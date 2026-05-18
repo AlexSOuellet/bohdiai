@@ -1,0 +1,7 @@
+.next
+node_modules
+.vercel
+package-lock.json
+Design files
+Project-Docs
+*.docx
