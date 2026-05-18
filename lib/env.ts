@@ -1,20 +1,30 @@
 import { z } from 'zod';
 
+const optionalUrl = z.preprocess(
+  (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+  z.string().url().optional(),
+);
+
+const optionalString = z.preprocess(
+  (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+  z.string().optional(),
+);
+
 const serverSchema = z.object({
   SUPABASE_URL: z.string().url(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
-  DATABASE_URL: z.string().url().optional(),
+  DATABASE_URL: optionalUrl,
   RESEND_API_KEY: z.string().min(1),
   RESEND_FROM_EMAIL: z.string().min(1),
   SITE_URL: z.string().url(),
   FOUNDER_CAP: z.coerce.number().int().positive().default(25),
-  SENTRY_DSN: z.string().url().optional(),
-  SENTRY_AUTH_TOKEN: z.string().optional(),
+  SENTRY_DSN: optionalUrl,
+  SENTRY_AUTH_TOKEN: optionalString,
 });
 
 const clientSchema = z.object({
-  NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
-  NEXT_PUBLIC_POSTHOG_HOST: z.string().url().optional(),
+  NEXT_PUBLIC_POSTHOG_KEY: optionalString,
+  NEXT_PUBLIC_POSTHOG_HOST: optionalUrl,
 });
 
 type ServerEnv = z.infer<typeof serverSchema>;

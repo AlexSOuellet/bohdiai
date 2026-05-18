@@ -3,7 +3,8 @@
     "allow": [
       "PowerShell(python C:\\\\Temp\\\\extract_text.py > C:\\\\Temp\\\\all_docs.md; \\(Get-Item C:\\\\Temp\\\\all_docs.md\\).Length)",
       "Bash(npm install *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(vercel --version)"
     ]
   }
 }

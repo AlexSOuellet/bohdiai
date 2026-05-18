@@ -13,11 +13,9 @@ export async function POST(req: Request) {
   try {
     return await handle(req);
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    const stack = err instanceof Error ? err.stack : undefined;
-    console.error('waitlist route fatal', message, stack);
+    console.error('waitlist route fatal', err);
     return NextResponse.json(
-      { ok: false, message: `DIAG: ${message}`, stack: stack?.split('\n').slice(0, 5) },
+      { ok: false, message: 'Something went wrong. Please try again.' },
       { status: 500 },
     );
   }
