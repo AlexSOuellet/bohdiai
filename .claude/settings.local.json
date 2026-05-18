@@ -4,7 +4,15 @@
       "PowerShell(python C:\\\\Temp\\\\extract_text.py > C:\\\\Temp\\\\all_docs.md; \\(Get-Item C:\\\\Temp\\\\all_docs.md\\).Length)",
       "Bash(npm install *)",
       "Bash(npm run *)",
-      "Bash(vercel --version)"
+      "Bash(vercel --version)",
+      "Bash(curl -s -X POST https://bohdiai.vercel.app/api/waitlist -H \"content-type: application/json\" -d '{\"email\":\"diag2@example.com\",\"type\":\"notify\"}')",
+      "Bash(vercel project *)",
+      "Bash(vercel teams *)",
+      "Bash(vercel switch *)",
+      "Bash(vercel link *)",
+      "Bash(vercel env *)",
+      "Bash(vercel deploy *)",
+      "Bash(curl -s -I https://bohdiai.vercel.app/)"
     ]
   }
 }
