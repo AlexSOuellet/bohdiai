@@ -10,6 +10,20 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
+  try {
+    return await handle(req);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const stack = err instanceof Error ? err.stack : undefined;
+    console.error('waitlist route fatal', message, stack);
+    return NextResponse.json(
+      { ok: false, message: `DIAG: ${message}`, stack: stack?.split('\n').slice(0, 5) },
+      { status: 500 },
+    );
+  }
+}
+
+async function handle(req: Request) {
   let payload: unknown;
   try {
     payload = await req.json();
