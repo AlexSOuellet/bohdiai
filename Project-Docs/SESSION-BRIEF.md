@@ -1,66 +1,88 @@
 # Session Brief — BohdiAI
 
-**Last updated:** 2026-05-18 (end of Phase 0 build session)
+**Last updated:** 2026-05-18 (end of mock build-out + audit session)
 **Update at the end of every session.**
 
 ---
 
 ## Where we are right now
 
-**Phase 0 is technically shipped to a Vercel preview URL** at https://bohdiai.vercel.app. The full stack works end-to-end:
+The design mock is **feature-complete**. All 8 sections built, mobile-responsive at ≤720px, animations dialed in, anchor navigation working, and a real Chrome browser quirk diagnosed and fixed. Daily audit passed (see [session-logs/2026-05-18.md](session-logs/2026-05-18.md)).
 
-- Marketing page renders all 9 sections (Header, Hero, How it works, Trades, Who's behind this, Waitlist, Community, Pledge, Footer)
-- Waitlist form: email + Founder/Notify radio, live "X of 25 founder spots left" counter, founder cap behavior
-- `POST /api/waitlist` writes to Supabase with confirmation token
-- Resend sends confirmation email from `BohdiAI <alex@bohdiai.com>`
-- `GET /confirm?token=...` confirms + sends welcome email + redirects to `/confirmed`
-- Confirmed end-to-end with real Gmail on 2026-05-18
+**Next action: port the mock to Next.js and deploy as the new `bohdiai.com`.**
 
-Domain is **bohdiai.com** (NOT `bohdi.ai`, which is owned by a third party). Brand is still **BohdiAI**.
+The current live preview at https://bohdiai.vercel.app still shows the bare-bones "literary boutique" design from Phase 0. The mock at `_design-mocks/hero-atmospheric.html` is the replacement.
 
-## What's NOT done yet (next session priorities)
+## What's in the finished mock
 
-**Alex's stated next focus: page look-and-feel review.** That's the right call before DNS flip.
+**File:** `_design-mocks/hero-atmospheric.html` (~2000 lines, single self-contained HTML)
+**Direction:** "Atmospheric" — near-black background with warm honey light effects. Reference: https://godly.website/website/create-video-716
 
-In priority order:
+**Final section order** (was reordered mid-session for trust-signal flow):
+1. **Hero** — atmospheric scene with 3 cycling storefronts (June's Sourdough / Iron & Ash Tattoo / Posy Lane Books), each a completely different *kind* of website. Honey-pill "Beta opening — summer 2026" at top. Browser frame locked at 700px desktop / 620px mobile. **3 honey dot indicators below the frame** — click to jump between storefronts. **Hover anywhere on the frame to pause** auto-cycle.
+2. **How It Works** — 3 numbered steps with connecting honey line (horizontal desktop, vertical mobile). Typewriter prompt cycling through 5 business intros, glowing AI orb, live URL badge.
+3. **Trades marquee** — 2 horizontal scrolling rows of business-type chips at readable speeds (140s/160s — slowed from 80s/90s). Sourdough/Tattoo/Picture-book-author highlighted in honey. Tap-to-pause on mobile.
+4. **Waitlist** — Honey-bordered card with **two-button toggle** (Founder Beta 25 spots / Notify me), live counter with honey progress bar (mocked at 17/25 — will be real from Supabase in production), email input + submit. Inline success state on submit (no modal).
+5. **Who's Behind** — Alex's portrait (`assets/alex-portrait.png`) with **CSS radial-gradient mask** that feathers edges into the dark page. Revised "I've spent 30 years..." quote with honey accent on "home computers" and "AI." Signed "Alex Scott · Founder, BohdiAI."
+6. **Pledge** — Three signed pledges in italic Cormorant, each with a glowing honey dot on a vertical rule. Same Alex signature as Who's Behind. Pledge #2 softened to data we can actually deliver (customer list / emails / order history). Pledge #3 rewritten to "Your shop's data stays in your shop" (was confusing "Subscription only" wording).
+7. **Community** — Skool card with "On Skool" platform pill, "Witsend Breakthroughs" lockup, "Just opened" status pill, CTA linking to real Skool URL. "Free to join. You don't need a BohdiAI account."
+8. **Footer** — Brand + tagline / Product / Community / Contact columns. "© 2026 BohdiAI · Built in Rhode Island." Real YouTube channel link wired (https://www.youtube.com/@TheAlexScott).
 
-1. **Visual review on real devices and browsers.** Page is at https://bohdiai.vercel.app. Walk through it on desktop (Chrome, Safari, Firefox), tablet, mobile. Look for: copy that doesn't sit right, palette tweaks, spacing issues, hero text rotation timing, whether the "Who's behind this" copy lands the way Alex wants, whether the storefront-stack illustration reads correctly, whether the trades grid feels too dense, whether the dark Community card pulls focus the right way.
-2. **"Who's behind this" copy review.** Current draft is a 2-paragraph card by Claude. Alex hasn't reviewed it yet. Spec called for him to pick from 2-3 versions — we shipped one for speed. If he doesn't like it, draft alternatives.
-3. **og:image visual review.** Dynamically generated at `/opengraph-image` via next/og. Test by sharing the URL in iMessage / Slack / Discord and seeing how the preview card looks.
-4. **Lighthouse pass.** Target: mobile Performance ≥ 90, Accessibility ≥ 95, SEO ≥ 95, Best Practices ≥ 95.
-5. **Fix silent email-send failures.** Currently if Resend errors, the API still returns success and the user gets "Check your email" but no email. Per Golden Rule "no silent failures," this needs to fail loud. ~30 min fix.
-6. **Wire Sentry + PostHog stubs** so they activate when keys are added. Alex still hasn't created those accounts.
-7. **Clean up test rows in the `waitlist` table** (diag2, diag3, posttest, etc.). One SQL delete.
-8. **DNS flip** — change `SITE_URL` back to `https://bohdiai.com`, point DNS at Vercel via Cloudflare. Last step before announcing.
+**Animation tuning** (session-end): removed the sweep bar (pure decoration), removed cart-counter ticker (read as fake), slowed "+1 new order" pill 7s→13s, slowed trades marquees ~2x. Static "Cart · 3 / 2 of 6 / 1" numbers per storefront instead of tick-tick theater.
 
-## Operational tools wired up this session
+**Critical bug fixed:** `.scene` had `overflow: hidden` which silently creates a Chrome scroll container. Anchor links were scrolling `.scene` internally instead of the document, leaving navbar/hero at negative y coordinates. **Fix: `overflow: clip`.** Worth a line in Engineering Standards before the port.
 
-- **Vercel CLI is installed and linked** to `alex-ouellet-s-projects/bohdiai`. Claude can now run `vercel env`, `vercel deploy`, `vercel logs`, etc. without Alex touching the dashboard. Auth lives in Alex's user profile (one-time `vercel login` already done).
-- **GitHub repo:** `https://github.com/AlexSOuellet/bohdiai` (under Alex's personal account, not the planned `bohdi-software` org — deferred decision, fine for now).
-- **Supabase project:** us-east-1, `bohdi-ai`, RLS enabled on `waitlist`, no policies. New secret-key system in use (legacy keys disabled after a service_role leak in chat earlier in this session — both Supabase and Resend keys were rotated).
+## NEXT SESSION: Port the mock to Next.js + deploy
 
-## Stack confirmed working
+**Goal: `bohdiai.com` shows the new design within a few days.**
 
-Next.js 14.2.15 (App Router) · Tailwind · TypeScript (strictest) · Supabase (Postgres + RLS) · Vercel (Node 24 build, iad1 region) · Resend · Cloudflare (DNS + Email Routing for `alex@bohdiai.com`)
+Realistic time: **3-5 days of focused work** (closer to 3 if no surprises).
 
-## Open blockers (waiting on Alex)
+Order of operations:
+1. **Split the mock into React components** in `components/` — roughly: Header, Hero, BrowserDemo, HowItWorks, TradesMarquee, Waitlist, WhoBehind, Pledge, Community, Footer (~10 components).
+2. **Move CSS over** — keep as global CSS for now. No premature conversion to Tailwind. Convert hardcoded hex/rgba values to design tokens (per audit Q3).
+3. **Move the 17 storefront images** from the gen-tool CDN to `/public/storefronts/` (or Supabase Storage if we want a CDN). Keep `alex-portrait.png` in `/public/`.
+4. **Wire the waitlist form to the existing API route** (already works in Phase 0 — just connect the new UI to the existing endpoint). Replace mocked 17/25 counter with the real count from Supabase.
+5. **Delete the old components** that the new design replaces (Header, Hero, HowItWorks, Breadth, WhosBehindThis, Waitlist, Community, Pledge, Footer — keep only the logic layer like the waitlist API).
+6. **Fix the audit gaps** before going live: email input `<label>`, `aria-live` on status pills, skip-to-content link, Lighthouse mobile ≥ 90.
+7. **DNS flip** `bohdiai.com` to the new design.
 
-- Sentry + PostHog accounts (low priority — can do anytime)
-- Whether to migrate repo to `bohdi-software` GitHub org (deferred — fine to ship under personal account)
-- Whether to set up GitHub Action for auto-migrations before Phase 1 (recommended)
+## After the marketing site is live → Phase 1 (beta product)
+
+Alex's target: **private beta in roughly 2 months** (so ~mid-August 2026).
+
+Phase 1 spec doesn't exist yet. Draft it AFTER the marketing site is live, so we can plan the actual product (multi-tenant maker auth, AI storefront generation, [shop].bohdiai.com subdomains, Stripe/Square webhook integration) with a clear scope.
 
 ## Files to know
 
-- All Phase 0 source code under `app/`, `components/`, `lib/`, `supabase/migrations/`
-- Design originals in `Design files/BohdiAI/` (still reference `bohdi.ai` in places — update when Phase 1 needs them)
-- Phase 0 spec: [Phase-0-Spec.md](Phase-0-Spec.md) — APPROVED, followed Path A (strict spec, not the richer design)
-- Pre-work checklist: [Phase-0-PreWork-Checklist.md](Phase-0-PreWork-Checklist.md) — completed
+- `_design-mocks/hero-atmospheric.html` — the finished mock (the source of truth for the port)
+- `_design-mocks/assets/alex-portrait.png` — founder portrait used in Who's Behind
+- `app/` and `components/` — current Phase 0 Next.js site (mostly to be replaced)
+- `lib/`, `supabase/migrations/` — keep these, the waitlist API + DB stay
+- Phase 0 spec: [Phase-0-Spec.md](Phase-0-Spec.md) — shipped, but the design has evolved well past it
+- Daily audit: [Daily-Audit.md](Daily-Audit.md)
+- Today's session log: [session-logs/2026-05-18.md](session-logs/2026-05-18.md)
 - Approval Policy and Engineering Standards still authoritative
 
-## Don'ts (current session preferences)
+## Operational notes (unchanged)
+
+- **Vercel CLI installed and linked** to `alex-ouellet-s-projects/bohdiai`
+- **GitHub repo:** https://github.com/AlexSOuellet/bohdiai
+- **Supabase:** us-east-1, `bohdi-ai`, secret-key system in use
+- **Stack:** Next.js 14.2.15 · Tailwind · TypeScript strict · Supabase · Vercel · Resend · Cloudflare
+
+## Deferred backlog (pick up after the port)
+
+- Fix silent email-send failures (Golden Rule violation, ~30 min)
+- Wire Sentry + PostHog stubs (waiting on accounts)
+- Clean test rows in waitlist table
+- DNS flip to bohdiai.com (handled as part of the port)
+
+## Don'ts (working preferences)
 
 - Don't use the AskUserQuestion popup tool. Ask inline.
 - Don't use git worktrees. Work in main tree on a feature branch.
-- Don't add anything not in the Phase 0 spec — Bucket 4 escalation.
-- Don't paste secrets in chat. Alex puts secrets into Vercel directly OR fills `.env.local` — but the file-diff system notification will surface them to Claude if filled while Claude is watching. Rotate after.
-- Slow down on long step-by-step procedures. Alex prefers smaller, clearer chunks over big batches.
+- Don't paste secrets in chat.
+- Don't ship "subtle" motion — Alex wants visible (but no theater — the cart-counter ticker is the cautionary tale).
+- Don't build desktop-only — mobile-first from now on.
+- When clipping atmospheric/decorative effects in production: use `overflow: clip`, NOT `overflow: hidden`. Hidden creates a Chrome scroll container that breaks anchor links.

@@ -12,7 +12,16 @@
       "Bash(vercel link *)",
       "Bash(vercel env *)",
       "Bash(vercel deploy *)",
-      "Bash(curl -s -I https://bohdiai.vercel.app/)"
+      "Bash(curl -s -I https://bohdiai.vercel.app/)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "mcp__puppeteer__puppeteer_screenshot",
+      "mcp__puppeteer__puppeteer_evaluate",
+      "mcp__puppeteer__puppeteer_navigate",
+      "mcp__946388a9-f691-4542-90df-dfd7dd209b36__generate_image",
+      "mcp__946388a9-f691-4542-90df-dfd7dd209b36__job_display",
+      "PowerShell(Start-Process \"C:\\\\Projects\\\\BohdiAI\\\\_design-mocks\\\\hero-atmospheric.html\"; \\(Get-Item 'C:\\\\Projects\\\\BohdiAI\\\\_design-mocks\\\\hero-atmospheric.html'\\).Length)"
     ]
   }
 }
