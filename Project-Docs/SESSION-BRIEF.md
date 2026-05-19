@@ -10,9 +10,9 @@
 **`https://bohdiai.com` is live on Vercel** with a valid Let's Encrypt cert. The Next.js stack is on the current Active LTS (Node 22, Next 16, React 19). CVE count went from 24 → 2 (and the 2 remaining are postcss inside Next's bundled deps — npm audit's "fix" wrongly suggests downgrading to Next 9). CI workflow is wired (typecheck + Vitest+coverage + Playwright). Coverage gate is live for `lib/**` at 90%.
 
 **Remaining polish (not launch-blocking):**
-- One-click in Vercel dashboard: set `www.bohdiai.com` to 308-redirect to `bohdiai.com` (Settings → Domains → "..." → Redirect). Both currently serve 200 OK.
-- Re-run Lighthouse on prod build now that Next 16 is live (was 97/97/96/100 on Next 14 — Best Practices should hit 100 now that favicon.ico exists).
-- Phase-0-Spec.md sync to current design (low priority).
+- **LCP follow-up.** Post-launch Lighthouse against `https://bohdiai.com` (mobile): **Performance 89** (was 97), **Accessibility 97**, **Best Practices 100** (was 96 — favicon fix worked), **SEO 100**. The 8-point Performance regression is entirely LCP: 3.5s, score 63. Every other metric is excellent (FCP 1.3s/98, TBT 70ms/99, CLS 0.002/100). Cause is some combination of (a) ~15 kB First Load JS increase from Next 15 → 16 + React 19, (b) real-network latency the local prod test didn't have, (c) the LCP element likely lacking `priority` / `fetchPriority="high"`. Fix is a 30-min next-session task: identify the LCP element via Lighthouse's `largest-contentful-paint-element` audit on a real run, add `next/image` priority hints. Not launch-blocking.
+- **www → apex redirect.** Alex was mid-edit in Vercel Settings → Domains setting up the 308 redirect (`www.bohdiai.com` → `bohdiai.com`). Save status uncertain. Verify next session by `curl -sI https://www.bohdiai.com` — if it shows `HTTP/1.1 308` and `location: https://bohdiai.com/`, done. Currently both serve 200 OK directly, which is functional but not canonical.
+- **Phase-0-Spec.md sync** to current design (low priority).
 
 ## What happened in this late-night session (2026-05-19, the upgrade-chain session)
 
