@@ -19,7 +19,7 @@ At the end of every working session, before declaring work complete. Any "No" an
 |---|---|---|
 | 1 | Does today's work match the current phase spec? | |
 | 2 | Does it follow the Master Spec decisions? | |
-| 3 | Are all styles driven by design tokens (no hardcoded values)? | |
+| 3 | **Phase 1+ only:** Are tenant-rendered component variants driven by the per-tenant token schema (no hardcoded values)? *(N/A for Phase 0 marketing artwork — see note below.)* | |
 | 4 | Is tenant isolation enforced via RLS? | |
 | 5 | Is the code modular and independently testable? | |
 | 6 | Does it work without depending on unbuilt features? | |
@@ -38,6 +38,8 @@ At the end of every working session, before declaring work complete. Any "No" an
 | 19 | Has it been reviewed and approved by the founder? | |
 
 **Note on N/A:** Some questions don't apply to every session (e.g., #14 on a marketing-page session). Mark as N/A with one line explaining why. N/A is not a pass-by-default.
+
+**Scope note on Q3 (design tokens):** Q3 applies to Phase 1+ tenant-rendered component variants — the modular components composed per-tenant via Supabase JSON tokens (Master Spec §6). It does NOT apply to Phase 0 marketing artwork (e.g., the home-page atmospheric scene or the three demo storefronts in `components/storefronts/`), which are monolithic single-file marketing art with no Phase 1 architectural role. Marking Q3 as N/A is correct for any Phase 0-only session. This scoping was added after a session-wasting detour where Q3 was misread as applying to marketing art — see [SESSION-BRIEF.md](SESSION-BRIEF.md) 2026-05-19 late session.
 
 ---
 

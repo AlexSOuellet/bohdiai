@@ -39,13 +39,9 @@ Marketing site at https://bohdiai.vercel.app is feature-complete. Today's late s
 
 ## NEXT SESSION priorities (in order)
 
-1. **Decide + act on open questions 1–3 above.**
-2. **Q3 reframe in Daily-Audit.md** (~5 min).
-3. **Write smoke tests** for Waitlist form + BrowserDemo cycle (resolves audit Q7 hard fail).
-4. **Run axe-core a11y scan** + fix any serious issues (Q18 finish).
-5. **Run real Lighthouse mobile audit** + fix anything below 90.
-6. **DNS flip `bohdiai.com` → this Vercel project** once 1–5 are clean.
-7. **After launch lands → begin drafting Phase 1 spec.** Target: private beta mid-August 2026.
+1. **Next.js major upgrade: 14.2.15 → 15.x → 16.x BEFORE DNS flip.** `npm audit` currently flags 24 advisories against `next@14.2.15` (1 critical, 3 high, 1 moderate; most are config-gated and we don't expose the vulnerable surface, but the count is real). Doing the upgrade now is *safer* than deferring: codebase is at its smallest, no live users, smoke tests now exist, and we want to be on current Next *before* Phase 1 adds tenant middleware + tenant-aware caching (where Next 15's flipped fetch caching default is a silent footgun). Order: 14 → 15 first (the bigger jump — async `cookies()`/`headers()`/`params`, fetch no longer cached by default, React 19), all tests green + manual smoke, then 15 → 16. Re-run `npm audit` after.
+2. **DNS flip `bohdiai.com` → this Vercel project** once the upgrade ships clean to preview.
+3. **After launch lands → begin drafting Phase 1 spec.** Target: private beta mid-August 2026.
 
 ## Lessons banked from today (do not repeat)
 
