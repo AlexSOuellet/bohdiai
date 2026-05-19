@@ -200,6 +200,62 @@
     animation: ember-rise 18s ease-in-out infinite;
   }
 
+  /*
+   * .portrait-mask: feathered radial fade so a photo emerges from the
+   * dark page background. Used by WhoBehind for Alex's portrait.
+   * Mobile mask is slightly tighter — variant lives on the section side.
+   */
+  .portrait-mask {
+    -webkit-mask-image: radial-gradient(
+      ellipse 62% 70% at 50% 40%,
+      #000 18%,
+      rgba(0, 0, 0, 0.7) 50%,
+      transparent 88%
+    );
+    mask-image: radial-gradient(
+      ellipse 62% 70% at 50% 40%,
+      #000 18%,
+      rgba(0, 0, 0, 0.7) 50%,
+      transparent 88%
+    );
+  }
+  @media (max-width: 720px) {
+    .portrait-mask {
+      -webkit-mask-image: radial-gradient(
+        ellipse 65% 72% at 50% 40%,
+        #000 22%,
+        rgba(0, 0, 0, 0.7) 52%,
+        transparent 92%
+      );
+      mask-image: radial-gradient(
+        ellipse 65% 72% at 50% 40%,
+        #000 22%,
+        rgba(0, 0, 0, 0.7) 52%,
+        transparent 92%
+      );
+    }
+  }
+
+  /* Honey radial glow behind the portrait so the warm bokeh has somewhere to land */
+  .portrait-bokeh::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    height: 75%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(243, 201, 122, 0.18),
+      rgba(233, 161, 61, 0.08) 40%,
+      transparent 70%
+    );
+    filter: blur(30px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
   /* Page content sits above all atmospheric layers */
   .scene-content {
     position: relative;

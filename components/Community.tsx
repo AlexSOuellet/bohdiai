@@ -1,13 +1,11 @@
+import { SectionKicker } from './SectionKicker';
+
 const SKOOL_URL = 'https://www.skool.com/wits-end-breakthrough-7869';
 
 export function Community(): React.ReactElement {
   return (
     <section id="community" className="relative z-content px-3 py-14 md:py-24">
-      <div className="mb-4 flex items-center justify-center gap-3.5 text-[11px] font-medium uppercase tracking-[0.22em] text-muted md:text-[12px]">
-        <span className="inline-block size-1.5 rounded-full bg-honey shadow-[0_0_14px_var(--honey)]" />
-        Community
-        <span className="inline-block size-1.5 rounded-full bg-honey shadow-[0_0_14px_var(--honey)]" />
-      </div>
+      <SectionKicker>Community</SectionKicker>
 
       <h2 className="mx-auto max-w-[720px] px-3 text-center font-sans text-[28px] font-medium leading-[1.1] tracking-[-0.025em] text-text-soft md:text-[42px] md:tracking-[-0.03em]">
         This isn&apos;t just a tool. There&apos;s{' '}

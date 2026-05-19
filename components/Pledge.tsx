@@ -1,11 +1,9 @@
+import { SectionKicker } from './SectionKicker';
+
 export function Pledge(): React.ReactElement {
   return (
     <section id="pledge" className="relative z-content px-2 py-14 md:py-24">
-      <div className="mb-4 flex items-center justify-center gap-3.5 text-[11px] font-medium uppercase tracking-[0.22em] text-muted md:text-[12px]">
-        <span className="inline-block size-1.5 rounded-full bg-honey shadow-[0_0_14px_var(--honey)]" />
-        The pledge
-        <span className="inline-block size-1.5 rounded-full bg-honey shadow-[0_0_14px_var(--honey)]" />
-      </div>
+      <SectionKicker>The pledge</SectionKicker>
 
       <h2 className="mx-auto mb-10 max-w-[680px] px-3 text-center font-sans text-[28px] font-medium leading-[1.08] tracking-[-0.025em] text-text-soft md:mb-11 md:text-[42px] md:tracking-[-0.03em]">
         Three things I{' '}

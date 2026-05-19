@@ -1,6 +1,7 @@
 import { Scene } from '@/components/Scene';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
+import { WhoBehind } from '@/components/WhoBehind';
 import { Pledge } from '@/components/Pledge';
 import { Community } from '@/components/Community';
 import { Footer } from '@/components/Footer';
@@ -52,6 +53,7 @@ export default async function HomePage(): Promise<React.ReactElement> {
             HowItWorks · TradesMarquee · Waitlist · WhoBehind · BrowserDemo
           </p>
         </section>
+        <WhoBehind />
         <Pledge />
         <Community />
       </main>
