@@ -1,12 +1,4 @@
-import { Header } from '@/components/Header';
-import { Hero } from '@/components/Hero';
-import { HowItWorks } from '@/components/HowItWorks';
-import { Breadth } from '@/components/Breadth';
-import { WhosBehindThis } from '@/components/WhosBehindThis';
-import { Community } from '@/components/Community';
-import { Waitlist } from '@/components/Waitlist';
-import { Pledge } from '@/components/Pledge';
-import { Footer } from '@/components/Footer';
+import { Scene } from '@/components/Scene';
 import { supabaseAdmin } from '@/lib/supabase';
 import { serverEnv } from '@/lib/env';
 
@@ -38,25 +30,24 @@ function getFounderCap(): number {
   }
 }
 
-export default async function HomePage() {
+export default async function HomePage(): Promise<React.ReactElement> {
   const [founderTakenCount, founderCap] = await Promise.all([
     getFounderTakenCount(),
     Promise.resolve(getFounderCap()),
   ]);
 
   return (
-    <>
-      <Header />
+    <Scene>
       <main id="main">
-        <Hero />
-        <HowItWorks />
-        <Breadth />
-        <WhosBehindThis />
-        <Waitlist founderTakenCount={founderTakenCount} founderCap={founderCap} />
-        <Community />
-        <Pledge />
+        <section className="py-20 text-center">
+          <p className="text-honey-warm font-mono text-xs uppercase tracking-[0.16em]">
+            Atmospheric shell — sections wiring in
+          </p>
+          <p className="mt-4 text-text-soft">
+            Founder waitlist: {founderTakenCount}/{founderCap}
+          </p>
+        </section>
       </main>
-      <Footer />
-    </>
+    </Scene>
   );
 }
