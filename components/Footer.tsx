@@ -45,16 +45,14 @@ export function Footer(): React.ReactElement {
         <span>© 2026 BohdiAI · Built in Rhode Island</span>
         <span className="flex gap-4 md:gap-[18px]">
           <a
-            href="#"
+            href="/privacy"
             className="text-muted no-underline transition-colors hover:text-text-soft"
-            aria-label="Privacy policy (coming with Phase 1)"
           >
             Privacy
           </a>
           <a
-            href="#"
+            href="/terms"
             className="text-muted no-underline transition-colors hover:text-text-soft"
-            aria-label="Terms of service (coming with Phase 1)"
           >
             Terms
           </a>
