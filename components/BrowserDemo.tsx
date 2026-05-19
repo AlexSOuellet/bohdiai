@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { SourdoughStore } from './storefronts/SourdoughStore';
+import { TattooStore } from './storefronts/TattooStore';
 
 type Storefront = {
   liveUrl: string;
@@ -21,7 +22,7 @@ const STOREFRONTS: readonly Storefront[] = [
     liveUrl: 'ironandash-tattoo.bohdiai.com',
     brandName: 'Iron & Ash',
     newOrder: '✨ +1 consult requested',
-    render: () => <PlaceholderStore name="Iron & Ash" tagline="Custom blackwork · By appointment only · Providence, RI" bg="#0a0908" text="#e8dfd1" accent="#c9a87a" />,
+    render: () => <TattooStore />,
   },
   {
     liveUrl: 'posylane-books.bohdiai.com',

@@ -578,6 +578,286 @@
     }
   }
 
+  /* ---- Tattoo storefront — near-black, gothic + Bebas all-caps ---- */
+  .store-tattoo {
+    background: #0a0908;
+    color: #e8dfd1;
+    font-family: 'Inter', sans-serif;
+    padding: 0;
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .store-tattoo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.025) 1px, transparent 0);
+    background-size: 5px 5px;
+    z-index: 1;
+  }
+  .store-tattoo .bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 24px;
+    border-bottom: 1px solid rgba(232, 223, 209, 0.1);
+    position: relative;
+    z-index: 2;
+  }
+  .store-tattoo .bar .brand {
+    font-family: var(--font-gothic), serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #e8dfd1;
+    letter-spacing: 0.01em;
+  }
+  .store-tattoo .bar .nav {
+    display: flex;
+    gap: 18px;
+    font-family: var(--font-mono), monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(232, 223, 209, 0.55);
+  }
+  .store-tattoo .bar .cta {
+    background: #a01a1a;
+    color: #f5e8d4;
+    font-family: var(--font-mono), monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+  }
+  .store-tattoo .hero {
+    position: relative;
+    aspect-ratio: 3.2 / 1;
+    max-height: 230px;
+    overflow: hidden;
+    z-index: 2;
+  }
+  .store-tattoo .hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: contrast(1.1) saturate(0.85);
+    display: block;
+  }
+  .store-tattoo .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to bottom, rgba(10, 9, 8, 0.3), rgba(10, 9, 8, 0.85)),
+      linear-gradient(to right, rgba(10, 9, 8, 0.7) 0%, transparent 50%);
+  }
+  .store-tattoo .hero .title {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 24px 28px;
+    color: #f5e8d4;
+    z-index: 2;
+  }
+  .store-tattoo .hero .title h1 {
+    font-family: var(--font-bebas), sans-serif;
+    font-weight: 400;
+    font-size: 54px;
+    line-height: 0.92;
+    letter-spacing: 0.02em;
+    margin: 0;
+    text-transform: uppercase;
+  }
+  .store-tattoo .hero .title h1 .blk {
+    font-family: var(--font-gothic), serif;
+    font-size: 0.85em;
+    color: #a01a1a;
+    text-transform: none;
+  }
+  .store-tattoo .hero .title .sub {
+    margin-top: 8px;
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #a01a1a;
+  }
+  .store-tattoo .artist {
+    padding: 9px 24px;
+    border-bottom: 1px solid rgba(232, 223, 209, 0.08);
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(232, 223, 209, 0.65);
+    position: relative;
+    z-index: 2;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .store-tattoo .artist b {
+    color: #e8dfd1;
+    font-weight: 600;
+  }
+  .store-tattoo .artist .quote {
+    color: rgba(232, 223, 209, 0.45);
+    font-style: italic;
+    text-transform: none;
+    letter-spacing: 0.01em;
+    font-family: 'Inter', serif;
+    margin-left: 18px;
+  }
+  .store-tattoo .section {
+    padding: 22px 24px 26px;
+    position: relative;
+    z-index: 2;
+    flex: 1;
+  }
+  .store-tattoo .section .label {
+    font-family: var(--font-mono), monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #a01a1a;
+    margin-bottom: 14px;
+  }
+  .store-tattoo .grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+  }
+  .store-tattoo .grid .pic {
+    aspect-ratio: 1 / 1.2;
+    max-height: 170px;
+    overflow: hidden;
+    background: #15110a;
+    position: relative;
+  }
+  .store-tattoo .grid .pic .lbl {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    font-family: var(--font-mono), monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #e8dfd1;
+    background: rgba(10, 9, 8, 0.7);
+    padding: 3px 7px;
+    z-index: 1;
+  }
+  .store-tattoo .grid .pic img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: contrast(1.1) saturate(0.85);
+    display: block;
+  }
+  .store-tattoo .foot {
+    border-top: 1px solid rgba(232, 223, 209, 0.1);
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(232, 223, 209, 0.55);
+    position: relative;
+    z-index: 2;
+  }
+  .store-tattoo .foot .open-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #3f9c3f;
+    box-shadow: 0 0 8px #3f9c3f;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .store-tattoo .foot .booking {
+    color: #a01a1a;
+    font-weight: 600;
+  }
+  @media (max-width: 720px) {
+    .store-tattoo .bar {
+      padding: 10px 14px;
+    }
+    .store-tattoo .bar .brand {
+      font-size: 18px;
+    }
+    .store-tattoo .bar .nav {
+      display: none;
+    }
+    .store-tattoo .bar .cta {
+      font-size: 9px;
+      padding: 6px 10px;
+      letter-spacing: 0.16em;
+    }
+    .store-tattoo .hero {
+      aspect-ratio: 2.4 / 1;
+      max-height: 130px;
+    }
+    .store-tattoo .hero .title {
+      padding: 12px 14px;
+    }
+    .store-tattoo .hero .title h1 {
+      font-size: 32px;
+      line-height: 0.95;
+    }
+    .store-tattoo .hero .title .sub {
+      font-size: 9px;
+      margin-top: 4px;
+      letter-spacing: 0.16em;
+    }
+    .store-tattoo .artist {
+      padding: 7px 14px;
+      font-size: 9px;
+      letter-spacing: 0.12em;
+    }
+    .store-tattoo .artist .quote {
+      display: none;
+    }
+    .store-tattoo .section {
+      padding: 14px 14px 16px;
+    }
+    .store-tattoo .section .label {
+      font-size: 9px;
+      margin-bottom: 10px;
+      letter-spacing: 0.18em;
+    }
+    .store-tattoo .grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+    }
+    .store-tattoo .grid .pic {
+      aspect-ratio: 1 / 1;
+      max-height: 110px;
+    }
+    .store-tattoo .grid .pic .lbl {
+      font-size: 8px;
+      padding: 2px 5px;
+      left: 4px;
+      bottom: 4px;
+      letter-spacing: 0.12em;
+    }
+    .store-tattoo .foot {
+      padding: 10px 14px;
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      gap: 8px;
+    }
+  }
+
   /*
    * .marquee-fade: horizontal scroll lane with feathered fade-in/out at
    * left + right edges so chips emerge from the dark. Used by TradesMarquee.

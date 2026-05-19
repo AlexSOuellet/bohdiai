@@ -1,5 +1,14 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter_Tight, Cormorant_Garamond, Manrope, JetBrains_Mono } from 'next/font/google';
+import {
+  Inter_Tight,
+  Cormorant_Garamond,
+  Manrope,
+  JetBrains_Mono,
+  UnifrakturCook,
+  Bebas_Neue,
+  Fredoka,
+  Caveat,
+} from 'next/font/google';
 import './globals.css';
 
 const interTight = Inter_Tight({
@@ -29,6 +38,36 @@ const jetbrains = JetBrains_Mono({
   display: 'swap',
   variable: '--font-mono',
   weight: ['400', '600'],
+});
+
+// Storefront-only display fonts (loaded once, used inside BrowserDemo).
+// Each is a single-style display family — small footprint.
+const unifrakturCook = UnifrakturCook({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-gothic',
+  weight: ['700'],
+});
+
+const bebas = Bebas_Neue({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-bebas',
+  weight: ['400'],
+});
+
+const fredoka = Fredoka({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-fredoka',
+  weight: ['400', '500', '600', '700'],
+});
+
+const caveat = Caveat({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-caveat',
+  weight: ['500', '700'],
 });
 
 const SITE_URL = process.env['SITE_URL'] ?? 'https://bohdiai.com';
@@ -69,7 +108,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${interTight.variable} ${cormorant.variable} ${manrope.variable} ${jetbrains.variable}`}
+      className={`${interTight.variable} ${cormorant.variable} ${manrope.variable} ${jetbrains.variable} ${unifrakturCook.variable} ${bebas.variable} ${fredoka.variable} ${caveat.variable}`}
     >
       <body className="bg-bg font-sans text-text antialiased">
         <a
