@@ -1219,9 +1219,64 @@
   }
 }
 
-/* ===== Section-scoped keyframes used by atmospheric backdrop ===== */
-/* Page-wide animations (breathe, beam-sway, etc.) are declared in tailwind.config.ts. */
-/* ember-rise is here because it overlaps with the existing tailwind 'rise' name. */
+/*
+ * Keyframes declared here (not in tailwind.config.ts) because they're
+ * referenced from .build / .scene-* @layer components classes via raw
+ * `animation:` CSS, not Tailwind `animate-*` utilities. Tailwind only
+ * emits keyframes that match an animation utility class used in JSX —
+ * keyframes declared only in theme.extend.keyframes won't be in the
+ * output CSS unless something uses `animate-{name}`.
+ */
+@keyframes build-in {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes breathe {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateX(-50%) scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.1);
+  }
+}
+@keyframes breathe-slow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: translateX(-50%) scale(0.92);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translateX(-50%) scale(1.14);
+  }
+}
+@keyframes beam-sway {
+  0%, 100% {
+    transform: translateX(-50%) rotate(-22deg) scaleY(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateX(-50%) rotate(-26deg) scaleY(1.08);
+    opacity: 1;
+  }
+}
+@keyframes beam-sway-2 {
+  0%, 100% {
+    transform: translateX(-50%) rotate(18deg) scaleY(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateX(-50%) rotate(22deg) scaleY(1.06);
+    opacity: 1;
+  }
+}
 @keyframes ember-rise {
   0% {
     transform: translate(0, 0) scale(0.6);
