@@ -1,11 +1,12 @@
+import { Scene } from '@/components/Scene';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { HowItWorks } from '@/components/HowItWorks';
-import { Breadth } from '@/components/Breadth';
-import { WhosBehindThis } from '@/components/WhosBehindThis';
-import { Community } from '@/components/Community';
+import { TradesMarquee } from '@/components/TradesMarquee';
 import { Waitlist } from '@/components/Waitlist';
+import { WhoBehind } from '@/components/WhoBehind';
 import { Pledge } from '@/components/Pledge';
+import { Community } from '@/components/Community';
 import { Footer } from '@/components/Footer';
 import { supabaseAdmin } from '@/lib/supabase';
 import { serverEnv } from '@/lib/env';
@@ -38,25 +39,25 @@ function getFounderCap(): number {
   }
 }
 
-export default async function HomePage() {
+export default async function HomePage(): Promise<React.ReactElement> {
   const [founderTakenCount, founderCap] = await Promise.all([
     getFounderTakenCount(),
     Promise.resolve(getFounderCap()),
   ]);
 
   return (
-    <>
+    <Scene>
       <Header />
       <main id="main">
         <Hero />
         <HowItWorks />
-        <Breadth />
-        <WhosBehindThis />
+        <TradesMarquee />
         <Waitlist founderTakenCount={founderTakenCount} founderCap={founderCap} />
-        <Community />
+        <WhoBehind />
         <Pledge />
+        <Community />
       </main>
       <Footer />
-    </>
+    </Scene>
   );
 }

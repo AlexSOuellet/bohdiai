@@ -1,56 +1,114 @@
-const STEPS = [
-  {
-    kicker: 'Tell us about you',
-    h: 'A short conversation.',
-    p: 'Three or four questions — what you make or do, who buys it, how you take payment. No forms to fight with.',
-  },
-  {
-    kicker: 'AI builds your storefront',
-    h: 'Made for your trade.',
-    p: 'A bakery looks like a bakery. A vintage shop looks like a vintage shop. Estate sales get an event page. The layout fits how your business actually works.',
-  },
-  {
-    kicker: 'You go live',
-    h: 'In minutes. Yours forever.',
-    p: 'You own the site, the customer list, the payments. We never take a cut of your sales. Edit anything in plain English, any time.',
-  },
+import { SectionKicker } from './SectionKicker';
+import { Typewriter } from './Typewriter';
+
+const HOW_PROMPTS = [
+  'I bake sourdough out of my home in Providence',
+  'I tattoo blackwork in a small Brooklyn studio',
+  'I write picture books for kids ages 3 to 7',
+  'I teach piano lessons in a converted Maple Street garage',
+  'I curate restored mid-century furniture in Newport',
 ] as const;
 
-export function HowItWorks() {
+export function HowItWorks(): React.ReactElement {
   return (
-    <section id="how" className="relative">
-      <div className="mx-auto max-w-[1180px] px-6 py-20 md:px-10 md:py-28">
-        <div className="grid gap-10 md:grid-cols-12">
-          <div className="md:col-span-4">
-            <div className="mb-4 font-mono text-[11px] uppercase tracking-[0.16em] text-honey-700">
-              / how it works
-            </div>
-            <h2 className="font-serif text-[40px] font-light leading-[1.0] tracking-[-0.02em] text-ink-900 md:text-[52px]">
-              The hard part isn&rsquo;t building{' '}
-              <em className="italic text-honey-600">your</em> website.
-            </h2>
-            <p className="mt-5 max-w-[34ch] text-[17px] leading-relaxed text-ink-600">
-              It&rsquo;s deciding what goes on it, what to call things, and how to handle the
-              awkward parts — pickup windows, custom orders, deposits, sliding-scale prices.
-              BohdiAI does that thinking with you.
-            </p>
-          </div>
+    <section id="how" className="relative z-content px-3 pb-12 pt-16 md:pb-20 md:pt-32">
+      <SectionKicker>How it works</SectionKicker>
 
-          <ol className="grid gap-px overflow-hidden rounded-2xl border border-cream-300 bg-cream-300/60 sm:grid-cols-3 md:col-span-8">
-            {STEPS.map((s) => (
-              <li key={s.kicker} className="flex flex-col bg-cream-50 p-6 md:p-7">
-                <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-ink-500">
-                  {s.kicker}
-                </span>
-                <h3 className="mt-6 font-serif text-[22px] leading-snug tracking-[-0.01em] text-ink-900">
-                  {s.h}
-                </h3>
-                <p className="mt-3 text-[14.5px] leading-relaxed text-ink-600">{s.p}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
+      <h2 className="mx-auto max-w-[720px] px-3 text-center font-sans text-[30px] font-medium leading-[1.05] tracking-[-0.025em] text-text-soft md:text-[48px] md:tracking-[-0.03em]">
+        Three steps.{' '}
+        <em className="not-italic text-honey-warm [text-shadow:0_0_32px_rgba(243,201,122,0.5)]">
+          No code.
+        </em>{' '}
+        No templates.
+      </h2>
+      <p className="mx-auto mt-3.5 max-w-[560px] px-3 text-center text-[14px] leading-[1.55] text-muted md:mt-5 md:text-[16px]">
+        Tell BohdiAI about your business, watch it build, go live. That&apos;s the whole thing.
+      </p>
+
+      <div className="relative mt-11 grid grid-cols-1 gap-9 md:mt-18 md:grid-cols-3 md:gap-5">
+        {/* Connecting line: vertical on mobile (center column), horizontal on desktop */}
+        <span
+          aria-hidden="true"
+          className="absolute left-1/2 top-[30px] bottom-[30px] z-base w-px -translate-x-1/2 md:left-[8%] md:right-[8%] md:top-[88px] md:h-px md:w-auto md:bottom-auto md:translate-x-0 [background:linear-gradient(to_bottom,transparent,rgba(243,201,122,0.4)_12%,rgba(243,201,122,0.4)_88%,transparent)] md:[background:linear-gradient(to_right,transparent,rgba(243,201,122,0.4)_20%,rgba(243,201,122,0.4)_80%,transparent)]"
+        />
+
+        <Step num="01" title="Tell BohdiAI about your business" copy="A few sentences is enough. Your products, your style, what makes you you.">
+          <PromptCard />
+        </Step>
+        <Step num="02" title="AI builds your storefront" copy="A complete working site tuned to your kind of business — not a template anyone else has.">
+          <Orb />
+        </Step>
+        <Step num="03" title="Go live — keep 100%" copy="Publish on your own subdomain. Take orders, take bookings. We never take a cut of your sales.">
+          <LiveBadge />
+        </Step>
       </div>
     </section>
+  );
+}
+
+function Step({
+  num,
+  title,
+  copy,
+  children,
+}: {
+  num: string;
+  title: string;
+  copy: string;
+  children: React.ReactNode;
+}): React.ReactElement {
+  return (
+    <div className="relative z-raised px-3 text-center md:px-3">
+      <span className="relative z-content inline-block bg-bg px-3.5 font-sans text-[38px] font-light leading-none tracking-[-0.04em] text-honey-warm [text-shadow:0_0_24px_rgba(243,201,122,0.5)] md:px-4.5 md:text-[48px]">
+        {num}
+      </span>
+      <div className="relative my-5 flex h-[130px] items-center justify-center md:my-7 md:h-[160px]">
+        {children}
+      </div>
+      <h3 className="mb-2 font-sans text-[19px] font-medium tracking-[-0.015em] text-text md:text-[22px]">
+        {title}
+      </h3>
+      <p className="mx-auto max-w-[280px] text-[13px] leading-[1.55] text-muted md:text-[14px]">
+        {copy}
+      </p>
+    </div>
+  );
+}
+
+function PromptCard(): React.ReactElement {
+  return (
+    <div className="w-full max-w-[260px] rounded-lg border border-text/[0.12] bg-text/[0.04] p-3.5 text-left text-[12px] leading-[1.5] text-text-soft backdrop-blur-[8px] md:max-w-[280px] md:p-4 md:text-[13px]">
+      <div className="mb-1.5 text-[11px] tracking-[0.05em] text-muted">YOU</div>
+      <div className="text-text">
+        <Typewriter phrases={HOW_PROMPTS} />
+      </div>
+    </div>
+  );
+}
+
+function Orb(): React.ReactElement {
+  return (
+    <div className="relative size-[100px] md:size-[120px]">
+      {/* Outer rotating ring */}
+      <span className="absolute -inset-1.5 rounded-full border border-honey-warm/[0.15] [border-right-color:var(--honey)] animate-ring-spin-rev md:-inset-2" />
+      {/* Inner rotating ring */}
+      <span className="absolute inset-0 rounded-full border border-honey-warm/30 [border-top-color:var(--honey-warm)] animate-ring-spin" />
+      {/* Core */}
+      <span className="absolute inset-[25px] animate-orb-pulse rounded-full shadow-[0_0_30px_var(--honey-warm),0_0_60px_var(--honey)] [background:radial-gradient(circle,#fff3d6_0%,var(--honey-warm)_50%,var(--honey-deep)_90%)] md:inset-[30px]" />
+    </div>
+  );
+}
+
+function LiveBadge(): React.ReactElement {
+  return (
+    <div className="flex flex-col items-center gap-3.5">
+      <span className="inline-flex items-center gap-1.5 rounded-pill bg-honey-warm px-3 py-1 text-[11px] font-bold tracking-[0.04em] text-bg-2">
+        <span className="inline-block size-1.5 animate-pulse-dark rounded-full bg-bg-2" />
+        LIVE
+      </span>
+      <span className="inline-flex items-center gap-2 rounded-md border border-text/[0.15] bg-text/[0.06] px-3 py-1.5 font-sans text-[12px] text-text-soft md:text-[13px]">
+        <span className="text-honey">🔒</span>yourshop.bohdiai.com
+      </span>
+    </div>
   );
 }

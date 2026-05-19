@@ -1,31 +1,32 @@
-import { BohdiLogo } from './BohdiLogo';
+const BLUR_CHIP =
+  'inline-flex items-center gap-2 rounded-pill border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-text-soft no-underline backdrop-blur-[20px]';
 
-export function Header() {
+export function Header(): React.ReactElement {
   return (
-    <header className="relative z-20">
-      <div className="mx-auto flex max-w-[1180px] items-center justify-between px-6 pt-6 md:px-10 md:pt-8">
-        <a href="#top" className="focus-ring rounded">
-          <BohdiLogo />
-        </a>
-        <nav
-          aria-label="Primary"
-          className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-600 md:gap-6"
+    <header className="flex items-center justify-between pt-0.5 md:pt-2">
+      <div className="flex items-center gap-1.5 md:gap-2">
+        <a
+          href="/"
+          className={`${BLUR_CHIP} gap-2.5 py-2 pl-2 pr-3.5 text-[12px] md:text-[13px]`}
         >
-          <a href="#how" className="link-underline hidden md:inline">
-            How it works
-          </a>
-          <a href="#community" className="link-underline hidden md:inline">
-            Community
-          </a>
-          <span
-            aria-disabled="true"
-            className="rounded-full border border-ink-900/15 px-3 py-2 text-ink-800/60"
-            title="Log in opens when the product launches"
-          >
-            Log in
+          <span className="grid size-6 place-items-center rounded-[7px] bg-gradient-to-br from-honey-warm to-honey-deep text-[13px] font-bold text-bg-2">
+            B
           </span>
-        </nav>
+          BohdiAI
+        </a>
+        <a href="#how" className={`${BLUR_CHIP} hidden md:inline-flex`}>
+          How it works
+        </a>
+        <a href="#community" className={`${BLUR_CHIP} hidden md:inline-flex`}>
+          Community
+        </a>
       </div>
+      <a
+        href="#waitlist"
+        className="inline-flex items-center gap-2 rounded-pill border border-transparent bg-text px-4 py-1.5 text-[12px] font-semibold text-bg no-underline md:py-2 md:text-[13px]"
+      >
+        Reserve your shop →
+      </a>
     </header>
   );
 }

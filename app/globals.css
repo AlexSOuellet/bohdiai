@@ -3,142 +3,322 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --bg: #0a0805;
+    --bg-2: #15110a;
+    --text: #f3ede0;
+    --text-soft: #d8d2c4;
+    --muted: #7e7464;
+    --honey: #e9a13d;
+    --honey-warm: #f3c97a;
+    --honey-deep: #c9831e;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   html,
   body {
-    background: #f7f1e6;
-  }
-  body {
-    color: #2a241c;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter Tight', Inter, ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
   }
-  .font-serif {
-    font-feature-settings: 'ss01', 'ss02';
+
+  section[id] {
+    scroll-margin-top: 24px;
   }
 }
 
 @layer components {
-  .paper {
-    background-color: #f7f1e6;
-    background-image:
-      radial-gradient(rgba(86, 73, 59, 0.06) 1px, transparent 1px),
-      radial-gradient(rgba(86, 73, 59, 0.04) 1px, transparent 1px);
-    background-size:
-      22px 22px,
-      11px 11px;
-    background-position:
-      0 0,
-      11px 11px;
+  /* ===== Atmospheric backdrop (page-wide) ===== */
+
+  /*
+   * .scene: full-bleed atmospheric container.
+   * overflow: clip prevents Chrome from treating it as a scroll target for
+   * anchor links — using overflow: hidden silently breaks in-page nav.
+   */
+  .scene {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+    overflow: clip;
   }
 
-  .paper-dark {
-    background-color: #1a1410;
-    background-image: radial-gradient(rgba(233, 178, 87, 0.05) 1px, transparent 1px);
-    background-size: 18px 18px;
+  /* Breathing honey glow at the bottom of the scene */
+  .scene-glow {
+    position: absolute;
+    left: 50%;
+    bottom: -180px;
+    transform: translateX(-50%);
+    width: 1400px;
+    height: 900px;
+    background: radial-gradient(
+      ellipse 700px 380px at center,
+      rgba(243, 201, 122, 0.38),
+      rgba(233, 161, 61, 0.13) 40%,
+      transparent 70%
+    );
+    filter: blur(6px);
+    pointer-events: none;
+    z-index: 0;
+    animation: breathe 7s ease-in-out infinite;
+  }
+  .scene-glow-deep {
+    position: absolute;
+    left: 50%;
+    bottom: -340px;
+    transform: translateX(-50%);
+    width: 1800px;
+    height: 1000px;
+    background: radial-gradient(
+      ellipse 900px 500px at center,
+      rgba(201, 131, 30, 0.22),
+      transparent 65%
+    );
+    filter: blur(20px);
+    pointer-events: none;
+    z-index: 0;
+    animation: breathe-slow 11s ease-in-out infinite;
   }
 
-  .link-underline {
-    background-image: linear-gradient(currentColor, currentColor);
-    background-size: 100% 1px;
-    background-repeat: no-repeat;
-    background-position: 0 100%;
-    transition: background-size 0.3s ease;
-  }
-  .link-underline:hover {
-    background-size: 0% 1px;
-  }
-
-  .focus-ring:focus {
-    outline: 2px solid #d99634;
-    outline-offset: 2px;
-  }
-  .focus-ring:focus-visible {
-    outline: 2px solid #d99634;
-    outline-offset: 2px;
+  /* Corner-darkening vignette */
+  .scene-vignette {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 1200px 700px at 50% 0%, rgba(0, 0, 0, 0.5), transparent 60%),
+      radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.6) 100%);
+    pointer-events: none;
+    z-index: 1;
   }
 
-  .input {
-    width: 100%;
-    background: transparent;
-    border: 0;
-    border-bottom: 1px solid #c9b58e;
-    padding: 14px 2px 10px;
-    font-size: 17px;
-    color: #1f1a14;
-    transition: border-color 0.2s ease;
+  /* Angled prism light beams */
+  .scene-prism {
+    position: absolute;
+    left: 50%;
+    bottom: -200px;
+    width: 1600px;
+    height: 1200px;
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: 0;
   }
-  .input::placeholder {
-    color: #a39378;
+  .scene-prism .beam {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 200px;
+    height: 1400px;
+    transform-origin: bottom center;
+    border-radius: 50%;
+    filter: blur(40px);
+    mix-blend-mode: screen;
   }
-  .input:focus {
-    outline: none;
-    border-bottom-color: #1f1a14;
+  .scene-prism .beam-1 {
+    transform: translateX(-50%) rotate(-22deg);
+    background: linear-gradient(
+      to top,
+      rgba(243, 201, 122, 0.45),
+      rgba(233, 161, 61, 0.28) 25%,
+      rgba(201, 131, 30, 0.1) 55%,
+      transparent 78%
+    );
+    animation: beam-sway 9s ease-in-out infinite;
   }
-
-  .btn-primary {
-    background: #1f1a14;
-    color: #fbf8f2;
-    transition:
-      background 0.2s ease,
-      transform 0.2s ease;
+  .scene-prism .beam-2 {
+    transform: translateX(-50%) rotate(18deg);
+    background: linear-gradient(
+      to top,
+      rgba(255, 238, 200, 0.38),
+      rgba(243, 201, 122, 0.26) 30%,
+      rgba(233, 161, 61, 0.1) 60%,
+      transparent 82%
+    );
+    animation: beam-sway-2 11s ease-in-out infinite;
   }
-  .btn-primary:hover {
-    background: #2a241c;
-  }
-  .btn-primary:active {
-    transform: translateY(1px);
-  }
-  .btn-primary:disabled {
-    background: #56493b;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  .honey-rule {
-    height: 1px;
-    background: linear-gradient(to right, transparent, #d99634, transparent);
-  }
-
-  .pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: #f7f1e6;
-    border: 1px solid #e3d3b1;
-    font-family: var(--font-geist-mono), ui-monospace, monospace;
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #56493b;
-  }
-  .pill .dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 999px;
-    background: #d99634;
-    box-shadow: 0 0 0 4px rgba(217, 150, 52, 0.15);
+  .scene-prism .beam-3 {
+    transform: translateX(-50%) rotate(-4deg);
+    width: 140px;
+    height: 1100px;
+    background: linear-gradient(
+      to top,
+      rgba(255, 255, 220, 0.5),
+      rgba(255, 238, 200, 0.3) 20%,
+      rgba(243, 201, 122, 0.12) 50%,
+      transparent 78%
+    );
+    filter: blur(28px);
+    animation: beam-sway 7s ease-in-out infinite reverse;
   }
 
-  .card {
-    transition:
-      transform 0.3s ease,
-      box-shadow 0.3s ease,
-      border-color 0.3s ease;
+  /* SVG noise grain overlay (data URI to avoid an asset request) */
+  .scene-grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.06;
+    pointer-events: none;
+    z-index: 2;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   }
-  .card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 30px 60px -28px rgba(31, 26, 20, 0.25);
+
+  /* Floating embers (positions set inline per ember via JS) */
+  .scene-embers {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+    overflow: hidden;
+  }
+  .scene-embers .ember {
+    position: absolute;
+    bottom: -40px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle at center,
+      #fff3d6 0%,
+      var(--honey-warm) 40%,
+      var(--honey) 75%,
+      transparent 100%
+    );
+    box-shadow:
+      0 0 24px var(--honey-warm),
+      0 0 60px var(--honey),
+      0 0 120px rgba(243, 201, 122, 0.5);
+    opacity: 0;
+    filter: blur(0.3px);
+    animation: ember-rise 18s ease-in-out infinite;
+  }
+
+  /*
+   * .portrait-mask: feathered radial fade so a photo emerges from the
+   * dark page background. Used by WhoBehind for Alex's portrait.
+   * Mobile mask is slightly tighter — variant lives on the section side.
+   */
+  .portrait-mask {
+    -webkit-mask-image: radial-gradient(
+      ellipse 62% 70% at 50% 40%,
+      #000 18%,
+      rgba(0, 0, 0, 0.7) 50%,
+      transparent 88%
+    );
+    mask-image: radial-gradient(
+      ellipse 62% 70% at 50% 40%,
+      #000 18%,
+      rgba(0, 0, 0, 0.7) 50%,
+      transparent 88%
+    );
+  }
+  @media (max-width: 720px) {
+    .portrait-mask {
+      -webkit-mask-image: radial-gradient(
+        ellipse 65% 72% at 50% 40%,
+        #000 22%,
+        rgba(0, 0, 0, 0.7) 52%,
+        transparent 92%
+      );
+      mask-image: radial-gradient(
+        ellipse 65% 72% at 50% 40%,
+        #000 22%,
+        rgba(0, 0, 0, 0.7) 52%,
+        transparent 92%
+      );
+    }
+  }
+
+  /* Honey radial glow behind the portrait so the warm bokeh has somewhere to land */
+  .portrait-bokeh::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    height: 75%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(243, 201, 122, 0.18),
+      rgba(233, 161, 61, 0.08) 40%,
+      transparent 70%
+    );
+    filter: blur(30px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /*
+   * .marquee-fade: horizontal scroll lane with feathered fade-in/out at
+   * left + right edges so chips emerge from the dark. Used by TradesMarquee.
+   * Hovering the marquee pauses the track animation; .paused toggles it on
+   * touch (tap-to-pause).
+   */
+  .marquee-fade {
+    position: relative;
+    overflow: hidden;
+    padding: 6px 0;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  }
+  .marquee-fade:hover > *,
+  .marquee-fade.paused > * {
+    animation-play-state: paused;
+  }
+
+  /* Page content sits above all atmospheric layers */
+  .scene-content {
+    position: relative;
+    z-index: 5;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 24px 32px 80px;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+@layer utilities {
+  /* Reduced-motion: kill animations and transitions for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ===== Section-scoped keyframes used by atmospheric backdrop ===== */
+/* Page-wide animations (breathe, beam-sway, etc.) are declared in tailwind.config.ts. */
+/* ember-rise is here because it overlaps with the existing tailwind 'rise' name. */
+@keyframes ember-rise {
+  0% {
+    transform: translate(0, 0) scale(0.6);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  30% {
+    transform: translate(20px, -35vh) scale(1);
+  }
+  60% {
+    transform: translate(-25px, -70vh) scale(1.05);
+  }
+  88% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(15px, -120vh) scale(0.7);
+    opacity: 0;
   }
 }
