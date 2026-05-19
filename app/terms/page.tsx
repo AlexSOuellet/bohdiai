@@ -89,7 +89,7 @@ export default function TermsPage(): React.ReactElement {
               The site is provided as-is. I&apos;ll do my best to keep it up and working, but
               I&apos;m not liable for losses tied to it being down, slow, or wrong. If something
               breaks, tell me at{' '}
-              <a href={`mailto:${CONTACT_EMAIL}`} className="text-honey-warm underline-offset-4 hover:underline">
+              <a href={`mailto:${CONTACT_EMAIL}`} className="text-honey-warm underline underline-offset-4 decoration-honey-warm/40 hover:decoration-honey-warm">
                 {CONTACT_EMAIL}
               </a>{' '}
               and I&apos;ll fix it.
@@ -114,7 +114,7 @@ export default function TermsPage(): React.ReactElement {
             <p>
               BohdiAI is built and operated by Alex Ouellet (publicly: Alex Scott) in Rhode
               Island, USA.{' '}
-              <a href={`mailto:${CONTACT_EMAIL}`} className="text-honey-warm underline-offset-4 hover:underline">
+              <a href={`mailto:${CONTACT_EMAIL}`} className="text-honey-warm underline underline-offset-4 decoration-honey-warm/40 hover:decoration-honey-warm">
                 {CONTACT_EMAIL}
               </a>
               .

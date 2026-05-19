@@ -56,7 +56,7 @@ export function BrowserDemo(): ReactElement {
 
   return (
     <div
-      className="relative mx-auto mt-8 h-[620px] max-w-full md:mt-7 md:h-[700px] md:max-w-[980px]"
+      className="relative z-sticky mx-auto mt-8 h-[620px] max-w-full md:mt-7 md:h-[700px] md:max-w-[980px]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onClick={() => setPaused((p) => !p)}
@@ -92,12 +92,18 @@ export function BrowserDemo(): ReactElement {
           <div className="w-5 md:w-14" />
         </div>
 
-        {/* Storefront content — rotates per idx */}
-        <div className="flex-1 overflow-hidden">{current.render()}</div>
+        {/* Storefront content — rotates per idx.
+            aria-hidden because the rendered storefronts are decorative marketing
+            art (fake products, fake CTAs that don't navigate). The brand name
+            and URL pill above already announce the demo to screen readers. */}
+        <div className="flex-1 overflow-hidden" aria-hidden="true" role="presentation">
+          {current.render()}
+        </div>
       </div>
 
-      {/* Dot navigators */}
-      <div className="relative z-content mt-6 flex items-center justify-center gap-2.5 md:mt-7">
+      {/* Dot navigators. Button is sized to a 24px hit target (WCAG 2.5.8 AA);
+          the visible dot lives in the inner span so the design stays unchanged. */}
+      <div className="relative z-content mt-6 flex items-center justify-center gap-2 md:mt-7">
         {STOREFRONTS.map((s, i) => (
           <button
             key={s.liveUrl}
@@ -109,12 +115,20 @@ export function BrowserDemo(): ReactElement {
             aria-label={`Show ${s.brandName} storefront`}
             aria-pressed={i === idx}
             className={[
-              'h-[9px] rounded-full border-0 transition-[background,box-shadow,width] duration-base hover:bg-honey-warm/55',
-              i === idx
-                ? 'w-7 bg-honey-warm shadow-[0_0_14px_var(--honey-warm)]'
-                : 'w-[9px] bg-text-soft/[0.18]',
+              'group grid h-6 cursor-pointer place-items-center border-0 bg-transparent p-0 transition-[width] duration-base',
+              i === idx ? 'w-9' : 'w-6',
             ].join(' ')}
-          />
+          >
+            <span
+              aria-hidden="true"
+              className={[
+                'block h-[9px] rounded-full transition-[background,box-shadow,width] duration-base group-hover:bg-honey-warm/55',
+                i === idx
+                  ? 'w-7 bg-honey-warm shadow-[0_0_14px_var(--honey-warm)]'
+                  : 'w-[9px] bg-text-soft/[0.18]',
+              ].join(' ')}
+            />
+          </button>
         ))}
       </div>
     </div>

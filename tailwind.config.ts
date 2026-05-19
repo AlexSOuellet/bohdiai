@@ -16,7 +16,7 @@ const config: Config = {
           DEFAULT: '#f3ede0',
           soft: '#d8d2c4',
         },
-        muted: '#7e7464',
+        muted: '#8a8070',
         honey: {
           DEFAULT: '#e9a13d',
           warm: '#f3c97a',

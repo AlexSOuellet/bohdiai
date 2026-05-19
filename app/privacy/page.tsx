@@ -44,11 +44,11 @@ export default function PrivacyPage(): React.ReactElement {
             </p>
             <p className="mt-3">
               BohdiAI uses{' '}
-              <a href="https://posthog.com" target="_blank" rel="noopener noreferrer" className="text-honey-warm underline-offset-4 hover:underline">
+              <a href="https://posthog.com" target="_blank" rel="noopener noreferrer" className="text-honey-warm underline underline-offset-4 decoration-honey-warm/40 hover:decoration-honey-warm">
                 PostHog
               </a>{' '}
               for basic, privacy-respecting analytics (page views, button clicks) and{' '}
-              <a href="https://sentry.io" target="_blank" rel="noopener noreferrer" className="text-honey-warm underline-offset-4 hover:underline">
+              <a href="https://sentry.io" target="_blank" rel="noopener noreferrer" className="text-honey-warm underline underline-offset-4 decoration-honey-warm/40 hover:decoration-honey-warm">
                 Sentry
               </a>{' '}
               for error reports when something breaks. Neither sells your data, and neither is
@@ -73,11 +73,11 @@ export default function PrivacyPage(): React.ReactElement {
             </h2>
             <p>
               Emails are stored in{' '}
-              <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-honey-warm underline-offset-4 hover:underline">
+              <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-honey-warm underline underline-offset-4 decoration-honey-warm/40 hover:decoration-honey-warm">
                 Supabase
               </a>{' '}
               (Postgres database, encrypted at rest, US region) and synced to{' '}
-              <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-honey-warm underline-offset-4 hover:underline">
+              <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-honey-warm underline underline-offset-4 decoration-honey-warm/40 hover:decoration-honey-warm">
                 Resend
               </a>{' '}
               so I can actually send you the confirmation and the eventual launch email.
@@ -91,7 +91,7 @@ export default function PrivacyPage(): React.ReactElement {
             <p>
               Every email I send has a one-click unsubscribe. If you want your record fully
               deleted (not just unsubscribed), email{' '}
-              <a href={`mailto:${CONTACT_EMAIL}`} className="text-honey-warm underline-offset-4 hover:underline">
+              <a href={`mailto:${CONTACT_EMAIL}`} className="text-honey-warm underline underline-offset-4 decoration-honey-warm/40 hover:decoration-honey-warm">
                 {CONTACT_EMAIL}
               </a>{' '}
               and I&apos;ll delete it within 7 days. If you&apos;re in the EU/UK, this is your GDPR
@@ -127,7 +127,7 @@ export default function PrivacyPage(): React.ReactElement {
             <p>
               BohdiAI is built and operated by Alex Ouellet (publicly: Alex Scott) in Rhode
               Island, USA. Questions, requests, complaints — all go to{' '}
-              <a href={`mailto:${CONTACT_EMAIL}`} className="text-honey-warm underline-offset-4 hover:underline">
+              <a href={`mailto:${CONTACT_EMAIL}`} className="text-honey-warm underline underline-offset-4 decoration-honey-warm/40 hover:decoration-honey-warm">
                 {CONTACT_EMAIL}
               </a>
               .
