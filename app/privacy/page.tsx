@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Privacy — BohdiAI',
@@ -12,7 +13,7 @@ const LAST_UPDATED = 'May 19, 2026';
 export default function PrivacyPage(): React.ReactElement {
   return (
     <main className="min-h-screen px-4 py-10 md:px-8 md:py-14">
-      <a
+      <Link
         href="/"
         className="inline-flex items-center gap-2.5 rounded-pill border border-white/10 bg-white/5 px-3 py-2 text-[13px] font-medium text-text-soft no-underline backdrop-blur-[20px]"
       >
@@ -20,7 +21,7 @@ export default function PrivacyPage(): React.ReactElement {
           B
         </span>
         BohdiAI
-      </a>
+      </Link>
 
       <article className="mx-auto max-w-[680px] pb-24 pt-10 md:pt-16">
         <div className="mb-4 inline-flex items-center gap-3.5 text-[11px] font-medium uppercase tracking-[0.22em] text-muted md:text-[12px]">
@@ -136,12 +137,12 @@ export default function PrivacyPage(): React.ReactElement {
         </div>
 
         <div className="mt-12 border-t border-white/5 pt-6">
-          <a
+          <Link
             href="/"
             className="inline-flex items-center gap-2 text-[14px] text-text-soft no-underline transition-colors hover:text-honey-warm"
           >
             ← Back to the page
-          </a>
+          </Link>
         </div>
       </article>
     </main>

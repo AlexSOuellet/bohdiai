@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'You’re in — BohdiAI',
@@ -10,7 +11,7 @@ const SKOOL_URL = 'https://www.skool.com/wits-end-breakthrough-7869';
 export default function ConfirmedPage(): React.ReactElement {
   return (
     <main className="min-h-screen px-4 py-10 md:px-8 md:py-14">
-      <a
+      <Link
         href="/"
         className="inline-flex items-center gap-2.5 rounded-pill border border-white/10 bg-white/5 px-3 py-2 text-[13px] font-medium text-text-soft no-underline backdrop-blur-[20px]"
       >
@@ -18,7 +19,7 @@ export default function ConfirmedPage(): React.ReactElement {
           B
         </span>
         BohdiAI
-      </a>
+      </Link>
 
       <div className="mx-auto max-w-[640px] pb-24 pt-12 text-center md:pt-20">
         <div className="mb-4 inline-flex items-center justify-center gap-3.5 text-[11px] font-medium uppercase tracking-[0.22em] text-muted md:text-[12px]">
@@ -49,12 +50,12 @@ export default function ConfirmedPage(): React.ReactElement {
           >
             Join the community →
           </a>
-          <a
+          <Link
             href="/"
             className="inline-flex items-center justify-center gap-2 rounded-pill border border-white/[0.12] bg-white/[0.03] px-6 py-3.5 font-sans text-[14px] font-semibold text-text-soft no-underline backdrop-blur-[20px]"
           >
             Back to the page
-          </a>
+          </Link>
         </div>
       </div>
     </main>
