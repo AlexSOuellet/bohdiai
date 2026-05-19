@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { SourdoughStore } from './storefronts/SourdoughStore';
 import { TattooStore } from './storefronts/TattooStore';
+import { KidsStore } from './storefronts/KidsStore';
 
 type Storefront = {
   liveUrl: string;
@@ -28,7 +29,7 @@ const STOREFRONTS: readonly Storefront[] = [
     liveUrl: 'posylane-books.bohdiai.com',
     brandName: 'Posy Lane Books',
     newOrder: '✨ +1 pre-order — Fox and Lantern',
-    render: () => <PlaceholderStore name="Posy Lane Books" tagline="Picture books for kids 3 to 7 · Signed editions" bg="#fef3e0" text="#2a1f15" accent="#d4a574" />,
+    render: () => <KidsStore />,
   },
 ];
 
@@ -170,39 +171,3 @@ function UrlTypewriter({ target }: { target: string }): ReactElement {
   );
 }
 
-function PlaceholderStore({
-  name,
-  tagline,
-  bg,
-  text,
-  accent,
-}: {
-  name: string;
-  tagline: string;
-  bg: string;
-  text: string;
-  accent: string;
-}): ReactElement {
-  return (
-    <div
-      className="flex h-full flex-col items-center justify-center px-6 py-8 text-center transition-colors duration-500"
-      style={{ backgroundColor: bg, color: text }}
-    >
-      <div
-        className="mb-3 font-sans text-xs uppercase tracking-[0.16em] opacity-60"
-        style={{ color: accent }}
-      >
-        Demo storefront
-      </div>
-      <h3 className="mb-2 font-sans text-[28px] font-medium tracking-[-0.02em] md:text-[36px]">
-        {name}
-      </h3>
-      <p className="max-w-[420px] text-[14px] leading-relaxed opacity-70 md:text-[15px]">
-        {tagline}
-      </p>
-      <div className="mt-6 text-[11px] uppercase tracking-[0.14em] opacity-40">
-        Full storefront wiring in next session
-      </div>
-    </div>
-  );
-}
