@@ -1,5 +1,4 @@
-const COVER =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38zE6IRCqEvAbRQc2Z00szuFsL9/hf_20260518_154642_43ae12d6-81cb-428a-b1bf-c268d65c943b.png';
+const COVER = '/storefronts/fox-cover.webp';
 
 /**
  * Posy Lane Books demo storefront. Sky-blue background with painterly

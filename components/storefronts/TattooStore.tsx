@@ -1,17 +1,10 @@
-const T1 =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38zE6IRCqEvAbRQc2Z00szuFsL9/hf_20260518_154607_182dd597-4fd9-4297-900b-2c4a7ccb0d3a.png';
-const T2 =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38zE6IRCqEvAbRQc2Z00szuFsL9/hf_20260518_154610_d3ba53b4-7c1b-46bb-86bf-0b43be17bac6.png';
-const T3 =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38zE6IRCqEvAbRQc2Z00szuFsL9/hf_20260518_154636_3b5f4d07-38cb-480a-bb02-a79ca9a551e2.png';
-const T4 =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38zE6IRCqEvAbRQc2Z00szuFsL9/hf_20260518_154639_dc540b99-a649-4c74-be2a-5049f0fe17d1.png';
-const T5 =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38zE6IRCqEvAbRQc2Z00szuFsL9/hf_20260518_155801_741e6582-a3e3-4113-9d50-17f72396987e.png';
-const T6 =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38zE6IRCqEvAbRQc2Z00szuFsL9/hf_20260518_155804_c9973468-a3e5-467c-a606-2a7d308697df.png';
-const T7 =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38zE6IRCqEvAbRQc2Z00szuFsL9/hf_20260518_155808_4c059476-49dd-440b-afb2-a9cef035894a.png';
+const T1 = '/storefronts/tattoo-1.webp';
+const T2 = '/storefronts/tattoo-2.webp';
+const T3 = '/storefronts/tattoo-3.webp';
+const T4 = '/storefronts/tattoo-4.webp';
+const T5 = '/storefronts/tattoo-5.webp';
+const T6 = '/storefronts/tattoo-6.webp';
+const T7 = '/storefronts/tattoo-7.webp';
 
 /**
  * Iron & Ash tattoo studio demo storefront. Near-black background with

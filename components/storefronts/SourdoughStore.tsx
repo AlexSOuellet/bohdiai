@@ -1,9 +1,6 @@
-const IMG_COUNTRY =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38zE6IRCqEvAbRQc2Z00szuFsL9/hf_20260518_145937_95dfa374-f341-429d-a17e-eda4bd77f644.png';
-const IMG_SEEDED =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38zE6IRCqEvAbRQc2Z00szuFsL9/hf_20260518_150840_bd3caeee-f411-43bf-ad17-c8f138e579d5.png';
-const IMG_CINNAMON =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38zE6IRCqEvAbRQc2Z00szuFsL9/hf_20260518_150845_5b092730-ee84-4432-8502-1573f7bcece0.png';
+const IMG_COUNTRY = '/storefronts/country.webp';
+const IMG_SEEDED = '/storefronts/seeded.webp';
+const IMG_CINNAMON = '/storefronts/cinnamon.webp';
 
 /**
  * June's Sourdough demo storefront. Cream paper background, Inter sans,
