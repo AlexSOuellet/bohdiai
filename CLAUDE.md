@@ -2,6 +2,18 @@
 
 **Read this first at the start of every BohdiAI session.**
 
+## Required reading at session start (do this BEFORE responding to the user's first message)
+
+1. This file (`CLAUDE.md`) — orientation
+2. `project-docs/SESSION-BRIEF.md` — operational state (what we did, what's next)
+3. `project-docs/BohdiAI-Master-Spec.md` — **product spec (rank-2 authority)**. Required for any architecture conversation.
+4. `project-docs/BohdiAI-Roles-Workflow.md` — **rules of engagement (rank-2 authority)**. Required for any process question.
+5. The current phase doc (`project-docs/Phase-0-Spec.md` today; later `Phase-1-Spec.md`, etc.)
+
+Only pull additional docs if the task specifically requires it.
+
+**Hard rule — "cite-or-shut-up":** Before opining on architecture (tokens, components, blocks, tenants, niches, schemas, build sequence, agent roles, anything spec-defined), Claude must cite the relevant Master Spec / Roles-Workflow section. If Claude cannot cite it, Claude has not earned the right to opine on it — stop and re-read the spec instead of guessing. This rule exists because guessing has already cost a session.
+
 ## What this project is
 
 BohdiAI is a multi-tenant AI-powered SaaS that gives makers/artisans (bakers, vintage sellers, farm stands, service providers, etc.) a complete AI-generated storefront on a `[shop].bohdiai.com` subdomain in minutes. Subscription-only (Freemium / Basic $19.95 / Pro $29.95). **Never takes a cut of sales** — money flows customer → maker's own Stripe/Square; BohdiAI reads webhooks only.

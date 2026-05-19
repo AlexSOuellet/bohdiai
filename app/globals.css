@@ -186,7 +186,7 @@
     border-radius: 50%;
     background: radial-gradient(
       circle at center,
-      #fff3d6 0%,
+      var(--surface)3d6 0%,
       var(--honey-warm) 40%,
       var(--honey) 75%,
       transparent 100%
@@ -305,8 +305,19 @@
 
   /* ---- Sourdough storefront — cream paper, rounded everything ---- */
   .store-sourdough {
-    background: #fbf5e8;
-    color: #1a1410;
+    /* Demo palette — scoped tokens for the June's Sourdough storefront */
+    --paper: #fbf5e8;
+    --ink: #1a1410;
+    --ink-soft: #56493b;
+    --muted: #7a6a58;
+    --honey: #f3c97a;
+    --honey-deep: #a96812;
+    --accent: #3f9c3f;
+    --surface: #fff;
+    --surface-muted: #eee;
+
+    background: var(--paper);
+    color: var(--ink);
     padding: 22px 32px 28px;
     font-family: 'Inter', sans-serif;
     display: flex;
@@ -331,8 +342,8 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: #1a1410;
-    color: #f3c97a;
+    background: var(--ink);
+    color: var(--honey);
     display: grid;
     place-items: center;
     font-size: 11px;
@@ -343,11 +354,11 @@
     gap: 22px;
     font-size: 13px;
     font-weight: 500;
-    color: #56493b;
+    color: var(--ink-soft);
   }
   .store-sourdough .cart {
-    background: #1a1410;
-    color: #fbf5e8;
+    background: var(--ink);
+    color: var(--paper);
     padding: 7px 14px;
     border-radius: 999px;
     font-size: 12px;
@@ -365,16 +376,16 @@
     line-height: 1.08;
     letter-spacing: -0.02em;
     font-weight: 700;
-    color: #1a1410;
+    color: var(--ink);
   }
   .store-sourdough .hero h2 em {
     font-style: italic;
-    color: #a96812;
+    color: var(--honey-deep);
     font-weight: 500;
   }
   .store-sourdough .hero p {
     margin-top: 10px;
-    color: #56493b;
+    color: var(--ink-soft);
     font-size: 13px;
     line-height: 1.5;
   }
@@ -399,7 +410,7 @@
     bottom: 14px;
     left: 14px;
     background: rgba(26, 20, 16, 0.85);
-    color: #fbf5e8;
+    color: var(--paper);
     padding: 5px 10px;
     border-radius: 6px;
     font-size: 11px;
@@ -414,7 +425,7 @@
     margin-top: 6px;
   }
   .store-sourdough .item {
-    background: #fff;
+    background: var(--surface);
     border-radius: 10px;
     padding: 10px;
     border: 1px solid rgba(58, 49, 39, 0.08);
@@ -425,7 +436,7 @@
     border-radius: 6px;
     margin-bottom: 8px;
     overflow: hidden;
-    background: #eee;
+    background: var(--surface-muted);
   }
   .store-sourdough .item .sw img {
     width: 100%;
@@ -439,14 +450,14 @@
   }
   .store-sourdough .item .m {
     font-size: 11px;
-    color: #7a6a58;
+    color: var(--muted);
     margin-top: 1px;
   }
   .store-sourdough .item .p {
     font-size: 12px;
     font-weight: 700;
     margin-top: 6px;
-    color: #1a1410;
+    color: var(--ink);
   }
   .store-sourdough .foot {
     margin-top: 14px;
@@ -456,7 +467,7 @@
     align-items: center;
     justify-content: space-between;
     font-size: 12px;
-    color: #56493b;
+    color: var(--ink-soft);
   }
   .store-sourdough .foot .market {
     display: flex;
@@ -464,7 +475,7 @@
     gap: 8px;
   }
   .store-sourdough .foot .market b {
-    color: #1a1410;
+    color: var(--ink);
     font-weight: 600;
   }
   .store-sourdough .foot .market .dot {
@@ -472,14 +483,14 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #3f9c3f;
-    box-shadow: 0 0 8px #3f9c3f;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
   }
   .store-sourdough .foot .subscribe {
     display: flex;
     align-items: center;
     gap: 0;
-    background: #fff;
+    background: var(--surface);
     border: 1px solid rgba(58, 49, 39, 0.18);
     border-radius: 999px;
     overflow: hidden;
@@ -487,11 +498,11 @@
   .store-sourdough .foot .subscribe .em {
     padding: 7px 14px;
     font-size: 12px;
-    color: #56493b;
+    color: var(--ink-soft);
   }
   .store-sourdough .foot .subscribe .btn {
-    background: #a96812;
-    color: #fbf5e8;
+    background: var(--honey-deep);
+    color: var(--paper);
     padding: 8px 14px;
     font-size: 11px;
     font-weight: 600;
@@ -586,10 +597,18 @@
     }
   }
 
-  /* ---- Tattoo storefront — near-black, gothic + Bebas all-caps ---- */
+  /* ---- Iron & Ash tattoo storefront — near-black, gothic + Bebas all-caps ---- */
   .store-tattoo {
-    background: #0a0908;
-    color: #e8dfd1;
+    /* Demo palette — scoped tokens for the Iron & Ash storefront */
+    --ink: #0a0908;
+    --ink-deep: #15110a;
+    --bone: #e8dfd1;
+    --cream: #f5e8d4;
+    --blood: #a01a1a;
+    --accent: #3f9c3f;
+
+    background: var(--ink);
+    color: var(--bone);
     font-family: 'Inter', sans-serif;
     padding: 0;
     position: relative;
@@ -619,7 +638,7 @@
     font-family: var(--font-gothic), serif;
     font-size: 24px;
     font-weight: 700;
-    color: #e8dfd1;
+    color: var(--bone);
     letter-spacing: 0.01em;
   }
   .store-tattoo .bar .nav {
@@ -632,8 +651,8 @@
     color: rgba(232, 223, 209, 0.55);
   }
   .store-tattoo .bar .cta {
-    background: #a01a1a;
-    color: #f5e8d4;
+    background: var(--blood);
+    color: var(--cream);
     font-family: var(--font-mono), monospace;
     font-size: 10px;
     font-weight: 600;
@@ -669,7 +688,7 @@
     right: 0;
     bottom: 0;
     padding: 24px 28px;
-    color: #f5e8d4;
+    color: var(--cream);
     z-index: 2;
   }
   .store-tattoo .hero .title h2 {
@@ -684,7 +703,7 @@
   .store-tattoo .hero .title h2 .blk {
     font-family: var(--font-gothic), serif;
     font-size: 0.85em;
-    color: #a01a1a;
+    color: var(--blood);
     text-transform: none;
   }
   .store-tattoo .hero .title .sub {
@@ -693,7 +712,7 @@
     font-size: 11px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: #a01a1a;
+    color: var(--blood);
   }
   .store-tattoo .artist {
     padding: 9px 24px;
@@ -711,7 +730,7 @@
     text-overflow: ellipsis;
   }
   .store-tattoo .artist b {
-    color: #e8dfd1;
+    color: var(--bone);
     font-weight: 600;
   }
   .store-tattoo .artist .quote {
@@ -733,7 +752,7 @@
     font-size: 10px;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: #a01a1a;
+    color: var(--blood);
     margin-bottom: 14px;
   }
   .store-tattoo .grid {
@@ -745,7 +764,7 @@
     aspect-ratio: 1 / 1.2;
     max-height: 170px;
     overflow: hidden;
-    background: #15110a;
+    background: var(--ink-deep);
     position: relative;
   }
   .store-tattoo .grid .pic .lbl {
@@ -756,7 +775,7 @@
     font-size: 9px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: #e8dfd1;
+    color: var(--bone);
     background: rgba(10, 9, 8, 0.7);
     padding: 3px 7px;
     z-index: 1;
@@ -787,13 +806,13 @@
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: #3f9c3f;
-    box-shadow: 0 0 8px #3f9c3f;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
     margin-right: 8px;
     vertical-align: middle;
   }
   .store-tattoo .foot .booking {
-    color: #a01a1a;
+    color: var(--blood);
     font-weight: 600;
   }
   @media (max-width: 720px) {
@@ -868,8 +887,20 @@
 
   /* ---- Posy Lane Books — sky-blue poster, Fredoka + Caveat ---- */
   .store-kids {
-    background: #a8d8ea;
-    color: #3d2a1f;
+    /* Demo palette — scoped tokens for the Posy Lane Books storefront */
+    --sky: #a8d8ea;
+    --paper: #fff5d6;
+    --ink: #3d2a1f;
+    --ink-soft: #5d4a3f;
+    --red: #e63946;
+    --gold: #fcbf49;
+    --leaf: #6a8e3a;
+    --leaf-soft: #c5dca0;
+    --rose: #f4a4a4;
+    --surface: #fff;
+
+    background: var(--sky);
+    color: var(--ink);
     font-family: var(--font-fredoka), sans-serif;
     padding: 0;
     position: relative;
@@ -903,7 +934,7 @@
     font-family: var(--font-caveat), cursive;
     font-weight: 700;
     font-size: 26px;
-    color: #3d2a1f;
+    color: var(--ink);
     transform: rotate(-2deg);
   }
   .store-kids .chrome .nav {
@@ -911,7 +942,7 @@
     gap: 14px;
     font-size: 12px;
     font-weight: 500;
-    color: #3d2a1f;
+    color: var(--ink);
   }
   .store-kids .chrome .nav span {
     background: rgba(255, 245, 214, 0.7);
@@ -919,20 +950,21 @@
     border-radius: 999px;
   }
   .store-kids .chrome .nav .cart {
-    background: #e63946;
-    color: #fff5d6;
+    background: var(--red);
+    color: var(--paper);
     font-weight: 700;
     padding: 6px 12px;
   }
   .store-kids .poster {
     position: relative;
-    padding: 55px 28px 18px;
+    padding: 44px 28px 14px;
     display: grid;
     grid-template-columns: 1.05fr 1fr;
     gap: 24px;
     align-items: center;
     z-index: 2;
     flex: 1;
+    min-height: 0;
   }
   .store-kids .poster .copy {
     grid-column: 1;
@@ -944,7 +976,7 @@
     font-family: var(--font-caveat), cursive;
     font-weight: 700;
     font-size: 14px;
-    color: #e63946;
+    color: var(--red);
     letter-spacing: 0.01em;
     transform: rotate(-3deg);
     display: inline-block;
@@ -952,10 +984,10 @@
   }
   .store-kids .poster h2 {
     font-weight: 700;
-    font-size: 64px;
+    font-size: 54px;
     line-height: 0.92;
     letter-spacing: -0.04em;
-    color: #3d2a1f;
+    color: var(--ink);
     margin: 0;
   }
   .store-kids .poster h2 em {
@@ -963,7 +995,7 @@
     font-style: normal;
     font-weight: 700;
     font-size: 1.15em;
-    color: #e63946;
+    color: var(--red);
     display: inline-block;
     transform: rotate(-3deg);
   }
@@ -972,7 +1004,7 @@
     font-family: var(--font-caveat), cursive;
     font-weight: 500;
     font-size: 18px;
-    color: #3d2a1f;
+    color: var(--ink);
   }
   .store-kids .poster .author b {
     font-weight: 700;
@@ -984,8 +1016,8 @@
     gap: 0;
   }
   .store-kids .poster .price-tag {
-    background: #3d2a1f;
-    color: #fff5d6;
+    background: var(--ink);
+    color: var(--paper);
     font-weight: 700;
     font-size: 14px;
     padding: 14px 18px;
@@ -995,13 +1027,13 @@
     font-size: 18px;
   }
   .store-kids .poster .btn {
-    background: #e63946;
-    color: #fff;
+    background: var(--red);
+    color: var(--surface);
     font-weight: 700;
     font-size: 14px;
     padding: 14px 22px;
     border-radius: 0 999px 999px 0;
-    border-left: 2px solid #fff5d6;
+    border-left: 2px solid var(--paper);
   }
   .store-kids .poster .cover {
     position: relative;
@@ -1010,10 +1042,10 @@
     width: 100%;
     aspect-ratio: 1 / 1;
     transform: rotate(4deg);
-    border: 6px solid #3d2a1f;
+    border: 6px solid var(--ink);
     box-shadow:
-      -16px 18px 0 -3px #6a8e3a,
-      -28px 32px 0 -4px #fcbf49,
+      -16px 18px 0 -3px var(--leaf),
+      -28px 32px 0 -4px var(--gold),
       -40px 48px 40px rgba(61, 42, 31, 0.2);
   }
   .store-kids .poster .cover img {
@@ -1029,8 +1061,8 @@
     width: 90px;
     height: 90px;
     border-radius: 50%;
-    background: #fcbf49;
-    color: #3d2a1f;
+    background: var(--gold);
+    color: var(--ink);
     display: grid;
     place-items: center;
     font-family: var(--font-caveat), cursive;
@@ -1040,19 +1072,19 @@
     text-align: center;
     transform: rotate(15deg);
     box-shadow:
-      0 0 0 4px #3d2a1f,
+      0 0 0 4px var(--ink),
       0 12px 24px rgba(61, 42, 31, 0.2);
     z-index: 6;
   }
   .store-kids .quote {
     padding: 14px 28px 16px;
     text-align: center;
-    color: #3d2a1f;
+    color: var(--ink);
     position: relative;
     z-index: 3;
   }
   .store-kids .quote .stars {
-    color: #e63946;
+    color: var(--red);
     font-size: 14px;
     letter-spacing: 0.18em;
     margin-bottom: 4px;
@@ -1061,13 +1093,13 @@
     font-family: var(--font-caveat), cursive;
     font-weight: 500;
     font-size: 18px;
-    color: #3d2a1f;
+    color: var(--ink);
     line-height: 1.2;
   }
   .store-kids .quote .src {
     font-size: 11px;
     font-weight: 600;
-    color: #5d4a3f;
+    color: var(--ink-soft);
     margin-top: 2px;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -1075,16 +1107,16 @@
   .store-kids .thumbs {
     position: relative;
     z-index: 4;
-    background: #fff5d6;
-    border-top: 3px dashed #3d2a1f;
-    padding: 12px 22px;
+    background: var(--paper);
+    border-top: 3px dashed var(--ink);
+    padding: 10px 22px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
     font-family: var(--font-caveat), cursive;
-    font-size: 16px;
-    color: #3d2a1f;
+    font-size: 15px;
+    color: var(--ink);
   }
   .store-kids .thumbs .label {
     font-weight: 700;
@@ -1092,24 +1124,24 @@
     font-size: 18px;
   }
   .store-kids .thumbs .chip {
-    background: #fff;
-    border: 2px solid #3d2a1f;
+    background: var(--surface);
+    border: 2px solid var(--ink);
     border-radius: 999px;
     padding: 6px 14px;
     font-family: var(--font-fredoka), sans-serif;
     font-size: 13px;
     font-weight: 600;
-    color: #3d2a1f;
+    color: var(--ink);
     line-height: 1;
   }
   .store-kids .thumbs .chip.red {
-    background: #f4a4a4;
+    background: var(--rose);
   }
   .store-kids .thumbs .chip.yel {
-    background: #fcbf49;
+    background: var(--gold);
   }
   .store-kids .thumbs .chip.grn {
-    background: #c5dca0;
+    background: var(--leaf-soft);
   }
   @media (max-width: 720px) {
     .store-kids .chrome {
@@ -1130,19 +1162,19 @@
     }
     .store-kids .poster {
       grid-template-columns: 1fr;
-      gap: 18px;
-      padding: 48px 18px 14px;
+      gap: 12px;
+      padding: 36px 18px 10px;
     }
     .store-kids .poster .cover {
       grid-column: 1;
       grid-row: 1;
-      width: 62%;
+      width: 50%;
       margin: 0 auto;
       transform: rotate(3deg);
       border-width: 4px;
       box-shadow:
-        -10px 12px 0 -2px #6a8e3a,
-        -18px 22px 0 -3px #fcbf49,
+        -10px 12px 0 -2px var(--leaf),
+        -18px 22px 0 -3px var(--gold),
         -26px 32px 26px rgba(61, 42, 31, 0.2);
     }
     .store-kids .poster .copy {
@@ -1155,7 +1187,7 @@
       margin-bottom: 4px;
     }
     .store-kids .poster h2 {
-      font-size: 38px;
+      font-size: 32px;
       line-height: 0.95;
     }
     .store-kids .poster .author {
