@@ -256,6 +256,328 @@
     z-index: 0;
   }
 
+  /* ===== Storefronts (rendered inside BrowserDemo's frame) =====
+   *
+   * Each storefront is a self-contained mini-design with its own palette,
+   * typography, and layout. They live as @layer components because:
+   * (1) the styling is dense and product-specific (not page-wide tokens),
+   * (2) it's a hard wall between BohdiAI's atmospheric chrome and the
+   *     pretend-real storefronts inside the browser frame,
+   * (3) Tailwind class soup would dominate the JSX.
+   *
+   * The .build family staggers element reveals on a 6.5s loop synced to
+   * the BrowserDemo cycle. .store-frame is the shared container.
+   */
+  .store-frame {
+    height: 100%;
+    transition: background-color 0.5s ease;
+  }
+  .build {
+    opacity: 0;
+    animation: build-loop 6.5s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+  }
+  .build-1 {
+    animation-delay: 0.2s;
+  }
+  .build-2 {
+    animation-delay: 0.5s;
+  }
+  .build-3 {
+    animation-delay: 0.9s;
+  }
+  .build-5 {
+    animation-delay: 1.4s;
+  }
+  .build-6 {
+    animation-delay: 1.7s;
+  }
+  .build-7 {
+    animation-delay: 2s;
+  }
+
+  /* ---- Sourdough storefront — cream paper, rounded everything ---- */
+  .store-sourdough {
+    background: #fbf5e8;
+    color: #1a1410;
+    padding: 22px 32px 28px;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-direction: column;
+  }
+  .store-sourdough .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(58, 49, 39, 0.12);
+  }
+  .store-sourdough .brand {
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .store-sourdough .brand .mark {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #1a1410;
+    color: #f3c97a;
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .store-sourdough .nav {
+    display: flex;
+    gap: 22px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #56493b;
+  }
+  .store-sourdough .cart {
+    background: #1a1410;
+    color: #fbf5e8;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .store-sourdough .hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: center;
+    padding: 20px 0 18px;
+  }
+  .store-sourdough .hero h2 {
+    font-size: 26px;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+    color: #1a1410;
+  }
+  .store-sourdough .hero h2 em {
+    font-style: italic;
+    color: #a96812;
+    font-weight: 500;
+  }
+  .store-sourdough .hero p {
+    margin-top: 10px;
+    color: #56493b;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .store-sourdough .imgbox {
+    aspect-ratio: 1.6 / 1;
+    border-radius: 14px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .store-sourdough .imgbox::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 65% 60%, rgba(255, 255, 255, 0.18), transparent 40%),
+      radial-gradient(circle at 30% 70%, rgba(0, 0, 0, 0.2), transparent 50%);
+  }
+  .store-sourdough .imgbox .label {
+    position: absolute;
+    bottom: 14px;
+    left: 14px;
+    background: rgba(26, 20, 16, 0.85);
+    color: #fbf5e8;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    backdrop-filter: blur(8px);
+    z-index: 1;
+  }
+  .store-sourdough .items {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .store-sourdough .item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid rgba(58, 49, 39, 0.08);
+  }
+  .store-sourdough .item .sw {
+    width: 100%;
+    aspect-ratio: 1.33 / 1;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    background: #eee;
+  }
+  .store-sourdough .item .sw img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .store-sourdough .item .n {
+    font-weight: 600;
+    font-size: 12px;
+  }
+  .store-sourdough .item .m {
+    font-size: 11px;
+    color: #7a6a58;
+    margin-top: 1px;
+  }
+  .store-sourdough .item .p {
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 6px;
+    color: #1a1410;
+  }
+  .store-sourdough .foot {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(58, 49, 39, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #56493b;
+  }
+  .store-sourdough .foot .market {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .store-sourdough .foot .market b {
+    color: #1a1410;
+    font-weight: 600;
+  }
+  .store-sourdough .foot .market .dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #3f9c3f;
+    box-shadow: 0 0 8px #3f9c3f;
+  }
+  .store-sourdough .foot .subscribe {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: #fff;
+    border: 1px solid rgba(58, 49, 39, 0.18);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .store-sourdough .foot .subscribe .em {
+    padding: 7px 14px;
+    font-size: 12px;
+    color: #56493b;
+  }
+  .store-sourdough .foot .subscribe .btn {
+    background: #a96812;
+    color: #fbf5e8;
+    padding: 8px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  @media (max-width: 720px) {
+    .store-sourdough {
+      padding: 14px 14px 16px;
+    }
+    .store-sourdough .head {
+      padding-bottom: 10px;
+    }
+    .store-sourdough .brand {
+      font-size: 15px;
+      gap: 6px;
+    }
+    .store-sourdough .brand .mark {
+      width: 20px;
+      height: 20px;
+      font-size: 10px;
+    }
+    .store-sourdough .nav {
+      gap: 8px;
+      font-size: 11px;
+    }
+    .store-sourdough .nav span:not(.cart) {
+      display: none;
+    }
+    .store-sourdough .cart {
+      padding: 5px 10px;
+      font-size: 11px;
+    }
+    .store-sourdough .hero {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding: 14px 0 12px;
+    }
+    .store-sourdough .hero h2 {
+      font-size: 20px;
+    }
+    .store-sourdough .hero p {
+      font-size: 12px;
+      margin-top: 6px;
+    }
+    .store-sourdough .imgbox {
+      aspect-ratio: 2 / 1;
+    }
+    .store-sourdough .imgbox .label {
+      font-size: 10px;
+      padding: 4px 8px;
+      bottom: 10px;
+      left: 10px;
+    }
+    .store-sourdough .items {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .store-sourdough .item {
+      padding: 6px;
+    }
+    .store-sourdough .item .n {
+      font-size: 11px;
+    }
+    .store-sourdough .item .m {
+      font-size: 10px;
+    }
+    .store-sourdough .item .p {
+      font-size: 11px;
+      margin-top: 4px;
+    }
+    .store-sourdough .foot {
+      flex-direction: column;
+      gap: 10px;
+      align-items: stretch;
+      margin-top: 12px;
+      padding-top: 10px;
+      font-size: 11px;
+    }
+    .store-sourdough .foot .subscribe {
+      width: 100%;
+    }
+    .store-sourdough .foot .subscribe .em {
+      flex: 1;
+      font-size: 11px;
+      padding: 6px 10px;
+    }
+    .store-sourdough .foot .subscribe .btn {
+      font-size: 10px;
+      padding: 7px 10px;
+      white-space: nowrap;
+    }
+  }
+
   /*
    * .marquee-fade: horizontal scroll lane with feathered fade-in/out at
    * left + right edges so chips emerge from the dark. Used by TradesMarquee.

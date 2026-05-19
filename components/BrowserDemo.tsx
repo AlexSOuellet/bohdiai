@@ -1,54 +1,39 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactElement } from 'react';
+import { SourdoughStore } from './storefronts/SourdoughStore';
 
 type Storefront = {
   liveUrl: string;
-  typewriter: string;
-  cart: string;
   brandName: string;
-  brandTagline: string;
-  bg: string;
-  text: string;
-  accent: string;
+  newOrder: string;
+  render: () => ReactElement;
 };
 
 const STOREFRONTS: readonly Storefront[] = [
   {
     liveUrl: 'junes-sourdough.bohdiai.com',
-    typewriter: 'junes-sourdough.bohdiai.com',
-    cart: 'Cart · 3',
     brandName: "June's Sourdough",
-    brandTagline: 'Country, seeded, and a special cinnamon-raisin · Pickup Saturday',
-    bg: '#fbf5e8',
-    text: '#1a1410',
-    accent: '#a96812',
+    newOrder: '✨ +1 new order — cinnamon loaf',
+    render: () => <SourdoughStore />,
   },
   {
-    liveUrl: 'iron-and-ash.bohdiai.com',
-    typewriter: 'iron-and-ash.bohdiai.com',
-    cart: '2 of 6',
+    liveUrl: 'ironandash-tattoo.bohdiai.com',
     brandName: 'Iron & Ash',
-    brandTagline: 'Custom blackwork · By appointment only · Providence, RI',
-    bg: '#0a0908',
-    text: '#e8dfd1',
-    accent: '#c9a87a',
+    newOrder: '✨ +1 consult requested',
+    render: () => <PlaceholderStore name="Iron & Ash" tagline="Custom blackwork · By appointment only · Providence, RI" bg="#0a0908" text="#e8dfd1" accent="#c9a87a" />,
   },
   {
-    liveUrl: 'posy-lane-books.bohdiai.com',
-    typewriter: 'posy-lane-books.bohdiai.com',
-    cart: 'Cart · 1',
+    liveUrl: 'posylane-books.bohdiai.com',
     brandName: 'Posy Lane Books',
-    brandTagline: 'Picture books for kids 3 to 7 · Signed editions',
-    bg: '#fef3e0',
-    text: '#2a1f15',
-    accent: '#d4a574',
+    newOrder: '✨ +1 pre-order — Fox and Lantern',
+    render: () => <PlaceholderStore name="Posy Lane Books" tagline="Picture books for kids 3 to 7 · Signed editions" bg="#fef3e0" text="#2a1f15" accent="#d4a574" />,
   },
 ];
 
 const CYCLE_MS = 6500;
 
-export function BrowserDemo(): React.ReactElement {
+export function BrowserDemo(): ReactElement {
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const current = STOREFRONTS[idx] ?? STOREFRONTS[0]!;
@@ -74,6 +59,15 @@ export function BrowserDemo(): React.ReactElement {
       onMouseLeave={() => setPaused(false)}
       onClick={() => setPaused((p) => !p)}
     >
+      {/* +1 new-order pill — top left, flashes in periodically */}
+      <span
+        key={`order-${idx}`}
+        className="absolute left-2.5 top-[-10px] z-toast inline-flex animate-flash-in items-center gap-1.5 whitespace-nowrap rounded-pill bg-honey px-2.5 py-1 text-[10px] font-bold text-bg-2 shadow-[0_10px_28px_rgba(233,161,61,0.6),0_0_30px_rgba(243,201,122,0.4)] md:left-9 md:top-[-12px] md:px-3.5 md:py-1.5 md:text-[12px]"
+        style={{ animationDuration: '13s' }}
+      >
+        {current.newOrder}
+      </span>
+
       {/* Live URL pill — top right */}
       <span className="absolute right-2.5 top-[-10px] z-toast inline-flex max-w-[60%] items-center gap-1.5 overflow-hidden text-ellipsis whitespace-nowrap rounded-pill border border-honey-warm/30 bg-bg px-2.5 py-1 text-[10px] font-semibold text-honey-warm shadow-[0_8px_20px_rgba(0,0,0,0.4)] md:right-9 md:top-[-12px] md:gap-2 md:px-3.5 md:py-1.5 md:text-[12px]">
         <span className="size-1.5 animate-pulse-ring rounded-full bg-honey shadow-[0_0_10px_var(--honey)]" />
@@ -82,7 +76,7 @@ export function BrowserDemo(): React.ReactElement {
 
       {/* Browser frame */}
       <div className="flex h-full animate-browser-bob flex-col overflow-hidden rounded-t-[12px] rounded-b-[8px] border border-white/[0.06] bg-[#1a1612] shadow-[0_60px_120px_-30px_rgba(0,0,0,0.7),0_30px_60px_-20px_rgba(233,161,61,0.15),0_0_1px_rgba(243,201,122,0.2)] md:rounded-t-[18px] md:rounded-b-[12px]">
-        {/* Browser bar: traffic dots + URL with typewriter + spacer */}
+        {/* Browser bar */}
         <div className="flex shrink-0 items-center gap-2 border-b border-white/[0.05] bg-[#15110a] px-3 py-2.5 md:gap-3 md:px-4 md:py-3">
           <span className="flex gap-1.5">
             <span className="size-[9px] rounded-full bg-[#2c2620] md:size-[11px]" />
@@ -91,18 +85,16 @@ export function BrowserDemo(): React.ReactElement {
           </span>
           <div className="flex-1 rounded-[7px] bg-bg px-2 py-1 text-center font-sans text-[10px] text-muted md:px-3.5 md:py-1.5 md:text-[12px]">
             <span className="text-honey">🔒 </span>
-            <UrlTypewriter target={current.typewriter} />
+            <UrlTypewriter target={current.liveUrl} />
           </div>
           <div className="w-5 md:w-14" />
         </div>
 
-        {/* Storefront content area — for now: themed placeholder per storefront */}
-        <div className="flex-1 overflow-hidden">
-          <StorefrontPlaceholder storefront={current} />
-        </div>
+        {/* Storefront content — rotates per idx */}
+        <div className="flex-1 overflow-hidden">{current.render()}</div>
       </div>
 
-      {/* Dot navigators — below the frame */}
+      {/* Dot navigators */}
       <div className="relative z-content mt-6 flex items-center justify-center gap-2.5 md:mt-7">
         {STOREFRONTS.map((s, i) => (
           <button
@@ -127,7 +119,7 @@ export function BrowserDemo(): React.ReactElement {
   );
 }
 
-function UrlTypewriter({ target }: { target: string }): React.ReactElement {
+function UrlTypewriter({ target }: { target: string }): ReactElement {
   const [text, setText] = useState(target);
   const targetRef = useRef(target);
 
@@ -177,26 +169,38 @@ function UrlTypewriter({ target }: { target: string }): React.ReactElement {
   );
 }
 
-function StorefrontPlaceholder({ storefront }: { storefront: Storefront }): React.ReactElement {
+function PlaceholderStore({
+  name,
+  tagline,
+  bg,
+  text,
+  accent,
+}: {
+  name: string;
+  tagline: string;
+  bg: string;
+  text: string;
+  accent: string;
+}): ReactElement {
   return (
     <div
       className="flex h-full flex-col items-center justify-center px-6 py-8 text-center transition-colors duration-500"
-      style={{ backgroundColor: storefront.bg, color: storefront.text }}
+      style={{ backgroundColor: bg, color: text }}
     >
       <div
         className="mb-3 font-sans text-xs uppercase tracking-[0.16em] opacity-60"
-        style={{ color: storefront.accent }}
+        style={{ color: accent }}
       >
         Demo storefront
       </div>
       <h3 className="mb-2 font-sans text-[28px] font-medium tracking-[-0.02em] md:text-[36px]">
-        {storefront.brandName}
+        {name}
       </h3>
       <p className="max-w-[420px] text-[14px] leading-relaxed opacity-70 md:text-[15px]">
-        {storefront.brandTagline}
+        {tagline}
       </p>
       <div className="mt-6 text-[11px] uppercase tracking-[0.14em] opacity-40">
-        Full storefronts wiring in next session
+        Full storefront wiring in next session
       </div>
     </div>
   );
