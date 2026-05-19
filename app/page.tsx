@@ -1,6 +1,8 @@
 import { Scene } from '@/components/Scene';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
+import { Pledge } from '@/components/Pledge';
+import { Community } from '@/components/Community';
 import { Footer } from '@/components/Footer';
 import { supabaseAdmin } from '@/lib/supabase';
 import { serverEnv } from '@/lib/env';
@@ -46,9 +48,12 @@ export default async function HomePage(): Promise<React.ReactElement> {
         <Hero />
         <section className="py-12 text-center">
           <p className="font-mono text-xs uppercase tracking-[0.16em] text-muted">
-            Founder waitlist: {founderTakenCount}/{founderCap} · more sections wiring in
+            Founder waitlist: {founderTakenCount}/{founderCap} · sections still wiring in:
+            HowItWorks · TradesMarquee · Waitlist · WhoBehind · BrowserDemo
           </p>
         </section>
+        <Pledge />
+        <Community />
       </main>
       <Footer />
     </Scene>
