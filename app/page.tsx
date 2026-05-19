@@ -1,4 +1,5 @@
 import { Scene } from '@/components/Scene';
+import { Header } from '@/components/Header';
 import { supabaseAdmin } from '@/lib/supabase';
 import { serverEnv } from '@/lib/env';
 
@@ -38,9 +39,10 @@ export default async function HomePage(): Promise<React.ReactElement> {
 
   return (
     <Scene>
+      <Header />
       <main id="main">
         <section className="py-20 text-center">
-          <p className="text-honey-warm font-mono text-xs uppercase tracking-[0.16em]">
+          <p className="font-mono text-xs uppercase tracking-[0.16em] text-honey-warm">
             Atmospheric shell — sections wiring in
           </p>
           <p className="mt-4 text-text-soft">
