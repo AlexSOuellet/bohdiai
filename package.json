@@ -17,7 +17,7 @@
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
-    "next": "^15.5.18",
+    "next": "^16.2.6",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "resend": "^4.0.0",
@@ -35,7 +35,7 @@
     "@vitest/coverage-v8": "^4.1.6",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.1",
-    "eslint-config-next": "^15.5.18",
+    "eslint-config-next": "^16.2.6",
     "eslint-plugin-tailwindcss": "^3.18.3",
     "jsdom": "^29.1.1",
     "postcss": "^8.4.47",
