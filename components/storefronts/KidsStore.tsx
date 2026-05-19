@@ -23,9 +23,9 @@ export function KidsStore(): React.ReactElement {
       <div className="poster">
         <div className="copy build build-2">
           <div className="lockup">★ New picture book ★</div>
-          <h1>
+          <h2>
             The Fox<br />and the <em>Lantern</em>
-          </h1>
+          </h2>
           <div className="author">
             A bedtime story by <b>Posy Hartwell</b>
           </div>

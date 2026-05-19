@@ -28,11 +28,11 @@ export function TattooStore(): React.ReactElement {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={T1} alt="" />
         <div className="title">
-          <h1>
+          <h2>
             Custom blackwork.
             <br />
             By appointment <span className="blk">only</span>.
-          </h1>
+          </h2>
           <div className="sub">Providence, RI · est. 2014</div>
         </div>
       </div>

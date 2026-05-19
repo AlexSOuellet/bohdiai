@@ -29,6 +29,7 @@ const cormorant = Cormorant_Garamond({
 const manrope = Manrope({
   subsets: ['latin'],
   display: 'swap',
+  preload: false,
   variable: '--font-display',
   weight: ['400', '500', '600', '700', '800'],
 });
@@ -42,9 +43,13 @@ const jetbrains = JetBrains_Mono({
 
 // Storefront-only display fonts (loaded once, used inside BrowserDemo).
 // Each is a single-style display family — small footprint.
+// Storefront-only fonts: not preloaded so they don't block LCP.
+// Loaded when the browser first encounters them inside BrowserDemo
+// (a few seconds after first paint).
 const unifrakturCook = UnifrakturCook({
   subsets: ['latin'],
   display: 'swap',
+  preload: false,
   variable: '--font-gothic',
   weight: ['700'],
 });
@@ -52,6 +57,7 @@ const unifrakturCook = UnifrakturCook({
 const bebas = Bebas_Neue({
   subsets: ['latin'],
   display: 'swap',
+  preload: false,
   variable: '--font-bebas',
   weight: ['400'],
 });
@@ -59,6 +65,7 @@ const bebas = Bebas_Neue({
 const fredoka = Fredoka({
   subsets: ['latin'],
   display: 'swap',
+  preload: false,
   variable: '--font-fredoka',
   weight: ['400', '500', '600', '700'],
 });
@@ -66,6 +73,7 @@ const fredoka = Fredoka({
 const caveat = Caveat({
   subsets: ['latin'],
   display: 'swap',
+  preload: false,
   variable: '--font-caveat',
   weight: ['500', '700'],
 });
