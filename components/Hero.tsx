@@ -1,3 +1,4 @@
+import { BrowserDemo } from './BrowserDemo';
 import { Rotator } from './Rotator';
 
 export function Hero(): React.ReactElement {
@@ -34,11 +35,7 @@ export function Hero(): React.ReactElement {
         </a>
       </div>
 
-      <div className="mx-auto mt-8 grid h-[620px] max-w-full place-items-center rounded-lg border border-white/[0.06] bg-bg-2/60 md:mt-7 md:h-[700px] md:max-w-[980px]">
-        <p className="font-mono text-xs uppercase tracking-[0.16em] text-muted">
-          BrowserDemo wiring in next
-        </p>
-      </div>
+      <BrowserDemo />
     </div>
   );
 }
