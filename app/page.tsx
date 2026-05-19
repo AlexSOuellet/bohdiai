@@ -1,5 +1,6 @@
 import { Scene } from '@/components/Scene';
 import { Header } from '@/components/Header';
+import { Hero } from '@/components/Hero';
 import { supabaseAdmin } from '@/lib/supabase';
 import { serverEnv } from '@/lib/env';
 
@@ -41,12 +42,10 @@ export default async function HomePage(): Promise<React.ReactElement> {
     <Scene>
       <Header />
       <main id="main">
-        <section className="py-20 text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.16em] text-honey-warm">
-            Atmospheric shell — sections wiring in
-          </p>
-          <p className="mt-4 text-text-soft">
-            Founder waitlist: {founderTakenCount}/{founderCap}
+        <Hero />
+        <section className="py-12 text-center">
+          <p className="font-mono text-xs uppercase tracking-[0.16em] text-muted">
+            Founder waitlist: {founderTakenCount}/{founderCap} · more sections wiring in
           </p>
         </section>
       </main>

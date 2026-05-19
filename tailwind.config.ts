@@ -71,8 +71,23 @@ const config: Config = {
           '50%': { opacity: '0.45', transform: 'translateX(-50%) rotate(-2deg)' },
         },
         'pulse-glow': {
-          '0%, 100%': { opacity: '0.6' },
-          '50%': { opacity: '1' },
+          '0%, 100%': {
+            color: '#c9831e',
+            textShadow: '0 0 0 rgba(243, 201, 122, 0)',
+          },
+          '50%': {
+            color: '#ffe9b8',
+            textShadow:
+              '0 0 24px rgba(243, 201, 122, 0.9), 0 0 60px rgba(243, 201, 122, 0.5), 0 0 100px rgba(233, 161, 61, 0.3)',
+          },
+        },
+        'pulse-ring': {
+          '0%, 100%': {
+            boxShadow: '0 0 0 0 rgba(233, 161, 61, 0.55), 0 0 10px #e9a13d',
+          },
+          '50%': {
+            boxShadow: '0 0 0 8px rgba(233, 161, 61, 0), 0 0 18px #e9a13d',
+          },
         },
         'browser-bob': {
           '0%, 100%': { transform: 'translateY(0)' },
@@ -100,7 +115,9 @@ const config: Config = {
         'breathe-slow': 'breathe-slow 11s ease-in-out infinite',
         'beam-sway': 'beam-sway 9s ease-in-out infinite',
         'beam-sway-2': 'beam-sway-2 13s ease-in-out infinite',
-        'pulse-glow': 'pulse-glow 2.4s ease-in-out infinite',
+        'pulse-glow': 'pulse-glow 2.6s ease-in-out infinite',
+        'pulse-ring': 'pulse-ring 1.8s ease-in-out infinite',
+        'rot-swap': 'rot-swap 2.4s ease-in-out infinite',
         'browser-bob': 'browser-bob 6s ease-in-out infinite',
         rise: 'rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both',
         'flash-in': 'flash-in 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both',
