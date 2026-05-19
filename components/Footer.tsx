@@ -1,67 +1,113 @@
-import { BohdiLogo } from './BohdiLogo';
-
 const SKOOL_URL = 'https://www.skool.com/wits-end-breakthrough-7869';
+const YOUTUBE_URL = 'https://www.youtube.com/@TheAlexScott';
 const CONTACT_EMAIL = 'alex@bohdiai.com';
 
-export function Footer() {
+export function Footer(): React.ReactElement {
   return (
-    <footer className="paper-dark relative bg-espresso-900 text-cream-50">
-      <div className="mx-auto max-w-[1180px] px-6 pb-10 pt-16 md:px-10">
-        <div className="grid gap-10 md:grid-cols-12">
-          <div className="md:col-span-5">
-            <BohdiLogo tone="cream" size={32} />
-            <p className="mt-5 max-w-[18ch] font-serif text-[26px] font-light leading-[1.15] tracking-[-0.01em] md:text-[30px]">
-              The trusted friend who happens to be really good at tech.
-            </p>
-            <p className="mt-5 max-w-[40ch] text-[14px] text-cream-50/60">
-              Built for small businesses. Made in Rhode Island. Launching summer 2026.
-            </p>
+    <footer className="relative z-content mt-12 pb-9 pt-12 md:mt-20 md:pb-9 md:pt-12 [background:linear-gradient(to_bottom,rgba(243,201,122,0.18),transparent_1px)_top/100%_1px_no-repeat,transparent]">
+      <div className="mx-auto flex max-w-[1180px] flex-col gap-8 px-4 md:flex-row md:items-start md:justify-between md:gap-10 md:px-8">
+        <div className="md:max-w-[300px] md:shrink-0">
+          <div className="mb-3.5 inline-flex items-center gap-2.5">
+            <span className="grid size-7 place-items-center rounded-md bg-gradient-to-br from-honey-warm to-honey-deep font-sans text-[15px] font-extrabold text-bg-2">
+              B
+            </span>
+            <span className="font-sans text-[18px] font-semibold tracking-[-0.015em] text-text">
+              BohdiAI
+            </span>
           </div>
-          <div className="grid grid-cols-2 gap-8 text-[14px] sm:grid-cols-3 md:col-span-7">
-            <FooterCol title="Get involved">
-              <FLink href="#waitlist">Join the waitlist</FLink>
-              <FLink href={SKOOL_URL}>Skool community</FLink>
-            </FooterCol>
-            <FooterCol title="The thing">
-              <FLink href="#how">How it works</FLink>
-              <FLink href="#who">Who&rsquo;s behind this</FLink>
-            </FooterCol>
-            <FooterCol title="Get in touch">
-              <FLink href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</FLink>
-            </FooterCol>
-          </div>
+          <p className="text-[12px] leading-[1.55] text-muted md:text-[13px]">
+            AI-generated storefronts for makers, artisans, and small businesses. You keep 100% of
+            what you sell.
+          </p>
         </div>
-        <div className="mt-16 flex flex-wrap items-center justify-between gap-3 border-t border-cream-50/10 pt-6 font-mono text-[11px] uppercase tracking-[0.14em] text-cream-50/50">
-          <span>© 2026 BohdiAI · bohdiai.com</span>
-          <span>You own it. All of it.</span>
+
+        <div className="flex flex-wrap gap-7 md:gap-12">
+          <FooterCol title="Product">
+            <FLink href="#waitlist">Reserve your shop</FLink>
+            <FLink href="#how">How it works</FLink>
+            <FLink href="#pledge">Our pledge</FLink>
+          </FooterCol>
+          <FooterCol title="Community">
+            <FLink href={SKOOL_URL} external>
+              Witsend Breakthroughs ↗
+            </FLink>
+            <FLink href={YOUTUBE_URL} external>
+              Alex Scott on YouTube ↗
+            </FLink>
+          </FooterCol>
+          <FooterCol title="Contact">
+            <FLink href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</FLink>
+          </FooterCol>
         </div>
+      </div>
+
+      <div className="mx-auto mt-7 flex max-w-[1180px] flex-col items-start justify-between gap-2 border-t border-white/5 px-4 pt-5 text-[11px] tracking-[0.02em] text-muted md:flex-row md:items-center md:px-8">
+        <span>© 2026 BohdiAI · Built in Rhode Island</span>
+        <span className="flex gap-4 md:gap-[18px]">
+          <a
+            href="#"
+            className="text-muted no-underline transition-colors hover:text-text-soft"
+            aria-label="Privacy policy (coming with Phase 1)"
+          >
+            Privacy
+          </a>
+          <a
+            href="#"
+            className="text-muted no-underline transition-colors hover:text-text-soft"
+            aria-label="Terms of service (coming with Phase 1)"
+          >
+            Terms
+          </a>
+        </span>
       </div>
     </footer>
   );
 }
 
-function FooterCol({ title, children }: { title: string; children: React.ReactNode }) {
+function FooterCol({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}): React.ReactElement {
   return (
-    <div>
-      <div className="mb-4 font-mono text-[11px] uppercase tracking-[0.14em] text-honey-300">
+    <div className="flex min-w-[130px] flex-col gap-2 md:gap-2.5">
+      <span className="mb-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted">
         {title}
-      </div>
-      <ul className="space-y-2.5">{children}</ul>
+      </span>
+      {children}
     </div>
   );
 }
 
-function FLink({ href, children }: { href: string; children: React.ReactNode }) {
-  const external = href.startsWith('http');
-  return (
-    <li>
+function FLink({
+  href,
+  external = false,
+  children,
+}: {
+  href: string;
+  external?: boolean;
+  children: React.ReactNode;
+}): React.ReactElement {
+  if (external) {
+    return (
       <a
         href={href}
-        {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-        className="link-underline text-cream-50/85 hover:text-cream-50"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 text-[12px] text-text-soft no-underline transition-colors hover:text-honey-warm md:text-[13px]"
       >
         {children}
       </a>
-    </li>
+    );
+  }
+  return (
+    <a
+      href={href}
+      className="inline-flex items-center gap-1.5 text-[12px] text-text-soft no-underline transition-colors hover:text-honey-warm md:text-[13px]"
+    >
+      {children}
+    </a>
   );
 }

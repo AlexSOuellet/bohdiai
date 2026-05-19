@@ -1,6 +1,7 @@
 import { Scene } from '@/components/Scene';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
+import { Footer } from '@/components/Footer';
 import { supabaseAdmin } from '@/lib/supabase';
 import { serverEnv } from '@/lib/env';
 
@@ -49,6 +50,7 @@ export default async function HomePage(): Promise<React.ReactElement> {
           </p>
         </section>
       </main>
+      <Footer />
     </Scene>
   );
 }
