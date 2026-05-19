@@ -272,27 +272,35 @@
     height: 100%;
     transition: background-color 0.5s ease;
   }
+  /*
+   * .build family — one-shot staggered fade-in when a storefront mounts.
+   * Originally the mock had an infinite 6.5s build-loop that cycled
+   * elements in and out for a "rebuild" effect, but the long invisible
+   * windows made storefront content disappear at unpredictable moments.
+   * Now: elements fade up once over ~0.6s with stagger, then stay
+   * visible for the rest of the BrowserDemo cycle. Cleaner read.
+   */
   .build {
     opacity: 0;
-    animation: build-loop 6.5s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+    animation: build-in 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
   }
   .build-1 {
-    animation-delay: 0.2s;
+    animation-delay: 0.05s;
   }
   .build-2 {
-    animation-delay: 0.5s;
+    animation-delay: 0.15s;
   }
   .build-3 {
-    animation-delay: 0.9s;
+    animation-delay: 0.25s;
   }
   .build-5 {
-    animation-delay: 1.4s;
+    animation-delay: 0.4s;
   }
   .build-6 {
-    animation-delay: 1.7s;
+    animation-delay: 0.5s;
   }
   .build-7 {
-    animation-delay: 2s;
+    animation-delay: 0.6s;
   }
 
   /* ---- Sourdough storefront — cream paper, rounded everything ---- */

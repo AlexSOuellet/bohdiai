@@ -128,11 +128,9 @@ const config: Config = {
           from: { transform: 'translateX(-50%)' },
           to: { transform: 'translateX(0)' },
         },
-        'build-loop': {
-          '0%': { opacity: '0', transform: 'translateY(14px) scale(0.98)' },
-          '10%': { opacity: '1', transform: 'translateY(0) scale(1)' },
-          '88%': { opacity: '1', transform: 'translateY(0) scale(1)' },
-          '96%, 100%': { opacity: '0', transform: 'translateY(-6px) scale(0.99)' },
+        'build-in': {
+          '0%': { opacity: '0', transform: 'translateY(8px) scale(0.99)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
       },
       animation: {
@@ -149,7 +147,7 @@ const config: Config = {
         'pulse-dark': 'pulse-dark 1.6s ease-in-out infinite',
         'scroll-left': 'scroll-left 140s linear infinite',
         'scroll-right': 'scroll-right 160s linear infinite',
-        'build-loop': 'build-loop 6.5s cubic-bezier(0.2,0.7,0.2,1) infinite',
+        'build-in': 'build-in 0.6s cubic-bezier(0.2,0.7,0.2,1) forwards',
         'browser-bob': 'browser-bob 6s ease-in-out infinite',
         rise: 'rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both',
         'flash-in': 'flash-in 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both',
