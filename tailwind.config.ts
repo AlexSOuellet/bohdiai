@@ -120,6 +120,14 @@ const config: Config = {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.3' },
         },
+        'scroll-left': {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-50%)' },
+        },
+        'scroll-right': {
+          from: { transform: 'translateX(-50%)' },
+          to: { transform: 'translateX(0)' },
+        },
       },
       animation: {
         breathe: 'breathe 7s ease-in-out infinite',
@@ -133,6 +141,8 @@ const config: Config = {
         'ring-spin': 'ring-spin 3s linear infinite',
         'ring-spin-rev': 'ring-spin 5s linear infinite reverse',
         'pulse-dark': 'pulse-dark 1.6s ease-in-out infinite',
+        'scroll-left': 'scroll-left 140s linear infinite',
+        'scroll-right': 'scroll-right 160s linear infinite',
         'browser-bob': 'browser-bob 6s ease-in-out infinite',
         rise: 'rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both',
         'flash-in': 'flash-in 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both',

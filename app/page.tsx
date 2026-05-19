@@ -2,6 +2,7 @@ import { Scene } from '@/components/Scene';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { HowItWorks } from '@/components/HowItWorks';
+import { TradesMarquee } from '@/components/TradesMarquee';
 import { WhoBehind } from '@/components/WhoBehind';
 import { Pledge } from '@/components/Pledge';
 import { Community } from '@/components/Community';
@@ -49,10 +50,11 @@ export default async function HomePage(): Promise<React.ReactElement> {
       <main id="main">
         <Hero />
         <HowItWorks />
+        <TradesMarquee />
         <section className="py-8 text-center">
           <p className="font-mono text-xs uppercase tracking-[0.16em] text-muted">
-            Founder waitlist: {founderTakenCount}/{founderCap} · still wiring in: TradesMarquee ·
-            Waitlist · BrowserDemo
+            Founder waitlist: {founderTakenCount}/{founderCap} · still wiring in: Waitlist ·
+            BrowserDemo
           </p>
         </section>
         <WhoBehind />

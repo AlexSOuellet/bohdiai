@@ -256,6 +256,24 @@
     z-index: 0;
   }
 
+  /*
+   * .marquee-fade: horizontal scroll lane with feathered fade-in/out at
+   * left + right edges so chips emerge from the dark. Used by TradesMarquee.
+   * Hovering the marquee pauses the track animation; .paused toggles it on
+   * touch (tap-to-pause).
+   */
+  .marquee-fade {
+    position: relative;
+    overflow: hidden;
+    padding: 6px 0;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  }
+  .marquee-fade:hover > *,
+  .marquee-fade.paused > * {
+    animation-play-state: paused;
+  }
+
   /* Page content sits above all atmospheric layers */
   .scene-content {
     position: relative;
