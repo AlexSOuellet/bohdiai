@@ -3,53 +3,108 @@ import type { Config } from 'tailwindcss';
 const config: Config = {
   content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
   theme: {
+    screens: {
+      md: '720px',
+      lg: '1024px',
+      xl: '1280px',
+    },
     extend: {
       colors: {
-        cream: {
-          50: '#fbf8f2',
-          100: '#f7f1e6',
-          200: '#efe5d0',
-          300: '#e3d3b1',
+        bg: '#0a0805',
+        'bg-2': '#15110a',
+        text: {
+          DEFAULT: '#f3ede0',
+          soft: '#d8d2c4',
         },
-        ink: {
-          400: '#a39378',
-          500: '#7a6a58',
-          600: '#56493b',
-          700: '#3a3127',
-          800: '#2a241c',
-          900: '#1f1a14',
-        },
+        muted: '#7e7464',
         honey: {
-          300: '#f3c97a',
-          400: '#e9b257',
-          500: '#d99634',
-          600: '#bf7a1f',
-          700: '#945c14',
-        },
-        espresso: {
-          700: '#2f261e',
-          800: '#241c16',
-          900: '#1a1410',
+          DEFAULT: '#e9a13d',
+          warm: '#f3c97a',
+          deep: '#c9831e',
         },
       },
       fontFamily: {
-        serif: ['var(--font-newsreader)', 'ui-serif', 'Georgia', 'serif'],
-        sans: ['var(--font-geist-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        mono: ['var(--font-geist-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        sans: ['"Inter Tight"', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        display: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
-      animation: {
-        rise: 'rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both',
-        fadeSwap: 'fadeSwap 2.2s ease-in-out both',
+      borderRadius: {
+        sm: '4px',
+        md: '8px',
+        lg: '14px',
+        xl: '20px',
+        pill: '9999px',
+      },
+      transitionDuration: {
+        fast: '180ms',
+        base: '260ms',
+        slow: '520ms',
+      },
+      transitionTimingFunction: {
+        out: 'cubic-bezier(0.2, 0.7, 0.2, 1)',
+        inout: 'cubic-bezier(0.4, 0, 0.2, 1)',
+      },
+      zIndex: {
+        behind: '-1',
+        base: '0',
+        raised: '1',
+        content: '10',
+        sticky: '20',
+        toast: '50',
       },
       keyframes: {
+        breathe: {
+          '0%, 100%': { opacity: '0.6', transform: 'translateX(-50%) scale(0.95)' },
+          '50%': { opacity: '1', transform: 'translateX(-50%) scale(1.1)' },
+        },
+        'breathe-slow': {
+          '0%, 100%': { opacity: '0.5', transform: 'translateX(-50%) scale(0.92)' },
+          '50%': { opacity: '0.9', transform: 'translateX(-50%) scale(1.14)' },
+        },
+        'beam-sway': {
+          '0%, 100%': { opacity: '0.35', transform: 'translateX(-50%) rotate(-3deg)' },
+          '50%': { opacity: '0.55', transform: 'translateX(-50%) rotate(3deg)' },
+        },
+        'beam-sway-2': {
+          '0%, 100%': { opacity: '0.25', transform: 'translateX(-50%) rotate(4deg)' },
+          '50%': { opacity: '0.45', transform: 'translateX(-50%) rotate(-2deg)' },
+        },
+        'pulse-glow': {
+          '0%, 100%': { opacity: '0.6' },
+          '50%': { opacity: '1' },
+        },
+        'browser-bob': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-4px)' },
+        },
         rise: {
           '0%': { opacity: '0', transform: 'translateY(14px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
-        fadeSwap: {
-          '0%, 100%': { opacity: '0', transform: 'translateY(8px)' },
-          '12%, 88%': { opacity: '1', transform: 'translateY(0)' },
+        'flash-in': {
+          '0%': { opacity: '0', transform: 'translateY(6px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        blink: {
+          '0%, 49%': { opacity: '1' },
+          '50%, 100%': { opacity: '0' },
+        },
+        'rot-swap': {
+          '0%, 100%': { opacity: '0', transform: 'translateY(6px)' },
+          '10%, 90%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        breathe: 'breathe 7s ease-in-out infinite',
+        'breathe-slow': 'breathe-slow 11s ease-in-out infinite',
+        'beam-sway': 'beam-sway 9s ease-in-out infinite',
+        'beam-sway-2': 'beam-sway-2 13s ease-in-out infinite',
+        'pulse-glow': 'pulse-glow 2.4s ease-in-out infinite',
+        'browser-bob': 'browser-bob 6s ease-in-out infinite',
+        rise: 'rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both',
+        'flash-in': 'flash-in 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both',
+        blink: 'blink 1s steps(1) infinite',
       },
     },
   },
