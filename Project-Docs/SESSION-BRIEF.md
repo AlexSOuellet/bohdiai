@@ -54,14 +54,21 @@ These were silently deferred earlier in this session. Alex's standing rule appli
 2. **Coverage gates not wired.** `@vitest/coverage-v8` is installed but there is no `npm run test:coverage` script, no thresholds in `vitest.config.ts`, no CI gate. Engineering-Standards §7 specifies 90/85/75% with CI gates. Wire when CI exists.
 3. **CI not wired.** Tests run locally only. GitHub Actions workflow that runs Vitest + Playwright on PRs is on the to-do list but unscoped. Decide during the Next upgrade session whether to land CI before or after the upgrade.
 4. **Phase-0-Spec.md sync.** Design has evolved well past what's documented in [Phase-0-Spec.md](Phase-0-Spec.md). Worth a sync edit but not launch-blocking.
-5. **Favicon `.ico`.** `app/favicon.ico` would close the last Lighthouse Best Practices console error (404). Modern browsers already get `app/icon.svg`. Cosmetic.
+5. **Favicon `.ico`.** `app/favicon.ico` would close the last Lighthouse Best Practices console error (404 in the console) and bump Best Practices 96 → 100. Modern browsers already get `app/icon.svg`. Small but worth doing — sharp can't write ICO directly, so manually wrap a 32×32 PNG in the ICO header (~20 min).
 6. **Engineering-Standards §7 "no DB mocks" deviation in waitlist smoke tests.** Tests mock the `/api/waitlist` network response with `page.route()` so they don't pollute Supabase or fire real Resend emails. This is a deliberate carve-out for marketing-form smoke tests (the failure mode we care about is the form, not the API). Decision was raised inline and approved — documenting it here so it stays approved.
 
 ## NEXT SESSION priorities (in order)
 
-1. **Next.js major upgrade: 14.2.15 → 15.x → 16.x BEFORE DNS flip.** `npm audit` currently flags 24 advisories against `next@14.2.15` (1 critical, 3 high, 1 moderate; most are config-gated and we don't expose the vulnerable surface, but the count is real). Doing the upgrade now is *safer* than deferring: codebase is at its smallest, no live users, smoke tests now exist as a safety net, and we want to be on current Next *before* Phase 1 adds tenant middleware + tenant-aware caching (where Next 15's flipped fetch caching default is a silent footgun). Order: bump Node to 20.19+ first → 14 → 15 (the bigger jump — async `cookies()`/`headers()`/`params`, fetch no longer cached by default, React 19) → run all 33 tests + manual smoke → 15 → 16 → re-run `npm audit` → unpin Vitest/jsdom to current majors as a follow-on.
-2. **DNS flip `bohdiai.com` → this Vercel project** once the upgrade ships clean to preview.
-3. **After launch lands → begin drafting Phase 1 spec.** Target: private beta mid-August 2026.
+**Read the "Tech debt parked" section above before starting — items #1, #2, #3, #5 below pull directly from it. Do not skip them.**
+
+1. **Node 20.11 → 20.19+ upgrade.** Prerequisite for the Next 16 upgrade *and* for unpinning Vitest/jsdom from year-old majors. Do this first so the Next upgrade has a clean Node baseline.
+2. **Next.js major upgrade: 14.2.15 → 15.x → 16.x BEFORE DNS flip.** `npm audit` currently flags 24 advisories against `next@14.2.15` (1 critical, 3 high, 1 moderate; most are config-gated and we don't expose the vulnerable surface, but the count is real). Doing the upgrade now is *safer* than deferring: codebase is at its smallest, no live users, smoke tests now exist as a safety net, and we want to be on current Next *before* Phase 1 adds tenant middleware + tenant-aware caching (where Next 15's flipped fetch caching default is a silent footgun). Order: 14 → 15 (the bigger jump — async `cookies()`/`headers()`/`params`, fetch no longer cached by default, React 19) → run all 33 tests + manual smoke → 15 → 16 → re-run `npm audit` → unpin Vitest from v2 to current + jsdom from v25 to current as a follow-on.
+3. **Wire CI (GitHub Actions).** `.github/workflows/test.yml` running typecheck + Vitest + Playwright on every PR. Tests already mock the network so no real Supabase/Resend secrets needed in CI — only placeholder env vars so the dev server boots. Lands AFTER the Next upgrade so CI is testing the post-upgrade code, not 14.2.15.
+4. **Wire coverage gates.** Add `npm run test:coverage` script + thresholds in `vitest.config.ts` per Engineering-Standards §7 (90% `lib/`, 85% `app/api/`, 75% components-with-logic). Gate the CI job on coverage thresholds. Phase 0 only has `lib/validation.ts` (already 100%) so this is forward-looking — but it bites the first time Phase 1 code lands without tests, which is the whole point.
+5. **Generate `app/favicon.ico`.** Closes the last Lighthouse Best Practices console error (96 → 100). ~20 min, manual ICO-header wrap around a 32×32 PNG (sharp can't write ICO).
+6. **DNS flip `bohdiai.com` → this Vercel project** once 1–5 are clean on preview.
+7. **Phase-0-Spec.md sync.** Edit the spec to match what actually shipped. Needs Alex in the loop for the "is this scope creep or final design?" calls. Can land after DNS flip; not a launch blocker.
+8. **After launch lands → begin drafting Phase 1 spec.** Target: private beta mid-August 2026.
 
 ## Lessons banked from this session (do not repeat)
 
