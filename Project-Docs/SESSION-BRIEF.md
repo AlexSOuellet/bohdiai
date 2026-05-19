@@ -1,17 +1,36 @@
 # Session Brief — BohdiAI
 
-**Last updated:** 2026-05-19 evening session (Privacy/Terms + test infrastructure + a11y + Lighthouse + bugs found)
+**Last updated:** 2026-05-19 late-night session (Node 22 + Next 16 + React 19 upgrade chain, CI, coverage, favicon, DNS flip — bohdiai.com is LIVE)
 **Update at the end of every session.**
 
 ---
 
 ## Where we are right now
 
-Marketing site at https://bohdiai.vercel.app is feature-complete and audited. Privacy + Terms ship-ready. Automated test safety net in place. Real a11y and Lighthouse passes done. The only remaining launch blockers are the Next.js major upgrade and the DNS flip — both are next-session priorities, in that order.
+**`https://bohdiai.com` is live on Vercel** with a valid Let's Encrypt cert. The Next.js stack is on the current Active LTS (Node 22, Next 16, React 19). CVE count went from 24 → 2 (and the 2 remaining are postcss inside Next's bundled deps — npm audit's "fix" wrongly suggests downgrading to Next 9). CI workflow is wired (typecheck + Vitest+coverage + Playwright). Coverage gate is live for `lib/**` at 90%.
 
-**Not yet done:** Next 14 → 15 → 16 upgrade. DNS flip from Phase 0 design at `bohdiai.com` to this Vercel project. Phase-0-Spec.md sync to current design (low priority).
+**Remaining polish (not launch-blocking):**
+- One-click in Vercel dashboard: set `www.bohdiai.com` to 308-redirect to `bohdiai.com` (Settings → Domains → "..." → Redirect). Both currently serve 200 OK.
+- Re-run Lighthouse on prod build now that Next 16 is live (was 97/97/96/100 on Next 14 — Best Practices should hit 100 now that favicon.ico exists).
+- Phase-0-Spec.md sync to current design (low priority).
 
-## What happened in this evening session (2026-05-19)
+## What happened in this late-night session (2026-05-19, the upgrade-chain session)
+
+1. **Node 20.11 → 22.22.2** (commit `e6cb821`). Node 20 reached EOL April 2026; jumped straight to current Active LTS instead of just unblocking-version 20.19. `.nvmrc` pinned. `engines.node: >=22.0.0`.
+
+2. **Vitest 2 → 4, jsdom 25 → 29, @types/node → 22, @testing-library/react → latest** (commit `ac0b91e`). Now that Node is current, all the year-old pins are unpinned. CVE count dropped 9 → 5 just from transitive cleanup.
+
+3. **Next.js 14.2.15 → 15.5.18 + React 18 → 19** (commit `00a7180`). The big jump. Async-request-API codemod for `searchParams` in `app/confirm/error/page.tsx`. `experimental.typedRoutes → typedRoutes`. Converted 6 internal `<a href="/">` → `<Link>` (Header + 4 pages) for eslint-config-next 15. Cleared stale `tsconfig.tsbuildinfo` (carried Next 14 type cache and was masking the upgrade).
+
+4. **Next.js 15 → 16.2.6** (commit `9ccf058`). Auto-modified `tsconfig.json` (jsx → react-jsx, added `.next/dev/types`). No code changes — async-API codemod from the 15 step covered 16.
+
+5. **CI + coverage + favicon** (commit `2c5e291`). `.github/workflows/test.yml` runs typecheck → vitest+coverage → playwright. Dummy env vars; tests already mock the network. Coverage gate scoped to `lib/**` at 90% (currently 100%). `scripts/generate-favicon.mjs` rasterizes `icon.svg` → 32×32 PNG → manually wraps ICO header (sharp can't write ICO). Closes the Lighthouse 404.
+
+6. **ESLint 8 → 9** (commit `dceb1ab`). First Vercel deploy of the upgrade chain ERESOLVE-failed because eslint-config-next@16 needs eslint ≥9. Local install was permissive; Vercel's npm install is stricter. Bumped to eslint 9. Next 16 no longer runs `next lint` so flat-config breakage doesn't bite us.
+
+7. **DNS flip — bohdiai.com → Vercel** (no commit; DNS-only). Apex `A` was at GoDaddy parking IPs (`15.197.148.33`, `3.33.130.190`), proxy ON. Replaced with `A → 76.76.21.21` proxy OFF. `CNAME www` retargeted to `cname.vercel-dns.com` proxy OFF. Deleted leftover `_domainconnect` CNAME. All MX/TXT (Email Routing + SPF + Cloudflare DKIM + Resend DKIM) preserved. Vercel issued Let's Encrypt cert within ~3 min. `https://bohdiai.com` returns 200 OK with `Server: Vercel` and `<title>BohdiAI — Your Business Online. Finally Made Easy.</title>`.
+
+## What happened in the prior evening session (2026-05-19)
 
 1. **Privacy + Terms pages shipped.** Drafted [app/privacy/page.tsx](../app/privacy/page.tsx) and [app/terms/page.tsx](../app/terms/page.tsx) in Alex's warm/direct voice, mirroring the `/confirmed` styling. Privacy covers email-only collection, why, where it lives (Supabase + Resend), GDPR erasure path via alex@bohdiai.com. Terms covers non-binding waitlist, no warranties, Rhode Island governing law. Footer hrefs moved off `"#"` placeholders to `/privacy` and `/terms`. Commit `d95a8de`.
 
