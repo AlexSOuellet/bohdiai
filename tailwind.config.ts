@@ -109,6 +109,17 @@ const config: Config = {
           '0%, 100%': { opacity: '0', transform: 'translateY(6px)' },
           '10%, 90%': { opacity: '1', transform: 'translateY(0)' },
         },
+        'orb-pulse': {
+          '0%, 100%': { transform: 'scale(1)', opacity: '1' },
+          '50%': { transform: 'scale(1.08)', opacity: '0.9' },
+        },
+        'ring-spin': {
+          to: { transform: 'rotate(360deg)' },
+        },
+        'pulse-dark': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.3' },
+        },
       },
       animation: {
         breathe: 'breathe 7s ease-in-out infinite',
@@ -118,6 +129,10 @@ const config: Config = {
         'pulse-glow': 'pulse-glow 2.6s ease-in-out infinite',
         'pulse-ring': 'pulse-ring 1.8s ease-in-out infinite',
         'rot-swap': 'rot-swap 2.4s ease-in-out infinite',
+        'orb-pulse': 'orb-pulse 2.4s ease-in-out infinite',
+        'ring-spin': 'ring-spin 3s linear infinite',
+        'ring-spin-rev': 'ring-spin 5s linear infinite reverse',
+        'pulse-dark': 'pulse-dark 1.6s ease-in-out infinite',
         'browser-bob': 'browser-bob 6s ease-in-out infinite',
         rise: 'rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both',
         'flash-in': 'flash-in 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both',

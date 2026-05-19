@@ -1,6 +1,7 @@
 import { Scene } from '@/components/Scene';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
+import { HowItWorks } from '@/components/HowItWorks';
 import { WhoBehind } from '@/components/WhoBehind';
 import { Pledge } from '@/components/Pledge';
 import { Community } from '@/components/Community';
@@ -47,10 +48,11 @@ export default async function HomePage(): Promise<React.ReactElement> {
       <Header />
       <main id="main">
         <Hero />
-        <section className="py-12 text-center">
+        <HowItWorks />
+        <section className="py-8 text-center">
           <p className="font-mono text-xs uppercase tracking-[0.16em] text-muted">
-            Founder waitlist: {founderTakenCount}/{founderCap} · sections still wiring in:
-            HowItWorks · TradesMarquee · Waitlist · WhoBehind · BrowserDemo
+            Founder waitlist: {founderTakenCount}/{founderCap} · still wiring in: TradesMarquee ·
+            Waitlist · BrowserDemo
           </p>
         </section>
         <WhoBehind />
