@@ -11,7 +11,7 @@ import { Footer } from '@/components/Footer';
 import { supabaseAdmin } from '@/lib/supabase';
 import { serverEnv } from '@/lib/env';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 30;
 
 async function getFounderTakenCount(): Promise<number> {
   try {
