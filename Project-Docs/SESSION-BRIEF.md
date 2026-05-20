@@ -1,17 +1,89 @@
 # Session Brief — BohdiAI
 
-**Last updated:** 2026-05-20 morning session (LCP fix via ISR + www redirect verified + Phase 1 planning kicked off — foundation-first approach locked)
+**Last updated:** 2026-05-20 afternoon session (Phase 1 planning — 15 product decisions captured in dedicated log; CI fixed; LCP fix shipped)
 **Update at the end of every session.**
 
 ---
 
 ## Picking up next session
 
-**Alex is at work. When he returns we resume the Phase 1 planning brainstorm.** Specifically: the "Every business shape BohdiAI will ever serve" brainstorm — the single page that goes at the front of the Tech Arch Spec and informs the entire database schema design.
+**Resume the design conversation.** Per Alex at end of session: "next session we will continue with design."
 
-**Don't skip:** before that brainstorm, confirm Alex is OK with the foundation-first rule we agreed on this session (see "Phase 1 planning — key decisions locked" below). The rule reframes the Master Spec's phasing and may need a Master Spec amendment.
+**Required reading at session start** (cite-or-shut-up — Alex enforced this mid-session, do not skip):
+1. `CLAUDE.md` (this file's parent in `/`)
+2. `project-docs/SESSION-BRIEF.md`
+3. `project-docs/BohdiAI-Master-Spec.md`
+4. `project-docs/BohdiAI-Roles-Workflow.md`
+5. **`project-docs/Phase-1-Decisions-Log.md`** — NEW this session, 15 product decisions that govern the Tech Arch Spec drafting
 
-## Phase 1 planning — key decisions locked this session
+**Critical communication protocol** (Alex flagged this hard mid-session — see "Lessons banked from this session" below): Claude has a pattern of restating Alex's words back faithfully while embedding interpretation underneath. New protocol: when filling in unknowns, surface the gap explicitly — don't bake the guess into a polished-sounding response. Decisions log is the artifact that catches drift; every entry runs by Alex before landing.
+
+**Open design questions to engage with** (from `Phase-1-Decisions-Log.md` "Open items"):
+- Specific customer types under Seller and Doer
+- What a niche schema actually looks like in form
+- How AI training/data flow works (what data goes in, where from)
+- The mood-descriptor list itself (which moods, how many, how they map to design tokens + block assembly)
+- Database schema (pending the above)
+- Variations table structure
+
+## Phase 1 planning — afternoon session summary
+
+**Long conversation** that pivoted multiple times. Net output: a dedicated decisions log at `project-docs/Phase-1-Decisions-Log.md` with 15 product calls (D1–D15) governing Phase 1 design.
+
+**Headline shifts from the morning's plan:**
+
+1. **The "shapes" framework died.** The 19-shape list from the morning ("one-time product, custom commission, time-block service, ...") was abandoned mid-conversation. Alex found the framing carried interpretations he didn't share. Replaced by his simpler model: tenants are Sellers and/or Doers (D3). Advertiser is not a type — every tenant advertises by virtue of having a storefront; pure business-card tenants are Sellers/Doers on a freemium tier.
+
+2. **Niche schema shrunk dramatically (D5).** Master Spec §8 framed niche schemas as structured database content (fields, badges, AI prompts, design boundaries, component preferences). That structure was Claude's framing, not Alex's. New framing: niche schema is starting input the AI uses; the customer iterates from there. Many niches share schema. No 100-schema upfront effort.
+
+3. **Sellers' product variations go Etsy-style (D4).** Seller-defined variations table linked by product ID and tenant ID. No pre-built field definitions per niche. Open count. Maybe bundle + promo fields.
+
+4. **Design is mood-driven, not niche-driven (D6, D7, D8).** Customer picks a mood descriptor at onboarding ("dark and stormy", "rustic", "warm and cozy", "summer afternoon", "autumn landscape") — NOT abstract design jargon (warm/cool/traditional/modern), which Alex correctly called gibberish. Mood drives both design tokens AND the block assembly (which sections appear, in what order). Curated list at onboarding, free-text iteration later via the editor.
+
+5. **AI does the design but defaults to two looks without good data (D10).** Alex's observation: AI design generation defaults to "dark background with purple highlights" or "cream background with pastels" regardless of input. Quality depends on the data fed in. Niche knowledge is one input among many; customer's mood pick and their own assets (photos, brand) matter more.
+
+6. **All standard e-commerce features are in scope eventually (D13).** Customer accounts, reviews, gift cards, coupons, shipping labels, POD integration, etc. Many were already on Alex's radar but not in the documented spec — that gap was a real source of drift this session. Launch subset locked in D14; post-launch but foundation-supported in D15.
+
+**Critical meta-decision: foundation-first phasing rule (D1).** Phasing controls what we BUILD AND SHIP, not what the foundation supports. The foundation has to support every kind of business and every roadmap feature. Later phases only ADD. If a later-phase feature forces a Phase 1 table rewrite, the foundation is wrong.
+
+## CI fixed
+
+CI workflow has been **failing on every push since it was set up on 2026-05-19** (Alex got emails). Root cause found and fixed this session:
+
+- `package-lock.json` was missing peer-dep entries (`@testing-library/dom@10.4.1` and several transitive deps).
+- Why: Claude's local npm config has `legacy-peer-deps=true` globally, which omits peer deps from the lock file. CI uses modern resolution and rejected the lock as out-of-sync.
+- Fix: regenerated `package-lock.json` with `--no-legacy-peer-deps`, plus committed a project-local `.npmrc` pinning `legacy-peer-deps=false` so anyone (including Claude in future sessions) running `npm install` gets the same behavior as CI.
+- Commit `31e187a`, pushed. Run `26174846368` passed on first try. CI now green for the first time since the workflow was wired.
+
+## What shipped this session (full list)
+
+1. **LCP fix shipped + verified** (morning) — `force-dynamic` → ISR (`revalidate=30`). Commit `3259c95`, pushed. `/` now renders static with 30s revalidate. Pending: re-run Lighthouse on bohdiai.com mobile to confirm LCP back under 2s.
+2. **www → apex redirect verified** (morning) — `curl -sI https://www.bohdiai.com` returns 308 to apex. Last-night's mid-edit save in Vercel saved correctly.
+3. **Waitlist truncated** (morning, Alex via Supabase SQL Editor) — counter now reads 25/25.
+4. **Phase 1 decisions log created and committed** (afternoon) — `project-docs/Phase-1-Decisions-Log.md`, 15 decisions plus open items plus process notes.
+5. **CI fixed and verified green** (afternoon) — commit `31e187a`.
+
+## Lessons banked from this session (do not repeat)
+
+- **Drift through faithful-sounding restatement.** Claude has a pattern of echoing Alex's words back while embedding interpretation underneath. Alex specifically called out eight examples in a single response. Fix going forward: when filling in unknowns, list the gaps as explicit questions instead of folding them into a polished response. Don't summarize when you should be asking.
+- **Don't turn "maybe" into "you want."** Claude converted Alex's tentative thinking ("maybe we should build niche schemas first") into "you want to build niche schemas first." Real harm. Tentative thoughts stay tentative until explicitly committed.
+- **Watch for invented examples.** Claude added "SBA 500 employees", "BOMs / work orders / lot tracking", "restaurant POS systems", "HVAC dispatch", "salon scheduling at scale", "e-commerce warehouses" — all examples Alex never gave but Claude attributed to his scope statement.
+- **Watch for invented thresholds.** Claude proposed "1-chair salon yes, 10-chair salon no" as if Alex had set those thresholds. He hadn't.
+- **The documented spec is partial.** Alex has a much fuller mental picture of BohdiAI than what's in the Master Spec. Customer accounts, wishlists, coupons, shipping labels, POD integration — all on Alex's radar, none in the documented spec. Anything not in the documents is invisible to Claude — when those things come up, treat them as background-assumed (D13), not new ideas to evaluate.
+- **Use Alex's vocabulary, not designer jargon.** "Warm/cool", "traditional/modern", "minimal/busy" are gibberish to makers (and arguably to Claude — Claude couldn't define "traditional" concretely when challenged). Use evocative human language (D6).
+- **Plain English when asked.** Alex asked for plain English multiple times during this session. Reflexive structured-list formatting is over-complication. When in doubt, conversational prose beats bulleted summary.
+
+## What's NOT on this brief but was true earlier
+
+The morning session's brief sections (LCP fix details, ISR commit, www redirect, Master Spec re-read at midpoint) are preserved below this section. The "key decisions locked this session" list from the morning is now superseded by the dedicated decisions log — read that file instead.
+
+## Open local-env item carried over
+
+- **Local `.env.local` still has disabled legacy `service_role` Supabase key.** Alex needs to update it from Supabase Dashboard → bohdi-ai → Project Settings → API Keys → copy current Secret key into `.env.local`'s `SUPABASE_SERVICE_ROLE_KEY=` line. Without this, Claude can't run admin scripts against production Supabase from this machine.
+
+---
+
+## Morning session — key decisions locked (preserved for context)
 
 1. **Tech Arch Spec is the next deliverable.** Before any Phase 1 code is written, we write `project-docs/Technical-Architecture-Spec.md` that locks the database schema, the design-token JSON shape, the niche-schema JSON shape, RLS policies, and proves the design against the 5-6 hardest queries the app will need.
 
