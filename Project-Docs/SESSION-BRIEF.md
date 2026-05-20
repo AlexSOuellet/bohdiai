@@ -1,9 +1,52 @@
 # Session Brief — BohdiAI
 
-**Last updated:** 2026-05-19 late-night session (Node 22 + Next 16 + React 19 upgrade chain, CI, coverage, favicon, DNS flip — bohdiai.com is LIVE)
+**Last updated:** 2026-05-20 morning session (LCP fix via ISR + www redirect verified + Phase 1 planning kicked off — foundation-first approach locked)
 **Update at the end of every session.**
 
 ---
+
+## Picking up next session
+
+**Alex is at work. When he returns we resume the Phase 1 planning brainstorm.** Specifically: the "Every business shape BohdiAI will ever serve" brainstorm — the single page that goes at the front of the Tech Arch Spec and informs the entire database schema design.
+
+**Don't skip:** before that brainstorm, confirm Alex is OK with the foundation-first rule we agreed on this session (see "Phase 1 planning — key decisions locked" below). The rule reframes the Master Spec's phasing and may need a Master Spec amendment.
+
+## Phase 1 planning — key decisions locked this session
+
+1. **Tech Arch Spec is the next deliverable.** Before any Phase 1 code is written, we write `project-docs/Technical-Architecture-Spec.md` that locks the database schema, the design-token JSON shape, the niche-schema JSON shape, RLS policies, and proves the design against the 5-6 hardest queries the app will need.
+
+2. **Foundation-first rule (Alex's call, agreed by Claude as Lead Dev):** Phasing controls which features we BUILD AND SHIP, NOT what the foundation supports. The foundation has to support every kind of business BohdiAI will ever serve — products, services, bookings, events, classes, rentals, subscriptions, commissions, gift cards, real estate, courses, anything. Phase 1 only ships SOME of those features, but the schema is built to fit ALL of them. If a Phase 3 feature forces a Phase 1 table rewrite, we got the foundation wrong.
+
+3. **`listings` over `products`.** The central table will be called something neutral (`listings` or `items`) with a `kind` column (`product`, `service`, `booking`, `event`, ...). Phase 1 only implements `kind = 'product'` UI + service-listing-with-consult-form (so tattoo + estate sales work), but the schema accepts every kind from day 1.
+
+4. **Spec inconsistency surfaced:** The marketing site features Iron & Ash (tattoo parlor) as one of three demo storefronts, but Master Spec §2 + §17 put services in "future." Either we amend the Master Spec to include service-shaped niches in Phase 1, or we swap the tattoo demo for a third product-shaped storefront. **Alex picked path B (informally) — Phase 1 supports service-shaped listings with a "request a consult" contact form, real-time booking engine deferred to Phase 2. Not yet formally amended in the Master Spec.**
+
+5. **Tech Arch Spec proposed structure (Alex approved):**
+   - (1) Purpose & scope
+   - (2) Every business shape we will ever serve (brainstorm-driven)
+   - (3) Core entities (plain-English list)
+   - (4) Database schema (tables, columns, indexes, constraints, JSON document shapes)
+   - (5) RLS policies
+   - (6) Access pattern proofs (5-6 hardest queries written against the schema)
+   - (7) Migrations & seed-data strategy
+   - (8) Open questions
+
+6. **Working cadence agreed:** Claude drafts one section at a time, Alex approves before next section starts, Claude pauses at any non-trivial design decision and asks before locking.
+
+## What shipped this session
+
+1. **www → apex redirect verified.** `curl -sI https://www.bohdiai.com` returns `HTTP/1.1 308 Permanent Redirect, Location: https://bohdiai.com/`. Last-night's mid-edit save in Vercel Settings → Domains did save correctly. No further action needed.
+
+2. **LCP fix shipped — `force-dynamic` → ISR (`revalidate=30`).** Commit `3259c95` on main, pushed to origin. The hero is text-LCP with no above-the-fold image, so the 3.5s LCP regression was TTFB-bound (every request was blocking on Supabase to count founder slots). ISR makes `/` edge-cached, founder count goes stale ±30s — acceptable headroom against the 25-slot cap. Build verified: `/` now renders as `○ (Static)` with 30s revalidate (was `ƒ Dynamic`). Next Lighthouse run against bohdiai.com should show LCP back to <2s and Performance back to ~97.
+
+3. **Waitlist truncated.** Alex ran `TRUNCATE waitlist;` in Supabase SQL Editor. Counter will read "25 of 25 left" on next ISR refresh or Vercel redeploy.
+
+4. **Master Spec, Roles-Workflow, Phase-0-Spec read at session midpoint.** Alex pulled Claude up on skipping the cite-or-shut-up protocol at session start. Future sessions: do the full required-reading before any task, including small ones.
+
+## Local environment gap (raise next session)
+
+- **Local `.env.local` still has the disabled legacy `service_role` Supabase key.** Supabase disabled all legacy anon/service_role keys on 2026-05-18; production runs on the new "secret key" system. Local key needs updating from Supabase Dashboard → bohdi-ai → Project Settings → API Keys → copy the current Secret key (starts with `sb_secret_…`) into `.env.local`'s `SUPABASE_SERVICE_ROLE_KEY=` line. Until this is done, Claude cannot run admin scripts locally against the production Supabase project (which is why the `TRUNCATE waitlist;` had to be run by Alex in the dashboard).
+- **Read-only Postgres MCP installed.** `mcp__server-postgres__query` exists but is read-only by design. If we want Claude to do admin SQL directly, swap to the official Supabase MCP later. Not urgent.
 
 ## Where we are right now
 
