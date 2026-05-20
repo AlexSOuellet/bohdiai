@@ -1,302 +1,177 @@
 # Session Brief — BohdiAI
 
-**Last updated:** 2026-05-20 afternoon session (Phase 1 planning — 15 product decisions captured in dedicated log; CI fixed; LCP fix shipped)
+**Last updated:** 2026-05-20 evening (database design started — Tech Arch Spec exists with two tables drafted, decisions log rewritten with full context, plain-English rule added to CLAUDE.md)
+
 **Update at the end of every session.**
 
 ---
 
-## Picking up next session
+## Picking up tomorrow
 
-**Resume the design conversation.** Per Alex at end of session: "next session we will continue with design."
+Alex stopped for the night after we started drafting the actual database. The Tech Arch Spec at `project-docs/Tech-Arch-Spec.md` has the tenants table and the tenant_members table done, both approved. The next table to draft is subscriptions — the SaaS billing relationship between BohdiAI and the tenant, tracking which tier they're on and the live state from Stripe.
 
-**Required reading at session start** (cite-or-shut-up — Alex enforced this mid-session, do not skip):
-1. `CLAUDE.md` (this file's parent in `/`)
-2. `project-docs/SESSION-BRIEF.md`
-3. `project-docs/BohdiAI-Master-Spec.md`
-4. `project-docs/BohdiAI-Roles-Workflow.md`
-5. **`project-docs/Phase-1-Decisions-Log.md`** — NEW this session, 15 product decisions that govern the Tech Arch Spec drafting
-
-**Critical communication protocol** (Alex flagged this hard mid-session — see "Lessons banked from this session" below): Claude has a pattern of restating Alex's words back faithfully while embedding interpretation underneath. New protocol: when filling in unknowns, surface the gap explicitly — don't bake the guess into a polished-sounding response. Decisions log is the artifact that catches drift; every entry runs by Alex before landing.
-
-**Open design questions to engage with** (from `Phase-1-Decisions-Log.md` "Open items"):
-- Specific customer types under Seller and Doer
-- What a niche schema actually looks like in form
-- How AI training/data flow works (what data goes in, where from)
-- The mood-descriptor list itself (which moods, how many, how they map to design tokens + block assembly)
-- Database schema (pending the above)
-- Variations table structure
-
-## Phase 1 planning — afternoon session summary
-
-**Long conversation** that pivoted multiple times. Net output: a dedicated decisions log at `project-docs/Phase-1-Decisions-Log.md` with 15 product calls (D1–D15) governing Phase 1 design.
-
-**Headline shifts from the morning's plan:**
-
-1. **The "shapes" framework died.** The 19-shape list from the morning ("one-time product, custom commission, time-block service, ...") was abandoned mid-conversation. Alex found the framing carried interpretations he didn't share. Replaced by his simpler model: tenants are Sellers and/or Doers (D3). Advertiser is not a type — every tenant advertises by virtue of having a storefront; pure business-card tenants are Sellers/Doers on a freemium tier.
-
-2. **Niche schema shrunk dramatically (D5).** Master Spec §8 framed niche schemas as structured database content (fields, badges, AI prompts, design boundaries, component preferences). That structure was Claude's framing, not Alex's. New framing: niche schema is starting input the AI uses; the customer iterates from there. Many niches share schema. No 100-schema upfront effort.
-
-3. **Sellers' product variations go Etsy-style (D4).** Seller-defined variations table linked by product ID and tenant ID. No pre-built field definitions per niche. Open count. Maybe bundle + promo fields.
-
-4. **Design is mood-driven, not niche-driven (D6, D7, D8).** Customer picks a mood descriptor at onboarding ("dark and stormy", "rustic", "warm and cozy", "summer afternoon", "autumn landscape") — NOT abstract design jargon (warm/cool/traditional/modern), which Alex correctly called gibberish. Mood drives both design tokens AND the block assembly (which sections appear, in what order). Curated list at onboarding, free-text iteration later via the editor.
-
-5. **AI does the design but defaults to two looks without good data (D10).** Alex's observation: AI design generation defaults to "dark background with purple highlights" or "cream background with pastels" regardless of input. Quality depends on the data fed in. Niche knowledge is one input among many; customer's mood pick and their own assets (photos, brand) matter more.
-
-6. **All standard e-commerce features are in scope eventually (D13).** Customer accounts, reviews, gift cards, coupons, shipping labels, POD integration, etc. Many were already on Alex's radar but not in the documented spec — that gap was a real source of drift this session. Launch subset locked in D14; post-launch but foundation-supported in D15.
-
-**Critical meta-decision: foundation-first phasing rule (D1).** Phasing controls what we BUILD AND SHIP, not what the foundation supports. The foundation has to support every kind of business and every roadmap feature. Later phases only ADD. If a later-phase feature forces a Phase 1 table rewrite, the foundation is wrong.
-
-## CI fixed
-
-CI workflow has been **failing on every push since it was set up on 2026-05-19** (Alex got emails). Root cause found and fixed this session:
-
-- `package-lock.json` was missing peer-dep entries (`@testing-library/dom@10.4.1` and several transitive deps).
-- Why: Claude's local npm config has `legacy-peer-deps=true` globally, which omits peer deps from the lock file. CI uses modern resolution and rejected the lock as out-of-sync.
-- Fix: regenerated `package-lock.json` with `--no-legacy-peer-deps`, plus committed a project-local `.npmrc` pinning `legacy-peer-deps=false` so anyone (including Claude in future sessions) running `npm install` gets the same behavior as CI.
-- Commit `31e187a`, pushed. Run `26174846368` passed on first try. CI now green for the first time since the workflow was wired.
-
-## What shipped this session (full list)
-
-1. **LCP fix shipped + verified** (morning) — `force-dynamic` → ISR (`revalidate=30`). Commit `3259c95`, pushed. `/` now renders static with 30s revalidate. Pending: re-run Lighthouse on bohdiai.com mobile to confirm LCP back under 2s.
-2. **www → apex redirect verified** (morning) — `curl -sI https://www.bohdiai.com` returns 308 to apex. Last-night's mid-edit save in Vercel saved correctly.
-3. **Waitlist truncated** (morning, Alex via Supabase SQL Editor) — counter now reads 25/25.
-4. **Phase 1 decisions log created and committed** (afternoon) — `project-docs/Phase-1-Decisions-Log.md`, 15 decisions plus open items plus process notes.
-5. **CI fixed and verified green** (afternoon) — commit `31e187a`.
-
-## Lessons banked from this session (do not repeat)
-
-- **Drift through faithful-sounding restatement.** Claude has a pattern of echoing Alex's words back while embedding interpretation underneath. Alex specifically called out eight examples in a single response. Fix going forward: when filling in unknowns, list the gaps as explicit questions instead of folding them into a polished response. Don't summarize when you should be asking.
-- **Don't turn "maybe" into "you want."** Claude converted Alex's tentative thinking ("maybe we should build niche schemas first") into "you want to build niche schemas first." Real harm. Tentative thoughts stay tentative until explicitly committed.
-- **Watch for invented examples.** Claude added "SBA 500 employees", "BOMs / work orders / lot tracking", "restaurant POS systems", "HVAC dispatch", "salon scheduling at scale", "e-commerce warehouses" — all examples Alex never gave but Claude attributed to his scope statement.
-- **Watch for invented thresholds.** Claude proposed "1-chair salon yes, 10-chair salon no" as if Alex had set those thresholds. He hadn't.
-- **The documented spec is partial.** Alex has a much fuller mental picture of BohdiAI than what's in the Master Spec. Customer accounts, wishlists, coupons, shipping labels, POD integration — all on Alex's radar, none in the documented spec. Anything not in the documents is invisible to Claude — when those things come up, treat them as background-assumed (D13), not new ideas to evaluate.
-- **Use Alex's vocabulary, not designer jargon.** "Warm/cool", "traditional/modern", "minimal/busy" are gibberish to makers (and arguably to Claude — Claude couldn't define "traditional" concretely when challenged). Use evocative human language (D6).
-- **Plain English when asked.** Alex asked for plain English multiple times during this session. Reflexive structured-list formatting is over-complication. When in doubt, conversational prose beats bulleted summary.
-
-## What's NOT on this brief but was true earlier
-
-The morning session's brief sections (LCP fix details, ISR commit, www redirect, Master Spec re-read at midpoint) are preserved below this section. The "key decisions locked this session" list from the morning is now superseded by the dedicated decisions log — read that file instead.
-
-## Open local-env item carried over
-
-- **Local `.env.local` still has disabled legacy `service_role` Supabase key.** Alex needs to update it from Supabase Dashboard → bohdi-ai → Project Settings → API Keys → copy current Secret key into `.env.local`'s `SUPABASE_SERVICE_ROLE_KEY=` line. Without this, Claude can't run admin scripts against production Supabase from this machine.
+Resume by drafting the subscriptions table. Alex's instruction was that Claude (as Lead Developer) drives the database design — proposes the table, the columns, the relationships, and the rationale, then Alex reviews and corrects. Do not ask Alex "where should I start" or "which table next." The order is in the Tech Arch Spec's "Sections to come" list.
 
 ---
 
-## Morning session — key decisions locked (preserved for context)
+## Required reading at session start
 
-1. **Tech Arch Spec is the next deliverable.** Before any Phase 1 code is written, we write `project-docs/Technical-Architecture-Spec.md` that locks the database schema, the design-token JSON shape, the niche-schema JSON shape, RLS policies, and proves the design against the 5-6 hardest queries the app will need.
+Do not skip any of these. Alex enforced this mid-session and the cite-or-shut-up rule in CLAUDE.md requires it.
 
-2. **Foundation-first rule (Alex's call, agreed by Claude as Lead Dev):** Phasing controls which features we BUILD AND SHIP, NOT what the foundation supports. The foundation has to support every kind of business BohdiAI will ever serve — products, services, bookings, events, classes, rentals, subscriptions, commissions, gift cards, real estate, courses, anything. Phase 1 only ships SOME of those features, but the schema is built to fit ALL of them. If a Phase 3 feature forces a Phase 1 table rewrite, we got the foundation wrong.
+1. `CLAUDE.md` at the project root — orientation, the cite-or-shut-up rule, and (new this session) the plain-English-in-chat rule. Read the whole file.
+2. `project-docs/SESSION-BRIEF.md` — this file.
+3. `project-docs/BohdiAI-Master-Spec.md` — the product spec, in full. Note: several sections are now superseded by the decisions log (§2, §6.2, §6.3, §8, §17). The decisions log wins where it has spoken, the Master Spec wins where the log is silent.
+4. `project-docs/BohdiAI-Roles-Workflow.md` — roles and process.
+5. `project-docs/Phase-1-Decisions-Log.md` — the nine product decisions that govern the Tech Arch Spec.
+6. `project-docs/Tech-Arch-Spec.md` — the live database design we are working on.
 
-3. **`listings` over `products`.** The central table will be called something neutral (`listings` or `items`) with a `kind` column (`product`, `service`, `booking`, `event`, ...). Phase 1 only implements `kind = 'product'` UI + service-listing-with-consult-form (so tattoo + estate sales work), but the schema accepts every kind from day 1.
+---
 
-4. **Spec inconsistency surfaced:** The marketing site features Iron & Ash (tattoo parlor) as one of three demo storefronts, but Master Spec §2 + §17 put services in "future." Either we amend the Master Spec to include service-shaped niches in Phase 1, or we swap the tattoo demo for a third product-shaped storefront. **Alex picked path B (informally) — Phase 1 supports service-shaped listings with a "request a consult" contact form, real-time booking engine deferred to Phase 2. Not yet formally amended in the Master Spec.**
+## The plain-English rule (read this — it changed how Claude works)
 
-5. **Tech Arch Spec proposed structure (Alex approved):**
-   - (1) Purpose & scope
-   - (2) Every business shape we will ever serve (brainstorm-driven)
-   - (3) Core entities (plain-English list)
-   - (4) Database schema (tables, columns, indexes, constraints, JSON document shapes)
-   - (5) RLS policies
-   - (6) Access pattern proofs (5-6 hardest queries written against the schema)
-   - (7) Migrations & seed-data strategy
-   - (8) Open questions
+Alex called this out hard near the end of the session: Claude's defaults toward structured-looking responses — bullet lists, headings, section IDs, bold labels — feel like over-complication in chat. That habit belongs in documentation, not conversation. The CLAUDE.md file now has a hard rule about this. In chat, talk like a person. Sentences and short paragraphs beat bullet lists. No "D5" or "§6.2" references — describe the prior decision in a few words instead ("the variations-table decision," "the foundation-first rule"). No designer or engineer jargon unless Alex used it first. Save formatting for documents.
 
-6. **Working cadence agreed:** Claude drafts one section at a time, Alex approves before next section starts, Claude pauses at any non-trivial design decision and asks before locking.
+The CLAUDE.md change is local on disk but not yet committed. It will take effect for new sessions once committed.
 
-## What shipped this session
+---
 
-1. **www → apex redirect verified.** `curl -sI https://www.bohdiai.com` returns `HTTP/1.1 308 Permanent Redirect, Location: https://bohdiai.com/`. Last-night's mid-edit save in Vercel Settings → Domains did save correctly. No further action needed.
+## What we accomplished today
 
-2. **LCP fix shipped — `force-dynamic` → ISR (`revalidate=30`).** Commit `3259c95` on main, pushed to origin. The hero is text-LCP with no above-the-fold image, so the 3.5s LCP regression was TTFB-bound (every request was blocking on Supabase to count founder slots). ISR makes `/` edge-cached, founder count goes stale ±30s — acceptable headroom against the 25-slot cap. Build verified: `/` now renders as `○ (Static)` with 30s revalidate (was `ƒ Dynamic`). Next Lighthouse run against bohdiai.com should show LCP back to <2s and Performance back to ~97.
+The session ran from morning to evening with three phases.
 
-3. **Waitlist truncated.** Alex ran `TRUNCATE waitlist;` in Supabase SQL Editor. Counter will read "25 of 25 left" on next ISR refresh or Vercel redeploy.
+### Morning — operational fixes
 
-4. **Master Spec, Roles-Workflow, Phase-0-Spec read at session midpoint.** Alex pulled Claude up on skipping the cite-or-shut-up protocol at session start. Future sessions: do the full required-reading before any task, including small ones.
+The LCP regression flagged in the previous session was investigated. The hero is text-LCP with no above-the-fold image, so the actual cause was the page being rendered fresh on every request (force-dynamic) to count founder slots. Switched to ISR with a 30-second revalidate window. The page is now edge-cached and TTFB drops dramatically. Pending: re-run Lighthouse against bohdiai.com mobile to confirm LCP back under 2 seconds.
 
-## Local environment gap (raise next session)
+The www-to-apex 308 redirect was verified live with curl.
 
-- **Local `.env.local` still has the disabled legacy `service_role` Supabase key.** Supabase disabled all legacy anon/service_role keys on 2026-05-18; production runs on the new "secret key" system. Local key needs updating from Supabase Dashboard → bohdi-ai → Project Settings → API Keys → copy the current Secret key (starts with `sb_secret_…`) into `.env.local`'s `SUPABASE_SERVICE_ROLE_KEY=` line. Until this is done, Claude cannot run admin scripts locally against the production Supabase project (which is why the `TRUNCATE waitlist;` had to be run by Alex in the dashboard).
-- **Read-only Postgres MCP installed.** `mcp__server-postgres__query` exists but is read-only by design. If we want Claude to do admin SQL directly, swap to the official Supabase MCP later. Not urgent.
+Alex truncated the waitlist table via the Supabase SQL editor so the founder counter reads 25/25 again.
 
-## Where we are right now
+Both fixes were committed and pushed (commits `3259c95` and `7401395`).
 
-**`https://bohdiai.com` is live on Vercel** with a valid Let's Encrypt cert. The Next.js stack is on the current Active LTS (Node 22, Next 16, React 19). CVE count went from 24 → 2 (and the 2 remaining are postcss inside Next's bundled deps — npm audit's "fix" wrongly suggests downgrading to Next 9). CI workflow is wired (typecheck + Vitest+coverage + Playwright). Coverage gate is live for `lib/**` at 90%.
+### Afternoon — Phase 1 planning
 
-**Remaining polish (not launch-blocking):**
-- **LCP follow-up.** Post-launch Lighthouse against `https://bohdiai.com` (mobile): **Performance 89** (was 97), **Accessibility 97**, **Best Practices 100** (was 96 — favicon fix worked), **SEO 100**. The 8-point Performance regression is entirely LCP: 3.5s, score 63. Every other metric is excellent (FCP 1.3s/98, TBT 70ms/99, CLS 0.002/100). Cause is some combination of (a) ~15 kB First Load JS increase from Next 15 → 16 + React 19, (b) real-network latency the local prod test didn't have, (c) the LCP element likely lacking `priority` / `fetchPriority="high"`. Fix is a 30-min next-session task: identify the LCP element via Lighthouse's `largest-contentful-paint-element` audit on a real run, add `next/image` priority hints. Not launch-blocking.
-- **www → apex redirect.** Alex was mid-edit in Vercel Settings → Domains setting up the 308 redirect (`www.bohdiai.com` → `bohdiai.com`). Save status uncertain. Verify next session by `curl -sI https://www.bohdiai.com` — if it shows `HTTP/1.1 308` and `location: https://bohdiai.com/`, done. Currently both serve 200 OK directly, which is functional but not canonical.
-- **Phase-0-Spec.md sync** to current design (low priority).
+A long, pivoting conversation that resulted in nine product decisions governing the Tech Arch Spec. Highlights below; full context is in `project-docs/Phase-1-Decisions-Log.md`.
 
-## What happened in this late-night session (2026-05-19, the upgrade-chain session)
+The "shapes" framework Claude had started building (19 transaction shapes — one-time product, time-block service, online auction, etc.) died mid-conversation. Alex found the framing carried interpretations he didn't share. The replacement is much simpler: every tenant is a Seller, a Doer, or both. Those are the only two types. Things Claude had wanted to make sub-types (Teacher, Host, Subscription Provider, Display) are either things Doers do or are not types at all (Subscription is a payment model, Advertiser is universal behavior, Display is a tier feature).
 
-1. **Node 20.11 → 22.22.2** (commit `e6cb821`). Node 20 reached EOL April 2026; jumped straight to current Active LTS instead of just unblocking-version 20.19. `.nvmrc` pinned. `engines.node: >=22.0.0`.
+The original niche schema concept from the Master Spec (a structured per-niche document defining fields, badges, AI prompts, design boundaries, and component preferences) shrunk dramatically. Field definitions are replaced by seller-defined variations Etsy-style — sellers add whatever variations they want per product, no pre-built field lists per niche. The remaining parts of the original niche schema concept (AI prompts, design suggestions) become AI input data, not structured database content. There's no 100-schema upfront research effort.
 
-2. **Vitest 2 → 4, jsdom 25 → 29, @types/node → 22, @testing-library/react → latest** (commit `ac0b91e`). Now that Node is current, all the year-old pins are unpinned. CVE count dropped 9 → 5 just from transitive cleanup.
+Design is mood-driven, not niche-driven. The customer picks a mood at onboarding from a curated list — "dark and stormy," "rustic," "warm and cozy," "summer afternoon," "autumn landscape" — and the AI generates both the design tokens and the block assembly to match. Niche stereotypes are out: an occult candle maker picks "dark and stormy," not the warm-honey-and-amber default the Master Spec's §6.2 originally implied. Master Spec §6.2 needs amendment.
 
-3. **Next.js 14.2.15 → 15.5.18 + React 18 → 19** (commit `00a7180`). The big jump. Async-request-API codemod for `searchParams` in `app/confirm/error/page.tsx`. `experimental.typedRoutes → typedRoutes`. Converted 6 internal `<a href="/">` → `<Link>` (Header + 4 pages) for eslint-config-next 15. Cleared stale `tsconfig.tsbuildinfo` (carried Next 14 type cache and was masking the upgrade).
+AI is the design engine, but the AI needs the right data. Alex's experience is that AI design defaults to one of two looks ("dark background with purple highlights" or "cream background with pastels") regardless of what you ask for. The customer's mood pick is one input, but their own assets (photos, brand) matter more. Niche knowledge is one input among many, not the dominant one.
 
-4. **Next.js 15 → 16.2.6** (commit `9ccf058`). Auto-modified `tsconfig.json` (jsx → react-jsx, added `.next/dev/types`). No code changes — async-API codemod from the 15 step covered 16.
+The full e-commerce feature roadmap (Etsy-and-Shopify level — customer accounts, gift cards, coupons, shipping labels, POD integration, reviews, analytics, social links, customer messaging) is in scope eventually. The launch subset is shop organization, content pages, customer accounts, reviews, promos, gift cards, analytics, and social media links. Everything else is post-launch but the foundation must support it now.
 
-5. **CI + coverage + favicon** (commit `2c5e291`). `.github/workflows/test.yml` runs typecheck → vitest+coverage → playwright. Dummy env vars; tests already mock the network. Coverage gate scoped to `lib/**` at 90% (currently 100%). `scripts/generate-favicon.mjs` rasterizes `icon.svg` → 32×32 PNG → manually wraps ICO header (sharp can't write ICO). Closes the Lighthouse 404.
+The overarching rule that governs everything: foundation-first phasing. The database has to support every roadmap feature even if its UI ships years later. Later phases only add — they never rewrite Phase 1 tables.
 
-6. **ESLint 8 → 9** (commit `dceb1ab`). First Vercel deploy of the upgrade chain ERESOLVE-failed because eslint-config-next@16 needs eslint ≥9. Local install was permissive; Vercel's npm install is stricter. Bumped to eslint 9. Next 16 no longer runs `next lint` so flat-config breakage doesn't bite us.
+### Afternoon — CI fix
 
-7. **DNS flip — bohdiai.com → Vercel** (no commit; DNS-only). Apex `A` was at GoDaddy parking IPs (`15.197.148.33`, `3.33.130.190`), proxy ON. Replaced with `A → 76.76.21.21` proxy OFF. `CNAME www` retargeted to `cname.vercel-dns.com` proxy OFF. Deleted leftover `_domainconnect` CNAME. All MX/TXT (Email Routing + SPF + Cloudflare DKIM + Resend DKIM) preserved. Vercel issued Let's Encrypt cert within ~3 min. `https://bohdiai.com` returns 200 OK with `Server: Vercel` and `<title>BohdiAI — Your Business Online. Finally Made Easy.</title>`.
+CI had been silently failing on every push since the workflow was added two days ago. Alex was getting emails about it. Root cause: package-lock.json was missing peer-dependency entries because Claude's global npm config had legacy-peer-deps=true, which omits peer deps from the lock file. CI uses modern resolution and rejected the lock as out-of-sync. Fixed by regenerating the lock file with --no-legacy-peer-deps and adding a project-local .npmrc pinning legacy-peer-deps=false so anyone running npm install in this repo gets the same behavior as CI. Run 26174846368 passed on first try. Committed and pushed (commit `31e187a`).
 
-## What happened in the prior evening session (2026-05-19)
+### Evening — Tech Arch Spec started
 
-1. **Privacy + Terms pages shipped.** Drafted [app/privacy/page.tsx](../app/privacy/page.tsx) and [app/terms/page.tsx](../app/terms/page.tsx) in Alex's warm/direct voice, mirroring the `/confirmed` styling. Privacy covers email-only collection, why, where it lives (Supabase + Resend), GDPR erasure path via alex@bohdiai.com. Terms covers non-binding waitlist, no warranties, Rhode Island governing law. Footer hrefs moved off `"#"` placeholders to `/privacy` and `/terms`. Commit `d95a8de`.
+Alex grounded the conversation: the immediate task is designing the database to hold everything we'll build later. Not designing tenant-facing features. Not picking architecture. The database. He also corrected Claude (as Lead Developer) for asking "where should I start" — that's a founder-level question and Claude should drive it.
 
-2. **Test infrastructure landed (Vitest + Playwright + axe-core).** Commit `6aed71e`. Specifically:
-   - **Vitest 2** (jsdom) for unit tests. Pinned to v2 because Vitest 4 needs Node 20.19+ and the local environment is on Node 20.11 — this is a deliberate trade-off and is tracked under "Tech debt parked" below.
-   - **Playwright 1.60** for E2E with Chromium desktop + Pixel 5 mobile projects. `webServer` config launches `next dev --port 3100`.
-   - **@axe-core/playwright** for WCAG 2.1 AA scans.
-   - **9 unit tests** for `lib/validation.ts` (waitlist + resend zod schemas).
-   - **6 Playwright smoke specs** for Waitlist form (4 specs: validation, success, already-on-list, server error — all using `page.route()` mocks so tests do NOT touch Supabase or Resend) and BrowserDemo (2 specs: dot click + auto-cycle).
-   - **3 a11y specs** (home, privacy, terms) that fail on any serious or critical WCAG violation. `.store-frame` is excluded with documented reasoning — the demo storefronts are decorative marketing art with intentional cream-on-cream contrast.
-   - npm scripts: `test`, `test:watch`, `test:e2e`.
-   - **All 33 tests green** on the final run (9 Vitest unit + 12 Playwright smoke × 2 projects + 3 × 2 a11y).
+The Tech Arch Spec was started at `project-docs/Tech-Arch-Spec.md`. Two tables drafted and approved by Alex.
 
-3. **Real bugs caught and fixed.** Commit `a4d7124`:
-   - **BrowserDemo z-index bug.** The `<section id="how">` had `z-content` and was layered above the BrowserDemo's outer div (which had no z), so it intercepted pointer events in the thin strip where the dot navigators live. Fixed by bumping BrowserDemo to `z-sticky`. Caught by Playwright `clicking a dot jumps to that storefront`. **Affected real users** in that strip, not just tests.
-   - **Dot button touch target.** Dots were 9×9px — fails WCAG 2.5.8 AA (24×24px minimum). Wrapped the visible 9px dot in a 24×24px (or 24×36 active) clickable button so the design is unchanged but the hit area is compliant. Caught by Lighthouse target-size audit.
-   - **Muted text contrast.** `--muted: #7e7464` on bg `#0a0805` was 4.35:1 — just under WCAG 4.5:1 for normal text. Bumped to `#8a8070` (~4.6:1). Affects footer copyright + Last-updated stamps. Visually almost identical.
-   - **Privacy/Terms inline link styling.** Mailto + service links were honey-warm color only, no underline (only on hover) — fails WCAG `link-in-text-block` because color alone is insufficient distinction. Now always underlined with `decoration-honey-warm/40` normal → `/100` on hover.
-   - **Storefront marketing art accessibility.** Added `aria-hidden="true"` + `role="presentation"` to the storefront render container in BrowserDemo. Those storefronts have fake products / fake CTAs that don't navigate — they're marketing art, not real content. Screen readers correctly skip them now; the brand name + URL pill above the frame still announce the demo. Note: Lighthouse's color-contrast rule deliberately does NOT honor aria-hidden (sighted users with cognitive disabilities still see the text), which is why Lighthouse Accessibility is 97 and not 100. We accept this trade-off — the cream-on-cream bakery aesthetic is the marketing point.
-   - **`app/icon.svg` created.** Brand B mark gradient. Closes one of the two Lighthouse Best Practices console errors (the legacy `/favicon.ico` 404 remains — no Windows-friendly way to generate a binary `.ico` without imagemagick, deferred as cosmetic).
+The tenants table is the root entity. Every other table will reference tenant_id. Decisions made while drafting:
 
-4. **Lighthouse mobile audit (against prod build at `next start --port 3100`):**
-   - Performance: **97**
-   - Accessibility: **97** (was 93 before target-size fix)
-   - Best Practices: **96** (single `favicon.ico` 404 keeping it off 100)
-   - SEO: **100**
-   - Target was ">90 across the board" — comfortably exceeded.
+- The subdomain is fixed at onboarding and only changeable by admin intervention — to protect the maker from breaking their own shared links and SEO.
+- Tenant types are stored as an array (`{seller, doer}`) rather than two boolean columns, so adding a third type later doesn't require a schema migration.
+- Multi-currency, time zone, contact email, and physical address are all included even though only USD ships at launch — they're cheap to add now and avoid migrations later.
+- Soft delete (deleted_at column). The audit period before hard deletion is not yet decided — Alex offered to keep accounts indefinitely with a 6-month archived state requiring admin restore, but that was a suggestion not a decision. The schema supports any policy.
+- Owner is **not** a column on tenants. The user-to-tenant relationship lives in tenant_members instead.
 
-5. **Daily-Audit Q3 reframed.** Commit `845d606`. Q3 ("Are all styles driven by design tokens?") now explicitly scoped to Phase 1+ tenant-rendered component variants only. Marked N/A for Phase 0 marketing artwork. Documents why so future audits don't repeat the May 19 token-refactor detour.
+The tenant_members table bridges Supabase auth.users and tenants. One row per (user, tenant) relationship with a role of either admin or customer. Decisions made:
 
-6. **Course correction on "defer it" reflexes.** Alex pushed back twice and was right both times:
-   - On the Next.js upgrade. I initially recommended deferring 14.2.15 → 16.x as a "separate decision." Alex asked "won't it be even bigger later?" — yes, exactly. Reversed. Now next session's #1 priority. Codebase will only grow before launch; doing the upgrade *before* DNS flip means going live on a current, patched version of Next.
-   - On a broader principle. Alex set the rule: **"If anything is going to have to be done eventually and will benefit the app, it needs to be done."** I had silently pinned Vitest/jsdom to year-old majors instead of raising the Node upgrade, declared CI a "separate decision" without re-raising it, and skipped wiring coverage thresholds despite installing the tool. All flagged below under "Tech debt parked."
+- Customers and admins live in the same table with a role column, per Alex's suggestion. One person logging in might be an admin of their own shop and a customer of someone else's — same login, different rows.
+- Role is text with a check constraint, not a Postgres enum, so we can add new role values later without an alter-type migration.
+- Soft removal (status column with active or removed), so audit history makes sense when someone is taken off the admin list.
+- No separate invitations table — Alex's call. Multi-admin self-service is a "look up by email and add" action, not an invitation flow.
 
-## Tech debt parked (raise next session)
+The customers table Claude had originally planned (section 9) was dropped. Customers are tenant_members with role='customer'. Customer-specific data (saved addresses, wishlists, payment methods) will go in a customer_profiles table that joins to tenant_members.
 
-These were silently deferred earlier in this session. Alex's standing rule applies — get them done.
+---
 
-1. **Node 20.11 → 20.19+ upgrade.** Required to unpin Vitest from v2 → v4 and jsdom from v25 → v29 (the current Node hangs ~6 patch versions short of what those expect). Also a prerequisite for Next 16. Do this as part of the Next upgrade session.
-2. **Coverage gates not wired.** `@vitest/coverage-v8` is installed but there is no `npm run test:coverage` script, no thresholds in `vitest.config.ts`, no CI gate. Engineering-Standards §7 specifies 90/85/75% with CI gates. Wire when CI exists.
-3. **CI not wired.** Tests run locally only. GitHub Actions workflow that runs Vitest + Playwright on PRs is on the to-do list but unscoped. Decide during the Next upgrade session whether to land CI before or after the upgrade.
-4. **Phase-0-Spec.md sync.** Design has evolved well past what's documented in [Phase-0-Spec.md](Phase-0-Spec.md). Worth a sync edit but not launch-blocking.
-5. **Favicon `.ico`.** `app/favicon.ico` would close the last Lighthouse Best Practices console error (404 in the console) and bump Best Practices 96 → 100. Modern browsers already get `app/icon.svg`. Small but worth doing — sharp can't write ICO directly, so manually wrap a 32×32 PNG in the ICO header (~20 min).
-6. **Engineering-Standards §7 "no DB mocks" deviation in waitlist smoke tests.** Tests mock the `/api/waitlist` network response with `page.route()` so they don't pollute Supabase or fire real Resend emails. This is a deliberate carve-out for marketing-form smoke tests (the failure mode we care about is the form, not the API). Decision was raised inline and approved — documenting it here so it stays approved.
+## What's next on the Tech Arch Spec (in order)
 
-## NEXT SESSION priorities (in order)
+The remaining table sections to draft, per the spec's "Sections to come" list:
 
-**Read the "Tech debt parked" section above before starting — items #1, #2, #3, #5 below pull directly from it. Do not skip them.**
+3. Subscriptions — Stripe billing state for the tenant's BohdiAI subscription (freemium/basic/pro)
+4. Design tokens — per-tenant, with version history
+5. Niche schemas — shared across tenants, holding AI starting inputs and component preferences
+6. Listings — the unified table for everything a tenant offers (products and services)
+7. Variations — seller-defined attributes per listing
+8. Collections — how listings get grouped
+9. Customer profiles — extra data for tenant_members with role=customer
+10. Orders, order_items, payments — commerce
+11. Reviews
+12. Gift cards
+13. Content pages — about, FAQ, policies
+14. Uploads, files, media
+15. Future-supported tables — messaging, marketing, fulfillment, integrations — designed for the foundation, UI ships later
 
-1. **Node 20.11 → 20.19+ upgrade.** Prerequisite for the Next 16 upgrade *and* for unpinning Vitest/jsdom from year-old majors. Do this first so the Next upgrade has a clean Node baseline.
-2. **Next.js major upgrade: 14.2.15 → 15.x → 16.x BEFORE DNS flip.** `npm audit` currently flags 24 advisories against `next@14.2.15` (1 critical, 3 high, 1 moderate; most are config-gated and we don't expose the vulnerable surface, but the count is real). Doing the upgrade now is *safer* than deferring: codebase is at its smallest, no live users, smoke tests now exist as a safety net, and we want to be on current Next *before* Phase 1 adds tenant middleware + tenant-aware caching (where Next 15's flipped fetch caching default is a silent footgun). Order: 14 → 15 (the bigger jump — async `cookies()`/`headers()`/`params`, fetch no longer cached by default, React 19) → run all 33 tests + manual smoke → 15 → 16 → re-run `npm audit` → unpin Vitest from v2 to current + jsdom from v25 to current as a follow-on.
-3. **Wire CI (GitHub Actions).** `.github/workflows/test.yml` running typecheck + Vitest + Playwright on every PR. Tests already mock the network so no real Supabase/Resend secrets needed in CI — only placeholder env vars so the dev server boots. Lands AFTER the Next upgrade so CI is testing the post-upgrade code, not 14.2.15.
-4. **Wire coverage gates.** Add `npm run test:coverage` script + thresholds in `vitest.config.ts` per Engineering-Standards §7 (90% `lib/`, 85% `app/api/`, 75% components-with-logic). Gate the CI job on coverage thresholds. Phase 0 only has `lib/validation.ts` (already 100%) so this is forward-looking — but it bites the first time Phase 1 code lands without tests, which is the whole point.
-5. **Generate `app/favicon.ico`.** Closes the last Lighthouse Best Practices console error (96 → 100). ~20 min, manual ICO-header wrap around a 32×32 PNG (sharp can't write ICO).
-6. **DNS flip `bohdiai.com` → this Vercel project** once 1–5 are clean on preview.
-7. **Phase-0-Spec.md sync.** Edit the spec to match what actually shipped. Needs Alex in the loop for the "is this scope creep or final design?" calls. Can land after DNS flip; not a launch blocker.
-8. **After launch lands → begin drafting Phase 1 spec.** Target: private beta mid-August 2026.
+Subscriptions is next.
 
-## Lessons banked from this session (do not repeat)
+---
 
-- **"If it has to be done eventually and benefits the app, it needs to be done."** Alex's standing rule. Stop reflexively deferring CVE upgrades, Node upgrades, coverage wiring, etc. Surface them, recommend, and act in the same session unless they're genuinely out of scope.
-- **Tests catch real bugs.** The BrowserDemo z-index bug and the dot button target-size bug both affected real users, not just tests. The test safety net pays for itself the day it lands.
-- **Decorative marketing art needs `aria-hidden` + axe `.exclude()`.** The two work in tandem: `aria-hidden` is honest semantics, `.exclude()` is honest measurement. Lighthouse won't honor either for color-contrast (sighted-user reasoning), and that's an accepted trade-off — not a thing to keep trying to fix.
-- **Windows orphan node processes block dev/test workflows.** TaskStop kills the wrapper shell but not the spawned children. Alex closed Claude Desktop and manually killed nodes mid-session to unstick. If port 3100/3000 hangs in future sessions, suspect orphan processes first.
-- **`process.env.X` fails Next/TS strict build.** Must use bracket notation: `process.env['X']`. Caught in `playwright.config.ts` during `npm run build`.
+## Open items still to be decided
 
-## Lessons banked from previous sessions (still active)
+Listed in full in the decisions log. The biggest ones:
 
-- **Read the Master Spec at session start, every session.** CLAUDE.md enforces this.
-- **Cite the spec before opining on architecture.** If I can't cite it, I'm guessing. Stop and re-read instead. CLAUDE.md enforces this.
-- **`replace_all` for color migration is dangerous when the search target also exists in the migration scaffold.** Define new tokens *after* sweeping the file, not before.
-- **Don't conflate "built it as a React component" with "built it as a reusable template."** Three single-file storefront components are marketing art, not a template library.
+- The Master Spec needs amendments at §2, §6.2, §6.3, §8, and §17 to match the decisions made today. None of those edits have been written.
+- What a Doer's storefront actually looks like (scheduling? portfolio? contact form? all of those?). Not decided.
+- How a multi-type tenant (Seller + Doer) renders on one storefront. Not decided.
+- What a niche schema is in practice (JSON, markdown, prompt template, database row?). Not decided.
+- The actual curated mood list. Not decided.
+- The audit-period policy for closed tenants.
+- The variations table structure (specific columns, types).
 
-## Files to know
+The Tech Arch Spec drafting will surface most of these as it progresses. They become "decide while drafting" moments.
 
-1. **Posy Lane Books cutoff fix.** The KidsStore demo was overflowing the BrowserDemo container on mobile + desktop (poster padding + h2 + chip strip too tall). Tightened in `globals.css`: poster padding 55→44 desktop / 48→36 mobile, h2 64→54 desktop / 38→32 mobile, cover image width 62→50% mobile, thumbs strip padding/gap/font reduced, `min-height: 0` on `.poster` so flex shrinks. Verified locally.
+---
 
-2. **Storefront token refactor.** Replaced raw hex inside `.store-sourdough` / `.store-tattoo` / `.store-kids` with scoped CSS custom properties at the top of each block (`--paper`, `--ink`, `--blood`, `--sky`, etc). Hit a real bug mid-flight: `replace_all` swept through the token *definitions themselves*, turning them into self-references (`--paper: var(--paper)`) and breaking the storefronts. Fixed by redefining all three palette blocks with literal hex values. Lesson: when using `replace_all` for hex → `var(--name)`, define the tokens *after* the replacement, not before. **NOTE:** this refactor turned out to be architecturally unnecessary (see point 4 below) but causes no harm and stays in place per Alex's call.
+## Files modified or created today (committed)
 
-3. **Stray hex audit.** Searched the rest of the codebase. Found ~15 hex literals in `app/opengraph-image.tsx`, `components/BrowserDemo.tsx`, `components/Community.tsx`, `components/HowItWorks.tsx`. These were NOT cleaned up because of point 4.
+- `app/page.tsx` — switched from force-dynamic to ISR (commit `3259c95`)
+- `package-lock.json` and `.npmrc` — regenerated lock without legacy peer deps, pinned the setting locally (commit `31e187a`)
+- `project-docs/Phase-1-Decisions-Log.md` — created, then rewritten with full context (in the evening session)
+- `project-docs/SESSION-BRIEF.md` — updated multiple times
 
-4. **Course correction — I was opining on architecture without reading the Master Spec.** Alex caught me framing the 3 demo storefronts as "seed templates" and inventing Phase 1 architecture by guessing. The actual Phase 1 architecture (Master Spec §6) is:
-   - Per-tenant design tokens in Supabase JSON, injected as CSS variables at render time
-   - AI-generated token values bounded by per-niche schemas (candle makers = warm tones, jewelry = cool tones)
-   - ~15–18 modular React component variants (3–4 hero variants, 3 grid variants, etc), composed per-tenant via tenant data
-   - Lead developer (me) builds the token schema + 5 foundational components; agents build remaining variants + niche schemas + design boundaries in parallel
-   - The 3 demo storefronts I built earlier are NOT seed templates — they're monolithic single-file marketing art with no Phase 1 architectural role
+## Files modified today (not yet committed)
 
-5. **Spec docs ported from .docx to .md.** Created [BohdiAI-Master-Spec.md](BohdiAI-Master-Spec.md) and [BohdiAI-Roles-Workflow.md](BohdiAI-Roles-Workflow.md) so I can load them at session start without docx extraction. The .docx files remain canonical.
+- `CLAUDE.md` — added the plain-English-in-chat hard rule
+- `project-docs/Phase-1-Decisions-Log.md` — full rewrite (the original 15-decision shorthand version was committed earlier in the day; this evening rewrite consolidates to 9 decisions with full context and is in the working tree)
+- `project-docs/Tech-Arch-Spec.md` — new file with tenants and tenant_members sections
+- `project-docs/SESSION-BRIEF.md` — this update
 
-6. **CLAUDE.md tightened.** Added a "Required reading at session start" list (CLAUDE.md → SESSION-BRIEF.md → Master Spec → Roles & Workflow → current Phase Spec) AND a hard rule: before opining on architecture, I must cite the relevant Master Spec section. If I can't cite it, I haven't earned the right to opine. Guessing already cost a session.
+Commit and push at end of session if Alex approves.
 
-## Open questions for next session
+---
 
-1. **Privacy + Terms:** Footer links are still `href="#"` placeholders. Waitlist already collects emails. Real GDPR-friendly pages or placeholder "Coming with launch"?
-2. **DNS flip:** When to point `bohdiai.com` → this Vercel project? Needs your Cloudflare access.
-3. **`.build` rebuild-effect direction:** Today the old infinite cycle was killed. Want a subtle 30s periodic re-trigger for the "watch your store rebuild" feeling, or keep the current one-shot fade-in? Earlier this session you said "refade sounds nice" but we didn't build it.
-4. **Daily Audit Q3 reframe:** Q3 ("design tokens, no hardcoded values") was the trigger for today's whole token detour. With the actual architecture in hand: Q3 should apply to Phase 1 *component variants* (which are token-driven by design), NOT to Phase 0 marketing artwork like the 3 demo storefronts. Worth a quick edit to Daily-Audit.md so future audits don't re-trigger the same misunderstanding.
+## Local environment gap (still open)
 
-## NEXT SESSION priorities (in order)
+The `.env.local` file still has the disabled legacy service_role Supabase key. Until Alex updates it (Supabase Dashboard → bohdi-ai → Project Settings → API Keys → copy the current Secret key into the `SUPABASE_SERVICE_ROLE_KEY=` line), Claude cannot run admin scripts against production Supabase from this machine. Not urgent — only matters when we need to do direct database operations outside the app.
 
-1. **Next.js major upgrade: 14.2.15 → 15.x → 16.x BEFORE DNS flip.** `npm audit` currently flags 24 advisories against `next@14.2.15` (1 critical, 3 high, 1 moderate; most are config-gated and we don't expose the vulnerable surface, but the count is real). Doing the upgrade now is *safer* than deferring: codebase is at its smallest, no live users, smoke tests now exist, and we want to be on current Next *before* Phase 1 adds tenant middleware + tenant-aware caching (where Next 15's flipped fetch caching default is a silent footgun). Order: 14 → 15 first (the bigger jump — async `cookies()`/`headers()`/`params`, fetch no longer cached by default, React 19), all tests green + manual smoke, then 15 → 16. Re-run `npm audit` after.
-2. **DNS flip `bohdiai.com` → this Vercel project** once the upgrade ships clean to preview.
-3. **After launch lands → begin drafting Phase 1 spec.** Target: private beta mid-August 2026.
+---
 
-## Lessons banked from today (do not repeat)
+## Lessons banked (do not repeat)
 
-- **Read the Master Spec at session start, every session.** CLAUDE.md now enforces this.
-- **Cite the spec before opining on architecture.** If I can't cite it, I'm guessing. Stop and re-read instead. CLAUDE.md now enforces this.
-- **`replace_all` for color migration is dangerous when the search target also exists in the migration scaffold.** Define new tokens *after* sweeping the file, not before. (Or use targeted edits instead of `replace_all`.)
-- **Don't conflate "built it as a React component" with "built it as a reusable template."** Three single-file storefront components are marketing art, not a template library. The Phase 1 template library is independent modular variants assembled per tenant via data.
+Several patterns surfaced this session that should not recur.
 
-## Files to know
+**The drift-through-faithful-restatement pattern.** Claude has been restating Alex's words back faithfully while embedding interpretation underneath. The interpretations don't show up in the readback, so Alex reads what looks like agreement and then the interpretations come out in implementation. Alex pointed to specific examples this session: adding "SBA 500-employee" reference Alex didn't invoke, inventing "restaurant POS systems" as an out-of-scope example Alex didn't give, picking specific interpretations of vague terms (deciding the magnet-maker's "special print processing" is a field on each product when it might be a workflow), declaring thresholds Alex didn't set (1-chair salon yes, 10-chair salon no), and turning Alex's "maybe" into "you want." The fix is to make interpretations visible before acting — list the gaps as explicit questions rather than folding them into a polished response.
 
-- `_design-mocks/hero-atmospheric.html` — source-of-truth mock, frozen reference
-- `app/page.tsx` — wires the 10 sections into the Scene shell
-- `app/layout.tsx` — fonts + skip-to-content + JSON-LD
-- `app/globals.css` — atmospheric backdrop + 3 storefront stylesheets + keyframes
-- `app/privacy/page.tsx` + `app/terms/page.tsx` — legal pages, shipped this session
-- `app/icon.svg` — brand B favicon (modern browsers; legacy `/favicon.ico` still 404s)
-- `tailwind.config.ts` — design tokens
-- `components/` — 16 files (10 sections + Scene + Embers + Rotator + Typewriter + SectionKicker + BrowserDemo)
-- `components/storefronts/` — SourdoughStore + TattooStore + KidsStore (marketing art, NOT seed templates)
-- `lib/validation.ts` + `lib/validation.test.ts` — waitlist/resend zod schemas + 9 unit tests
-- `e2e/waitlist.spec.ts` + `e2e/browser-demo.spec.ts` + `e2e/a11y.spec.ts` — 15 Playwright specs
-- `vitest.config.ts` + `vitest.setup.ts` — unit test harness
-- `playwright.config.ts` — desktop + mobile projects, webServer launches dev on port 3100
-- `scripts/compress-portrait.mjs` + `scripts/download-storefronts.mjs` — image pipeline (reproducible)
-- `project-docs/Styling-Conventions.md` — rank-2 operating doc (Tailwind + atmospheric tokens)
-- `project-docs/BohdiAI-Master-Spec.md` — **rank-2 product spec** (.docx is canonical)
-- `project-docs/BohdiAI-Roles-Workflow.md` — **rank-2 process doc** (.docx is canonical)
-- `project-docs/Phase-0-Spec.md` — Phase 0, shipped (design has evolved past it — sync edit pending)
-- `project-docs/Approval-Policy.md` + `Engineering-Standards.md` — still authoritative
-- `project-docs/Daily-Audit.md` — the 19-question audit; Q3 reframed this session
+**Asking "where should I start" when Claude should drive.** Claude is the Lead Developer per the Master Spec and Roles-Workflow. Alex is the founder. He sets vision and approves. He does not pick which database table to draw first. Repeatedly asking him for direction on technical implementation decisions inverts the roles. Alex called this out specifically and it should not recur — when there's a technical decision within spec boundaries, propose and proceed; ask only when ambiguity is genuinely product-level.
 
-## Operational notes (unchanged)
+**Treating suggestions as decisions.** When Alex floats an idea ("maybe we should build niche schemas first," "if they come back after six months they would need to request a restore"), the right move is to engage with the idea on its merits, not to immediately commit it to the spec. Tentative thoughts stay tentative until explicitly committed.
 
-- **Vercel CLI installed and linked** to `alex-ouellet-s-projects/bohdiai`
-- **GitHub repo:** https://github.com/AlexSOuellet/bohdiai
-- **Live preview:** https://bohdiai.vercel.app
-- **Supabase:** us-east-1, `bohdi-ai`, secret-key system
-- **Stack:** Next.js 14.2.15 · Tailwind · TypeScript strict · Supabase · Vercel · Resend · Cloudflare
+**Plain English in chat.** The structured-list reflex is a documentation habit and belongs in `.md` files, not chat. Alex asked for plain English multiple times this session. The CLAUDE.md change should prevent this from recurring in new sessions.
 
-## Don'ts (working preferences, unchanged)
+**The Master Spec is partial.** Many obvious e-commerce features (customer accounts, gift cards, coupons, shipping labels, POD integration) were on Alex's mental list but not in the documented spec. A new session can only see what's documented. That's why the decisions log and the Tech Arch Spec are now the authoritative sources for everything captured today.
 
-- Don't use the AskUserQuestion popup tool. Ask inline.
-- Don't use git worktrees. Work in main tree on a feature branch when needed.
-- Don't paste secrets in chat.
-- Don't ship subtle motion — Alex wants visible (but no theater — cart-ticker is the cautionary tale).
-- Don't build desktop-only — mobile-first.
-- `overflow: clip` (not `hidden`) for atmospheric clipping — `hidden` creates a Chrome scroll container that breaks anchor links.
-- Styling decisions: Styling-Conventions.md wins.
-- Keyframes used by `@layer components` rules: declare in `globals.css`, NOT `tailwind.config.ts` (Tailwind won't emit them otherwise).
-- Don't invent architecture. Cite the Master Spec or stop and ask.
+---
+
+## Previous session summary (kept for context)
+
+Earlier sessions covered Phase 0 launch — the marketing site at bohdiai.com, double-opt-in waitlist, founder cap behavior, the full Next.js + Vercel + Supabase + Resend + Cloudflare stack, CI workflow setup, Node 22 + Next 16 + React 19 upgrade chain, design system port from the Claude Design output. Phase 0 is done and live. Phase 1 planning began today.

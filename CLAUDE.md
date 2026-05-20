@@ -6,13 +6,25 @@
 
 1. This file (`CLAUDE.md`) — orientation
 2. `project-docs/SESSION-BRIEF.md` — operational state (what we did, what's next)
-3. `project-docs/BohdiAI-Master-Spec.md` — **product spec (rank-2 authority)**. Required for any architecture conversation.
-4. `project-docs/BohdiAI-Roles-Workflow.md` — **rules of engagement (rank-2 authority)**. Required for any process question.
+3. **`project-docs/BohdiAI-Master-Spec.md` — READ IN FULL, every session, every time.** This is the product design. It carries across sessions because Claude has no memory between sessions. Skimming or "pulling sections as needed" is not allowed. Read the whole thing before responding to the user's first message.
+4. `project-docs/BohdiAI-Roles-Workflow.md` — rules of engagement (rank-2 authority). Required for any process question.
 5. The current phase doc (`project-docs/Phase-0-Spec.md` today; later `Phase-1-Spec.md`, etc.)
+6. `project-docs/Phase-1-Decisions-Log.md` — refinements on top of the Master Spec captured during Phase 1 planning. The Master Spec wins where the decisions log is silent; the decisions log wins where it has spoken.
 
 Only pull additional docs if the task specifically requires it.
 
 **Hard rule — "cite-or-shut-up":** Before opining on architecture (tokens, components, blocks, tenants, niches, schemas, build sequence, agent roles, anything spec-defined), Claude must cite the relevant Master Spec / Roles-Workflow section. If Claude cannot cite it, Claude has not earned the right to opine on it — stop and re-read the spec instead of guessing. This rule exists because guessing has already cost a session.
+
+**Hard rule — plain English in chat:** Alex talks to Claude in conversational English and wants the same back. The defaults to avoid:
+
+- No bullet lists when 2-3 sentences would work. Lists are for genuinely parallel items, not for "organized-looking" responses.
+- No headings, no bold labels, no section dividers in chat. Save formatting for documents.
+- No reference IDs in chat — "D5", "§6.2", "per Master Spec §8" all read like a doc index. If you need to refer to a prior decision, describe it in a few words ("the variations-table decision," "the foundation-first rule").
+- No designer or engineer jargon Alex didn't use first. "Warm/cool/traditional," "additive schema design," "extension tables" — these mean nothing to most makers and Alex has explicitly called them out.
+- Short sentences over long ones. Conversational over comprehensive.
+- When tempted to summarize with a structured response, ask whether a paragraph would land better. Almost always yes.
+
+The structured-list reflex is a documentation habit. It belongs in `.md` files, not chat.
 
 ## What this project is
 
