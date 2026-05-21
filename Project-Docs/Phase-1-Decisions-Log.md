@@ -157,6 +157,52 @@ D1 (foundation-first) governs all of these — the database has to absorb every 
 
 ---
 
+## 2026-05-21
+
+### D10. Paid tiers include a 7-day trial, card required
+
+Freemium is too restrictive to function as a trial — it's essentially a landing page. Makers can see how a BohdiAI site gets built but can't actually run a business on it (no products, no commerce, no editor). Asking someone to enter a credit card to experience the actual product is too much friction, especially for an audience that's been burned by Etsy fees.
+
+When a maker picks Basic or Pro at onboarding, they get a 7-day trial of that tier with deferred payment. Card on file is required to start the trial. Auto-charge runs on day 8 unless they cancel.
+
+Three calls bundled into this decision:
+
+**Card required.** No card, no trial. Card-required converts dramatically better than no-card trials because the day-8 charge is the default and cancelling requires action. The framing in the UI is soft — "no charge today, cancel anytime before [date]" — not aggressive.
+
+**One trial per tenant, forever.** If a tenant trials Pro for 7 days, downgrades to Basic on day 4, they don't get a fresh Basic trial. If they cancel mid-trial and come back six months later, no new trial. Otherwise serial trial-hopping turns into a free permanent Pro tier.
+
+**Seven days.** Long enough for a maker to load products, play with the editor, and see what the dashboard does over a weekend plus weekdays. Short enough to force the decision. Shopify settled on 3 after years of testing; Squarespace runs 14. Seven splits the difference and matches the rhythm of an evening or weekend project.
+
+The Tech Arch Spec subscriptions table (§3) already has `trial_start`, `trial_end`, and a `status` value of `trialing` — no schema change needed. The behavior lives in the Stripe subscription creation call (`trial_period_days: 7`) and in the webhook handler that updates the subscription row.
+
+### D11. Niche content lives in files, blocks library lives in code
+
+Two architectural calls bundled together because the reasoning is the same. Both override what the Master Spec implied (database tables editable from the founder admin).
+
+**Niches as markdown files.** Niche content is prose the AI consumes — descriptions of how candle makers describe their products, what tone resonates for tattoo artists, common variations sellers in this niche use. Prose belongs in markdown, not JSON-in-a-database-column. Files live at `/content/niches/<slug>.md` with YAML frontmatter for structured metadata and markdown body for prose. Loaded at build time into a typed manifest. Niches change rarely (a few at launch, a few more over time), so the "every change is a deploy" cost is near zero. PR review is better quality control than admin-form-input anyway.
+
+**Blocks library as code.** Each block is a React component file whose exported metadata constant describes the block (key, section type, content schema, tier required, tenant type fit, status). A build script collects every meta export into a single typed manifest the AI reads. Keeping component and metadata in the same file eliminates the drift bugs that come from storing metadata separately in a database — a row for a deleted component is a runtime crash, a component without a row is invisible to the AI.
+
+The unifying principle: things that are tightly coupled to code, change rarely, and are platform-wide rather than tenant-specific belong in code or files, not the database. Things that are tenant-specific, change at runtime, or need row-level security stay in the database. Niche schemas and the blocks catalog hit all the "belongs in code" criteria.
+
+What this costs: the founder admin screen for niche management implied by Master Spec §11 becomes "list of niches in repo" rather than an editable form. Adding niches and blocks happens by opening a PR, not by inserting database rows. Cowork agents adding niches or block variants do it the same way. This is a workflow change, not an engineering downside — PR review is a feature.
+
+Reversible if we're wrong: migrating markdown files to a database table is an afternoon of work (parse files, INSERT rows, repoint the loader). Nothing about the file-based approach locks us in.
+
+The Tech Arch Spec §6 and §7 reflect this — both sections describe where the content lives and why, without database tables.
+
+### D12. Shipments as a first-class table from day one
+
+Fulfillment tracking lives in its own table at launch, not as columns on the orders table. Every order has at least one shipments row; multi-shipment orders (a maker splits a five-item order into two boxes shipped on different days) work the day a maker needs them, with no migration.
+
+The alternative was keeping tracking columns on the orders table for the simple "one shipment per order" launch case and adding a shipments table later when multi-shipment became a real need. That would have created a dual-source-of-truth period — some orders tracked via columns on the order row, some via shipments rows, with application code reading from both during a transitional period.
+
+Doing it now is free because the spec hasn't been built. Doing it later would have required a real data migration with real customer data. Foundation-first applies — the schema absorbs every future feature additively, and shipments was the one place in the audit where deferring would have forced a costly migration.
+
+The Tech Arch Spec §14 now includes shipments and shipment_items tables. The orders table no longer carries `tracking_number`, `tracking_url`, `shipping_method`, `shipped_at`, or `delivered_at`. Order-level status values `shipped` and `delivered` are aggregate states derived from shipment states.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.
