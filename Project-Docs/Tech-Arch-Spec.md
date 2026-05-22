@@ -23,6 +23,12 @@ create table tenants (
   tier             text not null check (tier in ('freemium', 'basic', 'pro')),
   types            text[] not null check (types <@ array['seller', 'doer']::text[] and array_length(types, 1) >= 1),
   primary_niche    text,
+  niche_from_list  boolean not null default true,
+  secondary_niche  text,
+  niche_description text,
+  specializations  text[] not null default '{}'::text[],
+  specialization_notes text,
+  inspiration_urls text[] not null default '{}'::text[] check (array_length(inspiration_urls, 1) is null or array_length(inspiration_urls, 1) <= 3),
   status           text not null default 'active' check (status in ('active', 'suspended', 'closed')),
   stripe_account_id text,
   square_merchant_id text,
@@ -54,7 +60,13 @@ create index tenants_status_idx on tenants (status) where deleted_at is null;
 - **`business_name`** — the display name shown on the storefront. Can be edited freely.
 - **`tier`** — Freemium, Basic, or Pro. Drives feature gating across the platform.
 - **`types`** — array of Seller and/or Doer. A restaurant gets `{seller, doer}`. A plumber gets `{doer}`. A magnet maker gets `{seller}`. Enforced by check constraint to only allow these two values, with at least one required.
-- **`primary_niche`** — text label like `'candle_maker'` or `'tattoo_artist'`. Used as input to AI generation and analytics. Not a foreign key — niches are not a hard-coded table because new niches get added without code changes per the spec. A separate niche-reference table can be added later if we ever need to enforce values.
+- **`primary_niche`** — text label like `'candles'` or `'tattoo_artist'`. Used as input to AI generation and analytics. When the tenant picked a niche from the onboarding list, this is the slug from the niche file. When they picked Other, this is whatever free-text name they typed. Not a foreign key — niche files live in the repo, not a table.
+- **`niche_from_list`** — true if the tenant picked from the onboarding list (and `primary_niche` is therefore a known slug with a niche file), false if they picked Other (and `primary_niche` is free-text). Lets us run clean reports on what Other-pickers are actually doing, so we can prioritize which niche file to write next.
+- **`secondary_niche`** — when the tenant picked Other and identified a closest secondary niche from the list, this holds that niche's slug. The AI uses the secondary niche file as grounding context for adjacent Other-pickers. Null for list-picked tenants. Also null for novel-product tenants (the Other-pickers who took the "none of these are close" path into the D15 novel-product flow).
+- **`niche_description`** — when the tenant picked Other, this holds the short free-text description they typed about what they make. The AI uses it to specialize from the secondary niche file (adjacent path) or as the primary grounding input (novel-product path). Null for list-picked tenants.
+- **`specializations`** — text array of structured sub-identities the tenant picked from the onboarding chip picker. The chip values come from the niche file's `Common specializations and variations` section. For a Music Teacher tenant this ends up as `{piano, voice}`. For a Tutor it might be `{math, sat_prep}`. For a Photographer it might be `{wedding, newborn}`. Used as structured AI input at generation and for analytics ("how many music teachers teach piano"). Empty array for tenants who didn't pick any chips.
+- **`specialization_notes`** — free-text field for anything the tenant typed at onboarding that wasn't in the chip list. The music teacher who teaches Tuvan throat singing types it here. The AI reads both the structured chips and the notes when generating. Null when the tenant didn't add anything beyond the chips. Only populated for list-picked tenants; Other-pickers use `niche_description` for the equivalent concept.
+- **`inspiration_urls`** — optional list of up to three URLs the tenant pastes at onboarding pointing to sites they admire, competitors they want to feel adjacent to, or any visual reference that inspires them. The AI uses these alongside the mood pick and the tenant's own assets when generating the storefront, so the tenant's bias goes into their own site without biasing the platform's niche files. Empty array is fine — the niche file and mood pick generate a complete site without any reference URLs.
 - **`status`** — active, suspended (admin-initiated, billing or abuse), or closed (tenant initiated). Suspended tenants' storefronts return a "this store is currently unavailable" page; their data is preserved.
 - **`stripe_account_id`** — the maker's own Stripe account ID, captured during the guided payment setup walkthrough. Null until they connect. This is their account, not a Stripe Connect connection — BohdiAI is not in the money flow.
 - **`square_merchant_id`** — same idea, for makers who use Square.
@@ -433,77 +445,107 @@ A tenant's admin can read all history rows for their tenant. No tenant reads ano
 
 ---
 
-## 6. Niche content (file-based, not in database)
+## 6. Niches
 
-Per D11, niche schemas do not live in the database. They live as markdown files in the application repo at `/content/niches/`, one file per niche, loaded at build time and cached at runtime.
+Per D17, niches live in a dedicated database table — not as markdown files in the repo, and not implied as a sub-structure of the tenants table. Each niche is one row holding its identity, classification, prose body the AI reads, and lifecycle status.
 
-This section is included in the Tech Arch Spec because the architecture is incomplete without it — a reader looking for "where does niche content live?" needs to find the answer here. The shape and rationale matter even though no database table backs it.
+### 6.1 Table definition
 
-### 6.1 Where it lives
+```sql
+create table niches (
+  slug              text primary key,
+  display_name      text not null,
+  tenant_type_fit   text[] not null check (tenant_type_fit <@ array['seller', 'doer']::text[] and array_length(tenant_type_fit, 1) >= 1),
+  aliases           text[] not null default '{}'::text[],
+  related_niches    text[] not null default '{}'::text[],
+  status            text not null default 'draft' check (status in ('draft', 'in_review', 'approved', 'retired')),
+  body_markdown     text not null,
+  created_at        timestamptz not null default now(),
+  updated_at        timestamptz not null default now(),
+  created_by        uuid references tenant_members(user_id),
+  last_updated_by   uuid references tenant_members(user_id),
+  approved_at       timestamptz,
+  approved_by       uuid references tenant_members(user_id)
+);
 
-Each niche is a single markdown file at `/content/niches/<slug>.md`. The slug is the same identifier used in the `tenants.primary_niche` column — `candle_maker.md`, `tattoo_artist.md`, `dog_groomer.md`, `plumber.md`.
-
-The file has YAML frontmatter for structured metadata and a markdown body for prose content the AI consumes.
-
-```markdown
----
-slug: candle_maker
-display_name: Candle Maker
-tenant_type_fit: [seller]
-status: active
-search_keywords:
-  - handmade candles
-  - soy candles
-  - scented candles
-common_variations:
-  - scent
-  - size
-  - wax_type
-block_preferences:
-  - hero_centered_overlay
-  - product_grid_three_column
-  - about_story_left
----
-
-## Product description guidance
-
-Candle products are typically described with scent profile, burn time, and the atmosphere they create. Customers care about how the candle will feel in their home, not just the technical specs...
-
-## About page guidance
-
-Candle makers often have origin stories rooted in self-care, gift-giving, or a creative outlet...
+create index niches_status_idx on niches (status);
+create index niches_tenant_type_fit_idx on niches using gin (tenant_type_fit);
+create index niches_aliases_idx on niches using gin (aliases);
 ```
 
-### 6.2 How it gets used
+### 6.2 Column-by-column
 
-A loader function at build time reads every file in `/content/niches/`, validates the frontmatter against a Zod schema, and emits a typed manifest. Runtime code imports the manifest; no file I/O happens per request.
+- **`slug`** — the niche's primary key. A short lowercase string with underscores (`candles`, `tattoo_artist`, `dog_groomer`). Stable and never reused; renaming a niche means creating a new row with a new slug and retiring the old one.
+- **`display_name`** — the customer-facing label shown in onboarding ("Candle Maker", "Tattoo Artist", "Dog Groomer"). Can be edited freely; it's just a label.
+- **`tenant_type_fit`** — array of seller and/or doer. A candle maker is seller. A tattoo artist is both. A plumber is doer. Drives which onboarding paths show this niche as a choice.
+- **`aliases`** — array of alternative names a maker might use when searching the onboarding list ("candle making", "soy candles", "candle company" all map to the candles slug). Search and autocomplete on the onboarding niche picker check both display_name and aliases.
+- **`related_niches`** — array of slugs the AI uses for cross-sell expansion suggestions later in the dashboard and for whoever authors related niches subsequently. Not a fallback mechanism — onboarding only offers niches in approved status.
+- **`status`** — lifecycle state. `draft` is in progress (an agent or human just started writing it). `in_review` is ready for a human approval. `approved` is live and reachable from onboarding and AI generation. `retired` is retired — still readable for tenants who picked it before, not offered to new tenants.
+- **`body_markdown`** — the prose body the AI reads when generating sites and content for a tenant in this niche. The content shape matches the section template (what the business does, brand exemplars across the range, who the customers are, how they talk about their products, common variations sellers use, what customers ask before buying, visual direction range, what tends to surface on the storefront, what to avoid, adjacent niches).
+- **`created_at`**, **`updated_at`** — standard timestamps. `updated_at` maintained by a trigger.
+- **`created_by`**, **`last_updated_by`** — the user (founder, agent, or staff member) who created the row and who last touched it. Both reference tenant_members because that's where user identity lives.
+- **`approved_at`**, **`approved_by`** — when and by whom the niche was last moved into `approved` status. Cleared if the row is moved back to draft or in_review.
 
-When the AI generates a product description, it loads the relevant niche's prose sections from the manifest and combines them with its base prompt. When onboarding picks design starting points, it reads the `block_preferences` array. When the niche picker renders in onboarding, it reads `display_name` and `tenant_type_fit` from the manifest.
+### 6.3 Why these choices
 
-The `tenants.primary_niche` column holds the slug. If a tenant references a niche slug that doesn't exist in the manifest (because we removed or renamed a file), the application falls back to a generic default niche rather than erroring. Validation at build time catches this for known tenants; runtime fallback handles edge cases.
+**Status flag, not a separate publishing model.** The same row holds the draft, in_review, approved, and retired states. The AI generation path filters on `status = 'approved'`. The admin curation UI surfaces drafts and in_review rows for editing and approval. No separate "published_niches" table, no merge step — the status column is the source of truth.
 
-### 6.3 Why files, not a table
+**Slug as primary key, not a uuid.** Slugs are short, stable, human-readable, and used everywhere niches are referenced (tenants.primary_niche, tenants.secondary_niche, related_niches array). A uuid would force every reference to be opaque; a slug self-documents.
 
-Niches are prose content the AI reads. Authoring prose in markdown is materially better than authoring in JSON-in-a-database-column — natural format, readable diffs, PR review workflow, Git history for free. Niches change rarely (add a few at launch, a few more as you grow, then mostly leave alone), so the "every change is a deploy" cost is near-zero.
+**Aliases as a column array, not a join table.** Aliases are search hints, not first-class entities. They never get queried for their own properties. Storing them as a Postgres text array with a GIN index keeps lookups fast and the schema lean.
 
-The build process is the validator. A markdown file with malformed frontmatter fails the build, not production. A niche referenced by code but missing a file fails the build. Drift between code and content is structurally impossible.
+**Related niches as an array of slugs, not a join table.** Same reasoning. The list is short (typically two to four neighbors), it's queried only to drive cross-sell hints and authoring guidance, and a join table would be over-engineering.
 
-The Master Spec §11 implied a founder-admin screen for niche management. That trade is real: with files, "managing niches" means opening a PR, not editing a textarea. The PR review workflow is actually better quality control, and the workflow already runs through me. If a non-technical user ever needs to add niches from a web UI, we revisit. Migration to a database table would be an afternoon of work.
+**body_markdown as text, not jsonb or structured columns.** The section template lives in the writing convention, not the schema. Storing the body as one markdown column keeps authoring natural and makes the AI's job simple — it reads the prose the way a person would. If we ever need structured queries against body sub-parts, we can layer a parsed cache on top without rewriting the storage.
 
-### 6.4 What's NOT here
+**Approval audit columns.** Approval is the quality gate. Knowing who approved a niche and when matters for accountability, especially as Cowork agents start producing volume.
 
-- **Per-tenant niche customization.** Niches are shared platform content. Tenant-specific behavior lives in their tenant rows (design_tokens, listings, page_blocks).
-- **Niche-specific code branches.** Nothing in code says `if (niche === 'candle_maker')`. The niche file provides data; generic code consumes it.
+### 6.4 Row-level security
+
+Niches are platform-wide content, not tenant-scoped. RLS is set so anonymous reads are restricted to approved rows (the storefront and onboarding read them), and writes are restricted to staff and approved Cowork agents (identified by a role on tenant_members). Tenants do not read or write the niches table directly.
+
+### 6.5 Version history
+
+A separate `niche_versions` table holds row history — every edit creates a snapshot row capturing the prior state of the niche, who made the change, what changed, and an optional reason note. Designed for the niche-edit use case rather than inherited from git: searchable by editor, queryable by date range, tied to the same user identities as the rest of the platform.
+
+```sql
+create table niche_versions (
+  id                uuid primary key default gen_random_uuid(),
+  niche_slug        text not null references niches(slug) on delete cascade,
+  snapshot          jsonb not null,
+  changed_at        timestamptz not null default now(),
+  changed_by        uuid references tenant_members(user_id),
+  change_reason     text
+);
+
+create index niche_versions_slug_changed_idx on niche_versions (niche_slug, changed_at desc);
+```
+
+The snapshot is the full niche row as it existed before the change. Restoring a prior version is a write of the snapshot back into the niches row.
+
+### 6.6 The Other-path interaction
+
+Per D16, an Other-picking tenant identifies a closest secondary niche and types a description. The secondary niche is a slug from the niches table — they pick from approved rows.
+
+Per D15, a truly novel-product Other-picker who can't find a closest secondary triggers the novel-product flow. When that flow runs, the platform may write a draft niche row to capture the maker's description plus whatever grounding the AI built from their answers. That row sits in `draft` status, invisible to other tenants, until a human moves it through review and approval. If approved, future makers who type variants of the same niche name find it in the list.
+
+### 6.7 What's NOT in this table
+
+- **Per-tenant niche customization.** Niches are shared platform content. Tenant-specific information (the maker's own description, their inspiration URLs) lives on the tenants row.
+- **Niche-specific code branches.** Nothing in code says `if (niche === 'candles')`. The niche row provides data; generic code consumes it.
 - **Product field definitions.** Killed by D4. Sellers define their own variations.
-- **Hard design constraints.** Killed by D6. Design is mood-driven; niche preferences are starting hints only.
+- **Hard design constraints.** Killed by D6. Design is mood-driven; niche content provides starting hints only.
+- **AI generation cost or telemetry data.** Lives in a separate telemetry table when we build it.
 
 ---
 
-## 7. Blocks library (code-based, not in database)
+## 7. Blocks and widgets libraries (code-based, not in database)
 
-Per D11, the blocks library does not live in the database. Each block is a React component file in the repo whose exported metadata is collected at build time into a single manifest the AI and the editor read.
+Per D11 (blocks half) and D13, neither the blocks library nor the widgets library lives in the database. Each block and each widget is a React component file in the repo whose exported metadata is collected at build time into a single manifest the AI and the editor read.
 
-Same reasoning as niches: catalog metadata that's tightly coupled to component code belongs with the component code, not in a separate database table that can drift from the implementation.
+Reasoning: a block is two halves of the same thing — the React component you see on the page and the metadata that describes it. If one half is missing or out of sync, the platform breaks when it tries to render that block. Keeping metadata and component in the same file eliminates that drift bug. (Niches do not have a code half and therefore do not need code-based storage; they live in the database per D17. Blocks and widgets do have a code half and stay in code.)
+
+Blocks and widgets are two parallel catalogs, not one. Blocks are visual containers with declared slots; widgets are the functional pieces that fill those slots. The AI picks blocks for visual feel and threads widgets into their slots for function. See D13 for the rationale.
 
 ### 7.1 Where it lives
 
@@ -555,11 +597,62 @@ Deprecation works the same way as the table version would: the `status` field in
 
 The `page_blocks.block_key` column holds a string matching a `meta.key` somewhere in the manifest. There is no database foreign key (you can't FK to a code constant), so validation happens at the application layer on write: the writer checks the key against the manifest and rejects if it doesn't exist or is in `draft` status. The catalog-immutable-keys rule still applies — once a block ships, its key never changes, only new keys get added.
 
-### 7.5 What's NOT here
+### 7.5 What's NOT here (blocks)
 
 - **Per-tenant block customization.** Same as niches — tenants compose from the library, they don't fork it.
 - **Block instance content.** Lives in page_blocks. The block file describes the class; instances are rows.
 - **Compatibility rules between blocks.** Not enforced today. If we ever need them, separate manifest, same pattern.
+
+### 7.6 Where widgets live
+
+Each widget is a TypeScript file at `/widgets/<widget_type>/<key>.tsx`. The file exports both the React component and a typed metadata constant, mirroring blocks.
+
+```typescript
+// /widgets/booking_calendar/booking_calendar_v1.tsx
+export const meta = {
+  key: 'booking_calendar_v1',
+  widget_type: 'booking',
+  display_name: 'Booking calendar',
+  description: 'A calendar interface that lets a customer pick an available time slot for a Doer listing and submit a booking request. Reads availability from the listing; writes a booking record on submit.',
+  tier_required: 'basic',
+  tenant_type_fit: ['doer'],
+  slot_shape: 'primary',
+  content_schema: z.object({
+    listing_id: z.string().uuid(),
+    heading: z.string().optional(),
+    confirmation_message: z.string().optional(),
+  }),
+  preview_image_url: '/widget-previews/booking_calendar_v1.png',
+  status: 'active',
+  introduced_at: '2026-07-15',
+} as const;
+
+export function BookingCalendarV1(props: z.infer<typeof meta.content_schema>) {
+  // component code
+}
+```
+
+`widget_type` groups widgets that serve the same functional purpose (booking, contact, price, cta, gallery, etc.). `slot_shape` declares what kind of slot the widget fits — `primary` for large section-sized slots, `cta` for button-sized slots, `inline` for small text-adjacent slots, and so on. Block content_schemas declare slots of matching shapes; the AI matches by shape.
+
+### 7.7 How widgets get used
+
+The same build script that scans `/blocks/**/*.tsx` scans `/widgets/**/*.tsx`, collects every meta export, and emits a typed `widgets-manifest.ts` alongside the blocks manifest. The AI reads both manifests when generating a page: pick blocks for the visual layout, pick widgets for the functional fills, write the resulting composition into page_blocks rows.
+
+Validation is the same as blocks. Every meta object parses through a master Zod schema, every key is unique within the widgets manifest, every active widget has an importable component, every widget referenced in seed data exists. Build fails on any mismatch.
+
+### 7.8 How blocks and widgets connect
+
+A block's `content_schema` declares its slots — named fields with shapes. Some fields hold literal content (a headline string, an image URL); others hold widget references — a tuple of `{ widget_key, widget_content }` matching a widget in the manifest whose `slot_shape` matches the slot.
+
+A `hero_split_screen_v1` block might declare a `cta` field of widget-reference shape `cta`. The page_blocks row for that hero stores either a literal `{ cta_text, cta_url }` for a simple link, or a widget reference like `{ widget_key: 'book_now_button_v1', widget_content: { listing_id: '...' } }` for a booking CTA. The renderer reads the content, sees the widget reference, dynamically imports that widget component, and renders it in the slot.
+
+Compatibility is shape-based, not enumerated. A new widget with `slot_shape: 'cta'` automatically fits every block declaring a `cta` slot, without changing any blocks. A new block with a `primary` slot automatically accepts every `primary`-shape widget. No per-block whitelist, no migration when widgets are added.
+
+### 7.9 What's NOT here (widgets)
+
+- **Per-tenant widget customization.** Same as blocks — tenants pick from the library, they don't fork it.
+- **Widget instance content.** Lives in page_blocks alongside the host block's content.
+- **Cross-widget composition rules.** Not modeled today. If we ever need them, separate manifest, same pattern.
 
 ---
 

@@ -17,7 +17,7 @@
 5. Onboarding Flow
 6. Design System (Tokens, Components, Uniqueness)
 7. Commerce & Payments
-8. Niche Specialization (Collections & Schemas)
+8. Niche Specialization
 9. Market Mode
 10. Tenant Dashboard (Maker Experience)
 11. Founder Admin
@@ -52,13 +52,21 @@ BohdiAI is intentionally not limited to crafters. While artisans and makers are 
 
 ## 2. Target Audience
 
-**The Kitchen Table Maker** — Makes something beautiful but has no online presence. Lowest possible barrier to entry.
+BohdiAI is for businesses with one to five people running them. Crafters are the bulk of the audience, but the platform also supports bakers, electricians, plumbers, restaurants, tattoo artists, dog groomers, photographers, and similar very-small businesses.
 
-**The Craft Fair / Popup Seller** — Already selling in person. Has a table at the local market, maybe a Venmo and a notebook. Between shows, their business does not exist online.
+Every BohdiAI tenant is a Seller, a Doer, or both. A Seller sells things — products, digital items, gift cards. A Doer does things for customers — services, classes, appointments, events, contractor work. Multi-type is normal: a restaurant sells food and takes reservations; a tattoo artist sells merch and books appointments.
 
-**The Frustrated Etsy / Platform Lister** — Tried Etsy and it did not work. Too much competition, too many fees, no control. Wants their own store on their own terms.
+**The Kitchen Table Maker** — Makes something beautiful but has no online presence. Lowest possible barrier to entry. (Seller.)
 
-**Service Providers (future)** — Dog groomers, photographers, tutors, personal chefs, cleaning services. Anyone who needs a professional online presence to generate leads.
+**The Craft Fair / Popup Seller** — Already selling in person. Has a table at the local market, maybe a Venmo and a notebook. Between shows, their business does not exist online. (Seller.)
+
+**The Frustrated Etsy / Platform Lister** — Tried Etsy and it did not work. Too much competition, too many fees, no control. Wants their own store on their own terms. (Seller.)
+
+**The Service Provider** — Tattoo artists, plumbers, photographers, dog groomers, tutors, personal chefs. Needs a professional online presence to generate leads and, depending on the trade, book appointments or display a portfolio. (Doer.)
+
+**The Hybrid Business** — Restaurants, bakeries with classes, jewelry makers who also do custom commissions. Sells things and does things. (Seller + Doer.)
+
+BohdiAI is **not** for businesses with 500-product catalogs, manufacturers with bills-of-materials and lot tracking, or industries that need a dedicated industry tool (full restaurant POS, HVAC dispatch, salon scheduling at scale). A specific business whose workflow doesn't fit the standard build is a paid add-on, not an automatic onboarding result.
 
 **What they have in common:** They are doers first. They did not get into this to learn web design, SEO, or payment processing. BohdiAI meets them where they are and makes the business side easy.
 
@@ -157,35 +165,43 @@ Every visual choice is stored in the Supabase database as a JSON block of design
 
 ### 6.2 AI-Generated Variation
 
-At onboarding, the AI does not just generate content. It **generates a unique set of design tokens within the niche's defined boundaries.** Two candle makers always feel warm and organic, but one gets amber and cream with rounded corners and a serif header, another gets terracotta and linen with sharper edges and a different serif.
+At onboarding, the AI generates a unique set of design tokens for the tenant. The primary input is **mood**, picked by the customer from a curated list — evocative phrases like "dark and stormy," "rustic," "warm and cozy," "summer afternoon," "autumn landscape." The mood is concrete human language, not abstract designer terms like "warm," "cool," "traditional," or "modern."
 
-Niche boundaries define the acceptable range of values for each craft category. Colors for candle makers stay in the warm range (ambers, honeys, terracottas). Jewelry designers get cool tones and clean sans-serifs. Woodworkers get earthy palettes. The variation is constrained enough to always look good, diverse enough that no two stores are identical.
+The customer's own assets matter more than the niche. Their product photos, any existing brand, references they admire — these feed the AI alongside the mood pick and produce a design that fits the business rather than fitting the stereotype of the niche. An occult candle maker doesn't get amber-and-honey just because they're a candle maker; they get a palette that matches the mood they picked.
+
+Niche knowledge is one input among several, not a constraint. The AI uses niche context to make sensible defaults — what kinds of products this seller likely shows, what tone resonates with their customers — but the customer can override anything.
+
+The result: every storefront feels intentionally designed for the specific maker, not for an abstract category.
 
 ### 6.3 Modular Component Assembly (The Structure)
 
-BohdiAI does not just swap colors. It changes the structural arrangement of the page. Multiple polished React component variants exist for each section:
+BohdiAI does not just swap colors. It changes the structural arrangement of the page. Each section type (hero, product grid, about, footer, product detail, and others) has many polished React component variants, with more added over time. The lead developer builds the first foundational variant of each type as the reference pattern; Cowork agents replicate the pattern to add additional variants.
 
-- **Hero sections:** 3–4 variants (split-screen, centered overlay, text-only minimal, image-left)
-- **Product grids:** 3 variants (standard grid, masonry, carousel)
-- **About sections:** 2–3 variants (story-left-image-right, full-width centered, split with quote)
-- **Footer:** 2–3 variants (centered minimal, left-aligned detailed, multi-column)
-- **Product detail page:** 2–3 variants (image-left-info-right, full-width gallery, stacked)
+The mood the customer picks at onboarding drives more than which hero variant gets used — it drives **which sections appear and in what order**. A "dark and stormy" storefront might lead with the maker's story; a "summer afternoon" storefront might lead with products front-and-center. Block assembly is part of the design, not separate from it.
 
-This yields approximately **15–18 total components**. Combined with design token variation, the number of unique site appearances is effectively unlimited.
+Combined with design token variation, the number of unique site appearances is effectively unlimited.
 
-### 6.4 The Vibe Slider
+### 6.4 Widgets — the functional layer
+
+Blocks are visual containers with declared slots. Widgets are the functional pieces that fill those slots — a booking calendar, a contact form, a price display, an add-to-cart button, a product card, a testimonial, a map, a "book now" CTA, an image gallery, an availability list.
+
+The AI assembles a storefront by picking blocks (for visual feel, driven by mood and niche) and then threading widgets into the slots those blocks expose (for function, driven by what the tenant sells and what their niche needs). A tattoo artist's storefront picks a feature block with a large primary slot and threads a booking-calendar widget into it. A candle maker's storefront picks the same kind of feature block and threads a featured-product widget into it. Same block, different widget — that's how Sellers and Doers share the visual library without needing tenant-type-specific blocks.
+
+Widgets are a catalog separate from the blocks catalog. Each widget declares what slot shape it fits, what content it accepts, what tier it requires, and what kind of tenant it applies to. The AI reads the widget catalog the same way it reads the blocks catalog when generating a page.
+
+### 6.5 The Vibe Slider
 
 Located in the AI editor (My Website section of the dashboard). When a maker moves the slider from "Rustic" to "Modern," the AI mathematically shifts all token values in a coordinated way. Fonts change, corners sharpen, colors cool down. All changes remain balanced, elegant, and within safe design boundaries. The maker cannot break their own site.
 
-### 6.5 Claude Vision Extraction (Post-Onboarding)
+### 6.6 Claude Vision Extraction (Post-Onboarding)
 
 When a maker adds their first real product with photos, Claude Vision can analyze the product images, extract the color palette, and offer to update the site's design tokens to match. This happens **after** onboarding, not during it. Available to Pro tier users.
 
-### 6.6 Build Approach
+### 6.7 Build Approach
 
-- Lead developer builds the token schema and **5 foundational components** (one per section type).
-- **Agents build remaining component variants** following the established pattern.
-- **Agents build niche boundaries and design token ranges** in parallel.
+- Lead developer builds the token schema, the first foundational block of each section type, and the first foundational widget of each functional type.
+- Cowork agents build additional block variants and additional widget variants following the established pattern.
+- Cowork agents build niche content files in parallel.
 - Founder reviews and approves all work.
 
 ---
@@ -227,48 +243,22 @@ Stripe is positioned as the recommended option with a brief explanation of its a
 
 ---
 
-## 8. Niche Specialization (Collections & Schemas)
+## 8. Niche Specialization
 
-**Core Concept**
-BohdiAI understands what makers make. Instead of treating every product the same way (title, price, description, photos), the platform adds structured, niche-specific fields and visual elements that make every storefront feel purpose-built for that craft.
+**Seller-defined variations.** BohdiAI does not pre-define what fields a product can have based on the niche. Sellers define their own variations per product — scent, size, color, wax type, burn time, anything. A candle maker adds the fields that matter for candles; a woodworker adds the fields that matter for woodworking. No hard-coded list of acceptable fields per niche. This is the same pattern Etsy uses, and it scales to any kind of seller without code changes.
 
-**Collections as Interface, Schemas as Engine**
-Makers organize products into **Collections**. Each Collection carries a niche **Schema** that defines what product fields appear, what badges display, and how structured data renders on the storefront.
+Products also support bundles (quantity-for-discount, like "buy 3, save $5") and product-level promos (a discount or sale on a specific product).
 
-A maker who does both candles and soaps creates two collections. When they add a product to the Candles collection, they see scent profile, burn time, and wax type fields. When they add a product to the Soaps collection, they see ingredients, skin type, and weight fields. The schemas follow the collection, not the store.
+**Niche content as AI input.** Each niche has a content file that the AI reads when generating a tenant's site, product descriptions, and design tokens. The file describes how sellers in this niche talk about their work, what tone resonates with their customers, what variations they commonly use, and what visual direction tends to fit. This is starting input, not a constraint — the customer's mood pick (§6.2) and their own assets (§6.2) override anything the niche file suggests.
 
-**What a Schema Contains**
-- **Field definitions:** field name, field type (text, number, dropdown), display label
-- **Badge rules:** which field values surface as visual badges on product cards (e.g., "Soy Wax", "Food Safe Finish")
-- **AI generation prompts:** how the AI writes product descriptions for this niche
-- **Design token boundaries:** the range of acceptable visual values for this niche category
-- **Component combination preferences:** which hero, grid, and layout variants suit this niche
+Niche content lives at `/content/niches/<slug>.md` in the repo. Markdown body holds the prose the AI reads; YAML frontmatter holds structured metadata. Files are loaded into a typed manifest at build time. Adding a niche is a PR, not a database insert — PR review catches quality issues that admin forms can't.
 
-**Examples**
+Most niches share content with neighboring niches. A plumber and an electrician have similar needs. The library is intentionally small — a handful of files covering broad categories, not a hundred files for every imaginable trade.
 
-| Niche | Schema Fields | Badges |
-|---|---|---|
-| Candle Making | Scent Profile (Top/Mid/Base), Burn Time, Wax Type, Wick Material | "Soy Wax", "40+ Hour Burn" |
-| Woodworking | Wood Species, Finish Type, Dimensions, Care Instructions | "Food-Safe Finish", "Handcrafted" |
-| Soap & Bath | Ingredients, Scent, Skin Type, Weight, Curing Time | "All Natural", "Sensitive Skin" |
-| Jewelry | Materials, Gemstones, Dimensions, Hypoallergenic (Y/N) | "Sterling Silver", "Hypoallergenic" |
-
-**Post-Purchase Notes**
-Each product has an optional "Post-Purchase Note" field the maker can fill in. If populated, it is included in the order confirmation email. AI assistance is available to help generate the content. The maker controls the messaging.
-
-**Schema Management**
-- Schemas are JSON definitions managed in the Founder Admin dashboard.
-- Adding a new niche requires no code changes — create the schema in the admin, and it is immediately available.
-- An agent builds schemas in parallel during development, following the established pattern.
-- The schema engine is a top build priority. The first niche (candles) is built by hand as the reference pattern.
-
-**At Launch**
-- Schema fields and formatted display on product pages
-- Visual badges on product cards
-- As many niches as can be built during the development cycle (target: 3–5 per day via agent)
+**Post-Purchase Notes.** Each product has an optional Post-Purchase Note the seller fills in. If populated, it is included in the order confirmation email. AI assistance helps draft it. The seller controls the messaging.
 
 **Deferred to Phase 2**
-- Storefront filtering ("Shop by Scent Family", sort by burn time)
+- Storefront filtering by seller-defined variation values ("Shop by Scent Family")
 - Advanced automated email content beyond post-purchase notes
 
 ---
@@ -468,20 +458,30 @@ Full database schema to be defined in the Technical Architecture Spec document.
 - Begin recruiting founding members / beta testers
 
 **Phase 1: MVP Launch**
-- AI-powered onboarding with niche theming and design token generation
-- Design token system and modular component assembly
+- AI-powered onboarding with mood-driven design and token generation
+- Design token system and modular component assembly with many variants
 - AI editor (chat, highlight-and-transform, click-to-edit) with Vibe Slider
-- Products with niche schema fields, collections, and badges
+- Listings for both Sellers (products, digital products, gift cards) and Doers (services, classes, appointments, events) — single unified listings model
+- Seller-defined product variations, bundles, and per-product promos
+- Collections for shop organization
+- Storefront content pages (about, shipping/returns, FAQ, custom URLs)
+- Customer accounts with saved addresses, order history, and wishlists
 - Multi-item cart with quantity support and checkout (Stripe + Square)
 - Order management with webhook-based transaction tracking
+- Shipments and tracking (multi-shipment supported from day one)
+- Customer reviews tied to verified purchases
+- Promos and discount codes (cart-level and product-level)
+- Gift cards
+- Seller analytics (sales, traffic, conversion)
+- Social media links
 - Lightweight "Log a Sale" (Market Mode)
 - Guided payment processor setup in dashboard
-- Tenant dashboard: home, My Website, Products, Orders, Log a Sale, Settings
-- Founder admin: user management, revenue dashboard, niche schema management
+- Tenant dashboard: home, My Website, Listings, Orders, Log a Sale, Settings
+- Founder admin: user management, revenue dashboard, niche file management (PR-based)
 - Subdomain hosting (`[storename].bohdiai.com`)
 - Custom domain support (self-serve for Basic, assisted for Pro)
-- Three subscription tiers (Freemium, Basic, Pro)
-- As many niche schemas as can be built during development
+- Three subscription tiers (Freemium, Basic with 7-day trial, Pro with 7-day trial)
+- Niche content files covering the launch set of categories
 
 **Phase 2: Growth Features**
 - Full Market Mode UI (mobile-optimized, craft fair summary)

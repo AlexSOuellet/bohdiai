@@ -175,7 +175,12 @@ Three calls bundled into this decision:
 
 The Tech Arch Spec subscriptions table (§3) already has `trial_start`, `trial_end`, and a `status` value of `trialing` — no schema change needed. The behavior lives in the Stripe subscription creation call (`trial_period_days: 7`) and in the webhook handler that updates the subscription row.
 
-### D11. Niche content lives in files, blocks library lives in code
+### D11. Blocks library lives in code
+
+*Note added 2026-05-22: This decision originally bundled niches and blocks together. The niches half is superseded by D17 — niches now live in a database table. The blocks half stands. The original combined reasoning is preserved below for the record; read it as applying to blocks only.*
+
+(Originally written as: Niche content lives in files, blocks library lives in code.)
+
 
 Two architectural calls bundled together because the reasoning is the same. Both override what the Master Spec implied (database tables editable from the founder admin).
 
@@ -200,6 +205,96 @@ The alternative was keeping tracking columns on the orders table for the simple 
 Doing it now is free because the spec hasn't been built. Doing it later would have required a real data migration with real customer data. Foundation-first applies — the schema absorbs every future feature additively, and shipments was the one place in the audit where deferring would have forced a costly migration.
 
 The Tech Arch Spec §14 now includes shipments and shipment_items tables. The orders table no longer carries `tracking_number`, `tracking_url`, `shipping_method`, `shipped_at`, or `delivered_at`. Order-level status values `shipped` and `delivered` are aggregate states derived from shipment states.
+
+---
+
+## 2026-05-22
+
+### D13. Widgets as a first-class concept, separate from blocks
+
+The platform has two distinct catalogs, not one. Blocks are visual containers — a hero, a feature section, a listing grid, a footer — each with declared slots. Widgets are the functional pieces that fill the slots — a booking calendar, a contact form, a price display, an add-to-cart, a product card, a testimonial, a map, a "book now" CTA.
+
+The AI assembles a storefront by picking blocks (driven by mood and niche), then threading widgets into the slots those blocks expose (driven by what the tenant sells, what their niche needs, and what content the AI generates). A booking calendar isn't a block; it's a widget that fits any block exposing a large enough primary slot. A "book now" button is a widget that fits any block with a CTA slot. Without a widget catalog, blocks are empty frames and the AI has nothing to thread in.
+
+This decision matters because the original framing — every functional thing is a block — would have produced a sprawling catalog of capability-widgets (booking blocks, contact blocks, listing blocks) where the question for each niche is which widgets it needs. That's the Squarespace model. BohdiAI is not that. Blocks here are layout shapes that the AI picks for visual variety; the functional and content layer is separate and threads through.
+
+Widgets follow the same rules as blocks (D11): tightly coupled to code, change rarely, platform-wide rather than tenant-specific. They live in the repo, each one a React component with an exported meta describing what slot shapes it fits, what content it accepts, what tier it requires, what tenant type it applies to. A build script collects all widget meta into a typed manifest the AI reads. Same machinery as blocks, parallel structure.
+
+The Master Spec §6 didn't name widgets and the Tech Arch Spec §7 only described blocks. Both updated to reflect this separation: Master Spec §6 introduces widgets alongside blocks, Tech Arch Spec §7 renamed to cover both libraries with parallel subsections, page_blocks (§8) describes how a block's content references the widgets threaded into its slots.
+
+### D14. Niche files anchor against the full range of the category; tenants add their own references on top
+
+The bias to avoid in a niche file is the monolithic generalization — "candle makers tend to be X," "the candle genre has converged on Y," "the typical buyer is Z." That kind of statement collapses a wide category into a single profile and tilts every storefront the AI generates toward that profile. A niche file should never make blanket claims about who the makers are, what aesthetic the genre prefers, or what demographic the buyers belong to.
+
+What a niche file should do is anchor against the full range of the category by naming real brand exemplars spread across different positionings. For candles that means showing P.F. Candle Co. (California-casual artisanal) alongside Harlem Candle Co. (luxury storytelling) alongside Boy Smells (playful, named-as-character) alongside a devotional candle maker alongside a folk-vintage Etsy shop — because the variety is the antidote to bias. The maker reading the file sees what's achievable across the range, not what a single archetype looks like. Every maker wants their site to feel like a million-dollar brand; the file's job is to show what that looks like in their direction, not in one default direction.
+
+The tenant's inputs at onboarding — mood pick, inspiration URLs, their own assets — add to this research, they do not replace it. The platform does the heavy lifting of grounding each niche in the full range of the category; the tenant adds their flavor on top. Skipping the inspiration URLs is fine — the mood pick and the niche file are enough on their own. The point of letting the tenant supply links is to give them voice in the direction, not to outsource the research.
+
+Implications:
+
+The tenants table needs an `inspiration_urls` column (text array, nullable, max 3 entries) to store what the tenant pastes at onboarding. The Tech Arch Spec tenants section is updated to add it.
+
+The onboarding flow needs an optional step for inspiration links. Plain-English prompt — something like "any sites you love or want yours to feel like? Paste up to three." Skip is the default path.
+
+When researching and writing a niche file, the agent should deliberately pull exemplars across positioning — at least three or four brands at different points in the category's range — so the file shows what success looks like in multiple directions, not one. The file should never assert a single dominant aesthetic, demographic, or buyer profile.
+
+Price ranges, market vocabulary (notes, throw, scent families), variation axes, and other category-level facts belong in the file when they're true across the category. What does not belong is any sentence that starts "most candle makers are…" or "the typical candle buyer wants…" — those are the monolithic generalizations the file has to avoid.
+
+### D15. Novel-product onboarding is a branch with its own language
+
+When a maker picks Other and types in a niche, the platform does a research pass to ground the build. Most Other-pickers will fall into a niche that's slightly outside the launch list but adjacent to something the AI can work with — the research pass finds enough material to build a thinner-than-curated but still grounded site. Those tenants get the normal flow.
+
+A small share of Other-pickers are in genuinely novel territory — they've invented something, they're three years ahead of a category, or they sit in such a narrow intersection that the web has nothing to anchor against. The research pass returns nothing usable. For those tenants, the normal flow doesn't fit.
+
+The platform detects this case and branches onboarding. The maker sees plain-English language acknowledging their situation rather than a generic "building your site" experience that's silently producing a weaker first generation. The language frames it as a feature: "What you're making is unusual enough that we don't have a reference for it. We'll build a preliminary version using what you tell us, then work with you to refine it."
+
+The branch then asks the maker a couple of targeted grounding questions — the 30-second pitch (what they'd tell a customer at their booth) and the negative space (what they don't want it to feel like) being the two that pull the most signal. The maker's answers, plus the mood pick, plus any inspiration URLs they pasted, plus their own assets, become the inputs the AI generates from. The site that comes out is treated explicitly as a preliminary draft, not a finished site, with the maker dropped into the editor under "let's fine-tune this together" framing.
+
+The graceful failure mode behind this branch is human concierge help. If the preliminary draft plus chat iteration still doesn't land for a maker, the platform offers a paid concierge path — Pro-tier service included, Basic-tier paid add-on, or founder-handled at launch volumes. That's the safety valve for the rare cases the AI stack can't catch.
+
+Implications:
+
+The onboarding flow needs a detection step on Other entries — run the research pass, and if it returns below a quality threshold, branch into novel-product mode. The threshold and what "below quality" means is design work that happens when we write the onboarding spec.
+
+The novel-product branch needs its own copy in plain English, set during onboarding spec drafting. The principle is locked here: honest acknowledgment, preliminary framing, collaborative refinement, concierge safety net.
+
+The tenants table could carry a flag indicating the tenant went through the novel-product path — useful for proactively offering concierge help and for analytics on how the path performs. To be added when implementation gets to onboarding.
+
+The maker's grounding answers (30-second pitch and negative space) should be captured somewhere — probably on the tenant or in a related onboarding-answers table — so the AI can reference them later when the maker iterates via chat.
+
+### D16. Other-path has an adjacent-niche route before the novel branch
+
+The Other onboarding path is not one flow, it's two. The adjacent-niche route handles most Other-pickers cleanly; the novel-product branch (D15) handles the rare cases where adjacency doesn't apply.
+
+When a maker picks Other, onboarding asks them to pick the closest secondary niche from the list — the niche that comes nearest to what they do, even if it's not exact — and to type a short description of what they make. The AI then uses the secondary niche file as the grounding base (vocabulary, customer patterns, variation axes, visual range) and uses the maker's description to specialize from there. The site that comes out has real grounding from an adjacent file plus the maker's own voice. Better than a generic Other-path; it lets the platform add value to a niche it doesn't have a file for without having to write a new file.
+
+The onboarding question for the secondary pick also includes an honest "none of these are close" option. That's the gate to the D15 novel-product branch. A maker who can identify a closest secondary stays on the adjacent route. A maker who genuinely can't get sent into the novel-product flow with the targeted grounding questions and the preliminary-draft framing.
+
+Worth saying directly: this gives us three paths total, not two. List-picked tenants get their niche file straight. Adjacent Other-pickers get the closest secondary file plus their description. Truly novel Other-pickers get the novel-product branch. Each path produces a usable site; the quality of grounding scales with how close to a known niche the maker actually is.
+
+Implications:
+
+The tenants table needs two new columns. `secondary_niche` (text, nullable) holds the slug of the closest secondary niche when the maker picked Other and identified an adjacent one. `niche_description` (text, nullable) holds the short description the maker typed about what they make. Both null for list-picked tenants. `secondary_niche` also null for novel-product tenants (who took the "none of these" path).
+
+The onboarding flow now has three branches downstream of the niche question, not two. The Other branch becomes itself a branch: secondary pick succeeds (adjacent route) or fails into the novel-product flow (D15).
+
+When the AI generates a storefront for an adjacent Other-picker, the prompt-build step includes both the secondary niche file and the maker's description, clearly distinguished so the AI uses the file as context and the description as the tenant-specific specialization rather than treating them as the same kind of input.
+
+### D17. Niches live in a database table
+
+Niches move out of markdown files in the repo and into a dedicated database table. Blocks stay in code (D11 still applies to them). The original D11 bundled both because they felt similar — platform-wide reference content — but they are different things and the storage call is different.
+
+The mechanism that made code-based storage right for blocks does not apply to niches. A block is two halves of the same thing — the React component you see on the page and the metadata that describes it — and the two halves have to live together or the platform breaks. A niche has no code half. It is pure content the AI reads. Nothing about it needs to be paired with a code artifact.
+
+Putting niches in a database makes the things we actually want to do easy. The founder admin can add or edit a niche through a form without a deploy. The Other-path can save a new niche row on the fly when a maker types one in and the AI builds it; the next maker who types the same thing reuses what the platform already has. Cowork agents — when they come online and start producing niches in volume, which is the plan — write directly to the database via the same Supabase API they would use for anything else, instead of opening pull requests that have to be merged before they take effect.
+
+Quality control moves from pull-request review to an admin-side approval workflow. Each niche row has a status — draft, in review, approved, retired. The AI only grounds tenant generations against approved rows. New rows from the Other-path or from agents start in draft and require a human approval before they become reachable. This replaces the natural code-review gate that the file model had with a deliberate workflow gate that fits the use case.
+
+The niches table shape: slug (primary key), display_name, tenant_type_fit (array of seller/doer), aliases (array of alternative names), related_niches (array of related slugs), status (draft / in_review / approved / retired), body_markdown (the prose the AI reads), created_at, updated_at, created_by, last_updated_by. A separate niche_versions table holds row history — who edited what, when, what changed — designed for this use case rather than inherited from git.
+
+The Tech Arch Spec is updated to describe the niches table in detail and to remove the file-based niche infrastructure from §6. The existing markdown niche file at content/niches/candles.md becomes a draft reference; its prose becomes the body_markdown of the candles row when we seed the table at implementation time.
+
+This decision was reached after the file-based approach was stress-tested and the case for it weakened. The original D11 reasoning that applied genuinely to niches — change rarely, platform-wide, no code coupling — turned out to be wrong on the "no code coupling" part (niches have no code coupling, but that's an argument for the database, not against it) and overweighted on "change rarely" once Cowork agents producing volume entered the picture. The case for the database holds on its own merits.
 
 ---
 

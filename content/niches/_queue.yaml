@@ -1,0 +1,2507 @@
+# BohdiAI niche launch queue
+#
+# Candidate niches for niche-writer to draft, in priority order for launch.
+# Read top to bottom — the most important entries come first. If we get to
+# them all, great. If we don't, the launch-critical ones are at the top.
+#
+# Fields:
+#   slug             — short identifier used as the niches table primary key
+#   display_name     — customer-facing label shown in the onboarding picker
+#                      (person/role form, not entity form — "Baker" not "Bakery")
+#   tenant_type_fit  — [seller], [doer], or [seller, doer]
+#   priority         — P0 must-have, P1 ship if we can, P2 nice-to-have
+#   status           — done, pending, in_progress, skip
+#   notes            — context for whoever picks this entry up
+#
+# Edit freely. Mark "skip" to remove an entry from the agent queue. Bump
+# entries up or down as you re-read.
+
+# ============================================================
+# P0 — must-have at launch
+# ============================================================
+# The dozen-plus niches that span the full audience (solo makers, Etsy
+# refugees, craft-fair sellers, service providers, hybrid businesses).
+# Without these the platform's claim to range isn't validated.
+
+- slug: candles
+  display_name: Candle Maker
+  tenant_type_fit: [seller]
+  priority: P0
+  status: done
+  notes: Reference niche. Drafted by hand, used as example for niche-writer.
+
+- slug: jewelry_maker
+  display_name: Jewelry Maker
+  tenant_type_fit: [seller]
+  priority: P0
+  status: pending
+  notes: The most-cited Etsy category. Spans personalized name pieces,
+    silversmith and goldsmith work, beadwork, polymer clay, gemstones,
+    resin, hand-stamped metal. Concerns center on metal type, allergens,
+    sizing, gift packaging.
+
+- slug: baker
+  display_name: Baker
+  tenant_type_fit: [seller, doer]
+  priority: P0
+  status: pending
+  notes: Cottage-food bakers, custom-cake makers, sourdough specialists,
+    wedding cake makers. Retail plus custom orders. Often teaches classes.
+    Huge population at the kitchen-table-maker tier.
+
+- slug: photographer
+  display_name: Photographer
+  tenant_type_fit: [doer, seller]
+  priority: P0
+  status: pending
+  notes: Portrait, wedding, newborn, family, brand, real estate, product,
+    pet. One niche at launch — may split sub-segments later. Seller side
+    for prints and digital products.
+
+- slug: hair_stylist
+  display_name: Hair Stylist
+  tenant_type_fit: [doer]
+  priority: P0
+  status: pending
+  notes: Independent stylists (booth-renters, home-studio, mobile). Color
+    work and longer appointments differentiate from barbers. Common
+    specializations are color, extensions, bridal, kids.
+
+- slug: soap_and_bath
+  display_name: Soap & Bath Maker
+  tenant_type_fit: [seller]
+  priority: P0
+  status: pending
+  notes: Cold-process and melt-and-pour soap, bath bombs, body butters,
+    scrubs, lotions, salts. Closely adjacent to candles. Concerns are
+    ingredients, skin sensitivity, scent, curing time for cold-process.
+
+- slug: ceramicist
+  display_name: Ceramicist / Potter
+  tenant_type_fit: [seller, doer]
+  priority: P0
+  status: pending
+  notes: Mugs, bowls, vases, planters, custom commissions. Often teaches
+    classes (doer side). Classic Seller+Doer hybrid validator.
+
+- slug: woodworker
+  display_name: Woodworker
+  tenant_type_fit: [seller, doer]
+  priority: P0
+  status: pending
+  notes: Cutting boards, turned bowls, custom signs, kids' toys, decor,
+    cabinetry, furniture commissions. Schema tends to include wood
+    species, finish, food-safety status. Common specializations are
+    cutting boards, furniture, signs, toys.
+
+- slug: tattoo_artist
+  display_name: Tattoo Artist
+  tenant_type_fit: [seller, doer]
+  priority: P0
+  status: pending
+  notes: Doer is primary identity (appointment-driven). Seller side for
+    flash designs, prints, merch, gift cards. Often booth-renting.
+    Subcultural audience validator.
+
+- slug: dog_groomer
+  display_name: Dog Groomer
+  tenant_type_fit: [doer]
+  priority: P0
+  status: pending
+  notes: Independent groomers, mobile groomers, small shops. Appointment-
+    driven, often booked out weeks. Cut photography is portfolio.
+
+- slug: fine_artist
+  display_name: Fine Artist / Painter
+  tenant_type_fit: [seller, doer]
+  priority: P0
+  status: pending
+  notes: Watercolor, oil, acrylic, mixed media. Original works for sale
+    plus commissioned portraits (pet portraits, family portraits, custom
+    paintings). Art-side validator.
+
+- slug: florist
+  display_name: Florist
+  tenant_type_fit: [seller, doer]
+  priority: P0
+  status: pending
+  notes: Retail arrangements (seller) plus wedding and event work (doer).
+    Often takes standing-order and subscription business. Common
+    specializations are wedding, event, daily arrangements, dried.
+
+- slug: tutor
+  display_name: Tutor
+  tenant_type_fit: [doer]
+  priority: P0
+  status: pending
+  notes: Academic tutoring — math, science, English, languages, SAT/ACT
+    prep, college essay coaching. Common specializations from the niche
+    file vocabulary. Huge solo-business population.
+
+- slug: personal_trainer
+  display_name: Personal Trainer
+  tenant_type_fit: [doer, seller]
+  priority: P0
+  status: pending
+  notes: In-gym, in-home, mobile, online programming. Often sells digital
+    programs. Common specializations are weight loss, strength, bodybuilding,
+    senior fitness, pre/postnatal.
+
+# ============================================================
+# P1 — high priority, ship if we can
+# ============================================================
+# Solid coverage across the small-business spectrum. With these plus the
+# P0s the platform has real range at launch.
+
+# P1 — Maker / Sellers (handcraft)
+
+- slug: leatherworker
+  display_name: Leatherworker
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Wallets, belts, bags, journals, dog collars, watch straps,
+    saddles, harnesses. Often takes commissions. Includes saddler,
+    harness maker, tanner, furrier identities.
+
+- slug: knitter
+  display_name: Knitter
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Finished knit pieces — sweaters, hats, scarves, blankets, baby
+    gifts. Often also sells patterns as digital downloads. Distinct
+    technique and community from crochet.
+
+- slug: crocheter
+  display_name: Crocheter
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Finished crochet pieces — amigurumi, blankets, hats, granny
+    squares, garments. Often also sells patterns as digital downloads.
+    Distinct technique and community from knitting.
+
+- slug: quilter
+  display_name: Quilter
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Quilts for sale plus custom commission work (memory quilts,
+    wedding quilts, baby quilts). Heavy on tradition framing.
+
+- slug: sewing_alterations
+  display_name: Sewist & Tailor
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Sewing-based makers and tailors. Includes alterations,
+    dressmaking, costume, custom garment work, bridal alterations.
+
+- slug: embroiderer
+  display_name: Embroiderer & Needlepoint
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Hand embroidery hoops, finished pieces, kits, patterns, machine
+    embroidery service for businesses.
+
+- slug: sticker_maker
+  display_name: Sticker Maker
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Vinyl stickers, planner stickers, sticker sheets, die-cut. Low
+    startup cost, high-volume sales model. Beginner-friendly Etsy entry.
+
+- slug: pins_patches
+  display_name: Pin, Patch & Enamel Maker
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Enamel pins, embroidered patches, buttons, badges. Pop-culture
+    and subcultural designs. Genre conventions are specific.
+
+- slug: wedding_stationery
+  display_name: Wedding & Event Stationery Designer
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Invitations, save-the-dates, programs, place cards, signage.
+    Heavy custom workflow. Often offers digital-download printables.
+
+- slug: calligrapher
+  display_name: Calligrapher & Hand Letterer
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Wedding signage and envelopes (doer), prints and digital art
+    (seller). Often overlaps with wedding stationery.
+
+- slug: personalized_gifts
+  display_name: Personalized Gifts Seller
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Engraved cutting boards, custom name signs, monogrammed items.
+    Cuts across woodworking, leather, ceramics — but the maker often
+    self-identifies as personalized-gift seller.
+
+- slug: apparel_designer
+  display_name: Apparel & T-Shirt Designer
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Print-on-demand and hand-screened shirts, sweatshirts, hats.
+    High SKU count, often POD. Different operationally from one-of-a-
+    kind makers.
+
+- slug: pet_products
+  display_name: Pet Products Maker
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Pet treats (baked, freeze-dried), bandanas, collars, beds,
+    toys, harnesses. Growth category. Ingredient concerns are intense.
+
+- slug: vintage_reseller
+  display_name: Vintage Reseller
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Etsy's second-largest category. Vintage clothing, jewelry,
+    housewares, ephemera. The seller is curator not creator. Concerns
+    center on condition, era authenticity, sizing.
+
+- slug: antique_dealer
+  display_name: Antique Dealer
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Specialized antiques, period furniture, collectibles. Often
+    expertise-focused (certain era, type, region). Distinct from
+    general vintage by curation depth.
+
+- slug: plant_seller
+  display_name: Plant Seller / Nursery
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Houseplants, succulents, propagated cuttings, rare aroids,
+    seedlings, bonsai. Plant Etsy is a real market with its own
+    shipping conventions and care-card norms.
+
+- slug: apothecary_herbalist
+  display_name: Apothecary & Herbalist
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Herbal teas, tinctures, salves, oils, dried herbs, ritual
+    bundles. Wellness and tradition positioning. Sometimes consultations
+    (doer side).
+
+- slug: crystal_seller
+  display_name: Crystal & Mineral Seller
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Raw and polished crystals, jewelry-mounted stones, ethical
+    sourcing claims, metaphysical positioning.
+
+- slug: witchcraft_occult
+  display_name: Witchcraft & Occult Supplies
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Ritual candles, tarot decks, spell kits, herbal bundles, altar
+    pieces. Strong subcultural identity with its own visual conventions.
+
+- slug: art_print_seller
+  display_name: Art Print Seller / Independent Artist
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Original art, fine art prints, digital downloads. Distinct from
+    fine artist by selling print reproductions as the primary product.
+
+- slug: illustrator
+  display_name: Illustrator
+  tenant_type_fit: [doer, seller]
+  priority: P1
+  status: pending
+  notes: Editorial illustration, commercial commissions, book illustration,
+    custom portrait illustration. Adjacent to graphic designer but
+    skill-distinct.
+
+- slug: glass_artist
+  display_name: Glass Artist
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Blown glass, fused glass, resin coasters, resin jewelry, epoxy
+    art. Includes glassblower identity. Distinct from stained glass.
+
+- slug: stained_glass_artist
+  display_name: Stained Glass Artist
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Wall pieces, window panels, suncatchers, restoration
+    commissions. Distinct tradition from blown/fused glass.
+
+- slug: sculptor
+  display_name: Sculptor
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Clay, metal, wood, mixed-media, stone. Includes stone carver.
+    Both ready-made works and commissioned pieces.
+
+- slug: blacksmith
+  display_name: Blacksmith & Metalworker
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Forged ironwork — hooks, hardware, fireplace tools, decorative
+    pieces, custom architectural work. Includes knife maker / bladesmith.
+
+- slug: printmaker
+  display_name: Printmaker
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Screen printing, letterpress, lino, woodblock, etching. Both
+    open editions and limited prints. Often workshops (doer).
+
+- slug: comic_artist
+  display_name: Comic Artist
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Indie comic creators, webcomic artists, illustrated zines.
+    Often Patreon-supported, prints and originals as merch.
+
+- slug: doll_plush
+  display_name: Doll & Plush Maker
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Handmade dolls, softies, amigurumi figures, art dolls.
+    Custom-portrait dolls are a real commission market.
+
+- slug: toy_maker
+  display_name: Toy Maker
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Wooden toys, traditional toys, puzzles, marble runs, Waldorf-
+    style toys. Heavy on safety positioning and ingredient claims.
+
+- slug: bookbinder
+  display_name: Bookbinder & Letterpress
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Handbound journals, custom photo albums, letterpress cards
+    and prints, book restoration commissions.
+
+- slug: journal_planner_maker
+  display_name: Journal & Planner Maker
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Handmade journals, planners, bullet journals, sketchbooks.
+    Adjacent to bookbinder but customer is different (productivity /
+    wellness vs. archival).
+
+- slug: frame_maker
+  display_name: Frame Maker / Picture Framer
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Custom frames for art and photography. Both retail and
+    framing-as-a-service. Often local shop with online presence.
+
+- slug: cobbler
+  display_name: Cobbler & Shoemaker
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Shoe repair, leather conditioning, resoling, custom shoemaking
+    (cordwainer tradition). Declining trade with real demand.
+
+- slug: furniture_restorer
+  display_name: Furniture Restorer & Flipper
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Refinished and refurbished furniture for sale, plus custom
+    restoration commissions.
+
+- slug: upholsterer
+  display_name: Upholsterer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Furniture upholstery, automotive upholstery, marine. Heavy
+    commission work. Solo or small-crew operation.
+
+- slug: polymer_clay
+  display_name: Polymer Clay Artist
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Polymer clay earrings (major Etsy segment), figurines,
+    decorative pieces. Distinctive visual conventions.
+
+- slug: resin_artist
+  display_name: Resin Artist
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Resin coasters, resin jewelry, epoxy art, river tables.
+    Growing category with distinctive technique.
+
+- slug: 3d_printer
+  display_name: 3D Printer / Print Maker
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Uses a 3D printer to make and sell physical objects — tabletop
+    minis, custom phone stands, articulated dragons, planters, prototypes,
+    tools. May print own designs or others'. Also offers print-on-demand
+    services where customers send files. Physical-product side of 3D
+    printing; distinct from 3D Modeler (digital files).
+
+- slug: 3d_modeler
+  display_name: 3D Modeler
+  tenant_type_fit: [doer, seller]
+  priority: P1
+  status: pending
+  notes: Designs 3D models for 3D printing, video games, architectural
+    visualization, VR. Sells digital model files plus takes custom
+    commissions. Digital-product side of 3D; distinct from 3D Printer
+    (physical objects).
+
+- slug: magnet_maker
+  display_name: Magnet Maker
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Custom photo magnets, save-the-date magnets, fridge magnet
+    sets, button-style pin-back magnets. Beginner-accessible Etsy
+    category, often sold in sets. Adjacent to sticker maker and
+    personalized gifts but distinct enough to call out.
+
+# P1 — Food and agricultural sellers
+
+- slug: restaurant
+  display_name: Restaurant Owner
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Small family restaurants, neighborhood spots, ethnic
+    restaurants. 1-5 person operations. BohdiAI is the storefront,
+    menu, reservations, gift cards presence.
+
+- slug: cafe_owner
+  display_name: Cafe & Coffee Shop Owner
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Small independent cafes, coffee shops, tea houses. Often sells
+    beans (seller) and serves walk-in customers (doer).
+
+- slug: food_truck
+  display_name: Food Truck Operator
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Mobile food operations. Schedule and location communication
+    is central. Often catering (doer side).
+
+- slug: caterer
+  display_name: Caterer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Wedding and event catering, drop-off catering. Smaller-scale
+    operations.
+
+- slug: personal_chef
+  display_name: Personal Chef
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: In-home meal prep, small dinner parties, intimate events.
+    Distinct from caterer by scale.
+
+- slug: jam_preserves
+  display_name: Jam & Preserves Maker
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Jams, jellies, fruit butters, pickles, fermented goods.
+    Cottage food friendly.
+
+- slug: honey_producer
+  display_name: Honey Producer & Beekeeper
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Raw honey, infused honey, beeswax candles, propolis. Beekeeping
+    classes adjacent. Includes apiarist identity.
+
+- slug: hot_sauce
+  display_name: Hot Sauce & Condiment Maker
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Hot sauces, BBQ sauces, mustards, infused vinegars and oils.
+    Strong personality branding is genre convention.
+
+- slug: chocolatier
+  display_name: Chocolatier
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Truffles, bonbons, bars, custom occasion pieces. Often gift-
+    driven (holidays, weddings).
+
+- slug: cheesemaker
+  display_name: Artisan Cheesemaker
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Small-batch artisan cheese. Often farm-based. Heavy regulatory
+    backdrop.
+
+- slug: charcutier
+  display_name: Charcutier & Cured Meat Maker
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Cured meats, salumi, snack boards. Catered grazing tables
+    (doer side) is a real market.
+
+- slug: farmer
+  display_name: Farmer
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Small farms, micro-farms, market gardens. Produce, eggs, flowers,
+    CSA subscriptions. Seasonal inventory.
+
+- slug: butcher
+  display_name: Butcher
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Independent butcher shop, custom processing, specialty cuts.
+    Often farm-connected.
+
+# P1 — Personal care services
+
+- slug: barber
+  display_name: Barber
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Independent barbers, small one-to-three-chair shops. Walk-ins
+    plus appointments. Cut photography is portfolio.
+
+- slug: esthetician
+  display_name: Esthetician
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Facials, waxing, brow/lash services, skincare. Often booth-
+    rents. Includes beautician identity.
+
+- slug: nail_tech
+  display_name: Nail Tech
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Independent nail techs, booth-renters, home-studio. Nail-art
+    portfolio matters. Includes manicurist, pedicurist identities.
+
+- slug: makeup_artist
+  display_name: Makeup Artist
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Wedding makeup, event makeup, editorial, special effects.
+    Heavy portfolio dependence.
+
+- slug: lash_brow
+  display_name: Lash & Brow Artist
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Lash extensions, lash lifts, brow lamination, microblading,
+    permanent makeup. Often specialty within esthetician.
+
+- slug: massage_therapist
+  display_name: Massage Therapist
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Licensed massage therapists in private practice, mobile, or
+    chair-renting. Concerns: modality, credentials, accessibility.
+
+# P1 — Wellness, alternative health, and instruction
+
+- slug: acupuncturist
+  display_name: Acupuncturist
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Licensed acupuncturists, often integrated with herbal medicine
+    and bodywork.
+
+- slug: chiropractor
+  display_name: Chiropractor
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Solo chiropractic practice or small clinic. Service mix,
+    booking, patient education.
+
+- slug: yoga_instructor
+  display_name: Yoga Instructor
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Studio-based, mobile, online classes. Sometimes sells branded
+    merch and digital programs.
+
+- slug: pilates_instructor
+  display_name: Pilates Instructor
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Studio Pilates, reformer Pilates, mat-based group classes.
+
+- slug: dance_instructor
+  display_name: Dance Instructor
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Ballet, contemporary, hip-hop, ballroom, swing, wedding-dance
+    coaching. Private lessons and group classes.
+
+- slug: martial_arts_instructor
+  display_name: Martial Arts Instructor
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: BJJ, karate, MMA, kickboxing, judo, traditional styles. Solo
+    school owners and traveling instructors.
+
+- slug: wellness_coach
+  display_name: Wellness & Nutrition Coach
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Health coaching, nutrition coaching, holistic wellness.
+    Includes nutritionist and dietitian identities. Often digital
+    programs alongside.
+
+- slug: life_coach
+  display_name: Career & Life Coach
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Career coaching, life coaching, executive coaching. Often sells
+    digital programs and courses.
+
+- slug: spiritual_advisor
+  display_name: Tarot, Astrology & Spiritual Advisor
+  tenant_type_fit: [doer, seller]
+  priority: P1
+  status: pending
+  notes: Tarot readings, astrology charts, intuitive readings, spiritual
+    guidance, mediumship. Often sells decks, courses, charts (seller).
+
+- slug: reiki_practitioner
+  display_name: Reiki & Energy Practitioner
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Reiki, energy work, chakra balancing, intuitive energy healing.
+    Wellness and spiritual positioning.
+
+- slug: sound_healer
+  display_name: Sound Healer
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Sound bath practitioners, gong baths, crystal singing bowls,
+    tuning fork therapy. Often group sessions in studios or event
+    settings. Distinct practice and instruments from reiki.
+
+- slug: mental_health_practice
+  display_name: Therapist / Mental Health Practitioner
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Solo private practice therapists, counselors, psychologists,
+    psychotherapists. Professional presence, areas of practice, intake.
+    HIPAA handled by their own practice tools.
+
+- slug: solo_medical_practice
+  display_name: Solo Medical Practice
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Solo or small-practice MDs across specialties — family medicine,
+    pediatrics, dermatology, concierge medicine, integrative medicine,
+    others. Includes psychiatry.
+
+- slug: solo_dental_practice
+  display_name: Solo Dental Practice
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Solo or small dental practices — general dentistry, orthodontics,
+    periodontics, endodontics, oral surgery, pediatric dentistry.
+
+- slug: doula
+  display_name: Doula
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Birth doulas, postpartum doulas. Highly relationship-driven,
+    portfolio is reviews and testimonials.
+
+- slug: midwife
+  display_name: Midwife
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Solo midwifery practice. Heavy on trust, story, services, and
+    birth philosophy.
+
+- slug: lactation_consultant
+  display_name: Lactation Consultant
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Certified lactation consultants in private practice.
+
+- slug: music_teacher
+  display_name: Music & Performing Arts Teacher
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Private lessons — piano, guitar, voice, drums, strings, brass.
+    Also acting and vocal coaching. Common specializations from the
+    instrument or art form taught.
+
+- slug: art_teacher
+  display_name: Art & Craft Teacher
+  tenant_type_fit: [doer, seller]
+  priority: P1
+  status: pending
+  notes: Painting classes, drawing classes, craft workshops, pottery
+    classes (overlap with ceramicist). Often sells materials kits.
+
+# P1 — Trades and home services
+
+- slug: plumber
+  display_name: Plumber
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Independent licensed plumbers. Service work plus small projects.
+
+- slug: electrician
+  display_name: Electrician
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Independent licensed electricians. Small project work plus
+    service calls.
+
+- slug: hvac_tech
+  display_name: HVAC Technician
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Solo or small-crew HVAC — installation, repair, maintenance.
+    Similar shape to plumbing and electrical.
+
+- slug: handyman
+  display_name: Handyman
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: General home repair, small renovations, mounting and installation.
+    Solo or two-person crew.
+
+- slug: general_contractor
+  display_name: General Contractor
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Small construction and renovation contractor running 1-5 person
+    operation. Project portfolio matters; consultations are sales.
+
+- slug: roofer
+  display_name: Roofer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Independent roofers, small-crew operations. Storm-damage repair
+    plus full replacements.
+
+- slug: house_painter
+  display_name: House Painter
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Interior and exterior painting, decorative finishes, cabinet
+    refinishing. Includes painter/decorator identity.
+
+- slug: mason
+  display_name: Mason / Bricklayer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Brick, stone, block work. Patios, walls, fireplaces. Solo or
+    small-crew.
+
+- slug: tiler
+  display_name: Tiler
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Floor, wall, kitchen, bathroom tile installation. Often
+    subcontracts to general contractors plus direct work.
+
+- slug: drywaller
+  display_name: Drywaller / Plasterer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Drywall installation, plaster work, texture, repairs.
+
+- slug: cabinet_maker
+  display_name: Cabinet Maker
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Custom cabinetry, built-ins, kitchens. Heavy commission work.
+    Distinct from general woodworker by scale and customer.
+
+- slug: welder
+  display_name: Welder
+  tenant_type_fit: [doer, seller]
+  priority: P1
+  status: pending
+  notes: Mobile welders, fabrication shops, repair work, ornamental
+    iron, custom metal commissions.
+
+- slug: glazier
+  display_name: Glazier / Window Installer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Window installation, repair, replacement. Residential and small
+    commercial.
+
+- slug: solar_installer
+  display_name: Solar Installer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Residential solar panel installation. Small-crew operations.
+    Lead-generation heavy.
+
+- slug: locksmith
+  display_name: Locksmith
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Residential, commercial, automotive locksmithing. Mobile
+    operation common.
+
+- slug: home_inspector
+  display_name: Home Inspector
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Pre-purchase home inspections, specialty inspections (radon,
+    mold, pest). Often paired with real-estate-agent referrals.
+
+# P1 — Home maintenance, cleaning
+
+- slug: house_cleaner
+  display_name: House Cleaner
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Residential cleaning, move-in/move-out, vacation rental, post-
+    construction. 1-5 person scope.
+
+- slug: window_washer
+  display_name: Window Washer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Residential and small commercial. Solo operator typical.
+
+- slug: pressure_washing
+  display_name: Pressure Washer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Driveways, decks, siding, fences. Solo or two-person operation.
+
+- slug: carpet_cleaner
+  display_name: Carpet Cleaner
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Residential and commercial. Often packaged with upholstery and
+    tile cleaning.
+
+- slug: pool_service
+  display_name: Pool Service & Maintenance
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Pool cleaning, chemical balancing, opening/closing. Route-based
+    recurring service.
+
+- slug: tree_trimmer
+  display_name: Tree Trimmer / Arborist
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Tree pruning, removal, stump grinding, arborist consulting.
+    Licensed arborist plus general tree work.
+
+- slug: landscaper
+  display_name: Landscaper & Gardener
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Lawn care, garden design, hardscape, seasonal cleanup. Photo
+    portfolio of before/afters matters.
+
+- slug: pest_control
+  display_name: Pest Control Technician
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Residential pest control, termite treatment, wildlife removal.
+    Includes exterminator identity.
+
+- slug: junk_removal
+  display_name: Junk Removal & Hauling
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Small-scale junk removal, donation runs, estate cleanouts.
+    Often overlaps with estate sale organizing.
+
+- slug: mover
+  display_name: Mover
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Local moving, piano moves, packing service. Small crew.
+
+# P1 — Pet services
+
+- slug: dog_trainer
+  display_name: Dog Trainer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Private lessons, group classes, board-and-train. Often sells
+    digital training programs.
+
+- slug: pet_sitter
+  display_name: Pet Sitter & Dog Walker
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: In-home pet sitting, daily walks, drop-in visits, boarding.
+    Trust-driven; reviews are decisive.
+
+- slug: pet_photographer
+  display_name: Pet Photographer
+  tenant_type_fit: [doer, seller]
+  priority: P1
+  status: pending
+  notes: Distinct from general photography by customer profile and
+    workflow. Often sells prints.
+
+- slug: mobile_vet
+  display_name: Mobile Vet & Pet Wellness
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: In-home veterinary care, wellness exams, vaccine clinics.
+    Solo-vet operation.
+
+- slug: veterinarian
+  display_name: Small Vet Clinic
+  tenant_type_fit: [doer, seller]
+  priority: P1
+  status: pending
+  notes: Owner-operated vet clinics. Service list, hours, sometimes
+    boutique pet retail.
+
+- slug: horse_trainer
+  display_name: Horse Trainer & Equestrian Coach
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Horse training, riding instruction, equestrian coaching. Often
+    farm-based.
+
+# P1 — Creative services
+
+- slug: graphic_designer
+  display_name: Graphic Designer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Logo, brand identity, marketing collateral, social media
+    graphics, illustration commissions. Portfolio-driven.
+
+- slug: brand_designer
+  display_name: Brand & Identity Designer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Logo, brand identity, brand strategy. Higher-end positioning
+    than general graphic designer.
+
+- slug: web_designer
+  display_name: Web Designer & Developer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Small-business website design, Shopify/WordPress sites,
+    portfolio sites. Solo or two-person studio.
+
+- slug: seo_consultant
+  display_name: SEO Consultant
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Search engine optimization for small business clients. Often
+    packaged with content writing and Google Business Profile work.
+
+- slug: social_media_manager
+  display_name: Social Media Manager
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Content scheduling, community management, content creation for
+    small-business clients.
+
+- slug: copywriter
+  display_name: Copywriter & Freelance Writer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Copywriting, content writing, ghostwriting, technical writing,
+    travel writing.
+
+- slug: editor_proofreader
+  display_name: Editor & Proofreader
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Manuscript editing, line editing, proofreading, developmental
+    editing. Often works with self-published authors.
+
+- slug: voice_actor
+  display_name: Voice Actor & Audiobook Narrator
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Commercial VO, audiobook narration, character work. Home-studio
+    based, portfolio-driven.
+
+- slug: videographer
+  display_name: Videographer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Event, commercial, brand video work. Distinct from wedding
+    videographer (separate niche).
+
+- slug: wedding_videographer
+  display_name: Wedding Videographer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Wedding films, highlight reels, full-day documentation.
+
+- slug: drone_pilot
+  display_name: Drone Pilot & Aerial Photographer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Real estate aerial, event aerial, mapping/inspection. FAA Part
+    107 licensed solo operator.
+
+- slug: video_editor
+  display_name: Video Editor & Animator
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Wedding edits, YouTube/social content, animation, motion
+    graphics.
+
+- slug: dj
+  display_name: DJ
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Wedding, event, club, mobile, corporate. One niche covers
+    range; voice differs by sub-segment.
+
+- slug: music_producer
+  display_name: Music Producer
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Beat makers, mixing/mastering engineers, songwriters. Often
+    sells beats and samples. Distinct from DJ.
+
+# P1 — Events, weddings, hospitality
+
+- slug: wedding_planner
+  display_name: Wedding & Event Planner
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Full-service planning, day-of coordination, partial planning.
+    Portfolio-driven.
+
+- slug: event_planner
+  display_name: Event Planner
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Corporate events, parties, milestones, non-wedding events.
+    Distinct from wedding planner by event mix.
+
+- slug: wedding_officiant
+  display_name: Wedding Officiant
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Civil and spiritual ceremony officiation, vow consulting.
+
+- slug: gigging_musician
+  display_name: Gigging Musician
+  tenant_type_fit: [doer, seller]
+  priority: P1
+  status: pending
+  notes: Solo and small-band performers — weddings, corporate,
+    restaurants, bars. Often sells merch and recordings.
+
+- slug: bed_and_breakfast
+  display_name: Bed & Breakfast Owner
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Small inn or B&B (under ~10 rooms). Booking and review-driven.
+    Includes innkeeper identity.
+
+- slug: tour_guide
+  display_name: Tour Guide
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Walking tours, food tours, ghost tours, neighborhood history,
+    bike tours. Solo operator.
+
+# P1 — Professional services
+
+- slug: real_estate_agent
+  display_name: Real Estate Agent
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Solo agents and small teams. BohdiAI is personal brand and
+    listing presence.
+
+- slug: mortgage_broker
+  display_name: Mortgage Broker
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Solo brokers or small offices. Lead generation and personal
+    brand presence.
+
+- slug: insurance_agent
+  display_name: Insurance Agent
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Independent insurance agents, small agencies. Local-market
+    presence.
+
+- slug: accountant
+  display_name: Accountant or CPA
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Solo CPAs and small accounting practices. Includes tax
+    consultant.
+
+- slug: tax_preparer
+  display_name: Tax Preparer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Independent tax preparers, often seasonal. Distinct from full
+    CPA practice by scope.
+
+- slug: attorney
+  display_name: Attorney
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Solo attorneys and small practices. Professional presence,
+    areas of practice, intake.
+
+- slug: financial_advisor
+  display_name: Financial Planner & Advisor
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Independent financial advisors, RIAs, small practices.
+
+- slug: bookkeeper
+  display_name: Bookkeeper
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Small-business bookkeeping, QuickBooks setup, monthly close.
+
+- slug: virtual_assistant
+  display_name: Virtual Assistant
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Admin support, scheduling, inbox management, customer service.
+    Remote, often multiple small-business clients.
+
+- slug: notary
+  display_name: Mobile Notary
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Mobile notary services, loan signing agent. Solo operator.
+
+- slug: mediator
+  display_name: Mediator
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Civil and family mediation, conflict resolution, divorce
+    mediation.
+
+- slug: translator
+  display_name: Translator & Interpreter
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Language translation services, court and medical interpretation.
+
+- slug: travel_agent
+  display_name: Travel Agent
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Independent travel agents, often specializing (cruises, luxury,
+    adventure, family).
+
+- slug: genealogist
+  display_name: Genealogist
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Family history research, DNA result interpretation, lineage
+    research.
+
+# P1 — Property and short-term rental
+
+- slug: short_term_rental_host
+  display_name: Short-Term Rental Host
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Independent short-term rental hosts running one to a few
+    properties. Direct-booking presence.
+
+- slug: property_manager
+  display_name: Small Property Manager
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Small property management operations. Owner-operator scale.
+
+- slug: home_stager
+  display_name: Home Stager
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Real estate staging, furniture rental for staging. Works with
+    real estate agents.
+
+- slug: interior_designer
+  display_name: Interior Designer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Small-practice interior design, e-design, color consulting.
+    Portfolio is decisive.
+
+# P1 — Specialty and miscellaneous
+
+- slug: estate_sale_organizer
+  display_name: Estate Sale Organizer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Estate sale planning, staging, pricing, weekend operation.
+    Often combined with junk removal.
+
+- slug: professional_organizer
+  display_name: Professional Organizer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Home organization, decluttering, closet design, move-in setup.
+    Solo operator.
+
+- slug: auctioneer
+  display_name: Auctioneer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Estate auctions, equipment auctions, charity auctions.
+    Includes liquidator.
+
+- slug: bookseller
+  display_name: Bookseller
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Independent bookstores, used books, rare books, online-only
+    booksellers.
+
+- slug: auto_mechanic
+  display_name: Auto Mechanic
+  tenant_type_fit: [doer, seller]
+  priority: P1
+  status: pending
+  notes: Independent mechanic, small auto shop (1-5 person), mobile
+    mechanic.
+
+- slug: car_detailer
+  display_name: Auto Detailer
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Mobile or shop-based detailing. Cosmetic work, lower regulatory
+    overhead than auto repair.
+
+- slug: bicycle_repairer
+  display_name: Bike Repair
+  tenant_type_fit: [doer, seller]
+  priority: P1
+  status: pending
+  notes: Mobile or small-shop bike repair, sometimes selling parts and
+    refurbished bikes.
+
+- slug: appliance_repairer
+  display_name: Appliance Repair
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: In-home repair of major appliances. Independent technician.
+
+- slug: watch_repair
+  display_name: Watch & Jewelry Repair
+  tenant_type_fit: [doer, seller]
+  priority: P1
+  status: pending
+  notes: Repairs, battery replacement, custom work. Sometimes sells
+    pre-owned pieces.
+
+# P1 — Digital products and creator economy
+
+- slug: youtube_creator
+  display_name: YouTube Creator
+  tenant_type_fit: [doer, seller]
+  priority: P1
+  status: pending
+  notes: Full-time video content creators. Revenue from ads,
+    sponsorships, memberships, merch. Building an audience, not selling
+    a service.
+
+- slug: podcaster
+  display_name: Podcaster
+  tenant_type_fit: [doer]
+  priority: P1
+  status: pending
+  notes: Independent podcasters, often Patreon or sponsorship supported.
+
+- slug: course_creator
+  display_name: Course Creator
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Online courses on own platform or Teachable/Skillshare/Udemy.
+    Adjacent to what Alex builds with Witsend Breakthroughs.
+
+- slug: newsletter_writer
+  display_name: Newsletter & Substack Writer
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Paid newsletter operators. Substack, Beehiiv, ConvertKit.
+    Subscription-based content business.
+
+- slug: patreon_creator
+  display_name: Patreon Creator / Membership Host
+  tenant_type_fit: [seller, doer]
+  priority: P1
+  status: pending
+  notes: Membership-supported creators across mediums. Recurring
+    subscription model.
+
+- slug: printables_seller
+  display_name: Printables & Digital Download Seller
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Wedding printables, planner pages, art prints as digital
+    download, kids' printables. Huge Etsy category.
+
+- slug: template_seller
+  display_name: Template Seller
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Canva templates, Notion templates, Excel templates, Procreate
+    brushes, Lightroom presets, Photoshop actions.
+
+- slug: pattern_seller
+  display_name: Pattern Seller
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Knit, crochet, sewing, embroidery, quilting patterns as PDF
+    downloads.
+
+- slug: self_published_author
+  display_name: Self-Published Author
+  tenant_type_fit: [seller]
+  priority: P1
+  status: pending
+  notes: Independent authors selling books, ebooks, audiobooks. Often
+    a newsletter, courses, and merch alongside.
+
+# ============================================================
+# P2 — nice-to-have, can wait
+# ============================================================
+# Specialty trades, rare artisan crafts, edge categories, narrower
+# specializations. Real businesses but less critical to launch coverage.
+
+# P2 — Specialty makers and crafts
+
+- slug: furniture_maker
+  display_name: Furniture Maker
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Larger-scale woodworking — tables, chairs, beds, built-ins.
+    Heavy commission work.
+
+- slug: knife_maker
+  display_name: Knife Maker & Bladesmith
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Forged knives, kitchen blades, hunting and bushcraft knives.
+    Custom commissions with long lead times.
+
+- slug: glassblower
+  display_name: Glassblower
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Blown glass — vases, ornaments, drinking glasses, sculpture.
+    Often demos and classes (doer).
+
+- slug: stone_carver
+  display_name: Stone Carver
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Stone sculpture, memorial work, garden art. Heavy commission.
+
+- slug: pyrography_artist
+  display_name: Pyrography Artist (Wood Burning)
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Pyrography portraits, custom wood-burned signs, decorative
+    pieces. Heavy commission.
+
+- slug: mosaic_artist
+  display_name: Mosaic Artist
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Tile and glass mosaic pieces, garden art, decorative panels,
+    custom commissions.
+
+- slug: weaver
+  display_name: Weaver
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Hand-loom weaving — tapestries, rugs, scarves, blankets.
+    Tradition-heavy positioning.
+
+- slug: woodcarver
+  display_name: Woodcarver
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Wood carving — figures, relief, chip carving, chainsaw art.
+    Often regional specialties.
+
+- slug: basket_weaver
+  display_name: Basket Weaver
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Traditional basketry, natural-fiber baskets, contemporary woven
+    sculpture. Rare but distinct.
+
+- slug: rug_maker
+  display_name: Rug Maker
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Hand-hooked rugs, tufted rugs, woven rugs, custom commissions.
+
+- slug: milliner
+  display_name: Milliner (Hat Maker)
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Custom hats, derby and wedding hats, fascinators. Heavy
+    commission work.
+
+- slug: cosplay_maker
+  display_name: Cosplay & Costume Maker
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Cosplay pieces, custom costumes, accessories, props. Highly
+    subcultural customer.
+
+- slug: paper_maker
+  display_name: Paper Maker
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Handmade paper, traditional papermaking, decorative sheets.
+    Specialty craft.
+
+- slug: pen_maker
+  display_name: Pen & Writing Instrument Maker
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Turned wooden pens, custom fountain pens, ink seller, wax
+    seals.
+
+- slug: engraver
+  display_name: Engraver
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Hand engraving on metal, glass, wood. Custom monogramming and
+    commemorative work.
+
+- slug: taxidermist
+  display_name: Taxidermist
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Hunting trophy mounts, pet preservation, fine art taxidermy.
+
+- slug: gunsmith
+  display_name: Gunsmith
+  tenant_type_fit: [doer, seller]
+  priority: P2
+  status: pending
+  notes: Firearm repair, customization, restoration. Licensed FFL
+    holders.
+
+- slug: clockmaker
+  display_name: Clockmaker
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Custom clocks, antique clock restoration, watchmaking
+    adjacencies.
+
+- slug: lapidary
+  display_name: Lapidary (Gem Cutter)
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Gem cutting, faceting, cabochon making. Often supplies jewelry
+    makers.
+
+- slug: model_maker
+  display_name: Model Maker
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Scale models, dioramas, miniature painting, custom 3D-printed
+    models.
+
+- slug: knitwear_designer
+  display_name: Knitwear & Pattern Designer
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Distinct from knitter — designs and sells patterns as digital
+    downloads. Adjacent to fiber-arts community.
+
+- slug: zine_publisher
+  display_name: Zine Publisher
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Indie zines, art zines, literary zines. Small print runs and
+    digital distribution.
+
+- slug: ice_sculptor
+  display_name: Ice Sculptor
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Wedding and event ice sculpture, demos, competitions.
+    Specialty seasonal.
+
+- slug: mentalist
+  display_name: Mentalist & Stage Magician
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Stage mentalists, mind-reading acts, magicians, illusionists.
+    Entertainment for corporate events, weddings, private parties, and
+    venues. Distinct from spiritual advisor — this is performance, not
+    a reading practice.
+
+- slug: wigmaker
+  display_name: Wigmaker
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Custom wigs for medical use, theater, film, drag, fashion.
+
+- slug: sneaker_customizer
+  display_name: Sneaker Customizer
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Custom-painted sneakers, refurbishment, restoration. Subcultural
+    customer.
+
+- slug: conservator
+  display_name: Art Conservator
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Independent art conservators — paintings, paper, textile, object
+    restoration.
+
+- slug: tobacconist
+  display_name: Tobacconist
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Tobacco, cigars, pipes, smoking accessories. Specialty retail.
+
+- slug: pawnbroker
+  display_name: Pawnbroker
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Independent pawn shops, secondhand dealers. Regulated.
+
+# P2 — Rare or traditional crafts
+
+- slug: cooper
+  display_name: Cooper (Barrel Maker)
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Whiskey, wine, beer barrels, custom cooperage. Rare but real.
+
+- slug: thatcher
+  display_name: Thatcher
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Thatched roof construction and repair. Rare, mostly UK/Europe.
+
+- slug: farrier
+  display_name: Farrier
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Horseshoeing, hoof care. Mobile operation. Distinct from
+    blacksmith.
+
+- slug: sailmaker
+  display_name: Sailmaker
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Sailmaking, sail repair, custom canvas work. Coastal trade.
+
+- slug: falconer
+  display_name: Falconer
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Falconry services, abatement, education. Highly regulated.
+
+- slug: piano_tuner
+  display_name: Piano Tuner & Technician
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Piano tuning, repair, restoration. Solo operator typical.
+
+- slug: knife_sharpener
+  display_name: Knife Sharpener
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Mobile or shop-based knife sharpening for kitchens and home use.
+
+# P2 — Specialty food and drink
+
+- slug: pastry_chef
+  display_name: Pastry Chef (Private)
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Private pastry chef, custom desserts, cake decorating, dessert
+    catering. Distinct from baker by specialization.
+
+- slug: cake_decorator
+  display_name: Cake Decorator
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Custom celebration cakes, wedding cakes, sugar art. May
+    overlap with baker depending on scale.
+
+- slug: spice_blender
+  display_name: Spice Blender
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Custom spice blends, rubs, salts, herb mixes.
+
+- slug: tea_blender
+  display_name: Tea Blender
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Loose-leaf blends, herbal tisanes, wellness teas.
+
+- slug: coffee_roaster
+  display_name: Coffee Roaster
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Single-origin and blend roasters. Subscription model common.
+
+- slug: confectioner
+  display_name: Confectioner & Candy Maker
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Caramels, fudge, brittles, hard candies, marshmallows. Distinct
+    from chocolatier.
+
+- slug: brewer
+  display_name: Small Brewery / Nano-Brewer
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Nano-brewery, taproom, beer-and-merch operation. Distinct from
+    homebrew.
+
+- slug: distiller
+  display_name: Craft Distiller
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Small-batch spirits with tasting room. Heavy regulatory
+    backdrop.
+
+- slug: vintner
+  display_name: Small Winery / Vintner
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Boutique wineries with tasting rooms. Wine club subscriptions,
+    tasting bookings.
+
+- slug: ferments
+  display_name: Mead, Kombucha & Ferments
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Mead, kombucha, jun, switchel, fermented sodas. Cottage food
+    laws vary.
+
+- slug: mushroom_grower
+  display_name: Mushroom Grower
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Specialty mushrooms (oyster, shiitake, lion's mane, reishi),
+    grow kits, dried mushrooms.
+
+- slug: microgreens
+  display_name: Microgreens & Specialty Produce Grower
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Microgreens, edible flowers, rare/heirloom vegetables.
+    Restaurant wholesale plus consumer subs.
+
+- slug: orchardist
+  display_name: Orchardist
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Apple, peach, stone fruit, citrus orchards. U-pick operations
+    common. Seasonal.
+
+- slug: rancher
+  display_name: Rancher
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Small-scale ranching — beef, lamb, dairy, fiber animals.
+    Direct-to-consumer sales.
+
+- slug: fishmonger
+  display_name: Fishmonger
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Independent fish shop, direct-from-boat retail, smoked fish.
+
+- slug: fisherman
+  display_name: Commercial Fisherman
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Independent commercial fishermen, often selling direct from
+    boat or to consumers via CSF.
+
+- slug: sommelier
+  display_name: Sommelier (Private)
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Private sommeliers, wine consultants for restaurants and
+    private clients.
+
+- slug: mixologist
+  display_name: Mixologist (Event)
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Event and private bartending, custom cocktail programs,
+    wedding mobile bar.
+
+# P2 — Specialty service providers
+
+- slug: nutritionist
+  display_name: Nutritionist / Dietitian
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Registered dietitians, certified nutritionists. Solo practice.
+
+- slug: speech_pathologist
+  display_name: Speech-Language Pathologist
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Solo speech therapy practice, often pediatric focus or
+    rehabilitation.
+
+- slug: physical_therapist
+  display_name: Physical Therapist
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Solo PT practice, sports performance, post-surgical rehab.
+
+- slug: occupational_therapist
+  display_name: Occupational Therapist
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Solo OT practice, pediatric, hand therapy, sensory integration.
+
+- slug: audiologist
+  display_name: Audiologist
+  tenant_type_fit: [doer, seller]
+  priority: P2
+  status: pending
+  notes: Solo audiology, hearing aid fitting and sales.
+
+- slug: optometrist
+  display_name: Optometrist
+  tenant_type_fit: [doer, seller]
+  priority: P2
+  status: pending
+  notes: Solo or small optometry practices. Often sells eyewear (seller).
+
+- slug: naturopath
+  display_name: Naturopath
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Naturopathic medicine, herbal protocols. State-licensed in some
+    states.
+
+- slug: homeopath
+  display_name: Homeopath
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Classical and contemporary homeopathy. Solo practice.
+
+- slug: osteopath
+  display_name: Osteopath
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Osteopathic manipulation, structural integration. Distinct from
+    DO (medical doctor).
+
+- slug: aromatherapist
+  display_name: Aromatherapist
+  tenant_type_fit: [doer, seller]
+  priority: P2
+  status: pending
+  notes: Custom essential oil blends, consultations, sometimes apothecary
+    overlap.
+
+- slug: reflexologist
+  display_name: Reflexologist
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Foot, hand, ear reflexology. Solo practice, often integrated
+    with massage.
+
+- slug: hypnotherapist
+  display_name: Hypnotherapist
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Clinical hypnotherapy, behavior change, smoking cessation.
+    Solo practice.
+
+- slug: trichologist
+  display_name: Trichologist
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Hair and scalp specialist. Solo practice, often integrated
+    with salon services.
+
+- slug: electrologist
+  display_name: Electrologist
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Permanent hair removal via electrolysis. Distinct from laser
+    technicians.
+
+- slug: spray_tan
+  display_name: Spray Tan Artist
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Mobile and studio spray tanning. Event-prep, wedding-prep,
+    regulars.
+
+- slug: body_piercer
+  display_name: Body Piercer
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Independent piercers, often shop-renting alongside tattoo
+    artists.
+
+- slug: tattoo_remover
+  display_name: Tattoo Removal Specialist
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Laser tattoo removal. Specialty solo practice.
+
+# P2 — Instruction and coaching specialties
+
+- slug: driving_instructor
+  display_name: Driving Instructor
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Driver's education, defensive driving, commercial license prep.
+    Often state-certified.
+
+- slug: swim_instructor
+  display_name: Swim Instructor
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Private and group swim lessons, water safety. Often mobile or
+    pool-renting.
+
+- slug: tennis_coach
+  display_name: Tennis Coach
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Private and group tennis instruction.
+
+- slug: golf_instructor
+  display_name: Golf Instructor
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Private golf lessons, swing analysis, course management.
+
+- slug: surf_instructor
+  display_name: Surf Instructor
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Surf lessons, surf camps, coastal location dependent.
+
+- slug: ski_instructor
+  display_name: Ski Instructor
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Private ski and snowboard instruction. Seasonal.
+
+- slug: flight_instructor
+  display_name: Flight Instructor
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Private pilot instruction, recurrent training, ratings.
+
+- slug: college_counselor
+  display_name: College Counselor & Essay Coach
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: College application coaching, essay editing, test prep
+    strategy.
+
+# P2 — Outdoor and adventure
+
+- slug: outdoor_guide
+  display_name: Outdoor Guide & Outfitter
+  tenant_type_fit: [doer, seller]
+  priority: P2
+  status: pending
+  notes: Hiking, kayaking, climbing guides, gear rental. Often sells
+    apparel.
+
+- slug: fishing_guide
+  display_name: Fishing Guide
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Fly fishing, charter fishing, freshwater guides. Often boat-
+    based.
+
+- slug: hunting_guide
+  display_name: Hunting Guide & Outfitter
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Big game, waterfowl, upland bird guides. Often property-based.
+
+- slug: boat_charter
+  display_name: Boat Charter Captain
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Charter fishing, sailing charters, sunset cruises. USCG-
+    licensed solo operator.
+
+# P2 — Digital products and creator economy specialties
+
+- slug: twitch_streamer
+  display_name: Twitch Streamer / Live Streamer
+  tenant_type_fit: [doer, seller]
+  priority: P2
+  status: pending
+  notes: Live streaming on Twitch, YouTube Live, Kick. Subscriptions,
+    bits, sponsorships, merch.
+
+- slug: stock_media_creator
+  display_name: Stock Media Creator
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Stock photographer, illustrator, video creator, music/SFX
+    creator. Selling to brands and content creators.
+
+- slug: font_designer
+  display_name: Font Designer
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Independent type foundries, decorative and display fonts. Often
+    sold via MyFonts and own site.
+
+- slug: theme_developer
+  display_name: Theme & Website Template Developer
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Shopify themes, WordPress themes, Webflow templates, Framer
+    templates.
+
+- slug: indie_app_developer
+  display_name: Indie App Developer
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Small SaaS, paid mobile apps, browser extensions, WordPress
+    plugins. Solo dev selling own product.
+
+- slug: indie_game_developer
+  display_name: Indie Game Developer
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Mobile, PC, console games. Often crowdfunded.
+
+- slug: documentary_filmmaker
+  display_name: Documentary Filmmaker
+  tenant_type_fit: [doer, seller]
+  priority: P2
+  status: pending
+  notes: Independent documentary makers. Often Patreon or crowdfunding
+    supported.
+
+- slug: ux_designer
+  display_name: UX/UI Designer
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Independent UX/UI designers, often freelance for SaaS and
+    startup clients.
+
+- slug: product_photographer
+  display_name: Product Photographer
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: E-commerce product shots, food photography, stylized still
+    life. B2B clients.
+
+- slug: real_estate_photographer
+  display_name: Real Estate Photographer
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Listing photography for real estate agents, virtual tours,
+    drone work pairing.
+
+- slug: travel_writer
+  display_name: Travel Writer
+  tenant_type_fit: [doer, seller]
+  priority: P2
+  status: pending
+  notes: Freelance travel writer, blog/newsletter operator, guidebook
+    contributor.
+
+# P2 — Other specialties
+
+- slug: archivist
+  display_name: Independent Archivist
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Family records, business records, organizational archives.
+    Independent specialty.
+
+- slug: appraiser
+  display_name: Appraiser & Valuator
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Personal property, art, antiques, jewelry appraisal. Insurance
+    and estate work. Includes gemologist.
+
+- slug: art_dealer
+  display_name: Art Dealer
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Independent art dealers, gallery owners. Curatorial work.
+
+- slug: grant_writer
+  display_name: Grant Writer
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Independent grant writers for nonprofits and small businesses.
+
+- slug: paralegal
+  display_name: Independent Paralegal
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Independent paralegals offering document preparation services
+    direct to consumers (in states where allowed).
+
+- slug: private_investigator
+  display_name: Private Investigator
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Licensed private investigators, often surveillance, background,
+    or domestic work.
+
+- slug: security_consultant
+  display_name: Security Consultant
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Independent security consultants — physical security
+    assessments, training, planning.
+
+- slug: nanny_childminder
+  display_name: Nanny & Childminder
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Independent nannies, registered childminders, after-school
+    care. Trust and credential-driven.
+
+- slug: doula_postpartum
+  display_name: Postpartum Doula
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Postpartum support, newborn care, sleep training. Adjacent to
+    birth doula but distinct service.
+
+- slug: religious_devotional
+  display_name: Religious & Devotional Items Seller
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Saint candles, rosaries, prayer beads, icons, religious gifts.
+    Traditional positioning.
+
+- slug: perfumer
+  display_name: Independent Perfumer
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Small-batch fragrance — natural, indie, niche perfumery.
+
+- slug: incense_maker
+  display_name: Incense Maker
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Hand-rolled incense, cones, smudge bundles, resins.
+
+- slug: chimney_sweep
+  display_name: Chimney Sweep
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Chimney cleaning, inspections, minor repairs. Seasonal.
+
+- slug: gutter_cleaner
+  display_name: Gutter Cleaner
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Residential gutter cleaning, repair, guard installation.
+
+- slug: fence_installer
+  display_name: Fence Installer
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Wood, vinyl, chain-link, ornamental iron fence installation.
+
+- slug: deck_builder
+  display_name: Deck Builder
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Custom decks, screened porches, pergolas.
+
+- slug: insulation_installer
+  display_name: Insulation Installer
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Spray foam, fiberglass, cellulose insulation. Residential and
+    small commercial.
+
+- slug: floor_sander
+  display_name: Floor Sander & Finisher
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Hardwood floor refinishing, sanding, staining, sealing.
+
+- slug: architect
+  display_name: Architect (Small Practice)
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Solo architects and small studios, residential and small
+    commercial work.
+
+- slug: surveyor
+  display_name: Land Surveyor
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Boundary surveys, construction staking, topographic surveys.
+
+- slug: landscape_architect
+  display_name: Landscape Architect
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Residential and small commercial landscape design. Distinct
+    from landscaper by design focus.
+
+- slug: structural_engineer
+  display_name: Structural Engineer
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Solo structural engineers, residential and small commercial
+    projects, code consulting.
+
+- slug: environmental_consultant
+  display_name: Environmental Consultant
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Phase I assessments, wetland delineation, compliance work.
+
+- slug: arborist_consultant
+  display_name: Arborist Consultant
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Tree health consulting, expert reports, tree preservation
+    planning. Distinct from tree trimmer.
+
+- slug: cartographer
+  display_name: Cartographer
+  tenant_type_fit: [doer, seller]
+  priority: P2
+  status: pending
+  notes: Custom map design, illustrated maps for prints and signage.
+    Often illustration overlap.
+
+- slug: dressmaker
+  display_name: Dressmaker / Bridal Sewist
+  tenant_type_fit: [seller, doer]
+  priority: P2
+  status: pending
+  notes: Bridal alterations, custom dressmaking, formalwear. Distinct
+    from general tailor.
+
+- slug: tour_guide_specialty
+  display_name: Specialty Tour Guide
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Ghost tours, food tours, history tours, brewery tours. Often
+    one tour route plus seasonal variations.
+
+- slug: bartender_private
+  display_name: Private Event Bartender
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Private and event bartending. Distinct from bar employee.
+
+- slug: butler
+  display_name: Private Butler / Estate Manager
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Independent estate manager, household manager, private butler
+    for HNW clients. Rare but real.
+
+- slug: housekeeper_private
+  display_name: Private Housekeeper
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Private full-service housekeeper for individual households,
+    distinct from general house cleaning service.
+
+- slug: concierge_private
+  display_name: Independent Concierge
+  tenant_type_fit: [doer]
+  priority: P2
+  status: pending
+  notes: Personal concierge services, lifestyle management, errand
+    services.
+
+- slug: pet_treat_maker
+  display_name: Pet Bakery / Pet Treat Maker
+  tenant_type_fit: [seller]
+  priority: P2
+  status: pending
+  notes: Specialty pet treats, dog cakes, freeze-dried treats. Distinct
+    from general pet products by being food-specific.
