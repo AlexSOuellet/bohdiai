@@ -49,6 +49,10 @@ yarn-error.log*
 # TypeScript
 *.tsbuildinfo
 
+# Generated manifests — rebuilt on every dev/build run
+lib/blocks-manifest.generated.ts
+lib/widgets-manifest.generated.ts
+
 # Sentry
 .sentryclirc
 
