@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
-  content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
+  content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}', './blocks/**/*.{ts,tsx}', './widgets/**/*.{ts,tsx}'],
   theme: {
     screens: {
       md: '720px',
