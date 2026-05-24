@@ -34,7 +34,7 @@
   display_name: Jewelry Maker
   tenant_type_fit: [seller]
   priority: P0
-  status: pending
+  status: done
   notes: The most-cited Etsy category. Spans personalized name pieces,
     silversmith and goldsmith work, beadwork, polymer clay, gemstones,
     resin, hand-stamped metal. Concerns center on metal type, allergens,
@@ -44,7 +44,7 @@
   display_name: Baker
   tenant_type_fit: [seller, doer]
   priority: P0
-  status: pending
+  status: done
   notes: Cottage-food bakers, custom-cake makers, sourdough specialists,
     wedding cake makers. Retail plus custom orders. Often teaches classes.
     Huge population at the kitchen-table-maker tier.
@@ -71,7 +71,7 @@
   display_name: Soap & Bath Maker
   tenant_type_fit: [seller]
   priority: P0
-  status: pending
+  status: done
   notes: Cold-process and melt-and-pour soap, bath bombs, body butters,
     scrubs, lotions, salts. Closely adjacent to candles. Concerns are
     ingredients, skin sensitivity, scent, curing time for cold-process.
@@ -80,7 +80,7 @@
   display_name: Ceramicist / Potter
   tenant_type_fit: [seller, doer]
   priority: P0
-  status: pending
+  status: done
   notes: Mugs, bowls, vases, planters, custom commissions. Often teaches
     classes (doer side). Classic Seller+Doer hybrid validator.
 
@@ -88,7 +88,7 @@
   display_name: Woodworker
   tenant_type_fit: [seller, doer]
   priority: P0
-  status: pending
+  status: done
   notes: Cutting boards, turned bowls, custom signs, kids' toys, decor,
     cabinetry, furniture commissions. Schema tends to include wood
     species, finish, food-safety status. Common specializations are
@@ -115,7 +115,7 @@
   display_name: Fine Artist / Painter
   tenant_type_fit: [seller, doer]
   priority: P0
-  status: pending
+  status: done
   notes: Watercolor, oil, acrylic, mixed media. Original works for sale
     plus commissioned portraits (pet portraits, family portraits, custom
     paintings). Art-side validator.
@@ -268,7 +268,7 @@
   display_name: Vintage Reseller
   tenant_type_fit: [seller]
   priority: P1
-  status: pending
+  status: done
   notes: Etsy's second-largest category. Vintage clothing, jewelry,
     housewares, ephemera. The seller is curator not creator. Concerns
     center on condition, era authenticity, sizing.
