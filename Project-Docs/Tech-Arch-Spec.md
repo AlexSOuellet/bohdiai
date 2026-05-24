@@ -74,7 +74,7 @@ create index tenants_status_idx on tenants (status) where deleted_at is null;
 - **`time_zone`** — IANA time zone. Drives every date/time displayed on the storefront and in the dashboard. Defaults to Eastern but onboarding asks.
 - **`contact_email`** — the business's public contact email (shown on the storefront). Distinct from the auth email the maker logs in with, because they may not want their personal email public.
 - **`phone`**, **`address_*`** — optional business contact and physical address. Address used for shipping origin and tax-jurisdiction lookups later. All optional because a digital-only tenant has none of this.
-- **`created_at`**, **`updated_at`** — standard timestamps. `updated_at` maintained by a database trigger (covered in a later section).
+- **`created_at`**, **`updated_at`** — standard timestamps. `updated_at` is maintained by the `public.set_updated_at()` trigger function, defined in migration `20260522000002_updated_at_trigger.sql` and attached as `before update for each row` on every table with an `updated_at` column.
 - **`deleted_at`** — soft-delete timestamp. Set when a tenant closes their account. Their data stays for an audit period (TBD) before hard deletion. All unique indexes and active-tenant lookups filter on `deleted_at is null`.
 
 ### 1.3 Why these choices
@@ -462,10 +462,10 @@ create table niches (
   body_markdown     text not null,
   created_at        timestamptz not null default now(),
   updated_at        timestamptz not null default now(),
-  created_by        uuid references tenant_members(user_id),
-  last_updated_by   uuid references tenant_members(user_id),
+  created_by        uuid references auth.users(id) on delete set null,
+  last_updated_by   uuid references auth.users(id) on delete set null,
   approved_at       timestamptz,
-  approved_by       uuid references tenant_members(user_id)
+  approved_by       uuid references auth.users(id) on delete set null
 );
 
 create index niches_status_idx on niches (status);
@@ -483,8 +483,8 @@ create index niches_aliases_idx on niches using gin (aliases);
 - **`status`** — lifecycle state. `draft` is in progress (an agent or human just started writing it). `in_review` is ready for a human approval. `approved` is live and reachable from onboarding and AI generation. `retired` is retired — still readable for tenants who picked it before, not offered to new tenants.
 - **`body_markdown`** — the prose body the AI reads when generating sites and content for a tenant in this niche. The content shape matches the section template (what the business does, brand exemplars across the range, who the customers are, how they talk about their products, common variations sellers use, what customers ask before buying, visual direction range, what tends to surface on the storefront, what to avoid, adjacent niches).
 - **`created_at`**, **`updated_at`** — standard timestamps. `updated_at` maintained by a trigger.
-- **`created_by`**, **`last_updated_by`** — the user (founder, agent, or staff member) who created the row and who last touched it. Both reference tenant_members because that's where user identity lives.
-- **`approved_at`**, **`approved_by`** — when and by whom the niche was last moved into `approved` status. Cleared if the row is moved back to draft or in_review.
+- **`created_by`**, **`last_updated_by`** — the user (founder, agent, or staff member) who created the row and who last touched it. Both reference `auth.users(id)` directly (not via tenant_members) because niches are platform-wide content, not tenant-scoped, and the same user can be a member of multiple tenants — referencing tenant_members.user_id would be ambiguous. Set null on user deletion to preserve the niche row.
+- **`approved_at`**, **`approved_by`** — when and by whom the niche was last moved into `approved` status. Cleared if the row is moved back to draft or in_review. Same auth.users reference.
 
 ### 6.3 Why these choices
 
@@ -1285,6 +1285,7 @@ create table orders (
   source                 text not null default 'storefront' check (source in (
                            'storefront', 'market_mode', 'admin_manual', 'imported'
                          )),
+  event_id               uuid,
   created_at             timestamptz not null default now(),
   updated_at             timestamptz not null default now(),
   paid_at                timestamptz,
@@ -1393,6 +1394,7 @@ create index shipment_items_order_item_idx on shipment_items (order_item_id);
 - **Money columns in cents** — subtotal, tax, shipping, discount, total. Integer math avoids floating-point currency bugs.
 - **`shipping_address` / `billing_address` as JSONB snapshots.** The customer's address book lives in customer_addresses, but the order captures the address as a snapshot at purchase time. A customer who edits or deletes their address later doesn't break old orders.
 - **`source`** — where the order came from. `storefront` is the normal cart flow. `market_mode` is the in-person "log a sale" from Master Spec §9. `admin_manual` is the maker creating an order by hand. `imported` is from a migration tool (Phase 2 per Master Spec §14).
+- **`event_id`** — optional soft reference to an `events` row. Set when the maker tags a Market Mode log-a-sale to a specific craft show or market event. Null for all storefront orders. No database FK constraint — a deleted event doesn't cascade to orders; the application handles the missing-event case gracefully. Present from day one so per-event profitability analytics need no schema migration.
 - **Timestamp lifecycle columns** — paid_at, fulfilled_at, canceled_at. Shipment timestamps live on the shipments table, not here.
 
 **order_items** — line items, snapshotted.
@@ -1933,7 +1935,92 @@ Tenant admins read/write all their promos. Customers don't read the promos table
 
 ---
 
-## 20. Future-supported tables (foundation audit)
+## 20. Events and event tracking
+
+Craft show calendar, event expense log, and the sales-to-event attribution that ties Market Mode log-a-sale entries to specific events. Per D18, all three ship at launch.
+
+Two tables: `events` (one row per event the maker creates) and `event_expenses` (one row per expense line associated with an event). The `orders` table already carries an `event_id` column (added in §14) — nullable, set when the maker tags a Market Mode sale to an event.
+
+### 20.1 Table definitions
+
+```sql
+create table events (
+  id                uuid primary key default gen_random_uuid(),
+  tenant_id         uuid not null references tenants(id) on delete cascade,
+  name              text not null,
+  event_date        date not null,
+  end_date          date,
+  location          text,
+  url               text,
+  notes             text,
+  status            text not null default 'upcoming' check (status in (
+                      'upcoming', 'completed', 'canceled'
+                    )),
+  created_at        timestamptz not null default now(),
+  updated_at        timestamptz not null default now()
+);
+
+create index events_tenant_date_idx on events (tenant_id, event_date);
+create index events_tenant_status_idx on events (tenant_id, status);
+
+create table event_expenses (
+  id                uuid primary key default gen_random_uuid(),
+  event_id          uuid not null references events(id) on delete cascade,
+  tenant_id         uuid not null references tenants(id) on delete cascade,
+  description       text not null,
+  amount_cents      integer not null check (amount_cents >= 0),
+  created_at        timestamptz not null default now(),
+  updated_at        timestamptz not null default now()
+);
+
+create index event_expenses_event_idx on event_expenses (event_id);
+```
+
+The FK from `orders.event_id` to `events.id` is a soft reference (no database-level FK constraint) because an order tagged to a deleted event should not cascade-delete. The application layer handles the missing-event case gracefully.
+
+### 20.2 Column-by-column
+
+**events**
+
+- **`name`** — the display name shown in the calendar and dashboard list. "Downtown Farmers Market", "Holiday Craft Show", etc.
+- **`event_date`** — the day the event starts. Date not timestamp — most craft shows don't have a precise start time the maker needs to capture.
+- **`end_date`** — optional. For multi-day shows (a three-day holiday market), both start and end are captured. Null for single-day events.
+- **`location`** — free text. The maker types the venue or address. Not structured because the full address-column split is overkill for a market name.
+- **`url`** — optional link to the event's website or Facebook page.
+- **`notes`** — private maker notes ("booth 42, bring the tall rack").
+- **`status`** — `upcoming` is the default for new events, `completed` is set (manually or by a job) after event_date passes, `canceled` is set by the maker.
+
+**event_expenses**
+
+- **`description`** — what the expense was: "Booth fee", "Gas", "Supplies", "Parking".
+- **`amount_cents`** — expense amount in cents. Always positive.
+
+### 20.3 How the public calendar widget works
+
+The storefront calendar widget reads `status = 'upcoming'` events for the tenant, ordered by event_date, and renders them as a simple list or calendar view. The widget is built like any other widget (§7.6) — it reads from events via a server component and threads into any block that exposes an appropriate slot.
+
+### 20.4 How the per-event profitability works
+
+The dashboard event detail view shows:
+- Total sales tagged to this event: `sum(orders.total_cents) where event_id = ?`
+- Total expenses for this event: `sum(event_expenses.amount_cents) where event_id = ?`
+- Net: sales minus expenses
+
+No pre-aggregated cache is needed at launch — the sums run against a small dataset per event. If the expense list or sale count ever grows large enough that the query is slow, a cached aggregate can be added additively.
+
+### 20.5 Row-level security
+
+Tenant admins read and write their own events and event_expenses. Anonymous storefront visitors read `status = 'upcoming'` events for the tenant whose storefront they are visiting (read-only, for the calendar widget). No cross-tenant reads.
+
+### 20.6 What's NOT here
+
+- **Recurring events.** A maker who attends the same farmers market every Saturday sets up one event per occurrence at launch. Recurring event templates (or a repeat rule) can be added additively if the maker feedback demands it.
+- **Booth/space information.** Notes field covers this at launch. A dedicated booth field can be added if needed.
+- **Event-level inventory pre-packs.** Knowing "I'm taking 20 of each candle to this show" is a future feature. The event_expenses covers cost inputs; inventory pre-allocation would be a separate events_inventory table.
+
+---
+
+## 21. Future-supported tables (foundation audit)
 
 Per D1, the launch database has to support every feature on the BohdiAI roadmap even if the UI ships years later. This section walks through each post-launch area and asks one question per table group: does this require any change to the launch tables?
 
@@ -2003,13 +2090,18 @@ Everything else (messaging, marketing, integrations, analytics, customer segment
 
 ## Spec status
 
-All foundational tables for Phase 1 are now drafted, plus the foundation audit for post-launch features. The spec stands at roughly 25 tables across 20 sections. Each section follows the same shape: table definition, column-by-column rationale, why these choices, RLS policy, what's NOT in this table.
+All foundational tables for Phase 1 are drafted, plus the events/event tracking tables (§20), plus the foundation audit for post-launch features. The spec covers 33 tables across 21 sections. The schema is live in Supabase (all tables applied via migrations as of 2026-05-22). Events and event_expenses tables and the event_id column on orders are pending migration.
 
-Open items that surfaced during drafting:
+**Two deviations from the original spec that are now reflected here:**
 
-- The Master Spec amendments listed in the decisions log (§2, §6.2, §6.3, §8, §17) still need to be written.
+1. **Niches FK columns** (§6). The original draft had `created_by`, `last_updated_by`, and `approved_by` referencing `tenant_members(user_id)`. That references a non-unique column (one user can be a member of many tenants). The live migration uses `references auth.users(id) on delete set null` instead. This spec now reflects the corrected version.
+
+2. **The `set_updated_at()` trigger function.** Every section that uses `updated_at` says it is maintained by a database trigger. The function itself lives in `supabase/migrations/20260522000002_updated_at_trigger.sql` as `public.set_updated_at()` and is attached as `before update for each row` on every applicable table.
+
+**Open items:**
+
+- The mood list for D6 still needs to be curated — examples exist but the full launch set doesn't.
 - Doer-storefront and multi-type-tenant rendering questions are still open at the product-design level; the database supports them either way.
-- The mood list for D6 still needs to be curated.
-- RLS policy SQL is described in each section but not yet written as final SQL — that lands when we implement.
-
-Each section follows the same shape: table definition, column-by-column rationale, why these choices, RLS policy, what's NOT in this table.
+- RLS policy SQL is described in each section but not yet written as final SQL — that lands when we implement each feature.
+- Events and event_expenses migrations still need to be written and applied.
+- The event_id column on orders needs a migration.

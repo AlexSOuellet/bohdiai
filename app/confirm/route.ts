@@ -65,7 +65,7 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL('/confirm/error?reason=server', site));
   }
 
-  const { subject, html, text } = welcomeEmail(row.type);
+  const { subject, html, text } = welcomeEmail(row.type as 'founder' | 'notify');
   try {
     await resend().emails.send({ from: fromEmail(), to: row.email, subject, html, text });
   } catch (err) {

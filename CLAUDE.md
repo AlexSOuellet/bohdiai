@@ -8,7 +8,7 @@
 2. `project-docs/SESSION-BRIEF.md` — operational state (what we did, what's next)
 3. **`project-docs/BohdiAI-Master-Spec.md` — READ IN FULL, every session, every time.** This is the product design. It carries across sessions because Claude has no memory between sessions. Skimming or "pulling sections as needed" is not allowed. Read the whole thing before responding to the user's first message.
 4. `project-docs/BohdiAI-Roles-Workflow.md` — rules of engagement (rank-2 authority). Required for any process question.
-5. The current phase doc (`project-docs/Phase-0-Spec.md` today; later `Phase-1-Spec.md`, etc.)
+5. The current phase doc (`project-docs/Phase-1-Spec.md`)
 6. `project-docs/Phase-1-Decisions-Log.md` — refinements on top of the Master Spec captured during Phase 1 planning. The Master Spec wins where the decisions log is silent; the decisions log wins where it has spoken.
 
 Only pull additional docs if the task specifically requires it.
@@ -28,9 +28,9 @@ The structured-list reflex is a documentation habit. It belongs in `.md` files, 
 
 ## What this project is
 
-BohdiAI is a multi-tenant AI-powered SaaS that gives makers/artisans (bakers, vintage sellers, farm stands, service providers, etc.) a complete AI-generated storefront on a `[shop].bohdiai.com` subdomain in minutes. Subscription-only (Freemium / Basic $19.95 / Pro $29.95). **Never takes a cut of sales** — money flows customer → maker's own Stripe/Square; BohdiAI reads webhooks only.
+BohdiAI is a multi-tenant AI-powered SaaS that gives makers/artisans (bakers, vintage sellers, farm stands, etc.) a complete AI-generated storefront on a `[shop].bohdiai.com` subdomain in minutes. Subscription-only (one tier at launch, ~$35–$49/mo). **Never takes a cut of sales** — money flows customer → maker's own Stripe/Square; BohdiAI reads webhooks only.
 
-**Status as of 2026-05-17:** planning complete, Phase 0 spec approved, awaiting Alex's pre-work before build begins.
+**Status as of 2026-05-24:** Phase 0 shipped and live. Phase 1 planning complete — D1 through D18 locked. All 33 database tables live in Supabase. Phase 1 Spec written. Build begins next session.
 
 ## Roles
 
@@ -50,7 +50,7 @@ Next.js (App Router) · Supabase (Postgres + RLS + Auth + Storage) · Vercel · 
 
 1. **Golden Rules** (`project-docs/BohdiAI-Golden-Rules.docx`) — inviolable principles. If anything else conflicts, Golden Rules win.
 2. **Master Spec** (`project-docs/BohdiAI-Master-Spec.docx`) — product/technical spec.
-3. **Phase Docs** (`project-docs/Phase-N-Spec.md`) — current phase scope. Phase 0 approved; Phase 1 not yet drafted.
+3. **Phase Docs** (`project-docs/Phase-N-Spec.md`) — current phase scope. Phase 0 shipped. Phase 1 spec written and active.
 4. Feature Specs (per-feature, written as needed)
 5. Agent Guides (written when agents come online)
 
@@ -59,24 +59,15 @@ Operating docs (rank 2, alongside Master Spec):
 - `project-docs/Engineering-Standards.md` — strictest TS, 90/85/75% test coverage, no `any`, ADRs required, etc. APPROVED.
 - `project-docs/Daily-Audit.md` — the 19-question audit from Golden Rules + CI automation + session log format. APPROVED.
 
-## Phase 0 status
+## Phase 0 status — SHIPPED ✓
 
-**Spec:** [project-docs/Phase-0-Spec.md](project-docs/Phase-0-Spec.md) — APPROVED.
+bohdiai.com is live. Double-opt-in waitlist works. Full stack validated. See `project-docs/Phase-0-Spec.md` for the complete record.
 
-**Locked decisions (all 9 open questions answered):**
-1. Repo name: `bohdi-ai`
-2. GitHub org: new `bohdi-software` org under Alex's personal account
-3. From address: `alex@bohdiai.com` (Cloudflare Email Routing → Alex's Gmail; sending via Resend)
-4. Form fields: email-only (no name field)
-5. og:image: Claude drafts, Alex approves
-6. Footer contact: `alex@bohdiai.com`
-7. Skool URL: `https://www.skool.com/wits-end-breakthrough-7869` (with `learn.bohdiai.com` redirecting to it via free Cloudflare redirect, NOT paid Skool white-label)
-8. "Who's behind this" copy: Claude drafts 2-3 versions, Alex picks
-9. Supabase: same project as Phase 1 (`bohdi-ai` project under new "Bohdi Software" Supabase org)
+## Phase 1 status — READY TO BUILD
 
-**Pre-work checklist:** [project-docs/Phase-0-PreWork-Checklist.md](project-docs/Phase-0-PreWork-Checklist.md) — Alex will complete in the morning before build session.
+All planning complete. D1 through D18 locked in `project-docs/Phase-1-Decisions-Log.md`. Database live in Supabase (33 tables, RLS on, migration runner at `scripts/db-migrate.mjs`). Phase 1 Spec at `project-docs/Phase-1-Spec.md`.
 
-**Next session goal:** Alex completes pre-work → shares non-secret IDs (Supabase URL, Sentry DSN, PostHog keys) and puts secrets directly in Vercel env vars → Claude scaffolds Next.js + ports design + builds waitlist + double-opt-in + founder cap + deploys to preview.
+**Next session goal:** Start Phase 1 build. First priority is the storefront resolver (subdomain → tenant_id middleware), then Supabase Auth wiring, then onboarding flow. See Session Brief and Phase 1 Spec for full sequence.
 
 ## Brand context (load-bearing)
 
@@ -98,12 +89,16 @@ Operating docs (rank 2, alongside Master Spec):
 - `project-docs/BohdiAI-Golden-Rules.docx` — rank 1 authority (Word doc, source of 19-question audit)
 - `project-docs/BohdiAI-Master-Spec.docx` — rank 2 authority
 - `project-docs/BohdiAI-Roles-Workflow.docx` — roles reference
-- `project-docs/Phase-0-Spec.md` — current phase, APPROVED
-- `project-docs/Phase-0-PreWork-Checklist.md` — Alex's setup steps
+- `project-docs/Phase-1-Spec.md` — current phase spec, ACTIVE
+- `project-docs/Phase-0-Spec.md` — Phase 0 record (shipped)
+- `project-docs/Tech-Arch-Spec.md` — database design, schema live in Supabase
 - `project-docs/Approval-Policy.md` — the four buckets
 - `project-docs/Engineering-Standards.md` — the strict standards
 - `project-docs/Daily-Audit.md` — end-of-session audit
-- `Design files/BohdiAI/` — extracted Claude Design output (Coming Soon.html, app.jsx, parts.jsx). Port these into Next.js for Phase 0. Tailwind + Newsreader/Geist fonts + cream/honey/ink palette.
+- `content/niches/candles.md` — reference niche file
+- `content/niches/_queue.yaml` — launch queue of ~260 niche candidates
+- `.claude/skills/niche-writer/SKILL.md` — the niche-writer skill
+- `Design files/BohdiAI/` — extracted Claude Design output. Tailwind + Newsreader/Geist fonts + cream/honey/ink palette.
 
 ## Mantras (from Golden Rules)
 

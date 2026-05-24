@@ -52,23 +52,23 @@ BohdiAI is intentionally not limited to crafters. While artisans and makers are 
 
 ## 2. Target Audience
 
-BohdiAI is for businesses with one to five people running them. Crafters are the bulk of the audience, but the platform also supports bakers, electricians, plumbers, restaurants, tattoo artists, dog groomers, photographers, and similar very-small businesses.
+BohdiAI is for businesses with one to five people running them. The launch audience is makers who sell things — handmade goods, digital products, custom orders and commissions. Crafters are the bulk: candle makers, soap makers, jewelers, bakers, woodworkers, artists, vintage sellers. Makers who also take custom commissions are included — a jeweler who makes to order, a baker who does custom cakes.
 
-Every BohdiAI tenant is a Seller, a Doer, or both. A Seller sells things — products, digital items, gift cards. A Doer does things for customers — services, classes, appointments, events, contractor work. Multi-type is normal: a restaurant sells food and takes reservations; a tattoo artist sells merch and books appointments.
+Every BohdiAI tenant is a Seller, a Doer, or both. A Seller sells things — products, digital items. A Doer does things for customers — services, classes, appointments, events, contractor work. Multi-type is normal and supported.
 
-**The Kitchen Table Maker** — Makes something beautiful but has no online presence. Lowest possible barrier to entry. (Seller.)
+**The Maker with Products** — Makes something and wants to sell it online. May already sell at craft fairs or on Etsy. Wants their own store, their own brand, no platform fees on their sales. (Seller.)
 
-**The Craft Fair / Popup Seller** — Already selling in person. Has a table at the local market, maybe a Venmo and a notebook. Between shows, their business does not exist online. (Seller.)
+**The Craft Fair / Popup Seller** — Already selling in person. Has a table at the local market, maybe a Venmo and a notebook. Between shows, their business does not exist online. Needs Market Mode to log in-person sales and keep inventory synced. (Seller.)
 
 **The Frustrated Etsy / Platform Lister** — Tried Etsy and it did not work. Too much competition, too many fees, no control. Wants their own store on their own terms. (Seller.)
 
-**The Service Provider** — Tattoo artists, plumbers, photographers, dog groomers, tutors, personal chefs. Needs a professional online presence to generate leads and, depending on the trade, book appointments or display a portfolio. (Doer.)
+**The Maker Who Also Does** — Bakers who teach classes, jewelry makers who take commissions, artists who do custom portraits. Sells things and does things for customers. (Seller + Doer.)
 
-**The Hybrid Business** — Restaurants, bakeries with classes, jewelry makers who also do custom commissions. Sells things and does things. (Seller + Doer.)
+**Pure service trades — plumbers, electricians, dentists, dog groomers, tattoo artists, photographers — are deferred.** The platform will support them, but they are not the launch audience. The onboarding, the niche library, the block and widget catalogs, and the marketing are built for makers-who-sell first. Doer-specific features (booking calendars, appointment management, service availability) come in a later phase once the maker base is established.
 
-BohdiAI is **not** for businesses with 500-product catalogs, manufacturers with bills-of-materials and lot tracking, or industries that need a dedicated industry tool (full restaurant POS, HVAC dispatch, salon scheduling at scale). A specific business whose workflow doesn't fit the standard build is a paid add-on, not an automatic onboarding result.
+BohdiAI is **not** for businesses with 500-product catalogs, manufacturers with bills-of-materials and lot tracking, or industries that need a dedicated industry tool (full restaurant POS, HVAC dispatch, salon scheduling at scale).
 
-**What they have in common:** They are doers first. They did not get into this to learn web design, SEO, or payment processing. BohdiAI meets them where they are and makes the business side easy.
+**What they have in common:** They are makers first. They did not get into this to learn web design, SEO, or payment processing. BohdiAI meets them where they are and makes the business side easy.
 
 ---
 
@@ -95,33 +95,34 @@ Pure subscription revenue. BohdiAI never takes a percentage of maker sales. No t
 
 **Marketing Message:** "No fees on your sales. Ever. Unlike Etsy, we never take a cut."
 
-**Tier Structure**
+**Launch Tier Structure**
 
-| Feature | Freemium (Free) | Basic ($19.95/mo) | Pro ($29.95/mo) |
-|---|---|---|---|
-| AI Onboarding | One-time generation | Full niche theming | Full niche theming |
-| Site Type | Single landing page | Full store | Full store |
-| Products | None | 5–10 | Unlimited |
-| Collections | None | 1–2 | Unlimited |
-| Commerce (Cart/Checkout) | No | Yes | Yes |
-| AI Editor | No (click-to-edit only) | Limited monthly cap | Higher monthly cap |
-| Vibe Slider | No | Yes | Yes |
-| Schema Fields & Badges | No | Yes | Yes |
-| AI Image Studio | No | 3 generations/day | Higher daily cap |
-| Custom Domain | No (subdomain only) | Yes (self-serve setup) | Yes (setup included) |
-| Domain Setup Help | N/A | $10–$15 one-time fee | Included |
-| Log a Sale (Market Mode) | No | Yes | Yes |
-| Order Management | No | Yes | Yes |
-| Component Library | Basic | Core set | Full library |
-| Footer Branding | "Powered by BohdiAI" | None | None |
-| Claude Vision Extraction | No | No | Yes (when available) |
-| Priority New Features | No | No | Yes |
+One tier at launch. Multi-tier pricing is Phase 2 after the product proves itself with real paying customers.
 
-Specific caps (exact AI interaction limits, exact product counts for Basic) will be refined based on beta tester usage patterns and cost data.
+| Feature | BohdiAI ($25/mo launch price) |
+|---|---|
+| AI Onboarding | Full niche + mood-driven site generation |
+| Site Type | Full store on a subdomain |
+| Products | Unlimited |
+| Collections | Unlimited |
+| Commerce (Cart/Checkout) | Yes — Stripe and Square |
+| AI Editor | Yes — chat, highlight-and-transform, click-to-edit |
+| Vibe Slider | Yes |
+| Log a Sale (Market Mode) | Yes, including event tagging |
+| Event Calendar | Yes — public calendar widget + internal event log |
+| Order Management | Yes |
+| Custom Domain | Phase 2 |
+| Footer Branding | None |
+
+Launch price is $25/month (D19) — deliberate audience-first pricing for kitchen-table makers. AI usage caps (editor interactions per month, image studio generations) to be calibrated during beta based on actual usage and cost data.
+
+**Phase 2: Multi-tier**
+
+Freemium, a lower-priced Basic tier, and a higher-priced Pro tier are planned for Phase 2 once usage patterns from real customers justify the segmentation. The database and billing infrastructure is built to support them from day one. The decision on what each tier includes will be made with real data.
 
 **Paid Add-Ons (future)**
 - Additional AI token packs
-- One-time concierge setup services for Basic tier
+- One-time concierge setup services
 
 ---
 
@@ -236,10 +237,16 @@ Stripe is positioned as the recommended option with a brief explanation of its a
 - Multi-item cart with quantity support at launch.
 - No discount codes, shipping calculators, or saved carts at launch.
 - Clean, simple checkout flow.
+- Guest checkout at launch. Customer accounts (saved addresses, order history, wishlists) are Phase 2.
 
 **Deferred to Phase 2**
+- Customer accounts on storefronts (saved addresses, order history, wishlists)
+- Gift cards
+- Promos and discount codes
+- Shipment tracking UI (tracking numbers, carrier, delivery status visible to maker)
 - Stripe Tax automation
-- Full multi-item cart enhancements (discount codes, shipping options)
+- Cart enhancements (discount codes, shipping options)
+- Reviews tied to verified purchases
 
 ---
 
@@ -268,11 +275,20 @@ Most niches share content with neighboring niches. A plumber and an electrician 
 **Concept**
 Market Mode is a feature for makers who sell at craft fairs, farmers markets, and popup events. It lets them log in-person sales from their phone and keep their online inventory in sync.
 
-**At Launch: Lightweight "Log a Sale"**
+**At Launch: Lightweight "Log a Sale" + Event Tracking**
 - Simple interface: tap a product from a photo grid, enter quantity, sale is recorded.
 - Inventory deducts automatically — a sale at the booth immediately updates the live website.
 - Payment processing is the maker's responsibility at the booth (they use whatever they already have).
 - Market Mode tracks what sold, not how they got paid.
+
+**Event Calendar and Tracker (at launch)**
+- The maker can add upcoming events (craft shows, farmers markets, popup events) — name, date, location, optional link.
+- Upcoming events display on the storefront via a public calendar widget so customers know where to find the maker in person.
+- Past events can have expenses logged (booth fee, gas, supplies).
+- Each Market Mode log-a-sale entry can be tagged to a specific event.
+- The dashboard shows per-event totals: sales logged to that event minus expenses = profitability view. The maker can see at a glance which shows are worth doing again.
+
+This is the data that craft show veterans want and no major platform provides: was that farmers market worth the drive?
 
 **Phase 2: Full Market Mode UI**
 - Dedicated mobile-optimized view with high contrast for outdoor/bright light use.
@@ -291,22 +307,39 @@ The maker's dashboard is designed for desktop/laptop as the primary setup experi
 |---|---|
 | Dashboard Home | At-a-glance view: recent orders, revenue snapshot, guided next steps for new users. |
 | My Website | The AI-powered site editor. Three editing modes: (1) AI chat for complex requests, (2) Highlight-and-transform for targeted rewrites, (3) Direct click-to-edit for quick manual changes. Includes the Vibe Slider for design adjustments. |
-| Products | Add and edit products with niche schema fields. Organize into Collections. Claude Vision photo upload generates titles, descriptions, and suggests pricing from product images. |
-| Orders | Order notifications, customer details, shipping info, fulfillment tracking. Populated automatically from cart/checkout transactions via webhooks. |
-| Log a Sale | Lightweight Market Mode. Tap a product, enter quantity, inventory syncs. For craft fair and in-person sales. |
-| Settings | Account management, subscription/billing, payment processor setup (guided Stripe/Square walkthrough), custom domain configuration. |
+| Listings | Add and edit products and digital products. Organize into Collections. Claude Vision photo upload generates titles, descriptions, and suggests pricing from product images. |
+| Orders | Order notifications, customer details, fulfillment info. Populated automatically from cart/checkout transactions via webhooks. |
+| Log a Sale | Lightweight Market Mode. Tap a product, enter quantity, inventory syncs. Tag the sale to an event. For craft fair and in-person sales. |
+| Settings | Account management, subscription/billing, payment processor setup (guided Stripe/Square walkthrough). |
 
-**Post-Launch Value-Add Rollouts**
+**What is NOT in the launch dashboard**
+- Custom domain configuration (Phase 2)
+- Customer account management (Phase 2)
+- Reviews (Phase 2)
+- Gift cards (Phase 2)
+- Promos and discount codes (Phase 2)
+- Finances / income tracking (Phase 2)
+- AI Image Studio (Phase 2)
+- Messages / customer inbox (Phase 2)
+- Full Market Mode mobile UI (Phase 2)
+
+**Post-Launch Value-Add Rollouts (Phase 2)**
+- Customer accounts — saved addresses, order history, wishlists
+- Reviews tied to verified purchases
+- Gift cards
+- Promos and discount codes
+- Custom domain support (self-serve)
 - Finances — income/expense tracking, transaction history
-- Tools — pricing calculator, COGS worksheet, shipping calculator, craft fair planner, tax estimator
+- Tools — pricing calculator, COGS worksheet, shipping calculator, tax estimator
 - AI Image Studio — background removal, photo enhancement, lifestyle mockups
 - Messages — customer inquiries inbox
 - Full Market Mode UI
 - Training tab (Skool integration beyond a simple link)
 
-**Future Features**
+**Future Features (Phase 3+)**
 - AI storefront chatbot — answers customer questions using the store's product data and FAQ
 - AI platform FAQ chatbot — answers maker questions about how to use BohdiAI
+- Multi-tier pricing (Freemium, Basic, Pro)
 
 ---
 
@@ -450,50 +483,56 @@ Full database schema to be defined in the Technical Architecture Spec document.
 
 ## 17. Phasing Summary
 
-**Phase 0: Marketing Foundation**
-- Build and launch bohdiai.com (coming soon landing page)
-- Beta access application and waitlist capture
-- Skool community active and growing
-- SEO and AEO optimization from day one
-- Begin recruiting founding members / beta testers
+**Phase 0: Marketing Foundation** ✓ SHIPPED
+- bohdiai.com coming soon site live
+- Double-opt-in waitlist with founder cap
+- Full stack validated (Next.js + Vercel + Supabase + Resend + Cloudflare)
+- SEO and AEO optimized from day one
 
-**Phase 1: MVP Launch**
+**Phase 1: MVP Launch — Makers Who Sell**
+
+The launch product is intentionally scoped. Prove the core — AI-generated storefronts, a working editor, real sales — before expanding. Everything in the Phase 2 list is designed and database-supported from day one; the launch scope is a build and validation discipline, not an architecture limit.
+
 - AI-powered onboarding with mood-driven design and token generation
-- Design token system and modular component assembly with many variants
+- Design token system and modular component assembly (many variants built over time by Cowork agents)
 - AI editor (chat, highlight-and-transform, click-to-edit) with Vibe Slider
-- Listings for both Sellers (products, digital products, gift cards) and Doers (services, classes, appointments, events) — single unified listings model
-- Seller-defined product variations, bundles, and per-product promos
+- Listings for Sellers — products and digital products only at launch
+- Seller-defined product variations
 - Collections for shop organization
 - Storefront content pages (about, shipping/returns, FAQ, custom URLs)
-- Customer accounts with saved addresses, order history, and wishlists
 - Multi-item cart with quantity support and checkout (Stripe + Square)
 - Order management with webhook-based transaction tracking
-- Shipments and tracking (multi-shipment supported from day one)
-- Customer reviews tied to verified purchases
-- Promos and discount codes (cart-level and product-level)
-- Gift cards
-- Seller analytics (sales, traffic, conversion)
 - Social media links
-- Lightweight "Log a Sale" (Market Mode)
+- "Log a Sale" (Market Mode) with event tagging
+- Public event calendar widget on storefront
+- Internal event log with expense tracking and per-event profitability
 - Guided payment processor setup in dashboard
 - Tenant dashboard: home, My Website, Listings, Orders, Log a Sale, Settings
-- Founder admin: user management, revenue dashboard, niche file management (PR-based)
+- Founder admin: user management, revenue dashboard, niche management
 - Subdomain hosting (`[storename].bohdiai.com`)
-- Custom domain support (self-serve for Basic, assisted for Pro)
-- Three subscription tiers (Freemium, Basic with 7-day trial, Pro with 7-day trial)
-- Niche content files covering the launch set of categories
+- One subscription tier (~$35–$49/month, 7-day trial, card required)
+- Niche content covering the launch set of maker categories
+- Async support (2 business day response)
 
-**Phase 2: Growth Features**
+**Phase 2: Growth Features** (funded by Phase 1 revenue)
+- Customer accounts on storefronts (saved addresses, order history, wishlists)
+- Customer reviews tied to verified purchases
+- Gift cards
+- Promos and discount codes (cart-level and product-level)
+- Custom domain support
 - Full Market Mode UI (mobile-optimized, craft fair summary)
 - Storefront filtering ("Shop by Scent Family", sort by attributes)
 - Migration tools: CSV import for Shopify, Etsy, Square with AI mapping
 - Claude Vision product photo extraction and site token refinement
 - Stripe Tax automation
-- Cart enhancements (discount codes, shipping options)
+- Cart enhancements (shipping options)
 - AI Image Studio enhancements
 - Financial tools (income/expense tracking, reporting)
 - Business tools (pricing calculator, COGS worksheet, tax estimator)
-- Expanded niche categories
+- Messages — customer inquiries inbox
+- Multi-tier pricing (Freemium, Basic, Pro) once usage patterns justify it
+- Doer features — booking calendars, appointment management, service listings
+- Expanded niche categories including service trades
 - Blog at bohdiai.com/blog
 
 **Phase 3: Scale & Deepen**
@@ -504,7 +543,7 @@ Full database schema to be defined in the Technical Architecture Spec document.
 - Marketing CMS in founder admin
 - Full support ticketing system
 
-Phase documents will be created as each phase is entered, with detailed scope, timelines, and development milestones. Each phase is modular and testable.
+Phase documents will be created as each phase is entered, with detailed scope and development milestones. Each phase is modular and testable. The database supports all phases from day one — only the UI scope changes between phases.
 
 ---
 

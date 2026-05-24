@@ -298,6 +298,44 @@ This decision was reached after the file-based approach was stress-tested and th
 
 ---
 
+## 2026-05-24
+
+### D18. We stay a SaaS with a narrowed v1 scope
+
+A long conversation today walked through whether BohdiAI should pivot from a SaaS to a one-time generator product — build the site, hand it over, no recurring relationship. The generator model had real appeal on cost and operational weight, but it had two problems we couldn't get past. The kitchen-table maker the Master Spec was designed for can't self-install a Vercel-plus-database-plus-Stripe stack no matter how clean we make it; the audience that can self-install is a different audience entirely. And a SaaS with a real subscriber book sells for several times annual recurring revenue, while a generator-plus-concierge business essentially doesn't sell, which matters when you're building something you may want to exit someday.
+
+What was real and worth taking seriously was the feeling of being on the hook to support a SaaS forever. That feeling isn't something to push through — it's data about what the SaaS has to look like to be runnable by one person. So we stayed with SaaS but narrowed launch scope to what makes the product distinct and what's defensible to support.
+
+**What stays for launch.** The AI generation that builds a maker's site at onboarding from mood and niche. The AI editor — chat, highlight-and-transform, click-to-edit. The vibe slider. These are the wedge against Squarespace and Shopify; without them there's no reason for the product to exist. Storefronts on subdomains. Listings as products and digital products. Cart and checkout. Order capture via webhooks from the maker's own Stripe or Square. The maker dashboard scoped to home, the website editor, listings, orders, log a sale, and settings. Founder admin scoped to user management, revenue dashboard, and niche management. A public calendar widget on the storefront so makers can show where to find them in person. An internal event log in the dashboard with expense tracking. Sales attribution that ties Market Mode log-a-sale entries to specific events, so the maker can see which craft shows were profitable.
+
+**What gets cut from launch.** Custom domains, deferred to Phase 1.5 or Phase 2. The advanced commerce surface — gift cards, customer accounts on storefronts, reviews tied to verified purchases, wishlists, promos, multi-shipment tracking UI — none of that ships at launch. Multi-tier pricing — one tier, one price. The full Doer surface — appointment booking, real-time availability, portfolio-led layouts for pure service trades — deferred. Plumbers, electricians, dentists, dog groomers, tattoo artists are not the launch audience. The launch audience is makers who sell things, including makers who take custom orders or commissions. A "request a custom order" widget covers the commission case without dragging in real booking infrastructure.
+
+**One tier at launch, priced higher than $20.** Twenty was the original placeholder and on reflection it's low for what the product actually does. The honest range for an AI-built storefront with a working editor and the vibe slider is somewhere around $35-$49 a month. Squarespace charges $23-$36 for less. The exact number is still open. The principle locked here is that pricing reflects value, not what feels safest to charge. One tier also removes a whole category of billing edge cases.
+
+**No cap on growth.** We considered capping the maker count to make support manageable for one person. Rejected. If we're building it, we're building it as a business that can grow and that can be sold later, and a closed cap undercuts both. Support burden gets managed instead by scope discipline — narrower product, fewer support categories — and by setting explicit expectations (async support, two business day response, not realtime).
+
+**Maker audience refined.** The launch audience is makers who sell things — physical products, digital products, custom-order commissions. Multi-type makers (a baker who also teaches classes, a jeweler who also takes commissions) are included. Pure service trades — plumbers, electricians, dentists, dog groomers, tattoo artists — are deferred. The schema fully supports Doers; the launch UI, onboarding options, and marketing do not target them. A "request a custom order" form widget handles the commission case for makers who take them without requiring booking-calendar infrastructure.
+
+**Craft show calendar and event tracking added to launch scope.** Makers can show a public calendar of upcoming events (craft shows, markets, popups) on their storefront. Internally, they can log event details and expenses. Market Mode log-a-sale entries can be tagged to a specific event, giving the maker a per-event profitability view (sales minus expenses per show). The storefront calendar widget and internal event log ship at launch. The sales-to-event attribution UI ships at launch because Market Mode is already in launch scope.
+
+**Schema decision worth recording.** When Market Mode's sales table gets built, the orders table gets an optional `event_id` column from day one, even though the full attribution UI is also part of launch. If we ever want to add deeper analytics later, no schema change is needed. The principle generalizes: nothing about the narrowed launch scope simplifies the schema. The schema still has to absorb every Phase 2 and Phase 3 feature additively. What changes is which UI we ship, not which tables exist.
+
+**Master Spec amendments this requires.** Section 2 tightens to makers-who-sell at launch with pure service trades explicitly deferred. Section 4 becomes one tier at the higher price point, with the multi-tier table flagged as Phase 2. Section 7 cuts to cart, checkout, orders, and Market Mode at launch. Section 9 adds the event-tracking and attribution capability to Market Mode. Section 10 shrinks the dashboard to the listed sections only. Section 17 gets rewritten — much of what was Phase 1 moves to Phase 2, funded by revenue once paying customers are real.
+
+The principle behind all of this is keep-it-simple for launch and prove there's a winning product before pouring more work into surface area. Once paying customers are real, every cut comes back as a deliberate Phase 2 add, funded by revenue, with usage data from real makers telling us which to add first.
+
+---
+
+## 2026-05-24 (build session start)
+
+### D19. Launch price is $25/month
+
+$25/month is the launch price. Deliberate, not a placeholder. The audience is kitchen-table makers who are already skeptical of another monthly fee — pricing at the bottom of the market is the right call for that audience at launch. This is framed as a launch price, not the permanent price; room to move up as the product proves itself.
+
+The Phase 1 Spec was carrying `$39/month` as a placeholder Claude put in without Alex confirming it. That number is gone. Use `$25/month` everywhere — UI copy, database seeds, billing flow.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.

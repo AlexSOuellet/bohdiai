@@ -1,0 +1,140 @@
+import { createServerClient } from '@supabase/ssr';
+import type { SetAllCookies } from '@supabase/ssr';
+import { NextRequest, NextResponse } from 'next/server';
+
+const RESERVED = new Set(['www', 'admin', 'app', 'learn']);
+const BASE_DOMAIN = 'bohdiai.com';
+
+export const config = {
+  matcher: [
+    // Run on all paths except Next.js internals and static assets
+    '/((?!_next/static|_next/image|favicon\\.ico|icon\\.svg|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
+};
+
+export async function proxy(request: NextRequest) {
+  const hostname = request.headers.get('host') ?? '';
+  const subdomain = extractSubdomain(hostname);
+
+  // Storefront subdomains: resolve tenant or return 404
+  let tenantId: string | undefined;
+  if (subdomain !== null) {
+    const tenant = await resolveTenant(subdomain);
+    if (!tenant) {
+      return new NextResponse('Store not found', { status: 404 });
+    }
+    tenantId = tenant.id;
+  }
+
+  // Build augmented request headers (includes tenant context when applicable)
+  const requestHeaders = new Headers(request.headers);
+  if (tenantId) {
+    requestHeaders.set('x-tenant-id', tenantId);
+    requestHeaders.set('x-tenant-subdomain', subdomain!);
+  }
+
+  // Start with a response that forwards the augmented headers to route handlers
+  // and server components via Next.js's internal request-headers mechanism.
+  let response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+
+  // Refresh the Supabase auth session on every request so JWTs stay current.
+  // If NEXT_PUBLIC_SUPABASE_* vars are missing (e.g. during early dev), skip gracefully.
+  const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL'];
+  const anonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
+
+  if (supabaseUrl && anonKey) {
+    const supabase = createServerClient(supabaseUrl, anonKey, {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        // When Supabase needs to update the session cookie it rebuilds the
+        // response so the new cookies are included. We recreate with the same
+        // requestHeaders so tenant context is preserved.
+        setAll: ((cookiesToSet) => {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          response = NextResponse.next({ request: { headers: requestHeaders } });
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options ?? {});
+          });
+        }) satisfies SetAllCookies,
+      },
+    });
+    await supabase.auth.getUser();
+  }
+
+  return response;
+}
+
+/**
+ * Returns the storefront subdomain from a hostname, or null if the request
+ * is not for a tenant storefront.
+ *
+ * Examples:
+ *   bohdiai.com          → null  (marketing site)
+ *   app.bohdiai.com      → null  (maker dashboard)
+ *   admin.bohdiai.com    → null  (founder admin)
+ *   myshop.bohdiai.com   → "myshop"
+ *   localhost            → null  (local marketing site)
+ *   myshop.localhost     → "myshop"  (local storefront dev)
+ */
+function extractSubdomain(hostname: string): string | null {
+  const host = hostname.split(':')[0] ?? '';
+
+  if (host === 'localhost') return null;
+
+  if (host.endsWith('.localhost')) {
+    const sub = host.slice(0, -'.localhost'.length);
+    return sub !== '' && !RESERVED.has(sub) ? sub : null;
+  }
+
+  if (host === BASE_DOMAIN || host === `www.${BASE_DOMAIN}`) return null;
+
+  if (!host.endsWith(`.${BASE_DOMAIN}`)) return null;
+
+  const sub = host.slice(0, -(`.${BASE_DOMAIN}`.length));
+
+  // Reject nested subdomains (e.g. a.b.bohdiai.com)
+  if (sub.includes('.')) return null;
+
+  return sub !== '' && !RESERVED.has(sub) ? sub : null;
+}
+
+async function resolveTenant(subdomain: string): Promise<{ id: string } | null> {
+  const supabaseUrl = process.env['SUPABASE_URL'];
+  const serviceRoleKey = process.env['SUPABASE_SERVICE_ROLE_KEY'];
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.error('[middleware] Missing Supabase env vars — cannot resolve tenant');
+    return null;
+  }
+
+  // Lowercase matches the unique index on lower(subdomain)
+  const url =
+    `${supabaseUrl}/rest/v1/tenants` +
+    `?select=id` +
+    `&subdomain=eq.${encodeURIComponent(subdomain.toLowerCase())}` +
+    `&status=eq.active` +
+    `&limit=1`;
+
+  try {
+    const res = await fetch(url, {
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+        Accept: 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      console.error(`[middleware] Supabase tenant lookup failed: ${res.status}`);
+      return null;
+    }
+
+    const rows = (await res.json()) as Array<{ id: string }>;
+    return rows[0] ?? null;
+  } catch (err) {
+    console.error('[middleware] Tenant resolution error:', err);
+    return null;
+  }
+}
