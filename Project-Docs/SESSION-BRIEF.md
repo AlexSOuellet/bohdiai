@@ -1,6 +1,6 @@
 # Session Brief — BohdiAI
 
-**Last updated:** 2026-05-24 (planning session — D18 locked, all docs updated, Phase 1 Spec written, ready to build)
+**Last updated:** 2026-05-24 (Layer 2 build session — mood vocab, manifests, first block/widget, candles niche seeded)
 
 **Update at the end of every session.**
 
@@ -8,7 +8,7 @@
 
 ## Picking up next session
 
-Layer 1 is complete. Layer 2 is next.
+Layer 2 is partially complete. Onboarding flow scaffold is next.
 
 **Layer 1 — done:**
 - Events, event_expenses migrations applied. event_id column on orders applied.
@@ -17,17 +17,21 @@ Layer 1 is complete. Layer 2 is next.
 - D19 locked: launch price is $25/month.
 - Pre-existing Phase 0 type error in `confirm/route.ts` fixed.
 
-**Layer 2 — natural first moves, in dependency order:**
+**Layer 2 — done so far:**
+- **Mood vocabulary locked (D20).** 7 moods: Dark and Stormy, Rustic, Warm and Cozy, Summer Afternoon, Wild Meadow, Bright Bazaar, Sunday Morning. Each carries an AI-readable description, block assembly hint, and directional token hints. Lives in `lib/moods.ts`.
+- **Design token type.** `lib/tokens.ts` — DesignTokens Zod schema + `tokensToCssVars()` utility. Maps token objects to CSS custom properties injected by the storefront layout.
+- **BlockMeta / WidgetMeta types.** `lib/blocks.ts` — the schema the AI reads from manifests when assembling pages.
+- **First foundational block.** `blocks/hero-editorial/` — story-first, typography-forward hero. Suits dark/rustic/minimal moods. Exports meta for the build script.
+- **First foundational widget.** `widgets/cta-button/` — single CTA button, fills any CTA slot. Exports meta.
+- **Manifest build script.** `scripts/build-manifests.mjs` — scans `blocks/**/meta.ts` and `widgets/**/meta.ts`, imports via tsx, emits typed `lib/blocks-manifest.generated.ts` and `lib/widgets-manifest.generated.ts`. Runs automatically via predev/prebuild hooks.
+- **Candles niche seeded.** `supabase/migrations/20260524000004_seed_niches.sql` applied. Row live in Supabase with status=approved. This unblocks onboarding.
 
-1. **Mood vocabulary.** The curated launch list for onboarding screen 3. Examples exist (dark and stormy, rustic, warm and cozy, summer afternoon, autumn landscape); the full set doesn't. Design this before touching onboarding code — it's a product decision, not a code decision.
+**Layer 2 — remaining:**
+- **Onboarding flow scaffold.** Five screens per Phase 1 Spec §5. Mood list and candles niche are now ready. This is the next task.
 
-2. **Onboarding flow scaffold.** Five screens per Phase 1 Spec §5. Needs the mood list and at least one approved niche row to be functional.
-
-3. **Blocks and widgets manifests.** Build script that scans `/blocks/**/*.tsx` and `/widgets/**/*.tsx` and emits typed manifests. Needed before the AI generation pipeline can assemble pages.
-
-4. **First foundational block and widget.** Lead developer builds the reference variant of each section type and functional widget type. Cowork agents replicate from there.
-
-5. **Seed the niches table.** Candles content at `content/niches/candles.md` becomes the first approved row. Target 20–30 niches before first beta signups.
+**Layer 2 decisions locked this session:**
+- **D20.** 7 moods at launch: Dark and Stormy, Rustic, Warm and Cozy, Summer Afternoon, Wild Meadow, Bright Bazaar, Sunday Morning. Each maps to a distinct block assembly pattern. Vibe slider handles fine-tuning within a mood; moods handle structurally different starting points.
+- **Block variants:** No fixed count locked. Lead developer builds one foundational variant per block type; Cowork agents build as many as needed for meaningful visual variety. Volume to be calibrated once Alex can see what a block variant looks like.
 
 ---
 
