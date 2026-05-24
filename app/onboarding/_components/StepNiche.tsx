@@ -3,11 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { checkSubdomainAvailable } from '../actions';
 import type { NicheOption, OnboardingData } from './types';
-import { suggestShopName, toSubdomain } from './types';
-
-const NICHE_EMOJI: Record<string, string> = {
-  candles: '🕯️',
-};
+import { toSubdomain } from './types';
 
 type AvailabilityStatus = 'idle' | 'checking' | 'available' | 'taken' | 'error';
 
@@ -21,19 +17,38 @@ interface StepNicheProps {
 export default function StepNiche({ data, niches, onAdvance, onBack }: StepNicheProps) {
   const [selectedSlug, setSelectedSlug] = useState(data.nicheSlug);
   const [shopName, setShopName] = useState(data.shopName);
-  const [showOther, setShowOther] = useState(data.nicheSlug === 'other');
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<AvailabilityStatus>(data.subdomain ? 'available' : 'idle');
   const [confirmedSubdomain, setConfirmedSubdomain] = useState(data.subdomain);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const selectedNiche = niches.find((n) => n.slug === selectedSlug);
   const previewSubdomain = toSubdomain(shopName);
+
+  const filtered = query.trim()
+    ? niches.filter((n) => n.display_name.toLowerCase().includes(query.toLowerCase()))
+    : niches;
+
   const canContinue =
     selectedSlug !== '' &&
-    selectedSlug !== 'other' &&
     shopName.trim() !== '' &&
     status === 'available';
 
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setQuery('');
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  // Debounced subdomain availability check
   useEffect(() => {
     const trimmed = shopName.trim();
     if (!trimmed) {
@@ -49,7 +64,7 @@ export default function StepNiche({ data, niches, onAdvance, onBack }: StepNiche
       try {
         const result = await checkSubdomainAvailable(trimmed);
         setConfirmedSubdomain(result.available ? result.subdomain : '');
-        setStatus(result.available ? 'available' : (result.subdomain.length < 2 ? 'idle' : 'taken'));
+        setStatus(result.available ? 'available' : result.subdomain.length < 2 ? 'idle' : 'taken');
       } catch {
         setStatus('error');
       }
@@ -60,20 +75,10 @@ export default function StepNiche({ data, niches, onAdvance, onBack }: StepNiche
     };
   }, [shopName]);
 
-  function handleNicheSelect(slug: string, displayName: string) {
+  function selectNiche(slug: string) {
     setSelectedSlug(slug);
-    setShowOther(false);
-    if (shopName === '' || shopName === suggestShopName(data.name, selectedNiche?.display_name ?? '')) {
-      setShopName(suggestShopName(data.name, displayName));
-    }
-  }
-
-  function handleOtherSelect() {
-    setSelectedSlug('other');
-    setShowOther(true);
-    setShopName('');
-    setStatus('idle');
-    setConfirmedSubdomain('');
+    setOpen(false);
+    setQuery('');
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -81,7 +86,7 @@ export default function StepNiche({ data, niches, onAdvance, onBack }: StepNiche
     if (!canContinue) return;
     onAdvance({
       nicheSlug: selectedSlug,
-      nicheDisplayName: selectedNiche?.display_name ?? 'Other',
+      nicheDisplayName: selectedNiche?.display_name ?? '',
       shopName: shopName.trim(),
       subdomain: confirmedSubdomain,
     });
@@ -101,48 +106,69 @@ export default function StepNiche({ data, niches, onAdvance, onBack }: StepNiche
         <p className="text-sm text-muted">Pick the closest match. You can refine later.</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        {niches.map((niche) => {
-          const emoji = NICHE_EMOJI[niche.slug] ?? '🏪';
-          const isSelected = selectedSlug === niche.slug;
-          return (
-            <button
-              key={niche.slug}
-              type="button"
-              onClick={() => handleNicheSelect(niche.slug, niche.display_name)}
-              className={[
-                'flex flex-col items-start rounded-lg border p-4 text-left transition-all duration-fast',
-                isSelected
-                  ? 'border-honey bg-honey/10 text-text'
-                  : 'border-white/10 bg-bg-2 text-text-soft hover:border-white/20 hover:text-text',
-              ].join(' ')}
-            >
-              <span className="mb-2 text-2xl">{emoji}</span>
-              <span className="font-medium">{niche.display_name}</span>
-            </button>
-          );
-        })}
-
+      {/* Niche dropdown */}
+      <div ref={containerRef} className="relative">
         <button
           type="button"
-          onClick={handleOtherSelect}
+          onClick={() => setOpen((o) => !o)}
           className={[
-            'flex flex-col items-start rounded-lg border p-4 text-left transition-all duration-fast',
-            showOther
-              ? 'border-honey bg-honey/10 text-text'
-              : 'border-white/10 bg-bg-2 text-text-soft hover:border-white/20 hover:text-text',
+            'flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left transition-colors',
+            open
+              ? 'border-honey/60 bg-bg-2 ring-1 ring-honey/40'
+              : selectedNiche
+              ? 'border-honey/40 bg-bg-2 text-text'
+              : 'border-white/10 bg-bg-2 text-muted',
           ].join(' ')}
         >
-          <span className="mb-2 text-2xl">✦</span>
-          <span className="font-medium">Something else</span>
+          <span className={selectedNiche ? 'text-text' : 'text-muted'}>
+            {selectedNiche ? selectedNiche.display_name : 'Select your niche…'}
+          </span>
+          <span className="text-muted">{open ? '▲' : '▼'}</span>
         </button>
+
+        {open && (
+          <div className="absolute z-10 mt-1 w-full rounded-lg border border-white/10 bg-bg-2 shadow-lg">
+            <div className="border-b border-white/10 p-2">
+              <input
+                autoFocus
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search…"
+                className="w-full rounded bg-bg px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none"
+              />
+            </div>
+            <ul className="max-h-60 overflow-y-auto py-1">
+              {filtered.length > 0 ? (
+                filtered.map((niche) => (
+                  <li key={niche.slug}>
+                    <button
+                      type="button"
+                      onClick={() => selectNiche(niche.slug)}
+                      className={[
+                        'w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-white/5',
+                        selectedSlug === niche.slug ? 'text-honey' : 'text-text-soft',
+                      ].join(' ')}
+                    >
+                      {niche.display_name}
+                      {selectedSlug === niche.slug && <span className="float-right">✓</span>}
+                    </button>
+                  </li>
+                ))
+              ) : (
+                <li className="px-4 py-3 text-sm text-muted">No matches — more niches coming soon.</li>
+              )}
+            </ul>
+          </div>
+        )}
       </div>
 
-      {(selectedSlug !== '' && !showOther) || showOther ? (
+      {/* Shop name + subdomain check */}
+      {selectedSlug !== '' && (
         <div className="space-y-3">
           <div>
             <label htmlFor="shopName" className="mb-1.5 block text-sm font-medium text-text-soft">
-              What would you like to call your shop?
+              Shop name
             </label>
             <input
               id="shopName"
@@ -172,7 +198,7 @@ export default function StepNiche({ data, niches, onAdvance, onBack }: StepNiche
                 <>
                   <span className="text-red-400">✗</span>
                   <span className="text-red-400">
-                    {previewSubdomain}.bohdiai.com is already taken — try a different name
+                    {previewSubdomain}.bohdiai.com is taken — try a different name
                   </span>
                 </>
               )}
@@ -182,7 +208,7 @@ export default function StepNiche({ data, niches, onAdvance, onBack }: StepNiche
             </div>
           )}
         </div>
-      ) : null}
+      )}
 
       <button
         type="submit"
