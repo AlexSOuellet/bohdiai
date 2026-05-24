@@ -10,6 +10,7 @@ export interface OnboardingData {
   nicheSlug: string;
   nicheDisplayName: string;
   shopName: string;
+  subdomain: string;
   moodKey: MoodKey | '';
   inspirationUrls: readonly [string, string, string];
 }
@@ -19,6 +20,7 @@ export const INITIAL_DATA: OnboardingData = {
   nicheSlug: '',
   nicheDisplayName: '',
   shopName: '',
+  subdomain: '',
   moodKey: '',
   inspirationUrls: ['', '', ''],
 };

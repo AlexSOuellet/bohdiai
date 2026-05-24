@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { generateStorefront } from '../actions';
+import type { MoodKey } from '@/lib/moods';
 import type { OnboardingData } from './types';
 
 interface StepBuildProps {
@@ -8,7 +10,7 @@ interface StepBuildProps {
   onBack: () => void;
 }
 
-const STEPS = [
+const ANIMATION_STEPS = [
   'Reading your mood and style preferences…',
   'Choosing your color palette and fonts…',
   'Assembling your storefront layout…',
@@ -17,17 +19,52 @@ const STEPS = [
 ];
 
 export default function StepBuild({ data, onBack }: StepBuildProps) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [done, setDone] = useState(false);
+  const [animStep, setAnimStep] = useState(0);
+  const [animDone, setAnimDone] = useState(false);
+  const [genDone, setGenDone] = useState(false);
+  const [tenantSubdomain, setTenantSubdomain] = useState('');
+  const [error, setError] = useState('');
+  const calledRef = useRef(false);
 
+  const done = animDone && genDone;
+
+  // Cosmetic progress animation
   useEffect(() => {
-    if (currentStep >= STEPS.length) {
-      setDone(true);
+    if (animStep >= ANIMATION_STEPS.length) {
+      setAnimDone(true);
       return;
     }
-    const t = setTimeout(() => setCurrentStep((s) => s + 1), 1400);
+    const t = setTimeout(() => setAnimStep((s) => s + 1), 1400);
     return () => clearTimeout(t);
-  }, [currentStep]);
+  }, [animStep]);
+
+  // Real generation — fires once on mount
+  useEffect(() => {
+    if (calledRef.current) return;
+    calledRef.current = true;
+
+    if (!data.moodKey) {
+      setError('Missing mood selection.');
+      setGenDone(true);
+      return;
+    }
+
+    generateStorefront({
+      shopName: data.shopName,
+      subdomain: data.subdomain,
+      nicheSlug: data.nicheSlug,
+      moodKey: data.moodKey as MoodKey,
+    })
+      .then((result) => {
+        setTenantSubdomain(result.subdomain);
+        setGenDone(true);
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : 'Something went wrong.';
+        setError(message);
+        setGenDone(true);
+      });
+  }, [data]);
 
   return (
     <div className="space-y-8">
@@ -41,20 +78,20 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
           ← Back
         </button>
         <h1 className="mb-2 font-serif text-3xl text-text">
-          {done ? 'Your store is ready.' : `Building ${data.shopName || 'your store'}…`}
+          {done ? (error ? 'Something went wrong.' : 'Your store is ready.') : `Building ${data.shopName || 'your store'}…`}
         </h1>
         <p className="text-sm text-muted">
           {done
-            ? "Take a look — it's yours to customize from here."
-            : 'This takes about 10 seconds.'}
+            ? (error ? 'You can go back and try again.' : "Take a look — it's yours to customize from here.")
+            : 'This takes about 15 seconds.'}
         </p>
       </div>
 
       {!done ? (
         <div className="space-y-3">
-          {STEPS.map((label, i) => {
-            const isPast = i < currentStep;
-            const isCurrent = i === currentStep;
+          {ANIMATION_STEPS.map((label, i) => {
+            const isPast = i < animStep;
+            const isCurrent = i === animStep;
             return (
               <div key={i} className="flex items-center gap-3">
                 <div
@@ -77,17 +114,31 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
             );
           })}
         </div>
+      ) : error ? (
+        <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-6 space-y-3">
+          <p className="text-sm text-red-400">{error}</p>
+        </div>
       ) : (
         <div className="rounded-xl border border-honey/20 bg-honey/5 p-6 text-center space-y-4">
           <p className="text-4xl">✦</p>
           <p className="font-medium text-text">{data.shopName}</p>
-          <p className="text-sm text-muted">AI generation coming in Layer 3.</p>
-          <a
-            href={`https://app.bohdiai.com`}
-            className="inline-block rounded-lg bg-honey px-6 py-3 font-medium text-bg transition-opacity hover:opacity-90"
-          >
-            Go to your dashboard
-          </a>
+          <p className="text-xs text-muted">{tenantSubdomain}.bohdiai.com</p>
+          <div className="flex flex-col gap-2">
+            <a
+              href={`https://${tenantSubdomain}.bohdiai.com`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block rounded-lg bg-honey px-6 py-3 font-medium text-bg transition-opacity hover:opacity-90"
+            >
+              See your storefront
+            </a>
+            <a
+              href="https://app.bohdiai.com"
+              className="text-sm text-muted hover:text-text-soft"
+            >
+              Go to your dashboard →
+            </a>
+          </div>
         </div>
       )}
     </div>

@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { checkSubdomainAvailable } from '../actions';
 import type { NicheOption, OnboardingData } from './types';
 import { suggestShopName, toSubdomain } from './types';
 
 const NICHE_EMOJI: Record<string, string> = {
   candles: '🕯️',
 };
+
+type AvailabilityStatus = 'idle' | 'checking' | 'available' | 'taken' | 'error';
 
 interface StepNicheProps {
   data: OnboardingData;
@@ -19,12 +22,43 @@ export default function StepNiche({ data, niches, onAdvance, onBack }: StepNiche
   const [selectedSlug, setSelectedSlug] = useState(data.nicheSlug);
   const [shopName, setShopName] = useState(data.shopName);
   const [showOther, setShowOther] = useState(data.nicheSlug === 'other');
+  const [status, setStatus] = useState<AvailabilityStatus>(data.subdomain ? 'available' : 'idle');
+  const [confirmedSubdomain, setConfirmedSubdomain] = useState(data.subdomain);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selectedNiche = niches.find((n) => n.slug === selectedSlug);
-  const subdomain = toSubdomain(shopName);
+  const previewSubdomain = toSubdomain(shopName);
   const canContinue =
-    (selectedSlug !== '' && selectedSlug !== 'other' && shopName.trim() !== '') ||
-    (showOther && shopName.trim() !== '');
+    selectedSlug !== '' &&
+    selectedSlug !== 'other' &&
+    shopName.trim() !== '' &&
+    status === 'available';
+
+  useEffect(() => {
+    const trimmed = shopName.trim();
+    if (!trimmed) {
+      setStatus('idle');
+      setConfirmedSubdomain('');
+      return;
+    }
+
+    setStatus('checking');
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const result = await checkSubdomainAvailable(trimmed);
+        setConfirmedSubdomain(result.available ? result.subdomain : '');
+        setStatus(result.available ? 'available' : (result.subdomain.length < 2 ? 'idle' : 'taken'));
+      } catch {
+        setStatus('error');
+      }
+    }, 500);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [shopName]);
 
   function handleNicheSelect(slug: string, displayName: string) {
     setSelectedSlug(slug);
@@ -38,6 +72,8 @@ export default function StepNiche({ data, niches, onAdvance, onBack }: StepNiche
     setSelectedSlug('other');
     setShowOther(true);
     setShopName('');
+    setStatus('idle');
+    setConfirmedSubdomain('');
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -47,6 +83,7 @@ export default function StepNiche({ data, niches, onAdvance, onBack }: StepNiche
       nicheSlug: selectedSlug,
       nicheDisplayName: selectedNiche?.display_name ?? 'Other',
       shopName: shopName.trim(),
+      subdomain: confirmedSubdomain,
     });
   }
 
@@ -102,7 +139,7 @@ export default function StepNiche({ data, niches, onAdvance, onBack }: StepNiche
       </div>
 
       {(selectedSlug !== '' && !showOther) || showOther ? (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div>
             <label htmlFor="shopName" className="mb-1.5 block text-sm font-medium text-text-soft">
               What would you like to call your shop?
@@ -117,11 +154,32 @@ export default function StepNiche({ data, niches, onAdvance, onBack }: StepNiche
             />
           </div>
 
-          {subdomain !== '' && (
-            <p className="text-xs text-muted">
-              Your store will live at{' '}
-              <span className="font-medium text-honey">{subdomain}.bohdiai.com</span>
-            </p>
+          {previewSubdomain !== '' && (
+            <div className="flex items-center gap-2 text-xs">
+              {status === 'checking' && (
+                <span className="text-muted">Checking {previewSubdomain}.bohdiai.com…</span>
+              )}
+              {status === 'available' && (
+                <>
+                  <span className="text-honey">✓</span>
+                  <span className="text-text-soft">
+                    <span className="font-medium text-honey">{previewSubdomain}.bohdiai.com</span>{' '}
+                    is available
+                  </span>
+                </>
+              )}
+              {status === 'taken' && (
+                <>
+                  <span className="text-red-400">✗</span>
+                  <span className="text-red-400">
+                    {previewSubdomain}.bohdiai.com is already taken — try a different name
+                  </span>
+                </>
+              )}
+              {status === 'error' && (
+                <span className="text-muted">Couldn't check availability — try again</span>
+              )}
+            </div>
           )}
         </div>
       ) : null}

@@ -20,6 +20,7 @@ const serverSchema = z.object({
   FOUNDER_CAP: z.coerce.number().int().positive().default(25),
   SENTRY_DSN: optionalUrl,
   SENTRY_AUTH_TOKEN: optionalString,
+  ANTHROPIC_API_KEY: z.string().min(1),
 });
 
 const clientSchema = z.object({
