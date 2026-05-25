@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import { anthropicClient } from '@/lib/anthropic';
 import { logger } from '@/lib/logger';
-import { getPlaceholderImage } from '@/lib/pexels';
+import { generateProductImage } from '@/lib/fal';
 
-// ─── Output types ─────────────────────────────────────────────────────────────
+const MAX_PRODUCT_IMAGES = 4;
 
 const GeneratedListingSchema = z.object({
   name: z.string(),
@@ -11,7 +11,7 @@ const GeneratedListingSchema = z.object({
   short_description: z.string(),
   description: z.string(),
   base_price_cents: z.number().int().positive(),
-  pexels_query: z.string(),
+  image_prompt: z.string(),
 });
 
 const GeneratedListingsSchema = z.object({
@@ -30,17 +30,17 @@ function extractJson(text: string): unknown {
   return JSON.parse(match[0]);
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
-
 export async function generateListings(
   shopName: string,
-  nicheSlug: string,
+  subdomain: string,
   nicheDisplayName: string,
   nicheBodyMarkdown: string,
   count: number,
   tenantId?: string,
 ): Promise<GeneratedListingWithImage[]> {
-  const prompt = `You are helping a maker launch their online store. Generate ${count} realistic placeholder product listings for their shop.
+  const imageCount = Math.min(count, MAX_PRODUCT_IMAGES);
+
+  const prompt = `You are helping a maker launch their online store. Generate ${imageCount} realistic placeholder product listings for their shop.
 
 SHOP: ${shopName}
 NICHE: ${nicheDisplayName}
@@ -48,13 +48,13 @@ NICHE: ${nicheDisplayName}
 NICHE CONTEXT:
 ${nicheBodyMarkdown}
 
-Generate ${count} products that feel authentic to this niche. Each product should have:
+Generate ${imageCount} products that feel authentic to this niche. Each product should have:
 - A specific, evocative name (not generic — not "Candle" but "Black Fig & Vetiver Soy Candle")
 - A slug (lowercase, hyphens only, no spaces)
 - A short_description (one compelling sentence, under 120 chars)
 - A full description (2-3 sentences, maker voice, specific materials and techniques)
 - A realistic price in cents (e.g. $24.00 = 2400)
-- A pexels_query: a 2-4 word search phrase that would find a great product photo on Pexels for this item
+- An image_prompt: a detailed description for an AI image generator to create a professional product photo (e.g. "Hand-poured soy candle in a matte black jar with a kraft paper label, soft candlelight, dark moody background, close-up product photography")
 
 Return ONLY a JSON object — no markdown, no explanation:
 {
@@ -65,7 +65,7 @@ Return ONLY a JSON object — no markdown, no explanation:
       "short_description": "<one sentence>",
       "description": "<2-3 sentences>",
       "base_price_cents": <integer>,
-      "pexels_query": "<search term>"
+      "image_prompt": "<detailed AI image generation prompt>"
     }
   ]
 }`;
@@ -83,7 +83,7 @@ Return ONLY a JSON object — no markdown, no explanation:
     inputTokens: response.usage.input_tokens,
     outputTokens: response.usage.output_tokens,
     latencyMs,
-    count,
+    count: imageCount,
     tenantId,
   });
 
@@ -91,12 +91,23 @@ Return ONLY a JSON object — no markdown, no explanation:
   const raw = extractJson(text);
   const { listings } = GeneratedListingsSchema.parse(raw);
 
-  const withImages = await Promise.all(
-    listings.map(async (listing) => {
-      const image_url = await getPlaceholderImage(nicheSlug, listing.pexels_query);
-      return { ...listing, image_url };
-    }),
-  );
+  // Generate images in batches of 2 to avoid fal.ai concurrent request rate limits
+  const withImages: GeneratedListingWithImage[] = [];
+  for (let i = 0; i < listings.length; i += 2) {
+    const batch = listings.slice(i, i + 2);
+    const results = await Promise.all(
+      batch.map((listing) =>
+        generateProductImage(
+          listing.name,
+          listing.description,
+          nicheDisplayName,
+          subdomain,
+          listing.slug,
+        ).then((image_url) => ({ ...listing, image_url })),
+      ),
+    );
+    withImages.push(...results);
+  }
 
   return withImages;
 }

@@ -99,14 +99,23 @@ PAGE ASSEMBLY GUIDANCE (follow this structure exactly):
 ${mood.blockAssemblyHint}
 
 MANDATORY RULES — these override all other guidance:
-1. The FIRST block (position 0) MUST be "hero-editorial". No exceptions. Every storefront starts with a hero.
-2. A "products-grid" block MUST appear in the page. This is a commerce storefront — products are non-negotiable.
+1. The FIRST block (position 0) MUST be a hero block (sectionType: "hero"). Choose the hero variant that best fits the mood and niche — do not default to "hero-editorial" if a more fitting variant exists.
+2. A products block (sectionType: "products") MUST appear in the page. Choose the variant that best fits the mood. This is a commerce storefront — products are non-negotiable.
 3. Total blocks: 4 to 6. Do not output fewer than 4 or more than 6.
 4. moodFit is a suggestion, not a gate. You may use any block for any mood — the mandatory blocks above override moodFit restrictions.
 
 ${blocksContext}
 
-Assemble the home page. Fill all aiGenerated content fields with authentic, specific copy using niche vocabulary — real product names, real maker language, nothing generic. For "href" fields in widgets, use relative paths like "/shop", "/about", "/commissions".
+Assemble the home page. For all aiGenerated content fields, write like a gifted copywriter, not a content generator.
+
+COPY RULES:
+- Every headline must stop someone mid-scroll. It should be specific, unexpected, and true to this shop — not interchangeable with any other maker.
+- Subheadlines say something real and particular. Not "crafted with love" or "made by hand" or "quality you can trust" — those are placeholders, not copy.
+- Write like the maker is talking directly to their best customer. Warm, specific, a little surprising. The reader should feel like they already know this shop after one sentence.
+- Use the niche vocabulary naturally — the words real practitioners use, not the words a marketer uses to describe them.
+- Banned phrases: "crafted with love," "made with passion," "quality you can trust," "handmade with care," "small batch," "artisanal," "curated." Show it, don't label it.
+
+For "href" fields in widgets, use relative paths like "/shop", "/about", "/commissions".
 
 Return ONLY a JSON object — no markdown, no explanation:
 {

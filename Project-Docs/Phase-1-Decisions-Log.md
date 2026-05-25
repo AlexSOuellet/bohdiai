@@ -328,11 +328,15 @@ The principle behind all of this is keep-it-simple for launch and prove there's 
 
 ## 2026-05-24 (build session start)
 
-### D19. Launch price is $25/month
+### D19. Launch price is $35–$39/month (revised 2026-05-25)
 
-$25/month is the launch price. Deliberate, not a placeholder. The audience is kitchen-table makers who are already skeptical of another monthly fee — pricing at the bottom of the market is the right call for that audience at launch. This is framed as a launch price, not the permanent price; room to move up as the product proves itself.
+**Original decision ($25/month) is superseded.**
 
-The Phase 1 Spec was carrying `$39/month` as a placeholder Claude put in without Alex confirming it. That number is gone. Use `$25/month` everywhere — UI copy, database seeds, billing flow.
+Launch price is $35–$39/month. Exact number to be confirmed before Stripe wiring, but the range is locked. Rationale: Shopify Basic is $39/month and takes an additional 2.9% + $0.30 per transaction. BohdiAI takes no cut of sales ever. A maker doing $1,500/month on Etsy pays $110–$130/month in combined fees — BohdiAI at $35–$39 is still an obvious win. The product now includes AI-generated images (fal.ai FLUX Pro), cinematic hero blocks, and a full design system that makes $25 an undersell.
+
+AI usage: 100 AI calls/month included. Additional 100 calls for $5. Onboarding generation is explicitly excluded from the cap. Cap applies to dashboard AI actions only (image regeneration, copy rewrites, token changes). At ~$0.07/call average, 100 calls costs ~$7 against $35–$39 revenue — healthy margin.
+
+Use `$35/month` as the working number in UI copy until the exact price is confirmed.
 
 ---
 

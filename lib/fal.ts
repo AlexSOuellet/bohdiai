@@ -1,0 +1,96 @@
+import { createFalClient } from '@fal-ai/client';
+import { serverEnv } from '@/lib/env';
+import { supabaseAdmin } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
+
+const BUCKET = 'generated-images';
+
+function falClient() {
+  return createFalClient({ credentials: serverEnv().FAL_API_KEY });
+}
+
+interface FalImage {
+  url: string;
+}
+
+interface FalOutput {
+  images: FalImage[];
+}
+
+async function generateAndStore(
+  prompt: string,
+  storagePath: string,
+  imageSize: 'square_hd' | 'landscape_16_9',
+): Promise<string | null> {
+  const start = Date.now();
+
+  try {
+    const result = await falClient().subscribe('fal-ai/flux-pro' as string, {
+      input: {
+        prompt,
+        image_size: imageSize,
+        num_inference_steps: 28,
+        guidance_scale: 3.5,
+        num_images: 1,
+        output_format: 'jpeg',
+      },
+    });
+
+    const latencyMs = Date.now() - start;
+    const output = result.data as FalOutput;
+    const imageUrl = output.images[0]?.url;
+
+    if (imageUrl === undefined) {
+      logger.warn('fal: no image in response', { prompt, latencyMs });
+      return null;
+    }
+
+    logger.info('fal: image generated', { latencyMs, storagePath });
+
+    const res = await fetch(imageUrl);
+    if (!res.ok) {
+      logger.warn('fal: download failed, using direct URL', { status: res.status });
+      return imageUrl;
+    }
+
+    const buffer = await res.arrayBuffer();
+    const db = supabaseAdmin();
+
+    const { error } = await db.storage.from(BUCKET).upload(storagePath, buffer, {
+      contentType: 'image/jpeg',
+      upsert: true,
+    });
+
+    if (error !== null) {
+      logger.warn('fal: storage upload failed, using direct URL', { error: error.message });
+      return imageUrl;
+    }
+
+    const { data: urlData } = db.storage.from(BUCKET).getPublicUrl(storagePath);
+    return urlData.publicUrl;
+  } catch (err) {
+    logger.error('fal: generation failed', { error: String(err), prompt });
+    return null;
+  }
+}
+
+export async function generateProductImage(
+  productName: string,
+  productDescription: string,
+  nicheDisplayName: string,
+  subdomain: string,
+  slug: string,
+): Promise<string | null> {
+  const prompt = `Professional product photography: ${productName}. ${productDescription}. Handmade artisan ${nicheDisplayName}. Clean neutral background, soft natural light, high resolution, commercial quality, no text.`;
+  return generateAndStore(prompt, `product-images/${subdomain}/${slug}.jpg`, 'square_hd');
+}
+
+export async function generateHeroImage(
+  shopName: string,
+  nicheDisplayName: string,
+  moodLabel: string,
+  subdomain: string,
+): Promise<string | null> {
+  const prompt = `Editorial lifestyle photography for ${shopName}, a handmade ${nicheDisplayName} brand. ${moodLabel} mood and atmosphere. Cinematic wide shot, dramatic natural lighting, artisan workshop or natural setting, rich depth, no text, no people, wide landscape composition.`;
+  return generateAndStore(prompt, `hero-images/${subdomain}/hero.jpg`, 'landscape_16_9');
+}

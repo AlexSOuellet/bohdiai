@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 
 const WINDOW_MS = 60 * 60 * 1000; // 1 hour
-const MAX_PER_WINDOW = 3;
+const MAX_PER_WINDOW = 20; // TODO: reset to 3 before launch
 
 async function getIp(): Promise<string> {
   const store = await headers();

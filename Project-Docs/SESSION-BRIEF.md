@@ -1,78 +1,117 @@
 # Session Brief — BohdiAI
 
-**Last updated:** 2026-05-25 (Layer 3 complete — AI generation pipeline working end-to-end)
+**Last updated:** 2026-05-25 (Session 2 — fal.ai images live, block variants built, design system overhauled)
 
 **Update at the end of every session.**
 
 ---
 
-## Picking up next session
+## State of the build
 
-Layer 3 is complete and verified working. The next layer is the **storefront renderer** — the page that reads a tenant's tokens and blocks from the DB and renders their site at `[shop].bohdiai.com`.
+The generation pipeline is fully working end-to-end. Running the onboarding flow produces a real storefront with:
+- AI-generated design tokens (colors, fonts, spacing)
+- AI-generated copy (headlines, about text, testimonials, product names/descriptions)
+- fal.ai FLUX Pro images for hero background + up to 4 product photos
+- Multiple block variant options the AI chooses between
+- Framer Motion scroll-reveal animations on hero blocks
+- Grain texture overlay via `sf-noise-grain`
 
-**Layer 1 — done:**
-- Storefront resolver live in `proxy.ts`. Reads `[shop].bohdiai.com`, looks up tenant by subdomain, injects `x-tenant-id` and `x-tenant-subdomain` into request headers. Unknown subdomains → 404.
-- Supabase Auth wiring complete: `lib/supabase-server.ts`, `lib/supabase-browser.ts`, `app/auth/callback/route.ts`, session refresh in proxy. Database types regenerated from live schema (all 36 tables).
-- D19 locked: launch price is $25/month.
-- Events, event_expenses migrations applied. event_id column on orders applied.
-
-**Layer 2 — done:**
-- Mood vocabulary locked (D20). 7 moods in `lib/moods.ts`.
-- Design token type. `lib/tokens.ts` — DesignTokens Zod schema + `tokensToCssVars()` utility.
-- BlockMeta / WidgetMeta types. `lib/blocks.ts`.
-- First foundational block: `blocks/hero-editorial/`.
-- First foundational widget: `widgets/cta-button/`.
-- Manifest build script: `scripts/build-manifests.mjs`. Runs via predev/prebuild hooks.
-- Onboarding scaffold complete. Five-screen wizard at `app/onboarding/`:
-  - `page.tsx` — server page, fetches approved niches
-  - `_components/OnboardingFlow.tsx` — state machine, accumulates `OnboardingData`
-  - `_components/StepName.tsx` — shop name entry
-  - `_components/StepNiche.tsx` — searchable dropdown niche picker + subdomain availability check
-  - `_components/StepMood.tsx` — mood selection
-  - `_components/StepTrial.tsx` — billing placeholder ($25/mo)
-  - `_components/StepBuild.tsx` — calls `generateStorefront` on mount, shows animated progress, links to live storefront on completion
-  - `_components/ProgressBar.tsx`, `_components/types.ts`
-- 8 niches seeded (status=approved): candles, jewelry_maker, baker, soap_and_bath, ceramicist, woodworker, fine_artist, vintage_reseller.
-
-**Layer 3 — done:**
-- `app/onboarding/actions.ts` — two server actions:
-  - `checkSubdomainAvailable(shopName)` — slugifies + queries tenants table, returns available/taken
-  - `generateStorefront(input)` — orchestrates full generation pipeline, writes to DB
-- `lib/anthropic.ts` — singleton Anthropic client. Uses `BOHDIAI_ANTHROPIC_KEY` (not `ANTHROPIC_API_KEY`) and hardcoded `baseURL: 'https://api.anthropic.com'` to avoid collision with Claude Code's injected env vars.
-- `lib/generation/generate-tokens.ts` — Anthropic call → `DesignTokens` (colors, fonts, spacing, layout)
-- `lib/generation/generate-page.ts` — Anthropic call → ordered block+content list (block key, position, content fields, slot widgets)
-- `lib/generation/write-storefront.ts` — sequential admin DB writes: tenant → design_tokens → content_pages → page_blocks
-- `lib/env.ts` — `BOHDIAI_ANTHROPIC_KEY` required server var.
-
-**Verified working:** full onboarding run for a rustic woodworker generated authentic copy ("Made from the Wood. Built to Last Generations."), correct color palette (#F5EFE0 parchment background, rust accent), Zilla Slab + Lora fonts, all written to Supabase.
+The storefront renderer is live at `[shop].localhost:3000` via the middleware proxy.
 
 ---
 
-## Layer 4 — storefront renderer (next)
+## What was built this session
 
-The page that makes `[shop].bohdiai.com` actually render something.
+**Image generation (replaces Pexels):**
+- `lib/fal.ts` — fal.ai FLUX Pro client. `generateProductImage()` and `generateHeroImage()`. Downloads and caches to Supabase Storage `generated-images` bucket. Falls back to direct fal.ai URL if storage fails.
+- `lib/pexels.ts` — deleted
+- `lib/env.ts` — `FAL_API_KEY` replaces `PEXELS_API_KEY`
+- `supabase/migrations/20260525000003_storage_generated_images.sql` — new public bucket
+- `next.config.js` — fal.ai CDN domains added, Pexels removed
+- Product images batch 2 at a time to avoid fal.ai concurrent rate limits
+- Hero image generates after AI text calls complete (not alongside) to avoid rate limits
 
-**What it needs to do:**
-1. The subdomain resolver (`proxy.ts`) already injects `x-tenant-id` into every request to a tenant subdomain — that's done.
-2. A catch-all route at `app/[...path]/page.tsx` (or a tenant-specific layout) reads `x-tenant-id` from headers, fetches the tenant's `design_tokens` (is_active=true) and `content_pages` + `page_blocks` for the requested slug.
-3. Injects design tokens as CSS custom properties (via `tokensToCssVars()` — already built).
-4. Renders blocks in position order using the block component registry.
-5. Block components read their `content` JSON and render accordingly.
+**Block variants (5 new blocks built by Cowork):**
+- `blocks/hero-cinematic/` — full viewport, bottom-gradient, dramatic typography, Framer Motion entrance
+- `blocks/hero-split-gallery/` — split panel layout
+- `blocks/hero-split-screen/` — split screen layout
+- `blocks/products-bloom-grid/` — editorial product grid variant
+- `blocks/products-editorial-grid/` — editorial product layout
+- `blocks/products-split-carousel/` — split carousel layout
 
-**Key files to build:**
-- `app/storefront/layout.tsx` — tenant layout, injects CSS vars from design tokens
-- `app/storefront/page.tsx` — home page, fetches and renders page blocks
-- `blocks/hero-editorial/index.tsx` — the React component for the one block we have (meta already exists at `blocks/hero-editorial/meta.ts`)
-- `widgets/cta-button/index.tsx` — the React component for the one widget we have
-- A block registry (`lib/block-registry.ts`) mapping block keys to React components
+**Animation system:**
+- Framer Motion installed
+- `components/storefront/ScrollReveal.tsx` — reusable scroll-triggered reveal wrapper, respects `prefers-reduced-motion`
 
-**Note on routing:** The proxy already handles subdomain → tenant_id mapping. The storefront pages need to live under a route that the proxy rewrites to, or be a separate Next.js app. Check `proxy.ts` to understand how it currently routes tenant requests before building the renderer.
+**Storefront navbar:**
+- `components/storefront/` — NavStorefront component built by Cowork
+
+**Design system fixes:**
+- `app/globals.css` — `sf-noise-grain` class added inside `@layer components` (grain texture overlay), CSS syntax error fixed
+- Token generation prompt hardened to produce opinionated, varied palettes — not always the "obvious" color for a mood
+- Copy generation prompt hardened with banned phrases and creative copywriter mandate
+- `generate-page.ts` — AI now chooses any hero/products variant, not hardcoded to `hero-editorial`/`products-grid`
+
+**Pricing locked:**
+- D19 revised: $35–$39/month (working number: $35). AI usage: 100 calls/month included, 100 more for $5. Onboarding excluded from cap.
+
+**Rate limit:**
+- `lib/rate-limit.ts` — bumped to 20/hour for development testing. TODO: reset to 3 before launch.
+
+---
+
+## What's working / verified
+
+- Full onboarding → storefront generation pipeline
+- fal.ai hero image injection into hero block content
+- fal.ai product images cached in Supabase Storage
+- Cinematic hero with real photo looks genuinely impressive (Sue's Bakery test)
+- Grain texture, scroll animations, varied palettes all rendering
+- TypeScript clean, all 23 tests passing
+
+---
+
+## Layers completed
+
+**Layer 1 — done:** Storefront resolver, Supabase Auth, middleware proxy.
+
+**Layer 2 — done:** Moods, design tokens, block/widget types, manifest build script, onboarding wizard.
+
+**Layer 3 — done:** Generation pipeline (tokens + page + listings + images), DB writes, rate limiting.
+
+**Layer 4 — done:** Storefront renderer (`app/storefront/layout.tsx`, `app/storefront/page.tsx`, block registry).
+
+**Layer 5 (this session) — done:** fal.ai image generation, block variants, animation system, design quality overhaul.
+
+---
+
+## Next priorities
+
+1. **More block variants** — remaining moods need hero variants. The 5 moods without `hero-cinematic` still fall back to `hero-editorial`. Hand the updated skill doc to Cowork.
+2. **Navbar wiring** — `NavStorefront` was built but needs to be wired into `app/storefront/layout.tsx` with tenant shop name fetch.
+3. **Session brief says** open items 1–8 below.
+
+---
+
+## Open items
+
+1. **Streaming build progress** — `StepBuild` animation is a cosmetic timer. Swap for real SSE streaming so each step lights up as real work completes.
+2. **Doer storefront rendering** — product design hasn't settled what a seller+doer storefront looks like.
+3. **Spec touch-up** — Master Spec `.docx` files haven't been updated to reflect D1–D20. Alex to handle when timing allows.
+4. **StepTrial copy** — billing placeholder at $35/month. Confirm exact price ($35 vs $39) before wiring Stripe.
+5. **Per-tenant AI usage caps (Phase 2 dashboard)** — 100 AI calls/month included, additional 100 for $5. Onboarding excluded from cap. Build when dashboard exists.
+6. **Etsy/Shopify import (Phase 2)** — exit ramp positioning. Products + photos in Phase 2, reviews stretch goal. Customer list not possible (Etsy withholds buyer emails).
+7. **Marketing copy update** — drop "live in minutes." New angle: "A beautiful, full-content site — just add your personal touches and products and you're live." Emphasize conversational interface. Update `components/Hero.tsx` and `components/HowItWorks.tsx`.
+8. **Rate limit reset** — `lib/rate-limit.ts` MAX_PER_WINDOW is 20 for dev testing. Reset to 3 before launch.
+9. **Sentry + PostHog** — Alex has not signed up yet. Both are optional in env.ts. Wire up when accounts exist.
 
 ---
 
 ## Critical env var note
 
-Claude Code injects its own `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` into all child processes. `.env.local` cannot override these because the inherited env vars take precedence. The fix applied: use `BOHDIAI_ANTHROPIC_KEY` in `.env.local` instead, and pass it explicitly with `baseURL: 'https://api.anthropic.com'` in `lib/anthropic.ts`. Do not rename this back.
+Claude Code injects its own `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` into all child processes. `.env.local` cannot override these. Fix: use `BOHDIAI_ANTHROPIC_KEY` in `.env.local` with explicit `baseURL: 'https://api.anthropic.com'` in `lib/anthropic.ts`. Do not rename this back.
+
+`.env.local` must also have `FAL_API_KEY` from fal.ai dashboard.
 
 ---
 
@@ -80,49 +119,30 @@ Claude Code injects its own `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` into al
 
 1. `CLAUDE.md` at the project root
 2. `project-docs/SESSION-BRIEF.md` — this file
-3. `project-docs/BohdiAI-Master-Spec.md` — full product spec
+3. `project-docs/BohdiAI-Master-Spec.md` — full product spec (read in full, every session)
 4. `project-docs/BohdiAI-Roles-Workflow.md`
-5. `project-docs/Phase-1-Decisions-Log.md` — D1–D20
+5. `project-docs/Phase-1-Decisions-Log.md` — D1–D19
 6. `project-docs/Tech-Arch-Spec.md` — database design
 7. `project-docs/Phase-1-Spec.md` — current phase spec
-8. `.claude/skills/niche-writer/SKILL.md`
-9. `content/niches/_queue.yaml`
-10. `content/niches/candles.md`
 
 ---
 
 ## What's in the DB
 
-36 tables. 8 niches (status=approved). At least 1 tenant row (the test woodworker run). All 6 migrations applied (000001–000005 + the original Phase 0 set).
+36 tables. 8 niches (status=approved). Multiple test tenant rows. All migrations applied through `20260525000003`.
 
 Migration runner: `node scripts/db-migrate.mjs`
 
----
-
-## Local environment
-
-`.env.local` has (first line, no BOM):
-- `BOHDIAI_ANTHROPIC_KEY=sk-ant-...` ← must be first or at minimum not last; file must end with a newline
-- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_PASSWORD`
-- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- Resend, Sentry, PostHog, SITE_URL, FOUNDER_CAP vars
-
----
-
-## Open items
-
-1. **Storefront renderer** — next build target. Maker can't see their site yet.
-2. **Streaming build progress** — `StepBuild` animation is cosmetic timer. After renderer exists, swap for real SSE streaming so each step lights up as real work completes.
-3. **Doer storefront rendering** — product design hasn't settled what a seller+doer storefront looks like.
-4. **Spec touch-up** — Master Spec `.docx` files haven't been updated to reflect D1–D20. Alex to handle when timing allows.
-5. **StepTrial copy** — billing placeholder, confirm exact copy before wiring real Stripe.
+Storage buckets: `placeholder-images` (legacy, unused), `generated-images` (active — fal.ai output).
 
 ---
 
 ## Lessons banked
 
-**Claude Code env collision.** Claude Code injects `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` into child processes. Any Next.js dev server started from Claude Code inherits these and `.env.local` cannot override them. Always use a project-specific key name (`BOHDIAI_ANTHROPIC_KEY`) for Anthropic API keys in this codebase.
+**Claude Code env collision.** Claude Code injects `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` into child processes. Always use `BOHDIAI_ANTHROPIC_KEY`.
+
+**fal.ai concurrent limits.** New accounts hit rate limits with 5 simultaneous FLUX Pro requests. Batch product images 2 at a time. Generate hero image after text generation completes, not alongside.
+
+**Token generation defaults to safe.** Without explicit instruction to be opinionated, the AI returns the most expected palette for a mood every time. The prompt now explicitly bans this.
 
 **Don't estimate.** Frame work by dependencies and sequencing, not weeks or days.
-
-**Push back is the job.** Staying with the SaaS shape and simplifying it was the right call.

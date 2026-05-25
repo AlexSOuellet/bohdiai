@@ -28,7 +28,9 @@ DIRECTIONAL HINTS:
 - Shape: ${mood.tokenHints.shape}
 - Spacing: ${mood.tokenHints.spacing}
 
-Generate design tokens that feel authentic to this maker's craft and true to the mood. Use real Google Fonts names for typography (e.g. "Playfair Display", "Inter", "Lora", "DM Sans"). Colors must be valid hex codes.
+Generate design tokens that feel authentic to this maker's craft and true to the mood. Be opinionated and distinctive — do not default to the most obvious or expected palette for this mood. Every storefront should look like a considered brand decision, not a template. A rustic baker should not always get cream and brown. A wild meadow herbalist should not always get sage green. Push into unexpected but still authentic territory: a deep forest green background, a near-black with warm amber, a dusty terracotta, a slate blue with ochre. The mood sets the feeling, not the exact color. Make a strong, specific choice a real brand designer would be proud of.
+
+Use real Google Fonts names for typography (e.g. "Playfair Display", "Inter", "Lora", "DM Sans", "Fraunces", "Syne", "Cormorant Garamond", "Crimson Pro", "Libre Baskerville", "Work Sans"). Colors must be valid hex codes. Ensure sufficient contrast between text and background (WCAG AA minimum).
 
 Return ONLY a JSON object with this exact structure — no markdown, no explanation:
 {

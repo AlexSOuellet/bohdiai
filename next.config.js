@@ -6,15 +6,18 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        // Supabase Storage — placeholder product images cached per niche
         protocol: 'https',
         hostname: 'jdmizpqtpbmcpspfuihp.supabase.co',
         pathname: '/storage/v1/object/public/**',
       },
       {
-        // Pexels CDN — fallback direct URLs when Storage upload fails
+        // fal.ai direct URLs — fallback when Supabase Storage upload fails
         protocol: 'https',
-        hostname: 'images.pexels.com',
+        hostname: 'fal.media',
+      },
+      {
+        protocol: 'https',
+        hostname: 'storage.googleapis.com',
       },
     ],
   },

@@ -7,6 +7,7 @@ import { generateTokens } from '@/lib/generation/generate-tokens';
 import { generatePage } from '@/lib/generation/generate-page';
 import { generateListings } from '@/lib/generation/generate-listings';
 import { writeStorefront } from '@/lib/generation/write-storefront';
+import { generateHeroImage } from '@/lib/fal';
 import { toSubdomain } from './_components/types';
 
 // ─── Subdomain availability check ────────────────────────────────────────────
@@ -53,7 +54,6 @@ export async function generateStorefront(
 
   const mood = MOODS[input.moodKey];
 
-  // Fetch the niche row — body_markdown is what the AI reads
   const { data: niche, error: nicheError } = await supabaseAdmin()
     .from('niches')
     .select('display_name, body_markdown, tenant_type_fit')
@@ -64,18 +64,39 @@ export async function generateStorefront(
     throw new Error(`Niche not found: ${input.nicheSlug}`);
   }
 
-  // Run all AI generation calls in parallel.
-  // tenantId is not yet created at this point — logging will show undefined,
-  // which is correct. The tenant row is written in writeStorefront below.
+  // Run all AI text generation calls in parallel first
   const [tokens, page, listings] = await Promise.all([
     generateTokens(niche.body_markdown, mood),
     generatePage(input.shopName, niche.display_name, niche.body_markdown, mood),
     input.productCount > 0
-      ? generateListings(input.shopName, input.nicheSlug, niche.display_name, niche.body_markdown, input.productCount)
+      ? generateListings(
+          input.shopName,
+          input.subdomain,
+          niche.display_name,
+          niche.body_markdown,
+          input.productCount,
+        )
       : Promise.resolve([]),
   ]);
 
-  // Write everything to DB
+  // Generate hero image after text generation — product images already generated inside
+  // generateListings. Running hero separately avoids fal.ai concurrent request rate limits.
+  const heroImageUrl = await generateHeroImage(
+    input.shopName,
+    niche.display_name,
+    mood.label,
+    input.subdomain,
+  );
+
+  // Inject hero image URL into the hero block content before writing to DB.
+  // The hero block is always at position 0; backgroundImageUrl is system-filled, not AI-filled.
+  if (heroImageUrl !== null) {
+    const heroBlock = page.blocks.find((b) => b.position === 0);
+    if (heroBlock !== undefined) {
+      heroBlock.content['backgroundImageUrl'] = heroImageUrl;
+    }
+  }
+
   return writeStorefront({
     subdomain: input.subdomain,
     shopName: input.shopName,

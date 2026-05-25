@@ -97,7 +97,8 @@
       "Bash(Remove-Item C:\\\\Projects\\\\BohdiAI\\\\scripts\\\\test-generate-page.mjs)",
       "Bash(grep -v \"//.*any\\\\|node_modules\\\\|\\\\.d\\\\.ts\")",
       "Bash(grep -rn \"rgba\\\\|#[0-9a-fA-F]\\\\{3,6\\\\}\\\\|px\\\\b\\\\|rem\\\\b\\\\|em\\\\b\\\\|clamp\\\\|minmax\\\\|repeat\\(\" blocks/ app/storefront/)",
-      "Bash(npx supabase *)"
+      "Bash(npx supabase *)",
+      "Bash(node -e \"const f = require\\('@fal-ai/client'\\); console.log\\(Object.keys\\(f\\)\\)\")"
     ]
   }
 }

@@ -1,8 +1,13 @@
 import type { ReactNode } from 'react';
 
 import HeroEditorial from '@/blocks/hero-editorial';
+import HeroCinematic from '@/blocks/hero-cinematic';
+import HeroSplitGallery from '@/blocks/hero-split-gallery';
+import HeroSplitScreen from '@/blocks/hero-split-screen';
 import AboutMaker from '@/blocks/about-maker';
 import ProductsGrid from '@/blocks/products-grid';
+import ProductsEditorialGrid from '@/blocks/products-editorial-grid';
+import ProductsSplitCarousel from '@/blocks/products-split-carousel';
 import CollectionsRow from '@/blocks/collections-row';
 import CtaBanner from '@/blocks/cta-banner';
 import TestimonialsGrid from '@/blocks/testimonials-grid';
@@ -61,14 +66,19 @@ interface SlotData {
 }
 
 const BLOCK_REGISTRY: Record<string, BlockComponent> = {
-  'hero-editorial':    asBlock(HeroEditorial),
-  'about-maker':       asBlock(AboutMaker),
-  'products-grid':     asBlock(ProductsGrid),
-  'collections-row':   asBlock(CollectionsRow),
-  'cta-banner':        asBlock(CtaBanner),
-  'testimonials-grid': asBlock(TestimonialsGrid),
-  'events-list':       asBlock(EventsList),
-  'custom-content':    asBlock(CustomContent),
+  'hero-editorial':          asBlock(HeroEditorial),
+  'hero-cinematic':          asBlock(HeroCinematic),
+  'hero-split-gallery':      asBlock(HeroSplitGallery),
+  'hero-split-screen':       asBlock(HeroSplitScreen),
+  'about-maker':             asBlock(AboutMaker),
+  'products-grid':           asBlock(ProductsGrid),
+  'products-editorial-grid': asBlock(ProductsEditorialGrid),
+  'products-split-carousel': asBlock(ProductsSplitCarousel),
+  'collections-row':         asBlock(CollectionsRow),
+  'cta-banner':              asBlock(CtaBanner),
+  'testimonials-grid':       asBlock(TestimonialsGrid),
+  'events-list':             asBlock(EventsList),
+  'custom-content':          asBlock(CustomContent),
 };
 
 export function renderBlock(row: BlockRow, tenantId: string): ReactNode {
