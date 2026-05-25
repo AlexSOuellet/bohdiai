@@ -1,6 +1,6 @@
 # Session Brief — BohdiAI
 
-**Last updated:** 2026-05-24 (Layer 2 complete — onboarding scaffold done, 8 niches seeded)
+**Last updated:** 2026-05-25 (Layer 3 complete — AI generation pipeline working end-to-end)
 
 **Update at the end of every session.**
 
@@ -8,143 +8,121 @@
 
 ## Picking up next session
 
-Layer 2 is complete. Layer 3 (AI generation pipeline) is next.
+Layer 3 is complete and verified working. The next layer is the **storefront renderer** — the page that reads a tenant's tokens and blocks from the DB and renders their site at `[shop].bohdiai.com`.
 
 **Layer 1 — done:**
-- Events, event_expenses migrations applied. event_id column on orders applied.
-- Storefront resolver live in `proxy.ts` (Next.js 16 renamed middleware → proxy). Reads `[shop].bohdiai.com`, looks up tenant by subdomain, injects `x-tenant-id` and `x-tenant-subdomain` into request headers. Unknown subdomains → 404.
+- Storefront resolver live in `proxy.ts`. Reads `[shop].bohdiai.com`, looks up tenant by subdomain, injects `x-tenant-id` and `x-tenant-subdomain` into request headers. Unknown subdomains → 404.
 - Supabase Auth wiring complete: `lib/supabase-server.ts`, `lib/supabase-browser.ts`, `app/auth/callback/route.ts`, session refresh in proxy. Database types regenerated from live schema (all 36 tables).
 - D19 locked: launch price is $25/month.
-- Pre-existing Phase 0 type error in `confirm/route.ts` fixed.
+- Events, event_expenses migrations applied. event_id column on orders applied.
 
 **Layer 2 — done:**
-- **Mood vocabulary locked (D20).** 7 moods: Dark and Stormy, Rustic, Warm and Cozy, Summer Afternoon, Wild Meadow, Bright Bazaar, Sunday Morning. Lives in `lib/moods.ts`.
-- **Design token type.** `lib/tokens.ts` — DesignTokens Zod schema + `tokensToCssVars()` utility.
-- **BlockMeta / WidgetMeta types.** `lib/blocks.ts` — schema the AI reads from manifests.
-- **First foundational block.** `blocks/hero-editorial/` — story-first, typography-forward hero.
-- **First foundational widget.** `widgets/cta-button/` — single CTA button, fills any CTA slot.
-- **Manifest build script.** `scripts/build-manifests.mjs` — scans blocks/widgets, emits typed manifests. Runs via predev/prebuild hooks.
-- **Onboarding scaffold complete.** Five-screen wizard at `app/onboarding/`:
-  - `page.tsx` (server) — fetches approved niches, renders `<OnboardingFlow>`
+- Mood vocabulary locked (D20). 7 moods in `lib/moods.ts`.
+- Design token type. `lib/tokens.ts` — DesignTokens Zod schema + `tokensToCssVars()` utility.
+- BlockMeta / WidgetMeta types. `lib/blocks.ts`.
+- First foundational block: `blocks/hero-editorial/`.
+- First foundational widget: `widgets/cta-button/`.
+- Manifest build script: `scripts/build-manifests.mjs`. Runs via predev/prebuild hooks.
+- Onboarding scaffold complete. Five-screen wizard at `app/onboarding/`:
+  - `page.tsx` — server page, fetches approved niches
   - `_components/OnboardingFlow.tsx` — state machine, accumulates `OnboardingData`
   - `_components/StepName.tsx` — shop name entry
-  - `_components/StepNiche.tsx` — niche picker, fetches from niches table
-  - `_components/StepMood.tsx` — mood selection (7 moods from `lib/moods.ts`)
-  - `_components/StepTrial.tsx` — billing placeholder
-  - `_components/StepBuild.tsx` — animated AI generation placeholder (Layer 3 hook point)
-  - `_components/ProgressBar.tsx` — 5-dot progress indicator
-  - `_components/types.ts` — `OnboardingData`, `NicheOption`, `INITIAL_DATA`
-- **8 niches seeded (status=approved):**
-  - candles (reference, seeded in batch 1)
-  - jewelry_maker, baker, soap_and_bath, ceramicist, woodworker, fine_artist, vintage_reseller (batch 2 — migration `20260524000005_seed_niches_batch2.sql` applied)
-  - All 8 are live in Supabase. All 8 `content/niches/*.md` files exist.
+  - `_components/StepNiche.tsx` — searchable dropdown niche picker + subdomain availability check
+  - `_components/StepMood.tsx` — mood selection
+  - `_components/StepTrial.tsx` — billing placeholder ($25/mo)
+  - `_components/StepBuild.tsx` — calls `generateStorefront` on mount, shows animated progress, links to live storefront on completion
+  - `_components/ProgressBar.tsx`, `_components/types.ts`
+- 8 niches seeded (status=approved): candles, jewelry_maker, baker, soap_and_bath, ceramicist, woodworker, fine_artist, vintage_reseller.
 
-**Layer 2 decisions locked:**
-- **D20.** 7 moods at launch. Vibe slider handles fine-tuning within a mood.
-- **Block variants:** No fixed count locked. Lead developer builds one foundational variant; Cowork agents replicate.
+**Layer 3 — done:**
+- `app/onboarding/actions.ts` — two server actions:
+  - `checkSubdomainAvailable(shopName)` — slugifies + queries tenants table, returns available/taken
+  - `generateStorefront(input)` — orchestrates full generation pipeline, writes to DB
+- `lib/anthropic.ts` — singleton Anthropic client. Uses `BOHDIAI_ANTHROPIC_KEY` (not `ANTHROPIC_API_KEY`) and hardcoded `baseURL: 'https://api.anthropic.com'` to avoid collision with Claude Code's injected env vars.
+- `lib/generation/generate-tokens.ts` — Anthropic call → `DesignTokens` (colors, fonts, spacing, layout)
+- `lib/generation/generate-page.ts` — Anthropic call → ordered block+content list (block key, position, content fields, slot widgets)
+- `lib/generation/write-storefront.ts` — sequential admin DB writes: tenant → design_tokens → content_pages → page_blocks
+- `lib/env.ts` — `BOHDIAI_ANTHROPIC_KEY` required server var.
+
+**Verified working:** full onboarding run for a rustic woodworker generated authentic copy ("Made from the Wood. Built to Last Generations."), correct color palette (#F5EFE0 parchment background, rust accent), Zilla Slab + Lora fonts, all written to Supabase.
 
 ---
 
-## Layer 3 — next
+## Layer 4 — storefront renderer (next)
 
-The AI generation pipeline. This is what `StepBuild.tsx`'s animation is a placeholder for.
+The page that makes `[shop].bohdiai.com` actually render something.
 
-**What it does:** takes `OnboardingData` (shop name + niche slug + mood slug) and:
-1. Calls Anthropic API to generate `DesignTokens` (colors, typography, spacing) from niche `body_markdown` + mood description
-2. Calls Anthropic API to assemble a page block list (which blocks to use, in what order) from mood's `blockHint` + available blocks in `blocks-manifest.generated.ts`
-3. Calls Anthropic API to generate content for each block slot (headline, subheadline, body, CTA) using niche vocabulary
-4. Writes the result to DB in a single transaction: row in `design_tokens`, rows in `page_blocks`, updates `tenants` with subdomain
+**What it needs to do:**
+1. The subdomain resolver (`proxy.ts`) already injects `x-tenant-id` into every request to a tenant subdomain — that's done.
+2. A catch-all route at `app/[...path]/page.tsx` (or a tenant-specific layout) reads `x-tenant-id` from headers, fetches the tenant's `design_tokens` (is_active=true) and `content_pages` + `page_blocks` for the requested slug.
+3. Injects design tokens as CSS custom properties (via `tokensToCssVars()` — already built).
+4. Renders blocks in position order using the block component registry.
+5. Block components read their `content` JSON and render accordingly.
 
-**Entry point:** a server action (or API route) that `StepBuild` calls on mount. Returns a job ID or streams progress. The five animation steps in `StepBuild` map to these five real phases.
+**Key files to build:**
+- `app/storefront/layout.tsx` — tenant layout, injects CSS vars from design tokens
+- `app/storefront/page.tsx` — home page, fetches and renders page blocks
+- `blocks/hero-editorial/index.tsx` — the React component for the one block we have (meta already exists at `blocks/hero-editorial/meta.ts`)
+- `widgets/cta-button/index.tsx` — the React component for the one widget we have
+- A block registry (`lib/block-registry.ts`) mapping block keys to React components
 
-**Files to build:**
-- `lib/generation/generate-tokens.ts` — Anthropic call → `DesignTokens`
-- `lib/generation/generate-blocks.ts` — Anthropic call → ordered block list with slot content
-- `lib/generation/generate-content.ts` — Anthropic call → fills content slots per block
-- `lib/generation/write-storefront.ts` — single DB transaction committing all output
-- `app/api/generate/route.ts` (or server action) — orchestrates the four steps, streams progress
+**Note on routing:** The proxy already handles subdomain → tenant_id mapping. The storefront pages need to live under a route that the proxy rewrites to, or be a separate Next.js app. Check `proxy.ts` to understand how it currently routes tenant requests before building the renderer.
+
+---
+
+## Critical env var note
+
+Claude Code injects its own `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` into all child processes. `.env.local` cannot override these because the inherited env vars take precedence. The fix applied: use `BOHDIAI_ANTHROPIC_KEY` in `.env.local` instead, and pass it explicitly with `baseURL: 'https://api.anthropic.com'` in `lib/anthropic.ts`. Do not rename this back.
 
 ---
 
 ## Required reading at session start
 
-Do not skip any of these. The cite-or-shut-up rule in CLAUDE.md requires it.
-
-1. `CLAUDE.md` at the project root — orientation and rules.
-2. `project-docs/SESSION-BRIEF.md` — this file.
-3. `project-docs/BohdiAI-Master-Spec.md` — the product spec, in full.
-4. `project-docs/BohdiAI-Roles-Workflow.md` — roles and process.
-5. `project-docs/Phase-1-Decisions-Log.md` — decisions D1–D20.
-6. `project-docs/Tech-Arch-Spec.md` — the database design.
-7. `project-docs/Phase-1-Spec.md` — the Phase 1 build spec.
-8. `.claude/skills/niche-writer/SKILL.md` — the niche-writer skill.
-9. `content/niches/_queue.yaml` — the launch queue (8 done, next P0s are photographer, hair_stylist, tattoo_artist, etc.).
-10. `content/niches/candles.md` — the reference niche file.
+1. `CLAUDE.md` at the project root
+2. `project-docs/SESSION-BRIEF.md` — this file
+3. `project-docs/BohdiAI-Master-Spec.md` — full product spec
+4. `project-docs/BohdiAI-Roles-Workflow.md`
+5. `project-docs/Phase-1-Decisions-Log.md` — D1–D20
+6. `project-docs/Tech-Arch-Spec.md` — database design
+7. `project-docs/Phase-1-Spec.md` — current phase spec
+8. `.claude/skills/niche-writer/SKILL.md`
+9. `content/niches/_queue.yaml`
+10. `content/niches/candles.md`
 
 ---
 
-## What we accomplished this session (2026-05-24 — Layer 2 build + niche seeding)
+## What's in the DB
 
-### Code shipped
+36 tables. 8 niches (status=approved). At least 1 tenant row (the test woodworker run). All 6 migrations applied (000001–000005 + the original Phase 0 set).
 
-- `app/onboarding/page.tsx` — server page, fetches niches, mounts OnboardingFlow
-- `app/onboarding/_components/OnboardingFlow.tsx` — step state machine
-- `app/onboarding/_components/StepName.tsx`
-- `app/onboarding/_components/StepNiche.tsx`
-- `app/onboarding/_components/StepMood.tsx`
-- `app/onboarding/_components/StepTrial.tsx`
-- `app/onboarding/_components/StepBuild.tsx`
-- `app/onboarding/_components/ProgressBar.tsx`
-- `app/onboarding/_components/types.ts`
-- `content/niches/jewelry_maker.md`
-- `content/niches/baker.md`
-- `content/niches/soap_and_bath.md`
-- `content/niches/ceramicist.md`
-- `content/niches/woodworker.md`
-- `content/niches/fine_artist.md`
-- `content/niches/vintage_reseller.md`
-- `supabase/migrations/20260524000005_seed_niches_batch2.sql` — applied
-
-### Decisions locked
-
-- **D20** — 7 moods at launch (Dark and Stormy, Rustic, Warm and Cozy, Summer Afternoon, Wild Meadow, Bright Bazaar, Sunday Morning)
-
----
-
-## What's in the DB right now
-
-36 tables in the public schema (33 original + events, event_expenses, plus event_id on orders).
-
-8 rows in `niches` table, all `status='approved'`: candles, jewelry_maker, baker, soap_and_bath, ceramicist, woodworker, fine_artist, vintage_reseller.
-
-Migration runner: `node scripts/db-migrate.mjs` — all 5 migrations applied (000001–000005).
+Migration runner: `node scripts/db-migrate.mjs`
 
 ---
 
 ## Local environment
 
-`.env.local` has:
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY=sb_secret_...`
-- `SUPABASE_DB_PASSWORD=...`
-- Plus all Phase 0 vars (Resend, Sentry, PostHog, site URL, founder cap)
+`.env.local` has (first line, no BOM):
+- `BOHDIAI_ANTHROPIC_KEY=sk-ant-...` ← must be first or at minimum not last; file must end with a newline
+- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_PASSWORD`
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- Resend, Sentry, PostHog, SITE_URL, FOUNDER_CAP vars
 
 ---
 
 ## Open items
 
-1. **Doer storefront rendering.** What does a multi-type tenant (maker + takes commissions) look like on one storefront? The schema supports it; the product design hasn't settled this.
-
-2. **Spec touch-up note.** The Master Spec `.docx` files are source-of-truth originals. The `.md` files in project-docs are the working copies Claude reads. The docx files have not been updated to reflect D1–D20. Open item for Alex when timing allows.
-
-3. **StepTrial pricing display.** The component shows $25/mo billing placeholder text — consistent with D19. Confirm exact copy before wiring real billing.
+1. **Storefront renderer** — next build target. Maker can't see their site yet.
+2. **Streaming build progress** — `StepBuild` animation is cosmetic timer. After renderer exists, swap for real SSE streaming so each step lights up as real work completes.
+3. **Doer storefront rendering** — product design hasn't settled what a seller+doer storefront looks like.
+4. **Spec touch-up** — Master Spec `.docx` files haven't been updated to reflect D1–D20. Alex to handle when timing allows.
+5. **StepTrial copy** — billing placeholder, confirm exact copy before wiring real Stripe.
 
 ---
 
 ## Lessons banked
 
-**D18 conversation.** The generator-not-SaaS pivot came from a real and legitimate feeling about support overhead. The right answer was to take that feeling seriously, trace it back to specific causes, and address those specifically rather than abandoning the model.
+**Claude Code env collision.** Claude Code injects `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` into child processes. Any Next.js dev server started from Claude Code inherits these and `.env.local` cannot override them. Always use a project-specific key name (`BOHDIAI_ANTHROPIC_KEY`) for Anthropic API keys in this codebase.
 
 **Don't estimate.** Frame work by dependencies and sequencing, not weeks or days.
 
-**Push back is the job.** Staying with the SaaS shape and simplifying it (rather than pivoting away) was the right call.
+**Push back is the job.** Staying with the SaaS shape and simplifying it was the right call.
