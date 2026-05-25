@@ -6,7 +6,7 @@ const meta: BlockMeta = {
   sectionType: 'hero',
   description:
     'A full-width, typography-forward hero. Large headline leads; subheadline below. The maker story comes before the product. Best when the brand identity is the draw — not the catalog.',
-  moodFit: ['dark-and-stormy', 'rustic', 'sunday-morning'],
+  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
   tenantTypeFit: ['seller', 'doer'],
   tier: 'free',
   status: 'active',

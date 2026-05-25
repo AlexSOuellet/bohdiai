@@ -6,7 +6,7 @@ const meta: BlockMeta = {
   sectionType: 'products',
   description:
     'A grid of product cards pulled from the tenant\'s active listings. The primary commerce section — leads with a headline and subtitle, then shows the catalog. Best placed early on product-forward storefronts.',
-  moodFit: ['summer-afternoon', 'bright-bazaar', 'warm-and-cozy', 'rustic', 'sunday-morning'],
+  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
   tenantTypeFit: ['seller'],
   tier: 'free',
   status: 'active',

@@ -101,9 +101,9 @@ export const MOODS: Record<MoodKey, Mood> = {
       'Open with a lush, imagery-forward hero that fills the viewport. Let the visuals do the work first. Then botanical product cards. Then maker story as a brief grounding note at the end — not at the top.',
     tokenHints: {
       palette:
-        'deep sage or forest green background, off-white or warm cream text, wildflower purple or thistle accent',
+        'LIGHT background — soft sage white, pale celadon, or warm linen (never dark — this mood is alive and sun-lit, not shadowy). Sage green or botanical green as the primary brand color. Wildflower purple, thistle, or soft lavender as the accent. Warm cream or off-white text on any dark surfaces.',
       typography: 'elegant thin serif or hand-feel display heading, readable body',
-      shape: 'slight organic rounding — natural but not perfectly round',
+      shape: 'slight organic rounding — natural but not perfectly sharp or perfectly round',
       spacing: 'generous — room for things to breathe the way plants need space',
     },
   },

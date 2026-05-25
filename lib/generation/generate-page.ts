@@ -93,12 +93,18 @@ ${nicheBodyMarkdown}
 MOOD: ${mood.label}
 ${mood.description}
 
-PAGE ASSEMBLY GUIDANCE:
+PAGE ASSEMBLY GUIDANCE (follow this structure exactly):
 ${mood.blockAssemblyHint}
+
+MANDATORY RULES — these override all other guidance:
+1. The FIRST block (position 0) MUST be "hero-editorial". No exceptions. Every storefront starts with a hero.
+2. A "products-grid" block MUST appear in the page. This is a commerce storefront — products are non-negotiable.
+3. Total blocks: 4 to 6. Do not output fewer than 4 or more than 6.
+4. moodFit is a suggestion, not a gate. You may use any block for any mood — the mandatory blocks above override moodFit restrictions.
 
 ${blocksContext}
 
-Assemble a home page for this maker. Choose blocks from the available list that suit the mood and niche. Fill all aiGenerated content fields with authentic, specific copy using the niche vocabulary. For "href" fields in widgets, use relative paths like "/shop", "/about", "/commissions".
+Assemble the home page. Fill all aiGenerated content fields with authentic, specific copy using niche vocabulary — real product names, real maker language, nothing generic. For "href" fields in widgets, use relative paths like "/shop", "/about", "/commissions".
 
 Return ONLY a JSON object — no markdown, no explanation:
 {
