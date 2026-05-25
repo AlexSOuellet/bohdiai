@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import type { Json } from '@/lib/database.types';
 import type { DesignTokens } from '@/lib/tokens';
 import type { GeneratedPage } from './generate-page';
+import type { GeneratedListingWithImage } from './generate-listings';
 
 export interface StorefrontWriteInput {
   subdomain: string;
@@ -10,6 +11,7 @@ export interface StorefrontWriteInput {
   tenantTypes: string[];
   tokens: DesignTokens;
   page: GeneratedPage;
+  listings: GeneratedListingWithImage[];
 }
 
 export interface StorefrontWriteResult {
@@ -96,6 +98,31 @@ export async function writeStorefront(input: StorefrontWriteInput): Promise<Stor
 
     if (blocksError) {
       throw new Error(`Failed to write page blocks: ${blocksError.message}`);
+    }
+  }
+
+  // 5. Write placeholder listings
+  if (input.listings.length > 0) {
+    const now = new Date().toISOString();
+    const listingRows = input.listings.map((listing) => ({
+      tenant_id: tenantId,
+      listing_type: 'product' as const,
+      slug: listing.slug,
+      name: listing.name,
+      short_description: listing.short_description,
+      description: listing.description,
+      base_price_cents: listing.base_price_cents,
+      status: 'active' as const,
+      requires_shipping: true,
+      media_ids: listing.image_url !== null ? [listing.image_url] : [],
+      metadata: { placeholder: true, image_url: listing.image_url } as unknown as Json,
+      published_at: now,
+    }));
+
+    const { error: listingsError } = await db.from('listings').insert(listingRows);
+
+    if (listingsError) {
+      throw new Error(`Failed to write listings: ${listingsError.message}`);
     }
   }
 

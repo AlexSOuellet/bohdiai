@@ -7,8 +7,11 @@ import ProgressBar from './ProgressBar';
 import StepName from './StepName';
 import StepNiche from './StepNiche';
 import StepMood from './StepMood';
+import { StepProducts } from './StepProducts';
 import StepTrial from './StepTrial';
 import StepBuild from './StepBuild';
+
+const TOTAL_STEPS = 6;
 
 interface OnboardingFlowProps {
   niches: NicheOption[];
@@ -20,7 +23,7 @@ export default function OnboardingFlow({ niches }: OnboardingFlowProps) {
 
   function advance(patch: Partial<OnboardingData>) {
     setData((prev) => ({ ...prev, ...patch }));
-    setStep((s) => Math.min(s + 1, 5));
+    setStep((s) => Math.min(s + 1, TOTAL_STEPS));
   }
 
   function back() {
@@ -29,12 +32,13 @@ export default function OnboardingFlow({ niches }: OnboardingFlowProps) {
 
   return (
     <div>
-      <ProgressBar step={step} total={5} />
+      <ProgressBar step={step} total={TOTAL_STEPS} />
       {step === 1 && <StepName data={data} onAdvance={advance} />}
       {step === 2 && <StepNiche data={data} niches={niches} onAdvance={advance} onBack={back} />}
       {step === 3 && <StepMood data={data} onAdvance={advance} onBack={back} />}
-      {step === 4 && <StepTrial data={data} onAdvance={advance} onBack={back} />}
-      {step === 5 && <StepBuild data={data} onBack={back} />}
+      {step === 4 && <StepProducts data={data} onNext={(patch) => advance(patch)} />}
+      {step === 5 && <StepTrial data={data} onAdvance={advance} onBack={back} />}
+      {step === 6 && <StepBuild data={data} onBack={back} />}
     </div>
   );
 }

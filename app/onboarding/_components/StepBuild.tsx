@@ -54,6 +54,7 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
       subdomain: data.subdomain,
       nicheSlug: data.nicheSlug,
       moodKey: data.moodKey as MoodKey,
+      productCount: data.productCount,
     })
       .then((result) => {
         setTenantSubdomain(result.subdomain);

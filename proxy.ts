@@ -33,11 +33,19 @@ export async function proxy(request: NextRequest) {
     requestHeaders.set('x-tenant-subdomain', subdomain!);
   }
 
-  // Start with a response that forwards the augmented headers to route handlers
-  // and server components via Next.js's internal request-headers mechanism.
-  let response = NextResponse.next({
-    request: { headers: requestHeaders },
-  });
+  // For tenant requests, rewrite the URL to the storefront route so that
+  // myshop.bohdiai.com/ hits app/storefront/ rather than the marketing home.
+  const isTenantRequest = tenantId !== undefined;
+  const rewriteUrl = isTenantRequest ? request.nextUrl.clone() : null;
+  if (rewriteUrl !== null) {
+    const originalPath = request.nextUrl.pathname;
+    rewriteUrl.pathname = '/storefront' + (originalPath === '/' ? '' : originalPath);
+  }
+
+  // Start response — rewrite for tenant requests, pass-through for marketing/app.
+  let response = rewriteUrl !== null
+    ? NextResponse.rewrite(rewriteUrl, { request: { headers: requestHeaders } })
+    : NextResponse.next({ request: { headers: requestHeaders } });
 
   // Refresh the Supabase auth session on every request so JWTs stay current.
   // If NEXT_PUBLIC_SUPABASE_* vars are missing (e.g. during early dev), skip gracefully.
@@ -50,10 +58,12 @@ export async function proxy(request: NextRequest) {
         getAll: () => request.cookies.getAll(),
         // When Supabase needs to update the session cookie it rebuilds the
         // response so the new cookies are included. We recreate with the same
-        // requestHeaders so tenant context is preserved.
+        // requestHeaders and rewriteUrl (if any) so tenant context is preserved.
         setAll: ((cookiesToSet) => {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request: { headers: requestHeaders } });
+          response = rewriteUrl !== null
+            ? NextResponse.rewrite(rewriteUrl, { request: { headers: requestHeaders } })
+            : NextResponse.next({ request: { headers: requestHeaders } });
           cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options ?? {});
           });

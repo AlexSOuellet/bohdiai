@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { MOODS, type MoodKey } from '@/lib/moods';
 import { generateTokens } from '@/lib/generation/generate-tokens';
 import { generatePage } from '@/lib/generation/generate-page';
+import { generateListings } from '@/lib/generation/generate-listings';
 import { writeStorefront } from '@/lib/generation/write-storefront';
 import { toSubdomain } from './_components/types';
 
@@ -36,6 +37,7 @@ export interface GenerateStorefrontInput {
   subdomain: string;
   nicheSlug: string;
   moodKey: MoodKey;
+  productCount: number; // 0 = none, 3 = just a few, 8 = solid collection, 15 = full catalog
 }
 
 export interface GenerateStorefrontResult {
@@ -59,10 +61,13 @@ export async function generateStorefront(
     throw new Error(`Niche not found: ${input.nicheSlug}`);
   }
 
-  // Run the two AI generation calls (tokens and page) in parallel
-  const [tokens, page] = await Promise.all([
+  // Run all AI generation calls in parallel
+  const [tokens, page, listings] = await Promise.all([
     generateTokens(niche.body_markdown, mood),
     generatePage(input.shopName, niche.display_name, niche.body_markdown, mood),
+    input.productCount > 0
+      ? generateListings(input.shopName, input.nicheSlug, niche.display_name, niche.body_markdown, input.productCount)
+      : Promise.resolve([]),
   ]);
 
   // Write everything to DB
@@ -73,5 +78,6 @@ export async function generateStorefront(
     tenantTypes: niche.tenant_type_fit,
     tokens,
     page,
+    listings,
   });
 }
