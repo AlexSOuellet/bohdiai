@@ -45,7 +45,7 @@ export default async function ProductsEditorialGrid({ content, tenantId }: Produ
   }));
 
   return (
-    <section className="bg-s-background py-s-section sf-noise-grain relative overflow-hidden">
+    <section id="products" className="bg-s-background py-s-section sf-noise-grain relative overflow-hidden">
       
       {/* Soft background ambient blur orb */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[60%] h-[40%] rounded-full bg-s-primary/5 blur-[120px] pointer-events-none z-0" aria-hidden="true" />
@@ -111,8 +111,8 @@ export default async function ProductsEditorialGrid({ content, tenantId }: Produ
                         <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent pointer-events-none" />
 
                         {/* Floating glassmorphism price tag */}
-                        <div className="absolute bottom-4 right-4 bg-s-surface/85 backdrop-blur-md border border-s-border/40 py-1.5 px-3 rounded-pill shadow-lg z-raised">
-                          <p className="font-s-heading font-black text-s-accent text-sm tracking-tight leading-none">
+                        <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-md py-1.5 px-3 rounded-pill shadow-lg z-raised">
+                          <p className="font-s-heading font-black text-white text-sm tracking-tight leading-none">
                             {formatPrice(listing.base_price_cents)}
                           </p>
                         </div>

@@ -27,7 +27,7 @@ export const INITIAL_DATA: OnboardingData = {
   shopName: '',
   subdomain: '',
   moodKey: '',
-  productCount: 3,
+  productCount: 4,
   inspirationUrls: ['', '', ''],
 };
 

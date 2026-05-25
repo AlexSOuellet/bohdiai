@@ -44,7 +44,7 @@ export default async function ProductsGrid({ content, tenantId }: ProductsGridPr
   }));
 
   return (
-    <section className="bg-s-background py-s-section">
+    <section id="products" className="bg-s-background py-s-section">
       <div className="mx-auto max-w-6xl px-6">
         <div className="mb-10 text-center">
           <h2 className="sf-heading sf-text-heading">{content.headline}</h2>

@@ -99,10 +99,10 @@ PAGE ASSEMBLY GUIDANCE (follow this structure exactly):
 ${mood.blockAssemblyHint}
 
 MANDATORY RULES — these override all other guidance:
-1. The FIRST block (position 0) MUST be a hero block (sectionType: "hero"). Choose the hero variant that best fits the mood and niche — do not default to "hero-editorial" if a more fitting variant exists.
-2. A products block (sectionType: "products") MUST appear in the page. Choose the variant that best fits the mood. This is a commerce storefront — products are non-negotiable.
+1. The FIRST block (position 0) MUST be a hero block (sectionType: "hero"). Pick the hero variant whose moodFit includes the current mood. If two hero variants both fit the mood, choose based on niche — photographic niches favor the split-screen or split-gallery; editorial or service niches may use editorial variants.
+2. A products block (sectionType: "products") MUST appear in the page. Choose the variant whose moodFit includes the current mood.
 3. Total blocks: 4 to 6. Do not output fewer than 4 or more than 6.
-4. moodFit is a suggestion, not a gate. You may use any block for any mood — the mandatory blocks above override moodFit restrictions.
+4. moodFit is a real constraint. Always prefer blocks whose moodFit includes the current mood. Only use a block outside its moodFit if no in-mood option exists for a mandatory section type (hero, products).
 
 ${blocksContext}
 
@@ -115,7 +115,8 @@ COPY RULES:
 - Use the niche vocabulary naturally — the words real practitioners use, not the words a marketer uses to describe them.
 - Banned phrases: "crafted with love," "made with passion," "quality you can trust," "handmade with care," "small batch," "artisanal," "curated." Show it, don't label it.
 
-For "href" fields in widgets, use relative paths like "/shop", "/about", "/commissions".
+For "href" fields in widgets, use anchor links that scroll to sections on this page: "/#products", "/#about", "/#collections", "/#events". Do NOT link to pages that may not exist ("/shop", "/contact", "/commissions", "/booking").
+For "label" fields in CTA widgets, write copy that fits a scroll action, not a page visit. The reader is staying on the page. Good examples: "See the Work", "Meet the Maker", "View the Collection", "Explore the Shop". Bad examples: "Browse All Work", "Visit the Shop", "Go to Studio" — these imply leaving the page.
 
 Return ONLY a JSON object — no markdown, no explanation:
 {

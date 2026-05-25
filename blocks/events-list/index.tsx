@@ -47,7 +47,7 @@ export default async function EventsList({ content, tenantId }: EventsListProps)
   if (items.length === 0) return null;
 
   return (
-    <section className="bg-s-surface py-s-section">
+    <section id="events" className="bg-s-surface py-s-section">
       <div className="mx-auto max-w-3xl px-6">
         <h2 className="mb-8 text-center sf-heading sf-text-heading">{content.headline}</h2>
 

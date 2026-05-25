@@ -65,7 +65,7 @@ export default async function ProductsBloomGrid({ content, tenantId }: ProductsB
   }));
 
   return (
-    <section className="relative bg-s-background py-s-section overflow-hidden">
+    <section id="products" className="relative bg-s-background py-s-section overflow-hidden">
 
       {/* ─── Botanical ambient glow orbs — give the section a living, garden-like warmth ─── */}
       <div

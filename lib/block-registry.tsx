@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
 
+import NavSplit from '@/blocks/nav-split';
 import HeroEditorial from '@/blocks/hero-editorial';
 import HeroCinematic from '@/blocks/hero-cinematic';
 import HeroSplitGallery from '@/blocks/hero-split-gallery';
 import HeroSplitScreen from '@/blocks/hero-split-screen';
 import AboutMaker from '@/blocks/about-maker';
+import ProductsBloomGrid from '@/blocks/products-bloom-grid';
 import ProductsGrid from '@/blocks/products-grid';
 import ProductsEditorialGrid from '@/blocks/products-editorial-grid';
 import ProductsSplitCarousel from '@/blocks/products-split-carousel';
@@ -66,11 +68,13 @@ interface SlotData {
 }
 
 const BLOCK_REGISTRY: Record<string, BlockComponent> = {
+  'nav-split':               asBlock(NavSplit),
   'hero-editorial':          asBlock(HeroEditorial),
   'hero-cinematic':          asBlock(HeroCinematic),
   'hero-split-gallery':      asBlock(HeroSplitGallery),
   'hero-split-screen':       asBlock(HeroSplitScreen),
   'about-maker':             asBlock(AboutMaker),
+  'products-bloom-grid':     asBlock(ProductsBloomGrid),
   'products-grid':           asBlock(ProductsGrid),
   'products-editorial-grid': asBlock(ProductsEditorialGrid),
   'products-split-carousel': asBlock(ProductsSplitCarousel),

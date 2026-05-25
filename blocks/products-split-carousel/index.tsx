@@ -41,7 +41,7 @@ export default async function ProductsSplitCarousel({ content, tenantId }: Produ
   }));
 
   return (
-    <section className="bg-s-background py-s-section sf-noise-grain relative overflow-hidden">
+    <section id="products" className="bg-s-background py-s-section sf-noise-grain relative overflow-hidden">
       
       {/* Background ambient lighting ray */}
       <div className="absolute top-1/4 right-1/4 w-[50%] h-[50%] rounded-full bg-s-accent/5 blur-[120px] pointer-events-none z-0" aria-hidden="true" />

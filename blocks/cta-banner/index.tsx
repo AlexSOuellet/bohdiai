@@ -22,12 +22,12 @@ export default function CtaBanner({ content, slots }: CtaBannerProps) {
   return (
     <section className="bg-s-primary py-s-section text-center">
       <div className="mx-auto max-w-3xl px-6">
-        <h2 className="mb-4 sf-heading sf-text-heading text-s-background">
+        <h2 className="mb-4 sf-heading sf-text-heading text-s-text">
           {content.headline}
         </h2>
 
         {content.subheadline !== undefined && content.subheadline !== '' && (
-          <p className="mb-8 sf-body sf-text-body text-s-background/75">
+          <p className="mb-8 sf-body sf-text-body text-s-text/75">
             {content.subheadline}
           </p>
         )}

@@ -38,14 +38,31 @@ export default async function StorefrontHomePage() {
     .eq('is_visible', true)
     .order('position', { ascending: true });
 
+  const isDev = process.env.NODE_ENV === 'development';
+
   return (
     <main>
       {(blocks ?? []).map((block) => {
         const content = contentToRecord(block.content);
         if (content === null) return null;
-        return renderBlock(
+        const rendered = renderBlock(
           { block_key: block.block_key, position: block.position, content },
           tenantId,
+        );
+        if (!isDev) return rendered;
+        return (
+          <div key={block.block_key + block.position} style={{ position: 'relative' }}>
+            <div style={{
+              position: 'absolute', top: 8, left: 8, zIndex: 9999,
+              background: 'rgba(0,0,0,0.75)', color: '#facc15',
+              fontFamily: 'monospace', fontSize: '11px', fontWeight: 600,
+              padding: '2px 8px', borderRadius: '4px', letterSpacing: '0.05em',
+              pointerEvents: 'none', userSelect: 'none',
+            }}>
+              {block.block_key}
+            </div>
+            {rendered}
+          </div>
         );
       })}
     </main>

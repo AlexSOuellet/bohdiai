@@ -17,14 +17,24 @@ interface AboutMakerProps {
   slots?: AboutMakerSlots;
 }
 
+function bodyToText(raw: string): string {
+  return raw
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<p[^>]*>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .trim();
+}
+
 export default function AboutMaker({ content, slots }: AboutMakerProps) {
+  const bodyText = bodyToText(content.body);
   return (
-    <section className="bg-s-surface py-s-section">
+    <section id="about" className="bg-s-surface py-s-section">
       <div className="mx-auto max-w-3xl px-6">
         <h2 className="mb-6 sf-heading sf-text-heading">{content.headline}</h2>
 
         <p className="mb-8 whitespace-pre-line sf-body sf-text-body text-s-muted">
-          {content.body}
+          {bodyText}
         </p>
 
         {slots?.['primary-cta'] !== undefined && (

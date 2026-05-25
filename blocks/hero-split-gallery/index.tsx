@@ -9,7 +9,7 @@ interface HeroSplitGalleryContent {
   tagline?: string;
   headline: string;
   subheadline?: string;
-  primaryImageUrl: string;
+  primaryImageUrl?: string;
   secondaryImageUrl?: string;
 }
 
@@ -52,23 +52,31 @@ function formatHeadline(text: string) {
 
 export default function HeroSplitGallery({ content, slots }: HeroSplitGalleryProps) {
   const { tagline, headline, subheadline, primaryImageUrl, secondaryImageUrl } = content;
+  const hasPrimary = primaryImageUrl !== undefined && primaryImageUrl !== '';
   const hasSecondary = secondaryImageUrl !== undefined && secondaryImageUrl !== '';
 
   return (
     <section className="relative min-h-[90vh] md:min-h-screen w-full flex flex-col md:flex-row items-stretch overflow-hidden bg-s-background sf-noise-grain">
-      
+
       {/* ─── Left Column: Full Viewport Portrait Photo ─── */}
       <div className="relative w-full md:w-1/2 min-h-[50vh] md:min-h-screen overflow-hidden group">
-        <Image
-          src={primaryImageUrl}
-          alt={headline}
-          fill
-          priority
-          sizes="(max-width: 720px) 100vw, 50vw"
-          className="object-cover object-center transition-transform duration-[1400ms] ease-out group-hover:scale-105"
-        />
-        {/* Soft atmospheric gradient depth overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-s-background/50 via-transparent to-black/15 pointer-events-none" />
+        {hasPrimary ? (
+          <>
+            <Image
+              src={primaryImageUrl}
+              alt={headline}
+              fill
+              priority
+              sizes="(max-width: 720px) 100vw, 50vw"
+              className="object-cover object-center transition-transform duration-[1400ms] ease-out group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-s-background/50 via-transparent to-black/15 pointer-events-none" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-s-surface via-s-background to-s-surface">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] rounded-full bg-s-accent/10 blur-[100px] pointer-events-none" />
+          </div>
+        )}
       </div>
 
       {/* ─── Right Column: High-Tension Typography & Overlapping Horizontal Card ─── */}
@@ -121,7 +129,7 @@ export default function HeroSplitGallery({ content, slots }: HeroSplitGalleryPro
             <ScrollReveal delay={0.7} yOffset={30} className="w-full">
               <div className="relative aspect-[1.6/1] md:absolute md:bottom-[-80px] md:left-[-140px] md:w-[320px] lg:w-[400px] rounded-s-card overflow-hidden shadow-2xl border border-s-border bg-s-surface group z-raised hidden md:block">
                 <Image
-                  src={secondaryImageUrl}
+                  src={secondaryImageUrl ?? ''}
                   alt={headline}
                   fill
                   sizes="(max-width: 720px) 100vw, 400px"

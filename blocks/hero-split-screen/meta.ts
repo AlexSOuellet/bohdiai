@@ -46,9 +46,17 @@ const meta: BlockMeta = {
     {
       key: 'backgroundImageUrl',
       type: 'image',
-      label: 'Left Split Screen Image',
+      label: 'Split Screen Image',
       required: true,
       aiGenerated: false,
+    },
+    {
+      key: 'layout',
+      type: 'text',
+      label: 'Layout — "image-left" or "image-right"',
+      required: false,
+      aiGenerated: true,
+      maxLength: 12,
     },
   ],
 };

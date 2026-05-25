@@ -2,6 +2,7 @@ import { anthropicClient } from '@/lib/anthropic';
 import { logger } from '@/lib/logger';
 import type { Mood } from '@/lib/moods';
 import { DesignTokensSchema, type DesignTokens } from '@/lib/tokens';
+import { enforceTokenContrast } from '@/lib/contrast';
 
 function extractJson(text: string): unknown {
   const match = text.match(/\{[\s\S]*\}/);
@@ -84,5 +85,6 @@ Return ONLY a JSON object with this exact structure — no markdown, no explanat
 
   const text = response.content[0]?.type === 'text' ? response.content[0].text : '';
   const raw = extractJson(text);
-  return DesignTokensSchema.parse(raw);
+  const tokens = DesignTokensSchema.parse(raw);
+  return enforceTokenContrast(tokens);
 }

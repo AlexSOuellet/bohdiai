@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import Image from 'next/image';
 import meta from './meta';
-import ScrollReveal from '@/components/storefront/ScrollReveal';
 
 export { meta };
 
@@ -10,6 +9,7 @@ interface HeroSplitScreenContent {
   headline: string;
   subheadline?: string;
   backgroundImageUrl: string;
+  layout?: string;
 }
 
 interface HeroSplitScreenSlots {
@@ -39,7 +39,7 @@ function formatHeadline(text: string) {
 
   return (
     <span className="flex flex-col">
-      <span className="font-s-heading font-light italic text-s-accent tracking-wide mb-2 text-3xl md:text-4xl lg:text-5xl capitalize">
+      <span className="font-s-heading font-light italic text-s-accent tracking-wide mb-2 text-2xl md:text-3xl xl:text-4xl capitalize">
         {kicker}
       </span>
       <span className="font-s-heading font-black tracking-tighter uppercase text-s-text">
@@ -50,12 +50,16 @@ function formatHeadline(text: string) {
 }
 
 export default function HeroSplitScreen({ content, slots }: HeroSplitScreenProps) {
-  const { tagline, headline, subheadline, backgroundImageUrl } = content;
+  const { tagline, headline, subheadline, backgroundImageUrl, layout } = content;
+  const imageRight = layout === 'image-right';
 
   return (
-    <section className="relative min-h-[90vh] md:min-h-screen w-full flex flex-col md:flex-row items-stretch overflow-hidden bg-s-background sf-noise-grain">
-      
-      {/* ─── Left Side: Pure Full-Bleed Vertical Photographic Block ─── */}
+    <section className={[
+      'relative min-h-[90vh] md:min-h-screen w-full flex flex-col items-stretch overflow-hidden bg-s-background sf-noise-grain',
+      imageRight ? 'md:flex-row-reverse' : 'md:flex-row',
+    ].join(' ')}>
+
+      {/* Photo side */}
       <div className="relative w-full md:w-1/2 min-h-[45vh] md:min-h-screen overflow-hidden group">
         <Image
           src={backgroundImageUrl}
@@ -67,21 +71,24 @@ export default function HeroSplitScreen({ content, slots }: HeroSplitScreenProps
         />
         {/* Soft atmospheric gradient depth overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-s-background/60 via-transparent to-transparent pointer-events-none md:hidden" />
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-s-background/45 pointer-events-none hidden md:block" />
+        <div className={[
+          'absolute inset-0 pointer-events-none hidden md:block',
+          imageRight
+            ? 'bg-gradient-to-l from-transparent via-transparent to-s-background/45'
+            : 'bg-gradient-to-r from-transparent via-transparent to-s-background/45',
+        ].join(' ')} />
       </div>
 
-      {/* ─── Right Side: Elegant Solid-Colored Typography Card Panel ─── */}
+      {/* Typography card side */}
       <div className="relative w-full md:w-1/2 flex items-center justify-center p-6 md:p-12 lg:p-20 bg-s-background">
         
         {/* Ambient background accent ray */}
         <div className="absolute -bottom-[10%] -right-[10%] w-[60%] h-[60%] rounded-full bg-s-accent/10 blur-[120px] pointer-events-none z-0" aria-hidden="true" />
 
         <div className="relative w-full max-w-xl z-content">
-          
-          <ScrollReveal delay={0.15} yOffset={35} className="w-full">
-            
+
             {/* The Premium Structured Card Panel */}
-            <div className="bg-s-surface border border-s-border rounded-s-card p-8 md:p-12 lg:p-16 shadow-2xl relative overflow-hidden sf-noise-grain">
+            <div className="bg-s-surface border border-s-border rounded-s-card p-8 md:p-10 lg:p-12 shadow-2xl relative overflow-hidden sf-noise-grain">
               
               {/* Micro-texture local overlay */}
               <div className="absolute inset-0 pointer-events-none opacity-[0.03] mix-blend-overlay z-0 sf-noise-grain" aria-hidden="true" />
@@ -96,7 +103,7 @@ export default function HeroSplitScreen({ content, slots }: HeroSplitScreenProps
               )}
 
               {/* Staggered Mixed-Weight Headline */}
-              <h1 className="mb-6 sf-text-hero leading-[0.95] md:leading-[0.9] tracking-tighter text-left select-none font-s-heading font-black text-s-text">
+              <h1 className="mb-6 text-3xl md:text-4xl xl:text-5xl leading-[1] tracking-tighter text-left select-none font-s-heading font-black text-s-text break-words">
                 {formatHeadline(headline)}
               </h1>
 
@@ -118,7 +125,6 @@ export default function HeroSplitScreen({ content, slots }: HeroSplitScreenProps
               )}
 
             </div>
-          </ScrollReveal>
 
         </div>
       </div>

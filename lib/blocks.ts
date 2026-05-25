@@ -1,6 +1,7 @@
 import type { MoodKey } from './moods';
 
 export type SectionType =
+  | 'nav'
   | 'hero'
   | 'about'
   | 'products'
