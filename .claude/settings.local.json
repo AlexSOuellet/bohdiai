@@ -82,7 +82,22 @@
       "Bash(grep -v \"^$\")",
       "Bash(node scripts/db-migrate.mjs --status)",
       "Bash(node scripts/db-migrate.mjs --mark-applied 20260518000000_waitlist.sql)",
-      "Bash(node scripts/db-migrate.mjs)"
+      "Bash(node scripts/db-migrate.mjs)",
+      "PowerShell(Get-ChildItem C:\\\\Projects\\\\BohdiAI\\\\app -Recurse -Depth 2 | Where-Object { $_.Name -ne 'node_modules' } | Select-Object FullName | Format-Table -HideTableHeaders)",
+      "Bash(cd /mnt/c/Projects/BohdiAI && grep -E \"supabase|@supabase\" package.json)",
+      "PowerShell(cd C:\\\\Projects\\\\BohdiAI; npx supabase gen types typescript --project-id jdmizpqtpbmcpspfuihp --schema public > lib\\\\database.types.ts; echo \"Exit: $LASTEXITCODE\"; Get-Content lib\\\\database.types.ts | Measure-Object -Line)",
+      "Bash(node --input-type=module)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(node --env-file=.env.local -e ' *)",
+      "Bash(fuser -k 3000/tcp)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(node scripts/build-manifests.mjs)",
+      "Bash(npx tsx *)",
+      "Bash(findstr :3000)",
+      "Bash(Remove-Item C:\\\\Projects\\\\BohdiAI\\\\scripts\\\\test-generate-page.mjs)",
+      "Bash(grep -v \"//.*any\\\\|node_modules\\\\|\\\\.d\\\\.ts\")",
+      "Bash(grep -rn \"rgba\\\\|#[0-9a-fA-F]\\\\{3,6\\\\}\\\\|px\\\\b\\\\|rem\\\\b\\\\|em\\\\b\\\\|clamp\\\\|minmax\\\\|repeat\\(\" blocks/ app/storefront/)",
+      "Bash(npx supabase *)"
     ]
   }
 }

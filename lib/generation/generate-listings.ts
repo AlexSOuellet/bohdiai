@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { anthropicClient } from '@/lib/anthropic';
+import { logger } from '@/lib/logger';
 import { getPlaceholderImage } from '@/lib/pexels';
 
 // ─── Output types ─────────────────────────────────────────────────────────────
@@ -10,7 +11,7 @@ const GeneratedListingSchema = z.object({
   short_description: z.string(),
   description: z.string(),
   base_price_cents: z.number().int().positive(),
-  pexels_query: z.string(), // search term for Pexels image lookup
+  pexels_query: z.string(),
 });
 
 const GeneratedListingsSchema = z.object({
@@ -25,7 +26,7 @@ export interface GeneratedListingWithImage extends GeneratedListing {
 
 function extractJson(text: string): unknown {
   const match = text.match(/\{[\s\S]*\}/);
-  if (!match?.[0]) throw new Error('No JSON object found in AI response');
+  if (match?.[0] === undefined) throw new Error('No JSON object found in AI response');
   return JSON.parse(match[0]);
 }
 
@@ -37,6 +38,7 @@ export async function generateListings(
   nicheDisplayName: string,
   nicheBodyMarkdown: string,
   count: number,
+  tenantId?: string,
 ): Promise<GeneratedListingWithImage[]> {
   const prompt = `You are helping a maker launch their online store. Generate ${count} realistic placeholder product listings for their shop.
 
@@ -68,17 +70,27 @@ Return ONLY a JSON object — no markdown, no explanation:
   ]
 }`;
 
+  const start = Date.now();
   const response = await anthropicClient().messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 2048,
     messages: [{ role: 'user', content: prompt }],
+  });
+  const latencyMs = Date.now() - start;
+
+  logger.info('ai: generate-listings', {
+    model: response.model,
+    inputTokens: response.usage.input_tokens,
+    outputTokens: response.usage.output_tokens,
+    latencyMs,
+    count,
+    tenantId,
   });
 
   const text = response.content[0]?.type === 'text' ? response.content[0].text : '';
   const raw = extractJson(text);
   const { listings } = GeneratedListingsSchema.parse(raw);
 
-  // Fetch Pexels images in parallel
   const withImages = await Promise.all(
     listings.map(async (listing) => {
       const image_url = await getPlaceholderImage(nicheSlug, listing.pexels_query);

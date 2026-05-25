@@ -10,6 +10,15 @@ const config: Config = {
     },
     extend: {
       colors: {
+        // Storefront token bridge — resolved per-tenant via CSS custom properties
+        // injected in app/storefront/layout.tsx. Do not use these on the marketing site.
+        's-background': 'var(--color-background)',
+        's-surface': 'var(--color-surface)',
+        's-text': 'var(--color-text)',
+        's-muted': 'var(--color-text-muted)',
+        's-primary': 'var(--color-primary)',
+        's-accent': 'var(--color-accent)',
+        's-border': 'var(--color-border)',
         bg: '#0a0805',
         'bg-2': '#15110a',
         text: {
@@ -28,6 +37,14 @@ const config: Config = {
         serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
         display: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        // Storefront token bridge
+        's-heading': ['var(--font-heading)'],
+        's-body': ['var(--font-body)'],
+      },
+      spacing: {
+        // Storefront token bridge
+        's-section': 'var(--spacing-section)',
+        's-card-gap': 'var(--card-gap)',
       },
       borderRadius: {
         sm: '4px',
@@ -35,6 +52,8 @@ const config: Config = {
         lg: '14px',
         xl: '20px',
         pill: '9999px',
+        // Storefront token bridge
+        's-card': 'var(--card-border-radius)',
       },
       transitionDuration: {
         fast: '180ms',

@@ -1,6 +1,7 @@
 'use server';
 
 import { supabaseAdmin } from '@/lib/supabase';
+import { checkGenerationRateLimit } from '@/lib/rate-limit';
 import { MOODS, type MoodKey } from '@/lib/moods';
 import { generateTokens } from '@/lib/generation/generate-tokens';
 import { generatePage } from '@/lib/generation/generate-page';
@@ -48,6 +49,8 @@ export interface GenerateStorefrontResult {
 export async function generateStorefront(
   input: GenerateStorefrontInput,
 ): Promise<GenerateStorefrontResult> {
+  await checkGenerationRateLimit();
+
   const mood = MOODS[input.moodKey];
 
   // Fetch the niche row — body_markdown is what the AI reads
@@ -61,7 +64,9 @@ export async function generateStorefront(
     throw new Error(`Niche not found: ${input.nicheSlug}`);
   }
 
-  // Run all AI generation calls in parallel
+  // Run all AI generation calls in parallel.
+  // tenantId is not yet created at this point — logging will show undefined,
+  // which is correct. The tenant row is written in writeStorefront below.
   const [tokens, page, listings] = await Promise.all([
     generateTokens(niche.body_markdown, mood),
     generatePage(input.shopName, niche.display_name, niche.body_markdown, mood),

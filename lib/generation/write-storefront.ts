@@ -19,6 +19,13 @@ export interface StorefrontWriteResult {
   subdomain: string;
 }
 
+// Supabase's Json type is a deep recursive union that TypeScript can't prove
+// our validated objects satisfy structurally. This helper narrows once at the
+// DB boundary — callers must ensure the value is JSON-serialisable.
+function toJson(value: unknown): Json {
+  return value as Json;
+}
+
 export async function writeStorefront(input: StorefrontWriteInput): Promise<StorefrontWriteResult> {
   const db = supabaseAdmin();
 
@@ -37,7 +44,7 @@ export async function writeStorefront(input: StorefrontWriteInput): Promise<Stor
     .select('id')
     .single();
 
-  if (tenantError || !tenant) {
+  if (tenantError !== null || tenant === null) {
     throw new Error(`Failed to create tenant: ${tenantError?.message ?? 'unknown error'}`);
   }
 
@@ -46,13 +53,13 @@ export async function writeStorefront(input: StorefrontWriteInput): Promise<Stor
   // 2. Write active design tokens
   const { error: tokensError } = await db.from('design_tokens').insert({
     tenant_id: tenantId,
-    tokens: input.tokens as unknown as Json,
+    tokens: toJson(input.tokens),
     label: 'Onboarding generation',
     source: 'onboarding',
     is_active: true,
   });
 
-  if (tokensError) {
+  if (tokensError !== null) {
     throw new Error(`Failed to write design tokens: ${tokensError.message}`);
   }
 
@@ -71,7 +78,7 @@ export async function writeStorefront(input: StorefrontWriteInput): Promise<Stor
     .select('id')
     .single();
 
-  if (pageError || !homePage) {
+  if (pageError !== null || homePage === null) {
     throw new Error(`Failed to create home page: ${pageError?.message ?? 'unknown error'}`);
   }
 
@@ -80,23 +87,23 @@ export async function writeStorefront(input: StorefrontWriteInput): Promise<Stor
   // 4. Write page blocks
   if (input.page.blocks.length > 0) {
     const blockRows = input.page.blocks.map((block) => {
-      const content: Json = { ...block.content } as unknown as Json;
+      const content = { ...block.content } as Record<string, unknown>;
       if (Object.keys(block.slots).length > 0) {
-        (content as Record<string, unknown>)['slots'] = block.slots;
+        content['slots'] = block.slots;
       }
       return {
         tenant_id: tenantId,
         page_id: pageId,
         block_key: block.blockKey,
         position: block.position,
-        content: content as Json,
+        content: toJson(content),
         is_visible: true,
       };
     });
 
     const { error: blocksError } = await db.from('page_blocks').insert(blockRows);
 
-    if (blocksError) {
+    if (blocksError !== null) {
       throw new Error(`Failed to write page blocks: ${blocksError.message}`);
     }
   }
@@ -114,14 +121,13 @@ export async function writeStorefront(input: StorefrontWriteInput): Promise<Stor
       base_price_cents: listing.base_price_cents,
       status: 'active' as const,
       requires_shipping: true,
-      media_ids: listing.image_url !== null ? [listing.image_url] : [],
-      metadata: { placeholder: true, image_url: listing.image_url } as unknown as Json,
+      metadata: toJson({ placeholder: true, image_url: listing.image_url }),
       published_at: now,
     }));
 
     const { error: listingsError } = await db.from('listings').insert(listingRows);
 
-    if (listingsError) {
+    if (listingsError !== null) {
       throw new Error(`Failed to write listings: ${listingsError.message}`);
     }
   }

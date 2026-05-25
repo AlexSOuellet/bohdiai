@@ -11,20 +11,43 @@ import CustomContent from '@/blocks/custom-content';
 
 import CtaButton from '@/widgets/cta-button';
 
+// ─── Shared prop shapes ───────────────────────────────────────────────────────
+
+interface BlockProps {
+  content: Record<string, unknown>;
+  slots?: Record<string, ReactNode>;
+  tenantId?: string;
+}
+
+type BlockComponent = (props: BlockProps) => ReactNode | Promise<ReactNode>;
+
+interface WidgetProps {
+  content: Record<string, string>;
+}
+
+type WidgetComponent = (props: WidgetProps) => ReactNode;
+
+// ─── Registry adapters ────────────────────────────────────────────────────────
+
+// Each block declares typed props (e.g. HeroEditorialProps). The registry
+// dispatches them at runtime keyed by block_key, so the static types can't be
+// verified at the call site. The adapter casts once here and each block is
+// responsible for only reading fields that exist in its content schema.
+function asBlock(c: (props: never) => ReactNode | Promise<ReactNode>): BlockComponent {
+  return c as unknown as BlockComponent;
+}
+
+function asWidget(c: (props: never) => ReactNode): WidgetComponent {
+  return c as unknown as WidgetComponent;
+}
+
 // ─── Widget registry ──────────────────────────────────────────────────────────
 
-type WidgetComponent = (props: { content: Record<string, string> }) => ReactNode;
-
 const WIDGET_REGISTRY: Record<string, WidgetComponent> = {
-  'cta-button': CtaButton as unknown as WidgetComponent,
+  'cta-button': asWidget(CtaButton),
 };
 
 // ─── Block registry ───────────────────────────────────────────────────────────
-
-interface SlotData {
-  widgetKey: string;
-  content: Record<string, string>;
-}
 
 export interface BlockRow {
   block_key: string;
@@ -32,23 +55,20 @@ export interface BlockRow {
   content: Record<string, unknown>;
 }
 
-// Block components receive content, optional rendered slots, and optional tenantId.
-// Data-fetching blocks (products, collections, events) use tenantId to query the DB.
-type BlockComponent = (props: {
-  content: Record<string, unknown>;
-  slots?: Record<string, ReactNode>;
-  tenantId?: string;
-}) => ReactNode | Promise<ReactNode>;
+interface SlotData {
+  widgetKey: string;
+  content: Record<string, string>;
+}
 
 const BLOCK_REGISTRY: Record<string, BlockComponent> = {
-  'hero-editorial': HeroEditorial as unknown as BlockComponent,
-  'about-maker': AboutMaker as unknown as BlockComponent,
-  'products-grid': ProductsGrid as unknown as BlockComponent,
-  'collections-row': CollectionsRow as unknown as BlockComponent,
-  'cta-banner': CtaBanner as unknown as BlockComponent,
-  'testimonials-grid': TestimonialsGrid as unknown as BlockComponent,
-  'events-list': EventsList as unknown as BlockComponent,
-  'custom-content': CustomContent as unknown as BlockComponent,
+  'hero-editorial':    asBlock(HeroEditorial),
+  'about-maker':       asBlock(AboutMaker),
+  'products-grid':     asBlock(ProductsGrid),
+  'collections-row':   asBlock(CollectionsRow),
+  'cta-banner':        asBlock(CtaBanner),
+  'testimonials-grid': asBlock(TestimonialsGrid),
+  'events-list':       asBlock(EventsList),
+  'custom-content':    asBlock(CustomContent),
 };
 
 export function renderBlock(row: BlockRow, tenantId: string): ReactNode {
@@ -62,9 +82,9 @@ export function renderBlock(row: BlockRow, tenantId: string): ReactNode {
   const renderedSlots: Record<string, ReactNode> = {};
   if (rawSlots !== undefined) {
     for (const [slotKey, slotData] of Object.entries(rawSlots)) {
-      const WidgetComponent = WIDGET_REGISTRY[slotData.widgetKey];
-      if (WidgetComponent !== undefined) {
-        renderedSlots[slotKey] = <WidgetComponent content={slotData.content} />;
+      const Widget = WIDGET_REGISTRY[slotData.widgetKey];
+      if (Widget !== undefined) {
+        renderedSlots[slotKey] = <Widget content={slotData.content} />;
       }
     }
   }

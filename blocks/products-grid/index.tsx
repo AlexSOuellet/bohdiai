@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import meta from './meta';
 import { supabaseAdmin } from '@/lib/supabase';
 
@@ -19,7 +20,7 @@ interface Listing {
   name: string;
   short_description: string | null;
   base_price_cents: number;
-  media_ids: string[];
+  metadata: { image_url?: string | null } | null;
 }
 
 function formatPrice(cents: number): string {
@@ -30,127 +31,61 @@ export default async function ProductsGrid({ content, tenantId }: ProductsGridPr
   const db = supabaseAdmin();
   const { data: listings } = await db
     .from('listings')
-    .select('id, slug, name, short_description, base_price_cents, media_ids')
+    .select('id, slug, name, short_description, base_price_cents, metadata')
     .eq('tenant_id', tenantId)
     .eq('status', 'active')
     .is('deleted_at', null)
     .order('published_at', { ascending: false })
     .limit(12);
 
-  const items: Listing[] = listings ?? [];
+  const items: Listing[] = (listings ?? []).map((l) => ({
+    ...l,
+    metadata: (l.metadata as { image_url?: string | null } | null) ?? null,
+  }));
 
   return (
-    <section
-      style={{
-        backgroundColor: 'var(--color-background)',
-        paddingTop: 'var(--spacing-section)',
-        paddingBottom: 'var(--spacing-section)',
-      }}
-    >
+    <section className="bg-s-background py-s-section">
       <div className="mx-auto max-w-6xl px-6">
         <div className="mb-10 text-center">
-          <h2
-            style={{
-              fontFamily: 'var(--font-heading)',
-              fontWeight: 'var(--heading-weight)',
-              letterSpacing: 'var(--heading-letter-spacing)',
-              color: 'var(--color-text)',
-              fontSize: 'clamp(1.75rem, 4vw, 2.75rem)',
-              lineHeight: '1.2',
-            }}
-          >
-            {content.headline}
-          </h2>
+          <h2 className="sf-heading sf-text-heading">{content.headline}</h2>
           {content.subtitle !== undefined && content.subtitle !== '' && (
-            <p
-              className="mx-auto mt-3 max-w-xl"
-              style={{
-                fontFamily: 'var(--font-body)',
-                lineHeight: 'var(--body-line-height)',
-                fontSize: '1rem',
-                color: 'var(--color-text-muted)',
-              }}
-            >
-              {content.subtitle}
-            </p>
+            <p className="mx-auto mt-3 max-w-xl sf-body text-s-muted">{content.subtitle}</p>
           )}
         </div>
 
         {items.length === 0 ? (
-          <p
-            className="text-center"
-            style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)' }}
-          >
-            Products coming soon.
-          </p>
+          <p className="text-center sf-body text-s-muted">Products coming soon.</p>
         ) : (
-          <ul
-            className="grid gap-[var(--card-gap)]"
-            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}
-          >
+          <ul className="grid gap-s-card-gap grid-cols-[repeat(auto-fill,minmax(240px,1fr))]">
             {items.map((listing) => (
               <li key={listing.id}>
                 <a
                   href={`/listings/${listing.slug}`}
-                  className="block overflow-hidden transition-opacity hover:opacity-90"
-                  style={{
-                    backgroundColor: 'var(--color-surface)',
-                    borderRadius: 'var(--card-border-radius)',
-                    border: '1px solid var(--color-border)',
-                  }}
+                  className="block overflow-hidden sf-card transition-opacity hover:opacity-90"
                 >
-                  <div
-                    style={{
-                      aspectRatio: '1 / 1',
-                      backgroundColor: 'var(--color-border)',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {listing.media_ids[0] !== undefined ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={listing.media_ids[0]}
+                  <div className="relative aspect-square overflow-hidden bg-s-border">
+                    {listing.metadata?.image_url != null ? (
+                      <Image
+                        src={listing.metadata.image_url}
                         alt={listing.name}
-                        className="h-full w-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center">
-                        <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>
-                          Photo coming soon
-                        </span>
+                        <span className="text-xs sf-body text-s-muted">Photo coming soon</span>
                       </div>
                     )}
                   </div>
                   <div className="p-4">
-                    <p
-                      className="mb-1 font-medium"
-                      style={{
-                        fontFamily: 'var(--font-heading)',
-                        color: 'var(--color-text)',
-                        fontSize: '1rem',
-                      }}
-                    >
-                      {listing.name}
-                    </p>
+                    <p className="mb-1 font-medium sf-body text-s-text">{listing.name}</p>
                     {listing.short_description !== null && (
-                      <p
-                        className="mb-2 line-clamp-2 text-sm"
-                        style={{
-                          fontFamily: 'var(--font-body)',
-                          color: 'var(--color-text-muted)',
-                          lineHeight: '1.4',
-                        }}
-                      >
+                      <p className="mb-2 line-clamp-2 text-sm sf-body text-s-muted leading-snug">
                         {listing.short_description}
                       </p>
                     )}
-                    <p
-                      style={{
-                        fontFamily: 'var(--font-body)',
-                        color: 'var(--color-accent)',
-                        fontWeight: 600,
-                      }}
-                    >
+                    <p className="font-semibold sf-body text-s-accent">
                       {formatPrice(listing.base_price_cents)}
                     </p>
                   </div>

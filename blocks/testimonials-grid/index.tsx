@@ -35,59 +35,15 @@ export default function TestimonialsGrid({ content }: TestimonialsGridProps) {
   }
 
   return (
-    <section
-      style={{
-        backgroundColor: 'var(--color-background)',
-        paddingTop: 'var(--spacing-section)',
-        paddingBottom: 'var(--spacing-section)',
-      }}
-    >
+    <section className="bg-s-background py-s-section">
       <div className="mx-auto max-w-6xl px-6">
-        <h2
-          className="mb-10 text-center"
-          style={{
-            fontFamily: 'var(--font-heading)',
-            fontWeight: 'var(--heading-weight)',
-            letterSpacing: 'var(--heading-letter-spacing)',
-            color: 'var(--color-text)',
-            fontSize: 'clamp(1.75rem, 4vw, 2.75rem)',
-            lineHeight: '1.2',
-          }}
-        >
-          {content.headline}
-        </h2>
+        <h2 className="mb-10 text-center sf-heading sf-text-heading">{content.headline}</h2>
 
-        <ul className="grid gap-[var(--card-gap)] sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-s-card-gap sm:grid-cols-2 lg:grid-cols-3">
           {testimonials.map((t, i) => (
-            <li
-              key={i}
-              className="flex flex-col justify-between p-6"
-              style={{
-                backgroundColor: 'var(--color-surface)',
-                borderRadius: 'var(--card-border-radius)',
-                border: '1px solid var(--color-border)',
-              }}
-            >
-              <p
-                className="mb-4"
-                style={{
-                  fontFamily: 'var(--font-body)',
-                  lineHeight: 'var(--body-line-height)',
-                  color: 'var(--color-text)',
-                  fontStyle: 'italic',
-                }}
-              >
-                &ldquo;{t.text}&rdquo;
-              </p>
-              <p
-                className="text-sm font-medium"
-                style={{
-                  fontFamily: 'var(--font-body)',
-                  color: 'var(--color-text-muted)',
-                }}
-              >
-                — {t.author}
-              </p>
+            <li key={i} className="flex flex-col justify-between p-6 sf-card">
+              <p className="mb-4 italic sf-body text-s-text">&ldquo;{t.text}&rdquo;</p>
+              <p className="text-sm font-medium sf-body text-s-muted">— {t.author}</p>
             </li>
           ))}
         </ul>

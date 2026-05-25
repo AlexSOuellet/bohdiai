@@ -28,15 +28,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
   return (
     <>
       {cssVars !== '' && <style dangerouslySetInnerHTML={{ __html: cssVars }} />}
-      <div
-        style={{
-          backgroundColor: 'var(--color-background)',
-          color: 'var(--color-text)',
-          minHeight: '100vh',
-        }}
-      >
-        {children}
-      </div>
+      <div className="min-h-screen bg-s-background text-s-text">{children}</div>
     </>
   );
 }

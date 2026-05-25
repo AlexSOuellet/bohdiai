@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { anthropicClient } from '@/lib/anthropic';
+import { logger } from '@/lib/logger';
 import type { Mood } from '@/lib/moods';
 import { BLOCKS_MANIFEST } from '@/lib/blocks-manifest.generated';
 import { WIDGETS_MANIFEST } from '@/lib/widgets-manifest.generated';
@@ -30,7 +31,7 @@ export type GeneratedPage = z.infer<typeof GeneratedPageSchema>;
 
 function extractJson(text: string): unknown {
   const match = text.match(/\{[\s\S]*\}/);
-  if (!match?.[0]) throw new Error('No JSON object found in AI response');
+  if (match?.[0] === undefined) throw new Error('No JSON object found in AI response');
   return JSON.parse(match[0]);
 }
 
@@ -79,6 +80,7 @@ export async function generatePage(
   nicheDisplayName: string,
   nicheBodyMarkdown: string,
   mood: Mood,
+  tenantId?: string,
 ): Promise<GeneratedPage> {
   const blocksContext = buildBlocksContext();
 
@@ -127,10 +129,20 @@ Return ONLY a JSON object — no markdown, no explanation:
   ]
 }`;
 
+  const start = Date.now();
   const response = await anthropicClient().messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 2048,
     messages: [{ role: 'user', content: prompt }],
+  });
+  const latencyMs = Date.now() - start;
+
+  logger.info('ai: generate-page', {
+    model: response.model,
+    inputTokens: response.usage.input_tokens,
+    outputTokens: response.usage.output_tokens,
+    latencyMs,
+    tenantId,
   });
 
   const text = response.content[0]?.type === 'text' ? response.content[0].text : '';

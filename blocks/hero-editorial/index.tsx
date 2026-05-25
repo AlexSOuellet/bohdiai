@@ -3,8 +3,6 @@ import meta from './meta';
 
 export { meta };
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface HeroEditorialContent {
   headline: string;
   subheadline?: string;
@@ -20,57 +18,39 @@ interface HeroEditorialProps {
   slots?: HeroEditorialSlots;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export default function HeroEditorial({ content, slots }: HeroEditorialProps) {
   const { headline, subheadline, backgroundImageUrl } = content;
   const hasBackground = backgroundImageUrl !== undefined;
 
   return (
-    <section
-      className="relative w-full"
-      style={{
-        backgroundColor: 'var(--color-background)',
-        paddingTop: 'var(--spacing-section)',
-        paddingBottom: 'var(--spacing-section)',
-      }}
-    >
+    <section className="relative w-full bg-s-background py-s-section">
       {hasBackground && (
         <div
           className="absolute inset-0 bg-cover bg-center"
+          // backgroundImage is a dynamic URL — cannot be expressed as a Tailwind class
           style={{ backgroundImage: `url(${backgroundImageUrl})` }}
           aria-hidden="true"
         >
-          <div
-            className="absolute inset-0"
-            style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
-          />
+          <div className="absolute inset-0 bg-black/45" />
         </div>
       )}
 
       <div className="relative mx-auto max-w-4xl px-6 text-center">
         <h1
-          className="mb-4 leading-tight"
-          style={{
-            fontFamily: 'var(--font-heading)',
-            fontWeight: 'var(--heading-weight)',
-            letterSpacing: 'var(--heading-letter-spacing)',
-            color: hasBackground ? '#fff' : 'var(--color-text)',
-            fontSize: 'clamp(2.5rem, 6vw, 5rem)',
-          }}
+          className={[
+            'mb-4 sf-heading sf-text-hero',
+            hasBackground ? 'text-white' : 'text-s-text',
+          ].join(' ')}
         >
           {headline}
         </h1>
 
         {subheadline !== undefined && (
           <p
-            className="mx-auto mb-8 max-w-xl leading-relaxed"
-            style={{
-              fontFamily: 'var(--font-body)',
-              lineHeight: 'var(--body-line-height)',
-              fontSize: '1.125rem',
-              color: hasBackground ? 'rgba(255,255,255,0.85)' : 'var(--color-text-muted)',
-            }}
+            className={[
+              'mx-auto mb-8 max-w-xl sf-body sf-text-body',
+              hasBackground ? 'text-white/85' : 'text-s-muted',
+            ].join(' ')}
           >
             {subheadline}
           </p>

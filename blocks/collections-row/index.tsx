@@ -35,61 +35,20 @@ export default async function CollectionsRow({ content, tenantId }: CollectionsR
   if (items.length === 0) return null;
 
   return (
-    <section
-      style={{
-        backgroundColor: 'var(--color-surface)',
-        paddingTop: 'var(--spacing-section)',
-        paddingBottom: 'var(--spacing-section)',
-      }}
-    >
+    <section className="bg-s-surface py-s-section">
       <div className="mx-auto max-w-6xl px-6">
-        <h2
-          className="mb-8 text-center"
-          style={{
-            fontFamily: 'var(--font-heading)',
-            fontWeight: 'var(--heading-weight)',
-            letterSpacing: 'var(--heading-letter-spacing)',
-            color: 'var(--color-text)',
-            fontSize: 'clamp(1.75rem, 4vw, 2.75rem)',
-            lineHeight: '1.2',
-          }}
-        >
-          {content.headline}
-        </h2>
+        <h2 className="mb-8 text-center sf-heading sf-text-heading">{content.headline}</h2>
 
         <ul className="flex flex-wrap justify-center gap-4">
           {items.map((collection) => (
             <li key={collection.id}>
               <a
                 href={`/collections/${collection.slug}`}
-                className="block px-6 py-4 text-center transition-opacity hover:opacity-80"
-                style={{
-                  backgroundColor: 'var(--color-background)',
-                  borderRadius: 'var(--card-border-radius)',
-                  border: '1px solid var(--color-border)',
-                  minWidth: '140px',
-                }}
+                className="block min-w-[140px] px-6 py-4 text-center sf-card transition-opacity hover:opacity-80"
               >
-                <p
-                  className="font-medium"
-                  style={{
-                    fontFamily: 'var(--font-heading)',
-                    color: 'var(--color-text)',
-                    fontSize: '1rem',
-                  }}
-                >
-                  {collection.name}
-                </p>
+                <p className="font-medium sf-body text-s-text">{collection.name}</p>
                 {collection.description !== null && (
-                  <p
-                    className="mt-1 text-sm"
-                    style={{
-                      fontFamily: 'var(--font-body)',
-                      color: 'var(--color-text-muted)',
-                    }}
-                  >
-                    {collection.description}
-                  </p>
+                  <p className="mt-1 text-sm sf-body text-s-muted">{collection.description}</p>
                 )}
               </a>
             </li>

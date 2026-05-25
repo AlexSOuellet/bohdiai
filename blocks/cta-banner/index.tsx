@@ -20,39 +20,14 @@ interface CtaBannerProps {
 
 export default function CtaBanner({ content, slots }: CtaBannerProps) {
   return (
-    <section
-      className="text-center"
-      style={{
-        backgroundColor: 'var(--color-primary)',
-        paddingTop: 'var(--spacing-section)',
-        paddingBottom: 'var(--spacing-section)',
-      }}
-    >
+    <section className="bg-s-primary py-s-section text-center">
       <div className="mx-auto max-w-3xl px-6">
-        <h2
-          className="mb-4"
-          style={{
-            fontFamily: 'var(--font-heading)',
-            fontWeight: 'var(--heading-weight)',
-            letterSpacing: 'var(--heading-letter-spacing)',
-            color: 'var(--color-background)',
-            fontSize: 'clamp(1.75rem, 4vw, 3rem)',
-            lineHeight: '1.15',
-          }}
-        >
+        <h2 className="mb-4 sf-heading sf-text-heading text-s-background">
           {content.headline}
         </h2>
 
         {content.subheadline !== undefined && content.subheadline !== '' && (
-          <p
-            className="mb-8"
-            style={{
-              fontFamily: 'var(--font-body)',
-              lineHeight: 'var(--body-line-height)',
-              fontSize: '1.0625rem',
-              color: 'rgba(255,255,255,0.75)',
-            }}
-          >
+          <p className="mb-8 sf-body sf-text-body text-s-background/75">
             {content.subheadline}
           </p>
         )}

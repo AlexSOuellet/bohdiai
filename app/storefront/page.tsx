@@ -2,6 +2,16 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { renderBlock } from '@/lib/block-registry';
+import type { Json } from '@/lib/database.types';
+
+// Narrows Supabase's Json type to the object shape renderBlock expects.
+// Array-shaped or scalar content rows are skipped rather than erroring.
+function contentToRecord(content: Json): Record<string, unknown> | null {
+  if (typeof content !== 'object' || content === null || Array.isArray(content)) {
+    return null;
+  }
+  return content as Record<string, unknown>;
+}
 
 export default async function StorefrontHomePage() {
   const headerStore = await headers();
@@ -11,7 +21,6 @@ export default async function StorefrontHomePage() {
 
   const db = supabaseAdmin();
 
-  // Fetch the home content page
   const { data: page } = await db
     .from('content_pages')
     .select('id')
@@ -22,7 +31,6 @@ export default async function StorefrontHomePage() {
 
   if (page === null) notFound();
 
-  // Fetch page blocks in position order
   const { data: blocks } = await db
     .from('page_blocks')
     .select('block_key, position, content')
@@ -32,12 +40,14 @@ export default async function StorefrontHomePage() {
 
   return (
     <main>
-      {(blocks ?? []).map((block) =>
-        renderBlock(
-          block as { block_key: string; position: number; content: Record<string, unknown> },
+      {(blocks ?? []).map((block) => {
+        const content = contentToRecord(block.content);
+        if (content === null) return null;
+        return renderBlock(
+          { block_key: block.block_key, position: block.position, content },
           tenantId,
-        )
-      )}
+        );
+      })}
     </main>
   );
 }

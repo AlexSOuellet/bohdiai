@@ -1,5 +1,6 @@
 import { serverEnv } from '@/lib/env';
 import { supabaseAdmin } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 
 const PEXELS_API = 'https://api.pexels.com/v1/search';
 const BUCKET = 'placeholder-images';
@@ -25,7 +26,6 @@ export async function getPlaceholderImage(
   const db = supabaseAdmin();
   const cachePrefix = `${nicheSlug}/`;
 
-  // Check cache — any image for this niche works
   const { data: cached } = await db.storage
     .from(BUCKET)
     .list(cachePrefix, { limit: 20 });
@@ -40,14 +40,12 @@ export async function getPlaceholderImage(
     }
   }
 
-  // Cache miss — fetch from Pexels
   const photo = await fetchPexelsPhoto(searchQuery);
   if (photo === null) return null;
 
-  // Download and cache in Supabase Storage
   try {
     const res = await fetch(photo.src.large);
-    if (!res.ok) return photo.src.large; // fallback to direct URL if download fails
+    if (!res.ok) return photo.src.large;
     const buffer = await res.arrayBuffer();
     const fileName = `${cachePrefix}${photo.id}.jpg`;
 
@@ -58,8 +56,11 @@ export async function getPlaceholderImage(
 
     const { data: urlData } = db.storage.from(BUCKET).getPublicUrl(fileName);
     return urlData.publicUrl;
-  } catch {
-    // If caching fails, return the Pexels URL directly
+  } catch (err) {
+    logger.warn('pexels: storage cache failed, using direct URL', {
+      error: String(err),
+      nicheSlug,
+    });
     return photo.src.large;
   }
 }
@@ -74,18 +75,17 @@ async function fetchPexelsPhoto(query: string): Promise<PexelsPhoto | null> {
     });
 
     if (!res.ok) {
-      console.error(`[pexels] API error: ${res.status}`);
+      logger.error('pexels: API request failed', { status: res.status, query });
       return null;
     }
 
     const data = (await res.json()) as PexelsResponse;
     if (data.photos.length === 0) return null;
 
-    // Pick a random photo from results for variety
     const idx = Math.floor(Math.random() * Math.min(data.photos.length, 10));
     return data.photos[idx] ?? null;
   } catch (err) {
-    console.error('[pexels] fetch error:', err);
+    logger.error('pexels: fetch threw', { error: String(err), query });
     return null;
   }
 }
