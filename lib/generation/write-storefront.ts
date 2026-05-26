@@ -8,6 +8,7 @@ export interface StorefrontWriteInput {
   subdomain: string;
   shopName: string;
   nicheSlug: string;
+  moodKey: string;
   tenantTypes: string[];
   tokens: DesignTokens;
   page: GeneratedPage;
@@ -38,6 +39,7 @@ export async function writeStorefront(input: StorefrontWriteInput): Promise<Stor
       tier: 'freemium',
       types: input.tenantTypes,
       primary_niche: input.nicheSlug,
+      mood_key: input.moodKey,
       niche_from_list: true,
       status: 'active',
     })

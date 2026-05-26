@@ -83,9 +83,7 @@ export async function generateStorefront(
   // Generate hero image after text generation — product images already generated inside
   // generateListings. Running hero separately avoids fal.ai concurrent request rate limits.
   const heroImageUrl = await generateHeroImage(
-    input.shopName,
     niche.display_name,
-    mood.label,
     input.subdomain,
   );
 
@@ -138,6 +136,7 @@ export async function generateStorefront(
     subdomain: input.subdomain,
     shopName: input.shopName,
     nicheSlug: input.nicheSlug,
+    moodKey: input.moodKey,
     tenantTypes: niche.tenant_type_fit,
     tokens,
     page,

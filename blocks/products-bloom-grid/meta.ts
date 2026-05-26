@@ -5,8 +5,8 @@ const meta: BlockMeta = {
   label: 'Bloom Asymmetric Grid',
   sectionType: 'products',
   description:
-    'A lush, maximalist asymmetric product grid built for Wild Meadow and Bright Bazaar storefronts. Breaks the uniform card template completely — products scatter across a botanical-inspired masonry layout with oversized feature cells, dramatically varied aspect ratios, bold organic rounded frames, and floating accent badges. Images are expected to be full-bleed editorial photographs. Choose this over products-editorial-grid when the brand is light, alive, and joyful rather than dark and editorial.',
-  moodFit: ['wild-meadow', 'bright-bazaar'],
+    'Asymmetric masonry grid. Products alternate between wide 2-column feature cells and tall 1-column portrait cells. Full-bleed images with product name and price overlaid at the bottom of each card behind a dark gradient. Organic rounded frames.',
+  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
   tenantTypeFit: ['seller'],
   tier: 'free',
   status: 'active',

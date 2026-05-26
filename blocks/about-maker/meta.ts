@@ -5,8 +5,8 @@ const meta: BlockMeta = {
   label: 'About the Maker',
   sectionType: 'about',
   description:
-    'The maker\'s story told in their own voice. Headline, a paragraph or two of prose, and an optional CTA. Story-first — the person behind the shop matters more than the product catalog here.',
-  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'sunday-morning', 'wild-meadow'],
+    'Maker story section. Headline, one or two paragraphs of prose, and an optional CTA button.',
+  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
   tenantTypeFit: ['seller', 'doer'],
   tier: 'free',
   status: 'active',

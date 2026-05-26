@@ -86,11 +86,9 @@ export async function generateProductImage(
 }
 
 export async function generateHeroImage(
-  shopName: string,
   nicheDisplayName: string,
-  moodLabel: string,
   subdomain: string,
 ): Promise<string | null> {
-  const prompt = `Editorial lifestyle photography for ${shopName}, a handmade ${nicheDisplayName} brand. ${moodLabel} mood and atmosphere. Cinematic wide shot, dramatic natural lighting, artisan workshop or natural setting, rich depth, no text, no people, wide landscape composition.`;
+  const prompt = `Editorial lifestyle photography: ${nicheDisplayName} maker's workshop. Close-up details of the materials, tools, and finished work specific to ${nicheDisplayName}. Cinematic wide shot, real working studio environment, rich depth, no text, no people, wide landscape composition.`;
   return generateAndStore(prompt, `hero-images/${subdomain}/hero.jpg`, 'landscape_16_9');
 }

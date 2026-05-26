@@ -5,8 +5,8 @@ const meta: BlockMeta = {
   label: 'Editorial Hero',
   sectionType: 'hero',
   description:
-    'A full-width, typography-forward hero. Large headline leads; subheadline below. The maker story comes before the product. Best when the brand identity is the draw — not the catalog.',
-  moodFit: ['bright-bazaar', 'summer-afternoon'],
+    'Full-width centered text hero. Large headline and subheadline centered on the page, CTA below. Background image optional — renders as pure typography without one, or with the image behind a dark overlay when provided.',
+  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
   tenantTypeFit: ['seller', 'doer'],
   tier: 'free',
   status: 'active',

@@ -9,7 +9,7 @@ interface HeroSplitGalleryContent {
   tagline?: string;
   headline: string;
   subheadline?: string;
-  primaryImageUrl?: string;
+  primaryImageUrl: string;
   secondaryImageUrl?: string;
 }
 
@@ -39,11 +39,11 @@ function formatHeadline(text: string) {
   const main = words.slice(splitIndex).join(' ');
 
   return (
-    <span className="flex flex-col md:inline">
-      <span className="font-s-heading font-light italic text-s-accent tracking-wide mb-2 md:mb-0 md:mr-4 block md:inline text-4xl md:text-5xl lg:text-6xl capitalize">
+    <span className="flex flex-col">
+      <span className="font-s-heading font-light italic text-s-accent tracking-wide mb-1 block text-3xl md:text-4xl lg:text-5xl capitalize">
         {kicker}
       </span>
-      <span className="font-s-heading font-black tracking-tighter uppercase text-s-text">
+      <span className="font-s-heading font-black tracking-tighter uppercase text-s-text block text-4xl md:text-5xl lg:text-6xl break-words">
         {main}
       </span>
     </span>
@@ -52,7 +52,6 @@ function formatHeadline(text: string) {
 
 export default function HeroSplitGallery({ content, slots }: HeroSplitGalleryProps) {
   const { tagline, headline, subheadline, primaryImageUrl, secondaryImageUrl } = content;
-  const hasPrimary = primaryImageUrl !== undefined && primaryImageUrl !== '';
   const hasSecondary = secondaryImageUrl !== undefined && secondaryImageUrl !== '';
 
   return (
@@ -60,23 +59,15 @@ export default function HeroSplitGallery({ content, slots }: HeroSplitGalleryPro
 
       {/* ─── Left Column: Full Viewport Portrait Photo ─── */}
       <div className="relative w-full md:w-1/2 min-h-[50vh] md:min-h-screen overflow-hidden group">
-        {hasPrimary ? (
-          <>
-            <Image
-              src={primaryImageUrl}
-              alt={headline}
-              fill
-              priority
-              sizes="(max-width: 720px) 100vw, 50vw"
-              className="object-cover object-center transition-transform duration-[1400ms] ease-out group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-s-background/50 via-transparent to-black/15 pointer-events-none" />
-          </>
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-s-surface via-s-background to-s-surface">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] rounded-full bg-s-accent/10 blur-[100px] pointer-events-none" />
-          </div>
-        )}
+        <Image
+          src={primaryImageUrl}
+          alt={headline}
+          fill
+          priority
+          sizes="(max-width: 720px) 100vw, 50vw"
+          className="object-cover object-center transition-transform duration-[1400ms] ease-out group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-s-background/50 via-transparent to-black/15 pointer-events-none" />
       </div>
 
       {/* ─── Right Column: High-Tension Typography & Overlapping Horizontal Card ─── */}
@@ -101,7 +92,7 @@ export default function HeroSplitGallery({ content, slots }: HeroSplitGalleryPro
 
           {/* Staggered Headline */}
           <ScrollReveal delay={0.25} yOffset={25}>
-            <h1 className="mb-6 sf-text-hero leading-[0.95] md:leading-[0.9] tracking-tighter text-left select-none font-s-heading font-black text-s-text">
+            <h1 className="mb-6 leading-[0.95] tracking-tighter text-left select-none font-s-heading text-s-text">
               {formatHeadline(headline)}
             </h1>
           </ScrollReveal>

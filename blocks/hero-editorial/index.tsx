@@ -20,38 +20,27 @@ interface HeroEditorialProps {
 
 export default function HeroEditorial({ content, slots }: HeroEditorialProps) {
   const { headline, subheadline, backgroundImageUrl } = content;
-  const hasBackground = backgroundImageUrl !== undefined;
+  const hasBackground = backgroundImageUrl !== undefined && backgroundImageUrl !== '';
 
   return (
     <section className="relative w-full bg-s-background py-s-section">
       {hasBackground && (
         <div
           className="absolute inset-0 bg-cover bg-center"
-          // backgroundImage is a dynamic URL — cannot be expressed as a Tailwind class
           style={{ backgroundImage: `url(${backgroundImageUrl})` }}
           aria-hidden="true"
         >
-          <div className="absolute inset-0 bg-black/45" />
+          <div className="absolute inset-0 bg-black/50" />
         </div>
       )}
 
       <div className="relative mx-auto max-w-4xl px-6 text-center">
-        <h1
-          className={[
-            'mb-4 sf-heading sf-text-hero',
-            hasBackground ? 'text-white' : 'text-s-text',
-          ].join(' ')}
-        >
+        <h1 className={`mb-4 sf-heading sf-text-hero ${hasBackground ? 'text-white' : 'text-s-text'}`}>
           {headline}
         </h1>
 
         {subheadline !== undefined && (
-          <p
-            className={[
-              'mx-auto mb-8 max-w-xl sf-body sf-text-body',
-              hasBackground ? 'text-white/85' : 'text-s-muted',
-            ].join(' ')}
-          >
+          <p className={`mx-auto mb-8 max-w-xl sf-body sf-text-body ${hasBackground ? 'text-white/85' : 'text-s-muted'}`}>
             {subheadline}
           </p>
         )}

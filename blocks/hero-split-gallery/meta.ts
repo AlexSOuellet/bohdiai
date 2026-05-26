@@ -5,8 +5,8 @@ const meta: BlockMeta = {
   label: 'Asymmetrical Split Gallery',
   sectionType: 'hero',
   description:
-    'An elegant, studio-grade asymmetrical split-screen hero layout. Dominates one half of the viewport with a massive vertical image, while the other half layers staggered typography over a secondary horizontal card. Best for Summer Afternoon, Wild Meadow, Sunday Morning, and Bright Bazaar moods.',
-  moodFit: ['summer-afternoon', 'wild-meadow', 'sunday-morning', 'bright-bazaar'],
+    'Asymmetric 50/50 split. Tall portrait image on the left fills the full height. Text panel on the right sits on a solid background — tagline, headline, subheadline, CTA. Optional secondary landscape photo overlaps the bottom-left corner.',
+  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
   tenantTypeFit: ['seller', 'doer'],
   tier: 'free',
   status: 'active',

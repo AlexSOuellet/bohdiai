@@ -65,18 +65,11 @@ interface StepMoodProps {
 
 export default function StepMood({ data, onAdvance, onBack }: StepMoodProps) {
   const [selectedMood, setSelectedMood] = useState<MoodKey | ''>(data.moodKey);
-  const [urls, setUrls] = useState<readonly [string, string, string]>(data.inspirationUrls);
-
-  function setUrl(index: 0 | 1 | 2, value: string) {
-    const next: [string, string, string] = [urls[0], urls[1], urls[2]];
-    next[index] = value;
-    setUrls(next);
-  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedMood) return;
-    onAdvance({ moodKey: selectedMood, inspirationUrls: urls });
+    onAdvance({ moodKey: selectedMood });
   }
 
   return (
@@ -130,28 +123,6 @@ export default function StepMood({ data, onAdvance, onBack }: StepMoodProps) {
           );
         })}
       </div>
-
-      {selectedMood !== '' && (
-        <div className="space-y-3">
-          <div>
-            <p className="mb-1 text-sm font-medium text-text-soft">
-              Any sites you love or want yours to feel like?{' '}
-              <span className="font-normal text-muted">Optional.</span>
-            </p>
-            <p className="mb-3 text-xs text-muted">Paste up to three. Skip this if you're not sure.</p>
-          </div>
-          {([0, 1, 2] as const).map((i) => (
-            <input
-              key={i}
-              type="url"
-              value={urls[i]}
-              onChange={(e) => setUrl(i, e.target.value)}
-              placeholder={`https://example.com${i > 0 ? ` (${i + 1})` : ''}`}
-              className="w-full rounded-lg border border-white/10 bg-bg-2 px-4 py-2.5 text-sm text-text placeholder:text-muted focus:border-honey/60 focus:outline-none focus:ring-1 focus:ring-honey/40"
-            />
-          ))}
-        </div>
-      )}
 
       <button
         type="submit"

@@ -1,6 +1,6 @@
 # Session Brief — BohdiAI
 
-**Last updated:** 2026-05-25 (Session 2 — fal.ai images live, block variants built, design system overhauled)
+**Last updated:** 2026-05-26 (Session 4 — generation quality: hero variety, mood colors, image prompts, block descriptions)
 
 **Update at the end of every session.**
 
@@ -8,102 +8,126 @@
 
 ## State of the build
 
-The generation pipeline is fully working end-to-end. Running the onboarding flow produces a real storefront with:
-- AI-generated design tokens (colors, fonts, spacing)
-- AI-generated copy (headlines, about text, testimonials, product names/descriptions)
-- fal.ai FLUX Pro images for hero background + up to 4 product photos
-- Multiple block variant options the AI chooses between
-- Framer Motion scroll-reveal animations on hero blocks
-- Grain texture overlay via `sf-noise-grain`
+The generation pipeline is working end-to-end. Session 4 was a full QA and correction pass on generation quality. Hero variety is now unbiased. Mood palettes now render recognizably. Hero images are niche-specific. All block descriptions are neutral structural descriptions with no selection steering. The inspiration URL field has been removed (unimplemented, unspecced).
 
-The storefront renderer is live at `[shop].localhost:3000` via the middleware proxy.
+**Known remaining gaps (do not start the session without reading these):**
+- `/shop`, `/contact`, `/gallery` pages do not exist — they are 404s.
+- The AI generates only the home page. Multi-page generation is the top priority for next session.
+- No contact form block exists yet.
+- Dark-and-stormy still favors cinematic hero — partially mitigated by removing steering language, but may need more testing.
+- Hero images are newly niche-specific (prompt fixed this session) but untested at scale across all niches.
 
 ---
 
 ## What was built this session
 
-**Image generation (replaces Pexels):**
-- `lib/fal.ts` — fal.ai FLUX Pro client. `generateProductImage()` and `generateHeroImage()`. Downloads and caches to Supabase Storage `generated-images` bucket. Falls back to direct fal.ai URL if storage fails.
-- `lib/pexels.ts` — deleted
-- `lib/env.ts` — `FAL_API_KEY` replaces `PEXELS_API_KEY`
-- `supabase/migrations/20260525000003_storage_generated_images.sql` — new public bucket
-- `next.config.js` — fal.ai CDN domains added, Pexels removed
-- Product images batch 2 at a time to avoid fal.ai concurrent rate limits
-- Hero image generates after AI text calls complete (not alongside) to avoid rate limits
+### Block description overhaul (all 15 blocks)
+All block meta.ts files were rewritten to be pure structural descriptions — what the layout looks like, not when to use it. All steering language ("best for X mood", "suits dramatic brands", etc.) was removed. moodFit opened to all 7 moods on every block so the AI is free to choose any block for any mood.
 
-**Block variants (5 new blocks built by Cowork):**
-- `blocks/hero-cinematic/` — full viewport, bottom-gradient, dramatic typography, Framer Motion entrance
-- `blocks/hero-split-gallery/` — split panel layout
-- `blocks/hero-split-screen/` — split screen layout
-- `blocks/products-bloom-grid/` — editorial product grid variant
-- `blocks/products-editorial-grid/` — editorial product layout
-- `blocks/products-split-carousel/` — split carousel layout
+### Hero selection bias fixes
+- `lib/generation/generate-page.ts` — Rule #1 rewritten: removed per-variant guidance ("cinematic suits dramatic brands, split-gallery suits image-heavy brands") which was overriding all other guidance. AI now reads block descriptions and chooses.
+- `lib/generation/generate-page.ts` — `shuffled<T>()` Fisher-Yates shuffle added. Hero blocks and products blocks are independently shuffled before context is built, eliminating position bias.
+- `lib/moods.ts` — `blockAssemblyHint` for dark-and-stormy had "full-bleed editorial hero" which was pointing directly at hero-cinematic. Removed.
 
-**Animation system:**
-- Framer Motion installed
-- `components/storefront/ScrollReveal.tsx` — reusable scroll-triggered reveal wrapper, respects `prefers-reduced-motion`
+### Mood token color fixes
+- `lib/moods.ts` — All 7 mood `tokenHints.palette` strings rewritten to explicitly assign colors to roles (background, surface, text, accent, border) with hex ranges. Previously the AI was misassigning primary colors to the background slot (e.g. forest green as rustic background).
+- `lib/generation/generate-tokens.ts` — Removed "be surprising, push into unexpected territory" instruction that was actively encouraging wrong color role assignments (it literally suggested "a deep forest green background" as an example of distinctiveness, which rustic was following).
 
-**Storefront navbar:**
-- `components/storefront/` — NavStorefront component built by Cowork
+### Hero image prompt fixes
+- `lib/fal.ts` — `generateHeroImage` prompt rewritten to be niche-specific only. Removed `${moodLabel}` (was making FLUX generate mood-themed landscapes instead of craft images). Removed "or natural setting" escape hatch (was generating garden/outdoor scenes for studio crafts). New prompt: maker's workshop, close-up details of materials/tools/finished work, real working studio environment.
+- `lib/fal.ts` — `shopName` and `moodLabel` parameters removed from `generateHeroImage` signature (no longer used).
+- `app/onboarding/actions.ts` — Updated call site to match new signature.
 
-**Design system fixes:**
-- `app/globals.css` — `sf-noise-grain` class added inside `@layer components` (grain texture overlay), CSS syntax error fixed
-- Token generation prompt hardened to produce opinionated, varied palettes — not always the "obvious" color for a mood
-- Copy generation prompt hardened with banned phrases and creative copywriter mandate
-- `generate-page.ts` — AI now chooses any hero/products variant, not hardcoded to `hero-editorial`/`products-grid`
+### Hero cinematic overlay lightened
+- `blocks/hero-cinematic/index.tsx` — Gradient overlays reduced: bottom `from-black/80 via-black/40 to-black/60` → `from-black/70 via-black/20 to-black/30`. Left `from-black/70 via-black/30` → `from-black/60 via-black/20`. Images were being crushed to near-black even when niche-specific.
 
-**Pricing locked:**
-- D19 revised: $35–$39/month (working number: $35). AI usage: 100 calls/month included, 100 more for $5. Onboarding excluded from cap.
+### Hero split-gallery text overflow fix
+- `blocks/hero-split-gallery/index.tsx` — `formatHeadline` rewritten to always render `flex-col` (was going `md:inline` on desktop, causing long headlines to overflow the right panel). Explicit font sizes added to both spans (`text-3xl md:text-4xl lg:text-5xl` for italic kicker, `text-4xl md:text-5xl lg:text-6xl` for bold main). `sf-text-hero` removed from h1 since child spans now own sizing.
 
-**Rate limit:**
-- `lib/rate-limit.ts` — bumped to 20/hour for development testing. TODO: reset to 3 before launch.
+### Products split-carousel price badge
+- `blocks/products-split-carousel/CarouselWrapper.tsx` — Price badge styling changed to `bg-black` (opaque) with `text-s-accent`. Previous `bg-s-surface/90 text-s-accent` was low-contrast on some moods; `bg-black/70 text-white` was rejected as looking cheap. Final: opaque black pill, mood accent color text.
+
+### Products bloom-grid price badge
+- `blocks/products-bloom-grid/index.tsx` — Price badge changed from `bg-s-accent text-white` to `bg-black/70 text-white` (accent can be any color including light ones).
+
+### Inspiration URL field removed
+- `app/onboarding/_components/StepMood.tsx` — URL inputs removed (3 fields for "sites you love").
+- `app/onboarding/_components/types.ts` — `inspirationUrls` field removed from `OnboardingData` and `INITIAL_DATA`.
+- Feature was unimplemented (collected data but nothing in the generation pipeline used it) and unspecced. Removed cleanly. Can be re-added when properly specced.
+
+### mood_key stored on tenants
+- `supabase/migrations/20260526000001_tenants_mood_key.sql` — Added `mood_key text` column to tenants table.
+- `lib/database.types.ts` — Added `mood_key` to Row, Insert, Update types.
+- `lib/generation/write-storefront.ts` — `moodKey` now written to tenants row.
+- `app/onboarding/actions.ts` — `moodKey` passed to `writeStorefront`.
 
 ---
 
 ## What's working / verified
 
 - Full onboarding → storefront generation pipeline
-- fal.ai hero image injection into hero block content
-- fal.ai product images cached in Supabase Storage
-- Cinematic hero with real photo looks genuinely impressive (Sue's Bakery test)
-- Grain texture, scroll animations, varied palettes all rendering
-- TypeScript clean, all 23 tests passing
+- nav-split renders on every storefront (system-injected)
+- Hero variety: AI now receives shuffled block list and neutral descriptions — bias significantly reduced
+- Mood palettes: rustic generates cream/parchment backgrounds, not forest green; dark-and-stormy generates near-black
+- Hero images: niche-specific (letterpress printer gets a printing workshop, candle maker gets a candle studio)
+- Products split-carousel price badge readable on all moods
+- TypeScript clean
 
 ---
 
 ## Layers completed
 
 **Layer 1 — done:** Storefront resolver, Supabase Auth, middleware proxy.
-
 **Layer 2 — done:** Moods, design tokens, block/widget types, manifest build script, onboarding wizard.
-
 **Layer 3 — done:** Generation pipeline (tokens + page + listings + images), DB writes, rate limiting.
-
-**Layer 4 — done:** Storefront renderer (`app/storefront/layout.tsx`, `app/storefront/page.tsx`, block registry).
-
-**Layer 5 (this session) — done:** fal.ai image generation, block variants, animation system, design quality overhaul.
+**Layer 4 — done:** Storefront renderer, block registry.
+**Layer 5 — done:** fal.ai image generation, block variants, animation system, design quality overhaul.
+**Layer 6 — done:** Storefront QA, nav, generation correctness.
+**Session 4 (this session) — done:** Generation quality pass. Hero variety, mood color fidelity, image prompt accuracy, block descriptions, overlay tuning.
 
 ---
 
-## Next priorities
+## Top priority for next session
 
-1. **More block variants** — remaining moods need hero variants. The 5 moods without `hero-cinematic` still fall back to `hero-editorial`. Hand the updated skill doc to Cowork.
-2. **Navbar wiring** — `NavStorefront` was built but needs to be wired into `app/storefront/layout.tsx` with tenant shop name fetch.
-3. **Session brief says** open items 1–8 below.
+**Multi-page generation.** The AI currently generates only the home page. Every storefront needs secondary pages and the AI should generate all of them in one generation run.
+
+Pages to build:
+- `/shop` — product listing grid (queries `listings` for the tenant, renders in a grid)
+- `/contact` — contact form with Resend submission (not mailto — build it right)
+- `/gallery` — portfolio/gallery page for artist/doer niches
+
+Architecture:
+1. Build the Next.js route files for each page (same pattern as `app/storefront/page.tsx` — read blocks from DB by slug)
+2. Build a `contact-form` block (name/email/message, submit to a new `/api/contact` route that sends via Resend)
+3. Build a `gallery` block or adapt existing products blocks for a gallery layout
+4. Extend `generatePage` (or create `generateSecondaryPages`) to generate blocks for each relevant secondary page
+5. `writeStorefront` saves all pages to `content_pages` + `page_blocks`
+6. Update generation prompt: give the AI valid page routes (`/shop`, `/contact`, `/gallery`) so CTAs link to real pages with appropriate copy
+
+Niche type guides which pages the AI generates:
+- Seller → home + shop (+ contact optional)
+- Doer → home + contact (+ gallery optional)
+- Both → home + shop + contact (+ gallery if artist-type)
+
+Once secondary pages exist, relax the CTA href constraint in `generate-page.ts` to allow real page routes.
 
 ---
 
 ## Open items
 
-1. **Streaming build progress** — `StepBuild` animation is a cosmetic timer. Swap for real SSE streaming so each step lights up as real work completes.
-2. **Doer storefront rendering** — product design hasn't settled what a seller+doer storefront looks like.
-3. **Spec touch-up** — Master Spec `.docx` files haven't been updated to reflect D1–D20. Alex to handle when timing allows.
-4. **StepTrial copy** — billing placeholder at $35/month. Confirm exact price ($35 vs $39) before wiring Stripe.
-5. **Per-tenant AI usage caps (Phase 2 dashboard)** — 100 AI calls/month included, additional 100 for $5. Onboarding excluded from cap. Build when dashboard exists.
-6. **Etsy/Shopify import (Phase 2)** — exit ramp positioning. Products + photos in Phase 2, reviews stretch goal. Customer list not possible (Etsy withholds buyer emails).
-7. **Marketing copy update** — drop "live in minutes." New angle: "A beautiful, full-content site — just add your personal touches and products and you're live." Emphasize conversational interface. Update `components/Hero.tsx` and `components/HowItWorks.tsx`.
-8. **Rate limit reset** — `lib/rate-limit.ts` MAX_PER_WINDOW is 20 for dev testing. Reset to 3 before launch.
-9. **Sentry + PostHog** — Alex has not signed up yet. Both are optional in env.ts. Wire up when accounts exist.
+1. **Streaming build progress** — `StepBuild` animation is a cosmetic timer. Swap for real SSE streaming.
+2. **Doer storefront rendering** — what does a seller+doer storefront look like vs pure seller?
+3. **Spec touch-up** — Master Spec `.docx` files haven't been updated to reflect D1–D20.
+4. **StepTrial copy** — billing placeholder at $35/month. Confirm exact price before wiring Stripe.
+5. **Per-tenant AI usage caps (Phase 2 dashboard)** — 100 AI calls/month included, additional 100 for $5.
+6. **Etsy/Shopify import (Phase 2)** — products + photos. Customer list not possible (Etsy withholds buyer emails).
+7. **Marketing copy update** — drop "live in minutes." New angle: "A beautiful, full-content site — just add your personal touches and products and you're live."
+8. **Rate limit reset** — `lib/rate-limit.ts` MAX_PER_WINDOW is 20 for dev. Reset to 3 before launch.
+9. **Sentry + PostHog** — Alex has not signed up yet. Wire up when accounts exist.
+10. **hero-editorial** — needs more testing across moods/niches. Was previously narrowed but now opened to all moods.
+11. **Inspiration URL / site reference** — removed this session (unimplemented). Needs a proper spec before rebuilding. Intent: maker pastes a URL to a site they like for inspiration; AI uses it to inform tone and feel. Not copying — inspiration only.
+12. **Block swap in dashboard** — no mechanism for makers to swap one block variant for another post-generation. Not in Phase 1 scope but noted as a gap.
+13. **Dark-and-stormy hero variety** — still needs more test runs to confirm cinematic bias is fully resolved.
 
 ---
 
@@ -129,7 +153,7 @@ Claude Code injects its own `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` into al
 
 ## What's in the DB
 
-36 tables. 8 niches (status=approved). Multiple test tenant rows. All migrations applied through `20260525000003`.
+36 tables. 18 niches (status=approved). Multiple test tenant rows. All migrations applied through `20260526000001`.
 
 Migration runner: `node scripts/db-migrate.mjs`
 
@@ -143,6 +167,24 @@ Storage buckets: `placeholder-images` (legacy, unused), `generated-images` (acti
 
 **fal.ai concurrent limits.** New accounts hit rate limits with 5 simultaneous FLUX Pro requests. Batch product images 2 at a time. Generate hero image after text generation completes, not alongside.
 
-**Token generation defaults to safe.** Without explicit instruction to be opinionated, the AI returns the most expected palette for a mood every time. The prompt now explicitly bans this.
+**Token generation color role assignment.** Without explicit role assignments in palette hints (background = X, accent = Y), the AI will freely swap colors across roles. "Forest green primary" becomes forest green background. Always specify which hex range goes on which CSS variable.
+
+**"Be surprising" backfires.** Telling the AI to avoid predictable palettes caused it to put wrong colors in wrong roles. The instruction literally gave "deep forest green background" as an example of distinctiveness — and rustic shops followed it. Distinctiveness should come from shade variation within a role, not from swapping colors across roles.
+
+**Block description language is selection criteria.** Any phrase in a block description that sounds like a use case ("suits dramatic brands", "best for story-forward shops") will be used by the AI to select or reject that block. Descriptions must be purely structural — what the layout looks like, not when to use it.
+
+**blockAssemblyHint steers hero selection.** "Full-bleed editorial hero" in dark-and-stormy's blockAssemblyHint was pointing directly at hero-cinematic every time. Mood assembly hints must not name layout shapes — they should describe narrative emphasis and section order only.
+
+**Hero image "or natural setting" = garden.** Giving FLUX an escape hatch to "natural setting" results in generic outdoor/garden photography for any niche in a nature-adjacent mood. Remove the escape hatch. Always anchor to the specific craft: "maker's workshop, materials, tools, finished work."
+
+**moodFit must be a real constraint.** Setting moodFit as a "suggestion" caused the AI to always gravitate to the most-capable-sounding hero variant. Enforce moodFit as a rule or all sites look the same.
 
 **Don't estimate.** Frame work by dependencies and sequencing, not weeks or days.
+
+**ScrollReveal on hero card.** Hero card starts at opacity 0 — if IntersectionObserver doesn't fire (timing, margin, hydration), card stays invisible. Never wrap the hero card in ScrollReveal. Hero is above the fold and should render immediately.
+
+**Hero image field key varies by block.** `hero-split-screen` uses `backgroundImageUrl`, `hero-split-gallery` uses `primaryImageUrl`. Injection must look up the field key from the block's content schema, not hardcode it.
+
+**Transparent nav doesn't work on split-screen heroes.** The nav sits over both the photo (dark) and the card panel (light) simultaneously. No single text color works on both. Always use a solid background.
+
+**CSS custom property opacity modifiers don't work as expected.** `bg-s-background/95` renders nearly transparent because Tailwind can't compose opacity with arbitrary CSS variable values. Use `bg-s-background` (no modifier) for reliable solid backgrounds.

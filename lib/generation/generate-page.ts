@@ -35,10 +35,26 @@ function extractJson(text: string): unknown {
   return JSON.parse(match[0]);
 }
 
+function shuffled<T>(arr: T[]): T[] {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = copy[i] as T;
+    copy[i] = copy[j] as T;
+    copy[j] = tmp;
+  }
+  return copy;
+}
+
 function buildBlocksContext(): string {
   const lines: string[] = ['AVAILABLE BLOCKS:'];
-  for (const block of BLOCKS_MANIFEST) {
-    if (block.status !== 'active') continue;
+  // Shuffle hero blocks so position in the list doesn't bias the AI toward one variant.
+  const active = BLOCKS_MANIFEST.filter(b => b.status === 'active');
+  const heroBlocks = shuffled(active.filter(b => b.sectionType === 'hero'));
+  const productBlocks = shuffled(active.filter(b => b.sectionType === 'products'));
+  const otherBlocks = active.filter(b => b.sectionType !== 'hero' && b.sectionType !== 'products');
+  const orderedBlocks = [...heroBlocks, ...productBlocks, ...otherBlocks];
+  for (const block of orderedBlocks) {
     lines.push(`\nBlock key: "${block.key}"`);
     lines.push(`  Section type: ${block.sectionType}`);
     lines.push(`  Description: ${block.description}`);
@@ -99,10 +115,10 @@ PAGE ASSEMBLY GUIDANCE (follow this structure exactly):
 ${mood.blockAssemblyHint}
 
 MANDATORY RULES — these override all other guidance:
-1. The FIRST block (position 0) MUST be a hero block (sectionType: "hero"). Pick the hero variant whose moodFit includes the current mood. If two hero variants both fit the mood, choose based on niche — photographic niches favor the split-screen or split-gallery; editorial or service niches may use editorial variants.
+1. The FIRST block (position 0) MUST be a hero block (sectionType: "hero"). All hero variants are equally valid for any shop — read each block's structural description and make a genuine choice based on this specific shop's niche and personality. Do NOT default to whichever hero appears first in the list.
 2. A products block (sectionType: "products") MUST appear in the page. Choose the variant whose moodFit includes the current mood.
 3. Total blocks: 4 to 6. Do not output fewer than 4 or more than 6.
-4. moodFit is a real constraint. Always prefer blocks whose moodFit includes the current mood. Only use a block outside its moodFit if no in-mood option exists for a mandatory section type (hero, products).
+4. moodFit is a real constraint for non-hero blocks. Always prefer blocks whose moodFit includes the current mood. Only use a block outside its moodFit if no in-mood option exists for a mandatory section type (products).
 
 ${blocksContext}
 

@@ -5,8 +5,8 @@ const meta: BlockMeta = {
   label: 'Testimonials',
   sectionType: 'testimonials',
   description:
-    'Social proof section showing up to three customer quotes. At onboarding the AI generates representative placeholder testimonials in the voice of real customers for this niche. The maker replaces them with real reviews over time.',
-  moodFit: ['warm-and-cozy', 'sunday-morning', 'rustic', 'summer-afternoon', 'bright-bazaar'],
+    'Up to three customer quotes in a grid. AI generates placeholder testimonials at onboarding; the maker replaces them with real reviews.',
+  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
   tenantTypeFit: ['seller', 'doer'],
   tier: 'free',
   status: 'active',

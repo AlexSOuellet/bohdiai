@@ -1905,6 +1905,7 @@ export type Database = {
           id: string
           inspiration_urls: string[]
           niche_description: string | null
+          mood_key: string | null
           niche_from_list: boolean
           phone: string | null
           postal_code: string | null
@@ -1935,6 +1936,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           inspiration_urls?: string[]
+          mood_key?: string | null
           niche_description?: string | null
           niche_from_list?: boolean
           phone?: string | null
@@ -1966,6 +1968,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           inspiration_urls?: string[]
+          mood_key?: string | null
           niche_description?: string | null
           niche_from_list?: boolean
           phone?: string | null

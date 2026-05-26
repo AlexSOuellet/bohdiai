@@ -65,12 +65,13 @@ export default function CarouselWrapper({ items }: CarouselWrapperProps) {
               {/* Subtle ambient light vignette */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent pointer-events-none" />
 
-              {/* Floating Glassmorphism Price Badge */}
-              <div className="absolute bottom-6 left-6 bg-s-surface/90 backdrop-blur-md border border-s-border/40 py-2 px-4 rounded-pill shadow-xl">
+              {/* Price Badge */}
+              <div className="absolute bottom-6 left-6 bg-black py-2 px-4 rounded-pill shadow-xl">
                 <span className="font-s-heading font-black text-s-accent text-lg tracking-tight leading-none">
                   {formatPrice(activeItem?.base_price_cents ?? 0)}
                 </span>
               </div>
+
             </motion.div>
           </AnimatePresence>
           

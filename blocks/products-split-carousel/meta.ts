@@ -5,8 +5,8 @@ const meta: BlockMeta = {
   label: 'Sticky Preview Split Grid',
   sectionType: 'products',
   description:
-    'A highly interactive, split-layout products block. Features a sticky left-hand portrait preview frame displaying the hovered product in massive cinematic scale, while the right-hand column lists products with oversized numbers, thin dividers, and interactive slide-in details. Best for Bright Bazaar, Summer Afternoon, Warm & Cozy, and Sunday Morning moods.',
-  moodFit: ['bright-bazaar', 'summer-afternoon', 'warm-and-cozy', 'sunday-morning'],
+    'Split layout. Sticky left panel shows the hovered product image at full height. Right column lists all products as numbered rows with thin dividers — hover slides in product details. Interactive, no traditional card grid.',
+  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
   tenantTypeFit: ['seller'],
   tier: 'free',
   status: 'active',

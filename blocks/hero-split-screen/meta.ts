@@ -5,8 +5,8 @@ const meta: BlockMeta = {
   label: 'Split Screen Hero',
   sectionType: 'hero',
   description:
-    'A bold, high-contrast split-viewport hero. Features a dramatic full-bleed landscape photo occupying the left side, and a solid-colored typography card panel with nested border dividers and high-fashion serif letterforms on the right. Perfect for Dark & Stormy, Rustic, Warm & Cozy, and Sunday Morning moods.',
-  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'sunday-morning'],
+    'Clean 50/50 split. Wide landscape image on the left. Solid bordered card panel on the right — tagline, mixed-weight headline, divider line, subheadline, CTA.',
+  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
   tenantTypeFit: ['seller', 'doer'],
   tier: 'free',
   status: 'active',

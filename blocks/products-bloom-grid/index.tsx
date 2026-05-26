@@ -176,8 +176,8 @@ export default async function ProductsBloomGrid({ content, tenantId }: ProductsB
                             )}
                           </div>
 
-                          {/* ─── Bold pill price badge — joyful for Bazaar, clean for Meadow ─── */}
-                          <span className="flex-shrink-0 bg-s-accent text-white font-s-heading font-black text-sm px-3 py-1.5 rounded-full leading-none shadow-lg ring-1 ring-white/10 whitespace-nowrap">
+                          {/* ─── Bold pill price badge — black/70 so it reads on any accent color ─── */}
+                          <span className="flex-shrink-0 bg-black/70 text-white font-s-heading font-black text-sm px-3 py-1.5 rounded-full leading-none shadow-lg ring-1 ring-white/10 whitespace-nowrap">
                             {formatPrice(listing.base_price_cents)}
                           </span>
                         </div>

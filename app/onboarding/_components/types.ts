@@ -18,7 +18,6 @@ export interface OnboardingData {
   subdomain: string;
   moodKey: MoodKey | '';
   productCount: number;
-  inspirationUrls: readonly [string, string, string];
 }
 
 export const INITIAL_DATA: OnboardingData = {
@@ -28,7 +27,6 @@ export const INITIAL_DATA: OnboardingData = {
   subdomain: '',
   moodKey: '',
   productCount: 4,
-  inspirationUrls: ['', '', ''],
 };
 
 /** Derive a subdomain slug from the maker's chosen shop name. */

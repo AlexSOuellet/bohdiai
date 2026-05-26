@@ -5,8 +5,8 @@ const meta: BlockMeta = {
   label: 'Upcoming Events',
   sectionType: 'events',
   description:
-    'Lists the maker\'s upcoming craft shows, markets, and popup events pulled from the events table. Lets customers know where to find the maker in person. Renders nothing when no upcoming events exist — safe to include on any page.',
-  moodFit: ['rustic', 'warm-and-cozy', 'wild-meadow', 'summer-afternoon', 'sunday-morning'],
+    'List of upcoming events pulled from the events table — craft shows, markets, popups. Renders nothing when no upcoming events exist.',
+  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
   tenantTypeFit: ['seller', 'doer'],
   tier: 'free',
   status: 'active',

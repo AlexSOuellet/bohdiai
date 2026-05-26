@@ -5,8 +5,8 @@ const meta: BlockMeta = {
   label: 'Editorial Products Grid',
   sectionType: 'products',
   description:
-    'An elite, art-gallery-inspired product display variant. Completely avoids uniform grid cards, opting instead for a highly asymmetrical, staggered layout where alternating products use massive portrait and offset landscape aspect ratios, dramatic visual framing, and floating price tags. Optimized for Dark & Stormy, Rustic, Sunday Morning, and Wild Meadow moods.',
-  moodFit: ['dark-and-stormy', 'rustic', 'sunday-morning', 'wild-meadow'],
+    'Staggered editorial grid. Alternating products use portrait and landscape aspect ratios with vertical offsets, creating a broken asymmetric layout. Images sit above text — name, description, price, and a view-details link below each photo.',
+  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
   tenantTypeFit: ['seller'],
   tier: 'free',
   status: 'active',
