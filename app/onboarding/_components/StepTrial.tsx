@@ -26,7 +26,7 @@ export default function StepTrial({ data, onAdvance, onBack }: StepTrialProps) {
         </button>
         <h1 className="mb-2 font-serif text-3xl text-text">Start your free trial</h1>
         <p className="text-sm text-muted">
-          14 days free, then $39/mo. Cancel any time. No cut of your sales — ever.
+          7 days free, then $35/mo. Cancel any time. No cut of your sales — ever.
         </p>
       </div>
 
@@ -44,7 +44,7 @@ export default function StepTrial({ data, onAdvance, onBack }: StepTrialProps) {
         <div className="border-t border-white/10 pt-4 space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted">Monthly after trial</span>
-            <span className="text-text">$39 / mo</span>
+            <span className="text-text">$35 / mo</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted">Transaction fees</span>

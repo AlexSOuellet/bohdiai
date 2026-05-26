@@ -36,6 +36,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build generated manifests
+        run: npm run build:manifests
+
       - name: Typecheck
         run: npm run typecheck
 

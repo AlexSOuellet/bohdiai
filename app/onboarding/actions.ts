@@ -9,7 +9,8 @@ import { generateListings } from '@/lib/generation/generate-listings';
 import { writeStorefront } from '@/lib/generation/write-storefront';
 import { generateHeroImage } from '@/lib/fal';
 import { BLOCKS_MANIFEST } from '@/lib/blocks-manifest.generated';
-import { toSubdomain } from './_components/types';
+import { toSubdomain } from '@/lib/subdomain';
+import { logger } from '@/lib/logger';
 
 // ─── Subdomain availability check ────────────────────────────────────────────
 
@@ -52,7 +53,20 @@ export async function generateStorefront(
   input: GenerateStorefrontInput,
 ): Promise<GenerateStorefrontResult> {
   await checkGenerationRateLimit();
+  try {
+    return await runGeneration(input);
+  } catch (err) {
+    logger.error('storefront generation failed', {
+      subdomain: input.subdomain,
+      nicheSlug: input.nicheSlug,
+      moodKey: input.moodKey,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    throw new Error('We were unable to build your store. Please try again.');
+  }
+}
 
+async function runGeneration(input: GenerateStorefrontInput): Promise<GenerateStorefrontResult> {
   const mood = MOODS[input.moodKey];
 
   const { data: niche, error: nicheError } = await supabaseAdmin()

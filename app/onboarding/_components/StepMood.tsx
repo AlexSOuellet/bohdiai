@@ -95,11 +95,13 @@ export default function StepMood({ data, onAdvance, onBack }: StepMoodProps) {
               key={mood.key}
               type="button"
               onClick={() => setSelectedMood(mood.key)}
-              className="relative overflow-hidden rounded-lg border p-4 text-left transition-all duration-fast focus-visible:outline focus-visible:outline-2 focus-visible:outline-honey"
+              className={[
+                'relative overflow-hidden rounded-lg border p-4 text-left transition-all duration-fast focus-visible:outline focus-visible:outline-2 focus-visible:outline-honey',
+                isSelected ? 'ring-1 ring-honey/25' : '',
+              ].join(' ')}
               style={{
                 background: visual.background,
-                borderColor: isSelected ? '#e9a13d' : visual.border,
-                boxShadow: isSelected ? '0 0 0 2px #e9a13d40' : 'none',
+                borderColor: isSelected ? 'var(--honey)' : visual.border,
               }}
             >
               {isSelected && (

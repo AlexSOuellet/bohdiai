@@ -1,15 +1,13 @@
 import type { MoodKey } from '@/lib/moods';
 
+export { toSubdomain } from '@/lib/subdomain';
+
+export const DEFAULT_PRODUCT_COUNT = 4;
+
 export interface NicheOption {
   slug: string;
   display_name: string;
 }
-
-export const PRODUCT_COUNT_OPTIONS = [
-  { label: "I'm just starting out", value: 3 },
-  { label: 'A solid collection', value: 8 },
-  { label: "I've got a catalog", value: 15 },
-] as const;
 
 export interface OnboardingData {
   nicheSlug: string;
@@ -26,15 +24,5 @@ export const INITIAL_DATA: OnboardingData = {
   shopName: '',
   subdomain: '',
   moodKey: '',
-  productCount: 4,
+  productCount: DEFAULT_PRODUCT_COUNT,
 };
-
-/** Derive a subdomain slug from the maker's chosen shop name. */
-export function toSubdomain(shopName: string): string {
-  return shopName
-    .toLowerCase()
-    .replace(/[''`']/gu, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 63);
-}

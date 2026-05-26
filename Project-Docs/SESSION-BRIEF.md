@@ -1,6 +1,6 @@
 # Session Brief — BohdiAI
 
-**Last updated:** 2026-05-26 (Session 4 — generation quality: hero variety, mood colors, image prompts, block descriptions)
+**Last updated:** 2026-05-26 (Session 5 — onboarding audit + integration test)
 
 **Update at the end of every session.**
 
@@ -8,7 +8,7 @@
 
 ## State of the build
 
-The generation pipeline is working end-to-end. Session 4 was a full QA and correction pass on generation quality. Hero variety is now unbiased. Mood palettes now render recognizably. Hero images are niche-specific. All block descriptions are neutral structural descriptions with no selection steering. The inspiration URL field has been removed (unimplemented, unspecced).
+The generation pipeline is working end-to-end and fully tested. Session 5 was a full audit of all onboarding code against project rules, followed by fixing everything found. All hardcoded values, dead code, missing tests, and engineering standards violations have been remediated. The storefront write now goes through an atomic Postgres RPC transaction. Integration tests run against the real Supabase database.
 
 **Known remaining gaps (do not start the session without reading these):**
 - `/shop`, `/contact`, `/gallery` pages do not exist — they are 404s.
@@ -20,6 +20,48 @@ The generation pipeline is working end-to-end. Session 4 was a full QA and corre
 ---
 
 ## What was built this session
+
+### Onboarding full audit and remediation
+
+All onboarding code was audited against the Engineering Standards and project rules. Every violation was fixed:
+
+- **Hardcoded hex values** — `StepMood.tsx` selection ring was using `#e9a13d` and `#e9a13d40`. Replaced with `var(--honey)` and Tailwind `ring-honey/25`.
+- **Dead code removed** — `StepProducts.tsx` deleted (not in spec, never wired into the wizard).
+- **toSubdomain moved** — extracted from `app/onboarding/_components/types.ts` to `lib/subdomain.ts` so it can be unit tested. 16 unit tests added covering all edge cases.
+- **Type guard replacing `as` cast** — `StepBuild.tsx` used `data.moodKey as MoodKey`. Replaced with `isMoodKey()` type guard.
+- **`key={i}` → `key={label}`** in animation steps array.
+- **User-facing error messages** — raw `err.message` was being shown to users. Now logs internally and shows a friendly "Go back and try again" message.
+- **Feature flag gate** — `app/onboarding/page.tsx` now calls `isFeatureEnabled('onboarding')` and returns `notFound()` if disabled. New `lib/feature-flags.ts` module. New `feature_flags` DB table (migration `20260526000003`).
+- **`generateStorefront` split** — public wrapper handles rate limiting, try/catch, and logging. Internal `runGeneration` does the actual work. `checkGenerationRateLimit()` call was accidentally dropped in a refactor; restored.
+- **Pricing copy** — "14 days free" → "7 days free", $39 → $35 per `StepTrial.tsx` spec.
+
+### Atomic RPC transaction
+
+`lib/generation/write-storefront.ts` rewrote to call a single Postgres RPC (`write_tenant_storefront`) that wraps all 5 DB inserts (tenant, design_tokens, content_pages, page_blocks, listings) in one transaction. Partial-write state is no longer possible. Migration `20260526000002`.
+
+### Integration tests against real Supabase
+
+`lib/generation/write-storefront.test.ts` — 3 tests that write to and read from the real Supabase database:
+1. Creates tenant, tokens, page, and blocks correctly.
+2. Creates listings when provided.
+3. Rolls back everything if the subdomain is already taken.
+
+`afterEach` cleans up in reverse FK order. Tests skip when `CI=true` (CI has dummy credentials). `vitest.global-setup.ts` added to inject `.env.local` into `process.env` via Vite's `loadEnv` before any test file loads.
+
+### Schema validation tests
+
+- `lib/generation/generate-page.test.ts` — 9 schema tests for `GeneratedPageSchema`
+- `lib/generation/generate-listings.test.ts` — 8 schema tests for `GeneratedListingsSchema`
+
+### CI fix
+
+`npm run build:manifests` added to the workflow before typecheck. `blocks-manifest.generated.ts` doesn't exist in CI until explicitly built; all downstream TS errors were from this missing file.
+
+### database.types.ts updated
+
+Added `feature_flags` table types. Added `write_tenant_storefront` function signature.
+
+---
 
 ### Block description overhaul (all 15 blocks)
 All block meta.ts files were rewritten to be pure structural descriptions — what the layout looks like, not when to use it. All steering language ("best for X mood", "suits dramatic brands", etc.) was removed. moodFit opened to all 7 moods on every block so the AI is free to choose any block for any mood.
@@ -71,7 +113,9 @@ All block meta.ts files were rewritten to be pure structural descriptions — wh
 - Mood palettes: rustic generates cream/parchment backgrounds, not forest green; dark-and-stormy generates near-black
 - Hero images: niche-specific (letterpress printer gets a printing workshop, candle maker gets a candle studio)
 - Products split-carousel price badge readable on all moods
-- TypeScript clean
+- Atomic DB write — all 5 tables in one transaction, rolls back on any failure
+- Integration tests: 3 tests against real Supabase, all passing
+- 77 tests passing, TypeScript clean
 
 ---
 
@@ -83,7 +127,8 @@ All block meta.ts files were rewritten to be pure structural descriptions — wh
 **Layer 4 — done:** Storefront renderer, block registry.
 **Layer 5 — done:** fal.ai image generation, block variants, animation system, design quality overhaul.
 **Layer 6 — done:** Storefront QA, nav, generation correctness.
-**Session 4 (this session) — done:** Generation quality pass. Hero variety, mood color fidelity, image prompt accuracy, block descriptions, overlay tuning.
+**Session 4 — done:** Generation quality pass. Hero variety, mood color fidelity, image prompt accuracy, block descriptions, overlay tuning.
+**Session 5 (this session) — done:** Onboarding audit + remediation. Atomic RPC transaction. Integration tests. CI fix.
 
 ---
 
@@ -104,10 +149,16 @@ Architecture:
 5. `writeStorefront` saves all pages to `content_pages` + `page_blocks`
 6. Update generation prompt: give the AI valid page routes (`/shop`, `/contact`, `/gallery`) so CTAs link to real pages with appropriate copy
 
-Niche type guides which pages the AI generates:
-- Seller → home + shop (+ contact optional)
-- Doer → home + contact (+ gallery optional)
-- Both → home + shop + contact (+ gallery if artist-type)
+Pages generated for every tenant:
+- Home (always)
+- /shop (always — every seller needs a shop page)
+- /contact (always — every maker needs a contact page)
+
+Gallery:
+- The /gallery route exists but is not generated by default
+- The maker enables it after the fact from the dashboard
+- Exception: if the home page generation produces a CTA that links to /gallery, OR any content that implies a gallery exists (e.g. "See Our Custom Work", "Browse Past Projects", "View the Portfolio"), generate the gallery page content at build time so nothing is dead on arrival
+- Gallery is not limited to portfolio/doer businesses — woodworkers, jewelers, ceramicists all benefit from showing custom/process work
 
 Once secondary pages exist, relax the CTA href constraint in `generate-page.ts` to allow real page routes.
 
@@ -153,7 +204,10 @@ Claude Code injects its own `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` into al
 
 ## What's in the DB
 
-36 tables. 18 niches (status=approved). Multiple test tenant rows. All migrations applied through `20260526000001`.
+38 tables. 18 niches (status=approved). Multiple test tenant rows. All migrations applied through `20260526000003`.
+
+- `20260526000002` — `write_tenant_storefront` RPC
+- `20260526000003` — `feature_flags` table, seeded with `('onboarding', true)`
 
 Migration runner: `node scripts/db-migrate.mjs`
 
@@ -188,3 +242,5 @@ Storage buckets: `placeholder-images` (legacy, unused), `generated-images` (acti
 **Transparent nav doesn't work on split-screen heroes.** The nav sits over both the photo (dark) and the card panel (light) simultaneously. No single text color works on both. Always use a solid background.
 
 **CSS custom property opacity modifiers don't work as expected.** `bg-s-background/95` renders nearly transparent because Tailwind can't compose opacity with arbitrary CSS variable values. Use `bg-s-background` (no modifier) for reliable solid backgrounds.
+
+**Vitest doesn't auto-inject `.env.local` into `process.env`.** Vitest uses Vite's loadEnv, but the injected vars land in `import.meta.env`, not `process.env`, in the Node test runner. Use a `globalSetup` file that calls `loadEnv('test', process.cwd(), '')` and manually copies values into `process.env` (skipping any already set, so CI workflow vars win).

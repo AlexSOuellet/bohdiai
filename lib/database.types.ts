@@ -560,6 +560,33 @@ export type Database = {
           },
         ]
       }
+      feature_flags: {
+        Row: {
+          id: string
+          name: string
+          enabled: boolean
+          allowlist: string[]
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          enabled?: boolean
+          allowlist?: string[]
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          enabled?: boolean
+          allowlist?: string[]
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_expenses: {
         Row: {
           amount_cents: number
@@ -2247,6 +2274,10 @@ export type Database = {
       is_tenant_customer: {
         Args: { target_tenant_id: string }
         Returns: boolean
+      }
+      write_tenant_storefront: {
+        Args: { p_data: Json }
+        Returns: Json
       }
     }
     Enums: {

@@ -2,8 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { generateStorefront } from '../actions';
-import type { MoodKey } from '@/lib/moods';
+import { MOODS, type MoodKey } from '@/lib/moods';
 import type { OnboardingData } from './types';
+
+function isMoodKey(value: string): value is MoodKey {
+  return value in MOODS;
+}
 
 interface StepBuildProps {
   data: OnboardingData;
@@ -43,8 +47,8 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
     if (calledRef.current) return;
     calledRef.current = true;
 
-    if (!data.moodKey) {
-      setError('Missing mood selection.');
+    if (!data.moodKey || !isMoodKey(data.moodKey)) {
+      setError('Something went wrong — please go back and reselect your mood.');
       setGenDone(true);
       return;
     }
@@ -53,16 +57,15 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
       shopName: data.shopName,
       subdomain: data.subdomain,
       nicheSlug: data.nicheSlug,
-      moodKey: data.moodKey as MoodKey,
+      moodKey: data.moodKey,
       productCount: data.productCount,
     })
       .then((result) => {
         setTenantSubdomain(result.subdomain);
         setGenDone(true);
       })
-      .catch((err: unknown) => {
-        const message = err instanceof Error ? err.message : 'Something went wrong.';
-        setError(message);
+      .catch(() => {
+        setError('We hit a problem building your store. Go back and try again — your choices are saved.');
         setGenDone(true);
       });
   }, [data]);
@@ -94,7 +97,7 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
             const isPast = i < animStep;
             const isCurrent = i === animStep;
             return (
-              <div key={i} className="flex items-center gap-3">
+              <div key={label} className="flex items-center gap-3">
                 <div
                   className={[
                     'flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border text-[10px] transition-all duration-slow',
