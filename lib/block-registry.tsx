@@ -15,6 +15,7 @@ import CtaBanner from '@/blocks/cta-banner';
 import TestimonialsGrid from '@/blocks/testimonials-grid';
 import EventsList from '@/blocks/events-list';
 import CustomContent from '@/blocks/custom-content';
+import FooterClassic from '@/blocks/footer-classic';
 
 import CtaButton from '@/widgets/cta-button';
 
@@ -83,6 +84,7 @@ const BLOCK_REGISTRY: Record<string, BlockComponent> = {
   'testimonials-grid':       asBlock(TestimonialsGrid),
   'events-list':             asBlock(EventsList),
   'custom-content':          asBlock(CustomContent),
+  'footer-classic':          asBlock(FooterClassic),
 };
 
 export function renderBlock(row: BlockRow, tenantId: string): ReactNode {

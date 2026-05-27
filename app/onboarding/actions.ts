@@ -124,8 +124,14 @@ async function runGeneration(input: GenerateStorefrontInput): Promise<GenerateSt
     const manifest = BLOCKS_MANIFEST.find((m) => m.key === b.blockKey);
     return manifest?.sectionType !== 'nav';
   });
+  // Strip any footer block the AI may have generated — we inject our own.
+  const aiBlocksNoFooter = aiBlocks.filter((b) => {
+    const manifest = BLOCKS_MANIFEST.find((m) => m.key === b.blockKey);
+    return manifest?.sectionType !== 'footer';
+  });
+
   // Determine nav links based on what sections are present in the page
-  const sectionTypes = aiBlocks.map((b) => {
+  const sectionTypes = aiBlocksNoFooter.map((b) => {
     const manifest = BLOCKS_MANIFEST.find((m) => m.key === b.blockKey);
     return manifest?.sectionType;
   });
@@ -144,7 +150,24 @@ async function runGeneration(input: GenerateStorefrontInput): Promise<GenerateSt
     slots: {} as Record<string, { widgetKey: string; content: Record<string, string> }>,
   };
 
-  page.blocks = [navBlock, ...aiBlocks.map((b, i) => ({ ...b, position: i }))];
+  // Footer is system-injected. Includes shop + contact, plus about/events if present on the page.
+  const footerSections: string[] = ['shop'];
+  if (sectionTypes.includes('about')) footerSections.push('about');
+  if (sectionTypes.includes('events')) footerSections.push('events');
+  footerSections.push('contact');
+
+  const footerBlock = {
+    blockKey: 'footer-classic',
+    position: 9999,
+    content: {
+      shopName: input.shopName,
+      sections: JSON.stringify(footerSections),
+    },
+    slots: {} as Record<string, { widgetKey: string; content: Record<string, string> }>,
+  };
+
+  const middle = aiBlocksNoFooter.map((b, i) => ({ ...b, position: i }));
+  page.blocks = [navBlock, ...middle, footerBlock];
 
   return writeStorefront({
     subdomain: input.subdomain,

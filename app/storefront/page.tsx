@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { renderBlock } from '@/lib/block-registry';
+import { BLOCKS_MANIFEST } from '@/lib/blocks-manifest.generated';
 import type { Json } from '@/lib/database.types';
 
 // Narrows Supabase's Json type to the object shape renderBlock expects.
@@ -38,11 +39,39 @@ export default async function StorefrontHomePage() {
     .eq('is_visible', true)
     .order('position', { ascending: true });
 
+  // Fallback: if the stored blocks don't already include a footer (e.g. tenants
+  // generated before footer-classic existed), inject one so every site has the
+  // legal links and the platform credit. New generations write the footer up
+  // front; this path is for legacy data only.
+  const resolvedBlocks = blocks ?? [];
+  const hasFooter = resolvedBlocks.some((b) => {
+    const manifest = BLOCKS_MANIFEST.find((m) => m.key === b.block_key);
+    return manifest?.sectionType === 'footer';
+  });
+
+  let footerFallback: typeof resolvedBlocks[number] | null = null;
+  if (!hasFooter) {
+    const { data: tenant } = await db
+      .from('tenants')
+      .select('business_name')
+      .eq('id', tenantId)
+      .single();
+    if (tenant !== null) {
+      footerFallback = {
+        block_key: 'footer-classic',
+        position: 9999,
+        content: { shopName: tenant.business_name, sections: JSON.stringify(['shop', 'contact']) },
+      };
+    }
+  }
+
+  const allBlocks = footerFallback === null ? resolvedBlocks : [...resolvedBlocks, footerFallback];
+
   const isDev = process.env.NODE_ENV === 'development';
 
   return (
     <main>
-      {(blocks ?? []).map((block) => {
+      {allBlocks.map((block) => {
         const content = contentToRecord(block.content);
         if (content === null) return null;
         const rendered = renderBlock(

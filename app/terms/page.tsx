@@ -84,6 +84,26 @@ export default function TermsPage(): React.ReactElement {
 
           <section>
             <h2 className="mb-3 font-sans text-[20px] font-semibold tracking-[-0.01em] text-text md:text-[22px]">
+              Sample legal documents for storefronts
+            </h2>
+            <p>
+              When BohdiAI hosts a maker&apos;s storefront, every site is generated with a sample
+              Terms of Service and Privacy Policy as a starting point. These are templates written
+              in plain English to cover the common case — they are not legal advice and they are
+              not a substitute for a lawyer.
+            </p>
+            <p className="mt-3">
+              Reviewing those documents for accuracy, completeness, and compliance with the laws
+              that apply to the shop&apos;s business, location, and customers is the shop owner&apos;s
+              responsibility, not BohdiAI&apos;s. The shop can edit them at any time. If the shop
+              sells in a regulated category, or to customers in jurisdictions with specific
+              requirements (EU/UK GDPR, California CCPA, etc.), the shop is responsible for making
+              sure their published terms and privacy policy reflect that.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="mb-3 font-sans text-[20px] font-semibold tracking-[-0.01em] text-text md:text-[22px]">
               No warranties
             </h2>
             <p>

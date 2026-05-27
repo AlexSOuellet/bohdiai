@@ -9,7 +9,8 @@ export type SectionType =
   | 'cta'
   | 'testimonials'
   | 'events'
-  | 'custom';
+  | 'custom'
+  | 'footer';
 
 export type TenantType = 'seller' | 'doer';
 export type Tier = 'free' | 'basic' | 'pro';
