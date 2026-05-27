@@ -21,6 +21,7 @@ interface Listing {
   name: string;
   short_description: string | null;
   base_price_cents: number;
+  is_preview: boolean;
   metadata: { image_url?: string | null } | null;
 }
 
@@ -32,8 +33,9 @@ export default async function ProductsEditorialGrid({ content, tenantId }: Produ
   const db = supabaseAdmin();
   const { data: listings } = await db
     .from('listings')
-    .select('id, slug, name, short_description, base_price_cents, metadata')
+    .select('id, slug, name, short_description, base_price_cents, is_preview, metadata')
     .eq('tenant_id', tenantId)
+    .eq('listing_type', 'product')
     .eq('status', 'active')
     .is('deleted_at', null)
     .order('published_at', { ascending: false })
@@ -110,10 +112,10 @@ export default async function ProductsEditorialGrid({ content, tenantId }: Produ
                         {/* Subtle atmospheric vignette over image */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent pointer-events-none" />
 
-                        {/* Floating glassmorphism price tag */}
+                        {/* Floating glassmorphism badge — price for real listings, "Coming Soon" for previews */}
                         <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-md py-1.5 px-3 rounded-pill shadow-lg z-raised">
-                          <p className="font-s-heading font-black text-white text-sm tracking-tight leading-none">
-                            {formatPrice(listing.base_price_cents)}
+                          <p className="font-s-heading font-black text-white text-[10px] uppercase tracking-[0.15em] leading-none">
+                            {listing.is_preview ? 'Coming Soon' : formatPrice(listing.base_price_cents)}
                           </p>
                         </div>
                       </div>

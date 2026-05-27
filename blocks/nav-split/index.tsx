@@ -15,11 +15,13 @@ interface NavSplitProps {
 }
 
 const SECTION_LINKS: Record<string, { label: string; href: string }> = {
-  shop:        { label: 'Shop',        href: '/shop' },
-  about:       { label: 'About',       href: '/#about' },
-  collections: { label: 'Collections', href: '/#collections' },
-  events:      { label: 'Events',      href: '/#events' },
-  contact:     { label: 'Contact',     href: '/contact' },
+  shop:          { label: 'Shop',          href: '/shop' },
+  about:         { label: 'About',         href: '/about' },
+  collections:   { label: 'Collections',   href: '/collections' },
+  subscriptions: { label: 'Subscriptions', href: '/subscriptions' },
+  events:        { label: 'Events',        href: '/#events' },
+  gallery:       { label: 'Gallery',       href: '/gallery' },
+  contact:       { label: 'Contact',       href: '/contact' },
 };
 
 function parseSections(raw: string | undefined): string[] {

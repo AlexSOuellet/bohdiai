@@ -16,6 +16,9 @@ import TestimonialsGrid from '@/blocks/testimonials-grid';
 import EventsList from '@/blocks/events-list';
 import CustomContent from '@/blocks/custom-content';
 import FooterClassic from '@/blocks/footer-classic';
+import ContactForm from '@/blocks/contact-form';
+import ProductsShopGrid from '@/blocks/products-shop-grid';
+import PageIntro from '@/blocks/page-intro';
 
 import CtaButton from '@/widgets/cta-button';
 
@@ -85,6 +88,9 @@ const BLOCK_REGISTRY: Record<string, BlockComponent> = {
   'events-list':             asBlock(EventsList),
   'custom-content':          asBlock(CustomContent),
   'footer-classic':          asBlock(FooterClassic),
+  'contact-form':            asBlock(ContactForm),
+  'products-shop-grid':      asBlock(ProductsShopGrid),
+  'page-intro':              asBlock(PageIntro),
 };
 
 export function renderBlock(row: BlockRow, tenantId: string): ReactNode {

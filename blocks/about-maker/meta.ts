@@ -5,11 +5,12 @@ const meta: BlockMeta = {
   label: 'About the Maker',
   sectionType: 'about',
   description:
-    'Maker story section. Headline, one or two paragraphs of prose, and an optional CTA button.',
+    'Maker story section. Two-column layout — headline + one or two paragraphs of prose alongside a photo of the maker at work (workshop scene, hands on tools, materials in the foreground). Optional CTA button below.',
   moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
   tenantTypeFit: ['seller', 'doer'],
   tier: 'free',
   status: 'active',
+  pageTypes: ['home'],
   slots: [
     {
       key: 'primary-cta',
@@ -34,6 +35,13 @@ const meta: BlockMeta = {
       required: true,
       aiGenerated: true,
       maxLength: 600,
+    },
+    {
+      key: 'imageUrl',
+      type: 'image',
+      label: 'Photo (injected at generation time — workshop scene per niche)',
+      required: false,
+      aiGenerated: false,
     },
   ],
 };

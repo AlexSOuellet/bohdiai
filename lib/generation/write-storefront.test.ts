@@ -49,7 +49,15 @@ const SAMPLE_PAGE: GeneratedPage = {
       },
     },
   ],
+  secondaryPages: {
+    shop: { eyebrow: 'The Shop', heading: 'All work', subheading: 'Browse the studio.' },
+    contact: { heading: 'Say Hello', subheading: 'Drop us a note.', buttonLabel: 'Send Message' },
+  },
 };
+
+const SAMPLE_PAGES = [
+  { slug: '/', pageType: 'home', title: 'Home', blocks: SAMPLE_PAGE.blocks },
+];
 
 describeIfReal('writeStorefront (integration)', () => {
   const cleanupIds: string[] = [];
@@ -77,7 +85,9 @@ describeIfReal('writeStorefront (integration)', () => {
       moodKey: 'rustic',
       tenantTypes: ['seller'],
       tokens: SAMPLE_TOKENS,
-      page: SAMPLE_PAGE,
+      pages: SAMPLE_PAGES,
+      collections: [],
+      subscriptions: [],
       listings: [],
     });
 
@@ -108,6 +118,7 @@ describeIfReal('writeStorefront (integration)', () => {
       .from('content_pages')
       .select('slug, status, page_type')
       .eq('tenant_id', result.tenantId)
+      .eq('slug', '/')
       .single();
 
     expect(page?.slug).toBe('/');
@@ -135,7 +146,9 @@ describeIfReal('writeStorefront (integration)', () => {
       moodKey: 'rustic',
       tenantTypes: ['seller'],
       tokens: SAMPLE_TOKENS,
-      page: SAMPLE_PAGE,
+      pages: SAMPLE_PAGES,
+      collections: [],
+      subscriptions: [],
       listings: [
         {
           name: 'Black Fig Candle',
@@ -145,6 +158,7 @@ describeIfReal('writeStorefront (integration)', () => {
           base_price_cents: 2400,
           image_prompt: 'candle on slate',
           image_url: null,
+          collection_slug: null,
         },
       ],
     });
@@ -173,7 +187,9 @@ describeIfReal('writeStorefront (integration)', () => {
       moodKey: 'rustic',
       tenantTypes: ['seller'],
       tokens: SAMPLE_TOKENS,
-      page: SAMPLE_PAGE,
+      pages: SAMPLE_PAGES,
+      collections: [],
+      subscriptions: [],
       listings: [],
     });
     cleanupIds.push(first.tenantId);
@@ -187,7 +203,9 @@ describeIfReal('writeStorefront (integration)', () => {
         moodKey: 'rustic',
         tenantTypes: ['seller'],
         tokens: SAMPLE_TOKENS,
-        page: SAMPLE_PAGE,
+        pages: SAMPLE_PAGES,
+        collections: [],
+      subscriptions: [],
         listings: [],
       }),
     ).rejects.toThrow();

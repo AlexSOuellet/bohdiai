@@ -35,10 +35,14 @@ export async function proxy(request: NextRequest) {
 
   // For tenant requests, rewrite the URL to the storefront route so that
   // myshop.bohdiai.com/ hits app/storefront/ rather than the marketing home.
+  // EXCEPT /api/* — those route to the shared platform API regardless of which
+  // subdomain the request originated from (forms posted from tenant pages
+  // hit /api/notify-interest, /api/contact, etc, and need to resolve normally).
   const isTenantRequest = tenantId !== undefined;
-  const rewriteUrl = isTenantRequest ? request.nextUrl.clone() : null;
+  const originalPath = request.nextUrl.pathname;
+  const skipRewrite = originalPath.startsWith('/api/');
+  const rewriteUrl = isTenantRequest && !skipRewrite ? request.nextUrl.clone() : null;
   if (rewriteUrl !== null) {
-    const originalPath = request.nextUrl.pathname;
     rewriteUrl.pathname = '/storefront' + (originalPath === '/' ? '' : originalPath);
   }
 

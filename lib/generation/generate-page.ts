@@ -19,13 +19,31 @@ const GeneratedBlockSchema = z.object({
   slots: z.record(z.string(), GeneratedSlotSchema).default({}),
 });
 
+const SecondaryPageCopySchema = z.object({
+  eyebrow: z.string().min(1).max(40),
+  heading: z.string().min(1).max(80),
+  subheading: z.string().min(1).max(240),
+});
+
+const ContactCopySchema = z.object({
+  heading: z.string().min(1).max(80),
+  subheading: z.string().min(1).max(280),
+  buttonLabel: z.string().min(1).max(40),
+});
+
 const GeneratedPageSchema = z.object({
   blocks: z.array(GeneratedBlockSchema).min(1),
+  secondaryPages: z.object({
+    shop: SecondaryPageCopySchema,
+    contact: ContactCopySchema,
+  }),
 });
 
 export type GeneratedSlot = z.infer<typeof GeneratedSlotSchema>;
 export type GeneratedBlock = z.infer<typeof GeneratedBlockSchema>;
 export type GeneratedPage = z.infer<typeof GeneratedPageSchema>;
+export type GeneratedSecondaryPageCopy = z.infer<typeof SecondaryPageCopySchema>;
+export type GeneratedContactCopy = z.infer<typeof ContactCopySchema>;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -48,8 +66,14 @@ function shuffled<T>(arr: T[]): T[] {
 
 function buildBlocksContext(): string {
   const lines: string[] = ['AVAILABLE BLOCKS:'];
+  // Only show the AI blocks that are (a) active and (b) declare themselves usable
+  // on the home page via pageTypes. System-injected blocks (nav, footer) and
+  // secondary-page blocks (shop grid, contact form, page intro) are filtered out
+  // automatically because they don't include 'home' in their pageTypes.
+  const active = BLOCKS_MANIFEST.filter(
+    (b) => b.status === 'active' && b.pageTypes.includes('home'),
+  );
   // Shuffle hero blocks so position in the list doesn't bias the AI toward one variant.
-  const active = BLOCKS_MANIFEST.filter(b => b.status === 'active');
   const heroBlocks = shuffled(active.filter(b => b.sectionType === 'hero'));
   const productBlocks = shuffled(active.filter(b => b.sectionType === 'products'));
   const otherBlocks = active.filter(b => b.sectionType !== 'hero' && b.sectionType !== 'products');
@@ -131,8 +155,20 @@ COPY RULES:
 - Use the niche vocabulary naturally — the words real practitioners use, not the words a marketer uses to describe them.
 - Banned phrases: "crafted with love," "made with passion," "quality you can trust," "handmade with care," "small batch," "artisanal," "curated." Show it, don't label it.
 
-For "href" fields in widgets, use anchor links that scroll to sections on this page: "/#products", "/#about", "/#collections", "/#events". Do NOT link to pages that may not exist ("/shop", "/contact", "/commissions", "/booking").
-For "label" fields in CTA widgets, write copy that fits a scroll action, not a page visit. The reader is staying on the page. Good examples: "See the Work", "Meet the Maker", "View the Collection", "Explore the Shop". Bad examples: "Browse All Work", "Visit the Shop", "Go to Studio" — these imply leaving the page.
+For "href" fields in widgets, you may use any of these page routes: "/shop" (full product grid), "/contact" (contact form), or anchor links that scroll on the home page ("/#products", "/#about", "/#collections", "/#events"). Do NOT link to pages that don't exist ("/commissions", "/booking", "/services").
+
+SECONDARY PAGES
+The storefront has two automatically-built secondary pages: a /shop page (full product listing) and a /contact page (contact form). You must also write the headings for these pages so they match the home page voice.
+
+For /shop, write:
+- "eyebrow": uppercase label, MAX 40 characters (e.g. "All Work", "The Shop", "Collection")
+- "heading": page title, MAX 80 characters (e.g. "Everything in the studio", "The full range")
+- "subheading": one or two warm sentences inviting the visitor to browse. MAX 240 characters total — be tight, not chatty. Same voice and specificity as the home page copy. Avoid the banned phrases.
+
+For /contact, write:
+- "heading": page title, MAX 80 characters (e.g. "Get in touch", "Drop us a line", "Say hello")
+- "subheading": one warm, inviting sentence about what kinds of messages this maker welcomes (commissions, questions, hellos). MAX 280 characters — keep it to one sentence; do not write a paragraph. Same voice. Avoid the banned phrases.
+- "buttonLabel": short button text, MAX 40 characters (e.g. "Send Message", "Reach Out", "Say Hello")
 
 Return ONLY a JSON object — no markdown, no explanation:
 {
@@ -152,13 +188,17 @@ Return ONLY a JSON object — no markdown, no explanation:
         }
       }
     }
-  ]
+  ],
+  "secondaryPages": {
+    "shop": { "eyebrow": "...", "heading": "...", "subheading": "..." },
+    "contact": { "heading": "...", "subheading": "...", "buttonLabel": "..." }
+  }
 }`;
 
   const start = Date.now();
   const response = await anthropicClient().messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 2048,
+    max_tokens: 2560,
     messages: [{ role: 'user', content: prompt }],
   });
   const latencyMs = Date.now() - start;

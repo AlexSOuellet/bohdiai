@@ -20,6 +20,7 @@ interface Listing {
   name: string;
   short_description: string | null;
   base_price_cents: number;
+  is_preview: boolean;
   metadata: { image_url?: string | null } | null;
 }
 
@@ -31,8 +32,9 @@ export default async function ProductsGrid({ content, tenantId }: ProductsGridPr
   const db = supabaseAdmin();
   const { data: listings } = await db
     .from('listings')
-    .select('id, slug, name, short_description, base_price_cents, metadata')
+    .select('id, slug, name, short_description, base_price_cents, is_preview, metadata')
     .eq('tenant_id', tenantId)
+    .eq('listing_type', 'product')
     .eq('status', 'active')
     .is('deleted_at', null)
     .order('published_at', { ascending: false })
@@ -85,9 +87,15 @@ export default async function ProductsGrid({ content, tenantId }: ProductsGridPr
                         {listing.short_description}
                       </p>
                     )}
-                    <p className="font-semibold sf-body text-s-accent">
-                      {formatPrice(listing.base_price_cents)}
-                    </p>
+                    {listing.is_preview ? (
+                      <p className="font-semibold sf-body text-s-muted uppercase tracking-[0.15em] text-xs">
+                        Coming Soon
+                      </p>
+                    ) : (
+                      <p className="font-semibold sf-body text-s-accent">
+                        {formatPrice(listing.base_price_cents)}
+                      </p>
+                    )}
                   </div>
                 </a>
               </li>

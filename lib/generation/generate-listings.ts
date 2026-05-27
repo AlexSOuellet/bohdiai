@@ -12,6 +12,12 @@ const GeneratedListingSchema = z.object({
   description: z.string(),
   base_price_cents: z.number().int().positive(),
   image_prompt: z.string(),
+  /**
+   * Slug of the collection this listing belongs to. The AI picks from the slugs
+   * provided in the prompt; null if no collections exist for this shop. The RPC
+   * resolves the slug to a collection ID at write time.
+   */
+  collection_slug: z.string().nullable().default(null),
 });
 
 const GeneratedListingsSchema = z.object({
@@ -36,9 +42,15 @@ export async function generateListings(
   nicheDisplayName: string,
   nicheBodyMarkdown: string,
   count: number,
+  /** Collection slugs to assign products to. Empty array means no collections for this shop. */
+  collectionSlugs: string[],
   tenantId?: string,
 ): Promise<GeneratedListingWithImage[]> {
   const imageCount = Math.min(count, MAX_PRODUCT_IMAGES);
+
+  const collectionGuidance = collectionSlugs.length > 0
+    ? `\nCOLLECTIONS\nThis shop has these collections, identified by slug: ${collectionSlugs.map(s => `"${s}"`).join(', ')}.\nFor each product, set "collection_slug" to the slug of the collection it best belongs to. Distribute products across collections sensibly — don't dump them all into one collection unless they truly all belong to the same one.\n`
+    : `\nThis shop has no collections. Set "collection_slug" to null for every product.\n`;
 
   const prompt = `You are helping a maker launch their online store. Generate ${imageCount} realistic placeholder product listings for their shop.
 
@@ -47,7 +59,7 @@ NICHE: ${nicheDisplayName}
 
 NICHE CONTEXT:
 ${nicheBodyMarkdown}
-
+${collectionGuidance}
 Generate ${imageCount} products that feel authentic to this niche. Each product should have:
 - A specific, evocative name (not generic — not "Candle" but "Black Fig & Vetiver Soy Candle")
 - A slug (lowercase, hyphens only, no spaces)
@@ -55,6 +67,7 @@ Generate ${imageCount} products that feel authentic to this niche. Each product 
 - A full description (2-3 sentences, maker voice, specific materials and techniques)
 - A realistic price in cents (e.g. $24.00 = 2400)
 - An image_prompt: a detailed description for an AI image generator to create a professional product photo (e.g. "Hand-poured soy candle in a matte black jar with a kraft paper label, soft candlelight, dark moody background, close-up product photography")
+- A collection_slug per the guidance above (null if no collections, otherwise one of the provided slugs)
 
 Return ONLY a JSON object — no markdown, no explanation:
 {
@@ -65,7 +78,8 @@ Return ONLY a JSON object — no markdown, no explanation:
       "short_description": "<one sentence>",
       "description": "<2-3 sentences>",
       "base_price_cents": <integer>,
-      "image_prompt": "<detailed AI image generation prompt>"
+      "image_prompt": "<detailed AI image generation prompt>",
+      "collection_slug": <"slug" or null>
     }
   ]
 }`;

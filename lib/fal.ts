@@ -92,3 +92,15 @@ export async function generateHeroImage(
   const prompt = `Editorial lifestyle photography: ${nicheDisplayName} maker's workshop. Close-up details of the materials, tools, and finished work specific to ${nicheDisplayName}. Cinematic wide shot, real working studio environment, rich depth, no text, no people, wide landscape composition.`;
   return generateAndStore(prompt, `hero-images/${subdomain}/hero.jpg`, 'landscape_16_9');
 }
+
+export async function generateAboutImage(
+  nicheDisplayName: string,
+  subdomain: string,
+): Promise<string | null> {
+  // More intimate than the hero — hands at work, partial maker silhouette OK,
+  // materials in mid-process. Portrait orientation pairs with the two-column
+  // about layout. No text, no identifiable faces (so the photo holds up
+  // regardless of who the actual maker is).
+  const prompt = `Editorial documentary photography: hands at work in a ${nicheDisplayName} maker's studio. In-progress detail — tools being used, materials being shaped, the texture of the work itself. Warm natural window light, shallow depth of field, intimate close-mid shot, real studio environment, no identifiable faces, no text, vertical portrait composition.`;
+  return generateAndStore(prompt, `about-images/${subdomain}/about.jpg`, 'square_hd');
+}

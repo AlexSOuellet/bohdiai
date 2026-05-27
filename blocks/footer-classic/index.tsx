@@ -12,11 +12,13 @@ interface FooterClassicProps {
 }
 
 const SECTION_LINKS: Record<string, { label: string; href: string }> = {
-  shop:    { label: 'Shop',    href: '/shop' },
-  about:   { label: 'About',   href: '/#about' },
-  contact: { label: 'Contact', href: '/contact' },
-  events:  { label: 'Events',  href: '/#events' },
-  gallery: { label: 'Gallery', href: '/gallery' },
+  shop:          { label: 'Shop',          href: '/shop' },
+  about:         { label: 'About',         href: '/about' },
+  collections:   { label: 'Collections',   href: '/collections' },
+  subscriptions: { label: 'Subscriptions', href: '/subscriptions' },
+  contact:       { label: 'Contact',       href: '/contact' },
+  events:        { label: 'Events',        href: '/#events' },
+  gallery:       { label: 'Gallery',       href: '/gallery' },
 };
 
 function parseSections(raw: string | undefined): string[] {

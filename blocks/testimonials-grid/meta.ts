@@ -10,6 +10,7 @@ const meta: BlockMeta = {
   tenantTypeFit: ['seller', 'doer'],
   tier: 'free',
   status: 'active',
+  pageTypes: ['home'],
   slots: [],
   contentSchema: [
     {

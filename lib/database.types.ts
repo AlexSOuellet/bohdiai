@@ -966,6 +966,7 @@ export type Database = {
           id: string
           inventory_count: number | null
           inventory_tracked: boolean
+          is_preview: boolean
           listing_type: string
           low_stock_threshold: number | null
           media_ids: string[]
@@ -995,6 +996,7 @@ export type Database = {
           id?: string
           inventory_count?: number | null
           inventory_tracked?: boolean
+          is_preview?: boolean
           listing_type: string
           low_stock_threshold?: number | null
           media_ids?: string[]
@@ -1024,6 +1026,7 @@ export type Database = {
           id?: string
           inventory_count?: number | null
           inventory_tracked?: boolean
+          is_preview?: boolean
           listing_type?: string
           low_stock_threshold?: number | null
           media_ids?: string[]
@@ -1209,6 +1212,45 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notify_interest: {
+        Row: {
+          id: string
+          tenant_id: string
+          listing_id: string
+          email: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          listing_id: string
+          email: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          listing_id?: string
+          email?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notify_interest_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notify_interest_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
             referencedColumns: ["id"]
           },
         ]

@@ -21,6 +21,7 @@ interface Listing {
   name: string;
   short_description: string | null;
   base_price_cents: number;
+  is_preview: boolean;
   metadata: { image_url?: string | null } | null;
 }
 
@@ -52,8 +53,9 @@ export default async function ProductsBloomGrid({ content, tenantId }: ProductsB
   const db = supabaseAdmin();
   const { data: listings } = await db
     .from('listings')
-    .select('id, slug, name, short_description, base_price_cents, metadata')
+    .select('id, slug, name, short_description, base_price_cents, is_preview, metadata')
     .eq('tenant_id', tenantId)
+    .eq('listing_type', 'product')
     .eq('status', 'active')
     .is('deleted_at', null)
     .order('published_at', { ascending: false })
@@ -176,9 +178,9 @@ export default async function ProductsBloomGrid({ content, tenantId }: ProductsB
                             )}
                           </div>
 
-                          {/* ─── Bold pill price badge — black/70 so it reads on any accent color ─── */}
-                          <span className="flex-shrink-0 bg-black/70 text-white font-s-heading font-black text-sm px-3 py-1.5 rounded-full leading-none shadow-lg ring-1 ring-white/10 whitespace-nowrap">
-                            {formatPrice(listing.base_price_cents)}
+                          {/* ─── Bold pill — price for real listings, "Coming Soon" for previews ─── */}
+                          <span className="flex-shrink-0 bg-black/70 text-white font-s-heading font-black text-[10px] uppercase tracking-[0.15em] px-3 py-1.5 rounded-full leading-none shadow-lg ring-1 ring-white/10 whitespace-nowrap">
+                            {listing.is_preview ? 'Coming Soon' : formatPrice(listing.base_price_cents)}
                           </span>
                         </div>
                       </div>

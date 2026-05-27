@@ -10,6 +10,7 @@ interface Listing {
   name: string;
   short_description: string | null;
   base_price_cents: number;
+  is_preview: boolean;
   metadata: { image_url?: string | null } | null;
 }
 
@@ -65,10 +66,12 @@ export default function CarouselWrapper({ items }: CarouselWrapperProps) {
               {/* Subtle ambient light vignette */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent pointer-events-none" />
 
-              {/* Price Badge */}
+              {/* Price/Preview Badge */}
               <div className="absolute bottom-6 left-6 bg-black py-2 px-4 rounded-pill shadow-xl">
                 <span className="font-s-heading font-black text-s-accent text-lg tracking-tight leading-none">
-                  {formatPrice(activeItem?.base_price_cents ?? 0)}
+                  {activeItem?.is_preview === true
+                    ? 'Coming Soon'
+                    : formatPrice(activeItem?.base_price_cents ?? 0)}
                 </span>
               </div>
 
@@ -115,7 +118,7 @@ export default function CarouselWrapper({ items }: CarouselWrapperProps) {
                     {listing.name}
                   </h3>
                   <span className="font-s-heading font-black text-s-text text-sm">
-                    {formatPrice(listing.base_price_cents)}
+                    {listing.is_preview ? 'Soon' : formatPrice(listing.base_price_cents)}
                   </span>
                 </div>
                 
