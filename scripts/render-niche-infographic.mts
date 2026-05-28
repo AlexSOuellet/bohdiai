@@ -4,7 +4,7 @@
  * assembly for a tenant's home page.
  *
  * Usage: tsx scripts/render-niche-infographic.mts <niche-slug> <mood-key>
- *   e.g. tsx scripts/render-niche-infographic.mts leatherworker dark-and-stormy
+ *   e.g. tsx scripts/render-niche-infographic.mts leatherworker dark
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -25,7 +25,7 @@ const { generatePage } = await import('../lib/generation/generate-page.ts');
 const { MOODS } = await import('../lib/moods.ts');
 
 const nicheSlug = process.argv[2] ?? 'leatherworker';
-const moodKey = process.argv[3] ?? 'dark-and-stormy';
+const moodKey = process.argv[3] ?? 'dark';
 
 const mood = (MOODS as any)[moodKey];
 if (!mood) throw new Error(`Unknown mood: ${moodKey}. Options: ${Object.keys(MOODS).join(', ')}`);

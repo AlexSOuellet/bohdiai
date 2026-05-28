@@ -1,0 +1,141 @@
+{
+  "kind": "mood-style-sheet",
+  "key": "sunset",
+  "label": "Sunset",
+  "note": "Raw materials. Named only — no role assignments, no feel labels.",
+  "palette": [
+    {
+      "name": "Cream Light",
+      "hex": "#F8EBD2"
+    },
+    {
+      "name": "Butter",
+      "hex": "#F5D38C"
+    },
+    {
+      "name": "Pale Tangerine",
+      "hex": "#F2B16E"
+    },
+    {
+      "name": "Coral",
+      "hex": "#E8744C"
+    },
+    {
+      "name": "Burnt Sienna",
+      "hex": "#B85A28"
+    },
+    {
+      "name": "Terracotta",
+      "hex": "#C46A3A"
+    },
+    {
+      "name": "Amber",
+      "hex": "#C5821C"
+    },
+    {
+      "name": "Gold Leaf",
+      "hex": "#B9882C"
+    },
+    {
+      "name": "Dusty Rose",
+      "hex": "#C28278"
+    },
+    {
+      "name": "Dusky Violet",
+      "hex": "#7A4B6E"
+    },
+    {
+      "name": "Faded Denim",
+      "hex": "#6E8398"
+    },
+    {
+      "name": "Cinder",
+      "hex": "#3A2820"
+    },
+    {
+      "name": "Oxidized Copper",
+      "hex": "#7A4A2A"
+    },
+    {
+      "name": "Sand",
+      "hex": "#D9B888"
+    },
+    {
+      "name": "Last Light",
+      "hex": "#642C1C"
+    }
+  ],
+  "fonts": [
+    {
+      "name": "Fraunces",
+      "category": "didone"
+    },
+    {
+      "name": "Italiana",
+      "category": "didone"
+    },
+    {
+      "name": "Cormorant Garamond",
+      "category": "old-style-serif"
+    },
+    {
+      "name": "Playfair Display",
+      "category": "didone"
+    },
+    {
+      "name": "DM Serif Display",
+      "category": "didone"
+    },
+    {
+      "name": "Bree Serif",
+      "category": "slab-serif"
+    },
+    {
+      "name": "Outfit",
+      "category": "humanist-sans"
+    },
+    {
+      "name": "Familjen Grotesk",
+      "category": "grotesque"
+    },
+    {
+      "name": "Petit Formal Script",
+      "category": "script"
+    },
+    {
+      "name": "Mrs Saint Delafield",
+      "category": "script"
+    },
+    {
+      "name": "Yeseva One",
+      "category": "display-serif"
+    },
+    {
+      "name": "Newsreader",
+      "category": "old-style-serif"
+    },
+    {
+      "name": "Sacramento",
+      "category": "script"
+    },
+    {
+      "name": "Tenor Sans",
+      "category": "neo-grotesque"
+    }
+  ],
+  "textures": [
+    "terracotta",
+    "gold-leaf",
+    "oxidized-copper",
+    "raw-linen",
+    "beeswax",
+    "sea-salt",
+    "ceramic-glaze",
+    "oiled-wood",
+    "faded-denim",
+    "beach-pebble",
+    "honeycomb-amber",
+    "dried-citrus-peel",
+    "long-shadow"
+  ]
+}

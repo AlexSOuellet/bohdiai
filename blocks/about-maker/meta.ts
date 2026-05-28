@@ -6,9 +6,6 @@ const meta: BlockMeta = {
   sectionType: 'about',
   description:
     'Maker story section. Two-column layout — headline + one or two paragraphs of prose alongside a photo of the maker at work (workshop scene, hands on tools, materials in the foreground). Optional CTA button below.',
-  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
-  tenantTypeFit: ['seller', 'doer'],
-  tier: 'free',
   status: 'active',
   pageTypes: ['home'],
   slots: [

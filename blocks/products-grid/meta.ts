@@ -6,9 +6,6 @@ const meta: BlockMeta = {
   sectionType: 'products',
   description:
     'Uniform grid of product cards. Auto-filling columns at 240px minimum width. Each card: square image on top, product name, short description, and price below on a solid background.',
-  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
-  tenantTypeFit: ['seller'],
-  tier: 'free',
   status: 'active',
   pageTypes: ['home'],
   slots: [],

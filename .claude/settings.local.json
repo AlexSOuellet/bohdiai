@@ -148,7 +148,17 @@
       "Bash(node tmp/build-niche-doc.mjs)",
       "Bash(ls \"C:\\\\Users\\\\Bohdi\\\\AppData\\\\Roaming\\\\Claude\\\\local-agent-mode-sessions\\\\skills-plugin\\\\88e131a0-6c6a-4b4c-a8c3-644f2d9b7180\\\\6c9ad3c5-c358-4620-9833-38f5fd21d601\\\\skills\\\\docx\\\\scripts\\\\office\\\\\" 2>&1 | head)",
       "Bash(node tmp/compare-tokens.mjs)",
-      "Bash(node -e \"import\\('dotenv'\\).then\\(d => { d.config\\({ path: '.env.local' }\\); const u = process.env.SUPABASE_URL; const k = process.env.SUPABASE_SERVICE_ROLE_KEY; if \\(!u || !k\\) { console.log\\('MISSING', {url: !!u, key: !!k}\\); process.exit\\(1\\); } fetch\\(u + '/rest/v1/niches?select=slug&limit=1', { headers: { apikey: k, Authorization: 'Bearer ' + k } }\\).then\\(r => r.text\\(\\).then\\(t => console.log\\(r.status, t.slice\\(0, 200\\)\\)\\)\\); }\\)\")"
+      "Bash(node -e \"import\\('dotenv'\\).then\\(d => { d.config\\({ path: '.env.local' }\\); const u = process.env.SUPABASE_URL; const k = process.env.SUPABASE_SERVICE_ROLE_KEY; if \\(!u || !k\\) { console.log\\('MISSING', {url: !!u, key: !!k}\\); process.exit\\(1\\); } fetch\\(u + '/rest/v1/niches?select=slug&limit=1', { headers: { apikey: k, Authorization: 'Bearer ' + k } }\\).then\\(r => r.text\\(\\).then\\(t => console.log\\(r.status, t.slice\\(0, 200\\)\\)\\)\\); }\\)\")",
+      "Bash(echo \"exit=$?\")",
+      "PowerShell(Stop-Process -Id 20740 -Force)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Process node -ErrorAction SilentlyContinue | ForEach-Object { \"PID=$\\($_.Id\\) start=$\\($_.StartTime\\) mem=$\\([math]::Round\\($_.WorkingSet/1MB\\)\\)MB\" })",
+      "Bash(node tmp/check-legacy-leather.mjs)",
+      "Bash(node tmp/show-block-pick.mjs)",
+      "Bash(node tmp/bohdi-report.mjs lous-leather-craft)",
+      "Bash(node tmp/bohdi-report.mjs leather-utopia)",
+      "Bash(node tmp/bohdi-report.mjs absolute-leather)",
+      "Bash(mkdir -p content/style-sheets && cp tmp/style-sheets/*.json content/style-sheets/ && ls content/style-sheets/)"
     ]
   }
 }

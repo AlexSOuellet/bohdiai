@@ -396,6 +396,64 @@ Implementation footprint is small: one migration for the table, one logging help
 
 ---
 
+## 2026-05-28 (session 9)
+
+These six decisions came out of building Bohdi the agent and watching him produce real storefronts. The first one finalizes the mood lineup; the second supersedes part of D23 (the two-agent split collapses into one); the rest articulate how the prompt and brand positioning should constrain his work.
+
+### D26. Mood lineup is seven plain category labels
+
+The mood list at launch is **DARK · RUSTIC · COZY · BOTANICAL · SUNSET · SIMPLE · MODERN**. Plain category labels, not poetic ("Sunday Morning" → SIMPLE). bright-bazaar removed from the lineup because it doesn't fit makers — its bold/maximalist energy belongs to SaaS or pattern textiles, not to artisan storefronts. summer-afternoon retargeted from "bright midday" to golden-hour and renamed SUNSET, occupying a visual territory (amber, terracotta, dusky violet, gold leaf) that no other mood covered. MODERN is new — Swiss-design assertive, Bauhaus primary colors, geometric display type. Fills the gap between "minimal-quiet" (SIMPLE) and "bold-loud" by being minimal-LOUD.
+
+The category-label naming is a maker UX decision. Evocative names like "Sunday Morning" require the maker to interpret what they're picking; plain labels like SIMPLE tell them directly. Eventually the picker should show sample storefronts per mood so the maker sees what they're choosing, but the labels alone should at least be unambiguous.
+
+Each mood now carries a structured style sheet — 15 named hex colors, 14 named fonts with structural taxonomy categories (no feel words), 13 named textures. Stored at `tmp/style-sheets/mood-*.json` for now; will move to a database column at some point.
+
+Existing tenant rows migrated by `20260528000002_mood_keys_renamed.sql`. Old keys (dark-and-stormy, warm-and-cozy, wild-meadow, summer-afternoon, sunday-morning) mapped to new ones. bright-bazaar tenants mapped to MODERN as the closest replacement (none existed in production at the time).
+
+### D27. Bohdi is the agent — single contractor, internal employees we don't surface
+
+D23 specified two agents (Lead Designer + Image Agent). D27 collapses that to a single named agent: **Bohdi**. He's the contractor the platform hires. Internally he may have employees (sub-agents, specialist roles) — that's his org, not exposed to the maker, not part of the product surface. The maker sees Bohdi. We brief Bohdi. Bohdi delivers.
+
+The two-agent split from D23 was an implementation detail that leaked into the architecture. Naming a contractor with private internals lets us reshape the internal split (one model, two agents, ten agents) without ever touching the maker-facing identity. Bohdi as the name also matches the product brand (BohdiAI) cleanly.
+
+In Phase 1 Bohdi is a single tool-using agent loop. Tools: read_niche, read_mood, list_blocks, list_widgets, log_decision, generate_image, set_tokens, set_home_page, set_secondary_pages_copy, add_collection, add_listing, add_subscription, set_hero_image, set_about_image, finalize. He runs sequentially with prompt caching on the system prompt + tools list. A leatherworker × any-mood onboarding takes 3-4 minutes and costs ~$0.50-0.80 in Claude + ~$0.25 in fal images.
+
+D23 still stands on statelessness — Bohdi has no memory between sessions. The `design_choices` log (D25) is the only persistent record of what he did.
+
+The legacy one-shot generation pipeline stays in place for non-leatherworker niches until each niche has a style sheet authored.
+
+### D28. Tell Bohdi how to think. Don't tell him what to choose.
+
+A clear distinction baked into how Bohdi's system prompt is written. Telling him **how to think** is fair — deliberation method (generate 2+ candidates with reasoning), mental models (mood is the visual world, niche is the material vocabulary inside it), meta-awareness (LLMs rationalize anything, so reasoning is fluency, not proof), self-checks (if two moods produce the same visual identity, the axes flipped). Telling him **what to choose** is not — "pick the boldest variant," "safe is the failure mode," "prefer hero-lava over hero-cinematic" all crossed the line.
+
+The discipline exists because every prompt change reaches for the next test case's failure. That's whack-a-mole. The reasoning quality improves with prompt direction but the output quality doesn't — Bohdi just defends the new direction more fluently. Real output quality comes from inputs (materials, catalog) and mechanics (deliberation, output review), not from telling him which way to lean.
+
+### D29. WOW is the job, within the constraints of the mood the maker picked
+
+Bohdi's quality bar is articulated as WOW — a storefront the maker would text to their friends because they can't believe it's theirs, not a competent or polished site. The bar is not "fits the maker." It's "stops someone mid-scroll."
+
+The constraint that keeps WOW honest: WOW happens **inside** the mood the maker picked. The mood is the customer's choice, not negotiable. A WOW SIMPLE shop is the most distinctive SIMPLE shop you can build, not a redefined-as-bold shop wearing SIMPLE's label. The mood is the boundary; how Bohdi makes it WOW inside that boundary is up to him.
+
+This pairs with D28 — "WOW is the job" is a quality bar (how-to-think), not a selection rule (what-to-choose). It tells him the success criterion without dictating which inventory choices satisfy it.
+
+### D30. Mood is the visual world. Niche is the material vocabulary inside that world.
+
+D6 said design is driven by mood, not niche. D30 sharpens that with the framing Bohdi reads in his prompt. Mood defines the visual character — palette, type system, mood textures, the gestalt. Niche provides the material vocabulary inside that gestalt — the words real practitioners use, the products they make, the customers they serve.
+
+A leatherworker × SIMPLE shop is a SIMPLE shop that happens to work with leather. A leatherworker × DARK shop is a DARK shop that happens to work with leather. The mood is what the shop **looks like**; the niche is what the shop **sells and talks about**. Flipping the axes — making the niche carry visual character — produces sites where every leatherworker shop looks the same regardless of mood, which is the failure mode session 9 actually observed before this principle landed.
+
+The collapse diagnostic baked into Bohdi's prompt: if two shops in the same niche but different moods would read as the same visual identity, the niche has eaten the mood.
+
+### D31. Visibly not AI slop is the brand position that informs catalog choices
+
+Every AI site builder in the industry — Wix AI, Squarespace AI, Shopify Magic — has converged on a recognizable visual pattern. Clean nav, hero with stock-feeling photo, three-column grid of cards, testimonials row, footer. That pattern is the noise floor; sites that fit it are pattern-matched as "another AI builder" within seconds.
+
+BohdiAI's strategic position is being **visibly not that**. A maker who lands on a BohdiAI storefront should be able to tell within two seconds it wasn't generated by Wix. Looking like every other AI builder is competitive death because it removes any reason for a maker to pick us.
+
+This is a brand-positioning decision that informs catalog choices, not Bohdi's day-to-day prompt. Every block variant we build should make the question "does this make a BohdiAI site harder to confuse with an AI-builder site, or easier?" answer "harder." Adding a sixth product grid that's slightly different from the existing five is competitive death by a thousand papercuts. The block-variant roadmap leans toward geometry that the industry doesn't do — asymmetric, overlapping, scroll-driven, image-bleed, non-rectangular. The Block-Variants-Roadmap doc at `project-docs/Block-Variants-Roadmap.md` is the working list.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.

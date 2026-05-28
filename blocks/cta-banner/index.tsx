@@ -20,7 +20,7 @@ interface CtaBannerProps {
 
 export default function CtaBanner({ content, slots }: CtaBannerProps) {
   return (
-    <section className="bg-s-primary py-s-section text-center">
+    <section className="bg-s-surface py-s-section text-center">
       <div className="mx-auto max-w-3xl px-6">
         <h2 className="mb-4 sf-heading sf-text-heading text-s-text">
           {content.headline}

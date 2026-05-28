@@ -1,6 +1,7 @@
 import { headers } from 'next/headers';
 import { supabaseAdmin } from '@/lib/supabase';
 import { DesignTokensSchema, tokensToCssVars } from '@/lib/tokens';
+import SmoothScroll from '@/components/storefront/motion/SmoothScroll';
 
 export default async function StorefrontLayout({ children }: { children: React.ReactNode }) {
   const headerStore = await headers();
@@ -28,6 +29,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
   return (
     <>
       {cssVars !== '' && <style dangerouslySetInnerHTML={{ __html: cssVars }} />}
+      <SmoothScroll />
       <div className="min-h-screen bg-s-background text-s-text">{children}</div>
     </>
   );

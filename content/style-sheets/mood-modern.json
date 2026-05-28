@@ -1,0 +1,141 @@
+{
+  "kind": "mood-style-sheet",
+  "key": "modern",
+  "label": "Modern",
+  "note": "Raw materials. Named only — no role assignments, no feel labels.",
+  "palette": [
+    {
+      "name": "Paper White",
+      "hex": "#F7F5F0"
+    },
+    {
+      "name": "Off White",
+      "hex": "#E8E4D9"
+    },
+    {
+      "name": "Cement",
+      "hex": "#A5A19A"
+    },
+    {
+      "name": "Jet Black",
+      "hex": "#0C0C0C"
+    },
+    {
+      "name": "Bauhaus Red",
+      "hex": "#E63022"
+    },
+    {
+      "name": "Traffic Red",
+      "hex": "#C81E1E"
+    },
+    {
+      "name": "Mondrian Yellow",
+      "hex": "#F5C518"
+    },
+    {
+      "name": "Lemon",
+      "hex": "#F2E422"
+    },
+    {
+      "name": "Electric Blue",
+      "hex": "#1E3DD4"
+    },
+    {
+      "name": "Deep Cobalt",
+      "hex": "#0D2580"
+    },
+    {
+      "name": "Neon Orange",
+      "hex": "#FA6B1E"
+    },
+    {
+      "name": "Hot Pink",
+      "hex": "#F0418A"
+    },
+    {
+      "name": "Deep Emerald",
+      "hex": "#0E6E48"
+    },
+    {
+      "name": "Lime",
+      "hex": "#A8E000"
+    },
+    {
+      "name": "Ochre",
+      "hex": "#C9912E"
+    }
+  ],
+  "fonts": [
+    {
+      "name": "Bebas Neue",
+      "category": "condensed-display"
+    },
+    {
+      "name": "Anton",
+      "category": "condensed-display"
+    },
+    {
+      "name": "Archivo Black",
+      "category": "geometric-sans"
+    },
+    {
+      "name": "Oswald",
+      "category": "condensed-sans"
+    },
+    {
+      "name": "Big Shoulders Display",
+      "category": "condensed-display"
+    },
+    {
+      "name": "Inter",
+      "category": "humanist-sans"
+    },
+    {
+      "name": "Manrope",
+      "category": "humanist-sans"
+    },
+    {
+      "name": "Space Grotesk",
+      "category": "grotesque"
+    },
+    {
+      "name": "Space Mono",
+      "category": "monospace"
+    },
+    {
+      "name": "IBM Plex Mono",
+      "category": "monospace"
+    },
+    {
+      "name": "Bodoni Moda",
+      "category": "didone"
+    },
+    {
+      "name": "Bungee",
+      "category": "display"
+    },
+    {
+      "name": "Syne",
+      "category": "display"
+    },
+    {
+      "name": "Unbounded",
+      "category": "geometric-display"
+    }
+  ],
+  "textures": [
+    "matte-ink",
+    "riso-print",
+    "photocopy-grain",
+    "neon-glow",
+    "pressed-cement",
+    "polished-steel",
+    "vinyl",
+    "screen-print-halftone",
+    "color-block",
+    "hard-shadow",
+    "plotter-line",
+    "foil-stamp",
+    "painted-floor"
+  ]
+}

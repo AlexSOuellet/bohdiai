@@ -1,0 +1,56 @@
+{
+  "kind": "niche-style-sheet",
+  "slug": "leatherworker",
+  "note": "Raw materials for a leatherworker site. Named only — no role assignments, no feel labels.",
+
+  "palette": [
+    { "name": "Parchment",     "hex": "#F5EFE6" },
+    { "name": "Linen",         "hex": "#EDE4D3" },
+    { "name": "Bone",          "hex": "#E8DCC4" },
+    { "name": "Natural Tan",   "hex": "#C9A878" },
+    { "name": "Saddle Tan",    "hex": "#B8763E" },
+    { "name": "Cognac",        "hex": "#8E5A30" },
+    { "name": "Chestnut",      "hex": "#6E4023" },
+    { "name": "Chocolate",     "hex": "#3D2817" },
+    { "name": "Espresso",      "hex": "#2A1F18" },
+    { "name": "Oxblood",       "hex": "#6E2A1F" },
+    { "name": "Burgundy",      "hex": "#4A1A1A" },
+    { "name": "Brick",         "hex": "#9A3A28" },
+    { "name": "Forest",        "hex": "#2E3D2A" },
+    { "name": "Antique Brass", "hex": "#A57940" },
+    { "name": "Taupe",         "hex": "#7A6B5C" }
+  ],
+
+  "fonts": [
+    { "name": "Cormorant Garamond",  "category": "refined-serif" },
+    { "name": "Playfair Display",    "category": "high-contrast-serif" },
+    { "name": "Lora",                "category": "warm-serif" },
+    { "name": "Roboto Slab",         "category": "slab-serif" },
+    { "name": "Arvo",                "category": "slab-serif" },
+    { "name": "IM Fell English",     "category": "old-style-serif" },
+    { "name": "Bree Serif",          "category": "wood-type-display" },
+    { "name": "Inter",               "category": "humanist-sans" },
+    { "name": "DM Sans",             "category": "geometric-sans" },
+    { "name": "Oswald",              "category": "condensed-caps" },
+    { "name": "Special Elite",       "category": "typewriter" },
+    { "name": "Permanent Marker",    "category": "hand-marker" },
+    { "name": "Rye",                 "category": "western-display" },
+    { "name": "Sancreek",            "category": "western-tuscan" },
+    { "name": "Pinyon Script",       "category": "script" }
+  ],
+
+  "textures": [
+    "pebbled-grain",
+    "full-grain-veg-tan",
+    "suede",
+    "burnished-edge",
+    "saddle-stitch",
+    "edge-paint",
+    "tooled-western",
+    "kraft-paper",
+    "linen-weave",
+    "antique-brass",
+    "solid-copper",
+    "matte-black-hardware"
+  ]
+}

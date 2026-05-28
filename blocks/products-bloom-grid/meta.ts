@@ -6,9 +6,6 @@ const meta: BlockMeta = {
   sectionType: 'products',
   description:
     'Asymmetric masonry grid. Products alternate between wide 2-column feature cells and tall 1-column portrait cells. Full-bleed images with product name and price overlaid at the bottom of each card behind a dark gradient. Organic rounded frames.',
-  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
-  tenantTypeFit: ['seller'],
-  tier: 'free',
   status: 'active',
   pageTypes: ['home'],
   slots: [],

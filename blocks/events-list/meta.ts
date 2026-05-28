@@ -6,9 +6,6 @@ const meta: BlockMeta = {
   sectionType: 'events',
   description:
     'List of upcoming events pulled from the events table — craft shows, markets, popups. Renders nothing when no upcoming events exist.',
-  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
-  tenantTypeFit: ['seller', 'doer'],
-  tier: 'free',
   status: 'active',
   pageTypes: ['home'],
   slots: [],

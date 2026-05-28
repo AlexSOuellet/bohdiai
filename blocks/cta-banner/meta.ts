@@ -6,9 +6,6 @@ const meta: BlockMeta = {
   sectionType: 'cta',
   description:
     'Full-width banner with a bold headline, an optional supporting line, and one or two CTA buttons.',
-  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
-  tenantTypeFit: ['seller', 'doer'],
-  tier: 'free',
   status: 'active',
   pageTypes: ['home'],
   slots: [

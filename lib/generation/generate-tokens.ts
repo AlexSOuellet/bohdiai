@@ -14,13 +14,13 @@ function extractJson(text: string): unknown {
 
 interface StyleSheet {
   palette: Array<{ name: string; hex: string }>;
-  fonts: Array<{ name: string; category: string; feel: string }>;
+  fonts: Array<{ name: string; category: string }>;
   textures: string[];
 }
 
 function loadSheetIfPresent(filename: string): StyleSheet | null {
-  // Shortcut location for the niche × mood prompt test. Eventually these live in the DB.
-  const p = path.join(process.cwd(), 'tmp', 'style-sheets', filename);
+  // Style sheets live in the repo under content/. Eventually they move to the DB.
+  const p = path.join(process.cwd(), 'content', 'style-sheets', filename);
   if (!fs.existsSync(p)) return null;
   try {
     const raw = fs.readFileSync(p, 'utf8');
@@ -32,9 +32,7 @@ function loadSheetIfPresent(filename: string): StyleSheet | null {
 
 function renderSheet(label: string, sheet: StyleSheet): string {
   const palette = sheet.palette.map((c) => `  ${c.name.padEnd(18)} ${c.hex}`).join('\n');
-  const fonts = sheet.fonts
-    .map((f) => `  ${f.name.padEnd(24)} [${f.category}] — ${f.feel}`)
-    .join('\n');
+  const fonts = sheet.fonts.map((f) => `  ${f.name.padEnd(24)} [${f.category}]`).join('\n');
   const textures = sheet.textures.join(', ');
   return `${label}\nPALETTE:\n${palette}\n\nFONTS:\n${fonts}\n\nTEXTURES: ${textures}`;
 }
@@ -50,7 +48,7 @@ export async function generateTokens(
 
   const sheetsBlock =
     nicheSheet && moodSheet
-      ? `\n\n──────────────────────────────────────────────\nRAW MATERIALS — TWO STYLE SHEETS\n──────────────────────────────────────────────\n\n${renderSheet('═══ NICHE STYLE SHEET ═══', nicheSheet)}\n\n${renderSheet('═══ MOOD STYLE SHEET ═══', moodSheet)}\n\nHow to use these sheets:\n- Prefer items that appear in both sheets (the overlap is where niche and mood agree).\n- Where there is no overlap, lean toward the mood without leaving the niche entirely.\n- You decide which hue plays which part. You decide which font plays which part. You decide which textures the design draws on.\n- You may go slightly outside these lists if the design needs it, but the lists are the starting point.\n`
+      ? `\n\n──────────────────────────────────────────────\nRAW MATERIALS — TWO STYLE SHEETS\n──────────────────────────────────────────────\n\n${renderSheet('═══ NICHE STYLE SHEET ═══', nicheSheet)}\n\n${renderSheet('═══ MOOD STYLE SHEET ═══', moodSheet)}\n\nYou decide which hue plays which part. You decide which font plays which part. You decide which textures the design draws on. You may go outside these lists if the design needs it.\n`
       : '';
 
   const prompt = `You are a brand designer making visual design tokens for an artisan maker's storefront.

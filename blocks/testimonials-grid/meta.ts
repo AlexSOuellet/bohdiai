@@ -6,9 +6,6 @@ const meta: BlockMeta = {
   sectionType: 'testimonials',
   description:
     'Up to three customer quotes in a grid. AI generates placeholder testimonials at onboarding; the maker replaces them with real reviews.',
-  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
-  tenantTypeFit: ['seller', 'doer'],
-  tier: 'free',
   status: 'active',
   pageTypes: ['home'],
   slots: [],

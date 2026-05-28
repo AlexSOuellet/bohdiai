@@ -6,9 +6,6 @@ const meta: BlockMeta = {
   sectionType: 'hero',
   description:
     'Full-bleed image hero. The image fills the entire viewport. Headline and subheadline overlay the image directly, anchored left, protected by dark gradients. Tagline kicker above the headline. CTA below.',
-  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
-  tenantTypeFit: ['seller', 'doer'],
-  tier: 'free',
   status: 'active',
   pageTypes: ['home'],
   slots: [

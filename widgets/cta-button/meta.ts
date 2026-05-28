@@ -6,8 +6,6 @@ const meta: WidgetMeta = {
   description:
     'A single call-to-action button. Drives traffic to a URL — typically the product catalog, a featured collection, or a custom-order form. Works in any CTA slot.',
   slotAccepts: ['primary-cta', 'secondary-cta', 'cta'],
-  tenantTypeFit: ['seller', 'doer'],
-  tier: 'free',
   status: 'active',
   contentSchema: [
     {
