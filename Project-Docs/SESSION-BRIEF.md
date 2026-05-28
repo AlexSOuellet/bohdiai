@@ -124,7 +124,7 @@ These are the throughline of the conversation — every fix above sits on top of
 
 **7. Only structural HOWs survive.** "No text in images" (image models can't render text legibly), "valid hex codes" (renderer requires them), "/contact must exist" (route physics). Anything that isn't physics is design opinion and should go to the AI.
 
-Not yet formal decisions in the Phase 1 Decisions Log — Alex can promote whichever ones he wants into D20+ next session.
+**Promoted to formal decisions D20–D25 in `Phase-1-Decisions-Log.md` at the start of the next session.** The seven principles above map to the six log entries roughly as follows: principles 1 + 7 → D20 (WHAT vs HOW + structural HOWs); principle 2 → D21 (style-sheet intersection); principle 3 → D22 (block definitions are shape); principle 4 + 5 → D23 (stateless agents, two-agent architecture); principle 6 → D24 (min-2 self-deliberation). D25 covers the design_choices table. Read those entries in the log for the binding wording.
 
 ---
 

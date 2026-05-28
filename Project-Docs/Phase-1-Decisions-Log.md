@@ -340,6 +340,62 @@ Use `$35/month` as the working number in UI copy until the exact price is confir
 
 ---
 
+## 2026-05-27 (session 8)
+
+These six decisions came out of an audit of how much control the generation pipeline exerts on the AI. The conversation walked through every layer where we encode design opinions — prompt instructions, mood definitions, block metadata, post-processing, schema constraints, downstream code coupling — and landed on a different operating principle for the platform. Each of the six entries below is a piece of that shift, written in the order it makes most sense to apply them.
+
+### D20. We say WHAT, the AI says HOW
+
+The throughline principle that informs everything else in this session. We hand the AI raw materials — the niche, the mood, the available blocks, the available fonts, the available textures — and the role it plays. The AI decides how to express it: which hues play which roles, which fonts pair, which blocks compose the page, how the images frame themselves. Anywhere we encode HOW, we've substituted our judgment for the model's, and ours is fixed at code-write time while the AI's is responsive to the specific context in front of it. We lose every time we substitute.
+
+The corollary is that only structural HOWs survive in our prompts and metadata. Things the rendering pipeline literally requires for the output to be valid — hex codes, the JSON output shape, "no text in images" because image models can't render legible text, routes that either exist or 404. Everything that isn't physics is design opinion and belongs to the AI.
+
+This sharpens Master Spec §6.2 (AI-generated variation) and §6.6 (AI generation pipeline) by treating the AI's expressive freedom as the design, not a problem to be managed. Every "should" or "must" or "always" in our generation prompts is now suspect and should be challenged against whether it's physics or opinion.
+
+### D21. Niche × mood is two style sheets the AI intersects, not prose hints we prescribe
+
+This builds on D6 (design is driven by mood, not niche) and D14 (niche files anchor against the full range without dictating outcomes). Both stand. D21 adds the structural shape that makes them work together.
+
+A niche carries a structured style sheet alongside its prose body — a palette of named hues with hex codes, a roster of fonts with category labels, a list of textures the niche pulls from. A mood carries the same shape. Neither sheet assigns roles. The palette is just hues; the fonts are just letterforms; the textures are just materials.
+
+When the AI generates tokens for a tenant, it reads both sheets and intersects them. Items that appear in both get priority — they're the agreement between niche and mood. Where there's no overlap, the AI leans toward the mood without leaving the niche entirely. The AI assigns roles (which hue plays background, which font plays heading, which texture flavors the imagery) based on the design intent, not a pre-coded mapping.
+
+This replaces the four `tokenHints` sentences per mood in `lib/moods.ts`, which prescribed role assignments inside the mood definition. It also replaces the "visual direction range" sections of existing niche files when those sections dictated specific aesthetic outcomes. A working test shipped in session 8 for leatherworker × dark-and-stormy only, gated through JSON files in `tmp/style-sheets/`. Other niche × mood pairs keep the old prescriptive pipeline until their style sheets are authored and the gating can be removed.
+
+### D22. Block definitions are pure shape, not feel
+
+Block metadata today carries fields that encode platform opinions about each block — `moodFit` (which moods this block works in), `tenantTypeFit` (which tenant types it fits), `tier` (which subscription tier unlocks it), and descriptions written in feel-laden language ("editorial hero with image and headline" rather than "two-column layout with photo left, heading and CTA right"). When the AI reads `moodFit`, it's reading our pre-decided judgment rather than making one itself. When it reads a feel-laden description, it's pattern-matching on the language rather than evaluating the shape.
+
+Block definitions going forward describe what the block IS structurally — geometry, content fields, slot shapes — and nothing about feel or fit. `moodFit`, `tenantTypeFit`, and `tier` come out of block metadata. The AI judges fit by reading the structural description against the design intent (niche, mood, style sheets), the same way a designer would. Tier becomes a billing concern surfaced elsewhere (at render time or admin time), not a property of the block. Tenant type fit either disappears entirely or moves to widgets, which do have tenant-type-dependent function in some cases.
+
+This change ripples to every block in `blocks/**/meta.ts` and to `buildBlocksContext` in `lib/generation/generate-page.ts`, which currently feeds `moodFit` to the AI as an advisory signal.
+
+### D23. Generation is reframed as agents — stateless for Phase 1, two agents to start
+
+The generation pipeline moves from one-shot prompt-to-JSON calls into agent collaborations. Two agents at the start: a **Lead Designer** that handles tokens, page composition, copy, and the brief to the Image Agent; and an **Image Agent** that takes the brief, generates photos via fal, reviews them against the brief, and returns them. Copy stays with the Lead Designer because copy is part of design — splitting it off into a separate Copy Agent recreates the disconnect we just removed between images and design.
+
+For Phase 1 these agents are ephemeral. Each onboarding or editor session instantiates a fresh agent, loads the current DB state as its working context, does its work, persists results, and disposes. No conversation history is kept between sessions. The agent has no memory of past edits except what's visible in the design tokens, page blocks, listings, and decision log (see D25).
+
+Persistent agent memory — an agent that remembers the maker across sessions and accumulates relationship context — is a future-state pattern. Useful, well-understood, deferred. Phase 1 ships the stateless version because it's simpler, cheaper, and sufficient. The Master Spec §6.6 implied agentic generation without specifying the shape; D23 specifies it.
+
+### D24. Self-deliberation: minimum two candidates with reasoning, agent decides the ceiling
+
+For any meaningful design decision the agent makes — block selection, palette role assignment, font pairing, copy direction, image brief — it generates at least two candidates with reasoning before committing, then evaluates them against the design intent and commits to one with reasoning. The reasoning gets logged (see D25).
+
+The minimum of two prevents the agent from defaulting to a single-pass habit. The lack of upper cap trusts the agent to know when a choice deserves more deliberation. Picking between hero-cinematic and hero-editorial might warrant three candidates; picking the exact heading letter-spacing value warrants one. A fixed N (always three, always five) was considered and rejected — it invites theater (agent generates the required count to satisfy the rule when the choice was obvious) and wastes tokens on trivial decisions.
+
+The expected cost variance is small relative to the quality lift. If the deliberation turns out to be theater rather than real thought, an A/B test of minimum-2 against single-pass against maker satisfaction is the validation tool.
+
+### D25. design_choices logging table is built in Phase 1
+
+A new database table called `design_choices` is added in Phase 1 alongside the agent layer. It captures every meaningful decision the agent makes — what the candidates were, what got picked, why, in what niche-mood context. Columns include `tenant_id`, `decision_type` (block-pick, palette-role-assignment, font-pairing, copy-headline, image-brief, etc), `candidates` (JSONB), `picked` (JSONB), `reasoning` (text), `niche_slug`, `mood_key`, `created_at`.
+
+No dashboards built on top of this yet — that's a Phase 2 concern. The point of building the table now is that data only starts accumulating from the moment the table exists. Skipping it means six months from now we have no record of what the agent does, and we lose the ability to spot bias ("agent picks Cormorant Unicase 78% of the time for dark moods — taste or rut?"), dead inventory (blocks never picked), success patterns (which choices correlate with retention), and training material for an eventual self-hosted model.
+
+Implementation footprint is small: one migration for the table, one logging helper called from each agent decision point, no UI work in this phase. The value compounds with every site generated.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.
