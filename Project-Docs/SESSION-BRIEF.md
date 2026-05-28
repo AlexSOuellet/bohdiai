@@ -1,190 +1,207 @@
 # Session Brief — BohdiAI
 
-**Last updated:** 2026-05-26 (Session 5 — onboarding audit + integration test)
+**Last updated:** 2026-05-27 (Session 8 — control audit, style sheets, low-control test, events bug, agent framing)
 
 **Update at the end of every session.**
 
 ---
 
+## Action at session start
+
+**Rotate the Supabase key.** Pull a fresh service-role key from the Supabase dashboard and update `.env.local` before doing anything else. The current key needs to be replaced.
+
+Once rotated: strip the secret-containing permission lines from `.claude/settings.local.json` (lines that contain `sb_secret_` in any of the recorded Bash/curl permissions), recommit on top of local commit `35040f8`, then `git push origin main`. Two commits will go up together (the session 8 work + the secret strip).
+
+---
+
+## How Claude works with Alex (operating rules for the assistant)
+
+These are throughline rules for every session, not just session 8. New sessions should treat these as binding.
+
+**Don't prescribe. Propose.** The same "WHAT vs HOW" principle that applies to AI generation applies to Claude in chat. Hand over raw materials and trade-offs; let Alex make the call. "My judgment call on what fits" is the wrong framing — it closes doors instead of opening them. The fix is to propose options with honest trade-offs, mark a recommendation if asked, and wait for Alex to choose.
+
+**Push back on overengineering, including your own.** Alex flagged repeatedly this session that Claude over-engineers and over-controls. The reflex to add infrastructure, write generators for things that could be done by hand, build documentation for the documentation — all real and recurring. When Claude catches itself proposing a new generator, a new abstraction, or a new validation layer, the question to ask is "is this required to ship, or am I doing it because it's interesting?" If the answer is the second, stop.
+
+**Plain English in chat. No structured documentation reflex.** No bullet lists when 2–3 sentences would work. No section headings, bold labels, decision IDs, or jargon Alex didn't use first. No "per the Master Spec §6.3" style references. Conversational prose lands. The structured-list reflex is documentation; documentation belongs in `.md` files, not chat.
+
+**One question at a time when walking decisions.** Multi-part questions ("should we do X, and if so, how, and when, and what's the cost?") overwhelm and produce surface answers. Sequential one-at-a-time produces real answers.
+
+**Don't invent under pushback.** When Alex pushes back, acknowledge and wait. Don't fill the gap with a new guess — that compounds the original mistake. The right move when a proposal doesn't land is "got it, what's the right read?" not "OK here's another five options."
+
+**Don't give time estimates.** Claude is not calibrated on Alex's velocity. Past estimates have been off by ~7x. Frame work by dependency order, not by weeks or sessions.
+
+**Push back on scope drift.** If Alex asks for something out of the current phase, name it as scope drift and surface the trade-off before silently absorbing it. He's explicitly asked Claude to keep him in check, not to comply quietly.
+
+---
+
 ## State of the build
 
-The generation pipeline is working end-to-end and fully tested. Session 5 was a full audit of all onboarding code against project rules, followed by fixing everything found. All hardcoded values, dead code, missing tests, and engineering standards violations have been remediated. The storefront write now goes through an atomic Postgres RPC transaction. Integration tests run against the real Supabase database.
+Onboarding still produces the same multi-page storefront as session 7 — home, /shop, /contact, /about, optional /collections + /subscriptions, /cart, /terms, /privacy, /listings/[slug]. The plumbing for generating sites hasn't changed shape. What changed this session is **how much control we exert on the AI during generation**.
 
-**Known remaining gaps (do not start the session without reading these):**
-- `/shop`, `/contact`, `/gallery` pages do not exist — they are 404s.
-- The AI generates only the home page. Multi-page generation is the top priority for next session.
-- No contact form block exists yet.
-- Dark-and-stormy still favors cinematic hero — partially mitigated by removing steering language, but may need more testing.
-- Hero images are newly niche-specific (prompt fixed this session) but untested at scale across all niches.
+A new pattern is in place for one niche × mood pair as a working test: **leatherworker × dark-and-stormy**. For that combination only, the generation prompts have been stripped of design prescription — the AI gets raw materials (a niche style sheet + a mood style sheet) and the freedom to decide which hue plays which role, which font plays heading vs body, which blocks make up the page, how the images should look. Every other niche × mood combination still runs the original prescriptive pipeline. This is a deliberate scoping decision while we work out the kinks.
+
+Three leatherworker × dark-and-stormy sites were generated end-to-end across the session (larrys-leather, lavendar-leather, unbridled-leather). The tokens shifted significantly after style sheets came in — colors and fonts are now drawn directly from the mood sheet by name (Obsidian, Soot, Blood, Bone, Cormorant Unicase). The visual gestalt of the rendered sites still converges, because images and block selection still have prescription that we haven't fully unwound, and because the underlying block library is small enough that the AI lands on the same hero/about/products variants regardless of prompt changes.
+
+A real bug was found and fixed in passing: the events-list block was being placed on the home page by the AI even when no events exist, leaving a dead nav link and an empty section. Fixed for all niches/moods — block now excluded from the AI's onboarding menu, nav helper now counts actual upcoming events instead of block presence.
 
 ---
 
 ## What was built this session
 
-### Onboarding full audit and remediation
+### Visual style-sheet infographics (discussion artifacts)
 
-All onboarding code was audited against the Engineering Standards and project rules. Every violation was fixed:
+- `tmp/leatherworker-snapshot.html` — niche raw materials: 15 colors with shade ramps, 9 fonts grouped by letterform category, 12 texture swatches
+- `tmp/mood-dark-and-moody-snapshot.html` (mood-dark-and-stormy) — 15 colors with shade ramps, 14 fonts spanning blackletter / Roman caps / Didone / industrial / script, 13 textures including smoke, wax drip, brushed iron, burned paper
 
-- **Hardcoded hex values** — `StepMood.tsx` selection ring was using `#e9a13d` and `#e9a13d40`. Replaced with `var(--honey)` and Tailwind `ring-honey/25`.
-- **Dead code removed** — `StepProducts.tsx` deleted (not in spec, never wired into the wizard).
-- **toSubdomain moved** — extracted from `app/onboarding/_components/types.ts` to `lib/subdomain.ts` so it can be unit tested. 16 unit tests added covering all edge cases.
-- **Type guard replacing `as` cast** — `StepBuild.tsx` used `data.moodKey as MoodKey`. Replaced with `isMoodKey()` type guard.
-- **`key={i}` → `key={label}`** in animation steps array.
-- **User-facing error messages** — raw `err.message` was being shown to users. Now logs internally and shows a friendly "Go back and try again" message.
-- **Feature flag gate** — `app/onboarding/page.tsx` now calls `isFeatureEnabled('onboarding')` and returns `notFound()` if disabled. New `lib/feature-flags.ts` module. New `feature_flags` DB table (migration `20260526000003`).
-- **`generateStorefront` split** — public wrapper handles rate limiting, try/catch, and logging. Internal `runGeneration` does the actual work. `checkGenerationRateLimit()` call was accidentally dropped in a refactor; restored.
-- **Pricing copy** — "14 days free" → "7 days free", $39 → $35 per `StepTrial.tsx` spec.
+The infographics drove a long conversation about what a style sheet actually is — raw materials, no role assignments, no how-to-design rules — and produced the principle that the niche × mood intersection is what the AI works from.
 
-### Atomic RPC transaction
+### Style sheet data files (shortcut location)
 
-`lib/generation/write-storefront.ts` rewrote to call a single Postgres RPC (`write_tenant_storefront`) that wraps all 5 DB inserts (tenant, design_tokens, content_pages, page_blocks, listings) in one transaction. Partial-write state is no longer possible. Migration `20260526000002`.
+- `tmp/style-sheets/niche-leatherworker.json` — palette + fonts + textures, named only, no roles
+- `tmp/style-sheets/mood-dark-and-stormy.json` — same shape
 
-### Integration tests against real Supabase
+Eventually these live in the DB. Shortcut location for now while we iterate.
 
-`lib/generation/write-storefront.test.ts` — 3 tests that write to and read from the real Supabase database:
-1. Creates tenant, tokens, page, and blocks correctly.
-2. Creates listings when provided.
-3. Rolls back everything if the subdomain is already taken.
+### Low-control generation pipeline (gated to leatherworker × dark-and-stormy)
 
-`afterEach` cleans up in reverse FK order. Tests skip when `CI=true` (CI has dummy credentials). `vitest.global-setup.ts` added to inject `.env.local` into `process.env` via Vite's `loadEnv` before any test file loads.
+**`lib/generation/generate-tokens.ts`**
+- Loads niche + mood JSON sheets from `tmp/style-sheets/` when both exist (gating is implicit — only this one pair has files)
+- Hands the sheets to the AI as raw materials with one instruction: prefer the overlap, lean mood, stay in niche
+- Dropped: the four mood `tokenHints` sentences, the font menu in parentheses, the "tells you which color goes on which role — follow precisely" prescription, the "do not swap colors across roles" rule, the example sentences ("a rustic shop should read rustic")
+- Kept: the JSON output schema (renderer reads from fixed keys) and the existing `enforceTokenContrast` post-processing
 
-### Schema validation tests
+**`lib/generation/generate-page.ts`**
+- New `nicheSlug` parameter
+- Low-control branch when `nicheSlug === 'leatherworker' && mood.key === 'dark-and-stormy'`:
+  - Drops `mood.blockAssemblyHint` from the prompt
+  - Drops the MANDATORY RULES block (first block must be hero, products must appear, 4–6 blocks total, moodFit constraint)
+  - Drops the COPY RULES and banned phrases list
+  - Keeps the technical href allowlist (routes that don't exist would 404)
 
-- `lib/generation/generate-page.test.ts` — 9 schema tests for `GeneratedPageSchema`
-- `lib/generation/generate-listings.test.ts` — 8 schema tests for `GeneratedListingsSchema`
+**`lib/fal.ts` (image generation)**
+- All three image functions (`generateHeroImage`, `generateAboutImage`, `generateProductImage`) accept a `moodSignal` parameter
+- Low-control branch when gated: prompt is the niche + mood label + mood description + only the technical constraints (no text, landscape/portrait, no people on hero, no faces on about)
+- Dropped when gated: "editorial," "cinematic," "rich depth," "warm natural light," "commercial quality," "soft natural light," and other aesthetic prescriptions
 
-### CI fix
+**`lib/generation/generate-listings.ts`**
+- Accepts `moodSignal`, threads it through to product image calls
 
-`npm run build:manifests` added to the workflow before typecheck. `blocks-manifest.generated.ts` doesn't exist in CI until explicitly built; all downstream TS errors were from this missing file.
+**`lib/contrast.ts`**
+- `enforceTokenContrast` accepts `{ skipAccent: true }` option
+- `generateTokens` passes it when both style sheets load — keeps the AI's accent pick from being shifted off-hue for contrast
 
-### database.types.ts updated
+**`app/onboarding/actions.ts`**
+- Builds `moodSignal` once at the top of the action and threads it to all image generators + generatePage
 
-Added `feature_flags` table types. Added `write_tenant_storefront` function signature.
+### Events bug fix (universal, not gated)
 
----
+- `lib/generation/generate-page.ts` — `buildBlocksContext` excludes `events-list` from the AI's home-page menu. A brand-new tenant has no events; the block returns null when empty; the AI never should have been offered it.
+- `app/storefront/_components/storefront-chrome.ts` — events nav section now counts actual upcoming events in the `events` table instead of block presence. No events = no nav link.
 
-### Block description overhaul (all 15 blocks)
-All block meta.ts files were rewritten to be pure structural descriptions — what the layout looks like, not when to use it. All steering language ("best for X mood", "suits dramatic brands", etc.) was removed. moodFit opened to all 7 moods on every block so the AI is free to choose any block for any mood.
+### Tooling
 
-### Hero selection bias fixes
-- `lib/generation/generate-page.ts` — Rule #1 rewritten: removed per-variant guidance ("cinematic suits dramatic brands, split-gallery suits image-heavy brands") which was overriding all other guidance. AI now reads block descriptions and chooses.
-- `lib/generation/generate-page.ts` — `shuffled<T>()` Fisher-Yates shuffle added. Hero blocks and products blocks are independently shuffled before context is built, eliminating position bias.
-- `lib/moods.ts` — `blockAssemblyHint` for dark-and-stormy had "full-bleed editorial hero" which was pointing directly at hero-cinematic. Removed.
-
-### Mood token color fixes
-- `lib/moods.ts` — All 7 mood `tokenHints.palette` strings rewritten to explicitly assign colors to roles (background, surface, text, accent, border) with hex ranges. Previously the AI was misassigning primary colors to the background slot (e.g. forest green as rustic background).
-- `lib/generation/generate-tokens.ts` — Removed "be surprising, push into unexpected territory" instruction that was actively encouraging wrong color role assignments (it literally suggested "a deep forest green background" as an example of distinctiveness, which rustic was following).
-
-### Hero image prompt fixes
-- `lib/fal.ts` — `generateHeroImage` prompt rewritten to be niche-specific only. Removed `${moodLabel}` (was making FLUX generate mood-themed landscapes instead of craft images). Removed "or natural setting" escape hatch (was generating garden/outdoor scenes for studio crafts). New prompt: maker's workshop, close-up details of materials/tools/finished work, real working studio environment.
-- `lib/fal.ts` — `shopName` and `moodLabel` parameters removed from `generateHeroImage` signature (no longer used).
-- `app/onboarding/actions.ts` — Updated call site to match new signature.
-
-### Hero cinematic overlay lightened
-- `blocks/hero-cinematic/index.tsx` — Gradient overlays reduced: bottom `from-black/80 via-black/40 to-black/60` → `from-black/70 via-black/20 to-black/30`. Left `from-black/70 via-black/30` → `from-black/60 via-black/20`. Images were being crushed to near-black even when niche-specific.
-
-### Hero split-gallery text overflow fix
-- `blocks/hero-split-gallery/index.tsx` — `formatHeadline` rewritten to always render `flex-col` (was going `md:inline` on desktop, causing long headlines to overflow the right panel). Explicit font sizes added to both spans (`text-3xl md:text-4xl lg:text-5xl` for italic kicker, `text-4xl md:text-5xl lg:text-6xl` for bold main). `sf-text-hero` removed from h1 since child spans now own sizing.
-
-### Products split-carousel price badge
-- `blocks/products-split-carousel/CarouselWrapper.tsx` — Price badge styling changed to `bg-black` (opaque) with `text-s-accent`. Previous `bg-s-surface/90 text-s-accent` was low-contrast on some moods; `bg-black/70 text-white` was rejected as looking cheap. Final: opaque black pill, mood accent color text.
-
-### Products bloom-grid price badge
-- `blocks/products-bloom-grid/index.tsx` — Price badge changed from `bg-s-accent text-white` to `bg-black/70 text-white` (accent can be any color including light ones).
-
-### Inspiration URL field removed
-- `app/onboarding/_components/StepMood.tsx` — URL inputs removed (3 fields for "sites you love").
-- `app/onboarding/_components/types.ts` — `inspirationUrls` field removed from `OnboardingData` and `INITIAL_DATA`.
-- Feature was unimplemented (collected data but nothing in the generation pipeline used it) and unspecced. Removed cleanly. Can be re-added when properly specced.
-
-### mood_key stored on tenants
-- `supabase/migrations/20260526000001_tenants_mood_key.sql` — Added `mood_key text` column to tenants table.
-- `lib/database.types.ts` — Added `mood_key` to Row, Insert, Update types.
-- `lib/generation/write-storefront.ts` — `moodKey` now written to tenants row.
-- `app/onboarding/actions.ts` — `moodKey` passed to `writeStorefront`.
+- `scripts/render-niche-infographic.mts` — runs `generateTokens` + `generatePage` for a niche × mood and emits an HTML infographic. Used early in the session before the style-sheet pattern landed; superseded by the snapshot HTML files for discussion purposes.
+- `tmp/build-niche-doc.mjs` — built a DOCX combining a niche file with a canonical style sheet. Wasn't the right shape for what Alex wanted but stays in tmp/ as reference.
+- `tmp/compare-tokens.mjs` + `tmp/check-images.mjs` — db queries to compare generated tokens across tenants and verify image URLs exist on storage.
 
 ---
 
-## What's working / verified
+## Principles articulated this session (carry forward to next session)
 
-- Full onboarding → storefront generation pipeline
-- nav-split renders on every storefront (system-injected)
-- Hero variety: AI now receives shuffled block list and neutral descriptions — bias significantly reduced
-- Mood palettes: rustic generates cream/parchment backgrounds, not forest green; dark-and-stormy generates near-black
-- Hero images: niche-specific (letterpress printer gets a printing workshop, candle maker gets a candle studio)
-- Products split-carousel price badge readable on all moods
-- Atomic DB write — all 5 tables in one transaction, rolls back on any failure
-- Integration tests: 3 tests against real Supabase, all passing
-- 77 tests passing, TypeScript clean
+These are the throughline of the conversation — every fix above sits on top of them.
+
+**1. We say WHAT, the AI says HOW.** We hand the AI raw materials (niche, mood, available blocks, available fonts, available textures) and the role it plays. The AI decides which colors play which role, which fonts pair, which blocks compose the page, how the images frame themselves. Anywhere we encode HOW, we've stolen design from the model.
+
+**2. The niche × mood intersection is what the AI works from, not prose hints.** The niche file carries the prose context but a structured style sheet (palette + fonts + textures, named only, no role assignments) is what the AI actually pulls choices from. Same shape for moods. The AI prefers overlap first, leans mood second, stays in the niche as guardrail.
+
+**3. Block definitions should be pure shape, not feel.** Strip `moodFit`, `tenantTypeFit`, `tier`, and any "feel" language from block descriptions. Describe what the block IS structurally — two-column split, full-bleed photograph with overlay card, etc. The AI judges fit by reading the structural description against the design context.
+
+**4. Frame the AI as an agent, not a prompt.** The control surface collapses to one thing: how well we wrote the agent's role. A clear role, a good toolkit, raw materials, and an objective — then trust the agent to design.
+
+**5. Stateless agents are sufficient for Phase 1.** Each generation is a fresh agent that reads current DB state, does its work, persists results, disposes. Memory across sessions can be added later as a structured decision log if specific gaps emerge.
+
+**6. Self-deliberation improves quality.** Agents that generate 2+ candidates with reasoning before committing produce better outputs than single-pass. Same model, more tokens spent on judgment, measurably better choices.
+
+**7. Only structural HOWs survive.** "No text in images" (image models can't render text legibly), "valid hex codes" (renderer requires them), "/contact must exist" (route physics). Anything that isn't physics is design opinion and should go to the AI.
+
+Not yet formal decisions in the Phase 1 Decisions Log — Alex can promote whichever ones he wants into D20+ next session.
 
 ---
 
-## Layers completed
+## Agent architecture — specifics decided (read before asking Alex about agent design)
 
-**Layer 1 — done:** Storefront resolver, Supabase Auth, middleware proxy.
-**Layer 2 — done:** Moods, design tokens, block/widget types, manifest build script, onboarding wizard.
-**Layer 3 — done:** Generation pipeline (tokens + page + listings + images), DB writes, rate limiting.
-**Layer 4 — done:** Storefront renderer, block registry.
-**Layer 5 — done:** fal.ai image generation, block variants, animation system, design quality overhaul.
-**Layer 6 — done:** Storefront QA, nav, generation correctness.
-**Session 4 — done:** Generation quality pass. Hero variety, mood color fidelity, image prompt accuracy, block descriptions, overlay tuning.
-**Session 5 (this session) — done:** Onboarding audit + remediation. Atomic RPC transaction. Integration tests. CI fix.
+These were discussed in detail at the end of session 8. A new session should NOT re-ask Alex about any of them.
+
+**Agent count and roles.** Two agents. **Lead Designer** + **Image Agent**. The Lead Designer picks tokens (palette role assignments, font pairings), composes the page (block selection + order), writes copy, and briefs the Image Agent. The Image Agent receives the brief, generates the images via fal, reviews them against the brief, asks for revisions if needed, returns them. Copy is part of design, not a separate Copy Agent — splitting copy off creates the same disconnect we just fixed between images and design. Fewer agents with more autonomy beats more agents with narrower scopes.
+
+**Self-deliberation shape.** Variable candidates with a floor. **Minimum 2** for any meaningful decision (block selection, palette role assignment, font pairing, copy direction). **No upper cap** — agent decides when a choice deserves more deliberation. The floor of 2 prevents single-pass defaulting; the no-cap trusts the agent to know when more is warranted. If deliberation quality needs validation, A/B test min-2 against single-pass and look at maker satisfaction. Do not pin a fixed N (e.g. "always 3") — that invites theater (agent generates 3 to satisfy the rule when only 1 made sense) and wastes tokens on trivial choices.
+
+**Reasoning storage.** Build the `design_choices` table this phase. Lightweight version — columns for `tenant_id`, `decision_type` (block-pick, palette-role-assignment, font-pairing, copy-headline, image-brief, etc), `candidates` JSONB, `picked` JSONB, `reasoning` text, `niche_slug`, `mood_key`, `created_at`. One helper called from each agent decision point. No dashboards yet, just log. The reason to build now and not later: data only accumulates from the moment the table exists, and the value (spotting agent bias, dead inventory, success patterns, eventual training material for our own model) is too high to lose six months of decisions.
+
+**Stateless still applies.** The agents above are still ephemeral per-onboarding/per-edit. Each session loads current DB state, does the work, persists results, disposes. `design_choices` rows persist (they're the log), but no agent conversation history is kept between sessions. Persistent agent memory remains a carry-forward item for later.
 
 ---
 
 ## Top priority for next session
 
-**Multi-page generation.** The AI currently generates only the home page. Every storefront needs secondary pages and the AI should generate all of them in one generation run.
+Alex's words: "We need to look at the moods we have and change them. We need to rebuild the niche schemas for the niches we have and change the skill to build them correctly. We also need to change the block definitions to eliminate unnecessary mood verbiage etc."
 
-Pages to build:
-- `/shop` — product listing grid (queries `listings` for the tenant, renders in a grid)
-- `/contact` — contact form with Resend submission (not mailto — build it right)
-- `/gallery` — portfolio/gallery page for artist/doer niches
+In dependency order:
 
-Architecture:
-1. Build the Next.js route files for each page (same pattern as `app/storefront/page.tsx` — read blocks from DB by slug)
-2. Build a `contact-form` block (name/email/message, submit to a new `/api/contact` route that sends via Resend)
-3. Build a `gallery` block or adapt existing products blocks for a gallery layout
-4. Extend `generatePage` (or create `generateSecondaryPages`) to generate blocks for each relevant secondary page
-5. `writeStorefront` saves all pages to `content_pages` + `page_blocks`
-6. Update generation prompt: give the AI valid page routes (`/shop`, `/contact`, `/gallery`) so CTAs link to real pages with appropriate copy
+**1. Rework the moods.** Strip the prescription from `lib/moods.ts`. Each mood becomes label + description + a style sheet (palette + fonts + textures, named only). Drop `tokenHints` and `blockAssemblyHint`. The mood definition is raw materials, not instructions.
 
-Pages generated for every tenant:
-- Home (always)
-- /shop (always — every seller needs a shop page)
-- /contact (always — every maker needs a contact page)
+**2. Rebuild niche schemas.** 18 niches currently in DB. Each gets a structured style sheet attached — palette, fonts, textures — in addition to the prose body. Decide where this lives: extend the niches table with a JSONB column, or attach to a sibling table. Once schemas have the new shape, the JSON file shortcut in `tmp/style-sheets/` can be retired and the low-control pipeline can be ungated.
 
-Gallery:
-- The /gallery route exists but is not generated by default
-- The maker enables it after the fact from the dashboard
-- Exception: if the home page generation produces a CTA that links to /gallery, OR any content that implies a gallery exists (e.g. "See Our Custom Work", "Browse Past Projects", "View the Portfolio"), generate the gallery page content at build time so nothing is dead on arrival
-- Gallery is not limited to portfolio/doer businesses — woodworkers, jewelers, ceramicists all benefit from showing custom/process work
+**3. Update the niche-writer skill.** The skill at `.claude/skills/niche-writer/SKILL.md` currently produces prose-heavy niche files with "Visual direction range" sections that dictate ranges. Rewrite the skill to produce niche files with the new shape — prose body for context, structured style sheet as data — and to anchor against exemplars without dictating outcomes.
 
-Once secondary pages exist, relax the CTA href constraint in `generate-page.ts` to allow real page routes.
+**4. Strip block definitions.** For every block in `blocks/**/meta.ts`, remove `moodFit`, `tenantTypeFit`, `tier`, and rewrite the `description` to be purely structural. Keep `key`, `sectionType` (or rename to something purely structural), `contentSchema`, `slots`.
+
+Once all four are done, the gating on leatherworker × dark-and-stormy can be removed and the low-control pipeline applies platform-wide.
 
 ---
 
-## Open items
+## Carry-forward items (deferred, discussed but not built)
 
-1. **Streaming build progress** — `StepBuild` animation is a cosmetic timer. Swap for real SSE streaming.
-2. **Doer storefront rendering** — what does a seller+doer storefront look like vs pure seller?
-3. **Spec touch-up** — Master Spec `.docx` files haven't been updated to reflect D1–D20.
-4. **StepTrial copy** — billing placeholder at $35/month. Confirm exact price before wiring Stripe.
-5. **Per-tenant AI usage caps (Phase 2 dashboard)** — 100 AI calls/month included, additional 100 for $5.
-6. **Etsy/Shopify import (Phase 2)** — products + photos. Customer list not possible (Etsy withholds buyer emails).
-7. **Marketing copy update** — drop "live in minutes." New angle: "A beautiful, full-content site — just add your personal touches and products and you're live."
-8. **Rate limit reset** — `lib/rate-limit.ts` MAX_PER_WINDOW is 20 for dev. Reset to 3 before launch.
-9. **Sentry + PostHog** — Alex has not signed up yet. Wire up when accounts exist.
-10. **hero-editorial** — needs more testing across moods/niches. Was previously narrowed but now opened to all moods.
-11. **Inspiration URL / site reference** — removed this session (unimplemented). Needs a proper spec before rebuilding. Intent: maker pastes a URL to a site they like for inspiration; AI uses it to inform tone and feel. Not copying — inspiration only.
-12. **Block swap in dashboard** — no mechanism for makers to swap one block variant for another post-generation. Not in Phase 1 scope but noted as a gap.
-13. **Dark-and-stormy hero variety** — still needs more test runs to confirm cinematic bias is fully resolved.
+- **Agent layer.** Design Agent + Image Agent collaboration with shared brief. Discussed in depth. Not built. Would replace the current one-shot generator-per-step pipeline. The work above (style sheets, low-control prompts) is the necessary cleanup that has to happen before the agent layer is worth building on top of.
+- **Self-deliberation pattern.** Agent generates 2+ candidates per decision with reasoning, picks one with reasoning, logs both. Discussed, not implemented.
+- **`design_choices` logging table.** Every palette role, font, block, layout decision logged with niche + mood context. Gives platform-level visibility into what the agent gravitates toward and surfaces bias, dead inventory, success patterns. Not built.
+- **Per-tenant agent persistence.** Future-state pattern for an agent that lives in code + DB and accumulates memory across sessions. Worth designing for but not Phase 1.
+- **Schema bottleneck.** Even with style sheets, the DesignTokens schema forces seven fixed color roles, one heading font, one body font, tight enums on shape/spacing/layout. Real ceiling on AI expression. Renderer reads from these exact keys, so loosening means rewriting the renderer too. Not addressed this session.
+
+---
+
+## Open items (still carried from previous sessions)
+
+These are unchanged from session 7. Re-listed only in compressed form — see session 7 brief for full detail if needed.
+
+1. Streaming build progress (real SSE instead of cosmetic timer)
+2. Doer storefront rendering pattern
+3. Master Spec touch-up to reflect D1–D20+ and recent sessions
+4. StepTrial copy — confirm exact price before wiring Stripe
+5. Per-tenant AI usage caps (Phase 2 dashboard)
+6. Etsy/Shopify import (Phase 2)
+7. Marketing copy update — drop "live in minutes"
+8. Rate limit reset before launch (MAX_PER_WINDOW back to 3)
+9. Sentry + PostHog signup
+10. `hero-editorial` cross-mood/niche testing
+11. Inspiration URL / site reference — needs proper spec before rebuilding
+12. Block swap in dashboard
+13. Per-IP rate limit on `/api/contact` and `/api/notify-interest`
+14. Stripe Subscriptions integration
+15. Page-options dashboard
+16. Collection thumbnails
+17. `collections-row` forcing on home when collections exist
+18. Subscription image error handling
+
+New item added this session:
+
+19. **First-load image timing.** Race between onboarding landing the maker on the storefront and storage propagation finishing on freshly uploaded images. Maker sees missing images for a few seconds and assumes failure. A "still finishing up — refresh in a moment" hint on first storefront load after onboarding would prevent the "did it break?" moment.
 
 ---
 
 ## Critical env var note
 
-Claude Code injects its own `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` into all child processes. `.env.local` cannot override these. Fix: use `BOHDIAI_ANTHROPIC_KEY` in `.env.local` with explicit `baseURL: 'https://api.anthropic.com'` in `lib/anthropic.ts`. Do not rename this back.
+(Unchanged from session 7.) Claude Code injects its own `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` into all child processes. `.env.local` cannot override these. Fix: use `BOHDIAI_ANTHROPIC_KEY` in `.env.local` with explicit `baseURL: 'https://api.anthropic.com'` in `lib/anthropic.ts`. Do not rename this back.
 
 `.env.local` must also have `FAL_API_KEY` from fal.ai dashboard.
 
@@ -196,7 +213,7 @@ Claude Code injects its own `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` into al
 2. `project-docs/SESSION-BRIEF.md` — this file
 3. `project-docs/BohdiAI-Master-Spec.md` — full product spec (read in full, every session)
 4. `project-docs/BohdiAI-Roles-Workflow.md`
-5. `project-docs/Phase-1-Decisions-Log.md` — D1–D19
+5. `project-docs/Phase-1-Decisions-Log.md` — D1–D19 (D20+ to be drafted from session 8 principles)
 6. `project-docs/Tech-Arch-Spec.md` — database design
 7. `project-docs/Phase-1-Spec.md` — current phase spec
 
@@ -204,43 +221,24 @@ Claude Code injects its own `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` into al
 
 ## What's in the DB
 
-38 tables. 18 niches (status=approved). Multiple test tenant rows. All migrations applied through `20260526000003`.
+40+ tables. 18 niches (status=approved). Multiple test tenant rows including `larrys-leather`, `lavendar-leather`, `unbridled-leather` from this session. All migrations applied through `20260527000008`.
 
-- `20260526000002` — `write_tenant_storefront` RPC
-- `20260526000003` — `feature_flags` table, seeded with `('onboarding', true)`
+No new migrations this session. The events bug fix changes runtime query logic but no schema change.
 
 Migration runner: `node scripts/db-migrate.mjs`
 
-Storage buckets: `placeholder-images` (legacy, unused), `generated-images` (active — fal.ai output).
+Storage buckets: `placeholder-images` (legacy, unused), `generated-images` (active — fal.ai output for products, hero, about, subscriptions).
 
 ---
 
-## Lessons banked
+## Lessons banked this session
 
-**Claude Code env collision.** Claude Code injects `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` into child processes. Always use `BOHDIAI_ANTHROPIC_KEY`.
+**The control was layered.** Every place we touch the AI is a place we either give it raw materials or tell it what to do. We were doing the latter at every layer — prompt instructions, mood definitions, block metadata, post-processing, schema constraints, downstream coupling. Stripping one layer (mood hints from tokens) isn't enough because the next layer (block descriptions with moodFit, MANDATORY RULES on page assembly, image prompts ignoring mood entirely, schema enums forcing a fixed shape) re-imposes control. The fix is layered too — work down through each one.
 
-**fal.ai concurrent limits.** New accounts hit rate limits with 5 simultaneous FLUX Pro requests. Batch product images 2 at a time. Generate hero image after text generation completes, not alongside.
+**"My judgment call" is the wrong framing in chat.** Alex flagged early in the session that "my judgment call on what the niche commits to" is exactly the wrong language — it shuts the door instead of opening one. Same pattern as Claude's behavior with the AI: dressing prescription as expertise. The fix is to hand over raw materials and frame choices as proposals to discuss, not as deliverables finalized.
 
-**Token generation color role assignment.** Without explicit role assignments in palette hints (background = X, accent = Y), the AI will freely swap colors across roles. "Forest green primary" becomes forest green background. Always specify which hex range goes on which CSS variable.
+**The infographic was the wedge.** Showing Alex a visual style sheet ("here's what raw materials look like") opened the conversation that the niche files don't carry style sheets, that the moods are prescription, that block descriptions encode feel. None of that was visible in code. The infographic made it visible.
 
-**"Be surprising" backfires.** Telling the AI to avoid predictable palettes caused it to put wrong colors in wrong roles. The instruction literally gave "deep forest green background" as an example of distinctiveness — and rustic shops followed it. Distinctiveness should come from shade variation within a role, not from swapping colors across roles.
+**Variance doesn't show up where you look first.** Three leatherworker × dark-and-stormy sites with very different tokens (Cormorant Garamond vs Unicase, Crimson Pro vs Playfair Display vs Bodoni Moda, primary tan vs primary blood-red) still looked the same to the eye, because images and block selection — the loudest visual elements — were unchanged. Token diversity matters less than the layers above it when judging "does this site feel different from the last one."
 
-**Block description language is selection criteria.** Any phrase in a block description that sounds like a use case ("suits dramatic brands", "best for story-forward shops") will be used by the AI to select or reject that block. Descriptions must be purely structural — what the layout looks like, not when to use it.
-
-**blockAssemblyHint steers hero selection.** "Full-bleed editorial hero" in dark-and-stormy's blockAssemblyHint was pointing directly at hero-cinematic every time. Mood assembly hints must not name layout shapes — they should describe narrative emphasis and section order only.
-
-**Hero image "or natural setting" = garden.** Giving FLUX an escape hatch to "natural setting" results in generic outdoor/garden photography for any niche in a nature-adjacent mood. Remove the escape hatch. Always anchor to the specific craft: "maker's workshop, materials, tools, finished work."
-
-**moodFit must be a real constraint.** Setting moodFit as a "suggestion" caused the AI to always gravitate to the most-capable-sounding hero variant. Enforce moodFit as a rule or all sites look the same.
-
-**Don't estimate.** Frame work by dependencies and sequencing, not weeks or days.
-
-**ScrollReveal on hero card.** Hero card starts at opacity 0 — if IntersectionObserver doesn't fire (timing, margin, hydration), card stays invisible. Never wrap the hero card in ScrollReveal. Hero is above the fold and should render immediately.
-
-**Hero image field key varies by block.** `hero-split-screen` uses `backgroundImageUrl`, `hero-split-gallery` uses `primaryImageUrl`. Injection must look up the field key from the block's content schema, not hardcode it.
-
-**Transparent nav doesn't work on split-screen heroes.** The nav sits over both the photo (dark) and the card panel (light) simultaneously. No single text color works on both. Always use a solid background.
-
-**CSS custom property opacity modifiers don't work as expected.** `bg-s-background/95` renders nearly transparent because Tailwind can't compose opacity with arbitrary CSS variable values. Use `bg-s-background` (no modifier) for reliable solid backgrounds.
-
-**Vitest doesn't auto-inject `.env.local` into `process.env`.** Vitest uses Vite's loadEnv, but the injected vars land in `import.meta.env`, not `process.env`, in the Node test runner. Use a `globalSetup` file that calls `loadEnv('test', process.cwd(), '')` and manually copies values into `process.env` (skipping any already set, so CI workflow vars win).
+**Build the page, don't suppress the link — except when there's no content at all.** The events-list bug surfaced a refinement of the principle. When AI generates a CTA pointing at a future feature, build a stub page. When the AI is offered a block that depends on tenant data the tenant doesn't have, don't show the block — there's no content to build a page around.

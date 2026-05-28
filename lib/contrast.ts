@@ -156,7 +156,10 @@ const LARGE_TEXT_RATIO = 4.5;  // raised from 3.0 — 3.0 passes technically but
  * Called immediately after AI generation, before any DB write.
  * Returns a new tokens object — never mutates the input.
  */
-export function enforceTokenContrast(tokens: DesignTokens): DesignTokens {
+export function enforceTokenContrast(
+  tokens: DesignTokens,
+  options: { skipAccent?: boolean } = {},
+): DesignTokens {
   const colors = { ...tokens.colors };
 
   // Primary text must be readable on both page background and card surfaces
@@ -168,8 +171,10 @@ export function enforceTokenContrast(tokens: DesignTokens): DesignTokens {
   colors.textMuted = adjustForContrast(colors.textMuted, colors.surface, LARGE_TEXT_RATIO);
 
   // Accent is used for CTAs and highlights — UI component threshold
-  colors.accent = adjustForContrast(colors.accent, colors.background, LARGE_TEXT_RATIO);
-  colors.accent = adjustForContrast(colors.accent, colors.surface, LARGE_TEXT_RATIO);
+  if (!options.skipAccent) {
+    colors.accent = adjustForContrast(colors.accent, colors.background, LARGE_TEXT_RATIO);
+    colors.accent = adjustForContrast(colors.accent, colors.surface, LARGE_TEXT_RATIO);
+  }
 
   return { ...tokens, colors };
 }

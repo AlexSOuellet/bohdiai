@@ -85,9 +85,16 @@ async function runGeneration(input: GenerateStorefrontInput): Promise<GenerateSt
   // complete before listings (the AI needs the collection slugs to assign each
   // product to one), so listings is awaited separately after this batch.
   // Subscriptions are independent and run in the initial batch.
+  const moodSignal = {
+    nicheSlug: input.nicheSlug,
+    moodKey: mood.key,
+    moodLabel: mood.label,
+    moodDescription: mood.description,
+  };
+
   const [tokens, page, collections, subscriptionsRaw] = await Promise.all([
-    generateTokens(niche.body_markdown, mood),
-    generatePage(input.shopName, niche.display_name, niche.body_markdown, mood),
+    generateTokens(niche.body_markdown, mood, undefined, input.nicheSlug),
+    generatePage(input.shopName, niche.display_name, niche.body_markdown, mood, undefined, input.nicheSlug),
     generateCollections(input.shopName, niche.display_name, niche.body_markdown),
     generateSubscriptions(input.shopName, niche.display_name, niche.body_markdown),
   ]);
@@ -105,6 +112,7 @@ async function runGeneration(input: GenerateStorefrontInput): Promise<GenerateSt
           niche.display_name,
           input.subdomain,
           `subscriptions/${s.slug}`,
+          moodSignal,
         ).then((image_url) => ({ ...s, image_url })),
       ),
     );
@@ -120,6 +128,8 @@ async function runGeneration(input: GenerateStorefrontInput): Promise<GenerateSt
           niche.body_markdown,
           input.productCount,
           collections.map((c) => c.slug),
+          undefined,
+          moodSignal,
         )
       : [];
 
@@ -127,8 +137,8 @@ async function runGeneration(input: GenerateStorefrontInput): Promise<GenerateSt
   // generated inside generateListings; subscription images generated above.
   // Running hero and about together stays under fal.ai concurrent-request limits.
   const [heroImageUrl, aboutImageUrl] = await Promise.all([
-    generateHeroImage(niche.display_name, input.subdomain),
-    generateAboutImage(niche.display_name, input.subdomain),
+    generateHeroImage(niche.display_name, input.subdomain, moodSignal),
+    generateAboutImage(niche.display_name, input.subdomain, moodSignal),
   ]);
 
   // Inject hero image URL into the hero block content before writing to DB.

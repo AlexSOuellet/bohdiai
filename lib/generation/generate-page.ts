@@ -72,7 +72,11 @@ function buildBlocksContext(): string {
   // automatically because they don't include 'home' in their pageTypes.
   const active = BLOCKS_MANIFEST.filter(
     (b) => b.status === 'active' && b.pageTypes.includes('home'),
-  );
+    // events-list is excluded at onboarding because brand-new tenants have no
+    // events. The block returns null when empty, which leaves a dead nav link
+    // and an empty home section. Once the dashboard can create events, the
+    // maker will add this block themselves.
+  ).filter((b) => b.key !== 'events-list');
   // Shuffle hero blocks so position in the list doesn't bias the AI toward one variant.
   const heroBlocks = shuffled(active.filter(b => b.sectionType === 'hero'));
   const productBlocks = shuffled(active.filter(b => b.sectionType === 'products'));
@@ -121,8 +125,25 @@ export async function generatePage(
   nicheBodyMarkdown: string,
   mood: Mood,
   tenantId?: string,
+  nicheSlug?: string,
 ): Promise<GeneratedPage> {
   const blocksContext = buildBlocksContext();
+
+  // Gated test: leatherworker × dark-and-stormy gets a stripped, low-control prompt.
+  // Everything else keeps the current prescriptive behavior.
+  const lowControl = nicheSlug === 'leatherworker' && mood.key === 'dark-and-stormy';
+
+  const moodSection = lowControl
+    ? `MOOD: ${mood.label}\n${mood.description}\n`
+    : `MOOD: ${mood.label}\n${mood.description}\n\nPAGE ASSEMBLY GUIDANCE (follow this structure exactly):\n${mood.blockAssemblyHint}\n`;
+
+  const rulesSection = lowControl
+    ? ''
+    : `\nMANDATORY RULES — these override all other guidance:\n1. The FIRST block (position 0) MUST be a hero block (sectionType: "hero"). All hero variants are equally valid for any shop — read each block's structural description and make a genuine choice based on this specific shop's niche and personality. Do NOT default to whichever hero appears first in the list.\n2. A products block (sectionType: "products") MUST appear in the page. Choose the variant whose moodFit includes the current mood.\n3. Total blocks: 4 to 6. Do not output fewer than 4 or more than 6.\n4. moodFit is a real constraint for non-hero blocks. Always prefer blocks whose moodFit includes the current mood. Only use a block outside its moodFit if no in-mood option exists for a mandatory section type (products).\n`;
+
+  const copyRules = lowControl
+    ? `\nWrite copy that sounds like this maker talking to a customer who already gets it. Specific, warm, not interchangeable with any other shop.`
+    : `\nAssemble the home page. For all aiGenerated content fields, write like a gifted copywriter, not a content generator.\n\nCOPY RULES:\n- Every headline must stop someone mid-scroll. It should be specific, unexpected, and true to this shop — not interchangeable with any other maker.\n- Subheadlines say something real and particular. Not "crafted with love" or "made by hand" or "quality you can trust" — those are placeholders, not copy.\n- Write like the maker is talking directly to their best customer. Warm, specific, a little surprising. The reader should feel like they already know this shop after one sentence.\n- Use the niche vocabulary naturally — the words real practitioners use, not the words a marketer uses to describe them.\n- Banned phrases: "crafted with love," "made with passion," "quality you can trust," "handmade with care," "small batch," "artisanal," "curated." Show it, don't label it.`;
 
   const prompt = `You are a storefront designer assembling a home page for an artisan maker.
 
@@ -132,28 +153,9 @@ NICHE: ${nicheDisplayName}
 NICHE CONTEXT:
 ${nicheBodyMarkdown}
 
-MOOD: ${mood.label}
-${mood.description}
-
-PAGE ASSEMBLY GUIDANCE (follow this structure exactly):
-${mood.blockAssemblyHint}
-
-MANDATORY RULES — these override all other guidance:
-1. The FIRST block (position 0) MUST be a hero block (sectionType: "hero"). All hero variants are equally valid for any shop — read each block's structural description and make a genuine choice based on this specific shop's niche and personality. Do NOT default to whichever hero appears first in the list.
-2. A products block (sectionType: "products") MUST appear in the page. Choose the variant whose moodFit includes the current mood.
-3. Total blocks: 4 to 6. Do not output fewer than 4 or more than 6.
-4. moodFit is a real constraint for non-hero blocks. Always prefer blocks whose moodFit includes the current mood. Only use a block outside its moodFit if no in-mood option exists for a mandatory section type (products).
-
+${moodSection}${rulesSection}
 ${blocksContext}
-
-Assemble the home page. For all aiGenerated content fields, write like a gifted copywriter, not a content generator.
-
-COPY RULES:
-- Every headline must stop someone mid-scroll. It should be specific, unexpected, and true to this shop — not interchangeable with any other maker.
-- Subheadlines say something real and particular. Not "crafted with love" or "made by hand" or "quality you can trust" — those are placeholders, not copy.
-- Write like the maker is talking directly to their best customer. Warm, specific, a little surprising. The reader should feel like they already know this shop after one sentence.
-- Use the niche vocabulary naturally — the words real practitioners use, not the words a marketer uses to describe them.
-- Banned phrases: "crafted with love," "made with passion," "quality you can trust," "handmade with care," "small batch," "artisanal," "curated." Show it, don't label it.
+${copyRules}
 
 For "href" fields in widgets, you may use any of these page routes: "/shop" (full product grid), "/contact" (contact form), or anchor links that scroll on the home page ("/#products", "/#about", "/#collections", "/#events"). Do NOT link to pages that don't exist ("/commissions", "/booking", "/services").
 

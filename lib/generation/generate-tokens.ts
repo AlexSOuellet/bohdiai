@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { anthropicClient } from '@/lib/anthropic';
 import { logger } from '@/lib/logger';
 import type { Mood } from '@/lib/moods';
@@ -10,30 +12,57 @@ function extractJson(text: string): unknown {
   return JSON.parse(match[0]);
 }
 
+interface StyleSheet {
+  palette: Array<{ name: string; hex: string }>;
+  fonts: Array<{ name: string; category: string; feel: string }>;
+  textures: string[];
+}
+
+function loadSheetIfPresent(filename: string): StyleSheet | null {
+  // Shortcut location for the niche × mood prompt test. Eventually these live in the DB.
+  const p = path.join(process.cwd(), 'tmp', 'style-sheets', filename);
+  if (!fs.existsSync(p)) return null;
+  try {
+    const raw = fs.readFileSync(p, 'utf8');
+    return JSON.parse(raw) as StyleSheet;
+  } catch {
+    return null;
+  }
+}
+
+function renderSheet(label: string, sheet: StyleSheet): string {
+  const palette = sheet.palette.map((c) => `  ${c.name.padEnd(18)} ${c.hex}`).join('\n');
+  const fonts = sheet.fonts
+    .map((f) => `  ${f.name.padEnd(24)} [${f.category}] — ${f.feel}`)
+    .join('\n');
+  const textures = sheet.textures.join(', ');
+  return `${label}\nPALETTE:\n${palette}\n\nFONTS:\n${fonts}\n\nTEXTURES: ${textures}`;
+}
+
 export async function generateTokens(
   nicheBodyMarkdown: string,
   mood: Mood,
   tenantId?: string,
+  nicheSlug?: string,
 ): Promise<DesignTokens> {
-  const prompt = `You are a brand designer generating visual design tokens for an artisan maker's storefront.
+  const nicheSheet = nicheSlug ? loadSheetIfPresent(`niche-${nicheSlug}.json`) : null;
+  const moodSheet = loadSheetIfPresent(`mood-${mood.key}.json`);
+
+  const sheetsBlock =
+    nicheSheet && moodSheet
+      ? `\n\n──────────────────────────────────────────────\nRAW MATERIALS — TWO STYLE SHEETS\n──────────────────────────────────────────────\n\n${renderSheet('═══ NICHE STYLE SHEET ═══', nicheSheet)}\n\n${renderSheet('═══ MOOD STYLE SHEET ═══', moodSheet)}\n\nHow to use these sheets:\n- Prefer items that appear in both sheets (the overlap is where niche and mood agree).\n- Where there is no overlap, lean toward the mood without leaving the niche entirely.\n- You decide which hue plays which part. You decide which font plays which part. You decide which textures the design draws on.\n- You may go slightly outside these lists if the design needs it, but the lists are the starting point.\n`
+      : '';
+
+  const prompt = `You are a brand designer making visual design tokens for an artisan maker's storefront.
 
 NICHE CONTEXT:
 ${nicheBodyMarkdown}
 
 MOOD: ${mood.label}
 ${mood.description}
+${sheetsBlock}
+Return ONLY a JSON object with this exact structure — no markdown, no explanation. Use valid hex codes. Use real Google Font names. Ensure text is readable against its background.
 
-DIRECTIONAL HINTS:
-- Palette: ${mood.tokenHints.palette}
-- Typography: ${mood.tokenHints.typography}
-- Shape: ${mood.tokenHints.shape}
-- Spacing: ${mood.tokenHints.spacing}
-
-Generate design tokens that feel authentic to this maker's craft and unmistakably true to the mood. The DIRECTIONAL HINTS above tell you which color goes on which role (background, text, accent) — follow them precisely. Within those constraints, make strong specific choices: a particular shade of rust rather than generic orange, a specific warm cream rather than plain white, a distinctive ochre rather than generic yellow. Every storefront should feel like a considered brand decision. The mood must be immediately recognizable — a rustic shop should read rustic, a dark-and-stormy shop should read dark and moody. Do not swap colors across roles (e.g. do not put the accent color on the background, do not use the background color as the accent).
-
-Use real Google Fonts names for typography (e.g. "Playfair Display", "Inter", "Lora", "DM Sans", "Fraunces", "Syne", "Cormorant Garamond", "Crimson Pro", "Libre Baskerville", "Work Sans"). Colors must be valid hex codes. Ensure sufficient contrast between text and background (WCAG AA minimum).
-
-Return ONLY a JSON object with this exact structure — no markdown, no explanation:
 {
   "colors": {
     "primary": "<hex>",
@@ -45,8 +74,8 @@ Return ONLY a JSON object with this exact structure — no markdown, no explanat
     "border": "<hex>"
   },
   "typography": {
-    "headingFont": "<Google Font name or system stack>",
-    "bodyFont": "<Google Font name or system stack>",
+    "headingFont": "<Google Font name>",
+    "bodyFont": "<Google Font name>",
     "headingWeight": <400|600|700|800|900>,
     "headingLetterSpacing": "<e.g. -0.02em>",
     "bodyLineHeight": "<e.g. 1.6>",
@@ -81,10 +110,14 @@ Return ONLY a JSON object with this exact structure — no markdown, no explanat
     outputTokens: response.usage.output_tokens,
     latencyMs,
     tenantId,
+    nicheSheetLoaded: !!nicheSheet,
+    moodSheetLoaded: !!moodSheet,
   });
 
   const text = response.content[0]?.type === 'text' ? response.content[0].text : '';
   const raw = extractJson(text);
   const tokens = DesignTokensSchema.parse(raw);
-  return enforceTokenContrast(tokens);
+  // When both sheets loaded we trust the AI's accent pick — don't shift it for contrast.
+  const skipAccent = !!nicheSheet && !!moodSheet;
+  return enforceTokenContrast(tokens, { skipAccent });
 }

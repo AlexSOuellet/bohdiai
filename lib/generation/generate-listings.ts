@@ -45,6 +45,7 @@ export async function generateListings(
   /** Collection slugs to assign products to. Empty array means no collections for this shop. */
   collectionSlugs: string[],
   tenantId?: string,
+  moodSignal?: { nicheSlug?: string; moodKey?: string; moodLabel?: string; moodDescription?: string },
 ): Promise<GeneratedListingWithImage[]> {
   const imageCount = Math.min(count, MAX_PRODUCT_IMAGES);
 
@@ -117,6 +118,7 @@ Return ONLY a JSON object — no markdown, no explanation:
           nicheDisplayName,
           subdomain,
           listing.slug,
+          moodSignal,
         ).then((image_url) => ({ ...listing, image_url })),
       ),
     );

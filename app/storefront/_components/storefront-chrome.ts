@@ -38,11 +38,11 @@ export async function loadStorefrontChrome(tenantId: string): Promise<{
       .eq('slug', '/gallery')
       .eq('status', 'published'),
     db
-      .from('page_blocks')
-      .select('block_key', { count: 'exact', head: true })
+      .from('events')
+      .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
-      .eq('block_key', 'events-list')
-      .eq('is_visible', true),
+      .eq('status', 'upcoming')
+      .gte('event_date', new Date().toISOString().slice(0, 10)),
     db
       .from('page_blocks')
       .select('block_key', { count: 'exact', head: true })
