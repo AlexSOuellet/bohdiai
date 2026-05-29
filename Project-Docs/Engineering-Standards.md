@@ -108,6 +108,15 @@
 - **Squash-merge to main.** Keep history clean.
 - **No secrets in commits.** `.env*` files are gitignored. Use `.env.example` for documentation.
 
+## 10.5 Environment variables (Vercel sync)
+
+`.env.local` is the source of truth for local dev. Vercel Production and Preview are separate stores that don't auto-sync.
+
+- **When adding or removing a key in `lib/env.ts`,** push the change to Vercel in the same session for both Production and Preview. A missing required key fails the build *and* every preview deploy of every open branch until fixed.
+- **When rotating a value locally,** update Vercel too. Drift between local and Vercel is silent until something breaks at runtime.
+- **`vercel env add NAME preview "" --value "..." --yes`** — the empty-string positional is required to scope to all preview branches. The Vercel CLI v54+ otherwise demands a branch name and exits non-zero in non-interactive mode.
+- **Sanity check:** the names in `.env.local` should match (a superset of) what `vercel env ls` shows, minus local-only keys like `SUPABASE_DB_PASSWORD`.
+
 ## 11. Performance budgets
 
 - **Storefront load: < 3s** on 4G mobile (per Golden Rule). Lighthouse mobile Performance ≥ 90.

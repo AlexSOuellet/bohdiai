@@ -158,7 +158,18 @@
       "Bash(node tmp/bohdi-report.mjs lous-leather-craft)",
       "Bash(node tmp/bohdi-report.mjs leather-utopia)",
       "Bash(node tmp/bohdi-report.mjs absolute-leather)",
-      "Bash(mkdir -p content/style-sheets && cp tmp/style-sheets/*.json content/style-sheets/ && ls content/style-sheets/)"
+      "Bash(mkdir -p content/style-sheets && cp tmp/style-sheets/*.json content/style-sheets/ && ls content/style-sheets/)",
+      "Bash(gh run *)",
+      "Bash(bash /tmp/sync-vercel-env.sh)",
+      "Bash(cat > *)",
+      "Bash(npx --yes vercel env add TEST_VAR preview)",
+      "Bash(npx --yes vercel env rm TEST_VAR production --yes)",
+      "Bash(npx --yes vercel env add TEST_VAR preview --value \"test-value\" --yes)",
+      "Bash(npx --yes vercel env add --help)",
+      "Bash(npx --yes vercel --non-interactive env add TEST_VAR preview --value \"test-value\" --yes)",
+      "Bash(npx --yes vercel env add TEST_VAR preview \"\" --value \"test-value\" --yes)",
+      "Bash(npx --yes vercel env rm TEST_VAR preview --yes)",
+      "Bash(npx --yes vercel env ls)"
     ]
   }
 }

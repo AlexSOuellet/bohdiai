@@ -8,9 +8,11 @@
 
 ## Action at session start
 
-**Vercel deploys are failing on `origin/main`.** The failure is from session 8's commit, not anything in session 9. Click through the Vercel notification email to get the actual error before doing anything else — likely missing env vars (FAL_API_KEY, BOHDIAI_ANTHROPIC_KEY) or a Linux/case-sensitivity issue. Local `npm run build` exits clean.
+**Vercel env sync resolved 2026-05-29.** Preview builds had been failing since commit `41bf8cb` because `SITE_URL`, `BOHDIAI_ANTHROPIC_KEY`, `FAL_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_ANON_KEY` were never pushed to Vercel after being added to `lib/env.ts`. Production was serving a stale build from before those keys existed. All 11 non-empty vars from `.env.local` are now synced to both Production and Preview. Sentry and PostHog vars left untouched (blank locally, existing Vercel values preserved).
 
-Session 9 work is on branch `session-9/strip-directional-wording`, pushed to origin but NOT merged to main. Don't merge until Vercel is fixed.
+GitHub Actions still fails on the `lib/**` 90% coverage gate — Phase 1 generation code shipped without unit tests. Separate problem from the Vercel deploy. See `vitest.config.ts` for the threshold.
+
+Session 9 work is on branch `session-9/strip-directional-wording`. Redeploy the failed Vercel build to confirm green, then merge.
 
 ---
 
