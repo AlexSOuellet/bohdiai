@@ -2,33 +2,35 @@
 
 **Status:** Draft — primitives list only. This document grows section by section as each piece is approved.
 
-**Purpose.** Replace the frozen block catalog with a small composition language Bohdi uses to author layouts directly. Functional art, not brochures. Bohdi composes the page; he doesn't pick the page.
+**Purpose.** Replace the frozen block catalog with a composition language Bohdi uses to author layouts directly. He composes the page; he doesn't pick the page.
 
 ---
 
 ## 1. Primitives
 
-These are the building blocks. Every layout Bohdi composes is a tree of these. They nest — a `split` can hold two `stack`s, a `stack` can hold a `band` that holds a `grid`. Each primitive carries geometry (proportions, alignment, spacing), style intent (which named palette color anchors this region, which type role plays here, which texture flavors it), and a default mobile behavior. Mobile is a first-class concern — every primitive declares how it collapses on small screens, and Bohdi can override the default per node when the composition needs it.
+These are the building blocks. A layout is a tree of these. They nest freely — any primitive can hold any other primitive. Each primitive carries geometry (proportions, alignment, spacing) and style intent attached per node.
 
-**band** — A full-width horizontal section of the page. The "rows" of a site read top-to-bottom. A hero is a band. An about section is a band. A footer is a band. Every page is a stack of bands. *Mobile:* bands stay bands; vertical padding scales down.
+Mobile is a first-class concern. Every primitive declares how it behaves on small screens, and Bohdi can override that behavior per node when the composition calls for it. A layout is not finished until its mobile expression is composed as deliberately as its desktop expression.
 
-**stack** — A vertical sequence of children inside a container. Children flow top-to-bottom. Used inside a band when content needs to read as a column (headline above sub above CTA). *Mobile:* unchanged — vertical was always going to read fine.
+**band** — A horizontal section that spans the full width of its parent. *Mobile:* unchanged; vertical padding scales down.
 
-**row** — A horizontal sequence of children. Children flow left-to-right with control over alignment and wrap. Used for nav items, product rows, icon strips. *Mobile:* wraps to multiple lines, or collapses to a stack, depending on a `mobile` knob Bohdi sets per row.
+**stack** — A vertical sequence of children. Children flow top-to-bottom. *Mobile:* unchanged.
 
-**split** — Two panes side-by-side or top-and-bottom with a ratio (e.g. 60/40, 50/50, 70/30). The bread-and-butter of editorial layout — image left and text right, or text left and image right, or headline above products. *Mobile:* default is to stack vertically with explicit child order (image-first or text-first, Bohdi picks).
+**row** — A horizontal sequence of children with alignment and wrap controls. Children flow left-to-right. *Mobile:* wraps or collapses to a stack per a `mobile` knob set on the row.
 
-**grid** — A regular N-column structure with M rows. Used for product grids, collection galleries, image walls. *Mobile:* column count collapses on a stated ladder (e.g. 4 → 2, 3 → 1 or 2, 2 → 1) — Bohdi sets the mobile column count explicitly.
+**split** — N panes side-by-side or top-and-bottom with explicit ratios that sum to 100 (e.g. 60/40, 50/50, 50/25/25, 25/25/25/25). *Mobile:* default is to stack vertically; child order is set on the split.
 
-**overlap** — Children layered on top of each other on the z-axis. Used when an image needs a headline on top of it, when a card breaks out of the section below, when a wordmark sits over a hero photo. *Mobile:* z-stacking is preserved where there's room, otherwise collapses to a vertical stack — Bohdi tags which child is the anchor when it has to collapse.
+**grid** — A regular N-column structure with M rows. *Mobile:* column count collapses on a ladder set on the grid.
 
-**bleed** — A child that breaks its container and extends to the viewport edge. Used to push images off the page edge, to create asymmetry, to make a section feel boundless instead of boxed. *Mobile:* still bleeds — bleed is even stronger on small screens because the viewport is narrow.
+**overlap** — Children layered on the z-axis. *Mobile:* preserved where there's room, otherwise collapses to a vertical stack; the anchor child is tagged on the overlap.
 
-**pane** — A contained box with optional padding, background fill, border treatment, and radius. The "card" shape. Used inside grids, splits, or stacks when content needs to feel held. *Mobile:* padding scales down on a stated ratio; otherwise unchanged.
+**bleed** — A child that breaks its container and extends to the viewport edge. *Mobile:* still bleeds.
 
-**marquee** — A horizontal scrolling sequence. Used when a series of items wants motion — a band of customer logos, a row of recent makes, a strip of testimonials. *Mobile:* still scrolls horizontally — touch-scroll is native on mobile and marquees often read better there than on desktop.
+**pane** — A contained box with optional padding, background fill, border treatment, and radius. *Mobile:* padding scales down per a stated ratio; otherwise unchanged.
 
-**gutter** — Explicit empty space with a size value. Not invisible. Used deliberately to create asymmetry, breathing room, or a deliberate pause between sections. *Mobile:* size scales down proportionally.
+**marquee** — A horizontal scrolling sequence of children. *Mobile:* still scrolls horizontally.
+
+**gutter** — Explicit empty space with a size value. *Mobile:* size scales down proportionally.
 
 ---
 
@@ -44,7 +46,7 @@ The primitives define geometry. Style intent defines how each region of the page
 
 **Type roster as vocabulary.** The tenant carries a roster of ~6–14 fonts drawn from the style sheet, each described by its character (e.g. Cormorant Unicase: tall capitals with subtle geometric edges, reads as quietly authoritative; IBM Plex Mono: machined typewriter feel, holds technical content without coldness). The style sheet does not tag fonts as "the heading font" or "the body font." Bohdi reads the roster and assigns type roles per composition — which font carries the display work on this site, which runs the body, which punctuates.
 
-**Texture set.** The tenant carries a set of named textures from the style sheet — linen, vellum, leather grain, photo grain, paper, kraft, etc. Each described by character. Any node can flavor its surface with a texture. Used sparingly — over-textured pages get noisy. Bohdi decides where texture lives per composition.
+**Texture set.** The tenant carries a set of named textures from the style sheet — linen, vellum, leather grain, photo grain, paper, kraft, etc. Each described by character. Any node can flavor its surface with a texture. Bohdi decides where and how much texture lives per composition.
 
 **Per-node intent.** Each node in the tree can carry up to four intent tags — a palette intent (a named color from the palette), a type intent (a named font from the roster) for any text content it holds, a texture intent for its surface, and a density intent (compact / normal / generous) that scales padding and gutter. Children inherit intent from their parent unless they override. So Bohdi can paint a whole band with one intent and let it flow, or override a single pane inside to invert.
 
@@ -88,4 +90,4 @@ The two sections above cover the structural skeleton. These pieces are agreed in
 
 ---
 
-*Bohdi composes layout trees from primitives, paints them with the named palette and roster he reads from the style sheets, fills them with authored copy and bound data. The renderer walks the tree. Patterns inform him. The art director catches what telling him can't. The functional art is the result, not the marketing.*
+*Bohdi composes layout trees from primitives, paints them with the named palette and roster he reads from the style sheets, fills them with authored copy and bound data. The renderer walks the tree. Patterns inform him. The art director catches what telling him can't.*
