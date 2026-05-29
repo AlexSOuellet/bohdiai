@@ -15,8 +15,9 @@ const TIP_INTERVAL_MS = 8000;
 
 export const runtime = 'nodejs';
 // Generation runs Bohdi or the legacy pipeline — sonnet calls + fal calls.
-// A normal job fits in 3-5 minutes; allow up to 10 to be safe.
-export const maxDuration = 600;
+// A normal job fits in 3-4 minutes; 300s is the Hobby-plan ceiling and
+// enough headroom for normal runs.
+export const maxDuration = 300;
 
 interface GenerateBody {
   shopName: string;
