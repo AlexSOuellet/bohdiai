@@ -20,6 +20,11 @@ import { logger } from '@/lib/logger';
 import { labelFor, type ProgressEmitter, type ProgressStep } from '@/lib/progress';
 import { inferGenderFromName } from '@/lib/name-gender';
 import { sanitizeDeep } from '@/lib/copy-sanitize';
+import {
+  BOHDI_LAYOUT_TOOLS,
+  handleSetLayout,
+  handleSetStyleSheet,
+} from './layout-tools';
 import type { BohdiAccumulator, BohdiBrief } from './types';
 
 // ─── Tool definitions for the Anthropic API ──────────────────────────────────
@@ -389,6 +394,7 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
       "Commit everything Bohdi has built to the database. Call this only after tokens, home page blocks, secondary page copy, about page content, hero image, and all listings are set. Returns the tenant ID. After this, Bohdi's job is done.",
     input_schema: { type: 'object', properties: {} },
   },
+  ...BOHDI_LAYOUT_TOOLS,
 ];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -841,6 +847,14 @@ const handlers: Record<string, Handler> = {
 
     logger.info('bohdi: finalize', { tenantId: result.tenantId, subdomain: result.subdomain });
     return { tenantId: result.tenantId, subdomain: result.subdomain };
+  },
+
+  async set_style_sheet(args, ctx) {
+    return handleSetStyleSheet(args, ctx.accumulator);
+  },
+
+  async set_layout(args, ctx) {
+    return handleSetLayout(args, ctx.accumulator);
   },
 };
 

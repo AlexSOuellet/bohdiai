@@ -6,6 +6,8 @@ import type { GeneratedPage } from '@/lib/generation/generate-page';
 import type { GeneratedCollection } from '@/lib/generation/generate-collections';
 import type { GeneratedListingWithImage } from '@/lib/generation/generate-listings';
 import type { GeneratedSubscriptionWithImage } from '@/lib/generation/write-storefront';
+import type { Page } from '@/lib/layout';
+import type { StyleSheet } from '@/lib/style-sheet';
 
 export interface BohdiBrief {
   shopName: string;
@@ -49,6 +51,8 @@ export interface BohdiAccumulator {
   subscriptions: GeneratedSubscriptionWithImage[];
   heroImageUrl: string | null;
   aboutImageUrl: string | null;
+  styleSheet: StyleSheet | null;
+  layoutPages: Page[];
 }
 
 export function emptyAccumulator(): BohdiAccumulator {
@@ -63,5 +67,7 @@ export function emptyAccumulator(): BohdiAccumulator {
     subscriptions: [],
     heroImageUrl: null,
     aboutImageUrl: null,
+    styleSheet: null,
+    layoutPages: [],
   };
 }
