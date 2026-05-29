@@ -6,9 +6,6 @@ const meta: BlockMeta = {
   sectionType: 'custom',
   description:
     'A freeform text section for anything the maker wants to say that doesn\'t fit another block — a seasonal announcement, a studio note, a care guide, a policy summary. AI generates a relevant opening; the maker edits freely.',
-  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'sunday-morning', 'wild-meadow', 'summer-afternoon', 'bright-bazaar'],
-  tenantTypeFit: ['seller', 'doer'],
-  tier: 'free',
   status: 'active',
   pageTypes: ['home'],
   slots: [

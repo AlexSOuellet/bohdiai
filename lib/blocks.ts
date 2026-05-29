@@ -1,5 +1,3 @@
-import type { MoodKey } from './moods';
-
 export type SectionType =
   | 'nav'
   | 'hero'
@@ -13,7 +11,6 @@ export type SectionType =
   | 'footer';
 
 export type TenantType = 'seller' | 'doer';
-export type Tier = 'free' | 'basic' | 'pro';
 export type CatalogStatus = 'active' | 'draft' | 'retired';
 
 /**
@@ -55,12 +52,8 @@ export interface BlockMeta {
   key: string;
   label: string;
   sectionType: SectionType;
-  /** What the AI reads to decide whether to pick this block for a given mood and niche. */
+  /** Purely structural description — what the block IS, not how it feels. */
   description: string;
-  /** Moods this block suits best. The AI prefers these but can pick any active block. */
-  moodFit: MoodKey[];
-  tenantTypeFit: TenantType[];
-  tier: Tier;
   status: CatalogStatus;
   /**
    * Which pages this block can appear on. The home-page generator only sees blocks
@@ -78,12 +71,10 @@ export interface BlockMeta {
 export interface WidgetMeta {
   key: string;
   label: string;
-  /** What the AI reads to decide whether to thread this widget into a slot. */
+  /** Purely structural description — what the widget IS, not how it feels. */
   description: string;
   /** Slot keys this widget can fill. Must match SlotDefinition.accepts in at least one block. */
   slotAccepts: string[];
-  tenantTypeFit: TenantType[];
-  tier: Tier;
   status: CatalogStatus;
   contentSchema: ContentField[];
 }

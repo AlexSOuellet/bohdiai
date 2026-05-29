@@ -13,7 +13,7 @@ interface MoodVisual {
 }
 
 const MOOD_VISUALS: Record<MoodKey, MoodVisual> = {
-  'dark-and-stormy': {
+  dark: {
     background: 'linear-gradient(135deg, #12090a 0%, #1e0d08 100%)',
     border: '#3d1808',
     text: '#f0e0c8',
@@ -25,35 +25,35 @@ const MOOD_VISUALS: Record<MoodKey, MoodVisual> = {
     text: '#f5e8d0',
     label: '#a07848',
   },
-  'warm-and-cozy': {
+  cozy: {
     background: 'linear-gradient(135deg, #2e1509 0%, #1e0e05 100%)',
     border: '#5c2810',
     text: '#faf0e0',
     label: '#e87038',
   },
-  'summer-afternoon': {
-    background: 'linear-gradient(135deg, #fffbf0 0%, #fff8e4 100%)',
-    border: '#e8d870',
-    text: '#1a1808',
-    label: '#9a8010',
-  },
-  'wild-meadow': {
+  botanical: {
     background: 'linear-gradient(135deg, #0a1e10 0%, #061408 100%)',
     border: '#1a3820',
     text: '#d0f0d8',
     label: '#4a9c5c',
   },
-  'bright-bazaar': {
-    background: 'linear-gradient(135deg, #1a0828 0%, #28082a 100%)',
-    border: '#5a1878',
-    text: '#f8e0f8',
-    label: '#d850c8',
+  sunset: {
+    background: 'linear-gradient(135deg, #2a1208 0%, #3a1a06 100%)',
+    border: '#7a3818',
+    text: '#fbe6c8',
+    label: '#f08438',
   },
-  'sunday-morning': {
+  simple: {
     background: 'linear-gradient(135deg, #f8f8f5 0%, #f0f0ea 100%)',
     border: '#d0d0c8',
     text: '#1a1a18',
     label: '#6a6a60',
+  },
+  modern: {
+    background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
+    border: '#3a3a3a',
+    text: '#f4f4f4',
+    label: '#e84a3c',
   },
 };
 

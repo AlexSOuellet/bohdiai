@@ -6,17 +6,6 @@ const meta: BlockMeta = {
   sectionType: 'custom',
   description:
     'A small header block used at the top of secondary pages (shop, gallery, etc.). Renders an optional eyebrow label, a heading, and a short subheading. No imagery — purely typographic.',
-  moodFit: [
-    'dark-and-stormy',
-    'rustic',
-    'warm-and-cozy',
-    'summer-afternoon',
-    'wild-meadow',
-    'bright-bazaar',
-    'sunday-morning',
-  ],
-  tenantTypeFit: ['seller', 'doer'],
-  tier: 'free',
   status: 'active',
   pageTypes: ['shop', 'gallery'],
   slots: [],

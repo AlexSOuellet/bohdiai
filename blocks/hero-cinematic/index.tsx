@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import Image from 'next/image';
 import meta from './meta';
 import ScrollReveal from '@/components/storefront/ScrollReveal';
+import ParallaxImage from '@/components/storefront/motion/ParallaxImage';
 
 export { meta };
 
@@ -54,20 +55,20 @@ export default function HeroCinematic({ content, slots }: HeroCinematicProps) {
 
   return (
     <section className="relative min-h-[90vh] md:min-h-screen w-full flex items-center justify-start overflow-hidden bg-s-background py-16 md:py-24">
-      {/* ─── Background Image ─── */}
-      <div className="absolute inset-0 z-0">
+      {/* ─── Background Image — parallaxes against scroll ─── */}
+      <ParallaxImage amount={120} className="absolute inset-0 z-0">
         <Image
           src={backgroundImageUrl}
           alt={headline}
           fill
           priority
           sizes="100vw"
-          className="object-cover object-center transition-transform duration-[1200ms] ease-out hover:scale-105"
+          className="object-cover object-center"
         />
         {/* Gradient vignettes for depth and text contrast */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/30" aria-hidden="true" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" aria-hidden="true" />
-      </div>
+      </ParallaxImage>
 
       {/* ─── Tactile Local Texture Overlay (Abstracted to globals.css class) ─── */}
       <div 

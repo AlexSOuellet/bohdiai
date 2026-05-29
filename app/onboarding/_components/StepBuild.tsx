@@ -22,15 +22,32 @@ const ANIMATION_STEPS = [
   'Putting the finishing touches on…',
 ];
 
+function formatElapsed(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 export default function StepBuild({ data, onBack }: StepBuildProps) {
   const [animStep, setAnimStep] = useState(0);
   const [animDone, setAnimDone] = useState(false);
   const [genDone, setGenDone] = useState(false);
   const [tenantSubdomain, setTenantSubdomain] = useState('');
   const [error, setError] = useState('');
+  const [elapsed, setElapsed] = useState(0);
   const calledRef = useRef(false);
 
   const done = animDone && genDone;
+
+  // Real elapsed-time counter — ticks every second until generation finishes.
+  useEffect(() => {
+    if (genDone) return;
+    const startedAt = Date.now();
+    const id = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startedAt) / 1000));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [genDone]);
 
   // Cosmetic progress animation
   useEffect(() => {
@@ -85,9 +102,13 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
           {done ? (error ? 'Something went wrong.' : 'Your store is ready.') : `Building ${data.shopName || 'your store'}…`}
         </h1>
         <p className="text-sm text-muted">
-          {done
-            ? (error ? 'You can go back and try again.' : "Take a look — it's yours to customize from here.")
-            : 'This takes about 15 seconds.'}
+          {done ? (
+            error ? 'You can go back and try again.' : "Take a look — it's yours to customize from here."
+          ) : (
+            <>
+              Elapsed <span className="font-mono tabular-nums text-text-soft">{formatElapsed(elapsed)}</span>
+            </>
+          )}
         </p>
       </div>
 

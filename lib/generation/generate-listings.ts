@@ -49,9 +49,33 @@ export async function generateListings(
 ): Promise<GeneratedListingWithImage[]> {
   const imageCount = Math.min(count, MAX_PRODUCT_IMAGES);
 
+  const lowControl = moodSignal?.nicheSlug === 'leatherworker' && moodSignal?.moodKey === 'dark';
+
   const collectionGuidance = collectionSlugs.length > 0
     ? `\nCOLLECTIONS\nThis shop has these collections, identified by slug: ${collectionSlugs.map(s => `"${s}"`).join(', ')}.\nFor each product, set "collection_slug" to the slug of the collection it best belongs to. Distribute products across collections sensibly — don't dump them all into one collection unless they truly all belong to the same one.\n`
     : `\nThis shop has no collections. Set "collection_slug" to null for every product.\n`;
+
+  const moodHeader = lowControl && moodSignal
+    ? `\nMOOD: ${moodSignal.moodLabel}\n${moodSignal.moodDescription ?? ''}\n`
+    : '';
+
+  const productGuidance = lowControl
+    ? `Generate ${imageCount} products. Each product needs:
+- name
+- slug (lowercase, hyphens only, no spaces)
+- short_description (under 120 chars)
+- description (2-3 sentences)
+- base_price_cents (integer, e.g. $24.00 = 2400)
+- image_prompt for an AI image generator. No text in the image.
+- collection_slug per the guidance above`
+    : `Generate ${imageCount} products that feel authentic to this niche. Each product should have:
+- A specific, evocative name (not generic — not "Candle" but "Black Fig & Vetiver Soy Candle")
+- A slug (lowercase, hyphens only, no spaces)
+- A short_description (one compelling sentence, under 120 chars)
+- A full description (2-3 sentences, maker voice, specific materials and techniques)
+- A realistic price in cents (e.g. $24.00 = 2400)
+- An image_prompt: a detailed description for an AI image generator to create a professional product photo (e.g. "Hand-poured soy candle in a matte black jar with a kraft paper label, soft candlelight, dark moody background, close-up product photography")
+- A collection_slug per the guidance above (null if no collections, otherwise one of the provided slugs)`;
 
   const prompt = `You are helping a maker launch their online store. Generate ${imageCount} realistic placeholder product listings for their shop.
 
@@ -60,15 +84,8 @@ NICHE: ${nicheDisplayName}
 
 NICHE CONTEXT:
 ${nicheBodyMarkdown}
-${collectionGuidance}
-Generate ${imageCount} products that feel authentic to this niche. Each product should have:
-- A specific, evocative name (not generic — not "Candle" but "Black Fig & Vetiver Soy Candle")
-- A slug (lowercase, hyphens only, no spaces)
-- A short_description (one compelling sentence, under 120 chars)
-- A full description (2-3 sentences, maker voice, specific materials and techniques)
-- A realistic price in cents (e.g. $24.00 = 2400)
-- An image_prompt: a detailed description for an AI image generator to create a professional product photo (e.g. "Hand-poured soy candle in a matte black jar with a kraft paper label, soft candlelight, dark moody background, close-up product photography")
-- A collection_slug per the guidance above (null if no collections, otherwise one of the provided slugs)
+${moodHeader}${collectionGuidance}
+${productGuidance}
 
 Return ONLY a JSON object — no markdown, no explanation:
 {

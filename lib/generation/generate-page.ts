@@ -86,7 +86,6 @@ function buildBlocksContext(): string {
     lines.push(`\nBlock key: "${block.key}"`);
     lines.push(`  Section type: ${block.sectionType}`);
     lines.push(`  Description: ${block.description}`);
-    lines.push(`  Mood fit: ${block.moodFit.join(', ')}`);
     lines.push(`  Content fields (aiGenerated=true):`);
     for (const field of block.contentSchema) {
       if (!field.aiGenerated) continue;
@@ -129,21 +128,23 @@ export async function generatePage(
 ): Promise<GeneratedPage> {
   const blocksContext = buildBlocksContext();
 
-  // Gated test: leatherworker × dark-and-stormy gets a stripped, low-control prompt.
+  // Gated test: leatherworker × dark gets a stripped, low-control prompt.
   // Everything else keeps the current prescriptive behavior.
-  const lowControl = nicheSlug === 'leatherworker' && mood.key === 'dark-and-stormy';
+  const lowControl = nicheSlug === 'leatherworker' && mood.key === 'dark';
 
-  const moodSection = lowControl
-    ? `MOOD: ${mood.label}\n${mood.description}\n`
-    : `MOOD: ${mood.label}\n${mood.description}\n\nPAGE ASSEMBLY GUIDANCE (follow this structure exactly):\n${mood.blockAssemblyHint}\n`;
+  const moodSection = `MOOD: ${mood.label}\n${mood.description}\n`;
 
   const rulesSection = lowControl
     ? ''
-    : `\nMANDATORY RULES — these override all other guidance:\n1. The FIRST block (position 0) MUST be a hero block (sectionType: "hero"). All hero variants are equally valid for any shop — read each block's structural description and make a genuine choice based on this specific shop's niche and personality. Do NOT default to whichever hero appears first in the list.\n2. A products block (sectionType: "products") MUST appear in the page. Choose the variant whose moodFit includes the current mood.\n3. Total blocks: 4 to 6. Do not output fewer than 4 or more than 6.\n4. moodFit is a real constraint for non-hero blocks. Always prefer blocks whose moodFit includes the current mood. Only use a block outside its moodFit if no in-mood option exists for a mandatory section type (products).\n`;
+    : `\nMANDATORY RULES — these override all other guidance:\n1. The FIRST block (position 0) MUST be a hero block (sectionType: "hero"). All hero variants are equally valid for any shop — read each block's structural description and make a genuine choice based on this specific shop's niche and personality. Do NOT default to whichever hero appears first in the list.\n2. A products block (sectionType: "products") MUST appear in the page.\n3. Total blocks: 4 to 6. Do not output fewer than 4 or more than 6.\n`;
 
   const copyRules = lowControl
-    ? `\nWrite copy that sounds like this maker talking to a customer who already gets it. Specific, warm, not interchangeable with any other shop.`
+    ? ''
     : `\nAssemble the home page. For all aiGenerated content fields, write like a gifted copywriter, not a content generator.\n\nCOPY RULES:\n- Every headline must stop someone mid-scroll. It should be specific, unexpected, and true to this shop — not interchangeable with any other maker.\n- Subheadlines say something real and particular. Not "crafted with love" or "made by hand" or "quality you can trust" — those are placeholders, not copy.\n- Write like the maker is talking directly to their best customer. Warm, specific, a little surprising. The reader should feel like they already know this shop after one sentence.\n- Use the niche vocabulary naturally — the words real practitioners use, not the words a marketer uses to describe them.\n- Banned phrases: "crafted with love," "made with passion," "quality you can trust," "handmade with care," "small batch," "artisanal," "curated." Show it, don't label it.`;
+
+  const secondaryPagesSection = lowControl
+    ? `\nSECONDARY PAGES\nThe storefront has two automatically-built secondary pages: a /shop page (full product listing) and a /contact page (contact form). Write the headings for them.\n\nFor /shop, write:\n- "eyebrow": uppercase label, MAX 40 characters\n- "heading": page title, MAX 80 characters\n- "subheading": MAX 240 characters\n\nFor /contact, write:\n- "heading": page title, MAX 80 characters\n- "subheading": MAX 280 characters\n- "buttonLabel": short button text, MAX 40 characters\n`
+    : `\nSECONDARY PAGES\nThe storefront has two automatically-built secondary pages: a /shop page (full product listing) and a /contact page (contact form). You must also write the headings for these pages so they match the home page voice.\n\nFor /shop, write:\n- "eyebrow": uppercase label, MAX 40 characters (e.g. "All Work", "The Shop", "Collection")\n- "heading": page title, MAX 80 characters (e.g. "Everything in the studio", "The full range")\n- "subheading": one or two warm sentences inviting the visitor to browse. MAX 240 characters total — be tight, not chatty. Same voice and specificity as the home page copy. Avoid the banned phrases.\n\nFor /contact, write:\n- "heading": page title, MAX 80 characters (e.g. "Get in touch", "Drop us a line", "Say hello")\n- "subheading": one warm, inviting sentence about what kinds of messages this maker welcomes (commissions, questions, hellos). MAX 280 characters — keep it to one sentence; do not write a paragraph. Same voice. Avoid the banned phrases.\n- "buttonLabel": short button text, MAX 40 characters (e.g. "Send Message", "Reach Out", "Say Hello")\n`;
 
   const prompt = `You are a storefront designer assembling a home page for an artisan maker.
 
@@ -158,20 +159,7 @@ ${blocksContext}
 ${copyRules}
 
 For "href" fields in widgets, you may use any of these page routes: "/shop" (full product grid), "/contact" (contact form), or anchor links that scroll on the home page ("/#products", "/#about", "/#collections", "/#events"). Do NOT link to pages that don't exist ("/commissions", "/booking", "/services").
-
-SECONDARY PAGES
-The storefront has two automatically-built secondary pages: a /shop page (full product listing) and a /contact page (contact form). You must also write the headings for these pages so they match the home page voice.
-
-For /shop, write:
-- "eyebrow": uppercase label, MAX 40 characters (e.g. "All Work", "The Shop", "Collection")
-- "heading": page title, MAX 80 characters (e.g. "Everything in the studio", "The full range")
-- "subheading": one or two warm sentences inviting the visitor to browse. MAX 240 characters total — be tight, not chatty. Same voice and specificity as the home page copy. Avoid the banned phrases.
-
-For /contact, write:
-- "heading": page title, MAX 80 characters (e.g. "Get in touch", "Drop us a line", "Say hello")
-- "subheading": one warm, inviting sentence about what kinds of messages this maker welcomes (commissions, questions, hellos). MAX 280 characters — keep it to one sentence; do not write a paragraph. Same voice. Avoid the banned phrases.
-- "buttonLabel": short button text, MAX 40 characters (e.g. "Send Message", "Reach Out", "Say Hello")
-
+${secondaryPagesSection}
 Return ONLY a JSON object — no markdown, no explanation:
 {
   "blocks": [

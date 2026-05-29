@@ -39,7 +39,19 @@ export async function generateSubscriptions(
   nicheDisplayName: string,
   nicheBodyMarkdown: string,
   tenantId?: string,
+  nicheSlug?: string,
+  moodKey?: string,
 ): Promise<GeneratedSubscription[]> {
+  const lowControl = nicheSlug === 'leatherworker' && moodKey === 'dark';
+
+  const copyVoiceLine = lowControl ? '' : `\nSame voice as the rest of the storefront copy. Avoid the banned phrases ("crafted with love", "made with passion", "artisanal", "curated", etc).\n`;
+  const shortDescLine = lowControl
+    ? `- "short_description": one sentence under 160 chars`
+    : `- "short_description": one warm sentence under 160 chars — what subscribers get and why`;
+  const descLine = lowControl
+    ? `- "description": 2–3 sentences — what to expect, how it works`
+    : `- "description": 2–3 sentences in the maker's voice — what to expect, how it works, why it's good`;
+
   const prompt = `You are helping a maker imagine subscription offerings for their shop. Decide whether a recurring "X of the month" subscription would fit this niche, and if so, generate 1–2 sample subscriptions.
 
 SHOP: ${shopName}
@@ -71,14 +83,12 @@ If subscriptions don't fit, return an empty array.
 If they do fit, generate 1–2 samples (1 is usually enough). Each subscription needs:
 - "name": short title (e.g. "Candle of the Month", "Bouquet Subscription")
 - "slug": url-safe (lowercase, hyphens only)
-- "short_description": one warm sentence under 160 chars — what subscribers get and why
-- "description": 2–3 sentences in the maker's voice — what to expect, how it works, why it's good
+${shortDescLine}
+${descLine}
 - "base_price_cents": realistic per-period price (e.g. $32/mo = 3200)
 - "subscription_interval": "week" | "month" | "quarter" (the cadence the subscription ships on)
 - "image_prompt": detailed AI image prompt for a hero photo of the subscription concept
-
-Same voice as the rest of the storefront copy. Avoid the banned phrases ("crafted with love", "made with passion", "artisanal", "curated", etc).
-
+${copyVoiceLine}
 Return ONLY a JSON object — no markdown, no explanation:
 {
   "subscriptions": [

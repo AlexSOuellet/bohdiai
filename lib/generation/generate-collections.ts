@@ -31,7 +31,15 @@ export async function generateCollections(
   nicheDisplayName: string,
   nicheBodyMarkdown: string,
   tenantId?: string,
+  nicheSlug?: string,
+  moodKey?: string,
 ): Promise<GeneratedCollection[]> {
+  const lowControl = nicheSlug === 'leatherworker' && moodKey === 'dark';
+
+  const collectionDescriptionField = lowControl
+    ? `- "description": one sentence describing what's in this collection — 280 chars max.`
+    : `- "description": one warm sentence describing what's in this collection — 280 chars max. Same voice as the rest of the storefront copy. Avoid the banned phrases ("crafted with love", "made with passion", "artisanal", "curated", etc).`;
+
   const prompt = `You are helping a maker organize their online store. Decide whether collections (groupings of products) would help this shop, and if so, generate 2–4 sample collections appropriate to the niche.
 
 SHOP: ${shopName}
@@ -57,7 +65,7 @@ If collections don't fit this shop, return an empty array.
 If they do fit, generate 2–4 sample collections. Each collection needs:
 - "name": short title (e.g. "Wellness Candles", "Holiday Collection") — 60 chars max
 - "slug": url-safe (lowercase, hyphens only)
-- "description": one warm sentence describing what's in this collection — 280 chars max. Same voice as the rest of the storefront copy. Avoid the banned phrases ("crafted with love", "made with passion", "artisanal", "curated", etc).
+${collectionDescriptionField}
 
 These are starting points the maker will edit. Don't generate more than makes sense — 2–3 is often perfect; 4 is the cap.
 

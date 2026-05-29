@@ -1,6 +1,6 @@
 # Session Brief — BohdiAI
 
-**Last updated:** 2026-05-27 (Session 8 — control audit, style sheets, low-control test, events bug, agent framing)
+**Last updated:** 2026-05-28 (Session 9 — Bohdi the agent, WOW positioning, mood rename, motion primitives, block catalog expansion)
 
 **Update at the end of every session.**
 
@@ -8,202 +8,216 @@
 
 ## Action at session start
 
-**Rotate the Supabase key.** Pull a fresh service-role key from the Supabase dashboard and update `.env.local` before doing anything else. The current key needs to be replaced.
+**Vercel env sync resolved 2026-05-29.** Preview builds had been failing since commit `41bf8cb` because `SITE_URL`, `BOHDIAI_ANTHROPIC_KEY`, `FAL_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_ANON_KEY` were never pushed to Vercel after being added to `lib/env.ts`. Production was serving a stale build from before those keys existed. All 11 non-empty vars from `.env.local` are now synced to both Production and Preview. Sentry and PostHog vars left untouched (blank locally, existing Vercel values preserved).
 
-Once rotated: strip the secret-containing permission lines from `.claude/settings.local.json` (lines that contain `sb_secret_` in any of the recorded Bash/curl permissions), recommit on top of local commit `35040f8`, then `git push origin main`. Two commits will go up together (the session 8 work + the secret strip).
+GitHub Actions still fails on the `lib/**` 90% coverage gate — Phase 1 generation code shipped without unit tests. Separate problem from the Vercel deploy. See `vitest.config.ts` for the threshold.
+
+Session 9 work is on branch `session-9/strip-directional-wording`. Redeploy the failed Vercel build to confirm green, then merge.
 
 ---
 
 ## How Claude works with Alex (operating rules for the assistant)
 
-These are throughline rules for every session, not just session 8. New sessions should treat these as binding.
+These are throughline rules for every session, not just session 9. New sessions should treat these as binding.
 
-**Don't prescribe. Propose.** The same "WHAT vs HOW" principle that applies to AI generation applies to Claude in chat. Hand over raw materials and trade-offs; let Alex make the call. "My judgment call on what fits" is the wrong framing — it closes doors instead of opening them. The fix is to propose options with honest trade-offs, mark a recommendation if asked, and wait for Alex to choose.
+**Don't prescribe. Propose.** Hand over raw materials and trade-offs; let Alex make the call. "My judgment call on what fits" closes doors instead of opening them. Propose options with honest trade-offs, mark a recommendation if asked, wait for Alex to choose.
 
-**Push back on overengineering, including your own.** Alex flagged repeatedly this session that Claude over-engineers and over-controls. The reflex to add infrastructure, write generators for things that could be done by hand, build documentation for the documentation — all real and recurring. When Claude catches itself proposing a new generator, a new abstraction, or a new validation layer, the question to ask is "is this required to ship, or am I doing it because it's interesting?" If the answer is the second, stop.
+**Push back on overengineering, including your own.** Claude over-engineers and over-controls by default. The reflex to add infrastructure, write generators for things that could be done by hand, build documentation for the documentation — all recurring. When proposing a new generator, abstraction, or validation layer, the question to ask is "is this required to ship, or am I doing it because it's interesting?" If the second, stop.
 
-**Plain English in chat. No structured documentation reflex.** No bullet lists when 2–3 sentences would work. No section headings, bold labels, decision IDs, or jargon Alex didn't use first. No "per the Master Spec §6.3" style references. Conversational prose lands. The structured-list reflex is documentation; documentation belongs in `.md` files, not chat.
+**Plain English in chat. No structured documentation reflex.** No bullet lists when 2-3 sentences would work. No section headings, bold labels, decision IDs, or jargon Alex didn't use first. Conversational prose lands. Documentation belongs in `.md` files, not chat.
 
-**One question at a time when walking decisions.** Multi-part questions ("should we do X, and if so, how, and when, and what's the cost?") overwhelm and produce surface answers. Sequential one-at-a-time produces real answers.
+**One question at a time when walking decisions.** Multi-part questions overwhelm and produce surface answers. Sequential one-at-a-time produces real answers.
 
 **Don't invent under pushback.** When Alex pushes back, acknowledge and wait. Don't fill the gap with a new guess — that compounds the original mistake. The right move when a proposal doesn't land is "got it, what's the right read?" not "OK here's another five options."
 
 **Don't give time estimates.** Claude is not calibrated on Alex's velocity. Past estimates have been off by ~7x. Frame work by dependency order, not by weeks or sessions.
 
-**Push back on scope drift.** If Alex asks for something out of the current phase, name it as scope drift and surface the trade-off before silently absorbing it. He's explicitly asked Claude to keep him in check, not to comply quietly.
+**Push back on scope drift.** If Alex asks for something out of the current phase, name it as scope drift and surface the trade-off before silently absorbing it.
+
+**Never start preview/dev servers unless explicitly asked.** Alex manages his own dev environment. Auto-spawning leaves zombie processes holding ports and burns time on cleanup. The hook reminders about preview verification should be acknowledged and ignored unless Alex specifically asks for a server.
+
+**Tell Bohdi how to think. Don't tell him what to choose.** A quality bar (WOW is the job) and a mental model (mood is the visual world, niche is the material vocabulary inside it) are how-to-think. "Pick the boldest variant," "safe choices are the failure mode," naming specific blocks as favored — all what-to-choose. Quality bar = OK. Variant selection = not OK.
+
+**Stop prompt-tuning to test cases.** When a generation comes out wrong, the reflex is to add a paragraph to Bohdi's system prompt. That's whack-a-mole — LLMs rationalize anything. The real levers are (a) materials Bohdi reads, (b) deliberation mechanics, (c) output review. Edit those before touching the prompt.
+
+**Don't play safe directing the safe AI.** Claude's safe-mode shows up as hedging, fallbacks, "let me ask which to start with" when told to just go, building "competent but not aggressive" implementations of bold-named features. Bohdi inherits the timidity through the catalog Claude builds and the prompts Claude writes. Watch for the pattern.
 
 ---
 
 ## State of the build
 
-Onboarding still produces the same multi-page storefront as session 7 — home, /shop, /contact, /about, optional /collections + /subscriptions, /cart, /terms, /privacy, /listings/[slug]. The plumbing for generating sites hasn't changed shape. What changed this session is **how much control we exert on the AI during generation**.
+Bohdi is alive. The leatherworker niche routes through the agent loop for any mood; other niches still use the legacy one-shot pipeline. Bohdi reads niche + mood style sheets, deliberates 2+ candidates with reasoning per meaningful choice, logs every decision to the `design_choices` table, briefs his own images, composes pages, and commits via finalize. A run takes 3-4 minutes and costs ~$0.50-0.80 in Claude tokens plus ~$0.25 in fal image generation.
 
-A new pattern is in place for one niche × mood pair as a working test: **leatherworker × dark-and-stormy**. For that combination only, the generation prompts have been stripped of design prescription — the AI gets raw materials (a niche style sheet + a mood style sheet) and the freedom to decide which hue plays which role, which font plays heading vs body, which blocks make up the page, how the images should look. Every other niche × mood combination still runs the original prescriptive pipeline. This is a deliberate scoping decision while we work out the kinks.
+Mood lineup is now seven plain category labels: **DARK · RUSTIC · COZY · BOTANICAL · SUNSET · SIMPLE · MODERN**. Old keys (dark-and-stormy, warm-and-cozy, wild-meadow, summer-afternoon, sunday-morning) migrated. bright-bazaar cut. MODERN added. Every mood has a style sheet at `tmp/style-sheets/mood-*.json` — palette (15 named colors), fonts (14 named with structural taxonomy categories, no feel words), textures (13 named). The niche-leatherworker.json style sheet exists; the other 17 niches don't yet.
 
-Three leatherworker × dark-and-stormy sites were generated end-to-end across the session (larrys-leather, lavendar-leather, unbridled-leather). The tokens shifted significantly after style sheets came in — colors and fonts are now drawn directly from the mood sheet by name (Obsidian, Soot, Blood, Bone, Cormorant Unicase). The visual gestalt of the rendered sites still converges, because images and block selection still have prescription that we haven't fully unwound, and because the underlying block library is small enough that the AI lands on the same hero/about/products variants regardless of prompt changes.
+Block catalog expanded from 19 to 30 (one marked draft). New variants: hero-bento, hero-super-type, hero-lava, about-founders-note, about-manifest, products-bento-grid, products-in-the-wild, testimonials-featured (now with cross-fade rotation through multiple testimonials, pauses on hover), testimonials-carousel, nav-centered-wordmark. hero-split-gallery marked draft (visually too close to hero-split-screen).
 
-A real bug was found and fixed in passing: the events-list block was being placed on the home page by the AI even when no events exist, leaving a dead nav link and an empty section. Fixed for all niches/moods — block now excluded from the AI's onboarding menu, nav helper now counts actual upcoming events instead of block presence.
+Motion primitives library under `components/storefront/motion/`: SmoothScroll (Lenis-driven momentum scroll, mounted in storefront layout — every storefront now scrolls premium), ParallaxImage (vertical drift against scroll), Marquee (auto-scrolling row), SplitReveal (character or word reveal with stagger; fixed mid-word wrapping bug). All respect prefers-reduced-motion. Used inside blocks where structure calls for them (hero-cinematic bg parallaxes, hero-super-type headline char-reveals, about-manifest body word-reveals, products-in-the-wild images parallax per scene).
+
+Bohdi's system prompt was rewritten multiple times this session. Final shape: WOW IS the job framed as a quality bar; WOW happens within the constraints of the mood the maker picked (mood is the customer's choice, not negotiable). Mood = visual world, niche = material vocabulary inside that world. Collapse diagnostic: if two moods in the same niche produce the same visual identity, the axes have flipped. No "pick the bold variant" or "name the new blocks" direction. Deliberation method, physics constraints, batching mechanics retained.
 
 ---
 
 ## What was built this session
 
-### Visual style-sheet infographics (discussion artifacts)
+### Block-variant builder skill stripped
 
-- `tmp/leatherworker-snapshot.html` — niche raw materials: 15 colors with shade ramps, 9 fonts grouped by letterform category, 12 texture swatches
-- `tmp/mood-dark-and-moody-snapshot.html` (mood-dark-and-stormy) — 15 colors with shade ramps, 14 fonts spanning blackletter / Roman caps / Didone / industrial / script, 13 textures including smoke, wax drip, brushed iron, burned paper
+`.claude/skills/block-variant-builder/SKILL.md` had heavy directional prescription throughout (mood descriptions, "godly level means [list]", specific atmosphere/motion instructions, prescriptive deliverable counts). All directional verbiage removed. The skill now is: brand positioning frame (visibly not AI slop), technical constraints (tokens, file structure), integration steps (registry + manifest), and a pointer to the roadmap doc. No "build N variants of type X, prefer scroll reveals, add grain." The builder's call.
 
-The infographics drove a long conversation about what a style sheet actually is — raw materials, no role assignments, no how-to-design rules — and produced the principle that the niche × mood intersection is what the AI works from.
+### Mood lineup overhaul
 
-### Style sheet data files (shortcut location)
+`lib/moods.ts` reduced from 132 lines of prescription to a clean 7-mood interface with label + audience description only. `tokenHints` and `blockAssemblyHint` fields removed from the Mood interface entirely. Mood keys renamed to plain category labels:
+- dark-and-stormy → dark
+- warm-and-cozy → cozy
+- wild-meadow → botanical
+- summer-afternoon → sunset (retargeted from "bright midday" to golden-hour)
+- sunday-morning → simple
+- bright-bazaar → REMOVED (off-fit for makers)
+- (new) → modern
 
-- `tmp/style-sheets/niche-leatherworker.json` — palette + fonts + textures, named only, no roles
-- `tmp/style-sheets/mood-dark-and-stormy.json` — same shape
+Migration `20260528000002_mood_keys_renamed.sql` updates existing tenants and design_choices rows.
 
-Eventually these live in the DB. Shortcut location for now while we iterate.
+`StepMood.tsx` picker updated with new visual swatches per mood.
 
-### Low-control generation pipeline (gated to leatherworker × dark-and-stormy)
+### Mood style sheets for all 7 moods
 
-**`lib/generation/generate-tokens.ts`**
-- Loads niche + mood JSON sheets from `tmp/style-sheets/` when both exist (gating is implicit — only this one pair has files)
-- Hands the sheets to the AI as raw materials with one instruction: prefer the overlap, lean mood, stay in niche
-- Dropped: the four mood `tokenHints` sentences, the font menu in parentheses, the "tells you which color goes on which role — follow precisely" prescription, the "do not swap colors across roles" rule, the example sentences ("a rustic shop should read rustic")
-- Kept: the JSON output schema (renderer reads from fixed keys) and the existing `enforceTokenContrast` post-processing
+`tmp/style-sheets/` now has mood sheets for all seven moods, each with 15 named colors, 14 named fonts (structural taxonomy categories only — no feel words), 13 named textures. The non-leatherworker niches still fall back to label + description because no other niche has a style sheet yet — that's the next-session work.
 
-**`lib/generation/generate-page.ts`**
-- New `nicheSlug` parameter
-- Low-control branch when `nicheSlug === 'leatherworker' && mood.key === 'dark-and-stormy'`:
-  - Drops `mood.blockAssemblyHint` from the prompt
-  - Drops the MANDATORY RULES block (first block must be hero, products must appear, 4–6 blocks total, moodFit constraint)
-  - Drops the COPY RULES and banned phrases list
-  - Keeps the technical href allowlist (routes that don't exist would 404)
+Distinctive curatorial calls per mood (Alex's "do NOT play it safe" instruction): dark uses gothic blackletter and didone; rustic uses workshop pigments (woad indigo, madder red, iron oxide) and western/slab display; cozy uses warm domestic interiors (sourdough crust, dried lavender, marsala); botanical uses lush undergrowth (foxglove, deep moss, foraged berry) with botanical-illustration scripts; sunset uses golden-hour amber/coral/dusky-violet with warm contrast serifs; simple uses Japanese-Scandi precision (plaster, bone china, tatami) with refined sans; modern uses Bauhaus primary (red, electric blue, Mondrian yellow, hot pink) with heavy geometric display.
 
-**`lib/fal.ts` (image generation)**
-- All three image functions (`generateHeroImage`, `generateAboutImage`, `generateProductImage`) accept a `moodSignal` parameter
-- Low-control branch when gated: prompt is the niche + mood label + mood description + only the technical constraints (no text, landscape/portrait, no people on hero, no faces on about)
-- Dropped when gated: "editorial," "cinematic," "rich depth," "warm natural light," "commercial quality," "soft natural light," and other aesthetic prescriptions
+### Bohdi the agent
 
-**`lib/generation/generate-listings.ts`**
-- Accepts `moodSignal`, threads it through to product image calls
+`lib/bohdi/` directory with four files:
+- `types.ts` — BohdiBrief, BohdiResult, BohdiAccumulator
+- `tools.ts` — 16 tools with handlers (read_niche, read_mood, list_blocks, list_widgets, log_decision, generate_image, set_tokens with contrast enforcement, set_home_page with explicit slot schema, set_secondary_pages_copy, add_collection, add_listing, add_subscription, set_hero_image, set_about_image, finalize). Shuffles hero/products variants in list_blocks output to prevent alphabetical bias.
+- `system-prompt.ts` — final shape described above
+- `run.ts` — Anthropic tool-use loop with prompt caching (system prompt + tools cached, ~70-80% cost reduction after turn 1), batching nudge, cost logging, 80-turn safety cap
 
-**`lib/contrast.ts`**
-- `enforceTokenContrast` accepts `{ skipAccent: true }` option
-- `generateTokens` passes it when both style sheets load — keeps the AI's accent pick from being shifted off-hue for contrast
+`design_choices` table migration `20260528000001_design_choices.sql` — columns for tenant_id, decision_type, candidates JSONB, picked JSONB, reasoning, niche_slug, mood_key, created_at.
 
-**`app/onboarding/actions.ts`**
-- Builds `moodSignal` once at the top of the action and threads it to all image generators + generatePage
+`app/onboarding/actions.ts` routes leatherworker × any-mood through `runBohdi`; everything else stays on the legacy pipeline.
 
-### Events bug fix (universal, not gated)
+### Block catalog expansion
 
-- `lib/generation/generate-page.ts` — `buildBlocksContext` excludes `events-list` from the AI's home-page menu. A brand-new tenant has no events; the block returns null when empty; the AI never should have been offered it.
-- `app/storefront/_components/storefront-chrome.ts` — events nav section now counts actual upcoming events in the `events` table instead of block presence. No events = no nav link.
+11 new blocks (10 active, 1 hero-centered-wordmark nav). All in `blocks/{key}/` with meta.ts + index.tsx. Registered in `lib/block-registry.tsx`. Manifests regenerated.
 
-### Tooling
+`blocks/hero-split-gallery/meta.ts` marked `status: 'draft'` (visually too similar to hero-split-screen).
 
-- `scripts/render-niche-infographic.mts` — runs `generateTokens` + `generatePage` for a niche × mood and emits an HTML infographic. Used early in the session before the style-sheet pattern landed; superseded by the snapshot HTML files for discussion purposes.
-- `tmp/build-niche-doc.mjs` — built a DOCX combining a niche file with a canonical style sheet. Wasn't the right shape for what Alex wanted but stays in tmp/ as reference.
-- `tmp/compare-tokens.mjs` + `tmp/check-images.mjs` — db queries to compare generated tokens across tenants and verify image URLs exist on storage.
+Stripped `moodFit`, `tenantTypeFit`, `tier` fields from every block meta. BlockMeta and WidgetMeta interfaces in `lib/blocks.ts` updated.
 
----
+### Motion primitives
 
-## Principles articulated this session (carry forward to next session)
+`components/storefront/motion/` — SmoothScroll (Lenis), ParallaxImage, Marquee, SplitReveal. Wired into storefront layout (smooth scroll site-wide) and into specific blocks where structure naturally calls for motion.
 
-These are the throughline of the conversation — every fix above sits on top of them.
+### Onboarding UI
 
-**1. We say WHAT, the AI says HOW.** We hand the AI raw materials (niche, mood, available blocks, available fonts, available textures) and the role it plays. The AI decides which colors play which role, which fonts pair, which blocks compose the page, how the images frame themselves. Anywhere we encode HOW, we've stolen design from the model.
+`StepBuild.tsx` now shows an elapsed-time counter while Bohdi works ("Elapsed 1:42") so the maker isn't staring at a silent spinner.
 
-**2. The niche × mood intersection is what the AI works from, not prose hints.** The niche file carries the prose context but a structured style sheet (palette + fonts + textures, named only, no role assignments) is what the AI actually pulls choices from. Same shape for moods. The AI prefers overlap first, leans mood second, stays in the niche as guardrail.
+### Bohdi report tool
 
-**3. Block definitions should be pure shape, not feel.** Strip `moodFit`, `tenantTypeFit`, `tier`, and any "feel" language from block descriptions. Describe what the block IS structurally — two-column split, full-bleed photograph with overlay card, etc. The AI judges fit by reading the structural description against the design context.
+`tmp/bohdi-report.mjs <subdomain>` prints a readable design-decisions report for any tenant — final block structure plus every logged decision with candidates, picked option, and reasoning. Used heavily this session to debug Bohdi's choices.
 
-**4. Frame the AI as an agent, not a prompt.** The control surface collapses to one thing: how well we wrote the agent's role. A clear role, a good toolkit, raw materials, and an objective — then trust the agent to design.
+### Renderer fixes
 
-**5. Stateless agents are sufficient for Phase 1.** Each generation is a fresh agent that reads current DB state, does its work, persists results, disposes. Memory across sessions can be added later as a structured decision log if specific gaps emerge.
-
-**6. Self-deliberation improves quality.** Agents that generate 2+ candidates with reasoning before committing produce better outputs than single-pass. Same model, more tokens spent on judgment, measurably better choices.
-
-**7. Only structural HOWs survive.** "No text in images" (image models can't render text legibly), "valid hex codes" (renderer requires them), "/contact must exist" (route physics). Anything that isn't physics is design opinion and should go to the AI.
-
-**Promoted to formal decisions D20–D25 in `Phase-1-Decisions-Log.md` at the start of the next session.** The seven principles above map to the six log entries roughly as follows: principles 1 + 7 → D20 (WHAT vs HOW + structural HOWs); principle 2 → D21 (style-sheet intersection); principle 3 → D22 (block definitions are shape); principle 4 + 5 → D23 (stateless agents, two-agent architecture); principle 6 → D24 (min-2 self-deliberation). D25 covers the design_choices table. Read those entries in the log for the binding wording.
+- cta-banner uses `bg-s-surface` instead of `bg-s-primary` (architectural mismatch — primary is brand color, surface is THE section-background token)
+- `/about` page now finds whichever about-section block the home picked (about-maker, about-founders-note, or about-manifest) via the manifest, instead of hardcoding `about-maker` and 404ing
+- Block registry slot rendering accepts both `widgetKey` and legacy `key` field so existing tenants with the wrong shape still get CTAs
+- Mid-word line breaks in SplitReveal fixed — characters now wrap inside per-word nowrap spans so words can only break at spaces
+- `enforceTokenContrast` is now called inside set_tokens (it was lost when Bohdi was introduced)
 
 ---
 
-## Agent architecture — specifics decided (read before asking Alex about agent design)
+## Principles articulated this session (carry forward)
 
-These were discussed in detail at the end of session 8. A new session should NOT re-ask Alex about any of them.
+**1. Tell Bohdi how to think. Don't tell him what to choose.** Quality bars and mental models are how-to-think. Variant selection rules ("pick the boldest," "prefer the new blocks") are what-to-choose. The first is fair to put in the prompt; the second is not.
 
-**Agent count and roles.** Two agents. **Lead Designer** + **Image Agent**. The Lead Designer picks tokens (palette role assignments, font pairings), composes the page (block selection + order), writes copy, and briefs the Image Agent. The Image Agent receives the brief, generates the images via fal, reviews them against the brief, asks for revisions if needed, returns them. Copy is part of design, not a separate Copy Agent — splitting copy off creates the same disconnect we just fixed between images and design. Fewer agents with more autonomy beats more agents with narrower scopes.
+**2. WOW is the job, within the mood's constraints.** Bohdi optimizes for stop-them-mid-scroll, but the mood is the maker's choice and not negotiable. A WOW simple shop is the most distinctive SIMPLE shop. A WOW dark shop is the most distinctive DARK shop. He can't redefine the mood to be bolder.
 
-**Self-deliberation shape.** Variable candidates with a floor. **Minimum 2** for any meaningful decision (block selection, palette role assignment, font pairing, copy direction). **No upper cap** — agent decides when a choice deserves more deliberation. The floor of 2 prevents single-pass defaulting; the no-cap trusts the agent to know when more is warranted. If deliberation quality needs validation, A/B test min-2 against single-pass and look at maker satisfaction. Do not pin a fixed N (e.g. "always 3") — that invites theater (agent generates 3 to satisfy the rule when only 1 made sense) and wastes tokens on trivial choices.
+**3. Mood is the visual world. Niche is the material vocabulary inside that world.** If two shops in the same niche but different moods produce the same visual identity, the axes have collapsed — the niche has eaten the mood.
 
-**Reasoning storage.** Build the `design_choices` table this phase. Lightweight version — columns for `tenant_id`, `decision_type` (block-pick, palette-role-assignment, font-pairing, copy-headline, image-brief, etc), `candidates` JSONB, `picked` JSONB, `reasoning` text, `niche_slug`, `mood_key`, `created_at`. One helper called from each agent decision point. No dashboards yet, just log. The reason to build now and not later: data only accumulates from the moment the table exists, and the value (spotting agent bias, dead inventory, success patterns, eventual training material for our own model) is too high to lose six months of decisions.
+**4. The block model produces stacks. WOW comes from catalog variety, not better composition.** Block-based assembly inherently makes vertical stacks of rectangles. Different visual character per site comes from having genuinely different block geometries in the catalog (asymmetric, overlapping, scroll-driven, image-bleed). More variants → more variance.
 
-**Stateless still applies.** The agents above are still ephemeral per-onboarding/per-edit. Each session loads current DB state, does the work, persists results, disposes. `design_choices` rows persist (they're the log), but no agent conversation history is kept between sessions. Persistent agent memory remains a carry-forward item for later.
+**5. Visibly not AI slop is the brand position.** Every catalog choice should make BohdiAI sites harder to confuse with a Wix/Squarespace AI-built site, not easier. Adding a sixth slightly-different products grid is competitive death.
+
+**6. Deliberation is not proof.** Bohdi's reasoning is fluency, not judgment. He can defend any pick. The output is the proof. Prompt-tuning his reasoning quality is whack-a-mole — change inputs and review outputs instead.
+
+**7. Real materials beat prescriptive prompts.** Mood and niche style sheets with named raw materials and no role assignments outperform prescriptive "dark backgrounds for moody" instructions. The materials constrain structurally.
+
+**8. Motion primitives, not motion direction.** Build the primitives (parallax, smooth scroll, reveal). Apply them inside blocks where the block's own structure calls for motion. Don't tell the AI "this maker needs scroll-triggered reveals" — that's mood/niche-based motion direction.
 
 ---
 
 ## Top priority for next session
 
-Alex's words: "We need to look at the moods we have and change them. We need to rebuild the niche schemas for the niches we have and change the skill to build them correctly. We also need to change the block definitions to eliminate unnecessary mood verbiage etc."
-
 In dependency order:
 
-**1. Rework the moods.** Strip the prescription from `lib/moods.ts`. Each mood becomes label + description + a style sheet (palette + fonts + textures, named only). Drop `tokenHints` and `blockAssemblyHint`. The mood definition is raw materials, not instructions.
+**1. Vercel deploy fix.** Get main building on Vercel before anything else. Likely env-var configuration on Vercel side. Without this, no shipping.
 
-**2. Rebuild niche schemas.** 18 niches currently in DB. Each gets a structured style sheet attached — palette, fonts, textures — in addition to the prose body. Decide where this lives: extend the niches table with a JSONB column, or attach to a sibling table. Once schemas have the new shape, the JSON file shortcut in `tmp/style-sheets/` can be retired and the low-control pipeline can be ungated.
+**2. Strip the other 17 niche files.** Same stripping pattern as leatherworker — remove "Visual direction range," "What tends to surface on the storefront," "What to avoid," and visual descriptors leaking into Brand exemplars. Sync to the niches table. The niche-writer skill should be updated to produce the new shape too.
 
-**3. Update the niche-writer skill.** The skill at `.claude/skills/niche-writer/SKILL.md` currently produces prose-heavy niche files with "Visual direction range" sections that dictate ranges. Rewrite the skill to produce niche files with the new shape — prose body for context, structured style sheet as data — and to anchor against exemplars without dictating outcomes.
+**3. Build niche style sheets for the other 17 niches.** Each gets palette (15 named colors) + fonts (14 named with structural taxonomy categories) + textures (13 named). Without these, Bohdi only has the niche prose to work from for non-leatherworker shops.
 
-**4. Strip block definitions.** For every block in `blocks/**/meta.ts`, remove `moodFit`, `tenantTypeFit`, `tier`, and rewrite the `description` to be purely structural. Keep `key`, `sectionType` (or rename to something purely structural), `contentSchema`, `slots`.
+**4. Run Bohdi across the other 17 niches × all 7 moods.** That's 119 combinations. Won't actually run all of them — pick 8-12 representative pairs (candle × cozy, jeweler × modern, baker × sunset, etc) and verify Bohdi produces visually distinct sites that respect mood boundaries.
 
-Once all four are done, the gating on leatherworker × dark-and-stormy can be removed and the low-control pipeline applies platform-wide.
+**5. Drop the leatherworker gate.** Once non-leatherworker niches have style sheets and Bohdi handles a wide range of niche × mood combos well, retire the legacy generation pipeline entirely. All onboardings route through Bohdi.
+
+---
+
+## Future features banked (post-Phase-1 / launch wave)
+
+These are real product asks Alex named near end of session 9. They're not Phase 1 build-time; they're launch wave features. Capture them so they don't get lost.
+
+**Tenant-side mood regeneration.** Once a maker is in the dashboard, they should be able to regenerate their storefront under a different mood without redoing onboarding. "Try this same shop in COZY" or "show me what SUNSET would look like."
+
+**Preview-before-save.** When the maker first generates (or regenerates with a different mood), they see a preview of the result and choose to save it or try again. Today the generated storefront goes straight to live — no decision point. Adding preview is a real UX improvement and de-risks regen.
+
+**Mood samples in the onboarding picker.** Right now the mood step is colored swatches with a one-line description. Makers don't really know what they're picking. The picker should let them click a mood and see actual sample storefronts in that mood. Helps them choose the right look for their shop.
+
+**Sample gallery on bohdiai.com.** Marketing site needs a gallery of representative sites across niches and moods. Build 12-20 sample storefronts (or repurpose dev-generated ones), store them, render them in a gallery page. The gallery itself becomes a credibility asset and feeds the mood picker.
 
 ---
 
 ## Carry-forward items (deferred, discussed but not built)
 
-- **Agent layer.** Design Agent + Image Agent collaboration with shared brief. Discussed in depth. Not built. Would replace the current one-shot generator-per-step pipeline. The work above (style sheets, low-control prompts) is the necessary cleanup that has to happen before the agent layer is worth building on top of.
-- **Self-deliberation pattern.** Agent generates 2+ candidates per decision with reasoning, picks one with reasoning, logs both. Discussed, not implemented.
-- **`design_choices` logging table.** Every palette role, font, block, layout decision logged with niche + mood context. Gives platform-level visibility into what the agent gravitates toward and surfaces bias, dead inventory, success patterns. Not built.
+- **Vision review on images.** Image Agent looks at the fal output and decides whether it matches the brief, regenerates if not. Discussed at length, deliberately not built. Decision was: first run, no iteration. The cost/quality trade-off favors trust at onboarding because the maker swaps placeholder images anyway. Worth reconsidering for the Phase 2 AI Image Studio.
+
+- **Schema bottleneck.** The DesignTokens schema still forces 7 fixed color roles, one heading font, one body font, tight enums on shape/spacing/layout. Even with great style sheets, Bohdi pours 15 colors into 7 slots. Real ceiling on AI expression. Loosening means rewriting the renderer.
+
 - **Per-tenant agent persistence.** Future-state pattern for an agent that lives in code + DB and accumulates memory across sessions. Worth designing for but not Phase 1.
-- **Schema bottleneck.** Even with style sheets, the DesignTokens schema forces seven fixed color roles, one heading font, one body font, tight enums on shape/spacing/layout. Real ceiling on AI expression. Renderer reads from these exact keys, so loosening means rewriting the renderer too. Not addressed this session.
 
 ---
 
-## Open items (still carried from previous sessions)
+## Open items (carried from earlier sessions, still applicable)
 
-These are unchanged from session 7. Re-listed only in compressed form — see session 7 brief for full detail if needed.
-
-1. Streaming build progress (real SSE instead of cosmetic timer)
+1. Streaming build progress (real SSE instead of cosmetic timer + elapsed counter)
 2. Doer storefront rendering pattern
-3. Master Spec touch-up to reflect D1–D20+ and recent sessions
+3. Master Spec touch-up to reflect D1–D25+ and recent sessions
 4. StepTrial copy — confirm exact price before wiring Stripe
 5. Per-tenant AI usage caps (Phase 2 dashboard)
 6. Etsy/Shopify import (Phase 2)
 7. Marketing copy update — drop "live in minutes"
 8. Rate limit reset before launch (MAX_PER_WINDOW back to 3)
 9. Sentry + PostHog signup
-10. `hero-editorial` cross-mood/niche testing
-11. Inspiration URL / site reference — needs proper spec before rebuilding
-12. Block swap in dashboard
-13. Per-IP rate limit on `/api/contact` and `/api/notify-interest`
-14. Stripe Subscriptions integration
-15. Page-options dashboard
-16. Collection thumbnails
-17. `collections-row` forcing on home when collections exist
-18. Subscription image error handling
-
-New item added this session:
-
-19. **First-load image timing.** Race between onboarding landing the maker on the storefront and storage propagation finishing on freshly uploaded images. Maker sees missing images for a few seconds and assumes failure. A "still finishing up — refresh in a moment" hint on first storefront load after onboarding would prevent the "did it break?" moment.
+10. Inspiration URL / site reference — needs proper spec before rebuilding
+11. Block swap in dashboard
+12. Per-IP rate limit on `/api/contact` and `/api/notify-interest`
+13. Stripe Subscriptions integration
+14. Page-options dashboard
+15. Collection thumbnails
+16. `collections-row` forcing on home when collections exist
+17. Subscription image error handling
+18. First-load image timing race
+19. **Vercel main-branch deploy failure** (new — needs root-cause from Vercel logs)
 
 ---
 
 ## Critical env var note
 
-(Unchanged from session 7.) Claude Code injects its own `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` into all child processes. `.env.local` cannot override these. Fix: use `BOHDIAI_ANTHROPIC_KEY` in `.env.local` with explicit `baseURL: 'https://api.anthropic.com'` in `lib/anthropic.ts`. Do not rename this back.
+(Unchanged from session 8.) Claude Code injects its own `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` into all child processes. `.env.local` cannot override these. Fix: use `BOHDIAI_ANTHROPIC_KEY` in `.env.local` with explicit `baseURL: 'https://api.anthropic.com'` in `lib/anthropic.ts`. Do not rename this back.
 
 `.env.local` must also have `FAL_API_KEY` from fal.ai dashboard.
+
+Vercel needs both env vars set in the dashboard for the deploy to work in production.
 
 ---
 
@@ -211,19 +225,22 @@ New item added this session:
 
 1. `CLAUDE.md` at the project root
 2. `project-docs/SESSION-BRIEF.md` — this file
-3. `project-docs/BohdiAI-Master-Spec.md` — full product spec (read in full, every session)
+3. `project-docs/BohdiAI-Master-Spec.md` — full product spec
 4. `project-docs/BohdiAI-Roles-Workflow.md`
-5. `project-docs/Phase-1-Decisions-Log.md` — D1–D19 (D20+ to be drafted from session 8 principles)
+5. `project-docs/Phase-1-Decisions-Log.md` — D1–D31 (D26-D31 added this session)
 6. `project-docs/Tech-Arch-Spec.md` — database design
 7. `project-docs/Phase-1-Spec.md` — current phase spec
+8. `project-docs/Block-Variants-Roadmap.md` — block catalog plans
 
 ---
 
 ## What's in the DB
 
-40+ tables. 18 niches (status=approved). Multiple test tenant rows including `larrys-leather`, `lavendar-leather`, `unbridled-leather` from this session. All migrations applied through `20260527000008`.
+40+ tables. 18 niches (status=approved). Tenants from session 9 testing: lous-leather-craft, lucys-leather, legacy-leather, larrys-leather, lavendar-leather, unbridled-leather, leather-utopia, absolute-leather, yamley-leather, test-leather — all leatherworker, various moods. design_choices table populated with Bohdi's deliberation logs for every leatherworker run.
 
-No new migrations this session. The events bug fix changes runtime query logic but no schema change.
+Migrations applied through `20260528000002`:
+- `20260528000001_design_choices.sql` — Bohdi's decision log
+- `20260528000002_mood_keys_renamed.sql` — mood key rename for tenants + design_choices
 
 Migration runner: `node scripts/db-migrate.mjs`
 
@@ -233,12 +250,16 @@ Storage buckets: `placeholder-images` (legacy, unused), `generated-images` (acti
 
 ## Lessons banked this session
 
-**The control was layered.** Every place we touch the AI is a place we either give it raw materials or tell it what to do. We were doing the latter at every layer — prompt instructions, mood definitions, block metadata, post-processing, schema constraints, downstream coupling. Stripping one layer (mood hints from tokens) isn't enough because the next layer (block descriptions with moodFit, MANDATORY RULES on page assembly, image prompts ignoring mood entirely, schema enums forcing a fixed shape) re-imposes control. The fix is layered too — work down through each one.
+**Bohdi inherits the developer's timidity.** Claude's safe-mode patterns (hedging, fallbacks, "let me ask first," building competent-but-conventional implementations of bold-named blocks) show up in Bohdi's behavior because they're in Bohdi's catalog and Bohdi's prompts. Safe directing safe. The fix isn't a smarter prompt — it's a less timid developer.
 
-**"My judgment call" is the wrong framing in chat.** Alex flagged early in the session that "my judgment call on what the niche commits to" is exactly the wrong language — it shuts the door instead of opening one. Same pattern as Claude's behavior with the AI: dressing prescription as expertise. The fix is to hand over raw materials and frame choices as proposals to discuss, not as deliverables finalized.
+**LLMs rationalize anything.** Bohdi's logged reasoning is fluency, not proof. He can defend any pick with smart-sounding prose. So output evaluation matters more than reasoning evaluation, and prompt-tuning to test cases is whack-a-mole. The signal he can't argue with is structural — materials, physics, mechanics.
 
-**The infographic was the wedge.** Showing Alex a visual style sheet ("here's what raw materials look like") opened the conversation that the niche files don't carry style sheets, that the moods are prescription, that block descriptions encode feel. None of that was visible in code. The infographic made it visible.
+**The block model produces stacks by definition.** No matter how distinct individual blocks are, every page is a vertical stack of full-width horizontal slabs. To stop reading as "AI-builder slop" requires either block variants with genuinely non-rectangular geometry (which we started building) OR a different composition model (which we ruled out because makers need editability).
 
-**Variance doesn't show up where you look first.** Three leatherworker × dark-and-stormy sites with very different tokens (Cormorant Garamond vs Unicase, Crimson Pro vs Playfair Display vs Bodoni Moda, primary tan vs primary blood-red) still looked the same to the eye, because images and block selection — the loudest visual elements — were unchanged. Token diversity matters less than the layers above it when judging "does this site feel different from the last one."
+**Visibly NOT AI slop is the moat.** Every catalog choice has to make BohdiAI sites harder to confuse with Wix/Squarespace AI sites. Adding "competent but conventional" variants is competitive death. The roadmap of weird-shaped variants (hero-lava, products-in-the-wild done right, about-manifest) is strategic, not stylistic.
 
-**Build the page, don't suppress the link — except when there's no content at all.** The events-list bug surfaced a refinement of the principle. When AI generates a CTA pointing at a future feature, build a stub page. When the AI is offered a block that depends on tenant data the tenant doesn't have, don't show the block — there's no content to build a page around.
+**The materials are the real lever, not the prompt.** Every time Bohdi disappointed this session, Claude reached for the prompt. The actual fix was always upstream — style sheet curation, block variant builds, niche prose stripping. Touching the prompt to fix output is fighting LLM rationalization with more prose.
+
+**Prompt caching matters.** Bohdi's first turn writes ~10k input tokens (system prompt + tools list). Without caching, every subsequent turn re-pays for those. With caching, they cost 10% after turn 1. ~70-80% input-token cost cut for free. Should be baked into any tool-use loop pattern.
+
+**Mood character must come first.** When Bohdi found "one bold move" for leatherworker (dark inversion), he started applying it to every mood by rationalizing the mood's accent color as a base. The mood is the customer's choice; the niche is the content. Flipping the axes collapses the lineup.

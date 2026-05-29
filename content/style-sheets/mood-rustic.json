@@ -1,0 +1,141 @@
+{
+  "kind": "mood-style-sheet",
+  "key": "rustic",
+  "label": "Rustic",
+  "note": "Raw materials. Named only — no role assignments, no feel labels.",
+  "palette": [
+    {
+      "name": "Limewash",
+      "hex": "#EFE7D6"
+    },
+    {
+      "name": "Bone",
+      "hex": "#E4D4B8"
+    },
+    {
+      "name": "Hide Glue",
+      "hex": "#B98C50"
+    },
+    {
+      "name": "Madder Red",
+      "hex": "#B6391C"
+    },
+    {
+      "name": "Iron Oxide",
+      "hex": "#7C2818"
+    },
+    {
+      "name": "Walnut Hull",
+      "hex": "#3D2316"
+    },
+    {
+      "name": "Hearth Black",
+      "hex": "#15110D"
+    },
+    {
+      "name": "Woad Indigo",
+      "hex": "#2A3658"
+    },
+    {
+      "name": "Lichen",
+      "hex": "#7A8D3F"
+    },
+    {
+      "name": "Burlap",
+      "hex": "#A89674"
+    },
+    {
+      "name": "Slate",
+      "hex": "#48504F"
+    },
+    {
+      "name": "Birch",
+      "hex": "#D5C9A6"
+    },
+    {
+      "name": "Beeswax",
+      "hex": "#D89F3A"
+    },
+    {
+      "name": "Saddle",
+      "hex": "#8E5A2A"
+    },
+    {
+      "name": "Charred Oak",
+      "hex": "#2A201A"
+    }
+  ],
+  "fonts": [
+    {
+      "name": "Roboto Slab",
+      "category": "slab-serif"
+    },
+    {
+      "name": "Arvo",
+      "category": "slab-serif"
+    },
+    {
+      "name": "Bree Serif",
+      "category": "slab-serif"
+    },
+    {
+      "name": "IM Fell English",
+      "category": "old-style-serif"
+    },
+    {
+      "name": "Sancreek",
+      "category": "slab-serif"
+    },
+    {
+      "name": "Rye",
+      "category": "slab-serif"
+    },
+    {
+      "name": "Diplomata SC",
+      "category": "all-caps"
+    },
+    {
+      "name": "Special Elite",
+      "category": "typewriter"
+    },
+    {
+      "name": "Lobster Two",
+      "category": "script"
+    },
+    {
+      "name": "Lora",
+      "category": "old-style-serif"
+    },
+    {
+      "name": "Crimson Text",
+      "category": "old-style-serif"
+    },
+    {
+      "name": "Bilbo Swash Caps",
+      "category": "script"
+    },
+    {
+      "name": "Permanent Marker",
+      "category": "marker"
+    },
+    {
+      "name": "Mulish",
+      "category": "humanist-sans"
+    }
+  ],
+  "textures": [
+    "raw-linen-weave",
+    "rough-sawn-oak",
+    "beeswax",
+    "sisal-rope",
+    "hammered-brass",
+    "linseed-oil-wash",
+    "cast-iron",
+    "kraft-paper",
+    "butcher-paper",
+    "raw-cotton",
+    "oilcloth",
+    "hand-stitched-seam",
+    "fired-clay"
+  ]
+}

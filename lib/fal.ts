@@ -77,7 +77,7 @@ async function generateAndStore(
 interface MoodSignal {
   /** Niche slug for gating (e.g. 'leatherworker'). */
   nicheSlug?: string;
-  /** Mood key for gating (e.g. 'dark-and-stormy'). */
+  /** Mood key for gating (e.g. 'dark'). */
   moodKey?: string;
   /** Mood label and description to thread into the image prompt. */
   moodLabel?: string;
@@ -85,7 +85,7 @@ interface MoodSignal {
 }
 
 function isLowControl(s?: MoodSignal): boolean {
-  return s?.nicheSlug === 'leatherworker' && s?.moodKey === 'dark-and-stormy';
+  return s?.nicheSlug === 'leatherworker' && s?.moodKey === 'dark';
 }
 
 export async function generateProductImage(
@@ -97,7 +97,7 @@ export async function generateProductImage(
   moodSignal?: MoodSignal,
 ): Promise<string | null> {
   const prompt = isLowControl(moodSignal)
-    ? `Product photography of ${productName}. ${productDescription}. Mood: ${moodSignal!.moodLabel}. ${moodSignal!.moodDescription} No text.`
+    ? `Product photography of ${productName}. ${productDescription}. Mood: ${moodSignal!.moodLabel}. No text.`
     : `Professional product photography: ${productName}. ${productDescription}. Handmade artisan ${nicheDisplayName}. Clean neutral background, soft natural light, high resolution, commercial quality, no text.`;
   return generateAndStore(prompt, `product-images/${subdomain}/${slug}.jpg`, 'square_hd');
 }
@@ -108,7 +108,7 @@ export async function generateHeroImage(
   moodSignal?: MoodSignal,
 ): Promise<string | null> {
   const prompt = isLowControl(moodSignal)
-    ? `A ${nicheDisplayName}'s working environment. Mood: ${moodSignal!.moodLabel}. ${moodSignal!.moodDescription} No text, no people, wide landscape composition.`
+    ? `A ${nicheDisplayName}'s working environment. Mood: ${moodSignal!.moodLabel}. No text, no people, wide landscape composition.`
     : `Editorial lifestyle photography: ${nicheDisplayName} maker's workshop. Close-up details of the materials, tools, and finished work specific to ${nicheDisplayName}. Cinematic wide shot, real working studio environment, rich depth, no text, no people, wide landscape composition.`;
   return generateAndStore(prompt, `hero-images/${subdomain}/hero.jpg`, 'landscape_16_9');
 }
@@ -119,7 +119,7 @@ export async function generateAboutImage(
   moodSignal?: MoodSignal,
 ): Promise<string | null> {
   const prompt = isLowControl(moodSignal)
-    ? `Hands at work in a ${nicheDisplayName}'s studio. Mood: ${moodSignal!.moodLabel}. ${moodSignal!.moodDescription} No identifiable faces, no text, vertical portrait composition.`
+    ? `Hands at work in a ${nicheDisplayName}'s studio. Mood: ${moodSignal!.moodLabel}. No identifiable faces, no text, vertical portrait composition.`
     : `Editorial documentary photography: hands at work in a ${nicheDisplayName} maker's studio. In-progress detail — tools being used, materials being shaped, the texture of the work itself. Warm natural window light, shallow depth of field, intimate close-mid shot, real studio environment, no identifiable faces, no text, vertical portrait composition.`;
   return generateAndStore(prompt, `about-images/${subdomain}/about.jpg`, 'square_hd');
 }

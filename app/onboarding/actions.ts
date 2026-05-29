@@ -13,6 +13,7 @@ import { generateHeroImage, generateProductImage, generateAboutImage } from '@/l
 import { BLOCKS_MANIFEST } from '@/lib/blocks-manifest.generated';
 import { toSubdomain } from '@/lib/subdomain';
 import { logger } from '@/lib/logger';
+import { runBohdi } from '@/lib/bohdi/run';
 
 // ─── Subdomain availability check ────────────────────────────────────────────
 
@@ -71,6 +72,19 @@ export async function generateStorefront(
 async function runGeneration(input: GenerateStorefrontInput): Promise<GenerateStorefrontResult> {
   const mood = MOODS[input.moodKey];
 
+  // Gated: any leatherworker run goes through Bohdi (the new agent).
+  // Other niches use the legacy one-shot pipeline.
+  if (input.nicheSlug === 'leatherworker') {
+    const result = await runBohdi({
+      shopName: input.shopName,
+      subdomain: input.subdomain,
+      nicheSlug: input.nicheSlug,
+      moodKey: input.moodKey,
+      productCount: input.productCount,
+    });
+    return { tenantId: result.tenantId, subdomain: result.subdomain };
+  }
+
   const { data: niche, error: nicheError } = await supabaseAdmin()
     .from('niches')
     .select('display_name, body_markdown, tenant_type_fit')
@@ -95,8 +109,8 @@ async function runGeneration(input: GenerateStorefrontInput): Promise<GenerateSt
   const [tokens, page, collections, subscriptionsRaw] = await Promise.all([
     generateTokens(niche.body_markdown, mood, undefined, input.nicheSlug),
     generatePage(input.shopName, niche.display_name, niche.body_markdown, mood, undefined, input.nicheSlug),
-    generateCollections(input.shopName, niche.display_name, niche.body_markdown),
-    generateSubscriptions(input.shopName, niche.display_name, niche.body_markdown),
+    generateCollections(input.shopName, niche.display_name, niche.body_markdown, undefined, input.nicheSlug, mood.key),
+    generateSubscriptions(input.shopName, niche.display_name, niche.body_markdown, undefined, input.nicheSlug, mood.key),
   ]);
 
   // Generate images for the sample subscriptions. Batched 2 at a time to stay

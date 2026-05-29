@@ -27,21 +27,19 @@ Distribution channels include their own online shop, Etsy, craft fairs and marke
 
 ## Brand exemplars across the range
 
-**Frank Clegg Leatherworks (New England heritage, generational craft).** A family-owned shop in Fall River, Massachusetts, open since 1970. Vegetable-tanned leathers, saddle-stitched seams, pieces meant to last a lifetime. Voice is restrained and traditional. The patina story — how full-grain veg-tan darkens and molds to its owner over decades — is central to the brand. Prices reflect the positioning ($300–$1,500+).
+**Frank Clegg Leatherworks.** A family-owned shop in Fall River, Massachusetts, open since 1970. Vegetable-tanned leathers, saddle-stitched seams, pieces meant to last a lifetime. The patina story — how full-grain veg-tan darkens and molds to its owner over decades — is central to the brand. Prices reflect the positioning ($300–$1,500+).
 
-**Tanner Goods (Portland artisanal, clean and minimal).** Oregon-based, clean photography, warm earth tones, long-term use as the positioning. "Made to last, made in Oregon." The aesthetic reads contemporary without being trendy. Mid-to-high prices, direct-to-consumer plus some wholesale.
+**Tanner Goods.** Oregon-based, long-term use as the positioning. "Made to last, made in Oregon." Mid-to-high prices, direct-to-consumer plus some wholesale.
 
-**Lotuff Leather (New American Luxury, understated).** Providence, Rhode Island. Very clean lines, subtle branding, vegetable-tanned leathers, everything made in-house. "New American Luxury" is literally their positioning line. The brand resists decoration; the quality of the leather and stitching is the statement.
+**Lotuff Leather.** Providence, Rhode Island. Vegetable-tanned leathers, everything made in-house. "New American Luxury" is literally their positioning line.
 
-**Saddleback Leather (rugged, adventurer, 100-year warranty).** Heavy-duty full-grain leather bags, briefcases, and backpacks. Explicit about the materials, the weight, the durability. Known for a 100-year warranty and "they'll fight over it when you're dead" marketing. Loud, personality-driven voice.
+**Saddleback Leather.** Heavy-duty full-grain leather bags, briefcases, and backpacks. Explicit about the materials, the weight, the durability. Known for a 100-year warranty and "they'll fight over it when you're dead" marketing.
 
-**Odin Leather Goods (small studio, hand-crafted, local).** Small Texas shop, hand-crafted, emphasizes the maker's hands and tools. Voice is personal. A leatherworker who tells the story of each piece being made in the shop.
+**Odin Leather Goods.** Small Texas shop, hand-crafted. A leatherworker who tells the story of each piece being made in the shop.
 
-**Folk/Western heritage leatherworkers (tooled leather, Southwest, rodeo).** Floral or geometric carving, hand-tooled designs, traditional tack forms. Customers for whom leather is a cultural material — saddle makers, Western-wear accessory makers, belt-carvers. Different visual language entirely.
+**Folk and Western heritage leatherworkers.** Floral or geometric carving, hand-tooled designs, traditional tack forms. Customers for whom leather is a cultural material — saddle makers, Western-wear accessory makers, belt-carvers.
 
-**Minimalist modern wallet/cardholder makers (Etsy-native, gifting, everyday carry).** Thin cardholders in natural vegetable tan or black chrome tan. Simple forms, minimal branding, often positioned as gifts. Price range of $30–$90. The dominant form factor for entry-level leatherworkers building a product line.
-
-A tenant could land anywhere across this range, including places not on this list — the mood pick and inspiration URLs are what choose direction.
+**Minimalist modern wallet and cardholder makers.** Etsy-native, gifting, everyday carry. Thin cardholders in natural vegetable tan or black chrome tan. Often positioned as gifts. Price range of $30–$90. The dominant form factor for entry-level leatherworkers building a product line.
 
 ## Who their customers are
 
@@ -71,9 +69,7 @@ Edge finishing vocabulary: burnishing (rubbing the edge to compress and smooth i
 
 Hardware vocabulary: solid brass, antique brass, solid copper, matte black hardware — buyers notice and ask about hardware finishes.
 
-The patina story is specific to vegetable-tanned leather and is a major selling point: veg-tan leather starts pale and firms up, then darkens and softens with use and contact, molding to the owner over time. Makers who tell this story well ("ten years from now, this wallet will be the color of dark honey") outsell makers who only describe what the piece looks like when new.
-
-What reads flat: "premium quality leather goods," "durable and stylish," "great for everyday use." What works: material specifics, construction details, the patina story, and the hands that made it.
+The patina story is specific to vegetable-tanned leather and is a major selling point: veg-tan leather starts pale and firms up, then darkens and softens with use and contact, molding to the owner over time.
 
 ## Common specializations and variations
 
@@ -104,46 +100,6 @@ What reads flat: "premium quality leather goods," "durable and stylish," "great 
 - What hardware options are available?
 - What is the return policy on custom pieces?
 
-Storefronts that answer these clearly tend to outperform ones that don't.
-
-## Visual direction range
-
-This category contains a wide range of visual sensibilities — not a single dominant aesthetic — and the mood pick and inspiration URLs are what choose among them.
-
-- **Heritage workshop:** Warm mid-century browns, aged brass accents, clean serif type, photography that shows tools, hides, and the maker's hands alongside the finished pieces. Common in traditional and heritage-positioned brands.
-- **Minimal modern:** Pale natural leather on clean white or light backgrounds, neutral tones, sans-serif type, very clean product photography. Common in contemporary DTC brands.
-- **Dark rugged:** Deep blacks, oxblood, full-bleed photography of worn leather and outdoor settings. Common in adventurer and durability-focused positioning.
-- **Luxury restrained:** Very little color, large white space, the leather itself as the primary visual. The brand almost disappears so the material can speak. Common in New American Luxury positioning.
-- **Folk and Western:** Hand-tooled floral or geometric designs, turquoise and tan color palette, Western typography and iconography. A completely different visual direction from the above.
-- **Studio artisan:** Process photography dominant — hands stitching, tools laid out, hides on a bench. The maker's face and workshop are part of the brand. Common in single-maker shops building a personal following.
-
-What holds true across directions: close-up photography of leather texture, edge finishing, hardware, and stitch lines is high-performing in this category. Buyers want to see the grain, the burnished edge, the thread running through the holes. A macro shot of saddle stitching communicates more about quality than a paragraph of copy.
-
-## What tends to surface on the storefront
-
-The mood pick and inspiration URLs drive the layout — this section just lists what tends to be useful.
-
-**A process or materials block.** In this category, how something is made and what it's made from are a core part of the value proposition. A short materials story — what the leather is, where it comes from, how it ages — does meaningful work before the buyer reaches the product page.
-
-**A customization or personalization section.** Initials, monograms, and custom sizing are high-demand in this category. A visible, easy-to-find personalization option increases conversion, especially with gift buyers.
-
-**A care guide.** Conditioning leather is a recurring question. A care guide or FAQ block answers it once for every buyer and reduces post-purchase regret.
-
-**A portfolio or gallery block.** For makers who do significant custom or bespoke work, a gallery showing custom pieces across different leathers and styles serves as the primary selling tool.
-
-**A patina showcase.** Before-and-after or "years later" photography showing how a piece has aged is compelling in the vegetable-tan category. If the maker has it, it should be visible.
-
-**A repair or restoration service block.** If the maker takes repair work, surfacing it attracts customers who have a beloved leather piece in need of care — and often converts them into product buyers too.
-
-## What to avoid
-
-- **Stock leather texture images.** The maker's own leather — their specific hides, their chosen tannage, their stitching style — is what the buyer is paying for. Generic stock undercuts that immediately.
-- **Grade and material vagueness.** "High-quality leather" means nothing. "Horween chromexcel, pull-up finish, from the tannery in Chicago" means something. Specificity is credibility.
-- **Hiding the construction process.** Buyers who care about craft want to see how the piece was made. Hiding the process treats it as a commodity.
-- **Burying the patina story.** For vegetable-tanned goods, the way the leather ages over years is a primary selling point. Copy that only describes the piece when new leaves the best argument on the table.
-- **Generic gift framing.** "Makes a great gift for the man in your life" is everywhere. Specific gift framing ("a wallet he'll still be carrying in 2040") is less common and more persuasive.
-- **Underexplaining custom work.** Custom or made-to-order work requires more explanation than ready-to-ship products — timeline, process, what's customizable, what it costs. Vague custom pages lose orders.
-
 ## Adjacent niches
 
-Leatherworkers commonly expand into bag making (canvas and leather combinations), bookbinding (leather-covered journals), knife and sheath making, Western or equestrian accessories, and belt and accessory sets. Some leatherworkers also do repair and restoration work across leather goods categories. Writers of adjacent files for bag_maker and bookbinder should note that the leatherworker's material vocabulary (grain grades, tanning methods, edge finishing) applies directly in those categories. The saddle-maker subset overlaps with equestrian niches that may get their own files as the queue grows.
+Leatherworkers commonly expand into bag making (canvas and leather combinations), bookbinding (leather-covered journals), knife and sheath making, Western or equestrian accessories, and belt and accessory sets. Some leatherworkers also do repair and restoration work across leather goods categories. The leatherworker's material vocabulary (grain grades, tanning methods, edge finishing) applies directly in adjacent categories.

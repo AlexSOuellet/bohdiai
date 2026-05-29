@@ -6,17 +6,6 @@ const meta: BlockMeta = {
   sectionType: 'custom',
   description:
     'A simple contact form (name, email, message) that posts to the platform contact API and sends an email to the shop owner. Renders an intro heading, a short subheading, the form, and a small confirmation message after a successful send.',
-  moodFit: [
-    'dark-and-stormy',
-    'rustic',
-    'warm-and-cozy',
-    'summer-afternoon',
-    'wild-meadow',
-    'bright-bazaar',
-    'sunday-morning',
-  ],
-  tenantTypeFit: ['seller', 'doer'],
-  tier: 'free',
   status: 'active',
   pageTypes: ['contact'],
   slots: [],

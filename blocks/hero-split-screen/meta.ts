@@ -6,9 +6,6 @@ const meta: BlockMeta = {
   sectionType: 'hero',
   description:
     'Clean 50/50 split. Wide landscape image on the left. Solid bordered card panel on the right — tagline, mixed-weight headline, divider line, subheadline, CTA.',
-  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
-  tenantTypeFit: ['seller', 'doer'],
-  tier: 'free',
   status: 'active',
   pageTypes: ['home'],
   slots: [

@@ -6,9 +6,6 @@ const meta: BlockMeta = {
   sectionType: 'products',
   description:
     'Split layout. Sticky left panel shows the hovered product image at full height. Right column lists all products as numbered rows with thin dividers — hover slides in product details. Interactive, no traditional card grid.',
-  moodFit: ['dark-and-stormy', 'rustic', 'warm-and-cozy', 'summer-afternoon', 'wild-meadow', 'bright-bazaar', 'sunday-morning'],
-  tenantTypeFit: ['seller'],
-  tier: 'free',
   status: 'active',
   pageTypes: ['home'],
   slots: [],

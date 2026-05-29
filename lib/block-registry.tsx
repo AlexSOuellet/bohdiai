@@ -1,18 +1,28 @@
 import type { ReactNode } from 'react';
 
 import NavSplit from '@/blocks/nav-split';
+import NavCenteredWordmark from '@/blocks/nav-centered-wordmark';
 import HeroEditorial from '@/blocks/hero-editorial';
 import HeroCinematic from '@/blocks/hero-cinematic';
 import HeroSplitGallery from '@/blocks/hero-split-gallery';
 import HeroSplitScreen from '@/blocks/hero-split-screen';
+import HeroBento from '@/blocks/hero-bento';
+import HeroSuperType from '@/blocks/hero-super-type';
+import HeroLava from '@/blocks/hero-lava';
 import AboutMaker from '@/blocks/about-maker';
+import AboutFoundersNote from '@/blocks/about-founders-note';
+import AboutManifest from '@/blocks/about-manifest';
 import ProductsBloomGrid from '@/blocks/products-bloom-grid';
 import ProductsGrid from '@/blocks/products-grid';
 import ProductsEditorialGrid from '@/blocks/products-editorial-grid';
 import ProductsSplitCarousel from '@/blocks/products-split-carousel';
+import ProductsBentoGrid from '@/blocks/products-bento-grid';
+import ProductsInTheWild from '@/blocks/products-in-the-wild';
 import CollectionsRow from '@/blocks/collections-row';
 import CtaBanner from '@/blocks/cta-banner';
 import TestimonialsGrid from '@/blocks/testimonials-grid';
+import TestimonialsFeatured from '@/blocks/testimonials-featured';
+import TestimonialsCarousel from '@/blocks/testimonials-carousel';
 import EventsList from '@/blocks/events-list';
 import CustomContent from '@/blocks/custom-content';
 import FooterClassic from '@/blocks/footer-classic';
@@ -73,18 +83,28 @@ interface SlotData {
 
 const BLOCK_REGISTRY: Record<string, BlockComponent> = {
   'nav-split':               asBlock(NavSplit),
+  'nav-centered-wordmark':   asBlock(NavCenteredWordmark),
   'hero-editorial':          asBlock(HeroEditorial),
   'hero-cinematic':          asBlock(HeroCinematic),
   'hero-split-gallery':      asBlock(HeroSplitGallery),
   'hero-split-screen':       asBlock(HeroSplitScreen),
+  'hero-bento':              asBlock(HeroBento),
+  'hero-super-type':         asBlock(HeroSuperType),
+  'hero-lava':               asBlock(HeroLava),
   'about-maker':             asBlock(AboutMaker),
+  'about-founders-note':     asBlock(AboutFoundersNote),
+  'about-manifest':          asBlock(AboutManifest),
   'products-bloom-grid':     asBlock(ProductsBloomGrid),
   'products-grid':           asBlock(ProductsGrid),
   'products-editorial-grid': asBlock(ProductsEditorialGrid),
   'products-split-carousel': asBlock(ProductsSplitCarousel),
+  'products-bento-grid':     asBlock(ProductsBentoGrid),
+  'products-in-the-wild':    asBlock(ProductsInTheWild),
   'collections-row':         asBlock(CollectionsRow),
   'cta-banner':              asBlock(CtaBanner),
   'testimonials-grid':       asBlock(TestimonialsGrid),
+  'testimonials-featured':   asBlock(TestimonialsFeatured),
+  'testimonials-carousel':   asBlock(TestimonialsCarousel),
   'events-list':             asBlock(EventsList),
   'custom-content':          asBlock(CustomContent),
   'footer-classic':          asBlock(FooterClassic),
@@ -104,7 +124,13 @@ export function renderBlock(row: BlockRow, tenantId: string): ReactNode {
   const renderedSlots: Record<string, ReactNode> = {};
   if (rawSlots !== undefined) {
     for (const [slotKey, slotData] of Object.entries(rawSlots)) {
-      const Widget = WIDGET_REGISTRY[slotData.widgetKey];
+      // Bohdi sometimes wrote slots with `key` instead of `widgetKey` before the
+      // tool schema enforced the field name. Accept either for existing tenants.
+      const widgetKey =
+        slotData.widgetKey ??
+        (slotData as unknown as { key?: string }).key ??
+        '';
+      const Widget = WIDGET_REGISTRY[widgetKey];
       if (Widget !== undefined) {
         renderedSlots[slotKey] = <Widget content={slotData.content} />;
       }
