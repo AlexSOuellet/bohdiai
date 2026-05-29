@@ -1,6 +1,10 @@
+import { supabaseAdmin } from '@/lib/supabase';
+import { sanitizeDeep } from '@/lib/copy-sanitize';
+import { writeStorefrontLayout } from '@/lib/generation/write-storefront-layout';
 import { StyleSheetSchema } from '@/lib/style-sheet';
 import { validatePage } from '@/lib/layout';
-import type { BohdiToolDef } from './tools';
+import { logger } from '@/lib/logger';
+import type { BohdiToolDef, HandlerContext } from './tools';
 import type { BohdiAccumulator } from './types';
 
 export const BOHDI_LAYOUT_TOOLS: BohdiToolDef[] = [
@@ -164,6 +168,77 @@ export async function handleSetStyleSheet(
     ok: true,
     message: `Style sheet set. Palette: ${parsed.data.palette.length} colors. Fonts: ${parsed.data.fonts.length}. Textures: ${parsed.data.textures.length}.`,
   };
+}
+
+export async function finalizeLayoutEngine(
+  ctx: HandlerContext,
+): Promise<{ tenantId: string; subdomain: string }> {
+  const a = ctx.accumulator;
+  if (a.styleSheet === null) {
+    throw new Error('finalize (layout engine): style sheet not set — call set_style_sheet first');
+  }
+  if (a.layoutPages.length === 0) {
+    throw new Error('finalize (layout engine): no layout pages set — call set_layout for at least the home page');
+  }
+
+  const sanitizedPages = a.layoutPages.map((p) => sanitizeDeep(p));
+  const sanitizedCollections = sanitizeDeep(a.collections);
+  const sanitizedListings = sanitizeDeep(a.listings);
+  const sanitizedSubscriptions = sanitizeDeep(a.subscriptions);
+
+  const { data: niche } = await supabaseAdmin()
+    .from('niches')
+    .select('tenant_type_fit')
+    .eq('slug', ctx.brief.nicheSlug)
+    .single();
+  const tenantTypes = niche?.tenant_type_fit ?? ['seller'];
+
+  const result = await writeStorefrontLayout({
+    subdomain: ctx.brief.subdomain,
+    shopName: ctx.brief.shopName,
+    nicheSlug: ctx.brief.nicheSlug,
+    moodKey: ctx.brief.moodKey,
+    tenantTypes,
+    styleSheet: a.styleSheet,
+    layoutPages: sanitizedPages,
+    collections: sanitizedCollections,
+    listings: sanitizedListings,
+    subscriptions: sanitizedSubscriptions,
+    ...(ctx.brief.logoUrl !== undefined ? { logoUrl: ctx.brief.logoUrl } : {}),
+  });
+
+  ctx.tenantIdRef.value = result.tenantId;
+  ctx.done.value = true;
+  ctx.done.result = result;
+
+  const dbUpdate = supabaseAdmin() as unknown as {
+    from: (t: string) => {
+      update: (r: unknown) => {
+        is: (col: string, val: unknown) => {
+          eq: (col: string, val: unknown) => {
+            eq: (col: string, val: unknown) => Promise<unknown>;
+          };
+        };
+      };
+    };
+  };
+  await dbUpdate
+    .from('design_choices')
+    .update({ tenant_id: result.tenantId })
+    .is('tenant_id', null)
+    .eq('niche_slug', ctx.brief.nicheSlug)
+    .eq('mood_key', ctx.brief.moodKey);
+
+  logger.info('bohdi: finalize (layout engine)', {
+    tenantId: result.tenantId,
+    subdomain: result.subdomain,
+    pages: sanitizedPages.length,
+    palette: a.styleSheet.palette.length,
+    fonts: a.styleSheet.fonts.length,
+    textures: a.styleSheet.textures.length,
+  });
+
+  return result;
 }
 
 export async function handleSetLayout(

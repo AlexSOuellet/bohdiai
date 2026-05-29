@@ -3,6 +3,13 @@ import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { renderBlock } from '@/lib/block-registry';
 import { BLOCKS_MANIFEST } from '@/lib/blocks-manifest.generated';
+import { LayoutPage } from '@/components/storefront/layout';
+import { PageSchema } from '@/lib/layout';
+import { StyleSheetSchema } from '@/lib/style-sheet';
+import {
+  compileStyleSheet,
+  googleFontPreconnectLinks,
+} from '@/lib/style-sheet-loader';
 import type { Json } from '@/lib/database.types';
 
 interface StorefrontPageProps {
@@ -29,20 +36,51 @@ export default async function StorefrontPage({ slug }: StorefrontPageProps) {
 
   const db = supabaseAdmin();
 
-  const { data: page } = await db
+  const { data: pageRaw } = await db
     .from('content_pages')
-    .select('id')
+    .select('id, slug, title')
     .eq('tenant_id', tenantId)
     .eq('slug', slug)
     .eq('status', 'published')
     .maybeSingle();
 
-  if (page === null) notFound();
+  if (pageRaw === null) notFound();
+
+  // Read layout_tree via a typed-around query — database.types.ts predates
+  // the column.
+  const pageExtended = await (async () => {
+    const client = db as unknown as {
+      from: (t: string) => {
+        select: (cols: string) => {
+          eq: (col: string, val: string) => {
+            maybeSingle: () => Promise<{ data: { layout_tree: Json | null } | null }>;
+          };
+        };
+      };
+    };
+    const res = await client
+      .from('content_pages')
+      .select('layout_tree')
+      .eq('id', pageRaw.id)
+      .maybeSingle();
+    return res.data;
+  })();
+
+  if (pageExtended !== null && pageExtended.layout_tree !== null) {
+    return renderLayoutEnginePage({
+      tenantId,
+      pageRecord: {
+        slug: pageRaw.slug,
+        title: pageRaw.title,
+        layoutTree: pageExtended.layout_tree,
+      },
+    });
+  }
 
   const { data: blocks } = await db
     .from('page_blocks')
     .select('block_key, position, content')
-    .eq('page_id', page.id)
+    .eq('page_id', pageRaw.id)
     .eq('is_visible', true)
     .order('position', { ascending: true });
 
@@ -102,4 +140,99 @@ export default async function StorefrontPage({ slug }: StorefrontPageProps) {
       })}
     </main>
   );
+}
+
+interface LayoutEnginePageRecord {
+  slug: string;
+  title: string;
+  layoutTree: Json;
+}
+
+async function renderLayoutEnginePage({
+  tenantId,
+  pageRecord,
+}: {
+  tenantId: string;
+  pageRecord: LayoutEnginePageRecord;
+}) {
+  const db = supabaseAdmin();
+  const treeContainer =
+    typeof pageRecord.layoutTree === 'object' &&
+    pageRecord.layoutTree !== null &&
+    !Array.isArray(pageRecord.layoutTree)
+      ? (pageRecord.layoutTree as Record<string, unknown>)
+      : null;
+
+  if (treeContainer === null) {
+    notFound();
+  }
+
+  const rootRaw = treeContainer['root'];
+  const metaRaw = treeContainer['meta'];
+  const parsedPage = PageSchema.safeParse({
+    slug: pageRecord.slug.replace(/^\/+/, '') || 'home',
+    name: pageRecord.title,
+    root: rootRaw,
+    ...(metaRaw !== null && metaRaw !== undefined ? { meta: metaRaw } : {}),
+  });
+  if (!parsedPage.success) {
+    notFound();
+  }
+
+  const styleSheetRow = await (async () => {
+    const client = db as unknown as {
+      from: (t: string) => {
+        select: (cols: string) => {
+          eq: (col: string, val: string) => {
+            eq: (col: string, val: boolean) => {
+              maybeSingle: () => Promise<{ data: { sheet: Json } | null }>;
+            };
+          };
+        };
+      };
+    };
+    const res = await client
+      .from('style_sheets')
+      .select('sheet')
+      .eq('tenant_id', tenantId)
+      .eq('is_active', true)
+      .maybeSingle();
+    return res.data;
+  })();
+
+  const compiled =
+    styleSheetRow !== null && styleSheetRow.sheet !== null
+      ? compileStyleSheetIfValid(styleSheetRow.sheet)
+      : null;
+
+  return (
+    <>
+      {compiled !== null && (
+        <>
+          {googleFontPreconnectLinks().map((l) => (
+            <link
+              key={l.href}
+              rel={l.rel}
+              href={l.href}
+              {...(l.crossOrigin === 'anonymous' ? { crossOrigin: 'anonymous' as const } : {})}
+            />
+          ))}
+          {compiled.googleFontLinks.map((href) => (
+            <link key={href} rel="stylesheet" href={href} />
+          ))}
+          <style dangerouslySetInnerHTML={{ __html: compiled.cssVariables }} />
+          {compiled.customFontFaces !== '' && (
+            <style dangerouslySetInnerHTML={{ __html: compiled.customFontFaces }} />
+          )}
+        </>
+      )}
+      <LayoutPage page={parsedPage.data} />
+    </>
+  );
+}
+
+function compileStyleSheetIfValid(sheet: Json) {
+  const parsed = StyleSheetSchema.safeParse(sheet);
+  if (!parsed.success) return null;
+  return compileStyleSheet(parsed.data);
 }

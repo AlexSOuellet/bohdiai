@@ -22,9 +22,11 @@ import { inferGenderFromName } from '@/lib/name-gender';
 import { sanitizeDeep } from '@/lib/copy-sanitize';
 import {
   BOHDI_LAYOUT_TOOLS,
+  finalizeLayoutEngine,
   handleSetLayout,
   handleSetStyleSheet,
 } from './layout-tools';
+import { isLayoutEngineNiche } from './layout-engine-niches';
 import type { BohdiAccumulator, BohdiBrief } from './types';
 
 // ─── Tool definitions for the Anthropic API ──────────────────────────────────
@@ -677,6 +679,11 @@ const handlers: Record<string, Handler> = {
 
   async finalize(_args, ctx) {
     const a = ctx.accumulator;
+
+    if (isLayoutEngineNiche(ctx.brief.nicheSlug)) {
+      return finalizeLayoutEngine(ctx);
+    }
+
     if (!a.tokens) throw new Error('finalize: tokens not set');
     if (!a.homePage) throw new Error('finalize: home page not set');
     if (!a.shopPageCopy || !a.contactPageCopy) throw new Error('finalize: secondary pages copy not set');

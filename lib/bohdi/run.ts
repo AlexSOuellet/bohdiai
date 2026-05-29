@@ -5,7 +5,7 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { anthropicClient } from '@/lib/anthropic';
 import { logger } from '@/lib/logger';
 import { labelFor, stepForTool, type ProgressEmitter } from '@/lib/progress';
-import { BOHDI_SYSTEM_PROMPT } from './system-prompt';
+import { systemPromptFor } from './system-prompt';
 import { BOHDI_TOOLS, dispatchTool, type HandlerContext } from './tools';
 import { emptyAccumulator, type BohdiBrief, type BohdiResult } from './types';
 
@@ -75,7 +75,7 @@ Begin. Read the niche and mood first, then design the storefront end-to-end. Del
   const cachedSystem: Anthropic.TextBlockParam[] = [
     {
       type: 'text',
-      text: BOHDI_SYSTEM_PROMPT,
+      text: systemPromptFor(brief.nicheSlug),
       cache_control: { type: 'ephemeral' },
     },
   ];

@@ -18,7 +18,7 @@ import { inferGenderFromName } from '@/lib/name-gender';
 import { sanitizeDeep } from '@/lib/copy-sanitize';
 import { runBohdi } from '@/lib/bohdi/run';
 
-const BOHDI_NICHES = new Set(['leatherworker', 'photo_magnet_maker']);
+const BOHDI_NICHES = new Set(['leatherworker', 'photo_magnet_maker', 'candles']);
 
 export interface RunStorefrontInput {
   shopName: string;
