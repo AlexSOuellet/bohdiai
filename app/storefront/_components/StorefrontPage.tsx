@@ -2,7 +2,8 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { LayoutPage } from '@/components/storefront/layout';
-import { PageSchema } from '@/lib/layout';
+import { PageSchema, resolvePage } from '@/lib/layout';
+import { createResolveContextForTenant } from '@/lib/layout/resolver-supabase';
 import { StyleSheetSchema } from '@/lib/style-sheet';
 import {
   compileStyleSheet,
@@ -91,6 +92,11 @@ export default async function StorefrontPage({ slug }: StorefrontPageProps) {
       ? compileStyleSheetIfValid(styleSheetRow.sheet)
       : null;
 
+  const resolved = await resolvePage(
+    parsedPage.data,
+    createResolveContextForTenant(tenantId),
+  );
+
   return (
     <>
       {compiled !== null && (
@@ -116,7 +122,7 @@ export default async function StorefrontPage({ slug }: StorefrontPageProps) {
           )}
         </>
       )}
-      <LayoutPage page={parsedPage.data} />
+      <LayoutPage page={parsedPage.data} resolved={resolved} />
     </>
   );
 }

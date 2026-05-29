@@ -1,5 +1,5 @@
 import type { BandNode } from '@/lib/layout';
-import { Node, deriveCtx, type RenderContext } from '../Node';
+import { Node, childPath, deriveCtx, type RenderContext } from '../Node';
 import { applyDensity, intentToStyleVars } from '../intent';
 import {
   ALIGN_ITEMS_CLASS,
@@ -48,7 +48,11 @@ export function Band({ node, ctx }: { node: BandNode; ctx: RenderContext }) {
       )}
     >
       {node.children.map((child, i) => (
-        <Node key={child.id ?? `band-${i}`} node={child} ctx={childCtx} />
+        <Node
+          key={child.id ?? `band-${i}`}
+          node={child}
+          ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }}
+        />
       ))}
     </section>
   );

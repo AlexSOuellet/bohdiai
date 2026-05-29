@@ -1,5 +1,5 @@
 import type { GridNode } from '@/lib/layout';
-import { Node, deriveCtx, type RenderContext } from '../Node';
+import { Node, childPath, deriveCtx, type RenderContext } from '../Node';
 import { applyDensity, intentToStyleVars } from '../intent';
 import {
   ALIGN_CONTENT_CLASS,
@@ -52,7 +52,11 @@ export function Grid({ node, ctx }: { node: GridNode; ctx: RenderContext }) {
       )}
     >
       {node.children.map((child, i) => (
-        <Node key={child.id ?? `grid-${i}`} node={child} ctx={childCtx} />
+        <Node
+          key={child.id ?? `grid-${i}`}
+          node={child}
+          ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }}
+        />
       ))}
     </div>
   );

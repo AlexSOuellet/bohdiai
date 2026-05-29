@@ -1,10 +1,21 @@
-import type { CartNode } from '@/lib/layout';
+import type { CartNode, ResolvedCart } from '@/lib/layout';
 import type { RenderContext } from '../Node';
 import { intentToStyleVars } from '../intent';
 
+function formatPriceCents(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
+function resolvedCartAt(ctx: RenderContext): ResolvedCart | null {
+  if (ctx.resolved === undefined || ctx.path === undefined) return null;
+  const data = ctx.resolved[ctx.path];
+  if (Array.isArray(data) || data === undefined || data === null) return null;
+  return data as ResolvedCart;
+}
+
 export function CartContent({
   node,
-  ctx: _ctx,
+  ctx,
 }: {
   node: CartNode;
   ctx: RenderContext;
@@ -39,31 +50,63 @@ export function CartContent({
     );
   }
 
+  const cart = resolvedCartAt(ctx);
+
+  if (cart === null || cart.lines.length === 0) {
+    return (
+      <div
+        data-node-type="cart"
+        data-node-variant="page"
+        data-node-id={node.id}
+        style={intentToStyleVars(node.intent)}
+        className="flex flex-col gap-4 w-full"
+      >
+        <h2 className="text-2xl font-semibold">Your cart is empty</h2>
+        <a
+          href="/shop"
+          className="inline-flex items-center w-fit px-6 py-3 rounded-md bg-black text-white font-medium"
+        >
+          Browse the shop
+        </a>
+      </div>
+    );
+  }
+
   return (
     <div
       data-node-type="cart"
       data-node-variant="page"
       data-node-id={node.id}
-      data-bound-placeholder
       style={intentToStyleVars(node.intent)}
       className="flex flex-col gap-4 w-full"
     >
-      <div className="h-6 w-1/4 bg-black/10 rounded" />
+      <h2 className="text-2xl font-semibold">Cart</h2>
       <div className="flex flex-col gap-3">
-        {Array.from({ length: 2 }).map((_, i) => (
-          <div key={`cart-line-${i}`} className="flex items-center gap-4 py-3 border-b border-black/10">
-            <div className="w-16 h-16 bg-black/10" />
-            <div className="flex-1 flex flex-col gap-1">
-              <div className="h-4 w-1/2 bg-black/10 rounded" />
-              <div className="h-3 w-1/4 bg-black/10 rounded" />
+        {cart.lines.map((line) => (
+          <div
+            key={line.productId}
+            className="flex items-center gap-4 py-3 border-b border-black/10"
+          >
+            <div className="w-16 h-16 bg-black/10 overflow-hidden">
+              {line.imageUrl !== undefined && (
+                <img
+                  src={line.imageUrl}
+                  alt={line.productName}
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
-            <div className="h-5 w-16 bg-black/10 rounded" />
+            <div className="flex-1 flex flex-col gap-1">
+              <div className="font-medium">{line.productName}</div>
+              <div className="text-sm opacity-70">qty {line.quantity}</div>
+            </div>
+            <div className="text-base">{formatPriceCents(line.priceCents)}</div>
           </div>
         ))}
       </div>
       <div className="flex items-center justify-between mt-2">
         <span className="font-medium">Total</span>
-        <div className="h-5 w-20 bg-black/10 rounded" />
+        <span className="text-lg">{formatPriceCents(cart.subtotalCents)}</span>
       </div>
     </div>
   );

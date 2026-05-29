@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import type { OverlapAnchorPosition, OverlapNode } from '@/lib/layout';
-import { Node, deriveCtx, type RenderContext } from '../Node';
+import { Node, childPath, deriveCtx, type RenderContext } from '../Node';
 import { intentToStyleVars } from '../intent';
 import { joinClasses } from '../scale';
 
@@ -39,7 +39,10 @@ export function Overlap({ node, ctx }: { node: OverlapNode; ctx: RenderContext }
             className={positionClass}
             style={isAnchor ? { zIndex: 0 } : { zIndex: i + 1 }}
           >
-            <Node node={child} ctx={childCtx} />
+            <Node
+              node={child}
+              ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }}
+            />
           </div>
         );
       })}
@@ -58,7 +61,10 @@ export function Overlap({ node, ctx }: { node: OverlapNode; ctx: RenderContext }
             style={wrapperStyle}
             className="w-full"
           >
-            <Node node={child} ctx={childCtx} />
+            <Node
+              node={child}
+              ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }}
+            />
           </div>
         );
       })}

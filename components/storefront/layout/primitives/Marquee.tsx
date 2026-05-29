@@ -2,7 +2,7 @@
 
 import type { CSSProperties } from 'react';
 import type { MarqueeNode, MarqueeSpeed } from '@/lib/layout';
-import { Node, deriveCtx, type RenderContext } from '../Node';
+import { Node, childPath, deriveCtx, type RenderContext } from '../Node';
 import { applyDensity, intentToStyleVars } from '../intent';
 import { GAP_CLASS, GAP_CLASS_MD, joinClasses } from '../scale';
 
@@ -55,7 +55,10 @@ export function Marquee({ node, ctx }: { node: MarqueeNode; ctx: RenderContext }
       >
         {node.children.map((child, i) => (
           <div key={child.id ?? `marquee-a-${i}`} className="shrink-0">
-            <Node node={child} ctx={childCtx} />
+            <Node
+              node={child}
+              ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }}
+            />
           </div>
         ))}
         {node.children.map((child, i) => (
@@ -64,7 +67,10 @@ export function Marquee({ node, ctx }: { node: MarqueeNode; ctx: RenderContext }
             className="shrink-0"
             aria-hidden="true"
           >
-            <Node node={child} ctx={childCtx} />
+            <Node
+              node={child}
+              ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }}
+            />
           </div>
         ))}
       </div>

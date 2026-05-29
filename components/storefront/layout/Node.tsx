@@ -1,4 +1,4 @@
-import type { Density, LayoutNode } from '@/lib/layout';
+import type { Density, LayoutNode, ResolvedDataByNodePath } from '@/lib/layout';
 import { inheritedDensity } from './intent';
 import { Band } from './primitives/Band';
 import { Bleed } from './primitives/Bleed';
@@ -31,6 +31,8 @@ import { WordmarkContent } from './content/Wordmark';
 
 export interface RenderContext {
   density?: Density;
+  path?: string;
+  resolved?: ResolvedDataByNodePath;
 }
 
 export interface NodeProps {
@@ -40,7 +42,15 @@ export interface NodeProps {
 
 export function deriveCtx(node: LayoutNode, ctx: RenderContext): RenderContext {
   const density = inheritedDensity(ctx.density, node.intent);
-  return density === undefined ? {} : { density };
+  const next: RenderContext = {};
+  if (density !== undefined) next.density = density;
+  if (ctx.resolved !== undefined) next.resolved = ctx.resolved;
+  return next;
+}
+
+export function childPath(ctx: RenderContext, segment: string): string {
+  const base = ctx.path ?? 'root';
+  return `${base}.${segment}`;
 }
 
 export function Node({ node, ctx }: NodeProps) {

@@ -1,4 +1,4 @@
-import type { ProductGridNode } from '@/lib/layout';
+import type { ProductGridNode, ResolvedProduct } from '@/lib/layout';
 import type { RenderContext } from '../Node';
 import { intentToStyleVars } from '../intent';
 import {
@@ -12,9 +12,23 @@ import {
   joinClasses,
 } from '../scale';
 
+function formatPriceCents(cents: number | undefined): string {
+  if (cents === undefined) return '';
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
+function resolvedProductsAt(
+  ctx: RenderContext,
+): ResolvedProduct[] | null {
+  if (ctx.resolved === undefined || ctx.path === undefined) return null;
+  const data = ctx.resolved[ctx.path];
+  if (!Array.isArray(data)) return null;
+  return data as ResolvedProduct[];
+}
+
 export function ProductGridContent({
   node,
-  ctx: _ctx,
+  ctx,
 }: {
   node: ProductGridNode;
   ctx: RenderContext;
@@ -24,11 +38,16 @@ export function ProductGridContent({
   const mobileColumns =
     node.mobileColumns ?? defaultMobileColumnsForDesktop(desktopColumns);
 
+  const products = resolvedProductsAt(ctx);
+  const items: (ResolvedProduct | null)[] =
+    products !== null
+      ? products
+      : Array.from({ length: count }).map(() => null);
+
   return (
     <div
       data-node-type="productGrid"
       data-node-id={node.id}
-      data-bound-placeholder
       style={intentToStyleVars(node.intent)}
       className={joinClasses(
         'grid w-full',
@@ -40,16 +59,37 @@ export function ProductGridContent({
         GAP_Y_CLASS_MD.lg,
       )}
     >
-      {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={`product-${i}`}
-          className="flex flex-col gap-2"
-        >
-          <div className="aspect-[4/5] w-full bg-black/10" />
-          <div className="h-4 w-3/4 bg-black/10 rounded" />
-          <div className="h-3 w-1/3 bg-black/10 rounded" />
-        </div>
-      ))}
+      {items.map((p, i) =>
+        p === null ? (
+          <div key={`product-skel-${i}`} className="flex flex-col gap-2">
+            <div className="aspect-[4/5] w-full bg-black/10" />
+            <div className="h-4 w-3/4 bg-black/10 rounded" />
+            <div className="h-3 w-1/3 bg-black/10 rounded" />
+          </div>
+        ) : (
+          <a
+            key={p.id}
+            href={`/listings/${p.slug}`}
+            className="flex flex-col gap-2 group"
+          >
+            <div className="aspect-[4/5] w-full bg-black/10 overflow-hidden">
+              {p.imageUrl !== undefined && (
+                <img
+                  src={p.imageUrl}
+                  alt={p.name}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                />
+              )}
+            </div>
+            <div className="font-medium leading-snug">{p.name}</div>
+            {p.priceCents !== undefined && (
+              <div className="text-sm opacity-70">
+                {formatPriceCents(p.priceCents)}
+              </div>
+            )}
+          </a>
+        ),
+      )}
     </div>
   );
 }

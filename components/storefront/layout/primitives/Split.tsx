@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import type { SplitNode } from '@/lib/layout';
-import { Node, deriveCtx, type RenderContext } from '../Node';
+import { Node, childPath, deriveCtx, type RenderContext } from '../Node';
 import { applyDensity, intentToStyleVars } from '../intent';
 import { GAP_CLASS, GAP_CLASS_MD, joinClasses } from '../scale';
 
@@ -47,7 +47,10 @@ export function Split({ node, ctx }: { node: SplitNode; ctx: RenderContext }) {
             style={wrapperStyle}
             className="flex flex-col"
           >
-            <Node node={child} ctx={childCtx} />
+            <Node
+              node={child}
+              ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }}
+            />
           </div>
         );
       })}

@@ -1,4 +1,4 @@
-import type { CollectionGridNode } from '@/lib/layout';
+import type { CollectionGridNode, ResolvedCollection } from '@/lib/layout';
 import type { RenderContext } from '../Node';
 import { intentToStyleVars } from '../intent';
 import {
@@ -12,9 +12,18 @@ import {
   joinClasses,
 } from '../scale';
 
+function resolvedCollectionsAt(
+  ctx: RenderContext,
+): ResolvedCollection[] | null {
+  if (ctx.resolved === undefined || ctx.path === undefined) return null;
+  const data = ctx.resolved[ctx.path];
+  if (!Array.isArray(data)) return null;
+  return data as ResolvedCollection[];
+}
+
 export function CollectionGridContent({
   node,
-  ctx: _ctx,
+  ctx,
 }: {
   node: CollectionGridNode;
   ctx: RenderContext;
@@ -24,11 +33,16 @@ export function CollectionGridContent({
   const mobileColumns =
     node.mobileColumns ?? defaultMobileColumnsForDesktop(desktopColumns);
 
+  const collections = resolvedCollectionsAt(ctx);
+  const items: (ResolvedCollection | null)[] =
+    collections !== null
+      ? collections
+      : Array.from({ length: count }).map(() => null);
+
   return (
     <div
       data-node-type="collectionGrid"
       data-node-id={node.id}
-      data-bound-placeholder
       style={intentToStyleVars(node.intent)}
       className={joinClasses(
         'grid w-full',
@@ -40,12 +54,32 @@ export function CollectionGridContent({
         GAP_Y_CLASS_MD.lg,
       )}
     >
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={`collection-${i}`} className="flex flex-col gap-2">
-          <div className="aspect-[3/2] w-full bg-black/10" />
-          <div className="h-5 w-1/2 bg-black/10 rounded" />
-        </div>
-      ))}
+      {items.map((c, i) =>
+        c === null ? (
+          <div key={`collection-skel-${i}`} className="flex flex-col gap-2">
+            <div className="aspect-[3/2] w-full bg-black/10" />
+            <div className="h-5 w-1/2 bg-black/10 rounded" />
+          </div>
+        ) : (
+          <a
+            key={c.slug}
+            href={`/collections/${c.slug}`}
+            className="flex flex-col gap-2 group"
+          >
+            <div className="aspect-[3/2] w-full bg-black/10 overflow-hidden">
+              {c.imageUrl !== undefined && (
+                <img
+                  src={c.imageUrl}
+                  alt={c.name}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                />
+              )}
+            </div>
+            <div className="font-medium">{c.name}</div>
+            <div className="text-xs opacity-60">{c.itemCount} pieces</div>
+          </a>
+        ),
+      )}
     </div>
   );
 }

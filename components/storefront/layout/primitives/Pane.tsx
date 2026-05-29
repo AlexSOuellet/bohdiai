@@ -1,5 +1,5 @@
 import type { PaneNode } from '@/lib/layout';
-import { Node, deriveCtx, type RenderContext } from '../Node';
+import { Node, childPath, deriveCtx, type RenderContext } from '../Node';
 import { applyDensity, intentToStyleVars } from '../intent';
 import {
   BORDER_CLASS,
@@ -49,7 +49,10 @@ export function Pane({ node, ctx }: { node: PaneNode; ctx: RenderContext }) {
         SHADOW_CLASS_MD[desktopShadow],
       )}
     >
-      <Node node={node.child} ctx={childCtx} />
+      <Node
+        node={node.child}
+        ctx={{ ...childCtx, path: childPath(ctx, 'child') }}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import type { BleedNode, BleedSide } from '@/lib/layout';
-import { Node, deriveCtx, type RenderContext } from '../Node';
+import { Node, childPath, deriveCtx, type RenderContext } from '../Node';
 import { intentToStyleVars } from '../intent';
 import { joinClasses } from '../scale';
 
@@ -37,7 +37,10 @@ export function Bleed({ node, ctx }: { node: BleedNode; ctx: RenderContext }) {
         BLEED_CLASS_MD[desktopSide],
       )}
     >
-      <Node node={node.child} ctx={childCtx} />
+      <Node
+        node={node.child}
+        ctx={{ ...childCtx, path: childPath(ctx, 'child') }}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import type { StackNode } from '@/lib/layout';
-import { Node, deriveCtx, type RenderContext } from '../Node';
+import { Node, childPath, deriveCtx, type RenderContext } from '../Node';
 import { applyDensity, intentToStyleVars } from '../intent';
 import {
   ALIGN_ITEMS_CLASS,
@@ -36,7 +36,11 @@ export function Stack({ node, ctx }: { node: StackNode; ctx: RenderContext }) {
       )}
     >
       {node.children.map((child, i) => (
-        <Node key={child.id ?? `stack-${i}`} node={child} ctx={childCtx} />
+        <Node
+          key={child.id ?? `stack-${i}`}
+          node={child}
+          ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }}
+        />
       ))}
     </div>
   );
