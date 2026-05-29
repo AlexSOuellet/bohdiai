@@ -157,7 +157,7 @@ The page_blocks / renderBlock / BLOCKS_MANIFEST / footer-injection path is gone 
 
 Named explicitly so the next session does not lose this thread:
 
-**Untested.** Nothing has been generated through this path yet. The first candles × mood run will be the first end-to-end test. Expect bugs.
+**First candles canary — ran. cathys-candles tenant generated end-to-end.** 7:41 build, 14 turns, $0.75, 4 pages composed via set_layout, 14 palette colors / 5 fonts / 2 textures. Storefront renders. Issue list and decisions from reviewing the result are at the bottom of this brief under "Session 12 test results — backlog for next session."
 
 **Social links source.** No table for social URLs today. The resolver returns []. SocialLinks node renders the platforms Bohdi requested as unlinked icon placeholders. Not breaking, but not real.
 
@@ -311,4 +311,40 @@ Storage buckets: `placeholder-images` (legacy, unused), `generated-images` (acti
 #24. [completed] Storefront route resolves before rendering
 ```
 
-All session 12 work complete. Task list resets next session. First task next session is to run candles × one mood end-to-end and look at what comes out.
+All session 12 build work complete. Task list resets next session.
+
+---
+
+## Session 12 test results — backlog for next session
+
+The first candles canary generated successfully (cathys-candles, 7:41 build, $0.75, 14 turns). Storefront is live at `cathys-candles.localhost:3000`. Two production bugs were fixed during the test (committed at the end of the session):
+
+- StepBuild's AbortController cleanup was tearing down the fetch in React Strict Mode (dev). Removed.
+- MAX_TOKENS bumped from 4096 to 16000 — a single set_layout call emits a large JSON tree and was capping out.
+
+Alex's eye on the live result, in his words and order:
+
+1. **Hero is solid.** Big editorial image, eyebrow + headline + sub. Likes the shape. Two issues underneath: some text on the photo is hard to read where the background is bright, and the renderer's contrast enforcement only works against palette colors, not image pixels. Fix path: when an image node has a text node placed on top (overlap), the renderer should automatically lay a scrim band so contrast is enforced.
+
+2. **Marquee with the scent names works great.** Bohdi reached for the marquee primitive on his own. Good sign that primitive earns its place.
+
+3. **Bohdi invents URLs.** A featured-product band linked to `/shop/honey-and-beeswax` (404). Real listing route is `/listings/{slug}`. The layout-engine system prompt does not enumerate the real routes — the legacy prompt did. Fix path: spell out the routes in the prompt AND probably teach button/featuredProduct nodes to format hrefs from known patterns rather than free-text.
+
+4. **Shop page collection thumbnails are huge empty boxes.** Collections table has no image_url column (already flagged in this brief). With no image, the placeholder fills the cell. Light text on light pane on top of that — illegible. Fix path: collapse the collection card to a text-only card shape when there's no image, and the contrast enforcement should catch the light-on-light text.
+
+5. **"Pages feel overrun and too big."** Bands render full-width with no inner max-width on the content. Real editorial caps content at 1100-1280px centered while bands themselves can bleed for backgrounds. Fix path: bands default to a centered content max-width with a `width: 'full'` opt-in for true full-bleed.
+
+6. **"Mobile text gets scrunched."** Narrow viewport collapses text into cramped layouts. Need to audit responsive type scale and gutter behavior on the small-end. Renderer applies the mobile knob per primitive but text nodes themselves don't currently scale type.
+
+7. **Still feels stacked.** Every band on top of the next band. No split, no overlap, no bleed. Bohdi reached for the safest geometry — vertical band stack. Fix path: this is where the art-director pass comes in, calling a page out when its rhythm is monotonic. Until that ships, can lean harder in the prompt OR can prefab partial trees (patterns) Bohdi can study.
+
+8. **Speed/cost.** 7:41 is too slow. $0.75 per generation is expensive at the per-tenant level. The single biggest leak: Bohdi has the full toolbox visible — he called set_tokens + set_secondary_pages_copy + set_about_page + set_hero_image + set_about_image (all legacy) alongside set_style_sheet + set_layout. That's 2-3 wasted turns and a lot of token cost. Fix path: gate the tools list by niche too (not just the system prompt). Layout-engine niches see layout tools + shared only.
+
+Alex's onboarding-step feedback (banked here so it's not lost):
+
+9. **Drop the booth pitch voice step.** A 1-2 sentence pitch can't carry a 1500-3500 character about page, so Bohdi invents the rest and the result reads generic. Approved direction: drop the voice step entirely, Bohdi writes the about from niche + mood + shop name as a polished sample the maker rewrites in post-onboarding personalization. The about page itself stays — every storefront ships with one, no blanks.
+
+10. **Replace the build ticker + personalized status updates with something better.** Alex doesn't like the rotating tip ticker or the "Sarah, choosing your colors…" personalized status copy. My lean is "show the real work as it lands" — palette swatches appear as Bohdi authors them, fonts appear with sample text, product images pop in as fal returns them. Real artifacts of the build, not curated tips. Pending Alex's final call on direction.
+
+Suggested order for next session (Alex's call): #8 (gate tools by niche — speed win) and #9 (drop voice step) are mechanical and unblock cleaner subsequent testing. #1, #4, #5, #6 are renderer fixes. #3 is prompt + minor renderer change. #7 and #10 are the bigger UX/architecture moves.
+
