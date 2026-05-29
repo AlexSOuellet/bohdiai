@@ -18,6 +18,7 @@ export type CatalogStatus = 'active' | 'draft' | 'retired';
  *
  * - 'home': the AI may pick this block when composing the home page.
  * - 'shop': used on the /shop page.
+ * - 'about': used on the /about page (expanded story, distinct from home about teaser).
  * - 'contact': used on the /contact page.
  * - 'gallery': used on the /gallery page.
  * - 'system': injected by the platform on every page (nav, footer). Never AI-picked.
@@ -25,7 +26,7 @@ export type CatalogStatus = 'active' | 'draft' | 'retired';
  * A block can declare multiple page types if it fits more than one context.
  * The home-page generator filters the manifest by `pageTypes.includes('home')`.
  */
-export type PageType = 'home' | 'shop' | 'contact' | 'gallery' | 'system';
+export type PageType = 'home' | 'shop' | 'about' | 'contact' | 'gallery' | 'system';
 
 export type ContentFieldType = 'text' | 'richtext' | 'image' | 'url';
 

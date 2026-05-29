@@ -16,6 +16,8 @@ export interface OnboardingData {
   subdomain: string;
   moodKey: MoodKey | '';
   productCount: number;
+  logoUrl: string;          // Empty string = no logo uploaded.
+  brandColors: string[];    // Hex codes from Vision; empty if no logo or extraction failed.
 }
 
 export const INITIAL_DATA: OnboardingData = {
@@ -25,4 +27,6 @@ export const INITIAL_DATA: OnboardingData = {
   subdomain: '',
   moodKey: '',
   productCount: DEFAULT_PRODUCT_COUNT,
+  logoUrl: '',
+  brandColors: [],
 };

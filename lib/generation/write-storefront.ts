@@ -32,6 +32,8 @@ export interface StorefrontWriteInput {
   listings: GeneratedListingWithImage[];
   /** AI-generated sample subscription listings (may be empty when niche doesn't fit). */
   subscriptions: GeneratedSubscriptionWithImage[];
+  /** Optional uploaded logo URL — stored on tenants.logo_url. */
+  logoUrl?: string | undefined;
 }
 
 export interface GeneratedSubscriptionWithImage extends GeneratedSubscription {
@@ -85,6 +87,7 @@ export async function writeStorefront(input: StorefrontWriteInput): Promise<Stor
       collections: input.collections,
       listings: input.listings,
       subscriptions: input.subscriptions,
+      logoUrl: input.logoUrl ?? '',
     }),
   });
 

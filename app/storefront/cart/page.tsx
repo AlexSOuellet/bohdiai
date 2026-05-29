@@ -1,8 +1,6 @@
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
-import NavSplit from '@/blocks/nav-split';
-import FooterClassic from '@/blocks/footer-classic';
-import { loadStorefrontChrome } from '../_components/storefront-chrome';
+import { loadStorefrontChromeBlocks } from '../_components/storefront-chrome';
 
 /**
  * Cart page stub. Renders an empty-cart state with nav + footer so the cart icon
@@ -14,12 +12,11 @@ export default async function StorefrontCartPage() {
   const tenantId = headerStore.get('x-tenant-id');
   if (tenantId === null) notFound();
 
-  const { shopName, sections } = await loadStorefrontChrome(tenantId);
-  const sectionsJson = JSON.stringify(sections);
+  const { nav, footer } = await loadStorefrontChromeBlocks(tenantId);
 
   return (
     <>
-      <NavSplit content={{ shopName, sections: sectionsJson }} />
+      {nav}
       <main className="pt-32 pb-20 min-h-[60vh]">
         <div className="max-w-2xl mx-auto px-6 text-center">
           <p className="font-s-body text-xs uppercase tracking-[0.2em] text-s-text/50 mb-4">
@@ -39,7 +36,7 @@ export default async function StorefrontCartPage() {
           </a>
         </div>
       </main>
-      <FooterClassic content={{ shopName, sections: sectionsJson }} />
+      {footer}
     </>
   );
 }

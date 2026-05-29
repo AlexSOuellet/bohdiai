@@ -1,156 +1,96 @@
 ---
 name: niche-writer
-description: Research and write a BohdiAI niche entry — the prose body and metadata that grounds AI site generation for a category of small business. Use this skill whenever the user asks to write, draft, create, research, or add a niche (e.g., "write a niche file for tattoo artists", "research the bakery niche", "draft a niche for dog groomers", "add a candle niche"), or whenever a new niche needs to be created to support tenants in a category BohdiAI doesn't yet cover. This is the canonical process for producing a niche entry that meets the platform's quality and bias-avoidance rules — do not freelance the structure or skip the research phase.
+description: Research and write a BohdiAI niche entry — the prose body plus the style sheet that grounds AI site generation for a category of small business. Use this skill whenever the user asks to write, draft, create, research, or add a niche (e.g., "write a niche file for tattoo artists", "research the bakery niche", "draft a niche for dog groomers", "add a candle niche"), or whenever a new niche needs to be created to support tenants in a category BohdiAI doesn't yet cover. This is the canonical process for producing a niche entry that meets the platform's quality and bias-avoidance rules — do not freelance the structure or skip the research phase.
 ---
 
 # Niche Writer
 
-## What a niche is
+## What a niche entry is
 
-A BohdiAI niche is a database row (per Tech Arch Spec §6) that holds reference content the AI consumes when generating storefronts, product copy, and design tokens for tenants in a category. One niche row covers one broad category of small business — `candles`, `tattoo_artist`, `dog_groomer`, `bakery`. The row has structured metadata (slug, display name, tenant types, aliases, related niches, status) and a body of markdown prose that the AI reads.
+A BohdiAI niche entry is a pair of files:
 
-The point of a niche entry is to give the AI grounding it can use to generate sites that feel built for *this kind of business*, while leaving room for individual tenants to express their own voice via mood pick, inspiration URLs, and their own assets.
+1. **Prose body** at `content/niches/<slug>.md` — YAML frontmatter plus sectioned markdown. Read by Bohdi (the generation agent) as the material vocabulary of the category.
+2. **Style sheet** at `content/style-sheets/niche-<slug>.json` — a structured list of raw visual materials (palette, fonts, wordmark fonts, textures). Read by Bohdi alongside the mood style sheet as the toolkit he assembles the design from.
 
-## When you write a niche entry
+Both files together. A prose body without a style sheet leaves Bohdi flying half-blind. A style sheet without prose leaves him without the material vocabulary. The skill produces both in one pass.
 
-Most often you write a niche entry because:
+## The shape we are NOT producing
 
-- A new launch-list niche is being added to the platform and an agent or the lead developer is producing the first version.
-- An Other-path tenant identified a niche we don't have yet, and the platform is producing a draft entry from the captured signal.
-- An existing niche entry is being refreshed because the category has shifted or the original was thin.
-
-In every case the output is the same shape — metadata fields plus body_markdown — and the process below applies.
+Past niche files included sections called "Visual direction range," "What tends to surface on the storefront," and "What to avoid." Those sections directed which moods, blocks, and aesthetics to use — that direction now belongs to the mood and to Bohdi's deliberation. **Do not include those sections.** Visual descriptors should also be scrubbed out of Brand exemplars — describe a brand's positioning, voice, and what makes them distinctive in their market, not what their site looks like.
 
 ## How you know which niche to write
 
-The skill does not pick the niche for you. The niche to write is always supplied by the operator (the human, the calling agent, or the upstream pipeline) when the skill is invoked.
+The niche is always supplied by the operator. Inputs that are sufficient to start:
 
-What you should expect to receive as input:
+- A niche name (display name, slug, or free-text from a tenant's Other-path onboarding).
+- Tenant type fit — `seller`, `doer`, or both. Infer if not supplied; if genuinely ambiguous, stop and ask.
+- Optional context — the maker's typed description, inspiration URLs they pasted, a sentence of background.
+- Optional related-niche hints.
 
-- **A niche name.** Either a proposed display name ("Dog Groomers", "Bakery", "Tattoo Artists"), a slug ("dog_groomers"), or the free-text input a tenant typed during onboarding when picking Other ("estate sale organizer", "lullabies pressed onto vinyl from voicemail recordings").
-- **Tenant type fit.** Whether the niche is `seller`, `doer`, or both. If the operator did not supply this, infer it from the niche name and confirm it in the frontmatter — a baker is seller, a plumber is doer, a tattoo artist is both. If genuinely ambiguous, stop and ask.
-- **Optional context.** When the niche came from an Other-path tenant, the operator may supply the maker's typed description and any inspiration URLs they pasted. Use this material as a starting input to the research phase — it tells you something about the niche you wouldn't have known from the name alone.
-- **Optional related-niche hints.** The operator may name niches they consider adjacent. Use these to inform your research starting points and your `related_niches` frontmatter field, but don't treat them as authoritative — your research may surface different adjacencies.
-
-If the input you received is just a niche name with no other context, that's fine. Treat the name as the only input and run the process below.
-
-If the input is ambiguous, contradictory, or so vague you can't run productive research from it (a one-word slug that could mean three different things, or a description that conflicts with the niche name), stop and ask the operator for clarification rather than guessing. Producing a draft from misunderstood input wastes everyone's time.
-
-The operator typically invokes the skill with a sentence or short brief. Examples of inputs that are sufficient to start:
-
-- "Write a niche for dog groomers."
-- "Draft a niche for bakeries that handle both retail and wedding cakes."
-- "An Other-path tenant typed 'estate sale organizer' and described their work as 'helping families clear out homes after a death or downsize, including pricing, staging, and running the sale weekend'. Write a draft niche for them."
-- "Refresh the candles niche — the original was thin on devotional and ritual positionings."
-
-## Output format
-
-Produce a single markdown file (this becomes the seed for a row in the `niches` table) with YAML frontmatter for the metadata and a body following the section template below.
-
-```markdown
----
-slug: candles
-display_name: Candle Maker
-tenant_type_fit: [seller]
-aliases:
-  - candle making
-  - soy candles
-  - candle company
-related_niches:
-  - soap
-  - bath_and_body
-status: draft
----
-
-# Candles
-
-## What this business does
-...
-
-## Brand exemplars across the range
-...
-
-(remaining sections per template below)
-```
-
-New entries always start at `status: draft`. They are reviewed by a human (or designated approver) before being promoted to `approved` and made visible in onboarding. Never set status to `approved` yourself.
+If the input is so vague you can't run productive research from it, stop and ask. Producing a draft from misunderstood input wastes everyone's time.
 
 ## The process
 
-Work in three phases in order: research, synthesize, draft. Do not skip the research phase even when you know something about the niche. The point of writing the niche file is that the file is grounded in observable market data, not in priors.
+Three phases: research → synthesize → draft. Don't skip research even when you think you know the category — the point of the niche file is that it's grounded in observable market data, not in priors.
 
 ### Phase 1: Research
 
-Goal: build a grounded picture of the category from real sources.
+**Step 1 — Surface the names.** Two parallel web searches:
 
-**Step 1 — Surface the names.** Run two parallel web searches:
+- Top independent or notable brands/businesses in the category.
+- Marketplace-side data — Etsy bestsellers, Shopify success stories, trade-publication roundups.
 
-- One for top independent or notable brands/businesses in the category. Use phrasing like "top independent <niche> brands", "best <niche> small business", "notable <niche> brands".
-- One for marketplace-side data — Etsy bestsellers, Shopify success stories, or trade-publication roundups for the category.
+Capture five to eight names that span different positionings, not five names in the same direction. If everything coming back is premium D2C, search again with phrasing that surfaces budget, devotional, traditional, subcultural, or community-based players.
 
-The two angles together surface names from different parts of the market. Capture five to eight names that span different positionings, not five names that all look the same. If everything coming back is premium D2C, search again with phrasing that surfaces budget, devotional, traditional, subcultural, or community-based players.
+**Step 2 — Study the brands.** Fetch four or five names in parallel. For each, capture:
 
-**Step 2 — Study the brands.** Fetch four or five of the names in parallel, asking each fetch to capture:
+- Positioning and voice — what they say about themselves, how they describe their work.
+- Pricing range.
+- Product types, sizes, categories, and how they organize them.
+- How products are described — vocabulary, naming strategy, material/feature language.
+- Origin story or about-page voice.
 
-- Voice and visual style
-- Homepage structure (what sections appear in what order)
-- How products are described — vocabulary, naming strategy, scent/material/feature language
-- How they describe themselves (about page, origin story)
-- Product types, sizes, categories, and how they organize them
-
-If a fetch fails or returns empty, retry with the redirected URL or move on — don't get stuck on one source. Aim to study three to five sites that span the positioning range, not five sites in the same direction.
+You do NOT need to capture homepage layouts, color palettes, font usage, or any other visual specifics. Those belong to the mood the maker eventually picks, not to the niche file.
 
 **Step 3 — Gather category vocabulary.** Search for:
 
-- How buyers and makers talk about the products (genre-specific terms — "hot throw" for candles, "lead time" for woodworking, "lot tracking" for skincare, etc.).
-- Common customer concerns, complaints, and questions in reviews.
-- Variation conventions in the market (sizes, materials, formats that have become standards).
-
-This phase produces the raw material for the body sections that follow. If you're moving fast, run the brand-name search, the brand-study fetches, and the vocabulary searches in overlapping parallel rather than strictly in series.
+- How buyers and makers talk about the products (genre-specific terms).
+- Customer concerns and questions that recur in reviews.
+- Variation conventions (sizes, materials, formats that have become standards).
 
 ### Phase 2: Synthesize
 
-Goal: distill the research into patterns that hold across multiple sources.
-
-Identify what's consistent across the brands you studied: vocabulary that recurs, structural patterns shared across sites, customer concerns that show up in multiple sources. Those become facts in the body.
+Identify what's consistent across the brands you studied: recurring vocabulary, customer concerns that surface in multiple sources. Those become facts in the body.
 
 Identify what's *not* consistent: things one brand does that no other does. Those are individual choices, not category facts. Don't promote them into the body as if they were category-wide.
 
-Identify the range of positionings you observed. The brand-exemplar section is where this lives. Make sure you can point to at least three distinct positionings (warm artisanal, design-forward, traditional/devotional, occult/ritual, folk/vintage, subcultural, luxury storytelling, minimal modern, etc.) and have a real brand or business type to anchor each one. If you only found one positioning, your research was too narrow — go back and search again with different angles.
+Identify the range of positionings you observed. The brand-exemplar section is where this lives. Make sure you can point to at least three distinct positionings (warm artisanal, traditional/devotional, subcultural, luxe storytelling, folk/vintage, minimal modern, etc.) and have a real brand anchoring each one. If you only found one positioning, your research was too narrow — search again.
 
-### Phase 3: Draft
+### Phase 3: Draft both files
 
-Write the markdown file following the section template below. Apply the bias rules throughout (next section).
+Write the prose markdown AND the style sheet. The style sheet rules are below; the prose template is right here.
 
-## Section template (in order)
+## Prose section template (in order)
 
-Every niche entry has these sections, in this order, with these names. Don't invent new sections or rearrange — consistency lets the AI consume entries reliably across the library.
+Every niche entry has these seven sections, in this order, with these names. Don't invent new sections or rearrange — consistency lets Bohdi consume entries reliably across the library.
 
-1. **What this business does.** Two or three grounded paragraphs describing what makers in this category actually produce or do, how their operations typically look, and where they distribute. Stay descriptive, not aspirational.
+1. **What this business does.** Two or three grounded paragraphs describing what makers in this category actually produce or do, how their operations typically look, and where they distribute. Descriptive, not aspirational.
 
-2. **Brand exemplars across the range.** Name three to eight real brands or business types, each anchoring a different positioning in the category. For each one, give a short paragraph capturing their positioning, voice, visual signature, and what makes them distinctive. These are anchors for what a polished version of each direction looks like — not targets the maker must imitate. End the section with an explicit note that a tenant could land anywhere across this range, including places not on the list, and that the mood pick and inspiration URLs are what choose direction.
+2. **Brand exemplars across the range.** Three to eight real brands or business types, each anchoring a different positioning in the category. For each: a short paragraph capturing positioning, voice, pricing range, and what makes them distinctive in their market. **No visual descriptors** — no "warm earthy palette," no "letterpress feel," no font names, no layout descriptions. End the section with an explicit note that a tenant could land anywhere across this range, including places not on the list.
 
-3. **Who their customers are.** Describe the buyer types in the category (self-buyers, gift-buyers, functional buyers, collectors, subcultural buyers, and any niche-specific archetypes). For each, a sentence or two on motivation. Then a paragraph or two on concerns and considerations that recur across most segments (with category-specific vocabulary). If price ranges have observable conventions, include them as ranges, not single numbers, with a clear acknowledgment that positioning shifts them.
+3. **Who their customers are.** Buyer types in the category (self-buyers, gift-buyers, functional buyers, collectors, subcultural buyers, niche-specific archetypes). One or two sentences per type on motivation. Then a paragraph on concerns and considerations that recur across most segments, with category-specific vocabulary. If price ranges have observable conventions, include them as ranges, not single numbers, with acknowledgment that positioning shifts them.
 
-4. **How they talk about their products.** The vocabulary of the category. What kind of language recurs (perfumery notes for candles, "from the studio" framing for ceramics, lead times for commissioned work). The naming strategies makers use (descriptive, character/personality, place-based, intention/function, time-of-day, cultural reference, etc.) with examples drawn from the brand exemplars. What kind of phrasing reads flat (corporate language almost always reads flat in handcraft categories). The role of the maker's story.
+4. **How they talk about their products.** The vocabulary of the category. What kind of language recurs. The naming strategies makers use (descriptive, character/personality, place-based, intention/function, time-of-day, cultural reference) with examples from the brand exemplars. What phrasing tends to read flat. The role of the maker's story.
 
-5. **Common specializations and variations.** The sub-identities and axes that exist within this niche. For Seller niches this tends to be product-level variation axes (scent, size, wax type for candles; wood species, finish, food-safety status for woodworkers) — the dimensions makers vary across their catalog. For Doer niches this tends to be specializations — the sub-areas a practitioner works in (piano, guitar, voice, drums for music teacher; wedding, newborn, family portrait, headshot, brand for photographer; math, science, languages, SAT prep for tutor). For hybrid niches the section covers both. Phrase entries as starting suggestions that the maker picks from, never as a fixed schema. This section is read by the onboarding chip picker, so each distinct item should be short and self-contained enough to surface as a checkbox option. Include any common bundle, collection, or subscription patterns observed.
+5. **Common specializations and variations.** The sub-identities and axes within this niche. For Seller niches this tends to be product-level variation axes (scent, size, wax type for candles; wood species, finish, food-safety status for woodworkers). For Doer niches this tends to be specializations (piano, guitar, voice for music teacher; wedding, newborn, portrait for photographer). For hybrid niches: both. Phrase as starting suggestions, never as a fixed schema. Each item short enough to surface as an onboarding chip.
 
-6. **What customers ask before buying.** A short list of questions that recur in the category, framed as "the AI's job in product descriptions, FAQ, and storefront copy is to answer these without the customer having to ask". Pull from the research on customer concerns and reviews. End with a one-line note that storefronts that answer these clearly tend to outperform ones that don't.
+6. **What customers ask before buying.** A short list of questions that recur in the category, framed as "the AI's job in product descriptions, FAQ, and storefront copy is to answer these without the customer having to ask." Pull from research on customer concerns.
 
-7. **Visual direction range.** Five to eight distinct visual sensibilities observed in the category, each named and briefly described. Tag each with the positioning it tends to come from. Lead the section with an explicit statement that the category contains a wide range of visual sensibilities — not a single dominant aesthetic — and that the mood pick and inspiration URLs are what choose among them. Close with anything that holds true across visual directions (e.g., photography conventions that work regardless of mood).
-
-8. **What tends to surface on the storefront.** Blocks and widgets the AI should weigh when composing a tenant's storefront in this category. Lead with a note that the mood pick and inspiration URLs drive the layout — this section just lists what tends to be useful. Each item is a short paragraph: name the block or widget, briefly explain why it tends to help in this category.
-
-9. **What to avoid.** Negative examples specific to the category. Stock imagery, vague descriptions, inflated claims, generic positioning, hiding the maker, jargon without context. Five or six items as a bulleted list with brief explanations.
-
-10. **Adjacent niches.** Categories makers in this niche commonly expand into. Acknowledge that some content in this file will share with the adjacent niche files. End with guidance for whoever writes those adjacent files later — lean on this one for the shared parts, focus on what's specific.
+7. **Adjacent niches.** Categories makers in this niche commonly expand into. Acknowledge content overlap with adjacent niche files.
 
 ## Bias-avoidance rules
 
-The biggest mistake in writing a niche file is the monolithic generalization — collapsing a wide category into a single profile and tilting every storefront the AI generates toward that profile. Per D14, never make blanket claims about who the makers are, what aesthetic the category prefers, or what demographic the buyers belong to.
-
-Specifically, the file must never contain sentences shaped like:
+The biggest mistake is the monolithic generalization — collapsing a wide category into a single profile. The file must never contain sentences shaped like:
 
 - "Most <niche> makers are <demographic>..."
 - "The genre has converged on <single aesthetic>..."
@@ -159,79 +99,120 @@ Specifically, the file must never contain sentences shaped like:
 
 Instead:
 
-- Describe **ranges** with examples spread across positionings. "The visual direction range in this category includes warm artisanal, minimal modern, luxe ornate, dark and occult..."
-- Describe **buyer types** as plural archetypes, not one dominant frame. Self-buyers, gift-buyers, functional buyers, etc.
-- When citing brand exemplars, deliberately span positionings. If you cite three premium D2C brands, you've failed the rule — find a devotional maker, a folk/vintage Etsy shop, an occult or ritual brand, a subcultural brand, and so on.
-- Frame visual and stylistic tendencies as **tendencies that the mood pick overrides**, never as conventions the maker should conform to.
-
-The customer's inputs at onboarding — mood, inspiration URLs, their own assets — add to the research in this file, they don't replace it. The platform does the heavy lifting of grounding each niche in the full range of the category; the tenant adds their flavor on top. The file should describe the territory; the tenant chooses the direction.
+- Describe **ranges** with examples spread across positionings.
+- Describe **buyer types** as plural archetypes, not one dominant frame.
+- When citing brand exemplars, deliberately span positionings. Three premium D2C brands fails the rule — find a devotional maker, a folk shop, a subcultural brand, a minimalist modern maker.
+- Never write aesthetic conventions as something the maker should conform to.
 
 Two craft-quality rules also apply throughout:
 
-- **Specifics over abstractions.** Real scent notes, real material names, real customer behaviors, real product sizes, real pricing ranges. The AI generates better copy when fed concrete inputs. "A relaxing scent" is dead copy; "bergamot, vetiver, and a thread of black pepper" is alive.
-- **Tendencies over rules.** Anything visual or stylistic is framed as a tendency the mood pick overrides. Anything functional (vocabulary, customer concerns, variation axes) can be stated as category fact.
+- **Specifics over abstractions.** Real material names, real customer behaviors, real product sizes, real pricing ranges. "A relaxing scent" is dead copy; "bergamot, vetiver, and a thread of black pepper" is alive.
+- **Tendencies over rules.** Anything visual or stylistic is out of scope for the prose entirely. Anything functional (vocabulary, customer concerns, variation axes) can be stated as category fact.
 
-### Phase 4: Audit
+## Style sheet construction
 
-Goal: catch mechanical and bias-rule violations before the entry lands anywhere.
+The style sheet is a JSON file at `content/style-sheets/niche-<slug>.json`. It contains raw visual materials with no role assignments — Bohdi decides which color is background, which font heads, which texture appears where. The sheet is a toolkit, not a recipe.
 
-The skill bundles an audit script at `scripts/audit.py`. Pipe your draft markdown into it; it returns a JSON report and exits 0 on pass or 1 on fail.
-
-```bash
-python scripts/audit.py path/to/draft.md
-# or
-echo "$draft_markdown" | python scripts/audit.py
-```
-
-The audit checks frontmatter shape (required fields present, valid values for slug, tenant_type_fit, status), all ten template sections present and in the right order, no forbidden sentence patterns (the monolithic generalizations from the bias-avoidance rules), at least three brand exemplars in the brand-exemplar section, the visual-direction section frames a range with mood-pick override language, and no stub-length sections.
-
-The audit report looks like this:
+### Schema
 
 ```json
 {
-  "pass": false,
-  "issues": [
-    {
-      "severity": "error",
-      "rule": "monolithic_makers_buyers_claim",
-      "detail": "Sentence flattens the category — 'most makers/buyers...'. Rewrite as a range or as plural archetypes. Offending sentence: \"Most candle makers gravitate toward warm tones.\""
-    }
+  "kind": "niche-style-sheet",
+  "slug": "<slug>",
+  "note": "Raw materials for a <niche> site. Named only — no role assignments, no feel labels.",
+
+  "palette": [
+    { "name": "Specific Material Name", "hex": "#RRGGBB" },
+    ...
+  ],
+
+  "fonts": [
+    { "name": "Google Font Name", "category": "<structural category>" },
+    ...
+  ],
+
+  "wordmark": [
+    { "name": "Google Font Name", "category": "<display category>" },
+    ...
+  ],
+
+  "textures": [
+    "named-texture",
+    ...
   ]
 }
 ```
 
-If the audit returns `"pass": true`, proceed to Phase 5.
+### Palette — 15 named colors
 
-If it returns `"pass": false`, you have two choices. Either fix the issues and re-run the audit until it passes (preferred — the issues are specific and addressable), or accept the failure and let Phase 5 route the entry to the review folder for a human to fix. Fixing in place is the right default; routing to review is the fallback when an issue can't be cleanly resolved from automated checks (a research gap, a structural call that needs judgment).
+Each color named for a SPECIFIC material or thing from the niche's vocabulary. "Saddle Tan," "Espresso," "Antique Brass," "Walnut Hull" — not "warm brown 1," "warm brown 2." A color named after a real material has a job; a color named "secondary accent" doesn't.
 
-The audit catches mechanical and pattern-based issues. It does not catch subtle bias, voice that's off, or factually wrong claims about the niche. Passing the audit means the entry is structurally sound and bias-rule-clean — not that it's been judged for content quality.
+Span the value range. Include at least two near-blacks, at least two near-whites, and a handful of mids. Include at least one or two unexpected anchors — pulls that break out of the obvious palette and give Bohdi options for surprise.
 
-### Phase 5: Disposition (single write)
+The 15 colors are a toolkit; Bohdi may use 6 or 8 of them on any given site. Don't constrain yourself to "the seven roles" — that's the schema's job, not the curation's.
 
-Goal: write the entry once to its final location based on the audit result. Don't write to an intermediate location and shuffle.
+### Fonts — at least 14 named with structural taxonomy categories
 
-If the audit passed: write the entry to its niches destination. Today, before the niches database table is built, that means writing the markdown file to `content/niches/<slug>.md` — these files become the seed for the database when it exists. Once the niches table is live, write the entry directly via the Supabase API at `status: draft` (the row exists but is not reachable from onboarding until human approval moves it to `status: approved`).
+Each font is a real Google Font (verify it exists at fonts.google.com). The category is **structural**, not feel-based:
 
-If the audit failed and you chose to route to review rather than fix: write the entry to `content/niches/_review/<slug>.md` along with a sibling file `content/niches/_review/<slug>.audit.json` holding the audit report. The review folder is the inbox for human eyes — every entry there is waiting for a fix or a judgment call.
+- `refined-serif`, `high-contrast-serif`, `slab-serif`, `old-style-serif`, `humanist-sans`, `geometric-sans`, `condensed-caps`, `typewriter`, `hand-marker`, `script`, `western-display`, `wood-type-display`, `blackletter`, `mono`
 
-Either way it's a single write. The agent does not write to a draft location and then move; the audit result determines the destination before the first write.
+Never use feel words ("elegant," "rugged," "playful," "bold") as a category. Structural taxonomy lets Bohdi compose pairings without being told the answer.
 
-## Self-check pass
+Span the catalog. Don't ship 14 serifs and call it a niche.
 
-The audit covers the mechanical rules. This list covers the judgment rules the audit cannot enforce. Run through it before triggering the audit:
+### Wordmark — 4 to 6 display fonts specifically for wordmarks
 
-- Does the entry name at least three distinct *positionings* (not three brands in the same direction) in the brand-exemplar section?
-- Is everything visual or stylistic framed as a tendency the mood pick overrides, not as a rule?
-- Are the variations described as starting suggestions rather than a fixed schema?
-- Are price ranges and customer concerns grounded in observable data, not in priors? If you can't point to a source for any specific claim, either ground it or remove it.
-- Does the file include vocabulary specific to this category that the AI should know (genre-specific terms, naming conventions, common claims)? If not, more research is probably needed.
-- Are brand exemplars cited as anchors and not as targets? Is it explicit that the tenant could land anywhere across the range?
+These are heavier, more distinctive, more visually striking than the general fonts array. Wordmark fonts are typically things you'd never use for body or even heading at small sizes — they look ridiculous below 32px and ridiculous at body size. Distinct categories: heavy display, blackletter, oversized geometric, hand-tooled, deeply customized serifs with extreme contrast.
 
-A clean self-check plus a passing audit is the readiness bar.
+This array is what Bohdi reads when picking the wordmark font. He may also draw from the mood's wordmark options. Curate so the typographic wordmark for a site in this niche × mood has somewhere distinctive to land — not a default heading font played louder.
 
-## Notes for the operator (the human or agent driving this skill)
+### Textures — 10 to 14 named material textures
 
-- Research time scales with how unfamiliar the category is. Familiar categories (candles, jewelry, baked goods) can be researched in two to four minutes with parallel fetches. Unfamiliar or niche categories (estate sale organizing, devotional candle makers, haptic memory products) may take longer or may legitimately produce a thinner entry.
-- If a category is so novel that no useful research surfaces, this skill is the wrong tool. The novel-product onboarding branch (D15) handles those tenants differently and does not produce a niche entry. Stop and surface the issue rather than writing a low-quality entry.
-- The reference file `references/candles-example.md` shows a finished niche entry following these rules.
-- The reference file `references/section-checklist.md` is a quick checklist to use during the self-check pass.
+Named for actual textures the niche works with or evokes. "Full-grain veg-tan," "saddle-stitch," "linseed-oil-wash," "kraft-paper" — not "rough texture," "natural feel." Bohdi reads these and decides which surface or accent they apply to.
+
+### Curation rules
+
+- **Specific names, not generic descriptors.** A color named after a real pigment outperforms a color named "primary."
+- **No role assignments.** The schema decides which slot a color fills. The style sheet's job is to give Bohdi a vocabulary, not a recipe.
+- **No feel words anywhere.** Categories are structural. Names are material. If you find yourself writing "moody" or "playful" or "sophisticated" — stop.
+- **The bar is the leatherworker style sheet at `content/style-sheets/niche-leatherworker.json`.** Curate to that level of specificity or higher. Generic palettes get rejected.
+
+## Self-check
+
+Before writing the files, run this list:
+
+**Prose:**
+- Three distinct positionings (not three brands in the same direction) in Brand exemplars?
+- No visual descriptors in Brand exemplars? (No font names, no palette descriptions, no layout language.)
+- Variations described as starting suggestions, never a fixed schema?
+- Price ranges, customer concerns grounded in observable data?
+- Vocabulary specific to this category included?
+- Brand exemplars cited as anchors, not targets?
+
+**Style sheet:**
+- 15 named colors, each named for a specific material or thing — never "primary," "accent," etc.?
+- At least 14 named fonts, all with structural taxonomy categories, no feel words?
+- 4–6 wordmark fonts that genuinely look ridiculous below 32px — heavy display, distinctive character?
+- 10–14 named textures, each pulling from the niche's actual material vocabulary?
+- Nothing in the sheet that reads as a role assignment or a recipe?
+
+A clean self-check is the readiness bar.
+
+## Output
+
+Two files, written once each in their final location:
+
+- `content/niches/<slug>.md` — frontmatter + 7-section markdown.
+- `content/style-sheets/niche-<slug>.json` — palette + fonts + wordmark + textures.
+
+New niches always start at `status: draft` in the frontmatter. They're reviewed by a human before being promoted to `approved` and made visible in onboarding. Never set status to `approved` yourself.
+
+If the niches table is the source of truth, the prose file can be synced to the table afterward (the runner reads the markdown and writes the body_markdown column). The style sheet stays on disk for now and is read by Bohdi at generation time.
+
+## Notes for the operator
+
+- Research time scales with how unfamiliar the category is. Familiar categories (candles, jewelry, baked goods) can be researched in a couple of focused passes with parallel fetches. Unfamiliar or niche categories may take longer or may legitimately produce a thinner entry.
+- If a category is so novel that no useful research surfaces, this skill is the wrong tool. The novel-product onboarding branch handles those tenants differently. Stop and surface the issue rather than writing a low-quality entry.
+- The canonical reference is `content/niches/leatherworker.md` paired with `content/style-sheets/niche-leatherworker.json`. Hold every new niche to that bar.
+- The skill produces drafts. Style sheet curation in particular drifts toward safe and generic when authored quickly — review every output for genericness before it lands. "Moss green" is the failure mode; "Walnut Hull" is the bar.

@@ -2,9 +2,7 @@ import Image from 'next/image';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
-import NavSplit from '@/blocks/nav-split';
-import FooterClassic from '@/blocks/footer-classic';
-import { loadStorefrontChrome } from '../../_components/storefront-chrome';
+import { loadStorefrontChromeBlocks } from '../../_components/storefront-chrome';
 
 interface CollectionPageProps {
   params: Promise<{ slug: string }>;
@@ -57,12 +55,11 @@ export default async function StorefrontCollectionPage({ params }: CollectionPag
     metadata: (l.metadata as { image_url?: string | null } | null) ?? null,
   }));
 
-  const { shopName, sections } = await loadStorefrontChrome(tenantId);
-  const sectionsJson = JSON.stringify(sections);
+  const { nav, footer } = await loadStorefrontChromeBlocks(tenantId);
 
   return (
     <>
-      <NavSplit content={{ shopName, sections: sectionsJson }} />
+      {nav}
       <main className="bg-s-background">
         {/* ─── Intro ─── */}
         <section className="pt-28 pb-8 md:pt-32 md:pb-12">
@@ -136,7 +133,7 @@ export default async function StorefrontCollectionPage({ params }: CollectionPag
           </div>
         </section>
       </main>
-      <FooterClassic content={{ shopName, sections: sectionsJson }} />
+      {footer}
     </>
   );
 }

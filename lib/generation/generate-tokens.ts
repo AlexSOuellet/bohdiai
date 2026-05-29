@@ -42,6 +42,7 @@ export async function generateTokens(
   mood: Mood,
   tenantId?: string,
   nicheSlug?: string,
+  brandColors?: string[],
 ): Promise<DesignTokens> {
   const nicheSheet = nicheSlug ? loadSheetIfPresent(`niche-${nicheSlug}.json`) : null;
   const moodSheet = loadSheetIfPresent(`mood-${mood.key}.json`);
@@ -51,6 +52,11 @@ export async function generateTokens(
       ? `\n\n──────────────────────────────────────────────\nRAW MATERIALS — TWO STYLE SHEETS\n──────────────────────────────────────────────\n\n${renderSheet('═══ NICHE STYLE SHEET ═══', nicheSheet)}\n\n${renderSheet('═══ MOOD STYLE SHEET ═══', moodSheet)}\n\nYou decide which hue plays which part. You decide which font plays which part. You decide which textures the design draws on. You may go outside these lists if the design needs it.\n`
       : '';
 
+  const brandColorsBlock =
+    brandColors && brandColors.length > 0
+      ? `\n\nBRAND COLORS (extracted from the maker's uploaded logo — the logo itself will appear in the nav and carries these colors on its own): ${brandColors.join(', ')}. The palette should follow the mood, not the logo. Do NOT force these brand colors into primary, text, or accent roles. Pick a mood-appropriate palette that coexists visually with the logo when placed alongside it. Only nudge palette choices to avoid an obvious clash (e.g. warm-on-cool, dramatic value collision). The logo is a color island in the nav; the rest of the site is the mood.\n`
+      : '';
+
   const prompt = `You are a brand designer making visual design tokens for an artisan maker's storefront.
 
 NICHE CONTEXT:
@@ -58,7 +64,7 @@ ${nicheBodyMarkdown}
 
 MOOD: ${mood.label}
 ${mood.description}
-${sheetsBlock}
+${sheetsBlock}${brandColorsBlock}
 Return ONLY a JSON object with this exact structure — no markdown, no explanation. Use valid hex codes. Use real Google Font names. Ensure text is readable against its background.
 
 {
@@ -78,6 +84,13 @@ Return ONLY a JSON object with this exact structure — no markdown, no explanat
     "headingLetterSpacing": "<e.g. -0.02em>",
     "bodyLineHeight": "<e.g. 1.6>",
     "baseSize": "<e.g. 16px>"
+  },
+  "wordmark": {
+    "font": "<Google Font name — a display font distinct from headingFont, chosen to be the visual signature of the shop>",
+    "treatment": "<solid|gradient|outline|two-tone>",
+    "color1": "<hex — always used. For solid/outline this is THE color. For gradient it's the start. For two-tone it's the first word.>",
+    "color2": "<hex — gradient end OR second word for two-tone. Use empty string '' for solid/outline.>",
+    "letterSpacing": "<e.g. -0.03em for tight display, 0.08em for spaced caps>"
   },
   "shape": {
     "borderRadius": "<none|sm|md|lg|full>",

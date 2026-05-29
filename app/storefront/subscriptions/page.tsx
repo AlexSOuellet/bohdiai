@@ -2,10 +2,8 @@ import Image from 'next/image';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
-import NavSplit from '@/blocks/nav-split';
-import FooterClassic from '@/blocks/footer-classic';
 import NotifyForm from '../_components/NotifyForm';
-import { loadStorefrontChrome } from '../_components/storefront-chrome';
+import { loadStorefrontChromeBlocks } from '../_components/storefront-chrome';
 
 interface Subscription {
   id: string;
@@ -54,12 +52,11 @@ export default async function StorefrontSubscriptionsPage() {
     metadata: (s.metadata as { image_url?: string | null } | null) ?? null,
   }));
 
-  const { shopName, sections } = await loadStorefrontChrome(tenantId);
-  const navSections = JSON.stringify(sections);
+  const { nav, footer } = await loadStorefrontChromeBlocks(tenantId);
 
   return (
     <>
-      <NavSplit content={{ shopName, sections: navSections }} />
+      {nav}
       <main className="bg-s-background">
         <section className="pt-28 pb-8 md:pt-32 md:pb-12">
           <div className="max-w-3xl mx-auto px-6 text-center">
@@ -115,9 +112,7 @@ export default async function StorefrontSubscriptionsPage() {
           </div>
         </section>
       </main>
-      <FooterClassic
-        content={{ shopName, sections: navSections }}
-      />
+      {footer}
     </>
   );
 }

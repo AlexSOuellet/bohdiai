@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Wordmark from '@/components/storefront/Wordmark';
 import meta from './meta';
 
 export { meta };
@@ -8,6 +9,7 @@ export { meta };
 interface NavSplitContent {
   shopName: string;
   sections?: string;
+  logoUrl?: string;
 }
 
 interface NavSplitProps {
@@ -84,9 +86,10 @@ export default function NavSplit({ content }: NavSplitProps) {
         <a
           href="/"
           aria-label={`${content.shopName} — Home`}
-          className="font-s-heading text-base tracking-tight whitespace-nowrap shrink-0 text-s-text"
+          className="shrink-0 text-base"
+          style={{ ['--sf-logo-height' as string]: '36px' }}
         >
-          {content.shopName}
+          <Wordmark shopName={content.shopName} logoUrl={content.logoUrl} />
         </a>
 
         <nav className="flex items-center gap-8" aria-label="Primary navigation">
@@ -107,9 +110,10 @@ export default function NavSplit({ content }: NavSplitProps) {
         <a
           href="/"
           aria-label={`${content.shopName} — Home`}
-          className="font-s-heading text-s-text text-base tracking-tight"
+          className="text-base"
+          style={{ ['--sf-logo-height' as string]: '32px' }}
         >
-          {content.shopName}
+          <Wordmark shopName={content.shopName} logoUrl={content.logoUrl} />
         </a>
         <a href="/cart" aria-label="Cart" className="text-s-text/60 hover:text-s-text transition-colors duration-200">
           <CartIcon />

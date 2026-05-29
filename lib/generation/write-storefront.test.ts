@@ -26,6 +26,13 @@ const SAMPLE_TOKENS: DesignTokens = {
     bodyLineHeight: '1.6',
     baseSize: '16px',
   },
+  wordmark: {
+    font: 'Bodoni Moda',
+    treatment: 'solid',
+    color1: '#1a1a1a',
+    color2: '',
+    letterSpacing: '-0.03em',
+  },
   shape: { borderRadius: 'md', cardBorderRadius: 'lg' },
   spacing: { sectionPadding: 'normal', cardGap: 'normal' },
   layout: { heroStyle: 'full-bleed', productGridCols: 3, footerStyle: 'minimal' },
@@ -52,6 +59,14 @@ const SAMPLE_PAGE: GeneratedPage = {
   secondaryPages: {
     shop: { eyebrow: 'The Shop', heading: 'All work', subheading: 'Browse the studio.' },
     contact: { heading: 'Say Hello', subheading: 'Drop us a note.', buttonLabel: 'Send Message' },
+    about: {
+      eyebrow: 'Our Story',
+      headline: 'About the Studio',
+      intro: 'A short intro paragraph that sets up the story.',
+      body: 'Paragraph one of the long body text for testing purposes.\n\nParagraph two of the long body text to make sure multi-paragraph rendering works correctly.',
+      signatureName: 'Test',
+      signatureRole: 'Maker',
+    },
   },
 };
 

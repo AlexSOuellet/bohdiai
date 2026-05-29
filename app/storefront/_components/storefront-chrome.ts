@@ -1,4 +1,8 @@
 import { supabaseAdmin } from '@/lib/supabase';
+import { renderBlock } from '@/lib/block-registry';
+import { BLOCKS_MANIFEST } from '@/lib/blocks-manifest.generated';
+import type { Json } from '@/lib/database.types';
+import type { ReactNode } from 'react';
 
 /**
  * Computes the nav section list for a storefront at render time, based on what
@@ -53,13 +57,90 @@ export async function loadStorefrontChrome(tenantId: string): Promise<{
 
   const shopName = tenantQ.data?.business_name ?? 'Shop';
 
-  const sections: string[] = ['shop'];
-  if ((aboutQ.count ?? 0) > 0) sections.push('about');
-  if ((collectionsQ.count ?? 0) > 0) sections.push('collections');
-  if ((subscriptionsQ.count ?? 0) > 0) sections.push('subscriptions');
-  if ((eventsQ.count ?? 0) > 0) sections.push('events');
-  if ((galleryQ.count ?? 0) > 0) sections.push('gallery');
-  sections.push('contact');
+  // Order rule (hard): shop first, conditional items in the middle, about
+  // second-to-last, contact last. shop, about, contact are baseline — always
+  // present. about is here unconditionally regardless of aboutQ because the
+  // /about page exists for every tenant.
+  const conditionals: string[] = [];
+  if ((collectionsQ.count ?? 0) > 0) conditionals.push('collections');
+  if ((subscriptionsQ.count ?? 0) > 0) conditionals.push('subscriptions');
+  if ((eventsQ.count ?? 0) > 0) conditionals.push('events');
+  if ((galleryQ.count ?? 0) > 0) conditionals.push('gallery');
+
+  const sections: string[] = ['shop', ...conditionals, 'about', 'contact'];
+
+  // aboutQ is read above but no longer used for nav ordering — kept queried
+  // in case future render paths want to know whether the home has an about block.
+  void aboutQ;
 
   return { shopName, sections };
+}
+
+/**
+ * Loads the tenant's chosen nav + footer blocks from their home page and
+ * returns them as rendered React elements. Every storefront page that isn't
+ * driven by `StorefrontPage` (which already reads blocks from the DB) should
+ * use this helper. Uses the stored block content as-is — same nav, same
+ * sections, on every page. Sections are frozen at generation time; if the
+ * maker adds a collection later and wants it in the nav, that's a separate
+ * regeneration concern.
+ */
+export async function loadStorefrontChromeBlocks(
+  tenantId: string,
+): Promise<{ nav: ReactNode | null; footer: ReactNode | null }> {
+  const db = supabaseAdmin();
+
+  const { data: homePage } = await db
+    .from('content_pages')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('slug', '/')
+    .eq('status', 'published')
+    .maybeSingle();
+
+  if (homePage === null) return { nav: null, footer: null };
+
+  const { data: blocks } = await db
+    .from('page_blocks')
+    .select('block_key, position, content')
+    .eq('page_id', homePage.id)
+    .eq('is_visible', true);
+
+  const resolved = blocks ?? [];
+  const navRow = resolved.find((b) => {
+    const m = BLOCKS_MANIFEST.find((x) => x.key === b.block_key);
+    return m?.sectionType === 'nav';
+  });
+  const footerRow = resolved.find((b) => {
+    const m = BLOCKS_MANIFEST.find((x) => x.key === b.block_key);
+    return m?.sectionType === 'footer';
+  });
+
+  function asRecord(content: Json): Record<string, unknown> {
+    if (typeof content !== 'object' || content === null || Array.isArray(content)) return {};
+    return content as Record<string, unknown>;
+  }
+
+  const nav = navRow
+    ? renderBlock(
+        {
+          block_key: navRow.block_key,
+          position: navRow.position,
+          content: asRecord(navRow.content),
+        },
+        tenantId,
+      )
+    : null;
+  const footer = footerRow
+    ? renderBlock(
+        {
+          block_key: footerRow.block_key,
+          position: footerRow.position,
+          content: asRecord(footerRow.content),
+        },
+        tenantId,
+      )
+    : null;
+
+  return { nav, footer };
 }

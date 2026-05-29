@@ -45,6 +45,8 @@ export interface GenerateStorefrontInput {
   nicheSlug: string;
   moodKey: MoodKey;
   productCount: number; // 0 = none, 3 = just a few, 8 = solid collection, 15 = full catalog
+  logoUrl?: string;
+  brandColors?: string[];
 }
 
 export interface GenerateStorefrontResult {
@@ -72,15 +74,18 @@ export async function generateStorefront(
 async function runGeneration(input: GenerateStorefrontInput): Promise<GenerateStorefrontResult> {
   const mood = MOODS[input.moodKey];
 
-  // Gated: any leatherworker run goes through Bohdi (the new agent).
-  // Other niches use the legacy one-shot pipeline.
-  if (input.nicheSlug === 'leatherworker') {
+  // Gated: niches with a hand-curated style sheet route through Bohdi.
+  // Other niches use the legacy one-shot pipeline until their style sheets land.
+  const BOHDI_NICHES = new Set(['leatherworker', 'photo_magnet_maker']);
+  if (BOHDI_NICHES.has(input.nicheSlug)) {
     const result = await runBohdi({
       shopName: input.shopName,
       subdomain: input.subdomain,
       nicheSlug: input.nicheSlug,
       moodKey: input.moodKey,
       productCount: input.productCount,
+      logoUrl: input.logoUrl,
+      brandColors: input.brandColors,
     });
     return { tenantId: result.tenantId, subdomain: result.subdomain };
   }
@@ -107,7 +112,7 @@ async function runGeneration(input: GenerateStorefrontInput): Promise<GenerateSt
   };
 
   const [tokens, page, collections, subscriptionsRaw] = await Promise.all([
-    generateTokens(niche.body_markdown, mood, undefined, input.nicheSlug),
+    generateTokens(niche.body_markdown, mood, undefined, input.nicheSlug, input.brandColors),
     generatePage(input.shopName, niche.display_name, niche.body_markdown, mood, undefined, input.nicheSlug),
     generateCollections(input.shopName, niche.display_name, niche.body_markdown, undefined, input.nicheSlug, mood.key),
     generateSubscriptions(input.shopName, niche.display_name, niche.body_markdown, undefined, input.nicheSlug, mood.key),
@@ -196,25 +201,20 @@ async function runGeneration(input: GenerateStorefrontInput): Promise<GenerateSt
     return manifest?.sectionType;
   });
 
-  // Nav + footer sections. Collections + Subscriptions are gated on real rows
-  // existing for the tenant (not on the AI picking a related block).
-  // Gallery is no longer auto-generated — the maker enables it via the dashboard.
+  // Order rule (hard): shop first, conditional items in the middle,
+  // about second-to-last, contact last. shop, about, contact are baseline
+  // — always present in both nav and footer.
   const hasSubscriptions = subscriptions.length > 0;
 
-  const navSections: string[] = ['shop'];
-  if (homeSectionTypes.includes('about')) navSections.push('about');
-  if (hasCollections) navSections.push('collections');
-  if (hasSubscriptions) navSections.push('subscriptions');
-  if (homeSectionTypes.includes('events')) navSections.push('events');
+  const conditionals: string[] = [];
+  if (hasCollections) conditionals.push('collections');
+  if (hasSubscriptions) conditionals.push('subscriptions');
+  if (homeSectionTypes.includes('events')) conditionals.push('events');
 
-  const footerSections: string[] = ['shop'];
-  if (homeSectionTypes.includes('about')) footerSections.push('about');
-  if (hasCollections) footerSections.push('collections');
-  if (hasSubscriptions) footerSections.push('subscriptions');
-  if (homeSectionTypes.includes('events')) footerSections.push('events');
-  footerSections.push('contact');
+  const navSections: string[] = ['shop', ...conditionals, 'about', 'contact'];
+  const footerSections: string[] = ['shop', ...conditionals, 'about', 'contact'];
 
-  const navBlock = buildNavBlock(input.shopName, navSections);
+  const navBlock = buildNavBlock(input.shopName, navSections, input.logoUrl ?? '');
   const footerBlock = buildFooterBlock(input.shopName, footerSections);
 
   const homePageBlocks = [
@@ -263,6 +263,26 @@ async function runGeneration(input: GenerateStorefrontInput): Promise<GenerateSt
     footerBlock,
   ];
 
+  const aboutCopy = page.secondaryPages.about;
+  const aboutPageBlocks = [
+    navBlock,
+    {
+      blockKey: 'about-story',
+      position: 0,
+      content: {
+        eyebrow: aboutCopy.eyebrow,
+        headline: aboutCopy.headline,
+        intro: aboutCopy.intro,
+        body: aboutCopy.body,
+        signatureName: aboutCopy.signatureName,
+        signatureRole: aboutCopy.signatureRole,
+        imageUrl: aboutImageUrl ?? '',
+      },
+      slots: {} as Record<string, { widgetKey: string; content: Record<string, string> }>,
+    },
+    footerBlock,
+  ];
+
   const pages: Array<{
     slug: string;
     pageType: string;
@@ -271,6 +291,7 @@ async function runGeneration(input: GenerateStorefrontInput): Promise<GenerateSt
   }> = [
     { slug: '/', pageType: 'home', title: input.shopName, blocks: homePageBlocks },
     { slug: '/shop', pageType: 'shop', title: `${input.shopName} — Shop`, blocks: shopPageBlocks },
+    { slug: '/about', pageType: 'about', title: `${input.shopName} — About`, blocks: aboutPageBlocks },
     { slug: '/contact', pageType: 'contact', title: `${input.shopName} — Contact`, blocks: contactPageBlocks },
   ];
 
@@ -285,6 +306,7 @@ async function runGeneration(input: GenerateStorefrontInput): Promise<GenerateSt
     collections,
     listings,
     subscriptions,
+    logoUrl: input.logoUrl,
   });
 }
 
@@ -297,11 +319,11 @@ type SystemBlock = {
   slots: Record<string, { widgetKey: string; content: Record<string, string> }>;
 };
 
-function buildNavBlock(shopName: string, sections: string[]): SystemBlock {
+function buildNavBlock(shopName: string, sections: string[], logoUrl: string): SystemBlock {
   return {
     blockKey: 'nav-split',
     position: -1,
-    content: { shopName, sections: JSON.stringify(sections) },
+    content: { shopName, sections: JSON.stringify(sections), logoUrl },
     slots: {},
   };
 }

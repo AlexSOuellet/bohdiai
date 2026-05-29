@@ -176,5 +176,13 @@ export function enforceTokenContrast(
     colors.accent = adjustForContrast(colors.accent, colors.surface, LARGE_TEXT_RATIO);
   }
 
-  return { ...tokens, colors };
+  // Wordmark renders large in the nav over the page background.
+  // color1 must always pass. color2 only matters for gradient/two-tone (non-empty).
+  const wordmark = { ...tokens.wordmark };
+  wordmark.color1 = adjustForContrast(wordmark.color1, colors.background, LARGE_TEXT_RATIO);
+  if (wordmark.color2 !== '') {
+    wordmark.color2 = adjustForContrast(wordmark.color2, colors.background, LARGE_TEXT_RATIO);
+  }
+
+  return { ...tokens, colors, wordmark };
 }

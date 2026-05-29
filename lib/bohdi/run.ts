@@ -18,12 +18,19 @@ export async function runBohdi(brief: BohdiBrief): Promise<BohdiResult> {
   const tenantIdRef = { value: null as string | null };
   const ctx: HandlerContext = { brief, accumulator, done, tenantIdRef };
 
+  const logoLine = brief.logoUrl !== undefined && brief.logoUrl !== ''
+    ? `\n- Maker uploaded a logo at: ${brief.logoUrl}`
+    : '';
+  const brandColorsLine = brief.brandColors !== undefined && brief.brandColors.length > 0
+    ? `\n- Brand colors extracted from the logo (locked identity — honor these in your palette while respecting the mood): ${brief.brandColors.join(', ')}`
+    : '';
+
   const initialUserMessage = `BRIEF
 - Shop name: ${brief.shopName}
 - Subdomain: ${brief.subdomain}
 - Niche slug: ${brief.nicheSlug}
 - Mood key: ${brief.moodKey}
-- Product count to generate: ${brief.productCount}
+- Product count to generate: ${brief.productCount}${logoLine}${brandColorsLine}
 
 Begin. Read the niche and mood first, then design the storefront end-to-end. Deliberate every meaningful choice. Log every decision. Finalize when complete.`;
 

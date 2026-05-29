@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Wordmark from '@/components/storefront/Wordmark';
 import meta from './meta';
 
 export { meta };
@@ -8,6 +9,7 @@ export { meta };
 interface NavCenteredWordmarkContent {
   shopName: string;
   sections?: string;
+  logoUrl?: string;
 }
 
 interface NavCenteredWordmarkProps {
@@ -83,7 +85,7 @@ export default function NavCenteredWordmark({ content }: NavCenteredWordmarkProp
     'font-s-body text-xs uppercase tracking-[0.18em] text-s-text/65 hover:text-s-text transition-colors duration-200';
 
   const wordmarkClass = [
-    'font-s-heading text-s-text whitespace-nowrap transition-all duration-300 tracking-tight',
+    'transition-all duration-300',
     scrolled ? 'text-2xl md:text-3xl' : 'text-3xl md:text-4xl lg:text-5xl',
   ].join(' ');
 
@@ -107,8 +109,9 @@ export default function NavCenteredWordmark({ content }: NavCenteredWordmarkProp
           href="/"
           aria-label={`${content.shopName} — Home`}
           className={wordmarkClass}
+          style={{ ['--sf-logo-height' as string]: scrolled ? '48px' : '72px' }}
         >
-          {content.shopName}
+          <Wordmark shopName={content.shopName} logoUrl={content.logoUrl} />
         </a>
 
         {/* Right links + cart */}
@@ -131,9 +134,10 @@ export default function NavCenteredWordmark({ content }: NavCenteredWordmarkProp
         <a
           href="/"
           aria-label={`${content.shopName} — Home`}
-          className="font-s-heading text-s-text text-2xl tracking-tight whitespace-nowrap text-center"
+          className="text-2xl text-center"
+          style={{ ['--sf-logo-height' as string]: '40px' }}
         >
-          {content.shopName}
+          <Wordmark shopName={content.shopName} logoUrl={content.logoUrl} />
         </a>
         <a href="/cart" aria-label="Cart" className="text-s-text/65 hover:text-s-text transition-colors duration-200 justify-self-end">
           <CartIcon />

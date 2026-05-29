@@ -31,11 +31,21 @@ const ContactCopySchema = z.object({
   buttonLabel: z.string().min(1).max(40),
 });
 
+const AboutPageCopySchema = z.object({
+  eyebrow: z.string().min(1).max(40),
+  headline: z.string().min(1).max(80),
+  intro: z.string().min(1).max(500),
+  body: z.string().min(200).max(3500),
+  signatureName: z.string().min(1).max(40),
+  signatureRole: z.string().max(60).default(''),
+});
+
 const GeneratedPageSchema = z.object({
   blocks: z.array(GeneratedBlockSchema).min(1),
   secondaryPages: z.object({
     shop: SecondaryPageCopySchema,
     contact: ContactCopySchema,
+    about: AboutPageCopySchema,
   }),
 });
 
@@ -44,6 +54,7 @@ export type GeneratedBlock = z.infer<typeof GeneratedBlockSchema>;
 export type GeneratedPage = z.infer<typeof GeneratedPageSchema>;
 export type GeneratedSecondaryPageCopy = z.infer<typeof SecondaryPageCopySchema>;
 export type GeneratedContactCopy = z.infer<typeof ContactCopySchema>;
+export type GeneratedAboutPageCopy = z.infer<typeof AboutPageCopySchema>;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -142,9 +153,11 @@ export async function generatePage(
     ? ''
     : `\nAssemble the home page. For all aiGenerated content fields, write like a gifted copywriter, not a content generator.\n\nCOPY RULES:\n- Every headline must stop someone mid-scroll. It should be specific, unexpected, and true to this shop — not interchangeable with any other maker.\n- Subheadlines say something real and particular. Not "crafted with love" or "made by hand" or "quality you can trust" — those are placeholders, not copy.\n- Write like the maker is talking directly to their best customer. Warm, specific, a little surprising. The reader should feel like they already know this shop after one sentence.\n- Use the niche vocabulary naturally — the words real practitioners use, not the words a marketer uses to describe them.\n- Banned phrases: "crafted with love," "made with passion," "quality you can trust," "handmade with care," "small batch," "artisanal," "curated." Show it, don't label it.`;
 
+  const aboutPageGuidance = `\nFor /about, write the EXPANDED about page — distinct from and substantially longer than the home about block. The home about block (which you'll write in the blocks above) is a teaser, 300-500 chars. The /about page is the full story: 1500-3500 chars across multiple paragraphs separated by blank lines. It must add information a visitor wouldn't get from the home teaser — origin, philosophy, materials, process, what the maker believes. Do not paraphrase the home block; write fresh material.\n- "eyebrow": small label above the headline, MAX 40 chars (e.g. "Our Story", "The Maker")\n- "headline": page title, MAX 80 chars\n- "intro": lead paragraph, 1-2 sentences, MAX 500 chars\n- "body": long body, 1500-3500 chars, multiple paragraphs separated by blank lines (\\n\\n)\n- "signatureName": maker's first name or signature (or empty string if no signature fits the voice)\n- "signatureRole": optional role line under signature (or empty string)\n`;
+
   const secondaryPagesSection = lowControl
-    ? `\nSECONDARY PAGES\nThe storefront has two automatically-built secondary pages: a /shop page (full product listing) and a /contact page (contact form). Write the headings for them.\n\nFor /shop, write:\n- "eyebrow": uppercase label, MAX 40 characters\n- "heading": page title, MAX 80 characters\n- "subheading": MAX 240 characters\n\nFor /contact, write:\n- "heading": page title, MAX 80 characters\n- "subheading": MAX 280 characters\n- "buttonLabel": short button text, MAX 40 characters\n`
-    : `\nSECONDARY PAGES\nThe storefront has two automatically-built secondary pages: a /shop page (full product listing) and a /contact page (contact form). You must also write the headings for these pages so they match the home page voice.\n\nFor /shop, write:\n- "eyebrow": uppercase label, MAX 40 characters (e.g. "All Work", "The Shop", "Collection")\n- "heading": page title, MAX 80 characters (e.g. "Everything in the studio", "The full range")\n- "subheading": one or two warm sentences inviting the visitor to browse. MAX 240 characters total — be tight, not chatty. Same voice and specificity as the home page copy. Avoid the banned phrases.\n\nFor /contact, write:\n- "heading": page title, MAX 80 characters (e.g. "Get in touch", "Drop us a line", "Say hello")\n- "subheading": one warm, inviting sentence about what kinds of messages this maker welcomes (commissions, questions, hellos). MAX 280 characters — keep it to one sentence; do not write a paragraph. Same voice. Avoid the banned phrases.\n- "buttonLabel": short button text, MAX 40 characters (e.g. "Send Message", "Reach Out", "Say Hello")\n`;
+    ? `\nSECONDARY PAGES\nThe storefront has three automatically-built secondary pages: /shop (full product listing), /about (expanded story), /contact (contact form). Write the content for all three.\n\nFor /shop, write:\n- "eyebrow": uppercase label, MAX 40 characters\n- "heading": page title, MAX 80 characters\n- "subheading": MAX 240 characters\n\nFor /contact, write:\n- "heading": page title, MAX 80 characters\n- "subheading": MAX 280 characters\n- "buttonLabel": short button text, MAX 40 characters\n${aboutPageGuidance}`
+    : `\nSECONDARY PAGES\nThe storefront has three automatically-built secondary pages: /shop (full product listing), /about (expanded story), /contact (contact form). You must write the content for all three so they match the home page voice.\n\nFor /shop, write:\n- "eyebrow": uppercase label, MAX 40 characters (e.g. "All Work", "The Shop", "Collection")\n- "heading": page title, MAX 80 characters (e.g. "Everything in the studio", "The full range")\n- "subheading": one or two warm sentences inviting the visitor to browse. MAX 240 characters total — be tight, not chatty. Same voice and specificity as the home page copy. Avoid the banned phrases.\n\nFor /contact, write:\n- "heading": page title, MAX 80 characters (e.g. "Get in touch", "Drop us a line", "Say hello")\n- "subheading": one warm, inviting sentence about what kinds of messages this maker welcomes (commissions, questions, hellos). MAX 280 characters — keep it to one sentence; do not write a paragraph. Same voice. Avoid the banned phrases.\n- "buttonLabel": short button text, MAX 40 characters (e.g. "Send Message", "Reach Out", "Say Hello")\n${aboutPageGuidance}`;
 
   const prompt = `You are a storefront designer assembling a home page for an artisan maker.
 
@@ -181,14 +194,22 @@ Return ONLY a JSON object — no markdown, no explanation:
   ],
   "secondaryPages": {
     "shop": { "eyebrow": "...", "heading": "...", "subheading": "..." },
-    "contact": { "heading": "...", "subheading": "...", "buttonLabel": "..." }
+    "contact": { "heading": "...", "subheading": "...", "buttonLabel": "..." },
+    "about": {
+      "eyebrow": "...",
+      "headline": "...",
+      "intro": "...",
+      "body": "Multi-paragraph long-form story. Use \\n\\n between paragraphs.",
+      "signatureName": "...",
+      "signatureRole": "..."
+    }
   }
 }`;
 
   const start = Date.now();
   const response = await anthropicClient().messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 2560,
+    max_tokens: 4096,
     messages: [{ role: 'user', content: prompt }],
   });
   const latencyMs = Date.now() - start;

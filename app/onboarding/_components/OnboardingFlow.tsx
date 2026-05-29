@@ -6,11 +6,12 @@ import { INITIAL_DATA } from './types';
 import ProgressBar from './ProgressBar';
 import StepName from './StepName';
 import StepNiche from './StepNiche';
+import StepLogo from './StepLogo';
 import StepMood from './StepMood';
 import StepTrial from './StepTrial';
 import StepBuild from './StepBuild';
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
 
 interface OnboardingFlowProps {
   niches: NicheOption[];
@@ -34,9 +35,10 @@ export default function OnboardingFlow({ niches }: OnboardingFlowProps) {
       <ProgressBar step={step} total={TOTAL_STEPS} />
       {step === 1 && <StepName data={data} onAdvance={advance} />}
       {step === 2 && <StepNiche data={data} niches={niches} onAdvance={advance} onBack={back} />}
-      {step === 3 && <StepMood data={data} onAdvance={advance} onBack={back} />}
-      {step === 4 && <StepTrial data={data} onAdvance={advance} onBack={back} />}
-      {step === 5 && <StepBuild data={data} onBack={back} />}
+      {step === 3 && <StepLogo data={data} onAdvance={advance} onBack={back} />}
+      {step === 4 && <StepMood data={data} onAdvance={advance} onBack={back} />}
+      {step === 5 && <StepTrial data={data} onAdvance={advance} onBack={back} />}
+      {step === 6 && <StepBuild data={data} onBack={back} />}
     </div>
   );
 }

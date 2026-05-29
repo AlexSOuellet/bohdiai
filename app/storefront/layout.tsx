@@ -8,6 +8,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
   const tenantId = headerStore.get('x-tenant-id');
 
   let cssVars = '';
+  let wordmarkTreatment: 'solid' | 'gradient' | 'outline' | 'two-tone' = 'solid';
 
   if (tenantId !== null) {
     const db = supabaseAdmin();
@@ -22,6 +23,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
       const parsed = DesignTokensSchema.safeParse(data.tokens);
       if (parsed.success) {
         cssVars = tokensToCssVars(parsed.data);
+        wordmarkTreatment = parsed.data.wordmark.treatment;
       }
     }
   }
@@ -30,7 +32,12 @@ export default async function StorefrontLayout({ children }: { children: React.R
     <>
       {cssVars !== '' && <style dangerouslySetInnerHTML={{ __html: cssVars }} />}
       <SmoothScroll />
-      <div className="min-h-screen bg-s-background text-s-text">{children}</div>
+      <div
+        className="min-h-screen bg-s-background text-s-text"
+        data-wordmark-treatment={wordmarkTreatment}
+      >
+        {children}
+      </div>
     </>
   );
 }

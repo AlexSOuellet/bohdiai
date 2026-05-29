@@ -20,6 +20,13 @@ export const DesignTokensSchema = z.object({
     bodyLineHeight: z.string(),        // e.g. '1.5' | '1.6' | '1.75'
     baseSize: z.string(),              // e.g. '16px' | '17px' | '18px'
   }),
+  wordmark: z.object({
+    font: z.string(),                              // display font for the wordmark — distinct from headingFont
+    treatment: z.enum(['solid', 'gradient', 'outline', 'two-tone']),
+    color1: z.string(),                            // always used (the only color for solid/outline; first word for two-tone; gradient start)
+    color2: z.string(),                            // gradient end / second word for two-tone; empty string '' for solid/outline
+    letterSpacing: z.string(),                     // e.g. '-0.03em' for tight display, '0.08em' for spaced caps
+  }),
   shape: z.object({
     borderRadius: z.enum(['none', 'sm', 'md', 'lg', 'full']),
     cardBorderRadius: z.enum(['none', 'sm', 'md', 'lg', 'full']),
@@ -64,7 +71,7 @@ const CARD_GAP_VALUES: Record<'tight' | 'normal' | 'loose', string> = {
  * as CSS custom properties. Called by the storefront layout to skin a tenant's site.
  */
 export function tokensToCssVars(tokens: DesignTokens): string {
-  const { colors, typography, shape, spacing } = tokens;
+  const { colors, typography, wordmark, shape, spacing } = tokens;
 
   const vars: string[] = [
     `--color-primary: ${colors.primary}`,
@@ -81,6 +88,11 @@ export function tokensToCssVars(tokens: DesignTokens): string {
     `--heading-letter-spacing: ${typography.headingLetterSpacing}`,
     `--body-line-height: ${typography.bodyLineHeight}`,
     `--base-size: ${typography.baseSize}`,
+
+    `--wordmark-font: ${wordmark.font}`,
+    `--wordmark-color-1: ${wordmark.color1}`,
+    `--wordmark-color-2: ${wordmark.color2}`,
+    `--wordmark-letter-spacing: ${wordmark.letterSpacing}`,
 
     `--border-radius: ${RADIUS_VALUES[shape.borderRadius]}`,
     `--card-border-radius: ${RADIUS_VALUES[shape.cardBorderRadius]}`,

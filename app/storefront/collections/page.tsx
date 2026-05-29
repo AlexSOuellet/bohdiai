@@ -1,9 +1,7 @@
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
-import NavSplit from '@/blocks/nav-split';
-import FooterClassic from '@/blocks/footer-classic';
-import { loadStorefrontChrome } from '../_components/storefront-chrome';
+import { loadStorefrontChromeBlocks } from '../_components/storefront-chrome';
 
 interface Collection {
   id: string;
@@ -31,12 +29,11 @@ export default async function StorefrontCollectionsIndexPage() {
   if (collectionsRaw === null || collectionsRaw.length === 0) notFound();
 
   const items: Collection[] = collectionsRaw;
-  const { shopName, sections } = await loadStorefrontChrome(tenantId);
-  const sectionsJson = JSON.stringify(sections);
+  const { nav, footer } = await loadStorefrontChromeBlocks(tenantId);
 
   return (
     <>
-      <NavSplit content={{ shopName, sections: sectionsJson }} />
+      {nav}
       <main className="bg-s-background">
         <section className="pt-28 pb-8 md:pt-32 md:pb-12">
           <div className="max-w-3xl mx-auto px-6 text-center">
@@ -79,7 +76,7 @@ export default async function StorefrontCollectionsIndexPage() {
           </div>
         </section>
       </main>
-      <FooterClassic content={{ shopName, sections: sectionsJson }} />
+      {footer}
     </>
   );
 }

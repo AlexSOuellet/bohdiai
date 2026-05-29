@@ -167,6 +167,24 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
             'baseSize',
           ],
         },
+        wordmark: {
+          type: 'object',
+          description:
+            "The shop wordmark is the identity element in the nav. Pick a display font that's distinct from the heading font — this is the visual signature of the shop. Pick a treatment that fits the mood and niche. For solid/outline, color2 must be empty string ''.",
+          properties: {
+            font: { type: 'string', description: 'Google Font name — a display font, distinct from headingFont.' },
+            treatment: {
+              type: 'string',
+              enum: ['solid', 'gradient', 'outline', 'two-tone'],
+              description:
+                "solid = single color. gradient = linear gradient color1 → color2. outline = stroked text, no fill (color1 is the stroke). two-tone = first word in color1, rest in color2 (best for 2-word shop names).",
+            },
+            color1: { type: 'string', description: 'Hex. Always used.' },
+            color2: { type: 'string', description: "Hex. Used by gradient and two-tone; empty string '' for solid/outline." },
+            letterSpacing: { type: 'string', description: 'e.g. -0.03em for tight display, 0.08em for spaced caps.' },
+          },
+          required: ['font', 'treatment', 'color1', 'color2', 'letterSpacing'],
+        },
         shape: {
           type: 'object',
           properties: {
@@ -193,7 +211,7 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
           required: ['heroStyle', 'productGridCols', 'footerStyle'],
         },
       },
-      required: ['colors', 'typography', 'shape', 'spacing', 'layout'],
+      required: ['colors', 'typography', 'wordmark', 'shape', 'spacing', 'layout'],
     },
   },
   {
@@ -338,7 +356,7 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
   },
   {
     name: 'set_about_image',
-    description: 'Set the about-maker block image URL (optional). The URL must come from generate_image with kind=about.',
+    description: 'Set the about image URL (optional). The URL must come from generate_image with kind=about. The image is shared between the home about block and the /about page.',
     input_schema: {
       type: 'object',
       properties: { url: { type: 'string' } },
@@ -346,9 +364,26 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
     },
   },
   {
+    name: 'set_about_page',
+    description:
+      "Set the content for the dedicated /about page (separate from the home page about block). This is the expanded story — the maker's full origin, philosophy, process. It must be substantially LONGER and DISTINCT from the home about block, not a paraphrase. The home about is a teaser; this is the real article. Body should be 1500-3500 chars across multiple paragraphs separated by blank lines.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        eyebrow: { type: 'string', description: 'Small label above the page headline, e.g. "Our Story", "The Maker". Optional but recommended.' },
+        headline: { type: 'string', description: 'The /about page\'s main headline — title of the page (under 80 chars).' },
+        intro: { type: 'string', description: 'Lead paragraph that sets up the story. 1-2 sentences, 300-500 chars.' },
+        body: { type: 'string', description: 'The long body of the story. Multiple paragraphs separated by blank lines. 1500-3500 chars. Must NOT repeat the home about block — this is the expanded version, deeper and richer.' },
+        signatureName: { type: 'string', description: 'Optional signature name at the bottom (typically the maker\'s first name).' },
+        signatureRole: { type: 'string', description: 'Optional role line under the signature.' },
+      },
+      required: ['eyebrow', 'headline', 'intro', 'body', 'signatureName', 'signatureRole'],
+    },
+  },
+  {
     name: 'finalize',
     description:
-      "Commit everything Bohdi has built to the database. Call this only after tokens, home page blocks, secondary page copy, hero image, and all listings are set. Returns the tenant ID. After this, Bohdi's job is done.",
+      "Commit everything Bohdi has built to the database. Call this only after tokens, home page blocks, secondary page copy, about page content, hero image, and all listings are set. Returns the tenant ID. After this, Bohdi's job is done.",
     input_schema: { type: 'object', properties: {} },
   },
 ];
@@ -595,6 +630,26 @@ const handlers: Record<string, Handler> = {
     return { ok: true };
   },
 
+  async set_about_page(args, ctx) {
+    const a = args as {
+      eyebrow: string;
+      headline: string;
+      intro: string;
+      body: string;
+      signatureName: string;
+      signatureRole: string;
+    };
+    ctx.accumulator.aboutPageContent = {
+      eyebrow: a.eyebrow,
+      headline: a.headline,
+      intro: a.intro,
+      body: a.body,
+      signatureName: a.signatureName,
+      signatureRole: a.signatureRole,
+    };
+    return { ok: true };
+  },
+
   async finalize(_args, ctx) {
     const a = ctx.accumulator;
     if (!a.tokens) throw new Error('finalize: tokens not set');
@@ -639,23 +694,22 @@ const handlers: Record<string, Handler> = {
     const hasCollections = a.collections.length > 0;
     const hasSubscriptions = a.subscriptions.length > 0;
 
-    const navSections: string[] = ['shop'];
-    if (homeSectionTypes.includes('about')) navSections.push('about');
-    if (hasCollections) navSections.push('collections');
-    if (hasSubscriptions) navSections.push('subscriptions');
-    if (homeSectionTypes.includes('events')) navSections.push('events');
+    // Order rule (hard): shop first, conditional items in the middle,
+    // about second-to-last, contact last. shop, about, contact are all
+    // always present in both nav and footer — they are baseline.
+    const conditionals: string[] = [];
+    if (hasCollections) conditionals.push('collections');
+    if (hasSubscriptions) conditionals.push('subscriptions');
+    if (homeSectionTypes.includes('events')) conditionals.push('events');
 
-    const footerSections: string[] = ['shop'];
-    if (homeSectionTypes.includes('about')) footerSections.push('about');
-    if (hasCollections) footerSections.push('collections');
-    if (hasSubscriptions) footerSections.push('subscriptions');
-    if (homeSectionTypes.includes('events')) footerSections.push('events');
-    footerSections.push('contact');
+    const navSections: string[] = ['shop', ...conditionals, 'about', 'contact'];
+    const footerSections: string[] = ['shop', ...conditionals, 'about', 'contact'];
 
+    const logoUrl = ctx.brief.logoUrl ?? '';
     const navBlock = {
       blockKey: 'nav-centered-wordmark',
       position: -1,
-      content: { shopName: ctx.brief.shopName, sections: JSON.stringify(navSections) },
+      content: { shopName: ctx.brief.shopName, sections: JSON.stringify(navSections), logoUrl },
       slots: {} as Record<string, { widgetKey: string; content: Record<string, string> }>,
     };
     const footerBlock = {
@@ -699,6 +753,21 @@ const handlers: Record<string, Handler> = {
       footerBlock,
     ];
 
+    if (!a.aboutPageContent) throw new Error('finalize: about page content not set');
+    const aboutPageBlocks = [
+      navBlock,
+      {
+        blockKey: 'about-story',
+        position: 0,
+        content: {
+          ...a.aboutPageContent,
+          imageUrl: a.aboutImageUrl ?? '',
+        },
+        slots: {} as Record<string, { widgetKey: string; content: Record<string, string> }>,
+      },
+      footerBlock,
+    ];
+
     const result = await writeStorefront({
       subdomain: ctx.brief.subdomain,
       shopName: ctx.brief.shopName,
@@ -709,11 +778,13 @@ const handlers: Record<string, Handler> = {
       pages: [
         { slug: '/', pageType: 'home', title: ctx.brief.shopName, blocks: homePageBlocks },
         { slug: '/shop', pageType: 'shop', title: `${ctx.brief.shopName} — Shop`, blocks: shopPageBlocks },
+        { slug: '/about', pageType: 'about', title: `${ctx.brief.shopName} — About`, blocks: aboutPageBlocks },
         { slug: '/contact', pageType: 'contact', title: `${ctx.brief.shopName} — Contact`, blocks: contactPageBlocks },
       ],
       collections: a.collections,
       listings: a.listings,
       subscriptions: a.subscriptions,
+      logoUrl,
     });
 
     ctx.tenantIdRef.value = result.tenantId;

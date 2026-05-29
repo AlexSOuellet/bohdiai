@@ -20,6 +20,13 @@ const BASE_TOKENS: DesignTokens = {
     bodyLineHeight: '1.6',
     baseSize: '16px',
   },
+  wordmark: {
+    font: 'Bodoni Moda',
+    treatment: 'solid',
+    color1: '#1a1a1a',
+    color2: '',
+    letterSpacing: '-0.03em',
+  },
   shape: {
     borderRadius: 'md',
     cardBorderRadius: 'lg',
@@ -82,6 +89,19 @@ describe('tokensToCssVars', () => {
     expect(css).toContain('--heading-letter-spacing: -0.02em');
     expect(css).toContain('--body-line-height: 1.6');
     expect(css).toContain('--base-size: 16px');
+  });
+
+  it('includes all wordmark vars', () => {
+    const css = tokensToCssVars(BASE_TOKENS);
+    expect(css).toContain('--wordmark-font: Bodoni Moda');
+    expect(css).toContain('--wordmark-color-1: #1a1a1a');
+    expect(css).toContain('--wordmark-color-2: ');
+    expect(css).toContain('--wordmark-letter-spacing: -0.03em');
+  });
+
+  it('rejects invalid wordmark treatment', () => {
+    const bad = { ...BASE_TOKENS, wordmark: { ...BASE_TOKENS.wordmark, treatment: 'rainbow' } };
+    expect(() => DesignTokensSchema.parse(bad)).toThrow();
   });
 
   it('resolves borderRadius enum to px values', () => {

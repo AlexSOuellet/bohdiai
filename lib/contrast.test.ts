@@ -95,6 +95,13 @@ function makeTokens(overrides: Partial<DesignTokens['colors']> = {}): DesignToke
       bodyLineHeight: '1.6',
       baseSize: '16px',
     },
+    wordmark: {
+      font: 'Bodoni Moda',
+      treatment: 'solid',
+      color1: '#E8DECE',
+      color2: '',
+      letterSpacing: '-0.03em',
+    },
     shape: { borderRadius: 'sm', cardBorderRadius: 'md' },
     spacing: { sectionPadding: 'normal', cardGap: 'normal' },
     layout: { heroStyle: 'full-bleed', productGridCols: 3, footerStyle: 'minimal' },

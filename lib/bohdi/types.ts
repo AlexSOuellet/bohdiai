@@ -13,6 +13,8 @@ export interface BohdiBrief {
   nicheSlug: string;
   moodKey: string;
   productCount: number;
+  logoUrl?: string | undefined;          // Public URL of uploaded logo, if maker provided one.
+  brandColors?: string[] | undefined;    // Hex codes extracted from the logo via Vision; honor in palette.
 }
 
 export interface BohdiResult {
@@ -24,11 +26,21 @@ export interface BohdiResult {
  * Bohdi accumulates these as he works. He calls set_* and add_* tools to
  * populate this state; finalize commits the whole accumulator atomically.
  */
+export interface AboutPageContent {
+  eyebrow: string;
+  headline: string;
+  intro: string;
+  body: string;
+  signatureName: string;
+  signatureRole: string;
+}
+
 export interface BohdiAccumulator {
   tokens: DesignTokens | null;
   homePage: GeneratedPage['blocks'] | null;
   shopPageCopy: GeneratedPage['secondaryPages']['shop'] | null;
   contactPageCopy: GeneratedPage['secondaryPages']['contact'] | null;
+  aboutPageContent: AboutPageContent | null;
   collections: GeneratedCollection[];
   listings: GeneratedListingWithImage[];
   subscriptions: GeneratedSubscriptionWithImage[];
@@ -42,6 +54,7 @@ export function emptyAccumulator(): BohdiAccumulator {
     homePage: null,
     shopPageCopy: null,
     contactPageCopy: null,
+    aboutPageContent: null,
     collections: [],
     listings: [],
     subscriptions: [],

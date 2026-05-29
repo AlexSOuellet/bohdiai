@@ -2,10 +2,8 @@ import Image from 'next/image';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
-import NavSplit from '@/blocks/nav-split';
-import FooterClassic from '@/blocks/footer-classic';
 import NotifyForm from '../../_components/NotifyForm';
-import { loadStorefrontChrome } from '../../_components/storefront-chrome';
+import { loadStorefrontChromeBlocks } from '../../_components/storefront-chrome';
 
 interface ListingPageProps {
   params: Promise<{ slug: string }>;
@@ -55,15 +53,14 @@ export default async function StorefrontListingPage({ params }: ListingPageProps
     if (col !== null) collection = col;
   }
 
-  const { shopName, sections } = await loadStorefrontChrome(tenantId);
-  const sectionsJson = JSON.stringify(sections);
+  const { nav, footer } = await loadStorefrontChromeBlocks(tenantId);
 
   const isSubscription = listing.listing_type === 'subscription';
   const linkClass = 'font-s-body text-xs uppercase tracking-[0.15em] text-s-text/60 hover:text-s-text transition-colors';
 
   return (
     <>
-      <NavSplit content={{ shopName, sections: sectionsJson }} />
+      {nav}
       <main className="bg-s-background pt-28 pb-20 md:pt-32">
         <div className="max-w-6xl mx-auto px-6">
           {/* ─── Breadcrumb ─── */}
@@ -176,7 +173,7 @@ export default async function StorefrontListingPage({ params }: ListingPageProps
           </div>
         </div>
       </main>
-      <FooterClassic content={{ shopName, sections: sectionsJson }} />
+      {footer}
     </>
   );
 }

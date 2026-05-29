@@ -169,7 +169,29 @@
       "Bash(npx --yes vercel --non-interactive env add TEST_VAR preview --value \"test-value\" --yes)",
       "Bash(npx --yes vercel env add TEST_VAR preview \"\" --value \"test-value\" --yes)",
       "Bash(npx --yes vercel env rm TEST_VAR preview --yes)",
-      "Bash(npx --yes vercel env ls)"
+      "Bash(npx --yes vercel env ls)",
+      "Bash(git fetch *)",
+      "Bash(git pull *)",
+      "Bash(git merge *)",
+      "Bash(git stash *)",
+      "Bash(rm .claude/skills/niche-writer/references/candles-example.md .claude/skills/niche-writer/scripts/audit.py)",
+      "Bash(rmdir .claude/skills/niche-writer/scripts)",
+      "Bash(ls C:/Projects/RhodyStrong/ 2>&1 | head -20)",
+      "WebFetch(domain:www.flashmagnets.com)",
+      "WebFetch(domain:www.trulyengaging.com)",
+      "WebFetch(domain:www.mypicmag.com)",
+      "WebFetch(domain:www.foxprint.com)",
+      "WebFetch(domain:www.sticky9.com)",
+      "WebFetch(domain:www.shutterfly.com)",
+      "WebFetch(domain:www.magnets.com)",
+      "WebFetch(domain:www.snapfish.com)",
+      "WebFetch(domain:www.magnisimo.com)",
+      "Bash(findstr \":3000 \")",
+      "Bash(node tmp/bohdi-report.mjs rhody-strong)",
+      "Bash(node tmp/bohdi-report.mjs rhody-stronger)",
+      "Bash(node tmp/query-about-cta.mjs)",
+      "Bash(node tmp/list-tenants.mjs)",
+      "Bash(git reset *)"
     ]
   }
 }

@@ -1283,6 +1283,64 @@
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
     background-blend-mode: soft-light;
   }
+
+  /* ---- Wordmark treatments ----
+   * Driven by --wordmark-* CSS vars set by tokensToCssVars + a data attribute
+   * on the storefront root that selects the treatment. The Wordmark component
+   * always renders two spans (.sf-wordmark-1 for the first word, .sf-wordmark-2
+   * for the rest) so the same markup serves all four treatments.
+   */
+  .sf-wordmark {
+    font-family: var(--wordmark-font);
+    letter-spacing: var(--wordmark-letter-spacing);
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--wordmark-color-1);
+    display: inline-block;
+  }
+  .sf-wordmark .sf-wordmark-1,
+  .sf-wordmark .sf-wordmark-2 {
+    color: inherit;
+  }
+
+  /* Solid: both spans inherit color1 (default above). */
+
+  /* Gradient: linear gradient color1 → color2 painted into the text. */
+  [data-wordmark-treatment="gradient"] .sf-wordmark {
+    background-image: linear-gradient(90deg, var(--wordmark-color-1), var(--wordmark-color-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Outline: stroked text, transparent fill. color1 = stroke color. */
+  [data-wordmark-treatment="outline"] .sf-wordmark {
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 1.5px var(--wordmark-color-1);
+  }
+
+  /* Two-tone: first word color1, second span color2. */
+  [data-wordmark-treatment="two-tone"] .sf-wordmark .sf-wordmark-1 {
+    color: var(--wordmark-color-1);
+  }
+  [data-wordmark-treatment="two-tone"] .sf-wordmark .sf-wordmark-2 {
+    color: var(--wordmark-color-2);
+  }
+
+  /* Uploaded logo (when present) replaces the typographic wordmark.
+   * Height comes from --sf-logo-height set by the parent nav block — different
+   * nav layouts need different logo sizes (compact bar vs. large focal wordmark).
+   * Default is 40px for safety; nav blocks override via inline style or class.
+   */
+  .sf-logo {
+    height: var(--sf-logo-height, 40px);
+    width: auto;
+    max-width: 220px;
+    display: inline-block;
+    object-fit: contain;
+  }
 }
 
 @layer utilities {

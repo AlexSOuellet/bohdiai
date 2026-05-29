@@ -25,6 +25,13 @@ const meta: BlockMeta = {
       required: false,
       aiGenerated: true,
     },
+    {
+      key: 'logoUrl',
+      type: 'text',
+      label: 'Public URL of the tenant\'s uploaded logo. Empty string = render the typographic wordmark instead.',
+      required: false,
+      aiGenerated: false,
+    },
   ],
 };
 

@@ -12,6 +12,7 @@ import HeroLava from '@/blocks/hero-lava';
 import AboutMaker from '@/blocks/about-maker';
 import AboutFoundersNote from '@/blocks/about-founders-note';
 import AboutManifest from '@/blocks/about-manifest';
+import AboutStory from '@/blocks/about-story';
 import ProductsBloomGrid from '@/blocks/products-bloom-grid';
 import ProductsGrid from '@/blocks/products-grid';
 import ProductsEditorialGrid from '@/blocks/products-editorial-grid';
@@ -94,6 +95,7 @@ const BLOCK_REGISTRY: Record<string, BlockComponent> = {
   'about-maker':             asBlock(AboutMaker),
   'about-founders-note':     asBlock(AboutFoundersNote),
   'about-manifest':          asBlock(AboutManifest),
+  'about-story':             asBlock(AboutStory),
   'products-bloom-grid':     asBlock(ProductsBloomGrid),
   'products-grid':           asBlock(ProductsGrid),
   'products-editorial-grid': asBlock(ProductsEditorialGrid),
