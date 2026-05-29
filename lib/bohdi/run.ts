@@ -10,7 +10,7 @@ import { BOHDI_TOOLS, dispatchTool, type HandlerContext } from './tools';
 import { emptyAccumulator, type BohdiBrief, type BohdiResult } from './types';
 
 const MODEL = 'claude-sonnet-4-6';
-const MAX_TOKENS = 4096;
+const MAX_TOKENS = 16000; // layout-engine compose calls emit large JSON trees
 const MAX_TURNS = 80; // safety cap — a normal job should fit well under this
 
 export async function runBohdi(

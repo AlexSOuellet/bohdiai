@@ -52,8 +52,6 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
       return;
     }
 
-    const controller = new AbortController();
-
     (async () => {
       try {
         const res = await fetch('/api/onboarding/generate', {
@@ -71,7 +69,6 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
             voiceBoothPitch: data.voiceBoothPitch === '' ? undefined : data.voiceBoothPitch,
             voiceNegativeSpace: data.voiceNegativeSpace === '' ? undefined : data.voiceNegativeSpace,
           }),
-          signal: controller.signal,
         });
 
         if (!res.ok || !res.body) {
@@ -111,6 +108,10 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
       }
     })();
 
+    // No cleanup — once generation starts we let it run to completion even if
+    // the component remounts (React Strict Mode does this in dev). The server
+    // keeps building; the maker sees the result on next visit.
+
     function handleEvent(evt: ProgressEvent) {
       if (evt.type === 'status') {
         setStatusLabel(evt.label);
@@ -126,7 +127,6 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
       }
     }
 
-    return () => controller.abort();
   }, [data]);
 
   return (
