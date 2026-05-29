@@ -161,6 +161,8 @@ Never use feel words ("elegant," "rugged," "playful," "bold") as a category. Str
 
 Span the catalog. Don't ship 14 serifs and call it a niche.
 
+**Display and heading fonts have to earn their place.** Headings carry character — they're where the site has voice. A utilitarian sans like Inter, Lato, Source Sans, Open Sans, Roboto, Nunito, Work Sans, Karla, DM Sans, or PT Sans is a fine body font; in a heading role it makes the page read as a template. Headings need a font with character — a distinctive serif with real contrast, an expressive sans with personality, a geometric display face, a careful condensed face. If a font would read as anonymous in a 64px hero headline, it's body-only. Never put one of the utilitarian sans-serifs above as the only serif/sans option for the niche — there must always be at least one character-forward display option and one character-forward heading option available.
+
 ### Wordmark — 4 to 6 display fonts specifically for wordmarks
 
 These are heavier, more distinctive, more visually striking than the general fonts array. Wordmark fonts are typically things you'd never use for body or even heading at small sizes — they look ridiculous below 32px and ridiculous at body size. Distinct categories: heavy display, blackletter, oversized geometric, hand-tooled, deeply customized serifs with extreme contrast.
@@ -196,6 +198,7 @@ Before writing the files, run this list:
 - 4–6 wordmark fonts that genuinely look ridiculous below 32px — heavy display, distinctive character?
 - 10–14 named textures, each pulling from the niche's actual material vocabulary?
 - Nothing in the sheet that reads as a role assignment or a recipe?
+- At least one character-forward display font and one character-forward heading font (no niche where only utilitarian sans-serifs are available for the big type)?
 
 A clean self-check is the readiness bar.
 

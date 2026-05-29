@@ -1,26 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { generateStorefront } from '../actions';
 import { MOODS, type MoodKey } from '@/lib/moods';
 import type { OnboardingData } from './types';
+import type { ProgressEvent } from '@/lib/progress';
+import BuildTicker from './BuildTicker';
 
 function isMoodKey(value: string): value is MoodKey {
   return value in MOODS;
 }
-
-interface StepBuildProps {
-  data: OnboardingData;
-  onBack: () => void;
-}
-
-const ANIMATION_STEPS = [
-  'Reading your mood and style preferences…',
-  'Choosing your color palette and fonts…',
-  'Assembling your storefront layout…',
-  'Writing your opening copy…',
-  'Putting the finishing touches on…',
-];
 
 function formatElapsed(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -28,65 +16,117 @@ function formatElapsed(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
+interface StepBuildProps {
+  data: OnboardingData;
+  onBack: () => void;
+}
+
 export default function StepBuild({ data, onBack }: StepBuildProps) {
-  const [animStep, setAnimStep] = useState(0);
-  const [animDone, setAnimDone] = useState(false);
-  const [genDone, setGenDone] = useState(false);
-  const [tenantSubdomain, setTenantSubdomain] = useState('');
-  const [error, setError] = useState('');
+  const [statusLabel, setStatusLabel] = useState('Getting set up…');
+  const [tip, setTip] = useState('');
   const [elapsed, setElapsed] = useState(0);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState('');
+  const [tenantSubdomain, setTenantSubdomain] = useState('');
+  const [buildSeconds, setBuildSeconds] = useState(0);
   const calledRef = useRef(false);
 
-  const done = animDone && genDone;
-
-  // Real elapsed-time counter — ticks every second until generation finishes.
+  // Real elapsed-time counter.
   useEffect(() => {
-    if (genDone) return;
+    if (done) return;
     const startedAt = Date.now();
     const id = setInterval(() => {
       setElapsed(Math.floor((Date.now() - startedAt) / 1000));
     }, 1000);
     return () => clearInterval(id);
-  }, [genDone]);
+  }, [done]);
 
-  // Cosmetic progress animation
-  useEffect(() => {
-    if (animStep >= ANIMATION_STEPS.length) {
-      setAnimDone(true);
-      return;
-    }
-    const t = setTimeout(() => setAnimStep((s) => s + 1), 1400);
-    return () => clearTimeout(t);
-  }, [animStep]);
-
-  // Real generation — fires once on mount
+  // Stream generation events from the SSE route.
   useEffect(() => {
     if (calledRef.current) return;
     calledRef.current = true;
 
     if (!data.moodKey || !isMoodKey(data.moodKey)) {
       setError('Something went wrong — please go back and reselect your mood.');
-      setGenDone(true);
+      setDone(true);
       return;
     }
 
-    generateStorefront({
-      shopName: data.shopName,
-      subdomain: data.subdomain,
-      nicheSlug: data.nicheSlug,
-      moodKey: data.moodKey,
-      productCount: data.productCount,
-      logoUrl: data.logoUrl,
-      brandColors: data.brandColors,
-    })
-      .then((result) => {
-        setTenantSubdomain(result.subdomain);
-        setGenDone(true);
-      })
-      .catch(() => {
+    const controller = new AbortController();
+
+    (async () => {
+      try {
+        const res = await fetch('/api/onboarding/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            shopName: data.shopName,
+            subdomain: data.subdomain,
+            nicheSlug: data.nicheSlug,
+            moodKey: data.moodKey,
+            productCount: data.productCount,
+            makerName: data.makerName === '' ? undefined : data.makerName,
+            logoUrl: data.logoUrl === '' ? undefined : data.logoUrl,
+            brandColors: data.brandColors.length === 0 ? undefined : data.brandColors,
+            voiceBoothPitch: data.voiceBoothPitch === '' ? undefined : data.voiceBoothPitch,
+            voiceNegativeSpace: data.voiceNegativeSpace === '' ? undefined : data.voiceNegativeSpace,
+          }),
+          signal: controller.signal,
+        });
+
+        if (!res.ok || !res.body) {
+          setError('We hit a problem starting your build. Go back and try again.');
+          setDone(true);
+          return;
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        // Parse the SSE stream. Each event is `data: <json>\n\n`. We split on
+        // double-newline to find complete events; partial events stay in the
+        // buffer for the next chunk.
+        while (true) {
+          const { value, done: streamDone } = await reader.read();
+          if (streamDone) break;
+          buffer += decoder.decode(value, { stream: true });
+          const events = buffer.split('\n\n');
+          buffer = events.pop() ?? '';
+          for (const evt of events) {
+            const line = evt.split('\n').find((l) => l.startsWith('data: '));
+            if (line === undefined) continue;
+            const json = line.slice('data: '.length);
+            try {
+              const parsed = JSON.parse(json) as ProgressEvent;
+              handleEvent(parsed);
+            } catch {
+              // Skip malformed events — log silently.
+            }
+          }
+        }
+      } catch {
         setError('We hit a problem building your store. Go back and try again — your choices are saved.');
-        setGenDone(true);
-      });
+        setDone(true);
+      }
+    })();
+
+    function handleEvent(evt: ProgressEvent) {
+      if (evt.type === 'status') {
+        setStatusLabel(evt.label);
+      } else if (evt.type === 'tip') {
+        setTip(evt.text);
+      } else if (evt.type === 'done') {
+        setTenantSubdomain(evt.subdomain);
+        setBuildSeconds(Math.round(evt.totalMs / 1000));
+        setDone(true);
+      } else if (evt.type === 'error') {
+        setError(evt.message);
+        setDone(true);
+      }
+    }
+
+    return () => controller.abort();
   }, [data]);
 
   return (
@@ -101,46 +141,23 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
           ← Back
         </button>
         <h1 className="mb-2 font-serif text-3xl text-text">
-          {done ? (error ? 'Something went wrong.' : 'Your store is ready.') : `Building ${data.shopName || 'your store'}…`}
+          {done
+            ? error
+              ? 'Something went wrong.'
+              : 'Your store is ready.'
+            : `Building ${data.shopName || 'your store'}…`}
         </h1>
         <p className="text-sm text-muted">
-          {done ? (
-            error ? 'You can go back and try again.' : "Take a look — it's yours to customize from here."
-          ) : (
-            <>
-              Elapsed <span className="font-mono tabular-nums text-text-soft">{formatElapsed(elapsed)}</span>
-            </>
-          )}
+          {done
+            ? error
+              ? 'You can go back and try again.'
+              : `Built in ${formatElapsed(buildSeconds)}. Take a look — it's yours to customize from here.`
+            : 'A few minutes. Worth it.'}
         </p>
       </div>
 
       {!done ? (
-        <div className="space-y-3">
-          {ANIMATION_STEPS.map((label, i) => {
-            const isPast = i < animStep;
-            const isCurrent = i === animStep;
-            return (
-              <div key={label} className="flex items-center gap-3">
-                <div
-                  className={[
-                    'flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border text-[10px] transition-all duration-slow',
-                    isPast ? 'border-honey bg-honey text-bg' : isCurrent ? 'border-honey-warm bg-transparent text-honey-warm' : 'border-white/10 bg-transparent text-transparent',
-                  ].join(' ')}
-                >
-                  {isPast ? '✓' : isCurrent ? '·' : ''}
-                </div>
-                <span
-                  className={[
-                    'text-sm transition-colors duration-slow',
-                    isPast ? 'text-text-soft' : isCurrent ? 'text-text' : 'text-muted',
-                  ].join(' ')}
-                >
-                  {label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+        <BuildTicker statusLabel={statusLabel} tip={tip} elapsed={elapsed} />
       ) : error ? (
         <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-6 space-y-3">
           <p className="text-sm text-red-400">{error}</p>

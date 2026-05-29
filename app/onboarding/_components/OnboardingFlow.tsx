@@ -8,10 +8,11 @@ import StepName from './StepName';
 import StepNiche from './StepNiche';
 import StepLogo from './StepLogo';
 import StepMood from './StepMood';
+import StepVoice from './StepVoice';
 import StepTrial from './StepTrial';
 import StepBuild from './StepBuild';
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
 
 interface OnboardingFlowProps {
   niches: NicheOption[];
@@ -37,8 +38,9 @@ export default function OnboardingFlow({ niches }: OnboardingFlowProps) {
       {step === 2 && <StepNiche data={data} niches={niches} onAdvance={advance} onBack={back} />}
       {step === 3 && <StepLogo data={data} onAdvance={advance} onBack={back} />}
       {step === 4 && <StepMood data={data} onAdvance={advance} onBack={back} />}
-      {step === 5 && <StepTrial data={data} onAdvance={advance} onBack={back} />}
-      {step === 6 && <StepBuild data={data} onBack={back} />}
+      {step === 5 && <StepVoice data={data} onAdvance={advance} onBack={back} />}
+      {step === 6 && <StepTrial data={data} onAdvance={advance} onBack={back} />}
+      {step === 7 && <StepBuild data={data} onBack={back} />}
     </div>
   );
 }

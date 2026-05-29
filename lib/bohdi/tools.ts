@@ -17,6 +17,9 @@ import {
   generateProductImage,
 } from '@/lib/fal';
 import { logger } from '@/lib/logger';
+import { labelFor, type ProgressEmitter, type ProgressStep } from '@/lib/progress';
+import { inferGenderFromName } from '@/lib/name-gender';
+import { sanitizeDeep } from '@/lib/copy-sanitize';
 import type { BohdiAccumulator, BohdiBrief } from './types';
 
 // ─── Tool definitions for the Anthropic API ──────────────────────────────────
@@ -424,6 +427,8 @@ export interface HandlerContext {
   done: { value: boolean; result: { tenantId: string; subdomain: string } | null };
   /** Tenant ID once known (after finalize) — used to backfill design_choices rows. */
   tenantIdRef: { value: string | null };
+  /** Optional progress emitter — handlers call this to stream maker-facing status. */
+  onProgress?: ProgressEmitter | undefined;
 }
 
 const handlers: Record<string, Handler> = {
@@ -526,7 +531,21 @@ const handlers: Record<string, Handler> = {
       moodKey: ctx.brief.moodKey,
       moodLabel: MOODS[ctx.brief.moodKey as MoodKey]?.label,
       moodDescription: MOODS[ctx.brief.moodKey as MoodKey]?.description,
+      gender: inferGenderFromName(ctx.brief.makerName),
     };
+    // Emit a kind-specific status before the fal call. The image generation
+    // is the longest single step in Bohdi's run; the maker should see what
+    // he's working on while it runs.
+    const stepByKind: Record<typeof kind, ProgressStep> = {
+      hero: 'generating-hero-image',
+      about: 'generating-about-image',
+      product: 'generating-product-image',
+      subscription: 'generating-product-image',
+    };
+    const step = stepByKind[kind];
+    if (ctx.onProgress) {
+      ctx.onProgress({ type: 'status', step, label: labelFor(step, ctx.brief.makerName) });
+    }
     let url: string | null = null;
     if (kind === 'hero') {
       url = await generateHeroImage(ctx.brief.nicheSlug, subdomain, moodSignal);
@@ -656,6 +675,18 @@ const handlers: Record<string, Handler> = {
     if (!a.homePage) throw new Error('finalize: home page not set');
     if (!a.shopPageCopy || !a.contactPageCopy) throw new Error('finalize: secondary pages copy not set');
     if (!a.heroImageUrl) throw new Error('finalize: hero image not set');
+
+    // Scrub AI-tell punctuation (em-dashes, semicolons, parenthetical asides)
+    // from all text fields before they hit the database. Bohdi's prompt asks
+    // him to avoid them, but the model rationalizes past the instruction;
+    // this is the floor that catches what the prompt can't.
+    a.homePage = sanitizeDeep(a.homePage);
+    a.shopPageCopy = sanitizeDeep(a.shopPageCopy);
+    a.contactPageCopy = sanitizeDeep(a.contactPageCopy);
+    a.aboutPageContent = sanitizeDeep(a.aboutPageContent);
+    a.collections = sanitizeDeep(a.collections);
+    a.listings = sanitizeDeep(a.listings);
+    a.subscriptions = sanitizeDeep(a.subscriptions);
 
     // Use the same write path as the legacy generator. Import here to keep
     // the module graph clean.

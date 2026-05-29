@@ -4,6 +4,7 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { anthropicClient } from '@/lib/anthropic';
 import { logger } from '@/lib/logger';
+import { labelFor, stepForTool, type ProgressEmitter } from '@/lib/progress';
 import { BOHDI_SYSTEM_PROMPT } from './system-prompt';
 import { BOHDI_TOOLS, dispatchTool, type HandlerContext } from './tools';
 import { emptyAccumulator, type BohdiBrief, type BohdiResult } from './types';
@@ -12,11 +13,20 @@ const MODEL = 'claude-sonnet-4-6';
 const MAX_TOKENS = 4096;
 const MAX_TURNS = 80; // safety cap — a normal job should fit well under this
 
-export async function runBohdi(brief: BohdiBrief): Promise<BohdiResult> {
+export async function runBohdi(
+  brief: BohdiBrief,
+  onProgress?: ProgressEmitter,
+): Promise<BohdiResult> {
   const accumulator = emptyAccumulator();
   const done = { value: false, result: null as { tenantId: string; subdomain: string } | null };
   const tenantIdRef = { value: null as string | null };
-  const ctx: HandlerContext = { brief, accumulator, done, tenantIdRef };
+  const ctx: HandlerContext = { brief, accumulator, done, tenantIdRef, onProgress };
+
+  const makerName = brief.makerName;
+  const emit = (step: Parameters<typeof labelFor>[0]) => {
+    if (onProgress) onProgress({ type: 'status', step, label: labelFor(step, makerName) });
+  };
+  emit('starting');
 
   const logoLine = brief.logoUrl !== undefined && brief.logoUrl !== ''
     ? `\n- Maker uploaded a logo at: ${brief.logoUrl}`
@@ -24,13 +34,33 @@ export async function runBohdi(brief: BohdiBrief): Promise<BohdiResult> {
   const brandColorsLine = brief.brandColors !== undefined && brief.brandColors.length > 0
     ? `\n- Brand colors extracted from the logo (locked identity — honor these in your palette while respecting the mood): ${brief.brandColors.join(', ')}`
     : '';
+  const makerNameLine = brief.makerName !== undefined && brief.makerName !== ''
+    ? `\n- Maker's first name: ${brief.makerName}`
+    : '';
+
+  // The maker's own voice is the most important material for the about copy.
+  // When present, lean on it heavily — quote phrasing, use the rhythm. Do NOT
+  // paraphrase it into AI-tells. When absent, the about page stays terse and
+  // leans on the niche file rather than inventing voice.
+  const voiceSection = (brief.voiceBoothPitch !== undefined && brief.voiceBoothPitch !== '')
+    || (brief.voiceNegativeSpace !== undefined && brief.voiceNegativeSpace !== '')
+    ? `\n\nMAKER'S OWN VOICE (use as raw material — do not paraphrase into generic copy):${
+      brief.voiceBoothPitch !== undefined && brief.voiceBoothPitch !== ''
+        ? `\n- Booth pitch (how the maker describes their work out loud): "${brief.voiceBoothPitch}"`
+        : ''
+    }${
+      brief.voiceNegativeSpace !== undefined && brief.voiceNegativeSpace !== ''
+        ? `\n- What the maker doesn't want this to feel like (constraint): "${brief.voiceNegativeSpace}"`
+        : ''
+    }`
+    : '';
 
   const initialUserMessage = `BRIEF
 - Shop name: ${brief.shopName}
 - Subdomain: ${brief.subdomain}
 - Niche slug: ${brief.nicheSlug}
 - Mood key: ${brief.moodKey}
-- Product count to generate: ${brief.productCount}${logoLine}${brandColorsLine}
+- Product count to generate: ${brief.productCount}${makerNameLine}${logoLine}${brandColorsLine}${voiceSection}
 
 Begin. Read the niche and mood first, then design the storefront end-to-end. Deliberate every meaningful choice. Log every decision. Finalize when complete.`;
 
@@ -109,6 +139,10 @@ Begin. Read the niche and mood first, then design the storefront end-to-end. Del
     for (const block of response.content) {
       if (block.type !== 'tool_use') continue;
       const toolName = block.name;
+      // Emit a status event for the tool we're about to run. Tools without a
+      // mapped step (generate_image — kind isn't known here) emit their own.
+      const mappedStep = stepForTool(toolName);
+      if (mappedStep !== null) emit(mappedStep);
       try {
         const result = await dispatchTool(toolName, block.input, ctx);
         toolResults.push({

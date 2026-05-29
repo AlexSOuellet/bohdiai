@@ -82,10 +82,19 @@ interface MoodSignal {
   /** Mood label and description to thread into the image prompt. */
   moodLabel?: string;
   moodDescription?: string;
+  /** Gender of the human in the image. Inferred from the maker's name when
+   *  available; falls back to female (60%+ maker audience). */
+  gender?: import('./name-gender').Gender;
 }
 
 function isLowControl(s?: MoodSignal): boolean {
   return s?.nicheSlug === 'leatherworker' && s?.moodKey === 'dark';
+}
+
+import { personPhrase, type Gender } from './name-gender';
+
+function person(gender: Gender | undefined): ReturnType<typeof personPhrase> {
+  return personPhrase(gender ?? 'female');
 }
 
 export async function generateProductImage(
@@ -96,6 +105,7 @@ export async function generateProductImage(
   slug: string,
   moodSignal?: MoodSignal,
 ): Promise<string | null> {
+  // Product photography stays object-only — the product is the subject.
   const prompt = isLowControl(moodSignal)
     ? `Product photography of ${productName}. ${productDescription}. Mood: ${moodSignal!.moodLabel}. No text.`
     : `Professional product photography: ${productName}. ${productDescription}. Handmade artisan ${nicheDisplayName}. Clean neutral background, soft natural light, high resolution, commercial quality, no text.`;
@@ -107,9 +117,10 @@ export async function generateHeroImage(
   subdomain: string,
   moodSignal?: MoodSignal,
 ): Promise<string | null> {
+  const p = person(moodSignal?.gender);
   const prompt = isLowControl(moodSignal)
-    ? `A ${nicheDisplayName}'s working environment. Mood: ${moodSignal!.moodLabel}. No text, no people, wide landscape composition.`
-    : `Editorial lifestyle photography: ${nicheDisplayName} maker's workshop. Close-up details of the materials, tools, and finished work specific to ${nicheDisplayName}. Cinematic wide shot, real working studio environment, rich depth, no text, no people, wide landscape composition.`;
+    ? `${p.noun} working in ${p.poss} ${nicheDisplayName}'s studio. Mood: ${moodSignal!.moodLabel}. Cinematic wide shot, no text.`
+    : `Editorial lifestyle photography: ${p.noun} working in ${p.poss} ${nicheDisplayName} workshop. Real working studio environment, ${p.subj} is focused on the work, the materials and tools in view. Cinematic wide shot, rich depth, warm natural light, no text, wide landscape composition.`;
   return generateAndStore(prompt, `hero-images/${subdomain}/hero.jpg`, 'landscape_16_9');
 }
 
@@ -118,8 +129,9 @@ export async function generateAboutImage(
   subdomain: string,
   moodSignal?: MoodSignal,
 ): Promise<string | null> {
+  const p = person(moodSignal?.gender);
   const prompt = isLowControl(moodSignal)
-    ? `Hands at work in a ${nicheDisplayName}'s studio. Mood: ${moodSignal!.moodLabel}. No identifiable faces, no text, vertical portrait composition.`
-    : `Editorial documentary photography: hands at work in a ${nicheDisplayName} maker's studio. In-progress detail — tools being used, materials being shaped, the texture of the work itself. Warm natural window light, shallow depth of field, intimate close-mid shot, real studio environment, no identifiable faces, no text, vertical portrait composition.`;
+    ? `Portrait of ${p.noun} in ${p.poss} ${nicheDisplayName}'s studio, shaping ${p.poss} work with ${p.poss} hands. Mood: ${moodSignal!.moodLabel}. Intimate documentary shot, no text, vertical portrait composition.`
+    : `Editorial documentary portrait: ${p.noun} in ${p.poss} ${nicheDisplayName} studio, focused on the work in ${p.poss} hands. In-progress detail — the tools being used, the materials being shaped, the texture of the work itself. Warm natural window light, shallow depth of field, intimate close-mid shot, real studio environment, no text, vertical portrait composition.`;
   return generateAndStore(prompt, `about-images/${subdomain}/about.jpg`, 'square_hd');
 }

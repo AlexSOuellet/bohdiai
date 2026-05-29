@@ -13,8 +13,11 @@ export interface BohdiBrief {
   nicheSlug: string;
   moodKey: string;
   productCount: number;
+  makerName?: string | undefined;        // The maker's first name, captured at onboarding. Used for progress labels and as material for Bohdi's about-portrait brief.
   logoUrl?: string | undefined;          // Public URL of uploaded logo, if maker provided one.
   brandColors?: string[] | undefined;    // Hex codes extracted from the logo via Vision; honor in palette.
+  voiceBoothPitch?: string | undefined;     // Maker's own words: how they'd describe their work at a craft fair booth. Bohdi uses this as raw material for the about copy.
+  voiceNegativeSpace?: string | undefined;  // Maker's own words: what they don't want their site to feel like. Bohdi treats this as a constraint.
 }
 
 export interface BohdiResult {

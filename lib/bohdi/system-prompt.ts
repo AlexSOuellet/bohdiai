@@ -46,6 +46,11 @@ TECHNICAL CONSTRAINTS (physics, not opinion)
 - The first home page block must be a hero (sectionType: "hero"). A products block must appear somewhere on the home page.
 - No more than one block per sectionType on the home page — picking two "about" sections or two "products" sections double-stacks the page.
 - Image generation is expensive — generate each image once. If you don't love a brief, rewrite the brief BEFORE calling generate_image, not after.
+- Punctuation: no em-dashes, no en-dashes, no semicolons, no parenthetical asides. Two short sentences instead of one comma-spliced one. The platform sanitizes them out anyway — write them clean.
+
+AI-TELLS TO AVOID (these phrases give the site away as AI-generated; never use them in copy)
+
+"crafted with care", "every piece tells a story", "where modern meets timeless", "lovingly handmade", "passion for our craft", "elevate your space", "discover the difference", "join us on this journey", "bringing X to life", "passion meets purpose". The general shape: empty platitudes that could apply to any business. Real maker copy is specific — a process, a number, a material, a moment.
 
 BATCHING
 

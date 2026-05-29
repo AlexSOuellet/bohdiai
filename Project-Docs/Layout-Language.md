@@ -51,3 +51,41 @@ The primitives define geometry. Style intent defines how each region of the page
 **Roles are inferred from usage, not declared.** When the renderer compiles a tree to CSS, it walks the intent assignments and figures out what role each color is playing on this site (the color used as backgrounds across the most surface area is the dominant; the color used in headlines is the display ink; etc.). Roles emerge from Bohdi's composition. They are not pre-assigned by the style sheet.
 
 **Contrast is enforced.** Text intent is checked against the background or surface it sits on. If Bohdi assigns a text color that fails contrast against its backdrop, the renderer auto-adjusts to the nearest palette color that passes WCAG AA. This is the floor — Bohdi can paint dramatically, but the result is always readable.
+
+---
+
+## 3. Content layer
+
+Layout primitives are geometry. Style intent is paint. The content layer is what fills the geometry — text, images, products, collections, callouts. Two flavors.
+
+**Authored content.** Text Bohdi writes himself plus image briefs he hands to fal. Headlines, sub-headlines, body paragraphs, eyebrows, button labels, image prompts. Authored content is frozen into the layout tree at compose time — the maker can edit it later, but it doesn't update on its own. This is where Bohdi's voice work lands and where the maker's grounding answers become real copy.
+
+**Bound content.** Data from the maker's catalog — products, collections, subscriptions, events, social links. A node tagged "products grid, show six, order by featured" gets filled with whatever real products the maker has at render time. If the maker adds a product tomorrow, the grid shows it without Bohdi touching anything. Bohdi composed the geometry once; the data flows through it forever. Bound content also covers featured-specific binding ("this exact product," "this exact collection") for spotlight cases.
+
+**Widgets collapse into node types.** The original block-and-widget split (D13) was right about separating function from form, but in the layout language the separation falls out naturally — a CTA button is just a content-node type with a label and an href. A contact form is a content-node type. An add-to-cart on a product detail page is a content-node type. The separate widget catalog goes away. Content nodes have their own schemas the same way layout primitives do.
+
+---
+
+## 4. What still has to be designed
+
+The two sections above cover the structural skeleton. These pieces are agreed in principle but not specified in the doc yet — flagged here so the next round of doc work knows where to focus.
+
+**Patterns library.** Catalog comes back, but smaller and at a different level. Not blocks-as-frozen-layouts. Partial trees Bohdi can borrow as starting points — "hero with overlapping image and headline," "products in an asymmetric grid with one feature card." Patterns are training material, not a cage. They live alongside niche files as AI input, not as the only option. Schema and authoring shape pending.
+
+**The Bohdi compose tool.** Today Bohdi calls `set_tokens` and `set_home_page` with block keys. The layout language replaces these with a `set_layout` (or similar) tool that accepts a layout tree per page plus a style sheet (palette + roster + textures). Tool schema pending.
+
+**Renderer.** A recursive React component that walks a layout tree and emits the rendered page. Has to handle every primitive's geometry, every style intent, mobile collapse behavior per primitive, and content nodes. Will replace most or all of the current `blocks/` directory. Architecture pending.
+
+**Tenant DesignTokens replacement.** The current seven-color, two-font tokens schema goes away. Replaced by a named palette + font roster + texture set persisted as JSONB per tenant, written by Bohdi's compose tool. Migration shape pending.
+
+**Reference exemplars.** A `study_references` tool that returns curated layouts and palettes per niche × mood for Bohdi to absorb before composing. Material curation and tool shape pending.
+
+**The art director.** A second-pass review model that critiques Bohdi's composition against the brand promise (functional art, not brochures), checks for AI-tells in copy, and forces a redo if the result is mediocre. Pending.
+
+**Iterative process.** Bohdi generates three candidate compositions per page before developing one. Mechanics pending.
+
+**Bohdi reading his own past work.** A `recent_sites` tool returns his last N attempts in this niche × mood so he can see if he's about to repeat himself. Pending.
+
+---
+
+*Bohdi composes layout trees from primitives, paints them with the named palette and roster he reads from the style sheets, fills them with authored copy and bound data. The renderer walks the tree. Patterns inform him. The art director catches what telling him can't. The functional art is the result, not the marketing.*
