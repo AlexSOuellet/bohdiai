@@ -42,6 +42,35 @@ export function FeaturedCollectionContent({
     );
   }
 
+  const hasImage =
+    collection.imageUrl !== undefined && collection.imageUrl !== '';
+
+  if (!hasImage) {
+    return (
+      <a
+        data-node-type="featuredCollection"
+        data-node-id={node.id}
+        data-text-only
+        href={`/collections/${collection.slug}`}
+        style={
+          node.intent?.palette
+            ? {
+                ...intentToStyleVars(node.intent),
+                background: 'var(--node-palette)',
+                color: 'var(--node-palette-fg)',
+              }
+            : intentToStyleVars(node.intent)
+        }
+        className="flex flex-col items-center justify-center gap-3 aspect-[3/2] w-full p-10 text-center rounded transition-opacity hover:opacity-80"
+      >
+        <h3 className="text-2xl font-semibold">{collection.name}</h3>
+        <span className="text-xs opacity-60">
+          {collection.itemCount} pieces
+        </span>
+      </a>
+    );
+  }
+
   return (
     <a
       data-node-type="featuredCollection"
@@ -56,15 +85,13 @@ export function FeaturedCollectionContent({
           {collection.itemCount} pieces
         </span>
       </div>
-      {collection.imageUrl !== undefined && (
-        <div className="aspect-[3/2] w-full bg-black/10 overflow-hidden">
-          <img
-            src={collection.imageUrl}
-            alt={collection.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-          />
-        </div>
-      )}
+      <div className="aspect-[3/2] w-full bg-black/10 overflow-hidden">
+        <img
+          src={collection.imageUrl}
+          alt={collection.name}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+        />
+      </div>
     </a>
   );
 }

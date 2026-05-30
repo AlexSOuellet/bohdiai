@@ -45,6 +45,26 @@ describe('TextNodeSchema', () => {
   it('rejects extra keys', () => {
     expect(TextNodeSchema.safeParse({ type: 'text', role: 'body', content: 'x', extra: 1 }).success).toBe(false);
   });
+  it('accepts mobile.role', () => {
+    const n = TextNodeSchema.parse({
+      type: 'text', role: 'headline', content: 'x', mobile: { role: 'sub' },
+    });
+    expect(n.mobile?.role).toBe('sub');
+  });
+  it('rejects bad mobile.role', () => {
+    expect(
+      TextNodeSchema.safeParse({
+        type: 'text', role: 'headline', content: 'x', mobile: { role: 'mega' },
+      }).success,
+    ).toBe(false);
+  });
+  it('rejects extras inside mobile', () => {
+    expect(
+      TextNodeSchema.safeParse({
+        type: 'text', role: 'body', content: 'x', mobile: { size: 'lg' },
+      }).success,
+    ).toBe(false);
+  });
 });
 
 describe('ImageNodeSchema', () => {

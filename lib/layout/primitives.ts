@@ -98,6 +98,17 @@ export type MarqueeDirection = z.infer<typeof MarqueeDirectionSchema>;
 export const AxisSchema = z.enum(['horizontal', 'vertical']);
 export type Axis = z.infer<typeof AxisSchema>;
 
+export const BandContentWidthSchema = z.enum([
+  'narrow',
+  'normal',
+  'wide',
+  'full',
+]);
+export type BandContentWidth = z.infer<typeof BandContentWidthSchema>;
+
+export const OverlapScrimSchema = z.enum(['none', 'light', 'dark', 'auto']);
+export type OverlapScrim = z.infer<typeof OverlapScrimSchema>;
+
 const lazyChildren = () => z.array(z.lazy(() => LayoutNodeSchema));
 const lazyChild = () => z.lazy(() => LayoutNodeSchema);
 
@@ -109,6 +120,7 @@ export interface BandNode {
   minHeight?: MinHeight;
   align?: Align;
   justify?: Justify;
+  contentWidth?: BandContentWidth;
   children: LayoutNode[];
   mobile?: {
     padding?: SpacingScale;
@@ -128,6 +140,7 @@ export const BandSchema: z.ZodType<BandNode> = z.lazy(() =>
       minHeight: MinHeightSchema.optional(),
       align: AlignSchema.optional(),
       justify: JustifySchema.optional(),
+      contentWidth: BandContentWidthSchema.optional(),
       children: lazyChildren(),
       mobile: z
         .object({
@@ -308,6 +321,7 @@ export interface OverlapNode {
   intent?: Intent;
   align?: OverlapAnchorPosition;
   anchor: number;
+  scrim?: OverlapScrim;
   children: LayoutNode[];
   mobile?: {
     collapse?: OverlapMobileCollapse;
@@ -323,6 +337,7 @@ export const OverlapSchema: z.ZodType<OverlapNode> = z.lazy(() =>
       intent: IntentSchema.optional(),
       align: OverlapAnchorPositionSchema.optional(),
       anchor: z.number().int().min(0),
+      scrim: OverlapScrimSchema.optional(),
       children: lazyChildren(),
       mobile: z
         .object({

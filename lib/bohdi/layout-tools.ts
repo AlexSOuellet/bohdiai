@@ -82,18 +82,18 @@ export const BOHDI_LAYOUT_TOOLS: BohdiToolDef[] = [
       "PAGE INPUT: { slug, name, root, meta? }. slug is the URL path ('home', 'about', 'shop/[slug]'). root is the top-level node. meta is optional { title, description } for SEO.\n\n" +
       "EVERY node has a 'type' field plus type-specific fields. Every node accepts optional id (own anchor for art-director feedback) and intent ({ palette, type, texture, density } — all optional, all reference NAMED entries from the style sheet by name).\n\n" +
       "LAYOUT PRIMITIVES (geometry):\n" +
-      "- band — full-width horizontal section. children: array. fields: padding ('none'..'xxl'), minHeight ('auto'..'screen'), align ('start'..'stretch'), justify ('start'..'stretch'). mobile: { padding?, minHeight?, align?, justify? }.\n" +
+      "- band — full-width horizontal section. children: array. fields: padding ('none'..'xxl'), minHeight ('auto'..'screen'), align ('start'..'stretch'), justify ('start'..'stretch'), contentWidth ('narrow' ~768px | 'normal' ~1024px default | 'wide' ~1280px | 'full' edge-to-edge). The band's background still bleeds full-width regardless of contentWidth — only the inner content is capped. Use 'full' only when you genuinely want edge-to-edge content (rare). mobile: { padding?, minHeight?, align?, justify? }.\n" +
       "- stack — vertical sequence. children: array. fields: gap, align, justify. mobile: { gap?, align?, justify? }.\n" +
       "- row — horizontal sequence. children: array. fields: gap, align (incl 'baseline'), justify, wrap. mobile: { gap?, align?, justify?, collapse: 'wrap' | 'stack' | 'preserve' }.\n" +
       "- split — N panes (2-8). children: array, ratios: array of N numbers summing to 100. fields: direction ('horizontal'|'vertical'), gap, align. mobile: { direction?, gap?, stackOrder?: permutation of [0..N-1] }.\n" +
       "- grid — regular N-column M-row. children: array. fields: columns (1-12), rows? (1-12), gapX, gapY, align, justify. mobile: { columns? (1-6), gapX?, gapY? }.\n" +
-      "- overlap — z-layered children. children: array, anchor: index of the child that holds the natural flow. fields: align ('top-left' | 'top' | 'top-right' | 'left' | 'center' | 'right' | 'bottom-left' | 'bottom' | 'bottom-right'). mobile: { collapse: 'preserve' | 'stack', stackOrder? }.\n" +
+      "- overlap — z-layered children. children: array, anchor: index of the child that holds the natural flow. fields: align ('top-left' | 'top' | 'top-right' | 'left' | 'center' | 'right' | 'bottom-left' | 'bottom' | 'bottom-right'), scrim ('none' | 'light' | 'dark' | 'auto' — auto lays a contrast gradient when the anchor is an image and text is layered above; default 'auto'). mobile: { collapse: 'preserve' | 'stack', stackOrder? }.\n" +
       "- bleed — single child that extends to the viewport edge. child: a node, side: 'left' | 'right' | 'both' | 'top' | 'bottom' | 'all'. mobile: { side? }.\n" +
       "- pane — contained box. child: a node, padding?, radius? ('none' | 'sm' | 'md' | 'lg' | 'pill' | 'full'), border? ('none' | 'hairline' | 'thin' | 'medium' | 'thick'), shadow? ('none' | 'sm' | 'md' | 'lg'), fill?: boolean (paints palette intent as background). mobile: { padding?, radius?, border?, shadow? }.\n" +
       "- marquee — horizontally scrolling sequence. children: array. fields: direction ('left'|'right'), speed ('slow'|'medium'|'fast'), gap, pauseOnHover. mobile: { speed?, gap? }.\n" +
       "- gutter — empty space. fields: size ('xs'..'xxl'), axis ('vertical' | 'horizontal'). mobile: { size? }.\n\n" +
       "AUTHORED CONTENT NODES:\n" +
-      "- text — { role: 'eyebrow' | 'headline' | 'sub' | 'body' | 'caption', content: string, align?: 'start' | 'center' | 'end' }.\n" +
+      "- text — { role: 'eyebrow' | 'headline' | 'sub' | 'body' | 'caption', content: string, align?: 'start' | 'center' | 'end', mobile?: { role? — override role on small screens; if omitted, mobile auto-steps one size down to avoid cramped layouts } }.\n" +
       "- image — { brief: string for image generation, alt: string, aspect?: '1:1' | '4:5' | '3:4' | '4:3' | '3:2' | '16:9' | '21:9' | 'auto', focal?: { x: 0-100, y: 0-100 } }.\n" +
       "- button — { label, href, variant?: 'primary' | 'secondary' | 'ghost' | 'link' }.\n" +
       "- wordmark — { kind: 'text' | 'image', content: the text or the image URL, href? }.\n" +

@@ -15,6 +15,8 @@ import {
   MarqueeSpeedSchema,
   MarqueeDirectionSchema,
   AxisSchema,
+  BandContentWidthSchema,
+  OverlapScrimSchema,
   BandSchema,
   StackSchema,
   RowSchema,
@@ -47,6 +49,8 @@ describe('atomic enum schemas', () => {
     [MarqueeSpeedSchema, { good: ['slow', 'fast'], bad: 'turbo' }],
     [MarqueeDirectionSchema, { good: ['left', 'right'], bad: 'up' }],
     [AxisSchema, { good: ['horizontal', 'vertical'], bad: 'diagonal' }],
+    [BandContentWidthSchema, { good: ['narrow', 'normal', 'wide', 'full'], bad: 'huge' }],
+    [OverlapScrimSchema, { good: ['none', 'light', 'dark', 'auto'], bad: 'gradient' }],
   ];
 
   for (const [schema, { good, bad }] of cases) {
@@ -76,6 +80,21 @@ describe('BandSchema', () => {
   });
   it('rejects extras', () => {
     expect(BandSchema.safeParse({ type: 'band', children: [], wat: 1 }).success).toBe(false);
+  });
+  it('accepts contentWidth', () => {
+    expect(
+      BandSchema.parse({ type: 'band', contentWidth: 'wide', children: [] }).contentWidth,
+    ).toBe('wide');
+  });
+  it('accepts contentWidth full', () => {
+    expect(
+      BandSchema.parse({ type: 'band', contentWidth: 'full', children: [] }).contentWidth,
+    ).toBe('full');
+  });
+  it('rejects bad contentWidth', () => {
+    expect(
+      BandSchema.safeParse({ type: 'band', contentWidth: 'huge', children: [] }).success,
+    ).toBe(false);
   });
 });
 
@@ -168,6 +187,16 @@ describe('OverlapSchema', () => {
   it('rejects negative anchor', () => {
     expect(
       OverlapSchema.safeParse({ type: 'overlap', anchor: -1, children: [text] }).success,
+    ).toBe(false);
+  });
+  it('accepts scrim', () => {
+    expect(
+      OverlapSchema.parse({ type: 'overlap', anchor: 0, scrim: 'dark', children: [text] }).scrim,
+    ).toBe('dark');
+  });
+  it('rejects bad scrim', () => {
+    expect(
+      OverlapSchema.safeParse({ type: 'overlap', anchor: 0, scrim: 'gradient', children: [text] }).success,
     ).toBe(false);
   });
 });

@@ -1,8 +1,79 @@
 import type { CSSProperties } from 'react';
-import type { OverlapAnchorPosition, OverlapNode } from '@/lib/layout';
+import type {
+  LayoutNode,
+  OverlapAnchorPosition,
+  OverlapNode,
+  OverlapScrim,
+} from '@/lib/layout';
 import { Node, childPath, deriveCtx, type RenderContext } from '../Node';
 import { intentToStyleVars } from '../intent';
 import { joinClasses } from '../scale';
+
+const TEXTUAL_NODE_TYPES = new Set(['text', 'button', 'wordmark', 'quote']);
+
+function firstChildIsImage(node: LayoutNode): boolean {
+  if (
+    node.type === 'band' ||
+    node.type === 'stack' ||
+    node.type === 'row' ||
+    node.type === 'split' ||
+    node.type === 'grid' ||
+    node.type === 'marquee' ||
+    node.type === 'overlap'
+  ) {
+    const first = node.children[0];
+    if (first === undefined) return false;
+    if (first.type === 'image') return true;
+    return firstChildIsImage(first);
+  }
+  if (node.type === 'bleed' || node.type === 'pane') {
+    if (node.child.type === 'image') return true;
+    return firstChildIsImage(node.child);
+  }
+  return node.type === 'image';
+}
+
+function hasOverlayText(node: LayoutNode): boolean {
+  if (TEXTUAL_NODE_TYPES.has(node.type)) return true;
+  if (
+    node.type === 'band' ||
+    node.type === 'stack' ||
+    node.type === 'row' ||
+    node.type === 'split' ||
+    node.type === 'grid' ||
+    node.type === 'marquee' ||
+    node.type === 'overlap'
+  ) {
+    return node.children.some((c) => hasOverlayText(c));
+  }
+  if (node.type === 'bleed' || node.type === 'pane') {
+    return hasOverlayText(node.child);
+  }
+  return false;
+}
+
+function resolveScrim(
+  node: OverlapNode,
+): 'none' | 'light' | 'dark' {
+  const explicit: OverlapScrim = node.scrim ?? 'auto';
+  if (explicit === 'none') return 'none';
+  if (explicit === 'light' || explicit === 'dark') return explicit;
+  // auto
+  const base = node.children[node.anchor];
+  if (base === undefined) return 'none';
+  if (!firstChildIsImage(base)) return 'none';
+  const layered = node.children.filter((_, i) => i !== node.anchor);
+  if (!layered.some((c) => hasOverlayText(c))) return 'none';
+  // choose by intent palette on layered text — if any layered node has a palette intent, default dark
+  return 'dark';
+}
+
+const SCRIM_CLASS: Record<'light' | 'dark', string> = {
+  light:
+    'absolute inset-0 pointer-events-none bg-gradient-to-t from-white/70 via-white/30 to-transparent',
+  dark:
+    'absolute inset-0 pointer-events-none bg-gradient-to-t from-black/60 via-black/20 to-transparent',
+};
 
 const POSITION_CLASS: Record<OverlapAnchorPosition, string> = {
   'top-left': 'top-0 left-0',
@@ -23,6 +94,8 @@ export function Overlap({ node, ctx }: { node: OverlapNode; ctx: RenderContext }
   const stackOrder = node.mobile?.stackOrder;
   const anchorIndex = node.anchor;
 
+  const scrim = resolveScrim(node);
+
   const layered = (
     <div
       className="relative w-full h-full"
@@ -33,7 +106,7 @@ export function Overlap({ node, ctx }: { node: OverlapNode; ctx: RenderContext }
         const positionClass = isAnchor
           ? 'relative w-full h-full'
           : joinClasses('absolute', POSITION_CLASS[align]);
-        return (
+        const anchorNode = (
           <div
             key={child.id ?? `overlap-${i}`}
             className={positionClass}
@@ -45,6 +118,18 @@ export function Overlap({ node, ctx }: { node: OverlapNode; ctx: RenderContext }
             />
           </div>
         );
+        if (isAnchor && scrim !== 'none') {
+          return (
+            <div key={child.id ?? `overlap-${i}`} className="relative w-full h-full" style={{ zIndex: 0 }}>
+              <Node
+                node={child}
+                ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }}
+              />
+              <div data-scrim={scrim} className={SCRIM_CLASS[scrim]} />
+            </div>
+          );
+        }
+        return anchorNode;
       })}
     </div>
   );

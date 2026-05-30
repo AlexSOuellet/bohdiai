@@ -60,6 +60,24 @@ export function CollectionGridContent({
             <div className="aspect-[3/2] w-full bg-black/10" />
             <div className="h-5 w-1/2 bg-black/10 rounded" />
           </div>
+        ) : c.imageUrl === undefined || c.imageUrl === '' ? (
+          <a
+            key={c.slug}
+            href={`/collections/${c.slug}`}
+            data-text-only
+            style={
+              node.intent?.palette
+                ? {
+                    background: 'var(--node-palette)',
+                    color: 'var(--node-palette-fg)',
+                  }
+                : undefined
+            }
+            className="flex flex-col items-center justify-center gap-2 aspect-[3/2] w-full p-8 text-center rounded transition-opacity hover:opacity-80"
+          >
+            <div className="text-lg font-medium">{c.name}</div>
+            <div className="text-xs opacity-60">{c.itemCount} pieces</div>
+          </a>
         ) : (
           <a
             key={c.slug}
@@ -67,13 +85,11 @@ export function CollectionGridContent({
             className="flex flex-col gap-2 group"
           >
             <div className="aspect-[3/2] w-full bg-black/10 overflow-hidden">
-              {c.imageUrl !== undefined && (
-                <img
-                  src={c.imageUrl}
-                  alt={c.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                />
-              )}
+              <img
+                src={c.imageUrl}
+                alt={c.name}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+              />
             </div>
             <div className="font-medium">{c.name}</div>
             <div className="text-xs opacity-60">{c.itemCount} pieces</div>

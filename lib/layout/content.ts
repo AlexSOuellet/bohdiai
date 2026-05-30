@@ -35,6 +35,12 @@ export const TextNodeSchema = z
     role: TextRoleSchema,
     content: z.string().min(1),
     align: TextAlignSchema.optional(),
+    mobile: z
+      .object({
+        role: TextRoleSchema.optional(),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 export type TextNode = z.infer<typeof TextNodeSchema>;
