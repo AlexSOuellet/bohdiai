@@ -348,3 +348,5 @@ Alex's onboarding-step feedback (banked here so it's not lost):
 
 Suggested order for next session (Alex's call): #8 (gate tools by niche — speed win) and #9 (drop voice step) are mechanical and unblock cleaner subsequent testing. #1, #4, #5, #6 are renderer fixes. #3 is prompt + minor renderer change. #7 and #10 are the bigger UX/architecture moves.
 
+11. **CI Test workflow has been failing on every push since session 7.** Coverage gate fails: `lib/**` at ~17% lines / 16% functions / 12% branches vs the Engineering Standards 90% threshold. Chronic, not caused by session 12. Three paths: write enough tests to hit 90% (huge ongoing task), drop the threshold to a realistic baseline and raise it incrementally as tests are added, or disable the gate while shipping. Pending Alex's call.
+
