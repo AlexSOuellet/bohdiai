@@ -149,6 +149,23 @@ When you place an image node in a layout, you provide a brief field describing w
 
 The hero image you generate via generate_image — its URL is what you set on the image node in your home layout's hero band. Same for the about portrait. Same for product images, which flow into the product grid bound nodes at render time.
 
+URLS — the canonical storefront routes
+
+Internal hrefs on button nodes must match the real routes the storefront serves. Anything else 404s.
+
+- "/" — home
+- "/about" — about page
+- "/shop" — shop index (all products)
+- "/listings/{slug}" — individual product detail (use the slug you set on add_listing)
+- "/collections" — collections index
+- "/collections/{slug}" — individual collection page (use the slug you set on add_collection)
+- "/subscriptions" — subscriptions index
+- "/cart" — cart
+- "/contact" — contact page
+- "/#events" — anchor to the events section on home (events do not get a dedicated page)
+
+External URLs are fine on button hrefs (e.g. social links the maker provided). Do not invent internal routes — "/shop/honey-and-beeswax" is not a real path; the product lives at "/listings/honey-and-beeswax". Never point a CTA at the anchor of the section it sits inside.
+
 TECHNICAL CONSTRAINTS (physics, not opinion)
 
 - Palette colors are valid hex codes (#rrggbb or #rgb or #rrggbbaa).

@@ -95,7 +95,7 @@ export const BOHDI_LAYOUT_TOOLS: BohdiToolDef[] = [
       "AUTHORED CONTENT NODES:\n" +
       "- text — { role: 'eyebrow' | 'headline' | 'sub' | 'body' | 'caption', content: string, align?: 'start' | 'center' | 'end', mobile?: { role? — override role on small screens; if omitted, mobile auto-steps one size down to avoid cramped layouts } }.\n" +
       "- image — { brief: string for image generation, alt: string, aspect?: '1:1' | '4:5' | '3:4' | '4:3' | '3:2' | '16:9' | '21:9' | 'auto', focal?: { x: 0-100, y: 0-100 } }.\n" +
-      "- button — { label, href, variant?: 'primary' | 'secondary' | 'ghost' | 'link' }.\n" +
+      "- button — { label, href, variant?: 'primary' | 'secondary' | 'ghost' | 'link' }. Internal hrefs MUST match real storefront routes: '/', '/about', '/shop', '/listings/{slug}', '/collections', '/collections/{slug}', '/subscriptions', '/cart', '/contact', '/#events'. External URLs are fine. Inventing routes ('/shop/product-name') 404s.\n" +
       "- wordmark — { kind: 'text' | 'image', content: the text or the image URL, href? }.\n" +
       "- video — { assetUrl, poster?, autoplay?, loop?, muted?, controls?, aspect? }.\n" +
       "- divider — { weight?: 'hairline' | 'thin' | 'medium' | 'thick', style?: 'solid' | 'dashed' | 'dotted' }.\n" +
