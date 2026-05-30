@@ -146,6 +146,34 @@ describe('BOHDI_TOOLS', () => {
   });
 });
 
+describe('toolsForNiche', () => {
+  it('hides legacy block tools from layout-engine niches', async () => {
+    const { toolsForNiche } = await import('./tools');
+    const names = toolsForNiche('candles').map((t) => t.name);
+    for (const legacy of [
+      'list_blocks', 'list_widgets', 'set_tokens', 'set_home_page',
+      'set_secondary_pages_copy', 'set_about_page', 'set_hero_image', 'set_about_image',
+    ]) {
+      expect(names).not.toContain(legacy);
+    }
+    expect(names).toContain('set_style_sheet');
+    expect(names).toContain('set_layout');
+    expect(names).toContain('finalize');
+    expect(names).toContain('read_niche');
+  });
+
+  it('hides layout-engine tools from legacy niches', async () => {
+    const { toolsForNiche } = await import('./tools');
+    const names = toolsForNiche('leatherworker').map((t) => t.name);
+    expect(names).not.toContain('set_style_sheet');
+    expect(names).not.toContain('set_layout');
+    expect(names).toContain('set_tokens');
+    expect(names).toContain('set_home_page');
+    expect(names).toContain('list_blocks');
+    expect(names).toContain('finalize');
+  });
+});
+
 describe('dispatchTool — unknown tool', () => {
   it('throws', async () => {
     await expect(dispatchTool('does-not-exist', {}, makeCtx())).rejects.toThrow('Unknown tool');

@@ -28,8 +28,6 @@ interface GenerateBody {
   makerName?: string;
   logoUrl?: string;
   brandColors?: string[];
-  voiceBoothPitch?: string;
-  voiceNegativeSpace?: string;
 }
 
 function isMoodKey(value: string): value is MoodKey {
@@ -98,8 +96,6 @@ export async function POST(req: NextRequest): Promise<Response> {
             makerName: body.makerName,
             logoUrl: body.logoUrl,
             brandColors: body.brandColors,
-            voiceBoothPitch: body.voiceBoothPitch,
-            voiceNegativeSpace: body.voiceNegativeSpace,
           },
           send,
         );

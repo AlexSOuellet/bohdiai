@@ -204,16 +204,12 @@ describe('runStorefront dispatcher', () => {
       makerName: 'Sarah',
       logoUrl: 'https://logo',
       brandColors: ['#aaa'],
-      voiceBoothPitch: 'pitch',
-      voiceNegativeSpace: 'not this',
     });
     const brief = runBohdiMock.mock.calls[0]![0];
     expect(brief).toMatchObject({
       makerName: 'Sarah',
       logoUrl: 'https://logo',
       brandColors: ['#aaa'],
-      voiceBoothPitch: 'pitch',
-      voiceNegativeSpace: 'not this',
     });
   });
 });

@@ -66,8 +66,6 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
             makerName: data.makerName === '' ? undefined : data.makerName,
             logoUrl: data.logoUrl === '' ? undefined : data.logoUrl,
             brandColors: data.brandColors.length === 0 ? undefined : data.brandColors,
-            voiceBoothPitch: data.voiceBoothPitch === '' ? undefined : data.voiceBoothPitch,
-            voiceNegativeSpace: data.voiceNegativeSpace === '' ? undefined : data.voiceNegativeSpace,
           }),
         });
 

@@ -96,7 +96,7 @@ describe('runBohdi — happy path', () => {
       .mockResolvedValueOnce(toolUseResponse('finalize', {}, 'c'));
 
     const events: unknown[] = [];
-    const r = await runBohdi(makeBrief({ makerName: 'Alex', logoUrl: 'https://x/l.png', brandColors: ['#abcdef'], voiceBoothPitch: 'hi', voiceNegativeSpace: 'not corporate' }), (e) => events.push(e));
+    const r = await runBohdi(makeBrief({ makerName: 'Alex', logoUrl: 'https://x/l.png', brandColors: ['#abcdef'] }), (e) => events.push(e));
     expect(r).toEqual({ tenantId: 't-1', subdomain: 'acme' });
     expect(messagesCreateMock).toHaveBeenCalledTimes(3);
     expect(events.length).toBeGreaterThan(0);

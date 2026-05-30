@@ -29,8 +29,6 @@ export interface RunStorefrontInput {
   makerName?: string | undefined;
   logoUrl?: string | undefined;
   brandColors?: string[] | undefined;
-  voiceBoothPitch?: string | undefined;
-  voiceNegativeSpace?: string | undefined;
 }
 
 export interface RunStorefrontResult {
@@ -53,8 +51,6 @@ export async function runStorefront(
         makerName: input.makerName,
         logoUrl: input.logoUrl,
         brandColors: input.brandColors,
-        voiceBoothPitch: input.voiceBoothPitch,
-        voiceNegativeSpace: input.voiceNegativeSpace,
       },
       onProgress,
     );

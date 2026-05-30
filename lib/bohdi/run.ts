@@ -6,7 +6,7 @@ import { anthropicClient } from '@/lib/anthropic';
 import { logger } from '@/lib/logger';
 import { labelFor, stepForTool, type ProgressEmitter } from '@/lib/progress';
 import { systemPromptFor } from './system-prompt';
-import { BOHDI_TOOLS, dispatchTool, type HandlerContext } from './tools';
+import { dispatchTool, toolsForNiche, type HandlerContext } from './tools';
 import { emptyAccumulator, type BohdiBrief, type BohdiResult } from './types';
 
 const MODEL = 'claude-sonnet-4-6';
@@ -38,29 +38,12 @@ export async function runBohdi(
     ? `\n- Maker's first name: ${brief.makerName}`
     : '';
 
-  // The maker's own voice is the most important material for the about copy.
-  // When present, lean on it heavily — quote phrasing, use the rhythm. Do NOT
-  // paraphrase it into AI-tells. When absent, the about page stays terse and
-  // leans on the niche file rather than inventing voice.
-  const voiceSection = (brief.voiceBoothPitch !== undefined && brief.voiceBoothPitch !== '')
-    || (brief.voiceNegativeSpace !== undefined && brief.voiceNegativeSpace !== '')
-    ? `\n\nMAKER'S OWN VOICE (use as raw material — do not paraphrase into generic copy):${
-      brief.voiceBoothPitch !== undefined && brief.voiceBoothPitch !== ''
-        ? `\n- Booth pitch (how the maker describes their work out loud): "${brief.voiceBoothPitch}"`
-        : ''
-    }${
-      brief.voiceNegativeSpace !== undefined && brief.voiceNegativeSpace !== ''
-        ? `\n- What the maker doesn't want this to feel like (constraint): "${brief.voiceNegativeSpace}"`
-        : ''
-    }`
-    : '';
-
   const initialUserMessage = `BRIEF
 - Shop name: ${brief.shopName}
 - Subdomain: ${brief.subdomain}
 - Niche slug: ${brief.nicheSlug}
 - Mood key: ${brief.moodKey}
-- Product count to generate: ${brief.productCount}${makerNameLine}${logoLine}${brandColorsLine}${voiceSection}
+- Product count to generate: ${brief.productCount}${makerNameLine}${logoLine}${brandColorsLine}
 
 Begin. Read the niche and mood first, then design the storefront end-to-end. Deliberate every meaningful choice. Log every decision. Finalize when complete.`;
 
@@ -79,9 +62,12 @@ Begin. Read the niche and mood first, then design the storefront end-to-end. Del
       cache_control: { type: 'ephemeral' },
     },
   ];
+  // Tools list is gated by niche so layout-engine niches don't see the legacy
+  // block tools (and vice versa). Cuts wasted turns + token cost on each path.
+  const nicheTools = toolsForNiche(brief.nicheSlug);
   // Add cache_control to the last tool to mark the end of the cacheable tools block.
-  const cachedTools = BOHDI_TOOLS.map((t, i) =>
-    i === BOHDI_TOOLS.length - 1 ? { ...t, cache_control: { type: 'ephemeral' as const } } : t,
+  const cachedTools = nicheTools.map((t, i) =>
+    i === nicheTools.length - 1 ? { ...t, cache_control: { type: 'ephemeral' as const } } : t,
   ) as unknown as Anthropic.Tool[];
 
   let totalInput = 0;

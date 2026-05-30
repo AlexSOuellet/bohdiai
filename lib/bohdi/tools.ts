@@ -399,6 +399,31 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
   ...BOHDI_LAYOUT_TOOLS,
 ];
 
+// Tools only used on the legacy block-based generation path. Hidden from
+// layout-engine niches so Bohdi doesn't burn turns/cost calling them on
+// jobs where they do nothing.
+const LEGACY_ONLY_TOOL_NAMES: ReadonlySet<string> = new Set([
+  'list_blocks',
+  'list_widgets',
+  'set_tokens',
+  'set_home_page',
+  'set_secondary_pages_copy',
+  'set_about_page',
+  'set_hero_image',
+  'set_about_image',
+]);
+
+const LAYOUT_ENGINE_TOOL_NAMES: ReadonlySet<string> = new Set(
+  BOHDI_LAYOUT_TOOLS.map((t) => t.name),
+);
+
+export function toolsForNiche(slug: string): BohdiToolDef[] {
+  const isLayout = isLayoutEngineNiche(slug);
+  return BOHDI_TOOLS.filter((t) =>
+    isLayout ? !LEGACY_ONLY_TOOL_NAMES.has(t.name) : !LAYOUT_ENGINE_TOOL_NAMES.has(t.name),
+  );
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function shuffled<T>(arr: T[]): T[] {
