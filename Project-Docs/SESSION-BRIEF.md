@@ -1,6 +1,6 @@
 # Session Brief — BohdiAI
 
-**Last updated:** 2026-05-29 (Session 12 — layout engine landed end-to-end for candles. Schema + renderer + tokens + Bohdi tools + system prompt branch + finalize branch + new write RPC + storefront route + bound-content resolver all on `session-12/layout-engine`.)
+**Last updated:** 2026-05-30 (Session 13 — backfilled lib/** test coverage from 13% to 99.7% to clear the long-failing CI gate, then knocked out the mechanical items from the session 12 candles canary review: tools gated by niche, voice onboarding step dropped, band content max-width, overlap auto-scrim, collection card empty-image fallback, mobile responsive type, storefront route enumeration in Bohdi's prompt.)
 
 **Update at the end of every session.**
 
@@ -8,24 +8,17 @@
 
 ## Action at session start
 
-**Read this whole brief before the first response.** Session 12 built the layout engine end-to-end for a single niche (candles) and wired everything from Bohdi's compose tool through to the storefront render. Database is still empty — the candles canary has not been generated yet. The very next thing in the next session is to TEST this by running candles × one mood end-to-end and seeing what comes out. Testing costs money so the goal across session 12 was to land as much as possible BEFORE the first test. We did.
+**Read this whole brief before the first response.** Session 12 built the layout engine end-to-end for candles and ran the first canary (cathys-candles, 7:41 build, $0.75). Session 13 fixed the chronic CI coverage failure that had been red since before session 7 and worked through most of the candles backlog. Database is still empty (cathys-candles was wiped at some point — confirm before next test). The next testing milestone is another candles canary on the session-13 changes to see how it looks with the renderer/prompt fixes applied. Testing costs money so don't run it without a reason.
 
-Session 12 work is committed on branch `session-12/layout-engine` and pushed. Five commits on top of main (main was fast-forwarded with session 11's work at the start of session 12):
+Session 13 work is committed on branch `session-12/layout-engine` (still on the session-12 branch; was not rebranched). Four commits on top of session 12's last commit (`a1e75c4`):
 
-- `2493602 feat(session-12): layout language schema (intent, content nodes, primitives, page tree, validator)`
-- `14379ab feat(session-12): layout renderer + bound-content resolver scaffold`
-- `d0f24af feat(session-12): style_sheets table + StyleSheet schema + token compiler`
-- `3ff2863 feat(session-12): Bohdi gets set_style_sheet + set_layout tools`
-- `b283f5d feat(session-12): content_pages.layout_tree column`
-- `9e4a86c feat(session-12): wire layout engine end-to-end for candles niche`
-- `dac4fb5 refactor(session-12): drop legacy block fallback from storefront route`
-- `a1e75c4 feat(session-12): bound-content resolver wired end-to-end`
-- (this brief commit will be the next one)
+- `e49189a test(session-13): backfill lib/** coverage to clear 90% CI gate` — 28 new test files, 654 tests passing, coverage 99.73% lines / 96.93% branches / 100% funcs / 99.45% stmts. Additive `export` of internal Zod schemas in generate-{page,listings,collections,subscriptions} so tests exercise the real source. Exported `walkTree` from `lib/layout/tree.ts` for deep-tree tests that would otherwise time out on Zod recursive parsing. `vitest.config.ts` excludes truly-generated files (`database.types.ts`, the two `*-manifest.generated.ts` files).
+- `8fb42fb ci(session-13): run Test workflow on all branch pushes, not just main` — `.github/workflows/test.yml` no longer scopes to `main` only.
+- `3b775e7 feat(session-13): gate Bohdi's tools by niche; drop voice onboarding step` — `toolsForNiche(slug)` exported from `lib/bohdi/tools.ts`; layout-engine niches see only layout + shared tools, legacy niches see only legacy + shared. Voice step deleted (`StepVoice.tsx` removed; voiceBoothPitch/voiceNegativeSpace removed from OnboardingData, GenerateBody, RunStorefrontInput, BohdiBrief, Bohdi's initial-user-message). Onboarding is now 6 steps (Name, Niche, Logo, Mood, Trial, Build).
+- `3351cfd feat(session-13): renderer fixes from candles canary review (#1, #4, #5, #6)` — Band gains `contentWidth: 'narrow' | 'normal' | 'wide' | 'full'` (default normal ≈ max-w-5xl centered; full opts out for full-bleed). Overlap gains `scrim: 'none' | 'light' | 'dark' | 'auto'` (default auto; injects gradient sibling between image base and layered text). CollectionGrid + FeaturedCollection collapse to text-only card when resolved collection has no imageUrl. Text gains `mobile: { role? }` with default auto-step one role down on mobile. Bohdi's `BOHDI_LAYOUT_TOOLS` descriptions updated to teach him the new fields.
+- `ffd82da feat(session-13): teach Bohdi the real storefront routes (#3)` — layout-engine system prompt now enumerates `/`, `/about`, `/shop`, `/listings/{slug}`, `/collections`, `/collections/{slug}`, `/subscriptions`, `/cart`, `/contact`, `/#events`. Button tool description repeats the list at the point of decision. Calls out the actual canary bug (linked `/shop/honey-and-beeswax` instead of `/listings/honey-and-beeswax`).
 
-Three migrations applied to the linked Postgres:
-- `20260530000001_style_sheets.sql` — per-tenant named palette/font roster/texture set as JSONB
-- `20260530000002_content_pages_layout_tree.sql` — optional JSONB layout_tree column on content_pages
-- `20260530000003_write_tenant_storefront_layout.sql` — RPC that atomically writes tenant + style_sheet + content_pages with layout_tree + collections + listings + subscriptions
+**No new migrations this session.** Database schema unchanged from session 12.
 
 The dev server was NOT started in this session — Alex manages his own per `feedback_no_preview_unless_asked`.
 
@@ -33,11 +26,13 @@ The dev server was NOT started in this session — Alex manages his own per `fee
 
 ## How Claude works with Alex (operating rules for the assistant)
 
-These are throughline rules for every session, not just session 12. The new rules from session 12 sit at the top.
+These are throughline rules for every session, not just session 12. The new rules sit at the top.
 
-**Stop asking when the answer is obvious.** New as of session 12, banked at `feedback_stop_asking_when_obvious.md`. Surface real trade-offs, not industry-standard defaults. Don't overcompensate after a "keep me in the loop." The failure mode this session: I asked three obvious questions about renderer defaults (CSS variables for tokens, RSC vs client, data fetching separation) all of which had only one reasonable answer. Alex called it overcompensating. Real forks get surfaced; mechanical decisions get made.
+**Tests are part of done.** New as of session 13, banked at `feedback_tests_are_part_of_done.md`. A feature without a test isn't done, it's demoed. Letting `lib/**` coverage rot from 90% to 13% over the project's history was the biggest single failure mode of the project so far — months of pushes with no way to catch silent regressions. The 90% number isn't the point; the point is that test failure surfaces the moment something breaks, before push, before merge, before a maker hits it. End every session with `npm run test:coverage`. If a file touched in `lib/` is under threshold, the session isn't over.
 
-**Run migrations yourself.** New as of session 12, banked at `feedback_run_migrations_yourself.md`. After committing a SQL migration, run `node scripts/db-migrate.mjs`. Don't surface it as a manual step for Alex.
+**Stop asking when the answer is obvious.** From session 12, banked at `feedback_stop_asking_when_obvious.md`. Surface real trade-offs, not industry-standard defaults. Don't overcompensate after a "keep me in the loop." Session 13 had a recurrence — I asked Alex whether to open a PR to trigger CI when I could have just widened the workflow to trigger on all branches. He called it out. The pattern is "if there's a clean technical move, take it; only ask when there's a real fork."
+
+**Run migrations yourself.** From session 12, banked at `feedback_run_migrations_yourself.md`. After committing a SQL migration, run `node scripts/db-migrate.mjs`. Don't surface it as a manual step for Alex.
 
 **Don't narrow scope on approval.** Carried from session 11, at `feedback_dont_narrow_scope_on_approval.md`. When approval comes with an ambiguous referent, confirm scope before executing.
 
@@ -282,71 +277,56 @@ Storage buckets: `placeholder-images` (legacy, unused), `generated-images` (acti
 
 ---
 
-## Tasks at end of session 12
+## Tasks at end of session 13
 
 ```
-#1.  [completed] Write lib/layout/intent.ts
-#2.  [completed] Write lib/layout/content.ts
-#3.  [completed] Write lib/layout/primitives.ts
-#4.  [completed] Write lib/layout/tree.ts
-#5.  [completed] Write lib/layout/index.ts
-#6.  [completed] Write scale + intent helpers
-#7.  [completed] Write 10 primitive renderers
-#8.  [completed] Write 18 content node renderers
-#9.  [completed] Write Node dispatcher + Page wrapper
-#10. [completed] Write bound-content resolver scaffold
-#11. [completed] Add Tailwind content path (already covered)
-#12. [completed] Write style_sheets migration
-#13. [completed] Write StyleSheet Zod schema
-#14. [completed] Write style-sheet loader + emitter
-#15. [completed] Extend BohdiAccumulator
-#16. [completed] Write set_style_sheet + set_layout tools
-#17. [completed] Wire new tools into Bohdi tools.ts
-#18. [completed] Add layout_tree column to content_pages
-#19. [completed] Wire finalize for layout-engine niches
-#20. [completed] Branch Bohdi system prompt by niche
-#21. [completed] Storefront route reads layout_tree
-#22. [completed] Wire resolver fetchers to Supabase
-#23. [completed] Renderer reads resolved data via context
-#24. [completed] Storefront route resolves before rendering
+#1. [completed] Test pure-logic utilities (sanitize, moods, name-gender, progress, rate-limit, feature-flags, style-sheet, style-sheet-loader)
+#2. [completed] Test layout module (intent, content, primitives, tree validator, resolved, resolver-supabase)
+#3. [completed] Test Bohdi module (types, layout-engine-niches, system-prompt, layout-tools, tools, run)
+#4. [completed] Test generation pipeline (replace local-schema tests with real imports; cover write-storefront-layout, generate-collections, generate-subscriptions, generate-tokens)
+#5. [completed] Test thin SDK adapters (anthropic, fal, supabase-browser, supabase-server) and onboarding (run-storefront, ticker-content)
+#6. [completed] Final coverage pass — all four metrics over 90%
+#7. [completed] Widen CI workflow to run on feature branches
+#8. [completed] Gate Bohdi's tools by niche (#8 backlog)
+#9. [completed] Drop voice onboarding step (#9 backlog)
+#10. [completed] Renderer fixes — band contentWidth, overlap scrim, collection empty-image card, text mobile role (#1, #4, #5, #6 backlog)
+#11. [completed] Teach Bohdi the real storefront routes (#3 backlog)
 ```
 
-All session 12 build work complete. Task list resets next session.
+All planned session 13 work complete. Task list resets next session.
 
 ---
 
-## Session 12 test results — backlog for next session
+## Session 12 test results — backlog (most items closed in session 13)
 
-The first candles canary generated successfully (cathys-candles, 7:41 build, $0.75, 14 turns). Storefront is live at `cathys-candles.localhost:3000`. Two production bugs were fixed during the test (committed at the end of the session):
+The first candles canary generated successfully in session 12 (cathys-candles, 7:41 build, $0.75, 14 turns). Two production bugs were fixed during that test (StepBuild AbortController teardown in Strict Mode; MAX_TOKENS bumped 4096→16000). Alex's eye on the live result produced 11 backlog items. State of each as of end of session 13:
 
-- StepBuild's AbortController cleanup was tearing down the fetch in React Strict Mode (dev). Removed.
-- MAX_TOKENS bumped from 4096 to 16000 — a single set_layout call emits a large JSON tree and was capping out.
+1. **Hero scrim when text on image.** ✅ DONE session 13. Overlap got a `scrim: 'none' | 'light' | 'dark' | 'auto'` field; default auto injects a gradient sibling between image and layered text.
 
-Alex's eye on the live result, in his words and order:
+2. **Marquee works great.** No action needed.
 
-1. **Hero is solid.** Big editorial image, eyebrow + headline + sub. Likes the shape. Two issues underneath: some text on the photo is hard to read where the background is bright, and the renderer's contrast enforcement only works against palette colors, not image pixels. Fix path: when an image node has a text node placed on top (overlap), the renderer should automatically lay a scrim band so contrast is enforced.
+3. **Bohdi invents URLs.** ✅ DONE session 13. Layout-engine system prompt now enumerates the canonical routes (`/`, `/about`, `/shop`, `/listings/{slug}`, `/collections`, `/collections/{slug}`, `/subscriptions`, `/cart`, `/contact`, `/#events`). Button tool description repeats the list at the point of decision. Did NOT change Button to format hrefs from a pattern — kept free-text so external URLs and anchors still work; the prompt + tool description is the constraint.
 
-2. **Marquee with the scent names works great.** Bohdi reached for the marquee primitive on his own. Good sign that primitive earns its place.
+4. **Collection cards collapse when no image.** ✅ DONE session 13. CollectionGrid + FeaturedCollection render text-only card with palette background + foreground when resolved collection has no `imageUrl`. Underlying gap (collections table has no `image_url` column) still applies — would still need a column + dashboard upload to give collections real images.
 
-3. **Bohdi invents URLs.** A featured-product band linked to `/shop/honey-and-beeswax` (404). Real listing route is `/listings/{slug}`. The layout-engine system prompt does not enumerate the real routes — the legacy prompt did. Fix path: spell out the routes in the prompt AND probably teach button/featuredProduct nodes to format hrefs from known patterns rather than free-text.
+5. **Bands too wide.** ✅ DONE session 13. Band gained `contentWidth: 'narrow' | 'normal' | 'wide' | 'full'`; default normal (~max-w-5xl, 1024px) centered. `'full'` opts out for true full-bleed. Outer section still bleeds for backgrounds; inner div caps content.
 
-4. **Shop page collection thumbnails are huge empty boxes.** Collections table has no image_url column (already flagged in this brief). With no image, the placeholder fills the cell. Light text on light pane on top of that — illegible. Fix path: collapse the collection card to a text-only card shape when there's no image, and the contrast enforcement should catch the light-on-light text.
+6. **Mobile text scrunched.** ✅ DONE session 13. Text node gained `mobile: { role? }`. Default behavior: auto-step one role down on mobile (headline→sub, sub→body, body→caption). Explicit mobile.role wins.
 
-5. **"Pages feel overrun and too big."** Bands render full-width with no inner max-width on the content. Real editorial caps content at 1100-1280px centered while bands themselves can bleed for backgrounds. Fix path: bands default to a centered content max-width with a `width: 'full'` opt-in for true full-bleed.
+7. **Still feels stacked.** OPEN. Bohdi reaches for vertical band stack as the safe geometry. Three real forks pending Alex's direction: art-director second-agent pass; prefab partial-tree patterns Bohdi can study; lean harder in the prompt only. Session 13 did NOT touch this — needs Alex's call.
 
-6. **"Mobile text gets scrunched."** Narrow viewport collapses text into cramped layouts. Need to audit responsive type scale and gutter behavior on the small-end. Renderer applies the mobile knob per primitive but text nodes themselves don't currently scale type.
+8. **Speed/cost (tools gated by niche).** ✅ DONE session 13. `toolsForNiche(slug)` in `lib/bohdi/tools.ts` filters the tools list. Layout-engine niches no longer see set_tokens / set_home_page / set_secondary_pages_copy / set_about_page / set_hero_image / set_about_image. Should cut several turns and a chunk of token cost per candles build. Needs a fresh canary to measure the actual win.
 
-7. **Still feels stacked.** Every band on top of the next band. No split, no overlap, no bleed. Bohdi reached for the safest geometry — vertical band stack. Fix path: this is where the art-director pass comes in, calling a page out when its rhythm is monotonic. Until that ships, can lean harder in the prompt OR can prefab partial trees (patterns) Bohdi can study.
+9. **Drop voice onboarding step.** ✅ DONE session 13. StepVoice deleted; onboarding is 6 steps; voiceBoothPitch / voiceNegativeSpace removed from every layer; Bohdi writes the about from niche + mood + shop name. About page still ships.
 
-8. **Speed/cost.** 7:41 is too slow. $0.75 per generation is expensive at the per-tenant level. The single biggest leak: Bohdi has the full toolbox visible — he called set_tokens + set_secondary_pages_copy + set_about_page + set_hero_image + set_about_image (all legacy) alongside set_style_sheet + set_layout. That's 2-3 wasted turns and a lot of token cost. Fix path: gate the tools list by niche too (not just the system prompt). Layout-engine niches see layout tools + shared only.
+10. **Replace build ticker + personalized status copy.** OPEN. Alex doesn't like the rotating tip ticker or the "Sarah, choosing your colors…" personalized status. My lean is "show the real work as it lands" — palette swatches appear as authored, fonts appear with sample text, product images pop in as fal returns them. Pending Alex's call on direction.
 
-Alex's onboarding-step feedback (banked here so it's not lost):
+11. **CI Test workflow failing.** ✅ DONE session 13. Coverage gate failed for most of the project's history at ~13% lines / 9% branches. Wrote 28 new test files; final coverage 99.73% lines / 96.93% branches / 100% funcs / 99.45% stmts. Also widened `.github/workflows/test.yml` to trigger on all branch pushes (was main-only, which is why feature branches couldn't prove green). The fix surfaced and was banked as `feedback_tests_are_part_of_done.md` — tests are part of done from this session forward, not a follow-up.
 
-9. **Drop the booth pitch voice step.** A 1-2 sentence pitch can't carry a 1500-3500 character about page, so Bohdi invents the rest and the result reads generic. Approved direction: drop the voice step entirely, Bohdi writes the about from niche + mood + shop name as a polished sample the maker rewrites in post-onboarding personalization. The about page itself stays — every storefront ships with one, no blanks.
+## Open at end of session 13
 
-10. **Replace the build ticker + personalized status updates with something better.** Alex doesn't like the rotating tip ticker or the "Sarah, choosing your colors…" personalized status copy. My lean is "show the real work as it lands" — palette swatches appear as Bohdi authors them, fonts appear with sample text, product images pop in as fal returns them. Real artifacts of the build, not curated tips. Pending Alex's final call on direction.
-
-Suggested order for next session (Alex's call): #8 (gate tools by niche — speed win) and #9 (drop voice step) are mechanical and unblock cleaner subsequent testing. #1, #4, #5, #6 are renderer fixes. #3 is prompt + minor renderer change. #7 and #10 are the bigger UX/architecture moves.
-
-11. **CI Test workflow has been failing on every push for most of the project's history** (not just since session 7 — Alex corrected the record in session 13). Coverage gate failed: `lib/**` at ~13% lines / 9% branches vs the Engineering Standards 90% threshold. **Fixed in session 13.** Wrote 28 new test files; final coverage 99.73% lines / 96.93% branches / 100% funcs / 99.45% stmts. Also widened the workflow to trigger on all branch pushes (was main-only, which is why feature branches couldn't prove themselves green).
+- Items #7 (monotonic stacking) and #10 (build screen UX) — both need Alex's direction before more code.
+- Database is empty (cathys-candles wiped). Next candles canary should be run against the session-13 build to measure the speed/cost win from item #8 and verify the renderer fixes (#1, #4, #5, #6) look right in a real generation.
+- CI ran for the first time on a feature branch when session 13's commits pushed. Confirm the workflow is actually green on `session-12/layout-engine` before merging to main.
+- Branch `session-12/layout-engine` carries both session 12 and session 13 work. Naming is now misleading — eventually rebranch or just merge to main and drop it.
 
