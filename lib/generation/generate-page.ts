@@ -7,31 +7,31 @@ import { WIDGETS_MANIFEST } from '@/lib/widgets-manifest.generated';
 
 // ─── Output types ─────────────────────────────────────────────────────────────
 
-const GeneratedSlotSchema = z.object({
+export const GeneratedSlotSchema = z.object({
   widgetKey: z.string(),
   content: z.record(z.string(), z.string()),
 });
 
-const GeneratedBlockSchema = z.object({
+export const GeneratedBlockSchema = z.object({
   blockKey: z.string(),
   position: z.number().int().nonnegative(),
   content: z.record(z.string(), z.string()),
   slots: z.record(z.string(), GeneratedSlotSchema).default({}),
 });
 
-const SecondaryPageCopySchema = z.object({
+export const SecondaryPageCopySchema = z.object({
   eyebrow: z.string().min(1).max(40),
   heading: z.string().min(1).max(80),
   subheading: z.string().min(1).max(240),
 });
 
-const ContactCopySchema = z.object({
+export const ContactCopySchema = z.object({
   heading: z.string().min(1).max(80),
   subheading: z.string().min(1).max(280),
   buttonLabel: z.string().min(1).max(40),
 });
 
-const AboutPageCopySchema = z.object({
+export const AboutPageCopySchema = z.object({
   eyebrow: z.string().min(1).max(40),
   headline: z.string().min(1).max(80),
   intro: z.string().min(1).max(500),
@@ -40,7 +40,7 @@ const AboutPageCopySchema = z.object({
   signatureRole: z.string().max(60).default(''),
 });
 
-const GeneratedPageSchema = z.object({
+export const GeneratedPageSchema = z.object({
   blocks: z.array(GeneratedBlockSchema).min(1),
   secondaryPages: z.object({
     shop: SecondaryPageCopySchema,

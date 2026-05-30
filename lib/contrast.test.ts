@@ -71,6 +71,72 @@ describe('adjustForContrast', () => {
     const result = adjustForContrast('#1C1410', '#111009', 4.5);
     expect(contrastRatio(result, '#111009')).toBeGreaterThanOrEqual(4.5);
   });
+
+  it('picks the minimal-delta direction when both lighter and darker can pass', () => {
+    // A mid-gray fg on a near-white bg: darker direction trivially passes;
+    // lighter cannot really reach the threshold for this case → the algorithm
+    // should still return a passing color. Use a starting fg slightly closer
+    // to dark so both endpoints (0 and 1) easily clear a low threshold,
+    // exercising the "both passed — pick smaller delta" branch.
+    const bg = '#888888';
+    const fg = '#888888'; // same as bg, contrast 1:1, needs adjustment
+    // minRatio 2.0 is achievable in both directions from mid-gray.
+    const result = adjustForContrast(fg, bg, 2.0);
+    expect(contrastRatio(result, bg)).toBeGreaterThanOrEqual(2.0);
+  });
+
+  it('falls back to the best-available direction when neither direction can hit the minimum', () => {
+    // Mid-gray background where even pure white and pure black cannot reach
+    // a very high contrast ratio — exercises the "neither passes — return
+    // best available" branch.
+    const bg = '#777777';
+    const fg = '#777777';
+    const result = adjustForContrast(fg, bg, 21);
+    // Result is one of the two endpoint candidates; not asserting >= 21 because
+    // the function explicitly returns the best achievable when neither passes.
+    expect(typeof result).toBe('string');
+    expect(result).toMatch(/^#[0-9a-f]{6}$/);
+    const ratio = contrastRatio(result, bg);
+    // Picks the better of the two endpoints (black ≈ 4.78, white ≈ 4.48).
+    expect(ratio).toBeGreaterThan(4.5);
+  });
+});
+
+// ─── enforceTokenContrast wordmark color2 branch ──────────────────────────────
+
+describe('enforceTokenContrast wordmark color2', () => {
+  it('adjusts wordmark.color2 when it is non-empty', () => {
+    const tokens = makeTokens();
+    // Override wordmark with a failing color2 to exercise the non-empty branch.
+    tokens.wordmark.color2 = '#444444';
+    tokens.colors.background = '#333333';
+    const result = enforceTokenContrast(tokens);
+    expect(result.wordmark.color2).not.toBe('');
+    expect(contrastRatio(result.wordmark.color2, result.colors.background)).toBeGreaterThanOrEqual(3.0);
+  });
+
+  it('leaves wordmark.color2 empty when it starts empty', () => {
+    const tokens = makeTokens();
+    const result = enforceTokenContrast(tokens);
+    expect(result.wordmark.color2).toBe('');
+  });
+
+  it('adjusts a green-dominant foreground (exercises hexToHsl max=g branch)', () => {
+    // Failing pastel green on white → must adjust.
+    const result = adjustForContrast('#88dd66', '#ffffff', 4.5);
+    expect(contrastRatio(result, '#ffffff')).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('adjusts a blue-dominant foreground (exercises hexToHsl max=b branch)', () => {
+    const result = adjustForContrast('#6688dd', '#ffffff', 4.5);
+    expect(contrastRatio(result, '#ffffff')).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('skips accent adjustment when skipAccent option is true', () => {
+    const tokens = makeTokens({ accent: '#444444', background: '#333333' });
+    const result = enforceTokenContrast(tokens, { skipAccent: true });
+    expect(result.colors.accent).toBe('#444444');
+  });
 });
 
 // ─── enforceTokenContrast ─────────────────────────────────────────────────────

@@ -7,13 +7,13 @@ import { logger } from '@/lib/logger';
 // collections don't make sense (single-product makers, services-only doers).
 // The maker activates/edits/replaces from the dashboard later.
 
-const GeneratedCollectionSchema = z.object({
+export const GeneratedCollectionSchema = z.object({
   name: z.string().min(1).max(60),
   slug: z.string().regex(/^[a-z0-9-]+$/).min(1).max(80),
   description: z.string().max(280),
 });
 
-const GeneratedCollectionsSchema = z.object({
+export const GeneratedCollectionsSchema = z.object({
   /** Empty array means the niche doesn't benefit from collections. */
   collections: z.array(GeneratedCollectionSchema).max(4),
 });

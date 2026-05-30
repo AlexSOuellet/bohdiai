@@ -21,6 +21,11 @@ export default defineConfig({
         '**/*.test.{ts,tsx}',
         '**/*.d.ts',
         'lib/types/**',
+        // Generated files — produced by `npm run build:manifests` and Supabase typegen.
+        // Not hand-written, not meaningful to cover.
+        'lib/database.types.ts',
+        'lib/blocks-manifest.generated.ts',
+        'lib/widgets-manifest.generated.ts',
         // Phase 0 utility wrappers shipped without unit tests. Write tests
         // (or move to integration) in Phase 1; remove from this list to bring
         // them under the lib/** threshold.

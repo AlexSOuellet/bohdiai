@@ -236,7 +236,7 @@ function checkSemanticRules(
   }
 }
 
-function walkTree(root: LayoutNode, issues: ValidationIssue[]): void {
+export function walkTree(root: LayoutNode, issues: ValidationIssue[]): void {
   const stack: { node: LayoutNode; path: string; depth: number }[] = [
     { node: root, path: 'root', depth: 1 },
   ];

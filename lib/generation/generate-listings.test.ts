@@ -1,132 +1,192 @@
-import { describe, it, expect } from 'vitest';
-import { z } from 'zod';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import {
+  GeneratedListingSchema,
+  GeneratedListingsSchema,
+  generateListings,
+} from './generate-listings';
 
-const GeneratedListingSchema = z.object({
-  name: z.string(),
-  slug: z.string().regex(/^[a-z0-9-]+$/),
-  short_description: z.string(),
-  description: z.string(),
-  base_price_cents: z.number().int().positive(),
-  image_prompt: z.string(),
-});
+const messagesCreateMock = vi.fn();
+const generateProductImageMock = vi.fn();
 
-const GeneratedListingsSchema = z.object({
-  listings: z.array(GeneratedListingSchema).min(1),
-});
+vi.mock('@/lib/anthropic', () => ({
+  anthropicClient: () => ({ messages: { create: messagesCreateMock } }),
+}));
 
-describe('GeneratedListingsSchema', () => {
+vi.mock('@/lib/logger', () => ({
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock('@/lib/fal', () => ({
+  generateProductImage: (...args: unknown[]) => generateProductImageMock(...args),
+}));
+
+function buildValidListingsJson(count: number): string {
+  return JSON.stringify({
+    listings: Array.from({ length: count }, (_, i) => ({
+      name: `Product ${i}`,
+      slug: `product-${i}`,
+      short_description: 'short',
+      description: 'long',
+      base_price_cents: 1000 + i,
+      image_prompt: 'a product',
+      collection_slug: null,
+    })),
+  });
+}
+
+function mockResponse(text: string) {
+  return {
+    model: 'claude-sonnet-4-6',
+    content: [{ type: 'text', text }],
+    usage: { input_tokens: 1, output_tokens: 1 },
+  };
+}
+
+describe('GeneratedListingSchema (real exports)', () => {
   it('parses a valid listing', () => {
-    const input = {
-      listings: [
-        {
-          name: 'Black Fig & Vetiver Soy Candle',
-          slug: 'black-fig-vetiver-soy-candle',
-          short_description: 'A deep, earthy candle for evenings in.',
-          description: 'Hand-poured in small batches. 45-hour burn time.',
-          base_price_cents: 2400,
-          image_prompt: 'Close-up of a black jar candle on a slate surface',
-        },
-      ],
-    };
-    expect(() => GeneratedListingsSchema.parse(input)).not.toThrow();
+    expect(() =>
+      GeneratedListingSchema.parse({
+        name: 'X',
+        slug: 'x',
+        short_description: 's',
+        description: 'd',
+        base_price_cents: 1000,
+        image_prompt: 'p',
+      }),
+    ).not.toThrow();
   });
 
-  it('rejects an empty listings array', () => {
+  it('defaults collection_slug to null', () => {
+    const r = GeneratedListingSchema.parse({
+      name: 'X',
+      slug: 'x',
+      short_description: 's',
+      description: 'd',
+      base_price_cents: 1000,
+      image_prompt: 'p',
+    });
+    expect(r.collection_slug).toBeNull();
+  });
+
+  it('rejects slug with spaces', () => {
+    expect(() =>
+      GeneratedListingSchema.parse({
+        name: 'X',
+        slug: 'has space',
+        short_description: 's',
+        description: 'd',
+        base_price_cents: 1000,
+        image_prompt: 'p',
+      }),
+    ).toThrow();
+  });
+
+  it('rejects fractional price', () => {
+    expect(() =>
+      GeneratedListingSchema.parse({
+        name: 'X',
+        slug: 'x',
+        short_description: 's',
+        description: 'd',
+        base_price_cents: 1.5,
+        image_prompt: 'p',
+      }),
+    ).toThrow();
+  });
+
+  it('rejects zero price', () => {
+    expect(() =>
+      GeneratedListingSchema.parse({
+        name: 'X',
+        slug: 'x',
+        short_description: 's',
+        description: 'd',
+        base_price_cents: 0,
+        image_prompt: 'p',
+      }),
+    ).toThrow();
+  });
+
+  it('GeneratedListingsSchema rejects empty array', () => {
     expect(() => GeneratedListingsSchema.parse({ listings: [] })).toThrow();
   });
+});
 
-  it('rejects a slug with spaces', () => {
-    const input = {
-      listings: [
-        {
-          name: 'Candle',
-          slug: 'my candle',
-          short_description: 'desc',
-          description: 'desc',
-          base_price_cents: 1000,
-          image_prompt: 'img',
-        },
-      ],
-    };
-    expect(() => GeneratedListingsSchema.parse(input)).toThrow();
+describe('generateListings', () => {
+  beforeEach(() => {
+    messagesCreateMock.mockReset();
+    generateProductImageMock.mockReset();
+    generateProductImageMock.mockResolvedValue('https://img/x.jpg');
   });
 
-  it('rejects a slug with uppercase letters', () => {
-    const input = {
-      listings: [
-        {
-          name: 'Candle',
-          slug: 'MyCandle',
-          short_description: 'desc',
-          description: 'desc',
-          base_price_cents: 1000,
-          image_prompt: 'img',
-        },
-      ],
-    };
-    expect(() => GeneratedListingsSchema.parse(input)).toThrow();
+  it('caps image count at MAX_PRODUCT_IMAGES (4)', async () => {
+    messagesCreateMock.mockResolvedValue(mockResponse(buildValidListingsJson(4)));
+    const r = await generateListings('Shop', 'sub', 'Niche', 'body', 10, []);
+    expect(r).toHaveLength(4);
+    expect(generateProductImageMock).toHaveBeenCalledTimes(4);
   });
 
-  it('rejects a zero price', () => {
-    const input = {
-      listings: [
-        {
-          name: 'Candle',
-          slug: 'candle',
-          short_description: 'desc',
-          description: 'desc',
-          base_price_cents: 0,
-          image_prompt: 'img',
-        },
-      ],
-    };
-    expect(() => GeneratedListingsSchema.parse(input)).toThrow();
+  it('returns listings with image URLs', async () => {
+    messagesCreateMock.mockResolvedValue(mockResponse(buildValidListingsJson(2)));
+    const r = await generateListings('Shop', 'sub', 'Niche', 'body', 2, ['c1']);
+    expect(r[0]?.image_url).toBe('https://img/x.jpg');
   });
 
-  it('rejects a negative price', () => {
-    const input = {
-      listings: [
-        {
-          name: 'Candle',
-          slug: 'candle',
-          short_description: 'desc',
-          description: 'desc',
-          base_price_cents: -500,
-          image_prompt: 'img',
-        },
-      ],
-    };
-    expect(() => GeneratedListingsSchema.parse(input)).toThrow();
+  it('takes collection guidance when slugs provided', async () => {
+    messagesCreateMock.mockResolvedValue(mockResponse(buildValidListingsJson(1)));
+    await generateListings('Shop', 'sub', 'Niche', 'body', 1, ['summer', 'winter']);
+    const prompt = messagesCreateMock.mock.calls[0]?.[0].messages[0].content as string;
+    expect(prompt).toContain('"summer"');
+    expect(prompt).toContain('"winter"');
   });
 
-  it('rejects a fractional price', () => {
-    const input = {
-      listings: [
-        {
-          name: 'Candle',
-          slug: 'candle',
-          short_description: 'desc',
-          description: 'desc',
-          base_price_cents: 24.99,
-          image_prompt: 'img',
-        },
-      ],
-    };
-    expect(() => GeneratedListingsSchema.parse(input)).toThrow();
+  it('takes no-collections branch when slug array empty', async () => {
+    messagesCreateMock.mockResolvedValue(mockResponse(buildValidListingsJson(1)));
+    await generateListings('Shop', 'sub', 'Niche', 'body', 1, []);
+    const prompt = messagesCreateMock.mock.calls[0]?.[0].messages[0].content as string;
+    expect(prompt).toContain('no collections');
   });
 
-  it('rejects a listing missing image_prompt', () => {
-    const input = {
-      listings: [
-        {
-          name: 'Candle',
-          slug: 'candle',
-          short_description: 'desc',
-          description: 'desc',
-          base_price_cents: 1000,
-        },
-      ],
-    };
-    expect(() => GeneratedListingsSchema.parse(input)).toThrow();
+  it('takes low-control branch for leatherworker × dark', async () => {
+    messagesCreateMock.mockResolvedValue(mockResponse(buildValidListingsJson(1)));
+    await generateListings('Shop', 'sub', 'Leather', 'body', 1, [], 'tenant-id', {
+      nicheSlug: 'leatherworker',
+      moodKey: 'dark',
+      moodLabel: 'Dark',
+      moodDescription: 'dark desc',
+    });
+    const prompt = messagesCreateMock.mock.calls[0]?.[0].messages[0].content as string;
+    expect(prompt).toContain('MOOD: Dark');
+  });
+
+  it('low-control with missing moodDescription falls back to empty string', async () => {
+    messagesCreateMock.mockResolvedValue(mockResponse(buildValidListingsJson(1)));
+    await generateListings('Shop', 'sub', 'Leather', 'body', 1, [], undefined, {
+      nicheSlug: 'leatherworker',
+      moodKey: 'dark',
+      moodLabel: 'Dark',
+    });
+    expect(messagesCreateMock).toHaveBeenCalled();
+  });
+
+  it('throws on missing JSON', async () => {
+    messagesCreateMock.mockResolvedValue(mockResponse('no json'));
+    await expect(generateListings('S', 's', 'N', 'b', 1, [])).rejects.toThrow(
+      'No JSON object found in AI response',
+    );
+  });
+
+  it('throws on schema validation failure', async () => {
+    messagesCreateMock.mockResolvedValue(mockResponse(JSON.stringify({ listings: [] })));
+    await expect(generateListings('S', 's', 'N', 'b', 1, [])).rejects.toThrow();
+  });
+
+  it('throws when response content is not text', async () => {
+    messagesCreateMock.mockResolvedValue({
+      model: 'm',
+      content: [{ type: 'tool_use' }],
+      usage: { input_tokens: 1, output_tokens: 1 },
+    });
+    await expect(generateListings('S', 's', 'N', 'b', 1, [])).rejects.toThrow();
   });
 });

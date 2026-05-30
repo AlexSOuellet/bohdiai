@@ -5,7 +5,7 @@ import { generateProductImage } from '@/lib/fal';
 
 const MAX_PRODUCT_IMAGES = 4;
 
-const GeneratedListingSchema = z.object({
+export const GeneratedListingSchema = z.object({
   name: z.string(),
   slug: z.string().regex(/^[a-z0-9-]+$/),
   short_description: z.string(),
@@ -20,7 +20,7 @@ const GeneratedListingSchema = z.object({
   collection_slug: z.string().nullable().default(null),
 });
 
-const GeneratedListingsSchema = z.object({
+export const GeneratedListingsSchema = z.object({
   listings: z.array(GeneratedListingSchema).min(1),
 });
 

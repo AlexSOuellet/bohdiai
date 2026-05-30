@@ -10,7 +10,7 @@ import { logger } from '@/lib/logger';
 // because the recurring-payment plumbing isn't wired yet and because the
 // interest list itself is valuable signal for the maker.
 
-const GeneratedSubscriptionSchema = z.object({
+export const GeneratedSubscriptionSchema = z.object({
   name: z.string().min(1).max(80),
   slug: z.string().regex(/^[a-z0-9-]+$/).min(1).max(80),
   short_description: z.string().min(1).max(160),
@@ -21,7 +21,7 @@ const GeneratedSubscriptionSchema = z.object({
   image_prompt: z.string().min(1),
 });
 
-const GeneratedSubscriptionsSchema = z.object({
+export const GeneratedSubscriptionsSchema = z.object({
   /** Empty array means the niche doesn't benefit from subscriptions. */
   subscriptions: z.array(GeneratedSubscriptionSchema).max(2),
 });
