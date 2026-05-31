@@ -24,7 +24,9 @@ export function KidsStore(): React.ReactElement {
         <div className="copy build build-2">
           <div className="lockup">★ New picture book ★</div>
           <h2>
-            The Fox<br />and the <em>Lantern</em>
+            The Fox
+            <br />
+            and the <em>Lantern</em>
           </h2>
           <div className="author">
             A bedtime story by <b>Posy Hartwell</b>
@@ -40,13 +42,18 @@ export function KidsStore(): React.ReactElement {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={COVER} alt="" />
         </div>
-        <div className="stamp">New!<br />Aug 4</div>
+        <div className="stamp">
+          New!
+          <br />
+          Aug 4
+        </div>
       </div>
 
       <div className="quote build build-6">
         <div className="stars">★ ★ ★ ★ ★</div>
         <div className="q">
-          &ldquo;A new bedtime favorite. Posy&apos;s foxes look like the ones in our backyard.&rdquo;
+          &ldquo;A new bedtime favorite. Posy&apos;s foxes look like the ones in our
+          backyard.&rdquo;
         </div>
         <div className="src">School Library Journal</div>
       </div>

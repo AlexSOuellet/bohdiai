@@ -48,7 +48,7 @@ export function Band({ node, ctx }: { node: BandNode; ctx: RenderContext }) {
     ) : (
       <div
         className={joinClasses(
-          'w-full mx-auto flex flex-col',
+          'mx-auto flex w-full flex-col',
           CONTENT_WIDTH_CLASS[contentWidth],
           mobileAlign && ALIGN_ITEMS_CLASS[mobileAlign],
           desktopAlign && ALIGN_ITEMS_CLASS_MD[desktopAlign],
@@ -70,7 +70,7 @@ export function Band({ node, ctx }: { node: BandNode; ctx: RenderContext }) {
         ...(node.intent?.palette ? { background: 'var(--node-palette)' } : null),
       }}
       className={joinClasses(
-        'w-full flex flex-col',
+        'flex w-full flex-col',
         PADDING_Y_CLASS[mobilePadding],
         PADDING_Y_CLASS_MD[desktopPadding],
         mobileMinHeight && MIN_HEIGHT_CLASS[mobileMinHeight],

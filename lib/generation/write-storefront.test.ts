@@ -70,9 +70,7 @@ const SAMPLE_PAGE: GeneratedPage = {
   },
 };
 
-const SAMPLE_PAGES = [
-  { slug: '/', pageType: 'home', title: 'Home', blocks: SAMPLE_PAGE.blocks },
-];
+const SAMPLE_PAGES = [{ slug: '/', pageType: 'home', title: 'Home', blocks: SAMPLE_PAGE.blocks }];
 
 describeIfReal('writeStorefront (integration)', () => {
   const cleanupIds: string[] = [];
@@ -220,16 +218,13 @@ describeIfReal('writeStorefront (integration)', () => {
         tokens: SAMPLE_TOKENS,
         pages: SAMPLE_PAGES,
         collections: [],
-      subscriptions: [],
+        subscriptions: [],
         listings: [],
       }),
     ).rejects.toThrow();
 
     // Only one tenant with this subdomain should exist.
-    const { data: tenants } = await db
-      .from('tenants')
-      .select('id')
-      .eq('subdomain', subdomain);
+    const { data: tenants } = await db.from('tenants').select('id').eq('subdomain', subdomain);
 
     expect(tenants?.length).toBe(1);
   });

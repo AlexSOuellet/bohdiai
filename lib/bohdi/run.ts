@@ -5,6 +5,7 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { anthropicClient } from '@/lib/anthropic';
 import { logger } from '@/lib/logger';
 import { labelFor, stepForTool, type ProgressEmitter } from '@/lib/progress';
+import { withTimeout } from '@/lib/with-timeout';
 import { systemPromptFor } from './system-prompt';
 import { dispatchTool, toolsForNiche, type HandlerContext } from './tools';
 import { emptyAccumulator, type BohdiBrief, type BohdiResult } from './types';
@@ -12,6 +13,10 @@ import { emptyAccumulator, type BohdiBrief, type BohdiResult } from './types';
 const MODEL = 'claude-sonnet-4-6';
 const MAX_TOKENS = 16000; // layout-engine compose calls emit large JSON trees
 const MAX_TURNS = 80; // safety cap — a normal job should fit well under this
+// Hard ceiling on a single model turn. A large set_layout turn can take a
+// while, so this is generous — but a stalled call must surface as an error
+// instead of hanging the whole build forever.
+const TURN_TIMEOUT_MS = 150_000;
 
 export async function runBohdi(
   brief: BohdiBrief,
@@ -28,15 +33,18 @@ export async function runBohdi(
   };
   emit('starting');
 
-  const logoLine = brief.logoUrl !== undefined && brief.logoUrl !== ''
-    ? `\n- Maker uploaded a logo at: ${brief.logoUrl}`
-    : '';
-  const brandColorsLine = brief.brandColors !== undefined && brief.brandColors.length > 0
-    ? `\n- Brand colors extracted from the logo (locked identity — honor these in your palette while respecting the mood): ${brief.brandColors.join(', ')}`
-    : '';
-  const makerNameLine = brief.makerName !== undefined && brief.makerName !== ''
-    ? `\n- Maker's first name: ${brief.makerName}`
-    : '';
+  const logoLine =
+    brief.logoUrl !== undefined && brief.logoUrl !== ''
+      ? `\n- Maker uploaded a logo at: ${brief.logoUrl}`
+      : '';
+  const brandColorsLine =
+    brief.brandColors !== undefined && brief.brandColors.length > 0
+      ? `\n- Brand colors extracted from the logo (locked identity — honor these in your palette while respecting the mood): ${brief.brandColors.join(', ')}`
+      : '';
+  const makerNameLine =
+    brief.makerName !== undefined && brief.makerName !== ''
+      ? `\n- Maker's first name: ${brief.makerName}`
+      : '';
 
   const initialUserMessage = `BRIEF
 - Shop name: ${brief.shopName}
@@ -77,13 +85,17 @@ Begin. Read the niche and mood first, then design the storefront end-to-end. Del
 
   while (!done.value && turns < MAX_TURNS) {
     turns++;
-    const response = await anthropicClient().messages.create({
-      model: MODEL,
-      max_tokens: MAX_TOKENS,
-      system: cachedSystem,
-      tools: cachedTools,
-      messages,
-    });
+    const response = await withTimeout(
+      anthropicClient().messages.create({
+        model: MODEL,
+        max_tokens: MAX_TOKENS,
+        system: cachedSystem,
+        tools: cachedTools,
+        messages,
+      }),
+      TURN_TIMEOUT_MS,
+      `Bohdi model turn ${turns}`,
+    );
 
     const usage = response.usage as Anthropic.Usage & {
       cache_creation_input_tokens?: number;

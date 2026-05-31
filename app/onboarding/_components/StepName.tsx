@@ -31,7 +31,7 @@ export default function StepName({ data, onAdvance }: StepNameProps) {
       <div className="space-y-5">
         <div>
           <label htmlFor="shopName" className="mb-2 block text-sm text-text-soft">
-            What's your shop called?
+            What&apos;s your shop called?
           </label>
           <input
             id="shopName"
@@ -46,7 +46,7 @@ export default function StepName({ data, onAdvance }: StepNameProps) {
 
         <div>
           <label htmlFor="makerName" className="mb-2 block text-sm text-text-soft">
-            And what's your name?
+            And what&apos;s your name?
           </label>
           <input
             id="makerName"

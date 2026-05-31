@@ -55,13 +55,14 @@ async function ensureMigrationsTable(client) {
 
 async function getApplied(client) {
   const { rows } = await client.query('select name from _migrations order by name');
-  return new Set(rows.map(r => r.name));
+  return new Set(rows.map((r) => r.name));
 }
 
 function listMigrationFiles() {
   if (!fs.existsSync(migrationsDir)) return [];
-  return fs.readdirSync(migrationsDir)
-    .filter(f => f.endsWith('.sql'))
+  return fs
+    .readdirSync(migrationsDir)
+    .filter((f) => f.endsWith('.sql'))
     .sort();
 }
 
@@ -100,23 +101,22 @@ async function main() {
     await ensureMigrationsTable(client);
     const applied = await getApplied(client);
     const all = listMigrationFiles();
-    const pending = all.filter(f => !applied.has(f));
+    const pending = all.filter((f) => !applied.has(f));
 
     if (markFile) {
       if (!listMigrationFiles().includes(markFile)) {
         throw new Error(`Migration file not found: ${markFile}`);
       }
-      await client.query(
-        'insert into _migrations (name) values ($1) on conflict do nothing',
-        [markFile],
-      );
+      await client.query('insert into _migrations (name) values ($1) on conflict do nothing', [
+        markFile,
+      ]);
       console.log(`Marked applied: ${markFile}`);
       return;
     }
 
     if (statusOnly) {
       console.log('Applied:');
-      for (const f of all.filter(f => applied.has(f))) console.log('  ✓', f);
+      for (const f of all.filter((f) => applied.has(f))) console.log('  ✓', f);
       console.log('Pending:');
       for (const f of pending) console.log('  ·', f);
       return;
@@ -149,7 +149,7 @@ async function main() {
   }
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('\nMigration failed:', err.message);
   if (err.detail) console.error('Detail:', err.detail);
   if (err.hint) console.error('Hint:', err.hint);

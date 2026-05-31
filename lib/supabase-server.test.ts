@@ -1,9 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-interface CookieRecord { name: string; value: string; options?: Record<string, unknown> }
+interface CookieRecord {
+  name: string;
+  value: string;
+  options?: Record<string, unknown>;
+}
 
 const createServerClientSpy = vi.fn(
-  (_url: string, _key: string, opts: { cookies: { getAll: () => CookieRecord[]; setAll: (c: CookieRecord[]) => void } }) => ({
+  (
+    _url: string,
+    _key: string,
+    opts: { cookies: { getAll: () => CookieRecord[]; setAll: (c: CookieRecord[]) => void } },
+  ) => ({
     __mocked: 'server-client',
     __opts: opts,
   }),

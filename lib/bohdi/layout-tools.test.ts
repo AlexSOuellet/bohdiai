@@ -217,7 +217,9 @@ describe('finalizeLayoutEngine', () => {
 
   it('throws if style sheet is not set', async () => {
     const a = emptyAccumulator();
-    a.layoutPages = [{ slug: 'home', name: 'Home', root: { type: 'text', role: 'body', content: 'x' } }];
+    a.layoutPages = [
+      { slug: 'home', name: 'Home', root: { type: 'text', role: 'body', content: 'x' } },
+    ];
     await expect(finalizeLayoutEngine(makeCtx(a))).rejects.toThrow('style sheet not set');
   });
 
@@ -233,7 +235,10 @@ describe('finalizeLayoutEngine', () => {
     a.layoutPages = [
       { slug: 'home', name: 'Home', root: { type: 'text', role: 'body', content: 'hi — there' } },
     ];
-    singleMock.mockResolvedValue({ data: { tenant_type_fit: ['seller', 'subscription'] }, error: null });
+    singleMock.mockResolvedValue({
+      data: { tenant_type_fit: ['seller', 'subscription'] },
+      error: null,
+    });
     writeStorefrontLayoutMock.mockResolvedValue({ tenantId: 't-123', subdomain: 'acme' });
 
     const ctx = makeCtx(a, makeBrief({ logoUrl: 'https://x/y.png' }));

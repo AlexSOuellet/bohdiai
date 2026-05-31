@@ -62,7 +62,9 @@ describe('PaletteEntrySchema', () => {
   });
 
   it('accepts 8-digit hex (with alpha)', () => {
-    expect(PaletteEntrySchema.safeParse({ ...validPalette(1), value: '#ffaa00cc' }).success).toBe(true);
+    expect(PaletteEntrySchema.safeParse({ ...validPalette(1), value: '#ffaa00cc' }).success).toBe(
+      true,
+    );
   });
 
   it('rejects non-hex color', () => {
@@ -90,9 +92,7 @@ describe('FontEntrySchema', () => {
   });
 
   it('accepts a system font', () => {
-    expect(
-      FontEntrySchema.safeParse({ ...validFont(1), source: 'system' }).success,
-    ).toBe(true);
+    expect(FontEntrySchema.safeParse({ ...validFont(1), source: 'system' }).success).toBe(true);
   });
 
   it('accepts a custom font with customUrl', () => {
@@ -106,50 +106,37 @@ describe('FontEntrySchema', () => {
   });
 
   it('rejects a custom font missing customUrl', () => {
-    expect(
-      FontEntrySchema.safeParse({ ...validFont(1), source: 'custom' }).success,
-    ).toBe(false);
+    expect(FontEntrySchema.safeParse({ ...validFont(1), source: 'custom' }).success).toBe(false);
   });
 
   it('rejects an invalid source enum', () => {
-    expect(
-      FontEntrySchema.safeParse({ ...validFont(1), source: 'bogus' }).success,
-    ).toBe(false);
+    expect(FontEntrySchema.safeParse({ ...validFont(1), source: 'bogus' }).success).toBe(false);
   });
 
   it('rejects weight that is not a multiple of 100', () => {
-    expect(
-      FontEntrySchema.safeParse({ ...validFont(1), weights: [450] }).success,
-    ).toBe(false);
+    expect(FontEntrySchema.safeParse({ ...validFont(1), weights: [450] }).success).toBe(false);
   });
 
   it('rejects weight below 100', () => {
-    expect(
-      FontEntrySchema.safeParse({ ...validFont(1), weights: [50] }).success,
-    ).toBe(false);
+    expect(FontEntrySchema.safeParse({ ...validFont(1), weights: [50] }).success).toBe(false);
   });
 
   it('rejects weight above 900', () => {
-    expect(
-      FontEntrySchema.safeParse({ ...validFont(1), weights: [1000] }).success,
-    ).toBe(false);
+    expect(FontEntrySchema.safeParse({ ...validFont(1), weights: [1000] }).success).toBe(false);
   });
 
   it('rejects empty weights array', () => {
-    expect(
-      FontEntrySchema.safeParse({ ...validFont(1), weights: [] }).success,
-    ).toBe(false);
+    expect(FontEntrySchema.safeParse({ ...validFont(1), weights: [] }).success).toBe(false);
   });
 
   it('rejects bad fallback enum', () => {
-    expect(
-      FontEntrySchema.safeParse({ ...validFont(1), fallback: 'bogus' }).success,
-    ).toBe(false);
+    expect(FontEntrySchema.safeParse({ ...validFont(1), fallback: 'bogus' }).success).toBe(false);
   });
 
   it('rejects a bad customUrl', () => {
     expect(
-      FontEntrySchema.safeParse({ ...validFont(1), source: 'custom', customUrl: 'not-a-url' }).success,
+      FontEntrySchema.safeParse({ ...validFont(1), source: 'custom', customUrl: 'not-a-url' })
+        .success,
     ).toBe(false);
   });
 });

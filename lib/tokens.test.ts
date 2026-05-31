@@ -106,7 +106,7 @@ describe('tokensToCssVars', () => {
 
   it('resolves borderRadius enum to px values', () => {
     const css = tokensToCssVars(BASE_TOKENS);
-    expect(css).toContain('--border-radius: 8px');   // md
+    expect(css).toContain('--border-radius: 8px'); // md
     expect(css).toContain('--card-border-radius: 16px'); // lg
   });
 
@@ -114,10 +114,16 @@ describe('tokensToCssVars', () => {
     const normal = tokensToCssVars(BASE_TOKENS);
     expect(normal).toContain('--spacing-section: 5rem');
 
-    const compact = tokensToCssVars({ ...BASE_TOKENS, spacing: { ...BASE_TOKENS.spacing, sectionPadding: 'compact' } });
+    const compact = tokensToCssVars({
+      ...BASE_TOKENS,
+      spacing: { ...BASE_TOKENS.spacing, sectionPadding: 'compact' },
+    });
     expect(compact).toContain('--spacing-section: 3rem');
 
-    const spacious = tokensToCssVars({ ...BASE_TOKENS, spacing: { ...BASE_TOKENS.spacing, sectionPadding: 'spacious' } });
+    const spacious = tokensToCssVars({
+      ...BASE_TOKENS,
+      spacing: { ...BASE_TOKENS.spacing, sectionPadding: 'spacious' },
+    });
     expect(spacious).toContain('--spacing-section: 8rem');
   });
 
@@ -125,10 +131,16 @@ describe('tokensToCssVars', () => {
     const normal = tokensToCssVars(BASE_TOKENS);
     expect(normal).toContain('--card-gap: 1.5rem');
 
-    const tight = tokensToCssVars({ ...BASE_TOKENS, spacing: { ...BASE_TOKENS.spacing, cardGap: 'tight' } });
+    const tight = tokensToCssVars({
+      ...BASE_TOKENS,
+      spacing: { ...BASE_TOKENS.spacing, cardGap: 'tight' },
+    });
     expect(tight).toContain('--card-gap: 1rem');
 
-    const loose = tokensToCssVars({ ...BASE_TOKENS, spacing: { ...BASE_TOKENS.spacing, cardGap: 'loose' } });
+    const loose = tokensToCssVars({
+      ...BASE_TOKENS,
+      spacing: { ...BASE_TOKENS.spacing, cardGap: 'loose' },
+    });
     expect(loose).toContain('--card-gap: 2.5rem');
   });
 });

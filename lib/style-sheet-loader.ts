@@ -19,12 +19,7 @@ function googleFontHref(family: string, weights: number[], styles: string[]): st
     .slice()
     .sort((a, b) => a - b)
     .flatMap((w) =>
-      hasItalic
-        ? [
-            `0,${w}`,
-            ...(styles.includes('italic') ? [`1,${w}`] : []),
-          ]
-        : [`${w}`],
+      hasItalic ? [`0,${w}`, ...(styles.includes('italic') ? [`1,${w}`] : [])] : [`${w}`],
     )
     .join(';');
   return `https://fonts.googleapis.com/css2?family=${familyParam}:${axes}@${weightDescriptors}&display=swap`;
@@ -34,11 +29,7 @@ function paletteVariableLine(name: string, value: string): string {
   return `  --palette-${slugifyEntry(name)}: ${value};`;
 }
 
-function fontVariableLine(
-  name: string,
-  family: string,
-  fallback: string,
-): string {
+function fontVariableLine(name: string, family: string, fallback: string): string {
   const quotedFamily = /\s/.test(family) ? `"${family}"` : family;
   return `  --font-${slugifyEntry(name)}: ${quotedFamily}, ${fallback};`;
 }
@@ -48,23 +39,11 @@ function textureVariableLine(name: string, value: string): string {
 }
 
 export function compileStyleSheet(sheet: StyleSheet): CompiledStyleSheet {
-  const paletteLines = sheet.palette.map((p) =>
-    paletteVariableLine(p.name, p.value),
-  );
-  const fontLines = sheet.fonts.map((f) =>
-    fontVariableLine(f.name, f.family, f.fallback),
-  );
-  const textureLines = sheet.textures.map((t) =>
-    textureVariableLine(t.name, t.value),
-  );
+  const paletteLines = sheet.palette.map((p) => paletteVariableLine(p.name, p.value));
+  const fontLines = sheet.fonts.map((f) => fontVariableLine(f.name, f.family, f.fallback));
+  const textureLines = sheet.textures.map((t) => textureVariableLine(t.name, t.value));
 
-  const cssVariables = [
-    ':root {',
-    ...paletteLines,
-    ...fontLines,
-    ...textureLines,
-    '}',
-  ].join('\n');
+  const cssVariables = [':root {', ...paletteLines, ...fontLines, ...textureLines, '}'].join('\n');
 
   const googleFonts = sheet.fonts.filter((f) => f.source === 'google');
   const googleFontLinks = googleFonts.map((f) =>

@@ -65,7 +65,15 @@ export function TattooStore(): React.ReactElement {
   );
 }
 
-function Pic({ src, label, delay }: { src: string; label: string; delay: '5' | '6' | '7' }): React.ReactElement {
+function Pic({
+  src,
+  label,
+  delay,
+}: {
+  src: string;
+  label: string;
+  delay: '5' | '6' | '7';
+}): React.ReactElement {
   return (
     <div className={`pic build build-${delay}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}

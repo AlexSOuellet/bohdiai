@@ -10,9 +10,13 @@ import type { DesignTokens } from '@/lib/tokens';
 
 function hexToRgb(hex: string): [number, number, number] {
   const clean = hex.replace('#', '');
-  const full = clean.length === 3
-    ? clean.split('').map((c) => c + c).join('')
-    : clean;
+  const full =
+    clean.length === 3
+      ? clean
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : clean;
   return [
     parseInt(full.slice(0, 2), 16) / 255,
     parseInt(full.slice(2, 4), 16) / 255,
@@ -71,7 +75,9 @@ function hslToHex(h: number, s: number, l: number): string {
   const lClamped = Math.max(0, Math.min(1, l));
 
   if (s === 0) {
-    const v = Math.round(lClamped * 255).toString(16).padStart(2, '0');
+    const v = Math.round(lClamped * 255)
+      .toString(16)
+      .padStart(2, '0');
     return `#${v}${v}${v}`;
   }
 
@@ -87,14 +93,21 @@ function hslToHex(h: number, s: number, l: number): string {
 // ─── Adjustment ───────────────────────────────────────────────────────────────
 
 function adjustInDirection(
-  h: number, s: number, l: number,
+  h: number,
+  s: number,
+  l: number,
   background: string,
   minRatio: number,
   direction: 'lighter' | 'darker',
 ): string {
   let lo: number, hi: number;
-  if (direction === 'lighter') { lo = l; hi = 1; }
-  else { lo = 0; hi = l; }
+  if (direction === 'lighter') {
+    lo = l;
+    hi = 1;
+  } else {
+    lo = 0;
+    hi = l;
+  }
 
   // Binary search for the minimal adjustment that achieves minRatio
   for (let i = 0; i < 20; i++) {
@@ -140,16 +153,14 @@ export function adjustForContrast(
   if (lighterPasses) return lighter;
   if (darkerPasses) return darker;
   // Neither achieves the minimum (e.g. mid-gray background) — return best available
-  return contrastRatio(lighter, background) >= contrastRatio(darker, background)
-    ? lighter
-    : darker;
+  return contrastRatio(lighter, background) >= contrastRatio(darker, background) ? lighter : darker;
 }
 
 // ─── Token enforcement ────────────────────────────────────────────────────────
 
 // WCAG AA thresholds
-const BODY_TEXT_RATIO = 4.5;   // normal text
-const LARGE_TEXT_RATIO = 4.5;  // raised from 3.0 — 3.0 passes technically but looks washed on light palettes
+const BODY_TEXT_RATIO = 4.5; // normal text
+const LARGE_TEXT_RATIO = 4.5; // raised from 3.0 — 3.0 passes technically but looks washed on light palettes
 
 /**
  * Enforces WCAG AA contrast on all critical color pairs in a token set.

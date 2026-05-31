@@ -11,11 +11,7 @@ import { WIDGETS_MANIFEST } from '@/lib/widgets-manifest.generated';
 import { DesignTokensSchema } from '@/lib/tokens';
 import { enforceTokenContrast } from '@/lib/contrast';
 import { MOODS, type MoodKey } from '@/lib/moods';
-import {
-  generateHeroImage,
-  generateAboutImage,
-  generateProductImage,
-} from '@/lib/fal';
+import { generateHeroImage, generateAboutImage, generateProductImage } from '@/lib/fal';
 import { logger } from '@/lib/logger';
 import { labelFor, type ProgressEmitter, type ProgressStep } from '@/lib/progress';
 import { inferGenderFromName } from '@/lib/name-gender';
@@ -45,7 +41,7 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
   {
     name: 'read_niche',
     description:
-      "Read the niche the maker chose. Returns the prose body (context about the business, customers, vocabulary) and a style sheet (named palette, fonts, textures — no role assignments). Call this once early.",
+      'Read the niche the maker chose. Returns the prose body (context about the business, customers, vocabulary) and a style sheet (named palette, fonts, textures — no role assignments). Call this once early.',
     input_schema: {
       type: 'object',
       properties: {
@@ -57,7 +53,7 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
   {
     name: 'read_mood',
     description:
-      "Read the mood the maker chose. Returns the mood label, audience description, and a style sheet (named palette, fonts, textures — no role assignments). Call this once early.",
+      'Read the mood the maker chose. Returns the mood label, audience description, and a style sheet (named palette, fonts, textures — no role assignments). Call this once early.',
     input_schema: {
       type: 'object',
       properties: {
@@ -85,13 +81,13 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
   {
     name: 'list_widgets',
     description:
-      'List the widgets available to thread into block slots. Returns each widget\'s key, description, accepted slot keys, and content schema.',
+      "List the widgets available to thread into block slots. Returns each widget's key, description, accepted slot keys, and content schema.",
     input_schema: { type: 'object', properties: {} },
   },
   {
     name: 'log_decision',
     description:
-      "Log a design decision Bohdi made. Call this for every meaningful choice — palette role assignment, font pairing, block pick, copy direction, image brief, composition. Provide at least 2 candidates with reasoning per candidate, the picked one, and overall reasoning. The log is permanent and visible to Alex.",
+      'Log a design decision Bohdi made. Call this for every meaningful choice — palette role assignment, font pairing, block pick, copy direction, image brief, composition. Provide at least 2 candidates with reasoning per candidate, the picked one, and overall reasoning. The log is permanent and visible to Alex.',
     input_schema: {
       type: 'object',
       properties: {
@@ -114,7 +110,7 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
         reasoning: {
           type: 'string',
           description:
-            'Bohdi\'s overall reasoning for choosing the picked candidate over the others.',
+            "Bohdi's overall reasoning for choosing the picked candidate over the others.",
         },
       },
       required: ['decisionType', 'candidates', 'picked', 'reasoning'],
@@ -141,7 +137,7 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
   {
     name: 'set_tokens',
     description:
-      "Set the design tokens for the storefront. Bohdi calls this once after deciding palette roles, fonts, shape, spacing, and layout. The schema is strict — every field is required.",
+      'Set the design tokens for the storefront. Bohdi calls this once after deciding palette roles, fonts, shape, spacing, and layout. The schema is strict — every field is required.',
     input_schema: {
       type: 'object',
       properties: {
@@ -182,16 +178,25 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
           description:
             "The shop wordmark is the identity element in the nav. Pick a display font that's distinct from the heading font — this is the visual signature of the shop. Pick a treatment that fits the mood and niche. For solid/outline, color2 must be empty string ''.",
           properties: {
-            font: { type: 'string', description: 'Google Font name — a display font, distinct from headingFont.' },
+            font: {
+              type: 'string',
+              description: 'Google Font name — a display font, distinct from headingFont.',
+            },
             treatment: {
               type: 'string',
               enum: ['solid', 'gradient', 'outline', 'two-tone'],
               description:
-                "solid = single color. gradient = linear gradient color1 → color2. outline = stroked text, no fill (color1 is the stroke). two-tone = first word in color1, rest in color2 (best for 2-word shop names).",
+                'solid = single color. gradient = linear gradient color1 → color2. outline = stroked text, no fill (color1 is the stroke). two-tone = first word in color1, rest in color2 (best for 2-word shop names).',
             },
             color1: { type: 'string', description: 'Hex. Always used.' },
-            color2: { type: 'string', description: "Hex. Used by gradient and two-tone; empty string '' for solid/outline." },
-            letterSpacing: { type: 'string', description: 'e.g. -0.03em for tight display, 0.08em for spaced caps.' },
+            color2: {
+              type: 'string',
+              description: "Hex. Used by gradient and two-tone; empty string '' for solid/outline.",
+            },
+            letterSpacing: {
+              type: 'string',
+              description: 'e.g. -0.03em for tight display, 0.08em for spaced caps.',
+            },
           },
           required: ['font', 'treatment', 'color1', 'color2', 'letterSpacing'],
         },
@@ -263,7 +268,7 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
   {
     name: 'set_secondary_pages_copy',
     description:
-      "Set the copy for the auto-built /shop and /contact pages. The pages themselves are platform-built; Bohdi just writes the headings.",
+      'Set the copy for the auto-built /shop and /contact pages. The pages themselves are platform-built; Bohdi just writes the headings.',
     input_schema: {
       type: 'object',
       properties: {
@@ -292,7 +297,7 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
   {
     name: 'add_collection',
     description:
-      "Add a sample collection to the storefront. Use only if collections fit this niche (groupings of products that naturally belong together). 0-4 collections total. Bohdi may also add zero.",
+      'Add a sample collection to the storefront. Use only if collections fit this niche (groupings of products that naturally belong together). 0-4 collections total. Bohdi may also add zero.',
     input_schema: {
       type: 'object',
       properties: {
@@ -306,7 +311,7 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
   {
     name: 'add_listing',
     description:
-      "Add a product listing. The image_url field must be a URL returned by generate_image (call that first). collection_slug must match a slug from a previously added collection, or null.",
+      'Add a product listing. The image_url field must be a URL returned by generate_image (call that first). collection_slug must match a slug from a previously added collection, or null.',
     input_schema: {
       type: 'object',
       properties: {
@@ -332,7 +337,7 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
   {
     name: 'add_subscription',
     description:
-      "Add a sample subscription. Only use for niches where a recurring small-item delivery makes sense (candles, soap, tea, baked goods, flowers). Skip for slow-production niches (leather, furniture, ceramics, jewelry). 0-2 total.",
+      'Add a sample subscription. Only use for niches where a recurring small-item delivery makes sense (candles, soap, tea, baked goods, flowers). Skip for slow-production niches (leather, furniture, ceramics, jewelry). 0-2 total.',
     input_schema: {
       type: 'object',
       properties: {
@@ -357,7 +362,8 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
   },
   {
     name: 'set_hero_image',
-    description: 'Set the home page hero background image URL. The URL must come from generate_image with kind=hero.',
+    description:
+      'Set the home page hero background image URL. The URL must come from generate_image with kind=hero.',
     input_schema: {
       type: 'object',
       properties: { url: { type: 'string' } },
@@ -366,7 +372,8 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
   },
   {
     name: 'set_about_image',
-    description: 'Set the about image URL (optional). The URL must come from generate_image with kind=about. The image is shared between the home about block and the /about page.',
+    description:
+      'Set the about image URL (optional). The URL must come from generate_image with kind=about. The image is shared between the home about block and the /about page.',
     input_schema: {
       type: 'object',
       properties: { url: { type: 'string' } },
@@ -380,11 +387,28 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
     input_schema: {
       type: 'object',
       properties: {
-        eyebrow: { type: 'string', description: 'Small label above the page headline, e.g. "Our Story", "The Maker". Optional but recommended.' },
-        headline: { type: 'string', description: 'The /about page\'s main headline — title of the page (under 80 chars).' },
-        intro: { type: 'string', description: 'Lead paragraph that sets up the story. 1-2 sentences, 300-500 chars.' },
-        body: { type: 'string', description: 'The long body of the story. Multiple paragraphs separated by blank lines. 1500-3500 chars. Must NOT repeat the home about block — this is the expanded version, deeper and richer.' },
-        signatureName: { type: 'string', description: 'Optional signature name at the bottom (typically the maker\'s first name).' },
+        eyebrow: {
+          type: 'string',
+          description:
+            'Small label above the page headline, e.g. "Our Story", "The Maker". Optional but recommended.',
+        },
+        headline: {
+          type: 'string',
+          description: "The /about page's main headline — title of the page (under 80 chars).",
+        },
+        intro: {
+          type: 'string',
+          description: 'Lead paragraph that sets up the story. 1-2 sentences, 300-500 chars.',
+        },
+        body: {
+          type: 'string',
+          description:
+            'The long body of the story. Multiple paragraphs separated by blank lines. 1500-3500 chars. Must NOT repeat the home about block — this is the expanded version, deeper and richer.',
+        },
+        signatureName: {
+          type: 'string',
+          description: "Optional signature name at the bottom (typically the maker's first name).",
+        },
         signatureRole: { type: 'string', description: 'Optional role line under the signature.' },
       },
       required: ['eyebrow', 'headline', 'intro', 'body', 'signatureName', 'signatureRole'],
@@ -497,13 +521,19 @@ const handlers: Record<string, Handler> = {
   async list_blocks(args, _ctx) {
     const { pageType } = args as { pageType: string };
     const active = BLOCKS_MANIFEST.filter(
-      (b) => b.status === 'active' && b.pageTypes.includes(pageType as 'home') && b.sectionType !== 'nav' && b.sectionType !== 'footer',
+      (b) =>
+        b.status === 'active' &&
+        b.pageTypes.includes(pageType as 'home') &&
+        b.sectionType !== 'nav' &&
+        b.sectionType !== 'footer',
     ).filter((b) => b.key !== 'events-list');
     // Shuffle variants within each sectionType so list order doesn't bias
     // Bohdi toward whatever block sorts first alphabetically.
     const heroes = shuffled(active.filter((b) => b.sectionType === 'hero'));
     const products = shuffled(active.filter((b) => b.sectionType === 'products'));
-    const others = shuffled(active.filter((b) => b.sectionType !== 'hero' && b.sectionType !== 'products'));
+    const others = shuffled(
+      active.filter((b) => b.sectionType !== 'hero' && b.sectionType !== 'products'),
+    );
     return [...heroes, ...products, ...others].map((b) => ({
       key: b.key,
       sectionType: b.sectionType,
@@ -543,7 +573,12 @@ const handlers: Record<string, Handler> = {
     const db = supabaseAdmin() as unknown as {
       from: (t: string) => {
         insert: (r: unknown) => {
-          select: (c: string) => { single: () => Promise<{ data: { id: string } | null; error: { message: string } | null }> };
+          select: (c: string) => {
+            single: () => Promise<{
+              data: { id: string } | null;
+              error: { message: string } | null;
+            }>;
+          };
         };
       };
     };
@@ -610,12 +645,22 @@ const handlers: Record<string, Handler> = {
   },
 
   async set_home_page(args, ctx) {
-    const { blocks } = args as { blocks: Array<{ blockKey: string; position: number; content: Record<string, string>; slots?: Record<string, unknown> }> };
+    const { blocks } = args as {
+      blocks: Array<{
+        blockKey: string;
+        position: number;
+        content: Record<string, string>;
+        slots?: Record<string, unknown>;
+      }>;
+    };
     ctx.accumulator.homePage = blocks.map((b) => ({
       blockKey: b.blockKey,
       position: b.position,
       content: b.content,
-      slots: (b.slots ?? {}) as Record<string, { widgetKey: string; content: Record<string, string> }>,
+      slots: (b.slots ?? {}) as Record<
+        string,
+        { widgetKey: string; content: Record<string, string> }
+      >,
     }));
     return { ok: true };
   },
@@ -711,7 +756,8 @@ const handlers: Record<string, Handler> = {
 
     if (!a.tokens) throw new Error('finalize: tokens not set');
     if (!a.homePage) throw new Error('finalize: home page not set');
-    if (!a.shopPageCopy || !a.contactPageCopy) throw new Error('finalize: secondary pages copy not set');
+    if (!a.shopPageCopy || !a.contactPageCopy)
+      throw new Error('finalize: secondary pages copy not set');
     if (!a.heroImageUrl) throw new Error('finalize: hero image not set');
 
     // Scrub AI-tell punctuation (em-dashes, semicolons, parenthetical asides)
@@ -738,7 +784,9 @@ const handlers: Record<string, Handler> = {
     });
     if (!heroBlock) throw new Error('finalize: no hero block in home page');
     const heroManifest = BLOCKS_MANIFEST.find((m) => m.key === heroBlock.blockKey);
-    const imageField = heroManifest?.contentSchema.find((f) => f.type === 'image' && !f.aiGenerated);
+    const imageField = heroManifest?.contentSchema.find(
+      (f) => f.type === 'image' && !f.aiGenerated,
+    );
     const imageFieldKey = imageField?.key ?? 'backgroundImageUrl';
     heroBlock.content[imageFieldKey] = a.heroImageUrl;
 
@@ -846,9 +894,24 @@ const handlers: Record<string, Handler> = {
       tokens: a.tokens,
       pages: [
         { slug: '/', pageType: 'home', title: ctx.brief.shopName, blocks: homePageBlocks },
-        { slug: '/shop', pageType: 'shop', title: `${ctx.brief.shopName} — Shop`, blocks: shopPageBlocks },
-        { slug: '/about', pageType: 'about', title: `${ctx.brief.shopName} — About`, blocks: aboutPageBlocks },
-        { slug: '/contact', pageType: 'contact', title: `${ctx.brief.shopName} — Contact`, blocks: contactPageBlocks },
+        {
+          slug: '/shop',
+          pageType: 'shop',
+          title: `${ctx.brief.shopName} — Shop`,
+          blocks: shopPageBlocks,
+        },
+        {
+          slug: '/about',
+          pageType: 'about',
+          title: `${ctx.brief.shopName} — About`,
+          blocks: aboutPageBlocks,
+        },
+        {
+          slug: '/contact',
+          pageType: 'contact',
+          title: `${ctx.brief.shopName} — Contact`,
+          blocks: contactPageBlocks,
+        },
       ],
       collections: a.collections,
       listings: a.listings,
@@ -864,8 +927,14 @@ const handlers: Record<string, Handler> = {
     const dbUpdate = supabaseAdmin() as unknown as {
       from: (t: string) => {
         update: (r: unknown) => {
-          is: (col: string, val: unknown) => {
-            eq: (col: string, val: unknown) => { eq: (col: string, val: unknown) => Promise<unknown> };
+          is: (
+            col: string,
+            val: unknown,
+          ) => {
+            eq: (
+              col: string,
+              val: unknown,
+            ) => { eq: (col: string, val: unknown) => Promise<unknown> };
           };
         };
       };

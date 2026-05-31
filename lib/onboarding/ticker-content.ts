@@ -24,13 +24,16 @@ function extractTipsFromNicheBody(body: string): string[] {
   for (const raw of lines) {
     const line = raw.trim();
     if (line === '') continue;
-    if (line.startsWith('#')) continue;       // Headings.
-    if (line.startsWith('---')) continue;     // Frontmatter delimiters.
-    if (line.startsWith('```')) continue;     // Code fence.
-    if (line.startsWith('|')) continue;       // Tables.
+    if (line.startsWith('#')) continue; // Headings.
+    if (line.startsWith('---')) continue; // Frontmatter delimiters.
+    if (line.startsWith('```')) continue; // Code fence.
+    if (line.startsWith('|')) continue; // Tables.
 
     // Strip leading bullet markers.
-    const stripped = line.replace(/^[-*]\s+/, '').replace(/^\d+\.\s+/, '').trim();
+    const stripped = line
+      .replace(/^[-*]\s+/, '')
+      .replace(/^\d+\.\s+/, '')
+      .trim();
     if (stripped === '') continue;
 
     // Split into sentences. Keep ones of a usable length for ticker display.
@@ -83,9 +86,10 @@ export async function loadTickerContent(
     .eq('slug', nicheSlug)
     .single();
 
-  const nicheTips = data?.body_markdown !== undefined && data?.body_markdown !== null
-    ? extractTipsFromNicheBody(data.body_markdown).slice(0, 30)
-    : [];
+  const nicheTips =
+    data?.body_markdown !== undefined && data?.body_markdown !== null
+      ? extractTipsFromNicheBody(data.body_markdown).slice(0, 30)
+      : [];
 
   return {
     nicheTips,

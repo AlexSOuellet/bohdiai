@@ -37,10 +37,7 @@ interface WriteRPCResult {
 function isWriteRPCResult(value: unknown): value is WriteRPCResult {
   if (typeof value !== 'object' || value === null) return false;
   const record = value as Record<string, unknown>;
-  return (
-    typeof record['tenantId'] === 'string' &&
-    typeof record['subdomain'] === 'string'
-  );
+  return typeof record['tenantId'] === 'string' && typeof record['subdomain'] === 'string';
 }
 
 function pageTypeFor(slug: string): string {

@@ -19,7 +19,9 @@ describe('PageSchema', () => {
   });
   it('accepts with meta', () => {
     const r = PageSchema.parse({
-      slug: 'about', name: 'About', root: text(),
+      slug: 'about',
+      name: 'About',
+      root: text(),
       meta: { title: 'About us', description: 'd' },
     });
     expect(r.meta?.title).toBe('About us');
@@ -92,7 +94,8 @@ describe('validatePage — happy path', () => {
 
   it('walks bleed and pane child', () => {
     const root: LayoutNode = {
-      type: 'bleed', side: 'all',
+      type: 'bleed',
+      side: 'all',
       child: { type: 'pane', child: text() },
     };
     expect(validatePage({ slug: 'h', name: 'h', root }).ok).toBe(true);
@@ -102,7 +105,10 @@ describe('validatePage — happy path', () => {
 describe('validatePage — split rules', () => {
   it('rejects split where ratios do not sum to 100', () => {
     const root: LayoutNode = {
-      type: 'split', direction: 'horizontal', ratios: [40, 40], children: [text(), text()],
+      type: 'split',
+      direction: 'horizontal',
+      ratios: [40, 40],
+      children: [text(), text()],
     };
     const r = validatePage({ slug: 'h', name: 'h', root });
     expect(r.ok).toBe(false);
@@ -111,7 +117,10 @@ describe('validatePage — split rules', () => {
 
   it('rejects split where ratios length != children length', () => {
     const root: LayoutNode = {
-      type: 'split', direction: 'horizontal', ratios: [50, 50], children: [text()],
+      type: 'split',
+      direction: 'horizontal',
+      ratios: [50, 50],
+      children: [text()],
     };
     const r = validatePage({ slug: 'h', name: 'h', root });
     expect(r.ok).toBe(false);
@@ -120,7 +129,9 @@ describe('validatePage — split rules', () => {
 
   it('rejects split where mobile.stackOrder is not a permutation (wrong length)', () => {
     const root: LayoutNode = {
-      type: 'split', direction: 'horizontal', ratios: [50, 50],
+      type: 'split',
+      direction: 'horizontal',
+      ratios: [50, 50],
       children: [text(), text()],
       mobile: { stackOrder: [0] },
     };
@@ -131,7 +142,9 @@ describe('validatePage — split rules', () => {
 
   it('rejects split where mobile.stackOrder is not a permutation (duplicates)', () => {
     const root: LayoutNode = {
-      type: 'split', direction: 'horizontal', ratios: [50, 50],
+      type: 'split',
+      direction: 'horizontal',
+      ratios: [50, 50],
       children: [text(), text()],
       mobile: { stackOrder: [0, 0] },
     };
@@ -140,7 +153,9 @@ describe('validatePage — split rules', () => {
 
   it('rejects split where mobile.stackOrder has out-of-range index', () => {
     const root: LayoutNode = {
-      type: 'split', direction: 'horizontal', ratios: [50, 50],
+      type: 'split',
+      direction: 'horizontal',
+      ratios: [50, 50],
       children: [text(), text()],
       mobile: { stackOrder: [0, 5] },
     };
@@ -149,7 +164,9 @@ describe('validatePage — split rules', () => {
 
   it('accepts valid split with valid stackOrder', () => {
     const root: LayoutNode = {
-      type: 'split', direction: 'horizontal', ratios: [50, 50],
+      type: 'split',
+      direction: 'horizontal',
+      ratios: [50, 50],
       children: [text(), text()],
       mobile: { stackOrder: [1, 0] },
     };
@@ -174,7 +191,9 @@ describe('validatePage — overlap rules', () => {
 
   it('rejects overlap with bad mobile.stackOrder', () => {
     const root: LayoutNode = {
-      type: 'overlap', anchor: 0, children: [text(), text()],
+      type: 'overlap',
+      anchor: 0,
+      children: [text(), text()],
       mobile: { stackOrder: [0, 5] },
     };
     expect(validatePage({ slug: 'h', name: 'h', root }).ok).toBe(false);
@@ -182,7 +201,9 @@ describe('validatePage — overlap rules', () => {
 
   it('accepts overlap with valid mobile.stackOrder', () => {
     const root: LayoutNode = {
-      type: 'overlap', anchor: 0, children: [text(), text()],
+      type: 'overlap',
+      anchor: 0,
+      children: [text(), text()],
       mobile: { stackOrder: [1, 0] },
     };
     expect(validatePage({ slug: 'h', name: 'h', root }).ok).toBe(true);
@@ -276,7 +297,10 @@ describe('validateLayoutNode', () => {
 
   it('returns walker issues for valid schema but invalid semantics', () => {
     const r = validateLayoutNode({
-      type: 'split', direction: 'horizontal', ratios: [50, 50], children: [text()],
+      type: 'split',
+      direction: 'horizontal',
+      ratios: [50, 50],
+      children: [text()],
     });
     expect(r.ok).toBe(false);
   });

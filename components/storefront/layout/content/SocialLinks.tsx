@@ -10,13 +10,7 @@ function resolvedSocialAt(ctx: RenderContext): ResolvedSocialLink[] | null {
   return data as ResolvedSocialLink[];
 }
 
-export function SocialLinksContent({
-  node,
-  ctx,
-}: {
-  node: SocialLinksNode;
-  ctx: RenderContext;
-}) {
+export function SocialLinksContent({ node, ctx }: { node: SocialLinksNode; ctx: RenderContext }) {
   const resolved = resolvedSocialAt(ctx);
   const links: { platform: string; url?: string }[] =
     resolved !== null && resolved.length > 0
@@ -50,24 +44,24 @@ export function SocialLinksContent({
             >
               {(style === 'icons' || style === 'both') && (
                 <span
-                  className="inline-block w-6 h-6 rounded-full bg-black/10"
+                  className="inline-block h-6 w-6 rounded-full bg-black/10"
                   aria-hidden="true"
                 />
               )}
               {(style === 'labels' || style === 'both') && (
-                <span className="capitalize text-sm">{l.platform}</span>
+                <span className="text-sm capitalize">{l.platform}</span>
               )}
             </a>
           ) : (
             <>
               {(style === 'icons' || style === 'both') && (
                 <span
-                  className="inline-block w-6 h-6 rounded-full bg-black/10"
+                  className="inline-block h-6 w-6 rounded-full bg-black/10"
                   aria-hidden="true"
                 />
               )}
               {(style === 'labels' || style === 'both') && (
-                <span className="capitalize text-sm">{l.platform}</span>
+                <span className="text-sm capitalize">{l.platform}</span>
               )}
             </>
           )}

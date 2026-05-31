@@ -64,7 +64,9 @@ async function main() {
   const blockMetaFiles = findMetaFiles(join(ROOT, 'blocks'));
   const widgetMetaFiles = findMetaFiles(join(ROOT, 'widgets'));
 
-  console.log(`build-manifests: found ${blockMetaFiles.length} block(s), ${widgetMetaFiles.length} widget(s)`);
+  console.log(
+    `build-manifests: found ${blockMetaFiles.length} block(s), ${widgetMetaFiles.length} widget(s)`,
+  );
 
   const blocks = [];
   for (const file of blockMetaFiles) {
@@ -90,18 +92,13 @@ async function main() {
     console.log(`  widget: ${meta.key}`);
   }
 
-  writeManifest(
-    join(ROOT, 'lib', 'blocks-manifest.generated.ts'),
-    'BLOCKS',
-    'BlockMeta',
-    blocks
-  );
+  writeManifest(join(ROOT, 'lib', 'blocks-manifest.generated.ts'), 'BLOCKS', 'BlockMeta', blocks);
 
   writeManifest(
     join(ROOT, 'lib', 'widgets-manifest.generated.ts'),
     'WIDGETS',
     'WidgetMeta',
-    widgets
+    widgets,
   );
 
   console.log('build-manifests: done');

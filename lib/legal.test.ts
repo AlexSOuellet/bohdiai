@@ -64,7 +64,9 @@ describe('renderLegalHtml', () => {
 
   it('renders an http link with target=_blank', () => {
     const html = renderLegalHtml('See [BohdiAI](https://bohdiai.com).');
-    expect(html).toContain('<a href="https://bohdiai.com" target="_blank" rel="noopener noreferrer">BohdiAI</a>');
+    expect(html).toContain(
+      '<a href="https://bohdiai.com" target="_blank" rel="noopener noreferrer">BohdiAI</a>',
+    );
   });
 
   it('renders a mailto link without target=_blank', () => {

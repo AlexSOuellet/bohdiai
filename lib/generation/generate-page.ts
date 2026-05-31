@@ -89,9 +89,11 @@ function buildBlocksContext(): string {
     // maker will add this block themselves.
   ).filter((b) => b.key !== 'events-list');
   // Shuffle hero blocks so position in the list doesn't bias the AI toward one variant.
-  const heroBlocks = shuffled(active.filter(b => b.sectionType === 'hero'));
-  const productBlocks = shuffled(active.filter(b => b.sectionType === 'products'));
-  const otherBlocks = active.filter(b => b.sectionType !== 'hero' && b.sectionType !== 'products');
+  const heroBlocks = shuffled(active.filter((b) => b.sectionType === 'hero'));
+  const productBlocks = shuffled(active.filter((b) => b.sectionType === 'products'));
+  const otherBlocks = active.filter(
+    (b) => b.sectionType !== 'hero' && b.sectionType !== 'products',
+  );
   const orderedBlocks = [...heroBlocks, ...productBlocks, ...otherBlocks];
   for (const block of orderedBlocks) {
     lines.push(`\nBlock key: "${block.key}"`);
@@ -106,7 +108,9 @@ function buildBlocksContext(): string {
     if (block.slots.length > 0) {
       lines.push(`  Widget slots:`);
       for (const slot of block.slots) {
-        lines.push(`    - "${slot.key}" accepts: [${slot.accepts.join(', ')}]${slot.required ? ' (required)' : ''}`);
+        lines.push(
+          `    - "${slot.key}" accepts: [${slot.accepts.join(', ')}]${slot.required ? ' (required)' : ''}`,
+        );
       }
     }
   }

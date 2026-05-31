@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import type { CartNode, ResolvedCart } from '@/lib/layout';
 import type { RenderContext } from '../Node';
 import { intentToStyleVars } from '../intent';
@@ -13,13 +14,7 @@ function resolvedCartAt(ctx: RenderContext): ResolvedCart | null {
   return data as ResolvedCart;
 }
 
-export function CartContent({
-  node,
-  ctx,
-}: {
-  node: CartNode;
-  ctx: RenderContext;
-}) {
+export function CartContent({ node, ctx }: { node: CartNode; ctx: RenderContext }) {
   if (node.variant === 'icon') {
     return (
       <a
@@ -29,7 +24,7 @@ export function CartContent({
         href="/cart"
         aria-label="Cart"
         style={intentToStyleVars(node.intent)}
-        className="inline-flex items-center justify-center w-10 h-10 rounded-md hover:bg-black/5"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-black/5"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -59,12 +54,12 @@ export function CartContent({
         data-node-variant="page"
         data-node-id={node.id}
         style={intentToStyleVars(node.intent)}
-        className="flex flex-col gap-4 w-full"
+        className="flex w-full flex-col gap-4"
       >
         <h2 className="text-2xl font-semibold">Your cart is empty</h2>
         <a
           href="/shop"
-          className="inline-flex items-center w-fit px-6 py-3 rounded-md bg-black text-white font-medium"
+          className="inline-flex w-fit items-center rounded-md bg-black px-6 py-3 font-medium text-white"
         >
           Browse the shop
         </a>
@@ -78,25 +73,27 @@ export function CartContent({
       data-node-variant="page"
       data-node-id={node.id}
       style={intentToStyleVars(node.intent)}
-      className="flex flex-col gap-4 w-full"
+      className="flex w-full flex-col gap-4"
     >
       <h2 className="text-2xl font-semibold">Cart</h2>
       <div className="flex flex-col gap-3">
         {cart.lines.map((line) => (
           <div
             key={line.productId}
-            className="flex items-center gap-4 py-3 border-b border-black/10"
+            className="flex items-center gap-4 border-b border-black/10 py-3"
           >
-            <div className="w-16 h-16 bg-black/10 overflow-hidden">
+            <div className="relative h-16 w-16 overflow-hidden bg-black/10">
               {line.imageUrl !== undefined && (
-                <img
+                <Image
                   src={line.imageUrl}
                   alt={line.productName}
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="64px"
+                  className="object-cover"
                 />
               )}
             </div>
-            <div className="flex-1 flex flex-col gap-1">
+            <div className="flex flex-1 flex-col gap-1">
               <div className="font-medium">{line.productName}</div>
               <div className="text-sm opacity-70">qty {line.quantity}</div>
             </div>
@@ -104,7 +101,7 @@ export function CartContent({
           </div>
         ))}
       </div>
-      <div className="flex items-center justify-between mt-2">
+      <div className="mt-2 flex items-center justify-between">
         <span className="font-medium">Total</span>
         <span className="text-lg">{formatPriceCents(cart.subtotalCents)}</span>
       </div>

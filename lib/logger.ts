@@ -14,6 +14,9 @@ function log(level: LogLevel, message: string, meta?: Record<string, unknown>): 
   } else if (level === 'warn') {
     console.warn(line);
   } else {
+    // This is the logger itself — the single sanctioned console site for
+    // info-level output. (error/warn go through the allowed console methods.)
+    // eslint-disable-next-line no-console
     console.log(line);
   }
 }

@@ -16,7 +16,12 @@ interface MarqueeProps {
  * Auto-scrolling horizontal row. Children render twice back-to-back so the
  * marquee loops seamlessly. Pauses when prefers-reduced-motion is set.
  */
-export default function Marquee({ children, duration = 30, direction = 'left', className }: MarqueeProps) {
+export default function Marquee({
+  children,
+  duration = 30,
+  direction = 'left',
+  className,
+}: MarqueeProps) {
   const reduced = useReducedMotion();
 
   if (reduced) {

@@ -4,25 +4,10 @@ import { LayoutNodeSchema, type LayoutNode } from './tree';
 
 const NodeIdSchema = z.string().min(1).max(64).optional();
 
-export const SpacingScaleSchema = z.enum([
-  'none',
-  'xs',
-  'sm',
-  'md',
-  'lg',
-  'xl',
-  'xxl',
-]);
+export const SpacingScaleSchema = z.enum(['none', 'xs', 'sm', 'md', 'lg', 'xl', 'xxl']);
 export type SpacingScale = z.infer<typeof SpacingScaleSchema>;
 
-const NonZeroSpacingScaleSchema = z.enum([
-  'xs',
-  'sm',
-  'md',
-  'lg',
-  'xl',
-  'xxl',
-]);
+const NonZeroSpacingScaleSchema = z.enum(['xs', 'sm', 'md', 'lg', 'xl', 'xxl']);
 export type NonZeroSpacingScale = z.infer<typeof NonZeroSpacingScaleSchema>;
 
 export const MinHeightSchema = z.enum(['auto', 'sm', 'md', 'lg', 'screen']);
@@ -40,13 +25,7 @@ export type Shadow = z.infer<typeof ShadowSchema>;
 export const AlignSchema = z.enum(['start', 'center', 'end', 'stretch']);
 export type Align = z.infer<typeof AlignSchema>;
 
-export const AlignWithBaselineSchema = z.enum([
-  'start',
-  'center',
-  'end',
-  'stretch',
-  'baseline',
-]);
+export const AlignWithBaselineSchema = z.enum(['start', 'center', 'end', 'stretch', 'baseline']);
 export type AlignWithBaseline = z.infer<typeof AlignWithBaselineSchema>;
 
 export const JustifySchema = z.enum([
@@ -73,14 +52,7 @@ export const OverlapAnchorPositionSchema = z.enum([
 ]);
 export type OverlapAnchorPosition = z.infer<typeof OverlapAnchorPositionSchema>;
 
-export const BleedSideSchema = z.enum([
-  'left',
-  'right',
-  'both',
-  'top',
-  'bottom',
-  'all',
-]);
+export const BleedSideSchema = z.enum(['left', 'right', 'both', 'top', 'bottom', 'all']);
 export type BleedSide = z.infer<typeof BleedSideSchema>;
 
 export const RowMobileCollapseSchema = z.enum(['wrap', 'stack', 'preserve']);
@@ -98,12 +70,7 @@ export type MarqueeDirection = z.infer<typeof MarqueeDirectionSchema>;
 export const AxisSchema = z.enum(['horizontal', 'vertical']);
 export type Axis = z.infer<typeof AxisSchema>;
 
-export const BandContentWidthSchema = z.enum([
-  'narrow',
-  'normal',
-  'wide',
-  'full',
-]);
+export const BandContentWidthSchema = z.enum(['narrow', 'normal', 'wide', 'full']);
 export type BandContentWidth = z.infer<typeof BandContentWidthSchema>;
 
 export const OverlapScrimSchema = z.enum(['none', 'light', 'dark', 'auto']);
@@ -130,30 +97,28 @@ export interface BandNode {
   };
 }
 
-export const BandSchema: z.ZodType<BandNode> = z.lazy(() =>
-  z
-    .object({
-      type: z.literal('band'),
-      id: NodeIdSchema,
-      intent: IntentSchema.optional(),
-      padding: SpacingScaleSchema.optional(),
-      minHeight: MinHeightSchema.optional(),
-      align: AlignSchema.optional(),
-      justify: JustifySchema.optional(),
-      contentWidth: BandContentWidthSchema.optional(),
-      children: lazyChildren(),
-      mobile: z
-        .object({
-          padding: SpacingScaleSchema.optional(),
-          minHeight: MinHeightSchema.optional(),
-          align: AlignSchema.optional(),
-          justify: JustifySchema.optional(),
-        })
-        .strict()
-        .optional(),
-    })
-    .strict(),
-) as unknown as z.ZodType<BandNode>;
+export const BandSchema = z
+  .object({
+    type: z.literal('band'),
+    id: NodeIdSchema,
+    intent: IntentSchema.optional(),
+    padding: SpacingScaleSchema.optional(),
+    minHeight: MinHeightSchema.optional(),
+    align: AlignSchema.optional(),
+    justify: JustifySchema.optional(),
+    contentWidth: BandContentWidthSchema.optional(),
+    children: lazyChildren(),
+    mobile: z
+      .object({
+        padding: SpacingScaleSchema.optional(),
+        minHeight: MinHeightSchema.optional(),
+        align: AlignSchema.optional(),
+        justify: JustifySchema.optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
 
 export interface StackNode {
   type: 'stack';
@@ -170,27 +135,25 @@ export interface StackNode {
   };
 }
 
-export const StackSchema: z.ZodType<StackNode> = z.lazy(() =>
-  z
-    .object({
-      type: z.literal('stack'),
-      id: NodeIdSchema,
-      intent: IntentSchema.optional(),
-      gap: SpacingScaleSchema.optional(),
-      align: AlignSchema.optional(),
-      justify: JustifySchema.optional(),
-      children: lazyChildren(),
-      mobile: z
-        .object({
-          gap: SpacingScaleSchema.optional(),
-          align: AlignSchema.optional(),
-          justify: JustifySchema.optional(),
-        })
-        .strict()
-        .optional(),
-    })
-    .strict(),
-) as unknown as z.ZodType<StackNode>;
+export const StackSchema = z
+  .object({
+    type: z.literal('stack'),
+    id: NodeIdSchema,
+    intent: IntentSchema.optional(),
+    gap: SpacingScaleSchema.optional(),
+    align: AlignSchema.optional(),
+    justify: JustifySchema.optional(),
+    children: lazyChildren(),
+    mobile: z
+      .object({
+        gap: SpacingScaleSchema.optional(),
+        align: AlignSchema.optional(),
+        justify: JustifySchema.optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
 
 export interface RowNode {
   type: 'row';
@@ -209,29 +172,27 @@ export interface RowNode {
   };
 }
 
-export const RowSchema: z.ZodType<RowNode> = z.lazy(() =>
-  z
-    .object({
-      type: z.literal('row'),
-      id: NodeIdSchema,
-      intent: IntentSchema.optional(),
-      gap: SpacingScaleSchema.optional(),
-      align: AlignWithBaselineSchema.optional(),
-      justify: JustifySchema.optional(),
-      wrap: z.boolean().optional(),
-      children: lazyChildren(),
-      mobile: z
-        .object({
-          gap: SpacingScaleSchema.optional(),
-          align: AlignWithBaselineSchema.optional(),
-          justify: JustifySchema.optional(),
-          collapse: RowMobileCollapseSchema.optional(),
-        })
-        .strict()
-        .optional(),
-    })
-    .strict(),
-) as unknown as z.ZodType<RowNode>;
+export const RowSchema = z
+  .object({
+    type: z.literal('row'),
+    id: NodeIdSchema,
+    intent: IntentSchema.optional(),
+    gap: SpacingScaleSchema.optional(),
+    align: AlignWithBaselineSchema.optional(),
+    justify: JustifySchema.optional(),
+    wrap: z.boolean().optional(),
+    children: lazyChildren(),
+    mobile: z
+      .object({
+        gap: SpacingScaleSchema.optional(),
+        align: AlignWithBaselineSchema.optional(),
+        justify: JustifySchema.optional(),
+        collapse: RowMobileCollapseSchema.optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
 
 export interface SplitNode {
   type: 'split';
@@ -249,28 +210,26 @@ export interface SplitNode {
   };
 }
 
-export const SplitSchema: z.ZodType<SplitNode> = z.lazy(() =>
-  z
-    .object({
-      type: z.literal('split'),
-      id: NodeIdSchema,
-      intent: IntentSchema.optional(),
-      direction: AxisSchema,
-      ratios: z.array(z.number().min(1).max(99)).min(2).max(8),
-      gap: SpacingScaleSchema.optional(),
-      align: AlignSchema.optional(),
-      children: lazyChildren(),
-      mobile: z
-        .object({
-          direction: AxisSchema.optional(),
-          gap: SpacingScaleSchema.optional(),
-          stackOrder: z.array(z.number().int().min(0)).optional(),
-        })
-        .strict()
-        .optional(),
-    })
-    .strict(),
-) as unknown as z.ZodType<SplitNode>;
+export const SplitSchema = z
+  .object({
+    type: z.literal('split'),
+    id: NodeIdSchema,
+    intent: IntentSchema.optional(),
+    direction: AxisSchema,
+    ratios: z.array(z.number().min(1).max(99)).min(2).max(8),
+    gap: SpacingScaleSchema.optional(),
+    align: AlignSchema.optional(),
+    children: lazyChildren(),
+    mobile: z
+      .object({
+        direction: AxisSchema.optional(),
+        gap: SpacingScaleSchema.optional(),
+        stackOrder: z.array(z.number().int().min(0)).optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
 
 export interface GridNode {
   type: 'grid';
@@ -290,30 +249,28 @@ export interface GridNode {
   };
 }
 
-export const GridSchema: z.ZodType<GridNode> = z.lazy(() =>
-  z
-    .object({
-      type: z.literal('grid'),
-      id: NodeIdSchema,
-      intent: IntentSchema.optional(),
-      columns: z.number().int().min(1).max(12),
-      rows: z.number().int().min(1).max(12).optional(),
-      gapX: SpacingScaleSchema.optional(),
-      gapY: SpacingScaleSchema.optional(),
-      align: AlignSchema.optional(),
-      justify: AlignSchema.optional(),
-      children: lazyChildren(),
-      mobile: z
-        .object({
-          columns: z.number().int().min(1).max(6).optional(),
-          gapX: SpacingScaleSchema.optional(),
-          gapY: SpacingScaleSchema.optional(),
-        })
-        .strict()
-        .optional(),
-    })
-    .strict(),
-) as unknown as z.ZodType<GridNode>;
+export const GridSchema = z
+  .object({
+    type: z.literal('grid'),
+    id: NodeIdSchema,
+    intent: IntentSchema.optional(),
+    columns: z.number().int().min(1).max(12),
+    rows: z.number().int().min(1).max(12).optional(),
+    gapX: SpacingScaleSchema.optional(),
+    gapY: SpacingScaleSchema.optional(),
+    align: AlignSchema.optional(),
+    justify: AlignSchema.optional(),
+    children: lazyChildren(),
+    mobile: z
+      .object({
+        columns: z.number().int().min(1).max(6).optional(),
+        gapX: SpacingScaleSchema.optional(),
+        gapY: SpacingScaleSchema.optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
 
 export interface OverlapNode {
   type: 'overlap';
@@ -329,26 +286,24 @@ export interface OverlapNode {
   };
 }
 
-export const OverlapSchema: z.ZodType<OverlapNode> = z.lazy(() =>
-  z
-    .object({
-      type: z.literal('overlap'),
-      id: NodeIdSchema,
-      intent: IntentSchema.optional(),
-      align: OverlapAnchorPositionSchema.optional(),
-      anchor: z.number().int().min(0),
-      scrim: OverlapScrimSchema.optional(),
-      children: lazyChildren(),
-      mobile: z
-        .object({
-          collapse: OverlapMobileCollapseSchema.optional(),
-          stackOrder: z.array(z.number().int().min(0)).optional(),
-        })
-        .strict()
-        .optional(),
-    })
-    .strict(),
-) as unknown as z.ZodType<OverlapNode>;
+export const OverlapSchema = z
+  .object({
+    type: z.literal('overlap'),
+    id: NodeIdSchema,
+    intent: IntentSchema.optional(),
+    align: OverlapAnchorPositionSchema.optional(),
+    anchor: z.number().int().min(0),
+    scrim: OverlapScrimSchema.optional(),
+    children: lazyChildren(),
+    mobile: z
+      .object({
+        collapse: OverlapMobileCollapseSchema.optional(),
+        stackOrder: z.array(z.number().int().min(0)).optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
 
 export interface BleedNode {
   type: 'bleed';
@@ -361,23 +316,21 @@ export interface BleedNode {
   };
 }
 
-export const BleedSchema: z.ZodType<BleedNode> = z.lazy(() =>
-  z
-    .object({
-      type: z.literal('bleed'),
-      id: NodeIdSchema,
-      intent: IntentSchema.optional(),
-      side: BleedSideSchema,
-      child: lazyChild(),
-      mobile: z
-        .object({
-          side: BleedSideSchema.optional(),
-        })
-        .strict()
-        .optional(),
-    })
-    .strict(),
-) as unknown as z.ZodType<BleedNode>;
+export const BleedSchema = z
+  .object({
+    type: z.literal('bleed'),
+    id: NodeIdSchema,
+    intent: IntentSchema.optional(),
+    side: BleedSideSchema,
+    child: lazyChild(),
+    mobile: z
+      .object({
+        side: BleedSideSchema.optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
 
 export interface PaneNode {
   type: 'pane';
@@ -397,30 +350,28 @@ export interface PaneNode {
   };
 }
 
-export const PaneSchema: z.ZodType<PaneNode> = z.lazy(() =>
-  z
-    .object({
-      type: z.literal('pane'),
-      id: NodeIdSchema,
-      intent: IntentSchema.optional(),
-      padding: SpacingScaleSchema.optional(),
-      radius: RadiusSchema.optional(),
-      border: BorderSchema.optional(),
-      shadow: ShadowSchema.optional(),
-      fill: z.boolean().optional(),
-      child: lazyChild(),
-      mobile: z
-        .object({
-          padding: SpacingScaleSchema.optional(),
-          radius: RadiusSchema.optional(),
-          border: BorderSchema.optional(),
-          shadow: ShadowSchema.optional(),
-        })
-        .strict()
-        .optional(),
-    })
-    .strict(),
-) as unknown as z.ZodType<PaneNode>;
+export const PaneSchema = z
+  .object({
+    type: z.literal('pane'),
+    id: NodeIdSchema,
+    intent: IntentSchema.optional(),
+    padding: SpacingScaleSchema.optional(),
+    radius: RadiusSchema.optional(),
+    border: BorderSchema.optional(),
+    shadow: ShadowSchema.optional(),
+    fill: z.boolean().optional(),
+    child: lazyChild(),
+    mobile: z
+      .object({
+        padding: SpacingScaleSchema.optional(),
+        radius: RadiusSchema.optional(),
+        border: BorderSchema.optional(),
+        shadow: ShadowSchema.optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
 
 export interface MarqueeNode {
   type: 'marquee';
@@ -437,27 +388,25 @@ export interface MarqueeNode {
   };
 }
 
-export const MarqueeSchema: z.ZodType<MarqueeNode> = z.lazy(() =>
-  z
-    .object({
-      type: z.literal('marquee'),
-      id: NodeIdSchema,
-      intent: IntentSchema.optional(),
-      direction: MarqueeDirectionSchema.optional(),
-      speed: MarqueeSpeedSchema.optional(),
-      gap: SpacingScaleSchema.optional(),
-      pauseOnHover: z.boolean().optional(),
-      children: lazyChildren(),
-      mobile: z
-        .object({
-          speed: MarqueeSpeedSchema.optional(),
-          gap: SpacingScaleSchema.optional(),
-        })
-        .strict()
-        .optional(),
-    })
-    .strict(),
-) as unknown as z.ZodType<MarqueeNode>;
+export const MarqueeSchema = z
+  .object({
+    type: z.literal('marquee'),
+    id: NodeIdSchema,
+    intent: IntentSchema.optional(),
+    direction: MarqueeDirectionSchema.optional(),
+    speed: MarqueeSpeedSchema.optional(),
+    gap: SpacingScaleSchema.optional(),
+    pauseOnHover: z.boolean().optional(),
+    children: lazyChildren(),
+    mobile: z
+      .object({
+        speed: MarqueeSpeedSchema.optional(),
+        gap: SpacingScaleSchema.optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
 
 export interface GutterNode {
   type: 'gutter';
@@ -470,7 +419,7 @@ export interface GutterNode {
   };
 }
 
-export const GutterSchema: z.ZodType<GutterNode> = z
+export const GutterSchema = z
   .object({
     type: z.literal('gutter'),
     id: NodeIdSchema,
@@ -484,7 +433,7 @@ export const GutterSchema: z.ZodType<GutterNode> = z
       .strict()
       .optional(),
   })
-  .strict() as unknown as z.ZodType<GutterNode>;
+  .strict();
 
 export const PRIMITIVE_NODE_TYPES = [
   'band',

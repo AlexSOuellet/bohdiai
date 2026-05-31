@@ -37,10 +37,7 @@ export function Bleed({ node, ctx }: { node: BleedNode; ctx: RenderContext }) {
         BLEED_CLASS_MD[desktopSide],
       )}
     >
-      <Node
-        node={node.child}
-        ctx={{ ...childCtx, path: childPath(ctx, 'child') }}
-      />
+      <Node node={node.child} ctx={{ ...childCtx, path: childPath(ctx, 'child') }} />
     </div>
   );
 }

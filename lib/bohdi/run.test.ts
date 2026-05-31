@@ -11,9 +11,15 @@ vi.mock('@/lib/anthropic', () => ({
 vi.mock('@/lib/supabase', () => ({
   supabaseAdmin: () => ({
     from: () => ({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
-      insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: { id: null }, error: null }) }) }),
-      update: () => ({ is: () => ({ eq: () => ({ eq: () => Promise.resolve({ data: null, error: null }) }) }) }),
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }),
+      }),
+      insert: () => ({
+        select: () => ({ single: () => Promise.resolve({ data: { id: null }, error: null }) }),
+      }),
+      update: () => ({
+        is: () => ({ eq: () => ({ eq: () => Promise.resolve({ data: null, error: null }) }) }),
+      }),
     }),
   }),
 }));
@@ -41,14 +47,29 @@ const VALID_STYLE_SHEET = {
     { name: 'C', value: '#1a1a1a', character: 'three' },
   ],
   fonts: [
-    { name: 'D', family: 'Cormorant', source: 'google', weights: [400], fallback: 'serif', character: 'one' },
-    { name: 'E', family: 'Inter', source: 'google', weights: [400], fallback: 'sans-serif', character: 'two' },
+    {
+      name: 'D',
+      family: 'Cormorant',
+      source: 'google',
+      weights: [400],
+      fallback: 'serif',
+      character: 'one',
+    },
+    {
+      name: 'E',
+      family: 'Inter',
+      source: 'google',
+      weights: [400],
+      fallback: 'sans-serif',
+      character: 'two',
+    },
   ],
   textures: [],
 };
 
 const VALID_LAYOUT = {
-  slug: 'home', name: 'Home',
+  slug: 'home',
+  name: 'Home',
   root: { type: 'text', role: 'body', content: 'hi' },
 };
 
@@ -68,7 +89,12 @@ function toolUseResponse(name: string, input: unknown, id = 'tu1') {
   return {
     stop_reason: 'tool_use' as const,
     content: [{ type: 'tool_use', id, name, input }],
-    usage: { input_tokens: 10, output_tokens: 5, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 },
+    usage: {
+      input_tokens: 10,
+      output_tokens: 5,
+      cache_read_input_tokens: 0,
+      cache_creation_input_tokens: 0,
+    },
   };
 }
 
@@ -96,7 +122,10 @@ describe('runBohdi — happy path', () => {
       .mockResolvedValueOnce(toolUseResponse('finalize', {}, 'c'));
 
     const events: unknown[] = [];
-    const r = await runBohdi(makeBrief({ makerName: 'Alex', logoUrl: 'https://x/l.png', brandColors: ['#abcdef'] }), (e) => events.push(e));
+    const r = await runBohdi(
+      makeBrief({ makerName: 'Alex', logoUrl: 'https://x/l.png', brandColors: ['#abcdef'] }),
+      (e) => events.push(e),
+    );
     expect(r).toEqual({ tenantId: 't-1', subdomain: 'acme' });
     expect(messagesCreateMock).toHaveBeenCalledTimes(3);
     expect(events.length).toBeGreaterThan(0);
@@ -113,17 +142,23 @@ describe('runBohdi — happy path', () => {
       toolUseResponse('set_layout', VALID_LAYOUT, 'c'),
       toolUseResponse('finalize', {}, 'd'),
     ];
-    messagesCreateMock.mockImplementation((args: { messages: Array<{ role: string; content: unknown }> }) => {
-      snapshots.push(JSON.parse(JSON.stringify(args.messages)));
-      return Promise.resolve(scripted[call++]);
-    });
+    messagesCreateMock.mockImplementation(
+      (args: { messages: Array<{ role: string; content: unknown }> }) => {
+        snapshots.push(JSON.parse(JSON.stringify(args.messages)));
+        return Promise.resolve(scripted[call++]);
+      },
+    );
 
     const r = await runBohdi(makeBrief());
     expect(r.tenantId).toBe('t-2');
     // Snapshot of turn-2 messages — last message is the user tool_results from turn 1.
     const turn2 = snapshots[1];
     const lastUserMsg = turn2?.[turn2.length - 1];
-    const blocks = lastUserMsg?.content as Array<{ is_error?: boolean; type?: string; content?: string }>;
+    const blocks = lastUserMsg?.content as Array<{
+      is_error?: boolean;
+      type?: string;
+      content?: string;
+    }>;
     const errResult = blocks?.find((b) => b.type === 'tool_result');
     expect(errResult?.is_error).toBe(true);
     expect(errResult?.content).toContain('Unknown tool');
@@ -165,7 +200,22 @@ describe('runBohdi — error paths', () => {
 
   it('throws after MAX_TURNS without finalize', async () => {
     // Each turn does a no-op tool call (set_style_sheet again).
-    messagesCreateMock.mockResolvedValue(toolUseResponse('set_style_sheet', VALID_STYLE_SHEET, 'loop'));
+    messagesCreateMock.mockResolvedValue(
+      toolUseResponse('set_style_sheet', VALID_STYLE_SHEET, 'loop'),
+    );
     await expect(runBohdi(makeBrief())).rejects.toThrow('did not finalize');
   }, 30_000);
+
+  it('rejects instead of hanging when a model turn stalls past the timeout', async () => {
+    vi.useFakeTimers();
+    try {
+      messagesCreateMock.mockReturnValue(new Promise(() => {})); // never settles
+      const pending = runBohdi(makeBrief());
+      const assertion = expect(pending).rejects.toThrow(/timed out/);
+      await vi.advanceTimersByTimeAsync(200_000);
+      await assertion;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

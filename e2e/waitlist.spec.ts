@@ -34,7 +34,9 @@ test.describe('Waitlist form', () => {
     await expect(page.getByText(/check your email to confirm/i)).toBeVisible();
   });
 
-  test('already-registered response shows the "you’re already on the list" state with resend', async ({ page }) => {
+  test('already-registered response shows the "you’re already on the list" state with resend', async ({
+    page,
+  }) => {
     await page.route('**/api/waitlist', async (route) => {
       await route.fulfill({
         status: 200,
@@ -65,8 +67,8 @@ test.describe('Waitlist form', () => {
     await page.getByRole('button', { name: /claim my founder spot|notify me at launch/i }).click();
 
     // Scope to the waitlist section to avoid Next's route announcer (also role=alert).
-    await expect(
-      page.locator('#waitlist').getByRole('alert'),
-    ).toContainText(/something went wrong/i);
+    await expect(page.locator('#waitlist').getByRole('alert')).toContainText(
+      /something went wrong/i,
+    );
   });
 });

@@ -24,6 +24,9 @@ function Crossfade({ keyValue, children }: { keyValue: string; children: React.R
   const [opacity, setOpacity] = useState(1);
 
   useEffect(() => {
+    // Intentional: drop opacity to 0 to start the fade-out the instant the
+    // content key changes. The extra render is the animation, not a mistake.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpacity(0);
     const t = setTimeout(() => {
       setShown(children);
@@ -33,9 +36,7 @@ function Crossfade({ keyValue, children }: { keyValue: string; children: React.R
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyValue]);
 
-  return (
-    <div style={{ opacity, transition: 'opacity 300ms ease' }}>{shown}</div>
-  );
+  return <div style={{ opacity, transition: 'opacity 300ms ease' }}>{shown}</div>;
 }
 
 export default function BuildTicker({ statusLabel, tip, elapsed }: BuildTickerProps) {

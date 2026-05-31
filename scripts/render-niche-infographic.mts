@@ -34,7 +34,7 @@ const nichePath = path.join(repoRoot, 'content', 'niches', `${nicheSlug}.md`);
 const nicheRaw = fs.readFileSync(nichePath, 'utf8');
 // Strip frontmatter
 const body = nicheRaw.replace(/^---[\s\S]*?---\s*/m, '');
-const displayName = (nicheRaw.match(/display_name:\s*['"]?(.+?)['"]?\s*$/m)?.[1] ?? nicheSlug);
+const displayName = nicheRaw.match(/display_name:\s*['"]?(.+?)['"]?\s*$/m)?.[1] ?? nicheSlug;
 
 console.log(`Generating tokens + page for ${displayName} × ${mood.label}...`);
 
@@ -352,7 +352,10 @@ ${fontImport}
     <span class="blab">Home page blocks</span>
     ${page.blocks
       .sort((a: any, b: any) => a.position - b.position)
-      .map((b: any, i: number, arr: any[]) => `<span class="b">${b.blockKey}</span>${i < arr.length - 1 ? '<span class="arrow">→</span>' : ''}`)
+      .map(
+        (b: any, i: number, arr: any[]) =>
+          `<span class="b">${b.blockKey}</span>${i < arr.length - 1 ? '<span class="arrow">→</span>' : ''}`,
+      )
       .join('')}
   </div>
 

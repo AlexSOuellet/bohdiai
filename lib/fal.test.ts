@@ -42,8 +42,8 @@ beforeEach(() => {
   uploadMock.mockResolvedValue({ error: null });
   getPublicUrlMock.mockReturnValue({ data: { publicUrl: 'https://cdn.example/public.jpg' } });
   // Default fetch mock — successful image download.
-  globalThis.fetch = vi.fn(async () =>
-    new Response(new Uint8Array([1, 2, 3]), { status: 200 }),
+  globalThis.fetch = vi.fn(
+    async () => new Response(new Uint8Array([1, 2, 3]), { status: 200 }),
   ) as unknown as typeof fetch;
 });
 
@@ -53,7 +53,13 @@ describe('generateProductImage', () => {
   it('returns the public storage URL on the happy path and uses the standard prompt', async () => {
     subscribeMock.mockResolvedValue({ data: { images: [{ url: 'https://fal.cdn/img.jpg' }] } });
     const { generateProductImage } = await import('./fal');
-    const url = await generateProductImage('Beeswax Candle', 'A warm taper.', 'Candles', 'sub', 'beeswax');
+    const url = await generateProductImage(
+      'Beeswax Candle',
+      'A warm taper.',
+      'Candles',
+      'sub',
+      'beeswax',
+    );
     expect(url).toBe('https://cdn.example/public.jpg');
     expect(createFalClientSpy).toHaveBeenCalledWith({ credentials: 'fal-test-key' });
     // Standard product prompt path (not low-control).
@@ -82,6 +88,19 @@ describe('generateProductImage', () => {
     expect(url).toBeNull();
   });
 
+  it('returns null when the fal call stalls past the timeout instead of hanging', async () => {
+    const { generateProductImage, FAL_IMAGE_TIMEOUT_MS } = await import('./fal');
+    vi.useFakeTimers();
+    try {
+      subscribeMock.mockReturnValue(new Promise(() => {})); // never settles
+      const pending = generateProductImage('X', 'Y', 'Niche', 'sub', 'slug');
+      await vi.advanceTimersByTimeAsync(FAL_IMAGE_TIMEOUT_MS + 1000);
+      await expect(pending).resolves.toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('returns null when the SDK response has no images', async () => {
     subscribeMock.mockResolvedValue({ data: { images: [] } });
     const { generateProductImage } = await import('./fal');
@@ -91,7 +110,9 @@ describe('generateProductImage', () => {
 
   it('falls back to the direct fal URL when fetch fails to download', async () => {
     subscribeMock.mockResolvedValue({ data: { images: [{ url: 'https://fal.cdn/d.jpg' }] } });
-    globalThis.fetch = vi.fn(async () => new Response(null, { status: 500 })) as unknown as typeof fetch;
+    globalThis.fetch = vi.fn(
+      async () => new Response(null, { status: 500 }),
+    ) as unknown as typeof fetch;
     const { generateProductImage } = await import('./fal');
     const url = await generateProductImage('X', 'Y', 'Niche', 'sub', 'slug');
     expect(url).toBe('https://fal.cdn/d.jpg');

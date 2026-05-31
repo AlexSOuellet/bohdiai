@@ -93,7 +93,7 @@ vi.mock('@/lib/name-gender', () => ({
 }));
 
 vi.mock('@/lib/copy-sanitize', () => ({
-  sanitizeDeep: <T,>(x: T): T => x,
+  sanitizeDeep: <T>(x: T): T => x,
 }));
 
 // ── Test helpers ──────────────────────────────────────────────────────────────
@@ -257,35 +257,37 @@ describe('runStorefront legacy pipeline', () => {
 
   it('throws when the niche row cannot be found', async () => {
     nicheResponse = { data: null, error: { message: 'not found' } };
-    await expect(
-      (await import('./run-storefront')).runStorefront(baseInput),
-    ).rejects.toThrow(/Niche not found/);
+    await expect((await import('./run-storefront')).runStorefront(baseInput)).rejects.toThrow(
+      /Niche not found/,
+    );
   });
 
   it('throws when hero image generation fails', async () => {
     generateHeroImageMock.mockResolvedValue(null);
-    await expect(
-      (await import('./run-storefront')).runStorefront(baseInput),
-    ).rejects.toThrow(/Hero image generation failed/);
+    await expect((await import('./run-storefront')).runStorefront(baseInput)).rejects.toThrow(
+      /Hero image generation failed/,
+    );
   });
 
   it('throws when the generated page has no hero block', async () => {
     generatePageMock.mockResolvedValue({
-      blocks: [
-        { blockKey: 'about-maker', position: 0, content: {}, slots: {} },
-      ],
+      blocks: [{ blockKey: 'about-maker', position: 0, content: {}, slots: {} }],
       secondaryPages: {
         shop: { eyebrow: 'Shop', heading: 'All', subheading: 'browse' },
         contact: { heading: 'Hi', subheading: 'Reach out', buttonLabel: 'Send' },
         about: {
-          eyebrow: 'About', headline: 'Our story', intro: 'i', body: 'b',
-          signatureName: 'S', signatureRole: 'M',
+          eyebrow: 'About',
+          headline: 'Our story',
+          intro: 'i',
+          body: 'b',
+          signatureName: 'S',
+          signatureRole: 'M',
         },
       },
     });
-    await expect(
-      (await import('./run-storefront')).runStorefront(baseInput),
-    ).rejects.toThrow(/No hero block/);
+    await expect((await import('./run-storefront')).runStorefront(baseInput)).rejects.toThrow(
+      /No hero block/,
+    );
   });
 
   it('drops the collections-row block from home blocks when no collections exist', async () => {
@@ -300,8 +302,12 @@ describe('runStorefront legacy pipeline', () => {
         shop: { eyebrow: 'Shop', heading: 'All', subheading: 'browse' },
         contact: { heading: 'Hi', subheading: 'Reach out', buttonLabel: 'Send' },
         about: {
-          eyebrow: 'About', headline: 'Our story', intro: 'i', body: 'b',
-          signatureName: 'S', signatureRole: 'M',
+          eyebrow: 'About',
+          headline: 'Our story',
+          intro: 'i',
+          body: 'b',
+          signatureName: 'S',
+          signatureRole: 'M',
         },
       },
     });
@@ -318,9 +324,7 @@ describe('runStorefront legacy pipeline', () => {
   });
 
   it('includes subscriptions and events in nav/footer section lists when present', async () => {
-    generateSubscriptionsMock.mockResolvedValue([
-      { name: 'S1', description: 'd', slug: 's1' },
-    ]);
+    generateSubscriptionsMock.mockResolvedValue([{ name: 'S1', description: 'd', slug: 's1' }]);
     generateProductImageMock.mockResolvedValue('https://img/s1.jpg');
     generatePageMock.mockResolvedValue({
       blocks: [
@@ -331,8 +335,12 @@ describe('runStorefront legacy pipeline', () => {
         shop: { eyebrow: 'Shop', heading: 'All', subheading: 'browse' },
         contact: { heading: 'Hi', subheading: 'Reach out', buttonLabel: 'Send' },
         about: {
-          eyebrow: 'About', headline: 'Our story', intro: 'i', body: 'b',
-          signatureName: 'S', signatureRole: 'M',
+          eyebrow: 'About',
+          headline: 'Our story',
+          intro: 'i',
+          body: 'b',
+          signatureName: 'S',
+          signatureRole: 'M',
         },
       },
     });
@@ -353,7 +361,9 @@ describe('runStorefront legacy pipeline', () => {
     await (await import('./run-storefront')).runStorefront(baseInput);
     const written = writeStorefrontMock.mock.calls[0]![0];
     const homePage = written.pages[0];
-    const heroBlock = homePage.blocks.find((b: { blockKey: string }) => b.blockKey === 'hero-cinematic');
+    const heroBlock = homePage.blocks.find(
+      (b: { blockKey: string }) => b.blockKey === 'hero-cinematic',
+    );
     expect(heroBlock.content.backgroundImageUrl).toBe('https://img/hero.jpg');
   });
 
@@ -361,7 +371,9 @@ describe('runStorefront legacy pipeline', () => {
     await (await import('./run-storefront')).runStorefront(baseInput);
     const written = writeStorefrontMock.mock.calls[0]![0];
     const homePage = written.pages[0];
-    const aboutBlock = homePage.blocks.find((b: { blockKey: string }) => b.blockKey === 'about-maker');
+    const aboutBlock = homePage.blocks.find(
+      (b: { blockKey: string }) => b.blockKey === 'about-maker',
+    );
     expect(aboutBlock.content.imageUrl).toBe('https://img/about.jpg');
   });
 
@@ -377,8 +389,12 @@ describe('runStorefront legacy pipeline', () => {
         shop: { eyebrow: 'Shop', heading: 'All', subheading: 'browse' },
         contact: { heading: 'Hi', subheading: 'Reach out', buttonLabel: 'Send' },
         about: {
-          eyebrow: 'About', headline: 'Our story', intro: 'i', body: 'b',
-          signatureName: 'S', signatureRole: 'M',
+          eyebrow: 'About',
+          headline: 'Our story',
+          intro: 'i',
+          body: 'b',
+          signatureName: 'S',
+          signatureRole: 'M',
         },
       },
     });
@@ -386,8 +402,12 @@ describe('runStorefront legacy pipeline', () => {
     const written = writeStorefrontMock.mock.calls[0]![0];
     const homePage = written.pages[0];
     // Exactly one nav + one footer (the orchestrator's own), not the AI's two extras.
-    const navCount = homePage.blocks.filter((b: { blockKey: string }) => b.blockKey === 'nav-split').length;
-    const footerCount = homePage.blocks.filter((b: { blockKey: string }) => b.blockKey === 'footer-classic').length;
+    const navCount = homePage.blocks.filter(
+      (b: { blockKey: string }) => b.blockKey === 'nav-split',
+    ).length;
+    const footerCount = homePage.blocks.filter(
+      (b: { blockKey: string }) => b.blockKey === 'footer-classic',
+    ).length;
     expect(navCount).toBe(1);
     expect(footerCount).toBe(1);
   });
@@ -397,7 +417,9 @@ describe('runStorefront legacy pipeline', () => {
     await (await import('./run-storefront')).runStorefront(baseInput);
     const written = writeStorefrontMock.mock.calls[0]![0];
     const aboutPage = written.pages.find((p: { slug: string }) => p.slug === '/about');
-    const aboutStory = aboutPage.blocks.find((b: { blockKey: string }) => b.blockKey === 'about-story');
+    const aboutStory = aboutPage.blocks.find(
+      (b: { blockKey: string }) => b.blockKey === 'about-story',
+    );
     expect(aboutStory.content.imageUrl).toBe('');
   });
 });

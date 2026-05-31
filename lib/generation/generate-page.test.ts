@@ -23,7 +23,11 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 const VALID_SECONDARY = {
-  shop: { eyebrow: 'The Shop', heading: 'Everything in the studio', subheading: 'Browse the full collection.' },
+  shop: {
+    eyebrow: 'The Shop',
+    heading: 'Everything in the studio',
+    subheading: 'Browse the full collection.',
+  },
   contact: { heading: 'Say Hello', subheading: 'Drop us a note.', buttonLabel: 'Send Message' },
   about: {
     eyebrow: 'Our Story',
@@ -82,11 +86,15 @@ describe('Schemas (real exports)', () => {
   });
 
   it('GeneratedBlockSchema rejects negative position', () => {
-    expect(() => GeneratedBlockSchema.parse({ blockKey: 'k', position: -1, content: {} })).toThrow();
+    expect(() =>
+      GeneratedBlockSchema.parse({ blockKey: 'k', position: -1, content: {} }),
+    ).toThrow();
   });
 
   it('GeneratedBlockSchema rejects non-integer position', () => {
-    expect(() => GeneratedBlockSchema.parse({ blockKey: 'k', position: 1.5, content: {} })).toThrow();
+    expect(() =>
+      GeneratedBlockSchema.parse({ blockKey: 'k', position: 1.5, content: {} }),
+    ).toThrow();
   });
 
   it('SecondaryPageCopySchema enforces max heading length', () => {

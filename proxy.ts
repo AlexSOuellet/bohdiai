@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import type { SetAllCookies } from '@supabase/ssr';
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 const RESERVED = new Set(['www', 'admin', 'app', 'learn']);
 const BASE_DOMAIN = 'bohdiai.com';

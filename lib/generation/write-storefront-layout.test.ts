@@ -65,7 +65,9 @@ describe('writeStorefrontLayout', () => {
       'write_tenant_storefront_layout',
       expect.objectContaining({ p_data: expect.any(Object) }),
     );
-    const sentPages = (rpcMock.mock.calls[0]?.[1].p_data as { pages: Array<Record<string, unknown>> }).pages;
+    const sentPages = (
+      rpcMock.mock.calls[0]?.[1].p_data as { pages: Array<Record<string, unknown>> }
+    ).pages;
     expect(sentPages[0]?.['slug']).toBe('/');
     expect(sentPages[0]?.['pageType']).toBe('home');
     expect(sentPages[0]?.['title']).toBe('Home Title');
@@ -82,21 +84,18 @@ describe('writeStorefrontLayout', () => {
   it('strips leading slashes from non-home slugs', async () => {
     rpcMock.mockResolvedValue({ data: { tenantId: 't', subdomain: 'shop' }, error: null });
     await writeStorefrontLayout(baseInput([makePage('///about')]));
-    const sentPages = (rpcMock.mock.calls[0]?.[1].p_data as { pages: Array<{ slug: string }> }).pages;
+    const sentPages = (rpcMock.mock.calls[0]?.[1].p_data as { pages: Array<{ slug: string }> })
+      .pages;
     expect(sentPages[0]?.slug).toBe('/about');
   });
 
   it('handles /-slug variations for pageType', async () => {
     rpcMock.mockResolvedValue({ data: { tenantId: 't', subdomain: 'shop' }, error: null });
     await writeStorefrontLayout(
-      baseInput([
-        makePage('/'),
-        makePage('/about'),
-        makePage('/shop'),
-        makePage('/contact'),
-      ]),
+      baseInput([makePage('/'), makePage('/about'), makePage('/shop'), makePage('/contact')]),
     );
-    const sentPages = (rpcMock.mock.calls[0]?.[1].p_data as { pages: Array<{ pageType: string }> }).pages;
+    const sentPages = (rpcMock.mock.calls[0]?.[1].p_data as { pages: Array<{ pageType: string }> })
+      .pages;
     expect(sentPages.map((p) => p.pageType)).toEqual(['home', 'about', 'shop', 'contact']);
   });
 
@@ -130,7 +129,10 @@ describe('writeStorefrontLayout', () => {
 
   it('passes through provided logoUrl', async () => {
     rpcMock.mockResolvedValue({ data: { tenantId: 't', subdomain: 'shop' }, error: null });
-    await writeStorefrontLayout({ ...baseInput([makePage('home')]), logoUrl: 'https://x/logo.png' });
+    await writeStorefrontLayout({
+      ...baseInput([makePage('home')]),
+      logoUrl: 'https://x/logo.png',
+    });
     const sent = rpcMock.mock.calls[0]?.[1].p_data as { logoUrl: string };
     expect(sent.logoUrl).toBe('https://x/logo.png');
   });
@@ -138,9 +140,15 @@ describe('writeStorefrontLayout', () => {
   it('treats empty-string slug as home', async () => {
     rpcMock.mockResolvedValue({ data: { tenantId: 't', subdomain: 's' }, error: null });
     // empty-string slug would fail PageSchema; bypass by casting
-    const page = { slug: '', name: 'Home', root: { type: 'section', id: 'r', children: [] } } as unknown as Page;
+    const page = {
+      slug: '',
+      name: 'Home',
+      root: { type: 'section', id: 'r', children: [] },
+    } as unknown as Page;
     await writeStorefrontLayout(baseInput([page]));
-    const sent = rpcMock.mock.calls[0]?.[1].p_data as { pages: Array<{ slug: string; pageType: string }> };
+    const sent = rpcMock.mock.calls[0]?.[1].p_data as {
+      pages: Array<{ slug: string; pageType: string }>;
+    };
     expect(sent.pages[0]?.slug).toBe('/');
     expect(sent.pages[0]?.pageType).toBe('home');
   });

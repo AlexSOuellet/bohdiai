@@ -24,8 +24,7 @@ export function Grid({ node, ctx }: { node: GridNode; ctx: RenderContext }) {
   const mobileGapX = applyDensity(node.mobile?.gapX, ctx.density) ?? desktopGapX;
   const mobileGapY = applyDensity(node.mobile?.gapY, ctx.density) ?? desktopGapY;
   const desktopColumns = node.columns;
-  const mobileColumns =
-    node.mobile?.columns ?? defaultMobileColumnsForDesktop(desktopColumns);
+  const mobileColumns = node.mobile?.columns ?? defaultMobileColumnsForDesktop(desktopColumns);
   const desktopAlign = node.align;
   const mobileAlign = desktopAlign;
   const desktopJustify = node.justify;
@@ -40,7 +39,7 @@ export function Grid({ node, ctx }: { node: GridNode; ctx: RenderContext }) {
         'grid',
         GRID_COLS_CLASS[mobileColumns] ?? GRID_COLS_CLASS[1],
         GRID_COLS_CLASS_MD[desktopColumns] ?? GRID_COLS_CLASS_MD[1],
-        node.rows !== undefined ? GRID_ROWS_CLASS[node.rows] ?? '' : '',
+        node.rows !== undefined ? (GRID_ROWS_CLASS[node.rows] ?? '') : '',
         GAP_X_CLASS[mobileGapX],
         GAP_X_CLASS_MD[desktopGapX],
         GAP_Y_CLASS[mobileGapY],

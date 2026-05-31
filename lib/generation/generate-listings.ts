@@ -45,19 +45,26 @@ export async function generateListings(
   /** Collection slugs to assign products to. Empty array means no collections for this shop. */
   collectionSlugs: string[],
   tenantId?: string,
-  moodSignal?: { nicheSlug?: string; moodKey?: string; moodLabel?: string; moodDescription?: string },
+  moodSignal?: {
+    nicheSlug?: string;
+    moodKey?: string;
+    moodLabel?: string;
+    moodDescription?: string;
+  },
 ): Promise<GeneratedListingWithImage[]> {
   const imageCount = Math.min(count, MAX_PRODUCT_IMAGES);
 
   const lowControl = moodSignal?.nicheSlug === 'leatherworker' && moodSignal?.moodKey === 'dark';
 
-  const collectionGuidance = collectionSlugs.length > 0
-    ? `\nCOLLECTIONS\nThis shop has these collections, identified by slug: ${collectionSlugs.map(s => `"${s}"`).join(', ')}.\nFor each product, set "collection_slug" to the slug of the collection it best belongs to. Distribute products across collections sensibly — don't dump them all into one collection unless they truly all belong to the same one.\n`
-    : `\nThis shop has no collections. Set "collection_slug" to null for every product.\n`;
+  const collectionGuidance =
+    collectionSlugs.length > 0
+      ? `\nCOLLECTIONS\nThis shop has these collections, identified by slug: ${collectionSlugs.map((s) => `"${s}"`).join(', ')}.\nFor each product, set "collection_slug" to the slug of the collection it best belongs to. Distribute products across collections sensibly — don't dump them all into one collection unless they truly all belong to the same one.\n`
+      : `\nThis shop has no collections. Set "collection_slug" to null for every product.\n`;
 
-  const moodHeader = lowControl && moodSignal
-    ? `\nMOOD: ${moodSignal.moodLabel}\n${moodSignal.moodDescription ?? ''}\n`
-    : '';
+  const moodHeader =
+    lowControl && moodSignal
+      ? `\nMOOD: ${moodSignal.moodLabel}\n${moodSignal.moodDescription ?? ''}\n`
+      : '';
 
   const productGuidance = lowControl
     ? `Generate ${imageCount} products. Each product needs:

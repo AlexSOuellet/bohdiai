@@ -34,10 +34,7 @@ export function SourdoughStore(): React.ReactElement {
             market — 9 to 11am.
           </p>
         </div>
-        <div
-          className="imgbox build build-3"
-          style={{ backgroundImage: `url(${IMG_COUNTRY})` }}
-        >
+        <div className="imgbox build build-3" style={{ backgroundImage: `url(${IMG_COUNTRY})` }}>
           <span className="label">Country loaf · $9</span>
         </div>
       </div>

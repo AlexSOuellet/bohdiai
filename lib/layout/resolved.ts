@@ -109,11 +109,7 @@ export interface ResolveContext {
   fetchCart: () => Promise<ResolvedCart>;
 }
 
-function walk(
-  node: LayoutNode,
-  path: string,
-  out: { node: LayoutNode; path: string }[],
-): void {
+function walk(node: LayoutNode, path: string, out: { node: LayoutNode; path: string }[]): void {
   out.push({ node, path });
   switch (node.type) {
     case 'band':
@@ -123,9 +119,7 @@ function walk(
     case 'grid':
     case 'overlap':
     case 'marquee':
-      node.children.forEach((child, i) =>
-        walk(child, `${path}.children[${i}]`, out),
-      );
+      node.children.forEach((child, i) => walk(child, `${path}.children[${i}]`, out));
       return;
     case 'bleed':
     case 'pane':
@@ -155,10 +149,7 @@ function isBound(node: LayoutNode): boolean {
   }
 }
 
-async function resolveNode(
-  node: LayoutNode,
-  ctx: ResolveContext,
-): Promise<unknown | undefined> {
+async function resolveNode(node: LayoutNode, ctx: ResolveContext): Promise<unknown | undefined> {
   switch (node.type) {
     case 'productGrid': {
       const n = node as ProductGridNode;

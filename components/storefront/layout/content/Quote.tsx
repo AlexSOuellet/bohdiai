@@ -2,13 +2,7 @@ import type { QuoteNode } from '@/lib/layout';
 import type { RenderContext } from '../Node';
 import { intentToStyleVars } from '../intent';
 
-export function QuoteContent({
-  node,
-  ctx: _ctx,
-}: {
-  node: QuoteNode;
-  ctx: RenderContext;
-}) {
+export function QuoteContent({ node, ctx: _ctx }: { node: QuoteNode; ctx: RenderContext }) {
   return (
     <figure
       data-node-type="quote"
@@ -19,7 +13,7 @@ export function QuoteContent({
       }}
       className="max-w-2xl"
     >
-      <blockquote className="text-xl md:text-2xl leading-snug italic">
+      <blockquote className="text-xl italic leading-snug md:text-2xl">
         &ldquo;{node.body}&rdquo;
       </blockquote>
       {(node.attribution !== undefined || node.role !== undefined) && (
@@ -27,9 +21,7 @@ export function QuoteContent({
           {node.attribution !== undefined && (
             <span className="font-medium not-italic">{node.attribution}</span>
           )}
-          {node.attribution !== undefined && node.role !== undefined && (
-            <span>, </span>
-          )}
+          {node.attribution !== undefined && node.role !== undefined && <span>, </span>}
           {node.role !== undefined && <span>{node.role}</span>}
         </figcaption>
       )}

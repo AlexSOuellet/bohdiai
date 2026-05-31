@@ -56,8 +56,13 @@ export type LayoutNode =
   | GutterNode
   | ContentNode;
 
+// Every node carries a literal `type`, so this is a discriminated union: Zod
+// reads `type` and validates against the single matching schema. A plain
+// z.union would instead try all ~28 members in order, recursing into the full
+// subtree on every failed attempt — exponential in tree depth and the cause of
+// multi-second page renders (see tree.discriminated-union.test.ts).
 export const LayoutNodeSchema: z.ZodType<LayoutNode> = z.lazy(() =>
-  z.union([
+  z.discriminatedUnion('type', [
     BandSchema,
     StackSchema,
     RowSchema,
@@ -86,7 +91,7 @@ export const LayoutNodeSchema: z.ZodType<LayoutNode> = z.lazy(() =>
     SocialLinksNodeSchema,
     NavLinksNodeSchema,
     EventsListNodeSchema,
-  ] as unknown as [z.ZodType<LayoutNode>, z.ZodType<LayoutNode>, ...z.ZodType<LayoutNode>[]]),
+  ]),
 ) as unknown as z.ZodType<LayoutNode>;
 
 const PageSlugSchema = z
@@ -124,9 +129,7 @@ export type ValidationIssue = {
   message: string;
 };
 
-export type ValidationResult =
-  | { ok: true; page: Page }
-  | { ok: false; issues: ValidationIssue[] };
+export type ValidationResult = { ok: true; page: Page } | { ok: false; issues: ValidationIssue[] };
 
 function pushChildren(
   node: LayoutNode,
@@ -167,11 +170,7 @@ function isPermutation(arr: number[], length: number): boolean {
   return true;
 }
 
-function checkSemanticRules(
-  node: LayoutNode,
-  path: string,
-  issues: ValidationIssue[],
-): void {
+function checkSemanticRules(node: LayoutNode, path: string, issues: ValidationIssue[]): void {
   if (node.type === 'split') {
     if (node.ratios.length !== node.children.length) {
       issues.push({
@@ -221,12 +220,8 @@ function checkSemanticRules(
     return;
   }
 
-  if (
-    (node.type === 'productGrid' || node.type === 'collectionGrid') &&
-    node.order === 'manual'
-  ) {
-    const manual =
-      node.type === 'productGrid' ? node.manualIds : node.manualSlugs;
+  if ((node.type === 'productGrid' || node.type === 'collectionGrid') && node.order === 'manual') {
+    const manual = node.type === 'productGrid' ? node.manualIds : node.manualSlugs;
     if (manual === undefined || manual.length === 0) {
       issues.push({
         path: `${path}.${node.type === 'productGrid' ? 'manualIds' : 'manualSlugs'}`,

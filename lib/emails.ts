@@ -32,15 +32,15 @@ export function welcomeEmail(type: 'founder' | 'notify'): {
   text: string;
 } {
   const subject =
-    type === 'founder'
-      ? 'You’re on the BohdiAI founder list'
-      : 'You’re on the BohdiAI waitlist';
+    type === 'founder' ? 'You’re on the BohdiAI founder list' : 'You’re on the BohdiAI waitlist';
   const greeting =
     type === 'founder'
       ? 'You&rsquo;re on the founder list. That means you&rsquo;ll hear from me first when beta opens, and you&rsquo;ll have a real say in what gets built.'
       : 'You&rsquo;re on the waitlist. I&rsquo;ll send you a note when public access opens — and the occasional honest update on what we&rsquo;re building. No promo blasts.';
   const text = [
-    type === 'founder' ? 'Welcome to the BohdiAI founder list.' : 'Welcome to the BohdiAI waitlist.',
+    type === 'founder'
+      ? 'Welcome to the BohdiAI founder list.'
+      : 'Welcome to the BohdiAI waitlist.',
     '',
     type === 'founder'
       ? 'You’ll hear from me first when beta opens, and you’ll have a real say in what gets built.'

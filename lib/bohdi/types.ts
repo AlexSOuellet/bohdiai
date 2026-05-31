@@ -15,9 +15,9 @@ export interface BohdiBrief {
   nicheSlug: string;
   moodKey: string;
   productCount: number;
-  makerName?: string | undefined;        // The maker's first name, captured at onboarding. Used for progress labels and as material for Bohdi's about-portrait brief.
-  logoUrl?: string | undefined;          // Public URL of uploaded logo, if maker provided one.
-  brandColors?: string[] | undefined;    // Hex codes extracted from the logo via Vision; honor in palette.
+  makerName?: string | undefined; // The maker's first name, captured at onboarding. Used for progress labels and as material for Bohdi's about-portrait brief.
+  logoUrl?: string | undefined; // Public URL of uploaded logo, if maker provided one.
+  brandColors?: string[] | undefined; // Hex codes extracted from the logo via Vision; honor in palette.
 }
 
 export interface BohdiResult {

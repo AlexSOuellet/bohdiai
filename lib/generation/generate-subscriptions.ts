@@ -12,7 +12,11 @@ import { logger } from '@/lib/logger';
 
 export const GeneratedSubscriptionSchema = z.object({
   name: z.string().min(1).max(80),
-  slug: z.string().regex(/^[a-z0-9-]+$/).min(1).max(80),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9-]+$/)
+    .min(1)
+    .max(80),
   short_description: z.string().min(1).max(160),
   description: z.string().min(1).max(800),
   base_price_cents: z.number().int().positive(),
@@ -44,7 +48,9 @@ export async function generateSubscriptions(
 ): Promise<GeneratedSubscription[]> {
   const lowControl = nicheSlug === 'leatherworker' && moodKey === 'dark';
 
-  const copyVoiceLine = lowControl ? '' : `\nSame voice as the rest of the storefront copy. Avoid the banned phrases ("crafted with love", "made with passion", "artisanal", "curated", etc).\n`;
+  const copyVoiceLine = lowControl
+    ? ''
+    : `\nSame voice as the rest of the storefront copy. Avoid the banned phrases ("crafted with love", "made with passion", "artisanal", "curated", etc).\n`;
   const shortDescLine = lowControl
     ? `- "short_description": one sentence under 160 chars`
     : `- "short_description": one warm sentence under 160 chars — what subscribers get and why`;

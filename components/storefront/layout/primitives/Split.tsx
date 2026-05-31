@@ -38,19 +38,10 @@ export function Split({ node, ctx }: { node: SplitNode; ctx: RenderContext }) {
     >
       {node.children.map((child, i) => {
         const wrapperStyle: CSSProperties =
-          stackOrder !== undefined
-            ? { order: stackOrder.indexOf(i) }
-            : {};
+          stackOrder !== undefined ? { order: stackOrder.indexOf(i) } : {};
         return (
-          <div
-            key={child.id ?? `split-${i}`}
-            style={wrapperStyle}
-            className="flex flex-col"
-          >
-            <Node
-              node={child}
-              ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }}
-            />
+          <div key={child.id ?? `split-${i}`} style={wrapperStyle} className="flex flex-col">
+            <Node node={child} ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }} />
           </div>
         );
       })}

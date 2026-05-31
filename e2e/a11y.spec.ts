@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 /**
@@ -19,7 +19,7 @@ import AxeBuilder from '@axe-core/playwright';
  * the per-tenant token schema, Master Spec §6) WILL be scanned in full when
  * they exist — they're not marketing art, they're product surface.
  */
-async function scan(page: import('@playwright/test').Page) {
+async function scan(page: Page) {
   return new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .exclude('.store-frame')

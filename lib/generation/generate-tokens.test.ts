@@ -151,9 +151,7 @@ describe('generateTokens', () => {
 
   it('throws on schema validation failure', async () => {
     existsSyncMock.mockReturnValue(false);
-    messagesCreateMock.mockResolvedValue(
-      mockResponse(JSON.stringify({ colors: { primary: 1 } })),
-    );
+    messagesCreateMock.mockResolvedValue(mockResponse(JSON.stringify({ colors: { primary: 1 } })));
     await expect(generateTokens('body', MOOD)).rejects.toThrow();
   });
 

@@ -33,9 +33,15 @@ function ctx(overrides: Partial<ResolveContext> = {}): ResolveContext {
     fetchCollection: vi.fn().mockResolvedValue(makeCollection('cf')),
     fetchSubscriptions: vi.fn().mockResolvedValue([makeSubscription('s1')]),
     fetchSubscription: vi.fn().mockResolvedValue(makeSubscription('s9')),
-    fetchSocialLinks: vi.fn().mockResolvedValue([{ platform: 'ig', url: 'https://i' } as ResolvedSocialLink]),
-    fetchNavLinks: vi.fn().mockResolvedValue([{ slug: 'about', label: 'About', order: 0 } as ResolvedNavLink]),
-    fetchEvents: vi.fn().mockResolvedValue([{ id: 'e1', name: 'Show', date: '2026-06-01' } as ResolvedEvent]),
+    fetchSocialLinks: vi
+      .fn()
+      .mockResolvedValue([{ platform: 'ig', url: 'https://i' } as ResolvedSocialLink]),
+    fetchNavLinks: vi
+      .fn()
+      .mockResolvedValue([{ slug: 'about', label: 'About', order: 0 } as ResolvedNavLink]),
+    fetchEvents: vi
+      .fn()
+      .mockResolvedValue([{ id: 'e1', name: 'Show', date: '2026-06-01' } as ResolvedEvent]),
     fetchCart: vi.fn().mockResolvedValue({ lines: [], subtotalCents: 0 } as ResolvedCart),
   };
   return { ...base, ...overrides };
@@ -47,7 +53,10 @@ function page(root: LayoutNode): Page {
 
 describe('resolvePage', () => {
   it('returns empty map for a tree with no bound nodes', async () => {
-    const root: LayoutNode = { type: 'stack', children: [{ type: 'text', role: 'body', content: 'x' }] };
+    const root: LayoutNode = {
+      type: 'stack',
+      children: [{ type: 'text', role: 'body', content: 'x' }],
+    };
     const result = await resolvePage(page(root), ctx());
     expect(result).toEqual({});
   });
@@ -63,12 +72,18 @@ describe('resolvePage', () => {
   it('resolves productGrid with filter and manualIds', async () => {
     const fp = vi.fn().mockResolvedValue([]);
     const root: LayoutNode = {
-      type: 'productGrid', count: 4, order: 'manual',
-      filter: { collectionSlug: 'wax' }, manualIds: ['x'],
+      type: 'productGrid',
+      count: 4,
+      order: 'manual',
+      filter: { collectionSlug: 'wax' },
+      manualIds: ['x'],
     };
     await resolvePage(page(root), ctx({ fetchProducts: fp }));
     expect(fp).toHaveBeenCalledWith({
-      count: 4, order: 'manual', filter: { collectionSlug: 'wax' }, manualIds: ['x'],
+      count: 4,
+      order: 'manual',
+      filter: { collectionSlug: 'wax' },
+      manualIds: ['x'],
     });
   });
 
@@ -96,7 +111,12 @@ describe('resolvePage', () => {
 
   it('resolves collectionGrid with manualSlugs', async () => {
     const fc = vi.fn().mockResolvedValue([]);
-    const root: LayoutNode = { type: 'collectionGrid', count: 5, order: 'manual', manualSlugs: ['a'] };
+    const root: LayoutNode = {
+      type: 'collectionGrid',
+      count: 5,
+      order: 'manual',
+      manualSlugs: ['a'],
+    };
     await resolvePage(page(root), ctx({ fetchCollections: fc }));
     expect(fc).toHaveBeenCalledWith({ count: 5, order: 'manual', manualSlugs: ['a'] });
   });
@@ -134,11 +154,7 @@ describe('resolvePage', () => {
   it('resolves socialLinks and navLinks and cart', async () => {
     const root: LayoutNode = {
       type: 'stack',
-      children: [
-        { type: 'socialLinks' },
-        { type: 'navLinks' },
-        { type: 'cart', variant: 'icon' },
-      ],
+      children: [{ type: 'socialLinks' }, { type: 'navLinks' }, { type: 'cart', variant: 'icon' }],
     };
     const result = await resolvePage(page(root), ctx());
     expect(result['root.children[0]']).toBeDefined();
@@ -173,12 +189,12 @@ describe('resolvePage', () => {
       children: [
         {
           type: 'row',
-          children: [
-            { type: 'grid', columns: 1, children: [{ type: 'productGrid' }] },
-          ],
+          children: [{ type: 'grid', columns: 1, children: [{ type: 'productGrid' }] }],
         },
         {
-          type: 'split', direction: 'horizontal', ratios: [50, 50],
+          type: 'split',
+          direction: 'horizontal',
+          ratios: [50, 50],
           children: [
             { type: 'overlap', anchor: 0, children: [{ type: 'productGrid' }] },
             { type: 'marquee', children: [{ type: 'productGrid' }] },
@@ -208,7 +224,8 @@ describe('resolvePage', () => {
         }, ms);
       });
 
-    const fp = vi.fn()
+    const fp = vi
+      .fn()
       .mockImplementationOnce(() => slow('a', 30))
       .mockImplementationOnce(() => slow('b', 10));
 

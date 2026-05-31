@@ -1,10 +1,5 @@
 import type { CSSProperties } from 'react';
-import type {
-  LayoutNode,
-  OverlapAnchorPosition,
-  OverlapNode,
-  OverlapScrim,
-} from '@/lib/layout';
+import type { LayoutNode, OverlapAnchorPosition, OverlapNode, OverlapScrim } from '@/lib/layout';
 import { Node, childPath, deriveCtx, type RenderContext } from '../Node';
 import { intentToStyleVars } from '../intent';
 import { joinClasses } from '../scale';
@@ -52,9 +47,7 @@ function hasOverlayText(node: LayoutNode): boolean {
   return false;
 }
 
-function resolveScrim(
-  node: OverlapNode,
-): 'none' | 'light' | 'dark' {
+function resolveScrim(node: OverlapNode): 'none' | 'light' | 'dark' {
   const explicit: OverlapScrim = node.scrim ?? 'auto';
   if (explicit === 'none') return 'none';
   if (explicit === 'light' || explicit === 'dark') return explicit;
@@ -71,8 +64,7 @@ function resolveScrim(
 const SCRIM_CLASS: Record<'light' | 'dark', string> = {
   light:
     'absolute inset-0 pointer-events-none bg-gradient-to-t from-white/70 via-white/30 to-transparent',
-  dark:
-    'absolute inset-0 pointer-events-none bg-gradient-to-t from-black/60 via-black/20 to-transparent',
+  dark: 'absolute inset-0 pointer-events-none bg-gradient-to-t from-black/60 via-black/20 to-transparent',
 };
 
 const POSITION_CLASS: Record<OverlapAnchorPosition, string> = {
@@ -97,10 +89,7 @@ export function Overlap({ node, ctx }: { node: OverlapNode; ctx: RenderContext }
   const scrim = resolveScrim(node);
 
   const layered = (
-    <div
-      className="relative w-full h-full"
-      style={{ minHeight: 'inherit' }}
-    >
+    <div className="relative h-full w-full" style={{ minHeight: 'inherit' }}>
       {node.children.map((child, i) => {
         const isAnchor = i === anchorIndex;
         const positionClass = isAnchor
@@ -112,19 +101,17 @@ export function Overlap({ node, ctx }: { node: OverlapNode; ctx: RenderContext }
             className={positionClass}
             style={isAnchor ? { zIndex: 0 } : { zIndex: i + 1 }}
           >
-            <Node
-              node={child}
-              ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }}
-            />
+            <Node node={child} ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }} />
           </div>
         );
         if (isAnchor && scrim !== 'none') {
           return (
-            <div key={child.id ?? `overlap-${i}`} className="relative w-full h-full" style={{ zIndex: 0 }}>
-              <Node
-                node={child}
-                ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }}
-              />
+            <div
+              key={child.id ?? `overlap-${i}`}
+              className="relative h-full w-full"
+              style={{ zIndex: 0 }}
+            >
+              <Node node={child} ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }} />
               <div data-scrim={scrim} className={SCRIM_CLASS[scrim]} />
             </div>
           );
@@ -135,21 +122,12 @@ export function Overlap({ node, ctx }: { node: OverlapNode; ctx: RenderContext }
   );
 
   const stacked = (
-    <div className="flex flex-col w-full">
+    <div className="flex w-full flex-col">
       {node.children.map((child, i) => {
-        const wrapperStyle: CSSProperties = stackOrder
-          ? { order: stackOrder.indexOf(i) }
-          : {};
+        const wrapperStyle: CSSProperties = stackOrder ? { order: stackOrder.indexOf(i) } : {};
         return (
-          <div
-            key={child.id ?? `overlap-stack-${i}`}
-            style={wrapperStyle}
-            className="w-full"
-          >
-            <Node
-              node={child}
-              ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }}
-            />
+          <div key={child.id ?? `overlap-stack-${i}`} style={wrapperStyle} className="w-full">
+            <Node node={child} ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }} />
           </div>
         );
       })}
@@ -166,9 +144,7 @@ export function Overlap({ node, ctx }: { node: OverlapNode; ctx: RenderContext }
       <div className={collapse === 'preserve' ? 'block' : 'block md:hidden'}>
         {collapse === 'preserve' ? layered : stacked}
       </div>
-      {collapse === 'stack' ? (
-        <div className="hidden md:block">{layered}</div>
-      ) : null}
+      {collapse === 'stack' ? <div className="hidden md:block">{layered}</div> : null}
     </div>
   );
 }

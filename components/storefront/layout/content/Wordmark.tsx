@@ -3,13 +3,7 @@ import type { WordmarkNode } from '@/lib/layout';
 import type { RenderContext } from '../Node';
 import { intentToStyleVars } from '../intent';
 
-export function WordmarkContent({
-  node,
-  ctx: _ctx,
-}: {
-  node: WordmarkNode;
-  ctx: RenderContext;
-}) {
+export function WordmarkContent({ node, ctx: _ctx }: { node: WordmarkNode; ctx: RenderContext }) {
   const href = node.href ?? '/';
 
   const inner =
@@ -19,7 +13,7 @@ export function WordmarkContent({
           ...intentToStyleVars(node.intent),
           ...(node.intent?.palette ? { color: 'var(--node-palette)' } : null),
         }}
-        className="text-2xl md:text-3xl font-semibold tracking-tight"
+        className="text-2xl font-semibold tracking-tight md:text-3xl"
       >
         {node.content}
       </span>

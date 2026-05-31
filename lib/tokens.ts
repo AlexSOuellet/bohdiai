@@ -4,28 +4,28 @@ import { z } from 'zod';
 
 export const DesignTokensSchema = z.object({
   colors: z.object({
-    primary: z.string(),    // main brand color (hex or hsl)
-    accent: z.string(),     // CTA and highlight color
+    primary: z.string(), // main brand color (hex or hsl)
+    accent: z.string(), // CTA and highlight color
     background: z.string(), // page background
-    surface: z.string(),    // card and panel backgrounds
-    text: z.string(),       // primary text
-    textMuted: z.string(),  // secondary text, captions, labels
-    border: z.string(),     // borders and dividers
+    surface: z.string(), // card and panel backgrounds
+    text: z.string(), // primary text
+    textMuted: z.string(), // secondary text, captions, labels
+    border: z.string(), // borders and dividers
   }),
   typography: z.object({
-    headingFont: z.string(),           // CSS font-family value (Google Font or system stack)
+    headingFont: z.string(), // CSS font-family value (Google Font or system stack)
     bodyFont: z.string(),
-    headingWeight: z.number().int(),   // 400 | 600 | 700 | 800 | 900
-    headingLetterSpacing: z.string(),  // e.g. '-0.02em' | '0em' | '0.05em'
-    bodyLineHeight: z.string(),        // e.g. '1.5' | '1.6' | '1.75'
-    baseSize: z.string(),              // e.g. '16px' | '17px' | '18px'
+    headingWeight: z.number().int(), // 400 | 600 | 700 | 800 | 900
+    headingLetterSpacing: z.string(), // e.g. '-0.02em' | '0em' | '0.05em'
+    bodyLineHeight: z.string(), // e.g. '1.5' | '1.6' | '1.75'
+    baseSize: z.string(), // e.g. '16px' | '17px' | '18px'
   }),
   wordmark: z.object({
-    font: z.string(),                              // display font for the wordmark — distinct from headingFont
+    font: z.string(), // display font for the wordmark — distinct from headingFont
     treatment: z.enum(['solid', 'gradient', 'outline', 'two-tone']),
-    color1: z.string(),                            // always used (the only color for solid/outline; first word for two-tone; gradient start)
-    color2: z.string(),                            // gradient end / second word for two-tone; empty string '' for solid/outline
-    letterSpacing: z.string(),                     // e.g. '-0.03em' for tight display, '0.08em' for spaced caps
+    color1: z.string(), // always used (the only color for solid/outline; first word for two-tone; gradient start)
+    color2: z.string(), // gradient end / second word for two-tone; empty string '' for solid/outline
+    letterSpacing: z.string(), // e.g. '-0.03em' for tight display, '0.08em' for spaced caps
   }),
   shape: z.object({
     borderRadius: z.enum(['none', 'sm', 'md', 'lg', 'full']),

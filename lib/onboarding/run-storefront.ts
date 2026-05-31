@@ -10,7 +10,10 @@ import { generatePage } from '@/lib/generation/generate-page';
 import { generateListings } from '@/lib/generation/generate-listings';
 import { generateCollections } from '@/lib/generation/generate-collections';
 import { generateSubscriptions } from '@/lib/generation/generate-subscriptions';
-import { writeStorefront, type GeneratedSubscriptionWithImage } from '@/lib/generation/write-storefront';
+import {
+  writeStorefront,
+  type GeneratedSubscriptionWithImage,
+} from '@/lib/generation/write-storefront';
 import { generateHeroImage, generateProductImage, generateAboutImage } from '@/lib/fal';
 import { BLOCKS_MANIFEST } from '@/lib/blocks-manifest.generated';
 import { labelFor, type ProgressEmitter } from '@/lib/progress';
@@ -91,9 +94,30 @@ async function runLegacy(
   emit('composing-home');
   const [tokens, page, collections, subscriptionsRaw] = await Promise.all([
     generateTokens(niche.body_markdown, mood, undefined, input.nicheSlug, input.brandColors),
-    generatePage(input.shopName, niche.display_name, niche.body_markdown, mood, undefined, input.nicheSlug),
-    generateCollections(input.shopName, niche.display_name, niche.body_markdown, undefined, input.nicheSlug, mood.key),
-    generateSubscriptions(input.shopName, niche.display_name, niche.body_markdown, undefined, input.nicheSlug, mood.key),
+    generatePage(
+      input.shopName,
+      niche.display_name,
+      niche.body_markdown,
+      mood,
+      undefined,
+      input.nicheSlug,
+    ),
+    generateCollections(
+      input.shopName,
+      niche.display_name,
+      niche.body_markdown,
+      undefined,
+      input.nicheSlug,
+      mood.key,
+    ),
+    generateSubscriptions(
+      input.shopName,
+      niche.display_name,
+      niche.body_markdown,
+      undefined,
+      input.nicheSlug,
+      mood.key,
+    ),
   ]);
 
   emit('generating-product-image');
@@ -136,7 +160,9 @@ async function runLegacy(
   ]);
 
   if (heroImageUrl === null) {
-    throw new Error('Hero image generation failed — storefront cannot be created without a hero image.');
+    throw new Error(
+      'Hero image generation failed — storefront cannot be created without a hero image.',
+    );
   }
   const heroBlock = page.blocks.find((b) => {
     const manifest = BLOCKS_MANIFEST.find((m) => m.key === b.blockKey);
@@ -253,8 +279,18 @@ async function runLegacy(
   }> = [
     { slug: '/', pageType: 'home', title: input.shopName, blocks: homePageBlocks },
     { slug: '/shop', pageType: 'shop', title: `${input.shopName} — Shop`, blocks: shopPageBlocks },
-    { slug: '/about', pageType: 'about', title: `${input.shopName} — About`, blocks: aboutPageBlocks },
-    { slug: '/contact', pageType: 'contact', title: `${input.shopName} — Contact`, blocks: contactPageBlocks },
+    {
+      slug: '/about',
+      pageType: 'about',
+      title: `${input.shopName} — About`,
+      blocks: aboutPageBlocks,
+    },
+    {
+      slug: '/contact',
+      pageType: 'contact',
+      title: `${input.shopName} — Contact`,
+      blocks: contactPageBlocks,
+    },
   ];
 
   emit('finalizing');

@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import type { FeaturedProductNode, ResolvedProduct } from '@/lib/layout';
 import type { RenderContext } from '../Node';
 import { intentToStyleVars } from '../intent';
@@ -30,11 +31,11 @@ export function FeaturedProductContent({
         data-bound-placeholder
         data-product-id={node.productId}
         style={intentToStyleVars(node.intent)}
-        className="flex flex-col gap-3 w-full max-w-md"
+        className="flex w-full max-w-md flex-col gap-3"
       >
         <div className="aspect-[4/5] w-full bg-black/10" />
-        <div className="h-5 w-2/3 bg-black/10 rounded" />
-        <div className="h-4 w-1/4 bg-black/10 rounded" />
+        <div className="h-5 w-2/3 rounded bg-black/10" />
+        <div className="h-4 w-1/4 rounded bg-black/10" />
       </div>
     );
   }
@@ -46,30 +47,28 @@ export function FeaturedProductContent({
       data-product-id={product.id}
       href={`/listings/${product.slug}`}
       style={intentToStyleVars(node.intent)}
-      className="flex flex-col gap-3 w-full max-w-md group"
+      className="group flex w-full max-w-md flex-col gap-3"
     >
-      <div className="aspect-[4/5] w-full bg-black/10 overflow-hidden">
+      <div className="relative aspect-[4/5] w-full overflow-hidden bg-black/10">
         {product.imageUrl !== undefined && (
-          <img
+          <Image
             src={product.imageUrl}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            fill
+            sizes="(min-width: 768px) 33vw, 100vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           />
         )}
       </div>
       <div className="text-xl font-medium leading-snug">{product.name}</div>
       {node.showPrice !== false && product.priceCents !== undefined && (
-        <div className="text-base opacity-80">
-          {formatPriceCents(product.priceCents)}
-        </div>
+        <div className="text-base opacity-80">{formatPriceCents(product.priceCents)}</div>
       )}
       {product.shortDescription !== undefined && (
-        <p className="text-sm opacity-70 leading-relaxed">
-          {product.shortDescription}
-        </p>
+        <p className="text-sm leading-relaxed opacity-70">{product.shortDescription}</p>
       )}
       {node.showAddToCart !== false && (
-        <span className="inline-flex items-center px-6 py-3 rounded-md bg-black text-white font-medium w-fit">
+        <span className="inline-flex w-fit items-center rounded-md bg-black px-6 py-3 font-medium text-white">
           Add to cart
         </span>
       )}

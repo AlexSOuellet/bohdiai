@@ -3,7 +3,7 @@
 // Each progress event arrives as it happens; a final `done` event carries the
 // subdomain and total build time.
 
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { checkGenerationRateLimit } from '@/lib/rate-limit';
 import { MOODS, type MoodKey } from '@/lib/moods';
 import { runStorefront } from '@/lib/onboarding/run-storefront';
@@ -115,7 +115,11 @@ export async function POST(req: NextRequest): Promise<Response> {
           moodKey: body.moodKey,
           error: message,
         });
-        send({ type: 'error', message: 'We hit a problem building your store. Go back and try again — your choices are saved.' });
+        send({
+          type: 'error',
+          message:
+            'We hit a problem building your store. Go back and try again — your choices are saved.',
+        });
       } finally {
         try {
           controller.close();

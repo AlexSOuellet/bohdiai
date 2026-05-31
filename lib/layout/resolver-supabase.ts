@@ -34,9 +34,7 @@ function rowToProduct(row: ListingRow): ResolvedProduct {
     id: row.id,
     slug: row.slug,
     name: row.name,
-    ...(row.short_description !== null
-      ? { shortDescription: row.short_description }
-      : {}),
+    ...(row.short_description !== null ? { shortDescription: row.short_description } : {}),
     ...(row.base_price_cents !== null ? { priceCents: row.base_price_cents } : {}),
     ...(imageUrl !== undefined ? { imageUrl } : {}),
     isPreview: row.is_preview === true,
@@ -115,9 +113,7 @@ export function createResolveContextForTenant(tenantId: string): ResolveContext 
     async fetchProduct(id) {
       const { data } = await db
         .from('listings')
-        .select(
-          'id, slug, name, short_description, base_price_cents, is_preview, metadata',
-        )
+        .select('id, slug, name, short_description, base_price_cents, is_preview, metadata')
         .eq('tenant_id', tenantId)
         .eq('id', id)
         .maybeSingle();

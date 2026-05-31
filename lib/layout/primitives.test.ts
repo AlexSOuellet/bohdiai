@@ -54,12 +54,15 @@ describe('atomic enum schemas', () => {
   ];
 
   for (const [schema, { good, bad }] of cases) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const s = schema as { safeParse: (v: unknown) => { success: boolean } };
     for (const g of good) {
-      it(`accepts ${g}`, () => { expect(s.safeParse(g).success).toBe(true); });
+      it(`accepts ${g}`, () => {
+        expect(s.safeParse(g).success).toBe(true);
+      });
     }
-    it(`rejects ${bad}`, () => { expect(s.safeParse(bad).success).toBe(false); });
+    it(`rejects ${bad}`, () => {
+      expect(s.safeParse(bad).success).toBe(false);
+    });
   }
 });
 
@@ -69,14 +72,21 @@ describe('BandSchema', () => {
   });
   it('accepts full', () => {
     const n = BandSchema.parse({
-      type: 'band', id: 'b', padding: 'md', minHeight: 'lg', align: 'center', justify: 'between',
+      type: 'band',
+      id: 'b',
+      padding: 'md',
+      minHeight: 'lg',
+      align: 'center',
+      justify: 'between',
       children: [text],
       mobile: { padding: 'sm', minHeight: 'auto', align: 'start', justify: 'start' },
     });
     expect(n.children.length).toBe(1);
   });
   it('rejects bad padding', () => {
-    expect(BandSchema.safeParse({ type: 'band', padding: 'huge', children: [] }).success).toBe(false);
+    expect(BandSchema.safeParse({ type: 'band', padding: 'huge', children: [] }).success).toBe(
+      false,
+    );
   });
   it('rejects extras', () => {
     expect(BandSchema.safeParse({ type: 'band', children: [], wat: 1 }).success).toBe(false);
@@ -92,9 +102,9 @@ describe('BandSchema', () => {
     ).toBe('full');
   });
   it('rejects bad contentWidth', () => {
-    expect(
-      BandSchema.safeParse({ type: 'band', contentWidth: 'huge', children: [] }).success,
-    ).toBe(false);
+    expect(BandSchema.safeParse({ type: 'band', contentWidth: 'huge', children: [] }).success).toBe(
+      false,
+    );
   });
 });
 
@@ -104,18 +114,28 @@ describe('StackSchema', () => {
   });
   it('accepts mobile', () => {
     expect(
-      StackSchema.parse({ type: 'stack', children: [], mobile: { gap: 'xs', align: 'end', justify: 'center' } }).type,
+      StackSchema.parse({
+        type: 'stack',
+        children: [],
+        mobile: { gap: 'xs', align: 'end', justify: 'center' },
+      }).type,
     ).toBe('stack');
   });
   it('rejects bad gap', () => {
-    expect(StackSchema.safeParse({ type: 'stack', gap: 'gross', children: [] }).success).toBe(false);
+    expect(StackSchema.safeParse({ type: 'stack', gap: 'gross', children: [] }).success).toBe(
+      false,
+    );
   });
 });
 
 describe('RowSchema', () => {
   it('accepts full', () => {
     const n = RowSchema.parse({
-      type: 'row', gap: 'md', align: 'baseline', justify: 'evenly', wrap: true,
+      type: 'row',
+      gap: 'md',
+      align: 'baseline',
+      justify: 'evenly',
+      wrap: true,
       children: [text],
       mobile: { gap: 'xs', align: 'start', justify: 'center', collapse: 'wrap' },
     });
@@ -131,7 +151,9 @@ describe('RowSchema', () => {
 describe('SplitSchema', () => {
   it('accepts', () => {
     const n = SplitSchema.parse({
-      type: 'split', direction: 'horizontal', ratios: [50, 50],
+      type: 'split',
+      direction: 'horizontal',
+      ratios: [50, 50],
       children: [text, text],
       mobile: { direction: 'vertical', gap: 'sm', stackOrder: [1, 0] },
     });
@@ -139,17 +161,32 @@ describe('SplitSchema', () => {
   });
   it('rejects ratios < 2 items', () => {
     expect(
-      SplitSchema.safeParse({ type: 'split', direction: 'horizontal', ratios: [100], children: [text] }).success,
+      SplitSchema.safeParse({
+        type: 'split',
+        direction: 'horizontal',
+        ratios: [100],
+        children: [text],
+      }).success,
     ).toBe(false);
   });
   it('rejects ratio out of bounds', () => {
     expect(
-      SplitSchema.safeParse({ type: 'split', direction: 'horizontal', ratios: [0, 100], children: [text, text] }).success,
+      SplitSchema.safeParse({
+        type: 'split',
+        direction: 'horizontal',
+        ratios: [0, 100],
+        children: [text, text],
+      }).success,
     ).toBe(false);
   });
   it('rejects bad direction', () => {
     expect(
-      SplitSchema.safeParse({ type: 'split', direction: 'diag', ratios: [50, 50], children: [text, text] }).success,
+      SplitSchema.safeParse({
+        type: 'split',
+        direction: 'diag',
+        ratios: [50, 50],
+        children: [text, text],
+      }).success,
     ).toBe(false);
   });
 });
@@ -160,7 +197,13 @@ describe('GridSchema', () => {
   });
   it('accepts full', () => {
     const n = GridSchema.parse({
-      type: 'grid', columns: 4, rows: 2, gapX: 'md', gapY: 'sm', align: 'center', justify: 'stretch',
+      type: 'grid',
+      columns: 4,
+      rows: 2,
+      gapX: 'md',
+      gapY: 'sm',
+      align: 'center',
+      justify: 'stretch',
       children: [text],
       mobile: { columns: 2, gapX: 'xs', gapY: 'xs' },
     });
@@ -171,7 +214,8 @@ describe('GridSchema', () => {
   });
   it('rejects mobile columns > 6', () => {
     expect(
-      GridSchema.safeParse({ type: 'grid', columns: 3, children: [], mobile: { columns: 7 } }).success,
+      GridSchema.safeParse({ type: 'grid', columns: 3, children: [], mobile: { columns: 7 } })
+        .success,
     ).toBe(false);
   });
 });
@@ -179,15 +223,18 @@ describe('GridSchema', () => {
 describe('OverlapSchema', () => {
   it('accepts', () => {
     const n = OverlapSchema.parse({
-      type: 'overlap', align: 'center', anchor: 0, children: [text, text],
+      type: 'overlap',
+      align: 'center',
+      anchor: 0,
+      children: [text, text],
       mobile: { collapse: 'stack', stackOrder: [0, 1] },
     });
     expect(n.anchor).toBe(0);
   });
   it('rejects negative anchor', () => {
-    expect(
-      OverlapSchema.safeParse({ type: 'overlap', anchor: -1, children: [text] }).success,
-    ).toBe(false);
+    expect(OverlapSchema.safeParse({ type: 'overlap', anchor: -1, children: [text] }).success).toBe(
+      false,
+    );
   });
   it('accepts scrim', () => {
     expect(
@@ -196,55 +243,81 @@ describe('OverlapSchema', () => {
   });
   it('rejects bad scrim', () => {
     expect(
-      OverlapSchema.safeParse({ type: 'overlap', anchor: 0, scrim: 'gradient', children: [text] }).success,
+      OverlapSchema.safeParse({ type: 'overlap', anchor: 0, scrim: 'gradient', children: [text] })
+        .success,
     ).toBe(false);
   });
 });
 
 describe('BleedSchema', () => {
   it('accepts', () => {
-    const n = BleedSchema.parse({ type: 'bleed', side: 'both', child: text, mobile: { side: 'all' } });
+    const n = BleedSchema.parse({
+      type: 'bleed',
+      side: 'both',
+      child: text,
+      mobile: { side: 'all' },
+    });
     expect(n.side).toBe('both');
   });
   it('rejects missing child', () => {
     expect(BleedSchema.safeParse({ type: 'bleed', side: 'all' }).success).toBe(false);
   });
   it('rejects bad side', () => {
-    expect(BleedSchema.safeParse({ type: 'bleed', side: 'middle', child: text }).success).toBe(false);
+    expect(BleedSchema.safeParse({ type: 'bleed', side: 'middle', child: text }).success).toBe(
+      false,
+    );
   });
 });
 
 describe('PaneSchema', () => {
   it('accepts', () => {
     const n = PaneSchema.parse({
-      type: 'pane', padding: 'md', radius: 'lg', border: 'thin', shadow: 'sm', fill: true,
+      type: 'pane',
+      padding: 'md',
+      radius: 'lg',
+      border: 'thin',
+      shadow: 'sm',
+      fill: true,
       child: text,
       mobile: { padding: 'sm', radius: 'sm', border: 'none', shadow: 'none' },
     });
     expect(n.fill).toBe(true);
   });
   it('rejects bad radius', () => {
-    expect(PaneSchema.safeParse({ type: 'pane', radius: 'square', child: text }).success).toBe(false);
+    expect(PaneSchema.safeParse({ type: 'pane', radius: 'square', child: text }).success).toBe(
+      false,
+    );
   });
 });
 
 describe('MarqueeSchema', () => {
   it('accepts full', () => {
     const n = MarqueeSchema.parse({
-      type: 'marquee', direction: 'left', speed: 'fast', gap: 'md', pauseOnHover: true,
+      type: 'marquee',
+      direction: 'left',
+      speed: 'fast',
+      gap: 'md',
+      pauseOnHover: true,
       children: [text],
       mobile: { speed: 'slow', gap: 'sm' },
     });
     expect(n.speed).toBe('fast');
   });
   it('rejects bad speed', () => {
-    expect(MarqueeSchema.safeParse({ type: 'marquee', speed: 'turbo', children: [] }).success).toBe(false);
+    expect(MarqueeSchema.safeParse({ type: 'marquee', speed: 'turbo', children: [] }).success).toBe(
+      false,
+    );
   });
 });
 
 describe('GutterSchema', () => {
   it('accepts', () => {
-    const n = GutterSchema.parse({ type: 'gutter', size: 'md', axis: 'vertical', mobile: { size: 'sm' } });
+    const n = GutterSchema.parse({
+      type: 'gutter',
+      size: 'md',
+      axis: 'vertical',
+      mobile: { size: 'sm' },
+    });
     expect(n.size).toBe('md');
   });
   it('rejects size = none', () => {
@@ -254,7 +327,9 @@ describe('GutterSchema', () => {
     expect(GutterSchema.safeParse({ type: 'gutter' }).success).toBe(false);
   });
   it('rejects bad axis', () => {
-    expect(GutterSchema.safeParse({ type: 'gutter', size: 'md', axis: 'diag' }).success).toBe(false);
+    expect(GutterSchema.safeParse({ type: 'gutter', size: 'md', axis: 'diag' }).success).toBe(
+      false,
+    );
   });
 });
 

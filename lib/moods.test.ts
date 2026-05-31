@@ -4,7 +4,13 @@ import { MOODS, MOOD_LIST, type MoodKey } from './moods';
 describe('MOODS', () => {
   it('has all seven canonical moods', () => {
     const expected: MoodKey[] = [
-      'dark', 'rustic', 'cozy', 'botanical', 'sunset', 'simple', 'modern',
+      'dark',
+      'rustic',
+      'cozy',
+      'botanical',
+      'sunset',
+      'simple',
+      'modern',
     ];
     for (const k of expected) {
       expect(MOODS[k]).toBeDefined();

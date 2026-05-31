@@ -46,31 +46,17 @@ export function Marquee({ node, ctx }: { node: MarqueeNode; ctx: RenderContext }
       )}
     >
       <div
-        className={joinClasses(
-          'flex w-max',
-          GAP_CLASS[mobileGap],
-          GAP_CLASS_MD[desktopGap],
-        )}
+        className={joinClasses('flex w-max', GAP_CLASS[mobileGap], GAP_CLASS_MD[desktopGap])}
         style={trackStyle}
       >
         {node.children.map((child, i) => (
           <div key={child.id ?? `marquee-a-${i}`} className="shrink-0">
-            <Node
-              node={child}
-              ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }}
-            />
+            <Node node={child} ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }} />
           </div>
         ))}
         {node.children.map((child, i) => (
-          <div
-            key={child.id ?? `marquee-b-${i}`}
-            className="shrink-0"
-            aria-hidden="true"
-          >
-            <Node
-              node={child}
-              ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }}
-            />
+          <div key={child.id ?? `marquee-b-${i}`} className="shrink-0" aria-hidden="true">
+            <Node node={child} ctx={{ ...childCtx, path: childPath(ctx, `children[${i}]`) }} />
           </div>
         ))}
       </div>

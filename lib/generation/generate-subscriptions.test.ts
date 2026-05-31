@@ -45,9 +45,7 @@ describe('GeneratedSubscription schemas', () => {
   });
 
   it('rejects negative price', () => {
-    expect(() =>
-      GeneratedSubscriptionSchema.parse({ ...VALID, base_price_cents: -100 }),
-    ).toThrow();
+    expect(() => GeneratedSubscriptionSchema.parse({ ...VALID, base_price_cents: -100 })).toThrow();
   });
 
   it('rejects slug with uppercase', () => {
@@ -71,9 +69,7 @@ describe('generateSubscriptions', () => {
   });
 
   it('returns parsed subscriptions on happy path', async () => {
-    messagesCreateMock.mockResolvedValue(
-      mockResponse(JSON.stringify({ subscriptions: [VALID] })),
-    );
+    messagesCreateMock.mockResolvedValue(mockResponse(JSON.stringify({ subscriptions: [VALID] })));
     const r = await generateSubscriptions('Shop', 'Candles', 'body', 't-1');
     expect(r).toHaveLength(1);
     expect(r[0]?.subscription_interval).toBe('month');

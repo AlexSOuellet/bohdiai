@@ -1,10 +1,8 @@
 import { z } from 'zod';
 
-const HexColorSchema = z
-  .string()
-  .regex(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/, {
-    message: 'palette value must be a hex color (#rgb, #rrggbb, or #rrggbbaa)',
-  });
+const HexColorSchema = z.string().regex(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/, {
+  message: 'palette value must be a hex color (#rgb, #rrggbb, or #rrggbbaa)',
+});
 
 export const PaletteEntrySchema = z
   .object({

@@ -47,8 +47,12 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
     calledRef.current = true;
 
     if (!data.moodKey || !isMoodKey(data.moodKey)) {
+      // Intentional one-time guard (runs at most once via calledRef): an invalid
+      // mood can't be built, so we surface the error through state immediately.
+      /* eslint-disable react-hooks/set-state-in-effect */
       setError('Something went wrong — please go back and reselect your mood.');
       setDone(true);
+      /* eslint-enable react-hooks/set-state-in-effect */
       return;
     }
 
@@ -101,7 +105,9 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
           }
         }
       } catch {
-        setError('We hit a problem building your store. Go back and try again — your choices are saved.');
+        setError(
+          'We hit a problem building your store. Go back and try again — your choices are saved.',
+        );
         setDone(true);
       }
     })();
@@ -124,7 +130,6 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
         setDone(true);
       }
     }
-
   }, [data]);
 
   return (
@@ -157,11 +162,11 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
       {!done ? (
         <BuildTicker statusLabel={statusLabel} tip={tip} elapsed={elapsed} />
       ) : error ? (
-        <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-6 space-y-3">
+        <div className="space-y-3 rounded-xl border border-red-500/20 bg-red-500/5 p-6">
           <p className="text-sm text-red-400">{error}</p>
         </div>
       ) : (
-        <div className="rounded-xl border border-honey/20 bg-honey/5 p-6 text-center space-y-4">
+        <div className="space-y-4 rounded-xl border border-honey/20 bg-honey/5 p-6 text-center">
           <p className="text-4xl">✦</p>
           <p className="font-medium text-text">{data.shopName}</p>
           <p className="text-xs text-muted">{tenantSubdomain}.bohdiai.com</p>
@@ -174,10 +179,7 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
             >
               See your storefront
             </a>
-            <a
-              href="https://app.bohdiai.com"
-              className="text-sm text-muted hover:text-text-soft"
-            >
+            <a href="https://app.bohdiai.com" className="text-sm text-muted hover:text-text-soft">
               Go to your dashboard →
             </a>
           </div>

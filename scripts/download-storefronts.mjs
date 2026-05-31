@@ -1,6 +1,5 @@
 import { writeFile, mkdir } from 'node:fs/promises';
 import sharp from 'sharp';
-import { dirname } from 'node:path';
 
 const BASE = 'https://d8j0ntlcm91z4.cloudfront.net/user_38zE6IRCqEvAbRQc2Z00szuFsL9';
 const OUT = 'C:/Projects/BohdiAI/public/storefronts';

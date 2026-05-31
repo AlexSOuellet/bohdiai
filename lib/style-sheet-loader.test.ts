@@ -26,9 +26,7 @@ const baseSheet = (): StyleSheet => ({
       character: 'plain body',
     },
   ],
-  textures: [
-    { name: 'Paper Grain', value: 'url(/textures/paper.png)', character: 'subtle' },
-  ],
+  textures: [{ name: 'Paper Grain', value: 'url(/textures/paper.png)', character: 'subtle' }],
 });
 
 describe('compileStyleSheet', () => {
@@ -83,7 +81,9 @@ describe('compileStyleSheet', () => {
     const out = compileStyleSheet(sheet);
     expect(out.customFontFaces).toContain('@font-face');
     expect(out.customFontFaces).toContain('font-family: "My Custom Face";');
-    expect(out.customFontFaces).toContain('src: url(https://cdn.example.com/myfont.woff2) format("woff2");');
+    expect(out.customFontFaces).toContain(
+      'src: url(https://cdn.example.com/myfont.woff2) format("woff2");',
+    );
     expect(out.customFontFaces).toContain('font-display: swap;');
     // Still only one google font link.
     expect(out.googleFontLinks).toHaveLength(1);

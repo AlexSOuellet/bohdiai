@@ -3,25 +3,10 @@ import { IntentSchema } from './intent';
 
 const NodeIdSchema = z.string().min(1).max(64).optional();
 
-const AspectRatioSchema = z.enum([
-  '1:1',
-  '4:5',
-  '3:4',
-  '4:3',
-  '3:2',
-  '16:9',
-  '21:9',
-  'auto',
-]);
+const AspectRatioSchema = z.enum(['1:1', '4:5', '3:4', '4:3', '3:2', '16:9', '21:9', 'auto']);
 export type AspectRatio = z.infer<typeof AspectRatioSchema>;
 
-const TextRoleSchema = z.enum([
-  'eyebrow',
-  'headline',
-  'sub',
-  'body',
-  'caption',
-]);
+const TextRoleSchema = z.enum(['eyebrow', 'headline', 'sub', 'body', 'caption']);
 export type TextRole = z.infer<typeof TextRoleSchema>;
 
 const TextAlignSchema = z.enum(['start', 'center', 'end']);

@@ -1,11 +1,4 @@
-export type MoodKey =
-  | 'dark'
-  | 'rustic'
-  | 'cozy'
-  | 'botanical'
-  | 'sunset'
-  | 'simple'
-  | 'modern';
+export type MoodKey = 'dark' | 'rustic' | 'cozy' | 'botanical' | 'sunset' | 'simple' | 'modern';
 
 export interface Mood {
   key: MoodKey;

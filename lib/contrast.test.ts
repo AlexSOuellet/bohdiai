@@ -112,7 +112,9 @@ describe('enforceTokenContrast wordmark color2', () => {
     tokens.colors.background = '#333333';
     const result = enforceTokenContrast(tokens);
     expect(result.wordmark.color2).not.toBe('');
-    expect(contrastRatio(result.wordmark.color2, result.colors.background)).toBeGreaterThanOrEqual(3.0);
+    expect(contrastRatio(result.wordmark.color2, result.colors.background)).toBeGreaterThanOrEqual(
+      3.0,
+    );
   });
 
   it('leaves wordmark.color2 empty when it starts empty', () => {
@@ -204,13 +206,17 @@ describe('enforceTokenContrast', () => {
   it('fixes muted text that fails on background', () => {
     const tokens = makeTokens({ textMuted: '#666666', background: '#555555' });
     const result = enforceTokenContrast(tokens);
-    expect(contrastRatio(result.colors.textMuted, result.colors.background)).toBeGreaterThanOrEqual(3.0);
+    expect(contrastRatio(result.colors.textMuted, result.colors.background)).toBeGreaterThanOrEqual(
+      3.0,
+    );
   });
 
   it('fixes accent that fails on background', () => {
     const tokens = makeTokens({ accent: '#444444', background: '#333333' });
     const result = enforceTokenContrast(tokens);
-    expect(contrastRatio(result.colors.accent, result.colors.background)).toBeGreaterThanOrEqual(3.0);
+    expect(contrastRatio(result.colors.accent, result.colors.background)).toBeGreaterThanOrEqual(
+      3.0,
+    );
   });
 
   it('all six enforced pairs pass on a problem palette', () => {

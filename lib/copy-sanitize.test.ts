@@ -73,9 +73,10 @@ describe('sanitizeDeep', () => {
   });
 
   it('recursively sanitizes nested objects', () => {
-    expect(
-      sanitizeDeep({ title: 'one — two', meta: { description: 'a; b', count: 3 } }),
-    ).toEqual({ title: 'one. Two', meta: { description: 'a. B', count: 3 } });
+    expect(sanitizeDeep({ title: 'one — two', meta: { description: 'a; b', count: 3 } })).toEqual({
+      title: 'one. Two',
+      meta: { description: 'a. B', count: 3 },
+    });
   });
 
   it('does not mutate the input object', () => {

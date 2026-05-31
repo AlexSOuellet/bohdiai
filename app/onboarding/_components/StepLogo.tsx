@@ -49,7 +49,8 @@ export default function StepLogo({ data, onAdvance, onBack }: StepLogoProps) {
       <div>
         <h1 className="mb-2 font-serif text-3xl text-text">Got a logo?</h1>
         <p className="text-sm text-muted">
-          Drop it here and we'll build your storefront around it — your colors, your brand. If you don't have one yet, skip and we'll design a beautiful wordmark for you.
+          Drop it here and we&apos;ll build your storefront around it — your colors, your brand. If
+          you don&apos;t have one yet, skip and we&apos;ll design a beautiful wordmark for you.
         </p>
       </div>
 
@@ -62,7 +63,9 @@ export default function StepLogo({ data, onAdvance, onBack }: StepLogoProps) {
           if (file !== undefined) void handleFile(file);
         }}
         className={`flex aspect-[3/1] min-h-[180px] cursor-pointer items-center justify-center rounded-lg border-2 border-dashed transition-colors ${
-          preview !== '' ? 'border-honey/40 bg-bg-2' : 'border-white/15 bg-bg-2 hover:border-honey/40'
+          preview !== ''
+            ? 'border-honey/40 bg-bg-2'
+            : 'border-white/15 bg-bg-2 hover:border-honey/40'
         }`}
       >
         {preview !== '' ? (
@@ -87,13 +90,9 @@ export default function StepLogo({ data, onAdvance, onBack }: StepLogoProps) {
         />
       </div>
 
-      {uploading && (
-        <p className="text-sm text-muted">Reading your logo's colors…</p>
-      )}
+      {uploading && <p className="text-sm text-muted">Reading your logo&apos;s colors…</p>}
 
-      {error !== '' && (
-        <p className="text-sm text-red-400">{error}</p>
-      )}
+      {error !== '' && <p className="text-sm text-red-400">{error}</p>}
 
       {data.brandColors.length > 0 && (
         <div>
@@ -135,7 +134,7 @@ export default function StepLogo({ data, onAdvance, onBack }: StepLogoProps) {
             disabled={uploading}
             className="flex-1 rounded-lg border border-white/15 px-6 py-3 font-medium text-text transition-colors hover:bg-bg-2 disabled:cursor-not-allowed disabled:opacity-30"
           >
-            Skip — I don't have a logo
+            Skip — I don&apos;t have a logo
           </button>
         )}
       </div>

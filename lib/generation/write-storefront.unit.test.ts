@@ -46,7 +46,7 @@ const PAGE: GeneratedPage = {
       blockKey: 'hero',
       position: 0,
       content: { headline: 'Hi' },
-      slots: { 'cta': { widgetKey: 'cta-button', content: { label: 'Go' } } },
+      slots: { cta: { widgetKey: 'cta-button', content: { label: 'Go' } } },
     },
     {
       blockKey: 'plain',
@@ -99,7 +99,11 @@ describe('writeStorefront (unit, mocked Supabase)', () => {
   it('flattens slots into block content when slots is non-empty', async () => {
     rpcMock.mockResolvedValue({ data: { tenantId: 't', subdomain: 'shop' }, error: null });
     await writeStorefront(input());
-    const sentPages = (rpcMock.mock.calls[0]?.[1].p_data as { pages: Array<{ blocks: Array<{ content: Record<string, unknown> }> }> }).pages;
+    const sentPages = (
+      rpcMock.mock.calls[0]?.[1].p_data as {
+        pages: Array<{ blocks: Array<{ content: Record<string, unknown> }> }>;
+      }
+    ).pages;
     expect(sentPages[0]?.blocks[0]?.content['slots']).toBeDefined();
     expect(sentPages[0]?.blocks[1]?.content['slots']).toBeUndefined();
   });

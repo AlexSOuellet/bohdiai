@@ -50,26 +50,18 @@ const ROLE_TAG: Record<TextRole, 'p' | 'h1' | 'h2' | 'h3' | 'span'> = {
   caption: 'span',
 };
 
-export function TextContent({
-  node,
-  ctx: _ctx,
-}: {
-  node: TextNode;
-  ctx: RenderContext;
-}) {
+export function TextContent({ node, ctx: _ctx }: { node: TextNode; ctx: RenderContext }) {
   const Tag = ROLE_TAG[node.role];
   const desktopRole = node.role;
   const mobileRole = node.mobile?.role ?? MOBILE_STEP_DOWN[desktopRole];
-  const className = node.mobile?.role !== undefined || desktopRole !== mobileRole
-    ? joinClasses(
-        MOBILE_ROLE_CLASS[mobileRole],
-        DESKTOP_ROLE_CLASS_MD[desktopRole],
-        node.align && ALIGN_CLASS[node.align],
-      )
-    : joinClasses(
-        ROLE_CLASS[desktopRole],
-        node.align && ALIGN_CLASS[node.align],
-      );
+  const className =
+    node.mobile?.role !== undefined || desktopRole !== mobileRole
+      ? joinClasses(
+          MOBILE_ROLE_CLASS[mobileRole],
+          DESKTOP_ROLE_CLASS_MD[desktopRole],
+          node.align && ALIGN_CLASS[node.align],
+        )
+      : joinClasses(ROLE_CLASS[desktopRole], node.align && ALIGN_CLASS[node.align]);
   return (
     <Tag
       data-node-type="text"

@@ -103,8 +103,22 @@ const VALID_STYLE_SHEET = {
     { name: 'C', value: '#1a1a1a', character: 'three' },
   ],
   fonts: [
-    { name: 'D', family: 'Cormorant', source: 'google', weights: [400], fallback: 'serif', character: 'one' },
-    { name: 'E', family: 'Inter', source: 'google', weights: [400], fallback: 'sans-serif', character: 'two' },
+    {
+      name: 'D',
+      family: 'Cormorant',
+      source: 'google',
+      weights: [400],
+      fallback: 'serif',
+      character: 'one',
+    },
+    {
+      name: 'E',
+      family: 'Inter',
+      source: 'google',
+      weights: [400],
+      fallback: 'sans-serif',
+      character: 'two',
+    },
   ],
   textures: [],
 };
@@ -136,10 +150,24 @@ describe('BOHDI_TOOLS', () => {
   it('contains all expected tool names', () => {
     const names = BOHDI_TOOLS.map((t) => t.name);
     for (const expected of [
-      'read_niche', 'read_mood', 'list_blocks', 'list_widgets', 'log_decision',
-      'generate_image', 'set_tokens', 'set_home_page', 'set_secondary_pages_copy',
-      'add_collection', 'add_listing', 'add_subscription', 'set_hero_image',
-      'set_about_image', 'set_about_page', 'finalize', 'set_style_sheet', 'set_layout',
+      'read_niche',
+      'read_mood',
+      'list_blocks',
+      'list_widgets',
+      'log_decision',
+      'generate_image',
+      'set_tokens',
+      'set_home_page',
+      'set_secondary_pages_copy',
+      'add_collection',
+      'add_listing',
+      'add_subscription',
+      'set_hero_image',
+      'set_about_image',
+      'set_about_page',
+      'finalize',
+      'set_style_sheet',
+      'set_layout',
     ]) {
       expect(names).toContain(expected);
     }
@@ -151,8 +179,14 @@ describe('toolsForNiche', () => {
     const { toolsForNiche } = await import('./tools');
     const names = toolsForNiche('candles').map((t) => t.name);
     for (const legacy of [
-      'list_blocks', 'list_widgets', 'set_tokens', 'set_home_page',
-      'set_secondary_pages_copy', 'set_about_page', 'set_hero_image', 'set_about_image',
+      'list_blocks',
+      'list_widgets',
+      'set_tokens',
+      'set_home_page',
+      'set_secondary_pages_copy',
+      'set_about_page',
+      'set_hero_image',
+      'set_about_image',
     ]) {
       expect(names).not.toContain(legacy);
     }
@@ -188,7 +222,10 @@ describe('read_niche', () => {
       data: { display_name: 'Leather', body_markdown: '# body', tenant_type_fit: ['seller'] },
       error: null,
     });
-    const r = await dispatchTool('read_niche', { slug: 'leatherworker' }, makeCtx()) as Record<string, unknown>;
+    const r = (await dispatchTool('read_niche', { slug: 'leatherworker' }, makeCtx())) as Record<
+      string,
+      unknown
+    >;
     expect(r['slug']).toBe('leatherworker');
     expect(r['displayName']).toBe('Leather');
     expect(r['bodyMarkdown']).toBe('# body');
@@ -198,25 +235,35 @@ describe('read_niche', () => {
 
   it('throws when niche is missing', async () => {
     nicheSingleMock.mockResolvedValue({ data: null, error: { message: 'no row' } });
-    await expect(dispatchTool('read_niche', { slug: 'nope' }, makeCtx())).rejects.toThrow('Niche not found');
+    await expect(dispatchTool('read_niche', { slug: 'nope' }, makeCtx())).rejects.toThrow(
+      'Niche not found',
+    );
   });
 });
 
 describe('read_mood', () => {
   it('returns mood metadata', async () => {
-    const r = await dispatchTool('read_mood', { key: 'rustic' }, makeCtx()) as Record<string, unknown>;
+    const r = (await dispatchTool('read_mood', { key: 'rustic' }, makeCtx())) as Record<
+      string,
+      unknown
+    >;
     expect(r['key']).toBe('rustic');
     expect(r['label']).toBeDefined();
   });
 
   it('throws on unknown mood', async () => {
-    await expect(dispatchTool('read_mood', { key: 'unknown' }, makeCtx())).rejects.toThrow('Mood not found');
+    await expect(dispatchTool('read_mood', { key: 'unknown' }, makeCtx())).rejects.toThrow(
+      'Mood not found',
+    );
   });
 });
 
 describe('list_blocks', () => {
   it('returns active blocks for a page type, excluding nav/footer/events-list', async () => {
-    const r = await dispatchTool('list_blocks', { pageType: 'home' }, makeCtx()) as Array<{ key: string; sectionType: string }>;
+    const r = (await dispatchTool('list_blocks', { pageType: 'home' }, makeCtx())) as Array<{
+      key: string;
+      sectionType: string;
+    }>;
     expect(Array.isArray(r)).toBe(true);
     expect(r.length).toBeGreaterThan(0);
     expect(r.every((b) => b.sectionType !== 'nav' && b.sectionType !== 'footer')).toBe(true);
@@ -226,7 +273,7 @@ describe('list_blocks', () => {
 
 describe('list_widgets', () => {
   it('returns active widgets', async () => {
-    const r = await dispatchTool('list_widgets', {}, makeCtx()) as Array<{ key: string }>;
+    const r = (await dispatchTool('list_widgets', {}, makeCtx())) as Array<{ key: string }>;
     expect(Array.isArray(r)).toBe(true);
     expect(r.length).toBe(WIDGETS_MANIFEST.filter((w) => w.status === 'active').length);
   });
@@ -237,30 +284,47 @@ describe('log_decision', () => {
 
   it('inserts a row and returns the id', async () => {
     designChoicesInsertMock.mockResolvedValue({ data: { id: 'd-1' }, error: null });
-    const r = await dispatchTool('log_decision', {
-      decisionType: 'palette',
-      candidates: [{ a: 1 }, { a: 2 }],
-      picked: { a: 1 },
-      reasoning: 'because',
-    }, makeCtx()) as { id: string | null };
+    const r = (await dispatchTool(
+      'log_decision',
+      {
+        decisionType: 'palette',
+        candidates: [{ a: 1 }, { a: 2 }],
+        picked: { a: 1 },
+        reasoning: 'because',
+      },
+      makeCtx(),
+    )) as { id: string | null };
     expect(r.id).toBe('d-1');
   });
 
   it('throws when insert errors', async () => {
     designChoicesInsertMock.mockResolvedValue({ data: null, error: { message: 'boom' } });
-    await expect(dispatchTool('log_decision', {
-      decisionType: 'x',
-      candidates: [{}, {}],
-      picked: {},
-      reasoning: 'r',
-    }, makeCtx())).rejects.toThrow('log_decision failed: boom');
+    await expect(
+      dispatchTool(
+        'log_decision',
+        {
+          decisionType: 'x',
+          candidates: [{}, {}],
+          picked: {},
+          reasoning: 'r',
+        },
+        makeCtx(),
+      ),
+    ).rejects.toThrow('log_decision failed: boom');
   });
 
   it('returns null id when insert returns no data', async () => {
     designChoicesInsertMock.mockResolvedValue({ data: null, error: null });
-    const r = await dispatchTool('log_decision', {
-      decisionType: 'x', candidates: [{}, {}], picked: {}, reasoning: 'r',
-    }, makeCtx()) as { id: string | null };
+    const r = (await dispatchTool(
+      'log_decision',
+      {
+        decisionType: 'x',
+        candidates: [{}, {}],
+        picked: {},
+        reasoning: 'r',
+      },
+      makeCtx(),
+    )) as { id: string | null };
     expect(r.id).toBeNull();
   });
 });
@@ -276,45 +340,61 @@ describe('generate_image', () => {
     generateHeroImageMock.mockResolvedValue('https://x/hero.png');
     const events: unknown[] = [];
     const ctx = makeCtx({ onProgress: (e) => events.push(e) });
-    const r = await dispatchTool('generate_image', { kind: 'hero', prompt: 'p' }, ctx) as { url: string };
+    const r = (await dispatchTool('generate_image', { kind: 'hero', prompt: 'p' }, ctx)) as {
+      url: string;
+    };
     expect(r.url).toBe('https://x/hero.png');
     expect(events.length).toBe(1);
   });
 
   it('about kind calls generateAboutImage', async () => {
     generateAboutImageMock.mockResolvedValue('https://x/about.png');
-    const r = await dispatchTool('generate_image', { kind: 'about', prompt: 'p' }, makeCtx()) as { url: string };
+    const r = (await dispatchTool('generate_image', { kind: 'about', prompt: 'p' }, makeCtx())) as {
+      url: string;
+    };
     expect(r.url).toBe('https://x/about.png');
   });
 
   it('product kind requires slug and calls generateProductImage', async () => {
     generateProductImageMock.mockResolvedValue('https://x/p.png');
-    const r = await dispatchTool('generate_image', { kind: 'product', prompt: 'p', slug: 'wax' }, makeCtx()) as { url: string };
+    const r = (await dispatchTool(
+      'generate_image',
+      { kind: 'product', prompt: 'p', slug: 'wax' },
+      makeCtx(),
+    )) as { url: string };
     expect(r.url).toBe('https://x/p.png');
     expect(generateProductImageMock).toHaveBeenCalled();
   });
 
   it('subscription kind uses subscriptions/ folder', async () => {
     generateProductImageMock.mockResolvedValue('https://x/s.png');
-    await dispatchTool('generate_image', { kind: 'subscription', prompt: 'p', slug: 'box' }, makeCtx());
+    await dispatchTool(
+      'generate_image',
+      { kind: 'subscription', prompt: 'p', slug: 'box' },
+      makeCtx(),
+    );
     const args = generateProductImageMock.mock.calls[0];
     expect(args?.[4]).toBe('subscriptions/box');
   });
 
   it('throws when product/subscription kind has no slug', async () => {
-    await expect(dispatchTool('generate_image', { kind: 'product', prompt: 'p' }, makeCtx())).rejects.toThrow('requires slug');
+    await expect(
+      dispatchTool('generate_image', { kind: 'product', prompt: 'p' }, makeCtx()),
+    ).rejects.toThrow('requires slug');
   });
 
   it('throws when the image generator returns null', async () => {
     generateHeroImageMock.mockResolvedValue(null);
-    await expect(dispatchTool('generate_image', { kind: 'hero', prompt: 'p' }, makeCtx())).rejects.toThrow('returned no URL');
+    await expect(
+      dispatchTool('generate_image', { kind: 'hero', prompt: 'p' }, makeCtx()),
+    ).rejects.toThrow('returned no URL');
   });
 });
 
 describe('set_tokens', () => {
   it('stores tokens on the accumulator', async () => {
     const ctx = makeCtx();
-    const r = await dispatchTool('set_tokens', VALID_TOKENS, ctx) as { ok: boolean };
+    const r = (await dispatchTool('set_tokens', VALID_TOKENS, ctx)) as { ok: boolean };
     expect(r.ok).toBe(true);
     expect(ctx.accumulator.tokens).not.toBeNull();
   });
@@ -323,18 +403,33 @@ describe('set_tokens', () => {
 describe('set_home_page', () => {
   it('stores blocks with default empty slots', async () => {
     const ctx = makeCtx();
-    await dispatchTool('set_home_page', {
-      blocks: [{ blockKey: 'hero-cinematic', position: 0, content: {} }],
-    }, ctx);
+    await dispatchTool(
+      'set_home_page',
+      {
+        blocks: [{ blockKey: 'hero-cinematic', position: 0, content: {} }],
+      },
+      ctx,
+    );
     expect(ctx.accumulator.homePage?.length).toBe(1);
     expect(ctx.accumulator.homePage?.[0]?.slots).toEqual({});
   });
 
   it('preserves provided slots', async () => {
     const ctx = makeCtx();
-    await dispatchTool('set_home_page', {
-      blocks: [{ blockKey: 'x', position: 0, content: {}, slots: { a: { widgetKey: 'w', content: {} } } }],
-    }, ctx);
+    await dispatchTool(
+      'set_home_page',
+      {
+        blocks: [
+          {
+            blockKey: 'x',
+            position: 0,
+            content: {},
+            slots: { a: { widgetKey: 'w', content: {} } },
+          },
+        ],
+      },
+      ctx,
+    );
     expect(ctx.accumulator.homePage?.[0]?.slots?.['a']).toBeDefined();
   });
 });
@@ -342,36 +437,62 @@ describe('set_home_page', () => {
 describe('set_secondary_pages_copy + add_collection + add_listing + add_subscription + image setters + about page', () => {
   it('stores secondary pages copy', async () => {
     const ctx = makeCtx();
-    await dispatchTool('set_secondary_pages_copy', {
-      shop: { eyebrow: 'e', heading: 'h', subheading: 's' },
-      contact: { heading: 'h', subheading: 's', buttonLabel: 'b' },
-    }, ctx);
+    await dispatchTool(
+      'set_secondary_pages_copy',
+      {
+        shop: { eyebrow: 'e', heading: 'h', subheading: 's' },
+        contact: { heading: 'h', subheading: 's', buttonLabel: 'b' },
+      },
+      ctx,
+    );
     expect(ctx.accumulator.shopPageCopy?.heading).toBe('h');
     expect(ctx.accumulator.contactPageCopy?.buttonLabel).toBe('b');
   });
 
   it('add_collection appends', async () => {
     const ctx = makeCtx();
-    const r = await dispatchTool('add_collection', { name: 'n', slug: 's', description: 'd' }, ctx) as { count: number };
+    const r = (await dispatchTool(
+      'add_collection',
+      { name: 'n', slug: 's', description: 'd' },
+      ctx,
+    )) as { count: number };
     expect(r.count).toBe(1);
     expect(ctx.accumulator.collections.length).toBe(1);
   });
 
   it('add_listing appends and zeroes image_prompt', async () => {
     const ctx = makeCtx();
-    await dispatchTool('add_listing', {
-      name: 'n', slug: 's', short_description: 'sd', description: 'd',
-      base_price_cents: 1000, image_url: 'u', collection_slug: null,
-    }, ctx);
+    await dispatchTool(
+      'add_listing',
+      {
+        name: 'n',
+        slug: 's',
+        short_description: 'sd',
+        description: 'd',
+        base_price_cents: 1000,
+        image_url: 'u',
+        collection_slug: null,
+      },
+      ctx,
+    );
     expect(ctx.accumulator.listings[0]?.image_prompt).toBe('');
   });
 
   it('add_subscription appends', async () => {
     const ctx = makeCtx();
-    await dispatchTool('add_subscription', {
-      name: 'n', slug: 's', short_description: 'sd', description: 'd',
-      base_price_cents: 1000, subscription_interval: 'month', image_url: 'u',
-    }, ctx);
+    await dispatchTool(
+      'add_subscription',
+      {
+        name: 'n',
+        slug: 's',
+        short_description: 'sd',
+        description: 'd',
+        base_price_cents: 1000,
+        subscription_interval: 'month',
+        image_url: 'u',
+      },
+      ctx,
+    );
     expect(ctx.accumulator.subscriptions.length).toBe(1);
   });
 
@@ -389,10 +510,18 @@ describe('set_secondary_pages_copy + add_collection + add_listing + add_subscrip
 
   it('set_about_page stores content', async () => {
     const ctx = makeCtx();
-    await dispatchTool('set_about_page', {
-      eyebrow: 'e', headline: 'h', intro: 'i', body: 'b',
-      signatureName: 'n', signatureRole: 'r',
-    }, ctx);
+    await dispatchTool(
+      'set_about_page',
+      {
+        eyebrow: 'e',
+        headline: 'h',
+        intro: 'i',
+        body: 'b',
+        signatureName: 'n',
+        signatureRole: 'r',
+      },
+      ctx,
+    );
     expect(ctx.accumulator.aboutPageContent?.body).toBe('b');
   });
 });
@@ -400,17 +529,22 @@ describe('set_secondary_pages_copy + add_collection + add_listing + add_subscrip
 describe('set_style_sheet + set_layout (layout-engine tools wired through dispatch)', () => {
   it('set_style_sheet delegates to layout-tools handler', async () => {
     const ctx = makeCtx();
-    const r = await dispatchTool('set_style_sheet', VALID_STYLE_SHEET, ctx) as { ok: boolean };
+    const r = (await dispatchTool('set_style_sheet', VALID_STYLE_SHEET, ctx)) as { ok: boolean };
     expect(r.ok).toBe(true);
     expect(ctx.accumulator.styleSheet).not.toBeNull();
   });
 
   it('set_layout delegates to layout-tools handler', async () => {
     const ctx = makeCtx();
-    const r = await dispatchTool('set_layout', {
-      slug: 'home', name: 'Home',
-      root: { type: 'text', role: 'body', content: 'hi' },
-    }, ctx) as { ok: boolean };
+    const r = (await dispatchTool(
+      'set_layout',
+      {
+        slug: 'home',
+        name: 'Home',
+        root: { type: 'text', role: 'body', content: 'hi' },
+      },
+      ctx,
+    )) as { ok: boolean };
     expect(r.ok).toBe(true);
     expect(ctx.accumulator.layoutPages.length).toBe(1);
   });
@@ -432,10 +566,14 @@ describe('finalize — layout engine route', () => {
     const ctx = makeCtx({ brief: makeBrief({ nicheSlug: 'candles' }) });
     ctx.accumulator.styleSheet = VALID_STYLE_SHEET as unknown as BohdiAccumulator['styleSheet'];
     ctx.accumulator.layoutPages = [
-      { slug: 'home', name: 'Home', root: { type: 'text', role: 'body', content: 'x' } } as unknown as BohdiAccumulator['layoutPages'][number],
+      {
+        slug: 'home',
+        name: 'Home',
+        root: { type: 'text', role: 'body', content: 'x' },
+      } as unknown as BohdiAccumulator['layoutPages'][number],
     ];
 
-    const r = await dispatchTool('finalize', {}, ctx) as { tenantId: string };
+    const r = (await dispatchTool('finalize', {}, ctx)) as { tenantId: string };
     expect(r.tenantId).toBe('t-le');
     expect(writeStorefrontLayoutMock).toHaveBeenCalled();
   });
@@ -448,7 +586,15 @@ describe('finalize — legacy route', () => {
     designChoicesUpdateMock.mockClear();
   });
 
-  function primeLegacyAccumulator(ctx: HandlerContext, opts: { withAbout?: boolean; withCollections?: boolean; withSubscriptions?: boolean; withEventsBlock?: boolean } = {}): void {
+  function primeLegacyAccumulator(
+    ctx: HandlerContext,
+    opts: {
+      withAbout?: boolean;
+      withCollections?: boolean;
+      withSubscriptions?: boolean;
+      withEventsBlock?: boolean;
+    } = {},
+  ): void {
     ctx.accumulator.tokens = VALID_TOKENS as unknown as BohdiAccumulator['tokens'];
     const blocks: NonNullable<BohdiAccumulator['homePage']> = [
       { blockKey: 'hero-cinematic', position: 0, content: {}, slots: {} },
@@ -467,17 +613,29 @@ describe('finalize — legacy route', () => {
     ctx.accumulator.contactPageCopy = { heading: 'h', subheading: 's', buttonLabel: 'b' };
     ctx.accumulator.heroImageUrl = 'https://x/hero.png';
     ctx.accumulator.aboutPageContent = {
-      eyebrow: 'e', headline: 'h', intro: 'i', body: 'b', signatureName: 'n', signatureRole: 'r',
+      eyebrow: 'e',
+      headline: 'h',
+      intro: 'i',
+      body: 'b',
+      signatureName: 'n',
+      signatureRole: 'r',
     };
     if (opts.withCollections) {
       ctx.accumulator.collections = [{ name: 'C', slug: 'c', description: 'd' }];
     }
     if (opts.withSubscriptions) {
-      ctx.accumulator.subscriptions = [{
-        name: 'S', slug: 's', short_description: 'sd', description: 'd',
-        base_price_cents: 100, subscription_interval: 'month',
-        image_url: 'u', image_prompt: '',
-      }];
+      ctx.accumulator.subscriptions = [
+        {
+          name: 'S',
+          slug: 's',
+          short_description: 'sd',
+          description: 'd',
+          base_price_cents: 100,
+          subscription_interval: 'month',
+          image_url: 'u',
+          image_prompt: '',
+        },
+      ];
     }
   }
 
@@ -487,7 +645,7 @@ describe('finalize — legacy route', () => {
     const ctx = makeCtx();
     primeLegacyAccumulator(ctx);
 
-    const r = await dispatchTool('finalize', {}, ctx) as { tenantId: string };
+    const r = (await dispatchTool('finalize', {}, ctx)) as { tenantId: string };
     expect(r.tenantId).toBe('t-leg');
     expect(ctx.done.value).toBe(true);
     expect(writeStorefrontMock).toHaveBeenCalled();
@@ -497,11 +655,19 @@ describe('finalize — legacy route', () => {
     nicheSingleMock.mockResolvedValue({ data: null, error: null });
     writeStorefrontMock.mockResolvedValue({ tenantId: 't-3', subdomain: 'shop' });
     const ctx = makeCtx();
-    primeLegacyAccumulator(ctx, { withAbout: true, withCollections: true, withSubscriptions: true, withEventsBlock: true });
+    primeLegacyAccumulator(ctx, {
+      withAbout: true,
+      withCollections: true,
+      withSubscriptions: true,
+      withEventsBlock: true,
+    });
     ctx.accumulator.aboutImageUrl = 'https://x/about.png';
 
     await dispatchTool('finalize', {}, ctx);
-    const input = writeStorefrontMock.mock.calls[0]?.[0] as { tenantTypes: string[]; pages: Array<{ blocks: Array<{ blockKey: string; content: Record<string, string> }> }> };
+    const input = writeStorefrontMock.mock.calls[0]?.[0] as {
+      tenantTypes: string[];
+      pages: Array<{ blocks: Array<{ blockKey: string; content: Record<string, string> }> }>;
+    };
     expect(input.tenantTypes).toEqual(['seller']);
     const homeBlocks = input.pages[0]?.blocks ?? [];
     const navBlock = homeBlocks.find((b) => b.blockKey === 'nav-centered-wordmark');
@@ -527,14 +693,18 @@ describe('finalize — legacy route', () => {
   it('throws when secondary copy missing', async () => {
     const ctx = makeCtx();
     ctx.accumulator.tokens = VALID_TOKENS as unknown as BohdiAccumulator['tokens'];
-    ctx.accumulator.homePage = [{ blockKey: 'hero-cinematic', position: 0, content: {}, slots: {} }];
+    ctx.accumulator.homePage = [
+      { blockKey: 'hero-cinematic', position: 0, content: {}, slots: {} },
+    ];
     await expect(dispatchTool('finalize', {}, ctx)).rejects.toThrow('secondary pages copy not set');
   });
 
   it('throws when hero image missing', async () => {
     const ctx = makeCtx();
     ctx.accumulator.tokens = VALID_TOKENS as unknown as BohdiAccumulator['tokens'];
-    ctx.accumulator.homePage = [{ blockKey: 'hero-cinematic', position: 0, content: {}, slots: {} }];
+    ctx.accumulator.homePage = [
+      { blockKey: 'hero-cinematic', position: 0, content: {}, slots: {} },
+    ];
     ctx.accumulator.shopPageCopy = { eyebrow: 'e', heading: 'h', subheading: 's' };
     ctx.accumulator.contactPageCopy = { heading: 'h', subheading: 's', buttonLabel: 'b' };
     await expect(dispatchTool('finalize', {}, ctx)).rejects.toThrow('hero image not set');
@@ -550,7 +720,12 @@ describe('finalize — legacy route', () => {
     ctx.accumulator.contactPageCopy = { heading: 'h', subheading: 's', buttonLabel: 'b' };
     ctx.accumulator.heroImageUrl = 'https://x/h.png';
     ctx.accumulator.aboutPageContent = {
-      eyebrow: 'e', headline: 'h', intro: 'i', body: 'b', signatureName: 'n', signatureRole: 'r',
+      eyebrow: 'e',
+      headline: 'h',
+      intro: 'i',
+      body: 'b',
+      signatureName: 'n',
+      signatureRole: 'r',
     };
     await expect(dispatchTool('finalize', {}, ctx)).rejects.toThrow('no hero block');
   });
@@ -559,7 +734,9 @@ describe('finalize — legacy route', () => {
     nicheSingleMock.mockResolvedValue({ data: null, error: null });
     const ctx = makeCtx();
     ctx.accumulator.tokens = VALID_TOKENS as unknown as BohdiAccumulator['tokens'];
-    ctx.accumulator.homePage = [{ blockKey: 'hero-cinematic', position: 0, content: {}, slots: {} }];
+    ctx.accumulator.homePage = [
+      { blockKey: 'hero-cinematic', position: 0, content: {}, slots: {} },
+    ];
     ctx.accumulator.shopPageCopy = { eyebrow: 'e', heading: 'h', subheading: 's' };
     ctx.accumulator.contactPageCopy = { heading: 'h', subheading: 's', buttonLabel: 'b' };
     ctx.accumulator.heroImageUrl = 'https://x/h.png';

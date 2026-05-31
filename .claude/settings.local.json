@@ -191,7 +191,21 @@
       "Bash(node tmp/bohdi-report.mjs rhody-stronger)",
       "Bash(node tmp/query-about-cta.mjs)",
       "Bash(node tmp/list-tenants.mjs)",
-      "Bash(git reset *)"
+      "Bash(git reset *)",
+      "Bash(node C:/Projects/BohdiAI/.tmp-cov.mjs)",
+      "PowerShell(Get-Process node -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Force)",
+      "Bash(break)",
+      "Bash(curl -N -s -X POST http://localhost:3000/api/onboarding/generate -H \"Content-Type: application/json\" -d '{\"shopName\":\"Carol'\"'\"'s Candles\",\"subdomain\":\"carol-candles-test\",\"nicheSlug\":\"candles\",\"moodKey\":\"sunset\",\"productCount\":6,\"makerName\":\"Carol\"}')",
+      "mcp__postgres-bohdiai__query",
+      "Bash(sort -t' ' -k5 -rn)",
+      "Bash(npx prettier *)",
+      "Bash(npx eslint *)",
+      "Bash(git ls-files *)",
+      "Bash(git -c core.autocrlf=false diff components/Embers.tsx)",
+      "Bash(git -c core.autocrlf=false diff --ignore-cr-at-eol components/Embers.tsx)",
+      "Bash(git -c core.autocrlf=false diff --ignore-cr-at-eol --name-only)",
+      "Bash(echo \"=== commit result: $? ===\")"
     ]
   }
 }

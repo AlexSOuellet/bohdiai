@@ -2,8 +2,14 @@ import { createFalClient } from '@fal-ai/client';
 import { serverEnv } from '@/lib/env';
 import { supabaseAdmin } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
+import { withTimeout } from '@/lib/with-timeout';
 
 const BUCKET = 'generated-images';
+
+// Hard ceiling on a single fal image call. fal normally returns in well under
+// a minute; if it stalls past this, we abandon the wait and surface a failure
+// rather than letting one image hang the whole build forever.
+export const FAL_IMAGE_TIMEOUT_MS = 90_000;
 
 function falClient() {
   return createFalClient({ credentials: serverEnv().FAL_API_KEY });
@@ -25,16 +31,20 @@ async function generateAndStore(
   const start = Date.now();
 
   try {
-    const result = await falClient().subscribe('fal-ai/flux-pro' as string, {
-      input: {
-        prompt,
-        image_size: imageSize,
-        num_inference_steps: 28,
-        guidance_scale: 3.5,
-        num_images: 1,
-        output_format: 'jpeg',
-      },
-    });
+    const result = await withTimeout(
+      falClient().subscribe('fal-ai/flux-pro' as string, {
+        input: {
+          prompt,
+          image_size: imageSize,
+          num_inference_steps: 28,
+          guidance_scale: 3.5,
+          num_images: 1,
+          output_format: 'jpeg',
+        },
+      }),
+      FAL_IMAGE_TIMEOUT_MS,
+      `fal image (${storagePath})`,
+    );
 
     const latencyMs = Date.now() - start;
     const output = result.data as FalOutput;
@@ -84,7 +94,7 @@ interface MoodSignal {
   moodDescription?: string;
   /** Gender of the human in the image. Inferred from the maker's name when
    *  available; falls back to female (60%+ maker audience). */
-  gender?: import('./name-gender').Gender;
+  gender?: Gender;
 }
 
 function isLowControl(s?: MoodSignal): boolean {

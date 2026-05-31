@@ -80,8 +80,10 @@ describe('loadTickerContent', () => {
   });
 
   it('caps niche tips at 30 entries', async () => {
-    const manyLines = Array.from({ length: 80 }, (_, i) =>
-      `Tip number ${i} is a fully written-out sentence that easily exceeds the forty-character minimum for ticker display.`,
+    const manyLines = Array.from(
+      { length: 80 },
+      (_, i) =>
+        `Tip number ${i} is a fully written-out sentence that easily exceeds the forty-character minimum for ticker display.`,
     ).join('\n');
     singleResponse = { data: { body_markdown: manyLines } };
     const { loadTickerContent } = await import('./ticker-content');

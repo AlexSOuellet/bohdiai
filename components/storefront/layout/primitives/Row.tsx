@@ -22,11 +22,9 @@ export function Row({ node, ctx }: { node: RowNode; ctx: RenderContext }) {
   const collapse = node.mobile?.collapse ?? 'wrap';
   const desktopWrap = node.wrap === true;
 
-  const directionMobile =
-    collapse === 'stack' ? 'flex-col' : 'flex-row';
+  const directionMobile = collapse === 'stack' ? 'flex-col' : 'flex-row';
   const directionDesktop = 'md:flex-row';
-  const wrapMobile =
-    collapse === 'wrap' ? 'flex-wrap' : 'flex-nowrap';
+  const wrapMobile = collapse === 'wrap' ? 'flex-wrap' : 'flex-nowrap';
   const wrapDesktop = desktopWrap ? 'md:flex-wrap' : 'md:flex-nowrap';
 
   return (

@@ -50,9 +50,7 @@ beforeEach(() => {
 
 describe('checkGenerationRateLimit', () => {
   it('starts a new window when no prior row exists (cf-connecting-ip path)', async () => {
-    headersGet.mockImplementation((name) =>
-      name === 'cf-connecting-ip' ? '1.2.3.4' : null,
-    );
+    headersGet.mockImplementation((name) => (name === 'cf-connecting-ip' ? '1.2.3.4' : null));
     maybeSingle.mockResolvedValue({ data: null, error: null });
 
     const { checkGenerationRateLimit } = await import('./rate-limit');
@@ -113,9 +111,7 @@ describe('checkGenerationRateLimit', () => {
   });
 
   it('falls back to "unknown" when x-forwarded-for is empty-comma-only', async () => {
-    headersGet.mockImplementation((name) =>
-      name === 'x-forwarded-for' ? '' : null,
-    );
+    headersGet.mockImplementation((name) => (name === 'x-forwarded-for' ? '' : null));
     maybeSingle.mockResolvedValue({ data: null, error: null });
 
     const { checkGenerationRateLimit } = await import('./rate-limit');

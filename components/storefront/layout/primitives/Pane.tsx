@@ -34,9 +34,7 @@ export function Pane({ node, ctx }: { node: PaneNode; ctx: RenderContext }) {
       data-node-id={node.id}
       style={{
         ...intentToStyleVars(node.intent),
-        ...(fill && node.intent?.palette
-          ? { background: 'var(--node-palette)' }
-          : null),
+        ...(fill && node.intent?.palette ? { background: 'var(--node-palette)' } : null),
       }}
       className={joinClasses(
         PADDING_CLASS[mobilePadding],
@@ -49,10 +47,7 @@ export function Pane({ node, ctx }: { node: PaneNode; ctx: RenderContext }) {
         SHADOW_CLASS_MD[desktopShadow],
       )}
     >
-      <Node
-        node={node.child}
-        ctx={{ ...childCtx, path: childPath(ctx, 'child') }}
-      />
+      <Node node={node.child} ctx={{ ...childCtx, path: childPath(ctx, 'child') }} />
     </div>
   );
 }

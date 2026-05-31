@@ -14,13 +14,7 @@ const ASPECT_CLASS: Record<AspectRatio, string> = {
   auto: '',
 };
 
-export function VideoContent({
-  node,
-  ctx: _ctx,
-}: {
-  node: VideoNode;
-  ctx: RenderContext;
-}) {
+export function VideoContent({ node, ctx: _ctx }: { node: VideoNode; ctx: RenderContext }) {
   const aspect = node.aspect ?? '16:9';
   return (
     <div
@@ -37,7 +31,7 @@ export function VideoContent({
         muted={node.muted ?? node.autoplay === true}
         controls={node.controls ?? !(node.autoplay === true)}
         playsInline
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover"
       />
     </div>
   );

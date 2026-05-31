@@ -31,10 +31,7 @@ export default function StepNiche({ data, niches, onAdvance, onBack }: StepNiche
     ? niches.filter((n) => n.display_name.toLowerCase().includes(query.toLowerCase()))
     : niches;
 
-  const canContinue =
-    selectedSlug !== '' &&
-    shopName.trim() !== '' &&
-    status === 'available';
+  const canContinue = selectedSlug !== '' && shopName.trim() !== '' && status === 'available';
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -51,6 +48,10 @@ export default function StepNiche({ data, niches, onAdvance, onBack }: StepNiche
   // Debounced subdomain availability check
   useEffect(() => {
     const trimmed = shopName.trim();
+    // Intentional: this effect derives availability status from the typed shop
+    // name. Seeding/resetting status synchronously gives immediate feedback —
+    // it is not the sync-props-to-state pattern the rule guards against.
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (!trimmed) {
       setStatus('idle');
       setConfirmedSubdomain('');
@@ -58,6 +59,7 @@ export default function StepNiche({ data, niches, onAdvance, onBack }: StepNiche
     }
 
     setStatus('checking');
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
@@ -116,8 +118,8 @@ export default function StepNiche({ data, niches, onAdvance, onBack }: StepNiche
             open
               ? 'border-honey/60 bg-bg-2 ring-1 ring-honey/40'
               : selectedNiche
-              ? 'border-honey/40 bg-bg-2 text-text'
-              : 'border-white/10 bg-bg-2 text-muted',
+                ? 'border-honey/40 bg-bg-2 text-text'
+                : 'border-white/10 bg-bg-2 text-muted',
           ].join(' ')}
         >
           <span className={selectedNiche ? 'text-text' : 'text-muted'}>
@@ -156,7 +158,9 @@ export default function StepNiche({ data, niches, onAdvance, onBack }: StepNiche
                   </li>
                 ))
               ) : (
-                <li className="px-4 py-3 text-sm text-muted">No matches — more niches coming soon.</li>
+                <li className="px-4 py-3 text-sm text-muted">
+                  No matches — more niches coming soon.
+                </li>
               )}
             </ul>
           </div>
@@ -203,7 +207,7 @@ export default function StepNiche({ data, niches, onAdvance, onBack }: StepNiche
                 </>
               )}
               {status === 'error' && (
-                <span className="text-muted">Couldn't check availability — try again</span>
+                <span className="text-muted">Couldn&apos;t check availability — try again</span>
               )}
             </div>
           )}

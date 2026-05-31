@@ -30,15 +30,16 @@ function nextResponse(table: string): TableResponse {
 
 function makeBuilder(record: QueryRecord, response: TableResponse): unknown {
   const builder: Record<string, unknown> = {};
-  const chain = (op: string) => (...args: unknown[]) => {
-    record.ops.push({ op, args });
-    return builder;
-  };
+  const chain =
+    (op: string) =>
+    (...args: unknown[]) => {
+      record.ops.push({ op, args });
+      return builder;
+    };
   for (const op of ['select', 'eq', 'in', 'is', 'order', 'limit', 'gte']) {
     builder[op] = chain(op);
   }
-  builder['maybeSingle'] = () =>
-    Promise.resolve({ data: response.data ?? null, error: null });
+  builder['maybeSingle'] = () => Promise.resolve({ data: response.data ?? null, error: null });
   // The thenable: the builder itself can be awaited to get { data, count }.
   builder['then'] = (onFulfilled: (v: { data: unknown; count?: number; error: null }) => unknown) =>
     Promise.resolve({
@@ -88,24 +89,40 @@ describe('createResolveContextForTenant — tenantId', () => {
 
 describe('fetchProducts', () => {
   it('queries listings with tenant + product + active filters', async () => {
-    setResponse('listings', [{
-      data: [{
-        id: '1', slug: 's', name: 'N',
-        short_description: 'd', base_price_cents: 1200, is_preview: false,
-        metadata: { image_url: 'https://i/x.jpg' },
-      }],
-    }]);
+    setResponse('listings', [
+      {
+        data: [
+          {
+            id: '1',
+            slug: 's',
+            name: 'N',
+            short_description: 'd',
+            base_price_cents: 1200,
+            is_preview: false,
+            metadata: { image_url: 'https://i/x.jpg' },
+          },
+        ],
+      },
+    ]);
     const ctx = createResolveContextForTenant('t1');
     const result = await ctx.fetchProducts({ count: 5, order: 'featured' });
 
-    expect(result).toEqual([{
-      id: '1', slug: 's', name: 'N',
-      shortDescription: 'd', priceCents: 1200, imageUrl: 'https://i/x.jpg',
-      isPreview: false,
-    }]);
+    expect(result).toEqual([
+      {
+        id: '1',
+        slug: 's',
+        name: 'N',
+        shortDescription: 'd',
+        priceCents: 1200,
+        imageUrl: 'https://i/x.jpg',
+        isPreview: false,
+      },
+    ]);
     const r = recordsFor('listings')[0]!;
     expect(r.ops.find((o) => o.op === 'eq' && o.args[0] === 'tenant_id')!.args[1]).toBe('t1');
-    expect(r.ops.find((o) => o.op === 'eq' && o.args[0] === 'listing_type')!.args[1]).toBe('product');
+    expect(r.ops.find((o) => o.op === 'eq' && o.args[0] === 'listing_type')!.args[1]).toBe(
+      'product',
+    );
     expect(r.ops.find((o) => o.op === 'limit')!.args[0]).toBe(5);
     expect(r.ops.find((o) => o.op === 'order')!.args[0]).toBe('created_at');
   });
@@ -121,31 +138,40 @@ describe('fetchProducts', () => {
     setResponse('collections', [{ data: { id: 'coll-1' } }]);
     const ctx = createResolveContextForTenant('t1');
     await ctx.fetchProducts({
-      count: 3, order: 'featured', filter: { collectionSlug: 'wax' },
+      count: 3,
+      order: 'featured',
+      filter: { collectionSlug: 'wax' },
     });
     const collRec = recordsFor('collections')[0]!;
     expect(collRec.ops.find((o) => o.op === 'eq' && o.args[0] === 'slug')!.args[1]).toBe('wax');
     const listingsRec = recordsFor('listings')[0]!;
-    expect(listingsRec.ops.find((o) => o.op === 'eq' && o.args[0] === 'primary_collection_id')!.args[1])
-      .toBe('coll-1');
+    expect(
+      listingsRec.ops.find((o) => o.op === 'eq' && o.args[0] === 'primary_collection_id')!.args[1],
+    ).toBe('coll-1');
   });
 
   it('does not chain primary_collection_id eq when collection lookup is null', async () => {
     setResponse('collections', [{ data: null }]);
     const ctx = createResolveContextForTenant('t1');
     await ctx.fetchProducts({
-      count: 3, order: 'featured', filter: { collectionSlug: 'missing' },
+      count: 3,
+      order: 'featured',
+      filter: { collectionSlug: 'missing' },
     });
     const listingsRec = recordsFor('listings')[0]!;
-    expect(listingsRec.ops.some((o) => o.op === 'eq' && o.args[0] === 'primary_collection_id')).toBe(false);
+    expect(
+      listingsRec.ops.some((o) => o.op === 'eq' && o.args[0] === 'primary_collection_id'),
+    ).toBe(false);
   });
 
   it('orders by newest/oldest/price-asc/price-desc/manual', async () => {
     const ctx = createResolveContextForTenant('t1');
     const orders = ['newest', 'oldest', 'price-asc', 'price-desc', 'manual'] as const;
     const expectedCol = {
-      newest: 'created_at', oldest: 'created_at',
-      'price-asc': 'base_price_cents', 'price-desc': 'base_price_cents',
+      newest: 'created_at',
+      oldest: 'created_at',
+      'price-asc': 'base_price_cents',
+      'price-desc': 'base_price_cents',
       manual: 'created_at',
     } as const;
     for (const order of orders) {
@@ -172,26 +198,42 @@ describe('fetchProducts', () => {
   });
 
   it('omits optional fields when source columns are null', async () => {
-    setResponse('listings', [{
-      data: [{
-        id: '1', slug: 's', name: 'N',
-        short_description: null, base_price_cents: null,
-        is_preview: null, metadata: null,
-      }],
-    }]);
+    setResponse('listings', [
+      {
+        data: [
+          {
+            id: '1',
+            slug: 's',
+            name: 'N',
+            short_description: null,
+            base_price_cents: null,
+            is_preview: null,
+            metadata: null,
+          },
+        ],
+      },
+    ]);
     const ctx = createResolveContextForTenant('t1');
     const [p] = await ctx.fetchProducts({ count: 1, order: 'featured' });
     expect(p).toEqual({ id: '1', slug: 's', name: 'N', isPreview: false });
   });
 
   it('drops empty-string image_url from metadata', async () => {
-    setResponse('listings', [{
-      data: [{
-        id: '1', slug: 's', name: 'N',
-        short_description: null, base_price_cents: null, is_preview: true,
-        metadata: { image_url: '' },
-      }],
-    }]);
+    setResponse('listings', [
+      {
+        data: [
+          {
+            id: '1',
+            slug: 's',
+            name: 'N',
+            short_description: null,
+            base_price_cents: null,
+            is_preview: true,
+            metadata: { image_url: '' },
+          },
+        ],
+      },
+    ]);
     const ctx = createResolveContextForTenant('t1');
     const [p] = await ctx.fetchProducts({ count: 1, order: 'featured' });
     expect(p?.imageUrl).toBeUndefined();
@@ -201,13 +243,19 @@ describe('fetchProducts', () => {
 
 describe('fetchProduct', () => {
   it('returns mapped product when found', async () => {
-    setResponse('listings', [{
-      data: {
-        id: 'px', slug: 'sx', name: 'Nx',
-        short_description: 'd', base_price_cents: 500, is_preview: false,
-        metadata: { image_url: 'https://i/y.jpg' },
+    setResponse('listings', [
+      {
+        data: {
+          id: 'px',
+          slug: 'sx',
+          name: 'Nx',
+          short_description: 'd',
+          base_price_cents: 500,
+          is_preview: false,
+          metadata: { image_url: 'https://i/y.jpg' },
+        },
       },
-    }]);
+    ]);
     const ctx = createResolveContextForTenant('t1');
     const product = await ctx.fetchProduct('px');
     expect(product?.id).toBe('px');
@@ -223,14 +271,17 @@ describe('fetchProduct', () => {
 
 describe('fetchCollections', () => {
   it('returns mapped collections with itemCount from a follow-up count query', async () => {
-    setResponse('collections', [{ data: [{ id: 'c1', slug: 'wax', name: 'Wax', description: null }] }]);
+    setResponse('collections', [
+      { data: [{ id: 'c1', slug: 'wax', name: 'Wax', description: null }] },
+    ]);
     setResponse('listings', [{ data: null, count: 7 }]);
     const ctx = createResolveContextForTenant('t1');
     const result = await ctx.fetchCollections({ count: 3, order: 'newest' });
     expect(result).toEqual([{ slug: 'wax', name: 'Wax', itemCount: 7 }]);
     const listingsRec = recordsFor('listings')[0]!;
-    expect(listingsRec.ops.find((o) => o.op === 'eq' && o.args[0] === 'primary_collection_id')!.args[1])
-      .toBe('c1');
+    expect(
+      listingsRec.ops.find((o) => o.op === 'eq' && o.args[0] === 'primary_collection_id')!.args[1],
+    ).toBe('c1');
   });
 
   it('uses in() when manualSlugs provided', async () => {
@@ -258,7 +309,9 @@ describe('fetchCollections', () => {
 
 describe('fetchCollection', () => {
   it('returns mapped collection with itemCount', async () => {
-    setResponse('collections', [{ data: { id: 'c1', slug: 'wax', name: 'Wax', description: null } }]);
+    setResponse('collections', [
+      { data: { id: 'c1', slug: 'wax', name: 'Wax', description: null } },
+    ]);
     setResponse('listings', [{ data: null, count: 4 }]);
     const ctx = createResolveContextForTenant('t1');
     const c = await ctx.fetchCollection('wax');
@@ -282,19 +335,35 @@ describe('fetchCollection', () => {
 
 describe('fetchSubscriptions', () => {
   it('maps subscription rows', async () => {
-    setResponse('listings', [{
-      data: [{
-        id: 's1', slug: 'sub', name: 'Sub',
-        short_description: 'd', base_price_cents: 999, is_preview: false,
-        metadata: null, subscription_interval: 'yearly', description: 'x',
-      }],
-    }]);
+    setResponse('listings', [
+      {
+        data: [
+          {
+            id: 's1',
+            slug: 'sub',
+            name: 'Sub',
+            short_description: 'd',
+            base_price_cents: 999,
+            is_preview: false,
+            metadata: null,
+            subscription_interval: 'yearly',
+            description: 'x',
+          },
+        ],
+      },
+    ]);
     const ctx = createResolveContextForTenant('t1');
     const subs = await ctx.fetchSubscriptions(5);
-    expect(subs).toEqual([{
-      id: 's1', name: 'Sub', priceCents: 999, interval: 'yearly',
-      description: 'd', perks: [],
-    }]);
+    expect(subs).toEqual([
+      {
+        id: 's1',
+        name: 'Sub',
+        priceCents: 999,
+        interval: 'yearly',
+        description: 'd',
+        perks: [],
+      },
+    ]);
   });
 
   it('returns [] for null data and uses defaults for null fields', async () => {
@@ -304,13 +373,23 @@ describe('fetchSubscriptions', () => {
   });
 
   it('falls back to priceCents=0 and interval=monthly when null', async () => {
-    setResponse('listings', [{
-      data: [{
-        id: 's', slug: 's', name: 'n',
-        short_description: null, base_price_cents: null, is_preview: false,
-        metadata: null, subscription_interval: null, description: null,
-      }],
-    }]);
+    setResponse('listings', [
+      {
+        data: [
+          {
+            id: 's',
+            slug: 's',
+            name: 'n',
+            short_description: null,
+            base_price_cents: null,
+            is_preview: false,
+            metadata: null,
+            subscription_interval: null,
+            description: null,
+          },
+        ],
+      },
+    ]);
     const ctx = createResolveContextForTenant('t1');
     const [s] = await ctx.fetchSubscriptions(3);
     expect(s).toEqual({ id: 's', name: 'n', priceCents: 0, interval: 'monthly', perks: [] });
@@ -319,13 +398,21 @@ describe('fetchSubscriptions', () => {
 
 describe('fetchSubscription', () => {
   it('returns mapped subscription', async () => {
-    setResponse('listings', [{
-      data: {
-        id: 's', slug: 's', name: 'n',
-        short_description: 'd', base_price_cents: 1, is_preview: false,
-        metadata: null, subscription_interval: 'monthly', description: 'd',
+    setResponse('listings', [
+      {
+        data: {
+          id: 's',
+          slug: 's',
+          name: 'n',
+          short_description: 'd',
+          base_price_cents: 1,
+          is_preview: false,
+          metadata: null,
+          subscription_interval: 'monthly',
+          description: 'd',
+        },
       },
-    }]);
+    ]);
     const ctx = createResolveContextForTenant('t1');
     const s = await ctx.fetchSubscription('s');
     expect(s?.priceCents).toBe(1);
@@ -347,12 +434,14 @@ describe('fetchSocialLinks', () => {
 
 describe('fetchNavLinks', () => {
   it('maps rows using nav_label when set, else title; preserves nav_position; falls back to index when null', async () => {
-    setResponse('content_pages', [{
-      data: [
-        { slug: 'about', title: 'About', nav_label: 'About us', nav_position: 1 },
-        { slug: 'shop', title: 'Shop', nav_label: null, nav_position: null },
-      ],
-    }]);
+    setResponse('content_pages', [
+      {
+        data: [
+          { slug: 'about', title: 'About', nav_label: 'About us', nav_position: 1 },
+          { slug: 'shop', title: 'Shop', nav_label: null, nav_position: null },
+        ],
+      },
+    ]);
     const ctx = createResolveContextForTenant('t1');
     const result = await ctx.fetchNavLinks();
     expect(result).toEqual([
@@ -370,12 +459,14 @@ describe('fetchNavLinks', () => {
 
 describe('fetchEvents', () => {
   it('returns mapped events and applies upcoming filter', async () => {
-    setResponse('events', [{
-      data: [
-        { id: 'e1', name: 'Show', event_date: '2026-07-01', location: 'Mall', notes: 'fun' },
-        { id: 'e2', name: 'X', event_date: '2026-08-01', location: null, notes: null },
-      ],
-    }]);
+    setResponse('events', [
+      {
+        data: [
+          { id: 'e1', name: 'Show', event_date: '2026-07-01', location: 'Mall', notes: 'fun' },
+          { id: 'e2', name: 'X', event_date: '2026-08-01', location: null, notes: null },
+        ],
+      },
+    ]);
     const ctx = createResolveContextForTenant('t1');
     const result = await ctx.fetchEvents({ count: 5, upcoming: true });
     expect(result).toEqual([
