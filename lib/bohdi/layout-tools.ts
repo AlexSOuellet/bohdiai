@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { sanitizeDeep } from '@/lib/copy-sanitize';
 import { writeStorefrontLayout } from '@/lib/generation/write-storefront-layout';
 import { StyleSheetSchema } from '@/lib/style-sheet';
+import { validateDesignSystem } from '@/lib/design-system/validate';
 import { validatePage } from '@/lib/layout';
 import { logger } from '@/lib/logger';
 import type { BohdiToolDef, HandlerContext } from './tools';
@@ -11,10 +12,25 @@ export const BOHDI_LAYOUT_TOOLS: BohdiToolDef[] = [
   {
     name: 'set_style_sheet',
     description:
-      'Author the style sheet for this storefront — the vocabulary of color, type, and texture Bohdi will paint with. Three arrays.\n\n' +
-      'palette: 6-15 named colors. Each entry: { name: human-readable name; value: hex (#rrggbb); character: 1-3 sentences describing what this color IS (the world it comes from, the feeling it carries). Roles are NOT declared here — Bohdi assigns roles per composition by attaching palette intent to nodes. }\n\n' +
-      "fonts: 3-10 named typefaces. Each entry: { name: human-readable name; family: exact font-family string; source: 'google' | 'system' | 'custom'; weights: array of 100-900 multiples; styles: optional ['normal'] or ['normal','italic']; fallback: 'sans-serif' | 'serif' | 'monospace' | 'cursive' | 'system-ui'; character: 1-3 sentences describing the typeface's voice; customUrl: required if source='custom'. } No font is tagged 'heading' or 'body' — Bohdi assigns type roles per composition.\n\n" +
-      "textures: 0-8 named surface treatments. Each entry: { name; value: CSS image value (e.g. url(...), linear-gradient(...)); character: 1-3 sentences describing the texture's feel. }",
+      'Author the complete design system for this storefront. Call this FIRST, before any set_layout call. The system you define here is the authority — every page is composed against it.\n\n' +
+      '## palette (6-15 named colors)\n' +
+      'Named accent colors for painting nodes. Each: { name, value: hex (#rrggbb), character: 1-3 sentences describing what this color IS. }\n' +
+      'Roles are NOT declared here — assign palette intent to nodes when composing pages.\n\n' +
+      '## fonts (2-10 named typefaces)\n' +
+      "Each: { name, family: exact font-family string, source: 'google'|'system'|'custom', weights: [100-900 multiples], styles?: ['normal','italic'], fallback: 'sans-serif'|'serif'|'monospace'|'cursive'|'system-ui', character: 1-3 sentences, customUrl?: required if source='custom'. }\n" +
+      'No font is tagged heading or body here — roles are assigned in typeScale.\n\n' +
+      '## textures (0-8 named surface treatments)\n' +
+      'Each: { name, value: CSS image value, character }.\n\n' +
+      '## semanticColors — the page foundation derived from M3 color math\n' +
+      '{ primarySeedColor: hex — the one brand color that drives the whole palette; scheme: "light" | "dark" }.\n' +
+      'The full contrast-correct set (surface, on-surface, primary, on-primary, etc.) is derived automatically. For dark moods use "dark"; everything else defaults to "light".\n\n' +
+      '## typeScale — the typography system (all 5 roles required)\n' +
+      'Roles: eyebrow · headline · sub · body · caption.\n' +
+      'Each role: { fontName: must match a name in fonts[]; sizePx: desktop px (≥14); sizeMobilePx: mobile px (≥14, ≤sizePx); weight: 100-900; lineHeight: unitless; letterSpacing?: CSS value; uppercase?: boolean }.\n' +
+      'The renderer reads ONLY from these values — not from any hardcoded defaults. If you do not set a role, it has no size.\n' +
+      'Minimum: every size ≥ 14px. A system with any size below 14px will be rejected.\n\n' +
+      '## spacing\n' +
+      '{ unit: base spacing unit in px, 4-32. 8 is the standard. }',
     input_schema: {
       type: 'object',
       properties: {
@@ -40,10 +56,7 @@ export const BOHDI_LAYOUT_TOOLS: BohdiToolDef[] = [
               source: { type: 'string', enum: ['google', 'system', 'custom'] },
               weights: {
                 type: 'array',
-                items: {
-                  type: 'integer',
-                  enum: [100, 200, 300, 400, 500, 600, 700, 800, 900],
-                },
+                items: { type: 'integer', enum: [100, 200, 300, 400, 500, 600, 700, 800, 900] },
               },
               styles: {
                 type: 'array',
@@ -71,8 +84,49 @@ export const BOHDI_LAYOUT_TOOLS: BohdiToolDef[] = [
             required: ['name', 'value', 'character'],
           },
         },
+        semanticColors: {
+          type: 'object',
+          properties: {
+            primarySeedColor: { type: 'string', description: 'Hex color (#rrggbb).' },
+            scheme: { type: 'string', enum: ['light', 'dark'] },
+          },
+          required: ['primarySeedColor', 'scheme'],
+        },
+        typeScale: {
+          type: 'object',
+          description: 'All 5 roles required: eyebrow, headline, sub, body, caption.',
+          properties: Object.fromEntries(
+            ['eyebrow', 'headline', 'sub', 'body', 'caption'].map((role) => [
+              role,
+              {
+                type: 'object',
+                properties: {
+                  fontName: { type: 'string', description: 'Must match a name in fonts[].' },
+                  sizePx: { type: 'integer', description: 'Desktop size in px. Min 14.' },
+                  sizeMobilePx: {
+                    type: 'integer',
+                    description: 'Mobile size in px. Min 14, max sizePx.',
+                  },
+                  weight: { type: 'integer', enum: [100, 200, 300, 400, 500, 600, 700, 800, 900] },
+                  lineHeight: { type: 'number', description: 'Unitless. E.g. 1.5.' },
+                  letterSpacing: { type: 'string', description: 'CSS value, e.g. "0.05em".' },
+                  uppercase: { type: 'boolean' },
+                },
+                required: ['fontName', 'sizePx', 'sizeMobilePx', 'weight', 'lineHeight'],
+              },
+            ]),
+          ),
+          required: ['eyebrow', 'headline', 'sub', 'body', 'caption'],
+        },
+        spacing: {
+          type: 'object',
+          properties: {
+            unit: { type: 'integer', description: 'Base spacing unit in px. 4-32. Use 8.' },
+          },
+          required: ['unit'],
+        },
       },
-      required: ['palette', 'fonts', 'textures'],
+      required: ['palette', 'fonts', 'textures', 'semanticColors', 'typeScale', 'spacing'],
     },
   },
   {
@@ -136,6 +190,9 @@ interface SetStyleSheetArgs {
   palette: unknown;
   fonts: unknown;
   textures: unknown;
+  semanticColors: unknown;
+  typeScale: unknown;
+  spacing: unknown;
 }
 
 interface SetLayoutArgs {
@@ -163,10 +220,14 @@ export async function handleSetStyleSheet(
       })),
     };
   }
+  const dsValidation = validateDesignSystem(parsed.data);
+  if (!dsValidation.ok) {
+    return { ok: false, issues: dsValidation.issues };
+  }
   accumulator.styleSheet = parsed.data;
   return {
     ok: true,
-    message: `Style sheet set. Palette: ${parsed.data.palette.length} colors. Fonts: ${parsed.data.fonts.length}. Textures: ${parsed.data.textures.length}.`,
+    message: `Design system set. Palette: ${parsed.data.palette.length} colors. Fonts: ${parsed.data.fonts.length}. Type scale: all 5 roles defined. Seed: ${parsed.data.semanticColors.primarySeedColor} (${parsed.data.semanticColors.scheme}).`,
   };
 }
 

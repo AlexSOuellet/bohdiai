@@ -4,7 +4,7 @@ import { systemPromptFor, BOHDI_SYSTEM_PROMPT } from './system-prompt';
 describe('systemPromptFor', () => {
   it('returns the layout-engine prompt for candles', () => {
     const p = systemPromptFor('candles');
-    expect(p).toContain('THE STYLE SHEET');
+    expect(p).toContain('THE DESIGN SYSTEM');
     expect(p).toContain('LAYOUT PRIMITIVES');
     expect(p).toContain('set_style_sheet');
   });

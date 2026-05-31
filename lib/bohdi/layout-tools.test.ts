@@ -77,6 +77,15 @@ const VALID_STYLE_SHEET: StyleSheet = {
     },
   ],
   textures: [],
+  semanticColors: { primarySeedColor: '#a0522d', scheme: 'light' },
+  typeScale: {
+    eyebrow: { fontName: 'Body', sizePx: 14, sizeMobilePx: 14, weight: 500, lineHeight: 1.4 },
+    headline: { fontName: 'Display', sizePx: 48, sizeMobilePx: 28, weight: 700, lineHeight: 1.05 },
+    sub: { fontName: 'Display', sizePx: 24, sizeMobilePx: 20, weight: 600, lineHeight: 1.2 },
+    body: { fontName: 'Body', sizePx: 18, sizeMobilePx: 16, weight: 400, lineHeight: 1.6 },
+    caption: { fontName: 'Body', sizePx: 14, sizeMobilePx: 14, weight: 400, lineHeight: 1.4 },
+  },
+  spacing: { unit: 8 },
 };
 
 const VALID_PAGE_INPUT = {
@@ -121,7 +130,7 @@ describe('handleSetStyleSheet', () => {
     if (r.ok) {
       expect(r.message).toContain('Palette: 3');
       expect(r.message).toContain('Fonts: 2');
-      expect(r.message).toContain('Textures: 0');
+      expect(r.message).toContain('Type scale');
     }
     expect(a.styleSheet).not.toBeNull();
   });

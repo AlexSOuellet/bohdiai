@@ -28,10 +28,21 @@ const validTexture = (i: number) => ({
   character: 'subtle paper grain',
 });
 
+const validTypeScale = () => ({
+  eyebrow: { fontName: 'Font 2', sizePx: 14, sizeMobilePx: 14, weight: 500, lineHeight: 1.4 },
+  headline: { fontName: 'Font 1', sizePx: 48, sizeMobilePx: 28, weight: 700, lineHeight: 1.05 },
+  sub: { fontName: 'Font 1', sizePx: 24, sizeMobilePx: 20, weight: 600, lineHeight: 1.2 },
+  body: { fontName: 'Font 2', sizePx: 18, sizeMobilePx: 16, weight: 400, lineHeight: 1.6 },
+  caption: { fontName: 'Font 2', sizePx: 14, sizeMobilePx: 14, weight: 400, lineHeight: 1.4 },
+});
+
 const validSheet = () => ({
   palette: [validPalette(1), validPalette(2), validPalette(3)],
   fonts: [validFont(1), validFont(2)],
   textures: [validTexture(1)],
+  semanticColors: { primarySeedColor: '#a0522d', scheme: 'light' as const },
+  typeScale: validTypeScale(),
+  spacing: { unit: 8 },
 });
 
 describe('slugifyEntry', () => {

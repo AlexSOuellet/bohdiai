@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TypeScaleSchema, SemanticColorsSeedSchema, SpacingSchema } from './design-system/schema';
 
 const HexColorSchema = z.string().regex(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/, {
   message: 'palette value must be a hex color (#rgb, #rrggbb, or #rrggbbaa)',
@@ -57,6 +58,9 @@ export const StyleSheetSchema = z
     palette: z.array(PaletteEntrySchema).min(3).max(24),
     fonts: z.array(FontEntrySchema).min(2).max(16),
     textures: z.array(TextureEntrySchema).max(12),
+    semanticColors: SemanticColorsSeedSchema,
+    typeScale: TypeScaleSchema,
+    spacing: SpacingSchema,
   })
   .strict()
   .superRefine((sheet, ctx) => {

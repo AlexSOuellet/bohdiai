@@ -3,62 +3,6 @@ import type { RenderContext } from '../Node';
 import { intentToStyleVars } from '../intent';
 import { joinClasses } from '../scale';
 
-const ROLE_CLASS: Record<TextRole, string> = {
-  eyebrow: 'text-xs uppercase tracking-[0.2em] font-medium opacity-80',
-  headline: 'text-4xl md:text-6xl font-semibold leading-[1.05] tracking-tight',
-  sub: 'text-xl md:text-2xl font-medium leading-snug',
-  body: 'text-base md:text-lg leading-relaxed',
-  caption: 'text-sm opacity-70',
-};
-
-// Mobile (base) role class — desktop sizes get scoped under md: prefix so they win.
-const MOBILE_ROLE_CLASS: Record<TextRole, string> = {
-  eyebrow: 'text-[0.65rem] uppercase tracking-[0.18em] font-medium opacity-80',
-  headline: 'text-3xl font-semibold leading-[1.1] tracking-tight',
-  sub: 'text-lg font-medium leading-snug',
-  body: 'text-sm leading-relaxed',
-  caption: 'text-xs opacity-70',
-};
-
-const DESKTOP_ROLE_CLASS_MD: Record<TextRole, string> = {
-  eyebrow: 'md:text-xs md:tracking-[0.2em]',
-  headline: 'md:text-6xl md:leading-[1.05]',
-  sub: 'md:text-2xl',
-  body: 'md:text-lg',
-  caption: 'md:text-sm',
-};
-
-const MOBILE_STEP_DOWN: Record<TextRole, TextRole> = {
-  eyebrow: 'eyebrow',
-  headline: 'sub',
-  sub: 'body',
-  body: 'caption',
-  caption: 'caption',
-};
-
-// Script fonts (cursive fallback) are drawn to flow in lowercase; forcing
-// uppercase + wide tracking on them breaks the joined letterforms. For a script
-// eyebrow we drop both so the font can render as designed. Non-eyebrow roles and
-// non-script fonts are unaffected.
-const SCRIPT_EYEBROW = 'text-2xl font-medium';
-const SCRIPT_EYEBROW_MOBILE = 'text-lg font-medium';
-const SCRIPT_EYEBROW_MD = 'md:text-2xl';
-
-export function roleClass(role: TextRole, isScript: boolean): string {
-  if (isScript && role === 'eyebrow') return SCRIPT_EYEBROW;
-  return ROLE_CLASS[role];
-}
-
-export function mobileRoleClass(role: TextRole, isScript: boolean): string {
-  if (isScript && role === 'eyebrow') return SCRIPT_EYEBROW_MOBILE;
-  return MOBILE_ROLE_CLASS[role];
-}
-
-export function desktopMdClass(role: TextRole, isScript: boolean): string {
-  if (isScript && role === 'eyebrow') return SCRIPT_EYEBROW_MD;
-  return DESKTOP_ROLE_CLASS_MD[role];
-}
-
 const ALIGN_CLASS: Record<TextAlign, string> = {
   start: 'text-left',
   center: 'text-center',
@@ -73,31 +17,32 @@ const ROLE_TAG: Record<TextRole, 'p' | 'h1' | 'h2' | 'h3' | 'span'> = {
   caption: 'span',
 };
 
-export function TextContent({ node, ctx }: { node: TextNode; ctx: RenderContext }) {
+export function TextContent({ node, ctx: _ctx }: { node: TextNode; ctx: RenderContext }) {
   const Tag = ROLE_TAG[node.role];
-  const desktopRole = node.role;
-  const mobileRole = node.mobile?.role ?? MOBILE_STEP_DOWN[desktopRole];
-  const isScript =
-    node.intent?.type !== undefined && (ctx.scriptFonts?.has(node.intent.type) ?? false);
-  const className =
-    node.mobile?.role !== undefined || desktopRole !== mobileRole
-      ? joinClasses(
-          mobileRoleClass(mobileRole, isScript),
-          desktopMdClass(desktopRole, isScript),
-          node.align && ALIGN_CLASS[node.align],
-        )
-      : joinClasses(roleClass(desktopRole, isScript), node.align && ALIGN_CLASS[node.align]);
+  const role = node.role;
+
+  // Type scale values come entirely from CSS variables set by the compiled design system.
+  // The mobile size is the default; the @media (min-width: 768px) block overrides it.
+  const typeStyle: React.CSSProperties = {
+    fontFamily: `var(--type-${role}-font)`,
+    fontSize: `var(--type-${role}-size)`,
+    fontWeight: `var(--type-${role}-weight)` as React.CSSProperties['fontWeight'],
+    lineHeight: `var(--type-${role}-line-height)`,
+    letterSpacing: `var(--type-${role}-letter-spacing, normal)`,
+    textTransform: `var(--type-${role}-transform, none)` as React.CSSProperties['textTransform'],
+  };
+
   return (
     <Tag
       data-node-type="text"
-      data-node-role={desktopRole}
-      data-node-role-mobile={mobileRole}
+      data-node-role={role}
       data-node-id={node.id}
       style={{
+        ...typeStyle,
         ...intentToStyleVars(node.intent),
         ...(node.intent?.palette ? { color: 'var(--node-palette)' } : null),
       }}
-      className={className}
+      className={joinClasses(node.align && ALIGN_CLASS[node.align])}
     >
       {node.content}
     </Tag>

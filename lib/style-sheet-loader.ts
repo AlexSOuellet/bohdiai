@@ -1,5 +1,7 @@
 import type { StyleSheet } from './style-sheet';
 import { slugifyEntry } from './style-sheet';
+import { deriveSemanticColors } from './design-system/derive';
+import { compileDesignSystemVars } from './design-system/compile';
 
 export interface CompiledStyleSheet {
   cssVariables: string;
@@ -43,7 +45,26 @@ export function compileStyleSheet(sheet: StyleSheet): CompiledStyleSheet {
   const fontLines = sheet.fonts.map((f) => fontVariableLine(f.name, f.family, f.fallback));
   const textureLines = sheet.textures.map((t) => textureVariableLine(t.name, t.value));
 
-  const cssVariables = [':root {', ...paletteLines, ...fontLines, ...textureLines, '}'].join('\n');
+  // Derive semantic colors from M3 seed and compile design system vars
+  const semanticColors = deriveSemanticColors(
+    sheet.semanticColors.primarySeedColor,
+    sheet.semanticColors.scheme,
+  );
+  const { rootLines: dsRootLines, mediaLines: dsMediaLines } = compileDesignSystemVars(
+    sheet,
+    semanticColors,
+  );
+
+  // Merge palette/font/texture lines with design system lines into one :root block
+  const allRootLines = [...paletteLines, ...fontLines, ...textureLines, ...dsRootLines];
+  let cssVariables = [':root {', ...allRootLines, '}'].join('\n');
+
+  if (dsMediaLines.length > 0) {
+    cssVariables +=
+      '\n@media (min-width: 768px) {\n  :root {\n' +
+      dsMediaLines.map((l) => '  ' + l).join('\n') +
+      '\n  }\n}';
+  }
 
   const googleFonts = sheet.fonts.filter((f) => f.source === 'google');
   const googleFontLinks = googleFonts.map((f) =>

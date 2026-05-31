@@ -2,6 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { compileStyleSheet, googleFontPreconnectLinks } from './style-sheet-loader';
 import type { StyleSheet } from './style-sheet';
 
+const baseTypeScale = {
+  eyebrow: { fontName: 'Body', sizePx: 14, sizeMobilePx: 14, weight: 500, lineHeight: 1.4 },
+  headline: { fontName: 'Header', sizePx: 48, sizeMobilePx: 28, weight: 700, lineHeight: 1.05 },
+  sub: { fontName: 'Header', sizePx: 24, sizeMobilePx: 20, weight: 600, lineHeight: 1.2 },
+  body: { fontName: 'Body', sizePx: 18, sizeMobilePx: 16, weight: 400, lineHeight: 1.6 },
+  caption: { fontName: 'Body', sizePx: 14, sizeMobilePx: 14, weight: 400, lineHeight: 1.4 },
+} as const;
+
 const baseSheet = (): StyleSheet => ({
   palette: [
     { name: 'Ink', value: '#111111', character: 'core text' },
@@ -27,6 +35,9 @@ const baseSheet = (): StyleSheet => ({
     },
   ],
   textures: [{ name: 'Paper Grain', value: 'url(/textures/paper.png)', character: 'subtle' }],
+  semanticColors: { primarySeedColor: '#d4a017', scheme: 'light' as const },
+  typeScale: baseTypeScale,
+  spacing: { unit: 8 },
 });
 
 describe('compileStyleSheet', () => {
@@ -40,6 +51,10 @@ describe('compileStyleSheet', () => {
     expect(out.cssVariables).toContain('--font-body: Inter, sans-serif;');
     expect(out.cssVariables).toContain('--texture-paper-grain: url(/textures/paper.png);');
     expect(out.cssVariables.trimEnd().endsWith('}')).toBe(true);
+    // Design system vars also emitted
+    expect(out.cssVariables).toContain('--color-surface:');
+    expect(out.cssVariables).toContain('--type-headline-font:');
+    expect(out.cssVariables).toContain('--spacing-unit: 8px');
   });
 
   it('emits a google font link sorted by weight with display=swap', () => {

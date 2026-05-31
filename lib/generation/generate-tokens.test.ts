@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Mood } from '@/lib/moods';
+import { MOODS } from '@/lib/moods';
 import type { DesignTokens } from '@/lib/tokens';
 
 const messagesCreateMock = vi.fn();
@@ -32,7 +32,7 @@ vi.mock('node:fs', () => ({
 // Import after mocks
 import { generateTokens } from './generate-tokens';
 
-const MOOD: Mood = { key: 'rustic', label: 'Rustic', description: 'Rustic mood' };
+const MOOD = MOODS.rustic;
 
 const VALID_TOKENS: DesignTokens = {
   colors: {

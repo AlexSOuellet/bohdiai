@@ -8,7 +8,7 @@ import {
   AboutPageCopySchema,
   generatePage,
 } from './generate-page';
-import type { Mood } from '@/lib/moods';
+import { MOODS } from '@/lib/moods';
 
 const messagesCreateMock = vi.fn();
 
@@ -39,17 +39,8 @@ const VALID_SECONDARY = {
   },
 };
 
-const MOOD: Mood = {
-  key: 'rustic',
-  label: 'Rustic',
-  description: 'Rustic mood',
-};
-
-const DARK_MOOD: Mood = {
-  key: 'dark',
-  label: 'Dark',
-  description: 'Dark mood',
-};
+const MOOD = MOODS.rustic;
+const DARK_MOOD = MOODS.dark;
 
 function buildValidPageJson(): string {
   return JSON.stringify({
