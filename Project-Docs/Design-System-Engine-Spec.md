@@ -43,6 +43,8 @@ A real design system (the DESIGN.md) contains far more than our style sheet:
 
 Our current style sheet (`lib/style-sheet.ts`) is just `palette` (name/hex/character) + `fonts` (name/family/weights/fallback/character) + `textures`. Raw materials, no system. That gap is the entire source of the font/contrast failures.
 
+**Crucial detail — the vocabulary is Material Design 3.** The color names in the sample (`surface-container-highest`, `on-primary-container`, `inverse-surface`, `surface-tint`, `on-tertiary-fixed-variant`, …) are M3's *exact* tokens, and the type scale (display / headline / body / label, with size steps) is M3's. So Stitch isn't inventing a vocabulary per design — it stands on a standard, complete design-token system. The division is the key insight: **Google (M3) supplies the structure and the math** — a seed color derives a full, contrast-correct tonal palette; the type scale carries legible size relationships — while **Stitch supplies the values** (which seed color, which fonts, the character). Google gives the empty slots and the rules that make them safe; the value choices are the design decision. **Lesson for us: adopt a standard token system (M3 or a curated subset), don't invent one** — the contrast/legibility floor then comes largely for free from M3's math, and "appears designed" borrows the structure of a system thousands of real products already trust. (M3 here is *plumbing*, not a look — the sample proves it: M3 tokens underneath, sharp-cornered brutalist editorial on top, the opposite of the "Material" aesthetic.)
+
 ---
 
 ## The commitment — three pieces
@@ -50,7 +52,7 @@ Our current style sheet (`lib/style-sheet.ts`) is just `palette` (name/hex/chara
 **Build BohdiAI's own Stitch: generate the design system first, compose within it, and enforce competence on the system — not the page.**
 
 ### 1. The system
-Replace the thin style sheet with a real, **generated** design system per tenant — paired semantic colors, a full type scale (roles + exact legible sizes + mobile variants), a spacing system, and component rules. The shape of the DESIGN.md above. Bohdi authors it in the step he already has (`set_style_sheet`), just far richer. It is generated fresh per tenant (that's what keeps every store unique); it is NOT hand-written templates.
+Replace the thin style sheet with a real, **generated** design system per tenant — paired semantic colors, a full type scale (roles + exact legible sizes + mobile variants), a spacing system, and component rules. The shape of the DESIGN.md above. The *structure* is a standard token system (Material Design 3 or a curated subset); Bohdi supplies the **seeds** and the M3 math derives the rest — see "How the system gets generated" below. Bohdi authors it in the step he already has (`set_style_sheet`), just far richer. It is generated fresh per tenant (that's what keeps every store unique); it is NOT hand-written templates.
 
 ### 2. The floor (validator)
 A validator runs on the **generated system** before any page is composed. It rejects a system that doesn't clear competence — any type size below a legible minimum, any color without a contrasting paired foreground, broken spacing — and makes Bohdi regenerate it. **This is where "appears designed" is guaranteed, once.** It is the answer to "we can't fix every page": we don't. A page built against a validated system is sound by construction.
@@ -59,6 +61,22 @@ A validator runs on the **generated system** before any page is composed. It rej
 Bohdi builds pages by **referencing the system's roles** ("this text is a `headline-lg`", "this is a `label-caps`", "this surface is `surface-container`") instead of free-assigning fonts, sizes, and colors to nodes. The renderer reads sizes/weights/colors from the system's scale and tokens instead of its own hardcoded role classes.
 
 ---
+
+## How the system gets generated — M3 + niche + mood
+
+Bohdi generates each tenant's design system from **three inputs**, each with a distinct job:
+
+- **M3 structure** — the token vocabulary + the derivation math + the contrast/scale guarantees. **Adopted, not generated.** This is the competence floor, and it's mostly free.
+- **Niche definition** — the category rails: what palettes, fonts, moods, and conventions fit this category (e.g. candles), so Bohdi stays on-world. **Level note:** the niche is the *category* (candles, shared across all candle makers); the generated design system is per *tenant* (Carol ≠ Brian). Open decision: **how much design DNA lives at the niche level (shared) vs is generated per tenant (unique)?** Too much at the niche level and every candle store rhymes — template-by-category, which we reject. Too little and Bohdi has no rails. Likely sweet spot: niche provides DNA + rails, tenant generates the specific instance inside them.
+- **Mood** — the maker's chosen direction, and the **strongest steer on the actual values** (rustic vs modern ≈ palette temperature, font character, texture). The per-maker dial.
+
+**Critical — Bohdi provides the SEEDS, not every value.** He must NOT hand-author all ~40 color tokens and every type size; that reopens the illegibility door we're closing. He picks a small seed set — a seed color or two, the two typefaces, and character (sharp vs soft, dense vs airy) — and **M3's math derives the full, contrast-correct, legible token system from those seeds.** Small decision surface = reliability. The validator (commitment piece 2) then confirms the derived system clears the floor.
+
+**The mood schema must get deeper.** Today mood is essentially a label (rustic, cozy, …). For mood to drive the seeds it has to become a real **design-direction spec** — e.g. rustic → warm earthy seed, serif-leaning, textured; modern → cool/neutral, geometric sans, flat. Enriching the mood schema is part of this build, not a freebie.
+
+**Precedence.** When niche and mood pull different ways (candles trend warm, but the maker picked "dark"), **mood wins the direction** (it's the maker's explicit choice); the niche shapes how that direction is executed tastefully.
+
+**Reconcile with the spec before locking.** "Niche schema" and "mood schema" already have meanings in the Master Spec / Tech Arch. Re-read those and align — do NOT silently redefine load-bearing terms. (Session 16 did not re-read the Master Spec.)
 
 ## What it is NOT / what it builds ON
 
@@ -103,18 +121,24 @@ This commitment is the **design-system foundation** — the competence floor tha
 - **Cost.** A richer system-generation step + a possible regenerate-on-validation-failure loop adds tokens. Build cost was already flagged as too high (~$2.40); weigh deliberately. (The eyes loop, phase 2, adds more.)
 - **DSL ceiling.** If a validated system + role-based composition still can't reach the bar because the layout DSL can't express enough, *that's* when we'd revisit the medium (richer DSL vs sandboxed code) — with evidence, not now.
 - **Per-tenant system vs mood/niche.** Decide whether the generated system keys off mood, niche, the maker's inputs, or all — and how much variety we want across tenants.
+- **Which token system — full M3 or a curated subset?** M3 is complete but large; a trimmed token set may serve better. Decide scope.
+- **How much of M3's color derivation do we adopt vs reimplement?** M3 has open-source color utilities (seed → full tonal palette with guaranteed contrast). Strongly prefer adopting that math over rebuilding it.
+- **Per-niche vs per-tenant split** (see "How the system gets generated") — settle how much design DNA is shared at the niche level vs generated per tenant.
+- **Mood schema depth** — mood must grow from a label into a design-direction spec that maps to seed guidance.
 - **Gemini.** If/when we build the eyes loop, a model with strong native vision is a motivated A/B (ties back to the original Claude-vs-Gemini question). Not part of this phase.
 
 ---
 
 ## Suggested build order (for the new session)
 
-1. Brainstorm + settle the type-role referencing decision (above).
-2. Define the new design-system schema (`lib/style-sheet.ts`) — TDD.
-3. Build the validator (the floor) — TDD, with the competence checks.
-4. Update `compileStyleSheet` to emit the scale/spacing/color tokens — TDD.
-5. Update `set_style_sheet` tool + `LAYOUT_ENGINE_PROMPT` so Bohdi generates the full system.
-6. Update the renderer (Text + intent + primitives) to consume the system; remove the hardcoded role classes (and the Session-16 font patches).
-7. End-to-end: regenerate a candles tenant, validate the system clears the floor, eyeball against the Carol bar.
+1. Brainstorm + settle: which token system (full M3 or curated subset), how text/surfaces reference roles, and the per-niche vs per-tenant split. Reconcile "niche schema" / "mood schema" against the Master Spec / Tech Arch first.
+2. Define the design-system schema around the chosen token structure (M3-based): paired color tokens, type scale, spacing — TDD.
+3. Wire the derivation: seed color(s) → full contrast-correct palette, typefaces → type scale. Adopt M3's color utilities rather than reimplement where possible — TDD.
+4. Build the validator (the floor) on the derived system — TDD.
+5. Deepen the mood schema into a design-direction spec (mood → seed guidance); define the niche-level design DNA / rails.
+6. Update `set_style_sheet` + `LAYOUT_ENGINE_PROMPT` so Bohdi takes M3 structure + niche + mood and supplies only the **seeds** (color(s), fonts, character) — not every value.
+7. Update `compileStyleSheet` to emit the derived tokens (scale/spacing/color) as CSS — TDD.
+8. Update the renderer (Text + intent + primitives) to consume the system; remove the hardcoded role classes (and the Session-16 font patches).
+9. End-to-end: regenerate a candles tenant, validate the system clears the floor, eyeball against the Carol bar.
 
 Tests are part of done. End with `npm run test:coverage` and typecheck.
