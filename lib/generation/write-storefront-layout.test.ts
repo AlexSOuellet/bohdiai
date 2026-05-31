@@ -152,4 +152,31 @@ describe('writeStorefrontLayout', () => {
     expect(sent.pages[0]?.slug).toBe('/');
     expect(sent.pages[0]?.pageType).toBe('home');
   });
+
+  it('seeds navbar placement per page (home out; shop/about/contact in; custom appended)', async () => {
+    rpcMock.mockResolvedValue({ data: { tenantId: 't', subdomain: 'shop' }, error: null });
+    await writeStorefrontLayout(
+      baseInput([
+        makePage('home'),
+        makePage('about'),
+        makePage('shop'),
+        makePage('contact'),
+        makePage('lookbook'),
+      ]),
+    );
+    const sentPages = (
+      rpcMock.mock.calls[0]?.[1].p_data as {
+        pages: Array<{ isInNav: boolean; navLabel: string | null; navPosition: number | null }>;
+      }
+    ).pages;
+    expect(sentPages[0]).toMatchObject({ isInNav: false, navLabel: null, navPosition: null }); // home
+    expect(sentPages[1]).toMatchObject({ isInNav: true, navLabel: 'About', navPosition: 20 });
+    expect(sentPages[2]).toMatchObject({ isInNav: true, navLabel: 'Shop', navPosition: 10 });
+    expect(sentPages[3]).toMatchObject({ isInNav: true, navLabel: 'Contact', navPosition: 30 });
+    expect(sentPages[4]).toMatchObject({
+      isInNav: true,
+      navLabel: 'Name lookbook',
+      navPosition: 40,
+    });
+  });
 });

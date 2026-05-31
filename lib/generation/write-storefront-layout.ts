@@ -5,6 +5,7 @@ import type { StyleSheet } from '@/lib/style-sheet';
 import type { GeneratedCollection } from './generate-collections';
 import type { GeneratedListingWithImage } from './generate-listings';
 import type { GeneratedSubscriptionWithImage } from './write-storefront';
+import { computeNavPlacement } from './nav-placement';
 
 function toJson(value: unknown): Json {
   return value as Json;
@@ -51,16 +52,25 @@ function pageTypeFor(slug: string): string {
 export async function writeStorefrontLayout(
   input: LayoutStorefrontWriteInput,
 ): Promise<LayoutStorefrontWriteResult> {
-  const pages = input.layoutPages.map((p) => ({
-    slug: p.slug === 'home' ? '/' : `/${p.slug.replace(/^\/+/, '')}`,
-    pageType: pageTypeFor(p.slug),
-    title: p.meta?.title ?? p.name,
-    metaDescription: p.meta?.description ?? null,
-    layoutTree: {
-      root: p.root,
-      meta: p.meta ?? null,
-    },
-  }));
+  const placements = computeNavPlacement(
+    input.layoutPages.map((p) => ({ slug: p.slug, name: p.name })),
+  );
+  const pages = input.layoutPages.map((p, i) => {
+    const placement = placements[i] ?? { isInNav: false, navLabel: null, navPosition: null };
+    return {
+      slug: p.slug === 'home' ? '/' : `/${p.slug.replace(/^\/+/, '')}`,
+      pageType: pageTypeFor(p.slug),
+      title: p.meta?.title ?? p.name,
+      metaDescription: p.meta?.description ?? null,
+      isInNav: placement.isInNav,
+      navLabel: placement.navLabel,
+      navPosition: placement.navPosition,
+      layoutTree: {
+        root: p.root,
+        meta: p.meta ?? null,
+      },
+    };
+  });
 
   const client = supabaseAdmin() as unknown as {
     rpc: (
