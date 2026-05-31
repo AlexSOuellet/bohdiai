@@ -87,10 +87,11 @@ export default async function StorefrontPage({ slug }: StorefrontPageProps) {
     .eq('is_active', true)
     .maybeSingle();
 
-  const compiled =
+  const styleResult =
     styleSheetRow !== null && styleSheetRow.sheet !== null
-      ? compileStyleSheetIfValid(styleSheetRow.sheet)
+      ? parseStyleSheet(styleSheetRow.sheet)
       : null;
+  const compiled = styleResult?.compiled ?? null;
 
   const resolved = await resolvePage(
     parsedPage.data,
@@ -122,13 +123,20 @@ export default async function StorefrontPage({ slug }: StorefrontPageProps) {
           )}
         </>
       )}
-      <LayoutPage page={parsedPage.data} resolved={resolved} />
+      <LayoutPage
+        page={parsedPage.data}
+        resolved={resolved}
+        {...(styleResult?.scriptFonts ? { scriptFonts: styleResult.scriptFonts } : {})}
+      />
     </>
   );
 }
 
-function compileStyleSheetIfValid(sheet: Json) {
+function parseStyleSheet(sheet: Json) {
   const parsed = StyleSheetSchema.safeParse(sheet);
   if (!parsed.success) return null;
-  return compileStyleSheet(parsed.data);
+  const scriptFonts = new Set(
+    parsed.data.fonts.filter((f) => f.fallback === 'cursive').map((f) => f.name),
+  );
+  return { compiled: compileStyleSheet(parsed.data), scriptFonts };
 }

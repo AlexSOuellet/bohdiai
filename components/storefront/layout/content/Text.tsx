@@ -36,6 +36,29 @@ const MOBILE_STEP_DOWN: Record<TextRole, TextRole> = {
   caption: 'caption',
 };
 
+// Script fonts (cursive fallback) are drawn to flow in lowercase; forcing
+// uppercase + wide tracking on them breaks the joined letterforms. For a script
+// eyebrow we drop both so the font can render as designed. Non-eyebrow roles and
+// non-script fonts are unaffected.
+const SCRIPT_EYEBROW = 'text-2xl font-medium';
+const SCRIPT_EYEBROW_MOBILE = 'text-lg font-medium';
+const SCRIPT_EYEBROW_MD = 'md:text-2xl';
+
+export function roleClass(role: TextRole, isScript: boolean): string {
+  if (isScript && role === 'eyebrow') return SCRIPT_EYEBROW;
+  return ROLE_CLASS[role];
+}
+
+export function mobileRoleClass(role: TextRole, isScript: boolean): string {
+  if (isScript && role === 'eyebrow') return SCRIPT_EYEBROW_MOBILE;
+  return MOBILE_ROLE_CLASS[role];
+}
+
+export function desktopMdClass(role: TextRole, isScript: boolean): string {
+  if (isScript && role === 'eyebrow') return SCRIPT_EYEBROW_MD;
+  return DESKTOP_ROLE_CLASS_MD[role];
+}
+
 const ALIGN_CLASS: Record<TextAlign, string> = {
   start: 'text-left',
   center: 'text-center',
@@ -50,18 +73,20 @@ const ROLE_TAG: Record<TextRole, 'p' | 'h1' | 'h2' | 'h3' | 'span'> = {
   caption: 'span',
 };
 
-export function TextContent({ node, ctx: _ctx }: { node: TextNode; ctx: RenderContext }) {
+export function TextContent({ node, ctx }: { node: TextNode; ctx: RenderContext }) {
   const Tag = ROLE_TAG[node.role];
   const desktopRole = node.role;
   const mobileRole = node.mobile?.role ?? MOBILE_STEP_DOWN[desktopRole];
+  const isScript =
+    node.intent?.type !== undefined && (ctx.scriptFonts?.has(node.intent.type) ?? false);
   const className =
     node.mobile?.role !== undefined || desktopRole !== mobileRole
       ? joinClasses(
-          MOBILE_ROLE_CLASS[mobileRole],
-          DESKTOP_ROLE_CLASS_MD[desktopRole],
+          mobileRoleClass(mobileRole, isScript),
+          desktopMdClass(desktopRole, isScript),
           node.align && ALIGN_CLASS[node.align],
         )
-      : joinClasses(ROLE_CLASS[desktopRole], node.align && ALIGN_CLASS[node.align]);
+      : joinClasses(roleClass(desktopRole, isScript), node.align && ALIGN_CLASS[node.align]);
   return (
     <Tag
       data-node-type="text"
