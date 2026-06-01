@@ -45,7 +45,7 @@ Asset generation runs **live through fal** during the run, so we also learn the 
 
 Both are full-viewport client components (they run timed animations). Both are added to the layout tree's discriminated union and authored through `set_layout`, like the existing primitives. Motion is **slow and linear** — an eased opacity fade reads as a pop; linear reads as a real fade. Reduced motion keeps opacity fades and drops any movement, using the same `data-*` exemption pattern already in `app/globals.css`.
 
-The pieces own composition, motion, and dramatic scale (the taste, baked in from the proven probes). They read the tenant's **display font and brand color** from the design system Bohdi authors, so the brand frame matches the maker's identity rather than being hardcoded.
+**The look is both at once — baked craft and tenant identity, not a tradeoff.** The pieces own composition, motion, dramatic scale, and the dark scrim (the cinematic "this is an ad, not a webpage" feeling, baked in from the proven probes — identical for every tenant). At the same time they read the tenant's **display font and brand color** from the design system Bohdi authors, so the type and color are unmistakably that maker's brand. The fixed machinery is what makes it feel directed; the tenant's fonts and color are what make it theirs. Both always apply.
 
 ### `story` piece (covers story-over-video and story-over-still)
 Generalizes `app/moment-probe/CandleStoryDemo.tsx`.
@@ -124,4 +124,4 @@ The finished moment renders at the test tenant's storefront root.
 - **fal cost per clip** unknown until the first real run; Alex will measure it then.
 - **Still image quality** on fal vs the Higgsfield Nano Banana stills — may need a better fal image model for the spotlight bar.
 - **Existing layout-engine tenants** remain un-renderable (predate the `wordmark` role) — irrelevant here; the test uses a fresh tenant.
-- **Brand-frame styling on the moment** (how strongly the tenant's font/color overrides the baked cinematic look) is a judgment call we'll refine after seeing the first real moment.
+- **Brand-frame styling on the moment** — resolved: it's **both**. The cinematic craft (composition, motion, scale, scrim) is baked and identical per tenant; the tenant's display font and brand color always apply on top for identity. Fine-tuning the exact weight/size of the brand frame within that is a small refinement after the first real moment, not an open direction question.
