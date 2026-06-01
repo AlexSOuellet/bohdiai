@@ -13,20 +13,18 @@ function escapeForUrl(family: string): string {
   return encodeURIComponent(family.trim());
 }
 
-// Google variable fonts with an optical-size (opsz) axis. Without requesting this
-// axis, Google serves the font's default (text) optical cut, so the same family at
-// a large display size renders flat and generic instead of its dramatic display
-// cut. The value is the font's actual opsz range. Only families verified here get
-// opsz requested — a wrong range fails the whole request, so the registry stays
-// conservative and grows as ranges are confirmed against Google Fonts.
-const OPTICAL_SIZE_FONTS: Record<string, string> = {
-  Fraunces: '9..144',
-};
-
-function googleFontHref(family: string, weights: number[], styles: string[]): string {
+function googleFontHref(
+  family: string,
+  weights: number[],
+  styles: string[],
+  opticalSize?: string,
+): string {
   const familyParam = escapeForUrl(family);
   const hasItalic = styles.includes('italic');
-  const opsz = OPTICAL_SIZE_FONTS[family.trim()];
+  // opsz comes from the font Bohdi authored — when a variable font declares its
+  // optical-size range, we request that axis so it renders its display cut at
+  // large sizes. No font names or ranges are baked into this code.
+  const opsz = opticalSize;
   // Axes must be listed alphabetically: ital, opsz, wght.
   const axes = [hasItalic ? 'ital' : null, opsz ? 'opsz' : null, 'wght']
     .filter((a): a is string => a !== null)
@@ -85,7 +83,7 @@ export function compileStyleSheet(sheet: StyleSheet): CompiledStyleSheet {
 
   const googleFonts = sheet.fonts.filter((f) => f.source === 'google');
   const googleFontLinks = googleFonts.map((f) =>
-    googleFontHref(f.family, f.weights, f.styles ?? ['normal']),
+    googleFontHref(f.family, f.weights, f.styles ?? ['normal'], f.opticalSize),
   );
 
   const customFonts = sheet.fonts.filter(

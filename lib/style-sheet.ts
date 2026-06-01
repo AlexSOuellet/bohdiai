@@ -37,6 +37,13 @@ export const FontEntrySchema = z
     fallback: z.enum(['sans-serif', 'serif', 'monospace', 'cursive', 'system-ui']),
     character: z.string().min(1).max(400),
     customUrl: z.string().url().optional(),
+    // Optical-size axis range for variable fonts that have one (e.g. Fraunces is
+    // "9..144"). When set, the loader requests the opsz axis so the font renders
+    // its display cut at large sizes instead of the flat text cut. Format: "MIN..MAX".
+    opticalSize: z
+      .string()
+      .regex(/^\d+\.\.\d+$/, { message: 'opticalSize must be a range like "9..144"' })
+      .optional(),
   })
   .strict()
   .refine((f) => f.source !== 'custom' || f.customUrl !== undefined, {

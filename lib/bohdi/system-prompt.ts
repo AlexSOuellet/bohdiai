@@ -93,7 +93,7 @@ Five parts:
 1. semanticColors — a primarySeedColor (hex) and scheme ("light" or "dark"). The platform derives a full contrast-correct color set from your seed via Material Design 3. Dark moods use "dark"; otherwise "light". The seed is the brand's one true color.
 2. typeScale — six required roles: eyebrow · headline · sub · body · caption · wordmark. Each: fontName (must exactly match a name in fonts[]), sizePx (≥14), sizeMobilePx (≥14, ≤sizePx), weight, lineHeight, optional letterSpacing/uppercase. The moment renders its story lines in the headline role and the brand name in the wordmark role, so design those deliberately — big, dramatic display sizes. A script font must never be the eyebrow and never uppercase.
 3. palette — 6-15 named colors { name, value: hex, character }. Accents only; not section backgrounds.
-4. fonts — 2-10 typefaces { name, family, source, weights, fallback, character }. Names here are what typeScale.*.fontName references. Pick distinct voices; never put a body sans (Inter, Roboto) in the headline role.
+4. fonts — 2-10 typefaces { name, family, source, weights, fallback, character }. Names here are what typeScale.*.fontName references. Pick distinct voices; never put a body sans (Inter, Roboto) in the headline role. If a font is a variable optical-size serif (Fraunces, Newsreader, Bodoni Moda, Roboto Serif), set its opticalSize range ("MIN..MAX", e.g. Fraunces "9..144", Newsreader "6..72") so it renders its dramatic display cut at the moment's large sizes instead of a flat text cut.
 5. textures — 0-8 CSS image values. Optional.
 
 VALIDATION: set_style_sheet validates before accepting. If a fontName doesn't match fonts[], or a size is below 14px, it returns issues. Correct and call again.

@@ -18,7 +18,7 @@ export const BOHDI_LAYOUT_TOOLS: BohdiToolDef[] = [
       'Named accent colors for painting nodes. Each: { name, value: hex (#rrggbb), character: 1-3 sentences describing what this color IS. }\n' +
       'Roles are NOT declared here — assign palette intent to nodes when composing pages.\n\n' +
       '## fonts (2-10 named typefaces)\n' +
-      "Each: { name, family: exact font-family string, source: 'google'|'system'|'custom', weights: [100-900 multiples], styles?: ['normal','italic'], fallback: 'sans-serif'|'serif'|'monospace'|'cursive'|'system-ui', character: 1-3 sentences, customUrl?: required if source='custom'. }\n" +
+      "Each: { name, family: exact font-family string, source: 'google'|'system'|'custom', weights: [100-900 multiples], styles?: ['normal','italic'], fallback: 'sans-serif'|'serif'|'monospace'|'cursive'|'system-ui', character: 1-3 sentences, customUrl?: required if source='custom', opticalSize?: 'MIN..MAX' for variable fonts with an optical-size axis (Fraunces '9..144', Newsreader '6..72') so they render their display cut at large sizes. }\n" +
       'No font is tagged heading or body here — roles are assigned in typeScale.\n\n' +
       '## textures (0-8 named surface treatments)\n' +
       'Each: { name, value: CSS image value, character }.\n\n' +
@@ -70,6 +70,11 @@ export const BOHDI_LAYOUT_TOOLS: BohdiToolDef[] = [
               },
               character: { type: 'string' },
               customUrl: { type: 'string' },
+              opticalSize: {
+                type: 'string',
+                description:
+                  'Optical-size axis range for a variable font that has one, as "MIN..MAX" (e.g. Fraunces is "9..144", Newsreader "6..72", Bodoni Moda "6..96"). Set this for optical display serifs so they render their dramatic display cut at large sizes instead of a flat text cut. Omit for fonts without an optical-size axis.',
+              },
             },
             required: ['name', 'family', 'source', 'weights', 'fallback', 'character'],
           },
