@@ -12,6 +12,11 @@ import { DesignTokensSchema } from '@/lib/tokens';
 import { enforceTokenContrast } from '@/lib/contrast';
 import { MOODS, type MoodKey } from '@/lib/moods';
 import { generateHeroImage, generateAboutImage, generateProductImage } from '@/lib/fal';
+import {
+  generateMomentVideo,
+  generateMomentStill,
+  type MomentAspect,
+} from '@/lib/moments/media';
 import { logger } from '@/lib/logger';
 import { labelFor, type ProgressEmitter, type ProgressStep } from '@/lib/progress';
 import { inferGenderFromName } from '@/lib/name-gender';
@@ -949,6 +954,31 @@ const handlers: Record<string, Handler> = {
 
     logger.info('bohdi: finalize', { tenantId: result.tenantId, subdomain: result.subdomain });
     return { tenantId: result.tenantId, subdomain: result.subdomain };
+  },
+
+  async generate_moment_asset(args, ctx) {
+    const { kind, prompt, aspect, durationSec } = args as {
+      kind: 'video' | 'still';
+      prompt: string;
+      aspect?: MomentAspect;
+      durationSec?: number;
+    };
+    const subdomain = ctx.brief.subdomain;
+    let url: string | null;
+    if (kind === 'video') {
+      url = await generateMomentVideo(prompt, {
+        subdomain,
+        ...(aspect !== undefined ? { aspect } : {}),
+        ...(durationSec !== undefined ? { durationSec } : {}),
+      });
+    } else {
+      url = await generateMomentStill(prompt, {
+        subdomain,
+        ...(aspect !== undefined ? { aspect } : {}),
+      });
+    }
+    if (url === null) throw new Error(`generate_moment_asset kind=${kind} returned no URL`);
+    return { url };
   },
 
   async set_style_sheet(args, ctx) {

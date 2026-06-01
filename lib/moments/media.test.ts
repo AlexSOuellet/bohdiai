@@ -1,0 +1,104 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// ── Mock SDK + helpers (mirrors lib/fal.test.ts) ──────────────────────────────
+
+const subscribeMock = vi.fn();
+const createFalClientSpy = vi.fn(() => ({ subscribe: subscribeMock }));
+
+vi.mock('@fal-ai/client', () => ({
+  createFalClient: (...args: unknown[]) => createFalClientSpy(...(args as [])),
+}));
+
+vi.mock('@/lib/env', () => ({
+  serverEnv: () => ({ FAL_API_KEY: 'fal-test-key' }),
+}));
+
+const uploadMock = vi.fn();
+const getPublicUrlMock = vi.fn();
+const storageFromMock = vi.fn(() => ({ upload: uploadMock, getPublicUrl: getPublicUrlMock }));
+
+vi.mock('@/lib/supabase', () => ({
+  supabaseAdmin: () => ({ storage: { from: storageFromMock } }),
+}));
+
+vi.mock('@/lib/logger', () => ({
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
+
+beforeEach(() => {
+  subscribeMock.mockReset();
+  createFalClientSpy.mockClear();
+  uploadMock.mockReset();
+  getPublicUrlMock.mockReset();
+  storageFromMock.mockClear();
+  uploadMock.mockResolvedValue({ error: null });
+  getPublicUrlMock.mockReturnValue({ data: { publicUrl: 'https://cdn.example/public.bin' } });
+  globalThis.fetch = vi.fn(
+    async () => new Response(new Uint8Array([1, 2, 3]), { status: 200 }),
+  ) as unknown as typeof fetch;
+});
+
+// ── generateMomentStill ───────────────────────────────────────────────────────
+
+describe('generateMomentStill', () => {
+  it('returns the public storage URL and passes the prompt through verbatim', async () => {
+    subscribeMock.mockResolvedValue({ data: { images: [{ url: 'https://fal.cdn/s.jpg' }] } });
+    const { generateMomentStill } = await import('./media');
+    const url = await generateMomentStill('a single hammered ring on black', {
+      subdomain: 'ore-and-ash',
+      aspect: '16:9',
+    });
+    expect(url).toBe('https://cdn.example/public.bin');
+    expect(createFalClientSpy).toHaveBeenCalledWith({ credentials: 'fal-test-key' });
+    const [, opts] = subscribeMock.mock.calls[0]!;
+    // The prompt is Bohdi's — not wrapped or rewritten by us.
+    expect(opts.input.prompt).toBe('a single hammered ring on black');
+    expect(opts.input.image_size).toBe('landscape_16_9');
+  });
+
+  it('maps a square aspect to square_hd', async () => {
+    subscribeMock.mockResolvedValue({ data: { images: [{ url: 'https://fal.cdn/s.jpg' }] } });
+    const { generateMomentStill } = await import('./media');
+    await generateMomentStill('x', { subdomain: 'sub', aspect: '1:1' });
+    const [, opts] = subscribeMock.mock.calls[0]!;
+    expect(opts.input.image_size).toBe('square_hd');
+  });
+
+  it('returns null when the SDK throws', async () => {
+    subscribeMock.mockRejectedValue(new Error('rate limited'));
+    const { generateMomentStill } = await import('./media');
+    expect(await generateMomentStill('x', { subdomain: 'sub' })).toBeNull();
+  });
+});
+
+// ── generateMomentVideo ───────────────────────────────────────────────────────
+
+describe('generateMomentVideo', () => {
+  it('calls the Kling video model with the prompt, duration and 16:9, and returns the stored URL', async () => {
+    subscribeMock.mockResolvedValue({ data: { video: { url: 'https://fal.cdn/clip.mp4' } } });
+    const { generateMomentVideo, KLING_VIDEO_MODEL } = await import('./media');
+    const url = await generateMomentVideo('a candle flame flickering, locked camera', {
+      subdomain: 'ember-and-oak',
+      aspect: '16:9',
+      durationSec: 6,
+    });
+    expect(url).toBe('https://cdn.example/public.bin');
+    const [model, opts] = subscribeMock.mock.calls[0]!;
+    expect(model).toBe(KLING_VIDEO_MODEL);
+    expect(opts.input.prompt).toBe('a candle flame flickering, locked camera');
+    expect(String(opts.input.duration)).toBe('6');
+    expect(opts.input.aspect_ratio).toBe('16:9');
+  });
+
+  it('returns null when the response carries no video', async () => {
+    subscribeMock.mockResolvedValue({ data: {} });
+    const { generateMomentVideo } = await import('./media');
+    expect(await generateMomentVideo('x', { subdomain: 'sub' })).toBeNull();
+  });
+
+  it('returns null when the SDK throws', async () => {
+    subscribeMock.mockRejectedValue(new Error('boom'));
+    const { generateMomentVideo } = await import('./media');
+    expect(await generateMomentVideo('x', { subdomain: 'sub' })).toBeNull();
+  });
+});

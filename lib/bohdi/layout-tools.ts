@@ -188,6 +188,42 @@ export const BOHDI_LAYOUT_TOOLS: BohdiToolDef[] = [
       required: ['slug', 'name', 'root'],
     },
   },
+  {
+    name: 'generate_moment_asset',
+    description:
+      'Generate the held medium for a moment brick (story or spotlight) from a prompt you write, and get back a hosted URL to drop into the brick\'s media slot.\n\n' +
+      "Choose `kind` deliberately from the niche and mood: 'video' when motion IS the atmosphere (a flame, steam rising, hands at work) — best for the story brick; 'still' when there is nothing meaningful moving or motion would feel gimmicky, and always for the spotlight brick (a single lit object). The video/still choice is part of choosing the right brick.\n\n" +
+      'PROMPT CRAFT (the asset is only as good as the prompt):\n' +
+      '- Locked-off camera (no pan or zoom) for held backdrops — camera moves fight overlay text and break the loop. (A spotlight still is the one place a faint push-in is fine; the renderer handles that, not the prompt.)\n' +
+      '- Only the subject moves (the flame flickers, the steam rises). Slow. Seamless loop. NO people, NO text, NO cuts.\n' +
+      '- Be deliberate about the handmade, atmospheric look (a hand-thrown vessel, uneven wax) — a generic prompt yields a generic mass-produced look. Keep extra detail soft or in shadow.\n' +
+      '- ATMOSPHERE, never the specific inventory. Evoke the brand world; never depict the maker\'s actual products.\n\n' +
+      'Video defaults to 6 seconds, 16:9. Returns { url }. Generation can take a couple of minutes for video.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        kind: {
+          type: 'string',
+          enum: ['video', 'still'],
+          description: "'video' for moving footage (Kling), 'still' for a single image.",
+        },
+        prompt: {
+          type: 'string',
+          description: 'The generation prompt you write, following the craft rules above.',
+        },
+        aspect: {
+          type: 'string',
+          enum: ['16:9', '1:1', '9:16'],
+          description: 'Aspect ratio. A full-screen moment is almost always 16:9. Defaults to 16:9.',
+        },
+        durationSec: {
+          type: 'integer',
+          description: 'Video only. Clip length in seconds. Defaults to 6.',
+        },
+      },
+      required: ['kind', 'prompt'],
+    },
+  },
 ];
 
 interface SetStyleSheetArgs {

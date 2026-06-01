@@ -56,6 +56,13 @@ vi.mock('@/lib/generation/write-storefront-layout', () => ({
   writeStorefrontLayout: (input: unknown) => writeStorefrontLayoutMock(input),
 }));
 
+const generateMomentVideoMock = vi.fn();
+const generateMomentStillMock = vi.fn();
+vi.mock('@/lib/moments/media', () => ({
+  generateMomentVideo: (...args: unknown[]) => generateMomentVideoMock(...args),
+  generateMomentStill: (...args: unknown[]) => generateMomentStillMock(...args),
+}));
+
 // ─── Imports under test ──────────────────────────────────────────────────────
 
 import { BOHDI_TOOLS, dispatchTool, type HandlerContext } from './tools';
@@ -764,5 +771,54 @@ describe('finalize — legacy route', () => {
     ctx.accumulator.heroImageUrl = 'https://x/h.png';
     // aboutPageContent intentionally null
     await expect(dispatchTool('finalize', {}, ctx)).rejects.toThrow('about page content not set');
+  });
+});
+
+describe('generate_moment_asset', () => {
+  beforeEach(() => {
+    generateMomentVideoMock.mockReset();
+    generateMomentStillMock.mockReset();
+  });
+
+  it('is gated to layout-engine niches only', async () => {
+    const { toolsForNiche } = await import('./tools');
+    const layout = toolsForNiche('candles').map((t) => t.name);
+    const legacy = toolsForNiche('leatherworker').map((t) => t.name);
+    expect(layout).toContain('generate_moment_asset');
+    expect(legacy).not.toContain('generate_moment_asset');
+  });
+
+  it('generates a video and returns its url, threading the brief subdomain through', async () => {
+    generateMomentVideoMock.mockResolvedValue('https://cdn/clip.mp4');
+    const ctx = makeCtx({ brief: makeBrief({ subdomain: 'ember', nicheSlug: 'candles' }) });
+    const r = (await dispatchTool(
+      'generate_moment_asset',
+      { kind: 'video', prompt: 'a candle flame flickering', aspect: '16:9', durationSec: 6 },
+      ctx,
+    )) as { url: string };
+    expect(r.url).toBe('https://cdn/clip.mp4');
+    const [prompt, opts] = generateMomentVideoMock.mock.calls[0]!;
+    expect(prompt).toBe('a candle flame flickering');
+    expect(opts).toMatchObject({ subdomain: 'ember', aspect: '16:9', durationSec: 6 });
+    expect(generateMomentStillMock).not.toHaveBeenCalled();
+  });
+
+  it('generates a still and returns its url', async () => {
+    generateMomentStillMock.mockResolvedValue('https://cdn/still.jpg');
+    const r = (await dispatchTool(
+      'generate_moment_asset',
+      { kind: 'still', prompt: 'a hammered ring on black', aspect: '16:9' },
+      makeCtx({ brief: makeBrief({ nicheSlug: 'candles' }) }),
+    )) as { url: string };
+    expect(r.url).toBe('https://cdn/still.jpg');
+    expect(generateMomentStillMock).toHaveBeenCalledOnce();
+    expect(generateMomentVideoMock).not.toHaveBeenCalled();
+  });
+
+  it('throws when generation returns null', async () => {
+    generateMomentVideoMock.mockResolvedValue(null);
+    await expect(
+      dispatchTool('generate_moment_asset', { kind: 'video', prompt: 'x' }, makeCtx()),
+    ).rejects.toThrow();
   });
 });
