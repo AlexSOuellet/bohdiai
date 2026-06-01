@@ -45,7 +45,13 @@ Asset generation runs **live through fal** during the run, so we also learn the 
 
 Both are full-viewport client components (they run timed animations). Both are added to the layout tree's discriminated union and authored through `set_layout`, like the existing primitives. Motion is **slow and linear** — an eased opacity fade reads as a pop; linear reads as a real fade. Reduced motion keeps opacity fades and drops any movement, using the same `data-*` exemption pattern already in `app/globals.css`.
 
-**The look is both at once — baked craft and tenant identity, not a tradeoff.** The pieces own composition, motion, dramatic scale, and the dark scrim (the cinematic "this is an ad, not a webpage" feeling, baked in from the proven probes — identical for every tenant). At the same time they read the tenant's **display font and brand color** from the design system Bohdi authors, so the type and color are unmistakably that maker's brand. The fixed machinery is what makes it feel directed; the tenant's fonts and color are what make it theirs. Both always apply.
+**The look comes from three things at once — baked craft, tenant identity, and mood. None of them is a tradeoff against the others.**
+
+1. **Baked cinematic craft (same for every tenant).** The pieces own composition, motion, dramatic scale, and the scrim — the "this is an ad, not a webpage" feeling, from the proven probes. This never varies; it's what makes every moment feel directed.
+2. **Tenant identity.** The pieces read the tenant's **display font and brand color** from the design system Bohdi authors, so the type and color are unmistakably that maker's brand.
+3. **Mood.** The mood's `designDirection` (brightness, temperature, type character, scheme) already shapes the design system Bohdi authors *and* drives which brick he picks — and it also sets the moment's tone directly: how dark the scrim sits, whether it leans light or shadowed, the overall temperature. A "dark" mood moment and a "cozy" mood moment should feel different beyond just swapped colors.
+
+All three always apply together.
 
 ### `story` piece (covers story-over-video and story-over-still)
 Generalizes `app/moment-probe/CandleStoryDemo.tsx`.
@@ -124,4 +130,4 @@ The finished moment renders at the test tenant's storefront root.
 - **fal cost per clip** unknown until the first real run; Alex will measure it then.
 - **Still image quality** on fal vs the Higgsfield Nano Banana stills — may need a better fal image model for the spotlight bar.
 - **Existing layout-engine tenants** remain un-renderable (predate the `wordmark` role) — irrelevant here; the test uses a fresh tenant.
-- **Brand-frame styling on the moment** — resolved: it's **both**. The cinematic craft (composition, motion, scale, scrim) is baked and identical per tenant; the tenant's display font and brand color always apply on top for identity. Fine-tuning the exact weight/size of the brand frame within that is a small refinement after the first real moment, not an open direction question.
+- **Brand-frame styling on the moment** — resolved: it's all **three at once**. The cinematic craft (composition, motion, scale, scrim) is baked and identical per tenant; the tenant's display font and brand color always apply on top for identity; and the mood sets the tone (scrim darkness, light-vs-shadowed lean, temperature). Fine-tuning the exact weight/size of the brand frame within that is a small refinement after the first real moment, not an open direction question.
