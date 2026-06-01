@@ -3,7 +3,7 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import type { StoryNode, StoryTone } from '@/lib/layout';
 import { Node, childPath, deriveCtx, type RenderContext } from '../Node';
-import { typeRoleStyle } from '../intent';
+import { typeRoleFont } from '../intent';
 
 // Timing from the proven probe (CandleStoryDemo). Slow and deliberate — a moment
 // breathes. The cross-fade is LINEAR: an eased opacity fade front-loads and reads
@@ -80,12 +80,17 @@ export function Story({ node, ctx }: { node: StoryNode; ctx: RenderContext }) {
         style={{ background: scrim, zIndex: 1 }}
       />
 
-      {/* the story, one line at a time, each cross-fading into the next */}
+      {/* the story, one line at a time, each cross-fading into the next.
+          The brick owns the cinematic SIZE; the tenant owns the FONT. */}
       {node.story.map((textLine, i) => (
         <div key={i} data-story-line data-meld-fade style={frame(step === i, 2)}>
           <p
             style={{
-              ...typeRoleStyle('headline'),
+              ...typeRoleFont('headline'),
+              fontSize: 'clamp(30px, 5.4vw, 76px)',
+              fontWeight: 400,
+              lineHeight: 1.08,
+              letterSpacing: '-0.01em',
               margin: 0,
               maxWidth: 920,
               textShadow: shadow,
@@ -102,7 +107,11 @@ export function Story({ node, ctx }: { node: StoryNode; ctx: RenderContext }) {
           {node.eyebrow !== undefined && (
             <div
               style={{
-                ...typeRoleStyle('eyebrow'),
+                ...typeRoleFont('eyebrow'),
+                fontSize: 'clamp(11px, 1.1vw, 14px)',
+                fontWeight: 600,
+                letterSpacing: '0.3em',
+                textTransform: 'uppercase',
                 color: 'var(--color-primary)',
                 marginBottom: 18,
               }}
@@ -110,7 +119,17 @@ export function Story({ node, ctx }: { node: StoryNode; ctx: RenderContext }) {
               {node.eyebrow}
             </div>
           )}
-          <div data-story-wordmark style={{ ...typeRoleStyle('wordmark'), margin: 0 }}>
+          <div
+            data-story-wordmark
+            style={{
+              ...typeRoleFont('wordmark'),
+              fontSize: 'clamp(44px, 9vw, 124px)',
+              fontWeight: 600,
+              lineHeight: 0.95,
+              letterSpacing: '-0.02em',
+              margin: 0,
+            }}
+          >
             {node.brand}
           </div>
           {node.cta !== undefined && (
@@ -118,11 +137,14 @@ export function Story({ node, ctx }: { node: StoryNode; ctx: RenderContext }) {
               href={node.cta.href}
               data-story-cta
               style={{
+                ...typeRoleFont('caption'),
                 display: 'inline-block',
                 marginTop: 34,
                 background: 'var(--color-primary)',
                 color: 'var(--color-on-primary)',
-                ...typeRoleStyle('caption'),
+                fontSize: 16,
+                fontWeight: 600,
+                letterSpacing: '0.04em',
                 padding: '15px 34px',
                 borderRadius: 2,
               }}

@@ -72,6 +72,26 @@ describe('Story — the brand frame', () => {
     const cta = getByText('Step inside') as HTMLAnchorElement;
     expect(cta.getAttribute('href')).toBe('/shop');
   });
+
+  // The brick owns the cinematic SCALE and metrics; the tenant owns only the FONT.
+  // (jsdom drops clamp() from inline fontSize, so we assert the brick-owned weight
+  // and line-height — which read the design-system role vars in the old, buggy code.)
+  it('renders the brand in the tenant wordmark font but with the brick own display metrics', () => {
+    const { getByText } = render(<Story node={makeStory()} ctx={{}} />);
+    const wordmark = getByText('Ember and Oak');
+    expect(wordmark.style.fontFamily).toContain('var(--type-wordmark-font)');
+    // brick-owned, not var(--type-wordmark-weight)/-line-height
+    expect(wordmark.style.fontWeight).toBe('600');
+    expect(wordmark.style.lineHeight).toBe('0.95');
+  });
+
+  it('renders the story lines in the headline font with the brick own metrics', () => {
+    const { container } = render(<Story node={makeStory()} ctx={{}} />);
+    const p = container.querySelector('[data-story-line] p') as HTMLElement;
+    expect(p.style.fontFamily).toContain('var(--type-headline-font)');
+    expect(p.style.fontWeight).toBe('400');
+    expect(p.style.lineHeight).toBe('1.08');
+  });
 });
 
 describe('Story — tone (mood-driven)', () => {

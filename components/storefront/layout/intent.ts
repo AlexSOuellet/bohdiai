@@ -55,6 +55,16 @@ export function typeRoleStyle(role: TypeScaleRole): CSSProperties {
 }
 
 /**
+ * Just the font family for a type-scale role — for places that want the tenant's
+ * typeface but set their own size/weight/spacing. Moment bricks use this: the
+ * brick owns the cinematic SCALE (a big clamp), the tenant owns the FONT, so the
+ * brand reads as the maker's identity without inheriting the small nav wordmark size.
+ */
+export function typeRoleFont(role: TypeScaleRole): CSSProperties {
+  return { fontFamily: `var(--type-${role}-font)` };
+}
+
+/**
  * Turns a surface role into a background + paired foreground color, both from the
  * design system's semantic color tokens. Because every M3 surface has a guaranteed
  * contrasting `on-*` color, a container that uses this can never produce unreadable

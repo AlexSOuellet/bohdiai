@@ -18,17 +18,19 @@ const BUCKET = 'generated-images';
 export const MOMENT_STILL_TIMEOUT_MS = 90_000;
 export const MOMENT_VIDEO_TIMEOUT_MS = 240_000;
 
-// fal model ids. Kling v2.6 Pro text-to-video — confirmed against fal's catalog
-// (2026-06): input { prompt, duration: "5"|"10", aspect_ratio: 16:9|9:16|1:1 }.
-// Kling versions move and fal renames endpoints; swapping this string (or routing
-// to Higgsfield) is the whole "change one file" promise of the seam.
-export const KLING_VIDEO_MODEL = 'fal-ai/kling-video/v2.6/pro/text-to-video';
+// fal model ids. Kling 3.0 Pro text-to-video — confirmed against fal's catalog
+// (2026-06): input { prompt, duration: "3".."15", aspect_ratio: 16:9|9:16|1:1 }.
+// V3 is the cinematic prompt-driven tier (vs 2.x). Kling versions move and fal
+// renames endpoints; swapping this string (or routing to Higgsfield) is the whole
+// "change one file" promise of the seam.
+export const KLING_VIDEO_MODEL = 'fal-ai/kling-video/v3/pro/text-to-video';
 const FLUX_IMAGE_MODEL = 'fal-ai/flux-pro';
 
-// Kling accepts ONLY "5" or "10" second clips. Snap any requested length to the
-// nearest valid value (anything ≤ 7 → "5", longer → "10").
-function klingDuration(durationSec: number | undefined): '5' | '10' {
-  return (durationSec ?? 5) >= 8 ? '10' : '5';
+// Kling 3.0 accepts whole-second durations from 3 to 15. Default to 6 — a short
+// atmospheric loop is plenty for a held moment backdrop. Clamp anything else in.
+function klingDuration(durationSec: number | undefined): string {
+  const n = Math.round(durationSec ?? 6);
+  return String(Math.max(3, Math.min(15, n)));
 }
 
 export type MomentAspect = '16:9' | '1:1' | '9:16';

@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { SpotlightNode, SpotlightSide } from '@/lib/layout';
 import { Node, childPath, deriveCtx, type RenderContext } from '../Node';
-import { typeRoleStyle } from '../intent';
+import { typeRoleFont } from '../intent';
 
 const cream = '#f4efe6';
 
@@ -95,7 +95,11 @@ export function Spotlight({ node, ctx }: { node: SpotlightNode; ctx: RenderConte
             data-stage-reveal
             style={{
               ...reveal(4200, 2.2),
-              ...typeRoleStyle('eyebrow'),
+              ...typeRoleFont('eyebrow'),
+              fontSize: 'clamp(11px, 1vw, 13px)',
+              fontWeight: 600,
+              letterSpacing: '0.3em',
+              textTransform: 'uppercase',
               color: 'var(--color-primary)',
               marginBottom: 22,
             }}
@@ -104,7 +108,19 @@ export function Spotlight({ node, ctx }: { node: SpotlightNode; ctx: RenderConte
           </div>
         )}
 
-        <div data-stage-reveal data-spotlight-wordmark style={{ ...reveal(5000), ...typeRoleStyle('wordmark') }}>
+        <div
+          data-stage-reveal
+          data-spotlight-wordmark
+          style={{
+            ...reveal(5000),
+            ...typeRoleFont('wordmark'),
+            fontSize: 'clamp(40px, 6vw, 88px)',
+            fontWeight: 300,
+            lineHeight: 0.98,
+            letterSpacing: '-0.01em',
+            textShadow: '0 2px 40px rgba(0,0,0,0.6)',
+          }}
+        >
           {node.brand}
         </div>
 
@@ -112,9 +128,12 @@ export function Spotlight({ node, ctx }: { node: SpotlightNode; ctx: RenderConte
           data-stage-reveal
           style={{
             ...reveal(6200),
-            ...typeRoleStyle('headline'),
+            ...typeRoleFont('headline'),
+            fontSize: 'clamp(17px, 1.8vw, 24px)',
+            fontWeight: 400,
+            lineHeight: 1.4,
+            color: 'rgba(244,239,230,0.9)',
             margin: '20px 0 0',
-            textShadow: '0 2px 40px rgba(0,0,0,0.6)',
           }}
         >
           {node.line}
@@ -126,7 +145,11 @@ export function Spotlight({ node, ctx }: { node: SpotlightNode; ctx: RenderConte
             href={node.cta.href}
             style={{
               ...reveal(7200),
-              ...typeRoleStyle('caption'),
+              ...typeRoleFont('caption'),
+              fontSize: 13,
+              fontWeight: 600,
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
               display: 'inline-block',
               marginTop: 34,
               color: cream,
