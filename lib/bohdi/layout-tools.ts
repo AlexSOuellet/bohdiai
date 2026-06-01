@@ -198,7 +198,7 @@ export const BOHDI_LAYOUT_TOOLS: BohdiToolDef[] = [
       '- Only the subject moves (the flame flickers, the steam rises). Slow. Seamless loop. NO people, NO text, NO cuts.\n' +
       '- Be deliberate about the handmade, atmospheric look (a hand-thrown vessel, uneven wax) — a generic prompt yields a generic mass-produced look. Keep extra detail soft or in shadow.\n' +
       '- ATMOSPHERE, never the specific inventory. Evoke the brand world; never depict the maker\'s actual products.\n\n' +
-      'Video defaults to 6 seconds, 16:9. Returns { url }. Generation can take a couple of minutes for video.',
+      'Video is 16:9 and either 5 or 10 seconds (defaults to 5; a short atmospheric loop is plenty). Returns { url }. Generation can take a couple of minutes for video.',
     input_schema: {
       type: 'object',
       properties: {
@@ -218,7 +218,7 @@ export const BOHDI_LAYOUT_TOOLS: BohdiToolDef[] = [
         },
         durationSec: {
           type: 'integer',
-          description: 'Video only. Clip length in seconds. Defaults to 6.',
+          description: 'Video only. Clip length in seconds — 5 or 10. Defaults to 5.',
         },
       },
       required: ['kind', 'prompt'],

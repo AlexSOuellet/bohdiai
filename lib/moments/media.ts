@@ -18,13 +18,18 @@ const BUCKET = 'generated-images';
 export const MOMENT_STILL_TIMEOUT_MS = 90_000;
 export const MOMENT_VIDEO_TIMEOUT_MS = 240_000;
 
-// fal model ids. NOTE: confirm the exact Kling endpoint id against fal's catalog
-// before the first live run — Kling versions move and fal renames endpoints.
-// Swapping this string (or routing to Higgsfield) is the whole "change one file"
-// promise of the seam. Valid Kling durations on fal are typically "5" or "10";
-// confirm 6s is accepted (or snap to the nearest) at the live run.
+// fal model ids. Kling v2.1 master text-to-video — confirmed against fal's
+// catalog (2026-06). Kling versions move and fal renames endpoints; swapping
+// this string (or routing to Higgsfield) is the whole "change one file" promise
+// of the seam.
 export const KLING_VIDEO_MODEL = 'fal-ai/kling-video/v2.1/master/text-to-video';
 const FLUX_IMAGE_MODEL = 'fal-ai/flux-pro';
+
+// Kling accepts ONLY "5" or "10" second clips. Snap any requested length to the
+// nearest valid value (anything ≤ 7 → "5", longer → "10").
+function klingDuration(durationSec: number | undefined): '5' | '10' {
+  return (durationSec ?? 5) >= 8 ? '10' : '5';
+}
 
 export type MomentAspect = '16:9' | '1:1' | '9:16';
 
@@ -121,7 +126,7 @@ export async function generateMomentVideo(
 ): Promise<string | null> {
   const start = Date.now();
   const aspect = opts.aspect ?? '16:9';
-  const duration = String(opts.durationSec ?? 6);
+  const duration = klingDuration(opts.durationSec);
   try {
     const result = await withTimeout(
       falClient().subscribe(KLING_VIDEO_MODEL as string, {

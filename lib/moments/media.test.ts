@@ -74,20 +74,32 @@ describe('generateMomentStill', () => {
 // ── generateMomentVideo ───────────────────────────────────────────────────────
 
 describe('generateMomentVideo', () => {
-  it('calls the Kling video model with the prompt, duration and 16:9, and returns the stored URL', async () => {
+  it('calls the Kling video model with the prompt and 16:9, and returns the stored URL', async () => {
     subscribeMock.mockResolvedValue({ data: { video: { url: 'https://fal.cdn/clip.mp4' } } });
     const { generateMomentVideo, KLING_VIDEO_MODEL } = await import('./media');
     const url = await generateMomentVideo('a candle flame flickering, locked camera', {
       subdomain: 'ember-and-oak',
       aspect: '16:9',
-      durationSec: 6,
     });
     expect(url).toBe('https://cdn.example/public.bin');
     const [model, opts] = subscribeMock.mock.calls[0]!;
     expect(model).toBe(KLING_VIDEO_MODEL);
     expect(opts.input.prompt).toBe('a candle flame flickering, locked camera');
-    expect(String(opts.input.duration)).toBe('6');
     expect(opts.input.aspect_ratio).toBe('16:9');
+  });
+
+  it('snaps duration to the only valid Kling values — "5" or "10"', async () => {
+    subscribeMock.mockResolvedValue({ data: { video: { url: 'https://fal.cdn/c.mp4' } } });
+    const { generateMomentVideo } = await import('./media');
+    // default → "5"
+    await generateMomentVideo('x', { subdomain: 'sub' });
+    expect(subscribeMock.mock.calls[0]![1].input.duration).toBe('5');
+    // 6 is not a valid Kling length → snaps down to "5"
+    await generateMomentVideo('x', { subdomain: 'sub', durationSec: 6 });
+    expect(subscribeMock.mock.calls[1]![1].input.duration).toBe('5');
+    // 10 stays "10"
+    await generateMomentVideo('x', { subdomain: 'sub', durationSec: 10 });
+    expect(subscribeMock.mock.calls[2]![1].input.duration).toBe('10');
   });
 
   it('returns null when the response carries no video', async () => {
