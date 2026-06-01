@@ -1,39 +1,36 @@
 'use client';
 
 import { useEffect, useState, type CSSProperties } from 'react';
+import type { SurfaceRole } from '@/lib/design-system/types';
 import type { StoryNode, StoryTone } from '@/lib/layout';
 import { Node, childPath, deriveCtx, type RenderContext } from '../Node';
-import { typeRoleFont } from '../intent';
+import { surfaceStyleVars, typeRoleStyle } from '../intent';
 
-// Timing from the proven probe (CandleStoryDemo). Slow and deliberate — a moment
-// breathes. The cross-fade is LINEAR: an eased opacity fade front-loads and reads
-// as a pop; linear climbs steadily and reads as a real dissolve.
+// Timing from the proven probe. Slow and deliberate. The cross-fade is LINEAR:
+// an eased opacity fade front-loads and reads as a pop; linear reads as a real
+// dissolve. (Motion/timing are the brick's behavior, not type or color.)
 const OPEN_MS = 900; // a breath of media alone before the first line
 const HOLD_MS = 3400; // how long each line lingers before dissolving
 const FADE = '1.8s'; // how long the cross-fade takes
 
-// The moment's tone is mood-driven. Dark sits in shadow (dark scrim, light text);
-// light lifts (light scrim, dark text). The paired text color is the moment's
-// contrast guarantee — overlay text can't read off a flat token, so we supply it.
-const TONE: Record<StoryTone, { base: string; scrim: string; text: string; shadow: string }> = {
-  dark: {
-    base: '#0c0907',
-    scrim: 'radial-gradient(120% 90% at 50% 45%, rgba(0,0,0,0.25), rgba(0,0,0,0.72))',
-    text: '#f6f1ea',
-    shadow: '0 2px 36px rgba(0,0,0,0.5)',
-  },
-  light: {
-    base: '#f6f1ea',
-    scrim: 'radial-gradient(120% 90% at 50% 45%, rgba(255,255,255,0.30), rgba(255,255,255,0.78))',
-    text: '#15110d',
-    shadow: 'none',
-  },
+// The mood-driven tone maps to one of the design system's surfaces. The text
+// color is that surface's guaranteed-readable paired foreground — sourced from
+// the design system, not hardcoded. A neutral scrim darkens/lightens the media
+// so the paired color reads (the scrim is a legibility device, not a color choice).
+const TONE_SURFACE: Record<StoryTone, SurfaceRole> = {
+  dark: 'inverse-surface',
+  light: 'surface',
+};
+const TONE_SCRIM: Record<StoryTone, string> = {
+  dark: 'radial-gradient(120% 90% at 50% 45%, rgba(0,0,0,0.25), rgba(0,0,0,0.72))',
+  light: 'radial-gradient(120% 90% at 50% 45%, rgba(255,255,255,0.30), rgba(255,255,255,0.78))',
 };
 
 export function Story({ node, ctx }: { node: StoryNode; ctx: RenderContext }) {
   const childCtx = deriveCtx(node, ctx);
   const tone = node.tone ?? 'dark';
-  const { base, scrim, text, shadow } = TONE[tone];
+  const surface = surfaceStyleVars(TONE_SURFACE[tone]);
+  const scrim = TONE_SCRIM[tone];
   const brandStep = node.story.length; // the final frame's step index
   const [step, setStep] = useState(-1); // -1 = media alone, a breath before it starts
 
@@ -52,13 +49,12 @@ export function Story({ node, ctx }: { node: StoryNode; ctx: RenderContext }) {
       placeItems: 'center',
       padding: 'clamp(28px, 6vw, 96px)',
       textAlign: 'center',
-      color: text,
+      color: surface.color, // design system's paired-contrast text color
       opacity: visible ? 1 : 0,
       transition: `opacity ${FADE} linear`,
       pointerEvents: visible ? 'auto' : 'none',
       zIndex,
-      // keep the cross-fade alive under reduced motion (opacity is motion-safe);
-      // the globals.css exemption restores this duration under the blanket reduce rule.
+      // keep the cross-fade alive under reduced motion (opacity is motion-safe).
       ['--meld-fade-duration' as string]: FADE,
     } as CSSProperties;
   }
@@ -69,7 +65,7 @@ export function Story({ node, ctx }: { node: StoryNode; ctx: RenderContext }) {
       data-node-id={node.id}
       data-story-tone={tone}
       className="relative flex w-full overflow-hidden min-h-screen"
-      style={{ background: base }}
+      style={{ background: surface.background }}
     >
       <div className="absolute inset-0" style={{ zIndex: 0 }}>
         <Node node={node.media} ctx={{ ...childCtx, path: childPath(ctx, 'media') }} />
@@ -81,23 +77,10 @@ export function Story({ node, ctx }: { node: StoryNode; ctx: RenderContext }) {
       />
 
       {/* the story, one line at a time, each cross-fading into the next.
-          The brick owns the cinematic SIZE; the tenant owns the FONT. */}
+          Type comes entirely from the headline role of the design system. */}
       {node.story.map((textLine, i) => (
         <div key={i} data-story-line data-meld-fade style={frame(step === i, 2)}>
-          <p
-            style={{
-              ...typeRoleFont('headline'),
-              fontSize: 'clamp(30px, 5.4vw, 76px)',
-              fontWeight: 400,
-              lineHeight: 1.08,
-              letterSpacing: '-0.01em',
-              margin: 0,
-              maxWidth: 920,
-              textShadow: shadow,
-            }}
-          >
-            {textLine}
-          </p>
+          <p style={{ ...typeRoleStyle('headline'), margin: 0, maxWidth: '20em' }}>{textLine}</p>
         </div>
       ))}
 
@@ -105,34 +88,11 @@ export function Story({ node, ctx }: { node: StoryNode; ctx: RenderContext }) {
       <div data-story-brand data-meld-fade style={frame(step >= brandStep, 3)}>
         <div>
           {node.eyebrow !== undefined && (
-            <div
-              style={{
-                ...typeRoleFont('eyebrow'),
-                fontSize: 'clamp(11px, 1.1vw, 14px)',
-                fontWeight: 600,
-                letterSpacing: '0.3em',
-                textTransform: 'uppercase',
-                // the readable paired text color, slightly dimmed — NOT a palette
-                // accent, which has no guaranteed contrast over the media.
-                color: text,
-                opacity: 0.78,
-                marginBottom: 18,
-              }}
-            >
+            <div style={{ ...typeRoleStyle('eyebrow'), opacity: 0.78, marginBottom: 18 }}>
               {node.eyebrow}
             </div>
           )}
-          <div
-            data-story-wordmark
-            style={{
-              ...typeRoleFont('wordmark'),
-              fontSize: 'clamp(44px, 9vw, 124px)',
-              fontWeight: 600,
-              lineHeight: 0.95,
-              letterSpacing: '-0.02em',
-              margin: 0,
-            }}
-          >
+          <div data-story-wordmark style={{ ...typeRoleStyle('wordmark'), margin: 0 }}>
             {node.brand}
           </div>
           {node.cta !== undefined && (
@@ -140,14 +100,11 @@ export function Story({ node, ctx }: { node: StoryNode; ctx: RenderContext }) {
               href={node.cta.href}
               data-story-cta
               style={{
-                ...typeRoleFont('caption'),
+                ...typeRoleStyle('body'),
                 display: 'inline-block',
                 marginTop: 34,
                 background: 'var(--color-primary)',
                 color: 'var(--color-on-primary)',
-                fontSize: 16,
-                fontWeight: 600,
-                letterSpacing: '0.04em',
                 padding: '15px 34px',
                 borderRadius: 2,
               }}

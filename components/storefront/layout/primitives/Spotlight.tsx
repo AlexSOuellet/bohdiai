@@ -1,9 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { SpotlightNode, SpotlightSide } from '@/lib/layout';
 import { Node, childPath, deriveCtx, type RenderContext } from '../Node';
-import { typeRoleFont } from '../intent';
-
-const cream = '#f4efe6';
+import { surfaceStyleVars, typeRoleStyle } from '../intent';
 
 // The signature: the object rises out of pure black over ~6s. Opacity, linear.
 const RISE_DURATION = '6s';
@@ -13,8 +11,8 @@ const RISE_DELAY_MS = 500;
 // reduced-motion exemption ([data-spotlight-zoom] in globals.css) can keep it.
 const PUSH_DURATION = '20s';
 
-// A reduced-motion-safe slow opacity fade for the words (the same mechanism the
-// stage reveal uses). The words arrive only after the object is lit.
+// A reduced-motion-safe slow opacity fade for the words. They arrive only after
+// the object is lit. (Motion/timing are the brick's behavior, not type or color.)
 function reveal(delayMs: number, durSec = 2.6): CSSProperties {
   return {
     '--stage-reveal-duration': `${durSec}s`,
@@ -31,6 +29,8 @@ export function Spotlight({ node, ctx }: { node: SpotlightNode; ctx: RenderConte
   const childCtx = deriveCtx(node, ctx);
   const side = node.contentSide ?? 'right';
   const textAlign = side === 'right' ? 'right' : 'left';
+  // The text color is the design system's paired foreground for a dark field.
+  const textColor = surfaceStyleVars('inverse-surface').color;
   // Deepen the side the words sit on so they read once the light is up.
   const gradient =
     side === 'right'
@@ -43,6 +43,8 @@ export function Spotlight({ node, ctx }: { node: SpotlightNode; ctx: RenderConte
       data-node-id={node.id}
       data-spotlight-side={side}
       className={`relative flex w-full items-center overflow-hidden min-h-screen ${SIDE_CLASS[side]}`}
+      // Pure black is the brick's defining structure — the void the object rises
+      // out of — not a palette/brand color.
       style={{ background: '#000' }}
     >
       {/* slow push-in wrapper (gentle, secondary) */}
@@ -82,62 +84,19 @@ export function Spotlight({ node, ctx }: { node: SpotlightNode; ctx: RenderConte
 
       <div
         className="relative"
-        style={{
-          zIndex: 2,
-          maxWidth: 480,
-          textAlign,
-          padding: 'clamp(32px, 6vw, 96px)',
-          color: cream,
-        }}
+        style={{ zIndex: 2, maxWidth: 480, textAlign, padding: 'clamp(32px, 6vw, 96px)', color: textColor }}
       >
         {node.eyebrow !== undefined && (
-          <div
-            data-stage-reveal
-            style={{
-              ...reveal(4200, 2.2),
-              ...typeRoleFont('eyebrow'),
-              fontSize: 'clamp(11px, 1vw, 13px)',
-              fontWeight: 600,
-              letterSpacing: '0.3em',
-              textTransform: 'uppercase',
-              // readable cream on the black field — not a palette accent.
-              color: cream,
-              opacity: 0.82,
-              marginBottom: 22,
-            }}
-          >
+          <div data-stage-reveal style={{ ...reveal(4200, 2.2), ...typeRoleStyle('eyebrow'), opacity: 0.82, marginBottom: 22 }}>
             {node.eyebrow}
           </div>
         )}
 
-        <div
-          data-stage-reveal
-          data-spotlight-wordmark
-          style={{
-            ...reveal(5000),
-            ...typeRoleFont('wordmark'),
-            fontSize: 'clamp(40px, 6vw, 88px)',
-            fontWeight: 300,
-            lineHeight: 0.98,
-            letterSpacing: '-0.01em',
-            textShadow: '0 2px 40px rgba(0,0,0,0.6)',
-          }}
-        >
+        <div data-stage-reveal data-spotlight-wordmark style={{ ...reveal(5000), ...typeRoleStyle('wordmark') }}>
           {node.brand}
         </div>
 
-        <p
-          data-stage-reveal
-          style={{
-            ...reveal(6200),
-            ...typeRoleFont('headline'),
-            fontSize: 'clamp(17px, 1.8vw, 24px)',
-            fontWeight: 400,
-            lineHeight: 1.4,
-            color: 'rgba(244,239,230,0.9)',
-            margin: '20px 0 0',
-          }}
-        >
+        <p data-stage-reveal style={{ ...reveal(6200), ...typeRoleStyle('sub'), margin: '20px 0 0' }}>
           {node.line}
         </p>
 
@@ -147,15 +106,10 @@ export function Spotlight({ node, ctx }: { node: SpotlightNode; ctx: RenderConte
             href={node.cta.href}
             style={{
               ...reveal(7200),
-              ...typeRoleFont('caption'),
-              fontSize: 13,
-              fontWeight: 600,
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
+              ...typeRoleStyle('caption'),
               display: 'inline-block',
               marginTop: 34,
-              color: cream,
-              borderBottom: `1px solid ${cream}`,
+              borderBottom: '1px solid currentColor',
               paddingBottom: 4,
             }}
           >
