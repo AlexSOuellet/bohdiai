@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { MOODS, type MoodKey } from '@/lib/moods';
 import type { OnboardingData } from './types';
-import type { ProgressEvent } from '@/lib/progress';
 import BuildTicker from './BuildTicker';
+
+const POLL_MS = 2500;
 
 function isMoodKey(value: string): value is MoodKey {
   return value in MOODS;
@@ -23,13 +24,13 @@ interface StepBuildProps {
 
 export default function StepBuild({ data, onBack }: StepBuildProps) {
   const [statusLabel, setStatusLabel] = useState('Getting set up…');
-  const [tip, setTip] = useState('');
   const [elapsed, setElapsed] = useState(0);
   const [done, setDone] = useState(false);
   const [error, setError] = useState('');
   const [tenantSubdomain, setTenantSubdomain] = useState('');
   const [buildSeconds, setBuildSeconds] = useState(0);
   const calledRef = useRef(false);
+  const startRef = useRef(0);
 
   // Real elapsed-time counter.
   useEffect(() => {
@@ -41,7 +42,9 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
     return () => clearInterval(id);
   }, [done]);
 
-  // Stream generation events from the SSE route.
+  // Kick off a background build, then poll it for progress and the result. The
+  // build runs on its own — even if this screen reloads, the build keeps going
+  // and the maker sees the result when they return.
   useEffect(() => {
     if (calledRef.current) return;
     calledRef.current = true;
@@ -56,9 +59,48 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
       return;
     }
 
+    startRef.current = Date.now();
+    let cancelled = false;
+    let pollTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const finish = (subdomain: string) => {
+      setTenantSubdomain(subdomain);
+      setBuildSeconds(Math.round((Date.now() - startRef.current) / 1000));
+      setDone(true);
+    };
+    const fail = (message: string) => {
+      setError(message);
+      setDone(true);
+    };
+
+    const poll = (buildId: string) => {
+      const tick = async () => {
+        if (cancelled) return;
+        try {
+          const r = await fetch(`/api/onboarding/builds/${buildId}`);
+          if (r.ok) {
+            const b = (await r.json()) as {
+              status: 'pending' | 'running' | 'done' | 'failed';
+              statusLabel: string | null;
+              subdomain: string;
+              error: string | null;
+            };
+            if (b.statusLabel) setStatusLabel(b.statusLabel);
+            if (b.status === 'done') return finish(b.subdomain);
+            if (b.status === 'failed')
+              return fail(b.error ?? 'Something went wrong. Go back and try again.');
+          }
+        } catch {
+          // transient — keep polling
+        }
+        pollTimer = setTimeout(() => void tick(), POLL_MS);
+      };
+      void tick();
+    };
+
     (async () => {
       try {
-        const res = await fetch('/api/onboarding/generate', {
+        const res = await fetch('/api/onboarding/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -72,64 +114,21 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
             brandColors: data.brandColors.length === 0 ? undefined : data.brandColors,
           }),
         });
-
-        if (!res.ok || !res.body) {
-          setError('We hit a problem starting your build. Go back and try again.');
-          setDone(true);
+        if (!res.ok) {
+          fail('We hit a problem starting your build. Go back and try again.');
           return;
         }
-
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-
-        // Parse the SSE stream. Each event is `data: <json>\n\n`. We split on
-        // double-newline to find complete events; partial events stay in the
-        // buffer for the next chunk.
-        while (true) {
-          const { value, done: streamDone } = await reader.read();
-          if (streamDone) break;
-          buffer += decoder.decode(value, { stream: true });
-          const events = buffer.split('\n\n');
-          buffer = events.pop() ?? '';
-          for (const evt of events) {
-            const line = evt.split('\n').find((l) => l.startsWith('data: '));
-            if (line === undefined) continue;
-            const json = line.slice('data: '.length);
-            try {
-              const parsed = JSON.parse(json) as ProgressEvent;
-              handleEvent(parsed);
-            } catch {
-              // Skip malformed events — log silently.
-            }
-          }
-        }
+        const { buildId } = (await res.json()) as { buildId: string };
+        poll(buildId);
       } catch {
-        setError(
-          'We hit a problem building your store. Go back and try again — your choices are saved.',
-        );
-        setDone(true);
+        fail('We hit a problem starting your build. Go back and try again.');
       }
     })();
 
-    // No cleanup — once generation starts we let it run to completion even if
-    // the component remounts (React Strict Mode does this in dev). The server
-    // keeps building; the maker sees the result on next visit.
-
-    function handleEvent(evt: ProgressEvent) {
-      if (evt.type === 'status') {
-        setStatusLabel(evt.label);
-      } else if (evt.type === 'tip') {
-        setTip(evt.text);
-      } else if (evt.type === 'done') {
-        setTenantSubdomain(evt.subdomain);
-        setBuildSeconds(Math.round(evt.totalMs / 1000));
-        setDone(true);
-      } else if (evt.type === 'error') {
-        setError(evt.message);
-        setDone(true);
-      }
-    }
+    return () => {
+      cancelled = true;
+      if (pollTimer) clearTimeout(pollTimer);
+    };
   }, [data]);
 
   return (
@@ -160,7 +159,7 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
       </div>
 
       {!done ? (
-        <BuildTicker statusLabel={statusLabel} tip={tip} elapsed={elapsed} />
+        <BuildTicker statusLabel={statusLabel} tip="" elapsed={elapsed} />
       ) : error ? (
         <div className="space-y-3 rounded-xl border border-red-500/20 bg-red-500/5 p-6">
           <p className="text-sm text-red-400">{error}</p>
