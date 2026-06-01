@@ -108,4 +108,12 @@ describe('Story — tone (mood-driven)', () => {
     // #15110d → rgb(21, 17, 13)
     expect(line.style.color).toBe('rgb(21, 17, 13)');
   });
+
+  it('the eyebrow uses the readable paired text color, not a low-contrast brand accent', () => {
+    const { getByText } = render(<Story node={makeStory({ tone: 'dark' })} ctx={{}} />);
+    const eyebrow = getByText('Hand-poured in Providence');
+    // cream over the dark scrim — NOT var(--color-primary) (an accent has no
+    // guaranteed contrast over media, which is why it was unreadable).
+    expect(eyebrow.style.color).toBe('rgb(246, 241, 234)');
+  });
 });

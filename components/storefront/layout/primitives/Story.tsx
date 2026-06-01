@@ -112,7 +112,10 @@ export function Story({ node, ctx }: { node: StoryNode; ctx: RenderContext }) {
                 fontWeight: 600,
                 letterSpacing: '0.3em',
                 textTransform: 'uppercase',
-                color: 'var(--color-primary)',
+                // the readable paired text color, slightly dimmed — NOT a palette
+                // accent, which has no guaranteed contrast over the media.
+                color: text,
+                opacity: 0.78,
                 marginBottom: 18,
               }}
             >

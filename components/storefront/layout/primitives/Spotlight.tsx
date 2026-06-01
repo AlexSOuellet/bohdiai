@@ -100,7 +100,9 @@ export function Spotlight({ node, ctx }: { node: SpotlightNode; ctx: RenderConte
               fontWeight: 600,
               letterSpacing: '0.3em',
               textTransform: 'uppercase',
-              color: 'var(--color-primary)',
+              // readable cream on the black field — not a palette accent.
+              color: cream,
+              opacity: 0.82,
               marginBottom: 22,
             }}
           >
