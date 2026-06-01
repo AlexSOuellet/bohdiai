@@ -83,6 +83,31 @@ describe('compileStyleSheet', () => {
     expect(out.googleFontLinks[0]).not.toContain('ital');
   });
 
+  it('requests the optical-size (opsz) axis for optical fonts like Fraunces', () => {
+    const sheet = baseSheet();
+    sheet.fonts[0] = {
+      name: 'Header',
+      family: 'Fraunces',
+      source: 'google',
+      weights: [400, 600],
+      styles: ['normal', 'italic'],
+      fallback: 'serif',
+      character: 'optical display serif',
+    };
+    const out = compileStyleSheet(sheet);
+    const href = out.googleFontLinks[0] ?? '';
+    expect(href).toContain('family=Fraunces');
+    // alphabetical axis order ital,opsz,wght, with the opsz range threaded per weight
+    expect(href).toContain('ital,opsz,wght@');
+    expect(href).toContain('0,9..144,400');
+    expect(href).toContain('1,9..144,600');
+  });
+
+  it('does not request opsz for fonts without an optical-size axis', () => {
+    // Playfair Display is not in the optical-size registry
+    expect(compileStyleSheet(baseSheet()).googleFontLinks[0]).not.toContain('opsz');
+  });
+
   it('emits @font-face for custom fonts and skips google for them', () => {
     const sheet = baseSheet();
     sheet.fonts.push({

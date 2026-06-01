@@ -13,16 +13,33 @@ function escapeForUrl(family: string): string {
   return encodeURIComponent(family.trim());
 }
 
+// Google variable fonts with an optical-size (opsz) axis. Without requesting this
+// axis, Google serves the font's default (text) optical cut, so the same family at
+// a large display size renders flat and generic instead of its dramatic display
+// cut. The value is the font's actual opsz range. Only families verified here get
+// opsz requested — a wrong range fails the whole request, so the registry stays
+// conservative and grows as ranges are confirmed against Google Fonts.
+const OPTICAL_SIZE_FONTS: Record<string, string> = {
+  Fraunces: '9..144',
+};
+
 function googleFontHref(family: string, weights: number[], styles: string[]): string {
   const familyParam = escapeForUrl(family);
   const hasItalic = styles.includes('italic');
-  const axes = hasItalic ? 'ital,wght' : 'wght';
+  const opsz = OPTICAL_SIZE_FONTS[family.trim()];
+  // Axes must be listed alphabetically: ital, opsz, wght.
+  const axes = [hasItalic ? 'ital' : null, opsz ? 'opsz' : null, 'wght']
+    .filter((a): a is string => a !== null)
+    .join(',');
   const weightDescriptors = weights
     .slice()
     .sort((a, b) => a - b)
-    .flatMap((w) =>
-      hasItalic ? [`0,${w}`, ...(styles.includes('italic') ? [`1,${w}`] : [])] : [`${w}`],
-    )
+    .flatMap((w) => {
+      const italicVariants = hasItalic ? ['0', '1'] : [null];
+      return italicVariants.map((ital) =>
+        [ital, opsz, String(w)].filter((v): v is string => v !== null && v !== undefined).join(','),
+      );
+    })
     .join(';');
   return `https://fonts.googleapis.com/css2?family=${familyParam}:${axes}@${weightDescriptors}&display=swap`;
 }
