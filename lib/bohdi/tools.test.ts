@@ -261,6 +261,18 @@ describe('read_mood', () => {
     expect(r['label']).toBeDefined();
   });
 
+  it('returns the structured design direction rails', async () => {
+    const r = (await dispatchTool('read_mood', { key: 'rustic' }, makeCtx())) as Record<
+      string,
+      unknown
+    >;
+    const dir = r['designDirection'] as Record<string, unknown> | undefined;
+    expect(dir).toBeDefined();
+    expect(dir?.['paletteTemperature']).toBeDefined();
+    expect(dir?.['brightness']).toBeDefined();
+    expect(dir?.['defaultScheme']).toBeDefined();
+  });
+
   it('throws on unknown mood', async () => {
     await expect(dispatchTool('read_mood', { key: 'unknown' }, makeCtx())).rejects.toThrow(
       'Mood not found',

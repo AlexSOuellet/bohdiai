@@ -53,7 +53,7 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
   {
     name: 'read_mood',
     description:
-      'Read the mood the maker chose. Returns the mood label, audience description, and a style sheet (named palette, fonts, textures — no role assignments). Call this once early.',
+      'Read the mood the maker chose. Returns the mood label, audience description, a design direction (paletteTemperature, brightness, typeCharacter, textureAffinity, defaultScheme — the rails for your seed color, scheme, and font choices; mood wins conflicts with the niche), and a style sheet (named palette, fonts, textures — no role assignments). Call this once early.',
     input_schema: {
       type: 'object',
       properties: {
@@ -514,6 +514,7 @@ const handlers: Record<string, Handler> = {
       key: mood.key,
       label: mood.label,
       description: mood.description,
+      designDirection: mood.designDirection,
       styleSheet: loadStyleSheet(`mood-${key}.json`),
     };
   },
