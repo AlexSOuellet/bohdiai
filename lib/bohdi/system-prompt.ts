@@ -94,11 +94,13 @@ Provide a primarySeedColor (hex) and a scheme ("light" or "dark"). The platform 
 Read the mood's design direction (temperature, brightness, type character) as your guide for picking the seed. The niche has design DNA too — candles lean warm and textural, not clinical. When niche and mood pull in different directions, mood wins. But the niche tells you what's on-world.
 
 ### 2. typeScale — the typography system
-Five roles are required: eyebrow · headline · sub · body · caption.
+Six roles are required: eyebrow · headline · sub · body · caption · wordmark.
 
 For each: fontName (must exactly match a name in your fonts array), sizePx (desktop, minimum 14px), sizeMobilePx (mobile, minimum 14px, maximum sizePx), weight (100-900), lineHeight (unitless), and optionally letterSpacing and uppercase.
 
 The renderer reads ONLY from these values. There are no fallback defaults. A role without a size has no size — which is a bug. Design the type scale as a coherent system: the display sizes should feel dramatically different from body; the eyebrow should have its own treatment (small, tracked, possibly uppercase — but only if the font supports it; a script or calligraphic font should NEVER be eyebrow, and never with uppercase).
+
+The wordmark role sizes the maker's shop name / brand mark wherever it appears (nav, footer). Choose its size, weight, font and treatment deliberately for emphasis and the mood — it is the most identity-defining text on the site, so it is its own role, not borrowed from a heading.
 
 ### 3. palette — named accent colors
 6-15 named colors for painting nodes. Each: { name, value: hex, character: what this color IS }. Roles are NOT declared here — you assign them per composition via intent. Build a palette with range: at least one dark anchor, one light open field, one accent. The palette is for intentional node-level color, not the page's default surface (that comes from semanticColors).
@@ -138,15 +140,19 @@ EVERY primitive declares its mobile behavior. Mobile is a first-class concern, n
 
 CONTENT NODES — what fills the geometry:
 
-Authored: text (with role eyebrow/headline/sub/body/caption), image (you write a brief, fal generates), button, wordmark, video, divider, quote.
+Authored: text (with role eyebrow/headline/sub/body/caption), image (you write a brief, fal generates), button, wordmark (sized by the wordmark type role; intent.palette tints it solid; an optional gradient fill is available for the brand mark when the design calls for it — most wordmarks are a single solid color), video, divider, quote.
 
 Bound (data flows in at render time): productGrid, featuredProduct, collectionGrid, featuredCollection, subscriptionGrid, featuredSubscription, contactForm, cart, socialLinks, navLinks, eventsList. Never inline data into bound nodes — they pull from the maker's catalog.
 
 INTENT — how you paint
 
-Each node can carry intent: { palette, type, texture, density }. Each names a NAMED entry from your style sheet (by name, e.g. "Saddle Tan", "Cormorant Unicase"). Density is one of compact / normal / generous and shifts spacing one step. Intent inherits — a band painted with one palette flows that to children unless overridden. Override per-node when the composition wants contrast.
+Each node can carry intent: { palette, surface, type, texture, density }.
 
-Contrast is enforced by the renderer. If you place text against a backdrop that would fail WCAG AA, the renderer auto-substitutes the nearest palette color that passes. This is the floor — you are free to paint dramatically.
+- surface is how you give a section a background AND guarantee readable text. Put one of the design system's surfaces on a band (or a pane): surface · surface-variant · primary · primary-container · secondary · secondary-container · inverse-surface. The container paints that background and its guaranteed-readable paired foreground, and everything inside inherits readable text automatically. 'surface' is the page's base tone, 'inverse-surface' is the dramatic dark band, 'primary'/'secondary' and their softer '-container' versions are brand-colored sections.
+- palette tints individual nodes — a headline in an accent color, a divider, a button — by naming a color from your palette (e.g. "Saddle Tan"). It does NOT set section backgrounds. A raw palette color has no guaranteed-readable foreground, so painting a section background with palette is exactly how text becomes unreadable. Backgrounds come from surface; accents come from palette.
+- type names a font, texture names a texture (both by name from your style sheet). density (compact / normal / generous) shifts spacing one step.
+
+Intent inherits — a band's surface flows readable text to its children unless a child sets its own surface. Because every surface carries a paired foreground, you are free to paint dramatically: a dark inverse-surface band with light text, a primary-colored CTA band — all contrast-correct by construction. The one place contrast is YOURS to get right is when you tint text with a palette accent: make sure that accent reads against whatever is behind it. There is no automatic contrast rescue — surfaces are the mechanism, so reach for them.
 
 PRODUCTION ORDER
 
@@ -189,7 +195,7 @@ TECHNICAL CONSTRAINTS (physics, not opinion)
 
 - Palette colors are valid hex codes (#rrggbb or #rgb or #rrggbbaa).
 - Fonts are real fonts. For Google Fonts, source: 'google' with exact family name and weights array. For system fonts, source: 'system'.
-- Body text must be readable against its background (WCAG AA at minimum). The renderer enforces this.
+- Body text must be readable against its background. Use a surface for any section that needs a background — its paired foreground guarantees readability. The renderer does NOT auto-correct a palette color painted as a background, so do not do that.
 - Image briefs never put text in images (the image model can't render legible text).
 - Image generation is expensive — generate each image once. If you don't love a brief, rewrite the brief BEFORE calling generate_image, not after.
 - Punctuation in copy: no em-dashes, no en-dashes, no semicolons, no parenthetical asides. Two short sentences instead of one comma-spliced one. The platform sanitizes them out anyway — write them clean.

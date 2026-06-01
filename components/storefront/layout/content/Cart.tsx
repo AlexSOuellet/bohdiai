@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import type { CartNode, ResolvedCart } from '@/lib/layout';
 import type { RenderContext } from '../Node';
-import { intentToStyleVars } from '../intent';
+import { intentToStyleVars, typeRoleStyle } from '../intent';
 
 function formatPriceCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -24,7 +24,7 @@ export function CartContent({ node, ctx }: { node: CartNode; ctx: RenderContext 
         href="/cart"
         aria-label="Cart"
         style={intentToStyleVars(node.intent)}
-        className="inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-black/5"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-md transition-opacity hover:opacity-70"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -56,10 +56,15 @@ export function CartContent({ node, ctx }: { node: CartNode; ctx: RenderContext 
         style={intentToStyleVars(node.intent)}
         className="flex w-full flex-col gap-4"
       >
-        <h2 className="text-2xl font-semibold">Your cart is empty</h2>
+        <h2 style={typeRoleStyle('sub')}>Your cart is empty</h2>
         <a
           href="/shop"
-          className="inline-flex w-fit items-center rounded-md bg-black px-6 py-3 font-medium text-white"
+          style={{
+            ...typeRoleStyle('body'),
+            background: 'var(--color-primary)',
+            color: 'var(--color-on-primary)',
+          }}
+          className="inline-flex w-fit items-center rounded-md px-6 py-3"
         >
           Browse the shop
         </a>
@@ -75,14 +80,18 @@ export function CartContent({ node, ctx }: { node: CartNode; ctx: RenderContext 
       style={intentToStyleVars(node.intent)}
       className="flex w-full flex-col gap-4"
     >
-      <h2 className="text-2xl font-semibold">Cart</h2>
+      <h2 style={typeRoleStyle('sub')}>Cart</h2>
       <div className="flex flex-col gap-3">
         {cart.lines.map((line) => (
           <div
             key={line.productId}
-            className="flex items-center gap-4 border-b border-black/10 py-3"
+            style={{ borderColor: 'var(--color-outline)' }}
+            className="flex items-center gap-4 border-b py-3"
           >
-            <div className="relative h-16 w-16 overflow-hidden bg-black/10">
+            <div
+              style={{ background: 'var(--color-surface-variant)' }}
+              className="relative h-16 w-16 overflow-hidden"
+            >
               {line.imageUrl !== undefined && (
                 <Image
                   src={line.imageUrl}
@@ -94,16 +103,16 @@ export function CartContent({ node, ctx }: { node: CartNode; ctx: RenderContext 
               )}
             </div>
             <div className="flex flex-1 flex-col gap-1">
-              <div className="font-medium">{line.productName}</div>
-              <div className="text-sm opacity-70">qty {line.quantity}</div>
+              <div style={typeRoleStyle('body')}>{line.productName}</div>
+              <div style={{ ...typeRoleStyle('caption'), opacity: 0.7 }}>qty {line.quantity}</div>
             </div>
-            <div className="text-base">{formatPriceCents(line.priceCents)}</div>
+            <div style={typeRoleStyle('body')}>{formatPriceCents(line.priceCents)}</div>
           </div>
         ))}
       </div>
       <div className="mt-2 flex items-center justify-between">
-        <span className="font-medium">Total</span>
-        <span className="text-lg">{formatPriceCents(cart.subtotalCents)}</span>
+        <span style={typeRoleStyle('body')}>Total</span>
+        <span style={typeRoleStyle('sub')}>{formatPriceCents(cart.subtotalCents)}</span>
       </div>
     </div>
   );

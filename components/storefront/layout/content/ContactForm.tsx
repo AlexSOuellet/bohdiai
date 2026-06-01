@@ -1,6 +1,14 @@
 import type { ContactFormNode } from '@/lib/layout';
 import type { RenderContext } from '../Node';
-import { intentToStyleVars } from '../intent';
+import { intentToStyleVars, typeRoleStyle } from '../intent';
+
+// Inputs paint a readable surface of their own so they stay legible on any band.
+const FIELD_STYLE: React.CSSProperties = {
+  ...typeRoleStyle('body'),
+  background: 'var(--color-surface)',
+  color: 'var(--color-on-surface)',
+  borderColor: 'var(--color-outline)',
+};
 
 const DEFAULT_FIELDS: NonNullable<ContactFormNode['fields']> = [
   { name: 'name', label: 'Name', kind: 'text', required: true },
@@ -30,7 +38,7 @@ export function ContactFormContent({
         const id = `cf-${node.id ?? 'form'}-${field.name}`;
         return (
           <div key={field.name} className="flex flex-col gap-1.5">
-            <label htmlFor={id} className="text-sm font-medium">
+            <label htmlFor={id} style={typeRoleStyle('caption')}>
               {field.label}
               {field.required === true && (
                 <span aria-hidden="true" className="opacity-70">
@@ -46,14 +54,16 @@ export function ContactFormContent({
                 required={field.required === true}
                 placeholder={field.placeholder}
                 rows={4}
-                className="px-3 py-2 border border-black/20 rounded-md"
+                style={FIELD_STYLE}
+                className="px-3 py-2 border rounded-md"
               />
             ) : field.kind === 'select' ? (
               <select
                 id={id}
                 name={field.name}
                 required={field.required === true}
-                className="px-3 py-2 border border-black/20 rounded-md"
+                style={FIELD_STYLE}
+                className="px-3 py-2 border rounded-md"
               >
                 {(field.options ?? []).map((opt) => (
                   <option key={opt} value={opt}>
@@ -68,7 +78,8 @@ export function ContactFormContent({
                 type={field.kind}
                 required={field.required === true}
                 placeholder={field.placeholder}
-                className="px-3 py-2 border border-black/20 rounded-md"
+                style={FIELD_STYLE}
+                className="px-3 py-2 border rounded-md"
               />
             )}
           </div>
@@ -76,12 +87,12 @@ export function ContactFormContent({
       })}
       <button
         type="submit"
-        style={
-          node.intent?.palette
-            ? { background: 'var(--node-palette)', color: 'white' }
-            : undefined
-        }
-        className="px-6 py-3 rounded-md font-medium bg-black text-white"
+        style={{
+          ...typeRoleStyle('body'),
+          background: 'var(--color-primary)',
+          color: 'var(--color-on-primary)',
+        }}
+        className="px-6 py-3 rounded-md"
       >
         {submitLabel}
       </button>

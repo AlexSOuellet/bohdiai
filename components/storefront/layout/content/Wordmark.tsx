@@ -1,19 +1,37 @@
 import NextImage from 'next/image';
 import type { WordmarkNode } from '@/lib/layout';
 import type { RenderContext } from '../Node';
-import { intentToStyleVars } from '../intent';
+import { intentToStyleVars, paletteVar, typeRoleStyle } from '../intent';
+
+function gradientStyle(gradient: NonNullable<WordmarkNode['gradient']>): React.CSSProperties {
+  const angle = gradient.angle ?? 90;
+  return {
+    backgroundImage: `linear-gradient(${angle}deg, ${paletteVar(gradient.from)}, ${paletteVar(gradient.to)})`,
+    WebkitBackgroundClip: 'text',
+    backgroundClip: 'text',
+    color: 'transparent',
+  };
+}
 
 export function WordmarkContent({ node, ctx: _ctx }: { node: WordmarkNode; ctx: RenderContext }) {
   const href = node.href ?? '/';
+
+  // Color precedence: an explicit gradient wins, then a palette accent, otherwise the
+  // wordmark inherits the readable text color of whatever surface it sits on.
+  const colorStyle: React.CSSProperties = node.gradient
+    ? gradientStyle(node.gradient)
+    : node.intent?.palette
+      ? { color: 'var(--node-palette)' }
+      : {};
 
   const inner =
     node.kind === 'text' ? (
       <span
         style={{
+          ...typeRoleStyle('wordmark'),
           ...intentToStyleVars(node.intent),
-          ...(node.intent?.palette ? { color: 'var(--node-palette)' } : null),
+          ...colorStyle,
         }}
-        className="text-2xl font-semibold tracking-tight md:text-3xl"
       >
         {node.content}
       </span>

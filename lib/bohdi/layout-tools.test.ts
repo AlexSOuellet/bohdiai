@@ -84,6 +84,7 @@ const VALID_STYLE_SHEET: StyleSheet = {
     sub: { fontName: 'Display', sizePx: 24, sizeMobilePx: 20, weight: 600, lineHeight: 1.2 },
     body: { fontName: 'Body', sizePx: 18, sizeMobilePx: 16, weight: 400, lineHeight: 1.6 },
     caption: { fontName: 'Body', sizePx: 14, sizeMobilePx: 14, weight: 400, lineHeight: 1.4 },
+    wordmark: { fontName: 'Display', sizePx: 28, sizeMobilePx: 22, weight: 700, lineHeight: 1.1 },
   },
   spacing: { unit: 8 },
 };

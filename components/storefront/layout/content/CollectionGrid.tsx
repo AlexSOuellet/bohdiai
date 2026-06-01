@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import type { CollectionGridNode, ResolvedCollection } from '@/lib/layout';
 import type { RenderContext } from '../Node';
-import { intentToStyleVars } from '../intent';
+import { intentToStyleVars, surfaceStyleVars, typeRoleStyle } from '../intent';
 import {
   GAP_X_CLASS,
   GAP_X_CLASS_MD,
@@ -53,30 +53,32 @@ export function CollectionGridContent({
       {items.map((c, i) =>
         c === null ? (
           <div key={`collection-skel-${i}`} className="flex flex-col gap-2">
-            <div className="aspect-[3/2] w-full bg-black/10" />
-            <div className="h-5 w-1/2 rounded bg-black/10" />
+            <div
+              style={{ background: 'var(--color-surface-variant)' }}
+              className="aspect-[3/2] w-full"
+            />
+            <div
+              style={{ background: 'var(--color-surface-variant)' }}
+              className="h-5 w-1/2 rounded"
+            />
           </div>
         ) : c.imageUrl === undefined || c.imageUrl === '' ? (
           <a
             key={c.slug}
             href={`/collections/${c.slug}`}
             data-text-only
-            style={
-              node.intent?.palette
-                ? {
-                    background: 'var(--node-palette)',
-                    color: 'var(--node-palette-fg)',
-                  }
-                : undefined
-            }
+            style={surfaceStyleVars(node.intent?.surface ?? 'surface-variant')}
             className="flex aspect-[3/2] w-full flex-col items-center justify-center gap-2 rounded p-8 text-center transition-opacity hover:opacity-80"
           >
-            <div className="text-lg font-medium">{c.name}</div>
-            <div className="text-xs opacity-60">{c.itemCount} pieces</div>
+            <div style={typeRoleStyle('sub')}>{c.name}</div>
+            <div style={{ ...typeRoleStyle('caption'), opacity: 0.6 }}>{c.itemCount} pieces</div>
           </a>
         ) : (
           <a key={c.slug} href={`/collections/${c.slug}`} className="group flex flex-col gap-2">
-            <div className="relative aspect-[3/2] w-full overflow-hidden bg-black/10">
+            <div
+              style={{ background: 'var(--color-surface-variant)' }}
+              className="relative aspect-[3/2] w-full overflow-hidden"
+            >
               <Image
                 src={c.imageUrl}
                 alt={c.name}
@@ -85,8 +87,8 @@ export function CollectionGridContent({
                 className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
               />
             </div>
-            <div className="font-medium">{c.name}</div>
-            <div className="text-xs opacity-60">{c.itemCount} pieces</div>
+            <div style={typeRoleStyle('body')}>{c.name}</div>
+            <div style={{ ...typeRoleStyle('caption'), opacity: 0.6 }}>{c.itemCount} pieces</div>
           </a>
         ),
       )}

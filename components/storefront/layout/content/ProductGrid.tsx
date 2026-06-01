@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import type { ProductGridNode, ResolvedProduct } from '@/lib/layout';
 import type { RenderContext } from '../Node';
-import { intentToStyleVars } from '../intent';
+import { intentToStyleVars, typeRoleStyle } from '../intent';
 import {
   GAP_X_CLASS,
   GAP_X_CLASS_MD,
@@ -52,13 +52,25 @@ export function ProductGridContent({ node, ctx }: { node: ProductGridNode; ctx: 
       {items.map((p, i) =>
         p === null ? (
           <div key={`product-skel-${i}`} className="flex flex-col gap-2">
-            <div className="aspect-[4/5] w-full bg-black/10" />
-            <div className="h-4 w-3/4 rounded bg-black/10" />
-            <div className="h-3 w-1/3 rounded bg-black/10" />
+            <div
+              style={{ background: 'var(--color-surface-variant)' }}
+              className="aspect-[4/5] w-full"
+            />
+            <div
+              style={{ background: 'var(--color-surface-variant)' }}
+              className="h-4 w-3/4 rounded"
+            />
+            <div
+              style={{ background: 'var(--color-surface-variant)' }}
+              className="h-3 w-1/3 rounded"
+            />
           </div>
         ) : (
           <a key={p.id} href={`/listings/${p.slug}`} className="group flex flex-col gap-2">
-            <div className="relative aspect-[4/5] w-full overflow-hidden bg-black/10">
+            <div
+              style={{ background: 'var(--color-surface-variant)' }}
+              className="relative aspect-[4/5] w-full overflow-hidden"
+            >
               {p.imageUrl !== undefined && (
                 <Image
                   src={p.imageUrl}
@@ -69,9 +81,11 @@ export function ProductGridContent({ node, ctx }: { node: ProductGridNode; ctx: 
                 />
               )}
             </div>
-            <div className="font-medium leading-snug">{p.name}</div>
+            <div style={typeRoleStyle('body')}>{p.name}</div>
             {p.priceCents !== undefined && (
-              <div className="text-sm opacity-70">{formatPriceCents(p.priceCents)}</div>
+              <div style={{ ...typeRoleStyle('caption'), opacity: 0.7 }}>
+                {formatPriceCents(p.priceCents)}
+              </div>
             )}
           </a>
         ),

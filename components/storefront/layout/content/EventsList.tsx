@@ -1,6 +1,6 @@
 import type { EventsListNode, ResolvedEvent } from '@/lib/layout';
 import type { RenderContext } from '../Node';
-import { intentToStyleVars } from '../intent';
+import { intentToStyleVars, typeRoleStyle } from '../intent';
 import { joinClasses } from '../scale';
 
 function resolvedEventsAt(ctx: RenderContext): ResolvedEvent[] | null {
@@ -51,28 +51,26 @@ export function EventsListContent({
         e === null ? (
           <div
             key={`event-skel-${i}`}
-            className="flex flex-col gap-2 p-4 border border-black/10 rounded-md"
+            style={{ borderColor: 'var(--color-outline)' }}
+            className="flex flex-col gap-2 p-4 border rounded-md"
           >
-            <div className="h-3 w-1/3 bg-black/10 rounded" />
-            <div className="h-5 w-2/3 bg-black/10 rounded" />
-            <div className="h-3 w-1/2 bg-black/10 rounded" />
+            <div style={{ background: 'var(--color-surface-variant)' }} className="h-3 w-1/3 rounded" />
+            <div style={{ background: 'var(--color-surface-variant)' }} className="h-5 w-2/3 rounded" />
+            <div style={{ background: 'var(--color-surface-variant)' }} className="h-3 w-1/2 rounded" />
           </div>
         ) : (
           <div
             key={e.id}
-            className="flex flex-col gap-2 p-4 border border-black/10 rounded-md"
+            style={{ borderColor: 'var(--color-outline)' }}
+            className="flex flex-col gap-2 p-4 border rounded-md"
           >
-            <div className="text-xs uppercase tracking-[0.15em] opacity-70">
-              {formatDate(e.date)}
-            </div>
-            <h4 className="text-lg font-medium leading-snug">{e.name}</h4>
+            <div style={{ ...typeRoleStyle('eyebrow'), opacity: 0.7 }}>{formatDate(e.date)}</div>
+            <h4 style={typeRoleStyle('sub')}>{e.name}</h4>
             {e.location !== undefined && (
-              <div className="text-sm opacity-70">{e.location}</div>
+              <div style={{ ...typeRoleStyle('caption'), opacity: 0.7 }}>{e.location}</div>
             )}
             {e.description !== undefined && (
-              <p className="text-sm opacity-70 leading-relaxed">
-                {e.description}
-              </p>
+              <p style={{ ...typeRoleStyle('caption'), opacity: 0.7 }}>{e.description}</p>
             )}
           </div>
         ),

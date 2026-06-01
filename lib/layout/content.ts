@@ -73,6 +73,19 @@ export const WordmarkNodeSchema = z
     kind: z.enum(['text', 'image']),
     content: z.string().min(1),
     href: z.string().min(1).optional(),
+    /**
+     * Optional gradient text fill for a text wordmark. Use only when the design calls
+     * for it — most wordmarks are a single solid color. from/to reference named palette
+     * colors; angle is in degrees (default 90, i.e. left-to-right).
+     */
+    gradient: z
+      .object({
+        from: z.string().min(1),
+        to: z.string().min(1),
+        angle: z.number().min(0).max(360).optional(),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 export type WordmarkNode = z.infer<typeof WordmarkNodeSchema>;

@@ -1,6 +1,6 @@
 import type { NavLinksNode, ResolvedNavLink } from '@/lib/layout';
 import type { RenderContext } from '../Node';
-import { intentToStyleVars } from '../intent';
+import { intentToStyleVars, typeRoleStyle } from '../intent';
 import { joinClasses } from '../scale';
 
 const STYLE_CLASS: Record<NonNullable<NavLinksNode['style']>, string> = {
@@ -41,6 +41,10 @@ export function NavLinksContent({
 
   const style = node.style ?? 'plain';
 
+  // Links inherit the readable foreground of the surface they sit on (fixing the
+  // default browser-blue link color). An explicit palette intent tints them an accent.
+  const linkColor = node.intent?.palette !== undefined ? 'var(--node-palette)' : 'inherit';
+
   return (
     <nav
       data-node-type="navLinks"
@@ -52,8 +56,9 @@ export function NavLinksContent({
           <li key={l.slug}>
             <a
               href={`/${l.slug.replace(/^\/+/, '')}`}
+              style={{ ...typeRoleStyle('body'), color: linkColor }}
               className={joinClasses(
-                'text-sm md:text-base font-medium hover:opacity-80 transition-opacity',
+                'hover:opacity-80 transition-opacity',
                 STYLE_CLASS[style],
               )}
             >

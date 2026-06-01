@@ -1,6 +1,6 @@
 import type { QuoteNode } from '@/lib/layout';
 import type { RenderContext } from '../Node';
-import { intentToStyleVars } from '../intent';
+import { intentToStyleVars, typeRoleStyle } from '../intent';
 
 export function QuoteContent({ node, ctx: _ctx }: { node: QuoteNode; ctx: RenderContext }) {
   return (
@@ -13,13 +13,13 @@ export function QuoteContent({ node, ctx: _ctx }: { node: QuoteNode; ctx: Render
       }}
       className="max-w-2xl"
     >
-      <blockquote className="text-xl italic leading-snug md:text-2xl">
+      <blockquote style={{ ...typeRoleStyle('sub'), fontStyle: 'italic' }}>
         &ldquo;{node.body}&rdquo;
       </blockquote>
       {(node.attribution !== undefined || node.role !== undefined) && (
-        <figcaption className="mt-3 text-sm opacity-70">
+        <figcaption style={{ ...typeRoleStyle('caption'), opacity: 0.7 }} className="mt-3">
           {node.attribution !== undefined && (
-            <span className="font-medium not-italic">{node.attribution}</span>
+            <span className="not-italic">{node.attribution}</span>
           )}
           {node.attribution !== undefined && node.role !== undefined && <span>, </span>}
           {node.role !== undefined && <span>{node.role}</span>}

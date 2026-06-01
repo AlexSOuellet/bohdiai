@@ -61,6 +61,7 @@ describe('TypeScaleSchema', () => {
     sub: { fontName: 'Playfair Display', sizePx: 28, sizeMobilePx: 22, weight: 600, lineHeight: 1.2 },
     body: { fontName: 'Geist', sizePx: 18, sizeMobilePx: 16, weight: 400, lineHeight: 1.6 },
     caption: { fontName: 'Geist', sizePx: 14, sizeMobilePx: 14, weight: 400, lineHeight: 1.4 },
+    wordmark: { fontName: 'Playfair Display', sizePx: 30, sizeMobilePx: 24, weight: 700, lineHeight: 1.1 },
   };
 
   it('accepts a valid scale', () => {

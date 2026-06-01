@@ -31,7 +31,7 @@ export function DividerContent({
       data-node-id={node.id}
       style={{
         ...intentToStyleVars(node.intent),
-        ...(node.intent?.palette ? { borderColor: 'var(--node-palette)' } : null),
+        borderColor: node.intent?.palette ? 'var(--node-palette)' : 'var(--color-outline)',
       }}
       className={joinClasses('w-full', WEIGHT_CLASS[weight], STYLE_CLASS[style])}
     />

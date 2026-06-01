@@ -53,6 +53,7 @@ const mockSheet: StyleSheet = {
     sub: { fontName: 'Playfair Display', sizePx: 28, sizeMobilePx: 22, weight: 600, lineHeight: 1.2 },
     body: { fontName: 'Geist', sizePx: 18, sizeMobilePx: 16, weight: 400, lineHeight: 1.6 },
     caption: { fontName: 'Geist', sizePx: 14, sizeMobilePx: 14, weight: 400, lineHeight: 1.4 },
+    wordmark: { fontName: 'Playfair Display', sizePx: 30, sizeMobilePx: 24, weight: 700, lineHeight: 1.1 },
   },
   spacing: { unit: 8 },
 };
@@ -71,6 +72,16 @@ describe('compileDesignSystemVars', () => {
       rootLines.some((l) => l.includes('--type-headline-font: "Playfair Display", serif')),
     ).toBe(true);
     expect(rootLines.some((l) => l.includes('--type-body-font: Geist, sans-serif'))).toBe(true);
+  });
+
+  it('emits wordmark type scale variables', () => {
+    const { rootLines, mediaLines } = compileDesignSystemVars(mockSheet, mockSemanticColors);
+    expect(
+      rootLines.some((l) => l.includes('--type-wordmark-font: "Playfair Display", serif')),
+    ).toBe(true);
+    expect(rootLines.some((l) => l.includes('--type-wordmark-size: 24px'))).toBe(true);
+    expect(rootLines.some((l) => l.includes('--type-wordmark-weight: 700'))).toBe(true);
+    expect(mediaLines.some((l) => l.includes('--type-wordmark-size: 30px'))).toBe(true);
   });
 
   it('emits mobile size as the default (root) and desktop size in media overrides', () => {

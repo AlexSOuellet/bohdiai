@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import type { Density, Intent, SpacingScale } from '@/lib/layout';
+import { SURFACE_ON_COLOR, type SurfaceRole, type TypeScaleRole } from '@/lib/design-system/types';
 
 const SPACING_ORDER: SpacingScale[] = [
   'none',
@@ -36,6 +37,36 @@ export type IntentStyleVars = CSSProperties & {
   '--node-font'?: string;
   '--node-texture'?: string;
 };
+
+/**
+ * All typographic properties for a type-scale role, read from the design system's
+ * compiled CSS variables. The renderer never hardcodes font, size, weight, line-height,
+ * letter-spacing, or transform — every component that renders text reads them from here.
+ */
+export function typeRoleStyle(role: TypeScaleRole): CSSProperties {
+  return {
+    fontFamily: `var(--type-${role}-font)`,
+    fontSize: `var(--type-${role}-size)`,
+    fontWeight: `var(--type-${role}-weight)` as CSSProperties['fontWeight'],
+    lineHeight: `var(--type-${role}-line-height)`,
+    letterSpacing: `var(--type-${role}-letter-spacing, normal)`,
+    textTransform: `var(--type-${role}-transform, none)` as CSSProperties['textTransform'],
+  };
+}
+
+/**
+ * Turns a surface role into a background + paired foreground color, both from the
+ * design system's semantic color tokens. Because every M3 surface has a guaranteed
+ * contrasting `on-*` color, a container that uses this can never produce unreadable
+ * text, and descendants inherit the readable color. Returns {} when no surface is set.
+ */
+export function surfaceStyleVars(surface: SurfaceRole | undefined): CSSProperties {
+  if (surface === undefined) return {};
+  return {
+    background: `var(--color-${surface})`,
+    color: `var(--color-${SURFACE_ON_COLOR[surface]})`,
+  };
+}
 
 export function intentToStyleVars(intent: Intent | undefined): IntentStyleVars {
   const style: IntentStyleVars = {};

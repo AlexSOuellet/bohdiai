@@ -34,11 +34,8 @@ export function ImageContent({
         data-image-placeholder
         role="img"
         aria-label={node.alt}
-        style={intentToStyleVars(node.intent)}
-        className={joinClasses(
-          'relative w-full bg-black/10',
-          ASPECT_CLASS[aspect] || 'aspect-[3/2]',
-        )}
+        style={{ ...intentToStyleVars(node.intent), background: 'var(--color-surface-variant)' }}
+        className={joinClasses('relative w-full', ASPECT_CLASS[aspect] || 'aspect-[3/2]')}
       />
     );
   }

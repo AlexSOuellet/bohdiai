@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import type { FeaturedCollectionNode, ResolvedCollection } from '@/lib/layout';
 import type { RenderContext } from '../Node';
-import { intentToStyleVars } from '../intent';
+import { intentToStyleVars, surfaceStyleVars, typeRoleStyle } from '../intent';
 
 function resolvedCollectionAt(ctx: RenderContext): ResolvedCollection | null {
   if (ctx.resolved === undefined || ctx.path === undefined) return null;
@@ -30,12 +30,13 @@ export function FeaturedCollectionContent({
         style={intentToStyleVars(node.intent)}
         className="flex w-full flex-col gap-4"
       >
-        <div className="h-7 w-1/3 rounded bg-black/10" />
+        <div style={{ background: 'var(--color-surface-variant)' }} className="h-7 w-1/3 rounded" />
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {Array.from({ length: preview }).map((_, i) => (
             <div
               key={`featured-collection-skel-${i}`}
-              className="aspect-square w-full bg-black/10"
+              style={{ background: 'var(--color-surface-variant)' }}
+              className="aspect-square w-full"
             />
           ))}
         </div>
@@ -52,19 +53,16 @@ export function FeaturedCollectionContent({
         data-node-id={node.id}
         data-text-only
         href={`/collections/${collection.slug}`}
-        style={
-          node.intent?.palette
-            ? {
-                ...intentToStyleVars(node.intent),
-                background: 'var(--node-palette)',
-                color: 'var(--node-palette-fg)',
-              }
-            : intentToStyleVars(node.intent)
-        }
+        style={{
+          ...intentToStyleVars(node.intent),
+          ...surfaceStyleVars(node.intent?.surface ?? 'surface-variant'),
+        }}
         className="flex aspect-[3/2] w-full flex-col items-center justify-center gap-3 rounded p-10 text-center transition-opacity hover:opacity-80"
       >
-        <h3 className="text-2xl font-semibold">{collection.name}</h3>
-        <span className="text-xs opacity-60">{collection.itemCount} pieces</span>
+        <h3 style={typeRoleStyle('sub')}>{collection.name}</h3>
+        <span style={{ ...typeRoleStyle('caption'), opacity: 0.6 }}>
+          {collection.itemCount} pieces
+        </span>
       </a>
     );
   }
@@ -78,10 +76,15 @@ export function FeaturedCollectionContent({
       className="group flex w-full flex-col gap-4"
     >
       <div className="flex items-baseline justify-between">
-        <h3 className="text-2xl font-semibold">{collection.name}</h3>
-        <span className="text-xs opacity-60">{collection.itemCount} pieces</span>
+        <h3 style={typeRoleStyle('sub')}>{collection.name}</h3>
+        <span style={{ ...typeRoleStyle('caption'), opacity: 0.6 }}>
+          {collection.itemCount} pieces
+        </span>
       </div>
-      <div className="relative aspect-[3/2] w-full overflow-hidden bg-black/10">
+      <div
+        style={{ background: 'var(--color-surface-variant)' }}
+        className="relative aspect-[3/2] w-full overflow-hidden"
+      >
         <Image
           src={imageUrl}
           alt={collection.name}

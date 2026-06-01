@@ -34,6 +34,7 @@ const validTypeScale = () => ({
   sub: { fontName: 'Font 1', sizePx: 24, sizeMobilePx: 20, weight: 600, lineHeight: 1.2 },
   body: { fontName: 'Font 2', sizePx: 18, sizeMobilePx: 16, weight: 400, lineHeight: 1.6 },
   caption: { fontName: 'Font 2', sizePx: 14, sizeMobilePx: 14, weight: 400, lineHeight: 1.4 },
+  wordmark: { fontName: 'Font 1', sizePx: 28, sizeMobilePx: 22, weight: 700, lineHeight: 1.1 },
 });
 
 const validSheet = () => ({

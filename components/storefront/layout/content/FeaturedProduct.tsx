@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import type { FeaturedProductNode, ResolvedProduct } from '@/lib/layout';
 import type { RenderContext } from '../Node';
-import { intentToStyleVars } from '../intent';
+import { intentToStyleVars, typeRoleStyle } from '../intent';
 
 function formatPriceCents(cents: number | undefined): string {
   if (cents === undefined) return '';
@@ -33,9 +33,12 @@ export function FeaturedProductContent({
         style={intentToStyleVars(node.intent)}
         className="flex w-full max-w-md flex-col gap-3"
       >
-        <div className="aspect-[4/5] w-full bg-black/10" />
-        <div className="h-5 w-2/3 rounded bg-black/10" />
-        <div className="h-4 w-1/4 rounded bg-black/10" />
+        <div
+          style={{ background: 'var(--color-surface-variant)' }}
+          className="aspect-[4/5] w-full"
+        />
+        <div style={{ background: 'var(--color-surface-variant)' }} className="h-5 w-2/3 rounded" />
+        <div style={{ background: 'var(--color-surface-variant)' }} className="h-4 w-1/4 rounded" />
       </div>
     );
   }
@@ -49,7 +52,10 @@ export function FeaturedProductContent({
       style={intentToStyleVars(node.intent)}
       className="group flex w-full max-w-md flex-col gap-3"
     >
-      <div className="relative aspect-[4/5] w-full overflow-hidden bg-black/10">
+      <div
+        style={{ background: 'var(--color-surface-variant)' }}
+        className="relative aspect-[4/5] w-full overflow-hidden"
+      >
         {product.imageUrl !== undefined && (
           <Image
             src={product.imageUrl}
@@ -60,15 +66,24 @@ export function FeaturedProductContent({
           />
         )}
       </div>
-      <div className="text-xl font-medium leading-snug">{product.name}</div>
+      <div style={typeRoleStyle('sub')}>{product.name}</div>
       {node.showPrice !== false && product.priceCents !== undefined && (
-        <div className="text-base opacity-80">{formatPriceCents(product.priceCents)}</div>
+        <div style={{ ...typeRoleStyle('body'), opacity: 0.8 }}>
+          {formatPriceCents(product.priceCents)}
+        </div>
       )}
       {product.shortDescription !== undefined && (
-        <p className="text-sm leading-relaxed opacity-70">{product.shortDescription}</p>
+        <p style={{ ...typeRoleStyle('caption'), opacity: 0.7 }}>{product.shortDescription}</p>
       )}
       {node.showAddToCart !== false && (
-        <span className="inline-flex w-fit items-center rounded-md bg-black px-6 py-3 font-medium text-white">
+        <span
+          style={{
+            ...typeRoleStyle('body'),
+            background: 'var(--color-primary)',
+            color: 'var(--color-on-primary)',
+          }}
+          className="inline-flex w-fit items-center rounded-md px-6 py-3"
+        >
           Add to cart
         </span>
       )}

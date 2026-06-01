@@ -1,6 +1,6 @@
 import type { BandContentWidth, BandNode } from '@/lib/layout';
 import { Node, childPath, deriveCtx, type RenderContext } from '../Node';
-import { applyDensity, intentToStyleVars } from '../intent';
+import { applyDensity, intentToStyleVars, surfaceStyleVars } from '../intent';
 import {
   ALIGN_ITEMS_CLASS,
   ALIGN_ITEMS_CLASS_MD,
@@ -67,7 +67,7 @@ export function Band({ node, ctx }: { node: BandNode; ctx: RenderContext }) {
       data-content-width={contentWidth}
       style={{
         ...intentToStyleVars(node.intent),
-        ...(node.intent?.palette ? { background: 'var(--node-palette)' } : null),
+        ...surfaceStyleVars(node.intent?.surface),
       }}
       className={joinClasses(
         'flex w-full flex-col',

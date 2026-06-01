@@ -123,11 +123,7 @@ export default async function StorefrontPage({ slug }: StorefrontPageProps) {
           )}
         </>
       )}
-      <LayoutPage
-        page={parsedPage.data}
-        resolved={resolved}
-        {...(styleResult?.scriptFonts ? { scriptFonts: styleResult.scriptFonts } : {})}
-      />
+      <LayoutPage page={parsedPage.data} resolved={resolved} />
     </>
   );
 }
@@ -135,8 +131,5 @@ export default async function StorefrontPage({ slug }: StorefrontPageProps) {
 function parseStyleSheet(sheet: Json) {
   const parsed = StyleSheetSchema.safeParse(sheet);
   if (!parsed.success) return null;
-  const scriptFonts = new Set(
-    parsed.data.fonts.filter((f) => f.fallback === 'cursive').map((f) => f.name),
-  );
-  return { compiled: compileStyleSheet(parsed.data), scriptFonts };
+  return { compiled: compileStyleSheet(parsed.data) };
 }

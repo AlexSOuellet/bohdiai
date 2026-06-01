@@ -33,8 +33,6 @@ export interface RenderContext {
   density?: Density;
   path?: string;
   resolved?: ResolvedDataByNodePath;
-  /** Names of fonts whose fallback is 'cursive' — treated as scripts for typographic treatment. */
-  scriptFonts?: Set<string>;
 }
 
 export interface NodeProps {
@@ -47,7 +45,6 @@ export function deriveCtx(node: LayoutNode, ctx: RenderContext): RenderContext {
   const next: RenderContext = {};
   if (density !== undefined) next.density = density;
   if (ctx.resolved !== undefined) next.resolved = ctx.resolved;
-  if (ctx.scriptFonts !== undefined) next.scriptFonts = ctx.scriptFonts;
   return next;
 }
 

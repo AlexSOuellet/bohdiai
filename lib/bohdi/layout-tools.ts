@@ -3,6 +3,7 @@ import { sanitizeDeep } from '@/lib/copy-sanitize';
 import { writeStorefrontLayout } from '@/lib/generation/write-storefront-layout';
 import { StyleSheetSchema } from '@/lib/style-sheet';
 import { validateDesignSystem } from '@/lib/design-system/validate';
+import { TYPE_SCALE_ROLES, SURFACE_ROLES } from '@/lib/design-system/types';
 import { validatePage } from '@/lib/layout';
 import { logger } from '@/lib/logger';
 import type { BohdiToolDef, HandlerContext } from './tools';
@@ -24,8 +25,9 @@ export const BOHDI_LAYOUT_TOOLS: BohdiToolDef[] = [
       '## semanticColors — the page foundation derived from M3 color math\n' +
       '{ primarySeedColor: hex — the one brand color that drives the whole palette; scheme: "light" | "dark" }.\n' +
       'The full contrast-correct set (surface, on-surface, primary, on-primary, etc.) is derived automatically. For dark moods use "dark"; everything else defaults to "light".\n\n' +
-      '## typeScale — the typography system (all 5 roles required)\n' +
-      'Roles: eyebrow · headline · sub · body · caption.\n' +
+      '## typeScale — the typography system (all 6 roles required)\n' +
+      'Roles: eyebrow · headline · sub · body · caption · wordmark.\n' +
+      'The wordmark role sizes your shop name / brand mark — pick its size, weight and font deliberately for emphasis and the mood, the same as any other role.\n' +
       'Each role: { fontName: must match a name in fonts[]; sizePx: desktop px (≥14); sizeMobilePx: mobile px (≥14, ≤sizePx); weight: 100-900; lineHeight: unitless; letterSpacing?: CSS value; uppercase?: boolean }.\n' +
       'The renderer reads ONLY from these values — not from any hardcoded defaults. If you do not set a role, it has no size.\n' +
       'Minimum: every size ≥ 14px. A system with any size below 14px will be rejected.\n\n' +
@@ -94,9 +96,9 @@ export const BOHDI_LAYOUT_TOOLS: BohdiToolDef[] = [
         },
         typeScale: {
           type: 'object',
-          description: 'All 5 roles required: eyebrow, headline, sub, body, caption.',
+          description: `All ${TYPE_SCALE_ROLES.length} roles required: ${TYPE_SCALE_ROLES.join(', ')}.`,
           properties: Object.fromEntries(
-            ['eyebrow', 'headline', 'sub', 'body', 'caption'].map((role) => [
+            [...TYPE_SCALE_ROLES].map((role) => [
               role,
               {
                 type: 'object',
@@ -116,7 +118,7 @@ export const BOHDI_LAYOUT_TOOLS: BohdiToolDef[] = [
               },
             ]),
           ),
-          required: ['eyebrow', 'headline', 'sub', 'body', 'caption'],
+          required: [...TYPE_SCALE_ROLES],
         },
         spacing: {
           type: 'object',
@@ -134,7 +136,9 @@ export const BOHDI_LAYOUT_TOOLS: BohdiToolDef[] = [
     description:
       "Compose a complete page as a tree of layout primitives and content nodes. Call once per page (home, about, shop, contact, any custom pages). The page is composed in full — header, body, footer all part of the same tree, all under Bohdi's authorship.\n\n" +
       "PAGE INPUT: { slug, name, root, meta? }. slug is the URL path ('home', 'about', 'shop/[slug]'). root is the top-level node. meta is optional { title, description } for SEO.\n\n" +
-      "EVERY node has a 'type' field plus type-specific fields. Every node accepts optional id (own anchor for art-director feedback) and intent ({ palette, type, texture, density } — all optional, all reference NAMED entries from the style sheet by name).\n\n" +
+      "EVERY node has a 'type' field plus type-specific fields. Every node accepts optional id (own anchor for art-director feedback) and intent ({ palette, surface, type, texture, density } — all optional). palette, type and texture reference NAMED entries from the style sheet by name. density is a spacing dial.\n\n" +
+      `## surface — how you paint a section and guarantee readable text\n` +
+      `intent.surface puts one of the design system's contrast-correct surfaces on a band (or other container): ${SURFACE_ROLES.join(' · ')}. The container paints that background AND its guaranteed-readable paired text color, and everything inside inherits readable text automatically. THIS is how you set a section's background — do NOT use a raw palette color as a section background, because a raw color has no guaranteed-readable foreground. Use intent.palette only for accents (tinting a headline, a button). 'surface' is the default page tone; 'inverse-surface' is the dramatic dark band; 'primary'/'secondary' and their '-container' softer versions are brand-colored sections.\n\n` +
       'LAYOUT PRIMITIVES (geometry):\n' +
       "- band — full-width horizontal section. children: array. fields: padding ('none'..'xxl'), minHeight ('auto'..'screen'), align ('start'..'stretch'), justify ('start'..'stretch'), contentWidth ('narrow' ~768px | 'normal' ~1024px default | 'wide' ~1280px | 'full' edge-to-edge). The band's background still bleeds full-width regardless of contentWidth — only the inner content is capped. Use 'full' only when you genuinely want edge-to-edge content (rare). mobile: { padding?, minHeight?, align?, justify? }.\n" +
       '- stack — vertical sequence. children: array. fields: gap, align, justify. mobile: { gap?, align?, justify? }.\n' +
@@ -150,7 +154,7 @@ export const BOHDI_LAYOUT_TOOLS: BohdiToolDef[] = [
       "- text — { role: 'eyebrow' | 'headline' | 'sub' | 'body' | 'caption', content: string, align?: 'start' | 'center' | 'end', mobile?: { role? — override role on small screens; if omitted, mobile auto-steps one size down to avoid cramped layouts } }.\n" +
       "- image — { brief: string for image generation, alt: string, aspect?: '1:1' | '4:5' | '3:4' | '4:3' | '3:2' | '16:9' | '21:9' | 'auto', focal?: { x: 0-100, y: 0-100 } }.\n" +
       "- button — { label, href, variant?: 'primary' | 'secondary' | 'ghost' | 'link' }. Internal hrefs MUST match real storefront routes: '/', '/about', '/shop', '/listings/{slug}', '/collections', '/collections/{slug}', '/subscriptions', '/cart', '/contact', '/#events'. External URLs are fine. Inventing routes ('/shop/product-name') 404s.\n" +
-      "- wordmark — { kind: 'text' | 'image', content: the text or the image URL, href? }.\n" +
+      "- wordmark — { kind: 'text' | 'image', content: the text or the image URL, href?, gradient?: { from, to (named palette colors), angle? } }. A text wordmark is sized by the wordmark type-scale role; intent.palette tints it a solid color; gradient gives it a clipped color-gradient fill — use gradient ONLY when the design calls for it, most wordmarks are a single solid color.\n" +
       '- video — { assetUrl, poster?, autoplay?, loop?, muted?, controls?, aspect? }.\n' +
       "- divider — { weight?: 'hairline' | 'thin' | 'medium' | 'thick', style?: 'solid' | 'dashed' | 'dotted' }.\n" +
       '- quote — { body, attribution?, role? }.\n\n' +
@@ -227,7 +231,7 @@ export async function handleSetStyleSheet(
   accumulator.styleSheet = parsed.data;
   return {
     ok: true,
-    message: `Design system set. Palette: ${parsed.data.palette.length} colors. Fonts: ${parsed.data.fonts.length}. Type scale: all 5 roles defined. Seed: ${parsed.data.semanticColors.primarySeedColor} (${parsed.data.semanticColors.scheme}).`,
+    message: `Design system set. Palette: ${parsed.data.palette.length} colors. Fonts: ${parsed.data.fonts.length}. Type scale: all ${TYPE_SCALE_ROLES.length} roles defined. Seed: ${parsed.data.semanticColors.primarySeedColor} (${parsed.data.semanticColors.scheme}).`,
   };
 }
 

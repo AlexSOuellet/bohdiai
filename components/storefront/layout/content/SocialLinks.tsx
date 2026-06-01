@@ -1,6 +1,6 @@
 import type { ResolvedSocialLink, SocialLinksNode } from '@/lib/layout';
 import type { RenderContext } from '../Node';
-import { intentToStyleVars } from '../intent';
+import { intentToStyleVars, typeRoleStyle } from '../intent';
 import { joinClasses } from '../scale';
 
 function resolvedSocialAt(ctx: RenderContext): ResolvedSocialLink[] | null {
@@ -44,24 +44,30 @@ export function SocialLinksContent({ node, ctx }: { node: SocialLinksNode; ctx: 
             >
               {(style === 'icons' || style === 'both') && (
                 <span
-                  className="inline-block h-6 w-6 rounded-full bg-black/10"
+                  style={{ background: 'var(--color-surface-variant)' }}
+                  className="inline-block h-6 w-6 rounded-full"
                   aria-hidden="true"
                 />
               )}
               {(style === 'labels' || style === 'both') && (
-                <span className="text-sm capitalize">{l.platform}</span>
+                <span style={typeRoleStyle('caption')} className="capitalize">
+                  {l.platform}
+                </span>
               )}
             </a>
           ) : (
             <>
               {(style === 'icons' || style === 'both') && (
                 <span
-                  className="inline-block h-6 w-6 rounded-full bg-black/10"
+                  style={{ background: 'var(--color-surface-variant)' }}
+                  className="inline-block h-6 w-6 rounded-full"
                   aria-hidden="true"
                 />
               )}
               {(style === 'labels' || style === 'both') && (
-                <span className="text-sm capitalize">{l.platform}</span>
+                <span style={typeRoleStyle('caption')} className="capitalize">
+                  {l.platform}
+                </span>
               )}
             </>
           )}

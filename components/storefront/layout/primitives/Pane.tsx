@@ -1,6 +1,6 @@
 import type { PaneNode } from '@/lib/layout';
 import { Node, childPath, deriveCtx, type RenderContext } from '../Node';
-import { applyDensity, intentToStyleVars } from '../intent';
+import { applyDensity, intentToStyleVars, surfaceStyleVars } from '../intent';
 import {
   BORDER_CLASS,
   BORDER_CLASS_MD,
@@ -34,7 +34,10 @@ export function Pane({ node, ctx }: { node: PaneNode; ctx: RenderContext }) {
       data-node-id={node.id}
       style={{
         ...intentToStyleVars(node.intent),
-        ...(fill && node.intent?.palette ? { background: 'var(--node-palette)' } : null),
+        ...surfaceStyleVars(node.intent?.surface),
+        ...(fill && node.intent?.palette && node.intent?.surface === undefined
+          ? { background: 'var(--node-palette)' }
+          : null),
       }}
       className={joinClasses(
         PADDING_CLASS[mobilePadding],
