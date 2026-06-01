@@ -10,7 +10,9 @@ import {
   RowSchema,
   SplitSchema,
   StackSchema,
+  SpotlightSchema,
   StageSchema,
+  StorySchema,
   type BandNode,
   type BleedNode,
   type GridNode,
@@ -22,6 +24,8 @@ import {
   type SplitNode,
   type StackNode,
   type StageNode,
+  type StoryNode,
+  type SpotlightNode,
 } from './primitives';
 import {
   ButtonNodeSchema,
@@ -57,6 +61,8 @@ export type LayoutNode =
   | MarqueeNode
   | GutterNode
   | StageNode
+  | StoryNode
+  | SpotlightNode
   | ContentNode;
 
 // Every node carries a literal `type`, so this is a discriminated union: Zod
@@ -77,6 +83,8 @@ export const LayoutNodeSchema: z.ZodType<LayoutNode> = z.lazy(() =>
     MarqueeSchema,
     GutterSchema,
     StageSchema,
+    StorySchema,
+    SpotlightSchema,
     TextNodeSchema,
     ImageNodeSchema,
     ButtonNodeSchema,
@@ -164,6 +172,10 @@ function pushChildren(
         if (child === undefined) continue;
         out.push({ node: child, path: `${basePath}.content[${i}]` });
       }
+      out.push({ node: node.media, path: `${basePath}.media` });
+      return;
+    case 'story':
+    case 'spotlight':
       out.push({ node: node.media, path: `${basePath}.media` });
       return;
     default:

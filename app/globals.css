@@ -1421,6 +1421,17 @@
     opacity: 1;
   }
 }
+/* Spotlight (Moments engine): a faint slow push-in underneath the object's rise.
+ * Secondary movement — gentle enough to keep under reduced-motion (see the
+ * [data-spotlight-zoom] exemption above). */
+@keyframes spotlight-push {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.1);
+  }
+}
 @keyframes breathe {
   0%, 100% {
     opacity: 0.6;

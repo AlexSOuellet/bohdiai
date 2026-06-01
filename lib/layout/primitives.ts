@@ -82,6 +82,16 @@ export type StageRevealMotion = z.infer<typeof StageRevealMotionSchema>;
 export const StageRevealStaggerSchema = z.enum(['tight', 'normal', 'loose']);
 export type StageRevealStagger = z.infer<typeof StageRevealStaggerSchema>;
 
+// A moment's tone — how the held media is scrimmed and which paired text color
+// reads over it. The mood drives this: a dark mood sits in shadow (dark scrim,
+// light text); a light mood lifts (light scrim, dark text).
+export const StoryToneSchema = z.enum(['dark', 'light']);
+export type StoryTone = z.infer<typeof StoryToneSchema>;
+
+const MomentCtaSchema = z
+  .object({ label: z.string().min(1).max(80), href: z.string().min(1) })
+  .strict();
+
 const lazyChildren = () => z.array(z.lazy(() => LayoutNodeSchema));
 const lazyChild = () => z.lazy(() => LayoutNodeSchema);
 
@@ -501,6 +511,89 @@ export const StageSchema = z
   })
   .strict();
 
+/**
+ * The "story" moment brick: a full-viewport held medium (video OR still, expected
+ * to be `fill`) with headline lines that cross-fade one REPLACING the last, landing
+ * on a brand frame that stays. The motion, timing and dramatic scale are baked into
+ * the renderer; Bohdi fills the language slots (the story lines, eyebrow, brand, CTA)
+ * and picks the tone. Distinct from `stage`, which accumulates content instead of
+ * replacing it.
+ */
+export interface StoryNode {
+  type: 'story';
+  id?: string;
+  intent?: Intent;
+  /** The held medium — a video or an image, expected to be `fill`. */
+  media: LayoutNode;
+  /** The story, told one line at a time. Each cross-fades into the next. */
+  story: string[];
+  /** Small label on the final brand frame. */
+  eyebrow?: string;
+  /** The brand name shown on the final frame (rendered with the wordmark role). */
+  brand: string;
+  /** Optional call to action on the final frame. */
+  cta?: { label: string; href: string };
+  /** How the media is scrimmed and which paired text color reads. Defaults to 'dark'. */
+  tone?: StoryTone;
+}
+
+export const StorySchema = z
+  .object({
+    type: z.literal('story'),
+    id: NodeIdSchema,
+    intent: IntentSchema.optional(),
+    media: lazyChild(),
+    story: z.array(z.string().min(1).max(120)).min(1).max(8),
+    eyebrow: z.string().min(1).max(60).optional(),
+    brand: z.string().min(1).max(80),
+    cta: MomentCtaSchema.optional(),
+    tone: StoryToneSchema.optional(),
+  })
+  .strict();
+
+// Which side of the frame the spotlight's words sit in (the object holds the
+// other side). The object always rises from black; this is just text placement.
+export const SpotlightSideSchema = z.enum(['left', 'right']);
+export type SpotlightSide = z.infer<typeof SpotlightSideSchema>;
+
+/**
+ * The "spotlight" moment brick: the screen starts black and a single hero object
+ * rises out of the dark (opacity climbing over ~6s — the signature), with a faint
+ * slow push-in underneath. A few words fade in once the object is lit, sitting in
+ * the negative space to one side. For a single luxe/minimal hero object.
+ */
+export interface SpotlightNode {
+  type: 'spotlight';
+  id?: string;
+  intent?: Intent;
+  /** The hero object — an image, expected to be `fill`. Rises out of black. */
+  media: LayoutNode;
+  /** The single headline that fades in after the object is lit. */
+  line: string;
+  /** Small label above the headline. */
+  eyebrow?: string;
+  /** The brand name (rendered with the wordmark role). */
+  brand: string;
+  /** Optional call to action. */
+  cta?: { label: string; href: string };
+  /** Which side the words sit on. Defaults to 'right'. */
+  contentSide?: SpotlightSide;
+}
+
+export const SpotlightSchema = z
+  .object({
+    type: z.literal('spotlight'),
+    id: NodeIdSchema,
+    intent: IntentSchema.optional(),
+    media: lazyChild(),
+    line: z.string().min(1).max(120),
+    eyebrow: z.string().min(1).max(60).optional(),
+    brand: z.string().min(1).max(80),
+    cta: MomentCtaSchema.optional(),
+    contentSide: SpotlightSideSchema.optional(),
+  })
+  .strict();
+
 export const PRIMITIVE_NODE_TYPES = [
   'band',
   'stack',
@@ -513,6 +606,8 @@ export const PRIMITIVE_NODE_TYPES = [
   'marquee',
   'gutter',
   'stage',
+  'story',
+  'spotlight',
 ] as const;
 export type PrimitiveNodeType = (typeof PRIMITIVE_NODE_TYPES)[number];
 
@@ -527,4 +622,6 @@ export type PrimitiveNode =
   | PaneNode
   | MarqueeNode
   | GutterNode
-  | StageNode;
+  | StageNode
+  | StoryNode
+  | SpotlightNode;

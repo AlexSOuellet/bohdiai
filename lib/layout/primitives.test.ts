@@ -334,11 +334,16 @@ describe('GutterSchema', () => {
 });
 
 describe('PRIMITIVE_NODE_TYPES', () => {
-  it('has 11 entries', () => {
-    expect(PRIMITIVE_NODE_TYPES).toHaveLength(11);
+  it('has 13 entries', () => {
+    expect(PRIMITIVE_NODE_TYPES).toHaveLength(13);
   });
 
   it('includes the stage primitive', () => {
     expect(PRIMITIVE_NODE_TYPES).toContain('stage');
+  });
+
+  it('includes the story and spotlight moment primitives', () => {
+    expect(PRIMITIVE_NODE_TYPES).toContain('story');
+    expect(PRIMITIVE_NODE_TYPES).toContain('spotlight');
   });
 });

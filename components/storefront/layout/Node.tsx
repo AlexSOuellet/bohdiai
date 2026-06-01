@@ -11,6 +11,8 @@ import { Row } from './primitives/Row';
 import { Split } from './primitives/Split';
 import { Stack } from './primitives/Stack';
 import { Stage } from './primitives/Stage';
+import { Story } from './primitives/Story';
+import { Spotlight } from './primitives/Spotlight';
 import { ButtonContent } from './content/Button';
 import { CartContent } from './content/Cart';
 import { CollectionGridContent } from './content/CollectionGrid';
@@ -78,6 +80,10 @@ export function Node({ node, ctx }: NodeProps) {
       return <Gutter node={node} ctx={ctx} />;
     case 'stage':
       return <Stage node={node} ctx={ctx} />;
+    case 'story':
+      return <Story node={node} ctx={ctx} />;
+    case 'spotlight':
+      return <Spotlight node={node} ctx={ctx} />;
     case 'text':
       return <TextContent node={node} ctx={ctx} />;
     case 'image':
