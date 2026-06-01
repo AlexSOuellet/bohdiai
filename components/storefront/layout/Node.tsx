@@ -10,6 +10,7 @@ import { Pane } from './primitives/Pane';
 import { Row } from './primitives/Row';
 import { Split } from './primitives/Split';
 import { Stack } from './primitives/Stack';
+import { Stage } from './primitives/Stage';
 import { ButtonContent } from './content/Button';
 import { CartContent } from './content/Cart';
 import { CollectionGridContent } from './content/CollectionGrid';
@@ -75,6 +76,8 @@ export function Node({ node, ctx }: NodeProps) {
       return <Marquee node={node} ctx={ctx} />;
     case 'gutter':
       return <Gutter node={node} ctx={ctx} />;
+    case 'stage':
+      return <Stage node={node} ctx={ctx} />;
     case 'text':
       return <TextContent node={node} ctx={ctx} />;
     case 'image':

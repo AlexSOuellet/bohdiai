@@ -76,6 +76,12 @@ export type BandContentWidth = z.infer<typeof BandContentWidthSchema>;
 export const OverlapScrimSchema = z.enum(['none', 'light', 'dark', 'auto']);
 export type OverlapScrim = z.infer<typeof OverlapScrimSchema>;
 
+export const StageRevealMotionSchema = z.enum(['rise', 'fade', 'rise-fade']);
+export type StageRevealMotion = z.infer<typeof StageRevealMotionSchema>;
+
+export const StageRevealStaggerSchema = z.enum(['tight', 'normal', 'loose']);
+export type StageRevealStagger = z.infer<typeof StageRevealStaggerSchema>;
+
 const lazyChildren = () => z.array(z.lazy(() => LayoutNodeSchema));
 const lazyChild = () => z.lazy(() => LayoutNodeSchema);
 
@@ -435,6 +441,66 @@ export const GutterSchema = z
   })
   .strict();
 
+export interface StageNode {
+  type: 'stage';
+  id?: string;
+  intent?: Intent;
+  /** Held height. Defaults to 'screen' — a stage is a full-viewport moment. */
+  minHeight?: MinHeight;
+  /** Where the content block sits over the media. Defaults to 'bottom-left'. */
+  align?: OverlapAnchorPosition;
+  /** Inset of the content block from the edges. Defaults to 'xl'. */
+  padding?: SpacingScale;
+  /** Contrast wash between the media and the content. Defaults to 'auto' (→ dark). */
+  scrim?: OverlapScrim;
+  /**
+   * How the content flows in. A stage is never static — content arrives in
+   * sequence. Defaults to rise-fade with a normal stagger.
+   */
+  reveal?: {
+    motion?: StageRevealMotion;
+    stagger?: StageRevealStagger;
+  };
+  /** The held media — an image or video, expected to be `fill`. Fills the viewport. */
+  media: LayoutNode;
+  /** The overlaid content that flows in over the media. */
+  content: LayoutNode[];
+  mobile?: {
+    minHeight?: MinHeight;
+    align?: OverlapAnchorPosition;
+    padding?: SpacingScale;
+  };
+}
+
+export const StageSchema = z
+  .object({
+    type: z.literal('stage'),
+    id: NodeIdSchema,
+    intent: IntentSchema.optional(),
+    minHeight: MinHeightSchema.optional(),
+    align: OverlapAnchorPositionSchema.optional(),
+    padding: SpacingScaleSchema.optional(),
+    scrim: OverlapScrimSchema.optional(),
+    reveal: z
+      .object({
+        motion: StageRevealMotionSchema.optional(),
+        stagger: StageRevealStaggerSchema.optional(),
+      })
+      .strict()
+      .optional(),
+    media: lazyChild(),
+    content: lazyChildren(),
+    mobile: z
+      .object({
+        minHeight: MinHeightSchema.optional(),
+        align: OverlapAnchorPositionSchema.optional(),
+        padding: SpacingScaleSchema.optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
+
 export const PRIMITIVE_NODE_TYPES = [
   'band',
   'stack',
@@ -446,6 +512,7 @@ export const PRIMITIVE_NODE_TYPES = [
   'pane',
   'marquee',
   'gutter',
+  'stage',
 ] as const;
 export type PrimitiveNodeType = (typeof PRIMITIVE_NODE_TYPES)[number];
 
@@ -459,4 +526,5 @@ export type PrimitiveNode =
   | BleedNode
   | PaneNode
   | MarqueeNode
-  | GutterNode;
+  | GutterNode
+  | StageNode;

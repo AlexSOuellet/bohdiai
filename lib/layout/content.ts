@@ -39,6 +39,12 @@ export const ImageNodeSchema = z
     alt: z.string().min(1),
     aspect: AspectRatioSchema.optional(),
     assetUrl: z.string().url().optional(),
+    /**
+     * Fill the parent container instead of being a fixed-ratio box. The image
+     * absolutely covers its parent (object-fit: cover), ignoring `aspect`. This is
+     * how a `stage` (or any held surface) holds a full-bleed image behind content.
+     */
+    fill: z.boolean().optional(),
     focal: z
       .object({
         x: z.number().min(0).max(100),
@@ -102,6 +108,8 @@ export const VideoNodeSchema = z
     muted: z.boolean().optional(),
     controls: z.boolean().optional(),
     aspect: AspectRatioSchema.optional(),
+    /** Fill the parent container (object-fit: cover), ignoring `aspect`. See ImageNode.fill. */
+    fill: z.boolean().optional(),
   })
   .strict();
 export type VideoNode = z.infer<typeof VideoNodeSchema>;

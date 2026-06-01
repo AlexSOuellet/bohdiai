@@ -10,6 +10,7 @@ import {
   RowSchema,
   SplitSchema,
   StackSchema,
+  StageSchema,
   type BandNode,
   type BleedNode,
   type GridNode,
@@ -20,6 +21,7 @@ import {
   type RowNode,
   type SplitNode,
   type StackNode,
+  type StageNode,
 } from './primitives';
 import {
   ButtonNodeSchema,
@@ -54,6 +56,7 @@ export type LayoutNode =
   | PaneNode
   | MarqueeNode
   | GutterNode
+  | StageNode
   | ContentNode;
 
 // Every node carries a literal `type`, so this is a discriminated union: Zod
@@ -73,6 +76,7 @@ export const LayoutNodeSchema: z.ZodType<LayoutNode> = z.lazy(() =>
     PaneSchema,
     MarqueeSchema,
     GutterSchema,
+    StageSchema,
     TextNodeSchema,
     ImageNodeSchema,
     ButtonNodeSchema,
@@ -154,6 +158,14 @@ function pushChildren(
     case 'pane':
       out.push({ node: node.child, path: `${basePath}.child` });
       return;
+    case 'stage':
+      for (let i = node.content.length - 1; i >= 0; i--) {
+        const child = node.content[i];
+        if (child === undefined) continue;
+        out.push({ node: child, path: `${basePath}.content[${i}]` });
+      }
+      out.push({ node: node.media, path: `${basePath}.media` });
+      return;
     default:
       return;
   }
@@ -217,6 +229,14 @@ function checkSemanticRules(node: LayoutNode, path: string, issues: ValidationIs
         });
       }
     }
+    return;
+  }
+
+  if (node.type === 'stage' && node.content.length === 0) {
+    issues.push({
+      path: `${path}.content`,
+      message: 'stage must have at least one content node',
+    });
     return;
   }
 

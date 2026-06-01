@@ -1353,6 +1353,25 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+
+    /*
+     * Moments are built on motion, and a slow OPACITY fade is the one kind of
+     * motion reduced-motion users can safely keep — the setting exists to stop
+     * movement (slides, parallax), not cross-fades. So the stage keeps its slow
+     * fade (forced to the no-movement keyframe) and the meld keeps its dissolve,
+     * even under reduced-motion. Everything that actually moves stays flattened.
+     */
+    [data-stage-reveal] {
+      animation-name: stage-fade !important;
+      animation-duration: var(--stage-reveal-duration, 5s) !important;
+    }
+    [data-meld-fade] {
+      transition-duration: var(--meld-fade-duration, 2.4s) !important;
+    }
+    /* A very slow spotlight push-in is gentle enough to keep — let it run. */
+    [data-spotlight-zoom] {
+      animation-duration: var(--spotlight-zoom-duration, 24s) !important;
+    }
   }
 }
 
@@ -1372,6 +1391,34 @@
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+/* Stage (Moments engine) staged-reveal motion. Content over a held media surface
+ * flows in one node at a time; the renderer sets per-node animation-delay. */
+@keyframes stage-rise-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes stage-rise {
+  0% {
+    transform: translateY(22px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes stage-fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
   }
 }
 @keyframes breathe {

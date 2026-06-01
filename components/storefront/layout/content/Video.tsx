@@ -16,12 +16,15 @@ const ASPECT_CLASS: Record<AspectRatio, string> = {
 
 export function VideoContent({ node, ctx: _ctx }: { node: VideoNode; ctx: RenderContext }) {
   const aspect = node.aspect ?? '16:9';
+  // Fill mode: cover the parent (e.g. a stage's full-bleed backdrop). Aspect ignored.
+  const fillClass = node.fill === true ? 'absolute inset-0 h-full w-full' : ASPECT_CLASS[aspect];
   return (
     <div
       data-node-type="video"
       data-node-id={node.id}
+      {...(node.fill === true ? { 'data-video-fill': true } : {})}
       style={intentToStyleVars(node.intent)}
-      className={joinClasses('relative w-full', ASPECT_CLASS[aspect])}
+      className={joinClasses(node.fill === true ? '' : 'relative w-full', fillClass)}
     >
       <video
         src={node.assetUrl}

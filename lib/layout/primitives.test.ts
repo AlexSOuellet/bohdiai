@@ -334,7 +334,11 @@ describe('GutterSchema', () => {
 });
 
 describe('PRIMITIVE_NODE_TYPES', () => {
-  it('has 10 entries', () => {
-    expect(PRIMITIVE_NODE_TYPES).toHaveLength(10);
+  it('has 11 entries', () => {
+    expect(PRIMITIVE_NODE_TYPES).toHaveLength(11);
+  });
+
+  it('includes the stage primitive', () => {
+    expect(PRIMITIVE_NODE_TYPES).toContain('stage');
   });
 });

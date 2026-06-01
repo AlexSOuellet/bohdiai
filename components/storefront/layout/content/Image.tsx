@@ -26,6 +26,42 @@ export function ImageContent({
   const focalObjectPosition =
     node.focal !== undefined ? `${node.focal.x}% ${node.focal.y}%` : 'center';
 
+  // Fill mode: cover the parent (e.g. a stage's full-bleed backdrop) instead of
+  // being a fixed-ratio box. Aspect is ignored.
+  if (node.fill === true) {
+    if (node.assetUrl === undefined) {
+      return (
+        <div
+          data-node-type="image"
+          data-node-id={node.id}
+          data-image-placeholder
+          data-image-fill
+          role="img"
+          aria-label={node.alt}
+          style={{ ...intentToStyleVars(node.intent), background: 'var(--color-surface-variant)' }}
+          className="absolute inset-0 h-full w-full"
+        />
+      );
+    }
+    return (
+      <div
+        data-node-type="image"
+        data-node-id={node.id}
+        data-image-fill
+        style={intentToStyleVars(node.intent)}
+        className="absolute inset-0 h-full w-full"
+      >
+        <NextImage
+          src={node.assetUrl}
+          alt={node.alt}
+          fill
+          sizes="100vw"
+          style={{ objectFit: 'cover', objectPosition: focalObjectPosition }}
+        />
+      </div>
+    );
+  }
+
   if (node.assetUrl === undefined) {
     return (
       <div
