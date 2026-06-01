@@ -18,11 +18,11 @@ const BUCKET = 'generated-images';
 export const MOMENT_STILL_TIMEOUT_MS = 90_000;
 export const MOMENT_VIDEO_TIMEOUT_MS = 240_000;
 
-// fal model ids. Kling v2.1 master text-to-video — confirmed against fal's
-// catalog (2026-06). Kling versions move and fal renames endpoints; swapping
-// this string (or routing to Higgsfield) is the whole "change one file" promise
-// of the seam.
-export const KLING_VIDEO_MODEL = 'fal-ai/kling-video/v2.1/master/text-to-video';
+// fal model ids. Kling v2.6 Pro text-to-video — confirmed against fal's catalog
+// (2026-06): input { prompt, duration: "5"|"10", aspect_ratio: 16:9|9:16|1:1 }.
+// Kling versions move and fal renames endpoints; swapping this string (or routing
+// to Higgsfield) is the whole "change one file" promise of the seam.
+export const KLING_VIDEO_MODEL = 'fal-ai/kling-video/v2.6/pro/text-to-video';
 const FLUX_IMAGE_MODEL = 'fal-ai/flux-pro';
 
 // Kling accepts ONLY "5" or "10" second clips. Snap any requested length to the
