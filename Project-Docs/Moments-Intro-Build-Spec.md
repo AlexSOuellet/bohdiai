@@ -25,6 +25,7 @@ Asset generation runs **live through fal** during the run, so we also learn the 
 ## Scope
 
 ### In scope
+- **Bohdi authoring the full design system** (the design-system foundation — the "DESIGN.md" equivalent). This is the first real piece of the eventual full build, so it's done properly now, not as throwaway styling for the moment. It carries forward into the next session's home/functional-page work.
 - Two rendering pieces: a `story` moment and a `spotlight` moment (full-screen, animated, reduced-motion-safe), added to the layout tree and renderer.
 - Three selectable bricks presented to Bohdi: **story-over-video**, **story-over-still** (both render through the `story` piece), and **spotlight**. Distinct recipes with distinct "use when" logic and prompt guidance; shared machinery where the composition is identical.
 - A fal-backed media-generation tool Bohdi calls to produce the video (Kling 3.0) or the still, behind a thin provider seam so Higgsfield can replace fal later without touching the tool.
@@ -63,8 +64,8 @@ Generalizes `app/moment-probe/spotlight/page.tsx`.
 - **content** — one headline line plus the brand frame (eyebrow, brand, CTA), fading in after the object is lit (~4s+), placed in the negative space to one side with a darkening gradient for legibility.
 - Reduced motion: keep the opacity rise, drop the push-in.
 
-### What stays the same as the design system
-Bohdi still authors a real design system via `set_style_sheet` (the existing 6-role type scale, palette, semantic colors, etc.) — the moment reads the wordmark/display font and brand color from it. We reuse the existing schema and validator; we do **not** invent a moment-only style format.
+### The design system is a first-class deliverable
+Bohdi authors the **complete** design system via `set_style_sheet` (the existing 6-role type scale, palette, semantic colors, spacing, fonts, textures) — and we treat that as a real deliverable in its own right, not as minimal styling for the moment. It is the first step of the actual full build; the home and functional pages in a later session compose against this same system. So requiring all six type roles is **not** overkill here — it's the foundation, authored once, reused. The moment reads the wordmark/display font and brand color from it. We reuse the existing schema and validator; we do **not** invent a moment-only style format.
 
 ---
 
@@ -95,7 +96,7 @@ Locked-off camera for backdrops (no pan/zoom); only the subject moves (flame fli
 A focused run path (a new entry point or a flag on the existing Bohdi run) that:
 
 1. Reads the niche and the mood (mood now carries `designDirection`, wired in Session 18).
-2. Authors the design system (`set_style_sheet`) — needed for the brand frame's font and color.
+2. Authors the **full** design system (`set_style_sheet`) — the foundation for the whole eventual build, and the source of the brand frame's font and color. Done properly here, reused later.
 3. **Chooses a brick deliberately** from the three, reasoning from niche + mood: does this niche have motion worth filming (→ story-over-video), is it a single hero object on the luxe/minimal end (→ spotlight), or is it a story where motion would feel gimmicky (→ story-over-still)? Logs the reasoning.
 4. Writes the asset prompt per the craft rules and calls the generation tool.
 5. Writes the story/headline copy (no terminal punctuation).
