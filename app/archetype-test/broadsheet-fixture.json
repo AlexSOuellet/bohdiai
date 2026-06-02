@@ -1,0 +1,220 @@
+{
+  "content": {
+    "shopName": "Mid Mod and More",
+    "mastheadTitle": "The Mid Mod Gazette",
+    "motto": "Honest goods from another era, found for this one.",
+    "edition": {
+      "volumeLabel": "Vol. IV — No. 11",
+      "issueLabel": "No. 11",
+      "city": "Hudson",
+      "region": "New York",
+      "dateLine": "Saturday · July 12 · 2025",
+      "priceLine": "Ten cents"
+    },
+    "nav": {
+      "sections": [
+        "New Finds",
+        "Schedule",
+        "Shows",
+        "About"
+      ],
+      "primaryCta": "Shop Now",
+      "secondaryCta": "Inquire"
+    },
+    "lead": {
+      "kicker": "New Arrival",
+      "headline": "A Danish Walnut Credenza Surfaces from an Estate in the Hudson Valley",
+      "headlineEmphasis": "Surfaces",
+      "subhead": "Six drawers, tapered legs, original pulls intact. A piece that traveled far to sit quietly in the right room.",
+      "photo": {
+        "prompt": "A low Danish walnut credenza with tapered legs and six original brass pulls, photographed in soft side-light against a plain white wall, 1960s mid-century modern furniture, clean editorial still life",
+        "alt": "Danish walnut credenza with original brass pulls",
+        "caption": "Estate find, Hudson Valley. Circa 1962. Condition: excellent throughout."
+      },
+      "bodyDropCap": "The credenza arrived on a Tuesday, wrapped in moving blankets and smelling faintly of cedar. It came out of an estate in Rhinebeck, part of a living room that had not changed since 1968. The walnut veneer is tight, the brass pulls show only the lightest patina, and all six drawers slide without resistance.",
+      "bodyContinuation": "Pieces like this move quickly. The proportions are right for a dining room or a long hallway. The maker's mark on the underside reads Brdr. Furbo, a small Danish workshop that operated through the early seventies. This one is priced to sell, not to sit.",
+      "priceWord": "Eight hundred forty",
+      "priceFigure": "$840",
+      "ctaLabel": "Inquire"
+    },
+    "schedule": {
+      "title": "The Picker's Almanac",
+      "intro": "What's coming in, what's going out, and when to look.",
+      "headers": {
+        "day": "Day",
+        "item": "The Find",
+        "notes": "Notes",
+        "price": "Price",
+        "status": "Status"
+      },
+      "rows": [
+        {
+          "day": "Monday",
+          "itemName": "Eames-era fiberglass side chair",
+          "notes": "Rope edge, original shock mounts, ochre shell",
+          "price": "$385",
+          "status": "Available",
+          "highlight": true
+        },
+        {
+          "day": "Tuesday",
+          "itemName": "Danish teak wall clock",
+          "notes": "Runs well, new battery, no cracks",
+          "price": "$95",
+          "status": "Available"
+        },
+        {
+          "day": "Wednesday",
+          "itemName": "Pair of G-Plan side tables",
+          "notes": "Sold as a set only",
+          "price": "$220",
+          "status": "Hold"
+        },
+        {
+          "day": "Thursday",
+          "itemName": "Sunburst mirror, brass frame",
+          "notes": "26-inch diameter, minor foxing on glass",
+          "price": "$175",
+          "status": "Available"
+        },
+        {
+          "day": "Friday",
+          "itemName": "Ceramic planter, earth tones",
+          "notes": "No chips, original saucer included",
+          "price": "$48",
+          "status": "Available"
+        },
+        {
+          "day": "Saturday",
+          "itemName": "Teak dining table, extension leaf",
+          "notes": "Seats six extended, seats four without",
+          "price": "$1,100",
+          "status": "New",
+          "highlight": true
+        },
+        {
+          "day": "Sunday",
+          "itemName": "Shop closed — sourcing day",
+          "notes": "Back Monday with new finds",
+          "price": "N/A",
+          "status": "Closed"
+        }
+      ]
+    },
+    "newsColumn": {
+      "pageLabel": "Page Two",
+      "sectionTitle": "Around the Shop",
+      "stories": [
+        {
+          "kicker": "Estate Run",
+          "headline": "Three Sales Scheduled for Late July",
+          "body": "Three estate sales in Columbia County are on the calendar for the last two weeks of July. Two are from families downsizing after decades in the same house. Expect teak, walnut, and the occasional piece of Scandinavian pottery. First right of refusal goes to newsletter subscribers."
+        },
+        {
+          "kicker": "Condition Report",
+          "headline": "What Patina Means Here and What It Does Not",
+          "body": "Every listing uses the word patina honestly. It means age-appropriate wear that does not affect function or structure. It does not mean damaged, repaired without disclosure, or refinished without notice. If a piece has been touched up, that is in the listing. Always."
+        },
+        {
+          "kicker": "Shipping Note",
+          "headline": "White Glove Freight Now Available on Select Pieces",
+          "body": "Larger furniture, including case goods and tables, can now ship via white glove freight to most of the continental United States. The carrier wraps, pads, and delivers to room of choice. Rates are quoted per piece. Ask at checkout or send a message before buying."
+        }
+      ]
+    },
+    "classifieds": {
+      "title": "Available This Week",
+      "items": [
+        {
+          "headline": "Knoll-Style Tulip Side Table",
+          "body": "White fiberglass top, cast iron pedestal base, 20-inch diameter. No chips. Original production, not a reproduction.",
+          "price": "$210",
+          "tag": "Tables"
+        },
+        {
+          "headline": "Pair of Teak Bookends",
+          "body": "Heavy, solid teak. No markings. Good original condition with minor surface wear consistent with age.",
+          "price": "$55",
+          "tag": "Objects"
+        },
+        {
+          "headline": "Arc Floor Lamp, Brushed Steel",
+          "body": "Seven-foot arc, weighted marble base, white drum shade. All wiring tested and intact. Works perfectly.",
+          "price": "$295",
+          "tag": "Lighting"
+        },
+        {
+          "headline": "Rosewood Veneered Box",
+          "body": "Small decorative box with hinged lid, likely Danish, 1960s. Interior lined with aged felt. No damage.",
+          "price": "$65",
+          "tag": "Objects"
+        },
+        {
+          "headline": "Wicker and Cane Magazine Rack",
+          "body": "Mid-century form, tight weave, no breaks. Sits level. Patina on frame consistent with age.",
+          "price": "$80",
+          "tag": "Storage"
+        },
+        {
+          "headline": "Milo Baughman–Style Sling Chair",
+          "body": "Chrome frame, black leather sling seat, excellent structural condition. Leather shows light surface crease.",
+          "price": "$460",
+          "tag": "Seating"
+        }
+      ]
+    },
+    "appearances": {
+      "pageLabel": "Page Three",
+      "sectionTitle": "In Person",
+      "intro": "Mid Mod and More appears at shows with a curated selection. Tables are small and chosen carefully.",
+      "events": [
+        {
+          "dayDate": "Saturday, August 9, 2025",
+          "location": "Hudson Modernist Market — Hudson, NY",
+          "time": "9 am – 4 pm"
+        },
+        {
+          "dayDate": "Sunday, August 10, 2025",
+          "location": "Hudson Modernist Market — Hudson, NY",
+          "time": "10 am – 3 pm"
+        },
+        {
+          "dayDate": "Saturday, September 20, 2025",
+          "location": "Catskill Antique Show — Catskill, NY",
+          "time": "8 am – 5 pm"
+        },
+        {
+          "dayDate": "Saturday, October 11, 2025",
+          "location": "Mid-Century Fall Show — Rhinebeck, NY",
+          "time": "9 am – 4 pm"
+        }
+      ]
+    },
+    "founderNote": {
+      "title": "From the Picker",
+      "paragraphs": [
+        "I started doing this because I kept finding pieces too good to leave behind and had nowhere to put them. The apartment filled up fast. The shop followed.",
+        "Everything here I have handled myself. I drive to the sales, I carry the furniture, and I take the photographs on the same folding table in my garage. There is no warehouse. There is no assistant. When you send a message, I write back.",
+        "The things I bring in are the things I would keep if I had more room. That is the only filter I use. It is not complicated, but it keeps the inventory honest."
+      ],
+      "signatureName": "Elise",
+      "signatureRole": "Picker · Proprietor · Hudson, NY"
+    },
+    "colophon": {
+      "description": "The Mid Mod Gazette is published by Mid Mod and More, a small vintage shop dealing in mid-century modern furniture and objects sourced from estates, flea markets, and private collections across the Northeast.",
+      "contactColumnTitle": "Correspond",
+      "contact": {
+        "email": "hello@midmodandmore.com",
+        "phone": "(518) 555-0142",
+        "address": "Hudson, New York 12534"
+      },
+      "subscribe": {
+        "title": "The Weekly Letter",
+        "blurb": "New finds, upcoming shows, and the occasional note on what to look for at estate sales. Sent once a week, no more.",
+        "ctaLabel": "Subscribe"
+      },
+      "printedLine": "Printed in good faith · Hudson, NY · Est. 2019"
+    }
+  },
+  "themeKey": "cyan-ledger"
+}
