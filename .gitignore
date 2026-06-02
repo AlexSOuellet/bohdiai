@@ -68,3 +68,9 @@ Desktop.ini
 # Working artifacts — local-only scratch space (style sheet shortcuts, comparison scripts, generated HTML/DOCX for discussion)
 /tmp/
 /supabase/.temp/
+
+# Brainstorming visual companion (mockups + state) and stray run logs
+/.superpowers/
+*.log
+sse-out.log
+sse-start.txt
