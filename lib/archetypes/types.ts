@@ -21,6 +21,13 @@ export interface ColorPair {
   fgMuted: string;
   accent: string;
   rule: string;
+  /**
+   * The skin's SECOND surface — the contrast panel used by alternating bands
+   * (e.g. the founder band). Direction-agnostic: a light skin's contrast is
+   * near-black, a dark skin's is a lifted charcoal. Each carries its own
+   * readable text. Skins that use only one surface omit it.
+   */
+  contrast?: { bg: string; fg: string; fgMuted: string };
 }
 
 /** Type role definitions. The archetype owns the scale and hierarchy. */
