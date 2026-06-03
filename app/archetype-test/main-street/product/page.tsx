@@ -22,8 +22,8 @@ function standIn(seed: string, w: number, h: number): string {
 }
 
 export default function MainStreetProductTestPage() {
-  const home = homeFixture as { content: MainStreetContent; themeKey: string };
-  const theme = mainStreetArchetype.resolveTheme({ themeKey: home.themeKey });
+  const home = homeFixture as unknown as { content: MainStreetContent; skinKey: string };
+  const skin = mainStreetArchetype.resolveTheme({ skinKey: home.skinKey });
   const base = productFixture as ProductView;
 
   const media: CatalogMedia[] = base.media.map((m, i) =>
@@ -34,5 +34,5 @@ export default function MainStreetProductTestPage() {
 
   const product: ProductView = { ...base, media };
 
-  return <MainStreetProduct content={home.content} product={product} theme={theme} />;
+  return <MainStreetProduct content={home.content} product={product} skin={skin} />;
 }

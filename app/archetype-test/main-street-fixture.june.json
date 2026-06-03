@@ -1,49 +1,30 @@
 {
   "content": {
     "shopName": "June's Sourdough",
-    "identity": {
-      "wordmark": "June's Sourdough",
-      "tagline": "Naturally leavened, by hand, in small batches",
-      "nav": ["Shop", "About", "Contact"]
+    "identity": { "wordmark": "June's Sourdough", "nav": ["Shop", "About", "Find us"] },
+    "moment": {
+      "media": { "kind": "video", "prompt": "Steam rising off a cracked sourdough crust at first light, slow and close", "alt": "A loaf cooling on the rack" },
+      "story": ["It starts the night before", "Folded by hand, left to rise slow", "Pulled from the oven at first light"],
+      "eyebrow": "Baked fresh every morning",
+      "brand": "June's Sourdough",
+      "ctaLabel": "See the loaves",
+      "secondaryCtaLabel": "Our story"
     },
-    "hero": {
-      "headline": "Naturally leavened, by hand",
-      "sub": "Country, seeded, and a cinnamon-raisin special each week, baked the night before",
-      "ctaLabel": "Shop the loaves",
-      "photo": {
-        "prompt": "A rustic round sourdough loaf, scored and blistered crust, on a wood board in warm light",
-        "alt": "A round sourdough loaf with a blistered crust"
+    "goods": { "title": "Pulled from the oven this morning", "label": "This week" },
+    "founder": {
+      "quote": "I started June's with one cast-iron oven and a starter named Frank, and fourteen years on he still does most of the work",
+      "attribution": "June Carter, founder and baker",
+      "photo": { "prompt": "A baker in an apron holding a loaf in a warm kitchen", "alt": "June in her kitchen" },
+      "findUs": {
+        "label": "Find us this week",
+        "rows": [
+          { "day": "Wed", "where": "Riverside Farmers Market", "time": "8-1" },
+          { "day": "Fri", "where": "The shop on Main, fresh loaves", "time": "7-6" },
+          { "day": "Sat", "where": "Downtown Makers Market", "time": "9-2" }
+        ]
       }
     },
-    "featured": { "title": "This week" },
-    "maker": {
-      "label": "Meet June",
-      "headline": "One oven, one pair of hands",
-      "body": "I started baking for neighbors and never stopped. Every loaf is mixed, folded, and shaped by hand the night before. I bake what I would want on my own table, and I sell it the morning it comes out.",
-      "photo": {
-        "prompt": "A baker in an apron holding a fresh loaf in a warm home kitchen",
-        "alt": "June holding a loaf in her kitchen"
-      },
-      "ctaLabel": "Read the full story"
-    },
-    "secondary": {
-      "label": "Where to find us",
-      "headline": "Saturdays at the market",
-      "body": "Find this week's bake at the Hope Street Farmers Market, 9 to 11am. Pre-orders are held until 10."
-    },
-    "stayInTouch": {
-      "headline": "Get next week's bake list",
-      "body": "One email a week with the loaves and the pickup details.",
-      "ctaLabel": "Join the list"
-    },
-    "footer": {
-      "blurb": "Baked and sold in Providence, Rhode Island",
-      "columns": [
-        { "title": "Shop", "items": ["Loaves", "Pickup", "Gift cards"] },
-        { "title": "Connect", "items": ["Instagram", "Email"] }
-      ]
-    }
+    "close": { "label": "Come say hello", "headline": "Warm bread is on Main Street by seven", "ctaLabel": "Order for pickup" }
   },
-  "themeKey": "main-street-hearth",
-  "arrangement": "classic"
+  "skinKey": "main-street-ember"
 }
