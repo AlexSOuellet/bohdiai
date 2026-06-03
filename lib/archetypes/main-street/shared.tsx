@@ -16,6 +16,7 @@ import React from 'react';
 import type { ArchetypeTheme, TypeRole } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
+import { MAIN_STREET_FONT_HREFS } from './themes';
 
 export interface MainStreetRoles {
   wordmark: TypeRole;
@@ -43,8 +44,8 @@ export function typeRoleCss(role: TypeRole): React.CSSProperties {
   };
 }
 
-export function fontHrefForTheme(_theme: ArchetypeTheme): string {
-  return 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700&family=Mulish:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap';
+export function fontHrefForTheme(theme: ArchetypeTheme): string {
+  return MAIN_STREET_FONT_HREFS[theme.key] ?? MAIN_STREET_FONT_HREFS['main-street-paper']!;
 }
 
 export function rootCss(theme: ArchetypeTheme): string {
