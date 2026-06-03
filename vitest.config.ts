@@ -6,7 +6,7 @@ export default defineConfig({
     environment: 'jsdom',
     globalSetup: ['./vitest.global-setup.ts'],
     globals: true,
-    include: ['lib/**/*.test.ts', 'components/**/*.test.{ts,tsx}', 'app/**/*.test.{ts,tsx}', 'blocks/**/*.test.{ts,tsx}'],
+    include: ['lib/**/*.test.{ts,tsx}', 'components/**/*.test.{ts,tsx}', 'app/**/*.test.{ts,tsx}', 'blocks/**/*.test.{ts,tsx}'],
     setupFiles: ['./vitest.setup.ts'],
     coverage: {
       // Per Engineering-Standards §7: 90% lib, 85% app/api, 75% components-with-logic.
