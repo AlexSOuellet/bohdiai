@@ -70,7 +70,7 @@ export const MAIN_STREET_THEMES: Record<string, ArchetypeTheme> = {
   'main-street-hearth': {
     key: 'main-street-hearth',
     label: 'Hearth',
-    palette: { bg: '#F1E7D0', fg: '#271B12', fgMuted: '#6E5C45', accent: '#C2491F', rule: '#D8C7A6' },
+    palette: { bg: '#EAD7AE', fg: '#2A1E12', fgMuted: '#6E5A3E', accent: '#C2491F', rule: '#D3BD92' },
     type: makeType(FONT.young, FONT.hanken),
     spacing: SPACING,
     atmosphere: { grain: GRAIN, photoFilter: 'saturate(0.97) contrast(1.03) sepia(0.08)' },
@@ -81,7 +81,7 @@ export const MAIN_STREET_THEMES: Record<string, ArchetypeTheme> = {
   'main-street-linen': {
     key: 'main-street-linen',
     label: 'Linen',
-    palette: { bg: '#F2F1EC', fg: '#1C1B19', fgMuted: '#6B695F', accent: '#3D6B53', rule: '#DEDCD3' },
+    palette: { bg: '#DCE0D6', fg: '#1E211C', fgMuted: '#5E6358', accent: '#3D6B53', rule: '#C6CCBC' },
     type: makeType(FONT.hanken, FONT.hanken, 800),
     spacing: SPACING,
     atmosphere: { grain: GRAIN, photoFilter: 'saturate(0.95) contrast(1.03)' },
@@ -92,7 +92,7 @@ export const MAIN_STREET_THEMES: Record<string, ArchetypeTheme> = {
   'main-street-field': {
     key: 'main-street-field',
     label: 'Field',
-    palette: { bg: '#EAE7D9', fg: '#23231A', fgMuted: '#63604F', accent: '#9A5A2C', rule: '#D5D0BE' },
+    palette: { bg: '#D9D3B8', fg: '#232318', fgMuted: '#5F5C44', accent: '#8A5A24', rule: '#C2BB98' },
     type: makeType(FONT.bitter, FONT.work, 700),
     spacing: SPACING,
     atmosphere: { grain: GRAIN, photoFilter: 'saturate(0.92) contrast(1.02) sepia(0.06)' },
@@ -103,7 +103,7 @@ export const MAIN_STREET_THEMES: Record<string, ArchetypeTheme> = {
   'main-street-press': {
     key: 'main-street-press',
     label: 'Press',
-    palette: { bg: '#F4F3EF', fg: '#15140F', fgMuted: '#59574E', accent: '#2D5BD0', rule: '#DEDCD4' },
+    palette: { bg: '#DEE2E4', fg: '#15171A', fgMuted: '#565B61', accent: '#2D5BD0', rule: '#C5CBD0' },
     type: makeType(FONT.bricolage, FONT.inter, 800),
     spacing: SPACING,
     atmosphere: { grain: GRAIN, photoFilter: 'saturate(1.02) contrast(1.05)' },
