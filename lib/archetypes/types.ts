@@ -91,6 +91,12 @@ export interface ArchetypeMeta {
   };
 }
 
+/** One curated, complete page composition the archetype can wear. */
+export interface ArchetypeArrangement {
+  key: string;
+  label: string;
+}
+
 /**
  * The archetype itself.
  *
@@ -114,12 +120,23 @@ export interface Archetype<
   /** Curated theme variants. Resolved from the theme pick. */
   themes: Record<string, ArchetypeTheme>;
 
+  /**
+   * Optional curated arrangements — complete page compositions the archetype
+   * ships. The engine (or the maker, in the editor) picks one; the renderer
+   * switches composition on it. Omitted by archetypes with a single layout.
+   */
+  arrangements?: Record<string, ArchetypeArrangement>;
+
+  /** Default arrangement key when none is supplied. */
+  defaultArrangement?: string;
+
   /** Resolve a theme pick to its concrete ArchetypeTheme. */
   resolveTheme(pick: z.infer<TThemeSchema>): ArchetypeTheme;
 
-  /** Renderer — takes validated content + a resolved theme. */
+  /** Renderer — takes validated content + a resolved theme + optional arrangement. */
   render: ComponentType<{
     content: z.infer<TContentSchema>;
     theme: ArchetypeTheme;
+    arrangement?: string;
   }>;
 }
