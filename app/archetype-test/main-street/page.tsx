@@ -10,7 +10,8 @@
  */
 import { MainStreet, type MainStreetContent, type ProductView } from '@/lib/archetypes/main-street';
 import { mainStreetArchetype, MAIN_STREET_SKINS } from '@/lib/archetypes/main-street';
-import fixture from '../main-street-fixture.june.json';
+import juneFixture from '../main-street-fixture.june.json';
+import bohdiFixture from '../main-street-fixture.bohdi.json';
 
 interface Fixture {
   content: MainStreetContent;
@@ -38,10 +39,17 @@ const PREVIEW_PRODUCTS: ProductView[] = [
   { slug: 'cinnamon', name: 'Cinnamon morning bun', price: '$6', shortDescription: 'Saturdays only, gone by ten', description: '', status: 'active', media: [{ kind: 'image', url: CINNAMON, alt: 'Cinnamon morning bun' }], variations: [] },
 ];
 
-export default async function MainStreetTestPage({ searchParams }: { searchParams: Promise<{ skin?: string }> }) {
+export default async function MainStreetTestPage({ searchParams }: { searchParams: Promise<{ skin?: string; src?: string }> }) {
   const sp = await searchParams;
-  const f = fixture as unknown as Fixture;
+  // ?src=bohdi renders the HARNESS-AUTHORED fixture (the reproduction proof) with
+  // NO hand-picked stand-in assets — placeholders show where Bohdi-prompted
+  // generation / stock would fill in. The june fixture keeps its demo stand-ins
+  // so the home preview reads true.
+  const isBohdi = sp.src === 'bohdi';
+  const f = (isBohdi ? bohdiFixture : juneFixture) as unknown as Fixture;
   const skinKey = sp.skin && MAIN_STREET_SKINS[sp.skin] ? sp.skin : f.skinKey;
   const skin = mainStreetArchetype.resolveTheme({ skinKey });
-  return <MainStreet content={withStandIns(f.content)} skin={skin} products={PREVIEW_PRODUCTS} />;
+  const content = isBohdi ? f.content : withStandIns(f.content);
+  const products = isBohdi ? [] : PREVIEW_PRODUCTS;
+  return <MainStreet content={content} skin={skin} products={products} />;
 }

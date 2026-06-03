@@ -1,0 +1,64 @@
+{
+  "content": {
+    "shopName": "Tannery Row",
+    "identity": {
+      "wordmark": "Tannery Row",
+      "nav": [
+        "Shop",
+        "About",
+        "Find Us"
+      ]
+    },
+    "moment": {
+      "media": {
+        "kind": "video",
+        "prompt": "Slow held workshop shot. Amber light on a worn oak bench. Hands pull a stitching awl through veg-tanned hide in steady rhythm. Close on a brass buckle catching the light. Wide bench view: waxed thread, bone folder, half-finished wallet. Steam from a beeswax pot. Sun drifts slowly across the surface. No fast cuts. Palette: warm tobacco, raw hide, deep shadow.",
+        "alt": "Hands saddle-stitching a leather belt on a workshop bench in warm afternoon light"
+      },
+      "story": [
+        "full-grain hide, straight from the tannery",
+        "every hole punched by hand",
+        "brass hardware, waxed linen thread",
+        "built to last thirty years, not one season",
+        "Tannery Row"
+      ],
+      "eyebrow": "Made one at a time in the workshop",
+      "brand": "Tannery Row",
+      "ctaLabel": "See the work",
+      "secondaryCtaLabel": "How it's made"
+    },
+    "goods": {
+      "title": "What's on the bench right now",
+      "label": "Ready to ship"
+    },
+    "founder": {
+      "quote": "I cut every piece myself and stitch it by hand — no machines, no shortcuts. The hide I use takes six weeks to tan in an oak bark pit, and you'll feel that density the first time you hold one of these belts.",
+      "attribution": "Jordan Merck, maker and sole proprietor",
+      "photo": {
+        "prompt": "Warm portrait of a leather worker at their bench, hands on a half-finished tote. Leather apron, rolled sleeves. Dark background with hand tools on a pegboard and a single amber work light. Quiet, focused, not posed. Warm grain.",
+        "alt": "Jordan at the bench, hands on a half-finished leather tote, workshop tools behind"
+      },
+      "findUs": {
+        "label": "Find us this week",
+        "rows": [
+          {
+            "day": "Sat",
+            "where": "Riverside Makers Market",
+            "time": "8-2"
+          },
+          {
+            "day": "Sun",
+            "where": "Old Town Artisan Fair",
+            "time": "10-4"
+          }
+        ]
+      }
+    },
+    "close": {
+      "label": "Come find something real",
+      "headline": "Good leather gets better every year you use it",
+      "ctaLabel": "Order yours"
+    }
+  },
+  "skinKey": "main-street-ember"
+}
