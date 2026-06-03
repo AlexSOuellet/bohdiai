@@ -53,6 +53,7 @@ export function fontHrefForTheme(theme: ArchetypeTheme): string {
 
 export function rootCss(theme: ArchetypeTheme): string {
   const { palette, atmosphere, motion, spacing } = theme;
+  const navH = ((theme.type['wordmark']?.size ?? 30) as number) + 44; // wordmark + padding + border + breathing
   const responsive = Object.entries(theme.type)
     .filter(([, role]) => role.sizeMobile && role.sizeMobile !== role.size)
     .map(
@@ -80,9 +81,11 @@ export function rootCss(theme: ArchetypeTheme): string {
     }
     /* paper grain — absolute so it scrolls with the page, not fixed over it */
     .arch-main-street .ms-grain { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0.05; mix-blend-mode: multiply; background-image: ${atmosphere.grain ?? 'none'}; }
-    .arch-main-street > .arch-stage { position: relative; z-index: 1; }
-    /* fixed navbar — the site scrolls behind it */
-    .arch-main-street .ms-head { position: sticky; top: 0; z-index: 30; background: ${palette.bg}; border-bottom: 1px solid ${palette.rule}; animation: none !important; opacity: 1 !important; transform: none !important; }
+    .arch-main-street > .arch-stage { position: relative; z-index: 1; padding-top: ${navH}px; }
+    .arch-main-street .arch-stage > section:first-of-type { margin-top: 0; }
+    /* fixed navbar — the site scrolls behind it. position:fixed (not sticky) so
+       it survives the global html/body overflow-x:hidden that breaks sticky. */
+    .arch-main-street .ms-head { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: ${palette.bg}; border-bottom: 1px solid ${palette.rule}; animation: none !important; opacity: 1 !important; transform: none !important; }
 
     .arch-main-street .archetype-photo { filter: ${atmosphere.photoFilter ?? 'none'}; display: block; width: 100%; height: 100%; object-fit: cover; }
 
