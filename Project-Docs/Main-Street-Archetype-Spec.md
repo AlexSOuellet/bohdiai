@@ -15,6 +15,18 @@ A storefront is **bones + a skin**. The bones (the **shape** / archetype) own co
 
 ---
 
+## THE PARAMOUNT BUILD RULE — nothing niche-specific, nothing hardcoded
+
+**The single most important constraint of the whole build.** Violating it is how one tenant's build silently breaks every *other* niche. Claude has broken this before (hardcoded values claimed as compliant — Session 20; bakery field names leaking into a "niche-neutral" schema — Session 21). Treat it as inviolable and **checkable**.
+
+- **The renderer (bones) owns STRUCTURE ONLY.** No literal color, font-family, size, weight, letter-spacing, text-transform, or copy in any component. Every color is the **skin** or a derivation of it (color-mix / inversion); every type value is a **named role** from the skin's type system; grain and photo grade are **skin-owned**.
+- **The schema and field names are niche-neutral.** No bakery — or any-niche — vocabulary anywhere: not in field names, labels, defaults, or comments. The Session 21 contamination (`bakerNote`, `aroundTheOven`, a hardcoded "This week's bake" header) is the exact failure to avoid. Use generic slots: `hero.story[]`, `hero.brand`, `hero.cta`, `featured.eyebrow`, `founder.quote`, `findUs.rows[]`, `close.cta`, etc.
+- **Everything bakery in the mockup is CONTENT, not chrome.** "June's Sourdough", the four bread lines, "This week's bake", "Find us this week", "Come say hello", the markets, the products, the bread video and photos — **all authored or supplied per tenant**, none baked into the archetype. A leatherworker fills the same slots with different words and the page must read as a leatherworker.
+- **The starter skin is data, not the renderer.** Ember/espresso/cream + Instrument Serif / Inter / IBM Plex Mono are **skin #1's values**, living in a skin object on the shelf — never constants in a component. The renderer must render a dark industrial skin or a delicate pastel skin with **zero code change** (the two-surface, direction-agnostic requirement, §2).
+- **Self-check before claiming done:** grep the renderer for hex codes, `font-family`, px sizes, `uppercase`, and any niche word. If any appear outside the skin/schema, it is a violation — fix it in the **archetype**, not the test page. ("Did you fix the page or the archetype?")
+
+---
+
 ## 1. The core reframe: SHAPE vs SKIN
 
 Last session's mistake was welding four fixed skins into each archetype and calling the bundle "the archetype." That is the genericness trap: two shops share a shape (fine) **and** the same four skins (not fine — they read as cousins).
