@@ -50,8 +50,8 @@ describe('MainStreetContentSchema', () => {
 
   it('accepts a store with the optional regions omitted', () => {
     const c = validContent();
-    delete (c as Record<string, unknown>).secondary;
-    delete (c as Record<string, unknown>).stayInTouch;
+    delete (c as Record<string, unknown>)['secondary'];
+    delete (c as Record<string, unknown>)['stayInTouch'];
     expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 
