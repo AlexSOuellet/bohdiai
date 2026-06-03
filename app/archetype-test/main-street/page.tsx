@@ -22,28 +22,26 @@ interface Fixture {
   arrangement: string;
 }
 
-function standIn(seed: string, w: number, h: number): string {
-  const safe = seed.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40);
-  return `https://picsum.photos/seed/${safe}/${w}/${h}`;
-}
+// Preview-only stand-ins point at the real demo bread assets so the live route
+// reads true; the archetype itself never sees these — they're injected here.
+const COUNTRY = '/storefronts/country.webp';
+const SEEDED = '/storefronts/seeded.webp';
+const CINNAMON = '/storefronts/cinnamon.webp';
 
-/** Fill the hero + maker photo slots with deterministic stand-ins. Preview only. */
+/** Fill the hero + maker photo slots with stand-ins. Preview only. */
 function withStandIns(content: MainStreetContent): MainStreetContent {
   return {
     ...content,
-    hero: { ...content.hero, photo: { ...content.hero.photo, url: content.hero.photo.url ?? standIn('hero-loaf', 1000, 750) } },
-    maker: { ...content.maker, photo: { ...content.maker.photo, url: content.maker.photo.url ?? standIn('maker-portrait', 800, 1000) } },
+    hero: { ...content.hero, photo: { ...content.hero.photo, url: content.hero.photo.url ?? COUNTRY } },
+    maker: { ...content.maker, photo: { ...content.maker.photo, url: content.maker.photo.url ?? SEEDED } },
   };
 }
 
 /** Stand-in featured catalog rows. Preview only — real rows come from the DB. */
 const PREVIEW_PRODUCTS: ProductView[] = [
-  { slug: 'country-loaf', name: 'Country Loaf', price: '$9', description: '', status: 'active', media: [{ kind: 'image', alt: 'Country loaf', url: standIn('country-loaf', 800, 1000) }], variations: [] },
-  { slug: 'seeded-loaf', name: 'Seeded', price: '$10', description: '', status: 'active', media: [{ kind: 'image', alt: 'Seeded loaf', url: standIn('seeded-loaf', 800, 1000) }], variations: [] },
-  { slug: 'cinnamon-raisin', name: 'Cinnamon Raisin', price: '$11', description: '', status: 'active', media: [{ kind: 'image', alt: 'Cinnamon raisin loaf', url: standIn('cinnamon-raisin', 800, 1000) }], variations: [] },
-  { slug: 'baguette', name: 'Baguette', price: '$5', description: '', status: 'active', media: [{ kind: 'image', alt: 'Baguette', url: standIn('baguette', 800, 1000) }], variations: [] },
-  { slug: 'focaccia', name: 'Focaccia', price: '$8', description: '', status: 'active', media: [{ kind: 'image', alt: 'Focaccia', url: standIn('focaccia', 800, 1000) }], variations: [] },
-  { slug: 'sandwich-tin', name: 'Sandwich Tin', price: '$7', description: '', status: 'active', media: [{ kind: 'image', alt: 'Sandwich tin loaf', url: standIn('sandwich-tin', 800, 1000) }], variations: [] },
+  { slug: 'country-loaf', name: 'Country', price: '$9', description: '', status: 'active', media: [{ kind: 'image', alt: 'Country loaf', url: COUNTRY }], variations: [] },
+  { slug: 'seeded-loaf', name: 'Seeded', price: '$10', description: '', status: 'active', media: [{ kind: 'image', alt: 'Seeded loaf', url: SEEDED }], variations: [] },
+  { slug: 'cinnamon-raisin', name: 'Cinnamon', price: '$11', description: '', status: 'active', media: [{ kind: 'image', alt: 'Cinnamon raisin loaf', url: CINNAMON }], variations: [] },
 ];
 
 export default function MainStreetTestPage() {
