@@ -13,7 +13,7 @@
  * `themeKey` (main-street-paper / -amber / -field / -cobalt) to review the family.
  */
 import { MainStreet, type MainStreetContent, type ProductView } from '@/lib/archetypes/main-street';
-import { mainStreetArchetype } from '@/lib/archetypes/main-street';
+import { mainStreetArchetype, MAIN_STREET_THEMES } from '@/lib/archetypes/main-street';
 import fixture from '../main-street-fixture.june.json';
 
 interface Fixture {
@@ -44,15 +44,18 @@ const PREVIEW_PRODUCTS: ProductView[] = [
   { slug: 'cinnamon-raisin', name: 'Cinnamon', price: '$11', description: '', status: 'active', media: [{ kind: 'image', alt: 'Cinnamon raisin loaf', url: CINNAMON }], variations: [] },
 ];
 
-export default function MainStreetTestPage() {
+export default async function MainStreetTestPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ theme?: string; arrangement?: string }>;
+}) {
+  const sp = await searchParams;
   const f = fixture as Fixture;
-  const theme = mainStreetArchetype.resolveTheme({ themeKey: f.themeKey });
+  // Preview-only switches: ?theme=main-street-{hearth|linen|field|press} & ?arrangement={classic|goods-first|story-led}
+  const themeKey = sp.theme && MAIN_STREET_THEMES[sp.theme] ? sp.theme : f.themeKey;
+  const arrangement = sp.arrangement ?? f.arrangement;
+  const theme = mainStreetArchetype.resolveTheme({ themeKey });
   return (
-    <MainStreet
-      content={withStandIns(f.content)}
-      theme={theme}
-      arrangement={f.arrangement}
-      products={PREVIEW_PRODUCTS}
-    />
+    <MainStreet content={withStandIns(f.content)} theme={theme} arrangement={arrangement} products={PREVIEW_PRODUCTS} />
   );
 }
