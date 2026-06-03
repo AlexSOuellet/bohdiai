@@ -10,5 +10,17 @@
       "mcp__Claude_Preview__preview_network",
       "Bash(where *)"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"DESIGN GUARDRAIL (BohdiAI): for ANY storefront / archetype / UI / visual work, invoke the frontend-design skill BEFORE writing code, and the superpowers brainstorming skill before any creative design. Commit to ONE bold organizing idea and design OUTWARD from it; never retreat to safe/generic/template choices (no stock 3-column card grids, no muted near-white palettes, no centered-everything, no missing motion). Added after Session 23, where skipping these produced template slop.\"}}'"
+          }
+        ]
+      }
+    ]
   }
 }
