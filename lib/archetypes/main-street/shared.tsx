@@ -196,7 +196,7 @@ export function MainStreetHeader({
             </span>
           ))}
           <a href="/cart" data-type="nav" style={{ ...typeRoleCss(t.nav), color: theme.palette.fg }}>
-            Bag (0)
+            Cart (0)
           </a>
         </nav>
       </div>
