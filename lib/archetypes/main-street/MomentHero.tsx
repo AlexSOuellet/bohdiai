@@ -14,7 +14,7 @@
  * and fonts from the skin — nothing typographic or color is hardcoded; the
  * black scrim/backstop are neutral legibility devices, not skin colors.
  */
-import React, { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetContent } from './schemas';
 import { Media, Nav, typeRoleCss, roles } from './chrome';

@@ -6,7 +6,7 @@ import { MAIN_STREET_SKINS } from './skins';
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 const identity = { wordmark: "June's Sourdough", nav: ['Shop', 'About'] };
 const moment = {
-  media: { kind: 'video' as const, url: '/bread-kling.mp4', alt: 'A loaf cooling' },
+  media: { kind: 'video' as const, prompt: 'Steam rising off a cracked crust, slow', url: '/bread-kling.mp4', alt: 'A loaf cooling' },
   story: ['It starts the night before', 'Pulled from the oven at first light'],
   eyebrow: 'Baked fresh every morning',
   brand: "June's Sourdough",

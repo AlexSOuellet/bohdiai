@@ -11,7 +11,6 @@
  * Structure only: every color is a skin var or a color-mix derivation, every
  * type value is a named role, every word is a content slot.
  */
-import React from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';

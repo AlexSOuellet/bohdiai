@@ -1,75 +1,58 @@
 /**
  * Main Street archetype — the complete artifact.
  *
- * The default maker shop: a hero, a featured selection of the maker's goods,
- * the maker's own story, optional supporting bands, and a footer. Ships a
- * curated family of complete arrangements (classic / goods-first / story-led)
- * the engine or the maker picks from. Familiar by design, composed in ways the
- * template builders never would. Niche-neutral by construction.
+ * The everyday maker shop as a paced SALES PAGE: the brand's moment is the hero,
+ * then goods in motion, the maker beside a real find-us calendar, and a big-type
+ * close. One fixed composition. Niche-neutral by construction — any maker fills
+ * the same slots in their own voice, dressed in a skin picked off the shelf.
  *
- * Composition, typography, color pairs, spacing, the photo grade, motion,
- * content slots, theme hooks, and the arrangement family are all defined in this
- * module. A tenant supplies content matching the schema, a theme pick, and an
- * arrangement pick; the renderer produces a finished page. Bohdi cannot author
- * shape and cannot break the color/type guarantees.
+ * Composition, typography (scale), spacing, motion, and the content slots live
+ * in this module's renderer; the skin supplies color + the three font voices +
+ * grain + photo grade. Bohdi cannot author shape and cannot break the
+ * color/type guarantees.
  */
 import type { Archetype, ArchetypeMeta } from '../types';
 import { MainStreet } from './MainStreet';
-import {
-  MainStreetContentSchema,
-  MainStreetThemeSchema,
-  type MainStreetThemePick,
-} from './schemas';
-import { MAIN_STREET_THEMES } from './themes';
-import { MAIN_STREET_ARRANGEMENTS, MAIN_STREET_DEFAULT_ARRANGEMENT } from './arrangements-meta';
+import { MainStreetContentSchema, MainStreetSkinSchema, type MainStreetSkinPick } from './schemas';
+import { MAIN_STREET_SKINS } from './skins';
 
 const META: ArchetypeMeta = {
   key: 'main-street',
   label: 'Main Street',
   description:
-    "The default maker shop: a hero, a featured selection of the maker's goods, the maker's own story, optional supporting bands, and a footer. Ships a curated family of complete arrangements the maker can switch between. Familiar by design, composed in ways the template builders never would. Niche-neutral by construction — any maker fills the same slots in their own voice.",
+    "The everyday maker shop as a paced sales page: the brand's moment is the hero, then goods in motion, the maker beside a real find-us calendar, and a big-type close. Niche-neutral by construction — any maker fills the same slots in their own voice, dressed in a skin picked off the shelf.",
   suitableFor: {
     nicheKinds: ['bakery', 'candles', 'ceramics', 'soap', 'food', 'apparel', 'general'],
-    moods: ['simple', 'cozy', 'rustic', 'modern'],
+    moods: ['cozy', 'rustic', 'simple', 'modern'],
   },
 };
 
-export const mainStreetArchetype: Archetype<
-  typeof MainStreetContentSchema,
-  typeof MainStreetThemeSchema
-> = {
+export const mainStreetArchetype: Archetype<typeof MainStreetContentSchema, typeof MainStreetSkinSchema> = {
   meta: META,
   contentSchema: MainStreetContentSchema,
-  themeSchema: MainStreetThemeSchema,
-  themes: MAIN_STREET_THEMES,
-  arrangements: MAIN_STREET_ARRANGEMENTS,
-  defaultArrangement: MAIN_STREET_DEFAULT_ARRANGEMENT,
-  resolveTheme(pick: MainStreetThemePick) {
-    const theme = MAIN_STREET_THEMES[pick.themeKey];
-    if (!theme) {
+  themeSchema: MainStreetSkinSchema,
+  themes: MAIN_STREET_SKINS,
+  resolveTheme(pick: MainStreetSkinPick) {
+    const skin = MAIN_STREET_SKINS[pick.skinKey];
+    if (!skin) {
       throw new Error(
-        `Main Street archetype: unknown theme key "${pick.themeKey}". Valid keys: ${Object.keys(MAIN_STREET_THEMES).join(', ')}`,
+        `Main Street: unknown skin "${pick.skinKey}". Valid: ${Object.keys(MAIN_STREET_SKINS).join(', ')}`,
       );
     }
-    return theme;
+    return skin;
   },
   // Contract render: catalog rows are wired by the engine at integration time.
-  // Until then this renders the chrome with no featured rows; the test routes
-  // call <MainStreet> directly with real ProductView fixtures.
-  render: ({ content, theme, arrangement }) => (
-    <MainStreet content={content} theme={theme} arrangement={arrangement} products={[]} />
-  ),
+  // Until then this renders with no goods; the test routes call <MainStreet>
+  // directly with real ProductView fixtures.
+  render: ({ content, theme }) => <MainStreet content={content} skin={theme} products={[]} />,
 };
 
-export { MAIN_STREET_THEMES } from './themes';
-export { MAIN_STREET_ARRANGEMENTS, MAIN_STREET_DEFAULT_ARRANGEMENT } from './arrangements-meta';
+export { MAIN_STREET_SKINS } from './skins';
 export {
   MainStreetContentSchema,
-  MainStreetThemeSchema,
-  MainStreetArrangementSchema,
+  MainStreetSkinSchema,
   type MainStreetContent,
-  type MainStreetThemePick,
-  type MainStreetArrangementPick,
+  type MainStreetSkinPick,
 } from './schemas';
 export { MainStreet } from './MainStreet';
 export { MainStreetProduct } from './MainStreetProduct';
