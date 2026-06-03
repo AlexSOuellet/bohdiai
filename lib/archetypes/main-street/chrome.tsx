@@ -8,6 +8,7 @@
  * `color-mix` derivations — never literals. Structure only; no niche words.
  */
 import React from 'react';
+import Link from 'next/link';
 import type { ArchetypeTheme, TypeRole } from '../types';
 import type { MainStreetContent } from './schemas';
 import { MAIN_STREET_FONT_HREFS, type MainStreetRoles } from './skins';
@@ -50,7 +51,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .join('\n');
   return `
     .arch-main-street{
-      --ms-bg:${p.bg};--ms-fg:${p.fg};--ms-fg-muted:${p.fgMuted};--ms-accent:${p.accent};--ms-rule:${p.rule};
+      --ms-bg:${p.bg};--ms-fg:${p.fg};--ms-fg-muted:${p.fgMuted};--ms-accent:${p.accent};--ms-on-accent:${p.onAccent ?? p.bg};--ms-rule:${p.rule};
       --ms-contrast-bg:${c.bg};--ms-contrast-fg:${c.fg};--ms-contrast-fg-muted:${c.fgMuted};
       --ms-disp:${r.brand.family};--ms-body:${r.body.family};--ms-mono:${r.eyebrow.family};
       --ms-section:${sp.section}px;--ms-loose:${sp.loose}px;--ms-base:${sp.base}px;--ms-tight:${sp.tight}px;
@@ -118,9 +119,9 @@ export function Nav({ identity, skin }: { identity: MainStreetContent['identity'
   const r = roles(skin);
   return (
     <>
-      <a href="/" data-type="wordmark" style={{ ...typeRoleCss(r.wordmark), color: 'inherit' }}>
+      <Link href="/" data-type="wordmark" style={{ ...typeRoleCss(r.wordmark), color: 'inherit' }}>
         {identity.wordmark}
-      </a>
+      </Link>
       <div style={{ display: 'flex', gap: 30, alignItems: 'center' }}>
         {identity.nav.map((item) => (
           <a key={item} href="#" data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), color: 'inherit', opacity: 0.85 }}>
@@ -154,9 +155,9 @@ export function MainStreetFooter({ shopName, skin }: { shopName: string; skin: A
         {shopName}
       </span>
       <div style={{ display: 'flex', gap: 20, alignItems: 'baseline' }}>
-        <a href="/" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
+        <Link href="/" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
           Home
-        </a>
+        </Link>
         <a href="/privacy" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
           Privacy
         </a>

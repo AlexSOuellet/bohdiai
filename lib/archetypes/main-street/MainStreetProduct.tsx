@@ -136,7 +136,7 @@ export function MainStreetProduct({
                 style={{
                   ...typeRoleCss(r.navLabel),
                   background: soldOut ? 'var(--ms-fg-muted)' : 'var(--ms-accent)',
-                  color: '#fff',
+                  color: 'var(--ms-on-accent)',
                   border: 'none',
                   padding: `${sp.base}px ${sp.loose}px`,
                   cursor: soldOut ? 'default' : 'pointer',

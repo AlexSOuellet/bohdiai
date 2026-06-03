@@ -165,7 +165,7 @@ export function Close({ close, skin }: { close: MainStreetContent['close']; skin
         style={{
           ...typeRoleCss(r.navLabel),
           background: 'var(--ms-accent)',
-          color: '#fff',
+          color: 'var(--ms-on-accent)',
           padding: '16px 26px',
           borderRadius: 2,
           display: 'inline-block',

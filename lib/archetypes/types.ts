@@ -21,6 +21,9 @@ export interface ColorPair {
   fgMuted: string;
   accent: string;
   rule: string;
+  /** Readable text color for content placed ON the accent (e.g. CTA labels).
+   *  Skin-owned so the renderer never hardcodes a text color on a button. */
+  onAccent?: string;
   /**
    * The skin's SECOND surface — the contrast panel used by alternating bands
    * (e.g. the founder band). Direction-agnostic: a light skin's contrast is

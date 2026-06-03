@@ -98,7 +98,7 @@ export function MomentHero({
       <header
         ref={heroRef}
         data-ms-hero
-        style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: '#0c0907', color: 'var(--ms-contrast-fg)' }}
+        style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'var(--ms-contrast-bg)', color: 'var(--ms-contrast-fg)' }}
       >
         <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
           <Media media={moment.media} style={{ filter: 'saturate(1.02) contrast(1.04) brightness(.92) sepia(.06)' }} />
@@ -140,7 +140,7 @@ export function MomentHero({
               <a
                 href="#goods"
                 data-type="navLabel"
-                style={{ ...typeRoleCss(r.navLabel), background: 'var(--ms-accent)', color: '#fff', padding: '16px 26px', borderRadius: 2 }}
+                style={{ ...typeRoleCss(r.navLabel), background: 'var(--ms-accent)', color: 'var(--ms-on-accent)', padding: '16px 26px', borderRadius: 2 }}
               >
                 {moment.ctaLabel}
               </a>

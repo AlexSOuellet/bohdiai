@@ -100,6 +100,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
       fg: '#2B1A12',
       fgMuted: '#7A6249',
       accent: '#C8431B',
+      onAccent: '#FFFFFF',
       rule: 'rgba(43,26,18,0.16)',
       contrast: { bg: '#1C120B', fg: '#F4EAD7', fgMuted: 'rgba(244,234,215,0.66)' },
     },
