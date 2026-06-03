@@ -1,69 +1,66 @@
 import { describe, it, expect } from 'vitest';
 import { MainStreetContentSchema } from './schemas';
 
-function validContent() {
+function valid() {
   return {
     shopName: "June's Sourdough",
-    identity: {
-      wordmark: "June's Sourdough",
-      tagline: 'Naturally leavened, by hand, in small batches',
-      nav: ['Shop', 'About', 'Contact'],
+    identity: { wordmark: "June's Sourdough", nav: ['Shop', 'About', 'Find us'] },
+    moment: {
+      media: { kind: 'video', prompt: 'Steam rising off a cracked sourdough crust, slow', alt: 'A loaf cooling' },
+      story: ['It starts the night before', 'Folded by hand, left to rise slow', 'Pulled from the oven at first light'],
+      eyebrow: 'Baked fresh every morning',
+      brand: "June's Sourdough",
+      ctaLabel: 'See the loaves',
     },
-    hero: {
-      headline: 'Naturally leavened, by hand',
-      sub: 'Country, seeded, and a cinnamon-raisin special each week',
-      ctaLabel: 'Shop the loaves',
-      photo: { prompt: 'A rustic round sourdough loaf, scored and blistered crust', alt: 'A round sourdough loaf' },
+    goods: { title: 'Pulled from the oven this morning' },
+    founder: {
+      quote: 'I started with one cast-iron oven and a starter named Frank, and fourteen years on he still does most of the work',
+      attribution: 'June Carter, founder and baker',
+      photo: { prompt: 'A baker holding a loaf in a warm kitchen', alt: 'June in her kitchen' },
+      findUs: {
+        label: 'Find us this week',
+        rows: [
+          { day: 'Wed', where: 'Riverside Farmers Market', time: '8-1' },
+          { day: 'Sat', where: 'Downtown Makers Market', time: '9-2' },
+        ],
+      },
     },
-    featured: { title: 'This week' },
-    maker: {
-      label: 'Meet June',
-      headline: 'One oven, one pair of hands',
-      body: 'I started baking for neighbors and never stopped. Every loaf is mixed, folded, and shaped by hand the night before. I bake what I would want on my own table.',
-      photo: { prompt: 'A baker in an apron holding a loaf, warm kitchen', alt: 'June in her kitchen' },
-      ctaLabel: 'Read the full story',
-    },
-    secondary: {
-      label: 'Where to find us',
-      headline: 'Saturdays at the market',
-      body: 'Find this week’s bake at the Hope Street Farmers Market, 9 to 11am.',
-    },
-    stayInTouch: {
-      headline: 'Get next week’s bake list',
-      body: 'One email a week, the loaves and the pickup details.',
-      ctaLabel: 'Join the list',
-    },
-    footer: {
-      blurb: 'Baked and sold in Providence, Rhode Island',
-      columns: [
-        { title: 'Shop', items: ['Loaves', 'Pickup', 'Gift cards'] },
-        { title: 'Connect', items: ['Instagram', 'Email'] },
-      ],
-    },
+    close: { label: 'Come say hello', headline: 'Warm bread is on Main Street by seven', ctaLabel: 'Order for pickup' },
   };
 }
 
 describe('MainStreetContentSchema', () => {
   it('accepts a complete valid store', () => {
-    expect(MainStreetContentSchema.safeParse(validContent()).success).toBe(true);
+    expect(MainStreetContentSchema.safeParse(valid()).success).toBe(true);
   });
 
-  it('accepts a store with the optional regions omitted', () => {
-    const c = validContent();
-    delete (c as Record<string, unknown>)['secondary'];
-    delete (c as Record<string, unknown>)['stayInTouch'];
+  it('accepts a store with findUs omitted', () => {
+    const c = valid();
+    delete (c.founder as Record<string, unknown>)['findUs'];
     expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 
-  it('rejects a hero headline that exceeds the cap', () => {
-    const c = validContent();
-    c.hero.headline = 'x'.repeat(60);
+  it('requires at least two story lines', () => {
+    const c = valid();
+    c.moment.story = ['only one'];
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+  });
+
+  it('caps the story line length', () => {
+    const c = valid();
+    c.moment.story = ['x'.repeat(60), 'ok'];
     expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
   });
 
   it('rejects fewer than 2 nav items', () => {
-    const c = validContent();
+    const c = valid();
     c.identity.nav = ['Shop'];
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+  });
+
+  it('caps the close headline', () => {
+    const c = valid();
+    c.close.headline = 'x'.repeat(80);
     expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
   });
 });

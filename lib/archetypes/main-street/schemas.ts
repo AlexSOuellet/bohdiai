@@ -1,126 +1,99 @@
 /**
- * Main Street archetype — schemas.
+ * Main Street archetype — content schema (the four-beat sales page).
  *
- * Main Street is the default maker shop: a hero, a featured selection of the
- * maker's goods, the maker's own story, optional supporting bands, and a footer.
- * It ships a curated family of arrangements (see MainStreet.tsx); the content
- * here is identical across arrangements, so a maker can switch format with one
- * click and nothing has to be re-authored.
- *
- * Niche-neutral by construction — every label and string is a content slot, so
+ * Niche-neutral by construction: every label and string is a content slot, so
  * the archetype never assumes a maker bakes, throws pots, or pours candles. The
- * same shop wears any niche by the words Bohdi writes into it.
+ * four beats — the MOMENT (hero), GOODS in motion, the FOUNDER + a find-us
+ * calendar, and the CLOSE — are filled in the maker's own words. Catalog rows
+ * (the goods) are passed to the renderer separately as the shared ProductView
+ * core; the archetype never authors the catalog.
  *
- * Every text field is capped (max) as well as floored (min) so Bohdi cannot
- * overflow the geometry the renderer assumes — the lesson from the broadsheet,
- * where an unbounded headline broke the display.
+ * Every text field is capped (max) as well as floored (min) so authored content
+ * cannot overflow the geometry the renderer assumes.
  */
 import { z } from 'zod';
-import { MAIN_STREET_THEMES } from './themes';
-import { MAIN_STREET_ARRANGEMENTS } from './arrangements-meta';
+import { MAIN_STREET_SKINS } from './skins';
 
-/** Imagery slot: a prompt for generation, optionally a pre-resolved URL. */
+/** A held-media slot for the hero moment — a generation prompt, optionally a
+ *  resolved url (+ poster for video). Niche-neutral. */
+const MediaSlot = z.object({
+  kind: z.enum(['video', 'image']).default('video'),
+  prompt: z.string().min(8).max(400),
+  url: z.string().url().optional(),
+  poster: z.string().url().optional(),
+  alt: z.string().min(4).max(120),
+});
+
+/** A photo slot for the founder portrait. */
 const PhotoSlot = z.object({
   prompt: z.string().min(8).max(400),
   url: z.string().url().optional(),
   alt: z.string().min(4).max(120),
 });
 
-/** A footer link column. */
-const FooterColumn = z.object({
-  title: z.string().min(2).max(24),
-  items: z.array(z.string().min(1).max(28)).min(2).max(5),
+/** One "find us this week" row. */
+const FindUsRow = z.object({
+  day: z.string().min(1).max(12),
+  where: z.string().min(4).max(60),
+  time: z.string().min(1).max(12),
 });
 
-/**
- * The complete content contract for a Main Street store. Every tenant produces
- * exactly this shape, the same for every arrangement; the renderer structurally
- * cannot consume anything else.
- */
 export const MainStreetContentSchema = z.object({
-  /** The shop's actual name — used in the footer. */
+  /** The shop's actual name — used in the footer + as the default wordmark. */
   shopName: z.string().min(2).max(40),
 
-  /** The top identity bar. */
   identity: z.object({
-    /** The shop name as it reads in the wordmark (usually the shop name). */
     wordmark: z.string().min(2).max(28),
-    /** One line of the maker's voice. */
-    tagline: z.string().min(8).max(96),
-    /** Top navigation labels. */
     nav: z.array(z.string().min(2).max(18)).min(2).max(4),
   }),
 
-  /** The hero — the shop's face. Required. */
-  hero: z.object({
-    /** The headline. Renders large, so keep it tight. */
-    headline: z.string().min(6).max(52),
-    /** One supporting line under the headline. */
-    sub: z.string().min(8).max(120),
-    /** Primary call to action label. */
+  /** BEAT 1 — the moment is the hero. Held media + a story told one line at a
+   *  time, landing on the brand + CTA. */
+  moment: z.object({
+    media: MediaSlot,
+    /** The story lines, each cross-fading into the next. Kept tight so they set
+     *  large and read in one breath. */
+    story: z.array(z.string().min(4).max(48)).min(2).max(5),
+    eyebrow: z.string().min(4).max(48),
+    brand: z.string().min(2).max(28),
     ctaLabel: z.string().min(3).max(24),
+    secondaryCtaLabel: z.string().min(3).max(24).optional(),
+  }),
+
+  /** BEAT 2 — goods in motion. Just the heading; products are catalog rows. */
+  goods: z.object({
+    title: z.string().min(2).max(48),
+    /** Optional small label on the heading row, e.g. "This week". */
+    label: z.string().min(2).max(24).optional(),
+  }),
+
+  /** BEAT 3 — the founder + a real "find us this week" calendar. Required: the
+   *  authority the platform is built on. */
+  founder: z.object({
+    quote: z.string().min(24).max(280),
+    attribution: z.string().min(4).max(60),
     photo: PhotoSlot,
+    findUs: z
+      .object({
+        label: z.string().min(2).max(28),
+        rows: z.array(FindUsRow).min(1).max(5),
+      })
+      .optional(),
   }),
 
-  /** Featured selection — just the section heading. The products are catalog
-   *  rows passed to the renderer separately (the shared ProductView core). */
-  featured: z.object({
-    /** Short section heading, e.g. "Featured" or "What we make". */
-    title: z.string().min(2).max(36),
-  }),
-
-  /** The maker — story and face. Required: the authority the platform is built on. */
-  maker: z.object({
-    /** Small eyebrow, like "The Studio" or "About". */
-    label: z.string().min(2).max(24),
-    /** The story hook headline. */
-    headline: z.string().min(6).max(52),
-    /** The story paragraph, in the maker's voice. */
-    body: z.string().min(40).max(480),
-    photo: PhotoSlot,
-    ctaLabel: z.string().min(3).max(28),
-  }),
-
-  /** Optional supporting band — a note, what's new, where to find the maker.
-   *  Niche-neutral: the maker decides what it says. Drops out if absent. */
-  secondary: z
-    .object({
-      label: z.string().min(2).max(24),
-      headline: z.string().min(4).max(52),
-      body: z.string().min(12).max(280),
-    })
-    .optional(),
-
-  /** Optional email-capture beat. Drops out if absent. */
-  stayInTouch: z
-    .object({
-      headline: z.string().min(4).max(52),
-      body: z.string().min(8).max(160),
-      ctaLabel: z.string().min(3).max(24),
-    })
-    .optional(),
-
-  /** Footer — a blurb and exactly two link columns. */
-  footer: z.object({
-    blurb: z.string().min(8).max(90),
-    columns: z.array(FooterColumn).length(2),
+  /** BEAT 4 — the close: a big-type sign-off + an order/pickup CTA. */
+  close: z.object({
+    label: z.string().min(2).max(28),
+    headline: z.string().min(6).max(72),
+    ctaLabel: z.string().min(3).max(24),
   }),
 });
 
 export type MainStreetContent = z.infer<typeof MainStreetContentSchema>;
 
-/**
- * The only theme choice Bohdi can make is which curated theme variant to wear.
- * Everything inside it — colors, fonts, scale, spacing, atmosphere, motion — is
- * the archetype's, not his.
- */
-export const MainStreetThemeSchema = z.object({
-  themeKey: z.enum(Object.keys(MAIN_STREET_THEMES) as [string, ...string[]]),
+/** The only skin choice is which curated skin to wear. Everything inside it is
+ *  the archetype's, not Bohdi's. */
+export const MainStreetSkinSchema = z.object({
+  skinKey: z.enum(Object.keys(MAIN_STREET_SKINS) as [string, ...string[]]),
 });
-export type MainStreetThemePick = z.infer<typeof MainStreetThemeSchema>;
-
-/** The arrangement (complete page composition) pick. */
-export const MainStreetArrangementSchema = z.object({
-  arrangement: z.enum(Object.keys(MAIN_STREET_ARRANGEMENTS) as [string, ...string[]]),
-});
-export type MainStreetArrangementPick = z.infer<typeof MainStreetArrangementSchema>;
+export type MainStreetSkinPick = z.infer<typeof MainStreetSkinSchema>;
