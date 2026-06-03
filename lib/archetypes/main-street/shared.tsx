@@ -275,24 +275,34 @@ function CtaButton({ label, theme }: { label: string; theme: ArchetypeTheme }) {
   );
 }
 
+/** The archetype's image framing — the dressed-up, matted-print look: a
+ *  rounded card with a thin rule and a soft lift, the photo rounded inside. */
+const FRAME_RADIUS = 12;
+const IMG_RADIUS = 8;
+const FRAME_SHADOW = '0 1px 2px rgba(0, 0, 0, 0.05), 0 10px 26px rgba(0, 0, 0, 0.06)';
+
 /** Photo or a graceful placeholder, sharing the archetype's grade. */
 function Photo({
   photo,
   theme,
   aspectRatio,
+  radius = 0,
 }: {
   photo: { url?: string | undefined; alt: string };
   theme: ArchetypeTheme;
   aspectRatio: string;
+  radius?: number;
 }) {
   if (photo.url) {
-    return <img src={photo.url} alt={photo.alt} className="archetype-photo" style={{ aspectRatio }} />;
+    return (
+      <img src={photo.url} alt={photo.alt} className="archetype-photo" style={{ aspectRatio, borderRadius: radius }} />
+    );
   }
   return (
     <div
       className="archetype-photo"
       aria-label={photo.alt}
-      style={{ aspectRatio, background: theme.palette.fgMuted, opacity: 0.18 }}
+      style={{ aspectRatio, borderRadius: radius, background: theme.palette.fgMuted, opacity: 0.18 }}
     />
   );
 }
@@ -350,7 +360,7 @@ export function HeroRegion({
     );
   }
 
-  // bleed (default) — off-axis: text left, image bleeding to the right edge.
+  // bleed (default) — off-axis: text left, a larger framed image right.
   return (
     <section
       style={{
@@ -369,7 +379,7 @@ export function HeroRegion({
         </p>
         <CtaButton label={hero.ctaLabel} theme={theme} />
       </div>
-      <div style={{ marginRight: 'calc(50% - 50vw)' }}>
+      <div style={{ borderRadius: FRAME_RADIUS, overflow: 'hidden', boxShadow: FRAME_SHADOW }}>
         <Photo photo={hero.photo} theme={theme} aspectRatio="4 / 3" />
       </div>
     </section>
@@ -406,10 +416,28 @@ export function FeaturedRegion({
           <a
             key={p.slug + i}
             href={`/shop/${p.slug}`}
-            style={{ color: theme.palette.fg, textDecoration: 'none', display: 'block' }}
+            style={{
+              color: theme.palette.fg,
+              textDecoration: 'none',
+              display: 'block',
+              background: theme.palette.bg,
+              border: `1px solid ${theme.palette.rule}`,
+              borderRadius: FRAME_RADIUS,
+              padding: sp.tight,
+              boxShadow: FRAME_SHADOW,
+            }}
           >
-            <Photo photo={p.media[0] ?? { alt: p.name }} theme={theme} aspectRatio={aspect} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: sp.tight, gap: sp.tight }}>
+            <Photo photo={p.media[0] ?? { alt: p.name }} theme={theme} aspectRatio={aspect} radius={IMG_RADIUS} />
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'baseline',
+                marginTop: sp.tight,
+                padding: `0 ${sp.tight}px ${sp.tight}px`,
+                gap: sp.tight,
+              }}
+            >
               <span data-type="body" style={{ ...typeRoleCss(t.body), color: theme.palette.fg, fontWeight: 600 }}>
                 {p.name}
               </span>
@@ -456,7 +484,7 @@ export function MakerRegion({
         padding: sp.section,
       }}
     >
-      <div>
+      <div style={{ borderRadius: FRAME_RADIUS, overflow: 'hidden' }}>
         <Photo photo={maker.photo} theme={theme} aspectRatio="4 / 5" />
       </div>
       <div>
