@@ -328,9 +328,8 @@ export function HeroRegion({
       <section
         style={{
           marginTop: sp.section,
-          width: '100vw',
-          marginLeft: 'calc(50% - 50vw)',
           background: 'color-mix(in srgb, var(--ms-accent) 12%, var(--ms-bg))',
+          borderRadius: FRAME_RADIUS,
           padding: `${sp.section}px ${sp.loose}px`,
           textAlign: 'center',
         }}
@@ -404,7 +403,14 @@ export function FeaturedRegion({
   const aspect = variant === 'grid2' ? '4 / 3' : '4 / 5';
 
   return (
-    <section style={{ marginTop: sp.section }}>
+    <section
+      style={{
+        marginTop: sp.section,
+        background: 'color-mix(in srgb, var(--ms-fg) 8%, var(--ms-bg))',
+        borderRadius: FRAME_RADIUS,
+        padding: sp.section,
+      }}
+    >
       <h2 data-type="title" style={{ ...typeRoleCss(t.title), color: theme.palette.fg, marginBottom: sp.loose }}>
         {featured.title}
       </h2>
