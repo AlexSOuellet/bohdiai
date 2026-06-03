@@ -79,11 +79,11 @@ export function rootCss(theme: ArchetypeTheme): string {
       --ms-base: ${spacing.base}px;
       --ms-tight: ${spacing.tight}px;
     }
-    /* shop-window keyline frame */
-    .arch-main-street .ms-frame { position: fixed; inset: 14px; z-index: 40; pointer-events: none; border: 1px solid ${palette.fg}; }
-    .arch-main-street .ms-frame::after { content: ''; position: absolute; inset: 4px; border: 1px solid color-mix(in srgb, ${palette.fg} 22%, transparent); }
-    /* paper grain */
-    .arch-main-street .ms-grain { position: fixed; inset: 0; z-index: 39; pointer-events: none; opacity: 0.05; mix-blend-mode: multiply; background-image: ${atmosphere.grain ?? 'none'}; }
+    /* paper grain — absolute so it scrolls with the page, not fixed over it */
+    .arch-main-street .ms-grain { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0.05; mix-blend-mode: multiply; background-image: ${atmosphere.grain ?? 'none'}; }
+    .arch-main-street > .arch-stage { position: relative; z-index: 1; }
+    /* fixed navbar — the site scrolls behind it */
+    .arch-main-street .ms-head { position: sticky; top: 0; z-index: 30; background: ${palette.bg}; border-bottom: 1px solid ${palette.rule}; animation: none !important; opacity: 1 !important; transform: none !important; }
 
     .arch-main-street .archetype-photo { filter: ${atmosphere.photoFilter ?? 'none'}; display: block; width: 100%; height: 100%; object-fit: cover; }
 
@@ -120,7 +120,6 @@ export function MainStreetRoot({
       <style dangerouslySetInnerHTML={{ __html: rootCss(theme) }} />
       <div className="arch-main-street">
         <div className="ms-grain" aria-hidden />
-        <div className="ms-frame" aria-hidden />
         <main className="arch-stage">{children}</main>
       </div>
     </>
@@ -165,21 +164,24 @@ export function MainStreetHeader({
 }) {
   const t = theme.type as unknown as MainStreetRoles;
   const sp = theme.spacing;
+  const pad = variant === 'home' ? 18 : 14;
   return (
-    <header style={{ ...WRAP, paddingTop: variant === 'home' ? 30 : 20, paddingBottom: sp.base, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: sp.base }}>
-      <a href="/" data-type="wordmark" style={{ ...typeRoleCss(t.wordmark), color: theme.palette.fg }}>
-        {identity.wordmark}
-      </a>
-      <nav style={{ display: 'flex', gap: 24, alignItems: 'baseline' }}>
-        {identity.nav.map((item) => (
-          <span key={item} data-type="nav" style={{ ...typeRoleCss(t.nav), color: theme.palette.fgMuted }}>
-            {item}
-          </span>
-        ))}
-        <a href="/cart" data-type="nav" style={{ ...typeRoleCss(t.nav), color: theme.palette.fg }}>
-          Bag (0)
+    <header className="ms-head">
+      <div style={{ ...WRAP, paddingTop: pad, paddingBottom: pad, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: sp.base }}>
+        <a href="/" data-type="wordmark" style={{ ...typeRoleCss(t.wordmark), color: theme.palette.fg }}>
+          {identity.wordmark}
         </a>
-      </nav>
+        <nav style={{ display: 'flex', gap: 24, alignItems: 'baseline' }}>
+          {identity.nav.map((item) => (
+            <span key={item} data-type="nav" style={{ ...typeRoleCss(t.nav), color: theme.palette.fgMuted }}>
+              {item}
+            </span>
+          ))}
+          <a href="/cart" data-type="nav" style={{ ...typeRoleCss(t.nav), color: theme.palette.fg }}>
+            Bag (0)
+          </a>
+        </nav>
+      </div>
     </header>
   );
 }
