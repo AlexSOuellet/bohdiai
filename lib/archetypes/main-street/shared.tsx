@@ -67,7 +67,6 @@ export function rootCss(theme: ArchetypeTheme): string {
       color: ${palette.fg};
       position: relative;
       isolation: isolate;
-      overflow-x: clip;
       min-height: 100vh;
       --ms-bg: ${palette.bg};
       --ms-fg: ${palette.fg};
@@ -102,6 +101,24 @@ export function rootCss(theme: ArchetypeTheme): string {
     @media (prefers-reduced-motion: reduce) {
       .arch-main-street .arch-stage > * { animation: none; opacity: 1; transform: none; }
     }
+
+    /* layout — in classes so it can respond (inline styles cannot) */
+    .arch-main-street .ms-wrap { max-width: 1160px; margin-inline: auto; padding-inline: 48px; }
+    .arch-main-street .ms-hero { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: ${spacing.section}px; align-items: end; }
+    .arch-main-street .ms-featgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: ${spacing.loose}px; }
+    .arch-main-street .ms-featgrid.cols2 { grid-template-columns: repeat(2, 1fr); }
+    .arch-main-street .ms-maker-inner { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: ${spacing.section}px; align-items: center; }
+    .arch-main-street .ms-footgrid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: ${spacing.loose}px; }
+    @media (max-width: 860px) {
+      .arch-main-street .ms-hero, .arch-main-street .ms-maker-inner { grid-template-columns: 1fr; gap: ${spacing.loose}px; }
+      .arch-main-street .ms-featgrid, .arch-main-street .ms-featgrid.cols2 { grid-template-columns: repeat(2, 1fr); }
+      .arch-main-street .ms-footgrid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 560px) {
+      .arch-main-street .ms-wrap { padding-inline: 22px; }
+      .arch-main-street .ms-featgrid, .arch-main-street .ms-featgrid.cols2 { grid-template-columns: 1fr; }
+      .arch-main-street .ms-footgrid { grid-template-columns: 1fr; }
+    }
     ${responsive}
   `;
 }
@@ -125,8 +142,6 @@ export function MainStreetRoot({
     </>
   );
 }
-
-const WRAP: React.CSSProperties = { maxWidth: 1160, marginInline: 'auto', paddingInline: 48 };
 
 /** Photo or a graceful placeholder, sharing the archetype's grade. */
 function Photo({
@@ -167,7 +182,7 @@ export function MainStreetHeader({
   const pad = variant === 'home' ? 18 : 14;
   return (
     <header className="ms-head">
-      <div style={{ ...WRAP, paddingTop: pad, paddingBottom: pad, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: sp.base }}>
+      <div className="ms-wrap" style={{ paddingTop: pad, paddingBottom: pad, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: sp.base }}>
         <a href="/" data-type="wordmark" style={{ ...typeRoleCss(t.wordmark), color: theme.palette.fg }}>
           {identity.wordmark}
         </a>
@@ -215,7 +230,7 @@ export function HeroRegion({ hero, theme, variant }: { hero: MainStreetContent['
 
   if (variant === 'band') {
     return (
-      <section style={{ ...WRAP, marginTop: sp.section }}>
+      <section className="ms-wrap" style={{ marginTop: sp.section }}>
         <div style={{ background: 'color-mix(in srgb, var(--ms-accent) 12%, var(--ms-bg))', padding: `${sp.section}px ${sp.loose}px`, textAlign: 'center' }}>
           <h2 data-type="heroHead" style={{ ...typeRoleCss(t.heroHead), color: theme.palette.fg, margin: 0, maxWidth: '14ch', marginInline: 'auto' }}>{hero.headline}</h2>
           <p data-type="body" style={{ ...typeRoleCss(t.body), color: theme.palette.fgMuted, maxWidth: '40ch', margin: `${sp.base}px auto 0` }}>{hero.sub}</p>
@@ -227,7 +242,7 @@ export function HeroRegion({ hero, theme, variant }: { hero: MainStreetContent['
 
   if (variant === 'closer') {
     return (
-      <section style={{ ...WRAP, marginTop: sp.section, textAlign: 'center', paddingTop: sp.loose, borderTop: `1px solid ${theme.palette.rule}` }}>
+      <section className="ms-wrap" style={{ marginTop: sp.section, textAlign: 'center', paddingTop: sp.loose, borderTop: `1px solid ${theme.palette.rule}` }}>
         <h2 data-type="title" style={{ ...typeRoleCss(t.title), color: theme.palette.fg, margin: 0 }}>{hero.headline}</h2>
         <p data-type="body" style={{ ...typeRoleCss(t.body), color: theme.palette.fgMuted, maxWidth: '40ch', margin: `${sp.tight}px auto 0` }}>{hero.sub}</p>
         <Cta label={hero.ctaLabel} theme={theme} />
@@ -237,7 +252,7 @@ export function HeroRegion({ hero, theme, variant }: { hero: MainStreetContent['
 
   // bleed — the big editorial hero: oversized headline left, framed image right.
   return (
-    <section style={{ ...WRAP, marginTop: sp.base, display: 'grid', gridTemplateColumns: '1.05fr 0.95fr', gap: sp.section, alignItems: 'end', paddingBottom: sp.section }}>
+    <section className="ms-wrap ms-hero" style={{ marginTop: sp.base, paddingBottom: sp.section }}>
       <div>
         <h1 data-type="heroHead" style={{ ...typeRoleCss(t.heroHead), color: theme.palette.fg, margin: 0, maxWidth: '12ch' }}>{hero.headline}</h1>
         <p data-type="body" style={{ ...typeRoleCss(t.body), color: theme.palette.fgMuted, maxWidth: '34ch', marginTop: sp.loose }}>{hero.sub}</p>
@@ -257,13 +272,10 @@ export function FeaturedRegion({ featured, products, theme, variant }: { feature
   const cols = variant === 'grid2' ? 2 : 3;
 
   return (
-    <section style={{ ...WRAP, marginTop: sp.section }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: sp.base, marginBottom: sp.loose }}>
-        <span data-type="sectionNo" style={{ ...typeRoleCss(t.sectionNo), color: theme.palette.accent }}>01</span>
-        <h2 data-type="title" style={{ ...typeRoleCss(t.title), color: theme.palette.fg, margin: 0 }}>{featured.title}</h2>
-      </div>
+    <section className="ms-wrap" style={{ marginTop: sp.section }}>
+      <h2 data-type="title" style={{ ...typeRoleCss(t.title), color: theme.palette.fg, margin: `0 0 ${sp.loose}px` }}>{featured.title}</h2>
       <div style={{ background: 'color-mix(in srgb, var(--ms-fg) 7%, var(--ms-bg))', padding: sp.loose }}>
-        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: sp.loose }}>
+        <div className={`ms-featgrid${cols === 2 ? ' cols2' : ''}`}>
           {products.map((p, i) => (
             <a key={p.slug + i} href={`/shop/${p.slug}`} style={{ display: 'block', background: theme.palette.bg, padding: sp.tight, boxShadow: FRAME_SHADOW, color: theme.palette.fg }}>
               <Photo photo={p.media[0] ?? { alt: p.name }} theme={theme} aspectRatio="4 / 5" />
@@ -291,7 +303,7 @@ export function MakerRegion({ maker, theme, variant }: { maker: MainStreetConten
 
   return (
     <section style={{ marginTop: sp.section, background: bg, color: fg }}>
-      <div style={{ ...WRAP, display: 'grid', gridTemplateColumns: '0.8fr 1.2fr', gap: sp.section, alignItems: 'center', paddingTop: sp.section, paddingBottom: sp.section }}>
+      <div className="ms-wrap ms-maker-inner" style={{ paddingTop: sp.section, paddingBottom: sp.section }}>
         <div style={{ borderRadius: IMG_RADIUS, overflow: 'hidden' }}>
           <Photo photo={maker.photo} theme={theme} aspectRatio="4 / 5" />
         </div>
@@ -311,7 +323,7 @@ export function SecondaryRegion({ secondary, theme }: { secondary: NonNullable<M
   const t = theme.type as unknown as MainStreetRoles;
   const sp = theme.spacing;
   return (
-    <section style={{ ...WRAP, marginTop: sp.section }}>
+    <section className="ms-wrap" style={{ marginTop: sp.section }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: sp.base, borderTop: `1px solid ${theme.palette.rule}`, borderBottom: `1px solid ${theme.palette.rule}`, padding: `${sp.loose}px 0` }}>
         <span data-type="title" style={{ ...typeRoleCss(t.title), color: theme.palette.fg }}>{secondary.headline}</span>
         <span data-type="body" style={{ ...typeRoleCss(t.body), color: theme.palette.fgMuted, maxWidth: '46ch' }}>
@@ -328,7 +340,7 @@ export function StayInTouchRegion({ stayInTouch, theme }: { stayInTouch: NonNull
   const t = theme.type as unknown as MainStreetRoles;
   const sp = theme.spacing;
   return (
-    <section style={{ ...WRAP, marginTop: sp.section, textAlign: 'center' }}>
+    <section className="ms-wrap" style={{ marginTop: sp.section, textAlign: 'center' }}>
       <h2 data-type="title" style={{ ...typeRoleCss(t.title), color: theme.palette.fg, margin: 0 }}>{stayInTouch.headline}</h2>
       <p data-type="body" style={{ ...typeRoleCss(t.body), color: theme.palette.fgMuted, maxWidth: '40ch', margin: `${sp.tight}px auto 0` }}>{stayInTouch.body}</p>
       <div style={{ display: 'inline-flex', marginTop: sp.loose, border: `1px solid ${theme.palette.fg}` }}>
@@ -345,8 +357,8 @@ export function MainStreetFooter({ shopName, footer, theme }: { shopName: string
   const sp = theme.spacing;
   return (
     <footer style={{ marginTop: sp.section, background: 'color-mix(in srgb, var(--ms-fg) 7%, var(--ms-bg))', paddingTop: sp.section, paddingBottom: sp.loose }}>
-      <div style={WRAP}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: sp.loose }}>
+      <div className="ms-wrap">
+        <div className="ms-footgrid">
           <div>
             <div data-type="title" style={{ ...typeRoleCss(t.title), color: theme.palette.fg }}>{shopName}</div>
             <p data-type="caption" style={{ ...typeRoleCss(t.caption), color: theme.palette.fgMuted, marginTop: sp.tight, maxWidth: '32ch' }}>{footer.blurb}</p>
