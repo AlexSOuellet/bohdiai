@@ -1,0 +1,16 @@
+{
+  "slug": "country-loaf",
+  "name": "Country Loaf",
+  "price": "$9",
+  "shortDescription": "Our everyday loaf — naturally leavened, blistered crust, open crumb.",
+  "description": "A naturally leavened loaf built over two days. A long cold rise gives it a deep, mellow tang and an open, custardy crumb. Mixed, folded, and shaped by hand, baked dark for a crackling crust. Sold the morning it comes out of the oven.",
+  "status": "active",
+  "media": [
+    { "kind": "image", "alt": "A round country sourdough loaf, scored and dark-baked" },
+    { "kind": "image", "alt": "The open crumb of a cut country loaf" },
+    { "kind": "video", "alt": "Steam rising off a fresh-cut loaf" }
+  ],
+  "variations": [
+    { "name": "Size", "options": ["Boule", "Batard"] }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "content": {
+    "shopName": "June's Sourdough",
+    "identity": {
+      "wordmark": "June's Sourdough",
+      "tagline": "Naturally leavened, by hand, in small batches",
+      "nav": ["Shop", "About", "Contact"]
+    },
+    "hero": {
+      "headline": "Naturally leavened, by hand",
+      "sub": "Country, seeded, and a cinnamon-raisin special each week, baked the night before",
+      "ctaLabel": "Shop the loaves",
+      "photo": {
+        "prompt": "A rustic round sourdough loaf, scored and blistered crust, on a wood board in warm light",
+        "alt": "A round sourdough loaf with a blistered crust"
+      }
+    },
+    "featured": { "title": "This week" },
+    "maker": {
+      "label": "Meet June",
+      "headline": "One oven, one pair of hands",
+      "body": "I started baking for neighbors and never stopped. Every loaf is mixed, folded, and shaped by hand the night before. I bake what I would want on my own table, and I sell it the morning it comes out.",
+      "photo": {
+        "prompt": "A baker in an apron holding a fresh loaf in a warm home kitchen",
+        "alt": "June holding a loaf in her kitchen"
+      },
+      "ctaLabel": "Read the full story"
+    },
+    "secondary": {
+      "label": "Where to find us",
+      "headline": "Saturdays at the market",
+      "body": "Find this week's bake at the Hope Street Farmers Market, 9 to 11am. Pre-orders are held until 10."
+    },
+    "stayInTouch": {
+      "headline": "Get next week's bake list",
+      "body": "One email a week with the loaves and the pickup details.",
+      "ctaLabel": "Join the list"
+    },
+    "footer": {
+      "blurb": "Baked and sold in Providence, Rhode Island",
+      "columns": [
+        { "title": "Shop", "items": ["Loaves", "Pickup", "Gift cards"] },
+        { "title": "Connect", "items": ["Instagram", "Email"] }
+      ]
+    }
+  },
+  "themeKey": "main-street-amber",
+  "arrangement": "classic"
+}
