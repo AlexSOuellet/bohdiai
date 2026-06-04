@@ -20,8 +20,10 @@ import { labelFor, type ProgressEmitter } from '@/lib/progress';
 import { inferGenderFromName } from '@/lib/name-gender';
 import { sanitizeDeep } from '@/lib/copy-sanitize';
 import { runBohdi } from '@/lib/bohdi/run';
+import { usesArchetypeEngine } from './select-storefront';
+import { buildArchetypeStore } from './build-archetype-store';
 
-const BOHDI_NICHES = new Set(['leatherworker', 'photo_magnet_maker', 'candles']);
+const BOHDI_NICHES = new Set(['photo_magnet_maker', 'candles']);
 
 export interface RunStorefrontInput {
   shopName: string;
@@ -43,6 +45,22 @@ export async function runStorefront(
   input: RunStorefrontInput,
   onProgress?: ProgressEmitter,
 ): Promise<RunStorefrontResult> {
+  // New archetype engine: select an archetype + skin, Bohdi authors + generates,
+  // publish. Gated to a rollout set of niches; the rest use the existing paths.
+  if (usesArchetypeEngine(input.nicheSlug)) {
+    return buildArchetypeStore(
+      {
+        shopName: input.shopName,
+        subdomain: input.subdomain,
+        nicheSlug: input.nicheSlug,
+        moodKey: input.moodKey,
+        productCount: input.productCount,
+        makerName: input.makerName,
+        logoUrl: input.logoUrl,
+      },
+      onProgress,
+    );
+  }
   if (BOHDI_NICHES.has(input.nicheSlug)) {
     return runBohdi(
       {

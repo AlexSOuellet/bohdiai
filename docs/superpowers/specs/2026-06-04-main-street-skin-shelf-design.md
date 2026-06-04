@@ -1,12 +1,17 @@
 # Main Street — the first real skin shelf (design)
 
-**Status:** Design approved in brainstorming (Session 27, 2026-06-04). Not built.
+**Status:** Built (Session 27, 2026-06-04). The shelf is the first piece of a
+larger same-session build: the REAL engine (onboarding → selection → Bohdi
+authors + generates → live subdomain). See the engine wiring in
+`lib/onboarding/build-archetype-store.ts`, `lib/onboarding/select-storefront.ts`,
+`lib/archetypes/registry.tsx`, and the StorefrontPage archetype branch.
 **Branch:** `session-12/layout-engine`
-**Scope:** Build the first multi-skin shelf for the Main Street archetype — seven skins
-across three characters — so two different niches render as two different worlds
-through the same bones with zero renderer change. This is the shelf half of the
-Session-25 "real test." Selection and asset generation are **separate later passes**
-and are explicitly out of scope here (see §6).
+**Scope (corrected):** The shelf — seven skins across three characters — so two
+niches render as two different worlds through the same bones with zero renderer
+change. **This is NOT a standalone deliverable.** Alex's hard rule: nothing is a
+real test until the actual engine runs a niche end to end with nothing hand-fed.
+So selection + generation + live render are NOT "later passes" — they were built
+in the same session as the engine the shelf feeds. (§6 corrected accordingly.)
 
 > Read alongside `Project-Docs/Main-Street-Archetype-Spec.md` (the shape/skin model)
 > and the Session 24–26 blocks of `SESSION-BRIEF.md`. This doc is the concrete
@@ -160,20 +165,26 @@ worlds. Verification:
 
 ---
 
-## 6. Explicitly out of scope (later passes, per the session brief)
+## 6. Built alongside the shelf (the real engine — same session)
 
-- **Selection** — niche + mood + character → skin (deterministic). Not built; the tags
-  exist to feed it later.
-- **Asset generation** — Bohdi's hero prompt → fal/Kling video; product/portrait images.
-  The skins ship with placeholder/fixture media as today.
-- **Niche → character classification data** on the ~260 niche files and the
-  niche-writer skill change.
-- **The eyes/critic loop** (automated).
-- **Sub-page designs** (shop/about/events are still stubs).
-- **Onboarding catalog-size question.**
+The shelf is fed by a real engine built in the same session, so a niche flows end
+to end with nothing hand-fed:
 
-These are real and sequenced after the shelf; folding them in here would be the
-scope-creep the brief warns against.
+- **Selection** — `selectStorefront(niche, mood, count)` in `lib/onboarding/select-storefront.ts`: niche → character (a map), then a deterministic skin within that character. Skin is selected, never authored. ✅ built + tested.
+- **Asset generation** — the engine (`build-archetype-store.ts`) has Bohdi write prompts and generates the hero video (Kling) + founder portrait (FLUX) + product photos. Product photos are capped at **5** and recycled across extra products (global rule). Hero/portrait uncapped. ✅ built.
+- **Bohdi authors the whole store** — content AND the product catalog, because a new maker has no catalog. Products persist as real `listings` rows; the renderer reads rows. ✅ built.
+- **Live render** — StorefrontPage detects an archetype envelope on the home page and renders the archetype with the real listing rows. ✅ built.
+- **Niche → character** lives in `select-storefront.ts` for the launch niches (a small map, not all ~260 yet).
+
+### Still genuinely deferred (flagged, not silently dropped)
+- **Sub-pages** (shop/about/events) — the live store is the home page only; the
+  nav/cue links to those routes will 404 until built. (Violates "build pages, don't
+  suppress links" — flagged, owed.)
+- **The eyes/critic loop** (automated review of the generated result).
+- **Onboarding catalog-size question** — `productCount` is plumbed; the explicit
+  onboarding question is still owed.
+- **Niche → character for all ~260 niches** + the niche-writer skill change.
+- **Production runner** for builds over the 300s request cap.
 
 ---
 
