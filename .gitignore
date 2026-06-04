@@ -74,3 +74,4 @@ Desktop.ini
 *.log
 sse-out.log
 sse-start.txt
+.tmp-shots/

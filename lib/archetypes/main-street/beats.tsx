@@ -16,34 +16,73 @@ import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
 import { Media, typeRoleCss, roles } from './chrome';
 
+/** The view-all cue pointing home's sampling at the full Products page. */
+export interface GoodsViewAll {
+  href: string;
+  label: string;
+}
+
+/** The shared goods heading row — an optional small label, the title, and the
+ *  "see the full catalog" cue that marks this beat as a SAMPLING and sends the
+ *  shopper to the Products page. Every goods treatment opens with this so the
+ *  beat reads consistently whichever body the system picked. */
+export function GoodsHead({
+  goods,
+  skin,
+  viewAll,
+}: {
+  goods: MainStreetContent['goods'];
+  skin: ArchetypeTheme;
+  viewAll?: GoodsViewAll | undefined;
+}) {
+  const r = roles(skin);
+  return (
+    <div
+      className="ms-wrap"
+      style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 24, flexWrap: 'wrap', marginBottom: 48 }}
+    >
+      <div>
+        {goods.label && (
+          <span data-type="eyebrow" style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-accent)', display: 'block', marginBottom: 14 }}>
+            {goods.label}
+          </span>
+        )}
+        <h2 data-type="goodsHead" style={{ ...typeRoleCss(r.goodsHead), color: 'var(--ms-fg)', maxWidth: '16ch', margin: 0 }}>
+          {goods.title}
+        </h2>
+      </div>
+      {viewAll && (
+        <a
+          href={viewAll.href}
+          data-type="navLabel"
+          className="ms-viewall"
+          style={{ ...typeRoleCss(r.navLabel), color: 'var(--ms-accent)', whiteSpace: 'nowrap' }}
+        >
+          {viewAll.label} &rarr;
+        </a>
+      )}
+    </div>
+  );
+}
+
 export function GoodsMarquee({
   goods,
   products,
   skin,
+  viewAll,
 }: {
   goods: MainStreetContent['goods'];
   products: ProductView[];
   skin: ArchetypeTheme;
+  viewAll?: GoodsViewAll | undefined;
 }) {
   const r = roles(skin);
   // Duplicate the row so the -50% scroll loops seamlessly.
   const loop = [...products, ...products];
   return (
     <section id="goods" style={{ padding: '96px 0 110px', overflow: 'hidden' }}>
-      <div
-        className="ms-wrap"
-        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 24, flexWrap: 'wrap', marginBottom: 48 }}
-      >
-        <h2 data-type="goodsHead" style={{ ...typeRoleCss(r.goodsHead), color: 'var(--ms-fg)', maxWidth: '16ch', margin: 0 }}>
-          {goods.title}
-        </h2>
-        {goods.label && (
-          <span data-type="eyebrow" style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-accent)' }}>
-            {goods.label}
-          </span>
-        )}
-      </div>
-      <div className="ms-marquee" style={{ display: 'flex', gap: 26, width: 'max-content', padding: '0 13px' }}>
+      <GoodsHead goods={goods} skin={skin} viewAll={viewAll} />
+      <div className="ms-marquee" style={{ display: 'flex', gap: 18, width: 'max-content', padding: '0 9px' }}>
         {loop.map((p, i) => (
           <article key={p.slug + i} data-ms-card style={{ width: 340, flex: '0 0 auto' }}>
             <div

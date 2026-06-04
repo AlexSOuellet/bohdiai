@@ -8,10 +8,12 @@
  * ONLY — the archetype renderer never sees a stand-in and stays free of
  * hardcoded specifics.
  */
-import { MainStreet, type MainStreetContent, type ProductView } from '@/lib/archetypes/main-street';
+import { MainStreet, type MainStreetContent } from '@/lib/archetypes/main-street';
 import { mainStreetArchetype, MAIN_STREET_SKINS } from '@/lib/archetypes/main-street';
+import type { GoodsTreatment } from '@/lib/archetypes/main-street/goods';
 import juneFixture from '../main-street-fixture.june.json';
 import bohdiFixture from '../main-street-fixture.bohdi.json';
+import { PREVIEW_PRODUCTS } from './preview-products';
 
 interface Fixture {
   content: MainStreetContent;
@@ -19,27 +21,24 @@ interface Fixture {
 }
 
 const HERO_VIDEO = '/bread-kling.mp4';
-const COUNTRY = '/storefronts/country.webp';
-const SEEDED = '/storefronts/seeded.webp';
-const CINNAMON = '/storefronts/cinnamon.webp';
+const PORTRAIT = '/storefronts/seeded.webp';
+const SHOP_HREF = '/archetype-test/main-street/shop';
+const GOODS_TREATMENTS: GoodsTreatment[] = ['marquee', 'procession', 'switcher', 'slideshow'];
 
 /** Inject the hero video + the founder portrait. Preview only. */
 function withStandIns(content: MainStreetContent): MainStreetContent {
   return {
     ...content,
     moment: { ...content.moment, media: { ...content.moment.media, url: content.moment.media.url ?? HERO_VIDEO } },
-    founder: { ...content.founder, photo: { ...content.founder.photo, url: content.founder.photo.url ?? SEEDED } },
+    founder: { ...content.founder, photo: { ...content.founder.photo, url: content.founder.photo.url ?? PORTRAIT } },
   };
 }
 
-/** Stand-in catalog rows. Preview only — real rows come from the DB. */
-const PREVIEW_PRODUCTS: ProductView[] = [
-  { slug: 'country', name: 'Country sourdough', price: '$9', shortDescription: '48-hour cold ferment, cracked crust', description: '', status: 'active', media: [{ kind: 'image', url: COUNTRY, alt: 'Country sourdough' }], variations: [] },
-  { slug: 'seeded', name: 'Seeded rye', price: '$8', shortDescription: 'Caraway, molasses, a dense honest loaf', description: '', status: 'active', media: [{ kind: 'image', url: SEEDED, alt: 'Seeded rye' }], variations: [] },
-  { slug: 'cinnamon', name: 'Cinnamon morning bun', price: '$6', shortDescription: 'Saturdays only, gone by ten', description: '', status: 'active', media: [{ kind: 'image', url: CINNAMON, alt: 'Cinnamon morning bun' }], variations: [] },
-];
-
-export default async function MainStreetTestPage({ searchParams }: { searchParams: Promise<{ skin?: string; src?: string }> }) {
+export default async function MainStreetTestPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ skin?: string; src?: string; goods?: string }>;
+}) {
   const sp = await searchParams;
   // ?src=bohdi renders the HARNESS-AUTHORED fixture (the reproduction proof) with
   // NO hand-picked stand-in assets — placeholders show where Bohdi-prompted
@@ -51,5 +50,16 @@ export default async function MainStreetTestPage({ searchParams }: { searchParam
   const skin = mainStreetArchetype.resolveTheme({ skinKey });
   const content = isBohdi ? f.content : withStandIns(f.content);
   const products = isBohdi ? [] : PREVIEW_PRODUCTS;
-  return <MainStreet content={content} skin={skin} products={products} />;
+  // ?goods=marquee|procession|switcher|slideshow forces a treatment for preview;
+  // omitted, the system selects from catalog size.
+  const goodsTreatment = GOODS_TREATMENTS.find((t) => t === sp.goods);
+  return (
+    <MainStreet
+      content={content}
+      skin={skin}
+      products={products}
+      goodsTreatment={goodsTreatment}
+      shopHref={SHOP_HREF}
+    />
+  );
 }

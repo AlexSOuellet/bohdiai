@@ -12,22 +12,28 @@ import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
 import { MainStreetRoot, MainStreetFooter } from './chrome';
 import { MomentHero } from './MomentHero';
-import { GoodsMarquee, FounderCalendar, Close } from './beats';
+import { FounderCalendar, Close } from './beats';
+import { GoodsBeat } from './GoodsBeat';
+import type { GoodsTreatment } from './goods';
 import { Reveal } from './Reveal';
 
 export interface MainStreetProps {
   content: MainStreetContent;
   skin: ArchetypeTheme;
   products: ProductView[];
+  /** Mood lean — feeds goods-treatment selection. Optional. */
+  mood?: string | undefined;
+  /** Force the goods treatment (previews/tests). Selected from catalog size when omitted. */
+  goodsTreatment?: GoodsTreatment | undefined;
+  /** Where the goods "see the full catalog" cue points. Defaults to /shop. */
+  shopHref?: string | undefined;
 }
 
-export function MainStreet({ content, skin, products }: MainStreetProps) {
+export function MainStreet({ content, skin, products, mood, goodsTreatment, shopHref }: MainStreetProps) {
   return (
     <MainStreetRoot skin={skin}>
       <MomentHero identity={content.identity} moment={content.moment} skin={skin} />
-      <Reveal>
-        <GoodsMarquee goods={content.goods} products={products} skin={skin} />
-      </Reveal>
+      <GoodsBeat goods={content.goods} products={products} skin={skin} mood={mood} treatment={goodsTreatment} shopHref={shopHref} />
       <Reveal>
         <FounderCalendar founder={content.founder} skin={skin} />
       </Reveal>

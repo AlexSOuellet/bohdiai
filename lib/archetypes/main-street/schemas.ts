@@ -60,11 +60,17 @@ export const MainStreetContentSchema = z.object({
     secondaryCtaLabel: z.string().min(3).max(24).optional(),
   }),
 
-  /** BEAT 2 — goods in motion. Just the heading; products are catalog rows. */
+  /** BEAT 2 — goods in motion. Just the heading; products are catalog rows. The
+   *  home page shows only a SAMPLING — the full catalog lives on the Products
+   *  page, reached via the view-all cue. */
   goods: z.object({
     title: z.string().min(2).max(48),
     /** Optional small label on the heading row, e.g. "This week". */
     label: z.string().min(2).max(24).optional(),
+    /** The view-all cue pointing to the Products page, in the maker's voice,
+     *  e.g. "See the whole bakery" or "Shop everything". Falls back to a neutral
+     *  default when omitted. */
+    viewAllLabel: z.string().min(2).max(28).optional(),
   }),
 
   /** BEAT 3 — the founder + a real "find us this week" calendar. Required: the

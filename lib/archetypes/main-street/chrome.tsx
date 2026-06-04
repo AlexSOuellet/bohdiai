@@ -68,16 +68,37 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-reveal.in{opacity:1;transform:none}
     .arch-main-street .ms-reveal.d1{transition-delay:.12s}
     /* goods marquee — slow, edge-to-edge, pauses on hover */
-    .arch-main-street .ms-marquee{animation:ms-scroll 46s linear infinite}
+    .arch-main-street .ms-marquee{animation:ms-scroll 38s linear infinite}
     .arch-main-street .ms-marquee:hover{animation-play-state:paused}
     @keyframes ms-scroll{to{transform:translateX(-50%)}}
+    /* goods switcher — image cross-fades as you point down the list */
+    .arch-main-street .ms-switch-layer{transition:opacity .7s ${mo.reveal.easing}}
+    .arch-main-street .ms-switch-list{justify-content:center}
+    .arch-main-street .ms-switch-list li:last-child{border-bottom:1px solid var(--ms-rule)}
+    /* goods slideshow — cross-fade + a slow Ken Burns push-in on the live slide */
+    .arch-main-street .ms-slide-layer{transition:opacity 1.1s ${mo.reveal.easing}}
+    .arch-main-street .ms-kb{animation:ms-kenburns 6.5s ${mo.reveal.easing} forwards}
+    @keyframes ms-kenburns{from{transform:scale(1.005)}to{transform:scale(1.075) translateY(-1.2%)}}
+    /* goods procession — each image settles out of a slow zoom as it arrives */
+    .arch-main-street .ms-proc-img{transform:scale(1.07);transition:transform 1.6s ${mo.reveal.easing}}
+    .arch-main-street .ms-reveal.in .ms-proc-img{transform:none}
+    .arch-main-street .ms-proc-row.alt .ms-proc-frame{order:2}
     @media(max-width:860px){
       .arch-main-street .ms-founder-grid{grid-template-columns:1fr!important;gap:36px!important}
       .arch-main-street .ms-marquee [data-ms-card]{width:74vw}
+      .arch-main-street .ms-switch-grid{grid-template-columns:1fr!important;gap:32px!important}
+      .arch-main-street .ms-proc-row{grid-template-columns:1fr!important;gap:28px!important}
+      .arch-main-street .ms-proc-row.alt .ms-proc-frame{order:0}
+      .arch-main-street .ms-catalog-grid{grid-template-columns:repeat(2,1fr)!important}
+    }
+    @media(max-width:560px){
+      .arch-main-street .ms-catalog-grid{grid-template-columns:1fr!important}
     }
     @media(prefers-reduced-motion:reduce){
       .arch-main-street .ms-reveal{opacity:1;transform:none;transition:none}
       .arch-main-street .ms-marquee{animation:none}
+      .arch-main-street .ms-kb{animation:none}
+      .arch-main-street .ms-proc-img{transform:none;transition:none}
     }
     ${responsive}
   `;
