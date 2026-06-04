@@ -60,6 +60,11 @@ export interface ArchetypeBuildSpec<T = unknown> {
   /** One line for the menu: what this archetype IS / when it fits. Bohdi reads
    *  this to choose; it must not steer toward any niche. */
   menuDescription: string;
+  /** Whether this archetype is structurally viable for a catalog of this size.
+   *  A STRUCTURAL gate, not aesthetic steering — e.g. the Gallery's wall needs a
+   *  dense catalog, so a tiny shop can't fill it. Catalog size limits which
+   *  shapes are on the menu; everything past that stays Bohdi's choice. */
+  fitsCatalog(productCount: number): boolean;
   /** The looks Bohdi may pick for this archetype (its own skins/themes). */
   looks: LookOption[];
   /** The fields Bohdi authors once he's chosen this archetype (incl. products,
@@ -74,11 +79,14 @@ export interface ArchetypeBuildSpec<T = unknown> {
   /** Content + catalog for persistence/render. */
   toPayload(authored: T): RenderPayload;
   /** Paint a stored store. Products come from the tenant's listing rows (empty
-   *  for archetypes that embed products in content). */
+   *  for archetypes that embed products in content). `catalogSize` is the maker's
+   *  TRUE catalog size (what they entered at onboarding), which drives treatment
+   *  selection even though the home shows only a sampling. */
   render(args: {
     content: unknown;
     lookKey: string;
     products: ProductView[];
     mood?: string | undefined;
+    catalogSize?: number | undefined;
   }): ReactElement;
 }

@@ -18,7 +18,7 @@ import { MOODS, type MoodKey } from '@/lib/moods';
 import { logger } from '@/lib/logger';
 import type { ProgressEmitter } from '@/lib/progress';
 import { generateMomentVideo, generateMomentStill } from '@/lib/moments/media';
-import { archetypeSpec, archetypeMenu } from '@/lib/archetypes/registry';
+import { archetypeMenu } from '@/lib/archetypes/registry';
 import type { ArchetypeBuildSpec, AuthoringBrief, MediaJob } from '@/lib/archetypes/builder';
 import { writeArchetypeStorefront } from '@/lib/generation/write-archetype-storefront';
 
@@ -106,9 +106,12 @@ interface Chosen {
   lookKey: string;
 }
 
-/** Run Bohdi until he chooses a format and submits a valid store. */
+/** Run Bohdi until he chooses a format and submits a valid store. Only the
+ *  archetypes that FIT the maker's catalog size are on the menu — a structural
+ *  gate (e.g. the Gallery wall needs density), not aesthetic steering. */
 async function authorStore(brief: AuthoringBrief): Promise<{ chosen: Chosen; authored: unknown }> {
-  const specs = archetypeMenu();
+  const eligible = archetypeMenu().filter((s) => s.fitsCatalog(brief.productCount));
+  const specs = eligible.length > 0 ? eligible : archetypeMenu();
   const system = buildMenuPrompt(brief, specs);
   const messages: Anthropic.MessageParam[] = [
     { role: 'user', content: 'Build this maker\'s store. Start by calling choose_format.' },
@@ -135,7 +138,7 @@ async function authorStore(brief: AuthoringBrief): Promise<{ chosen: Chosen; aut
     for (const tu of toolUses) {
       if (tu.name === 'choose_format') {
         const a = tu.input as { archetypeKey?: unknown; lookKey?: unknown };
-        const spec = typeof a.archetypeKey === 'string' ? archetypeSpec(a.archetypeKey) : undefined;
+        const spec = typeof a.archetypeKey === 'string' ? specs.find((s) => s.key === a.archetypeKey) : undefined;
         const lookOk = spec && typeof a.lookKey === 'string' && spec.looks.some((l) => l.key === a.lookKey);
         if (!spec || !lookOk) {
           results.push({ type: 'tool_result', tool_use_id: tu.id, is_error: true, content: JSON.stringify({ ok: false, error: `Unknown archetype or look. Archetypes: ${specs.map((s) => s.key).join(', ')}` }) });
@@ -241,6 +244,7 @@ export async function buildArchetypeStore(
     archetypeKey: spec.key,
     lookKey: chosen.lookKey,
     mood: input.moodKey,
+    catalogSize: input.productCount,
     content: payload.content,
     products: payload.products,
     logoUrl: input.logoUrl,

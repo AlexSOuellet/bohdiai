@@ -27,6 +27,7 @@ export function GoodsBeat({
   skin,
   mood,
   treatment,
+  catalogSize,
   shopHref = '/shop',
 }: {
   goods: MainStreetContent['goods'];
@@ -36,12 +37,15 @@ export function GoodsBeat({
   mood?: string | undefined;
   /** Force a treatment (previews/tests). When omitted it is selected. */
   treatment?: GoodsTreatment | undefined;
+  /** The maker's TRUE catalog size. Treatment is chosen from this, even though
+   *  the home shows only a sampling. Falls back to the shown count. */
+  catalogSize?: number | undefined;
   /** Where the "see the full catalog" cue points — the Products page. */
   shopHref?: string | undefined;
 }) {
   // Selection runs off the TRUE catalog size; the home page then shows only a
   // SAMPLING (Main Street is a sales page, not a catalog).
-  const chosen = treatment ?? selectGoodsTreatment(products.length, mood);
+  const chosen = treatment ?? selectGoodsTreatment(catalogSize ?? products.length, mood);
   const sample = sampleForTreatment(products, chosen);
   const viewAll: GoodsViewAll = { href: shopHref, label: goods.viewAllLabel ?? DEFAULT_VIEW_ALL };
 

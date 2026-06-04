@@ -207,5 +207,6 @@ async function renderArchetypeStore(env: Record<string, unknown>, tenantId: stri
   });
 
   const mood = typeof env['mood'] === 'string' ? (env['mood'] as string) : undefined;
-  return spec.render({ content: env['content'], lookKey: lookKey as string, products, mood });
+  const catalogSize = typeof env['catalogSize'] === 'number' ? (env['catalogSize'] as number) : undefined;
+  return spec.render({ content: env['content'], lookKey: lookKey as string, products, mood, catalogSize });
 }

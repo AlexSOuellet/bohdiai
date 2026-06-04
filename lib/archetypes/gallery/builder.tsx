@@ -94,11 +94,16 @@ function toPayload(content: GalleryContent): RenderPayload {
   return { content, products: [] }; // products are embedded in the wall
 }
 
+// The wall needs density to read as a wall — a structural minimum, not taste.
+const GALLERY_MIN_CATALOG = 8;
+
 export const GALLERY_SPEC: ArchetypeBuildSpec<GalleryContent> = {
   key: 'gallery',
   label: 'Gallery',
   menuDescription:
     "A maker's shop wall: a dense, browsable grid of work is the centerpiece, inventory and price visible the instant you land, with the maker's story and face supporting it. For a maker with a lot of visual pieces to show, where the work itself is the pitch.",
+  // The wall is 8-24 tiles — a small catalog can't fill it, so it's off the menu below that.
+  fitsCatalog: (productCount: number) => productCount >= GALLERY_MIN_CATALOG,
   looks,
   authoringSpec,
   parseSubmission,

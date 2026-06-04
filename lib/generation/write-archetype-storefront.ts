@@ -17,6 +17,8 @@ export interface ArchetypeWriteInput {
   archetypeKey: string;
   lookKey: string;
   mood: string;
+  /** The maker's TRUE catalog size (from onboarding) — drives treatment selection. */
+  catalogSize: number;
   /** Validated archetype content with generated media URLs already folded in. */
   content: unknown;
   /** Separate catalog rows (empty for archetypes that embed products in content). */
@@ -66,6 +68,7 @@ export async function writeArchetypeStorefront(
       archetypeKey: input.archetypeKey,
       lookKey: input.lookKey,
       mood: input.mood,
+      catalogSize: input.catalogSize,
       content: input.content,
     },
     meta: { title: input.shopName },

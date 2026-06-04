@@ -27,6 +27,21 @@ const msProducts = [
   { name: 'Tote', slug: 'tote', shortDescription: 'A market tote', description: 'A roomy everyday tote.', basePriceCents: 22000, imagePrompt: 'a leather tote on a bench' },
 ];
 
+describe('catalog-size gate', () => {
+  it('Main Street fits any catalog size (the home is a sampling)', () => {
+    expect(MAIN_STREET_SPEC.fitsCatalog(1)).toBe(true);
+    expect(MAIN_STREET_SPEC.fitsCatalog(6)).toBe(true);
+    expect(MAIN_STREET_SPEC.fitsCatalog(45)).toBe(true);
+  });
+
+  it('Gallery needs at least 8 pieces to fill the wall', () => {
+    expect(GALLERY_SPEC.fitsCatalog(6)).toBe(false); // a 6-item woodworker → no Gallery
+    expect(GALLERY_SPEC.fitsCatalog(7)).toBe(false);
+    expect(GALLERY_SPEC.fitsCatalog(8)).toBe(true);
+    expect(GALLERY_SPEC.fitsCatalog(24)).toBe(true);
+  });
+});
+
 describe('MAIN_STREET_SPEC', () => {
   it('offers all seven skins as looks and a menu description', () => {
     expect(MAIN_STREET_SPEC.looks.length).toBe(7);
