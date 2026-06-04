@@ -17,6 +17,17 @@ function formatElapsed(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
+/** The storefront's URL, correct for the environment we're in. In dev the
+ *  tenant resolves at `{sub}.localhost:{port}`; in production at the real domain. */
+function storefrontUrl(subdomain: string): string {
+  if (typeof window === 'undefined') return `https://${subdomain}.bohdiai.com`;
+  const { hostname, port, protocol } = window.location;
+  if (hostname === 'localhost' || hostname.endsWith('.localhost')) {
+    return `${protocol}//${subdomain}.localhost${port ? `:${port}` : ''}`;
+  }
+  return `https://${subdomain}.bohdiai.com`;
+}
+
 interface StepBuildProps {
   data: OnboardingData;
   onBack: () => void;
@@ -29,7 +40,9 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
   const [error, setError] = useState('');
   const [tenantSubdomain, setTenantSubdomain] = useState('');
   const [buildSeconds, setBuildSeconds] = useState(0);
-  const calledRef = useRef(false);
+  const startedRef = useRef(false);
+  const cancelledRef = useRef(false);
+  const buildIdRef = useRef<string | null>(null);
   const startRef = useRef(0);
 
   // Real elapsed-time counter.
@@ -45,23 +58,14 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
   // Kick off a background build, then poll it for progress and the result. The
   // build runs on its own — even if this screen reloads, the build keeps going
   // and the maker sees the result when they return.
+  //
+  // Cancellation lives in a REF, reset by whichever mount is live, so React's
+  // dev StrictMode double-mount (mount → cleanup → mount) can't permanently kill
+  // the poll: the throwaway mount's cleanup flips the ref, the live mount flips
+  // it back. The POST fires exactly once (startedRef); the live mount resumes
+  // polling from the stored build id.
   useEffect(() => {
-    if (calledRef.current) return;
-    calledRef.current = true;
-
-    if (!data.moodKey || !isMoodKey(data.moodKey)) {
-      // Intentional one-time guard (runs at most once via calledRef): an invalid
-      // mood can't be built, so we surface the error through state immediately.
-      /* eslint-disable react-hooks/set-state-in-effect */
-      setError('Something went wrong — please go back and reselect your mood.');
-      setDone(true);
-      /* eslint-enable react-hooks/set-state-in-effect */
-      return;
-    }
-
-    startRef.current = Date.now();
-    let cancelled = false;
-    let pollTimer: ReturnType<typeof setTimeout> | undefined;
+    cancelledRef.current = false;
 
     const finish = (subdomain: string) => {
       setTenantSubdomain(subdomain);
@@ -73,32 +77,48 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
       setDone(true);
     };
 
-    const poll = (buildId: string) => {
-      const tick = async () => {
-        if (cancelled) return;
-        try {
-          const r = await fetch(`/api/onboarding/builds/${buildId}`);
-          if (r.ok) {
-            const b = (await r.json()) as {
-              status: 'pending' | 'running' | 'done' | 'failed';
-              statusLabel: string | null;
-              subdomain: string;
-              error: string | null;
-            };
-            if (b.statusLabel) setStatusLabel(b.statusLabel);
-            if (b.status === 'done') return finish(b.subdomain);
-            if (b.status === 'failed')
-              return fail(b.error ?? 'Something went wrong. Go back and try again.');
-          }
-        } catch {
-          // transient — keep polling
+    const tick = async () => {
+      const buildId = buildIdRef.current;
+      if (cancelledRef.current || buildId === null) return;
+      try {
+        const r = await fetch(`/api/onboarding/builds/${buildId}`);
+        if (r.ok) {
+          const b = (await r.json()) as {
+            status: 'pending' | 'running' | 'done' | 'failed';
+            statusLabel: string | null;
+            subdomain: string;
+            error: string | null;
+          };
+          if (b.statusLabel) setStatusLabel(b.statusLabel);
+          if (b.status === 'done') return finish(b.subdomain);
+          if (b.status === 'failed') return fail(b.error ?? 'Something went wrong. Go back and try again.');
         }
-        pollTimer = setTimeout(() => void tick(), POLL_MS);
-      };
-      void tick();
+      } catch {
+        // transient — keep polling
+      }
+      if (!cancelledRef.current) setTimeout(() => void tick(), POLL_MS);
     };
 
-    (async () => {
+    if (startedRef.current) {
+      // Remount (e.g. StrictMode): the build is already running — just resume polling.
+      void tick();
+      return () => {
+        cancelledRef.current = true;
+      };
+    }
+    startedRef.current = true;
+
+    if (!data.moodKey || !isMoodKey(data.moodKey)) {
+      /* eslint-disable react-hooks/set-state-in-effect */
+      setError('Something went wrong — please go back and reselect your mood.');
+      setDone(true);
+      /* eslint-enable react-hooks/set-state-in-effect */
+      return;
+    }
+
+    startRef.current = Date.now();
+
+    void (async () => {
       try {
         const res = await fetch('/api/onboarding/start', {
           method: 'POST',
@@ -119,15 +139,15 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
           return;
         }
         const { buildId } = (await res.json()) as { buildId: string };
-        poll(buildId);
+        buildIdRef.current = buildId;
+        void tick();
       } catch {
         fail('We hit a problem starting your build. Go back and try again.');
       }
     })();
 
     return () => {
-      cancelled = true;
-      if (pollTimer) clearTimeout(pollTimer);
+      cancelledRef.current = true;
     };
   }, [data]);
 
@@ -171,7 +191,7 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
           <p className="text-xs text-muted">{tenantSubdomain}.bohdiai.com</p>
           <div className="flex flex-col gap-2">
             <a
-              href={`https://${tenantSubdomain}.bohdiai.com`}
+              href={storefrontUrl(tenantSubdomain)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block rounded-lg bg-honey px-6 py-3 font-medium text-bg transition-opacity hover:opacity-90"
