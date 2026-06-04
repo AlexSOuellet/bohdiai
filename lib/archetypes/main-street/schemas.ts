@@ -83,9 +83,16 @@ export const MainStreetContentSchema = z.object({
      *  "Read our story". Falls back to a neutral default when omitted. The home
      *  founder beat is a TEASER; the full bio lives on the About page. */
     aboutLabel: z.string().min(2).max(28).optional(),
+    /** The "find us this week" calendar. OPTIONAL by design: a maker who does no
+     *  markets or events simply has none, and the founder beat renders without it
+     *  (and without its events cue) — nothing else breaks. When present it is a
+     *  TEASER of upcoming dates pointing at the full Events page. */
     findUs: z
       .object({
         label: z.string().min(2).max(28),
+        /** Cue to the full Events page, in the maker's voice, e.g. "See all our
+         *  markets". Falls back to a neutral default. */
+        eventsLabel: z.string().min(2).max(28).optional(),
         rows: z.array(FindUsRow).min(1).max(5),
       })
       .optional(),

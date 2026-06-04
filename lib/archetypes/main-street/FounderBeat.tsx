@@ -19,6 +19,7 @@ export function FounderBeat({
   mood,
   treatment,
   aboutHref = '/about',
+  eventsHref = '/events',
 }: {
   founder: MainStreetContent['founder'];
   skin: ArchetypeTheme;
@@ -28,21 +29,23 @@ export function FounderBeat({
   treatment?: FounderTreatment | undefined;
   /** Where the "about" cue points — the full bio page. */
   aboutHref?: string | undefined;
+  /** Where the calendar's events cue points — the full Events page. */
+  eventsHref?: string | undefined;
 }) {
   const rows = founder.findUs?.rows.length ?? 0;
   const wanted = treatment ?? selectFounderTreatment({ mood, findUsRows: rows });
-  // findus leads with the calendar — fall back if there isn't one.
+  // findus leads with the calendar — fall back if the maker does no events.
   const chosen: FounderTreatment = wanted === 'findus' && rows === 0 ? 'quote' : wanted;
   const about: FounderAbout = { href: aboutHref, label: founder.aboutLabel ?? DEFAULT_ABOUT };
 
   switch (chosen) {
     case 'portrait':
-      return <FounderPortrait founder={founder} skin={skin} about={about} />;
+      return <FounderPortrait founder={founder} skin={skin} about={about} eventsHref={eventsHref} />;
     case 'letter':
-      return <FounderLetter founder={founder} skin={skin} about={about} />;
+      return <FounderLetter founder={founder} skin={skin} about={about} eventsHref={eventsHref} />;
     case 'findus':
-      return <FounderFindUs founder={founder} skin={skin} about={about} />;
+      return <FounderFindUs founder={founder} skin={skin} about={about} eventsHref={eventsHref} />;
     default:
-      return <FounderQuote founder={founder} skin={skin} about={about} />;
+      return <FounderQuote founder={founder} skin={skin} about={about} eventsHref={eventsHref} />;
   }
 }

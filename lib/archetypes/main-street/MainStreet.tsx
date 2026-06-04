@@ -33,15 +33,17 @@ export interface MainStreetProps {
   shopHref?: string | undefined;
   /** Where the founder "about" cue points. Defaults to /about. */
   aboutHref?: string | undefined;
+  /** Where the calendar's events cue points. Defaults to /events. */
+  eventsHref?: string | undefined;
 }
 
-export function MainStreet({ content, skin, products, mood, goodsTreatment, founderTreatment, shopHref, aboutHref }: MainStreetProps) {
+export function MainStreet({ content, skin, products, mood, goodsTreatment, founderTreatment, shopHref, aboutHref, eventsHref }: MainStreetProps) {
   return (
     <MainStreetRoot skin={skin}>
       <MomentHero identity={content.identity} moment={content.moment} skin={skin} />
       <GoodsBeat goods={content.goods} products={products} skin={skin} mood={mood} treatment={goodsTreatment} shopHref={shopHref} />
       <Reveal>
-        <FounderBeat founder={content.founder} skin={skin} mood={mood} treatment={founderTreatment} aboutHref={aboutHref} />
+        <FounderBeat founder={content.founder} skin={skin} mood={mood} treatment={founderTreatment} aboutHref={aboutHref} eventsHref={eventsHref} />
       </Reveal>
       <Reveal>
         <Close close={content.close} skin={skin} />

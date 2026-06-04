@@ -66,6 +66,33 @@ describe('FounderBeat — forced treatment renders on the contrast band', () => 
   });
 });
 
+describe('FounderBeat — the calendar points at an events page', () => {
+  it('renders an events cue on the calendar pointing at the events page', () => {
+    const { container } = render(<FounderBeat founder={withRows(2)} skin={skin} treatment="quote" eventsHref="/events" />);
+    const cue = container.querySelector('.ms-eventscue') as HTMLAnchorElement;
+    expect(cue.getAttribute('href')).toBe('/events');
+    expect(cue.textContent).toContain('See all dates');
+  });
+
+  it('uses the maker-authored events label when present', () => {
+    const f = withRows(2);
+    f.findUs!.eventsLabel = 'See all our markets';
+    const { container } = render(<FounderBeat founder={f} skin={skin} treatment="quote" />);
+    expect((container.querySelector('.ms-eventscue') as HTMLElement).textContent).toContain('See all our markets');
+  });
+});
+
+describe('FounderBeat — calendar disabled does not break the beat or about', () => {
+  for (const treatment of ['quote', 'portrait', 'letter'] as const) {
+    it(`${treatment}: no calendar → no events cue, but the band + about cue still render`, () => {
+      const { container } = render(<FounderBeat founder={baseFounder} skin={skin} treatment={treatment} />);
+      expect(container.querySelector('.ms-eventscue')).toBeNull();
+      expect(container.querySelector('[data-ms-founder]')).toBeTruthy();
+      expect(container.querySelector('.ms-aboutcue')).toBeTruthy();
+    });
+  }
+});
+
 describe('FounderBeat — the about teaser cue', () => {
   it('renders the about cue pointing at the bio page', () => {
     const { container } = render(<FounderBeat founder={baseFounder} skin={skin} treatment="quote" aboutHref="/about" />);

@@ -25,6 +25,7 @@ const HERO_VIDEO = '/bread-kling.mp4';
 const PORTRAIT = '/storefronts/seeded.webp';
 const SHOP_HREF = '/archetype-test/main-street/shop';
 const ABOUT_HREF = '/archetype-test/main-street/about';
+const EVENTS_HREF = '/archetype-test/main-street/events';
 const GOODS_TREATMENTS: GoodsTreatment[] = ['marquee', 'procession', 'switcher', 'slideshow'];
 const FOUNDER_TREATMENTS: FounderTreatment[] = ['quote', 'portrait', 'letter', 'findus'];
 
@@ -66,6 +67,7 @@ export default async function MainStreetTestPage({
       founderTreatment={founderTreatment}
       shopHref={SHOP_HREF}
       aboutHref={ABOUT_HREF}
+      eventsHref={EVENTS_HREF}
     />
   );
 }
