@@ -126,68 +126,6 @@ export function GoodsMarquee({
   );
 }
 
-export function FounderCalendar({ founder, skin }: { founder: MainStreetContent['founder']; skin: ArchetypeTheme }) {
-  const r = roles(skin);
-  // Hairlines derived from the contrast surface's own text — direction-agnostic.
-  const hair = 'color-mix(in srgb, var(--ms-contrast-fg) 18%, transparent)';
-  return (
-    <section
-      data-ms-founder
-      style={{ background: 'var(--ms-contrast-bg)', color: 'var(--ms-contrast-fg)', padding: '110px 40px' }}
-    >
-      <div
-        className="ms-wrap ms-founder-grid"
-        style={{ display: 'grid', gridTemplateColumns: '1.05fr .95fr', gap: 64, alignItems: 'center' }}
-      >
-        <div style={{ position: 'relative', aspectRatio: '4 / 5', borderRadius: 3, overflow: 'hidden' }}>
-          <Media media={founder.photo} />
-        </div>
-        <div>
-          <p data-type="quote" style={{ ...typeRoleCss(r.quote), color: 'var(--ms-contrast-fg)', margin: 0 }}>
-            {founder.quote}
-          </p>
-          <div data-type="sig" style={{ ...typeRoleCss(r.sig), color: 'var(--ms-contrast-fg-muted)', marginTop: 26 }}>
-            &mdash; {founder.attribution}
-          </div>
-          {founder.findUs && (
-            <div style={{ marginTop: 40, borderTop: `1px solid ${hair}`, paddingTop: 24 }}>
-              <span
-                data-type="eyebrow"
-                style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-accent)', display: 'block', marginBottom: 16 }}
-              >
-                {founder.findUs.label}
-              </span>
-              {founder.findUs.rows.map((row, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'baseline',
-                    gap: 16,
-                    padding: '13px 0',
-                    borderBottom: `1px solid ${hair}`,
-                  }}
-                >
-                  <span data-type="day" style={{ ...typeRoleCss(r.day), color: 'var(--ms-contrast-fg-muted)', flex: '0 0 95px' }}>
-                    {row.day}
-                  </span>
-                  <span data-type="where" style={{ ...typeRoleCss(r.where), color: 'var(--ms-contrast-fg)', flex: 1 }}>
-                    {row.where}
-                  </span>
-                  <span data-type="price" style={{ ...typeRoleCss(r.price), color: 'var(--ms-contrast-fg-muted)' }}>
-                    {row.time}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function Close({ close, skin }: { close: MainStreetContent['close']; skin: ArchetypeTheme }) {
   const r = roles(skin);
   return (

@@ -11,6 +11,7 @@
 import { MainStreet, type MainStreetContent } from '@/lib/archetypes/main-street';
 import { mainStreetArchetype, MAIN_STREET_SKINS } from '@/lib/archetypes/main-street';
 import type { GoodsTreatment } from '@/lib/archetypes/main-street/goods';
+import type { FounderTreatment } from '@/lib/archetypes/main-street/founder';
 import juneFixture from '../main-street-fixture.june.json';
 import bohdiFixture from '../main-street-fixture.bohdi.json';
 import { PREVIEW_PRODUCTS } from './preview-products';
@@ -23,7 +24,9 @@ interface Fixture {
 const HERO_VIDEO = '/bread-kling.mp4';
 const PORTRAIT = '/storefronts/seeded.webp';
 const SHOP_HREF = '/archetype-test/main-street/shop';
+const ABOUT_HREF = '/archetype-test/main-street/about';
 const GOODS_TREATMENTS: GoodsTreatment[] = ['marquee', 'procession', 'switcher', 'slideshow'];
+const FOUNDER_TREATMENTS: FounderTreatment[] = ['quote', 'portrait', 'letter', 'findus'];
 
 /** Inject the hero video + the founder portrait. Preview only. */
 function withStandIns(content: MainStreetContent): MainStreetContent {
@@ -37,7 +40,7 @@ function withStandIns(content: MainStreetContent): MainStreetContent {
 export default async function MainStreetTestPage({
   searchParams,
 }: {
-  searchParams: Promise<{ skin?: string; src?: string; goods?: string }>;
+  searchParams: Promise<{ skin?: string; src?: string; goods?: string; founder?: string }>;
 }) {
   const sp = await searchParams;
   // ?src=bohdi renders the HARNESS-AUTHORED fixture (the reproduction proof) with
@@ -53,13 +56,16 @@ export default async function MainStreetTestPage({
   // ?goods=marquee|procession|switcher|slideshow forces a treatment for preview;
   // omitted, the system selects from catalog size.
   const goodsTreatment = GOODS_TREATMENTS.find((t) => t === sp.goods);
+  const founderTreatment = FOUNDER_TREATMENTS.find((t) => t === sp.founder);
   return (
     <MainStreet
       content={content}
       skin={skin}
       products={products}
       goodsTreatment={goodsTreatment}
+      founderTreatment={founderTreatment}
       shopHref={SHOP_HREF}
+      aboutHref={ABOUT_HREF}
     />
   );
 }

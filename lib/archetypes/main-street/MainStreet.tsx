@@ -12,9 +12,11 @@ import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
 import { MainStreetRoot, MainStreetFooter } from './chrome';
 import { MomentHero } from './MomentHero';
-import { FounderCalendar, Close } from './beats';
+import { Close } from './beats';
 import { GoodsBeat } from './GoodsBeat';
+import { FounderBeat } from './FounderBeat';
 import type { GoodsTreatment } from './goods';
+import type { FounderTreatment } from './founder';
 import { Reveal } from './Reveal';
 
 export interface MainStreetProps {
@@ -25,17 +27,21 @@ export interface MainStreetProps {
   mood?: string | undefined;
   /** Force the goods treatment (previews/tests). Selected from catalog size when omitted. */
   goodsTreatment?: GoodsTreatment | undefined;
+  /** Force the founder treatment (previews/tests). Selected from cadence + mood when omitted. */
+  founderTreatment?: FounderTreatment | undefined;
   /** Where the goods "see the full catalog" cue points. Defaults to /shop. */
   shopHref?: string | undefined;
+  /** Where the founder "about" cue points. Defaults to /about. */
+  aboutHref?: string | undefined;
 }
 
-export function MainStreet({ content, skin, products, mood, goodsTreatment, shopHref }: MainStreetProps) {
+export function MainStreet({ content, skin, products, mood, goodsTreatment, founderTreatment, shopHref, aboutHref }: MainStreetProps) {
   return (
     <MainStreetRoot skin={skin}>
       <MomentHero identity={content.identity} moment={content.moment} skin={skin} />
       <GoodsBeat goods={content.goods} products={products} skin={skin} mood={mood} treatment={goodsTreatment} shopHref={shopHref} />
       <Reveal>
-        <FounderCalendar founder={content.founder} skin={skin} />
+        <FounderBeat founder={content.founder} skin={skin} mood={mood} treatment={founderTreatment} aboutHref={aboutHref} />
       </Reveal>
       <Reveal>
         <Close close={content.close} skin={skin} />

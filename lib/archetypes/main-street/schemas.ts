@@ -79,6 +79,10 @@ export const MainStreetContentSchema = z.object({
     quote: z.string().min(24).max(280),
     attribution: z.string().min(4).max(60),
     photo: PhotoSlot,
+    /** The "about" cue pointing to the full bio page, in the maker's voice, e.g.
+     *  "Read our story". Falls back to a neutral default when omitted. The home
+     *  founder beat is a TEASER; the full bio lives on the About page. */
+    aboutLabel: z.string().min(2).max(28).optional(),
     findUs: z
       .object({
         label: z.string().min(2).max(28),

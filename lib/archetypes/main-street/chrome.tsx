@@ -85,6 +85,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-proc-row.alt .ms-proc-frame{order:2}
     @media(max-width:860px){
       .arch-main-street .ms-founder-grid{grid-template-columns:1fr!important;gap:36px!important}
+      .arch-main-street .ms-founder-findus{grid-template-columns:1fr!important;gap:40px!important}
       .arch-main-street .ms-marquee [data-ms-card]{width:74vw}
       .arch-main-street .ms-switch-grid{grid-template-columns:1fr!important;gap:32px!important}
       .arch-main-street .ms-proc-row{grid-template-columns:1fr!important;gap:28px!important}
