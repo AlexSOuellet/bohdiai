@@ -1,26 +1,12 @@
 /**
- * Persist an archetype store. Reuses the layout-engine atomic write RPC: the
- * home page's layout_tree carries an ARCHETYPE ENVELOPE (kind/archetypeKey/
- * skinKey/mood/content) instead of a layout node, and the products land as real
- * `listings` rows. StorefrontPage detects the envelope and renders the archetype
- * (reading the listing rows back as the catalog) — the renderer never authors
- * the catalog; it consumes rows.
- *
- * A style_sheet row is written only because the RPC requires one; archetype
- * stores style entirely from the skin, so it's a minimal placeholder the render
- * path ignores.
+ * Persist an archetype store — clean, purpose-built (no borrowed layout-engine
+ * RPC, no style sheet). Writes a tenant, one home page carrying the archetype
+ * envelope (archetypeKey / lookKey / mood / content), and the catalog as real
+ * listing rows. The archetype dresses entirely from its look, so there is no
+ * style_sheet anywhere in this path.
  */
 import { supabaseAdmin } from '@/lib/supabase';
-import type { Json } from '@/lib/database.types';
-
-export interface ArchetypeListingRow {
-  slug: string;
-  name: string;
-  short_description: string;
-  description: string;
-  base_price_cents: number;
-  image_url: string | null;
-}
+import type { ProductView } from '@/lib/archetypes/content';
 
 export interface ArchetypeWriteInput {
   subdomain: string;
@@ -29,12 +15,12 @@ export interface ArchetypeWriteInput {
   moodKey: string;
   tenantTypes: string[];
   archetypeKey: string;
-  skinKey: string;
-  /** Render-time hint for treatment selection (goods/founder). */
+  lookKey: string;
   mood: string;
-  /** Validated archetype content (with generated media URLs already folded in). */
+  /** Validated archetype content with generated media URLs already folded in. */
   content: unknown;
-  listings: ArchetypeListingRow[];
+  /** Separate catalog rows (empty for archetypes that embed products in content). */
+  products: ProductView[];
   logoUrl?: string | undefined;
 }
 
@@ -43,84 +29,86 @@ export interface ArchetypeWriteResult {
   subdomain: string;
 }
 
-// The skin owns all styling, so this is a constraint-satisfying placeholder only.
-const PLACEHOLDER_STYLE_SHEET = {
-  palette: [{ name: 'primary', value: '#000000', character: 'placeholder — archetype styles from its skin' }],
-  fonts: [{ name: 'body', family: 'system-ui', source: 'system', weights: [400], fallback: 'system-ui', character: 'placeholder' }],
-  textures: [],
+type LooseClient = {
+  from: (t: string) => {
+    insert: (r: unknown) => {
+      select: (c: string) => { single: () => Promise<{ data: { id: string } | null; error: { message: string } | null }> };
+    } & Promise<{ error: { message: string } | null }>;
+  };
 };
-
-function toJson(value: unknown): Json {
-  return value as Json;
-}
-
-function isResult(value: unknown): value is ArchetypeWriteResult {
-  if (typeof value !== 'object' || value === null) return false;
-  const r = value as Record<string, unknown>;
-  return typeof r['tenantId'] === 'string' && typeof r['subdomain'] === 'string';
-}
 
 export async function writeArchetypeStorefront(
   input: ArchetypeWriteInput,
 ): Promise<ArchetypeWriteResult> {
-  const envelope = {
-    kind: 'archetype' as const,
-    archetypeKey: input.archetypeKey,
-    skinKey: input.skinKey,
-    mood: input.mood,
-    content: input.content,
-  };
+  const db = supabaseAdmin() as unknown as LooseClient;
 
-  const pages = [
-    {
-      slug: '/',
-      pageType: 'home',
-      title: input.shopName,
-      metaDescription: null,
-      isInNav: false,
-      navLabel: null,
-      navPosition: null,
-      layoutTree: { root: envelope, meta: { title: input.shopName } },
-    },
-  ];
-
-  const listings = input.listings.map((l) => ({
-    slug: l.slug,
-    name: l.name,
-    short_description: l.short_description,
-    description: l.description,
-    base_price_cents: l.base_price_cents,
-    image_url: l.image_url ?? '',
-  }));
-
-  const client = supabaseAdmin() as unknown as {
-    rpc: (
-      name: string,
-      args: { p_data: Json },
-    ) => Promise<{ data: unknown; error: { message: string } | null }>;
-  };
-
-  const { data, error } = await client.rpc('write_tenant_storefront_layout', {
-    p_data: toJson({
+  const { data: tenant, error: tenantErr } = await db
+    .from('tenants')
+    .insert({
       subdomain: input.subdomain,
-      shopName: input.shopName,
-      nicheSlug: input.nicheSlug,
-      moodKey: input.moodKey,
-      tenantTypes: input.tenantTypes.length > 0 ? input.tenantTypes : ['seller'],
-      styleSheet: PLACEHOLDER_STYLE_SHEET,
-      pages,
-      collections: [],
-      listings,
-      subscriptions: [],
-      logoUrl: input.logoUrl ?? '',
-    }),
-  });
+      business_name: input.shopName,
+      tier: 'basic',
+      types: input.tenantTypes.length > 0 ? input.tenantTypes : ['seller'],
+      primary_niche: input.nicheSlug,
+      mood_key: input.moodKey,
+      niche_from_list: true,
+      status: 'active',
+      logo_url: input.logoUrl && input.logoUrl !== '' ? input.logoUrl : null,
+    })
+    .select('id')
+    .single();
+  if (tenantErr || !tenant) throw new Error(`writeArchetypeStorefront: tenant insert failed — ${tenantErr?.message ?? 'no id'}`);
+  const tenantId = tenant.id;
 
-  if (error !== null) {
-    throw new Error(`Failed to write archetype storefront: ${error.message}`);
+  const envelope = {
+    root: {
+      kind: 'archetype' as const,
+      archetypeKey: input.archetypeKey,
+      lookKey: input.lookKey,
+      mood: input.mood,
+      content: input.content,
+    },
+    meta: { title: input.shopName },
+  };
+
+  const { error: pageErr } = await db.from('content_pages').insert({
+    tenant_id: tenantId,
+    slug: '/',
+    page_type: 'home',
+    title: input.shopName,
+    status: 'published',
+    is_system_page: true,
+    is_in_nav: false,
+    layout_tree: envelope,
+  });
+  if (pageErr) throw new Error(`writeArchetypeStorefront: home page insert failed — ${pageErr.message}`);
+
+  if (input.products.length > 0) {
+    const now = new Date().toISOString();
+    const rows = input.products.map((p) => ({
+      tenant_id: tenantId,
+      listing_type: 'product',
+      slug: p.slug,
+      name: p.name,
+      short_description: p.shortDescription ?? null,
+      description: p.description,
+      base_price_cents: priceToCents(p.price),
+      status: 'active',
+      is_preview: true,
+      requires_shipping: true,
+      metadata: { placeholder: true, image_url: p.media[0]?.url ?? '' },
+      published_at: now,
+    }));
+    const { error: listErr } = await db.from('listings').insert(rows);
+    if (listErr) throw new Error(`writeArchetypeStorefront: listings insert failed — ${listErr.message}`);
   }
-  if (!isResult(data)) {
-    throw new Error('write_tenant_storefront_layout returned an unexpected shape');
-  }
-  return { tenantId: data.tenantId, subdomain: data.subdomain };
+
+  return { tenantId, subdomain: input.subdomain };
+}
+
+/** Parse a display price ("$48", "from $40") back to cents for the listing row. */
+function priceToCents(price: string): number {
+  const m = price.match(/(\d+(?:\.\d{1,2})?)/);
+  if (!m) return 0;
+  return Math.round(parseFloat(m[1]!) * 100);
 }

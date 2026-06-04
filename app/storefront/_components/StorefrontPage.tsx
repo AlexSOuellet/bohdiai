@@ -9,7 +9,7 @@ import {
   compileStyleSheet,
   googleFontPreconnectLinks,
 } from '@/lib/style-sheet-loader';
-import { archetypeEntry } from '@/lib/archetypes/registry';
+import { archetypeSpec } from '@/lib/archetypes/registry';
 import type { ProductView, CatalogMedia } from '@/lib/archetypes/content';
 import type { Json } from '@/lib/database.types';
 
@@ -163,18 +163,15 @@ interface ListingRow {
   metadata: { image_url?: string } | null;
 }
 
-/** Render a stored archetype store: validate content, load the real catalog
- *  rows as ProductViews, and paint via the archetype's registered renderer. */
+/** Render a stored archetype store: load the real catalog rows as ProductViews
+ *  and paint via the chosen archetype's registered renderer. */
 async function renderArchetypeStore(env: Record<string, unknown>, tenantId: string) {
   const archetypeKey = env['archetypeKey'];
-  const skinKey = env['skinKey'];
-  if (typeof archetypeKey !== 'string' || typeof skinKey !== 'string') notFound();
+  const lookKey = env['lookKey'];
+  if (typeof archetypeKey !== 'string' || typeof lookKey !== 'string') notFound();
 
-  const entry = archetypeEntry(archetypeKey as string);
-  if (entry === undefined) notFound();
-
-  const parsed = entry.builder.parseContent(env['content']);
-  if (!parsed.ok) notFound();
+  const spec = archetypeSpec(archetypeKey as string);
+  if (spec === undefined) notFound();
 
   const db = supabaseAdmin() as unknown as {
     from: (t: string) => {
@@ -210,5 +207,5 @@ async function renderArchetypeStore(env: Record<string, unknown>, tenantId: stri
   });
 
   const mood = typeof env['mood'] === 'string' ? (env['mood'] as string) : undefined;
-  return entry.renderStore({ content: parsed.content, skinKey: skinKey as string, products, mood });
+  return spec.render({ content: env['content'], lookKey: lookKey as string, products, mood });
 }

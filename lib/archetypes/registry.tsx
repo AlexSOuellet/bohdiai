@@ -1,47 +1,21 @@
 /**
- * Archetype registry — the one lookup the engine and the live renderer share.
- * Maps an archetype key to its BUILD contract (how Bohdi authors it) and its
- * RENDER (how a stored store paints). Adding an archetype = one entry here; the
- * engine and StorefrontPage stay archetype-blind.
+ * Archetype registry — the menu Bohdi chooses from and the engine/render share.
+ * Each entry is a fully self-describing build spec. Adding an archetype = one
+ * import here; the engine and StorefrontPage never name an archetype.
  */
-import type { ReactElement } from 'react';
-import type { ProductView } from './content';
-import type { ArchetypeBuilder } from './builder';
-import { MainStreet, mainStreetArchetype, type MainStreetContent } from './main-street';
-import { MAIN_STREET_BUILDER } from './main-street/builder';
+import type { ArchetypeBuildSpec } from './builder';
+import { MAIN_STREET_SPEC } from './main-street/builder';
+import { GALLERY_SPEC } from './gallery/builder';
 
-export interface ArchetypeEntry {
-  key: string;
-  /** Build-time: how Bohdi authors this archetype + what media it generates. */
-  builder: ArchetypeBuilder<unknown>;
-  /** Render-time: paint a stored store. Content is already validated by the
-   *  builder; products come from the tenant's real listing rows. */
-  renderStore(args: {
-    content: unknown;
-    skinKey: string;
-    products: ProductView[];
-    mood?: string | undefined;
-  }): ReactElement;
-}
-
-export const ARCHETYPE_REGISTRY: Record<string, ArchetypeEntry> = {
-  'main-street': {
-    key: 'main-street',
-    builder: MAIN_STREET_BUILDER as ArchetypeBuilder<unknown>,
-    renderStore: ({ content, skinKey, products, mood }) => {
-      const skin = mainStreetArchetype.resolveTheme({ skinKey });
-      return (
-        <MainStreet
-          content={content as MainStreetContent}
-          skin={skin}
-          products={products}
-          mood={mood}
-        />
-      );
-    },
-  },
+export const ARCHETYPE_SPECS: Record<string, ArchetypeBuildSpec> = {
+  [MAIN_STREET_SPEC.key]: MAIN_STREET_SPEC as ArchetypeBuildSpec,
+  [GALLERY_SPEC.key]: GALLERY_SPEC as ArchetypeBuildSpec,
 };
 
-export function archetypeEntry(key: string): ArchetypeEntry | undefined {
-  return ARCHETYPE_REGISTRY[key];
+export function archetypeSpec(key: string): ArchetypeBuildSpec | undefined {
+  return ARCHETYPE_SPECS[key];
+}
+
+export function archetypeMenu(): ArchetypeBuildSpec[] {
+  return Object.values(ARCHETYPE_SPECS);
 }

@@ -1,17 +1,16 @@
 /**
- * The archetype BUILD contract — what the one engine needs from any archetype to
- * build a store. This is the seam that keeps the engine archetype-blind: the
- * engine selects an archetype, asks it for its authoring prompt, runs Bohdi
- * against its content schema, generates the media it declares, and publishes.
- * Main Street is the first archetype to implement this; the next is data, not
- * new engine code.
+ * The archetype BUILD contract — what the one engine needs from any archetype so
+ * BOHDI, not the engine, makes every creative call. The engine does not pick the
+ * archetype, the look, the words, the products, or the images. It presents the
+ * menu, runs Bohdi, generates from his prompts, and publishes. Each archetype is
+ * fully self-describing: its content shape, its product model, its looks.
  *
- * A maker onboards with nothing — no copy, no products, no photos. So Bohdi
- * builds ALL of it. Products are generic across archetypes (same shape, poured
- * into whatever container the archetype renders), so they live here, not per
- * archetype. The archetype-specific parts are: the content shape, the authoring
- * voice, and which non-product media slots get generated.
+ * A maker onboards with nothing, so Bohdi builds all of it. Product photos are
+ * the only thing capped (see the engine's MAX_PRODUCT_IMAGES) — every other
+ * asset generates freely; the cap is expressed per media job via `group`.
  */
+import type { ReactElement } from 'react';
+import type { ProductView } from './content';
 
 /** What Bohdi is told about the maker. Built from the niche + mood + onboarding. */
 export interface AuthoringBrief {
@@ -20,51 +19,66 @@ export interface AuthoringBrief {
   nicheBody: string;
   moodLabel: string;
   moodDescription: string;
-  /** Roughly how many products the maker sells — drives how many to author. */
   productCount: number;
   makerName?: string | undefined;
 }
 
-/** A product Bohdi invents for a brand-new store. Persisted as a real listing
- *  row; the archetype renders it from the row. Generic across all archetypes. */
-export interface ProductBrief {
-  name: string;
-  slug: string;
-  shortDescription: string;
+/** One look (skin/theme) Bohdi can pick for a given archetype. */
+export interface LookOption {
+  key: string;
+  label: string;
   description: string;
-  basePriceCents: number;
-  /** Prompt for this product's photo. Capped count of these actually generate. */
-  imagePrompt: string;
 }
 
-/** A non-product asset the archetype needs generated (hero video, portrait, …).
- *  Derived from the authored content so the engine can generate without knowing
- *  the archetype's shape. NOT subject to the product-image cap. */
+/** An asset to generate from Bohdi's prompt. `group: 'product'` photos are
+ *  capped and recycled; `'feature'` (hero video, portraits, collections) free. */
 export interface MediaJob {
-  /** Stable id used to map the generated URL back via applyMedia. */
   id: string;
   kind: 'video' | 'still';
   prompt: string;
   aspect: '16:9' | '1:1' | '9:16';
-  /** Video only. Seconds (3–15). */
   durationSec?: number;
+  group: 'product' | 'feature';
 }
 
-export type ContentParse<T> =
-  | { ok: true; content: T }
+export type ParseResult<T> =
+  | { ok: true; authored: T }
   | { ok: false; issues: Array<{ path: string; message: string }> };
 
-/** Everything the engine needs to build one archetype's store. */
-export interface ArchetypeBuilder<TContent> {
+/** Final content + catalog for persistence/render. Products may be a separate
+ *  catalog (Main Street) or already embedded in content (Gallery → empty here). */
+export interface RenderPayload {
+  content: unknown;
+  products: ProductView[];
+}
+
+/** Everything the engine needs to let Bohdi build (and later render) one
+ *  archetype. Generic over the archetype's authored submission type T. */
+export interface ArchetypeBuildSpec<T = unknown> {
   key: string;
-  /** The system prompt that has Bohdi author this archetype's content (NOT the
-   *  products — the engine appends a shared product brief — and NOT the skin,
-   *  which selection picks). */
-  buildAuthoringPrompt(brief: AuthoringBrief): string;
-  /** Validate the content Bohdi submitted against the archetype's schema. */
-  parseContent(raw: unknown): ContentParse<TContent>;
-  /** The non-product media this archetype needs generated, from the content. */
-  mediaJobs(content: TContent): MediaJob[];
-  /** Fold generated media URLs (by job id) back into the content. */
-  applyMedia(content: TContent, urls: Record<string, string | null>): TContent;
+  label: string;
+  /** One line for the menu: what this archetype IS / when it fits. Bohdi reads
+   *  this to choose; it must not steer toward any niche. */
+  menuDescription: string;
+  /** The looks Bohdi may pick for this archetype (its own skins/themes). */
+  looks: LookOption[];
+  /** The fields Bohdi authors once he's chosen this archetype (incl. products,
+   *  in whatever shape this archetype holds them). Returned by choose_format. */
+  authoringSpec(brief: AuthoringBrief): string;
+  /** Validate Bohdi's full submission for this archetype. */
+  parseSubmission(raw: unknown): ParseResult<T>;
+  /** Every asset to generate, derived from the submission. */
+  mediaJobs(authored: T): MediaJob[];
+  /** Fold generated URLs (by job id) back into the submission. */
+  applyMedia(authored: T, urls: Record<string, string | null>): T;
+  /** Content + catalog for persistence/render. */
+  toPayload(authored: T): RenderPayload;
+  /** Paint a stored store. Products come from the tenant's listing rows (empty
+   *  for archetypes that embed products in content). */
+  render(args: {
+    content: unknown;
+    lookKey: string;
+    products: ProductView[];
+    mood?: string | undefined;
+  }): ReactElement;
 }
