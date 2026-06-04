@@ -104,6 +104,30 @@ Within Main Street, the **goods beat has four motion-bearing bodies**, system-se
 
 Sampling caps are per-treatment (marquee ~10 since it loops; procession ~4 since it's full rows); **selection still runs off the true catalog size**, so a 40-item shop gets the marquee even though home shows ten. The "see the full catalog" cue is a Bohdi-authorable label (`goods.viewAllLabel`) with a neutral fallback. The dedicated **Products / full-catalog page is still its own design** (current implementation is a placeholder stub).
 
+### Founder-beat treatment (built Session 26)
+The founder beat (Beat 3) is also a **teaser** with four system-selected bodies, so the authority band stops defaulting to one dark slab. The full bio moves to its own **About page**; the beat carries an authorable "about" cue (`founder.aboutLabel`). Selection is by in-person cadence + mood:
+
+| Treatment | Selected when | Shape |
+| --- | --- | --- |
+| **Quote** | default | portrait beside a pull-quote (calm, authority-forward) |
+| **Portrait** | cinematic moods (dark/sunset/botanical) | a CONTAINED portrait in the band, quote over a soft scrim |
+| **Letter** | intimate moods (cozy/rustic/homey) | the quote as a short signed note, small inset portrait |
+| **Find-us-forward** | maker is out a lot (≥3 calendar rows) | the find-us calendar as the hero, portrait + a line of voice supporting |
+
+**Edge rule (locked):** the full-width contrast band may span the viewport, but the portrait and copy stay inside the content column with real margins — **never edge to edge**. (Killed the true full-bleed image idea.)
+
+### The calendar is a teaser → Events page, and disables cleanly (locked Session 26)
+The "find us this week" calendar is itself a teaser of upcoming dates with a **"see all dates" cue → the Events page** (authorable `founder.findUs.eventsLabel`, neutral fallback). It is **optional by design**: a maker who does no markets/events simply has no calendar — **and no events cue, so no dead link** — while the founder band and the about cue render untouched in every treatment. The find-us-forward treatment falls back to the quote when there's no calendar. **"Disabling after the fact" is an editor action** (the stored content drops the calendar); the renderer already handles its absence — the editor toggle itself is future editor work.
+
+### The Moment is one story-led hero (not a set of treatments)
+Beat 1 does **not** get treatments. It is one shape — a **background** (still image OR video, later a slow slideshow of the maker's own stills) with the **story** told one line at a time, cross-fading, landing on the brand + CTA. **The STORY is the wow**, not the background; a still works as well as a video because the magic is the narrative revealing, so the background gets **no decorative motion** (it would compete with the lines). The slideshow-of-stills waits on the maker's uploaded photos (not available at onboarding) and must slot in without a renderer rewrite.
+
+### Post-onboarding additions are EDITS to a beat, never new sections (locked Session 26)
+The page stays locked at four beats. When a tenant wants to add something later (e.g. a **Subscribe** capture), it is an **edit of the beat that already owns that job** — subscribe lives inside the **close**, more dates live inside the **founder calendar** — never a free-floating new section and never an onboarding decision. The close ships as the plain big-type sign-off (no image — the page is already image-heavy); subscribe is a later editor edit of the close.
+
+### Sub-pages are live but stubbed
+The teaser cues point at real routes — **Products (shop), About, Events** — but those pages are **placeholder stubs**. Designing each is the multi-page half of the sales-page archetype, still to do.
+
 ### Skins fit niche *characters*, not all niches
 Some skins are flat wrong for some niches (a butcher in floral pastels). A skin is tagged with two things: the **moods** it expresses and the **niches it flatters**. To not drown in per-niche tagging across ~260 niches, tag by **niche character** (rugged / delicate / homey / clean / …). Niches are sorted into a handful of characters; skins are tagged to characters; a niche inherits its character's skins.
 
