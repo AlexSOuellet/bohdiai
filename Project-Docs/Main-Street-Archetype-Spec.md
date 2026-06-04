@@ -89,6 +89,21 @@ The Gallery won on **shape** (the bold "wall" idea). **Main Street is the normal
 - **Skin** is selected by **mood**, refined by **niche**. **Mood wins on conflict** (Alex's original rule) — but only *within the set the niche permits*.
 - A maker's **brand color** nudges the accent (never the bg/text contrast pair).
 
+### ⚠️ TO BUILD — onboarding must capture catalog size (locked Session 26)
+Catalog size is a load-bearing selection input (it picks the archetype *and*, within Main Street, the goods-beat treatment), but **at onboarding we don't know it** — the maker hasn't entered products yet. **Decision: onboarding asks the maker, directly, for an approximate catalog size** (how many products they sell or hope to sell). A maker ready to build a storefront knows whether it's six things or sixty; approximate is enough because selection only needs the *tier*, not the exact count. The niche can pre-fill a sensible default (candles lean small, vintage resale leans big) so it's often a confirm, not a question. This is **not** the maker choosing a layout (which they never do) — it's a fact about their business that the system then acts on. The plumbing is ready: `selectGoodsTreatment(count, mood)` already takes the count; the missing piece is the onboarding question + threading the answer into selection. Build this in the **selection-wiring / engine-integration** step, not in the archetype itself.
+
+### Goods-beat treatment (built Session 26)
+Within Main Street, the **goods beat has four motion-bearing bodies**, system-selected from catalog size (mood breaks the small-catalog tie) so two Main Street shops don't share one shape — and the home page shows only a **sampling** (Main Street is a sales page, not a catalog), with a "see the full catalog" cue pointing at the Products page:
+
+| Treatment | Catalog tier | Motion |
+| --- | --- | --- |
+| **Marquee** | deep (≈12+) | continuous horizontal drift |
+| **Procession** | mid (≈6–11) | full-width rows settling out of a slow scroll-zoom |
+| **Switcher** | small, crisp moods | one image + a list; pointing a row cross-fades it |
+| **Slideshow** | small, cinematic moods | auto-advancing cross-fade + Ken Burns drift |
+
+Sampling caps are per-treatment (marquee ~10 since it loops; procession ~4 since it's full rows); **selection still runs off the true catalog size**, so a 40-item shop gets the marquee even though home shows ten. The "see the full catalog" cue is a Bohdi-authorable label (`goods.viewAllLabel`) with a neutral fallback. The dedicated **Products / full-catalog page is still its own design** (current implementation is a placeholder stub).
+
 ### Skins fit niche *characters*, not all niches
 Some skins are flat wrong for some niches (a butcher in floral pastels). A skin is tagged with two things: the **moods** it expresses and the **niches it flatters**. To not drown in per-niche tagging across ~260 niches, tag by **niche character** (rugged / delicate / homey / clean / …). Niches are sorted into a handful of characters; skins are tagged to characters; a niche inherits its character's skins.
 
