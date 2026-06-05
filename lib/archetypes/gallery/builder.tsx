@@ -13,6 +13,7 @@ import type {
   ParseResult,
   RenderPayload,
 } from '../builder';
+import type { PortableStore } from '../portable';
 import { Gallery } from './Gallery';
 import { galleryArchetype } from './index';
 import { GalleryContentSchema, type GalleryContent } from './schemas';
@@ -94,6 +95,24 @@ function toPayload(content: GalleryContent): RenderPayload {
   return { content, products: [] }; // products are embedded in the wall
 }
 
+function handOff(content: GalleryContent): PortableStore {
+  return {
+    shopName: content.shopName,
+    wordmark: content.identity.wordmark,
+    tagline: content.identity.tagline,
+    maker: {
+      headline: content.maker.headline,
+      body: content.maker.body,
+      photoUrl: content.maker.photo.url ?? null,
+    },
+    products: content.wall.products.map((p) => ({
+      name: p.name,
+      price: p.price,
+      photoUrl: p.photo.url ?? null,
+    })),
+  };
+}
+
 // The wall needs density to read as a wall — a structural minimum, not taste.
 const GALLERY_MIN_CATALOG = 8;
 
@@ -110,6 +129,7 @@ export const GALLERY_SPEC: ArchetypeBuildSpec<GalleryContent> = {
   mediaJobs,
   applyMedia,
   toPayload,
+  handOff,
   render: ({ content, lookKey }) => {
     const theme = galleryArchetype.resolveTheme({ themeKey: lookKey });
     return <Gallery content={content as GalleryContent} theme={theme} />;

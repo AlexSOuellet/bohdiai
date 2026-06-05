@@ -13,6 +13,7 @@ import type {
   RenderPayload,
 } from '../builder';
 import type { ProductView } from '../content';
+import type { PortableStore } from '../portable';
 import { MainStreet } from './MainStreet';
 import { mainStreetArchetype } from './index';
 import { MainStreetContentSchema, type MainStreetContent } from './schemas';
@@ -176,6 +177,24 @@ function toPayload(a: MainStreetAuthored): RenderPayload {
   return { content: a.content, products };
 }
 
+function handOff(a: MainStreetAuthored): PortableStore {
+  return {
+    shopName: a.content.shopName,
+    wordmark: a.content.identity.wordmark,
+    tagline: a.content.moment.eyebrow,
+    maker: {
+      body: a.content.founder.quote,
+      photoUrl: a.content.founder.photo.url ?? null,
+    },
+    products: a.products.map((p, i) => ({
+      name: p.name,
+      price: formatPrice(p.basePriceCents),
+      description: p.description,
+      photoUrl: a.productUrls[i] ?? null,
+    })),
+  };
+}
+
 export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   key: 'main-street',
   label: 'Main Street',
@@ -189,6 +208,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   mediaJobs,
   applyMedia,
   toPayload,
+  handOff,
   render: ({ content, lookKey, products, mood, catalogSize }) => {
     const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
     return (

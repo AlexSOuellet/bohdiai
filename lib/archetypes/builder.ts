@@ -11,6 +11,7 @@
  */
 import type { ReactElement } from 'react';
 import type { ProductView } from './content';
+import type { PortableStore } from './portable';
 
 /** What Bohdi is told about the maker. Built from the niche + mood + onboarding. */
 export interface AuthoringBrief {
@@ -78,6 +79,10 @@ export interface ArchetypeBuildSpec<T = unknown> {
   applyMedia(authored: T, urls: Record<string, string | null>): T;
   /** Content + catalog for persistence/render. */
   toPayload(authored: T): RenderPayload;
+  /** Lift the maker's portable content out of THIS archetype's stored content,
+   *  so another archetype can re-express the same maker (try-on). Optional — an
+   *  archetype that can't be a try-on SOURCE omits it. */
+  handOff?(content: T): PortableStore;
   /** Paint a stored store. Products come from the tenant's listing rows (empty
    *  for archetypes that embed products in content). `catalogSize` is the maker's
    *  TRUE catalog size (what they entered at onboarding), which drives treatment
