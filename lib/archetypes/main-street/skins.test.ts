@@ -47,17 +47,34 @@ describe('MAIN_STREET_SKINS', () => {
     }
   });
 
-  it('tags every skin with a character and at least one mood', () => {
+  const WORLDS = ['Hearth', 'Workshop', 'Fine', 'Garden', 'Studio', 'Mystic', 'Playroom', 'Press', 'Relic'];
+
+  it('tags every skin with a world and at least one mood', () => {
     for (const key of Object.keys(MAIN_STREET_SKINS)) {
       const tag = MAIN_STREET_SKIN_TAGS[key];
       expect(tag).toBeTruthy();
-      expect(['homey', 'rugged', 'delicate']).toContain(tag!.character);
+      expect(WORLDS).toContain(tag!.world);
       expect(tag!.moods.length).toBeGreaterThan(0);
     }
   });
 
-  it('spans all three characters on the shelf', () => {
-    const characters = new Set(Object.values(MAIN_STREET_SKIN_TAGS).map((t) => t.character));
-    expect(characters).toEqual(new Set(['homey', 'rugged', 'delicate']));
+  it('fills every one of the nine maker-worlds', () => {
+    const worlds = new Set(Object.values(MAIN_STREET_SKIN_TAGS).map((t) => t.world));
+    expect(worlds).toEqual(new Set(WORLDS));
+  });
+
+  it('goes deep — every world carries at least three skins', () => {
+    const counts = new Map<string, number>();
+    for (const tag of Object.values(MAIN_STREET_SKIN_TAGS)) {
+      counts.set(tag.world, (counts.get(tag.world) ?? 0) + 1);
+    }
+    for (const world of WORLDS) {
+      expect(counts.get(world) ?? 0).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it('holds the no-cousins line — no two skins share a display face', () => {
+    const displays = Object.values(MAIN_STREET_SKINS).map((s) => (s.type as unknown as MainStreetRoles).brand.family);
+    expect(new Set(displays).size).toBe(displays.length);
   });
 });

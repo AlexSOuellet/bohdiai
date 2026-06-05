@@ -8,11 +8,14 @@
  * names no color and no font — so the same Main Street wears any skin, light or
  * dark, with zero code change.
  *
- * The shelf spans three niche CHARACTERS (homey / rugged / delicate). A skin
- * carries only a character + a few moods as its tag — never a niche list — so
- * the shelf stays short no matter how many niches accrue (the niche→character
- * mapping lives with the niches). Selection reads those tags; nothing here does
- * the picking.
+ * The shelf is organized by maker-WORLDS — loose families of maker (Hearth,
+ * Workshop, Fine, Garden, Studio, Mystic, Playroom, Press, Relic). A skin
+ * carries only a world + a few moods as its tag — never a niche list — so the
+ * shelf stays short no matter how many niches accrue (the niche→world mapping
+ * lives with the niches). The shelf goes DEEP: several skins per world spanning
+ * its real range (light/dark, quiet/loud). The differentiator is the TYPEFACE —
+ * no two skins share a display face, so even two cream skins never read as
+ * cousins. Selection is Bohdi's call off the menu; nothing here does the picking.
  */
 import type { ArchetypeTheme, TypeRole } from '../types';
 
@@ -108,16 +111,29 @@ function makeType(v: TypeVoices): Record<string, TypeRole> {
   return roles as unknown as Record<string, TypeRole>;
 }
 
-/** A skin's tag — one character bucket + a few moods. The whole tag. Never a
- *  niche list (that lives with the niches). Read by selection; inert here. */
+/** The nine maker-worlds a skin can belong to. A loose selection family, not a
+ *  hard bucket — a new niche classifies into a world and inherits its skins. */
+export type MakerWorld =
+  | 'Hearth'
+  | 'Workshop'
+  | 'Fine'
+  | 'Garden'
+  | 'Studio'
+  | 'Mystic'
+  | 'Playroom'
+  | 'Press'
+  | 'Relic';
+
+/** A skin's tag — one world + a few moods. The whole tag. Never a niche list
+ *  (that lives with the niches). Read by the menu; inert for selection. */
 export interface SkinTag {
-  character: 'homey' | 'rugged' | 'delicate';
+  world: MakerWorld;
   moods: string[];
 }
 
 export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
-  // ── Character: homey ──────────────────────────────────────────────────────
-  // Skin #1 — committed ember on warm cream. Bakery / farm / food.
+  // ══ HEARTH ════ warm, handmade, domestic: baker, jam, soap, candles, fiber ══
+  // Ember — committed ember on warm cream. The cozy morning.
   'main-street-ember': {
     key: 'main-street-ember',
     label: 'Ember',
@@ -141,7 +157,80 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
     motion: MOTION,
   },
 
-  // ── Character: rugged ─────────────────────────────────────────────────────
+  // Orchard — golden evening. Honey, jam, harvest, cider.
+  'main-street-orchard': {
+    key: 'main-street-orchard',
+    label: 'Orchard',
+    palette: {
+      bg: '#EFD9B4',
+      fg: '#3A2415',
+      fgMuted: 'rgba(58,36,21,0.58)',
+      accent: '#C2562F',
+      onAccent: '#FFF6EA',
+      rule: 'rgba(58,36,21,0.18)',
+      contrast: { bg: '#3C2230', fg: '#EFD9B4', fgMuted: 'rgba(239,217,180,0.66)' },
+    },
+    type: makeType({
+      display: "'Hedvig Letters Serif', Georgia, serif",
+      displayWeight: 400,
+      body: "'Karla', system-ui, sans-serif",
+      label: "'Fragment Mono', ui-monospace, monospace",
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'saturate(1.05) contrast(1.03) sepia(0.10)' },
+    motion: MOTION,
+  },
+
+  // Pantry — bright farm-fresh kitchen. Baker, preserves, market stall.
+  'main-street-pantry': {
+    key: 'main-street-pantry',
+    label: 'Pantry',
+    palette: {
+      bg: '#FBF3E2',
+      fg: '#2E3A2B',
+      fgMuted: 'rgba(46,58,43,0.58)',
+      accent: '#C0432E',
+      onAccent: '#FFFFFF',
+      rule: 'rgba(46,58,43,0.16)',
+      contrast: { bg: '#2E3A2B', fg: '#FBF3E2', fgMuted: 'rgba(251,243,226,0.66)' },
+    },
+    type: makeType({
+      display: "'Zilla Slab', Georgia, serif",
+      displayWeight: 600,
+      body: "'Mulish', system-ui, sans-serif",
+      label: "'Sometype Mono', ui-monospace, monospace",
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'saturate(1.06) brightness(1.03) contrast(1.02)' },
+    motion: MOTION,
+  },
+
+  // Hearthstone — candlelit dark warm. Candles, soap, evening fiber.
+  'main-street-hearthstone': {
+    key: 'main-street-hearthstone',
+    label: 'Hearthstone',
+    palette: {
+      bg: '#1B1410',
+      fg: '#ECDCC2',
+      fgMuted: 'rgba(236,220,194,0.60)',
+      accent: '#D98A3D',
+      onAccent: '#1B1410',
+      rule: 'rgba(236,220,194,0.14)',
+      contrast: { bg: '#E4D2B4', fg: '#1B1410', fgMuted: 'rgba(27,20,16,0.62)' },
+    },
+    type: makeType({
+      display: "'DM Serif Display', Georgia, serif",
+      displayWeight: 400,
+      body: "'EB Garamond', Georgia, serif",
+      label: "'Anonymous Pro', ui-monospace, monospace",
+      labelWeight: 700,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'saturate(1.0) contrast(1.05) brightness(0.95) sepia(0.06)' },
+    motion: MOTION,
+  },
+
+  // ══ WORKSHOP ════ rugged, made-to-last: leather, wood, metal, knives, meat ══
   // Tannery — warm leather. Leather / wood / saddle.
   'main-street-tannery': {
     key: 'main-street-tannery',
@@ -219,7 +308,32 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
     motion: MOTION,
   },
 
-  // ── Character: delicate ───────────────────────────────────────────────────
+  // Sawdust — daylight woodshop. The workshop with the doors open.
+  'main-street-sawdust': {
+    key: 'main-street-sawdust',
+    label: 'Sawdust',
+    palette: {
+      bg: '#E7DAC4',
+      fg: '#2A2118',
+      fgMuted: 'rgba(42,33,24,0.58)',
+      accent: '#B06A2C',
+      onAccent: '#FFF8EC',
+      rule: 'rgba(42,33,24,0.18)',
+      contrast: { bg: '#2A2118', fg: '#E7DAC4', fgMuted: 'rgba(231,218,196,0.64)' },
+    },
+    type: makeType({
+      display: "'Hepta Slab', Georgia, serif",
+      displayWeight: 700,
+      body: "'Public Sans', system-ui, sans-serif",
+      label: "'Overpass Mono', ui-monospace, monospace",
+      labelWeight: 500,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'saturate(1.02) contrast(1.04) sepia(0.05)' },
+    motion: MOTION,
+  },
+
+  // ══ FINE ════ refined, quiet, luxe: jewelry, chocolatier, perfume, milliner ══
   // Porcelain — romantic studio. Jewelry / ceramics / fine goods.
   'main-street-porcelain': {
     key: 'main-street-porcelain',
@@ -242,31 +356,6 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
     }),
     spacing: SPACING,
     atmosphere: { grain: GRAIN, photoFilter: 'saturate(0.96) brightness(1.03) contrast(0.98)' },
-    motion: MOTION,
-  },
-
-  // Botanical — earthy, seasonal. Florals / apothecary / herbalist.
-  'main-street-botanical': {
-    key: 'main-street-botanical',
-    label: 'Botanical',
-    palette: {
-      bg: '#F3EFE4',
-      fg: '#2A2E22',
-      fgMuted: 'rgba(42,46,34,0.55)',
-      accent: '#6F7B4E',
-      onAccent: '#F3EFE4',
-      rule: 'rgba(42,46,34,0.12)',
-      contrast: { bg: '#20342A', fg: '#E4ECDF', fgMuted: 'rgba(228,236,223,0.62)' },
-    },
-    type: makeType({
-      display: "'Fraunces', Georgia, serif",
-      displayWeight: 600,
-      body: "'Hanken Grotesk', system-ui, sans-serif",
-      label: "'Space Mono', ui-monospace, monospace",
-      labelWeight: 400,
-    }),
-    spacing: SPACING,
-    atmosphere: { grain: GRAIN, photoFilter: 'saturate(1.03) contrast(1.02) sepia(0.03)' },
     motion: MOTION,
   },
 
@@ -294,34 +383,584 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
     atmosphere: { grain: GRAIN, photoFilter: 'contrast(1.04) saturate(0.98) brightness(1.01)' },
     motion: MOTION,
   },
+
+  // Gild — dark luxe. Black and thin gold; the lit jewel case.
+  'main-street-gild': {
+    key: 'main-street-gild',
+    label: 'Gild',
+    palette: {
+      bg: '#15120E',
+      fg: '#F0E9DC',
+      fgMuted: 'rgba(240,233,220,0.55)',
+      accent: '#C2A35A',
+      onAccent: '#15120E',
+      rule: 'rgba(240,233,220,0.12)',
+      contrast: { bg: '#F0E9DC', fg: '#15120E', fgMuted: 'rgba(21,18,14,0.58)' },
+    },
+    type: makeType({
+      display: "'Prata', Georgia, serif",
+      displayWeight: 400,
+      body: "'Manrope', system-ui, sans-serif",
+      label: "'Manrope', system-ui, sans-serif",
+      labelWeight: 600,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'contrast(1.05) saturate(0.98) brightness(0.98)' },
+    motion: MOTION,
+  },
+
+  // ══ GARDEN ════ botanical, earthy, seasonal: florist, plants, apothecary ══
+  // Botanical — earthy, seasonal. Florals / apothecary / herbalist.
+  'main-street-botanical': {
+    key: 'main-street-botanical',
+    label: 'Botanical',
+    palette: {
+      bg: '#F3EFE4',
+      fg: '#2A2E22',
+      fgMuted: 'rgba(42,46,34,0.55)',
+      accent: '#6F7B4E',
+      onAccent: '#F3EFE4',
+      rule: 'rgba(42,46,34,0.12)',
+      contrast: { bg: '#20342A', fg: '#E4ECDF', fgMuted: 'rgba(228,236,223,0.62)' },
+    },
+    type: makeType({
+      display: "'Fraunces', Georgia, serif",
+      displayWeight: 600,
+      body: "'Hanken Grotesk', system-ui, sans-serif",
+      label: "'Space Mono', ui-monospace, monospace",
+      labelWeight: 400,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'saturate(1.03) contrast(1.02) sepia(0.03)' },
+    motion: MOTION,
+  },
+
+  // Conservatory — airy glasshouse. Light, classical, green.
+  'main-street-conservatory': {
+    key: 'main-street-conservatory',
+    label: 'Conservatory',
+    palette: {
+      bg: '#EEF0E4',
+      fg: '#283324',
+      fgMuted: 'rgba(40,51,36,0.55)',
+      accent: '#5C7A4A',
+      onAccent: '#EEF0E4',
+      rule: 'rgba(40,51,36,0.12)',
+      contrast: { bg: '#1F2C20', fg: '#E7EDDD', fgMuted: 'rgba(231,237,221,0.62)' },
+    },
+    type: makeType({
+      display: "'Marcellus', Georgia, serif",
+      displayWeight: 400,
+      body: "'Karla', system-ui, sans-serif",
+      label: "'Syne Mono', ui-monospace, monospace",
+      labelWeight: 400,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'saturate(1.04) brightness(1.02) contrast(1.0)' },
+    motion: MOTION,
+  },
+
+  // Wildflower — colorful meadow. The bright, blowsy cut-flower stand.
+  'main-street-wildflower': {
+    key: 'main-street-wildflower',
+    label: 'Wildflower',
+    palette: {
+      bg: '#F4EFDF',
+      fg: '#33301F',
+      fgMuted: 'rgba(51,48,31,0.55)',
+      accent: '#C76B86',
+      onAccent: '#FFFFFF',
+      rule: 'rgba(51,48,31,0.14)',
+      contrast: { bg: '#43492A', fg: '#F4EFDF', fgMuted: 'rgba(244,239,223,0.64)' },
+    },
+    type: makeType({
+      display: "'Yeseva One', Georgia, serif",
+      displayWeight: 400,
+      body: "'Mulish', system-ui, sans-serif",
+      label: "'Red Hat Mono', ui-monospace, monospace",
+      labelWeight: 500,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'saturate(1.08) brightness(1.02) contrast(1.02)' },
+    motion: MOTION,
+  },
+
+  // ══ STUDIO ════ art-forward, the goods ARE the art: painter, printmaker ══
+  // Studio — quiet gallery wall. Bone white, huge ink type, one hot signal.
+  'main-street-studio': {
+    key: 'main-street-studio',
+    label: 'Studio',
+    palette: {
+      bg: '#F4F1EA',
+      fg: '#16140F',
+      fgMuted: 'rgba(22,20,15,0.52)',
+      accent: '#E5391B',
+      onAccent: '#FFFFFF',
+      rule: 'rgba(22,20,15,0.12)',
+      contrast: { bg: '#1A1814', fg: '#F0EBE0', fgMuted: 'rgba(240,235,224,0.60)' },
+    },
+    type: makeType({
+      display: "'Syne', system-ui, sans-serif",
+      displayWeight: 800,
+      body: "'Newsreader', Georgia, serif",
+      label: "'Syne', system-ui, sans-serif",
+      labelWeight: 600,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'contrast(1.05) saturate(1.02)' },
+    motion: MOTION,
+  },
+
+  // Darkroom — moody dark gallery. Charcoal wall, cold slate signal.
+  'main-street-darkroom': {
+    key: 'main-street-darkroom',
+    label: 'Darkroom',
+    palette: {
+      bg: '#16171A',
+      fg: '#E4E2DC',
+      fgMuted: 'rgba(228,226,220,0.55)',
+      accent: '#6E8FA6',
+      onAccent: '#16171A',
+      rule: 'rgba(228,226,220,0.12)',
+      contrast: { bg: '#E4E2DC', fg: '#16171A', fgMuted: 'rgba(22,23,26,0.60)' },
+    },
+    type: makeType({
+      display: "'Bricolage Grotesque', system-ui, sans-serif",
+      displayWeight: 700,
+      body: "'Source Serif 4', Georgia, serif",
+      label: "'Geist Mono', ui-monospace, monospace",
+      labelWeight: 500,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'contrast(1.06) saturate(0.96) brightness(0.97)' },
+    motion: MOTION,
+  },
+
+  // Pigment — vivid gallery for colorful work. Bright white, hot magenta.
+  'main-street-pigment': {
+    key: 'main-street-pigment',
+    label: 'Pigment',
+    palette: {
+      bg: '#FBFAF6',
+      fg: '#1A1730',
+      fgMuted: 'rgba(26,23,48,0.5)',
+      accent: '#E4007C',
+      onAccent: '#FFFFFF',
+      rule: 'rgba(26,23,48,0.12)',
+      contrast: { bg: '#1A1730', fg: '#FBFAF6', fgMuted: 'rgba(251,250,246,0.64)' },
+    },
+    type: makeType({
+      display: "'Darker Grotesque', system-ui, sans-serif",
+      displayWeight: 800,
+      body: "'Mada', system-ui, sans-serif",
+      label: "'Sometype Mono', ui-monospace, monospace",
+      labelWeight: 500,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'saturate(1.1) contrast(1.04)' },
+    motion: MOTION,
+  },
+
+  // ══ MYSTIC ════ esoteric, moody, celestial: tarot, crystals, ritual, occult ══
+  // Nightshade — deep occult. Violet-black, moonlight type, electric amethyst.
+  'main-street-nightshade': {
+    key: 'main-street-nightshade',
+    label: 'Nightshade',
+    palette: {
+      bg: '#14101F',
+      fg: '#E7E2F1',
+      fgMuted: 'rgba(231,226,241,0.58)',
+      accent: '#9D6BEC',
+      onAccent: '#14101F',
+      rule: 'rgba(201,162,75,0.30)',
+      contrast: { bg: '#221A33', fg: '#ECE6F6', fgMuted: 'rgba(236,230,246,0.62)' },
+    },
+    type: makeType({
+      display: "'Gloock', Georgia, serif",
+      displayWeight: 400,
+      body: "'Spectral', Georgia, serif",
+      label: "'Martian Mono', ui-monospace, monospace",
+      labelWeight: 500,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'saturate(0.92) contrast(1.06) brightness(0.95)' },
+    motion: MOTION,
+  },
+
+  // Celestine — soft celestial. Pale dawn-lilac, dusk-violet, star-chart calm.
+  'main-street-celestine': {
+    key: 'main-street-celestine',
+    label: 'Celestine',
+    palette: {
+      bg: '#ECE9F2',
+      fg: '#2A2540',
+      fgMuted: 'rgba(42,37,64,0.55)',
+      accent: '#7A6FB0',
+      onAccent: '#ECE9F2',
+      rule: 'rgba(42,37,64,0.14)',
+      contrast: { bg: '#221E38', fg: '#E9E5F3', fgMuted: 'rgba(233,229,243,0.62)' },
+    },
+    type: makeType({
+      display: "'Cinzel', Georgia, serif",
+      displayWeight: 600,
+      body: "'Cardo', Georgia, serif",
+      label: "'Fragment Mono', ui-monospace, monospace",
+      labelWeight: 400,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'saturate(0.98) brightness(1.02) contrast(1.0)' },
+    motion: MOTION,
+  },
+
+  // Ritual — blood and candle. Near-black, bone type, a single blood red.
+  'main-street-ritual': {
+    key: 'main-street-ritual',
+    label: 'Ritual',
+    palette: {
+      bg: '#120D0D',
+      fg: '#E8DCD2',
+      fgMuted: 'rgba(232,220,210,0.55)',
+      accent: '#A11D2A',
+      onAccent: '#E8DCD2',
+      rule: 'rgba(232,220,210,0.12)',
+      contrast: { bg: '#2A1012', fg: '#E8DCD2', fgMuted: 'rgba(232,220,210,0.60)' },
+    },
+    type: makeType({
+      display: "'Eczar', Georgia, serif",
+      displayWeight: 700,
+      body: "'Vollkorn', Georgia, serif",
+      label: "'Sometype Mono', ui-monospace, monospace",
+      labelWeight: 500,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'saturate(1.0) contrast(1.08) brightness(0.9)' },
+    motion: MOTION,
+  },
+
+  // ══ PLAYROOM ════ playful, bright: stickers, pins, polymer clay, toys, plush ══
+  // Confetti — butter-bright. Rounded heavy type, poppy and grape in tension.
+  'main-street-confetti': {
+    key: 'main-street-confetti',
+    label: 'Confetti',
+    palette: {
+      bg: '#FCEFD6',
+      fg: '#20223A',
+      fgMuted: 'rgba(32,34,58,0.55)',
+      accent: '#FB4D3D',
+      onAccent: '#FFFFFF',
+      rule: 'rgba(32,34,58,0.14)',
+      contrast: { bg: '#2E2350', fg: '#FCEFD6', fgMuted: 'rgba(252,239,214,0.66)' },
+    },
+    type: makeType({
+      display: "'Unbounded', system-ui, sans-serif",
+      displayWeight: 700,
+      body: "'Figtree', system-ui, sans-serif",
+      label: "'DM Mono', ui-monospace, monospace",
+      labelWeight: 500,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'saturate(1.08) contrast(1.02) brightness(1.02)' },
+    motion: MOTION,
+  },
+
+  // Bubblegum — candy loud. Cotton-candy white, bubblegum pink, pool cyan.
+  'main-street-bubblegum': {
+    key: 'main-street-bubblegum',
+    label: 'Bubblegum',
+    palette: {
+      bg: '#FFF0F5',
+      fg: '#2A1A3E',
+      fgMuted: 'rgba(42,26,62,0.5)',
+      accent: '#FF4FA3',
+      onAccent: '#FFFFFF',
+      rule: 'rgba(42,26,62,0.12)',
+      contrast: { bg: '#18B3C4', fg: '#06222A', fgMuted: 'rgba(6,34,42,0.62)' },
+    },
+    type: makeType({
+      display: "'Fredoka', system-ui, sans-serif",
+      displayWeight: 600,
+      body: "'Nunito', system-ui, sans-serif",
+      label: "'Spline Sans Mono', ui-monospace, monospace",
+      labelWeight: 500,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'saturate(1.12) brightness(1.03) contrast(1.0)' },
+    motion: MOTION,
+  },
+
+  // Sprout — gentle pastel. The calm, friendly end of playful — a choice, not a shout.
+  'main-street-sprout': {
+    key: 'main-street-sprout',
+    label: 'Sprout',
+    palette: {
+      bg: '#F2F4E9',
+      fg: '#34402F',
+      fgMuted: 'rgba(52,64,47,0.55)',
+      accent: '#E08A4B',
+      onAccent: '#FFFFFF',
+      rule: 'rgba(52,64,47,0.12)',
+      contrast: { bg: '#3C4A47', fg: '#F2F4E9', fgMuted: 'rgba(242,244,233,0.64)' },
+    },
+    type: makeType({
+      display: "'Quicksand', system-ui, sans-serif",
+      displayWeight: 700,
+      body: "'Nunito Sans', system-ui, sans-serif",
+      label: "'Red Hat Mono', ui-monospace, monospace",
+      labelWeight: 500,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'saturate(1.02) brightness(1.03) contrast(0.99)' },
+    motion: MOTION,
+  },
+
+  // ══ PRESS ════ graphic, inky, urban: screenprint, zines, streetwear ══
+  // Pressroom — riso overprint. Bone paper, off-register red and blue.
+  'main-street-pressroom': {
+    key: 'main-street-pressroom',
+    label: 'Pressroom',
+    palette: {
+      bg: '#F1EBDE',
+      fg: '#15140F',
+      fgMuted: 'rgba(21,20,15,0.55)',
+      accent: '#F5333F',
+      onAccent: '#FFFFFF',
+      rule: 'rgba(21,20,15,0.14)',
+      contrast: { bg: '#2536D4', fg: '#F1EBDE', fgMuted: 'rgba(241,235,222,0.66)' },
+    },
+    type: makeType({
+      display: "'Big Shoulders Display', 'Arial Narrow', sans-serif",
+      displayWeight: 700,
+      displayUppercase: true,
+      body: "'Schibsted Grotesk', system-ui, sans-serif",
+      label: "'Spline Sans Mono', ui-monospace, monospace",
+      labelWeight: 500,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'contrast(1.08) saturate(1.05)' },
+    motion: MOTION,
+  },
+
+  // Marquee — streetwear poster. Black, one neon-lime, a wall of caps.
+  'main-street-marquee': {
+    key: 'main-street-marquee',
+    label: 'Marquee',
+    palette: {
+      bg: '#0E0E0E',
+      fg: '#F2F2EF',
+      fgMuted: 'rgba(242,242,239,0.55)',
+      accent: '#C6FF00',
+      onAccent: '#0E0E0E',
+      rule: 'rgba(242,242,239,0.14)',
+      contrast: { bg: '#F2F2EF', fg: '#0E0E0E', fgMuted: 'rgba(14,14,14,0.60)' },
+    },
+    type: makeType({
+      display: "'Anton', 'Arial Narrow', sans-serif",
+      displayWeight: 400,
+      displayUppercase: true,
+      body: "'Hanken Grotesk', system-ui, sans-serif",
+      label: "'JetBrains Mono', ui-monospace, monospace",
+      labelWeight: 500,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'contrast(1.1) saturate(1.04)' },
+    motion: MOTION,
+  },
+
+  // Broadside — raw zine. Newsprint gray, stamped red, condensed caps.
+  'main-street-broadside': {
+    key: 'main-street-broadside',
+    label: 'Broadside',
+    palette: {
+      bg: '#E8E4DA',
+      fg: '#161514',
+      fgMuted: 'rgba(22,21,20,0.58)',
+      accent: '#D6322A',
+      onAccent: '#FFFFFF',
+      rule: 'rgba(22,21,20,0.18)',
+      contrast: { bg: '#161514', fg: '#E8E4DA', fgMuted: 'rgba(232,228,218,0.64)' },
+    },
+    type: makeType({
+      display: "'Bebas Neue', 'Arial Narrow', sans-serif",
+      displayWeight: 400,
+      displayUppercase: true,
+      body: "'IBM Plex Sans', system-ui, sans-serif",
+      label: "'Sometype Mono', ui-monospace, monospace",
+      labelWeight: 500,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'grayscale(0.15) contrast(1.12) saturate(0.9)' },
+    motion: MOTION,
+  },
+
+  // ══ RELIC ════ vintage, nostalgic, aged: antiques, ephemera, mid-century ══
+  // Heirloom — aged ochre. Faded paper, sepia ink, worn teal and oxblood.
+  'main-street-heirloom': {
+    key: 'main-street-heirloom',
+    label: 'Heirloom',
+    palette: {
+      bg: '#ECE3CE',
+      fg: '#36291A',
+      fgMuted: 'rgba(54,41,26,0.55)',
+      accent: '#3E6E64',
+      onAccent: '#ECE3CE',
+      rule: 'rgba(54,41,26,0.16)',
+      contrast: { bg: '#5A2E2A', fg: '#ECE3CE', fgMuted: 'rgba(236,227,206,0.66)' },
+    },
+    type: makeType({
+      display: "'Libre Caslon Display', Georgia, serif",
+      displayWeight: 400,
+      body: "'Source Serif 4', Georgia, serif",
+      label: "'Courier Prime', ui-monospace, monospace",
+      labelWeight: 700,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'sepia(0.18) saturate(0.9) contrast(1.02) brightness(0.99)' },
+    motion: MOTION,
+  },
+
+  // Curiosity — vintage cabinet. Deep wood, brass, a bottle-green band.
+  'main-street-curiosity': {
+    key: 'main-street-curiosity',
+    label: 'Curiosity',
+    palette: {
+      bg: '#1C1A14',
+      fg: '#DCCBA6',
+      fgMuted: 'rgba(220,203,166,0.55)',
+      accent: '#9A7B3A',
+      onAccent: '#1C1A14',
+      rule: 'rgba(220,203,166,0.14)',
+      contrast: { bg: '#2C4038', fg: '#DCCBA6', fgMuted: 'rgba(220,203,166,0.60)' },
+    },
+    type: makeType({
+      display: "'Abril Fatface', Georgia, serif",
+      displayWeight: 400,
+      body: "'Lora', Georgia, serif",
+      label: "'Anonymous Pro', ui-monospace, monospace",
+      labelWeight: 700,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'sepia(0.22) saturate(0.85) contrast(1.04) brightness(0.95)' },
+    motion: MOTION,
+  },
+
+  // Postmark — mid-century ephemera. Aged paper, retro orange and teal.
+  'main-street-postmark': {
+    key: 'main-street-postmark',
+    label: 'Postmark',
+    palette: {
+      bg: '#EDE4D0',
+      fg: '#2E2A22',
+      fgMuted: 'rgba(46,42,34,0.55)',
+      accent: '#C25B36',
+      onAccent: '#FFF8EC',
+      rule: 'rgba(46,42,34,0.16)',
+      contrast: { bg: '#2C5450', fg: '#EDE4D0', fgMuted: 'rgba(237,228,208,0.64)' },
+    },
+    type: makeType({
+      display: "'Rozha One', Georgia, serif",
+      displayWeight: 400,
+      body: "'Crimson Pro', Georgia, serif",
+      label: "'Sometype Mono', ui-monospace, monospace",
+      labelWeight: 500,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'sepia(0.14) saturate(0.95) contrast(1.02)' },
+    motion: MOTION,
+  },
 };
 
-/** Selection tags — character + moods per skin. Inert here; read by selection. */
+/** Selection tags — world + moods per skin. Inert for selection; feed the menu. */
 export const MAIN_STREET_SKIN_TAGS: Record<string, SkinTag> = {
-  'main-street-ember': { character: 'homey', moods: ['cozy', 'rustic', 'warm'] },
-  'main-street-tannery': { character: 'rugged', moods: ['warm', 'handmade'] },
-  'main-street-forge': { character: 'rugged', moods: ['cool', 'industrial', 'modern'] },
-  'main-street-anvil': { character: 'rugged', moods: ['bold', 'plain', 'loud'] },
-  'main-street-porcelain': { character: 'delicate', moods: ['romantic', 'quiet', 'fine'] },
-  'main-street-botanical': { character: 'delicate', moods: ['earthy', 'natural', 'seasonal'] },
-  'main-street-atelier': { character: 'delicate', moods: ['sharp', 'luxury', 'modern'] },
+  'main-street-ember': { world: 'Hearth', moods: ['cozy', 'rustic', 'warm'] },
+  'main-street-orchard': { world: 'Hearth', moods: ['warm', 'golden', 'harvest'] },
+  'main-street-pantry': { world: 'Hearth', moods: ['bright', 'fresh', 'homey'] },
+  'main-street-hearthstone': { world: 'Hearth', moods: ['dark', 'candlelit', 'cozy'] },
+  'main-street-tannery': { world: 'Workshop', moods: ['warm', 'handmade', 'rugged'] },
+  'main-street-forge': { world: 'Workshop', moods: ['cool', 'industrial', 'modern'] },
+  'main-street-anvil': { world: 'Workshop', moods: ['bold', 'plain', 'loud'] },
+  'main-street-sawdust': { world: 'Workshop', moods: ['warm', 'daylight', 'handmade'] },
+  'main-street-porcelain': { world: 'Fine', moods: ['romantic', 'quiet', 'fine'] },
+  'main-street-atelier': { world: 'Fine', moods: ['sharp', 'luxury', 'modern'] },
+  'main-street-gild': { world: 'Fine', moods: ['dark', 'luxury', 'rich'] },
+  'main-street-botanical': { world: 'Garden', moods: ['earthy', 'natural', 'seasonal'] },
+  'main-street-conservatory': { world: 'Garden', moods: ['airy', 'classical', 'green'] },
+  'main-street-wildflower': { world: 'Garden', moods: ['bright', 'colorful', 'meadow'] },
+  'main-street-studio': { world: 'Studio', moods: ['stark', 'modern', 'gallery'] },
+  'main-street-darkroom': { world: 'Studio', moods: ['dark', 'moody', 'gallery'] },
+  'main-street-pigment': { world: 'Studio', moods: ['vivid', 'bold', 'colorful'] },
+  'main-street-nightshade': { world: 'Mystic', moods: ['dark', 'occult', 'moody'] },
+  'main-street-celestine': { world: 'Mystic', moods: ['soft', 'celestial', 'dreamy'] },
+  'main-street-ritual': { world: 'Mystic', moods: ['dark', 'intense', 'ritual'] },
+  'main-street-confetti': { world: 'Playroom', moods: ['bright', 'playful', 'fun'] },
+  'main-street-bubblegum': { world: 'Playroom', moods: ['loud', 'candy', 'fun'] },
+  'main-street-sprout': { world: 'Playroom', moods: ['soft', 'gentle', 'friendly'] },
+  'main-street-pressroom': { world: 'Press', moods: ['graphic', 'inky', 'urban'] },
+  'main-street-marquee': { world: 'Press', moods: ['bold', 'street', 'loud'] },
+  'main-street-broadside': { world: 'Press', moods: ['raw', 'zine', 'graphic'] },
+  'main-street-heirloom': { world: 'Relic', moods: ['vintage', 'aged', 'nostalgic'] },
+  'main-street-curiosity': { world: 'Relic', moods: ['dark', 'antique', 'rich'] },
+  'main-street-postmark': { world: 'Relic', moods: ['retro', 'mid-century', 'aged'] },
 };
 
 export const MAIN_STREET_FONT_HREFS: Record<string, string> = {
   'main-street-ember':
     'https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap',
+  'main-street-orchard':
+    'https://fonts.googleapis.com/css2?family=Hedvig+Letters+Serif&family=Karla:wght@400;500;600&family=Fragment+Mono&display=swap',
+  'main-street-pantry':
+    'https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Mulish:wght@400;500;600&family=Sometype+Mono:wght@400;500&display=swap',
+  'main-street-hearthstone':
+    'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Anonymous+Pro:wght@400;700&display=swap',
   'main-street-tannery':
     'https://fonts.googleapis.com/css2?family=Bitter:wght@400;600;800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap',
   'main-street-forge':
     'https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Archivo:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap',
   'main-street-anvil':
     'https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap',
+  'main-street-sawdust':
+    'https://fonts.googleapis.com/css2?family=Hepta+Slab:wght@400;600;700&family=Public+Sans:wght@400;500;600&family=Overpass+Mono:wght@400;500&display=swap',
   'main-street-porcelain':
     'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap',
-  'main-street-botanical':
-    'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600&family=Space+Mono:wght@400&display=swap',
   'main-street-atelier':
     'https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Inter:wght@400;500;600&display=swap',
+  'main-street-gild':
+    'https://fonts.googleapis.com/css2?family=Prata&family=Manrope:wght@400;500;600;700&display=swap',
+  'main-street-botanical':
+    'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600&family=Space+Mono:wght@400&display=swap',
+  'main-street-conservatory':
+    'https://fonts.googleapis.com/css2?family=Marcellus&family=Karla:wght@400;500;600&family=Syne+Mono&display=swap',
+  'main-street-wildflower':
+    'https://fonts.googleapis.com/css2?family=Yeseva+One&family=Mulish:wght@400;500;600&family=Red+Hat+Mono:wght@400;500&display=swap',
+  'main-street-studio':
+    'https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap',
+  'main-street-darkroom':
+    'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Geist+Mono:wght@400;500&display=swap',
+  'main-street-pigment':
+    'https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@500;700;800;900&family=Mada:wght@400;500;600&family=Sometype+Mono:wght@400;500&display=swap',
+  'main-street-nightshade':
+    'https://fonts.googleapis.com/css2?family=Gloock&family=Spectral:ital,wght@0,400;0,500;1,400&family=Martian+Mono:wght@400;500&display=swap',
+  'main-street-celestine':
+    'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cardo:ital,wght@0,400;0,700;1,400&family=Fragment+Mono&display=swap',
+  'main-street-ritual':
+    'https://fonts.googleapis.com/css2?family=Eczar:wght@400;600;700&family=Vollkorn:ital,wght@0,400;0,600;1,400&family=Sometype+Mono:wght@400;500&display=swap',
+  'main-street-confetti':
+    'https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Figtree:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap',
+  'main-street-bubblegum':
+    'https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700&family=Spline+Sans+Mono:wght@400;500&display=swap',
+  'main-street-sprout':
+    'https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Nunito+Sans:wght@400;600&family=Red+Hat+Mono:wght@400;500&display=swap',
+  'main-street-pressroom':
+    'https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;700&family=Spline+Sans+Mono:wght@400;500&display=swap',
+  'main-street-marquee':
+    'https://fonts.googleapis.com/css2?family=Anton&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap',
+  'main-street-broadside':
+    'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;600&family=Sometype+Mono:wght@400;500&display=swap',
+  'main-street-heirloom':
+    'https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap',
+  'main-street-curiosity':
+    'https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Lora:ital,wght@0,400;0,600;1,400&family=Anonymous+Pro:wght@400;700&display=swap',
+  'main-street-postmark':
+    'https://fonts.googleapis.com/css2?family=Rozha+One&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Sometype+Mono:wght@400;500&display=swap',
 };
 
 export type MainStreetSkinKey = keyof typeof MAIN_STREET_SKINS;
