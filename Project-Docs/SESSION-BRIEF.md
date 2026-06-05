@@ -40,6 +40,10 @@
 - Skin-divergence (parked): make the craft-world skins genuinely distinct (not cousins), so brand-voice→skin actually produces visibly different stores.
 - Try-on follow-ups: a **make-live / publish** button (copy a version into the live home), **owner-gating of `?v=`** previews, wiring **brand-voice→skin selection**, and generalizing `handOff`/`takeOn` to every archetype (any-to-any try-on).
 
+### Topics Alex flagged for tomorrow's DISCUSSION (not action yet)
+- **Does Gallery work as a standalone archetype at all?** Given Main Street >> Gallery for Abigail, consider **demoting Gallery to just a PRODUCT/CATALOG PAGE inside Main Street** rather than its own storefront archetype. Open question — discuss before touching anything.
+- **Add VARIANTS to the Main Street About section** — selectable treatments for the founder/About beat the way `goods` and `founder` already have. This is how we'd answer Alex's "Gallery's About is better": give Main Street a fuller About variant, not just the teaser.
+
 ### Process notes
 - Saved a memory **`feedback_preview_does_not_work`**: the `Claude_Preview` MCP loses its server handle on navigation and Bash can't reach the Windows localhost — don't try to load pages; hand Alex the URL and ask for the F12 console. (Burned real time wrestling it this session.)
 - `swap-skin.ts` (throwaway) removed; `run-tryon.ts` kept as the CLI proof harness. `scripts/gen-skin-shelf.ts` + `skin-shelf.html` (a visual contact-sheet of all 29 skins, opened in the browser to judge them) remain untracked.
