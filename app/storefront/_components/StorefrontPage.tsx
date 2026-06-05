@@ -12,15 +12,37 @@ import {
 import { archetypeSpec } from '@/lib/archetypes/registry';
 import type { ProductView, CatalogMedia } from '@/lib/archetypes/content';
 import type { Json } from '@/lib/database.types';
+import { readVersion } from '@/lib/tryon/write-version';
 
 interface StorefrontPageProps {
   slug: string;
+  /** Try-on preview — render the saved version with this label instead of the live store. */
+  version?: string | undefined;
 }
 
-export default async function StorefrontPage({ slug }: StorefrontPageProps) {
+export default async function StorefrontPage({ slug, version }: StorefrontPageProps) {
   const headerStore = await headers();
   const tenantId = headerStore.get('x-tenant-id');
   if (tenantId === null) notFound();
+
+  // Try-on preview: if ?v=<label> names a saved version, render it in place.
+  // (Owner-gating is deferred — see the try-on spec.) Unknown labels fall
+  // through to the live store below.
+  if (version !== undefined && version !== '') {
+    const env = await readVersion(tenantId, version);
+    if (env && env.kind === 'archetype') {
+      const spec = archetypeSpec(env.archetypeKey);
+      if (spec) {
+        return spec.render({
+          content: env.content,
+          lookKey: env.lookKey,
+          products: (env.products ?? []) as ProductView[],
+          mood: env.mood,
+          catalogSize: env.catalogSize,
+        });
+      }
+    }
+  }
 
   const db = supabaseAdmin();
 
