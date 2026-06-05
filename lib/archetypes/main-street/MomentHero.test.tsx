@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, cleanup, act } from '@testing-library/react';
-import { MomentHero } from './MomentHero';
+import { MomentHero, buildStoryTimeline } from './MomentHero';
 import { MAIN_STREET_SKINS } from './skins';
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
@@ -15,6 +15,13 @@ const moment = {
 
 afterEach(cleanup);
 
+describe('buildStoryTimeline', () => {
+  it('frames each line with a clean gap and lands on the brand — no two lines stack', () => {
+    const t = buildStoryTimeline(2);
+    expect(t.map((p) => p.kind)).toEqual(['open', 'line', 'gap', 'line', 'gap', 'brand']);
+  });
+});
+
 describe('MomentHero', () => {
   it('renders a full-screen hero with held media, a frame per story line, and a brand frame', () => {
     const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
@@ -28,11 +35,11 @@ describe('MomentHero', () => {
     vi.useFakeTimers();
     try {
       const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
-      // The sequence is a chain of effects: each step's timeout fires, sets the
-      // next step, which re-runs the effect and schedules the next timeout. Each
-      // link needs its own React commit, so advance in per-step flushes:
-      // breath (900) then one hold (3400) per story line, plus one extra to land.
-      for (const ms of [900, 3400, 3400, 3400]) {
+      // The sequence is a chain of effects: each phase's timeout fires, advances
+      // to the next phase, which re-runs the effect and schedules the next
+      // timeout. Each link needs its own React commit, so advance per-phase.
+      // For a 2-line story: open, line, gap, line, gap -> brand.
+      for (const ms of [600, 2000, 800, 2000, 800]) {
         await act(async () => {
           await vi.advanceTimersByTimeAsync(ms);
         });

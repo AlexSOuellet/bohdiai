@@ -31,6 +31,19 @@ const PhotoSlot = z.object({
   alt: z.string().min(4).max(120),
 });
 
+/** A hero story line. Capped tight so it sets large and reads in one breath, and
+ *  carries NO punctuation — not even a mid-line period or comma. Punctuation makes
+ *  the line staccato, and as the lines cross-fade the marks from two lines stack
+ *  into a smeared double-exposure. Apostrophes and intra-word hyphens are fine
+ *  ("don't", "full-grain"); periods, commas, dashes, colons, and quotes are not. */
+const StoryLine = z
+  .string()
+  .min(4)
+  .max(48)
+  .refine((s) => !/[.,!?;:…–—"“”]/.test(s), {
+    message: 'story lines carry no punctuation (no periods, commas, dashes, colons, or quotes)',
+  });
+
 /** One "find us this week" row. */
 const FindUsRow = z.object({
   day: z.string().min(1).max(12),
@@ -53,7 +66,7 @@ export const MainStreetContentSchema = z.object({
     media: MediaSlot,
     /** The story lines, each cross-fading into the next. Kept tight so they set
      *  large and read in one breath. */
-    story: z.array(z.string().min(4).max(48)).min(2).max(5),
+    story: z.array(StoryLine).min(2).max(4),
     eyebrow: z.string().min(4).max(48),
     brand: z.string().min(2).max(28),
     ctaLabel: z.string().min(3).max(24),

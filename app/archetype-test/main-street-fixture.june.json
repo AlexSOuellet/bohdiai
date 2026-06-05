@@ -4,7 +4,7 @@
     "identity": { "wordmark": "June's Sourdough", "nav": ["Shop", "About", "Find us"] },
     "moment": {
       "media": { "kind": "video", "prompt": "Steam rising off a cracked sourdough crust at first light, slow and close", "alt": "A loaf cooling on the rack" },
-      "story": ["It starts the night before", "Folded by hand, left to rise slow", "Pulled from the oven at first light"],
+      "story": ["It starts the night before", "Folded by hand and left to rise slow", "Pulled from the oven at first light"],
       "eyebrow": "Baked fresh every morning",
       "brand": "June's Sourdough",
       "ctaLabel": "See the loaves",

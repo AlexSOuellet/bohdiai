@@ -53,6 +53,11 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street{
       --ms-bg:${p.bg};--ms-fg:${p.fg};--ms-fg-muted:${p.fgMuted};--ms-accent:${p.accent};--ms-on-accent:${p.onAccent ?? p.bg};--ms-rule:${p.rule};
       --ms-contrast-bg:${c.bg};--ms-contrast-fg:${c.fg};--ms-contrast-fg-muted:${c.fgMuted};
+      /* on-media: a fixed, skin-agnostic near-white for text painted OVER hero
+         media. The video's luminance is unknown and a skin's contrast surface
+         can itself be light, so over-media text never reads from the skin — it
+         reads from these legibility tokens (the scrim guarantees a dark backdrop). */
+      --ms-on-media:#F7F5F2;--ms-on-media-muted:rgba(247,245,242,.74);
       --ms-disp:${r.brand.family};--ms-body:${r.body.family};--ms-mono:${r.eyebrow.family};
       --ms-section:${sp.section}px;--ms-loose:${sp.loose}px;--ms-base:${sp.base}px;--ms-tight:${sp.tight}px;
       background:var(--ms-bg);color:var(--ms-fg);position:relative;isolation:isolate;min-height:100vh;

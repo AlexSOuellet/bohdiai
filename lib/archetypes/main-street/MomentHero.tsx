@@ -4,24 +4,67 @@
  * Main Street — BEAT 1: the moment IS the hero.
  *
  * A full-screen held video with the brand story told one line at a time,
- * cross-fading, landing on the brand + CTA — and that landing IS the resting
- * hero. Plays on load; you scroll past it. The fixed nav stays hidden until the
- * brand lands, then appears, and goes solid once the hero scrolls out of view.
+ * landing on the brand + CTA — and that landing IS the resting hero. Plays on
+ * load; you scroll past it. The fixed nav stays hidden until the brand lands,
+ * then appears, and goes solid once the hero scrolls out of view.
  *
- * Timing is copied EXACTLY from the proven Story primitive: a 900ms breath of
- * media alone, 3400ms hold per line, a 1.8s LINEAR cross-fade (an eased opacity
- * fade front-loads and reads as a pop; linear is a true dissolve). Reads colors
- * and fonts from the skin — nothing typographic or color is hardcoded; the
- * black scrim/backstop are neutral legibility devices, not skin colors.
+ * REVEAL RHYTHM — each line fades fully out and the video breathes alone for a
+ * beat before the next fades in, so two lines never share the screen. (An
+ * overlapping cross-fade stacks the marks of two lines into a smeared
+ * double-exposure.) Timeline is built by a pure, tested helper; the numbers are
+ * deliberately on the quick side — eyeball on a real build and tune them here.
+ *
+ * CONTRAST OVER MEDIA — every word painted over the video uses the skin-agnostic
+ * `--ms-on-media` near-white plus the dark scrim, NEVER the skin's contrast
+ * color. A skin's contrast surface can itself be light (so its text is dark),
+ * and the video's luminance is unknown, so reading text color from the skin is
+ * how a dark wordmark lands invisibly on a dark video. The scrim + on-media
+ * pairing guarantees legibility by construction, independent of both.
  */
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetContent } from './schemas';
 import { Media, Nav, typeRoleCss, roles } from './chrome';
 
-const OPEN_MS = 900;
-const HOLD_MS = 3400;
-const FADE = '1.8s';
+// Tunable reveal timing (ms). GAP_MS must be >= the fade so a line fully clears
+// before the next begins — that no-overlap is the whole point.
+const OPEN_MS = 600; // media alone before the first line
+const LINE_MS = 2000; // a line held (includes its own ~fade-in)
+const GAP_MS = 800; // media alone between lines
+const FADE = '0.7s';
+
+export type StoryPhase =
+  | { kind: 'open' }
+  | { kind: 'line'; index: number }
+  | { kind: 'gap' }
+  | { kind: 'brand' };
+
+/** The ordered reveal timeline: a breath of media, then each line followed by a
+ *  clean gap, finally landing on the brand. Pure + exported so the rhythm is
+ *  testable without driving the component's timers. */
+export function buildStoryTimeline(lineCount: number): StoryPhase[] {
+  const phases: StoryPhase[] = [{ kind: 'open' }];
+  for (let i = 0; i < lineCount; i += 1) {
+    phases.push({ kind: 'line', index: i });
+    phases.push({ kind: 'gap' });
+  }
+  phases.push({ kind: 'brand' });
+  return phases;
+}
+
+/** How long a phase holds before advancing; null = terminal (the brand rests). */
+export function phaseDurationMs(p: StoryPhase): number | null {
+  switch (p.kind) {
+    case 'open':
+      return OPEN_MS;
+    case 'line':
+      return LINE_MS;
+    case 'gap':
+      return GAP_MS;
+    case 'brand':
+      return null;
+  }
+}
 
 export function MomentHero({
   identity,
@@ -33,17 +76,21 @@ export function MomentHero({
   skin: ArchetypeTheme;
 }) {
   const r = roles(skin);
-  const brandStep = moment.story.length;
-  const [step, setStep] = useState(-1);
+  const lineCount = moment.story.length;
+  const timeline = buildStoryTimeline(lineCount);
+  const [pi, setPi] = useState(0);
   const [solid, setSolid] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
-  const landed = step >= brandStep;
+  const phase = timeline[pi]!;
+  const landed = phase.kind === 'brand';
 
   useEffect(() => {
-    if (step >= brandStep) return undefined;
-    const t = setTimeout(() => setStep((s) => s + 1), step < 0 ? OPEN_MS : HOLD_MS);
+    const ms = phaseDurationMs(buildStoryTimeline(lineCount)[pi]!);
+    if (ms == null) return undefined;
+    const last = buildStoryTimeline(lineCount).length - 1;
+    const t = setTimeout(() => setPi((n) => Math.min(n + 1, last)), ms);
     return () => clearTimeout(t);
-  }, [step, brandStep]);
+  }, [pi, lineCount]);
 
   useEffect(() => {
     const el = heroRef.current;
@@ -68,6 +115,7 @@ export function MomentHero({
     zIndex: z,
   });
 
+  const lineVisible = (i: number) => phase.kind === 'line' && phase.index === i;
   const navVisible = landed || solid;
 
   return (
@@ -85,7 +133,9 @@ export function MomentHero({
           justifyContent: 'space-between',
           padding: solid ? '14px 40px' : '20px 40px',
           background: solid ? 'var(--ms-bg)' : 'transparent',
-          color: solid ? 'var(--ms-fg)' : 'var(--ms-contrast-fg)',
+          // Solid nav sits on the page surface (skin fg); over the hero it uses
+          // the on-media near-white so it reads on the (dark-scrimmed) video.
+          color: solid ? 'var(--ms-fg)' : 'var(--ms-on-media)',
           boxShadow: solid ? '0 1px 0 var(--ms-rule)' : 'none',
           opacity: navVisible ? 1 : 0,
           pointerEvents: navVisible ? 'auto' : 'none',
@@ -98,23 +148,25 @@ export function MomentHero({
       <header
         ref={heroRef}
         data-ms-hero
-        style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'var(--ms-contrast-bg)', color: 'var(--ms-contrast-fg)' }}
+        style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'var(--ms-contrast-bg)', color: 'var(--ms-on-media)' }}
       >
         <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
           <Media media={moment.media} style={{ filter: 'saturate(1.02) contrast(1.04) brightness(.92) sepia(.06)' }} />
         </div>
+        {/* Scrim: weighted toward the center where the text sits, so white text
+            reads regardless of whether the video is bright or dark. Tunable. */}
         <div
           aria-hidden
-          style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'radial-gradient(120% 90% at 50% 45%, rgba(0,0,0,.25), rgba(0,0,0,.74))' }}
+          style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'radial-gradient(120% 90% at 50% 45%, rgba(0,0,0,.42), rgba(0,0,0,.82))' }}
         />
 
         {moment.story.map((line, i) => (
-          <div key={i} data-story-line style={frame(step === i, 2)}>
+          <div key={i} data-story-line style={frame(lineVisible(i), 2)}>
             <p
               data-type="storyline"
               style={{
                 ...typeRoleCss(r.storyline),
-                color: 'var(--ms-contrast-fg)',
+                color: 'var(--ms-on-media)',
                 maxWidth: '18ch',
                 margin: 0,
                 textShadow: '0 2px 36px rgba(0,0,0,.55)',
@@ -127,12 +179,12 @@ export function MomentHero({
 
         <div data-story-brand style={frame(landed, 3)}>
           <div>
-            <div data-type="eyebrow" style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-contrast-fg-muted)', marginBottom: 18 }}>
+            <div data-type="eyebrow" style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-on-media-muted)', marginBottom: 18 }}>
               {moment.eyebrow}
             </div>
             <h1
               data-type="brand"
-              style={{ ...typeRoleCss(r.brand), color: 'var(--ms-contrast-fg)', margin: 0, textShadow: '0 2px 40px rgba(0,0,0,.5)' }}
+              style={{ ...typeRoleCss(r.brand), color: 'var(--ms-on-media)', margin: 0, textShadow: '0 2px 40px rgba(0,0,0,.5)' }}
             >
               {moment.brand}
             </h1>
@@ -150,8 +202,8 @@ export function MomentHero({
                   data-type="navLabel"
                   style={{
                     ...typeRoleCss(r.navLabel),
-                    border: '1px solid var(--ms-contrast-fg-muted)',
-                    color: 'var(--ms-contrast-fg)',
+                    border: '1px solid var(--ms-on-media-muted)',
+                    color: 'var(--ms-on-media)',
                     padding: '16px 26px',
                     borderRadius: 2,
                   }}

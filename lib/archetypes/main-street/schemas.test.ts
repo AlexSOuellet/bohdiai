@@ -7,7 +7,7 @@ function valid() {
     identity: { wordmark: "June's Sourdough", nav: ['Shop', 'About', 'Find us'] },
     moment: {
       media: { kind: 'video', prompt: 'Steam rising off a cracked sourdough crust, slow', alt: 'A loaf cooling' },
-      story: ['It starts the night before', 'Folded by hand, left to rise slow', 'Pulled from the oven at first light'],
+      story: ['It starts the night before', 'Folded by hand and left to rise slow', 'Pulled from the oven at first light'],
       eyebrow: 'Baked fresh every morning',
       brand: "June's Sourdough",
       ctaLabel: 'See the loaves',
@@ -48,8 +48,32 @@ describe('MainStreetContentSchema', () => {
 
   it('caps the story line length', () => {
     const c = valid();
-    c.moment.story = ['x'.repeat(60), 'ok'];
+    c.moment.story = ['x'.repeat(60), 'ok line'];
     expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+  });
+
+  it('caps the story at four lines', () => {
+    const c = valid();
+    c.moment.story = ['line one', 'line two', 'line three', 'line four', 'line five'];
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+  });
+
+  it('rejects punctuation in a story line', () => {
+    const c = valid();
+    c.moment.story = ['Flour. Water. Salt. Time.', 'No shortcuts'];
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+  });
+
+  it('rejects a comma in a story line', () => {
+    const c = valid();
+    c.moment.story = ['Made in small batches, every week', 'Real bread for real people'];
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+  });
+
+  it('allows apostrophes and intra-word hyphens in story lines', () => {
+    const c = valid();
+    c.moment.story = ["don't rush it", 'cut from full-grain hides'];
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 
   it('rejects fewer than 2 nav items', () => {

@@ -62,14 +62,14 @@ Call submit_store with { content, products }.
 content (MAX lengths are real; stay comfortably under them):
 - shopName (2-40)
 - identity: { wordmark (2-28), nav (2-4 strings, each 2-18) }
-- moment: { media: { kind: "video", prompt (8-400): a SLOW, held, atmospheric hero video (gentle motion — hands working, light moving; never fast cuts), alt (4-120) }, story (2-5 strings, each 4-48), eyebrow (4-48), brand (2-28), ctaLabel (3-24), secondaryCtaLabel (3-24, optional) }
+- moment: { media: { kind: "video", prompt (8-400): a SLOW, held, atmospheric hero video (gentle motion — hands working, light moving; never fast cuts), alt (4-120) }, story (2-4 strings, each 4-48, NO punctuation at all — not even periods between words; apostrophes and hyphens within a word are fine), eyebrow (4-48), brand (2-28), ctaLabel (3-24), secondaryCtaLabel (3-24, optional) }
 - goods: { title (2-48), label (2-24, optional), viewAllLabel (2-28, optional) }
 - founder: { quote (24-280, first person, ~2 sentences, specific, no AI-tell), attribution (4-60), photo: { prompt (8-400): the maker, alt (4-120) }, aboutLabel (2-28, optional), findUs (optional): { label (2-28), eventsLabel (2-28, optional), rows (1-5): { day (1-12), where (4-60), time (1-12) } } }
 - close: { label (2-28), headline (6-72), ctaLabel (3-24) }
 
 products (author ${target}; a brand-new store with no catalog, so you create it): each { name (2-40), slug (2-48, lowercase-hyphen), shortDescription (4-90), description (12-300), basePriceCents (integer cents, e.g. 4800 = $48), imagePrompt (8-400): a clean product photo on a fitting surface }.
 
-VOICE: specifics over platitudes; no AI-tell ("crafted with care", "every piece tells a story"); short sentences; no em-dashes or semicolons; NO terminal punctuation in headlines, story lines, or the brand.`;
+VOICE: specifics over platitudes; no AI-tell ("crafted with care", "every piece tells a story"); short sentences; no em-dashes or semicolons; NO terminal punctuation in headlines or the brand; the hero story lines carry NO punctuation at all (not even mid-line periods or commas — "Flour. Water. Salt. Time." is wrong; "Flour water salt time" is right).`;
 }
 
 function parseSubmission(raw: unknown): ParseResult<MainStreetAuthored> {
