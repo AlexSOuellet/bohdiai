@@ -7,7 +7,19 @@ const msContent = {
   shopName: 'Tannery Row',
   identity: { wordmark: 'Tannery Row', nav: ['Shop', 'About'] },
   moment: {
-    media: { kind: 'video', prompt: 'slow hands stitching leather at a bench', alt: 'maker at the bench' },
+    media: {
+      kind: 'video',
+      prompt: {
+        composition: 'close on a workbench, a half-finished wallet in frame',
+        subject: 'steam curling off a beeswax pot',
+        environment: 'a dim leather workshop',
+        atmosphere: 'warm and patient',
+        camera: 'locked off, shallow depth of field',
+        lighting: 'a single amber work lamp',
+        style: 'photographic, deep shadow, warm palette',
+      },
+      alt: 'maker at the bench',
+    },
     story: ['cut by hand', 'stitched to last'],
     eyebrow: 'Made in the workshop',
     brand: 'Tannery Row',

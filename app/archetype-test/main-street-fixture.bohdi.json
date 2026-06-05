@@ -12,8 +12,16 @@
     "moment": {
       "media": {
         "kind": "video",
-        "prompt": "Slow held workshop shot. Amber light on a worn oak bench. Hands pull a stitching awl through veg-tanned hide in steady rhythm. Close on a brass buckle catching the light. Wide bench view: waxed thread, bone folder, half-finished wallet. Steam from a beeswax pot. Sun drifts slowly across the surface. No fast cuts. Palette: warm tobacco, raw hide, deep shadow.",
-        "alt": "Hands saddle-stitching a leather belt on a workshop bench in warm afternoon light"
+        "prompt": {
+          "composition": "close on a worn oak workbench, a half-finished veg-tanned wallet and brass buckle in frame",
+          "subject": "fine steam curling off a beeswax pot, dust drifting in the light",
+          "environment": "a dim leather workshop, waxed thread and a bone folder laid out",
+          "atmosphere": "warm, patient, hand-made",
+          "camera": "locked off, no movement, shallow depth of field",
+          "lighting": "a single amber work lamp raking low across the hide",
+          "style": "photographic, deep shadow, warm tobacco palette, filmic grain"
+        },
+        "alt": "A leather workshop bench in warm lamplight"
       },
       "story": [
         "full-grain hide straight from the tannery",

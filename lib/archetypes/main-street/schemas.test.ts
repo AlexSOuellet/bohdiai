@@ -6,7 +6,19 @@ function valid() {
     shopName: "June's Sourdough",
     identity: { wordmark: "June's Sourdough", nav: ['Shop', 'About', 'Find us'] },
     moment: {
-      media: { kind: 'video', prompt: 'Steam rising off a cracked sourdough crust, slow', alt: 'A loaf cooling' },
+      media: {
+        kind: 'video',
+        prompt: {
+          composition: 'tight overhead on a single cracked sourdough loaf',
+          subject: 'steam rising slowly off the crust',
+          environment: 'a warm flour-dusted kitchen bench',
+          atmosphere: 'quiet and unhurried',
+          camera: 'locked off, shallow depth of field',
+          lighting: 'soft low golden window light',
+          style: 'photographic, warm, filmic grain',
+        },
+        alt: 'A loaf cooling',
+      },
       story: ['It starts the night before', 'Folded by hand and left to rise slow', 'Pulled from the oven at first light'],
       eyebrow: 'Baked fresh every morning',
       brand: "June's Sourdough",
@@ -73,6 +85,18 @@ describe('MainStreetContentSchema', () => {
   it('allows apostrophes and intra-word hyphens in story lines', () => {
     const c = valid();
     c.moment.story = ["don't rush it", 'cut from full-grain hides'];
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
+  });
+
+  it('rejects a hero media prompt authored as a bare string', () => {
+    const c = valid();
+    (c.moment as Record<string, unknown>)['media'] = { kind: 'video', prompt: 'steam rising off the crust, slow', alt: 'a loaf' };
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+  });
+
+  it('accepts a still hero (kind image) with a structured scene', () => {
+    const c = valid();
+    (c.moment.media as Record<string, unknown>)['kind'] = 'image';
     expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 

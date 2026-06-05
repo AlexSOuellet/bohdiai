@@ -18,6 +18,7 @@ import { mainStreetArchetype } from './index';
 import { MainStreetContentSchema, type MainStreetContent } from './schemas';
 import { MAIN_STREET_SKINS } from './skins';
 import { GOODS_TREATMENT_MENU } from './goods';
+import { sceneToPrompt } from './scene-prompt';
 
 const SKIN_DESCRIPTIONS: Record<string, string> = {
   'main-street-ember': 'warm cream and ember, a soft serif — homey, cozy, hand-baked',
@@ -69,7 +70,7 @@ Call submit_store with { content, products }.
 content (MAX lengths are real; stay comfortably under them):
 - shopName (2-40)
 - identity: { wordmark (2-28), nav (2-4 strings, each 2-18) }
-- moment: { media: { kind: "video", prompt (8-400): a SLOW, held, atmospheric hero video (gentle motion — hands working, light moving; never fast cuts), alt (4-120) }, story (2-4 strings, each 4-48, NO punctuation at all — not even periods between words; apostrophes and hyphens within a word are fine), eyebrow (4-48), brand (2-28), ctaLabel (3-24), secondaryCtaLabel (3-24, optional) }
+- moment: { media: { kind: "video" OR "image" — a held VIDEO or a cinematic STILL. A still is an equally strong hero and has no loop seam, so prefer a still unless real ambient motion genuinely adds something; prompt: a STRUCTURED scene, fill every group with a short phrase — { composition, subject, environment, atmosphere, camera, lighting, style }. For VIDEO the subject MUST be neutral and ambient (steam rising, a flame breathing, dust drifting in a light beam, fabric settling) and the motion slow and continuous — NEVER a person performing an action and NEVER a big lighting change, because the clip loops and any action or flash jumps on the restart; alt (4-120) }, story (2-4 strings, each 4-48, NO punctuation at all — not even periods between words; apostrophes and hyphens within a word are fine), eyebrow (4-48), brand (2-28), ctaLabel (3-24), secondaryCtaLabel (3-24, optional) }
 - goods: { title (2-48), treatment (one of: marquee | procession | switcher | slideshow — your pick from above), label (2-24, optional), viewAllLabel (2-28, optional) }
 - founder: { quote (24-280, first person, ~2 sentences, specific, no AI-tell), attribution (4-60), photo: { prompt (8-400): the maker, alt (4-120) }, aboutLabel (2-28, optional), findUs (optional): { label (2-28), eventsLabel (2-28, optional), rows (1-5): { day (1-12), where (4-60), time (1-12) } } }
 - close: { label (2-28), headline (6-72), ctaLabel (3-24) }
@@ -93,8 +94,17 @@ function parseSubmission(raw: unknown): ParseResult<MainStreetAuthored> {
 }
 
 function mediaJobs(a: MainStreetAuthored): MediaJob[] {
+  // The hero follows the AUTHORED kind — a still is an equally valid hero and
+  // sidesteps the loop seam entirely. The scene is serialized for the provider:
+  // JSON (+ seamless-loop intent) for video, prose for a still.
+  const heroKind: 'video' | 'still' = a.content.moment.media.kind === 'image' ? 'still' : 'video';
+  const heroPrompt = sceneToPrompt(a.content.moment.media.prompt, heroKind);
+  const hero: MediaJob =
+    heroKind === 'video'
+      ? { id: 'hero', kind: 'video', prompt: heroPrompt, aspect: '16:9', durationSec: 6, group: 'feature' }
+      : { id: 'hero', kind: 'still', prompt: heroPrompt, aspect: '16:9', group: 'feature' };
   const jobs: MediaJob[] = [
-    { id: 'hero', kind: 'video', prompt: a.content.moment.media.prompt, aspect: '16:9', durationSec: 6, group: 'feature' },
+    hero,
     { id: 'portrait', kind: 'still', prompt: a.content.founder.photo.prompt, aspect: '1:1', group: 'feature' },
   ];
   a.products.forEach((p, i) => {

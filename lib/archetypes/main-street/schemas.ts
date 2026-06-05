@@ -15,11 +15,27 @@ import { z } from 'zod';
 import { MAIN_STREET_SKINS } from './skins';
 import { GOODS_TREATMENTS } from './goods';
 
-/** A held-media slot for the hero moment — a generation prompt, optionally a
- *  resolved url (+ poster for video). Niche-neutral. */
+/** The hero's held media, authored as a STRUCTURED scene rather than a prose
+ *  sentence — video models take direction far better from grouped fields, and a
+ *  still uses the same groups joined into a description. The generation seam
+ *  serializes this (JSON for video, prose for a still) and, for video, injects a
+ *  seamless-loop + slow-motion intent. The groups are fixed; Bohdi fills them. */
+const ScenePrompt = z.object({
+  composition: z.string().min(3).max(160),
+  subject: z.string().min(3).max(160),
+  environment: z.string().min(3).max(160),
+  atmosphere: z.string().min(3).max(120),
+  camera: z.string().min(3).max(120),
+  lighting: z.string().min(3).max(120),
+  style: z.string().min(3).max(120),
+});
+export type ScenePrompt = z.infer<typeof ScenePrompt>;
+
+/** A held-media slot for the hero moment — a structured scene prompt, optionally
+ *  a resolved url (+ poster for video). A still is as valid a hero as a video. */
 const MediaSlot = z.object({
   kind: z.enum(['video', 'image']).default('video'),
-  prompt: z.string().min(8).max(400),
+  prompt: ScenePrompt,
   url: z.string().url().optional(),
   poster: z.string().url().optional(),
   alt: z.string().min(4).max(120),

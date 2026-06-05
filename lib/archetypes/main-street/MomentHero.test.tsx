@@ -6,7 +6,20 @@ import { MAIN_STREET_SKINS } from './skins';
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 const identity = { wordmark: "June's Sourdough", nav: ['Shop', 'About'] };
 const moment = {
-  media: { kind: 'video' as const, prompt: 'Steam rising off a cracked crust, slow', url: '/bread-kling.mp4', alt: 'A loaf cooling' },
+  media: {
+    kind: 'video' as const,
+    prompt: {
+      composition: 'tight overhead on a cracked loaf',
+      subject: 'steam rising slowly off the crust',
+      environment: 'a warm kitchen bench',
+      atmosphere: 'quiet and unhurried',
+      camera: 'locked off, shallow depth',
+      lighting: 'soft golden window light',
+      style: 'photographic, filmic grain',
+    },
+    url: '/bread-kling.mp4',
+    alt: 'A loaf cooling',
+  },
   story: ['It starts the night before', 'Pulled from the oven at first light'],
   eyebrow: 'Baked fresh every morning',
   brand: "June's Sourdough",

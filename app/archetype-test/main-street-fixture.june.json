@@ -3,7 +3,19 @@
     "shopName": "June's Sourdough",
     "identity": { "wordmark": "June's Sourdough", "nav": ["Shop", "About", "Find us"] },
     "moment": {
-      "media": { "kind": "video", "prompt": "Steam rising off a cracked sourdough crust at first light, slow and close", "alt": "A loaf cooling on the rack" },
+      "media": {
+        "kind": "video",
+        "prompt": {
+          "composition": "tight overhead on a single cracked sourdough loaf cooling on a wire rack",
+          "subject": "steam rising slowly off the crust",
+          "environment": "a warm flour-dusted kitchen bench at first light",
+          "atmosphere": "quiet, hand-made, unhurried",
+          "camera": "locked off, no movement, shallow depth of field",
+          "lighting": "soft low golden window light raking across the crust",
+          "style": "photographic, warm, filmic grain"
+        },
+        "alt": "A loaf cooling on the rack"
+      },
       "story": ["It starts the night before", "Folded by hand and left to rise slow", "Pulled from the oven at first light"],
       "eyebrow": "Baked fresh every morning",
       "brand": "June's Sourdough",
