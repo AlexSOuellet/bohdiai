@@ -151,7 +151,10 @@ export function MomentHero({
         style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'var(--ms-contrast-bg)', color: 'var(--ms-on-media)' }}
       >
         <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-          <Media media={moment.media} style={{ filter: 'saturate(1.02) contrast(1.04) brightness(.92) sepia(.06)' }} />
+          {/* No hardcoded tint — the hero media takes the skin's own photo grade
+              (applied via the .archetype-photo class), so it's mood-driven and a
+              dark skin and a warm skin no longer come out the same sepia. */}
+          <Media media={moment.media} />
         </div>
         {/* Scrim: weighted toward the center where the text sits, so white text
             reads regardless of whether the video is bright or dark. Tunable. */}
