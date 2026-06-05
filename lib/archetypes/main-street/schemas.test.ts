@@ -76,6 +76,18 @@ describe('MainStreetContentSchema', () => {
     expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 
+  it('accepts a Bohdi-authored goods treatment', () => {
+    const c = valid();
+    (c.goods as Record<string, unknown>)['treatment'] = 'marquee';
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
+  });
+
+  it('rejects an unknown goods treatment', () => {
+    const c = valid();
+    (c.goods as Record<string, unknown>)['treatment'] = 'mosaic';
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+  });
+
   it('rejects fewer than 2 nav items', () => {
     const c = valid();
     c.identity.nav = ['Shop'];

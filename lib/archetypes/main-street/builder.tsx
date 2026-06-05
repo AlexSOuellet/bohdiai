@@ -17,6 +17,7 @@ import { MainStreet } from './MainStreet';
 import { mainStreetArchetype } from './index';
 import { MainStreetContentSchema, type MainStreetContent } from './schemas';
 import { MAIN_STREET_SKINS } from './skins';
+import { GOODS_TREATMENT_MENU } from './goods';
 
 const SKIN_DESCRIPTIONS: Record<string, string> = {
   'main-street-ember': 'warm cream and ember, a soft serif — homey, cozy, hand-baked',
@@ -55,7 +56,13 @@ interface MainStreetAuthored {
 
 function authoringSpec(b: AuthoringBrief): string {
   const target = Math.max(3, Math.min(b.productCount > 0 ? b.productCount : 6, 10));
+  const treatments = (Object.entries(GOODS_TREATMENT_MENU) as Array<[string, string]>)
+    .map(([k, desc]) => `    - ${k}: ${desc}`)
+    .join('\n');
   return `MAIN STREET — a paced sales page in four full-width beats: (1) THE MOMENT, a full-screen held video with a short brand story told one line at a time, cross-fading, landing on the brand and a button; (2) GOODS in motion, a moving showcase of products; (3) THE FOUNDER beside a "find us this week" calendar; (4) THE CLOSE, a big-type sign-off. Layout, fonts, color, spacing, and motion are fixed by the archetype and the skin you already chose. Author the content and write vivid generation prompts for the hero video, the founder portrait, and each product photo.
+
+GOODS TREATMENT — pick the body the goods beat wears (goods.treatment), the one that fits THIS shop. The home shows only a small sampling of products either way, so catalog size is a hint, not a rule:
+${treatments}
 
 Call submit_store with { content, products }.
 
@@ -63,7 +70,7 @@ content (MAX lengths are real; stay comfortably under them):
 - shopName (2-40)
 - identity: { wordmark (2-28), nav (2-4 strings, each 2-18) }
 - moment: { media: { kind: "video", prompt (8-400): a SLOW, held, atmospheric hero video (gentle motion — hands working, light moving; never fast cuts), alt (4-120) }, story (2-4 strings, each 4-48, NO punctuation at all — not even periods between words; apostrophes and hyphens within a word are fine), eyebrow (4-48), brand (2-28), ctaLabel (3-24), secondaryCtaLabel (3-24, optional) }
-- goods: { title (2-48), label (2-24, optional), viewAllLabel (2-28, optional) }
+- goods: { title (2-48), treatment (one of: marquee | procession | switcher | slideshow — your pick from above), label (2-24, optional), viewAllLabel (2-28, optional) }
 - founder: { quote (24-280, first person, ~2 sentences, specific, no AI-tell), attribution (4-60), photo: { prompt (8-400): the maker, alt (4-120) }, aboutLabel (2-28, optional), findUs (optional): { label (2-28), eventsLabel (2-28, optional), rows (1-5): { day (1-12), where (4-60), time (1-12) } } }
 - close: { label (2-28), headline (6-72), ctaLabel (3-24) }
 

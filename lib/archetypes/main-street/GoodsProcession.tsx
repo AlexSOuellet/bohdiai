@@ -27,12 +27,15 @@ export function GoodsProcession({
 }) {
   const r = roles(skin);
   return (
-    <section id="goods" style={{ padding: '96px 0 110px' }}>
+    <section id="goods" style={{ padding: '72px 0 80px' }}>
       <GoodsHead goods={goods} skin={skin} viewAll={viewAll} />
-      <div className="ms-wrap" style={{ display: 'flex', flexDirection: 'column', gap: 110 }}>
+      {/* Narrower than the page wrap so the one-per-row march stays calm, not
+          billboard-sized. Scale is tunable here: container width, row gap, the
+          image column ratio, and the aspect. */}
+      <div className="ms-wrap" style={{ maxWidth: 940, display: 'flex', flexDirection: 'column', gap: 64 }}>
         {products.map((p, i) => (
           <Reveal key={p.slug}>
-            <div className={`ms-proc-row${i % 2 === 1 ? ' alt' : ''}`} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56, alignItems: 'center' }}>
+            <div className={`ms-proc-row${i % 2 === 1 ? ' alt' : ''}`} style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.1fr', gap: 48, alignItems: 'center' }}>
               <div
                 className="ms-proc-frame"
                 style={{

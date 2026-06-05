@@ -1,10 +1,13 @@
 /**
- * Main Street — goods-beat treatment selection.
+ * Main Street — the goods-beat treatments.
  *
  * The goods beat has FOUR bodies, all motion-bearing, none of them the banned
- * card grid. Which one a shop wears is SELECTED, never authored and never a
- * maker choice — it falls out of how much the maker actually sells (catalog
- * size), with mood breaking the tie among the small-catalog treatments:
+ * card grid. Which one a shop wears is BOHDI's choice — he picks it with his
+ * look (see the builder's authoring spec), so two shops in one niche can read
+ * differently and a tenant can try a different one on later. `selectGoodsTreatment`
+ * survives only as a deterministic FALLBACK for content authored before the
+ * treatment field existed; catalog size was the old driver, mood breaking the
+ * small-catalog tie:
  *
  *  - marquee     — continuous horizontal drift. Wants a deep catalog to feel
  *                  full (twenty things gliding past read rich; four read broke).
@@ -19,7 +22,19 @@
  * world, the treatment changes the bones of the goods beat.
  */
 
-export type GoodsTreatment = 'marquee' | 'procession' | 'switcher' | 'slideshow';
+/** The four goods treatments, as a tuple — the single source the schema enum and
+ *  the authoring menu both read so they can never drift apart. */
+export const GOODS_TREATMENTS = ['marquee', 'procession', 'switcher', 'slideshow'] as const;
+export type GoodsTreatment = (typeof GOODS_TREATMENTS)[number];
+
+/** One-line purpose for each treatment, shown to Bohdi so he picks the one that
+ *  fits the shop. Catalog size is a HINT here, never a gate. */
+export const GOODS_TREATMENT_MENU: Record<GoodsTreatment, string> = {
+  marquee: 'an abundant, continuous horizontal drift of products — reads rich and busy; suits a fuller catalog (small ones are filled by repeating)',
+  procession: 'full-width products, one per row, each settling out of a slow zoom as it scrolls in — editorial, each piece gets its moment',
+  switcher: 'one big image beside a tight list of pieces; pointing at a row cross-fades the image — curated and interactive',
+  slideshow: 'one product at a time, auto-advancing on a slow cross-fade with a gentle drift — cinematic and hands-off',
+};
 
 /** Catalog-size thresholds. A deep catalog loops in the marquee; a mid catalog
  *  walks the procession; a small catalog gets one of the two single-piece
@@ -59,7 +74,7 @@ export function selectGoodsTreatment(productCount: number, mood?: string): Goods
  */
 export const GOODS_SAMPLE_CAP: Record<GoodsTreatment, number> = {
   marquee: 10,
-  procession: 4,
+  procession: 5,
   switcher: 6,
   slideshow: 6,
 };

@@ -70,7 +70,38 @@ describe('GoodsBeat — sampling + the view-all cue', () => {
   });
 });
 
-describe('GoodsBeat — selected treatment', () => {
+describe('GoodsBeat — Bohdi-authored treatment', () => {
+  it('wears the treatment authored in goods.treatment', () => {
+    const { container } = render(
+      <GoodsBeat goods={{ title: 'From the bench', treatment: 'slideshow' }} products={makeProducts(3)} skin={skin} />,
+    );
+    expect(container.querySelectorAll('.ms-slide-layer').length).toBe(3);
+  });
+
+  it('an explicit prop overrides the authored treatment (previews)', () => {
+    const { container } = render(
+      <GoodsBeat goods={{ title: 'From the bench', treatment: 'slideshow' }} products={makeProducts(3)} skin={skin} treatment="switcher" />,
+    );
+    expect(container.querySelectorAll('[data-ms-switch-row]').length).toBe(3);
+  });
+
+  it('renders a prominent bottom view-all CTA', () => {
+    const { container } = render(
+      <GoodsBeat goods={{ title: 'From the bench', treatment: 'procession' }} products={makeProducts(3)} skin={skin} shopHref="/shop" />,
+    );
+    const cta = container.querySelector('.ms-viewall-cta') as HTMLAnchorElement | null;
+    expect(cta).toBeTruthy();
+    expect(cta?.getAttribute('href')).toBe('/shop');
+  });
+
+  it('fills a thin marquee so it does not read sparse', () => {
+    const { container } = render(<GoodsBeat goods={goods} products={makeProducts(3)} skin={skin} treatment="marquee" />);
+    // 3 products repeated to the floor (10), then doubled for the loop.
+    expect(container.querySelectorAll('[data-ms-card]').length).toBeGreaterThanOrEqual(20);
+  });
+});
+
+describe('GoodsBeat — selected treatment (legacy fallback)', () => {
   it('selects the marquee for a deep catalog', () => {
     const { container } = render(<GoodsBeat goods={goods} products={makeProducts(14)} skin={skin} />);
     expect(container.querySelectorAll('[data-ms-card]').length).toBeGreaterThan(0);

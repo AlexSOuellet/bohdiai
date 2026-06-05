@@ -13,6 +13,7 @@
  */
 import { z } from 'zod';
 import { MAIN_STREET_SKINS } from './skins';
+import { GOODS_TREATMENTS } from './goods';
 
 /** A held-media slot for the hero moment — a generation prompt, optionally a
  *  resolved url (+ poster for video). Niche-neutral. */
@@ -78,6 +79,10 @@ export const MainStreetContentSchema = z.object({
    *  page, reached via the view-all cue. */
   goods: z.object({
     title: z.string().min(2).max(48),
+    /** Which goods body to wear. BOHDI's choice — he picks the one that fits the
+     *  shop. Optional only so content authored before this field still parses
+     *  (the renderer falls back to the legacy size-based pick when it is absent). */
+    treatment: z.enum(GOODS_TREATMENTS).optional(),
     /** Optional small label on the heading row, e.g. "This week". */
     label: z.string().min(2).max(24).optional(),
     /** The view-all cue pointing to the Products page, in the maker's voice,

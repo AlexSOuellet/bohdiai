@@ -65,6 +65,43 @@ export function GoodsHead({
   );
 }
 
+/** The prominent end-of-sampling CTA. The home goods beat is a TASTE; this is the
+ *  clear button that sends the shopper to the full Products page (the small cue in
+ *  the heading is secondary). Bohdi's label, with a neutral fallback. */
+export function GoodsViewAllCta({ viewAll, skin }: { viewAll?: GoodsViewAll | undefined; skin: ArchetypeTheme }) {
+  if (!viewAll) return null;
+  const r = roles(skin);
+  return (
+    <div className="ms-wrap" style={{ display: 'flex', justifyContent: 'center', marginTop: 56 }}>
+      <a
+        href={viewAll.href}
+        data-type="navLabel"
+        className="ms-viewall-cta"
+        style={{
+          ...typeRoleCss(r.navLabel),
+          color: 'var(--ms-fg)',
+          border: '1px solid var(--ms-rule)',
+          padding: '15px 30px',
+          borderRadius: 2,
+        }}
+      >
+        {viewAll.label} &rarr;
+      </a>
+    </div>
+  );
+}
+
+/** A marquee reads thin on a small catalog. Repeat the sampling up to a floor so
+ *  the drift always looks full — reusing the maker's few photos is fine (the
+ *  marquee loops anyway). */
+const MARQUEE_MIN_CARDS = 10;
+function fillMarquee(products: ProductView[]): ProductView[] {
+  if (products.length === 0) return products;
+  const out: ProductView[] = [];
+  while (out.length < Math.max(MARQUEE_MIN_CARDS, products.length)) out.push(...products);
+  return out;
+}
+
 export function GoodsMarquee({
   goods,
   products,
@@ -77,8 +114,9 @@ export function GoodsMarquee({
   viewAll?: GoodsViewAll | undefined;
 }) {
   const r = roles(skin);
-  // Duplicate the row so the -50% scroll loops seamlessly.
-  const loop = [...products, ...products];
+  // Fill thin catalogs, then duplicate so the -50% scroll loops seamlessly.
+  const filled = fillMarquee(products);
+  const loop = [...filled, ...filled];
   return (
     <section id="goods" style={{ padding: '96px 0 110px', overflow: 'hidden' }}>
       <GoodsHead goods={goods} skin={skin} viewAll={viewAll} />
