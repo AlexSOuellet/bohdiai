@@ -29,21 +29,34 @@ Each archetype's build spec gains two capabilities:
 
 ## The conversion flow
 
-`convert(sourceSubdomain, targetArchetypeKey, newName)`:
+`convert(subdomain, targetArchetypeKey, label)` — all on the **one** tenant:
 
-1. Load the source tenant's home envelope → `sourceSpec.handOff(content)` → **PortableStore**.
+1. Load the tenant's **live** envelope → `sourceSpec.handOff(content)` → **PortableStore**.
 2. `targetSpec.takeOn(portable, brief)` → authored target content + its media jobs.
 3. **Media** — reuse what carries over (the maker photo, any existing product photos); generate only what the target needs that the source lacked (Main Street's hero; product photos when the source had none, capped at `MAX_PRODUCT_IMAGES` and recycled).
-4. `writeArchetypeStorefront` under the new name / new subdomain as a **new tenant**. The source store is never modified.
+4. Save the result as a **new version row** on the same tenant (not live). The live store is never modified.
 
-Result: both stores exist, same maker, one per shape, open side by side.
+Result: the one tenant now holds two versions — the live Gallery and the new Main Street — viewable side by side under one subdomain (`/` for live, `/?v=<label>` for the try-on). Same maker, same wordmark, so **no new name is needed**.
+
+## Storage — versions under one tenant
+
+A new `store_versions` table holds try-on variants (drafts): `id`, `tenant_id`, `label` (e.g. `mainstreet`), `envelope` (the archetype payload `{kind:'archetype', archetypeKey, lookKey, mood, catalogSize, content}` plus its product rows), `created_at`.
+
+- The **live** store stays where it is — the tenant's `content_pages` home. No migration needed for the first cut.
+- The bare subdomain renders the live store, exactly as today.
+- `…/?v=<label>` renders that draft version from `store_versions` instead — the in-place preview.
+- **Make live** (the editor's publish, later) copies a chosen version's envelope into the live `content_pages` home. Out of scope for this cut.
+- **Security:** preview-by-param is fine for us now; for real makers, gate `?v=` to the authenticated owner so customers can't surf someone's unpublished drafts.
+
+The storefront resolver (`StorefrontPage` / `renderArchetypeStore`) gains one branch: if a `v` param is present (and owned), render that `store_versions` envelope; otherwise render the live home as today.
 
 ## First cut (this build)
 
 - Implement `Gallery.handOff` and `MainStreet.takeOn` only.
-- Test maker: `abigails-custom-creations` (crocheter, simple) → a new Main Street tenant under a new name.
-- Keep her brand voice and her 18 product names/prices; reuse her maker photo for the founder beat; generate the hero + ~5 product photos (hers have none).
-- Judge by opening the Gallery original and the Main Street conversion side by side.
+- Add the `store_versions` table + the resolver `?v=` branch.
+- Test maker: `abigails-custom-creations` (crocheter, simple). Her Gallery stays the live store; the conversion writes a `mainstreet` version on the same tenant.
+- Keep her brand voice and her 18 product names/prices (same wordmark, same maker); reuse her maker photo for the founder beat; generate the hero + ~5 product photos (hers have none).
+- Judge by opening the live Gallery (`/`) and the Main Street version (`/?v=mainstreet`) side by side.
 
 ### Carries over vs regenerated
 
@@ -54,12 +67,14 @@ Result: both stores exist, same maker, one per shape, open side by side.
 
 - `handOff`/`takeOn` for every archetype (any-to-any try-on).
 - The editor UI for try-on; the mood→palette layer; the broader skin-divergence work.
-- Try-on *versions* under a single tenant (this cut writes a separate tenant).
+- The **make-live / publish** action (copying a version into the live home) — versions are written and previewable now; promoting one is a later editor action.
+- Owner-gating of `?v=` previews (noted under Security) — deferred past the first cut.
 
 ## Testing
 
 - **Unit:** `Gallery.handOff` produces a valid `PortableStore` from a content fixture; `MainStreet.takeOn` produces schema-valid Main Street content from a `PortableStore` fixture. The live-Bohdi author step and the media generation are seams, mocked in unit tests.
-- **Proof:** the live Abigail conversion, run once, judged side by side against her Gallery.
+- **Unit:** the resolver renders the live home when no `v` param is present, and the matching `store_versions` envelope when `?v=<label>` is present (missing label falls back to live).
+- **Proof:** the live Abigail conversion, run once, judged side by side — live Gallery at `/`, Main Street at `/?v=mainstreet`.
 
 ## Open question carried in
 
