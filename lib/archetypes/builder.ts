@@ -46,8 +46,8 @@ export type ParseResult<T> =
   | { ok: true; authored: T }
   | { ok: false; issues: Array<{ path: string; message: string }> };
 
-/** Final content + catalog for persistence/render. Products may be a separate
- *  catalog (Main Street) or already embedded in content (Gallery → empty here). */
+/** Final content + catalog for persistence/render. Products are a separate
+ *  catalog of rows — the archetype never authors the catalog. */
 export interface RenderPayload {
   content: unknown;
   products: ProductView[];
@@ -62,9 +62,9 @@ export interface ArchetypeBuildSpec<T = unknown> {
    *  this to choose; it must not steer toward any niche. */
   menuDescription: string;
   /** Whether this archetype is structurally viable for a catalog of this size.
-   *  A STRUCTURAL gate, not aesthetic steering — e.g. the Gallery's wall needs a
-   *  dense catalog, so a tiny shop can't fill it. Catalog size limits which
-   *  shapes are on the menu; everything past that stays Bohdi's choice. */
+   *  A STRUCTURAL gate, not aesthetic steering — an archetype can declare a
+   *  minimum catalog it needs to be viable. Catalog size limits which shapes are
+   *  on the menu; everything past that stays Bohdi's choice. */
   fitsCatalog(productCount: number): boolean;
   /** The looks Bohdi may pick for this archetype (its own skins/themes). */
   looks: LookOption[];

@@ -108,7 +108,7 @@ interface Chosen {
 
 /** Run Bohdi until he chooses a format and submits a valid store. Only the
  *  archetypes that FIT the maker's catalog size are on the menu — a structural
- *  gate (e.g. the Gallery wall needs density), not aesthetic steering. */
+ *  gate (an archetype can require a minimum catalog), not aesthetic steering. */
 async function authorStore(brief: AuthoringBrief): Promise<{ chosen: Chosen; authored: unknown }> {
   const eligible = archetypeMenu().filter((s) => s.fitsCatalog(brief.productCount));
   const specs = eligible.length > 0 ? eligible : archetypeMenu();
