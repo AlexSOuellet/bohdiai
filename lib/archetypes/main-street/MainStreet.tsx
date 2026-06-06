@@ -15,6 +15,7 @@ import { MomentHero } from './MomentHero';
 import { Close } from './beats';
 import { GoodsBeat } from './GoodsBeat';
 import { FounderBeat } from './FounderBeat';
+import { FindUsBeat } from './FindUsBeat';
 import type { GoodsTreatment } from './goods';
 import type { FounderTreatment } from './founder';
 import { Reveal } from './Reveal';
@@ -46,8 +47,13 @@ export function MainStreet({ content, skin, products, mood, catalogSize, goodsTr
       <MomentHero identity={content.identity} moment={content.moment} skin={skin} />
       <GoodsBeat goods={content.goods} products={products} skin={skin} mood={mood} treatment={goodsTreatment} catalogSize={catalogSize} shopHref={shopHref} />
       <Reveal>
-        <FounderBeat founder={content.founder} skin={skin} mood={mood} treatment={founderTreatment} aboutHref={aboutHref} eventsHref={eventsHref} />
+        <FounderBeat founder={content.founder} skin={skin} mood={mood} treatment={founderTreatment} aboutHref={aboutHref} />
       </Reveal>
+      {content.founder.findUs && content.founder.findUs.rows.length > 0 && (
+        <Reveal>
+          <FindUsBeat findUs={content.founder.findUs} skin={skin} eventsHref={eventsHref} />
+        </Reveal>
+      )}
       <Reveal>
         <Close close={content.close} skin={skin} />
       </Reveal>

@@ -27,7 +27,7 @@ const SHOP_HREF = '/archetype-test/main-street/shop';
 const ABOUT_HREF = '/archetype-test/main-street/about';
 const EVENTS_HREF = '/archetype-test/main-street/events';
 const GOODS_TREATMENTS: GoodsTreatment[] = ['marquee', 'procession', 'switcher', 'slideshow'];
-const FOUNDER_TREATMENTS: FounderTreatment[] = ['quote', 'portrait', 'letter', 'findus'];
+const FOUNDER_TREATMENTS: FounderTreatment[] = ['quote', 'portrait', 'letter', 'card'];
 
 /** Inject the hero video + the founder portrait. Preview only. */
 function withStandIns(content: MainStreetContent): MainStreetContent {
