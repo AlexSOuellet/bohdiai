@@ -15,7 +15,7 @@ import type {
 import type { ProductView } from '../content';
 import type { PortableStore } from '../portable';
 import { MainStreet } from './MainStreet';
-import { ShopPage, EventsPage } from './pages';
+import { ShopPage, EventsPage, AboutPage, ContactPage } from './pages';
 import { mainStreetArchetype } from './index';
 import { MainStreetContentSchema, type MainStreetContent } from './schemas';
 import { MAIN_STREET_SKINS } from './skins';
@@ -120,6 +120,8 @@ content (MAX lengths are real; stay comfortably under them):
 - goods: { title (2-48), treatment (one of: marquee | procession | switcher | slideshow — your pick from above), label (2-24, optional), viewAllLabel (2-28, optional) }
 - founder: { quote (24-280, first person, ~2 sentences, specific, no AI-tell), attribution (4-60), treatment (one of: quote | portrait | letter | card — your pick from the ABOUT TREATMENT menu above), eyebrow (2-24, optional — for the card, e.g. "Since 2019"), heading (2-28, optional — for the card, e.g. "Meet Mara"), photo: { prompt (8-400): the maker, alt (4-120) }, aboutLabel (2-28, optional), findUs (optional — its OWN section on the home, NOT inside the About beat; seed 1-5 plausible sample dates the maker can edit or turn off later): { label (2-28), eventsLabel (2-28, optional), rows (1-5): { day (1-12), where (4-60), time (1-12) } } }
 - close: { label (2-28), headline (6-72), ctaLabel (3-24) }
+- about (the full ABOUT page — the maker's story at LENGTH; the home founder beat is only a teaser of this): { heading (4-60), story (2-5 paragraphs, each 40-700 — who the maker is, how they got here, how they actually work; specific to THIS maker and niche, drawn from the niche source, never generic filler) }
+- contact (the CONTACT page invitation, in the maker's voice; do NOT invent an email or phone): { heading (4-48), intro (20-400) }
 
 products (author ${target}; a brand-new store with no catalog, so you create it): each { name (2-40), slug (2-48, lowercase-hyphen), shortDescription (4-90), description (12-600, write real substance — materials, use, what makes it specific; not one thin line), basePriceCents (integer cents, e.g. 4800 = $48), imagePrompt (8-400): a clean product photo on a fitting surface }.
 
@@ -231,6 +233,10 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
         return <ShopPage content={c} skin={skin} products={products} />;
       case 'events':
         return <EventsPage content={c} skin={skin} />;
+      case 'about':
+        return <AboutPage content={c} skin={skin} />;
+      case 'contact':
+        return <ContactPage content={c} skin={skin} />;
       default:
         return <MainStreet content={c} skin={skin} products={products} mood={mood} catalogSize={catalogSize} />;
     }

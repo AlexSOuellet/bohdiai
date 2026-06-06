@@ -146,6 +146,29 @@ export const MainStreetContentSchema = z.object({
     headline: z.string().min(6).max(72),
     ctaLabel: z.string().min(3).max(24),
   }),
+
+  /** The full ABOUT page — the maker's story at length (the home founder beat is
+   *  only a teaser of this). Optional so content authored before this field still
+   *  parses; the About page falls back to the founder quote when it's absent. The
+   *  story is the rich, niche-specific writing the deepen pass leans on hardest. */
+  about: z
+    .object({
+      heading: z.string().min(4).max(60),
+      /** 2-5 real paragraphs — who the maker is, how they got here, how they work.
+       *  Specific to THIS maker and niche, never generic. */
+      story: z.array(z.string().min(40).max(700)).min(2).max(5),
+    })
+    .optional(),
+
+  /** The CONTACT page — an authored invitation to get in touch. Optional; the
+   *  page shows a neutral intro when absent. Real email/social are added by the
+   *  maker later (unknown at onboarding), so this is voice, not contact details. */
+  contact: z
+    .object({
+      heading: z.string().min(4).max(48),
+      intro: z.string().min(20).max(400),
+    })
+    .optional(),
 });
 
 export type MainStreetContent = z.infer<typeof MainStreetContentSchema>;

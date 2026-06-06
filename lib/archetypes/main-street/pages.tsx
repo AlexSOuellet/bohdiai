@@ -117,6 +117,50 @@ export function ShopPage({ content, skin, products }: { content: MainStreetConte
   );
 }
 
+/** ABOUT — the maker's story at length. The full version of the home founder
+ *  teaser: heading, portrait, and the multi-paragraph story. Falls back to the
+ *  founder quote when no dedicated story was authored. */
+export function AboutPage({ content, skin }: { content: MainStreetContent; skin: ArchetypeTheme }) {
+  const r = roles(skin);
+  const about = content.about;
+  const heading = about?.heading ?? 'Our story';
+  const paragraphs = about?.story ?? [content.founder.quote];
+  return (
+    <MainStreetSubPage content={content} skin={skin}>
+      <PageHead title={heading} skin={skin} />
+      <section data-ms-about className="ms-wrap" style={{ padding: '24px 40px 110px', maxWidth: 820 }}>
+        <div style={{ position: 'relative', aspectRatio: '16 / 10', borderRadius: 4, overflow: 'hidden', marginBottom: 44 }}>
+          <Media media={content.founder.photo} />
+        </div>
+        {paragraphs.map((para, i) => (
+          <p key={i} data-type="body" data-ms-story style={{ ...typeRoleCss(r.body), color: 'var(--ms-fg)', margin: '0 0 22px', maxWidth: '64ch' }}>
+            {para}
+          </p>
+        ))}
+        <div data-type="sig" style={{ ...typeRoleCss(r.sig), color: 'var(--ms-fg-muted)', marginTop: 14 }}>&mdash; {content.founder.attribution}</div>
+      </section>
+    </MainStreetSubPage>
+  );
+}
+
+/** CONTACT — an authored invitation to get in touch. Real email/social are the
+ *  maker's to add later; at onboarding this is voice, not contact details. */
+export function ContactPage({ content, skin }: { content: MainStreetContent; skin: ArchetypeTheme }) {
+  const r = roles(skin);
+  const heading = content.contact?.heading ?? 'Get in touch';
+  const intro = content.contact?.intro ?? 'We would love to hear from you — questions, custom requests, or just to say hello.';
+  return (
+    <MainStreetSubPage content={content} skin={skin}>
+      <PageHead title={heading} skin={skin} />
+      <section data-ms-contact className="ms-wrap" style={{ padding: '24px 40px 120px', maxWidth: 680, textAlign: 'center' }}>
+        <p data-type="body" style={{ ...typeRoleCss(r.body), color: 'var(--ms-fg)', margin: '0 auto', maxWidth: '52ch' }}>
+          {intro}
+        </p>
+      </section>
+    </MainStreetSubPage>
+  );
+}
+
 /** EVENTS — the full find-us calendar, or a friendly "check back" empty state
  *  when the maker has no upcoming dates (or has turned the calendar off). */
 export function EventsPage({ content, skin }: { content: MainStreetContent; skin: ArchetypeTheme }) {

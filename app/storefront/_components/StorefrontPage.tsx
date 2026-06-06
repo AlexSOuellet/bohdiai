@@ -25,6 +25,8 @@ interface StorefrontPageProps {
 const SLUG_TO_ARCHETYPE_PAGE: Record<string, ArchetypePage> = {
   '/shop': 'shop',
   '/events': 'events',
+  '/about': 'about',
+  '/contact': 'contact',
 };
 
 /** Load the tenant's home ('/') archetype envelope, or null if the home isn't an
