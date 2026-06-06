@@ -454,6 +454,42 @@ This is a brand-positioning decision that informs catalog choices, not Bohdi's d
 
 ---
 
+## 2026-06-06 (session 30)
+
+These came out of a long design conversation that reworked the archetype direction from Sessions 22–29 and settled how a maker's storefront shape gets chosen. Full design detail, the four shapes' looks, and mockups live in `docs/superpowers/specs/2026-06-06-archetype-catalog-and-the-moment-design.md`.
+
+### D32. The archetype catalog is four storefront shapes plus two shapes that travel
+
+The storefront catalog is four whole-business *shapes*. **The Shop** (Main Street) — the deep-catalog maker; the workhorse most makers land on. **The Counter** — fresh/seasonal/batch makers who sell a rotating "what's available now" (bakers, farms, preserves), with preorder, pickup, and sold-out mechanics. **The Find** — curated one-of-a-kind (vintage, antique), where every piece is sold once and provenance/condition is the copy. **The Body of Work** — image-first art where the work is beheld and acquired and commerce is kept quiet.
+
+An archetype is now a *business shape*, not a skin. That is the change from Sessions 22–29, where Main Street and Gallery were two looks for the same maker. Because the shape is now structural, the archetype is no longer Bohdi's aesthetic call (see D35).
+
+**Gallery is retired as a standalone archetype.** It lost head-to-head to Main Street for a real maker (Session 29), and the dense salon-wall is a physical-gallery technique that successful online stores deliberately avoid. Its one good bone — the dense visual wall — survives as a *page treatment* (a catalog or portfolio page) inside other archetypes, especially The Find and The Body of Work.
+
+Two pieces are **shapes that travel**, not whole storefronts: the dense wall (above) and **The One** (D34). Commission/made-to-order stays a "request a custom order" CTA mode, not an archetype.
+
+### D33. The Moment is BohdiAI's signature front door, shared across every storefront
+
+The hero is no longer welded bespoke into each archetype — this reverses the Session-24 "each archetype owns its hero" decision. Instead there is one portable **Moment** — a cinematic brand intro, the same engine on every storefront — and it is **BohdiAI's signature**: the thing every BohdiAI site does that a Wix or Squarespace site never would. It is the wow, and it embodies the "visibly not AI slop" position.
+
+Behavior. The Moment plays on a front-door visit only. On Main Street it *melts into the page as the hero* — you scroll past it into the shop. On shapes with no hero surface to become (Counter, Find, Body of Work) it is a *gate* that plays, then dismisses ("enter shop") to reveal the shape. A per-shop cookie marks it seen; a returning front-door visitor skips straight to the shape. Any deep link or QR code bypasses the Moment and leaves the cookie unset, so that visitor still gets their Moment the next time they come through the front door. Any maker can turn it off; default on. A **custom cinematic video Moment is a paid upsell**.
+
+### D34. "The One" is a launch-page feature, not a storefront archetype
+
+True one-product shops barely exist — authors write more books, the hot-sauce maker adds a hot honey — so a single-product *storefront* archetype would serve almost nobody. The One is instead a **launch / landing page**: a single-hero poster page (the offer, the proof, the buy, with detail spilling into sub-pages) that a maker deploys on top of their real store for a drop, then retires. Because almost every maker has something to spotlight at some point, this is broadly useful.
+
+It is a backend feature where the maker picks how loud the launch is. **As the Moment** — the launch takes over the front door for the run of the drop; temporary by default but the maker owns the dial, and this is where the paid custom-video Moment attaches. **A clickable link** in the store — the store stays the front door, the launch is one click in. **Total standalone** — its own URL for a QR, an email blast, or an ad; this is a deep link, so it bypasses the Moment consistent with D33. The launch playbook (Christmas collectible, once-in-a-lifetime, scarcity as a hook) is also a natural Skool / Witsend Breakthroughs training module.
+
+### D35. Onboarding always builds Main Street; the catalog is a post-build suggestion engine, and Bohdi never picks the archetype
+
+**Onboarding always builds Main Street.** We can't reliably tell a weekly baker from a catalog baker, or a curator from a shopkeeper, at onboarding without interrogating the maker — and a wrong auto-build ships a wrong store. Main Street renders every maker acceptably, so everyone starts there. **Bohdi never selects an archetype**, which removes the mis-pick risk and ends the steering question for archetype choice (his freedom stays in the skin, treatments, copy, and the Moment).
+
+The rest of the catalog is a **post-build, content-loaded suggestion engine**, delivered by the Session-29 try-on tool. The sequence is load-bearing: the maker adds their real products and content *first*, then we *actively* suggest a more business-specific look and show it with their own content already inside it — "this is how a shop like yours actually sells." The maker recognizes their own fit and chooses; because it's their call it can't be wrong, and the personalized try-on (their pieces in the Find, their loaves in the Counter) is the moment the subscription justifies itself. Active suggestion also beats the default-gravity problem — non-explorers get walked to their fit instead of having to discover it.
+
+The niche still carries a *loose hint* of which shapes to suggest (the Find to a vintage seller, the Counter to a baker), but it drives a suggestion, not a build, so it can be heuristic — a wrong suggestion costs nothing. An archetype earns a best-fit *default* (built at onboarding in place of Main Street) only when it is shown to beat Main Street for a niche — by functional fit (the Counter's preorder/pickup transaction model is the first candidate, because a rotating-stock maker's business runs on mechanics Main Street can't express) or by real conversion evidence once live. "Different" or "thematically apt" does not earn a default; the burden of proof is on the new shape, not on Main Street.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.
