@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Marrow &amp; Moth — The Find</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,600;0,6..96,800;1,6..96,500&family=Spectral:ital,wght@0,400;0,500;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --void: #1a1512;
+    --void-2: #221b16;
+    --panel: #2a221c;
+    --cream: #e9ddc6;
+    --cream-soft: #b6a888;
+    --brass: #c19b54;
+    --oxblood: #9a463b;
+    --line: rgba(193, 155, 84, 0.22);
+    --shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.8);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Spectral', Georgia, serif;
+    background-color: var(--void);
+    color: var(--cream);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse at 50% -10%, rgba(193,155,84,0.10) 0%, rgba(193,155,84,0) 45%),
+      radial-gradient(ellipse at 80% 110%, rgba(154,70,59,0.10) 0%, rgba(154,70,59,0) 50%);
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 2; }
+
+  header { display: flex; align-items: flex-end; justify-content: space-between; padding: 34px 0 20px; }
+  .brand .name { font-family: 'Bodoni Moda'; font-weight: 800; font-size: 30px; letter-spacing: 0.01em; line-height: 1; }
+  .brand .tag { font-family: 'Courier Prime'; font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--brass); margin-top: 8px; }
+  nav { display: flex; align-items: center; gap: 26px; }
+  nav a { font-family: 'Courier Prime'; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cream-soft); text-decoration: none; transition: color .2s; }
+  nav a:hover { color: var(--cream); }
+  nav .cart { color: var(--brass); }
+
+  .ribbon { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 14px 0; margin-bottom: 50px; }
+  .ribbon .lead { font-family: 'Bodoni Moda'; font-style: italic; font-weight: 500; font-size: 18px; }
+  .ribbon .spacer { flex: 1; }
+  .ribbon .meta { font-family: 'Courier Prime'; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cream-soft); }
+  .ribbon .meta b { color: var(--brass); }
+
+  .sec-head { display: flex; align-items: baseline; gap: 16px; margin: 0 0 30px; }
+  .sec-head h2 { font-family: 'Bodoni Moda'; font-weight: 600; font-size: 22px; letter-spacing: 0.02em; }
+  .sec-head .rule { flex: 1; height: 1px; background: var(--line); align-self: center; }
+  .sec-head .count { font-family: 'Courier Prime'; font-size: 11px; letter-spacing: 0.14em; color: var(--cream-soft); }
+
+  .cabinet { column-count: 3; column-gap: 30px; margin-bottom: 70px; }
+  @media (max-width: 900px) { .cabinet { column-count: 2; } }
+  @media (max-width: 600px) { .cabinet { column-count: 1; } }
+
+  .piece { break-inside: avoid; margin-bottom: 30px; background: var(--void-2); border: 1px solid var(--line); border-radius: 3px; overflow: hidden; box-shadow: var(--shadow); transition: transform .35s ease, border-color .35s ease; position: relative; }
+  .piece:hover { transform: translateY(-5px); border-color: var(--brass); }
+  .piece .ph { position: relative; overflow: hidden; background: #0e0b09; }
+  .piece .ph img { width: 100%; display: block; filter: sepia(0.42) saturate(0.78) contrast(1.04) brightness(0.86); transition: filter .4s, transform .6s; }
+  .piece:hover .ph img { filter: sepia(0.22) saturate(0.95) contrast(1.05) brightness(0.96); transform: scale(1.03); }
+
+  .body { padding: 18px 20px 22px; }
+  .lot { font-family: 'Courier Prime'; font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brass); margin-bottom: 8px; }
+  .piece h3 { font-family: 'Bodoni Moda'; font-weight: 600; font-size: 21px; line-height: 1.1; margin-bottom: 10px; }
+  .spec { font-family: 'Courier Prime'; font-size: 11px; color: var(--cream-soft); line-height: 1.7; border-top: 1px dashed var(--line); border-bottom: 1px dashed var(--line); padding: 9px 0; margin-bottom: 12px; }
+  .spec .k { color: var(--brass); }
+  .note { font-style: italic; font-size: 14.5px; color: var(--cream); margin-bottom: 16px; }
+  .row { display: flex; align-items: center; justify-content: space-between; }
+  .price { font-family: 'Bodoni Moda'; font-weight: 600; font-size: 22px; }
+  .acq { font-family: 'Courier Prime'; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--void); background: var(--brass); padding: 8px 16px; border: none; cursor: pointer; transition: opacity .2s; }
+  .acq:hover { opacity: 0.85; }
+
+  .piece.sold .ph img { filter: sepia(0.6) saturate(0.4) contrast(1) brightness(0.6) grayscale(0.3); }
+  .sold-stamp { position: absolute; top: 22px; left: -8px; font-family: 'Courier Prime'; font-weight: 700; font-size: 14px; letter-spacing: 0.3em; color: var(--cream); background: var(--oxblood); padding: 7px 22px 7px 16px; transform: rotate(-4deg); box-shadow: 0 8px 16px -6px rgba(0,0,0,.7); z-index: 3; }
+  .piece.sold .acq { background: transparent; color: var(--cream-soft); border: 1px solid var(--line); cursor: default; }
+  .piece.sold .price { color: var(--cream-soft); text-decoration: line-through; }
+
+  .feature { column-span: all; display: grid; grid-template-columns: 1.15fr 1fr; gap: 0; margin-bottom: 30px; }
+  @media (max-width: 700px) { .feature { grid-template-columns: 1fr; } }
+  .feature .ph img { height: 100%; object-fit: cover; }
+  .feature .body { display: flex; flex-direction: column; justify-content: center; padding: 34px 36px; }
+  .feature h3 { font-size: 32px; }
+  .feature .note { font-size: 17px; }
+
+  .teasers { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 26px; padding: 54px 0; border-top: 1px solid var(--line); margin-bottom: 0; }
+  @media (max-width: 800px) { .teasers { grid-template-columns: 1fr; } }
+  .teaser .tk { font-family: 'Courier Prime'; font-size: 10.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--brass); margin-bottom: 12px; }
+  .teaser h4 { font-family: 'Bodoni Moda'; font-weight: 600; font-size: 26px; margin-bottom: 12px; line-height: 1.05; }
+  .teaser p { font-size: 15px; color: var(--cream-soft); margin-bottom: 16px; }
+  .teaser .more { font-family: 'Courier Prime'; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cream); text-decoration: none; border-bottom: 1px solid var(--brass); padding-bottom: 3px; }
+  .curator { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .curator .face { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(140deg, var(--brass), var(--oxblood)); flex: none; }
+  .curator .q { font-style: italic; font-size: 14px; }
+
+  .close { text-align: center; padding: 70px 24px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .close .tk { font-family: 'Courier Prime'; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--brass); margin-bottom: 14px; }
+  .close h2 { font-family: 'Bodoni Moda'; font-weight: 600; font-size: 38px; line-height: 1.1; margin-bottom: 24px; max-width: 16em; margin-left: auto; margin-right: auto; }
+  .close .form { display: inline-flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .close input { font-family: 'Courier Prime'; font-size: 13px; padding: 14px 18px; background: var(--void-2); border: 1px solid var(--line); color: var(--cream); min-width: 260px; }
+  .close button { font-family: 'Courier Prime'; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; padding: 14px 22px; background: var(--brass); color: var(--void); border: none; cursor: pointer; }
+
+  footer { display: flex; justify-content: space-between; align-items: center; padding: 30px 0 56px; flex-wrap: wrap; gap: 14px; }
+  footer .fb { font-family: 'Bodoni Moda'; font-weight: 800; font-size: 18px; }
+  footer .fl { display: flex; gap: 18px; font-family: 'Courier Prime'; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+  footer .fl a { color: var(--cream-soft); text-decoration: none; }
+  footer .fl a:hover { color: var(--cream); }
+
+  .rise { opacity: 0; transform: translateY(20px); animation: rise .8s cubic-bezier(.22,1,.36,1) forwards; }
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+  .r1{animation-delay:.05s}.r2{animation-delay:.13s}.r3{animation-delay:.21s}.r4{animation-delay:.29s}
+  .r5{animation-delay:.37s}.r6{animation-delay:.45s}.r7{animation-delay:.53s}.r8{animation-delay:.61s}.r9{animation-delay:.69s}
+  .stampin { animation: stampin .5s cubic-bezier(.34,1.56,.64,1) .5s both; }
+  @keyframes stampin { from { opacity: 0; transform: rotate(30deg) scale(.4); } to { opacity: 1; transform: rotate(-4deg) scale(1); } }
+  @media (prefers-reduced-motion: reduce) { .rise,.stampin { animation: none; opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand rise r1">
+      <div class="name">Marrow &amp; Moth</div>
+      <div class="tag">vintage · salvage · curiosities</div>
+    </div>
+    <nav class="rise r1">
+      <a href="#">The Collection</a>
+      <a href="#">New Arrivals</a>
+      <a href="#">About</a>
+      <a href="#">Visit</a>
+      <a href="#" class="cart">Cart (0)</a>
+    </nav>
+  </header>
+
+  <div class="ribbon rise r2">
+    <span class="lead">Found this week across New England estates &amp; back rooms.</span>
+    <span class="spacer"></span>
+    <span class="meta"><b>9</b> new pieces · once it's gone, it's gone</span>
+  </div>
+
+  <div class="sec-head rise r2">
+    <h2>The Collection</h2>
+    <span class="rule"></span>
+    <span class="count">each one of one</span>
+  </div>
+
+  <section class="cabinet">
+
+    <article class="piece feature rise r2">
+      <div class="ph"><img src="https://picsum.photos/seed/mm-clock/760/760" alt="" /></div>
+      <div class="body">
+        <div class="lot">Lot No. 055</div>
+        <h3>Brass Ship's Clock</h3>
+        <div class="spec"><span class="k">ERA</span> c. 1930s &nbsp;·&nbsp; <span class="k">ORIGIN</span> Maritime, New England<br /><span class="k">CONDITION</span> Honest wear, fully wound &amp; running</div>
+        <div class="note">"Keeps better time than most of us. The kind of object a room organizes itself around."</div>
+        <div class="row"><span class="price">$310</span><button class="acq">Make it yours</button></div>
+      </div>
+    </article>
+
+    <article class="piece rise r3">
+      <div class="ph"><img src="https://picsum.photos/seed/mm-scale/520/640" alt="" /></div>
+      <div class="body">
+        <div class="lot">Lot No. 047</div>
+        <h3>Brass Apothecary Scale</h3>
+        <div class="spec"><span class="k">ERA</span> c. 1920s · England<br /><span class="k">CONDITION</span> Patinated, true &amp; balanced</div>
+        <div class="note">"The patina you can't fake — only earn."</div>
+        <div class="row"><span class="price">$185</span><button class="acq">Make it yours</button></div>
+      </div>
+    </article>
+
+    <article class="piece sold rise r4">
+      <div class="sold-stamp stampin">SOLD</div>
+      <div class="ph"><img src="https://picsum.photos/seed/mm-opera/520/560" alt="" /></div>
+      <div class="body">
+        <div class="lot">Lot No. 031</div>
+        <h3>Tortoiseshell Opera Glasses</h3>
+        <div class="spec"><span class="k">ERA</span> c. 1890s<br /><span class="k">CONDITION</span> Optics clear, original case</div>
+        <div class="note">"Gone in a day. The good ones always are."</div>
+        <div class="row"><span class="price">$140</span><button class="acq">Found a home</button></div>
+      </div>
+    </article>
+
+    <article class="piece rise r5">
+      <div class="ph"><img src="https://picsum.photos/seed/mm-books/520/700" alt="" /></div>
+      <div class="body">
+        <div class="lot">Lot No. 052</div>
+        <h3>Cloth-Bound Novels, Set of Nine</h3>
+        <div class="spec"><span class="k">ERA</span> 1930s–50s<br /><span class="k">CONDITION</span> Sound spines, foxed pages</div>
+        <div class="note">"Spines worth shelving face-out."</div>
+        <div class="row"><span class="price">$64</span><button class="acq">Make it yours</button></div>
+      </div>
+    </article>
+
+    <article class="piece rise r4">
+      <div class="ph"><img src="https://picsum.photos/seed/mm-urn/520/600" alt="" /></div>
+      <div class="body">
+        <div class="lot">Lot No. 044</div>
+        <h3>Cast Iron Garden Urn</h3>
+        <div class="spec"><span class="k">ERA</span> Late 1800s<br /><span class="k">CONDITION</span> Weathered, structurally sound</div>
+        <div class="note">"Heavier than it looks. Worth every ounce of it."</div>
+        <div class="row"><span class="price">$240</span><button class="acq">Make it yours</button></div>
+      </div>
+    </article>
+
+    <article class="piece sold rise r6">
+      <div class="sold-stamp stampin">SOLD</div>
+      <div class="ph"><img src="https://picsum.photos/seed/mm-type/520/640" alt="" /></div>
+      <div class="body">
+        <div class="lot">Lot No. 049</div>
+        <h3>Smith-Corona Typewriter, 1948</h3>
+        <div class="spec"><span class="k">ERA</span> 1948<br /><span class="k">CONDITION</span> Types clean — we checked every key</div>
+        <div class="note">"Still types. Still beautiful. Already spoken for."</div>
+        <div class="row"><span class="price">$165</span><button class="acq">Found a home</button></div>
+      </div>
+    </article>
+
+    <article class="piece rise r5">
+      <div class="ph"><img src="https://picsum.photos/seed/mm-decanter/520/560" alt="" /></div>
+      <div class="body">
+        <div class="lot">Lot No. 053</div>
+        <h3>Cut-Crystal Decanter</h3>
+        <div class="spec"><span class="k">ERA</span> c. 1960s<br /><span class="k">CONDITION</span> No chips, stopper original</div>
+        <div class="note">"Catches the afternoon light and keeps it."</div>
+        <div class="row"><span class="price">$95</span><button class="acq">Make it yours</button></div>
+      </div>
+    </article>
+
+    <article class="piece rise r7">
+      <div class="ph"><img src="https://picsum.photos/seed/mm-blanket/520/620" alt="" /></div>
+      <div class="body">
+        <div class="lot">Lot No. 040</div>
+        <h3>Wool Camp Blanket</h3>
+        <div class="spec"><span class="k">ERA</span> 1940s<br /><span class="k">CONDITION</span> Mended once, by someone who cared</div>
+        <div class="note">"A small honest repair. We left it. It's part of the story."</div>
+        <div class="row"><span class="price">$78</span><button class="acq">Make it yours</button></div>
+      </div>
+    </article>
+
+    <article class="piece rise r8">
+      <div class="ph"><img src="https://picsum.photos/seed/mm-inkwell/520/520" alt="" /></div>
+      <div class="body">
+        <div class="lot">Lot No. 038</div>
+        <h3>Pressed-Glass Inkwell</h3>
+        <div class="spec"><span class="k">ERA</span> c. 1900<br /><span class="k">CONDITION</span> Hairline to base, sound</div>
+        <div class="note">"A small thing. A good thing."</div>
+        <div class="row"><span class="price">$42</span><button class="acq">Make it yours</button></div>
+      </div>
+    </article>
+
+  </section>
+
+  <section class="teasers">
+    <div class="teaser rise r2">
+      <div class="tk">Just in</div>
+      <h4>New Arrivals</h4>
+      <p>The hunt never stops. New pieces land most weeks — see what walked in the door before it walks back out.</p>
+      <a class="more" href="#">See the latest →</a>
+    </div>
+    <div class="teaser rise r3">
+      <div class="tk">The eye behind it</div>
+      <h4>About</h4>
+      <div class="curator">
+        <div class="face"></div>
+        <div class="q">"I buy what I'd live with."</div>
+      </div>
+      <p>One person, a good eye, and a long memory — hunting estates, barns, and back rooms for the pieces worth keeping.</p>
+      <a class="more" href="#">The whole story →</a>
+    </div>
+    <div class="teaser rise r4">
+      <div class="tk">Where to find us</div>
+      <h4>Visit</h4>
+      <p>Brimfield in the spring, the Pawtucket flea most Sundays, and a small brick shop open Saturdays 10–4.</p>
+      <a class="more" href="#">Dates &amp; map →</a>
+    </div>
+  </section>
+
+  <section class="close rise r2">
+    <div class="tk">Once it's gone, it's gone</div>
+    <h2>Get first look at every new find.</h2>
+    <div class="form">
+      <input type="email" placeholder="you@email.com" />
+      <button>Send me the finds</button>
+    </div>
+  </section>
+
+  <footer>
+    <div class="fb">Marrow &amp; Moth</div>
+    <div class="fl">
+      <a href="#">Collection</a>
+      <a href="#">New Arrivals</a>
+      <a href="#">About</a>
+      <a href="#">Visit</a>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>June's Sourdough — The Counter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Hanken+Grotesk:wght@400;500;700&family=Shantell+Sans:ital,wght@0,500;0,600;1,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #ece0c6;
+    --paper-2: #e4d4b3;
+    --ink: #2a2018;
+    --ink-2: #6a5a44;
+    --cream: #fbf6e8;
+    --red: #bf3b2b;
+    --red-deep: #9e2f22;
+    --green: #5c6b38;
+    --tag: #d8c094;
+    --line: rgba(42, 32, 24, 0.22);
+    --shadow: 0 18px 40px -18px rgba(42, 32, 24, 0.55);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    color: var(--ink);
+    background-color: var(--paper);
+    background-image:
+      radial-gradient(circle at 18% 12%, rgba(251, 246, 232, 0.7) 0%, rgba(251, 246, 232, 0) 30%),
+      radial-gradient(circle at 82% 78%, rgba(216, 192, 148, 0.45) 0%, rgba(216, 192, 148, 0) 38%);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* paper grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.12'/%3E%3C/svg%3E");
+  }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px; position: relative; z-index: 2; }
+
+  /* ---------- header ---------- */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 0 18px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .mono-mark {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: var(--ink); color: var(--cream);
+    display: grid; place-items: center;
+    font-family: 'Bricolage Grotesque'; font-weight: 800; font-size: 22px;
+    transform: rotate(-4deg);
+    box-shadow: var(--shadow);
+  }
+  .brand .name {
+    font-family: 'Bricolage Grotesque'; font-weight: 800; font-size: 23px;
+    letter-spacing: -0.02em; line-height: 1;
+  }
+  nav { display: flex; align-items: center; gap: 22px; }
+  nav a {
+    font-size: 13px; font-weight: 500; color: var(--ink); text-decoration: none;
+    letter-spacing: 0.01em; padding-bottom: 3px; border-bottom: 2px solid transparent;
+    transition: border-color 0.2s;
+  }
+  nav a:hover { border-color: var(--red); }
+  nav .cart {
+    font-family: 'Space Mono'; font-size: 12px; background: var(--ink); color: var(--cream);
+    padding: 7px 12px; border-radius: 999px; border: none;
+  }
+
+  /* ---------- date ribbon ---------- */
+  .ribbon {
+    display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+    border-top: 2px solid var(--ink); border-bottom: 1px dashed var(--line);
+    padding: 12px 0; margin-bottom: 38px;
+  }
+  .ribbon .week {
+    font-family: 'Space Mono'; font-weight: 700; font-size: 13px; letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .ribbon .note { font-family: 'Shantell Sans'; font-style: italic; font-size: 16px; color: var(--red-deep); }
+  .ribbon .spacer { flex: 1; }
+  .ribbon .baked { font-family: 'Space Mono'; font-size: 12px; color: var(--ink-2); }
+
+  /* ---------- hero ---------- */
+  .hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: center; margin-bottom: 70px; }
+  .hero .scrawl {
+    font-family: 'Shantell Sans'; font-weight: 600; font-size: 19px; color: var(--red);
+    transform: rotate(-3deg); display: inline-block; margin-bottom: 10px;
+  }
+  .hero h1 {
+    font-family: 'Bricolage Grotesque'; font-weight: 800; font-size: 58px; line-height: 0.96;
+    letter-spacing: -0.035em; margin-bottom: 20px;
+  }
+  .hero h1 em { font-style: normal; color: var(--red); }
+  .hero p { font-size: 17px; color: var(--ink-2); max-width: 30em; margin-bottom: 26px; }
+  .cta-row { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .btn-primary {
+    font-family: 'Hanken Grotesk'; font-weight: 700; font-size: 15px;
+    background: var(--red); color: var(--cream); border: none;
+    padding: 14px 24px; border-radius: 999px; cursor: pointer;
+    box-shadow: 0 10px 22px -10px var(--red-deep);
+    transition: transform 0.15s, background 0.2s;
+  }
+  .btn-primary:hover { transform: translateY(-2px); background: var(--red-deep); }
+  .clock-mini { font-family: 'Space Mono'; font-size: 12px; color: var(--ink-2); }
+  .clock-mini b { color: var(--ink); }
+
+  /* hero object */
+  .hero-obj { position: relative; justify-self: center; }
+  .hero-obj .board {
+    width: 340px; height: 340px; border-radius: 8px;
+    background: var(--cream);
+    padding: 16px; transform: rotate(-2.5deg);
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(42, 32, 24, 0.1);
+  }
+  .hero-obj .board img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; display: block; }
+  .hero-obj .stamp {
+    position: absolute; top: -22px; right: -18px;
+    width: 92px; height: 92px; border-radius: 50%;
+    background: var(--green); color: var(--cream);
+    display: grid; place-items: center; text-align: center;
+    font-family: 'Bricolage Grotesque'; font-weight: 800; font-size: 14px; line-height: 1.05;
+    transform: rotate(11deg);
+    box-shadow: 0 8px 18px -8px rgba(42, 32, 24, 0.6);
+    border: 2px dashed rgba(251, 246, 232, 0.55);
+  }
+  .hero-obj .pricetag {
+    position: absolute; bottom: 14px; left: -22px;
+    background: var(--ink); color: var(--cream);
+    font-family: 'Space Mono'; font-weight: 700; font-size: 18px;
+    padding: 8px 16px; transform: rotate(-5deg);
+    box-shadow: var(--shadow);
+  }
+  .hero-obj .pricetag span { font-size: 11px; opacity: 0.7; display: block; font-weight: 400; }
+
+  /* ---------- the board ---------- */
+  .board-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
+  .eyebrow {
+    font-family: 'Space Mono'; font-weight: 700; font-size: 12px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--ink-2);
+  }
+  .board-head .rule { flex: 1; height: 2px; background: var(--ink); align-self: center; }
+
+  .list { margin-bottom: 64px; }
+  .loaf {
+    display: grid; grid-template-columns: 96px 1fr auto auto; gap: 24px; align-items: center;
+    padding: 22px 8px; border-bottom: 1px dashed var(--line);
+    transition: background 0.2s;
+  }
+  .loaf:hover { background: rgba(251, 246, 232, 0.5); }
+  .loaf.special { background: rgba(191, 59, 43, 0.06); border-radius: 8px; border-bottom-color: transparent; }
+  .loaf .thumb {
+    width: 96px; height: 96px; border-radius: 6px; object-fit: cover; display: block;
+    box-shadow: 0 8px 18px -10px rgba(42, 32, 24, 0.5); transform: rotate(-1.5deg);
+  }
+  .loaf .name { font-family: 'Bricolage Grotesque'; font-weight: 800; font-size: 27px; letter-spacing: -0.02em; line-height: 1; }
+  .loaf .name .flag {
+    font-family: 'Shantell Sans'; font-weight: 600; font-size: 14px; color: var(--red);
+    transform: rotate(-2deg); display: inline-block; margin-left: 10px; vertical-align: middle;
+  }
+  .loaf .desc { font-size: 14px; color: var(--ink-2); margin-top: 5px; }
+  .loaf .notes { font-family: 'Space Mono'; font-size: 11px; color: var(--green); margin-top: 6px; letter-spacing: 0.02em; }
+  .loaf .price { font-family: 'Space Mono'; font-weight: 700; font-size: 24px; }
+  .loaf .add {
+    font-family: 'Hanken Grotesk'; font-weight: 700; font-size: 13px;
+    background: transparent; color: var(--ink); border: 1.5px solid var(--ink);
+    padding: 9px 18px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+    transition: background 0.18s, color 0.18s;
+  }
+  .loaf .add:hover { background: var(--ink); color: var(--cream); }
+  .loaf.special .add { background: var(--red); color: var(--cream); border-color: var(--red); }
+  .loaf.special .add:hover { background: var(--red-deep); }
+
+  /* ---------- clock strip ---------- */
+  .clock {
+    background: var(--ink); color: var(--cream);
+    border-radius: 14px; padding: 26px 34px; margin-bottom: 72px;
+    display: flex; align-items: center; gap: 28px; flex-wrap: wrap;
+    box-shadow: var(--shadow);
+  }
+  .clock .dot { width: 11px; height: 11px; border-radius: 50%; background: var(--red); flex: none; animation: pulse 2.4s ease-in-out infinite; }
+  .clock .lines { font-family: 'Space Mono'; font-size: 14px; letter-spacing: 0.03em; flex: 1; }
+  .clock .lines b { color: #f4cf5a; }
+  .clock .lines .sep { opacity: 0.4; margin: 0 12px; }
+  @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.7); } }
+
+  /* ---------- teasers ---------- */
+  .teasers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 70px; }
+  .teaser {
+    background: var(--cream); border-radius: 14px; padding: 26px;
+    border: 1px solid rgba(42, 32, 24, 0.08); box-shadow: 0 14px 30px -22px rgba(42, 32, 24, 0.5);
+    display: flex; flex-direction: column;
+  }
+  .teaser .tk { font-family: 'Space Mono'; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--red); margin-bottom: 12px; }
+  .teaser h3 { font-family: 'Bricolage Grotesque'; font-weight: 800; font-size: 24px; letter-spacing: -0.02em; margin-bottom: 10px; line-height: 1.05; }
+  .teaser p { font-size: 14px; color: var(--ink-2); margin-bottom: 18px; flex: 1; }
+  .teaser .more { font-weight: 700; font-size: 14px; color: var(--ink); text-decoration: none; border-bottom: 2px solid var(--red); padding-bottom: 2px; align-self: flex-start; }
+  /* calendar teaser */
+  .cal-row { display: flex; align-items: center; gap: 12px; font-size: 13px; padding: 7px 0; border-bottom: 1px dashed var(--line); }
+  .cal-row:last-of-type { border-bottom: none; }
+  .cal-row .d { font-family: 'Space Mono'; font-weight: 700; font-size: 13px; min-width: 58px; }
+  .cal-row .loc { color: var(--ink-2); }
+  /* meet june */
+  .june { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .june .face { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--tag), var(--green)); flex: none; box-shadow: var(--shadow); }
+  .june .q { font-family: 'Shantell Sans'; font-style: italic; font-size: 15px; color: var(--ink); }
+
+  /* ---------- subscribe ---------- */
+  .subscribe {
+    text-align: center; padding: 56px 28px; margin-bottom: 60px;
+    border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink);
+  }
+  .subscribe .scrawl { font-family: 'Shantell Sans'; font-weight: 600; font-size: 18px; color: var(--red); transform: rotate(-2deg); display: inline-block; margin-bottom: 8px; }
+  .subscribe h2 { font-family: 'Bricolage Grotesque'; font-weight: 800; font-size: 40px; letter-spacing: -0.03em; margin-bottom: 22px; line-height: 1; }
+  .sub-form { display: inline-flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .sub-form input {
+    font-family: 'Space Mono'; font-size: 14px; padding: 14px 20px; border-radius: 999px;
+    border: 1.5px solid var(--ink); background: var(--cream); min-width: 260px; color: var(--ink);
+  }
+  .sub-form input::placeholder { color: var(--ink-2); }
+
+  /* ---------- footer ---------- */
+  footer { display: flex; justify-content: space-between; align-items: center; padding: 24px 0 50px; flex-wrap: wrap; gap: 16px; }
+  footer .fbrand { font-family: 'Bricolage Grotesque'; font-weight: 800; font-size: 16px; }
+  footer .flinks { display: flex; gap: 18px; font-size: 12px; }
+  footer .flinks a { color: var(--ink-2); text-decoration: none; }
+  footer .flinks a:hover { color: var(--ink); }
+
+  /* ---------- load motion ---------- */
+  .reveal { opacity: 0; transform: translateY(16px); animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+  .d1 { animation-delay: 0.05s; } .d2 { animation-delay: 0.15s; } .d3 { animation-delay: 0.25s; }
+  .d4 { animation-delay: 0.35s; } .d5 { animation-delay: 0.45s; } .d6 { animation-delay: 0.55s; }
+  .d7 { animation-delay: 0.65s; } .d8 { animation-delay: 0.75s; }
+  .stamp-in { animation: stampIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both; }
+  @keyframes stampIn { from { opacity: 0; transform: rotate(40deg) scale(0.3); } to { opacity: 1; transform: rotate(11deg) scale(1); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .stamp-in { animation: none; opacity: 1; transform: none; }
+    .clock .dot { animation: none; }
+  }
+
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; gap: 48px; }
+    .hero h1 { font-size: 46px; }
+    .teasers { grid-template-columns: 1fr; }
+    .loaf { grid-template-columns: 72px 1fr auto; }
+    .loaf .add { grid-column: 2 / -1; justify-self: start; margin-top: 6px; }
+    nav a:not(.cart) { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand reveal d1">
+      <div class="mono-mark">J</div>
+      <div class="name">June's Sourdough</div>
+    </div>
+    <nav class="reveal d1">
+      <a href="#">This Week</a>
+      <a href="#">The Pantry</a>
+      <a href="#">About June</a>
+      <a href="#">Find Us</a>
+      <a href="#" class="cart">CART · 0</a>
+    </nav>
+  </header>
+
+  <div class="ribbon reveal d2">
+    <span class="week">Week of June 6</span>
+    <span class="note">baked Friday night, gone by Saturday noon</span>
+    <span class="spacer"></span>
+    <span class="baked">↻ updated weekly</span>
+  </div>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="scrawl reveal d2">fresh out of the oven —</span>
+      <h1 class="reveal d3">This week's loaves,<br />baked <em>Friday night.</em></h1>
+      <p class="reveal d4">Three this week — a classic country, a toasty seeded, and a cinnamon-raisin I only make on Saturdays. Reserve yours and grab it warm at the market.</p>
+      <div class="cta-row reveal d4">
+        <button class="btn-primary">Pre-order for Saturday →</button>
+        <span class="clock-mini">orders close <b>Thursday 9pm</b></span>
+      </div>
+    </div>
+    <div class="hero-obj reveal d5">
+      <div class="board"><img src="storefronts/country.webp" alt="Country sourdough loaf" /></div>
+      <div class="stamp stamp-in">THIS<br />WEEK'S<br />BAKE</div>
+      <div class="pricetag">$9<span>country loaf</span></div>
+    </div>
+  </section>
+
+  <div class="board-head reveal d2">
+    <span class="eyebrow">On the board this week</span>
+    <span class="rule"></span>
+  </div>
+  <section class="list">
+    <div class="loaf reveal d3">
+      <img class="thumb" src="storefronts/country.webp" alt="Country loaf" />
+      <div>
+        <div class="name">Country</div>
+        <div class="desc">Naturally leavened, blistered crust, open crumb. The everyday loaf.</div>
+        <div class="notes">24-HR COLD FERMENT · ORGANIC FLOUR</div>
+      </div>
+      <div class="price">$9</div>
+      <button class="add">Pre-order</button>
+    </div>
+    <div class="loaf reveal d4">
+      <img class="thumb" src="storefronts/seeded.webp" alt="Seeded loaf" />
+      <div>
+        <div class="name">Seeded</div>
+        <div class="desc">Sunflower, flax, and sesame folded through. Nutty and substantial.</div>
+        <div class="notes">SOAKED SEEDS · TOASTS BEAUTIFULLY</div>
+      </div>
+      <div class="price">$10</div>
+      <button class="add">Pre-order</button>
+    </div>
+    <div class="loaf special reveal d5">
+      <img class="thumb" src="storefronts/cinnamon.webp" alt="Cinnamon raisin loaf" />
+      <div>
+        <div class="name">Cinnamon-Raisin <span class="flag">Saturday only!</span></div>
+        <div class="desc">Swirled cinnamon sugar and plump raisins. Makes the whole house smell like Sunday.</div>
+        <div class="notes">LIMITED · 12 LOAVES · GOES FAST</div>
+      </div>
+      <div class="price">$11</div>
+      <button class="add">Pre-order</button>
+    </div>
+  </section>
+
+  <section class="clock reveal d2">
+    <span class="dot"></span>
+    <div class="lines">
+      Orders close <b>Thursday 9pm</b>
+      <span class="sep">·</span>
+      Pickup <b>Saturday 9–11am</b>
+      <span class="sep">·</span>
+      Hope Street Farmers Market, Providence
+    </div>
+  </section>
+
+  <section class="teasers">
+    <div class="teaser reveal d2">
+      <span class="tk">Always on hand</span>
+      <h3>The Pantry</h3>
+      <p>Granola, sourdough crackers, and small-batch jam — the shelf-stable things you can add to any pickup.</p>
+      <a class="more" href="#">Browse the pantry →</a>
+    </div>
+    <div class="teaser reveal d3">
+      <span class="tk">Since 2019</span>
+      <h3>Meet June</h3>
+      <div class="june">
+        <div class="face"></div>
+        <div class="q">"I started with one cast-iron and a starter named Walt."</div>
+      </div>
+      <p>A kitchen-table baker who turned a weekend habit into Saturday mornings at the market.</p>
+      <a class="more" href="#">Read June's story →</a>
+    </div>
+    <div class="teaser reveal d4">
+      <span class="tk">Where to find us</span>
+      <h3>This month</h3>
+      <div class="cal-row"><span class="d">Sat 6/7</span><span class="loc">Hope St Farmers Market · 9–11am</span></div>
+      <div class="cal-row"><span class="d">Sat 6/14</span><span class="loc">Armory Pop-Up · 10–1pm</span></div>
+      <div class="cal-row"><span class="d">Sat 6/21</span><span class="loc">Hope St Farmers Market · 9–11am</span></div>
+      <a class="more" href="#" style="margin-top:16px;">See all dates →</a>
+    </div>
+  </section>
+
+  <section class="subscribe reveal d2">
+    <span class="scrawl">don't miss a bake —</span>
+    <h2>Get next week's bake list.</h2>
+    <div class="sub-form">
+      <input type="email" placeholder="you@email.com" />
+      <button class="btn-primary">Send it Thursday →</button>
+    </div>
+  </section>
+
+  <footer>
+    <div class="fbrand">June's Sourdough</div>
+    <div class="flinks">
+      <a href="#">This Week</a>
+      <a href="#">The Pantry</a>
+      <a href="#">About</a>
+      <a href="#">Find Us</a>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

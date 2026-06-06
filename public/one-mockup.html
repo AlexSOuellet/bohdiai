@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Lantern-Keeper — The One</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Hanken+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #18121f;
+    --ink-2: #221a2b;
+    --panel: #2a2033;
+    --cream: #f3e9d6;
+    --cream-soft: #b7a78f;
+    --gold: #d3a44e;
+    --ember: #c2492f;
+    --line: rgba(211, 164, 78, 0.24);
+    --shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.85);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    background-color: var(--ink);
+    color: var(--cream);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.55;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 2; }
+
+  header { display: flex; align-items: center; justify-content: space-between; padding: 26px 0; }
+  .brand { font-family: 'Space Mono'; font-weight: 700; font-size: 13px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--gold); }
+  nav { display: flex; gap: 24px; }
+  nav a { font-family: 'Space Mono'; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cream-soft); text-decoration: none; transition: color .2s; }
+  nav a:hover { color: var(--cream); }
+
+  /* HERO POSTER */
+  .poster { position: relative; display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 50px; align-items: center; padding: 40px 0 90px; min-height: 78vh; }
+  .poster::before {
+    content: ''; position: absolute; left: 8%; top: 50%; width: 460px; height: 460px; transform: translateY(-50%);
+    background: radial-gradient(circle, rgba(211,164,78,0.30) 0%, rgba(211,164,78,0) 65%); pointer-events: none; z-index: 0;
+  }
+  .book-obj { position: relative; justify-self: center; z-index: 2; }
+  .book-obj img { width: 330px; max-width: 80vw; display: block; border-radius: 4px; transform: rotate(-4deg); box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.06); }
+  .book-obj .seal {
+    position: absolute; top: -26px; right: -26px; width: 104px; height: 104px; border-radius: 50%;
+    background: var(--ember); color: var(--cream); display: grid; place-items: center; text-align: center;
+    font-family: 'Space Mono'; font-weight: 700; font-size: 12px; line-height: 1.25; letter-spacing: 0.04em;
+    transform: rotate(12deg); box-shadow: 0 12px 24px -8px rgba(0,0,0,.7); border: 2px dashed rgba(243,233,214,0.5);
+  }
+  .poster .copy { position: relative; z-index: 2; }
+  .poster .kicker { font-family: 'Space Mono'; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; }
+  .poster h1 { font-family: 'DM Serif Display'; font-weight: 400; font-size: 78px; line-height: 0.98; letter-spacing: -0.01em; margin-bottom: 8px; }
+  .poster h1 .sub { display: block; font-style: italic; font-size: 40px; color: var(--gold); margin-top: 6px; }
+  .poster .byline { font-family: 'Space Mono'; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cream-soft); margin: 18px 0 22px; }
+  .poster .pull { font-family: 'DM Serif Display'; font-style: italic; font-size: 22px; line-height: 1.4; color: var(--cream); max-width: 18em; margin-bottom: 30px; }
+  .buy-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .btn { font-family: 'Hanken Grotesk'; font-weight: 700; font-size: 15px; background: var(--gold); color: var(--ink); border: none; padding: 15px 28px; border-radius: 2px; cursor: pointer; letter-spacing: 0.01em; transition: transform .15s, background .2s; }
+  .btn:hover { transform: translateY(-2px); background: #e2b461; }
+  .ships { font-family: 'Space Mono'; font-size: 12px; color: var(--cream-soft); }
+  .ships b { color: var(--cream); }
+
+  /* beats */
+  .beat { padding: 64px 0; border-top: 1px solid var(--line); }
+  .eyebrow { font-family: 'Space Mono'; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 20px; }
+
+  .excerpt { max-width: 40em; }
+  .excerpt p { font-family: 'DM Serif Display'; font-size: 23px; line-height: 1.55; font-style: italic; color: var(--cream); margin-bottom: 18px; }
+  .excerpt .more { font-family: 'Space Mono'; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cream); text-decoration: none; border-bottom: 1px solid var(--gold); padding-bottom: 3px; }
+
+  /* formats — the detail that spills into pages */
+  .formats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  @media (max-width: 760px) { .formats { grid-template-columns: 1fr 1fr; } }
+  .fmt { background: var(--ink-2); border: 1px solid var(--line); border-radius: 4px; padding: 22px; text-align: center; transition: border-color .25s, transform .25s; }
+  .fmt:hover { border-color: var(--gold); transform: translateY(-3px); }
+  .fmt .t { font-family: 'DM Serif Display'; font-size: 21px; margin-bottom: 6px; }
+  .fmt .d { font-size: 12.5px; color: var(--cream-soft); min-height: 34px; }
+  .fmt .pr { font-family: 'Space Mono'; font-weight: 700; font-size: 18px; color: var(--gold); margin: 12px 0; }
+  .fmt button { font-family: 'Hanken Grotesk'; font-weight: 700; font-size: 12px; background: transparent; border: 1px solid var(--cream-soft); color: var(--cream); padding: 8px 16px; border-radius: 2px; cursor: pointer; width: 100%; transition: background .2s, color .2s; }
+  .fmt button:hover { background: var(--cream); color: var(--ink); }
+  .fmt.signed { border-color: var(--ember); }
+  .fmt.signed .pr { color: var(--ember); }
+
+  /* praise */
+  .praise { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  @media (max-width: 760px) { .praise { grid-template-columns: 1fr; } }
+  .blurb { font-family: 'DM Serif Display'; font-style: italic; font-size: 24px; line-height: 1.4; }
+  .blurb .src { display: block; font-family: 'Space Mono'; font-style: normal; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); margin-top: 14px; }
+
+  /* author */
+  .author { display: grid; grid-template-columns: 120px 1fr; gap: 28px; align-items: center; }
+  .author .face { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(140deg, var(--gold), var(--ember)); }
+  .author h3 { font-family: 'DM Serif Display'; font-size: 30px; margin-bottom: 10px; }
+  .author p { color: var(--cream-soft); max-width: 40em; margin-bottom: 14px; }
+  .author .more { font-family: 'Space Mono'; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cream); text-decoration: none; border-bottom: 1px solid var(--gold); padding-bottom: 3px; }
+
+  /* close */
+  .close { text-align: center; padding: 90px 24px; }
+  .close h2 { font-family: 'DM Serif Display'; font-size: 52px; line-height: 1.05; margin-bottom: 12px; }
+  .close h2 .i { font-style: italic; color: var(--gold); }
+  .close p { font-family: 'Space Mono'; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cream-soft); margin-bottom: 28px; }
+
+  footer { display: flex; justify-content: space-between; align-items: center; padding: 26px 0 56px; border-top: 1px solid var(--line); flex-wrap: wrap; gap: 14px; }
+  footer .fb { font-family: 'Space Mono'; font-weight: 700; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); }
+  footer .fl { display: flex; gap: 18px; font-family: 'Space Mono'; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+  footer .fl a { color: var(--cream-soft); text-decoration: none; }
+  footer .fl a:hover { color: var(--cream); }
+
+  .rise { opacity: 0; transform: translateY(22px); animation: rise .85s cubic-bezier(.22,1,.36,1) forwards; }
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+  .r1{animation-delay:.05s}.r2{animation-delay:.16s}.r3{animation-delay:.27s}.r4{animation-delay:.38s}.r5{animation-delay:.5s}
+  .drop { opacity: 0; transform: translateY(-30px) rotate(-4deg); animation: drop 1s cubic-bezier(.22,1,.36,1) .2s forwards; }
+  @keyframes drop { to { opacity: 1; transform: translateY(0) rotate(-4deg); } }
+  .sealin { animation: sealin .55s cubic-bezier(.34,1.56,.64,1) .9s both; }
+  @keyframes sealin { from { opacity: 0; transform: rotate(40deg) scale(.3); } to { opacity: 1; transform: rotate(12deg) scale(1); } }
+  @media (prefers-reduced-motion: reduce) { .rise,.drop,.sealin { animation: none; opacity: 1; transform: none; } .book-obj img { transform: rotate(-4deg); } }
+
+  @media (max-width: 820px) { .poster { grid-template-columns: 1fr; gap: 40px; text-align: center; } .poster h1 { font-size: 56px; } .buy-row { justify-content: center; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand rise r1">Wend Press</div>
+    <nav class="rise r1">
+      <a href="#">The Book</a>
+      <a href="#">Excerpt</a>
+      <a href="#">The Author</a>
+      <a href="#">Cart (0)</a>
+    </nav>
+  </header>
+
+  <section class="poster">
+    <div class="book-obj drop">
+      <img src="storefronts/fox-cover.webp" alt="The Lantern-Keeper cover" />
+      <div class="seal sealin">SIGNED<br />FIRST<br />EDITION</div>
+    </div>
+    <div class="copy">
+      <div class="kicker rise r2">A debut novel · out August 4</div>
+      <h1 class="rise r2">The Lantern<span class="sub">— Keeper</span></h1>
+      <div class="byline rise r3">by Marion Ash</div>
+      <div class="pull rise r3">"A small light, carried carefully through a very long dark."</div>
+      <div class="buy-row rise r4">
+        <button class="btn">Pre-order — $24 →</button>
+        <span class="ships">ships <b>Aug 4</b> · signed copies limited</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="beat">
+    <div class="eyebrow">First pages</div>
+    <div class="excerpt">
+      <p>"The lighthouse had not worked in forty years, which was exactly why they sent her to keep it."</p>
+      <p>"You do not light a lamp for the ships you can see. You light it for the ones you can't."</p>
+      <a class="more" href="#">Read the first chapter →</a>
+    </div>
+  </section>
+
+  <section class="beat">
+    <div class="eyebrow">Choose your edition</div>
+    <div class="formats">
+      <div class="fmt rise r1">
+        <div class="t">Hardcover</div>
+        <div class="d">Cloth-bound, dust jacket</div>
+        <div class="pr">$24</div>
+        <button>Pre-order</button>
+      </div>
+      <div class="fmt signed rise r2">
+        <div class="t">Signed</div>
+        <div class="d">Hand-signed &amp; numbered, /500</div>
+        <div class="pr">$38</div>
+        <button>Pre-order</button>
+      </div>
+      <div class="fmt rise r3">
+        <div class="t">Ebook</div>
+        <div class="d">EPUB &amp; Kindle, instant</div>
+        <div class="pr">$9</div>
+        <button>Pre-order</button>
+      </div>
+      <div class="fmt rise r4">
+        <div class="t">Audiobook</div>
+        <div class="d">Read by the author, 9 hrs</div>
+        <div class="pr">$19</div>
+        <button>Pre-order</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="beat">
+    <div class="eyebrow">Early praise</div>
+    <div class="praise">
+      <div class="blurb">"I read it in one sitting and then sat with it for a week."<span class="src">— The Driftwood Review</span></div>
+      <div class="blurb">"Quiet, and then suddenly not. Ash writes light like she's afraid of losing it."<span class="src">— Author of <em>Saltwater Year</em></span></div>
+    </div>
+  </section>
+
+  <section class="beat">
+    <div class="eyebrow">Behind the book</div>
+    <div class="author">
+      <div class="face"></div>
+      <div>
+        <h3>Marion Ash</h3>
+        <p>Wrote this one over three winters on the Rhode Island coast, mostly by lamplight, mostly when she should have been sleeping. The Lantern-Keeper is her first novel.</p>
+        <a class="more" href="#">More about Marion →</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="close">
+    <h2>One book.<br /><span class="i">Carried by hand</span> to your door.</h2>
+    <p>Out August 4 · pre-order now</p>
+    <button class="btn">Pre-order — $24 →</button>
+  </section>
+
+  <footer>
+    <div class="fb">Wend Press</div>
+    <div class="fl">
+      <a href="#">The Book</a>
+      <a href="#">Excerpt</a>
+      <a href="#">Author</a>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

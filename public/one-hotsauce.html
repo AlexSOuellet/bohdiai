@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Devil's Acre — The One</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --scorch: #b8391c;
+    --scorch-deep: #8c2814;
+    --scorch-dark: #5e1c0f;
+    --cream: #f4e7c8;
+    --ink: #1f120b;
+    --acid: #f3b425;
+    --chili: #5a8a33;
+    --line: rgba(244, 231, 200, 0.28);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Oswald', sans-serif;
+    background: var(--ink);
+    color: var(--cream);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 32px; position: relative; }
+
+  header { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; position: relative; z-index: 6; }
+  .brand { font-family: 'Alfa Slab One'; font-size: 20px; letter-spacing: 0.01em; color: var(--cream); }
+  nav { display: flex; gap: 22px; }
+  nav a { font-family: 'Oswald'; font-weight: 600; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cream); text-decoration: none; opacity: 0.85; transition: opacity .2s; }
+  nav a:hover { opacity: 1; }
+
+  /* HERO POSTER */
+  .poster {
+    position: relative; overflow: hidden;
+    background: var(--scorch);
+    border: 3px solid var(--ink);
+    border-radius: 6px;
+    padding: 48px 40px 56px;
+    margin-bottom: 64px;
+    box-shadow: 0 40px 80px -34px rgba(0,0,0,.8);
+  }
+  /* sunburst */
+  .poster::before {
+    content: ''; position: absolute; left: 50%; top: 46%; width: 1400px; height: 1400px;
+    transform: translate(-50%, -50%); z-index: 0; opacity: 0.5;
+    background: repeating-conic-gradient(from 0deg at 50% 50%, var(--scorch-deep) 0deg 7deg, transparent 7deg 14deg);
+    animation: spin 90s linear infinite;
+  }
+  @keyframes spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+  .poster::after {
+    content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(ellipse at 50% 42%, rgba(244,231,200,0.12) 0%, rgba(0,0,0,0) 40%),
+                radial-gradient(ellipse at 50% 120%, rgba(94,28,15,0.85) 0%, rgba(94,28,15,0) 55%);
+  }
+  .poster-inner { position: relative; z-index: 3; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 20px; min-height: 60vh; }
+  @media (max-width: 860px) { .poster-inner { grid-template-columns: 1fr; text-align: center; justify-items: center; } }
+
+  .col-left { text-align: right; }
+  @media (max-width: 860px) { .col-left { text-align: center; order: 2; } }
+  .col-right { text-align: left; }
+  @media (max-width: 860px) { .col-right { text-align: center; order: 3; } }
+  @media (max-width: 860px) { .bottle-wrap { order: 1; } }
+
+  .eyebrow-strip { display: inline-block; font-family: 'Oswald'; font-weight: 700; font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink); background: var(--acid); padding: 5px 14px; transform: rotate(-2deg); margin-bottom: 18px; }
+  .titanic { font-family: 'Alfa Slab One'; line-height: 0.9; text-transform: uppercase; color: var(--cream); text-shadow: 4px 4px 0 var(--scorch-dark); }
+  .titanic .l1 { font-size: 64px; display: block; }
+  .titanic .l2 { font-size: 92px; display: block; color: var(--acid); text-shadow: 4px 4px 0 var(--scorch-dark); }
+  .sub-slab { font-family: 'Oswald'; font-weight: 600; font-size: 16px; letter-spacing: 0.26em; text-transform: uppercase; margin-top: 12px; color: var(--cream); }
+
+  /* heat meter */
+  .heat { display: inline-flex; align-items: center; gap: 10px; margin-top: 22px; font-family: 'Space Mono'; font-weight: 700; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; }
+  .pips { display: inline-flex; gap: 4px; }
+  .pip { width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--ink); background: transparent; }
+  .pip.on { background: var(--acid); }
+
+  .tagline { font-family: 'Alfa Slab One'; font-size: 30px; line-height: 1.05; color: var(--cream); margin-bottom: 22px; text-shadow: 3px 3px 0 var(--scorch-dark); }
+  .price-line { font-family: 'Space Mono'; font-weight: 700; font-size: 15px; letter-spacing: 0.08em; color: var(--cream); margin-bottom: 18px; }
+  .buy { font-family: 'Alfa Slab One'; font-size: 18px; background: var(--ink); color: var(--acid); border: none; padding: 16px 30px; border-radius: 3px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.02em; box-shadow: 0 10px 0 var(--scorch-dark); transition: transform .12s, box-shadow .12s; }
+  .buy:hover { transform: translateY(3px); box-shadow: 0 7px 0 var(--scorch-dark); }
+
+  /* bottle object */
+  .bottle-wrap { position: relative; z-index: 4; }
+  .bottle-wrap svg { display: block; filter: drop-shadow(0 24px 30px rgba(0,0,0,.55)); }
+  .seal {
+    position: absolute; top: 6px; right: -30px; width: 110px; height: 110px; border-radius: 50%;
+    background: var(--cream); color: var(--ink); display: grid; place-items: center; text-align: center;
+    font-family: 'Space Mono'; font-weight: 700; font-size: 11px; line-height: 1.3; letter-spacing: 0.06em;
+    transform: rotate(13deg); border: 3px solid var(--ink); box-shadow: 0 10px 20px -6px rgba(0,0,0,.6); z-index: 5;
+  }
+
+  /* beats */
+  .beat { padding: 56px 0; border-bottom: 2px solid rgba(244,231,200,0.12); }
+  .beat-eyebrow { font-family: 'Alfa Slab One'; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--acid); margin-bottom: 18px; }
+  .beat h2 { font-family: 'Alfa Slab One'; font-size: 40px; line-height: 1; text-transform: uppercase; margin-bottom: 18px; }
+
+  .heat-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: center; }
+  @media (max-width: 760px) { .heat-grid { grid-template-columns: 1fr; } }
+  .heat-grid p { font-size: 18px; line-height: 1.6; color: var(--cream); opacity: 0.92; font-weight: 300; }
+  .on-it { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+  .on-it span { font-family: 'Oswald'; font-weight: 600; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; border: 1.5px solid var(--line); padding: 7px 13px; border-radius: 999px; }
+
+  /* sizes */
+  .sizes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  @media (max-width: 760px) { .sizes { grid-template-columns: 1fr 1fr; } }
+  .size { background: var(--scorch); border: 2px solid var(--ink); border-radius: 4px; padding: 22px; text-align: center; transition: transform .2s; }
+  .size:hover { transform: translateY(-4px); }
+  .size .s { font-family: 'Alfa Slab One'; font-size: 22px; text-transform: uppercase; }
+  .size .d { font-family: 'Oswald'; font-weight: 300; font-size: 13px; color: var(--cream); opacity: .85; min-height: 34px; margin-top: 4px; }
+  .size .pr { font-family: 'Space Mono'; font-weight: 700; font-size: 18px; color: var(--acid); margin: 10px 0; }
+  .size button { font-family: 'Oswald'; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; background: var(--ink); color: var(--acid); border: none; padding: 9px 14px; border-radius: 2px; cursor: pointer; width: 100%; }
+
+  /* praise */
+  .praise { display: grid; grid-template-columns: 1fr 1fr; gap: 34px; }
+  @media (max-width: 760px) { .praise { grid-template-columns: 1fr; } }
+  .quote { font-family: 'Alfa Slab One'; font-size: 24px; line-height: 1.2; }
+  .quote .src { display: block; font-family: 'Space Mono'; font-size: 11px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--acid); margin-top: 12px; }
+
+  /* story */
+  .story { display: grid; grid-template-columns: 110px 1fr; gap: 26px; align-items: center; }
+  .story .face { width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(140deg, var(--acid), var(--scorch-deep)); border: 3px solid var(--ink); }
+  .story p { font-size: 17px; font-weight: 300; line-height: 1.6; color: var(--cream); max-width: 42em; margin-bottom: 12px; }
+  .story .more { font-family: 'Oswald'; font-weight: 700; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--acid); text-decoration: none; border-bottom: 1.5px solid var(--acid); padding-bottom: 3px; }
+
+  /* close */
+  .close { text-align: center; padding: 84px 24px; }
+  .close h2 { font-family: 'Alfa Slab One'; font-size: 58px; line-height: 0.95; text-transform: uppercase; margin-bottom: 8px; }
+  .close h2 .a { color: var(--acid); }
+  .close p { font-family: 'Space Mono'; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--cream); opacity: .8; margin-bottom: 26px; }
+
+  footer { display: flex; justify-content: space-between; align-items: center; padding: 26px 0 56px; flex-wrap: wrap; gap: 14px; border-top: 2px solid rgba(244,231,200,0.12); }
+  footer .fb { font-family: 'Alfa Slab One'; font-size: 16px; color: var(--acid); }
+  footer .fl { display: flex; gap: 18px; font-family: 'Oswald'; font-weight: 600; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+  footer .fl a { color: var(--cream); text-decoration: none; opacity: .8; }
+  footer .fl a:hover { opacity: 1; }
+
+  /* motion */
+  .rise { opacity: 0; transform: translateY(20px); animation: rise .8s cubic-bezier(.22,1,.36,1) forwards; }
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+  .r1{animation-delay:.1s}.r2{animation-delay:.24s}.r3{animation-delay:.38s}.r4{animation-delay:.52s}
+  .drop { opacity: 0; transform: translateY(-40px); animation: drop 1s cubic-bezier(.34,1.3,.5,1) .15s forwards; }
+  @keyframes drop { to { opacity: 1; transform: translateY(0); } }
+  .sealin { animation: sealin .5s cubic-bezier(.34,1.56,.64,1) .85s both; }
+  @keyframes sealin { from { opacity: 0; transform: rotate(46deg) scale(.3); } to { opacity: 1; transform: rotate(13deg) scale(1); } }
+  @media (prefers-reduced-motion: reduce) { .rise,.drop,.sealin { animation: none; opacity: 1; transform: none; } .poster::before { animation: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">Devil's Acre</div>
+    <nav>
+      <a href="#">The Sauce</a>
+      <a href="#">The Heat</a>
+      <a href="#">Find It</a>
+      <a href="#">Cart (0)</a>
+    </nav>
+  </header>
+
+  <section class="poster">
+    <div class="poster-inner">
+      <div class="col-left">
+        <span class="eyebrow-strip rise r1">Small Batch · No. 01</span>
+        <div class="titanic rise r1"><span class="l1">Devil's</span><span class="l2">Acre</span></div>
+        <div class="sub-slab rise r2">One sauce · made by hand</div>
+        <div class="heat rise r2">
+          Heat
+          <span class="pips">
+            <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+            <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+            <span class="pip on"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span>
+          </span>
+          7 / 10
+        </div>
+      </div>
+
+      <div class="bottle-wrap drop">
+        <svg width="200" height="380" viewBox="0 0 200 380" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Devil's Acre hot sauce bottle">
+          <!-- cap -->
+          <rect x="74" y="6" width="52" height="40" rx="5" fill="#17100b" stroke="#0c0805" stroke-width="2"/>
+          <rect x="70" y="40" width="60" height="12" rx="3" fill="#0c0805"/>
+          <!-- neck -->
+          <rect x="84" y="50" width="32" height="34" fill="#7a2414"/>
+          <!-- wax drip -->
+          <path d="M68 80 q4 22 8 0 q5 26 9 4 q5 30 10 2 q5 28 10 4 q5 24 9 0 q4 20 8 -2 l0 -18 l-64 0 z" fill="#0c0805"/>
+          <!-- shoulder + body -->
+          <path d="M70 92 q30 -10 60 0 l6 30 l0 232 q0 14 -14 14 l-44 0 q-14 0 -14 -14 l0 -232 z" fill="#9e2a14" stroke="#17100b" stroke-width="3"/>
+          <!-- sauce glass highlight -->
+          <path d="M80 120 q-4 110 2 230" stroke="#d3603f" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
+          <!-- label -->
+          <rect x="62" y="150" width="76" height="150" rx="4" fill="#f4e7c8" stroke="#17100b" stroke-width="2.5"/>
+          <rect x="62" y="150" width="76" height="26" fill="#b8391c"/>
+          <text x="100" y="168" text-anchor="middle" font-family="Alfa Slab One, serif" font-size="12" fill="#f4e7c8" letter-spacing="0.5">DEVIL'S</text>
+          <!-- flame -->
+          <path d="M100 192 q-16 14 -8 30 q-10 -4 -6 -16 q-12 18 4 32 q14 12 28 0 q14 -16 0 -34 q4 12 -4 16 q8 -18 -8 -28 q2 8 -2 12 q4 -14 -4 -22 z" fill="#b8391c"/>
+          <text x="100" y="262" text-anchor="middle" font-family="Oswald, sans-serif" font-weight="700" font-size="9" fill="#17100b" letter-spacing="1.5">HOT SAUCE</text>
+          <text x="100" y="280" text-anchor="middle" font-family="Space Mono, monospace" font-size="7" fill="#5e1c0f" letter-spacing="1">SMALL BATCH · 5 OZ</text>
+        </svg>
+      </div>
+      <div class="seal sealin">BOTTLED<br />BY HAND<br />◆ EST ◆</div>
+
+      <div class="col-right">
+        <div class="tagline rise r3">No<br />apologies.</div>
+        <div class="price-line rise r3">$12 a bottle · ships anywhere</div>
+        <button class="buy rise r4">Get a bottle →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="beat">
+    <div class="beat-eyebrow">What you're in for</div>
+    <div class="heat-grid">
+      <div>
+        <h2>Smoke first.<br />Then the burn.</h2>
+        <p>Charred jalapeño and guajillo, a slow ferment, a hit of black vinegar and brown sugar. It builds — you'll feel it on the back end, not the front. Hot enough to mean it. Not so hot you can't taste it.</p>
+        <div class="on-it">
+          <span>Eggs</span><span>Tacos</span><span>Pizza</span><span>Pulled pork</span><span>Honestly, everything</span>
+        </div>
+      </div>
+      <div style="text-align:center;">
+        <div class="heat" style="font-size:14px;">
+          Heat
+          <span class="pips">
+            <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+            <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+            <span class="pip on"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span>
+          </span>
+        </div>
+        <p style="margin-top:14px; font-family:'Space Mono'; font-size:13px; letter-spacing:0.08em;">~14,000 SHU · fermented 21 days</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="beat">
+    <div class="beat-eyebrow">Pick your heat</div>
+    <div class="sizes">
+      <div class="size"><div class="s">5 oz</div><div class="d">The everyday bottle</div><div class="pr">$12</div><button>Add</button></div>
+      <div class="size"><div class="s">3-Pack</div><div class="d">Stock the shelf, save a few</div><div class="pr">$32</div><button>Add</button></div>
+      <div class="size"><div class="s">Gift Box</div><div class="d">Bottle + sticker + hot honey</div><div class="pr">$24</div><button>Add</button></div>
+      <div class="size"><div class="s">Wholesale</div><div class="d">For shops &amp; restaurants</div><div class="pr">Inquire</div><button>Ask</button></div>
+    </div>
+  </section>
+
+  <section class="beat">
+    <div class="beat-eyebrow">Word of mouth</div>
+    <div class="praise">
+      <div class="quote">"It ruined every other hot sauce for me. I'm not even mad."<span class="src">— Dani R., repeat offender</span></div>
+      <div class="quote">"Bought one. Came back for the three-pack two days later."<span class="src">— Providence Farmers Market</span></div>
+    </div>
+  </section>
+
+  <section class="beat">
+    <div class="beat-eyebrow">Who's behind it</div>
+    <div class="story">
+      <div class="face"></div>
+      <div>
+        <p>One stubborn person, a Rhode Island kitchen, and a pepper habit that got out of hand. Devil's Acre started as a batch for friends and never really stopped. Still made by hand, still one sauce, still no apologies.</p>
+        <a class="more" href="#">The whole story →</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="close">
+    <h2>One sauce.<br /><span class="a">No apologies.</span></h2>
+    <p>Made by hand · ships anywhere</p>
+    <button class="buy">Get a bottle →</button>
+  </section>
+
+  <footer>
+    <div class="fb">Devil's Acre</div>
+    <div class="fl">
+      <a href="#">The Sauce</a>
+      <a href="#">The Heat</a>
+      <a href="#">Find It</a>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
