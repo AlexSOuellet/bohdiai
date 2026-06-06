@@ -92,7 +92,14 @@ function authoringSpec(b: AuthoringBrief): string {
   const treatments = (Object.entries(GOODS_TREATMENT_MENU) as Array<[string, string]>)
     .map(([k, desc]) => `    - ${k}: ${desc}`)
     .join('\n');
+  const nicheSource = b.nicheBody.trim().slice(0, 12000);
   return `MAIN STREET — a paced sales page in four full-width beats: (1) THE MOMENT, a full-screen held video with a short brand story told one line at a time, cross-fading, landing on the brand and a button; (2) GOODS in motion, a moving showcase of products; (3) THE FOUNDER beside a "find us this week" calendar; (4) THE CLOSE, a big-type sign-off. Layout, fonts, color, spacing, and motion are fixed by the archetype and the skin you already chose. Author the content and write vivid generation prompts for the hero video, the founder portrait, and each product photo.
+
+NICHE SOURCE — this is how makers in this niche actually talk, what they sell, the materials and techniques they use, and who buys from them. MINE IT. Name real products, real materials, real processes from it. The copy must sound like THIS ${b.nicheDisplayName.toLowerCase()}, not a generic shop. Do not invent niche facts that contradict it.
+
+${nicheSource}
+
+---
 
 GOODS TREATMENT — pick the body the goods beat wears (goods.treatment), the one that fits THIS shop. The home shows only a small sampling of products either way, so catalog size is a hint, not a rule:
 ${treatments}
