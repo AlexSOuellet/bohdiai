@@ -19,9 +19,17 @@ Two questions sort everything here:
 1. **What is the star of the page?** Each storefront archetype is a different *center of gravity* — the shop, the fresh batch, the curated find, the body of work. This is a structural shape, not a niche or a mood.
 2. **Is it a whole storefront, or a shape that travels?** Some pieces are full sites. Others are shapes deployed *on top of* a store — a launch page, a catalog-page treatment. Keeping these separate is what stops the catalog from bloating.
 
-## Main Street is the default; the catalog works because looks are try-on-able
+## Archetype selection — Main Street default + post-build suggestion engine
 
-Main Street (The Shop) is the bread-and-butter — most makers land there, and it pays the bills. The rest of the catalog earns its place not by being picked cold at a fork in onboarding, but by being **easy to try on**: a maker can flip their own store into a different shape and see it. The Session-29 archetype try-on / conversion tool is the delivery vehicle for this entire catalog. The product value is *giving choices in an easy format*, not forcing a one-time archetype decision. This is why Counter, Find, and Body of Work are worth having even though Main Street is the workhorse.
+**Onboarding always builds Main Street.** We cannot reliably tell a weekly baker from a catalog baker, or a curator from a shopkeeper, at onboarding without interrogating the maker — and a wrong auto-build ships a wrong store. Main Street renders every maker acceptably, so everyone starts there.
+
+**Bohdi never selects an archetype.** This removes the mis-pick risk entirely and ends the steering question for archetype choice — his freedom stays in the skin, the treatments, the copy, and the Moment, never the business shape.
+
+**The rest of the catalog is a post-build, content-loaded suggestion engine**, delivered by the Session-29 try-on tool. Sequence matters: the maker adds their real products and content *first*; then we *actively* suggest a more business-specific look and show it with their own content already inside it — "this is how a shop like yours actually sells." The maker recognizes their own fit and chooses. Because it's their call, it can't be wrong; and the personalized try-on (their pieces in the Find, their loaves in the Counter) is the moment the subscription justifies itself. Active suggestion also beats the default-gravity problem — non-explorers get walked to their fit instead of having to discover it.
+
+**The niche carries a loose suggestion hint**, not a deterministic selector — which shapes to *offer* the maker (the Find to a vintage seller, the Counter to a baker). It drives a suggestion, not a build, so it can be heuristic; a wrong suggestion costs nothing.
+
+**Earning a default.** An archetype earns a best-fit *default* (built at onboarding instead of Main Street) only when it is shown to beat Main Street for a niche — by **functional fit** (the Counter's preorder/pickup/sold-out transaction model is the first candidate, because a rotating-stock maker's business runs on mechanics Main Street can't express) or by **real conversion evidence** once live. "Different" or "thematically apt" does not earn a default; the burden of proof sits on the new shape, not on Main Street. Note: this is a *product* test, independent of which archetype happens to be built first (a build-sequencing fact, not a design driver).
 
 ## The four storefront archetypes
 
