@@ -21,6 +21,7 @@ import { generateMomentVideo, generateMomentStill } from '@/lib/moments/media';
 import { archetypeMenu } from '@/lib/archetypes/registry';
 import type { ArchetypeBuildSpec, AuthoringBrief, MediaJob } from '@/lib/archetypes/builder';
 import { writeArchetypeStorefront } from '@/lib/generation/write-archetype-storefront';
+import { withImageDirectives } from '@/lib/onboarding/image-directives';
 
 const MODEL = 'claude-sonnet-4-6';
 const MAX_TURNS = 10;
@@ -47,6 +48,12 @@ export interface ArchetypeBuildResult {
  */
 export function recycleProductPhotos(count: number, photos: string[]): Array<string | null> {
   return Array.from({ length: count }, (_, i) => (photos.length > 0 ? photos[i % photos.length]! : null));
+}
+
+/** Apply the engine's enforced image directives (photorealism + name-matched
+ *  people) to a job's authored prompt before generation. */
+export function prepareJobPrompt(job: MediaJob, makerName?: string): string {
+  return withImageDirectives(job.prompt, { isPerson: job.subjectIsPerson, makerName });
 }
 
 function buildMenuPrompt(brief: AuthoringBrief, specs: ArchetypeBuildSpec[]): string {
@@ -197,10 +204,12 @@ export async function buildArchetypeStore(
   // photos are capped and recycled. Unique storage path per job so nothing overwrites.
   emit('Generating your photos and video');
   const jobs = spec.mediaJobs(authored);
-  const run = (j: MediaJob) =>
-    j.kind === 'video'
-      ? generateMomentVideo(j.prompt, { subdomain: `${input.subdomain}/${j.id}`, aspect: j.aspect, ...(j.durationSec !== undefined ? { durationSec: j.durationSec } : {}) })
-      : generateMomentStill(j.prompt, { subdomain: `${input.subdomain}/${j.id}`, aspect: j.aspect });
+  const run = (j: MediaJob) => {
+    const prompt = prepareJobPrompt(j, input.makerName);
+    return j.kind === 'video'
+      ? generateMomentVideo(prompt, { subdomain: `${input.subdomain}/${j.id}`, aspect: j.aspect, ...(j.durationSec !== undefined ? { durationSec: j.durationSec } : {}) })
+      : generateMomentStill(prompt, { subdomain: `${input.subdomain}/${j.id}`, aspect: j.aspect });
+  };
 
   const feature = jobs.filter((j) => j.group === 'feature');
   const product = jobs.filter((j) => j.group === 'product');
