@@ -13,84 +13,52 @@ const baseFounder: MainStreetContent['founder'] = {
   photo: { prompt: 'baker in a kitchen', alt: 'June' },
 };
 
-function withRows(n: number): MainStreetContent['founder'] {
-  return {
-    ...baseFounder,
-    findUs: {
-      label: 'Find us this week',
-      rows: Array.from({ length: n }, (_, i) => ({ day: `D${i}`, where: `Market ${i}`, time: '9-2' })),
-    },
-  };
-}
+const cardFounder: MainStreetContent['founder'] = {
+  ...baseFounder,
+  eyebrow: 'Since 2019',
+  heading: 'Meet June',
+};
 
 afterEach(cleanup);
 
 describe('selectFounderTreatment', () => {
-  it('leads with the calendar when the maker is out a lot', () => {
-    expect(selectFounderTreatment({ findUsRows: 3 })).toBe('findus');
-    expect(selectFounderTreatment({ findUsRows: 5, mood: 'cozy' })).toBe('findus');
+  it('honors an explicit Bohdi pick', () => {
+    expect(selectFounderTreatment({ mood: 'cozy', pick: 'portrait' })).toBe('portrait');
   });
-  it('reads intimate moods as a letter', () => {
-    expect(selectFounderTreatment({ findUsRows: 0, mood: 'cozy' })).toBe('letter');
-    expect(selectFounderTreatment({ findUsRows: 1, mood: 'rustic' })).toBe('letter');
-  });
-  it('reads cinematic moods as a portrait', () => {
-    expect(selectFounderTreatment({ findUsRows: 0, mood: 'dark' })).toBe('portrait');
+  it('leans card for intimate moods and portrait for cinematic, with no date input', () => {
+    expect(selectFounderTreatment({ mood: 'cozy' })).toBe('card');
+    expect(selectFounderTreatment({ mood: 'rustic' })).toBe('card');
+    expect(selectFounderTreatment({ mood: 'dark' })).toBe('portrait');
   });
   it('defaults to the quote', () => {
-    expect(selectFounderTreatment({ findUsRows: 0, mood: 'modern' })).toBe('quote');
-    expect(selectFounderTreatment({ findUsRows: 0 })).toBe('quote');
+    expect(selectFounderTreatment({ mood: 'modern' })).toBe('quote');
+    expect(selectFounderTreatment({})).toBe('quote');
+  });
+  it('never returns the removed calendar-led treatment', () => {
+    for (const mood of ['cozy', 'rustic', 'dark', 'sunset', 'modern', undefined]) {
+      expect(['quote', 'portrait', 'letter', 'card']).toContain(selectFounderTreatment({ mood }));
+    }
   });
 });
 
-describe('FounderBeat — forced treatment renders on the contrast band', () => {
-  for (const treatment of ['quote', 'portrait', 'letter'] as const) {
-    it(`${treatment} renders the quote on the contrast surface`, () => {
-      const { getByText, container } = render(<FounderBeat founder={baseFounder} skin={skin} treatment={treatment} />);
+describe('FounderBeat — maker-only treatments on the contrast band', () => {
+  for (const treatment of ['quote', 'portrait', 'letter', 'card'] as const) {
+    it(`${treatment} renders the maker quote on the contrast surface and no calendar`, () => {
+      const { getByText, container } = render(<FounderBeat founder={cardFounder} skin={skin} treatment={treatment} />);
       expect(getByText(/cast-iron oven/)).toBeTruthy();
       const band = container.querySelector('[data-ms-founder]') as HTMLElement;
       expect(band.style.background).toContain('--ms-contrast-bg');
-    });
-  }
-
-  it('findus leads with the calendar rows', () => {
-    const { getByText } = render(<FounderBeat founder={withRows(3)} skin={skin} treatment="findus" />);
-    expect(getByText('Market 0')).toBeTruthy();
-    expect(getByText('Find us this week')).toBeTruthy();
-  });
-
-  it('falls back off findus when there is no calendar', () => {
-    const { container } = render(<FounderBeat founder={baseFounder} skin={skin} treatment="findus" />);
-    // No findus aside list; the quote band still renders.
-    expect(container.querySelector('[data-ms-founder]')).toBeTruthy();
-  });
-});
-
-describe('FounderBeat — the calendar points at an events page', () => {
-  it('renders an events cue on the calendar pointing at the events page', () => {
-    const { container } = render(<FounderBeat founder={withRows(2)} skin={skin} treatment="quote" eventsHref="/events" />);
-    const cue = container.querySelector('.ms-eventscue') as HTMLAnchorElement;
-    expect(cue.getAttribute('href')).toBe('/events');
-    expect(cue.textContent).toContain('See all dates');
-  });
-
-  it('uses the maker-authored events label when present', () => {
-    const f = withRows(2);
-    f.findUs!.eventsLabel = 'See all our markets';
-    const { container } = render(<FounderBeat founder={f} skin={skin} treatment="quote" />);
-    expect((container.querySelector('.ms-eventscue') as HTMLElement).textContent).toContain('See all our markets');
-  });
-});
-
-describe('FounderBeat — calendar disabled does not break the beat or about', () => {
-  for (const treatment of ['quote', 'portrait', 'letter'] as const) {
-    it(`${treatment}: no calendar → no events cue, but the band + about cue still render`, () => {
-      const { container } = render(<FounderBeat founder={baseFounder} skin={skin} treatment={treatment} />);
+      // The calendar is its own beat now — never inside the founder band.
+      expect(container.querySelector('[data-type="day"]')).toBeNull();
       expect(container.querySelector('.ms-eventscue')).toBeNull();
-      expect(container.querySelector('[data-ms-founder]')).toBeTruthy();
-      expect(container.querySelector('.ms-aboutcue')).toBeTruthy();
     });
   }
+
+  it('the card treatment shows the eyebrow and heading', () => {
+    const { getByText } = render(<FounderBeat founder={cardFounder} skin={skin} treatment="card" />);
+    expect(getByText('Meet June')).toBeTruthy();
+    expect(getByText('Since 2019')).toBeTruthy();
+  });
 });
 
 describe('FounderBeat — the about teaser cue', () => {
@@ -104,5 +72,9 @@ describe('FounderBeat — the about teaser cue', () => {
     const f = { ...baseFounder, aboutLabel: 'Meet the baker' };
     const { container } = render(<FounderBeat founder={f} skin={skin} treatment="quote" />);
     expect((container.querySelector('.ms-aboutcue') as HTMLElement).textContent).toContain('Meet the baker');
+  });
+  it('honors a Bohdi-authored treatment on the founder content', () => {
+    const { getByText } = render(<FounderBeat founder={{ ...cardFounder, treatment: 'card' }} skin={skin} />);
+    expect(getByText('Meet June')).toBeTruthy();
   });
 });

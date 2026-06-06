@@ -1,33 +1,25 @@
 /**
- * Main Street — founder-beat treatment selection.
+ * Main Street — About-beat (founder) treatment selection.
  *
- * Beat 3 is the authority of the shop: the maker, in their own voice, beside
- * where to meet them. Like the goods beat it has several bodies, system-selected
- * so the founder band stops defaulting to one dark slab. It is a TEASER — a taste
- * of the maker — with an "about" cue to the full bio on the About page.
+ * Beat 3 is the maker, in their own voice. It has four MAKER-ONLY bodies; the
+ * market calendar is its own separate beat, never inside these.
  *
  *  - quote    — portrait beside a pull-quote. Calm, authority-forward (default).
- *  - portrait — a large CONTAINED portrait in the band, quote over a soft scrim.
- *               Cinematic; the image stays inside the column, never edge to edge.
- *  - letter   — the quote as a short signed note, small inset portrait. Intimate;
- *               the one that fights the dark-band reflex hardest.
- *  - findus   — the "find us this week" calendar as the hero, portrait + a line of
- *               voice supporting it. For makers whose in-person presence IS the
- *               story; only valid WITH a calendar.
+ *  - portrait — a large CONTAINED portrait, quote over a soft scrim. Cinematic.
+ *  - letter   — the quote as a short signed note, small inset portrait. Intimate.
+ *  - card     — the "Meet June" card: eyebrow, heading, round face, a warm
+ *               pull-quote, and the about cue. Personal.
  *
- * The calendar is an independent axis: shown whenever the maker actually does
- * in-person events (a find-us list exists), regardless of treatment.
+ * BOHDI picks the treatment (like the goods beat). When he doesn't, we lean on
+ * mood only — NEVER on market-date count, which we don't know at onboarding.
  */
 
-export type FounderTreatment = 'quote' | 'portrait' | 'letter' | 'findus';
+export type FounderTreatment = 'quote' | 'portrait' | 'letter' | 'card';
 
-/** Many find-us dates → the maker is a market regular; lead with the calendar. */
-const FINDUS_FORWARD_ROWS = 3;
-
-/** Intimate, homemade moods read as a personal letter. */
-const LETTER_MOODS = ['cozy', 'rustic', 'homey'];
+/** Intimate, homemade moods read as the personal card. */
+const INTIMATE_MOODS = ['cozy', 'rustic', 'homey'];
 /** Cinematic, image-led moods read as a portrait. */
-const PORTRAIT_MOODS = ['dark', 'sunset', 'botanical'];
+const CINEMATIC_MOODS = ['dark', 'sunset', 'botanical'];
 
 function matches(mood: string | undefined, set: string[]): boolean {
   if (!mood) return false;
@@ -36,13 +28,12 @@ function matches(mood: string | undefined, set: string[]): boolean {
 }
 
 /**
- * Pick the founder treatment. Deterministic from the in-person cadence (how many
- * find-us rows) and mood. A maker out at markets often leads with the calendar;
- * otherwise mood chooses how intimate or cinematic the band reads.
+ * Pick the About treatment. Bohdi's explicit pick wins; otherwise mood chooses
+ * how intimate or cinematic the band reads. No market-date input.
  */
-export function selectFounderTreatment(opts: { mood?: string | undefined; findUsRows: number }): FounderTreatment {
-  if (opts.findUsRows >= FINDUS_FORWARD_ROWS) return 'findus';
-  if (matches(opts.mood, LETTER_MOODS)) return 'letter';
-  if (matches(opts.mood, PORTRAIT_MOODS)) return 'portrait';
+export function selectFounderTreatment(opts: { mood?: string | undefined; pick?: FounderTreatment | undefined }): FounderTreatment {
+  if (opts.pick) return opts.pick;
+  if (matches(opts.mood, INTIMATE_MOODS)) return 'card';
+  if (matches(opts.mood, CINEMATIC_MOODS)) return 'portrait';
   return 'quote';
 }

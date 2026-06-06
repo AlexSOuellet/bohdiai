@@ -46,18 +46,24 @@ function AboutCue({ about, skin }: { about: FounderAbout | undefined; skin: Arch
   );
 }
 
-function FindUsList({ findUs, skin, eventsHref, heading = 'eyebrow' }: { findUs: NonNullable<Founder['findUs']>; skin: ArchetypeTheme; eventsHref: string; heading?: 'eyebrow' | 'title' }) {
+/** The calendar list. Lives on the contrast band (onContrast, default) OR the
+ *  base surface (onContrast=false, when rendered as its own find-us beat). The
+ *  hairline + text colors flip with the surface so it reads either way. */
+export function FindUsList({ findUs, skin, eventsHref, heading = 'eyebrow', onContrast = true }: { findUs: NonNullable<Founder['findUs']>; skin: ArchetypeTheme; eventsHref: string; heading?: 'eyebrow' | 'title'; onContrast?: boolean }) {
   const r = roles(skin);
+  const fg = onContrast ? 'var(--ms-contrast-fg)' : 'var(--ms-fg)';
+  const fgMuted = onContrast ? 'var(--ms-contrast-fg-muted)' : 'var(--ms-fg-muted)';
+  const hair = onContrast ? HAIR : 'var(--ms-rule)';
   return (
     <div>
-      <span data-type={heading} style={{ ...typeRoleCss(heading === 'title' ? r.title : r.eyebrow), color: heading === 'title' ? 'var(--ms-contrast-fg)' : 'var(--ms-accent)', display: 'block', marginBottom: 16 }}>
+      <span data-type={heading} style={{ ...typeRoleCss(heading === 'title' ? r.title : r.eyebrow), color: heading === 'title' ? fg : 'var(--ms-accent)', display: 'block', marginBottom: 16 }}>
         {findUs.label}
       </span>
       {findUs.rows.map((row, i) => (
-        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16, padding: '13px 0', borderBottom: `1px solid ${HAIR}` }}>
-          <span data-type="day" style={{ ...typeRoleCss(r.day), color: 'var(--ms-contrast-fg-muted)', flex: '0 0 95px' }}>{row.day}</span>
-          <span data-type="where" style={{ ...typeRoleCss(r.where), color: 'var(--ms-contrast-fg)', flex: 1 }}>{row.where}</span>
-          <span data-type="price" style={{ ...typeRoleCss(r.price), color: 'var(--ms-contrast-fg-muted)' }}>{row.time}</span>
+        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16, padding: '13px 0', borderBottom: `1px solid ${hair}` }}>
+          <span data-type="day" style={{ ...typeRoleCss(r.day), color: fgMuted, flex: '0 0 95px' }}>{row.day}</span>
+          <span data-type="where" style={{ ...typeRoleCss(r.where), color: fg, flex: 1 }}>{row.where}</span>
+          <span data-type="price" style={{ ...typeRoleCss(r.price), color: fgMuted }}>{row.time}</span>
         </div>
       ))}
       <a href={eventsHref} data-type="navLabel" className="ms-eventscue" style={{ ...typeRoleCss(r.navLabel), color: 'var(--ms-accent)', display: 'inline-block', marginTop: 18 }}>
@@ -67,10 +73,10 @@ function FindUsList({ findUs, skin, eventsHref, heading = 'eyebrow' }: { findUs:
   );
 }
 
-type TreatmentProps = { founder: Founder; skin: ArchetypeTheme; about?: FounderAbout | undefined; eventsHref: string };
+type TreatmentProps = { founder: Founder; skin: ArchetypeTheme; about?: FounderAbout | undefined };
 
 /** quote — portrait beside a pull-quote (the calm, authority-forward default). */
-export function FounderQuote({ founder, skin, about, eventsHref }: TreatmentProps) {
+export function FounderQuote({ founder, skin, about }: TreatmentProps) {
   const r = roles(skin);
   return (
     <FounderBand>
@@ -81,11 +87,6 @@ export function FounderQuote({ founder, skin, about, eventsHref }: TreatmentProp
         <div>
           <p data-type="quote" style={{ ...typeRoleCss(r.quote), color: 'var(--ms-contrast-fg)', margin: 0 }}>{founder.quote}</p>
           <div data-type="sig" style={{ ...typeRoleCss(r.sig), color: 'var(--ms-contrast-fg-muted)', marginTop: 26 }}>&mdash; {founder.attribution}</div>
-          {founder.findUs && (
-            <div style={{ marginTop: 40, borderTop: `1px solid ${HAIR}`, paddingTop: 24 }}>
-              <FindUsList findUs={founder.findUs} skin={skin} eventsHref={eventsHref} />
-            </div>
-          )}
           <AboutCue about={about} skin={skin} />
         </div>
       </div>
@@ -95,7 +96,7 @@ export function FounderQuote({ founder, skin, about, eventsHref }: TreatmentProp
 
 /** portrait — a large CONTAINED portrait, the quote over a soft bottom scrim.
  *  The image sits inside the column; text is inset from the block's own edges. */
-export function FounderPortrait({ founder, skin, about, eventsHref }: TreatmentProps) {
+export function FounderPortrait({ founder, skin, about }: TreatmentProps) {
   const r = roles(skin);
   return (
     <FounderBand>
@@ -107,11 +108,6 @@ export function FounderPortrait({ founder, skin, about, eventsHref }: TreatmentP
           <div data-type="sig" style={{ ...typeRoleCss(r.sig), color: 'var(--ms-contrast-fg-muted)', marginTop: 20 }}>&mdash; {founder.attribution}</div>
         </div>
       </div>
-      {founder.findUs && (
-        <div className="ms-portrait-strip" style={{ marginTop: 36 }}>
-          <FindUsList findUs={founder.findUs} skin={skin} eventsHref={eventsHref} />
-        </div>
-      )}
       <AboutCue about={about} skin={skin} />
     </FounderBand>
   );
@@ -119,7 +115,7 @@ export function FounderPortrait({ founder, skin, about, eventsHref }: TreatmentP
 
 /** letter — the quote as a short signed note on a narrow measure, a small inset
  *  portrait. Intimate and homemade; the antidote to the dark-slab reflex. */
-export function FounderLetter({ founder, skin, about, eventsHref }: TreatmentProps) {
+export function FounderLetter({ founder, skin, about }: TreatmentProps) {
   const r = roles(skin);
   return (
     <FounderBand>
@@ -129,34 +125,35 @@ export function FounderLetter({ founder, skin, about, eventsHref }: TreatmentPro
         </div>
         <p data-type="quote" style={{ ...typeRoleCss(r.quote), color: 'var(--ms-contrast-fg)', margin: 0, lineHeight: 1.4 }}>{founder.quote}</p>
         <div data-type="title" style={{ ...typeRoleCss(r.title), fontStyle: 'italic', color: 'var(--ms-contrast-fg)', marginTop: 30 }}>{founder.attribution}</div>
-        {founder.findUs && (
-          <div style={{ marginTop: 44, textAlign: 'left', borderTop: `1px solid ${HAIR}`, paddingTop: 28 }}>
-            <FindUsList findUs={founder.findUs} skin={skin} eventsHref={eventsHref} />
-          </div>
-        )}
         <AboutCue about={about} skin={skin} />
       </div>
     </FounderBand>
   );
 }
 
-/** findus — the calendar is the hero; the portrait + a line of voice support it.
- *  Only valid when a find-us list exists (the dispatcher guarantees it). */
-export function FounderFindUs({ founder, skin, about, eventsHref }: TreatmentProps) {
+/** card — the "Meet June" card: eyebrow, heading, a round face, a warm pull-quote,
+ *  the attribution, and the about cue. Personal and inviting. */
+export function FounderCard({ founder, skin, about }: TreatmentProps) {
   const r = roles(skin);
-  const findUs = founder.findUs;
   return (
     <FounderBand>
-      <div className="ms-founder-findus" style={{ display: 'grid', gridTemplateColumns: '1.2fr .8fr', gap: 64, alignItems: 'start' }}>
-        <div>{findUs && <FindUsList findUs={findUs} skin={skin} eventsHref={eventsHref} heading="title" />}</div>
-        <div className="ms-findus-aside">
-          <div style={{ position: 'relative', aspectRatio: '1 / 1', borderRadius: 3, overflow: 'hidden', marginBottom: 22 }}>
-            <Media media={founder.photo} />
-          </div>
-          <p data-type="body" style={{ ...typeRoleCss(r.body), color: 'var(--ms-contrast-fg)', margin: 0 }}>{founder.quote}</p>
-          <div data-type="sig" style={{ ...typeRoleCss(r.sig), color: 'var(--ms-contrast-fg-muted)', marginTop: 18 }}>&mdash; {founder.attribution}</div>
-          <AboutCue about={about} skin={skin} />
+      <div className="ms-founder-card" style={{ maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
+        {founder.eyebrow && (
+          <span data-type="eyebrow" style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-accent)', display: 'block', marginBottom: 14 }}>
+            {founder.eyebrow}
+          </span>
+        )}
+        {founder.heading && (
+          <h2 data-type="title" style={{ ...typeRoleCss(r.title), color: 'var(--ms-contrast-fg)', margin: '0 0 28px' }}>
+            {founder.heading}
+          </h2>
+        )}
+        <div style={{ width: 96, height: 96, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 22px', position: 'relative', border: `1px solid ${HAIR}` }}>
+          <Media media={founder.photo} />
         </div>
+        <p data-type="quote" style={{ ...typeRoleCss(r.quote), fontStyle: 'italic', color: 'var(--ms-contrast-fg)', margin: 0, lineHeight: 1.4 }}>{founder.quote}</p>
+        <div data-type="sig" style={{ ...typeRoleCss(r.sig), color: 'var(--ms-contrast-fg-muted)', marginTop: 22 }}>&mdash; {founder.attribution}</div>
+        <AboutCue about={about} skin={skin} />
       </div>
     </FounderBand>
   );
