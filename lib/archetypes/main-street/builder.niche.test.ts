@@ -25,3 +25,22 @@ describe('Main Street authoringSpec — niche source', () => {
     expect(spec).toMatch(/specific|concrete|real/);
   });
 });
+
+describe('Main Street authoringSpec — voice and story arc', () => {
+  it('asks the moment story to tell one arc across its lines', () => {
+    const spec = MAIN_STREET_SPEC.authoringSpec(brief).toLowerCase();
+    expect(spec).toContain('tell one story');
+    expect(spec).toMatch(/builds line to line|not four disconnected/);
+  });
+
+  it('tells Bohdi to rewrite any line that could appear on any shop', () => {
+    const spec = MAIN_STREET_SPEC.authoringSpec(brief).toLowerCase();
+    expect(spec).toMatch(/could (appear|be) on any/);
+  });
+
+  it('bans the named AI-tell platitudes', () => {
+    const spec = MAIN_STREET_SPEC.authoringSpec(brief).toLowerCase();
+    expect(spec).toContain('crafted with care');
+    expect(spec).toContain('every piece tells a story');
+  });
+});
