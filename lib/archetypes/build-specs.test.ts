@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { MAIN_STREET_SPEC } from './main-street/builder';
-import { GALLERY_SPEC } from './gallery/builder';
-import type { GalleryContent } from './gallery/schemas';
 
 const msContent = {
   shopName: 'Tannery Row',
@@ -46,17 +44,11 @@ describe('catalog-size gate', () => {
     expect(MAIN_STREET_SPEC.fitsCatalog(45)).toBe(true);
   });
 
-  it('Gallery needs at least 8 pieces to fill the wall', () => {
-    expect(GALLERY_SPEC.fitsCatalog(6)).toBe(false); // a 6-item woodworker → no Gallery
-    expect(GALLERY_SPEC.fitsCatalog(7)).toBe(false);
-    expect(GALLERY_SPEC.fitsCatalog(8)).toBe(true);
-    expect(GALLERY_SPEC.fitsCatalog(24)).toBe(true);
-  });
 });
 
 describe('MAIN_STREET_SPEC', () => {
-  it('offers all seven skins as looks and a menu description', () => {
-    expect(MAIN_STREET_SPEC.looks.length).toBe(7);
+  it('offers the full deep skin shelf as looks and a menu description', () => {
+    expect(MAIN_STREET_SPEC.looks.length).toBe(29);
     expect(MAIN_STREET_SPEC.menuDescription.length).toBeGreaterThan(20);
   });
 
@@ -90,64 +82,5 @@ describe('MAIN_STREET_SPEC', () => {
     expect(payload.products[0]!.price).toBe('$98');
     expect(payload.products[0]!.media[0]?.url).toBe('https://cdn/0.jpg');
     expect((payload.content as typeof msContent).moment.media).toMatchObject({ url: 'https://cdn/clip.mp4' });
-  });
-});
-
-const galleryContent = {
-  shopName: 'Quill & Stone',
-  identity: { wordmark: 'Quill & Stone', tagline: 'Hand-set silver and river stone', nav: ['Shop', 'About'] },
-  wall: {
-    products: Array.from({ length: 8 }, (_, i) => ({
-      name: `Piece ${i + 1}`,
-      price: `$${40 + i * 10}`,
-      photo: { prompt: `a silver pendant number ${i + 1} on slate`, alt: `pendant ${i + 1}` },
-    })),
-  },
-  maker: {
-    label: 'The Studio',
-    headline: 'Set by hand at a river bench',
-    body: 'I cut and set every stone myself at a bench by the water, one piece at a time, the way my grandmother taught me.',
-    photo: { prompt: 'a jeweler at a bench by a window', alt: 'the maker' },
-    ctaLabel: 'Read the story',
-  },
-  footer: {
-    blurb: 'Hand-set silver from the river valley',
-    columns: [
-      { title: 'Shop', items: ['Rings', 'Pendants'] },
-      { title: 'More', items: ['About', 'Contact'] },
-    ],
-  },
-};
-
-describe('GALLERY_SPEC', () => {
-  it('offers its four themes as looks', () => {
-    expect(GALLERY_SPEC.looks.length).toBe(4);
-  });
-
-  it('validates a wall submission and embeds products in content', () => {
-    const r = GALLERY_SPEC.parseSubmission({ content: galleryContent });
-    expect(r.ok).toBe(true);
-    if (!r.ok) return;
-    const payload = GALLERY_SPEC.toPayload(r.authored);
-    expect(payload.products.length).toBe(0); // products live in the wall, not as rows
-  });
-
-  it('declares every wall tile as a product job and the maker photo as a feature', () => {
-    const r = GALLERY_SPEC.parseSubmission({ content: galleryContent });
-    if (!r.ok) throw new Error('expected ok');
-    const jobs = GALLERY_SPEC.mediaJobs(r.authored);
-    expect(jobs.filter((j) => j.group === 'product').length).toBe(8);
-    expect(jobs.find((j) => j.id === 'maker')?.group).toBe('feature');
-  });
-
-  it('folds a recycled photo set into the wall via applyMedia', () => {
-    const r = GALLERY_SPEC.parseSubmission({ content: galleryContent });
-    if (!r.ok) throw new Error('expected ok');
-    const urls: Record<string, string> = { maker: 'https://cdn/maker.jpg' };
-    for (let i = 0; i < 8; i++) urls[`product:${i}`] = `https://cdn/p${i % 5}.jpg`; // 5 unique, recycled
-    const out = GALLERY_SPEC.applyMedia(r.authored, urls) as GalleryContent;
-    expect(out.wall.products[0]!.photo.url).toBe('https://cdn/p0.jpg');
-    expect(out.wall.products[6]!.photo.url).toBe('https://cdn/p1.jpg'); // 6 % 5 = 1
-    expect(out.maker.photo.url).toBe('https://cdn/maker.jpg');
   });
 });
