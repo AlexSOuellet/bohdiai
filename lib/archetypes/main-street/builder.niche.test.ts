@@ -44,3 +44,17 @@ describe('Main Street authoringSpec — voice and story arc', () => {
     expect(spec).toContain('every piece tells a story');
   });
 });
+
+describe('Main Street authoringSpec — About treatment + find-us', () => {
+  it('offers the About treatments including the card and tells Bohdi to pick one', () => {
+    const spec = MAIN_STREET_SPEC.authoringSpec(brief).toLowerCase();
+    expect(spec).toMatch(/about treatment/);
+    expect(spec).toContain('card');
+  });
+
+  it('tells Bohdi find-us is its own section he seeds and the maker can turn off', () => {
+    const spec = MAIN_STREET_SPEC.authoringSpec(brief).toLowerCase();
+    expect(spec).toMatch(/find.?us/);
+    expect(spec).toMatch(/own section|seed|sample dates/);
+  });
+});

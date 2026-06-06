@@ -104,6 +104,12 @@ ${nicheSource}
 GOODS TREATMENT — pick the body the goods beat wears (goods.treatment), the one that fits THIS shop. The home shows only a small sampling of products either way, so catalog size is a hint, not a rule:
 ${treatments}
 
+ABOUT TREATMENT — pick the body the About/founder beat wears (founder.treatment). All show the maker only; the find-us calendar is its OWN separate section, never inside the About beat:
+    - quote: portrait beside a pull-quote (calm, authority-forward)
+    - portrait: a large contained portrait, the quote over a soft scrim (cinematic)
+    - letter: the quote as a short signed note, small inset portrait (intimate)
+    - card: the "meet the maker" card — eyebrow, heading, round face, a warm pull-quote (personal)
+
 Call submit_store with { content, products }.
 
 content (MAX lengths are real; stay comfortably under them):
@@ -111,7 +117,7 @@ content (MAX lengths are real; stay comfortably under them):
 - identity: { wordmark (2-28), nav (2-4 strings, each 2-18) }
 - moment: { media: { kind: "video" OR "image" — a held VIDEO or a cinematic STILL. A still is an equally strong hero and has no loop seam, so prefer a still unless real ambient motion genuinely adds something; prompt: a STRUCTURED scene, fill every group with a short phrase — { composition, subject, environment, atmosphere, camera, lighting, style }. For VIDEO the subject MUST be neutral and ambient (steam rising, a flame breathing, dust drifting in a light beam, fabric settling) and the motion slow and continuous — NEVER a person performing an action and NEVER a big lighting change, because the clip loops and any action or flash jumps on the restart; alt (4-120) }, story (2-4 strings, each 4-48, NO punctuation at all — not even periods between words; apostrophes and hyphens within a word are fine): the lines together TELL ONE STORY that builds line to line and lands on the brand — not four disconnected slogans. Draw the specifics from the niche source), eyebrow (4-48), brand (2-28), ctaLabel (3-24), secondaryCtaLabel (3-24, optional) }
 - goods: { title (2-48), treatment (one of: marquee | procession | switcher | slideshow — your pick from above), label (2-24, optional), viewAllLabel (2-28, optional) }
-- founder: { quote (24-280, first person, ~2 sentences, specific, no AI-tell), attribution (4-60), photo: { prompt (8-400): the maker, alt (4-120) }, aboutLabel (2-28, optional), findUs (optional): { label (2-28), eventsLabel (2-28, optional), rows (1-5): { day (1-12), where (4-60), time (1-12) } } }
+- founder: { quote (24-280, first person, ~2 sentences, specific, no AI-tell), attribution (4-60), treatment (one of: quote | portrait | letter | card — your pick from the ABOUT TREATMENT menu above), eyebrow (2-24, optional — for the card, e.g. "Since 2019"), heading (2-28, optional — for the card, e.g. "Meet Mara"), photo: { prompt (8-400): the maker, alt (4-120) }, aboutLabel (2-28, optional), findUs (optional — its OWN section on the home, NOT inside the About beat; seed 1-5 plausible sample dates the maker can edit or turn off later): { label (2-28), eventsLabel (2-28, optional), rows (1-5): { day (1-12), where (4-60), time (1-12) } } }
 - close: { label (2-28), headline (6-72), ctaLabel (3-24) }
 
 products (author ${target}; a brand-new store with no catalog, so you create it): each { name (2-40), slug (2-48, lowercase-hyphen), shortDescription (4-90), description (12-600, write real substance — materials, use, what makes it specific; not one thin line), basePriceCents (integer cents, e.g. 4800 = $48), imagePrompt (8-400): a clean product photo on a fitting surface }.
