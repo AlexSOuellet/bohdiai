@@ -1,7 +1,7 @@
 # Archetype Catalog & The Moment — Design
 
 **Date:** 2026-06-06
-**Status:** Design agreed in conversation; mockups built for three of four storefront shapes. Body of Work look still to design. Not yet built into the engine.
+**Status:** Design agreed in conversation; mockups built for all four storefront shapes (plus two skins of The One). Not yet built into the engine.
 **Authors:** Alex (product owner) + Claude (lead dev)
 
 ## What this supersedes
@@ -18,6 +18,10 @@ Two questions sort everything here:
 
 1. **What is the star of the page?** Each storefront archetype is a different *center of gravity* — the shop, the fresh batch, the curated find, the body of work. This is a structural shape, not a niche or a mood.
 2. **Is it a whole storefront, or a shape that travels?** Some pieces are full sites. Others are shapes deployed *on top of* a store — a launch page, a catalog-page treatment. Keeping these separate is what stops the catalog from bloating.
+
+## Main Street is the default; the catalog works because looks are try-on-able
+
+Main Street (The Shop) is the bread-and-butter — most makers land there, and it pays the bills. The rest of the catalog earns its place not by being picked cold at a fork in onboarding, but by being **easy to try on**: a maker can flip their own store into a different shape and see it. The Session-29 archetype try-on / conversion tool is the delivery vehicle for this entire catalog. The product value is *giving choices in an easy format*, not forcing a one-time archetype decision. This is why Counter, Find, and Body of Work are worth having even though Main Street is the workhorse.
 
 ## The four storefront archetypes
 
@@ -48,10 +52,14 @@ A storefront archetype is a whole-business *shape*. The test each one passes (an
 
 ### 4. The Body of Work
 - **Who:** image-first art makers — fine artist, art-print seller, illustrator, printmaker, photographer-selling-prints, comic artist, sculptor, stained glass.
-- **The star:** the work itself, seen as a collection — the maker's eye and the cohesion across pieces. **Commerce goes quiet:** you fall for the work first, then discover you can buy a print.
-- **Must stay distinct from The Find.** Both are "browse a collection" grids and risk becoming Gallery-but-nicer twice. The divergence: The Find is *objects with stories* (tag, provenance, price, commerce up front); The Body of Work is *images to behold* (quiet commerce, cohesion over placards).
-- **Moment behavior:** to be decided when the look is designed (gate vs melt depends on whether the shape has a hero surface).
-- **Status:** look **not yet designed** — the one remaining mockup.
+- **The star:** the work itself, seen as a collection — the maker's eye and the cohesion across pieces. **Commerce goes quiet:** you fall for the work first, then discover you can acquire it.
+- **Portfolio vs selling is a false split.** For art, the portfolio *is* the sales tool — quiet commerce is how a $2,000 painting sells, not the absence of selling. The "Available / Inquire / Prints / Commissions" are real commerce, just presented softly.
+- **The boundary with The Shop is posture, not niche:** *beheld and acquired* (slow, high-consideration, one piece at a time) is Body of Work; *browsed and bought* (many SKUs, scan-and-cart) is The Shop with great photography. A fine-art photographer with a few limited prints is Body of Work; a 200-image print-on-demand shop is The Shop.
+- **The maker who's genuinely both** (beholdable work + real print volume) keeps the portfolio as the face and puts volume-selling in a "Prints" sub-page — a more shop-like catalog, even the dense-wall treatment. Portfolio out front, shop in a page.
+- **Must stay distinct from The Find.** Both are "browse a collection," and risk becoming Gallery-but-nicer twice. The divergence is posture: The Find is *objects with stories* (tag, provenance, price up front; dense, dark, archival); Body of Work is *images to behold* (quiet commerce, cohesion over placards; light, airy, slow, full-size work with generous space).
+- **Moment behavior:** **gates** (the opening is the work plus an artist statement, not a moment surface to melt into).
+- **Mockup:** `public/bodyofwork-mockup.html` (Della Quist, painter).
+- **Status:** look drafted. A limited-implementation slice (fewer makers) but a genuinely distinct posture, and nearly free to support since it reuses the engine and the same quiet-commerce pieces.
 
 ### Niche grounding (storefront archetype by maker)
 - **Shop:** most made-goods sellers + digital downloads.
@@ -109,7 +117,7 @@ The platform already has the pieces; they just need to be pointed at a weekly ri
 
 ## Open items
 
-- **Body of Work look** — not yet designed (the last mockup). Decide its Moment behavior (gate vs melt) when the look lands. Keep it unmistakably distinct from The Find (images-to-behold / quiet commerce vs objects-with-stories / commerce-forward).
+- **All four shapes now have a drafted look** (mockups in `public/`). What remains is engine implementation, not look-finding.
 - **The Counter mockup is tasteful, not yet wow.** The conventional hero (headline-left/photo-right) and the bottom 3-card teaser grid are the weak spots. The wow is meant to come from the Moment, but the board beat itself can be pushed further (a living board, a real countdown, or a magazine-cover treatment) if we want it louder. Revisit when building.
 - **Build sequencing** — none of this is in the engine yet. Order, dependencies, and how the Moment engine is extracted/reused are an implementation-plan question.
 
@@ -118,5 +126,6 @@ The platform already has the pieces; they just need to be pointed at a weekly ri
 - `find-mockup.html` — The Find (Curated Cabinet), Marrow & Moth.
 - `one-mockup.html` — The One, quiet literary book launch.
 - `one-hotsauce.html` — The One, loud hot-sauce poster.
+- `bodyofwork-mockup.html` — The Body of Work, Della Quist (painter).
 
 (Mockup object photos are stand-ins — local bread/book images where we had them, vintage-graded random photos for The Find. Real generation would use the maker's actual wares.)
