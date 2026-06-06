@@ -246,8 +246,8 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
     const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
     return <MainStreetProduct content={content as MainStreetContent} skin={skin} product={product} />;
   },
-  renderContentPage: ({ content, lookKey, title, body }) => {
+  renderContentPage: ({ content, lookKey, title, body, html }) => {
     const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
-    return <ContentPage content={content as MainStreetContent} skin={skin} title={title} body={body} />;
+    return <ContentPage content={content as MainStreetContent} skin={skin} title={title} body={body} html={html} />;
   },
 };

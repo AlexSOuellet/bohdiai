@@ -82,10 +82,13 @@ export async function renderArchetypeProductPage(tenantId: string, product: Prod
 
 /** Render a plain content page (legal/maker-added) in the tenant's archetype, or
  *  null if the tenant is a legacy store / the archetype has no content page. */
-export async function renderArchetypeContentPage(tenantId: string, title: string, body: string[]) {
+export async function renderArchetypeContentPage(
+  tenantId: string,
+  opts: { title?: string; body?: string[]; html?: string },
+) {
   const a = await resolveArchetype(tenantId);
   if (a === null || a.spec.renderContentPage === undefined) return null;
-  return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, title, body });
+  return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, ...opts });
 }
 
 export default async function StorefrontPage({ slug, version }: StorefrontPageProps) {

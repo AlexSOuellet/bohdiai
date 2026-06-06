@@ -82,15 +82,33 @@ function PageHead({ eyebrow, title, skin }: { eyebrow?: string | undefined; titl
   );
 }
 
-/** A plain content page in Main Street chrome — a title + body paragraphs. Used
- *  for legal docs (Privacy/Terms) and any maker-added page. */
-export function ContentPage({ content, skin, title, body }: { content: MainStreetContent; skin: ArchetypeTheme; title: string; body: string[] }) {
+/** Minimal skin-driven styling for an HTML body (legal docs). Scoped to .ms-legal
+ *  so headings/links read in the skin instead of browser defaults. */
+function legalCss(): string {
+  return `.arch-main-street .ms-legal h1{font-family:var(--ms-disp);font-size:34px;color:var(--ms-fg);margin:0 0 18px}
+.arch-main-street .ms-legal h2{font-family:var(--ms-disp);font-size:22px;color:var(--ms-fg);margin:34px 0 12px}
+.arch-main-street .ms-legal p{color:var(--ms-fg);margin:0 0 16px;max-width:66ch}
+.arch-main-street .ms-legal a{color:var(--ms-accent)}`;
+}
+
+/** A plain content page in Main Street chrome. Pass `body` for authored paragraphs
+ *  (maker-added pages) OR `html` for pre-rendered markup (legal docs, which carry
+ *  their own headings). Used for Privacy/Terms and any maker-added page. */
+export function ContentPage({ content, skin, title, body, html }: { content: MainStreetContent; skin: ArchetypeTheme; title?: string | undefined; body?: string[] | undefined; html?: string | undefined }) {
   const r = roles(skin);
+  if (html !== undefined) {
+    return (
+      <MainStreetSubPage content={content} skin={skin}>
+        <style dangerouslySetInnerHTML={{ __html: legalCss() }} />
+        <article data-ms-content className="ms-wrap ms-legal" style={{ padding: '72px 40px 110px', maxWidth: 760 }} dangerouslySetInnerHTML={{ __html: html }} />
+      </MainStreetSubPage>
+    );
+  }
   return (
     <MainStreetSubPage content={content} skin={skin}>
-      <PageHead title={title} skin={skin} />
+      {title && <PageHead title={title} skin={skin} />}
       <section data-ms-content className="ms-wrap" style={{ padding: '24px 40px 110px', maxWidth: 760 }}>
-        {body.map((para, i) => (
+        {(body ?? []).map((para, i) => (
           <p key={i} data-type="body" style={{ ...typeRoleCss(r.body), color: 'var(--ms-fg)', margin: '0 0 20px', maxWidth: '66ch' }}>
             {para}
           </p>

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { loadLegalMarkdown, renderLegalHtml, type LegalDoc } from '@/lib/legal';
 import { loadStorefrontChromeBlocks } from './storefront-chrome';
+import { renderArchetypeContentPage } from './StorefrontPage';
 
 interface LegalPageProps {
   doc: LegalDoc;
@@ -29,6 +30,10 @@ export default async function LegalPage({ doc }: LegalPageProps) {
 
   const markdown = await loadLegalMarkdown(doc, { shopName, contactEmail, lastUpdated });
   const html = renderLegalHtml(markdown);
+
+  // Archetype tenants get the legal doc in their own chrome (legacy fallback below).
+  const archetypePage = await renderArchetypeContentPage(tenantId, { html });
+  if (archetypePage !== null) return archetypePage;
 
   return (
     <>

@@ -86,6 +86,13 @@ describe('ContentPage', () => {
     // wears the shared sub-page nav
     expect(container.querySelector('a[href="/shop"]')).toBeTruthy();
   });
+
+  it('renders pre-rendered HTML (legal docs) inside the shell', () => {
+    const { container } = render(<ContentPage content={content} skin={skin} html={'<h1>Privacy</h1><p>We respect it.</p>'} />);
+    const article = container.querySelector('.ms-legal') as HTMLElement;
+    expect(article.querySelector('h1')?.textContent).toBe('Privacy');
+    expect(article.querySelector('p')?.textContent).toBe('We respect it.');
+  });
 });
 
 describe('EventsPage', () => {

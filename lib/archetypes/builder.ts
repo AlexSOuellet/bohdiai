@@ -111,6 +111,7 @@ export interface ArchetypeBuildSpec<T = unknown> {
   renderProduct?(args: { content: unknown; lookKey: string; product: ProductView }): ReactElement;
 
   /** Paint a plain content page (legal docs, maker-added pages) in the archetype's
-   *  chrome: a title + body paragraphs. Optional. */
-  renderContentPage?(args: { content: unknown; lookKey: string; title: string; body: string[] }): ReactElement;
+   *  chrome. Pass `body` for authored paragraphs or `html` for pre-rendered markup
+   *  (legal docs carry their own headings). Optional. */
+  renderContentPage?(args: { content: unknown; lookKey: string; title?: string | undefined; body?: string[] | undefined; html?: string | undefined }): ReactElement;
 }
