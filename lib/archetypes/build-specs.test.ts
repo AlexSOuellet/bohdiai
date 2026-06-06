@@ -67,6 +67,15 @@ describe('MAIN_STREET_SPEC', () => {
     expect(jobs.filter((j) => j.group === 'product').length).toBe(3);
   });
 
+  it('marks the founder portrait as a person image and the hero/products as not', () => {
+    const r = MAIN_STREET_SPEC.parseSubmission({ content: msContent, products: msProducts });
+    if (!r.ok) throw new Error('expected ok');
+    const jobs = MAIN_STREET_SPEC.mediaJobs(r.authored);
+    expect(jobs.find((j) => j.id === 'portrait')?.subjectIsPerson).toBe(true);
+    expect(jobs.find((j) => j.id === 'hero')?.subjectIsPerson ?? false).toBe(false);
+    expect(jobs.filter((j) => j.group === 'product').every((j) => !j.subjectIsPerson)).toBe(true);
+  });
+
   it('folds media in and builds ProductViews via toPayload', () => {
     const r = MAIN_STREET_SPEC.parseSubmission({ content: msContent, products: msProducts });
     if (!r.ok) throw new Error('expected ok');

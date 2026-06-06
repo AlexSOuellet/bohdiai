@@ -137,7 +137,7 @@ function mediaJobs(a: MainStreetAuthored): MediaJob[] {
       : { id: 'hero', kind: 'still', prompt: heroPrompt, aspect: '16:9', group: 'feature' };
   const jobs: MediaJob[] = [
     hero,
-    { id: 'portrait', kind: 'still', prompt: a.content.founder.photo.prompt, aspect: '1:1', group: 'feature' },
+    { id: 'portrait', kind: 'still', prompt: a.content.founder.photo.prompt, aspect: '1:1', group: 'feature', subjectIsPerson: true },
   ];
   a.products.forEach((p, i) => {
     jobs.push({ id: `product:${i}`, kind: 'still', prompt: p.imagePrompt, aspect: '1:1', group: 'product' });

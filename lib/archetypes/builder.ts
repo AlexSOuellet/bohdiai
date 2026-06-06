@@ -40,6 +40,9 @@ export interface MediaJob {
   aspect: '16:9' | '1:1' | '9:16';
   durationSec?: number;
   group: 'product' | 'feature';
+  /** True when the image depicts the maker (or a person standing in for them),
+   *  so the engine can match the subject to the maker's name. */
+  subjectIsPerson?: boolean;
 }
 
 export type ParseResult<T> =
