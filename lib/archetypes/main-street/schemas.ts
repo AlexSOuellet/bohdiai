@@ -112,6 +112,14 @@ export const MainStreetContentSchema = z.object({
   founder: z.object({
     quote: z.string().min(24).max(280),
     attribution: z.string().min(4).max(60),
+    /** Which About look to wear — BOHDI's pick, the one that fits the maker. All
+     *  maker-only; the find-us calendar is its own beat, never inside these.
+     *  Optional so content authored before this field still parses. */
+    treatment: z.enum(['quote', 'portrait', 'letter', 'card']).optional(),
+    /** Small label above the heading on the card treatment, e.g. "Since 2019". */
+    eyebrow: z.string().min(2).max(24).optional(),
+    /** The card treatment's heading, e.g. "Meet June". */
+    heading: z.string().min(2).max(28).optional(),
     photo: PhotoSlot,
     /** The "about" cue pointing to the full bio page, in the maker's voice, e.g.
      *  "Read our story". Falls back to a neutral default when omitted. The home

@@ -124,3 +124,21 @@ describe('MainStreetContentSchema', () => {
     expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
   });
 });
+
+describe('founder — About treatment + card fields', () => {
+  it('accepts an authored About treatment and optional eyebrow/heading', () => {
+    const c = valid();
+    Object.assign(c.founder, { treatment: 'card', eyebrow: 'Since 2019', heading: 'Meet June' });
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
+  });
+
+  it('still accepts a founder with no treatment (treatment optional)', () => {
+    expect(MainStreetContentSchema.safeParse(valid()).success).toBe(true);
+  });
+
+  it('rejects an unknown About treatment', () => {
+    const c = valid();
+    (c.founder as Record<string, unknown>)['treatment'] = 'findus';
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+  });
+});
