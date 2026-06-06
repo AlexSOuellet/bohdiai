@@ -10,6 +10,7 @@ import {
   googleFontPreconnectLinks,
 } from '@/lib/style-sheet-loader';
 import { archetypeSpec } from '@/lib/archetypes/registry';
+import type { ArchetypePage } from '@/lib/archetypes/builder';
 import type { ProductView, CatalogMedia } from '@/lib/archetypes/content';
 import type { Json } from '@/lib/database.types';
 import { readVersion } from '@/lib/tryon/write-version';
@@ -18,6 +19,41 @@ interface StorefrontPageProps {
   slug: string;
   /** Try-on preview — render the saved version with this label instead of the live store. */
   version?: string | undefined;
+}
+
+/** Storefront routes that an archetype paints as a sub-page off the home envelope. */
+const SLUG_TO_ARCHETYPE_PAGE: Record<string, ArchetypePage> = {
+  '/shop': 'shop',
+  '/events': 'events',
+};
+
+/** Load the tenant's home ('/') archetype envelope, or null if the home isn't an
+ *  archetype store (legacy tenant) or has no published home. */
+async function loadHomeArchetypeEnvelope(tenantId: string): Promise<Record<string, unknown> | null> {
+  const db = supabaseAdmin() as unknown as {
+    from: (t: string) => {
+      select: (c: string) => {
+        eq: (c: string, v: string) => {
+          eq: (c: string, v: string) => {
+            eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: { layout_tree: Json | null } | null }> };
+          };
+        };
+      };
+    };
+  };
+  const { data } = await db
+    .from('content_pages')
+    .select('layout_tree')
+    .eq('tenant_id', tenantId)
+    .eq('slug', '/')
+    .eq('status', 'published')
+    .maybeSingle();
+  const tree = data?.layout_tree;
+  if (tree === null || tree === undefined || typeof tree !== 'object' || Array.isArray(tree)) return null;
+  const root = (tree as Record<string, unknown>)['root'];
+  if (root === null || typeof root !== 'object' || Array.isArray(root)) return null;
+  const rootObj = root as Record<string, unknown>;
+  return rootObj['kind'] === 'archetype' ? rootObj : null;
 }
 
 export default async function StorefrontPage({ slug, version }: StorefrontPageProps) {
@@ -42,6 +78,16 @@ export default async function StorefrontPage({ slug, version }: StorefrontPagePr
         });
       }
     }
+  }
+
+  // Multi-page archetype: a sub-page route (/shop, /events, …) has no row of its
+  // own — it renders the SAME stored archetype envelope (on the home '/' row) as
+  // a different page. If the tenant is an archetype store, paint that page here;
+  // otherwise fall through to the legacy per-slug content_pages system.
+  const subPage = SLUG_TO_ARCHETYPE_PAGE[slug];
+  if (subPage !== undefined) {
+    const env = await loadHomeArchetypeEnvelope(tenantId);
+    if (env !== null) return renderArchetypeStore(env, tenantId, subPage);
   }
 
   const db = supabaseAdmin();
@@ -187,7 +233,7 @@ interface ListingRow {
 
 /** Render a stored archetype store: load the real catalog rows as ProductViews
  *  and paint via the chosen archetype's registered renderer. */
-async function renderArchetypeStore(env: Record<string, unknown>, tenantId: string) {
+async function renderArchetypeStore(env: Record<string, unknown>, tenantId: string, page?: ArchetypePage) {
   const archetypeKey = env['archetypeKey'];
   const lookKey = env['lookKey'];
   if (typeof archetypeKey !== 'string' || typeof lookKey !== 'string') notFound();
@@ -230,5 +276,5 @@ async function renderArchetypeStore(env: Record<string, unknown>, tenantId: stri
 
   const mood = typeof env['mood'] === 'string' ? (env['mood'] as string) : undefined;
   const catalogSize = typeof env['catalogSize'] === 'number' ? (env['catalogSize'] as number) : undefined;
-  return spec.render({ content: env['content'], lookKey: lookKey as string, products, mood, catalogSize });
+  return spec.render({ content: env['content'], lookKey: lookKey as string, products, mood, catalogSize, page });
 }

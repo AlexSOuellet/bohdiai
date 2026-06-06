@@ -13,6 +13,11 @@ import type { ReactElement } from 'react';
 import type { ProductView } from './content';
 import type { PortableStore } from './portable';
 
+/** Which page of a multi-page archetype to paint. The home is the default; the
+ *  rest are the storefront's standard pages. A maker-added custom page renders
+ *  through `content` for the generic template (handled by the route, not here). */
+export type ArchetypePage = 'home' | 'shop' | 'about' | 'events' | 'contact';
+
 /** What Bohdi is told about the maker. Built from the niche + mood + onboarding. */
 export interface AuthoringBrief {
   shopName: string;
@@ -89,12 +94,14 @@ export interface ArchetypeBuildSpec<T = unknown> {
   /** Paint a stored store. Products come from the tenant's listing rows (empty
    *  for archetypes that embed products in content). `catalogSize` is the maker's
    *  TRUE catalog size (what they entered at onboarding), which drives treatment
-   *  selection even though the home shows only a sampling. */
+   *  selection even though the home shows only a sampling. `page` selects WHICH
+   *  page to paint — the archetype is multi-page; it defaults to the home. */
   render(args: {
     content: unknown;
     lookKey: string;
     products: ProductView[];
     mood?: string | undefined;
     catalogSize?: number | undefined;
+    page?: ArchetypePage | undefined;
   }): ReactElement;
 }
