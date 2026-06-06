@@ -97,7 +97,7 @@ export function ShopPage({ content, skin, products }: { content: MainStreetConte
         ) : (
           <div className="ms-catalog-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 28 }}>
             {products.map((p) => (
-              <a key={p.slug} href={`/${p.slug}`} data-ms-card style={{ color: 'inherit' }}>
+              <a key={p.slug} href={`/listings/${p.slug}`} data-ms-card style={{ color: 'inherit' }}>
                 <div style={{ position: 'relative', aspectRatio: '4 / 5', borderRadius: 3, overflow: 'hidden', background: 'color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg))' }}>
                   <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
                   <span data-type="price" style={{ ...typeRoleCss(r.price), position: 'absolute', left: 12, bottom: 12, background: 'var(--ms-bg)', color: 'var(--ms-fg)', padding: '6px 10px', borderRadius: 2 }}>

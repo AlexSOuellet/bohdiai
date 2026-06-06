@@ -34,7 +34,7 @@ describe('ShopPage', () => {
     const { getByText, container } = render(<ShopPage content={content} skin={skin} products={products} />);
     expect(getByText('The Belt')).toBeTruthy();
     expect(getByText('The Wallet')).toBeTruthy();
-    expect(container.querySelector('a[href="/belt"]')).toBeTruthy();
+    expect(container.querySelector('a[href="/listings/belt"]')).toBeTruthy();
     expect(container.querySelector('[data-ms-shop]')).toBeTruthy();
   });
 
