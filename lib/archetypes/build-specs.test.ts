@@ -67,6 +67,13 @@ describe('MAIN_STREET_SPEC', () => {
     expect(jobs.filter((j) => j.group === 'product').length).toBe(3);
   });
 
+  it('accepts a rich product description up to 600 chars', () => {
+    const longDesc = 'A '.padEnd(560, 'x') + ' finish.'; // ~568 chars, over the old 300 cap
+    const products = msProducts.map((p, i) => (i === 0 ? { ...p, description: longDesc } : p));
+    const r = MAIN_STREET_SPEC.parseSubmission({ content: msContent, products });
+    expect(r.ok).toBe(true);
+  });
+
   it('marks the founder portrait as a person image and the hero/products as not', () => {
     const r = MAIN_STREET_SPEC.parseSubmission({ content: msContent, products: msProducts });
     if (!r.ok) throw new Error('expected ok');

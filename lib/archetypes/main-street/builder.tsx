@@ -74,7 +74,7 @@ const ProductSchema = z.object({
   name: z.string().min(2).max(40),
   slug: z.string().min(2).max(48),
   shortDescription: z.string().min(4).max(90),
-  description: z.string().min(12).max(300),
+  description: z.string().min(12).max(600),
   basePriceCents: z.number().int().min(100).max(5_000_00),
   imagePrompt: z.string().min(8).max(400),
 });
@@ -114,7 +114,7 @@ content (MAX lengths are real; stay comfortably under them):
 - founder: { quote (24-280, first person, ~2 sentences, specific, no AI-tell), attribution (4-60), photo: { prompt (8-400): the maker, alt (4-120) }, aboutLabel (2-28, optional), findUs (optional): { label (2-28), eventsLabel (2-28, optional), rows (1-5): { day (1-12), where (4-60), time (1-12) } } }
 - close: { label (2-28), headline (6-72), ctaLabel (3-24) }
 
-products (author ${target}; a brand-new store with no catalog, so you create it): each { name (2-40), slug (2-48, lowercase-hyphen), shortDescription (4-90), description (12-300), basePriceCents (integer cents, e.g. 4800 = $48), imagePrompt (8-400): a clean product photo on a fitting surface }.
+products (author ${target}; a brand-new store with no catalog, so you create it): each { name (2-40), slug (2-48, lowercase-hyphen), shortDescription (4-90), description (12-600, write real substance — materials, use, what makes it specific; not one thin line), basePriceCents (integer cents, e.g. 4800 = $48), imagePrompt (8-400): a clean product photo on a fitting surface }.
 
 VOICE: specifics over platitudes; no AI-tell ("crafted with care", "every piece tells a story"); short sentences; no em-dashes or semicolons; NO terminal punctuation in headlines or the brand; the hero story lines carry NO punctuation at all (not even mid-line periods or commas — "Flour. Water. Salt. Time." is wrong; "Flour water salt time" is right). Write like THIS maker in THIS niche: name real materials, techniques, and product types from the niche source. Concrete beats abstract every time. If a line could appear on any shop's site, rewrite it.`;
 }
