@@ -1,7 +1,7 @@
 # Main Street Archetype — Design Spec (the redesign)
 
-**Status:** Design validated by show-and-react mockup. NOT built. This is the target and the model.
-**Date:** 2026-06-03 (Session 24)
+**Status:** BUILT (Session 31) — Main Street is the only archetype and a complete multi-page storefront. This doc is the original design/target; for the as-built state (Gallery deleted, content engine rebuilt with the full niche file + deepen pass, home About/find-us split, all pages rendering off one envelope) see the Session 31 brief block, decisions D36–D39, and `docs/superpowers/specs/2026-06-06-main-street-completion-and-content-engine-design.md`. The Moment-as-portable-engine reframe (Session 30, D33) is a later implementation pass and is NOT yet built (the home still uses the welded MomentHero).
+**Date:** 2026-06-03 (Session 24); built out Session 31
 **Supersedes:** the visual layer of `Everyday-Archetype-Spec.md` (the rejected first Main Street). The structural scaffolding from that work is kept (see "What we keep" below); the visual layer is redesigned from scratch here.
 **Branch:** `session-12/layout-engine`
 

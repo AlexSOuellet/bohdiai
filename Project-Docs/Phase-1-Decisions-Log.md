@@ -490,6 +490,24 @@ The niche still carries a *loose hint* of which shapes to suggest (the Find to a
 
 ---
 
+### D36. Gallery is deleted; Main Street is the only archetype (Session 31)
+
+Gallery is removed from the codebase entirely — no registry entry, module, tests, or routes. Every onboarding builds Main Street (consistent with D35). The dense salon-wall survives only as a possible future catalog/portfolio *page treatment* inside an archetype, not as a standalone storefront. Stale published Gallery tenants were unpublished so nothing renders a deleted archetype. (The legacy block-system "gallery" page type and the `hero-split-gallery` block are a different system and were left untouched.)
+
+### D37. Main Street is a complete multi-page storefront painted from one content envelope (Session 31)
+
+Main Street is not a home page bolted onto legacy sub-pages. One stored archetype envelope (on the tenant's `/` row) carries the content for every fixed page; the catalog comes from product rows; the renderer is page-aware. Every storefront route — Home, Shop, Product detail, About, Events, Contact, Privacy, Terms, Collections (index + detail), Subscriptions, Cart — resolves that envelope and paints the right page in Main Street chrome. The legacy `StorefrontPage`/`LayoutPage` system is now only the fallback for non-archetype tenants. Real checkout (line items + payment) remains the separate commerce build. Maker-added custom pages render through a generic content-page template.
+
+### D38. The home About beat is the maker only; find-us is its own beat (Session 31)
+
+Alex's call: the About/founder beat and the market calendar must not be fused. The About beat is a Bohdi-picked menu of maker-only looks (quote / portrait / letter / card — the "Meet June" card from the Counter mockup), with a teaser cue to the full About page. The find-us calendar is its own home beat, shown only when the maker has dates. Treatment selection never reads market-date count — we don't know dates at onboarding, so Bohdi seeds plausible sample dates that the maker edits or turns off (placeholder content, like placeholder products).
+
+### D39. Bohdi authors rich, niche-specific content via the full niche file + a deepen pass (Session 31)
+
+"Claude has the best reputation for content, so let's prove it." The content engine was starving Bohdi (the niche file was sliced to 1,600 of ~15-28k chars and never re-fed at authoring; slots were tiny). Now: the full niche body goes into the authoring step with an instruction to use its specifics; slots are widened; the moment story must tell one arc; and after his first valid draft Bohdi does a **deepen pass** — re-reading his own draft against the niche file and a quality bar, rewriting the weak parts (with a safe fallback to the first draft). Affordable because the archetype owns design, so Bohdi's tokens go to copy. Two image rules are enforced at generation: every image is photo-realistic, and generated people match the maker's name (heuristic default, maker-overridable).
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.
