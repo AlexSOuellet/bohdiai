@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
-import { ShopPage, EventsPage, AboutPage, ContactPage, ContentPage } from './pages';
+import { ShopPage, EventsPage, AboutPage, ContactPage, ContentPage, MainStreetSubPage } from './pages';
 import { MAIN_STREET_SKINS } from './skins';
 import type { MainStreetContent } from './schemas';
 import type { ProductView } from '../content';
@@ -75,6 +75,17 @@ describe('ContactPage', () => {
   it('shows a neutral invitation when none was authored', () => {
     const { container } = render(<ContactPage content={content} skin={skin} />);
     expect(container.querySelector('[data-ms-contact]')?.textContent).toMatch(/hear from you|get in touch/i);
+  });
+});
+
+describe('MainStreetSubPage (the shared shell)', () => {
+  it('wraps arbitrary children with the nav and footer', () => {
+    const { getByText, container } = render(
+      <MainStreetSubPage content={content} skin={skin}><div data-testid="body">cart goes here</div></MainStreetSubPage>,
+    );
+    expect(getByText('cart goes here')).toBeTruthy();
+    expect(container.querySelector('a[href="/shop"]')).toBeTruthy(); // nav
+    expect(container.querySelector('a[href="/privacy"]')).toBeTruthy(); // footer
   });
 });
 

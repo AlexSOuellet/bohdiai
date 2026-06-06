@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
@@ -89,6 +90,14 @@ export async function renderArchetypeContentPage(
   const a = await resolveArchetype(tenantId);
   if (a === null || a.spec.renderContentPage === undefined) return null;
   return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, ...opts });
+}
+
+/** Wrap a functional page's body (cart, collections, subscriptions) in the
+ *  tenant's archetype chrome, or null if the tenant is a legacy store. */
+export async function renderArchetypeShell(tenantId: string, children: ReactNode) {
+  const a = await resolveArchetype(tenantId);
+  if (a === null || a.spec.renderShell === undefined) return null;
+  return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children });
 }
 
 export default async function StorefrontPage({ slug, version }: StorefrontPageProps) {

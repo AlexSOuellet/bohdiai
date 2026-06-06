@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { loadStorefrontChromeBlocks } from '../_components/storefront-chrome';
+import { renderArchetypeShell } from '../_components/StorefrontPage';
 
 interface Collection {
   id: string;
@@ -29,6 +30,30 @@ export default async function StorefrontCollectionsIndexPage() {
   if (collectionsRaw === null || collectionsRaw.length === 0) notFound();
 
   const items: Collection[] = collectionsRaw;
+
+  // Archetype tenants: the collections index in Main Street chrome.
+  const archetype = await renderArchetypeShell(
+    tenantId,
+    <section style={{ padding: '88px 40px 110px' }}>
+      <div className="ms-wrap" style={{ textAlign: 'center', marginBottom: 56 }}>
+        <span style={{ color: 'var(--ms-accent)', display: 'block', marginBottom: 14, fontFamily: 'var(--ms-mono)', textTransform: 'uppercase', letterSpacing: '0.18em', fontSize: 13 }}>Collections</span>
+        <h1 style={{ fontFamily: 'var(--ms-disp)', color: 'var(--ms-fg)', fontSize: 44, margin: 0 }}>Browse by collection</h1>
+      </div>
+      <div className="ms-wrap ms-catalog-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }}>
+        {items.map((c) => (
+          <a key={c.id} href={`/collections/${c.slug}`} style={{ display: 'block', padding: '32px', border: '1px solid var(--ms-rule)', borderRadius: 3, color: 'inherit' }}>
+            <h2 style={{ fontFamily: 'var(--ms-disp)', color: 'var(--ms-fg)', fontSize: 26, margin: '0 0 10px' }}>{c.name}</h2>
+            {c.description !== null && c.description !== '' && (
+              <p style={{ color: 'var(--ms-fg-muted)', margin: '0 0 18px' }}>{c.description}</p>
+            )}
+            <span style={{ color: 'var(--ms-accent)', fontFamily: 'var(--ms-mono)', textTransform: 'uppercase', letterSpacing: '0.15em', fontSize: 12 }}>Explore &rarr;</span>
+          </a>
+        ))}
+      </div>
+    </section>,
+  );
+  if (archetype !== null) return archetype;
+
   const { nav, footer } = await loadStorefrontChromeBlocks(tenantId);
 
   return (

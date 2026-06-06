@@ -16,7 +16,7 @@ import type { ProductView } from '../content';
 import type { PortableStore } from '../portable';
 import { MainStreet } from './MainStreet';
 import { MainStreetProduct } from './MainStreetProduct';
-import { ShopPage, EventsPage, AboutPage, ContactPage, ContentPage } from './pages';
+import { ShopPage, EventsPage, AboutPage, ContactPage, ContentPage, MainStreetSubPage } from './pages';
 import { mainStreetArchetype } from './index';
 import { MainStreetContentSchema, type MainStreetContent } from './schemas';
 import { MAIN_STREET_SKINS } from './skins';
@@ -249,5 +249,9 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   renderContentPage: ({ content, lookKey, title, body, html }) => {
     const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
     return <ContentPage content={content as MainStreetContent} skin={skin} title={title} body={body} html={html} />;
+  },
+  renderShell: ({ content, lookKey, children }) => {
+    const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
+    return <MainStreetSubPage content={content as MainStreetContent} skin={skin}>{children}</MainStreetSubPage>;
   },
 };

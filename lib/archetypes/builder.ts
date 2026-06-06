@@ -9,7 +9,7 @@
  * the only thing capped (see the engine's MAX_PRODUCT_IMAGES) — every other
  * asset generates freely; the cap is expressed per media job via `group`.
  */
-import type { ReactElement } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import type { ProductView } from './content';
 import type { PortableStore } from './portable';
 
@@ -114,4 +114,9 @@ export interface ArchetypeBuildSpec<T = unknown> {
    *  chrome. Pass `body` for authored paragraphs or `html` for pre-rendered markup
    *  (legal docs carry their own headings). Optional. */
   renderContentPage?(args: { content: unknown; lookKey: string; title?: string | undefined; body?: string[] | undefined; html?: string | undefined }): ReactElement;
+
+  /** Wrap arbitrary children in the archetype's shell (skin bridge + nav + footer).
+   *  For functional pages (cart, collections, subscriptions) whose body is bespoke
+   *  but which must wear the store's chrome. Optional. */
+  renderShell?(args: { content: unknown; lookKey: string; children: ReactNode }): ReactElement;
 }
