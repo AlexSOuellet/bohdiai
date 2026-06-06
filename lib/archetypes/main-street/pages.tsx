@@ -82,6 +82,24 @@ function PageHead({ eyebrow, title, skin }: { eyebrow?: string | undefined; titl
   );
 }
 
+/** A plain content page in Main Street chrome — a title + body paragraphs. Used
+ *  for legal docs (Privacy/Terms) and any maker-added page. */
+export function ContentPage({ content, skin, title, body }: { content: MainStreetContent; skin: ArchetypeTheme; title: string; body: string[] }) {
+  const r = roles(skin);
+  return (
+    <MainStreetSubPage content={content} skin={skin}>
+      <PageHead title={title} skin={skin} />
+      <section data-ms-content className="ms-wrap" style={{ padding: '24px 40px 110px', maxWidth: 760 }}>
+        {body.map((para, i) => (
+          <p key={i} data-type="body" style={{ ...typeRoleCss(r.body), color: 'var(--ms-fg)', margin: '0 0 20px', maxWidth: '66ch' }}>
+            {para}
+          </p>
+        ))}
+      </section>
+    </MainStreetSubPage>
+  );
+}
+
 /** SHOP — the full catalog as a responsive grid (chrome defines .ms-catalog-grid
  *  breakpoints). The home shows a sampling; this shows everything. */
 export function ShopPage({ content, skin, products }: { content: MainStreetContent; skin: ArchetypeTheme; products: ProductView[] }) {

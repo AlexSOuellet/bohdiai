@@ -58,6 +58,36 @@ async function loadHomeArchetypeEnvelope(tenantId: string): Promise<Record<strin
   return rootObj['kind'] === 'archetype' ? rootObj : null;
 }
 
+/** Resolve the tenant's home archetype spec + envelope, or null for a legacy
+ *  tenant. Shared by the product and content-page routes so they paint in the
+ *  archetype's chrome instead of the legacy system. */
+async function resolveArchetype(tenantId: string) {
+  const env = await loadHomeArchetypeEnvelope(tenantId);
+  if (env === null) return null;
+  const key = env['archetypeKey'];
+  const lookKey = env['lookKey'];
+  if (typeof key !== 'string' || typeof lookKey !== 'string') return null;
+  const spec = archetypeSpec(key);
+  if (spec === undefined) return null;
+  return { spec, lookKey, content: env['content'] };
+}
+
+/** Render a product detail page in the tenant's archetype, or null if the tenant
+ *  is a legacy store / the archetype has no product page. */
+export async function renderArchetypeProductPage(tenantId: string, product: ProductView) {
+  const a = await resolveArchetype(tenantId);
+  if (a === null || a.spec.renderProduct === undefined) return null;
+  return a.spec.renderProduct({ content: a.content, lookKey: a.lookKey, product });
+}
+
+/** Render a plain content page (legal/maker-added) in the tenant's archetype, or
+ *  null if the tenant is a legacy store / the archetype has no content page. */
+export async function renderArchetypeContentPage(tenantId: string, title: string, body: string[]) {
+  const a = await resolveArchetype(tenantId);
+  if (a === null || a.spec.renderContentPage === undefined) return null;
+  return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, title, body });
+}
+
 export default async function StorefrontPage({ slug, version }: StorefrontPageProps) {
   const headerStore = await headers();
   const tenantId = headerStore.get('x-tenant-id');

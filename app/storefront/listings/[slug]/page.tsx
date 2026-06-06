@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import NotifyForm from '../../_components/NotifyForm';
 import { loadStorefrontChromeBlocks } from '../../_components/storefront-chrome';
+import { renderArchetypeProductPage } from '../../_components/StorefrontPage';
+import type { ProductView, CatalogMedia } from '@/lib/archetypes/content';
 
 interface ListingPageProps {
   params: Promise<{ slug: string }>;
@@ -42,6 +44,22 @@ export default async function StorefrontListingPage({ params }: ListingPageProps
   if (listing === null) notFound();
 
   const meta = (listing.metadata as { image_url?: string | null } | null) ?? null;
+
+  // Archetype tenants get the product page in their own chrome (the legacy render
+  // below is the fallback for non-archetype stores).
+  const media: CatalogMedia[] = meta?.image_url ? [{ kind: 'image', url: meta.image_url, alt: listing.name }] : [];
+  const productView: ProductView = {
+    slug: listing.slug,
+    name: listing.name,
+    price: formatPrice(listing.base_price_cents),
+    ...(listing.short_description ? { shortDescription: listing.short_description } : {}),
+    description: listing.description ?? '',
+    status: 'active',
+    media,
+    variations: [],
+  };
+  const archetypePage = await renderArchetypeProductPage(tenantId, productView);
+  if (archetypePage !== null) return archetypePage;
 
   let collection: { name: string; slug: string } | null = null;
   if (listing.primary_collection_id !== null) {

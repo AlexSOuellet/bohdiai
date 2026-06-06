@@ -104,4 +104,13 @@ export interface ArchetypeBuildSpec<T = unknown> {
     catalogSize?: number | undefined;
     page?: ArchetypePage | undefined;
   }): ReactElement;
+
+  /** Paint a single product's detail page in the archetype's chrome. The product
+   *  is a row (ProductView); `content` is the stored envelope content (for skin
+   *  identity/footer). Optional — an archetype without a product page omits it. */
+  renderProduct?(args: { content: unknown; lookKey: string; product: ProductView }): ReactElement;
+
+  /** Paint a plain content page (legal docs, maker-added pages) in the archetype's
+   *  chrome: a title + body paragraphs. Optional. */
+  renderContentPage?(args: { content: unknown; lookKey: string; title: string; body: string[] }): ReactElement;
 }
