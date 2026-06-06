@@ -1,4 +1,7 @@
-/** THROWAWAY PROBE index — see moments.tsx. Delete with the folder. */
+/** THROWAWAY PROBE index — see moments.tsx. Delete with the folder.
+ *  Uses plain <a> on purpose: these are dev-only probe routes not in the typed
+ *  route map, so next/link would fail typecheck. The page-link lint rule is
+ *  suppressed per link below. */
 import { MOMENTS } from './moments';
 
 export default function MomentProbeIndex() {
@@ -12,6 +15,7 @@ export default function MomentProbeIndex() {
       <ul style={{ marginTop: 24, lineHeight: 2 }}>
         {MOMENTS.map((m) => (
           <li key={m.id}>
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- throwaway probe route, not in typed routes */}
             <a href={`/moment-probe/${m.id}`} style={{ color: '#c24d24', fontWeight: 600 }}>
               {m.label}
             </a>
@@ -19,6 +23,7 @@ export default function MomentProbeIndex() {
           </li>
         ))}
         <li style={{ marginTop: 12 }}>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- throwaway probe route, not in typed routes */}
           <a href="/moment-probe/meld" style={{ color: '#c24d24', fontWeight: 600 }}>
             Candles · the meld (click Enter)
           </a>

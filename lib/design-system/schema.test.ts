@@ -69,6 +69,7 @@ describe('TypeScaleSchema', () => {
   });
 
   it('rejects a missing role', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructure to omit `headline`
     const { headline: _h, ...withoutHeadline } = validScale;
     expect(TypeScaleSchema.safeParse(withoutHeadline).success).toBe(false);
   });
