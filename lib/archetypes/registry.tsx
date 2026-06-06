@@ -5,11 +5,9 @@
  */
 import type { ArchetypeBuildSpec } from './builder';
 import { MAIN_STREET_SPEC } from './main-street/builder';
-import { GALLERY_SPEC } from './gallery/builder';
 
 export const ARCHETYPE_SPECS: Record<string, ArchetypeBuildSpec> = {
   [MAIN_STREET_SPEC.key]: MAIN_STREET_SPEC as ArchetypeBuildSpec,
-  [GALLERY_SPEC.key]: GALLERY_SPEC as ArchetypeBuildSpec,
 };
 
 export function archetypeSpec(key: string): ArchetypeBuildSpec | undefined {
