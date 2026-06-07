@@ -52,11 +52,11 @@ THE MAKER
 THE NICHE — who this kind of maker is and who buys from them. Read all of it; it shows the full range of the category, not one stereotype:
 ${niche}
 
-Call set_trajectory with five fields:
-- feeling: the single feeling the whole store should leave a visitor with, in one line.
-- customerWhy: why someone chooses a ${brief.nicheDisplayName.toLowerCase()}'s work.
-- visualWorld: the look and feel the store should have, within the ${brief.moodLabel} mood.
-- momentConcept: the concept for the hero moment.
+Call set_trajectory with five fields (hard length limits — stay under):
+- feeling (12-160): the single feeling the whole store should leave a visitor with, in one line.
+- customerWhy (20-280): why someone chooses a ${brief.nicheDisplayName.toLowerCase()}'s work.
+- visualWorld (20-280): the look and feel the store should have, within the ${brief.moodLabel} mood.
+- momentConcept (20-360): the concept for the hero moment.
 - register: "loud" or "restrained".
 
 Set the trajectory now.`;
@@ -68,6 +68,7 @@ export async function direct(brief: CrewBrief): Promise<Trajectory> {
   const messages: Anthropic.MessageParam[] = [
     { role: 'user', content: 'Set the trajectory. Call set_trajectory.' },
   ];
+  let lastIssues = '';
 
   for (let attempt = 0; attempt < 2; attempt++) {
     const resp = await withTimeout(
@@ -93,6 +94,7 @@ export async function direct(brief: CrewBrief): Promise<Trajectory> {
     }
 
     const issues = parsed.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message }));
+    lastIssues = issues.map((i) => `${i.path}: ${i.message}`).join('; ');
     messages.push({ role: 'assistant', content: resp.content });
     messages.push({
       role: 'user',
@@ -100,5 +102,5 @@ export async function direct(brief: CrewBrief): Promise<Trajectory> {
     });
   }
 
-  throw new Error('Director did not produce a valid trajectory');
+  throw new Error(`Director did not produce a valid trajectory. Last issues: ${lastIssues}`);
 }

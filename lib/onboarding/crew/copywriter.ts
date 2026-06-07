@@ -99,6 +99,7 @@ export async function writeCopy(brief: CrewBrief, trajectory: Trajectory): Promi
   const messages: Anthropic.MessageParam[] = [
     { role: 'user', content: 'Write every word of the store. Call submit_copy.' },
   ];
+  let lastIssues = '';
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const resp = await withTimeout(
@@ -124,6 +125,7 @@ export async function writeCopy(brief: CrewBrief, trajectory: Trajectory): Promi
     }
 
     const issues = parsed.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message }));
+    lastIssues = issues.map((i) => `${i.path}: ${i.message}`).join('; ');
     messages.push({ role: 'assistant', content: resp.content });
     messages.push({
       role: 'user',
@@ -131,5 +133,5 @@ export async function writeCopy(brief: CrewBrief, trajectory: Trajectory): Promi
     });
   }
 
-  throw new Error(`Copywriter did not produce valid copy within ${MAX_ATTEMPTS} attempts`);
+  throw new Error(`Copywriter did not produce valid copy within ${MAX_ATTEMPTS} attempts. Last issues: ${lastIssues}`);
 }

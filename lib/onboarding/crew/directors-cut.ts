@@ -68,6 +68,7 @@ export async function directorsCut(brief: CrewBrief, trajectory: Trajectory, cur
   const messages: Anthropic.MessageParam[] = [
     { role: 'user', content: 'Do the final cut. Call final_cut.' },
   ];
+  let lastIssues = '';
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const resp = await withTimeout(
@@ -131,6 +132,7 @@ export async function directorsCut(brief: CrewBrief, trajectory: Trajectory, cur
       return { copy: nextCopy, moment: nextMoment, look: nextLook };
     }
 
+    lastIssues = issues.map((i) => `${i.path}: ${i.message}`).join('; ');
     messages.push({ role: 'assistant', content: resp.content });
     messages.push({
       role: 'user',
@@ -138,5 +140,5 @@ export async function directorsCut(brief: CrewBrief, trajectory: Trajectory, cur
     });
   }
 
-  throw new Error(`Director's Cut did not settle within ${MAX_ATTEMPTS} attempts`);
+  throw new Error(`Director's Cut did not settle within ${MAX_ATTEMPTS} attempts. Last issues: ${lastIssues}`);
 }

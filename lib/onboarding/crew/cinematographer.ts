@@ -22,7 +22,7 @@ import type { Trajectory } from './trajectory';
 
 const MODEL = 'claude-sonnet-4-6';
 const MAX_TOKENS = 1500;
-const MAX_ATTEMPTS = 3;
+const MAX_ATTEMPTS = 4;
 const TIMEOUT_MS = 60_000;
 
 /** What the Cinematographer produces — the hero media slot minus the resolved
@@ -54,17 +54,17 @@ THE TRAJECTORY
 THE STORY that plays over the Moment:
 ${lines}
 
-Design the shot with set_moment:
+Design the shot with set_moment. The fields and their hard limits (stay under — short phrases, not sentences):
 - kind: "video" or "image".
 - prompt: the shot as seven short phrases —
-    - composition: how the shot is framed.
-    - subject: what is in frame.
-    - environment: where it is.
-    - atmosphere: the feeling in the air.
-    - camera: the angle, lens, and any movement.
-    - lighting: the light.
-    - style: the visual style.
-- alt: a plain description of the shot (4-120).
+    - composition (3-160): how the shot is framed.
+    - subject (3-160): what is in frame.
+    - environment (3-160): where it is.
+    - atmosphere (3-120): the feeling in the air.
+    - camera (3-120): the angle, lens, and any movement.
+    - lighting (3-120): the light.
+    - style (3-120): the visual style.
+- alt (4-120): a plain description of the shot.
 
 If kind is "video": it is a short clip that LOOPS seamlessly, so the motion must be continuous and ambient — no progressive human action and no large change in light or position across the clip, or the restart will jump. A motionless person is fine (hands at rest, a figure standing still); a person performing an action is not.
 
@@ -77,6 +77,7 @@ export async function shootMoment(trajectory: Trajectory, story: string[]): Prom
   const messages: Anthropic.MessageParam[] = [
     { role: 'user', content: 'Design the Moment. Call set_moment.' },
   ];
+  let lastIssues = '';
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const resp = await withTimeout(
@@ -102,6 +103,7 @@ export async function shootMoment(trajectory: Trajectory, story: string[]): Prom
     }
 
     const issues = parsed.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message }));
+    lastIssues = issues.map((i) => `${i.path}: ${i.message}`).join('; ');
     messages.push({ role: 'assistant', content: resp.content });
     messages.push({
       role: 'user',
@@ -109,5 +111,5 @@ export async function shootMoment(trajectory: Trajectory, story: string[]): Prom
     });
   }
 
-  throw new Error(`Cinematographer did not produce a valid moment within ${MAX_ATTEMPTS} attempts`);
+  throw new Error(`Cinematographer did not produce a valid moment within ${MAX_ATTEMPTS} attempts. Last issues: ${lastIssues}`);
 }

@@ -76,7 +76,7 @@ describe('shootMoment (the Cinematographer)', () => {
   it('throws when no valid moment is produced within the attempt cap', async () => {
     create.mockResolvedValue(toolMsg({ ...scene, alt: 'x' })); // too short
     await expect(shootMoment(trajectory, story)).rejects.toThrow(/valid moment/);
-    expect(create).toHaveBeenCalledTimes(3);
+    expect(create).toHaveBeenCalledTimes(4);
   });
 
   it('throws if the model never calls the tool', async () => {

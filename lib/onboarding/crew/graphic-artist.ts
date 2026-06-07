@@ -117,6 +117,7 @@ export async function designLook(
   const messages: Anthropic.MessageParam[] = [
     { role: 'user', content: 'Pick the skin and direct the photos. Call set_look.' },
   ];
+  let lastIssues = '';
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const resp = await withTimeout(
@@ -159,6 +160,7 @@ export async function designLook(
       for (const i of parsed.error.issues) issues.push({ path: i.path.join('.'), message: i.message });
     }
 
+    lastIssues = issues.map((i) => `${i.path}: ${i.message}`).join('; ');
     messages.push({ role: 'assistant', content: resp.content });
     messages.push({
       role: 'user',
@@ -166,5 +168,5 @@ export async function designLook(
     });
   }
 
-  throw new Error(`Graphic Artist did not produce a valid look within ${MAX_ATTEMPTS} attempts`);
+  throw new Error(`Graphic Artist did not produce a valid look within ${MAX_ATTEMPTS} attempts. Last issues: ${lastIssues}`);
 }
