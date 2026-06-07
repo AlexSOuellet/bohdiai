@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, cleanup, act } from '@testing-library/react';
-import { MomentHero, buildStoryTimeline } from './MomentHero';
+import { MomentHero, buildStoryTimeline, phaseDurationMs } from './MomentHero';
 import { MAIN_STREET_SKINS } from './skins';
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
@@ -70,9 +70,11 @@ describe('MomentHero', () => {
       const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
       // The sequence is a chain of effects: each phase's timeout fires, advances
       // to the next phase, which re-runs the effect and schedules the next
-      // timeout. Each link needs its own React commit, so advance per-phase.
-      // For a 2-line story: open, line, gap, line, gap -> brand.
-      for (const ms of [600, 2000, 800, 2000, 800]) {
+      // timeout. Each link needs its own React commit, so advance per-phase by
+      // the phase's real duration (derived, so timing tuning never breaks this).
+      for (const phase of buildStoryTimeline(moment.story.length)) {
+        const ms = phaseDurationMs(phase);
+        if (ms === null) break; // brand is terminal
         await act(async () => {
           await vi.advanceTimersByTimeAsync(ms);
         });

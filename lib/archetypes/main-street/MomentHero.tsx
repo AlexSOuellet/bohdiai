@@ -11,8 +11,9 @@
  * REVEAL RHYTHM — each line fades fully out and the video breathes alone for a
  * beat before the next fades in, so two lines never share the screen. (An
  * overlapping cross-fade stacks the marks of two lines into a smeared
- * double-exposure.) Timeline is built by a pure, tested helper; the numbers are
- * deliberately on the quick side — eyeball on a real build and tune them here.
+ * double-exposure.) Timeline is built by a pure, tested helper. The pace is slow
+ * and deliberate — a line rests long enough to read twice before it dissolves;
+ * this is a cinematic front door, not a slideshow. Tune the numbers here.
  *
  * CONTRAST OVER MEDIA — every word painted over the video uses the skin-agnostic
  * `--ms-on-media` near-white plus the dark scrim, NEVER the skin's contrast
@@ -27,11 +28,13 @@ import type { MainStreetContent } from './schemas';
 import { Media, Nav, typeRoleCss, roles } from './chrome';
 
 // Tunable reveal timing (ms). GAP_MS must be >= the fade so a line fully clears
-// before the next begins — that no-overlap is the whole point.
-const OPEN_MS = 600; // media alone before the first line
-const LINE_MS = 2000; // a line held (includes its own ~fade-in)
-const GAP_MS = 800; // media alone between lines
-const FADE = '0.7s';
+// before the next begins — that no-overlap is the whole point. Slow and
+// deliberate: a line holds ~3.4s (≈2.5s fully opaque after the fade-in) so it
+// reads without rush, with a calm breath of video between.
+const OPEN_MS = 1000; // media alone before the first line
+const LINE_MS = 3400; // a line held (includes its own ~fade-in)
+const GAP_MS = 1000; // media alone between lines
+const FADE = '0.9s';
 
 export type StoryPhase =
   | { kind: 'open' }
