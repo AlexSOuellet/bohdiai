@@ -48,6 +48,12 @@ describe('ShopPage', () => {
     expect(container.querySelector('a[href="/events"]')).toBeTruthy();
     expect(container.querySelector('a[href="/cart"]')).toBeTruthy();
   });
+
+  it('shows the maker logo beside the wordmark in the sub-page header when uploaded', () => {
+    const withLogo: MainStreetContent = { ...content, identity: { ...content.identity, logoUrl: 'https://cdn/logo.png' } };
+    const { container } = render(<ShopPage content={withLogo} skin={skin} products={products} />);
+    expect((container.querySelector('img[data-ms-logo]') as HTMLImageElement | null)?.getAttribute('src')).toBe('https://cdn/logo.png');
+  });
 });
 
 describe('AboutPage', () => {

@@ -172,6 +172,14 @@ function applyMedia(a: MainStreetAuthored, urls: Record<string, string | null>):
   return { ...a, content, productUrls };
 }
 
+/** Fold the tenant's uploaded logo (a tenant fact, not authored content) into the
+ *  content's identity so the chrome can show it beside the wordmark. No-op when the
+ *  maker uploaded no logo. */
+function withLogo(content: MainStreetContent, logoUrl?: string): MainStreetContent {
+  if (logoUrl === undefined || logoUrl === '') return content;
+  return { ...content, identity: { ...content.identity, logoUrl } };
+}
+
 function formatPrice(cents: number): string {
   const d = cents / 100;
   return Number.isInteger(d) ? `$${d}` : `$${d.toFixed(2)}`;
@@ -226,9 +234,9 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   applyMedia,
   toPayload,
   handOff,
-  render: ({ content, lookKey, products, mood, catalogSize, page }) => {
+  render: ({ content, lookKey, products, mood, catalogSize, page, logoUrl }) => {
     const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
-    const c = content as MainStreetContent;
+    const c = withLogo(content as MainStreetContent, logoUrl);
     switch (page) {
       case 'shop':
         return <ShopPage content={c} skin={skin} products={products} />;
@@ -242,16 +250,16 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
         return <MainStreet content={c} skin={skin} products={products} mood={mood} catalogSize={catalogSize} />;
     }
   },
-  renderProduct: ({ content, lookKey, product }) => {
+  renderProduct: ({ content, lookKey, product, logoUrl }) => {
     const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
-    return <MainStreetProduct content={content as MainStreetContent} skin={skin} product={product} />;
+    return <MainStreetProduct content={withLogo(content as MainStreetContent, logoUrl)} skin={skin} product={product} />;
   },
-  renderContentPage: ({ content, lookKey, title, body, html }) => {
+  renderContentPage: ({ content, lookKey, title, body, html, logoUrl }) => {
     const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
-    return <ContentPage content={content as MainStreetContent} skin={skin} title={title} body={body} html={html} />;
+    return <ContentPage content={withLogo(content as MainStreetContent, logoUrl)} skin={skin} title={title} body={body} html={html} />;
   },
-  renderShell: ({ content, lookKey, children }) => {
+  renderShell: ({ content, lookKey, children, logoUrl }) => {
     const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
-    return <MainStreetSubPage content={content as MainStreetContent} skin={skin}>{children}</MainStreetSubPage>;
+    return <MainStreetSubPage content={withLogo(content as MainStreetContent, logoUrl)} skin={skin}>{children}</MainStreetSubPage>;
   },
 };

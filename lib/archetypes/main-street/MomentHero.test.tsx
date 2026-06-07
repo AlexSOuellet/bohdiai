@@ -44,6 +44,18 @@ describe('MomentHero', () => {
     expect(container.querySelector('[data-story-brand]')).toBeTruthy();
   });
 
+  it('shows the maker logo beside the wordmark when one is uploaded', () => {
+    const withLogo = { ...identity, logoUrl: 'https://cdn/logo.png' };
+    const { container } = render(<MomentHero identity={withLogo} moment={moment} skin={skin} />);
+    const logo = container.querySelector('img[data-ms-logo]') as HTMLImageElement | null;
+    expect(logo?.getAttribute('src')).toBe('https://cdn/logo.png');
+  });
+
+  it('shows no logo image when the maker uploaded none', () => {
+    const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
+    expect(container.querySelector('img[data-ms-logo]')).toBeNull();
+  });
+
   it('renders nav links to real routes — never a dead "#" placeholder', () => {
     const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('a[href="#"]')).toBeNull();

@@ -59,6 +59,18 @@ async function loadHomeArchetypeEnvelope(tenantId: string): Promise<Record<strin
   return rootObj['kind'] === 'archetype' ? rootObj : null;
 }
 
+/** The tenant's uploaded logo URL, or undefined if none. Injected into the
+ *  archetype chrome at render — it's a tenant fact, not authored content. */
+async function loadTenantLogo(tenantId: string): Promise<string | undefined> {
+  const db = supabaseAdmin() as unknown as {
+    from: (t: string) => {
+      select: (c: string) => { eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: { logo_url: string | null } | null }> } };
+    };
+  };
+  const { data } = await db.from('tenants').select('logo_url').eq('id', tenantId).maybeSingle();
+  return data?.logo_url ?? undefined;
+}
+
 /** Resolve the tenant's home archetype spec + envelope, or null for a legacy
  *  tenant. Shared by the product and content-page routes so they paint in the
  *  archetype's chrome instead of the legacy system. */
@@ -70,7 +82,8 @@ async function resolveArchetype(tenantId: string) {
   if (typeof key !== 'string' || typeof lookKey !== 'string') return null;
   const spec = archetypeSpec(key);
   if (spec === undefined) return null;
-  return { spec, lookKey, content: env['content'] };
+  const logoUrl = await loadTenantLogo(tenantId);
+  return { spec, lookKey, content: env['content'], logoUrl };
 }
 
 /** Render a product detail page in the tenant's archetype, or null if the tenant
@@ -78,7 +91,7 @@ async function resolveArchetype(tenantId: string) {
 export async function renderArchetypeProductPage(tenantId: string, product: ProductView) {
   const a = await resolveArchetype(tenantId);
   if (a === null || a.spec.renderProduct === undefined) return null;
-  return a.spec.renderProduct({ content: a.content, lookKey: a.lookKey, product });
+  return a.spec.renderProduct({ content: a.content, lookKey: a.lookKey, product, logoUrl: a.logoUrl });
 }
 
 /** Render a plain content page (legal/maker-added) in the tenant's archetype, or
@@ -89,7 +102,7 @@ export async function renderArchetypeContentPage(
 ) {
   const a = await resolveArchetype(tenantId);
   if (a === null || a.spec.renderContentPage === undefined) return null;
-  return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, ...opts });
+  return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, ...opts, logoUrl: a.logoUrl });
 }
 
 /** Wrap a functional page's body (cart, collections, subscriptions) in the
@@ -97,7 +110,7 @@ export async function renderArchetypeContentPage(
 export async function renderArchetypeShell(tenantId: string, children: ReactNode) {
   const a = await resolveArchetype(tenantId);
   if (a === null || a.spec.renderShell === undefined) return null;
-  return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children });
+  return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, logoUrl: a.logoUrl });
 }
 
 export default async function StorefrontPage({ slug, version }: StorefrontPageProps) {
@@ -119,6 +132,7 @@ export default async function StorefrontPage({ slug, version }: StorefrontPagePr
           products: (env.products ?? []) as ProductView[],
           mood: env.mood,
           catalogSize: env.catalogSize,
+          logoUrl: await loadTenantLogo(tenantId),
         });
       }
     }
@@ -320,5 +334,6 @@ async function renderArchetypeStore(env: Record<string, unknown>, tenantId: stri
 
   const mood = typeof env['mood'] === 'string' ? (env['mood'] as string) : undefined;
   const catalogSize = typeof env['catalogSize'] === 'number' ? (env['catalogSize'] as number) : undefined;
-  return spec.render({ content: env['content'], lookKey: lookKey as string, products, mood, catalogSize, page });
+  const logoUrl = await loadTenantLogo(tenantId);
+  return spec.render({ content: env['content'], lookKey: lookKey as string, products, mood, catalogSize, page, logoUrl });
 }

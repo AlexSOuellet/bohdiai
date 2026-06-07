@@ -152,13 +152,26 @@ export const MAIN_STREET_NAV: ReadonlyArray<{ href: string; label: string }> = [
   { href: '/contact', label: 'Contact' },
 ];
 
+/** The brand lockup in a header: the maker's uploaded logo (when present) beside
+ *  the typographic wordmark. The wordmark text ALWAYS shows, so the brand reads
+ *  even when a logo is dark over the hero's video — the logo rides alongside it. */
+export function WordmarkLink({ wordmark, logoUrl, role }: { wordmark: string; logoUrl?: string | undefined; role: TypeRole }) {
+  return (
+    <Link href="/" data-type="wordmark" style={{ ...typeRoleCss(role), color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 12 }}>
+      {logoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={logoUrl} alt="" data-ms-logo style={{ height: '1.5em', width: 'auto', display: 'block' }} />
+      ) : null}
+      {wordmark}
+    </Link>
+  );
+}
+
 export function Nav({ identity, skin }: { identity: MainStreetContent['identity']; skin: ArchetypeTheme }) {
   const r = roles(skin);
   return (
     <>
-      <Link href="/" data-type="wordmark" style={{ ...typeRoleCss(r.wordmark), color: 'inherit' }}>
-        {identity.wordmark}
-      </Link>
+      <WordmarkLink wordmark={identity.wordmark} logoUrl={identity.logoUrl} role={r.wordmark} />
       <div style={{ display: 'flex', gap: 30, alignItems: 'center' }}>
         {MAIN_STREET_NAV.map((item) => (
           <a key={item.href} href={item.href} data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), color: 'inherit', opacity: 0.85 }}>

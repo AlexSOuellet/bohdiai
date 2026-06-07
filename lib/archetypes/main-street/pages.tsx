@@ -5,12 +5,11 @@
  * a solid nav header (not the hero's over-media nav), and the footer. Structure
  * only — colors are skin vars, fonts are named roles, nothing niche or hardcoded.
  */
-import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
-import { MainStreetRoot, MainStreetFooter, Media, typeRoleCss, roles, MAIN_STREET_NAV } from './chrome';
+import { MainStreetRoot, MainStreetFooter, Media, typeRoleCss, roles, MAIN_STREET_NAV, WordmarkLink } from './chrome';
 import { FindUsList } from './FounderBeats';
 
 function SubHeader({ content, skin }: { content: MainStreetContent; skin: ArchetypeTheme }) {
@@ -29,9 +28,7 @@ function SubHeader({ content, skin }: { content: MainStreetContent; skin: Archet
         flexWrap: 'wrap',
       }}
     >
-      <Link href="/" data-type="wordmark" style={{ ...typeRoleCss(r.wordmark), color: 'inherit' }}>
-        {content.identity.wordmark}
-      </Link>
+      <WordmarkLink wordmark={content.identity.wordmark} logoUrl={content.identity.logoUrl} role={r.wordmark} />
       <nav style={{ display: 'flex', gap: 26, alignItems: 'center', flexWrap: 'wrap' }}>
         {MAIN_STREET_NAV.map((item) => (
           <a key={item.href} href={item.href} data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), color: 'inherit', opacity: 0.85 }}>

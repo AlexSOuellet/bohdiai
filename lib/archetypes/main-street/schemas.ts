@@ -75,6 +75,9 @@ export const MainStreetContentSchema = z.object({
   identity: z.object({
     wordmark: z.string().min(2).max(28),
     nav: z.array(z.string().min(2).max(18)).min(2).max(4),
+    /** The maker's uploaded logo, if any. NOT authored by Bohdi — injected at
+     *  render from the tenant's upload, and shown beside the wordmark in the nav. */
+    logoUrl: z.string().optional(),
   }),
 
   /** BEAT 1 — the moment is the hero. Held media + a story told one line at a
