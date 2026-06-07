@@ -902,6 +902,50 @@ export const MAIN_STREET_SKIN_TAGS: Record<string, SkinTag> = {
   'main-street-postmark': { world: 'Relic', moods: ['retro', 'mid-century', 'aged'] },
 };
 
+/** A one-line, plain-language description of each skin — its colors, its type
+ *  face, and the world it belongs to. Shown to Bohdi's Graphic Artist (and the
+ *  legacy looks menu) so a skin can be chosen by what it actually looks like. */
+export const SKIN_DESCRIPTIONS: Record<string, string> = {
+  // Hearth — warm, handmade, domestic
+  'main-street-ember': 'warm cream and ember, a soft serif — homey, cozy, hand-baked',
+  'main-street-orchard': 'golden amber and terracotta, a warm hand-cut serif — harvest evening',
+  'main-street-pantry': 'bright kitchen cream and garden green, a sturdy slab — fresh and farm-direct',
+  'main-street-hearthstone': 'candlelit dark with ember amber, a high-contrast serif — cozy after dark',
+  // Workshop — rugged, made-to-last
+  'main-street-tannery': 'dark brown-black leather with aged brass, a sturdy slab — rugged and warm',
+  'main-street-forge': 'cold blue-charcoal with mustard, condensed industrial caps — metal and machine',
+  'main-street-anvil': 'near-black with a single blood red, heavy blunt caps — butcher-sign bold',
+  'main-street-sawdust': 'light oak and wood-stain brown, a clean slab — the daylight woodshop',
+  // Fine — refined, quiet, luxe
+  'main-street-porcelain': 'blush white and aubergine, a fine hairline serif — romantic and delicate',
+  'main-street-atelier': 'bright paper with ink and thin gold, a sharp modern grotesque — clean contemporary luxury',
+  'main-street-gild': 'black and thin gold, a high-contrast serif — the lit jewel case',
+  // Garden — botanical, earthy, seasonal
+  'main-street-botanical': 'oat and deep forest green, a soft optical serif — earthy and seasonal',
+  'main-street-conservatory': 'pale leaf-white and garden green, an airy roman serif — the glasshouse',
+  'main-street-wildflower': 'warm meadow cream and cosmos pink, a blowsy display serif — bright and seasonal',
+  // Studio — art-forward, the goods are the art
+  'main-street-studio': 'bone-white gallery wall, huge ink type, one hot vermillion — quiet room, loud art',
+  'main-street-darkroom': 'charcoal wall and cold slate, a characterful grotesque — moody gallery',
+  'main-street-pigment': 'bright white and hot magenta, a big bold grotesque — for vivid, colorful work',
+  // Mystic — esoteric, moody, celestial
+  'main-street-nightshade': 'violet-black and electric amethyst with a gold hairline, a carved gothic — deep occult',
+  'main-street-celestine': 'pale dawn-lilac and dusk violet, an engraved roman — soft and celestial',
+  'main-street-ritual': 'near-black and a single blood red, a dramatic serif — candlelit and intense',
+  // Playroom — playful, bright, friendly
+  'main-street-confetti': 'butter cream with poppy and grape, a rounded heavy display — bright and playful',
+  'main-street-bubblegum': 'cotton-candy white with bubblegum pink and pool cyan, a rounded display — candy loud',
+  'main-street-sprout': 'soft pistachio and warm apricot, a gentle rounded sans — the friendly, quiet end of playful',
+  // Press — graphic, inky, urban
+  'main-street-pressroom': 'bone paper with off-register riso red and blue, condensed poster caps — screenprint',
+  'main-street-marquee': 'black with one neon-lime, a wall of poster caps — streetwear and bold',
+  'main-street-broadside': 'newsprint gray with stamped red, condensed caps — the raw zine',
+  // Relic — vintage, nostalgic, aged
+  'main-street-heirloom': 'faded ochre paper, sepia ink, worn teal and oxblood, an old Caslon — found, not made',
+  'main-street-curiosity': 'deep wood and brass with a bottle-green band, a Victorian display — the vintage cabinet',
+  'main-street-postmark': 'aged paper with retro orange and teal, an ornate display serif — mid-century ephemera',
+};
+
 export const MAIN_STREET_FONT_HREFS: Record<string, string> = {
   'main-street-ember':
     'https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap',

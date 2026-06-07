@@ -20,7 +20,7 @@ import { GOODS_TREATMENTS } from './goods';
  *  still uses the same groups joined into a description. The generation seam
  *  serializes this (JSON for video, prose for a still) and, for video, injects a
  *  seamless-loop + slow-motion intent. The groups are fixed; Bohdi fills them. */
-const ScenePrompt = z.object({
+export const ScenePrompt = z.object({
   composition: z.string().min(3).max(160),
   subject: z.string().min(3).max(160),
   environment: z.string().min(3).max(160),
@@ -53,7 +53,7 @@ const PhotoSlot = z.object({
  *  the line staccato, and as the lines cross-fade the marks from two lines stack
  *  into a smeared double-exposure. Apostrophes and intra-word hyphens are fine
  *  ("don't", "full-grain"); periods, commas, dashes, colons, and quotes are not. */
-const StoryLine = z
+export const StoryLine = z
   .string()
   .min(4)
   .max(48)
@@ -62,11 +62,15 @@ const StoryLine = z
   });
 
 /** One "find us this week" row. */
-const FindUsRow = z.object({
+export const FindUsRow = z.object({
   day: z.string().min(1).max(12),
   where: z.string().min(4).max(60),
   time: z.string().min(1).max(12),
 });
+
+/** The About-beat bodies. A tuple so the content schema and the copywriter's
+ *  draft schema read the same source and can never drift apart. */
+export const FOUNDER_TREATMENTS = ['quote', 'portrait', 'letter', 'card'] as const;
 
 export const MainStreetContentSchema = z.object({
   /** The shop's actual name — used in the footer + as the default wordmark. */
@@ -118,7 +122,7 @@ export const MainStreetContentSchema = z.object({
     /** Which About look to wear — BOHDI's pick, the one that fits the maker. All
      *  maker-only; the find-us calendar is its own beat, never inside these.
      *  Optional so content authored before this field still parses. */
-    treatment: z.enum(['quote', 'portrait', 'letter', 'card']).optional(),
+    treatment: z.enum(FOUNDER_TREATMENTS).optional(),
     /** Small label above the heading on the card treatment, e.g. "Since 2019". */
     eyebrow: z.string().min(2).max(24).optional(),
     /** The card treatment's heading, e.g. "Meet June". */
