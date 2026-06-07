@@ -52,6 +52,12 @@ describe('Main Street authoringSpec — voice and story arc', () => {
     expect(spec).toMatch(/not a literal product/);
   });
 
+  it('prefers a held video for the Moment — motion is the signature wow', () => {
+    const spec = MAIN_STREET_SPEC.authoringSpec(brief).toLowerCase();
+    expect(spec).toMatch(/prefer a held video/);
+    expect(spec).toMatch(/choose a still only/);
+  });
+
   it('bans the named AI-tell platitudes', () => {
     const spec = MAIN_STREET_SPEC.authoringSpec(brief).toLowerCase();
     expect(spec).toContain('crafted with care');
