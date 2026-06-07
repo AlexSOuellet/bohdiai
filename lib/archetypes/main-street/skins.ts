@@ -359,7 +359,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
     motion: MOTION,
   },
 
-  // Atelier — clean luxury. Fine jewelry / perfume / fewer-better goods.
+  // Atelier — clean modern. A sharp grotesque on bright paper; contemporary, minimal luxury.
   'main-street-atelier': {
     key: 'main-street-atelier',
     label: 'Atelier',
@@ -373,8 +373,8 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
       contrast: { bg: '#14110E', fg: '#F1ECE4', fgMuted: 'rgba(241,236,228,0.60)' },
     },
     type: makeType({
-      display: "'Bodoni Moda', Georgia, serif",
-      displayWeight: 500,
+      display: "'Space Grotesk', system-ui, sans-serif",
+      displayWeight: 600,
       body: "'Inter', system-ui, sans-serif",
       label: "'Inter', system-ui, sans-serif",
       labelWeight: 500,
@@ -922,7 +922,7 @@ export const MAIN_STREET_FONT_HREFS: Record<string, string> = {
   'main-street-porcelain':
     'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap',
   'main-street-atelier':
-    'https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Inter:wght@400;500;600&display=swap',
+    'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap',
   'main-street-gild':
     'https://fonts.googleapis.com/css2?family=Prata&family=Manrope:wght@400;500;600;700&display=swap',
   'main-street-botanical':

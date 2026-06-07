@@ -36,7 +36,7 @@ const SKIN_DESCRIPTIONS: Record<string, string> = {
   'main-street-sawdust': 'light oak and wood-stain brown, a clean slab — the daylight woodshop',
   // Fine — refined, quiet, luxe
   'main-street-porcelain': 'blush white and aubergine, a fine hairline serif — romantic and delicate',
-  'main-street-atelier': 'paper white with ink and thin gold, a sharp didone — clean modern luxury',
+  'main-street-atelier': 'bright paper with ink and thin gold, a sharp modern grotesque — clean contemporary luxury',
   'main-street-gild': 'black and thin gold, a high-contrast serif — the lit jewel case',
   // Garden — botanical, earthy, seasonal
   'main-street-botanical': 'oat and deep forest green, a soft optical serif — earthy and seasonal',
