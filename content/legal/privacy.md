@@ -2,40 +2,38 @@
 
 _Last updated: {{lastUpdated}}_
 
-This is how **{{shopName}}** handles your information. Plain English.
+This Privacy Policy describes how **{{shopName}}** ("we," "us," or "our") collects, uses, discloses, and protects your personal information when you visit or make a purchase through this store (the "Site"). We are committed to handling your information responsibly and in accordance with applicable data protection laws.
 
-## What we collect
+## 1. Information We Collect
 
-When you place an order, we collect what we need to fulfill it: your name, email, shipping address, and the order details. Payment card information is handled directly by our payment provider (Stripe or Square) — we never see or store full card numbers.
+When you place an order, we collect the information necessary to process and fulfill it, including your name, email address, shipping address, and order details. If you contact us, we retain your correspondence in order to respond and provide support. Full payment card details are collected and processed directly by our payment processor (Stripe or Square); we do not receive or store complete card numbers.
 
-If you contact us by email, we keep that conversation so we can help you.
+We also collect limited, privacy-respecting analytics, such as aggregate page views and interactions, in order to understand and improve the Site. We do not engage in cross-site tracking and do not use advertising networks.
 
-The site uses basic, privacy-respecting analytics (anonymous page views, button clicks) to understand what's working. No cross-site tracking, no ad networks.
+## 2. How We Use Your Information
 
-## Why we collect it
+We use your information to process and fulfill your orders, deliver your purchases, respond to your inquiries, and, where you have expressly opted in, to send occasional updates regarding new products. We do not sell, rent, or trade your personal information.
 
-To fulfill your orders, to ship your purchases, to answer your questions, and to occasionally let you know about new work — but only if you opt in. No promo blasts. We never sell or rent your information.
+## 3. How Your Information Is Stored
 
-## Where it lives
+Order and contact information is stored within the BohdiAI platform infrastructure (Supabase, United States region) and encrypted at rest. Transactional emails, such as order confirmations, are delivered through Resend. Payment information is retained by our payment processor in accordance with its own privacy practices and not by us.
 
-Your order and contact details live in the BohdiAI platform's infrastructure (Supabase, US region, encrypted at rest). Order confirmation emails are sent through Resend. Payment data lives with the payment provider we use, not with us.
+## 4. Disclosure to Third Parties
 
-## Sharing
+We disclose personal information only to the extent necessary to fulfill your order, namely your shipping details to the relevant carrier and your payment information to the payment processor. We may also disclose information where required by law or where reasonably necessary to protect our legal rights. We do not disclose your information to third parties for their own marketing purposes.
 
-We share only what's needed to deliver your order: shipping address with the shipping carrier, payment details with the payment processor. We do not sell or share your data for marketing.
+## 5. Cookies
 
-## Cookies
+The Site uses a first-party cookie to maintain the contents of your cart between page loads and a first-party analytics cookie to measure unique visits. The Site does not use marketing cookies or third-party tracking cookies.
 
-The site uses a cart cookie so your items stay in the cart between page loads, and a first-party analytics cookie to count unique visits. No marketing cookies, no third-party trackers.
+## 6. Data Retention and Your Rights
 
-## How to get out
+You may request access to, correction of, or deletion of your personal information by contacting us at [{{contactEmail}}](mailto:{{contactEmail}}). We will act upon verified requests within a reasonable period, subject to any information we are required to retain for legal, accounting, or tax purposes. If you are located in the European Union or the United Kingdom, you have additional rights under the GDPR and UK GDPR, including the rights of access, rectification, erasure, restriction, and objection.
 
-If you want your record fully deleted, email [{{contactEmail}}](mailto:{{contactEmail}}) and we will delete it within 7 days, subject to any records we're legally required to keep (e.g. order history for tax purposes). If you're in the EU/UK, this is your GDPR right to erasure — same process.
+## 7. Changes to This Policy
 
-## Changes to this policy
+We may update this Privacy Policy from time to time. The "Last updated" date above indicates the most recent revision. We encourage you to review this policy periodically.
 
-We may update this policy from time to time. The date at the top will change when it does.
+## 8. Contact
 
-## Contact
-
-Questions, requests, complaints — email [{{contactEmail}}](mailto:{{contactEmail}}).
+For any questions, requests, or complaints regarding your privacy or this policy, please contact us at [{{contactEmail}}](mailto:{{contactEmail}}).

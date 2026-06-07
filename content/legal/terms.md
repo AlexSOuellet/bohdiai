@@ -2,38 +2,48 @@
 
 _Last updated: {{lastUpdated}}_
 
-These are the terms for shopping at **{{shopName}}**. Plain English, no surprises.
+These Terms of Service (the "Terms") govern your access to and use of the **{{shopName}}** online store (the "Site") and any purchase you make through it. By accessing the Site or placing an order, you agree to be bound by these Terms. If you do not agree to these Terms, you should not use the Site.
 
-## What this site is
+## 1. The Seller and the Platform
 
-{{shopName}} is an independent small business selling its own goods directly to customers. The site is hosted on BohdiAI, a platform that provides the storefront software. Your order is with {{shopName}} — not with BohdiAI.
+{{shopName}} (the "Seller," "we," "us," or "our") is an independent business that sells its own goods directly to customers. The Site operates using storefront software provided by BohdiAI, which acts solely as a technology provider. Your contract of sale is formed exclusively with the Seller. BohdiAI is not a party to any transaction and does not sell, hold title to, or fulfill any product offered on the Site.
 
-## Orders and payment
+## 2. Orders and Acceptance
 
-When you place an order, payment is processed by our payment provider (Stripe or Square) using your card, digital wallet, or supported method. {{shopName}} receives the funds; BohdiAI never holds your money.
+All orders constitute an offer to purchase and are subject to acceptance by the Seller. We reserve the right to decline, cancel, or limit any order, including where a product is unavailable, where an error in pricing or description has occurred, or where we reasonably suspect fraudulent or unauthorized activity. A binding contract of sale is formed only upon our confirmation that an order has been accepted.
 
-We aim to ship in stock items promptly. If something you ordered is unavailable, we will contact you to arrange a replacement or refund.
+## 3. Pricing and Payment
 
-## Returns and refunds
+All prices are stated in the currency displayed at checkout and, unless otherwise indicated, are exclusive of applicable taxes and shipping charges. Payment is processed by our third-party payment processor (Stripe or Square) using the payment method you select. Funds are received directly by the Seller. BohdiAI does not process, hold, or have access to your payment. You represent and warrant that you are authorized to use the payment method you provide.
 
-Refund and return policy is at {{shopName}}'s discretion. If you have a problem with your order, email us at [{{contactEmail}}](mailto:{{contactEmail}}) and we will work it out.
+## 4. Shipping and Fulfillment
 
-## Intellectual property
+We will make reasonable efforts to fulfill and dispatch orders promptly. Stated delivery time frames are estimates only and are not guaranteed. If an ordered item becomes unavailable after your order has been placed, we will contact you to arrange a substitution, backorder, or refund.
 
-All product photos, descriptions, and content on this site belong to {{shopName}}. Please don't copy them for commercial use without asking.
+## 5. Returns and Refunds
 
-## Acceptable use
+Returns, exchanges, and refunds are provided at the Seller's discretion and in accordance with any returns policy published on the Site. To raise an issue with an order, please contact us at [{{contactEmail}}](mailto:{{contactEmail}}). Custom, personalized, or perishable goods may be ineligible for return except where otherwise required by law.
 
-Don't try to break, scrape, or abuse the site. Don't place fraudulent orders. We reserve the right to cancel orders and refuse service at our discretion.
+## 6. Intellectual Property
 
-## No warranties
+All content on the Site, including product photographs, descriptions, text, logos, and visual design, is the property of the Seller or its licensors and is protected by applicable intellectual property laws. You may not reproduce, distribute, or otherwise exploit any such content for commercial purposes without our prior written consent.
 
-The site is provided as-is. We'll do our best to keep it accurate and up, but we're not liable for losses tied to it being down, slow, or wrong. Products are described in good faith — colors and details may vary slightly from photos, especially for handmade items.
+## 7. Acceptable Use
 
-## Changes to these terms
+You agree not to misuse the Site, including by attempting to gain unauthorized access, interfering with its normal operation, scraping or harvesting data, or submitting fraudulent or unauthorized orders. We reserve the right to suspend access, cancel orders, and refuse service at our discretion.
 
-We may update these terms from time to time. The date at the top will change when they do.
+## 8. Disclaimers
 
-## Contact
+The Site and all products are provided on an "as is" and "as available" basis. To the fullest extent permitted by law, we disclaim all warranties, whether express or implied, including the implied warranties of merchantability and fitness for a particular purpose. Product descriptions are offered in good faith; colors, finishes, and details may vary, particularly in the case of handmade items.
 
-Questions about an order, the site, or these terms — email [{{contactEmail}}](mailto:{{contactEmail}}).
+## 9. Limitation of Liability
+
+To the fullest extent permitted by law, neither the Seller nor BohdiAI shall be liable for any indirect, incidental, special, or consequential damages, or for any loss arising from the unavailability, interruption, or inaccuracy of the Site. Nothing in these Terms excludes or limits any liability that cannot be excluded or limited under applicable law.
+
+## 10. Changes to These Terms
+
+We may revise these Terms from time to time. The "Last updated" date above indicates the most recent revision. Your continued use of the Site following any revision constitutes acceptance of the updated Terms.
+
+## 11. Contact
+
+For questions regarding an order, the Site, or these Terms, please contact us at [{{contactEmail}}](mailto:{{contactEmail}}).
