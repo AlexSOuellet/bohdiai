@@ -1,28 +1,38 @@
 /**
- * Image-prompt directives enforced by the engine (not left to Bohdi's free text):
- *  - every generated image is photo-realistic (never illustrated/3D/render);
- *  - a person in the image matches the maker's name (female name → a woman, etc.),
- *    via the shared name→gender helper. A heuristic with a known failure mode
- *    (unisex names, the maker isn't the face) — a sensible default the maker can
- *    override later in the editor; it never blocks a build.
+ * Image-prompt directives enforced by the engine (not left to Bohdi's free text).
+ * The job is to GUARANTEE photorealism and, for a person, match the maker — without
+ * degrading the authored prompt. Two craft rules learned the hard way:
+ *
+ *  1. Steer realism with POSITIVE cues (medium + camera/lens), never a negation.
+ *     "no illustration or 3D render" makes image models attend to "illustration"
+ *     and "3D render" and drift toward them — the opposite of the intent.
+ *  2. Anchor the subject at the FRONT. A person's gender led the prompt as the
+ *     subject is honored; the same words trailing as an afterthought get ignored
+ *     (which is why a maker named for a man rendered as a woman).
+ *
+ * Gender is inferred from the maker's name (a heuristic; unisex/unknown names fall
+ * back to the audience default, the maker can change the photo later). It never
+ * blocks a build.
  */
 import { inferGenderFromName, personPhrase } from '@/lib/name-gender';
 
-const PHOTO_REAL =
-  'photorealistic photograph, natural lighting, real materials and textures, no illustration or 3D render';
+/** Positive realism cues — medium + lens, no negations. */
+const REALISM = 'Natural light, true textures, fine real-world detail, shot on a full-frame camera';
 
 export interface ImageDirectiveOpts {
   isPerson?: boolean | undefined;
   makerName?: string | undefined;
 }
 
-/** Append the enforced directives to an authored image prompt. */
+/** Compose ONE coherent prompt from the authored prompt + enforced directives.
+ *  Order matters: medium and subject lead, the authored scene follows, realism
+ *  cues close. */
 export function withImageDirectives(prompt: string, opts: ImageDirectiveOpts): string {
-  const parts = [prompt.trim()];
+  const base = prompt.trim();
   if (opts.isPerson) {
     const phrase = personPhrase(inferGenderFromName(opts.makerName));
-    parts.push(`the maker shown is ${phrase.noun}`);
+    // Lead with the gendered subject so the model anchors on it.
+    return `Photorealistic portrait photograph of ${phrase.noun}. ${base}. ${REALISM} with an 85mm portrait lens.`;
   }
-  parts.push(PHOTO_REAL);
-  return parts.join('. ');
+  return `Photorealistic photograph. ${base}. ${REALISM}.`;
 }
