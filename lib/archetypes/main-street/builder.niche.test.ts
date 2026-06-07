@@ -45,6 +45,13 @@ describe('Main Street authoringSpec — voice and story arc', () => {
     expect(spec).toContain('soy candle maker');
   });
 
+  it('directs the Moment image to be cinematic and carry emotion, not a literal product shot', () => {
+    const spec = MAIN_STREET_SPEC.authoringSpec(brief).toLowerCase();
+    expect(spec).toContain('cinematic');
+    expect(spec).toMatch(/carry emotion|carry the emotion/);
+    expect(spec).toMatch(/not a literal product/);
+  });
+
   it('bans the named AI-tell platitudes', () => {
     const spec = MAIN_STREET_SPEC.authoringSpec(brief).toLowerCase();
     expect(spec).toContain('crafted with care');
