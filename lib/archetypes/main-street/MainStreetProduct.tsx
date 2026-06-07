@@ -16,34 +16,28 @@ import type { CatalogMedia, ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
 import { MainStreetRoot, MainStreetFooter, Nav, typeRoleCss, roles } from './chrome';
 
-function MediaTile({ media, aspect, skin }: { media: CatalogMedia; aspect: string; skin: ArchetypeTheme }) {
-  const r = roles(skin);
-  const src = media.kind === 'video' ? media.poster : media.url;
-  return (
-    <div style={{ position: 'relative', overflow: 'hidden' }}>
-      {src ? (
-        <img src={src} alt={media.alt} className="archetype-photo" style={{ aspectRatio: aspect }} />
-      ) : (
-        <div className="archetype-photo" aria-label={media.alt} style={{ aspectRatio: aspect, background: 'var(--ms-fg-muted)', opacity: 0.18 }} />
-      )}
-      {media.kind === 'video' && (
-        <span
-          data-type="eyebrow"
-          style={{
-            ...typeRoleCss(r.eyebrow),
-            position: 'absolute',
-            left: 8,
-            top: 8,
-            background: 'var(--ms-fg)',
-            color: 'var(--ms-bg)',
-            padding: '5px 8px',
-            zIndex: 2,
-          }}
-        >
-          &#9658; Video
-        </span>
-      )}
-    </div>
+/** One media cell — a playable video or a still. A video renders a real
+ *  <video> with controls (poster shown until play), so product clips actually
+ *  play; a still renders an <img>, or a muted placeholder when no URL yet. */
+function MediaTile({ media, aspect }: { media: CatalogMedia; aspect: string }) {
+  if (media.kind === 'video' && media.url) {
+    return (
+      <video
+        className="archetype-photo"
+        style={{ aspectRatio: aspect }}
+        src={media.url}
+        poster={media.poster}
+        controls
+        muted
+        playsInline
+        aria-label={media.alt}
+      />
+    );
+  }
+  return media.url ? (
+    <img src={media.url} alt={media.alt} className="archetype-photo" style={{ aspectRatio: aspect }} />
+  ) : (
+    <div className="archetype-photo" aria-label={media.alt} style={{ aspectRatio: aspect, background: 'var(--ms-fg-muted)', opacity: 0.18 }} />
   );
 }
 
@@ -83,11 +77,11 @@ export function MainStreetProduct({
         <section style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: sp.section, alignItems: 'start' }}>
           {/* media gallery */}
           <div>
-            {primary && <MediaTile media={primary} aspect="4 / 5" skin={skin} />}
+            {primary && <MediaTile media={primary} aspect="4 / 5" />}
             {rest.length > 0 && (
               <div style={{ marginTop: sp.tight, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: sp.tight }}>
                 {rest.map((m, i) => (
-                  <MediaTile key={i} media={m} aspect="1 / 1" skin={skin} />
+                  <MediaTile key={i} media={m} aspect="1 / 1" />
                 ))}
               </div>
             )}
