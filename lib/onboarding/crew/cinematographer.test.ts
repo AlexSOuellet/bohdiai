@@ -64,7 +64,7 @@ describe('shootMoment (the Cinematographer)', () => {
   });
 
   it('rejects an incomplete scene, then accepts the fix', async () => {
-    const bad = { ...scene, prompt: { ...scene.prompt, composition: 'ab' } }; // < 3 chars
+    const bad = { ...scene, prompt: { ...scene.prompt, composition: '' } }; // empty — fails the non-empty floor
     create.mockResolvedValueOnce(toolMsg(bad)).mockResolvedValueOnce(toolMsg(scene));
     const s = await shootMoment(trajectory, story);
     expect(s.prompt.composition).toBe('wide low angle across a worn bench');

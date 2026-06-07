@@ -37,7 +37,8 @@ const ProductSchema = z.object({
   shortDescription: z.string().min(4).max(90),
   description: z.string().min(12).max(600),
   basePriceCents: z.number().int().min(100).max(5_000_00),
-  imagePrompt: z.string().min(8).max(400),
+  // Feeds the image model (not rendered) — no length cap, only a non-empty floor.
+  imagePrompt: z.string().min(1),
 });
 const ProductsSchema = z.array(ProductSchema).min(3).max(12);
 type ProductBriefT = z.infer<typeof ProductSchema>;

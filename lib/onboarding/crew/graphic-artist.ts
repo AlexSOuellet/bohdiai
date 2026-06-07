@@ -34,14 +34,16 @@ const TIMEOUT_MS = 90_000;
 
 /** What the Graphic Artist produces. `skinKey` is validated against the subset
  *  separately (a dynamic set), and `products` must cover the copywriter's slugs. */
+// The image prompts feed the image model (not rendered) — no length cap, only a
+// non-empty floor. `alt` renders into the DOM; `slug` is a routing identifier.
 export const GraphicSpecSchema = z.object({
   skinKey: z.string(),
   founderPhoto: z.object({
-    prompt: z.string().min(8).max(400),
+    prompt: z.string().min(1),
     alt: z.string().min(4).max(120),
   }),
   products: z
-    .array(z.object({ slug: z.string().min(2).max(48), imagePrompt: z.string().min(8).max(400) }))
+    .array(z.object({ slug: z.string().min(2).max(48), imagePrompt: z.string().min(1) }))
     .min(1),
 });
 export type GraphicSpec = z.infer<typeof GraphicSpecSchema>;
@@ -92,8 +94,8 @@ ${productList}
 Choose with set_look:
 - skinKey: the store's skin. Pick exactly ONE key from this list — these are the skins that fit the ${brief.moodLabel} mood the maker chose:
 ${skinList}
-- founderPhoto: a portrait of the maker — { prompt (8-400): the setting, framing, and light of the shot; alt (4-120) }. The system handles who the maker is; you set the shot and its light.
-- products: an image prompt for EVERY product above — an array of { slug, imagePrompt (8-400) }, one entry per slug, no extras: the product shot, its surface, and its light, in the same world as the Moment and the skin.
+- founderPhoto: a portrait of the maker — { prompt: the setting, framing, and light of the shot; alt (4-120) }. The system handles who the maker is; you set the shot and its light.
+- products: an image prompt for EVERY product above — an array of { slug, imagePrompt }, one entry per slug, no extras: the product shot, its surface, and its light, in the same world as the Moment and the skin.
 
 Set the look now.`;
 }

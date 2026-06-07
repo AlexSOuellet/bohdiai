@@ -51,7 +51,7 @@ describe('direct (the Director)', () => {
 
   it('retries once with the validation issues, then succeeds', async () => {
     create
-      .mockResolvedValueOnce(toolMsg({ ...valid, feeling: 'too short' })) // < 12 chars, invalid
+      .mockResolvedValueOnce(toolMsg({ ...valid, feeling: '' })) // < 12 chars, invalid
       .mockResolvedValueOnce(toolMsg(valid));
     const t = await direct(brief);
     expect(t.feeling).toBe(valid.feeling);
@@ -63,7 +63,7 @@ describe('direct (the Director)', () => {
   });
 
   it('throws when no valid trajectory is produced within two attempts', async () => {
-    create.mockResolvedValue(toolMsg({ ...valid, feeling: 'x' }));
+    create.mockResolvedValue(toolMsg({ ...valid, feeling: '' }));
     await expect(direct(brief)).rejects.toThrow(/valid trajectory/);
     expect(create).toHaveBeenCalledTimes(2);
   });

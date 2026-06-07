@@ -54,16 +54,16 @@ THE TRAJECTORY
 THE STORY that plays over the Moment:
 ${lines}
 
-Design the shot with set_moment. The fields and their hard limits (stay under — short phrases, not sentences):
+Design the shot with set_moment:
 - kind: "video" or "image".
 - prompt: the shot as seven short phrases —
-    - composition (3-160): how the shot is framed.
-    - subject (3-160): what is in frame.
-    - environment (3-160): where it is.
-    - atmosphere (3-120): the feeling in the air.
-    - camera (3-120): the angle, lens, and any movement.
-    - lighting (3-120): the light.
-    - style (3-120): the visual style.
+    - composition: how the shot is framed.
+    - subject: what is in frame.
+    - environment: where it is.
+    - atmosphere: the feeling in the air.
+    - camera: the angle, lens, and any movement.
+    - lighting: the light.
+    - style: the visual style.
 - alt (4-120): a plain description of the shot.
 
 If kind is "video": it is a short clip that LOOPS seamlessly, so the motion must be continuous and ambient — no progressive human action and no large change in light or position across the clip, or the restart will jump. A motionless person is fine (hands at rest, a figure standing still); a person performing an action is not.

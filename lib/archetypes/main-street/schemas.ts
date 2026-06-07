@@ -20,14 +20,18 @@ import { GOODS_TREATMENTS } from './goods';
  *  still uses the same groups joined into a description. The generation seam
  *  serializes this (JSON for video, prose for a still) and, for video, injects a
  *  seamless-loop + slow-motion intent. The groups are fixed; Bohdi fills them. */
+// These groups are never rendered — they are serialized into the prompt sent to
+// the image/video model (see scene-prompt.ts). So there is no layout geometry to
+// protect and no length cap; only a non-empty floor, since a blank group is
+// useless to the generator.
 export const ScenePrompt = z.object({
-  composition: z.string().min(3).max(160),
-  subject: z.string().min(3).max(160),
-  environment: z.string().min(3).max(160),
-  atmosphere: z.string().min(3).max(120),
-  camera: z.string().min(3).max(120),
-  lighting: z.string().min(3).max(120),
-  style: z.string().min(3).max(120),
+  composition: z.string().min(1),
+  subject: z.string().min(1),
+  environment: z.string().min(1),
+  atmosphere: z.string().min(1),
+  camera: z.string().min(1),
+  lighting: z.string().min(1),
+  style: z.string().min(1),
 });
 export type ScenePrompt = z.infer<typeof ScenePrompt>;
 
@@ -41,9 +45,11 @@ const MediaSlot = z.object({
   alt: z.string().min(4).max(120),
 });
 
-/** A photo slot for the founder portrait. */
+/** A photo slot for the founder portrait. `prompt` feeds the image model (not
+ *  rendered), so it has no length cap, only a non-empty floor; `alt` renders into
+ *  the DOM. */
 const PhotoSlot = z.object({
-  prompt: z.string().min(8).max(400),
+  prompt: z.string().min(1),
   url: z.string().url().optional(),
   alt: z.string().min(4).max(120),
 });

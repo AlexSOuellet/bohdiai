@@ -6,16 +6,17 @@
  */
 import { z } from 'zod';
 
+// The trajectory is internal scaffolding the crew passes around — none of it is
+// rendered, so the text fields carry no length cap, only a non-empty floor.
 export const TrajectorySchema = z.object({
   /** The emotional North Star — one evocative line, not a label. */
-  feeling: z.string().min(12).max(160),
+  feeling: z.string().min(1),
   /** Why a customer chooses this maker's category over store-bought. */
-  customerWhy: z.string().min(20).max(280),
-  /** The look direction in plain terms: warm-craft vs clean-modern vs bold, the
-   *  light key (high-key bright / low-key moody), the contrast level. */
-  visualWorld: z.string().min(20).max(280),
+  customerWhy: z.string().min(1),
+  /** The look and feel the store should have. */
+  visualWorld: z.string().min(1),
   /** The cinematic idea for the hero: subject, the motion worth filming, the grade. */
-  momentConcept: z.string().min(20).max(360),
+  momentConcept: z.string().min(1),
   /** Whether the typography should shout or whisper for this feeling. */
   register: z.enum(['loud', 'restrained']),
 });
