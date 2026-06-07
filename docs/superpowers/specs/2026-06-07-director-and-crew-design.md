@@ -1,7 +1,7 @@
 # The Director and Crew — Generation Architecture
 
 **Date:** 2026-06-07
-**Status:** Design approved (Session 32). Build in a fresh session.
+**Status:** BUILT (Session 33). The five-stage pipeline (`lib/onboarding/crew/`) is live and replaces `authorStore`; two live builds succeeded. Departures from this spec, decided during the build: no "prefer video" default (the cinematographer chooses freely — video-default was judged bias); no length caps on non-rendering fields (scene groups, image prompts, trajectory) — caps only protect rendered layout. Open follow-ups from the live walk are tracked in the Session 33 brief (Moment must become a portable play-first layer per D43; type scale too large; gender-neutral portrait per D42; contact form; mobile).
 **Supersedes:** the single-pass `authorStore` authoring model for Main Street.
 
 ---

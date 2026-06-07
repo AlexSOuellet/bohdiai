@@ -508,6 +508,40 @@ Alex's call: the About/founder beat and the market calendar must not be fused. T
 
 ---
 
+## 2026-06-07 (session 32)
+
+### D40. Generation is a Director and a Crew, not one author
+
+The single-pass authoring model (one Bohdi call writes the skin pick, every word, the Moment scene, the products, and the image prompts at once) is replaced. The problem it caused, seen across a live build: one model doing everything thinly produces a dull literal Moment, jargon copy, type that fights the video, and a mood that doesn't move the look — all symptoms of missing creative direction.
+
+The new model makes Bohdi a **Director**. He reads niche + mood and emits a structured **Trajectory** — feeling (the one-line North Star), customer-why, visual-world (the look direction + light key), moment-concept (the cinematic idea), and register (loud vs restrained type). Three specialists then each execute their craft to that trajectory: a **Copywriter** (every word), a **Cinematographer** (the Moment video spec as JSON — 5-6s, 16:9, 720p, seamless loop, no loop-breaking human motion, atmospheric grade; video by default with an automatic still fallback), and a **Graphic Artist** (the skin selection + image lighting/grade direction). A short **Director's Cut** pass checks the pieces land as one feeling. The maker only ever meets Bohdi; the crew is his internal org (consistent with D27).
+
+The orchestration is **deterministic pipeline code**, not the model deciding control flow — director → copywriter → cinematographer → graphic artist → cut, run sequentially for coherence (the cinematographer sees the story; the graphic artist sees both the story and the video, so the type serves the footage). Each specialist is its own focused, independently-tunable prompt. The pipeline replaces `authorStore` and assembles the SAME `MainStreetAuthored` content envelope.
+
+Crucially, the **static engine does not change** — the renderer, the archetype composition, the content schema, persistence, and the media-generation seam all stay. The crew produces DATA the existing engine consumes; it can never touch structure, layout, or type discipline. That is what keeps every build professionally composed (the whole reason for the archetype model, Sessions 21+). Cost is roughly +30-60s of orchestration and a few cents of Claude per build; media generation (the real cost) is unchanged.
+
+Full design and build order: `docs/superpowers/specs/2026-06-07-director-and-crew-design.md`.
+
+### D41. Skin selection is gated to the mood-aligned subset (wire the dormant tags)
+
+`MAIN_STREET_SKIN_TAGS` already tags every one of the 29 skins with a world and a set of moods. That metadata was built to constrain skin choice to niche and mood — but it is **read by nothing in the selection path** (only a dev preview script and tests consume it). Bohdi free-picks a skin off the text descriptions with mood as a loose hint, which is why a "modern" candle shop landed on the cream-and-didone Atelier instead of a genuinely modern skin.
+
+The fix wires the existing tags into selection: the Graphic Artist (D40) chooses only from the skins whose mood tags align with the trajectory's mood, and the pick is validated against that subset. This is the guardrail that was designed and then never connected. It is explicitly NOT a shelf rebuild — the shelf is genuinely diverse across nine worlds (dark, bold, modern, playful, rugged all exist); the gap was always selection, not the skins themselves. (Corrects the loose Session 28/29 read of the warm-craft Hearth skins as representative of the whole shelf.)
+
+---
+
+## 2026-06-07 (session 33)
+
+### D42. The maker portrait is gender-neutral; gender is never asked or inferred
+
+Generated maker imagery must not hinge on guessing the maker's gender. The name→gender lookup table (`lib/name-gender.ts`) is the wrong approach — a hand-typed list can't cover every name, it's culturally narrow, and it defaults unknowns to female, so a male maker named "Wally" got a woman's portrait. We will also **not** ask gender at onboarding. Instead the founder/About placeholder image is framed **gender-neutral** — the maker by their hands and their work, a figure at the bench, the workshop — until the maker uploads their own real photo. The name→gender table and its use in the image directives are to be removed (not extended).
+
+### D43. The Moment plays first as a portable layer, then melts into the hero (clarifies D33)
+
+A live walk found the Moment was built welded in **as** the Main Street hero — the "each archetype owns its hero" approach D33 explicitly reversed. D33 stands and is clarified here so it can't be misread again: the Moment is ONE **portable front-door layer** that **plays first** on a front-door visit, then resolves via a slow cinematic transition — **melting into the hero on Main Street**, dismissing into the opening on heroless shapes. Playing first (not welded) is precisely what lets the same Moment travel to an archetype that has no hero. The play-once per-shop cookie, the footer "Intro" replay, and the deep-link bypass all belong to that layer. The current implementation must be rebuilt to this.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.
