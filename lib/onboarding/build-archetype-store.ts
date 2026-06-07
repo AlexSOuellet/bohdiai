@@ -113,24 +113,10 @@ interface Chosen {
   lookKey: string;
 }
 
-/** The deepen instruction — issued once, after the first valid draft, in the
- *  same thread so Bohdi still has the full niche source and his own draft in
- *  context. He critiques against the niche file + a quality bar and resubmits. */
-function deepenInstruction(brief: AuthoringBrief): string {
-  return `Good — that draft is valid. Now make it EXCELLENT. Re-read the niche source you were given and your own draft, then rewrite every weak part and resubmit with submit_store. Check, line by line:
-- Could this copy appear on ANY ${brief.nicheDisplayName.toLowerCase()}'s site, or is it specific to THIS maker? Make it specific — name real materials, techniques, and product types from the niche source.
-- Does the founder quote and each product description say something concrete, or is it adjectives? Replace platitudes ("crafted with care", "every piece tells a story") with real detail.
-- Do the moment story lines tell ONE story that builds and lands on the brand?
-- Any banned punctuation (terminal punctuation in headlines/brand; ANY punctuation in story lines)? Remove it.
-Resubmit the improved store with submit_store. Keep the same structure and your archetype/look choice.`;
-}
-
 /** Run Bohdi until he chooses a format and submits a valid store. Only the
  *  archetypes that FIT the maker's catalog size are on the menu — a structural
  *  gate (an archetype can require a minimum catalog), not aesthetic steering.
- *  After the first valid draft we run ONE deepen round (see deepenInstruction);
- *  the deepened resubmit is final. If the deepen round yields nothing valid we
- *  fall back to the first valid draft, so deepen can never fail a good build. */
+ *  The first valid submission is final. */
 export async function authorStore(brief: AuthoringBrief): Promise<{ chosen: Chosen; authored: unknown }> {
   const eligible = archetypeMenu().filter((s) => s.fitsCatalog(brief.productCount));
   const specs = eligible.length > 0 ? eligible : archetypeMenu();
@@ -139,8 +125,6 @@ export async function authorStore(brief: AuthoringBrief): Promise<{ chosen: Chos
     { role: 'user', content: 'Build this maker\'s store. Start by calling choose_format.' },
   ];
   let chosen: Chosen | null = null;
-  let firstValid: unknown = null; // fallback if the deepen round yields nothing valid
-  let deepenRequested = false;
 
   for (let turn = 0; turn < MAX_TURNS; turn++) {
     const resp = await anthropicClient().messages.create({
@@ -155,16 +139,12 @@ export async function authorStore(brief: AuthoringBrief): Promise<{ chosen: Chos
     const toolUses = resp.content.filter((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use');
     if (toolUses.length === 0) {
       if (resp.stop_reason === 'end_turn') {
-        // Ended with no tool call. If we already have a valid draft (the deepen
-        // round just didn't resubmit), use it; otherwise nothing was built.
-        if (firstValid !== null && chosen) return { chosen, authored: firstValid };
         throw new Error('Bohdi ended without submitting the store');
       }
       continue;
     }
 
     const results: Anthropic.ToolResultBlockParam[] = [];
-    let justRequestedDeepen = false;
     for (const tu of toolUses) {
       if (tu.name === 'choose_format') {
         const a = tu.input as { archetypeKey?: unknown; lookKey?: unknown };
@@ -184,30 +164,13 @@ export async function authorStore(brief: AuthoringBrief): Promise<{ chosen: Chos
         }
         const parsed = chosen.spec.parseSubmission(tu.input);
         if (parsed.ok) {
-          if (!deepenRequested) {
-            // First valid draft — keep it as the fallback and ask Bohdi to deepen.
-            firstValid = parsed.authored;
-            deepenRequested = true;
-            justRequestedDeepen = true;
-            logger.info('archetype-build: first valid draft, requesting deepen', { archetype: chosen.spec.key, turn: turn + 1 });
-            results.push({ type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify({ ok: true }) });
-          } else {
-            // The deepened resubmit — final.
-            logger.info('archetype-build: deepened draft accepted', { archetype: chosen.spec.key, turn: turn + 1 });
-            return { chosen, authored: parsed.authored };
-          }
-        } else {
-          results.push({ type: 'tool_result', tool_use_id: tu.id, is_error: true, content: JSON.stringify({ ok: false, issues: parsed.issues.slice(0, 14) }) });
+          logger.info('archetype-build: draft accepted', { archetype: chosen.spec.key, turn: turn + 1 });
+          return { chosen, authored: parsed.authored };
         }
+        results.push({ type: 'tool_result', tool_use_id: tu.id, is_error: true, content: JSON.stringify({ ok: false, issues: parsed.issues.slice(0, 14) }) });
       }
     }
-    const content: Anthropic.ContentBlockParam[] = [...results];
-    if (justRequestedDeepen) content.push({ type: 'text', text: deepenInstruction(brief) });
-    messages.push({ role: 'user', content });
-  }
-  if (firstValid !== null && chosen) {
-    logger.info('archetype-build: deepen did not yield a valid resubmit; using first valid draft', { archetype: chosen.spec.key });
-    return { chosen, authored: firstValid };
+    messages.push({ role: 'user', content: results });
   }
   throw new Error(`Bohdi did not submit a valid store within ${MAX_TURNS} turns`);
 }

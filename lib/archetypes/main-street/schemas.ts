@@ -150,7 +150,7 @@ export const MainStreetContentSchema = z.object({
   /** The full ABOUT page — the maker's story at length (the home founder beat is
    *  only a teaser of this). Optional so content authored before this field still
    *  parses; the About page falls back to the founder quote when it's absent. The
-   *  story is the rich, niche-specific writing the deepen pass leans on hardest. */
+   *  story is where the rich, niche-specific writing lives. */
   about: z
     .object({
       heading: z.string().min(4).max(60),

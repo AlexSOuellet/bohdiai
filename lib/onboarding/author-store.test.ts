@@ -45,10 +45,6 @@ const draft = {
     { name: 'Tote', slug: 'tote', shortDescription: 'A tote', description: 'A roomy tote.', basePriceCents: 22000, imagePrompt: 'a tote on a bench' },
   ],
 };
-const deepened = {
-  ...draft,
-  content: { ...draft.content, moment: { ...draft.content.moment, eyebrow: 'Saddle-stitched in the workshop' } },
-};
 
 let counter = 0;
 function toolMsg(name: string, input: unknown) {
@@ -61,23 +57,20 @@ beforeEach(() => {
   counter = 0;
 });
 
-describe('authorStore deepen pass', () => {
-  it('runs one deepen round and returns the deepened draft', async () => {
+describe('authorStore (single pass)', () => {
+  it('accepts the first valid submission and returns it — no second deepen round', async () => {
     create
       .mockResolvedValueOnce(toolMsg('choose_format', { archetypeKey: 'main-street', lookKey: 'main-street-ember' }))
-      .mockResolvedValueOnce(toolMsg('submit_store', draft))
-      .mockResolvedValueOnce(toolMsg('submit_store', deepened));
-    const { authored } = await authorStore(brief);
-    expect((authored as typeof draft).content.moment.eyebrow).toBe('Saddle-stitched in the workshop');
-    expect(create).toHaveBeenCalledTimes(3); // choose, draft, deepened
-  });
-
-  it('falls back to the first valid draft if the deepen round never yields a valid resubmit', async () => {
-    create
-      .mockResolvedValueOnce(toolMsg('choose_format', { archetypeKey: 'main-street', lookKey: 'main-street-ember' }))
-      .mockResolvedValueOnce(toolMsg('submit_store', draft))
-      .mockResolvedValue({ content: [{ type: 'text', text: 'no change needed' }], stop_reason: 'end_turn' });
+      .mockResolvedValueOnce(toolMsg('submit_store', draft));
     const { authored } = await authorStore(brief);
     expect((authored as typeof draft).content.moment.eyebrow).toBe('Made in the workshop');
+    expect(create).toHaveBeenCalledTimes(2); // choose, submit — and that's it
+  });
+
+  it('throws if Bohdi ends the turn without ever submitting a valid store', async () => {
+    create
+      .mockResolvedValueOnce(toolMsg('choose_format', { archetypeKey: 'main-street', lookKey: 'main-street-ember' }))
+      .mockResolvedValue({ content: [{ type: 'text', text: 'all set' }], stop_reason: 'end_turn' });
+    await expect(authorStore(brief)).rejects.toThrow(/without submitting/);
   });
 });
