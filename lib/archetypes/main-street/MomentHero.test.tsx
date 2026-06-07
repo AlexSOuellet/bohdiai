@@ -44,6 +44,14 @@ describe('MomentHero', () => {
     expect(container.querySelector('[data-story-brand]')).toBeTruthy();
   });
 
+  it('renders nav links to real routes — never a dead "#" placeholder', () => {
+    const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
+    expect(container.querySelector('a[href="#"]')).toBeNull();
+    expect(container.querySelector('a[href="/shop"]')).toBeTruthy();
+    expect(container.querySelector('a[href="/about"]')).toBeTruthy();
+    expect(container.querySelector('a[href="/cart"]')).toBeTruthy();
+  });
+
   it('advances through the lines and lands on the brand frame', async () => {
     vi.useFakeTimers();
     try {

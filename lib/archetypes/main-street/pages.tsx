@@ -10,16 +10,8 @@ import type { ReactNode } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
-import { MainStreetRoot, MainStreetFooter, Media, typeRoleCss, roles } from './chrome';
+import { MainStreetRoot, MainStreetFooter, Media, typeRoleCss, roles, MAIN_STREET_NAV } from './chrome';
 import { FindUsList } from './FounderBeats';
-
-/** The canonical sub-page nav — real routes (the home hero nav is separate). */
-const SUB_NAV: Array<{ href: string; label: string }> = [
-  { href: '/shop', label: 'Shop' },
-  { href: '/about', label: 'About' },
-  { href: '/events', label: 'Events' },
-  { href: '/contact', label: 'Contact' },
-];
 
 function SubHeader({ content, skin }: { content: MainStreetContent; skin: ArchetypeTheme }) {
   const r = roles(skin);
@@ -41,7 +33,7 @@ function SubHeader({ content, skin }: { content: MainStreetContent; skin: Archet
         {content.identity.wordmark}
       </Link>
       <nav style={{ display: 'flex', gap: 26, alignItems: 'center', flexWrap: 'wrap' }}>
-        {SUB_NAV.map((item) => (
+        {MAIN_STREET_NAV.map((item) => (
           <a key={item.href} href={item.href} data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), color: 'inherit', opacity: 0.85 }}>
             {item.label}
           </a>

@@ -142,6 +142,16 @@ export function Media({
   return <div className={cls} aria-label={media.alt} style={{ ...style, background: 'var(--ms-fg-muted)', opacity: 0.18 }} />;
 }
 
+/** The canonical storefront nav — real routes shared by the home hero nav and
+ *  every sub-page header, so both always point at pages that exist. (The maker's
+ *  authored `identity.nav` labels are not used for routing — the pages are fixed.) */
+export const MAIN_STREET_NAV: ReadonlyArray<{ href: string; label: string }> = [
+  { href: '/shop', label: 'Shop' },
+  { href: '/about', label: 'About' },
+  { href: '/events', label: 'Events' },
+  { href: '/contact', label: 'Contact' },
+];
+
 export function Nav({ identity, skin }: { identity: MainStreetContent['identity']; skin: ArchetypeTheme }) {
   const r = roles(skin);
   return (
@@ -150,9 +160,9 @@ export function Nav({ identity, skin }: { identity: MainStreetContent['identity'
         {identity.wordmark}
       </Link>
       <div style={{ display: 'flex', gap: 30, alignItems: 'center' }}>
-        {identity.nav.map((item) => (
-          <a key={item} href="#" data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), color: 'inherit', opacity: 0.85 }}>
-            {item}
+        {MAIN_STREET_NAV.map((item) => (
+          <a key={item.href} href={item.href} data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), color: 'inherit', opacity: 0.85 }}>
+            {item.label}
           </a>
         ))}
         <a href="/cart" data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), color: 'inherit', opacity: 0.85 }}>
