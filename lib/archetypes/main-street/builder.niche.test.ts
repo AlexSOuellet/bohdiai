@@ -19,10 +19,10 @@ describe('Main Street authoringSpec — niche source', () => {
     expect(spec).toContain(SENTINEL);
   });
 
-  it('instructs Bohdi to mine the niche source for specifics', () => {
+  it('directs Bohdi to use the niche source to understand WHO buys and WHY', () => {
     const spec = MAIN_STREET_SPEC.authoringSpec(brief).toLowerCase();
-    expect(spec).toMatch(/niche|source material|this maker/);
-    expect(spec).toMatch(/specific|concrete|real/);
+    expect(spec).toMatch(/who buys/);
+    expect(spec).toMatch(/store-bought|store bought/);
   });
 });
 
@@ -33,9 +33,16 @@ describe('Main Street authoringSpec — voice and story arc', () => {
     expect(spec).toMatch(/builds line to line|not four disconnected/);
   });
 
-  it('tells Bohdi to rewrite any line that could appear on any shop', () => {
+  it('directs selling the store emotionally, not the maker process', () => {
     const spec = MAIN_STREET_SPEC.authoringSpec(brief).toLowerCase();
-    expect(spec).toMatch(/could (appear|be) on any/);
+    expect(spec).toContain('sell the store emotionally');
+    expect(spec).toMatch(/no process|process or materials/);
+  });
+
+  it('keeps copy at the category level, not a narrow sub-type', () => {
+    const spec = MAIN_STREET_SPEC.authoringSpec(brief).toLowerCase();
+    expect(spec).toContain('category level');
+    expect(spec).toContain('soy candle maker');
   });
 
   it('bans the named AI-tell platitudes', () => {
