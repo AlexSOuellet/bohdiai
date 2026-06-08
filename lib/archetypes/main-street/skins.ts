@@ -96,7 +96,7 @@ function makeType(v: TypeVoices): Record<string, TypeRole> {
     goodsHead: d(44, 30, '-0.01em', 1.04),
     title: d(30, 24, '-0.01em', 1.08),
     cardTitle: d(27, 24, '0', 1.05),
-    quote: d(32, 24, '-0.01em', 1.2),
+    quote: d(27, 21, '-0.01em', 1.3),
     closeHead: d(64, 36, '-0.015em', 1.0),
     eyebrow: m(12, '0.22em'),
     navLabel: m(11, '0.2em'),

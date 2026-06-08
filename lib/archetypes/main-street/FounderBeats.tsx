@@ -120,10 +120,10 @@ export function FounderLetter({ founder, skin, about }: TreatmentProps) {
   return (
     <FounderBand>
       <div className="ms-founder-letter" style={{ maxWidth: 720, margin: '0 auto', textAlign: 'center' }}>
-        <div style={{ width: 104, height: 104, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 34px', position: 'relative', border: `1px solid ${HAIR}` }}>
+        <div style={{ width: 168, height: 168, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 30px', position: 'relative', border: `1px solid ${HAIR}` }}>
           <Media media={founder.photo} />
         </div>
-        <p data-type="quote" style={{ ...typeRoleCss(r.quote), color: 'var(--ms-contrast-fg)', margin: 0, lineHeight: 1.4 }}>{founder.quote}</p>
+        <p data-type="quote" style={{ ...typeRoleCss(r.quote), color: 'var(--ms-contrast-fg)', margin: 0, lineHeight: 1.5 }}>{founder.quote}</p>
         <div data-type="title" style={{ ...typeRoleCss(r.title), fontStyle: 'italic', color: 'var(--ms-contrast-fg)', marginTop: 30 }}>{founder.attribution}</div>
         <AboutCue about={about} skin={skin} />
       </div>
@@ -148,10 +148,10 @@ export function FounderCard({ founder, skin, about }: TreatmentProps) {
             {founder.heading}
           </h2>
         )}
-        <div style={{ width: 96, height: 96, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 22px', position: 'relative', border: `1px solid ${HAIR}` }}>
+        <div style={{ width: 156, height: 156, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 24px', position: 'relative', border: `1px solid ${HAIR}` }}>
           <Media media={founder.photo} />
         </div>
-        <p data-type="quote" style={{ ...typeRoleCss(r.quote), fontStyle: 'italic', color: 'var(--ms-contrast-fg)', margin: 0, lineHeight: 1.4 }}>{founder.quote}</p>
+        <p data-type="quote" style={{ ...typeRoleCss(r.quote), fontStyle: 'italic', color: 'var(--ms-contrast-fg)', margin: 0, lineHeight: 1.5 }}>{founder.quote}</p>
         <div data-type="sig" style={{ ...typeRoleCss(r.sig), color: 'var(--ms-contrast-fg-muted)', marginTop: 22 }}>&mdash; {founder.attribution}</div>
         <AboutCue about={about} skin={skin} />
       </div>

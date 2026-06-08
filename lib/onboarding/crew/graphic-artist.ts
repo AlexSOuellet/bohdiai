@@ -94,7 +94,7 @@ ${productList}
 Choose with set_look:
 - skinKey: the store's skin. Pick exactly ONE key from this list — these are the skins that fit the ${brief.moodLabel} mood the maker chose:
 ${skinList}
-- founderPhoto: a portrait of the maker — { prompt: the setting, framing, and light of the shot; alt (4-120) }. The system handles who the maker is; you set the shot and its light.
+- founderPhoto: the maker AT WORK — framed on their hands and their craft at the bench, NOT their face. Never specify the maker's gender, age, or appearance (no "a man", "a woman", "bearded", etc.) — the maker adds their own real photo later; this placeholder is about the work, not the person. { prompt: the setting, framing, and light of the shot; alt (4-120) }. The system enforces the maker's framing and realism; you set the scene and its light.
 - products: an image prompt for EVERY product above — an array of { slug, imagePrompt }, one entry per slug, no extras: the product shot, its surface, and its light, in the same world as the Moment and the skin.
 
 Set the look now.`;
