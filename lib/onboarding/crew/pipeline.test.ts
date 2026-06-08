@@ -130,4 +130,23 @@ describe('directAndProduce (the crew pipeline)', () => {
     const cinematographerCall = create.mock.calls[2]![0] as { system: string };
     expect(cinematographerCall.system).toContain('Built by hand');
   });
+
+  it('surfaces the crew look-driving picks for the orchestrator to log', async () => {
+    create
+      .mockResolvedValueOnce(toolMsg('set_trajectory', trajectory))
+      .mockResolvedValueOnce(toolMsg('submit_copy', copy))
+      .mockResolvedValueOnce(toolMsg('set_moment', moment))
+      .mockResolvedValueOnce(toolMsg('set_look', look))
+      .mockResolvedValueOnce(toolMsg('final_cut', {}));
+
+    const result = await directAndProduce(brief);
+
+    // The pipeline does NOT log (the tenant doesn't exist yet); it returns the
+    // picks so the orchestrator can log them against the real tenant + niche.
+    expect(result.choices).toEqual({
+      momentKind: 'video',
+      goodsTreatment: 'procession',
+      founderTreatment: 'quote',
+    });
+  });
 });

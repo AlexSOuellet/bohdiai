@@ -25,6 +25,14 @@ import type { CrewBrief, CrewOutput } from './types';
 export interface CrewBuildResult {
   chosen: { spec: ArchetypeBuildSpec; lookKey: string };
   authored: MainStreetAuthored;
+  /** The three look-driving picks, surfaced for the orchestrator to log against
+   *  the real tenant + niche after persistence (the crew runs before the tenant
+   *  exists, so it records nothing itself). */
+  choices: {
+    momentKind: CrewOutput['moment']['kind'];
+    goodsTreatment: CrewOutput['copy']['goods']['treatment'];
+    founderTreatment: CrewOutput['copy']['founder']['treatment'];
+  };
 }
 
 /** Fold the crew's three artifacts into the engine's `{ content, products }`
@@ -70,5 +78,13 @@ export async function directAndProduce(brief: CrewBrief): Promise<CrewBuildResul
   }
 
   logger.info('crew: produced', { skin: cut.look.skinKey, products: cut.copy.products.length });
-  return { chosen: { spec: MAIN_STREET_SPEC, lookKey: cut.look.skinKey }, authored: parsed.authored };
+  return {
+    chosen: { spec: MAIN_STREET_SPEC, lookKey: cut.look.skinKey },
+    authored: parsed.authored,
+    choices: {
+      momentKind: cut.moment.kind,
+      goodsTreatment: cut.copy.goods.treatment,
+      founderTreatment: cut.copy.founder.treatment,
+    },
+  };
 }

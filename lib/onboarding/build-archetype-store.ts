@@ -21,6 +21,7 @@ import type { MediaJob } from '@/lib/archetypes/builder';
 import { writeArchetypeStorefront } from '@/lib/generation/write-archetype-storefront';
 import { withImageDirectives } from '@/lib/onboarding/image-directives';
 import { directAndProduce } from '@/lib/onboarding/crew/pipeline';
+import { logCrewChoices } from '@/lib/onboarding/crew/log-choices';
 import type { CrewBrief } from '@/lib/onboarding/crew/types';
 
 export const MAX_PRODUCT_IMAGES = 5;
@@ -80,7 +81,7 @@ export async function buildArchetypeStore(
   };
 
   emit('Designing your store');
-  const { chosen, authored } = await directAndProduce(brief);
+  const { chosen, authored, choices } = await directAndProduce(brief);
   const spec = chosen.spec;
 
   // Generate every asset the crew prompted. Feature assets generate freely; product
@@ -143,5 +144,18 @@ export async function buildArchetypeStore(
   });
 
   logger.info('archetype-build: published', { subdomain: result.subdomain, tenantId: result.tenantId, archetype: spec.key, look: chosen.lookKey });
+
+  // Log the crew's look-driving picks now that the tenant exists — keyed by the
+  // real tenant id, niche slug, and mood. Fire-and-forget: never blocks or fails
+  // the build.
+  logCrewChoices({
+    tenantId: result.tenantId,
+    nicheSlug: input.nicheSlug,
+    moodKey: input.moodKey,
+    momentKind: choices.momentKind,
+    goodsTreatment: choices.goodsTreatment,
+    founderTreatment: choices.founderTreatment,
+  });
+
   return result;
 }
