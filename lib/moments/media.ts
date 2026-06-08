@@ -14,23 +14,22 @@ import { withTimeout } from '@/lib/with-timeout';
 
 const BUCKET = 'generated-images';
 
-// Stills return fast; video generation is slow (a Kling clip can take minutes).
+// Stills return fast; video generation is slow (a Seedance clip can take minutes).
 export const MOMENT_STILL_TIMEOUT_MS = 90_000;
 export const MOMENT_VIDEO_TIMEOUT_MS = 240_000;
 
-// fal model ids. Kling 3.0 Pro text-to-video — confirmed against fal's catalog
-// (2026-06): input { prompt, duration: "3".."15", aspect_ratio: 16:9|9:16|1:1 }.
-// V3 is the cinematic prompt-driven tier (vs 2.x). Kling versions move and fal
-// renames endpoints; swapping this string (or routing to Higgsfield) is the whole
+// fal model id — Seedance 2.0 text-to-video. Input: { prompt, duration "4".."15"|"auto",
+// resolution "480p"|"720p", aspect_ratio, generate_audio }. It came out cinematic where
+// Kling came out flat. Swapping this string (or routing to another model) is the whole
 // "change one file" promise of the seam.
-export const KLING_VIDEO_MODEL = 'fal-ai/kling-video/v3/pro/text-to-video';
+export const SEEDANCE_VIDEO_MODEL = 'bytedance/seedance-2.0/text-to-video';
 const FLUX_IMAGE_MODEL = 'fal-ai/flux-pro';
 
-// Kling 3.0 accepts whole-second durations from 3 to 15. Default to 6 — a short
+// Seedance accepts whole-second durations from 4 to 15. Default to 6 — a short
 // atmospheric loop is plenty for a held moment backdrop. Clamp anything else in.
-function klingDuration(durationSec: number | undefined): string {
+function seedanceDuration(durationSec: number | undefined): string {
   const n = Math.round(durationSec ?? 6);
-  return String(Math.max(3, Math.min(15, n)));
+  return String(Math.max(4, Math.min(15, n)));
 }
 
 export type MomentAspect = '16:9' | '1:1' | '9:16';
@@ -128,14 +127,15 @@ export async function generateMomentVideo(
 ): Promise<string | null> {
   const start = Date.now();
   const aspect = opts.aspect ?? '16:9';
-  const duration = klingDuration(opts.durationSec);
   try {
     const result = await withTimeout(
-      falClient().subscribe(KLING_VIDEO_MODEL as string, {
+      falClient().subscribe(SEEDANCE_VIDEO_MODEL as string, {
         input: {
           prompt,
-          duration,
+          duration: seedanceDuration(opts.durationSec),
+          resolution: '720p',
           aspect_ratio: aspect,
+          generate_audio: false,
         },
       }),
       MOMENT_VIDEO_TIMEOUT_MS,

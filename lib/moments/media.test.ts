@@ -74,34 +74,37 @@ describe('generateMomentStill', () => {
 // ── generateMomentVideo ───────────────────────────────────────────────────────
 
 describe('generateMomentVideo', () => {
-  it('calls the Kling video model with the prompt and 16:9, and returns the stored URL', async () => {
+  it('calls Seedance 2.0 with the prompt, 720p, 16:9, and audio off, and returns the stored URL', async () => {
     subscribeMock.mockResolvedValue({ data: { video: { url: 'https://fal.cdn/clip.mp4' } } });
-    const { generateMomentVideo, KLING_VIDEO_MODEL } = await import('./media');
+    const { generateMomentVideo, SEEDANCE_VIDEO_MODEL } = await import('./media');
     const url = await generateMomentVideo('a candle flame flickering, locked camera', {
       subdomain: 'ember-and-oak',
       aspect: '16:9',
     });
     expect(url).toBe('https://cdn.example/public.bin');
     const [model, opts] = subscribeMock.mock.calls[0]!;
-    expect(model).toBe(KLING_VIDEO_MODEL);
+    expect(model).toBe(SEEDANCE_VIDEO_MODEL);
+    expect(SEEDANCE_VIDEO_MODEL).toBe('bytedance/seedance-2.0/text-to-video');
     expect(opts.input.prompt).toBe('a candle flame flickering, locked camera');
+    expect(opts.input.resolution).toBe('720p');
     expect(opts.input.aspect_ratio).toBe('16:9');
+    expect(opts.input.generate_audio).toBe(false);
   });
 
-  it('defaults to a 6-second clip and clamps to Kling 3.0 valid range (3-15)', async () => {
+  it('defaults to a 6-second clip and clamps to Seedance valid range (4-15)', async () => {
     subscribeMock.mockResolvedValue({ data: { video: { url: 'https://fal.cdn/c.mp4' } } });
     const { generateMomentVideo } = await import('./media');
-    // default → "6" (a short atmospheric loop; valid on Kling 3.0)
+    // default → "6" (a short atmospheric loop; valid on Seedance)
     await generateMomentVideo('x', { subdomain: 'sub' });
     expect(subscribeMock.mock.calls[0]![1].input.duration).toBe('6');
     // 10 passes through
     await generateMomentVideo('x', { subdomain: 'sub', durationSec: 10 });
     expect(subscribeMock.mock.calls[1]![1].input.duration).toBe('10');
-    // out of range clamps into 3..15
+    // out of range clamps into 4..15
     await generateMomentVideo('x', { subdomain: 'sub', durationSec: 99 });
     expect(subscribeMock.mock.calls[2]![1].input.duration).toBe('15');
     await generateMomentVideo('x', { subdomain: 'sub', durationSec: 1 });
-    expect(subscribeMock.mock.calls[3]![1].input.duration).toBe('3');
+    expect(subscribeMock.mock.calls[3]![1].input.duration).toBe('4');
   });
 
   it('returns null when the response carries no video', async () => {
