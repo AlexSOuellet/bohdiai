@@ -1,6 +1,20 @@
-import { describe, it, expect } from 'vitest';
-import { recycleProductPhotos, prepareJobPrompt } from './build-archetype-store';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { recycleProductPhotos, prepareJobPrompt, buildArchetypeStore } from './build-archetype-store';
 import type { MediaJob } from '@/lib/archetypes/builder';
+
+// Stand-ins for the orchestrator's heavy neighbors, so the wiring test can run
+// in memory with no DB, AI, or image calls. Each returns a value we control.
+const single = vi.fn();
+vi.mock('@/lib/supabase', () => ({
+  supabaseAdmin: () => ({ from: () => ({ select: () => ({ eq: () => ({ single }) }) }) }),
+}));
+const directAndProduce = vi.fn();
+vi.mock('@/lib/onboarding/crew/pipeline', () => ({ directAndProduce: (b: unknown) => directAndProduce(b) }));
+vi.mock('@/lib/moments/media', () => ({ generateMomentVideo: vi.fn(), generateMomentStill: vi.fn() }));
+const writeArchetypeStorefront = vi.fn();
+vi.mock('@/lib/generation/write-archetype-storefront', () => ({ writeArchetypeStorefront: (a: unknown) => writeArchetypeStorefront(a) }));
+const logCrewChoices = vi.fn();
+vi.mock('@/lib/onboarding/crew/log-choices', () => ({ logCrewChoices: (c: unknown) => logCrewChoices(c) }));
 
 describe('prepareJobPrompt', () => {
   const base: MediaJob = { id: 'x', kind: 'still', prompt: 'a wallet on stone', aspect: '1:1', group: 'product' };
@@ -41,5 +55,48 @@ describe('recycleProductPhotos', () => {
 
   it('handles a single surviving photo', () => {
     expect(recycleProductPhotos(4, ['only'])).toEqual(['only', 'only', 'only', 'only']);
+  });
+});
+
+describe('buildArchetypeStore — crew-choice logging seam', () => {
+  // A minimal spec whose media step is empty, so no images are generated.
+  const fakeSpec = {
+    key: 'main-street',
+    mediaJobs: () => [],
+    applyMedia: (authored: unknown) => authored,
+    toPayload: () => ({ content: {}, products: [] }),
+  };
+
+  beforeEach(() => {
+    single.mockResolvedValue({ data: { display_name: 'Woodworking', body_markdown: 'x', tenant_type_fit: ['seller'] }, error: null });
+    directAndProduce.mockResolvedValue({
+      chosen: { spec: fakeSpec, lookKey: 'main-street-ember' },
+      authored: {},
+      choices: { momentKind: 'video', goodsTreatment: 'procession', founderTreatment: 'quote' },
+    });
+    // The publish step hands back a tenant id we chose — a match proves the
+    // orchestrator passed THIS id through to the logger.
+    writeArchetypeStorefront.mockResolvedValue({ subdomain: 'wally', tenantId: 'tn_real_123' });
+    logCrewChoices.mockClear();
+  });
+
+  it('logs the crew picks against the real tenant id, niche, and mood after publishing', async () => {
+    await buildArchetypeStore({
+      shopName: "Wally's Wood",
+      subdomain: 'wally',
+      nicheSlug: 'woodworking',
+      moodKey: 'rustic',
+      productCount: 3,
+    });
+
+    expect(logCrewChoices).toHaveBeenCalledTimes(1);
+    expect(logCrewChoices).toHaveBeenCalledWith({
+      tenantId: 'tn_real_123', // from the publish step, not the input
+      nicheSlug: 'woodworking',
+      moodKey: 'rustic',
+      momentKind: 'video',
+      goodsTreatment: 'procession',
+      founderTreatment: 'quote',
+    });
   });
 });
