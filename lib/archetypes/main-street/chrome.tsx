@@ -88,6 +88,12 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-proc-img{transform:scale(1.07);transition:transform 1.6s ${mo.reveal.easing}}
     .arch-main-street .ms-reveal.in .ms-proc-img{transform:none}
     .arch-main-street .ms-proc-row.alt .ms-proc-frame{order:2}
+    /* product detail — two columns that stack on small screens */
+    .arch-main-street .ms-product-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:var(--ms-section);align-items:start}
+    @media(max-width:768px){
+      .arch-main-street .ms-product-grid{grid-template-columns:1fr;gap:28px}
+      .arch-main-street [data-ms-nav]{padding-left:20px!important;padding-right:20px!important}
+    }
     @media(max-width:860px){
       .arch-main-street .ms-founder-grid{grid-template-columns:1fr!important;gap:36px!important}
       .arch-main-street .ms-founder-findus{grid-template-columns:1fr!important;gap:40px!important}

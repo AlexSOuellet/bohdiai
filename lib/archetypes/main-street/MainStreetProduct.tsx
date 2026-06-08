@@ -59,6 +59,7 @@ export function MainStreetProduct({
   return (
     <MainStreetRoot skin={skin}>
       <nav
+        data-ms-nav
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -74,7 +75,7 @@ export function MainStreetProduct({
 
       <div className="ms-wrap" style={{ paddingTop: sp.section, paddingBottom: sp.section }}>
         {/* ============ PRODUCT DETAIL ============ */}
-        <section style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: sp.section, alignItems: 'start' }}>
+        <section className="ms-product-grid">
           {/* media gallery */}
           <div>
             {primary && <MediaTile media={primary} aspect="4 / 5" />}
