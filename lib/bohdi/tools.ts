@@ -12,22 +12,9 @@ import { DesignTokensSchema } from '@/lib/tokens';
 import { enforceTokenContrast } from '@/lib/contrast';
 import { MOODS, type MoodKey } from '@/lib/moods';
 import { generateHeroImage, generateAboutImage, generateProductImage } from '@/lib/fal';
-import {
-  generateMomentVideo,
-  generateMomentStill,
-  type MomentAspect,
-} from '@/lib/moments/media';
 import { logger } from '@/lib/logger';
 import { labelFor, type ProgressEmitter, type ProgressStep } from '@/lib/progress';
-import { inferGenderFromName } from '@/lib/name-gender';
 import { sanitizeDeep } from '@/lib/copy-sanitize';
-import {
-  BOHDI_LAYOUT_TOOLS,
-  finalizeLayoutEngine,
-  handleSetLayout,
-  handleSetStyleSheet,
-} from './layout-tools';
-import { isLayoutEngineNiche } from './layout-engine-niches';
 import type { BohdiAccumulator, BohdiBrief } from './types';
 
 // ─── Tool definitions for the Anthropic API ──────────────────────────────────
@@ -425,32 +412,13 @@ export const BOHDI_TOOLS: BohdiToolDef[] = [
       "Commit everything Bohdi has built to the database. Call this only after tokens, home page blocks, secondary page copy, about page content, hero image, and all listings are set. Returns the tenant ID. After this, Bohdi's job is done.",
     input_schema: { type: 'object', properties: {} },
   },
-  ...BOHDI_LAYOUT_TOOLS,
 ];
 
-// Tools only used on the legacy block-based generation path. Hidden from
-// layout-engine niches so Bohdi doesn't burn turns/cost calling them on
-// jobs where they do nothing.
-const LEGACY_ONLY_TOOL_NAMES: ReadonlySet<string> = new Set([
-  'list_blocks',
-  'list_widgets',
-  'set_tokens',
-  'set_home_page',
-  'set_secondary_pages_copy',
-  'set_about_page',
-  'set_hero_image',
-  'set_about_image',
-]);
-
-const LAYOUT_ENGINE_TOOL_NAMES: ReadonlySet<string> = new Set(
-  BOHDI_LAYOUT_TOOLS.map((t) => t.name),
-);
-
-export function toolsForNiche(slug: string): BohdiToolDef[] {
-  const isLayout = isLayoutEngineNiche(slug);
-  return BOHDI_TOOLS.filter((t) =>
-    isLayout ? !LEGACY_ONLY_TOOL_NAMES.has(t.name) : !LAYOUT_ENGINE_TOOL_NAMES.has(t.name),
-  );
+// Every niche now runs the one legacy block-and-tokens tool set. The
+// layout-engine path that gated tools per niche was deleted with the rest of
+// the dead Bohdi layout engine.
+export function toolsForNiche(_slug: string): BohdiToolDef[] {
+  return BOHDI_TOOLS;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -605,7 +573,6 @@ const handlers: Record<string, Handler> = {
       moodKey: ctx.brief.moodKey,
       moodLabel: MOODS[ctx.brief.moodKey as MoodKey]?.label,
       moodDescription: MOODS[ctx.brief.moodKey as MoodKey]?.description,
-      gender: inferGenderFromName(ctx.brief.makerName),
     };
     // Emit a kind-specific status before the fal call. The image generation
     // is the longest single step in Bohdi's run; the maker should see what
@@ -755,10 +722,6 @@ const handlers: Record<string, Handler> = {
 
   async finalize(_args, ctx) {
     const a = ctx.accumulator;
-
-    if (isLayoutEngineNiche(ctx.brief.nicheSlug)) {
-      return finalizeLayoutEngine(ctx);
-    }
 
     if (!a.tokens) throw new Error('finalize: tokens not set');
     if (!a.homePage) throw new Error('finalize: home page not set');
@@ -954,39 +917,6 @@ const handlers: Record<string, Handler> = {
 
     logger.info('bohdi: finalize', { tenantId: result.tenantId, subdomain: result.subdomain });
     return { tenantId: result.tenantId, subdomain: result.subdomain };
-  },
-
-  async generate_moment_asset(args, ctx) {
-    const { kind, prompt, aspect, durationSec } = args as {
-      kind: 'video' | 'still';
-      prompt: string;
-      aspect?: MomentAspect;
-      durationSec?: number;
-    };
-    const subdomain = ctx.brief.subdomain;
-    let url: string | null;
-    if (kind === 'video') {
-      url = await generateMomentVideo(prompt, {
-        subdomain,
-        ...(aspect !== undefined ? { aspect } : {}),
-        ...(durationSec !== undefined ? { durationSec } : {}),
-      });
-    } else {
-      url = await generateMomentStill(prompt, {
-        subdomain,
-        ...(aspect !== undefined ? { aspect } : {}),
-      });
-    }
-    if (url === null) throw new Error(`generate_moment_asset kind=${kind} returned no URL`);
-    return { url };
-  },
-
-  async set_style_sheet(args, ctx) {
-    return handleSetStyleSheet(args, ctx.accumulator);
-  },
-
-  async set_layout(args, ctx) {
-    return handleSetLayout(args, ctx.accumulator);
   },
 };
 

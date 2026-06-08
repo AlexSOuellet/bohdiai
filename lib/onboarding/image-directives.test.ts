@@ -2,24 +2,20 @@ import { describe, it, expect } from 'vitest';
 import { withImageDirectives } from './image-directives';
 
 describe('withImageDirectives', () => {
-  it('appends a photorealism directive to every prompt', () => {
-    const out = withImageDirectives('a leather belt on oak', { isPerson: false });
-    expect(out).toMatch(/a leather belt on oak/);
-    expect(out.toLowerCase()).toContain('photorealistic');
+  it('frames a person gender-neutrally, never by name', () => {
+    const out = withImageDirectives('at the workbench', { isPerson: true, makerName: 'Wally' });
     expect(out.toLowerCase()).not.toContain('a woman');
     expect(out.toLowerCase()).not.toContain('a man');
-  });
-
-  it('adds a female phrase for a person image when the maker name reads female', () => {
-    const out = withImageDirectives('portrait at the bench', { isPerson: true, makerName: 'Abigail Stone' });
+    expect(out.toLowerCase()).not.toContain('she');
+    expect(out.toLowerCase()).not.toContain('his');
+    expect(out).toContain('at the workbench');
     expect(out.toLowerCase()).toContain('photorealistic');
-    expect(out.toLowerCase()).toContain('a woman');
   });
 
-  it('adds a male phrase for a person image when the maker name reads male', () => {
-    const out = withImageDirectives('portrait at the bench', { isPerson: true, makerName: 'Samuel Reed' });
-    expect(out.toLowerCase()).toContain('a man');
-    expect(out.toLowerCase()).not.toContain('a woman');
+  it('leaves a non-person prompt photorealistic', () => {
+    const out = withImageDirectives('a walnut slab', { isPerson: false });
+    expect(out.toLowerCase()).toContain('photorealistic');
+    expect(out).toContain('a walnut slab');
   });
 
   it('steers realism with positive cues, never a counterproductive negation', () => {
@@ -27,16 +23,5 @@ describe('withImageDirectives', () => {
     expect(out).not.toContain('no illustration');
     expect(out).not.toContain('3d render');
     expect(out).toContain('camera');
-  });
-
-  it('leads with the gendered subject so the model anchors on it (not a trailing afterthought)', () => {
-    const out = withImageDirectives('at the workbench with a knife roll', { isPerson: true, makerName: 'Samuel Reed' }).toLowerCase();
-    expect(out.indexOf('a man')).toBeLessThan(out.indexOf('workbench'));
-  });
-
-  it('still renders a person directive with no name (helper defaults), never crashes', () => {
-    const out = withImageDirectives('portrait', { isPerson: true });
-    expect(out.toLowerCase()).toContain('photorealistic');
-    expect(out.length).toBeGreaterThan('portrait'.length);
   });
 });

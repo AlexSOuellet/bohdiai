@@ -11,9 +11,13 @@ describe('prepareJobPrompt', () => {
     expect(out.toLowerCase()).not.toContain('a woman');
   });
 
-  it('adds the matched person phrase to a portrait', () => {
+  it('frames a portrait gender-neutrally, never by a guessed gender (D42)', () => {
     const portrait: MediaJob = { ...base, id: 'portrait', prompt: 'the maker at the bench', subjectIsPerson: true };
-    expect(prepareJobPrompt(portrait, 'Abigail Stone').toLowerCase()).toContain('a woman');
+    const out = prepareJobPrompt(portrait, 'Abigail Stone').toLowerCase();
+    expect(out).not.toContain('a woman');
+    expect(out).not.toContain('a man');
+    expect(out).toContain('hands');
+    expect(out).toContain('photorealistic');
   });
 });
 

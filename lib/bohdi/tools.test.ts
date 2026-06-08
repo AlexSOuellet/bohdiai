@@ -51,18 +51,6 @@ vi.mock('@/lib/generation/write-storefront', () => ({
   writeStorefront: (input: unknown) => writeStorefrontMock(input),
 }));
 
-const writeStorefrontLayoutMock = vi.fn();
-vi.mock('@/lib/generation/write-storefront-layout', () => ({
-  writeStorefrontLayout: (input: unknown) => writeStorefrontLayoutMock(input),
-}));
-
-const generateMomentVideoMock = vi.fn();
-const generateMomentStillMock = vi.fn();
-vi.mock('@/lib/moments/media', () => ({
-  generateMomentVideo: (...args: unknown[]) => generateMomentVideoMock(...args),
-  generateMomentStill: (...args: unknown[]) => generateMomentStillMock(...args),
-}));
-
 // ─── Imports under test ──────────────────────────────────────────────────────
 
 import { BOHDI_TOOLS, dispatchTool, type HandlerContext } from './tools';
@@ -101,43 +89,6 @@ const VALID_TOKENS = {
   shape: { borderRadius: 'md', cardBorderRadius: 'lg' },
   spacing: { sectionPadding: 'normal', cardGap: 'normal' },
   layout: { heroStyle: 'full-bleed', productGridCols: 3, footerStyle: 'minimal' },
-};
-
-const VALID_STYLE_SHEET = {
-  palette: [
-    { name: 'A', value: '#a0522d', character: 'one' },
-    { name: 'B', value: '#f5f0e8', character: 'two' },
-    { name: 'C', value: '#1a1a1a', character: 'three' },
-  ],
-  fonts: [
-    {
-      name: 'D',
-      family: 'Cormorant',
-      source: 'google',
-      weights: [400],
-      fallback: 'serif',
-      character: 'one',
-    },
-    {
-      name: 'E',
-      family: 'Inter',
-      source: 'google',
-      weights: [400],
-      fallback: 'sans-serif',
-      character: 'two',
-    },
-  ],
-  textures: [],
-  semanticColors: { primarySeedColor: '#a0522d', scheme: 'light' },
-  typeScale: {
-    eyebrow: { fontName: 'E', sizePx: 14, sizeMobilePx: 14, weight: 500, lineHeight: 1.4 },
-    headline: { fontName: 'D', sizePx: 48, sizeMobilePx: 28, weight: 700, lineHeight: 1.05 },
-    sub: { fontName: 'D', sizePx: 24, sizeMobilePx: 20, weight: 600, lineHeight: 1.2 },
-    body: { fontName: 'E', sizePx: 18, sizeMobilePx: 16, weight: 400, lineHeight: 1.6 },
-    caption: { fontName: 'E', sizePx: 14, sizeMobilePx: 14, weight: 400, lineHeight: 1.4 },
-    wordmark: { fontName: 'D', sizePx: 28, sizeMobilePx: 22, weight: 700, lineHeight: 1.1 },
-  },
-  spacing: { unit: 8 },
 };
 
 function makeBrief(over: Partial<BohdiBrief> = {}): BohdiBrief {
@@ -183,8 +134,6 @@ describe('BOHDI_TOOLS', () => {
       'set_about_image',
       'set_about_page',
       'finalize',
-      'set_style_sheet',
-      'set_layout',
     ]) {
       expect(names).toContain(expected);
     }
@@ -192,10 +141,10 @@ describe('BOHDI_TOOLS', () => {
 });
 
 describe('toolsForNiche', () => {
-  it('hides legacy block tools from layout-engine niches', async () => {
+  it('returns the full tool set for every niche', async () => {
     const { toolsForNiche } = await import('./tools');
-    const names = toolsForNiche('candles').map((t) => t.name);
-    for (const legacy of [
+    const names = toolsForNiche('leatherworker').map((t) => t.name);
+    for (const expected of [
       'list_blocks',
       'list_widgets',
       'set_tokens',
@@ -204,24 +153,15 @@ describe('toolsForNiche', () => {
       'set_about_page',
       'set_hero_image',
       'set_about_image',
+      'finalize',
+      'read_niche',
     ]) {
-      expect(names).not.toContain(legacy);
+      expect(names).toContain(expected);
     }
-    expect(names).toContain('set_style_sheet');
-    expect(names).toContain('set_layout');
-    expect(names).toContain('finalize');
-    expect(names).toContain('read_niche');
-  });
-
-  it('hides layout-engine tools from legacy niches', async () => {
-    const { toolsForNiche } = await import('./tools');
-    const names = toolsForNiche('leatherworker').map((t) => t.name);
+    // The layout-engine tools are gone — no niche sees them anymore.
     expect(names).not.toContain('set_style_sheet');
     expect(names).not.toContain('set_layout');
-    expect(names).toContain('set_tokens');
-    expect(names).toContain('set_home_page');
-    expect(names).toContain('list_blocks');
-    expect(names).toContain('finalize');
+    expect(names).not.toContain('generate_moment_asset');
   });
 });
 
@@ -555,58 +495,7 @@ describe('set_secondary_pages_copy + add_collection + add_listing + add_subscrip
   });
 });
 
-describe('set_style_sheet + set_layout (layout-engine tools wired through dispatch)', () => {
-  it('set_style_sheet delegates to layout-tools handler', async () => {
-    const ctx = makeCtx();
-    const r = (await dispatchTool('set_style_sheet', VALID_STYLE_SHEET, ctx)) as { ok: boolean };
-    expect(r.ok).toBe(true);
-    expect(ctx.accumulator.styleSheet).not.toBeNull();
-  });
-
-  it('set_layout delegates to layout-tools handler', async () => {
-    const ctx = makeCtx();
-    const r = (await dispatchTool(
-      'set_layout',
-      {
-        slug: 'home',
-        name: 'Home',
-        root: { type: 'text', role: 'body', content: 'hi' },
-      },
-      ctx,
-    )) as { ok: boolean };
-    expect(r.ok).toBe(true);
-    expect(ctx.accumulator.layoutPages.length).toBe(1);
-  });
-});
-
 // ─── finalize router ─────────────────────────────────────────────────────────
-
-describe('finalize — layout engine route', () => {
-  beforeEach(() => {
-    writeStorefrontLayoutMock.mockReset();
-    nicheSingleMock.mockReset();
-    designChoicesUpdateMock.mockClear();
-  });
-
-  it('routes to finalizeLayoutEngine for candles niche', async () => {
-    nicheSingleMock.mockResolvedValue({ data: { tenant_type_fit: ['seller'] }, error: null });
-    writeStorefrontLayoutMock.mockResolvedValue({ tenantId: 't-le', subdomain: 'shop' });
-
-    const ctx = makeCtx({ brief: makeBrief({ nicheSlug: 'candles' }) });
-    ctx.accumulator.styleSheet = VALID_STYLE_SHEET as unknown as BohdiAccumulator['styleSheet'];
-    ctx.accumulator.layoutPages = [
-      {
-        slug: 'home',
-        name: 'Home',
-        root: { type: 'text', role: 'body', content: 'x' },
-      } as unknown as BohdiAccumulator['layoutPages'][number],
-    ];
-
-    const r = (await dispatchTool('finalize', {}, ctx)) as { tenantId: string };
-    expect(r.tenantId).toBe('t-le');
-    expect(writeStorefrontLayoutMock).toHaveBeenCalled();
-  });
-});
 
 describe('finalize — legacy route', () => {
   beforeEach(() => {
@@ -771,54 +660,5 @@ describe('finalize — legacy route', () => {
     ctx.accumulator.heroImageUrl = 'https://x/h.png';
     // aboutPageContent intentionally null
     await expect(dispatchTool('finalize', {}, ctx)).rejects.toThrow('about page content not set');
-  });
-});
-
-describe('generate_moment_asset', () => {
-  beforeEach(() => {
-    generateMomentVideoMock.mockReset();
-    generateMomentStillMock.mockReset();
-  });
-
-  it('is gated to layout-engine niches only', async () => {
-    const { toolsForNiche } = await import('./tools');
-    const layout = toolsForNiche('candles').map((t) => t.name);
-    const legacy = toolsForNiche('leatherworker').map((t) => t.name);
-    expect(layout).toContain('generate_moment_asset');
-    expect(legacy).not.toContain('generate_moment_asset');
-  });
-
-  it('generates a video and returns its url, threading the brief subdomain through', async () => {
-    generateMomentVideoMock.mockResolvedValue('https://cdn/clip.mp4');
-    const ctx = makeCtx({ brief: makeBrief({ subdomain: 'ember', nicheSlug: 'candles' }) });
-    const r = (await dispatchTool(
-      'generate_moment_asset',
-      { kind: 'video', prompt: 'a candle flame flickering', aspect: '16:9', durationSec: 6 },
-      ctx,
-    )) as { url: string };
-    expect(r.url).toBe('https://cdn/clip.mp4');
-    const [prompt, opts] = generateMomentVideoMock.mock.calls[0]!;
-    expect(prompt).toBe('a candle flame flickering');
-    expect(opts).toMatchObject({ subdomain: 'ember', aspect: '16:9', durationSec: 6 });
-    expect(generateMomentStillMock).not.toHaveBeenCalled();
-  });
-
-  it('generates a still and returns its url', async () => {
-    generateMomentStillMock.mockResolvedValue('https://cdn/still.jpg');
-    const r = (await dispatchTool(
-      'generate_moment_asset',
-      { kind: 'still', prompt: 'a hammered ring on black', aspect: '16:9' },
-      makeCtx({ brief: makeBrief({ nicheSlug: 'candles' }) }),
-    )) as { url: string };
-    expect(r.url).toBe('https://cdn/still.jpg');
-    expect(generateMomentStillMock).toHaveBeenCalledOnce();
-    expect(generateMomentVideoMock).not.toHaveBeenCalled();
-  });
-
-  it('throws when generation returns null', async () => {
-    generateMomentVideoMock.mockResolvedValue(null);
-    await expect(
-      dispatchTool('generate_moment_asset', { kind: 'video', prompt: 'x' }, makeCtx()),
-    ).rejects.toThrow();
   });
 });

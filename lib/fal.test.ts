@@ -29,9 +29,6 @@ vi.mock('@/lib/logger', () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
-// name-gender: keep real personPhrase logic so prompt strings build.
-// (We don't need to mock it — it's pure.)
-
 beforeEach(() => {
   subscribeMock.mockReset();
   createFalClientSpy.mockClear();
@@ -147,11 +144,12 @@ describe('generateHeroImage', () => {
       nicheSlug: 'leatherworker',
       moodKey: 'dark',
       moodLabel: 'Brooding',
-      gender: 'male',
     });
     const [, opts] = subscribeMock.mock.calls[0]!;
-    expect(opts.input.prompt).toMatch(/working in/);
     expect(opts.input.prompt).toMatch(/Mood: Brooding/);
+    // Gender-neutral: framed by hands, no guessed person noun/pronoun (D42).
+    expect(opts.input.prompt.toLowerCase()).not.toContain('a woman');
+    expect(opts.input.prompt.toLowerCase()).not.toContain('a man');
   });
 });
 
@@ -164,11 +162,11 @@ describe('generateAboutImage', () => {
     const url = await generateAboutImage('Candles', 'sub');
     expect(url).toBe('https://cdn.example/public.jpg');
     const [, opts] = subscribeMock.mock.calls[0]!;
-    expect(opts.input.prompt).toMatch(/Editorial documentary portrait/);
+    expect(opts.input.prompt).toMatch(/Editorial documentary photograph/);
     expect(opts.input.image_size).toBe('square_hd');
   });
 
-  it('uses the low-control about prompt for leatherworker/dark and female default', async () => {
+  it('uses the low-control about prompt for leatherworker/dark, gender-neutral', async () => {
     subscribeMock.mockResolvedValue({ data: { images: [{ url: 'https://fal.cdn/a2.jpg' }] } });
     const { generateAboutImage } = await import('./fal');
     await generateAboutImage('Leather', 'sub', {
@@ -177,7 +175,9 @@ describe('generateAboutImage', () => {
       moodLabel: 'Brooding',
     });
     const [, opts] = subscribeMock.mock.calls[0]!;
-    expect(opts.input.prompt).toMatch(/^Portrait of/);
     expect(opts.input.prompt).toMatch(/Mood: Brooding/);
+    // Gender-neutral: framed by hands, no guessed person noun/pronoun (D42).
+    expect(opts.input.prompt.toLowerCase()).not.toContain('a woman');
+    expect(opts.input.prompt.toLowerCase()).not.toContain('a man');
   });
 });

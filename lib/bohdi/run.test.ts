@@ -7,7 +7,7 @@ vi.mock('@/lib/anthropic', () => ({
   anthropicClient: () => ({ messages: { create: messagesCreateMock } }),
 }));
 
-// Anything `tools.ts` and `layout-tools.ts` import that hits the network.
+// Anything `tools.ts` imports that hits the network.
 vi.mock('@/lib/supabase', () => ({
   supabaseAdmin: () => ({
     from: () => ({
@@ -24,9 +24,9 @@ vi.mock('@/lib/supabase', () => ({
   }),
 }));
 
-const writeStorefrontLayoutMock = vi.fn();
-vi.mock('@/lib/generation/write-storefront-layout', () => ({
-  writeStorefrontLayout: (args: unknown) => writeStorefrontLayoutMock(args),
+const writeStorefrontMock = vi.fn();
+vi.mock('@/lib/generation/write-storefront', () => ({
+  writeStorefront: (args: unknown) => writeStorefrontMock(args),
 }));
 
 vi.mock('@/lib/fal', () => ({
@@ -40,65 +40,78 @@ vi.mock('@/lib/fal', () => ({
 import { runBohdi } from './run';
 import type { BohdiBrief } from './types';
 
-const VALID_STYLE_SHEET = {
-  palette: [
-    { name: 'A', value: '#a0522d', character: 'one' },
-    { name: 'B', value: '#f5f0e8', character: 'two' },
-    { name: 'C', value: '#1a1a1a', character: 'three' },
-  ],
-  fonts: [
-    {
-      name: 'D',
-      family: 'Cormorant',
-      source: 'google',
-      weights: [400],
-      fallback: 'serif',
-      character: 'one',
-    },
-    {
-      name: 'E',
-      family: 'Inter',
-      source: 'google',
-      weights: [400],
-      fallback: 'sans-serif',
-      character: 'two',
-    },
-  ],
-  textures: [],
-  semanticColors: { primarySeedColor: '#a0522d', scheme: 'light' },
-  typeScale: {
-    eyebrow: { fontName: 'E', sizePx: 14, sizeMobilePx: 14, weight: 500, lineHeight: 1.4 },
-    headline: { fontName: 'D', sizePx: 48, sizeMobilePx: 28, weight: 700, lineHeight: 1.05 },
-    sub: { fontName: 'D', sizePx: 24, sizeMobilePx: 20, weight: 600, lineHeight: 1.2 },
-    body: { fontName: 'E', sizePx: 18, sizeMobilePx: 16, weight: 400, lineHeight: 1.6 },
-    caption: { fontName: 'E', sizePx: 14, sizeMobilePx: 14, weight: 400, lineHeight: 1.4 },
-    wordmark: { fontName: 'D', sizePx: 28, sizeMobilePx: 22, weight: 700, lineHeight: 1.1 },
+const VALID_TOKENS = {
+  colors: {
+    primary: '#2c6e49',
+    accent: '#8ecae6',
+    background: '#f5f0e8',
+    surface: '#ffffff',
+    text: '#1a1a1a',
+    textMuted: '#6b6b6b',
+    border: '#e0dbd2',
   },
-  spacing: { unit: 8 },
+  typography: {
+    headingFont: 'Playfair Display',
+    bodyFont: 'Inter',
+    headingWeight: 700,
+    headingLetterSpacing: '-0.02em',
+    bodyLineHeight: '1.6',
+    baseSize: '16px',
+  },
+  wordmark: {
+    font: 'Bodoni Moda',
+    treatment: 'solid',
+    color1: '#1a1a1a',
+    color2: '',
+    letterSpacing: '-0.03em',
+  },
+  shape: { borderRadius: 'md', cardBorderRadius: 'lg' },
+  spacing: { sectionPadding: 'normal', cardGap: 'normal' },
+  layout: { heroStyle: 'full-bleed', productGridCols: 3, footerStyle: 'minimal' },
 };
 
-const VALID_LAYOUT = {
-  slug: 'home',
-  name: 'Home',
-  root: { type: 'text', role: 'body', content: 'hi' },
+const VALID_HOME_PAGE = {
+  blocks: [{ blockKey: 'hero-cinematic', position: 0, content: {} }],
+};
+
+const VALID_SECONDARY_COPY = {
+  shop: { eyebrow: 'e', heading: 'h', subheading: 's' },
+  contact: { heading: 'h', subheading: 's', buttonLabel: 'b' },
+};
+
+const VALID_ABOUT_PAGE = {
+  eyebrow: 'e',
+  headline: 'h',
+  intro: 'i',
+  body: 'b',
+  signatureName: 'n',
+  signatureRole: 'r',
 };
 
 function makeBrief(over: Partial<BohdiBrief> = {}): BohdiBrief {
   return {
     shopName: 'Acme',
     subdomain: 'acme',
-    nicheSlug: 'candles',
+    nicheSlug: 'leatherworker',
     moodKey: 'rustic',
     productCount: 1,
     ...over,
   };
 }
 
-// Helper: a scripted Anthropic response with one tool_use block.
-function toolUseResponse(name: string, input: unknown, id = 'tu1') {
+// Helper: a scripted Anthropic response with one or more tool_use blocks.
+function toolUseResponse(
+  calls: Array<{ name: string; input: unknown; id?: string }>,
+  fallbackId = 'tu',
+) {
   return {
     stop_reason: 'tool_use' as const,
-    content: [{ type: 'tool_use', id, name, input }],
+    content: calls.map((c, i) => ({
+      type: 'tool_use',
+      id: c.id ?? `${fallbackId}${i}`,
+      name: c.name,
+      input: c.input,
+    })),
     usage: {
       input_tokens: 10,
       output_tokens: 5,
@@ -116,20 +129,30 @@ function endTurnResponse() {
   };
 }
 
+// A full legacy build script: one turn sets everything, the next finalizes.
+function scriptHappyPath() {
+  messagesCreateMock
+    .mockResolvedValueOnce(
+      toolUseResponse([
+        { name: 'set_tokens', input: VALID_TOKENS },
+        { name: 'set_home_page', input: VALID_HOME_PAGE },
+        { name: 'set_secondary_pages_copy', input: VALID_SECONDARY_COPY },
+        { name: 'set_about_page', input: VALID_ABOUT_PAGE },
+        { name: 'set_hero_image', input: { url: 'https://x/hero.png' } },
+      ]),
+    )
+    .mockResolvedValueOnce(toolUseResponse([{ name: 'finalize', input: {}, id: 'fin' }]));
+}
+
 beforeEach(() => {
   messagesCreateMock.mockReset();
-  writeStorefrontLayoutMock.mockReset();
+  writeStorefrontMock.mockReset();
 });
 
 describe('runBohdi — happy path', () => {
   it('runs the tool loop until finalize, emits progress, returns the result', async () => {
-    writeStorefrontLayoutMock.mockResolvedValue({ tenantId: 't-1', subdomain: 'acme' });
-
-    // Script: turn 1 = set_style_sheet, turn 2 = set_layout, turn 3 = finalize.
-    messagesCreateMock
-      .mockResolvedValueOnce(toolUseResponse('set_style_sheet', VALID_STYLE_SHEET, 'a'))
-      .mockResolvedValueOnce(toolUseResponse('set_layout', VALID_LAYOUT, 'b'))
-      .mockResolvedValueOnce(toolUseResponse('finalize', {}, 'c'));
+    writeStorefrontMock.mockResolvedValue({ tenantId: 't-1', subdomain: 'acme' });
+    scriptHappyPath();
 
     const events: unknown[] = [];
     const r = await runBohdi(
@@ -137,20 +160,25 @@ describe('runBohdi — happy path', () => {
       (e) => events.push(e),
     );
     expect(r).toEqual({ tenantId: 't-1', subdomain: 'acme' });
-    expect(messagesCreateMock).toHaveBeenCalledTimes(3);
+    expect(messagesCreateMock).toHaveBeenCalledTimes(2);
     expect(events.length).toBeGreaterThan(0);
   });
 
   it('handles tool errors and passes is_error back to the model', async () => {
-    writeStorefrontLayoutMock.mockResolvedValue({ tenantId: 't-2', subdomain: 'acme' });
+    writeStorefrontMock.mockResolvedValue({ tenantId: 't-2', subdomain: 'acme' });
     // Capture message snapshots at each call (messages is mutated across turns).
     const snapshots: Array<Array<{ role: string; content: unknown }>> = [];
     let call = 0;
     const scripted = [
-      toolUseResponse('does-not-exist', {}, 'a'),
-      toolUseResponse('set_style_sheet', VALID_STYLE_SHEET, 'b'),
-      toolUseResponse('set_layout', VALID_LAYOUT, 'c'),
-      toolUseResponse('finalize', {}, 'd'),
+      toolUseResponse([{ name: 'does-not-exist', input: {}, id: 'a' }]),
+      toolUseResponse([
+        { name: 'set_tokens', input: VALID_TOKENS },
+        { name: 'set_home_page', input: VALID_HOME_PAGE },
+        { name: 'set_secondary_pages_copy', input: VALID_SECONDARY_COPY },
+        { name: 'set_about_page', input: VALID_ABOUT_PAGE },
+        { name: 'set_hero_image', input: { url: 'https://x/hero.png' } },
+      ]),
+      toolUseResponse([{ name: 'finalize', input: {}, id: 'd' }]),
     ];
     messagesCreateMock.mockImplementation(
       (args: { messages: Array<{ role: string; content: unknown }> }) => {
@@ -175,18 +203,31 @@ describe('runBohdi — happy path', () => {
   });
 
   it('skips non-tool_use content blocks within a turn', async () => {
-    writeStorefrontLayoutMock.mockResolvedValue({ tenantId: 't-3', subdomain: 'acme' });
+    writeStorefrontMock.mockResolvedValue({ tenantId: 't-3', subdomain: 'acme' });
     messagesCreateMock
       .mockResolvedValueOnce({
         stop_reason: 'tool_use',
         content: [
           { type: 'text', text: 'thinking' },
-          { type: 'tool_use', id: 'x', name: 'set_style_sheet', input: VALID_STYLE_SHEET },
+          { type: 'tool_use', id: 'x0', name: 'set_tokens', input: VALID_TOKENS },
+          { type: 'tool_use', id: 'x1', name: 'set_home_page', input: VALID_HOME_PAGE },
+          {
+            type: 'tool_use',
+            id: 'x2',
+            name: 'set_secondary_pages_copy',
+            input: VALID_SECONDARY_COPY,
+          },
+          { type: 'tool_use', id: 'x3', name: 'set_about_page', input: VALID_ABOUT_PAGE },
+          {
+            type: 'tool_use',
+            id: 'x4',
+            name: 'set_hero_image',
+            input: { url: 'https://x/hero.png' },
+          },
         ],
         usage: { input_tokens: 1, output_tokens: 1 },
       })
-      .mockResolvedValueOnce(toolUseResponse('set_layout', VALID_LAYOUT, 'b'))
-      .mockResolvedValueOnce(toolUseResponse('finalize', {}, 'c'));
+      .mockResolvedValueOnce(toolUseResponse([{ name: 'finalize', input: {}, id: 'fin' }]));
 
     const r = await runBohdi(makeBrief());
     expect(r.tenantId).toBe('t-3');
@@ -209,9 +250,9 @@ describe('runBohdi — error paths', () => {
   });
 
   it('throws after MAX_TURNS without finalize', async () => {
-    // Each turn does a no-op tool call (set_style_sheet again).
+    // Each turn does a no-op tool call (set_tokens again).
     messagesCreateMock.mockResolvedValue(
-      toolUseResponse('set_style_sheet', VALID_STYLE_SHEET, 'loop'),
+      toolUseResponse([{ name: 'set_tokens', input: VALID_TOKENS, id: 'loop' }]),
     );
     await expect(runBohdi(makeBrief())).rejects.toThrow('did not finalize');
   }, 30_000);
