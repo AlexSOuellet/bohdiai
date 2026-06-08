@@ -102,4 +102,14 @@ describe('shootMoment (the Cinematographer)', () => {
     const args = create.mock.calls[0]![0] as { system: string };
     expect(args.system.toLowerCase()).toContain('no text');
   });
+
+  it('directs the cinematographer to reach for video, a still only as a last resort (D47)', async () => {
+    create.mockResolvedValueOnce(toolMsg(scene));
+    await shootMoment(trajectory, story);
+    const sys = (create.mock.calls[0]![0] as { system: string }).system.toLowerCase();
+    // The Moment IS motion — video is the default, not a neutral coin-flip.
+    expect(sys).toMatch(/reach for video|default to video|prefer video|video by default/);
+    // A still is framed as the fallback, not a peer option.
+    expect(sys).toMatch(/still[\s\S]*?(last resort|only when|only if|cannot)/);
+  });
 });

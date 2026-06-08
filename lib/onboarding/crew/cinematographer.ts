@@ -4,13 +4,18 @@
  * the words (D40). Produces the structured scene (the seven fixed groups the
  * engine already renders), the video-or-still decision, and the alt text.
  *
- * No bias: the direction is the trajectory and the story. The prompt names the
- * scene groups STRUCTURALLY (what kind of info each holds) and states the loop
+ * No taste-bias: the direction is the trajectory and the story. The prompt names
+ * the scene groups STRUCTURALLY (what kind of info each holds) and states the loop
  * PHYSICS for a video (a seamless loop cannot contain progressive action or a big
  * light change without jumping on restart) — physics, not taste. It never says go
- * low-light, go cinematic, or prefer video; the video/still choice is left neutral
- * and follows the concept. (Failure fallback to a still is the pipeline's job, not
- * a creative default here.)
+ * low-light or go cinematic.
+ *
+ * It DOES prefer video — that is product intent, not taste (D47). The Moment is
+ * motion; a BohdiAI front door MOVES where a template builder's sits still (D33).
+ * So video is the default and a still is the last resort, chosen only when no
+ * simple ambient motion fits. Leaving the choice "neutral" made the model read
+ * video's loop restrictions as risk and play safe with stills — neutrality and
+ * intent are not the same thing.
  */
 import type Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
@@ -73,7 +78,7 @@ THE STORY that plays over the Moment:
 ${lines}
 
 Design the shot with set_moment:
-- kind: "video" or "image".
+- kind: "video" or "image". The Moment is motion — that a BohdiAI front door MOVES where a template builder's sits still is the whole point of it. Reach for video by default: almost any scene holds some simple, continuous, ambient motion that loops. Choose a still ONLY when you genuinely cannot find one ambient motion that suits the feeling — a still is the last resort, not an equal option.
 - prompt: the shot as seven short phrases —
     - composition: how the shot is framed.
     - subject: what is in frame.
