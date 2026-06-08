@@ -560,6 +560,18 @@ D43 left the handoff reading as automatic — "plays first, then melts." It isn'
 
 Everything else from D43 stands: the Moment is one portable layer (not welded to any hero), the footer "Intro" link replays it on demand, it's default-on and the maker can turn it off, and a custom cinematic-video Moment is a paid upsell.
 
+### D45. The shop name is a fixed onboarding fact — the crew never reinvents it (DONE, session 35)
+
+A live build named "Evening Shadow Candles" published as "Still Burn Co." because the Copywriter's schema *required* it to author `shopName`, `wordmark`, and `brand`. The shop name is the one literal thing onboarding captures and confirms; the crew has no business renaming it. The pipeline now forces the maker's real shop name into the shopName, the nav wordmark, and the hero brand, discarding anything the model proposed (the copywriter is also told the name is fixed). General principle: an onboarding fact the maker gave us (their name, their niche, their mood) is an input the crew builds *around*, never a field it gets to overwrite. Implemented and validated live this session.
+
+### D46. The crew authors each link's DESTINATION, not just its label (next session)
+
+Across every live build the CTAs were wrong because the label was authored freely but the destination was hardcoded in the renderer — a "Shop now" close button went to /contact, an "Our story" hero button went to /shop. The nav was worse: the copywriter authored a nav ("Breads / Order / Classes") that the renderer threw away entirely in favor of a fixed Shop/About/Events/Contact list. The fix: the crew picks each link's destination from the real pages (shop, about, events, contact, a product) and writes the label to match, so what a button SAYS and where it GOES always agree — and the maker's authored nav is actually used (mapped to real routes), not discarded. Alex: "I would like to see the crew build the links with the pages they suggest."
+
+### D47. The Moment cinematographer always reaches for video; a still is the last resort (next session)
+
+Two of three live builds (the baker, the ceramicist) got a STILL Moment when motion was the obvious win (steam off fresh bread). Cause: when the crew was built (D40), the cinematographer's video-vs-still choice was made deliberately *neutral* to avoid bias — the prompt just says "video or image" and the only thing it says about video is its loop RESTRICTIONS, so the model reads video as risky and plays safe with a still. But the Moment IS motion — that is its signature wow (D33) — so a strong preference for video is core product intent, not taste-bias. The cinematographer must always reach for video and choose a still ONLY when it genuinely cannot think of a simple ambient motion to capture. Alex: "always reach for video and only do stills if it truly cannot think of a simple motion to capture." (A lesson rides along: over-neutralizing to avoid bias can strip a load-bearing product decision — neutrality and intent are not the same thing.)
+
 ---
 
 ## Open items still to be decided
