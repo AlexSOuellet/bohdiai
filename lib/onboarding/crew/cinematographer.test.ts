@@ -83,4 +83,23 @@ describe('shootMoment (the Cinematographer)', () => {
     create.mockResolvedValueOnce({ content: [{ type: 'text', text: 'cut' }], stop_reason: 'end_turn' });
     await expect(shootMoment(trajectory, story)).rejects.toThrow(/did not call set_moment/);
   });
+
+  it('rejects a scene whose style asks for text/title/lettering in frame, then accepts the fix', async () => {
+    const lettered = { ...scene, prompt: { ...scene.prompt, style: 'warm filmic grade with a slab-serif title hand-set in the lower-right corner' } };
+    create.mockResolvedValueOnce(toolMsg(lettered)).mockResolvedValueOnce(toolMsg(scene));
+    const s = await shootMoment(trajectory, story);
+    expect(s.prompt.style).toBe('warm filmic grade');
+    expect(create).toHaveBeenCalledTimes(2);
+    const second = create.mock.calls[1]![0] as { messages: Array<{ role: string; content: unknown }> };
+    const lastMsg = JSON.stringify(second.messages.at(-1));
+    expect(lastMsg).toContain('style');
+    expect(lastMsg.toLowerCase()).toMatch(/text|letter/);
+  });
+
+  it('exposes the no-text-in-image physics rule in the prompt', async () => {
+    create.mockResolvedValueOnce(toolMsg(scene));
+    await shootMoment(trajectory, story);
+    const args = create.mock.calls[0]![0] as { system: string };
+    expect(args.system.toLowerCase()).toContain('no text');
+  });
 });

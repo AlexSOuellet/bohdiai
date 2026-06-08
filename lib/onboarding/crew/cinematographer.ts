@@ -35,6 +35,24 @@ export const MomentSceneSchema = z.object({
 });
 export type MomentScene = z.infer<typeof MomentSceneSchema>;
 
+/** Words that mean the shot is asking the image model to render lettering — which
+ *  it can't do legibly and which the engine owns via the wordmark. A physics guard,
+ *  not taste. Scoped to the seven prompt phrases that describe the rendered frame
+ *  (not `alt`, which is a plain caption and may legitimately use these words). */
+const TEXT_WORDS = ['title', 'text', 'lettering', 'typography', 'wordmark', 'logo', 'caption', 'headline'] as const;
+const TEXT_WORD_RE = new RegExp(`\\b(${TEXT_WORDS.join('|')})s?\\b`, 'i');
+
+/** Scan the rendered-frame phrases for any text-requesting word. Returns the
+ *  offending `field: word` hits, or [] if the shot is clean. */
+function findTextRequests(prompt: MomentScene['prompt']): string[] {
+  return (Object.entries(prompt) as Array<[string, string]>)
+    .map(([field, phrase]): string | null => {
+      const m = TEXT_WORD_RE.exec(phrase);
+      return m ? `${field}: "${m[0]}"` : null;
+    })
+    .filter((hit): hit is string => hit !== null);
+}
+
 const SET_MOMENT_TOOL: Anthropic.Tool = {
   name: 'set_moment',
   description: 'Design the Moment hero shot. Returns { ok: true } or { ok: false, issues: [...] } to fix and resubmit.',
@@ -65,6 +83,8 @@ Design the shot with set_moment:
     - lighting: the light.
     - style: the visual style.
 - alt (4-120): a plain description of the shot.
+
+- No text, lettering, logos, titles, captions, or typography anywhere in the frame — the engine sets the type; the shot is image only. (A physics rule: image models can't render legible text.)
 
 If kind is "video": it is a short clip that LOOPS seamlessly, so the motion must be continuous and ambient — no progressive human action and no large change in light or position across the clip, or the restart will jump. A motionless person is fine (hands at rest, a figure standing still); a person performing an action is not.
 
@@ -98,8 +118,24 @@ export async function shootMoment(trajectory: Trajectory, story: string[]): Prom
 
     const parsed = MomentSceneSchema.safeParse(tu.input);
     if (parsed.success) {
-      logger.info('crew: moment shot', { kind: parsed.data.kind });
-      return parsed.data;
+      const textHits = findTextRequests(parsed.data.prompt);
+      if (textHits.length === 0) {
+        logger.info('crew: moment shot', { kind: parsed.data.kind });
+        return parsed.data;
+      }
+      // The shot asked the image model to render lettering — a physics failure.
+      // Treat it like a validation failure and ask for a clean reshoot.
+      const issues = textHits.map((hit) => ({
+        path: `prompt.${hit.split(':')[0]}`,
+        message: `No text, lettering, titles, logos, or typography in the frame — the engine sets the type. Remove the lettering at ${hit} and reshoot the shot as image only.`,
+      }));
+      lastIssues = issues.map((i) => `${i.path}: ${i.message}`).join('; ');
+      messages.push({ role: 'assistant', content: resp.content });
+      messages.push({
+        role: 'user',
+        content: [{ type: 'tool_result', tool_use_id: tu.id, is_error: true, content: JSON.stringify({ ok: false, issues }) }],
+      });
+      continue;
     }
 
     const issues = parsed.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message }));
