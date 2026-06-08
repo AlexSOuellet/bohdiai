@@ -84,7 +84,7 @@ describe('generateMomentVideo', () => {
     expect(url).toBe('https://cdn.example/public.bin');
     const [model, opts] = subscribeMock.mock.calls[0]!;
     expect(model).toBe(SEEDANCE_VIDEO_MODEL);
-    expect(SEEDANCE_VIDEO_MODEL).toBe('bytedance/seedance-2.0/text-to-video');
+    expect(SEEDANCE_VIDEO_MODEL).toBe('bytedance/seedance-2.0/fast/text-to-video');
     expect(opts.input.prompt).toBe('a candle flame flickering, locked camera');
     expect(opts.input.resolution).toBe('720p');
     expect(opts.input.aspect_ratio).toBe('16:9');

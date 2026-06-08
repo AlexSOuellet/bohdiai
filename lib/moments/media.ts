@@ -18,11 +18,12 @@ const BUCKET = 'generated-images';
 export const MOMENT_STILL_TIMEOUT_MS = 90_000;
 export const MOMENT_VIDEO_TIMEOUT_MS = 240_000;
 
-// fal model id — Seedance 2.0 text-to-video. Input: { prompt, duration "4".."15"|"auto",
-// resolution "480p"|"720p", aspect_ratio, generate_audio }. It came out cinematic where
-// Kling came out flat. Swapping this string (or routing to another model) is the whole
-// "change one file" promise of the seam.
-export const SEEDANCE_VIDEO_MODEL = 'bytedance/seedance-2.0/text-to-video';
+// fal model id — Seedance 2.0 FAST text-to-video. Same input shape as the standard
+// 2.0 ({ prompt, duration "4".."15"|"auto", resolution "480p"|"720p", aspect_ratio,
+// generate_audio }) but generates much quicker, to cut the long onboarding build.
+// Swapping this string (or routing to another model) is the whole "change one file"
+// promise of the seam.
+export const SEEDANCE_VIDEO_MODEL = 'bytedance/seedance-2.0/fast/text-to-video';
 const FLUX_IMAGE_MODEL = 'fal-ai/flux-pro';
 
 // Seedance accepts whole-second durations from 4 to 15. Default to 6 — a short
