@@ -28,13 +28,15 @@ export type ProductDraft = z.infer<typeof ProductDraftSchema>;
 export const CopywriterDraftSchema = z.object({
   shopName: z.string().min(2).max(40),
   identity: z.object({
-    wordmark: z.string().min(2).max(28),
+    // Up to 40 to hold the maker's full shop name verbatim (the pipeline forces
+    // the wordmark to the real shop name; the crew never renames the shop).
+    wordmark: z.string().min(2).max(40),
     nav: z.array(z.string().min(2).max(18)).min(2).max(4),
   }),
   moment: z.object({
     story: z.array(StoryLine).min(2).max(4),
     eyebrow: z.string().min(4).max(48),
-    brand: z.string().min(2).max(28),
+    brand: z.string().min(2).max(40),
     ctaLabel: z.string().min(3).max(24),
     secondaryCtaLabel: z.string().min(3).max(24).optional(),
   }),

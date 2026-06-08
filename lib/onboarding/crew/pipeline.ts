@@ -40,13 +40,16 @@ export interface CrewBuildResult {
  *  the moment media; the graphic artist's prompts become the founder photo and
  *  each product's imagePrompt (matched by slug — coverage is guaranteed by the
  *  graphic-artist and director's-cut gates). */
-function assembleSubmission(out: CrewOutput): { content: unknown; products: unknown } {
+function assembleSubmission(out: CrewOutput, shopName: string): { content: unknown; products: unknown } {
   const { copy, moment, look } = out;
   const imageBySlug = new Map(look.products.map((p) => [p.slug, p.imagePrompt]));
+  // The shop name is the maker's one fixed onboarding fact — the crew never renames
+  // it. Force it through as the shopName, the nav wordmark, and the brand the hero
+  // lands on, discarding anything the copywriter proposed for those.
   const content = {
-    shopName: copy.shopName,
-    identity: copy.identity,
-    moment: { ...copy.moment, media: { kind: moment.kind, prompt: moment.prompt, alt: moment.alt } },
+    shopName,
+    identity: { ...copy.identity, wordmark: shopName },
+    moment: { ...copy.moment, brand: shopName, media: { kind: moment.kind, prompt: moment.prompt, alt: moment.alt } },
     goods: copy.goods,
     founder: { ...copy.founder, photo: { prompt: look.founderPhoto.prompt, alt: look.founderPhoto.alt } },
     close: copy.close,
@@ -72,7 +75,7 @@ export async function directAndProduce(brief: CrewBrief): Promise<CrewBuildResul
   const look = await designLook(brief, trajectory, copy.moment.story, moment, copy.products);
   const cut = await directorsCut(brief, trajectory, { copy, moment, look });
 
-  const parsed = MAIN_STREET_SPEC.parseSubmission(assembleSubmission(cut));
+  const parsed = MAIN_STREET_SPEC.parseSubmission(assembleSubmission(cut, brief.shopName));
   if (!parsed.ok) {
     throw new Error(`Crew output failed the engine schema: ${parsed.issues.map((i) => `${i.path}: ${i.message}`).join('; ')}`);
   }

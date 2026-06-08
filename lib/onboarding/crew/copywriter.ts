@@ -57,12 +57,12 @@ ${niche}
 
 Write the words with submit_copy. Each field, its hard limits (stay under), and where it appears:
 
-- shopName (2-40): the shop's name.
-- identity.wordmark (2-28): the name as it shows in the nav.
+- shopName: the shop is named "${brief.shopName}". This is the maker's own name for their shop — use it EXACTLY, do not invent, shorten, or alter it.
+- identity.wordmark: "${brief.shopName}" as it shows in the nav — use the exact name.
 - identity.nav (2-4 items, each 2-18): the nav links.
 - moment.story (2-4 lines, each 4-48): the hero lines, shown one at a time, each cross-fading into the next, landing on the brand. HARD: a line carries NO punctuation — no periods, commas, dashes, colons, or quotes (apostrophes and intra-word hyphens are fine). The marks would smear as the lines cross-fade.
 - moment.eyebrow (4-48): a small line above the hero.
-- moment.brand (2-28): the brand line the story lands on.
+- moment.brand: "${brief.shopName}" — the brand the story lands on; use the exact name.
 - moment.ctaLabel (3-24): the hero button.
 - moment.secondaryCtaLabel (3-24, optional): a second hero button.
 - goods.title (2-48): the heading of the products beat.

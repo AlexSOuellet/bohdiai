@@ -83,7 +83,9 @@ export const MainStreetContentSchema = z.object({
   shopName: z.string().min(2).max(40),
 
   identity: z.object({
-    wordmark: z.string().min(2).max(28),
+    // Up to 40 to hold the maker's full shop name verbatim (the wordmark IS the
+    // shop name — the crew never renames it).
+    wordmark: z.string().min(2).max(40),
     nav: z.array(z.string().min(2).max(18)).min(2).max(4),
     /** The maker's uploaded logo, if any. NOT authored by Bohdi — injected at
      *  render from the tenant's upload, and shown beside the wordmark in the nav. */
@@ -98,7 +100,7 @@ export const MainStreetContentSchema = z.object({
      *  large and read in one breath. */
     story: z.array(StoryLine).min(2).max(4),
     eyebrow: z.string().min(4).max(48),
-    brand: z.string().min(2).max(28),
+    brand: z.string().min(2).max(40),
     ctaLabel: z.string().min(3).max(24),
     secondaryCtaLabel: z.string().min(3).max(24).optional(),
   }),
