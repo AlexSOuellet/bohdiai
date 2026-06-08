@@ -35,7 +35,11 @@ export function GoodsProcession({
       <div className="ms-wrap" style={{ maxWidth: 940, display: 'flex', flexDirection: 'column', gap: 64 }}>
         {products.map((p, i) => (
           <Reveal key={p.slug}>
-            <div className={`ms-proc-row${i % 2 === 1 ? ' alt' : ''}`} style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.1fr', gap: 48, alignItems: 'center' }}>
+            <a
+              href={`/listings/${p.slug}`}
+              className={`ms-proc-row${i % 2 === 1 ? ' alt' : ''}`}
+              style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.1fr', gap: 48, alignItems: 'center', color: 'inherit', textDecoration: 'none' }}
+            >
               <div
                 className="ms-proc-frame"
                 style={{
@@ -63,7 +67,7 @@ export function GoodsProcession({
                   {p.price}
                 </span>
               </div>
-            </div>
+            </a>
           </Reveal>
         ))}
       </div>

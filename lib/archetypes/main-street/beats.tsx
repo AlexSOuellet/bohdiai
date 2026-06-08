@@ -123,40 +123,42 @@ export function GoodsMarquee({
       <div className="ms-marquee" style={{ display: 'flex', gap: 18, width: 'max-content', padding: '0 9px' }}>
         {loop.map((p, i) => (
           <article key={p.slug + i} data-ms-card style={{ width: 340, flex: '0 0 auto' }}>
-            <div
-              style={{
-                position: 'relative',
-                aspectRatio: '4 / 5',
-                borderRadius: 3,
-                overflow: 'hidden',
-                background: 'color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg))',
-              }}
-            >
-              <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
-              <span
-                data-type="price"
+            <a href={`/listings/${p.slug}`} style={{ color: 'inherit', textDecoration: 'none', display: 'block' }}>
+              <div
                 style={{
-                  ...typeRoleCss(r.price),
-                  position: 'absolute',
-                  left: 12,
-                  bottom: 12,
-                  background: 'var(--ms-bg)',
-                  color: 'var(--ms-fg)',
-                  padding: '6px 10px',
-                  borderRadius: 2,
+                  position: 'relative',
+                  aspectRatio: '4 / 5',
+                  borderRadius: 3,
+                  overflow: 'hidden',
+                  background: 'color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg))',
                 }}
               >
-                {p.price}
-              </span>
-            </div>
-            <h3 data-type="cardTitle" style={{ ...typeRoleCss(r.cardTitle), color: 'var(--ms-fg)', margin: '16px 0 2px' }}>
-              {p.name}
-            </h3>
-            {p.shortDescription && (
-              <p data-type="caption" style={{ ...typeRoleCss(r.caption), color: 'var(--ms-fg-muted)', margin: 0 }}>
-                {p.shortDescription}
-              </p>
-            )}
+                <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
+                <span
+                  data-type="price"
+                  style={{
+                    ...typeRoleCss(r.price),
+                    position: 'absolute',
+                    left: 12,
+                    bottom: 12,
+                    background: 'var(--ms-bg)',
+                    color: 'var(--ms-fg)',
+                    padding: '6px 10px',
+                    borderRadius: 2,
+                  }}
+                >
+                  {p.price}
+                </span>
+              </div>
+              <h3 data-type="cardTitle" style={{ ...typeRoleCss(r.cardTitle), color: 'var(--ms-fg)', margin: '16px 0 2px' }}>
+                {p.name}
+              </h3>
+              {p.shortDescription && (
+                <p data-type="caption" style={{ ...typeRoleCss(r.caption), color: 'var(--ms-fg-muted)', margin: 0 }}>
+                  {p.shortDescription}
+                </p>
+              )}
+            </a>
           </article>
         ))}
       </div>

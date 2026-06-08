@@ -57,7 +57,8 @@ export function GoodsSlideshow({
           paused.current = false;
         }}
       >
-        <div
+        <a
+          href={current ? `/listings/${current.slug}` : undefined}
           className="ms-slide-stage"
           style={{
             position: 'relative',
@@ -65,6 +66,9 @@ export function GoodsSlideshow({
             borderRadius: 3,
             overflow: 'hidden',
             background: 'color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg))',
+            display: 'block',
+            color: 'inherit',
+            textDecoration: 'none',
           }}
         >
           {products.map((p, i) => (
@@ -79,9 +83,12 @@ export function GoodsSlideshow({
               </div>
             </div>
           ))}
-        </div>
+        </a>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24, marginTop: 22, flexWrap: 'wrap' }}>
+        <a
+          href={current ? `/listings/${current.slug}` : undefined}
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24, marginTop: 22, flexWrap: 'wrap', color: 'inherit', textDecoration: 'none' }}
+        >
           <div>
             <h3 data-type="cardTitle" style={{ ...typeRoleCss(r.cardTitle), color: 'var(--ms-fg)', margin: 0 }}>
               {current?.name}
@@ -95,7 +102,7 @@ export function GoodsSlideshow({
           <span data-type="price" style={{ ...typeRoleCss(r.price), color: 'var(--ms-fg)' }}>
             {current?.price}
           </span>
-        </div>
+        </a>
 
         <div role="tablist" aria-label="Slides" style={{ display: 'flex', gap: 9, marginTop: 20 }}>
           {products.map((p, i) => (

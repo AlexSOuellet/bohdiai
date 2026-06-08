@@ -79,12 +79,11 @@ export function GoodsSwitcher({
             const on = i === active;
             return (
               <li key={p.slug} style={{ borderTop: '1px solid var(--ms-rule)', flex: 'none' }}>
-                <button
-                  type="button"
+                <a
+                  href={`/listings/${p.slug}`}
                   data-ms-switch-row={on ? 'on' : 'off'}
                   onMouseEnter={() => setActive(i)}
                   onFocus={() => setActive(i)}
-                  onClick={() => setActive(i)}
                   style={{
                     width: '100%',
                     textAlign: 'left',
@@ -93,6 +92,8 @@ export function GoodsSwitcher({
                     cursor: 'pointer',
                     padding: '20px 4px',
                     display: 'block',
+                    color: 'inherit',
+                    textDecoration: 'none',
                   }}
                 >
                   <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16 }}>
@@ -114,7 +115,7 @@ export function GoodsSwitcher({
                       {p.shortDescription}
                     </span>
                   )}
-                </button>
+                </a>
               </li>
             );
           })}

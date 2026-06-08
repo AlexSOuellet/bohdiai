@@ -151,7 +151,7 @@ function HeroCta({ moment, skin }: { moment: MainStreetContent['moment']; skin: 
         {moment.ctaLabel}
       </a>
       {moment.secondaryCtaLabel && (
-        <a href="#" data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), border: '1px solid var(--ms-on-media-muted)', color: 'var(--ms-on-media)', padding: '16px 26px', borderRadius: 2 }}>
+        <a href="/shop" data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), border: '1px solid var(--ms-on-media-muted)', color: 'var(--ms-on-media)', padding: '16px 26px', borderRadius: 2 }}>
           {moment.secondaryCtaLabel}
         </a>
       )}
@@ -264,6 +264,10 @@ export function MomentHero({
     const forceReplay = /[?&]intro=1(?:&|$)/.test(search);
     const cookieString = typeof document !== 'undefined' ? document.cookie : '';
     if (shouldPlayMoment({ initialPath: initialDocumentPath(), key: momentKey ?? null, cookieString, forceReplay })) {
+      // The play decision is client-only (it reads the loaded-document path and the
+      // cookie), so it can't be computed during render without an SSR mismatch.
+      // Deciding in a layout effect is the correct pattern here.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPlay(true);
     }
   }, [momentKey]);
