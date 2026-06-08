@@ -78,3 +78,16 @@ describe('MAIN_STREET_SKINS', () => {
     expect(new Set(displays).size).toBe(displays.length);
   });
 });
+
+describe('type scale', () => {
+  it('keeps display sizes within a sane desktop range', () => {
+    for (const skin of Object.values(MAIN_STREET_SKINS)) {
+      const t = skin.type as Record<string, { size: number }>;
+      expect(t['brand']!.size).toBeLessThanOrEqual(88);
+      expect(t['storyline']!.size).toBeLessThanOrEqual(56);
+      expect(t['closeHead']!.size).toBeLessThanOrEqual(68);
+      expect(t['goodsHead']!.size).toBeLessThanOrEqual(48);
+      expect(t['quote']!.size).toBeLessThanOrEqual(34);
+    }
+  });
+});
