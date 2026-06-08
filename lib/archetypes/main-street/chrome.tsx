@@ -214,6 +214,9 @@ export function MainStreetFooter({ shopName, skin }: { shopName: string; skin: A
         <Link href="/" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
           Home
         </Link>
+        <a href="/?intro=1" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
+          Intro
+        </a>
         <a href="/privacy" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
           Privacy
         </a>

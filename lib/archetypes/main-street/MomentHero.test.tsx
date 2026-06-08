@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { render, cleanup, act } from '@testing-library/react';
-import { MomentHero, buildStoryTimeline, phaseDurationMs } from './MomentHero';
+import { render, cleanup, act, fireEvent } from '@testing-library/react';
+import { MomentHero, MomentIntro, buildStoryTimeline, phaseDurationMs } from './MomentHero';
 import { MAIN_STREET_SKINS } from './skins';
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
@@ -35,13 +35,22 @@ describe('buildStoryTimeline', () => {
   });
 });
 
-describe('MomentHero', () => {
+describe('MomentHero (the rested hero)', () => {
   it('renders a full-screen hero with held media, a frame per story line, and a brand frame', () => {
     const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('[data-ms-hero]')).toBeTruthy();
     expect(container.querySelector('video')).toBeTruthy();
     expect(container.querySelectorAll('[data-story-line]')).toHaveLength(moment.story.length);
     expect(container.querySelector('[data-story-brand]')).toBeTruthy();
+  });
+
+  it('rests on the brand by default (no auto-play) and shows no intro overlay without a shop key', () => {
+    const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
+    // The hero is already landed — the brand frame is visible at rest.
+    const brand = container.querySelector('[data-story-brand]') as HTMLElement;
+    expect(brand.style.opacity).toBe('1');
+    // No momentKey → the cold-arrival overlay never mounts.
+    expect(container.querySelector('[data-moment-intro]')).toBeNull();
   });
 
   it('shows the maker logo beside the wordmark when one is uploaded', () => {
@@ -64,14 +73,18 @@ describe('MomentHero', () => {
     expect(container.querySelector('a[href="/cart"]')).toBeTruthy();
   });
 
-  it('advances through the lines and lands on the brand frame', async () => {
+});
+
+describe('MomentIntro (the cold-arrival overlay)', () => {
+  it('holds the Enter button back until the story has played and landed', async () => {
     vi.useFakeTimers();
     try {
-      const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
-      // The sequence is a chain of effects: each phase's timeout fires, advances
-      // to the next phase, which re-runs the effect and schedules the next
-      // timeout. Each link needs its own React commit, so advance per-phase by
-      // the phase's real duration (derived, so timing tuning never breaks this).
+      const onExited = vi.fn();
+      const { container } = render(<MomentIntro moment={moment} skin={skin} onExited={onExited} />);
+      // Before it lands, there is no way to enter.
+      expect(container.querySelector('[data-moment-enter]')).toBeNull();
+
+      // Advance phase by phase (each timeout schedules the next on its own commit).
       for (const phase of buildStoryTimeline(moment.story.length)) {
         const ms = phaseDurationMs(phase);
         if (ms === null) break; // brand is terminal
@@ -81,6 +94,36 @@ describe('MomentHero', () => {
       }
       const brand = container.querySelector('[data-story-brand]') as HTMLElement;
       expect(brand.style.opacity).toBe('1');
+      expect(container.querySelector('[data-moment-enter]')).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('melts (fades out) on Enter and calls onExited once the fade finishes', async () => {
+    vi.useFakeTimers();
+    try {
+      const onExited = vi.fn();
+      const { container } = render(<MomentIntro moment={moment} skin={skin} onExited={onExited} />);
+      for (const phase of buildStoryTimeline(moment.story.length)) {
+        const ms = phaseDurationMs(phase);
+        if (ms === null) break;
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(ms);
+        });
+      }
+      const enterBtn = container.querySelector('[data-moment-enter]') as HTMLButtonElement;
+      await act(async () => {
+        enterBtn.click();
+      });
+      const overlay = container.querySelector('[data-moment-intro]') as HTMLElement;
+      expect(overlay.style.opacity).toBe('0'); // melting
+      expect(onExited).not.toHaveBeenCalled(); // not until the fade completes
+
+      await act(async () => {
+        fireEvent.transitionEnd(overlay, { propertyName: 'opacity' });
+      });
+      expect(onExited).toHaveBeenCalledTimes(1);
     } finally {
       vi.useRealTimers();
     }
