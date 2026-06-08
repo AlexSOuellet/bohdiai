@@ -11,6 +11,7 @@ import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
 import { MainStreetRoot, MainStreetFooter, Media, typeRoleCss, roles, MAIN_STREET_NAV, WordmarkLink } from './chrome';
 import { FindUsList } from './FounderBeats';
+import { MainStreetContactForm } from './MainStreetContactForm';
 
 function SubHeader({ content, skin }: { content: MainStreetContent; skin: ArchetypeTheme }) {
   const r = roles(skin);
@@ -170,7 +171,7 @@ export function AboutPage({ content, skin }: { content: MainStreetContent; skin:
 
 /** CONTACT — an authored invitation to get in touch. Real email/social are the
  *  maker's to add later; at onboarding this is voice, not contact details. */
-export function ContactPage({ content, skin }: { content: MainStreetContent; skin: ArchetypeTheme }) {
+export function ContactPage({ content, skin, tenantId }: { content: MainStreetContent; skin: ArchetypeTheme; tenantId?: string | undefined }) {
   const r = roles(skin);
   const heading = content.contact?.heading ?? 'Get in touch';
   const intro = content.contact?.intro ?? 'We would love to hear from you — questions, custom requests, or just to say hello.';
@@ -181,6 +182,11 @@ export function ContactPage({ content, skin }: { content: MainStreetContent; ski
         <p data-type="body" style={{ ...typeRoleCss(r.body), color: 'var(--ms-fg)', margin: '0 auto', maxWidth: '52ch' }}>
           {intro}
         </p>
+        {tenantId !== undefined && (
+          <div style={{ marginTop: 44 }}>
+            <MainStreetContactForm skin={skin} tenantId={tenantId} />
+          </div>
+        )}
       </section>
     </MainStreetSubPage>
   );

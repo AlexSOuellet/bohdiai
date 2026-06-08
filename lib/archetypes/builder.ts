@@ -106,6 +106,9 @@ export interface ArchetypeBuildSpec<T = unknown> {
     /** The tenant's uploaded logo URL, if any — shown in the chrome. Injected from
      *  tenant data at render (not authored), so it's separate from `content`. */
     logoUrl?: string | undefined;
+    /** The tenant's id — needed by interactive sub-pages (e.g. the contact form
+     *  posts it to /api/contact). Injected from tenant data, not authored. */
+    tenantId?: string | undefined;
   }): ReactElement;
 
   /** Paint a single product's detail page in the archetype's chrome. The product

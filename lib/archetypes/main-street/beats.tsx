@@ -175,7 +175,7 @@ export function Close({ close, skin }: { close: MainStreetContent['close']; skin
         {close.headline}
       </h2>
       <a
-        href="#"
+        href="/contact"
         data-type="navLabel"
         style={{
           ...typeRoleCss(r.navLabel),
