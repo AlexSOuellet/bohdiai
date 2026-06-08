@@ -542,6 +542,26 @@ A live walk found the Moment was built welded in **as** the Main Street hero —
 
 ---
 
+## 2026-06-08 (session 35)
+
+### D44. The Moment autoplays cold at the front door, plays through, then waits for the customer to click "Enter site" before it melts in (refines D43)
+
+D43 left the handoff reading as automatic — "plays first, then melts." It isn't. The customer crosses the threshold on purpose, and that click is the whole pivot. The corrected lifecycle:
+
+- **It only plays on a cold front-door arrival.** The trigger is "this visit *landed* on the home page, and this visitor hasn't entered before (no cookie)." It is NOT "the visitor reached the home page somehow." Someone who follows a direct link or QR code to an inside page lands on that page with no Moment — and gets no Moment for the rest of that visit, even if they then navigate to the home page. The side door never opens the front-door show on the same trip. That person only gets the Moment on a future visit where they themselves arrive cold at the front door. (This sharpens D43's deep-link bypass: bypass holds for the entire visit, not just the entry request.)
+
+- **It autoplays and plays all the way through, then rests.** No click is needed to start it — arriving cold is the trigger. The Moment runs its full sequence and comes to rest on its final frame.
+
+- **The "Enter site" invite appears AFTER the play, not during.** Once the Moment has rested, the invite shows. The Moment holds there indefinitely. Nothing transitions until the customer clicks it — there is no timed auto-dismiss.
+
+- **The click melts it in — "melts" means a fade.** The full page is already rendered underneath. On Main Street the Moment fades into the hero; on a layout with no hero it fades out and the whole site fades in. Never a hard cut.
+
+- **Clicking Enter writes the do-not-replay cookie.** Crossing the threshold is what marks the shop seen; from then on that visitor skips straight to the site. The "Enter site" invite and the cookie are not alternatives — the invite is the threshold, and clicking it is what sets the cookie.
+
+Everything else from D43 stands: the Moment is one portable layer (not welded to any hero), the footer "Intro" link replays it on demand, it's default-on and the maker can turn it off, and a custom cinematic-video Moment is a paid upsell.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.
