@@ -98,6 +98,20 @@ describe('writeCopy (the Copywriter)', () => {
     expect(JSON.stringify(second.messages.at(-1))).toContain('punctuation');
   });
 
+  it('tells the copywriter its actual length when a field overflows its cap, then accepts the fix', async () => {
+    const longDesc = 'x'.repeat(650); // over the 600 cap
+    const over = { ...draft, products: [{ ...draft.products[0], description: longDesc }, draft.products[1], draft.products[2]] };
+    create.mockResolvedValueOnce(toolMsg(over)).mockResolvedValueOnce(toolMsg(draft));
+    const d = await writeCopy(brief, trajectory);
+    expect(d.products[0]!.description).toBe(draft.products[0]!.description);
+    expect(create).toHaveBeenCalledTimes(2);
+    const second = create.mock.calls[1]![0] as { messages: Array<{ role: string; content: unknown }> };
+    const last = JSON.stringify(second.messages.at(-1));
+    expect(last).toContain('products.0.description');
+    // the actionable part: the model is told its real length (650), not just the cap
+    expect(last).toContain('650');
+  });
+
   it('throws when no valid copy is produced within the attempt cap', async () => {
     create.mockResolvedValue(toolMsg({ ...draft, shopName: 'x' })); // too short
     await expect(writeCopy(brief, trajectory)).rejects.toThrow(/valid copy/);

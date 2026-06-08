@@ -13,6 +13,7 @@
  * chance of a miss) and a hard per-call timeout.
  */
 import type Anthropic from '@anthropic-ai/sdk';
+import { z } from 'zod';
 import { anthropicClient } from '@/lib/anthropic';
 import { logger } from '@/lib/logger';
 import { withTimeout } from '@/lib/with-timeout';
@@ -35,6 +36,39 @@ const SUBMIT_COPY_TOOL: Anthropic.Tool = {
 
 function targetProductCount(productCount: number): number {
   return Math.max(3, Math.min(productCount > 0 ? productCount : 6, 10));
+}
+
+/** Read the value at a zod issue path (e.g. ['products', 9, 'description']) out
+ *  of the submitted input, so we can report a too-long field's ACTUAL length. */
+function valueAtPath(root: unknown, path: ReadonlyArray<string | number>): unknown {
+  let cur: unknown = root;
+  for (const key of path) {
+    if (cur == null || typeof cur !== 'object') return undefined;
+    cur = (cur as Record<string | number, unknown>)[key];
+  }
+  return cur;
+}
+
+/** Turn zod issues into resubmit feedback. A length-cap violation gets the field's
+ *  REAL length and how many characters to add/cut — without that the model only
+ *  hears the ceiling ("at most 600") and keeps landing just over it, burning the
+ *  whole attempt budget (the build-failure this fixes). Other issues pass through. */
+function feedbackIssues(error: z.ZodError, input: unknown): Array<{ path: string; message: string }> {
+  return error.issues.map((i) => {
+    const path = i.path.join('.');
+    if ((i.code === 'too_big' || i.code === 'too_small') && i.type === 'string') {
+      const val = valueAtPath(input, i.path);
+      if (typeof val === 'string') {
+        if (i.code === 'too_big') {
+          const max = Number(i.maximum);
+          return { path, message: `is ${val.length} characters but must be at most ${max} — cut at least ${val.length - max} characters and resubmit.` };
+        }
+        const min = Number(i.minimum);
+        return { path, message: `is ${val.length} characters but must be at least ${min} — add at least ${min - val.length} characters and resubmit.` };
+      }
+    }
+    return { path, message: i.message };
+  });
 }
 
 function buildCopywriterPrompt(brief: CrewBrief, trajectory: Trajectory): string {
@@ -136,7 +170,7 @@ export async function writeCopy(brief: CrewBrief, trajectory: Trajectory): Promi
       return parsed.data;
     }
 
-    const issues = parsed.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message }));
+    const issues = feedbackIssues(parsed.error, tu.input);
     lastIssues = issues.map((i) => `${i.path}: ${i.message}`).join('; ');
     messages.push({ role: 'assistant', content: resp.content });
     messages.push({
