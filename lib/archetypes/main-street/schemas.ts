@@ -14,6 +14,22 @@
 import { z } from 'zod';
 import { MAIN_STREET_SKINS } from './skins';
 import { GOODS_TREATMENTS } from './goods';
+import { LINK_TARGETS } from './links';
+
+/** A nav link the crew authors: a label paired with a TARGET page, so the word
+ *  and the destination always agree (D46). The target is constrained to real
+ *  pages by the renderer's route map — a nav item can never 404. */
+export const NavItem = z.object({
+  label: z.string().min(2).max(18),
+  target: z.enum(LINK_TARGETS),
+});
+export type NavItem = z.infer<typeof NavItem>;
+
+/** One nav entry, tolerant of legacy rows: a bare string is an OLD nav whose
+ *  label was never used for routing (the renderer fell back to a fixed nav); a
+ *  { label, target } object is the authored form. New builds always emit objects. */
+export const NavEntry = z.union([z.string().min(2).max(18), NavItem]);
+export type NavEntry = z.infer<typeof NavEntry>;
 
 /** The hero's held media, authored as a STRUCTURED scene rather than a prose
  *  sentence — video models take direction far better from grouped fields, and a
@@ -86,7 +102,7 @@ export const MainStreetContentSchema = z.object({
     // Up to 40 to hold the maker's full shop name verbatim (the wordmark IS the
     // shop name — the crew never renames it).
     wordmark: z.string().min(2).max(40),
-    nav: z.array(z.string().min(2).max(18)).min(2).max(4),
+    nav: z.array(NavEntry).min(2).max(4),
     /** The maker's uploaded logo, if any. NOT authored by Bohdi — injected at
      *  render from the tenant's upload, and shown beside the wordmark in the nav. */
     logoUrl: z.string().optional(),
@@ -102,7 +118,14 @@ export const MainStreetContentSchema = z.object({
     eyebrow: z.string().min(4).max(48),
     brand: z.string().min(2).max(40),
     ctaLabel: z.string().min(3).max(24),
+    /** Where the primary hero button goes — a real page (D46). Optional so rows
+     *  authored before targets still parse; the renderer falls back to the goods
+     *  scroll when absent. */
+    ctaTarget: z.enum(LINK_TARGETS).optional(),
     secondaryCtaLabel: z.string().min(3).max(24).optional(),
+    /** Where the optional secondary hero button goes. Falls back to /shop when
+     *  absent (legacy behavior). */
+    secondaryCtaTarget: z.enum(LINK_TARGETS).optional(),
   }),
 
   /** BEAT 2 — goods in motion. Just the heading; products are catalog rows. The
@@ -160,6 +183,9 @@ export const MainStreetContentSchema = z.object({
     label: z.string().min(2).max(28),
     headline: z.string().min(6).max(72),
     ctaLabel: z.string().min(3).max(24),
+    /** Where the close button goes — a real page (D46). Optional so legacy rows
+     *  parse; the renderer falls back to /contact when absent. */
+    ctaTarget: z.enum(LINK_TARGETS).optional(),
   }),
 
   /** The full ABOUT page — the maker's story at length (the home founder beat is

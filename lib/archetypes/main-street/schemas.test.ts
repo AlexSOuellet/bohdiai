@@ -125,6 +125,56 @@ describe('MainStreetContentSchema', () => {
   });
 });
 
+describe('authored link destinations (D46)', () => {
+  it('accepts nav items authored as { label, target } pairs', () => {
+    const c = valid();
+    (c.identity as Record<string, unknown>)['nav'] = [
+      { label: 'Breads', target: 'shop' },
+      { label: 'Our story', target: 'about' },
+      { label: 'Find us', target: 'events' },
+    ];
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
+  });
+
+  it('still accepts legacy string nav (old stored rows)', () => {
+    // valid() already uses string nav; assert it explicitly here.
+    const c = valid();
+    c.identity.nav = ['Shop', 'About'];
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
+  });
+
+  it('rejects a nav item whose target is not a real page', () => {
+    const c = valid();
+    (c.identity as Record<string, unknown>)['nav'] = [
+      { label: 'Blog', target: 'blog' },
+      { label: 'Shop', target: 'shop' },
+    ];
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+  });
+
+  it('accepts authored hero CTA targets', () => {
+    const c = valid();
+    Object.assign(c.moment, { ctaTarget: 'goods', secondaryCtaLabel: 'Our story', secondaryCtaTarget: 'about' });
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
+  });
+
+  it('rejects an unknown hero CTA target', () => {
+    const c = valid();
+    (c.moment as Record<string, unknown>)['ctaTarget'] = 'newsletter';
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+  });
+
+  it('accepts an authored close CTA target', () => {
+    const c = valid();
+    (c.close as Record<string, unknown>)['ctaTarget'] = 'shop';
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
+  });
+
+  it('still accepts a close with no CTA target (legacy rows)', () => {
+    expect(MainStreetContentSchema.safeParse(valid()).success).toBe(true);
+  });
+});
+
 describe('founder — About treatment + card fields', () => {
   it('accepts an authored About treatment and optional eyebrow/heading', () => {
     const c = valid();

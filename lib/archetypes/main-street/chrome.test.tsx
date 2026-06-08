@@ -1,10 +1,28 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
-import { MainStreetRoot, MainStreetFooter, skinVarsCss } from './chrome';
+import { MainStreetRoot, MainStreetFooter, skinVarsCss, linkHref, LINK_TARGETS, resolveNav, MAIN_STREET_NAV } from './chrome';
 import { MAIN_STREET_SKINS } from './skins';
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 afterEach(cleanup);
+
+describe('linkHref', () => {
+  it('maps each real-page target to a route that exists', () => {
+    expect(linkHref('home')).toBe('/');
+    expect(linkHref('shop')).toBe('/shop');
+    expect(linkHref('about')).toBe('/about');
+    expect(linkHref('events')).toBe('/events');
+    expect(linkHref('contact')).toBe('/contact');
+    // goods is the in-page scroll to the products sampling on the home page.
+    expect(linkHref('goods')).toBe('#goods');
+  });
+
+  it('resolves every declared target (no target can 404)', () => {
+    for (const t of LINK_TARGETS) {
+      expect(linkHref(t)).toMatch(/^(\/|#)/);
+    }
+  });
+});
 
 describe('skinVarsCss', () => {
   it('emits both surfaces and the three font voices as CSS vars', () => {
@@ -16,6 +34,27 @@ describe('skinVarsCss', () => {
     expect(css).toContain('--ms-disp:');
     expect(css).toContain('--ms-body:');
     expect(css).toContain('--ms-mono:');
+  });
+});
+
+describe('resolveNav', () => {
+  it('uses the authored nav, pointing each label at its target route', () => {
+    const resolved = resolveNav([
+      { label: 'Breads', target: 'shop' },
+      { label: 'Our story', target: 'about' },
+    ]);
+    expect(resolved).toEqual([
+      { href: '/shop', label: 'Breads' },
+      { href: '/about', label: 'Our story' },
+    ]);
+  });
+
+  it('falls back to the fixed nav for legacy string entries (labels never had targets)', () => {
+    expect(resolveNav(['Shop', 'About', 'Find us'])).toEqual(MAIN_STREET_NAV);
+  });
+
+  it('falls back to the fixed nav when nav is empty', () => {
+    expect(resolveNav([])).toEqual(MAIN_STREET_NAV);
   });
 });
 

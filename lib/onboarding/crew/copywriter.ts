@@ -17,6 +17,7 @@ import { anthropicClient } from '@/lib/anthropic';
 import { logger } from '@/lib/logger';
 import { withTimeout } from '@/lib/with-timeout';
 import { GOODS_TREATMENT_MENU } from '@/lib/archetypes/main-street/goods';
+import { LINK_TARGETS } from '@/lib/archetypes/main-street/links';
 import { CopywriterDraftSchema, type CopywriterDraft } from './copywriter-schema';
 import type { Trajectory } from './trajectory';
 import type { CrewBrief } from './types';
@@ -42,6 +43,7 @@ function buildCopywriterPrompt(brief: CrewBrief, trajectory: Trajectory): string
   const goods = (Object.entries(GOODS_TREATMENT_MENU) as Array<[string, string]>)
     .map(([k, d]) => `      - ${k}: ${d}`)
     .join('\n');
+  const targets = LINK_TARGETS.join(', ');
 
   return `You are the COPYWRITER on Bohdi's crew. You write every word of this maker's storefront, to ONE brief: the trajectory the Director set. Serve it.
 
@@ -55,16 +57,26 @@ THE TRAJECTORY
 THE NICHE — context and vocabulary for this kind of maker and who buys from them. Read all of it:
 ${niche}
 
+LINKS — every link you write carries a label AND a target page, so what a button
+says and where it goes always agree. A target is one of: ${targets}.
+- home: the front page. shop: the full products page. goods: scrolls down to the
+  products on the home page (good for a hero "see the work" button). about: the
+  maker's story page. events: where to find the maker in person. contact: get in
+  touch / ask for a custom order.
+Choose the target that matches what the label promises — a button that says "Our
+story" targets about, "Shop now" targets shop, "Find us" targets events. (Targets
+must come from that list; these are the only pages that exist.)
+
 Write the words with submit_copy. Each field, its hard limits (stay under), and where it appears:
 
 - shopName: the shop is named "${brief.shopName}". This is the maker's own name for their shop — use it EXACTLY, do not invent, shorten, or alter it.
 - identity.wordmark: "${brief.shopName}" as it shows in the nav — use the exact name.
-- identity.nav (2-4 items, each 2-18): the nav links.
+- identity.nav (2-4 items): the nav links, each { label (2-18), target }.
 - moment.story (2-4 lines, each 4-48): the hero lines, shown one at a time, each cross-fading into the next, landing on the brand. HARD: a line carries NO punctuation — no periods, commas, dashes, colons, or quotes (apostrophes and intra-word hyphens are fine). The marks would smear as the lines cross-fade.
 - moment.eyebrow (4-48): a small line above the hero.
 - moment.brand: "${brief.shopName}" — the brand the story lands on; use the exact name.
-- moment.ctaLabel (3-24): the hero button.
-- moment.secondaryCtaLabel (3-24, optional): a second hero button.
+- moment.ctaLabel (3-24): the hero button. moment.ctaTarget: where it goes.
+- moment.secondaryCtaLabel (3-24, optional): a second hero button. moment.secondaryCtaTarget: where it goes (include when you write the secondary label).
 - goods.title (2-48): the heading of the products beat.
 - goods.treatment: which body the products beat wears — pick the one that fits this shop:
 ${goods}
@@ -83,7 +95,7 @@ ${goods}
 - founder.findUs (optional): a "find us this week" calendar. Dates are unknown at build time, so seed 1-5 plausible sample rows the maker edits or turns off later: { label (2-28), eventsLabel (2-28, optional), rows (1-5): { day (1-12), where (4-60), time (1-12) } }.
 - close.label (2-28): the close kicker.
 - close.headline (6-72): the big close line.
-- close.ctaLabel (3-24): the close button.
+- close.ctaLabel (3-24): the close button. close.ctaTarget: where it goes.
 - about.heading (4-60): the About page heading.
 - about.story (2-5 paragraphs, each 40-700): the About page body.
 - contact.heading (4-48): the Contact page heading.

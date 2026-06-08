@@ -10,8 +10,11 @@
 import React from 'react';
 import Link from 'next/link';
 import type { ArchetypeTheme, TypeRole } from '../types';
-import type { MainStreetContent } from './schemas';
+import type { MainStreetContent, NavEntry, NavItem } from './schemas';
 import { MAIN_STREET_FONT_HREFS, type MainStreetRoles } from './skins';
+import { LINK_TARGETS, linkHref, type LinkTarget } from './links';
+
+export { LINK_TARGETS, linkHref, type LinkTarget };
 
 export function typeRoleCss(role: TypeRole): React.CSSProperties {
   return {
@@ -148,15 +151,27 @@ export function Media({
   return <div className={cls} aria-label={media.alt} style={{ ...style, background: 'var(--ms-fg-muted)', opacity: 0.18 }} />;
 }
 
-/** The canonical storefront nav — real routes shared by the home hero nav and
- *  every sub-page header, so both always point at pages that exist. (The maker's
- *  authored `identity.nav` labels are not used for routing — the pages are fixed.) */
+/** The fallback nav — real routes used when a tenant has no authored nav (legacy
+ *  rows, or any row whose nav predates authored targets). Shared by the home hero
+ *  nav and every sub-page header. New builds author their own nav (D46). */
 export const MAIN_STREET_NAV: ReadonlyArray<{ href: string; label: string }> = [
   { href: '/shop', label: 'Shop' },
   { href: '/about', label: 'About' },
   { href: '/events', label: 'Events' },
   { href: '/contact', label: 'Contact' },
 ];
+
+/** Turn the authored nav entries into real `{ href, label }` links. The maker's
+ *  authored nav is used verbatim (D46), each label pointed at its target's route.
+ *  A nav that is legacy strings (labels that never carried a destination) or empty
+ *  falls back to the platform's fixed nav, so old stored rows render unchanged. */
+export function resolveNav(nav: ReadonlyArray<NavEntry>): ReadonlyArray<{ href: string; label: string }> {
+  const authored = nav.filter((n): n is NavItem => typeof n === 'object');
+  if (authored.length > 0 && authored.length === nav.length) {
+    return authored.map((n) => ({ href: linkHref(n.target), label: n.label }));
+  }
+  return MAIN_STREET_NAV;
+}
 
 /** The brand lockup in a header: the maker's uploaded logo (when present) beside
  *  the typographic wordmark. The wordmark text ALWAYS shows, so the brand reads
@@ -175,11 +190,12 @@ export function WordmarkLink({ wordmark, logoUrl, role }: { wordmark: string; lo
 
 export function Nav({ identity, skin }: { identity: MainStreetContent['identity']; skin: ArchetypeTheme }) {
   const r = roles(skin);
+  const items = resolveNav(identity.nav);
   return (
     <>
       <WordmarkLink wordmark={identity.wordmark} logoUrl={identity.logoUrl} role={r.wordmark} />
       <div style={{ display: 'flex', gap: 30, alignItems: 'center' }}>
-        {MAIN_STREET_NAV.map((item) => (
+        {items.map((item) => (
           <a key={item.href} href={item.href} data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), color: 'inherit', opacity: 0.85 }}>
             {item.label}
           </a>

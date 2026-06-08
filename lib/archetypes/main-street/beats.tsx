@@ -14,7 +14,7 @@
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
-import { Media, typeRoleCss, roles } from './chrome';
+import { Media, typeRoleCss, roles, linkHref } from './chrome';
 
 /** The view-all cue pointing home's sampling at the full Products page. */
 export interface GoodsViewAll {
@@ -168,6 +168,9 @@ export function GoodsMarquee({
 
 export function Close({ close, skin }: { close: MainStreetContent['close']; skin: ArchetypeTheme }) {
   const r = roles(skin);
+  // The close button goes where its label says (D46); legacy rows with no
+  // authored target keep the old /contact destination.
+  const ctaHref = close.ctaTarget ? linkHref(close.ctaTarget) : '/contact';
   return (
     <section style={{ padding: '130px 40px', textAlign: 'center' }}>
       <span data-type="eyebrow" style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-accent)', display: 'block', marginBottom: 22 }}>
@@ -177,7 +180,7 @@ export function Close({ close, skin }: { close: MainStreetContent['close']; skin
         {close.headline}
       </h2>
       <a
-        href="/contact"
+        href={ctaHref}
         data-type="navLabel"
         style={{
           ...typeRoleCss(r.navLabel),

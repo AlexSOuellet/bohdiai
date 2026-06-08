@@ -26,7 +26,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetContent } from './schemas';
-import { Media, Nav, typeRoleCss, roles } from './chrome';
+import { Media, Nav, typeRoleCss, roles, linkHref } from './chrome';
 import { shouldPlayMoment, initialDocumentPath, markMomentSeen } from './moment-gate';
 
 // Tunable reveal timing (ms). GAP_MS must be >= the fade so a line fully clears
@@ -141,17 +141,21 @@ function MomentStage({
   );
 }
 
-/** The rested hero's CTA row — the authored primary (scrolls to goods) and an
- *  optional secondary. */
+/** The rested hero's CTA row — the authored primary and an optional secondary,
+ *  each pointed where its label says it goes (D46). When a button has no authored
+ *  target the legacy default holds: the primary scrolls to the goods, the
+ *  secondary goes to the shop. */
 function HeroCta({ moment, skin }: { moment: MainStreetContent['moment']; skin: ArchetypeTheme }) {
   const r = roles(skin);
+  const primaryHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '#goods';
+  const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
   return (
     <>
-      <a href="#goods" data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), background: 'var(--ms-accent)', color: 'var(--ms-on-accent)', padding: '16px 26px', borderRadius: 2 }}>
+      <a href={primaryHref} data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), background: 'var(--ms-accent)', color: 'var(--ms-on-accent)', padding: '16px 26px', borderRadius: 2 }}>
         {moment.ctaLabel}
       </a>
       {moment.secondaryCtaLabel && (
-        <a href="/shop" data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), border: '1px solid var(--ms-on-media-muted)', color: 'var(--ms-on-media)', padding: '16px 26px', borderRadius: 2 }}>
+        <a href={secondaryHref} data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), border: '1px solid var(--ms-on-media-muted)', color: 'var(--ms-on-media)', padding: '16px 26px', borderRadius: 2 }}>
           {moment.secondaryCtaLabel}
         </a>
       )}

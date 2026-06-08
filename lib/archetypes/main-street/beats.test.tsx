@@ -37,4 +37,18 @@ describe('Close', () => {
     expect(getByText('Warm bread by seven')).toBeTruthy();
     expect(getByText('Order for pickup')).toBeTruthy();
   });
+
+  it('sends the close CTA where its label says it goes (D46)', () => {
+    const { getByText } = render(
+      <Close close={{ label: 'Browse', headline: 'See the whole shelf', ctaLabel: 'Shop now', ctaTarget: 'shop' }} skin={skin} />,
+    );
+    expect(getByText('Shop now').closest('a')?.getAttribute('href')).toBe('/shop');
+  });
+
+  it('falls back to /contact when the close CTA has no authored target (legacy)', () => {
+    const { getByText } = render(
+      <Close close={{ label: 'Come say hello', headline: 'Warm bread by seven', ctaLabel: 'Order for pickup' }} skin={skin} />,
+    );
+    expect(getByText('Order for pickup').closest('a')?.getAttribute('href')).toBe('/contact');
+  });
 });

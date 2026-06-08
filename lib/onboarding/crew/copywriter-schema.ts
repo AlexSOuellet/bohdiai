@@ -13,7 +13,8 @@
  */
 import { z } from 'zod';
 import { GOODS_TREATMENTS } from '@/lib/archetypes/main-street/goods';
-import { StoryLine, FindUsRow, FOUNDER_TREATMENTS } from '@/lib/archetypes/main-street/schemas';
+import { StoryLine, FindUsRow, FOUNDER_TREATMENTS, NavItem } from '@/lib/archetypes/main-street/schemas';
+import { LINK_TARGETS } from '@/lib/archetypes/main-street/links';
 
 /** A product's words only — no imagePrompt (the Graphic Artist adds that). */
 export const ProductDraftSchema = z.object({
@@ -31,14 +32,20 @@ export const CopywriterDraftSchema = z.object({
     // Up to 40 to hold the maker's full shop name verbatim (the pipeline forces
     // the wordmark to the real shop name; the crew never renames the shop).
     wordmark: z.string().min(2).max(40),
-    nav: z.array(z.string().min(2).max(18)).min(2).max(4),
+    // The crew authors each nav link as a label + a target page (D46), so the
+    // word and the destination always agree. Objects are REQUIRED here (unlike
+    // the tolerant content schema) — every NEW build must carry real targets.
+    nav: z.array(NavItem).min(2).max(4),
   }),
   moment: z.object({
     story: z.array(StoryLine).min(2).max(4),
     eyebrow: z.string().min(4).max(48),
     brand: z.string().min(2).max(40),
     ctaLabel: z.string().min(3).max(24),
+    // Where the primary hero button goes — authored alongside its label (D46).
+    ctaTarget: z.enum(LINK_TARGETS),
     secondaryCtaLabel: z.string().min(3).max(24).optional(),
+    secondaryCtaTarget: z.enum(LINK_TARGETS).optional(),
   }),
   goods: z.object({
     title: z.string().min(2).max(48),
@@ -65,6 +72,8 @@ export const CopywriterDraftSchema = z.object({
     label: z.string().min(2).max(28),
     headline: z.string().min(6).max(72),
     ctaLabel: z.string().min(3).max(24),
+    // Where the close button goes — authored alongside its label (D46).
+    ctaTarget: z.enum(LINK_TARGETS),
   }),
   about: z.object({
     heading: z.string().min(4).max(60),

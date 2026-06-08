@@ -73,6 +73,28 @@ describe('MomentHero (the rested hero)', () => {
     expect(container.querySelector('a[href="/cart"]')).toBeTruthy();
   });
 
+  it('sends the primary hero button to its authored target (D46)', () => {
+    const m = { ...moment, ctaLabel: 'Our story', ctaTarget: 'about' as const };
+    const { getByText } = render(<MomentHero identity={identity} moment={m} skin={skin} />);
+    expect(getByText('Our story').closest('a')?.getAttribute('href')).toBe('/about');
+  });
+
+  it('falls back to the goods scroll when the primary has no authored target', () => {
+    const { getByText } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
+    expect(getByText('See the loaves').closest('a')?.getAttribute('href')).toBe('#goods');
+  });
+
+  it('sends the secondary hero button to its authored target', () => {
+    const m = { ...moment, secondaryCtaLabel: 'Find us', secondaryCtaTarget: 'events' as const };
+    const { getByText } = render(<MomentHero identity={identity} moment={m} skin={skin} />);
+    expect(getByText('Find us').closest('a')?.getAttribute('href')).toBe('/events');
+  });
+
+  it('falls back to /shop for a secondary button with no authored target', () => {
+    const m = { ...moment, secondaryCtaLabel: 'Browse the shelf' };
+    const { getByText } = render(<MomentHero identity={identity} moment={m} skin={skin} />);
+    expect(getByText('Browse the shelf').closest('a')?.getAttribute('href')).toBe('/shop');
+  });
 });
 
 describe('MomentIntro (the cold-arrival overlay)', () => {

@@ -29,12 +29,13 @@ const trajectory: Trajectory = {
 // A minimal valid words-only draft (no image prompts; treatments chosen).
 const draft = {
   shopName: 'Tannery Row',
-  identity: { wordmark: 'Tannery Row', nav: ['Shop', 'About'] },
+  identity: { wordmark: 'Tannery Row', nav: [{ label: 'Shop', target: 'shop' }, { label: 'Our story', target: 'about' }] },
   moment: {
     story: ['Built by hand', 'Made to outlast you'],
     eyebrow: 'From the workshop',
     brand: 'Tannery Row',
     ctaLabel: 'See the work',
+    ctaTarget: 'goods',
   },
   goods: { title: 'The bench', treatment: 'procession' },
   founder: {
@@ -42,7 +43,7 @@ const draft = {
     attribution: 'Sam, founder',
     treatment: 'quote',
   },
-  close: { label: 'Come by', headline: 'Built to outlast us', ctaLabel: 'Order yours' },
+  close: { label: 'Come by', headline: 'Built to outlast us', ctaLabel: 'Order yours', ctaTarget: 'contact' },
   about: {
     heading: 'The story',
     story: [
@@ -106,5 +107,42 @@ describe('writeCopy (the Copywriter)', () => {
   it('throws if the model never calls the tool', async () => {
     create.mockResolvedValueOnce({ content: [{ type: 'text', text: 'done' }], stop_reason: 'end_turn' });
     await expect(writeCopy(brief, trajectory)).rejects.toThrow(/did not call submit_copy/);
+  });
+
+  it('instructs the copywriter to author each link target from the real pages', async () => {
+    create.mockResolvedValueOnce(toolMsg(draft));
+    await writeCopy(brief, trajectory);
+    const args = create.mock.calls[0]![0] as { system: string };
+    expect(args.system).toContain('target');
+    // names the real pages the crew can point at
+    expect(args.system).toMatch(/shop.*about.*events.*contact/s);
+  });
+});
+
+describe('CopywriterDraftSchema — authored link targets (D46)', () => {
+  it('requires nav items to carry a target page, not bare labels', () => {
+    const d = { ...draft, identity: { wordmark: 'Tannery Row', nav: ['Shop', 'About'] } };
+    expect(CopywriterDraftSchema.safeParse(d).success).toBe(false);
+  });
+
+  it('accepts nav authored as { label, target } pairs', () => {
+    expect(CopywriterDraftSchema.safeParse(draft).success).toBe(true);
+  });
+
+  it('rejects a nav target that is not a real page', () => {
+    const d = { ...draft, identity: { wordmark: 'Tannery Row', nav: [{ label: 'Blog', target: 'blog' }, { label: 'Shop', target: 'shop' }] } };
+    expect(CopywriterDraftSchema.safeParse(d).success).toBe(false);
+  });
+
+  it('requires a target on the primary hero CTA', () => {
+    const m: Record<string, unknown> = { ...draft.moment };
+    delete m['ctaTarget'];
+    expect(CopywriterDraftSchema.safeParse({ ...draft, moment: m }).success).toBe(false);
+  });
+
+  it('requires a target on the close CTA', () => {
+    const c: Record<string, unknown> = { ...draft.close };
+    delete c['ctaTarget'];
+    expect(CopywriterDraftSchema.safeParse({ ...draft, close: c }).success).toBe(false);
   });
 });
