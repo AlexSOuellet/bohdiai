@@ -34,7 +34,11 @@ export interface TreatmentRolls {
 const MODEL = 'claude-sonnet-4-6';
 const MAX_TOKENS = 12000;
 const MAX_ATTEMPTS = 4;
-const TIMEOUT_MS = 90_000;
+// Generous headroom: with no hard caps on body prose, a build can legitimately
+// generate more, and a model call should never be cut off mid-write. The soft
+// length guidance in the prompt is what actually keeps generation quick — this
+// is just the backstop so a slightly longer one still completes.
+const TIMEOUT_MS = 180_000;
 
 const SUBMIT_COPY_TOOL: Anthropic.Tool = {
   name: 'submit_copy',
@@ -80,6 +84,8 @@ Write the words with submit_copy. Each field, its hard limits (stay under), and 
 
 HEADINGS ARE PHRASES, NOT SENTENCES. The headings and headlines below (goods.title, founder.heading, close.headline, about.heading, contact.heading) carry NO periods, exclamation marks, or question marks, and never end in trailing punctuation. "One potter. One wheel. One kiln at a time." is the slop pattern to avoid — write one clean line ("Wheel-thrown stoneware, made to last"). Internal commas are fine. (Body prose — about.story, contact.intro, descriptions — is normal sentences.)
 
+KEEP IT TIGHT. The body-prose fields have NO hard length cap — the build never rejects them for length — but write punchy, not padded: aim for a 1-3 sentence founder quote, 2-4 sentence product descriptions, a few tight sentences per About paragraph, and a short Contact intro. A storefront reads better lean than long.
+
 - shopName: the shop is named "${brief.shopName}". This is the maker's own name for their shop — use it EXACTLY, do not invent, shorten, or alter it.
 - identity.wordmark: "${brief.shopName}" as it shows in the nav — use the exact name.
 - identity.nav (2-4 items): the nav links, each { label (2-18), target }.
@@ -93,7 +99,7 @@ HEADINGS ARE PHRASES, NOT SENTENCES. The headings and headlines below (goods.tit
 ${goods}
 - goods.label (2-24, optional): a small label on the heading row.
 - goods.viewAllLabel (2-28, optional): the cue to the full Products page.
-- founder.quote (24+, no upper limit): the founder's words in the About beat — as long as it needs to be.
+- founder.quote (24+, no hard cap): the founder's words in the About beat
 - founder.attribution (4-60): who said it.
 - founder.treatment: you drew "${rolls.founder}" this build — the dice again. Keep your draw unless it genuinely fights this shop; if it does, pick another from these and note why in one line:
       - quote: a portrait beside a pull-quote.
@@ -108,10 +114,10 @@ ${goods}
 - close.headline (6-72): the big close line.
 - close.ctaLabel (3-24): the close button. close.ctaTarget: where it goes.
 - about.heading (4-60): the About page heading.
-- about.story (2-5 paragraphs, each 40+, no upper limit): the About page body.
+- about.story (2-5 paragraphs, each 40+, no hard cap): the About page body.
 - contact.heading (4-48): the Contact page heading.
-- contact.intro (20+, no upper limit): the Contact page invitation. Real email and phone are unknown at build time and the maker adds them later, so write the voice, not contact details.
-- products (write ${target}): each { name (2-40), slug (2-48, lowercase-hyphen), shortDescription (4-90), description (12+, no upper limit), basePriceCents (integer cents, e.g. 4800 = $48) }.
+- contact.intro (20+, no hard cap): the Contact page invitation. Real email and phone are unknown at build time and the maker adds them later, so write the voice, not contact details.
+- products (write ${target}): each { name (2-40), slug (2-48, lowercase-hyphen), shortDescription (4-90), description (12+, no hard cap), basePriceCents (integer cents, e.g. 4800 = $48) }.
 
 Call submit_copy now.`;
 }
