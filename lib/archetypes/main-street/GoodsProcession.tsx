@@ -29,30 +29,38 @@ interface Slot {
   r: number;
 }
 
+// Slot geometry is tuned so that, with the stage height tied to its width (see
+// STAGE_ASPECT), horizontally-overlapping cards keep a clear vertical gap and no
+// card runs past the stage bottom — at any viewport. `top` is a % of the stage
+// HEIGHT; `w` a % of the stage WIDTH; a card's height is ~1.25× its width, so
+// both scale with the same dimension and the composition can't collide.
 const LAYOUTS: Record<number, Slot[]> = {
   3: [
-    { l: 5, t: 6, w: 30, r: -2 },
-    { l: 58, t: 18, w: 26, r: 1.5 },
-    { l: 28, t: 52, w: 28, r: 1 },
+    { l: 6, t: 6, w: 26, r: -2 },
+    { l: 62, t: 14, w: 25, r: 2 },
+    { l: 30, t: 52, w: 27, r: 1 },
   ],
   4: [
-    { l: 4, t: 4, w: 27, r: -2 },
-    { l: 52, t: 12, w: 24, r: 1.5 },
-    { l: 20, t: 48, w: 22, r: 1 },
-    { l: 60, t: 52, w: 27, r: -1.5 },
+    { l: 5, t: 4, w: 26, r: -2 },
+    { l: 60, t: 8, w: 26, r: 1.5 },
+    { l: 10, t: 56, w: 24, r: 1 },
+    { l: 58, t: 54, w: 27, r: -1.5 },
   ],
   5: [
-    { l: 3, t: 4, w: 26, r: -2.5 },
-    { l: 40, t: 16, w: 19, r: 1.5 },
-    { l: 70, t: 2, w: 23, r: 2 },
-    { l: 22, t: 50, w: 21, r: 1 },
-    { l: 62, t: 56, w: 28, r: -1.5 },
+    { l: 4, t: 3, w: 25, r: -2 },
+    { l: 38, t: 34, w: 19, r: 1.5 },
+    { l: 64, t: 6, w: 24, r: 2 },
+    { l: 8, t: 60, w: 23, r: 1 },
+    { l: 58, t: 54, w: 27, r: -1.5 },
   ],
 };
 
-/** How tall the scatter stands — a screen-and-a-half for a full five, less for
- *  fewer, so the composition breathes without running on. */
-const STAGE_VH: Record<number, number> = { 3: 105, 4: 125, 5: 150 };
+/** The stage height as a ratio of its width (`width / height`). Height tied to
+ *  width is the whole fix for the old overlap: a vh stage let card heights
+ *  (width-driven) and slot tops (height-driven) scale independently, so cards
+ *  collided on some window shapes. 1 : 1.1 leaves comfortable margins for the
+ *  lowest cards while staying near a screen-and-a-half tall on desktop. */
+const STAGE_ASPECT = '1 / 1.1';
 
 function slotsFor(n: number): Slot[] {
   return LAYOUTS[n] ?? LAYOUTS[5]!.slice(0, Math.max(1, n));
@@ -87,7 +95,6 @@ export function GoodsProcession({
   const r = roles(skin);
   const stageRef = useRef<HTMLDivElement>(null);
   const slots = slotsFor(products.length);
-  const stageVh = STAGE_VH[products.length] ?? 130;
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -122,7 +129,7 @@ export function GoodsProcession({
     <section id="goods" style={{ padding: '72px 0 84px' }}>
       <GoodsHead goods={goods} skin={skin} viewAll={viewAll} />
       <div className="ms-wrap">
-        <div ref={stageRef} className="ms-const-stage" style={{ position: 'relative', height: `${stageVh}vh` }}>
+        <div ref={stageRef} className="ms-const-stage" style={{ position: 'relative', aspectRatio: STAGE_ASPECT }}>
           {products.map((p, i) => {
             const s = slots[i] ?? slots[slots.length - 1]!;
             return (

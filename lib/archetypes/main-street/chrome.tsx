@@ -104,7 +104,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       .arch-main-street .ms-switch-grid{grid-template-columns:1fr!important;gap:32px!important}
       /* the constellation goes vertical on a phone — a designed drift, not a
          dead stack: cards hug left then right, vary in width, and overlap. */
-      .arch-main-street .ms-const-stage{height:auto!important;display:flex;flex-direction:column}
+      .arch-main-street .ms-const-stage{aspect-ratio:auto!important;height:auto!important;display:flex;flex-direction:column}
       .arch-main-street .ms-const-card{position:static!important;left:auto!important;top:auto!important;rotate:0!important}
       .arch-main-street .ms-const-card:nth-child(1){width:80%!important;align-self:flex-start}
       .arch-main-street .ms-const-card:nth-child(2){width:64%!important;align-self:flex-end;margin-top:-7%}

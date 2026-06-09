@@ -37,6 +37,16 @@ describe('GoodsBeat — forced treatment', () => {
     expect((cards[0] as HTMLElement).style.position).toBe('absolute');
   });
 
+  it('sizes the constellation stage from its width (aspect-ratio), not the viewport height', () => {
+    // A vh stage height decoupled card height (width-driven) from slot spacing
+    // (height-driven), so cards collided on some window shapes. Tying the stage
+    // height to its width keeps the geometry constant at any viewport.
+    const { container } = render(<GoodsBeat goods={goods} products={makeProducts(5)} skin={skin} treatment="procession" />);
+    const stage = container.querySelector('.ms-const-stage') as HTMLElement;
+    expect(stage.style.aspectRatio).toBeTruthy();
+    expect(stage.style.height).toBe('');
+  });
+
   it('switcher renders selectable list rows', () => {
     const { container } = render(<GoodsBeat goods={goods} products={makeProducts(3)} skin={skin} treatment="switcher" />);
     expect(container.querySelectorAll('[data-ms-switch-row]').length).toBe(3);

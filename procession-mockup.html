@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Procession — scatter explorations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Newsreader:ital@0;1&family=Geist:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* cozy / warm candle skin, just so this doesn't look like a generic wireframe */
+    --bg:#1b1411;
+    --bg-2:#221a16;
+    --fg:#f3e7da;
+    --fg-muted:#b69f8d;
+    --accent:#d98a4f;
+    --line:rgba(243,231,218,.14);
+    --display:"Fraunces", Georgia, serif;
+    --body:"Geist", system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--fg);
+    font-family:var(--body);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+    overflow-x:hidden;
+  }
+  /* faint grain so the negative space has atmosphere, not flat black */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .intro{
+    min-height:62vh;display:flex;flex-direction:column;justify-content:center;
+    padding:0 8vw;max-width:1200px;margin:0 auto;
+  }
+  .intro .kicker{font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:var(--accent);margin-bottom:18px}
+  .intro h1{font-family:var(--display);font-weight:400;font-size:clamp(2.4rem,5.5vw,4.4rem);line-height:1.04;letter-spacing:-.01em}
+  .intro p{margin-top:22px;max-width:46ch;color:var(--fg-muted);font-size:1.02rem}
+  .intro .hint{margin-top:34px;font-size:.8rem;color:var(--fg-muted);letter-spacing:.04em}
+  .intro .hint span{color:var(--accent)}
+
+  .stage-wrap{padding:7vh 6vw 9vh;max-width:1280px;margin:0 auto;position:relative;z-index:2}
+  .stage-label{
+    display:flex;align-items:baseline;gap:18px;margin-bottom:6vh;
+    border-top:1px solid var(--line);padding-top:22px;
+  }
+  .stage-label .n{font-family:var(--display);font-size:1rem;color:var(--accent)}
+  .stage-label h2{font-family:var(--display);font-weight:500;font-size:1.5rem;letter-spacing:-.01em}
+  .stage-label .desc{color:var(--fg-muted);font-size:.9rem;margin-left:auto;max-width:42ch;text-align:right}
+
+  /* the positioning stage — cards are absolutely placed for true scatter control */
+  .stage{position:relative;width:100%}
+
+  .card{
+    position:absolute;
+    text-decoration:none;color:inherit;
+    /* reveal state */
+    opacity:0;transform:translateY(34px) scale(.965);
+    transition:opacity 1.5s cubic-bezier(.16,.7,.3,1), transform 1.6s cubic-bezier(.16,.7,.3,1);
+    will-change:opacity,transform;
+  }
+  .stage.in .card{opacity:1;transform:none}
+  .card .frame{
+    position:relative;width:100%;aspect-ratio:4/5;overflow:hidden;border-radius:3px;
+    background:var(--bg-2);box-shadow:0 30px 60px -28px rgba(0,0,0,.7);
+  }
+  .card .frame img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.92) contrast(1.02)}
+  /* warm wash unifies the random placeholder photos into one palette */
+  .card .frame::after{content:"";position:absolute;inset:0;background:var(--accent);mix-blend-mode:color;opacity:.34}
+  .card .frame::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(to top,rgba(20,14,11,.55),transparent 55%)}
+  .card .meta{padding:14px 2px 0}
+  .card .name{font-family:var(--display);font-weight:500;font-size:1.05rem;letter-spacing:-.01em}
+  .card .price{display:block;margin-top:4px;color:var(--fg-muted);font-size:.85rem;letter-spacing:.02em}
+
+  .footer{padding:12vh 6vw;text-align:center;color:var(--fg-muted);font-size:.85rem;position:relative;z-index:2}
+
+  /* ---- the phone demo: a designed vertical drift, NOT a centered stack ---- */
+  .phone-wrap{padding:7vh 6vw 12vh;max-width:1280px;margin:0 auto;position:relative;z-index:2}
+  .phone{
+    width:392px;max-width:100%;margin:6vh auto 0;
+    border:10px solid #0d0907;border-radius:42px;
+    box-shadow:0 50px 90px -40px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.04);
+    overflow:hidden;background:var(--bg);
+  }
+  .phone .screen{padding:30px 20px 60px}
+  .phone .pgoods-head{font-family:var(--display);font-weight:500;font-size:1.5rem;margin:6px 0 30px}
+  .pstage{position:relative;display:flex;flex-direction:column}
+  .pcard{
+    text-decoration:none;color:inherit;display:block;
+    opacity:0;transform:translateY(30px) scale(.96);
+    transition:opacity 1.4s cubic-bezier(.16,.7,.3,1), transform 1.5s cubic-bezier(.16,.7,.3,1);
+  }
+  .pcard.in{opacity:1;transform:none}
+  .pcard .frame{position:relative;width:100%;aspect-ratio:4/5;overflow:hidden;border-radius:3px;background:var(--bg-2);box-shadow:0 24px 44px -22px rgba(0,0,0,.8)}
+  .pcard .frame img{width:100%;height:100%;object-fit:cover;display:block}
+  .pcard .frame::after{content:"";position:absolute;inset:0;background:var(--accent);mix-blend-mode:color;opacity:.34}
+  .pcard .meta{padding:11px 2px 0}
+  .pcard .name{font-family:var(--display);font-weight:500;font-size:1rem}
+  .pcard .price{display:block;margin-top:3px;color:var(--fg-muted);font-size:.82rem}
+
+  /* When the real browser is actually phone-width, the desktop stages drift the
+     same way instead of collapsing to a dead stack. */
+  @media (max-width:760px){
+    .stage{display:flex!important;flex-direction:column;height:auto!important;gap:0!important}
+    .card{position:static!important;left:auto!important;top:auto!important;rotate:0!important}
+    .card:nth-child(1){width:80%!important;align-self:flex-start}
+    .card:nth-child(2){width:64%!important;align-self:flex-end;margin-top:-7%}
+    .card:nth-child(3){width:88%!important;align-self:flex-start;margin-top:-3%}
+    .card:nth-child(4){width:58%!important;align-self:flex-end;margin-top:-9%}
+    .card:nth-child(5){width:74%!important;align-self:flex-start;margin-top:-2%}
+    .stage-label .desc{display:none}
+  }
+</style>
+</head>
+<body>
+
+  <section class="intro">
+    <div class="kicker">Hollow &amp; Wick · cozy</div>
+    <h1>Three ways the goods<br/>could build themselves</h1>
+    <p>Same five candles, same staggered fade — but each scatter is composed differently. Scroll down to each one and watch it assemble. Tell me which shape feels right and I'll build that into the real treatment.</p>
+    <p class="hint">Reload the page to see the build order reshuffle. Scroll slowly — each section <span>triggers when it enters the screen</span>.</p>
+  </section>
+
+  <!-- VARIATION 1 — the symmetric five (your sketch, equal cards) -->
+  <div class="stage-wrap">
+    <div class="stage-label">
+      <span class="n">01</span>
+      <h2>The Five</h2>
+      <span class="desc">Your sketch exactly — equal cards, the four corners and the middle. Honest baseline. Watch how the perfect symmetry still reads a little grid-like and the centre can feel sparse.</span>
+    </div>
+    <div class="stage" data-h="140" id="s1"></div>
+  </div>
+
+  <!-- VARIATION 2 — anchored: one large piece, the rest playing off it -->
+  <div class="stage-wrap">
+    <div class="stage-label">
+      <span class="n">02</span>
+      <h2>Anchored</h2>
+      <span class="desc">One large card anchors the composition; the other four are smaller and offset around it. The size contrast gives a focal point and makes the empty space feel intentional.</span>
+    </div>
+    <div class="stage" data-h="150" id="s2"></div>
+  </div>
+
+  <!-- VARIATION 3 — constellation: varied sizes, drift, a whisper of rotation -->
+  <div class="stage-wrap">
+    <div class="stage-label">
+      <span class="n">03</span>
+      <h2>Constellation</h2>
+      <span class="desc">Free scatter — varied sizes, vertical drift, a hair of rotation and the faintest overlap. The most editorial and the least like anything an AI builder spits out. Risk: can tip into messy if overdone.</span>
+    </div>
+    <div class="stage" data-h="165" id="s3"></div>
+  </div>
+
+  <!-- THE PHONE — the same scatter idea, art-directed for a narrow screen -->
+  <div class="phone-wrap">
+    <div class="stage-label">
+      <span class="n">04</span>
+      <h2>On a phone</h2>
+      <span class="desc">The scatter doesn't shrink — it goes vertical. Cards hug left, then right, vary in width, overlap, and fade in one at a time as each reaches the screen. Scroll the page and watch them land.</span>
+    </div>
+    <div class="phone">
+      <div class="screen">
+        <div class="pgoods-head">The Goods</div>
+        <div class="pstage" id="pstage"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">throwaway mockup · procession scatter explorations</div>
+
+<script>
+  const PRODUCTS = [
+    { name: "Ember & Oak",   price: "$28", seed: "emberoak" },
+    { name: "Midnight Fig",  price: "$32", seed: "midfig" },
+    { name: "Saltcedar",     price: "$26", seed: "saltcedar" },
+    { name: "Hearth No. 4",  price: "$30", seed: "hearth4" },
+    { name: "Smoke & Honey", price: "$34", seed: "smokehoney" },
+  ];
+
+  // layouts: each entry is {left, top, width, rotate} in % (left/top) and vw-ish width.
+  // top is % of the stage height (set via data-h as vh).
+  const LAYOUTS = {
+    s1: [ // the symmetric five — equal width, dice face
+      { l: 4,  t: 2,  w: 22, r: 0 },
+      { l: 74, t: 2,  w: 22, r: 0 },
+      { l: 39, t: 38, w: 22, r: 0 },
+      { l: 4,  t: 72, w: 22, r: 0 },
+      { l: 74, t: 72, w: 22, r: 0 },
+    ],
+    s2: [ // anchored — big one left, four smaller around
+      { l: 2,  t: 8,  w: 34, r: 0 },
+      { l: 46, t: 0,  w: 20, r: 0 },
+      { l: 74, t: 22, w: 22, r: 0 },
+      { l: 44, t: 52, w: 18, r: 0 },
+      { l: 70, t: 66, w: 24, r: 0 },
+    ],
+    s3: [ // constellation — varied sizes, drift, slight rotation (FIXED: height
+          // tied to width via aspect, slots tuned so nothing collides at any size)
+      { l: 4,  t: 3,  w: 25, r: -2 },
+      { l: 38, t: 34, w: 19, r: 1.5 },
+      { l: 64, t: 6,  w: 24, r: 2 },
+      { l: 8,  t: 60, w: 23, r: 1 },
+      { l: 58, t: 54, w: 27, r: -1.5 },
+    ],
+  };
+
+  function build(stageId){
+    const stage = document.getElementById(stageId);
+    // s3 (the chosen Constellation) ties its height to its WIDTH — the real fix.
+    // Resize the window and the cards keep their spacing; they never collide.
+    if (stageId === "s3") stage.style.aspectRatio = "1 / 1.1";
+    else stage.style.height = (stage.dataset.h || 140) + "vh";
+    const layout = LAYOUTS[stageId];
+    PRODUCTS.forEach((p, i) => {
+      const pos = layout[i];
+      const a = document.createElement("a");
+      a.className = "card";
+      a.href = "#";
+      a.style.left = pos.l + "%";
+      a.style.top = pos.t + "%";
+      a.style.width = pos.w + "%";
+      if (pos.r) a.style.rotate = pos.r + "deg";
+      a.innerHTML = `
+        <div class="frame"><img loading="lazy" alt="${p.name}"
+          src="https://picsum.photos/seed/${p.seed}/640/800" /></div>
+        <div class="meta"><span class="name">${p.name}</span><span class="price">${p.price}</span></div>`;
+      stage.appendChild(a);
+    });
+  }
+
+  function shuffle(n){
+    const a = [...Array(n).keys()];
+    for (let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // assign a random build order when the stage enters view, then reveal
+  function arm(stageId){
+    const stage = document.getElementById(stageId);
+    const cards = [...stage.querySelectorAll(".card")];
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        const order = shuffle(cards.length);
+        const STEP = 430; // ms between each card landing (matches the real build)
+        cards.forEach((c, i) => { c.style.transitionDelay = (order[i] * STEP) + "ms"; });
+        stage.classList.add("in");
+        io.unobserve(stage);
+      });
+    }, { threshold: 0.28 });
+    io.observe(stage);
+  }
+
+  ["s1","s2","s3"].forEach((id) => { build(id); arm(id); });
+
+  // --- phone demo: vertical drift, each card reveals as it reaches the screen ---
+  const PMOBILE = [
+    { align:"flex-start", w:80, mt:0,  r:-1   },
+    { align:"flex-end",   w:64, mt:-7, r:1.2  },
+    { align:"flex-start", w:88, mt:-3, r:0.8  },
+    { align:"flex-end",   w:58, mt:-9, r:-1.4 },
+    { align:"flex-start", w:74, mt:-2, r:1    },
+  ];
+  (function buildPhone(){
+    const ps = document.getElementById("pstage");
+    PRODUCTS.forEach((p, i) => {
+      const m = PMOBILE[i];
+      const a = document.createElement("a");
+      a.className = "pcard";
+      a.href = "#";
+      a.style.alignSelf = m.align;
+      a.style.width = m.w + "%";
+      a.style.marginTop = m.mt + "%";
+      if (m.r) a.style.rotate = m.r + "deg";
+      a.innerHTML = `
+        <div class="frame"><img loading="lazy" alt="${p.name}"
+          src="https://picsum.photos/seed/${p.seed}/640/800" /></div>
+        <div class="meta"><span class="name">${p.name}</span><span class="price">${p.price}</span></div>`;
+      ps.appendChild(a);
+    });
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.35 });
+    [...ps.querySelectorAll(".pcard")].forEach((c) => io.observe(c));
+  })();
+</script>
+</body>
+</html>
