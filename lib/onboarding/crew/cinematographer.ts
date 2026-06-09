@@ -24,6 +24,7 @@ import { anthropicClient } from '@/lib/anthropic';
 import { logger } from '@/lib/logger';
 import { withTimeout } from '@/lib/with-timeout';
 import { ScenePrompt } from '@/lib/archetypes/main-street/schemas';
+import { lengthAwareIssues } from './length-feedback';
 import type { Trajectory } from './trajectory';
 
 const MODEL = 'claude-sonnet-4-6';
@@ -175,7 +176,7 @@ export async function shootMoment(trajectory: Trajectory, story: string[]): Prom
       continue;
     }
 
-    const issues = parsed.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message }));
+    const issues = lengthAwareIssues(parsed.error, tu.input);
     lastIssues = issues.map((i) => `${i.path}: ${i.message}`).join('; ');
     messages.push({ role: 'assistant', content: resp.content });
     messages.push({
