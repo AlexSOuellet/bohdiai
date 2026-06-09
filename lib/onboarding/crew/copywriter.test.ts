@@ -103,7 +103,7 @@ describe('writeCopy (the Copywriter)', () => {
   });
 
   it('tells the copywriter its actual length when a field overflows its cap, then accepts the fix', async () => {
-    const longDesc = 'x'.repeat(650); // over the 600 cap
+    const longDesc = 'x'.repeat(850); // over the 800 cap
     const over = { ...draft, products: [{ ...draft.products[0], description: longDesc }, draft.products[1], draft.products[2]] };
     create.mockResolvedValueOnce(toolMsg(over)).mockResolvedValueOnce(toolMsg(draft));
     const d = await writeCopy(brief, trajectory, rolls);
@@ -112,8 +112,8 @@ describe('writeCopy (the Copywriter)', () => {
     const second = create.mock.calls[1]![0] as { messages: Array<{ role: string; content: unknown }> };
     const last = JSON.stringify(second.messages.at(-1));
     expect(last).toContain('products.0.description');
-    // the actionable part: the model is told its real length (650), not just the cap
-    expect(last).toContain('650');
+    // the actionable part: the model is told its real length (850), not just the cap
+    expect(last).toContain('850');
   });
 
   it('throws when no valid copy is produced within the attempt cap', async () => {

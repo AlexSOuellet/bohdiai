@@ -38,7 +38,7 @@ export const ProductDraftSchema = z.object({
   name: z.string().min(2).max(40),
   slug: z.string().min(2).max(48),
   shortDescription: z.string().min(4).max(90),
-  description: z.string().min(12).max(600),
+  description: z.string().min(12).max(800),
   basePriceCents: z.number().int().min(100).max(5_000_00),
 });
 export type ProductDraft = z.infer<typeof ProductDraftSchema>;
@@ -71,7 +71,7 @@ export const CopywriterDraftSchema = z.object({
     viewAllLabel: z.string().min(2).max(28).optional(),
   }),
   founder: z.object({
-    quote: z.string().min(24).max(280),
+    quote: z.string().min(24).max(340),
     attribution: z.string().min(4).max(60),
     treatment: z.enum(FOUNDER_TREATMENTS),
     eyebrow: z.string().min(2).max(24).optional(),

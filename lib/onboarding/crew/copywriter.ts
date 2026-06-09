@@ -93,7 +93,7 @@ HEADINGS ARE PHRASES, NOT SENTENCES. The headings and headlines below (goods.tit
 ${goods}
 - goods.label (2-24, optional): a small label on the heading row.
 - goods.viewAllLabel (2-28, optional): the cue to the full Products page.
-- founder.quote (24-280): the founder's words in the About beat.
+- founder.quote (24-340): the founder's words in the About beat.
 - founder.attribution (4-60): who said it.
 - founder.treatment: you drew "${rolls.founder}" this build — the dice again. Keep your draw unless it genuinely fights this shop; if it does, pick another from these and note why in one line:
       - quote: a portrait beside a pull-quote.
@@ -111,7 +111,7 @@ ${goods}
 - about.story (2-5 paragraphs, each 40-700): the About page body.
 - contact.heading (4-48): the Contact page heading.
 - contact.intro (20-400): the Contact page invitation. Real email and phone are unknown at build time and the maker adds them later, so write the voice, not contact details.
-- products (write ${target}): each { name (2-40), slug (2-48, lowercase-hyphen), shortDescription (4-90), description (12-600), basePriceCents (integer cents, e.g. 4800 = $48) }.
+- products (write ${target}): each { name (2-40), slug (2-48, lowercase-hyphen), shortDescription (4-90), description (12-800), basePriceCents (integer cents, e.g. 4800 = $48) }.
 
 Call submit_copy now.`;
 }

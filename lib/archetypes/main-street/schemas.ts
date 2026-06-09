@@ -148,7 +148,7 @@ export const MainStreetContentSchema = z.object({
   /** BEAT 3 — the founder + a real "find us this week" calendar. Required: the
    *  authority the platform is built on. */
   founder: z.object({
-    quote: z.string().min(24).max(280),
+    quote: z.string().min(24).max(340),
     attribution: z.string().min(4).max(60),
     /** Which About look to wear — BOHDI's pick, the one that fits the maker. All
      *  maker-only; the find-us calendar is its own beat, never inside these.
