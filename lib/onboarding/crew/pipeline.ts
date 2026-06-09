@@ -17,6 +17,7 @@ import type { ArchetypeBuildSpec } from '@/lib/archetypes/builder';
 import { logger } from '@/lib/logger';
 import { direct } from './director';
 import { writeCopy } from './copywriter';
+import { rollTreatments } from './treatment-roll';
 import { shootMoment } from './cinematographer';
 import { designLook } from './graphic-artist';
 import { directorsCut } from './directors-cut';
@@ -32,6 +33,10 @@ export interface CrewBuildResult {
     momentKind: CrewOutput['moment']['kind'];
     goodsTreatment: CrewOutput['copy']['goods']['treatment'];
     founderTreatment: CrewOutput['copy']['founder']['treatment'];
+    /** What the dice dealt before the copywriter played — surfaced alongside the
+     *  pick so logging can spot Bohdi overriding back to one body (reconvergence). */
+    goodsRoll: CrewOutput['copy']['goods']['treatment'];
+    founderRoll: CrewOutput['copy']['founder']['treatment'];
   };
 }
 
@@ -68,9 +73,11 @@ function assembleSubmission(out: CrewOutput, shopName: string): { content: unkno
 }
 
 /** Run the crew and produce the engine's MainStreetAuthored envelope. */
-export async function directAndProduce(brief: CrewBrief): Promise<CrewBuildResult> {
+export async function directAndProduce(brief: CrewBrief, rand: () => number = Math.random): Promise<CrewBuildResult> {
   const trajectory = await direct(brief);
-  const copy = await writeCopy(brief, trajectory);
+  // Code rolls the dice; the copywriter reads them and plays or overrides (D48).
+  const rolls = rollTreatments(rand);
+  const copy = await writeCopy(brief, trajectory, rolls);
   const moment = await shootMoment(trajectory, copy.moment.story);
   const look = await designLook(brief, trajectory, copy.moment.story, moment, copy.products);
   const cut = await directorsCut(brief, trajectory, { copy, moment, look });
@@ -88,6 +95,8 @@ export async function directAndProduce(brief: CrewBrief): Promise<CrewBuildResul
       momentKind: cut.moment.kind,
       goodsTreatment: cut.copy.goods.treatment,
       founderTreatment: cut.copy.founder.treatment,
+      goodsRoll: rolls.goods,
+      founderRoll: rolls.founder,
     },
   };
 }

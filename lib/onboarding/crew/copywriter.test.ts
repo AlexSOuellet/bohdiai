@@ -26,6 +26,10 @@ const trajectory: Trajectory = {
   register: 'restrained',
 };
 
+// The dice the pipeline deals the copywriter. Matches the draft below so the
+// existing assertions see unchanged behavior; the roll test below uses its own.
+const rolls = { goods: 'procession', founder: 'quote' } as const;
+
 // A minimal valid words-only draft (no image prompts; treatments chosen).
 const draft = {
   shopName: 'Tannery Row',
@@ -70,7 +74,7 @@ beforeEach(() => {
 describe('writeCopy (the Copywriter)', () => {
   it('returns the validated words-only draft from a valid first call', async () => {
     create.mockResolvedValueOnce(toolMsg(draft));
-    const d = await writeCopy(brief, trajectory);
+    const d = await writeCopy(brief, trajectory, rolls);
     expect(d.shopName).toBe('Tannery Row');
     expect(d.goods.treatment).toBe('procession');
     expect(d.founder.treatment).toBe('quote');
@@ -81,7 +85,7 @@ describe('writeCopy (the Copywriter)', () => {
 
   it('puts the trajectory in the prompt and forces the tool', async () => {
     create.mockResolvedValueOnce(toolMsg(draft));
-    await writeCopy(brief, trajectory);
+    await writeCopy(brief, trajectory, rolls);
     const args = create.mock.calls[0]![0] as { system: string; tool_choice?: unknown };
     expect(args.system).toContain(trajectory.feeling);
     expect(args.system).toContain(trajectory.customerWhy);
@@ -91,7 +95,7 @@ describe('writeCopy (the Copywriter)', () => {
   it('rejects a story line with punctuation, then accepts the fix', async () => {
     const bad = { ...draft, moment: { ...draft.moment, story: ['Flour. Water. Salt.', 'Time'] } };
     create.mockResolvedValueOnce(toolMsg(bad)).mockResolvedValueOnce(toolMsg(draft));
-    const d = await writeCopy(brief, trajectory);
+    const d = await writeCopy(brief, trajectory, rolls);
     expect(d.moment.story).toEqual(['Built by hand', 'Made to outlast you']);
     expect(create).toHaveBeenCalledTimes(2);
     const second = create.mock.calls[1]![0] as { messages: Array<{ role: string; content: unknown }> };
@@ -102,7 +106,7 @@ describe('writeCopy (the Copywriter)', () => {
     const longDesc = 'x'.repeat(650); // over the 600 cap
     const over = { ...draft, products: [{ ...draft.products[0], description: longDesc }, draft.products[1], draft.products[2]] };
     create.mockResolvedValueOnce(toolMsg(over)).mockResolvedValueOnce(toolMsg(draft));
-    const d = await writeCopy(brief, trajectory);
+    const d = await writeCopy(brief, trajectory, rolls);
     expect(d.products[0]!.description).toBe(draft.products[0]!.description);
     expect(create).toHaveBeenCalledTimes(2);
     const second = create.mock.calls[1]![0] as { messages: Array<{ role: string; content: unknown }> };
@@ -114,22 +118,33 @@ describe('writeCopy (the Copywriter)', () => {
 
   it('throws when no valid copy is produced within the attempt cap', async () => {
     create.mockResolvedValue(toolMsg({ ...draft, shopName: 'x' })); // too short
-    await expect(writeCopy(brief, trajectory)).rejects.toThrow(/valid copy/);
+    await expect(writeCopy(brief, trajectory, rolls)).rejects.toThrow(/valid copy/);
     expect(create).toHaveBeenCalledTimes(4);
   });
 
   it('throws if the model never calls the tool', async () => {
     create.mockResolvedValueOnce({ content: [{ type: 'text', text: 'done' }], stop_reason: 'end_turn' });
-    await expect(writeCopy(brief, trajectory)).rejects.toThrow(/did not call submit_copy/);
+    await expect(writeCopy(brief, trajectory, rolls)).rejects.toThrow(/did not call submit_copy/);
   });
 
   it('instructs the copywriter to author each link target from the real pages', async () => {
     create.mockResolvedValueOnce(toolMsg(draft));
-    await writeCopy(brief, trajectory);
+    await writeCopy(brief, trajectory, rolls);
     const args = create.mock.calls[0]![0] as { system: string };
     expect(args.system).toContain('target');
     // names the real pages the crew can point at
     expect(args.system).toMatch(/shop.*about.*events.*contact/s);
+  });
+
+  it('deals the rolled treatments to the copywriter as a draw it can override', async () => {
+    create.mockResolvedValueOnce(toolMsg(draft));
+    await writeCopy(brief, trajectory, { goods: 'slideshow', founder: 'card' });
+    const args = create.mock.calls[0]![0] as { system: string };
+    // the goods and About beats arrive with a starting treatment dealt by code...
+    expect(args.system).toContain('you drew "slideshow"');
+    expect(args.system).toContain('you drew "card"');
+    // ...which Bohdi plays unless it truly fights the shop — he keeps the veto.
+    expect(args.system).toContain('unless it genuinely fights');
   });
 });
 

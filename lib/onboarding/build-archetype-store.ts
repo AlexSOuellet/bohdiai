@@ -155,6 +155,8 @@ export async function buildArchetypeStore(
     momentKind: choices.momentKind,
     goodsTreatment: choices.goodsTreatment,
     founderTreatment: choices.founderTreatment,
+    goodsRoll: choices.goodsRoll,
+    founderRoll: choices.founderRoll,
   });
 
   return result;

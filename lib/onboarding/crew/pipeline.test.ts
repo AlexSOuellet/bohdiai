@@ -139,14 +139,34 @@ describe('directAndProduce (the crew pipeline)', () => {
       .mockResolvedValueOnce(toolMsg('set_look', look))
       .mockResolvedValueOnce(toolMsg('final_cut', {}));
 
-    const result = await directAndProduce(brief);
+    // rand: () => 0 deals the first face of each set — goods 'marquee', founder
+    // 'quote'. The mock copy overrides goods to 'procession' and keeps founder.
+    const result = await directAndProduce(brief, () => 0);
 
-    // The pipeline does NOT log (the tenant doesn't exist yet); it returns the
-    // picks so the orchestrator can log them against the real tenant + niche.
+    // The pipeline does NOT log (the tenant doesn't exist yet); it returns BOTH
+    // what was dealt and what the copywriter landed on, so the orchestrator can
+    // log rolled-vs-picked against the real tenant + niche.
     expect(result.choices).toEqual({
       momentKind: 'video',
       goodsTreatment: 'procession',
       founderTreatment: 'quote',
+      goodsRoll: 'marquee',
+      founderRoll: 'quote',
     });
+  });
+
+  it('deals the rolled treatments to the copywriter', async () => {
+    create
+      .mockResolvedValueOnce(toolMsg('set_trajectory', trajectory))
+      .mockResolvedValueOnce(toolMsg('submit_copy', copy))
+      .mockResolvedValueOnce(toolMsg('set_moment', moment))
+      .mockResolvedValueOnce(toolMsg('set_look', look))
+      .mockResolvedValueOnce(toolMsg('final_cut', {}));
+
+    await directAndProduce(brief, () => 0);
+    // calls[1] is the copywriter; its prompt carries the dealt draw.
+    const copywriterCall = create.mock.calls[1]![0] as { system: string };
+    expect(copywriterCall.system).toContain('you drew "marquee"');
+    expect(copywriterCall.system).toContain('you drew "quote"');
   });
 });

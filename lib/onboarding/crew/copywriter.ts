@@ -17,11 +17,19 @@ import { z } from 'zod';
 import { anthropicClient } from '@/lib/anthropic';
 import { logger } from '@/lib/logger';
 import { withTimeout } from '@/lib/with-timeout';
-import { GOODS_TREATMENT_MENU } from '@/lib/archetypes/main-street/goods';
+import { GOODS_TREATMENT_MENU, type GoodsTreatment } from '@/lib/archetypes/main-street/goods';
+import type { FounderTreatment } from '@/lib/archetypes/main-street/founder';
 import { LINK_TARGETS } from '@/lib/archetypes/main-street/links';
 import { CopywriterDraftSchema, type CopywriterDraft } from './copywriter-schema';
 import type { Trajectory } from './trajectory';
 import type { CrewBrief } from './types';
+
+/** The starting hand the pipeline deals: a treatment for each of the two beats
+ *  that converge. The copywriter plays each unless it genuinely fights the shop. */
+export interface TreatmentRolls {
+  goods: GoodsTreatment;
+  founder: FounderTreatment;
+}
 
 const MODEL = 'claude-sonnet-4-6';
 const MAX_TOKENS = 12000;
@@ -71,7 +79,7 @@ function feedbackIssues(error: z.ZodError, input: unknown): Array<{ path: string
   });
 }
 
-function buildCopywriterPrompt(brief: CrewBrief, trajectory: Trajectory): string {
+function buildCopywriterPrompt(brief: CrewBrief, trajectory: Trajectory, rolls: TreatmentRolls): string {
   const niche = brief.nicheBody.trim();
   const target = targetProductCount(brief.productCount);
   const goods = (Object.entries(GOODS_TREATMENT_MENU) as Array<[string, string]>)
@@ -112,13 +120,13 @@ Write the words with submit_copy. Each field, its hard limits (stay under), and 
 - moment.ctaLabel (3-24): the hero button. moment.ctaTarget: where it goes.
 - moment.secondaryCtaLabel (3-24, optional): a second hero button. moment.secondaryCtaTarget: where it goes (include when you write the secondary label).
 - goods.title (2-48): the heading of the products beat.
-- goods.treatment: which body the products beat wears — pick the one that fits this shop:
+- goods.treatment: you drew "${rolls.goods}" this build — the dice, not us, so shops stop wearing the same body. Keep your draw unless it genuinely fights this shop; if it does, pick another from these and note why in one line:
 ${goods}
 - goods.label (2-24, optional): a small label on the heading row.
 - goods.viewAllLabel (2-28, optional): the cue to the full Products page.
 - founder.quote (24-280): the founder's words in the About beat.
 - founder.attribution (4-60): who said it.
-- founder.treatment: which About-beat body — pick one:
+- founder.treatment: you drew "${rolls.founder}" this build — the dice again. Keep your draw unless it genuinely fights this shop; if it does, pick another from these and note why in one line:
       - quote: a portrait beside a pull-quote.
       - portrait: a large portrait with the quote over it.
       - letter: the quote as a short signed note with a small portrait.
@@ -140,8 +148,8 @@ Call submit_copy now.`;
 }
 
 /** Run the Copywriter: trajectory + niche in, one validated words-only draft out. */
-export async function writeCopy(brief: CrewBrief, trajectory: Trajectory): Promise<CopywriterDraft> {
-  const system = buildCopywriterPrompt(brief, trajectory);
+export async function writeCopy(brief: CrewBrief, trajectory: Trajectory, rolls: TreatmentRolls): Promise<CopywriterDraft> {
+  const system = buildCopywriterPrompt(brief, trajectory, rolls);
   const messages: Anthropic.MessageParam[] = [
     { role: 'user', content: 'Write every word of the store. Call submit_copy.' },
   ];

@@ -52,7 +52,7 @@ describe('logDesignChoice', () => {
 });
 
 describe('logCrewChoices', () => {
-  it('logs the three look-driving picks against the real tenant + niche + mood', async () => {
+  it('logs the three look-driving picks, recording what was rolled vs played', async () => {
     logCrewChoices({
       tenantId: 'tn_9',
       nicheSlug: 'woodworking',
@@ -60,6 +60,9 @@ describe('logCrewChoices', () => {
       momentKind: 'image',
       goodsTreatment: 'procession',
       founderTreatment: 'quote',
+      // goods overrode the dice ('marquee' → 'procession'); founder played its roll.
+      goodsRoll: 'marquee',
+      founderRoll: 'quote',
     });
     await flush();
 
@@ -72,7 +75,9 @@ describe('logCrewChoices', () => {
     }
     const byType = (t: string) => rows.find((r) => r['decision_type'] === t)!;
     expect(byType('moment-kind')['picked']).toEqual({ kind: 'image' });
-    expect(byType('goods-treatment')['picked']).toEqual({ treatment: 'procession' });
-    expect(byType('founder-treatment')['picked']).toEqual({ treatment: 'quote' });
+    // the treatment rows carry the dealt roll and whether Bohdi overrode it, so
+    // reconvergence (overriding back to one body) is visible in the data.
+    expect(byType('goods-treatment')['picked']).toEqual({ treatment: 'procession', rolled: 'marquee', overrode: true });
+    expect(byType('founder-treatment')['picked']).toEqual({ treatment: 'quote', rolled: 'quote', overrode: false });
   });
 });

@@ -78,6 +78,16 @@ export interface CrewChoicesLog {
   momentKind: (typeof MOMENT_KINDS)[number];
   goodsTreatment: string;
   founderTreatment: string;
+  /** What the dice dealt before the copywriter played — logged beside the pick so
+   *  overriding back to one body (reconvergence) is visible in the data (D48). */
+  goodsRoll: string;
+  founderRoll: string;
+}
+
+/** What got logged for a rolled treatment: the played treatment, the dealt roll,
+ *  and whether Bohdi overrode the dice. */
+function treatmentPick(treatment: string, rolled: string): { treatment: string; rolled: string; overrode: boolean } {
+  return { treatment, rolled, overrode: treatment !== rolled };
 }
 
 /**
@@ -89,6 +99,6 @@ export interface CrewChoicesLog {
 export function logCrewChoices(c: CrewChoicesLog): void {
   const base = { tenantId: c.tenantId, nicheSlug: c.nicheSlug, moodKey: c.moodKey };
   void logDesignChoice({ ...base, decisionType: 'moment-kind', candidates: MOMENT_KINDS, picked: { kind: c.momentKind }, reasoning: 'cinematographer chose the Moment kind for this build' });
-  void logDesignChoice({ ...base, decisionType: 'goods-treatment', candidates: GOODS_TREATMENTS, picked: { treatment: c.goodsTreatment }, reasoning: 'copywriter chose the goods section treatment' });
-  void logDesignChoice({ ...base, decisionType: 'founder-treatment', candidates: FOUNDER_TREATMENTS, picked: { treatment: c.founderTreatment }, reasoning: 'copywriter chose the founder section treatment' });
+  void logDesignChoice({ ...base, decisionType: 'goods-treatment', candidates: GOODS_TREATMENTS, picked: treatmentPick(c.goodsTreatment, c.goodsRoll), reasoning: 'copywriter played or overrode the dealt goods treatment' });
+  void logDesignChoice({ ...base, decisionType: 'founder-treatment', candidates: FOUNDER_TREATMENTS, picked: treatmentPick(c.founderTreatment, c.founderRoll), reasoning: 'copywriter played or overrode the dealt founder treatment' });
 }
