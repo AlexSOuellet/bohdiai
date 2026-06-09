@@ -2,7 +2,7 @@
 
 **Purpose:** the operational state a fresh session needs to start — current status, what's next, and the lessons that carry forward. **This file stays short.** Detailed per-session recaps live in `session-logs/` (one file per session). At the end of a session, write the recap to `session-logs/session-NN.md`, add a one-line entry to the index at the bottom of this file, and update only the Current State / Next Actions / Standing Lessons sections here. Do not paste full recaps back into this file — that is what bloated it to 1,200 lines and broke the reader (Session 35 cleanup).
 
-**Last updated:** 2026-06-08, end of Session 36, going into Session 37.
+**Last updated:** 2026-06-09, end of Session 37, going into Session 38.
 
 ---
 
@@ -20,28 +20,26 @@
 
 ## Current state
 
-Phase 1 build, on branch `session-12/layout-engine`. The storefront engine is **real and runs live** — Bohdi picks the archetype + skin, the Director + Crew pipeline (`lib/onboarding/crew/`) authors and generates everything, and it publishes a live tenant on production Supabase. Main Street is the primary archetype; its signature front door is the Moment. ~990 tests green.
+Phase 1 build, on branch `session-12/layout-engine`. The storefront engine is **real and runs live** — Bohdi picks the archetype + skin, the Director + Crew pipeline (`lib/onboarding/crew/`) authors and generates everything, and it publishes a live tenant on production Supabase. Main Street is the primary archetype; its signature front door is the Moment. ~1012 tests green, tsc clean.
 
-Session 36 shipped the two confirmed crew fixes plus a build-failure fix, all TDD, suite green (1005+ tests): **D46** (the crew authors each link's destination, not just its label — new `lib/archetypes/main-street/links.ts` with `LINK_TARGETS`/`linkHref`, authored nav via `resolveNav`, tolerant of legacy rows); **D47** (the cinematographer reaches for video, a still is the last resort); and a **copywriter length-feedback fix** (a live build died on a 600-char description overflow — the retry loop now reports the field's real length + chars to cut so it converges). Then a long, hard design conversation on the mood overhaul that **inverted the whole plan** — see below. Full recap: `session-logs/session-36.md`.
+Session 37 finished the mood-overhaul rethink and built the whole push, all TDD: **D48** (the crew picks each converging treatment — goods AND About — off a code-dealt roll it plays or overrides; code supplies the dice, Bohdi keeps the veto; About's roll is dealt before authoring so a rolled "card" gets its fields; rolled/played/overrode logged to `design_choices`); **D49** (deleted the dead mood→treatment rules — any treatment fits any mood — and the now-unused `mood` plumbing); **D50** (procession rebuilt as the **Constellation** — a scattered, asymmetric field that fades in one card at a time in random order on scroll-in, then rests; vertical-drift on mobile; slideshow also sped up). Full recap: `session-logs/session-37.md`.
 
 ## Next actions
 
-**Next session = finish the mood-overhaul rethink, then build it.** The Part E plan as written is DEAD — Session 36 established that **any treatment works with any mood, so there is NO mood→treatment mapping.** The real problem is the crew converging on the same goods AND about treatment every build (no variety). Resume here:
+The mood-overhaul push is built. What's next is mostly verification and the deferred pieces:
 
-0. **Answer the open question first (it gates everything):** the variety fix must come from getting the CREW to choose, NOT code making the pick (Alex: "find a way to get the crew to choose randomly is NOT coding it"). But models converge even when told to "choose randomly." Proposed: hand Bohdi a random "roll" in his brief he uses to pick — code supplies the dice, Bohdi reads them. **Unanswered:** does a roll count as "the crew choosing," or is even that too close to coding it (prompt-only, less reliable)? Resolve, then build.
-1. Get the crew to pick the goods AND about treatments with real variety (per the answer above).
-2. **Rebuild procession** — two-up and staggered, ~a row and a half (currently one product per full-width row, ~3 screens; takes too much space).
-3. **Speed up the slideshow** (too slow).
-4. **Maker treatment-override in the dashboard** — the treatment is already a stored per-shop field; the picker lands with the website editor.
+1. **Eyeball the real Constellation live** — only the throwaway mockup (`procession-mockup.html`, opened in Chrome) and the tests have been seen, not the actual Next render. Start the dev server when Alex wants to look.
+2. **Watch the first live builds** for the things the engine can now do: is the variety real, does Bohdi override the roll back to one body (the `design_choices` log will show it), does the Constellation hold up, is the slideshow pace right.
+3. **Maker treatment-override in the dashboard** — rides on the website editor (not built yet). The treatment is already a stored per-shop field, so nothing blocks it.
+4. **Override-reason text capture** — the prompt asks Bohdi why he overrides, but only the rolled/played/overrode fact is logged, not the text. Add a schema field if the override rate says we want his reasoning.
 
-Notes: the about matters MORE than goods for conveying mood (so it's the higher-value lever); mood still drives colors/skin as before. The five-decision Part E gate (feeling-definitions, color layer, skin re-tagging, mood→treatment map, Templated) is largely moot now that there's no mapping — but the **Studio skin's `Syne` font (Alex dislikes)** and skin re-tagging may still want attention separately.
-
-Also open (lower priority): delete the dead **broadsheet** archetype (chip spawned this session) and the dead `lib/bohdi/` directory (chip spawned earlier); the heroless-archetype Moment variant; founder photo/text sizes are an eyeball judgment call.
+Also open (lower priority, carried forward): delete the dead **broadsheet** archetype and the dead `lib/bohdi/` directory (chips spawned earlier); the **Studio skin's `Syne` font** (Alex dislikes); the heroless-archetype Moment variant; founder photo/text sizes are an eyeball judgment call.
 
 ---
 
 ## Session log index (full recaps in `session-logs/`)
 
+- [Session 37](session-logs/session-37.md) — Resolved the roll question and built the mood-overhaul push: D48 (crew picks treatments off a code-dealt roll it can override; rolled-vs-played logged), D49 (deleted the dead mood→treatment rules + unused mood plumbing), D50 (procession rebuilt as the Constellation, slideshow sped up). Full suite green (1012).
 - [Session 36](session-logs/session-36.md) — Shipped D46 (crew authors link destinations), D47 (cinematographer prefers video), and a copywriter length-feedback fix (build-failure); then a long mood-overhaul design conversation that inverted the plan (any treatment fits any mood → no mapping; the bug is convergence; fix = crew chooses with variety, not code)
 - [Session 35](session-logs/session-35.md) — De-bloated the brief; shipped both Session-34 plans (8 fixes) + corrected logging; locked + built the D44 Moment; live-build fix loop (shop name, Seedance fast, clickable products, founder beat); punch list D45–D47
 - [Session 34](session-logs/session-34.md) — Design + planning: wrote the two implementation plans above; bias audit of video prompts

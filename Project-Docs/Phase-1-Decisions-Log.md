@@ -574,6 +574,38 @@ Two of three live builds (the baker, the ceramicist) got a STILL Moment when mot
 
 ---
 
+## 2026-06-09 (session 37)
+
+These came out of the mood-overhaul follow-through. Session 36 had already inverted the original plan — there is no mood→treatment mapping, the real bug is the crew converging on one treatment every build — and left one question open: does handing Bohdi a random "roll" count as the crew choosing, or is that too close to coding the pick. We resolved that, then built it.
+
+### D48. The crew picks each converging treatment off a code-dealt roll it can override
+
+The copywriter chose the same goods body and almost always "quote" for the About beat on every build, so shops in one niche read alike. The honest diagnosis: a model's free, taste-driven pick *is* the convergence. Asked to choose what "fits this shop," Bohdi reaches for the same answer every time, because that's his genuine read of best-fit. So "let the crew choose freely AND give me variety" has a contradiction inside it — his free choice is the sameness. Any mechanism that produces variety is, by definition, leaning on the pick. The question was never whether to nudge, but how, while keeping the choice with Bohdi.
+
+The mechanism: each build, code rolls a treatment for each of the two converging beats — a uniform random draw from the real set — and deals it to the copywriter as his starting hand. He plays his draw unless it genuinely fights the shop, in which case he picks another from the menu and notes why in one line. Code supplies the entropy; Bohdi keeps the veto. This is the difference from the thing Alex rejected (a seeded code-side pick that decides the treatment behind Bohdi's back): code isn't choosing, it's dealing a card he can play or fold. Alex's words from Session 36 stand — "find a way to get the crew to choose randomly is NOT coding it" — and a roll satisfies that because the dice only break the rut; the decision is still his. Alex was good with this and explicitly reserved the right to change his mind once he sees real builds.
+
+Two specifics. For the About beat, the roll is dealt *before* the copywriter writes, because the richer About treatments need more authored content (the "card" needs an eyebrow and heading) — part of why it always defaulted to the cheap "quote." If we rolled the treatment only at render time, a rolled "card" would find its fields empty and fall back to quote, fixing nothing. So for About the roll drives the writing, not just the rendering. And every build logs what was dealt, what was played, and whether Bohdi overrode (into `design_choices`), so reconvergence — Bohdi overriding back to one body — shows up in the data instead of being invisible. The roll source is injectable, so the pipeline is deterministic in tests.
+
+The prompt asks Bohdi for a one-line reason when he overrides, but the build does not yet capture that text — only the rolled/played/overrode fact. Storing the reason would mean a new schema field; deferred until the override rate tells us we want to read his reasoning.
+
+The maker being able to override the treatment from the dashboard is the natural complement to this, but it rides on the website editor, which isn't built yet, so it lands when the editor does. The treatment is already a stored per-shop field, so nothing here blocks it.
+
+### D49. There is no mood→treatment mapping — any treatment fits any mood
+
+Established conversationally in Session 36 and acted on here. The goods treatments (marquee / constellation / switcher / slideshow) and the About treatments (quote / portrait / letter / card) are structural and kinetic — how many pieces show at once, whether it scrolls or fades, how much it asks of the shopper. That is tempo and attention-pattern, not mood. Mood lives in the skin, palette, type, and light, all of which wrap around whichever treatment is chosen. So any treatment can wear any mood and still read as that mood, which is exactly why there is no mapping to build and why the roll (D48) is safe — letting the treatment vary freely never produces a mood mismatch.
+
+The leftover mood→treatment rules in the code were deleted: the goods selector picked slideshow-vs-switcher off a "cinematic mood" list, and the About selector leaned card/portrait off intimate/cinematic mood lists. Both gone. The two selectors are now pure legacy fallbacks for rows authored before the treatment field existed — goods is size-only, About is pick-or-quote — and the now-unused `mood` plumbing was removed from the beats, MainStreet, and the builder. (One honest caveat surfaced and is worth remembering: the treatments aren't perfectly mood-*neutral* either, because they carry tempo, and a busy marquee vs a hands-off slideshow do carry a faint emotional lean. But all four were built to be composed and motion-bearing — none frantic, none funereal — so free variation never tips into a real mismatch.)
+
+### D50. The Main Street procession is rebuilt as the Constellation
+
+The old procession was one product per full-width row, the image settling out of a zoom as it scrolled in — it ran about three screens and felt long. It is replaced by a Constellation: the 3–5 sampled pieces (the home is a sampling, not the catalog) scattered across about a screen-and-a-half in a composed, asymmetric field — varied sizes, a little vertical drift, a whisper of rotation. When the section scrolls into view the cards fade in one at a time in a random order, as if the space is building itself, then rest. Once landed they hold still: the wow is the assembly, not a loop, and a resolved section is shoppable.
+
+The chosen shape is deliberately asymmetric rather than the symmetric "four corners and a centre" first sketched, because perfect corner symmetry reads as a grid of a different kind and the empty middle reads sparse; varied sizes and offset placement read as designed. On a phone the scatter goes vertical — cards hug left then right, vary in width, and overlap, art-directed for the narrow screen rather than collapsed to a centred stack of identical cards (which is the AI-builder pattern we avoid). Reduced-motion shows the cards at once. The design was settled against a throwaway HTML mockup Alex viewed in Chrome (three scatters plus a phone frame); "Constellation" won, with a slower build than the mockup's.
+
+Alongside this the slideshow was sped up — the per-slide dwell dropped from 5s to 3.2s and the cross-fade from 1.1s to 0.8s, because it read as sluggish. The slow Ken Burns drift stays; its slowness is intentional.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.
