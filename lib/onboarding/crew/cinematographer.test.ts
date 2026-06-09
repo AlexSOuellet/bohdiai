@@ -103,6 +103,33 @@ describe('shootMoment (the Cinematographer)', () => {
     expect(args.system.toLowerCase()).toContain('no text');
   });
 
+  it('rejects a video whose camera moves (it breaks the seamless loop), then accepts a locked camera', async () => {
+    const moving = { ...scene, prompt: { ...scene.prompt, camera: 'locked-off lens breathing slightly, slow rack focus drifting from the foot to the rim' } };
+    create.mockResolvedValueOnce(toolMsg(moving)).mockResolvedValueOnce(toolMsg(scene));
+    const s = await shootMoment(trajectory, story);
+    expect(s.prompt.camera).toBe('static wide shot, 35mm');
+    expect(create).toHaveBeenCalledTimes(2);
+    const second = create.mock.calls[1]![0] as { messages: Array<{ role: string; content: unknown }> };
+    const lastMsg = JSON.stringify(second.messages.at(-1)).toLowerCase();
+    expect(lastMsg).toContain('camera');
+    expect(lastMsg).toMatch(/loop|locked|static|movement/);
+  });
+
+  it('does not apply the locked-camera rule to a still (it does not loop)', async () => {
+    create.mockResolvedValueOnce(toolMsg({ ...scene, kind: 'image', prompt: { ...scene.prompt, camera: 'a slow pan across the bench' } }));
+    const s = await shootMoment(trajectory, story);
+    expect(s.kind).toBe('image');
+    expect(create).toHaveBeenCalledTimes(1);
+  });
+
+  it('directs a locked camera with motion from within the frame for video', async () => {
+    create.mockResolvedValueOnce(toolMsg(scene));
+    await shootMoment(trajectory, story);
+    const sys = (create.mock.calls[0]![0] as { system: string }).system.toLowerCase();
+    expect(sys).toMatch(/locked|static|hold the camera/);
+    expect(sys).toMatch(/within the frame|in the frame|from the scene/);
+  });
+
   it('directs the cinematographer to reach for video, a still only as a last resort (D47)', async () => {
     create.mockResolvedValueOnce(toolMsg(scene));
     await shootMoment(trajectory, story);

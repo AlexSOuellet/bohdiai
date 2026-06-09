@@ -6,9 +6,10 @@
  *
  * No taste-bias: the direction is the trajectory and the story. The prompt names
  * the scene groups STRUCTURALLY (what kind of info each holds) and states the loop
- * PHYSICS for a video (a seamless loop cannot contain progressive action or a big
- * light change without jumping on restart) — physics, not taste. It never says go
- * low-light or go cinematic.
+ * PHYSICS for a video (a seamless loop holds the camera LOCKED and takes its motion
+ * from within the frame; it cannot contain camera movement, progressive action, or
+ * a big light change without jumping on restart) — physics, not taste. It never
+ * says go low-light or go cinematic.
  *
  * It DOES prefer video — that is product intent, not taste (D47). The Moment is
  * motion; a BohdiAI front door MOVES where a template builder's sits still (D33).
@@ -58,6 +59,24 @@ function findTextRequests(prompt: MomentScene['prompt']): string[] {
     .filter((hit): hit is string => hit !== null);
 }
 
+/** Camera moves that break a seamless loop — the camera travels and can't return
+ *  to its start frame, so the restart jumps. A video Moment must hold the camera
+ *  still and let the motion come from within the frame. Physics, not taste. Scoped
+ *  to the `camera` phrase only (a tilt-shift LENS or "track" elsewhere is fine). */
+const CAMERA_MOVES = [
+  'pan', 'panning', 'dolly', 'zoom', 'zooming', 'rack focus', 'focus pull', 'pull focus',
+  'push in', 'push-in', 'crane', 'orbit', 'orbiting', 'handheld', 'glide', 'gliding',
+  'sweep', 'sweeping', 'pull back', 'pull-back', 'drift', 'drifting', 'breathing',
+] as const;
+const CAMERA_MOVE_RE = new RegExp(`\\b(${CAMERA_MOVES.join('|').replace(/ /g, '\\s')})\\b`, 'i');
+
+/** Find a camera-movement phrase in the camera field, or null if it's a static
+ *  setup. Only meaningful for a video (a still doesn't loop). */
+function findCameraMovement(camera: string): string | null {
+  const m = CAMERA_MOVE_RE.exec(camera);
+  return m ? m[0] : null;
+}
+
 const SET_MOMENT_TOOL: Anthropic.Tool = {
   name: 'set_moment',
   description: 'Design the Moment hero shot. Returns { ok: true } or { ok: false, issues: [...] } to fix and resubmit.',
@@ -84,14 +103,16 @@ Design the shot with set_moment:
     - subject: what is in frame.
     - environment: where it is.
     - atmosphere: the feeling in the air.
-    - camera: the angle, lens, and any movement.
+    - camera: the angle and lens. For a video the camera is LOCKED — a fixed, static setup. Name no movement: no pan, push-in, zoom, dolly, crane, orbit, rack focus, or drift. (A moving camera can't loop — see below.)
     - lighting: the light.
     - style: the visual style.
 - alt (4-120): a plain description of the shot.
 
 - No text, lettering, logos, titles, captions, or typography anywhere in the frame — the engine sets the type; the shot is image only. (A physics rule: image models can't render legible text.)
 
-If kind is "video": it is a short clip that LOOPS seamlessly, so the motion must be continuous and ambient — no progressive human action and no large change in light or position across the clip, or the restart will jump. A motionless person is fine (hands at rest, a figure standing still); a person performing an action is not.
+If kind is "video": it is a short clip that LOOPS seamlessly. Two things follow, both physics:
+- The CAMERA is locked. The motion comes from WITHIN the frame — drifting light, rising steam, a flame's flicker, fabric or dust stirring, a slow shimmer on a glaze — never from the camera. A camera that moves (pans, pushes in, zooms, racks focus, drifts) travels away from its start frame and the loop jumps on restart. Hold the camera still and let the scene move.
+- The in-frame motion is continuous and ambient — no progressive human action and no large change in light or position across the clip, or the restart will jump. A motionless person is fine (hands at rest, a figure standing still); a person performing an action is not.
 
 Set the moment now.`;
 }
@@ -124,16 +145,27 @@ export async function shootMoment(trajectory: Trajectory, story: string[]): Prom
     const parsed = MomentSceneSchema.safeParse(tu.input);
     if (parsed.success) {
       const textHits = findTextRequests(parsed.data.prompt);
-      if (textHits.length === 0) {
+      // A video must loop seamlessly, so its camera must be locked. A still
+      // doesn't loop, so camera wording is irrelevant for it.
+      const cameraHit = parsed.data.kind === 'video' ? findCameraMovement(parsed.data.prompt.camera) : null;
+      if (textHits.length === 0 && !cameraHit) {
         logger.info('crew: moment shot', { kind: parsed.data.kind });
         return parsed.data;
       }
-      // The shot asked the image model to render lettering — a physics failure.
-      // Treat it like a validation failure and ask for a clean reshoot.
-      const issues = textHits.map((hit) => ({
-        path: `prompt.${hit.split(':')[0]}`,
-        message: `No text, lettering, titles, logos, or typography in the frame — the engine sets the type. Remove the lettering at ${hit} and reshoot the shot as image only.`,
-      }));
+      // Physics failures (text the image model can't render; a moving camera that
+      // breaks the loop). Treat like a validation failure and ask for a reshoot.
+      const issues = [
+        ...textHits.map((hit) => ({
+          path: `prompt.${hit.split(':')[0]}`,
+          message: `No text, lettering, titles, logos, or typography in the frame — the engine sets the type. Remove the lettering at ${hit} and reshoot the shot as image only.`,
+        })),
+        ...(cameraHit
+          ? [{
+              path: 'prompt.camera',
+              message: `The Moment loops seamlessly, so the CAMERA must be LOCKED/static — a moving camera (here: "${cameraHit}") travels and can't return to its start frame, so the loop jumps. Hold the camera still and let the motion come from WITHIN the frame (drifting light, rising steam, a slow flicker). Reshoot the camera as a fixed setup.`,
+            }]
+          : []),
+      ];
       lastIssues = issues.map((i) => `${i.path}: ${i.message}`).join('; ');
       messages.push({ role: 'assistant', content: resp.content });
       messages.push({
