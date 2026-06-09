@@ -12,20 +12,14 @@ describe('selectGoodsTreatment', () => {
     expect(selectGoodsTreatment(11)).toBe('procession');
   });
 
-  it('gives a small catalog the switcher by default', () => {
+  it('gives a small catalog the switcher — never keyed off mood (no mood→treatment rule)', () => {
     expect(selectGoodsTreatment(3)).toBe('switcher');
-    expect(selectGoodsTreatment(5, 'modern')).toBe('switcher');
-    expect(selectGoodsTreatment(2, 'simple')).toBe('switcher');
+    expect(selectGoodsTreatment(5)).toBe('switcher');
+    expect(selectGoodsTreatment(2)).toBe('switcher');
   });
 
-  it('gives a small cinematic-mood catalog the slideshow', () => {
-    expect(selectGoodsTreatment(4, 'cozy')).toBe('slideshow');
-    expect(selectGoodsTreatment(3, 'DARK')).toBe('slideshow');
-    expect(selectGoodsTreatment(5, 'dark sunset')).toBe('slideshow');
-  });
-
-  it('is deterministic for the same inputs', () => {
-    expect(selectGoodsTreatment(4, 'rustic')).toBe(selectGoodsTreatment(4, 'rustic'));
+  it('is a pure size-based fallback, deterministic for the same count', () => {
+    expect(selectGoodsTreatment(4)).toBe(selectGoodsTreatment(4));
   });
 });
 

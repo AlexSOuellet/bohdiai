@@ -107,13 +107,8 @@ describe('GoodsBeat — selected treatment (legacy fallback)', () => {
     expect(container.querySelectorAll('[data-ms-card]').length).toBeGreaterThan(0);
   });
 
-  it('selects the switcher for a small default-mood catalog', () => {
-    const { container } = render(<GoodsBeat goods={goods} products={makeProducts(3)} skin={skin} mood="modern" />);
+  it('selects the switcher for a small catalog — purely by size, never mood', () => {
+    const { container } = render(<GoodsBeat goods={goods} products={makeProducts(3)} skin={skin} />);
     expect(container.querySelectorAll('[data-ms-switch-row]').length).toBe(3);
-  });
-
-  it('selects the slideshow for a small cinematic-mood catalog', () => {
-    const { container } = render(<GoodsBeat goods={goods} products={makeProducts(3)} skin={skin} mood="cozy" />);
-    expect(container.querySelectorAll('.ms-slide-layer').length).toBe(3);
   });
 });

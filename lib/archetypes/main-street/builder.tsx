@@ -199,7 +199,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   applyMedia,
   toPayload,
   handOff,
-  render: ({ content, lookKey, products, mood, catalogSize, page, logoUrl, tenantId }) => {
+  render: ({ content, lookKey, products, catalogSize, page, logoUrl, tenantId }) => {
     const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
     const c = withLogo(content as MainStreetContent, logoUrl);
     switch (page) {
@@ -212,7 +212,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       case 'contact':
         return <ContactPage content={c} skin={skin} tenantId={tenantId} />;
       default:
-        return <MainStreet content={c} skin={skin} products={products} mood={mood} catalogSize={catalogSize} momentKey={tenantId} />;
+        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} />;
     }
   },
   renderProduct: ({ content, lookKey, product, logoUrl }) => {

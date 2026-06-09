@@ -6,8 +6,8 @@
  * look (see the builder's authoring spec), so two shops in one niche can read
  * differently and a tenant can try a different one on later. `selectGoodsTreatment`
  * survives only as a deterministic FALLBACK for content authored before the
- * treatment field existed; catalog size was the old driver, mood breaking the
- * small-catalog tie:
+ * treatment field existed; catalog size is the only driver (any treatment fits
+ * any mood, so mood never picks):
  *
  *  - marquee     — continuous horizontal drift. Wants a deep catalog to feel
  *                  full (twenty things gliding past read rich; four read broke).
@@ -37,33 +37,22 @@ export const GOODS_TREATMENT_MENU: Record<GoodsTreatment, string> = {
 };
 
 /** Catalog-size thresholds. A deep catalog loops in the marquee; a mid catalog
- *  walks the procession; a small catalog gets one of the two single-piece
- *  treatments. */
+ *  walks the procession; a small catalog gets the switcher. */
 const DEEP_MIN = 12;
 const MID_MIN = 6;
 
-/** Moods that read as cinematic/atmospheric prefer the passive slideshow; the
- *  crisper, more interactive moods prefer the switcher. Matched case-insensitively
- *  and loosely so a skin's mood lean ("cozy", "dark sunset") still resolves. */
-const CINEMATIC = ['dark', 'sunset', 'botanical', 'cozy', 'rustic'];
-
-function isCinematic(mood: string | undefined): boolean {
-  if (!mood) return false;
-  const m = mood.toLowerCase();
-  return CINEMATIC.some((c) => m.includes(c));
-}
-
 /**
- * Pick the goods treatment for a shop. Deterministic: same catalog size + mood
- * always yields the same shape, so a render is reproducible.
+ * Resolve the goods treatment for a shop with no authored pick — the legacy
+ * fallback only (new builds carry Bohdi's rolled-and-played treatment). Purely
+ * size-based and deterministic; there is NO mood→treatment rule, since any
+ * treatment fits any mood.
  *
  * @param productCount how many catalog rows the shop has
- * @param mood the shop's mood lean (optional; only breaks the small-catalog tie)
  */
-export function selectGoodsTreatment(productCount: number, mood?: string): GoodsTreatment {
+export function selectGoodsTreatment(productCount: number): GoodsTreatment {
   if (productCount >= DEEP_MIN) return 'marquee';
   if (productCount >= MID_MIN) return 'procession';
-  return isCinematic(mood) ? 'slideshow' : 'switcher';
+  return 'switcher';
 }
 
 /**

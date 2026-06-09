@@ -27,7 +27,6 @@ export function GoodsBeat({
   goods,
   products,
   skin,
-  mood,
   treatment,
   catalogSize,
   shopHref = '/shop',
@@ -35,8 +34,6 @@ export function GoodsBeat({
   goods: MainStreetContent['goods'];
   products: ProductView[];
   skin: ArchetypeTheme;
-  /** Mood lean — only breaks the small-catalog tie. Optional. */
-  mood?: string | undefined;
   /** Force a treatment (previews/tests). When omitted it is selected. */
   treatment?: GoodsTreatment | undefined;
   /** The maker's TRUE catalog size. Treatment is chosen from this, even though
@@ -48,7 +45,7 @@ export function GoodsBeat({
   // Bohdi's authored treatment wins; an explicit prop overrides it (previews);
   // the size-based pick is only a fallback for pre-treatment content. The home
   // then shows only a SAMPLING (Main Street is a sales page, not a catalog).
-  const chosen = treatment ?? goods.treatment ?? selectGoodsTreatment(catalogSize ?? products.length, mood);
+  const chosen = treatment ?? goods.treatment ?? selectGoodsTreatment(catalogSize ?? products.length);
   const sample = sampleForTreatment(products, chosen);
   const viewAll: GoodsViewAll = { href: shopHref, label: goods.viewAllLabel ?? DEFAULT_VIEW_ALL };
   const cta = <GoodsViewAllCta viewAll={viewAll} skin={skin} />;

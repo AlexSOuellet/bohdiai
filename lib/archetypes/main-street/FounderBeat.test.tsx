@@ -23,20 +23,15 @@ afterEach(cleanup);
 
 describe('selectFounderTreatment', () => {
   it('honors an explicit Bohdi pick', () => {
-    expect(selectFounderTreatment({ mood: 'cozy', pick: 'portrait' })).toBe('portrait');
+    expect(selectFounderTreatment('portrait')).toBe('portrait');
   });
-  it('leans card for intimate moods and portrait for cinematic, with no date input', () => {
-    expect(selectFounderTreatment({ mood: 'cozy' })).toBe('card');
-    expect(selectFounderTreatment({ mood: 'rustic' })).toBe('card');
-    expect(selectFounderTreatment({ mood: 'dark' })).toBe('portrait');
+  it('falls back to the quote when nothing was picked — never keyed off mood', () => {
+    expect(selectFounderTreatment()).toBe('quote');
+    expect(selectFounderTreatment(undefined)).toBe('quote');
   });
-  it('defaults to the quote', () => {
-    expect(selectFounderTreatment({ mood: 'modern' })).toBe('quote');
-    expect(selectFounderTreatment({})).toBe('quote');
-  });
-  it('never returns the removed calendar-led treatment', () => {
-    for (const mood of ['cozy', 'rustic', 'dark', 'sunset', 'modern', undefined]) {
-      expect(['quote', 'portrait', 'letter', 'card']).toContain(selectFounderTreatment({ mood }));
+  it('returns only real About treatments', () => {
+    for (const pick of ['quote', 'portrait', 'letter', 'card', undefined] as const) {
+      expect(['quote', 'portrait', 'letter', 'card']).toContain(selectFounderTreatment(pick));
     }
   });
 });

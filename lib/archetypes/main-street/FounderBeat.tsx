@@ -2,9 +2,9 @@
  * FOUNDER — the About-beat dispatcher.
  *
  * Beat 3 has four MAKER-ONLY bodies (quote / portrait / letter / card). BOHDI
- * picks which (founder.treatment), like the goods beat; when he hasn't, it is
- * selected from mood only — never from market-date count (we don't know it at
- * onboarding). The market calendar is its OWN beat (FindUsBeat), never here.
+ * picks which (founder.treatment), like the goods beat; when he hasn't (legacy
+ * rows), it falls back to the quote. There is no mood→treatment rule — any body
+ * fits any mood. The market calendar is its OWN beat (FindUsBeat), never here.
  */
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetContent } from './schemas';
@@ -16,21 +16,17 @@ const DEFAULT_ABOUT = 'Read the full story';
 export function FounderBeat({
   founder,
   skin,
-  mood,
   treatment,
   aboutHref = '/about',
 }: {
   founder: MainStreetContent['founder'];
   skin: ArchetypeTheme;
-  /** Mood lean — chooses how intimate/cinematic the band reads when Bohdi
-   *  didn't pick. Optional. */
-  mood?: string | undefined;
-  /** Force a treatment (previews/tests). Otherwise Bohdi's pick, then selection. */
+  /** Force a treatment (previews/tests). Otherwise Bohdi's pick, then the quote. */
   treatment?: FounderTreatment | undefined;
   /** Where the "about" cue points — the full bio page. */
   aboutHref?: string | undefined;
 }) {
-  const chosen = selectFounderTreatment({ mood, pick: treatment ?? founder.treatment });
+  const chosen = selectFounderTreatment(treatment ?? founder.treatment);
   const about: FounderAbout = { href: aboutHref, label: founder.aboutLabel ?? DEFAULT_ABOUT };
 
   switch (chosen) {

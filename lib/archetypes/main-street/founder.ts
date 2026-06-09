@@ -10,30 +10,18 @@
  *  - card     — the "Meet June" card: eyebrow, heading, round face, a warm
  *               pull-quote, and the about cue. Personal.
  *
- * BOHDI picks the treatment (like the goods beat). When he doesn't, we lean on
- * mood only — NEVER on market-date count, which we don't know at onboarding.
+ * BOHDI picks the treatment (now dealt a roll he plays or overrides — see the
+ * crew). Any treatment fits any mood, so there is NO mood→treatment rule here.
+ * This selector is only the deterministic fallback for legacy rows authored
+ * before the treatment field existed: the maker's pick wins, else the quote.
  */
 
 export type FounderTreatment = 'quote' | 'portrait' | 'letter' | 'card';
 
-/** Intimate, homemade moods read as the personal card. */
-const INTIMATE_MOODS = ['cozy', 'rustic', 'homey'];
-/** Cinematic, image-led moods read as a portrait. */
-const CINEMATIC_MOODS = ['dark', 'sunset', 'botanical'];
-
-function matches(mood: string | undefined, set: string[]): boolean {
-  if (!mood) return false;
-  const m = mood.toLowerCase();
-  return set.some((x) => m.includes(x));
-}
-
 /**
- * Pick the About treatment. Bohdi's explicit pick wins; otherwise mood chooses
- * how intimate or cinematic the band reads. No market-date input.
+ * Resolve the About treatment. Bohdi's pick wins; with no pick (legacy content)
+ * it falls back to the quote. No mood input — mood never chose a treatment.
  */
-export function selectFounderTreatment(opts: { mood?: string | undefined; pick?: FounderTreatment | undefined }): FounderTreatment {
-  if (opts.pick) return opts.pick;
-  if (matches(opts.mood, INTIMATE_MOODS)) return 'card';
-  if (matches(opts.mood, CINEMATIC_MOODS)) return 'portrait';
-  return 'quote';
+export function selectFounderTreatment(pick?: FounderTreatment | undefined): FounderTreatment {
+  return pick ?? 'quote';
 }

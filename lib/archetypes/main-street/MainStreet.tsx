@@ -24,14 +24,12 @@ export interface MainStreetProps {
   content: MainStreetContent;
   skin: ArchetypeTheme;
   products: ProductView[];
-  /** Mood lean — feeds goods-treatment selection. Optional. */
-  mood?: string | undefined;
-  /** The maker's TRUE catalog size — drives goods-treatment selection even though
-   *  the home shows only a sampling. Falls back to the shown product count. */
+  /** The maker's TRUE catalog size — drives the goods-treatment fallback even
+   *  though the home shows only a sampling. Falls back to the shown product count. */
   catalogSize?: number | undefined;
-  /** Force the goods treatment (previews/tests). Selected from catalog size when omitted. */
+  /** Force the goods treatment (previews/tests). Falls back to catalog size when omitted. */
   goodsTreatment?: GoodsTreatment | undefined;
-  /** Force the founder treatment (previews/tests). Selected from cadence + mood when omitted. */
+  /** Force the founder treatment (previews/tests). Falls back to the quote when omitted. */
   founderTreatment?: FounderTreatment | undefined;
   /** Where the goods "see the full catalog" cue points. Defaults to /shop. */
   shopHref?: string | undefined;
@@ -43,13 +41,13 @@ export interface MainStreetProps {
   momentKey?: string | undefined;
 }
 
-export function MainStreet({ content, skin, products, mood, catalogSize, goodsTreatment, founderTreatment, shopHref, aboutHref, eventsHref, momentKey }: MainStreetProps) {
+export function MainStreet({ content, skin, products, catalogSize, goodsTreatment, founderTreatment, shopHref, aboutHref, eventsHref, momentKey }: MainStreetProps) {
   return (
     <MainStreetRoot skin={skin}>
       <MomentHero identity={content.identity} moment={content.moment} skin={skin} momentKey={momentKey} />
-      <GoodsBeat goods={content.goods} products={products} skin={skin} mood={mood} treatment={goodsTreatment} catalogSize={catalogSize} shopHref={shopHref} />
+      <GoodsBeat goods={content.goods} products={products} skin={skin} treatment={goodsTreatment} catalogSize={catalogSize} shopHref={shopHref} />
       <Reveal>
-        <FounderBeat founder={content.founder} skin={skin} mood={mood} treatment={founderTreatment} aboutHref={aboutHref} />
+        <FounderBeat founder={content.founder} skin={skin} treatment={founderTreatment} aboutHref={aboutHref} />
       </Reveal>
       {content.founder.findUs && content.founder.findUs.rows.length > 0 && (
         <Reveal>
