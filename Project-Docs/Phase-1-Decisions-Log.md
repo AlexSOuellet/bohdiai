@@ -604,6 +604,26 @@ The chosen shape is deliberately asymmetric rather than the symmetric "four corn
 
 Alongside this the slideshow was sped up — the per-slide dwell dropped from 5s to 3.2s and the cross-fade from 1.1s to 0.8s, because it read as sluggish. The slow Ken Burns drift stays; its slowness is intentional.
 
+### D51. The mood lineup is seven feelings; color is a layer under the mood, not a mood
+
+The maker-facing moods change from the old seven (Dark, Rustic, Cozy, Botanical, Sunset, Simple, Modern) to seven *feelings*: **Dark, Rustic, Cozy, Modern, Elegant, Playful, Industrial** — plus **Templated** as a deliberate eighth, built later. This was planned in the Session-34 design conversation but never implemented; the code still carried the old lineup, which is what Alex caught when the onboarding picker still showed Botanical/Sunset/Simple. This supersedes D26.
+
+The change of principle: **color stops being a mood.** Botanical (green) and Sunset (golden) were really colors wearing a mood's clothes; Simple was a near-duplicate of restraint. They retire. A mood is now a *feeling* the maker picks, and the specific color is a layer Bohdi chooses *inside* that feeling — the maker never picks color (Alex's call). The reason most of the old moods folded: in practice they all collapsed toward Cozy. Romantic was considered and rejected (it can't be separated from Cozy) — Claude pushed for it across sessions and Alex held the line; it stays out.
+
+Descriptions are rewritten feel-first — what the store *feels and looks like* (Dark = "low light and deep shadow, moody and a little mysterious") — never a list of crafts. The old descriptions named niches ("Dark is for occult candles, gothic jewelry…"), which is the exact niche-stereotype the platform rejects (a candle maker shouldn't be herded into Cozy). 
+
+The skins are re-tagged directly with the feelings they wear (a skin can wear several — Ember reads both rustic and cozy), and the old descriptive-word → mood bridge collapses to a direct membership test. Every feeling has 6+ skins and every skin is reachable, so no mood is left without a shelf; no new skins were needed. The treatment mechanism stays the roll (D48) — there is still no mood→treatment mapping (D49); the new feelings just feed the roll. A migration remapped existing tenants and stored envelopes (sunset→cozy, simple→elegant, botanical→rustic). The dead legacy layout-engine path (`lib/bohdi/*`, the legacy `lib/generation` writers, the old per-mood style-sheet JSON, the broadsheet archetype, the probe pages) was deleted as part of this, since it was the last place the old mood keys and color-as-mood style sheets lingered.
+
+### D52. The Moment camera is locked — a moving camera breaks the seamless loop
+
+The Moment video must hold the camera **static** and take its motion from *within the frame* (drifting light, rising steam, a slow flicker). A camera that moves — pans, push-ins, zooms, rack focus, drift — travels away from its start frame, so a seamless loop jumps on restart. This is physics, not taste, and it sharpens D33/D47 (the Moment is motion, prefer video): the motion is real, but it lives in the scene, not the lens. A live build had shot a rack-focus Moment that visibly broke the loop. The cinematographer prompt now locks the camera and directs in-frame motion, with a guard that rejects camera-movement wording on a video.
+
+### D53. No hard caps on body prose — the design carries any length; the build never fails or trims on copy
+
+A string of live builds died on copy length (an over-long alt, a quote 8 characters over, a description 3 over). The lesson, in Alex's framing: an imposed cap is suspect, and "who's to say next time it generates larger" — no cap is ever big enough because model output length is unbounded. So **the build must never fail because copy ran long, and it must never trim the copy to fit** (Claude built a trim-on-final-attempt backstop; Alex stopped it — the copy is the good part, the cap was the arbitrary part). 
+
+The resolution: the body-prose fields the responsive design absorbs at any length — product description, founder quote, About paragraphs, contact intro — have **no hard cap** (minimums stay as a quality floor). Hard caps remain *only* where length is structural and shapes the layout: the Moment story lines that cross-fade, the headlines that set large, the short card description, labels and names. To keep generation fast and copy punchy without a gate, the prompt carries a *soft* length nudge ("write punchy, not padded") — guidance the build never enforces. (Removing the caps made the model write longer and a build timed out; the soft nudge bounds generation length the right way, where cranking the timeout would have been the same band-aid as a bigger cap.) Two smaller rules rode along: headings are phrases, not sentences (no terminal/sentence punctuation — the "One potter. One wheel." slop), and the crew's length-aware retry feedback now reports a field's real length and how much to cut so the remaining capped fields converge.
+
 ---
 
 ## Open items still to be decided
