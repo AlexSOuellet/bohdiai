@@ -102,18 +102,20 @@ describe('writeCopy (the Copywriter)', () => {
     expect(JSON.stringify(second.messages.at(-1))).toContain('punctuation');
   });
 
-  it('tells the copywriter its actual length when a field overflows its cap, then accepts the fix', async () => {
-    const longDesc = 'x'.repeat(850); // over the 800 cap
-    const over = { ...draft, products: [{ ...draft.products[0], description: longDesc }, draft.products[1], draft.products[2]] };
+  it('tells the copywriter its actual length when a still-capped field overflows, then accepts the fix', async () => {
+    // shortDescription stays capped (it's a card line where length is structural);
+    // body prose is uncapped, so the feedback path is tested on a capped field.
+    const longShort = 'x'.repeat(120); // over the 90 cap on shortDescription
+    const over = { ...draft, products: [{ ...draft.products[0], shortDescription: longShort }, draft.products[1], draft.products[2]] };
     create.mockResolvedValueOnce(toolMsg(over)).mockResolvedValueOnce(toolMsg(draft));
     const d = await writeCopy(brief, trajectory, rolls);
-    expect(d.products[0]!.description).toBe(draft.products[0]!.description);
+    expect(d.products[0]!.shortDescription).toBe(draft.products[0]!.shortDescription);
     expect(create).toHaveBeenCalledTimes(2);
     const second = create.mock.calls[1]![0] as { messages: Array<{ role: string; content: unknown }> };
     const last = JSON.stringify(second.messages.at(-1));
-    expect(last).toContain('products.0.description');
-    // the actionable part: the model is told its real length (850), not just the cap
-    expect(last).toContain('850');
+    expect(last).toContain('products.0.shortDescription');
+    // the actionable part: the model is told its real length (120), not just the cap
+    expect(last).toContain('120');
   });
 
   it('throws when no valid copy is produced within the attempt cap', async () => {
@@ -153,6 +155,19 @@ describe('writeCopy (the Copywriter)', () => {
     expect(args.system).toContain('you drew "card"');
     // ...which Bohdi plays unless it truly fights the shop — he keeps the veto.
     expect(args.system).toContain('unless it genuinely fights');
+  });
+});
+
+describe('CopywriterDraftSchema — body prose has no hard cap (the design absorbs any length)', () => {
+  it('accepts a long description, quote, about paragraph, and contact intro', () => {
+    const d = {
+      ...draft,
+      founder: { ...draft.founder, quote: 'It ages with you and never lets go. '.repeat(30) },
+      about: { heading: 'The story', story: ['We started at a single bench. '.repeat(60), 'Everything is made to last. '.repeat(60)] },
+      contact: { heading: 'Say hello', intro: 'We read everything that comes in. '.repeat(40) },
+      products: [{ ...draft.products[0], description: 'A belt that ages with you. '.repeat(80) }, draft.products[1], draft.products[2]],
+    };
+    expect(CopywriterDraftSchema.safeParse(d).success).toBe(true);
   });
 });
 

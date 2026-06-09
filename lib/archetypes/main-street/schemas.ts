@@ -148,7 +148,7 @@ export const MainStreetContentSchema = z.object({
   /** BEAT 3 — the founder + a real "find us this week" calendar. Required: the
    *  authority the platform is built on. */
   founder: z.object({
-    quote: z.string().min(24).max(340),
+    quote: z.string().min(24),
     attribution: z.string().min(4).max(60),
     /** Which About look to wear — BOHDI's pick, the one that fits the maker. All
      *  maker-only; the find-us calendar is its own beat, never inside these.
@@ -197,7 +197,7 @@ export const MainStreetContentSchema = z.object({
       heading: z.string().min(4).max(60),
       /** 2-5 real paragraphs — who the maker is, how they got here, how they work.
        *  Specific to THIS maker and niche, never generic. */
-      story: z.array(z.string().min(40).max(700)).min(2).max(5),
+      story: z.array(z.string().min(40)).min(2).max(5),
     })
     .optional(),
 
@@ -207,7 +207,7 @@ export const MainStreetContentSchema = z.object({
   contact: z
     .object({
       heading: z.string().min(4).max(48),
-      intro: z.string().min(20).max(400),
+      intro: z.string().min(20),
     })
     .optional(),
 });
