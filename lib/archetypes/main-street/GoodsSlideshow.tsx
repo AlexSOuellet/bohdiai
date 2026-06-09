@@ -15,7 +15,9 @@ import type { MainStreetContent } from './schemas';
 import { Media, typeRoleCss, roles } from './chrome';
 import { GoodsHead, type GoodsViewAll } from './beats';
 
-const DWELL_MS = 5000;
+// How long each slide holds before advancing. Brisk enough not to drag (the
+// 5s original read as sluggish) while still leaving each product legible.
+const DWELL_MS = 3200;
 
 export function GoodsSlideshow({
   goods,

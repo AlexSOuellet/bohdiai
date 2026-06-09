@@ -84,13 +84,13 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-switch-list{justify-content:center}
     .arch-main-street .ms-switch-list li:last-child{border-bottom:1px solid var(--ms-rule)}
     /* goods slideshow — cross-fade + a slow Ken Burns push-in on the live slide */
-    .arch-main-street .ms-slide-layer{transition:opacity 1.1s ${mo.reveal.easing}}
+    .arch-main-street .ms-slide-layer{transition:opacity 0.8s ${mo.reveal.easing}}
     .arch-main-street .ms-kb{animation:ms-kenburns 6.5s ${mo.reveal.easing} forwards}
     @keyframes ms-kenburns{from{transform:scale(1.005)}to{transform:scale(1.075) translateY(-1.2%)}}
-    /* goods procession — each image settles out of a slow zoom as it arrives */
-    .arch-main-street .ms-proc-img{transform:scale(1.07);transition:transform 1.6s ${mo.reveal.easing}}
-    .arch-main-street .ms-reveal.in .ms-proc-img{transform:none}
-    .arch-main-street .ms-proc-row.alt .ms-proc-frame{order:2}
+    /* goods procession — a CONSTELLATION: scattered cards that each fade in once
+       (random order, staggered via an inline transition-delay) and then rest. */
+    .arch-main-street .ms-const-card{opacity:0;transform:translateY(34px) scale(.965);transition:opacity 1.5s ${mo.reveal.easing},transform 1.6s ${mo.reveal.easing}}
+    .arch-main-street .ms-const-stage.in .ms-const-card{opacity:1;transform:none}
     /* product detail — two columns that stack on small screens */
     .arch-main-street .ms-product-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:var(--ms-section);align-items:start}
     @media(max-width:768px){
@@ -102,8 +102,15 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       .arch-main-street .ms-founder-findus{grid-template-columns:1fr!important;gap:40px!important}
       .arch-main-street .ms-marquee [data-ms-card]{width:74vw}
       .arch-main-street .ms-switch-grid{grid-template-columns:1fr!important;gap:32px!important}
-      .arch-main-street .ms-proc-row{grid-template-columns:1fr!important;gap:28px!important}
-      .arch-main-street .ms-proc-row.alt .ms-proc-frame{order:0}
+      /* the constellation goes vertical on a phone — a designed drift, not a
+         dead stack: cards hug left then right, vary in width, and overlap. */
+      .arch-main-street .ms-const-stage{height:auto!important;display:flex;flex-direction:column}
+      .arch-main-street .ms-const-card{position:static!important;left:auto!important;top:auto!important;rotate:0!important}
+      .arch-main-street .ms-const-card:nth-child(1){width:80%!important;align-self:flex-start}
+      .arch-main-street .ms-const-card:nth-child(2){width:64%!important;align-self:flex-end;margin-top:-7%}
+      .arch-main-street .ms-const-card:nth-child(3){width:88%!important;align-self:flex-start;margin-top:-3%}
+      .arch-main-street .ms-const-card:nth-child(4){width:58%!important;align-self:flex-end;margin-top:-9%}
+      .arch-main-street .ms-const-card:nth-child(5){width:74%!important;align-self:flex-start;margin-top:-2%}
       .arch-main-street .ms-catalog-grid{grid-template-columns:repeat(2,1fr)!important}
     }
     @media(max-width:560px){
@@ -113,7 +120,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       .arch-main-street .ms-reveal{opacity:1;transform:none;transition:none}
       .arch-main-street .ms-marquee{animation:none}
       .arch-main-street .ms-kb{animation:none}
-      .arch-main-street .ms-proc-img{transform:none;transition:none}
+      .arch-main-street .ms-const-card{opacity:1;transform:none;transition:none}
     }
     ${responsive}
   `;

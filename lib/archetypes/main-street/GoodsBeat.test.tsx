@@ -28,9 +28,13 @@ describe('GoodsBeat — forced treatment', () => {
     expect(container.querySelectorAll('[data-ms-card]').length).toBeGreaterThan(0);
   });
 
-  it('procession renders full-width rows', () => {
+  it('procession renders a constellation of scattered product cards', () => {
     const { container } = render(<GoodsBeat goods={goods} products={makeProducts(3)} skin={skin} treatment="procession" />);
-    expect(container.querySelectorAll('.ms-proc-row').length).toBe(3);
+    const cards = container.querySelectorAll('[data-ms-const-card]');
+    expect(cards.length).toBe(3);
+    // each card is a scattered, positioned link to its listing
+    expect((cards[0] as HTMLAnchorElement).getAttribute('href')).toBe('/listings/p-0');
+    expect((cards[0] as HTMLElement).style.position).toBe('absolute');
   });
 
   it('switcher renders selectable list rows', () => {
