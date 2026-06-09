@@ -14,7 +14,7 @@
  * dropped). Callers should NOT await this for control flow.
  *
  * `design_choices` is newer than the generated Database types, so the insert is
- * cast — matching the precedent in `lib/bohdi/tools.ts`.
+ * cast until the generated types catch up.
  */
 import { supabaseAdmin } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
@@ -57,8 +57,7 @@ export async function logDesignChoice(choice: DesignChoice): Promise<void> {
     mood_key: choice.moodKey,
   };
 
-  // design_choices is too new to be in the generated Database types; cast for now
-  // (same approach as lib/bohdi/tools.ts:log_decision).
+  // design_choices is too new to be in the generated Database types; cast for now.
   const db = supabaseAdmin() as unknown as {
     from: (t: string) => { insert: (r: unknown) => Promise<{ error: { message: string } | null }> };
   };
