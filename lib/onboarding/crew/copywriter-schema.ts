@@ -16,6 +16,23 @@ import { GOODS_TREATMENTS } from '@/lib/archetypes/main-street/goods';
 import { StoryLine, FindUsRow, FOUNDER_TREATMENTS, NavItem } from '@/lib/archetypes/main-street/schemas';
 import { LINK_TARGETS } from '@/lib/archetypes/main-street/links';
 
+/** A headline is a phrase, not a sentence. No periods/exclamation/question marks
+ *  anywhere (the staccato "One potter. One wheel." pattern reads as AI slop) and
+ *  no trailing terminal punctuation. Internal commas and intra-word hyphens are
+ *  fine. Applied to the display headings the copywriter authors. */
+const SENTENCE_PUNCT = /[.!?]/;
+const TRAILING_PUNCT = /[:;,–—-]\s*$/;
+function headline(min: number, max: number) {
+  return z
+    .string()
+    .min(min)
+    .max(max)
+    .refine((s) => !SENTENCE_PUNCT.test(s) && !TRAILING_PUNCT.test(s), {
+      message:
+        'a headline is a phrase, not a sentence — no periods, exclamation marks, or question marks, and no trailing punctuation (internal commas are fine). Rewrite it as a single clean line.',
+    });
+}
+
 /** A product's words only — no imagePrompt (the Graphic Artist adds that). */
 export const ProductDraftSchema = z.object({
   name: z.string().min(2).max(40),
@@ -48,7 +65,7 @@ export const CopywriterDraftSchema = z.object({
     secondaryCtaTarget: z.enum(LINK_TARGETS).optional(),
   }),
   goods: z.object({
-    title: z.string().min(2).max(48),
+    title: headline(2, 48),
     treatment: z.enum(GOODS_TREATMENTS),
     label: z.string().min(2).max(24).optional(),
     viewAllLabel: z.string().min(2).max(28).optional(),
@@ -58,7 +75,7 @@ export const CopywriterDraftSchema = z.object({
     attribution: z.string().min(4).max(60),
     treatment: z.enum(FOUNDER_TREATMENTS),
     eyebrow: z.string().min(2).max(24).optional(),
-    heading: z.string().min(2).max(28).optional(),
+    heading: headline(2, 28).optional(),
     aboutLabel: z.string().min(2).max(28).optional(),
     findUs: z
       .object({
@@ -70,17 +87,17 @@ export const CopywriterDraftSchema = z.object({
   }),
   close: z.object({
     label: z.string().min(2).max(28),
-    headline: z.string().min(6).max(72),
+    headline: headline(6, 72),
     ctaLabel: z.string().min(3).max(24),
     // Where the close button goes — authored alongside its label (D46).
     ctaTarget: z.enum(LINK_TARGETS),
   }),
   about: z.object({
-    heading: z.string().min(4).max(60),
+    heading: headline(4, 60),
     story: z.array(z.string().min(40).max(700)).min(2).max(5),
   }),
   contact: z.object({
-    heading: z.string().min(4).max(48),
+    heading: headline(4, 48),
     intro: z.string().min(20).max(400),
   }),
   products: z.array(ProductDraftSchema).min(3).max(12),

@@ -109,7 +109,9 @@ Choose the target that matches what the label promises — a button that says "O
 story" targets about, "Shop now" targets shop, "Find us" targets events. (Targets
 must come from that list; these are the only pages that exist.)
 
-Write the words with submit_copy. Each field, its hard limits (stay under), and where it appears:
+Write the words with submit_copy. Each field, its hard limits (stay under), and where it appears.
+
+HEADINGS ARE PHRASES, NOT SENTENCES. The headings and headlines below (goods.title, founder.heading, close.headline, about.heading, contact.heading) carry NO periods, exclamation marks, or question marks, and never end in trailing punctuation. "One potter. One wheel. One kiln at a time." is the slop pattern to avoid — write one clean line ("Wheel-thrown stoneware, made to last"). Internal commas are fine. (Body prose — about.story, contact.intro, descriptions — is normal sentences.)
 
 - shopName: the shop is named "${brief.shopName}". This is the maker's own name for their shop — use it EXACTLY, do not invent, shorten, or alter it.
 - identity.wordmark: "${brief.shopName}" as it shows in the nav — use the exact name.

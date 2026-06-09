@@ -136,6 +136,14 @@ describe('writeCopy (the Copywriter)', () => {
     expect(args.system).toMatch(/shop.*about.*events.*contact/s);
   });
 
+  it('tells the copywriter headlines carry no sentence punctuation', async () => {
+    create.mockResolvedValueOnce(toolMsg(draft));
+    await writeCopy(brief, trajectory, rolls);
+    const args = create.mock.calls[0]![0] as { system: string };
+    expect(args.system.toLowerCase()).toContain('headline');
+    expect(args.system.toLowerCase()).toMatch(/no period|not a sentence|no sentence punctuation/);
+  });
+
   it('deals the rolled treatments to the copywriter as a draw it can override', async () => {
     create.mockResolvedValueOnce(toolMsg(draft));
     await writeCopy(brief, trajectory, { goods: 'slideshow', founder: 'card' });
@@ -145,6 +153,23 @@ describe('writeCopy (the Copywriter)', () => {
     expect(args.system).toContain('you drew "card"');
     // ...which Bohdi plays unless it truly fights the shop — he keeps the veto.
     expect(args.system).toContain('unless it genuinely fights');
+  });
+});
+
+describe('CopywriterDraftSchema — headlines carry no sentence punctuation', () => {
+  it('rejects a heading written as periods-between-phrases (the AI-slop pattern)', () => {
+    const d = { ...draft, about: { ...draft.about, heading: 'One potter. One wheel. One kiln at a time.' } };
+    expect(CopywriterDraftSchema.safeParse(d).success).toBe(false);
+  });
+
+  it('rejects a headline that ends in terminal punctuation', () => {
+    const d = { ...draft, close: { ...draft.close, headline: 'Built to outlast us.' } };
+    expect(CopywriterDraftSchema.safeParse(d).success).toBe(false);
+  });
+
+  it('accepts a clean heading and allows internal commas and intra-word hyphens', () => {
+    const d = { ...draft, about: { ...draft.about, heading: 'Wheel-thrown, kiln-fired, made to last' } };
+    expect(CopywriterDraftSchema.safeParse(d).success).toBe(true);
   });
 });
 
