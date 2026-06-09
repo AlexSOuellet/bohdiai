@@ -44,7 +44,7 @@ A run of live builds failed one at a time on copy length, ending in the realizat
 
 ## Open / next
 
-- **Constellation fade** is still unverified/possibly broken — Alex reported it "does not fade in or very fast" before pivoting to the moods, and the build he loved used the *marquee* treatment, not the Constellation. Likely cause: on the tall stage the whole stagger fires when only the top is in view, so lower cards fade off-screen; the fix is per-card reveal. STILL OPEN.
+- **Constellation — CONFIRMED GOOD live** (Alex: "constellation is fine, confirmed and much better than progression"). The mid-session "fade looks off / very fast" worry did not pan out once he saw a real build of it. No per-card-reveal fix needed; leave it as built.
 - **Templated** — the deliberate 8th mood (a fixed locked layout, no treatments, no Moment) — build after the seven are proven.
 - **Full onboarding-screen revamp** — flagged by Alex as needed, but "not today."
 - **Maker dashboard treatment override** and **override-reason text capture** — still deferred (ride on the editor / a schema field).

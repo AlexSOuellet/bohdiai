@@ -27,10 +27,9 @@ Session 37 was a big two-part day, all TDD. Morning: the treatment **roll** (D48
 
 ## Next actions
 
-The seven-feeling lineup and the variety engine are in and producing good builds. Open:
+The seven-feeling lineup and the variety engine are in and producing good builds. The **Constellation is confirmed good live** (Alex: "much better than progression") — the earlier "fade looks off" worry did not hold up; do NOT go chasing a per-card-reveal fix, it works as built. Open:
 
-1. **Constellation fade — still unverified / possibly broken.** Alex reported it "does not fade in or very fast" and then pivoted; the build he loved used the **marquee**, not the Constellation, so the scatter hasn't been confirmed live. Likely cause: on the tall stage the whole stagger fires when only the top is on screen, so lower cards fade off-screen — fix is **per-card reveal** (each card fades as it enters view). Highest-priority open item.
-2. **Templated** — the deliberate 8th mood (a fixed locked layout, no treatments, no Moment, the baseline foil). Build now that the seven work.
+1. **Templated** — the deliberate 8th mood (a fixed locked layout, no treatments, no Moment, the baseline foil). Build now that the seven work. Top buildable item.
 3. **Full onboarding-screen revamp** — Alex flagged it as needed ("but not today"). Future scope.
 4. **Watch live builds** for: real treatment variety, Bohdi overriding the roll back to one body (the `design_choices` log shows it), copy length/quality now that prose is uncapped, slideshow pace.
 5. **Maker treatment-override in the dashboard** and **override-reason text capture** — still deferred (ride on the website editor / a new schema field).
