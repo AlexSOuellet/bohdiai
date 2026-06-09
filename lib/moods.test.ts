@@ -2,26 +2,37 @@ import { describe, it, expect } from 'vitest';
 import { MOODS, MOOD_LIST, type MoodKey } from './moods';
 
 describe('MOODS', () => {
-  it('has all seven canonical moods', () => {
+  it('has all seven canonical feelings', () => {
     const expected: MoodKey[] = [
       'dark',
       'rustic',
       'cozy',
-      'botanical',
-      'sunset',
-      'simple',
       'modern',
+      'elegant',
+      'playful',
+      'industrial',
     ];
     for (const k of expected) {
       expect(MOODS[k]).toBeDefined();
       expect(MOODS[k].key).toBe(k);
     }
+    expect(MOOD_LIST.length).toBe(expected.length);
   });
 
-  it('every entry has a non-empty label and description', () => {
+  it('has retired the color-as-mood keys (botanical / sunset / simple)', () => {
+    const keys = Object.keys(MOODS);
+    expect(keys).not.toContain('botanical');
+    expect(keys).not.toContain('sunset');
+    expect(keys).not.toContain('simple');
+  });
+
+  it('every entry has a non-empty label and a feel-based description (no craft lists)', () => {
     for (const m of Object.values(MOODS)) {
       expect(m.label.length).toBeGreaterThan(0);
       expect(m.description.length).toBeGreaterThan(0);
+      // The old descriptions opened "For makers whose work…" and listed crafts.
+      // The new ones describe the feeling, never who it's "for".
+      expect(m.description.toLowerCase()).not.toContain('for makers');
     }
   });
 

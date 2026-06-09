@@ -31,29 +31,29 @@ const MOOD_VISUALS: Record<MoodKey, MoodVisual> = {
     text: '#faf0e0',
     label: '#e87038',
   },
-  botanical: {
-    background: 'linear-gradient(135deg, #0a1e10 0%, #061408 100%)',
-    border: '#1a3820',
-    text: '#d0f0d8',
-    label: '#4a9c5c',
-  },
-  sunset: {
-    background: 'linear-gradient(135deg, #2a1208 0%, #3a1a06 100%)',
-    border: '#7a3818',
-    text: '#fbe6c8',
-    label: '#f08438',
-  },
-  simple: {
-    background: 'linear-gradient(135deg, #f8f8f5 0%, #f0f0ea 100%)',
-    border: '#d0d0c8',
-    text: '#1a1a18',
-    label: '#6a6a60',
-  },
   modern: {
     background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
     border: '#3a3a3a',
     text: '#f4f4f4',
     label: '#e84a3c',
+  },
+  elegant: {
+    background: 'linear-gradient(135deg, #16131c 0%, #0e0c14 100%)',
+    border: '#2e2740',
+    text: '#ece7f3',
+    label: '#b9a6d6',
+  },
+  playful: {
+    background: 'linear-gradient(135deg, #15123a 0%, #2a0f33 100%)',
+    border: '#4a2a6a',
+    text: '#fdeef6',
+    label: '#ff7ac0',
+  },
+  industrial: {
+    background: 'linear-gradient(135deg, #14171a 0%, #0c0e10 100%)',
+    border: '#333b40',
+    text: '#dfe6ea',
+    label: '#7f96a3',
   },
 };
 

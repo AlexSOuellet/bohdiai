@@ -1,4 +1,4 @@
-export type MoodKey = 'dark' | 'rustic' | 'cozy' | 'botanical' | 'sunset' | 'simple' | 'modern';
+export type MoodKey = 'dark' | 'rustic' | 'cozy' | 'modern' | 'elegant' | 'playful' | 'industrial';
 
 export type PaletteTemperature = 'warm' | 'cool' | 'neutral';
 export type BrightnessDirection = 'dark' | 'mid' | 'light';
@@ -21,9 +21,12 @@ export interface MoodDesignDirection {
 export interface Mood {
   key: MoodKey;
   label: string;
-  /** Audience-naming description — who this mood is for, not what it should look like. */
+  /** Feel-based description — what the store feels and looks like, so a maker picks
+   *  by what resonates. Never names a craft or a color (color is Bohdi's layer
+   *  within the mood, not part of the mood). */
   description: string;
-  /** Design direction rails. Mood wins conflicts with niche defaults. */
+  /** Design direction rails. Mood wins conflicts with niche defaults. Color is
+   *  a layer chosen within the mood, so paletteTemperature is a loose lean only. */
   designDirection: MoodDesignDirection;
 }
 
@@ -31,8 +34,7 @@ export const MOODS: Record<MoodKey, Mood> = {
   dark: {
     key: 'dark',
     label: 'Dark',
-    description:
-      "For makers whose work belongs in low-light contexts — occult candles, dark art, gothic jewelry, leather goods, anything that isn't for a cheerful audience.",
+    description: 'Low light and deep shadow. Moody and a little mysterious, with drama where most stores play it safe.',
     designDirection: {
       paletteTemperature: 'neutral',
       brightness: 'dark',
@@ -44,8 +46,7 @@ export const MOODS: Record<MoodKey, Mood> = {
   rustic: {
     key: 'rustic',
     label: 'Rustic',
-    description:
-      'For makers whose work is rooted in tradition and natural materials — woodworkers, soap makers, farm stands, weavers, canners, herbalists.',
+    description: 'Warm, worn, and handmade. Natural materials and the feel of things made the old way, with some age in them.',
     designDirection: {
       paletteTemperature: 'warm',
       brightness: 'mid',
@@ -57,8 +58,7 @@ export const MOODS: Record<MoodKey, Mood> = {
   cozy: {
     key: 'cozy',
     label: 'Cozy',
-    description:
-      'For makers whose work belongs in a home — candle makers, textile artists, bakers, comfort-food creators, anything that lives in a lit room at the end of the day.',
+    description: 'Soft, warm, and welcoming. The calm of a lamp-lit room at the end of the day.',
     designDirection: {
       paletteTemperature: 'warm',
       brightness: 'light',
@@ -67,56 +67,52 @@ export const MOODS: Record<MoodKey, Mood> = {
       defaultScheme: 'light',
     },
   },
-  botanical: {
-    key: 'botanical',
-    label: 'Botanical',
-    description:
-      'For makers whose work is rooted in plants — botanical skincare, dried flowers, herbal products, foraged goods, anything that grows.',
-    designDirection: {
-      paletteTemperature: 'cool',
-      brightness: 'light',
-      typeCharacter: 'either',
-      textureAffinity: 'either',
-      defaultScheme: 'light',
-    },
-  },
-  sunset: {
-    key: 'sunset',
-    label: 'Sunset',
-    description:
-      'For makers whose work evokes golden-hour warmth — outdoor leather goods, summer perfumes, hand-thrown ceramics shot in window light, anything that lives in late-afternoon amber.',
-    designDirection: {
-      paletteTemperature: 'warm',
-      brightness: 'mid',
-      typeCharacter: 'either',
-      textureAffinity: 'either',
-      defaultScheme: 'light',
-    },
-  },
-  simple: {
-    key: 'simple',
-    label: 'Simple',
-    description:
-      'For makers whose work speaks for itself with restraint — minimal jewelry, modern ceramics, architectural prints, refined candles, object-as-art.',
-    designDirection: {
-      paletteTemperature: 'neutral',
-      brightness: 'light',
-      typeCharacter: 'sans-leaning',
-      textureAffinity: 'minimal',
-      defaultScheme: 'light',
-    },
-  },
   modern: {
     key: 'modern',
     label: 'Modern',
-    description:
-      'For makers whose work is a confident contemporary design statement — graphic prints, geometric ceramics, bold print textiles, designer-makers whose brand IS the design.',
+    description: 'Clean, confident, and geometric. Bold and contemporary — not quiet minimalism, design that speaks up.',
     designDirection: {
       paletteTemperature: 'neutral',
       brightness: 'light',
       typeCharacter: 'sans-leaning',
       textureAffinity: 'minimal',
       defaultScheme: 'light',
+    },
+  },
+  elegant: {
+    key: 'elegant',
+    label: 'Elegant',
+    description: 'Refined and graceful. Quiet luxury, fine detail, the sense that every choice was considered.',
+    designDirection: {
+      paletteTemperature: 'neutral',
+      brightness: 'light',
+      typeCharacter: 'serif-leaning',
+      textureAffinity: 'minimal',
+      defaultScheme: 'light',
+    },
+  },
+  playful: {
+    key: 'playful',
+    label: 'Playful',
+    description: 'Bright, joyful, and full of energy. Color and fun — a store that smiles back.',
+    designDirection: {
+      paletteTemperature: 'warm',
+      brightness: 'light',
+      typeCharacter: 'sans-leaning',
+      textureAffinity: 'either',
+      defaultScheme: 'light',
+    },
+  },
+  industrial: {
+    key: 'industrial',
+    label: 'Industrial',
+    description: 'Raw, tough, and machined. Concrete, metal, and hard edges — strength over softness.',
+    designDirection: {
+      paletteTemperature: 'cool',
+      brightness: 'mid',
+      typeCharacter: 'sans-leaning',
+      textureAffinity: 'rich',
+      defaultScheme: 'dark',
     },
   },
 };
