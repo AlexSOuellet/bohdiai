@@ -58,7 +58,7 @@ const MediaSlot = z.object({
   prompt: ScenePrompt,
   url: z.string().url().optional(),
   poster: z.string().url().optional(),
-  alt: z.string().min(4).max(120),
+  alt: z.string().min(4).max(240),
 });
 
 /** A photo slot for the founder portrait. `prompt` feeds the image model (not
@@ -67,7 +67,7 @@ const MediaSlot = z.object({
 const PhotoSlot = z.object({
   prompt: z.string().min(1),
   url: z.string().url().optional(),
-  alt: z.string().min(4).max(120),
+  alt: z.string().min(4).max(240),
 });
 
 /** A hero story line. Capped tight so it sets large and reads in one breath, and

@@ -74,8 +74,8 @@ describe('shootMoment (the Cinematographer)', () => {
   });
 
   it("tells the cinematographer the alt's real length when it overflows its cap, then accepts the fix", async () => {
-    const longAlt = 'a still hand resting on worn leather in a dim workshop with dust drifting in a slow shaft of late afternoon window light just so'; // > 120
-    expect(longAlt.length).toBeGreaterThan(120);
+    const longAlt = 'a'.repeat(250); // > 240 cap
+    expect(longAlt.length).toBeGreaterThan(240);
     const over = { ...scene, alt: longAlt };
     create.mockResolvedValueOnce(toolMsg(over)).mockResolvedValueOnce(toolMsg(scene));
     const s = await shootMoment(trajectory, story);

@@ -40,7 +40,7 @@ export const GraphicSpecSchema = z.object({
   skinKey: z.string(),
   founderPhoto: z.object({
     prompt: z.string().min(1),
-    alt: z.string().min(4).max(120),
+    alt: z.string().min(4).max(240),
   }),
   products: z
     .array(z.object({ slug: z.string().min(2).max(48), imagePrompt: z.string().min(1) }))
