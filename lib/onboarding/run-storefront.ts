@@ -10,6 +10,7 @@ export interface RunStorefrontInput {
   shopName: string;
   subdomain: string;
   nicheSlug: string;
+  nicheDescription?: string | undefined;
   moodKey: MoodKey;
   productCount: number;
   makerName?: string | undefined;
@@ -31,6 +32,7 @@ export async function runStorefront(
       shopName: input.shopName,
       subdomain: input.subdomain,
       nicheSlug: input.nicheSlug,
+      nicheDescription: input.nicheDescription,
       moodKey: input.moodKey,
       productCount: input.productCount,
       makerName: input.makerName,

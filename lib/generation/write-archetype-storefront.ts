@@ -12,7 +12,12 @@ import type { ProductView } from '@/lib/archetypes/content';
 export interface ArchetypeWriteInput {
   subdomain: string;
   shopName: string;
-  nicheSlug: string;
+  /** The chosen niche slug, or null for an "Other" maker who described their own craft. */
+  primaryNiche: string | null;
+  /** True when the maker picked a niche from the list; false for the "Other" path. */
+  nicheFromList: boolean;
+  /** The maker's typed description of what they make ("Other" path); null otherwise. */
+  nicheDescription: string | null;
   moodKey: string;
   tenantTypes: string[];
   archetypeKey: string;
@@ -44,9 +49,10 @@ export async function writeArchetypeStorefront(
       business_name: input.shopName,
       tier: 'basic',
       types: input.tenantTypes.length > 0 ? input.tenantTypes : ['seller'],
-      primary_niche: input.nicheSlug,
+      primary_niche: input.primaryNiche,
       mood_key: input.moodKey,
-      niche_from_list: true,
+      niche_from_list: input.nicheFromList,
+      niche_description: input.nicheDescription,
       status: 'active',
       logo_url: input.logoUrl && input.logoUrl !== '' ? input.logoUrl : null,
     })

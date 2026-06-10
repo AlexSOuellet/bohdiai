@@ -12,6 +12,7 @@ export type BuildInput = {
   subdomain: string;
   shopName: string;
   nicheSlug: string;
+  nicheDescription?: string | undefined;
   moodKey: string;
   productCount?: number;
   makerName?: string | undefined;

@@ -56,6 +56,7 @@ async function runBuild(buildId: string, input: BuildInput): Promise<void> {
         shopName: input.shopName,
         subdomain: input.subdomain,
         nicheSlug: input.nicheSlug,
+        nicheDescription: input.nicheDescription,
         moodKey: input.moodKey as MoodKey,
         productCount: input.productCount ?? 0,
         makerName: input.makerName,

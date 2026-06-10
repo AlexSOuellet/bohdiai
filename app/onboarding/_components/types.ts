@@ -12,6 +12,7 @@ export interface NicheOption {
 export interface OnboardingData {
   nicheSlug: string;
   nicheDisplayName: string;
+  nicheDescription: string;  // Set when the maker picked "Other" and typed what they make; '' otherwise.
   shopName: string;
   makerName: string;        // The maker's first name. Used for personalized progress labels and for the about-portrait brief.
   subdomain: string;
@@ -24,6 +25,7 @@ export interface OnboardingData {
 export const INITIAL_DATA: OnboardingData = {
   nicheSlug: '',
   nicheDisplayName: '',
+  nicheDescription: '',
   shopName: '',
   makerName: '',
   subdomain: '',

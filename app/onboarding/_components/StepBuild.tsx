@@ -127,6 +127,7 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
             shopName: data.shopName,
             subdomain: data.subdomain,
             nicheSlug: data.nicheSlug,
+            nicheDescription: data.nicheDescription === '' ? undefined : data.nicheDescription,
             moodKey: data.moodKey,
             productCount: data.productCount,
             makerName: data.makerName === '' ? undefined : data.makerName,

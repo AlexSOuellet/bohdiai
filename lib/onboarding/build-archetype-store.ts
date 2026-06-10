@@ -30,11 +30,18 @@ export interface ArchetypeBuildInput {
   shopName: string;
   subdomain: string;
   nicheSlug: string;
+  /** Set when the maker picked "Other" and typed what they make. Bohdi builds
+   *  from this description alone — no niche file, no DB lookup, nothing saved. */
+  nicheDescription?: string | undefined;
   moodKey: MoodKey;
   productCount: number;
   makerName?: string | undefined;
   logoUrl?: string | undefined;
 }
+
+/** The sentinel niche slug an "Other" maker carries — they described their own
+ *  craft instead of picking from the list. */
+export const OTHER_NICHE_SLUG = 'other';
 
 export interface ArchetypeBuildResult {
   tenantId: string;
@@ -61,18 +68,33 @@ export async function buildArchetypeStore(
 ): Promise<ArchetypeBuildResult> {
   const emit = (label: string) => onProgress?.({ type: 'status', step: 'composing-home', label });
 
-  const { data: niche, error } = await supabaseAdmin()
-    .from('niches')
-    .select('display_name, body_markdown, tenant_type_fit')
-    .eq('slug', input.nicheSlug)
-    .single();
-  if (error || !niche) throw new Error(`Niche not found: ${input.nicheSlug} (${error?.message ?? 'no row'})`);
+  // "Other" makers described their own craft — Bohdi builds from that text alone,
+  // with no niche row to look up. List-picked makers ground on their niche file.
+  const isOther = input.nicheSlug === OTHER_NICHE_SLUG;
+  let nicheDisplayName: string;
+  let nicheBody: string;
+  let tenantTypes: string[];
+  if (isOther) {
+    nicheDisplayName = 'maker';
+    nicheBody = input.nicheDescription ?? '';
+    tenantTypes = ['seller'];
+  } else {
+    const { data: niche, error } = await supabaseAdmin()
+      .from('niches')
+      .select('display_name, body_markdown, tenant_type_fit')
+      .eq('slug', input.nicheSlug)
+      .single();
+    if (error || !niche) throw new Error(`Niche not found: ${input.nicheSlug} (${error?.message ?? 'no row'})`);
+    nicheDisplayName = niche.display_name;
+    nicheBody = niche.body_markdown ?? '';
+    tenantTypes = niche.tenant_type_fit ?? ['seller'];
+  }
 
   const mood = MOODS[input.moodKey];
   const brief: CrewBrief = {
     shopName: input.shopName,
-    nicheDisplayName: niche.display_name,
-    nicheBody: niche.body_markdown ?? '',
+    nicheDisplayName,
+    nicheBody,
     moodLabel: mood.label,
     moodDescription: mood.description,
     productCount: input.productCount,
@@ -131,9 +153,11 @@ export async function buildArchetypeStore(
   const result = await writeArchetypeStorefront({
     subdomain: input.subdomain,
     shopName: input.shopName,
-    nicheSlug: input.nicheSlug,
+    primaryNiche: isOther ? null : input.nicheSlug,
+    nicheFromList: !isOther,
+    nicheDescription: isOther ? (input.nicheDescription ?? '') : null,
     moodKey: input.moodKey,
-    tenantTypes: niche.tenant_type_fit ?? ['seller'],
+    tenantTypes,
     archetypeKey: spec.key,
     lookKey: chosen.lookKey,
     mood: input.moodKey,

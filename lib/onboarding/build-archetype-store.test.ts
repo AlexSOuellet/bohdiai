@@ -100,3 +100,63 @@ describe('buildArchetypeStore — crew-choice logging seam', () => {
     });
   });
 });
+
+describe('buildArchetypeStore — Other (describe-and-build)', () => {
+  // A maker who picks "Other" types what they make; Bohdi builds from that
+  // description alone — no niche file, no DB lookup, nothing saved as a niche.
+  const fakeSpec = {
+    key: 'main-street',
+    mediaJobs: () => [],
+    applyMedia: (authored: unknown) => authored,
+    toPayload: () => ({ content: {}, products: [] }),
+  };
+
+  beforeEach(() => {
+    single.mockReset();
+    directAndProduce.mockReset();
+    directAndProduce.mockResolvedValue({
+      chosen: { spec: fakeSpec, lookKey: 'main-street-ember' },
+      authored: {},
+      choices: { momentKind: 'video', goodsTreatment: 'procession', founderTreatment: 'quote' },
+    });
+    writeArchetypeStorefront.mockReset();
+    writeArchetypeStorefront.mockResolvedValue({ subdomain: 'planters', tenantId: 'tn_other_1' });
+  });
+
+  it('skips the niches table and feeds the typed description as the niche body', async () => {
+    await buildArchetypeStore({
+      shopName: 'Set Stone',
+      subdomain: 'planters',
+      nicheSlug: 'other',
+      nicheDescription: 'I make hand-poured concrete planters with pressed botanicals',
+      moodKey: 'modern',
+      productCount: 3,
+    });
+
+    // No niche row exists for Other — the DB lookup must never run.
+    expect(single).not.toHaveBeenCalled();
+    // The crew receives the maker's own words as the niche material.
+    const brief = directAndProduce.mock.calls[0]![0] as { nicheBody: string };
+    expect(brief.nicheBody).toBe('I make hand-poured concrete planters with pressed botanicals');
+  });
+
+  it('persists as not-from-list with the description and no primary niche', async () => {
+    await buildArchetypeStore({
+      shopName: 'Set Stone',
+      subdomain: 'planters',
+      nicheSlug: 'other',
+      nicheDescription: 'concrete planters with pressed botanicals',
+      moodKey: 'modern',
+      productCount: 3,
+    });
+
+    const writeArg = writeArchetypeStorefront.mock.calls[0]![0] as {
+      nicheFromList: boolean;
+      nicheDescription: string | null;
+      primaryNiche: string | null;
+    };
+    expect(writeArg.nicheFromList).toBe(false);
+    expect(writeArg.nicheDescription).toBe('concrete planters with pressed botanicals');
+    expect(writeArg.primaryNiche).toBeNull();
+  });
+});
