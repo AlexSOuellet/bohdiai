@@ -99,6 +99,8 @@ All planning complete. D1 through D18 locked in `project-docs/Phase-1-Decisions-
 - `content/niches/_queue.yaml` — launch queue of ~260 niche candidates
 - `.claude/skills/niche-writer/SKILL.md` — the niche-writer skill
 - `Design files/BohdiAI/` — extracted Claude Design output. Tailwind + Newsreader/Geist fonts + cream/honey/ink palette.
+- `scripts/db-migrate.mjs` — apply migrations: `node scripts/db-migrate.mjs` (writes `.sql` under `supabase/migrations/` first). Running migrations is Claude's job, not a TODO for Alex.
+- `scripts/gen-types.mjs` — regenerate `lib/database.types.ts` from the live DB: `npm run gen:types`. **Run this after any migration that changes tables/columns.** Uses the linked Supabase project + the CLI's stored login (no Docker, no DB password). This exists because the types had drifted from the DB and got cast around — never hand-write or work around the generated types; regenerate them.
 
 ## Mantras (from Golden Rules)
 

@@ -27,6 +27,22 @@ Headline findings worth remembering:
 - **Verified-not-dead:** `style_sheets` is still read by the legacy `StorefrontPage` fallback renderer, so it can't be dropped without retiring that renderer first (a real decision, D5b).
 - **Process correction:** Alex stopped a workaround where Claude was hand-writing type entries from raw schema queries instead of regenerating properly, and reminded Claude to talk in plain English (no jargon, no decision-IDs, no structured lists in chat).
 
+## After the audit — DB cleanup + decisions (same session)
+
+**Deleted 21 old test stores, kept the 4 most recent.** Keepers: `terrys-tats`, `rhody-magnets`, `misty-petals`, `our-daily-bread` (all built Jun 9; cutoff was "everything before Our Daily Bread"). Done with a guarded one-off script (since removed — it's a foot-gun if re-run). After: **4 tenants, 4 content_pages (all archetype), 0 legacy pages, 0 style_sheet rows, 36 listings intact.**
+
+**Important correction banked:** a scary-sounding moment ("half the pages run through the old system") was *wrong*. Those "legacy" pages were stale test-store data from May 29–Jun 1, NOT new builds using the old path. **Every build uses the current archetype system.** The lesson: don't conflate old leftover data with current behavior, and verify against the live DB before raising an alarm (or claiming something's dead).
+
+**Decision — keep build images as a future library.** Old/deleted stores' images are deliberately NOT purged from Supabase Storage. Alex wants to eventually build a reusable image library Bohdi draws from instead of generating fresh every build (cost + speed + curation). Saved to memory `project_image_library_reuse`. So: don't clean storage when deleting test tenants.
+
+**The old rendering code is NOT confirmed-dead — do not assume.** Deleting the test stores cleared all old *data* (0 legacy pages, 0 style sheets), but the old `StorefrontPage`/`LayoutPage`/`style_sheets` rendering path likely doubles as the renderer for maker-added *custom* pages (per D37). The two "obvious quick deletes" (the `/gallery` route, the stale `'simple'` mood key) turned out to be entangled with this same path, not standalone — the gallery route is still wired into the storefront nav (`storefront-chrome.ts`), and the mood list is broadly stale, not just one word. **Verify before removing any of it.** (Caught before doing damage by checking, not trusting the audit subagent's "verified dead" label.)
+
+## Process notes banked this session
+
+- **Don't work around a proper tool — use it.** Claude started hand-writing type entries from raw schema queries instead of regenerating; Alex stopped it. The right fix was setting up `npm run gen:types`. When a canonical path exists, take it.
+- **Verify "dead/safe" labels against live code + data before deleting.** Two things labeled safe-to-delete weren't. Checking saved a broken nav link and a false alarm.
+- **Plain English in chat.** Alex stopped jargon twice ("page-drawing path", table names). Talk like a person.
+
 ## Open (in the fix plan)
 
-A2 (transactional write + test), A3 (silent build-status errors), A4 (pipeline timeout), B1 (proxy header strip), all of Phase C (security launch-gate, needs auth), and Phase D code-file cleanup. **Awaiting Alex's call:** delete-or-gate the preview routes (`app/archetype-test/**`, `app/_reference/functional-studies`) and the design scratch files (`procession-mockup.html`, `_design-mocks/`, `skin-shelf.html`); and whether to retire the legacy fallback so `style_sheets` can go.
+A2 (transactional write + test), A3 (silent build-status errors), A4 (pipeline timeout), B1 (proxy header strip), all of Phase C (security launch-gate, needs auth), and Phase D code-file cleanup. **Awaiting Alex's call:** delete-or-gate the preview routes (`app/archetype-test/**`, `app/_reference/functional-studies`); and whether to verify+retire the legacy `StorefrontPage` fallback (now serving zero data) so `style_sheets` + the gallery route + the stale mood metadata can all come out together.
