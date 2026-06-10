@@ -38,7 +38,10 @@ const TIMEOUT_MS = 60_000;
 export const MomentSceneSchema = z.object({
   kind: z.enum(['video', 'image']),
   prompt: ScenePrompt,
-  alt: z.string().min(4).max(240),
+  // No hard cap: `alt` is the accessibility caption (never laid out), so its
+  // length can't break anything and must never fail the build (D53). The min is
+  // a quality floor; a soft prompt nudge keeps it short without a gate.
+  alt: z.string().min(4),
 });
 export type MomentScene = z.infer<typeof MomentSceneSchema>;
 
@@ -107,7 +110,7 @@ Design the shot with set_moment:
     - camera: the angle and lens. For a video the camera is LOCKED — a fixed, static setup. Name no movement: no pan, push-in, zoom, dolly, crane, orbit, rack focus, or drift. (A moving camera can't loop — see below.)
     - lighting: the light.
     - style: the visual style.
-- alt (4-240): a plain description of the shot.
+- alt: a short, plain description of the shot — a sentence is plenty.
 
 - No text, lettering, logos, titles, captions, or typography anywhere in the frame — the engine sets the type; the shot is image only. (A physics rule: image models can't render legible text.)
 

@@ -35,12 +35,14 @@ const TIMEOUT_MS = 90_000;
 /** What the Graphic Artist produces. `skinKey` is validated against the subset
  *  separately (a dynamic set), and `products` must cover the copywriter's slugs. */
 // The image prompts feed the image model (not rendered) — no length cap, only a
-// non-empty floor. `alt` renders into the DOM; `slug` is a routing identifier.
+// non-empty floor. `alt` is the accessibility caption (read by assistive tech,
+// never laid out), so it carries no length cap either — copy never fails the
+// build (D53). `slug` is a routing identifier.
 export const GraphicSpecSchema = z.object({
   skinKey: z.string(),
   founderPhoto: z.object({
     prompt: z.string().min(1),
-    alt: z.string().min(4).max(240),
+    alt: z.string().min(4),
   }),
   products: z
     .array(z.object({ slug: z.string().min(2).max(48), imagePrompt: z.string().min(1) }))
@@ -94,7 +96,7 @@ ${productList}
 Choose with set_look:
 - skinKey: the store's skin. Pick exactly ONE key from this list — these are the skins that fit the ${brief.moodLabel} mood the maker chose:
 ${skinList}
-- founderPhoto: the maker AT WORK — framed on their hands and their craft at the bench, NOT their face. Never specify the maker's gender, age, or appearance (no "a man", "a woman", "bearded", etc.) — the maker adds their own real photo later; this placeholder is about the work, not the person. { prompt: the setting, framing, and light of the shot; alt (4-120) }. The system enforces the maker's framing and realism; you set the scene and its light.
+- founderPhoto: the maker AT WORK — framed on their hands and their craft at the bench, NOT their face. Never specify the maker's gender, age, or appearance (no "a man", "a woman", "bearded", etc.) — the maker adds their own real photo later; this placeholder is about the work, not the person. { prompt: the setting, framing, and light of the shot; alt: a short, plain description of the shot }. The system enforces the maker's framing and realism; you set the scene and its light.
 - products: an image prompt for EVERY product above — an array of { slug, imagePrompt }, one entry per slug, no extras: the product shot, its surface, and its light, in the same world as the Moment and the skin.
 
 Set the look now.`;

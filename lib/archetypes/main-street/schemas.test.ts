@@ -94,6 +94,13 @@ describe('MainStreetContentSchema', () => {
     expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
   });
 
+  it('accepts a long alt on the hero media and founder photo — alt is non-structural copy and never fails the build (D53)', () => {
+    const c = valid();
+    c.moment.media.alt = 'A loaf cooling on a flour-dusted bench in the soft golden light of an unhurried morning '.repeat(4); // ~360 chars, well past the old 240 cap
+    c.founder.photo.alt = 'June at her bench, hands deep in dough, the work of fourteen years in every fold '.repeat(4);
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
+  });
+
   it('accepts a still hero (kind image) with a structured scene', () => {
     const c = valid();
     (c.moment.media as Record<string, unknown>)['kind'] = 'image';

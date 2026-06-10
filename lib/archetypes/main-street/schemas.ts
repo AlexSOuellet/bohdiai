@@ -58,16 +58,17 @@ const MediaSlot = z.object({
   prompt: ScenePrompt,
   url: z.string().url().optional(),
   poster: z.string().url().optional(),
-  alt: z.string().min(4).max(240),
+  alt: z.string().min(4),
 });
 
 /** A photo slot for the founder portrait. `prompt` feeds the image model (not
- *  rendered), so it has no length cap, only a non-empty floor; `alt` renders into
- *  the DOM. */
+ *  rendered), so it has no length cap, only a non-empty floor. `alt` is the
+ *  accessibility caption — it's read by assistive tech, never laid out, so it
+ *  carries no length cap either (only a min floor): copy never fails the build (D53). */
 const PhotoSlot = z.object({
   prompt: z.string().min(1),
   url: z.string().url().optional(),
-  alt: z.string().min(4).max(240),
+  alt: z.string().min(4),
 });
 
 /** A hero story line. Capped tight so it sets large and reads in one breath, and

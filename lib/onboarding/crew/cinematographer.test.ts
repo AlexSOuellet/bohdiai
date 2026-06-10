@@ -73,19 +73,12 @@ describe('shootMoment (the Cinematographer)', () => {
     expect(JSON.stringify(second.messages.at(-1))).toContain('composition');
   });
 
-  it("tells the cinematographer the alt's real length when it overflows its cap, then accepts the fix", async () => {
-    const longAlt = 'a'.repeat(250); // > 240 cap
-    expect(longAlt.length).toBeGreaterThan(240);
-    const over = { ...scene, alt: longAlt };
-    create.mockResolvedValueOnce(toolMsg(over)).mockResolvedValueOnce(toolMsg(scene));
+  it('accepts a long alt as-is and never reshoots for its length — alt is non-structural copy and must never fail the build (D53)', async () => {
+    const longAlt = 'a'.repeat(300); // well past the old 240 cap
+    create.mockResolvedValue(toolMsg({ ...scene, alt: longAlt }));
     const s = await shootMoment(trajectory, story);
-    expect(s.alt).toBe(scene.alt);
-    expect(create).toHaveBeenCalledTimes(2);
-    const second = create.mock.calls[1]![0] as { messages: Array<{ role: string; content: unknown }> };
-    const last = JSON.stringify(second.messages.at(-1));
-    expect(last).toContain('alt');
-    // the actionable part: the model is told its real length, not just the cap
-    expect(last).toContain(String(longAlt.length));
+    expect(s.alt).toBe(longAlt);
+    expect(create).toHaveBeenCalledTimes(1); // valid on the first shot — no length reshoot
   });
 
   it('throws when no valid moment is produced within the attempt cap', async () => {
