@@ -6,6 +6,7 @@
  * style_sheet anywhere in this path.
  */
 import { supabaseAdmin } from '@/lib/supabase';
+import type { Json } from '@/lib/database.types';
 import type { ProductView } from '@/lib/archetypes/content';
 
 export interface ArchetypeWriteInput {
@@ -31,18 +32,10 @@ export interface ArchetypeWriteResult {
   subdomain: string;
 }
 
-type LooseClient = {
-  from: (t: string) => {
-    insert: (r: unknown) => {
-      select: (c: string) => { single: () => Promise<{ data: { id: string } | null; error: { message: string } | null }> };
-    } & Promise<{ error: { message: string } | null }>;
-  };
-};
-
 export async function writeArchetypeStorefront(
   input: ArchetypeWriteInput,
 ): Promise<ArchetypeWriteResult> {
-  const db = supabaseAdmin() as unknown as LooseClient;
+  const db = supabaseAdmin();
 
   const { data: tenant, error: tenantErr } = await db
     .from('tenants')
@@ -59,7 +52,10 @@ export async function writeArchetypeStorefront(
     })
     .select('id')
     .single();
-  if (tenantErr || !tenant) throw new Error(`writeArchetypeStorefront: tenant insert failed — ${tenantErr?.message ?? 'no id'}`);
+  if (tenantErr || !tenant)
+    throw new Error(
+      `writeArchetypeStorefront: tenant insert failed — ${tenantErr?.message ?? 'no id'}`,
+    );
   const tenantId = tenant.id;
 
   const envelope = {
@@ -69,7 +65,10 @@ export async function writeArchetypeStorefront(
       lookKey: input.lookKey,
       mood: input.mood,
       catalogSize: input.catalogSize,
-      content: input.content,
+      // `content` is type-erased to `unknown` at the archetype boundary (it's
+      // re-validated per-archetype at render time). It's plain validated data
+      // headed for the jsonb `layout_tree` column, so widen it to Json here.
+      content: input.content as Json,
     },
     meta: { title: input.shopName },
   };
@@ -84,7 +83,8 @@ export async function writeArchetypeStorefront(
     is_in_nav: false,
     layout_tree: envelope,
   });
-  if (pageErr) throw new Error(`writeArchetypeStorefront: home page insert failed — ${pageErr.message}`);
+  if (pageErr)
+    throw new Error(`writeArchetypeStorefront: home page insert failed — ${pageErr.message}`);
 
   if (input.products.length > 0) {
     const now = new Date().toISOString();
@@ -103,7 +103,8 @@ export async function writeArchetypeStorefront(
       published_at: now,
     }));
     const { error: listErr } = await db.from('listings').insert(rows);
-    if (listErr) throw new Error(`writeArchetypeStorefront: listings insert failed — ${listErr.message}`);
+    if (listErr)
+      throw new Error(`writeArchetypeStorefront: listings insert failed — ${listErr.message}`);
   }
 
   return { tenantId, subdomain: input.subdomain };

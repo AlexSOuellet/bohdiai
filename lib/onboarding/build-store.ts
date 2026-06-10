@@ -6,7 +6,9 @@ import { supabaseAdmin } from '@/lib/supabase';
 
 export type BuildStatus = 'pending' | 'running' | 'done' | 'failed';
 
-export interface BuildInput {
+// A `type` (not `interface`) so it carries the implicit index signature that
+// lets it serialize into the jsonb `input` column (Json) without a cast.
+export type BuildInput = {
   subdomain: string;
   shopName: string;
   nicheSlug: string;
@@ -15,7 +17,7 @@ export interface BuildInput {
   makerName?: string | undefined;
   logoUrl?: string | undefined;
   brandColors?: string[] | undefined;
-}
+};
 
 export interface BuildRow {
   id: string;
@@ -27,13 +29,14 @@ export interface BuildRow {
 }
 
 function builds() {
-  return (supabaseAdmin() as unknown as {
-    from: (t: string) => {
-      insert: (r: unknown) => { select: (c: string) => { single: () => Promise<{ data: { id: string } | null; error: { message: string } | null }> } };
-      update: (r: unknown) => { eq: (c: string, v: unknown) => Promise<{ error: { message: string } | null }> };
-      select: (c: string) => { eq: (c: string, v: unknown) => { single: () => Promise<{ data: BuildRow | null; error: { message: string } | null }> } };
-    };
-  }).from('builds');
+  return supabaseAdmin().from('builds');
+}
+
+const BUILD_STATUSES: readonly BuildStatus[] = ['pending', 'running', 'done', 'failed'];
+
+/** The DB column is free-text; narrow it back to the known status union. */
+function toBuildStatus(s: string): BuildStatus {
+  return (BUILD_STATUSES as readonly string[]).includes(s) ? (s as BuildStatus) : 'failed';
 }
 
 /** Create a pending build and return its id. */
@@ -74,7 +77,10 @@ export async function failBuild(id: string, message: string): Promise<void> {
 
 /** Read a build's current state, or null if it doesn't exist. */
 export async function getBuild(id: string): Promise<BuildRow | null> {
-  const { data, error } = await builds().select('*').eq('id', id).single();
+  const { data, error } = await builds()
+    .select('id, status, status_label, subdomain, tenant_id, error')
+    .eq('id', id)
+    .single();
   if (error || !data) return null;
-  return data;
+  return { ...data, status: toBuildStatus(data.status) };
 }

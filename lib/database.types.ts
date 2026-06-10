@@ -23,6 +23,56 @@ export type Database = {
         };
         Relationships: [];
       };
+      builds: {
+        Row: {
+          created_at: string;
+          error: string | null;
+          finished_at: string | null;
+          id: string;
+          input: Json;
+          started_at: string | null;
+          status: string;
+          status_label: string | null;
+          subdomain: string;
+          tenant_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          error?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          input: Json;
+          started_at?: string | null;
+          status?: string;
+          status_label?: string | null;
+          subdomain: string;
+          tenant_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          error?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          input?: Json;
+          started_at?: string | null;
+          status?: string;
+          status_label?: string | null;
+          subdomain?: string;
+          tenant_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'builds_tenant_id_fkey';
+            columns: ['tenant_id'];
+            isOneToOne: false;
+            referencedRelation: 'tenants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       cart_items: {
         Row: {
           added_at: string;
@@ -218,6 +268,7 @@ export type Database = {
           id: string;
           is_in_nav: boolean;
           is_system_page: boolean;
+          layout_tree: Json | null;
           meta_description: string | null;
           meta_keywords: string | null;
           nav_label: string | null;
@@ -237,6 +288,7 @@ export type Database = {
           id?: string;
           is_in_nav?: boolean;
           is_system_page?: boolean;
+          layout_tree?: Json | null;
           meta_description?: string | null;
           meta_keywords?: string | null;
           nav_label?: string | null;
@@ -256,6 +308,7 @@ export type Database = {
           id?: string;
           is_in_nav?: boolean;
           is_system_page?: boolean;
+          layout_tree?: Json | null;
           meta_description?: string | null;
           meta_keywords?: string | null;
           nav_label?: string | null;
@@ -427,6 +480,50 @@ export type Database = {
           },
         ];
       };
+      design_choices: {
+        Row: {
+          candidates: Json;
+          created_at: string;
+          decision_type: string;
+          id: string;
+          mood_key: string | null;
+          niche_slug: string | null;
+          picked: Json;
+          reasoning: string;
+          tenant_id: string | null;
+        };
+        Insert: {
+          candidates: Json;
+          created_at?: string;
+          decision_type: string;
+          id?: string;
+          mood_key?: string | null;
+          niche_slug?: string | null;
+          picked: Json;
+          reasoning: string;
+          tenant_id?: string | null;
+        };
+        Update: {
+          candidates?: Json;
+          created_at?: string;
+          decision_type?: string;
+          id?: string;
+          mood_key?: string | null;
+          niche_slug?: string | null;
+          picked?: Json;
+          reasoning?: string;
+          tenant_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'design_choices_tenant_id_fkey';
+            columns: ['tenant_id'];
+            isOneToOne: false;
+            referencedRelation: 'tenants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       design_tokens: {
         Row: {
           created_at: string;
@@ -554,33 +651,6 @@ export type Database = {
           },
         ];
       };
-      feature_flags: {
-        Row: {
-          id: string;
-          name: string;
-          enabled: boolean;
-          allowlist: string[];
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          name: string;
-          enabled?: boolean;
-          allowlist?: string[];
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          name?: string;
-          enabled?: boolean;
-          allowlist?: string[];
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
       event_expenses: {
         Row: {
           amount_cents: number;
@@ -675,6 +745,33 @@ export type Database = {
             referencedColumns: ['id'];
           },
         ];
+      };
+      feature_flags: {
+        Row: {
+          allowlist: string[];
+          created_at: string;
+          enabled: boolean;
+          id: string;
+          name: string;
+          updated_at: string;
+        };
+        Insert: {
+          allowlist?: string[];
+          created_at?: string;
+          enabled?: boolean;
+          id?: string;
+          name: string;
+          updated_at?: string;
+        };
+        Update: {
+          allowlist?: string[];
+          created_at?: string;
+          enabled?: boolean;
+          id?: string;
+          name?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       generation_rate_limits: {
         Row: {
@@ -1133,6 +1230,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      notify_interest: {
+        Row: {
+          created_at: string;
+          email: string;
+          id: string;
+          listing_id: string;
+          tenant_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          email: string;
+          id?: string;
+          listing_id: string;
+          tenant_id: string;
+        };
+        Update: {
+          created_at?: string;
+          email?: string;
+          id?: string;
+          listing_id?: string;
+          tenant_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'notify_interest_listing_id_fkey';
+            columns: ['listing_id'];
+            isOneToOne: false;
+            referencedRelation: 'listings';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'notify_interest_tenant_id_fkey';
+            columns: ['tenant_id'];
+            isOneToOne: false;
+            referencedRelation: 'tenants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       order_items: {
         Row: {
           created_at: string;
@@ -1206,45 +1342,6 @@ export type Database = {
             columns: ['tenant_id'];
             isOneToOne: false;
             referencedRelation: 'tenants';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      notify_interest: {
-        Row: {
-          id: string;
-          tenant_id: string;
-          listing_id: string;
-          email: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          tenant_id: string;
-          listing_id: string;
-          email: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          tenant_id?: string;
-          listing_id?: string;
-          email?: string;
-          created_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'notify_interest_tenant_id_fkey';
-            columns: ['tenant_id'];
-            isOneToOne: false;
-            referencedRelation: 'tenants';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'notify_interest_listing_id_fkey';
-            columns: ['listing_id'];
-            isOneToOne: false;
-            referencedRelation: 'listings';
             referencedColumns: ['id'];
           },
         ];
@@ -1838,6 +1935,92 @@ export type Database = {
           },
         ];
       };
+      store_versions: {
+        Row: {
+          created_at: string;
+          envelope: Json;
+          id: string;
+          label: string;
+          tenant_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          envelope: Json;
+          id?: string;
+          label: string;
+          tenant_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          envelope?: Json;
+          id?: string;
+          label?: string;
+          tenant_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'store_versions_tenant_id_fkey';
+            columns: ['tenant_id'];
+            isOneToOne: false;
+            referencedRelation: 'tenants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      style_sheets: {
+        Row: {
+          created_at: string;
+          id: string;
+          is_active: boolean;
+          label: string | null;
+          restored_from_snapshot_id: string | null;
+          sheet: Json;
+          source: string;
+          tenant_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          label?: string | null;
+          restored_from_snapshot_id?: string | null;
+          sheet: Json;
+          source: string;
+          tenant_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          label?: string | null;
+          restored_from_snapshot_id?: string | null;
+          sheet?: Json;
+          source?: string;
+          tenant_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'style_sheets_restored_from_snapshot_id_fkey';
+            columns: ['restored_from_snapshot_id'];
+            isOneToOne: false;
+            referencedRelation: 'style_sheets';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'style_sheets_tenant_id_fkey';
+            columns: ['tenant_id'];
+            isOneToOne: false;
+            referencedRelation: 'tenants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       subscriptions: {
         Row: {
           billing_interval: string | null;
@@ -1967,8 +2150,9 @@ export type Database = {
           deleted_at: string | null;
           id: string;
           inspiration_urls: string[];
-          niche_description: string | null;
+          logo_url: string | null;
           mood_key: string | null;
+          niche_description: string | null;
           niche_from_list: boolean;
           phone: string | null;
           postal_code: string | null;
@@ -1999,6 +2183,7 @@ export type Database = {
           deleted_at?: string | null;
           id?: string;
           inspiration_urls?: string[];
+          logo_url?: string | null;
           mood_key?: string | null;
           niche_description?: string | null;
           niche_from_list?: boolean;
@@ -2031,6 +2216,7 @@ export type Database = {
           deleted_at?: string | null;
           id?: string;
           inspiration_urls?: string[];
+          logo_url?: string | null;
           mood_key?: string | null;
           niche_description?: string | null;
           niche_from_list?: boolean;
@@ -2310,10 +2496,6 @@ export type Database = {
       is_tenant_customer: {
         Args: { target_tenant_id: string };
         Returns: boolean;
-      };
-      write_tenant_storefront: {
-        Args: { p_data: Json };
-        Returns: Json;
       };
     };
     Enums: {

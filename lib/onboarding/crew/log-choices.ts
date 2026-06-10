@@ -12,11 +12,9 @@
  * Fire-and-forget by contract: a logging failure must NEVER fail a build. Every
  * write is wrapped so a rejected promise is swallowed (logged at warn, then
  * dropped). Callers should NOT await this for control flow.
- *
- * `design_choices` is newer than the generated Database types, so the insert is
- * cast until the generated types catch up.
  */
 import { supabaseAdmin } from '@/lib/supabase';
+import type { Json } from '@/lib/database.types';
 import { logger } from '@/lib/logger';
 import { GOODS_TREATMENTS } from '@/lib/archetypes/main-street/goods';
 import { FOUNDER_TREATMENTS } from '@/lib/archetypes/main-street/schemas';
@@ -34,9 +32,9 @@ export interface DesignChoice {
   moodKey: string;
   decisionType: DesignDecisionType;
   /** The full set of options the choice was made from. */
-  candidates: readonly unknown[];
+  candidates: Json;
   /** The option the crew landed on. */
-  picked: unknown;
+  picked: Json;
   /** A short factual note on why/where the pick was recorded. */
   reasoning: string;
 }
@@ -57,16 +55,20 @@ export async function logDesignChoice(choice: DesignChoice): Promise<void> {
     mood_key: choice.moodKey,
   };
 
-  // design_choices is too new to be in the generated Database types; cast for now.
-  const db = supabaseAdmin() as unknown as {
-    from: (t: string) => { insert: (r: unknown) => Promise<{ error: { message: string } | null }> };
-  };
+  const db = supabaseAdmin();
 
   try {
     const { error } = await db.from('design_choices').insert(row);
-    if (error) logger.warn('crew: logDesignChoice insert failed', { decisionType: choice.decisionType, error: error.message });
+    if (error)
+      logger.warn('crew: logDesignChoice insert failed', {
+        decisionType: choice.decisionType,
+        error: error.message,
+      });
   } catch (err) {
-    logger.warn('crew: logDesignChoice threw', { decisionType: choice.decisionType, err: String(err) });
+    logger.warn('crew: logDesignChoice threw', {
+      decisionType: choice.decisionType,
+      err: String(err),
+    });
   }
 }
 
@@ -85,7 +87,10 @@ export interface CrewChoicesLog {
 
 /** What got logged for a rolled treatment: the played treatment, the dealt roll,
  *  and whether Bohdi overrode the dice. */
-function treatmentPick(treatment: string, rolled: string): { treatment: string; rolled: string; overrode: boolean } {
+function treatmentPick(
+  treatment: string,
+  rolled: string,
+): { treatment: string; rolled: string; overrode: boolean } {
   return { treatment, rolled, overrode: treatment !== rolled };
 }
 
@@ -97,7 +102,25 @@ function treatmentPick(treatment: string, rolled: string): { treatment: string; 
  */
 export function logCrewChoices(c: CrewChoicesLog): void {
   const base = { tenantId: c.tenantId, nicheSlug: c.nicheSlug, moodKey: c.moodKey };
-  void logDesignChoice({ ...base, decisionType: 'moment-kind', candidates: MOMENT_KINDS, picked: { kind: c.momentKind }, reasoning: 'cinematographer chose the Moment kind for this build' });
-  void logDesignChoice({ ...base, decisionType: 'goods-treatment', candidates: GOODS_TREATMENTS, picked: treatmentPick(c.goodsTreatment, c.goodsRoll), reasoning: 'copywriter played or overrode the dealt goods treatment' });
-  void logDesignChoice({ ...base, decisionType: 'founder-treatment', candidates: FOUNDER_TREATMENTS, picked: treatmentPick(c.founderTreatment, c.founderRoll), reasoning: 'copywriter played or overrode the dealt founder treatment' });
+  void logDesignChoice({
+    ...base,
+    decisionType: 'moment-kind',
+    candidates: [...MOMENT_KINDS],
+    picked: { kind: c.momentKind },
+    reasoning: 'cinematographer chose the Moment kind for this build',
+  });
+  void logDesignChoice({
+    ...base,
+    decisionType: 'goods-treatment',
+    candidates: [...GOODS_TREATMENTS],
+    picked: treatmentPick(c.goodsTreatment, c.goodsRoll),
+    reasoning: 'copywriter played or overrode the dealt goods treatment',
+  });
+  void logDesignChoice({
+    ...base,
+    decisionType: 'founder-treatment',
+    candidates: [...FOUNDER_TREATMENTS],
+    picked: treatmentPick(c.founderTreatment, c.founderRoll),
+    reasoning: 'copywriter played or overrode the dealt founder treatment',
+  });
 }

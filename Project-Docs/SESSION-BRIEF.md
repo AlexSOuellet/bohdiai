@@ -2,7 +2,7 @@
 
 **Purpose:** the operational state a fresh session needs to start — current status, what's next, and the lessons that carry forward. **This file stays short.** Detailed per-session recaps live in `session-logs/` (one file per session). At the end of a session, write the recap to `session-logs/session-NN.md`, add a one-line entry to the index at the bottom of this file, and update only the Current State / Next Actions / Standing Lessons sections here. Do not paste full recaps back into this file — that is what bloated it to 1,200 lines and broke the reader (Session 35 cleanup).
 
-**Last updated:** 2026-06-09, end of Session 37, going into Session 38.
+**Last updated:** 2026-06-10, Session 38 (full codebase audit + first fixes).
 
 ---
 
@@ -25,6 +25,14 @@ Phase 1 build, on branch `session-12/layout-engine`. The storefront engine is **
 
 Session 37 was a big two-part day, all TDD. Morning: the treatment **roll** (D48 — code deals each converging beat a roll Bohdi plays or overrides; rolled/played/overrode logged), deleting the dead mood→treatment rules (D49), and the **Constellation** procession + faster slideshow (D50). Afternoon, from live builds: **D51 — the mood lineup is now seven FEELINGS** (Dark, Rustic, Cozy, Modern, Elegant, Playful, Industrial; color is a layer Bohdi picks inside the feeling, not a mood; Botanical/Sunset/Simple retired; Romantic stays rejected), with skins re-tagged to the feelings, a tenant migration, and the **dead legacy layout-engine path deleted** (`lib/bohdi`, legacy `lib/generation`, broadsheet, probe pages, style-sheet JSON). Plus **D52** (the Moment camera is locked — a moving camera breaks the seamless loop) and **D53** (no hard caps on body prose — the design carries any length, the build never fails or trims on copy; caps stay only on structural display fields; a soft prompt nudge keeps copy punchy and generation fast). Full recap: `session-logs/session-37.md`.
 
+## Audit (Session 38) — what's done, what's open
+
+A full third-party-style audit ran this session across security, dead code, engineering practices, and the data layer. Two deliverables: `project-docs/Audit-2026-06-10.md` (findings) and `project-docs/Audit-Fix-Plan-2026-06-10.md` (the living fix tracker — **start here for the audit backlog**).
+
+Done this session: **A1** (regenerated `database.types.ts` from the live DB and removed all three `as unknown as` casts; added a repeatable `npm run gen:types`; `tsc` clean, 885 tests pass) and **D5a** (dropped the two dead legacy RPCs, migration `20260610000001`). Locked: **Try-On is in launch scope**, so `store_versions` + `lib/tryon/*` are keepers, not dead code.
+
+Open audit backlog (in the fix plan): A2 (transactional storefront write + missing test — half-built stores currently persist on failure), A3 (silent build-status errors), A4 (pipeline timeout budget over the 300s ceiling — caused a real failure), B1 (proxy `x-tenant-id` strip), all of Phase C (the security launch-gate, depends on auth), and Phase D code-file cleanup. **Awaiting Alex's call:** delete-or-gate the preview routes (`app/archetype-test/**`, `app/_reference/functional-studies`) and the design scratch files (`procession-mockup.html`, `_design-mocks/`, `skin-shelf.html`); and whether to retire the legacy `StorefrontPage` fallback so `style_sheets` can be dropped.
+
 ## Next actions
 
 The seven-feeling lineup and the variety engine are in and producing good builds. The **Constellation is confirmed good live** (Alex: "much better than progression") — the earlier "fade looks off" worry did not hold up; do NOT go chasing a per-card-reveal fix, it works as built. Open:
@@ -40,6 +48,7 @@ Also open (lower priority): the **Studio skin's `Syne` font** (Alex dislikes); t
 
 ## Session log index (full recaps in `session-logs/`)
 
+- [Session 38](session-logs/session-38.md) — Full codebase audit (security, dead code, practices, data layer) → `Audit-2026-06-10.md` + `Audit-Fix-Plan-2026-06-10.md`. Did A1 (type regen + de-cast + `gen:types`) and D5a (dropped two dead RPCs). Locked Try-On as launch scope. Rest of the audit backlog tracked in the fix plan.
 - [Session 37](session-logs/session-37.md) — Big two-part day. Built the treatment roll (D48), deleted the dead mood→treatment rules (D49), Constellation + faster slideshow (D50). Then from live builds: redefined the mood lineup to seven feelings + retired color-as-mood (D51), locked the Moment camera (D52), removed hard caps on body prose (D53), and deleted the dead legacy layout-engine path. Ended on the best build yet.
 - [Session 36](session-logs/session-36.md) — Shipped D46 (crew authors link destinations), D47 (cinematographer prefers video), and a copywriter length-feedback fix (build-failure); then a long mood-overhaul design conversation that inverted the plan (any treatment fits any mood → no mapping; the bug is convergence; fix = crew chooses with variety, not code)
 - [Session 35](session-logs/session-35.md) — De-bloated the brief; shipped both Session-34 plans (8 fixes) + corrected logging; locked + built the D44 Moment; live-build fix loop (shop name, Seedance fast, clickable products, founder beat); punch list D45–D47
