@@ -11,12 +11,11 @@
  * a big light change without jumping on restart) — physics, not taste. It never
  * says go low-light or go cinematic.
  *
- * It DOES prefer video — that is product intent, not taste (D47). The Moment is
- * motion; a BohdiAI front door MOVES where a template builder's sits still (D33).
- * So video is the default and a still is the last resort, chosen only when no
- * simple ambient motion fits. Leaving the choice "neutral" made the model read
- * video's loop restrictions as risk and play safe with stills — neutrality and
- * intent are not the same thing.
+ * The kind decision belongs to the DIRECTOR (trajectory.momentKind, see director.ts);
+ * this stage executes whichever kind was called for. Video carries real ambient motion
+ * belonging to the subject; spotlight carries the cinematic rise of a static hero
+ * object (the rise/push happen in CSS at render — see SpotlightStage). The Moment is
+ * always cinematic — that is D33 — but cinematic is not always video.
  */
 import type Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
@@ -36,7 +35,7 @@ const TIMEOUT_MS = 60_000;
  *  urls (generated later). Reuses ScenePrompt so its limits never drift from the
  *  engine that finally validates the assembled envelope. */
 export const MomentSceneSchema = z.object({
-  kind: z.enum(['video', 'image']),
+  kind: z.enum(['video', 'spotlight']),
   prompt: ScenePrompt,
   // No hard cap: `alt` is the accessibility caption (never laid out), so its
   // length can't break anything and must never fail the build (D53). The min is
@@ -87,7 +86,7 @@ const SET_MOMENT_TOOL: Anthropic.Tool = {
   input_schema: { type: 'object', properties: {}, additionalProperties: true },
 };
 
-function buildCinematographerPrompt(trajectory: Trajectory, story: string[]): string {
+export function buildCinematographerPrompt(trajectory: Trajectory, story: string[]): string {
   const lines = story.map((l) => `  ${l}`).join('\n');
   return `You are the CINEMATOGRAPHER on Bohdi's crew. You design the Moment — the hero of the front door, one large 16:9 shot that opens the store. Build it to the trajectory and to the story the copywriter wrote, so the shot carries the same feeling as the words.
 
@@ -100,8 +99,10 @@ THE TRAJECTORY
 THE STORY that plays over the Moment:
 ${lines}
 
+The director has called for a ${trajectory.momentKind.toUpperCase()} Moment for this shop. Build the shot accordingly. Set kind to "${trajectory.momentKind}". Do not second-guess this — the director judged the inventing-motion criterion against the trajectory; your job is to execute that call into a great shot.
+
 Design the shot with set_moment:
-- kind: "video" or "image". The Moment is motion — that a BohdiAI front door MOVES where a template builder's sits still is the whole point of it. Reach for video by default: almost any scene holds some simple, continuous, ambient motion that loops. Choose a still ONLY when you genuinely cannot find one ambient motion that suits the feeling — a still is the last resort, not an equal option.
+- kind: set to "${trajectory.momentKind}" as the director called.
 - prompt: the shot as seven short phrases —
     - composition: how the shot is framed.
     - subject: what is in frame.
@@ -117,6 +118,8 @@ Design the shot with set_moment:
 If kind is "video": it is a short clip that LOOPS seamlessly. Two things follow, both physics:
 - The CAMERA is locked. The motion comes from WITHIN the frame — drifting light, rising steam, a flame's flicker, fabric or dust stirring, a slow shimmer on a glaze — never from the camera. A camera that moves (pans, pushes in, zooms, racks focus, drifts) travels away from its start frame and the loop jumps on restart. Hold the camera still and let the scene move.
 - The in-frame motion is continuous and ambient — no progressive human action and no large change in light or position across the clip, or the restart will jump. A motionless person is fine (hands at rest, a figure standing still); a person performing an action is not.
+
+If kind is "spotlight": design a single beautiful STILL of one HERO OBJECT framed centrally on pure black. The composition treats the object as a held subject under light — describe what we see, how it's framed, and how it's lit. The 'environment' group is black (the void the object rises out of). The 'camera' group describes the lens and framing of the STATIC shot — a slow rise and a slow push-in are added by the renderer in CSS, not in the generated image, so 'camera' here is just framing, not motion. The 'atmosphere' is the air around the object. The image must contain NO text, lettering, or logos, and the object must be one clean subject — not a collage.
 
 Set the moment now.`;
 }

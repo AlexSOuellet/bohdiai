@@ -57,7 +57,7 @@ describe('logCrewChoices', () => {
       tenantId: 'tn_9',
       nicheSlug: 'woodworking',
       moodKey: 'rustic',
-      momentKind: 'image',
+      momentKind: 'video',
       goodsTreatment: 'procession',
       founderTreatment: 'quote',
       // goods overrode the dice ('marquee' → 'procession'); founder played its roll.
@@ -74,7 +74,7 @@ describe('logCrewChoices', () => {
       expect(row['mood_key']).toBe('rustic');
     }
     const byType = (t: string) => rows.find((r) => r['decision_type'] === t)!;
-    expect(byType('moment-kind')['picked']).toEqual({ kind: 'image' });
+    expect(byType('moment-kind')['picked']).toEqual({ kind: 'video' });
     // the treatment rows carry the dealt roll and whether Bohdi overrode it, so
     // reconvergence (overriding back to one body) is visible in the data.
     expect(byType('goods-treatment')['picked']).toEqual({ treatment: 'procession', rolled: 'marquee', overrode: true });

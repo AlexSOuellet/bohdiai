@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const create = vi.fn();
 vi.mock('@/lib/anthropic', () => ({ anthropicClient: () => ({ messages: { create } }) }));
 
-import { shootMoment, MomentSceneSchema } from './cinematographer';
+import { shootMoment, MomentSceneSchema, buildCinematographerPrompt } from './cinematographer';
 import type { Trajectory } from './trajectory';
 
 const trajectory: Trajectory = {
@@ -58,10 +58,10 @@ describe('shootMoment (the Cinematographer)', () => {
     expect(args.tool_choice).toEqual({ type: 'tool', name: 'set_moment' });
   });
 
-  it('accepts a still as a real choice', async () => {
-    create.mockResolvedValueOnce(toolMsg({ ...scene, kind: 'image' }));
+  it('accepts spotlight as a real choice (the director calls it — not every scene has natural motion)', async () => {
+    create.mockResolvedValueOnce(toolMsg({ ...scene, kind: 'spotlight' }));
     const s = await shootMoment(trajectory, story);
-    expect(s.kind).toBe('image');
+    expect(s.kind).toBe('spotlight');
   });
 
   it('rejects an incomplete scene, then accepts the fix', async () => {
@@ -124,10 +124,10 @@ describe('shootMoment (the Cinematographer)', () => {
     expect(lastMsg).toMatch(/loop|locked|static|movement/);
   });
 
-  it('does not apply the locked-camera rule to a still (it does not loop)', async () => {
-    create.mockResolvedValueOnce(toolMsg({ ...scene, kind: 'image', prompt: { ...scene.prompt, camera: 'a slow pan across the bench' } }));
+  it('does not apply the locked-camera rule to a spotlight (it does not loop — rise/push are CSS)', async () => {
+    create.mockResolvedValueOnce(toolMsg({ ...scene, kind: 'spotlight', prompt: { ...scene.prompt, camera: 'a slow pan across the bench' } }));
     const s = await shootMoment(trajectory, story);
-    expect(s.kind).toBe('image');
+    expect(s.kind).toBe('spotlight');
     expect(create).toHaveBeenCalledTimes(1);
   });
 
@@ -139,13 +139,83 @@ describe('shootMoment (the Cinematographer)', () => {
     expect(sys).toMatch(/within the frame|in the frame|from the scene/);
   });
 
-  it('directs the cinematographer to reach for video, a still only as a last resort (D47)', async () => {
+  it('tells the cinematographer to execute the director\'s kind, not pick one (D33 — cinematic is not always video)', async () => {
     create.mockResolvedValueOnce(toolMsg(scene));
     await shootMoment(trajectory, story);
-    const sys = (create.mock.calls[0]![0] as { system: string }).system.toLowerCase();
-    // The Moment IS motion — video is the default, not a neutral coin-flip.
-    expect(sys).toMatch(/reach for video|default to video|prefer video|video by default/);
-    // A still is framed as the fallback, not a peer option.
-    expect(sys).toMatch(/still[\s\S]*?(last resort|only when|only if|cannot)/);
+    const sys = (create.mock.calls[0]![0] as { system: string }).system;
+    // The director has already made the call — the cinematographer executes, not deliberates.
+    expect(sys).toMatch(/director has called for|execute that call/i);
+    // The old "reach for video / last resort" language is gone — the kind decision
+    // belongs to the director, not this stage.
+    expect(sys).not.toMatch(/reach for video|last resort|prefer video|video by default/i);
+  });
+
+  // --- Task 4: cinematographer executes the director's kind ---
+
+  it("returns a scene with kind 'video' when the trajectory calls for video", async () => {
+    create.mockResolvedValueOnce(toolMsg({ ...scene, kind: 'video' }));
+    const s = await shootMoment({ ...trajectory, momentKind: 'video' }, story);
+    expect(s.kind).toBe('video');
+  });
+
+  it("returns a scene with kind 'spotlight' when the trajectory calls for spotlight", async () => {
+    const spotlightScene = {
+      ...scene,
+      kind: 'spotlight' as const,
+      prompt: {
+        ...scene.prompt,
+        // environment is pure black for a spotlight shot
+        environment: 'pure black void',
+      },
+    };
+    create.mockResolvedValueOnce(toolMsg(spotlightScene));
+    const s = await shootMoment({ ...trajectory, momentKind: 'spotlight' }, story);
+    expect(s.kind).toBe('spotlight');
+  });
+
+  it("rejects a returned kind of 'image' — the cinematographer no longer produces images", async () => {
+    // 'image' no longer parses through MomentSceneSchema; every attempt comes back
+    // with kind: 'image' and fails the schema parse, exhausting the retry cap.
+    create.mockResolvedValue(toolMsg({ ...scene, kind: 'image' }));
+    await expect(shootMoment(trajectory, story)).rejects.toThrow(/valid moment/);
+    expect(create).toHaveBeenCalledTimes(4); // exhausted the attempt cap
+  });
+
+  it("includes spotlight branch wording in the prompt when momentKind is 'spotlight'", () => {
+    const spotlightTrajectory: Trajectory = { ...trajectory, momentKind: 'spotlight' };
+    const prompt = buildCinematographerPrompt(spotlightTrajectory, story);
+    // Prompt must announce the director's call and instruct the cinematographer to set kind to "spotlight"
+    expect(prompt).toContain('SPOTLIGHT');
+    expect(prompt).toContain('Set kind to "spotlight"');
+    // Spotlight-specific framing: object on pure black, camera is framing not motion
+    expect(prompt.toLowerCase()).toMatch(/pure black/);
+    expect(prompt.toLowerCase()).toMatch(/hero object|hero obj/);
+    // Camera-motion note: rise/push happen in CSS, not the generated image
+    expect(prompt).toMatch(/CSS|renderer/);
+  });
+
+  it("retains the camera-locked + in-frame-motion direction in the prompt when momentKind is 'video'", () => {
+    const videoTrajectory: Trajectory = { ...trajectory, momentKind: 'video' };
+    const prompt = buildCinematographerPrompt(videoTrajectory, story);
+    // Prompt must announce the director's call for VIDEO
+    expect(prompt).toContain('VIDEO');
+    expect(prompt).toContain('Set kind to "video"');
+    // Camera-physics rule must still be present for video
+    expect(prompt.toLowerCase()).toMatch(/locked|static|hold the camera/);
+    expect(prompt.toLowerCase()).toMatch(/within the frame|in the frame/);
+  });
+
+  it('does not apply the locked-camera rule to a spotlight (it is a still — rise/push are CSS)', async () => {
+    // A spotlight scene with a camera field that mentions motion should still pass,
+    // because the camera-movement guard is scoped to kind === 'video' only.
+    const spotlightWithMotionCamera = {
+      ...scene,
+      kind: 'spotlight' as const,
+      prompt: { ...scene.prompt, camera: 'a slow pan across the object' },
+    };
+    create.mockResolvedValueOnce(toolMsg(spotlightWithMotionCamera));
+    const s = await shootMoment({ ...trajectory, momentKind: 'spotlight' }, story);
+    expect(s.kind).toBe('spotlight');
+    expect(create).toHaveBeenCalledTimes(1); // no reshoot — camera guard skipped for still
   });
 });

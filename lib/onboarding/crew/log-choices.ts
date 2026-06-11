@@ -19,8 +19,11 @@ import { logger } from '@/lib/logger';
 import { GOODS_TREATMENTS } from '@/lib/archetypes/main-street/goods';
 import { FOUNDER_TREATMENTS } from '@/lib/archetypes/main-street/schemas';
 
-/** The two kinds of Moment the cinematographer chooses between. */
-const MOMENT_KINDS = ['video', 'image'] as const;
+/** The two kinds of Moment the cinematographer now produces. The legacy 'image'
+ *  kind is excluded — the cinematographer no longer emits it (Task 4). Old stores
+ *  with kind: 'image' keep rendering through MediaSlot, but new builds land on
+ *  video or spotlight only. */
+const MOMENT_KINDS = ['video', 'spotlight'] as const;
 
 export type DesignDecisionType = 'moment-kind' | 'goods-treatment' | 'founder-treatment';
 
