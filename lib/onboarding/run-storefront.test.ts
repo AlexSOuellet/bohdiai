@@ -44,10 +44,10 @@ describe('runStorefront', () => {
     expect(passedEmitter).toBe(emitter);
   });
 
-  it('does not pass brandColors into the build (archetype engine has no use for it yet)', async () => {
+  it('passes brandColors into the build', async () => {
     const { runStorefront } = await import('./run-storefront');
-    await runStorefront({ ...baseInput, brandColors: ['#aaa'] });
+    await runStorefront({ ...baseInput, brandColors: ['#1d7a66', '#e7d8b0'] });
     const [passedInput] = buildMock.mock.calls[0]!;
-    expect(passedInput).not.toHaveProperty('brandColors');
+    expect(passedInput).toHaveProperty('brandColors', ['#1d7a66', '#e7d8b0']);
   });
 });

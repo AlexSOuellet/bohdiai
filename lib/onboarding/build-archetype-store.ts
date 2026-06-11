@@ -37,6 +37,9 @@ export interface ArchetypeBuildInput {
   productCount: number;
   makerName?: string | undefined;
   logoUrl?: string | undefined;
+  /** The logo's extracted brand colors (prominence-ordered hex), or empty. Persisted
+   *  for render-time contrast; the dominant one bakes the accent (a later task). */
+  brandColors?: string[] | undefined;
 }
 
 /** The sentinel niche slug an "Other" maker carries — they described their own
@@ -165,6 +168,7 @@ export async function buildArchetypeStore(
     content: payload.content,
     products: payload.products,
     logoUrl: input.logoUrl,
+    brandColors: input.brandColors ?? [],
   });
 
   logger.info('archetype-build: published', { subdomain: result.subdomain, tenantId: result.tenantId, archetype: spec.key, look: chosen.lookKey });

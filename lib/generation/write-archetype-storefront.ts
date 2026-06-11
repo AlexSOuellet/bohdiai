@@ -30,6 +30,8 @@ export interface ArchetypeWriteInput {
   /** Separate catalog rows (empty for archetypes that embed products in content). */
   products: ProductView[];
   logoUrl?: string | undefined;
+  /** Logo brand colors to persist on the tenant (render-time contrast source). */
+  brandColors?: string[] | undefined;
 }
 
 export interface ArchetypeWriteResult {
@@ -55,6 +57,7 @@ export async function writeArchetypeStorefront(
       niche_description: input.nicheDescription,
       status: 'active',
       logo_url: input.logoUrl && input.logoUrl !== '' ? input.logoUrl : null,
+      brand_colors: input.brandColors && input.brandColors.length > 0 ? input.brandColors : null,
     })
     .select('id')
     .single();

@@ -37,6 +37,7 @@ export async function runStorefront(
       productCount: input.productCount,
       makerName: input.makerName,
       logoUrl: input.logoUrl,
+      brandColors: input.brandColors,
     },
     onProgress,
   );
