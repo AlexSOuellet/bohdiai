@@ -39,6 +39,7 @@ The mood paints the room — light/dark, contrast, type, the overall feeling. It
 
 - The build path consumes `brandColors` as a high-priority input to the Graphic Artist's skin selection and accent assignment, *inside* the mood-aligned skin subset (consistent with the existing mood-gated skin selection).
 - Anchor, not override: the strongest non-neutral logo color biases the accent role and biases skin choice toward skins whose palette can host it. The mood still governs world/skin family.
+- **Strong with a guard.** The dominant logo color is swapped in as the skin's accent — but only when it's a real, readable color. The accent doubles as link/eyebrow text on the page background, so the override is skipped (skin's own accent stands) when the color is achromatic (black/white/gray — low chroma) or when it doesn't clear a minimum contrast ratio against the skin background. A gray-logo or pale-logo maker keeps the designed accent rather than getting unreadable links. This is the agreed refinement of "try strong"; the broader soft fallback (logo only steers skin selection) remains the escape hatch if strong-where-legible still reads wrong on live builds.
 - Empty `brandColors` (SVG, Vision failure, no logo) → Bohdi's free pick inside the mood, unchanged from today.
 
 ### 3. Render-time logo header contrast — delete the plate
