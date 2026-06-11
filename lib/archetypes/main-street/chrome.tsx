@@ -69,8 +69,8 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street a{color:var(--ms-accent);text-decoration:none}
     /* logo lockup — the logo is bare: no plate. Contrast is guaranteed by the
        header surface itself (navContrast in SubHeader / MomentHero). */
-    .arch-main-street [data-ms-logo]{height:40px;width:auto}
-    @media(max-width:768px){.arch-main-street [data-ms-logo]{height:32px}}
+    .arch-main-street [data-ms-logo]{height:52px;width:auto}
+    @media(max-width:768px){.arch-main-street [data-ms-logo]{height:40px}}
     .arch-main-street .ms-grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;mix-blend-mode:multiply;background-image:${a.grain ?? 'none'}}
     .arch-main-street .archetype-photo{filter:${a.photoFilter ?? 'none'};display:block;width:100%;height:100%;object-fit:cover}
     .arch-main-street .ms-wrap{max-width:1200px;margin-inline:auto;padding-inline:40px}
