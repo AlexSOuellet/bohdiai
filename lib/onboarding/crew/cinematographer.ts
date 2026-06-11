@@ -155,12 +155,20 @@ export async function shootMoment(trajectory: Trajectory, story: string[]): Prom
       // A video must loop seamlessly, so its camera must be locked. A still
       // doesn't loop, so camera wording is irrelevant for it.
       const cameraHit = parsed.data.kind === 'video' ? findCameraMovement(parsed.data.prompt.camera) : null;
-      if (textHits.length === 0 && !cameraHit) {
+      // Belt-and-suspenders: the director's kind call is already in the prompt,
+      // but validate that the model actually set it — a misread directive would
+      // silently produce the wrong Moment kind if we don't cross-check here.
+      const kindMismatch =
+        parsed.data.kind !== trajectory.momentKind
+          ? `the director called for a ${trajectory.momentKind} Moment, but you set kind to "${parsed.data.kind}". Match the director's call: set kind to "${trajectory.momentKind}".`
+          : null;
+      if (textHits.length === 0 && !cameraHit && !kindMismatch) {
         logger.info('crew: moment shot', { kind: parsed.data.kind });
         return parsed.data;
       }
       // Physics failures (text the image model can't render; a moving camera that
-      // breaks the loop). Treat like a validation failure and ask for a reshoot.
+      // breaks the loop) and directive failures (the model set the wrong kind).
+      // Treat all like a validation failure and ask for a reshoot.
       const issues = [
         ...textHits.map((hit) => ({
           path: `prompt.${hit.split(':')[0]}`,
@@ -172,6 +180,7 @@ export async function shootMoment(trajectory: Trajectory, story: string[]): Prom
               message: `The Moment loops seamlessly, so the CAMERA must be LOCKED/static — a moving camera (here: "${cameraHit}") travels and can't return to its start frame, so the loop jumps. Hold the camera still and let the motion come from WITHIN the frame (drifting light, rising steam, a slow flicker). Reshoot the camera as a fixed setup.`,
             }]
           : []),
+        ...(kindMismatch ? [{ path: 'kind', message: kindMismatch }] : []),
       ];
       lastIssues = issues.map((i) => `${i.path}: ${i.message}`).join('; ');
       messages.push({ role: 'assistant', content: resp.content });

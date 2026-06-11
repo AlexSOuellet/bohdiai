@@ -59,8 +59,9 @@ describe('shootMoment (the Cinematographer)', () => {
   });
 
   it('accepts spotlight as a real choice (the director calls it — not every scene has natural motion)', async () => {
+    // The director sets momentKind — the trajectory and the returned kind must agree.
     create.mockResolvedValueOnce(toolMsg({ ...scene, kind: 'spotlight' }));
-    const s = await shootMoment(trajectory, story);
+    const s = await shootMoment({ ...trajectory, momentKind: 'spotlight' }, story);
     expect(s.kind).toBe('spotlight');
   });
 
@@ -125,8 +126,9 @@ describe('shootMoment (the Cinematographer)', () => {
   });
 
   it('does not apply the locked-camera rule to a spotlight (it does not loop — rise/push are CSS)', async () => {
+    // The director calls spotlight — trajectory and returned kind must agree.
     create.mockResolvedValueOnce(toolMsg({ ...scene, kind: 'spotlight', prompt: { ...scene.prompt, camera: 'a slow pan across the bench' } }));
-    const s = await shootMoment(trajectory, story);
+    const s = await shootMoment({ ...trajectory, momentKind: 'spotlight' }, story);
     expect(s.kind).toBe('spotlight');
     expect(create).toHaveBeenCalledTimes(1);
   });
@@ -217,5 +219,36 @@ describe('shootMoment (the Cinematographer)', () => {
     const s = await shootMoment({ ...trajectory, momentKind: 'spotlight' }, story);
     expect(s.kind).toBe('spotlight');
     expect(create).toHaveBeenCalledTimes(1); // no reshoot — camera guard skipped for still
+  });
+
+  // --- Task 8: kind-vs-trajectory cross-check ---
+
+  it('rejects a returned kind that does not match the trajectory and asks for a reshoot', async () => {
+    // Trajectory says spotlight; model returns video on the first attempt, then spotlight on retry.
+    const spotlightTrajectory: Trajectory = { ...trajectory, momentKind: 'spotlight' };
+    const spotlightScene = { ...scene, kind: 'spotlight' as const, prompt: { ...scene.prompt, environment: 'pure black void' } };
+    // First attempt: wrong kind (video) — should trigger the kind-mismatch issue.
+    // Second attempt: correct kind (spotlight) — should resolve.
+    create
+      .mockResolvedValueOnce(toolMsg({ ...scene, kind: 'video' }))
+      .mockResolvedValueOnce(toolMsg(spotlightScene));
+
+    const s = await shootMoment(spotlightTrajectory, story);
+    expect(s.kind).toBe('spotlight');
+    expect(create).toHaveBeenCalledTimes(2);
+
+    // The reshoot message must reference the kind mismatch.
+    const second = create.mock.calls[1]![0] as { messages: Array<{ role: string; content: unknown }> };
+    const lastMsg = JSON.stringify(second.messages.at(-1)).toLowerCase();
+    expect(lastMsg).toContain('director');
+    expect(lastMsg).toContain('spotlight');
+  });
+
+  it('passes through when kind matches the trajectory — no reshoot triggered', async () => {
+    // Trajectory says video, model returns video — no kind-mismatch issue, resolves on first attempt.
+    create.mockResolvedValueOnce(toolMsg({ ...scene, kind: 'video' }));
+    const s = await shootMoment({ ...trajectory, momentKind: 'video' }, story);
+    expect(s.kind).toBe('video');
+    expect(create).toHaveBeenCalledTimes(1);
   });
 });

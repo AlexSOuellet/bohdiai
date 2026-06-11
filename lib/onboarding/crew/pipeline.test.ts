@@ -156,6 +156,27 @@ describe('directAndProduce (the crew pipeline)', () => {
     });
   });
 
+  it('threads the trajectory momentKind through to the assembled envelope — spotlight path', async () => {
+    // Confirm the kind decision set by the director in the trajectory flows
+    // through the cinematographer and survives assembly unchanged.
+    const spotlightTrajectory = { ...trajectory, momentKind: 'spotlight' };
+    const spotlightMoment = {
+      ...moment,
+      kind: 'spotlight',
+      prompt: { ...moment.prompt, environment: 'pure black void' },
+    };
+    create
+      .mockResolvedValueOnce(toolMsg('set_trajectory', spotlightTrajectory))
+      .mockResolvedValueOnce(toolMsg('submit_copy', copy))
+      .mockResolvedValueOnce(toolMsg('set_moment', spotlightMoment))
+      .mockResolvedValueOnce(toolMsg('set_look', look))
+      .mockResolvedValueOnce(toolMsg('final_cut', { notes: 'coheres' }));
+
+    const result = await directAndProduce(brief);
+    expect(result.authored.content.moment.media.kind).toBe('spotlight');
+    expect(result.choices.momentKind).toBe('spotlight');
+  });
+
   it('deals the rolled treatments to the copywriter', async () => {
     create
       .mockResolvedValueOnce(toolMsg('set_trajectory', trajectory))
