@@ -12,6 +12,7 @@ const trajectory: Trajectory = {
   visualWorld: 'warm and worn, low light, deep shadow',
   momentConcept: 'a hand resting on a worn bench, dust drifting in a slow shaft of light',
   register: 'restrained',
+  momentKind: 'video',
 };
 
 const story = ['Built by hand', 'Made to outlast you'];

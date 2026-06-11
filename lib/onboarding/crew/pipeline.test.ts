@@ -27,6 +27,7 @@ const trajectory = {
   visualWorld: 'warm and worn, low light, deep shadow',
   momentConcept: 'a hand resting on a worn bench',
   register: 'restrained',
+  momentKind: 'video',
 };
 
 const copy = {

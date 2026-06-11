@@ -23,6 +23,7 @@ const valid = {
   visualWorld: 'clean-modern, high-key bright, airy with low contrast',
   momentConcept: 'a single flame breathing in soft window light, slow ambient drift, cool grade',
   register: 'restrained' as const,
+  momentKind: 'video' as const,
 };
 
 function toolMsg(input: unknown) {

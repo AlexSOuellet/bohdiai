@@ -19,6 +19,11 @@ export const TrajectorySchema = z.object({
   momentConcept: z.string().min(1),
   /** Whether the typography should shout or whisper for this feeling. */
   register: z.enum(['loud', 'restrained']),
+  /** Which kind of Moment the director called for. Video when the subject has real
+   *  ambient motion (steam, flame, water, hands at work). Spotlight when the
+   *  product is at rest and inventing motion would feel fake — the rise out of
+   *  black is the cinematic arc. (See the design doc.) */
+  momentKind: z.enum(['video', 'spotlight']),
 });
 
 export type Trajectory = z.infer<typeof TrajectorySchema>;

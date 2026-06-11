@@ -24,6 +24,7 @@ const trajectory: Trajectory = {
   visualWorld: 'warm and worn, low light, deep shadow, rich texture',
   momentConcept: 'a hand resting on a worn bench, dust drifting in a slow shaft of light',
   register: 'restrained',
+  momentKind: 'video',
 };
 
 // The dice the pipeline deals the copywriter. Matches the draft below so the
