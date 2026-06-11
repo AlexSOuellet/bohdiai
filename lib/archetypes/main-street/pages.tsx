@@ -25,7 +25,7 @@ function SubHeader({ content, skin }: { content: MainStreetContent; skin: Archet
         justifyContent: 'space-between',
         alignItems: 'center',
         gap: 24,
-        padding: '22px 40px',
+        padding: '14px 40px',
         borderBottom: '1px solid var(--ms-rule)',
         background: surface ? surface.bg : 'var(--ms-bg)',
         color: surface ? surface.fg : 'var(--ms-fg)',
