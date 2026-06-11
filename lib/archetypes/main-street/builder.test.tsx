@@ -14,7 +14,7 @@ function scene() {
   };
 }
 
-function submission(kind: 'video' | 'image') {
+function submission(kind: 'video' | 'image' | 'spotlight') {
   return {
     content: {
       shopName: 'Tannery Row',
@@ -83,5 +83,17 @@ describe('MAIN_STREET_SPEC.mediaJobs — hero follows the authored kind', () => 
     expect(hero.kind).toBe('still');
     expect(hero.aspect).toBe('16:9');
     expect(() => JSON.parse(hero.prompt)).toThrow(); // prose, not JSON
+  });
+
+  it('emits an image MediaJob for a spotlight Moment (rise/push happen in CSS at render)', () => {
+    // The cinematographer now produces kind:'spotlight'. The stored slot keeps
+    // 'spotlight' so the renderer can branch later (Task 7), but the media-job
+    // pipeline must route it to the still-image generator — CSS provides the motion.
+    const parsed = MAIN_STREET_SPEC.parseSubmission(submission('spotlight'));
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    const hero = MAIN_STREET_SPEC.mediaJobs(parsed.authored).find((j) => j.id === 'hero')!;
+    expect(hero.kind).toBe('still');
+    expect(hero.aspect).toBe('16:9');
   });
 });

@@ -52,9 +52,13 @@ export const ScenePrompt = z.object({
 export type ScenePrompt = z.infer<typeof ScenePrompt>;
 
 /** A held-media slot for the hero moment — a structured scene prompt, optionally
- *  a resolved url (+ poster for video). A still is as valid a hero as a video. */
+ *  a resolved url (+ poster for video). A still is as valid a hero as a video.
+ *
+ * 'image' is the legacy kind (cinematographer no longer produces it); 'spotlight'
+ * is the current kind for a single-still hero whose cinematic motion (rise/push)
+ * is applied in CSS at render time, not baked into the generated content. */
 const MediaSlot = z.object({
-  kind: z.enum(['video', 'image']).default('video'),
+  kind: z.enum(['video', 'image', 'spotlight']).default('video'),
   prompt: ScenePrompt,
   url: z.string().url().optional(),
   poster: z.string().url().optional(),

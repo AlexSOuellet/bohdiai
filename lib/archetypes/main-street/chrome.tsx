@@ -148,7 +148,7 @@ export function Media({
   className,
   style,
 }: {
-  media: { kind?: 'video' | 'image'; url?: string | undefined; poster?: string | undefined; alt: string };
+  media: { kind?: 'video' | 'image' | 'spotlight'; url?: string | undefined; poster?: string | undefined; alt: string };
   className?: string;
   style?: React.CSSProperties;
 }) {

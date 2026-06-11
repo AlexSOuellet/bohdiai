@@ -112,7 +112,15 @@ function mediaJobs(a: MainStreetAuthored): MediaJob[] {
   // The hero follows the AUTHORED kind — a still is an equally valid hero and
   // sidesteps the loop seam entirely. The scene is serialized for the provider:
   // JSON (+ seamless-loop intent) for video, prose for a still.
-  const heroKind: 'video' | 'still' = a.content.moment.media.kind === 'image' ? 'still' : 'video';
+  //
+  // Spotlight Moments generate a single still — the cinematic rise/push happen in
+  // CSS at render time (see SpotlightStage), not in the generated content.
+  // The stored slot keeps kind:'spotlight' so the renderer can branch later (Task 7).
+  // 'image' is the legacy kind; 'spotlight' is the current still-intent kind.
+  const heroKind: 'video' | 'still' =
+    a.content.moment.media.kind === 'image' || a.content.moment.media.kind === 'spotlight'
+      ? 'still'
+      : 'video';
   const heroPrompt = sceneToPrompt(a.content.moment.media.prompt, heroKind);
   const hero: MediaJob =
     heroKind === 'video'
