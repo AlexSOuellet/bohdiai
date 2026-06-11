@@ -69,8 +69,8 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street a{color:var(--ms-accent);text-decoration:none}
     /* logo lockup — the logo is bare: no plate. Contrast is guaranteed by the
        header surface itself (navContrast in SubHeader / MomentHero). */
-    .arch-main-street [data-ms-logo]{height:40px;width:auto}
-    @media(max-width:768px){.arch-main-street [data-ms-logo]{height:30px}}
+    .arch-main-street [data-ms-logo]{height:64px;width:auto}
+    @media(max-width:768px){.arch-main-street [data-ms-logo]{height:48px}}
     .arch-main-street .ms-grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;mix-blend-mode:multiply;background-image:${a.grain ?? 'none'}}
     .arch-main-street .archetype-photo{filter:${a.photoFilter ?? 'none'};display:block;width:100%;height:100%;object-fit:cover}
     .arch-main-street .ms-wrap{max-width:1200px;margin-inline:auto;padding-inline:40px}
@@ -184,19 +184,19 @@ export function resolveNav(nav: ReadonlyArray<NavEntry>): ReadonlyArray<{ href: 
   return MAIN_STREET_NAV;
 }
 
-/** The brand lockup in a header. When the maker uploaded a logo, the logo RULES:
- *  it stands as the primary brand mark, sized up and bare — no plate. The header
- *  surface guarantees contrast (via navContrast in SubHeader / MomentHero). The
- *  typographic wordmark is the fallback when no logo was uploaded. */
+/** The brand lockup in a header. When the maker uploaded a logo, it sits ALONGSIDE
+ *  the typographic wordmark — a true lockup, not a replacement — so the shop's
+ *  name is always legible next to the mark. With no logo, the wordmark stands
+ *  alone. The header surface guarantees logo contrast (via navContrast in
+ *  SubHeader / MomentHero); no plate. */
 export function WordmarkLink({ wordmark, logoUrl, role }: { wordmark: string; logoUrl?: string | undefined; role: TypeRole }) {
   return (
-    <Link href="/" data-type="wordmark" style={{ ...typeRoleCss(role), color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 12 }}>
-      {logoUrl ? (
+    <Link href="/" data-type="wordmark" style={{ ...typeRoleCss(role), color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 14 }}>
+      {logoUrl && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={logoUrl} alt={wordmark} data-ms-logo style={{ display: 'block' }} />
-      ) : (
-        wordmark
+        <img src={logoUrl} alt="" data-ms-logo style={{ display: 'block' }} />
       )}
+      <span>{wordmark}</span>
     </Link>
   );
 }

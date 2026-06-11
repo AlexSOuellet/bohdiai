@@ -53,18 +53,18 @@ describe('MomentHero (the rested hero)', () => {
     expect(container.querySelector('[data-moment-intro]')).toBeNull();
   });
 
-  it('lets a real logo RULE the header — it is the brand mark, carries the name as alt, and is bare (no plate)', () => {
+  it('lets a real logo sit beside the typographic wordmark — a true lockup, not a replacement, and bare (no plate)', () => {
     const withLogo = { ...identity, logoUrl: 'https://cdn/logo.png' };
     const { container } = render(<MomentHero identity={withLogo} moment={moment} skin={skin} />);
     const logo = container.querySelector('img[data-ms-logo]') as HTMLImageElement | null;
     expect(logo?.getAttribute('src')).toBe('https://cdn/logo.png');
-    // the shop name rides as the logo's alt (accessibility), not as competing display type
-    expect(logo?.getAttribute('alt')).toBe("June's Sourdough");
+    // the image is decorative — the visible wordmark text carries the shop name
+    expect(logo?.getAttribute('alt')).toBe('');
     // the logo is bare — no plate; the header surface handles contrast
     expect(logo?.closest('.ms-logo-plate')).toBeNull();
-    // the typographic wordmark steps aside when the logo rules
+    // the typographic wordmark stays — the logo joins it, doesn't replace it
     const mark = container.querySelector('[data-type="wordmark"]') as HTMLElement;
-    expect(mark.textContent).not.toContain("June's Sourdough");
+    expect(mark.textContent).toContain("June's Sourdough");
   });
 
   it('falls back to the typographic wordmark when the maker uploaded no logo', () => {
