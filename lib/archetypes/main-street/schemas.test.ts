@@ -52,10 +52,15 @@ describe('MainStreetContentSchema', () => {
     expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 
-  it('requires at least two story lines', () => {
-    const c = valid();
-    c.moment.story = ['only one'];
-    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+  it('requires at least one story line (a single line is valid — spotlight taglines)', () => {
+    // one line is valid now (spotlight Moment lands a single tagline)
+    const cOne = valid();
+    cOne.moment.story = ['only one'];
+    expect(MainStreetContentSchema.safeParse(cOne).success).toBe(true);
+    // zero lines is never valid
+    const cZero = valid();
+    cZero.moment.story = [];
+    expect(MainStreetContentSchema.safeParse(cZero).success).toBe(false);
   });
 
   it('caps the story line length', () => {

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const create = vi.fn();
 vi.mock('@/lib/anthropic', () => ({ anthropicClient: () => ({ messages: { create } }) }));
 
-import { writeCopy } from './copywriter';
+import { writeCopy, buildCopywriterPrompt } from './copywriter';
 import { CopywriterDraftSchema } from './copywriter-schema';
 import type { Trajectory } from './trajectory';
 import type { CrewBrief } from './types';
@@ -156,6 +156,28 @@ describe('writeCopy (the Copywriter)', () => {
     expect(args.system).toContain('you drew "card"');
     // ...which Bohdi plays unless it truly fights the shop — he keeps the veto.
     expect(args.system).toContain('unless it genuinely fights');
+  });
+});
+
+describe('buildCopywriterPrompt — momentKind branches the story directive', () => {
+  it('prompt directs a multi-line story when trajectory.momentKind is video', () => {
+    const t = { ...trajectory, momentKind: 'video' as const };
+    const prompt = buildCopywriterPrompt(brief, t, rolls);
+    expect(prompt).toContain('2-4 lines');
+  });
+
+  it('prompt directs ONE tagline in moment.story when trajectory.momentKind is spotlight', () => {
+    const t = { ...trajectory, momentKind: 'spotlight' as const };
+    const prompt = buildCopywriterPrompt(brief, t, rolls);
+    expect(prompt).toContain('EXACTLY 1 line');
+    expect(prompt).toContain('only entry in moment.story');
+  });
+});
+
+describe('CopywriterDraftSchema — spotlight tagline: single-line moment.story', () => {
+  it('accepts a single-line moment.story (spotlight tagline)', () => {
+    const d = { ...draft, moment: { ...draft.moment, story: ['One brave line that lands the brand'] } };
+    expect(CopywriterDraftSchema.safeParse(d).success).toBe(true);
   });
 });
 

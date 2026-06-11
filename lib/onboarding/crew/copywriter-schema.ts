@@ -55,7 +55,7 @@ export const CopywriterDraftSchema = z.object({
     nav: z.array(NavItem).min(2).max(4),
   }),
   moment: z.object({
-    story: z.array(StoryLine).min(2).max(4),
+    story: z.array(StoryLine).min(1).max(4),
     eyebrow: z.string().min(4).max(48),
     brand: z.string().min(2).max(40),
     ctaLabel: z.string().min(3).max(24),

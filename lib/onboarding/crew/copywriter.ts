@@ -50,13 +50,18 @@ function targetProductCount(productCount: number): number {
   return Math.max(3, Math.min(productCount > 0 ? productCount : 6, 10));
 }
 
-function buildCopywriterPrompt(brief: CrewBrief, trajectory: Trajectory, rolls: TreatmentRolls): string {
+export function buildCopywriterPrompt(brief: CrewBrief, trajectory: Trajectory, rolls: TreatmentRolls): string {
   const niche = brief.nicheBody.trim();
   const target = targetProductCount(brief.productCount);
   const goods = (Object.entries(GOODS_TREATMENT_MENU) as Array<[string, string]>)
     .map(([k, d]) => `      - ${k}: ${d}`)
     .join('\n');
   const targets = LINK_TARGETS.join(', ');
+
+  const storyDirective =
+    trajectory.momentKind === 'spotlight'
+      ? '- moment.story (EXACTLY 1 line, 4-48): the spotlight Moment lands one tagline-strength line over the wordmark after the object has risen from black. Write the single line as the only entry in moment.story. HARD: the line carries NO punctuation — no periods, commas, dashes, colons, or quotes (apostrophes and intra-word hyphens are fine).'
+      : '- moment.story (2-4 lines, each 4-48): the hero lines, shown one at a time, each cross-fading into the next, landing on the brand. HARD: a line carries NO punctuation — no periods, commas, dashes, colons, or quotes (apostrophes and intra-word hyphens are fine). The marks would smear as the lines cross-fade.';
 
   return `You are the COPYWRITER on Bohdi's crew. You write every word of this maker's storefront, to ONE brief: the trajectory the Director set. Serve it.
 
@@ -89,7 +94,7 @@ KEEP IT TIGHT. The body-prose fields have NO hard length cap — the build never
 - shopName: the shop is named "${brief.shopName}". This is the maker's own name for their shop — use it EXACTLY, do not invent, shorten, or alter it.
 - identity.wordmark: "${brief.shopName}" as it shows in the nav — use the exact name.
 - identity.nav (2-4 items): the nav links, each { label (2-18), target }.
-- moment.story (2-4 lines, each 4-48): the hero lines, shown one at a time, each cross-fading into the next, landing on the brand. HARD: a line carries NO punctuation — no periods, commas, dashes, colons, or quotes (apostrophes and intra-word hyphens are fine). The marks would smear as the lines cross-fade.
+${storyDirective}
 - moment.eyebrow (4-48): a small line above the hero.
 - moment.brand: "${brief.shopName}" — the brand the story lands on; use the exact name.
 - moment.ctaLabel (3-24): the hero button. moment.ctaTarget: where it goes.
