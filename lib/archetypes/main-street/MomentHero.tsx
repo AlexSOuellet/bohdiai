@@ -29,6 +29,7 @@ import type { MainStreetContent } from './schemas';
 import { Media, Nav, typeRoleCss, roles, linkHref } from './chrome';
 import { navContrast, relativeLuminance } from './logo-contrast';
 import { shouldPlayMoment, initialDocumentPath, markMomentSeen } from './moment-gate';
+import { SpotlightStage } from './SpotlightStage';
 
 // Tunable reveal timing (ms). GAP_MS must be >= the fade so a line fully clears
 // before the next begins — that no-overlap is the whole point.
@@ -37,6 +38,9 @@ const LINE_MS = 3400; // a line held (includes its own ~fade-in)
 const GAP_MS = 1000; // media alone between lines
 const FADE = '0.9s';
 const MELT_MS = 1100; // the "melt": overlay fade-out on Enter
+// Spotlight intro: how long to hold the Enter button back so it doesn't
+// interrupt the rise + word-stagger sequence (~7.5s to fully land).
+const SPOTLIGHT_ENTER_DELAY_MS = 7500;
 
 export type StoryPhase =
   | { kind: 'open' }
@@ -166,7 +170,14 @@ function HeroCta({ moment, skin }: { moment: MainStreetContent['moment']; skin: 
 
 /** The cold-arrival intro: a full-screen overlay above the page that plays the
  *  story, lands, then holds with an "Enter site" button. The click melts it (a
- *  fade) and calls `onExited` once the fade completes. */
+ *  fade) and calls `onExited` once the fade completes.
+ *
+ *  For video/image moments: plays the story timeline (open → line → gap → brand)
+ *  via MomentStage; the Enter button appears once the brand phase lands.
+ *
+ *  For spotlight moments: renders SpotlightStage which drives its own mount-time
+ *  animation; the Enter button is gated behind a ~7.5s delay so it doesn't
+ *  appear during the rise + word-stagger sequence. */
 export function MomentIntro({
   moment,
   skin,
@@ -177,21 +188,36 @@ export function MomentIntro({
   onExited: () => void;
 }) {
   const r = roles(skin);
+  const isSpotlight = moment.media.kind === 'spotlight';
+
+  // --- Non-spotlight (video / image): story timeline state ---
   const lineCount = moment.story.length;
   const [pi, setPi] = useState(0);
-  const [leaving, setLeaving] = useState(false);
   const phase = buildStoryTimeline(lineCount)[pi]!;
   const landed = phase.kind === 'brand';
 
   // Advance the timeline one phase at a time; the brand phase is terminal.
+  // Only active for non-spotlight moments.
   useEffect(() => {
-    if (leaving) return undefined;
+    if (isSpotlight) return undefined;
     const ms = phaseDurationMs(buildStoryTimeline(lineCount)[pi]!);
     if (ms == null) return undefined;
     const last = buildStoryTimeline(lineCount).length - 1;
     const t = setTimeout(() => setPi((n) => Math.min(n + 1, last)), ms);
     return () => clearTimeout(t);
-  }, [pi, lineCount, leaving]);
+  }, [pi, lineCount, isSpotlight]);
+
+  // --- Spotlight: gate the Enter button until the timeline has played ---
+  const [spotlightEntered, setSpotlightEntered] = useState(false);
+
+  useEffect(() => {
+    if (!isSpotlight) return undefined;
+    const t = setTimeout(() => setSpotlightEntered(true), SPOTLIGHT_ENTER_DELAY_MS);
+    return () => clearTimeout(t);
+  }, [isSpotlight]);
+
+  // --- Shared: leaving state and scroll lock ---
+  const [leaving, setLeaving] = useState(false);
 
   // Lock the page behind the overlay so it can't be scrolled during the intro.
   useEffect(() => {
@@ -239,7 +265,9 @@ export function MomentIntro({
         transition: `opacity ${MELT_MS}ms ease`,
       }}
     >
-      <MomentStage moment={moment} skin={skin} phase={phase} action={landed ? enterButton : null} />
+      {isSpotlight
+        ? <SpotlightStage moment={moment} skin={skin} action={spotlightEntered ? enterButton : null} />
+        : <MomentStage moment={moment} skin={skin} phase={phase} action={landed ? enterButton : null} />}
     </div>
   );
 }
@@ -326,7 +354,9 @@ export function MomentHero({
         data-ms-hero
         style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'var(--ms-contrast-bg)', color: 'var(--ms-on-media)' }}
       >
-        <MomentStage moment={moment} skin={skin} phase={{ kind: 'brand' }} action={<HeroCta moment={moment} skin={skin} />} />
+        {moment.media.kind === 'spotlight'
+          ? <SpotlightStage moment={moment} skin={skin} action={<HeroCta moment={moment} skin={skin} />} />
+          : <MomentStage moment={moment} skin={skin} phase={{ kind: 'brand' }} action={<HeroCta moment={moment} skin={skin} />} />}
       </header>
 
       {play && !gone && (

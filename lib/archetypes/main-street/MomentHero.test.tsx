@@ -117,6 +117,77 @@ describe('MomentHero — nav contrast (4c)', () => {
   });
 });
 
+describe('MomentHero — spotlight kind', () => {
+  it('uses SpotlightStage as the rested hero when moment.media.kind is spotlight', () => {
+    const spotlightMoment = { ...moment, media: { ...moment.media, kind: 'spotlight' as const } };
+    const { container } = render(<MomentHero identity={identity} moment={spotlightMoment} skin={skin} />);
+    expect(container.querySelector('[data-spotlight-stage]')).not.toBeNull();
+  });
+
+  it('uses the existing MomentStage (no SpotlightStage) when moment.media.kind is video', () => {
+    const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
+    expect(container.querySelector('[data-spotlight-stage]')).toBeNull();
+  });
+});
+
+describe('MomentIntro — spotlight kind', () => {
+  it('renders SpotlightStage inside the intro overlay for spotlight moments', () => {
+    const spotlightMoment = { ...moment, media: { ...moment.media, kind: 'spotlight' as const } };
+    const { container } = render(<MomentIntro moment={spotlightMoment} skin={skin} onExited={vi.fn()} />);
+    expect(container.querySelector('[data-spotlight-stage]')).not.toBeNull();
+    // Uses MomentStage shape selectors for non-spotlight so we check absence of story-line data attrs:
+    expect(container.querySelector('[data-story-line]')).toBeNull();
+  });
+
+  it('holds the Enter button back until ~7500ms have elapsed for spotlight', async () => {
+    vi.useFakeTimers();
+    try {
+      const spotlightMoment = { ...moment, media: { ...moment.media, kind: 'spotlight' as const } };
+      const { container } = render(<MomentIntro moment={spotlightMoment} skin={skin} onExited={vi.fn()} />);
+      // Button absent at t=0
+      expect(container.querySelector('[data-moment-enter]')).toBeNull();
+      // Advance to just before the gate (7499ms)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(7499);
+      });
+      expect(container.querySelector('[data-moment-enter]')).toBeNull();
+      // Advance past the gate
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2);
+      });
+      expect(container.querySelector('[data-moment-enter]')).not.toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('melts out on Enter click for spotlight and calls onExited after the fade', async () => {
+    vi.useFakeTimers();
+    try {
+      const onExited = vi.fn();
+      const spotlightMoment = { ...moment, media: { ...moment.media, kind: 'spotlight' as const } };
+      const { container } = render(<MomentIntro moment={spotlightMoment} skin={skin} onExited={onExited} />);
+      // Advance past the spotlight entry gate
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(7501);
+      });
+      const enterBtn = container.querySelector('[data-moment-enter]') as HTMLButtonElement;
+      await act(async () => {
+        enterBtn.click();
+      });
+      const overlay = container.querySelector('[data-moment-intro]') as HTMLElement;
+      expect(overlay.style.opacity).toBe('0'); // melting
+      expect(onExited).not.toHaveBeenCalled();
+      await act(async () => {
+        fireEvent.transitionEnd(overlay, { propertyName: 'opacity' });
+      });
+      expect(onExited).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
 describe('MomentIntro (the cold-arrival overlay)', () => {
   it('holds the Enter button back until the story has played and landed', async () => {
     vi.useFakeTimers();
