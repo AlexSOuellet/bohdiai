@@ -50,3 +50,16 @@ export function navContrast(logo: Tone, backdrop: 'light' | 'dark'): { bg: strin
     ? { bg: '#F7F5F2', fg: '#1a1a1a' }
     : { bg: '#1b1b1b', fg: '#F7F5F2' };
 }
+
+import type { ArchetypeTheme } from '../types';
+
+/**
+ * The STRONG brand-tint (build-time): keep the mood's skin but swap its accent to
+ * the maker's dominant logo color, recomputing the on-accent text for contrast.
+ * Everything else of the skin — bg, fg, type, light — is the mood's, untouched.
+ * No override → the skin is returned as-is (Bohdi's free accent stands).
+ */
+export function applyAccentOverride(skin: ArchetypeTheme, accent: string | undefined): ArchetypeTheme {
+  if (accent === undefined || !HEX6.test(accent)) return skin;
+  return { ...skin, palette: { ...skin.palette, accent, onAccent: readableOn(accent) } };
+}

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  relativeLuminance, dominantBrandColor, logoTone, readableOn, navContrast,
+  relativeLuminance, dominantBrandColor, logoTone, readableOn, navContrast, applyAccentOverride,
 } from './logo-contrast';
 
 describe('relativeLuminance', () => {
@@ -50,5 +50,17 @@ describe('navContrast', () => {
   });
   it('returns a dark surface for a light logo on a light backdrop', () => {
     expect(navContrast('light', 'light')).toEqual({ bg: '#1b1b1b', fg: '#F7F5F2' });
+  });
+});
+
+describe('applyAccentOverride', () => {
+  const skin = { palette: { bg: '#fff', fg: '#111', fgMuted: '#666', accent: '#0a0', rule: '#ddd' } } as never;
+  it('swaps the accent and recomputes readable on-accent text', () => {
+    const out = applyAccentOverride(skin, '#1d3a2e');
+    expect(out.palette.accent).toBe('#1d3a2e');
+    expect(out.palette.onAccent).toBe('#ffffff');
+  });
+  it('returns the skin untouched when there is no override', () => {
+    expect(applyAccentOverride(skin, undefined)).toBe(skin);
   });
 });
