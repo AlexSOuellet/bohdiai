@@ -22,7 +22,7 @@ import { MainStreetContentSchema, type MainStreetContent } from './schemas';
 import { MAIN_STREET_SKINS, SKIN_DESCRIPTIONS } from './skins';
 import { GOODS_TREATMENT_MENU } from './goods';
 import { sceneToPrompt } from './scene-prompt';
-import { logoTone } from './logo-contrast';
+import { logoTone, applyAccentOverride } from './logo-contrast';
 
 const looks: LookOption[] = Object.values(MAIN_STREET_SKINS).map((s) => ({
   key: s.key,
@@ -203,8 +203,8 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   applyMedia,
   toPayload,
   handOff,
-  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, tenantId }) => {
-    const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
+  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId }) => {
+    const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
     const c = withLogo(content as MainStreetContent, logoUrl, brandColors);
     switch (page) {
       case 'shop':
@@ -219,16 +219,16 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
         return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} />;
     }
   },
-  renderProduct: ({ content, lookKey, product, logoUrl, brandColors }) => {
-    const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
+  renderProduct: ({ content, lookKey, product, logoUrl, brandColors, accentOverride }) => {
+    const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
     return <MainStreetProduct content={withLogo(content as MainStreetContent, logoUrl, brandColors)} skin={skin} product={product} />;
   },
-  renderContentPage: ({ content, lookKey, title, body, html, logoUrl, brandColors }) => {
-    const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
+  renderContentPage: ({ content, lookKey, title, body, html, logoUrl, brandColors, accentOverride }) => {
+    const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
     return <ContentPage content={withLogo(content as MainStreetContent, logoUrl, brandColors)} skin={skin} title={title} body={body} html={html} />;
   },
-  renderShell: ({ content, lookKey, children, logoUrl, brandColors }) => {
-    const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
+  renderShell: ({ content, lookKey, children, logoUrl, brandColors, accentOverride }) => {
+    const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
     return <MainStreetSubPage content={withLogo(content as MainStreetContent, logoUrl, brandColors)} skin={skin}>{children}</MainStreetSubPage>;
   },
 };

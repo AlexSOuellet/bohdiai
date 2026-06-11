@@ -23,6 +23,7 @@ import { withImageDirectives } from '@/lib/onboarding/image-directives';
 import { directAndProduce } from '@/lib/onboarding/crew/pipeline';
 import { logCrewChoices } from '@/lib/onboarding/crew/log-choices';
 import type { CrewBrief } from '@/lib/onboarding/crew/types';
+import { dominantBrandColor } from '@/lib/archetypes/main-street/logo-contrast';
 
 export const MAX_PRODUCT_IMAGES = 5;
 
@@ -153,6 +154,7 @@ export async function buildArchetypeStore(
   });
 
   emit('Publishing your store');
+  const accentOverride = dominantBrandColor(input.brandColors ?? []);
   const result = await writeArchetypeStorefront({
     subdomain: input.subdomain,
     shopName: input.shopName,
@@ -169,6 +171,7 @@ export async function buildArchetypeStore(
     products: payload.products,
     logoUrl: input.logoUrl,
     brandColors: input.brandColors ?? [],
+    accentOverride,
   });
 
   logger.info('archetype-build: published', { subdomain: result.subdomain, tenantId: result.tenantId, archetype: spec.key, look: chosen.lookKey });

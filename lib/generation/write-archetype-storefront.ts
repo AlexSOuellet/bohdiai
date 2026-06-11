@@ -32,6 +32,9 @@ export interface ArchetypeWriteInput {
   logoUrl?: string | undefined;
   /** Logo brand colors to persist on the tenant (render-time contrast source). */
   brandColors?: string[] | undefined;
+  /** The dominant brand color baked at build time — overrides the skin's accent.
+   *  Stable across later logo uploads until an explicit re-tint rewrites the envelope. */
+  accentOverride?: string | undefined;
 }
 
 export interface ArchetypeWriteResult {
@@ -72,6 +75,7 @@ export async function writeArchetypeStorefront(
       kind: 'archetype' as const,
       archetypeKey: input.archetypeKey,
       lookKey: input.lookKey,
+      accentOverride: input.accentOverride ?? null,
       mood: input.mood,
       catalogSize: input.catalogSize,
       // `content` is type-erased to `unknown` at the archetype boundary (it's
