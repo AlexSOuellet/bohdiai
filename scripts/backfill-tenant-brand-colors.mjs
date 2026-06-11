@@ -68,7 +68,7 @@ async function extractBrandColorsViaVision(logoUrl, apiKey) {
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const anthropicKey = process.env.ANTHROPIC_API_KEY;
+const anthropicKey = process.env.ANTHROPIC_API_KEY || process.env.BOHDIAI_ANTHROPIC_KEY;
 if (!url || !serviceKey) {
   console.error('Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY — load .env.local with `node --env-file=.env.local`');
   process.exit(1);
