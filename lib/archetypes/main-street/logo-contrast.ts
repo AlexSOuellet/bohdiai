@@ -4,6 +4,8 @@
  * give the header when it doesn't. The renderer applies these; it never boxes the
  * logo. See docs/superpowers/specs/2026-06-11-logo-header-and-brand-colors-design.md.
  */
+import type { ArchetypeTheme } from '../types';
+
 export type Tone = 'light' | 'dark' | 'unknown';
 
 const HEX6 = /^#[0-9a-fA-F]{6}$/;
@@ -50,8 +52,6 @@ export function navContrast(logo: Tone, backdrop: 'light' | 'dark'): { bg: strin
     ? { bg: '#F7F5F2', fg: '#1a1a1a' }
     : { bg: '#1b1b1b', fg: '#F7F5F2' };
 }
-
-import type { ArchetypeTheme } from '../types';
 
 /**
  * The STRONG brand-tint (build-time): keep the mood's skin but swap its accent to
