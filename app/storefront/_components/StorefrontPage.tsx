@@ -59,28 +59,18 @@ async function loadHomeArchetypeEnvelope(tenantId: string): Promise<Record<strin
   return rootObj['kind'] === 'archetype' ? rootObj : null;
 }
 
-/** The tenant's uploaded logo URL, or undefined if none. Injected into the
- *  archetype chrome at render — it's a tenant fact, not authored content. */
-async function loadTenantLogo(tenantId: string): Promise<string | undefined> {
+/** Load the tenant's logo URL and brand colors in a single round-trip.
+ *  logoUrl is undefined when no logo is stored; brandColors is [] when no
+ *  color analysis has been run. Both facts are injected into archetype chrome
+ *  at render — they're tenant facts, not authored content. */
+async function loadTenantChrome(tenantId: string): Promise<{ logoUrl: string | undefined; brandColors: string[] }> {
   const db = supabaseAdmin() as unknown as {
     from: (t: string) => {
-      select: (c: string) => { eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: { logo_url: string | null } | null }> } };
+      select: (c: string) => { eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: { logo_url: string | null; brand_colors: string[] | null } | null }> } };
     };
   };
-  const { data } = await db.from('tenants').select('logo_url').eq('id', tenantId).maybeSingle();
-  return data?.logo_url ?? undefined;
-}
-
-/** The tenant's logo brand colors (live, render-time) — drives header contrast.
- *  Returns an empty array when no colors are stored (no logo, SVG, or failed analysis). */
-async function loadTenantBrandColors(tenantId: string): Promise<string[]> {
-  const db = supabaseAdmin() as unknown as {
-    from: (t: string) => {
-      select: (c: string) => { eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: { brand_colors: string[] | null } | null }> } };
-    };
-  };
-  const { data } = await db.from('tenants').select('brand_colors').eq('id', tenantId).maybeSingle();
-  return data?.brand_colors ?? [];
+  const { data } = await db.from('tenants').select('logo_url, brand_colors').eq('id', tenantId).maybeSingle();
+  return { logoUrl: data?.logo_url ?? undefined, brandColors: data?.brand_colors ?? [] };
 }
 
 /** Resolve the tenant's home archetype spec + envelope, or null for a legacy
@@ -94,8 +84,7 @@ async function resolveArchetype(tenantId: string) {
   if (typeof key !== 'string' || typeof lookKey !== 'string') return null;
   const spec = archetypeSpec(key);
   if (spec === undefined) return null;
-  const logoUrl = await loadTenantLogo(tenantId);
-  const brandColors = await loadTenantBrandColors(tenantId);
+  const { logoUrl, brandColors } = await loadTenantChrome(tenantId);
   return { spec, lookKey, content: env['content'], logoUrl, brandColors };
 }
 
@@ -139,14 +128,15 @@ export default async function StorefrontPage({ slug, version }: StorefrontPagePr
     if (env && env.kind === 'archetype') {
       const spec = archetypeSpec(env.archetypeKey);
       if (spec) {
+        const { logoUrl, brandColors } = await loadTenantChrome(tenantId);
         return spec.render({
           content: env.content,
           lookKey: env.lookKey,
           products: (env.products ?? []) as ProductView[],
           mood: env.mood,
           catalogSize: env.catalogSize,
-          logoUrl: await loadTenantLogo(tenantId),
-          brandColors: await loadTenantBrandColors(tenantId),
+          logoUrl,
+          brandColors,
           tenantId,
         });
       }
@@ -349,7 +339,6 @@ async function renderArchetypeStore(env: Record<string, unknown>, tenantId: stri
 
   const mood = typeof env['mood'] === 'string' ? (env['mood'] as string) : undefined;
   const catalogSize = typeof env['catalogSize'] === 'number' ? (env['catalogSize'] as number) : undefined;
-  const logoUrl = await loadTenantLogo(tenantId);
-  const brandColors = await loadTenantBrandColors(tenantId);
+  const { logoUrl, brandColors } = await loadTenantChrome(tenantId);
   return spec.render({ content: env['content'], lookKey: lookKey as string, products, mood, catalogSize, page, logoUrl, brandColors, tenantId });
 }
