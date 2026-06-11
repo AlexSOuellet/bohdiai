@@ -35,8 +35,13 @@ const SET_TRAJECTORY_TOOL: Anthropic.Tool = {
       visualWorld: { type: 'string', description: 'The look and feel the store should have.' },
       momentConcept: { type: 'string', description: 'The concept for the hero moment.' },
       register: { type: 'string', enum: ['loud', 'restrained'], description: 'Loud or restrained type.' },
+      momentKind: {
+        type: 'string',
+        enum: ['video', 'spotlight'],
+        description: "Which kind of Moment the front door plays. 'video' when the scene contains real ambient motion that belongs to the subject (steam off bread, a flame, water, hands at work). 'spotlight' when the product is at rest and inventing motion would feel fake — the rise out of black is the cinematic arc.",
+      },
     },
-    required: ['feeling', 'customerWhy', 'visualWorld', 'momentConcept', 'register'],
+    required: ['feeling', 'customerWhy', 'visualWorld', 'momentConcept', 'register', 'momentKind'],
   },
 };
 
@@ -58,6 +63,7 @@ Call set_trajectory with five fields:
 - visualWorld: the look and feel the store should have, within the ${brief.moodLabel} mood.
 - momentConcept: the concept for the hero moment.
 - register: "loud" or "restrained".
+- momentKind: 'video' or 'spotlight'. The Moment is BohdiAI's signature, so it MUST be cinematic — but cinematic is not always video. Pick 'video' when the maker's craft contains real ambient motion you can capture in 5 seconds (steam off bread, a candle flame, water moving, hands at work, dust in light, a kiln's glow). Pick 'spotlight' when the product is at rest and you would have to INVENT motion to fill the time (a sticker, a print, a finished piece of jewelry). The criterion is the test: am I capturing motion that's really there, or am I making it up? A held cinematic still always beats invented motion — and spotlight gives that still a cinematic frame (the object rises from black, the camera slowly pushes in, the words fade in over).
 
 Set the trajectory now.`;
 }

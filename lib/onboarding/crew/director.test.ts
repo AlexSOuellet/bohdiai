@@ -73,4 +73,11 @@ describe('direct (the Director)', () => {
     create.mockResolvedValueOnce({ content: [{ type: 'text', text: 'hmm' }], stop_reason: 'end_turn' });
     await expect(direct(brief)).rejects.toThrow(/did not call set_trajectory/);
   });
+
+  it('forwards the director-picked momentKind through to the trajectory', async () => {
+    // same mock pattern as the rest of the suite — override momentKind to spotlight
+    create.mockResolvedValueOnce(toolMsg({ ...valid, momentKind: 'spotlight' }));
+    const t = await direct(brief);
+    expect(t.momentKind).toBe('spotlight');
+  });
 });
