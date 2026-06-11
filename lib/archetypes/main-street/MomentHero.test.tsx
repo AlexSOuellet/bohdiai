@@ -106,6 +106,17 @@ describe('MomentHero (the rested hero)', () => {
   });
 });
 
+describe('MomentHero — nav contrast (4c)', () => {
+  it('gives the over-media nav a light surface for a dark logo (instead of staying transparent)', () => {
+    const darkLogoIdentity = { ...identity, logoUrl: 'https://cdn/logo.png', logoTone: 'dark' as const };
+    const { container } = render(<MomentHero identity={darkLogoIdentity} moment={moment} skin={skin} />);
+    const nav = container.querySelector('[data-ms-nav]')!;
+    const style = nav.getAttribute('style') ?? '';
+    // dark logo + dark media backdrop → light surface (#F7F5F2 or rgb equivalent)
+    expect(style.includes('#F7F5F2') || style.includes('rgb(247, 245, 242)') || style.includes('rgb(247,245,242)')).toBe(true);
+  });
+});
+
 describe('MomentIntro (the cold-arrival overlay)', () => {
   it('holds the Enter button back until the story has played and landed', async () => {
     vi.useFakeTimers();

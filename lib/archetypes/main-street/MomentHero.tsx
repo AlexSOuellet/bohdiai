@@ -27,6 +27,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type 
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetContent } from './schemas';
 import { Media, Nav, typeRoleCss, roles, linkHref } from './chrome';
+import { navContrast, relativeLuminance } from './logo-contrast';
 import { shouldPlayMoment, initialDocumentPath, markMomentSeen } from './moment-gate';
 
 // Tunable reveal timing (ms). GAP_MS must be >= the fade so a line fully clears
@@ -284,6 +285,19 @@ export function MomentHero({
     return () => io.disconnect();
   }, []);
 
+  const tone = identity.logoTone ?? 'unknown';
+  // Transparent state: logo sits over the dark scrim of the hero media
+  const overMedia = navContrast(tone, 'dark');
+  // Solid state: logo sits on the skin's background color
+  const skinBackdrop = relativeLuminance(skin.palette.bg) > 0.5 ? 'light' : 'dark';
+  const onSurface = navContrast(tone, skinBackdrop);
+  const navBg = solid
+    ? (onSurface ? onSurface.bg : 'var(--ms-bg)')
+    : (overMedia ? overMedia.bg : 'transparent');
+  const navFg = solid
+    ? (onSurface ? onSurface.fg : 'var(--ms-fg)')
+    : (overMedia ? overMedia.fg : 'var(--ms-on-media)');
+
   return (
     <>
       <nav
@@ -298,9 +312,9 @@ export function MomentHero({
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: solid ? '14px 40px' : '20px 40px',
-          background: solid ? 'var(--ms-bg)' : 'transparent',
-          color: solid ? 'var(--ms-fg)' : 'var(--ms-on-media)',
-          boxShadow: solid ? '0 1px 0 var(--ms-rule)' : 'none',
+          background: navBg,
+          color: navFg,
+          boxShadow: solid && !onSurface ? '0 1px 0 var(--ms-rule)' : 'none',
           transition: 'background .5s ease, padding .5s ease, color .5s ease',
         }}
       >
