@@ -1,9 +1,13 @@
 /**
  * Main Street — SpotlightStage: cinematic reveal for a 'spotlight' moment.
- * Pure black → hero object rises (opacity 6s, 500ms delay) + slow push-in
- * (scale 20s) → scrim → words fade in when phase === 'brand', staggered.
- * Pure component — no hooks, no IO. Reduced-motion: keyframes disabled,
- * object visible at rest, words appear instantly.
+ * Single continuous timeline from mount: pure black → hero object rises
+ * (opacity 6s, 500ms delay) + slow push-in (scale 20s) → scrim → words
+ * fade in with staggered delays that OVERLAP the rising object (eyebrow at
+ * 4.2s, brand at 5s, line at 6.2s, action at 7.2s — same rhythm as the
+ * legacy Spotlight primitive). Used identically by the rested hero and the
+ * intro overlay; only the `action` element differs between them.
+ * Pure component — no hooks, no IO. Reduced-motion: all animations disabled,
+ * everything visible immediately.
  * DO NOT import from components/storefront/layout/primitives/Spotlight.tsx.
  */
 import type { ReactNode } from 'react';
@@ -14,42 +18,47 @@ import { typeRoleCss, roles } from './chrome';
 const RISE_DURATION = '6s';
 const RISE_DELAY = '500ms';
 const PUSH_DURATION = '20s';
-const WORD_FADE = '1.1s';
-// Stagger delays (ms) counting from when phase becomes 'brand'.
-const D = { eyebrow: 4200, brand: 5000, line: 6200, action: 7200 } as const;
+
+// Stagger delays (ms) from mount — words OVERLAP the rising object
+// (eyebrow appears at 4.2s while the object is ~70% risen). Durations
+// match the legacy Spotlight primitive.
+const D = {
+  eyebrow: { delay: 4200, dur: '2.2s' },
+  brand:   { delay: 5000, dur: '2.6s' },
+  line:    { delay: 6200, dur: '2.6s' },
+  action:  { delay: 7200, dur: '2.6s' },
+} as const;
 
 const SCOPED_CSS = `
   @keyframes ss-rise{from{opacity:0}to{opacity:1}}
   @keyframes ss-push{from{transform:scale(1)}to{transform:scale(1.08)}}
+  @keyframes ss-fade{from{opacity:0}to{opacity:1}}
   [data-spotlight-stage] [data-spotlight-object]{animation:ss-push ${PUSH_DURATION} ease-out forwards}
   [data-spotlight-stage] [data-spotlight-rise]{animation:ss-rise ${RISE_DURATION} linear ${RISE_DELAY} both}
+  [data-spotlight-stage] [data-spotlight-eyebrow]{animation:ss-fade ${D.eyebrow.dur} linear ${D.eyebrow.delay}ms both}
+  [data-spotlight-stage] [data-spotlight-brand]{animation:ss-fade ${D.brand.dur} linear ${D.brand.delay}ms both}
+  [data-spotlight-stage] [data-spotlight-line]{animation:ss-fade ${D.line.dur} linear ${D.line.delay}ms both}
+  [data-spotlight-stage] [data-spotlight-action]{animation:ss-fade ${D.action.dur} linear ${D.action.delay}ms both}
   @media(prefers-reduced-motion:reduce){
     [data-spotlight-stage] [data-spotlight-object]{animation:none}
     [data-spotlight-stage] [data-spotlight-rise]{animation:none;opacity:1}
+    [data-spotlight-stage] [data-spotlight-eyebrow]{animation:none;opacity:1;transition:none}
+    [data-spotlight-stage] [data-spotlight-brand]{animation:none;opacity:1;transition:none}
+    [data-spotlight-stage] [data-spotlight-line]{animation:none;opacity:1;transition:none}
+    [data-spotlight-stage] [data-spotlight-action]{animation:none;opacity:1;transition:none}
   }
 `;
-
-function wordStyle(visible: boolean, delayMs: number): React.CSSProperties {
-  return {
-    opacity: visible ? 1 : 0,
-    transition: visible ? `opacity ${WORD_FADE} linear` : 'none',
-    transitionDelay: visible ? `${delayMs}ms` : '0ms',
-  };
-}
 
 export function SpotlightStage({
   moment,
   skin,
-  phase,
   action,
 }: {
   moment: MainStreetContent['moment'];
   skin: ArchetypeTheme;
-  phase: { kind: 'rising' | 'brand' };
   action: ReactNode;
 }) {
   const r = roles(skin);
-  const landed = phase.kind === 'brand';
   const line = moment.story[0] ?? null;
 
   return (
@@ -80,31 +89,31 @@ export function SpotlightStage({
       {/* Center-weighted scrim — text reads over any image luminance */}
       <div aria-hidden style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'radial-gradient(120% 90% at 50% 45%,rgba(0,0,0,.42),rgba(0,0,0,.82))' }} />
 
-      {/* Words layer — each element fades in at phase === 'brand' with stagger */}
+      {/* Words layer — all elements animate in from mount with staggered delays */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 2, display: 'grid', placeItems: 'center', textAlign: 'center', padding: 'clamp(28px,6vw,96px)' }}>
         <div>
           <div
             data-spotlight-eyebrow data-type="eyebrow"
-            style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-on-media-muted)', marginBottom: 18, ...wordStyle(landed, D.eyebrow) }}
+            style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-on-media-muted)', marginBottom: 18 }}
           >
             {moment.eyebrow}
           </div>
           <div
             data-spotlight-brand data-type="brand"
-            style={{ ...typeRoleCss(r.brand), color: 'var(--ms-on-media)', margin: 0, textShadow: '0 2px 40px rgba(0,0,0,.5)', ...wordStyle(landed, D.brand) }}
+            style={{ ...typeRoleCss(r.brand), color: 'var(--ms-on-media)', margin: 0, textShadow: '0 2px 40px rgba(0,0,0,.5)' }}
           >
             {moment.brand}
           </div>
           {line !== null && (
             <div
               data-spotlight-line data-type="storyline"
-              style={{ ...typeRoleCss(r.storyline), color: 'var(--ms-on-media)', maxWidth: '18ch', margin: '20px auto 0', textShadow: '0 2px 36px rgba(0,0,0,.55)', ...wordStyle(landed, D.line) }}
+              style={{ ...typeRoleCss(r.storyline), color: 'var(--ms-on-media)', maxWidth: '18ch', margin: '20px auto 0', textShadow: '0 2px 36px rgba(0,0,0,.55)' }}
             >
               {line}
             </div>
           )}
           {action != null && (
-            <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 32, flexWrap: 'wrap', ...wordStyle(landed, D.action) }}>
+            <div data-spotlight-action style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 32, flexWrap: 'wrap' }}>
               {action}
             </div>
           )}

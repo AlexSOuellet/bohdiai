@@ -20,8 +20,8 @@ const moment = {
 };
 
 describe('SpotlightStage', () => {
-  it('paints a pure-black backdrop, the hero object, and the words at the brand phase', () => {
-    const { container } = render(<SpotlightStage moment={moment} skin={skin} phase={{ kind: 'brand' }} action={null} />);
+  it('paints a pure-black backdrop, the hero object, and the words', () => {
+    const { container } = render(<SpotlightStage moment={moment} skin={skin} action={null} />);
     const root = container.querySelector('[data-spotlight-stage]') as HTMLElement;
     expect(root).not.toBeNull();
     // backdrop is pure black (#000)
@@ -32,22 +32,40 @@ describe('SpotlightStage', () => {
     expect(container.textContent).toContain('EYEBROW');
   });
 
-  it('hides the words while the object is still rising', () => {
-    const { container } = render(<SpotlightStage moment={moment} skin={skin} phase={{ kind: 'rising' }} action={null} />);
-    const brand = container.querySelector('[data-spotlight-brand]') as HTMLElement;
-    expect(brand).not.toBeNull();
-    expect(brand.getAttribute('style')).toMatch(/opacity:\s*0/);
+  it('renders all word elements in the DOM with on-media color from mount', () => {
+    const { container } = render(<SpotlightStage moment={moment} skin={skin} action={null} />);
+    // All word elements exist immediately — they animate in via CSS, not JS state.
+    expect(container.querySelector('[data-spotlight-eyebrow]')).not.toBeNull();
+    expect(container.querySelector('[data-spotlight-brand]')).not.toBeNull();
+    expect(container.querySelector('[data-spotlight-line]')).not.toBeNull();
   });
 
   it('renders an action element when supplied (e.g. the Enter button)', () => {
-    const { container } = render(<SpotlightStage moment={moment} skin={skin} phase={{ kind: 'brand' }} action={<button data-action>Enter site</button>} />);
+    const { container } = render(<SpotlightStage moment={moment} skin={skin} action={<button data-action>Enter site</button>} />);
     expect(container.querySelector('[data-action]')).not.toBeNull();
   });
 
   it('falls back to a static aria block when the moment has no url (placeholder build)', () => {
     const m = { ...moment, media: { ...moment.media, url: undefined } };
-    const { container } = render(<SpotlightStage moment={m} skin={skin} phase={{ kind: 'brand' }} action={null} />);
+    const { container } = render(<SpotlightStage moment={m} skin={skin} action={null} />);
     // Either an aria-labelled placeholder or no img — verify no img with src renders.
     expect(container.querySelector('img[src]')).toBeNull();
+  });
+
+  it('respects prefers-reduced-motion by disabling the rise, push, and word fades', () => {
+    // The component's <style> block must contain a prefers-reduced-motion section
+    // that disables the rise, push, AND the word transitions (so reduced-motion users
+    // don't sit on a black screen waiting for words).
+    const { container } = render(<SpotlightStage moment={moment} skin={skin} action={null} />);
+    const style = container.querySelector('style')!.textContent ?? '';
+    expect(style).toMatch(/prefers-reduced-motion:\s*reduce/);
+    // rise + push are disabled (animation:none) under reduced-motion
+    expect(style).toMatch(/data-spotlight-object[^}]*animation:\s*none/);
+    expect(style).toMatch(/data-spotlight-rise[^}]*animation:\s*none/);
+    expect(style).toMatch(/data-spotlight-rise[^}]*opacity:\s*1/);
+    // word fades are also disabled (transition:none + opacity:1 immediately)
+    expect(style).toMatch(/data-spotlight-eyebrow[^}]*transition:\s*none/);
+    expect(style).toMatch(/data-spotlight-brand[^}]*opacity:\s*1/);
+    expect(style).toMatch(/data-spotlight-line[^}]*transition:\s*none/);
   });
 });
