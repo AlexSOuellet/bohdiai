@@ -53,13 +53,51 @@ export function navContrast(logo: Tone, backdrop: 'light' | 'dark'): { bg: strin
     : { bg: '#1b1b1b', fg: '#F7F5F2' };
 }
 
+// Chroma below this threshold is treated as effectively gray (achromatic).
+const ACHROMATIC_MAX_CHROMA = 0.05;
+
+// Minimum WCAG contrast ratio required for the accent to read as text on the page bg.
+const MIN_ACCENT_CONTRAST = 3;
+
+/**
+ * True when `hex` is black, white, or a shade of gray — color saturation so low
+ * that using it as an accent would tint the store neutrally rather than brand it.
+ * Chroma = (max(r,g,b) − min(r,g,b)) / 255, range 0 (gray) … 1 (fully saturated).
+ */
+export function isAchromatic(hex: string): boolean {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const chroma = (Math.max(r, g, b) - Math.min(r, g, b)) / 255;
+  return chroma < ACHROMATIC_MAX_CHROMA;
+}
+
+/**
+ * WCAG contrast ratio between two hex colors, range 1 (identical) … 21 (black/white).
+ * Formula: (Llighter + 0.05) / (Ldarker + 0.05).
+ */
+export function contrastRatio(hexA: string, hexB: string): number {
+  const la = relativeLuminance(hexA);
+  const lb = relativeLuminance(hexB);
+  const lighter = Math.max(la, lb);
+  const darker = Math.min(la, lb);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
 /**
  * The STRONG brand-tint (build-time): keep the mood's skin but swap its accent to
  * the maker's dominant logo color, recomputing the on-accent text for contrast.
  * Everything else of the skin — bg, fg, type, light — is the mood's, untouched.
  * No override → the skin is returned as-is (Bohdi's free accent stands).
+ *
+ * Guard: the accent is skipped (skin returned unchanged) when:
+ *   (a) accent is undefined or not a valid 6-digit hex,
+ *   (b) accent is achromatic (black/white/gray — low chroma), or
+ *   (c) accent does not reach MIN_ACCENT_CONTRAST against the skin's bg.
  */
 export function applyAccentOverride(skin: ArchetypeTheme, accent: string | undefined): ArchetypeTheme {
   if (accent === undefined || !HEX6.test(accent)) return skin;
+  if (isAchromatic(accent)) return skin;
+  if (contrastRatio(accent, skin.palette.bg) < MIN_ACCENT_CONTRAST) return skin;
   return { ...skin, palette: { ...skin.palette, accent, onAccent: readableOn(accent) } };
 }
