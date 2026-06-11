@@ -311,7 +311,7 @@ export function MomentHero({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: solid ? '14px 40px' : '20px 40px',
+          padding: '14px 40px',
           background: navBg,
           color: navFg,
           boxShadow: solid && !onSurface ? '0 1px 0 var(--ms-rule)' : 'none',
