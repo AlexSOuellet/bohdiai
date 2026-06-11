@@ -106,6 +106,8 @@ export interface ArchetypeBuildSpec<T = unknown> {
     /** The tenant's uploaded logo URL, if any — shown in the chrome. Injected from
      *  tenant data at render (not authored), so it's separate from `content`. */
     logoUrl?: string | undefined;
+    /** The tenant's logo brand colors (live, render-time) — drives header contrast. */
+    brandColors?: string[] | undefined;
     /** The tenant's id — needed by interactive sub-pages (e.g. the contact form
      *  posts it to /api/contact). Injected from tenant data, not authored. */
     tenantId?: string | undefined;
@@ -114,15 +116,15 @@ export interface ArchetypeBuildSpec<T = unknown> {
   /** Paint a single product's detail page in the archetype's chrome. The product
    *  is a row (ProductView); `content` is the stored envelope content (for skin
    *  identity/footer). Optional — an archetype without a product page omits it. */
-  renderProduct?(args: { content: unknown; lookKey: string; product: ProductView; logoUrl?: string | undefined }): ReactElement;
+  renderProduct?(args: { content: unknown; lookKey: string; product: ProductView; logoUrl?: string | undefined; brandColors?: string[] | undefined }): ReactElement;
 
   /** Paint a plain content page (legal docs, maker-added pages) in the archetype's
    *  chrome. Pass `body` for authored paragraphs or `html` for pre-rendered markup
    *  (legal docs carry their own headings). Optional. */
-  renderContentPage?(args: { content: unknown; lookKey: string; title?: string | undefined; body?: string[] | undefined; html?: string | undefined; logoUrl?: string | undefined }): ReactElement;
+  renderContentPage?(args: { content: unknown; lookKey: string; title?: string | undefined; body?: string[] | undefined; html?: string | undefined; logoUrl?: string | undefined; brandColors?: string[] | undefined }): ReactElement;
 
   /** Wrap arbitrary children in the archetype's shell (skin bridge + nav + footer).
    *  For functional pages (cart, collections, subscriptions) whose body is bespoke
    *  but which must wear the store's chrome. Optional. */
-  renderShell?(args: { content: unknown; lookKey: string; children: ReactNode; logoUrl?: string | undefined }): ReactElement;
+  renderShell?(args: { content: unknown; lookKey: string; children: ReactNode; logoUrl?: string | undefined; brandColors?: string[] | undefined }): ReactElement;
 }

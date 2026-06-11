@@ -71,6 +71,18 @@ async function loadTenantLogo(tenantId: string): Promise<string | undefined> {
   return data?.logo_url ?? undefined;
 }
 
+/** The tenant's logo brand colors (live, render-time) — drives header contrast.
+ *  Returns an empty array when no colors are stored (no logo, SVG, or failed analysis). */
+async function loadTenantBrandColors(tenantId: string): Promise<string[]> {
+  const db = supabaseAdmin() as unknown as {
+    from: (t: string) => {
+      select: (c: string) => { eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: { brand_colors: string[] | null } | null }> } };
+    };
+  };
+  const { data } = await db.from('tenants').select('brand_colors').eq('id', tenantId).maybeSingle();
+  return data?.brand_colors ?? [];
+}
+
 /** Resolve the tenant's home archetype spec + envelope, or null for a legacy
  *  tenant. Shared by the product and content-page routes so they paint in the
  *  archetype's chrome instead of the legacy system. */
@@ -83,7 +95,8 @@ async function resolveArchetype(tenantId: string) {
   const spec = archetypeSpec(key);
   if (spec === undefined) return null;
   const logoUrl = await loadTenantLogo(tenantId);
-  return { spec, lookKey, content: env['content'], logoUrl };
+  const brandColors = await loadTenantBrandColors(tenantId);
+  return { spec, lookKey, content: env['content'], logoUrl, brandColors };
 }
 
 /** Render a product detail page in the tenant's archetype, or null if the tenant
@@ -91,7 +104,7 @@ async function resolveArchetype(tenantId: string) {
 export async function renderArchetypeProductPage(tenantId: string, product: ProductView) {
   const a = await resolveArchetype(tenantId);
   if (a === null || a.spec.renderProduct === undefined) return null;
-  return a.spec.renderProduct({ content: a.content, lookKey: a.lookKey, product, logoUrl: a.logoUrl });
+  return a.spec.renderProduct({ content: a.content, lookKey: a.lookKey, product, logoUrl: a.logoUrl, brandColors: a.brandColors });
 }
 
 /** Render a plain content page (legal/maker-added) in the tenant's archetype, or
@@ -102,7 +115,7 @@ export async function renderArchetypeContentPage(
 ) {
   const a = await resolveArchetype(tenantId);
   if (a === null || a.spec.renderContentPage === undefined) return null;
-  return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, ...opts, logoUrl: a.logoUrl });
+  return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, ...opts, logoUrl: a.logoUrl, brandColors: a.brandColors });
 }
 
 /** Wrap a functional page's body (cart, collections, subscriptions) in the
@@ -110,7 +123,7 @@ export async function renderArchetypeContentPage(
 export async function renderArchetypeShell(tenantId: string, children: ReactNode) {
   const a = await resolveArchetype(tenantId);
   if (a === null || a.spec.renderShell === undefined) return null;
-  return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, logoUrl: a.logoUrl });
+  return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, logoUrl: a.logoUrl, brandColors: a.brandColors });
 }
 
 export default async function StorefrontPage({ slug, version }: StorefrontPageProps) {
@@ -133,6 +146,7 @@ export default async function StorefrontPage({ slug, version }: StorefrontPagePr
           mood: env.mood,
           catalogSize: env.catalogSize,
           logoUrl: await loadTenantLogo(tenantId),
+          brandColors: await loadTenantBrandColors(tenantId),
           tenantId,
         });
       }
@@ -336,5 +350,6 @@ async function renderArchetypeStore(env: Record<string, unknown>, tenantId: stri
   const mood = typeof env['mood'] === 'string' ? (env['mood'] as string) : undefined;
   const catalogSize = typeof env['catalogSize'] === 'number' ? (env['catalogSize'] as number) : undefined;
   const logoUrl = await loadTenantLogo(tenantId);
-  return spec.render({ content: env['content'], lookKey: lookKey as string, products, mood, catalogSize, page, logoUrl, tenantId });
+  const brandColors = await loadTenantBrandColors(tenantId);
+  return spec.render({ content: env['content'], lookKey: lookKey as string, products, mood, catalogSize, page, logoUrl, brandColors, tenantId });
 }

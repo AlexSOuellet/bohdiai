@@ -22,6 +22,7 @@ import { MainStreetContentSchema, type MainStreetContent } from './schemas';
 import { MAIN_STREET_SKINS, SKIN_DESCRIPTIONS } from './skins';
 import { GOODS_TREATMENT_MENU } from './goods';
 import { sceneToPrompt } from './scene-prompt';
+import { logoTone } from './logo-contrast';
 
 const looks: LookOption[] = Object.values(MAIN_STREET_SKINS).map((s) => ({
   key: s.key,
@@ -137,12 +138,15 @@ function applyMedia(a: MainStreetAuthored, urls: Record<string, string | null>):
   return { ...a, content, productUrls };
 }
 
-/** Fold the tenant's uploaded logo (a tenant fact, not authored content) into the
- *  content's identity so the chrome can show it beside the wordmark. No-op when the
- *  maker uploaded no logo. */
-function withLogo(content: MainStreetContent, logoUrl?: string): MainStreetContent {
-  if (logoUrl === undefined || logoUrl === '') return content;
-  return { ...content, identity: { ...content.identity, logoUrl } };
+/** Fold the tenant's uploaded logo and brand colors (tenant facts, not authored
+ *  content) into the content's identity so the chrome can show the logo and apply
+ *  the correct contrast surface. No-op when there is no logo and no brand colors. */
+function withLogo(content: MainStreetContent, logoUrl?: string, brandColors?: string[]): MainStreetContent {
+  if ((logoUrl === undefined || logoUrl === '') && (brandColors === undefined || brandColors.length === 0)) return content;
+  const identity = { ...content.identity };
+  if (logoUrl !== undefined && logoUrl !== '') identity.logoUrl = logoUrl;
+  if (brandColors !== undefined && brandColors.length > 0) identity.logoTone = logoTone(brandColors);
+  return { ...content, identity };
 }
 
 function formatPrice(cents: number): string {
@@ -199,9 +203,9 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   applyMedia,
   toPayload,
   handOff,
-  render: ({ content, lookKey, products, catalogSize, page, logoUrl, tenantId }) => {
+  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, tenantId }) => {
     const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
-    const c = withLogo(content as MainStreetContent, logoUrl);
+    const c = withLogo(content as MainStreetContent, logoUrl, brandColors);
     switch (page) {
       case 'shop':
         return <ShopPage content={c} skin={skin} products={products} />;
@@ -215,16 +219,16 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
         return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} />;
     }
   },
-  renderProduct: ({ content, lookKey, product, logoUrl }) => {
+  renderProduct: ({ content, lookKey, product, logoUrl, brandColors }) => {
     const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
-    return <MainStreetProduct content={withLogo(content as MainStreetContent, logoUrl)} skin={skin} product={product} />;
+    return <MainStreetProduct content={withLogo(content as MainStreetContent, logoUrl, brandColors)} skin={skin} product={product} />;
   },
-  renderContentPage: ({ content, lookKey, title, body, html, logoUrl }) => {
+  renderContentPage: ({ content, lookKey, title, body, html, logoUrl, brandColors }) => {
     const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
-    return <ContentPage content={withLogo(content as MainStreetContent, logoUrl)} skin={skin} title={title} body={body} html={html} />;
+    return <ContentPage content={withLogo(content as MainStreetContent, logoUrl, brandColors)} skin={skin} title={title} body={body} html={html} />;
   },
-  renderShell: ({ content, lookKey, children, logoUrl }) => {
+  renderShell: ({ content, lookKey, children, logoUrl, brandColors }) => {
     const skin = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
-    return <MainStreetSubPage content={withLogo(content as MainStreetContent, logoUrl)} skin={skin}>{children}</MainStreetSubPage>;
+    return <MainStreetSubPage content={withLogo(content as MainStreetContent, logoUrl, brandColors)} skin={skin}>{children}</MainStreetSubPage>;
   },
 };
