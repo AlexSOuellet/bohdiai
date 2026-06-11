@@ -5,7 +5,10 @@ import { MAIN_STREET_SKINS } from './skins';
 import type { MainStreetContent } from './schemas';
 import type { ProductView } from '../content';
 
+// light-bg skin: ember bg is #F4EAD7 — luminance > 0.5
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
+// dark-bg skin: hearthstone bg is #1B1410 — luminance < 0.5
+const darkSkin = MAIN_STREET_SKINS['main-street-hearthstone']!;
 
 const content: MainStreetContent = {
   shopName: 'Tannery Row',
@@ -53,6 +56,25 @@ describe('ShopPage', () => {
     const withLogo: MainStreetContent = { ...content, identity: { ...content.identity, logoUrl: 'https://cdn/logo.png' } };
     const { container } = render(<ShopPage content={withLogo} skin={skin} products={products} />);
     expect((container.querySelector('img[data-ms-logo]') as HTMLImageElement | null)?.getAttribute('src')).toBe('https://cdn/logo.png');
+  });
+});
+
+describe('AboutPage — logo plate removal + header contrast (4b)', () => {
+  it('renders the logo bare — no white plate element', () => {
+    const c: MainStreetContent = { ...content, identity: { ...content.identity, logoUrl: 'https://cdn/logo.png', logoTone: 'dark' } };
+    const { container } = render(<AboutPage content={c} skin={skin} />);
+    expect(container.querySelector('.ms-logo-plate')).toBeNull();
+    expect(container.querySelector('[data-ms-logo]')).not.toBeNull();
+  });
+
+  it('gives the sub-header a contrasting surface when the logo tone matches the skin tone', () => {
+    // dark logo on a dark skin → header should take a light surface (#F7F5F2 = rgb(247,245,242))
+    const c: MainStreetContent = { ...content, identity: { ...content.identity, logoUrl: 'https://cdn/logo.png', logoTone: 'dark' } };
+    const { container } = render(<AboutPage content={c} skin={darkSkin} />);
+    const header = container.querySelector('header')!;
+    // jsdom converts hex to rgb in inline styles; accept either form
+    const style = header.getAttribute('style') ?? '';
+    expect(style.includes('#F7F5F2') || style.includes('rgb(247, 245, 242)') || style.includes('rgb(247,245,242)')).toBe(true);
   });
 });
 

@@ -53,15 +53,15 @@ describe('MomentHero (the rested hero)', () => {
     expect(container.querySelector('[data-moment-intro]')).toBeNull();
   });
 
-  it('lets a real logo RULE the header — it is the brand mark, carries the name as alt, and sits on a legibility plate', () => {
+  it('lets a real logo RULE the header — it is the brand mark, carries the name as alt, and is bare (no plate)', () => {
     const withLogo = { ...identity, logoUrl: 'https://cdn/logo.png' };
     const { container } = render(<MomentHero identity={withLogo} moment={moment} skin={skin} />);
     const logo = container.querySelector('img[data-ms-logo]') as HTMLImageElement | null;
     expect(logo?.getAttribute('src')).toBe('https://cdn/logo.png');
     // the shop name rides as the logo's alt (accessibility), not as competing display type
     expect(logo?.getAttribute('alt')).toBe("June's Sourdough");
-    // a fixed near-white plate keeps any logo legible — never dark-on-dark, never lost over the video
-    expect(logo?.closest('.ms-logo-plate')).toBeTruthy();
+    // the logo is bare — no plate; the header surface handles contrast
+    expect(logo?.closest('.ms-logo-plate')).toBeNull();
     // the typographic wordmark steps aside when the logo rules
     const mark = container.querySelector('[data-type="wordmark"]') as HTMLElement;
     expect(mark.textContent).not.toContain("June's Sourdough");

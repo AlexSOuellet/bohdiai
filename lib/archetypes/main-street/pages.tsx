@@ -10,11 +10,14 @@ import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
 import { MainStreetRoot, MainStreetFooter, Media, typeRoleCss, roles, MAIN_STREET_NAV, WordmarkLink } from './chrome';
+import { navContrast, relativeLuminance } from './logo-contrast';
 import { FindUsList } from './FounderBeats';
 import { MainStreetContactForm } from './MainStreetContactForm';
 
 function SubHeader({ content, skin }: { content: MainStreetContent; skin: ArchetypeTheme }) {
   const r = roles(skin);
+  const backdrop = relativeLuminance(skin.palette.bg) > 0.5 ? 'light' : 'dark';
+  const surface = navContrast(content.identity.logoTone ?? 'unknown', backdrop);
   return (
     <header
       style={{
@@ -24,8 +27,8 @@ function SubHeader({ content, skin }: { content: MainStreetContent; skin: Archet
         gap: 24,
         padding: '22px 40px',
         borderBottom: '1px solid var(--ms-rule)',
-        background: 'var(--ms-bg)',
-        color: 'var(--ms-fg)',
+        background: surface ? surface.bg : 'var(--ms-bg)',
+        color: surface ? surface.fg : 'var(--ms-fg)',
         flexWrap: 'wrap',
       }}
     >

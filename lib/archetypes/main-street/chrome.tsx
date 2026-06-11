@@ -67,12 +67,10 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       font-family:var(--ms-body);line-height:1.6;
     }
     .arch-main-street a{color:var(--ms-accent);text-decoration:none}
-    /* logo lockup — a real maker logo RULES the header: sized up and set on a
-       fixed near-white plate (the same skin-agnostic legibility token used over
-       media) so it never lands dark-on-dark on the skin or vanishes over the video. */
-    .arch-main-street .ms-logo-plate{display:inline-flex;align-items:center;background:var(--ms-on-media);padding:7px 11px;border-radius:9px;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+    /* logo lockup — the logo is bare: no plate. Contrast is guaranteed by the
+       header surface itself (navContrast in SubHeader / MomentHero). */
     .arch-main-street [data-ms-logo]{height:40px;width:auto}
-    @media(max-width:768px){.arch-main-street [data-ms-logo]{height:30px}.arch-main-street .ms-logo-plate{padding:6px 9px}}
+    @media(max-width:768px){.arch-main-street [data-ms-logo]{height:30px}}
     .arch-main-street .ms-grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;mix-blend-mode:multiply;background-image:${a.grain ?? 'none'}}
     .arch-main-street .archetype-photo{filter:${a.photoFilter ?? 'none'};display:block;width:100%;height:100%;object-fit:cover}
     .arch-main-street .ms-wrap{max-width:1200px;margin-inline:auto;padding-inline:40px}
@@ -187,18 +185,15 @@ export function resolveNav(nav: ReadonlyArray<NavEntry>): ReadonlyArray<{ href: 
 }
 
 /** The brand lockup in a header. When the maker uploaded a logo, the logo RULES:
- *  it stands as the primary brand mark, sized up and on a fixed near-white plate
- *  so it stays legible on any skin and over the hero video — never dark-on-dark.
- *  The shop name rides as the logo's alt text. The typographic wordmark only
- *  appears as the fallback when no logo was uploaded. */
+ *  it stands as the primary brand mark, sized up and bare — no plate. The header
+ *  surface guarantees contrast (via navContrast in SubHeader / MomentHero). The
+ *  typographic wordmark is the fallback when no logo was uploaded. */
 export function WordmarkLink({ wordmark, logoUrl, role }: { wordmark: string; logoUrl?: string | undefined; role: TypeRole }) {
   return (
     <Link href="/" data-type="wordmark" style={{ ...typeRoleCss(role), color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 12 }}>
       {logoUrl ? (
-        <span className="ms-logo-plate">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={logoUrl} alt={wordmark} data-ms-logo style={{ display: 'block' }} />
-        </span>
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={logoUrl} alt={wordmark} data-ms-logo style={{ display: 'block' }} />
       ) : (
         wordmark
       )}
