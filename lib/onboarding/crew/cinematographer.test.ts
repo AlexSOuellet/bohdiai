@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const create = vi.fn();
 vi.mock('@/lib/anthropic', () => ({ anthropicClient: () => ({ messages: { create } }) }));
 
-import { shootMoment, MomentSceneSchema, buildCinematographerPrompt } from './cinematographer';
+import { shootMoment, MomentSceneSchema, buildCinematographerPrompt, __buildCinematographerPromptForTest } from './cinematographer';
 import type { Trajectory } from './trajectory';
 
 const trajectory: Trajectory = {
@@ -250,5 +250,25 @@ describe('shootMoment (the Cinematographer)', () => {
     const s = await shootMoment({ ...trajectory, momentKind: 'video' }, story);
     expect(s.kind).toBe('video');
     expect(create).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('cinematographer prompt — makerWork', () => {
+  const sampleTrajectory: Trajectory = trajectory;
+
+  it("includes the maker's work summary when present", () => {
+    const prompt = __buildCinematographerPromptForTest(sampleTrajectory, ['lines', 'go', 'here'], 'This maker turns small bowls from local walnut.');
+    expect(prompt).toContain('WHAT THIS MAKER ACTUALLY MAKES');
+    expect(prompt).toContain('small bowls from local walnut');
+  });
+
+  it('omits the section when makerWork is empty', () => {
+    const prompt = __buildCinematographerPromptForTest(sampleTrajectory, ['lines'], '');
+    expect(prompt).not.toContain('WHAT THIS MAKER ACTUALLY MAKES');
+  });
+
+  it('omits the section when makerWork is undefined', () => {
+    const prompt = __buildCinematographerPromptForTest(sampleTrajectory, ['lines']);
+    expect(prompt).not.toContain('WHAT THIS MAKER ACTUALLY MAKES');
   });
 });

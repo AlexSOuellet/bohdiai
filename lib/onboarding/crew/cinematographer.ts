@@ -86,11 +86,18 @@ const SET_MOMENT_TOOL: Anthropic.Tool = {
   input_schema: { type: 'object', properties: {}, additionalProperties: true },
 };
 
-export function buildCinematographerPrompt(trajectory: Trajectory, story: string[]): string {
+export function buildCinematographerPrompt(trajectory: Trajectory, story: string[], makerWork?: string): string {
   const lines = story.map((l) => `  ${l}`).join('\n');
+  const trimmedMakerWork = makerWork?.trim();
+  const makerWorkClause = trimmedMakerWork
+    ? `WHAT THIS MAKER ACTUALLY MAKES — derived from the photos the maker uploaded. The Moment can show real subject matter rather than a stereotyped scene:
+${trimmedMakerWork}
+
+`
+    : '';
   return `You are the CINEMATOGRAPHER on Bohdi's crew. You design the Moment — the hero of the front door, one large 16:9 shot that opens the store. Build it to the trajectory and to the story the copywriter wrote, so the shot carries the same feeling as the words.
 
-THE TRAJECTORY
+${makerWorkClause}THE TRAJECTORY
 - feeling: ${trajectory.feeling}
 - why the customer wants this: ${trajectory.customerWhy}
 - visual world: ${trajectory.visualWorld}
@@ -124,9 +131,11 @@ If kind is "spotlight": design a single beautiful STILL of one HERO OBJECT frame
 Set the moment now.`;
 }
 
+export const __buildCinematographerPromptForTest = buildCinematographerPrompt;
+
 /** Run the Cinematographer: trajectory + story in, one validated Moment scene out. */
-export async function shootMoment(trajectory: Trajectory, story: string[]): Promise<MomentScene> {
-  const system = buildCinematographerPrompt(trajectory, story);
+export async function shootMoment(trajectory: Trajectory, story: string[], makerWork?: string): Promise<MomentScene> {
+  const system = buildCinematographerPrompt(trajectory, story, makerWork);
   const messages: Anthropic.MessageParam[] = [
     { role: 'user', content: 'Design the Moment. Call set_moment.' },
   ];

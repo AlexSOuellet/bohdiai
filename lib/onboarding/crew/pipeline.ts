@@ -78,7 +78,7 @@ export async function directAndProduce(brief: CrewBrief, rand: () => number = Ma
   // Code rolls the dice; the copywriter reads them and plays or overrides (D48).
   const rolls = rollTreatments(rand);
   const copy = await writeCopy(brief, trajectory, rolls);
-  const moment = await shootMoment(trajectory, copy.moment.story);
+  const moment = await shootMoment(trajectory, copy.moment.story, brief.makerWork);
   const look = await designLook(brief, trajectory, copy.moment.story, moment, copy.products);
   const cut = await directorsCut(brief, trajectory, { copy, moment, look });
 
