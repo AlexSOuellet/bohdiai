@@ -47,6 +47,13 @@ const SET_TRAJECTORY_TOOL: Anthropic.Tool = {
 
 function buildDirectorPrompt(brief: CrewBrief): string {
   const niche = brief.nicheBody.trim();
+  const makerWork = brief.makerWork?.trim();
+  const makerWorkClause = makerWork
+    ? `
+
+WHAT THIS MAKER ACTUALLY MAKES — derived from the photos the maker uploaded. Treat this as more specific than the niche file. Ground the trajectory in this actual work, not in a niche stereotype:
+${makerWork}`
+    : '';
   return `You are Bohdi, the DIRECTOR of this maker's storefront. You set ONE creative trajectory — the single feeling the whole store serves. Your crew (a copywriter, a cinematographer, a graphic artist) each execute their craft to it. Make it true to THIS maker, within the mood the maker chose.
 
 THE MAKER
@@ -55,7 +62,7 @@ THE MAKER
 - Mood the maker chose: ${brief.moodLabel} — ${brief.moodDescription}
 
 THE NICHE — who this kind of maker is and who buys from them. Read all of it; it shows the full range of the category, not one stereotype:
-${niche}
+${niche}${makerWorkClause}
 
 Call set_trajectory with five fields:
 - feeling: the single feeling the whole store should leave a visitor with, in one line.
@@ -67,6 +74,8 @@ Call set_trajectory with five fields:
 
 Set the trajectory now.`;
 }
+
+export const __buildDirectorPromptForTest = buildDirectorPrompt;
 
 /** Run the Director: niche + mood in, one validated Trajectory out. */
 export async function direct(brief: CrewBrief): Promise<Trajectory> {

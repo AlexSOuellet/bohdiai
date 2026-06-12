@@ -3,11 +3,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const create = vi.fn();
 vi.mock('@/lib/anthropic', () => ({ anthropicClient: () => ({ messages: { create } }) }));
 
-import { direct } from './director';
+import { direct, __buildDirectorPromptForTest } from './director';
 import { TrajectorySchema } from './trajectory';
 import type { CrewBrief } from './types';
 
-const brief: CrewBrief = {
+const baseBrief: CrewBrief = {
   shopName: 'Coastal Candles',
   nicheDisplayName: 'Candle maker',
   nicheBody: 'People buy candles to turn an ordinary evening into something that feels like home, calm, and theirs.',
@@ -16,6 +16,8 @@ const brief: CrewBrief = {
   productCount: 6,
   moodKey: 'modern',
 };
+
+const brief = baseBrief;
 
 const valid = {
   feeling: 'the hush of a light-filled coastal morning, calm and quietly upscale',
@@ -79,5 +81,19 @@ describe('direct (the Director)', () => {
     create.mockResolvedValueOnce(toolMsg({ ...valid, momentKind: 'spotlight' }));
     const t = await direct(brief);
     expect(t.momentKind).toBe('spotlight');
+  });
+});
+
+describe('director prompt — makerWork', () => {
+  it("includes the maker's work summary when present", () => {
+    const brief = { ...baseBrief, makerWork: 'This maker turns small bowls from local walnut.' };
+    const prompt = __buildDirectorPromptForTest(brief);
+    expect(prompt).toContain('WHAT THIS MAKER ACTUALLY MAKES');
+    expect(prompt).toContain('small bowls from local walnut');
+  });
+
+  it('omits the maker-work section when undefined', () => {
+    const prompt = __buildDirectorPromptForTest(baseBrief);
+    expect(prompt).not.toContain('WHAT THIS MAKER ACTUALLY MAKES');
   });
 });
