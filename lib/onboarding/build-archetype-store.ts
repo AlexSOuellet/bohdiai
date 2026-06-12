@@ -135,6 +135,15 @@ export async function buildArchetypeStore(
     ...(input.makerWork !== undefined ? { makerWork: input.makerWork } : {}),
   };
 
+  logger.info('archetype-build: brief', {
+    subdomain: input.subdomain,
+    niche: input.nicheSlug,
+    mood: input.moodKey,
+    uploads: input.productPhotoUrls?.length ?? 0,
+    visionEntries: brief.visionPerPhoto?.length ?? 0,
+    makerWorkLength: brief.makerWork?.length ?? 0,
+  });
+
   emit('Designing your store');
   const { chosen, authored, choices } = await directAndProduce(brief);
   const spec = chosen.spec;
