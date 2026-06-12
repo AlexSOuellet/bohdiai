@@ -5,7 +5,7 @@ interface ProgressBarProps {
 
 export default function ProgressBar({ step, total }: ProgressBarProps) {
   return (
-    <div className="mb-10" role="progressbar" aria-valuenow={step} aria-valuemin={1} aria-valuemax={total}>
+    <div className="mb-10" role="progressbar" aria-valuenow={step} aria-valuemin={1} aria-valuemax={total} data-progress-total={total}>
       <div className="flex items-center gap-1.5">
         {Array.from({ length: total }, (_, i) => {
           const s = i + 1;
