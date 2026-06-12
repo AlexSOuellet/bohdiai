@@ -249,6 +249,46 @@ describe('copywriter prompt — founder-attribution name lock', () => {
   });
 });
 
+describe('copywriter prompt — visionPerPhoto and flat catalog', () => {
+  const baseBrief: CrewBrief = {
+    shopName: 'Sawdust & Stone',
+    nicheDisplayName: 'Woodworker',
+    nicheBody: 'A small niche body for testing.',
+    moodLabel: 'Rustic',
+    moodDescription: 'Warm timber and morning light.',
+    productCount: 5,
+    makerName: 'Wally',
+    moodKey: 'rustic',
+  };
+
+  it('targets exactly 5 products regardless of brief.productCount', () => {
+    const b: CrewBrief = { ...baseBrief, productCount: 20 };
+    const prompt = buildCopywriterPrompt(b, trajectory, rolls);
+    expect(prompt).toMatch(/write 5/i);
+  });
+
+  it("threads per-photo Vision suggestions as starting hands for products 1..N", () => {
+    const b: CrewBrief = {
+      ...baseBrief,
+      visionPerPhoto: [
+        { productType: 'turned walnut bowl', suggestedName: 'River Bowl', suggestedShortDescription: 'small bowl', suggestedDescription: 'A small turned walnut bowl.', suggestedPriceCents: 4800 },
+        { productType: 'small wooden sign', suggestedName: 'Welcome Plank', suggestedShortDescription: 'a sign', suggestedDescription: 'A small carved sign.', suggestedPriceCents: 3200 },
+      ],
+    };
+    const prompt = buildCopywriterPrompt(b, trajectory, rolls);
+    expect(prompt).toContain("THE MAKER'S WORK");
+    expect(prompt).toContain('turned walnut bowl');
+    expect(prompt).toContain('small wooden sign');
+    expect(prompt).toMatch(/products 1 through 2/i);
+    expect(prompt).toMatch(/products 3 through 5.*stand-?ins/i);
+  });
+
+  it("omits the maker's-work section when visionPerPhoto is empty/undefined", () => {
+    const prompt = buildCopywriterPrompt(baseBrief, trajectory, rolls);
+    expect(prompt).not.toContain("THE MAKER'S WORK");
+  });
+});
+
 describe('CopywriterDraftSchema — authored link targets (D46)', () => {
   it('requires nav items to carry a target page, not bare labels', () => {
     const d = { ...draft, identity: { wordmark: 'Tannery Row', nav: ['Shop', 'About'] } };

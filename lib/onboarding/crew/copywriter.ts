@@ -46,13 +46,11 @@ const SUBMIT_COPY_TOOL: Anthropic.Tool = {
   input_schema: { type: 'object', properties: {}, additionalProperties: true },
 };
 
-function targetProductCount(productCount: number): number {
-  return Math.max(3, Math.min(productCount > 0 ? productCount : 6, 10));
-}
+const TARGET_PRODUCTS = 5;
 
 export function buildCopywriterPrompt(brief: CrewBrief, trajectory: Trajectory, rolls: TreatmentRolls): string {
   const niche = brief.nicheBody.trim();
-  const target = targetProductCount(brief.productCount);
+  const target = TARGET_PRODUCTS;
   const goods = (Object.entries(GOODS_TREATMENT_MENU) as Array<[string, string]>)
     .map(([k, d]) => `      - ${k}: ${d}`)
     .join('\n');
@@ -62,6 +60,15 @@ export function buildCopywriterPrompt(brief: CrewBrief, trajectory: Trajectory, 
   const nameLockClause = makerNameTrimmed
     ? `THE MAKER'S NAME — the maker's real first name is "${makerNameTrimmed}". Lock founder.attribution to "${makerNameTrimmed}" exactly. Do not invent, shorten, or add a surname.`
     : `THE MAKER'S NAME — the maker's first name was not captured. Write a generic attribution like "The maker" for founder.attribution rather than inventing a name.`;
+
+  const photos = brief.visionPerPhoto ?? [];
+  const photoCount = photos.length;
+  const makerWorkClause = photoCount > 0
+    ? `
+
+THE MAKER'S WORK — ${photoCount} photo${photoCount === 1 ? '' : 's'} the maker uploaded. Author products 1 through ${photoCount} around these photos (use the same product type, write a faithful name and description, the image URL is already assigned). Then author products ${photoCount + 1} through ${target} as stand-ins that fit alongside the real work (similar category, similar price range, similar style).
+${photos.map((p, i) => `  - Photo ${i + 1}: ${p.productType}; suggested name "${p.suggestedName}"; suggested price ${p.suggestedPriceCents} cents; suggested short description "${p.suggestedShortDescription}"`).join('\n')}`
+    : '';
 
   const storyDirective =
     trajectory.momentKind === 'spotlight'
@@ -80,7 +87,7 @@ THE TRAJECTORY
 THE NICHE — context and vocabulary for this kind of maker and who buys from them. Read all of it:
 ${niche}
 
-${nameLockClause}
+${nameLockClause}${makerWorkClause}
 
 LINKS — every link you write carries a label AND a target page, so what a button
 says and where it goes always agree. A target is one of: ${targets}.
