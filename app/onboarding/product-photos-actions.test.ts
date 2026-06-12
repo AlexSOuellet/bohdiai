@@ -64,22 +64,23 @@ describe('uploadProductPhotos — Vision read', () => {
     createMessageMock.mockReset();
   });
 
-  it('parses a valid Vision response into visionPerPhoto + makerWork', async () => {
-    createMessageMock.mockResolvedValue({
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify({
-            perPhoto: [
-              { productType: 'turned walnut bowl', suggestedName: 'River Bowl', suggestedShortDescription: 'a small bowl', suggestedDescription: 'A small turned walnut bowl from local stock.', suggestedPriceCents: 4800 },
-              { productType: 'small wooden sign', suggestedName: 'Welcome Plank', suggestedShortDescription: 'a small carved sign', suggestedDescription: 'A small carved walnut sign for entryways.', suggestedPriceCents: 3200 },
-            ],
-            makerWork: 'This maker turns small bowls and carves small signs from local hardwood.',
-          }),
-        },
-      ],
+  function toolUseResponse(input: unknown): Anthropic.Message {
+    return {
+      content: [{ type: 'tool_use', id: 'tu_1', name: 'submit_photo_read', input }],
       usage: { input_tokens: 100, output_tokens: 100 },
-    } as unknown as Anthropic.Message);
+    } as unknown as Anthropic.Message;
+  }
+
+  it('parses a valid Vision tool_use response into visionPerPhoto + makerWork', async () => {
+    createMessageMock.mockResolvedValue(
+      toolUseResponse({
+        perPhoto: [
+          { productType: 'turned walnut bowl', suggestedName: 'River Bowl', suggestedShortDescription: 'a small bowl', suggestedDescription: 'A small turned walnut bowl from local stock.', suggestedPriceCents: 4800 },
+          { productType: 'small wooden sign', suggestedName: 'Welcome Plank', suggestedShortDescription: 'a small carved sign', suggestedDescription: 'A small carved walnut sign for entryways.', suggestedPriceCents: 3200 },
+        ],
+        makerWork: 'This maker turns small bowls and carves small signs from local hardwood.',
+      }),
+    );
 
     const formData = new FormData();
     formData.append('photos', makeFile('a.jpg'));
@@ -91,7 +92,26 @@ describe('uploadProductPhotos — Vision read', () => {
     expect(result.makerWork).toMatch(/small bowls/i);
   });
 
-  it('degrades to empty Vision result when the Vision call throws', async () => {
+  it('uses forced tool_choice in the request so the SDK guarantees valid JSON output', async () => {
+    createMessageMock.mockResolvedValue(
+      toolUseResponse({
+        perPhoto: [
+          { productType: 'bowl', suggestedName: 'A bowl', suggestedShortDescription: 'a small bowl', suggestedDescription: 'A small turned bowl.', suggestedPriceCents: 4800 },
+        ],
+        makerWork: 'Turns small bowls.',
+      }),
+    );
+
+    const formData = new FormData();
+    formData.append('photos', makeFile('a.jpg'));
+    await uploadProductPhotos('test-shop', formData);
+
+    const callArgs = createMessageMock.mock.calls[0]![0] as { tools?: unknown; tool_choice?: unknown };
+    expect(callArgs.tools).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'submit_photo_read' })]));
+    expect(callArgs.tool_choice).toEqual({ type: 'tool', name: 'submit_photo_read' });
+  });
+
+  it('degrades to empty Vision result when both Vision attempts throw', async () => {
     createMessageMock.mockRejectedValue(new Error('vision failed'));
 
     const formData = new FormData();
@@ -101,11 +121,13 @@ describe('uploadProductPhotos — Vision read', () => {
     expect(result.productPhotoUrls).toHaveLength(1);
     expect(result.visionPerPhoto).toEqual([]);
     expect(result.makerWork).toBe('');
+    // Two attempts before degrading
+    expect(createMessageMock).toHaveBeenCalledTimes(2);
   });
 
-  it('degrades to empty Vision result when the response is malformed JSON', async () => {
+  it('degrades to empty when the response has no tool_use block', async () => {
     createMessageMock.mockResolvedValue({
-      content: [{ type: 'text', text: 'not json at all' }],
+      content: [{ type: 'text', text: 'this should have been a tool call' }],
       usage: { input_tokens: 0, output_tokens: 0 },
     } as unknown as Anthropic.Message);
 
@@ -118,20 +140,14 @@ describe('uploadProductPhotos — Vision read', () => {
   });
 
   it('degrades to empty when the per-photo count does not match the upload count', async () => {
-    createMessageMock.mockResolvedValue({
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify({
-            perPhoto: [
-              { productType: 'bowl', suggestedName: 'a', suggestedShortDescription: 'b', suggestedDescription: 'c d', suggestedPriceCents: 100 },
-            ],
-            makerWork: 'mismatch',
-          }),
-        },
-      ],
-      usage: { input_tokens: 1, output_tokens: 1 },
-    } as unknown as Anthropic.Message);
+    createMessageMock.mockResolvedValue(
+      toolUseResponse({
+        perPhoto: [
+          { productType: 'bowl', suggestedName: 'a', suggestedShortDescription: 'b', suggestedDescription: 'c d', suggestedPriceCents: 100 },
+        ],
+        makerWork: 'mismatch',
+      }),
+    );
 
     const formData = new FormData();
     formData.append('photos', makeFile('a.jpg'));
@@ -140,5 +156,26 @@ describe('uploadProductPhotos — Vision read', () => {
 
     expect(result.visionPerPhoto).toEqual([]);
     expect(result.makerWork).toBe('');
+  });
+
+  it('retries once on transient failure before degrading to empty', async () => {
+    createMessageMock
+      .mockRejectedValueOnce(new Error('transient'))
+      .mockResolvedValueOnce(
+        toolUseResponse({
+          perPhoto: [
+            { productType: 'bowl', suggestedName: 'River Bowl', suggestedShortDescription: 'a small bowl', suggestedDescription: 'A small turned bowl.', suggestedPriceCents: 4800 },
+          ],
+          makerWork: 'Turns small bowls.',
+        }),
+      );
+
+    const formData = new FormData();
+    formData.append('photos', makeFile('a.jpg'));
+    const result = await uploadProductPhotos('test-shop', formData);
+
+    expect(createMessageMock).toHaveBeenCalledTimes(2);
+    expect(result.visionPerPhoto).toHaveLength(1);
+    expect(result.makerWork).toMatch(/small bowls/i);
   });
 });

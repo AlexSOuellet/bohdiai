@@ -1,5 +1,6 @@
 'use server';
 
+import type Anthropic from '@anthropic-ai/sdk';
 import { supabaseAdmin } from '@/lib/supabase';
 import { anthropicClient } from '@/lib/anthropic';
 import { logger } from '@/lib/logger';
@@ -9,7 +10,8 @@ const BUCKET = 'tenant-logos';
 const MAX_BYTES = 10 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 const MAX_PHOTOS = 5;
-const VISION_TIMEOUT_MS = 60_000;
+const VISION_TIMEOUT_MS = 90_000;
+const MAX_VISION_ATTEMPTS = 2;
 
 export interface UploadProductPhotosResult {
   productPhotoUrls: string[];
@@ -52,96 +54,127 @@ export async function uploadProductPhotos(
   return { productPhotoUrls: uploaded, ...vision };
 }
 
+// Forced tool use — the SDK guarantees tool_use.input is valid JSON. Free-text
+// JSON broke at ~1.8k chars in a real Session 41 build (unescaped quote inside a
+// description). Every other crew member in this codebase uses this pattern for
+// the same reason — see lib/onboarding/crew/{director,copywriter,...}.ts.
+const SUBMIT_PHOTO_READ_TOOL: Anthropic.Tool = {
+  name: 'submit_photo_read',
+  description: "Submit a structured read of the maker's uploaded product photos.",
+  input_schema: {
+    type: 'object',
+    properties: {
+      perPhoto: {
+        type: 'array',
+        description: 'One entry per photo, in upload order. Must match the input photo count exactly.',
+        items: {
+          type: 'object',
+          properties: {
+            productType: { type: 'string', description: 'Short noun phrase like "turned walnut bowl" or "small wooden sign".' },
+            suggestedName: { type: 'string', description: 'A real product name, 2-40 chars.' },
+            suggestedShortDescription: { type: 'string', description: '4-90 chars.' },
+            suggestedDescription: { type: 'string', description: '12+ chars, 2-4 sentences selling the piece.' },
+            suggestedPriceCents: { type: 'integer', description: 'Your best read of category-appropriate pricing, in cents (e.g. 4800 = $48).' },
+          },
+          required: ['productType', 'suggestedName', 'suggestedShortDescription', 'suggestedDescription', 'suggestedPriceCents'],
+        },
+      },
+      makerWork: {
+        type: 'string',
+        description: '2-3 sentences on what this maker actually makes, written for another AI to read as part of its brief.',
+      },
+    },
+    required: ['perPhoto', 'makerWork'],
+  },
+};
+
 async function readPhotos(urls: string[]): Promise<{ visionPerPhoto: VisionPerPhoto[]; makerWork: string }> {
   const start = Date.now();
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), VISION_TIMEOUT_MS);
-    let response;
+  const userText = `You are looking at ${urls.length} product photo${urls.length === 1 ? '' : 's'} this maker uploaded. Submit a structured read by calling submit_photo_read — exactly ${urls.length} perPhoto entr${urls.length === 1 ? 'y' : 'ies'}, in upload order, plus a 2-3 sentence makerWork summary describing what this maker actually makes.`;
+
+  for (let attempt = 0; attempt < MAX_VISION_ATTEMPTS; attempt++) {
     try {
-      response = await anthropicClient().messages.create(
-        {
-          model: 'claude-sonnet-4-6',
-          max_tokens: 2000,
-          messages: [
-            {
-              role: 'user',
-              content: [
-                ...urls.map((u) => ({ type: 'image' as const, source: { type: 'url' as const, url: u } })),
-                {
-                  type: 'text' as const,
-                  text: `You are looking at ${urls.length} product photo${urls.length === 1 ? '' : 's'} this maker uploaded. For each photo, in upload order, return:
-- productType: short noun phrase ("turned walnut bowl", "small wooden sign")
-- suggestedName: 2-40 chars, a real product name
-- suggestedShortDescription: 4-90 chars
-- suggestedDescription: 12+ chars, 2-4 sentences
-- suggestedPriceCents: integer cents, your best read of category-appropriate pricing
-
-Also write a makerWork field: 2-3 sentences on what this maker actually makes, written for another AI to read as part of its brief.
-
-Return ONLY a JSON object, no markdown:
-{"perPhoto":[{"productType":"...","suggestedName":"...","suggestedShortDescription":"...","suggestedDescription":"...","suggestedPriceCents":4800}, ...],"makerWork":"..."}`,
-                },
-              ],
-            },
-          ],
-        },
-        { signal: controller.signal },
-      );
-    } finally {
-      clearTimeout(timer);
-    }
-    const latencyMs = Date.now() - start;
-
-    const text = response.content[0]?.type === 'text' ? response.content[0].text : '';
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match?.[0]) {
-      logger.warn('product photos vision: no JSON', { latencyMs });
-      return { visionPerPhoto: [], makerWork: '' };
-    }
-    const parsed = JSON.parse(match[0]) as { perPhoto?: unknown; makerWork?: unknown };
-    if (!Array.isArray(parsed.perPhoto)) return { visionPerPhoto: [], makerWork: '' };
-
-    const visionPerPhoto: VisionPerPhoto[] = [];
-    for (const p of parsed.perPhoto) {
-      if (typeof p !== 'object' || p === null) continue;
-      const r = p as Record<string, unknown>;
-      const productType = r['productType'];
-      const suggestedName = r['suggestedName'];
-      const suggestedShortDescription = r['suggestedShortDescription'];
-      const suggestedDescription = r['suggestedDescription'];
-      const suggestedPriceCents = r['suggestedPriceCents'];
-      if (
-        typeof productType === 'string' &&
-        typeof suggestedName === 'string' &&
-        typeof suggestedShortDescription === 'string' &&
-        typeof suggestedDescription === 'string' &&
-        typeof suggestedPriceCents === 'number'
-      ) {
-        visionPerPhoto.push({
-          productType,
-          suggestedName,
-          suggestedShortDescription,
-          suggestedDescription,
-          suggestedPriceCents: Math.round(suggestedPriceCents),
-        });
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), VISION_TIMEOUT_MS);
+      let response: Anthropic.Message;
+      try {
+        response = await anthropicClient().messages.create(
+          {
+            model: 'claude-sonnet-4-6',
+            max_tokens: 2000,
+            tools: [SUBMIT_PHOTO_READ_TOOL],
+            tool_choice: { type: 'tool', name: 'submit_photo_read' },
+            messages: [
+              {
+                role: 'user',
+                content: [
+                  ...urls.map((u) => ({ type: 'image' as const, source: { type: 'url' as const, url: u } })),
+                  { type: 'text' as const, text: userText },
+                ],
+              },
+            ],
+          },
+          { signal: controller.signal },
+        );
+      } finally {
+        clearTimeout(timer);
       }
-    }
-    if (visionPerPhoto.length !== urls.length) {
-      logger.warn('product photos vision: per-photo count mismatch', { expected: urls.length, got: visionPerPhoto.length, latencyMs });
-      return { visionPerPhoto: [], makerWork: '' };
-    }
+      const latencyMs = Date.now() - start;
 
-    const makerWork = typeof parsed.makerWork === 'string' ? parsed.makerWork : '';
-    logger.info('product photos vision: read', {
-      latencyMs,
-      inputTokens: response.usage.input_tokens,
-      outputTokens: response.usage.output_tokens,
-      perPhotoCount: visionPerPhoto.length,
-    });
-    return { visionPerPhoto, makerWork };
-  } catch (err) {
-    logger.warn('product photos vision: extraction failed', { error: err instanceof Error ? err.message : String(err) });
-    return { visionPerPhoto: [], makerWork: '' };
+      const tu = response.content.find((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use');
+      if (!tu) {
+        logger.warn('product photos vision: no tool_use block', { attempt, latencyMs });
+        continue;
+      }
+
+      const input = tu.input as { perPhoto?: unknown; makerWork?: unknown };
+      if (!Array.isArray(input.perPhoto)) {
+        logger.warn('product photos vision: perPhoto not array', { attempt, latencyMs });
+        continue;
+      }
+
+      const visionPerPhoto: VisionPerPhoto[] = [];
+      for (const p of input.perPhoto) {
+        if (typeof p !== 'object' || p === null) continue;
+        const r = p as Record<string, unknown>;
+        const productType = r['productType'];
+        const suggestedName = r['suggestedName'];
+        const suggestedShortDescription = r['suggestedShortDescription'];
+        const suggestedDescription = r['suggestedDescription'];
+        const suggestedPriceCents = r['suggestedPriceCents'];
+        if (
+          typeof productType === 'string' &&
+          typeof suggestedName === 'string' &&
+          typeof suggestedShortDescription === 'string' &&
+          typeof suggestedDescription === 'string' &&
+          typeof suggestedPriceCents === 'number'
+        ) {
+          visionPerPhoto.push({
+            productType,
+            suggestedName,
+            suggestedShortDescription,
+            suggestedDescription,
+            suggestedPriceCents: Math.round(suggestedPriceCents),
+          });
+        }
+      }
+      if (visionPerPhoto.length !== urls.length) {
+        logger.warn('product photos vision: per-photo count mismatch', { attempt, expected: urls.length, got: visionPerPhoto.length, latencyMs });
+        continue;
+      }
+
+      const makerWork = typeof input.makerWork === 'string' ? input.makerWork : '';
+      logger.info('product photos vision: read', {
+        latencyMs,
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
+        perPhotoCount: visionPerPhoto.length,
+        makerWorkLength: makerWork.length,
+      });
+      return { visionPerPhoto, makerWork };
+    } catch (err) {
+      logger.warn('product photos vision: extraction failed', { attempt, error: err instanceof Error ? err.message : String(err) });
+    }
   }
+  return { visionPerPhoto: [], makerWork: '' };
 }
