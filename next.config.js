@@ -3,6 +3,13 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   typedRoutes: true,
+  experimental: {
+    serverActions: {
+      // Product photo upload sends up to 5 photos × 10MB each via FormData
+      // through uploadProductPhotos. Default 1MB blocks anything past one photo.
+      bodySizeLimit: '55mb',
+    },
+  },
   images: {
     remotePatterns: [
       {
