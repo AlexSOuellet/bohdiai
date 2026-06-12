@@ -106,4 +106,39 @@ describe('directAndProduce — photo-derived fields stay out of the Graphic Arti
     expect(designLookBrief.moodLabel).toBe('Rustic');
     expect(designLookBrief.nicheDisplayName).toBe('Woodworker');
   });
+
+  it('passes undefined photo fields all the way through when the maker skipped uploads', async () => {
+    vi.mocked(direct).mockReset().mockResolvedValue(trajectory);
+    vi.mocked(writeCopy).mockReset().mockResolvedValue(copy);
+    vi.mocked(shootMoment).mockReset().mockResolvedValue(moment);
+    vi.mocked(designLook).mockReset().mockResolvedValue(look);
+    vi.mocked(directorsCut).mockReset().mockResolvedValue({ copy, moment, look });
+
+    const brief: CrewBrief = {
+      shopName: 'Test',
+      nicheDisplayName: 'Woodworker',
+      nicheBody: 'A test body.',
+      moodLabel: 'Rustic',
+      moodDescription: '',
+      productCount: 5,
+      moodKey: 'rustic',
+      // visionPerPhoto and makerWork omitted — this is the skip path
+    };
+
+    await directAndProduce(brief);
+
+    const directBrief = vi.mocked(direct).mock.calls[0]![0] as CrewBrief;
+    expect(directBrief.makerWork).toBeUndefined();
+    expect(directBrief.visionPerPhoto).toBeUndefined();
+
+    const copyBriefArg = vi.mocked(writeCopy).mock.calls[0]![0] as CrewBrief;
+    expect(copyBriefArg.visionPerPhoto).toBeUndefined();
+
+    const shootArgs = vi.mocked(shootMoment).mock.calls[0]!;
+    expect(shootArgs[2]).toBeUndefined();
+
+    const designLookBrief = vi.mocked(designLook).mock.calls[0]![0] as CrewBrief;
+    expect(designLookBrief.makerWork).toBeUndefined();
+    expect(designLookBrief.visionPerPhoto).toBeUndefined();
+  });
 });
