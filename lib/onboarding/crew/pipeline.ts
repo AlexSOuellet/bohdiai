@@ -79,7 +79,17 @@ export async function directAndProduce(brief: CrewBrief, rand: () => number = Ma
   const rolls = rollTreatments(rand);
   const copy = await writeCopy(brief, trajectory, rolls);
   const moment = await shootMoment(trajectory, copy.moment.story, brief.makerWork);
-  const look = await designLook(brief, trajectory, copy.moment.story, moment, copy.products);
+  // The Graphic Artist never sees the photo-derived signals — skin pick stays
+  // niche + mood (D41), accent override stays logo (D56). Strip the photo
+  // fields here so the rule is STRUCTURAL, not just documented convention:
+  // we never want palette decisions reaching for whatever happened to be in a
+  // maker's (possibly bad) product photos.
+  const { visionPerPhoto: _vpp, makerWork: _mw, ...graphicBrief } = brief;
+  void _vpp;
+  void _mw;
+  const look = await designLook(graphicBrief, trajectory, copy.moment.story, moment, copy.products);
+  // Director's Cut sees the full brief — it's the coherence pass, not a
+  // creative decision about color, so it benefits from every signal we have.
   const cut = await directorsCut(brief, trajectory, { copy, moment, look });
 
   const parsed = MAIN_STREET_SPEC.parseSubmission(assembleSubmission(cut, brief.shopName));
