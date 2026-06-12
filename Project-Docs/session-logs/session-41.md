@@ -3,7 +3,7 @@
 **Date:** 2026-06-12
 **Branch:** session-12/layout-engine
 **Tests:** 946 → 989 (+43)
-**Commits:** 24 (incl. spec + plan)
+**Commits:** 27 (incl. spec + plan)
 
 A single piece of product work landed end-to-end: optional product-photo upload at onboarding, with the maker's actual work feeding the Director's trajectory, the Cinematographer's Moment, and the Copywriter's catalog. Three ridealong fixes shipped first as independent commits — founder-name attribution, portrait-treatment scrim, catalog-size step retirement. Then two production bugs that surfaced on Alex's live tests: a body-prose schema cap that violated D53, and the Vision call using raw JSON parsing where every other crew member uses forced tool-use. End of session: "much better."
 
@@ -75,12 +75,30 @@ Also bumped the Vision timeout from 60s to 90s (the real call took 14.6s for 3 p
 
 Alex retried with Patriot Woodworking: "much better."
 
+## Slideshow polish — Ken Burns flip, then the real fix
+
+After the photo upload landed, Alex caught "bohdi zooms in quite a bit on the slideshow treatment." First diagnosis was wrong: I flipped the Ken Burns keyframe from a push-in (`scale(1.005)` → `scale(1.075)`) to a pull-back (`scale(1.075)` → `scale(1.005)`) on the theory that the camera should reveal the maker's composition rather than investigate into it. Same motion budget, different feeling.
+
+Refresh — "did nothing different." The Ken Burns flip was correct in isolation but didn't address the dominant zoom. Real cause: `object-fit: cover` on the 3:2 landscape slide stage was cropping uploaded photos (typically portrait or square) by 15–25% before the animation even ran. The Ken Burns then scaled an already-cropped slice.
+
+Fix: each slide is now two layers — a blurred backdrop (same image, `scale(1.18)`, `blur(32px) saturate(1.05) brightness(0.82)`) fills the stage at any aspect, and the real photo sits CONTAINED on top so the maker's intentional crop is never re-cropped. The Ken Burns drift rides the foreground only; the backdrop stays still as atmospheric depth. Standard Instagram/Spotify pattern. Works universally — for fal-generated wides and maker-uploaded portraits alike. No hardcoding, no per-source branching: the renderer treats every product photo the same way, which happens to be the way that respects any aspect ratio.
+
+Alex: "better." Live test confirmed the new build was both cheaper AND faster than previous ones (Vision tool-use call is more efficient than parse-and-retry, fewer fal generations when uploads fill slots).
+
+## Idea on the table — photo upgrade as opt-in
+
+Alex floated: "what if we offered the maker a photo upgrade? Using their image exactly, recreate with a more professional mockup." Already on the roadmap — Master Spec lists "AI Image Studio — background removal, photo enhancement, lifestyle mockups" under Phase 2.
+
+Conversation landed on shape: opt-in at upload, per-photo (not whole-set), processed during the build phase (not synchronously at upload, to preserve the few-minutes onboarding pacing). The maker ticks "recreate" on any upload tile that needs it; the build generates a polished version for those slots; the rest publish as-uploaded. No silent "fix every photo" default — the rustic candle maker keeps their workshop shots, the kitchen-table maker can recreate the granite-countertop ones. Alex: "no, let me think about it. Since it is already slated for post build…" — parked for now, kept as a near-term Phase 2 candidate worth pulling forward.
+
 ## Standing lessons to carry forward
 
 - **Forced tool_use is the default for any structured AI output beyond hex-codes scale.** Raw-JSON-in-text works when the output is tiny (a few hex strings, a single integer); it breaks above ~1k chars because the model's quote-escaping is fragile. The Director, Copywriter, Cinematographer, Graphic Artist all force tool_use precisely for this reason. New AI integrations should default to that pattern; raw-text JSON is the exception, not the rule, and it must justify itself.
 - **D53 vigilance.** Every body-prose schema cap is a build risk. When adding or copy-pasting a schema, the question is: "does the design carry any length?" If yes, no max. The Crew's Copywriter prompt got D53 right; the legacy `authoringSpec` and the underlying schema didn't. Bug surface = anywhere body prose has a length cap.
 - **The implementer subagents caught two real plan errors.** I had `/api/onboarding/generate` as the live route — the implementer found `/start` is the actual one and updated both routes plus `build-store.ts`. Code reviewer caught the portrait-scrim test was too weak (sibling-ness alone would pass against the buggy code). Worth paying the dispatch cost on multi-file plumbing tasks where my plan might miss a layer.
 - **Diagnostic logging is cheap; add it BEFORE assuming where the bug is.** When the photos-but-no-awareness symptom appeared, I almost went straight to refactoring. Adding the `archetype-build: brief uploads=N visionEntries=N` line and asking Alex for the upload-step log surfaced the exact failure mode in one round-trip.
+- **The first diagnosis is often the wrong one.** "Bohdi zooms in on the slideshow" pointed at the Ken Burns animation. The animation was a small contributor; the dominant cause was `object-fit: cover` cropping uploaded photos to a 3:2 stage before any animation ran. Shipped the flip, Alex confirmed "did nothing different," went back to the renderer and found the real cause. The pattern: when a fix lands and the user sees no change, the diagnosis was wrong — don't double down on the same theory.
+- **No hardcoding when a universal rule works.** The slideshow fix could have been "detect upload URLs, treat them differently." Instead the renderer treats every product photo the same way (contain over blurred backdrop) and the same code respects fal generations and maker uploads. Per-source branching is the kind of hidden coupling that bites later when the source list changes.
 
 ## Files + commits
 
@@ -90,10 +108,13 @@ Alex retried with Patriot Woodworking: "much better."
 - D53 cleanup (product description + about story + contact intro caps): `392fb20`
 - Diagnostic build log: `0082adc`
 - Vision tool-use fix (the real bug): `97c925e`
+- Slideshow Ken Burns pull-back: `eafad6f`
+- Slideshow contain over blurred backdrop (the real slideshow fix): `10a640d`
 
 ## Next session
 
 - Live-test more niches with photos uploaded. Confirm the Director's trajectory genuinely shifts on `makerWork` content — the test on Patriot Woodworking was good but a single tenant is not enough signal.
+- **Photo upgrade as opt-in.** Maker ticks "recreate" on any upload tile they want polished; build runs fal image-to-image on those slots only; the rest publish as-uploaded. Parked end-of-session, kept as a near-term Phase 2 candidate worth pulling forward. Alex is sitting on the decision.
 - Woodworker niche-file rewrite (the cutting-board fixation) via the niche-writer skill. Separate spec.
 - CI coverage gate still red from Session 39 (Try-On's `write-version.ts` 0%, `convert.ts` ~29%).
 - "Most-prominent-readable" brand-color refinement from Session 40 still open — instead of always anchoring on the dominant brand color, pick the most prominent that ALSO clears contrast against the skin's bg.
