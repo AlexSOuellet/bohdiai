@@ -103,7 +103,7 @@ export function FounderPortrait({ founder, skin, about }: TreatmentProps) {
     <FounderBand>
       <div className="ms-founder-portrait" style={{ position: 'relative', borderRadius: 4, overflow: 'hidden', aspectRatio: '16 / 10' }}>
         <Media media={founder.photo} />
-        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
+        <div data-portrait-anchor style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
           <div
             data-portrait-scrim
             aria-hidden="true"

@@ -21,12 +21,20 @@ const founder: MainStreetContent['founder'] = {
 afterEach(cleanup);
 
 describe('FounderPortrait — scrim wraps the text', () => {
-  it('renders a scrim element whose layout follows the text container, not a fixed bottom strip', () => {
+  it('places the scrim and text in a bottom-anchored wrapper distinct from the image container, so the scrim follows the text bounding box', () => {
     const { container } = render(<FounderPortrait founder={founder} skin={skin} />);
     const scrim = container.querySelector('[data-portrait-scrim]');
-    expect(scrim).not.toBeNull();
     const text = container.querySelector('[data-portrait-text]');
+    const anchor = container.querySelector('[data-portrait-anchor]');
+    const imageContainer = container.querySelector('.ms-founder-portrait');
+    expect(scrim).not.toBeNull();
     expect(text).not.toBeNull();
-    expect(scrim?.parentElement).toBe(text?.parentElement);
+    expect(anchor).not.toBeNull();
+    // Scrim and text are direct children of the anchor wrapper
+    expect(scrim?.parentElement).toBe(anchor);
+    expect(text?.parentElement).toBe(anchor);
+    // The anchor is INSIDE the image container, not the image container itself —
+    // this is what guarantees the scrim sizes to the text, not the image.
+    expect(anchor?.parentElement).toBe(imageContainer);
   });
 });
