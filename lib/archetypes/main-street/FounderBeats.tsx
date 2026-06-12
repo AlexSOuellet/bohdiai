@@ -94,18 +94,31 @@ export function FounderQuote({ founder, skin, about }: TreatmentProps) {
   );
 }
 
-/** portrait — a large CONTAINED portrait, the quote over a soft bottom scrim.
- *  The image sits inside the column; text is inset from the block's own edges. */
+/** portrait — a large CONTAINED portrait with the quote anchored to the bottom.
+ *  The scrim sits BEHIND the text container and follows its bounding box, so a
+ *  long quote that pushes upward never sticks out into unscrimmed image area. */
 export function FounderPortrait({ founder, skin, about }: TreatmentProps) {
   const r = roles(skin);
   return (
     <FounderBand>
       <div className="ms-founder-portrait" style={{ position: 'relative', borderRadius: 4, overflow: 'hidden', aspectRatio: '16 / 10' }}>
         <Media media={founder.photo} />
-        <div className="ms-portrait-scrim" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, var(--ms-contrast-bg) 4%, color-mix(in srgb, var(--ms-contrast-bg) 50%, transparent) 32%, transparent 62%)' }} />
-        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '48px clamp(28px, 5vw, 64px)' }}>
-          <p data-type="quote" style={{ ...typeRoleCss(r.quote), color: 'var(--ms-contrast-fg)', margin: 0, maxWidth: '22ch' }}>{founder.quote}</p>
-          <div data-type="sig" style={{ ...typeRoleCss(r.sig), color: 'var(--ms-contrast-fg-muted)', marginTop: 20 }}>&mdash; {founder.attribution}</div>
+        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
+          <div
+            data-portrait-scrim
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background:
+                'linear-gradient(to top, var(--ms-contrast-bg) 75%, color-mix(in srgb, var(--ms-contrast-bg) 65%, transparent) 92%, transparent 100%)',
+              pointerEvents: 'none',
+            }}
+          />
+          <div data-portrait-text style={{ position: 'relative', padding: '48px clamp(28px, 5vw, 64px)' }}>
+            <p data-type="quote" style={{ ...typeRoleCss(r.quote), color: 'var(--ms-contrast-fg)', margin: 0, maxWidth: '32ch' }}>{founder.quote}</p>
+            <div data-type="sig" style={{ ...typeRoleCss(r.sig), color: 'var(--ms-contrast-fg-muted)', marginTop: 20 }}>&mdash; {founder.attribution}</div>
+          </div>
         </div>
       </div>
       <AboutCue about={about} skin={skin} />
