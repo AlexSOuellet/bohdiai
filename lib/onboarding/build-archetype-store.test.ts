@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { recycleProductPhotos, prepareJobPrompt, buildArchetypeStore } from './build-archetype-store';
+import { recycleProductPhotos, assignProductPhotos, prepareJobPrompt, buildArchetypeStore } from './build-archetype-store';
 import type { MediaJob } from '@/lib/archetypes/builder';
 
 // Stand-ins for the orchestrator's heavy neighbors, so the wiring test can run
@@ -55,6 +55,39 @@ describe('recycleProductPhotos', () => {
 
   it('handles a single surviving photo', () => {
     expect(recycleProductPhotos(4, ['only'])).toEqual(['only', 'only', 'only', 'only']);
+  });
+});
+
+describe('assignProductPhotos', () => {
+  it('matches recycle behavior when no uploads (today\'s behavior)', () => {
+    // With zero uploads, every slot uses generated photos in order — same as recycle.
+    expect(assignProductPhotos([], ['a', 'b', 'c'], 3)).toEqual(['a', 'b', 'c']);
+    expect(assignProductPhotos([], ['a', 'b', 'c'], 6)).toEqual(['a', 'b', 'c', 'a', 'b', 'c']);
+    expect(assignProductPhotos([], [], 3)).toEqual([null, null, null]);
+  });
+
+  it('uses uploads for the first N slots and generated photos for the rest', () => {
+    // 2 uploads + 3 generated for a catalog of 5 — uploads come first, then generated.
+    expect(assignProductPhotos(['u1', 'u2'], ['g1', 'g2', 'g3'], 5)).toEqual([
+      'u1', 'u2', 'g1', 'g2', 'g3',
+    ]);
+  });
+
+  it('recycles generated photos when the catalog runs longer than uploads + generated', () => {
+    // 1 upload + 2 generated, catalog of 6 → upload, then g1,g2 cycling.
+    expect(assignProductPhotos(['u1'], ['g1', 'g2'], 6)).toEqual([
+      'u1', 'g1', 'g2', 'g1', 'g2', 'g1',
+    ]);
+  });
+
+  it('fills all slots from uploads when uploads meet or exceed the slot count', () => {
+    expect(assignProductPhotos(['u1', 'u2', 'u3'], [], 3)).toEqual(['u1', 'u2', 'u3']);
+    // Even if there are extra uploads beyond the catalog, only the first N are used.
+    expect(assignProductPhotos(['u1', 'u2', 'u3', 'u4', 'u5'], [], 3)).toEqual(['u1', 'u2', 'u3']);
+  });
+
+  it('returns null for trailing slots when no generated photos and uploads run short', () => {
+    expect(assignProductPhotos(['u1'], [], 3)).toEqual(['u1', null, null]);
   });
 });
 

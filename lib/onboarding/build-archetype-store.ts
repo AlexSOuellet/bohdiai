@@ -23,6 +23,7 @@ import { withImageDirectives } from '@/lib/onboarding/image-directives';
 import { directAndProduce } from '@/lib/onboarding/crew/pipeline';
 import { logCrewChoices } from '@/lib/onboarding/crew/log-choices';
 import type { CrewBrief } from '@/lib/onboarding/crew/types';
+import type { VisionPerPhoto } from '@/app/onboarding/_components/types';
 import { dominantBrandColor } from '@/lib/archetypes/main-street/logo-contrast';
 
 export const MAX_PRODUCT_IMAGES = 5;
@@ -41,6 +42,13 @@ export interface ArchetypeBuildInput {
   /** The logo's extracted brand colors (prominence-ordered hex), or empty. Persisted
    *  for render-time contrast; the dominant one bakes the accent (a later task). */
   brandColors?: string[] | undefined;
+  /** Photo URLs the maker uploaded at onboarding. The first N product slots use
+   *  these directly; the remaining (MAX_PRODUCT_IMAGES - N) slots are generated. */
+  productPhotoUrls?: string[] | undefined;
+  /** Per-photo Vision read, parallel to productPhotoUrls. Threaded to Copywriter. */
+  visionPerPhoto?: VisionPerPhoto[] | undefined;
+  /** Cross-photo Vision summary, threaded to Director + Cinematographer. */
+  makerWork?: string | undefined;
 }
 
 /** The sentinel niche slug an "Other" maker carries — they described their own
@@ -58,6 +66,25 @@ export interface ArchetypeBuildResult {
  */
 export function recycleProductPhotos(count: number, photos: string[]): Array<string | null> {
   return Array.from({ length: count }, (_, i) => (photos.length > 0 ? photos[i % photos.length]! : null));
+}
+
+/**
+ * Assign a photo to each of `productJobCount` product slots. The first
+ * `uploads.length` slots use the maker's uploaded URLs directly; the remaining
+ * slots use the generated photos in order (and recycle if the catalog runs
+ * longer than uploads + generated combined). Returns null for any slot when
+ * neither source is available.
+ */
+export function assignProductPhotos(
+  uploads: string[],
+  generatedPhotos: string[],
+  productJobCount: number,
+): Array<string | null> {
+  return Array.from({ length: productJobCount }, (_, i) => {
+    if (i < uploads.length) return uploads[i]!;
+    const recycleIdx = i - uploads.length;
+    return generatedPhotos.length > 0 ? generatedPhotos[recycleIdx % generatedPhotos.length]! : null;
+  });
 }
 
 /** Apply the engine's enforced image directives (photorealism + name-matched
@@ -104,6 +131,8 @@ export async function buildArchetypeStore(
     productCount: input.productCount,
     makerName: input.makerName,
     moodKey: input.moodKey,
+    ...(input.visionPerPhoto !== undefined ? { visionPerPhoto: input.visionPerPhoto } : {}),
+    ...(input.makerWork !== undefined ? { makerWork: input.makerWork } : {}),
   };
 
   emit('Designing your store');
@@ -123,22 +152,27 @@ export async function buildArchetypeStore(
 
   const feature = jobs.filter((j) => j.group === 'feature');
   const product = jobs.filter((j) => j.group === 'product');
-  const toGenerate = product.slice(0, MAX_PRODUCT_IMAGES);
+  const uploads = input.productPhotoUrls ?? [];
+
+  // Product slots: first N use the maker's uploads, the rest get generated up to
+  // the global cap. Fal only runs for slots N+1..MAX_PRODUCT_IMAGES.
+  const productSlotsToGenerate = Math.max(0, MAX_PRODUCT_IMAGES - uploads.length);
+  const productJobsForGeneration = product.slice(uploads.length).slice(0, productSlotsToGenerate);
 
   const [featureUrls, productGenUrls] = await Promise.all([
     Promise.all(feature.map(run)),
-    Promise.all(toGenerate.map(run)),
+    Promise.all(productJobsForGeneration.map(run)),
   ]);
 
-  const photos = productGenUrls.filter((u): u is string => typeof u === 'string' && u.length > 0);
-  const recycled = recycleProductPhotos(product.length, photos);
+  const generatedPhotos = productGenUrls.filter((u): u is string => typeof u === 'string' && u.length > 0);
+  const productPhotoUrls = assignProductPhotos(uploads, generatedPhotos, product.length);
 
   const urls: Record<string, string | null> = {};
   feature.forEach((j, i) => {
     urls[j.id] = featureUrls[i] ?? null;
   });
   product.forEach((j, i) => {
-    urls[j.id] = recycled[i] ?? null;
+    urls[j.id] = productPhotoUrls[i] ?? null;
   });
 
   const withMedia = spec.applyMedia(authored, urls);
@@ -149,7 +183,8 @@ export async function buildArchetypeStore(
     archetype: spec.key,
     look: chosen.lookKey,
     features: feature.length,
-    productPhotos: photos.length,
+    productPhotos: generatedPhotos.length,
+    productUploads: uploads.length,
     productSlots: product.length,
   });
 
