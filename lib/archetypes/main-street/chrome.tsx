@@ -87,10 +87,13 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-switch-layer{transition:opacity .7s ${mo.reveal.easing}}
     .arch-main-street .ms-switch-list{justify-content:center}
     .arch-main-street .ms-switch-list li:last-child{border-bottom:1px solid var(--ms-rule)}
-    /* goods slideshow — cross-fade + a slow Ken Burns push-in on the live slide */
+    /* goods slideshow — cross-fade + a slow Ken Burns pull-BACK on the live slide.
+       The camera reveals the composition rather than investigating into it: tight
+       maker shots land on the photographer's intended frame, AI-generated wides do
+       the same. Inverting "push in" was the Session 41 fix. */
     .arch-main-street .ms-slide-layer{transition:opacity 0.8s ${mo.reveal.easing}}
     .arch-main-street .ms-kb{animation:ms-kenburns 6.5s ${mo.reveal.easing} forwards}
-    @keyframes ms-kenburns{from{transform:scale(1.005)}to{transform:scale(1.075) translateY(-1.2%)}}
+    @keyframes ms-kenburns{from{transform:scale(1.075) translateY(-1.2%)}to{transform:scale(1.005)}}
     /* goods procession — a CONSTELLATION: scattered cards that each fade in once
        (random order, staggered via an inline transition-delay) and then rest. */
     .arch-main-street .ms-const-card{opacity:0;transform:translateY(34px) scale(.965);transition:opacity 1.5s ${mo.reveal.easing},transform 1.6s ${mo.reveal.easing}}
