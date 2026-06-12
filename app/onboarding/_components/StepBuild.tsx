@@ -133,6 +133,9 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
             makerName: data.makerName === '' ? undefined : data.makerName,
             logoUrl: data.logoUrl === '' ? undefined : data.logoUrl,
             brandColors: data.brandColors.length === 0 ? undefined : data.brandColors,
+            productPhotoUrls: data.productPhotoUrls.length === 0 ? undefined : data.productPhotoUrls,
+            visionPerPhoto: data.visionPerPhoto.length === 0 ? undefined : data.visionPerPhoto,
+            makerWork: data.makerWork === '' ? undefined : data.makerWork,
           }),
         });
         if (!res.ok) {

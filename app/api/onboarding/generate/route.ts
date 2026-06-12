@@ -6,6 +6,7 @@
 import type { NextRequest } from 'next/server';
 import { checkGenerationRateLimit } from '@/lib/rate-limit';
 import { MOODS, type MoodKey } from '@/lib/moods';
+import type { VisionPerPhoto } from '@/app/onboarding/_components/types';
 import { runStorefront } from '@/lib/onboarding/run-storefront';
 import { loadTickerContent } from '@/lib/onboarding/ticker-content';
 import { logger } from '@/lib/logger';
@@ -28,6 +29,9 @@ interface GenerateBody {
   makerName?: string;
   logoUrl?: string;
   brandColors?: string[];
+  productPhotoUrls?: string[];
+  visionPerPhoto?: VisionPerPhoto[];
+  makerWork?: string;
 }
 
 function isMoodKey(value: string): value is MoodKey {
@@ -96,6 +100,9 @@ export async function POST(req: NextRequest): Promise<Response> {
             makerName: body.makerName,
             logoUrl: body.logoUrl,
             brandColors: body.brandColors,
+            productPhotoUrls: body.productPhotoUrls,
+            visionPerPhoto: body.visionPerPhoto,
+            makerWork: body.makerWork,
           },
           send,
         );

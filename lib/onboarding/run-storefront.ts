@@ -4,6 +4,7 @@
 
 import type { MoodKey } from '@/lib/moods';
 import type { ProgressEmitter } from '@/lib/progress';
+import type { VisionPerPhoto } from '@/app/onboarding/_components/types';
 import { buildArchetypeStore } from './build-archetype-store';
 
 export interface RunStorefrontInput {
@@ -16,6 +17,9 @@ export interface RunStorefrontInput {
   makerName?: string | undefined;
   logoUrl?: string | undefined;
   brandColors?: string[] | undefined;
+  productPhotoUrls?: string[] | undefined;
+  visionPerPhoto?: VisionPerPhoto[] | undefined;
+  makerWork?: string | undefined;
 }
 
 export interface RunStorefrontResult {
@@ -38,6 +42,9 @@ export async function runStorefront(
       makerName: input.makerName,
       logoUrl: input.logoUrl,
       brandColors: input.brandColors,
+      productPhotoUrls: input.productPhotoUrls,
+      visionPerPhoto: input.visionPerPhoto,
+      makerWork: input.makerWork,
     },
     onProgress,
   );
