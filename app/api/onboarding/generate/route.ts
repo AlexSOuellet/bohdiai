@@ -73,7 +73,10 @@ export async function POST(req: NextRequest): Promise<Response> {
 
       // Load ticker content (niche tips + encouragement) before kicking off
       // generation so the first tip can land within a second or two.
-      const ticker = await loadTickerContent(body.nicheSlug, body.makerName);
+      const ticker = await loadTickerContent(body.nicheSlug, body.makerName, {
+        hasUploadedPhotos:
+          body.productPhotoUrls !== undefined && body.productPhotoUrls.length > 0,
+      });
       const tipPool = interleave(shuffle(ticker.encouragement), shuffle(ticker.nicheTips));
       let tipIdx = 0;
 

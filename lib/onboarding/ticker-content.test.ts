@@ -128,6 +128,21 @@ describe('loadTickerContent', () => {
     expect(result.nicheTips.some((t) => t.includes('real long sentence'))).toBe(true);
   });
 
+  it('includes a "Studying your work" beat when photos were uploaded', async () => {
+    const { loadTickerContent } = await import('./ticker-content');
+    const result = await loadTickerContent('candles', 'Sarah', { hasUploadedPhotos: true });
+    const all = JSON.stringify(result);
+    expect(all).toMatch(/studying your work/i);
+  });
+
+  it('omits the "Studying your work" beat when no photos uploaded', async () => {
+    const { loadTickerContent } = await import('./ticker-content');
+    const noOpts = await loadTickerContent('candles', 'Sarah');
+    expect(JSON.stringify(noOpts)).not.toMatch(/studying your work/i);
+    const explicitFalse = await loadTickerContent('candles', 'Sarah', { hasUploadedPhotos: false });
+    expect(JSON.stringify(explicitFalse)).not.toMatch(/studying your work/i);
+  });
+
   it('skips sentences shaped like two-word internal heading labels', async () => {
     // Build a two-capitalized-word "label" sentence that hits the 40-240 char
     // window — uses long words so the regex still matches the whole thing.

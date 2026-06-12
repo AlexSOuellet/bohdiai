@@ -61,11 +61,14 @@ function dedupe(arr: string[]): string[] {
   return out;
 }
 
-function buildEncouragement(makerName?: string): string[] {
+function buildEncouragement(
+  makerName?: string,
+  options?: { hasUploadedPhotos?: boolean },
+): string[] {
   const name = makerName?.trim();
   const opener = name !== undefined && name !== '' ? `${name}, ` : '';
 
-  return [
+  const lines = [
     `${opener}this is the part that takes a few minutes. Worth it.`,
     `${opener}while we build — think about who your first customer is.`,
     `Your shop is being composed deliberately. Not picked from a template.`,
@@ -74,11 +77,19 @@ function buildEncouragement(makerName?: string): string[] {
     `${opener}this will not look like every other AI-built site. That's the point.`,
     `Bohdi works the way a designer would. One choice at a time.`,
   ];
+
+  if (options?.hasUploadedPhotos === true) {
+    // Surfaced only when the maker uploaded photos — Bohdi notices their work.
+    lines.unshift(`Studying your work…`);
+  }
+
+  return lines;
 }
 
 export async function loadTickerContent(
   nicheSlug: string,
   makerName?: string,
+  options?: { hasUploadedPhotos?: boolean },
 ): Promise<TickerContent> {
   const { data } = await supabaseAdmin()
     .from('niches')
@@ -93,6 +104,6 @@ export async function loadTickerContent(
 
   return {
     nicheTips,
-    encouragement: buildEncouragement(makerName),
+    encouragement: buildEncouragement(makerName, options),
   };
 }
