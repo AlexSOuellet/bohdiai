@@ -73,18 +73,45 @@ export function GoodsSlideshow({
             textDecoration: 'none',
           }}
         >
-          {products.map((p, i) => (
-            <div
-              key={p.slug}
-              className="ms-slide-layer"
-              style={{ position: 'absolute', inset: 0, opacity: i === active ? 1 : 0 }}
-              aria-hidden={i !== active}
-            >
-              <div key={`${p.slug}-${i === active ? active : 'idle'}`} className={i === active ? 'ms-kb' : undefined} style={{ width: '100%', height: '100%' }}>
-                <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
+          {products.map((p, i) => {
+            // Each slide is two layers — a blurred backdrop fills the stage at any
+            // aspect (Instagram/Spotify pattern) and the real photo sits CONTAINED
+            // on top so a maker's tight crop never gets re-cropped to 3:2. The Ken
+            // Burns drift rides the foreground only; the backdrop stays still as
+            // atmospheric depth.
+            const media = p.media[0] ?? { kind: 'image' as const, alt: p.name };
+            return (
+              <div
+                key={p.slug}
+                className="ms-slide-layer"
+                style={{ position: 'absolute', inset: 0, opacity: i === active ? 1 : 0 }}
+                aria-hidden={i !== active}
+              >
+                <Media
+                  media={media}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transform: 'scale(1.18)',
+                    filter: 'blur(32px) saturate(1.05) brightness(0.82)',
+                  }}
+                />
+                <div key={`${p.slug}-${i === active ? active : 'idle'}`} className={i === active ? 'ms-kb' : undefined} style={{ position: 'absolute', inset: 0 }}>
+                  <Media
+                    media={media}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                    }}
+                  />
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </a>
 
         <a
