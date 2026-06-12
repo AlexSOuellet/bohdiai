@@ -58,6 +58,11 @@ export function buildCopywriterPrompt(brief: CrewBrief, trajectory: Trajectory, 
     .join('\n');
   const targets = LINK_TARGETS.join(', ');
 
+  const makerNameTrimmed = brief.makerName?.trim();
+  const nameLockClause = makerNameTrimmed
+    ? `THE MAKER'S NAME — the maker's real first name is "${makerNameTrimmed}". Lock founder.attribution to "${makerNameTrimmed}" exactly. Do not invent, shorten, or add a surname.`
+    : `THE MAKER'S NAME — the maker's first name was not captured. Write a generic attribution like "The maker" for founder.attribution rather than inventing a name.`;
+
   const storyDirective =
     trajectory.momentKind === 'spotlight'
       ? '- moment.story (EXACTLY 1 line, 4-48): the spotlight Moment lands one tagline-strength line over the wordmark after the object has risen from black. Write the single line as the only entry in moment.story. HARD: the line carries NO punctuation — no periods, commas, dashes, colons, or quotes (apostrophes and intra-word hyphens are fine).'
@@ -74,6 +79,8 @@ THE TRAJECTORY
 
 THE NICHE — context and vocabulary for this kind of maker and who buys from them. Read all of it:
 ${niche}
+
+${nameLockClause}
 
 LINKS — every link you write carries a label AND a target page, so what a button
 says and where it goes always agree. A target is one of: ${targets}.

@@ -211,6 +211,44 @@ describe('CopywriterDraftSchema — headlines carry no sentence punctuation', ()
   });
 });
 
+describe('copywriter prompt — founder-attribution name lock', () => {
+  const baseBrief: CrewBrief = {
+    shopName: 'Sawdust & Stone',
+    nicheDisplayName: 'Woodworker',
+    nicheBody: 'A small niche body for testing.',
+    moodLabel: 'Rustic',
+    moodDescription: 'Warm timber and morning light.',
+    productCount: 5,
+    makerName: 'Wally',
+    moodKey: 'rustic',
+  };
+
+  const t: Trajectory = {
+    feeling: 'a quiet workshop',
+    customerWhy: 'they want a piece that lasts',
+    visualWorld: 'morning light, warm timber',
+    momentConcept: 'hands at the bench',
+    register: 'restrained',
+    momentKind: 'video',
+  };
+
+  const r = { goods: 'marquee', founder: 'quote' } as const;
+
+  it("passes the maker's first name into the prompt and locks founder.attribution to it", () => {
+    const prompt = buildCopywriterPrompt(baseBrief, t, r);
+    expect(prompt).toContain('Wally');
+    expect(prompt).toMatch(/founder\.attribution[^\n]*Wally/);
+    expect(prompt).toMatch(/do not invent/i);
+  });
+
+  it("when makerName is undefined, instructs a generic attribution rather than inventing", () => {
+    const briefNoName: CrewBrief = { ...baseBrief, makerName: undefined };
+    const prompt = buildCopywriterPrompt(briefNoName, t, r);
+    expect(prompt).not.toMatch(/founder\.attribution[^\n]*Wally/);
+    expect(prompt).toMatch(/maker'?s first name was not captured/i);
+  });
+});
+
 describe('CopywriterDraftSchema — authored link targets (D46)', () => {
   it('requires nav items to carry a target page, not bare labels', () => {
     const d = { ...draft, identity: { wordmark: 'Tannery Row', nav: ['Shop', 'About'] } };
