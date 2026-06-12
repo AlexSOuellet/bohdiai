@@ -36,7 +36,7 @@ const ProductSchema = z.object({
   name: z.string().min(2).max(40),
   slug: z.string().min(2).max(48),
   shortDescription: z.string().min(4).max(90),
-  description: z.string().min(12).max(600),
+  description: z.string().min(12),
   basePriceCents: z.number().int().min(100).max(5_000_00),
   // Feeds the image model (not rendered) — no length cap, only a non-empty floor.
   imagePrompt: z.string().min(1),
@@ -82,10 +82,10 @@ content (MAX lengths are real; stay comfortably under them):
 - goods: { title (2-48), treatment (one of: marquee | procession | switcher | slideshow — your pick from above), label (2-24, optional), viewAllLabel (2-28, optional) }
 - founder: { quote (24-280, first person, ~2 sentences, about WHY they make this and what it means to the people they make for — no process detail, no AI-tell), attribution (4-60), treatment (one of: quote | portrait | letter | card — your pick from the ABOUT TREATMENT menu above), eyebrow (2-24, optional — for the card, e.g. "Since 2019"), heading (2-28, optional — for the card, e.g. "Meet Mara"), photo: { prompt (8-400): the maker, alt (4-120) }, aboutLabel (2-28, optional), findUs (optional — its OWN section on the home, NOT inside the About beat; seed 1-5 plausible sample dates the maker can edit or turn off later): { label (2-28), eventsLabel (2-28, optional), rows (1-5): { day (1-12), where (4-60), time (1-12) } } }
 - close: { label (2-28), headline (6-72), ctaLabel (3-24) }
-- about (the full ABOUT page — the maker's story at LENGTH; the home founder beat is only a teaser of this): { heading (4-60), story (2-5 paragraphs, each 40-700 — who the maker is, how they got here, and why it matters to the people they make for; warm and personal, never process detail or generic filler) }
-- contact (the CONTACT page invitation, in the maker's voice; do NOT invent an email or phone): { heading (4-48), intro (20-400) }
+- about (the full ABOUT page — the maker's story at LENGTH; the home founder beat is only a teaser of this): { heading (4-60), story (2-5 paragraphs, each 40+, no hard cap — who the maker is, how they got here, and why it matters to the people they make for; warm and personal, never process detail or generic filler) }
+- contact (the CONTACT page invitation, in the maker's voice; do NOT invent an email or phone): { heading (4-48), intro (20+, no hard cap) }
 
-products (author ${target}; a brand-new store with no catalog, so you create it): each { name (2-40, plain category-level names, not a narrow specialty), slug (2-48, lowercase-hyphen), shortDescription (4-90), description (12-600, sell it to the customer — what it is and why they would want it, the feeling and the use; NOT how it is made, no materials or process), basePriceCents (integer cents, e.g. 4800 = $48), imagePrompt (8-400): a clean product photo on a fitting surface }.
+products (author ${target}; a brand-new store with no catalog, so you create it): each { name (2-40, plain category-level names, not a narrow specialty), slug (2-48, lowercase-hyphen), shortDescription (4-90), description (12+, no hard cap — sell it to the customer, what it is and why they would want it, the feeling and the use; NOT how it is made, no materials or process), basePriceCents (integer cents, e.g. 4800 = $48), imagePrompt (8-400): a clean product photo on a fitting surface }.
 
 VOICE — your job is to SELL THE STORE EMOTIONALLY: make a visitor FEEL why they want this. Write to the customer's desire, never the maker's process.
 - Answer the real question: why would someone choose a ${b.nicheDisplayName.toLowerCase()}'s work over the store-bought version? What feeling, meaning, or quality is the shelf missing? Lead with THAT.
