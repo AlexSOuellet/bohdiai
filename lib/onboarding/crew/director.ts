@@ -33,27 +33,20 @@ const SET_TRAJECTORY_TOOL: Anthropic.Tool = {
       feeling: { type: 'string', description: 'The single feeling the whole store should leave a visitor with, in one line.' },
       customerWhy: { type: 'string', description: "Why someone chooses this maker's work." },
       visualWorld: { type: 'string', description: 'The look and feel the store should have.' },
-      momentConcept: { type: 'string', description: 'The concept for the hero moment.' },
+      heroConcept: { type: 'string', description: 'The concept for the hero shot.' },
       register: { type: 'string', enum: ['loud', 'restrained'], description: 'Loud or restrained type.' },
-      momentKind: {
+      heroKind: {
         type: 'string',
-        enum: ['video', 'spotlight'],
-        description: "Which kind of Moment the front door plays. 'video' when the scene contains real ambient motion that belongs to the subject (steam off bread, a flame, water, hands at work). 'spotlight' when the product is at rest and inventing motion would feel fake — the rise out of black is the cinematic arc.",
+        enum: ['video', 'still'],
+        description: "Which kind of hero the front door carries. 'video' when the scene contains real ambient motion that belongs to the subject (steam off bread, a flame, water, hands at work, light moving across a room). 'still' when the product is at rest and inventing motion would feel fake — the hero is then a cinematic SCENE composition (the product in its real world, lit naturally, with depth and air), held still.",
       },
     },
-    required: ['feeling', 'customerWhy', 'visualWorld', 'momentConcept', 'register', 'momentKind'],
+    required: ['feeling', 'customerWhy', 'visualWorld', 'heroConcept', 'register', 'heroKind'],
   },
 };
 
 function buildDirectorPrompt(brief: CrewBrief): string {
   const niche = brief.nicheBody.trim();
-  const makerWork = brief.makerWork?.trim();
-  const makerWorkClause = makerWork
-    ? `
-
-WHAT THIS MAKER ACTUALLY MAKES — derived from the photos the maker uploaded. Treat this as more specific than the niche file. Ground the trajectory in this actual work, not in a niche stereotype:
-${makerWork}`
-    : '';
   return `You are Bohdi, the DIRECTOR of this maker's storefront. You set ONE creative trajectory — the single feeling the whole store serves. Your crew (a copywriter, a cinematographer, a graphic artist) each execute their craft to it. Make it true to THIS maker, within the mood the maker chose.
 
 THE MAKER
@@ -62,15 +55,15 @@ THE MAKER
 - Mood the maker chose: ${brief.moodLabel} — ${brief.moodDescription}
 
 THE NICHE — who this kind of maker is and who buys from them. Read all of it; it shows the full range of the category, not one stereotype:
-${niche}${makerWorkClause}
+${niche}
 
 Call set_trajectory with five fields:
 - feeling: the single feeling the whole store should leave a visitor with, in one line.
 - customerWhy: why someone chooses a ${brief.nicheDisplayName.toLowerCase()}'s work.
 - visualWorld: the look and feel the store should have, within the ${brief.moodLabel} mood.
-- momentConcept: the concept for the hero moment.
+- heroConcept: the concept for the hero shot — what we see, where, in what light.
 - register: "loud" or "restrained".
-- momentKind: 'video' or 'spotlight'. The Moment is BohdiAI's signature, so it MUST be cinematic — but cinematic is not always video. Pick 'video' when the maker's craft contains real ambient motion you can capture in 5 seconds (steam off bread, a candle flame, water moving, hands at work, dust in light, a kiln's glow). Pick 'spotlight' when the product is at rest and you would have to INVENT motion to fill the time (a sticker, a print, a finished piece of jewelry). The criterion is the test: am I capturing motion that's really there, or am I making it up? A held cinematic still always beats invented motion — and spotlight gives that still a cinematic frame (the object rises from black, the camera slowly pushes in, the words fade in over).
+- heroKind: 'video' or 'still'. DEFAULT TO VIDEO. The hero is BohdiAI's signature and motion is its native form (D33, D47). Most makers' worlds contain ambient motion you can film: steam off bread (a baker), a flame's flicker (a candle maker), water beading (a soap maker after a rinse), hands at work, dust in a sunbeam, curtains breathing, light moving across a counter, a kiln's glow, fabric stirring, water in a basin. The camera holds still — the world moves. Pick 'still' ONLY when you genuinely cannot think of any ambient motion the maker's world could offer in a 5-second locked-camera clip. Truly static cases are rare: a finished piece of jewelry sitting alone, a printed sticker, a flat print on paper. If you find yourself reaching for still on a niche that has heat, water, light, hands, or breath in its world, you're under-imagining — go video. The test is not "is the product moving" but "is there any motion in this maker's world worth filming." A 'still' hero is a fallback for genuinely motionless subjects and renders as a cinematic SCENE (the product in its real world, lit naturally), never a product on a void.
 
 Set the trajectory now.`;
 }

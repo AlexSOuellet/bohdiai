@@ -42,7 +42,7 @@ THE TRAJECTORY
 - feeling: ${trajectory.feeling}
 - why the customer wants this: ${trajectory.customerWhy}
 - visual world: ${trajectory.visualWorld}
-- the moment: ${trajectory.momentConcept}
+- the moment: ${trajectory.heroConcept}
 - type register: ${trajectory.register}
 
 THE COPY (every word):

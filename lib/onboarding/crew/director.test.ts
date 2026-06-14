@@ -23,9 +23,9 @@ const valid = {
   feeling: 'the hush of a light-filled coastal morning, calm and quietly upscale',
   customerWhy: 'a candle turns an ordinary evening into a moment that feels like home and calm',
   visualWorld: 'clean-modern, high-key bright, airy with low contrast',
-  momentConcept: 'a single flame breathing in soft window light, slow ambient drift, cool grade',
+  heroConcept: 'a single flame breathing in soft window light, slow ambient drift, cool grade',
   register: 'restrained' as const,
-  momentKind: 'video' as const,
+  heroKind: 'video' as const,
 };
 
 function toolMsg(input: unknown) {
@@ -76,24 +76,11 @@ describe('direct (the Director)', () => {
     await expect(direct(brief)).rejects.toThrow(/did not call set_trajectory/);
   });
 
-  it('forwards the director-picked momentKind through to the trajectory', async () => {
-    // same mock pattern as the rest of the suite — override momentKind to spotlight
-    create.mockResolvedValueOnce(toolMsg({ ...valid, momentKind: 'spotlight' }));
+  it('forwards the director-picked heroKind through to the trajectory', async () => {
+    // same mock pattern as the rest of the suite — override heroKind to spotlight
+    create.mockResolvedValueOnce(toolMsg({ ...valid, heroKind: 'still' }));
     const t = await direct(brief);
-    expect(t.momentKind).toBe('spotlight');
+    expect(t.heroKind).toBe('still');
   });
 });
 
-describe('director prompt — makerWork', () => {
-  it("includes the maker's work summary when present", () => {
-    const brief = { ...baseBrief, makerWork: 'This maker turns small bowls from local walnut.' };
-    const prompt = __buildDirectorPromptForTest(brief);
-    expect(prompt).toContain('WHAT THIS MAKER ACTUALLY MAKES');
-    expect(prompt).toContain('small bowls from local walnut');
-  });
-
-  it('omits the maker-work section when undefined', () => {
-    const prompt = __buildDirectorPromptForTest(baseBrief);
-    expect(prompt).not.toContain('WHAT THIS MAKER ACTUALLY MAKES');
-  });
-});

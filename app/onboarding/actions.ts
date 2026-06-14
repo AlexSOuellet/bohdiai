@@ -6,7 +6,6 @@ import { type MoodKey } from '@/lib/moods';
 import { toSubdomain } from '@/lib/subdomain';
 import { logger } from '@/lib/logger';
 import { runStorefront } from '@/lib/onboarding/run-storefront';
-import type { VisionPerPhoto } from './_components/types';
 
 // ─── Subdomain availability check ────────────────────────────────────────────
 
@@ -45,9 +44,6 @@ export interface GenerateStorefrontInput {
   makerName?: string;
   logoUrl?: string;
   brandColors?: string[];
-  productPhotoUrls?: string[];
-  visionPerPhoto?: VisionPerPhoto[];
-  makerWork?: string;
 }
 
 export interface GenerateStorefrontResult {

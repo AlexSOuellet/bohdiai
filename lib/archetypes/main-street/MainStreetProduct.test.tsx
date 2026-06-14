@@ -11,7 +11,7 @@ const content: MainStreetContent = {
   shopName: 'Tannery Row',
   identity: { wordmark: 'Tannery Row', nav: ['Shop', 'About'] },
   moment: {
-    media: { kind: 'image', prompt: { composition: 'b', subject: 's', environment: 'e', atmosphere: 'a', camera: 'c', lighting: 'l', style: 'p' }, alt: 'x' },
+    media: { kind: 'still', prompt: { composition: 'b', subject: 's', environment: 'e', atmosphere: 'a', camera: 'c', lighting: 'l', style: 'p' }, alt: 'x' },
     story: ['cut by hand', 'stitched to last'],
     eyebrow: 'Made in the workshop',
     brand: 'Tannery Row',

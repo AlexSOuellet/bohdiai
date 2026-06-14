@@ -18,20 +18,6 @@ export type BuildInput = {
   makerName?: string | undefined;
   logoUrl?: string | undefined;
   brandColors?: string[] | undefined;
-  productPhotoUrls?: string[] | undefined;
-  visionPerPhoto?: VisionPerPhotoInput[] | undefined;
-  makerWork?: string | undefined;
-};
-
-/** Vision summary per photo. Mirrors `VisionPerPhoto` from the onboarding UI,
- *  redeclared here to keep build-store free of UI imports and to carry the
- *  implicit index signature the jsonb `input` column needs. */
-export type VisionPerPhotoInput = {
-  productType: string;
-  suggestedName: string;
-  suggestedShortDescription: string;
-  suggestedDescription: string;
-  suggestedPriceCents: number;
 };
 
 export interface BuildRow {

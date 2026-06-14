@@ -20,7 +20,7 @@ import { GOODS_TREATMENT_MENU, type GoodsTreatment } from '@/lib/archetypes/main
 import type { FounderTreatment } from '@/lib/archetypes/main-street/founder';
 import { LINK_TARGETS } from '@/lib/archetypes/main-street/links';
 import { CopywriterDraftSchema, type CopywriterDraft } from './copywriter-schema';
-import { lengthAwareIssues } from './length-feedback';
+import { buildResubmitPayload } from './length-feedback';
 import type { Trajectory } from './trajectory';
 import type { CrewBrief } from './types';
 
@@ -61,19 +61,8 @@ export function buildCopywriterPrompt(brief: CrewBrief, trajectory: Trajectory, 
     ? `THE MAKER'S NAME — the maker's real first name is "${makerNameTrimmed}". Lock founder.attribution to "${makerNameTrimmed}" exactly. Do not invent, shorten, or add a surname.`
     : `THE MAKER'S NAME — the maker's first name was not captured. Write a generic attribution like "The maker" for founder.attribution rather than inventing a name.`;
 
-  const photos = brief.visionPerPhoto ?? [];
-  const photoCount = photos.length;
-  const makerWorkClause = photoCount > 0
-    ? `
-
-THE MAKER'S WORK — ${photoCount} photo${photoCount === 1 ? '' : 's'} the maker uploaded. Author products 1 through ${photoCount} around these photos (use the same product type, write a faithful name and description, the image URL is already assigned). Then author products ${photoCount + 1} through ${target} as stand-ins that fit alongside the real work (similar category, similar price range, similar style).
-${photos.map((p, i) => `  - Photo ${i + 1}: ${p.productType}; suggested name "${p.suggestedName}"; suggested price ${p.suggestedPriceCents} cents; suggested short description "${p.suggestedShortDescription}"`).join('\n')}`
-    : '';
-
   const storyDirective =
-    trajectory.momentKind === 'spotlight'
-      ? '- moment.story (EXACTLY 1 line, 4-48): the spotlight Moment lands one tagline-strength line over the wordmark after the object has risen from black. Write the single line as the only entry in moment.story. HARD: the line carries NO punctuation — no periods, commas, dashes, colons, or quotes (apostrophes and intra-word hyphens are fine).'
-      : '- moment.story (2-4 lines, each 4-48): the hero lines, shown one at a time, each cross-fading into the next, landing on the brand. HARD: a line carries NO punctuation — no periods, commas, dashes, colons, or quotes (apostrophes and intra-word hyphens are fine). The marks would smear as the lines cross-fade.';
+    '- moment.story (1-4 lines, each 4-48 chars, aim for 36-44 to leave headroom — the cap is a hard cap, lines that land at 48 burn the build): the maker\'s short narrative of the hero shot, authored content stored alongside the brand. Keep them tight and true to the trajectory. HARD: each line carries NO punctuation — no periods, commas, dashes, colons, or quotes (apostrophes and intra-word hyphens are fine).';
 
   return `You are the COPYWRITER on Bohdi's crew. You write every word of this maker's storefront, to ONE brief: the trajectory the Director set. Serve it.
 
@@ -81,23 +70,25 @@ THE TRAJECTORY
 - feeling: ${trajectory.feeling}
 - why the customer wants this: ${trajectory.customerWhy}
 - visual world: ${trajectory.visualWorld}
-- the hero moment: ${trajectory.momentConcept}
+- the hero moment: ${trajectory.heroConcept}
 - type register: ${trajectory.register}
 
 THE NICHE — context and vocabulary for this kind of maker and who buys from them. Read all of it:
 ${niche}
 
-${nameLockClause}${makerWorkClause}
+${nameLockClause}
 
 LINKS — every link you write carries a label AND a target page, so what a button
 says and where it goes always agree. A target is one of: ${targets}.
-- home: the front page. shop: the full products page. goods: scrolls down to the
-  products on the home page (good for a hero "see the work" button). about: the
-  maker's story page. events: where to find the maker in person. contact: get in
-  touch / ask for a custom order.
+- home: the front page. shop: the full products page (the catalog — the home is a
+  SAMPLING, the shop is where every piece lives, so "see the work" / "shop now" /
+  "browse the collection" all target shop). about: the maker's story page.
+  events: where to find the maker in person. contact: get in touch / ask for a
+  custom order.
 Choose the target that matches what the label promises — a button that says "Our
-story" targets about, "Shop now" targets shop, "Find us" targets events. (Targets
-must come from that list; these are the only pages that exist.)
+story" targets about, "Shop now" or "See the work" targets shop, "Find us"
+targets events. (Targets must come from that list; these are the only pages that
+exist.)
 
 Write the words with submit_copy. Each field, its hard limits (stay under), and where it appears.
 
@@ -172,12 +163,13 @@ export async function writeCopy(brief: CrewBrief, trajectory: Trajectory, rolls:
       return parsed.data;
     }
 
-    const issues = lengthAwareIssues(parsed.error, tu.input);
-    lastIssues = issues.map((i) => `${i.path}: ${i.message}`).join('; ');
+    const payload = buildResubmitPayload(parsed.error, tu.input);
+    payload.issues = payload.issues.slice(0, 14);
+    lastIssues = payload.issues.map((i) => `${i.path}: ${i.message}`).join('; ');
     messages.push({ role: 'assistant', content: resp.content });
     messages.push({
       role: 'user',
-      content: [{ type: 'tool_result', tool_use_id: tu.id, is_error: true, content: JSON.stringify({ ok: false, issues: issues.slice(0, 14) }) }],
+      content: [{ type: 'tool_result', tool_use_id: tu.id, is_error: true, content: JSON.stringify(payload) }],
     });
   }
 

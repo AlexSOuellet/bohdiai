@@ -57,7 +57,7 @@ describe('logCrewChoices', () => {
       tenantId: 'tn_9',
       nicheSlug: 'woodworking',
       moodKey: 'rustic',
-      momentKind: 'video',
+      heroKind: 'video',
       goodsTreatment: 'procession',
       founderTreatment: 'quote',
       // goods overrode the dice ('marquee' → 'procession'); founder played its roll.

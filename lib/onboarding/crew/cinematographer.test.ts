@@ -10,9 +10,9 @@ const trajectory: Trajectory = {
   feeling: 'the quiet pride of carrying something built to outlast you',
   customerWhy: 'people want one good thing that ages with them',
   visualWorld: 'warm and worn, low light, deep shadow',
-  momentConcept: 'a hand resting on a worn bench, dust drifting in a slow shaft of light',
+  heroConcept: 'a hand resting on a worn bench, dust drifting in a slow shaft of light',
   register: 'restrained',
-  momentKind: 'video',
+  heroKind: 'video',
 };
 
 const story = ['Built by hand', 'Made to outlast you'];
@@ -49,20 +49,20 @@ describe('shootMoment (the Cinematographer)', () => {
     expect(create).toHaveBeenCalledTimes(1);
   });
 
-  it('feeds the momentConcept and story into the prompt and forces the tool', async () => {
+  it('feeds the heroConcept and story into the prompt and forces the tool', async () => {
     create.mockResolvedValueOnce(toolMsg(scene));
     await shootMoment(trajectory, story);
     const args = create.mock.calls[0]![0] as { system: string; tool_choice?: unknown };
-    expect(args.system).toContain(trajectory.momentConcept);
+    expect(args.system).toContain(trajectory.heroConcept);
     expect(args.system).toContain('Built by hand');
     expect(args.tool_choice).toEqual({ type: 'tool', name: 'set_moment' });
   });
 
   it('accepts spotlight as a real choice (the director calls it — not every scene has natural motion)', async () => {
-    // The director sets momentKind — the trajectory and the returned kind must agree.
-    create.mockResolvedValueOnce(toolMsg({ ...scene, kind: 'spotlight' }));
-    const s = await shootMoment({ ...trajectory, momentKind: 'spotlight' }, story);
-    expect(s.kind).toBe('spotlight');
+    // The director sets heroKind — the trajectory and the returned kind must agree.
+    create.mockResolvedValueOnce(toolMsg({ ...scene, kind: 'still' }));
+    const s = await shootMoment({ ...trajectory, heroKind: 'still' }, story);
+    expect(s.kind).toBe('still');
   });
 
   it('rejects an incomplete scene, then accepts the fix', async () => {
@@ -125,11 +125,11 @@ describe('shootMoment (the Cinematographer)', () => {
     expect(lastMsg).toMatch(/loop|locked|static|movement/);
   });
 
-  it('does not apply the locked-camera rule to a spotlight (it does not loop — rise/push are CSS)', async () => {
-    // The director calls spotlight — trajectory and returned kind must agree.
-    create.mockResolvedValueOnce(toolMsg({ ...scene, kind: 'spotlight', prompt: { ...scene.prompt, camera: 'a slow pan across the bench' } }));
-    const s = await shootMoment({ ...trajectory, momentKind: 'spotlight' }, story);
-    expect(s.kind).toBe('spotlight');
+  it('does not apply the locked-camera rule to a still (it does not loop — the CSS push-in is the only motion)', async () => {
+    // The director calls still — trajectory and returned kind must agree.
+    create.mockResolvedValueOnce(toolMsg({ ...scene, kind: 'still', prompt: { ...scene.prompt, camera: 'a slow pan across the bench' } }));
+    const s = await shootMoment({ ...trajectory, heroKind: 'still' }, story);
+    expect(s.kind).toBe('still');
     expect(create).toHaveBeenCalledTimes(1);
   });
 
@@ -156,23 +156,23 @@ describe('shootMoment (the Cinematographer)', () => {
 
   it("returns a scene with kind 'video' when the trajectory calls for video", async () => {
     create.mockResolvedValueOnce(toolMsg({ ...scene, kind: 'video' }));
-    const s = await shootMoment({ ...trajectory, momentKind: 'video' }, story);
+    const s = await shootMoment({ ...trajectory, heroKind: 'video' }, story);
     expect(s.kind).toBe('video');
   });
 
-  it("returns a scene with kind 'spotlight' when the trajectory calls for spotlight", async () => {
-    const spotlightScene = {
+  it("returns a scene with kind 'still' when the trajectory calls for still (D54 — a real scene, not a void)", async () => {
+    const stillScene = {
       ...scene,
-      kind: 'spotlight' as const,
+      kind: 'still' as const,
       prompt: {
         ...scene.prompt,
-        // environment is pure black for a spotlight shot
-        environment: 'pure black void',
+        // environment is a real space — a kitchen counter at morning light
+        environment: 'a kitchen counter beside a sunlit window with a folded linen',
       },
     };
-    create.mockResolvedValueOnce(toolMsg(spotlightScene));
-    const s = await shootMoment({ ...trajectory, momentKind: 'spotlight' }, story);
-    expect(s.kind).toBe('spotlight');
+    create.mockResolvedValueOnce(toolMsg(stillScene));
+    const s = await shootMoment({ ...trajectory, heroKind: 'still' }, story);
+    expect(s.kind).toBe('still');
   });
 
   it("rejects a returned kind of 'image' — the cinematographer no longer produces images", async () => {
@@ -183,21 +183,20 @@ describe('shootMoment (the Cinematographer)', () => {
     expect(create).toHaveBeenCalledTimes(4); // exhausted the attempt cap
   });
 
-  it("includes spotlight branch wording in the prompt when momentKind is 'spotlight'", () => {
-    const spotlightTrajectory: Trajectory = { ...trajectory, momentKind: 'spotlight' };
-    const prompt = buildCinematographerPrompt(spotlightTrajectory, story);
-    // Prompt must announce the director's call and instruct the cinematographer to set kind to "spotlight"
-    expect(prompt).toContain('SPOTLIGHT');
-    expect(prompt).toContain('Set kind to "spotlight"');
-    // Spotlight-specific framing: object on pure black, camera is framing not motion
-    expect(prompt.toLowerCase()).toMatch(/pure black/);
-    expect(prompt.toLowerCase()).toMatch(/hero object|hero obj/);
-    // Camera-motion note: rise/push happen in CSS, not the generated image
-    expect(prompt).toMatch(/CSS|renderer/);
+  it("includes still-scene branch wording in the prompt when heroKind is 'still' (D54 — scene-in-world, not product-on-void)", () => {
+    const stillTrajectory: Trajectory = { ...trajectory, heroKind: 'still' };
+    const prompt = buildCinematographerPrompt(stillTrajectory, story);
+    // Prompt must announce the director's call and instruct the cinematographer to set kind to "still"
+    expect(prompt).toContain('STILL');
+    expect(prompt).toContain('Set kind to "still"');
+    // Still-scene framing: the product in its real environment, not on a void
+    expect(prompt.toLowerCase()).toMatch(/real environment|its real environment|not on a void|product card/);
+    // Pure black backgrounds are explicitly FORBIDDEN
+    expect(prompt.toLowerCase()).toMatch(/pure black or any solid void/);
   });
 
-  it("retains the camera-locked + in-frame-motion direction in the prompt when momentKind is 'video'", () => {
-    const videoTrajectory: Trajectory = { ...trajectory, momentKind: 'video' };
+  it("retains the camera-locked + in-frame-motion direction in the prompt when heroKind is 'video'", () => {
+    const videoTrajectory: Trajectory = { ...trajectory, heroKind: 'video' };
     const prompt = buildCinematographerPrompt(videoTrajectory, story);
     // Prompt must announce the director's call for VIDEO
     expect(prompt).toContain('VIDEO');
@@ -207,17 +206,17 @@ describe('shootMoment (the Cinematographer)', () => {
     expect(prompt.toLowerCase()).toMatch(/within the frame|in the frame/);
   });
 
-  it('does not apply the locked-camera rule to a spotlight (it is a still — rise/push are CSS)', async () => {
-    // A spotlight scene with a camera field that mentions motion should still pass,
+  it('does not apply the locked-camera rule to a still (it is a held image — the CSS push-in is the only motion)', async () => {
+    // A still scene with a camera field that mentions motion should still pass,
     // because the camera-movement guard is scoped to kind === 'video' only.
-    const spotlightWithMotionCamera = {
+    const stillWithMotionCamera = {
       ...scene,
-      kind: 'spotlight' as const,
-      prompt: { ...scene.prompt, camera: 'a slow pan across the object' },
+      kind: 'still' as const,
+      prompt: { ...scene.prompt, camera: 'a slow pan across the bench' },
     };
-    create.mockResolvedValueOnce(toolMsg(spotlightWithMotionCamera));
-    const s = await shootMoment({ ...trajectory, momentKind: 'spotlight' }, story);
-    expect(s.kind).toBe('spotlight');
+    create.mockResolvedValueOnce(toolMsg(stillWithMotionCamera));
+    const s = await shootMoment({ ...trajectory, heroKind: 'still' }, story);
+    expect(s.kind).toBe('still');
     expect(create).toHaveBeenCalledTimes(1); // no reshoot — camera guard skipped for still
   });
 
@@ -225,8 +224,8 @@ describe('shootMoment (the Cinematographer)', () => {
 
   it('rejects a returned kind that does not match the trajectory and asks for a reshoot', async () => {
     // Trajectory says spotlight; model returns video on the first attempt, then spotlight on retry.
-    const spotlightTrajectory: Trajectory = { ...trajectory, momentKind: 'spotlight' };
-    const spotlightScene = { ...scene, kind: 'spotlight' as const, prompt: { ...scene.prompt, environment: 'pure black void' } };
+    const spotlightTrajectory: Trajectory = { ...trajectory, heroKind: 'still' };
+    const spotlightScene = { ...scene, kind: 'still' as const, prompt: { ...scene.prompt, environment: 'pure black void' } };
     // First attempt: wrong kind (video) — should trigger the kind-mismatch issue.
     // Second attempt: correct kind (spotlight) — should resolve.
     create
@@ -234,41 +233,22 @@ describe('shootMoment (the Cinematographer)', () => {
       .mockResolvedValueOnce(toolMsg(spotlightScene));
 
     const s = await shootMoment(spotlightTrajectory, story);
-    expect(s.kind).toBe('spotlight');
+    expect(s.kind).toBe('still');
     expect(create).toHaveBeenCalledTimes(2);
 
     // The reshoot message must reference the kind mismatch.
     const second = create.mock.calls[1]![0] as { messages: Array<{ role: string; content: unknown }> };
     const lastMsg = JSON.stringify(second.messages.at(-1)).toLowerCase();
     expect(lastMsg).toContain('director');
-    expect(lastMsg).toContain('spotlight');
+    expect(lastMsg).toContain('still');
   });
 
   it('passes through when kind matches the trajectory — no reshoot triggered', async () => {
     // Trajectory says video, model returns video — no kind-mismatch issue, resolves on first attempt.
     create.mockResolvedValueOnce(toolMsg({ ...scene, kind: 'video' }));
-    const s = await shootMoment({ ...trajectory, momentKind: 'video' }, story);
+    const s = await shootMoment({ ...trajectory, heroKind: 'video' }, story);
     expect(s.kind).toBe('video');
     expect(create).toHaveBeenCalledTimes(1);
   });
 });
 
-describe('cinematographer prompt — makerWork', () => {
-  const sampleTrajectory: Trajectory = trajectory;
-
-  it("includes the maker's work summary when present", () => {
-    const prompt = __buildCinematographerPromptForTest(sampleTrajectory, ['lines', 'go', 'here'], 'This maker turns small bowls from local walnut.');
-    expect(prompt).toContain('WHAT THIS MAKER ACTUALLY MAKES');
-    expect(prompt).toContain('small bowls from local walnut');
-  });
-
-  it('omits the section when makerWork is empty', () => {
-    const prompt = __buildCinematographerPromptForTest(sampleTrajectory, ['lines'], '');
-    expect(prompt).not.toContain('WHAT THIS MAKER ACTUALLY MAKES');
-  });
-
-  it('omits the section when makerWork is undefined', () => {
-    const prompt = __buildCinematographerPromptForTest(sampleTrajectory, ['lines']);
-    expect(prompt).not.toContain('WHAT THIS MAKER ACTUALLY MAKES');
-  });
-});

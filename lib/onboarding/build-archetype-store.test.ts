@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { recycleProductPhotos, assignProductPhotos, prepareJobPrompt, buildArchetypeStore } from './build-archetype-store';
+import { recycleProductPhotos, prepareJobPrompt, buildArchetypeStore } from './build-archetype-store';
 import type { MediaJob } from '@/lib/archetypes/builder';
 
 // Stand-ins for the orchestrator's heavy neighbors, so the wiring test can run
@@ -58,39 +58,6 @@ describe('recycleProductPhotos', () => {
   });
 });
 
-describe('assignProductPhotos', () => {
-  it('matches recycle behavior when no uploads (today\'s behavior)', () => {
-    // With zero uploads, every slot uses generated photos in order — same as recycle.
-    expect(assignProductPhotos([], ['a', 'b', 'c'], 3)).toEqual(['a', 'b', 'c']);
-    expect(assignProductPhotos([], ['a', 'b', 'c'], 6)).toEqual(['a', 'b', 'c', 'a', 'b', 'c']);
-    expect(assignProductPhotos([], [], 3)).toEqual([null, null, null]);
-  });
-
-  it('uses uploads for the first N slots and generated photos for the rest', () => {
-    // 2 uploads + 3 generated for a catalog of 5 — uploads come first, then generated.
-    expect(assignProductPhotos(['u1', 'u2'], ['g1', 'g2', 'g3'], 5)).toEqual([
-      'u1', 'u2', 'g1', 'g2', 'g3',
-    ]);
-  });
-
-  it('recycles generated photos when the catalog runs longer than uploads + generated', () => {
-    // 1 upload + 2 generated, catalog of 6 → upload, then g1,g2 cycling.
-    expect(assignProductPhotos(['u1'], ['g1', 'g2'], 6)).toEqual([
-      'u1', 'g1', 'g2', 'g1', 'g2', 'g1',
-    ]);
-  });
-
-  it('fills all slots from uploads when uploads meet or exceed the slot count', () => {
-    expect(assignProductPhotos(['u1', 'u2', 'u3'], [], 3)).toEqual(['u1', 'u2', 'u3']);
-    // Even if there are extra uploads beyond the catalog, only the first N are used.
-    expect(assignProductPhotos(['u1', 'u2', 'u3', 'u4', 'u5'], [], 3)).toEqual(['u1', 'u2', 'u3']);
-  });
-
-  it('returns null for trailing slots when no generated photos and uploads run short', () => {
-    expect(assignProductPhotos(['u1'], [], 3)).toEqual(['u1', null, null]);
-  });
-});
-
 describe('buildArchetypeStore — crew-choice logging seam', () => {
   // A minimal spec whose media step is empty, so no images are generated.
   const fakeSpec = {
@@ -105,7 +72,7 @@ describe('buildArchetypeStore — crew-choice logging seam', () => {
     directAndProduce.mockResolvedValue({
       chosen: { spec: fakeSpec, lookKey: 'main-street-ember' },
       authored: {},
-      choices: { momentKind: 'video', goodsTreatment: 'procession', founderTreatment: 'quote' },
+      choices: { heroKind: 'video', goodsTreatment: 'procession', founderTreatment: 'quote' },
     });
     // The publish step hands back a tenant id we chose — a match proves the
     // orchestrator passed THIS id through to the logger.
@@ -127,7 +94,7 @@ describe('buildArchetypeStore — crew-choice logging seam', () => {
       tenantId: 'tn_real_123', // from the publish step, not the input
       nicheSlug: 'woodworking',
       moodKey: 'rustic',
-      momentKind: 'video',
+      heroKind: 'video',
       goodsTreatment: 'procession',
       founderTreatment: 'quote',
     });
@@ -150,7 +117,7 @@ describe('buildArchetypeStore — Other (describe-and-build)', () => {
     directAndProduce.mockResolvedValue({
       chosen: { spec: fakeSpec, lookKey: 'main-street-ember' },
       authored: {},
-      choices: { momentKind: 'video', goodsTreatment: 'procession', founderTreatment: 'quote' },
+      choices: { heroKind: 'video', goodsTreatment: 'procession', founderTreatment: 'quote' },
     });
     writeArchetypeStorefront.mockReset();
     writeArchetypeStorefront.mockResolvedValue({ subdomain: 'planters', tenantId: 'tn_other_1' });

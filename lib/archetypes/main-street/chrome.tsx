@@ -151,7 +151,7 @@ export function Media({
   className,
   style,
 }: {
-  media: { kind?: 'video' | 'image' | 'spotlight'; url?: string | undefined; poster?: string | undefined; alt: string };
+  media: { kind?: 'video' | 'image' | 'still'; url?: string | undefined; poster?: string | undefined; alt: string };
   className?: string;
   style?: React.CSSProperties;
 }) {
@@ -246,9 +246,6 @@ export function MainStreetFooter({ shopName, skin }: { shopName: string; skin: A
         <Link href="/" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
           Home
         </Link>
-        <a href="/?intro=1" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
-          Intro
-        </a>
         <a href="/privacy" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
           Privacy
         </a>

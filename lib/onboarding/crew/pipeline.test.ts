@@ -25,15 +25,15 @@ const trajectory = {
   feeling: 'the quiet pride of carrying something built to outlast you',
   customerWhy: 'people want one good thing that ages with them',
   visualWorld: 'warm and worn, low light, deep shadow',
-  momentConcept: 'a hand resting on a worn bench',
+  heroConcept: 'a hand resting on a worn bench',
   register: 'restrained',
-  momentKind: 'video',
+  heroKind: 'video',
 };
 
 const copy = {
   shopName: 'Tannery Row',
   identity: { wordmark: 'Tannery Row', nav: [{ label: 'Shop', target: 'shop' }, { label: 'Our story', target: 'about' }] },
-  moment: { story: ['Built by hand', 'Made to outlast you'], eyebrow: 'From the workshop', brand: 'Tannery Row', ctaLabel: 'See the work', ctaTarget: 'goods' },
+  moment: { story: ['Built by hand', 'Made to outlast you'], eyebrow: 'From the workshop', brand: 'Tannery Row', ctaLabel: 'See the work', ctaTarget: 'shop' },
   goods: { title: 'The bench', treatment: 'procession' },
   founder: { quote: 'I would rather make one belt that lasts thirty years than ten that fall apart.', attribution: 'Sam, founder', treatment: 'quote' },
   close: { label: 'Come by', headline: 'Built to outlast us', ctaLabel: 'Order yours', ctaTarget: 'contact' },
@@ -148,7 +148,7 @@ describe('directAndProduce (the crew pipeline)', () => {
     // what was dealt and what the copywriter landed on, so the orchestrator can
     // log rolled-vs-picked against the real tenant + niche.
     expect(result.choices).toEqual({
-      momentKind: 'video',
+      heroKind: 'video',
       goodsTreatment: 'procession',
       founderTreatment: 'quote',
       goodsRoll: 'marquee',
@@ -156,13 +156,13 @@ describe('directAndProduce (the crew pipeline)', () => {
     });
   });
 
-  it('threads the trajectory momentKind through to the assembled envelope — spotlight path', async () => {
+  it('threads the trajectory heroKind through to the assembled envelope — spotlight path', async () => {
     // Confirm the kind decision set by the director in the trajectory flows
     // through the cinematographer and survives assembly unchanged.
-    const spotlightTrajectory = { ...trajectory, momentKind: 'spotlight' };
+    const spotlightTrajectory = { ...trajectory, heroKind: 'still' };
     const spotlightMoment = {
       ...moment,
-      kind: 'spotlight',
+      kind: 'still',
       prompt: { ...moment.prompt, environment: 'pure black void' },
     };
     create
@@ -173,8 +173,8 @@ describe('directAndProduce (the crew pipeline)', () => {
       .mockResolvedValueOnce(toolMsg('final_cut', { notes: 'coheres' }));
 
     const result = await directAndProduce(brief);
-    expect(result.authored.content.moment.media.kind).toBe('spotlight');
-    expect(result.choices.momentKind).toBe('spotlight');
+    expect(result.authored.content.moment.media.kind).toBe('still');
+    expect(result.choices.heroKind).toBe('still');
   });
 
   it('deals the rolled treatments to the copywriter', async () => {

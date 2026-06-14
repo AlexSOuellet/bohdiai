@@ -51,30 +51,4 @@ describe('runStorefront', () => {
     expect(passedInput).toHaveProperty('brandColors', ['#1d7a66', '#e7d8b0']);
   });
 
-  it('passes productPhotoUrls, visionPerPhoto, and makerWork into buildArchetypeStore', async () => {
-    const { runStorefront } = await import('./run-storefront');
-    await runStorefront({
-      ...baseInput,
-      productPhotoUrls: ['https://example.com/p1.jpg'],
-      visionPerPhoto: [
-        {
-          productType: 'bowl',
-          suggestedName: 'River Bowl',
-          suggestedShortDescription: 'small bowl',
-          suggestedDescription: 'A small bowl.',
-          suggestedPriceCents: 4800,
-        },
-      ],
-      makerWork: 'Turns small bowls.',
-    });
-    const [passedInput] = buildMock.mock.calls[0]!;
-    expect(passedInput).toMatchObject({
-      productPhotoUrls: ['https://example.com/p1.jpg'],
-      makerWork: 'Turns small bowls.',
-    });
-    expect(passedInput).toHaveProperty('visionPerPhoto');
-    expect((passedInput as { visionPerPhoto: Array<{ productType: string }> }).visionPerPhoto[0]).toMatchObject({
-      productType: 'bowl',
-    });
-  });
 });

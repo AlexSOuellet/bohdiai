@@ -6,7 +6,6 @@
 import type { NextRequest } from 'next/server';
 import { checkGenerationRateLimit } from '@/lib/rate-limit';
 import { MOODS, type MoodKey } from '@/lib/moods';
-import type { VisionPerPhoto } from '@/app/onboarding/_components/types';
 import { runStorefront } from '@/lib/onboarding/run-storefront';
 import { loadTickerContent } from '@/lib/onboarding/ticker-content';
 import { logger } from '@/lib/logger';
@@ -29,9 +28,6 @@ interface GenerateBody {
   makerName?: string;
   logoUrl?: string;
   brandColors?: string[];
-  productPhotoUrls?: string[];
-  visionPerPhoto?: VisionPerPhoto[];
-  makerWork?: string;
 }
 
 function isMoodKey(value: string): value is MoodKey {
@@ -73,10 +69,7 @@ export async function POST(req: NextRequest): Promise<Response> {
 
       // Load ticker content (niche tips + encouragement) before kicking off
       // generation so the first tip can land within a second or two.
-      const ticker = await loadTickerContent(body.nicheSlug, body.makerName, {
-        hasUploadedPhotos:
-          body.productPhotoUrls !== undefined && body.productPhotoUrls.length > 0,
-      });
+      const ticker = await loadTickerContent(body.nicheSlug, body.makerName);
       const tipPool = interleave(shuffle(ticker.encouragement), shuffle(ticker.nicheTips));
       let tipIdx = 0;
 
@@ -103,9 +96,6 @@ export async function POST(req: NextRequest): Promise<Response> {
             makerName: body.makerName,
             logoUrl: body.logoUrl,
             brandColors: body.brandColors,
-            productPhotoUrls: body.productPhotoUrls,
-            visionPerPhoto: body.visionPerPhoto,
-            makerWork: body.makerWork,
           },
           send,
         );

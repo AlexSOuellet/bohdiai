@@ -1,0 +1,68 @@
+{
+  "kind": "niche-style-sheet",
+  "slug": "knitter",
+  "note": "Raw materials for a knitter site (finished hand-knit pieces and patterns). Named only — no role assignments, no feel labels.",
+
+  "palette": [
+    { "name": "Aran Cream",       "hex": "#F2EBDC" },
+    { "name": "Bone White",       "hex": "#FAF6EE" },
+    { "name": "Oatmeal Heather",  "hex": "#D9D0BB" },
+    { "name": "Undyed Fleece",    "hex": "#C8BFA9" },
+    { "name": "Heather Smoke",    "hex": "#6A655E" },
+    { "name": "Wool Charcoal",    "hex": "#2F2C28" },
+    { "name": "Peat",             "hex": "#1A1612" },
+    { "name": "Madder Root",      "hex": "#A03422" },
+    { "name": "Berry Wine",       "hex": "#6B1C2F" },
+    { "name": "Walnut Hull",      "hex": "#5C3A1E" },
+    { "name": "Saffron",          "hex": "#E07A2B" },
+    { "name": "Weld Yellow",      "hex": "#C9A436" },
+    { "name": "Mossy Heather",    "hex": "#5C6840" },
+    { "name": "Lichen",           "hex": "#95A07A" },
+    { "name": "Indigo Vat",       "hex": "#1E3A5F" }
+  ],
+
+  "fonts": [
+    { "name": "EB Garamond",         "category": "old-style-serif" },
+    { "name": "Cormorant Garamond",  "category": "high-contrast-serif" },
+    { "name": "Crimson Pro",         "category": "old-style-serif" },
+    { "name": "Lora",                "category": "refined-serif" },
+    { "name": "Playfair Display",    "category": "high-contrast-serif" },
+    { "name": "Domine",              "category": "slab-serif" },
+    { "name": "Bitter",              "category": "slab-serif" },
+    { "name": "IM Fell English",     "category": "old-style-serif" },
+    { "name": "Syne",                "category": "geometric-sans" },
+    { "name": "Space Grotesk",       "category": "geometric-sans" },
+    { "name": "Plus Jakarta Sans",   "category": "humanist-sans" },
+    { "name": "Public Sans",         "category": "humanist-sans" },
+    { "name": "Special Elite",       "category": "typewriter" },
+    { "name": "Caveat",              "category": "hand-marker" },
+    { "name": "Homemade Apple",      "category": "hand-marker" },
+    { "name": "JetBrains Mono",      "category": "mono" }
+  ],
+
+  "wordmark": [
+    { "name": "Fraunces",                "category": "high-contrast-serif" },
+    { "name": "Yeseva One",              "category": "high-contrast-serif" },
+    { "name": "Abril Fatface",           "category": "high-contrast-serif" },
+    { "name": "Big Shoulders Display",   "category": "condensed-caps" },
+    { "name": "Aboreto",                 "category": "refined-serif" },
+    { "name": "UnifrakturMaguntia",      "category": "blackletter" }
+  ],
+
+  "textures": [
+    "cabled-aran",
+    "stockinette-stitch",
+    "garter-stitch",
+    "ribbed-knit",
+    "fair-isle-stranded",
+    "fisherman-aran",
+    "tweed-fleck",
+    "heathered-wool",
+    "boucle-loop",
+    "felted-wool",
+    "waffle-knit",
+    "linen-weave",
+    "raw-linen",
+    "hand-stitched-edge"
+  ]
+}

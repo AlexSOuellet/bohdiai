@@ -24,9 +24,9 @@ const trajectory: Trajectory = {
   feeling: 'the quiet pride of carrying something built to outlast you',
   customerWhy: 'people want one good thing that ages with them',
   visualWorld: 'warm and worn, low light, deep shadow',
-  momentConcept: 'a hand resting on a worn bench',
+  heroConcept: 'a hand resting on a worn bench',
   register: 'restrained',
-  momentKind: 'video',
+  heroKind: 'video',
 };
 
 const story = ['Built by hand', 'Made to outlast you'];

@@ -14,20 +14,20 @@ describe('OnboardingFlow — no catalog-size step', () => {
   });
 });
 
-describe('OnboardingFlow — photo step placement', () => {
-  it('total steps is 7 (Name, Niche, Logo, Photos, Mood, Trial, Build)', () => {
+describe('OnboardingFlow — step count', () => {
+  it('total steps is 6 (Name, Niche, Logo, Mood, Trial, Build)', () => {
     const { container } = render(
       <OnboardingFlow niches={[{ slug: 'candles', display_name: 'Candle maker' }]} />,
     );
     const progress = container.querySelector('[data-progress-total]');
-    expect(progress?.getAttribute('data-progress-total')).toBe('7');
+    expect(progress?.getAttribute('data-progress-total')).toBe('6');
   });
 
-  it('the source imports StepProductPhotos', async () => {
+  it('the source does not import StepProductPhotos (photo upload moved to post-onboarding)', async () => {
     const source = await fs.readFile(
       path.join(process.cwd(), 'app/onboarding/_components/OnboardingFlow.tsx'),
       'utf-8',
     );
-    expect(source).toMatch(/StepProductPhotos/);
+    expect(source).not.toMatch(/StepProductPhotos/);
   });
 });

@@ -3,12 +3,12 @@ import { TrajectorySchema } from './trajectory';
 
 describe('TrajectorySchema', () => {
   const base = {
-    feeling: 'f', customerWhy: 'w', visualWorld: 'v', momentConcept: 'm', register: 'restrained' as const,
+    feeling: 'f', customerWhy: 'w', visualWorld: 'v', heroConcept: 'm', register: 'restrained' as const,
   };
-  it('requires momentKind to be video or spotlight', () => {
-    expect(TrajectorySchema.safeParse({ ...base, momentKind: 'video' }).success).toBe(true);
-    expect(TrajectorySchema.safeParse({ ...base, momentKind: 'spotlight' }).success).toBe(true);
-    expect(TrajectorySchema.safeParse({ ...base, momentKind: 'image' }).success).toBe(false);
+  it('requires heroKind to be video or spotlight', () => {
+    expect(TrajectorySchema.safeParse({ ...base, heroKind: 'video' }).success).toBe(true);
+    expect(TrajectorySchema.safeParse({ ...base, heroKind: 'still' }).success).toBe(true);
+    expect(TrajectorySchema.safeParse({ ...base, heroKind: 'image' }).success).toBe(false);
     expect(TrajectorySchema.safeParse(base).success).toBe(false);
   });
 });

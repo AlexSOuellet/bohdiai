@@ -109,18 +109,12 @@ function parseSubmission(raw: unknown): ParseResult<MainStreetAuthored> {
 }
 
 function mediaJobs(a: MainStreetAuthored): MediaJob[] {
-  // The hero follows the AUTHORED kind — a still is an equally valid hero and
+  // The hero follows the authored kind — a still is an equally valid hero and
   // sidesteps the loop seam entirely. The scene is serialized for the provider:
-  // JSON (+ seamless-loop intent) for video, prose for a still.
-  //
-  // Spotlight Moments generate a single still — the cinematic rise/push happen in
-  // CSS at render time (see SpotlightStage), not in the generated content.
-  // The stored slot keeps kind:'spotlight' so the renderer can branch later (Task 7).
-  // 'image' is the legacy kind; 'spotlight' is the current still-intent kind.
+  // JSON (+ seamless-loop intent) for video, prose for a still. A very subtle CSS
+  // push-in adds cinematic time to a still at render; the generated asset is held.
   const heroKind: 'video' | 'still' =
-    a.content.moment.media.kind === 'image' || a.content.moment.media.kind === 'spotlight'
-      ? 'still'
-      : 'video';
+    a.content.moment.media.kind === 'still' ? 'still' : 'video';
   const heroPrompt = sceneToPrompt(a.content.moment.media.prompt, heroKind);
   const hero: MediaJob =
     heroKind === 'video'
@@ -224,7 +218,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       case 'contact':
         return <ContactPage content={c} skin={skin} tenantId={tenantId} />;
       default:
-        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} />;
+        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} />;
     }
   },
   renderProduct: ({ content, lookKey, product, logoUrl, brandColors, accentOverride }) => {

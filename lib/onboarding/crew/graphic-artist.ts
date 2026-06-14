@@ -82,7 +82,7 @@ THE TRAJECTORY
 - feeling: ${trajectory.feeling}
 - visual world: ${trajectory.visualWorld}
 - type register: ${trajectory.register}
-- the moment: ${trajectory.momentConcept}
+- the moment: ${trajectory.heroConcept}
 
 THE MOMENT (the ${scene.kind} the photos must sit beside):
 ${sceneLines}

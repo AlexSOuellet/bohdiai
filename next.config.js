@@ -9,6 +9,12 @@ const nextConfig = {
       // through uploadProductPhotos. Default 1MB blocks anything past one photo.
       bodySizeLimit: '55mb',
     },
+    // proxy.ts (middleware) sits in front of every request including server
+    // actions; Next.js caps the body it sees at 10MB by default. The proxy
+    // doesn't read the body (it only resolves subdomain → tenant), so it's safe
+    // to match the server-action cap. Without this, photo uploads fail with
+    // "Request body exceeded 10MB / Unexpected end of form" before the action runs.
+    middlewareClientMaxBodySize: '55mb',
   },
   images: {
     remotePatterns: [

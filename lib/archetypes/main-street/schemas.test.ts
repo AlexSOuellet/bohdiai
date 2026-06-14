@@ -106,9 +106,9 @@ describe('MainStreetContentSchema', () => {
     expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 
-  it('accepts a still hero (kind image) with a structured scene', () => {
+  it('accepts a still hero (kind still) with a structured scene', () => {
     const c = valid();
-    (c.moment.media as Record<string, unknown>)['kind'] = 'image';
+    (c.moment.media as Record<string, unknown>)['kind'] = 'still';
     expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 
@@ -166,7 +166,7 @@ describe('authored link destinations (D46)', () => {
 
   it('accepts authored hero CTA targets', () => {
     const c = valid();
-    Object.assign(c.moment, { ctaTarget: 'goods', secondaryCtaLabel: 'Our story', secondaryCtaTarget: 'about' });
+    Object.assign(c.moment, { ctaTarget: 'shop', secondaryCtaLabel: 'Our story', secondaryCtaTarget: 'about' });
     expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 

@@ -42,3 +42,35 @@ export function lengthAwareIssues(error: z.ZodError, input: unknown): Array<{ pa
     return { path, message: i.message };
   });
 }
+
+/** True when every zod issue is a string length-cap violation. When this holds,
+ *  the model can converge by editing only the named fields — it should not
+ *  rewrite the rest of the draft (a fresh rewrite is how a 3-character overshoot
+ *  burns four attempts: each retry rolls a new string for the same field). */
+export function isLengthOnly(error: z.ZodError): boolean {
+  if (error.issues.length === 0) return false;
+  return error.issues.every(
+    (i) => (i.code === 'too_big' || i.code === 'too_small') && i.type === 'string',
+  );
+}
+
+/** The tool_result payload for a validation-retry round. On length-only failures,
+ *  carries an explicit instruction to resubmit the previous draft unchanged except
+ *  for the named fields — so a tight cap converges in one targeted edit rather
+ *  than burning attempts on fresh rewrites of everything. */
+export function buildResubmitPayload(error: z.ZodError, input: unknown): {
+  ok: false;
+  issues: Array<{ path: string; message: string }>;
+  instruction?: string;
+} {
+  const issues = lengthAwareIssues(error, input);
+  if (isLengthOnly(error)) {
+    return {
+      ok: false,
+      issues,
+      instruction:
+        'Resubmit your previous draft EXACTLY as-is, changing only the fields listed in issues to fit their length. Every other field must be byte-for-byte identical to your previous submission. Do not rewrite, rephrase, or reorder anything else. For each field being shortened: take the previous string and drop or shorten ONE word (or remove a small filler word like "the", "a", "and"); do not write a new line from scratch — a fresh rewrite tends to land at the same length. Aim well under the cap, not right at it.',
+    };
+  }
+  return { ok: false, issues };
+}

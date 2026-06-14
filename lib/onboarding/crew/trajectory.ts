@@ -16,14 +16,15 @@ export const TrajectorySchema = z.object({
   /** The look and feel the store should have. */
   visualWorld: z.string().min(1),
   /** The cinematic idea for the hero: subject, the motion worth filming, the grade. */
-  momentConcept: z.string().min(1),
+  heroConcept: z.string().min(1),
   /** Whether the typography should shout or whisper for this feeling. */
   register: z.enum(['loud', 'restrained']),
-  /** Which kind of Moment the director called for. Video when the subject has real
-   *  ambient motion (steam, flame, water, hands at work). Spotlight when the
-   *  product is at rest and inventing motion would feel fake — the rise out of
-   *  black is the cinematic arc. (See the design doc.) */
-  momentKind: z.enum(['video', 'spotlight']),
+  /** Which kind of hero the director called for. Video when the subject has real
+   *  ambient motion (steam, flame, water, hands at work, light moving across a
+   *  room). Still when the product is at rest and inventing motion would feel
+   *  fake — the hero is then a cinematic SCENE composition (the product in its
+   *  world, lit naturally, with depth and air), held still. */
+  heroKind: z.enum(['video', 'still']),
 });
 
 export type Trajectory = z.infer<typeof TrajectorySchema>;

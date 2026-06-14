@@ -23,7 +23,7 @@ import { FOUNDER_TREATMENTS } from '@/lib/archetypes/main-street/schemas';
  *  kind is excluded — the cinematographer no longer emits it (Task 4). Old stores
  *  with kind: 'image' keep rendering through MediaSlot, but new builds land on
  *  video or spotlight only. */
-const MOMENT_KINDS = ['video', 'spotlight'] as const;
+const MOMENT_KINDS = ['video', 'still'] as const;
 
 export type DesignDecisionType = 'moment-kind' | 'goods-treatment' | 'founder-treatment';
 
@@ -79,7 +79,7 @@ export interface CrewChoicesLog {
   tenantId: string;
   nicheSlug: string;
   moodKey: string;
-  momentKind: (typeof MOMENT_KINDS)[number];
+  heroKind: (typeof MOMENT_KINDS)[number];
   goodsTreatment: string;
   founderTreatment: string;
   /** What the dice dealt before the copywriter played — logged beside the pick so
@@ -109,8 +109,8 @@ export function logCrewChoices(c: CrewChoicesLog): void {
     ...base,
     decisionType: 'moment-kind',
     candidates: [...MOMENT_KINDS],
-    picked: { kind: c.momentKind },
-    reasoning: 'cinematographer chose the Moment kind for this build',
+    picked: { kind: c.heroKind },
+    reasoning: 'director chose the hero kind from the trajectory; cinematographer executed',
   });
   void logDesignChoice({
     ...base,

@@ -13,13 +13,11 @@ describe('linkHref', () => {
     expect(linkHref('about')).toBe('/about');
     expect(linkHref('events')).toBe('/events');
     expect(linkHref('contact')).toBe('/contact');
-    // goods is the in-page scroll to the products sampling on the home page.
-    expect(linkHref('goods')).toBe('#goods');
   });
 
-  it('resolves every declared target (no target can 404)', () => {
+  it('every target is a real route — no in-page scroll target (the home is a sampling; the shop is the catalog)', () => {
     for (const t of LINK_TARGETS) {
-      expect(linkHref(t)).toMatch(/^(\/|#)/);
+      expect(linkHref(t)).toMatch(/^\//);
     }
   });
 });

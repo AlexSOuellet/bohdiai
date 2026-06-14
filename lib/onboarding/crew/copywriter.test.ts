@@ -22,9 +22,9 @@ const trajectory: Trajectory = {
   feeling: 'the quiet pride of carrying something built to outlast you',
   customerWhy: 'people want one good thing that ages with them, not another that wears out',
   visualWorld: 'warm and worn, low light, deep shadow, rich texture',
-  momentConcept: 'a hand resting on a worn bench, dust drifting in a slow shaft of light',
+  heroConcept: 'a hand resting on a worn bench, dust drifting in a slow shaft of light',
   register: 'restrained',
-  momentKind: 'video',
+  heroKind: 'video',
 };
 
 // The dice the pipeline deals the copywriter. Matches the draft below so the
@@ -40,7 +40,7 @@ const draft = {
     eyebrow: 'From the workshop',
     brand: 'Tannery Row',
     ctaLabel: 'See the work',
-    ctaTarget: 'goods',
+    ctaTarget: 'shop',
   },
   goods: { title: 'The bench', treatment: 'procession' },
   founder: {
@@ -119,6 +119,34 @@ describe('writeCopy (the Copywriter)', () => {
     expect(last).toContain('120');
   });
 
+  it('on length-only failures, tells the model to resubmit the previous draft with ONLY the named fields changed', async () => {
+    // The exact failure that killed a real build: moment.story.0 overflows a tight
+    // 48-char cap by 3 characters. With no preserve-the-rest instruction the model
+    // rewrites every field each retry — a different field lands long next round and
+    // the budget burns without converging on the one bad line.
+    const overLong = 'x'.repeat(51); // 3 over the 48 cap on a StoryLine
+    const over = { ...draft, moment: { ...draft.moment, story: [overLong, draft.moment.story[1]] } };
+    create.mockResolvedValueOnce(toolMsg(over)).mockResolvedValueOnce(toolMsg(draft));
+    await writeCopy(brief, trajectory, rolls);
+    expect(create).toHaveBeenCalledTimes(2);
+    const second = create.mock.calls[1]![0] as { messages: Array<{ role: string; content: unknown }> };
+    const last = JSON.stringify(second.messages.at(-1));
+    // the model sees: this is length-only, so don't rewrite the rest
+    expect(last).toContain('moment.story.0');
+    expect(last).toMatch(/byte-for-byte identical|previous draft EXACTLY|only the fields/i);
+  });
+
+  it('on a non-length failure, does NOT tell the model to preserve the rest of the draft (a structural fix may require rewriting)', async () => {
+    // Punctuation violation on a story line is not a length cap — the model should
+    // be free to rewrite the line, not constrained to a byte-identical resubmit.
+    const punctured = { ...draft, moment: { ...draft.moment, story: ['Built by hand.', 'Made to outlast you'] } };
+    create.mockResolvedValueOnce(toolMsg(punctured)).mockResolvedValueOnce(toolMsg(draft));
+    await writeCopy(brief, trajectory, rolls);
+    const second = create.mock.calls[1]![0] as { messages: Array<{ role: string; content: unknown }> };
+    const last = JSON.stringify(second.messages.at(-1));
+    expect(last).not.toMatch(/byte-for-byte identical|previous draft EXACTLY/i);
+  });
+
   it('throws when no valid copy is produced within the attempt cap', async () => {
     create.mockResolvedValue(toolMsg({ ...draft, shopName: 'x' })); // too short
     await expect(writeCopy(brief, trajectory, rolls)).rejects.toThrow(/valid copy/);
@@ -159,23 +187,20 @@ describe('writeCopy (the Copywriter)', () => {
   });
 });
 
-describe('buildCopywriterPrompt — momentKind branches the story directive', () => {
-  it('prompt directs a multi-line story when trajectory.momentKind is video', () => {
-    const t = { ...trajectory, momentKind: 'video' as const };
-    const prompt = buildCopywriterPrompt(brief, t, rolls);
-    expect(prompt).toContain('2-4 lines');
-  });
-
-  it('prompt directs ONE tagline in moment.story when trajectory.momentKind is spotlight', () => {
-    const t = { ...trajectory, momentKind: 'spotlight' as const };
-    const prompt = buildCopywriterPrompt(brief, t, rolls);
-    expect(prompt).toContain('EXACTLY 1 line');
-    expect(prompt).toContain('only entry in moment.story');
+describe('buildCopywriterPrompt — story directive does NOT branch on heroKind (D54 — hero renders the brand block at rest)', () => {
+  it('directs 1-4 lines regardless of heroKind (the kind chooses the cinematographer\'s shot, not the copy structure)', () => {
+    const videoPrompt = buildCopywriterPrompt(brief, { ...trajectory, heroKind: 'video' as const }, rolls);
+    const stillPrompt = buildCopywriterPrompt(brief, { ...trajectory, heroKind: 'still' as const }, rolls);
+    expect(videoPrompt).toContain('1-4 lines');
+    expect(stillPrompt).toContain('1-4 lines');
+    // The old spotlight rise / cross-fade story lifecycle language is gone (D54)
+    expect(videoPrompt).not.toMatch(/cross-fading|risen from black|tagline-strength line/i);
+    expect(stillPrompt).not.toMatch(/cross-fading|risen from black|tagline-strength line/i);
   });
 });
 
-describe('CopywriterDraftSchema — spotlight tagline: single-line moment.story', () => {
-  it('accepts a single-line moment.story (spotlight tagline)', () => {
+describe('CopywriterDraftSchema — moment.story accepts any length from 1 to 4 lines', () => {
+  it('accepts a single-line moment.story', () => {
     const d = { ...draft, moment: { ...draft.moment, story: ['One brave line that lands the brand'] } };
     expect(CopywriterDraftSchema.safeParse(d).success).toBe(true);
   });
@@ -227,9 +252,9 @@ describe('copywriter prompt — founder-attribution name lock', () => {
     feeling: 'a quiet workshop',
     customerWhy: 'they want a piece that lasts',
     visualWorld: 'morning light, warm timber',
-    momentConcept: 'hands at the bench',
+    heroConcept: 'hands at the bench',
     register: 'restrained',
-    momentKind: 'video',
+    heroKind: 'video',
   };
 
   const r = { goods: 'marquee', founder: 'quote' } as const;
@@ -249,7 +274,7 @@ describe('copywriter prompt — founder-attribution name lock', () => {
   });
 });
 
-describe('copywriter prompt — visionPerPhoto and flat catalog', () => {
+describe('copywriter prompt — flat catalog target', () => {
   const baseBrief: CrewBrief = {
     shopName: 'Sawdust & Stone',
     nicheDisplayName: 'Woodworker',
@@ -265,27 +290,6 @@ describe('copywriter prompt — visionPerPhoto and flat catalog', () => {
     const b: CrewBrief = { ...baseBrief, productCount: 20 };
     const prompt = buildCopywriterPrompt(b, trajectory, rolls);
     expect(prompt).toMatch(/write 5/i);
-  });
-
-  it("threads per-photo Vision suggestions as starting hands for products 1..N", () => {
-    const b: CrewBrief = {
-      ...baseBrief,
-      visionPerPhoto: [
-        { productType: 'turned walnut bowl', suggestedName: 'River Bowl', suggestedShortDescription: 'small bowl', suggestedDescription: 'A small turned walnut bowl.', suggestedPriceCents: 4800 },
-        { productType: 'small wooden sign', suggestedName: 'Welcome Plank', suggestedShortDescription: 'a sign', suggestedDescription: 'A small carved sign.', suggestedPriceCents: 3200 },
-      ],
-    };
-    const prompt = buildCopywriterPrompt(b, trajectory, rolls);
-    expect(prompt).toContain("THE MAKER'S WORK");
-    expect(prompt).toContain('turned walnut bowl');
-    expect(prompt).toContain('small wooden sign');
-    expect(prompt).toMatch(/products 1 through 2/i);
-    expect(prompt).toMatch(/products 3 through 5.*stand-?ins/i);
-  });
-
-  it("omits the maker's-work section when visionPerPhoto is empty/undefined", () => {
-    const prompt = buildCopywriterPrompt(baseBrief, trajectory, rolls);
-    expect(prompt).not.toContain("THE MAKER'S WORK");
   });
 });
 

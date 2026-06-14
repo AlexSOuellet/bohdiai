@@ -4,17 +4,17 @@
  *
  * Pure (no React) so both the content schema and the renderer can share it. The
  * crew authors a TARGET from this list rather than a raw URL, so what a button
- * says and where it goes always agree and a link can never 404 (D46). `goods` is
- * the in-page scroll to the products sampling on the home page; the rest are real
- * routes.
+ * says and where it goes always agree and a link can never 404 (D46). Every
+ * target is a real route — there is no in-page scroll target. The home is a
+ * SAMPLING (D32); the full catalog lives at /shop, so "See the work" buttons
+ * route to the shop page, not to a section on the home.
  */
-export const LINK_TARGETS = ['home', 'shop', 'goods', 'about', 'events', 'contact'] as const;
+export const LINK_TARGETS = ['home', 'shop', 'about', 'events', 'contact'] as const;
 export type LinkTarget = (typeof LINK_TARGETS)[number];
 
 const LINK_HREFS: Record<LinkTarget, string> = {
   home: '/',
   shop: '/shop',
-  goods: '#goods',
   about: '/about',
   events: '/events',
   contact: '/contact',

@@ -11,7 +11,7 @@
  * a big light change without jumping on restart) — physics, not taste. It never
  * says go low-light or go cinematic.
  *
- * The kind decision belongs to the DIRECTOR (trajectory.momentKind, see director.ts);
+ * The kind decision belongs to the DIRECTOR (trajectory.heroKind, see director.ts);
  * this stage executes whichever kind was called for. Video carries real ambient motion
  * belonging to the subject; spotlight carries the cinematic rise of a static hero
  * object (the rise/push happen in CSS at render — see SpotlightStage). The Moment is
@@ -23,7 +23,7 @@ import { anthropicClient } from '@/lib/anthropic';
 import { logger } from '@/lib/logger';
 import { withTimeout } from '@/lib/with-timeout';
 import { ScenePrompt } from '@/lib/archetypes/main-street/schemas';
-import { lengthAwareIssues } from './length-feedback';
+import { buildResubmitPayload } from './length-feedback';
 import type { Trajectory } from './trajectory';
 
 const MODEL = 'claude-sonnet-4-6';
@@ -35,7 +35,7 @@ const TIMEOUT_MS = 60_000;
  *  urls (generated later). Reuses ScenePrompt so its limits never drift from the
  *  engine that finally validates the assembled envelope. */
 export const MomentSceneSchema = z.object({
-  kind: z.enum(['video', 'spotlight']),
+  kind: z.enum(['video', 'still']),
   prompt: ScenePrompt,
   // No hard cap: `alt` is the accessibility caption (never laid out), so its
   // length can't break anything and must never fail the build (D53). The min is
@@ -86,36 +86,29 @@ const SET_MOMENT_TOOL: Anthropic.Tool = {
   input_schema: { type: 'object', properties: {}, additionalProperties: true },
 };
 
-export function buildCinematographerPrompt(trajectory: Trajectory, story: string[], makerWork?: string): string {
+export function buildCinematographerPrompt(trajectory: Trajectory, story: string[]): string {
   const lines = story.map((l) => `  ${l}`).join('\n');
-  const trimmedMakerWork = makerWork?.trim();
-  const makerWorkClause = trimmedMakerWork
-    ? `WHAT THIS MAKER ACTUALLY MAKES — derived from the photos the maker uploaded. The Moment can show real subject matter rather than a stereotyped scene:
-${trimmedMakerWork}
+  return `You are the CINEMATOGRAPHER on Bohdi's crew. You design the HERO — one large 16:9 shot that opens the store. Build it to the trajectory and to the story the copywriter wrote, so the shot carries the same feeling as the words.
 
-`
-    : '';
-  return `You are the CINEMATOGRAPHER on Bohdi's crew. You design the Moment — the hero of the front door, one large 16:9 shot that opens the store. Build it to the trajectory and to the story the copywriter wrote, so the shot carries the same feeling as the words.
-
-${makerWorkClause}THE TRAJECTORY
+THE TRAJECTORY
 - feeling: ${trajectory.feeling}
 - why the customer wants this: ${trajectory.customerWhy}
 - visual world: ${trajectory.visualWorld}
-- the moment: ${trajectory.momentConcept}
+- the hero: ${trajectory.heroConcept}
 
-THE STORY that plays over the Moment:
+THE STORY that lands over the hero:
 ${lines}
 
-The director has called for a ${trajectory.momentKind.toUpperCase()} Moment for this shop. Build the shot accordingly. Set kind to "${trajectory.momentKind}". Do not second-guess this — the director judged the inventing-motion criterion against the trajectory; your job is to execute that call into a great shot.
+The director has called for a ${trajectory.heroKind.toUpperCase()} hero for this shop. Build the shot accordingly. Set kind to "${trajectory.heroKind}". Do not second-guess this — the director judged the inventing-motion criterion against the trajectory; your job is to execute that call into a great shot.
 
 Design the shot with set_moment:
-- kind: set to "${trajectory.momentKind}" as the director called.
+- kind: set to "${trajectory.heroKind}" as the director called.
 - prompt: the shot as seven short phrases —
     - composition: how the shot is framed.
     - subject: what is in frame.
     - environment: where it is.
     - atmosphere: the feeling in the air.
-    - camera: the angle and lens. For a video the camera is LOCKED — a fixed, static setup. Name no movement: no pan, push-in, zoom, dolly, crane, orbit, rack focus, or drift. (A moving camera can't loop — see below.)
+    - camera: the angle and lens. For a video the camera is LOCKED — a fixed, static setup. Name no movement: no pan, push-in, zoom, dolly, crane, orbit, rack focus, or drift. (A moving camera can't loop — see below.) For a still the camera is also static; the renderer adds a very subtle CSS push-in at render, not the image.
     - lighting: the light.
     - style: the visual style.
 - alt: a short, plain description of the shot — a sentence is plenty.
@@ -126,7 +119,9 @@ If kind is "video": it is a short clip that LOOPS seamlessly. Two things follow,
 - The CAMERA is locked. The motion comes from WITHIN the frame — drifting light, rising steam, a flame's flicker, fabric or dust stirring, a slow shimmer on a glaze — never from the camera. A camera that moves (pans, pushes in, zooms, racks focus, drifts) travels away from its start frame and the loop jumps on restart. Hold the camera still and let the scene move.
 - The in-frame motion is continuous and ambient — no progressive human action and no large change in light or position across the clip, or the restart will jump. A motionless person is fine (hands at rest, a figure standing still); a person performing an action is not.
 
-If kind is "spotlight": design a single beautiful STILL of one HERO OBJECT framed centrally on pure black. The composition treats the object as a held subject under light — describe what we see, how it's framed, and how it's lit. The 'environment' group is black (the void the object rises out of). The 'camera' group describes the lens and framing of the STATIC shot — a slow rise and a slow push-in are added by the renderer in CSS, not in the generated image, so 'camera' here is just framing, not motion. The 'atmosphere' is the air around the object. The image must contain NO text, lettering, or logos, and the object must be one clean subject — not a collage.
+If kind is "still": video is the default for the Moment (D33, D47), and a still is the fallback the director reached for because the subject genuinely cannot offer ambient motion in 5 seconds. Treat it that way — make the still work without trying to make it the prettier choice. The product sits in its real environment (a sink, a windowsill, a workbench, a table, a studio corner, a counter), not on a void. The composition has some depth and air around the product. The lighting is natural and directional. The 'environment' phrase must describe a real space; pure black or any solid void is forbidden — that reads as a product card and we are explicitly NOT building that.
+
+LIGHTING for a still is physics: the scene must be clearly lit with directional light that gives the product separation from its surroundings — a key from the side or above-front, a softer fill, the product visibly modeled (highlights on one side, soft shadow on the other). Even when the trajectory calls for a moody atmosphere, the product itself must be readable — never let it disappear into shadow. The atmosphere lives in the room, the light, and the air around the product, not in flattening the product itself.
 
 Set the moment now.`;
 }
@@ -134,8 +129,8 @@ Set the moment now.`;
 export const __buildCinematographerPromptForTest = buildCinematographerPrompt;
 
 /** Run the Cinematographer: trajectory + story in, one validated Moment scene out. */
-export async function shootMoment(trajectory: Trajectory, story: string[], makerWork?: string): Promise<MomentScene> {
-  const system = buildCinematographerPrompt(trajectory, story, makerWork);
+export async function shootMoment(trajectory: Trajectory, story: string[]): Promise<MomentScene> {
+  const system = buildCinematographerPrompt(trajectory, story);
   const messages: Anthropic.MessageParam[] = [
     { role: 'user', content: 'Design the Moment. Call set_moment.' },
   ];
@@ -168,8 +163,8 @@ export async function shootMoment(trajectory: Trajectory, story: string[], maker
       // but validate that the model actually set it — a misread directive would
       // silently produce the wrong Moment kind if we don't cross-check here.
       const kindMismatch =
-        parsed.data.kind !== trajectory.momentKind
-          ? `the director called for a ${trajectory.momentKind} Moment, but you set kind to "${parsed.data.kind}". Match the director's call: set kind to "${trajectory.momentKind}".`
+        parsed.data.kind !== trajectory.heroKind
+          ? `the director called for a ${trajectory.heroKind} Moment, but you set kind to "${parsed.data.kind}". Match the director's call: set kind to "${trajectory.heroKind}".`
           : null;
       if (textHits.length === 0 && !cameraHit && !kindMismatch) {
         logger.info('crew: moment shot', { kind: parsed.data.kind });
@@ -200,12 +195,12 @@ export async function shootMoment(trajectory: Trajectory, story: string[], maker
       continue;
     }
 
-    const issues = lengthAwareIssues(parsed.error, tu.input);
-    lastIssues = issues.map((i) => `${i.path}: ${i.message}`).join('; ');
+    const payload = buildResubmitPayload(parsed.error, tu.input);
+    lastIssues = payload.issues.map((i) => `${i.path}: ${i.message}`).join('; ');
     messages.push({ role: 'assistant', content: resp.content });
     messages.push({
       role: 'user',
-      content: [{ type: 'tool_result', tool_use_id: tu.id, is_error: true, content: JSON.stringify({ ok: false, issues }) }],
+      content: [{ type: 'tool_result', tool_use_id: tu.id, is_error: true, content: JSON.stringify(payload) }],
     });
   }
 

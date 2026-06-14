@@ -1,6 +1,6 @@
-import { describe, it, expect, afterEach, vi } from 'vitest';
-import { render, cleanup, act, fireEvent } from '@testing-library/react';
-import { MomentHero, MomentIntro, buildStoryTimeline, phaseDurationMs } from './MomentHero';
+import { describe, it, expect, afterEach } from 'vitest';
+import { render, cleanup } from '@testing-library/react';
+import { MomentHero } from './MomentHero';
 import { MAIN_STREET_SKINS } from './skins';
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
@@ -28,29 +28,46 @@ const moment = {
 
 afterEach(cleanup);
 
-describe('buildStoryTimeline', () => {
-  it('frames each line with a clean gap and lands on the brand — no two lines stack', () => {
-    const t = buildStoryTimeline(2);
-    expect(t.map((p) => p.kind)).toEqual(['open', 'line', 'gap', 'line', 'gap', 'brand']);
-  });
-});
-
-describe('MomentHero (the rested hero)', () => {
-  it('renders a full-screen hero with held media, a frame per story line, and a brand frame', () => {
+describe('MomentHero (the hero IS the front door, D54)', () => {
+  it('renders a full-screen hero with held media and the brand block landed at rest', () => {
     const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('[data-ms-hero]')).toBeTruthy();
     expect(container.querySelector('video')).toBeTruthy();
-    expect(container.querySelectorAll('[data-story-line]')).toHaveLength(moment.story.length);
-    expect(container.querySelector('[data-story-brand]')).toBeTruthy();
+    expect(container.querySelector('[data-ms-hero-brand]')).toBeTruthy();
   });
 
-  it('rests on the brand by default (no auto-play) and shows no intro overlay without a shop key', () => {
+  it('renders the authored story lines as a subhead stack beneath the brand', () => {
     const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
-    // The hero is already landed — the brand frame is visible at rest.
-    const brand = container.querySelector('[data-story-brand]') as HTMLElement;
-    expect(brand.style.opacity).toBe('1');
-    // No momentKey → the cold-arrival overlay never mounts.
+    const lines = container.querySelectorAll('[data-ms-hero-story-line]');
+    expect(lines).toHaveLength(moment.story.length);
+    expect(lines[0]!.textContent).toBe(moment.story[0]);
+    expect(lines[1]!.textContent).toBe(moment.story[1]);
+  });
+
+  it('omits the story block when no story lines are authored', () => {
+    const noStory = { ...moment, story: [] };
+    const { container } = render(<MomentHero identity={identity} moment={noStory} skin={skin} />);
+    expect(container.querySelector('[data-ms-hero-story]')).toBeNull();
+  });
+
+  it('does NOT mount a portable Moment intro overlay (the portable Moment layer retired in D54)', () => {
+    const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('[data-moment-intro]')).toBeNull();
+    expect(container.querySelector('[data-moment-enter]')).toBeNull();
+    expect(container.querySelector('[data-spotlight-stage]')).toBeNull();
+  });
+
+  it('renders a STILL hero as an img with a very subtle CSS push-in (no fal-rendered camera motion)', () => {
+    const stillMoment = {
+      ...moment,
+      media: { ...moment.media, kind: 'still' as const, url: '/scene.jpg' },
+    };
+    const { container } = render(<MomentHero identity={identity} moment={stillMoment} skin={skin} />);
+    // a still asset renders as <img>, not <video> — fal returned a still
+    expect(container.querySelector('img')).toBeTruthy();
+    expect(container.querySelector('video')).toBeNull();
+    // the push-in animation keyframes are emitted so the subtle motion has somewhere to live
+    expect(container.innerHTML).toContain('ms-hero-push');
   });
 
   it('lets a real logo sit beside the typographic wordmark — a true lockup, not a replacement, and bare (no plate)', () => {
@@ -88,9 +105,9 @@ describe('MomentHero (the rested hero)', () => {
     expect(getByText('Our story').closest('a')?.getAttribute('href')).toBe('/about');
   });
 
-  it('falls back to the goods scroll when the primary has no authored target', () => {
+  it('falls back to /shop when the primary has no authored target (the catalog is the destination — the home is a sampling)', () => {
     const { getByText } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
-    expect(getByText('See the loaves').closest('a')?.getAttribute('href')).toBe('#goods');
+    expect(getByText('See the loaves').closest('a')?.getAttribute('href')).toBe('/shop');
   });
 
   it('sends the secondary hero button to its authored target', () => {
@@ -114,131 +131,5 @@ describe('MomentHero — nav contrast (4c)', () => {
     const style = nav.getAttribute('style') ?? '';
     // dark logo + dark media backdrop → light surface (#F7F5F2 or rgb equivalent)
     expect(style.includes('#F7F5F2') || style.includes('rgb(247, 245, 242)') || style.includes('rgb(247,245,242)')).toBe(true);
-  });
-});
-
-describe('MomentHero — spotlight kind', () => {
-  it('uses SpotlightStage as the rested hero when moment.media.kind is spotlight', () => {
-    const spotlightMoment = { ...moment, media: { ...moment.media, kind: 'spotlight' as const } };
-    const { container } = render(<MomentHero identity={identity} moment={spotlightMoment} skin={skin} />);
-    expect(container.querySelector('[data-spotlight-stage]')).not.toBeNull();
-  });
-
-  it('uses the existing MomentStage (no SpotlightStage) when moment.media.kind is video', () => {
-    const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
-    expect(container.querySelector('[data-spotlight-stage]')).toBeNull();
-  });
-});
-
-describe('MomentIntro — spotlight kind', () => {
-  it('renders SpotlightStage inside the intro overlay for spotlight moments', () => {
-    const spotlightMoment = { ...moment, media: { ...moment.media, kind: 'spotlight' as const } };
-    const { container } = render(<MomentIntro moment={spotlightMoment} skin={skin} onExited={vi.fn()} />);
-    expect(container.querySelector('[data-spotlight-stage]')).not.toBeNull();
-    // Uses MomentStage shape selectors for non-spotlight so we check absence of story-line data attrs:
-    expect(container.querySelector('[data-story-line]')).toBeNull();
-  });
-
-  it('holds the Enter button back until ~7500ms have elapsed for spotlight', async () => {
-    vi.useFakeTimers();
-    try {
-      const spotlightMoment = { ...moment, media: { ...moment.media, kind: 'spotlight' as const } };
-      const { container } = render(<MomentIntro moment={spotlightMoment} skin={skin} onExited={vi.fn()} />);
-      // Button absent at t=0
-      expect(container.querySelector('[data-moment-enter]')).toBeNull();
-      // Advance to just before the gate (7499ms)
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(7499);
-      });
-      expect(container.querySelector('[data-moment-enter]')).toBeNull();
-      // Advance past the gate
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(2);
-      });
-      expect(container.querySelector('[data-moment-enter]')).not.toBeNull();
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it('melts out on Enter click for spotlight and calls onExited after the fade', async () => {
-    vi.useFakeTimers();
-    try {
-      const onExited = vi.fn();
-      const spotlightMoment = { ...moment, media: { ...moment.media, kind: 'spotlight' as const } };
-      const { container } = render(<MomentIntro moment={spotlightMoment} skin={skin} onExited={onExited} />);
-      // Advance past the spotlight entry gate
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(7501);
-      });
-      const enterBtn = container.querySelector('[data-moment-enter]') as HTMLButtonElement;
-      await act(async () => {
-        enterBtn.click();
-      });
-      const overlay = container.querySelector('[data-moment-intro]') as HTMLElement;
-      expect(overlay.style.opacity).toBe('0'); // melting
-      expect(onExited).not.toHaveBeenCalled();
-      await act(async () => {
-        fireEvent.transitionEnd(overlay, { propertyName: 'opacity' });
-      });
-      expect(onExited).toHaveBeenCalledTimes(1);
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-});
-
-describe('MomentIntro (the cold-arrival overlay)', () => {
-  it('holds the Enter button back until the story has played and landed', async () => {
-    vi.useFakeTimers();
-    try {
-      const onExited = vi.fn();
-      const { container } = render(<MomentIntro moment={moment} skin={skin} onExited={onExited} />);
-      // Before it lands, there is no way to enter.
-      expect(container.querySelector('[data-moment-enter]')).toBeNull();
-
-      // Advance phase by phase (each timeout schedules the next on its own commit).
-      for (const phase of buildStoryTimeline(moment.story.length)) {
-        const ms = phaseDurationMs(phase);
-        if (ms === null) break; // brand is terminal
-        await act(async () => {
-          await vi.advanceTimersByTimeAsync(ms);
-        });
-      }
-      const brand = container.querySelector('[data-story-brand]') as HTMLElement;
-      expect(brand.style.opacity).toBe('1');
-      expect(container.querySelector('[data-moment-enter]')).toBeTruthy();
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it('melts (fades out) on Enter and calls onExited once the fade finishes', async () => {
-    vi.useFakeTimers();
-    try {
-      const onExited = vi.fn();
-      const { container } = render(<MomentIntro moment={moment} skin={skin} onExited={onExited} />);
-      for (const phase of buildStoryTimeline(moment.story.length)) {
-        const ms = phaseDurationMs(phase);
-        if (ms === null) break;
-        await act(async () => {
-          await vi.advanceTimersByTimeAsync(ms);
-        });
-      }
-      const enterBtn = container.querySelector('[data-moment-enter]') as HTMLButtonElement;
-      await act(async () => {
-        enterBtn.click();
-      });
-      const overlay = container.querySelector('[data-moment-intro]') as HTMLElement;
-      expect(overlay.style.opacity).toBe('0'); // melting
-      expect(onExited).not.toHaveBeenCalled(); // not until the fade completes
-
-      await act(async () => {
-        fireEvent.transitionEnd(overlay, { propertyName: 'opacity' });
-      });
-      expect(onExited).toHaveBeenCalledTimes(1);
-    } finally {
-      vi.useRealTimers();
-    }
   });
 });

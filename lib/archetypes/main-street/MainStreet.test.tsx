@@ -11,7 +11,7 @@ const base: MainStreetContent = {
   identity: { wordmark: 'Tannery Row', nav: ['Shop', 'About'] },
   moment: {
     media: {
-      kind: 'image',
+      kind: 'still',
       prompt: { composition: 'bench', subject: 'a wallet', environment: 'a workshop', atmosphere: 'warm', camera: 'still', lighting: 'amber', style: 'photographic' },
       alt: 'the bench',
     },

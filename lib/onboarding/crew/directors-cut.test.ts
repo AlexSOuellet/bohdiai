@@ -21,16 +21,16 @@ const trajectory: Trajectory = {
   feeling: 'the quiet pride of carrying something built to outlast you',
   customerWhy: 'people want one good thing that ages with them',
   visualWorld: 'warm and worn, low light, deep shadow',
-  momentConcept: 'a hand resting on a worn bench',
+  heroConcept: 'a hand resting on a worn bench',
   register: 'restrained',
-  momentKind: 'video',
+  heroKind: 'video',
 };
 
 const current: CrewOutput = {
   copy: {
     shopName: 'Tannery Row',
     identity: { wordmark: 'Tannery Row', nav: [{ label: 'Shop', target: 'shop' }, { label: 'Our story', target: 'about' }] },
-    moment: { story: ['Built by hand', 'Made to outlast you'], eyebrow: 'From the workshop', brand: 'Tannery Row', ctaLabel: 'See the work', ctaTarget: 'goods' },
+    moment: { story: ['Built by hand', 'Made to outlast you'], eyebrow: 'From the workshop', brand: 'Tannery Row', ctaLabel: 'See the work', ctaTarget: 'shop' },
     goods: { title: 'The bench', treatment: 'procession' },
     founder: { quote: 'I would rather make one belt that lasts thirty years than ten that fall apart.', attribution: 'Sam, founder', treatment: 'quote' },
     close: { label: 'Come by', headline: 'Built to outlast us', ctaLabel: 'Order yours', ctaTarget: 'contact' },

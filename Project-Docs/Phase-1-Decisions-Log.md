@@ -626,6 +626,26 @@ The resolution: the body-prose fields the responsive design absorbs at any lengt
 
 ---
 
+---
+
+## 2026-06-14 (session 42)
+
+### D54. Kill the portable Moment; the Main Street hero becomes the surface; still heroes are scenes, not products on black
+
+Across multiple live builds this session the spotlight Moment landed badly: dark product on a dark void, the still-from-pure-black framing turned every front door dark regardless of mood, the Moment-as-portable-layer carried a Wix/Squarespace product-hero look it was supposed to avoid, and the click-through Enter Site step felt like extra friction in front of the actual store. The lighting fix (the cinematographer's separation directive added earlier this session) made the picture better but didn't fix the structural problems — a great photograph of one product on black is still a product photograph, not a brand intro. And by design spotlight forced the entire first impression onto pure black, hiding whatever mood the maker had picked.
+
+The fix is structural, not a tuning pass. The portable Moment concept retires. The Main Street hero becomes the front door — same surface, no separate layer that plays first and melts in. No Enter Site click-through, no play-once-then-rest lifecycle, no cold-front-door cookie, no deep-link bypass logic, no footer Intro replay link, no SpotlightStage component. The director still picks heroKind from the same motion criterion, but it now drives the hero directly. Video heroes work exactly as they do today — locked camera, in-frame motion only, fal-generated, seamless loop. Still heroes get a redesigned treatment: a cinematic SCENE composition (the product in its world — soap on a stone by a sink with morning light, candle on a windowsill with curtains, jewelry on a dressed table with an open book) rendered as a single fal still, with a very subtle CSS push-in at render time (gentle scale, slow, barely perceptible — not the slideshow's Ken Burns). The "rise out of pure black" framing is dead. The scene shows the maker's world; the skin's colors get to be visible because there's a room around the product instead of a void.
+
+For the three other archetypes (Counter, Find, Body of Work — D32, none built yet), the Moment goes away with no replacement. Each shape opens with its own native chrome when those are built (cabinet, board, artist statement). BohdiAI's "visibly not AI slop" differentiation (D31) no longer leans on a shared signature wow layer; it leans on the Constellation procession, the marquee, the founder beat with the portrait scrim, the skin and type system, and the crew's authored voice — all of which are already distinctive. The bet behind this call is that a cinematic still scene OR a real-motion video hero, sitting in the right mood's skin, with the page-down treatments below already distinctive, doesn't need a front-door layer on top to be "not AI slop."
+
+Cost: the still treatment is much cheaper than video (one fal image vs. one fal video). The static-product savings spotlight gave us are preserved and extended.
+
+What this supersedes: **D33** (Moment as BohdiAI's signature shared across every storefront), **D43** (Moment plays first as portable layer, then melts), **D44** (autoplay-cold-arrival, play-through-and-rest, Enter Site invite, cookie write on click), **D57** (two-treatment Moment as a portable layer concept; the still-vs-video kind selection itself stays, just at the hero), **D58** (spotlight tagline + rise-as-arc framing — replaced by the still-scene framing). **D52** (locked camera for video) STAYS because video heroes still loop, and a moving camera still can't loop seamlessly. **D47** (prefer real motion; never invent motion) STAYS as the criterion the director uses to pick between video and still hero.
+
+Live tenants currently carrying spotlight content are test stores and get wiped; the schema drops the spotlight legacy path entirely, and `momentKind` is renamed to `heroKind` with values `video` and `still`.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.
