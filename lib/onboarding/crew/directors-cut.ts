@@ -21,6 +21,7 @@ import { moodAlignedSkins } from '@/lib/archetypes/main-street/skin-selection';
 import { CopywriterDraftSchema } from './copywriter-schema';
 import { MomentSceneSchema } from './cinematographer';
 import { GraphicSpecSchema } from './graphic-artist';
+import { normalizeCopy } from './normalize-copy';
 import type { Trajectory } from './trajectory';
 import type { CrewBrief, CrewOutput } from './types';
 
@@ -93,7 +94,10 @@ export async function directorsCut(brief: CrewBrief, trajectory: Trajectory, cur
     let nextCopy = current.copy;
     if (input.copy !== undefined) {
       const c = CopywriterDraftSchema.safeParse(input.copy);
-      if (c.success) nextCopy = c.data;
+      // Normalize any revised copy the same way the Copywriter's output is
+      // normalized so a Director's Cut revision can't reintroduce headline /
+      // story-line punctuation that the build would otherwise carry forward.
+      if (c.success) nextCopy = normalizeCopy(c.data);
       else for (const i of c.error.issues) issues.push({ path: `copy.${i.path.join('.')}`, message: i.message });
     }
     let nextMoment = current.moment;

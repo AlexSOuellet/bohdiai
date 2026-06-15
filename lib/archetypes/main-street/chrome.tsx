@@ -129,6 +129,30 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       .arch-main-street .ms-kb{animation:none}
       .arch-main-street .ms-const-card{opacity:1;transform:none;transition:none}
     }
+    /* Overflow discipline (D57). The schema no longer caps string length — the
+       build never fails on copy on ANY field — so the renderer carries visual
+       restraint. Each type role gets the strategy that fits its slot: nav and
+       button labels stay one line and ellipsis at a sane max; story lines and
+       card lines line-clamp; display headlines wrap with a max-width so they
+       can grow without breaking layout; body prose wraps naturally with a
+       comfortable measure. */
+    .arch-main-street [data-type="navLabel"]{max-width:240px;display:inline-block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+    .arch-main-street [data-type="wordmark"]{max-width:360px;display:inline-block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+    .arch-main-street [data-type="eyebrow"]{display:inline-block;max-width:60ch;overflow-wrap:break-word}
+    .arch-main-street [data-type="storyline"]{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word;max-width:24ch;margin-inline:auto}
+    .arch-main-street [data-type="cardTitle"]{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word}
+    .arch-main-street [data-type="caption"]{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word}
+    .arch-main-street [data-type="brand"]{max-width:18ch;margin-inline:auto;overflow-wrap:break-word}
+    .arch-main-street [data-type="goodsHead"]{max-width:24ch;overflow-wrap:break-word}
+    .arch-main-street [data-type="closeHead"]{max-width:22ch;margin-inline:auto;overflow-wrap:break-word}
+    .arch-main-street [data-type="title"]{max-width:30ch;overflow-wrap:break-word}
+    .arch-main-street [data-type="quote"]{max-width:62ch;overflow-wrap:break-word}
+    .arch-main-street [data-type="body"]{max-width:70ch;overflow-wrap:break-word}
+    .arch-main-street [data-type="sig"]{display:inline-block;max-width:32ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+    .arch-main-street [data-type="price"]{white-space:nowrap}
+    .arch-main-street [data-type="day"]{white-space:nowrap}
+    .arch-main-street [data-type="where"]{display:inline-block;max-width:38ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+    .arch-main-street [data-type="legal"]{white-space:nowrap}
     ${responsive}
   `;
 }
@@ -246,6 +270,9 @@ export function MainStreetFooter({ shopName, skin }: { shopName: string; skin: A
         <Link href="/" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
           Home
         </Link>
+        <a href="/?intro=1" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
+          Intro
+        </a>
         <a href="/privacy" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
           Privacy
         </a>

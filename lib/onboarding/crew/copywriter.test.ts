@@ -93,62 +93,50 @@ describe('writeCopy (the Copywriter)', () => {
     expect(args.tool_choice).toEqual({ type: 'tool', name: 'submit_copy' });
   });
 
-  it('rejects a story line with punctuation, then accepts the fix', async () => {
-    const bad = { ...draft, moment: { ...draft.moment, story: ['Flour. Water. Salt.', 'Time'] } };
-    create.mockResolvedValueOnce(toolMsg(bad)).mockResolvedValueOnce(toolMsg(draft));
+  it('accepts a story line with punctuation in ONE pass (no retry) — the normalize step strips the bad characters server-side, D53 sharpened', async () => {
+    // The build NEVER fails on copy. Punctuation in a story line is no longer
+    // a schema rejection; normalize-copy strips it after parse succeeds.
+    const punctured = { ...draft, moment: { ...draft.moment, story: ['Flour. Water. Salt.', 'Time'] } };
+    create.mockResolvedValueOnce(toolMsg(punctured));
     const d = await writeCopy(brief, trajectory, rolls);
-    expect(d.moment.story).toEqual(['Built by hand', 'Made to outlast you']);
-    expect(create).toHaveBeenCalledTimes(2);
-    const second = create.mock.calls[1]![0] as { messages: Array<{ role: string; content: unknown }> };
-    expect(JSON.stringify(second.messages.at(-1))).toContain('punctuation');
+    expect(create).toHaveBeenCalledTimes(1);
+    // The forbidden marks are gone; the words remain.
+    expect(d.moment.story[0]).toBe('Flour Water Salt');
+    expect(d.moment.story[1]).toBe('Time');
   });
 
-  it('tells the copywriter its actual length when a still-capped field overflows, then accepts the fix', async () => {
-    // shortDescription stays capped (it's a card line where length is structural);
-    // body prose is uncapped, so the feedback path is tested on a capped field.
-    const longShort = 'x'.repeat(120); // over the 90 cap on shortDescription
+  it('accepts a verbose product shortDescription in ONE pass — no length cap anywhere, the build never fails on length', async () => {
+    const longShort = 'x'.repeat(220); // would have blown the old 90 cap
     const over = { ...draft, products: [{ ...draft.products[0], shortDescription: longShort }, draft.products[1], draft.products[2]] };
-    create.mockResolvedValueOnce(toolMsg(over)).mockResolvedValueOnce(toolMsg(draft));
+    create.mockResolvedValueOnce(toolMsg(over));
     const d = await writeCopy(brief, trajectory, rolls);
-    expect(d.products[0]!.shortDescription).toBe(draft.products[0]!.shortDescription);
-    expect(create).toHaveBeenCalledTimes(2);
-    const second = create.mock.calls[1]![0] as { messages: Array<{ role: string; content: unknown }> };
-    const last = JSON.stringify(second.messages.at(-1));
-    expect(last).toContain('products.0.shortDescription');
-    // the actionable part: the model is told its real length (120), not just the cap
-    expect(last).toContain('120');
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(d.products[0]!.shortDescription).toBe(longShort);
   });
 
-  it('on length-only failures, tells the model to resubmit the previous draft with ONLY the named fields changed', async () => {
-    // The exact failure that killed a real build: moment.story.0 overflows a tight
-    // 48-char cap by 3 characters. With no preserve-the-rest instruction the model
-    // rewrites every field each retry — a different field lands long next round and
-    // the budget burns without converging on the one bad line.
-    const overLong = 'x'.repeat(51); // 3 over the 48 cap on a StoryLine
-    const over = { ...draft, moment: { ...draft.moment, story: [overLong, draft.moment.story[1]] } };
-    create.mockResolvedValueOnce(toolMsg(over)).mockResolvedValueOnce(toolMsg(draft));
+  it('accepts a verbose moment story line in ONE pass — story lines have no length cap; the build never fails on length', async () => {
+    const longLine = 'x'.repeat(120); // would have blown the old 48 cap
+    const over = { ...draft, moment: { ...draft.moment, story: [longLine, draft.moment.story[1]] } };
+    create.mockResolvedValueOnce(toolMsg(over));
+    const d = await writeCopy(brief, trajectory, rolls);
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(d.moment.story[0]).toBe(longLine);
+  });
+
+  it('still retries on a shape failure (wrong enum, missing required field) — only shape can fail validation now', async () => {
+    // A non-real link target is an enum miss — that's shape, not length. Schema rejects.
+    const badEnum = { ...draft, moment: { ...draft.moment, ctaTarget: 'newsletter' as unknown as 'shop' } };
+    create.mockResolvedValueOnce(toolMsg(badEnum)).mockResolvedValueOnce(toolMsg(draft));
     await writeCopy(brief, trajectory, rolls);
     expect(create).toHaveBeenCalledTimes(2);
-    const second = create.mock.calls[1]![0] as { messages: Array<{ role: string; content: unknown }> };
-    const last = JSON.stringify(second.messages.at(-1));
-    // the model sees: this is length-only, so don't rewrite the rest
-    expect(last).toContain('moment.story.0');
-    expect(last).toMatch(/byte-for-byte identical|previous draft EXACTLY|only the fields/i);
   });
 
-  it('on a non-length failure, does NOT tell the model to preserve the rest of the draft (a structural fix may require rewriting)', async () => {
-    // Punctuation violation on a story line is not a length cap — the model should
-    // be free to rewrite the line, not constrained to a byte-identical resubmit.
-    const punctured = { ...draft, moment: { ...draft.moment, story: ['Built by hand.', 'Made to outlast you'] } };
-    create.mockResolvedValueOnce(toolMsg(punctured)).mockResolvedValueOnce(toolMsg(draft));
-    await writeCopy(brief, trajectory, rolls);
-    const second = create.mock.calls[1]![0] as { messages: Array<{ role: string; content: unknown }> };
-    const last = JSON.stringify(second.messages.at(-1));
-    expect(last).not.toMatch(/byte-for-byte identical|previous draft EXACTLY/i);
-  });
-
-  it('throws when no valid copy is produced within the attempt cap', async () => {
-    create.mockResolvedValue(toolMsg({ ...draft, shopName: 'x' })); // too short
+  it('throws when no valid copy is produced within the attempt cap (shape failures only — length never fails)', async () => {
+    // Missing required field is a shape failure. Length / punctuation can no
+    // longer make this throw — they are normalized away.
+    const missing: Record<string, unknown> = { ...draft };
+    delete missing['shopName'];
+    create.mockResolvedValue(toolMsg(missing));
     await expect(writeCopy(brief, trajectory, rolls)).rejects.toThrow(/valid copy/);
     expect(create).toHaveBeenCalledTimes(4);
   });
@@ -219,15 +207,23 @@ describe('CopywriterDraftSchema — body prose has no hard cap (the design absor
   });
 });
 
-describe('CopywriterDraftSchema — headlines carry no sentence punctuation', () => {
-  it('rejects a heading written as periods-between-phrases (the AI-slop pattern)', () => {
+describe('CopywriterDraftSchema — headlines: schema accepts any string, normalize-copy strips sentence punctuation post-parse', () => {
+  it('accepts a heading written as periods-between-phrases at the schema layer — normalize strips the periods after the build proceeds', async () => {
     const d = { ...draft, about: { ...draft.about, heading: 'One potter. One wheel. One kiln at a time.' } };
-    expect(CopywriterDraftSchema.safeParse(d).success).toBe(false);
+    expect(CopywriterDraftSchema.safeParse(d).success).toBe(true);
+    create.mockResolvedValueOnce(toolMsg(d));
+    const written = await writeCopy(brief, trajectory, rolls);
+    // Periods stripped; the remaining text reads as a phrase.
+    expect(written.about.heading).not.toMatch(/[.!?]/);
+    expect(written.about.heading).toContain('One potter');
   });
 
-  it('rejects a headline that ends in terminal punctuation', () => {
+  it('accepts a headline that ends in terminal punctuation — normalize trims it off', async () => {
     const d = { ...draft, close: { ...draft.close, headline: 'Built to outlast us.' } };
-    expect(CopywriterDraftSchema.safeParse(d).success).toBe(false);
+    expect(CopywriterDraftSchema.safeParse(d).success).toBe(true);
+    create.mockResolvedValueOnce(toolMsg(d));
+    const written = await writeCopy(brief, trajectory, rolls);
+    expect(written.close.headline).toBe('Built to outlast us');
   });
 
   it('accepts a clean heading and allows internal commas and intra-word hyphens', () => {

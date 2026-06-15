@@ -52,11 +52,21 @@ describe('logDesignChoice', () => {
 });
 
 describe('logCrewChoices', () => {
-  it('logs the three look-driving picks, recording what was rolled vs played', async () => {
+  const trajectory = {
+    feeling: 'the quiet hum of a workshop after hours',
+    customerWhy: 'they want a piece with story, not a stock object',
+    visualWorld: 'warm oak and aged brass, low light, hands at the bench',
+    heroConcept: 'a chisel meeting walnut in soft side-light',
+    register: 'restrained' as const,
+    heroKind: 'video' as const,
+  };
+
+  it('logs the trajectory PLUS the three look-driving picks, recording what was rolled vs played', async () => {
     logCrewChoices({
       tenantId: 'tn_9',
       nicheSlug: 'woodworking',
       moodKey: 'rustic',
+      trajectory,
       heroKind: 'video',
       goodsTreatment: 'procession',
       founderTreatment: 'quote',
@@ -66,7 +76,7 @@ describe('logCrewChoices', () => {
     });
     await flush();
 
-    expect(insert).toHaveBeenCalledTimes(3);
+    expect(insert).toHaveBeenCalledTimes(4);
     const rows = insert.mock.calls.map((c) => c[0] as Record<string, unknown>);
     for (const row of rows) {
       expect(row['tenant_id']).toBe('tn_9');
@@ -74,6 +84,9 @@ describe('logCrewChoices', () => {
       expect(row['mood_key']).toBe('rustic');
     }
     const byType = (t: string) => rows.find((r) => r['decision_type'] === t)!;
+    // Trajectory: the Director's whole call, picklable for review later. Without
+    // this, we can't tell a wrong-vision miss apart from a wrong-execution miss.
+    expect(byType('trajectory')['picked']).toEqual(trajectory);
     expect(byType('moment-kind')['picked']).toEqual({ kind: 'video' });
     // the treatment rows carry the dealt roll and whether Bohdi overrode it, so
     // reconvergence (overriding back to one body) is visible in the data.

@@ -365,7 +365,12 @@
       "WebFetch(domain:www.aransweatermarket.com)",
       "WebFetch(domain:wasteyarnproject.com)",
       "Bash(xargs sed -i 's/momentKind/heroKind/g; s/momentConcept/heroConcept/g')",
-      "Bash(xargs sed -i \"s/'spotlight'/'still'/g; s/\\\\\"spotlight\\\\\"/\\\\\"still\\\\\"/g\")"
+      "Bash(xargs sed -i \"s/'spotlight'/'still'/g; s/\\\\\"spotlight\\\\\"/\\\\\"still\\\\\"/g\")",
+      "Bash(node -e \"require\\('dotenv'\\).config\\({path:'.env.local'}\\); const {createClient}=require\\('@supabase/supabase-js'\\); const c=createClient\\(process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.SUPABASE_SERVICE_ROLE_KEY\\); c.from\\('niches'\\).select\\('slug,display_name,status,updated_at'\\).in\\('slug',['knitter']\\).then\\(r=>console.log\\(JSON.stringify\\(r.data,null,2\\)\\)\\);\")",
+      "Bash(awk -F\\\\' '{print $2}')",
+      "Bash(awk -F\"moods:\" '{print $2}')",
+      "Bash(awk -F'data-type=\"' '{print $2}')",
+      "Bash(awk -F'\"' '{print $1}')"
     ]
   }
 }

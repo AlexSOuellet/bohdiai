@@ -63,28 +63,28 @@ describe('MainStreetContentSchema', () => {
     expect(MainStreetContentSchema.safeParse(cZero).success).toBe(false);
   });
 
-  it('caps the story line length', () => {
+  it('accepts a long story line — no length cap, never fails the build (D53 sharpened)', () => {
     const c = valid();
     c.moment.story = ['x'.repeat(60), 'ok line'];
-    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 
-  it('caps the story at four lines', () => {
+  it('accepts five or more story lines — no array cap; the renderer absorbs whatever was authored', () => {
     const c = valid();
     c.moment.story = ['line one', 'line two', 'line three', 'line four', 'line five'];
-    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 
-  it('rejects punctuation in a story line', () => {
+  it('accepts punctuation in a story line — the schema is permissive; the Copywriter normalize step strips bad characters at parse time, the build never fails on copy', () => {
     const c = valid();
     c.moment.story = ['Flour. Water. Salt. Time.', 'No shortcuts'];
-    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 
-  it('rejects a comma in a story line', () => {
+  it('accepts commas in a story line at the schema layer — normalize-copy strips them before render', () => {
     const c = valid();
     c.moment.story = ['Made in small batches, every week', 'Real bread for real people'];
-    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 
   it('allows apostrophes and intra-word hyphens in story lines', () => {
@@ -124,16 +124,16 @@ describe('MainStreetContentSchema', () => {
     expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
   });
 
-  it('rejects fewer than 2 nav items', () => {
+  it('accepts a single nav item (the renderer requires at least one entry)', () => {
     const c = valid();
     c.identity.nav = ['Shop'];
-    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 
-  it('caps the close headline', () => {
+  it('accepts a long close headline — no length cap, the renderer absorbs any length', () => {
     const c = valid();
     c.close.headline = 'x'.repeat(80);
-    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 });
 

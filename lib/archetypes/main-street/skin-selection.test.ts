@@ -6,11 +6,16 @@ import { MOODS, type MoodKey } from '@/lib/moods';
 const ALL_MOODS = Object.keys(MOODS) as MoodKey[];
 
 describe('moodAlignedSkins (the D41 skin gate)', () => {
-  it('gives every feeling a real shelf (>=5 skins) and never the whole shelf by accident', () => {
+  it('gives every feeling a coherent shelf (>=4 skins) and never the whole shelf by accident', () => {
+    // D56: genuinely-dark skins are tagged `dark` only and removed from non-dark
+    // subsets, even when they share a world with a non-dark feeling. Elegant
+    // shrinks to 4 (porcelain/atelier/conservatory/celestine) — small but
+    // coherent. A padded shelf with miscategorized dark skins is worse than a
+    // smaller shelf that honestly fits the maker's feeling.
     const total = Object.keys(MAIN_STREET_SKIN_TAGS).length;
     for (const mood of ALL_MOODS) {
       const subset = moodAlignedSkins(mood);
-      expect(subset.length).toBeGreaterThanOrEqual(5);
+      expect(subset.length).toBeGreaterThanOrEqual(4);
       expect(subset.length).toBeLessThan(total); // a genuine gate, not a pass-through
     }
   });

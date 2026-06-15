@@ -13,7 +13,9 @@ import { MAIN_STREET_SKIN_TAGS } from './skins';
 
 /** The skins that can wear the maker's chosen feeling — the subset the Graphic
  *  Artist may pick from. Falls back to the whole shelf only if a mood somehow
- *  matched nothing (it shouldn't — every mood has 6+ skins), so a build never stalls. */
+ *  matched nothing (it shouldn't — every mood has at least 4 skins), so a build
+ *  never stalls. Dark skins live in the Dark subset only; if the maker picks a
+ *  non-dark feeling, no dark skin is on offer. */
 export function moodAlignedSkins(moodKey: MoodKey): string[] {
   const matched = Object.entries(MAIN_STREET_SKIN_TAGS)
     .filter(([, tag]) => (tag.moods as readonly string[]).includes(moodKey))

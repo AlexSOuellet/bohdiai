@@ -12,7 +12,7 @@ related_niches:
   - crocheter
   - fiber_artist
   - textile_maker
-status: draft
+status: approved
 ---
 
 # Knitter

@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
-import { MomentHero } from './MomentHero';
+import { MomentHero, buildHeroTimeline, heroPhaseDurationMs } from './MomentHero';
 import { MAIN_STREET_SKINS } from './skins';
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
@@ -28,7 +28,7 @@ const moment = {
 
 afterEach(cleanup);
 
-describe('MomentHero (the hero IS the front door, D54)', () => {
+describe('MomentHero (the hero IS the front door, D54 corrected)', () => {
   it('renders a full-screen hero with held media and the brand block landed at rest', () => {
     const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('[data-ms-hero]')).toBeTruthy();
@@ -36,21 +36,25 @@ describe('MomentHero (the hero IS the front door, D54)', () => {
     expect(container.querySelector('[data-ms-hero-brand]')).toBeTruthy();
   });
 
-  it('renders the authored story lines as a subhead stack beneath the brand', () => {
+  it('puts the authored story lines in the DOM (for the play-through to reveal one at a time) but renders them invisible at rest', () => {
     const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
     const lines = container.querySelectorAll('[data-ms-hero-story-line]');
     expect(lines).toHaveLength(moment.story.length);
     expect(lines[0]!.textContent).toBe(moment.story[0]);
     expect(lines[1]!.textContent).toBe(moment.story[1]);
+    // At rest the line frames have opacity 0 — the story plays during the
+    // timeline, not as a static stack under the brand.
+    const frames = container.querySelectorAll('[data-ms-hero-story-line-frame]');
+    for (const f of frames) expect((f as HTMLElement).style.opacity).toBe('0');
   });
 
-  it('omits the story block when no story lines are authored', () => {
+  it('renders no story-line frames when no story lines are authored', () => {
     const noStory = { ...moment, story: [] };
     const { container } = render(<MomentHero identity={identity} moment={noStory} skin={skin} />);
-    expect(container.querySelector('[data-ms-hero-story]')).toBeNull();
+    expect(container.querySelectorAll('[data-ms-hero-story-line]')).toHaveLength(0);
   });
 
-  it('does NOT mount a portable Moment intro overlay (the portable Moment layer retired in D54)', () => {
+  it('does NOT mount a portable Moment intro overlay (the portable layer retired in D54)', () => {
     const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('[data-moment-intro]')).toBeNull();
     expect(container.querySelector('[data-moment-enter]')).toBeNull();
@@ -63,10 +67,8 @@ describe('MomentHero (the hero IS the front door, D54)', () => {
       media: { ...moment.media, kind: 'still' as const, url: '/scene.jpg' },
     };
     const { container } = render(<MomentHero identity={identity} moment={stillMoment} skin={skin} />);
-    // a still asset renders as <img>, not <video> — fal returned a still
     expect(container.querySelector('img')).toBeTruthy();
     expect(container.querySelector('video')).toBeNull();
-    // the push-in animation keyframes are emitted so the subtle motion has somewhere to live
     expect(container.innerHTML).toContain('ms-hero-push');
   });
 
@@ -75,11 +77,8 @@ describe('MomentHero (the hero IS the front door, D54)', () => {
     const { container } = render(<MomentHero identity={withLogo} moment={moment} skin={skin} />);
     const logo = container.querySelector('img[data-ms-logo]') as HTMLImageElement | null;
     expect(logo?.getAttribute('src')).toBe('https://cdn/logo.png');
-    // the image is decorative — the visible wordmark text carries the shop name
     expect(logo?.getAttribute('alt')).toBe('');
-    // the logo is bare — no plate; the header surface handles contrast
     expect(logo?.closest('.ms-logo-plate')).toBeNull();
-    // the typographic wordmark stays — the logo joins it, doesn't replace it
     const mark = container.querySelector('[data-type="wordmark"]') as HTMLElement;
     expect(mark.textContent).toContain("June's Sourdough");
   });
@@ -129,7 +128,33 @@ describe('MomentHero — nav contrast (4c)', () => {
     const { container } = render(<MomentHero identity={darkLogoIdentity} moment={moment} skin={skin} />);
     const nav = container.querySelector('[data-ms-nav]')!;
     const style = nav.getAttribute('style') ?? '';
-    // dark logo + dark media backdrop → light surface (#F7F5F2 or rgb equivalent)
     expect(style.includes('#F7F5F2') || style.includes('rgb(247, 245, 242)') || style.includes('rgb(247,245,242)')).toBe(true);
+  });
+});
+
+describe('MomentHero hero timeline (the play-through, in the hero surface)', () => {
+  it('builds: open → (line, gap) × N → brand', () => {
+    const t = buildHeroTimeline(2);
+    expect(t.map((p) => p.kind)).toEqual(['open', 'line', 'gap', 'line', 'gap', 'brand']);
+    expect(t[1]).toEqual({ kind: 'line', index: 0 });
+    expect(t[3]).toEqual({ kind: 'line', index: 1 });
+  });
+
+  it('with no story lines, the timeline is still valid (open → brand)', () => {
+    const t = buildHeroTimeline(0);
+    expect(t.map((p) => p.kind)).toEqual(['open', 'brand']);
+  });
+
+  it('the brand phase is terminal (null duration); non-terminal phases have positive durations', () => {
+    expect(heroPhaseDurationMs({ kind: 'brand' })).toBeNull();
+    expect(heroPhaseDurationMs({ kind: 'open' })!).toBeGreaterThan(0);
+    expect(heroPhaseDurationMs({ kind: 'gap' })!).toBeGreaterThan(0);
+    expect(heroPhaseDurationMs({ kind: 'line', index: 0 })!).toBeGreaterThan(0);
+  });
+
+  it('a gap is at least as long as the fade so two lines never share the screen', () => {
+    // The fade is 0.9s (900ms). A gap holds for at least that, so one line is
+    // fully out before the next is in.
+    expect(heroPhaseDurationMs({ kind: 'gap' })!).toBeGreaterThanOrEqual(900);
   });
 });

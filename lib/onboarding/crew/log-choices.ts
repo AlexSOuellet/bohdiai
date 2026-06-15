@@ -18,6 +18,7 @@ import type { Json } from '@/lib/database.types';
 import { logger } from '@/lib/logger';
 import { GOODS_TREATMENTS } from '@/lib/archetypes/main-street/goods';
 import { FOUNDER_TREATMENTS } from '@/lib/archetypes/main-street/schemas';
+import type { Trajectory } from './trajectory';
 
 /** The two kinds of Moment the cinematographer now produces. The legacy 'image'
  *  kind is excluded — the cinematographer no longer emits it (Task 4). Old stores
@@ -25,7 +26,7 @@ import { FOUNDER_TREATMENTS } from '@/lib/archetypes/main-street/schemas';
  *  video or spotlight only. */
 const MOMENT_KINDS = ['video', 'still'] as const;
 
-export type DesignDecisionType = 'moment-kind' | 'goods-treatment' | 'founder-treatment';
+export type DesignDecisionType = 'trajectory' | 'moment-kind' | 'goods-treatment' | 'founder-treatment';
 
 export interface DesignChoice {
   /** The now-created tenant the build belongs to. */
@@ -79,6 +80,10 @@ export interface CrewChoicesLog {
   tenantId: string;
   nicheSlug: string;
   moodKey: string;
+  /** The Director's full trajectory — the creative North Star the whole crew
+   *  executed to. Logged so we can read Bohdi's call when reviewing a build and
+   *  tell a wrong-vision miss apart from a wrong-execution miss. */
+  trajectory: Trajectory;
   heroKind: (typeof MOMENT_KINDS)[number];
   goodsTreatment: string;
   founderTreatment: string;
@@ -105,6 +110,16 @@ function treatmentPick(
  */
 export function logCrewChoices(c: CrewChoicesLog): void {
   const base = { tenantId: c.tenantId, nicheSlug: c.nicheSlug, moodKey: c.moodKey };
+  void logDesignChoice({
+    ...base,
+    decisionType: 'trajectory',
+    // The trajectory is freeform authoring, not a pick from a finite set, so
+    // there is no candidates list to log here — the maker's niche + mood already
+    // sit on the row as the inputs Bohdi authored from.
+    candidates: [],
+    picked: c.trajectory as unknown as Json,
+    reasoning: 'director set the trajectory the whole crew executed to',
+  });
   void logDesignChoice({
     ...base,
     decisionType: 'moment-kind',

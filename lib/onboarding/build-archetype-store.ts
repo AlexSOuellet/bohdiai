@@ -113,7 +113,7 @@ export async function buildArchetypeStore(
   });
 
   emit('Designing your store');
-  const { chosen, authored, choices } = await directAndProduce(brief);
+  const { chosen, authored, choices, trajectory } = await directAndProduce(brief);
   const spec = chosen.spec;
 
   // Generate every asset the crew prompted. Feature assets generate freely; product
@@ -191,6 +191,7 @@ export async function buildArchetypeStore(
     tenantId: result.tenantId,
     nicheSlug: input.nicheSlug,
     moodKey: input.moodKey,
+    trajectory,
     heroKind: choices.heroKind,
     goodsTreatment: choices.goodsTreatment,
     founderTreatment: choices.founderTreatment,

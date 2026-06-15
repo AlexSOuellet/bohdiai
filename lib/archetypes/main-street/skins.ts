@@ -873,24 +873,28 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
  *  feelings are the seven canonical moods (lib/moods); a skin can belong to more
  *  than one (Ember reads both rustic and cozy). `moodAlignedSkins` gates skin
  *  choice to the maker's chosen feeling off these tags. Every skin has at least
- *  one feeling and every feeling has 6+ skins, so no mood is left without a shelf. */
+ *  one feeling and every feeling has at least 4 skins — a coherent shelf, not a
+ *  padded count. Genuinely dark skins (hearthstone, gild, curiosity, darkroom)
+ *  carry the `dark` tag only and never appear in non-dark subsets, even when
+ *  their world (Hearth, Fine, Studio, Relic) overlaps with a non-dark feeling —
+ *  the dark register IS the look, regardless of world. */
 export const MAIN_STREET_SKIN_TAGS: Record<string, SkinTag> = {
   'main-street-ember': { world: 'Hearth', moods: ['rustic', 'cozy'] },
   'main-street-orchard': { world: 'Hearth', moods: ['cozy', 'rustic'] },
   'main-street-pantry': { world: 'Hearth', moods: ['cozy', 'playful'] },
-  'main-street-hearthstone': { world: 'Hearth', moods: ['dark', 'cozy'] },
+  'main-street-hearthstone': { world: 'Hearth', moods: ['dark'] },
   'main-street-tannery': { world: 'Workshop', moods: ['rustic', 'industrial'] },
   'main-street-forge': { world: 'Workshop', moods: ['industrial', 'modern'] },
   'main-street-anvil': { world: 'Workshop', moods: ['modern'] },
   'main-street-sawdust': { world: 'Workshop', moods: ['rustic', 'cozy'] },
   'main-street-porcelain': { world: 'Fine', moods: ['elegant'] },
   'main-street-atelier': { world: 'Fine', moods: ['elegant', 'modern'] },
-  'main-street-gild': { world: 'Fine', moods: ['dark', 'elegant'] },
+  'main-street-gild': { world: 'Fine', moods: ['dark'] },
   'main-street-botanical': { world: 'Garden', moods: ['rustic'] },
   'main-street-conservatory': { world: 'Garden', moods: ['elegant'] },
   'main-street-wildflower': { world: 'Garden', moods: ['playful'] },
   'main-street-studio': { world: 'Studio', moods: ['modern', 'industrial'] },
-  'main-street-darkroom': { world: 'Studio', moods: ['dark', 'modern'] },
+  'main-street-darkroom': { world: 'Studio', moods: ['dark'] },
   'main-street-pigment': { world: 'Studio', moods: ['playful', 'modern'] },
   'main-street-nightshade': { world: 'Mystic', moods: ['dark'] },
   'main-street-celestine': { world: 'Mystic', moods: ['elegant', 'cozy'] },
@@ -902,7 +906,7 @@ export const MAIN_STREET_SKIN_TAGS: Record<string, SkinTag> = {
   'main-street-marquee': { world: 'Press', moods: ['modern', 'industrial'] },
   'main-street-broadside': { world: 'Press', moods: ['industrial', 'modern'] },
   'main-street-heirloom': { world: 'Relic', moods: ['rustic'] },
-  'main-street-curiosity': { world: 'Relic', moods: ['dark', 'elegant'] },
+  'main-street-curiosity': { world: 'Relic', moods: ['dark'] },
   'main-street-postmark': { world: 'Relic', moods: ['rustic'] },
 };
 

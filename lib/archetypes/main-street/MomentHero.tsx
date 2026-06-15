@@ -1,50 +1,123 @@
 'use client';
 
 /**
- * Main Street — BEAT 1: the hero.
+ * Main Street — BEAT 1: the hero, which IS the Moment.
  *
- * The hero IS the front door. No portable Moment layer, no rise-from-black, no
- * Enter Site click-through, no play-once lifecycle, no cookie. A visitor lands
- * on the home page and the hero renders directly. (D54 retired the portable
- * Moment concept; the page-down treatments — Constellation, marquee, founder
- * portrait, skin and type — carry distinctiveness.)
+ * D54 (corrected): the hero is the front door. There is no separate portable
+ * layer that plays first and melts in. There is no Enter Site click. What plays
+ * is the same brand-story timeline as before — held media + each story line
+ * fading in and out one at a time, settling on the brand+CTA at rest — but it
+ * plays IN the hero surface itself, not on an overlay above it.
  *
- * Two kinds, both driven by the cinematographer's `media.kind` (D40, D54):
+ * GATE — the timeline only runs on a cold front-door arrival (this visit loaded
+ * on the home page, no per-shop seen-cookie). A side-door visitor (deep link /
+ * QR / inside-page first hit) gets the resting hero directly; they get the
+ * Moment next time they cold-arrive at home. When the timeline lands on the
+ * brand phase, the per-shop seen-cookie is written, so a returning visitor
+ * skips straight to the resting hero. A footer "Intro" link (./chrome) carries
+ * `?intro=1` and forces a replay regardless of cookie or arrival kind. (See
+ * `./moment-gate` for the decision and the cookie machinery.)
+ *
+ * SSR — the server renders the resting state (brand + CTA visible, no story
+ * lines). On client mount the gate runs in a layout effect; if play is decided
+ * we flip to the open phase before paint so there's no flash of brand on a
+ * cold visit. Returning visitors and side-door visitors never see a flicker
+ * because they keep the rest state.
+ *
+ * Two media kinds, both driven by the cinematographer's `media.kind` (D40, D54,
+ * refined by D55):
  *   • VIDEO — fal-generated 16:9 clip with the camera LOCKED and in-frame motion
- *     only (D52). Autoplays muted, loops seamlessly. Used when the maker's world
- *     contains real ambient motion (steam, flame, water, hands, light).
+ *     only (D52). Autoplays muted, loops seamlessly.
  *   • STILL — fal-generated 16:9 cinematic SCENE composition (the product in its
- *     real world, lit naturally, with depth and air — not a product on a void).
- *     A very subtle CSS push-in adds cinematic time at render — scale 1.0 → 1.03
- *     over ~24s, basically imperceptible, the scene quietly settles.
+ *     real world, lit naturally, with depth and air). A very subtle CSS push-in
+ *     adds cinematic time at render.
  *
  * CONTRAST OVER MEDIA — every word painted over the hero uses the skin-agnostic
  * `--ms-on-media` near-white plus the dark scrim, NEVER the skin's contrast
  * color, so text stays legible over a hero of unknown luminance.
  */
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetContent } from './schemas';
 import { Media, Nav, typeRoleCss, roles, linkHref } from './chrome';
 import { navContrast, relativeLuminance } from './logo-contrast';
+import { shouldPlayMoment, initialDocumentPath, markMomentSeen } from './moment-gate';
 
 const STILL_PUSH_IN_SECONDS = 24;
 
-/** The shared inner visual: held media, a center-weighted scrim, the brand block
- *  with an `action` row (the hero's CTA). The eyebrow + brand land immediately —
- *  there's no story-play timeline anymore (D54). The story lines are still
- *  authored and stored, but the hero renders the brand at rest. */
+// Timeline tuning (ms). GAP_MS must be >= the fade so a line fully clears before
+// the next begins — that no-overlap is the whole point. Pace is slow and
+// deliberate; a line rests long enough to read twice.
+const OPEN_MS = 1000; // media alone before the first line
+const LINE_MS = 3400; // a line held (includes its own fade-in)
+const GAP_MS = 1000; // media alone between lines
+const FADE = '0.9s';
+
+export type HeroPhase =
+  | { kind: 'open' }
+  | { kind: 'line'; index: number }
+  | { kind: 'gap' }
+  | { kind: 'brand' };
+
+/** The ordered hero timeline: a breath of media, then each line followed by a
+ *  clean gap, finally landing on the brand. Pure + exported so the rhythm is
+ *  testable without driving the component's timers. */
+export function buildHeroTimeline(lineCount: number): HeroPhase[] {
+  const phases: HeroPhase[] = [{ kind: 'open' }];
+  for (let i = 0; i < lineCount; i += 1) {
+    phases.push({ kind: 'line', index: i });
+    phases.push({ kind: 'gap' });
+  }
+  phases.push({ kind: 'brand' });
+  return phases;
+}
+
+/** How long a phase holds before advancing; null = terminal (the brand rests). */
+export function heroPhaseDurationMs(p: HeroPhase): number | null {
+  switch (p.kind) {
+    case 'open':
+      return OPEN_MS;
+    case 'line':
+      return LINE_MS;
+    case 'gap':
+      return GAP_MS;
+    case 'brand':
+      return null;
+  }
+}
+
+const overlayFrame = (visible: boolean, z: number): CSSProperties => ({
+  position: 'absolute',
+  inset: 0,
+  display: 'grid',
+  placeItems: 'center',
+  textAlign: 'center',
+  padding: 'clamp(28px,6vw,96px)',
+  opacity: visible ? 1 : 0,
+  transition: `opacity ${FADE} linear`,
+  pointerEvents: visible ? 'auto' : 'none',
+  zIndex: z,
+});
+
+/** The shared inner visual: held media, a center-weighted scrim, story lines
+ *  (each visible only during its own line phase), and the brand block (visible
+ *  only on the brand phase). The brand block carries the eyebrow + heading +
+ *  CTA — at rest, only the brand block shows, no story lines. */
 function HeroStage({
   moment,
   skin,
+  phase,
   action,
 }: {
   moment: MainStreetContent['moment'];
   skin: ArchetypeTheme;
+  phase: HeroPhase;
   action: ReactNode;
 }) {
   const r = roles(skin);
   const isStill = moment.media.kind === 'still';
+  const landed = phase.kind === 'brand';
+  const lineVisible = (i: number) => phase.kind === 'line' && phase.index === i;
 
   return (
     <>
@@ -63,8 +136,6 @@ function HeroStage({
       >
         <Media media={moment.media} />
       </div>
-      {/* The very gentle push-in lives in a stylesheet on document body via
-          a global style tag below, so the animation keyframes are available. */}
       <style>{`@keyframes ms-hero-push { 0% { transform: scale(1); } 100% { transform: scale(1.03); } }`}</style>
       {/* Scrim weighted toward the center where the text sits, so white text reads
           whether the scene is bright or dark. */}
@@ -73,7 +144,25 @@ function HeroStage({
         style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'radial-gradient(120% 90% at 50% 45%, rgba(0,0,0,.42), rgba(0,0,0,.82))' }}
       />
 
-      <div data-ms-hero-brand style={brandFrame()}>
+      {/* Story lines, one per phase frame — each cross-fades in and out. The
+          authored array is rendered into the DOM so it's testable; visibility is
+          driven by the phase. */}
+      {moment.story.map((line, i) => (
+        <div key={i} data-ms-hero-story-line-frame style={overlayFrame(lineVisible(i), 2)}>
+          <p
+            data-type="storyline"
+            data-ms-hero-story-line
+            style={{ ...typeRoleCss(r.storyline), color: 'var(--ms-on-media)', maxWidth: '24ch', margin: 0, textShadow: '0 2px 36px rgba(0,0,0,.55)' }}
+          >
+            {line}
+          </p>
+        </div>
+      ))}
+
+      {/* The brand block — eyebrow, heading, CTA. Visible only on the brand
+          phase, which is the timeline's terminal state and also the SSR default
+          state. */}
+      <div data-ms-hero-brand style={overlayFrame(landed, 3)}>
         <div>
           <div data-type="eyebrow" style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-on-media-muted)', marginBottom: 18 }}>
             {moment.eyebrow}
@@ -81,20 +170,6 @@ function HeroStage({
           <h1 data-type="brand" style={{ ...typeRoleCss(r.brand), color: 'var(--ms-on-media)', margin: 0, textShadow: '0 2px 40px rgba(0,0,0,.5)' }}>
             {moment.brand}
           </h1>
-          {moment.story.length > 0 && (
-            <div data-ms-hero-story style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 6, maxWidth: '32ch', marginInline: 'auto' }}>
-              {moment.story.map((line, i) => (
-                <p
-                  key={i}
-                  data-type="storyline"
-                  data-ms-hero-story-line
-                  style={{ ...typeRoleCss(r.storyline), color: 'var(--ms-on-media)', margin: 0, textShadow: '0 2px 36px rgba(0,0,0,.55)' }}
-                >
-                  {line}
-                </p>
-              ))}
-            </div>
-          )}
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 32, flexWrap: 'wrap' }}>{action}</div>
         </div>
       </div>
@@ -102,22 +177,10 @@ function HeroStage({
   );
 }
 
-function brandFrame(): CSSProperties {
-  return {
-    position: 'absolute',
-    inset: 0,
-    display: 'grid',
-    placeItems: 'center',
-    textAlign: 'center',
-    padding: 'clamp(28px,6vw,96px)',
-    zIndex: 2,
-  };
-}
-
 /** The hero's CTA row — the authored primary and an optional secondary, each
  *  pointed where its label says it goes (D46). When a button has no authored
- *  target the legacy default holds: the primary scrolls to the goods, the
- *  secondary goes to the shop. */
+ *  target the fallback is /shop (the home is a sampling; the catalog lives at
+ *  the shop). */
 function HeroCta({ moment, skin }: { moment: MainStreetContent['moment']; skin: ArchetypeTheme }) {
   const r = roles(skin);
   const primaryHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';
@@ -140,13 +203,58 @@ export function MomentHero({
   identity,
   moment,
   skin,
+  momentKey,
 }: {
   identity: MainStreetContent['identity'];
   moment: MainStreetContent['moment'];
   skin: ArchetypeTheme;
+  /** Per-shop key (tenant id) for the seen-cookie. Without it the timeline never
+   *  plays and the hero renders at rest — used in previews / tests / SSR. */
+  momentKey?: string | undefined;
 }) {
+  const timeline = buildHeroTimeline(moment.story.length);
+  const lastIndex = timeline.length - 1; // the brand phase
+
+  // The current timeline step. SSR default = the last step (brand at rest) so a
+  // returning visitor and a deep-link visitor see the resting hero immediately
+  // with no flicker. The step is an integer index — not a content-typed phase —
+  // because the timeline has indistinguishable phases (two 'gap' frames) that
+  // can't be told apart by shape alone.
+  const [step, setStep] = useState<number>(lastIndex);
   const [solid, setSolid] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
+
+  // Decide whether the Moment plays. Client-only (reads the loaded-document
+  // path + cookie); layout effect so we flip to step 0 (open) before paint when
+  // play is decided, avoiding a flash of brand on cold arrivals.
+  useLayoutEffect(() => {
+    const search = typeof window !== 'undefined' ? window.location.search : '';
+    const forceReplay = /[?&]intro=1(?:&|$)/.test(search);
+    const cookieString = typeof document !== 'undefined' ? document.cookie : '';
+    if (shouldPlayMoment({ initialPath: initialDocumentPath(), key: momentKey ?? null, cookieString, forceReplay })) {
+      // The play decision is client-only; deciding in a layout effect is the
+      // correct pattern here.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setStep(0);
+    }
+  }, [momentKey]);
+
+  // Drive the timeline. The brand step (last) is terminal — on landing on it,
+  // write the per-shop cookie so the next cold visit skips the play. Marking
+  // seen is idempotent.
+  useEffect(() => {
+    if (step >= lastIndex) {
+      if (momentKey) markMomentSeen(momentKey);
+      return undefined;
+    }
+    const ms = heroPhaseDurationMs(timeline[step]!);
+    if (ms == null) return undefined;
+    const t = setTimeout(() => setStep((n) => Math.min(n + 1, lastIndex)), ms);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, lastIndex, momentKey]);
+
+  const phase = timeline[step]!;
 
   useEffect(() => {
     const el = heroRef.current;
@@ -157,9 +265,7 @@ export function MomentHero({
   }, []);
 
   const tone = identity.logoTone ?? 'unknown';
-  // Transparent state: logo sits over the dark scrim of the hero media
   const overMedia = navContrast(tone, 'dark');
-  // Solid state: logo sits on the skin's background color
   const skinBackdrop = relativeLuminance(skin.palette.bg) > 0.5 ? 'light' : 'dark';
   const onSurface = navContrast(tone, skinBackdrop);
   const navBg = solid
@@ -197,7 +303,7 @@ export function MomentHero({
         data-ms-hero
         style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'var(--ms-contrast-bg)', color: 'var(--ms-on-media)' }}
       >
-        <HeroStage moment={moment} skin={skin} action={<HeroCta moment={moment} skin={skin} />} />
+        <HeroStage moment={moment} skin={skin} phase={phase} action={<HeroCta moment={moment} skin={skin} />} />
       </header>
     </>
   );

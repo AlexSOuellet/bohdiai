@@ -5,101 +5,85 @@
  * the founder photo prompt, or product image prompts — those are the
  * Cinematographer's and Graphic Artist's jobs, assembled in later.
  *
- * Built from the SAME primitives as MainStreetContentSchema (imported, not
- * re-typed) so the limits can never drift from the engine that finally validates
- * the assembled envelope. Treatments and the about/contact pages are REQUIRED
- * here (the copywriter always authors them); the content schema leaves them
- * optional only to keep older stored rows parseable.
+ * SCHEMA POLICY (D53 sharpened): this schema validates SHAPE — the right fields,
+ * the right types, the right enums. It does NOT enforce length on any string,
+ * and it does NOT reject content for punctuation or formatting. The build NEVER
+ * fails because copy was too long, too short, or punctuated wrong. The
+ * normalize step (normalize-copy.ts) strips terminal punctuation from headlines
+ * and story lines and slugifies slugs without throwing; the renderer absorbs
+ * any length via CSS (line-clamp on cards, ellipsis on labels, natural wrap on
+ * headlines). The maker can also edit anything in the dashboard post-build.
+ *
+ * Floors are .min(1) — a required string can't be EMPTY (an empty button label
+ * would render an unclickable target) — but anything non-empty is accepted. The
+ * Copywriter prompt still names target lengths so generation stays punchy; the
+ * schema just no longer enforces them.
  */
 import { z } from 'zod';
 import { GOODS_TREATMENTS } from '@/lib/archetypes/main-street/goods';
-import { StoryLine, FindUsRow, FOUNDER_TREATMENTS, NavItem } from '@/lib/archetypes/main-street/schemas';
+import { FindUsRow, FOUNDER_TREATMENTS, NavItem } from '@/lib/archetypes/main-street/schemas';
 import { LINK_TARGETS } from '@/lib/archetypes/main-street/links';
-
-/** A headline is a phrase, not a sentence. No periods/exclamation/question marks
- *  anywhere (the staccato "One potter. One wheel." pattern reads as AI slop) and
- *  no trailing terminal punctuation. Internal commas and intra-word hyphens are
- *  fine. Applied to the display headings the copywriter authors. */
-const SENTENCE_PUNCT = /[.!?]/;
-const TRAILING_PUNCT = /[:;,–—-]\s*$/;
-function headline(min: number, max: number) {
-  return z
-    .string()
-    .min(min)
-    .max(max)
-    .refine((s) => !SENTENCE_PUNCT.test(s) && !TRAILING_PUNCT.test(s), {
-      message:
-        'a headline is a phrase, not a sentence — no periods, exclamation marks, or question marks, and no trailing punctuation (internal commas are fine). Rewrite it as a single clean line.',
-    });
-}
 
 /** A product's words only — no imagePrompt (the Graphic Artist adds that). */
 export const ProductDraftSchema = z.object({
-  name: z.string().min(2).max(40),
-  slug: z.string().min(2).max(48),
-  shortDescription: z.string().min(4).max(90),
-  description: z.string().min(12),
-  basePriceCents: z.number().int().min(100).max(5_000_00),
+  name: z.string().min(1),
+  slug: z.string().min(1),
+  shortDescription: z.string().min(1),
+  description: z.string().min(1),
+  basePriceCents: z.number().int().min(1),
 });
 export type ProductDraft = z.infer<typeof ProductDraftSchema>;
 
 export const CopywriterDraftSchema = z.object({
-  shopName: z.string().min(2).max(40),
+  shopName: z.string().min(1),
   identity: z.object({
-    // Up to 40 to hold the maker's full shop name verbatim (the pipeline forces
-    // the wordmark to the real shop name; the crew never renames the shop).
-    wordmark: z.string().min(2).max(40),
-    // The crew authors each nav link as a label + a target page (D46), so the
-    // word and the destination always agree. Objects are REQUIRED here (unlike
-    // the tolerant content schema) — every NEW build must carry real targets.
-    nav: z.array(NavItem).min(2).max(4),
+    wordmark: z.string().min(1),
+    nav: z.array(NavItem).min(1),
   }),
   moment: z.object({
-    story: z.array(StoryLine).min(1).max(4),
-    eyebrow: z.string().min(4).max(48),
-    brand: z.string().min(2).max(40),
-    ctaLabel: z.string().min(3).max(24),
-    // Where the primary hero button goes — authored alongside its label (D46).
+    story: z.array(z.string().min(1)).min(1),
+    eyebrow: z.string().min(1),
+    brand: z.string().min(1),
+    ctaLabel: z.string().min(1),
     ctaTarget: z.enum(LINK_TARGETS),
-    secondaryCtaLabel: z.string().min(3).max(24).optional(),
+    secondaryCtaLabel: z.string().min(1).optional(),
     secondaryCtaTarget: z.enum(LINK_TARGETS).optional(),
   }),
   goods: z.object({
-    title: headline(2, 48),
+    title: z.string().min(1),
     treatment: z.enum(GOODS_TREATMENTS),
-    label: z.string().min(2).max(24).optional(),
-    viewAllLabel: z.string().min(2).max(28).optional(),
+    label: z.string().min(1).optional(),
+    viewAllLabel: z.string().min(1).optional(),
   }),
   founder: z.object({
-    quote: z.string().min(24),
-    attribution: z.string().min(4).max(60),
+    quote: z.string().min(1),
+    attribution: z.string().min(1),
     treatment: z.enum(FOUNDER_TREATMENTS),
-    eyebrow: z.string().min(2).max(24).optional(),
-    heading: headline(2, 28).optional(),
-    aboutLabel: z.string().min(2).max(28).optional(),
+    eyebrow: z.string().min(1).optional(),
+    heading: z.string().min(1).optional(),
+    aboutLabel: z.string().min(1).optional(),
     findUs: z
       .object({
-        label: z.string().min(2).max(28),
-        eventsLabel: z.string().min(2).max(28).optional(),
-        rows: z.array(FindUsRow).min(1).max(5),
+        label: z.string().min(1),
+        eventsLabel: z.string().min(1).optional(),
+        rows: z.array(FindUsRow).min(1),
       })
       .optional(),
   }),
   close: z.object({
-    label: z.string().min(2).max(28),
-    headline: headline(6, 72),
-    ctaLabel: z.string().min(3).max(24),
-    // Where the close button goes — authored alongside its label (D46).
+    label: z.string().min(1),
+    headline: z.string().min(1),
+    ctaLabel: z.string().min(1),
     ctaTarget: z.enum(LINK_TARGETS),
   }),
   about: z.object({
-    heading: headline(4, 60),
-    story: z.array(z.string().min(40)).min(2).max(5),
+    heading: z.string().min(1),
+    story: z.array(z.string().min(1)).min(1),
   }),
   contact: z.object({
-    heading: headline(4, 48),
-    intro: z.string().min(20),
+    heading: z.string().min(1),
+    intro: z.string().min(1),
   }),
-  products: z.array(ProductDraftSchema).min(3).max(12),
+  products: z.array(ProductDraftSchema).min(1),
 });
 export type CopywriterDraft = z.infer<typeof CopywriterDraftSchema>;

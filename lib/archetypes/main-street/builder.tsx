@@ -32,16 +32,20 @@ const looks: LookOption[] = Object.values(MAIN_STREET_SKINS).map((s) => ({
 
 // Main Street holds products as separate rows (name, real price in cents, copy,
 // and an image prompt). Bohdi invents them — a new store has no catalog.
+//
+// Per D53 (sharpened): no length caps. The schema validates shape only; the
+// renderer handles any length via CSS line-clamp on cards. Floors are .min(1)
+// so a required string can't be empty — an empty product name is a broken row.
 const ProductSchema = z.object({
-  name: z.string().min(2).max(40),
-  slug: z.string().min(2).max(48),
-  shortDescription: z.string().min(4).max(90),
-  description: z.string().min(12),
-  basePriceCents: z.number().int().min(100).max(5_000_00),
+  name: z.string().min(1),
+  slug: z.string().min(1),
+  shortDescription: z.string().min(1),
+  description: z.string().min(1),
+  basePriceCents: z.number().int().min(1),
   // Feeds the image model (not rendered) — no length cap, only a non-empty floor.
   imagePrompt: z.string().min(1),
 });
-const ProductsSchema = z.array(ProductSchema).min(3).max(12);
+const ProductsSchema = z.array(ProductSchema).min(1);
 type ProductBriefT = z.infer<typeof ProductSchema>;
 
 export interface MainStreetAuthored {
@@ -218,7 +222,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       case 'contact':
         return <ContactPage content={c} skin={skin} tenantId={tenantId} />;
       default:
-        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} />;
+        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} />;
     }
   },
   renderProduct: ({ content, lookKey, product, logoUrl, brandColors, accentOverride }) => {

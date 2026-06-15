@@ -37,12 +37,15 @@ export interface MainStreetProps {
   aboutHref?: string | undefined;
   /** Where the calendar's events cue points. Defaults to /events. */
   eventsHref?: string | undefined;
+  /** Per-shop key (tenant id) for the Moment's seen-cookie. Without it the
+   *  hero plays no timeline and renders directly at rest — used in previews. */
+  momentKey?: string | undefined;
 }
 
-export function MainStreet({ content, skin, products, catalogSize, goodsTreatment, founderTreatment, shopHref, aboutHref, eventsHref }: MainStreetProps) {
+export function MainStreet({ content, skin, products, catalogSize, goodsTreatment, founderTreatment, shopHref, aboutHref, eventsHref, momentKey }: MainStreetProps) {
   return (
     <MainStreetRoot skin={skin}>
-      <MomentHero identity={content.identity} moment={content.moment} skin={skin} />
+      <MomentHero identity={content.identity} moment={content.moment} skin={skin} momentKey={momentKey} />
       <GoodsBeat goods={content.goods} products={products} skin={skin} treatment={goodsTreatment} catalogSize={catalogSize} shopHref={shopHref} />
       <Reveal>
         <FounderBeat founder={content.founder} skin={skin} treatment={founderTreatment} aboutHref={aboutHref} />

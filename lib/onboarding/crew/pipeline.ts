@@ -21,11 +21,16 @@ import { rollTreatments } from './treatment-roll';
 import { shootMoment } from './cinematographer';
 import { designLook } from './graphic-artist';
 import { directorsCut } from './directors-cut';
+import type { Trajectory } from './trajectory';
 import type { CrewBrief, CrewOutput } from './types';
 
 export interface CrewBuildResult {
   chosen: { spec: ArchetypeBuildSpec; lookKey: string };
   authored: MainStreetAuthored;
+  /** The Director's trajectory — the one creative North Star the whole crew
+   *  executed to. Surfaced for the orchestrator to log against the tenant after
+   *  persistence so we can read what Bohdi actually said when reviewing a build. */
+  trajectory: Trajectory;
   /** The three look-driving picks, surfaced for the orchestrator to log against
    *  the real tenant + niche after persistence (the crew runs before the tenant
    *  exists, so it records nothing itself). */
@@ -93,6 +98,7 @@ export async function directAndProduce(brief: CrewBrief, rand: () => number = Ma
   return {
     chosen: { spec: MAIN_STREET_SPEC, lookKey: cut.look.skinKey },
     authored: parsed.authored,
+    trajectory,
     choices: {
       heroKind: cut.moment.kind,
       goodsTreatment: cut.copy.goods.treatment,

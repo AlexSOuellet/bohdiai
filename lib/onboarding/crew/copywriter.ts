@@ -21,6 +21,7 @@ import type { FounderTreatment } from '@/lib/archetypes/main-street/founder';
 import { LINK_TARGETS } from '@/lib/archetypes/main-street/links';
 import { CopywriterDraftSchema, type CopywriterDraft } from './copywriter-schema';
 import { buildResubmitPayload } from './length-feedback';
+import { normalizeCopy } from './normalize-copy';
 import type { Trajectory } from './trajectory';
 import type { CrewBrief } from './types';
 
@@ -159,8 +160,12 @@ export async function writeCopy(brief: CrewBrief, trajectory: Trajectory, rolls:
 
     const parsed = CopywriterDraftSchema.safeParse(tu.input);
     if (parsed.success) {
-      logger.info('crew: copy written', { products: parsed.data.products.length, goods: parsed.data.goods.treatment, founder: parsed.data.founder.treatment });
-      return parsed.data;
+      // Normalize the draft — strip headline / story punctuation, slugify slugs,
+      // trim whitespace. ACCEPTING transforms, never throw — the build never
+      // fails on copy formatting (D53 sharpened).
+      const normalized = normalizeCopy(parsed.data);
+      logger.info('crew: copy written', { products: normalized.products.length, goods: normalized.goods.treatment, founder: normalized.founder.treatment });
+      return normalized;
     }
 
     const payload = buildResubmitPayload(parsed.error, tu.input);
