@@ -30,7 +30,9 @@ import type { CrewBrief } from './types';
 const MODEL = 'claude-sonnet-4-6';
 const MAX_TOKENS = 4000;
 const MAX_ATTEMPTS = 4;
-const TIMEOUT_MS = 90_000;
+// 60s per-call. Stage sum must stay under the 300s route ceiling (see
+// pipeline.ts PIPELINE_DEADLINE_MS + guard test).
+export const TIMEOUT_MS = 60_000;
 
 /** What the Graphic Artist produces. `skinKey` is validated against the subset
  *  separately (a dynamic set), and `products` must cover the copywriter's slugs. */

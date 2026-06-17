@@ -22,7 +22,7 @@ import type { CrewBrief } from './types';
 
 const MODEL = 'claude-sonnet-4-6';
 const MAX_TOKENS = 1500;
-const TIMEOUT_MS = 60_000;
+export const TIMEOUT_MS = 60_000;
 
 const SET_TRAJECTORY_TOOL: Anthropic.Tool = {
   name: 'set_trajectory',

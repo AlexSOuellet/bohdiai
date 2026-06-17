@@ -28,7 +28,10 @@ import type { CrewBrief, CrewOutput } from './types';
 const MODEL = 'claude-sonnet-4-6';
 const MAX_TOKENS = 12000;
 const MAX_ATTEMPTS = 3;
-const TIMEOUT_MS = 120_000;
+// 25s per-call. Director's Cut is a coherence pass over already-authored
+// artifacts — no fresh content. Stage sum must stay under the 300s route
+// ceiling (see pipeline.ts PIPELINE_DEADLINE_MS + guard test).
+export const TIMEOUT_MS = 25_000;
 
 const FINAL_CUT_TOOL: Anthropic.Tool = {
   name: 'final_cut',

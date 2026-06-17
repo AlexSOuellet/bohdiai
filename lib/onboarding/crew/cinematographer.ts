@@ -29,7 +29,7 @@ import type { Trajectory } from './trajectory';
 const MODEL = 'claude-sonnet-4-6';
 const MAX_TOKENS = 1500;
 const MAX_ATTEMPTS = 4;
-const TIMEOUT_MS = 60_000;
+export const TIMEOUT_MS = 60_000;
 
 /** What the Cinematographer produces — the hero media slot minus the resolved
  *  urls (generated later). Reuses ScenePrompt so its limits never drift from the

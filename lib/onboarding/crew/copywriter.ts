@@ -35,11 +35,11 @@ export interface TreatmentRolls {
 const MODEL = 'claude-sonnet-4-6';
 const MAX_TOKENS = 12000;
 const MAX_ATTEMPTS = 4;
-// Generous headroom: with no hard caps on body prose, a build can legitimately
-// generate more, and a model call should never be cut off mid-write. The soft
-// length guidance in the prompt is what actually keeps generation quick — this
-// is just the backstop so a slightly longer one still completes.
-const TIMEOUT_MS = 180_000;
+// 90s is the per-call backstop. The soft length guidance in the prompt is
+// what actually keeps generation quick. The sum of all stage timeouts must
+// stay under the route's 300s ceiling (see pipeline.ts PIPELINE_DEADLINE_MS +
+// the guard test); 90s is the audit's recommended trim of the prior 180s.
+export const TIMEOUT_MS = 90_000;
 
 const SUBMIT_COPY_TOOL: Anthropic.Tool = {
   name: 'submit_copy',

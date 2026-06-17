@@ -7,7 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const create = vi.fn();
 vi.mock('@/lib/anthropic', () => ({ anthropicClient: () => ({ messages: { create } }) }));
 
-import { directAndProduce } from './pipeline';
+import { directAndProduce, PIPELINE_DEADLINE_MS, ROUTE_CEILING_MS, STAGE_TIMEOUTS_SUM_MS } from './pipeline';
 import { moodAlignedSkins } from '@/lib/archetypes/main-street/skin-selection';
 import type { CrewBrief } from './types';
 
@@ -175,6 +175,19 @@ describe('directAndProduce (the crew pipeline)', () => {
     const result = await directAndProduce(brief);
     expect(result.authored.content.moment.media.kind).toBe('still');
     expect(result.choices.heroKind).toBe('still');
+  });
+
+  // A4 guard — the pipeline timeout budget once silently regressed past the
+  // route ceiling (510s of stage timeouts against a 300s route, which caused
+  // a real failure). These invariants stop that from happening again.
+  describe('timeout budget (A4 guard)', () => {
+    it('sum of per-stage timeouts stays under the route ceiling', () => {
+      expect(STAGE_TIMEOUTS_SUM_MS).toBeLessThan(ROUTE_CEILING_MS);
+    });
+
+    it('overall pipeline deadline is under the route ceiling', () => {
+      expect(PIPELINE_DEADLINE_MS).toBeLessThan(ROUTE_CEILING_MS);
+    });
   });
 
   it('deals the rolled treatments to the copywriter', async () => {

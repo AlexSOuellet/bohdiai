@@ -15,14 +15,43 @@
 import { MAIN_STREET_SPEC, type MainStreetAuthored } from '@/lib/archetypes/main-street/builder';
 import type { ArchetypeBuildSpec } from '@/lib/archetypes/builder';
 import { logger } from '@/lib/logger';
-import { direct } from './director';
-import { writeCopy } from './copywriter';
+import { withTimeout } from '@/lib/with-timeout';
+import { direct, TIMEOUT_MS as DIRECTOR_TIMEOUT_MS } from './director';
+import { writeCopy, TIMEOUT_MS as COPYWRITER_TIMEOUT_MS } from './copywriter';
 import { rollTreatments } from './treatment-roll';
-import { shootMoment } from './cinematographer';
-import { designLook } from './graphic-artist';
-import { directorsCut } from './directors-cut';
+import { shootMoment, TIMEOUT_MS as CINEMATOGRAPHER_TIMEOUT_MS } from './cinematographer';
+import { designLook, TIMEOUT_MS as GRAPHIC_ARTIST_TIMEOUT_MS } from './graphic-artist';
+import { directorsCut, TIMEOUT_MS as DIRECTORS_CUT_TIMEOUT_MS } from './directors-cut';
 import type { Trajectory } from './trajectory';
 import type { CrewBrief, CrewOutput } from './types';
+
+/**
+ * Overall crew pipeline deadline. The crew runs sequentially, so without an
+ * overall ceiling a worst-case run can sit at the sum of per-stage timeouts
+ * (which already caused a real failure when the sum exceeded the route's
+ * 300s ceiling). This bites if the stages individually stay under their
+ * timeouts but collectively run too long.
+ *
+ * Sized at 290s — under the route's 300s ceiling, leaving headroom for media
+ * generation + the DB write that happen after this returns. A guard test
+ * (pipeline.test.ts) asserts the sum of per-stage timeouts also stays under
+ * the route ceiling, so this can't silently regress.
+ */
+export const PIPELINE_DEADLINE_MS = 290_000;
+
+/** The route ceiling (start/route.ts `maxDuration = 300`), in ms. Exported so
+ *  the guard test asserts the invariant in one place. */
+export const ROUTE_CEILING_MS = 300_000;
+
+/** Sum of the five stage timeouts. The pipeline runs them sequentially, so
+ *  this is the worst-case wall time without the overall deadline. Must stay
+ *  under ROUTE_CEILING_MS — asserted by the guard test. */
+export const STAGE_TIMEOUTS_SUM_MS =
+  DIRECTOR_TIMEOUT_MS +
+  COPYWRITER_TIMEOUT_MS +
+  CINEMATOGRAPHER_TIMEOUT_MS +
+  GRAPHIC_ARTIST_TIMEOUT_MS +
+  DIRECTORS_CUT_TIMEOUT_MS;
 
 export interface CrewBuildResult {
   chosen: { spec: ArchetypeBuildSpec; lookKey: string };
@@ -77,8 +106,14 @@ function assembleSubmission(out: CrewOutput, shopName: string): { content: unkno
   return { content, products };
 }
 
-/** Run the crew and produce the engine's MainStreetAuthored envelope. */
+/** Run the crew and produce the engine's MainStreetAuthored envelope.
+ *  Wrapped in PIPELINE_DEADLINE_MS so a slow collective run aborts cleanly
+ *  under the route ceiling instead of being killed by Vercel. */
 export async function directAndProduce(brief: CrewBrief, rand: () => number = Math.random): Promise<CrewBuildResult> {
+  return withTimeout(runCrew(brief, rand), PIPELINE_DEADLINE_MS, 'crew pipeline');
+}
+
+async function runCrew(brief: CrewBrief, rand: () => number): Promise<CrewBuildResult> {
   const trajectory = await direct(brief);
   // Code rolls the dice; the copywriter reads them and plays or overrides (D48).
   const rolls = rollTreatments(rand);
