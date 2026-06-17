@@ -32,6 +32,10 @@ export interface ArchetypeWriteInput {
   logoUrl?: string | undefined;
   /** Logo brand colors to persist on the tenant (render-time contrast source). */
   brandColors?: string[] | undefined;
+  /** Vision-detected: true when the logo image already contains the shop name,
+   *  so the renderer hides the side text wordmark to avoid doubling. Null when
+   *  not analyzed (SVG, skipped, failed) — renderer treats null as false. */
+  logoContainsWordmark?: boolean | null | undefined;
   /** The dominant brand color baked at build time — overrides the skin's accent.
    *  Stable across later logo uploads until an explicit re-tint rewrites the envelope. */
   accentOverride?: string | undefined;
@@ -42,6 +46,16 @@ export interface ArchetypeWriteResult {
   subdomain: string;
 }
 
+/**
+ * Transactional in spirit (A2): insert the tenant as `status: 'draft'` so the
+ * subdomain resolver (which matches `status=eq.active`) can't see a half-built
+ * store. Only flip to `'active'` after content_pages AND listings have
+ * landed. If any intermediate write fails, the tenant stays in `'draft'` —
+ * the store is invisible to visitors and the row is identifiable as an orphan
+ * for cleanup, instead of going live half-built.
+ *
+ * This is the simpler alternative to a Postgres RPC, per the audit fix plan.
+ */
 export async function writeArchetypeStorefront(
   input: ArchetypeWriteInput,
 ): Promise<ArchetypeWriteResult> {
@@ -58,9 +72,11 @@ export async function writeArchetypeStorefront(
       mood_key: input.moodKey,
       niche_from_list: input.nicheFromList,
       niche_description: input.nicheDescription,
-      status: 'active',
+      // Draft until ALL writes land; only the final flip publishes the store.
+      status: 'draft',
       logo_url: input.logoUrl && input.logoUrl !== '' ? input.logoUrl : null,
       brand_colors: input.brandColors && input.brandColors.length > 0 ? input.brandColors : null,
+      logo_contains_wordmark: input.logoContainsWordmark ?? null,
     })
     .select('id')
     .single();
@@ -119,6 +135,17 @@ export async function writeArchetypeStorefront(
     if (listErr)
       throw new Error(`writeArchetypeStorefront: listings insert failed — ${listErr.message}`);
   }
+
+  // All writes landed — publish the store. The resolver matches `status=eq.active`,
+  // so only this flip makes the subdomain reachable.
+  const { error: publishErr } = await db
+    .from('tenants')
+    .update({ status: 'active' })
+    .eq('id', tenantId);
+  if (publishErr)
+    throw new Error(
+      `writeArchetypeStorefront: tenant publish (status→active) failed — ${publishErr.message}`,
+    );
 
   return { tenantId, subdomain: input.subdomain };
 }
