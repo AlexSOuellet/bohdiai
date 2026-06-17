@@ -1,0 +1,68 @@
+{
+  "kind": "niche-style-sheet",
+  "slug": "woodworker",
+  "note": "Raw materials for a woodworker site. Named only — no role assignments, no feel labels. Bohdi reads this alongside the mood's style sheet and decides which color is background, which font heads, which texture rides where.",
+
+  "palette": [
+    { "name": "Walnut Hull",         "hex": "#3A2418" },
+    { "name": "Espresso",            "hex": "#1A120C" },
+    { "name": "Workshop Pencil",     "hex": "#2A2826" },
+    { "name": "Cherry Heart",        "hex": "#8A2814" },
+    { "name": "Saddle Oak",          "hex": "#7A4A28" },
+    { "name": "Linseed Wash",        "hex": "#A88A52" },
+    { "name": "Shellac",             "hex": "#C97A2E" },
+    { "name": "Antique Brass",       "hex": "#A8843A" },
+    { "name": "White Oak",           "hex": "#C9A974" },
+    { "name": "Maple Curl",          "hex": "#E0C896" },
+    { "name": "Sawdust",             "hex": "#D6C8A4" },
+    { "name": "Birch Bark",          "hex": "#E8DCC8" },
+    { "name": "Bleached Pine",       "hex": "#F0E8D8" },
+    { "name": "Forest Lichen",       "hex": "#5E6B3E" },
+    { "name": "Iron Black",          "hex": "#0F0F0E" }
+  ],
+
+  "fonts": [
+    { "name": "Crimson Pro",            "category": "old-style-serif" },
+    { "name": "Newsreader",             "category": "refined-serif" },
+    { "name": "Vollkorn",               "category": "old-style-serif" },
+    { "name": "Libre Caslon Text",      "category": "old-style-serif" },
+    { "name": "Marcellus",              "category": "refined-serif" },
+    { "name": "Eczar",                  "category": "refined-serif" },
+    { "name": "Bree Serif",             "category": "slab-serif" },
+    { "name": "Bitter",                 "category": "slab-serif" },
+    { "name": "Caprasimo",              "category": "slab-serif" },
+    { "name": "Big Shoulders Display",  "category": "condensed-caps" },
+    { "name": "Anton",                  "category": "condensed-caps" },
+    { "name": "Hanken Grotesk",         "category": "humanist-sans" },
+    { "name": "Manrope",                "category": "geometric-sans" },
+    { "name": "Reddit Mono",            "category": "mono" },
+    { "name": "Courier Prime",          "category": "typewriter" },
+    { "name": "JetBrains Mono",         "category": "mono" }
+  ],
+
+  "wordmark": [
+    { "name": "Caprasimo",              "category": "slab-serif" },
+    { "name": "Big Shoulders Display",  "category": "condensed-caps" },
+    { "name": "Alfa Slab One",          "category": "slab-serif" },
+    { "name": "Marcellus",              "category": "refined-serif" },
+    { "name": "Bree Serif",             "category": "slab-serif" },
+    { "name": "Anton",                  "category": "condensed-caps" }
+  ],
+
+  "textures": [
+    "quarter-sawn-grain",
+    "live-edge",
+    "saw-mark",
+    "plane-shaving",
+    "sawdust-floor",
+    "shop-pencil-line",
+    "tung-oil-grain",
+    "spalted-figure",
+    "carbon-paper-trace",
+    "shop-rag-smudge",
+    "linseed-wash",
+    "blackened-iron",
+    "brown-paper-template",
+    "burnished-edge"
+  ]
+}

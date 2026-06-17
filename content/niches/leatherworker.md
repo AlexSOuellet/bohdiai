@@ -19,7 +19,7 @@ status: draft
 
 ## What this business does
 
-A leatherworker cuts, stitches, and finishes leather into functional objects. The range of what gets made is wide: wallets and cardholders, belts, bags and totes, journal covers, watch straps, dog collars and leashes, key fobs, guitar straps, holsters, sheaths, sandals, and saddles. Most independent leatherworkers are one- or two-person shops operating out of a home studio or a small dedicated workshop, working with hand tools alongside a stitching pony and perhaps a clicker press.
+A leatherworker cuts, stitches, and finishes leather into functional objects. The range of what gets made is wide: wallets and cardholders, belts, bags and totes, journal covers, watch straps, dog collars and leashes, key fobs, guitar straps, holsters, sheaths, sandals, and saddles. Independent shops range from solo home-studio makers working with hand tools and a stitching pony, to small studios with a clicker press and a sewing machine, to design-led brands working with outsourced production.
 
 The work involves sourcing hides (usually from specialty leather suppliers or tanneries), cutting pieces from templates or patterns, skiving edges thin, hand-stitching or machine-stitching seams, and finishing edges by burnishing, painting, or dyeing. Turnaround time on custom orders varies from days to weeks depending on complexity. Many leatherworkers sell both a ready-to-ship product line and a made-to-order or custom service — the ready-to-ship line funds the business between custom orders, and custom orders fund the experimentation that feeds the next product line.
 
@@ -40,6 +40,12 @@ Distribution channels include their own online shop, Etsy, craft fairs and marke
 **Folk and Western heritage leatherworkers.** Floral or geometric carving, hand-tooled designs, traditional tack forms. Customers for whom leather is a cultural material — saddle makers, Western-wear accessory makers, belt-carvers.
 
 **Minimalist modern wallet and cardholder makers.** Etsy-native, gifting, everyday carry. Thin cardholders in natural vegetable tan or black chrome tan. Often positioned as gifts. Price range of $30–$90. The dominant form factor for entry-level leatherworkers building a product line.
+
+**Polène.** Paris-based, founded by a brother-and-two-sisters team. Sculptural fashion-forward handbags in saturated and neutral leathers — sage, dusty rose, deep red, lilac. Mid-luxury pricing ($350–$700) that undercuts traditional luxury houses while offering an unmistakable silhouette. Proves the category isn't only heritage-brown: a leather goods brand can be fashion-led, design-driven, and color-forward.
+
+**Cuyana.** Women-founded, "fewer, better things" as the positioning. Slow-fashion leather goods with a signature monogramming and free repairs offer. Pebbled leathers, modern minimal silhouettes in expanded colorways (cinnamon, cream, soft pink, sage). Price tier $150–$400. Direct-to-consumer plus a small retail footprint.
+
+**Behno.** Women-led New York brand, modern color palette (terracotta, ocean blue, cherry), structural silhouettes. Built around an explicit ethical-production story — partnered with a single women-employing factory in India. Shows that a leather brand's authority story can be social mission as easily as it can be heritage workshop.
 
 ## Who their customers are
 
