@@ -5,6 +5,14 @@ const calls: { table: string; op: string; payload?: unknown; eqId?: unknown }[] 
 const insertSingleMock = vi.fn();
 const updateResultMock = vi.fn();
 const selectSingleMock = vi.fn();
+const loggerErrorMock = vi.fn();
+vi.mock('@/lib/logger', () => ({
+  logger: {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: (...args: unknown[]) => loggerErrorMock(...args),
+  },
+}));
 
 function makeAdmin() {
   return {
@@ -47,6 +55,7 @@ beforeEach(() => {
   insertSingleMock.mockReset();
   updateResultMock.mockReset();
   selectSingleMock.mockReset();
+  loggerErrorMock.mockReset();
   updateResultMock.mockResolvedValue({ error: null });
 });
 
@@ -85,6 +94,35 @@ describe('status transitions', () => {
     const u = calls.find((c) => c.op === 'update');
     expect(u?.payload).toMatchObject({ status: 'failed', error: 'video generation failed' });
     expect((u?.payload as { finished_at?: string }).finished_at).toBeTruthy();
+  });
+});
+
+describe('error surfacing — A3 (no more silent failures)', () => {
+  it('markRunning logs but does NOT throw on DB error (progress is best-effort)', async () => {
+    updateResultMock.mockResolvedValueOnce({ error: { message: 'db down' } });
+    await expect(markRunning('b-1', 'Designing')).resolves.toBeUndefined();
+    expect(loggerErrorMock).toHaveBeenCalledWith(
+      'build-store: markRunning failed',
+      expect.objectContaining({ buildId: 'b-1', error: 'db down' }),
+    );
+  });
+
+  it('completeBuild logs AND throws on DB error (terminal write must surface)', async () => {
+    updateResultMock.mockResolvedValueOnce({ error: { message: 'conflict' } });
+    await expect(completeBuild('b-1', 'tenant-9')).rejects.toThrow(/conflict/);
+    expect(loggerErrorMock).toHaveBeenCalledWith(
+      'build-store: completeBuild failed',
+      expect.objectContaining({ buildId: 'b-1', tenantId: 'tenant-9', error: 'conflict' }),
+    );
+  });
+
+  it('failBuild logs AND throws on DB error (terminal write must surface)', async () => {
+    updateResultMock.mockResolvedValueOnce({ error: { message: 'network' } });
+    await expect(failBuild('b-1', 'something broke')).rejects.toThrow(/network/);
+    expect(loggerErrorMock).toHaveBeenCalledWith(
+      'build-store: failBuild failed',
+      expect.objectContaining({ buildId: 'b-1', error: 'network' }),
+    );
   });
 });
 

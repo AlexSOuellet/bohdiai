@@ -62,6 +62,7 @@ async function runBuild(buildId: string, input: BuildInput): Promise<void> {
         makerName: input.makerName,
         logoUrl: input.logoUrl,
         brandColors: input.brandColors,
+        logoContainsWordmark: input.logoContainsWordmark ?? null,
       },
       (event) => {
         if (event.type === 'status') void updateProgress(buildId, event.label);
@@ -72,10 +73,22 @@ async function runBuild(buildId: string, input: BuildInput): Promise<void> {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Build failed';
     logger.error('build: failed', { buildId, error: message });
-    await failBuild(
-      buildId,
-      'We hit a problem building your store. Your choices are saved — try again.',
-    );
+    // failBuild can itself throw (terminal write — see build-store.ts). If it
+    // does, the build is now stuck in 'running' forever; log loudly here so
+    // we can see it instead of letting it become an unhandled rejection.
+    try {
+      await failBuild(
+        buildId,
+        'We hit a problem building your store. Your choices are saved — try again.',
+      );
+    } catch (failErr) {
+      const failMsg = failErr instanceof Error ? failErr.message : 'failBuild failed';
+      logger.error('build: failBuild also failed — build row stuck', {
+        buildId,
+        originalError: message,
+        failBuildError: failMsg,
+      });
+    }
   }
 }
 
