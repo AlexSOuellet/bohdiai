@@ -486,7 +486,9 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   },
 
   // ══ STUDIO ════ art-forward, the goods ARE the art: painter, printmaker ══
-  // Studio — quiet gallery wall. Bone white, huge ink type, one hot signal.
+  // Studio — gallery wall. Bone white, huge ink type, one hot signal. Caprasimo
+  // is the heavy display — even strokes, retro-modern, art-school-grown-up —
+  // and Reddit Mono quiets the labels so the display does the talking.
   'main-street-studio': {
     key: 'main-street-studio',
     label: 'Studio',
@@ -500,11 +502,11 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
       contrast: { bg: '#1A1814', fg: '#F0EBE0', fgMuted: 'rgba(240,235,224,0.60)' },
     },
     type: makeType({
-      display: "'Syne', system-ui, sans-serif",
-      displayWeight: 800,
+      display: "'Caprasimo', Georgia, serif",
+      displayWeight: 400,
       body: "'Newsreader', Georgia, serif",
-      label: "'Syne', system-ui, sans-serif",
-      labelWeight: 600,
+      label: "'Reddit Mono', ui-monospace, monospace",
+      labelWeight: 500,
     }),
     spacing: SPACING,
     atmosphere: { grain: GRAIN, photoFilter: 'contrast(1.05) saturate(1.02)' },
@@ -984,7 +986,7 @@ export const MAIN_STREET_FONT_HREFS: Record<string, string> = {
   'main-street-wildflower':
     'https://fonts.googleapis.com/css2?family=Yeseva+One&family=Mulish:wght@400;500;600&family=Red+Hat+Mono:wght@400;500&display=swap',
   'main-street-studio':
-    'https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap',
+    'https://fonts.googleapis.com/css2?family=Caprasimo&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Reddit+Mono:wght@400;500&display=swap',
   'main-street-darkroom':
     'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Geist+Mono:wght@400;500&display=swap',
   'main-street-pigment':

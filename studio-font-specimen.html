@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Studio skin — even-stroke options</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Alfa+Slab+One&family=Kalnia:wght@700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Reddit+Mono:wght@400;500&display=swap" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #2a2826; color: #F0EBE0; font-family: 'Newsreader', Georgia, serif; padding: 40px 24px; line-height: 1.5; }
+    .header { max-width: 1440px; margin: 0 auto 40px; padding-bottom: 24px; border-bottom: 1px solid rgba(240,235,224,0.18); }
+    h1 { font-family: 'Caprasimo', Georgia, serif; font-size: 32px; letter-spacing: -0.005em; margin-bottom: 10px; }
+    .header p { opacity: 0.7; font-size: 14px; max-width: 760px; }
+    .row { max-width: 1440px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+    @media (max-width: 1200px) { .row { grid-template-columns: 1fr; } }
+    .card { background: #F4F1EA; color: #16140F; padding: 44px 36px; border-radius: 2px; box-shadow: 0 30px 80px rgba(0,0,0,0.25); position: relative; overflow: hidden; }
+    .stamp { position: absolute; top: 18px; right: 22px; font-family: 'Reddit Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(22,20,15,0.6); font-weight: 500; }
+    .meta { display: flex; gap: 12px; align-items: center; margin-bottom: 32px; }
+    .world { font-family: 'Reddit Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #E5391B; font-weight: 500; }
+    .key { font-family: 'Reddit Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(22,20,15,0.55); font-weight: 500; }
+
+    .hero { font-size: 64px; line-height: 0.98; letter-spacing: -0.015em; margin-bottom: 24px; }
+    .story { font-size: 40px; line-height: 1.1; letter-spacing: -0.01em; margin-bottom: 28px; }
+    .goodsHead { font-size: 34px; line-height: 1.04; letter-spacing: -0.01em; margin-bottom: 22px; }
+    .cardTitle { font-size: 22px; letter-spacing: 0; line-height: 1.05; flex: 1; }
+    .closeHead { font-size: 48px; line-height: 1.0; letter-spacing: -0.015em; margin-top: 24px; }
+
+    /* CAPRASIMO */
+    .opt-caprasimo .hero,
+    .opt-caprasimo .story,
+    .opt-caprasimo .goodsHead,
+    .opt-caprasimo .cardTitle,
+    .opt-caprasimo .closeHead { font-family: 'Caprasimo', Georgia, serif; font-weight: 400; }
+
+    /* ALFA SLAB ONE */
+    .opt-alfa .hero,
+    .opt-alfa .story,
+    .opt-alfa .goodsHead,
+    .opt-alfa .cardTitle,
+    .opt-alfa .closeHead { font-family: 'Alfa Slab One', Georgia, serif; font-weight: 400; }
+
+    /* KALNIA */
+    .opt-kalnia .hero,
+    .opt-kalnia .story,
+    .opt-kalnia .goodsHead,
+    .opt-kalnia .cardTitle,
+    .opt-kalnia .closeHead { font-family: 'Kalnia', Georgia, serif; font-weight: 700; }
+
+    .body { font-family: 'Newsreader', Georgia, serif; font-size: 16px; line-height: 1.6; max-width: 56ch; margin-bottom: 28px; color: rgba(22,20,15,0.85); }
+    .item-row { display: flex; gap: 16px; align-items: baseline; margin-bottom: 22px; padding-bottom: 20px; border-bottom: 1px solid rgba(22,20,15,0.12); }
+    .price { font-size: 12px; letter-spacing: 0.02em; color: rgba(22,20,15,0.65); font-family: 'Reddit Mono', ui-monospace, monospace; font-weight: 500; }
+    .label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #E5391B; font-family: 'Reddit Mono', ui-monospace, monospace; font-weight: 500; }
+
+    .notes { max-width: 1440px; margin: 60px auto 0; padding-top: 32px; border-top: 1px solid rgba(240,235,224,0.18); font-size: 13px; line-height: 1.7; opacity: 0.8; }
+    .notes p { margin-bottom: 10px; }
+    .notes b { color: #F0EBE0; font-weight: 500; }
+    .vote { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+    .vote span { font-family: 'Reddit Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; padding: 6px 12px; border: 1px solid rgba(240,235,224,0.3); border-radius: 2px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Studio — three even-stroke options</h1>
+    <p>No thin parts to disappear. Same content, same color, same body face (Newsreader), same accent (#E5391B), same Reddit Mono labels. Only the big display face differs. Pick one or tell me to keep going.</p>
+  </div>
+
+  <div class="row">
+
+    <article class="card opt-caprasimo">
+      <span class="stamp">A · Caprasimo</span>
+      <div class="meta"><span class="world">Studio</span><span class="key">studio</span></div>
+      <p class="hero">Quietly Made</p>
+      <p class="story">Studio talk for things that last.</p>
+      <p class="body">Every piece here was chosen by hand and kept for a reason. We sell things that last, and we tell you where they came from.</p>
+      <p class="label">Est · MMXXVI · The Shop</p>
+      <div style="margin-top: 30px;">
+        <p class="goodsHead">The work</p>
+        <div class="item-row"><p class="cardTitle">A small painting on cradled birch</p><p class="price">$340</p></div>
+        <div class="item-row"><p class="cardTitle">A linocut, edition of twelve</p><p class="price">$120</p></div>
+      </div>
+      <p class="closeHead">Come find a piece you'll keep.</p>
+    </article>
+
+    <article class="card opt-alfa">
+      <span class="stamp">B · Alfa Slab One</span>
+      <div class="meta"><span class="world">Studio</span><span class="key">studio</span></div>
+      <p class="hero">Quietly Made</p>
+      <p class="story">Studio talk for things that last.</p>
+      <p class="body">Every piece here was chosen by hand and kept for a reason. We sell things that last, and we tell you where they came from.</p>
+      <p class="label">Est · MMXXVI · The Shop</p>
+      <div style="margin-top: 30px;">
+        <p class="goodsHead">The work</p>
+        <div class="item-row"><p class="cardTitle">A small painting on cradled birch</p><p class="price">$340</p></div>
+        <div class="item-row"><p class="cardTitle">A linocut, edition of twelve</p><p class="price">$120</p></div>
+      </div>
+      <p class="closeHead">Come find a piece you'll keep.</p>
+    </article>
+
+    <article class="card opt-kalnia">
+      <span class="stamp">C · Kalnia 700</span>
+      <div class="meta"><span class="world">Studio</span><span class="key">studio</span></div>
+      <p class="hero">Quietly Made</p>
+      <p class="story">Studio talk for things that last.</p>
+      <p class="body">Every piece here was chosen by hand and kept for a reason. We sell things that last, and we tell you where they came from.</p>
+      <p class="label">Est · MMXXVI · The Shop</p>
+      <div style="margin-top: 30px;">
+        <p class="goodsHead">The work</p>
+        <div class="item-row"><p class="cardTitle">A small painting on cradled birch</p><p class="price">$340</p></div>
+        <div class="item-row"><p class="cardTitle">A linocut, edition of twelve</p><p class="price">$120</p></div>
+      </div>
+      <p class="closeHead">Come find a piece you'll keep.</p>
+    </article>
+
+  </div>
+
+  <div class="notes">
+    <p><b>A · Caprasimo.</b> Bold display serif, retro-modern, refined-but-characterful. Recently-added Google font, not generic. Even strokes everywhere — no parts disappear. Reads as art-school-but-grown-up. Single weight (400) which IS the bold.</p>
+    <p><b>B · Alfa Slab One.</b> Heavy slab serif. Gallery-poster confident. Most "loud" of the three; closest to "the type IS the art." Single weight, ultra-even strokes. Edge of being too poster-blunt — but Studio's brief literally says "enormous off-center jet-black type."</p>
+    <p><b>C · Kalnia 700.</b> Modern variable serif — a contemporary geometric slab. Most "current/clean" of the three; least quirky. Even strokes at 700 weight. Closest to what a 2026 high-end gallery's website would actually use.</p>
+    <p>Reply with A, B, or C. Or none — and I'll show three more.</p>
+  </div>
+</body>
+</html>
