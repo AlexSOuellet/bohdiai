@@ -43,7 +43,7 @@ const MOOD_VISUALS: Record<MoodKey, MoodVisual> = {
     text: '#ece7f3',
     label: '#b9a6d6',
   },
-  playful: {
+  cheerful: {
     background: 'linear-gradient(135deg, #15123a 0%, #2a0f33 100%)',
     border: '#4a2a6a',
     text: '#fdeef6',

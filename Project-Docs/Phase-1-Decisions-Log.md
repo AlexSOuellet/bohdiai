@@ -690,6 +690,24 @@ Modern still contains genuinely-bold dark options (Anvil "near-black with one bl
 
 ---
 
+## 2026-06-17 (session 44)
+
+### D58. The Playful mood is renamed Cheerful
+
+A live build of Bloated Bellys (herbalist × playful) landed cleanly on the Confetti skin — butter-cream background, poppy and grape accents, the rounded Unbounded display. The build is bright, sunlit, color-positive. Alex's read: "this site is bright, but I would not call it playful."
+
+He's right. In plain English "Playful" promises kid-energy, toy-store wink, humor — a register only one skin on the shelf (Bubblegum) actually delivers. The other five (Confetti, Sprout, Wildflower, Pantry, Pigment) are bright and cheerful but not playful in the toy-store sense. A herbalist picking "Playful" sets a wrong expectation for what they're about to see; a herbalist picking "Cheerful" sees exactly what the word said.
+
+The fix is the label, not the shelf. Cheerful is what the bucket has always been — bright, lifted, full of color, a store that smiles back. The six skins all stay; their tags change from `playful` to `cheerful`. Bubblegum at the loud end is still cheerful, just turned up.
+
+What changes: the mood key (`playful` → `cheerful`), the mood label (Playful → Cheerful), the six skin tags, the onboarding picker card, the description copy, and a migration to remap existing tenants + design_choices + the stored archetype envelope's `mood` field. The mood description rewrites from "bright, joyful, and full of energy — color and fun" to "bright and lifted, color-positive — sun on the page, a store that smiles back."
+
+What does NOT change: the shelf composition (Confetti / Bubblegum / Sprout / Wildflower / Pantry / Pigment all stay; the cozy crossovers on Pantry and Sprout stay), the D41 mood-gate wiring, the trajectory/director language at the prompt level (the model reads the current MOODS table, not the old key by name), and any other mood's name or shelf. The English-prose use of "playful" in niche body_markdown files describes a brand register the AI grounds against — it stays.
+
+Supersedes the Playful naming in **D51** (the seven-feelings lineup); D51's principle (color is a layer Bohdi picks inside the feeling, not a mood; descriptions are feel-first) and the lineup itself (Dark, Rustic, Cozy, Modern, Elegant, Cheerful, Industrial) stand. The ride-along lesson: a mood label is a promise to the maker — when the label overpromises one corner of the shelf, the build that lands on a different corner reads "wrong," even when the build is correct. Name the bucket honestly.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.

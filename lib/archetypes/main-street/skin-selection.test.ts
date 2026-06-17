@@ -29,11 +29,11 @@ describe('moodAlignedSkins (the D41 skin gate)', () => {
     }
   });
 
-  it('keeps a dark shop out of playful skins and a modern shop out of cozy ones', () => {
+  it('keeps a dark shop out of cheerful skins and a modern shop out of cozy ones', () => {
     const dark = moodAlignedSkins('dark');
     expect(dark).toContain('main-street-nightshade');
-    expect(dark).not.toContain('main-street-bubblegum'); // playful
-    expect(dark).not.toContain('main-street-pantry'); // cozy / playful
+    expect(dark).not.toContain('main-street-bubblegum'); // cheerful
+    expect(dark).not.toContain('main-street-pantry'); // cozy / cheerful
 
     const modern = moodAlignedSkins('modern');
     expect(modern).toContain('main-street-forge'); // industrial, modern

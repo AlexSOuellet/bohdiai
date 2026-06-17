@@ -1,4 +1,4 @@
-export type MoodKey = 'dark' | 'rustic' | 'cozy' | 'modern' | 'elegant' | 'playful' | 'industrial';
+export type MoodKey = 'dark' | 'rustic' | 'cozy' | 'modern' | 'elegant' | 'cheerful' | 'industrial';
 
 export type PaletteTemperature = 'warm' | 'cool' | 'neutral';
 export type BrightnessDirection = 'dark' | 'mid' | 'light';
@@ -91,10 +91,10 @@ export const MOODS: Record<MoodKey, Mood> = {
       defaultScheme: 'light',
     },
   },
-  playful: {
-    key: 'playful',
-    label: 'Playful',
-    description: 'Bright, joyful, and full of energy. Color and fun — a store that smiles back.',
+  cheerful: {
+    key: 'cheerful',
+    label: 'Cheerful',
+    description: 'Bright and lifted, color-positive. Sun on the page — a store that smiles back.',
     designDirection: {
       paletteTemperature: 'warm',
       brightness: 'light',

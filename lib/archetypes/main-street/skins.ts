@@ -637,7 +637,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
     motion: MOTION,
   },
 
-  // ══ PLAYROOM ════ playful, bright: stickers, pins, polymer clay, toys, plush ══
+  // ══ PLAYROOM ════ cheerful, bright: stickers, pins, polymer clay, toys, plush ══
   // Confetti — butter-bright. Rounded heavy type, poppy and grape in tension.
   'main-street-confetti': {
     key: 'main-street-confetti',
@@ -688,7 +688,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
     motion: MOTION,
   },
 
-  // Sprout — gentle pastel. The calm, friendly end of playful — a choice, not a shout.
+  // Sprout — gentle pastel. The calm, friendly end of cheerful — a choice, not a shout.
   'main-street-sprout': {
     key: 'main-street-sprout',
     label: 'Sprout',
@@ -881,7 +881,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
 export const MAIN_STREET_SKIN_TAGS: Record<string, SkinTag> = {
   'main-street-ember': { world: 'Hearth', moods: ['rustic', 'cozy'] },
   'main-street-orchard': { world: 'Hearth', moods: ['cozy', 'rustic'] },
-  'main-street-pantry': { world: 'Hearth', moods: ['cozy', 'playful'] },
+  'main-street-pantry': { world: 'Hearth', moods: ['cozy', 'cheerful'] },
   'main-street-hearthstone': { world: 'Hearth', moods: ['dark'] },
   'main-street-tannery': { world: 'Workshop', moods: ['rustic', 'industrial'] },
   'main-street-forge': { world: 'Workshop', moods: ['industrial', 'modern'] },
@@ -892,16 +892,16 @@ export const MAIN_STREET_SKIN_TAGS: Record<string, SkinTag> = {
   'main-street-gild': { world: 'Fine', moods: ['dark'] },
   'main-street-botanical': { world: 'Garden', moods: ['rustic'] },
   'main-street-conservatory': { world: 'Garden', moods: ['elegant'] },
-  'main-street-wildflower': { world: 'Garden', moods: ['playful'] },
+  'main-street-wildflower': { world: 'Garden', moods: ['cheerful'] },
   'main-street-studio': { world: 'Studio', moods: ['modern', 'industrial'] },
   'main-street-darkroom': { world: 'Studio', moods: ['dark'] },
-  'main-street-pigment': { world: 'Studio', moods: ['playful', 'modern'] },
+  'main-street-pigment': { world: 'Studio', moods: ['cheerful', 'modern'] },
   'main-street-nightshade': { world: 'Mystic', moods: ['dark'] },
   'main-street-celestine': { world: 'Mystic', moods: ['elegant', 'cozy'] },
   'main-street-ritual': { world: 'Mystic', moods: ['dark'] },
-  'main-street-confetti': { world: 'Playroom', moods: ['playful'] },
-  'main-street-bubblegum': { world: 'Playroom', moods: ['playful'] },
-  'main-street-sprout': { world: 'Playroom', moods: ['cozy', 'playful'] },
+  'main-street-confetti': { world: 'Playroom', moods: ['cheerful'] },
+  'main-street-bubblegum': { world: 'Playroom', moods: ['cheerful'] },
+  'main-street-sprout': { world: 'Playroom', moods: ['cozy', 'cheerful'] },
   'main-street-pressroom': { world: 'Press', moods: ['industrial', 'modern'] },
   'main-street-marquee': { world: 'Press', moods: ['modern', 'industrial'] },
   'main-street-broadside': { world: 'Press', moods: ['industrial', 'modern'] },
@@ -940,10 +940,10 @@ export const SKIN_DESCRIPTIONS: Record<string, string> = {
   'main-street-nightshade': 'violet-black and electric amethyst with a gold hairline, a carved gothic — deep occult',
   'main-street-celestine': 'pale dawn-lilac and dusk violet, an engraved roman — soft and celestial',
   'main-street-ritual': 'near-black and a single blood red, a dramatic serif — candlelit and intense',
-  // Playroom — playful, bright, friendly
-  'main-street-confetti': 'butter cream with poppy and grape, a rounded heavy display — bright and playful',
+  // Playroom — cheerful, bright, friendly
+  'main-street-confetti': 'butter cream with poppy and grape, a rounded heavy display — bright and cheerful',
   'main-street-bubblegum': 'cotton-candy white with bubblegum pink and pool cyan, a rounded display — candy loud',
-  'main-street-sprout': 'soft pistachio and warm apricot, a gentle rounded sans — the friendly, quiet end of playful',
+  'main-street-sprout': 'soft pistachio and warm apricot, a gentle rounded sans — the friendly, quiet end of cheerful',
   // Press — graphic, inky, urban
   'main-street-pressroom': 'bone paper with off-register riso red and blue, condensed poster caps — screenprint',
   'main-street-marquee': 'black with one neon-lime, a wall of poster caps — streetwear and bold',

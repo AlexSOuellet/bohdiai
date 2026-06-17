@@ -9,7 +9,7 @@ describe('MOODS', () => {
       'cozy',
       'modern',
       'elegant',
-      'playful',
+      'cheerful',
       'industrial',
     ];
     for (const k of expected) {

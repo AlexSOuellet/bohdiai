@@ -98,9 +98,9 @@ Full recap: `session-logs/session-40.md`.
 ## Next actions
 
 1. **Live-test the corrected Moment play-through.** Expect: cold first arrival plays held media + story lines one at a time + settles on brand+CTA. Returning visitor (cookie set) lands directly on the resting hero. Footer Intro link replays on demand. Deep-link arrival skips the Moment.
-2. **Live-test moods we didn't hit today** — Playful and Rustic in particular. Today's builds covered Cozy, Elegant, Modern, Industrial.
+2. **Live-test moods we didn't hit today** — Cheerful (renamed from Playful, D58) and Rustic in particular. Today's builds covered Cozy, Elegant, Modern, Industrial.
 3. **Wipe test tenants when ready.** `UPDATE tenants SET status='inactive', updated_at=now() WHERE status='active' AND deleted_at IS NULL;` in Supabase Studio. Today's tenants carry pre-D54-correction layouts (resting hero only, no play-through stored) — they need a rebuild to see the new behavior.
-4. **Mood picker cards all-dark UX bug** (Session 42, not fixed). Every card sits on near-black with a small accent — Modern is literally `#0a0a0a`, Cozy is `#2e1509`, even Playful is dark purple. Real UX fix would re-do each card to show its actual feel.
+4. **Mood picker cards all-dark UX bug** (Session 42, not fixed). Every card sits on near-black with a small accent — Modern is literally `#0a0a0a`, Cozy is `#2e1509`, even Cheerful is dark purple. Real UX fix would re-do each card to show its actual feel.
 5. **Skin picker in the maker dashboard** (Session 43 — architectural answer confirmed for "I picked X but want a different skin in the subset"). Phase 1 build when the editor lands; one DB write per swap; preview cards rendered with the maker's own content.
 6. **Niche audit beyond knitter.** Crocheter + soap_and_bath are balanced; rest of launch set not spot-checked.
 7. **Woodworker niche-file rewrite** (cutting-board fixation, Session 41). Niche-writer skill job, separate spec.
