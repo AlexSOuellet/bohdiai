@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   relativeLuminance, dominantBrandColor, logoTone, readableOn, navContrast,
-  applyAccentOverride, isAchromatic, contrastRatio,
+  applyAccentOverride, isAchromatic, contrastRatio, pickBrandColorForSkin,
 } from './logo-contrast';
 
 describe('relativeLuminance', () => {
@@ -81,6 +81,40 @@ describe('contrastRatio', () => {
   });
   it('same color vs itself is ~1', () => {
     expect(contrastRatio('#1d3a2e', '#1d3a2e')).toBeCloseTo(1, 0);
+  });
+});
+
+describe('pickBrandColorForSkin', () => {
+  it('returns the first valid hex that clears contrast against a light bg', () => {
+    expect(pickBrandColorForSkin(['#1d3a2e', '#e7d8b0'], '#ffffff')).toBe('#1d3a2e');
+  });
+
+  it('SKIPS the dominant color when it has insufficient contrast and returns the next', () => {
+    // The session-40 Rhody Strong case: navy is dominant, gold is next.
+    // Against a dark Hearthstone-like bg, navy fails contrast and gold wins.
+    expect(pickBrandColorForSkin(['#0b2447', '#d4a017'], '#1c120b')).toBe('#d4a017');
+  });
+
+  it('skips achromatic dominant (gray/black/white) and picks the next chromatic that contrasts', () => {
+    expect(pickBrandColorForSkin(['#000000', '#1d7a66'], '#ffffff')).toBe('#1d7a66');
+    expect(pickBrandColorForSkin(['#808080', '#c8431b'], '#ffffff')).toBe('#c8431b');
+  });
+
+  it('skips invalid hex entries and picks the next valid one that contrasts', () => {
+    expect(pickBrandColorForSkin(['not-a-color', '#zzzzzz', '#1d3a2e'], '#ffffff')).toBe('#1d3a2e');
+  });
+
+  it('returns undefined when NO color clears contrast (skin accent stands)', () => {
+    // Pale cream colors against a cream bg — none clears 3:1.
+    expect(pickBrandColorForSkin(['#f1e7d2', '#ece0c0'], '#f4f1ea')).toBeUndefined();
+  });
+
+  it('returns undefined for an empty list', () => {
+    expect(pickBrandColorForSkin([], '#ffffff')).toBeUndefined();
+  });
+
+  it('returns undefined when every entry is achromatic', () => {
+    expect(pickBrandColorForSkin(['#000000', '#ffffff', '#888888'], '#f4f1ea')).toBeUndefined();
   });
 });
 

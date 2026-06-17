@@ -23,7 +23,8 @@ import { withImageDirectives } from '@/lib/onboarding/image-directives';
 import { directAndProduce } from '@/lib/onboarding/crew/pipeline';
 import { logCrewChoices } from '@/lib/onboarding/crew/log-choices';
 import type { CrewBrief } from '@/lib/onboarding/crew/types';
-import { dominantBrandColor } from '@/lib/archetypes/main-street/logo-contrast';
+import { pickBrandColorForSkin } from '@/lib/archetypes/main-street/logo-contrast';
+import { MAIN_STREET_SKINS } from '@/lib/archetypes/main-street/skins';
 
 export const MAX_PRODUCT_IMAGES = 5;
 
@@ -41,6 +42,10 @@ export interface ArchetypeBuildInput {
   /** The logo's extracted brand colors (prominence-ordered hex), or empty. Persisted
    *  for render-time contrast; the dominant one bakes the accent (a later task). */
   brandColors?: string[] | undefined;
+  /** Vision-detected: true when the logo image already contains the shop name.
+   *  Persisted to tenants.logo_contains_wordmark so the renderer can suppress the
+   *  side text wordmark and avoid doubling the maker's name. */
+  logoContainsWordmark?: boolean | null | undefined;
 }
 
 /** The sentinel niche slug an "Other" maker carries — they described their own
@@ -162,7 +167,13 @@ export async function buildArchetypeStore(
   });
 
   emit('Publishing your store');
-  const accentOverride = dominantBrandColor(input.brandColors ?? []);
+  // Pick the most prominent brand color that ALSO clears contrast against
+  // the chosen skin's bg. Walking the list in prominence order means a
+  // maker with navy + gold logos against a dark skin gets gold as the
+  // accent (the next-most-prominent readable color) instead of losing
+  // both to the contrast guard at render time.
+  const skinBg = MAIN_STREET_SKINS[chosen.lookKey]?.palette.bg ?? '#ffffff';
+  const accentOverride = pickBrandColorForSkin(input.brandColors ?? [], skinBg);
   const result = await writeArchetypeStorefront({
     subdomain: input.subdomain,
     shopName: input.shopName,
@@ -179,6 +190,7 @@ export async function buildArchetypeStore(
     products: payload.products,
     logoUrl: input.logoUrl,
     brandColors: input.brandColors ?? [],
+    logoContainsWordmark: input.logoContainsWordmark ?? null,
     accentOverride,
   });
 

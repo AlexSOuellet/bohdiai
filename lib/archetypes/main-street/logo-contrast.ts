@@ -23,9 +23,41 @@ export function relativeLuminance(hex: string): number {
   return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
 }
 
-/** The most prominent usable brand color (first valid hex), or undefined. */
+/** The most prominent usable brand color (first valid hex), or undefined.
+ *  Skin-blind — used as a fallback when the skin's bg isn't available, and
+ *  as the seed before `pickBrandColorForSkin` walks the list. */
 export function dominantBrandColor(colors: string[]): string | undefined {
   return colors.find((c) => HEX6.test(c));
+}
+
+/**
+ * Pick the most prominent brand color that ALSO clears contrast against the
+ * skin's background. Walks the brand-color list in prominence order and
+ * returns the first one that is a valid hex, NOT achromatic, and reaches
+ * MIN_ACCENT_CONTRAST against `skinBg`.
+ *
+ * If no color in the list satisfies all three, returns undefined — the
+ * skin's own accent stands. (Skipping is correct: forcing a non-contrasting
+ * brand color would make the maker's accent invisible on the page.)
+ *
+ * This is the smarter selector that replaces the old `dominantBrandColor`
+ * at the build-time accent-override call site. The previous behavior — pick
+ * the first valid hex regardless of skin, then let the render-time guard
+ * silently skip it — meant a maker with navy + gold logos against a dark
+ * skin lost BOTH usable accent colors. Now navy is skipped and gold is
+ * picked, so the maker's brand actually lands.
+ */
+export function pickBrandColorForSkin(
+  colors: string[],
+  skinBg: string,
+): string | undefined {
+  for (const c of colors) {
+    if (!HEX6.test(c)) continue;
+    if (isAchromatic(c)) continue;
+    if (contrastRatio(c, skinBg) < MIN_ACCENT_CONTRAST) continue;
+    return c;
+  }
+  return undefined;
 }
 
 /** Whether the logo, as a whole, reads light or dark — from its dominant ink. */
