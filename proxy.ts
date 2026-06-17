@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import type { SetAllCookies } from '@supabase/ssr';
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
+import { sanitizeTenantHeaders, isUnreachableStorefrontPath } from '@/lib/proxy-security';
 
 const RESERVED = new Set(['www', 'admin', 'app', 'learn']);
 const BASE_DOMAIN = 'bohdiai.com';
@@ -17,6 +18,12 @@ export async function proxy(request: NextRequest) {
   const hostname = request.headers.get('host') ?? '';
   const subdomain = extractSubdomain(hostname);
 
+  // /storefront/* is an internal rewrite target — on the apex (no subdomain)
+  // it is never directly addressable. 404 instead of leaking the rewrite shape.
+  if (isUnreachableStorefrontPath(request.nextUrl.pathname, subdomain)) {
+    return new NextResponse('Not found', { status: 404 });
+  }
+
   // Storefront subdomains: resolve tenant or return 404
   let tenantId: string | undefined;
   if (subdomain !== null) {
@@ -27,8 +34,13 @@ export async function proxy(request: NextRequest) {
     tenantId = tenant.id;
   }
 
-  // Build augmented request headers (includes tenant context when applicable)
+  // Build augmented request headers (includes tenant context when applicable).
+  // CRITICAL: drop any forged x-tenant-* headers from the inbound request
+  // BEFORE we (maybe) set them ourselves. Without this, an outside caller
+  // could send `x-tenant-id: <victim-uuid>` from the apex and have it
+  // propagate unchecked into every server component and API handler.
   const requestHeaders = new Headers(request.headers);
+  sanitizeTenantHeaders(requestHeaders);
   if (tenantId) {
     requestHeaders.set('x-tenant-id', tenantId);
     requestHeaders.set('x-tenant-subdomain', subdomain!);
