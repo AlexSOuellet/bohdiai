@@ -218,15 +218,31 @@ export function resolveNav(nav: ReadonlyArray<NavEntry>): ReadonlyArray<{ href: 
  *  the typographic wordmark — a true lockup, not a replacement — so the shop's
  *  name is always legible next to the mark. With no logo, the wordmark stands
  *  alone. The header surface guarantees logo contrast (via navContrast in
- *  SubHeader / MomentHero); no plate. */
-export function WordmarkLink({ wordmark, logoUrl, role }: { wordmark: string; logoUrl?: string | undefined; role: TypeRole }) {
+ *  SubHeader / MomentHero); no plate.
+ *
+ *  EXCEPTION: when the logo IMAGE already contains the shop name (Vision-detected
+ *  at upload, threaded as `logoContainsWordmark`), the text wordmark is hidden so
+ *  the name doesn't render twice. The logo's alt text carries the wordmark so
+ *  screen readers still announce the shop name. */
+export function WordmarkLink({
+  wordmark,
+  logoUrl,
+  logoContainsWordmark,
+  role,
+}: {
+  wordmark: string;
+  logoUrl?: string | undefined;
+  logoContainsWordmark?: boolean | undefined;
+  role: TypeRole;
+}) {
+  const hideText = logoUrl !== undefined && logoUrl !== '' && logoContainsWordmark === true;
   return (
     <Link href="/" data-type="wordmark" style={{ ...typeRoleCss(role), color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 14 }}>
       {logoUrl && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={logoUrl} alt="" data-ms-logo style={{ display: 'block' }} />
+        <img src={logoUrl} alt={hideText ? wordmark : ''} data-ms-logo style={{ display: 'block' }} />
       )}
-      <span>{wordmark}</span>
+      {!hideText && <span>{wordmark}</span>}
     </Link>
   );
 }
@@ -236,7 +252,7 @@ export function Nav({ identity, skin }: { identity: MainStreetContent['identity'
   const items = resolveNav(identity.nav);
   return (
     <>
-      <WordmarkLink wordmark={identity.wordmark} logoUrl={identity.logoUrl} role={r.wordmark} />
+      <WordmarkLink wordmark={identity.wordmark} logoUrl={identity.logoUrl} logoContainsWordmark={identity.logoContainsWordmark} role={r.wordmark} />
       <div style={{ display: 'flex', gap: 30, alignItems: 'center' }}>
         {items.map((item) => (
           <a key={item.href} href={item.href} data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), color: 'inherit', opacity: 0.85 }}>

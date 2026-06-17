@@ -16,6 +16,7 @@ export interface RunStorefrontInput {
   makerName?: string | undefined;
   logoUrl?: string | undefined;
   brandColors?: string[] | undefined;
+  logoContainsWordmark?: boolean | null | undefined;
 }
 
 export interface RunStorefrontResult {
@@ -38,6 +39,7 @@ export async function runStorefront(
       makerName: input.makerName,
       logoUrl: input.logoUrl,
       brandColors: input.brandColors,
+      logoContainsWordmark: input.logoContainsWordmark ?? null,
     },
     onProgress,
   );

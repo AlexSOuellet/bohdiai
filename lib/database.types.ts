@@ -2157,6 +2157,7 @@ export type Database = {
           deleted_at: string | null
           id: string
           inspiration_urls: string[]
+          logo_contains_wordmark: boolean | null
           logo_url: string | null
           mood_key: string | null
           niche_description: string | null
@@ -2191,6 +2192,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           inspiration_urls?: string[]
+          logo_contains_wordmark?: boolean | null
           logo_url?: string | null
           mood_key?: string | null
           niche_description?: string | null
@@ -2225,6 +2227,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           inspiration_urls?: string[]
+          logo_contains_wordmark?: boolean | null
           logo_url?: string | null
           mood_key?: string | null
           niche_description?: string | null

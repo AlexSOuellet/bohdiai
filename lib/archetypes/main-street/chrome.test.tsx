@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
-import { MainStreetRoot, MainStreetFooter, skinVarsCss, linkHref, LINK_TARGETS, resolveNav, MAIN_STREET_NAV } from './chrome';
+import { MainStreetRoot, MainStreetFooter, WordmarkLink, skinVarsCss, linkHref, LINK_TARGETS, resolveNav, MAIN_STREET_NAV } from './chrome';
 import { MAIN_STREET_SKINS } from './skins';
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
@@ -65,6 +65,72 @@ describe('MainStreetRoot', () => {
     );
     expect(container.querySelector('.arch-main-street')).toBeTruthy();
     expect(container.querySelector('.ms-grain')).toBeTruthy();
+  });
+});
+
+describe('WordmarkLink — logo-contains-wordmark doubling fix', () => {
+  const role = (skin.type as unknown as { wordmark: import('../types').TypeRole }).wordmark;
+
+  it('shows BOTH the logo image and the text wordmark by default (pure mark logo)', () => {
+    const { container, queryByText } = render(
+      <WordmarkLink wordmark="Ember Candles" logoUrl="https://x/y.png" role={role} />,
+    );
+    expect(container.querySelector('img[data-ms-logo]')).toBeTruthy();
+    expect(queryByText('Ember Candles')).toBeTruthy();
+  });
+
+  it('shows the text wordmark when there is NO logo at all', () => {
+    const { container, queryByText } = render(
+      <WordmarkLink wordmark="Ember Candles" role={role} />,
+    );
+    expect(container.querySelector('img[data-ms-logo]')).toBeNull();
+    expect(queryByText('Ember Candles')).toBeTruthy();
+  });
+
+  it('HIDES the text wordmark when the logo image already contains the shop name', () => {
+    const { container, queryByText } = render(
+      <WordmarkLink
+        wordmark="Ember Candles"
+        logoUrl="https://x/wordmark-logo.png"
+        logoContainsWordmark
+        role={role}
+      />,
+    );
+    expect(container.querySelector('img[data-ms-logo]')).toBeTruthy();
+    expect(queryByText('Ember Candles')).toBeNull();
+  });
+
+  it('puts the shop name in the logo image alt when text is hidden (a11y)', () => {
+    const { container } = render(
+      <WordmarkLink
+        wordmark="Ember Candles"
+        logoUrl="https://x/wordmark-logo.png"
+        logoContainsWordmark
+        role={role}
+      />,
+    );
+    const img = container.querySelector('img[data-ms-logo]') as HTMLImageElement | null;
+    expect(img?.alt).toBe('Ember Candles');
+  });
+
+  it('keeps showing the text when logoContainsWordmark is true but there is no logo URL (safety)', () => {
+    // Defensive: a stale flag with no logo shouldn't hide the wordmark entirely.
+    const { queryByText } = render(
+      <WordmarkLink wordmark="Ember Candles" logoContainsWordmark role={role} />,
+    );
+    expect(queryByText('Ember Candles')).toBeTruthy();
+  });
+
+  it('keeps showing the text when logoContainsWordmark is false explicitly', () => {
+    const { queryByText } = render(
+      <WordmarkLink
+        wordmark="Ember Candles"
+        logoUrl="https://x/y.png"
+        logoContainsWordmark={false}
+        role={role}
+      />,
+    );
+    expect(queryByText('Ember Candles')).toBeTruthy();
   });
 });
 

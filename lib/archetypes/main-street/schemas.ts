@@ -109,6 +109,11 @@ export const MainStreetContentSchema = z.object({
      *  render — not authored). Used by chrome to guarantee logo readability without
      *  a plate. Absent when there is no logo or the analysis produced no usable hex. */
     logoTone: z.enum(['light', 'dark', 'unknown']).optional(),
+    /** True when the logo image already contains the shop name (Vision-detected
+     *  at upload time, injected at render — not authored by Bohdi). When true,
+     *  the WordmarkLink hides the typographic wordmark so the maker's name doesn't
+     *  render twice. Absent or false means show both. */
+    logoContainsWordmark: z.boolean().optional(),
   }),
 
   /** BEAT 1 — the moment is the hero. Held media + a story told one line at a

@@ -144,14 +144,28 @@ function applyMedia(a: MainStreetAuthored, urls: Record<string, string | null>):
   return { ...a, content, productUrls };
 }
 
-/** Fold the tenant's uploaded logo and brand colors (tenant facts, not authored
- *  content) into the content's identity so the chrome can show the logo and apply
- *  the correct contrast surface. No-op when there is no logo and no brand colors. */
-function withLogo(content: MainStreetContent, logoUrl?: string, brandColors?: string[]): MainStreetContent {
-  if ((logoUrl === undefined || logoUrl === '') && (brandColors === undefined || brandColors.length === 0)) return content;
+/** Fold the tenant's uploaded logo, brand colors, and logo-contains-wordmark
+ *  flag (tenant facts, not authored content) into the content's identity so the
+ *  chrome can show the logo, apply the correct contrast surface, and suppress
+ *  the side text wordmark when the logo image already carries the shop name.
+ *  No-op when none of those facts are present. */
+function withLogo(
+  content: MainStreetContent,
+  logoUrl?: string,
+  brandColors?: string[],
+  logoContainsWordmark?: boolean | null | undefined,
+): MainStreetContent {
+  const hasLogo = logoUrl !== undefined && logoUrl !== '';
+  const hasColors = brandColors !== undefined && brandColors.length > 0;
+  const hasContainsFlag = logoContainsWordmark === true;
+  if (!hasLogo && !hasColors && !hasContainsFlag) return content;
   const identity = { ...content.identity };
-  if (logoUrl !== undefined && logoUrl !== '') identity.logoUrl = logoUrl;
-  if (brandColors !== undefined && brandColors.length > 0) identity.logoTone = logoTone(brandColors);
+  if (hasLogo) identity.logoUrl = logoUrl;
+  if (hasColors) identity.logoTone = logoTone(brandColors!);
+  // Only set `true` — null/undefined/false leave the flag absent so the
+  // renderer's default (show both) applies. Setting `false` explicitly would
+  // overwrite an authored true with no upside.
+  if (logoContainsWordmark === true) identity.logoContainsWordmark = true;
   return { ...content, identity };
 }
 
@@ -209,9 +223,9 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   applyMedia,
   toPayload,
   handOff,
-  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId }) => {
+  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, logoContainsWordmark, accentOverride, tenantId }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
-    const c = withLogo(content as MainStreetContent, logoUrl, brandColors);
+    const c = withLogo(content as MainStreetContent, logoUrl, brandColors, logoContainsWordmark);
     switch (page) {
       case 'shop':
         return <ShopPage content={c} skin={skin} products={products} />;
@@ -225,16 +239,16 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
         return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} />;
     }
   },
-  renderProduct: ({ content, lookKey, product, logoUrl, brandColors, accentOverride }) => {
+  renderProduct: ({ content, lookKey, product, logoUrl, brandColors, logoContainsWordmark, accentOverride }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
-    return <MainStreetProduct content={withLogo(content as MainStreetContent, logoUrl, brandColors)} skin={skin} product={product} />;
+    return <MainStreetProduct content={withLogo(content as MainStreetContent, logoUrl, brandColors, logoContainsWordmark)} skin={skin} product={product} />;
   },
-  renderContentPage: ({ content, lookKey, title, body, html, logoUrl, brandColors, accentOverride }) => {
+  renderContentPage: ({ content, lookKey, title, body, html, logoUrl, brandColors, logoContainsWordmark, accentOverride }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
-    return <ContentPage content={withLogo(content as MainStreetContent, logoUrl, brandColors)} skin={skin} title={title} body={body} html={html} />;
+    return <ContentPage content={withLogo(content as MainStreetContent, logoUrl, brandColors, logoContainsWordmark)} skin={skin} title={title} body={body} html={html} />;
   },
-  renderShell: ({ content, lookKey, children, logoUrl, brandColors, accentOverride }) => {
+  renderShell: ({ content, lookKey, children, logoUrl, brandColors, logoContainsWordmark, accentOverride }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
-    return <MainStreetSubPage content={withLogo(content as MainStreetContent, logoUrl, brandColors)} skin={skin}>{children}</MainStreetSubPage>;
+    return <MainStreetSubPage content={withLogo(content as MainStreetContent, logoUrl, brandColors, logoContainsWordmark)} skin={skin}>{children}</MainStreetSubPage>;
   },
 };

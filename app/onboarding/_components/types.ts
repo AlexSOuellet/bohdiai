@@ -20,6 +20,10 @@ export interface OnboardingData {
   productCount: number;
   logoUrl: string;
   brandColors: string[];
+  /** True when the logo image already contains the shop name (so the header
+   *  wordmark shouldn't double it up). Null when not analyzed (SVG, skipped,
+   *  failed) — the renderer treats null as false. */
+  logoContainsWordmark: boolean | null;
 }
 
 export const INITIAL_DATA: OnboardingData = {
@@ -33,4 +37,5 @@ export const INITIAL_DATA: OnboardingData = {
   productCount: DEFAULT_PRODUCT_COUNT,
   logoUrl: '',
   brandColors: [],
+  logoContainsWordmark: null,
 };

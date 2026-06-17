@@ -27,8 +27,12 @@ export default function StepLogo({ data, onAdvance, onBack }: StepLogoProps) {
     try {
       const formData = new FormData();
       formData.append('logo', file);
-      const result = await uploadAndAnalyzeLogo(data.subdomain, formData);
-      onAdvance({ logoUrl: result.logoUrl, brandColors: result.brandColors });
+      const result = await uploadAndAnalyzeLogo(data.subdomain, formData, data.shopName);
+      onAdvance({
+        logoUrl: result.logoUrl,
+        brandColors: result.brandColors,
+        logoContainsWordmark: result.logoContainsWordmark,
+      });
     } catch (err) {
       setPreview(data.logoUrl);
       setError(err instanceof Error ? err.message : 'Upload failed');
@@ -37,11 +41,15 @@ export default function StepLogo({ data, onAdvance, onBack }: StepLogoProps) {
   }
 
   function handleSkip() {
-    onAdvance({ logoUrl: '', brandColors: [] });
+    onAdvance({ logoUrl: '', brandColors: [], logoContainsWordmark: null });
   }
 
   function handleSubmit() {
-    onAdvance({ logoUrl: data.logoUrl, brandColors: data.brandColors });
+    onAdvance({
+      logoUrl: data.logoUrl,
+      brandColors: data.brandColors,
+      logoContainsWordmark: data.logoContainsWordmark,
+    });
   }
 
   return (
