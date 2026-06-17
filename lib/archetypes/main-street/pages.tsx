@@ -20,7 +20,18 @@ function SubHeader({ content, skin }: { content: MainStreetContent; skin: Archet
   const surface = navContrast(content.identity.logoTone ?? 'unknown', backdrop);
   return (
     <header
+      data-ms-nav
       style={{
+        // Fixed so the nav anchors as the page scrolls, matching the home
+        // hero's pinned nav. Sticky read cleanly in theory but Lenis smooth-
+        // scroll (mounted by the storefront layout) breaks sticky in this
+        // setup — fixed sidesteps it the same way the home nav does. The
+        // sub-page main content is padded down to compensate (MainStreetSubPage).
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -47,12 +58,15 @@ function SubHeader({ content, skin }: { content: MainStreetContent; skin: Archet
   );
 }
 
-/** The shared shell every sub-page composes into. */
+/** The shared shell every sub-page composes into.
+ *  paddingTop on <main> clears the fixed SubHeader (~80px desktop, ~68px mobile)
+ *  so content starts below the nav rather than under it. The home hero does not
+ *  need this because its 100vh hero already sits under the fixed nav. */
 export function MainStreetSubPage({ content, skin, children }: { content: MainStreetContent; skin: ArchetypeTheme; children: ReactNode }) {
   return (
     <MainStreetRoot skin={skin}>
       <SubHeader content={content} skin={skin} />
-      <main>{children}</main>
+      <main className="ms-subpage-main">{children}</main>
       <MainStreetFooter shopName={content.shopName} skin={skin} />
     </MainStreetRoot>
   );

@@ -115,6 +115,26 @@ describe('MainStreetSubPage (the shared shell)', () => {
     expect(container.querySelector('a[href="/shop"]')).toBeTruthy(); // nav
     expect(container.querySelector('a[href="/privacy"]')).toBeTruthy(); // footer
   });
+
+  it('pins the nav to the top so it anchors as the page scrolls (parity with the home hero nav)', () => {
+    const { container } = render(
+      <MainStreetSubPage content={content} skin={skin}><div /></MainStreetSubPage>,
+    );
+    const nav = container.querySelector('[data-ms-nav]') as HTMLElement | null;
+    expect(nav).toBeTruthy();
+    // Fixed (not sticky) because Lenis smooth-scroll breaks sticky in this
+    // layout; fixed matches the home hero nav's approach.
+    expect(nav!.style.position).toBe('fixed');
+    expect(nav!.style.top).toBe('0px');
+  });
+
+  it('pads <main> down so content does not slide under the fixed nav', () => {
+    const { container } = render(
+      <MainStreetSubPage content={content} skin={skin}><div /></MainStreetSubPage>,
+    );
+    const main = container.querySelector('main.ms-subpage-main');
+    expect(main).toBeTruthy();
+  });
 });
 
 describe('ContentPage', () => {

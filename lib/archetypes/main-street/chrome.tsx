@@ -75,6 +75,9 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .archetype-photo{filter:${a.photoFilter ?? 'none'};display:block;width:100%;height:100%;object-fit:cover}
     .arch-main-street .ms-wrap{max-width:1200px;margin-inline:auto;padding-inline:40px}
     @media(max-width:860px){.arch-main-street .ms-wrap{padding-inline:20px}}
+    /* Sub-page <main> sits under the fixed SubHeader; pad it down by the nav height. */
+    .arch-main-street .ms-subpage-main{padding-top:80px}
+    @media(max-width:768px){.arch-main-street .ms-subpage-main{padding-top:68px}}
     /* scroll reveal — arrives once, resolves to stillness */
     .arch-main-street .ms-reveal{opacity:0;transform:translateY(30px);transition:opacity 1.1s ${mo.reveal.easing},transform 1.1s ${mo.reveal.easing}}
     .arch-main-street .ms-reveal.in{opacity:1;transform:none}
