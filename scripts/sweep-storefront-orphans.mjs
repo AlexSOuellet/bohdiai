@@ -18,11 +18,22 @@
  *   node scripts/sweep-storefront-orphans.mjs --mark-draft
  *   node scripts/sweep-storefront-orphans.mjs --delete
  */
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
-import { config } from 'dotenv';
 
-config({ path: '.env.local' });
-config({ path: '.env' });
+// Hand-rolled .env.local loader (matches the rest of scripts/). No dotenv dep.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(__dirname, '..');
+function loadEnv() {
+  const raw = fs.readFileSync(path.join(repoRoot, '.env.local'), 'utf8');
+  for (const line of raw.split(/\r?\n/)) {
+    const m = line.match(/^([A-Z0-9_]+)=(.*)$/);
+    if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2].trim();
+  }
+}
+loadEnv();
 
 const url = process.env.SUPABASE_URL;
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
