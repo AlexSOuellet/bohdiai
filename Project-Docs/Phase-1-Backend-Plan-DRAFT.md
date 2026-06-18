@@ -54,6 +54,24 @@ Three screens at admin.bohdiai.com per Master Spec section 11: user management, 
 - **Audit Phase C — security launch-gate.** Wired in once auth exists. Tracked in `Project-Docs/Audit-Fix-Plan-2026-06-10.md`.
 - **Audit Phase D — code-file cleanup.** A handful of files awaiting Alex's keep/delete calls (the preview routes under `app/archetype-test/**` and `app/_reference/functional-studies`, the design scratch files `procession-mockup.html`, `_design-mocks/`, `skin-shelf.html`, and whether to retire the legacy `StorefrontPage` fallback so `style_sheets` can be dropped). Five-minute decisions, but they're Alex's. None of it structural.
 
+## Production deployment (the go-live milestone) — surfaced Session 46
+
+Discovered this session while trying to show a real build to someone remote: **nothing built since Session 11 has ever been deployed.** Current reality, verified:
+
+- `origin/main` is frozen at a Session-11 commit. The entire storefront engine (Sessions 12–46) lives only on the `session-12/layout-engine` feature branch — pushed to GitHub, never merged to main.
+- Production (`bohdiai.com`) serves that old Session-11 code. The apex responds; it has none of the archetype engine.
+- Tenant subdomains don't resolve at all — there's no wildcard `*.bohdiai.com` DNS record, so `soul-splatter.bohdiai.com` and every storefront URL is unreachable on the internet.
+- So a build (like Soul Splatter) is "live" in the production database but has no public, viewable URL. The only way to see a storefront today is the local dev server (`soul-splatter.localhost:3000`).
+
+Going live is its own milestone, separate from the five build parts. What it takes:
+
+- Merge the feature branch to `main` (or repoint the deploy branch).
+- Deploy the Phase 1 app to Vercel with the full env (prod Supabase, Anthropic, fal, Resend, Stripe, …).
+- Wire wildcard `*.bohdiai.com` DNS + SSL through Cloudflare (Cloudflare for SaaS) so tenant subdomains resolve and route to the app.
+- Confirm the deployed app points at the same Supabase the builds write to.
+
+Parts of this need Alex in the Vercel and Cloudflare dashboards — those are account settings, not code. Claude can do the code/merge/build-config side. Note this would put the **unfinished** Phase 1 (no auth, no billing) on the web; storefronts are public and harmless to serve, but it's a deliberate choice, not a default. Decide timing with Alex — but it should not keep getting deferred, since "we can't show anyone the work" is a real cost.
+
 ## Things this plan deliberately doesn't say
 
 - **No time estimates.** Per the standing rule, Claude's calibration on velocity has been off by ~7x. Sequence is by dependency, not weeks.
