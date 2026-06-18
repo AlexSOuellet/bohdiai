@@ -708,6 +708,22 @@ Supersedes the Playful naming in **D51** (the seven-feelings lineup); D51's prin
 
 ---
 
+## 2026-06-18 (session 46)
+
+### D59. One global login for everyone; roles are per shop
+
+BohdiAI uses a single login system, not a per-shop one. One account per email, the way Supabase's built-in login already works. A person's *roles* live per shop on the existing `tenant_members` bridge (admin / customer). A maker logs in once and reaches any shop they own or staff (a shop picker if more than one); each shop is its own subscription. Customers join the *same* system when customer accounts ship in Phase 2 — no separate customer auth to build, and the existing `customer_profiles` / `tenant_members` tables (global identity + per-shop membership + per-shop profile) already fit, so no schema rework.
+
+How we got here: a long design conversation first chased a per-shop / hide-the-platform model, on the goal that a customer should never know two shops share a platform. That model would have meant building our own per-shop login system and it created a real support-and-friction problem (a fresh account at every shop). The unlock was separating two privacy questions that had been tangled together: (1) does a *customer* see all the shops they buy from, and (2) does a *maker* see that their customer shops elsewhere. They're independent. Only (2) actually matters, and (2) stays locked shut regardless — a maker only ever sees their own shop's data. Alex decided (1) doesn't matter. With (1) dropped, the single login is simplest, kills the friction, uses Supabase as-is, and fits the schema already built.
+
+The model is Etsy-like underneath (one login works across BohdiAI stores) but each storefront still looks like the maker's own brand on the surface — the comparison Alex used to picture it. Shopify is the precedent for the operator side: one global account, per-store roles, a store switcher, separate billing per store; multi-shop falls out for free.
+
+What we consciously give up: full "nobody can even tell there's a platform" storefront autonomy. A customer's one login working across stores means the platform isn't fully invisible to customers. We accept that — it's an edge want, and arguably outside the "concentrate on your craft, not the tech" audience. It can become a later premium for the few who ask; it does not drive the foundation. ("Looks like my brand" — store design + a custom domain — we still give every maker; "the platform is truly invisible" is the rarer ask.)
+
+Supersedes the per-shop-accounts direction explored earlier the same session (never written down as a decision). The auth build plan that follows from this is `Project-Docs/Phase-1-Auth-Plan-DRAFT.md`.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.
