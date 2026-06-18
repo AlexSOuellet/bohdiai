@@ -30,7 +30,7 @@ describe('runStorefront', () => {
   it('forwards the build input and the progress emitter', async () => {
     const emitter = vi.fn();
     const { runStorefront } = await import('./run-storefront');
-    await runStorefront({ ...baseInput, makerName: 'Sam', logoUrl: 'https://logo' }, emitter);
+    await runStorefront({ ...baseInput, makerName: 'Sam' }, emitter);
     const [passedInput, passedEmitter] = buildMock.mock.calls[0]!;
     expect(passedInput).toMatchObject({
       shopName: 'Test Shop',
@@ -39,16 +39,7 @@ describe('runStorefront', () => {
       moodKey: 'rustic',
       productCount: 8,
       makerName: 'Sam',
-      logoUrl: 'https://logo',
     });
     expect(passedEmitter).toBe(emitter);
   });
-
-  it('passes brandColors into the build', async () => {
-    const { runStorefront } = await import('./run-storefront');
-    await runStorefront({ ...baseInput, brandColors: ['#1d7a66', '#e7d8b0'] });
-    const [passedInput] = buildMock.mock.calls[0]!;
-    expect(passedInput).toHaveProperty('brandColors', ['#1d7a66', '#e7d8b0']);
-  });
-
 });

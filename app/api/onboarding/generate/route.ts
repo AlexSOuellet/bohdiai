@@ -26,8 +26,6 @@ interface GenerateBody {
   moodKey: string;
   productCount: number;
   makerName?: string;
-  logoUrl?: string;
-  brandColors?: string[];
 }
 
 function isMoodKey(value: string): value is MoodKey {
@@ -94,8 +92,6 @@ export async function POST(req: NextRequest): Promise<Response> {
             moodKey: body.moodKey as MoodKey,
             productCount: body.productCount,
             makerName: body.makerName,
-            logoUrl: body.logoUrl,
-            brandColors: body.brandColors,
           },
           send,
         );

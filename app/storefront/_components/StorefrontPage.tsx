@@ -59,23 +59,21 @@ async function loadHomeArchetypeEnvelope(tenantId: string): Promise<Record<strin
   return rootObj['kind'] === 'archetype' ? rootObj : null;
 }
 
-/** Load the tenant's logo URL, brand colors, and logo-contains-wordmark flag
- *  in a single round-trip. All three facts are injected into archetype chrome
- *  at render — they're tenant facts, not authored content. logoUrl is undefined
- *  when no logo is stored; brandColors is [] when no color analysis has run;
- *  logoContainsWordmark is null when the logo wasn't analyzed (SVG / pre-feature
- *  tenant), which the renderer treats as "show both" (the safe default). */
-async function loadTenantChrome(tenantId: string): Promise<{ logoUrl: string | undefined; brandColors: string[]; logoContainsWordmark: boolean | null }> {
+/** Load the tenant's logo URL and brand colors in a single round-trip. Both are
+ *  injected into archetype chrome at render — tenant facts, not authored content.
+ *  logoUrl is undefined when no logo is stored; brandColors is [] when no color
+ *  analysis has run. Both are null for every fresh tenant until the dashboard's
+ *  logo-upload step ships. */
+async function loadTenantChrome(tenantId: string): Promise<{ logoUrl: string | undefined; brandColors: string[] }> {
   const db = supabaseAdmin() as unknown as {
     from: (t: string) => {
-      select: (c: string) => { eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: { logo_url: string | null; brand_colors: string[] | null; logo_contains_wordmark: boolean | null } | null }> } };
+      select: (c: string) => { eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: { logo_url: string | null; brand_colors: string[] | null } | null }> } };
     };
   };
-  const { data } = await db.from('tenants').select('logo_url, brand_colors, logo_contains_wordmark').eq('id', tenantId).maybeSingle();
+  const { data } = await db.from('tenants').select('logo_url, brand_colors').eq('id', tenantId).maybeSingle();
   return {
     logoUrl: data?.logo_url ?? undefined,
     brandColors: data?.brand_colors ?? [],
-    logoContainsWordmark: data?.logo_contains_wordmark ?? null,
   };
 }
 
@@ -90,9 +88,9 @@ async function resolveArchetype(tenantId: string) {
   if (typeof key !== 'string' || typeof lookKey !== 'string') return null;
   const spec = archetypeSpec(key);
   if (spec === undefined) return null;
-  const { logoUrl, brandColors, logoContainsWordmark } = await loadTenantChrome(tenantId);
+  const { logoUrl, brandColors } = await loadTenantChrome(tenantId);
   const accentOverride = typeof env['accentOverride'] === 'string' ? (env['accentOverride'] as string) : undefined;
-  return { spec, lookKey, content: env['content'], logoUrl, brandColors, logoContainsWordmark, accentOverride };
+  return { spec, lookKey, content: env['content'], logoUrl, brandColors, accentOverride };
 }
 
 /** Render a product detail page in the tenant's archetype, or null if the tenant
@@ -100,7 +98,7 @@ async function resolveArchetype(tenantId: string) {
 export async function renderArchetypeProductPage(tenantId: string, product: ProductView) {
   const a = await resolveArchetype(tenantId);
   if (a === null || a.spec.renderProduct === undefined) return null;
-  return a.spec.renderProduct({ content: a.content, lookKey: a.lookKey, product, logoUrl: a.logoUrl, brandColors: a.brandColors, logoContainsWordmark: a.logoContainsWordmark, accentOverride: a.accentOverride });
+  return a.spec.renderProduct({ content: a.content, lookKey: a.lookKey, product, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
 }
 
 /** Render a plain content page (legal/maker-added) in the tenant's archetype, or
@@ -111,7 +109,7 @@ export async function renderArchetypeContentPage(
 ) {
   const a = await resolveArchetype(tenantId);
   if (a === null || a.spec.renderContentPage === undefined) return null;
-  return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, ...opts, logoUrl: a.logoUrl, brandColors: a.brandColors, logoContainsWordmark: a.logoContainsWordmark, accentOverride: a.accentOverride });
+  return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, ...opts, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
 }
 
 /** Wrap a functional page's body (cart, collections, subscriptions) in the
@@ -119,7 +117,7 @@ export async function renderArchetypeContentPage(
 export async function renderArchetypeShell(tenantId: string, children: ReactNode) {
   const a = await resolveArchetype(tenantId);
   if (a === null || a.spec.renderShell === undefined) return null;
-  return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, logoUrl: a.logoUrl, brandColors: a.brandColors, logoContainsWordmark: a.logoContainsWordmark, accentOverride: a.accentOverride });
+  return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
 }
 
 export default async function StorefrontPage({ slug, version }: StorefrontPageProps) {
@@ -135,7 +133,7 @@ export default async function StorefrontPage({ slug, version }: StorefrontPagePr
     if (env && env.kind === 'archetype') {
       const spec = archetypeSpec(env.archetypeKey);
       if (spec) {
-        const { logoUrl, brandColors, logoContainsWordmark } = await loadTenantChrome(tenantId);
+        const { logoUrl, brandColors } = await loadTenantChrome(tenantId);
         return spec.render({
           content: env.content,
           lookKey: env.lookKey,
@@ -144,7 +142,6 @@ export default async function StorefrontPage({ slug, version }: StorefrontPagePr
           catalogSize: env.catalogSize,
           logoUrl,
           brandColors,
-          logoContainsWordmark,
           tenantId,
         });
       }
@@ -348,6 +345,6 @@ async function renderArchetypeStore(env: Record<string, unknown>, tenantId: stri
   const mood = typeof env['mood'] === 'string' ? (env['mood'] as string) : undefined;
   const catalogSize = typeof env['catalogSize'] === 'number' ? (env['catalogSize'] as number) : undefined;
   const accentOverride = typeof env['accentOverride'] === 'string' ? (env['accentOverride'] as string) : undefined;
-  const { logoUrl, brandColors, logoContainsWordmark } = await loadTenantChrome(tenantId);
-  return spec.render({ content: env['content'], lookKey: lookKey as string, products, mood, catalogSize, page, logoUrl, brandColors, logoContainsWordmark, accentOverride, tenantId });
+  const { logoUrl, brandColors } = await loadTenantChrome(tenantId);
+  return spec.render({ content: env['content'], lookKey: lookKey as string, products, mood, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId });
 }

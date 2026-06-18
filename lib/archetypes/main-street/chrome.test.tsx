@@ -87,49 +87,17 @@ describe('WordmarkLink — logo-contains-wordmark doubling fix', () => {
     expect(queryByText('Ember Candles')).toBeTruthy();
   });
 
-  it('HIDES the text wordmark when the logo image already contains the shop name', () => {
+  it('shows the text wordmark alongside the logo by default (lockup)', () => {
+    // The dashboard will eventually let the maker choose logo-only when their
+    // logo already contains the shop name; until then, default is always show both.
     const { container, queryByText } = render(
       <WordmarkLink
         wordmark="Ember Candles"
         logoUrl="https://x/wordmark-logo.png"
-        logoContainsWordmark
         role={role}
       />,
     );
     expect(container.querySelector('img[data-ms-logo]')).toBeTruthy();
-    expect(queryByText('Ember Candles')).toBeNull();
-  });
-
-  it('puts the shop name in the logo image alt when text is hidden (a11y)', () => {
-    const { container } = render(
-      <WordmarkLink
-        wordmark="Ember Candles"
-        logoUrl="https://x/wordmark-logo.png"
-        logoContainsWordmark
-        role={role}
-      />,
-    );
-    const img = container.querySelector('img[data-ms-logo]') as HTMLImageElement | null;
-    expect(img?.alt).toBe('Ember Candles');
-  });
-
-  it('keeps showing the text when logoContainsWordmark is true but there is no logo URL (safety)', () => {
-    // Defensive: a stale flag with no logo shouldn't hide the wordmark entirely.
-    const { queryByText } = render(
-      <WordmarkLink wordmark="Ember Candles" logoContainsWordmark role={role} />,
-    );
-    expect(queryByText('Ember Candles')).toBeTruthy();
-  });
-
-  it('keeps showing the text when logoContainsWordmark is false explicitly', () => {
-    const { queryByText } = render(
-      <WordmarkLink
-        wordmark="Ember Candles"
-        logoUrl="https://x/y.png"
-        logoContainsWordmark={false}
-        role={role}
-      />,
-    );
     expect(queryByText('Ember Candles')).toBeTruthy();
   });
 });

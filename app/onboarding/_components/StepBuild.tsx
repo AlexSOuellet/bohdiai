@@ -131,8 +131,6 @@ export default function StepBuild({ data, onBack }: StepBuildProps) {
             moodKey: data.moodKey,
             productCount: data.productCount,
             makerName: data.makerName === '' ? undefined : data.makerName,
-            logoUrl: data.logoUrl === '' ? undefined : data.logoUrl,
-            brandColors: data.brandColors.length === 0 ? undefined : data.brandColors,
           }),
         });
         if (!res.ok) {

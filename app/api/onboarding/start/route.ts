@@ -60,9 +60,6 @@ async function runBuild(buildId: string, input: BuildInput): Promise<void> {
         moodKey: input.moodKey as MoodKey,
         productCount: input.productCount ?? 0,
         makerName: input.makerName,
-        logoUrl: input.logoUrl,
-        brandColors: input.brandColors,
-        logoContainsWordmark: input.logoContainsWordmark ?? null,
       },
       (event) => {
         if (event.type === 'status') void updateProgress(buildId, event.label);

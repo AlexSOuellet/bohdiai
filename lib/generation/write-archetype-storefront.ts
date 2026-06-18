@@ -29,16 +29,6 @@ export interface ArchetypeWriteInput {
   content: unknown;
   /** Separate catalog rows (empty for archetypes that embed products in content). */
   products: ProductView[];
-  logoUrl?: string | undefined;
-  /** Logo brand colors to persist on the tenant (render-time contrast source). */
-  brandColors?: string[] | undefined;
-  /** Vision-detected: true when the logo image already contains the shop name,
-   *  so the renderer hides the side text wordmark to avoid doubling. Null when
-   *  not analyzed (SVG, skipped, failed) — renderer treats null as false. */
-  logoContainsWordmark?: boolean | null | undefined;
-  /** The dominant brand color baked at build time — overrides the skin's accent.
-   *  Stable across later logo uploads until an explicit re-tint rewrites the envelope. */
-  accentOverride?: string | undefined;
 }
 
 export interface ArchetypeWriteResult {
@@ -74,9 +64,6 @@ export async function writeArchetypeStorefront(
       niche_description: input.nicheDescription,
       // Draft until ALL writes land; only the final flip publishes the store.
       status: 'draft',
-      logo_url: input.logoUrl && input.logoUrl !== '' ? input.logoUrl : null,
-      brand_colors: input.brandColors && input.brandColors.length > 0 ? input.brandColors : null,
-      logo_contains_wordmark: input.logoContainsWordmark ?? null,
     })
     .select('id')
     .single();
@@ -91,7 +78,7 @@ export async function writeArchetypeStorefront(
       kind: 'archetype' as const,
       archetypeKey: input.archetypeKey,
       lookKey: input.lookKey,
-      accentOverride: input.accentOverride ?? null,
+      accentOverride: null,
       mood: input.mood,
       catalogSize: input.catalogSize,
       // `content` is type-erased to `unknown` at the archetype boundary (it's

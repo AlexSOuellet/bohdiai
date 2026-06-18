@@ -17,9 +17,6 @@ export type BuildInput = {
   moodKey: string;
   productCount?: number;
   makerName?: string | undefined;
-  logoUrl?: string | undefined;
-  brandColors?: string[] | undefined;
-  logoContainsWordmark?: boolean | null | undefined;
 };
 
 export interface BuildRow {

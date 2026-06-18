@@ -42,8 +42,6 @@ export interface GenerateStorefrontInput {
   moodKey: MoodKey;
   productCount: number;
   makerName?: string;
-  logoUrl?: string;
-  brandColors?: string[];
 }
 
 export interface GenerateStorefrontResult {

@@ -43,7 +43,7 @@ function SubHeader({ content, skin }: { content: MainStreetContent; skin: Archet
         flexWrap: 'wrap',
       }}
     >
-      <WordmarkLink wordmark={content.identity.wordmark} logoUrl={content.identity.logoUrl} logoContainsWordmark={content.identity.logoContainsWordmark} role={r.wordmark} />
+      <WordmarkLink wordmark={content.identity.wordmark} logoUrl={content.identity.logoUrl} role={r.wordmark} />
       <nav style={{ display: 'flex', gap: 26, alignItems: 'center', flexWrap: 'wrap' }}>
         {MAIN_STREET_NAV.map((item) => (
           <a key={item.href} href={item.href} data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), color: 'inherit', opacity: 0.85 }}>
