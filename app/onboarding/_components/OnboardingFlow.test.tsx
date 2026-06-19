@@ -15,12 +15,23 @@ describe('OnboardingFlow — no catalog-size step', () => {
 });
 
 describe('OnboardingFlow — step count', () => {
-  it('total steps is 5 (Name, Niche, Mood, Trial, Build) — logo upload moved to the dashboard', () => {
+  it('total steps is 6 (Account, Name, Niche, Mood, Trial, Build) — account-first onboarding', () => {
     const { container } = render(
       <OnboardingFlow niches={[{ slug: 'candles', display_name: 'Candle maker' }]} />,
     );
     const progress = container.querySelector('[data-progress-total]');
-    expect(progress?.getAttribute('data-progress-total')).toBe('5');
+    expect(progress?.getAttribute('data-progress-total')).toBe('6');
+  });
+
+  it('a fresh visitor starts on the account step; a logged-in maker skips it', () => {
+    const niches = [{ slug: 'candles', display_name: 'Candle maker' }];
+
+    const fresh = render(<OnboardingFlow niches={niches} />);
+    expect(fresh.getByRole('button', { name: /create my account/i })).toBeInTheDocument();
+    fresh.unmount();
+
+    const returning = render(<OnboardingFlow niches={niches} startStep={2} />);
+    expect(returning.queryByRole('button', { name: /create my account/i })).toBeNull();
   });
 
   it('the source does not import StepProductPhotos (photo upload moved to post-onboarding)', async () => {

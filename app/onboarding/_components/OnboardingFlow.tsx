@@ -4,20 +4,27 @@ import { useState } from 'react';
 import type { NicheOption, OnboardingData } from './types';
 import { INITIAL_DATA } from './types';
 import ProgressBar from './ProgressBar';
+import StepAccount from './StepAccount';
 import StepName from './StepName';
 import StepNiche from './StepNiche';
 import StepMood from './StepMood';
 import StepTrial from './StepTrial';
 import StepBuild from './StepBuild';
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
 
 interface OnboardingFlowProps {
   niches: NicheOption[];
+  /**
+   * Where the maker starts. 1 = the account step (a fresh visitor). 2 = the
+   * first content step, for a maker who is already logged in (returned from
+   * Google, or creating an additional shop) so they skip account creation.
+   */
+  startStep?: number;
 }
 
-export default function OnboardingFlow({ niches }: OnboardingFlowProps) {
-  const [step, setStep] = useState(1);
+export default function OnboardingFlow({ niches, startStep = 1 }: OnboardingFlowProps) {
+  const [step, setStep] = useState(startStep);
   const [data, setData] = useState<OnboardingData>(INITIAL_DATA);
 
   function advance(patch: Partial<OnboardingData>) {
@@ -26,17 +33,18 @@ export default function OnboardingFlow({ niches }: OnboardingFlowProps) {
   }
 
   function back() {
-    setStep((s) => Math.max(s - 1, 1));
+    setStep((s) => Math.max(s - 1, startStep));
   }
 
   return (
     <div>
       <ProgressBar step={step} total={TOTAL_STEPS} />
-      {step === 1 && <StepName data={data} onAdvance={advance} />}
-      {step === 2 && <StepNiche data={data} niches={niches} onAdvance={advance} onBack={back} />}
-      {step === 3 && <StepMood data={data} onAdvance={advance} onBack={back} />}
-      {step === 4 && <StepTrial data={data} onAdvance={advance} onBack={back} />}
-      {step === 5 && <StepBuild data={data} onBack={back} />}
+      {step === 1 && <StepAccount onAdvance={advance} />}
+      {step === 2 && <StepName data={data} onAdvance={advance} />}
+      {step === 3 && <StepNiche data={data} niches={niches} onAdvance={advance} onBack={back} />}
+      {step === 4 && <StepMood data={data} onAdvance={advance} onBack={back} />}
+      {step === 5 && <StepTrial data={data} onAdvance={advance} onBack={back} />}
+      {step === 6 && <StepBuild data={data} onBack={back} />}
     </div>
   );
 }
