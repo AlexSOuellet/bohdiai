@@ -22,7 +22,7 @@ export function HowItWorks(): React.ReactElement {
         No templates.
       </h2>
       <p className="mx-auto mt-3.5 max-w-[560px] px-3 text-center text-[14px] leading-[1.55] text-muted md:mt-5 md:text-[16px]">
-        Tell BohdiAI about your business, watch it build, go live. That&apos;s the whole thing.
+        Pick your craft, pick a mood, watch it build, go live. That&apos;s the whole thing.
       </p>
 
       <div className="relative mt-11 grid grid-cols-1 gap-9 md:mt-18 md:grid-cols-3 md:gap-5">
@@ -32,7 +32,7 @@ export function HowItWorks(): React.ReactElement {
           className="absolute left-1/2 top-[30px] bottom-[30px] z-base w-px -translate-x-1/2 md:left-[8%] md:right-[8%] md:top-[88px] md:h-px md:w-auto md:bottom-auto md:translate-x-0 [background:linear-gradient(to_bottom,transparent,rgba(243,201,122,0.4)_12%,rgba(243,201,122,0.4)_88%,transparent)] md:[background:linear-gradient(to_right,transparent,rgba(243,201,122,0.4)_20%,rgba(243,201,122,0.4)_80%,transparent)]"
         />
 
-        <Step num="01" title="Tell BohdiAI about your business" copy="A few sentences is enough. Your products, your style, what makes you you.">
+        <Step num="01" title="Pick your craft and a mood" copy="Choose what you make from the list, then the feeling you want. That's the whole input.">
           <PromptCard />
         </Step>
         <Step num="02" title="AI builds your storefront" copy="A complete working site tuned to your kind of business — not a template anyone else has.">
