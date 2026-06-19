@@ -65,7 +65,8 @@ Discovered this session while trying to show a real build to someone remote: **n
 
 Going live is its own milestone, separate from the five build parts. What it takes:
 
-- Merge the feature branch to `main` (or repoint the deploy branch).
+- **Durable build runner (real code, not config — the one true blocker for onboarding in prod).** Onboarding kicks off the store build fire-and-forget (`void runBuild(...)` in `app/api/onboarding/start/route.ts`). On a persistent dev server that finishes fine; on Vercel the function can be frozen/torn down the moment it returns the response, so a real maker's build never completes. Needs the build to survive past the response — Vercel `waitUntil`/`after()` to keep the invocation alive, or hand the build to a background job/queue. NOTE: this blocks *new* onboarding builds only. Serving an already-built tenant (e.g. Soul Splatter, already in the prod DB) does NOT need it — that just needs the app deployed + wildcard DNS.
+- Merge the feature branch to `main` (or repoint the deploy branch). NOTE: the working tree currently has uncommitted marketing-copy + auth work; those must be committed before they'd ship in a deploy.
 - Deploy the Phase 1 app to Vercel with the full env (prod Supabase, Anthropic, fal, Resend, Stripe, …).
 - Wire wildcard `*.bohdiai.com` DNS + SSL through Cloudflare (Cloudflare for SaaS) so tenant subdomains resolve and route to the app.
 - Confirm the deployed app points at the same Supabase the builds write to.

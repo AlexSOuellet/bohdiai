@@ -724,6 +724,39 @@ Supersedes the per-shop-accounts direction explored earlier the same session (ne
 
 ---
 
+## 2026-06-19 (session 47)
+
+### D60. Storefronts publish live on build; checkout is gated on payment setup; the maker holds an online/offline switch
+
+A long conversation re-opened the Master Spec §5 "the site is built and live immediately" call, worried that a public store full of AI-generated placeholder products could trouble a maker — and worse, trouble the first visitor they share the URL with. We walked it all the way to "park it until the maker publishes" and back. Where it landed: storefronts stay live-on-build as the Master Spec says, with two guards.
+
+The reframe that settled it: **being live is not the wow.** The wow is the store Bohdi hands the maker and the fact that they can reshape it just by telling him what to change. Whether it's publicly live at that exact second adds nothing to that — so there's no wow to protect by auto-publishing, only risk to manage. Two guards manage it:
+
+- **Checkout is disabled until the maker connects a payment processor (Stripe/Square).** You can't take money without a processor anyway, so this costs nothing — and it removes the one real failure mode: a shared visitor hitting placeholder products with a working-looking cart and trying to buy. With the cart off, the worst a visitor sees is nice products they can't purchase yet, which reads as "still setting up," not "broken."
+- **The maker gets an online/offline toggle in the dashboard** to take the store private anytime (while swapping in real products, or whenever they want it down). Offline simply flips `tenants.status` off `active`; the resolver already serves only `active`, so it stops resolving. Default is live.
+
+Placeholder products are **not** labeled "sample" — a label makes the whole polished store read as a demo and cheapens it. The cart-gate is what protects against fake-inventory purchases, not a label. The exposure worry is also thinner than it first seems: a brand-new store on a subdomain nobody has the URL for has no audience until the maker shares it.
+
+"Live in minutes" stays honest, just repositioned: the *path* to live is short (Bohdi builds the look, the maker drops in real content and edits with him, then publishes), maker-initiated — not "auto-published with fake products" as the headline. "We give them the look, they sculpt the content."
+
+A real, explorable **demo** for prospects is a **post-beta** build item. The marketing browser mockups can't serve as that — they're hand-built marketing art, not real generated stores, so there's nothing live behind them.
+
+Marketing follows from this: the home "how it works" centers Bohdi as the maker's personal designer — the three steps are now *pick your craft and a mood → Bohdi builds your storefront → tell Bohdi what to change* (your designer on call, no tech, publish and keep 100%). The browser-demo "Live · url" pill became "Empowered By BohdiAI" (a made-with badge, not a link to a site that isn't there), and the trades marquee now lists only niches we've built or locked to build.
+
+### D61. Beta/founder access — admin approval creates a comped account; password set via an emailed invite
+
+The Phase-0 waitlist is email-capture only: a beta/founder enters an email, confirms a double-opt-in link, and reserves a spot. That is **not** an account — no password, no `auth.users` row, no way to log in. So the people who signed up to be founders currently can't get into the product. This entry sets how they do.
+
+A beta/founder gets in through **founder-admin approval**. Approving them in the admin **creates their Supabase auth account** (keyed to their waitlist email), flagged **comped** (not billable). They receive an **emailed invite** to set their password — or use Google — on first login. The set-password step must run through the emailed link, never a cold "type a new password" at `/signin`: otherwise anyone who knew a founder's email could seize the account. Same one global login as everyone else (D59) — a founder is just a maker whose account was admin-created and comped.
+
+The **comp flag travels with the account** so onboarding skips the card-required trial step (D10/D19) — a founder is never charged. During the closed beta, sign-up is gated to approved/invited accounts so the public can't self-serve before launch.
+
+This depends on the founder admin (the approve action), billing/subscriptions (the comp flag), and the invite email — none built yet. This entry is the spec for that chunk when it's built.
+
+**Open within this decision:** the exact shape of "comped" — free only *during* beta and then the maker rolls onto the locked-in founder rate the waitlist promised, vs. something longer or permanent. Settled here is the *mechanism* (admin-approval → comped account → emailed set-password invite); the comp *duration* and when founder pricing starts is still Alex's to set.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.
