@@ -64,4 +64,10 @@ describe('signInMaker', () => {
     const result = await signInMaker({ email: 'maker@example.com', password: 'wrongpass123' });
     expect(result).toEqual({ ok: false, error: 'Invalid login credentials' });
   });
+
+  it('rejects an empty email without calling supabase', async () => {
+    const result = await signInMaker({ email: '', password: 'sup3rsecret' });
+    expect(result).toEqual({ ok: false, error: expect.stringMatching(/email/i) });
+    expect(signInMock).not.toHaveBeenCalled();
+  });
 });

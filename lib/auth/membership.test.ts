@@ -74,6 +74,12 @@ describe('addShopOwner', () => {
 
     await expect(addShopOwner(USER, TENANT)).rejects.toThrow(/shop owner/i);
   });
+
+  it('throws when the membership check errors', async () => {
+    selectResult = { data: null, error: { message: 'db down' } };
+    await expect(addShopOwner(USER, TENANT)).rejects.toThrow(/membership/i);
+    expect(insertedRows).toHaveLength(0);
+  });
 });
 
 describe('isShopAdmin', () => {
@@ -112,6 +118,25 @@ describe('getUserShops', () => {
   it('returns an empty array when the user owns no shops', async () => {
     listResult = { data: [], error: null };
     expect(await getUserShops(USER)).toEqual([]);
+  });
+
+  it('treats a null data payload as no shops', async () => {
+    listResult = { data: null as unknown as unknown[], error: null };
+    expect(await getUserShops(USER)).toEqual([]);
+  });
+
+  it('skips memberships whose tenant join came back null', async () => {
+    listResult = {
+      data: [
+        { tenant_id: TENANT, tenants: null },
+        { tenant_id: 'live', tenants: { subdomain: 'ember', business_name: 'Ember' } },
+      ],
+      error: null,
+    };
+
+    const shops = await getUserShops(USER);
+
+    expect(shops).toEqual([{ tenantId: 'live', subdomain: 'ember', businessName: 'Ember' }]);
   });
 
   it('throws when the query errors', async () => {
