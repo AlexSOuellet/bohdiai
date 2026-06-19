@@ -9,6 +9,8 @@ import { checkGenerationRateLimit } from '@/lib/rate-limit';
 import { MOODS, type MoodKey } from '@/lib/moods';
 import { runStorefront } from '@/lib/onboarding/run-storefront';
 import { createBuild, markRunning, completeBuild, failBuild, type BuildInput } from '@/lib/onboarding/build-store';
+import { getCurrentUser } from '@/lib/auth/session';
+import { assignShopOwner } from '@/lib/auth/assign-owner';
 import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
@@ -37,18 +39,23 @@ export async function POST(req: NextRequest): Promise<Response> {
     return new Response(message, { status: 429 });
   }
 
+  // Read the signed-up maker in request scope (cookies are only available here).
+  // Account-first onboarding means this is set; the build links them as owner
+  // once the tenant lands. Null is handled loudly downstream, not silently.
+  const userId = (await getCurrentUser())?.id ?? null;
+
   const buildId = await createBuild(body);
 
   // Fire and forget. We intentionally do NOT await this — the response returns
   // now and the build runs on its own, writing progress to the build record.
   // (Locally this runs to completion; in production it needs a runner that
   // survives past the request — a separate, flagged piece of work.)
-  void runBuild(buildId, body);
+  void runBuild(buildId, body, userId);
 
   return Response.json({ buildId });
 }
 
-async function runBuild(buildId: string, input: BuildInput): Promise<void> {
+async function runBuild(buildId: string, input: BuildInput, userId: string | null): Promise<void> {
   try {
     await markRunning(buildId, 'Getting set up');
     const result = await runStorefront(
@@ -66,6 +73,9 @@ async function runBuild(buildId: string, input: BuildInput): Promise<void> {
       },
     );
     await completeBuild(buildId, result.tenantId);
+    // Link the maker as owner of their new shop. Best-effort + loudly logged —
+    // never undoes a successful build, but an unowned shop must not go unnoticed.
+    await assignShopOwner(userId, result.tenantId);
     logger.info('build: complete', { buildId, subdomain: result.subdomain });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Build failed';
