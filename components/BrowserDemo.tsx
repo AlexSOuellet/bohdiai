@@ -70,10 +70,12 @@ export function BrowserDemo(): ReactElement {
         {current.newOrder}
       </span>
 
-      {/* Live URL pill — top right */}
+      {/* Attribution badge — top right. A caption ("made with"), NOT a live link:
+          these are illustrative mockups, not real stores you can visit. The
+          pulsing dot is decorative. */}
       <span className="absolute right-2.5 top-[-10px] z-toast inline-flex max-w-[60%] items-center gap-1.5 overflow-hidden text-ellipsis whitespace-nowrap rounded-pill border border-honey-warm/30 bg-bg px-2.5 py-1 text-[10px] font-semibold text-honey-warm shadow-[0_8px_20px_rgba(0,0,0,0.4)] md:right-9 md:top-[-12px] md:gap-2 md:px-3.5 md:py-1.5 md:text-[12px]">
         <span className="size-1.5 animate-pulse-ring rounded-full bg-honey shadow-[0_0_10px_var(--honey)]" />
-        Live · {current.liveUrl}
+        Empowered By BohdiAI
       </span>
 
       {/* Browser frame */}

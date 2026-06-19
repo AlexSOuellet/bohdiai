@@ -1,13 +1,12 @@
 import { SectionKicker } from './SectionKicker';
-import { Typewriter } from './Typewriter';
 
-const HOW_PROMPTS = [
-  'I bake sourdough out of my home in Providence',
-  'I tattoo blackwork in a small Brooklyn studio',
-  'I write picture books for kids ages 3 to 7',
-  'I teach piano lessons in a converted Maple Street garage',
-  'I curate restored mid-century furniture in Newport',
-] as const;
+// The onboarding step-1 input: pick a craft from the grid, pick a mood. One of
+// each is shown selected (others dimmed) so the card mirrors the real flow
+// rather than someone typing a sentence.
+const CRAFT_CHIPS = ['Candle maker', 'Baker', 'Jeweler', 'Potter'] as const;
+const MOOD_CHIPS = ['Cozy', 'Rustic', 'Modern', 'Elegant'] as const;
+const SELECTED_CRAFT = 'Candle maker';
+const SELECTED_MOOD = 'Cozy';
 
 export function HowItWorks(): React.ReactElement {
   return (
@@ -22,7 +21,7 @@ export function HowItWorks(): React.ReactElement {
         No templates.
       </h2>
       <p className="mx-auto mt-3.5 max-w-[560px] px-3 text-center text-[14px] leading-[1.55] text-muted md:mt-5 md:text-[16px]">
-        Pick your craft, pick a mood, watch it build, go live. That&apos;s the whole thing.
+        Pick your craft, watch Bohdi build it, then tell him what to change. That&apos;s the whole thing.
       </p>
 
       <div className="relative mt-11 grid grid-cols-1 gap-9 md:mt-18 md:grid-cols-3 md:gap-5">
@@ -35,10 +34,10 @@ export function HowItWorks(): React.ReactElement {
         <Step num="01" title="Pick your craft and a mood" copy="Choose what you make from the list, then the feeling you want. That's the whole input.">
           <PromptCard />
         </Step>
-        <Step num="02" title="AI builds your storefront" copy="A complete working site tuned to your kind of business — not a template anyone else has.">
+        <Step num="02" title="Bohdi builds your storefront" copy="A complete working site tuned to your kind of business — not a template anyone else has.">
           <Orb />
         </Step>
-        <Step num="03" title="Go live — keep 100%" copy="Publish on your own subdomain. Take orders, take bookings. We never take a cut of your sales.">
+        <Step num="03" title="Tell Bohdi what to change" copy="Your personal designer, on call. Ask for anything in plain words — no tech to figure out. Publish when it's perfect, and keep every dollar you make.">
           <LiveBadge />
         </Step>
       </div>
@@ -78,11 +77,33 @@ function Step({
 function PromptCard(): React.ReactElement {
   return (
     <div className="w-full max-w-[260px] rounded-lg border border-text/[0.12] bg-text/[0.04] p-3.5 text-left text-[12px] leading-[1.5] text-text-soft backdrop-blur-[8px] md:max-w-[280px] md:p-4 md:text-[13px]">
-      <div className="mb-1.5 text-[11px] tracking-[0.05em] text-muted">YOU</div>
-      <div className="text-text">
-        <Typewriter phrases={HOW_PROMPTS} />
+      <div className="mb-1.5 text-[11px] tracking-[0.05em] text-muted">YOUR CRAFT</div>
+      <div className="flex flex-wrap gap-1.5">
+        {CRAFT_CHIPS.map((craft) => (
+          <Chip key={craft} label={craft} selected={craft === SELECTED_CRAFT} />
+        ))}
+      </div>
+      <div className="mb-1.5 mt-3 text-[11px] tracking-[0.05em] text-muted">MOOD</div>
+      <div className="flex flex-wrap gap-1.5">
+        {MOOD_CHIPS.map((mood) => (
+          <Chip key={mood} label={mood} selected={mood === SELECTED_MOOD} />
+        ))}
       </div>
     </div>
+  );
+}
+
+function Chip({ label, selected }: { label: string; selected: boolean }): React.ReactElement {
+  return (
+    <span
+      className={
+        selected
+          ? 'rounded-full border border-honey-warm/50 bg-honey-warm/15 px-2.5 py-1 text-[11px] text-honey-warm'
+          : 'rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[11px] text-muted'
+      }
+    >
+      {label}
+    </span>
   );
 }
 
