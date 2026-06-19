@@ -1,5 +1,27 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeTenantHeaders, isUnreachableStorefrontPath } from './proxy-security';
+import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost } from './proxy-security';
+
+describe('resolveProxyHost', () => {
+  it('prefers the forwarded host when the edge proxy sets one', () => {
+    expect(resolveProxyHost('soul-splatter.bohdiai.com', 'bohdiai.com')).toBe('soul-splatter.bohdiai.com');
+  });
+
+  it('trims whitespace from the forwarded host', () => {
+    expect(resolveProxyHost('  ember.bohdiai.com  ', 'bohdiai.com')).toBe('ember.bohdiai.com');
+  });
+
+  it('falls back to the real host header when no forwarded host is present', () => {
+    expect(resolveProxyHost(null, 'myshop.bohdiai.com')).toBe('myshop.bohdiai.com');
+  });
+
+  it('falls back to the host header when the forwarded host is blank', () => {
+    expect(resolveProxyHost('   ', 'myshop.bohdiai.com')).toBe('myshop.bohdiai.com');
+  });
+
+  it('returns an empty string when neither is present', () => {
+    expect(resolveProxyHost(null, null)).toBe('');
+  });
+});
 
 describe('sanitizeTenantHeaders', () => {
   it('drops a forged x-tenant-id arriving on an inbound request', () => {

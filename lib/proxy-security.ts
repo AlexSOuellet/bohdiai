@@ -22,6 +22,24 @@ export function sanitizeTenantHeaders(headers: Headers): void {
 }
 
 /**
+ * Pick the hostname the proxy resolves a tenant from.
+ *
+ * Storefront subdomains can't get their own TLS cert from our host while DNS
+ * lives on Cloudflare, so a Cloudflare edge snippet proxies `*.bohdiai.com`
+ * requests to the apex (which has a valid cert) and forwards the real shop host
+ * in a custom `x-bohdi-shop` header (not `x-forwarded-host`, which Vercel's edge
+ * manages itself). When that header is present we resolve against it;
+ * otherwise we use the actual `host`. Resolving a forged value only ever yields
+ * a public storefront or nothing, so this widens no real boundary — the
+ * internal `x-tenant-id` is still set by the proxy alone (see sanitize above).
+ */
+export function resolveProxyHost(forwardedHost: string | null, host: string | null): string {
+  const forwarded = forwardedHost?.trim();
+  if (forwarded) return forwarded;
+  return host ?? '';
+}
+
+/**
  * Return true when a request targets the internal `/storefront/*` rewrite
  * path on the apex (no subdomain). Apex visitors should never see internal
  * storefront URLs — those exist only as the rewrite target for resolved

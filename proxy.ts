@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import type { SetAllCookies } from '@supabase/ssr';
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
-import { sanitizeTenantHeaders, isUnreachableStorefrontPath } from '@/lib/proxy-security';
+import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost } from '@/lib/proxy-security';
 
 const RESERVED = new Set(['www', 'admin', 'app', 'learn']);
 const BASE_DOMAIN = 'bohdiai.com';
@@ -15,7 +15,14 @@ export const config = {
 };
 
 export async function proxy(request: NextRequest) {
-  const hostname = request.headers.get('host') ?? '';
+  // A Cloudflare edge snippet proxies shop subdomains to the apex (the only host
+  // with a valid cert) and forwards the real shop host in `x-bohdi-shop`. Prefer
+  // it; on the apex and everywhere else this is just the normal Host header.
+  // (NOT x-forwarded-host — Vercel's edge manages/overwrites that one.)
+  const hostname = resolveProxyHost(
+    request.headers.get('x-bohdi-shop'),
+    request.headers.get('host'),
+  );
   const subdomain = extractSubdomain(hostname);
 
   // /storefront/* is an internal rewrite target — on the apex (no subdomain)
