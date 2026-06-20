@@ -13,6 +13,20 @@ import { serverEnv } from '@/lib/env';
 
 export const revalidate = 30;
 
+const SITE_URL = process.env['SITE_URL'] ?? 'https://bohdiai.com';
+
+/** BohdiAI's own Organization schema. Lives here on the marketing home — NOT in
+ *  the root layout, where it used to leak onto every tenant storefront. */
+const ORGANIZATION_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'BohdiAI',
+  url: SITE_URL,
+  description:
+    'AI-powered storefronts for small business owners — makers, bakers, vintage sellers, service providers, farm stands and more.',
+  foundingDate: '2026',
+};
+
 async function getFounderTakenCount(): Promise<number> {
   try {
     const supabase = supabaseAdmin();
@@ -47,6 +61,10 @@ export default async function HomePage(): Promise<React.ReactElement> {
 
   return (
     <Scene>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
+      />
       <Header />
       <main id="main">
         <Hero />

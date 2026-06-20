@@ -1,7 +1,13 @@
+import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { loadStorefrontChromeBlocks } from '../_components/storefront-chrome';
 import { renderArchetypeShell } from '../_components/StorefrontPage';
+import { storefrontMetadata } from '@/lib/storefront/metadata';
+
+export function generateMetadata(): Promise<Metadata> {
+  return storefrontMetadata({ path: '/cart', pageName: 'Cart', noindex: true });
+}
 
 /**
  * Cart page stub. Renders an empty-cart state with the store's chrome so the cart

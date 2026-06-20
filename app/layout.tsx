@@ -126,20 +126,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to content
         </a>
         {children}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'Organization',
-              name: 'BohdiAI',
-              url: SITE_URL,
-              description:
-                'AI-powered storefronts for small business owners — makers, bakers, vintage sellers, service providers, farm stands and more.',
-              foundingDate: '2026',
-            }),
-          }}
-        />
       </body>
     </html>
   );

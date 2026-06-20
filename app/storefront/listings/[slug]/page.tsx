@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
@@ -5,6 +6,8 @@ import { supabaseAdmin } from '@/lib/supabase';
 import NotifyForm from '../../_components/NotifyForm';
 import { loadStorefrontChromeBlocks } from '../../_components/storefront-chrome';
 import { renderArchetypeProductPage } from '../../_components/StorefrontPage';
+import { storefrontMetadata, storefrontSeoFacts } from '@/lib/storefront/metadata';
+import { tenantProductJsonLd } from '@/lib/storefront/seo';
 import type { ProductView, CatalogMedia } from '@/lib/archetypes/content';
 
 interface ListingPageProps {
@@ -13,6 +16,30 @@ interface ListingPageProps {
 
 function formatPrice(cents: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
+}
+
+export async function generateMetadata({ params }: ListingPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const headerStore = await headers();
+  const tenantId = headerStore.get('x-tenant-id');
+  if (tenantId === null) return {};
+  const { data: listing } = await supabaseAdmin()
+    .from('listings')
+    .select('name, short_description, description, metadata')
+    .eq('tenant_id', tenantId)
+    .eq('slug', slug)
+    .eq('status', 'active')
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (listing === null) return {};
+  const img = (listing.metadata as { image_url?: string | null } | null)?.image_url;
+  const desc = listing.short_description ?? listing.description ?? undefined;
+  return storefrontMetadata({
+    path: `/listings/${slug}`,
+    pageName: listing.name,
+    ...(desc ? { description: desc } : {}),
+    ...(img ? { imageUrl: img } : {}),
+  });
 }
 
 function intervalLabel(interval: string | null): string {
@@ -58,8 +85,37 @@ export default async function StorefrontListingPage({ params }: ListingPageProps
     media,
     variations: [],
   };
+  // Product structured data — rendered in BOTH the archetype and legacy paths so
+  // search engines get rich-result data regardless of which renderer paints.
+  const seoFacts = await storefrontSeoFacts();
+  const productLd =
+    seoFacts === null ? null : (
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            tenantProductJsonLd(seoFacts, {
+              name: listing.name,
+              slug: listing.slug,
+              description: listing.short_description ?? listing.description ?? undefined,
+              priceCents: listing.base_price_cents,
+              imageUrl: meta?.image_url ?? undefined,
+              inStock: !listing.is_preview,
+            }),
+          ),
+        }}
+      />
+    );
+
   const archetypePage = await renderArchetypeProductPage(tenantId, productView);
-  if (archetypePage !== null) return archetypePage;
+  if (archetypePage !== null) {
+    return (
+      <>
+        {productLd}
+        {archetypePage}
+      </>
+    );
+  }
 
   let collection: { name: string; slug: string } | null = null;
   if (listing.primary_collection_id !== null) {
@@ -78,6 +134,7 @@ export default async function StorefrontListingPage({ params }: ListingPageProps
 
   return (
     <>
+      {productLd}
       {nav}
       <main className="bg-s-background pt-28 pb-20 md:pt-32">
         <div className="max-w-6xl mx-auto px-6">

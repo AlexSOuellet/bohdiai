@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
@@ -5,6 +6,11 @@ import { supabaseAdmin } from '@/lib/supabase';
 import NotifyForm from '../_components/NotifyForm';
 import { loadStorefrontChromeBlocks } from '../_components/storefront-chrome';
 import { renderArchetypeShell } from '../_components/StorefrontPage';
+import { storefrontMetadata } from '@/lib/storefront/metadata';
+
+export function generateMetadata(): Promise<Metadata> {
+  return storefrontMetadata({ path: '/subscriptions', pageName: 'Subscriptions' });
+}
 
 interface Subscription {
   id: string;

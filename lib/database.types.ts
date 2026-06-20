@@ -2166,6 +2166,7 @@ export type Database = {
           postal_code: string | null
           primary_niche: string | null
           secondary_niche: string | null
+          service_areas: string[] | null
           specialization_notes: string | null
           specializations: string[]
           square_merchant_id: string | null
@@ -2201,6 +2202,7 @@ export type Database = {
           postal_code?: string | null
           primary_niche?: string | null
           secondary_niche?: string | null
+          service_areas?: string[] | null
           specialization_notes?: string | null
           specializations?: string[]
           square_merchant_id?: string | null
@@ -2236,6 +2238,7 @@ export type Database = {
           postal_code?: string | null
           primary_niche?: string | null
           secondary_niche?: string | null
+          service_areas?: string[] | null
           specialization_notes?: string | null
           specializations?: string[]
           square_merchant_id?: string | null

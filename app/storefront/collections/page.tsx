@@ -1,8 +1,14 @@
+import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { loadStorefrontChromeBlocks } from '../_components/storefront-chrome';
 import { renderArchetypeShell } from '../_components/StorefrontPage';
+import { storefrontMetadata } from '@/lib/storefront/metadata';
+
+export function generateMetadata(): Promise<Metadata> {
+  return storefrontMetadata({ path: '/collections', pageName: 'Collections' });
+}
 
 interface Collection {
   id: string;

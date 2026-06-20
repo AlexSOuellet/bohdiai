@@ -1,12 +1,34 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { loadStorefrontChromeBlocks } from '../../_components/storefront-chrome';
 import { renderArchetypeShell } from '../../_components/StorefrontPage';
+import { storefrontMetadata } from '@/lib/storefront/metadata';
 
 interface CollectionPageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: CollectionPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const headerStore = await headers();
+  const tenantId = headerStore.get('x-tenant-id');
+  if (tenantId === null) return {};
+  const { data: collection } = await supabaseAdmin()
+    .from('collections')
+    .select('name, description')
+    .eq('tenant_id', tenantId)
+    .eq('slug', slug)
+    .eq('status', 'active')
+    .is('deleted_at', null)
+    .maybeSingle();
+  return storefrontMetadata({
+    path: `/collections/${slug}`,
+    pageName: collection?.name ?? 'Collection',
+    ...(collection?.description ? { description: collection.description } : {}),
+  });
 }
 
 interface Listing {
