@@ -15,13 +15,16 @@ const url = process.argv[2] ?? 'https://soul-splatter.bohdiai.com/';
 const out = process.argv[3] ?? 'tmp/hero-frames/hero-shot.png';
 const videoSeconds = Number(process.argv[4] ?? '3');
 const settleMs = Number(process.argv[5] ?? '11000');
+const vw = Number(process.argv[6] ?? '1200');
+const vh = Number(process.argv[7] ?? '630');
 
 const browser = await chromium.launch({
   args: ['--autoplay-policy=no-user-gesture-required'],
 });
 const ctx = await browser.newContext({
-  viewport: { width: 1200, height: 630 }, // OG share-card aspect
+  viewport: { width: vw, height: vh },
   deviceScaleFactor: 2,
+  isMobile: vw < 600,
 });
 const page = await ctx.newPage();
 

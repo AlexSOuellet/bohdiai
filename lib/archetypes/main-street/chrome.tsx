@@ -13,13 +13,39 @@ import type { ArchetypeTheme, TypeRole } from '../types';
 import type { MainStreetContent, NavEntry, NavItem } from './schemas';
 import { MAIN_STREET_FONT_HREFS, type MainStreetRoles } from './skins';
 import { LINK_TARGETS, linkHref, type LinkTarget } from './links';
+import { MainStreetMobileNav } from './MobileNav';
+import { IntroReplayLink } from './IntroReplayLink';
 
 export { LINK_TARGETS, linkHref, type LinkTarget };
+
+// Fluid type: the viewport band over which a size scales from its mobile floor
+// up to its full desktop value.
+const FLUID_MIN_VW = 360;
+const FLUID_MAX_VW = 1280;
+
+/**
+ * Turn a fixed desktop font size (px) into a fluid `clamp()` that scales DOWN on
+ * narrow screens. Big display type shrinks a lot; body and small labels barely
+ * move (the shrink factor eases from ~0.45 at display scale to ~0.95 at caption
+ * scale). Emitted INLINE — clamp works inline, which sidesteps the inline-vs-
+ * stylesheet precedence that made the old per-skin `sizeMobile` @media override
+ * ineffective. When a skin declares `sizeMobile`, it becomes the explicit floor.
+ */
+export function fluidFontSize(size: number, sizeMobile?: number): string {
+  const max = size;
+  const factor = Math.min(0.95, Math.max(0.45, 0.45 + 0.5 * (1 - (size - 12) / 72)));
+  const min = sizeMobile ?? Math.round(size * factor);
+  if (max <= min) return `${max}px`;
+  const slope = (max - min) / (FLUID_MAX_VW - FLUID_MIN_VW);
+  const intercept = Math.round((min - slope * FLUID_MIN_VW) * 100) / 100;
+  const vw = Math.round(slope * 100 * 1000) / 1000;
+  return `clamp(${min}px, ${intercept}px + ${vw}vw, ${max}px)`;
+}
 
 export function typeRoleCss(role: TypeRole): React.CSSProperties {
   return {
     fontFamily: role.family,
-    fontSize: role.size,
+    fontSize: fluidFontSize(role.size, role.sizeMobile),
     fontWeight: role.weight,
     lineHeight: role.lineHeight,
     letterSpacing: role.letterSpacing,
@@ -44,14 +70,8 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
   const a = skin.atmosphere;
   const mo = skin.motion;
   const r = roles(skin);
-  // Mobile font-size overrides for roles that declare a distinct sizeMobile.
-  const responsive = Object.entries(skin.type)
-    .filter(([, role]) => role.sizeMobile && role.sizeMobile !== role.size)
-    .map(
-      ([k, role]) =>
-        `@media (max-width:768px){.arch-main-street [data-type="${k}"]{font-size:${role.sizeMobile}px}}`,
-    )
-    .join('\n');
+  // Type sizes are fluid at the source (see fluidFontSize) — emitted inline as
+  // clamp(), so no per-role mobile @media overrides are needed here.
   return `
     .arch-main-street{
       --ms-bg:${p.bg};--ms-fg:${p.fg};--ms-fg-muted:${p.fgMuted};--ms-accent:${p.accent};--ms-on-accent:${p.onAccent ?? p.bg};--ms-rule:${p.rule};
@@ -75,6 +95,30 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .archetype-photo{filter:${a.photoFilter ?? 'none'};display:block;width:100%;height:100%;object-fit:cover}
     .arch-main-street .ms-wrap{max-width:1200px;margin-inline:auto;padding-inline:40px}
     @media(max-width:860px){.arch-main-street .ms-wrap{padding-inline:20px}}
+    /* Header nav: full link row on desktop, a menu button + full-screen overlay
+       on phones. The breakpoint hides one and shows the other; the overlay reads
+       the skin's own --ms-* vars so it matches the store. */
+    .arch-main-street .ms-nav-links{display:flex;gap:30px;align-items:center}
+    .arch-main-street .ms-nav-toggle{display:none}
+    @media(max-width:640px){
+      .arch-main-street .ms-nav-links{display:none}
+      .arch-main-street .ms-nav-toggle{display:inline-flex}
+    }
+    .arch-main-street .ms-burger{background:none;border:0;color:inherit;cursor:pointer;padding:8px;display:inline-flex;flex-direction:column;gap:5px}
+    .arch-main-street .ms-burger-line{display:block;width:24px;height:2px;background:currentColor}
+    .arch-main-street .ms-mobile-overlay{position:fixed;inset:0;z-index:100;background:var(--ms-bg);color:var(--ms-fg);display:flex;flex-direction:column;justify-content:center;align-items:center;animation:ms-overlay-in .4s ${mo.reveal.easing}}
+    @keyframes ms-overlay-in{from{opacity:0}to{opacity:1}}
+    .arch-main-street .ms-burger-close{position:absolute;top:20px;right:24px;width:34px;height:34px;background:none;border:0;color:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+    .arch-main-street .ms-burger-x{position:absolute;width:26px;height:2px;background:currentColor}
+    .arch-main-street .ms-burger-x:first-child{transform:rotate(45deg)}
+    .arch-main-street .ms-burger-x:last-child{transform:rotate(-45deg)}
+    .arch-main-street .ms-mobile-links{display:flex;flex-direction:column;gap:6px;text-align:center}
+    .arch-main-street .ms-mobile-links a{color:inherit;font-family:var(--ms-disp);font-size:clamp(30px,9vw,46px);line-height:1.18;letter-spacing:.01em;opacity:0;transform:translateY(14px);animation:ms-link-in .55s ${mo.reveal.easing} forwards}
+    @keyframes ms-link-in{to{opacity:1;transform:none}}
+    @media(prefers-reduced-motion:reduce){
+      .arch-main-street .ms-mobile-overlay{animation:none}
+      .arch-main-street .ms-mobile-links a{animation:none;opacity:1;transform:none}
+    }
     /* Sub-page <main> sits under the fixed SubHeader; pad it down by the nav height. */
     .arch-main-street .ms-subpage-main{padding-top:80px}
     @media(max-width:768px){.arch-main-street .ms-subpage-main{padding-top:68px}}
@@ -156,7 +200,6 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street [data-type="day"]{white-space:nowrap}
     .arch-main-street [data-type="where"]{display:inline-block;max-width:38ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
     .arch-main-street [data-type="legal"]{white-space:nowrap}
-    ${responsive}
   `;
 }
 
@@ -241,19 +284,18 @@ export function WordmarkLink({
 export function Nav({ identity, skin }: { identity: MainStreetContent['identity']; skin: ArchetypeTheme }) {
   const r = roles(skin);
   const items = resolveNav(identity.nav);
+  const allItems = [...items, { href: '/cart', label: 'Cart' }];
   return (
     <>
       <WordmarkLink wordmark={identity.wordmark} logoUrl={identity.logoUrl} role={r.wordmark} />
-      <div style={{ display: 'flex', gap: 30, alignItems: 'center' }}>
-        {items.map((item) => (
+      <div className="ms-nav-links">
+        {allItems.map((item) => (
           <a key={item.href} href={item.href} data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), color: 'inherit', opacity: 0.85 }}>
             {item.label}
           </a>
         ))}
-        <a href="/cart" data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), color: 'inherit', opacity: 0.85 }}>
-          Cart
-        </a>
       </div>
+      <MainStreetMobileNav items={allItems} />
     </>
   );
 }
@@ -280,9 +322,9 @@ export function MainStreetFooter({ shopName, skin }: { shopName: string; skin: A
         <Link href="/" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
           Home
         </Link>
-        <a href="/?intro=1" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
+        <IntroReplayLink style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
           Intro
-        </a>
+        </IntroReplayLink>
         <a href="/privacy" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
           Privacy
         </a>

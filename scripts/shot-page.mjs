@@ -10,16 +10,18 @@ import { chromium } from '@playwright/test';
 const url = process.argv[2];
 const out = process.argv[3] ?? 'tmp/hero-frames/page.png';
 const mode = process.argv[4] ?? 'full';
+const width = Number(process.argv[5] ?? '1200');
+const height = Number(process.argv[6] ?? '900');
 
 const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
-const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 }, deviceScaleFactor: 2 });
+const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 2, isMobile: width < 600 });
 const page = await ctx.newPage();
 await page.goto(url, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(1500);
 
 // Walk down the page to trigger reveals, then back to top.
-const height = await page.evaluate(() => document.body.scrollHeight);
-for (let y = 0; y < height; y += 500) {
+const pageHeight = await page.evaluate(() => document.body.scrollHeight);
+for (let y = 0; y < pageHeight; y += 500) {
   await page.evaluate((yy) => { window.scrollTo(0, yy); window.dispatchEvent(new Event('scroll')); }, y);
   await page.waitForTimeout(180);
 }

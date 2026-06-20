@@ -11,6 +11,12 @@
  * landing path, the cookie write) are the only browser-touching pieces.
  */
 
+/** Window event the footer "Intro" link fires to replay the Moment without a
+ *  full page reload. MomentHero listens for it; the link also navigates to
+ *  `/?intro=1` so the replay works whether you're already on home or arriving
+ *  from another page. */
+export const REPLAY_INTRO_EVENT = 'bohdi:replay-intro';
+
 export function momentSeenCookieName(key: string): string {
   return `bohdi_moment_seen_${key}`;
 }

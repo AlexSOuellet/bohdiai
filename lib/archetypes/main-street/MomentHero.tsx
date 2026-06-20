@@ -41,7 +41,7 @@ import type { ArchetypeTheme } from '../types';
 import type { MainStreetContent } from './schemas';
 import { Media, Nav, typeRoleCss, roles, linkHref } from './chrome';
 import { navContrast, relativeLuminance } from './logo-contrast';
-import { shouldPlayMoment, initialDocumentPath, markMomentSeen } from './moment-gate';
+import { shouldPlayMoment, initialDocumentPath, markMomentSeen, REPLAY_INTRO_EVENT } from './moment-gate';
 
 const STILL_PUSH_IN_SECONDS = 24;
 
@@ -238,6 +238,15 @@ export function MomentHero({
       setStep(0);
     }
   }, [momentKey]);
+
+  // Footer "Intro" replay: a client-side signal restarts the timeline without a
+  // full reload (covers clicking Intro while already on the home page; arriving
+  // from another page is handled by the mount effect above reading ?intro=1).
+  useEffect(() => {
+    const replay = () => setStep(0);
+    window.addEventListener(REPLAY_INTRO_EVENT, replay);
+    return () => window.removeEventListener(REPLAY_INTRO_EVENT, replay);
+  }, []);
 
   // Drive the timeline. The brand step (last) is terminal — on landing on it,
   // write the per-shop cookie so the next cold visit skips the play. Marking

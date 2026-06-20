@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
-import { MainStreetRoot, MainStreetFooter, WordmarkLink, skinVarsCss, linkHref, LINK_TARGETS, resolveNav, MAIN_STREET_NAV } from './chrome';
+import { MainStreetRoot, MainStreetFooter, WordmarkLink, skinVarsCss, fluidFontSize, linkHref, LINK_TARGETS, resolveNav, MAIN_STREET_NAV } from './chrome';
 import { MAIN_STREET_SKINS } from './skins';
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
@@ -32,6 +32,34 @@ describe('skinVarsCss', () => {
     expect(css).toContain('--ms-disp:');
     expect(css).toContain('--ms-body:');
     expect(css).toContain('--ms-mono:');
+  });
+});
+
+describe('fluidFontSize', () => {
+  const minOf = (css: string) => Number(css.match(/clamp\((\d+(?:\.\d+)?)px/)![1]);
+
+  it('returns a clamp() that tops out at the desktop size', () => {
+    const css = fluidFontSize(84);
+    expect(css.startsWith('clamp(')).toBe(true);
+    expect(css.endsWith('84px)')).toBe(true);
+  });
+
+  it('shrinks large display type well below its desktop size on small screens', () => {
+    expect(minOf(fluidFontSize(84))).toBeLessThan(84 * 0.6);
+  });
+
+  it('barely shrinks small label type', () => {
+    const min = minOf(fluidFontSize(13));
+    expect(min).toBeGreaterThanOrEqual(12);
+    expect(min).toBeLessThanOrEqual(13);
+  });
+
+  it('honors an explicit sizeMobile as the floor', () => {
+    expect(fluidFontSize(64, 28).startsWith('clamp(28px,')).toBe(true);
+  });
+
+  it('returns a plain px size when the floor meets the desktop size', () => {
+    expect(fluidFontSize(12, 12)).toBe('12px');
   });
 });
 
