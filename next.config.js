@@ -40,7 +40,12 @@ const nextConfig = {
         source: '/(.*)',
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'X-Frame-Options', value: 'DENY' },
+          // Frame protection is set per-surface in proxy.ts: storefronts allow
+          // framing by our own dashboard (the editor's live preview) and nobody
+          // else; the dashboard, marketing, and admin stay un-frameable (DENY).
+          // It can't live here because the only thing that distinguishes a
+          // storefront from the marketing apex is the subdomain, which only the
+          // proxy resolves.
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
         ],

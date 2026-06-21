@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import type { SetAllCookies } from '@supabase/ssr';
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
-import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost } from '@/lib/proxy-security';
+import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost, isAppHost, isAppSurfacePath } from '@/lib/proxy-security';
 
 const RESERVED = new Set(['www', 'admin', 'app', 'learn']);
 const BASE_DOMAIN = 'bohdiai.com';
@@ -24,6 +24,15 @@ export async function proxy(request: NextRequest) {
     request.headers.get('host'),
   );
   const subdomain = extractSubdomain(hostname);
+
+  // The maker dashboard lives on app.bohdiai.com under /dashboard/*. Land the
+  // bare app root on the dashboard home so app.bohdiai.com isn't the marketing
+  // page. Other app-host paths (/signin, /onboarding) pass through unchanged.
+  if (isAppHost(hostname) && request.nextUrl.pathname === '/') {
+    const dest = request.nextUrl.clone();
+    dest.pathname = '/dashboard';
+    return NextResponse.redirect(dest);
+  }
 
   // /storefront/* is an internal rewrite target — on the apex (no subdomain)
   // it is never directly addressable. 404 instead of leaking the rewrite shape.
@@ -58,9 +67,12 @@ export async function proxy(request: NextRequest) {
   // EXCEPT /api/* — those route to the shared platform API regardless of which
   // subdomain the request originated from (forms posted from tenant pages
   // hit /api/notify-interest, /api/contact, etc, and need to resolve normally).
+  // On a shop subdomain we still serve the platform API and — so a maker can sign
+  // in on their own site and manage it there — the auth + dashboard surface, with
+  // the shop's tenant context attached. Everything else paints the storefront.
   const isTenantRequest = tenantId !== undefined;
   const originalPath = request.nextUrl.pathname;
-  const skipRewrite = originalPath.startsWith('/api/');
+  const skipRewrite = originalPath.startsWith('/api/') || isAppSurfacePath(originalPath);
   const rewriteUrl = isTenantRequest && !skipRewrite ? request.nextUrl.clone() : null;
   if (rewriteUrl !== null) {
     rewriteUrl.pathname = '/storefront' + (originalPath === '/' ? '' : originalPath);
@@ -95,6 +107,22 @@ export async function proxy(request: NextRequest) {
       },
     });
     await supabase.auth.getUser();
+  }
+
+  // Frame protection, per surface. A storefront (the rewritten tenant render) may
+  // be framed by our own dashboard for the editor's live preview, and by nobody
+  // else — `frame-ancestors` lists our origins (same-origin 'self' covers a maker
+  // editing on their own shop subdomain; *.bohdiai.com covers the app host
+  // framing a shop). Everything else — the dashboard itself, marketing, admin —
+  // stays un-frameable.
+  if (rewriteUrl !== null) {
+    response.headers.set(
+      'Content-Security-Policy',
+      "frame-ancestors 'self' https://*.bohdiai.com http://*.localhost:3000",
+    );
+    response.headers.delete('X-Frame-Options');
+  } else {
+    response.headers.set('X-Frame-Options', 'DENY');
   }
 
   return response;

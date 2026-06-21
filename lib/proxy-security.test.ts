@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost } from './proxy-security';
+import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost, isAppHost, isAppSurfacePath } from './proxy-security';
 
 describe('resolveProxyHost', () => {
   it('prefers the forwarded host when the edge proxy sets one', () => {
@@ -93,5 +93,45 @@ describe('isUnreachableStorefrontPath', () => {
 
   it('returns false for paths that merely contain "storefront" but do not start with /storefront', () => {
     expect(isUnreachableStorefrontPath('/blog/storefront-tips', null)).toBe(false);
+  });
+});
+
+describe('isAppHost', () => {
+  it('is true for the production dashboard host', () => {
+    expect(isAppHost('app.bohdiai.com')).toBe(true);
+  });
+
+  it('is true for the dev dashboard host with a port', () => {
+    expect(isAppHost('app.localhost:3000')).toBe(true);
+  });
+
+  it('is false for the marketing apex and storefront subdomains', () => {
+    expect(isAppHost('bohdiai.com')).toBe(false);
+    expect(isAppHost('www.bohdiai.com')).toBe(false);
+    expect(isAppHost('myshop.bohdiai.com')).toBe(false);
+    expect(isAppHost('admin.bohdiai.com')).toBe(false);
+  });
+
+  it('is false for bare localhost and null', () => {
+    expect(isAppHost('localhost:3000')).toBe(false);
+    expect(isAppHost(null)).toBe(false);
+  });
+});
+
+describe('isAppSurfacePath', () => {
+  it('keeps auth and dashboard on the app even on a shop subdomain', () => {
+    expect(isAppSurfacePath('/signin')).toBe(true);
+    expect(isAppSurfacePath('/signin/reset')).toBe(true);
+    expect(isAppSurfacePath('/auth/callback')).toBe(true);
+    expect(isAppSurfacePath('/dashboard')).toBe(true);
+    expect(isAppSurfacePath('/dashboard/website')).toBe(true);
+  });
+
+  it('lets the storefront paint everything else', () => {
+    expect(isAppSurfacePath('/')).toBe(false);
+    expect(isAppSurfacePath('/shop')).toBe(false);
+    expect(isAppSurfacePath('/about')).toBe(false);
+    // a product slug that merely contains the word is still a storefront path
+    expect(isAppSurfacePath('/listings/signing-kit')).toBe(false);
   });
 });

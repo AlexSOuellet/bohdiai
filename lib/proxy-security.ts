@@ -51,3 +51,32 @@ export function isUnreachableStorefrontPath(
 ): boolean {
   return subdomain === null && pathname.startsWith('/storefront');
 }
+
+/**
+ * Return true when the hostname is the maker dashboard host (`app.bohdiai.com`
+ * or `app.localhost` in dev). The dashboard lives under `/dashboard/*`; the bare
+ * app root redirects there (see proxy.ts). This is a host check only — it does
+ * NOT gate auth (the dashboard routes do that themselves via requireUser).
+ */
+export function isAppHost(hostname: string | null): boolean {
+  const host = (hostname ?? '').split(':')[0] ?? '';
+  return host === 'app.bohdiai.com' || host === 'app.localhost';
+}
+
+/**
+ * Return true for paths that serve the real app (auth + maker dashboard) even on
+ * a shop subdomain, instead of being rewritten to the public storefront. A maker
+ * signs in on their OWN site and lands in their dashboard there (the address says
+ * which shop); the tenant context the proxy resolved is what the dashboard acts
+ * on. Storefronts are our server-rendered code, not maker-authored HTML, so the
+ * sign-in form on a shop host is the same trusted page as on the apex.
+ */
+export function isAppSurfacePath(pathname: string): boolean {
+  return (
+    pathname === '/signin' ||
+    pathname.startsWith('/signin/') ||
+    pathname.startsWith('/auth') ||
+    pathname === '/dashboard' ||
+    pathname.startsWith('/dashboard/')
+  );
+}

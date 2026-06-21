@@ -1,8 +1,8 @@
 # Editor Design — the maker's store-shaping editor
 
-**Status:** Design in progress (Session 49). Door 1 ("change mood") is designed and is the **next-session build priority**. Doors 2 and 3 are defined but not yet designed. Cross-cutting principles live in `Editor-Design-Notes.md`; the editor's place in the product is in the `feedback_editor_equal_diligence` memory + the Session Brief standing lessons.
+**Status:** Door 1 ("try a feeling") is **BUILT** (Session 50) — the maker dashboard shell plus the live re-skin editor. Live-testing it surfaced a bigger finding that **reframed the editor's direction** — see the Session-50 section at the bottom ("The catalog is the weak link; the editor as the place you make it yours"). The three-door framing below still holds as the entry model, but the editor's ambition has grown past it. Cross-cutting principles live in `Editor-Design-Notes.md`; the editor's place in the product is in the `feedback_editor_equal_diligence` memory + the Session Brief standing lessons.
 
-This doc is the concrete design. When door 1 is built, the open questions for doors 2–3 get resolved here and each gets turned into an implementation plan.
+This doc is the concrete design. The Session-50 section at the bottom is the current direction; the door-by-door material above it is the original plan that door 1 shipped against.
 
 ---
 
@@ -90,3 +90,54 @@ Listings / inventory: add and edit products and digital products, organize into 
 - Cross-cutting editor rules: `Editor-Design-Notes.md` (single source of truth / no liar toggles; subjective intent → curated levers, never freehand; sync the derived, never silently rewrite the authored).
 - The editor's priority and "equal diligence" framing: `feedback_editor_equal_diligence` memory + Session Brief standing lessons.
 - Archetype/skin/feeling background: Decisions D32, D35, D41, D51, D56, D58.
+
+---
+
+## 2026-06-21 (Session 50) — The catalog is the weak link; the editor as the place you make it yours
+
+Door 1 got built and live-tested this session. The build is sound and the editor does exactly what it should. But seeing real stores re-skin live, side by side, exposed a problem the tool was honest enough to reveal: **changing the feeling barely changes the look.** This section is the direction we landed on in response. It supersedes the door-by-door framing above as the editor's trajectory (door 1 still shipped against that framing).
+
+### What got built (door 1)
+
+- A real **maker dashboard shell** on the app host (`app.bohdiai.com`) and **on each shop's own subdomain** — a maker signs in on their own site and lands in that shop's dashboard there (Alex's call: makers log in on their own site, not only a central host). Sidebar nav (Home, My Website, and honest "Soon" tags on Listings/Orders/Settings), shop header, sign-out. The bare app root redirects to the dashboard.
+- The **"My Website" editor** = door 1: the seven feelings as radio chips, the selected feeling's skins as **full style-sheet cards** (each painted in its own palette and set in its real fonts), and a **live preview iframe** of the maker's real store that re-skins as they click. **Use this look** commits — a pure renderer re-skin (no AI, no regeneration), stashing the prior look for revert. Gated behind an `editor` feature flag (off in prod, on in dev) and shop-ownership.
+- Frame protection moved into the proxy so a storefront can be framed only by our own dashboard (the preview) and nobody else; dashboard/marketing/admin stay un-frameable.
+
+### The finding — measured, not vibes
+
+Backgrounds are the loudest signal on a page, and almost the whole shelf lives in one cream-to-white band. Measuring background luminance (0–255):
+
+- **Cozy** — all six skins L 219–243 (every one a warm pale).
+- **Elegant** — all four L 234–248 (all pale).
+- **Cheerful** — all six L 239–250 (all cream/white; the accents vary and saturate, but the grounds don't).
+- Only **Dark** (and the dark half of Industrial/Modern/Rustic) leaves the band.
+
+So flipping Cozy → Elegant → Cheerful barely moves the dominant color; the accent and font do change, but they're the quiet part, so the whole impression clusters. We built most of the shelf in the exact cream-and-pastels register that reads as "another AI builder" — the thing we explicitly position against. Fonts compound it: the shelf is **serif-heavy** (a dozen-plus refined serifs), so two skins side by side read as cousins, and there is **not a single script face**, which a lot of makers reach for.
+
+**The editor is fine. The shelf it reveals is the weak part.**
+
+### The direction
+
+**Spine (agreed):** onboarding builds a safe, good, general store (Main Street, as today); the **editor is where the maker makes it truly theirs.** This is the second half of the core promise, restated — not a new idea, but now the centre of gravity.
+
+**Floor — genuinely expressive parts (do regardless):** the skins must actually express the feeling they belong to. The light moods have to *leave the cream band* (Cozy genuinely dim-and-warm, Elegant deep or jewel-toned, Cheerful on saturated grounds). The font shelf needs real range and boldness, **including script** — placed as a display/wordmark voice on the skins where it fits, never as body or tiny labels (legibility). This is the raw material everything else mixes; bland parts make even the best editor look flat.
+
+**Ceiling — curated mix-and-match:** grow the editor from "try a feeling" into "**mix and match your own**" — pick this hero or that hero, this section order or that, this treatment or that. The hard rule that frames it: **the maker can never break their store** (Master Spec §6.5; `Editor-Design-Notes.md`). So it is **curated Lego, not a blank canvas** — a set of pre-designed parts where *every combination is guaranteed to compose*. Free-form drag-anything is explicitly out; that reintroduces the broken-page risk the whole archetype engine exists to prevent.
+
+**Section order varies by feeling:** within Main Street, a feeling should change *which sections lead and in what order* (Rustic leading with the maker's story, Cozy leading with goods), not just the paint. This is the original Master Spec §6.3 promise that Main Street never implemented, and it partly reopens the earlier call that treatment/layout isn't tied to mood (D49) — so it's a real decision, taken deliberately, with a **hand-designed composition per feeling** (not free reshuffling) so it always stays composed.
+
+### The open strategic fork (NOT decided)
+
+How we get stores to look genuinely different from each other:
+
+- **(a) One rich archetype** — make Main Street expressive enough (color + font + section order) that feelings really differ on the same shape. Cheaper; no onboarding archetype-assignment problem; but every store is still fundamentally the same shape.
+- **(b) A small library of distinct shapes** — build the other archetypes we designed but never shipped (the Counter "what's fresh this week" baker — *June's Sourdoughs*; the Find; the Body of Work) and let makers try them on. Genuinely different looks *and* business fit (the Counter's rotating-stock/pickup model Main Street can't express). Bigger commitment; each is a whole storefront; reopens "how does a maker end up on the right shape" (D35's reason for one-at-launch).
+
+Trying to make one archetype shape-shift through moods is half-fighting the reason archetypes exist. Claude's lean is (b) is the stronger differentiation bet, but it's the bigger build and changes what "next" is. **This is Alex's call and is not yet made.** The existing plan already assumes makers try on other shapes *after* the safe build (D35) — we just never built the shapes to try on.
+
+### Proposed sequence (one piece at a time, show-don't-tell)
+
+1. **Re-ground the skins for real expressiveness** — tonal range out of the cream band + a bolder font shelf including script + fewer serifs. Bring specimens to react to before locking (the show-don't-describe rule for visible-output decisions). Needed under either fork.
+2. **Section-order-by-feeling** within Main Street — curated, hand-designed composition per feeling.
+3. **Grow the editor toward curated mix-and-match** — swappable, always-composing parts.
+4. **Decide the one-rich-archetype vs. library-of-shapes fork** — and if (b), build the Counter next and stand up the "try a different shape" flow.

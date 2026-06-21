@@ -11,7 +11,9 @@ const inputClass =
 
 export default function SignInForm() {
   const router = useRouter();
-  const next = useSearchParams().get('next') ?? '/';
+  // Default into the dashboard — on a shop subdomain that lands the maker in that
+  // shop's dashboard; on the app host, their shop (or the picker).
+  const next = useSearchParams().get('next') ?? '/dashboard';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

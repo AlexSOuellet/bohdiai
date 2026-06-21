@@ -4,6 +4,7 @@
 // (account before build, per the auth plan); sign-in by the /signin page for
 // returning makers. They return a result the form renders, rather than throwing.
 
+import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 
 export type AuthResult = { ok: true } | { ok: false; error: string };
@@ -36,6 +37,13 @@ export async function signUpMaker(credentials: Credentials): Promise<AuthResult>
 
   if (error) return { ok: false, error: error.message };
   return { ok: true };
+}
+
+/** Sign the maker out and send them to the sign-in page. Used by the dashboard. */
+export async function signOutMaker(): Promise<void> {
+  const supabase = await createSupabaseServerClient();
+  await supabase.auth.signOut();
+  redirect('/signin');
 }
 
 export async function signInMaker(credentials: Credentials): Promise<AuthResult> {
