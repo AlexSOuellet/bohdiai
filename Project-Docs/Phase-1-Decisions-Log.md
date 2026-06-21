@@ -757,6 +757,20 @@ This depends on the founder admin (the approve action), billing/subscriptions (t
 
 ---
 
+## 2026-06-21 (session 49)
+
+### D62. Cloudflare for SaaS is the long-term hosting and SSL architecture
+
+Cloudflare sits in front of the app, terminating SSL for both our own `*.bohdiai.com` subdomains (covered free by a single wildcard cert on our zone) and any custom domain a maker brings (Cloudflare Custom Hostnames, automatic issue + renewal, ~$0.10/domain/mo past the free 100), and proxies all traffic to a Vercel origin behind it.
+
+Chosen over the alternative (letting Vercel own domains + certs directly) for four reasons that all matter more as we scale: it scales linearly and cheaply instead of hitting Vercel's per-project domain cap and the Enterprise cliff; Cloudflare's edge stays in front for DDoS protection, CDN, and caching, which shields the Vercel bill during a viral surge; it requires no nameserver move, so DNS and the alex@bohdiai.com email forwarding stay on Cloudflare untouched; and it keeps the app host *replaceable* — because Cloudflare owns the maker-domain-and-cert relationship, moving the app off Vercel later means repointing one origin, with zero maker-visible domain or cert migration. It also promotes the Session-47 Worker reverse-proxy hack (already live) to the supported, intended product rather than a re-architecture.
+
+How this resolves the custom-domain question that opened the session: custom domains are additive on top of the beta product, not a rewrite. The app already resolves a request to a tenant by its incoming host; a custom domain is one more host → tenant mapping (a column/small table plus one resolver branch), and the renderer is unchanged (it paints by tenant_id regardless of how the visitor arrived). The only genuinely new work lives at the edge (the Cloudflare for SaaS layer), which is self-contained and does not reach into the storefront engine or schema.
+
+Open and unproven: the path has not been stood up in our setup. Before any beta maker is hosted on it, it must be proven end-to-end with one real external domain (cert issues, auto-renews, store serves over HTTPS through the Vercel origin). This is the same Vercel+Cloudflare cert seam that failed in Session 47, so it's the part to prove early, not assume. Likely requires a paid Cloudflare plan; cost confirmed a non-issue. The before-beta test is tracked as a near-term task in the Session Brief Next Actions.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.
@@ -781,6 +795,7 @@ These amendments haven't been written yet.
 - **The actual mood list.** Per D6 we have examples ("dark and stormy," "rustic," "warm and cozy," "summer afternoon," "autumn landscape") but not the full curated list that ships at launch. How many moods, what the names are, how each one maps to design tokens and block assembly — all open.
 - **How AI training/data flow works** — per D8 the AI needs the right data, but we haven't said what data, from where, or in what format.
 - **The variations table structure.** Per D4 sellers define their own variations. The literal columns, types, and structure of that table is open.
+- **Inventory source of truth at the booth — our app vs. Square (and "build our own POS").** Master Spec §9 has Market Mode as lightweight log-a-sale *in our app* (the maker taps the item, we drop the count instantly), with payment at the booth being whatever the maker already uses — so we own inventory and Square is just a card reader, and there is no inventory sync from Square. That sidesteps the oversell/two-way-sync problem Gemini raised. The open question: a maker already deep in Square who rings everything on Square POS would face *double entry* (ring on Square AND log in our app). Two ways to remove that friction: (a) ingest Square's inventory webhooks and treat Square as a system of record (a real Square inventory integration; not launch scope), or (b) **build our own in-app POS** so the maker takes the card payment *inside our app* (Stripe Terminal incl. Tap-to-Pay on phone, or Square's Mobile Payments SDK) — one tap takes payment, logs the sale, decrements our inventory, tags the event. Option (b) collapses the sync problem entirely and deepens Market Mode into the whole booth experience, but it's a meaningful build beyond the current lightweight spec and must keep money flowing to the maker's own account (no Connect — Master Spec §7). Both are post-launch (full Market Mode UI is Phase 2). Decision deferred; flagged here so the commerce/Market-Mode build picks it up.
 
 ### Tech Arch Spec open items
 
