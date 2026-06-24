@@ -114,6 +114,9 @@ export interface ArchetypeBuildSpec<T = unknown> {
     /** The tenant's id — needed by interactive sub-pages (e.g. the contact form
      *  posts it to /api/contact). Injected from tenant data, not authored. */
     tenantId?: string | undefined;
+    /** Which hero variant the recipe names (resolved through the archetype's hero
+     *  catalog). Optional — omitted falls back to the archetype's default hero. */
+    heroVariant?: string | undefined;
   }): ReactElement;
 
   /** Paint a single product's detail page in the archetype's chrome. The product

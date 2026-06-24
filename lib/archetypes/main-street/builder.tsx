@@ -215,7 +215,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   applyMedia,
   toPayload,
   handOff,
-  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId }) => {
+  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
     const c = withLogo(content as MainStreetContent, logoUrl, brandColors);
     switch (page) {
@@ -228,7 +228,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       case 'contact':
         return <ContactPage content={c} skin={skin} tenantId={tenantId} />;
       default:
-        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} />;
+        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} heroVariant={heroVariant} />;
     }
   },
   renderProduct: ({ content, lookKey, product, logoUrl, brandColors, accentOverride }) => {

@@ -24,6 +24,10 @@ interface StorefrontPageProps {
   /** Editor door-1 preview — re-render the live home in this skin without persisting.
    *  Re-skins the already-public content only; owner-gating is deferred (like try-on). */
   previewLook?: string | undefined;
+  /** Hero-swap preview — render the home with this hero variant without persisting
+   *  (resolved through the archetype's hero catalog; unknown keys fall back to the
+   *  default hero). Same non-persisting preview model as previewLook. */
+  previewHero?: string | undefined;
 }
 
 /** Storefront routes that an archetype paints as a sub-page off the home envelope. */
@@ -124,7 +128,7 @@ export async function renderArchetypeShell(tenantId: string, children: ReactNode
   return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
 }
 
-export default async function StorefrontPage({ slug, version, previewLook }: StorefrontPageProps) {
+export default async function StorefrontPage({ slug, version, previewLook, previewHero }: StorefrontPageProps) {
   const headerStore = await headers();
   const tenantId = headerStore.get('x-tenant-id');
   if (tenantId === null) notFound();
@@ -222,7 +226,7 @@ export default async function StorefrontPage({ slug, version, previewLook }: Sto
     !Array.isArray(rootRaw) &&
     (rootRaw as Record<string, unknown>)['kind'] === 'archetype'
   ) {
-    return renderArchetypeStore(rootRaw as Record<string, unknown>, tenantId, undefined, previewLook);
+    return renderArchetypeStore(rootRaw as Record<string, unknown>, tenantId, undefined, previewLook, previewHero);
   }
 
   const parsedPage = PageSchema.safeParse({
@@ -306,7 +310,7 @@ interface ListingRow {
 /** Render a stored archetype store: load the real catalog rows as ProductViews
  *  and paint via the chosen archetype's registered renderer. An `overrideLook`
  *  (editor door-1 preview) re-skins the same content without persisting. */
-async function renderArchetypeStore(env: Record<string, unknown>, tenantId: string, page?: ArchetypePage, overrideLook?: string) {
+async function renderArchetypeStore(env: Record<string, unknown>, tenantId: string, page?: ArchetypePage, overrideLook?: string, previewHero?: string) {
   const archetypeKey = env['archetypeKey'];
   const lookKey = env['lookKey'];
   if (typeof archetypeKey !== 'string' || typeof lookKey !== 'string') notFound();
@@ -353,5 +357,5 @@ async function renderArchetypeStore(env: Record<string, unknown>, tenantId: stri
   const catalogSize = typeof env['catalogSize'] === 'number' ? (env['catalogSize'] as number) : undefined;
   const accentOverride = typeof env['accentOverride'] === 'string' ? (env['accentOverride'] as string) : undefined;
   const { logoUrl, brandColors } = await loadTenantChrome(tenantId);
-  return spec.render({ content: env['content'], lookKey: effectiveLook, products, mood, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId });
+  return spec.render({ content: env['content'], lookKey: effectiveLook, products, mood, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant: previewHero });
 }
