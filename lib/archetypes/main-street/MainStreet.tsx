@@ -49,7 +49,7 @@ export interface MainStreetProps {
 export function MainStreet({ content, skin, products, catalogSize, goodsTreatment, founderTreatment, shopHref, aboutHref, eventsHref, momentKey, heroVariant }: MainStreetProps) {
   return (
     <MainStreetRoot skin={skin}>
-      {resolveHero(heroVariant)({ identity: content.identity, moment: content.moment, skin, momentKey })}
+      {resolveHero(heroVariant)({ identity: content.identity, moment: content.moment, skin, momentKey, products })}
       <GoodsBeat goods={content.goods} products={products} skin={skin} treatment={goodsTreatment} catalogSize={catalogSize} shopHref={shopHref} />
       <Reveal>
         <FounderBeat founder={content.founder} skin={skin} treatment={founderTreatment} aboutHref={aboutHref} />
