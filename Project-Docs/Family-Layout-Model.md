@@ -8,6 +8,16 @@ This doc is for review. Alex corrects drift before any of it is treated as final
 
 ---
 
+## The slop we are fixing (read this first — the whole reason for this model)
+
+The 29 skins we built before each looked great **on their own**. The slop appeared the moment a maker tried on a different mood: every mood looked the same. The reason is not the skins — it is that **every mood used the SAME layout**: hero over products over maker over footer, same sections, same order. The skin changed the paint (some color, some font, a darker background for dark/industrial) but the **structure never moved**. Same bones under every mood reads as the same site, which is exactly the AI-builder slop we position against.
+
+So the fix is NOT better skins. It is that **each family must differ in LAYOUT — different section variations, in a different order — not just color and font.** Different paint on one fixed layout IS the slop.
+
+Cozy is the one exception we keep: Main Street's layout already works and looks really good, so **Cozy = Main Street**. For Cozy we only tweak fonts, textures, and imagery filtering. Every OTHER family needs its own layout (its own sections/order), not Main Street recolored.
+
+---
+
 ## The core model
 
 **Stacked is the format. Settled, no more fighting it.** Almost every site on the web is a vertical stack of sections, top to bottom. Makers expect it, it's bulletproof on mobile, and it's the thing we can actually build reliably. We do *not* break the stack (sidebars, overlaps, split-screen page structures). We may play with one or two stack-breakers far down the line, tightly guardrailed and never mixed with other layouts — parked.
@@ -99,6 +109,10 @@ Four rules keep it honest:
 Tagging accuracy + granularity is the real work (too loose → wrong assets leak; too tight → nothing matches and it always generates). That calibration lives in the periodic pass + review.
 
 ---
+
+## Imagery filters are dynamic, not fixed (build requirement)
+
+A family's imagery "grade" (Cozy warm, Dark ember, Modern cool, etc.) must be computed **dynamically per image**, not stored as fixed CSS filter values. Fixed numbers only ever look right on the one photo they were tuned against; on a different photo (darker/brighter product, different white balance) the same grade over- or under-shoots. So the engine **reads the image, normalizes it to a known baseline (exposure + white balance), then applies the family grade to that normalized image.** This keeps image *creation* completely free — Bohdi generates whatever the maker's world calls for — while the family look still lands consistently on top. Library shots are pre-normalized; uploads get normalized on the way in. (Captured 2026-06-24 during the family style-sheet work, where the mockup filters were hand-tuned to one candle photo and wouldn't generalize.)
 
 ## Open items (not decided)
 
