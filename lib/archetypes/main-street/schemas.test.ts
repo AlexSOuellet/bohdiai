@@ -135,6 +135,22 @@ describe('MainStreetContentSchema', () => {
     c.close.headline = 'x'.repeat(80);
     expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
+
+  it('carries a shared hero sub-line — the plain supporting sentence non-Story heroes use (the pile, not Story fading lines)', () => {
+    const c = valid();
+    (c.moment as Record<string, unknown>)['sub'] = 'Hand-poured in small batches and shipped the day they cure';
+    const parsed = MainStreetContentSchema.safeParse(c);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.moment.sub).toBe('Hand-poured in small batches and shipped the day they cure');
+    }
+  });
+
+  it('still accepts a hero with no sub-line (legacy content authored before the shared sub)', () => {
+    const c = valid();
+    expect('sub' in c.moment).toBe(false);
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
+  });
 });
 
 describe('authored link destinations (D46)', () => {

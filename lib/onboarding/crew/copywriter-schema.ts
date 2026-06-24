@@ -44,6 +44,11 @@ export const CopywriterDraftSchema = z.object({
     story: z.array(z.string().min(1)).min(1),
     eyebrow: z.string().min(1),
     brand: z.string().min(1),
+    /** The shared hero SUB-LINE — one plain supporting sentence under the headline.
+     *  Required: it is the pile ingredient every non-Story hero (Split, Stacked,
+     *  Typographic, Floating card, Editorial cover) reads, so a build can't
+     *  complete without it. Story uses its fading `story` lines and ignores this. */
+    sub: z.string().min(1),
     ctaLabel: z.string().min(1),
     ctaTarget: z.enum(LINK_TARGETS),
     secondaryCtaLabel: z.string().min(1).optional(),

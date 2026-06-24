@@ -39,6 +39,7 @@ const draft = {
     story: ['Built by hand', 'Made to outlast you'],
     eyebrow: 'From the workshop',
     brand: 'Tannery Row',
+    sub: 'Hand-cut leather goods built to outlast you',
     ctaLabel: 'See the work',
     ctaTarget: 'shop',
   },
@@ -229,6 +230,27 @@ describe('CopywriterDraftSchema — headlines: schema accepts any string, normal
   it('accepts a clean heading and allows internal commas and intra-word hyphens', () => {
     const d = { ...draft, about: { ...draft.about, heading: 'Wheel-thrown, kiln-fired, made to last' } };
     expect(CopywriterDraftSchema.safeParse(d).success).toBe(true);
+  });
+});
+
+describe('CopywriterDraftSchema — shared hero sub-line (the pile)', () => {
+  it('requires a sub-line on the moment — the plain supporting sentence every non-Story hero uses', () => {
+    const m: Record<string, unknown> = { ...draft.moment };
+    delete m['sub'];
+    expect(CopywriterDraftSchema.safeParse({ ...draft, moment: m }).success).toBe(false);
+  });
+
+  it('accepts a draft that carries the sub-line', () => {
+    expect(CopywriterDraftSchema.safeParse(draft).success).toBe(true);
+    const parsed = CopywriterDraftSchema.safeParse(draft);
+    if (parsed.success) expect(parsed.data.moment.sub.length).toBeGreaterThan(0);
+  });
+});
+
+describe('copywriter prompt — authors the shared hero sub-line', () => {
+  it('instructs the copywriter to write moment.sub (one supporting sentence the non-Story heroes use)', () => {
+    const prompt = buildCopywriterPrompt(brief, trajectory, rolls);
+    expect(prompt).toMatch(/moment\.sub/);
   });
 });
 

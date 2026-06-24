@@ -119,6 +119,12 @@ export const MainStreetContentSchema = z.object({
     story: z.array(StoryLine).min(1),
     eyebrow: z.string().min(1),
     brand: z.string().min(1),
+    /** The shared hero SUB-LINE — one plain supporting sentence under the headline.
+     *  This is the pile ingredient every NON-Story hero uses (Split, Stacked,
+     *  Typographic, Floating card, Editorial cover). Story uses its fading `story`
+     *  lines instead and ignores this. Optional so content authored before the
+     *  modular hero work still parses; new builds always author it. */
+    sub: z.string().min(1).optional(),
     ctaLabel: z.string().min(1),
     /** Where the primary hero button goes — a real page (D46). Optional so rows
      *  authored before targets still parse; the renderer falls back to the goods

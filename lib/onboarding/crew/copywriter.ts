@@ -103,6 +103,7 @@ KEEP IT TIGHT. The body-prose fields have NO hard length cap — the build never
 ${storyDirective}
 - moment.eyebrow (4-48): a small line above the hero.
 - moment.brand: "${brief.shopName}" — the brand the story lands on; use the exact name.
+- moment.sub: one plain supporting sentence under the headline — what this shop is or makes, in a single clear line (e.g. "Hand-poured soy candles in small batches"). This is NOT the fading story lines; it is the standing sub-headline the other hero styles show. A normal short sentence; internal commas fine, no trailing period needed.
 - moment.ctaLabel (3-24): the hero button. moment.ctaTarget: where it goes.
 - moment.secondaryCtaLabel (3-24, optional): a second hero button. moment.secondaryCtaTarget: where it goes (include when you write the secondary label).
 - goods.title (2-48): the heading of the products beat.
