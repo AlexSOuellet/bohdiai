@@ -76,6 +76,11 @@ describe('hero catalog — resolves a hero variant key to a component', () => {
     expect(container.querySelector('[data-ms-hero-card]')).toBeTruthy();
   });
 
+  it('resolves "editorial-cover" to the Editorial cover hero', () => {
+    const { container } = render(resolveHero('editorial-cover')(props));
+    expect(container.querySelector('[data-ms-hero="editorial-cover"]')).toBeTruthy();
+  });
+
   it('every catalog entry renders a hero surface (no dead keys)', () => {
     for (const key of Object.keys(HERO_CATALOG)) {
       const { container, unmount } = render(resolveHero(key)(props));

@@ -32,6 +32,7 @@ import { SplitHero } from './SplitHero';
 import { StackedHero } from './StackedHero';
 import { TypographicHero } from './TypographicHero';
 import { FloatingCardHero } from './FloatingCardHero';
+import { EditorialCoverHero } from './EditorialCoverHero';
 
 /** The shared shape every hero variant is handed — the hero content contract. */
 export interface HeroProps {
@@ -45,7 +46,7 @@ export interface HeroProps {
 
 /** The hero variant keys a recipe can name. Grows as heroes are built (Stacked,
  *  Typographic, Collage, Floating card, Editorial cover, Carousel). */
-export type HeroVariantKey = 'story' | 'split' | 'split-left' | 'stacked' | 'typographic' | 'floating-card';
+export type HeroVariantKey = 'story' | 'split' | 'split-left' | 'stacked' | 'typographic' | 'floating-card' | 'editorial-cover';
 
 /** What the auto-build uses when a tenant has not chosen a hero. */
 export const DEFAULT_HERO_VARIANT: HeroVariantKey = 'story';
@@ -59,6 +60,7 @@ export const HERO_CATALOG: Record<HeroVariantKey, (props: HeroProps) => ReactEle
   stacked: (p) => <StackedHero identity={p.identity} moment={p.moment} skin={p.skin} />,
   typographic: (p) => <TypographicHero identity={p.identity} moment={p.moment} skin={p.skin} />,
   'floating-card': (p) => <FloatingCardHero identity={p.identity} moment={p.moment} skin={p.skin} />,
+  'editorial-cover': (p) => <EditorialCoverHero identity={p.identity} moment={p.moment} skin={p.skin} />,
 };
 
 /** Resolve a (possibly unknown) variant key to a hero render function. Falls
