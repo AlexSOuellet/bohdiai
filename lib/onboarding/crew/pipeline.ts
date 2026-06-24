@@ -88,7 +88,15 @@ function assembleSubmission(out: CrewOutput, shopName: string): { content: unkno
   const content = {
     shopName,
     identity: { ...copy.identity, wordmark: shopName },
-    moment: { ...copy.moment, brand: shopName, media: { kind: moment.kind, prompt: moment.prompt, alt: moment.alt } },
+    moment: {
+      ...copy.moment,
+      brand: shopName,
+      media: { kind: moment.kind, prompt: moment.prompt, alt: moment.alt },
+      // The Collage hero's stills, designed by the cinematographer. Carried through
+      // so the pantry is full; generation resolves their urls later. Omitted when
+      // the cinematographer didn't design them (Collage then degrades gracefully).
+      ...(moment.collageShots ? { collageShots: moment.collageShots } : {}),
+    },
     goods: copy.goods,
     founder: { ...copy.founder, photo: { prompt: look.founderPhoto.prompt, alt: look.founderPhoto.alt } },
     close: copy.close,

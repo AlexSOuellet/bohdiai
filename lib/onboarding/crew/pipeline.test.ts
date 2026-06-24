@@ -106,6 +106,27 @@ describe('directAndProduce (the crew pipeline)', () => {
     expect(productUrls).toEqual([]); // media not generated yet
   });
 
+  it('carries the cinematographer\'s collage shots into the assembled envelope', async () => {
+    const momentWithCollage = {
+      ...moment,
+      collageShots: [
+        { prompt: moment.prompt, alt: 'a wide of the bench' },
+        { prompt: moment.prompt, alt: 'a close detail on the stitch' },
+        { prompt: moment.prompt, alt: 'a small grouping of goods' },
+      ],
+    };
+    create
+      .mockResolvedValueOnce(toolMsg('set_trajectory', trajectory))
+      .mockResolvedValueOnce(toolMsg('submit_copy', copy))
+      .mockResolvedValueOnce(toolMsg('set_moment', momentWithCollage))
+      .mockResolvedValueOnce(toolMsg('set_look', look))
+      .mockResolvedValueOnce(toolMsg('final_cut', { notes: 'coheres' }));
+
+    const result = await directAndProduce(brief);
+    expect(result.authored.content.moment.collageShots).toHaveLength(3);
+    expect(result.authored.content.moment.collageShots![0]!.alt).toBe('a wide of the bench');
+  });
+
   it('threads a director-cut revision into the final envelope', async () => {
     const revisedCopy = { ...copy, moment: { ...copy.moment, story: ['Built by hand', 'Kept for a lifetime'] } };
     create

@@ -250,5 +250,35 @@ describe('shootMoment (the Cinematographer)', () => {
     expect(s.kind).toBe('video');
     expect(create).toHaveBeenCalledTimes(1);
   });
+
+  // --- Collage shots: the Cinematographer also designs the Collage hero's 3 stills ---
+
+  it('asks the cinematographer to also design three still collage shots', () => {
+    const prompt = buildCinematographerPrompt(trajectory, story);
+    expect(prompt.toLowerCase()).toContain('collage');
+    expect(prompt).toMatch(/three|3/);
+  });
+
+  it('passes through the three collage shots when the model provides them', async () => {
+    const withShots = {
+      ...scene,
+      collageShots: [
+        { prompt: scene.prompt, alt: 'a stack of folded goods' },
+        { prompt: scene.prompt, alt: 'a close detail on the grain' },
+        { prompt: scene.prompt, alt: 'the shelf in the studio' },
+      ],
+    };
+    create.mockResolvedValueOnce(toolMsg(withShots));
+    const s = await shootMoment(trajectory, story);
+    expect(s.collageShots).toHaveLength(3);
+    expect(s.collageShots![0]!.alt).toBe('a stack of folded goods');
+  });
+
+  it('still returns a valid scene when the model omits collage shots (optional — degrades, never fails the build)', async () => {
+    create.mockResolvedValueOnce(toolMsg(scene));
+    const s = await shootMoment(trajectory, story);
+    expect(s.collageShots).toBeUndefined();
+    expect(MomentSceneSchema.safeParse(s).success).toBe(true);
+  });
 });
 

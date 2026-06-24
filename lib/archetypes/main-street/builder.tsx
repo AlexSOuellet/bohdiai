@@ -131,13 +131,27 @@ function mediaJobs(a: MainStreetAuthored): MediaJob[] {
   a.products.forEach((p, i) => {
     jobs.push({ id: `product:${i}`, kind: 'still', prompt: p.imagePrompt, aspect: '1:1', group: 'product' });
   });
+  // The Collage hero's three stills — feature group (generated freely, not capped
+  // like products), so a swap to Collage finds them ready. Square source, cropped
+  // to the collage frame at render. Absent when the build authored no collage shots.
+  (a.content.moment.collageShots ?? []).forEach((s, i) => {
+    jobs.push({ id: `collage:${i}`, kind: 'still', prompt: sceneToPrompt(s.prompt, 'still'), aspect: '1:1', group: 'feature' });
+  });
   return jobs;
 }
 
 function applyMedia(a: MainStreetAuthored, urls: Record<string, string | null>): MainStreetAuthored {
+  const collageShots = a.content.moment.collageShots?.map((s, i) => ({
+    ...s,
+    ...(urls[`collage:${i}`] ? { url: urls[`collage:${i}`]! } : {}),
+  }));
   const content: MainStreetContent = {
     ...a.content,
-    moment: { ...a.content.moment, media: { ...a.content.moment.media, ...(urls['hero'] ? { url: urls['hero'] } : {}) } },
+    moment: {
+      ...a.content.moment,
+      media: { ...a.content.moment.media, ...(urls['hero'] ? { url: urls['hero'] } : {}) },
+      ...(collageShots ? { collageShots } : {}),
+    },
     founder: { ...a.content.founder, photo: { ...a.content.founder.photo, ...(urls['portrait'] ? { url: urls['portrait'] } : {}) } },
   };
   const productUrls = a.products.map((_, i) => urls[`product:${i}`] ?? null);

@@ -22,7 +22,7 @@ import { z } from 'zod';
 import { anthropicClient } from '@/lib/anthropic';
 import { logger } from '@/lib/logger';
 import { withTimeout } from '@/lib/with-timeout';
-import { ScenePrompt } from '@/lib/archetypes/main-street/schemas';
+import { ScenePrompt, CollageShot } from '@/lib/archetypes/main-street/schemas';
 import { buildResubmitPayload } from './length-feedback';
 import type { Trajectory } from './trajectory';
 
@@ -41,6 +41,13 @@ export const MomentSceneSchema = z.object({
   // length can't break anything and must never fail the build (D53). The min is
   // a quality floor; a soft prompt nudge keeps it short without a gate.
   alt: z.string().min(4),
+  // The Collage hero's three still scenes — designed alongside the hero so the
+  // pantry is full and a swap to Collage is instant. OPTIONAL on purpose: the
+  // prompt asks for three, but a miss degrades gracefully (Collage shows fewer /
+  // none) rather than failing the build (D53/D57). Generated as stills later;
+  // no url here. These are NOT frames of the hero clip — they are their own
+  // shots of the maker's world, varied from the hero and from each other.
+  collageShots: z.array(CollageShot).optional(),
 });
 export type MomentScene = z.infer<typeof MomentSceneSchema>;
 
@@ -112,6 +119,8 @@ Design the shot with set_moment:
     - lighting: the light.
     - style: the visual style.
 - alt: a short, plain description of the shot — a sentence is plenty.
+
+- collageShots: ALSO design exactly THREE still scenes for an alternate hero layout (a photo collage). Each is its own { prompt (the same seven groups), alt }. These are ALWAYS stills (no video, no loop concerns) and must be VARIED — different subjects, angles, and distances from the hero shot AND from each other (e.g. a wide of the workspace, a close detail, a small grouping of the goods), so the three read as a lively cluster rather than three takes of one thing. Same world and feeling as the hero. Same no-text rule applies. (If you truly cannot, omit collageShots — but three good ones are expected.)
 
 - No text, lettering, logos, titles, captions, or typography anywhere in the frame — the engine sets the type; the shot is image only. (A physics rule: image models can't render legible text.)
 

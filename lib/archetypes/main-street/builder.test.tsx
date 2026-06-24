@@ -85,3 +85,44 @@ describe('MAIN_STREET_SPEC.mediaJobs — hero follows the authored kind', () => 
     expect(() => JSON.parse(hero.prompt)).toThrow(); // prose, not JSON
   });
 });
+
+function withCollage(kind: 'video' | 'still') {
+  const s = submission(kind);
+  (s.content.moment as Record<string, unknown>)['collageShots'] = [
+    { prompt: scene(), alt: 'a wide of the bench' },
+    { prompt: scene(), alt: 'a close detail' },
+    { prompt: scene(), alt: 'a small grouping of goods' },
+  ];
+  return s;
+}
+
+describe('MAIN_STREET_SPEC — collage shot generation', () => {
+  it('emits a still media job per collage shot (group feature)', () => {
+    const parsed = MAIN_STREET_SPEC.parseSubmission(withCollage('video'));
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    const collage = MAIN_STREET_SPEC.mediaJobs(parsed.authored).filter((j) => j.id.startsWith('collage:'));
+    expect(collage).toHaveLength(3);
+    expect(collage.every((j) => j.kind === 'still')).toBe(true);
+    expect(collage.every((j) => j.group === 'feature')).toBe(true);
+  });
+
+  it('emits no collage jobs when the build authored none', () => {
+    const parsed = MAIN_STREET_SPEC.parseSubmission(submission('video'));
+    if (!parsed.ok) return;
+    expect(MAIN_STREET_SPEC.mediaJobs(parsed.authored).filter((j) => j.id.startsWith('collage:'))).toHaveLength(0);
+  });
+
+  it('folds generated collage urls into content.moment.collageShots', () => {
+    const parsed = MAIN_STREET_SPEC.parseSubmission(withCollage('video'));
+    if (!parsed.ok) return;
+    const urls = { 'collage:0': 'https://cdn.example.com/c0.jpg', 'collage:1': 'https://cdn.example.com/c1.jpg', 'collage:2': 'https://cdn.example.com/c2.jpg' };
+    const withMedia = MAIN_STREET_SPEC.applyMedia(parsed.authored, urls);
+    const shots = withMedia.content.moment.collageShots!;
+    expect(shots.map((s) => s.url)).toEqual([
+      'https://cdn.example.com/c0.jpg',
+      'https://cdn.example.com/c1.jpg',
+      'https://cdn.example.com/c2.jpg',
+    ]);
+  });
+});
