@@ -70,6 +70,12 @@ describe('hero catalog — resolves a hero variant key to a component', () => {
     expect(container.querySelector('[data-ms-hero-media]')).toBeNull();
   });
 
+  it('resolves "floating-card" to the Floating card hero', () => {
+    const { container } = render(resolveHero('floating-card')(props));
+    expect(container.querySelector('[data-ms-hero="floating-card"]')).toBeTruthy();
+    expect(container.querySelector('[data-ms-hero-card]')).toBeTruthy();
+  });
+
   it('every catalog entry renders a hero surface (no dead keys)', () => {
     for (const key of Object.keys(HERO_CATALOG)) {
       const { container, unmount } = render(resolveHero(key)(props));
