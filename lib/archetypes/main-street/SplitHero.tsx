@@ -52,7 +52,10 @@ export function SplitHero({
         minHeight: '100vh',
       }}
     >
-      <div style={{ marginBottom: 'clamp(24px,5vh,56px)' }}>
+      <div
+        data-ms-hero-nav
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, marginBottom: 'clamp(24px,5vh,56px)' }}
+      >
         <Nav identity={identity} skin={skin} />
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 540 }}>

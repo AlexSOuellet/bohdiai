@@ -100,4 +100,13 @@ describe('SplitHero — a skin-agnostic swappable hero (text panel + media panel
     const { container } = render(<SplitHero identity={identity} moment={moment} skin={skin} />);
     expect(container.textContent).toContain(identity.wordmark);
   });
+
+  it('lays the nav out as a horizontal bar (wordmark left, links right) — not stacked/crammed', () => {
+    const { container } = render(<SplitHero identity={identity} moment={moment} skin={skin} />);
+    const navBar = container.querySelector('[data-ms-hero-nav]') as HTMLElement | null;
+    expect(navBar).toBeTruthy();
+    expect(navBar!.style.display).toBe('flex');
+    expect(navBar!.style.justifyContent).toBe('space-between');
+    expect(navBar!.style.alignItems).toBe('center');
+  });
 });
