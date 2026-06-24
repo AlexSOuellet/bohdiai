@@ -64,6 +64,12 @@ describe('hero catalog — resolves a hero variant key to a component', () => {
     expect(container.querySelector('[data-ms-hero="stacked"]')).toBeTruthy();
   });
 
+  it('resolves "typographic" to the Typographic hero (no media)', () => {
+    const { container } = render(resolveHero('typographic')(props));
+    expect(container.querySelector('[data-ms-hero="typographic"]')).toBeTruthy();
+    expect(container.querySelector('[data-ms-hero-media]')).toBeNull();
+  });
+
   it('every catalog entry renders a hero surface (no dead keys)', () => {
     for (const key of Object.keys(HERO_CATALOG)) {
       const { container, unmount } = render(resolveHero(key)(props));
