@@ -11,7 +11,7 @@ import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
 import { MainStreetRoot, MainStreetFooter } from './chrome';
-import { MomentHero } from './MomentHero';
+import { resolveHero } from './hero-catalog';
 import { Close } from './beats';
 import { GoodsBeat } from './GoodsBeat';
 import { FounderBeat } from './FounderBeat';
@@ -40,12 +40,16 @@ export interface MainStreetProps {
   /** Per-shop key (tenant id) for the Moment's seen-cookie. Without it the
    *  hero plays no timeline and renders directly at rest — used in previews. */
   momentKey?: string | undefined;
+  /** Which hero variant the recipe names (resolved through the hero catalog).
+   *  Defaults to the Story hero — today's Main Street front door — so existing
+   *  builds render unchanged. */
+  heroVariant?: string | undefined;
 }
 
-export function MainStreet({ content, skin, products, catalogSize, goodsTreatment, founderTreatment, shopHref, aboutHref, eventsHref, momentKey }: MainStreetProps) {
+export function MainStreet({ content, skin, products, catalogSize, goodsTreatment, founderTreatment, shopHref, aboutHref, eventsHref, momentKey, heroVariant }: MainStreetProps) {
   return (
     <MainStreetRoot skin={skin}>
-      <MomentHero identity={content.identity} moment={content.moment} skin={skin} momentKey={momentKey} />
+      {resolveHero(heroVariant)({ identity: content.identity, moment: content.moment, skin, momentKey })}
       <GoodsBeat goods={content.goods} products={products} skin={skin} treatment={goodsTreatment} catalogSize={catalogSize} shopHref={shopHref} />
       <Reveal>
         <FounderBeat founder={content.founder} skin={skin} treatment={founderTreatment} aboutHref={aboutHref} />
