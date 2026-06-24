@@ -151,6 +151,33 @@ describe('MainStreetContentSchema', () => {
     expect('sub' in c.moment).toBe(false);
     expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
+
+  it('carries the Collage shots — three still scenes the Collage hero shows (the pile ingredient that hero needs)', () => {
+    const c = valid();
+    const shot = (subject: string) => ({
+      prompt: { composition: 'a', subject, environment: 'c', atmosphere: 'd', camera: 'e', lighting: 'f', style: 'g' },
+      url: 'https://cdn.example.com/x.jpg',
+      alt: subject,
+    });
+    (c.moment as Record<string, unknown>)['collageShots'] = [shot('one'), shot('two'), shot('three')];
+    const parsed = MainStreetContentSchema.safeParse(c);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.moment.collageShots).toHaveLength(3);
+  });
+
+  it('accepts a collage shot with no resolved url yet (authored before generation runs)', () => {
+    const c = valid();
+    (c.moment as Record<string, unknown>)['collageShots'] = [
+      { prompt: { composition: 'a', subject: 'b', environment: 'c', atmosphere: 'd', camera: 'e', lighting: 'f', style: 'g' }, alt: 'a shot' },
+    ];
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
+  });
+
+  it('still accepts a hero with no collage shots (every other hero ignores them)', () => {
+    const c = valid();
+    expect('collageShots' in c.moment).toBe(false);
+    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
+  });
 });
 
 describe('authored link destinations (D46)', () => {

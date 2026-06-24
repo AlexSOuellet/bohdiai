@@ -67,6 +67,17 @@ const MediaSlot = z.object({
   alt: z.string().min(1),
 });
 
+/** One Collage shot — a still scene the Collage hero shows (it shows ~3). Authored
+ *  as a structured ScenePrompt like the hero, generated as a still at build time
+ *  (NOT a frame of the hero video). `url` is absent until generation resolves it.
+ *  Only the Collage hero reads these; every other hero ignores them. */
+export const CollageShot = z.object({
+  prompt: ScenePrompt,
+  url: z.string().url().optional(),
+  alt: z.string().min(1),
+});
+export type CollageShot = z.infer<typeof CollageShot>;
+
 /** A photo slot for the founder portrait. `prompt` feeds the image model (not
  *  rendered) and `alt` is the accessibility caption (never laid out); both carry
  *  only a non-empty floor — copy never fails the build (D53). */
@@ -125,6 +136,10 @@ export const MainStreetContentSchema = z.object({
      *  lines instead and ignores this. Optional so content authored before the
      *  modular hero work still parses; new builds always author it. */
     sub: z.string().min(1).optional(),
+    /** The Collage hero's still scenes (it shows ~3). Optional so content authored
+     *  before the Collage hero still parses, and so heroes that don't use them
+     *  never require them. Generated as stills at build time. */
+    collageShots: z.array(CollageShot).optional(),
     ctaLabel: z.string().min(1),
     /** Where the primary hero button goes — a real page (D46). Optional so rows
      *  authored before targets still parse; the renderer falls back to the goods

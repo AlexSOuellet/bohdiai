@@ -91,6 +91,11 @@ describe('hero catalog — resolves a hero variant key to a component', () => {
     expect(container.querySelectorAll('[data-ms-carousel-item]')).toHaveLength(props.products.length);
   });
 
+  it('resolves "collage" to the Collage hero', () => {
+    const { container } = render(resolveHero('collage')(props));
+    expect(container.querySelector('[data-ms-hero="collage"]')).toBeTruthy();
+  });
+
   it('every catalog entry renders a hero surface (no dead keys)', () => {
     for (const key of Object.keys(HERO_CATALOG)) {
       const { container, unmount } = render(resolveHero(key)(props));
