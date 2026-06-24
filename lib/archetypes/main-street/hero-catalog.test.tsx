@@ -59,6 +59,11 @@ describe('hero catalog — resolves a hero variant key to a component', () => {
     expect(container.querySelector('[data-ms-hero="split"]')).toBeNull();
   });
 
+  it('resolves "stacked" to the Stacked hero (text block over a media band)', () => {
+    const { container } = render(resolveHero('stacked')(props));
+    expect(container.querySelector('[data-ms-hero="stacked"]')).toBeTruthy();
+  });
+
   it('every catalog entry renders a hero surface (no dead keys)', () => {
     for (const key of Object.keys(HERO_CATALOG)) {
       const { container, unmount } = render(resolveHero(key)(props));

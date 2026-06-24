@@ -29,6 +29,7 @@ import type { ArchetypeTheme } from '../types';
 import type { MainStreetContent } from './schemas';
 import { MomentHero } from './MomentHero';
 import { SplitHero } from './SplitHero';
+import { StackedHero } from './StackedHero';
 
 /** The shared shape every hero variant is handed — the hero content contract. */
 export interface HeroProps {
@@ -42,7 +43,7 @@ export interface HeroProps {
 
 /** The hero variant keys a recipe can name. Grows as heroes are built (Stacked,
  *  Typographic, Collage, Floating card, Editorial cover, Carousel). */
-export type HeroVariantKey = 'story' | 'split' | 'split-left';
+export type HeroVariantKey = 'story' | 'split' | 'split-left' | 'stacked';
 
 /** What the auto-build uses when a tenant has not chosen a hero. */
 export const DEFAULT_HERO_VARIANT: HeroVariantKey = 'story';
@@ -53,6 +54,7 @@ export const HERO_CATALOG: Record<HeroVariantKey, (props: HeroProps) => ReactEle
   story: (p) => <MomentHero identity={p.identity} moment={p.moment} skin={p.skin} momentKey={p.momentKey} />,
   split: (p) => <SplitHero identity={p.identity} moment={p.moment} skin={p.skin} mediaSide="right" />,
   'split-left': (p) => <SplitHero identity={p.identity} moment={p.moment} skin={p.skin} mediaSide="left" />,
+  stacked: (p) => <StackedHero identity={p.identity} moment={p.moment} skin={p.skin} />,
 };
 
 /** Resolve a (possibly unknown) variant key to a hero render function. Falls
