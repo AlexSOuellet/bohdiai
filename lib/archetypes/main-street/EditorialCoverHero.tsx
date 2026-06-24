@@ -41,7 +41,6 @@ export function EditorialCoverHero({
         .ms-editorial-hero .ms-cover-inner{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;color:var(--ms-on-media);padding:0 clamp(24px,5vw,64px) clamp(32px,5vh,64px)}
         .ms-editorial-hero .ms-cover-masthead{margin-top:clamp(24px,6vh,72px)}
         .ms-editorial-hero .ms-cover-coverlines{margin-top:auto;max-width:54ch}
-        .ms-editorial-hero [data-type="brand"]{font-size:clamp(56px,11vw,168px);line-height:.92;letter-spacing:-.02em;text-shadow:0 2px 50px rgba(0,0,0,.5)}
       `}</style>
 
       <div data-ms-hero-media>
@@ -58,7 +57,22 @@ export function EditorialCoverHero({
         </nav>
 
         <div className="ms-cover-masthead">
-          <h1 data-type="brand" style={{ ...typeRoleCss(r.brand), color: 'var(--ms-on-media)', margin: 0 }}>
+          {/* The skin owns the brand's FONT (family/weight via typeRoleCss); the
+              cover amplifies its SIZE to masthead scale. The size MUST be inline —
+              an inline style beats a stylesheet rule, so a <style> font-size here
+              would be overridden by typeRoleCss's inline size and never apply. */}
+          <h1
+            data-type="brand"
+            style={{
+              ...typeRoleCss(r.brand),
+              fontSize: 'clamp(56px, 11vw, 168px)',
+              lineHeight: 0.92,
+              letterSpacing: '-0.02em',
+              color: 'var(--ms-on-media)',
+              margin: 0,
+              textShadow: '0 2px 50px rgba(0,0,0,.5)',
+            }}
+          >
             {moment.brand}
           </h1>
         </div>

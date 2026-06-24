@@ -59,6 +59,18 @@ describe('EditorialCoverHero — giant masthead, brand-as-hero over media', () =
     expect(ctaLink.getAttribute('href')).toBe('/shop');
   });
 
+  it('does NOT set the masthead size in a <style> rule — it must be inline or the skin default overrides it (cover bug regression guard)', () => {
+    // The bug: a font-size set in a <style> rule for [data-type="brand"] is beaten
+    // by the skin's INLINE typeRoleCss fontSize (inline > stylesheet), so the
+    // masthead never grew. The fix sets the masthead scale inline; this guards
+    // against anyone moving it back into a stylesheet rule. (The literal clamp size
+    // isn't DOM-assertable — jsdom drops clamp() from the CSSOM, same as every
+    // other fluid size in these heroes — so the visible result is verified on deploy.)
+    const { container } = render(<EditorialCoverHero identity={identity} moment={moment} skin={skin} />);
+    const styleText = container.querySelector('style')?.textContent ?? '';
+    expect(styleText).not.toMatch(/\[data-type="brand"\]\s*\{[^}]*font-size/);
+  });
+
   it('lays the nav out as a horizontal bar', () => {
     const { container } = render(<EditorialCoverHero identity={identity} moment={moment} skin={skin} />);
     const navBar = container.querySelector('[data-ms-hero-nav]') as HTMLElement | null;
