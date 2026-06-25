@@ -17,7 +17,8 @@ import { useEffect, useRef } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
-import { Media, typeRoleCss, roles } from './chrome';
+import { Media } from './chrome';
+import { Type } from './Type';
 import { GoodsHead, type GoodsViewAll } from './beats';
 
 /** A scatter slot: left% and top% (of the stage height), width% (of the stage),
@@ -92,7 +93,6 @@ export function GoodsProcession({
   skin: ArchetypeTheme;
   viewAll?: GoodsViewAll | undefined;
 }) {
-  const r = roles(skin);
   const stageRef = useRef<HTMLDivElement>(null);
   const slots = slotsFor(products.length);
 
@@ -161,15 +161,16 @@ export function GoodsProcession({
                   <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
                 </div>
                 <div className="ms-const-meta" style={{ padding: '12px 2px 0' }}>
-                  <h3 data-type="cardTitle" style={{ ...typeRoleCss(r.cardTitle), color: 'var(--ms-fg)', margin: 0 }}>
+                  <Type as="h3" role="cardTitle" style={{ color: 'var(--ms-fg)', margin: 0 }}>
                     {p.name}
-                  </h3>
-                  <span
-                    data-type="price"
-                    style={{ ...typeRoleCss(r.price), color: 'var(--ms-fg-muted)', display: 'inline-block', marginTop: 4 }}
+                  </Type>
+                  <Type
+                    as="span"
+                    role="price"
+                    style={{ color: 'var(--ms-fg-muted)', display: 'inline-block', marginTop: 4 }}
                   >
                     {p.price}
-                  </span>
+                  </Type>
                 </div>
               </a>
             );

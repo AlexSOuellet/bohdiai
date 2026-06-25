@@ -12,7 +12,8 @@ import { useEffect, useRef, useState } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
-import { Media, typeRoleCss, roles } from './chrome';
+import { Media } from './chrome';
+import { Type } from './Type';
 import { GoodsHead, type GoodsViewAll } from './beats';
 
 // How long each slide holds before advancing. Brisk enough not to drag (the
@@ -30,7 +31,6 @@ export function GoodsSlideshow({
   skin: ArchetypeTheme;
   viewAll?: GoodsViewAll | undefined;
 }) {
-  const r = roles(skin);
   const [active, setActive] = useState(0);
   const paused = useRef(false);
 
@@ -119,18 +119,18 @@ export function GoodsSlideshow({
           style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24, marginTop: 22, flexWrap: 'wrap', color: 'inherit', textDecoration: 'none' }}
         >
           <div>
-            <h3 data-type="cardTitle" style={{ ...typeRoleCss(r.cardTitle), color: 'var(--ms-fg)', margin: 0 }}>
+            <Type as="h3" role="cardTitle" style={{ color: 'var(--ms-fg)', margin: 0 }}>
               {current?.name}
-            </h3>
+            </Type>
             {current?.shortDescription && (
-              <p data-type="caption" style={{ ...typeRoleCss(r.caption), color: 'var(--ms-fg-muted)', margin: '4px 0 0' }}>
+              <Type as="p" role="caption" style={{ color: 'var(--ms-fg-muted)', margin: '4px 0 0' }}>
                 {current.shortDescription}
-              </p>
+              </Type>
             )}
           </div>
-          <span data-type="price" style={{ ...typeRoleCss(r.price), color: 'var(--ms-fg)' }}>
+          <Type as="span" role="price" style={{ color: 'var(--ms-fg)' }}>
             {current?.price}
-          </span>
+          </Type>
         </a>
 
         <div role="tablist" aria-label="Slides" style={{ display: 'flex', gap: 9, marginTop: 20 }}>

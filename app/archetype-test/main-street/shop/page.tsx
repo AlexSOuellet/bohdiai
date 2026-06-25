@@ -75,7 +75,7 @@ export default async function MainStreetShopPage({ searchParams }: { searchParam
         </div>
       </section>
 
-      <MainStreetFooter shopName={f.content.shopName} skin={skin} />
+      <MainStreetFooter shopName={f.content.shopName} />
     </MainStreetRoot>
   );
 }

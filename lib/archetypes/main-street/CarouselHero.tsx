@@ -22,12 +22,12 @@
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
-import { Nav, typeRoleCss, roles, linkHref } from './chrome';
+import { Nav, linkHref } from './chrome';
+import { Type } from './Type';
 
 export function CarouselHero({
   identity,
   moment,
-  skin,
   products,
 }: {
   identity: MainStreetContent['identity'];
@@ -35,7 +35,6 @@ export function CarouselHero({
   skin: ArchetypeTheme;
   products: ProductView[];
 }) {
-  const r = roles(skin);
   const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';
   const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
 
@@ -55,38 +54,40 @@ export function CarouselHero({
         data-ms-hero-nav
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, padding: 'clamp(20px,3vw,32px) clamp(24px,5vw,60px) 0' }}
       >
-        <Nav identity={identity} skin={skin} />
+        <Nav identity={identity} />
       </div>
 
       <div className="ms-carousel-body">
         <div data-ms-hero-text style={{ display: 'flex', flexDirection: 'column' }}>
-          <div data-type="eyebrow" style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-accent)', marginBottom: 22 }}>
+          <Type as="div" role="eyebrow" style={{ color: 'var(--ms-accent)', marginBottom: 22 }}>
             {moment.eyebrow}
-          </div>
-          <h1 data-type="brand" style={{ ...typeRoleCss(r.brand), color: 'var(--ms-fg)', margin: 0 }}>
+          </Type>
+          <Type as="h1" role="brand" style={{ color: 'var(--ms-fg)', margin: 0 }}>
             {moment.brand}
-          </h1>
+          </Type>
           {moment.sub && (
-            <p data-ms-hero-sub data-type="body" style={{ ...typeRoleCss(r.body), color: 'var(--ms-fg-muted)', maxWidth: '40ch', marginTop: 22, marginBottom: 0 }}>
+            <Type as="p" role="body" data-ms-hero-sub style={{ color: 'var(--ms-fg-muted)', maxWidth: '40ch', marginTop: 22, marginBottom: 0 }}>
               {moment.sub}
-            </p>
+            </Type>
           )}
           <div style={{ display: 'flex', gap: 16, marginTop: 32, flexWrap: 'wrap' }}>
-            <a
+            <Type
+              as="a"
+              role="navLabel"
               href={ctaHref}
-              data-type="navLabel"
-              style={{ ...typeRoleCss(r.navLabel), background: 'var(--ms-accent)', color: 'var(--ms-on-accent)', padding: '16px 26px', borderRadius: 2 }}
+              style={{ background: 'var(--ms-accent)', color: 'var(--ms-on-accent)', padding: '16px 26px', borderRadius: 2 }}
             >
               {moment.ctaLabel}
-            </a>
+            </Type>
             {moment.secondaryCtaLabel && (
-              <a
+              <Type
+                as="a"
+                role="navLabel"
                 href={secondaryHref}
-                data-type="navLabel"
-                style={{ ...typeRoleCss(r.navLabel), border: '1px solid var(--ms-rule)', color: 'var(--ms-fg)', padding: '16px 26px', borderRadius: 2 }}
+                style={{ border: '1px solid var(--ms-rule)', color: 'var(--ms-fg)', padding: '16px 26px', borderRadius: 2 }}
               >
                 {moment.secondaryCtaLabel}
-              </a>
+              </Type>
             )}
           </div>
         </div>
@@ -100,12 +101,12 @@ export function CarouselHero({
                   <div className="ms-carousel-shot">
                     {shot && <img src={shot.url} alt={shot.alt ?? p.name} />}
                   </div>
-                  <div data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), color: 'var(--ms-fg)', marginTop: 12 }}>
+                  <Type as="div" role="navLabel" style={{ color: 'var(--ms-fg)', marginTop: 12 }}>
                     {p.name}
-                  </div>
-                  <div data-type="body" style={{ ...typeRoleCss(r.body), color: 'var(--ms-fg-muted)' }}>
+                  </Type>
+                  <Type as="div" role="body" style={{ color: 'var(--ms-fg-muted)' }}>
                     {p.price}
-                  </div>
+                  </Type>
                 </a>
               );
             })}

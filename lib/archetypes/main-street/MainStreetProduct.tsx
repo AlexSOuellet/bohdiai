@@ -14,7 +14,8 @@
 import type { ArchetypeTheme } from '../types';
 import type { CatalogMedia, ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
-import { MainStreetRoot, MainStreetFooter, Nav, typeRoleCss, roles } from './chrome';
+import { MainStreetRoot, MainStreetFooter, Nav } from './chrome';
+import { Type } from './Type';
 
 /** One media cell — a playable video or a still. A video renders a real
  *  <video> with controls (poster shown until play), so product clips actually
@@ -50,7 +51,6 @@ export function MainStreetProduct({
   product: ProductView;
   skin: ArchetypeTheme;
 }) {
-  const r = roles(skin);
   const sp = skin.spacing;
   const primary = product.media[0];
   const rest = product.media.slice(1);
@@ -70,7 +70,7 @@ export function MainStreetProduct({
           borderBottom: '1px solid var(--ms-rule)',
         }}
       >
-        <Nav identity={content.identity} skin={skin} />
+        <Nav identity={content.identity} />
       </nav>
 
       <div className="ms-wrap" style={{ paddingTop: sp.section, paddingBottom: sp.section }}>
@@ -90,33 +90,34 @@ export function MainStreetProduct({
 
           {/* buy column */}
           <div>
-            <h1 data-type="title" style={{ ...typeRoleCss(r.title), color: 'var(--ms-fg)', margin: 0 }}>
+            <Type as="h1" role="title" style={{ color: 'var(--ms-fg)', margin: 0 }}>
               {product.name}
-            </h1>
-            <div data-type="title" style={{ ...typeRoleCss(r.title), color: 'var(--ms-fg)', marginTop: sp.base }}>
+            </Type>
+            <Type as="div" role="title" style={{ color: 'var(--ms-fg)', marginTop: sp.base }}>
               {product.price}
-            </div>
+            </Type>
             {product.shortDescription && (
-              <p data-type="body" style={{ ...typeRoleCss(r.body), color: 'var(--ms-fg-muted)', marginTop: sp.base, maxWidth: 460 }}>
+              <Type as="p" role="body" style={{ color: 'var(--ms-fg-muted)', marginTop: sp.base, maxWidth: 460 }}>
                 {product.shortDescription}
-              </p>
+              </Type>
             )}
 
             {/* seller-defined variations */}
             {product.variations.map((v) => (
               <div key={v.name} style={{ marginTop: sp.loose }}>
-                <div data-type="eyebrow" style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-fg)' }}>
+                <Type as="div" role="eyebrow" style={{ color: 'var(--ms-fg)' }}>
                   {v.name}
-                </div>
+                </Type>
                 <div style={{ marginTop: sp.tight, display: 'flex', flexWrap: 'wrap', gap: sp.tight }}>
                   {v.options.map((opt) => (
-                    <span
+                    <Type
                       key={opt}
-                      data-type="caption"
-                      style={{ ...typeRoleCss(r.caption), color: 'var(--ms-fg)', border: '1px solid var(--ms-rule)', padding: '7px 12px' }}
+                      as="span"
+                      role="caption"
+                      style={{ color: 'var(--ms-fg)', border: '1px solid var(--ms-rule)', padding: '7px 12px' }}
                     >
                       {opt}
-                    </span>
+                    </Type>
                   ))}
                 </div>
               </div>
@@ -124,12 +125,12 @@ export function MainStreetProduct({
 
             {/* add to cart — accent background, paper as readable text */}
             <div style={{ marginTop: sp.loose }}>
-              <button
+              <Type
+                as="button"
+                role="navLabel"
                 type="button"
                 disabled={soldOut}
-                data-type="navLabel"
                 style={{
-                  ...typeRoleCss(r.navLabel),
                   background: soldOut ? 'var(--ms-fg-muted)' : 'var(--ms-accent)',
                   color: 'var(--ms-on-accent)',
                   border: 'none',
@@ -138,23 +139,23 @@ export function MainStreetProduct({
                 }}
               >
                 {soldOut ? 'Sold out' : 'Add to cart'}
-              </button>
+              </Type>
             </div>
           </div>
         </section>
 
         {/* ============ FULL DESCRIPTION ============ */}
         <section style={{ paddingTop: sp.section }}>
-          <div data-type="eyebrow" style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-accent)', marginBottom: sp.base }}>
+          <Type as="div" role="eyebrow" style={{ color: 'var(--ms-accent)', marginBottom: sp.base }}>
             Details
-          </div>
-          <p data-type="body" style={{ ...typeRoleCss(r.body), color: 'var(--ms-fg)', maxWidth: 640, margin: 0 }}>
+          </Type>
+          <Type as="p" role="body" style={{ color: 'var(--ms-fg)', maxWidth: 640, margin: 0 }}>
             {product.description}
-          </p>
+          </Type>
         </section>
       </div>
 
-      <MainStreetFooter shopName={content.shopName} skin={skin} />
+      <MainStreetFooter shopName={content.shopName} />
     </MainStreetRoot>
   );
 }

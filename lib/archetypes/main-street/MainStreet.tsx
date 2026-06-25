@@ -62,7 +62,7 @@ export function MainStreet({ content, skin, products, catalogSize, goodsTreatmen
       <Reveal>
         <Close close={content.close} skin={skin} />
       </Reveal>
-      <MainStreetFooter shopName={content.shopName} skin={skin} />
+      <MainStreetFooter shopName={content.shopName} />
     </MainStreetRoot>
   );
 }

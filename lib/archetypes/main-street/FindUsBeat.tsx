@@ -13,7 +13,6 @@ type FindUs = NonNullable<MainStreetContent['founder']['findUs']>;
 
 export function FindUsBeat({
   findUs,
-  skin,
   eventsHref = '/events',
 }: {
   findUs: FindUs;
@@ -23,7 +22,7 @@ export function FindUsBeat({
   return (
     <section data-ms-findus style={{ background: 'var(--ms-bg)', color: 'var(--ms-fg)', padding: '96px 40px' }}>
       <div className="ms-wrap" style={{ maxWidth: 760 }}>
-        <FindUsList findUs={findUs} skin={skin} eventsHref={eventsHref} heading="title" onContrast={false} />
+        <FindUsList findUs={findUs} eventsHref={eventsHref} heading="title" onContrast={false} />
       </div>
     </section>
   );

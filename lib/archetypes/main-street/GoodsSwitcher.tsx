@@ -13,7 +13,8 @@ import { useState } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
-import { Media, typeRoleCss, roles } from './chrome';
+import { Media } from './chrome';
+import { Type } from './Type';
 import { GoodsHead, type GoodsViewAll } from './beats';
 
 export function GoodsSwitcher({
@@ -27,7 +28,6 @@ export function GoodsSwitcher({
   skin: ArchetypeTheme;
   viewAll?: GoodsViewAll | undefined;
 }) {
-  const r = roles(skin);
   const [active, setActive] = useState(0);
   const current = products[active] ?? products[0];
 
@@ -56,10 +56,10 @@ export function GoodsSwitcher({
             </div>
           ))}
           {current && (
-            <span
-              data-type="price"
+            <Type
+              as="span"
+              role="price"
               style={{
-                ...typeRoleCss(r.price),
                 position: 'absolute',
                 left: 14,
                 bottom: 14,
@@ -70,7 +70,7 @@ export function GoodsSwitcher({
               }}
             >
               {current.price}
-            </span>
+            </Type>
           )}
         </div>
 
@@ -97,23 +97,25 @@ export function GoodsSwitcher({
                   }}
                 >
                   <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16 }}>
-                    <span
-                      data-type="cardTitle"
-                      style={{ ...typeRoleCss(r.cardTitle), color: on ? 'var(--ms-accent)' : 'var(--ms-fg)' }}
+                    <Type
+                      as="span"
+                      role="cardTitle"
+                      style={{ color: on ? 'var(--ms-accent)' : 'var(--ms-fg)' }}
                     >
                       {p.name}
-                    </span>
-                    <span data-type="price" style={{ ...typeRoleCss(r.price), color: 'var(--ms-fg-muted)' }}>
+                    </Type>
+                    <Type as="span" role="price" style={{ color: 'var(--ms-fg-muted)' }}>
                       {p.price}
-                    </span>
+                    </Type>
                   </span>
                   {on && p.shortDescription && (
-                    <span
-                      data-type="caption"
-                      style={{ ...typeRoleCss(r.caption), color: 'var(--ms-fg-muted)', display: 'block', marginTop: 6 }}
+                    <Type
+                      as="span"
+                      role="caption"
+                      style={{ color: 'var(--ms-fg-muted)', display: 'block', marginTop: 6 }}
                     >
                       {p.shortDescription}
-                    </span>
+                    </Type>
                   )}
                 </a>
               </li>

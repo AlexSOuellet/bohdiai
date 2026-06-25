@@ -14,7 +14,8 @@
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
-import { Media, typeRoleCss, roles, linkHref } from './chrome';
+import { Media, linkHref } from './chrome';
+import { Type } from './Type';
 
 /** The view-all cue pointing home's sampling at the full Products page. */
 export interface GoodsViewAll {
@@ -28,14 +29,12 @@ export interface GoodsViewAll {
  *  beat reads consistently whichever body the system picked. */
 export function GoodsHead({
   goods,
-  skin,
   viewAll,
 }: {
   goods: MainStreetContent['goods'];
-  skin: ArchetypeTheme;
+  skin?: ArchetypeTheme;
   viewAll?: GoodsViewAll | undefined;
 }) {
-  const r = roles(skin);
   return (
     <div
       className="ms-wrap"
@@ -43,23 +42,24 @@ export function GoodsHead({
     >
       <div>
         {goods.label && (
-          <span data-type="eyebrow" style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-accent)', display: 'block', marginBottom: 14 }}>
+          <Type as="span" role="eyebrow" style={{ color: 'var(--ms-accent)', display: 'block', marginBottom: 14 }}>
             {goods.label}
-          </span>
+          </Type>
         )}
-        <h2 data-type="goodsHead" style={{ ...typeRoleCss(r.goodsHead), color: 'var(--ms-fg)', maxWidth: '16ch', margin: 0 }}>
+        <Type as="h2" role="goodsHead" style={{ color: 'var(--ms-fg)', maxWidth: '16ch', margin: 0 }}>
           {goods.title}
-        </h2>
+        </Type>
       </div>
       {viewAll && (
-        <a
+        <Type
+          as="a"
+          role="navLabel"
           href={viewAll.href}
-          data-type="navLabel"
           className="ms-viewall"
-          style={{ ...typeRoleCss(r.navLabel), color: 'var(--ms-accent)', whiteSpace: 'nowrap' }}
+          style={{ color: 'var(--ms-accent)', whiteSpace: 'nowrap' }}
         >
           {viewAll.label} &rarr;
-        </a>
+        </Type>
       )}
     </div>
   );
@@ -68,17 +68,16 @@ export function GoodsHead({
 /** The prominent end-of-sampling CTA. The home goods beat is a TASTE; this is the
  *  clear button that sends the shopper to the full Products page (the small cue in
  *  the heading is secondary). Bohdi's label, with a neutral fallback. */
-export function GoodsViewAllCta({ viewAll, skin }: { viewAll?: GoodsViewAll | undefined; skin: ArchetypeTheme }) {
+export function GoodsViewAllCta({ viewAll }: { viewAll?: GoodsViewAll | undefined; skin?: ArchetypeTheme }) {
   if (!viewAll) return null;
-  const r = roles(skin);
   return (
     <div className="ms-wrap" style={{ display: 'flex', justifyContent: 'center', marginTop: 56 }}>
-      <a
+      <Type
+        as="a"
+        role="navLabel"
         href={viewAll.href}
-        data-type="navLabel"
         className="ms-viewall-cta"
         style={{
-          ...typeRoleCss(r.navLabel),
           color: 'var(--ms-fg)',
           border: '1px solid var(--ms-rule)',
           padding: '15px 30px',
@@ -86,7 +85,7 @@ export function GoodsViewAllCta({ viewAll, skin }: { viewAll?: GoodsViewAll | un
         }}
       >
         {viewAll.label} &rarr;
-      </a>
+      </Type>
     </div>
   );
 }
@@ -113,7 +112,6 @@ export function GoodsMarquee({
   skin: ArchetypeTheme;
   viewAll?: GoodsViewAll | undefined;
 }) {
-  const r = roles(skin);
   // Fill thin catalogs, then duplicate so the -50% scroll loops seamlessly.
   const filled = fillMarquee(products);
   const loop = [...filled, ...filled];
@@ -134,10 +132,10 @@ export function GoodsMarquee({
                 }}
               >
                 <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
-                <span
-                  data-type="price"
+                <Type
+                  as="span"
+                  role="price"
                   style={{
-                    ...typeRoleCss(r.price),
                     position: 'absolute',
                     left: 12,
                     bottom: 12,
@@ -148,15 +146,15 @@ export function GoodsMarquee({
                   }}
                 >
                   {p.price}
-                </span>
+                </Type>
               </div>
-              <h3 data-type="cardTitle" style={{ ...typeRoleCss(r.cardTitle), color: 'var(--ms-fg)', margin: '16px 0 2px' }}>
+              <Type as="h3" role="cardTitle" style={{ color: 'var(--ms-fg)', margin: '16px 0 2px' }}>
                 {p.name}
-              </h3>
+              </Type>
               {p.shortDescription && (
-                <p data-type="caption" style={{ ...typeRoleCss(r.caption), color: 'var(--ms-fg-muted)', margin: 0 }}>
+                <Type as="p" role="caption" style={{ color: 'var(--ms-fg-muted)', margin: 0 }}>
                   {p.shortDescription}
-                </p>
+                </Type>
               )}
             </a>
           </article>
@@ -166,24 +164,23 @@ export function GoodsMarquee({
   );
 }
 
-export function Close({ close, skin }: { close: MainStreetContent['close']; skin: ArchetypeTheme }) {
-  const r = roles(skin);
+export function Close({ close }: { close: MainStreetContent['close']; skin?: ArchetypeTheme }) {
   // The close button goes where its label says (D46); legacy rows with no
   // authored target keep the old /contact destination.
   const ctaHref = close.ctaTarget ? linkHref(close.ctaTarget) : '/contact';
   return (
     <section style={{ padding: '130px 40px', textAlign: 'center' }}>
-      <span data-type="eyebrow" style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-accent)', display: 'block', marginBottom: 22 }}>
+      <Type as="span" role="eyebrow" style={{ color: 'var(--ms-accent)', display: 'block', marginBottom: 22 }}>
         {close.label}
-      </span>
-      <h2 data-type="closeHead" style={{ ...typeRoleCss(r.closeHead), color: 'var(--ms-fg)', maxWidth: '16ch', margin: '0 auto 36px' }}>
+      </Type>
+      <Type as="h2" role="closeHead" style={{ color: 'var(--ms-fg)', maxWidth: '16ch', margin: '0 auto 36px' }}>
         {close.headline}
-      </h2>
-      <a
+      </Type>
+      <Type
+        as="a"
+        role="navLabel"
         href={ctaHref}
-        data-type="navLabel"
         style={{
-          ...typeRoleCss(r.navLabel),
           background: 'var(--ms-accent)',
           color: 'var(--ms-on-accent)',
           padding: '16px 26px',
@@ -192,7 +189,7 @@ export function Close({ close, skin }: { close: MainStreetContent['close']; skin
         }}
       >
         {close.ctaLabel}
-      </a>
+      </Type>
     </section>
   );
 }

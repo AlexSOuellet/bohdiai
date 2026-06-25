@@ -17,18 +17,17 @@
  */
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetContent } from './schemas';
-import { Media, Nav, typeRoleCss, roles, linkHref } from './chrome';
+import { Media, Nav, linkHref } from './chrome';
+import { Type } from './Type';
 
 export function EditorialCoverHero({
   identity,
   moment,
-  skin,
 }: {
   identity: MainStreetContent['identity'];
   moment: MainStreetContent['moment'];
   skin: ArchetypeTheme;
 }) {
-  const r = roles(skin);
   const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';
   const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
 
@@ -45,6 +44,13 @@ export function EditorialCoverHero({
         .ms-editorial-hero .ms-cover-masthead{text-align:center;margin-top:clamp(6px,1.5vh,18px)}
         .ms-editorial-hero .ms-cover-rule{height:1px;background:var(--ms-on-media);opacity:.75;margin-top:clamp(12px,1.8vh,22px)}
         .ms-editorial-hero .ms-cover-coverlines{margin-top:auto;max-width:34ch;display:flex;flex-direction:column;align-items:flex-start;text-align:left}
+        /* AMPLIFICATION — the cover blows the brand up to masthead scale and the
+           coverline above body size. These are real scoped rules (more specific
+           than the base [data-type] rule, later in the cascade), so they win
+           WITHOUT inline styles — which is what makes media queries work and the
+           old dead-CSS masthead bug impossible. */
+        .ms-editorial-hero .ms-cover-masthead [data-type="brand"]{font-size:clamp(56px,11vw,168px);line-height:.9;letter-spacing:-.015em}
+        .ms-editorial-hero .ms-cover-coverlines [data-type="body"]{font-size:clamp(18px,2vw,26px);line-height:1.35}
       `}</style>
 
       <div data-ms-hero-media>
@@ -57,7 +63,7 @@ export function EditorialCoverHero({
           data-ms-hero-nav
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, color: 'var(--ms-on-media)' }}
         >
-          <Nav identity={identity} skin={skin} />
+          <Nav identity={identity} />
         </nav>
 
         {/* MASTHEAD BANNER — pinned to the top, centred, with a full-width rule
@@ -65,27 +71,20 @@ export function EditorialCoverHero({
             Story (whose brand sits centred in the frame). The eyebrow is the small
             tracked dateline kicker above the title. */}
         <div className="ms-cover-masthead">
-          <div data-type="eyebrow" style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-on-media)', marginBottom: 'clamp(10px,1.4vh,16px)' }}>
+          <Type as="div" role="eyebrow" style={{ color: 'var(--ms-on-media)', marginBottom: 'clamp(10px,1.4vh,16px)' }}>
             {moment.eyebrow}
-          </div>
-          {/* The skin owns the brand's FONT (family/weight via typeRoleCss); the
-              cover amplifies its SIZE to masthead scale. The size MUST be inline —
-              an inline style beats a stylesheet rule, so a <style> font-size here
-              would be overridden by typeRoleCss's inline size and never apply. */}
-          <h1
-            data-type="brand"
-            style={{
-              ...typeRoleCss(r.brand),
-              fontSize: 'clamp(56px, 11vw, 168px)',
-              lineHeight: 0.9,
-              letterSpacing: '-0.015em',
-              color: 'var(--ms-on-media)',
-              margin: 0,
-              textShadow: '0 2px 50px rgba(0,0,0,.5)',
-            }}
+          </Type>
+          {/* The skin owns the brand's FONT (family/weight, from the role's CSS
+              vars); the cover amplifies its SIZE to masthead scale via the scoped
+              [data-type="brand"] rule in the <style> above — a real rule, so it
+              can use media queries and never fights an inline size. */}
+          <Type
+            as="h1"
+            role="brand"
+            style={{ color: 'var(--ms-on-media)', margin: 0, textShadow: '0 2px 50px rgba(0,0,0,.5)' }}
           >
             {moment.brand}
-          </h1>
+          </Type>
           <div className="ms-cover-rule" />
         </div>
 
@@ -94,30 +93,33 @@ export function EditorialCoverHero({
         <div className="ms-cover-coverlines">
           <div aria-hidden style={{ width: 40, height: 3, background: 'var(--ms-accent)', marginBottom: 16 }} />
           {moment.sub && (
-            <p
+            <Type
+              as="p"
+              role="body"
               data-ms-hero-sub
-              data-type="body"
-              style={{ ...typeRoleCss(r.body), fontSize: 'clamp(18px, 2vw, 26px)', lineHeight: 1.35, color: 'var(--ms-on-media)', margin: 0, textShadow: '0 1px 24px rgba(0,0,0,.55)' }}
+              style={{ color: 'var(--ms-on-media)', margin: 0, textShadow: '0 1px 24px rgba(0,0,0,.55)' }}
             >
               {moment.sub}
-            </p>
+            </Type>
           )}
           <div style={{ display: 'flex', gap: 16, marginTop: 26, flexWrap: 'wrap' }}>
-            <a
+            <Type
+              as="a"
+              role="navLabel"
               href={ctaHref}
-              data-type="navLabel"
-              style={{ ...typeRoleCss(r.navLabel), background: 'var(--ms-accent)', color: 'var(--ms-on-accent)', padding: '16px 26px', borderRadius: 2 }}
+              style={{ background: 'var(--ms-accent)', color: 'var(--ms-on-accent)', padding: '16px 26px', borderRadius: 2 }}
             >
               {moment.ctaLabel}
-            </a>
+            </Type>
             {moment.secondaryCtaLabel && (
-              <a
+              <Type
+                as="a"
+                role="navLabel"
                 href={secondaryHref}
-                data-type="navLabel"
-                style={{ ...typeRoleCss(r.navLabel), border: '1px solid var(--ms-on-media-muted)', color: 'var(--ms-on-media)', padding: '16px 26px', borderRadius: 2 }}
+                style={{ border: '1px solid var(--ms-on-media-muted)', color: 'var(--ms-on-media)', padding: '16px 26px', borderRadius: 2 }}
               >
                 {moment.secondaryCtaLabel}
-              </a>
+              </Type>
             )}
           </div>
         </div>

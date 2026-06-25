@@ -15,18 +15,17 @@
  */
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetContent } from './schemas';
-import { Nav, typeRoleCss, roles, linkHref } from './chrome';
+import { Nav, linkHref } from './chrome';
+import { Type } from './Type';
 
 export function TypographicHero({
   identity,
   moment,
-  skin,
 }: {
   identity: MainStreetContent['identity'];
   moment: MainStreetContent['moment'];
   skin: ArchetypeTheme;
 }) {
-  const r = roles(skin);
   const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';
   const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
 
@@ -41,38 +40,40 @@ export function TypographicHero({
         data-ms-hero-nav
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, padding: 'clamp(20px,3vw,32px) clamp(24px,5vw,60px) 0' }}
       >
-        <Nav identity={identity} skin={skin} />
+        <Nav identity={identity} />
       </div>
 
       <div className="ms-typ-body">
-        <div data-type="eyebrow" style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-accent)', marginBottom: 28 }}>
+        <Type as="div" role="eyebrow" style={{ color: 'var(--ms-accent)', marginBottom: 28 }}>
           {moment.eyebrow}
-        </div>
-        <h1 data-type="brand" style={{ ...typeRoleCss(r.brand), color: 'var(--ms-fg)', margin: 0, maxWidth: '16ch' }}>
+        </Type>
+        <Type as="h1" role="brand" style={{ color: 'var(--ms-fg)', margin: 0, maxWidth: '16ch' }}>
           {moment.brand}
-        </h1>
+        </Type>
         <div aria-hidden style={{ width: 64, height: 1, background: 'var(--ms-accent)', opacity: 0.7, margin: 'clamp(20px,3vh,32px) 0' }} />
         {moment.sub && (
-          <p data-ms-hero-sub data-type="body" style={{ ...typeRoleCss(r.body), color: 'var(--ms-fg-muted)', maxWidth: '46ch', margin: 0 }}>
+          <Type as="p" role="body" data-ms-hero-sub style={{ color: 'var(--ms-fg-muted)', maxWidth: '46ch', margin: 0 }}>
             {moment.sub}
-          </p>
+          </Type>
         )}
         <div style={{ display: 'flex', gap: 16, marginTop: 'clamp(28px,4vh,40px)', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <a
+          <Type
+            as="a"
+            role="navLabel"
             href={ctaHref}
-            data-type="navLabel"
-            style={{ ...typeRoleCss(r.navLabel), background: 'var(--ms-accent)', color: 'var(--ms-on-accent)', padding: '16px 26px', borderRadius: 2 }}
+            style={{ background: 'var(--ms-accent)', color: 'var(--ms-on-accent)', padding: '16px 26px', borderRadius: 2 }}
           >
             {moment.ctaLabel}
-          </a>
+          </Type>
           {moment.secondaryCtaLabel && (
-            <a
+            <Type
+              as="a"
+              role="navLabel"
               href={secondaryHref}
-              data-type="navLabel"
-              style={{ ...typeRoleCss(r.navLabel), border: '1px solid var(--ms-rule)', color: 'var(--ms-fg)', padding: '16px 26px', borderRadius: 2 }}
+              style={{ border: '1px solid var(--ms-rule)', color: 'var(--ms-fg)', padding: '16px 26px', borderRadius: 2 }}
             >
               {moment.secondaryCtaLabel}
-            </a>
+            </Type>
           )}
         </div>
       </div>

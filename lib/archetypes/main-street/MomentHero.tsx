@@ -39,7 +39,8 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetContent } from './schemas';
-import { Media, Nav, typeRoleCss, roles, linkHref } from './chrome';
+import { Media, Nav, linkHref } from './chrome';
+import { Type } from './Type';
 import { navContrast, relativeLuminance } from './logo-contrast';
 import { shouldPlayMoment, initialDocumentPath, markMomentSeen, REPLAY_INTRO_EVENT } from './moment-gate';
 
@@ -105,16 +106,13 @@ const overlayFrame = (visible: boolean, z: number): CSSProperties => ({
  *  CTA — at rest, only the brand block shows, no story lines. */
 function HeroStage({
   moment,
-  skin,
   phase,
   action,
 }: {
   moment: MainStreetContent['moment'];
-  skin: ArchetypeTheme;
   phase: HeroPhase;
   action: ReactNode;
 }) {
-  const r = roles(skin);
   const isStill = moment.media.kind === 'still';
   const landed = phase.kind === 'brand';
   const lineVisible = (i: number) => phase.kind === 'line' && phase.index === i;
@@ -149,13 +147,14 @@ function HeroStage({
           driven by the phase. */}
       {moment.story.map((line, i) => (
         <div key={i} data-ms-hero-story-line-frame style={overlayFrame(lineVisible(i), 2)}>
-          <p
-            data-type="storyline"
+          <Type
+            as="p"
+            role="storyline"
             data-ms-hero-story-line
-            style={{ ...typeRoleCss(r.storyline), color: 'var(--ms-on-media)', maxWidth: '24ch', margin: 0, textShadow: '0 2px 36px rgba(0,0,0,.55)' }}
+            style={{ color: 'var(--ms-on-media)', maxWidth: '24ch', margin: 0, textShadow: '0 2px 36px rgba(0,0,0,.55)' }}
           >
             {line}
-          </p>
+          </Type>
         </div>
       ))}
 
@@ -164,12 +163,12 @@ function HeroStage({
           state. */}
       <div data-ms-hero-brand style={overlayFrame(landed, 3)}>
         <div>
-          <div data-type="eyebrow" style={{ ...typeRoleCss(r.eyebrow), color: 'var(--ms-on-media-muted)', marginBottom: 18 }}>
+          <Type as="div" role="eyebrow" style={{ color: 'var(--ms-on-media-muted)', marginBottom: 18 }}>
             {moment.eyebrow}
-          </div>
-          <h1 data-type="brand" style={{ ...typeRoleCss(r.brand), color: 'var(--ms-on-media)', margin: 0, textShadow: '0 2px 40px rgba(0,0,0,.5)' }}>
+          </Type>
+          <Type as="h1" role="brand" style={{ color: 'var(--ms-on-media)', margin: 0, textShadow: '0 2px 40px rgba(0,0,0,.5)' }}>
             {moment.brand}
-          </h1>
+          </Type>
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 32, flexWrap: 'wrap' }}>{action}</div>
         </div>
       </div>
@@ -181,19 +180,18 @@ function HeroStage({
  *  pointed where its label says it goes (D46). When a button has no authored
  *  target the fallback is /shop (the home is a sampling; the catalog lives at
  *  the shop). */
-function HeroCta({ moment, skin }: { moment: MainStreetContent['moment']; skin: ArchetypeTheme }) {
-  const r = roles(skin);
+function HeroCta({ moment }: { moment: MainStreetContent['moment'] }) {
   const primaryHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';
   const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
   return (
     <>
-      <a href={primaryHref} data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), background: 'var(--ms-accent)', color: 'var(--ms-on-accent)', padding: '16px 26px', borderRadius: 2 }}>
+      <Type as="a" role="navLabel" href={primaryHref} style={{ background: 'var(--ms-accent)', color: 'var(--ms-on-accent)', padding: '16px 26px', borderRadius: 2 }}>
         {moment.ctaLabel}
-      </a>
+      </Type>
       {moment.secondaryCtaLabel && (
-        <a href={secondaryHref} data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), border: '1px solid var(--ms-on-media-muted)', color: 'var(--ms-on-media)', padding: '16px 26px', borderRadius: 2 }}>
+        <Type as="a" role="navLabel" href={secondaryHref} style={{ border: '1px solid var(--ms-on-media-muted)', color: 'var(--ms-on-media)', padding: '16px 26px', borderRadius: 2 }}>
           {moment.secondaryCtaLabel}
-        </a>
+        </Type>
       )}
     </>
   );
@@ -304,7 +302,7 @@ export function MomentHero({
           transition: 'background .5s ease, padding .5s ease, color .5s ease',
         }}
       >
-        <Nav identity={identity} skin={skin} />
+        <Nav identity={identity} />
       </nav>
 
       <header
@@ -312,7 +310,7 @@ export function MomentHero({
         data-ms-hero
         style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'var(--ms-contrast-bg)', color: 'var(--ms-on-media)' }}
       >
-        <HeroStage moment={moment} skin={skin} phase={phase} action={<HeroCta moment={moment} skin={skin} />} />
+        <HeroStage moment={moment} phase={phase} action={<HeroCta moment={moment} />} />
       </header>
     </>
   );

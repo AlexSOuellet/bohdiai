@@ -33,6 +33,33 @@ describe('skinVarsCss', () => {
     expect(css).toContain('--ms-body:');
     expect(css).toContain('--ms-mono:');
   });
+
+  it('emits each type role as CSS variables on the root (so the editor/families can retune type live)', () => {
+    const css = skinVarsCss(skin);
+    const brand = skin.type['brand']!;
+    expect(css).toContain(`--ms-t-brand-family:${brand.family}`);
+    expect(css).toContain('--ms-t-brand-size:clamp(');
+    expect(css).toContain(`--ms-t-brand-weight:${brand.weight}`);
+    expect(css).toContain(`--ms-t-brand-line:${brand.lineHeight}`);
+    // a label role carries uppercase + tracking
+    expect(css).toContain('--ms-t-navLabel-transform:uppercase');
+    expect(css).toContain(`--ms-t-navLabel-tracking:${skin.type['navLabel']!.letterSpacing}`);
+  });
+
+  it('styles every data-type role off those variables — no inline font needed', () => {
+    const css = skinVarsCss(skin);
+    for (const role of Object.keys(skin.type)) {
+      expect(css).toContain(`[data-type="${role}"]`);
+      expect(css).toContain(`font-family:var(--ms-t-${role}-family)`);
+      expect(css).toContain(`font-size:var(--ms-t-${role}-size)`);
+    }
+  });
+
+  it('drives the role size from the fluid clamp (display shrinks on small screens)', () => {
+    const css = skinVarsCss(skin);
+    // the brand size var is the same fluid clamp fluidFontSize produces
+    expect(css).toContain(`--ms-t-brand-size:${fluidFontSize(skin.type['brand']!.size, skin.type['brand']!.sizeMobile)}`);
+  });
 });
 
 describe('fluidFontSize', () => {
@@ -97,20 +124,16 @@ describe('MainStreetRoot', () => {
 });
 
 describe('WordmarkLink — logo-contains-wordmark doubling fix', () => {
-  const role = (skin.type as unknown as { wordmark: import('../types').TypeRole }).wordmark;
-
   it('shows BOTH the logo image and the text wordmark by default (pure mark logo)', () => {
     const { container, queryByText } = render(
-      <WordmarkLink wordmark="Ember Candles" logoUrl="https://x/y.png" role={role} />,
+      <WordmarkLink wordmark="Ember Candles" logoUrl="https://x/y.png" />,
     );
     expect(container.querySelector('img[data-ms-logo]')).toBeTruthy();
     expect(queryByText('Ember Candles')).toBeTruthy();
   });
 
   it('shows the text wordmark when there is NO logo at all', () => {
-    const { container, queryByText } = render(
-      <WordmarkLink wordmark="Ember Candles" role={role} />,
-    );
+    const { container, queryByText } = render(<WordmarkLink wordmark="Ember Candles" />);
     expect(container.querySelector('img[data-ms-logo]')).toBeNull();
     expect(queryByText('Ember Candles')).toBeTruthy();
   });
@@ -119,11 +142,7 @@ describe('WordmarkLink — logo-contains-wordmark doubling fix', () => {
     // The dashboard will eventually let the maker choose logo-only when their
     // logo already contains the shop name; until then, default is always show both.
     const { container, queryByText } = render(
-      <WordmarkLink
-        wordmark="Ember Candles"
-        logoUrl="https://x/wordmark-logo.png"
-        role={role}
-      />,
+      <WordmarkLink wordmark="Ember Candles" logoUrl="https://x/wordmark-logo.png" />,
     );
     expect(container.querySelector('img[data-ms-logo]')).toBeTruthy();
     expect(queryByText('Ember Candles')).toBeTruthy();
@@ -132,7 +151,7 @@ describe('WordmarkLink — logo-contains-wordmark doubling fix', () => {
 
 describe('MainStreetFooter', () => {
   it('renders the shop name and the platform-guaranteed legal links', () => {
-    const { getByText, container } = render(<MainStreetFooter shopName="June's Sourdough" skin={skin} />);
+    const { getByText, container } = render(<MainStreetFooter shopName="June's Sourdough" />);
     expect(getByText("June's Sourdough")).toBeTruthy();
     const links = Array.from(container.querySelectorAll('a')).map((a) => a.textContent);
     expect(links).toEqual(expect.arrayContaining(['Home', 'Privacy', 'Terms']));

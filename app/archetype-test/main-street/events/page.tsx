@@ -55,7 +55,7 @@ export default async function MainStreetEventsPage({ searchParams }: { searchPar
         </p>
       </section>
 
-      <MainStreetFooter shopName={f.content.shopName} skin={skin} />
+      <MainStreetFooter shopName={f.content.shopName} />
     </MainStreetRoot>
   );
 }

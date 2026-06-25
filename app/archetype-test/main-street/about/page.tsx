@@ -54,7 +54,7 @@ export default async function MainStreetAboutPage({ searchParams }: { searchPara
         </p>
       </section>
 
-      <MainStreetFooter shopName={f.content.shopName} skin={skin} />
+      <MainStreetFooter shopName={f.content.shopName} />
     </MainStreetRoot>
   );
 }

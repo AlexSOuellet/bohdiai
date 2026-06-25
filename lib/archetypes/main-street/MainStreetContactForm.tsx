@@ -1,15 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import type { ArchetypeTheme } from '../types';
-import { typeRoleCss, roles } from './chrome';
+import { Type } from './Type';
 
 /** The Main Street contact form. Posts to /api/contact, which requires the
  *  tenant id alongside name/email/message (see lib/validation contactSchema),
  *  so the page render threads the tenant id down as a prop. Structure only:
  *  colors are skin vars, type values are named roles. */
-export function MainStreetContactForm({ skin, tenantId }: { skin: ArchetypeTheme; tenantId: string }) {
-  const r = roles(skin);
+export function MainStreetContactForm({ tenantId }: { tenantId: string }) {
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
@@ -45,7 +43,6 @@ export function MainStreetContactForm({ skin, tenantId }: { skin: ArchetypeTheme
     font: 'inherit',
   };
   const label: React.CSSProperties = {
-    ...typeRoleCss(r.eyebrow),
     color: 'var(--ms-fg)',
     display: 'block',
     marginTop: 18,
@@ -53,32 +50,32 @@ export function MainStreetContactForm({ skin, tenantId }: { skin: ArchetypeTheme
 
   if (state === 'sent') {
     return (
-      <p data-type="body" style={{ ...typeRoleCss(r.body), color: 'var(--ms-fg)' }}>
+      <Type as="p" role="body" style={{ color: 'var(--ms-fg)' }}>
         Thanks — your message is on its way.
-      </p>
+      </Type>
     );
   }
 
   return (
     <form onSubmit={onSubmit} style={{ maxWidth: 520, margin: '0 auto', textAlign: 'left' }}>
-      <label style={label}>
+      <Type as="label" role="eyebrow" style={label}>
         Name
         <input name="name" required style={field} />
-      </label>
-      <label style={label}>
+      </Type>
+      <Type as="label" role="eyebrow" style={label}>
         Email
         <input name="email" type="email" required style={field} />
-      </label>
-      <label style={label}>
+      </Type>
+      <Type as="label" role="eyebrow" style={label}>
         Message
         <textarea name="message" required rows={5} style={field} />
-      </label>
-      <button
+      </Type>
+      <Type
+        as="button"
+        role="navLabel"
         type="submit"
         disabled={state === 'sending'}
-        data-type="navLabel"
         style={{
-          ...typeRoleCss(r.navLabel),
           marginTop: 22,
           background: 'var(--ms-accent)',
           color: 'var(--ms-on-accent)',
@@ -89,11 +86,11 @@ export function MainStreetContactForm({ skin, tenantId }: { skin: ArchetypeTheme
         }}
       >
         {state === 'sending' ? 'Sending…' : 'Send message'}
-      </button>
+      </Type>
       {state === 'error' && (
-        <p data-type="caption" style={{ ...typeRoleCss(r.caption), color: 'var(--ms-accent)', marginTop: 12 }}>
+        <Type as="p" role="caption" style={{ color: 'var(--ms-accent)', marginTop: 12 }}>
           Something went wrong — try again.
-        </p>
+        </Type>
       )}
     </form>
   );

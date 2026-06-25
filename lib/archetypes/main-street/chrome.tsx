@@ -15,6 +15,7 @@ import { MAIN_STREET_FONT_HREFS, type MainStreetRoles } from './skins';
 import { LINK_TARGETS, linkHref, type LinkTarget } from './links';
 import { MainStreetMobileNav } from './MobileNav';
 import { IntroReplayLink } from './IntroReplayLink';
+import { Type } from './Type';
 
 export { LINK_TARGETS, linkHref, type LinkTarget };
 
@@ -42,6 +43,14 @@ export function fluidFontSize(size: number, sizeMobile?: number): string {
   return `clamp(${min}px, ${intercept}px + ${vw}vw, ${max}px)`;
 }
 
+/**
+ * @deprecated Do NOT use in archetype code. Type is now declarative: render text
+ * with the `Type` component (`<Type role="brand" as="h1">`), which the per-role
+ * CSS in `skinVarsCss` paints from `--ms-t-*` variables. Inline type can't do
+ * media queries and wins specificity by brute force (the old editorial-masthead
+ * dead-CSS bug). Only the `app/archetype-test/*` dev-preview pages still call this
+ * pending their delete-or-gate decision; it gets removed when they do.
+ */
 export function typeRoleCss(role: TypeRole): React.CSSProperties {
   return {
     fontFamily: role.family,
@@ -53,6 +62,48 @@ export function typeRoleCss(role: TypeRole): React.CSSProperties {
     textTransform: role.uppercase ? 'uppercase' : undefined,
     fontVariationSettings: role.variationSettings,
   };
+}
+
+/**
+ * Emit a skin's type system as CSS — variables on the root plus one base rule per
+ * role keyed off the `data-type` hook the `Type` component stamps. This is the
+ * one place a skin's type becomes CSS (the color/font-voice analogue of the
+ * `--ms-*` vars). Sizes are the same fluid `clamp()` `typeRoleCss` used, so type
+ * still shrinks on narrow screens — but from the stylesheet now, where the
+ * cascade and media queries work, instead of inline where they don't.
+ */
+function typeRoleVarDecls(roles: Record<string, TypeRole>): string {
+  return Object.entries(roles)
+    .map(([name, role]) =>
+      [
+        `--ms-t-${name}-family:${role.family};`,
+        `--ms-t-${name}-size:${fluidFontSize(role.size, role.sizeMobile)};`,
+        `--ms-t-${name}-weight:${role.weight};`,
+        `--ms-t-${name}-line:${role.lineHeight};`,
+        `--ms-t-${name}-tracking:${role.letterSpacing ?? 'normal'};`,
+        `--ms-t-${name}-style:${role.italic ? 'italic' : 'normal'};`,
+        `--ms-t-${name}-transform:${role.uppercase ? 'uppercase' : 'none'};`,
+        role.variationSettings ? `--ms-t-${name}-vsettings:${role.variationSettings};` : '',
+      ].join(''),
+    )
+    .join('');
+}
+
+function typeRoleBaseRules(roles: Record<string, TypeRole>): string {
+  return Object.keys(roles)
+    .map(
+      (name) =>
+        `.arch-main-street [data-type="${name}"]{` +
+        `font-family:var(--ms-t-${name}-family);` +
+        `font-size:var(--ms-t-${name}-size);` +
+        `font-weight:var(--ms-t-${name}-weight);` +
+        `line-height:var(--ms-t-${name}-line);` +
+        `letter-spacing:var(--ms-t-${name}-tracking);` +
+        `font-style:var(--ms-t-${name}-style);` +
+        `text-transform:var(--ms-t-${name}-transform);` +
+        `font-variation-settings:var(--ms-t-${name}-vsettings,normal);}`,
+    )
+    .join('');
 }
 
 export function fontHref(skin: ArchetypeTheme): string {
@@ -83,9 +134,20 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       --ms-on-media:#F7F5F2;--ms-on-media-muted:rgba(247,245,242,.74);
       --ms-disp:${r.brand.family};--ms-body:${r.body.family};--ms-mono:${r.eyebrow.family};
       --ms-section:${sp.section}px;--ms-loose:${sp.loose}px;--ms-base:${sp.base}px;--ms-tight:${sp.tight}px;
+      ${typeRoleVarDecls(skin.type)}
       background:var(--ms-bg);color:var(--ms-fg);position:relative;isolation:isolate;min-height:100vh;
       font-family:var(--ms-body);line-height:1.6;
     }
+    /* Type system — each role's font, driven by the --ms-t-* vars above. The
+       Type component stamps data-type; these rules paint it. A component that
+       AMPLIFIES a role (the editorial masthead, an italic letter quote) writes a
+       more specific scoped rule against the same [data-type] hook — a real rule,
+       so it can use media queries and the cascade, never inline. */
+    ${typeRoleBaseRules(skin.type)}
+    /* Treatment type accents — skin-agnostic, scoped to a treatment's own class
+       so they win over the base role rule without any inline style. */
+    .arch-main-street .ms-founder-letter [data-type="title"]{font-style:italic}
+    .arch-main-street .ms-founder-card [data-type="quote"]{font-style:italic}
     .arch-main-street a{color:var(--ms-accent);text-decoration:none}
     /* logo lockup — the logo is bare: no plate. Contrast is guaranteed by the
        header surface itself (navContrast in SubHeader / MomentHero). */
@@ -264,35 +326,32 @@ export function resolveNav(nav: ReadonlyArray<NavEntry>): ReadonlyArray<{ href: 
 export function WordmarkLink({
   wordmark,
   logoUrl,
-  role,
 }: {
   wordmark: string;
   logoUrl?: string | undefined;
-  role: TypeRole;
 }) {
   return (
-    <Link href="/" data-type="wordmark" style={{ ...typeRoleCss(role), color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 14 }}>
+    <Type as={Link} role="wordmark" href="/" style={{ color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 14 }}>
       {logoUrl && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={logoUrl} alt="" data-ms-logo style={{ display: 'block' }} />
       )}
       <span>{wordmark}</span>
-    </Link>
+    </Type>
   );
 }
 
-export function Nav({ identity, skin }: { identity: MainStreetContent['identity']; skin: ArchetypeTheme }) {
-  const r = roles(skin);
+export function Nav({ identity }: { identity: MainStreetContent['identity'] }) {
   const items = resolveNav(identity.nav);
   const allItems = [...items, { href: '/cart', label: 'Cart' }];
   return (
     <>
-      <WordmarkLink wordmark={identity.wordmark} logoUrl={identity.logoUrl} role={r.wordmark} />
+      <WordmarkLink wordmark={identity.wordmark} logoUrl={identity.logoUrl} />
       <div className="ms-nav-links">
         {allItems.map((item) => (
-          <a key={item.href} href={item.href} data-type="navLabel" style={{ ...typeRoleCss(r.navLabel), color: 'inherit', opacity: 0.85 }}>
+          <Type as="a" key={item.href} href={item.href} role="navLabel" style={{ color: 'inherit', opacity: 0.85 }}>
             {item.label}
-          </a>
+          </Type>
         ))}
       </div>
       <MainStreetMobileNav items={allItems} />
@@ -300,8 +359,7 @@ export function Nav({ identity, skin }: { identity: MainStreetContent['identity'
   );
 }
 
-export function MainStreetFooter({ shopName, skin }: { shopName: string; skin: ArchetypeTheme }) {
-  const r = roles(skin);
+export function MainStreetFooter({ shopName }: { shopName: string }) {
   return (
     <footer
       style={{
@@ -315,25 +373,23 @@ export function MainStreetFooter({ shopName, skin }: { shopName: string; skin: A
         gap: 20,
       }}
     >
-      <span data-type="wordmark" style={{ ...typeRoleCss(r.wordmark) }}>
-        {shopName}
-      </span>
+      <Type as="span" role="wordmark">{shopName}</Type>
       <div style={{ display: 'flex', gap: 20, alignItems: 'baseline' }}>
-        <Link href="/" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
+        <Type as={Link} role="legal" href="/" style={{ color: 'inherit', opacity: 0.6 }}>
           Home
-        </Link>
-        <IntroReplayLink style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
+        </Type>
+        <IntroReplayLink style={{ color: 'inherit', opacity: 0.6 }}>
           Intro
         </IntroReplayLink>
-        <a href="/privacy" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
+        <Type as="a" role="legal" href="/privacy" style={{ color: 'inherit', opacity: 0.6 }}>
           Privacy
-        </a>
-        <a href="/terms" data-type="legal" style={{ ...typeRoleCss(r.legal), color: 'inherit', opacity: 0.6 }}>
+        </Type>
+        <Type as="a" role="legal" href="/terms" style={{ color: 'inherit', opacity: 0.6 }}>
           Terms
-        </a>
-        <span data-type="legal" style={{ ...typeRoleCss(r.legal), opacity: 0.5 }}>
+        </Type>
+        <Type as="span" role="legal" style={{ opacity: 0.5 }}>
           &copy; {shopName}
-        </span>
+        </Type>
       </div>
     </footer>
   );
