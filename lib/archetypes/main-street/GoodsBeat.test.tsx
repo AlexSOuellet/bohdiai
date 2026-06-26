@@ -65,12 +65,25 @@ describe('GoodsBeat — forced treatment', () => {
     expect((items[0] as HTMLAnchorElement).getAttribute('href')).toBe('/listings/p-0');
   });
 
-  it('carousel renders a stepped rail of product cards with prev/next controls', () => {
-    const { container } = render(<GoodsBeat goods={goods} products={makeProducts(6)} skin={skin} treatment="carousel" />);
-    const items = container.querySelectorAll('[data-ms-carousel-item]');
-    expect(items.length).toBe(6);
+  it('table renders products as objects on a surface, each linking to its listing', () => {
+    const { container } = render(<GoodsBeat goods={goods} products={makeProducts(5)} skin={skin} treatment="table" />);
+    const items = container.querySelectorAll('[data-ms-table-item]');
+    expect(items.length).toBe(5);
     expect((items[0] as HTMLAnchorElement).getAttribute('href')).toBe('/listings/p-0');
-    expect(container.querySelector('[data-ms-carousel-next]')).toBeTruthy();
+  });
+
+  it('index renders a type-led list of rows linking to listings', () => {
+    const { container } = render(<GoodsBeat goods={goods} products={makeProducts(6)} skin={skin} treatment="index" />);
+    const rows = container.querySelectorAll('[data-ms-index-row]');
+    expect(rows.length).toBe(6);
+    expect((rows[0] as HTMLAnchorElement).getAttribute('href')).toBe('/listings/p-0');
+  });
+
+  it('lookbook renders alternating spreads, one per product, linking to listings', () => {
+    const { container } = render(<GoodsBeat goods={goods} products={makeProducts(4)} skin={skin} treatment="lookbook" />);
+    const rows = container.querySelectorAll('[data-ms-lookbook-row]');
+    expect(rows.length).toBe(4);
+    expect((rows[0] as HTMLAnchorElement).getAttribute('href')).toBe('/listings/p-0');
   });
 });
 

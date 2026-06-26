@@ -23,19 +23,29 @@ describe('goods treatments — module registration', () => {
   });
 });
 
-describe('goods treatments — carousel registration', () => {
-  it('registers the carousel treatment', () => {
-    expect(GOODS_TREATMENTS).toContain('carousel');
+describe('goods treatments — table / index / lookbook registration', () => {
+  it('registers the table, index and lookbook treatments', () => {
+    expect(GOODS_TREATMENTS).toContain('table');
+    expect(GOODS_TREATMENTS).toContain('index');
+    expect(GOODS_TREATMENTS).toContain('lookbook');
   });
 
-  it('gives carousel a sample cap and an authoring-menu line', () => {
-    expect(GOODS_SAMPLE_CAP.carousel).toBeGreaterThan(0);
-    expect(GOODS_TREATMENT_MENU.carousel).toBeTruthy();
+  it('does NOT carry the retired carousel treatment (it rhymed with the marquee)', () => {
+    expect(GOODS_TREATMENTS).not.toContain('carousel');
   });
 
-  it('caps the carousel home sampling to its cap', () => {
+  it('gives each a sample cap and an authoring-menu line', () => {
+    for (const t of ['table', 'index', 'lookbook'] as const) {
+      expect(GOODS_SAMPLE_CAP[t]).toBeGreaterThan(0);
+      expect(GOODS_TREATMENT_MENU[t]).toBeTruthy();
+    }
+  });
+
+  it('caps each home sampling to its cap', () => {
     const big = Array.from({ length: 40 }, (_, i) => i);
-    expect(sampleForTreatment(big, 'carousel')).toHaveLength(GOODS_SAMPLE_CAP.carousel);
+    expect(sampleForTreatment(big, 'table')).toHaveLength(GOODS_SAMPLE_CAP.table);
+    expect(sampleForTreatment(big, 'index')).toHaveLength(GOODS_SAMPLE_CAP.index);
+    expect(sampleForTreatment(big, 'lookbook')).toHaveLength(GOODS_SAMPLE_CAP.lookbook);
   });
 });
 

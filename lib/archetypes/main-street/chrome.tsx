@@ -255,26 +255,71 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       .arch-main-street .ms-module-item{opacity:1;transform:none;transition:none}
       .arch-main-street .ms-module-frame .archetype-photo{transition:none}
     }
-    /* goods carousel — a stepped, browsable rail (lifted from the retired Carousel
-       hero; a product rail belongs in goods, not the front door). Native scroll-
-       snap for swipe + arrow buttons for stepping. Skin-agnostic: skin vars + type
-       roles; CSS only, never the inline styles the old hero carried. */
-    .arch-main-street .ms-gcarousel-section{padding:96px 0 110px}
-    .arch-main-street .ms-gcarousel-controls{display:flex;justify-content:flex-end;gap:10px;margin-bottom:22px}
-    .arch-main-street .ms-gcarousel-arrow{width:44px;height:44px;border:1px solid var(--ms-rule);background:transparent;color:var(--ms-fg);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;transition:background .2s,color .2s,border-color .2s}
-    .arch-main-street .ms-gcarousel-arrow:hover{background:var(--ms-accent);color:var(--ms-on-accent);border-color:var(--ms-accent)}
-    .arch-main-street .ms-gcarousel-arrow-glyph{font-size:20px;line-height:1}
-    .arch-main-street .ms-gcarousel-rail{display:flex;gap:22px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:10px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-    .arch-main-street .ms-gcarousel-rail::-webkit-scrollbar{display:none}
-    .arch-main-street .ms-gcarousel-item{scroll-snap-align:start;flex:0 0 clamp(220px,26vw,300px);color:inherit;text-decoration:none}
-    .arch-main-street .ms-gcarousel-shot{position:relative;aspect-ratio:4 / 5;overflow:hidden;border:1px solid var(--ms-rule);background:color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg))}
-    .arch-main-street .ms-gcarousel-shot .archetype-photo{transition:transform .6s ${mo.reveal.easing}}
-    .arch-main-street .ms-gcarousel-item:hover .ms-gcarousel-shot .archetype-photo{transform:scale(1.04)}
-    .arch-main-street .ms-gcarousel-name{display:block;color:var(--ms-fg);margin:14px 0 2px}
-    .arch-main-street .ms-gcarousel-item:hover .ms-gcarousel-name{color:var(--ms-accent)}
-    .arch-main-street .ms-gcarousel-price{display:block;color:var(--ms-fg-muted)}
+    /* goods index — a type-led catalogue list; words lead, the photo flicks in on
+       hover. Skin vars + type roles; thumb graded by the skin. No inline. */
+    .arch-main-street .ms-index-section{padding:96px 0 110px}
+    .arch-main-street .ms-index-list{border-top:1px solid var(--ms-rule)}
+    .arch-main-street .ms-index-row{display:grid;grid-template-columns:58px 1fr auto;align-items:baseline;gap:0 26px;padding:26px 8px;border-bottom:1px solid var(--ms-rule);position:relative;color:inherit;text-decoration:none;transition:padding-left .35s ${mo.reveal.easing}}
+    .arch-main-street .ms-index-row:hover{padding-left:22px}
+    .arch-main-street .ms-index-num{color:var(--ms-accent)}
+    .arch-main-street .ms-index-name{margin:0;color:var(--ms-fg)}
+    .arch-main-street .ms-index-row:hover .ms-index-name{color:var(--ms-accent)}
+    .arch-main-street .ms-index-desc{grid-column:2;color:var(--ms-fg-muted);margin-top:9px}
+    .arch-main-street .ms-index-price{color:var(--ms-fg);align-self:center}
+    .arch-main-street .ms-index-thumb{position:absolute;right:120px;top:50%;width:128px;height:auto;aspect-ratio:3/4;transform:translateY(-50%) rotate(-4deg);box-shadow:0 16px 34px #00000033;opacity:0;pointer-events:none;transition:opacity .3s ease;z-index:4}
+    .arch-main-street .ms-index-row:hover .ms-index-thumb{opacity:1}
+    @media(max-width:860px){.arch-main-street .ms-index-thumb{display:none}}
+    @media(prefers-reduced-motion:reduce){.arch-main-street .ms-index-row{transition:none}}
+    /* goods lookbook — big alternating image+text spreads, magazine. Skin vars +
+       type roles; the flip is a modifier class on every other row. No inline. */
+    .arch-main-street .ms-lookbook{display:flex;flex-direction:column;gap:clamp(56px,8vh,104px)}
+    .arch-main-street .ms-lookbook-row{display:grid;grid-template-columns:1.08fr .92fr;gap:clamp(28px,5vw,72px);align-items:center;color:inherit;text-decoration:none}
+    .arch-main-street .ms-lookbook-row--flip .ms-lookbook-media{order:2}
+    .arch-main-street .ms-lookbook-media{aspect-ratio:4/3;overflow:hidden;border-radius:3px;box-shadow:0 26px 60px #00000022}
+    .arch-main-street .ms-lookbook-media .archetype-photo{transition:transform .8s ${mo.reveal.easing}}
+    .arch-main-street .ms-lookbook-row:hover .ms-lookbook-media .archetype-photo{transform:scale(1.04)}
+    .arch-main-street .ms-lookbook-eyebrow{color:var(--ms-accent);display:flex;align-items:center;gap:12px;margin-bottom:18px}
+    .arch-main-street .ms-lookbook-eyebrow::before{content:"";width:30px;height:2px;background:var(--ms-accent)}
+    .arch-main-street .ms-lookbook-name{margin:0 0 14px;color:var(--ms-fg)}
+    .arch-main-street .ms-lookbook-price{display:block;color:var(--ms-fg-muted);margin-bottom:20px}
+    .arch-main-street .ms-lookbook-desc{color:var(--ms-fg-muted);margin:0 0 24px}
+    .arch-main-street .ms-lookbook-view{color:var(--ms-fg);border-bottom:2px solid var(--ms-fg);padding-bottom:3px;display:inline-block}
+    .arch-main-street .ms-lookbook-row:hover .ms-lookbook-view{color:var(--ms-accent);border-color:var(--ms-accent)}
+    @media(max-width:820px){
+      .arch-main-street .ms-lookbook-row,.arch-main-street .ms-lookbook-row--flip{grid-template-columns:1fr;gap:26px}
+      .arch-main-street .ms-lookbook-row--flip .ms-lookbook-media{order:0}
+    }
+    @media(prefers-reduced-motion:reduce){.arch-main-street .ms-lookbook-media .archetype-photo{transition:none}}
+    /* goods table — a styled tabletop: prints on mats, overlapping, shadowed,
+       rotated, settling on scroll-in. Surface + mats derived from skin vars; type
+       roles; placement + rotation + settle delays are CSS, never inline. */
+    .arch-main-street .ms-table-section{padding:80px 0 96px}
+    .arch-main-street .ms-table-stage{position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:color-mix(in srgb, var(--ms-fg) 12%, var(--ms-bg));box-shadow:inset 0 0 90px #00000022}
+    .arch-main-street .ms-table-item{position:absolute;color:inherit;text-decoration:none;opacity:0;transform:translateY(-22px) rotate(var(--r,0deg));transition:opacity .7s ${mo.reveal.easing},transform .75s ${mo.reveal.easing}}
+    .arch-main-street .ms-table-stage.in .ms-table-item{opacity:1;transform:translateY(0) rotate(var(--r,0deg))}
+    .arch-main-street .ms-table-stage.in .ms-table-item:nth-child(1){transition-delay:.06s}
+    .arch-main-street .ms-table-stage.in .ms-table-item:nth-child(2){transition-delay:.20s}
+    .arch-main-street .ms-table-stage.in .ms-table-item:nth-child(3){transition-delay:.12s}
+    .arch-main-street .ms-table-stage.in .ms-table-item:nth-child(4){transition-delay:.30s}
+    .arch-main-street .ms-table-stage.in .ms-table-item:nth-child(5){transition-delay:.24s}
+    .arch-main-street .ms-table-stage.in .ms-table-item:nth-child(6){transition-delay:.36s}
+    .arch-main-street .ms-table-item:nth-child(1){left:3%;top:8%;width:25%;--r:-5deg}
+    .arch-main-street .ms-table-item:nth-child(2){left:28%;top:25%;width:21%;--r:3.5deg}
+    .arch-main-street .ms-table-item:nth-child(3){left:52%;top:6%;width:26%;--r:-2deg}
+    .arch-main-street .ms-table-item:nth-child(4){left:15%;top:52%;width:22%;--r:4deg}
+    .arch-main-street .ms-table-item:nth-child(5){left:58%;top:48%;width:21%;--r:-6deg}
+    .arch-main-street .ms-table-item:nth-child(6){left:38%;top:36%;width:19%;--r:2deg}
+    .arch-main-street .ms-table-print{display:block;background:var(--ms-bg);padding:9px 9px 0;box-shadow:0 22px 45px #00000038,0 4px 10px #00000022}
+    .arch-main-street .ms-table-shot{display:block;position:relative;aspect-ratio:4/3;overflow:hidden}
+    .arch-main-street .ms-table-cap{display:flex;justify-content:space-between;gap:10px;padding:8px 2px 10px}
+    .arch-main-street .ms-table-name{color:var(--ms-fg)}
+    .arch-main-street .ms-table-price{color:var(--ms-accent)}
+    @media(max-width:820px){
+      .arch-main-street .ms-table-stage{aspect-ratio:auto!important;display:flex;flex-direction:column;gap:22px;padding:10px}
+      .arch-main-street .ms-table-item{position:static!important;left:auto!important;top:auto!important;width:auto!important;transform:none!important;opacity:1!important}
+    }
     @media(prefers-reduced-motion:reduce){
-      .arch-main-street .ms-gcarousel-shot .archetype-photo{transition:none}
+      .arch-main-street .ms-table-item{opacity:1;transform:rotate(var(--r,0deg));transition:none}
     }
     /* product detail — two columns that stack on small screens */
     .arch-main-street .ms-product-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:var(--ms-section);align-items:start}
