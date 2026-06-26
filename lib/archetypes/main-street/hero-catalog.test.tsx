@@ -21,10 +21,6 @@ const props: HeroProps = {
     ctaTarget: 'shop',
   },
   skin,
-  products: [
-    { slug: 'sourdough', name: 'Sourdough', price: '$8', description: 'a good loaf', status: 'active', media: [{ kind: 'image', url: '/s.jpg', alt: 'Sourdough' }], variations: [] },
-    { slug: 'rye', name: 'Rye', price: '$9', description: 'a dark loaf', status: 'active', media: [{ kind: 'image', url: '/r.jpg', alt: 'Rye' }], variations: [] },
-  ],
 };
 
 afterEach(cleanup);
@@ -83,12 +79,6 @@ describe('hero catalog — resolves a hero variant key to a component', () => {
   it('resolves "editorial-cover" to the Editorial cover hero', () => {
     const { container } = render(resolveHero('editorial-cover')(props));
     expect(container.querySelector('[data-ms-hero="editorial-cover"]')).toBeTruthy();
-  });
-
-  it('resolves "carousel" to the Carousel hero with a product item per row', () => {
-    const { container } = render(resolveHero('carousel')(props));
-    expect(container.querySelector('[data-ms-hero="carousel"]')).toBeTruthy();
-    expect(container.querySelectorAll('[data-ms-carousel-item]')).toHaveLength(props.products.length);
   });
 
   it('resolves "collage" to the Collage hero', () => {

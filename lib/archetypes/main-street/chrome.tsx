@@ -255,6 +255,27 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       .arch-main-street .ms-module-item{opacity:1;transform:none;transition:none}
       .arch-main-street .ms-module-frame .archetype-photo{transition:none}
     }
+    /* goods carousel — a stepped, browsable rail (lifted from the retired Carousel
+       hero; a product rail belongs in goods, not the front door). Native scroll-
+       snap for swipe + arrow buttons for stepping. Skin-agnostic: skin vars + type
+       roles; CSS only, never the inline styles the old hero carried. */
+    .arch-main-street .ms-gcarousel-section{padding:96px 0 110px}
+    .arch-main-street .ms-gcarousel-controls{display:flex;justify-content:flex-end;gap:10px;margin-bottom:22px}
+    .arch-main-street .ms-gcarousel-arrow{width:44px;height:44px;border:1px solid var(--ms-rule);background:transparent;color:var(--ms-fg);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;transition:background .2s,color .2s,border-color .2s}
+    .arch-main-street .ms-gcarousel-arrow:hover{background:var(--ms-accent);color:var(--ms-on-accent);border-color:var(--ms-accent)}
+    .arch-main-street .ms-gcarousel-arrow-glyph{font-size:20px;line-height:1}
+    .arch-main-street .ms-gcarousel-rail{display:flex;gap:22px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:10px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .arch-main-street .ms-gcarousel-rail::-webkit-scrollbar{display:none}
+    .arch-main-street .ms-gcarousel-item{scroll-snap-align:start;flex:0 0 clamp(220px,26vw,300px);color:inherit;text-decoration:none}
+    .arch-main-street .ms-gcarousel-shot{position:relative;aspect-ratio:4 / 5;overflow:hidden;border:1px solid var(--ms-rule);background:color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg))}
+    .arch-main-street .ms-gcarousel-shot .archetype-photo{transition:transform .6s ${mo.reveal.easing}}
+    .arch-main-street .ms-gcarousel-item:hover .ms-gcarousel-shot .archetype-photo{transform:scale(1.04)}
+    .arch-main-street .ms-gcarousel-name{display:block;color:var(--ms-fg);margin:14px 0 2px}
+    .arch-main-street .ms-gcarousel-item:hover .ms-gcarousel-name{color:var(--ms-accent)}
+    .arch-main-street .ms-gcarousel-price{display:block;color:var(--ms-fg-muted)}
+    @media(prefers-reduced-motion:reduce){
+      .arch-main-street .ms-gcarousel-shot .archetype-photo{transition:none}
+    }
     /* product detail — two columns that stack on small screens */
     .arch-main-street .ms-product-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:var(--ms-section);align-items:start}
     @media(max-width:768px){

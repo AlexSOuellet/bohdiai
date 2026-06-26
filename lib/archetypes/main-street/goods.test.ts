@@ -23,6 +23,22 @@ describe('goods treatments — module registration', () => {
   });
 });
 
+describe('goods treatments — carousel registration', () => {
+  it('registers the carousel treatment', () => {
+    expect(GOODS_TREATMENTS).toContain('carousel');
+  });
+
+  it('gives carousel a sample cap and an authoring-menu line', () => {
+    expect(GOODS_SAMPLE_CAP.carousel).toBeGreaterThan(0);
+    expect(GOODS_TREATMENT_MENU.carousel).toBeTruthy();
+  });
+
+  it('caps the carousel home sampling to its cap', () => {
+    const big = Array.from({ length: 40 }, (_, i) => i);
+    expect(sampleForTreatment(big, 'carousel')).toHaveLength(GOODS_SAMPLE_CAP.carousel);
+  });
+});
+
 describe('selectGoodsTreatment', () => {
   it('gives a deep catalog the marquee', () => {
     expect(selectGoodsTreatment(12)).toBe('marquee');

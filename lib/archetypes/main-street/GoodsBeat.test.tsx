@@ -64,6 +64,14 @@ describe('GoodsBeat — forced treatment', () => {
     expect(items.length).toBe(6);
     expect((items[0] as HTMLAnchorElement).getAttribute('href')).toBe('/listings/p-0');
   });
+
+  it('carousel renders a stepped rail of product cards with prev/next controls', () => {
+    const { container } = render(<GoodsBeat goods={goods} products={makeProducts(6)} skin={skin} treatment="carousel" />);
+    const items = container.querySelectorAll('[data-ms-carousel-item]');
+    expect(items.length).toBe(6);
+    expect((items[0] as HTMLAnchorElement).getAttribute('href')).toBe('/listings/p-0');
+    expect(container.querySelector('[data-ms-carousel-next]')).toBeTruthy();
+  });
 });
 
 describe('GoodsBeat — sampling + the view-all cue', () => {

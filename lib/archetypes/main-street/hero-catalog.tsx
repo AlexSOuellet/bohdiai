@@ -26,7 +26,6 @@
  */
 import type { ReactElement } from 'react';
 import type { ArchetypeTheme } from '../types';
-import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
 import { MomentHero } from './MomentHero';
 import { SplitHero } from './SplitHero';
@@ -34,7 +33,6 @@ import { StackedHero } from './StackedHero';
 import { TypographicHero } from './TypographicHero';
 import { FloatingCardHero } from './FloatingCardHero';
 import { EditorialCoverHero } from './EditorialCoverHero';
-import { CarouselHero } from './CarouselHero';
 import { CollageHero } from './CollageHero';
 
 /** The shared shape every hero variant is handed — the hero content contract. */
@@ -45,14 +43,13 @@ export interface HeroProps {
   /** Per-shop key (tenant id) for the Story hero's seen-cookie. Heroes that have
    *  no play-through (Split, etc.) ignore it. */
   momentKey?: string | undefined;
-  /** The live catalog rows — used by the Carousel hero's lineup. Other heroes
-   *  ignore them; an empty array is valid (Carousel renders no rail). */
-  products: ProductView[];
 }
 
 /** The hero variant keys a recipe can name. Grows as heroes are built (Stacked,
- *  Typographic, Collage, Floating card, Editorial cover, Carousel). */
-export type HeroVariantKey = 'story' | 'split' | 'split-left' | 'stacked' | 'typographic' | 'floating-card' | 'editorial-cover' | 'carousel' | 'collage';
+ *  Typographic, Collage, Floating card, Editorial cover). A product RAIL is not a
+ *  hero — it lives in goods (the carousel treatment), where a front-door rail
+ *  read as AI-builder slop. */
+export type HeroVariantKey = 'story' | 'split' | 'split-left' | 'stacked' | 'typographic' | 'floating-card' | 'editorial-cover' | 'collage';
 
 /** What the auto-build uses when a tenant has not chosen a hero. */
 export const DEFAULT_HERO_VARIANT: HeroVariantKey = 'story';
@@ -67,7 +64,6 @@ export const HERO_CATALOG: Record<HeroVariantKey, (props: HeroProps) => ReactEle
   typographic: (p) => <TypographicHero identity={p.identity} moment={p.moment} skin={p.skin} />,
   'floating-card': (p) => <FloatingCardHero identity={p.identity} moment={p.moment} skin={p.skin} />,
   'editorial-cover': (p) => <EditorialCoverHero identity={p.identity} moment={p.moment} skin={p.skin} />,
-  carousel: (p) => <CarouselHero identity={p.identity} moment={p.moment} skin={p.skin} products={p.products} />,
   collage: (p) => <CollageHero identity={p.identity} moment={p.moment} skin={p.skin} />,
 };
 

@@ -17,6 +17,7 @@ import { selectGoodsTreatment, sampleForTreatment, type GoodsTreatment } from '.
 import { GoodsMarquee, GoodsViewAllCta, type GoodsViewAll } from './beats';
 import { GoodsProcession } from './GoodsProcession';
 import { GoodsModule } from './GoodsModule';
+import { GoodsCarousel } from './GoodsCarousel';
 import { GoodsSwitcher } from './GoodsSwitcher';
 import { GoodsSlideshow } from './GoodsSlideshow';
 import { Reveal } from './Reveal';
@@ -76,6 +77,8 @@ export function GoodsBeat({
       <GoodsSwitcher goods={goods} products={sample} skin={skin} viewAll={viewAll} />
     ) : chosen === 'slideshow' ? (
       <GoodsSlideshow goods={goods} products={sample} skin={skin} viewAll={viewAll} />
+    ) : chosen === 'carousel' ? (
+      <GoodsCarousel goods={goods} products={sample} skin={skin} viewAll={viewAll} />
     ) : (
       <GoodsMarquee goods={goods} products={sample} skin={skin} viewAll={viewAll} />
     );
