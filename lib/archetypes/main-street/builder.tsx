@@ -20,7 +20,7 @@ import { ShopPage, EventsPage, AboutPage, ContactPage, ContentPage, MainStreetSu
 import { mainStreetArchetype } from './index';
 import { MainStreetContentSchema, type MainStreetContent } from './schemas';
 import { MAIN_STREET_SKINS, SKIN_DESCRIPTIONS } from './skins';
-import { GOODS_TREATMENT_MENU } from './goods';
+import { GOODS_TREATMENT_MENU, GOODS_TREATMENTS } from './goods';
 import { sceneToPrompt } from './scene-prompt';
 import { logoTone, applyAccentOverride } from './logo-contrast';
 
@@ -59,6 +59,9 @@ function authoringSpec(b: AuthoringBrief): string {
   const treatments = (Object.entries(GOODS_TREATMENT_MENU) as Array<[string, string]>)
     .map(([k, desc]) => `    - ${k}: ${desc}`)
     .join('\n');
+  // Derived from the same source as the menu above so the field spec can never
+  // drift out of sync with the registered treatments.
+  const treatmentKeys = GOODS_TREATMENTS.join(' | ');
   const nicheSource = b.nicheBody.trim().slice(0, 12000);
   return `MAIN STREET — a paced sales page in four full-width beats: (1) THE MOMENT, a full-screen held video with a short brand story told one line at a time, cross-fading, landing on the brand and a button; (2) GOODS in motion, a moving showcase of products; (3) THE FOUNDER beside a "find us this week" calendar; (4) THE CLOSE, a big-type sign-off. Layout, fonts, color, spacing, and motion are fixed by the archetype and the skin you already chose. Author the content and write vivid generation prompts for the hero video, the founder portrait, and each product photo.
 
@@ -83,7 +86,7 @@ content (MAX lengths are real; stay comfortably under them):
 - shopName (2-40)
 - identity: { wordmark (2-28), nav (2-4 strings, each 2-18) }
 - moment: { media: { kind: "video" OR "image" — prefer a held VIDEO. The Moment's signature wow is MOTION: a slow cinematic clip that breathes. Choose a still ONLY when there is genuinely nothing to animate — and almost every shop has something (a flame, steam, fabric settling, light shifting across a surface, water moving); prompt: a STRUCTURED scene, fill every group with a short phrase — { composition, subject, environment, atmosphere, camera, lighting, style }. This image is the WOW: it must be CINEMATIC and CARRY EMOTION — the opening shot of a film, evoking the same feeling your story reaches for, the thing the customer is really after. It is NOT a literal product photo and NOT the object the product sits on or in — choose atmosphere, light, and feeling over depiction. Use the groups like a cinematographer: real composition (depth, shallow focus, an evocative angle), expressive lighting (golden, low, raking, backlit), and a filmic style. A person may appear only if it deepens the feeling, and then as a fragment — hands, a silhouette, a figure from behind — never a posed portrait. For VIDEO the subject MUST be neutral and ambient (steam rising, a flame breathing, dust drifting in a light beam, fabric settling) and the motion slow and continuous — NEVER a person performing an action and NEVER a big lighting change, because the clip loops and any action or flash jumps on the restart; alt (4-120) }, story (2-4 strings, each 4-48, NO punctuation at all — not even periods between words; apostrophes and hyphens within a word are fine): the lines together TELL ONE STORY that builds line to line and lands on the brand — not four disconnected slogans. Make the customer FEEL why they want this kind of work — the desire it answers, never how it is made), eyebrow (4-48), brand (2-28), ctaLabel (3-24), secondaryCtaLabel (3-24, optional) }
-- goods: { title (2-48), treatment (one of: marquee | procession | switcher | slideshow — your pick from above), label (2-24, optional), viewAllLabel (2-28, optional) }
+- goods: { title (2-48), treatment (one of: ${treatmentKeys} — your pick from above), label (2-24, optional), viewAllLabel (2-28, optional) }
 - founder: { quote (24-280, first person, ~2 sentences, about WHY they make this and what it means to the people they make for — no process detail, no AI-tell), attribution (4-60), treatment (one of: quote | portrait | letter | card — your pick from the ABOUT TREATMENT menu above), eyebrow (2-24, optional — for the card, e.g. "Since 2019"), heading (2-28, optional — for the card, e.g. "Meet Mara"), photo: { prompt (8-400): the maker, alt (4-120) }, aboutLabel (2-28, optional), findUs (optional — its OWN section on the home, NOT inside the About beat; seed 1-5 plausible sample dates the maker can edit or turn off later): { label (2-28), eventsLabel (2-28, optional), rows (1-5): { day (1-12), where (4-60), time (1-12) } } }
 - close: { label (2-28), headline (6-72), ctaLabel (3-24) }
 - about (the full ABOUT page — the maker's story at LENGTH; the home founder beat is only a teaser of this): { heading (4-60), story (2-5 paragraphs, each 40+, no hard cap — who the maker is, how they got here, and why it matters to the people they make for; warm and personal, never process detail or generic filler) }

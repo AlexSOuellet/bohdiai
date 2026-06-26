@@ -1,8 +1,10 @@
 /**
  * Main Street — the goods-beat treatments.
  *
- * The goods beat has FOUR bodies, all motion-bearing, none of them the banned
- * card grid. Which one a shop wears is BOHDI's choice — he picks it with his
+ * The goods beat has FIVE bodies, none of them the banned card grid. Four are
+ * motion-bearing (marquee / procession / switcher / slideshow); the fifth
+ * (module) is deliberately still — a structural composition. Which one a shop
+ * wears is BOHDI's choice — he picks it with his
  * look (see the builder's authoring spec), so two shops in one niche can read
  * differently and a tenant can try a different one on later. `selectGoodsTreatment`
  * survives only as a deterministic FALLBACK for content authored before the
@@ -17,6 +19,9 @@
  *                  cross-fades the image. Curated, interactive. Small catalogs.
  *  - slideshow   — one product at a time, auto-advancing on a slow cross-fade
  *                  with a gentle drift. Cinematic, hands-off. Small catalogs.
+ *  - module      — an asymmetric editorial composition: products as modules on a
+ *                  strict grid, index numbers, specs, hairline rules. Still and
+ *                  structural — the wow is the composition, not motion. Small/mid.
  *
  * This keeps every Main Street from sharing one shape: the skin changes the
  * world, the treatment changes the bones of the goods beat.
@@ -24,7 +29,7 @@
 
 /** The four goods treatments, as a tuple — the single source the schema enum and
  *  the authoring menu both read so they can never drift apart. */
-export const GOODS_TREATMENTS = ['marquee', 'procession', 'switcher', 'slideshow'] as const;
+export const GOODS_TREATMENTS = ['marquee', 'procession', 'switcher', 'slideshow', 'module'] as const;
 export type GoodsTreatment = (typeof GOODS_TREATMENTS)[number];
 
 /** One-line purpose for each treatment, shown to Bohdi so he picks the one that
@@ -34,6 +39,7 @@ export const GOODS_TREATMENT_MENU: Record<GoodsTreatment, string> = {
   procession: 'full-width products, one per row, each settling out of a slow zoom as it scrolls in — editorial, each piece gets its moment',
   switcher: 'one big image beside a tight list of pieces; pointing at a row cross-fades the image — curated and interactive',
   slideshow: 'one product at a time, auto-advancing on a slow cross-fade with a gentle drift — cinematic and hands-off',
+  module: 'an asymmetric editorial composition — products placed as modules on a strict grid with index numbers, specs, and hairline rules; still and structural, everything visible at once',
 };
 
 /** Catalog-size thresholds. A deep catalog loops in the marquee; a mid catalog
@@ -66,6 +72,7 @@ export const GOODS_SAMPLE_CAP: Record<GoodsTreatment, number> = {
   procession: 5,
   switcher: 6,
   slideshow: 6,
+  module: 6,
 };
 
 /** Take the home-page sampling for a treatment. Selection still runs off the

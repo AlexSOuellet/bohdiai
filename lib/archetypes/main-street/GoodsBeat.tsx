@@ -1,14 +1,14 @@
 /**
  * GOODS — the beat dispatcher.
  *
- * The goods beat has four bodies (marquee / procession / switcher / slideshow).
- * Which one renders is BOHDI's choice, authored as goods.treatment. This
+ * The goods beat has five bodies (marquee / procession / switcher / slideshow /
+ * module). Which one renders is BOHDI's choice, authored as goods.treatment. This
  * component reads that (or an explicit override for previews), and falls back to
  * the legacy size-based pick only for content authored before the field existed.
  * Every body ends with a prominent "see the full catalog" CTA — the home is a
  * SAMPLING, the full catalog lives on the Products page. The marquee, switcher,
- * and slideshow arrive as a whole on a single scroll-reveal; the procession
- * reveals its rows one at a time, so it skips the outer wrapper.
+ * and slideshow arrive as a whole on a single scroll-reveal; the procession and
+ * the module reveal their pieces one at a time, so they skip the outer wrapper.
  */
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
@@ -16,6 +16,7 @@ import type { MainStreetContent } from './schemas';
 import { selectGoodsTreatment, sampleForTreatment, type GoodsTreatment } from './goods';
 import { GoodsMarquee, GoodsViewAllCta, type GoodsViewAll } from './beats';
 import { GoodsProcession } from './GoodsProcession';
+import { GoodsModule } from './GoodsModule';
 import { GoodsSwitcher } from './GoodsSwitcher';
 import { GoodsSlideshow } from './GoodsSlideshow';
 import { Reveal } from './Reveal';
@@ -54,6 +55,17 @@ export function GoodsBeat({
     return (
       <>
         <GoodsProcession goods={goods} products={sample} skin={skin} viewAll={viewAll} />
+        {cta}
+      </>
+    );
+  }
+
+  // The module runs its own scroll-in staggered reveal (like the procession), so
+  // it skips the outer one-shot Reveal wrapper.
+  if (chosen === 'module') {
+    return (
+      <>
+        <GoodsModule goods={goods} products={sample} skin={skin} viewAll={viewAll} />
         {cta}
       </>
     );

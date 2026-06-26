@@ -207,6 +207,54 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
        (random order, staggered via an inline transition-delay) and then rest. */
     .arch-main-street .ms-const-card{opacity:0;transform:translateY(34px) scale(.965);transition:opacity 1.5s ${mo.reveal.easing},transform 1.6s ${mo.reveal.easing}}
     .arch-main-street .ms-const-stage.in .ms-const-card{opacity:1;transform:none}
+    /* goods module — a STILL, structural composition (the Swiss answer to the
+       banned card grid). Asymmetric modules on a strict 12-col grid; index
+       numbers, specs, hairline rules. Skin-agnostic: colors are skin vars, type
+       is roles, imagery is graded by the skin's own .archetype-photo filter (warm
+       for Cozy, cool/mono for Modern). Placement + the staggered reveal are all
+       classes here — never inline; the delays live on nth-child, not the element. */
+    .arch-main-street .ms-module-section{padding:96px 0 110px}
+    .arch-main-street .ms-module-stage{display:grid;grid-template-columns:repeat(12,1fr);column-gap:28px;row-gap:64px;grid-auto-flow:dense}
+    .arch-main-street .ms-module-item{display:block;color:inherit;text-decoration:none;opacity:0;transform:translateY(20px);transition:opacity .9s ${mo.reveal.easing},transform .9s ${mo.reveal.easing}}
+    .arch-main-street .ms-module-stage.in .ms-module-item{opacity:1;transform:none}
+    .arch-main-street .ms-module-stage.in .ms-module-item:nth-child(1){transition-delay:.04s}
+    .arch-main-street .ms-module-stage.in .ms-module-item:nth-child(2){transition-delay:.12s}
+    .arch-main-street .ms-module-stage.in .ms-module-item:nth-child(3){transition-delay:.20s}
+    .arch-main-street .ms-module-stage.in .ms-module-item:nth-child(4){transition-delay:.28s}
+    .arch-main-street .ms-module-stage.in .ms-module-item:nth-child(5){transition-delay:.36s}
+    .arch-main-street .ms-module-stage.in .ms-module-item:nth-child(6){transition-delay:.44s}
+    /* asymmetric placement: varied spans + deliberate vertical drops + one wide
+       piece that breaks the lane. grid-auto-flow:dense backfills holes so a
+       small catalog (3-5) still reads composed. */
+    .arch-main-street .ms-module-item:nth-child(1){grid-column:span 7}
+    .arch-main-street .ms-module-item:nth-child(2){grid-column:span 5;margin-top:92px}
+    .arch-main-street .ms-module-item:nth-child(3){grid-column:span 5}
+    .arch-main-street .ms-module-item:nth-child(4){grid-column:span 4;margin-top:48px}
+    .arch-main-street .ms-module-item:nth-child(5){grid-column:span 3}
+    .arch-main-street .ms-module-item:nth-child(6){grid-column:span 6;margin-top:12px}
+    .arch-main-street .ms-module-frame{position:relative;overflow:hidden;aspect-ratio:4 / 5;border:1px solid var(--ms-rule);background:color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg))}
+    .arch-main-street .ms-module-item:nth-child(1) .ms-module-frame{aspect-ratio:7 / 6}
+    .arch-main-street .ms-module-item:nth-child(4) .ms-module-frame{aspect-ratio:1 / 1}
+    .arch-main-street .ms-module-item:nth-child(6) .ms-module-frame{aspect-ratio:16 / 9}
+    .arch-main-street .ms-module-frame .archetype-photo{transition:transform .6s ${mo.reveal.easing}}
+    .arch-main-street .ms-module-item:hover .ms-module-frame .archetype-photo{transform:scale(1.04)}
+    /* the Swiss data block under each piece — index | name | price, spec beneath */
+    .arch-main-street .ms-module-meta{display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:0 16px;margin-top:16px;padding-top:13px;border-top:1px solid var(--ms-rule)}
+    .arch-main-street .ms-module-idx{color:var(--ms-accent)}
+    .arch-main-street .ms-module-name{color:var(--ms-fg);margin:0}
+    .arch-main-street .ms-module-item:hover .ms-module-name{color:var(--ms-accent)}
+    .arch-main-street .ms-module-price{color:var(--ms-fg-muted)}
+    .arch-main-street .ms-module-spec{grid-column:2 / 3;color:var(--ms-fg-muted);display:block;margin-top:5px}
+    @media(max-width:880px){
+      .arch-main-street .ms-module-stage{row-gap:44px}
+      .arch-main-street .ms-module-item:nth-child(n){grid-column:span 12;margin-top:0}
+      .arch-main-street .ms-module-item:nth-child(1) .ms-module-frame,
+      .arch-main-street .ms-module-item:nth-child(4) .ms-module-frame{aspect-ratio:4 / 3}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .arch-main-street .ms-module-item{opacity:1;transform:none;transition:none}
+      .arch-main-street .ms-module-frame .archetype-photo{transition:none}
+    }
     /* product detail — two columns that stack on small screens */
     .arch-main-street .ms-product-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:var(--ms-section);align-items:start}
     @media(max-width:768px){

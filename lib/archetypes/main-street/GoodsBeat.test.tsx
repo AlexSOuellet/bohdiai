@@ -57,6 +57,13 @@ describe('GoodsBeat — forced treatment', () => {
     expect(container.querySelectorAll('.ms-slide-layer').length).toBe(3);
     expect(container.querySelectorAll('[role="tab"]').length).toBe(3);
   });
+
+  it('module renders a structural composition of product modules linking to listings', () => {
+    const { container } = render(<GoodsBeat goods={goods} products={makeProducts(6)} skin={skin} treatment="module" />);
+    const items = container.querySelectorAll('[data-ms-module-item]');
+    expect(items.length).toBe(6);
+    expect((items[0] as HTMLAnchorElement).getAttribute('href')).toBe('/listings/p-0');
+  });
 });
 
 describe('GoodsBeat — sampling + the view-all cue', () => {

@@ -1,5 +1,27 @@
 import { describe, it, expect } from 'vitest';
-import { selectGoodsTreatment, sampleForTreatment, GOODS_SAMPLE_CAP } from './goods';
+import {
+  selectGoodsTreatment,
+  sampleForTreatment,
+  GOODS_SAMPLE_CAP,
+  GOODS_TREATMENTS,
+  GOODS_TREATMENT_MENU,
+} from './goods';
+
+describe('goods treatments — module registration', () => {
+  it('registers the module treatment', () => {
+    expect(GOODS_TREATMENTS).toContain('module');
+  });
+
+  it('gives module a sample cap and an authoring-menu line', () => {
+    expect(GOODS_SAMPLE_CAP.module).toBeGreaterThan(0);
+    expect(GOODS_TREATMENT_MENU.module).toBeTruthy();
+  });
+
+  it('caps the module home sampling to its cap', () => {
+    const big = Array.from({ length: 40 }, (_, i) => i);
+    expect(sampleForTreatment(big, 'module')).toHaveLength(GOODS_SAMPLE_CAP.module);
+  });
+});
 
 describe('selectGoodsTreatment', () => {
   it('gives a deep catalog the marquee', () => {
