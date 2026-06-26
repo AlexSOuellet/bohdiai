@@ -16,6 +16,7 @@ import { LINK_TARGETS, linkHref, type LinkTarget } from './links';
 import { MainStreetMobileNav } from './MobileNav';
 import { IntroReplayLink } from './IntroReplayLink';
 import { Type } from './Type';
+import { relativeLuminance } from './logo-contrast';
 
 export { LINK_TARGETS, linkHref, type LinkTarget };
 
@@ -121,11 +122,17 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
   const a = skin.atmosphere;
   const mo = skin.motion;
   const r = roles(skin);
+  // Drop-shadow token. A black shadow vanishes on a dark surface, so its strength
+  // tracks the skin's background luminance — subtle on light skins, much stronger
+  // on dark ones — keeping tactile depth (the table prints, the lookbook images)
+  // readable on every skin. One token; treatments never hardcode a shadow color.
+  const shadow = relativeLuminance(p.bg) <= 0.5 ? 'rgba(0,0,0,.52)' : 'rgba(0,0,0,.20)';
   // Type sizes are fluid at the source (see fluidFontSize) — emitted inline as
   // clamp(), so no per-role mobile @media overrides are needed here.
   return `
     .arch-main-street{
       --ms-bg:${p.bg};--ms-fg:${p.fg};--ms-fg-muted:${p.fgMuted};--ms-accent:${p.accent};--ms-on-accent:${p.onAccent ?? p.bg};--ms-rule:${p.rule};
+      --ms-shadow:${shadow};
       --ms-contrast-bg:${c.bg};--ms-contrast-fg:${c.fg};--ms-contrast-fg-muted:${c.fgMuted};
       /* on-media: a fixed, skin-agnostic near-white for text painted OVER hero
          media. The video's luminance is unknown and a skin's contrast surface
@@ -266,7 +273,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-index-row:hover .ms-index-name{color:var(--ms-accent)}
     .arch-main-street .ms-index-desc{grid-column:2;color:var(--ms-fg-muted);margin-top:9px}
     .arch-main-street .ms-index-price{color:var(--ms-fg);align-self:center}
-    .arch-main-street .ms-index-thumb{position:absolute;right:120px;top:50%;width:128px;height:auto;aspect-ratio:3/4;transform:translateY(-50%) rotate(-4deg);box-shadow:0 16px 34px #00000033;opacity:0;pointer-events:none;transition:opacity .3s ease;z-index:4}
+    .arch-main-street .ms-index-thumb{position:absolute;right:120px;top:50%;width:128px;height:auto;aspect-ratio:3/4;transform:translateY(-50%) rotate(-4deg);box-shadow:0 16px 34px var(--ms-shadow);opacity:0;pointer-events:none;transition:opacity .3s ease;z-index:4}
     .arch-main-street .ms-index-row:hover .ms-index-thumb{opacity:1}
     @media(max-width:860px){.arch-main-street .ms-index-thumb{display:none}}
     @media(prefers-reduced-motion:reduce){.arch-main-street .ms-index-row{transition:none}}
@@ -275,7 +282,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-lookbook{display:flex;flex-direction:column;gap:clamp(56px,8vh,104px)}
     .arch-main-street .ms-lookbook-row{display:grid;grid-template-columns:1.08fr .92fr;gap:clamp(28px,5vw,72px);align-items:center;color:inherit;text-decoration:none}
     .arch-main-street .ms-lookbook-row--flip .ms-lookbook-media{order:2}
-    .arch-main-street .ms-lookbook-media{aspect-ratio:4/3;overflow:hidden;border-radius:3px;box-shadow:0 26px 60px #00000022}
+    .arch-main-street .ms-lookbook-media{aspect-ratio:4/3;overflow:hidden;border-radius:3px;box-shadow:0 26px 60px var(--ms-shadow)}
     .arch-main-street .ms-lookbook-media .archetype-photo{transition:transform .8s ${mo.reveal.easing}}
     .arch-main-street .ms-lookbook-row:hover .ms-lookbook-media .archetype-photo{transform:scale(1.04)}
     .arch-main-street .ms-lookbook-eyebrow{color:var(--ms-accent);display:flex;align-items:center;gap:12px;margin-bottom:18px}
@@ -294,7 +301,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
        rotated, settling on scroll-in. Surface + mats derived from skin vars; type
        roles; placement + rotation + settle delays are CSS, never inline. */
     .arch-main-street .ms-table-section{padding:80px 0 96px}
-    .arch-main-street .ms-table-stage{position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:color-mix(in srgb, var(--ms-fg) 12%, var(--ms-bg));box-shadow:inset 0 0 90px #00000022}
+    .arch-main-street .ms-table-stage{position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:color-mix(in srgb, var(--ms-fg) 12%, var(--ms-bg));box-shadow:inset 0 0 90px var(--ms-shadow)}
     .arch-main-street .ms-table-item{position:absolute;color:inherit;text-decoration:none;opacity:0;transform:translateY(-22px) rotate(var(--r,0deg));transition:opacity .7s ${mo.reveal.easing},transform .75s ${mo.reveal.easing}}
     .arch-main-street .ms-table-stage.in .ms-table-item{opacity:1;transform:translateY(0) rotate(var(--r,0deg))}
     .arch-main-street .ms-table-stage.in .ms-table-item:nth-child(1){transition-delay:.06s}
@@ -309,7 +316,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-table-item:nth-child(4){left:15%;top:52%;width:22%;--r:4deg}
     .arch-main-street .ms-table-item:nth-child(5){left:58%;top:48%;width:21%;--r:-6deg}
     .arch-main-street .ms-table-item:nth-child(6){left:38%;top:36%;width:19%;--r:2deg}
-    .arch-main-street .ms-table-print{display:block;background:var(--ms-bg);padding:9px 9px 0;box-shadow:0 22px 45px #00000038,0 4px 10px #00000022}
+    .arch-main-street .ms-table-print{display:block;background:var(--ms-bg);padding:9px 9px 0;border:1px solid var(--ms-rule);box-shadow:0 22px 45px var(--ms-shadow),0 4px 10px var(--ms-shadow)}
     .arch-main-street .ms-table-shot{display:block;position:relative;aspect-ratio:4/3;overflow:hidden}
     .arch-main-street .ms-table-cap{display:flex;justify-content:space-between;gap:10px;padding:8px 2px 10px}
     .arch-main-street .ms-table-name{color:var(--ms-fg)}

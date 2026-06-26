@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
 import { MainStreetRoot, MainStreetFooter, WordmarkLink, skinVarsCss, fluidFontSize, linkHref, LINK_TARGETS, resolveNav, MAIN_STREET_NAV } from './chrome';
 import { MAIN_STREET_SKINS } from './skins';
+import { relativeLuminance } from './logo-contrast';
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 afterEach(cleanup);
@@ -59,6 +60,21 @@ describe('skinVarsCss', () => {
     const css = skinVarsCss(skin);
     // the brand size var is the same fluid clamp fluidFontSize produces
     expect(css).toContain(`--ms-t-brand-size:${fluidFontSize(skin.type['brand']!.size, skin.type['brand']!.sizeMobile)}`);
+  });
+
+  it('tokenizes drop-shadows into an --ms-shadow var — no raw black-hex literals scattered in the CSS', () => {
+    const css = skinVarsCss(skin);
+    expect(css).toContain('--ms-shadow:');
+    expect(css).toContain('var(--ms-shadow)');
+    // the goods-treatment shadows must reference the token, not hardcode black
+    expect(css).not.toMatch(/#0{6}[0-9a-fA-F]{2}/);
+  });
+
+  it('strengthens the shadow token on a dark skin (a black shadow vanishes on a dark surface)', () => {
+    const lightSkin = Object.values(MAIN_STREET_SKINS).find((s) => relativeLuminance(s.palette.bg) > 0.5)!;
+    const darkSkin = Object.values(MAIN_STREET_SKINS).find((s) => relativeLuminance(s.palette.bg) <= 0.5)!;
+    const shadowOf = (css: string) => css.match(/--ms-shadow:[^;]+/)![0];
+    expect(shadowOf(skinVarsCss(darkSkin))).not.toBe(shadowOf(skinVarsCss(lightSkin)));
   });
 });
 
