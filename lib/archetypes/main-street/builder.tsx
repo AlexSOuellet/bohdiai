@@ -20,7 +20,7 @@ import { ShopPage, EventsPage, AboutPage, ContactPage, ContentPage, MainStreetSu
 import { mainStreetArchetype } from './index';
 import { MainStreetContentSchema, type MainStreetContent } from './schemas';
 import { MAIN_STREET_SKINS, SKIN_DESCRIPTIONS } from './skins';
-import { GOODS_TREATMENT_MENU, GOODS_TREATMENTS } from './goods';
+import { GOODS_TREATMENT_MENU, GOODS_TREATMENTS, type GoodsTreatment } from './goods';
 import { sceneToPrompt } from './scene-prompt';
 import { logoTone, applyAccentOverride } from './logo-contrast';
 
@@ -218,6 +218,12 @@ function handOff(a: MainStreetAuthored): PortableStore {
   };
 }
 
+/** Narrow the free-form ?goods= preview string to a real treatment, ignoring
+ *  anything not registered (an unknown value falls back to the authored/size pick). */
+function asGoodsTreatment(v?: string): GoodsTreatment | undefined {
+  return (GOODS_TREATMENTS as readonly string[]).includes(v ?? '') ? (v as GoodsTreatment) : undefined;
+}
+
 export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   key: 'main-street',
   label: 'Main Street',
@@ -232,7 +238,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   applyMedia,
   toPayload,
   handOff,
-  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant }) => {
+  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant, goodsTreatment }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
     const c = withLogo(content as MainStreetContent, logoUrl, brandColors);
     switch (page) {
@@ -245,7 +251,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       case 'contact':
         return <ContactPage content={c} skin={skin} tenantId={tenantId} />;
       default:
-        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} heroVariant={heroVariant} />;
+        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} heroVariant={heroVariant} goodsTreatment={asGoodsTreatment(goodsTreatment)} />;
     }
   },
   renderProduct: ({ content, lookKey, product, logoUrl, brandColors, accentOverride }) => {

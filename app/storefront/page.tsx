@@ -9,8 +9,8 @@ export function generateMetadata(): Promise<Metadata> {
 export default async function StorefrontHomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ v?: string; previewLook?: string; hero?: string }>;
+  searchParams: Promise<{ v?: string; previewLook?: string; hero?: string; goods?: string }>;
 }) {
   const sp = await searchParams;
-  return <StorefrontPage slug="/" version={sp.v} previewLook={sp.previewLook} previewHero={sp.hero} />;
+  return <StorefrontPage slug="/" version={sp.v} previewLook={sp.previewLook} previewHero={sp.hero} previewGoods={sp.goods} />;
 }

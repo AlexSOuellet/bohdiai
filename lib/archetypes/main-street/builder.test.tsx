@@ -1,6 +1,20 @@
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import { MAIN_STREET_SPEC } from './builder';
+import type { ProductView } from '../content';
+
+function productRows(n: number): ProductView[] {
+  return Array.from({ length: n }, (_, i) => ({
+    slug: `p-${i}`,
+    name: `Piece ${i}`,
+    price: `$${i + 1}`,
+    description: '',
+    shortDescription: 'a thing',
+    status: 'active' as const,
+    media: [{ kind: 'image' as const, url: '/x.webp', alt: `Piece ${i}` }],
+    variations: [],
+  }));
+}
 
 function scene() {
   return {
@@ -62,6 +76,23 @@ describe('MAIN_STREET_SPEC.render — accentOverride baked into skin', () => {
     // must appear literally in the rendered HTML (not converted by jsdom since
     // it's inside a <style> string, not a computed property)
     expect(container.innerHTML).toContain('#1d3a2e');
+  });
+});
+
+describe('MAIN_STREET_SPEC.render — goods treatment preview (?goods=)', () => {
+  it('forces the goods module treatment when asked, instead of the size fallback', () => {
+    const parsed = MAIN_STREET_SPEC.parseSubmission(submission('video'));
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    const content = MAIN_STREET_SPEC.toPayload(parsed.authored).content;
+    const el = MAIN_STREET_SPEC.render({
+      content,
+      lookKey: 'main-street-ember',
+      products: productRows(6),
+      goodsTreatment: 'module',
+    });
+    const { container } = render(el);
+    expect(container.querySelectorAll('[data-ms-module-item]').length).toBe(6);
   });
 });
 

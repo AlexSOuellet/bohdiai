@@ -117,6 +117,9 @@ export interface ArchetypeBuildSpec<T = unknown> {
     /** Which hero variant the recipe names (resolved through the archetype's hero
      *  catalog). Optional — omitted falls back to the archetype's default hero. */
     heroVariant?: string | undefined;
+    /** Force the goods-beat treatment (the non-persisting ?goods= preview).
+     *  Optional — omitted falls back to the authored treatment, then catalog size. */
+    goodsTreatment?: string | undefined;
   }): ReactElement;
 
   /** Paint a single product's detail page in the archetype's chrome. The product
