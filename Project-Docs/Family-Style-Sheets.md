@@ -80,16 +80,20 @@ Content used in every mockup is identical (the same candle shop "Marlow Candle C
 
 ## Section defaults (the matrix)
 
-Per family, the default for each section. Only **Hero** is designed so far (proposed); the rest are blank until we design them. Full matrix: `tmp/mockups/defaults-matrix.html`. Sections to design: Products, Collections, Reviews, About, Map/Find-us, Marquee, Nav, Footer, CTA, Contact, FAQ.
+Per family, the default for each section. **Hero** and now **Goods** are designed; the rest are blank until we design them. Full matrix: `tmp/mockups/defaults-matrix.html`. Sections still to design: Collections, Reviews, About, Map/Find-us, Marquee, Nav, Footer, CTA, Contact, FAQ.
 
-| Family | Default hero |
-|---|---|
-| Cozy | Story |
-| Rustic | Stacked |
-| Dark | Floating card *(open)* |
-| Luxury / Elegant | Typographic |
-| Playful | Collage |
-| Modern / Minimalist | Split |
+The eight goods treatments are all BUILT (`lib/archetypes/main-street/`): marquee, procession (the Constellation), switcher, slideshow, module, table, index, lookbook. There is **no family→default-goods wiring in code yet** — that arrives with the family layer; this column is the recorded decision the wiring will read.
+
+| Family | Default hero | Default goods |
+|---|---|---|
+| Cozy | Story | Constellation *(procession)* |
+| Rustic | Stacked | Marquee |
+| Dark | Floating card *(open)* | Slideshow |
+| Luxury / Elegant | Typographic | Switcher *(provisional — Index & Lookbook both fit Luxury; revisit)* |
+| Playful *(= Cheerful mood)* | Collage | **Table** *(locked)* |
+| Modern / Minimalist | Split | Module |
+
+**Goods notes.** Cheerful's default is the **Table** — the warm, tactile, abundant body; it replaced the Carousel, which was dropped for rhyming with the Marquee (two card rows are one idea, not two). The **Index** (type-led) and **Lookbook** (alternating spreads) are new bodies that lean elegant/editorial; they're in the shelf for any family but aren't anyone's locked default yet — the Luxury default may move to one of them. The Table's honest gap: its final form wants staged, cut-out product imagery; today each product photo reads as a print laid on the surface.
 
 ---
 

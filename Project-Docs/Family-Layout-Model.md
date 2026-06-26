@@ -64,7 +64,7 @@ Heroes are the topmost section. All 17 patterns from the mockup, and where each 
 | 5 | Stacked | **Hero** — text block, then a full-width image band |
 | 6 | Collage | **Hero** — headline beside a row of shots (wants ~3 images) |
 | 7 | Product-forward | **Cut** — Alex doesn't like it |
-| 8 | Carousel | **Hero** — niche-dependent (earns its place only with several things to feature) |
+| 8 | Carousel | **Retired** — a product rail isn't a brand front door (it read as AI-builder slop). Lifted into goods, then dropped there too for rhyming with the marquee. Gone. |
 | 9 | Background video | **Folds into Story** — it's Story with the media slot set to video |
 | 10 | Asymmetric editorial | **Folds into Split** — a Split variation unless we push the overlap much harder |
 | 11 | Two-up split | **Collections section** (new section type) |
@@ -75,7 +75,9 @@ Heroes are the topmost section. All 17 patterns from the mockup, and where each 
 | 16 | Map / find-us | **Find-us / events section** |
 | 17 | Marquee | **Band between sections** — not a hero |
 
-So the **heroes** are: Story, Split (L/R), Typographic, Stacked, Collage, Carousel, Floating card, Editorial cover. **New section type to add: Collections** (from two-up and mosaic). Background video and asymmetric editorial fold into existing heroes. Map is the find-us section; marquee is a between-sections band; action hero is a CTA section for now; product-forward is cut.
+So the **heroes** are: Story, Split (L/R), Typographic, Stacked, Collage, Floating card, Editorial cover (seven — Carousel was retired). **New section type to add: Collections** (from two-up and mosaic). Background video and asymmetric editorial fold into existing heroes. Map is the find-us section; marquee is a between-sections band; action hero is a CTA section for now; product-forward is cut.
+
+The **goods (Products) section** is the one beyond the hero that's now built out: **eight treatments** — marquee, procession (the Constellation), switcher, slideshow, module, table, index, lookbook — each a different idea of showing the goods (`lib/archetypes/main-street/`). Per-family goods defaults live in the matrix in `Family-Style-Sheets.md`.
 
 Every section variant reads the same **content contract** for its type — a hero reads label / headline / sub / media / CTA — with optional fields for the few that need extras (Story's fade lines, Collage's three images).
 
