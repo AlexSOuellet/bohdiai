@@ -44,14 +44,25 @@ Ran `npm run test:coverage`, then a small script over `coverage/coverage-summary
 
 ## Result
 
-`npm run test:coverage` → **exit 0**. All-files branches 87.35%; `.ts` and `.tsx` both clear their bars. **1268 tests pass** (was 1196 — 72 added). `tsc --noEmit` clean. `npm run lint` 0 errors (5 pre-existing `<img>` warnings remain, not failures). Committed `7124902` on `session-12/layout-engine`, **not pushed**.
+`npm run test:coverage` → **exit 0**. All-files branches 87.35%; `.ts` and `.tsx` both clear their bars. **1268 tests pass** (was 1196 — 72 added). `tsc --noEmit` clean. `npm run lint` 0 errors (5 pre-existing `<img>` warnings remain, not failures).
+
+**Pushed and verified green in CI.** Two full `Test` runs passed end-to-end on `session-12/layout-engine` (2m45s and 2m40s) — every step including the previously-unreached **E2E (Playwright) — 18 passed**. So the E2E risk below is **resolved, not just hoped**: the workflow's been red ~15 sessions and is now fully green. The GitHub failure emails stop here.
+
+## E2E — resolved
+
+The `Test` job runs `test:coverage` then Playwright E2E; it died at coverage every push for ~15 sessions, so E2E (`e2e/` — waitlist, a11y, browser-demo) never executed. I flagged it as the next suspect — then the post-push CI run actually ran it: **18 E2E tests passed.** No longer an open risk.
+
+## Ride-along: CI action versions bumped
+
+The first green run surfaced a deprecation annotation (Node 20 EOL on `actions/checkout@v4` + `setup-node@v4`). Bumped both to `@v5` (and `upload-artifact@v4` → `@v5` for consistency, since it'd warn the same way whenever a failure triggers it). Next CI run confirmed green with the annotation gone. Commit `bef3903`.
 
 ## Open / flagged
 
-- **E2E hasn't run in CI for ~15 sessions.** The `Test` job runs `test:coverage` then Playwright E2E; it died at coverage every time, so E2E never executed. Now that coverage passes, E2E (`e2e/` — waitlist, a11y, browser-demo against a local `next dev`) will run again. Those are stable Phase-0 specs and unlikely to have regressed, but this was NOT re-verified locally (browser download + localhost quirks make a local run unrepresentative). **If the failure emails persist after push, E2E is the next suspect.**
 - The two `__build*ForTest` exports in `director.ts` / `cinematographer.ts` are now orphaned (no importer). Left in place — harmless, possibly intended for a future prompt-assertion test. Minor cleanup candidate.
-- Not pushed; deploy story unchanged (still `main` frozen at Session 11 — the standing open item).
+- Deploy story unchanged (still `main` frozen at Session 11 — the standing open item). This branch is now pushed to `origin/session-12/layout-engine`.
 
-## Commit
+## Commits (all pushed)
 
 - `7124902` test(session-56): close the CI coverage gate — backfill tests for the real gaps (19 files, +938 / −29)
+- `9d897fe` docs(session-56): recap + brief — CI coverage gate closed
+- `bef3903` ci(session-56): bump checkout/setup-node/upload-artifact to v5 (off deprecated Node 20)
