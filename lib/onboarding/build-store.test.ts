@@ -46,7 +46,7 @@ function makeAdmin() {
 
 vi.mock('@/lib/supabase', () => ({ supabaseAdmin: () => makeAdmin() }));
 
-import { createBuild, markRunning, completeBuild, failBuild, getBuild } from './build-store';
+import { createBuild, markRunning, updateLabel, completeBuild, failBuild, getBuild } from './build-store';
 
 const INPUT = { subdomain: 'ember', shopName: 'Ember', nicheSlug: 'candles', moodKey: 'cozy' };
 
@@ -107,6 +107,20 @@ describe('error surfacing — A3 (no more silent failures)', () => {
     );
   });
 
+  it('updateLabel writes the new label and is best-effort on DB error', async () => {
+    await updateLabel('b-1', 'Generating photos');
+    const u = calls.find((c) => c.op === 'update');
+    expect(u?.payload).toMatchObject({ status_label: 'Generating photos' });
+
+    calls.length = 0;
+    updateResultMock.mockResolvedValueOnce({ error: { message: 'db down' } });
+    await expect(updateLabel('b-1', 'Publishing')).resolves.toBeUndefined();
+    expect(loggerErrorMock).toHaveBeenCalledWith(
+      'build-store: updateLabel failed',
+      expect.objectContaining({ buildId: 'b-1', error: 'db down' }),
+    );
+  });
+
   it('completeBuild logs AND throws on DB error (terminal write must surface)', async () => {
     updateResultMock.mockResolvedValueOnce({ error: { message: 'conflict' } });
     await expect(completeBuild('b-1', 'tenant-9')).rejects.toThrow(/conflict/);
@@ -140,5 +154,11 @@ describe('getBuild', () => {
   it('returns null when not found', async () => {
     selectSingleMock.mockResolvedValue({ data: null, error: { message: 'no row' } });
     expect(await getBuild('nope')).toBeNull();
+  });
+
+  it('narrows an unrecognized status column value to "failed"', async () => {
+    selectSingleMock.mockResolvedValue({ data: { id: 'b-1', status: 'who-knows', status_label: null }, error: null });
+    const row = await getBuild('b-1');
+    expect(row?.status).toBe('failed');
   });
 });

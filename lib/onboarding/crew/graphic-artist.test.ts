@@ -119,4 +119,27 @@ describe('designLook (the Graphic Artist)', () => {
     create.mockResolvedValueOnce({ content: [{ type: 'text', text: 'ok' }], stop_reason: 'end_turn' });
     await expect(designLook(brief, trajectory, story, scene, products)).rejects.toThrow(/did not call set_look/);
   });
+
+  it('rejects a schema-invalid submission (missing founderPhoto), then accepts the fix', async () => {
+    const broken = { skinKey: 'main-street-ember', products: look.products }; // no founderPhoto
+    create.mockResolvedValueOnce(toolMsg(broken)).mockResolvedValueOnce(toolMsg(look));
+    const l = await designLook(brief, trajectory, story, scene, products);
+    expect(l.skinKey).toBe('main-street-ember');
+    expect(create).toHaveBeenCalledTimes(2);
+    expect(JSON.stringify(create.mock.calls[1]![0])).toContain('founderPhoto');
+  });
+
+  it('rejects an extra image prompt for an unknown slug, then accepts the fix', async () => {
+    const extra = { ...look, products: [...look.products, { slug: 'hat', imagePrompt: 'a hat nobody ordered' }] };
+    create.mockResolvedValueOnce(toolMsg(extra)).mockResolvedValueOnce(toolMsg(look));
+    await designLook(brief, trajectory, story, scene, products);
+    expect(JSON.stringify(create.mock.calls[1]![0])).toContain('unknown product slugs');
+  });
+
+  it('rejects duplicate slugs in the look, then accepts the fix', async () => {
+    const dup = { ...look, products: [look.products[0]!, ...look.products] }; // belt twice
+    create.mockResolvedValueOnce(toolMsg(dup)).mockResolvedValueOnce(toolMsg(look));
+    await designLook(brief, trajectory, story, scene, products);
+    expect(JSON.stringify(create.mock.calls[1]![0])).toContain('duplicate product slugs');
+  });
 });

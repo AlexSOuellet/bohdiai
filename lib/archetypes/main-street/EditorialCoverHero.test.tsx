@@ -59,6 +59,22 @@ describe('EditorialCoverHero — giant masthead, brand-as-hero over media', () =
     expect(ctaLink.getAttribute('href')).toBe('/shop');
   });
 
+  it('falls back to /shop when the primary CTA has no authored target', () => {
+    const { ctaTarget, ...noTarget } = moment;
+    void ctaTarget;
+    const { container } = render(<EditorialCoverHero identity={identity} moment={noTarget} skin={skin} />);
+    const ctaLink = Array.from(container.querySelectorAll('a')).find((a) => a.textContent === moment.ctaLabel)!;
+    expect(ctaLink.getAttribute('href')).toBe('/shop');
+  });
+
+  it('renders a second CTA when a secondary label and target are authored', () => {
+    const withSecondary = { ...moment, secondaryCtaLabel: 'Our story', secondaryCtaTarget: 'about' as const };
+    const { container } = render(<EditorialCoverHero identity={identity} moment={withSecondary} skin={skin} />);
+    const secondary = Array.from(container.querySelectorAll('a')).find((a) => a.textContent === 'Our story')!;
+    expect(secondary).toBeTruthy();
+    expect(secondary.getAttribute('href')).toBeTruthy();
+  });
+
   it('amplifies the masthead size in a scoped <style> rule (cover bug regression guard)', () => {
     // The old bug: a font-size set in a <style> rule for [data-type="brand"] was
     // beaten by the skin's INLINE typeRoleCss fontSize (inline > stylesheet), so

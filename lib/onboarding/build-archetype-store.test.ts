@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { recycleProductPhotos, prepareJobPrompt, buildArchetypeStore } from './build-archetype-store';
 import type { MediaJob } from '@/lib/archetypes/builder';
+import { generateMomentVideo, generateMomentStill } from '@/lib/moments/media';
 
 // Stand-ins for the orchestrator's heavy neighbors, so the wiring test can run
 // in memory with no DB, AI, or image calls. Each returns a value we control.
@@ -158,5 +159,73 @@ describe('buildArchetypeStore — Other (describe-and-build)', () => {
     expect(writeArg.nicheFromList).toBe(false);
     expect(writeArg.nicheDescription).toBe('concrete planters with pressed botanicals');
     expect(writeArg.primaryNiche).toBeNull();
+  });
+});
+
+describe('buildArchetypeStore — media generation + niche fallbacks', () => {
+  const applyMedia = vi.fn((authored: unknown, urls: Record<string, string | null>) => ({ authored, urls }));
+  // 1 video + 1 portrait still (feature), 7 product stills (over the cap of 5).
+  const jobs: MediaJob[] = [
+    { id: 'hero', kind: 'video', prompt: 'h', aspect: '16:9', group: 'feature', durationSec: 6 },
+    { id: 'portrait', kind: 'still', prompt: 'p', aspect: '1:1', group: 'feature', subjectIsPerson: true },
+    ...Array.from({ length: 7 }, (_, i): MediaJob => ({
+      id: `product:${i}`,
+      kind: 'still',
+      prompt: `pr${i}`,
+      aspect: '1:1',
+      group: 'product',
+    })),
+  ];
+  const fakeSpec = { key: 'main-street', mediaJobs: () => jobs, applyMedia, toPayload: () => ({ content: {}, products: [] }) };
+
+  beforeEach(() => {
+    single.mockReset();
+    directAndProduce.mockReset();
+    writeArchetypeStorefront.mockReset();
+    applyMedia.mockClear();
+    vi.mocked(generateMomentVideo).mockReset().mockResolvedValue('vid');
+    vi.mocked(generateMomentStill).mockReset().mockResolvedValue('still');
+    directAndProduce.mockResolvedValue({
+      chosen: { spec: fakeSpec, lookKey: 'main-street-ember' },
+      authored: {},
+      choices: { heroKind: 'video', goodsTreatment: 'procession', founderTreatment: 'quote' },
+    });
+    writeArchetypeStorefront.mockResolvedValue({ subdomain: 'wally', tenantId: 'tn_1' });
+  });
+
+  it('generates a video for the video job, stills for the rest (capped at 5 products), and recycles photos across all slots', async () => {
+    single.mockResolvedValue({ data: { display_name: 'Wood', body_markdown: 'b', tenant_type_fit: ['seller'] }, error: null });
+
+    await buildArchetypeStore({ shopName: 'W', subdomain: 'wally', nicheSlug: 'woodworking', moodKey: 'rustic', productCount: 7 });
+
+    // one video job; portrait + 5 (capped) product stills = 6 stills
+    expect(vi.mocked(generateMomentVideo)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(generateMomentVideo).mock.calls[0]![1]).toMatchObject({ durationSec: 6 });
+    expect(vi.mocked(generateMomentStill)).toHaveBeenCalledTimes(6);
+
+    const urls = applyMedia.mock.calls[0]![1];
+    expect(urls['hero']).toBe('vid');
+    expect(urls['portrait']).toBe('still');
+    // all 7 product slots filled by recycling the 5 generated photos
+    expect(urls['product:6']).toBe('still');
+    expect(Object.keys(urls).filter((k) => k.startsWith('product:'))).toHaveLength(7);
+  });
+
+  it('falls back to empty niche body and seller-only tenant types when those columns are null', async () => {
+    single.mockResolvedValue({ data: { display_name: 'Wood', body_markdown: null, tenant_type_fit: null }, error: null });
+
+    await buildArchetypeStore({ shopName: 'W', subdomain: 'wally', nicheSlug: 'woodworking', moodKey: 'rustic', productCount: 1 });
+
+    const brief = directAndProduce.mock.calls[0]![0] as { nicheBody: string };
+    expect(brief.nicheBody).toBe('');
+    const writeArg = writeArchetypeStorefront.mock.calls[0]![0] as { tenantTypes: string[] };
+    expect(writeArg.tenantTypes).toEqual(['seller']);
+  });
+
+  it('throws when a list niche is not found', async () => {
+    single.mockResolvedValue({ data: null, error: { message: 'no row' } });
+    await expect(
+      buildArchetypeStore({ shopName: 'W', subdomain: 'wally', nicheSlug: 'ghost', moodKey: 'rustic', productCount: 1 }),
+    ).rejects.toThrow(/Niche not found: ghost/);
   });
 });

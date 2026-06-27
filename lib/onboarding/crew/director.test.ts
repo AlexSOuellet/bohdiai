@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const create = vi.fn();
 vi.mock('@/lib/anthropic', () => ({ anthropicClient: () => ({ messages: { create } }) }));
 
-import { direct, __buildDirectorPromptForTest } from './director';
+import { direct } from './director';
 import { TrajectorySchema } from './trajectory';
 import type { CrewBrief } from './types';
 

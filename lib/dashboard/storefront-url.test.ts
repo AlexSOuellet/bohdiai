@@ -16,6 +16,18 @@ describe('storefrontOrigin', () => {
   it('handles a preview-deploy host by stripping the leading app label', () => {
     expect(storefrontOrigin('myshop', 'app.bohdiai.dev')).toBe('https://myshop.bohdiai.dev');
   });
+
+  it('uses an apex host as-is when there is no leading app label', () => {
+    expect(storefrontOrigin('myshop', 'bohdiai.com')).toBe('https://myshop.bohdiai.com');
+  });
+
+  it('drops the port suffix for a bare localhost host', () => {
+    expect(storefrontOrigin('ember', 'localhost')).toBe('http://ember.localhost');
+  });
+
+  it('treats a null dashboard host as empty rather than throwing', () => {
+    expect(storefrontOrigin('x', null)).toBe('https://x.');
+  });
 });
 
 describe('previewUrl', () => {

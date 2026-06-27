@@ -68,6 +68,22 @@ describe('StackedHero — text block over a full-width media band', () => {
     expect(ctaLink.getAttribute('href')).toBe('/shop');
   });
 
+  it('falls back to /shop when the primary CTA has no authored target', () => {
+    const { ctaTarget, ...noTarget } = moment;
+    void ctaTarget;
+    const { container } = render(<StackedHero identity={identity} moment={noTarget} skin={skin} />);
+    const ctaLink = Array.from(container.querySelectorAll('a')).find((a) => a.textContent === moment.ctaLabel)!;
+    expect(ctaLink.getAttribute('href')).toBe('/shop');
+  });
+
+  it('renders a second CTA when a secondary label and target are authored', () => {
+    const withSecondary = { ...moment, secondaryCtaLabel: 'Our story', secondaryCtaTarget: 'about' as const };
+    const { container } = render(<StackedHero identity={identity} moment={withSecondary} skin={skin} />);
+    const secondary = Array.from(container.querySelectorAll('a')).find((a) => a.textContent === 'Our story')!;
+    expect(secondary).toBeTruthy();
+    expect(secondary.getAttribute('href')).toBeTruthy();
+  });
+
   it('lays the nav out as a horizontal bar', () => {
     const { container } = render(<StackedHero identity={identity} moment={moment} skin={skin} />);
     const navBar = container.querySelector('[data-ms-hero-nav]') as HTMLElement | null;

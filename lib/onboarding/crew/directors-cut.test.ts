@@ -113,4 +113,43 @@ describe('directorsCut (the coherence pass)', () => {
     create.mockResolvedValueOnce({ content: [{ type: 'text', text: 'looks good' }], stop_reason: 'end_turn' });
     await expect(directorsCut(brief, trajectory, current)).rejects.toThrow(/did not call final_cut/);
   });
+
+  it('applies a valid moment revision and keeps the other pieces by reference', async () => {
+    const revisedMoment = { ...current.moment, alt: 'a worn hand resting on cut leather' };
+    create.mockResolvedValueOnce(toolMsg({ notes: 'tightened the alt', moment: revisedMoment }));
+    const out = await directorsCut(brief, trajectory, current);
+    expect(out.moment.alt).toBe('a worn hand resting on cut leather');
+    expect(out.copy).toBe(current.copy);
+    expect(out.look).toBe(current.look);
+  });
+
+  it('rejects a schema-invalid copy revision, then settles', async () => {
+    create.mockResolvedValueOnce(toolMsg({ copy: { shopName: 'x' } })).mockResolvedValueOnce(toolMsg({ notes: 'ok' }));
+    const out = await directorsCut(brief, trajectory, current);
+    expect(create).toHaveBeenCalledTimes(2);
+    expect(JSON.stringify(create.mock.calls[1]![0])).toContain('copy.');
+    expect(out).toEqual(current);
+  });
+
+  it('rejects a schema-invalid moment revision, then settles', async () => {
+    create.mockResolvedValueOnce(toolMsg({ moment: { kind: 'video' } })).mockResolvedValueOnce(toolMsg({ notes: 'ok' }));
+    await directorsCut(brief, trajectory, current);
+    expect(JSON.stringify(create.mock.calls[1]![0])).toContain('moment.');
+  });
+
+  it('rejects a schema-invalid look revision, then settles', async () => {
+    create.mockResolvedValueOnce(toolMsg({ look: { skinKey: 'main-street-ember' } })).mockResolvedValueOnce(toolMsg({ notes: 'ok' }));
+    await directorsCut(brief, trajectory, current);
+    expect(JSON.stringify(create.mock.calls[1]![0])).toContain('look.');
+  });
+
+  it('rejects a look revision with duplicate product slugs, then settles', async () => {
+    const dupLook = {
+      ...current.look,
+      products: [current.look.products[0]!, current.look.products[0]!, current.look.products[1]!, current.look.products[2]!],
+    };
+    create.mockResolvedValueOnce(toolMsg({ look: dupLook })).mockResolvedValueOnce(toolMsg({ notes: 'ok' }));
+    await directorsCut(brief, trajectory, current);
+    expect(JSON.stringify(create.mock.calls[1]![0])).toContain('duplicate product slugs');
+  });
 });

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const create = vi.fn();
 vi.mock('@/lib/anthropic', () => ({ anthropicClient: () => ({ messages: { create } }) }));
 
-import { shootMoment, MomentSceneSchema, buildCinematographerPrompt, __buildCinematographerPromptForTest } from './cinematographer';
+import { shootMoment, MomentSceneSchema, buildCinematographerPrompt } from './cinematographer';
 import type { Trajectory } from './trajectory';
 
 const trajectory: Trajectory = {
