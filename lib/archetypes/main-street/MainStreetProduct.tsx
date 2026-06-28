@@ -70,7 +70,7 @@ export function MainStreetProduct({
           borderBottom: '1px solid var(--ms-rule)',
         }}
       >
-        <Nav identity={content.identity} />
+        <Nav identity={content.identity} currentHref="/shop" />
       </nav>
 
       <div className="ms-wrap" style={{ paddingTop: sp.section, paddingBottom: sp.section }}>

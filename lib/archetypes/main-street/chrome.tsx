@@ -192,6 +192,13 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     /* cta-forward — one link elevated to a filled accent button (the shop). */
     .arch-main-street .ms-nav-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:9px 18px;border-radius:2px;transition:opacity .3s ease}
     .arch-main-street .ms-nav-cta:hover{opacity:.88}
+    /* current-page highlight — the active link reads full-strength with a thin
+       underline in the surface's OWN text color, so it shows over a hero image or
+       on a solid sub-page header alike (accent could vanish over media). */
+    .arch-main-street .ms-nav-link{color:inherit;opacity:.85;transition:opacity .25s ease}
+    .arch-main-street .ms-nav-link:hover{opacity:1}
+    .arch-main-street .ms-nav-link--active{opacity:1;position:relative}
+    .arch-main-street .ms-nav-link--active::after{content:"";position:absolute;left:0;right:0;bottom:-5px;height:2px;background:currentColor;opacity:.7}
     .arch-main-street .ms-burger{background:none;border:0;color:inherit;cursor:pointer;padding:8px;display:inline-flex;flex-direction:column;gap:5px}
     .arch-main-street .ms-burger-line{display:block;width:24px;height:2px;background:currentColor}
     .arch-main-street .ms-mobile-overlay{position:fixed;inset:0;z-index:100;background:var(--ms-bg);color:var(--ms-fg);display:flex;flex-direction:column;justify-content:center;align-items:center;animation:ms-overlay-in .4s ${mo.reveal.easing}}
@@ -532,9 +539,15 @@ export function WordmarkLink({
   );
 }
 
-function NavLink({ href, label }: { href: string; label: string }) {
+function NavLink({ href, label, active = false }: { href: string; label: string; active?: boolean }) {
   return (
-    <Type as="a" href={href} role="navLabel" style={{ color: 'inherit', opacity: 0.85 }}>
+    <Type
+      as="a"
+      href={href}
+      role="navLabel"
+      aria-current={active ? 'page' : undefined}
+      className={active ? 'ms-nav-link ms-nav-link--active' : 'ms-nav-link'}
+    >
       {label}
     </Type>
   );
@@ -546,7 +559,15 @@ function NavLink({ href, label }: { href: string; label: string }) {
  *  same wordmark + burger on phones (the link groups hide under 640px). The shape
  *  is read here so every nav site (each hero, every sub-page header, the product
  *  page) picks the variant up from the identity with no extra wiring. */
-export function Nav({ identity }: { identity: MainStreetContent['identity'] }) {
+export function Nav({
+  identity,
+  currentHref,
+}: {
+  identity: MainStreetContent['identity'];
+  /** The href of the page being viewed — the matching nav link is marked active.
+   *  Absent on the home (the wordmark is "home"), so no link is current there. */
+  currentHref?: string | undefined;
+}) {
   const items = resolveNav(identity.nav);
   const allItems = [...items, { href: '/cart', label: 'Cart' }];
   const variant = identity.navVariant ?? 'standard';
@@ -559,13 +580,13 @@ export function Nav({ identity }: { identity: MainStreetContent['identity'] }) {
       <div className="ms-nav-split">
         <div className="ms-nav-links ms-nav-split-left">
           {left.map((item) => (
-            <NavLink key={item.href} href={item.href} label={item.label} />
+            <NavLink key={item.href} href={item.href} label={item.label} active={item.href === currentHref} />
           ))}
         </div>
         <WordmarkLink wordmark={identity.wordmark} logoUrl={identity.logoUrl} />
         <div className="ms-nav-links ms-nav-split-right">
           {right.map((item) => (
-            <NavLink key={item.href} href={item.href} label={item.label} />
+            <NavLink key={item.href} href={item.href} label={item.label} active={item.href === currentHref} />
           ))}
         </div>
         <MainStreetMobileNav items={allItems} />
@@ -595,11 +616,18 @@ export function Nav({ identity }: { identity: MainStreetContent['identity'] }) {
         <div className="ms-nav-links">
           {allItems.map((item, i) =>
             i === idx ? (
-              <Type as="a" key={item.href} href={item.href} role="navLabel" className="ms-nav-cta">
+              <Type
+                as="a"
+                key={item.href}
+                href={item.href}
+                role="navLabel"
+                className="ms-nav-cta"
+                aria-current={item.href === currentHref ? 'page' : undefined}
+              >
                 {item.label}
               </Type>
             ) : (
-              <NavLink key={item.href} href={item.href} label={item.label} />
+              <NavLink key={item.href} href={item.href} label={item.label} active={item.href === currentHref} />
             ),
           )}
         </div>
@@ -613,7 +641,7 @@ export function Nav({ identity }: { identity: MainStreetContent['identity'] }) {
       <WordmarkLink wordmark={identity.wordmark} logoUrl={identity.logoUrl} />
       <div className="ms-nav-links">
         {allItems.map((item) => (
-          <NavLink key={item.href} href={item.href} label={item.label} />
+          <NavLink key={item.href} href={item.href} label={item.label} active={item.href === currentHref} />
         ))}
       </div>
       <MainStreetMobileNav items={allItems} />

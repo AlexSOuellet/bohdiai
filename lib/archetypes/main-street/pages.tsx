@@ -9,14 +9,13 @@ import type { ReactNode } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
-import { MainStreetRoot, MainStreetFooter, Media, MAIN_STREET_NAV, WordmarkLink } from './chrome';
+import { MainStreetRoot, MainStreetFooter, Media, Nav } from './chrome';
 import { Type } from './Type';
-import { MainStreetMobileNav } from './MobileNav';
 import { navContrast, relativeLuminance } from './logo-contrast';
 import { FindUsList } from './FounderBeats';
 import { MainStreetContactForm } from './MainStreetContactForm';
 
-function SubHeader({ content, skin }: { content: MainStreetContent; skin: ArchetypeTheme }) {
+function SubHeader({ content, skin, current }: { content: MainStreetContent; skin: ArchetypeTheme; current?: string | undefined }) {
   const backdrop = relativeLuminance(skin.palette.bg) > 0.5 ? 'light' : 'dark';
   const surface = navContrast(content.identity.logoTone ?? 'unknown', backdrop);
   return (
@@ -44,18 +43,7 @@ function SubHeader({ content, skin }: { content: MainStreetContent; skin: Archet
         flexWrap: 'wrap',
       }}
     >
-      <WordmarkLink wordmark={content.identity.wordmark} logoUrl={content.identity.logoUrl} />
-      <nav className="ms-nav-links" aria-label="Site">
-        {MAIN_STREET_NAV.map((item) => (
-          <Type key={item.href} as="a" role="navLabel" href={item.href} style={{ color: 'inherit', opacity: 0.85 }}>
-            {item.label}
-          </Type>
-        ))}
-        <Type as="a" role="navLabel" href="/cart" style={{ color: 'inherit', opacity: 0.85 }}>
-          Cart
-        </Type>
-      </nav>
-      <MainStreetMobileNav items={[...MAIN_STREET_NAV, { href: '/cart', label: 'Cart' }]} />
+      <Nav identity={content.identity} currentHref={current} />
     </header>
   );
 }
@@ -64,10 +52,10 @@ function SubHeader({ content, skin }: { content: MainStreetContent; skin: Archet
  *  paddingTop on <main> clears the fixed SubHeader (~80px desktop, ~68px mobile)
  *  so content starts below the nav rather than under it. The home hero does not
  *  need this because its 100vh hero already sits under the fixed nav. */
-export function MainStreetSubPage({ content, skin, children }: { content: MainStreetContent; skin: ArchetypeTheme; children: ReactNode }) {
+export function MainStreetSubPage({ content, skin, children, current }: { content: MainStreetContent; skin: ArchetypeTheme; children: ReactNode; current?: string | undefined }) {
   return (
     <MainStreetRoot skin={skin}>
-      <SubHeader content={content} skin={skin} />
+      <SubHeader content={content} skin={skin} current={current} />
       <main className="ms-subpage-main">{children}</main>
       <MainStreetFooter shopName={content.shopName} />
     </MainStreetRoot>
@@ -129,7 +117,7 @@ export function ContentPage({ content, skin, title, body, html }: { content: Mai
  *  breakpoints). The home shows a sampling; this shows everything. */
 export function ShopPage({ content, skin, products }: { content: MainStreetContent; skin: ArchetypeTheme; products: ProductView[] }) {
   return (
-    <MainStreetSubPage content={content} skin={skin}>
+    <MainStreetSubPage content={content} skin={skin} current="/shop">
       <PageHead eyebrow={content.goods.label} title={content.goods.title} skin={skin} />
       <section data-ms-shop className="ms-wrap" style={{ padding: '24px 40px 110px' }}>
         {products.length === 0 ? (
@@ -167,7 +155,7 @@ export function AboutPage({ content, skin }: { content: MainStreetContent; skin:
   const heading = about?.heading ?? 'Our story';
   const paragraphs = about?.story ?? [content.founder.quote];
   return (
-    <MainStreetSubPage content={content} skin={skin}>
+    <MainStreetSubPage content={content} skin={skin} current="/about">
       <PageHead title={heading} skin={skin} />
       <section data-ms-about className="ms-wrap" style={{ padding: '24px 40px 110px', maxWidth: 820 }}>
         <div style={{ position: 'relative', aspectRatio: '16 / 10', borderRadius: 4, overflow: 'hidden', marginBottom: 44 }}>
@@ -190,7 +178,7 @@ export function ContactPage({ content, skin, tenantId }: { content: MainStreetCo
   const heading = content.contact?.heading ?? 'Get in touch';
   const intro = content.contact?.intro ?? 'We would love to hear from you — questions, custom requests, or just to say hello.';
   return (
-    <MainStreetSubPage content={content} skin={skin}>
+    <MainStreetSubPage content={content} skin={skin} current="/contact">
       <PageHead title={heading} skin={skin} />
       <section data-ms-contact className="ms-wrap" style={{ padding: '24px 40px 120px', maxWidth: 680, textAlign: 'center' }}>
         <Type as="p" role="body" style={{ color: 'var(--ms-fg)', margin: '0 auto', maxWidth: '52ch' }}>
@@ -212,7 +200,7 @@ export function EventsPage({ content, skin }: { content: MainStreetContent; skin
   const findUs = content.founder.findUs;
   const hasDates = !!findUs && findUs.rows.length > 0;
   return (
-    <MainStreetSubPage content={content} skin={skin}>
+    <MainStreetSubPage content={content} skin={skin} current="/events">
       <PageHead eyebrow={hasDates ? findUs!.label : undefined} title="Where to find us" skin={skin} />
       <section data-ms-events className="ms-wrap" style={{ padding: '24px 40px 120px', maxWidth: 780 }}>
         {hasDates ? (

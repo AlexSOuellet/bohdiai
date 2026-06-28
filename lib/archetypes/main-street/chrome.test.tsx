@@ -218,6 +218,20 @@ describe('Nav — split-center variant', () => {
     expect(container.querySelectorAll('.ms-nav-cta').length).toBe(1);
     expect(container.querySelectorAll('.ms-nav-links a').length).toBeGreaterThan(1);
   });
+
+  it('marks the current-page link active, and only that one', () => {
+    const { container } = render(<Nav identity={baseIdentity} currentHref="/about" />);
+    const active = container.querySelector('.ms-nav-link--active');
+    expect(active).not.toBeNull();
+    expect(active!.getAttribute('href')).toBe('/about');
+    expect(active!.getAttribute('aria-current')).toBe('page');
+    expect(container.querySelectorAll('.ms-nav-link--active').length).toBe(1);
+  });
+
+  it('marks no link active on the home (no current page)', () => {
+    const { container } = render(<Nav identity={baseIdentity} />);
+    expect(container.querySelector('.ms-nav-link--active')).toBeNull();
+  });
 });
 
 describe('MainStreetFooter', () => {
