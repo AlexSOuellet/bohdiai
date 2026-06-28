@@ -106,6 +106,13 @@ export const FindUsRow = z.object({
  *  draft schema read the same source and can never drift apart. */
 export const FOUNDER_TREATMENTS = ['quote', 'portrait', 'letter', 'card', 'workbench', 'editorial', 'signature'] as const;
 
+/** The two nav layouts a store can wear: the standard wordmark-left / links-right
+ *  bar, or a split bar with the wordmark CENTERED and the links flanking it. A
+ *  family-level look choice (recorded for the family layer, previewable via ?nav=);
+ *  default is standard. */
+export const NAV_VARIANTS = ['standard', 'split-center'] as const;
+export type NavVariant = (typeof NAV_VARIANTS)[number];
+
 export const MainStreetContentSchema = z.object({
   /** The shop's actual name — used in the footer + as the default wordmark. */
   shopName: z.string().min(1),
@@ -121,6 +128,10 @@ export const MainStreetContentSchema = z.object({
      *  render — not authored). Used by chrome to guarantee logo readability without
      *  a plate. Absent when there is no logo or the analysis produced no usable hex. */
     logoTone: z.enum(['light', 'dark', 'unknown']).optional(),
+    /** Which nav layout this store wears (a family-level look choice). Optional —
+     *  absent renders the standard wordmark-left bar; 'split-center' centers the
+     *  wordmark with links flanking it. */
+    navVariant: z.enum(NAV_VARIANTS).optional(),
   }),
 
   /** BEAT 1 — the moment is the hero. Held media + a story told one line at a

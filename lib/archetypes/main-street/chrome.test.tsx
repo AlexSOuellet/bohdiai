@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
-import { MainStreetRoot, MainStreetFooter, WordmarkLink, skinVarsCss, fluidFontSize, linkHref, LINK_TARGETS, resolveNav, MAIN_STREET_NAV } from './chrome';
+import { MainStreetRoot, MainStreetFooter, WordmarkLink, Nav, skinVarsCss, fluidFontSize, linkHref, LINK_TARGETS, resolveNav, MAIN_STREET_NAV } from './chrome';
 import { MAIN_STREET_SKINS } from './skins';
 import { relativeLuminance } from './logo-contrast';
 
@@ -162,6 +162,41 @@ describe('WordmarkLink — logo-contains-wordmark doubling fix', () => {
     );
     expect(container.querySelector('img[data-ms-logo]')).toBeTruthy();
     expect(queryByText('Ember Candles')).toBeTruthy();
+  });
+});
+
+describe('Nav — split-center variant', () => {
+  const baseIdentity = {
+    wordmark: 'Ember Candles',
+    nav: [
+      { label: 'Shop', target: 'shop' as const },
+      { label: 'About', target: 'about' as const },
+      { label: 'Events', target: 'events' as const },
+      { label: 'Contact', target: 'contact' as const },
+    ],
+  };
+
+  it('renders the standard bar with no split grid by default', () => {
+    const { container } = render(<Nav identity={baseIdentity} />);
+    expect(container.querySelector('.ms-nav-split')).toBeNull();
+    expect(container.querySelector('.ms-nav-links')).not.toBeNull();
+  });
+
+  it('centers the wordmark between two link groups when navVariant is split-center', () => {
+    const { container, getByText } = render(<Nav identity={{ ...baseIdentity, navVariant: 'split-center' }} />);
+    const split = container.querySelector('.ms-nav-split');
+    const left = container.querySelector('.ms-nav-split-left');
+    const right = container.querySelector('.ms-nav-split-right');
+    expect(split).not.toBeNull();
+    expect(left).not.toBeNull();
+    expect(right).not.toBeNull();
+    // links are split across BOTH sides, not stacked on one
+    expect(left!.querySelectorAll('a').length).toBeGreaterThan(0);
+    expect(right!.querySelectorAll('a').length).toBeGreaterThan(0);
+    // the wordmark stands on its own between the groups, not inside either
+    expect(getByText('Ember Candles')).toBeTruthy();
+    expect(left!.textContent).not.toContain('Ember Candles');
+    expect(right!.textContent).not.toContain('Ember Candles');
   });
 });
 

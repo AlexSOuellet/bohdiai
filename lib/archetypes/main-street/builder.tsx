@@ -18,7 +18,7 @@ import { MainStreet } from './MainStreet';
 import { MainStreetProduct } from './MainStreetProduct';
 import { ShopPage, EventsPage, AboutPage, ContactPage, ContentPage, MainStreetSubPage } from './pages';
 import { mainStreetArchetype } from './index';
-import { MainStreetContentSchema, FOUNDER_TREATMENTS, type MainStreetContent } from './schemas';
+import { MainStreetContentSchema, FOUNDER_TREATMENTS, NAV_VARIANTS, type MainStreetContent, type NavVariant } from './schemas';
 import { MAIN_STREET_SKINS, SKIN_DESCRIPTIONS } from './skins';
 import { GOODS_TREATMENT_MENU, GOODS_TREATMENTS, type GoodsTreatment } from './goods';
 import type { FounderTreatment } from './founder';
@@ -231,6 +231,18 @@ function asFounderTreatment(v?: string): FounderTreatment | undefined {
   return (FOUNDER_TREATMENTS as readonly string[]).includes(v ?? '') ? (v as FounderTreatment) : undefined;
 }
 
+/** Narrow the free-form ?nav= preview string to a real nav variant. */
+function asNavVariant(v?: string): NavVariant | undefined {
+  return (NAV_VARIANTS as readonly string[]).includes(v ?? '') ? (v as NavVariant) : undefined;
+}
+
+/** Apply a nav-variant override (the ?nav= preview) onto the content's identity, so
+ *  every nav site — each hero, every sub-page header, the product page — reads it. */
+function withNav(content: MainStreetContent, navVariant?: NavVariant): MainStreetContent {
+  if (!navVariant) return content;
+  return { ...content, identity: { ...content.identity, navVariant } };
+}
+
 export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   key: 'main-street',
   label: 'Main Street',
@@ -245,9 +257,9 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   applyMedia,
   toPayload,
   handOff,
-  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant, goodsTreatment, founderTreatment }) => {
+  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant, goodsTreatment, founderTreatment, navVariant }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
-    const c = withLogo(content as MainStreetContent, logoUrl, brandColors);
+    const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), asNavVariant(navVariant));
     switch (page) {
       case 'shop':
         return <ShopPage content={c} skin={skin} products={products} />;

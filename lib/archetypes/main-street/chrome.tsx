@@ -172,6 +172,16 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       .arch-main-street .ms-nav-links{display:none}
       .arch-main-street .ms-nav-toggle{display:inline-flex}
     }
+    /* split nav — the wordmark centered with links flanking it. A 1fr/auto/1fr grid
+       keeps the wordmark dead-center regardless of how the links balance. On a phone
+       the link groups hide and the burger appears, so the grid collapses to the same
+       wordmark-left / burger-right shape as the standard bar. */
+    .arch-main-street .ms-nav-split{width:100%;min-width:0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:24px}
+    .arch-main-street .ms-nav-split-left{justify-content:flex-start;min-width:0}
+    .arch-main-street .ms-nav-split-right{justify-content:flex-end;min-width:0}
+    @media(max-width:640px){
+      .arch-main-street .ms-nav-split{grid-template-columns:1fr auto;gap:0}
+    }
     .arch-main-street .ms-burger{background:none;border:0;color:inherit;cursor:pointer;padding:8px;display:inline-flex;flex-direction:column;gap:5px}
     .arch-main-street .ms-burger-line{display:block;width:24px;height:2px;background:currentColor}
     .arch-main-street .ms-mobile-overlay{position:fixed;inset:0;z-index:100;background:var(--ms-bg);color:var(--ms-fg);display:flex;flex-direction:column;justify-content:center;align-items:center;animation:ms-overlay-in .4s ${mo.reveal.easing}}
@@ -512,17 +522,52 @@ export function WordmarkLink({
   );
 }
 
+function NavLink({ href, label }: { href: string; label: string }) {
+  return (
+    <Type as="a" href={href} role="navLabel" style={{ color: 'inherit', opacity: 0.85 }}>
+      {label}
+    </Type>
+  );
+}
+
+/** The header nav. Two layouts, chosen by `identity.navVariant` (a family-level
+ *  look choice): the default wordmark-left / links-right bar, or 'split-center' —
+ *  the wordmark centered with the links split to either side. Both collapse to the
+ *  same wordmark + burger on phones (the link groups hide under 640px). The shape
+ *  is read here so every nav site (each hero, every sub-page header, the product
+ *  page) picks the variant up from the identity with no extra wiring. */
 export function Nav({ identity }: { identity: MainStreetContent['identity'] }) {
   const items = resolveNav(identity.nav);
   const allItems = [...items, { href: '/cart', label: 'Cart' }];
+
+  if ((identity.navVariant ?? 'standard') === 'split-center') {
+    const mid = Math.ceil(allItems.length / 2);
+    const left = allItems.slice(0, mid);
+    const right = allItems.slice(mid);
+    return (
+      <div className="ms-nav-split">
+        <div className="ms-nav-links ms-nav-split-left">
+          {left.map((item) => (
+            <NavLink key={item.href} href={item.href} label={item.label} />
+          ))}
+        </div>
+        <WordmarkLink wordmark={identity.wordmark} logoUrl={identity.logoUrl} />
+        <div className="ms-nav-links ms-nav-split-right">
+          {right.map((item) => (
+            <NavLink key={item.href} href={item.href} label={item.label} />
+          ))}
+        </div>
+        <MainStreetMobileNav items={allItems} />
+      </div>
+    );
+  }
+
   return (
     <>
       <WordmarkLink wordmark={identity.wordmark} logoUrl={identity.logoUrl} />
       <div className="ms-nav-links">
         {allItems.map((item) => (
-          <Type as="a" key={item.href} href={item.href} role="navLabel" style={{ color: 'inherit', opacity: 0.85 }}>
-            {item.label}
-          </Type>
+          <NavLink key={item.href} href={item.href} label={item.label} />
         ))}
       </div>
       <MainStreetMobileNav items={allItems} />
