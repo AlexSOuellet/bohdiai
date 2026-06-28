@@ -106,11 +106,15 @@ export const FindUsRow = z.object({
  *  draft schema read the same source and can never drift apart. */
 export const FOUNDER_TREATMENTS = ['quote', 'portrait', 'letter', 'card', 'workbench', 'editorial', 'signature'] as const;
 
-/** The two nav layouts a store can wear: the standard wordmark-left / links-right
- *  bar, or a split bar with the wordmark CENTERED and the links flanking it. A
- *  family-level look choice (recorded for the family layer, previewable via ?nav=);
- *  default is standard. */
-export const NAV_VARIANTS = ['standard', 'split-center'] as const;
+/** The nav layouts a store can wear — four distinct registers, not reshuffles:
+ *   - standard     — wordmark left, links right. The classic workhorse.
+ *   - split-center — wordmark centered, links flanking it. Editorial / boutique.
+ *   - menu-reveal  — wordmark + a "Menu" trigger; links hidden behind a click at
+ *                    ALL widths. The nav recedes — gallery / luxury quiet.
+ *   - cta-forward  — links plus one filled accent button (the shop). Commerce-loud.
+ *  A family-level look choice (recorded for the family layer, previewable via
+ *  ?nav=); default is standard. */
+export const NAV_VARIANTS = ['standard', 'split-center', 'menu-reveal', 'cta-forward'] as const;
 export type NavVariant = (typeof NAV_VARIANTS)[number];
 
 export const MainStreetContentSchema = z.object({

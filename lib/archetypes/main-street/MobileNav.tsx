@@ -8,14 +8,27 @@ export interface MobileNavItem {
 }
 
 /**
- * Phone nav for Main Street: a menu button (shown only under the header's mobile
- * breakpoint via the `.ms-nav-toggle` CSS) that opens a full-screen overlay with
- * the links large in the skin's display voice, fading in one after another. The
- * overlay reads the skin's own --ms-* vars (it renders inside .arch-main-street),
- * so it matches the store with no per-skin wiring. Esc closes; scroll is locked
- * while open; focus moves to the close button and back to the toggle on close.
+ * The Main Street menu trigger + full-screen overlay. By default it's the phone
+ * nav — a burger shown only under the header's mobile breakpoint (`.ms-nav-toggle`
+ * CSS) — opening a full-screen overlay with the links large in the skin's display
+ * voice, fading in one after another. The overlay reads the skin's own --ms-* vars
+ * (it renders inside .arch-main-street), so it matches the store with no per-skin
+ * wiring. Esc closes; scroll is locked while open; focus moves to the close button
+ * and back to the trigger on close.
+ *
+ * Two options let the menu-reveal nav reuse it at all widths: `label` renders the
+ * trigger as that word (e.g. "Menu") instead of a burger, and `always` keeps the
+ * trigger visible on desktop too (the gallery move — links live behind the click).
  */
-export function MainStreetMobileNav({ items }: { items: MobileNavItem[] }) {
+export function MainStreetMobileNav({
+  items,
+  label,
+  always = false,
+}: {
+  items: MobileNavItem[];
+  label?: string;
+  always?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -36,18 +49,26 @@ export function MainStreetMobileNav({ items }: { items: MobileNavItem[] }) {
   }, [open]);
 
   return (
-    <div className="ms-nav-toggle">
+    <div className={always ? 'ms-nav-toggle ms-nav-toggle--always' : 'ms-nav-toggle'}>
       <button
         ref={toggleRef}
         type="button"
         aria-label="Open menu"
         aria-expanded={open}
         onClick={() => setOpen(true)}
-        className="ms-burger"
+        className={label ? 'ms-menu-trigger' : 'ms-burger'}
       >
-        <span className="ms-burger-line" />
-        <span className="ms-burger-line" />
-        <span className="ms-burger-line" />
+        {label ? (
+          <span data-type="navLabel" className="ms-menu-label">
+            {label}
+          </span>
+        ) : (
+          <>
+            <span className="ms-burger-line" />
+            <span className="ms-burger-line" />
+            <span className="ms-burger-line" />
+          </>
+        )}
       </button>
 
       {open && (

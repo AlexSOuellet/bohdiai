@@ -182,6 +182,16 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     @media(max-width:640px){
       .arch-main-street .ms-nav-split{grid-template-columns:1fr auto;gap:0}
     }
+    /* menu-reveal — the trigger shows at ALL widths and reads as a word, not a
+       burger; the links live in the full-screen overlay behind the click. */
+    .arch-main-street .ms-nav-toggle--always{display:inline-flex}
+    .arch-main-street .ms-menu-trigger{background:none;border:0;color:inherit;cursor:pointer;padding:6px 2px;display:inline-flex;align-items:center;position:relative}
+    .arch-main-street .ms-menu-trigger::after{content:"";position:absolute;left:2px;right:2px;bottom:0;height:1px;background:currentColor;opacity:.5;transform:scaleX(0);transform-origin:left;transition:transform .35s ${mo.reveal.easing}}
+    .arch-main-street .ms-menu-trigger:hover::after{transform:scaleX(1)}
+    @media(prefers-reduced-motion:reduce){.arch-main-street .ms-menu-trigger::after{transition:none}}
+    /* cta-forward — one link elevated to a filled accent button (the shop). */
+    .arch-main-street .ms-nav-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:9px 18px;border-radius:2px;transition:opacity .3s ease}
+    .arch-main-street .ms-nav-cta:hover{opacity:.88}
     .arch-main-street .ms-burger{background:none;border:0;color:inherit;cursor:pointer;padding:8px;display:inline-flex;flex-direction:column;gap:5px}
     .arch-main-street .ms-burger-line{display:block;width:24px;height:2px;background:currentColor}
     .arch-main-street .ms-mobile-overlay{position:fixed;inset:0;z-index:100;background:var(--ms-bg);color:var(--ms-fg);display:flex;flex-direction:column;justify-content:center;align-items:center;animation:ms-overlay-in .4s ${mo.reveal.easing}}
@@ -539,8 +549,9 @@ function NavLink({ href, label }: { href: string; label: string }) {
 export function Nav({ identity }: { identity: MainStreetContent['identity'] }) {
   const items = resolveNav(identity.nav);
   const allItems = [...items, { href: '/cart', label: 'Cart' }];
+  const variant = identity.navVariant ?? 'standard';
 
-  if ((identity.navVariant ?? 'standard') === 'split-center') {
+  if (variant === 'split-center') {
     const mid = Math.ceil(allItems.length / 2);
     const left = allItems.slice(0, mid);
     const right = allItems.slice(mid);
@@ -559,6 +570,41 @@ export function Nav({ identity }: { identity: MainStreetContent['identity'] }) {
         </div>
         <MainStreetMobileNav items={allItems} />
       </div>
+    );
+  }
+
+  if (variant === 'menu-reveal') {
+    // The nav recedes: wordmark + a "Menu" trigger at all widths; the links live in
+    // the full-screen overlay behind the click. The gallery / luxury-quiet move.
+    return (
+      <>
+        <WordmarkLink wordmark={identity.wordmark} logoUrl={identity.logoUrl} />
+        <MainStreetMobileNav items={allItems} label="Menu" always />
+      </>
+    );
+  }
+
+  if (variant === 'cta-forward') {
+    // The standard bar, but one link is elevated to a filled accent button — the
+    // shop if present, else the last item. Commerce-loud.
+    const ctaIdx = allItems.findIndex((i) => i.href === '/shop');
+    const idx = ctaIdx >= 0 ? ctaIdx : allItems.length - 1;
+    return (
+      <>
+        <WordmarkLink wordmark={identity.wordmark} logoUrl={identity.logoUrl} />
+        <div className="ms-nav-links">
+          {allItems.map((item, i) =>
+            i === idx ? (
+              <Type as="a" key={item.href} href={item.href} role="navLabel" className="ms-nav-cta">
+                {item.label}
+              </Type>
+            ) : (
+              <NavLink key={item.href} href={item.href} label={item.label} />
+            ),
+          )}
+        </div>
+        <MainStreetMobileNav items={allItems} />
+      </>
     );
   }
 

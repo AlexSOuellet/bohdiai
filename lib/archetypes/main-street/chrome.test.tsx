@@ -198,6 +198,26 @@ describe('Nav — split-center variant', () => {
     expect(left!.textContent).not.toContain('Ember Candles');
     expect(right!.textContent).not.toContain('Ember Candles');
   });
+
+  it('hides the links behind an always-on Menu trigger for the menu-reveal variant', () => {
+    const { container, getByText } = render(<Nav identity={{ ...baseIdentity, navVariant: 'menu-reveal' }} />);
+    // no inline desktop link row — the links live in the overlay
+    expect(container.querySelector('.ms-nav-links')).toBeNull();
+    // a word trigger, shown at all widths (not the mobile-only burger)
+    expect(container.querySelector('.ms-nav-toggle--always')).not.toBeNull();
+    expect(container.querySelector('.ms-menu-trigger')).not.toBeNull();
+    expect(getByText('Menu')).toBeTruthy();
+  });
+
+  it('elevates the shop link to a filled CTA button for the cta-forward variant', () => {
+    const { container } = render(<Nav identity={{ ...baseIdentity, navVariant: 'cta-forward' }} />);
+    const cta = container.querySelector('.ms-nav-cta');
+    expect(cta).not.toBeNull();
+    expect(cta!.getAttribute('href')).toBe('/shop');
+    // the other links stay plain — only one is elevated
+    expect(container.querySelectorAll('.ms-nav-cta').length).toBe(1);
+    expect(container.querySelectorAll('.ms-nav-links a').length).toBeGreaterThan(1);
+  });
 });
 
 describe('MainStreetFooter', () => {
