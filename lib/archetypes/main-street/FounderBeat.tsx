@@ -9,7 +9,16 @@
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetContent } from './schemas';
 import { selectFounderTreatment, type FounderTreatment } from './founder';
-import { FounderQuote, FounderPortrait, FounderLetter, FounderCard, type FounderAbout } from './FounderBeats';
+import {
+  FounderQuote,
+  FounderPortrait,
+  FounderLetter,
+  FounderCard,
+  FounderWorkbench,
+  FounderEditorial,
+  FounderSignature,
+  type FounderAbout,
+} from './FounderBeats';
 
 const DEFAULT_ABOUT = 'Read the full story';
 
@@ -18,6 +27,7 @@ export function FounderBeat({
   skin,
   treatment,
   aboutHref = '/about',
+  aboutPage,
 }: {
   founder: MainStreetContent['founder'];
   skin: ArchetypeTheme;
@@ -25,6 +35,9 @@ export function FounderBeat({
   treatment?: FounderTreatment | undefined;
   /** Where the "about" cue points — the full bio page. */
   aboutHref?: string | undefined;
+  /** The full About-page story — the editorial treatment surfaces it as a feature
+   *  on the home. Absent for legacy rows; editorial then falls back to the quote. */
+  aboutPage?: MainStreetContent['about'] | undefined;
 }) {
   const chosen = selectFounderTreatment(treatment ?? founder.treatment);
   const about: FounderAbout = { href: aboutHref, label: founder.aboutLabel ?? DEFAULT_ABOUT };
@@ -36,6 +49,12 @@ export function FounderBeat({
       return <FounderLetter founder={founder} skin={skin} about={about} />;
     case 'card':
       return <FounderCard founder={founder} skin={skin} about={about} />;
+    case 'workbench':
+      return <FounderWorkbench founder={founder} skin={skin} about={about} />;
+    case 'editorial':
+      return <FounderEditorial founder={founder} skin={skin} about={about} aboutPage={aboutPage} />;
+    case 'signature':
+      return <FounderSignature founder={founder} skin={skin} about={about} />;
     default:
       return <FounderQuote founder={founder} skin={skin} about={about} />;
   }

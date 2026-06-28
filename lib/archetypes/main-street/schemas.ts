@@ -104,7 +104,7 @@ export const FindUsRow = z.object({
 
 /** The About-beat bodies. A tuple so the content schema and the copywriter's
  *  draft schema read the same source and can never drift apart. */
-export const FOUNDER_TREATMENTS = ['quote', 'portrait', 'letter', 'card'] as const;
+export const FOUNDER_TREATMENTS = ['quote', 'portrait', 'letter', 'card', 'workbench', 'editorial', 'signature'] as const;
 
 export const MainStreetContentSchema = z.object({
   /** The shop's actual name — used in the footer + as the default wordmark. */

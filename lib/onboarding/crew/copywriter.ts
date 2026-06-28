@@ -116,10 +116,13 @@ ${goods}
 - founder.treatment: you drew "${rolls.founder}" this build — the dice again. Keep your draw unless it genuinely fights this shop; if it does, pick another from these and note why in one line:
       - quote: a portrait beside a pull-quote.
       - portrait: a large portrait with the quote over it.
-      - letter: the quote as a short signed note with a small portrait.
+      - letter: your words as a short note on a paper slip, a snapshot clipped to it, signed by hand.
       - card: a meet-the-maker card — REQUIRES founder.eyebrow and founder.heading.
-- founder.eyebrow (2-24, optional): the small label above the card heading (card treatment).
-- founder.heading (2-28, optional): the card heading (card treatment).
+      - workbench: a wide documentary shot of you at work + a short intro (your quote is the caption); set founder.eyebrow as the small label (e.g. "In the workshop").
+      - editorial: a magazine feature — it lays your full about.story in columns with a drop cap and your quote as the pull-quote, so write a rich about.story and an about.heading for this one.
+      - signature: your promise set large as type, no photo — your quote IS the statement, so make it a punchy one-line creed.
+- founder.eyebrow (2-24, optional): the small label above the card heading (also the workbench / editorial kicker).
+- founder.heading (2-28, optional): the card heading (also a fallback editorial headline).
 - founder.aboutLabel (2-28, optional): the cue to the full About page.
 - founder.findUs (optional): a "find us this week" calendar. Dates are unknown at build time, so seed 1-5 plausible sample rows the maker edits or turns off later: { label (2-28), eventsLabel (2-28, optional), rows (1-5): { day (1-12), where (4-60), time (1-12) } }.
 - close.label (2-28): the close kicker.

@@ -52,7 +52,7 @@ export function MainStreet({ content, skin, products, catalogSize, goodsTreatmen
       {resolveHero(heroVariant)({ identity: content.identity, moment: content.moment, skin, momentKey })}
       <GoodsBeat goods={content.goods} products={products} skin={skin} treatment={goodsTreatment} catalogSize={catalogSize} shopHref={shopHref} />
       <Reveal>
-        <FounderBeat founder={content.founder} skin={skin} treatment={founderTreatment} aboutHref={aboutHref} />
+        <FounderBeat founder={content.founder} skin={skin} treatment={founderTreatment} aboutHref={aboutHref} aboutPage={content.about} />
       </Reveal>
       {content.founder.findUs && content.founder.findUs.rows.length > 0 && (
         <Reveal>

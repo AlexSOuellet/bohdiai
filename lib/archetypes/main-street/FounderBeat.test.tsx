@@ -30,14 +30,15 @@ describe('selectFounderTreatment', () => {
     expect(selectFounderTreatment(undefined)).toBe('quote');
   });
   it('returns only real About treatments', () => {
-    for (const pick of ['quote', 'portrait', 'letter', 'card', undefined] as const) {
-      expect(['quote', 'portrait', 'letter', 'card']).toContain(selectFounderTreatment(pick));
+    const all = ['quote', 'portrait', 'letter', 'card', 'workbench', 'editorial', 'signature'] as const;
+    for (const pick of [...all, undefined]) {
+      expect(all).toContain(selectFounderTreatment(pick));
     }
   });
 });
 
 describe('FounderBeat — maker-only treatments on the contrast band', () => {
-  for (const treatment of ['quote', 'portrait', 'letter', 'card'] as const) {
+  for (const treatment of ['quote', 'portrait', 'letter', 'card', 'workbench', 'editorial', 'signature'] as const) {
     it(`${treatment} renders the maker quote on the contrast surface and no calendar`, () => {
       const { getByText, container } = render(<FounderBeat founder={cardFounder} skin={skin} treatment={treatment} />);
       expect(getByText(/cast-iron oven/)).toBeTruthy();

@@ -18,9 +18,10 @@ import { MainStreet } from './MainStreet';
 import { MainStreetProduct } from './MainStreetProduct';
 import { ShopPage, EventsPage, AboutPage, ContactPage, ContentPage, MainStreetSubPage } from './pages';
 import { mainStreetArchetype } from './index';
-import { MainStreetContentSchema, type MainStreetContent } from './schemas';
+import { MainStreetContentSchema, FOUNDER_TREATMENTS, type MainStreetContent } from './schemas';
 import { MAIN_STREET_SKINS, SKIN_DESCRIPTIONS } from './skins';
 import { GOODS_TREATMENT_MENU, GOODS_TREATMENTS, type GoodsTreatment } from './goods';
+import type { FounderTreatment } from './founder';
 import { sceneToPrompt } from './scene-prompt';
 import { logoTone, applyAccentOverride } from './logo-contrast';
 
@@ -224,6 +225,12 @@ function asGoodsTreatment(v?: string): GoodsTreatment | undefined {
   return (GOODS_TREATMENTS as readonly string[]).includes(v ?? '') ? (v as GoodsTreatment) : undefined;
 }
 
+/** Narrow the free-form ?about= preview string to a real founder treatment, ignoring
+ *  anything not registered (an unknown value falls back to the authored/quote pick). */
+function asFounderTreatment(v?: string): FounderTreatment | undefined {
+  return (FOUNDER_TREATMENTS as readonly string[]).includes(v ?? '') ? (v as FounderTreatment) : undefined;
+}
+
 export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   key: 'main-street',
   label: 'Main Street',
@@ -238,7 +245,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   applyMedia,
   toPayload,
   handOff,
-  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant, goodsTreatment }) => {
+  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant, goodsTreatment, founderTreatment }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
     const c = withLogo(content as MainStreetContent, logoUrl, brandColors);
     switch (page) {
@@ -251,7 +258,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       case 'contact':
         return <ContactPage content={c} skin={skin} tenantId={tenantId} />;
       default:
-        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} heroVariant={heroVariant} goodsTreatment={asGoodsTreatment(goodsTreatment)} />;
+        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} heroVariant={heroVariant} goodsTreatment={asGoodsTreatment(goodsTreatment)} founderTreatment={asFounderTreatment(founderTreatment)} />;
     }
   },
   renderProduct: ({ content, lookKey, product, logoUrl, brandColors, accentOverride }) => {

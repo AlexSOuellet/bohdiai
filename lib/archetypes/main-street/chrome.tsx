@@ -153,7 +153,6 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     ${typeRoleBaseRules(skin.type)}
     /* Treatment type accents — skin-agnostic, scoped to a treatment's own class
        so they win over the base role rule without any inline style. */
-    .arch-main-street .ms-founder-letter [data-type="title"]{font-style:italic}
     .arch-main-street .ms-founder-card [data-type="quote"]{font-style:italic}
     .arch-main-street a{color:var(--ms-accent);text-decoration:none}
     /* logo lockup — the logo is bare: no plate. Contrast is guaranteed by the
@@ -383,6 +382,57 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street [data-type="day"]{white-space:nowrap}
     .arch-main-street [data-type="where"]{display:inline-block;max-width:38ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
     .arch-main-street [data-type="legal"]{white-space:nowrap}
+    /* ── About-beat treatments (class-only). Placed LAST so a treatment that needs
+       to amplify a type role — a bigger statement, a left-aligned headline — wins
+       on source order without inline styles or !important. Colors are skin vars or
+       contrast-surface color-mix; nothing is a literal. ── */
+    /* letter — a note on a paper slip laid on the dark band, turned, a snapshot
+       clipped to a corner, signed in the skin's display hand. Paper + ink are the
+       skin's BASE surface (an inversion against the contrast band). */
+    .arch-main-street .ms-letter-stage{display:flex;justify-content:flex-start;padding-left:6%}
+    .arch-main-street .ms-letter-paper{position:relative;background:var(--ms-bg);color:var(--ms-fg);max-width:600px;width:100%;padding:52px 56px 44px;border-radius:2px;transform:rotate(-1.3deg);box-shadow:0 34px 64px -26px var(--ms-shadow)}
+    .arch-main-street .ms-letter-clip{position:absolute;top:-26px;right:30px;width:104px;display:block;background:var(--ms-bg);padding:7px 7px 20px;border:1px solid var(--ms-rule);transform:rotate(4.5deg);box-shadow:0 18px 32px -14px var(--ms-shadow)}
+    .arch-main-street .ms-letter-clip .archetype-photo{height:auto;aspect-ratio:1 / 1.04}
+    .arch-main-street .ms-letter-kicker{color:var(--ms-accent);display:block;margin-bottom:18px}
+    .arch-main-street .ms-letter-body{color:color-mix(in srgb,var(--ms-fg) 90%,var(--ms-bg));max-width:42ch;margin:0;line-height:1.75}
+    .arch-main-street .ms-letter-sign{font-family:var(--ms-disp);font-style:italic;font-size:clamp(34px,4.4vw,50px);line-height:.95;color:var(--ms-fg);margin:18px 0 8px}
+    .arch-main-street .ms-letter-name{color:var(--ms-fg-muted);display:block}
+    .arch-main-street .ms-letter-ps{color:var(--ms-accent);display:inline-block;margin-top:22px}
+    @media(max-width:760px){
+      .arch-main-street .ms-letter-stage{padding-left:0}
+      .arch-main-street .ms-letter-paper{padding:40px 28px 34px}
+      .arch-main-street .ms-letter-clip{right:18px;width:84px}
+    }
+    /* workbench — a wide documentary shot of the maker at work, then a caption
+       (eyebrow + name | intro). The environment is the subject, not a headshot. */
+    .arch-main-street .ms-wb-photo{display:block;aspect-ratio:24 / 9;overflow:hidden;border-radius:4px;box-shadow:0 26px 60px var(--ms-shadow)}
+    .arch-main-street .ms-wb-cap{display:grid;grid-template-columns:.8fr 1.2fr;gap:48px;margin-top:32px;align-items:start}
+    .arch-main-street .ms-wb-eye{color:var(--ms-accent);display:block}
+    .arch-main-street .ms-wb-name{color:var(--ms-contrast-fg);margin-top:10px}
+    .arch-main-street .ms-wb-intro{color:var(--ms-contrast-fg);margin:0;max-width:62ch}
+    @media(max-width:760px){
+      .arch-main-street .ms-wb-cap{grid-template-columns:1fr;gap:22px}
+      .arch-main-street .ms-wb-photo{aspect-ratio:16 / 10}
+    }
+    /* editorial — a magazine feature: kicker, headline, byline, then the About
+       story in two columns with a drop cap, a pull-quote, the cue. Hairlines derive
+       from the contrast surface so they read on the dark band. */
+    .arch-main-street .ms-ed-kicker{color:var(--ms-accent);display:block}
+    .arch-main-street .ms-ed-head{color:var(--ms-contrast-fg);margin:14px 0 8px}
+    .arch-main-street .ms-ed-by{color:var(--ms-contrast-fg-muted);display:block;margin-bottom:36px}
+    .arch-main-street .ms-ed-cols{columns:2;column-gap:54px}
+    .arch-main-street .ms-ed-para{color:var(--ms-contrast-fg);margin:0 0 18px;break-inside:avoid}
+    .arch-main-street .ms-ed-para:first-child::first-letter{font-family:var(--ms-disp);font-size:3.4em;line-height:.66;float:left;padding:8px 12px 0 0;color:var(--ms-accent)}
+    .arch-main-street .ms-ed-pull{color:var(--ms-contrast-fg);border-top:1px solid color-mix(in srgb,var(--ms-contrast-fg) 18%,transparent);border-bottom:1px solid color-mix(in srgb,var(--ms-contrast-fg) 18%,transparent);padding:24px 0;margin:32px 0 0;max-width:60ch}
+    @media(max-width:760px){.arch-main-street .ms-ed-cols{columns:1}}
+    /* signature — a type-led manifesto, no photo. The statement amplifies its
+       close-head role (bigger, left-aligned — overriding the role's centered cap)
+       and is signed in the skin's display hand. */
+    .arch-main-street .ms-founder-signature{max-width:900px}
+    .arch-main-street .ms-sig-eye{color:var(--ms-accent);display:block;margin-bottom:26px}
+    .arch-main-street .ms-sig-statement{color:var(--ms-contrast-fg);margin:0;max-width:20ch;font-size:clamp(40px,5.4vw,66px)}
+    .arch-main-street .ms-sig-sign{font-family:var(--ms-disp);font-style:italic;font-size:clamp(38px,4.6vw,58px);line-height:.9;color:var(--ms-contrast-fg);margin:38px 0 8px}
+    .arch-main-street .ms-sig-name{color:var(--ms-contrast-fg-muted);display:block}
   `;
 }
 

@@ -120,6 +120,9 @@ export interface ArchetypeBuildSpec<T = unknown> {
     /** Force the goods-beat treatment (the non-persisting ?goods= preview).
      *  Optional — omitted falls back to the authored treatment, then catalog size. */
     goodsTreatment?: string | undefined;
+    /** Force the founder/About-beat treatment (the non-persisting ?about= preview).
+     *  Optional — omitted falls back to the authored treatment, then the quote. */
+    founderTreatment?: string | undefined;
   }): ReactElement;
 
   /** Paint a single product's detail page in the archetype's chrome. The product
