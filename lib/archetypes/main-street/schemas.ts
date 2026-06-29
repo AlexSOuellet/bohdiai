@@ -17,6 +17,7 @@
 import { z } from 'zod';
 import { MAIN_STREET_SKINS } from './skins';
 import { GOODS_TREATMENTS } from './goods';
+import { COLLECTIONS_TREATMENTS } from './collections';
 import { LINK_TARGETS } from './links';
 
 /** A nav link the crew authors: a label paired with a TARGET page, so the word
@@ -178,6 +179,22 @@ export const MainStreetContentSchema = z.object({
     label: z.string().min(1).optional(),
     viewAllLabel: z.string().min(1).optional(),
   }),
+
+  /** COLLECTIONS — the section heading + cues for the home collections teaser.
+   *  The band DATA (the collections themselves) is loaded from the tenant's
+   *  `collections` rows and passed to the renderer separately (like products),
+   *  never authored here. Optional so content authored before this field still
+   *  parses and so a shop with no collections simply omits the beat. Mirrors the
+   *  `goods` shape; `treatment` is the family-level band choice (previewable via
+   *  ?collections=), falling back to the documented default when absent. */
+  collections: z
+    .object({
+      title: z.string().min(1),
+      treatment: z.enum(COLLECTIONS_TREATMENTS).optional(),
+      label: z.string().min(1).optional(),
+      viewAllLabel: z.string().min(1).optional(),
+    })
+    .optional(),
 
   /** BEAT 3 — the founder + a real "find us this week" calendar. Required: the
    *  authority the platform is built on. */

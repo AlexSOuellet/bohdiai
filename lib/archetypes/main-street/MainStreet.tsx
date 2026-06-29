@@ -14,9 +14,11 @@ import { MainStreetRoot, MainStreetFooter } from './chrome';
 import { resolveHero } from './hero-catalog';
 import { Close } from './beats';
 import { GoodsBeat } from './GoodsBeat';
+import { CollectionsBeat } from './CollectionsBeat';
 import { FounderBeat } from './FounderBeat';
 import { FindUsBeat } from './FindUsBeat';
 import type { GoodsTreatment } from './goods';
+import type { CollectionView, CollectionsTreatment } from './collections';
 import type { FounderTreatment } from './founder';
 import { Reveal } from './Reveal';
 
@@ -29,6 +31,15 @@ export interface MainStreetProps {
   catalogSize?: number | undefined;
   /** Force the goods treatment (previews/tests). Falls back to catalog size when omitted. */
   goodsTreatment?: GoodsTreatment | undefined;
+  /** The shop's collections (loaded from the `collections` table, not authored).
+   *  When present the Collections band renders — structure derived from what the
+   *  store HAS, not an editorial pick. Empty/absent → no Collections beat. */
+  collections?: CollectionView[] | undefined;
+  /** Force the collections treatment (the ?collections= preview / tests). Falls
+   *  back to the authored/default band when omitted. */
+  collectionsTreatment?: CollectionsTreatment | undefined;
+  /** Where the collections "see all" cue points. Defaults to /collections. */
+  collectionsHref?: string | undefined;
   /** Force the founder treatment (previews/tests). Falls back to the quote when omitted. */
   founderTreatment?: FounderTreatment | undefined;
   /** Where the goods "see the full catalog" cue points. Defaults to /shop. */
@@ -46,11 +57,26 @@ export interface MainStreetProps {
   heroVariant?: string | undefined;
 }
 
-export function MainStreet({ content, skin, products, catalogSize, goodsTreatment, founderTreatment, shopHref, aboutHref, eventsHref, momentKey, heroVariant }: MainStreetProps) {
+export function MainStreet({ content, skin, products, catalogSize, goodsTreatment, collections, collectionsTreatment, collectionsHref, founderTreatment, shopHref, aboutHref, eventsHref, momentKey, heroVariant }: MainStreetProps) {
+  // The Collections band appears whenever the shop HAS collections — the structure
+  // follows what the store holds, not an editorial pick. The heading is the
+  // authored section when present, a plain default otherwise.
+  const collectionsSection = content.collections ?? { title: 'Collections' };
   return (
     <MainStreetRoot skin={skin}>
       {resolveHero(heroVariant)({ identity: content.identity, moment: content.moment, skin, momentKey })}
       <GoodsBeat goods={content.goods} products={products} skin={skin} treatment={goodsTreatment} catalogSize={catalogSize} shopHref={shopHref} />
+      {collections && collections.length > 0 && (
+        <Reveal>
+          <CollectionsBeat
+            section={collectionsSection}
+            items={collections}
+            skin={skin}
+            treatment={collectionsTreatment}
+            viewAll={{ href: collectionsHref ?? '/collections', label: collectionsSection.viewAllLabel ?? 'See all collections' }}
+          />
+        </Reveal>
+      )}
       <Reveal>
         <FounderBeat founder={content.founder} skin={skin} treatment={founderTreatment} aboutHref={aboutHref} aboutPage={content.about} />
       </Reveal>

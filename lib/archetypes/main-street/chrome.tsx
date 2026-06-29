@@ -460,6 +460,167 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-sig-statement{color:var(--ms-contrast-fg);margin:0;max-width:20ch;font-size:clamp(40px,5.4vw,66px)}
     .arch-main-street .ms-sig-sign{font-family:var(--ms-disp);font-style:italic;font-size:clamp(38px,4.6vw,58px);line-height:.9;color:var(--ms-contrast-fg);margin:38px 0 8px}
     .arch-main-street .ms-sig-name{color:var(--ms-contrast-fg-muted);display:block}
+    /* ════════════════════════════════════════════════════════════════════
+       COLLECTIONS-beat treatments (class-only). Six bands, one unique SHAPE per
+       family — a collections band shows GROUPS you enter, never products, so none
+       rhyme with the goods treatments. Colors are skin vars / contrast-surface /
+       color-mix, never literals; the only literal blacks are scrims painted OVER
+       cover photos (skin-agnostic, like MomentHero). Type is named roles; imagery
+       is graded by the skin's .archetype-photo filter. (Family fonts + wallpapers
+       arrive with the family layer.) ════════════════════════════════════════ */
+    .arch-main-street .ms-coll-section{padding:84px 0 96px}
+    /* cupboard (Cozy) — wide labeled shelves, a pinned paper slip on each. */
+    .arch-main-street .ms-cup-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:18px;margin-bottom:40px}
+    .arch-main-street .ms-cup-eyebrow{color:var(--ms-accent)}
+    .arch-main-street .ms-cup-title{margin:0;color:var(--ms-fg)}
+    .arch-main-street .ms-cup-shelves{display:flex;flex-direction:column;gap:20px}
+    .arch-main-street .ms-cup-shelf{position:relative;display:flex;align-items:stretch;height:148px;border-radius:6px;overflow:hidden;color:inherit;text-decoration:none;box-shadow:0 18px 30px -22px var(--ms-shadow);transition:transform .4s ease,box-shadow .4s ease}
+    .arch-main-street .ms-cup-shelf:hover{transform:translateY(-3px);box-shadow:0 24px 38px -22px var(--ms-shadow)}
+    .arch-main-street .ms-cup-cover{flex:1;position:relative;overflow:hidden}
+    .arch-main-street .ms-cup-cover .archetype-photo{position:absolute;inset:0}
+    .arch-main-street .ms-cup-slip{position:absolute;left:34px;top:50%;transform:translateY(-50%) rotate(-1.4deg);display:flex;flex-direction:column;background:color-mix(in srgb, var(--ms-bg) 86%, white);border:1px solid var(--ms-rule);border-radius:3px;padding:16px 26px 14px;min-width:300px;max-width:60%;box-shadow:0 12px 24px -12px var(--ms-shadow)}
+    .arch-main-street .ms-cup-slip::before{content:"";position:absolute;top:-6px;left:50%;width:10px;height:10px;border-radius:50%;background:var(--ms-accent);box-shadow:0 2px 4px var(--ms-shadow);transform:translateX(-50%)}
+    .arch-main-street .ms-cup-num{color:var(--ms-fg-muted)}
+    .arch-main-street .ms-cup-name{margin:3px 0 2px;color:var(--ms-fg)}
+    .arch-main-street .ms-cup-go{color:var(--ms-accent)}
+    @media(max-width:760px){
+      .arch-main-street .ms-cup-shelf{height:auto;flex-direction:column}
+      .arch-main-street .ms-cup-cover{min-height:140px}
+      .arch-main-street .ms-cup-slip{position:static;transform:none;min-width:0;max-width:none;left:auto;top:auto;border-radius:0 0 6px 6px}
+      .arch-main-street .ms-cup-slip::before{display:none}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .arch-main-street .ms-cup-shelf{transition:none}
+      .arch-main-street .ms-cup-shelf:hover{transform:none}
+    }
+    /* crates (Rustic) — stacked wood crates, names stenciled on the wood; one tall
+       crate beside two. A crate is a dark wood box on any skin (--ms-contrast-bg). */
+    .arch-main-street .ms-crate-head{margin-bottom:40px}
+    .arch-main-street .ms-crate-eyebrow{color:var(--ms-accent);display:block;margin-bottom:8px}
+    .arch-main-street .ms-crate-title{color:var(--ms-fg);margin:0;text-transform:uppercase}
+    .arch-main-street .ms-crate-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:22px}
+    .arch-main-street .ms-crate-item--tall{grid-row:span 2}
+    .arch-main-street .ms-crate-item{position:relative;display:block;border:3px solid var(--ms-fg);border-radius:4px;overflow:hidden;color:inherit;text-decoration:none;background:var(--ms-contrast-bg);box-shadow:inset 0 0 60px var(--ms-shadow),0 16px 26px -16px var(--ms-shadow);transition:transform .35s ease}
+    .arch-main-street .ms-crate-item:hover{transform:rotate(-.5deg) translateY(-2px)}
+    .arch-main-street .ms-crate-cover{display:block;width:100%;height:100%;min-height:150px}
+    .arch-main-street .ms-crate-item--tall .ms-crate-cover{min-height:322px}
+    .arch-main-street .ms-crate-cover .archetype-photo{width:100%;height:100%;min-height:inherit;object-fit:cover}
+    .arch-main-street .ms-crate-label{position:absolute;left:14px;right:14px;bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-radius:2px;background:rgba(0,0,0,.7);border:1px dashed color-mix(in srgb,var(--ms-contrast-fg) 40%,transparent)}
+    .arch-main-street .ms-crate-name{color:var(--ms-contrast-fg);text-transform:uppercase;letter-spacing:.1em}
+    .arch-main-street .ms-crate-count{color:var(--ms-accent);transform:rotate(-4deg)}
+    .arch-main-street .ms-crate-viewall{display:inline-block;margin-top:32px;color:var(--ms-accent);border-bottom:1px solid var(--ms-rule);padding-bottom:3px}
+    @media(max-width:760px){
+      .arch-main-street .ms-crate-grid{grid-template-columns:1fr}
+      .arch-main-street .ms-crate-item--tall{grid-row:auto}
+      .arch-main-street .ms-crate-item--tall .ms-crate-cover{min-height:150px}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .arch-main-street .ms-crate-item{transition:none}
+      .arch-main-street .ms-crate-item:hover{transform:none}
+    }
+    /* portals (Dark) — tall lit doorways emerging from shadow; the "shadow" is a
+       black scrim OVER each cover (skin-agnostic), an ember floor-glow in accent. */
+    .arch-main-street .ms-portal{padding:96px 0 110px;background:var(--ms-bg)}
+    .arch-main-street .ms-portal-head{text-align:center;margin-bottom:46px}
+    .arch-main-street .ms-portal-eyebrow{color:var(--ms-accent);display:block;margin-bottom:12px}
+    .arch-main-street .ms-portal-title{color:var(--ms-fg);margin:0;margin-inline:auto}
+    .arch-main-street .ms-portal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+    .arch-main-street .ms-portal-item{position:relative;display:block;aspect-ratio:3 / 4.4;border-radius:3px 3px 0 0;overflow:hidden;color:inherit;text-decoration:none;transition:transform .5s ${mo.reveal.easing}}
+    .arch-main-street .ms-portal-item:hover{transform:translateY(-6px)}
+    .arch-main-street .ms-portal-cover{position:absolute;inset:0;z-index:0}
+    .arch-main-street .ms-portal-cover .archetype-photo{transition:transform .6s ${mo.reveal.easing}}
+    .arch-main-street .ms-portal-item:hover .ms-portal-cover .archetype-photo{transform:scale(1.04)}
+    .arch-main-street .ms-portal-scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.92) 3%,rgba(0,0,0,.18) 42%,rgba(0,0,0,.42) 64%,rgba(0,0,0,.95) 100%)}
+    .arch-main-street .ms-portal-glow{position:absolute;left:0;right:0;bottom:0;height:46%;z-index:2;background:radial-gradient(120% 80% at 50% 120%,color-mix(in srgb,var(--ms-accent) 55%,transparent),transparent 70%);opacity:.72;transition:opacity .6s ${mo.reveal.easing}}
+    .arch-main-street .ms-portal-item:hover .ms-portal-glow{opacity:1}
+    .arch-main-street .ms-portal-cap{position:absolute;left:0;right:0;bottom:30px;z-index:3;text-align:center;padding:0 14px}
+    .arch-main-street .ms-portal-name{color:var(--ms-on-media);display:block}
+    .arch-main-street .ms-portal-rule{width:34px;height:1px;background:var(--ms-accent);margin:10px auto 0;display:block}
+    .arch-main-street .ms-portal-count{color:var(--ms-on-media-muted);display:block;margin-top:8px}
+    .arch-main-street .ms-portal-viewall{display:flex;justify-content:center;margin-top:46px;color:var(--ms-accent)}
+    @media(max-width:760px){
+      .arch-main-street .ms-portal-grid{grid-template-columns:1fr}
+      .arch-main-street .ms-portal-item{aspect-ratio:3 / 3.4}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .arch-main-street .ms-portal-item{transition:none}
+      .arch-main-street .ms-portal-cover .archetype-photo,
+      .arch-main-street .ms-portal-glow{transition:none}
+    }
+    /* chapters (Luxury) — a couture lookbook contents page: gold roman numeral,
+       name, a quiet count, one plate, gold hairlines, generous air. */
+    .arch-main-street .ms-chapter{padding:96px 0 110px;background:var(--ms-bg);color:var(--ms-fg)}
+    .arch-main-street .ms-chapter-head{text-align:center;margin-bottom:64px}
+    .arch-main-street .ms-chapter-eyebrow{color:var(--ms-accent);display:block;margin-bottom:16px}
+    .arch-main-street .ms-chapter-title{color:var(--ms-fg);margin:0}
+    .arch-main-street .ms-chapter-list{display:flex;flex-direction:column}
+    .arch-main-street .ms-chapter-row{display:grid;grid-template-columns:140px 1fr 1.1fr;align-items:center;gap:42px;padding:34px 0;border-top:1px solid var(--ms-rule);color:inherit;text-decoration:none}
+    .arch-main-street .ms-chapter-row:last-child{border-bottom:1px solid var(--ms-rule)}
+    .arch-main-street .ms-chapter-roman{color:var(--ms-accent);text-align:center;line-height:1}
+    .arch-main-street .ms-chapter-name{color:var(--ms-fg);margin:0;display:block}
+    .arch-main-street .ms-chapter-count{color:var(--ms-fg-muted);display:block;margin-top:14px}
+    .arch-main-street .ms-chapter-plate{aspect-ratio:5/3.4;overflow:hidden;box-shadow:0 24px 50px -28px var(--ms-shadow)}
+    .arch-main-street .ms-chapter-plate .archetype-photo{transition:transform .8s ease}
+    .arch-main-street .ms-chapter-row:hover .ms-chapter-plate .archetype-photo{transform:scale(1.05)}
+    @media(max-width:760px){
+      .arch-main-street .ms-chapter-row{grid-template-columns:60px 1fr;gap:24px}
+      .arch-main-street .ms-chapter-plate{display:none}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .arch-main-street .ms-chapter-plate .archetype-photo{transition:none}
+    }
+    /* lanes (Cheerful) — full-width candy bands, a punched circular cover. One
+       accent → three distinct band colors via nth-child + color-mix. */
+    .arch-main-street .ms-lane-band{background:var(--ms-bg);color:var(--ms-fg);padding:84px 0 96px}
+    .arch-main-street .ms-lane-head{margin-bottom:36px}
+    .arch-main-street .ms-lane-eyebrow{color:var(--ms-accent);display:block;margin-bottom:8px}
+    .arch-main-street .ms-lane-title{color:var(--ms-fg);margin:0}
+    .arch-main-street .ms-lanes{display:flex;flex-direction:column;gap:20px}
+    .arch-main-street .ms-lane{display:flex;align-items:center;gap:30px;border-radius:30px;padding:24px 36px;color:var(--ms-on-accent);position:relative;overflow:hidden;text-decoration:none;background:var(--ms-accent);box-shadow:0 14px 0 -4px color-mix(in srgb,var(--ms-fg) 16%,transparent);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+    .arch-main-street .ms-lane:nth-child(2){background:color-mix(in srgb,var(--ms-accent) 62%,var(--ms-fg))}
+    .arch-main-street .ms-lane:nth-child(3){background:color-mix(in srgb,var(--ms-accent) 55%,white)}
+    .arch-main-street .ms-lane:hover{transform:translateX(14px)}
+    .arch-main-street .ms-lane-pic{width:104px;height:104px;flex-shrink:0;border-radius:50%;overflow:hidden;display:block;border:6px solid var(--ms-on-accent);box-shadow:0 8px 0 color-mix(in srgb,var(--ms-fg) 14%,transparent);transition:transform .4s ease}
+    .arch-main-street .ms-lane-pic .archetype-photo{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    .arch-main-street .ms-lane:hover .ms-lane-pic{transform:rotate(8deg) scale(1.05)}
+    .arch-main-street .ms-lane-name{color:var(--ms-on-accent);flex:1;line-height:.92}
+    .arch-main-street .ms-lane-count{color:var(--ms-on-accent);opacity:.92;white-space:nowrap}
+    .arch-main-street .ms-lane-arr{color:var(--ms-on-accent);font-size:38px;line-height:1}
+    @media(max-width:760px){
+      .arch-main-street .ms-lane{flex-wrap:wrap;gap:16px;padding:20px 22px}
+      .arch-main-street .ms-lane-name{flex-basis:100%}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .arch-main-street .ms-lane{transition:none}
+      .arch-main-street .ms-lane:hover{transform:none}
+      .arch-main-street .ms-lane-pic{transition:none}
+      .arch-main-street .ms-lane:hover .ms-lane-pic{transform:none}
+    }
+    /* cascade (Modern) — a diagonal of overlapping covers stepping across; quiet,
+       image-forward. Diagonal placement is nth-child, never inline. */
+    .arch-main-street .ms-cascade{background:var(--ms-bg)}
+    .arch-main-street .ms-cascade-head{max-width:600px;margin-bottom:24px}
+    .arch-main-street .ms-cascade-eyebrow{color:var(--ms-fg-muted);display:block}
+    .arch-main-street .ms-cascade-title{color:var(--ms-fg);margin:14px 0 0}
+    .arch-main-street .ms-cascade-stage{position:relative;height:660px;max-width:1000px;margin-inline:auto}
+    .arch-main-street .ms-cascade-step{position:absolute;width:46%;aspect-ratio:4/3;overflow:hidden;border-radius:2px;box-shadow:0 34px 64px -30px var(--ms-shadow);text-decoration:none;color:inherit;transition:transform .5s cubic-bezier(.4,0,.1,1)}
+    .arch-main-street .ms-cascade-step:nth-child(1){left:0;top:0;z-index:3}
+    .arch-main-street .ms-cascade-step:nth-child(2){left:27%;top:170px;z-index:2}
+    .arch-main-street .ms-cascade-step:nth-child(3){left:54%;top:340px;z-index:1}
+    .arch-main-street .ms-cascade-step:hover{transform:translateY(-16px);z-index:4}
+    .arch-main-street .ms-cascade-cover{position:absolute;inset:0;display:block}
+    .arch-main-street .ms-cascade-step::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 50%,rgba(0,0,0,.62));pointer-events:none}
+    .arch-main-street .ms-cascade-lab{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:16px 20px;color:var(--ms-on-media);display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+    .arch-main-street .ms-cascade-name{color:var(--ms-on-media)}
+    .arch-main-street .ms-cascade-count{color:var(--ms-on-media);opacity:.85}
+    @media(max-width:760px){
+      .arch-main-street .ms-cascade-stage{height:auto;display:flex;flex-direction:column;gap:18px}
+      .arch-main-street .ms-cascade-step{position:static;width:100%}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .arch-main-street .ms-cascade-step{transition:none}
+      .arch-main-street .ms-cascade-step:hover{transform:none}
+    }
   `;
 }
 

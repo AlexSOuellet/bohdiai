@@ -10,7 +10,7 @@
  * asset generates freely; the cap is expressed per media job via `group`.
  */
 import type { ReactElement, ReactNode } from 'react';
-import type { ProductView } from './content';
+import type { ProductView, CollectionView } from './content';
 import type { PortableStore } from './portable';
 
 /** Which page of a multi-page archetype to paint. The home is the default; the
@@ -120,6 +120,12 @@ export interface ArchetypeBuildSpec<T = unknown> {
     /** Force the goods-beat treatment (the non-persisting ?goods= preview).
      *  Optional — omitted falls back to the authored treatment, then catalog size. */
     goodsTreatment?: string | undefined;
+    /** The shop's collections (loaded from the `collections` table, not authored).
+     *  The home Collections band renders only when this is non-empty. */
+    collections?: CollectionView[] | undefined;
+    /** Force the collections-beat treatment (the non-persisting ?collections=
+     *  preview). Optional — omitted falls back to the authored/default band. */
+    collectionsTreatment?: string | undefined;
     /** Force the founder/About-beat treatment (the non-persisting ?about= preview).
      *  Optional — omitted falls back to the authored treatment, then the quote. */
     founderTreatment?: string | undefined;

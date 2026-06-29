@@ -12,7 +12,7 @@ import {
 } from '@/lib/style-sheet-loader';
 import { archetypeSpec } from '@/lib/archetypes/registry';
 import type { ArchetypePage } from '@/lib/archetypes/builder';
-import type { ProductView, CatalogMedia } from '@/lib/archetypes/content';
+import type { ProductView, CatalogMedia, CollectionView } from '@/lib/archetypes/content';
 import type { Json } from '@/lib/database.types';
 import { readVersion } from '@/lib/tryon/write-version';
 import { isKnownSkin } from '@/lib/editor/look-shelf';
@@ -38,6 +38,10 @@ interface StorefrontPageProps {
   /** Nav-layout preview — render the nav in this variant without persisting
    *  (unknown values fall back to the stored/standard nav). */
   previewNav?: string | undefined;
+  /** Collections-band preview — render the collections beat in this treatment
+   *  without persisting. When the store has no real collections, sample ones are
+   *  seeded so every band is viewable (same non-persisting preview model). */
+  previewCollections?: string | undefined;
 }
 
 /** Storefront routes that an archetype paints as a sub-page off the home envelope. */
@@ -138,7 +142,7 @@ export async function renderArchetypeShell(tenantId: string, children: ReactNode
   return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
 }
 
-export default async function StorefrontPage({ slug, version, previewLook, previewHero, previewGoods, previewFounder, previewNav }: StorefrontPageProps) {
+export default async function StorefrontPage({ slug, version, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections }: StorefrontPageProps) {
   const headerStore = await headers();
   const tenantId = headerStore.get('x-tenant-id');
   if (tenantId === null) notFound();
@@ -236,7 +240,7 @@ export default async function StorefrontPage({ slug, version, previewLook, previ
     !Array.isArray(rootRaw) &&
     (rootRaw as Record<string, unknown>)['kind'] === 'archetype'
   ) {
-    return renderArchetypeStore(rootRaw as Record<string, unknown>, tenantId, undefined, previewLook, previewHero, previewGoods, previewFounder, previewNav);
+    return renderArchetypeStore(rootRaw as Record<string, unknown>, tenantId, undefined, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections);
   }
 
   const parsedPage = PageSchema.safeParse({
@@ -315,12 +319,52 @@ interface ListingRow {
   short_description: string | null;
   description: string | null;
   metadata: { image_url?: string } | null;
+  primary_collection_id: string | null;
+}
+
+interface CollectionRow {
+  id: string;
+  slug: string;
+  name: string;
+}
+
+/** Build the home Collections band data from the tenant's `collections` rows, with
+ *  the item count and a cover derived from the catalog (the collection's first
+ *  product image). Returns [] when the store has no collections. */
+function buildCollectionViews(collRows: CollectionRow[], listingRows: ListingRow[]): CollectionView[] {
+  const byCollection = new Map<string, { count: number; cover?: CatalogMedia }>();
+  for (const r of listingRows) {
+    const cid = r.primary_collection_id;
+    if (cid === null) continue;
+    const entry = byCollection.get(cid) ?? { count: 0 };
+    entry.count += 1;
+    const url = r.metadata?.image_url;
+    if (entry.cover === undefined && url) entry.cover = { kind: 'image', url, alt: r.name };
+    byCollection.set(cid, entry);
+  }
+  return collRows.map((c) => {
+    const agg = byCollection.get(c.id);
+    return { slug: c.slug, name: c.name, count: agg?.count ?? 0, cover: agg?.cover };
+  });
+}
+
+/** Seed plausible sample collections for the ?collections= preview when a store
+ *  has none yet — reusing the catalog's own images so every band is viewable on a
+ *  real store (the same "placeholder, not labeled" model as sample products/dates). */
+function seedPreviewCollections(products: ProductView[]): CollectionView[] {
+  const names = ['Signature', 'Seasonal', 'New Arrivals'];
+  return names.map((name, i) => ({
+    slug: name.toLowerCase().replace(/\s+/g, '-'),
+    name,
+    count: Math.max(1, products.length - i),
+    cover: products[i]?.media[0] ?? products[0]?.media[0],
+  }));
 }
 
 /** Render a stored archetype store: load the real catalog rows as ProductViews
  *  and paint via the chosen archetype's registered renderer. An `overrideLook`
  *  (editor door-1 preview) re-skins the same content without persisting. */
-async function renderArchetypeStore(env: Record<string, unknown>, tenantId: string, page?: ArchetypePage, overrideLook?: string, previewHero?: string, previewGoods?: string, previewFounder?: string, previewNav?: string) {
+async function renderArchetypeStore(env: Record<string, unknown>, tenantId: string, page?: ArchetypePage, overrideLook?: string, previewHero?: string, previewGoods?: string, previewFounder?: string, previewNav?: string, previewCollections?: string) {
   const archetypeKey = env['archetypeKey'];
   const lookKey = env['lookKey'];
   if (typeof archetypeKey !== 'string' || typeof lookKey !== 'string') notFound();
@@ -343,7 +387,7 @@ async function renderArchetypeStore(env: Record<string, unknown>, tenantId: stri
   };
   const { data: rows } = await db
     .from('listings')
-    .select('slug, name, base_price_cents, short_description, description, metadata')
+    .select('slug, name, base_price_cents, short_description, description, metadata, primary_collection_id')
     .eq('tenant_id', tenantId)
     .eq('listing_type', 'product')
     .order('created_at', { ascending: true });
@@ -363,9 +407,34 @@ async function renderArchetypeStore(env: Record<string, unknown>, tenantId: stri
     };
   });
 
+  // Collections band data — the tenant's own collections (count + cover derived
+  // from the catalog). When the store has none and ?collections= is set, seed
+  // sample ones so every band is viewable. Absent → no Collections beat renders.
+  const collDb = supabaseAdmin() as unknown as {
+    from: (t: string) => {
+      select: (c: string) => {
+        eq: (c: string, v: string) => {
+          eq: (c: string, v: string) => {
+            order: (c: string, o: { ascending: boolean }) => Promise<{ data: CollectionRow[] | null }>;
+          };
+        };
+      };
+    };
+  };
+  const { data: collRows } = await collDb
+    .from('collections')
+    .select('id, slug, name')
+    .eq('tenant_id', tenantId)
+    .eq('status', 'active')
+    .order('position', { ascending: true });
+  let collections = buildCollectionViews(collRows ?? [], rows ?? []);
+  if (collections.length === 0 && previewCollections !== undefined && previewCollections !== '') {
+    collections = seedPreviewCollections(products);
+  }
+
   const mood = typeof env['mood'] === 'string' ? (env['mood'] as string) : undefined;
   const catalogSize = typeof env['catalogSize'] === 'number' ? (env['catalogSize'] as number) : undefined;
   const accentOverride = typeof env['accentOverride'] === 'string' ? (env['accentOverride'] as string) : undefined;
   const { logoUrl, brandColors } = await loadTenantChrome(tenantId);
-  return spec.render({ content: env['content'], lookKey: effectiveLook, products, mood, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant: previewHero, goodsTreatment: previewGoods, founderTreatment: previewFounder, navVariant: previewNav });
+  return spec.render({ content: env['content'], lookKey: effectiveLook, products, mood, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant: previewHero, goodsTreatment: previewGoods, collections, collectionsTreatment: previewCollections, founderTreatment: previewFounder, navVariant: previewNav });
 }

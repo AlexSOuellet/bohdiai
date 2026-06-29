@@ -24,6 +24,19 @@ export interface CatalogMedia {
   poster?: string;
 }
 
+/** One collection as a renderer sees it — projected from the `collections` table
+ *  (+ its featured image and item count), archetype-agnostic like ProductView. A
+ *  collection is a GROUP the shopper enters; the home shows a sampling and links
+ *  each to `/collections/<slug>`. */
+export interface CollectionView {
+  slug: string;
+  name: string;
+  /** How many listings the collection holds (shown as a small count). */
+  count: number;
+  /** Featured image; absent until one is set. */
+  cover?: CatalogMedia | undefined;
+}
+
 /** A seller-defined variation axis with its options ("Size" → S / M / L). Per D4. */
 export interface CatalogVariation {
   /** Attribute name as the seller wrote it: "Size", "Metal", "Scent". */

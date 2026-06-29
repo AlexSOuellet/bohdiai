@@ -21,6 +21,7 @@ import { mainStreetArchetype } from './index';
 import { MainStreetContentSchema, FOUNDER_TREATMENTS, NAV_VARIANTS, type MainStreetContent, type NavVariant } from './schemas';
 import { MAIN_STREET_SKINS, SKIN_DESCRIPTIONS } from './skins';
 import { GOODS_TREATMENT_MENU, GOODS_TREATMENTS, type GoodsTreatment } from './goods';
+import { COLLECTIONS_TREATMENTS, type CollectionsTreatment } from './collections';
 import type { FounderTreatment } from './founder';
 import { sceneToPrompt } from './scene-prompt';
 import { logoTone, applyAccentOverride } from './logo-contrast';
@@ -236,6 +237,12 @@ function asNavVariant(v?: string): NavVariant | undefined {
   return (NAV_VARIANTS as readonly string[]).includes(v ?? '') ? (v as NavVariant) : undefined;
 }
 
+/** Narrow the free-form ?collections= preview string to a real treatment, ignoring
+ *  anything not registered (an unknown value falls back to the authored/default band). */
+function asCollectionsTreatment(v?: string): CollectionsTreatment | undefined {
+  return (COLLECTIONS_TREATMENTS as readonly string[]).includes(v ?? '') ? (v as CollectionsTreatment) : undefined;
+}
+
 /** Apply a nav-variant override (the ?nav= preview) onto the content's identity, so
  *  every nav site — each hero, every sub-page header, the product page — reads it. */
 function withNav(content: MainStreetContent, navVariant?: NavVariant): MainStreetContent {
@@ -257,7 +264,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   applyMedia,
   toPayload,
   handOff,
-  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant, goodsTreatment, founderTreatment, navVariant }) => {
+  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant, goodsTreatment, collections, collectionsTreatment, founderTreatment, navVariant }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
     const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), asNavVariant(navVariant));
     switch (page) {
@@ -270,7 +277,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       case 'contact':
         return <ContactPage content={c} skin={skin} tenantId={tenantId} />;
       default:
-        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} heroVariant={heroVariant} goodsTreatment={asGoodsTreatment(goodsTreatment)} founderTreatment={asFounderTreatment(founderTreatment)} />;
+        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} heroVariant={heroVariant} goodsTreatment={asGoodsTreatment(goodsTreatment)} collections={collections} collectionsTreatment={asCollectionsTreatment(collectionsTreatment)} founderTreatment={asFounderTreatment(founderTreatment)} />;
     }
   },
   renderProduct: ({ content, lookKey, product, logoUrl, brandColors, accentOverride }) => {
