@@ -225,6 +225,19 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-marquee{animation:ms-scroll 38s linear infinite}
     .arch-main-street .ms-marquee:hover{animation-play-state:paused}
     @keyframes ms-scroll{to{transform:translateX(-50%)}}
+    /* MARQUEE band (its own section, not the goods rail) — a loud scrolling
+       type band painted in the skin's accent. Same shape every family; the
+       accent colour and the goodsHead voice make it look like the family. Two
+       runs, the -50% loop is seamless (reuses ms-scroll); pauses on hover;
+       goes static under reduced-motion. */
+    .arch-main-street .ms-mq-band{background:var(--ms-accent);color:var(--ms-on-accent);overflow:hidden;padding:24px 0}
+    .arch-main-street .ms-mq-track{display:flex;width:max-content;animation:ms-scroll 44s linear infinite}
+    .arch-main-street .ms-mq-band:hover .ms-mq-track{animation-play-state:paused}
+    .arch-main-street .ms-mq-run{display:flex;align-items:center;flex:0 0 auto}
+    .arch-main-street .ms-mq-cell{display:inline-flex;align-items:center;flex:0 0 auto}
+    .arch-main-street .ms-mq-item{white-space:nowrap;padding:0 30px}
+    .arch-main-street .ms-mq-sep{white-space:nowrap;opacity:.5}
+    @media(prefers-reduced-motion:reduce){.arch-main-street .ms-mq-track{animation:none}}
     /* goods switcher — image cross-fades as you point down the list */
     .arch-main-street .ms-switch-layer{transition:opacity .7s ${mo.reveal.easing}}
     .arch-main-street .ms-switch-list{justify-content:center}

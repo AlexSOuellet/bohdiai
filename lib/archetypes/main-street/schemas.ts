@@ -196,6 +196,18 @@ export const MainStreetContentSchema = z.object({
     })
     .optional(),
 
+  /** MARQUEE — the loud scrolling-type band's phrases. One shape for every family
+   *  (no per-family treatment), so the only authored content is the list of
+   *  phrases it scrolls — brand-voice lines plus live strings ("New this week",
+   *  "Find us Saturdays"). Optional: the band is off unless the store has phrases;
+   *  a shop without a marquee simply omits the beat. The ?marquee= preview seeds
+   *  sample phrases so the band is viewable before Bohdi authors any. */
+  marquee: z
+    .object({
+      items: z.array(z.string().min(1)).min(1),
+    })
+    .optional(),
+
   /** BEAT 3 — the founder + a real "find us this week" calendar. Required: the
    *  authority the platform is built on. */
   founder: z.object({

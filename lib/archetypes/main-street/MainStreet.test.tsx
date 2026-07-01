@@ -47,6 +47,35 @@ describe('MainStreet — find-us beat composition', () => {
   });
 });
 
+describe('MainStreet — marquee band composition', () => {
+  it('shows the marquee band when phrases are passed (the ?marquee= preview)', () => {
+    const { container } = render(<MainStreet content={base} skin={skin} products={[]} marqueeItems={['Small batch', 'Made by hand']} />);
+    expect(container.querySelector('.ms-mq-band')).toBeTruthy();
+  });
+
+  it('shows the marquee band when the content authors one', () => {
+    const withMarquee: MainStreetContent = { ...base, marquee: { items: ['Made to order'] } };
+    const { container } = render(<MainStreet content={withMarquee} skin={skin} products={[]} />);
+    expect(container.querySelector('.ms-mq-band')).toBeTruthy();
+  });
+
+  it('shows no marquee band when neither the content nor a preview supplies phrases', () => {
+    const { container } = render(<MainStreet content={base} skin={skin} products={[]} />);
+    expect(container.querySelector('.ms-mq-band')).toBeNull();
+  });
+
+  it('places the marquee between the hero and the goods beat (the handoff slot)', () => {
+    const { container } = render(<MainStreet content={base} skin={skin} products={[]} marqueeItems={['Small batch']} />);
+    const hero = container.querySelector('[data-ms-hero]');
+    const marquee = container.querySelector('.ms-mq-band');
+    const goods = container.querySelector('#goods');
+    expect(hero && marquee && goods).toBeTruthy();
+    // Document order: hero → marquee → goods.
+    expect(hero!.compareDocumentPosition(marquee!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(marquee!.compareDocumentPosition(goods!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+});
+
 describe('MainStreet — hero slot resolves through the catalog (the swap)', () => {
   it('renders the Story hero by default (unchanged from before the catalog)', () => {
     const { container } = render(<MainStreet content={base} skin={skin} products={[]} />);

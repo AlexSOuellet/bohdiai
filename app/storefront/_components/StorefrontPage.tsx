@@ -42,6 +42,10 @@ interface StorefrontPageProps {
    *  without persisting. When the store has no real collections, sample ones are
    *  seeded so every band is viewable (same non-persisting preview model). */
   previewCollections?: string | undefined;
+  /** Marquee-band preview — turn the marquee band on without persisting. When the
+   *  store has no authored marquee, sample phrases are seeded so the band is
+   *  viewable (same non-persisting preview model). Any non-empty value enables it. */
+  previewMarquee?: string | undefined;
 }
 
 /** Storefront routes that an archetype paints as a sub-page off the home envelope. */
@@ -142,7 +146,7 @@ export async function renderArchetypeShell(tenantId: string, children: ReactNode
   return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
 }
 
-export default async function StorefrontPage({ slug, version, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections }: StorefrontPageProps) {
+export default async function StorefrontPage({ slug, version, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewMarquee }: StorefrontPageProps) {
   const headerStore = await headers();
   const tenantId = headerStore.get('x-tenant-id');
   if (tenantId === null) notFound();
@@ -240,7 +244,7 @@ export default async function StorefrontPage({ slug, version, previewLook, previ
     !Array.isArray(rootRaw) &&
     (rootRaw as Record<string, unknown>)['kind'] === 'archetype'
   ) {
-    return renderArchetypeStore(rootRaw as Record<string, unknown>, tenantId, undefined, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections);
+    return renderArchetypeStore(rootRaw as Record<string, unknown>, tenantId, undefined, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewMarquee);
   }
 
   const parsedPage = PageSchema.safeParse({
@@ -361,10 +365,17 @@ function seedPreviewCollections(products: ProductView[]): CollectionView[] {
   }));
 }
 
+/** Seed plausible marquee phrases for the ?marquee= preview when a store has no
+ *  authored marquee yet — a mix of brand-voice lines and live-info strings, the
+ *  same "placeholder, not labeled" model as sample products/collections/dates. */
+function seedPreviewMarquee(): string[] {
+  return ['Small batch', 'Made by hand', 'New this week', 'Shipped with care', 'Find us Saturdays'];
+}
+
 /** Render a stored archetype store: load the real catalog rows as ProductViews
  *  and paint via the chosen archetype's registered renderer. An `overrideLook`
  *  (editor door-1 preview) re-skins the same content without persisting. */
-async function renderArchetypeStore(env: Record<string, unknown>, tenantId: string, page?: ArchetypePage, overrideLook?: string, previewHero?: string, previewGoods?: string, previewFounder?: string, previewNav?: string, previewCollections?: string) {
+async function renderArchetypeStore(env: Record<string, unknown>, tenantId: string, page?: ArchetypePage, overrideLook?: string, previewHero?: string, previewGoods?: string, previewFounder?: string, previewNav?: string, previewCollections?: string, previewMarquee?: string) {
   const archetypeKey = env['archetypeKey'];
   const lookKey = env['lookKey'];
   if (typeof archetypeKey !== 'string' || typeof lookKey !== 'string') notFound();
@@ -436,5 +447,8 @@ async function renderArchetypeStore(env: Record<string, unknown>, tenantId: stri
   const catalogSize = typeof env['catalogSize'] === 'number' ? (env['catalogSize'] as number) : undefined;
   const accentOverride = typeof env['accentOverride'] === 'string' ? (env['accentOverride'] as string) : undefined;
   const { logoUrl, brandColors } = await loadTenantChrome(tenantId);
-  return spec.render({ content: env['content'], lookKey: effectiveLook, products, mood, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant: previewHero, goodsTreatment: previewGoods, collections, collectionsTreatment: previewCollections, founderTreatment: previewFounder, navVariant: previewNav });
+  // ?marquee= turns the band on with seeded phrases until Bohdi authors real ones.
+  const marqueeItems =
+    previewMarquee !== undefined && previewMarquee !== '' ? seedPreviewMarquee() : undefined;
+  return spec.render({ content: env['content'], lookKey: effectiveLook, products, mood, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant: previewHero, goodsTreatment: previewGoods, collections, collectionsTreatment: previewCollections, founderTreatment: previewFounder, navVariant: previewNav, marqueeItems });
 }

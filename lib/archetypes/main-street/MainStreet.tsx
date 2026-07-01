@@ -14,6 +14,7 @@ import { MainStreetRoot, MainStreetFooter } from './chrome';
 import { resolveHero } from './hero-catalog';
 import { Close } from './beats';
 import { GoodsBeat } from './GoodsBeat';
+import { MarqueeBeat } from './MarqueeBeat';
 import { CollectionsBeat } from './CollectionsBeat';
 import { FounderBeat } from './FounderBeat';
 import { FindUsBeat } from './FindUsBeat';
@@ -55,16 +56,25 @@ export interface MainStreetProps {
    *  Defaults to the Story hero — today's Main Street front door — so existing
    *  builds render unchanged. */
   heroVariant?: string | undefined;
+  /** Force the marquee band's phrases (the ?marquee= preview). Falls back to the
+   *  authored `content.marquee.items` when omitted; absent from both → no band. */
+  marqueeItems?: readonly string[] | undefined;
 }
 
-export function MainStreet({ content, skin, products, catalogSize, goodsTreatment, collections, collectionsTreatment, collectionsHref, founderTreatment, shopHref, aboutHref, eventsHref, momentKey, heroVariant }: MainStreetProps) {
+export function MainStreet({ content, skin, products, catalogSize, goodsTreatment, collections, collectionsTreatment, collectionsHref, founderTreatment, shopHref, aboutHref, eventsHref, momentKey, heroVariant, marqueeItems }: MainStreetProps) {
   // The Collections band appears whenever the shop HAS collections — the structure
   // follows what the store holds, not an editorial pick. The heading is the
   // authored section when present, a plain default otherwise.
   const collectionsSection = content.collections ?? { title: 'Collections' };
+  // The marquee band's phrases: a preview override wins, else the authored ones.
+  // Absent from both → the band doesn't render. Today it sits in its default
+  // handoff slot (right under the hero); the per-family position lands with the
+  // family layer.
+  const marquee = marqueeItems ?? content.marquee?.items;
   return (
     <MainStreetRoot skin={skin}>
       {resolveHero(heroVariant)({ identity: content.identity, moment: content.moment, skin, momentKey })}
+      {marquee && marquee.length > 0 && <MarqueeBeat items={marquee} skin={skin} />}
       <GoodsBeat goods={content.goods} products={products} skin={skin} treatment={goodsTreatment} catalogSize={catalogSize} shopHref={shopHref} />
       {collections && collections.length > 0 && (
         <Reveal>
