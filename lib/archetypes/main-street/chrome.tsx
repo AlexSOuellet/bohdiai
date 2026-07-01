@@ -228,10 +228,14 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     /* MARQUEE band (its own section, not the goods rail) — a loud scrolling
        type band painted in the skin's accent. Same shape every family; the
        accent colour and the goodsHead voice make it look like the family. Two
-       runs, the -50% loop is seamless (reuses ms-scroll); pauses on hover;
-       goes static under reduced-motion. */
-    .arch-main-street .ms-mq-band{background:var(--ms-accent);color:var(--ms-on-accent);overflow:hidden;padding:24px 0}
-    .arch-main-street .ms-mq-track{display:flex;width:max-content;animation:ms-scroll 44s linear infinite}
+       rows (mirroring the original mockup): a bright voice line over a dim,
+       reversed logistics line. Each row duplicates its run so the -50% loop is
+       seamless (reuses ms-scroll); pauses on hover; static under reduced-motion. */
+    .arch-main-street .ms-mq-band{background:var(--ms-accent);color:var(--ms-on-accent);overflow:hidden;padding:22px 0}
+    .arch-main-street .ms-mq-track{display:flex;width:max-content;animation:ms-scroll 46s linear infinite}
+    .arch-main-street .ms-mq-track + .ms-mq-track{margin-top:2px}
+    .arch-main-street .ms-mq-track.rev{animation-direction:reverse}
+    .arch-main-street .ms-mq-track.dim{opacity:.42;animation-duration:60s}
     .arch-main-street .ms-mq-band:hover .ms-mq-track{animation-play-state:paused}
     .arch-main-street .ms-mq-run{display:flex;align-items:center;flex:0 0 auto}
     .arch-main-street .ms-mq-cell{display:inline-flex;align-items:center;flex:0 0 auto}

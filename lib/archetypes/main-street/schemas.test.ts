@@ -52,19 +52,6 @@ describe('MainStreetContentSchema', () => {
     expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 
-  it('accepts a marquee with phrases, and a store with no marquee at all', () => {
-    expect(MainStreetContentSchema.safeParse(valid()).success).toBe(true); // marquee omitted
-    const c = valid();
-    (c as Record<string, unknown>)['marquee'] = { items: ['Small batch', 'Made by hand'] };
-    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
-  });
-
-  it('rejects a marquee with an empty phrase list (a band with nothing to scroll)', () => {
-    const c = valid();
-    (c as Record<string, unknown>)['marquee'] = { items: [] };
-    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
-  });
-
   it('requires at least one story line (a single line is valid — spotlight taglines)', () => {
     // one line is valid now (spotlight Moment lands a single tagline)
     const cOne = valid();

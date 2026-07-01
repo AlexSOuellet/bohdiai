@@ -264,7 +264,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   applyMedia,
   toPayload,
   handOff,
-  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant, goodsTreatment, collections, collectionsTreatment, founderTreatment, navVariant, marqueeItems }) => {
+  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant, goodsTreatment, collections, collectionsTreatment, founderTreatment, navVariant, showMarquee }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
     const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), asNavVariant(navVariant));
     switch (page) {
@@ -277,7 +277,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       case 'contact':
         return <ContactPage content={c} skin={skin} tenantId={tenantId} />;
       default:
-        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} heroVariant={heroVariant} goodsTreatment={asGoodsTreatment(goodsTreatment)} collections={collections} collectionsTreatment={asCollectionsTreatment(collectionsTreatment)} founderTreatment={asFounderTreatment(founderTreatment)} marqueeItems={marqueeItems} />;
+        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} heroVariant={heroVariant} goodsTreatment={asGoodsTreatment(goodsTreatment)} collections={collections} collectionsTreatment={asCollectionsTreatment(collectionsTreatment)} founderTreatment={asFounderTreatment(founderTreatment)} showMarquee={showMarquee} />;
     }
   },
   renderProduct: ({ content, lookKey, product, logoUrl, brandColors, accentOverride }) => {

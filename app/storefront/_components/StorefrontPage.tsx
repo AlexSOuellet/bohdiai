@@ -365,13 +365,6 @@ function seedPreviewCollections(products: ProductView[]): CollectionView[] {
   }));
 }
 
-/** Seed plausible marquee phrases for the ?marquee= preview when a store has no
- *  authored marquee yet — a mix of brand-voice lines and live-info strings, the
- *  same "placeholder, not labeled" model as sample products/collections/dates. */
-function seedPreviewMarquee(): string[] {
-  return ['Small batch', 'Made by hand', 'New this week', 'Shipped with care', 'Find us Saturdays'];
-}
-
 /** Render a stored archetype store: load the real catalog rows as ProductViews
  *  and paint via the chosen archetype's registered renderer. An `overrideLook`
  *  (editor door-1 preview) re-skins the same content without persisting. */
@@ -447,8 +440,7 @@ async function renderArchetypeStore(env: Record<string, unknown>, tenantId: stri
   const catalogSize = typeof env['catalogSize'] === 'number' ? (env['catalogSize'] as number) : undefined;
   const accentOverride = typeof env['accentOverride'] === 'string' ? (env['accentOverride'] as string) : undefined;
   const { logoUrl, brandColors } = await loadTenantChrome(tenantId);
-  // ?marquee= turns the band on with seeded phrases until Bohdi authors real ones.
-  const marqueeItems =
-    previewMarquee !== undefined && previewMarquee !== '' ? seedPreviewMarquee() : undefined;
-  return spec.render({ content: env['content'], lookKey: effectiveLook, products, mood, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant: previewHero, goodsTreatment: previewGoods, collections, collectionsTreatment: previewCollections, founderTreatment: previewFounder, navVariant: previewNav, marqueeItems });
+  // ?marquee= turns the band ON; its content is assembled from the store itself.
+  const showMarquee = previewMarquee !== undefined && previewMarquee !== '';
+  return spec.render({ content: env['content'], lookKey: effectiveLook, products, mood, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant: previewHero, goodsTreatment: previewGoods, collections, collectionsTreatment: previewCollections, founderTreatment: previewFounder, navVariant: previewNav, showMarquee });
 }

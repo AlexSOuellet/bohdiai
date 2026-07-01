@@ -48,24 +48,20 @@ describe('MainStreet — find-us beat composition', () => {
 });
 
 describe('MainStreet — marquee band composition', () => {
-  it('shows the marquee band when phrases are passed (the ?marquee= preview)', () => {
-    const { container } = render(<MainStreet content={base} skin={skin} products={[]} marqueeItems={['Small batch', 'Made by hand']} />);
+  it('shows the marquee band when turned on, with content from the store itself', () => {
+    const { container } = render(<MainStreet content={base} skin={skin} products={[]} showMarquee />);
     expect(container.querySelector('.ms-mq-band')).toBeTruthy();
+    // The voice line is assembled from base's own authored copy.
+    expect(container.textContent).toContain(base.moment.eyebrow);
   });
 
-  it('shows the marquee band when the content authors one', () => {
-    const withMarquee: MainStreetContent = { ...base, marquee: { items: ['Made to order'] } };
-    const { container } = render(<MainStreet content={withMarquee} skin={skin} products={[]} />);
-    expect(container.querySelector('.ms-mq-band')).toBeTruthy();
-  });
-
-  it('shows no marquee band when neither the content nor a preview supplies phrases', () => {
+  it('shows no marquee band when it is off (no toggle)', () => {
     const { container } = render(<MainStreet content={base} skin={skin} products={[]} />);
     expect(container.querySelector('.ms-mq-band')).toBeNull();
   });
 
   it('places the marquee between the hero and the goods beat (the handoff slot)', () => {
-    const { container } = render(<MainStreet content={base} skin={skin} products={[]} marqueeItems={['Small batch']} />);
+    const { container } = render(<MainStreet content={base} skin={skin} products={[]} showMarquee />);
     const hero = container.querySelector('[data-ms-hero]');
     const marquee = container.querySelector('.ms-mq-band');
     const goods = container.querySelector('#goods');
