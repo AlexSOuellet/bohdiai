@@ -16,6 +16,7 @@ const full = {
     secondaryCtaTarget: 'about',
   },
   goods: { title: 'Our goods.', treatment: 'marquee', label: ' new ', viewAllLabel: ' all ' },
+  marquee: { voice: ['Small batch.', ' Made to last! ', '   '] },
   founder: {
     quote: ' q ',
     attribution: ' me ',
@@ -36,6 +37,7 @@ const minimal = {
   identity: { wordmark: 'S', nav: [{ label: 'Shop', target: 'shop' }] },
   moment: { story: ['One'], eyebrow: 'e', brand: 'b', sub: 's', ctaLabel: 'c', ctaTarget: 'shop' },
   goods: { title: 'Goods', treatment: 'marquee' },
+  marquee: { voice: ['One'] },
   founder: { quote: 'q', attribution: 'a', treatment: 'quote' },
   close: { label: 'l', headline: 'Close', ctaLabel: 'c', ctaTarget: 'shop' },
   about: { heading: 'About', story: ['x'] },
@@ -60,6 +62,8 @@ describe('normalizeCopy', () => {
     expect(out.moment.secondaryCtaTarget).toBe('about');
     expect(out.goods.label).toBe('new');
     expect(out.goods.viewAllLabel).toBe('all');
+    // marquee voice: terminal punctuation stripped, the whitespace-only phrase dropped
+    expect(out.marquee.voice).toEqual(['Small batch', 'Made to last']);
     expect(out.founder.eyebrow).toBe('meet');
     expect(out.founder.aboutLabel).toBe('about');
     expect(out.founder.findUs?.eventsLabel).toBe('events');

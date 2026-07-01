@@ -111,6 +111,7 @@ ${storyDirective}
 ${goods}
 - goods.label (2-24, optional): a small label on the heading row.
 - goods.viewAllLabel (2-28, optional): the cue to the full Products page.
+- marquee.voice (2-6 phrases): the phrases a bold scrolling marquee band shows — short brand lines in THIS shop's voice, a few words each (e.g. "Small batch", "Poured by hand", "Rhode Island made"). No sentences, no trailing punctuation. Write only the voice; the band pairs these with live info (find-us dates, collection names) the store already holds, so do not write logistics here.
 - founder.quote (24+, no hard cap): the founder's words in the About beat
 - founder.attribution (4-60): who said it.
 - founder.treatment: you drew "${rolls.founder}" this build — the dice again. Keep your draw unless it genuinely fights this shop; if it does, pick another from these and note why in one line:

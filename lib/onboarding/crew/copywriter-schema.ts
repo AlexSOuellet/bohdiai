@@ -60,6 +60,13 @@ export const CopywriterDraftSchema = z.object({
     label: z.string().min(1).optional(),
     viewAllLabel: z.string().min(1).optional(),
   }),
+  /** The marquee band's VOICE line — a few punchy brand phrases the scrolling
+   *  band shows. Authored every build (build all sections at onboarding) so the
+   *  band is ready whenever a family/maker turns it on; its second line (live
+   *  logistics) is assembled from store data at render, not authored here. */
+  marquee: z.object({
+    voice: z.array(z.string().min(1)).min(1),
+  }),
   founder: z.object({
     quote: z.string().min(1),
     attribution: z.string().min(1),

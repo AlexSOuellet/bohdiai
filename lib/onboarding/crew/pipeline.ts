@@ -98,6 +98,7 @@ function assembleSubmission(out: CrewOutput, shopName: string): { content: unkno
       ...(moment.collageShots ? { collageShots: moment.collageShots } : {}),
     },
     goods: copy.goods,
+    marquee: copy.marquee,
     founder: { ...copy.founder, photo: { prompt: look.founderPhoto.prompt, alt: look.founderPhoto.alt } },
     close: copy.close,
     about: copy.about,

@@ -27,8 +27,16 @@ const base: MainStreetContent = {
 };
 
 describe('buildMarqueeLines — content is assembled from the store, never hardcoded', () => {
-  it('builds the voice line from the store’s own authored copy', () => {
-    const { voice } = buildMarqueeLines(base);
+  it('uses the marquee voice Bohdi authored when present', () => {
+    const authored: MainStreetContent = { ...base, marquee: { voice: ['Hand cut', 'Built to last'] } };
+    const { voice } = buildMarqueeLines(authored);
+    expect(voice).toEqual(['Hand cut', 'Built to last']);
+    // does NOT fall back to the other authored copy when its own voice exists
+    expect(voice).not.toContain('Made in the workshop');
+  });
+
+  it('falls back to deriving the voice from other authored copy for legacy stores', () => {
+    const { voice } = buildMarqueeLines(base); // no marquee field
     expect(voice).toContain('Made in the workshop'); // eyebrow
     expect(voice).toContain('The collection'); // goods label
     expect(voice).toContain('Come by'); // close label

@@ -67,6 +67,11 @@ export function normalizeCopy(d: CopywriterDraft): CopywriterDraft {
       ...(d.goods.label !== undefined ? { label: trim(d.goods.label) } : {}),
       ...(d.goods.viewAllLabel !== undefined ? { viewAllLabel: trim(d.goods.viewAllLabel) } : {}),
     },
+    marquee: {
+      // Marquee phrases scroll large like headlines — strip terminal punctuation,
+      // drop any that normalize to empty.
+      voice: d.marquee.voice.map(stripHeadlinePunct).filter((s) => s.length > 0),
+    },
     founder: {
       ...d.founder,
       quote: trim(d.founder.quote),

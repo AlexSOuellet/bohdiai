@@ -22,17 +22,20 @@ import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import type { MarqueeLines } from './marquee';
 
+import type { TypeRoleName } from './Type';
+
 /** One scrolling run of a line's phrases — each row renders two (the second hidden
- *  from assistive tech) so the -50% translate loops without a seam. */
-function MarqueeRun({ items, hidden }: { items: readonly string[]; hidden?: boolean }) {
+ *  from assistive tech) so the -50% translate loops without a seam. `role` sets the
+ *  register: the voice line runs loud (goodsHead), the info line a step down. */
+function MarqueeRun({ items, role, hidden }: { items: readonly string[]; role: TypeRoleName; hidden?: boolean }) {
   return (
     <span className="ms-mq-run" aria-hidden={hidden ? true : undefined}>
       {items.map((phrase, i) => (
         <span className="ms-mq-cell" key={`${phrase}-${i}`}>
-          <Type as="span" role="goodsHead" className="ms-mq-item">
+          <Type as="span" role={role} className="ms-mq-item">
             {phrase}
           </Type>
-          <Type as="span" role="goodsHead" className="ms-mq-sep" aria-hidden={true}>
+          <Type as="span" role={role} className="ms-mq-sep" aria-hidden={true}>
             ◆
           </Type>
         </span>
@@ -43,11 +46,11 @@ function MarqueeRun({ items, hidden }: { items: readonly string[]; hidden?: bool
 
 /** One row = one scrolling line. `variant` carries the row's look/direction
  *  modifiers (the dim, reversed logistics line vs. the bright voice line). */
-function MarqueeRow({ items, variant }: { items: readonly string[]; variant?: string }) {
+function MarqueeRow({ items, role, variant }: { items: readonly string[]; role: TypeRoleName; variant?: string }) {
   return (
     <div className={variant ? `ms-mq-track ${variant}` : 'ms-mq-track'}>
-      <MarqueeRun items={items} />
-      <MarqueeRun items={items} hidden />
+      <MarqueeRun items={items} role={role} />
+      <MarqueeRun items={items} role={role} hidden />
     </div>
   );
 }
@@ -64,8 +67,10 @@ export function MarqueeBeat({
   if (!hasVoice && !hasInfo) return null;
   return (
     <section className="ms-mq-band" aria-label="Highlights">
-      {hasVoice && <MarqueeRow items={lines.voice} />}
-      {hasInfo && <MarqueeRow items={lines.info} variant="rev dim" />}
+      {/* Voice line loud (goodsHead); info line a step down (cardTitle) so the two
+          registers read as hierarchy and never crowd each other vertically. */}
+      {hasVoice && <MarqueeRow items={lines.voice} role="goodsHead" />}
+      {hasInfo && <MarqueeRow items={lines.info} role="cardTitle" variant="rev dim" />}
     </section>
   );
 }

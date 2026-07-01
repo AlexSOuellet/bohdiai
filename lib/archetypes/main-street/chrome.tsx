@@ -231,16 +231,16 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
        rows (mirroring the original mockup): a bright voice line over a dim,
        reversed logistics line. Each row duplicates its run so the -50% loop is
        seamless (reuses ms-scroll); pauses on hover; static under reduced-motion. */
-    .arch-main-street .ms-mq-band{background:var(--ms-accent);color:var(--ms-on-accent);overflow:hidden;padding:22px 0}
-    .arch-main-street .ms-mq-track{display:flex;width:max-content;animation:ms-scroll 46s linear infinite}
-    .arch-main-street .ms-mq-track + .ms-mq-track{margin-top:2px}
+    .arch-main-street .ms-mq-band{background:var(--ms-accent);color:var(--ms-on-accent);overflow:hidden;padding:20px 0}
+    .arch-main-street .ms-mq-track{display:flex;width:max-content;line-height:1;animation:ms-scroll 46s linear infinite}
+    .arch-main-street .ms-mq-track + .ms-mq-track{margin-top:14px}
     .arch-main-street .ms-mq-track.rev{animation-direction:reverse}
     .arch-main-street .ms-mq-track.dim{opacity:.42;animation-duration:60s}
     .arch-main-street .ms-mq-band:hover .ms-mq-track{animation-play-state:paused}
     .arch-main-street .ms-mq-run{display:flex;align-items:center;flex:0 0 auto}
     .arch-main-street .ms-mq-cell{display:inline-flex;align-items:center;flex:0 0 auto}
-    .arch-main-street .ms-mq-item{white-space:nowrap;padding:0 30px}
-    .arch-main-street .ms-mq-sep{white-space:nowrap;opacity:.5}
+    .arch-main-street .ms-mq-item{white-space:nowrap;padding:0 30px;line-height:1}
+    .arch-main-street .ms-mq-sep{white-space:nowrap;opacity:.5;line-height:1}
     @media(prefers-reduced-motion:reduce){.arch-main-street .ms-mq-track{animation:none}}
     /* goods switcher — image cross-fades as you point down the list */
     .arch-main-street .ms-switch-layer{transition:opacity .7s ${mo.reveal.easing}}

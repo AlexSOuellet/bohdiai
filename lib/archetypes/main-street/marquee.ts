@@ -1,15 +1,13 @@
 /**
  * MARQUEE — content assembly.
  *
- * The band's phrases are NEVER hardcoded and never a separate authored field —
- * they are assembled from the store's OWN content and data at render, so the
- * marquee stays in sync with the site and costs no extra generation. Two lines,
- * two sources (mirrors the original two-row mockup — a bright brand line over a
- * dim logistics line):
+ * The band's phrases are NEVER hardcoded. Two lines, two sources (mirrors the
+ * original two-row mockup — a bright brand line over a dim logistics line):
  *
- *  - voice — the brand phrases Bohdi already authored for THIS store: the hero
- *            eyebrow, the goods label, the close sign-off + headline. Real words,
- *            not filler.
+ *  - voice — the brand phrases Bohdi AUTHORS for the marquee at build time
+ *            (`content.marquee.voice`). Legacy stores authored before that field
+ *            existed fall back to deriving the voice from the store's other
+ *            authored copy (hero eyebrow, goods label, close sign-off + headline).
  *  - info  — the store's live data: its find-us dates and its collection names.
  *            Assembled from what the store HAS, so it updates itself.
  *
@@ -52,13 +50,14 @@ export function buildMarqueeLines(
   content: MainStreetContent,
   collections: readonly CollectionView[] = [],
 ): MarqueeLines {
-  // VOICE — brand phrases the store already holds (authored by Bohdi).
-  const voice = tidy([
-    content.moment.eyebrow,
-    content.goods.label,
-    content.close.label,
-    content.close.headline,
-  ]);
+  // VOICE — the phrases Bohdi authored for the marquee. Legacy stores (no
+  // authored marquee) fall back to deriving the voice from other authored copy.
+  const authored = content.marquee?.voice;
+  const voice = tidy(
+    authored && authored.length > 0
+      ? authored
+      : [content.moment.eyebrow, content.goods.label, content.close.label, content.close.headline],
+  );
 
   // INFO — live logistics assembled from the store's real data. Each find-us
   // row becomes "where · day time"; each collection contributes its own name.

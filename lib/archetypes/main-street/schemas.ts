@@ -196,6 +196,17 @@ export const MainStreetContentSchema = z.object({
     })
     .optional(),
 
+  /** MARQUEE — the band's authored VOICE line (a few punchy brand phrases Bohdi
+   *  wrote). The band's second line (live logistics — find-us dates, collections)
+   *  is assembled from store data at render, never authored. Optional so content
+   *  authored before this field still parses; when absent the renderer falls back
+   *  to deriving the voice line from the store's other authored copy. */
+  marquee: z
+    .object({
+      voice: z.array(z.string().min(1)).min(1),
+    })
+    .optional(),
+
   /** BEAT 3 — the founder + a real "find us this week" calendar. Required: the
    *  authority the platform is built on. */
   founder: z.object({

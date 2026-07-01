@@ -44,6 +44,7 @@ const draft = {
     ctaTarget: 'shop',
   },
   goods: { title: 'The bench', treatment: 'procession' },
+  marquee: { voice: ['Small batch', 'Cut by hand', 'Made to last'] },
   founder: {
     quote: 'I would rather make one belt that lasts thirty years than ten that fall apart.',
     attribution: 'Sam, founder',
