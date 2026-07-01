@@ -13,6 +13,7 @@ import {
 import { archetypeSpec } from '@/lib/archetypes/registry';
 import type { ArchetypePage } from '@/lib/archetypes/builder';
 import type { ProductView, CatalogMedia, CollectionView } from '@/lib/archetypes/content';
+import { seedPreviewReviews } from '@/lib/archetypes/main-street/reviews';
 import type { Json } from '@/lib/database.types';
 import { readVersion } from '@/lib/tryon/write-version';
 import { isKnownSkin } from '@/lib/editor/look-shelf';
@@ -46,6 +47,10 @@ interface StorefrontPageProps {
    *  store has no authored marquee, sample phrases are seeded so the band is
    *  viewable (same non-persisting preview model). Any non-empty value enables it. */
   previewMarquee?: string | undefined;
+  /** Reviews-beat preview — render the reviews beat in this treatment without
+   *  persisting. When the store has no authored reviews, sample testimonials are
+   *  seeded so every treatment is viewable (same non-persisting preview model). */
+  previewReviews?: string | undefined;
 }
 
 /** Storefront routes that an archetype paints as a sub-page off the home envelope. */
@@ -146,7 +151,7 @@ export async function renderArchetypeShell(tenantId: string, children: ReactNode
   return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
 }
 
-export default async function StorefrontPage({ slug, version, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewMarquee }: StorefrontPageProps) {
+export default async function StorefrontPage({ slug, version, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewMarquee, previewReviews }: StorefrontPageProps) {
   const headerStore = await headers();
   const tenantId = headerStore.get('x-tenant-id');
   if (tenantId === null) notFound();
@@ -244,7 +249,7 @@ export default async function StorefrontPage({ slug, version, previewLook, previ
     !Array.isArray(rootRaw) &&
     (rootRaw as Record<string, unknown>)['kind'] === 'archetype'
   ) {
-    return renderArchetypeStore(rootRaw as Record<string, unknown>, tenantId, undefined, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewMarquee);
+    return renderArchetypeStore(rootRaw as Record<string, unknown>, tenantId, undefined, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewMarquee, previewReviews);
   }
 
   const parsedPage = PageSchema.safeParse({
@@ -368,7 +373,7 @@ function seedPreviewCollections(products: ProductView[]): CollectionView[] {
 /** Render a stored archetype store: load the real catalog rows as ProductViews
  *  and paint via the chosen archetype's registered renderer. An `overrideLook`
  *  (editor door-1 preview) re-skins the same content without persisting. */
-async function renderArchetypeStore(env: Record<string, unknown>, tenantId: string, page?: ArchetypePage, overrideLook?: string, previewHero?: string, previewGoods?: string, previewFounder?: string, previewNav?: string, previewCollections?: string, previewMarquee?: string) {
+async function renderArchetypeStore(env: Record<string, unknown>, tenantId: string, page?: ArchetypePage, overrideLook?: string, previewHero?: string, previewGoods?: string, previewFounder?: string, previewNav?: string, previewCollections?: string, previewMarquee?: string, previewReviews?: string) {
   const archetypeKey = env['archetypeKey'];
   const lookKey = env['lookKey'];
   if (typeof archetypeKey !== 'string' || typeof lookKey !== 'string') notFound();
@@ -442,5 +447,19 @@ async function renderArchetypeStore(env: Record<string, unknown>, tenantId: stri
   const { logoUrl, brandColors } = await loadTenantChrome(tenantId);
   // ?marquee= turns the band ON; its content is assembled from the store itself.
   const showMarquee = previewMarquee !== undefined && previewMarquee !== '';
-  return spec.render({ content: env['content'], lookKey: effectiveLook, products, mood, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant: previewHero, goodsTreatment: previewGoods, collections, collectionsTreatment: previewCollections, founderTreatment: previewFounder, navVariant: previewNav, showMarquee });
+  // ?reviews= names a treatment; when the store has no authored reviews, seed sample
+  // testimonials into the content so every treatment is viewable (non-persisting,
+  // same "placeholder, not labeled" model as the collections/marquee previews).
+  let content = env['content'];
+  const wantReviews = previewReviews !== undefined && previewReviews !== '';
+  if (
+    wantReviews &&
+    content !== null &&
+    typeof content === 'object' &&
+    !Array.isArray(content) &&
+    (content as Record<string, unknown>)['reviews'] === undefined
+  ) {
+    content = { ...(content as Record<string, unknown>), reviews: seedPreviewReviews() };
+  }
+  return spec.render({ content, lookKey: effectiveLook, products, mood, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant: previewHero, goodsTreatment: previewGoods, collections, collectionsTreatment: previewCollections, reviewsTreatment: previewReviews, founderTreatment: previewFounder, navVariant: previewNav, showMarquee });
 }

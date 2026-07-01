@@ -126,6 +126,10 @@ export interface ArchetypeBuildSpec<T = unknown> {
     /** Force the collections-beat treatment (the non-persisting ?collections=
      *  preview). Optional — omitted falls back to the authored/default band. */
     collectionsTreatment?: string | undefined;
+    /** Force the reviews-beat treatment (the non-persisting ?reviews= preview).
+     *  Optional — omitted falls back to the authored treatment, then the default.
+     *  The testimonials themselves live in `content.reviews` (authored). */
+    reviewsTreatment?: string | undefined;
     /** Force the founder/About-beat treatment (the non-persisting ?about= preview).
      *  Optional — omitted falls back to the authored treatment, then the quote. */
     founderTreatment?: string | undefined;

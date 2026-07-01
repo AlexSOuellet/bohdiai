@@ -67,6 +67,33 @@ export const CopywriterDraftSchema = z.object({
   marquee: z.object({
     voice: z.array(z.string().min(1)).min(1),
   }),
+  /** The reviews beat — the maker's testimonials, authored every build (build all
+   *  sections at onboarding) so the beat is ready whenever a family turns it on.
+   *  These are SEEDED placeholder testimonials the maker edits or replaces, exactly
+   *  like the sample find-us dates (D38) — plausible, in the shop's voice, NOT
+   *  labeled "sample". `summary` feeds the rating treatment's aggregate. The
+   *  copywriter authors CONTENT only — the treatment is a family-level look choice
+   *  (like collections/nav), so it is not picked here; the dispatcher default holds
+   *  until the family layer wires the per-family pick. */
+  reviews: z.object({
+    title: z.string().min(1),
+    label: z.string().min(1).optional(),
+    summary: z
+      .object({
+        score: z.string().min(1),
+        count: z.string().min(1),
+      })
+      .optional(),
+    items: z
+      .array(
+        z.object({
+          quote: z.string().min(1),
+          author: z.string().min(1),
+          location: z.string().min(1).optional(),
+        }),
+      )
+      .min(1),
+  }),
   founder: z.object({
     quote: z.string().min(1),
     attribution: z.string().min(1),

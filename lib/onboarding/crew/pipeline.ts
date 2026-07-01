@@ -99,6 +99,7 @@ function assembleSubmission(out: CrewOutput, shopName: string): { content: unkno
     },
     goods: copy.goods,
     marquee: copy.marquee,
+    reviews: copy.reviews,
     founder: { ...copy.founder, photo: { prompt: look.founderPhoto.prompt, alt: look.founderPhoto.alt } },
     close: copy.close,
     about: copy.about,

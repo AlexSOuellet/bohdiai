@@ -638,6 +638,90 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       .arch-main-street .ms-cascade-step{transition:none}
       .arch-main-street .ms-cascade-step:hover{transform:none}
     }
+
+    /* ════════════════════════════════════════════════════════════════════
+       REVIEWS beat — a small SHARED POOL of four treatments (like the nav
+       registers), not per-family shapes. Class-only; colors are skin vars; no
+       photos, so no scrims — pure --ms-*. Type is named roles. ════════════ */
+    .arch-main-street .ms-rev-section{padding:92px 0 104px}
+    /* rating — one enormous five-star row IS the hero; score, count, a small
+       strip of pulled quotes underneath. Centered, credibility at a glance. */
+    .arch-main-street .ms-rev-rating{text-align:center}
+    .arch-main-street .ms-rev-rating-eyebrow{color:var(--ms-accent);display:block;margin-bottom:10px}
+    .arch-main-street .ms-rev-rating-stars{display:flex;justify-content:center;gap:clamp(8px,1.4vw,18px);margin:8px 0 26px}
+    .arch-main-street .ms-rev-rating-star{width:clamp(56px,10vw,132px);height:clamp(56px,10vw,132px);fill:var(--ms-accent);filter:drop-shadow(0 10px 22px var(--ms-shadow))}
+    .arch-main-street .ms-rev-rating-score{color:var(--ms-fg);margin:0 auto;line-height:1}
+    .arch-main-street .ms-rev-rating-count{color:var(--ms-fg-muted);margin:14px auto 0}
+    .arch-main-street .ms-rev-rating-quips{display:flex;justify-content:center;flex-wrap:wrap;gap:18px 40px;margin-top:52px}
+    .arch-main-street .ms-rev-rating-quip{display:inline-flex;align-items:baseline;gap:10px;max-width:44ch}
+    .arch-main-street .ms-rev-rating-quote{color:color-mix(in srgb,var(--ms-fg) 84%,var(--ms-bg))}
+    .arch-main-street .ms-rev-rating-author{color:var(--ms-fg-muted)}
+    .arch-main-street .ms-rev-rating-viewall{display:inline-flex;justify-content:center;margin-top:44px;color:var(--ms-accent)}
+    /* pull-quote — one voice at a time on the whole stage, cycling. Editorial. */
+    .arch-main-street .ms-rev-pq{text-align:center}
+    .arch-main-street .ms-rev-pq .ms-wrap{max-width:940px}
+    .arch-main-street .ms-rev-pq-mark{display:block;color:var(--ms-accent);opacity:.9;line-height:.6;height:.44em;font-size:clamp(120px,20vw,240px)}
+    .arch-main-street .ms-rev-pq-eyebrow{display:block;color:var(--ms-accent);margin-bottom:6px}
+    .arch-main-street .ms-rev-pq-stage{position:relative;min-height:clamp(220px,30vh,300px)}
+    .arch-main-street .ms-rev-pq-fig{position:absolute;inset:0;opacity:0;transition:opacity .9s ease;pointer-events:none;margin:0}
+    .arch-main-street .ms-rev-pq-fig.on{opacity:1;pointer-events:auto}
+    .arch-main-street .ms-rev-pq figure [data-type="goodsHead"]{font-style:italic}
+    .arch-main-street .ms-rev-pq-quote{display:block;margin:8px auto 34px;max-width:22ch;color:var(--ms-fg)}
+    .arch-main-street .ms-rev-pq-rule{display:block;width:56px;height:1px;background:var(--ms-accent);margin:0 auto 22px}
+    .arch-main-street .ms-rev-pq-who{display:block;color:var(--ms-fg)}
+    .arch-main-street .ms-rev-pq-where{display:block;color:var(--ms-fg-muted);margin-top:7px}
+    .arch-main-street .ms-rev-pq-dots{display:flex;gap:9px;justify-content:center;margin-top:28px}
+    .arch-main-street .ms-rev-pq-dot{width:8px;height:8px;border-radius:50%;background:var(--ms-rule);border:0;padding:0;cursor:pointer;transition:background .4s ease}
+    .arch-main-street .ms-rev-pq-dot.on{background:var(--ms-accent)}
+    .arch-main-street .ms-rev-pq-viewall{display:inline-block;margin-top:34px;color:var(--ms-accent)}
+    /* guestbook — testimonials as pinned paper slips, hand-placed & rotated. Same
+       paper surface as the cupboard slip; pin/stars/name are the skin accent. */
+    .arch-main-street .ms-rev-book-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:18px;margin-bottom:30px}
+    .arch-main-street .ms-rev-book-eyebrow{color:var(--ms-accent)}
+    .arch-main-street .ms-rev-book-title{margin:0;color:var(--ms-fg)}
+    .arch-main-street .ms-rev-book-scatter{display:grid;grid-template-columns:repeat(3,1fr);gap:22px 26px;align-items:start}
+    .arch-main-street .ms-rev-book-slip{position:relative;background:color-mix(in srgb, var(--ms-bg) 86%, white);border:1px solid var(--ms-rule);border-radius:3px;padding:22px 24px 20px;box-shadow:0 16px 30px -18px var(--ms-shadow);transition:transform .4s ease,box-shadow .4s ease}
+    .arch-main-street .ms-rev-book-pin{position:absolute;top:-7px;left:50%;width:12px;height:12px;border-radius:50%;background:var(--ms-accent);box-shadow:0 2px 5px var(--ms-shadow);transform:translateX(-50%)}
+    .arch-main-street .ms-rev-book-stars{display:block;color:var(--ms-accent);letter-spacing:2px;margin-bottom:9px}
+    .arch-main-street .ms-rev-book-quote{margin:0;color:var(--ms-fg)}
+    .arch-main-street .ms-rev-book-who{display:block;color:var(--ms-accent);margin-top:12px}
+    .arch-main-street .ms-rev-book-all{display:inline-block;margin-top:34px;color:var(--ms-accent)}
+    .arch-main-street .ms-rev-book-slip:nth-child(1){transform:rotate(-2.2deg)}
+    .arch-main-street .ms-rev-book-slip:nth-child(2){transform:rotate(1.4deg);margin-top:26px}
+    .arch-main-street .ms-rev-book-slip:nth-child(3){transform:rotate(-1deg);margin-top:-8px}
+    .arch-main-street .ms-rev-book-slip:nth-child(4){transform:rotate(1.8deg);margin-top:-14px}
+    .arch-main-street .ms-rev-book-slip:nth-child(5){transform:rotate(-1.6deg);margin-top:20px}
+    .arch-main-street .ms-rev-book-slip:nth-child(6){transform:rotate(.8deg)}
+    .arch-main-street .ms-rev-book-slip:hover{transform:translateY(-4px) rotate(0deg);box-shadow:0 24px 40px -18px var(--ms-shadow)}
+    /* texts — testimonials as the real messages customers sent: a centered head,
+       a grid of threads, each an author name over one accent chat bubble. */
+    .arch-main-street .ms-rev-texts{padding:84px 0 96px}
+    .arch-main-street .ms-rev-texts-head{text-align:center;margin-bottom:34px}
+    .arch-main-street .ms-rev-texts-eyebrow{color:var(--ms-accent);display:block;margin-bottom:8px}
+    .arch-main-street .ms-rev-texts-title{color:var(--ms-fg);margin:0;margin-inline:auto}
+    .arch-main-street .ms-rev-texts-threads{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(20px,3vw,40px);align-items:start}
+    .arch-main-street .ms-rev-texts-thread{display:flex;flex-direction:column;gap:9px}
+    .arch-main-street .ms-rev-texts-name{color:var(--ms-fg-muted);text-align:center;display:block}
+    .arch-main-street .ms-rev-texts-where{color:var(--ms-fg-muted);text-align:center;display:block;opacity:.8;margin-top:-4px}
+    .arch-main-street .ms-rev-texts-bub{align-self:flex-start;max-width:88%;margin:4px 0 0;padding:13px 18px;border-radius:20px 20px 20px 6px;background:var(--ms-accent);color:var(--ms-on-accent);box-shadow:0 8px 20px -10px var(--ms-shadow)}
+    .arch-main-street .ms-rev-texts-foot{color:var(--ms-fg-muted);text-align:center;margin-top:30px}
+    .arch-main-street .ms-rev-texts-viewall{display:flex;justify-content:center;margin-top:26px;color:var(--ms-accent)}
+    @media(max-width:820px){
+      .arch-main-street .ms-rev-section{padding:64px 0 76px}
+      .arch-main-street .ms-rev-rating-star{width:clamp(46px,15vw,90px);height:clamp(46px,15vw,90px)}
+      .arch-main-street .ms-rev-rating-quips{gap:22px 0;margin-top:40px}
+      .arch-main-street .ms-rev-rating-quip{flex-direction:column;gap:4px;max-width:none;flex-basis:100%}
+      .arch-main-street .ms-rev-book-scatter{grid-template-columns:1fr}
+      .arch-main-street .ms-rev-book-slip{transform:none;margin-top:0}
+      .arch-main-street .ms-rev-book-slip:hover{transform:translateY(-4px)}
+      .arch-main-street .ms-rev-texts-threads{grid-template-columns:1fr}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .arch-main-street .ms-rev-pq-fig{transition:none}
+      .arch-main-street .ms-rev-pq-dot{transition:none}
+      .arch-main-street .ms-rev-book-slip{transition:none}
+      .arch-main-street .ms-rev-book-slip:hover{transform:none}
+    }
   `;
 }
 

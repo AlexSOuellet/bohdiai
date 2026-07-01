@@ -17,10 +17,12 @@ import { GoodsBeat } from './GoodsBeat';
 import { MarqueeBeat } from './MarqueeBeat';
 import { buildMarqueeLines } from './marquee';
 import { CollectionsBeat } from './CollectionsBeat';
+import { ReviewsBeat } from './ReviewsBeat';
 import { FounderBeat } from './FounderBeat';
 import { FindUsBeat } from './FindUsBeat';
 import type { GoodsTreatment } from './goods';
 import type { CollectionView, CollectionsTreatment } from './collections';
+import type { ReviewsTreatment } from './reviews';
 import type { FounderTreatment } from './founder';
 import { Reveal } from './Reveal';
 
@@ -61,9 +63,13 @@ export interface MainStreetProps {
    *  Its content is never passed in — it's assembled from this store's own copy +
    *  collections (see marquee.ts). Off → no band. */
   showMarquee?: boolean | undefined;
+  /** Force the reviews treatment (the ?reviews= preview / tests). Falls back to the
+   *  authored treatment, then the documented default. The testimonials themselves
+   *  live in content.reviews (authored) — the beat renders only when it has items. */
+  reviewsTreatment?: ReviewsTreatment | undefined;
 }
 
-export function MainStreet({ content, skin, products, catalogSize, goodsTreatment, collections, collectionsTreatment, collectionsHref, founderTreatment, shopHref, aboutHref, eventsHref, momentKey, heroVariant, showMarquee }: MainStreetProps) {
+export function MainStreet({ content, skin, products, catalogSize, goodsTreatment, collections, collectionsTreatment, collectionsHref, founderTreatment, shopHref, aboutHref, eventsHref, momentKey, heroVariant, showMarquee, reviewsTreatment }: MainStreetProps) {
   // The Collections band appears whenever the shop HAS collections — the structure
   // follows what the store holds, not an editorial pick. The heading is the
   // authored section when present, a plain default otherwise.
@@ -96,6 +102,11 @@ export function MainStreet({ content, skin, products, catalogSize, goodsTreatmen
       {content.founder.findUs && content.founder.findUs.rows.length > 0 && (
         <Reveal>
           <FindUsBeat findUs={content.founder.findUs} skin={skin} eventsHref={eventsHref} />
+        </Reveal>
+      )}
+      {content.reviews && content.reviews.items.length > 0 && (
+        <Reveal>
+          <ReviewsBeat section={content.reviews} skin={skin} treatment={reviewsTreatment} />
         </Reveal>
       )}
       <Reveal>

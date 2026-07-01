@@ -18,6 +18,7 @@ import { z } from 'zod';
 import { MAIN_STREET_SKINS } from './skins';
 import { GOODS_TREATMENTS } from './goods';
 import { COLLECTIONS_TREATMENTS } from './collections';
+import { REVIEWS_TREATMENTS } from './reviews';
 import { LINK_TARGETS } from './links';
 
 /** A nav link the crew authors: a label paired with a TARGET page, so the word
@@ -193,6 +194,37 @@ export const MainStreetContentSchema = z.object({
       treatment: z.enum(COLLECTIONS_TREATMENTS).optional(),
       label: z.string().min(1).optional(),
       viewAllLabel: z.string().min(1).optional(),
+    })
+    .optional(),
+
+  /** REVIEWS — the maker's testimonials, authored at build time and seeded like the
+   *  sample find-us dates (D38): plausible, maker-editable social proof, NOT labeled
+   *  "sample". At launch these are curated testimonials (verified-purchase reviews
+   *  are Phase 2). `treatment` is the family-level look choice (previewable via
+   *  ?reviews=); the four are a shared pool. `summary` feeds the Rating treatment's
+   *  aggregate. Optional so content authored before this field still parses and so a
+   *  shop with no testimonials simply omits the beat. */
+  reviews: z
+    .object({
+      title: z.string().min(1),
+      treatment: z.enum(REVIEWS_TREATMENTS).optional(),
+      label: z.string().min(1).optional(),
+      viewAllLabel: z.string().min(1).optional(),
+      summary: z
+        .object({
+          score: z.string().min(1),
+          count: z.string().min(1),
+        })
+        .optional(),
+      items: z
+        .array(
+          z.object({
+            quote: z.string().min(1),
+            author: z.string().min(1),
+            location: z.string().min(1).optional(),
+          }),
+        )
+        .min(1),
     })
     .optional(),
 

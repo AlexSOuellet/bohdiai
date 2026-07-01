@@ -72,6 +72,46 @@ describe('MainStreet — marquee band composition', () => {
   });
 });
 
+describe('MainStreet — reviews beat composition', () => {
+  const withReviews: MainStreetContent = {
+    ...base,
+    reviews: {
+      title: 'Kind words',
+      items: [
+        { quote: 'These belts are the real thing.', author: 'Dana R.' },
+        { quote: 'Worth every penny.', author: 'Marcus T.' },
+      ],
+    },
+  };
+
+  it('shows the reviews beat when the store has testimonials', () => {
+    const { container } = render(<MainStreet content={withReviews} skin={skin} products={[]} />);
+    expect(container.querySelector('#reviews')).toBeTruthy();
+    expect(container.textContent).toContain('Dana R.');
+  });
+
+  it('shows no reviews beat when the store has none', () => {
+    const { container } = render(<MainStreet content={base} skin={skin} products={[]} />);
+    expect(container.querySelector('#reviews')).toBeNull();
+  });
+
+  it('places the reviews beat after the goods and before the footer', () => {
+    const { container } = render(<MainStreet content={withReviews} skin={skin} products={[]} />);
+    const goods = container.querySelector('#goods');
+    const reviews = container.querySelector('#reviews');
+    const footer = container.querySelector('footer');
+    expect(goods && reviews && footer).toBeTruthy();
+    // Document order: goods → reviews → footer (reviews sits just before the close).
+    expect(goods!.compareDocumentPosition(reviews!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(reviews!.compareDocumentPosition(footer!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('honors a forced treatment (the ?reviews= preview)', () => {
+    const { container } = render(<MainStreet content={withReviews} skin={skin} products={[]} reviewsTreatment="guestbook" />);
+    expect(container.querySelector('.ms-rev-book')).toBeTruthy();
+  });
+});
+
 describe('MainStreet — hero slot resolves through the catalog (the swap)', () => {
   it('renders the Story hero by default (unchanged from before the catalog)', () => {
     const { container } = render(<MainStreet content={base} skin={skin} products={[]} />);

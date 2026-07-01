@@ -112,6 +112,11 @@ ${goods}
 - goods.label (2-24, optional): a small label on the heading row.
 - goods.viewAllLabel (2-28, optional): the cue to the full Products page.
 - marquee.voice (2-6 phrases): the phrases a bold scrolling marquee band shows — short brand lines in THIS shop's voice, a few words each (e.g. "Small batch", "Poured by hand", "Rhode Island made"). No sentences, no trailing punctuation. Write only the voice; the band pairs these with live info (find-us dates, collection names) the store already holds, so do not write logistics here.
+- reviews: the testimonials beat — seed it like the find-us dates, plausible placeholder social proof the maker edits or replaces, NOT labeled "sample". Do NOT pick a layout; just write the words:
+      - reviews.title (2-40): the heading of the beat (e.g. "Kind words", "What they say").
+      - reviews.label (2-24, optional): a small eyebrow over the heading (e.g. "Loved by customers").
+      - reviews.summary (optional): an honest aggregate for the star-rating layout — { score (e.g. "4.9 out of 5"), count (e.g. "200+ happy customers" — keep it modest and believable for a small maker, or omit if it would overreach) }.
+      - reviews.items (3-6): each { quote (a warm, specific line a real customer would write — about the FEELING the work gave them, never how it is made), author (a first name + last initial, e.g. "Dana R."), location (optional, e.g. "Providence, RI") }. Vary the voices; no two should read alike. No AI-tell.
 - founder.quote (24+, no hard cap): the founder's words in the About beat
 - founder.attribution (4-60): who said it.
 - founder.treatment: you drew "${rolls.founder}" this build — the dice again. Keep your draw unless it genuinely fights this shop; if it does, pick another from these and note why in one line:

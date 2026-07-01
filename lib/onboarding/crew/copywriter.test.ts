@@ -45,6 +45,15 @@ const draft = {
   },
   goods: { title: 'The bench', treatment: 'procession' },
   marquee: { voice: ['Small batch', 'Cut by hand', 'Made to last'] },
+  reviews: {
+    title: 'Kind words',
+    label: 'Loved by customers',
+    summary: { score: '4.9 out of 5', count: '200+ happy customers' },
+    items: [
+      { quote: 'These belts are the real thing and only get better with age.', author: 'Dana R.' },
+      { quote: 'Worth every penny and then some.', author: 'Marcus T.', location: 'Providence, RI' },
+    ],
+  },
   founder: {
     quote: 'I would rather make one belt that lasts thirty years than ten that fall apart.',
     attribution: 'Sam, founder',
