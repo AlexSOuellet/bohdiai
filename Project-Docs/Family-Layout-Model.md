@@ -73,7 +73,7 @@ Heroes are the topmost section. All 17 patterns from the mockup, and where each 
 | 14 | Mosaic | **Collections section** |
 | 15 | Action hero | **CTA section** — open: could be a hero for pickup/booking niches if that feature exists |
 | 16 | Map / find-us | **Find-us / events section** |
-| 17 | Marquee | **Band between sections** — not a hero |
+| 17 | Marquee | **Band between sections** — not a hero. **BUILT Session 59** (one shape all families, two lines: authored voice + live-data info; `?marquee=` preview). |
 
 So the **heroes** are: Story, Split (L/R), Typographic, Stacked, Collage, Floating card, Editorial cover (seven — Carousel was retired). **New section type to add: Collections** (from two-up and mosaic). Background video and asymmetric editorial fold into existing heroes. Map is the find-us section; marquee is a between-sections band; action hero is a CTA section for now; product-forward is cut.
 
