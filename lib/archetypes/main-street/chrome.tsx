@@ -722,6 +722,108 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       .arch-main-street .ms-rev-book-slip{transition:none}
       .arch-main-street .ms-rev-book-slip:hover{transform:none}
     }
+
+    /* ════════════════════════════════════════════════════════════════════
+       FIND US beat — a SHARED POOL of six treatments (like the reviews pool +
+       the nav registers), not per-family shapes. Class-only; colors are skin
+       vars; no photos, so no scrims — pure --ms-*. Type is named roles. ════ */
+    .arch-main-street .ms-fu-section{background:var(--ms-bg);color:var(--ms-fg);padding:92px 0 104px}
+    /* board — a tour-dates list: a date block, the venue + hours, an optional
+       kind pill. The editorial workhorse. */
+    .arch-main-street .ms-fu-board-head{color:var(--ms-fg);margin:0 0 30px}
+    .arch-main-street .ms-fu-board-row{display:grid;grid-template-columns:88px 1fr auto;align-items:center;gap:clamp(18px,3vw,44px);padding:22px 4px;border-top:1px solid var(--ms-rule)}
+    .arch-main-street .ms-fu-board-row:last-child{border-bottom:1px solid var(--ms-rule)}
+    .arch-main-street .ms-fu-board-date{text-align:center;display:flex;flex-direction:column;gap:3px}
+    .arch-main-street .ms-fu-board-dow{color:var(--ms-accent)}
+    .arch-main-street .ms-fu-board-num{color:var(--ms-fg);line-height:.9}
+    .arch-main-street .ms-fu-board-mon{color:var(--ms-fg-muted)}
+    .arch-main-street .ms-fu-board-day{color:var(--ms-accent)}
+    .arch-main-street .ms-fu-board-where{color:var(--ms-fg);margin:0}
+    .arch-main-street .ms-fu-board-time{color:var(--ms-fg-muted);margin:5px 0 0}
+    .arch-main-street .ms-fu-board-kind{color:var(--ms-accent);border:1px solid var(--ms-rule);border-radius:100px;padding:5px 11px;white-space:nowrap}
+    .arch-main-street .ms-fu-board-viewall{display:inline-block;margin-top:26px;color:var(--ms-accent)}
+    /* calendar — a real month grid + an agenda column; the recurring-schedule view. */
+    .arch-main-street .ms-fu-cal-grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:clamp(28px,5vw,64px);align-items:start}
+    .arch-main-street .ms-fu-cal-eyebrow{color:var(--ms-accent);display:block;margin-bottom:6px}
+    .arch-main-street .ms-fu-cal-title{color:var(--ms-fg);margin:0 0 22px}
+    .arch-main-street .ms-fu-cal-dows{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:8px}
+    .arch-main-street .ms-fu-cal-dow{color:var(--ms-fg-muted);text-align:center}
+    .arch-main-street .ms-fu-cal-month{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--ms-rule);border-left:1px solid var(--ms-rule)}
+    .arch-main-street .ms-fu-cal-cell{aspect-ratio:1 / .9;border-right:1px solid var(--ms-rule);border-bottom:1px solid var(--ms-rule);padding:7px 8px;position:relative;overflow:hidden;min-height:52px}
+    .arch-main-street .ms-fu-cal-pad{background:color-mix(in srgb, var(--ms-fg-muted) 8%, var(--ms-bg))}
+    .arch-main-street .ms-fu-cal-d{color:var(--ms-fg-muted)}
+    .arch-main-street .ms-fu-cal-ev .ms-fu-cal-d{color:var(--ms-fg)}
+    .arch-main-street .ms-fu-cal-dot{position:absolute;top:9px;right:9px;width:7px;height:7px;border-radius:50%;background:var(--ms-accent)}
+    .arch-main-street .ms-fu-cal-ev-l{display:block;margin-top:4px;color:var(--ms-fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .arch-main-street .ms-fu-cal-side-head{color:var(--ms-fg-muted);margin:0 0 12px}
+    .arch-main-street .ms-fu-cal-ag{display:flex;gap:14px;padding:14px 0;border-top:1px solid var(--ms-rule)}
+    .arch-main-street .ms-fu-cal-ag:last-child{border-bottom:1px solid var(--ms-rule)}
+    .arch-main-street .ms-fu-cal-ag-day{color:var(--ms-accent);flex:0 0 62px}
+    .arch-main-street .ms-fu-cal-ag-where{color:var(--ms-fg);display:block}
+    .arch-main-street .ms-fu-cal-ag-time{color:var(--ms-fg-muted);display:block;margin-top:3px}
+    .arch-main-street .ms-fu-cal-viewall{display:inline-block;margin-top:20px;color:var(--ms-accent)}
+    /* passes — dates as torn admission tickets in a horizontal rail. */
+    .arch-main-street .ms-fu-pass-head{color:var(--ms-fg);margin:0 0 28px}
+    .arch-main-street .ms-fu-pass-rail{display:flex;gap:22px;overflow-x:auto;padding:8px 2px 20px;scroll-snap-type:x mandatory}
+    .arch-main-street .ms-fu-pass-ticket{scroll-snap-align:start;flex:0 0 clamp(228px,26vw,276px);position:relative;display:grid;grid-template-columns:54px 1fr;background:color-mix(in srgb, var(--ms-bg) 88%, white);border:1px solid var(--ms-rule);border-radius:14px;overflow:hidden;box-shadow:0 18px 34px -20px var(--ms-shadow)}
+    .arch-main-street .ms-fu-pass-stub{background:var(--ms-accent);color:var(--ms-on-accent);display:flex;align-items:center;justify-content:center;position:relative}
+    .arch-main-street .ms-fu-pass-stub-l{writing-mode:vertical-rl;transform:rotate(180deg);color:var(--ms-on-accent)}
+    .arch-main-street .ms-fu-pass-stub::after{content:"";position:absolute;top:0;right:-6px;bottom:0;width:12px;background:radial-gradient(circle at 0 6px, transparent 0 5px, var(--ms-bg) 5px) 0 0/12px 18px repeat-y}
+    .arch-main-street .ms-fu-pass-body{padding:18px}
+    .arch-main-street .ms-fu-pass-num{display:block;color:var(--ms-accent);line-height:.9}
+    .arch-main-street .ms-fu-pass-mon{display:block;color:var(--ms-fg-muted);margin-top:4px}
+    .arch-main-street .ms-fu-pass-where{color:var(--ms-fg);margin:12px 0 6px}
+    .arch-main-street .ms-fu-pass-time{color:var(--ms-fg-muted);margin:0}
+    .arch-main-street .ms-fu-pass-viewall{display:inline-block;margin-top:22px;color:var(--ms-accent)}
+    /* next-stop — one nearest date spotlighted huge, the rest trailing small. */
+    .arch-main-street .ms-fu-next-eyebrow{color:var(--ms-accent);display:block}
+    .arch-main-street .ms-fu-next-now{display:flex;align-items:baseline;flex-wrap:wrap;gap:16px;margin:14px 0 8px}
+    .arch-main-street .ms-fu-next-when{color:var(--ms-fg);line-height:.88}
+    .arch-main-street .ms-fu-next-tag{color:var(--ms-accent);border:1px solid var(--ms-accent);border-radius:100px;padding:6px 13px}
+    .arch-main-street .ms-fu-next-where{color:var(--ms-fg);margin:0}
+    .arch-main-street .ms-fu-next-cta{display:inline-block;margin-top:26px;background:var(--ms-accent);color:var(--ms-on-accent);border-radius:3px;padding:14px 26px}
+    .arch-main-street .ms-fu-next-also{margin-top:50px;border-top:1px solid var(--ms-rule);padding-top:22px}
+    .arch-main-street .ms-fu-next-also-lbl{color:var(--ms-fg-muted);display:block;margin-bottom:16px}
+    .arch-main-street .ms-fu-next-strip{display:flex;flex-wrap:wrap;gap:16px 40px}
+    .arch-main-street .ms-fu-next-s{display:flex;align-items:baseline;gap:12px}
+    .arch-main-street .ms-fu-next-sd{color:var(--ms-accent)}
+    .arch-main-street .ms-fu-next-sv{color:var(--ms-fg)}
+    .arch-main-street .ms-fu-next-st{color:var(--ms-fg-muted)}
+    /* itinerary — the season as a stitched route line, stop after stop. */
+    .arch-main-street .ms-fu-itin-head{color:var(--ms-fg);margin:0 0 36px}
+    .arch-main-street .ms-fu-itin-route{position:relative;padding-left:52px}
+    .arch-main-street .ms-fu-itin-route::before{content:"";position:absolute;left:15px;top:10px;bottom:14px;border-left:2px dashed var(--ms-accent);opacity:.55}
+    .arch-main-street .ms-fu-itin-stop{position:relative;padding:0 0 30px}
+    .arch-main-street .ms-fu-itin-stop:last-child{padding-bottom:4px}
+    .arch-main-street .ms-fu-itin-node{position:absolute;left:-44px;top:5px;width:16px;height:16px;border-radius:50%;background:var(--ms-bg);border:3px solid var(--ms-accent)}
+    .arch-main-street .ms-fu-itin-wk .ms-fu-itin-node{background:var(--ms-accent)}
+    .arch-main-street .ms-fu-itin-dt{color:var(--ms-accent);display:block}
+    .arch-main-street .ms-fu-itin-where{color:var(--ms-fg);margin:5px 0 4px;display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+    .arch-main-street .ms-fu-itin-kind{color:var(--ms-accent);border:1px solid var(--ms-rule);border-radius:3px;padding:2px 8px}
+    .arch-main-street .ms-fu-itin-time{color:var(--ms-fg-muted);margin:0}
+    .arch-main-street .ms-fu-itin-viewall{display:inline-block;margin-top:8px;margin-left:52px;color:var(--ms-accent)}
+    /* poster — one printed broadside, the run of dates set as a playbill. */
+    .arch-main-street .ms-fu-poster .ms-wrap{max-width:660px}
+    .arch-main-street .ms-fu-poster-sheet{position:relative;background:color-mix(in srgb, var(--ms-bg) 90%, white);border:1px solid var(--ms-rule);padding:clamp(34px,5vw,58px) clamp(28px,5vw,60px) clamp(30px,4vw,46px);box-shadow:0 30px 60px -34px var(--ms-shadow);text-align:center}
+    .arch-main-street .ms-fu-poster-sheet::before{content:"";position:absolute;inset:11px;border:1.5px double var(--ms-accent);opacity:.5;pointer-events:none}
+    .arch-main-street .ms-fu-poster-title{color:var(--ms-fg);margin:0 0 4px}
+    .arch-main-street .ms-fu-poster-orn{display:flex;align-items:center;justify-content:center;gap:12px;margin:18px 0;color:var(--ms-accent)}
+    .arch-main-street .ms-fu-poster-orn::before,.arch-main-street .ms-fu-poster-orn::after{content:"";height:1px;width:64px;background:var(--ms-accent);opacity:.55}
+    .arch-main-street .ms-fu-poster-dates{position:relative}
+    .arch-main-street .ms-fu-poster-ln{display:grid;grid-template-columns:100px 1fr;align-items:baseline;gap:16px;text-align:left;padding:13px 0;border-top:1px solid var(--ms-rule)}
+    .arch-main-street .ms-fu-poster-ln:last-child{border-bottom:1px solid var(--ms-rule)}
+    .arch-main-street .ms-fu-poster-dd{color:var(--ms-accent)}
+    .arch-main-street .ms-fu-poster-de{color:var(--ms-fg);display:block}
+    .arch-main-street .ms-fu-poster-place{display:block;color:var(--ms-fg-muted);margin-top:2px}
+    .arch-main-street .ms-fu-poster-foot{display:inline-block;margin-top:24px;color:var(--ms-accent)}
+    @media(max-width:820px){
+      .arch-main-street .ms-fu-section{padding:64px 0 76px}
+      .arch-main-street .ms-fu-cal-grid2{grid-template-columns:1fr}
+      .arch-main-street .ms-fu-board-row{grid-template-columns:70px 1fr;column-gap:20px;row-gap:4px}
+      .arch-main-street .ms-fu-board-kind{grid-column:2;justify-self:start;margin-top:2px}
+      .arch-main-street .ms-fu-poster .ms-wrap{max-width:none}
+      .arch-main-street .ms-fu-poster-ln{grid-template-columns:1fr}
+    }
   `;
 }
 

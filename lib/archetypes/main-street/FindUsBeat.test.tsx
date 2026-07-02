@@ -2,33 +2,61 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
 import { FindUsBeat } from './FindUsBeat';
 import { MAIN_STREET_SKINS } from './skins';
+import type { FindUsSection } from './findus';
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 
-const findUs = {
-  label: 'Find us this month',
+const findUs: FindUsSection = {
+  label: 'Find us in person',
   eventsLabel: 'See all our markets',
   rows: [
-    { day: 'Sat 6/7', where: 'Hope St Farmers Market', time: '9-11am' },
-    { day: 'Sat 6/14', where: 'Armory Pop-Up', time: '10-1pm' },
+    { date: '2025-07-12', day: 'Sat, Jul 12', where: 'Hope St Farmers Market', time: '9–11am', kind: 'market' },
+    { date: '2025-07-24', day: 'Thu, Jul 24', where: 'Pouring Workshop', time: '6–8pm', kind: 'workshop' },
   ],
 };
 
 afterEach(cleanup);
 
-describe('FindUsBeat', () => {
-  it('renders the dates as its own section with an events cue', () => {
-    const { getByText, container } = render(<FindUsBeat findUs={findUs} skin={skin} eventsHref="/events" />);
+describe('FindUsBeat — the dispatcher', () => {
+  it('renders the board by default (no authored or forced treatment)', () => {
+    const { container, getByText } = render(<FindUsBeat findUs={findUs} skin={skin} eventsHref="/events" />);
+    expect(container.querySelector('.ms-fu-board')).toBeTruthy();
     expect(getByText('Hope St Farmers Market')).toBeTruthy();
-    expect(container.querySelectorAll('[data-type="day"]').length).toBe(2);
-    const cue = container.querySelector('.ms-eventscue') as HTMLAnchorElement;
+  });
+
+  it.each([
+    ['calendar', '.ms-fu-cal'],
+    ['passes', '.ms-fu-passes'],
+    ['next-stop', '.ms-fu-next'],
+    ['itinerary', '.ms-fu-itin'],
+    ['poster', '.ms-fu-poster'],
+    ['board', '.ms-fu-board'],
+  ] as const)('renders the %s treatment when forced', (treatment, selector) => {
+    const { container } = render(<FindUsBeat findUs={findUs} skin={skin} treatment={treatment} />);
+    expect(container.querySelector(selector)).toBeTruthy();
+    expect(container.querySelector('#find-us')).toBeTruthy();
+  });
+
+  it('honors the authored treatment when nothing is forced', () => {
+    const { container } = render(<FindUsBeat findUs={{ ...findUs, treatment: 'poster' }} skin={skin} />);
+    expect(container.querySelector('.ms-fu-poster')).toBeTruthy();
+  });
+
+  it('a forced treatment overrides the authored one (the preview wins)', () => {
+    const { container } = render(<FindUsBeat findUs={{ ...findUs, treatment: 'poster' }} skin={skin} treatment="itinerary" />);
+    expect(container.querySelector('.ms-fu-itin')).toBeTruthy();
+    expect(container.querySelector('.ms-fu-poster')).toBeNull();
+  });
+
+  it('renders the events cue with the authored label and href', () => {
+    const { container } = render(<FindUsBeat findUs={findUs} skin={skin} eventsHref="/events" />);
+    const cue = container.querySelector('[data-ms-fu-viewall]') as HTMLAnchorElement;
     expect(cue.getAttribute('href')).toBe('/events');
     expect(cue.textContent).toContain('See all our markets');
   });
 
-  it('renders on the base surface (not the contrast band)', () => {
-    const { container } = render(<FindUsBeat findUs={findUs} skin={skin} />);
-    const section = container.querySelector('[data-ms-findus]') as HTMLElement;
-    expect(section.style.background).toContain('--ms-bg');
+  it('renders nothing when there are no dates', () => {
+    const { container } = render(<FindUsBeat findUs={{ ...findUs, rows: [] }} skin={skin} />);
+    expect(container.querySelector('#find-us')).toBeNull();
   });
 });

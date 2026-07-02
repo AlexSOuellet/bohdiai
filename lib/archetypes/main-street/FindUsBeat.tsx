@@ -1,29 +1,60 @@
 /**
- * Main Street — the FIND US beat. The market/appointment calendar as its OWN
- * section (split out of the founder beat). Shown only when the maker has dates;
- * links to the full Events page. On the base surface so it alternates after the
- * founder band. Structure only — every value is a skin var or named role; the
- * row markup is the calendar lifted from the old founder beat.
+ * FIND US — the beat dispatcher.
+ *
+ * The find-us beat is a SHARED POOL of six treatments (board / calendar / passes /
+ * next-stop / itinerary / poster) — a store wears ONE, families double up (like the
+ * reviews pool + the nav registers). Which one renders is a family-level look choice
+ * authored as `findUs.treatment` (an explicit override wins for previews/tests); the
+ * documented default is the fallback until the family layer wires per-family defaults.
+ * The home shows only a HANDFUL of dates; the full list lives on the Events page.
+ * Renders nothing when the shop has no dates (guarded by MainStreet).
  */
 import type { ArchetypeTheme } from '../types';
-import type { MainStreetContent } from './schemas';
-import { FindUsList } from './FounderBeats';
-
-type FindUs = NonNullable<MainStreetContent['founder']['findUs']>;
+import {
+  type FindUsSection,
+  type FindUsTreatment,
+  DEFAULT_FINDUS_TREATMENT,
+  sampleEvents,
+} from './findus';
+import { FindUsBoard } from './FindUsBoard';
+import { FindUsCalendar } from './FindUsCalendar';
+import { FindUsPasses } from './FindUsPasses';
+import { FindUsNextStop } from './FindUsNextStop';
+import { FindUsItinerary } from './FindUsItinerary';
+import { FindUsPoster } from './FindUsPoster';
 
 export function FindUsBeat({
   findUs,
+  skin,
+  treatment,
   eventsHref = '/events',
 }: {
-  findUs: FindUs;
+  findUs: FindUsSection;
   skin: ArchetypeTheme;
+  /** Force a treatment (the ?findus= preview / tests). When omitted the authored
+   *  `findUs.treatment` wins, then the documented default. */
+  treatment?: FindUsTreatment | undefined;
   eventsHref?: string | undefined;
 }) {
-  return (
-    <section data-ms-findus style={{ background: 'var(--ms-bg)', color: 'var(--ms-fg)', padding: '96px 40px' }}>
-      <div className="ms-wrap" style={{ maxWidth: 760 }}>
-        <FindUsList findUs={findUs} eventsHref={eventsHref} heading="title" onContrast={false} />
-      </div>
-    </section>
-  );
+  if (findUs.rows.length === 0) return null;
+  const chosen = treatment ?? findUs.treatment ?? DEFAULT_FINDUS_TREATMENT;
+  const events = sampleEvents(findUs.rows);
+  const viewAll = { href: eventsHref, label: findUs.eventsLabel ?? 'See all dates' };
+  const props = { section: findUs, events, skin, viewAll };
+
+  switch (chosen) {
+    case 'calendar':
+      return <FindUsCalendar {...props} />;
+    case 'passes':
+      return <FindUsPasses {...props} />;
+    case 'next-stop':
+      return <FindUsNextStop {...props} />;
+    case 'itinerary':
+      return <FindUsItinerary {...props} />;
+    case 'poster':
+      return <FindUsPoster {...props} />;
+    case 'board':
+    default:
+      return <FindUsBoard {...props} />;
+  }
 }

@@ -19,6 +19,7 @@ import { MAIN_STREET_SKINS } from './skins';
 import { GOODS_TREATMENTS } from './goods';
 import { COLLECTIONS_TREATMENTS } from './collections';
 import { REVIEWS_TREATMENTS } from './reviews';
+import { FINDUS_TREATMENTS, FINDUS_KINDS } from './findus';
 import { LINK_TARGETS } from './links';
 
 /** A nav link the crew authors: a label paired with a TARGET page, so the word
@@ -97,11 +98,17 @@ const PhotoSlot = z.object({
  *  and quotes get cleaned off. */
 export const StoryLine = z.string().min(1);
 
-/** One "find us this week" row. */
+/** One "find us this week" row. `day`/`where`/`time` are the authored human strings
+ *  (also read by the events-page list + the marquee). `date` (ISO YYYY-MM-DD) is
+ *  optional and lets the date-shaped treatments (Calendar, Next Stop) place + sort;
+ *  `kind` tags an optional pill. Both optional so content authored before they
+ *  existed still parses. Shape only — no length caps (D57). */
 export const FindUsRow = z.object({
   day: z.string().min(1),
   where: z.string().min(1),
   time: z.string().min(1),
+  date: z.string().min(1).optional(),
+  kind: z.enum(FINDUS_KINDS).optional(),
 });
 
 /** The About-beat bodies. A tuple so the content schema and the copywriter's
@@ -252,6 +259,10 @@ export const MainStreetContentSchema = z.object({
     findUs: z
       .object({
         label: z.string().min(1),
+        /** The treatment this shop's find-us beat wears (a family-level look choice,
+         *  previewable via ?findus=); the six are a shared pool. Absent → the
+         *  dispatcher falls back to the documented default. */
+        treatment: z.enum(FINDUS_TREATMENTS).optional(),
         eventsLabel: z.string().min(1).optional(),
         rows: z.array(FindUsRow).min(1),
       })

@@ -38,12 +38,12 @@ describe('MainStreet — find-us beat composition', () => {
       founder: { ...base.founder, findUs: { label: 'Find us', rows: [{ day: 'Sat', where: 'Market', time: '9am' }] } },
     };
     const { container } = render(<MainStreet content={withDates} skin={skin} products={[]} />);
-    expect(container.querySelector('[data-ms-findus]')).toBeTruthy();
+    expect(container.querySelector('#find-us')).toBeTruthy();
   });
 
   it('shows no find-us beat when the maker has no dates', () => {
     const { container } = render(<MainStreet content={base} skin={skin} products={[]} />);
-    expect(container.querySelector('[data-ms-findus]')).toBeNull();
+    expect(container.querySelector('#find-us')).toBeNull();
   });
 });
 

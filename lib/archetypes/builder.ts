@@ -130,6 +130,10 @@ export interface ArchetypeBuildSpec<T = unknown> {
      *  Optional — omitted falls back to the authored treatment, then the default.
      *  The testimonials themselves live in `content.reviews` (authored). */
     reviewsTreatment?: string | undefined;
+    /** Force the find-us-beat treatment (the non-persisting ?findus= preview).
+     *  Optional — omitted falls back to the authored treatment, then the default.
+     *  The dates themselves live in `content.founder.findUs` (authored). */
+    findUsTreatment?: string | undefined;
     /** Force the founder/About-beat treatment (the non-persisting ?about= preview).
      *  Optional — omitted falls back to the authored treatment, then the quote. */
     founderTreatment?: string | undefined;
