@@ -1,28 +1,21 @@
+'use client';
 /**
  * FIND US — the calendar (the "month grid" treatment).
  *
- * A real month grid: the month of the soonest appearance, its days padded to a
- * Sunday-first grid, each date dropped into its cell with a marker, plus an agenda
- * list of that month's appearances alongside. The view a maker with a recurring
- * schedule (weekly markets, standing workshops) leans on — a pattern at a glance,
- * not a long list. The Modern default; skin-agnostic.
+ * A REAL calendar: it opens on the current month (passed from the server so it tracks
+ * today, not the maker's soonest date) and pages forward and back. Each appearance is
+ * dropped onto its real day cell; an agenda of that month's appearances sits alongside.
+ * A month with nothing shows a friendly check-back line — the maker keeps the dates
+ * current, we don't hide or recompute them. The Modern default; skin-agnostic.
  *
- * When no row carries a parseable ISO date (a legacy store), there's no grid to
- * build, so it falls back to a plain agenda so the beat always renders.
- *
- * Class-only: every value is a `--ms-*` var, type is named roles. The grid, cells,
- * markers, and agenda all live in `skinVarsCss` under `.ms-fu-cal-*` — never inline.
+ * Class-only: the grid, cells, markers, nav arrows, and agenda live in `skinVarsCss`
+ * under `.ms-fu-cal-*` — never inline.
  */
-import type { ArchetypeTheme } from '../types';
+import { useState } from 'react';
 import { Type } from './Type';
-import {
-  type FindUsSection,
-  type FindUsEvent,
-  FINDUS_WEEKDAY_HEADERS,
-  buildFindUsMonth,
-} from './findus';
+import { type FindUsSection, type FindUsEvent, FINDUS_WEEKDAY_HEADERS, buildFindUsMonth } from './findus';
 
-/** The agenda column — the shown appearances in full, shared by the grid + fallback. */
+/** The agenda column — the shown month's appearances in full. */
 function Agenda({ events }: { events: FindUsEvent[] }) {
   return (
     <div className="ms-fu-cal-agenda">
@@ -47,16 +40,28 @@ function Agenda({ events }: { events: FindUsEvent[] }) {
 
 export function FindUsCalendar({
   section,
-  events,
-  skin: _skin,
   viewAll,
+  year,
+  month,
 }: {
   section: FindUsSection;
-  events: FindUsEvent[];
-  skin: ArchetypeTheme;
+  /** The month the calendar opens on — the current real month (server-computed). */
+  year: number;
+  month: number;
   viewAll?: { href: string; label: string } | undefined;
 }) {
-  const month = buildFindUsMonth(events);
+  const [view, setView] = useState({ year, month });
+  const step = (delta: number) =>
+    setView((v) => {
+      const m = v.month + delta;
+      if (m < 1) return { year: v.year - 1, month: 12 };
+      if (m > 12) return { year: v.year + 1, month: 1 };
+      return { year: v.year, month: m };
+    });
+
+  const grid = buildFindUsMonth(section.rows, view);
+  const hasEvents = grid.events.length > 0;
+
   return (
     <section id="find-us" className="ms-fu-section ms-fu-cal">
       <div className="ms-wrap">
@@ -65,51 +70,57 @@ export function FindUsCalendar({
             <Type as="span" role="eyebrow" className="ms-fu-cal-eyebrow">
               {section.label}
             </Type>
-            {month ? (
-              <>
-                <Type as="h2" role="goodsHead" className="ms-fu-cal-title">
-                  {month.title}
-                </Type>
-                <div className="ms-fu-cal-dows" aria-hidden>
-                  {FINDUS_WEEKDAY_HEADERS.map((d) => (
-                    <Type as="span" role="day" key={d} className="ms-fu-cal-dow">
-                      {d}
-                    </Type>
-                  ))}
-                </div>
-                <div className="ms-fu-cal-month">
-                  {month.cells.map((cell, i) =>
-                    cell.dayNum === null ? (
-                      <div key={i} className="ms-fu-cal-cell ms-fu-cal-pad" />
-                    ) : (
-                      <div key={i} className={`ms-fu-cal-cell${cell.events.length > 0 ? ' ms-fu-cal-ev' : ''}`}>
-                        <Type as="span" role="caption" className="ms-fu-cal-d">
-                          {cell.dayNum}
-                        </Type>
-                        {cell.events[0] && (
-                          <>
-                            <span className="ms-fu-cal-dot" aria-hidden />
-                            <Type as="span" role="legal" className="ms-fu-cal-ev-l">
-                              {cell.events[0].where}
-                            </Type>
-                          </>
-                        )}
-                      </div>
-                    ),
-                  )}
-                </div>
-              </>
-            ) : (
+            <div className="ms-fu-cal-nav">
+              <button type="button" aria-label="Previous month" className="ms-fu-cal-arrow" onClick={() => step(-1)}>
+                &larr;
+              </button>
               <Type as="h2" role="goodsHead" className="ms-fu-cal-title">
-                Upcoming
+                {grid.title}
               </Type>
-            )}
+              <button type="button" aria-label="Next month" className="ms-fu-cal-arrow" onClick={() => step(1)}>
+                &rarr;
+              </button>
+            </div>
+            <div className="ms-fu-cal-dows" aria-hidden>
+              {FINDUS_WEEKDAY_HEADERS.map((d) => (
+                <Type as="span" role="day" key={d} className="ms-fu-cal-dow">
+                  {d}
+                </Type>
+              ))}
+            </div>
+            <div className="ms-fu-cal-month">
+              {grid.cells.map((cell, i) =>
+                cell.dayNum === null ? (
+                  <div key={i} className="ms-fu-cal-cell ms-fu-cal-pad" />
+                ) : (
+                  <div key={i} className={`ms-fu-cal-cell${cell.events.length > 0 ? ' ms-fu-cal-ev' : ''}`}>
+                    <Type as="span" role="caption" className="ms-fu-cal-d">
+                      {cell.dayNum}
+                    </Type>
+                    {cell.events[0] && (
+                      <>
+                        <span className="ms-fu-cal-dot" aria-hidden />
+                        <Type as="span" role="legal" className="ms-fu-cal-ev-l">
+                          {cell.events[0].where}
+                        </Type>
+                      </>
+                    )}
+                  </div>
+                ),
+              )}
+            </div>
           </div>
           <div className="ms-fu-cal-side">
             <Type as="h3" role="day" className="ms-fu-cal-side-head">
-              {month ? 'This month' : 'Upcoming'}
+              This month
             </Type>
-            <Agenda events={month ? month.events : events} />
+            {hasEvents ? (
+              <Agenda events={grid.events} />
+            ) : (
+              <Type as="p" role="body" className="ms-fu-cal-empty">
+                No dates this month — check back soon.
+              </Type>
+            )}
             {viewAll && (
               <Type as="a" role="navLabel" href={viewAll.href} data-ms-fu-viewall="" className="ms-fu-cal-viewall">
                 {viewAll.label} &rarr;

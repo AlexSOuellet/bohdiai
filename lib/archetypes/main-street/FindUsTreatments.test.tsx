@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { render, cleanup } from '@testing-library/react';
+import { render, cleanup, fireEvent } from '@testing-library/react';
 import { MAIN_STREET_SKINS } from './skins';
 import type { FindUsSection, FindUsEvent } from './findus';
 import { FindUsBoard } from './FindUsBoard';
@@ -34,17 +34,35 @@ describe('FindUsBoard', () => {
 });
 
 describe('FindUsCalendar', () => {
-  it('renders a month grid with a marked event cell when rows carry dates', () => {
-    const { container } = render(<FindUsCalendar section={section} events={[dated]} skin={skin} viewAll={viewAll} />);
+  // `dated` is 2025-08-02.
+  const august: FindUsSection = { ...section, rows: [dated] };
+
+  it('grids the given month and marks the cell for an event that falls in it', () => {
+    const { container } = render(<FindUsCalendar section={august} viewAll={viewAll} year={2025} month={8} />);
     expect(container.querySelector('.ms-fu-cal-month')).toBeTruthy();
     expect(container.querySelector('.ms-fu-cal-ev')).toBeTruthy();
     expect(container.querySelector('.ms-fu-cal-dot')).toBeTruthy();
   });
 
-  it('falls back to an agenda when no row carries a date', () => {
-    const { container, getByText } = render(<FindUsCalendar section={section} events={[undatedRow]} skin={skin} />);
-    expect(container.querySelector('.ms-fu-cal-month')).toBeNull();
-    expect(getByText('Hope St Market')).toBeTruthy();
+  it('shows the check-back empty state for a month with no events, still gridding it', () => {
+    const { container, getByText } = render(<FindUsCalendar section={august} year={2025} month={10} />);
+    expect(container.querySelector('.ms-fu-cal-month')).toBeTruthy(); // real calendar still renders
+    expect(getByText(/check back/i)).toBeTruthy();
+  });
+
+  it('pages forward and back through the months', () => {
+    const { getByText, getByLabelText } = render(<FindUsCalendar section={august} year={2025} month={8} />);
+    expect(getByText('August 2025')).toBeTruthy();
+    fireEvent.click(getByLabelText(/next month/i));
+    expect(getByText('September 2025')).toBeTruthy();
+    fireEvent.click(getByLabelText(/previous month/i));
+    expect(getByText('August 2025')).toBeTruthy();
+  });
+
+  it('wraps the year at the December/January boundary', () => {
+    const { getByText, getByLabelText } = render(<FindUsCalendar section={august} year={2025} month={12} />);
+    fireEvent.click(getByLabelText(/next month/i));
+    expect(getByText('January 2026')).toBeTruthy();
   });
 });
 
@@ -61,10 +79,15 @@ describe('FindUsPasses', () => {
 });
 
 describe('FindUsNextStop', () => {
-  it('spotlights the first row and trails the rest', () => {
+  it('leads with the venue as the hero and shows date+time as an accent, trailing the rest', () => {
     const second: FindUsEvent = { date: '2025-08-15', day: 'Fri, Aug 15', where: 'WaterFire', time: '7–11pm' };
     const { container, getByText } = render(<FindUsNextStop section={section} events={[dated, second]} skin={skin} viewAll={viewAll} />);
-    expect(getByText('Saturday')).toBeTruthy(); // weekday of the spotlight date
+    // the venue is the hero, not a lone derived weekday
+    expect(container.querySelector('.ms-fu-next-where')!.textContent).toBe('Wickford Festival');
+    expect(container.querySelector('.ms-fu-next-when')).toBeNull();
+    const accent = container.querySelector('.ms-fu-next-date')!.textContent!;
+    expect(accent).toContain('Aug 2');
+    expect(accent).toContain('10–5');
     expect(container.querySelector('.ms-fu-next-also')).toBeTruthy();
     expect(getByText('WaterFire')).toBeTruthy();
   });

@@ -15,6 +15,7 @@ import {
   type FindUsTreatment,
   DEFAULT_FINDUS_TREATMENT,
   sampleEvents,
+  currentYearMonth,
 } from './findus';
 import { FindUsBoard } from './FindUsBoard';
 import { FindUsCalendar } from './FindUsCalendar';
@@ -43,8 +44,12 @@ export function FindUsBeat({
   const props = { section: findUs, events, skin, viewAll };
 
   switch (chosen) {
-    case 'calendar':
-      return <FindUsCalendar {...props} />;
+    case 'calendar': {
+      // A real calendar opens on the current month (server-computed so it tracks
+      // today) and pages from there over the shop's full date list — not the handful.
+      const { year, month } = currentYearMonth(new Date());
+      return <FindUsCalendar section={findUs} viewAll={viewAll} year={year} month={month} />;
+    }
     case 'passes':
       return <FindUsPasses {...props} />;
     case 'next-stop':

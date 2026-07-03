@@ -1,15 +1,14 @@
 /**
- * FIND US — the next stop (the "spotlight the nearest date" treatment).
+ * FIND US — the next stop (the "spotlight the next appearance" treatment).
  *
- * The soonest appearance blown up huge — a big when (the weekday, when dated), a
- * date/time tag, the venue at display scale, then a "see all dates" call to action —
- * with the remaining appearances trailing small underneath. For the maker who wants
- * everyone at the very next date. The Dark default; skin-agnostic.
+ * The next appearance blown up VENUE-FIRST — the place is the hero at display scale,
+ * with the date and hours as a supporting accent line above it and a "see all dates"
+ * call to action below — the remaining appearances trailing small underneath. Where
+ * the maker is is the point, not the weekday. The Dark default; skin-agnostic.
  *
  * Class-only: the spotlight, the CTA, and the trailing strip live in `skinVarsCss`
- * under `.ms-fu-next-*`; colors are `--ms-*` vars, type is named roles. The rows are
- * assumed chronological (the copywriter seeds them in date order); the first is the
- * spotlight.
+ * under `.ms-fu-next-*`; colors are `--ms-*` vars, type is named roles. The rows
+ * render in configured order — the first is the spotlight; we don't recompute "next".
  */
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
@@ -19,6 +18,13 @@ import { type FindUsSection, type FindUsEvent, parseFindUsDate } from './findus'
 function alsoLabel(e: FindUsEvent): string {
   const p = parseFindUsDate(e.date);
   return p ? `${p.monthShort} ${p.dayNum}` : e.day;
+}
+
+/** The spotlight's supporting accent: the full date and the hours. */
+function dateAccent(e: FindUsEvent): string {
+  const p = parseFindUsDate(e.date);
+  const when = p ? `${p.weekday}, ${p.monthShort} ${p.dayNum}` : e.day;
+  return `${when} · ${e.time}`;
 }
 
 export function FindUsNextStop({
@@ -34,24 +40,16 @@ export function FindUsNextStop({
 }) {
   const [spotlight, ...rest] = events;
   if (!spotlight) return null;
-  const parts = parseFindUsDate(spotlight.date);
-  const when = parts ? parts.weekday : spotlight.day;
-  const tag = parts ? `${parts.monthShort} ${parts.dayNum} · ${spotlight.time}` : spotlight.time;
   return (
     <section id="find-us" className="ms-fu-section ms-fu-next">
       <div className="ms-wrap">
         <Type as="span" role="eyebrow" className="ms-fu-next-eyebrow">
           {section.label}
         </Type>
-        <div className="ms-fu-next-now">
-          <Type as="span" role="closeHead" className="ms-fu-next-when">
-            {when}
-          </Type>
-          <Type as="span" role="day" className="ms-fu-next-tag">
-            {tag}
-          </Type>
-        </div>
-        <Type as="p" role="goodsHead" className="ms-fu-next-where">
+        <Type as="span" role="day" className="ms-fu-next-date">
+          {dateAccent(spotlight)}
+        </Type>
+        <Type as="p" role="closeHead" className="ms-fu-next-where">
           {spotlight.where}
         </Type>
         {viewAll && (

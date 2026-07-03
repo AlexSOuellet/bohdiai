@@ -23,6 +23,28 @@ import { withImageDirectives } from '@/lib/onboarding/image-directives';
 import { directAndProduce } from '@/lib/onboarding/crew/pipeline';
 import { logCrewChoices } from '@/lib/onboarding/crew/log-choices';
 import type { CrewBrief } from '@/lib/onboarding/crew/types';
+import type { MainStreetAuthored } from '@/lib/archetypes/main-street/builder';
+import { stampFindUsDates } from '@/lib/archetypes/main-street/findus';
+
+/**
+ * Stamp real, near-future dates onto the seeded find-us rows at build time. The build
+ * knows today's date; the model does not — so code owns the dates the way it owns the
+ * shop name (D45). Bohdi authors the venue / hours / kind; this drops each onto a
+ * current, plausible date so a freshly-built store shows a populated calendar and
+ * "this week" list the maker then keeps up to date. Returns `authored` untouched when
+ * the shop has no find-us rows.
+ */
+export function stampAuthoredFindUs(authored: MainStreetAuthored, today: Date): MainStreetAuthored {
+  const findUs = authored.content?.founder?.findUs;
+  if (!findUs || findUs.rows.length === 0) return authored;
+  return {
+    ...authored,
+    content: {
+      ...authored.content,
+      founder: { ...authored.content.founder, findUs: { ...findUs, rows: stampFindUsDates(findUs.rows, today) } },
+    },
+  };
+}
 
 export const MAX_PRODUCT_IMAGES = 5;
 
@@ -108,8 +130,12 @@ export async function buildArchetypeStore(
   });
 
   emit('Designing your store');
-  const { chosen, authored, choices, trajectory } = await directAndProduce(brief);
+  const { chosen, authored: authoredRaw, choices, trajectory } = await directAndProduce(brief);
   const spec = chosen.spec;
+
+  // Stamp real current dates onto the seeded find-us rows before anything renders —
+  // the model can't know today; the build does (D45).
+  const authored = stampAuthoredFindUs(authoredRaw, new Date());
 
   // Generate every asset the crew prompted. Feature assets generate freely; product
   // photos are capped and recycled. Unique storage path per job so nothing overwrites.

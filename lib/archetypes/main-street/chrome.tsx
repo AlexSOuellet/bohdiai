@@ -745,7 +745,11 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     /* calendar — a real month grid + an agenda column; the recurring-schedule view. */
     .arch-main-street .ms-fu-cal-grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:clamp(28px,5vw,64px);align-items:start}
     .arch-main-street .ms-fu-cal-eyebrow{color:var(--ms-accent);display:block;margin-bottom:6px}
-    .arch-main-street .ms-fu-cal-title{color:var(--ms-fg);margin:0 0 22px}
+    .arch-main-street .ms-fu-cal-nav{display:flex;align-items:center;gap:14px;margin:0 0 22px}
+    .arch-main-street .ms-fu-cal-title{color:var(--ms-fg);margin:0}
+    .arch-main-street .ms-fu-cal-arrow{appearance:none;background:transparent;border:1px solid var(--ms-rule);color:var(--ms-fg);border-radius:50%;width:34px;height:34px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;transition:background .15s,color .15s,border-color .15s}
+    .arch-main-street .ms-fu-cal-arrow:hover{background:var(--ms-accent);color:var(--ms-on-accent);border-color:var(--ms-accent)}
+    .arch-main-street .ms-fu-cal-empty{color:var(--ms-fg-muted);padding:14px 0;border-top:1px solid var(--ms-rule)}
     .arch-main-street .ms-fu-cal-dows{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:8px}
     .arch-main-street .ms-fu-cal-dow{color:var(--ms-fg-muted);text-align:center}
     .arch-main-street .ms-fu-cal-month{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--ms-rule);border-left:1px solid var(--ms-rule)}
@@ -775,12 +779,10 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-fu-pass-where{color:var(--ms-fg);margin:12px 0 6px}
     .arch-main-street .ms-fu-pass-time{color:var(--ms-fg-muted);margin:0}
     .arch-main-street .ms-fu-pass-viewall{display:inline-block;margin-top:22px;color:var(--ms-accent)}
-    /* next-stop — one nearest date spotlighted huge, the rest trailing small. */
+    /* next-stop — the next appearance spotlighted VENUE-FIRST, the rest trailing small. */
     .arch-main-street .ms-fu-next-eyebrow{color:var(--ms-accent);display:block}
-    .arch-main-street .ms-fu-next-now{display:flex;align-items:baseline;flex-wrap:wrap;gap:16px;margin:14px 0 8px}
-    .arch-main-street .ms-fu-next-when{color:var(--ms-fg);line-height:.88}
-    .arch-main-street .ms-fu-next-tag{color:var(--ms-accent);border:1px solid var(--ms-accent);border-radius:100px;padding:6px 13px}
-    .arch-main-street .ms-fu-next-where{color:var(--ms-fg);margin:0}
+    .arch-main-street .ms-fu-next-date{color:var(--ms-accent);display:block;margin:18px 0 8px;letter-spacing:.02em}
+    .arch-main-street .ms-fu-next-where{color:var(--ms-fg);margin:0;line-height:.98;max-width:18ch}
     .arch-main-street .ms-fu-next-cta{display:inline-block;margin-top:26px;background:var(--ms-accent);color:var(--ms-on-accent);border-radius:3px;padding:14px 26px}
     .arch-main-street .ms-fu-next-also{margin-top:50px;border-top:1px solid var(--ms-rule);padding-top:22px}
     .arch-main-street .ms-fu-next-also-lbl{color:var(--ms-fg-muted);display:block;margin-bottom:16px}

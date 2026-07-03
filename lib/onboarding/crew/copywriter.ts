@@ -130,7 +130,7 @@ ${goods}
 - founder.eyebrow (2-24, optional): the small label above the card heading (also the workbench / editorial kicker).
 - founder.heading (2-28, optional): the card heading (also a fallback editorial headline).
 - founder.aboutLabel (2-28, optional): the cue to the full About page.
-- founder.findUs (optional): a "find us in person" calendar. Dates are unknown at build time, so seed 1-5 plausible sample rows the maker edits or turns off later, IN DATE ORDER (soonest first): { label (2-28), eventsLabel (2-28, optional), rows (1-5): { date (ISO YYYY-MM-DD, a plausible near-future date), day (a short human echo of that date, e.g. "Sat, Jul 12"), where (4-60, venue and town), time (1-12, the hours), kind (optional, one of: market | workshop | event) } }. Author the ISO date on every row — the calendar and spotlight treatments place events by it.
+- founder.findUs (optional): a "find us in person" calendar of markets / workshops / popups the maker sells at. Seed 1-5 plausible sample appearances the maker edits or turns off later: { label (2-28), eventsLabel (2-28, optional), rows (1-5): { where (4-60, the venue and town), time (1-12, the hours, e.g. "10–4"), kind (optional, one of: market | workshop | event), day (a short placeholder like "This week") } }. Do NOT author real dates — the build stamps current dates onto each row automatically; you write only the venue, hours, and kind.
 - close.label (2-28): the close kicker.
 - close.headline (6-72): the big close line.
 - close.ctaLabel (3-24): the close button. close.ctaTarget: where it goes.

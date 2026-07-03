@@ -85,7 +85,9 @@ export function normalizeCopy(d: CopywriterDraft): CopywriterDraft {
               ...d.founder.findUs,
               label: trim(d.founder.findUs.label),
               ...(d.founder.findUs.eventsLabel !== undefined ? { eventsLabel: trim(d.founder.findUs.eventsLabel) } : {}),
-              rows: d.founder.findUs.rows.map((r) => ({ day: trim(r.day), where: trim(r.where), time: trim(r.time) })),
+              // Keep every authored field (date, kind) — the build stamps real
+              // current dates over `date` later; just trim the human strings.
+              rows: d.founder.findUs.rows.map((r) => ({ ...r, day: trim(r.day), where: trim(r.where), time: trim(r.time) })),
             },
           }
         : {}),

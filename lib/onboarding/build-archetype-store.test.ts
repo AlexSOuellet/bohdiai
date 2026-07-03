@@ -102,6 +102,46 @@ describe('buildArchetypeStore — crew-choice logging seam', () => {
   });
 });
 
+describe('buildArchetypeStore — find-us date stamping', () => {
+  const applyMedia = vi.fn((authored: unknown) => authored);
+  const fakeSpec = { key: 'main-street', mediaJobs: () => [], applyMedia, toPayload: () => ({ content: {}, products: [] }) };
+
+  beforeEach(() => {
+    single.mockReset().mockResolvedValue({ data: { display_name: 'Candles', body_markdown: 'x', tenant_type_fit: ['seller'] }, error: null });
+    directAndProduce.mockReset();
+    writeArchetypeStorefront.mockReset().mockResolvedValue({ subdomain: 'lumen', tenantId: 'tn_fu' });
+    applyMedia.mockClear();
+  });
+
+  it('stamps real near-future ISO dates onto the seeded find-us rows before render (D45)', async () => {
+    directAndProduce.mockResolvedValue({
+      chosen: { spec: fakeSpec, lookKey: 'main-street-ember' },
+      authored: {
+        content: {
+          founder: {
+            findUs: {
+              label: 'Find us',
+              rows: [
+                { day: 'someday', where: 'Providence Flea', time: '10–4', kind: 'market' },
+                { day: 'someday', where: 'Hope St Market', time: '9–1' },
+              ],
+            },
+          },
+        },
+      },
+      choices: { heroKind: 'video', goodsTreatment: 'procession', founderTreatment: 'quote' },
+    });
+
+    await buildArchetypeStore({ shopName: 'Lumen', subdomain: 'lumen', nicheSlug: 'candles', moodKey: 'cozy', productCount: 3 });
+
+    const authored = applyMedia.mock.calls[0]![0] as { content: { founder: { findUs: { rows: Array<{ date?: string; where: string }> } } } };
+    const rows = authored.content.founder.findUs.rows;
+    expect(rows[0]!.date).toMatch(/^\d{4}-\d{2}-\d{2}$/); // a real ISO date now
+    expect(rows[0]!.where).toBe('Providence Flea'); // venue/kind untouched
+    expect(rows[0]!.date! < rows[1]!.date!).toBe(true); // ascending
+  });
+});
+
 describe('buildArchetypeStore — Other (describe-and-build)', () => {
   // A maker who picks "Other" types what they make; Bohdi builds from that
   // description alone — no niche file, no DB lookup, nothing saved as a niche.

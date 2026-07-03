@@ -8,6 +8,8 @@ import {
   parseFindUsDate,
   formatFindUsMonthTitle,
   buildFindUsMonth,
+  currentYearMonth,
+  stampFindUsDates,
   seedPreviewFindUs,
   type FindUsEvent,
 } from './findus';
@@ -70,37 +72,95 @@ describe('formatFindUsMonthTitle', () => {
   });
 });
 
+describe('currentYearMonth', () => {
+  it('reads the 1-based month and year off a date', () => {
+    expect(currentYearMonth(new Date(Date.UTC(2026, 6, 3)))).toEqual({ year: 2026, month: 7 });
+    expect(currentYearMonth(new Date(Date.UTC(2026, 11, 31)))).toEqual({ year: 2026, month: 12 });
+  });
+});
+
 describe('buildFindUsMonth', () => {
-  it('grids the soonest dated month, dropping events into their cells', () => {
-    const month = buildFindUsMonth([
-      row({ date: '2025-08-15', where: 'WaterFire' }),
-      row({ date: '2025-08-02', where: 'Wickford Festival' }),
-      row({ date: '2025-09-06', where: 'Next month' }),
-    ]);
-    expect(month).toBeDefined();
-    expect(month!.title).toBe('August 2025');
-    // August 2025: 31 days, the 1st is a Friday → 5 leading pad cells.
-    const pads = month!.cells.filter((c) => c.dayNum === null);
-    expect(pads).toHaveLength(5);
-    const days = month!.cells.filter((c) => c.dayNum !== null);
+  it('grids the REQUESTED month, dropping only that month\'s events into their cells', () => {
+    const month = buildFindUsMonth(
+      [
+        row({ date: '2026-07-20', where: 'WaterFire' }),
+        row({ date: '2026-07-05', where: 'Wickford Festival' }),
+        row({ date: '2026-08-06', where: 'Next month' }),
+      ],
+      { year: 2026, month: 7 },
+    );
+    expect(month.title).toBe('July 2026');
+    // July 2026: 31 days, the 1st is a Wednesday → 3 leading pad cells (Sunday-first).
+    const pads = month.cells.filter((c) => c.dayNum === null);
+    expect(pads).toHaveLength(3);
+    const days = month.cells.filter((c) => c.dayNum !== null);
     expect(days).toHaveLength(31);
-    const day2 = month!.cells.find((c) => c.dayNum === 2);
-    expect(day2!.events[0]!.where).toBe('Wickford Festival');
-    // Only August events feed the agenda — the September one is a different month.
-    expect(month!.events).toHaveLength(2);
+    const day5 = month.cells.find((c) => c.dayNum === 5);
+    expect(day5!.events[0]!.where).toBe('Wickford Festival');
+    // Only July events feed the agenda, in date order — the August one is elsewhere.
+    expect(month.events.map((e) => e.where)).toEqual(['Wickford Festival', 'WaterFire']);
   });
 
-  it('returns undefined when no row carries a parseable date (legacy fallback)', () => {
-    expect(buildFindUsMonth([row(), row({ date: 'not-a-date' })])).toBeUndefined();
+  it('still grids a month with no events (the empty-state case), never undefined', () => {
+    const month = buildFindUsMonth([row({ date: '2026-07-05', where: 'A' })], { year: 2026, month: 9 });
+    expect(month.title).toBe('September 2026');
+    expect(month.events).toHaveLength(0);
+    // September 2026 has 30 days — a full grid still renders under the empty state.
+    expect(month.cells.filter((c) => c.dayNum !== null)).toHaveLength(30);
+  });
+
+  it('ignores rows with no parseable date when placing cells', () => {
+    const month = buildFindUsMonth([row({ date: undefined }), row({ date: '2026-07-05', where: 'A' })], {
+      year: 2026,
+      month: 7,
+    });
+    expect(month.events).toHaveLength(1);
+  });
+});
+
+describe('stampFindUsDates', () => {
+  const today = new Date(Date.UTC(2026, 6, 3)); // Fri, Jul 3 2026
+
+  it('stamps ascending near-future dates from today, first ones within the week', () => {
+    const out = stampFindUsDates(
+      [
+        { day: 'x', where: 'A', time: '10–4', kind: 'market' },
+        { day: 'x', where: 'B', time: '9–1' },
+      ],
+      today,
+    );
+    expect(out[0]!.date).toBe('2026-07-05');
+    expect(out[1]!.date).toBe('2026-07-08');
+    // ascending
+    expect(out[0]!.date! < out[1]!.date!).toBe(true);
+  });
+
+  it('rewrites the day echo to match the stamped date and keeps where/time/kind', () => {
+    const out = stampFindUsDates([{ day: 'stale', where: 'A', time: '10–4', kind: 'market' }], today);
+    expect(out[0]!.day).toBe('Sun, Jul 5');
+    expect(out[0]!.where).toBe('A');
+    expect(out[0]!.time).toBe('10–4');
+    expect(out[0]!.kind).toBe('market');
+  });
+
+  it('handles more rows than the offset table without collision', () => {
+    const rows = Array.from({ length: 8 }, (_, i) => ({ day: 'x', where: `S${i}`, time: '10–4' }));
+    const out = stampFindUsDates(rows, today);
+    const dates = out.map((r) => r.date!);
+    expect(new Set(dates).size).toBe(8); // all distinct
+    // still ascending
+    for (let i = 1; i < dates.length; i += 1) expect(dates[i - 1]! < dates[i]!).toBe(true);
   });
 });
 
 describe('seedPreviewFindUs', () => {
-  it('seeds plausible dated rows with kinds for the preview', () => {
-    const seed = seedPreviewFindUs();
+  it('seeds dated rows with kinds relative to today so every treatment previews live', () => {
+    const today = new Date(Date.UTC(2026, 6, 3));
+    const seed = seedPreviewFindUs(today);
     expect(seed.rows.length).toBeGreaterThan(0);
     for (const r of seed.rows) {
       expect(parseFindUsDate(r.date)).toBeDefined();
+      expect(r.date! >= '2026-07-03').toBe(true); // never in the past
     }
     expect(seed.rows.some((r) => r.kind === 'workshop')).toBe(true);
   });

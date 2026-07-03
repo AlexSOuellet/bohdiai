@@ -172,23 +172,28 @@ export interface FindUsMonth {
   events: FindUsEvent[];
 }
 
-/**
- * Build the month grid the Calendar treatment renders: the month of the SOONEST
- * dated appearance, its days padded to a Sunday-first grid, each event dropped into
- * its day cell. Returns undefined when no row carries a parseable date (a legacy
- * store) so the treatment falls back to a plain agenda. Pure + deterministic —
- * shared by the component and its tests.
- */
-export function buildFindUsMonth(rows: readonly FindUsEvent[]): FindUsMonth | undefined {
-  const dated = rows
-    .map((e) => ({ e, p: parseFindUsDate(e.date) }))
-    .filter((x): x is { e: FindUsEvent; p: FindUsDateParts } => x.p !== undefined)
-    .sort((a, b) => a.p.year - b.p.year || a.p.month - b.p.month || a.p.dayNum - b.p.dayNum);
-  const first = dated[0];
-  if (!first) return undefined;
+/** The current calendar month/year (1-based month), read in UTC to stay consistent
+ *  with `parseFindUsDate`. The Calendar treatment opens on this month — a real
+ *  calendar tracks today, it does not hunt for the maker's soonest event. */
+export function currentYearMonth(today: Date): { year: number; month: number } {
+  return { year: today.getUTCFullYear(), month: today.getUTCMonth() + 1 };
+}
 
-  const { year, month } = first.p;
-  const inMonth = dated.filter((x) => x.p.year === year && x.p.month === month);
+/**
+ * Build the month grid the Calendar treatment renders for a SPECIFIC month (the one
+ * the visitor is looking at — the current month by default, paged from there). The
+ * month's days are padded to a Sunday-first grid and each event that falls in the
+ * month is dropped into its day cell; `events` carries that month's appearances in
+ * date order (empty when none fall in the month — the "no dates this month" state).
+ * A real calendar, not a soonest-event hunt. Pure + deterministic.
+ */
+export function buildFindUsMonth(rows: readonly FindUsEvent[], target: { year: number; month: number }): FindUsMonth {
+  const { year, month } = target;
+  const inMonth = rows
+    .map((e) => ({ e, p: parseFindUsDate(e.date) }))
+    .filter((x): x is { e: FindUsEvent; p: FindUsDateParts } => x.p !== undefined && x.p.year === year && x.p.month === month)
+    .sort((a, b) => a.p.dayNum - b.p.dayNum);
+
   const eventsByDay = new Map<number, FindUsEvent[]>();
   for (const { e, p } of inMonth) {
     const list = eventsByDay.get(p.dayNum) ?? [];
@@ -205,23 +210,58 @@ export function buildFindUsMonth(rows: readonly FindUsEvent[]): FindUsMonth | un
   return { title: formatFindUsMonthTitle(year, month), year, month, cells, events: inMonth.map((x) => x.e) };
 }
 
+/** Where the seeded sample appearances land relative to the build day: a couple this
+ *  week, the rest spread across the coming weeks — plausible, current, editable. */
+const STAMP_OFFSETS = [2, 5, 10, 18, 24, 31] as const;
+function stampOffset(i: number): number {
+  return i < STAMP_OFFSETS.length ? STAMP_OFFSETS[i]! : STAMP_OFFSETS[STAMP_OFFSETS.length - 1]! + (i - STAMP_OFFSETS.length + 1) * 7;
+}
+
+/** An ISO `YYYY-MM-DD` `offset` days after `today`, computed in UTC. */
+function isoAfter(today: Date, offset: number): string {
+  const d = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() + offset));
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/**
+ * Stamp real, near-future dates onto find-us rows at BUILD time — the build knows
+ * today's date, the model does not, so code owns this the way it owns the shop name
+ * (D45). Bohdi authors the venue / hours / kind; this drops each row onto a plausible
+ * date spread across the coming weeks (soonest first) and rewrites the `day` echo to
+ * match, so a freshly-built store shows a populated calendar and "this week" list the
+ * maker then keeps current. Pure + deterministic given `today`.
+ */
+export function stampFindUsDates(rows: readonly FindUsEvent[], today: Date): FindUsEvent[] {
+  return rows.map((r, i) => {
+    const iso = isoAfter(today, stampOffset(i));
+    const p = parseFindUsDate(iso)!;
+    return { ...r, date: iso, day: `${p.weekdayShort}, ${p.monthShort} ${p.dayNum}` };
+  });
+}
+
 /**
  * Seed plausible sample find-us dates for the ?findus= preview when a store has no
  * authored calendar — the same non-persisting "placeholder, not labeled" model as
  * the collections / reviews / marquee seeds. Never written to the store; only the
- * preview renders it. Carries ISO dates + kinds so every treatment (Calendar
- * included) is viewable.
+ * preview renders it. Dates are stamped relative to `today` (default now) so the
+ * Calendar preview always lands on the current month and every treatment is viewable.
  */
-export function seedPreviewFindUs(): FindUsSection {
+export function seedPreviewFindUs(today: Date = new Date()): FindUsSection {
   return {
     label: 'Find us in person',
     eventsLabel: 'See all dates',
-    rows: [
-      { date: '2025-07-12', day: 'Sat, Jul 12', where: 'Providence Flea — India Point Park', time: '10–4', kind: 'market' },
-      { date: '2025-07-20', day: 'Sun, Jul 20', where: 'Hope Street Market — Lippitt Park', time: '9–1', kind: 'market' },
-      { date: '2025-07-24', day: 'Thu, Jul 24', where: 'Candle-Pouring Workshop — The Studio, Pawtucket', time: '6–8pm', kind: 'workshop' },
-      { date: '2025-08-02', day: 'Sat, Aug 2', where: 'Wickford Art Festival — Wickford Village', time: '10–5', kind: 'event' },
-      { date: '2025-08-15', day: 'Fri, Aug 15', where: 'WaterFire — Downtown Providence', time: '7–11pm', kind: 'event' },
-    ],
+    rows: stampFindUsDates(
+      [
+        { day: '', where: 'Providence Flea — India Point Park', time: '10–4', kind: 'market' },
+        { day: '', where: 'Hope Street Market — Lippitt Park', time: '9–1', kind: 'market' },
+        { day: '', where: 'Candle-Pouring Workshop — The Studio, Pawtucket', time: '6–8pm', kind: 'workshop' },
+        { day: '', where: 'Wickford Art Festival — Wickford Village', time: '10–5', kind: 'event' },
+        { day: '', where: 'WaterFire — Downtown Providence', time: '7–11pm', kind: 'event' },
+      ],
+      today,
+    ),
   };
 }

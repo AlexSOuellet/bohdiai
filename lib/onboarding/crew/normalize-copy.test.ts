@@ -24,7 +24,7 @@ const full = {
     eyebrow: ' meet ',
     heading: 'Meet June.',
     aboutLabel: ' about ',
-    findUs: { label: ' find ', eventsLabel: ' events ', rows: [{ day: ' Sat ', where: ' Market ', time: ' 9-1 ' }] },
+    findUs: { label: ' find ', eventsLabel: ' events ', rows: [{ day: ' Sat ', where: ' Market ', time: ' 9-1 ', date: '2025-08-02', kind: 'market' }] },
   },
   close: { label: ' l ', headline: 'Come by!', ctaLabel: ' c ', ctaTarget: 'shop' },
   about: { heading: 'Our story.', story: [' a ', ' b '] },
@@ -67,7 +67,8 @@ describe('normalizeCopy', () => {
     expect(out.founder.eyebrow).toBe('meet');
     expect(out.founder.aboutLabel).toBe('about');
     expect(out.founder.findUs?.eventsLabel).toBe('events');
-    expect(out.founder.findUs?.rows[0]).toEqual({ day: 'Sat', where: 'Market', time: '9-1' });
+    // date + kind survive normalization (the build stamps real dates over the date later)
+    expect(out.founder.findUs?.rows[0]).toEqual({ day: 'Sat', where: 'Market', time: '9-1', date: '2025-08-02', kind: 'market' });
   });
 
   it('omits optional fields the draft did not include', () => {
