@@ -68,21 +68,23 @@ describe('AboutPage — logo plate removal + header contrast (4b)', () => {
   });
 
   it('gives the sub-header a contrasting surface when the logo tone matches the skin tone', () => {
-    // dark logo on a dark skin → header should take a light surface (#F7F5F2 = rgb(247,245,242))
+    // dark logo on a dark skin → header takes the LIGHT contrast surface, expressed as
+    // a data attribute (class-only; the CSS for it lives in skinVarsCss), no inline style.
     const c: MainStreetContent = { ...content, identity: { ...content.identity, logoUrl: 'https://cdn/logo.png', logoTone: 'dark' } };
     const { container } = render(<AboutPage content={c} skin={darkSkin} />);
     const header = container.querySelector('header')!;
-    // jsdom converts hex to rgb in inline styles; accept either form
-    const style = header.getAttribute('style') ?? '';
-    expect(style.includes('#F7F5F2') || style.includes('rgb(247, 245, 242)') || style.includes('rgb(247,245,242)')).toBe(true);
+    expect(header.getAttribute('data-ms-subhead')).toBe('light');
+    expect(header.getAttribute('style')).toBeNull(); // no inline styling
   });
 });
 
 describe('AboutPage', () => {
-  it('renders the authored story paragraphs and heading', () => {
+  it('renders the authored story paragraphs, each as its own paragraph', () => {
+    // The page opens with the founder treatment as its hero (representative of the
+    // home teaser) and then renders the full story below in class-only prose. The
+    // paragraphs get `data-ms-story` for the reader to hook into.
     const withAbout: MainStreetContent = { ...content, about: { heading: 'How Tannery Row began', story: ['I learned to stitch leather from my grandfather in his garage workshop over many summers.', 'Today every belt is cut from a single full-grain hide and saddle-stitched by hand.'] } };
-    const { getByText, container } = render(<AboutPage content={withAbout} skin={skin} />);
-    expect(getByText('How Tannery Row began')).toBeTruthy();
+    const { container } = render(<AboutPage content={withAbout} skin={skin} />);
     expect(container.querySelectorAll('[data-ms-story]').length).toBe(2);
   });
 
@@ -122,10 +124,11 @@ describe('MainStreetSubPage (the shared shell)', () => {
     );
     const nav = container.querySelector('[data-ms-nav]') as HTMLElement | null;
     expect(nav).toBeTruthy();
-    // Fixed (not sticky) because Lenis smooth-scroll breaks sticky in this
-    // layout; fixed matches the home hero nav's approach.
-    expect(nav!.style.position).toBe('fixed');
-    expect(nav!.style.top).toBe('0px');
+    // Fixed (not sticky) because Lenis smooth-scroll breaks sticky in this layout;
+    // fixed matches the home hero nav. The pinning lives in the .ms-subheader class
+    // (skinVarsCss), not an inline style.
+    expect(nav!.classList.contains('ms-subheader')).toBe(true);
+    expect(nav!.getAttribute('style')).toBeNull();
   });
 
   it('pads <main> down so content does not slide under the fixed nav', () => {

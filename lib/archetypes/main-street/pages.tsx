@@ -9,40 +9,28 @@ import type { ReactNode } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
-import { MainStreetRoot, MainStreetFooter, Media, Nav } from './chrome';
+import { MainStreetRoot, MainStreetFooter, Nav } from './chrome';
 import { Type } from './Type';
 import { navContrast, relativeLuminance } from './logo-contrast';
-import { FindUsList } from './FounderBeats';
+import { FindUsBeat } from './FindUsBeat';
+import { GoodsBeat } from './GoodsBeat';
+import { FounderBeat } from './FounderBeat';
+import { selectFounderTreatment } from './founder';
+import { CollectionsBeat } from './CollectionsBeat';
+import { ReviewsBeat } from './ReviewsBeat';
+import type { CollectionView } from '../content';
 import { MainStreetContactForm } from './MainStreetContactForm';
 
 function SubHeader({ content, skin, current }: { content: MainStreetContent; skin: ArchetypeTheme; current?: string | undefined }) {
+  // The header is fixed (matching the home hero's pinned nav — Lenis smooth-scroll
+  // breaks `sticky` here). When the bare logo would wash out on the skin, it takes a
+  // fixed contrasting chrome surface, expressed as a data attribute so the header
+  // carries no inline style (the CSS lives in skinVarsCss under .ms-subheader).
   const backdrop = relativeLuminance(skin.palette.bg) > 0.5 ? 'light' : 'dark';
   const surface = navContrast(content.identity.logoTone ?? 'unknown', backdrop);
+  const subheadTone = surface ? (relativeLuminance(surface.bg) > 0.5 ? 'light' : 'dark') : undefined;
   return (
-    <header
-      data-ms-nav
-      style={{
-        // Fixed so the nav anchors as the page scrolls, matching the home
-        // hero's pinned nav. Sticky read cleanly in theory but Lenis smooth-
-        // scroll (mounted by the storefront layout) breaks sticky in this
-        // setup — fixed sidesteps it the same way the home nav does. The
-        // sub-page main content is padded down to compensate (MainStreetSubPage).
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 50,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: 24,
-        padding: '14px 40px',
-        borderBottom: '1px solid var(--ms-rule)',
-        background: surface ? surface.bg : 'var(--ms-bg)',
-        color: surface ? surface.fg : 'var(--ms-fg)',
-        flexWrap: 'wrap',
-      }}
-    >
+    <header data-ms-nav data-ms-subhead={subheadTone} className="ms-subheader">
       <Nav identity={content.identity} currentHref={current} />
     </header>
   );
@@ -62,16 +50,16 @@ export function MainStreetSubPage({ content, skin, children, current }: { conten
   );
 }
 
-/** A simple page masthead — eyebrow + title — reused across sub-pages. */
-function PageHead({ eyebrow, title }: { eyebrow?: string | undefined; title: string; skin: ArchetypeTheme }) {
+/** A simple page masthead — eyebrow + title — reused across sub-pages. Class-only. */
+function PageHead({ eyebrow, title }: { eyebrow?: string | undefined; title: string }) {
   return (
-    <div className="ms-wrap" style={{ padding: '88px 40px 36px', textAlign: 'center' }}>
+    <div className="ms-wrap ms-pagehead">
       {eyebrow && (
-        <Type as="span" role="eyebrow" style={{ color: 'var(--ms-accent)', display: 'block', marginBottom: 14 }}>
+        <Type as="span" role="eyebrow" className="ms-pagehead-eyebrow">
           {eyebrow}
         </Type>
       )}
-      <Type as="h1" role="closeHead" style={{ color: 'var(--ms-fg)', margin: 0 }}>
+      <Type as="h1" role="closeHead" className="ms-pagehead-title">
         {title}
       </Type>
     </div>
@@ -95,16 +83,16 @@ export function ContentPage({ content, skin, title, body, html }: { content: Mai
     return (
       <MainStreetSubPage content={content} skin={skin}>
         <style dangerouslySetInnerHTML={{ __html: legalCss() }} />
-        <article data-ms-content className="ms-wrap ms-legal" style={{ padding: '72px 40px 110px', maxWidth: 760 }} dangerouslySetInnerHTML={{ __html: html }} />
+        <article data-ms-content className="ms-wrap ms-legal ms-page-legal" dangerouslySetInnerHTML={{ __html: html }} />
       </MainStreetSubPage>
     );
   }
   return (
     <MainStreetSubPage content={content} skin={skin}>
-      {title && <PageHead title={title} skin={skin} />}
-      <section data-ms-content className="ms-wrap" style={{ padding: '24px 40px 110px', maxWidth: 760 }}>
+      {title && <PageHead title={title} />}
+      <section data-ms-content className="ms-wrap ms-page ms-page-prose">
         {(body ?? []).map((para, i) => (
-          <Type key={i} as="p" role="body" style={{ color: 'var(--ms-fg)', margin: '0 0 20px', maxWidth: '66ch' }}>
+          <Type key={i} as="p" role="body">
             {para}
           </Type>
         ))}
@@ -118,56 +106,52 @@ export function ContentPage({ content, skin, title, body, html }: { content: Mai
 export function ShopPage({ content, skin, products }: { content: MainStreetContent; skin: ArchetypeTheme; products: ProductView[] }) {
   return (
     <MainStreetSubPage content={content} skin={skin} current="/shop">
-      <PageHead eyebrow={content.goods.label} title={content.goods.title} skin={skin} />
-      <section data-ms-shop className="ms-wrap" style={{ padding: '24px 40px 110px' }}>
+      <PageHead eyebrow={content.goods.label} title={content.goods.title} />
+      <section data-ms-shop className="ms-wrap ms-page">
         {products.length === 0 ? (
-          <Type as="p" role="body" style={{ color: 'var(--ms-fg-muted)', textAlign: 'center' }}>
+          <Type as="p" role="body" className="ms-page-empty">
             New pieces are on the way — check back soon.
           </Type>
         ) : (
-          <div className="ms-catalog-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 28 }}>
-            {products.map((p) => (
-              <a key={p.slug} href={`/listings/${p.slug}`} data-ms-card style={{ color: 'inherit' }}>
-                <div style={{ position: 'relative', aspectRatio: '4 / 5', borderRadius: 3, overflow: 'hidden', background: 'color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg))' }}>
-                  <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
-                  <Type as="span" role="price" style={{ position: 'absolute', left: 12, bottom: 12, background: 'var(--ms-bg)', color: 'var(--ms-fg)', padding: '6px 10px', borderRadius: 2 }}>
-                    {p.price}
-                  </Type>
-                </div>
-                <Type as="h3" role="cardTitle" style={{ color: 'var(--ms-fg)', margin: '16px 0 2px' }}>{p.name}</Type>
-                {p.shortDescription && (
-                  <Type as="p" role="caption" style={{ color: 'var(--ms-fg-muted)', margin: 0 }}>{p.shortDescription}</Type>
-                )}
-              </a>
-            ))}
-          </div>
+          // The full Shop page wears the SAME treatment the home teaser sold — if
+          // the home is Lookbook, /shop is a full lookbook; if it's Marquee, /shop
+          // is the full marquee. The GoodsBeat's `full` mode drops the sampling and
+          // the "see the full catalog" cue.
+          <GoodsBeat goods={content.goods} products={products} skin={skin} catalogSize={products.length} shopHref="/shop" full />
         )}
       </section>
     </MainStreetSubPage>
   );
 }
 
-/** ABOUT — the maker's story at length. The full version of the home founder
- *  teaser: heading, portrait, and the multi-paragraph story. Falls back to the
- *  founder quote when no dedicated story was authored. */
+/** ABOUT — the full "meet the maker" page, REPRESENTATIVE of the home teaser.
+ *  The founder treatment renders at the top (same shape the home wears — Letter
+ *  reads as a letter, Portrait as a portrait, Card as a card, etc.), so the page
+ *  visually delivers what the teaser advertised. Below it, the authored About
+ *  story runs in full prose — the reason the maker clicked "read the full story."
+ *  Editorial already sets the full story in its columns, so we skip the extra
+ *  prose block for that treatment (would double up). */
 export function AboutPage({ content, skin }: { content: MainStreetContent; skin: ArchetypeTheme }) {
-  const about = content.about;
-  const heading = about?.heading ?? 'Our story';
-  const paragraphs = about?.story ?? [content.founder.quote];
+  const treatment = selectFounderTreatment(content.founder.treatment);
+  const paragraphs = content.about?.story ?? [content.founder.quote];
+  // Editorial is the one treatment that already renders the full story in its
+  // own layout (columns + drop cap + pull-quote), so a story block below would
+  // duplicate. Every other treatment is a teaser, so the story runs below it.
+  const showStoryBlock = treatment !== 'editorial';
   return (
     <MainStreetSubPage content={content} skin={skin} current="/about">
-      <PageHead title={heading} skin={skin} />
-      <section data-ms-about className="ms-wrap" style={{ padding: '24px 40px 110px', maxWidth: 820 }}>
-        <div style={{ position: 'relative', aspectRatio: '16 / 10', borderRadius: 4, overflow: 'hidden', marginBottom: 44 }}>
-          <Media media={content.founder.photo} />
-        </div>
-        {paragraphs.map((para, i) => (
-          <Type key={i} as="p" role="body" data-ms-story style={{ color: 'var(--ms-fg)', margin: '0 0 22px', maxWidth: '64ch' }}>
-            {para}
-          </Type>
-        ))}
-        <Type as="div" role="sig" style={{ color: 'var(--ms-fg-muted)', marginTop: 14 }}>&mdash; {content.founder.attribution}</Type>
-      </section>
+      {/* The founder treatment as the page's HERO — no "about cue" (you're here). */}
+      <FounderBeat founder={content.founder} skin={skin} aboutPage={content.about} showAboutCue={false} />
+      {showStoryBlock && (
+        <section data-ms-about className="ms-aboutstory">
+          {paragraphs.map((para, i) => (
+            <Type key={i} as="p" role="body" data-ms-story className="ms-aboutstory-para">
+              {para}
+            </Type>
+          ))}
+          <Type as="div" role="sig" className="ms-aboutstory-sig">&mdash; {content.founder.attribution}</Type>
+        </section>
+      )}
     </MainStreetSubPage>
   );
 }
@@ -179,13 +163,13 @@ export function ContactPage({ content, skin, tenantId }: { content: MainStreetCo
   const intro = content.contact?.intro ?? 'We would love to hear from you — questions, custom requests, or just to say hello.';
   return (
     <MainStreetSubPage content={content} skin={skin} current="/contact">
-      <PageHead title={heading} skin={skin} />
-      <section data-ms-contact className="ms-wrap" style={{ padding: '24px 40px 120px', maxWidth: 680, textAlign: 'center' }}>
-        <Type as="p" role="body" style={{ color: 'var(--ms-fg)', margin: '0 auto', maxWidth: '52ch' }}>
+      <PageHead title={heading} />
+      <section data-ms-contact className="ms-wrap ms-page ms-contactpage">
+        <Type as="p" role="body" className="ms-contactpage-intro">
           {intro}
         </Type>
         {tenantId !== undefined && (
-          <div style={{ marginTop: 44 }}>
+          <div className="ms-contactpage-form">
             <MainStreetContactForm tenantId={tenantId} />
           </div>
         )}
@@ -194,23 +178,89 @@ export function ContactPage({ content, skin, tenantId }: { content: MainStreetCo
   );
 }
 
-/** EVENTS — the full find-us calendar, or a friendly "check back" empty state
- *  when the maker has no upcoming dates (or has turned the calendar off). */
+/** COLLECTIONS INDEX — the full collections band: the SAME treatment the home
+ *  teaser wears (cupboard / crates / portals / chapters / lanes / cascade), now
+ *  carrying every collection (not the home handful) and no "see all" cue. */
+export function CollectionsPage({ content, skin, collections }: { content: MainStreetContent; skin: ArchetypeTheme; collections: CollectionView[] }) {
+  const section = content.collections ?? { title: 'Collections' };
+  return (
+    <MainStreetSubPage content={content} skin={skin} current="/collections">
+      <PageHead eyebrow={section.label} title={section.title ?? 'Collections'} />
+      {collections.length === 0 ? (
+        <section data-ms-collections className="ms-wrap ms-page ms-page-empty">
+          <Type as="p" role="body">
+            New collections are on the way — check back soon.
+          </Type>
+        </section>
+      ) : (
+        <CollectionsBeat section={section} items={collections} skin={skin} full />
+      )}
+    </MainStreetSubPage>
+  );
+}
+
+/** COLLECTION DETAIL — one collection's page: header (name + count) and the
+ *  contents rendered in the store's SAME goods treatment (harmonizes with /shop).
+ *  Everything class-only; nothing about the collection is hardcoded. */
+export function CollectionPage({ content, skin, collection, products }: { content: MainStreetContent; skin: ArchetypeTheme; collection: CollectionView; products: ProductView[] }) {
+  return (
+    <MainStreetSubPage content={content} skin={skin} current="/collections">
+      <PageHead eyebrow={`${collection.count} ${collection.count === 1 ? 'piece' : 'pieces'}`} title={collection.name} />
+      <section data-ms-collection className="ms-wrap ms-page">
+        {products.length === 0 ? (
+          <Type as="p" role="body" className="ms-page-empty">
+            New pieces are on the way — check back soon.
+          </Type>
+        ) : (
+          // Reuse the store's goods treatment so a collection reads as a coherent
+          // subset of the shop — same visual system, different slice of catalog.
+          <GoodsBeat goods={content.goods} products={products} skin={skin} catalogSize={products.length} shopHref={`/collections/${collection.slug}`} full />
+        )}
+      </section>
+    </MainStreetSubPage>
+  );
+}
+
+/** TESTIMONIALS — the full reviews section: the SAME treatment the home teaser
+ *  wears (rating / pull-quote / guestbook / texts), now carrying every review
+ *  (not the home handful) and no "see all" cue. */
+export function TestimonialsPage({ content, skin }: { content: MainStreetContent; skin: ArchetypeTheme }) {
+  const reviews = content.reviews;
+  const hasReviews = !!reviews && reviews.items.length > 0;
+  return (
+    <MainStreetSubPage content={content} skin={skin} current="/testimonials">
+      <PageHead title={reviews?.title ?? 'What people say'} />
+      {hasReviews ? (
+        <ReviewsBeat section={reviews!} skin={skin} full />
+      ) : (
+        <section data-ms-testimonials className="ms-wrap ms-page ms-page-empty">
+          <Type as="p" role="body">
+            The kind words are still coming in — check back soon.
+          </Type>
+        </section>
+      )}
+    </MainStreetSubPage>
+  );
+}
+
+/** EVENTS — the full find-us section: the SAME treatment the home teaser wears,
+ *  now carrying every date, or a friendly "check back" empty state when the maker
+ *  has no upcoming dates (or turned the calendar off). Representative of its teaser. */
 export function EventsPage({ content, skin }: { content: MainStreetContent; skin: ArchetypeTheme }) {
   const findUs = content.founder.findUs;
   const hasDates = !!findUs && findUs.rows.length > 0;
   return (
     <MainStreetSubPage content={content} skin={skin} current="/events">
-      <PageHead eyebrow={hasDates ? findUs!.label : undefined} title="Where to find us" skin={skin} />
-      <section data-ms-events className="ms-wrap" style={{ padding: '24px 40px 120px', maxWidth: 780 }}>
-        {hasDates ? (
-          <FindUsList findUs={findUs!} eventsHref="/events" heading="eyebrow" onContrast={false} />
-        ) : (
-          <Type as="p" role="body" style={{ color: 'var(--ms-fg-muted)', textAlign: 'center' }}>
+      <PageHead eyebrow={hasDates ? findUs!.label : undefined} title="Where to find us" />
+      {hasDates ? (
+        <FindUsBeat findUs={findUs!} skin={skin} eventsHref="/events" full />
+      ) : (
+        <section data-ms-events className="ms-wrap ms-page ms-page-empty">
+          <Type as="p" role="body">
             No upcoming dates just yet — check back soon to see where we will be next.
           </Type>
-        )}
-      </section>
+        </section>
+      )}
     </MainStreetSubPage>
   );
 }

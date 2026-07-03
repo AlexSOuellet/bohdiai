@@ -30,6 +30,7 @@ export function CollectionsBeat({
   skin,
   treatment,
   viewAll,
+  full = false,
 }: {
   section: CollectionsSection;
   items: CollectionView[];
@@ -38,11 +39,15 @@ export function CollectionsBeat({
    *  authored `section.treatment` wins, then the documented default. */
   treatment?: CollectionsTreatment | undefined;
   viewAll?: { href: string; label: string } | undefined;
+  /** The Collections page wears the SAME treatment as the home teaser, but with
+   *  every collection (not the home sampling) and no "see all" cue. */
+  full?: boolean | undefined;
 }) {
   if (items.length === 0) return null;
   const chosen = treatment ?? section.treatment ?? DEFAULT_COLLECTIONS_TREATMENT;
-  const sample = sampleCollections(items);
-  const props = { section, items: sample, skin, viewAll };
+  const shown = full ? items : sampleCollections(items);
+  const effectiveViewAll = full ? undefined : viewAll;
+  const props = { section, items: shown, skin, viewAll: effectiveViewAll };
 
   switch (chosen) {
     case 'crates':

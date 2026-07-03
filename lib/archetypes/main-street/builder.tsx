@@ -16,7 +16,7 @@ import type { ProductView } from '../content';
 import type { PortableStore } from '../portable';
 import { MainStreet } from './MainStreet';
 import { MainStreetProduct } from './MainStreetProduct';
-import { ShopPage, EventsPage, AboutPage, ContactPage, ContentPage, MainStreetSubPage } from './pages';
+import { ShopPage, EventsPage, AboutPage, ContactPage, ContentPage, CollectionsPage, CollectionPage, TestimonialsPage, MainStreetSubPage } from './pages';
 import { mainStreetArchetype } from './index';
 import { MainStreetContentSchema, FOUNDER_TREATMENTS, NAV_VARIANTS, type MainStreetContent, type NavVariant } from './schemas';
 import { MAIN_STREET_SKINS, SKIN_DESCRIPTIONS } from './skins';
@@ -278,7 +278,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   applyMedia,
   toPayload,
   handOff,
-  render: ({ content, lookKey, products, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant, goodsTreatment, collections, collectionsTreatment, reviewsTreatment, findUsTreatment, founderTreatment, navVariant, showMarquee }) => {
+  render: ({ content, lookKey, products, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, tenantId, heroVariant, goodsTreatment, collections, collectionsTreatment, reviewsTreatment, findUsTreatment, founderTreatment, navVariant, showMarquee }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
     const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), asNavVariant(navVariant));
     switch (page) {
@@ -290,6 +290,18 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
         return <AboutPage content={c} skin={skin} />;
       case 'contact':
         return <ContactPage content={c} skin={skin} tenantId={tenantId} />;
+      case 'collections':
+        return <CollectionsPage content={c} skin={skin} collections={collections ?? []} />;
+      case 'collection': {
+        // The route already filtered products to this collection's rows; look up
+        // the collection itself so we can title the page. Falls back to a stub if
+        // the slug wasn't in the list (shouldn't happen — route 404s first).
+        const collection = (collections ?? []).find((x) => x.slug === collectionSlug)
+          ?? { slug: collectionSlug ?? '', name: 'Collection', count: products.length };
+        return <CollectionPage content={c} skin={skin} collection={collection} products={products} />;
+      }
+      case 'testimonials':
+        return <TestimonialsPage content={c} skin={skin} />;
       default:
         return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} heroVariant={heroVariant} goodsTreatment={asGoodsTreatment(goodsTreatment)} collections={collections} collectionsTreatment={asCollectionsTreatment(collectionsTreatment)} reviewsTreatment={asReviewsTreatment(reviewsTreatment)} findUsTreatment={asFindUsTreatment(findUsTreatment)} founderTreatment={asFounderTreatment(founderTreatment)} showMarquee={showMarquee} />;
     }

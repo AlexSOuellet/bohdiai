@@ -29,6 +29,7 @@ export function FindUsBeat({
   skin,
   treatment,
   eventsHref = '/events',
+  full = false,
 }: {
   findUs: FindUsSection;
   skin: ArchetypeTheme;
@@ -36,11 +37,14 @@ export function FindUsBeat({
    *  `findUs.treatment` wins, then the documented default. */
   treatment?: FindUsTreatment | undefined;
   eventsHref?: string | undefined;
+  /** The full Events page wears the SAME treatment as the home teaser, but with
+   *  every date (not the home handful) and no "see all" cue — you're already here. */
+  full?: boolean | undefined;
 }) {
   if (findUs.rows.length === 0) return null;
   const chosen = treatment ?? findUs.treatment ?? DEFAULT_FINDUS_TREATMENT;
-  const events = sampleEvents(findUs.rows);
-  const viewAll = { href: eventsHref, label: findUs.eventsLabel ?? 'See all dates' };
+  const events = full ? findUs.rows : sampleEvents(findUs.rows);
+  const viewAll = full ? undefined : { href: eventsHref, label: findUs.eventsLabel ?? 'See all dates' };
   const props = { section: findUs, events, skin, viewAll };
 
   switch (chosen) {

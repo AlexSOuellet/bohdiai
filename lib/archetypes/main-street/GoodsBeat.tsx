@@ -34,6 +34,7 @@ export function GoodsBeat({
   treatment,
   catalogSize,
   shopHref = '/shop',
+  full = false,
 }: {
   goods: MainStreetContent['goods'];
   products: ProductView[];
@@ -45,14 +46,18 @@ export function GoodsBeat({
   catalogSize?: number | undefined;
   /** Where the "see the full catalog" cue points — the Products page. */
   shopHref?: string | undefined;
+  /** The full Shop page wears the SAME treatment as the home teaser, but with
+   *  every product (not the treatment-specific home sample) and no "see full
+   *  catalog" cue — you're already here. */
+  full?: boolean | undefined;
 }) {
   // Bohdi's authored treatment wins; an explicit prop overrides it (previews);
   // the size-based pick is only a fallback for pre-treatment content. The home
   // then shows only a SAMPLING (Main Street is a sales page, not a catalog).
   const chosen = treatment ?? goods.treatment ?? selectGoodsTreatment(catalogSize ?? products.length);
-  const sample = sampleForTreatment(products, chosen);
+  const sample = full ? products : sampleForTreatment(products, chosen);
   const viewAll: GoodsViewAll = { href: shopHref, label: goods.viewAllLabel ?? DEFAULT_VIEW_ALL };
-  const cta = <GoodsViewAllCta viewAll={viewAll} skin={skin} />;
+  const cta = full ? null : <GoodsViewAllCta viewAll={viewAll} skin={skin} />;
 
   if (chosen === 'procession') {
     return (

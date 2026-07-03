@@ -28,6 +28,7 @@ export function FounderBeat({
   treatment,
   aboutHref = '/about',
   aboutPage,
+  showAboutCue = true,
 }: {
   founder: MainStreetContent['founder'];
   skin: ArchetypeTheme;
@@ -38,9 +39,14 @@ export function FounderBeat({
   /** The full About-page story — the editorial treatment surfaces it as a feature
    *  on the home. Absent for legacy rows; editorial then falls back to the quote. */
   aboutPage?: MainStreetContent['about'] | undefined;
+  /** The About page itself renders the beat as its hero — no "read the full story"
+   *  cue then (you're already there). Defaults on for the home teaser. */
+  showAboutCue?: boolean | undefined;
 }) {
   const chosen = selectFounderTreatment(treatment ?? founder.treatment);
-  const about: FounderAbout = { href: aboutHref, label: founder.aboutLabel ?? DEFAULT_ABOUT };
+  const about: FounderAbout | undefined = showAboutCue
+    ? { href: aboutHref, label: founder.aboutLabel ?? DEFAULT_ABOUT }
+    : undefined;
 
   switch (chosen) {
     case 'portrait':

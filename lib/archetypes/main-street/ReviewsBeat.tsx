@@ -25,6 +25,7 @@ export function ReviewsBeat({
   skin,
   treatment,
   viewAll,
+  full = false,
 }: {
   section: ReviewsSection;
   skin: ArchetypeTheme;
@@ -32,11 +33,15 @@ export function ReviewsBeat({
    *  `section.treatment` wins, then the documented default. */
   treatment?: ReviewsTreatment | undefined;
   viewAll?: { href: string; label: string } | undefined;
+  /** The Testimonials page wears the SAME treatment as the home teaser, but with
+   *  every review (not the home handful) and no "see all" cue. */
+  full?: boolean | undefined;
 }) {
   if (section.items.length === 0) return null;
   const chosen = treatment ?? section.treatment ?? DEFAULT_REVIEWS_TREATMENT;
-  const sample = sampleTestimonials(section.items);
-  const props = { section, items: sample, skin, viewAll };
+  const shown = full ? section.items : sampleTestimonials(section.items);
+  const effectiveViewAll = full ? undefined : viewAll;
+  const props = { section, items: shown, skin, viewAll: effectiveViewAll };
 
   switch (chosen) {
     case 'pull-quote':

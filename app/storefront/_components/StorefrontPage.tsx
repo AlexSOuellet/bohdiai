@@ -64,6 +64,8 @@ const SLUG_TO_ARCHETYPE_PAGE: Record<string, ArchetypePage> = {
   '/events': 'events',
   '/about': 'about',
   '/contact': 'contact',
+  '/collections': 'collections',
+  '/testimonials': 'testimonials',
 };
 
 /** Load the tenant's home ('/') archetype envelope, or null if the home isn't an
@@ -192,6 +194,14 @@ export default async function StorefrontPage({ slug, version, previewLook, previ
   if (subPage !== undefined) {
     const env = await loadHomeArchetypeEnvelope(tenantId);
     if (env !== null) return renderArchetypeStore(env, tenantId, subPage);
+  }
+  // /collections/<slug> — the collection detail page. Same envelope + archetype
+  // dispatch as the other sub-pages; only the products list is filtered to this
+  // collection's rows. Unknown slug: fall through to the legacy content path.
+  if (slug.startsWith('/collections/') && slug.length > '/collections/'.length) {
+    const collectionSlug = slug.slice('/collections/'.length);
+    const env = await loadHomeArchetypeEnvelope(tenantId);
+    if (env !== null) return renderArchetypeStore(env, tenantId, 'collection', undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, collectionSlug);
   }
 
   const db = supabaseAdmin();
@@ -378,7 +388,7 @@ function seedPreviewCollections(products: ProductView[]): CollectionView[] {
 /** Render a stored archetype store: load the real catalog rows as ProductViews
  *  and paint via the chosen archetype's registered renderer. An `overrideLook`
  *  (editor door-1 preview) re-skins the same content without persisting. */
-async function renderArchetypeStore(env: Record<string, unknown>, tenantId: string, page?: ArchetypePage, overrideLook?: string, previewHero?: string, previewGoods?: string, previewFounder?: string, previewNav?: string, previewCollections?: string, previewMarquee?: string, previewReviews?: string, previewFindUs?: string) {
+async function renderArchetypeStore(env: Record<string, unknown>, tenantId: string, page?: ArchetypePage, overrideLook?: string, previewHero?: string, previewGoods?: string, previewFounder?: string, previewNav?: string, previewCollections?: string, previewMarquee?: string, previewReviews?: string, previewFindUs?: string, collectionSlug?: string) {
   const archetypeKey = env['archetypeKey'];
   const lookKey = env['lookKey'];
   if (typeof archetypeKey !== 'string' || typeof lookKey !== 'string') notFound();
@@ -446,6 +456,21 @@ async function renderArchetypeStore(env: Record<string, unknown>, tenantId: stri
     collections = seedPreviewCollections(products);
   }
 
+  // Collection detail page: filter products down to those whose primary_collection_id
+  // matches this collection. If the slug names no known collection, 404 (the route
+  // guard already ran once, but nothing else catches a mid-request drop).
+  let effectiveProducts = products;
+  if (page === 'collection' && collectionSlug !== undefined) {
+    const collection = (collRows ?? []).find((c) => c.slug === collectionSlug);
+    if (collection === undefined) notFound();
+    const idsInCollection = new Set(
+      (rows ?? [])
+        .filter((r) => r.primary_collection_id === collection.id)
+        .map((r) => r.slug),
+    );
+    effectiveProducts = products.filter((p) => idsInCollection.has(p.slug));
+  }
+
   const mood = typeof env['mood'] === 'string' ? (env['mood'] as string) : undefined;
   const catalogSize = typeof env['catalogSize'] === 'number' ? (env['catalogSize'] as number) : undefined;
   const accentOverride = typeof env['accentOverride'] === 'string' ? (env['accentOverride'] as string) : undefined;
@@ -476,5 +501,5 @@ async function renderArchetypeStore(env: Record<string, unknown>, tenantId: stri
       content = { ...(content as Record<string, unknown>), founder: { ...(founder as Record<string, unknown>), findUs: seedPreviewFindUs() } };
     }
   }
-  return spec.render({ content, lookKey: effectiveLook, products, mood, catalogSize, page, logoUrl, brandColors, accentOverride, tenantId, heroVariant: previewHero, goodsTreatment: previewGoods, collections, collectionsTreatment: previewCollections, reviewsTreatment: previewReviews, findUsTreatment: previewFindUs, founderTreatment: previewFounder, navVariant: previewNav, showMarquee });
+  return spec.render({ content, lookKey: effectiveLook, products: effectiveProducts, mood, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, tenantId, heroVariant: previewHero, goodsTreatment: previewGoods, collections, collectionsTreatment: previewCollections, reviewsTreatment: previewReviews, findUsTreatment: previewFindUs, founderTreatment: previewFounder, navVariant: previewNav, showMarquee });
 }

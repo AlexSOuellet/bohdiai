@@ -217,6 +217,42 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     /* Sub-page <main> sits under the fixed SubHeader; pad it down by the nav height. */
     .arch-main-street .ms-subpage-main{padding-top:80px}
     @media(max-width:768px){.arch-main-street .ms-subpage-main{padding-top:68px}}
+    /* ── sub-page shell — class-only; the two contrast surfaces mirror navContrast's
+       fixed chrome states (like the on-media color), keyed on a data attribute so
+       the header never carries an inline style. ── */
+    .arch-main-street .ms-subheader{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;justify-content:space-between;align-items:center;gap:24px;padding:14px 40px;border-bottom:1px solid var(--ms-rule);background:var(--ms-bg);color:var(--ms-fg);flex-wrap:wrap}
+    .arch-main-street .ms-subheader[data-ms-subhead="light"]{background:#F7F5F2;color:#1a1a1a}
+    .arch-main-street .ms-subheader[data-ms-subhead="dark"]{background:#1b1b1b;color:#F7F5F2}
+    @media(max-width:768px){.arch-main-street .ms-subheader{padding-left:20px;padding-right:20px}}
+    /* page masthead — eyebrow + title, centered */
+    .arch-main-street .ms-pagehead{padding:88px 40px 36px;text-align:center}
+    .arch-main-street .ms-pagehead-eyebrow{color:var(--ms-accent);display:block;margin-bottom:14px}
+    .arch-main-street .ms-pagehead-title{color:var(--ms-fg);margin:0}
+    /* generic page body sections */
+    .arch-main-street .ms-page{padding:24px 40px 120px}
+    .arch-main-street .ms-page-narrow{max-width:780px}
+    .arch-main-street .ms-page-prose{max-width:760px}
+    .arch-main-street .ms-page-legal{padding:72px 40px 110px;max-width:760px}
+    .arch-main-street .ms-page-prose p{color:var(--ms-fg);margin:0 0 20px;max-width:66ch}
+    .arch-main-street .ms-page-empty{color:var(--ms-fg-muted);text-align:center}
+    /* shop — the full catalog grid (home shows a sampling, this shows everything) */
+    .arch-main-street .ms-catalog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+    .arch-main-street .ms-catalog-card{color:inherit;display:block}
+    .arch-main-street .ms-catalog-media{position:relative;aspect-ratio:4 / 5;border-radius:3px;overflow:hidden;background:color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg))}
+    .arch-main-street .ms-catalog-price{position:absolute;left:12px;bottom:12px;background:var(--ms-bg);color:var(--ms-fg);padding:6px 10px;border-radius:2px}
+    .arch-main-street .ms-catalog-name{color:var(--ms-fg);margin:16px 0 2px}
+    .arch-main-street .ms-catalog-desc{color:var(--ms-fg-muted);margin:0}
+    /* about page — the maker's story at length under the family's about look.
+       The FounderBeat treatment renders at the top (representative of the home
+       teaser); the full authored story renders below in class-only prose (skipped
+       for editorial, which already sets the full story inline in its columns). */
+    .arch-main-street .ms-aboutstory{max-width:820px;padding:56px 40px 24px;margin-inline:auto}
+    .arch-main-street .ms-aboutstory-para{color:var(--ms-fg);margin:0 0 22px;max-width:64ch}
+    .arch-main-street .ms-aboutstory-sig{color:var(--ms-fg-muted);margin-top:14px}
+    /* contact page — an authored invitation, centered */
+    .arch-main-street .ms-contactpage{max-width:680px;text-align:center}
+    .arch-main-street .ms-contactpage-intro{color:var(--ms-fg);margin:0 auto;max-width:52ch}
+    .arch-main-street .ms-contactpage-form{margin-top:44px}
     /* scroll reveal — arrives once, resolves to stillness */
     .arch-main-street .ms-reveal{opacity:0;transform:translateY(30px);transition:opacity 1.1s ${mo.reveal.easing},transform 1.1s ${mo.reveal.easing}}
     .arch-main-street .ms-reveal.in{opacity:1;transform:none}

@@ -16,7 +16,7 @@ import type { PortableStore } from './portable';
 /** Which page of a multi-page archetype to paint. The home is the default; the
  *  rest are the storefront's standard pages. A maker-added custom page renders
  *  through `content` for the generic template (handled by the route, not here). */
-export type ArchetypePage = 'home' | 'shop' | 'about' | 'events' | 'contact';
+export type ArchetypePage = 'home' | 'shop' | 'about' | 'events' | 'contact' | 'collections' | 'collection' | 'testimonials';
 
 /** What Bohdi is told about the maker. Built from the niche + mood + onboarding. */
 export interface AuthoringBrief {
@@ -103,6 +103,8 @@ export interface ArchetypeBuildSpec<T = unknown> {
     mood?: string | undefined;
     catalogSize?: number | undefined;
     page?: ArchetypePage | undefined;
+    /** Which collection to paint when `page === 'collection'`. Ignored otherwise. */
+    collectionSlug?: string | undefined;
     /** The tenant's uploaded logo URL, if any — shown in the chrome. Injected from
      *  tenant data at render (not authored), so it's separate from `content`. */
     logoUrl?: string | undefined;
