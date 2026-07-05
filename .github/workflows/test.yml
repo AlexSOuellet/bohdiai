@@ -14,13 +14,17 @@ jobs:
     timeout-minutes: 15
     env:
       # Dummy values so env validation passes. Tests mock the network with
-      # page.route(), so no real Supabase / Resend calls are made.
+      # page.route(), so no real Supabase / Resend / Anthropic / fal calls are made.
       SUPABASE_URL: https://ci.supabase.co
       SUPABASE_SERVICE_ROLE_KEY: ci-dummy-service-role-key
       RESEND_API_KEY: ci-dummy-resend-key
       RESEND_FROM_EMAIL: ci@bohdiai.com
       SITE_URL: http://localhost:3100
       FOUNDER_CAP: '25'
+      BOHDIAI_ANTHROPIC_KEY: ci-dummy-anthropic-key
+      FAL_API_KEY: ci-dummy-fal-key
+      NEXT_PUBLIC_SUPABASE_URL: https://ci.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-dummy-anon-key
       CI: 'true'
     steps:
       - uses: actions/checkout@v5
@@ -33,9 +37,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Build generated manifests
-        run: npm run build:manifests
 
       - name: Typecheck
         run: npm run typecheck

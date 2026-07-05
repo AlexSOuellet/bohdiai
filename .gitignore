@@ -46,6 +46,17 @@ yarn-error.log*
 # Vercel
 .vercel
 
+# Claude Code local settings — per-machine allow-list, not for the repo
+.claude/settings.local.json
+
+# Stray dev-server + probe artifacts (should never be committed)
+*.log
+lighthouse-*.json
+.tmp-shots/
+.tmp-dev.log
+procession-mockup.html
+studio-font-specimen.html
+
 # TypeScript
 *.tsbuildinfo
 

@@ -20,7 +20,7 @@ const config = [
     // at tenant-relative paths that are NOT literal Next routes, so plain <a>
     // tags are intentional — `no-html-link-for-pages` is a false positive here,
     // and typedRoutes can't type these paths for <Link> either.
-    files: ['app/storefront/**', 'blocks/**'],
+    files: ['app/storefront/**'],
     rules: {
       '@next/next/no-html-link-for-pages': 'off',
     },
