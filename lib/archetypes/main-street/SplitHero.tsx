@@ -5,16 +5,14 @@
  *
  * Text on a solid skin panel beside a full-bleed media panel. Unlike the Story
  * hero (MomentHero), the words here sit ON the skin's own surface — not over the
- * media — so they read the skin's real colors and fonts (--ms-bg / --ms-fg /
- * --ms-accent and the type roles). That is what makes Split look like whatever
- * family wears it: Cozy-Split, Rustic-Split, and Modern-Split are the SAME
- * structure with each family's skin poured in. The renderer names no color and
- * no font (the skin system's trick), so this component is family-agnostic.
+ * media — so they read the skin's real colors and fonts. That is what makes Split
+ * look like whatever family wears it: Cozy-Split, Rustic-Split, and Modern-Split
+ * are the SAME structure with each family's skin poured in. The renderer names no
+ * color and no font (the skin system's trick), so this component is family-agnostic.
  *
- * It reads the shared hero CONTENT CONTRACT (the "pile"): eyebrow (label), brand
- * (headline), sub (the plain supporting sentence), media, and the CTA(s). It
- * does NOT use the Story fading lines (`moment.story`) — those belong to the
- * Story hero alone.
+ * Class-only: every declaration lives in skinVarsCss under .ms-splithero-*. The
+ * `data-media-side` attribute swaps text/media order via CSS, so a media-side
+ * change is a data attribute change, not JSX reordering.
  *
  * `mediaSide` is the one structural knob: 'right' (default) or 'left' (the
  * mirror). On a phone the two panels stack into one column.
@@ -38,88 +36,39 @@ export function SplitHero({
 }) {
   const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';
   const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
-
-  const textPanel = (
-    <div
-      data-ms-hero-text
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        background: 'var(--ms-bg)',
-        color: 'var(--ms-fg)',
-        padding: 'clamp(28px,5vw,60px)',
-        minHeight: '100vh',
-      }}
-    >
-      <div
-        data-ms-hero-nav
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, marginBottom: 'clamp(24px,5vh,56px)' }}
-      >
-        <Nav identity={identity} />
-      </div>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 540 }}>
-        <Type as="div" role="eyebrow" style={{ color: 'var(--ms-accent)', marginBottom: 24 }}>
-          {moment.eyebrow}
-        </Type>
-        <Type as="h1" role="brand" style={{ color: 'var(--ms-fg)', margin: 0 }}>
-          {moment.brand}
-        </Type>
-        {moment.sub && (
-          <Type as="p" role="body" data-ms-hero-sub style={{ color: 'var(--ms-fg-muted)', maxWidth: '42ch', marginTop: 24, marginBottom: 0 }}>
-            {moment.sub}
+  return (
+    <header data-ms-hero="split" data-media-side={mediaSide} className="ms-splithero">
+      <div data-ms-hero-text className="ms-splithero-text">
+        <div data-ms-hero-nav className="ms-splithero-nav">
+          <Nav identity={identity} />
+        </div>
+        <div className="ms-splithero-inner">
+          <Type as="div" role="eyebrow" className="ms-hero-eyebrow">
+            {moment.eyebrow}
           </Type>
-        )}
-        <div style={{ display: 'flex', gap: 16, marginTop: 'clamp(28px,4vh,40px)', flexWrap: 'wrap' }}>
-          <Type
-            as="a"
-            role="navLabel"
-            href={ctaHref}
-            style={{ background: 'var(--ms-accent)', color: 'var(--ms-on-accent)', padding: '16px 26px', borderRadius: 2 }}
-          >
-            {moment.ctaLabel}
+          <Type as="h1" role="brand" className="ms-hero-brand">
+            {moment.brand}
           </Type>
-          {moment.secondaryCtaLabel && (
-            <Type
-              as="a"
-              role="navLabel"
-              href={secondaryHref}
-              style={{ border: '1px solid var(--ms-rule)', color: 'var(--ms-fg)', padding: '16px 26px', borderRadius: 2 }}
-            >
-              {moment.secondaryCtaLabel}
+          {moment.sub && (
+            <Type as="p" role="body" data-ms-hero-sub className="ms-hero-sub">
+              {moment.sub}
             </Type>
           )}
+          <div className="ms-hero-actions">
+            <Type as="a" role="navLabel" href={ctaHref} className="ms-cta-primary">
+              {moment.ctaLabel}
+            </Type>
+            {moment.secondaryCtaLabel && (
+              <Type as="a" role="navLabel" href={secondaryHref} className="ms-cta-secondary">
+                {moment.secondaryCtaLabel}
+              </Type>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
-
-  const mediaPanel = (
-    <div data-ms-hero-media style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh', background: 'var(--ms-contrast-bg)' }}>
-      <Media media={moment.media} />
-    </div>
-  );
-
-  return (
-    <header data-ms-hero="split" data-media-side={mediaSide} className="ms-split-hero">
-      <style>{`
-        .ms-split-hero{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
-        @media(max-width:860px){
-          .ms-split-hero{grid-template-columns:1fr}
-          .ms-split-hero [data-ms-hero-text]{min-height:auto;order:1}
-          .ms-split-hero [data-ms-hero-media]{min-height:56vh;order:2}
-        }
-      `}</style>
-      {mediaSide === 'left' ? (
-        <>
-          {mediaPanel}
-          {textPanel}
-        </>
-      ) : (
-        <>
-          {textPanel}
-          {mediaPanel}
-        </>
-      )}
+      <div data-ms-hero-media className="ms-splithero-media">
+        <Media media={moment.media} />
+      </div>
     </header>
   );
 }

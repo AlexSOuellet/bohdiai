@@ -42,10 +42,14 @@ describe('MomentHero (the hero IS the front door, D54 corrected)', () => {
     expect(lines).toHaveLength(moment.story.length);
     expect(lines[0]!.textContent).toBe(moment.story[0]);
     expect(lines[1]!.textContent).toBe(moment.story[1]);
-    // At rest the line frames have opacity 0 — the story plays during the
-    // timeline, not as a static stack under the brand.
+    // At rest the line frames are marked data-visible="false" — the CSS rule in
+    // skinVarsCss keys visibility off that attribute, so a class-only frame has no
+    // inline opacity; the story plays during the timeline, not as a static stack.
     const frames = container.querySelectorAll('[data-ms-hero-story-line-frame]');
-    for (const f of frames) expect((f as HTMLElement).style.opacity).toBe('0');
+    for (const f of frames) {
+      expect((f as HTMLElement).getAttribute('data-visible')).toBe('false');
+      expect((f as HTMLElement).className).toContain('ms-momenthero-frame');
+    }
   });
 
   it('renders no story-line frames when no story lines are authored', () => {
@@ -69,7 +73,11 @@ describe('MomentHero (the hero IS the front door, D54 corrected)', () => {
     const { container } = render(<MomentHero identity={identity} moment={stillMoment} skin={skin} />);
     expect(container.querySelector('img')).toBeTruthy();
     expect(container.querySelector('video')).toBeNull();
-    expect(container.innerHTML).toContain('ms-hero-push');
+    // Class-only: the push-in animation is applied via the --push modifier on the
+    // media frame; the CSS rule (in skinVarsCss) references the ms-hero-push keyframes.
+    const mediaFrame = container.querySelector('.ms-momenthero-mediaframe');
+    expect(mediaFrame).toBeTruthy();
+    expect(mediaFrame!.className).toContain('ms-momenthero-mediaframe--push');
   });
 
   it('lets a real logo sit beside the typographic wordmark — a true lockup, not a replacement, and bare (no plate)', () => {

@@ -88,12 +88,15 @@ describe('SplitHero — a skin-agnostic swappable hero (text panel + media panel
     expect(hero.getAttribute('data-media-side')).toBe('right');
   });
 
-  it('puts the media first when mediaSide is left (the mirror variant)', () => {
+  it('puts the media first (visually) when mediaSide is left via the data attribute', () => {
+    // Class-only: the DOM order stays text-first, media-second; the mirror layout
+    // is achieved by CSS `order` scoped to `[data-media-side="left"]` in skinVarsCss.
+    // The test asserts the data attribute that drives the CSS, not DOM reordering.
     const { container } = render(<SplitHero identity={identity} moment={moment} skin={skin} mediaSide="left" />);
     const hero = container.querySelector('[data-ms-hero="split"]')!;
-    const panels = hero.querySelectorAll('[data-ms-hero-text], [data-ms-hero-media]');
-    expect(panels[0]!.getAttribute('data-ms-hero-media')).not.toBeNull();
     expect(hero.getAttribute('data-media-side')).toBe('left');
+    expect(container.querySelector('[data-ms-hero-media]')).toBeTruthy();
+    expect(container.querySelector('[data-ms-hero-text]')).toBeTruthy();
   });
 
   it('renders the nav (the wordmark) inside the hero', () => {
@@ -101,12 +104,14 @@ describe('SplitHero — a skin-agnostic swappable hero (text panel + media panel
     expect(container.textContent).toContain(identity.wordmark);
   });
 
-  it('lays the nav out as a horizontal bar (wordmark left, links right) — not stacked/crammed', () => {
+  it('renders the nav bar as a class-only horizontal row (wordmark left, links right)', () => {
+    // Layout is class-only: the horizontal-bar rule lives in skinVarsCss under
+    // `.ms-splithero-nav` (display:flex; justify-content:space-between). Assert the
+    // class hook that carries the layout, not a resolved inline `style.display`.
     const { container } = render(<SplitHero identity={identity} moment={moment} skin={skin} />);
     const navBar = container.querySelector('[data-ms-hero-nav]') as HTMLElement | null;
     expect(navBar).toBeTruthy();
-    expect(navBar!.style.display).toBe('flex');
-    expect(navBar!.style.justifyContent).toBe('space-between');
-    expect(navBar!.style.alignItems).toBe('center');
+    expect(navBar!.className).toContain('ms-splithero-nav');
+    expect(navBar!.getAttribute('style')).toBeNull();
   });
 });

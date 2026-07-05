@@ -25,6 +25,81 @@ import { logCrewChoices } from '@/lib/onboarding/crew/log-choices';
 import type { CrewBrief } from '@/lib/onboarding/crew/types';
 import type { MainStreetAuthored } from '@/lib/archetypes/main-street/builder';
 import { stampFindUsDates } from '@/lib/archetypes/main-street/findus';
+import type { MainStreetContent } from '@/lib/archetypes/main-street/schemas';
+import type { ProductView } from '@/lib/archetypes/content';
+
+/**
+ * Persist the authored collections as real DB rows and round-robin assign each
+ * product to one. The copywriter authors `content.collections.items`; we insert
+ * them here so the Collections page has real content on a fresh build. Errors
+ * are logged but never fail the build — the store is already published and
+ * navigable; a missing collections row just means /collections shows an empty
+ * state until the maker adds them by hand.
+ */
+export async function persistCollections(
+  tenantId: string,
+  content: MainStreetContent,
+  products: ProductView[],
+): Promise<void> {
+  const items = content.collections?.items ?? [];
+  if (items.length === 0) return;
+  const db = supabaseAdmin();
+
+  const rows = items.map((c) => ({
+    tenant_id: tenantId,
+    slug: c.slug,
+    name: c.name,
+    description: c.description,
+    status: 'active' as const,
+  }));
+
+  const { data: inserted, error: insertError } = await db
+    .from('collections')
+    .insert(rows)
+    .select('id, slug');
+
+  if (insertError !== null || inserted === null) {
+    logger.warn('archetype-build: collections insert failed', {
+      tenantId,
+      count: rows.length,
+      error: insertError?.message,
+    });
+    return;
+  }
+
+  // Round-robin assign each product to a collection so /collections/[slug] has
+  // content on the first live view. Products with no slug are skipped silently.
+  if (inserted.length === 0 || products.length === 0) return;
+  const collectionIds = inserted.map((c) => c.id);
+  const assignments = products
+    .filter((p) => typeof p.slug === 'string' && p.slug.length > 0)
+    .map((p, i) => ({ slug: p.slug, collectionId: collectionIds[i % collectionIds.length]! }));
+
+  await Promise.all(
+    assignments.map(({ slug, collectionId }) =>
+      db
+        .from('listings')
+        .update({ primary_collection_id: collectionId })
+        .eq('tenant_id', tenantId)
+        .eq('slug', slug)
+        .then(({ error }) => {
+          if (error !== null) {
+            logger.warn('archetype-build: primary_collection assignment failed', {
+              tenantId,
+              slug,
+              error: error.message,
+            });
+          }
+        }),
+    ),
+  );
+
+  logger.info('archetype-build: collections persisted', {
+    tenantId,
+    collections: inserted.length,
+    productsAssigned: assignments.length,
+  });
+}
 
 /**
  * Stamp real, near-future dates onto the seeded find-us rows at build time. The build
@@ -198,6 +273,14 @@ export async function buildArchetypeStore(
     content: payload.content,
     products: payload.products,
   });
+
+  // Persist the authored collections as real DB rows and assign each product a
+  // primary collection so /collections/[slug] has content. Collections are a page
+  // like every other — the copywriter authored them; the build makes them real.
+  // Fire-and-verify: any error surfaces in Sentry but doesn't fail the build (the
+  // tenant is already published and viewable; a missing collection row just means
+  // /collections shows the empty state on this build).
+  await persistCollections(result.tenantId, payload.content as MainStreetContent, payload.products);
 
   logger.info('archetype-build: published', { subdomain: result.subdomain, tenantId: result.tenantId, archetype: spec.key, look: chosen.lookKey });
 

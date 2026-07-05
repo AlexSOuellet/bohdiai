@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Main Street — BEAT 1: the hero, which IS the Moment.
  *
@@ -30,11 +28,15 @@
  *     only (D52). Autoplays muted, loops seamlessly.
  *   • STILL — fal-generated 16:9 cinematic SCENE composition (the product in its
  *     real world, lit naturally, with depth and air). A very subtle CSS push-in
- *     adds cinematic time at render.
+ *     adds cinematic time at render, applied via the .ms-momenthero-mediaframe--push
+ *     class — never inline.
  *
  * CONTRAST OVER MEDIA — every word painted over the hero uses the skin-agnostic
  * `--ms-on-media` near-white plus the dark scrim, NEVER the skin's contrast
- * color, so text stays legible over a hero of unknown luminance.
+ * color, so text stays legible over a hero of unknown luminance. Class-only:
+ * every declaration lives in skinVarsCss under .ms-momenthero-*. Dynamic per-
+ * scroll nav surface values pass as CSS custom properties (--ms-nav-bg / --ms-nav-fg
+ * / --ms-nav-shadow) on the nav wrapper — CSS var passthrough, not literal inline.
  */
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type { ArchetypeTheme } from '../types';
@@ -44,15 +46,12 @@ import { Type } from './Type';
 import { navContrast, relativeLuminance } from './logo-contrast';
 import { shouldPlayMoment, initialDocumentPath, markMomentSeen, REPLAY_INTRO_EVENT } from './moment-gate';
 
-const STILL_PUSH_IN_SECONDS = 24;
-
 // Timeline tuning (ms). GAP_MS must be >= the fade so a line fully clears before
 // the next begins — that no-overlap is the whole point. Pace is slow and
 // deliberate; a line rests long enough to read twice.
 const OPEN_MS = 1000; // media alone before the first line
 const LINE_MS = 3400; // a line held (includes its own fade-in)
 const GAP_MS = 1000; // media alone between lines
-const FADE = '0.9s';
 
 export type HeroPhase =
   | { kind: 'open' }
@@ -87,23 +86,10 @@ export function heroPhaseDurationMs(p: HeroPhase): number | null {
   }
 }
 
-const overlayFrame = (visible: boolean, z: number): CSSProperties => ({
-  position: 'absolute',
-  inset: 0,
-  display: 'grid',
-  placeItems: 'center',
-  textAlign: 'center',
-  padding: 'clamp(28px,6vw,96px)',
-  opacity: visible ? 1 : 0,
-  transition: `opacity ${FADE} linear`,
-  pointerEvents: visible ? 'auto' : 'none',
-  zIndex: z,
-});
-
 /** The shared inner visual: held media, a center-weighted scrim, story lines
  *  (each visible only during its own line phase), and the brand block (visible
- *  only on the brand phase). The brand block carries the eyebrow + heading +
- *  CTA — at rest, only the brand block shows, no story lines. */
+ *  only on the brand phase). Class-only; the visible/hidden state is data-driven
+ *  via `data-visible`. */
 function HeroStage({
   moment,
   phase,
@@ -116,60 +102,29 @@ function HeroStage({
   const isStill = moment.media.kind === 'still';
   const landed = phase.kind === 'brand';
   const lineVisible = (i: number) => phase.kind === 'line' && phase.index === i;
-
+  const mediaFrameClass = isStill ? 'ms-momenthero-mediaframe ms-momenthero-mediaframe--push' : 'ms-momenthero-mediaframe';
   return (
     <>
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 0,
-          // For stills, a very subtle slow push-in adds cinematic time. The scale
-          // tops at 1.03 over ~24s — visible only over the dwell, not on first
-          // glance. The transform-origin keeps the center anchored. For videos
-          // this wrapper is a noop and Media's <video> handles its own motion.
-          ...(isStill ? { animation: `ms-hero-push ${STILL_PUSH_IN_SECONDS}s ease-in-out infinite alternate` } : {}),
-          transformOrigin: 'center',
-        }}
-      >
+      <div className={mediaFrameClass}>
         <Media media={moment.media} />
       </div>
-      <style>{`@keyframes ms-hero-push { 0% { transform: scale(1); } 100% { transform: scale(1.03); } }`}</style>
-      {/* Scrim weighted toward the center where the text sits, so white text reads
-          whether the scene is bright or dark. */}
-      <div
-        aria-hidden
-        style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'radial-gradient(120% 90% at 50% 45%, rgba(0,0,0,.42), rgba(0,0,0,.82))' }}
-      />
-
-      {/* Story lines, one per phase frame — each cross-fades in and out. The
-          authored array is rendered into the DOM so it's testable; visibility is
-          driven by the phase. */}
+      <div aria-hidden className="ms-momenthero-scrim" />
       {moment.story.map((line, i) => (
-        <div key={i} data-ms-hero-story-line-frame style={overlayFrame(lineVisible(i), 2)}>
-          <Type
-            as="p"
-            role="storyline"
-            data-ms-hero-story-line
-            style={{ color: 'var(--ms-on-media)', maxWidth: '24ch', margin: 0, textShadow: '0 2px 36px rgba(0,0,0,.55)' }}
-          >
+        <div key={i} data-ms-hero-story-line-frame data-visible={lineVisible(i) ? 'true' : 'false'} className="ms-momenthero-frame">
+          <Type as="p" role="storyline" data-ms-hero-story-line className="ms-momenthero-storyline">
             {line}
           </Type>
         </div>
       ))}
-
-      {/* The brand block — eyebrow, heading, CTA. Visible only on the brand
-          phase, which is the timeline's terminal state and also the SSR default
-          state. */}
-      <div data-ms-hero-brand style={overlayFrame(landed, 3)}>
+      <div data-ms-hero-brand data-visible={landed ? 'true' : 'false'} className="ms-momenthero-frame">
         <div>
-          <Type as="div" role="eyebrow" style={{ color: 'var(--ms-on-media-muted)', marginBottom: 18 }}>
+          <Type as="div" role="eyebrow" className="ms-momenthero-brand-eyebrow">
             {moment.eyebrow}
           </Type>
-          <Type as="h1" role="brand" style={{ color: 'var(--ms-on-media)', margin: 0, textShadow: '0 2px 40px rgba(0,0,0,.5)' }}>
+          <Type as="h1" role="brand" className="ms-momenthero-brand-h1">
             {moment.brand}
           </Type>
-          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 32, flexWrap: 'wrap' }}>{action}</div>
+          <div className="ms-momenthero-brand-actions">{action}</div>
         </div>
       </div>
     </>
@@ -185,11 +140,11 @@ function HeroCta({ moment }: { moment: MainStreetContent['moment'] }) {
   const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
   return (
     <>
-      <Type as="a" role="navLabel" href={primaryHref} style={{ background: 'var(--ms-accent)', color: 'var(--ms-on-accent)', padding: '16px 26px', borderRadius: 2 }}>
+      <Type as="a" role="navLabel" href={primaryHref} className="ms-momenthero-cta">
         {moment.ctaLabel}
       </Type>
       {moment.secondaryCtaLabel && (
-        <Type as="a" role="navLabel" href={secondaryHref} style={{ border: '1px solid var(--ms-on-media-muted)', color: 'var(--ms-on-media)', padding: '16px 26px', borderRadius: 2 }}>
+        <Type as="a" role="navLabel" href={secondaryHref} className="ms-momenthero-cta2">
           {moment.secondaryCtaLabel}
         </Type>
       )}
@@ -275,41 +230,20 @@ export function MomentHero({
   const overMedia = navContrast(tone, 'dark');
   const skinBackdrop = relativeLuminance(skin.palette.bg) > 0.5 ? 'light' : 'dark';
   const onSurface = navContrast(tone, skinBackdrop);
-  const navBg = solid
-    ? (onSurface ? onSurface.bg : 'var(--ms-bg)')
-    : (overMedia ? overMedia.bg : 'transparent');
-  const navFg = solid
-    ? (onSurface ? onSurface.fg : 'var(--ms-fg)')
-    : (overMedia ? overMedia.fg : 'var(--ms-on-media)');
+  // Class-only surface: dynamic scroll-driven nav colors pass as CSS custom
+  // properties on the nav wrapper — the class rule in skinVarsCss reads them.
+  const navVars = {
+    '--ms-nav-bg': solid ? (onSurface ? onSurface.bg : 'var(--ms-bg)') : (overMedia ? overMedia.bg : 'transparent'),
+    '--ms-nav-fg': solid ? (onSurface ? onSurface.fg : 'var(--ms-fg)') : (overMedia ? overMedia.fg : 'var(--ms-on-media)'),
+    '--ms-nav-shadow': solid && !onSurface ? '0 1px 0 var(--ms-rule)' : 'none',
+  } as CSSProperties;
 
   return (
     <>
-      <nav
-        data-ms-nav
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 50,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '14px 40px',
-          background: navBg,
-          color: navFg,
-          boxShadow: solid && !onSurface ? '0 1px 0 var(--ms-rule)' : 'none',
-          transition: 'background .5s ease, padding .5s ease, color .5s ease',
-        }}
-      >
+      <nav data-ms-nav className="ms-momenthero-nav" style={navVars}>
         <Nav identity={identity} />
       </nav>
-
-      <header
-        ref={heroRef}
-        data-ms-hero
-        style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'var(--ms-contrast-bg)', color: 'var(--ms-on-media)' }}
-      >
+      <header ref={heroRef} data-ms-hero className="ms-momenthero">
         <HeroStage moment={moment} phase={phase} action={<HeroCta moment={moment} />} />
       </header>
     </>

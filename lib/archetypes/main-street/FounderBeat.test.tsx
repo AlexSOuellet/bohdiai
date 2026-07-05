@@ -43,7 +43,10 @@ describe('FounderBeat — maker-only treatments on the contrast band', () => {
       const { getByText, container } = render(<FounderBeat founder={cardFounder} skin={skin} treatment={treatment} />);
       expect(getByText(/cast-iron oven/)).toBeTruthy();
       const band = container.querySelector('[data-ms-founder]') as HTMLElement;
-      expect(band.style.background).toContain('--ms-contrast-bg');
+      // Class-only: the contrast surface comes from the .ms-founder-band class in
+      // skinVarsCss, never inline. Assert the class hook, not a style property.
+      expect(band.className).toContain('ms-founder-band');
+      expect(band.getAttribute('style')).toBeNull();
       // The calendar is its own beat now — never inside the founder band.
       expect(container.querySelector('[data-type="day"]')).toBeNull();
       expect(container.querySelector('.ms-eventscue')).toBeNull();

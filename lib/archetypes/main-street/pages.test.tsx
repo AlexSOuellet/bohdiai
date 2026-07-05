@@ -102,9 +102,14 @@ describe('ContactPage', () => {
     expect(getByText(/custom belt/)).toBeTruthy();
   });
 
-  it('shows a neutral invitation when none was authored', () => {
+  it('renders no intro when the copywriter did not author one — no hardcoded English fallback', () => {
+    // Missing content.contact means the ContactPage renders no heading and no
+    // intro; the renderer never papers over a missing authored value with hardcoded
+    // English. This is the rule: if the crew missed it, that's a copywriter bug.
     const { container } = render(<ContactPage content={content} skin={skin} />);
-    expect(container.querySelector('[data-ms-contact]')?.textContent).toMatch(/hear from you|get in touch/i);
+    expect(container.querySelector('.ms-contactpage-intro')).toBeNull();
+    // The section is still there (may hold the form when tenantId is passed).
+    expect(container.querySelector('[data-ms-contact]')).toBeTruthy();
   });
 });
 

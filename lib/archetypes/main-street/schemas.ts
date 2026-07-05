@@ -188,19 +188,33 @@ export const MainStreetContentSchema = z.object({
     viewAllLabel: z.string().min(1).optional(),
   }),
 
-  /** COLLECTIONS — the section heading + cues for the home collections teaser.
-   *  The band DATA (the collections themselves) is loaded from the tenant's
-   *  `collections` rows and passed to the renderer separately (like products),
-   *  never authored here. Optional so content authored before this field still
-   *  parses and so a shop with no collections simply omits the beat. Mirrors the
-   *  `goods` shape; `treatment` is the family-level band choice (previewable via
-   *  ?collections=), falling back to the documented default when absent. */
+  /** COLLECTIONS — the section heading + cues for the home collections teaser AND
+   *  the authored collection ITEMS (name, description, slug) the build persists as
+   *  real `collections` DB rows. Collections are built like every other page: the
+   *  copywriter authors a niche-appropriate set at build time and the maker edits
+   *  them later. Optional so content authored before this field still parses; when
+   *  present but items is empty, the band still renders once real collections rows
+   *  exist (a later editor add). Mirrors the `goods` shape; `treatment` is the
+   *  family-level band choice (previewable via ?collections=). */
   collections: z
     .object({
       title: z.string().min(1),
       treatment: z.enum(COLLECTIONS_TREATMENTS).optional(),
       label: z.string().min(1).optional(),
       viewAllLabel: z.string().min(1).optional(),
+      /** Authored collections — the copywriter picks a small, niche-appropriate set
+       *  (3 by default: e.g. "Home Goods", "New This Week", "Bestsellers" — always
+       *  in the store's own voice). The build inserts these as real DB rows and
+       *  assigns products a primary collection so /collections/[slug] has content. */
+      items: z
+        .array(
+          z.object({
+            name: z.string().min(1),
+            description: z.string().min(1),
+            slug: z.string().min(1),
+          }),
+        )
+        .optional(),
     })
     .optional(),
 
@@ -259,6 +273,10 @@ export const MainStreetContentSchema = z.object({
     findUs: z
       .object({
         label: z.string().min(1),
+        /** The Events page heading (the maker's own words for "here's where we'll be").
+         *  Optional so legacy content still parses; the copywriter authors it every
+         *  build so the Events page never falls back to hardcoded English. */
+        title: z.string().min(1).optional(),
         /** The treatment this shop's find-us beat wears (a family-level look choice,
          *  previewable via ?findus=); the six are a shared pool. Absent → the
          *  dispatcher falls back to the documented default. */

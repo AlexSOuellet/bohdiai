@@ -9,7 +9,9 @@
  *  4. CLOSE — a big-type sign-off + an order/pickup CTA.
  *
  * Structure only: every color is a skin var or a color-mix derivation, every
- * type value is a named role, every word is a content slot.
+ * type value is a named role, every word is a content slot. Class-only —
+ * every declaration lives in skinVarsCss under .ms-goodshead-*, .ms-marq-*, or
+ * .ms-close-*. Nothing inline.
  */
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
@@ -36,28 +38,19 @@ export function GoodsHead({
   viewAll?: GoodsViewAll | undefined;
 }) {
   return (
-    <div
-      className="ms-wrap"
-      style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 24, flexWrap: 'wrap', marginBottom: 48 }}
-    >
+    <div className="ms-wrap ms-goodshead">
       <div>
         {goods.label && (
-          <Type as="span" role="eyebrow" style={{ color: 'var(--ms-accent)', display: 'block', marginBottom: 14 }}>
+          <Type as="span" role="eyebrow" className="ms-goodshead-eyebrow">
             {goods.label}
           </Type>
         )}
-        <Type as="h2" role="goodsHead" style={{ color: 'var(--ms-fg)', maxWidth: '16ch', margin: 0 }}>
+        <Type as="h2" role="goodsHead" className="ms-goodshead-title">
           {goods.title}
         </Type>
       </div>
       {viewAll && (
-        <Type
-          as="a"
-          role="navLabel"
-          href={viewAll.href}
-          className="ms-viewall"
-          style={{ color: 'var(--ms-accent)', whiteSpace: 'nowrap' }}
-        >
+        <Type as="a" role="navLabel" href={viewAll.href} className="ms-viewall ms-goodshead-cue">
           {viewAll.label} &rarr;
         </Type>
       )}
@@ -67,23 +60,12 @@ export function GoodsHead({
 
 /** The prominent end-of-sampling CTA. The home goods beat is a TASTE; this is the
  *  clear button that sends the shopper to the full Products page (the small cue in
- *  the heading is secondary). Bohdi's label, with a neutral fallback. */
+ *  the heading is secondary). Bohdi's label; only renders when authored. */
 export function GoodsViewAllCta({ viewAll }: { viewAll?: GoodsViewAll | undefined; skin?: ArchetypeTheme }) {
   if (!viewAll) return null;
   return (
-    <div className="ms-wrap" style={{ display: 'flex', justifyContent: 'center', marginTop: 56 }}>
-      <Type
-        as="a"
-        role="navLabel"
-        href={viewAll.href}
-        className="ms-viewall-cta"
-        style={{
-          color: 'var(--ms-fg)',
-          border: '1px solid var(--ms-rule)',
-          padding: '15px 30px',
-          borderRadius: 2,
-        }}
-      >
+    <div className="ms-wrap ms-shopcue-wrap">
+      <Type as="a" role="navLabel" href={viewAll.href} className="ms-viewall-cta ms-shopcue-btn">
         {viewAll.label} &rarr;
       </Type>
     </div>
@@ -116,43 +98,23 @@ export function GoodsMarquee({
   const filled = fillMarquee(products);
   const loop = [...filled, ...filled];
   return (
-    <section id="goods" style={{ padding: '96px 0 110px', overflow: 'hidden' }}>
+    <section id="goods" className="ms-marq-section">
       <GoodsHead goods={goods} skin={skin} viewAll={viewAll} />
-      <div className="ms-marquee" style={{ display: 'flex', gap: 18, width: 'max-content', padding: '0 9px' }}>
+      <div className="ms-marquee ms-marq-track">
         {loop.map((p, i) => (
-          <article key={p.slug + i} data-ms-card style={{ width: 340, flex: '0 0 auto' }}>
-            <a href={`/listings/${p.slug}`} style={{ color: 'inherit', textDecoration: 'none', display: 'block' }}>
-              <div
-                style={{
-                  position: 'relative',
-                  aspectRatio: '4 / 5',
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                  background: 'color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg))',
-                }}
-              >
+          <article key={p.slug + i} data-ms-card className="ms-marq-card">
+            <a href={`/listings/${p.slug}`} className="ms-marq-link">
+              <div className="ms-marq-media">
                 <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
-                <Type
-                  as="span"
-                  role="price"
-                  style={{
-                    position: 'absolute',
-                    left: 12,
-                    bottom: 12,
-                    background: 'var(--ms-bg)',
-                    color: 'var(--ms-fg)',
-                    padding: '6px 10px',
-                    borderRadius: 2,
-                  }}
-                >
+                <Type as="span" role="price" className="ms-marq-price">
                   {p.price}
                 </Type>
               </div>
-              <Type as="h3" role="cardTitle" style={{ color: 'var(--ms-fg)', margin: '16px 0 2px' }}>
+              <Type as="h3" role="cardTitle" className="ms-marq-name">
                 {p.name}
               </Type>
               {p.shortDescription && (
-                <Type as="p" role="caption" style={{ color: 'var(--ms-fg-muted)', margin: 0 }}>
+                <Type as="p" role="caption" className="ms-marq-desc">
                   {p.shortDescription}
                 </Type>
               )}
@@ -169,25 +131,14 @@ export function Close({ close }: { close: MainStreetContent['close']; skin?: Arc
   // authored target keep the old /contact destination.
   const ctaHref = close.ctaTarget ? linkHref(close.ctaTarget) : '/contact';
   return (
-    <section style={{ padding: '130px 40px', textAlign: 'center' }}>
-      <Type as="span" role="eyebrow" style={{ color: 'var(--ms-accent)', display: 'block', marginBottom: 22 }}>
+    <section className="ms-close-section">
+      <Type as="span" role="eyebrow" className="ms-close-eyebrow">
         {close.label}
       </Type>
-      <Type as="h2" role="closeHead" style={{ color: 'var(--ms-fg)', maxWidth: '16ch', margin: '0 auto 36px' }}>
+      <Type as="h2" role="closeHead" className="ms-close-head">
         {close.headline}
       </Type>
-      <Type
-        as="a"
-        role="navLabel"
-        href={ctaHref}
-        style={{
-          background: 'var(--ms-accent)',
-          color: 'var(--ms-on-accent)',
-          padding: '16px 26px',
-          borderRadius: 2,
-          display: 'inline-block',
-        }}
-      >
+      <Type as="a" role="navLabel" href={ctaHref} className="ms-close-cta">
         {close.ctaLabel}
       </Type>
     </section>

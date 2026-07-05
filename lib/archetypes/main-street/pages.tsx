@@ -20,6 +20,7 @@ import { CollectionsBeat } from './CollectionsBeat';
 import { ReviewsBeat } from './ReviewsBeat';
 import type { CollectionView } from '../content';
 import { MainStreetContactForm } from './MainStreetContactForm';
+import { DEFAULT_STRINGS } from './defaults';
 
 function SubHeader({ content, skin, current }: { content: MainStreetContent; skin: ArchetypeTheme; current?: string | undefined }) {
   // The header is fixed (matching the home hero's pinned nav — Lenis smooth-scroll
@@ -50,8 +51,11 @@ export function MainStreetSubPage({ content, skin, children, current }: { conten
   );
 }
 
-/** A simple page masthead — eyebrow + title — reused across sub-pages. Class-only. */
-function PageHead({ eyebrow, title }: { eyebrow?: string | undefined; title: string }) {
+/** A simple page masthead — eyebrow + title — reused across sub-pages. Class-only.
+ *  Both fields optional: if the copywriter didn't author a value, the head renders
+ *  without it rather than falling back to hardcoded English. */
+function PageHead({ eyebrow, title }: { eyebrow?: string | undefined; title?: string | undefined }) {
+  if (!eyebrow && !title) return null;
   return (
     <div className="ms-wrap ms-pagehead">
       {eyebrow && (
@@ -59,9 +63,11 @@ function PageHead({ eyebrow, title }: { eyebrow?: string | undefined; title: str
           {eyebrow}
         </Type>
       )}
-      <Type as="h1" role="closeHead" className="ms-pagehead-title">
-        {title}
-      </Type>
+      {title && (
+        <Type as="h1" role="closeHead" className="ms-pagehead-title">
+          {title}
+        </Type>
+      )}
     </div>
   );
 }
@@ -110,7 +116,7 @@ export function ShopPage({ content, skin, products }: { content: MainStreetConte
       <section data-ms-shop className="ms-wrap ms-page">
         {products.length === 0 ? (
           <Type as="p" role="body" className="ms-page-empty">
-            New pieces are on the way — check back soon.
+            {DEFAULT_STRINGS.emptyShop}
           </Type>
         ) : (
           // The full Shop page wears the SAME treatment the home teaser sold — if
@@ -159,15 +165,17 @@ export function AboutPage({ content, skin }: { content: MainStreetContent; skin:
 /** CONTACT — an authored invitation to get in touch. Real email/social are the
  *  maker's to add later; at onboarding this is voice, not contact details. */
 export function ContactPage({ content, skin, tenantId }: { content: MainStreetContent; skin: ArchetypeTheme; tenantId?: string | undefined }) {
-  const heading = content.contact?.heading ?? 'Get in touch';
-  const intro = content.contact?.intro ?? 'We would love to hear from you — questions, custom requests, or just to say hello.';
+  const heading = content.contact?.heading;
+  const intro = content.contact?.intro;
   return (
     <MainStreetSubPage content={content} skin={skin} current="/contact">
       <PageHead title={heading} />
       <section data-ms-contact className="ms-wrap ms-page ms-contactpage">
-        <Type as="p" role="body" className="ms-contactpage-intro">
-          {intro}
-        </Type>
+        {intro && (
+          <Type as="p" role="body" className="ms-contactpage-intro">
+            {intro}
+          </Type>
+        )}
         {tenantId !== undefined && (
           <div className="ms-contactpage-form">
             <MainStreetContactForm tenantId={tenantId} />
@@ -182,18 +190,18 @@ export function ContactPage({ content, skin, tenantId }: { content: MainStreetCo
  *  teaser wears (cupboard / crates / portals / chapters / lanes / cascade), now
  *  carrying every collection (not the home handful) and no "see all" cue. */
 export function CollectionsPage({ content, skin, collections }: { content: MainStreetContent; skin: ArchetypeTheme; collections: CollectionView[] }) {
-  const section = content.collections ?? { title: 'Collections' };
+  const section = content.collections;
   return (
     <MainStreetSubPage content={content} skin={skin} current="/collections">
-      <PageHead eyebrow={section.label} title={section.title ?? 'Collections'} />
+      <PageHead eyebrow={section?.label} title={section?.title} />
       {collections.length === 0 ? (
         <section data-ms-collections className="ms-wrap ms-page ms-page-empty">
           <Type as="p" role="body">
-            New collections are on the way — check back soon.
+            {DEFAULT_STRINGS.emptyCollections}
           </Type>
         </section>
       ) : (
-        <CollectionsBeat section={section} items={collections} skin={skin} full />
+        <CollectionsBeat section={section ?? { title: '' }} items={collections} skin={skin} full />
       )}
     </MainStreetSubPage>
   );
@@ -209,7 +217,7 @@ export function CollectionPage({ content, skin, collection, products }: { conten
       <section data-ms-collection className="ms-wrap ms-page">
         {products.length === 0 ? (
           <Type as="p" role="body" className="ms-page-empty">
-            New pieces are on the way — check back soon.
+            {DEFAULT_STRINGS.emptyShop}
           </Type>
         ) : (
           // Reuse the store's goods treatment so a collection reads as a coherent
@@ -229,13 +237,13 @@ export function TestimonialsPage({ content, skin }: { content: MainStreetContent
   const hasReviews = !!reviews && reviews.items.length > 0;
   return (
     <MainStreetSubPage content={content} skin={skin} current="/testimonials">
-      <PageHead title={reviews?.title ?? 'What people say'} />
+      <PageHead title={reviews?.title} />
       {hasReviews ? (
         <ReviewsBeat section={reviews!} skin={skin} full />
       ) : (
         <section data-ms-testimonials className="ms-wrap ms-page ms-page-empty">
           <Type as="p" role="body">
-            The kind words are still coming in — check back soon.
+            {DEFAULT_STRINGS.emptyReviews}
           </Type>
         </section>
       )}
@@ -251,13 +259,13 @@ export function EventsPage({ content, skin }: { content: MainStreetContent; skin
   const hasDates = !!findUs && findUs.rows.length > 0;
   return (
     <MainStreetSubPage content={content} skin={skin} current="/events">
-      <PageHead eyebrow={hasDates ? findUs!.label : undefined} title="Where to find us" />
+      <PageHead eyebrow={hasDates ? findUs!.label : undefined} title={findUs?.title} />
       {hasDates ? (
         <FindUsBeat findUs={findUs!} skin={skin} eventsHref="/events" full />
       ) : (
         <section data-ms-events className="ms-wrap ms-page ms-page-empty">
           <Type as="p" role="body">
-            No upcoming dates just yet — check back soon to see where we will be next.
+            {DEFAULT_STRINGS.emptyEvents}
           </Type>
         </section>
       )}

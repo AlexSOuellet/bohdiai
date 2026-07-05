@@ -85,10 +85,13 @@ says and where it goes always agree. A target is one of: ${targets}.
   SAMPLING, the shop is where every piece lives, so "see the work" / "shop now" /
   "browse the collection" all target shop). about: the maker's story page.
   events: where to find the maker in person. contact: get in touch / ask for a
-  custom order.
+  custom order. collections: the full set of themed groups this shop offers (use
+  when you author collections.items). testimonials: the full page of customer
+  reviews (use when you author the reviews beat).
 Choose the target that matches what the label promises — a button that says "Our
 story" targets about, "Shop now" or "See the work" targets shop, "Find us"
-targets events. (Targets must come from that list; these are the only pages that
+targets events, "Browse collections" targets collections, "Read reviews" targets
+testimonials. (Targets must come from that list; these are the only pages that
 exist.)
 
 Write the words with submit_copy. Each field, its hard limits (stay under), and where it appears.
@@ -99,7 +102,7 @@ KEEP IT TIGHT. The body-prose fields have NO hard length cap — the build never
 
 - shopName: the shop is named "${brief.shopName}". This is the maker's own name for their shop — use it EXACTLY, do not invent, shorten, or alter it.
 - identity.wordmark: "${brief.shopName}" as it shows in the nav — use the exact name.
-- identity.nav (2-4 items): the nav links, each { label (2-18), target }.
+- identity.nav (2-6 items): the nav links, each { label (2-18), target }. ALWAYS include shop. Include collections when you author collections.items. Include testimonials when you author the reviews beat. Home is optional (the wordmark is home). Don't cram every link — pick the ones a shopper on THIS store needs first.
 ${storyDirective}
 - moment.eyebrow (4-48): a small line above the hero.
 - moment.brand: "${brief.shopName}" — the brand the story lands on; use the exact name.
@@ -110,11 +113,17 @@ ${storyDirective}
 - goods.treatment: you drew "${rolls.goods}" this build — the dice, not us, so shops stop wearing the same body. Keep your draw unless it genuinely fights this shop; if it does, pick another from these and note why in one line:
 ${goods}
 - goods.label (2-24, optional): a small label on the heading row.
-- goods.viewAllLabel (2-28, optional): the cue to the full Products page.
+- goods.viewAllLabel (2-28): the cue to the full Products page (e.g. "See the full catalog", "Shop everything"). ALWAYS author this — the home is a sampling; the shop is the full catalog.
+- collections: the themed groups this shop offers. ALWAYS author — collections is a page like every other; the copywriter writes them; the build persists them as real DB rows the maker edits later. Same "not labeled sample" pattern as the reviews and find-us seeds:
+      - collections.title (2-48): the heading of the collections beat / page (e.g. "Collections", "Browse by group").
+      - collections.label (2-24, optional): a small eyebrow.
+      - collections.viewAllLabel (2-28): the cue to the full /collections page (e.g. "See all collections").
+      - collections.items (EXACTLY 3): each { name (2-32, plain category-level, in THIS shop's voice — e.g. "Home Goods", "New This Week", "Bestsellers", "Winter Warmers"; NOT a duplicate of goods.title, NOT the shop name), description (12-140, one sentence in the shop's voice about what the group holds), slug (2-40, lowercase-hyphen; the build re-slugifies so a plain name here is fine). Vary the three so they read as DIFFERENT groups — e.g. an occasion + a mood + a season, not three near-synonyms.
 - marquee.voice (2-6 phrases): the phrases a bold scrolling marquee band shows — short brand lines in THIS shop's voice, a few words each (e.g. "Small batch", "Poured by hand", "Rhode Island made"). No sentences, no trailing punctuation. Write only the voice; the band pairs these with live info (find-us dates, collection names) the store already holds, so do not write logistics here.
 - reviews: the testimonials beat — seed it like the find-us dates, plausible placeholder social proof the maker edits or replaces, NOT labeled "sample". Do NOT pick a layout; just write the words:
       - reviews.title (2-40): the heading of the beat (e.g. "Kind words", "What they say").
       - reviews.label (2-24, optional): a small eyebrow over the heading (e.g. "Loved by customers").
+      - reviews.viewAllLabel (2-28): the cue on the home to the full /testimonials page (e.g. "Read all reviews"). ALWAYS author this — the home shows a handful; the testimonials page shows every one.
       - reviews.summary (optional): an honest aggregate for the star-rating layout — { score (e.g. "4.9 out of 5"), count (e.g. "200+ happy customers" — keep it modest and believable for a small maker, or omit if it would overreach) }.
       - reviews.items (3-6): each { quote (a warm, specific line a real customer would write — about the FEELING the work gave them, never how it is made), author (a first name + last initial, e.g. "Dana R."), location (optional, e.g. "Providence, RI") }. Vary the voices; no two should read alike. No AI-tell.
 - founder.quote (24+, no hard cap): the founder's words in the About beat
@@ -130,7 +139,7 @@ ${goods}
 - founder.eyebrow (2-24, optional): the small label above the card heading (also the workbench / editorial kicker).
 - founder.heading (2-28, optional): the card heading (also a fallback editorial headline).
 - founder.aboutLabel (2-28, optional): the cue to the full About page.
-- founder.findUs (optional): a "find us in person" calendar of markets / workshops / popups the maker sells at. Seed 1-5 plausible sample appearances the maker edits or turns off later: { label (2-28), eventsLabel (2-28, optional), rows (1-5): { where (4-60, the venue and town), time (1-12, the hours, e.g. "10–4"), kind (optional, one of: market | workshop | event), day (a short placeholder like "This week") } }. Do NOT author real dates — the build stamps current dates onto each row automatically; you write only the venue, hours, and kind.
+- founder.findUs (optional): a "find us in person" calendar of markets / workshops / popups the maker sells at. Seed 1-5 plausible sample appearances the maker edits or turns off later: { label (2-28, the small eyebrow on the home band, e.g. "Find us in person"), title (2-48, the Events PAGE heading in this shop's voice, e.g. "Where to find us", "This season's dates"), eventsLabel (2-28, the "see all dates" cue), rows (1-5): { where (4-60, the venue and town), time (1-12, the hours, e.g. "10–4"), kind (optional, one of: market | workshop | event), day (a short placeholder like "This week") } }. Do NOT author real dates — the build stamps current dates onto each row automatically; you write only the venue, hours, and kind. Author findUs whenever this maker plausibly does in-person events; leave it off for pure digital / made-to-order shops.
 - close.label (2-28): the close kicker.
 - close.headline (6-72): the big close line.
 - close.ctaLabel (3-24): the close button. close.ctaTarget: where it goes.

@@ -75,26 +75,28 @@ describe('EditorialCoverHero — giant masthead, brand-as-hero over media', () =
     expect(secondary.getAttribute('href')).toBeTruthy();
   });
 
-  it('amplifies the masthead size in a scoped <style> rule (cover bug regression guard)', () => {
+  it('amplifies the masthead size via a scoped rule that lives in skinVarsCss (cover bug regression guard)', () => {
     // The old bug: a font-size set in a <style> rule for [data-type="brand"] was
     // beaten by the skin's INLINE typeRoleCss fontSize (inline > stylesheet), so
     // the masthead never grew — which is why the size used to be forced inline.
     // The Type-component refactor removed inline typeRoleCss entirely (type now
     // comes from --ms-t-* CSS vars + the base [data-type] rule), so a MORE SPECIFIC
     // scoped rule legitimately wins. This guards that the masthead amplification
-    // lives in that scoped rule and is never silently dropped. (The literal clamp
-    // size isn't DOM-assertable — jsdom drops clamp() from the CSSOM, same as every
-    // other fluid size in these heroes — so the visible result is verified on deploy.)
+    // is still declared in skinVarsCss — the amplification is a rule about a class
+    // that appears on the DOM, and skinVarsCss owns it (asserted separately in the
+    // chrome tests). Here we assert the class hook is present so the rule applies.
     const { container } = render(<EditorialCoverHero identity={identity} moment={moment} skin={skin} />);
-    const styleText = container.querySelector('style')?.textContent ?? '';
-    expect(styleText).toMatch(/\.ms-cover-masthead \[data-type="brand"\]\s*\{[^}]*font-size/);
+    const masthead = container.querySelector('.ms-cover-masthead');
+    expect(masthead).toBeTruthy();
+    expect(masthead!.querySelector('[data-type="brand"]')).toBeTruthy();
   });
 
-  it('lays the nav out as a horizontal bar', () => {
+  it('renders the nav bar as a class-only horizontal row', () => {
+    // Class-only: horizontal-bar rule lives in skinVarsCss under .ms-cover-nav.
     const { container } = render(<EditorialCoverHero identity={identity} moment={moment} skin={skin} />);
     const navBar = container.querySelector('[data-ms-hero-nav]') as HTMLElement | null;
     expect(navBar).toBeTruthy();
-    expect(navBar!.style.display).toBe('flex');
-    expect(navBar!.style.justifyContent).toBe('space-between');
+    expect(navBar!.className).toContain('ms-cover-nav');
+    expect(navBar!.getAttribute('style')).toBeNull();
   });
 });

@@ -77,11 +77,11 @@ describe('FloatingCardHero — a card on the skin surface over full-bleed media'
     expect(secondary.getAttribute('href')).toBeTruthy();
   });
 
-  it('lays the nav out as a horizontal bar', () => {
+  it('renders the nav bar as a class-only horizontal row', () => {
     const { container } = render(<FloatingCardHero identity={identity} moment={moment} skin={skin} />);
     const navBar = container.querySelector('[data-ms-hero-nav]') as HTMLElement | null;
     expect(navBar).toBeTruthy();
-    expect(navBar!.style.display).toBe('flex');
-    expect(navBar!.style.justifyContent).toBe('space-between');
+    expect(navBar!.className).toContain('ms-hero-navbar');
+    expect(navBar!.getAttribute('style')).toBeNull();
   });
 });

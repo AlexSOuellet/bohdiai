@@ -6,7 +6,7 @@ export default defineConfig({
     environment: 'jsdom',
     globalSetup: ['./vitest.global-setup.ts'],
     globals: true,
-    include: ['lib/**/*.test.{ts,tsx}', 'components/**/*.test.{ts,tsx}', 'app/**/*.test.{ts,tsx}', 'blocks/**/*.test.{ts,tsx}'],
+    include: ['lib/**/*.test.{ts,tsx}', 'components/**/*.test.{ts,tsx}', 'app/**/*.test.{ts,tsx}'],
     setupFiles: ['./vitest.setup.ts'],
     coverage: {
       // Per Engineering-Standards §7: 90% lib, 85% app/api, 75% components-with-logic.
@@ -21,11 +21,9 @@ export default defineConfig({
         '**/*.test.{ts,tsx}',
         '**/*.d.ts',
         'lib/types/**',
-        // Generated files — produced by `npm run build:manifests` and Supabase typegen.
-        // Not hand-written, not meaningful to cover.
+        // Generated file — produced by Supabase typegen. Not hand-written, not
+        // meaningful to cover.
         'lib/database.types.ts',
-        'lib/blocks-manifest.generated.ts',
-        'lib/widgets-manifest.generated.ts',
         // Phase 0 utility wrappers shipped without unit tests. Write tests
         // (or move to integration) in Phase 1; remove from this list to bring
         // them under the lib/** threshold.
@@ -36,13 +34,10 @@ export default defineConfig({
         // Type-only modules and barrel re-exports — zero executable logic (no
         // functions, no branches), so there is nothing to unit-test; counting them
         // only pollutes the denominator with 0%.
-        'lib/blocks.ts',
         'lib/archetypes/builder.ts',
         'lib/archetypes/content.ts',
         'lib/archetypes/portable.ts',
         'lib/archetypes/types.ts',
-        'lib/design-system/index.ts',
-        'lib/layout/index.ts',
         'lib/onboarding/crew/types.ts',
         // Server-only Next/Supabase glue (`import 'server-only'`) — needs
         // integration/e2e, not jsdom unit tests. The unit-testable SEO logic lives

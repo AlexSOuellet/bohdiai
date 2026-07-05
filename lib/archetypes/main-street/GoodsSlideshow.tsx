@@ -6,7 +6,8 @@
  * One product at a time, large, auto-advancing on a slow cross-fade with a
  * gentle drift across the image (the Ken Burns push-in that makes a still feel
  * alive). Hands-off and atmospheric — the passive cousin of the switcher. Pauses
- * on hover; does not auto-advance under reduced-motion. Structure only.
+ * on hover; does not auto-advance under reduced-motion. Class-only; active-vs-idle
+ * state is data-driven (data-on), never inline.
  */
 import { useEffect, useRef, useState } from 'react';
 import type { ArchetypeTheme } from '../types';
@@ -16,8 +17,6 @@ import { Media } from './chrome';
 import { Type } from './Type';
 import { GoodsHead, type GoodsViewAll } from './beats';
 
-// How long each slide holds before advancing. Brisk enough not to drag (the
-// 5s original read as sluggish) while still leaving each product legible.
 const DWELL_MS = 3200;
 
 export function GoodsSlideshow({
@@ -46,9 +45,8 @@ export function GoodsSlideshow({
   }, [products.length]);
 
   const current = products[active] ?? products[0];
-
   return (
-    <section id="goods" style={{ padding: '96px 0 110px' }}>
+    <section id="goods" className="ms-slide-section">
       <GoodsHead goods={goods} skin={skin} viewAll={viewAll} />
       <div
         className="ms-wrap"
@@ -62,78 +60,40 @@ export function GoodsSlideshow({
         <a
           href={current ? `/listings/${current.slug}` : undefined}
           className="ms-slide-stage"
-          style={{
-            position: 'relative',
-            aspectRatio: '3 / 2',
-            borderRadius: 3,
-            overflow: 'hidden',
-            background: 'color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg))',
-            display: 'block',
-            color: 'inherit',
-            textDecoration: 'none',
-          }}
         >
           {products.map((p, i) => {
-            // Each slide is two layers — a blurred backdrop fills the stage at any
-            // aspect (Instagram/Spotify pattern) and the real photo sits CONTAINED
-            // on top so a maker's tight crop never gets re-cropped to 3:2. The Ken
-            // Burns drift rides the foreground only; the backdrop stays still as
-            // atmospheric depth.
             const media = p.media[0] ?? { kind: 'image' as const, alt: p.name };
             return (
               <div
                 key={p.slug}
                 className="ms-slide-layer"
-                style={{ position: 'absolute', inset: 0, opacity: i === active ? 1 : 0 }}
+                data-on={i === active ? 'true' : 'false'}
                 aria-hidden={i !== active}
               >
-                <Media
-                  media={media}
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    transform: 'scale(1.18)',
-                    filter: 'blur(32px) saturate(1.05) brightness(0.82)',
-                  }}
-                />
-                <div key={`${p.slug}-${i === active ? active : 'idle'}`} className={i === active ? 'ms-kb' : undefined} style={{ position: 'absolute', inset: 0 }}>
-                  <Media
-                    media={media}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain',
-                    }}
-                  />
+                <Media media={media} className="ms-slide-backdrop" />
+                <div key={`${p.slug}-${i === active ? active : 'idle'}`} className={i === active ? 'ms-kb ms-slide-fg-wrap' : 'ms-slide-fg-wrap'}>
+                  <Media media={media} className="ms-slide-fg" />
                 </div>
               </div>
             );
           })}
         </a>
-
-        <a
-          href={current ? `/listings/${current.slug}` : undefined}
-          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24, marginTop: 22, flexWrap: 'wrap', color: 'inherit', textDecoration: 'none' }}
-        >
+        <a href={current ? `/listings/${current.slug}` : undefined} className="ms-slide-caption">
           <div>
-            <Type as="h3" role="cardTitle" style={{ color: 'var(--ms-fg)', margin: 0 }}>
+            <Type as="h3" role="cardTitle" className="ms-slide-name">
               {current?.name}
             </Type>
             {current?.shortDescription && (
-              <Type as="p" role="caption" style={{ color: 'var(--ms-fg-muted)', margin: '4px 0 0' }}>
+              <Type as="p" role="caption" className="ms-slide-desc">
                 {current.shortDescription}
               </Type>
             )}
           </div>
-          <Type as="span" role="price" style={{ color: 'var(--ms-fg)' }}>
+          <Type as="span" role="price" className="ms-slide-price">
             {current?.price}
           </Type>
         </a>
-
-        <div role="tablist" aria-label="Slides" style={{ display: 'flex', gap: 9, marginTop: 20 }}>
+        <div role="tablist" aria-label="Slides" className="ms-slide-dots">
           {products.map((p, i) => (
             <button
               key={p.slug}
@@ -142,16 +102,7 @@ export function GoodsSlideshow({
               aria-selected={i === active}
               aria-label={p.name}
               onClick={() => setActive(i)}
-              style={{
-                width: i === active ? 26 : 9,
-                height: 9,
-                borderRadius: 9,
-                border: 'none',
-                cursor: 'pointer',
-                padding: 0,
-                background: i === active ? 'var(--ms-accent)' : 'var(--ms-rule)',
-                transition: 'width .4s ease, background .4s ease',
-              }}
+              className="ms-slide-dot"
             />
           ))}
         </div>

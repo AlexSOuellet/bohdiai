@@ -246,22 +246,7 @@ export function stampFindUsDates(rows: readonly FindUsEvent[], today: Date): Fin
  * Seed plausible sample find-us dates for the ?findus= preview when a store has no
  * authored calendar — the same non-persisting "placeholder, not labeled" model as
  * the collections / reviews / marquee seeds. Never written to the store; only the
- * preview renders it. Dates are stamped relative to `today` (default now) so the
- * Calendar preview always lands on the current month and every treatment is viewable.
+ * preview renders it. The content lives in `__fixtures__/preview-findus.ts` (dev
+ * preview only); this thin re-export keeps existing callers importing from findus.
  */
-export function seedPreviewFindUs(today: Date = new Date()): FindUsSection {
-  return {
-    label: 'Find us in person',
-    eventsLabel: 'See all dates',
-    rows: stampFindUsDates(
-      [
-        { day: '', where: 'Providence Flea — India Point Park', time: '10–4', kind: 'market' },
-        { day: '', where: 'Hope Street Market — Lippitt Park', time: '9–1', kind: 'market' },
-        { day: '', where: 'Candle-Pouring Workshop — The Studio, Pawtucket', time: '6–8pm', kind: 'workshop' },
-        { day: '', where: 'Wickford Art Festival — Wickford Village', time: '10–5', kind: 'event' },
-        { day: '', where: 'WaterFire — Downtown Providence', time: '7–11pm', kind: 'event' },
-      ],
-      today,
-    ),
-  };
-}
+export { seedPreviewFindUsFixture as seedPreviewFindUs } from './__fixtures__/preview-findus';

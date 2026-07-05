@@ -7,25 +7,30 @@
  * this same row in its own language. Shares the skin, chrome, and atmosphere
  * with the sales page via ./chrome.
  *
- * No specifics hardcoded — colors are skin vars or derivations, type values are
- * named roles. (The full product-page redesign is a later thread; this keeps
- * the page set consistent with the new skin/roles.)
+ * Class-only: every declaration lives in skinVarsCss under .ms-product-*.
+ * Colors are skin vars or derivations, type values are named roles, per-tenant
+ * media aspect ratios pass as CSS custom properties on the media element.
  */
+import type { CSSProperties } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { CatalogMedia, ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
 import { MainStreetRoot, MainStreetFooter, Nav } from './chrome';
 import { Type } from './Type';
+import { DEFAULT_STRINGS } from './defaults';
 
 /** One media cell — a playable video or a still. A video renders a real
  *  <video> with controls (poster shown until play), so product clips actually
- *  play; a still renders an <img>, or a muted placeholder when no URL yet. */
+ *  play; a still renders an <img>, or a class-styled placeholder when no URL yet.
+ *  The aspect ratio passes as a CSS custom property so tenants can vary it without
+ *  the renderer carrying an inline `style` declaration for a design value. */
 function MediaTile({ media, aspect }: { media: CatalogMedia; aspect: string }) {
+  const aspectVars = { '--ms-tile-aspect': aspect } as CSSProperties;
   if (media.kind === 'video' && media.url) {
     return (
       <video
-        className="archetype-photo"
-        style={{ aspectRatio: aspect }}
+        className="archetype-photo ms-product-tile"
+        style={aspectVars}
         src={media.url}
         poster={media.poster}
         controls
@@ -36,9 +41,9 @@ function MediaTile({ media, aspect }: { media: CatalogMedia; aspect: string }) {
     );
   }
   return media.url ? (
-    <img src={media.url} alt={media.alt} className="archetype-photo" style={{ aspectRatio: aspect }} />
+    <img src={media.url} alt={media.alt} className="archetype-photo ms-product-tile" style={aspectVars} />
   ) : (
-    <div className="archetype-photo" aria-label={media.alt} style={{ aspectRatio: aspect, background: 'var(--ms-fg-muted)', opacity: 0.18 }} />
+    <div className="archetype-photo ms-product-tile ms-product-tile-empty" aria-label={media.alt} style={aspectVars} />
   );
 }
 
@@ -51,110 +56,76 @@ export function MainStreetProduct({
   product: ProductView;
   skin: ArchetypeTheme;
 }) {
-  const sp = skin.spacing;
   const primary = product.media[0];
   const rest = product.media.slice(1);
   const soldOut = product.status === 'sold_out';
 
   return (
     <MainStreetRoot skin={skin}>
-      <nav
-        data-ms-nav
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '14px 40px',
-          background: 'var(--ms-bg)',
-          color: 'var(--ms-fg)',
-          borderBottom: '1px solid var(--ms-rule)',
-        }}
-      >
+      <nav data-ms-nav className="ms-product-nav">
         <Nav identity={content.identity} currentHref="/shop" />
       </nav>
-
-      <div className="ms-wrap" style={{ paddingTop: sp.section, paddingBottom: sp.section }}>
-        {/* ============ PRODUCT DETAIL ============ */}
+      <div className="ms-wrap ms-product-section">
         <section className="ms-product-grid">
-          {/* media gallery */}
           <div>
             {primary && <MediaTile media={primary} aspect="4 / 5" />}
             {rest.length > 0 && (
-              <div style={{ marginTop: sp.tight, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: sp.tight }}>
+              <div className="ms-product-thumbs">
                 {rest.map((m, i) => (
                   <MediaTile key={i} media={m} aspect="1 / 1" />
                 ))}
               </div>
             )}
           </div>
-
-          {/* buy column */}
           <div>
-            <Type as="h1" role="title" style={{ color: 'var(--ms-fg)', margin: 0 }}>
+            <Type as="h1" role="title" className="ms-product-title">
               {product.name}
             </Type>
-            <Type as="div" role="title" style={{ color: 'var(--ms-fg)', marginTop: sp.base }}>
+            <Type as="div" role="title" className="ms-product-price">
               {product.price}
             </Type>
             {product.shortDescription && (
-              <Type as="p" role="body" style={{ color: 'var(--ms-fg-muted)', marginTop: sp.base, maxWidth: 460 }}>
+              <Type as="p" role="body" className="ms-product-desc">
                 {product.shortDescription}
               </Type>
             )}
-
-            {/* seller-defined variations */}
             {product.variations.map((v) => (
-              <div key={v.name} style={{ marginTop: sp.loose }}>
-                <Type as="div" role="eyebrow" style={{ color: 'var(--ms-fg)' }}>
+              <div key={v.name} className="ms-product-var">
+                <Type as="div" role="eyebrow" className="ms-product-var-lbl">
                   {v.name}
                 </Type>
-                <div style={{ marginTop: sp.tight, display: 'flex', flexWrap: 'wrap', gap: sp.tight }}>
+                <div className="ms-product-var-opts">
                   {v.options.map((opt) => (
-                    <Type
-                      key={opt}
-                      as="span"
-                      role="caption"
-                      style={{ color: 'var(--ms-fg)', border: '1px solid var(--ms-rule)', padding: '7px 12px' }}
-                    >
+                    <Type key={opt} as="span" role="caption" className="ms-product-var-chip">
                       {opt}
                     </Type>
                   ))}
                 </div>
               </div>
             ))}
-
-            {/* add to cart — accent background, paper as readable text */}
-            <div style={{ marginTop: sp.loose }}>
+            <div className="ms-product-buy">
               <Type
                 as="button"
                 role="navLabel"
                 type="button"
                 disabled={soldOut}
-                style={{
-                  background: soldOut ? 'var(--ms-fg-muted)' : 'var(--ms-accent)',
-                  color: 'var(--ms-on-accent)',
-                  border: 'none',
-                  padding: `${sp.base}px ${sp.loose}px`,
-                  cursor: soldOut ? 'default' : 'pointer',
-                }}
+                className="ms-product-cta"
+                data-soldout={soldOut ? 'true' : 'false'}
               >
-                {soldOut ? 'Sold out' : 'Add to cart'}
+                {soldOut ? DEFAULT_STRINGS.productSoldOut : DEFAULT_STRINGS.productAddToCart}
               </Type>
             </div>
           </div>
         </section>
-
-        {/* ============ FULL DESCRIPTION ============ */}
-        <section style={{ paddingTop: sp.section }}>
-          <Type as="div" role="eyebrow" style={{ color: 'var(--ms-accent)', marginBottom: sp.base }}>
-            Details
+        <section className="ms-product-story">
+          <Type as="div" role="eyebrow" className="ms-product-story-eyebrow">
+            {DEFAULT_STRINGS.productDetailsLabel}
           </Type>
-          <Type as="p" role="body" style={{ color: 'var(--ms-fg)', maxWidth: 640, margin: 0 }}>
+          <Type as="p" role="body" className="ms-product-story-body">
             {product.description}
           </Type>
         </section>
       </div>
-
       <MainStreetFooter shopName={content.shopName} />
     </MainStreetRoot>
   );

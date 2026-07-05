@@ -5,6 +5,7 @@
 // request's time limit.
 
 import type { NextRequest } from 'next/server';
+import { after } from 'next/server';
 import { checkGenerationRateLimit } from '@/lib/rate-limit';
 import { MOODS, type MoodKey } from '@/lib/moods';
 import { runStorefront } from '@/lib/onboarding/run-storefront';
@@ -46,11 +47,11 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   const buildId = await createBuild(body);
 
-  // Fire and forget. We intentionally do NOT await this — the response returns
-  // now and the build runs on its own, writing progress to the build record.
-  // (Locally this runs to completion; in production it needs a runner that
-  // survives past the request — a separate, flagged piece of work.)
-  void runBuild(buildId, body, userId);
+  // Return the buildId immediately; the build runs to completion after the
+  // response is sent. `after()` extends the serverless function lifetime past
+  // the response so a real Vercel deploy doesn't freeze mid-generation the way
+  // a bare `void runBuild(...)` would (fine in dev, broken in prod).
+  after(() => runBuild(buildId, body, userId));
 
   return Response.json({ buildId });
 }

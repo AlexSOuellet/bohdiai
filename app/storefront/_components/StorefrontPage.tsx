@@ -2,14 +2,6 @@ import type { ReactNode } from 'react';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
-import { LayoutPage } from '@/components/storefront/layout';
-import { PageSchema, resolvePage } from '@/lib/layout';
-import { createResolveContextForTenant } from '@/lib/layout/resolver-supabase';
-import { StyleSheetSchema } from '@/lib/style-sheet';
-import {
-  compileStyleSheet,
-  googleFontPreconnectLinks,
-} from '@/lib/style-sheet-loader';
 import { archetypeSpec } from '@/lib/archetypes/registry';
 import type { ArchetypePage } from '@/lib/archetypes/builder';
 import type { ProductView, CatalogMedia, CollectionView } from '@/lib/archetypes/content';
@@ -26,40 +18,26 @@ interface StorefrontPageProps {
   /** Editor door-1 preview — re-render the live home in this skin without persisting.
    *  Re-skins the already-public content only; owner-gating is deferred (like try-on). */
   previewLook?: string | undefined;
-  /** Hero-swap preview — render the home with this hero variant without persisting
-   *  (resolved through the archetype's hero catalog; unknown keys fall back to the
-   *  default hero). Same non-persisting preview model as previewLook. */
+  /** Hero-swap preview — render the home with this hero variant without persisting. */
   previewHero?: string | undefined;
-  /** Goods-treatment preview — render the goods beat in this treatment without
-   *  persisting (unknown values fall back to the authored/size pick). Same
-   *  non-persisting preview model as previewHero. */
+  /** Goods-treatment preview — render the goods beat in this treatment without persisting. */
   previewGoods?: string | undefined;
-  /** About/founder-treatment preview — render the maker beat in this treatment
-   *  without persisting (unknown values fall back to the authored/quote pick). */
+  /** About/founder-treatment preview — render the maker beat in this treatment without persisting. */
   previewFounder?: string | undefined;
-  /** Nav-layout preview — render the nav in this variant without persisting
-   *  (unknown values fall back to the stored/standard nav). */
+  /** Nav-layout preview — render the nav in this variant without persisting. */
   previewNav?: string | undefined;
-  /** Collections-band preview — render the collections beat in this treatment
-   *  without persisting. When the store has no real collections, sample ones are
-   *  seeded so every band is viewable (same non-persisting preview model). */
+  /** Collections-band preview — render the collections beat in this treatment without persisting. */
   previewCollections?: string | undefined;
-  /** Marquee-band preview — turn the marquee band on without persisting. When the
-   *  store has no authored marquee, sample phrases are seeded so the band is
-   *  viewable (same non-persisting preview model). Any non-empty value enables it. */
+  /** Marquee-band preview — turn the marquee band on without persisting. */
   previewMarquee?: string | undefined;
-  /** Reviews-beat preview — render the reviews beat in this treatment without
-   *  persisting. When the store has no authored reviews, sample testimonials are
-   *  seeded so every treatment is viewable (same non-persisting preview model). */
+  /** Reviews-beat preview — render the reviews beat in this treatment without persisting. */
   previewReviews?: string | undefined;
-  /** Find-us-beat preview — render the find-us beat in this treatment without
-   *  persisting. When the store has no authored dates, sample dates are seeded so
-   *  every treatment is viewable (same non-persisting preview model). */
+  /** Find-us-beat preview — render the find-us beat in this treatment without persisting. */
   previewFindUs?: string | undefined;
 }
 
-/** Storefront routes that an archetype paints as a sub-page off the home envelope. */
-const SLUG_TO_ARCHETYPE_PAGE: Record<string, ArchetypePage> = {
+/** Storefront routes that paint as a sub-page off the home envelope. */
+const SLUG_TO_PAGE: Record<string, ArchetypePage> = {
   '/shop': 'shop',
   '/events': 'events',
   '/about': 'about',
@@ -68,9 +46,8 @@ const SLUG_TO_ARCHETYPE_PAGE: Record<string, ArchetypePage> = {
   '/testimonials': 'testimonials',
 };
 
-/** Load the tenant's home ('/') archetype envelope, or null if the home isn't an
- *  archetype store (legacy tenant) or has no published home. */
-async function loadHomeArchetypeEnvelope(tenantId: string): Promise<Record<string, unknown> | null> {
+/** Load the tenant's home ('/') envelope, or null when the tenant has no published home. */
+async function loadHomeEnvelope(tenantId: string): Promise<Record<string, unknown> | null> {
   const db = supabaseAdmin() as unknown as {
     from: (t: string) => {
       select: (c: string) => {
@@ -98,7 +75,7 @@ async function loadHomeArchetypeEnvelope(tenantId: string): Promise<Record<strin
 }
 
 /** Load the tenant's logo URL and brand colors in a single round-trip. Both are
- *  injected into archetype chrome at render — tenant facts, not authored content.
+ *  injected into chrome at render — tenant facts, not authored content.
  *  logoUrl is undefined when no logo is stored; brandColors is [] when no color
  *  analysis has run. Both are null for every fresh tenant until the dashboard's
  *  logo-upload step ships. */
@@ -115,11 +92,11 @@ async function loadTenantChrome(tenantId: string): Promise<{ logoUrl: string | u
   };
 }
 
-/** Resolve the tenant's home archetype spec + envelope, or null for a legacy
- *  tenant. Shared by the product and content-page routes so they paint in the
- *  archetype's chrome instead of the legacy system. */
-async function resolveArchetype(tenantId: string) {
-  const env = await loadHomeArchetypeEnvelope(tenantId);
+/** Resolve the tenant's home envelope + spec, or null when the tenant has no
+ *  published home. Shared by the product/content/shell wrappers so every route
+ *  paints in the same chrome. */
+async function resolveEnvelope(tenantId: string) {
+  const env = await loadHomeEnvelope(tenantId);
   if (env === null) return null;
   const key = env['archetypeKey'];
   const lookKey = env['lookKey'];
@@ -131,29 +108,29 @@ async function resolveArchetype(tenantId: string) {
   return { spec, lookKey, content: env['content'], logoUrl, brandColors, accentOverride };
 }
 
-/** Render a product detail page in the tenant's archetype, or null if the tenant
- *  is a legacy store / the archetype has no product page. */
+/** Render a product detail page in the tenant's chrome, or null when the tenant
+ *  has no published home. */
 export async function renderArchetypeProductPage(tenantId: string, product: ProductView) {
-  const a = await resolveArchetype(tenantId);
+  const a = await resolveEnvelope(tenantId);
   if (a === null || a.spec.renderProduct === undefined) return null;
   return a.spec.renderProduct({ content: a.content, lookKey: a.lookKey, product, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
 }
 
-/** Render a plain content page (legal/maker-added) in the tenant's archetype, or
- *  null if the tenant is a legacy store / the archetype has no content page. */
+/** Render a plain content page (legal/maker-added) in the tenant's chrome, or
+ *  null when the tenant has no published home. */
 export async function renderArchetypeContentPage(
   tenantId: string,
   opts: { title?: string; body?: string[]; html?: string },
 ) {
-  const a = await resolveArchetype(tenantId);
+  const a = await resolveEnvelope(tenantId);
   if (a === null || a.spec.renderContentPage === undefined) return null;
   return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, ...opts, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
 }
 
-/** Wrap a functional page's body (cart, collections, subscriptions) in the
- *  tenant's archetype chrome, or null if the tenant is a legacy store. */
+/** Wrap a functional page's body (cart, subscriptions, etc.) in the tenant's
+ *  chrome, or null when the tenant has no published home. */
 export async function renderArchetypeShell(tenantId: string, children: ReactNode) {
-  const a = await resolveArchetype(tenantId);
+  const a = await resolveEnvelope(tenantId);
   if (a === null || a.spec.renderShell === undefined) return null;
   return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
 }
@@ -186,149 +163,28 @@ export default async function StorefrontPage({ slug, version, previewLook, previ
     }
   }
 
-  // Multi-page archetype: a sub-page route (/shop, /events, …) has no row of its
-  // own — it renders the SAME stored archetype envelope (on the home '/' row) as
-  // a different page. If the tenant is an archetype store, paint that page here;
-  // otherwise fall through to the legacy per-slug content_pages system.
-  const subPage = SLUG_TO_ARCHETYPE_PAGE[slug];
+  // Sub-page routes (/shop, /events, ...) render off the SAME stored home
+  // envelope, painted as a different page.
+  const subPage = SLUG_TO_PAGE[slug];
   if (subPage !== undefined) {
-    const env = await loadHomeArchetypeEnvelope(tenantId);
-    if (env !== null) return renderArchetypeStore(env, tenantId, subPage);
+    const env = await loadHomeEnvelope(tenantId);
+    if (env === null) notFound();
+    return renderStore(env, tenantId, subPage, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewMarquee, previewReviews, previewFindUs);
   }
-  // /collections/<slug> — the collection detail page. Same envelope + archetype
-  // dispatch as the other sub-pages; only the products list is filtered to this
-  // collection's rows. Unknown slug: fall through to the legacy content path.
+
+  // /collections/<slug> — the collection detail page. Same envelope dispatch as
+  // the other sub-pages; the products list is filtered to this collection's rows.
   if (slug.startsWith('/collections/') && slug.length > '/collections/'.length) {
     const collectionSlug = slug.slice('/collections/'.length);
-    const env = await loadHomeArchetypeEnvelope(tenantId);
-    if (env !== null) return renderArchetypeStore(env, tenantId, 'collection', undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, collectionSlug);
+    const env = await loadHomeEnvelope(tenantId);
+    if (env === null) notFound();
+    return renderStore(env, tenantId, 'collection', previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewMarquee, previewReviews, previewFindUs, collectionSlug);
   }
 
-  const db = supabaseAdmin();
-
-  const { data: pageRaw } = await db
-    .from('content_pages')
-    .select('id, slug, title')
-    .eq('tenant_id', tenantId)
-    .eq('slug', slug)
-    .eq('status', 'published')
-    .maybeSingle();
-
-  if (pageRaw === null) notFound();
-
-  const client = db as unknown as {
-    from: (t: string) => {
-      select: (cols: string) => {
-        eq: (col: string, val: string) => {
-          maybeSingle: () => Promise<{
-            data: { layout_tree: Json | null } | null;
-          }>;
-          eq: (col: string, val: boolean) => {
-            maybeSingle: () => Promise<{ data: { sheet: Json } | null }>;
-          };
-        };
-      };
-    };
-  };
-
-  const { data: pageExtended } = await client
-    .from('content_pages')
-    .select('layout_tree')
-    .eq('id', pageRaw.id)
-    .maybeSingle();
-
-  if (pageExtended === null || pageExtended.layout_tree === null) {
-    notFound();
-  }
-
-  const treeContainer =
-    typeof pageExtended.layout_tree === 'object' &&
-    pageExtended.layout_tree !== null &&
-    !Array.isArray(pageExtended.layout_tree)
-      ? (pageExtended.layout_tree as Record<string, unknown>)
-      : null;
-
-  if (treeContainer === null) {
-    notFound();
-  }
-
-  const rootRaw = treeContainer['root'];
-  const metaRaw = treeContainer['meta'];
-
-  // Archetype branch — the home page carries an archetype envelope, not a layout
-  // tree. The archetype styles entirely from its skin, so no style_sheet; the
-  // catalog comes from the tenant's real listing rows.
-  if (
-    rootRaw !== null &&
-    typeof rootRaw === 'object' &&
-    !Array.isArray(rootRaw) &&
-    (rootRaw as Record<string, unknown>)['kind'] === 'archetype'
-  ) {
-    return renderArchetypeStore(rootRaw as Record<string, unknown>, tenantId, undefined, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewMarquee, previewReviews, previewFindUs);
-  }
-
-  const parsedPage = PageSchema.safeParse({
-    slug: pageRaw.slug.replace(/^\/+/, '') || 'home',
-    name: pageRaw.title,
-    root: rootRaw,
-    ...(metaRaw !== null && metaRaw !== undefined ? { meta: metaRaw } : {}),
-  });
-  if (!parsedPage.success) {
-    notFound();
-  }
-
-  const { data: styleSheetRow } = await client
-    .from('style_sheets')
-    .select('sheet')
-    .eq('tenant_id', tenantId)
-    .eq('is_active', true)
-    .maybeSingle();
-
-  const styleResult =
-    styleSheetRow !== null && styleSheetRow.sheet !== null
-      ? parseStyleSheet(styleSheetRow.sheet)
-      : null;
-  const compiled = styleResult?.compiled ?? null;
-
-  const resolved = await resolvePage(
-    parsedPage.data,
-    createResolveContextForTenant(tenantId),
-  );
-
-  return (
-    <>
-      {compiled !== null && (
-        <>
-          {googleFontPreconnectLinks().map((l) => (
-            <link
-              key={l.href}
-              rel={l.rel}
-              href={l.href}
-              {...(l.crossOrigin === 'anonymous'
-                ? { crossOrigin: 'anonymous' as const }
-                : {})}
-            />
-          ))}
-          {compiled.googleFontLinks.map((href) => (
-            <link key={href} rel="stylesheet" href={href} />
-          ))}
-          <style dangerouslySetInnerHTML={{ __html: compiled.cssVariables }} />
-          {compiled.customFontFaces !== '' && (
-            <style
-              dangerouslySetInnerHTML={{ __html: compiled.customFontFaces }}
-            />
-          )}
-        </>
-      )}
-      <LayoutPage page={parsedPage.data} resolved={resolved} />
-    </>
-  );
-}
-
-function parseStyleSheet(sheet: Json) {
-  const parsed = StyleSheetSchema.safeParse(sheet);
-  if (!parsed.success) return null;
-  return { compiled: compileStyleSheet(parsed.data) };
+  // Home (/): render the store from the tenant's home envelope.
+  const env = await loadHomeEnvelope(tenantId);
+  if (env === null) notFound();
+  return renderStore(env, tenantId, undefined, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewMarquee, previewReviews, previewFindUs);
 }
 
 function formatPrice(cents: number): string {
@@ -385,10 +241,10 @@ function seedPreviewCollections(products: ProductView[]): CollectionView[] {
   }));
 }
 
-/** Render a stored archetype store: load the real catalog rows as ProductViews
- *  and paint via the chosen archetype's registered renderer. An `overrideLook`
- *  (editor door-1 preview) re-skins the same content without persisting. */
-async function renderArchetypeStore(env: Record<string, unknown>, tenantId: string, page?: ArchetypePage, overrideLook?: string, previewHero?: string, previewGoods?: string, previewFounder?: string, previewNav?: string, previewCollections?: string, previewMarquee?: string, previewReviews?: string, previewFindUs?: string, collectionSlug?: string) {
+/** Render a stored store: load the real catalog rows as ProductViews and paint
+ *  via the chosen spec's registered renderer. An `overrideLook` (editor door-1
+ *  preview) re-skins the same content without persisting. */
+async function renderStore(env: Record<string, unknown>, tenantId: string, page?: ArchetypePage, overrideLook?: string, previewHero?: string, previewGoods?: string, previewFounder?: string, previewNav?: string, previewCollections?: string, previewMarquee?: string, previewReviews?: string, previewFindUs?: string, collectionSlug?: string) {
   const archetypeKey = env['archetypeKey'];
   const lookKey = env['lookKey'];
   if (typeof archetypeKey !== 'string' || typeof lookKey !== 'string') notFound();
@@ -457,8 +313,7 @@ async function renderArchetypeStore(env: Record<string, unknown>, tenantId: stri
   }
 
   // Collection detail page: filter products down to those whose primary_collection_id
-  // matches this collection. If the slug names no known collection, 404 (the route
-  // guard already ran once, but nothing else catches a mid-request drop).
+  // matches this collection. If the slug names no known collection, 404.
   let effectiveProducts = products;
   if (page === 'collection' && collectionSlug !== undefined) {
     const collection = (collRows ?? []).find((c) => c.slug === collectionSlug);

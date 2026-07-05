@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { Type } from './Type';
+import { DEFAULT_STRINGS } from './defaults';
 
 /** The Main Street contact form. Posts to /api/contact, which requires the
  *  tenant id alongside name/email/message (see lib/validation contactSchema),
- *  so the page render threads the tenant id down as a prop. Structure only:
- *  colors are skin vars, type values are named roles. */
+ *  so the page render threads the tenant id down as a prop. Class-only —
+ *  every declaration lives in skinVarsCss under .ms-contactform-*. */
 export function MainStreetContactForm({ tenantId }: { tenantId: string }) {
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
@@ -15,7 +16,6 @@ export function MainStreetContactForm({ tenantId }: { tenantId: string }) {
     setState('sending');
     const data = new FormData(e.currentTarget);
     try {
-      // Field names MUST match lib/validation contactSchema: tenantId/name/email/message.
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -32,64 +32,40 @@ export function MainStreetContactForm({ tenantId }: { tenantId: string }) {
     }
   }
 
-  const field: React.CSSProperties = {
-    width: '100%',
-    padding: '12px 14px',
-    marginTop: 6,
-    background: 'var(--ms-bg)',
-    color: 'var(--ms-fg)',
-    border: '1px solid var(--ms-rule)',
-    borderRadius: 2,
-    font: 'inherit',
-  };
-  const label: React.CSSProperties = {
-    color: 'var(--ms-fg)',
-    display: 'block',
-    marginTop: 18,
-  };
-
   if (state === 'sent') {
     return (
-      <Type as="p" role="body" style={{ color: 'var(--ms-fg)' }}>
-        Thanks — your message is on its way.
+      <Type as="p" role="body" className="ms-contactform-body">
+        {DEFAULT_STRINGS.contactFormSent}
       </Type>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} style={{ maxWidth: 520, margin: '0 auto', textAlign: 'left' }}>
-      <Type as="label" role="eyebrow" style={label}>
-        Name
-        <input name="name" required style={field} />
+    <form onSubmit={onSubmit} className="ms-contactform-form">
+      <Type as="label" role="eyebrow" className="ms-contactform-field">
+        {DEFAULT_STRINGS.contactFormName}
+        <input name="name" required className="ms-contactform-input" />
       </Type>
-      <Type as="label" role="eyebrow" style={label}>
-        Email
-        <input name="email" type="email" required style={field} />
+      <Type as="label" role="eyebrow" className="ms-contactform-field">
+        {DEFAULT_STRINGS.contactFormEmail}
+        <input name="email" type="email" required className="ms-contactform-input" />
       </Type>
-      <Type as="label" role="eyebrow" style={label}>
-        Message
-        <textarea name="message" required rows={5} style={field} />
+      <Type as="label" role="eyebrow" className="ms-contactform-field">
+        {DEFAULT_STRINGS.contactFormMessage}
+        <textarea name="message" required rows={5} className="ms-contactform-textarea" />
       </Type>
       <Type
         as="button"
         role="navLabel"
         type="submit"
         disabled={state === 'sending'}
-        style={{
-          marginTop: 22,
-          background: 'var(--ms-accent)',
-          color: 'var(--ms-on-accent)',
-          border: 'none',
-          borderRadius: 2,
-          padding: '14px 28px',
-          cursor: state === 'sending' ? 'default' : 'pointer',
-        }}
+        className="ms-contactform-submit"
       >
-        {state === 'sending' ? 'Sending…' : 'Send message'}
+        {state === 'sending' ? DEFAULT_STRINGS.contactFormSending : DEFAULT_STRINGS.contactFormSend}
       </Type>
       {state === 'error' && (
-        <Type as="p" role="caption" style={{ color: 'var(--ms-accent)', marginTop: 12 }}>
-          Something went wrong — try again.
+        <Type as="p" role="caption" className="ms-contactform-status">
+          {DEFAULT_STRINGS.contactFormError}
         </Type>
       )}
     </form>

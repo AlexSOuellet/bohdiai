@@ -1,14 +1,15 @@
 /**
- * Main Street — BEAT 3, the founder, in four bodies.
+ * Main Street — BEAT 3, the founder, in seven bodies (quote, portrait, letter,
+ * card, workbench, editorial, signature).
  *
- * All four live on the skin's CONTRAST surface as a band that spans the full
+ * All seven live on the skin's CONTRAST surface as a band that spans the full
  * viewport width — but the portrait and copy stay inside the content column
  * (`ms-wrap`, padded), so nothing ever kisses the screen edges. Each is a TEASER
  * carrying an "about" cue to the full bio; the calendar shows whenever the maker
  * does in-person events. Structure only — every color is a skin var, every type
- * value comes from its role's CSS (via the Type component). Two treatments set
- * their text italic (letter attribution, card quote) — that lives as a scoped
- * `[data-type]` rule in skinVarsCss, never inline.
+ * value comes from its role's CSS (via the Type component), NO inline styles.
+ * Two treatments set their text italic (letter attribution, card quote) — that
+ * lives as a scoped `[data-type]` rule in skinVarsCss, never inline.
  */
 import type { ReactNode } from 'react';
 import type { ArchetypeTheme } from '../types';
@@ -23,17 +24,10 @@ export interface FounderAbout {
   label: string;
 }
 
-/** Neutral fallback for the calendar's events cue. */
-const DEFAULT_EVENTS = 'See all dates';
-
-/** A hairline derived from the contrast surface's own text — direction-agnostic
- *  so it reads on a dark OR a light contrast panel. */
-const HAIR = 'color-mix(in srgb, var(--ms-contrast-fg) 18%, transparent)';
-
 /** The full-width contrast band; children are held inside the padded column. */
 function FounderBand({ children }: { children: ReactNode }) {
   return (
-    <section data-ms-founder style={{ background: 'var(--ms-contrast-bg)', color: 'var(--ms-contrast-fg)', padding: '110px 40px' }}>
+    <section data-ms-founder className="ms-founder-band">
       <div className="ms-wrap">{children}</div>
     </section>
   );
@@ -42,7 +36,7 @@ function FounderBand({ children }: { children: ReactNode }) {
 function AboutCue({ about }: { about: FounderAbout | undefined }) {
   if (!about) return null;
   return (
-    <Type as="a" role="navLabel" href={about.href} className="ms-aboutcue" style={{ color: 'var(--ms-accent)', display: 'inline-block', marginTop: 30 }}>
+    <Type as="a" role="navLabel" href={about.href} className="ms-founder-aboutcue ms-aboutcue">
       {about.label} &rarr;
     </Type>
   );
@@ -50,26 +44,27 @@ function AboutCue({ about }: { about: FounderAbout | undefined }) {
 
 /** The calendar list. Lives on the contrast band (onContrast, default) OR the
  *  base surface (onContrast=false, when rendered as its own find-us beat). The
- *  hairline + text colors flip with the surface so it reads either way. */
+ *  hairline + text colors flip with the surface via the `data-oncontrast`
+ *  attribute — never inline. The "see all" cue only renders when the copywriter
+ *  authored an eventsLabel; no hardcoded English fallback. */
 export function FindUsList({ findUs, eventsHref, heading = 'eyebrow', onContrast = true }: { findUs: NonNullable<Founder['findUs']>; eventsHref: string; heading?: 'eyebrow' | 'title'; onContrast?: boolean }) {
-  const fg = onContrast ? 'var(--ms-contrast-fg)' : 'var(--ms-fg)';
-  const fgMuted = onContrast ? 'var(--ms-contrast-fg-muted)' : 'var(--ms-fg-muted)';
-  const hair = onContrast ? HAIR : 'var(--ms-rule)';
   return (
-    <div>
-      <Type as="span" role={heading} style={{ color: heading === 'title' ? fg : 'var(--ms-accent)', display: 'block', marginBottom: 16 }}>
+    <div className="ms-findus-list" data-oncontrast={onContrast ? 'true' : 'false'}>
+      <Type as="span" role={heading} className="ms-findus-heading" data-heading={heading}>
         {findUs.label}
       </Type>
       {findUs.rows.map((row, i) => (
-        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16, padding: '13px 0', borderBottom: `1px solid ${hair}` }}>
-          <Type as="span" role="day" style={{ color: fgMuted, flex: '0 0 95px' }}>{row.day}</Type>
-          <Type as="span" role="where" style={{ color: fg, flex: 1 }}>{row.where}</Type>
-          <Type as="span" role="price" style={{ color: fgMuted }}>{row.time}</Type>
+        <div key={i} className="ms-findus-row">
+          <Type as="span" role="day" className="ms-findus-day">{row.day}</Type>
+          <Type as="span" role="where" className="ms-findus-where">{row.where}</Type>
+          <Type as="span" role="price" className="ms-findus-time">{row.time}</Type>
         </div>
       ))}
-      <Type as="a" role="navLabel" href={eventsHref} className="ms-eventscue" style={{ color: 'var(--ms-accent)', display: 'inline-block', marginTop: 18 }}>
-        {findUs.eventsLabel ?? DEFAULT_EVENTS} &rarr;
-      </Type>
+      {findUs.eventsLabel && (
+        <Type as="a" role="navLabel" href={eventsHref} className="ms-findus-cue ms-eventscue">
+          {findUs.eventsLabel} &rarr;
+        </Type>
+      )}
     </div>
   );
 }
@@ -80,13 +75,13 @@ type TreatmentProps = { founder: Founder; skin: ArchetypeTheme; about?: FounderA
 export function FounderQuote({ founder, about }: TreatmentProps) {
   return (
     <FounderBand>
-      <div className="ms-founder-grid" style={{ display: 'grid', gridTemplateColumns: '1.05fr .95fr', gap: 64, alignItems: 'center' }}>
-        <div style={{ position: 'relative', aspectRatio: '4 / 5', borderRadius: 3, overflow: 'hidden' }}>
+      <div className="ms-founder-quote ms-founder-grid">
+        <div className="ms-founder-quote-photo">
           <Media media={founder.photo} />
         </div>
         <div>
-          <Type as="p" role="quote" style={{ color: 'var(--ms-contrast-fg)', margin: 0 }}>{founder.quote}</Type>
-          <Type as="div" role="sig" style={{ color: 'var(--ms-contrast-fg-muted)', marginTop: 26 }}>&mdash; {founder.attribution}</Type>
+          <Type as="p" role="quote" className="ms-founder-quote-body">{founder.quote}</Type>
+          <Type as="div" role="sig" className="ms-founder-quote-sig">&mdash; {founder.attribution}</Type>
           <AboutCue about={about} />
         </div>
       </div>
@@ -100,23 +95,13 @@ export function FounderQuote({ founder, about }: TreatmentProps) {
 export function FounderPortrait({ founder, about }: TreatmentProps) {
   return (
     <FounderBand>
-      <div className="ms-founder-portrait" style={{ position: 'relative', borderRadius: 4, overflow: 'hidden', aspectRatio: '16 / 10' }}>
+      <div className="ms-founder-portrait ms-founder-portrait-frame">
         <Media media={founder.photo} />
-        <div data-portrait-anchor style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
-          <div
-            data-portrait-scrim
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background:
-                'linear-gradient(to top, var(--ms-contrast-bg) 75%, color-mix(in srgb, var(--ms-contrast-bg) 65%, transparent) 92%, transparent 100%)',
-              pointerEvents: 'none',
-            }}
-          />
-          <div data-portrait-text style={{ position: 'relative', padding: '48px clamp(28px, 5vw, 64px)' }}>
-            <Type as="p" role="quote" style={{ color: 'var(--ms-contrast-fg)', margin: 0, maxWidth: '32ch' }}>{founder.quote}</Type>
-            <Type as="div" role="sig" style={{ color: 'var(--ms-contrast-fg-muted)', marginTop: 20 }}>&mdash; {founder.attribution}</Type>
+        <div data-portrait-anchor className="ms-founder-portrait-anchor">
+          <div data-portrait-scrim aria-hidden="true" className="ms-founder-portrait-scrim" />
+          <div data-portrait-text className="ms-founder-portrait-text">
+            <Type as="p" role="quote" className="ms-founder-portrait-quote">{founder.quote}</Type>
+            <Type as="div" role="sig" className="ms-founder-portrait-sig">&mdash; {founder.attribution}</Type>
           </div>
         </div>
       </div>
@@ -148,9 +133,11 @@ export function FounderLetter({ founder, about }: TreatmentProps) {
           <span className="ms-letter-clip">
             <Media media={founder.photo} />
           </span>
-          <Type as="span" role="eyebrow" className="ms-letter-kicker">
-            {founder.eyebrow ?? 'A note'}
-          </Type>
+          {founder.eyebrow && (
+            <Type as="span" role="eyebrow" className="ms-letter-kicker">
+              {founder.eyebrow}
+            </Type>
+          )}
           <Type as="p" role="body" className="ms-letter-body">{founder.quote}</Type>
           <div className="ms-letter-sign">{name}</div>
           {role && (
@@ -173,22 +160,22 @@ export function FounderLetter({ founder, about }: TreatmentProps) {
 export function FounderCard({ founder, about }: TreatmentProps) {
   return (
     <FounderBand>
-      <div className="ms-founder-card" style={{ maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
+      <div className="ms-founder-card">
         {founder.eyebrow && (
-          <Type as="span" role="eyebrow" style={{ color: 'var(--ms-accent)', display: 'block', marginBottom: 14 }}>
+          <Type as="span" role="eyebrow" className="ms-founder-card-eyebrow">
             {founder.eyebrow}
           </Type>
         )}
         {founder.heading && (
-          <Type as="h2" role="title" style={{ color: 'var(--ms-contrast-fg)', margin: '0 0 28px' }}>
+          <Type as="h2" role="title" className="ms-founder-card-heading">
             {founder.heading}
           </Type>
         )}
-        <div style={{ width: 156, height: 156, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 24px', position: 'relative', border: `1px solid ${HAIR}` }}>
+        <div className="ms-founder-card-avatar">
           <Media media={founder.photo} />
         </div>
-        <Type as="p" role="quote" style={{ color: 'var(--ms-contrast-fg)', margin: 0, lineHeight: 1.5 }}>{founder.quote}</Type>
-        <Type as="div" role="sig" style={{ color: 'var(--ms-contrast-fg-muted)', marginTop: 22 }}>&mdash; {founder.attribution}</Type>
+        <Type as="p" role="quote" className="ms-founder-card-quote">{founder.quote}</Type>
+        <Type as="div" role="sig" className="ms-founder-card-sig">&mdash; {founder.attribution}</Type>
         <AboutCue about={about} />
       </div>
     </FounderBand>
@@ -209,9 +196,11 @@ export function FounderWorkbench({ founder, about }: TreatmentProps) {
         </span>
         <div className="ms-wb-cap">
           <div className="ms-wb-head">
-            <Type as="span" role="eyebrow" className="ms-wb-eye">
-              {founder.eyebrow ?? 'In the workshop'}
-            </Type>
+            {founder.eyebrow && (
+              <Type as="span" role="eyebrow" className="ms-wb-eye">
+                {founder.eyebrow}
+              </Type>
+            )}
             <Type as="div" role="title" className="ms-wb-name">{founder.attribution}</Type>
           </div>
           <div className="ms-wb-text">
@@ -236,14 +225,18 @@ export function FounderEditorial({
   aboutPage,
 }: TreatmentProps & { aboutPage?: MainStreetContent['about'] }) {
   const paragraphs = aboutPage?.story ?? [founder.quote];
-  const headline = aboutPage?.heading ?? founder.heading ?? 'Meet the maker';
+  const headline = aboutPage?.heading ?? founder.heading;
   return (
     <FounderBand>
       <div className="ms-founder-editorial">
-        <Type as="span" role="eyebrow" className="ms-ed-kicker">
-          {founder.eyebrow ?? 'Meet the maker'}
-        </Type>
-        <Type as="h2" role="goodsHead" className="ms-ed-head">{headline}</Type>
+        {founder.eyebrow && (
+          <Type as="span" role="eyebrow" className="ms-ed-kicker">
+            {founder.eyebrow}
+          </Type>
+        )}
+        {headline && (
+          <Type as="h2" role="goodsHead" className="ms-ed-head">{headline}</Type>
+        )}
         <Type as="div" role="sig" className="ms-ed-by">{founder.attribution}</Type>
         <div className="ms-ed-cols">
           {paragraphs.map((p, i) => (
@@ -269,9 +262,11 @@ export function FounderSignature({ founder, about }: TreatmentProps) {
   return (
     <FounderBand>
       <div className="ms-founder-signature">
-        <Type as="span" role="eyebrow" className="ms-sig-eye">
-          {founder.eyebrow ?? 'What we stand for'}
-        </Type>
+        {founder.eyebrow && (
+          <Type as="span" role="eyebrow" className="ms-sig-eye">
+            {founder.eyebrow}
+          </Type>
+        )}
         <Type as="p" role="closeHead" className="ms-sig-statement">{founder.quote}</Type>
         <div className="ms-sig-sign">{name}</div>
         {role && (

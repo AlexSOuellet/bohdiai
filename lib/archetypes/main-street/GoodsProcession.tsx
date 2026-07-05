@@ -10,10 +10,15 @@
  * in a random order, as if the space is building itself, then rest. Once landed
  * they hold still (a resolved section is shoppable; the wow is the assembly, not
  * a loop). On a phone the scatter goes vertical — cards hug left then right,
- * vary in width, and overlap — so it survives the narrow screen instead of
- * collapsing to a dead stack. Positions are inline; the fade lives in the skin CSS.
+ * vary in width, and overlap.
+ *
+ * Class-only. Per-card position/rotation come from CSS custom properties written
+ * on each card (--ms-const-x/y/w/r), never as literal inline `left`/`top`/`rotate`.
+ * The random stagger delay is set on the card via `--ms-const-d` at mount. All the
+ * fade-in and layout rules live in skinVarsCss.
  */
 import { useEffect, useRef } from 'react';
+import type { CSSProperties } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
@@ -21,8 +26,6 @@ import { Media } from './chrome';
 import { Type } from './Type';
 import { GoodsHead, type GoodsViewAll } from './beats';
 
-/** A scatter slot: left% and top% (of the stage height), width% (of the stage),
- *  and a small rotation. Tuned per card count so 3, 4, or 5 each read composed. */
 interface Slot {
   l: number;
   t: number;
@@ -30,11 +33,6 @@ interface Slot {
   r: number;
 }
 
-// Slot geometry is tuned so that, with the stage height tied to its width (see
-// STAGE_ASPECT), horizontally-overlapping cards keep a clear vertical gap and no
-// card runs past the stage bottom — at any viewport. `top` is a % of the stage
-// HEIGHT; `w` a % of the stage WIDTH; a card's height is ~1.25× its width, so
-// both scale with the same dimension and the composition can't collide.
 const LAYOUTS: Record<number, Slot[]> = {
   3: [
     { l: 6, t: 6, w: 26, r: -2 },
@@ -56,19 +54,11 @@ const LAYOUTS: Record<number, Slot[]> = {
   ],
 };
 
-/** The stage height as a ratio of its width (`width / height`). Height tied to
- *  width is the whole fix for the old overlap: a vh stage let card heights
- *  (width-driven) and slot tops (height-driven) scale independently, so cards
- *  collided on some window shapes. 1 : 1.1 leaves comfortable margins for the
- *  lowest cards while staying near a screen-and-a-half tall on desktop. */
-const STAGE_ASPECT = '1 / 1.1';
-
 function slotsFor(n: number): Slot[] {
   return LAYOUTS[n] ?? LAYOUTS[5]!.slice(0, Math.max(1, n));
 }
 
-/** Fisher–Yates — the random order the cards build in (reshuffled each load, so
- *  the assembly never feels mechanical). Presentation only; no SSR concern. */
+/** Fisher–Yates — the random order the cards build in. Presentation only. */
 function shuffle(n: number): number[] {
   const a = Array.from({ length: n }, (_, i) => i);
   for (let i = a.length - 1; i > 0; i--) {
@@ -78,8 +68,6 @@ function shuffle(n: number): number[] {
   return a;
 }
 
-/** Gap between each card landing — slow and deliberate, so the space reads as
- *  building itself rather than snapping in. */
 const STEP_MS = 430;
 
 export function GoodsProcession({
@@ -106,13 +94,10 @@ export function GoodsProcession({
       (entries) => {
         entries.forEach((e) => {
           if (!e.isIntersecting) return;
-          // Deal each card a random place in the build order via its delay; the
-          // skin CSS does the fade. Reduced-motion skips the stagger (the CSS
-          // shows the cards immediately anyway).
           if (!reduce) {
             const order = shuffle(cards.length);
             cards.forEach((c, i) => {
-              c.style.transitionDelay = `${order[i]! * STEP_MS}ms`;
+              c.style.setProperty('--ms-const-d', `${order[i]! * STEP_MS}ms`);
             });
           }
           stage.classList.add('in');
@@ -126,49 +111,34 @@ export function GoodsProcession({
   }, [products.length]);
 
   return (
-    <section id="goods" style={{ padding: '72px 0 84px' }}>
+    <section id="goods" className="ms-const-section">
       <GoodsHead goods={goods} skin={skin} viewAll={viewAll} />
       <div className="ms-wrap">
-        <div ref={stageRef} className="ms-const-stage" style={{ position: 'relative', aspectRatio: STAGE_ASPECT }}>
+        <div ref={stageRef} className="ms-const-stage">
           {products.map((p, i) => {
             const s = slots[i] ?? slots[slots.length - 1]!;
+            const cardVars = {
+              '--ms-const-x': `${s.l}%`,
+              '--ms-const-y': `${s.t}%`,
+              '--ms-const-w': `${s.w}%`,
+              '--ms-const-r': `${s.r}deg`,
+            } as CSSProperties;
             return (
               <a
                 key={p.slug}
                 href={`/listings/${p.slug}`}
                 data-ms-const-card=""
                 className="ms-const-card"
-                style={{
-                  position: 'absolute',
-                  left: `${s.l}%`,
-                  top: `${s.t}%`,
-                  width: `${s.w}%`,
-                  rotate: `${s.r}deg`,
-                  color: 'inherit',
-                  textDecoration: 'none',
-                }}
+                style={cardVars}
               >
-                <div
-                  className="ms-const-frame"
-                  style={{
-                    position: 'relative',
-                    aspectRatio: '4 / 5',
-                    borderRadius: 3,
-                    overflow: 'hidden',
-                    background: 'color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg))',
-                  }}
-                >
+                <div className="ms-const-frame">
                   <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
                 </div>
-                <div className="ms-const-meta" style={{ padding: '12px 2px 0' }}>
-                  <Type as="h3" role="cardTitle" style={{ color: 'var(--ms-fg)', margin: 0 }}>
+                <div className="ms-const-meta">
+                  <Type as="h3" role="cardTitle" className="ms-const-name">
                     {p.name}
                   </Type>
-                  <Type
-                    as="span"
-                    role="price"
-                    style={{ color: 'var(--ms-fg-muted)', display: 'inline-block', marginTop: 4 }}
-                  >
+                  <Type as="span" role="price" className="ms-const-price">
                     {p.price}
                   </Type>
                 </div>

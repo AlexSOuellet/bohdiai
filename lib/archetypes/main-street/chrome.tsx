@@ -290,8 +290,12 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-kb{animation:ms-kenburns 6.5s ${mo.reveal.easing} forwards}
     @keyframes ms-kenburns{from{transform:scale(1.075) translateY(-1.2%)}to{transform:scale(1.005)}}
     /* goods procession — a CONSTELLATION: scattered cards that each fade in once
-       (random order, staggered via an inline transition-delay) and then rest. */
-    .arch-main-street .ms-const-card{opacity:0;transform:translateY(34px) scale(.965);transition:opacity 1.5s ${mo.reveal.easing},transform 1.6s ${mo.reveal.easing}}
+       (random order, staggered via a CSS custom-property delay) and then rest.
+       Position + rotation come from CSS vars written on each card (x/y/w/r); the
+       stagger delay comes from --ms-const-d set by the mount effect. The rotate
+       property is separate from transform, so the fade-in translate/scale doesn't
+       fight the per-card rotation. */
+    .arch-main-street .ms-const-card{position:absolute;left:var(--ms-const-x);top:var(--ms-const-y);width:var(--ms-const-w);rotate:var(--ms-const-r,0deg);color:inherit;text-decoration:none;opacity:0;transform:translateY(34px) scale(.965);transition:opacity 1.5s ${mo.reveal.easing},transform 1.6s ${mo.reveal.easing};transition-delay:var(--ms-const-d,0s)}
     .arch-main-street .ms-const-stage.in .ms-const-card{opacity:1;transform:none}
     /* goods module — a STILL, structural composition (the Swiss answer to the
        banned card grid). Asymmetric modules on a strict 12-col grid; index
@@ -414,7 +418,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       .arch-main-street [data-ms-nav]{padding-left:20px!important;padding-right:20px!important}
     }
     @media(max-width:860px){
-      .arch-main-street .ms-founder-grid{grid-template-columns:1fr!important;gap:36px!important}
+      .arch-main-street .ms-founder-quote{grid-template-columns:1fr!important;gap:36px!important}
       .arch-main-street .ms-founder-findus{grid-template-columns:1fr!important;gap:40px!important}
       .arch-main-street .ms-marquee [data-ms-card]{width:74vw}
       .arch-main-street .ms-switch-grid{grid-template-columns:1fr!important;gap:32px!important}
@@ -466,6 +470,52 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
        to amplify a type role — a bigger statement, a left-aligned headline — wins
        on source order without inline styles or !important. Colors are skin vars or
        contrast-surface color-mix; nothing is a literal. ── */
+    /* the shared band + cue every founder treatment sits on. All treatments render
+       inside a full-width contrast band; the content column stays inside .ms-wrap.
+       The about cue is a common tail rendered by every treatment except the letter
+       (which has its own P.S. variant) and the editorial (which owns its own tail). */
+    .arch-main-street .ms-founder-band{background:var(--ms-contrast-bg);color:var(--ms-contrast-fg);padding:110px 40px}
+    @media(max-width:760px){.arch-main-street .ms-founder-band{padding:76px 20px}}
+    .arch-main-street .ms-founder-aboutcue{color:var(--ms-accent);display:inline-block;margin-top:30px}
+    /* quote — a two-column pull-quote: portrait left, quote+attribution right. */
+    .arch-main-street .ms-founder-quote{display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center}
+    .arch-main-street .ms-founder-quote-photo{position:relative;aspect-ratio:4 / 5;border-radius:3px;overflow:hidden}
+    .arch-main-street .ms-founder-quote-body{color:var(--ms-contrast-fg);margin:0}
+    .arch-main-street .ms-founder-quote-sig{color:var(--ms-contrast-fg-muted);margin-top:26px}
+    /* portrait — a large CONTAINED portrait with the quote anchored to the bottom.
+       The scrim sits BEHIND the text container and follows its bounding box, so a
+       long quote that pushes upward never sticks out into unscrimmed image area. */
+    .arch-main-street .ms-founder-portrait-frame{position:relative;border-radius:4px;overflow:hidden;aspect-ratio:16 / 10}
+    .arch-main-street .ms-founder-portrait-anchor{position:absolute;left:0;right:0;bottom:0}
+    .arch-main-street .ms-founder-portrait-scrim{position:absolute;inset:0;background:linear-gradient(to top,var(--ms-contrast-bg) 75%,color-mix(in srgb,var(--ms-contrast-bg) 65%,transparent) 92%,transparent 100%);pointer-events:none}
+    .arch-main-street .ms-founder-portrait-text{position:relative;padding:48px clamp(28px,5vw,64px)}
+    .arch-main-street .ms-founder-portrait-quote{color:var(--ms-contrast-fg);margin:0;max-width:32ch}
+    .arch-main-street .ms-founder-portrait-sig{color:var(--ms-contrast-fg-muted);margin-top:20px}
+    /* card — the centered "meet the maker" card: eyebrow, heading, round face,
+       warm pull-quote, attribution. The italic on the quote is set through the
+       existing scoped [data-type="quote"] rule under .ms-founder-card. */
+    .arch-main-street .ms-founder-card{max-width:560px;margin:0 auto;text-align:center}
+    .arch-main-street .ms-founder-card-eyebrow{color:var(--ms-accent);display:block;margin-bottom:14px}
+    .arch-main-street .ms-founder-card-heading{color:var(--ms-contrast-fg);margin:0 0 28px}
+    .arch-main-street .ms-founder-card-avatar{width:156px;height:156px;border-radius:50%;overflow:hidden;margin:0 auto 24px;position:relative;border:1px solid color-mix(in srgb,var(--ms-contrast-fg) 18%,transparent)}
+    .arch-main-street .ms-founder-card-quote{color:var(--ms-contrast-fg);margin:0;line-height:1.5}
+    .arch-main-street .ms-founder-card-sig{color:var(--ms-contrast-fg-muted);margin-top:22px}
+    /* the shared FIND-US LIST — used by the founder band AND the standalone find-us
+       beat. Reads on the CONTRAST band by default; a data-oncontrast="false"
+       variant reads on the BASE surface (its own beat, the Events page). The
+       hairline and text colors flip with the surface. */
+    .arch-main-street .ms-findus-heading{display:block;margin-bottom:16px;color:var(--ms-accent)}
+    .arch-main-street .ms-findus-heading[data-heading="title"]{color:var(--ms-contrast-fg)}
+    .arch-main-street .ms-findus-list[data-oncontrast="false"] .ms-findus-heading[data-heading="title"]{color:var(--ms-fg)}
+    .arch-main-street .ms-findus-row{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:13px 0;border-bottom:1px solid color-mix(in srgb,var(--ms-contrast-fg) 18%,transparent)}
+    .arch-main-street .ms-findus-list[data-oncontrast="false"] .ms-findus-row{border-bottom-color:var(--ms-rule)}
+    .arch-main-street .ms-findus-day{color:var(--ms-contrast-fg-muted);flex:0 0 95px}
+    .arch-main-street .ms-findus-list[data-oncontrast="false"] .ms-findus-day{color:var(--ms-fg-muted)}
+    .arch-main-street .ms-findus-where{color:var(--ms-contrast-fg);flex:1}
+    .arch-main-street .ms-findus-list[data-oncontrast="false"] .ms-findus-where{color:var(--ms-fg)}
+    .arch-main-street .ms-findus-time{color:var(--ms-contrast-fg-muted)}
+    .arch-main-street .ms-findus-list[data-oncontrast="false"] .ms-findus-time{color:var(--ms-fg-muted)}
+    .arch-main-street .ms-findus-cue{color:var(--ms-accent);display:inline-block;margin-top:18px}
     /* letter — a note on a paper slip laid on the dark band, turned, a snapshot
        clipped to a corner, signed in the skin's display hand. Paper + ink are the
        skin's BASE surface (an inversion against the contrast band). */
@@ -862,6 +912,248 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       .arch-main-street .ms-fu-poster .ms-wrap{max-width:none}
       .arch-main-street .ms-fu-poster-ln{grid-template-columns:1fr}
     }
+    /* ══════════════════════════════════════════════════════════════════════
+       HEROES — shared classes + per-hero specifics. Every hero is class-only;
+       the media backdrop, nav overlay row, text stack, CTA row, and CTA buttons
+       come from these classes. Per-hero geometry (Split, Stacked, Floating,
+       Editorial, Collage, Moment, Typographic) has its own classes below.
+       Nothing inline — dynamic per-tenant values become CSS custom properties on
+       wrapper elements. ══════════════════════════════════════════════════════ */
+    .arch-main-street .ms-hero-navbar{position:absolute;top:0;left:0;right:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:clamp(20px,3vw,32px) clamp(24px,5vw,60px) 0}
+    .arch-main-street .ms-hero-navbar--on-media{color:var(--ms-on-media)}
+    .arch-main-street .ms-hero-brand{color:var(--ms-fg);margin:0}
+    .arch-main-street .ms-hero-brand--on-media{color:var(--ms-on-media);text-shadow:0 2px 40px rgba(0,0,0,.5)}
+    .arch-main-street .ms-hero-eyebrow{color:var(--ms-accent);display:block;margin-bottom:20px}
+    .arch-main-street .ms-hero-eyebrow--on-media{color:var(--ms-on-media);margin-bottom:clamp(10px,1.4vh,16px)}
+    .arch-main-street .ms-hero-sub{color:var(--ms-fg-muted);margin:20px 0 0}
+    .arch-main-street .ms-hero-sub--on-media{color:var(--ms-on-media);margin:20px 0 0}
+    .arch-main-street .ms-hero-rule{display:block;width:64px;height:1px;background:var(--ms-accent);opacity:.7;margin:clamp(20px,3vh,32px) 0}
+    .arch-main-street .ms-hero-rule--short{width:40px;height:3px;opacity:1;margin-bottom:16px}
+    .arch-main-street .ms-hero-rule--mid{width:46px;height:2px;opacity:1;margin-bottom:20px}
+    .arch-main-street .ms-hero-actions{display:flex;gap:16px;margin-top:clamp(24px,4vh,40px);flex-wrap:wrap}
+    .arch-main-street .ms-hero-actions--center{justify-content:center}
+    .arch-main-street .ms-cta-primary{background:var(--ms-accent);color:var(--ms-on-accent);padding:16px 26px;border-radius:2px;display:inline-block}
+    .arch-main-street .ms-cta-secondary{border:1px solid var(--ms-rule);color:var(--ms-fg);padding:16px 26px;border-radius:2px;display:inline-block}
+    .arch-main-street .ms-cta-secondary--on-media{border-color:var(--ms-on-media-muted);color:var(--ms-on-media)}
+    /* Split hero — text left, media right; 50/50 desktop, stacks on phone.
+       Text panel has a nav at top + content column below; the nav sits by natural
+       flow (nothing centers it), the inner content grows to fill and center-justifies. */
+    .arch-main-street .ms-splithero{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
+    .arch-main-street .ms-splithero[data-media-side="left"] .ms-splithero-media{order:1}
+    .arch-main-street .ms-splithero[data-media-side="left"] .ms-splithero-text{order:2}
+    .arch-main-street .ms-splithero-text{position:relative;padding:clamp(28px,5vw,60px);display:flex;flex-direction:column;background:var(--ms-bg);color:var(--ms-fg);min-height:100vh}
+    .arch-main-street .ms-splithero-nav{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:clamp(24px,5vh,56px)}
+    .arch-main-street .ms-splithero-inner{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:540px}
+    .arch-main-street .ms-splithero-media{position:relative;overflow:hidden;min-height:100vh;background:var(--ms-contrast-bg)}
+    @media(max-width:820px){
+      .arch-main-street .ms-splithero{grid-template-columns:1fr;min-height:auto}
+      .arch-main-street .ms-splithero-text{min-height:auto;padding:32px 24px}
+      .arch-main-street .ms-splithero-media{min-height:56vh}
+    }
+    /* Stacked hero — a nav row, a centered text block, then a media band. */
+    .arch-main-street .ms-stackedhero{display:flex;flex-direction:column;min-height:100vh;background:var(--ms-bg);color:var(--ms-fg)}
+    .arch-main-street .ms-stackedhero .ms-hero-navbar{position:relative}
+    .arch-main-street .ms-stackedhero-stack{display:flex;flex-direction:column;align-items:center;text-align:center;padding:clamp(32px,6vh,72px) clamp(24px,6vw,64px)}
+    .arch-main-street .ms-stackedhero-media{position:relative;overflow:hidden;background:var(--ms-contrast-bg);flex:1;min-height:40vh}
+    /* Typographic hero — no media backdrop; brand headline IS the picture. */
+    .arch-main-street .ms-typohero{display:flex;flex-direction:column;min-height:100vh;background:var(--ms-bg);color:var(--ms-fg)}
+    .arch-main-street .ms-typohero .ms-hero-navbar{position:relative}
+    .arch-main-street .ms-typohero-stack{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(40px,8vh,120px) clamp(24px,6vw,72px)}
+    .arch-main-street .ms-typohero-stack .ms-hero-brand{max-width:16ch}
+    .arch-main-street .ms-typohero-stack .ms-hero-sub{max-width:46ch;margin:0}
+    /* Floating card hero — media backdrop, then a solid card floating over it. */
+    .arch-main-street .ms-floating-hero{position:relative;min-height:100vh;overflow:hidden;background:var(--ms-contrast-bg);display:flex;flex-direction:column}
+    .arch-main-street .ms-floating-hero [data-ms-hero-media]{position:absolute;inset:0;z-index:0}
+    .arch-main-street .ms-float-wash{position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(0,0,0,.18),rgba(0,0,0,.5))}
+    .arch-main-street .ms-float-cardwrap{position:relative;z-index:2;flex:1;display:flex;align-items:center;justify-content:flex-end;padding:clamp(24px,5vw,80px)}
+    .arch-main-street .ms-float-card{background:var(--ms-bg);color:var(--ms-fg);padding:clamp(32px,4vw,52px);max-width:460px;border:1px solid var(--ms-rule);box-shadow:0 44px 100px -24px rgba(0,0,0,.55)}
+    .arch-main-street .ms-float-card-eyebrow{color:var(--ms-accent);display:block;margin-bottom:18px}
+    .arch-main-street .ms-float-card-rule{width:46px;height:2px;background:var(--ms-accent);margin-bottom:20px;display:block}
+    .arch-main-street .ms-float-card-brand{color:var(--ms-fg);margin:0}
+    .arch-main-street .ms-float-card-sub{color:var(--ms-fg-muted);margin:20px 0 0}
+    .arch-main-street .ms-float-card-actions{display:flex;gap:16px;margin-top:28px;flex-wrap:wrap}
+    .arch-main-street .ms-float-card-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:15px 24px;border-radius:2px;display:inline-block}
+    .arch-main-street .ms-float-card-cta2{border:1px solid var(--ms-rule);color:var(--ms-fg);padding:15px 24px;border-radius:2px;display:inline-block}
+    @media(max-width:860px){.arch-main-street .ms-float-cardwrap{justify-content:center}}
+    /* Editorial cover hero — magazine cover: masthead top, coverlines bottom-left. */
+    .arch-main-street .ms-editorial-hero{position:relative;min-height:100vh;overflow:hidden;background:var(--ms-contrast-bg);display:flex;flex-direction:column}
+    .arch-main-street .ms-editorial-hero [data-ms-hero-media]{position:absolute;inset:0;z-index:0}
+    .arch-main-street .ms-cover-grad{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.62),transparent 32%,transparent 58%,rgba(0,0,0,.7))}
+    .arch-main-street .ms-cover-inner{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;color:var(--ms-on-media);padding:clamp(14px,2vw,24px) clamp(20px,4vw,52px) clamp(28px,4vh,52px)}
+    .arch-main-street .ms-cover-nav{display:flex;align-items:center;justify-content:space-between;gap:24px;color:var(--ms-on-media)}
+    .arch-main-street .ms-cover-masthead{text-align:center;margin-top:clamp(6px,1.5vh,18px)}
+    .arch-main-street .ms-cover-eyebrow{color:var(--ms-on-media);display:block;margin-bottom:clamp(10px,1.4vh,16px)}
+    .arch-main-street .ms-cover-brand{color:var(--ms-on-media);margin:0;text-shadow:0 2px 50px rgba(0,0,0,.5)}
+    .arch-main-street .ms-cover-rule{height:1px;background:var(--ms-on-media);opacity:.75;margin-top:clamp(12px,1.8vh,22px)}
+    .arch-main-street .ms-cover-coverlines{margin-top:auto;max-width:34ch;display:flex;flex-direction:column;align-items:flex-start;text-align:left}
+    .arch-main-street .ms-cover-tick{width:40px;height:3px;background:var(--ms-accent);margin-bottom:16px;display:block}
+    .arch-main-street .ms-cover-sub{color:var(--ms-on-media);margin:0;text-shadow:0 1px 24px rgba(0,0,0,.55)}
+    .arch-main-street .ms-cover-actions{display:flex;gap:16px;margin-top:26px;flex-wrap:wrap}
+    .arch-main-street .ms-cover-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:16px 26px;border-radius:2px;display:inline-block}
+    .arch-main-street .ms-cover-cta2{border:1px solid var(--ms-on-media-muted);color:var(--ms-on-media);padding:16px 26px;border-radius:2px;display:inline-block}
+    .arch-main-street .ms-cover-masthead [data-type="brand"]{font-size:clamp(56px,11vw,168px);line-height:.9;letter-spacing:-.015em}
+    .arch-main-street .ms-cover-coverlines [data-type="body"]{font-size:clamp(18px,2vw,26px);line-height:1.35}
+    /* Collage hero — a text column beside a cluster of THREE positioned shots.
+       Each shot's position + rotation is set via nth-child (not inline) — the three
+       positions are fixed structural knobs, not per-tenant values. */
+    .arch-main-street .ms-collage-hero{display:flex;flex-direction:column;min-height:100vh;background:var(--ms-bg);color:var(--ms-fg)}
+    .arch-main-street .ms-collage-body{flex:1;display:grid;grid-template-columns:.92fr 1.08fr;align-items:center;gap:clamp(24px,4vw,48px);padding:clamp(16px,3vh,32px) clamp(24px,5vw,60px) clamp(32px,5vh,56px);min-height:0}
+    .arch-main-street .ms-collage-text{display:flex;flex-direction:column}
+    .arch-main-street .ms-collage-cluster{position:relative;width:100%;height:100%;min-height:360px}
+    .arch-main-street .ms-collage-shot{position:absolute;overflow:hidden;border:6px solid var(--ms-bg);box-shadow:0 16px 36px -12px rgba(0,0,0,.26)}
+    .arch-main-street .ms-collage-shot img{width:100%;height:100%;object-fit:cover;display:block}
+    .arch-main-street .ms-collage-shot:nth-child(1){width:46%;height:64%;left:0;top:6%;transform:rotate(-5deg);z-index:1}
+    .arch-main-street .ms-collage-shot:nth-child(2){width:38%;height:44%;right:2%;top:0;transform:rotate(5deg);z-index:2}
+    .arch-main-street .ms-collage-shot:nth-child(3){width:42%;height:46%;right:6%;bottom:2%;transform:rotate(-3deg);z-index:3}
+    @media(max-width:860px){
+      .arch-main-street .ms-collage-body{grid-template-columns:1fr;gap:clamp(20px,4vh,32px)}
+      .arch-main-street .ms-collage-cluster{min-height:300px}
+    }
+    /* Moment hero — the video/still that IS the front door. Nav is fixed at the top;
+       when the visitor scrolls past the hero, the nav's background flips from the
+       over-media wash to a solid surface — driven by CSS variables set inline on the
+       nav (--ms-nav-bg / --ms-nav-fg / --ms-nav-shadow), NEVER hardcoded properties. */
+    .arch-main-street .ms-momenthero-nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 40px;background:var(--ms-nav-bg,transparent);color:var(--ms-nav-fg,var(--ms-on-media));box-shadow:var(--ms-nav-shadow,none);transition:background .5s ease,padding .5s ease,color .5s ease}
+    .arch-main-street .ms-momenthero{position:relative;min-height:100vh;overflow:hidden;background:var(--ms-contrast-bg);color:var(--ms-on-media)}
+    .arch-main-street .ms-momenthero-mediaframe{position:absolute;inset:0;z-index:0;transform-origin:center}
+    .arch-main-street .ms-momenthero-mediaframe--push{animation:ms-hero-push 24s ease-in-out infinite alternate}
+    @keyframes ms-hero-push{0%{transform:scale(1)}100%{transform:scale(1.03)}}
+    .arch-main-street .ms-momenthero-frame{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:clamp(28px,6vw,96px);opacity:0;transition:opacity .9s linear;pointer-events:none}
+    .arch-main-street .ms-momenthero-frame[data-visible="true"]{opacity:1;pointer-events:auto}
+    .arch-main-street .ms-momenthero-storyline{color:var(--ms-on-media);max-width:24ch;margin:0;text-shadow:0 2px 36px rgba(0,0,0,.55)}
+    .arch-main-street .ms-momenthero-brand-eyebrow{color:var(--ms-on-media-muted);display:block;margin-bottom:18px}
+    .arch-main-street .ms-momenthero-brand-h1{color:var(--ms-on-media);margin:0;text-shadow:0 2px 40px rgba(0,0,0,.5)}
+    .arch-main-street .ms-momenthero-brand-actions{display:flex;gap:16px;justify-content:center;margin-top:32px;flex-wrap:wrap}
+    .arch-main-street .ms-momenthero-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:16px 26px;border-radius:2px;display:inline-block}
+    .arch-main-street .ms-momenthero-cta2{border:1px solid var(--ms-on-media-muted);color:var(--ms-on-media);padding:16px 26px;border-radius:2px;display:inline-block}
+    /* Moment hero scrim — center-weighted radial that darkens ONLY where text sits. */
+    .arch-main-street .ms-momenthero-scrim{position:absolute;inset:0;z-index:1;background:radial-gradient(120% 90% at 50% 45%, rgba(0,0,0,.42), rgba(0,0,0,.82))}
+    /* ══════════════════════════════════════════════════════════════════════
+       BEATS.TSX — GoodsHead, the goods marquee card, the "see full catalog" cue,
+       and the close section. All class-only. ══════════════════════════════════ */
+    .arch-main-street .ms-goodshead{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:48px}
+    .arch-main-street .ms-goodshead-eyebrow{color:var(--ms-accent);display:block;margin-bottom:14px}
+    .arch-main-street .ms-goodshead-title{color:var(--ms-fg);max-width:16ch;margin:0}
+    .arch-main-street .ms-goodshead-cue{color:var(--ms-accent);white-space:nowrap}
+    /* the pill-shaped "See the full catalog" button below the marquee body. */
+    .arch-main-street .ms-shopcue-wrap{display:flex;justify-content:center;margin-top:56px}
+    .arch-main-street .ms-shopcue-btn{background:var(--ms-accent);color:var(--ms-on-accent);padding:16px 32px;border-radius:100px;display:inline-block}
+    /* the marquee goods body — one row of product cards scrolling continuously. */
+    .arch-main-street .ms-marq-section{padding:96px 0 110px;overflow:hidden}
+    .arch-main-street .ms-marq-track{display:flex;gap:18px;width:max-content;padding:0 9px}
+    .arch-main-street .ms-marq-card{width:340px;flex:0 0 auto}
+    .arch-main-street .ms-marq-link{color:inherit;text-decoration:none;display:block}
+    .arch-main-street .ms-marq-media{position:relative;aspect-ratio:4/5;overflow:hidden;border-radius:3px;background:color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg))}
+    .arch-main-street .ms-marq-price{position:absolute;left:12px;bottom:12px;background:var(--ms-bg);color:var(--ms-fg);padding:6px 10px;border-radius:2px}
+    .arch-main-street .ms-marq-name{color:var(--ms-fg);margin:16px 0 2px}
+    .arch-main-street .ms-marq-desc{color:var(--ms-fg-muted);margin:0}
+    /* close — the big-type sign-off at the bottom of the home. */
+    .arch-main-street .ms-close-section{padding:130px 40px;text-align:center}
+    .arch-main-street .ms-close-eyebrow{color:var(--ms-accent);display:block;margin-bottom:22px}
+    .arch-main-street .ms-close-head{color:var(--ms-fg);max-width:16ch;margin:0 auto 36px}
+    .arch-main-street .ms-close-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:18px 34px;border-radius:2px;display:inline-block}
+    /* ══════════════════════════════════════════════════════════════════════
+       GOODS TREATMENTS — Procession (Constellation), Switcher, Slideshow. Per-
+       instance opacity/transform stays inline as CSS custom props on wrappers. ═ */
+    .arch-main-street .ms-const-section{padding:72px 0 84px}
+    .arch-main-street .ms-const-stage{position:relative;aspect-ratio:1 / 1.1}
+    .arch-main-street .ms-const-frame{position:relative;aspect-ratio:4 / 5;border-radius:3px;overflow:hidden;background:color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg))}
+    .arch-main-street .ms-const-meta{padding:12px 2px 0}
+    .arch-main-street .ms-const-name{color:var(--ms-fg);margin:0}
+    .arch-main-street .ms-const-price{color:var(--ms-fg-muted);display:inline-block;margin-top:4px}
+    .arch-main-street .ms-switch-section{padding:96px 0 110px}
+    .arch-main-street .ms-switch-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:stretch}
+    .arch-main-street .ms-switch-stage{position:relative;aspect-ratio:4/5;border-radius:3px;overflow:hidden;background:color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg))}
+    .arch-main-street .ms-switch-layer{position:absolute;inset:0;opacity:0}
+    .arch-main-street .ms-switch-layer[data-on="true"]{opacity:1}
+    .arch-main-street .ms-switch-price-tag{position:absolute;left:14px;bottom:14px;background:var(--ms-bg);color:var(--ms-fg);padding:7px 11px;border-radius:2px}
+    .arch-main-street .ms-switch-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+    .arch-main-street .ms-switch-row{border-top:1px solid var(--ms-rule);flex:none}
+    .arch-main-street .ms-switch-link{color:inherit;text-decoration:none;display:block;padding:20px 4px;background:transparent;border:0;cursor:pointer;text-align:left;width:100%}
+    .arch-main-street .ms-switch-line{display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+    .arch-main-street .ms-switch-name{color:var(--ms-fg)}
+    .arch-main-street .ms-switch-row[data-on="true"] .ms-switch-name{color:var(--ms-accent)}
+    .arch-main-street .ms-switch-price{color:var(--ms-fg-muted)}
+    .arch-main-street .ms-switch-desc{color:var(--ms-fg-muted);display:block;margin-top:6px}
+    .arch-main-street .ms-slide-section{padding:96px 0 110px}
+    .arch-main-street .ms-slide-stage{position:relative;aspect-ratio:3/2;overflow:hidden;border-radius:3px;background:color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg));display:block;color:inherit;text-decoration:none}
+    .arch-main-street .ms-slide-layer{position:absolute;inset:0;opacity:0}
+    .arch-main-street .ms-slide-layer[data-on="true"]{opacity:1}
+    .arch-main-street .ms-slide-backdrop{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.18);filter:blur(32px) saturate(1.05) brightness(.82)}
+    .arch-main-street .ms-slide-fg-wrap{position:absolute;inset:0}
+    .arch-main-street .ms-slide-fg{width:100%;height:100%;object-fit:contain}
+    .arch-main-street .ms-slide-caption{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-top:22px;flex-wrap:wrap;color:inherit;text-decoration:none}
+    .arch-main-street .ms-slide-name{color:var(--ms-fg);margin:0}
+    .arch-main-street .ms-slide-desc{color:var(--ms-fg-muted);margin:4px 0 0}
+    .arch-main-street .ms-slide-price{color:var(--ms-fg)}
+    .arch-main-street .ms-slide-dots{display:flex;gap:9px;margin-top:20px}
+    .arch-main-street .ms-slide-dot{width:9px;height:9px;border-radius:9px;border:0;padding:0;cursor:pointer;background:var(--ms-rule);transition:width .4s ease,background .4s ease}
+    .arch-main-street .ms-slide-dot[aria-selected="true"]{width:26px;background:var(--ms-accent)}
+    /* ══════════════════════════════════════════════════════════════════════
+       PRODUCT DETAIL — MainStreetProduct. ═══════════════════════════════════ */
+    .arch-main-street .ms-product-nav{display:flex;align-items:center;justify-content:space-between;padding:14px 40px;background:var(--ms-bg);color:var(--ms-fg);border-bottom:1px solid var(--ms-rule)}
+    .arch-main-street .ms-product-section{padding-top:var(--ms-section);padding-bottom:var(--ms-section)}
+    .arch-main-street .ms-product-tile{aspect-ratio:var(--ms-tile-aspect,4/5)}
+    .arch-main-street .ms-product-tile-empty{background:var(--ms-fg-muted);opacity:.18}
+    .arch-main-street .ms-product-thumbs{margin-top:var(--ms-tight);display:grid;grid-template-columns:repeat(3,1fr);gap:var(--ms-tight)}
+    .arch-main-street .ms-product-title{color:var(--ms-fg);margin:0}
+    .arch-main-street .ms-product-price{color:var(--ms-fg);margin-top:var(--ms-base)}
+    .arch-main-street .ms-product-desc{color:var(--ms-fg-muted);margin:var(--ms-base) 0 0;max-width:460px}
+    .arch-main-street .ms-product-var{margin-top:var(--ms-loose)}
+    .arch-main-street .ms-product-var-lbl{color:var(--ms-fg)}
+    .arch-main-street .ms-product-var-opts{margin-top:var(--ms-tight);display:flex;flex-wrap:wrap;gap:var(--ms-tight)}
+    .arch-main-street .ms-product-var-chip{color:var(--ms-fg);border:1px solid var(--ms-rule);padding:7px 12px;border-radius:2px}
+    .arch-main-street .ms-product-buy{margin-top:var(--ms-loose)}
+    .arch-main-street .ms-product-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:var(--ms-base) var(--ms-loose);border-radius:2px;display:inline-block;border:0;cursor:pointer;font:inherit}
+    .arch-main-street .ms-product-cta[data-soldout="true"]{background:var(--ms-fg-muted);cursor:default}
+    .arch-main-street .ms-product-story{padding-top:var(--ms-section)}
+    .arch-main-street .ms-product-story-eyebrow{color:var(--ms-accent);display:block;margin-bottom:var(--ms-base)}
+    .arch-main-street .ms-product-story-body{color:var(--ms-fg);max-width:640px;margin:0}
+    /* ══════════════════════════════════════════════════════════════════════
+       CONTACT FORM — MainStreetContactForm. ═════════════════════════════════ */
+    .arch-main-street .ms-contactform-form{max-width:520px;margin:0 auto;text-align:left}
+    .arch-main-street .ms-contactform-field{display:block;margin-top:14px}
+    .arch-main-street .ms-contactform-label{color:var(--ms-fg-muted);display:block;margin-bottom:6px}
+    .arch-main-street .ms-contactform-input{width:100%;background:var(--ms-bg);color:var(--ms-fg);border:1px solid var(--ms-rule);border-radius:2px;padding:12px 14px;font:inherit}
+    .arch-main-street .ms-contactform-textarea{width:100%;background:var(--ms-bg);color:var(--ms-fg);border:1px solid var(--ms-rule);border-radius:2px;padding:12px 14px;font:inherit;min-height:120px;resize:vertical}
+    .arch-main-street .ms-contactform-submit{background:var(--ms-accent);color:var(--ms-on-accent);padding:14px 24px;border-radius:2px;border:0;cursor:pointer;font:inherit;margin-top:18px}
+    .arch-main-street .ms-contactform-status{color:var(--ms-accent);margin-top:12px}
+    .arch-main-street .ms-contactform-body{color:var(--ms-fg)}
+    /* ══════════════════════════════════════════════════════════════════════
+       CHROME — logo lockup + footer. ════════════════════════════════════════ */
+    .arch-main-street .ms-lockup{color:inherit;display:inline-flex;align-items:center;gap:14px}
+    .arch-main-street .ms-lockup-logo{display:block}
+    .arch-main-street .ms-footer{background:var(--ms-contrast-bg);color:var(--ms-contrast-fg);padding:54px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
+    .arch-main-street .ms-footer-row{display:flex;gap:20px;align-items:baseline;flex-wrap:wrap}
+    .arch-main-street .ms-footer-link{color:inherit;opacity:.6}
+    .arch-main-street .ms-footer-legal{opacity:.5}
+    /* Media placeholder — when no url resolves, a dim scrim over the skin muted color. */
+    .arch-main-street .archetype-photo-empty{background:var(--ms-fg-muted);opacity:.18}
+    /* ══════════════════════════════════════════════════════════════════════
+       STOREFRONT PAGES — cart, subscriptions. Simple prose layouts in Main Street
+       chrome; class-only. The commerce build fleshes these out (line items,
+       quantities, checkout); for now they render an empty state with a shop cue. */
+    .arch-main-street .ms-simple-page{padding:120px 40px;text-align:center}
+    .arch-main-street .ms-simple-inner{max-width:620px;margin:0 auto}
+    .arch-main-street .ms-simple-eyebrow{color:var(--ms-accent);display:block;margin-bottom:16px}
+    .arch-main-street .ms-simple-head{color:var(--ms-fg);margin:0 0 16px}
+    .arch-main-street .ms-simple-body{color:var(--ms-fg-muted);margin:0 0 32px}
+    .arch-main-street .ms-simple-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:15px 28px;border-radius:2px;display:inline-block}
+    /* Subscriptions list — card grid in Main Street chrome. */
+    .arch-main-street .ms-subs-section{padding:88px 40px 110px}
+    .arch-main-street .ms-subs-head{text-align:center;margin-bottom:52px}
+    .arch-main-street .ms-subs-eyebrow{color:var(--ms-accent);display:block;margin-bottom:14px}
+    .arch-main-street .ms-subs-title{color:var(--ms-fg);margin:0}
+    .arch-main-street .ms-subs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:28px;max-width:900px;margin:0 auto}
+    @media(max-width:760px){.arch-main-street .ms-subs-grid{grid-template-columns:1fr}}
+    .arch-main-street .ms-subs-card{border:1px solid var(--ms-rule);border-radius:3px;overflow:hidden}
+    .arch-main-street .ms-subs-media{position:relative;aspect-ratio:4/3;overflow:hidden;background:color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg))}
+    .arch-main-street .ms-subs-body{padding:22px 24px}
+    .arch-main-street .ms-subs-name{color:var(--ms-fg);margin:0 0 6px}
+    .arch-main-street .ms-subs-price{color:var(--ms-accent);margin:0 0 12px}
+    .arch-main-street .ms-subs-interval{color:var(--ms-fg-muted)}
+    .arch-main-street .ms-subs-desc{color:var(--ms-fg-muted);margin:0 0 16px}
+    .arch-main-street .ms-subs-cue{color:var(--ms-accent)}
   `;
 }
 
@@ -894,7 +1186,8 @@ export function Media({
     );
   }
   if (media.url) return <img className={cls} style={style} src={media.url} alt={media.alt} />;
-  return <div className={cls} aria-label={media.alt} style={{ ...style, background: 'var(--ms-fg-muted)', opacity: 0.18 }} />;
+  const emptyCls = [cls, 'archetype-photo-empty'].join(' ');
+  return <div className={emptyCls} aria-label={media.alt} style={style} />;
 }
 
 /** The fallback nav — real routes used when a tenant has no authored nav (legacy
@@ -931,10 +1224,10 @@ export function WordmarkLink({
   logoUrl?: string | undefined;
 }) {
   return (
-    <Type as={Link} role="wordmark" href="/" style={{ color: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 14 }}>
+    <Type as={Link} role="wordmark" href="/" className="ms-lockup">
       {logoUrl && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={logoUrl} alt="" data-ms-logo style={{ display: 'block' }} />
+        <img src={logoUrl} alt="" data-ms-logo className="ms-lockup-logo" />
       )}
       <span>{wordmark}</span>
     </Type>
@@ -1053,33 +1346,22 @@ export function Nav({
 
 export function MainStreetFooter({ shopName }: { shopName: string }) {
   return (
-    <footer
-      style={{
-        background: 'var(--ms-contrast-bg)',
-        color: 'var(--ms-contrast-fg)',
-        padding: '54px 40px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 20,
-      }}
-    >
+    <footer className="ms-footer">
       <Type as="span" role="wordmark">{shopName}</Type>
-      <div style={{ display: 'flex', gap: 20, alignItems: 'baseline' }}>
-        <Type as={Link} role="legal" href="/" style={{ color: 'inherit', opacity: 0.6 }}>
+      <div className="ms-footer-row">
+        <Type as={Link} role="legal" href="/" className="ms-footer-link">
           Home
         </Type>
-        <IntroReplayLink style={{ color: 'inherit', opacity: 0.6 }}>
+        <IntroReplayLink className="ms-footer-link">
           Intro
         </IntroReplayLink>
-        <Type as="a" role="legal" href="/privacy" style={{ color: 'inherit', opacity: 0.6 }}>
+        <Type as="a" role="legal" href="/privacy" className="ms-footer-link">
           Privacy
         </Type>
-        <Type as="a" role="legal" href="/terms" style={{ color: 'inherit', opacity: 0.6 }}>
+        <Type as="a" role="legal" href="/terms" className="ms-footer-link">
           Terms
         </Type>
-        <Type as="span" role="legal" style={{ opacity: 0.5 }}>
+        <Type as="span" role="legal" className="ms-footer-legal">
           &copy; {shopName}
         </Type>
       </div>

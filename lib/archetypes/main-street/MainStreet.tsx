@@ -53,6 +53,8 @@ export interface MainStreetProps {
   aboutHref?: string | undefined;
   /** Where the calendar's events cue points. Defaults to /events. */
   eventsHref?: string | undefined;
+  /** Where the reviews "see all" cue points. Defaults to /testimonials. */
+  testimonialsHref?: string | undefined;
   /** Per-shop key (tenant id) for the Moment's seen-cookie. Without it the
    *  hero plays no timeline and renders directly at rest — used in previews. */
   momentKey?: string | undefined;
@@ -74,11 +76,16 @@ export interface MainStreetProps {
   findUsTreatment?: FindUsTreatment | undefined;
 }
 
-export function MainStreet({ content, skin, products, catalogSize, goodsTreatment, collections, collectionsTreatment, collectionsHref, founderTreatment, shopHref, aboutHref, eventsHref, momentKey, heroVariant, showMarquee, reviewsTreatment, findUsTreatment }: MainStreetProps) {
-  // The Collections band appears whenever the shop HAS collections — the structure
-  // follows what the store holds, not an editorial pick. The heading is the
-  // authored section when present, a plain default otherwise.
-  const collectionsSection = content.collections ?? { title: 'Collections' };
+export function MainStreet({ content, skin, products, catalogSize, goodsTreatment, collections, collectionsTreatment, collectionsHref, founderTreatment, shopHref, aboutHref, eventsHref, testimonialsHref, momentKey, heroVariant, showMarquee, reviewsTreatment, findUsTreatment }: MainStreetProps) {
+  // The Collections band appears when BOTH the shop has collection rows AND the
+  // copywriter authored the section (heading + treatment). No defensive fallback —
+  // if the copywriter didn't author it, the band doesn't render (rule: no hardcoding).
+  const collectionsSection = content.collections;
+  // The reviews home band takes its "see all" cue from the authored label — no
+  // hardcoded English fallback. Missing label → no cue rendered.
+  const reviewsViewAll = content.reviews?.viewAllLabel
+    ? { href: testimonialsHref ?? '/testimonials', label: content.reviews.viewAllLabel }
+    : undefined;
   // The marquee band's content is assembled from THIS store's own copy + data
   // (never hardcoded, never injected). When on, it sits in its default handoff
   // slot (under the hero); the per-family position lands with the family layer.
@@ -90,14 +97,14 @@ export function MainStreet({ content, skin, products, catalogSize, goodsTreatmen
         <MarqueeBeat lines={marqueeLines} skin={skin} />
       )}
       <GoodsBeat goods={content.goods} products={products} skin={skin} treatment={goodsTreatment} catalogSize={catalogSize} shopHref={shopHref} />
-      {collections && collections.length > 0 && (
+      {collectionsSection && collections && collections.length > 0 && (
         <Reveal>
           <CollectionsBeat
             section={collectionsSection}
             items={collections}
             skin={skin}
             treatment={collectionsTreatment}
-            viewAll={{ href: collectionsHref ?? '/collections', label: collectionsSection.viewAllLabel ?? 'See all collections' }}
+            viewAll={collectionsSection.viewAllLabel ? { href: collectionsHref ?? '/collections', label: collectionsSection.viewAllLabel } : undefined}
           />
         </Reveal>
       )}
@@ -111,7 +118,7 @@ export function MainStreet({ content, skin, products, catalogSize, goodsTreatmen
       )}
       {content.reviews && content.reviews.items.length > 0 && (
         <Reveal>
-          <ReviewsBeat section={content.reviews} skin={skin} treatment={reviewsTreatment} />
+          <ReviewsBeat section={content.reviews} skin={skin} treatment={reviewsTreatment} viewAll={reviewsViewAll} />
         </Reveal>
       )}
       <Reveal>

@@ -79,11 +79,11 @@ describe('CollageHero — a cluster of three shots beside the hero text', () => 
     expect(ctaLink.getAttribute('href')).toBe('/shop');
   });
 
-  it('lays the nav out as a horizontal bar', () => {
+  it('renders the nav bar as a class-only horizontal row', () => {
     const { container } = render(<CollageHero identity={identity} moment={moment} skin={skin} />);
     const navBar = container.querySelector('[data-ms-hero-nav]') as HTMLElement | null;
     expect(navBar).toBeTruthy();
-    expect(navBar!.style.display).toBe('flex');
-    expect(navBar!.style.justifyContent).toBe('space-between');
+    expect(navBar!.className).toContain('ms-hero-navbar');
+    expect(navBar!.getAttribute('style')).toBeNull();
   });
 });

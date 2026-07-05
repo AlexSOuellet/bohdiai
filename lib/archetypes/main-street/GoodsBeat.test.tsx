@@ -32,19 +32,23 @@ describe('GoodsBeat — forced treatment', () => {
     const { container } = render(<GoodsBeat goods={goods} products={makeProducts(3)} skin={skin} treatment="procession" />);
     const cards = container.querySelectorAll('[data-ms-const-card]');
     expect(cards.length).toBe(3);
-    // each card is a scattered, positioned link to its listing
+    // each card is a scattered, positioned link to its listing; position:absolute
+    // and per-card placement come from CSS classes + CSS custom properties, never
+    // hardcoded inline. Assert the class hook + the CSS var that carries position.
     expect((cards[0] as HTMLAnchorElement).getAttribute('href')).toBe('/listings/p-0');
-    expect((cards[0] as HTMLElement).style.position).toBe('absolute');
+    expect((cards[0] as HTMLElement).className).toContain('ms-const-card');
+    expect((cards[0] as HTMLElement).style.getPropertyValue('--ms-const-x')).toBeTruthy();
   });
 
-  it('sizes the constellation stage from its width (aspect-ratio), not the viewport height', () => {
+  it('sizes the constellation stage from its width via a class-only aspect-ratio', () => {
     // A vh stage height decoupled card height (width-driven) from slot spacing
     // (height-driven), so cards collided on some window shapes. Tying the stage
-    // height to its width keeps the geometry constant at any viewport.
+    // height to its width in the class rule (aspect-ratio) keeps the geometry
+    // constant at any viewport. Assert the class hook, not an inline style.
     const { container } = render(<GoodsBeat goods={goods} products={makeProducts(5)} skin={skin} treatment="procession" />);
     const stage = container.querySelector('.ms-const-stage') as HTMLElement;
-    expect(stage.style.aspectRatio).toBeTruthy();
-    expect(stage.style.height).toBe('');
+    expect(stage).toBeTruthy();
+    expect(stage.getAttribute('style')).toBeNull();
   });
 
   it('switcher renders selectable list rows', () => {

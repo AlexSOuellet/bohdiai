@@ -60,6 +60,28 @@ export const CopywriterDraftSchema = z.object({
     label: z.string().min(1).optional(),
     viewAllLabel: z.string().min(1).optional(),
   }),
+  /** The collections beat + PAGE — the copywriter authors 3 niche-appropriate
+   *  collections every build (build all sections at onboarding), and the build
+   *  persists them as real `collections` DB rows the maker edits later. The band
+   *  on the home is a teaser; /collections shows the full set; /collections/[slug]
+   *  shows the pieces in one. Optional in the schema so legacy content still
+   *  parses; new builds always author. */
+  collections: z
+    .object({
+      title: z.string().min(1),
+      label: z.string().min(1).optional(),
+      viewAllLabel: z.string().min(1).optional(),
+      items: z
+        .array(
+          z.object({
+            name: z.string().min(1),
+            description: z.string().min(1),
+            slug: z.string().min(1),
+          }),
+        )
+        .min(1),
+    })
+    .optional(),
   /** The marquee band's VOICE line — a few punchy brand phrases the scrolling
    *  band shows. Authored every build (build all sections at onboarding) so the
    *  band is ready whenever a family/maker turns it on; its second line (live
@@ -78,6 +100,7 @@ export const CopywriterDraftSchema = z.object({
   reviews: z.object({
     title: z.string().min(1),
     label: z.string().min(1).optional(),
+    viewAllLabel: z.string().min(1).optional(),
     summary: z
       .object({
         score: z.string().min(1),
@@ -104,6 +127,10 @@ export const CopywriterDraftSchema = z.object({
     findUs: z
       .object({
         label: z.string().min(1),
+        /** The Events page heading (the maker's own words). Optional so legacy
+         *  content still parses; new builds always author it, so the page never
+         *  falls back to a hardcoded English title. */
+        title: z.string().min(1).optional(),
         eventsLabel: z.string().min(1).optional(),
         rows: z.array(FindUsRow).min(1),
       })

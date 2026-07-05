@@ -67,6 +67,21 @@ export function normalizeCopy(d: CopywriterDraft): CopywriterDraft {
       ...(d.goods.label !== undefined ? { label: trim(d.goods.label) } : {}),
       ...(d.goods.viewAllLabel !== undefined ? { viewAllLabel: trim(d.goods.viewAllLabel) } : {}),
     },
+    ...(d.collections !== undefined
+      ? {
+          collections: {
+            ...d.collections,
+            title: stripHeadlinePunct(d.collections.title),
+            ...(d.collections.label !== undefined ? { label: trim(d.collections.label) } : {}),
+            ...(d.collections.viewAllLabel !== undefined ? { viewAllLabel: trim(d.collections.viewAllLabel) } : {}),
+            items: d.collections.items.map((c) => ({
+              name: trim(c.name),
+              description: trim(c.description),
+              slug: slugify(c.slug),
+            })),
+          },
+        }
+      : {}),
     marquee: {
       // Marquee phrases scroll large like headlines — strip terminal punctuation,
       // drop any that normalize to empty.
@@ -84,6 +99,7 @@ export function normalizeCopy(d: CopywriterDraft): CopywriterDraft {
             findUs: {
               ...d.founder.findUs,
               label: trim(d.founder.findUs.label),
+              ...(d.founder.findUs.title !== undefined ? { title: trim(d.founder.findUs.title) } : {}),
               ...(d.founder.findUs.eventsLabel !== undefined ? { eventsLabel: trim(d.founder.findUs.eventsLabel) } : {}),
               // Keep every authored field (date, kind) — the build stamps real
               // current dates over `date` later; just trim the human strings.
@@ -91,6 +107,21 @@ export function normalizeCopy(d: CopywriterDraft): CopywriterDraft {
             },
           }
         : {}),
+    },
+    reviews: {
+      ...d.reviews,
+      title: stripHeadlinePunct(d.reviews.title),
+      ...(d.reviews.label !== undefined ? { label: trim(d.reviews.label) } : {}),
+      ...(d.reviews.viewAllLabel !== undefined ? { viewAllLabel: trim(d.reviews.viewAllLabel) } : {}),
+      ...(d.reviews.summary !== undefined
+        ? { summary: { score: trim(d.reviews.summary.score), count: trim(d.reviews.summary.count) } }
+        : {}),
+      items: d.reviews.items.map((r) => ({
+        ...r,
+        quote: trim(r.quote),
+        author: trim(r.author),
+        ...(r.location !== undefined ? { location: trim(r.location) } : {}),
+      })),
     },
     close: {
       ...d.close,

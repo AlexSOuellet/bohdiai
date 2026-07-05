@@ -9,7 +9,7 @@
  * SAMPLING (D32); the full catalog lives at /shop, so "See the work" buttons
  * route to the shop page, not to a section on the home.
  */
-export const LINK_TARGETS = ['home', 'shop', 'about', 'events', 'contact'] as const;
+export const LINK_TARGETS = ['home', 'shop', 'about', 'events', 'contact', 'collections', 'testimonials'] as const;
 export type LinkTarget = (typeof LINK_TARGETS)[number];
 
 const LINK_HREFS: Record<LinkTarget, string> = {
@@ -18,6 +18,8 @@ const LINK_HREFS: Record<LinkTarget, string> = {
   about: '/about',
   events: '/events',
   contact: '/contact',
+  collections: '/collections',
+  testimonials: '/testimonials',
 };
 
 /** The one place a link target becomes a route. The renderer owns this map, so

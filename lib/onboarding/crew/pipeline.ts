@@ -100,6 +100,9 @@ function assembleSubmission(out: CrewOutput, shopName: string): { content: unkno
     goods: copy.goods,
     marquee: copy.marquee,
     reviews: copy.reviews,
+    // Collections is authored every build; the build persistence layer takes
+    // .items and inserts real `collections` DB rows. Absent on legacy copy drafts.
+    ...(copy.collections !== undefined ? { collections: copy.collections } : {}),
     founder: { ...copy.founder, photo: { prompt: look.founderPhoto.prompt, alt: look.founderPhoto.alt } },
     close: copy.close,
     about: copy.about,
