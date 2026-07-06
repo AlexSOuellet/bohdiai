@@ -12,32 +12,28 @@ export const dynamic = 'force-dynamic';
 const STOREFRONT_HOST = 'localhost:3000';
 const storefrontBase = (sub: string) => `http://${sub}.${STOREFRONT_HOST}`;
 
-interface LooseClient {
-  from: (t: string) => {
-    select: (c: string) => {
-      eq: (c: string, v: string) => { order: (c: string, o: { ascending: boolean }) => Promise<{ data: unknown }> };
-      in: (c: string, v: string[]) => Promise<{ data: unknown }>;
-    };
-  };
-}
-
 export default async function TryOnDashboard() {
-  const db = supabaseAdmin() as unknown as LooseClient;
+  const db = supabaseAdmin();
 
   const { data: tenantsRaw } = await db.from('tenants').select('id, subdomain, business_name').eq('status', 'active').order('created_at', { ascending: false });
-  const tenants = (tenantsRaw ?? []) as Array<{ id: string; subdomain: string; business_name: string }>;
+  const tenants = tenantsRaw ?? [];
   const ids = tenants.map((t) => t.id);
 
-  const { data: pagesRaw } = ids.length > 0 ? await db.from('content_pages').select('tenant_id, layout_tree').in('tenant_id', ids) : { data: [] };
-  const { data: versionsRaw } = ids.length > 0 ? await db.from('store_versions').select('tenant_id, label').in('tenant_id', ids) : { data: [] };
+  const { data: pagesRaw } = ids.length > 0
+    ? await db.from('content_pages').select('tenant_id, layout_tree').in('tenant_id', ids)
+    : { data: [] };
+  const { data: versionsRaw } = ids.length > 0
+    ? await db.from('store_versions').select('tenant_id, label').in('tenant_id', ids)
+    : { data: [] };
 
   const archByTenant = new Map<string, string>();
-  for (const p of (pagesRaw ?? []) as Array<{ tenant_id: string; layout_tree: { root?: { archetypeKey?: string } } | null }>) {
-    const a = p.layout_tree?.root?.archetypeKey;
-    if (a) archByTenant.set(p.tenant_id, a);
+  for (const p of pagesRaw ?? []) {
+    const root = (p.layout_tree as { root?: { archetypeKey?: string } } | null)?.root;
+    const a = root?.archetypeKey;
+    if (typeof a === 'string') archByTenant.set(p.tenant_id, a);
   }
   const versByTenant = new Map<string, string[]>();
-  for (const v of (versionsRaw ?? []) as Array<{ tenant_id: string; label: string }>) {
+  for (const v of versionsRaw ?? []) {
     const arr = versByTenant.get(v.tenant_id) ?? [];
     arr.push(v.label);
     versByTenant.set(v.tenant_id, arr);

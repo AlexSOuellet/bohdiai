@@ -9,6 +9,15 @@ import { seedPreviewReviews } from '@/lib/archetypes/main-street/reviews';
 import { seedPreviewFindUs } from '@/lib/archetypes/main-street/findus';
 import type { Json } from '@/lib/database.types';
 import { readVersion } from '@/lib/tryon/write-version';
+
+/** Extract image_url from a listings.metadata JSONB blob. Returns undefined when
+ *  metadata is null, not an object, or has no image_url. Narrows once at the
+ *  boundary so downstream code can trust the shape. */
+function imageUrlFromMetadata(m: Json): string | undefined {
+  if (m === null || typeof m !== 'object' || Array.isArray(m)) return undefined;
+  const url = (m as Record<string, unknown>)['image_url'];
+  return typeof url === 'string' ? url : undefined;
+}
 import { isKnownSkin } from '@/lib/editor/look-shelf';
 
 interface StorefrontPageProps {
@@ -48,18 +57,7 @@ const SLUG_TO_PAGE: Record<string, ArchetypePage> = {
 
 /** Load the tenant's home ('/') envelope, or null when the tenant has no published home. */
 async function loadHomeEnvelope(tenantId: string): Promise<Record<string, unknown> | null> {
-  const db = supabaseAdmin() as unknown as {
-    from: (t: string) => {
-      select: (c: string) => {
-        eq: (c: string, v: string) => {
-          eq: (c: string, v: string) => {
-            eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: { layout_tree: Json | null } | null }> };
-          };
-        };
-      };
-    };
-  };
-  const { data } = await db
+  const { data } = await supabaseAdmin()
     .from('content_pages')
     .select('layout_tree')
     .eq('tenant_id', tenantId)
@@ -80,12 +78,11 @@ async function loadHomeEnvelope(tenantId: string): Promise<Record<string, unknow
  *  analysis has run. Both are null for every fresh tenant until the dashboard's
  *  logo-upload step ships. */
 async function loadTenantChrome(tenantId: string): Promise<{ logoUrl: string | undefined; brandColors: string[] }> {
-  const db = supabaseAdmin() as unknown as {
-    from: (t: string) => {
-      select: (c: string) => { eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: { logo_url: string | null; brand_colors: string[] | null } | null }> } };
-    };
-  };
-  const { data } = await db.from('tenants').select('logo_url, brand_colors').eq('id', tenantId).maybeSingle();
+  const { data } = await supabaseAdmin()
+    .from('tenants')
+    .select('logo_url, brand_colors')
+    .eq('id', tenantId)
+    .maybeSingle();
   return {
     logoUrl: data?.logo_url ?? undefined,
     brandColors: data?.brand_colors ?? [],
@@ -198,7 +195,7 @@ interface ListingRow {
   base_price_cents: number;
   short_description: string | null;
   description: string | null;
-  metadata: { image_url?: string } | null;
+  metadata: Json;
   primary_collection_id: string | null;
 }
 
@@ -218,7 +215,7 @@ function buildCollectionViews(collRows: CollectionRow[], listingRows: ListingRow
     if (cid === null) continue;
     const entry = byCollection.get(cid) ?? { count: 0 };
     entry.count += 1;
-    const url = r.metadata?.image_url;
+    const url = imageUrlFromMetadata(r.metadata);
     if (entry.cover === undefined && url) entry.cover = { kind: 'image', url, alt: r.name };
     byCollection.set(cid, entry);
   }
@@ -254,18 +251,7 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
   const spec = archetypeSpec(archetypeKey as string);
   if (spec === undefined) notFound();
 
-  const db = supabaseAdmin() as unknown as {
-    from: (t: string) => {
-      select: (c: string) => {
-        eq: (c: string, v: string) => {
-          eq: (c: string, v: string) => {
-            order: (c: string, o: { ascending: boolean }) => Promise<{ data: ListingRow[] | null }>;
-          };
-        };
-      };
-    };
-  };
-  const { data: rows } = await db
+  const { data: rows } = await supabaseAdmin()
     .from('listings')
     .select('slug, name, base_price_cents, short_description, description, metadata, primary_collection_id')
     .eq('tenant_id', tenantId)
@@ -273,7 +259,7 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
     .order('created_at', { ascending: true });
 
   const products: ProductView[] = (rows ?? []).map((r) => {
-    const url = r.metadata?.image_url;
+    const url = imageUrlFromMetadata(r.metadata);
     const media: CatalogMedia[] = url ? [{ kind: 'image', url, alt: r.name }] : [];
     return {
       slug: r.slug,
@@ -290,18 +276,7 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
   // Collections band data — the tenant's own collections (count + cover derived
   // from the catalog). When the store has none and ?collections= is set, seed
   // sample ones so every band is viewable. Absent → no Collections beat renders.
-  const collDb = supabaseAdmin() as unknown as {
-    from: (t: string) => {
-      select: (c: string) => {
-        eq: (c: string, v: string) => {
-          eq: (c: string, v: string) => {
-            order: (c: string, o: { ascending: boolean }) => Promise<{ data: CollectionRow[] | null }>;
-          };
-        };
-      };
-    };
-  };
-  const { data: collRows } = await collDb
+  const { data: collRows } = await supabaseAdmin()
     .from('collections')
     .select('id, slug, name')
     .eq('tenant_id', tenantId)

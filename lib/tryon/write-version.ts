@@ -16,25 +16,18 @@ export interface VersionEnvelope {
 }
 
 export async function writeVersion(tenantId: string, label: string, envelope: VersionEnvelope): Promise<void> {
-  const db = supabaseAdmin() as unknown as {
-    from: (t: string) => { upsert: (r: unknown, o: unknown) => Promise<{ error: { message: string } | null }> };
-  };
-  const { error } = await db
+  const { error } = await supabaseAdmin()
     .from('store_versions')
-    .upsert({ tenant_id: tenantId, label, envelope }, { onConflict: 'tenant_id,label' });
+    .upsert({ tenant_id: tenantId, label, envelope: envelope as unknown as never }, { onConflict: 'tenant_id,label' });
   if (error) throw new Error(`writeVersion failed: ${error.message}`);
 }
 
 export async function readVersion(tenantId: string, label: string): Promise<VersionEnvelope | null> {
-  const db = supabaseAdmin() as unknown as {
-    from: (t: string) => {
-      select: (c: string) => {
-        eq: (c: string, v: string) => {
-          eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: { envelope: VersionEnvelope } | null }> };
-        };
-      };
-    };
-  };
-  const { data } = await db.from('store_versions').select('envelope').eq('tenant_id', tenantId).eq('label', label).maybeSingle();
-  return data?.envelope ?? null;
+  const { data } = await supabaseAdmin()
+    .from('store_versions')
+    .select('envelope')
+    .eq('tenant_id', tenantId)
+    .eq('label', label)
+    .maybeSingle();
+  return (data?.envelope as VersionEnvelope | undefined) ?? null;
 }

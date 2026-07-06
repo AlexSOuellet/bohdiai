@@ -19,18 +19,7 @@ function isMoodKey(value: unknown): value is MoodKey {
 }
 
 export async function loadCurrentLook(tenantId: string): Promise<CurrentLook | null> {
-  const db = supabaseAdmin() as unknown as {
-    from: (t: string) => {
-      select: (c: string) => {
-        eq: (c: string, v: string) => {
-          eq: (c: string, v: string) => {
-            eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: { layout_tree: unknown } | null }> };
-          };
-        };
-      };
-    };
-  };
-  const { data } = await db
+  const { data } = await supabaseAdmin()
     .from('content_pages')
     .select('layout_tree')
     .eq('tenant_id', tenantId)
