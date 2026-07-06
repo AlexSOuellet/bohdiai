@@ -321,12 +321,13 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   applyMedia,
   toPayload,
   handOff,
-  render: ({ content, lookKey, products, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, tenantId, mood, heroVariant, goodsTreatment, collections, collectionsTreatment, reviewsTreatment, findUsTreatment, founderTreatment, navVariant, showMarquee }) => {
+  render: ({ content, lookKey, products, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, tenantId, mood, heroVariant, goodsTreatment, collections, collectionsTreatment, reviewsTreatment, findUsTreatment, founderTreatment, navVariant }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
-    // Resolve the section variants from the tenant's mood (its family) and apply
-    // any preview URL overrides. Every page below wears the SAME picks so a
-    // /shop teaser matches what /home advertised. Bohdi authors CONTENT ONLY —
-    // no section variant comes from content anymore.
+    // Resolve the family AND its section variants from the tenant's mood, then
+    // apply any preview URL overrides. Every page below wears the SAME picks so
+    // a /shop teaser matches what /home advertised. The home's section ORDER
+    // + on/off comes from the family's stack too. Bohdi authors CONTENT ONLY.
+    const family = getFamily(mood);
     const treatments = resolveTreatments(mood, {
       hero: heroVariant, goods: goodsTreatment, collections: collectionsTreatment,
       reviews: reviewsTreatment, founder: founderTreatment, findUs: findUsTreatment, nav: navVariant,
@@ -354,7 +355,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       case 'testimonials':
         return <TestimonialsPage content={c} skin={skin} treatments={treatments} />;
       default:
-        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} showMarquee={showMarquee} />;
+        return <MainStreet content={c} skin={skin} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} />;
     }
   },
   renderProduct: ({ content, lookKey, product, mood, logoUrl, brandColors, accentOverride }) => {

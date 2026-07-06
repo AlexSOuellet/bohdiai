@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
 import { MainStreet } from './MainStreet';
 import { MAIN_STREET_SKINS } from './skins';
+import { FAMILIES } from './families';
 import type { MainStreetContent } from './schemas';
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
@@ -48,27 +49,60 @@ describe('MainStreet — find-us beat composition', () => {
 });
 
 describe('MainStreet — marquee band composition', () => {
-  it('shows the marquee band when turned on, with content from the store itself', () => {
-    const { container } = render(<MainStreet content={base} skin={skin} products={[]} showMarquee />);
+  it('shows the marquee band with content assembled from the store itself', () => {
+    // Every family ships marquee-on at onboarding; Cozy (the default stack) has
+    // it near the bottom of the page but always renders when the store has copy
+    // to fill it (the marquee never carries hardcoded lines).
+    const { container } = render(<MainStreet content={base} skin={skin} products={[]} />);
     expect(container.querySelector('.ms-mq-band')).toBeTruthy();
     // The voice line is assembled from base's own authored copy.
     expect(container.textContent).toContain(base.moment.eyebrow);
   });
 
-  it('shows no marquee band when it is off (no toggle)', () => {
-    const { container } = render(<MainStreet content={base} skin={skin} products={[]} />);
+  it('skips the marquee when the section is off in the family stack', () => {
+    // The family layer owns on/off — pass a stack with marquee explicitly off
+    // to prove the walk respects it (the maker's editor toggle will use the
+    // same mechanism in Phase 3).
+    const withoutMarquee = FAMILIES.cozy.sectionStack.map((e) =>
+      e.section === 'marquee' ? { ...e, on: false } : e,
+    );
+    const { container } = render(<MainStreet content={base} skin={skin} products={[]} sectionStack={withoutMarquee} />);
     expect(container.querySelector('.ms-mq-band')).toBeNull();
   });
 
-  it('places the marquee between the hero and the goods beat (the handoff slot)', () => {
-    const { container } = render(<MainStreet content={base} skin={skin} products={[]} showMarquee />);
+  it("places the marquee where the family stack says (Rustic → up top, between hero and about)", () => {
+    // Rustic's opens-with is the workbench (About), but a scrolling marquee band
+    // sits at position 2 — market energy, right after the hero. Verify the walk
+    // renders in stack order, not a fixed slot.
+    const { container } = render(<MainStreet content={base} skin={skin} products={[]} sectionStack={FAMILIES.rustic.sectionStack} />);
     const hero = container.querySelector('[data-ms-hero]');
     const marquee = container.querySelector('.ms-mq-band');
     const goods = container.querySelector('#goods');
     expect(hero && marquee && goods).toBeTruthy();
-    // Document order: hero → marquee → goods.
+    // Document order: hero → marquee → (about) → goods.
     expect(hero!.compareDocumentPosition(marquee!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(marquee!.compareDocumentPosition(goods!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+});
+
+describe('MainStreet — section stack walking (§1.4)', () => {
+  it('renders sections in the family order the stack declares', () => {
+    // Cozy opens with the maker (About Letter as the lead, position 2 after
+    // hero). The founder beat should render before the goods beat, unlike a
+    // family that leads with goods.
+    const { container } = render(<MainStreet content={base} skin={skin} products={[]} sectionStack={FAMILIES.cozy.sectionStack} />);
+    const founder = container.querySelector('[data-ms-founder]');
+    const goods = container.querySelector('#goods');
+    expect(founder && goods).toBeTruthy();
+    expect(founder!.compareDocumentPosition(goods!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('renders Dark with goods as the lead (position 2), before the About beat', () => {
+    const { container } = render(<MainStreet content={base} skin={skin} products={[]} sectionStack={FAMILIES.dark.sectionStack} />);
+    const goods = container.querySelector('#goods');
+    const founder = container.querySelector('[data-ms-founder]');
+    expect(goods && founder).toBeTruthy();
+    expect(goods!.compareDocumentPosition(founder!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });
 
