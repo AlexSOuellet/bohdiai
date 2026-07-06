@@ -10,27 +10,29 @@
 
 ## Current state
 
-**Phase 0 complete. Phase 1 decisions all locked with Alex (Session 65).**
+**Phase 1 landed end-to-end.** Family layer wires the whole renderer + build pipeline. Alex ran all six moods (Cozy, Rustic, Dark, Luxury, Cheerful, Modern) through fresh onboardings at the end of Session 65 — all rendered a functional store. Real design + content issues surfaced during the runs; they're carried forward to Session 66 for discussion.
 
-Phase 0 recap: CI green. Three unused deps deleted. One migration dropped four dead tables + enabled RLS on `notify_interest`. Types regenerated + every `as unknown as` shim around `supabaseAdmin()` deleted. Renderer swept — every hardcoded English string through `DEFAULT_STRINGS`/`DEFAULT_COUNTS`; missing `<main>` landmarks + About page `<h1>` + `MomentHero` `'use client'` added; nine unnecessary `'use client'` declarations removed; `:focus-visible` ring added. Docs archived to `Project-Docs/historical/`. Audit findings saved to `Audit-2026-07-05.md`. Master Spec / Tech Arch Spec / Decisions Log superseded sections marked.
+What's live now (see Full-Plan §1 for the checkbox log):
+- Renderer reads section variants + section order from the family the maker's mood picks. Bohdi authors CONTENT only — treatment fields and identity.nav are gone from the schema.
+- Every family ships all eight content sections at onboarding, in the family's opens-with order (Cozy → maker letter, Rustic → workbench, Dark → slow product, Luxury → chapters, Cheerful → loud marquee, Modern → grid).
+- Family names its default skin — pipeline overrides the Graphic Artist's pick after the crew runs, so paint is deterministic per family. The 29 skins remain reachable for Editor Door 1.
+- Nav lists Shop / Collections / About / Events / Reviews / Contact for every store; four nav variants chosen by family; labels flow through DEFAULT_STRINGS.
+- Storefront queries filter out non-active + soft-deleted rows. Home envelope + tenant chrome cached per-request. Collections persist before the tenant flips to `active`.
 
-Phase 1 decision lock (see Full-Plan §1.0 for the full record): mood stays public, `mood_key` stays the storage column, family is internal only; skins stay + grow as within-family editor options; v2 stack orders locked for all six families BUT every section is on by default at onboarding (v2's length-as-lever is retired — onboarding always ships the full stack so the maker never sees a thin site); sections without per-family designs (Footer, Close CTA band, Contact page, FAQ page) share one shape for now; nav renders every page created at onboarding, per-section on/off toggles come with the editor in Phase 3; Reviews seed at onboarding as sample content; Dark hero = Floating Card and Luxury Products = Switcher both locked; Industrial mood retires.
+**Not landed, carrying forward:** two §1.5 reliability audit rollups (publish full Anthropic tool schemas, wire AbortController through withTimeout). Neither affects visible output. §1.8 imagery grade was deferred by the plan text.
 
-**938 tests pass, tsc clean, lint clean (0 errors).**
+**940 tests pass, tsc clean, lint clean (0 errors).**
 
-**Two live test tenants:** `soul-splatter` and `soul-splatter-bright`.
+**Test tenants:** `soul-splatter` and `soul-splatter-bright` (Session-64 vintage, may or may not still render cleanly — not verified). Alex's Session-65 fresh onboardings produced additional live tenants across the six moods.
 
 ## Next actions
 
-**Session 65 continues — Phase 1 code work.**
+**Session 66 — discuss Session-65 onboarding issues + Phase 2 planning.**
 
-1. Doc cleanup commit (Full-Plan §1.0 cleanup list): clear the "Dark hero unsold" footnote + Switcher amber in `tmp/mockups/defaults-matrix.html`; strip the stale caveats in `tmp/mockups/family-stacks-v2.html`; verify the Reviews-built claim (confirmed — matrix is right, v2 caveat is stale on Reviews; Contact home-block genuinely not built).
-2. Phase 0 visual sign-off gate: Alex eyeballs `soul-splatter` + `soul-splatter-bright` post-renderer-sweep and confirms they render right.
-3. Family registry (`lib/archetypes/main-street/families.ts`) — six entries seeded from the defaults matrix + v2 stacks + Family-Style-Sheets.
-4. Renderer reads family via `mood_key` lookup, not from `content.<section>.treatment`. Section stack walks `family.sectionStack`.
-5. Copywriter authors CONTENT ONLY — delete `.treatment` fields, delete `identity.nav`. Reviews sample content stays authored.
-6. Nav renders from page inventory with family-picked variant.
-7. Audit fixes ride along in the phases they touch: consolidate duplicate data loads (1.3), add storefront `status='active'` + `deleted_at IS NULL` filters (1.3), persist collections before "live" flip (1.9), wire AbortController on Bohdi calls (1.5), publish full Anthropic tool schemas (1.5).
+1. Walk through the issues Alex saw on the six family onboardings. Prioritize: what breaks the onboarding-produces-a-complete-storefront promise vs what's cleanup.
+2. Fix the highest-impact issues from that list.
+3. Land the two §1.5 audit rollups (tool schemas + AbortController) as a follow-up commit — quality of build pipeline, not user-visible.
+4. Decide when to enter Phase 2 (onboarding creates real, complete storefronts — top priority 1). Phase 2 lives on top of the Phase 1 foundation; it's about closing gaps the six-family runs surfaced.
 
 ---
 
@@ -64,6 +66,7 @@ Phase 1 decision lock (see Full-Plan §1.0 for the full record): mood stays publ
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 65 (2026-07-06): Phase 1 landed — family registry, renderer reads family, section stack walking, copywriter authors CONTENT only, family default skin, nav lists every page, collections persist before publish. Alex ran all six moods through fresh onboardings; all rendered pretty well; design + content issues carry to Session 66. Twelve commits.
 - Session 64 (2026-07-05/06): Phase 0 executed — codebase mechanical cleanup, database cleanup, renderer sweep (no hardcoding + no inline styles once and for all), documentation reset. Full Plan approved as operative doc.
 - Session 63 (2026-07-04): substrate cleanup pass — all archetype files class-only, `DEFAULT_STRINGS` map, collections DB persistence, build runner fire-and-forget fixed. Direction correction: family layer wiring is the actual gate.
 - Session 62 (2026-07-03): find-us corrections applied + destination pages built. `Onboarding-Readiness-Plan.md` written (now superseded by Full Plan).

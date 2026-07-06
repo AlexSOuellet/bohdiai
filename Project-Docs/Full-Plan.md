@@ -123,88 +123,93 @@ All six original open items from the Session 63/64 plan are now settled. Sources
 7. **Dark hero is Floating Card. Luxury Products is Switcher.** Both were flagged in the matrix as unsold / provisional; both are now locked. The matrix footnotes get cleared in 1.0-doc-cleanup below.
 8. **Reviews seed at onboarding.** The copywriter authors sample testimonials as part of every build; the maker edits them post-onboarding. Verified-purchase reviews remain Phase 2 per D48-vintage reasoning.
 
-**1.0 doc cleanup — one commit before code lands:**
+**1.0 doc cleanup — landed Session 65:**
 
-- [ ] Update `tmp/mockups/defaults-matrix.html`: remove the "Dark hero unsold" footnote, change Switcher's provisional amber to locked green, correct the stale "Reviews not built" note if the code confirms Reviews are built (Discrepancy §1.0 note below).
-- [ ] Update `tmp/mockups/family-stacks-v2.html`: strip the "still open" caveat (Reviews/Contact home-block, Dark hero).
-- [ ] Update `CLAUDE.md` required-reading: add the two mockups under "Pulled as needed for family/renderer work."
-- [ ] Update `SESSION-BRIEF.md` Next Actions: remove the six-open-decisions list; replace with the locked-decisions pointer.
+- [x] Update `tmp/mockups/defaults-matrix.html`: removed the "Dark hero unsold" footnote + Switcher provisional amber flipped to locked green.
+- [x] Update `tmp/mockups/family-stacks-v2.html`: stripped the "still open" caveat; every section flipped ON except Contact (not built yet).
+- [x] Update `CLAUDE.md` required-reading: added both mockups under "Pulled as needed for family/renderer work."
+- [x] Update `SESSION-BRIEF.md` Next Actions: locked-decisions summary replaced the six-open-decisions list.
 
-**Discrepancy to verify.** `family-stacks-v2.html` says Reviews home-block "not built yet"; `defaults-matrix.html` says four Reviews treatments are built + tested. Matrix is newer. Verify by grepping the codebase before the cleanup commit; correct whichever doc is wrong.
+**Discrepancy verified.** Reviews home-block IS built (4 treatments + tests confirmed in `lib/archetypes/main-street/`). `family-stacks-v2.html` caveat was stale. Only Contact home-block genuinely isn't built.
 
-### 1.1 — Family registry
+### 1.1 — Family registry ✅ Session 65
 
-- [ ] Write `lib/archetypes/main-street/families.ts` with six entries. Source: `Family-Style-Sheets.md` for style defaults, `tmp/mockups/defaults-matrix.html` for section variant picks, `tmp/mockups/family-stacks-v2.html` for stack order + on/off state.
-- [ ] Each entry: `sectionDefaults` (Hero, Products, Collections, Reviews, About, Nav, Find-us, Marquee — per matrix), `sectionStack` (ordered list + on/off — per v2), `typePackage`, `palette`, `texture`, `wallpaper`, `imageryGrade`, `fontHref`.
+- [x] Wrote `lib/archetypes/main-street/families.ts` with six entries seeded from `Family-Style-Sheets.md`, defaults matrix, and v2 stacks.
+- [x] Each entry carries `sectionDefaults`, `sectionStack`, `typePackage`, `palette`, `texture`, `wallpaper`, `imageryGrade`, `fontHref`, `defaultSkin`.
 
-### 1.2 — Onboarding writes family via mood_key
+### 1.2 — Onboarding writes family via mood_key ✅ Session 65
 
-- [ ] No migration needed — column stays `mood_key`.
-- [ ] Onboarding continues to write the maker's mood pick to `mood_key`. That value IS the family.
-- [ ] Family lookup helper: `getFamily(tenant.mood_key) → Family` reads from the registry in 1.1.
+- [x] No migration needed — column stays `mood_key`.
+- [x] Onboarding continues to write the maker's mood pick to `mood_key`. That value IS the family.
+- [x] `getFamily(mood)` reads the registry, handling `elegant` → Luxury and legacy `industrial` → Modern aliases, plus a Cozy fallback for missing / unknown values.
 
-### 1.3 — Renderer reads family, not content
+### 1.3 — Renderer reads family, not content ✅ Session 65
 
-- [ ] Rewrite `MainStreet.tsx` to read section variants from `family.sectionDefaults.*`, not `content.<section>.treatment`
-- [ ] Rewrite `pages.tsx` same way
-- [ ] Rewrite `product.tsx` same way
-- [ ] Preview URL params (`?goods=`, `?hero=`, etc.) still override for dev
-- [ ] **Also lands here (Audit rolls-in):**
-  - StorefrontPage duplicate data loads consolidated (Audit #24 — same-envelope-3x-per-request)
-  - Storefront queries add `status='active'` + `is('deleted_at', null)` filters (Audit #9)
+- [x] MAIN_STREET_SPEC.render receives `mood`, resolves family via `getFamily(mood)`, and computes an effective `MainStreetTreatments` object (family defaults with preview URL overrides layered on top).
+- [x] MainStreet.tsx receives resolved treatments; each Beat's `?? content.<section>.treatment` fallback dropped in favor of the caller-passed treatment.
+- [x] pages.tsx sub-pages (Shop / About / Events / Testimonials / Collections / Collection detail) accept `treatments` and pass through.
+- [x] renderProduct / renderContentPage / renderShell all take `mood` and use `treatments.nav` for chrome so every route paints in the same family nav.
+- [x] Preview URL params still layer on top for dev.
+- [x] **Also landed:** StorefrontPage duplicate data loads consolidated via React `cache()` in new `lib/storefront/load-envelope.ts` (Audit #79 — 3-4× loads → 1 per request).
+- [x] **Also landed:** listings + collections queries add `.eq('status', 'active')` + `.is('deleted_at', null)` (Audit #70).
 
-### 1.4 — Section stack from family
+### 1.4 — Section stack from family ✅ Session 65
 
-- [ ] Replace hardcoded section order in `MainStreet.tsx` with a walk of `family.sectionStack` (v2 orders — opens-with lead per family).
-- [ ] Every section is ON at onboarding for every family. No per-family default-off.
-- [ ] Contact home-block: still off across every family because it isn't built yet (§1.0 open item — one shared design). Once built, it's on by default like the others.
-- [ ] Maker on/off toggles arrive with Editor Door 1 (Phase 3), not Phase 1. Renderer respects the toggle when present; absent = on.
+- [x] MainStreet.tsx walks `family.sectionStack` instead of a hardcoded order. Renderer map keyed by SectionKey; on-entries render in stack order inside `<main>`.
+- [x] Every section is ON at onboarding for every family (Cozy stack is the default fallback for tests / legacy callers).
+- [x] Contact home-block returns null everywhere — the section slot exists in the stack but the home block isn't designed yet.
+- [x] `showMarquee` prop retired. Marquee is on by default via the stack; Editor Door 1 (Phase 3) will use the same stack mechanism for maker toggles.
 
-### 1.5 — Copywriter authors CONTENT ONLY
+### 1.5 — Copywriter authors CONTENT ONLY ✅ Session 65
 
-- [ ] Delete `goods.treatment`, `founder.treatment`, `collections.treatment`, `reviews.treatment`, `findUs.treatment` from schemas
-- [ ] Delete D48 treatment-roll model from `pipeline.ts`
-- [ ] Rewrite copywriter prompt — no "you drew" language, no treatment mentions
-- [ ] Update copywriter tests
-- [ ] **Reviews seeding stays.** Copywriter continues to author sample testimonial content (voice + names + quotes) — this is content, not treatment. The family picks the Reviews *variant* (Guestbook / Pull-Quote / Texts / Rating).
-- [ ] **Also lands here:** publish full Anthropic tool schemas as `input_schema` on all four crew stages (Audit HIGH — copywriter, cinematographer, graphic-artist, directors-cut)
-- [ ] **Also lands here:** wire `AbortController` through `withTimeout` so timed-out Anthropic + fal calls actually cancel (Audit #12)
+- [x] Removed `.treatment` from `goods`, `collections`, `reviews`, `findUs`, `founder` in schemas.ts (Zod silently strips legacy fields).
+- [x] Deleted `treatment-roll.ts` + `treatment-roll.test.ts` (D48 retired).
+- [x] Copywriter prompt drops the "you drew X" language, the goods menu, and the founder body catalog. Prompt explicitly says: the BODY is the family's call.
+- [x] Copywriter output schema drops the two required `treatment` enums.
+- [x] Pipeline no longer rolls; `directAndProduce` signature loses its `rand` param. `CrewBuildResult.choices` shrinks to `heroKind`.
+- [x] log-choices.ts drops `goods-treatment` + `founder-treatment` decision rows (two rows land per build now: trajectory + moment-kind).
+- [x] Reviews seeding stays — copywriter still authors sample testimonial content every build.
+- [x] Tests re-cast across the board.
+- [ ] **Not landed (deferred):** publish full Anthropic tool schemas as `input_schema` on all four crew stages (Audit HIGH).
+- [ ] **Not landed (deferred):** wire `AbortController` through `withTimeout` so timed-out Anthropic + fal calls actually cancel (Audit #12).
 
-### 1.6 — Paint per family, skins ride on top
+### 1.6 — Paint per family, skins ride on top ✅ Session 65
 
-- [ ] Family provides the default paint (palette + type package + textures + wallpaper + imagery grade) — the ★ picks from `Family-Style-Sheets.md`.
-- [ ] The 29 skins stay in the catalog as within-family variants. Onboarding picks the family's default skin; the maker swaps to another within-family skin from the editor.
-- [ ] `skinVarsCss` continues to serve per-skin CSS variables; the family layer sits above it, deciding which skin to hand it by default.
-- [ ] Skin↔family mapping (which skins belong to which family) — one row per skin in the registry with a `family` field. Skins already tagged with mood keys — reuse those tags directly.
+- [x] Each Family entry names a `defaultSkin` — the ★ pick per family (Cozy → Ember, Rustic → Tannery, Dark → Hearthstone, Luxury → Atelier, Cheerful → Confetti, Modern → Studio).
+- [x] Pipeline resolves the family from `brief.moodKey` after the crew runs and uses `family.defaultSkin` as `chosen.lookKey`. The Graphic Artist still designs imagery, but the skin choice is deterministic per family.
+- [x] The 29 skins stay in the catalog via `moodAlignedSkins` so Editor Door 1 (Phase 3) can offer them as within-family swaps.
+- [x] Skin↔family mapping — the existing mood tags on skins are reused; no new field needed.
 
-### 1.7 — Nav renders every page, maker toggles
+### 1.7 — Nav renders every page, maker toggles ✅ Session 65
 
-- [ ] Renderer builds nav from the tenant's page inventory. Every page created at onboarding is listed by default.
-- [ ] Delete `identity.nav` from the copywriter schema and prompt — Bohdi does not author nav labels.
-- [ ] Page labels come from the page record's own `title` (or a canonical label per page type — "Shop" for products index, "About", "Events", "Contact").
-- [ ] Maker on/off toggles per nav item live in the editor (arrives with the editor); renderer respects them.
-- [ ] The four nav variants (Standard / Split-center / Menu-reveal / CTA-forward) are still chosen by family per the defaults matrix.
+- [x] `MAIN_STREET_NAV` expanded to six items (Shop, Collections, About, Events, Reviews, Contact); labels flow through `DEFAULT_STRINGS`.
+- [x] `resolveNav()` takes zero arguments; returns the fixed page list. Nav component drops the `identity.nav` read.
+- [x] `identity.nav` dropped from `CopywriterDraftSchema` (silently stripped if the crew tries); marked LEGACY-optional in `MainStreetContentSchema` for envelope back-compat.
+- [x] Copywriter prompt drops the nav authoring instructions.
+- [x] The four nav variants (Standard / Split-center / Menu-reveal / CTA-forward) are chosen by family per the defaults matrix (§1.3 wiring).
 
-### 1.8 — Imagery grade
+### 1.8 — Imagery grade (deferred)
 
-- [ ] Per-image normalize + family grade (per `Family-Layout-Model.md`)
-- [ ] Can defer past first runnable onboarding — first-cut builds without dynamic grading still ship coherent output
+- [ ] Per-image normalize + family grade (per `Family-Layout-Model.md`). Deferred past first runnable onboarding — first-cut builds without dynamic grading still ship coherent output.
 
-### 1.9 — Build pipeline hardening (rolls in)
+### 1.9 — Persist collections before live flip ✅ Session 65
 
-- [ ] Persist collections BEFORE flipping tenant to `active` (Audit #10 — currently a race window where store is live but /collections/[slug] 404s)
+- [x] `writeArchetypeStorefront` split — writes tenant (draft) + page + listings; no longer flips.
+- [x] New `publishArchetypeStorefront(tenantId)` does the flip.
+- [x] `build-archetype-store.ts` runs draft-write → `persistCollections` → publish. Any failure between draft and publish leaves the tenant invisible.
 
 ### Phase 1 Definition of Done
 
-- All six families have a registry entry with the section variants + stack order from `defaults-matrix.html` + `family-stacks-v2.html`.
-- Every section variant renders based on family (via `mood_key` lookup), not from a `.treatment` field on content.
-- Bohdi's schema has zero `.treatment` fields and zero `identity.nav`.
-- Copywriter prompt has zero treatment mentions and zero nav authoring.
-- Nav renders from the tenant's page inventory, with a family-picked variant.
-- The 29 skins remain reachable as within-family editor options.
-- A test build for each family produces visually distinct output — different opens-with lead, different length, family paint, family type.
-- Full test suite green. tsc clean. lint clean.
-- Alex visually approves before commit.
+- [x] All six families have a registry entry with the section variants + stack order from `defaults-matrix.html` + `family-stacks-v2.html`.
+- [x] Every section variant renders based on family (via `mood_key` lookup), not from a `.treatment` field on content.
+- [x] Bohdi's schema has zero `.treatment` fields and zero required `identity.nav`.
+- [x] Copywriter prompt has zero treatment mentions and zero nav authoring.
+- [x] Nav renders from the fixed page list, with a family-picked variant.
+- [x] The 29 skins remain reachable as within-family editor options.
+- [x] A test build for each family produces visually distinct output — different opens-with lead, different section variants, family paint, family type. **Alex ran all six families through onboarding at end of Session 65 — all rendered pretty well. Real issues carry forward to Session 66 for discussion.**
+- [x] Full test suite green (940 tests). tsc clean. lint clean (0 errors).
+- [x] Alex visually approved by running all six moods through fresh onboardings.
+- [ ] **Not landed:** two §1.5 audit rollups (input schemas, AbortController). Carry forward.
 
 ---
 
