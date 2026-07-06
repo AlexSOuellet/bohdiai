@@ -25,6 +25,47 @@ import { COLLECTIONS_TREATMENTS, type CollectionsTreatment } from './collections
 import { REVIEWS_TREATMENTS, type ReviewsTreatment } from './reviews';
 import { FINDUS_TREATMENTS, type FindUsTreatment } from './findus';
 import type { FounderTreatment } from './founder';
+import { getFamily } from './families';
+import type { HeroVariantKey } from './hero-catalog';
+
+/** Every section variant the family (or a preview override) picks for a render.
+ *  Populated at the builder level from the tenant's mood + any active URL previews;
+ *  passed through to the home renderer and every sub-page so they can carry the
+ *  same picks the home teaser sold. */
+export interface MainStreetTreatments {
+  hero: HeroVariantKey;
+  goods: GoodsTreatment;
+  collections: CollectionsTreatment;
+  reviews: ReviewsTreatment;
+  founder: FounderTreatment;
+  findUs: FindUsTreatment;
+  nav: NavVariant;
+}
+
+/** Resolve the family from the tenant's mood, then apply any preview overrides
+ *  on top. Overrides are narrowed through the as*Treatment guards so an unknown
+ *  string (?goods=bogus) silently falls back to the family default. */
+function resolveTreatments(mood: string | null | undefined, previews: {
+  hero?: string | undefined; goods?: string | undefined; collections?: string | undefined;
+  reviews?: string | undefined; founder?: string | undefined; findUs?: string | undefined;
+  nav?: string | undefined;
+}): MainStreetTreatments {
+  const family = getFamily(mood);
+  return {
+    hero: asHeroVariant(previews.hero) ?? family.sectionDefaults.hero,
+    goods: asGoodsTreatment(previews.goods) ?? family.sectionDefaults.goods,
+    collections: asCollectionsTreatment(previews.collections) ?? family.sectionDefaults.collections,
+    reviews: asReviewsTreatment(previews.reviews) ?? family.sectionDefaults.reviews,
+    founder: asFounderTreatment(previews.founder) ?? family.sectionDefaults.founder,
+    findUs: asFindUsTreatment(previews.findUs) ?? family.sectionDefaults.findUs,
+    nav: asNavVariant(previews.nav) ?? family.sectionDefaults.nav,
+  };
+}
+
+const HERO_KEYS: readonly HeroVariantKey[] = ['story', 'split', 'split-left', 'stacked', 'typographic', 'floating-card', 'editorial-cover', 'collage'];
+function asHeroVariant(v?: string): HeroVariantKey | undefined {
+  return (HERO_KEYS as readonly string[]).includes(v ?? '') ? (v as HeroVariantKey) : undefined;
+}
 import { sceneToPrompt } from './scene-prompt';
 import { logoTone, applyAccentOverride } from './logo-contrast';
 
@@ -280,44 +321,59 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   applyMedia,
   toPayload,
   handOff,
-  render: ({ content, lookKey, products, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, tenantId, heroVariant, goodsTreatment, collections, collectionsTreatment, reviewsTreatment, findUsTreatment, founderTreatment, navVariant, showMarquee }) => {
+  render: ({ content, lookKey, products, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, tenantId, mood, heroVariant, goodsTreatment, collections, collectionsTreatment, reviewsTreatment, findUsTreatment, founderTreatment, navVariant, showMarquee }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
-    const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), asNavVariant(navVariant));
+    // Resolve the section variants from the tenant's mood (its family) and apply
+    // any preview URL overrides. Every page below wears the SAME picks so a
+    // /shop teaser matches what /home advertised. Bohdi authors CONTENT ONLY —
+    // no section variant comes from content anymore.
+    const treatments = resolveTreatments(mood, {
+      hero: heroVariant, goods: goodsTreatment, collections: collectionsTreatment,
+      reviews: reviewsTreatment, founder: founderTreatment, findUs: findUsTreatment, nav: navVariant,
+    });
+    const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), treatments.nav);
     switch (page) {
       case 'shop':
-        return <ShopPage content={c} skin={skin} products={products} />;
+        return <ShopPage content={c} skin={skin} products={products} treatments={treatments} />;
       case 'events':
-        return <EventsPage content={c} skin={skin} />;
+        return <EventsPage content={c} skin={skin} treatments={treatments} />;
       case 'about':
-        return <AboutPage content={c} skin={skin} />;
+        return <AboutPage content={c} skin={skin} treatments={treatments} />;
       case 'contact':
         return <ContactPage content={c} skin={skin} tenantId={tenantId} />;
       case 'collections':
-        return <CollectionsPage content={c} skin={skin} collections={collections ?? []} />;
+        return <CollectionsPage content={c} skin={skin} collections={collections ?? []} treatments={treatments} />;
       case 'collection': {
         // The route already filtered products to this collection's rows; look up
         // the collection itself so we can title the page. Falls back to a stub if
         // the slug wasn't in the list (shouldn't happen — route 404s first).
         const collection = (collections ?? []).find((x) => x.slug === collectionSlug)
           ?? { slug: collectionSlug ?? '', name: 'Collection', count: products.length };
-        return <CollectionPage content={c} skin={skin} collection={collection} products={products} />;
+        return <CollectionPage content={c} skin={skin} collection={collection} products={products} treatments={treatments} />;
       }
       case 'testimonials':
-        return <TestimonialsPage content={c} skin={skin} />;
+        return <TestimonialsPage content={c} skin={skin} treatments={treatments} />;
       default:
-        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} heroVariant={heroVariant} goodsTreatment={asGoodsTreatment(goodsTreatment)} collections={collections} collectionsTreatment={asCollectionsTreatment(collectionsTreatment)} reviewsTreatment={asReviewsTreatment(reviewsTreatment)} findUsTreatment={asFindUsTreatment(findUsTreatment)} founderTreatment={asFounderTreatment(founderTreatment)} showMarquee={showMarquee} />;
+        return <MainStreet content={c} skin={skin} products={products} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} showMarquee={showMarquee} />;
     }
   },
-  renderProduct: ({ content, lookKey, product, logoUrl, brandColors, accentOverride }) => {
+  renderProduct: ({ content, lookKey, product, mood, logoUrl, brandColors, accentOverride }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
-    return <MainStreetProduct content={withLogo(content as MainStreetContent, logoUrl, brandColors)} skin={skin} product={product} />;
+    // Product pages wear the family's nav variant (same visual chrome as the home).
+    const treatments = resolveTreatments(mood, {});
+    const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), treatments.nav);
+    return <MainStreetProduct content={c} skin={skin} product={product} />;
   },
-  renderContentPage: ({ content, lookKey, title, body, html, logoUrl, brandColors, accentOverride }) => {
+  renderContentPage: ({ content, lookKey, title, body, html, mood, logoUrl, brandColors, accentOverride }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
-    return <ContentPage content={withLogo(content as MainStreetContent, logoUrl, brandColors)} skin={skin} title={title} body={body} html={html} />;
+    const treatments = resolveTreatments(mood, {});
+    const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), treatments.nav);
+    return <ContentPage content={c} skin={skin} title={title} body={body} html={html} />;
   },
-  renderShell: ({ content, lookKey, children, logoUrl, brandColors, accentOverride }) => {
+  renderShell: ({ content, lookKey, children, mood, logoUrl, brandColors, accentOverride }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
-    return <MainStreetSubPage content={withLogo(content as MainStreetContent, logoUrl, brandColors)} skin={skin}>{children}</MainStreetSubPage>;
+    const treatments = resolveTreatments(mood, {});
+    const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), treatments.nav);
+    return <MainStreetSubPage content={c} skin={skin}>{children}</MainStreetSubPage>;
   },
 };

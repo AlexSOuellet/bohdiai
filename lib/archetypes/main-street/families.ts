@@ -358,15 +358,23 @@ export const FAMILIES: Record<FamilyKey, Family> = {
 };
 
 /**
- * Resolve a tenant's stored `mood_key` to its Family. Handles the public/internal
- * naming split:
+ * Resolve a tenant's stored `mood_key` to its Family. Accepts loose input
+ * (string | null | undefined) so callers reading from the DB or an envelope
+ * don't have to pre-validate — legacy tenants with missing / unknown values
+ * fall back safely to Cozy. Handles the public/internal naming split:
  *   - `elegant` (public mood) → Luxury (internal family)
- *   - `industrial` (retired mood) → Modern (nearest neighbor). No tenants
- *     currently carry it; kept as a defensive alias until a follow-up migration
- *     drops it from the MoodKey type.
+ *   - `industrial` (retired mood) → Modern (nearest shelf neighbor)
+ *   - null / undefined / unknown string → Cozy (safe default)
  */
-export function getFamily(mood: MoodKey): Family {
+export function getFamily(mood: string | null | undefined): Family {
   if (mood === 'elegant') return FAMILIES.luxury;
   if (mood === 'industrial') return FAMILIES.modern;
-  return FAMILIES[mood];
+  if (mood !== null && mood !== undefined && (mood in FAMILIES)) {
+    return FAMILIES[mood as FamilyKey];
+  }
+  return FAMILIES.cozy;
 }
+
+/** Consumer-visible convenience — MoodKey callers get the same behavior. Used
+ *  by places that already validated the input against MoodKey.  */
+export type { MoodKey };

@@ -1,6 +1,7 @@
 import 'server-only';
 import { supabaseAdmin } from '@/lib/supabase';
 import type { TenantSeoFacts } from './seo';
+import { loadHomeEnvelope } from './load-envelope';
 
 /** A loose view of the home envelope content we read for SEO. */
 interface EnvelopeContent {
@@ -33,29 +34,21 @@ export async function loadTenantSeoFacts(
 ): Promise<TenantSeoFacts | null> {
   const db = supabaseAdmin();
 
-  const [{ data: tenant }, { data: page }] = await Promise.all([
+  // Envelope goes through the shared per-request cache — the same request
+  // hits it from the layout's JSON-LD, this SEO facts loader, and the page
+  // component itself; the cache guarantees ONE DB round-trip. (Audit #79.)
+  const [{ data: tenant }, envelope] = await Promise.all([
     db
       .from('tenants')
       .select('business_name, service_areas, logo_url, contact_email, phone, primary_niche')
       .eq('id', tenantId)
       .maybeSingle(),
-    db
-      .from('content_pages')
-      .select('layout_tree')
-      .eq('tenant_id', tenantId)
-      .eq('slug', '/')
-      .eq('status', 'published')
-      .maybeSingle(),
+    loadHomeEnvelope(tenantId),
   ]);
 
-  const tree = page?.layout_tree;
-  const root =
-    tree !== null && typeof tree === 'object' && !Array.isArray(tree)
-      ? (tree as Record<string, unknown>)['root']
-      : null;
   const content: EnvelopeContent =
-    root !== null && typeof root === 'object' && !Array.isArray(root)
-      ? ((root as Record<string, unknown>)['content'] as EnvelopeContent) ?? {}
+    envelope !== null
+      ? ((envelope['content'] as EnvelopeContent) ?? {})
       : {};
 
   const shopName = str(content.shopName) ?? str(tenant?.business_name) ?? subdomain;

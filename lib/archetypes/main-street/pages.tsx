@@ -15,12 +15,12 @@ import { navContrast, relativeLuminance } from './logo-contrast';
 import { FindUsBeat } from './FindUsBeat';
 import { GoodsBeat } from './GoodsBeat';
 import { FounderBeat } from './FounderBeat';
-import { selectFounderTreatment } from './founder';
 import { CollectionsBeat } from './CollectionsBeat';
 import { ReviewsBeat } from './ReviewsBeat';
 import type { CollectionView } from '../content';
 import { MainStreetContactForm } from './MainStreetContactForm';
 import { DEFAULT_STRINGS, DEFAULT_COUNTS } from './defaults';
+import type { MainStreetTreatments } from './builder';
 
 function SubHeader({ content, skin, current }: { content: MainStreetContent; skin: ArchetypeTheme; current?: string | undefined }) {
   // The header is fixed (matching the home hero's pinned nav — Lenis smooth-scroll
@@ -109,7 +109,7 @@ export function ContentPage({ content, skin, title, body, html }: { content: Mai
 
 /** SHOP — the full catalog as a responsive grid (chrome defines .ms-catalog-grid
  *  breakpoints). The home shows a sampling; this shows everything. */
-export function ShopPage({ content, skin, products }: { content: MainStreetContent; skin: ArchetypeTheme; products: ProductView[] }) {
+export function ShopPage({ content, skin, products, treatments }: { content: MainStreetContent; skin: ArchetypeTheme; products: ProductView[]; treatments: MainStreetTreatments }) {
   return (
     <MainStreetSubPage content={content} skin={skin} current="/shop">
       <PageHead eyebrow={content.goods.label} title={content.goods.title} />
@@ -123,7 +123,7 @@ export function ShopPage({ content, skin, products }: { content: MainStreetConte
           // the home is Lookbook, /shop is a full lookbook; if it's Marquee, /shop
           // is the full marquee. The GoodsBeat's `full` mode drops the sampling and
           // the "see the full catalog" cue.
-          <GoodsBeat goods={content.goods} products={products} skin={skin} catalogSize={products.length} shopHref="/shop" full />
+          <GoodsBeat goods={content.goods} products={products} skin={skin} treatment={treatments.goods} catalogSize={products.length} shopHref="/shop" full />
         )}
       </section>
     </MainStreetSubPage>
@@ -137,13 +137,12 @@ export function ShopPage({ content, skin, products }: { content: MainStreetConte
  *  story runs in full prose — the reason the maker clicked "read the full story."
  *  Editorial already sets the full story in its columns, so we skip the extra
  *  prose block for that treatment (would double up). */
-export function AboutPage({ content, skin }: { content: MainStreetContent; skin: ArchetypeTheme }) {
-  const treatment = selectFounderTreatment(content.founder.treatment);
+export function AboutPage({ content, skin, treatments }: { content: MainStreetContent; skin: ArchetypeTheme; treatments: MainStreetTreatments }) {
   const paragraphs = content.about?.story ?? [content.founder.quote];
   // Editorial is the one treatment that already renders the full story in its
   // own layout (columns + drop cap + pull-quote), so a story block below would
   // duplicate. Every other treatment is a teaser, so the story runs below it.
-  const showStoryBlock = treatment !== 'editorial';
+  const showStoryBlock = treatments.founder !== 'editorial';
   // The About page owns its <h1> — the authored heading names the page so screen
   // readers and search engines see the same title a sighted visitor would read.
   // Visually hidden because the founder treatment IS the visual hero; the heading
@@ -156,7 +155,7 @@ export function AboutPage({ content, skin }: { content: MainStreetContent; skin:
         </Type>
       )}
       {/* The founder treatment as the page's HERO — no "about cue" (you're here). */}
-      <FounderBeat founder={content.founder} skin={skin} aboutPage={content.about} showAboutCue={false} />
+      <FounderBeat founder={content.founder} skin={skin} treatment={treatments.founder} aboutPage={content.about} showAboutCue={false} />
       {showStoryBlock && (
         <section data-ms-about className="ms-aboutstory">
           {paragraphs.map((para, i) => (
@@ -198,7 +197,7 @@ export function ContactPage({ content, skin, tenantId }: { content: MainStreetCo
 /** COLLECTIONS INDEX — the full collections band: the SAME treatment the home
  *  teaser wears (cupboard / crates / portals / chapters / lanes / cascade), now
  *  carrying every collection (not the home handful) and no "see all" cue. */
-export function CollectionsPage({ content, skin, collections }: { content: MainStreetContent; skin: ArchetypeTheme; collections: CollectionView[] }) {
+export function CollectionsPage({ content, skin, collections, treatments }: { content: MainStreetContent; skin: ArchetypeTheme; collections: CollectionView[]; treatments: MainStreetTreatments }) {
   const section = content.collections;
   return (
     <MainStreetSubPage content={content} skin={skin} current="/collections">
@@ -210,7 +209,7 @@ export function CollectionsPage({ content, skin, collections }: { content: MainS
           </Type>
         </section>
       ) : (
-        <CollectionsBeat section={section ?? { title: '' }} items={collections} skin={skin} full />
+        <CollectionsBeat section={section ?? { title: '' }} items={collections} skin={skin} treatment={treatments.collections} full />
       )}
     </MainStreetSubPage>
   );
@@ -219,7 +218,7 @@ export function CollectionsPage({ content, skin, collections }: { content: MainS
 /** COLLECTION DETAIL — one collection's page: header (name + count) and the
  *  contents rendered in the store's SAME goods treatment (harmonizes with /shop).
  *  Everything class-only; nothing about the collection is hardcoded. */
-export function CollectionPage({ content, skin, collection, products }: { content: MainStreetContent; skin: ArchetypeTheme; collection: CollectionView; products: ProductView[] }) {
+export function CollectionPage({ content, skin, collection, products, treatments }: { content: MainStreetContent; skin: ArchetypeTheme; collection: CollectionView; products: ProductView[]; treatments: MainStreetTreatments }) {
   return (
     <MainStreetSubPage content={content} skin={skin} current="/collections">
       <PageHead eyebrow={DEFAULT_COUNTS.pieces(collection.count)} title={collection.name} />
@@ -231,7 +230,7 @@ export function CollectionPage({ content, skin, collection, products }: { conten
         ) : (
           // Reuse the store's goods treatment so a collection reads as a coherent
           // subset of the shop — same visual system, different slice of catalog.
-          <GoodsBeat goods={content.goods} products={products} skin={skin} catalogSize={products.length} shopHref={`/collections/${collection.slug}`} full />
+          <GoodsBeat goods={content.goods} products={products} skin={skin} treatment={treatments.goods} catalogSize={products.length} shopHref={`/collections/${collection.slug}`} full />
         )}
       </section>
     </MainStreetSubPage>
@@ -241,14 +240,14 @@ export function CollectionPage({ content, skin, collection, products }: { conten
 /** TESTIMONIALS — the full reviews section: the SAME treatment the home teaser
  *  wears (rating / pull-quote / guestbook / texts), now carrying every review
  *  (not the home handful) and no "see all" cue. */
-export function TestimonialsPage({ content, skin }: { content: MainStreetContent; skin: ArchetypeTheme }) {
+export function TestimonialsPage({ content, skin, treatments }: { content: MainStreetContent; skin: ArchetypeTheme; treatments: MainStreetTreatments }) {
   const reviews = content.reviews;
   const hasReviews = !!reviews && reviews.items.length > 0;
   return (
     <MainStreetSubPage content={content} skin={skin} current="/testimonials">
       <PageHead title={reviews?.title} />
       {hasReviews ? (
-        <ReviewsBeat section={reviews!} skin={skin} full />
+        <ReviewsBeat section={reviews!} skin={skin} treatment={treatments.reviews} full />
       ) : (
         <section data-ms-testimonials className="ms-wrap ms-page ms-page-empty">
           <Type as="p" role="body">
@@ -263,14 +262,14 @@ export function TestimonialsPage({ content, skin }: { content: MainStreetContent
 /** EVENTS — the full find-us section: the SAME treatment the home teaser wears,
  *  now carrying every date, or a friendly "check back" empty state when the maker
  *  has no upcoming dates (or turned the calendar off). Representative of its teaser. */
-export function EventsPage({ content, skin }: { content: MainStreetContent; skin: ArchetypeTheme }) {
+export function EventsPage({ content, skin, treatments }: { content: MainStreetContent; skin: ArchetypeTheme; treatments: MainStreetTreatments }) {
   const findUs = content.founder.findUs;
   const hasDates = !!findUs && findUs.rows.length > 0;
   return (
     <MainStreetSubPage content={content} skin={skin} current="/events">
       <PageHead eyebrow={hasDates ? findUs!.label : undefined} title={findUs?.title} />
       {hasDates ? (
-        <FindUsBeat findUs={findUs!} skin={skin} eventsHref="/events" full />
+        <FindUsBeat findUs={findUs!} skin={skin} treatment={treatments.findUs} eventsHref="/events" full />
       ) : (
         <section data-ms-events className="ms-wrap ms-page ms-page-empty">
           <Type as="p" role="body">

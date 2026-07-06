@@ -9,6 +9,7 @@ import { seedPreviewReviews } from '@/lib/archetypes/main-street/reviews';
 import { seedPreviewFindUs } from '@/lib/archetypes/main-street/findus';
 import type { Json } from '@/lib/database.types';
 import { readVersion } from '@/lib/tryon/write-version';
+import { loadHomeEnvelope, loadTenantChrome } from '@/lib/storefront/load-envelope';
 
 /** Extract image_url from a listings.metadata JSONB blob. Returns undefined when
  *  metadata is null, not an object, or has no image_url. Narrows once at the
@@ -55,43 +56,9 @@ const SLUG_TO_PAGE: Record<string, ArchetypePage> = {
   '/testimonials': 'testimonials',
 };
 
-/** Load the tenant's home ('/') envelope, or null when the tenant has no published home. */
-async function loadHomeEnvelope(tenantId: string): Promise<Record<string, unknown> | null> {
-  const { data } = await supabaseAdmin()
-    .from('content_pages')
-    .select('layout_tree')
-    .eq('tenant_id', tenantId)
-    .eq('slug', '/')
-    .eq('status', 'published')
-    .maybeSingle();
-  const tree = data?.layout_tree;
-  if (tree === null || tree === undefined || typeof tree !== 'object' || Array.isArray(tree)) return null;
-  const root = (tree as Record<string, unknown>)['root'];
-  if (root === null || typeof root !== 'object' || Array.isArray(root)) return null;
-  const rootObj = root as Record<string, unknown>;
-  return rootObj['kind'] === 'archetype' ? rootObj : null;
-}
-
-/** Load the tenant's logo URL and brand colors in a single round-trip. Both are
- *  injected into chrome at render — tenant facts, not authored content.
- *  logoUrl is undefined when no logo is stored; brandColors is [] when no color
- *  analysis has run. Both are null for every fresh tenant until the dashboard's
- *  logo-upload step ships. */
-async function loadTenantChrome(tenantId: string): Promise<{ logoUrl: string | undefined; brandColors: string[] }> {
-  const { data } = await supabaseAdmin()
-    .from('tenants')
-    .select('logo_url, brand_colors')
-    .eq('id', tenantId)
-    .maybeSingle();
-  return {
-    logoUrl: data?.logo_url ?? undefined,
-    brandColors: data?.brand_colors ?? [],
-  };
-}
-
 /** Resolve the tenant's home envelope + spec, or null when the tenant has no
  *  published home. Shared by the product/content/shell wrappers so every route
- *  paints in the same chrome. */
+ *  paints in the same chrome — including the family-driven nav variant. */
 async function resolveEnvelope(tenantId: string) {
   const env = await loadHomeEnvelope(tenantId);
   if (env === null) return null;
@@ -102,7 +69,8 @@ async function resolveEnvelope(tenantId: string) {
   if (spec === undefined) return null;
   const { logoUrl, brandColors } = await loadTenantChrome(tenantId);
   const accentOverride = typeof env['accentOverride'] === 'string' ? (env['accentOverride'] as string) : undefined;
-  return { spec, lookKey, content: env['content'], logoUrl, brandColors, accentOverride };
+  const mood = typeof env['mood'] === 'string' ? (env['mood'] as string) : undefined;
+  return { spec, lookKey, content: env['content'], logoUrl, brandColors, accentOverride, mood };
 }
 
 /** Render a product detail page in the tenant's chrome, or null when the tenant
@@ -110,7 +78,7 @@ async function resolveEnvelope(tenantId: string) {
 export async function renderArchetypeProductPage(tenantId: string, product: ProductView) {
   const a = await resolveEnvelope(tenantId);
   if (a === null || a.spec.renderProduct === undefined) return null;
-  return a.spec.renderProduct({ content: a.content, lookKey: a.lookKey, product, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
+  return a.spec.renderProduct({ content: a.content, lookKey: a.lookKey, product, mood: a.mood, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
 }
 
 /** Render a plain content page (legal/maker-added) in the tenant's chrome, or
@@ -121,7 +89,7 @@ export async function renderArchetypeContentPage(
 ) {
   const a = await resolveEnvelope(tenantId);
   if (a === null || a.spec.renderContentPage === undefined) return null;
-  return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, ...opts, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
+  return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, ...opts, mood: a.mood, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
 }
 
 /** Wrap a functional page's body (cart, subscriptions, etc.) in the tenant's
@@ -129,7 +97,7 @@ export async function renderArchetypeContentPage(
 export async function renderArchetypeShell(tenantId: string, children: ReactNode) {
   const a = await resolveEnvelope(tenantId);
   if (a === null || a.spec.renderShell === undefined) return null;
-  return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
+  return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, mood: a.mood, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
 }
 
 export default async function StorefrontPage({ slug, version, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewMarquee, previewReviews, previewFindUs }: StorefrontPageProps) {
@@ -256,6 +224,8 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
     .select('slug, name, base_price_cents, short_description, description, metadata, primary_collection_id')
     .eq('tenant_id', tenantId)
     .eq('listing_type', 'product')
+    .eq('status', 'active')
+    .is('deleted_at', null)
     .order('created_at', { ascending: true });
 
   const products: ProductView[] = (rows ?? []).map((r) => {
@@ -281,6 +251,7 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
     .select('id, slug, name')
     .eq('tenant_id', tenantId)
     .eq('status', 'active')
+    .is('deleted_at', null)
     .order('position', { ascending: true });
   let collections = buildCollectionViews(collRows ?? [], rows ?? []);
   if (collections.length === 0 && previewCollections !== undefined && previewCollections !== '') {

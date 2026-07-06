@@ -170,4 +170,11 @@ describe('getFamily', () => {
     // until a follow-up migration drops it from MoodKey.
     expect(getFamily('industrial').key).toBe('modern');
   });
+
+  it('falls back to Cozy for missing / unknown mood values', () => {
+    expect(getFamily(null).key).toBe('cozy');
+    expect(getFamily(undefined).key).toBe('cozy');
+    expect(getFamily('').key).toBe('cozy');
+    expect(getFamily('does-not-exist').key).toBe('cozy');
+  });
 });
