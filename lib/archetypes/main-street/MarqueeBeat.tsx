@@ -21,6 +21,7 @@
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import type { MarqueeLines } from './marquee';
+import { DEFAULT_STRINGS } from './defaults';
 
 import type { TypeRoleName } from './Type';
 
@@ -66,7 +67,7 @@ export function MarqueeBeat({
   const hasInfo = lines.info.length > 0;
   if (!hasVoice && !hasInfo) return null;
   return (
-    <section className="ms-mq-band" aria-label="Highlights">
+    <section className="ms-mq-band" aria-label={DEFAULT_STRINGS.ariaMarqueeHighlights}>
       {/* Voice line loud (goodsHead); info line a step down (cardTitle) so the two
           registers read as hierarchy and never crowd each other vertically. */}
       {hasVoice && <MarqueeRow items={lines.voice} role="goodsHead" />}

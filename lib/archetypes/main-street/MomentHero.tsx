@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Main Street — BEAT 1: the hero, which IS the Moment.
  *

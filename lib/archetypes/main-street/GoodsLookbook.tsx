@@ -17,6 +17,7 @@ import type { MainStreetContent } from './schemas';
 import { Media } from './chrome';
 import { Type } from './Type';
 import { GoodsHead, type GoodsViewAll } from './beats';
+import { DEFAULT_STRINGS, DEFAULT_COUNTS } from './defaults';
 
 export function GoodsLookbook({
   goods,
@@ -45,7 +46,7 @@ export function GoodsLookbook({
             </div>
             <div className="ms-lookbook-text">
               <Type as="span" role="eyebrow" className="ms-lookbook-eyebrow">
-                No. {String(i + 1).padStart(2, '0')}
+                {DEFAULT_COUNTS.numberOf(i + 1)}
               </Type>
               <Type as="h3" role="title" className="ms-lookbook-name">
                 {p.name}
@@ -59,7 +60,7 @@ export function GoodsLookbook({
                 </Type>
               )}
               <Type as="span" role="navLabel" className="ms-lookbook-view">
-                View the piece &rarr;
+                {DEFAULT_STRINGS.fallbackViewPiece} &rarr;
               </Type>
             </div>
           </a>

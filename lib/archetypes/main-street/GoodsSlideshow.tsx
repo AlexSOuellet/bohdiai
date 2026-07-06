@@ -16,6 +16,7 @@ import type { MainStreetContent } from './schemas';
 import { Media } from './chrome';
 import { Type } from './Type';
 import { GoodsHead, type GoodsViewAll } from './beats';
+import { DEFAULT_STRINGS } from './defaults';
 
 const DWELL_MS = 3200;
 
@@ -93,7 +94,7 @@ export function GoodsSlideshow({
             {current?.price}
           </Type>
         </a>
-        <div role="tablist" aria-label="Slides" className="ms-slide-dots">
+        <div role="tablist" aria-label={DEFAULT_STRINGS.ariaSlides} className="ms-slide-dots">
           {products.map((p, i) => (
             <button
               key={p.slug}

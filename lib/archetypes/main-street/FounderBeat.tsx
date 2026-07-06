@@ -19,8 +19,9 @@ import {
   FounderSignature,
   type FounderAbout,
 } from './FounderBeats';
+import { DEFAULT_STRINGS } from './defaults';
 
-const DEFAULT_ABOUT = 'Read the full story';
+const DEFAULT_ABOUT = DEFAULT_STRINGS.fallbackReadFullStory;
 
 export function FounderBeat({
   founder,

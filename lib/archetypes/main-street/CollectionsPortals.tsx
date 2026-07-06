@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * COLLECTIONS — the portals (Dark family).
  *
@@ -22,6 +20,7 @@ import type { ArchetypeTheme } from '../types';
 import type { CollectionView, CollectionsSection } from './collections';
 import { Media } from './chrome';
 import { Type } from './Type';
+import { DEFAULT_COUNTS } from './defaults';
 
 export function CollectionsPortals({
   section,
@@ -61,7 +60,7 @@ export function CollectionsPortals({
                 </Type>
                 <span className="ms-portal-rule" aria-hidden />
                 <Type as="span" role="legal" className="ms-portal-count">
-                  {c.count} pieces
+                  {DEFAULT_COUNTS.pieces(c.count)}
                 </Type>
               </span>
             </a>

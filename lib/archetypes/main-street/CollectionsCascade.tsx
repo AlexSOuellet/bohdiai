@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * COLLECTIONS — the cascade (Modern / Minimalist family).
  *

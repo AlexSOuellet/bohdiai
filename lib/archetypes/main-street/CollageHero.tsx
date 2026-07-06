@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Main Street — a swappable HERO variant: COLLAGE.
  *
@@ -19,6 +17,7 @@ import type { ArchetypeTheme } from '../types';
 import type { MainStreetContent } from './schemas';
 import { Nav, linkHref } from './chrome';
 import { Type } from './Type';
+import { DEFAULT_STRINGS } from './defaults';
 
 const MAX_SHOTS = 3;
 
@@ -63,7 +62,7 @@ export function CollageHero({
           </div>
         </div>
         {shots.length > 0 && (
-          <div className="ms-collage-cluster" aria-label="A few moments from the shop">
+          <div className="ms-collage-cluster" aria-label={DEFAULT_STRINGS.ariaCollageMoments}>
             {shots.map((s, i) => (
               <div key={i} data-ms-collage-shot className="ms-collage-shot">
                 <img src={s.url} alt={s.alt} />

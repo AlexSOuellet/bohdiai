@@ -23,6 +23,7 @@ import { FindUsPasses } from './FindUsPasses';
 import { FindUsNextStop } from './FindUsNextStop';
 import { FindUsItinerary } from './FindUsItinerary';
 import { FindUsPoster } from './FindUsPoster';
+import { DEFAULT_STRINGS } from './defaults';
 
 export function FindUsBeat({
   findUs,
@@ -44,7 +45,7 @@ export function FindUsBeat({
   if (findUs.rows.length === 0) return null;
   const chosen = treatment ?? findUs.treatment ?? DEFAULT_FINDUS_TREATMENT;
   const events = full ? findUs.rows : sampleEvents(findUs.rows);
-  const viewAll = full ? undefined : { href: eventsHref, label: findUs.eventsLabel ?? 'See all dates' };
+  const viewAll = full ? undefined : { href: eventsHref, label: findUs.eventsLabel ?? DEFAULT_STRINGS.fallbackSeeAllDates };
   const props = { section: findUs, events, skin, viewAll };
 
   switch (chosen) {

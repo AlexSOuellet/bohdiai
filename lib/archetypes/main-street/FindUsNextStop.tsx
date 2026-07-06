@@ -13,6 +13,7 @@
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import { type FindUsSection, type FindUsEvent, parseFindUsDate } from './findus';
+import { DEFAULT_STRINGS } from './defaults';
 
 /** A trailing appearance: its short date, venue, and time on one line. */
 function alsoLabel(e: FindUsEvent): string {
@@ -60,7 +61,7 @@ export function FindUsNextStop({
         {rest.length > 0 && (
           <div className="ms-fu-next-also">
             <Type as="span" role="day" className="ms-fu-next-also-lbl">
-              Also coming up
+              {DEFAULT_STRINGS.findUsAlsoComingUp}
             </Type>
             <div className="ms-fu-next-strip">
               {rest.map((e, i) => (

@@ -93,37 +93,39 @@ export function MainStreet({ content, skin, products, catalogSize, goodsTreatmen
   return (
     <MainStreetRoot skin={skin}>
       {resolveHero(heroVariant)({ identity: content.identity, moment: content.moment, skin, momentKey })}
-      {marqueeLines && (marqueeLines.voice.length > 0 || marqueeLines.info.length > 0) && (
-        <MarqueeBeat lines={marqueeLines} skin={skin} />
-      )}
-      <GoodsBeat goods={content.goods} products={products} skin={skin} treatment={goodsTreatment} catalogSize={catalogSize} shopHref={shopHref} />
-      {collectionsSection && collections && collections.length > 0 && (
+      <main>
+        {marqueeLines && (marqueeLines.voice.length > 0 || marqueeLines.info.length > 0) && (
+          <MarqueeBeat lines={marqueeLines} skin={skin} />
+        )}
+        <GoodsBeat goods={content.goods} products={products} skin={skin} treatment={goodsTreatment} catalogSize={catalogSize} shopHref={shopHref} />
+        {collectionsSection && collections && collections.length > 0 && (
+          <Reveal>
+            <CollectionsBeat
+              section={collectionsSection}
+              items={collections}
+              skin={skin}
+              treatment={collectionsTreatment}
+              viewAll={collectionsSection.viewAllLabel ? { href: collectionsHref ?? '/collections', label: collectionsSection.viewAllLabel } : undefined}
+            />
+          </Reveal>
+        )}
         <Reveal>
-          <CollectionsBeat
-            section={collectionsSection}
-            items={collections}
-            skin={skin}
-            treatment={collectionsTreatment}
-            viewAll={collectionsSection.viewAllLabel ? { href: collectionsHref ?? '/collections', label: collectionsSection.viewAllLabel } : undefined}
-          />
+          <FounderBeat founder={content.founder} skin={skin} treatment={founderTreatment} aboutHref={aboutHref} aboutPage={content.about} />
         </Reveal>
-      )}
-      <Reveal>
-        <FounderBeat founder={content.founder} skin={skin} treatment={founderTreatment} aboutHref={aboutHref} aboutPage={content.about} />
-      </Reveal>
-      {content.founder.findUs && content.founder.findUs.rows.length > 0 && (
+        {content.founder.findUs && content.founder.findUs.rows.length > 0 && (
+          <Reveal>
+            <FindUsBeat findUs={content.founder.findUs} skin={skin} treatment={findUsTreatment} eventsHref={eventsHref} />
+          </Reveal>
+        )}
+        {content.reviews && content.reviews.items.length > 0 && (
+          <Reveal>
+            <ReviewsBeat section={content.reviews} skin={skin} treatment={reviewsTreatment} viewAll={reviewsViewAll} />
+          </Reveal>
+        )}
         <Reveal>
-          <FindUsBeat findUs={content.founder.findUs} skin={skin} treatment={findUsTreatment} eventsHref={eventsHref} />
+          <Close close={content.close} skin={skin} />
         </Reveal>
-      )}
-      {content.reviews && content.reviews.items.length > 0 && (
-        <Reveal>
-          <ReviewsBeat section={content.reviews} skin={skin} treatment={reviewsTreatment} viewAll={reviewsViewAll} />
-        </Reveal>
-      )}
-      <Reveal>
-        <Close close={content.close} skin={skin} />
-      </Reveal>
+      </main>
       <MainStreetFooter shopName={content.shopName} />
     </MainStreetRoot>
   );

@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * COLLECTIONS — the color lanes (Cheerful family).
  *
@@ -22,6 +20,7 @@
 import type { ArchetypeTheme } from '../types';
 import { Media } from './chrome';
 import { Type } from './Type';
+import { DEFAULT_COUNTS } from './defaults';
 import type { CollectionView, CollectionsSection } from './collections';
 
 export function CollectionsLanes({
@@ -63,7 +62,7 @@ export function CollectionsLanes({
                 {c.name}
               </Type>
               <Type as="span" role="legal" className="ms-lane-count">
-                {`${c.count} items`}
+                {DEFAULT_COUNTS.items(c.count)}
               </Type>
               <Type as="span" role="legal" className="ms-lane-arr" aria-hidden="true">
                 →

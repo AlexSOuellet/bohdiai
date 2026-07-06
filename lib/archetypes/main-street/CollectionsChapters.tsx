@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * COLLECTIONS — the chapters (Luxury / Elegant family).
  *
@@ -23,6 +21,7 @@
 import type { ArchetypeTheme } from '../types';
 import { Media } from './chrome';
 import { Type } from './Type';
+import { DEFAULT_COUNTS } from './defaults';
 import type { CollectionView, CollectionsSection } from './collections';
 
 /** Tiny roman-numeral helper — chapters only ever number a handful, so a simple
@@ -94,7 +93,7 @@ export function CollectionsChapters({
                   {c.name}
                 </Type>
                 <Type as="span" role="caption" className="ms-chapter-count">
-                  {`${c.count} pieces`}
+                  {DEFAULT_COUNTS.pieces(c.count)}
                 </Type>
               </span>
               <span className="ms-chapter-plate">

@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Main Street — a swappable HERO variant: FLOATING CARD.
  *

@@ -20,7 +20,7 @@ import { CollectionsBeat } from './CollectionsBeat';
 import { ReviewsBeat } from './ReviewsBeat';
 import type { CollectionView } from '../content';
 import { MainStreetContactForm } from './MainStreetContactForm';
-import { DEFAULT_STRINGS } from './defaults';
+import { DEFAULT_STRINGS, DEFAULT_COUNTS } from './defaults';
 
 function SubHeader({ content, skin, current }: { content: MainStreetContent; skin: ArchetypeTheme; current?: string | undefined }) {
   // The header is fixed (matching the home hero's pinned nav — Lenis smooth-scroll
@@ -144,8 +144,17 @@ export function AboutPage({ content, skin }: { content: MainStreetContent; skin:
   // own layout (columns + drop cap + pull-quote), so a story block below would
   // duplicate. Every other treatment is a teaser, so the story runs below it.
   const showStoryBlock = treatment !== 'editorial';
+  // The About page owns its <h1> — the authored heading names the page so screen
+  // readers and search engines see the same title a sighted visitor would read.
+  // Visually hidden because the founder treatment IS the visual hero; the heading
+  // is a structural landmark, not chrome.
   return (
     <MainStreetSubPage content={content} skin={skin} current="/about">
+      {content.about?.heading && (
+        <Type as="h1" role="closeHead" className="ms-sr-only">
+          {content.about.heading}
+        </Type>
+      )}
       {/* The founder treatment as the page's HERO — no "about cue" (you're here). */}
       <FounderBeat founder={content.founder} skin={skin} aboutPage={content.about} showAboutCue={false} />
       {showStoryBlock && (
@@ -213,7 +222,7 @@ export function CollectionsPage({ content, skin, collections }: { content: MainS
 export function CollectionPage({ content, skin, collection, products }: { content: MainStreetContent; skin: ArchetypeTheme; collection: CollectionView; products: ProductView[] }) {
   return (
     <MainStreetSubPage content={content} skin={skin} current="/collections">
-      <PageHead eyebrow={`${collection.count} ${collection.count === 1 ? 'piece' : 'pieces'}`} title={collection.name} />
+      <PageHead eyebrow={DEFAULT_COUNTS.pieces(collection.count)} title={collection.name} />
       <section data-ms-collection className="ms-wrap ms-page">
         {products.length === 0 ? (
           <Type as="p" role="body" className="ms-page-empty">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { DEFAULT_STRINGS } from './defaults';
 
 export interface MobileNavItem {
   href: string;
@@ -53,7 +54,7 @@ export function MainStreetMobileNav({
       <button
         ref={toggleRef}
         type="button"
-        aria-label="Open menu"
+        aria-label={DEFAULT_STRINGS.ariaOpenMenu}
         aria-expanded={open}
         onClick={() => setOpen(true)}
         className={label ? 'ms-menu-trigger' : 'ms-burger'}
@@ -72,11 +73,11 @@ export function MainStreetMobileNav({
       </button>
 
       {open && (
-        <div className="ms-mobile-overlay" role="dialog" aria-modal="true" aria-label="Menu">
+        <div className="ms-mobile-overlay" role="dialog" aria-modal="true" aria-label={DEFAULT_STRINGS.ariaMenu}>
           <button
             ref={closeRef}
             type="button"
-            aria-label="Close menu"
+            aria-label={DEFAULT_STRINGS.ariaCloseMenu}
             onClick={() => {
               setOpen(false);
               toggleRef.current?.focus();
@@ -86,13 +87,13 @@ export function MainStreetMobileNav({
             <span className="ms-burger-x" />
             <span className="ms-burger-x" />
           </button>
-          <nav className="ms-mobile-links" aria-label="Site">
+          <nav className="ms-mobile-links" aria-label={DEFAULT_STRINGS.ariaSiteNav}>
             {items.map((item, i) => (
               <a
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                style={{ animationDelay: `${(i * 0.06 + 0.12).toFixed(2)}s` }}
+                data-ms-stagger={i}
               >
                 {item.label}
               </a>

@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * COLLECTIONS — the cupboard (Cozy family).
  *
@@ -21,6 +19,7 @@
 import type { ArchetypeTheme } from '../types';
 import { Media } from './chrome';
 import { Type } from './Type';
+import { DEFAULT_STRINGS, DEFAULT_COUNTS } from './defaults';
 import type { CollectionView, CollectionsSection } from './collections';
 
 export function CollectionsCupboard({
@@ -60,13 +59,13 @@ export function CollectionsCupboard({
               </span>
               <span className="ms-cup-slip">
                 <Type as="span" role="legal" className="ms-cup-num">
-                  {`${String(i + 1).padStart(2, '0')} — ${c.count} items`}
+                  {`${String(i + 1).padStart(2, '0')} — ${DEFAULT_COUNTS.items(c.count)}`}
                 </Type>
                 <Type as="span" role="cardTitle" className="ms-cup-name">
                   {c.name}
                 </Type>
                 <Type as="span" role="sig" className="ms-cup-go">
-                  {viewAll?.label ?? 'Explore'}
+                  {viewAll?.label ?? DEFAULT_STRINGS.fallbackExploreCollection}
                 </Type>
               </span>
             </a>

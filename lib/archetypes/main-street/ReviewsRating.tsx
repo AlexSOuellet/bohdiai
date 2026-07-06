@@ -19,6 +19,7 @@
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import type { ReviewsSection, Testimonial } from './reviews';
+import { DEFAULT_COUNTS } from './defaults';
 
 export function ReviewsRating({
   section,
@@ -31,8 +32,8 @@ export function ReviewsRating({
   skin: ArchetypeTheme;
   viewAll?: { href: string; label: string } | undefined;
 }) {
-  const score = section.summary?.score ?? '5 out of 5';
-  const count = section.summary?.count ?? `${items.length} reviews`;
+  const score = section.summary?.score ?? DEFAULT_COUNTS.outOfFive(5);
+  const count = section.summary?.count ?? DEFAULT_COUNTS.reviews(items.length);
   return (
     <section id="reviews" className="ms-rev-section ms-rev-rating">
       <div className="ms-wrap">

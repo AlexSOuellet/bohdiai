@@ -16,6 +16,7 @@ import { LINK_TARGETS, linkHref, type LinkTarget } from './links';
 import { MainStreetMobileNav } from './MobileNav';
 import { IntroReplayLink } from './IntroReplayLink';
 import { Type } from './Type';
+import { DEFAULT_STRINGS } from './defaults';
 import { relativeLuminance } from './logo-contrast';
 
 export { LINK_TARGETS, linkHref, type LinkTarget };
@@ -208,7 +209,15 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-burger-x:first-child{transform:rotate(45deg)}
     .arch-main-street .ms-burger-x:last-child{transform:rotate(-45deg)}
     .arch-main-street .ms-mobile-links{display:flex;flex-direction:column;gap:6px;text-align:center}
-    .arch-main-street .ms-mobile-links a{color:inherit;font-family:var(--ms-disp);font-size:clamp(30px,9vw,46px);line-height:1.18;letter-spacing:.01em;opacity:0;transform:translateY(14px);animation:ms-link-in .55s ${mo.reveal.easing} forwards}
+    .arch-main-street .ms-mobile-links a{color:inherit;font-family:var(--ms-disp);font-size:clamp(30px,9vw,46px);line-height:1.18;letter-spacing:.01em;opacity:0;transform:translateY(14px);animation:ms-link-in .55s ${mo.reveal.easing} forwards;animation-delay:.12s}
+    .arch-main-street .ms-mobile-links a[data-ms-stagger="1"]{animation-delay:.18s}
+    .arch-main-street .ms-mobile-links a[data-ms-stagger="2"]{animation-delay:.24s}
+    .arch-main-street .ms-mobile-links a[data-ms-stagger="3"]{animation-delay:.30s}
+    .arch-main-street .ms-mobile-links a[data-ms-stagger="4"]{animation-delay:.36s}
+    .arch-main-street .ms-mobile-links a[data-ms-stagger="5"]{animation-delay:.42s}
+    .arch-main-street .ms-mobile-links a[data-ms-stagger="6"]{animation-delay:.48s}
+    .arch-main-street .ms-mobile-links a[data-ms-stagger="7"]{animation-delay:.54s}
+    .arch-main-street .ms-mobile-links a[data-ms-stagger="8"]{animation-delay:.60s}
     @keyframes ms-link-in{to{opacity:1;transform:none}}
     @media(prefers-reduced-motion:reduce){
       .arch-main-street .ms-mobile-overlay{animation:none}
@@ -217,6 +226,12 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     /* Sub-page <main> sits under the fixed SubHeader; pad it down by the nav height. */
     .arch-main-street .ms-subpage-main{padding-top:80px}
     @media(max-width:768px){.arch-main-street .ms-subpage-main{padding-top:68px}}
+    /* Visually-hidden but screen-reader-accessible. Used for structural h1s (About
+       page) where the visual hero already carries the page identity. */
+    .arch-main-street .ms-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    /* Keyboard focus ring — family-consistent, uses the skin's accent so it lands
+       in the palette. Only applies to :focus-visible so mouse users don't see it. */
+    .arch-main-street :focus-visible{outline:2px solid var(--ms-accent);outline-offset:3px;border-radius:1px}
     /* ── sub-page shell — class-only; the two contrast surfaces mirror navContrast's
        fixed chrome states (like the on-media color), keyed on a data attribute so
        the header never carries an inline style. ── */
@@ -1192,12 +1207,13 @@ export function Media({
 
 /** The fallback nav — real routes used when a tenant has no authored nav (legacy
  *  rows, or any row whose nav predates authored targets). Shared by the home hero
- *  nav and every sub-page header. New builds author their own nav (D46). */
+ *  nav and every sub-page header. New builds author their own nav (D46). Labels
+ *  route through DEFAULT_STRINGS so they stay in the single defaults file. */
 export const MAIN_STREET_NAV: ReadonlyArray<{ href: string; label: string }> = [
-  { href: '/shop', label: 'Shop' },
-  { href: '/about', label: 'About' },
-  { href: '/events', label: 'Events' },
-  { href: '/contact', label: 'Contact' },
+  { href: '/shop', label: DEFAULT_STRINGS.navShop },
+  { href: '/about', label: DEFAULT_STRINGS.navAbout },
+  { href: '/events', label: DEFAULT_STRINGS.navEvents },
+  { href: '/contact', label: DEFAULT_STRINGS.navContact },
 ];
 
 /** Turn the authored nav entries into real `{ href, label }` links. The maker's
@@ -1264,7 +1280,7 @@ export function Nav({
   currentHref?: string | undefined;
 }) {
   const items = resolveNav(identity.nav);
-  const allItems = [...items, { href: '/cart', label: 'Cart' }];
+  const allItems = [...items, { href: '/cart', label: DEFAULT_STRINGS.navCart }];
   const variant = identity.navVariant ?? 'standard';
 
   if (variant === 'split-center') {
@@ -1295,7 +1311,7 @@ export function Nav({
     return (
       <>
         <WordmarkLink wordmark={identity.wordmark} logoUrl={identity.logoUrl} />
-        <MainStreetMobileNav items={allItems} label="Menu" always />
+        <MainStreetMobileNav items={allItems} label={DEFAULT_STRINGS.ariaMenu} always />
       </>
     );
   }
@@ -1350,16 +1366,16 @@ export function MainStreetFooter({ shopName }: { shopName: string }) {
       <Type as="span" role="wordmark">{shopName}</Type>
       <div className="ms-footer-row">
         <Type as={Link} role="legal" href="/" className="ms-footer-link">
-          Home
+          {DEFAULT_STRINGS.footerHome}
         </Type>
         <IntroReplayLink className="ms-footer-link">
-          Intro
+          {DEFAULT_STRINGS.footerIntro}
         </IntroReplayLink>
         <Type as="a" role="legal" href="/privacy" className="ms-footer-link">
-          Privacy
+          {DEFAULT_STRINGS.footerPrivacy}
         </Type>
         <Type as="a" role="legal" href="/terms" className="ms-footer-link">
-          Terms
+          {DEFAULT_STRINGS.footerTerms}
         </Type>
         <Type as="span" role="legal" className="ms-footer-legal">
           &copy; {shopName}

@@ -23,9 +23,10 @@ import { GoodsLookbook } from './GoodsLookbook';
 import { GoodsSwitcher } from './GoodsSwitcher';
 import { GoodsSlideshow } from './GoodsSlideshow';
 import { Reveal } from './Reveal';
+import { DEFAULT_STRINGS } from './defaults';
 
 /** Neutral fallback when the maker hasn't authored a view-all cue. */
-const DEFAULT_VIEW_ALL = 'See the full catalog';
+const DEFAULT_VIEW_ALL = DEFAULT_STRINGS.fallbackSeeAllGoods;
 
 export function GoodsBeat({
   goods,

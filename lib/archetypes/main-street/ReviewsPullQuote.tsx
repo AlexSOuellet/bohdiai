@@ -24,6 +24,7 @@ import { useEffect, useState } from 'react';
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import type { ReviewsSection, Testimonial } from './reviews';
+import { DEFAULT_COUNTS } from './defaults';
 
 /** How long a voice holds before the stage advances (ms). Slow and deliberate,
  *  in the spirit of the hero's pace — long enough to read the quote once. */
@@ -98,7 +99,7 @@ export function ReviewsPullQuote({
               <button
                 key={i}
                 type="button"
-                aria-label={`Show testimonial ${i + 1}`}
+                aria-label={DEFAULT_COUNTS.showTestimonial(i + 1)}
                 className={i === active ? 'ms-rev-pq-dot on' : 'ms-rev-pq-dot'}
                 onClick={() => setActive(i)}
               />

@@ -22,6 +22,7 @@
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import type { ReviewsSection, Testimonial } from './reviews';
+import { DEFAULT_STRINGS } from './defaults';
 
 export function ReviewsTexts({
   section,
@@ -65,7 +66,7 @@ export function ReviewsTexts({
           ))}
         </div>
         <Type as="p" role="legal" className="ms-rev-texts-foot">
-          real messages, shared with permission
+          {DEFAULT_STRINGS.reviewsTextsAttribution}
         </Type>
         {viewAll && (
           <a href={viewAll.href} data-ms-rev-viewall="" className="ms-rev-texts-viewall">

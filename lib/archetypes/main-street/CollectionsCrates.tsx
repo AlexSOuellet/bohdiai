@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * COLLECTIONS — the crates (Rustic family).
  *

@@ -14,6 +14,7 @@
 import { useState } from 'react';
 import { Type } from './Type';
 import { type FindUsSection, type FindUsEvent, FINDUS_WEEKDAY_HEADERS, buildFindUsMonth } from './findus';
+import { DEFAULT_STRINGS } from './defaults';
 
 /** The agenda column — the shown month's appearances in full. */
 function Agenda({ events }: { events: FindUsEvent[] }) {
@@ -71,13 +72,13 @@ export function FindUsCalendar({
               {section.label}
             </Type>
             <div className="ms-fu-cal-nav">
-              <button type="button" aria-label="Previous month" className="ms-fu-cal-arrow" onClick={() => step(-1)}>
+              <button type="button" aria-label={DEFAULT_STRINGS.ariaPreviousMonth} className="ms-fu-cal-arrow" onClick={() => step(-1)}>
                 &larr;
               </button>
               <Type as="h2" role="goodsHead" className="ms-fu-cal-title">
                 {grid.title}
               </Type>
-              <button type="button" aria-label="Next month" className="ms-fu-cal-arrow" onClick={() => step(1)}>
+              <button type="button" aria-label={DEFAULT_STRINGS.ariaNextMonth} className="ms-fu-cal-arrow" onClick={() => step(1)}>
                 &rarr;
               </button>
             </div>
@@ -112,13 +113,13 @@ export function FindUsCalendar({
           </div>
           <div className="ms-fu-cal-side">
             <Type as="h3" role="day" className="ms-fu-cal-side-head">
-              This month
+              {DEFAULT_STRINGS.eventsThisMonth}
             </Type>
             {hasEvents ? (
               <Agenda events={grid.events} />
             ) : (
               <Type as="p" role="body" className="ms-fu-cal-empty">
-                No dates this month — check back soon.
+                {DEFAULT_STRINGS.emptyMonth}
               </Type>
             )}
             {viewAll && (

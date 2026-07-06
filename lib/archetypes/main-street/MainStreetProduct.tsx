@@ -65,7 +65,7 @@ export function MainStreetProduct({
       <nav data-ms-nav className="ms-product-nav">
         <Nav identity={content.identity} currentHref="/shop" />
       </nav>
-      <div className="ms-wrap ms-product-section">
+      <main className="ms-wrap ms-product-section">
         <section className="ms-product-grid">
           <div>
             {primary && <MediaTile media={primary} aspect="4 / 5" />}
@@ -125,7 +125,7 @@ export function MainStreetProduct({
             {product.description}
           </Type>
         </section>
-      </div>
+      </main>
       <MainStreetFooter shopName={content.shopName} />
     </MainStreetRoot>
   );

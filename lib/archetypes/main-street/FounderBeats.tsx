@@ -16,6 +16,7 @@ import type { ArchetypeTheme } from '../types';
 import type { MainStreetContent } from './schemas';
 import { Media } from './chrome';
 import { Type } from './Type';
+import { DEFAULT_STRINGS } from './defaults';
 
 type Founder = MainStreetContent['founder'];
 
@@ -145,7 +146,7 @@ export function FounderLetter({ founder, about }: TreatmentProps) {
           )}
           {about && (
             <Type as="a" role="navLabel" href={about.href} className="ms-letter-ps">
-              P.S. {about.label} &rarr;
+              {DEFAULT_STRINGS.founderPostscript} {about.label} &rarr;
             </Type>
           )}
         </div>
