@@ -85,6 +85,11 @@ describe('FAMILIES registry', () => {
     expect(f.fontHref).toMatch(/^https:\/\/fonts\.googleapis\.com\/css2\?/);
   });
 
+  it.each(ALL_FAMILY_KEYS)('%s names a defaultSkin (the onboarding-time paint the family owns)', (key) => {
+    const f = FAMILIES[key];
+    expect(f.defaultSkin).toMatch(/^main-street-[a-z]+$/);
+  });
+
   it('locks the opens-with lead per family (v2 stacks)', () => {
     expect(FAMILIES.cozy.sectionStack.find((e) => e.lead)?.section).toBe('founder');
     expect(FAMILIES.rustic.sectionStack.find((e) => e.lead)?.section).toBe('founder');

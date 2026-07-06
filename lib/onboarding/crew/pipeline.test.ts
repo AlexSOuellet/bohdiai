@@ -88,8 +88,10 @@ describe('directAndProduce (the crew pipeline)', () => {
     const forcedTools = create.mock.calls.map((c) => (c[0] as { tool_choice: { name: string } }).tool_choice.name);
     expect(forcedTools).toEqual(['set_trajectory', 'submit_copy', 'set_moment', 'set_look', 'final_cut']);
 
-    // skin is the crew's pick, and within the mood subset
-    expect(result.chosen.lookKey).toBe('main-street-ember');
+    // §1.6 — the FAMILY provides the paint. The mock brief has moodKey='rustic',
+    // so onboarding lands on Rustic's default skin (Tannery), NOT the crew's
+    // free pick. The Graphic Artist's own suggestion is overridden.
+    expect(result.chosen.lookKey).toBe('main-street-tannery');
     expect(moodAlignedSkins('rustic')).toContain(result.chosen.lookKey);
 
     // the assembled envelope: words + the moment scene + the image prompts

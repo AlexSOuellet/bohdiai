@@ -106,6 +106,12 @@ export interface Family {
   imageryGrade: string;
   /** Google Fonts stylesheet URL preloaded on the storefront. */
   fontHref: string;
+  /** The skin the family PAINTS THROUGH at onboarding — the ★ pick from
+   *  Family-Style-Sheets whose palette best represents the family. Maker can
+   *  swap to another within-family skin from the editor (Phase 3). Every skin
+   *  in the catalog stays reachable via `moodAlignedSkins`; the default is
+   *  the family's own opinion. (§1.6) */
+  defaultSkin: string;
 }
 
 const on = (section: SectionKey, extras: { lead?: boolean } = {}): FamilySectionStackEntry => ({
@@ -156,6 +162,7 @@ const COZY: Family = {
   imageryGrade: REFERENCE_LABELS.families.imageryGrades.cozy,
   fontHref:
     'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Newsreader:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&family=Pinyon+Script&display=swap',
+  defaultSkin: 'main-street-ember',
 };
 
 const RUSTIC: Family = {
@@ -194,6 +201,7 @@ const RUSTIC: Family = {
   imageryGrade: REFERENCE_LABELS.families.imageryGrades.rustic,
   fontHref:
     'https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Bitter:wght@400;600;800&family=Cutive+Mono&family=Permanent+Marker&display=swap',
+  defaultSkin: 'main-street-tannery',
 };
 
 const DARK: Family = {
@@ -232,6 +240,7 @@ const DARK: Family = {
   imageryGrade: REFERENCE_LABELS.families.imageryGrades.dark,
   fontHref:
     'https://fonts.googleapis.com/css2?family=Gloock&family=Spectral:ital,wght@0,400;0,500;1,400&family=Syne:wght@500;600;700&family=Cinzel:wght@500;600&display=swap',
+  defaultSkin: 'main-street-hearthstone',
 };
 
 const LUXURY: Family = {
@@ -270,6 +279,7 @@ const LUXURY: Family = {
   imageryGrade: REFERENCE_LABELS.families.imageryGrades.luxury,
   fontHref:
     'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Tenor+Sans&family=Cinzel+Decorative:wght@600;700&display=swap',
+  defaultSkin: 'main-street-atelier',
 };
 
 const CHEERFUL: Family = {
@@ -308,6 +318,7 @@ const CHEERFUL: Family = {
   imageryGrade: REFERENCE_LABELS.families.imageryGrades.cheerful,
   fontHref:
     'https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Lilita+One&display=swap',
+  defaultSkin: 'main-street-confetti',
 };
 
 const MODERN: Family = {
@@ -346,6 +357,7 @@ const MODERN: Family = {
   imageryGrade: REFERENCE_LABELS.families.imageryGrades.modern,
   fontHref:
     'https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Saira+Condensed:wght@600;700&display=swap',
+  defaultSkin: 'main-street-studio',
 };
 
 export const FAMILIES: Record<FamilyKey, Family> = {

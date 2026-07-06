@@ -14,6 +14,7 @@
  */
 import { MAIN_STREET_SPEC, type MainStreetAuthored } from '@/lib/archetypes/main-street/builder';
 import type { ArchetypeBuildSpec } from '@/lib/archetypes/builder';
+import { getFamily } from '@/lib/archetypes/main-street/families';
 import { logger } from '@/lib/logger';
 import { withTimeout } from '@/lib/with-timeout';
 import { direct, TIMEOUT_MS as DIRECTOR_TIMEOUT_MS } from './director';
@@ -133,9 +134,16 @@ async function runCrew(brief: CrewBrief): Promise<CrewBuildResult> {
     throw new Error(`Crew output failed the engine schema: ${parsed.issues.map((i) => `${i.path}: ${i.message}`).join('; ')}`);
   }
 
-  logger.info('crew: produced', { skin: cut.look.skinKey, products: cut.copy.products.length });
+  // §1.6 — the FAMILY provides the paint. Onboarding always uses the family's
+  // default skin (the ★ pick that best represents the mood). The Graphic Artist
+  // still designs the imagery, but the skin choice is the family's, not Bohdi's.
+  // The maker can swap to another within-family skin in Editor Door 1 (Phase 3).
+  const family = getFamily(brief.moodKey);
+  const lookKey = family.defaultSkin;
+
+  logger.info('crew: produced', { skin: lookKey, family: family.key, products: cut.copy.products.length });
   return {
-    chosen: { spec: MAIN_STREET_SPEC, lookKey: cut.look.skinKey },
+    chosen: { spec: MAIN_STREET_SPEC, lookKey },
     authored: parsed.authored,
     trajectory,
     choices: {
