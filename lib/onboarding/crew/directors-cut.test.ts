@@ -29,7 +29,7 @@ const trajectory: Trajectory = {
 const current: CrewOutput = {
   copy: {
     shopName: 'Tannery Row',
-    identity: { wordmark: 'Tannery Row', nav: [{ label: 'Shop', target: 'shop' }, { label: 'Our story', target: 'about' }] },
+    identity: { wordmark: 'Tannery Row' },
     moment: { story: ['Built by hand', 'Made to outlast you'], eyebrow: 'From the workshop', brand: 'Tannery Row', sub: 'Hand-cut leather goods built to outlast you', ctaLabel: 'See the work', ctaTarget: 'shop' },
     goods: { title: 'The bench' },
     marquee: { voice: ['Small batch', 'Cut by hand', 'Made to last'] },

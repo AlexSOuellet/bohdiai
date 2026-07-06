@@ -107,23 +107,13 @@ describe('fluidFontSize', () => {
 });
 
 describe('resolveNav', () => {
-  it('uses the authored nav, pointing each label at its target route', () => {
-    const resolved = resolveNav([
-      { label: 'Breads', target: 'shop' },
-      { label: 'Our story', target: 'about' },
-    ]);
-    expect(resolved).toEqual([
-      { href: '/shop', label: 'Breads' },
-      { href: '/about', label: 'Our story' },
-    ]);
+  it('returns the platform nav — the fixed list of pages every storefront has (§1.7)', () => {
+    expect(resolveNav()).toEqual(MAIN_STREET_NAV);
   });
 
-  it('falls back to the fixed nav for legacy string entries (labels never had targets)', () => {
-    expect(resolveNav(['Shop', 'About', 'Find us'])).toEqual(MAIN_STREET_NAV);
-  });
-
-  it('falls back to the fixed nav when nav is empty', () => {
-    expect(resolveNav([])).toEqual(MAIN_STREET_NAV);
+  it('lists Shop, Collections, About, Events, Reviews, Contact in reading order', () => {
+    const hrefs = resolveNav().map((n) => n.href);
+    expect(hrefs).toEqual(['/shop', '/collections', '/about', '/events', '/testimonials', '/contact']);
   });
 });
 

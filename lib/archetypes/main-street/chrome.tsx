@@ -10,7 +10,7 @@
 import React from 'react';
 import Link from 'next/link';
 import type { ArchetypeTheme, TypeRole } from '../types';
-import type { MainStreetContent, NavEntry, NavItem } from './schemas';
+import type { MainStreetContent } from './schemas';
 import { MAIN_STREET_FONT_HREFS, type MainStreetRoles } from './skins';
 import { LINK_TARGETS, linkHref, type LinkTarget } from './links';
 import { MainStreetMobileNav } from './MobileNav';
@@ -1205,26 +1205,24 @@ export function Media({
   return <div className={emptyCls} aria-label={media.alt} style={style} />;
 }
 
-/** The fallback nav — real routes used when a tenant has no authored nav (legacy
- *  rows, or any row whose nav predates authored targets). Shared by the home hero
- *  nav and every sub-page header. New builds author their own nav (D46). Labels
- *  route through DEFAULT_STRINGS so they stay in the single defaults file. */
+/** The Main Street nav — every page created at onboarding, in reading order.
+ *  Fixed under §1.7: Bohdi does not author nav; the renderer lists the pages
+ *  the store actually has. Labels route through DEFAULT_STRINGS so a copy edit
+ *  or a locale change touches one file. Maker per-page on/off toggles arrive
+ *  with Editor Door 1 (Phase 3); until then every page shows. */
 export const MAIN_STREET_NAV: ReadonlyArray<{ href: string; label: string }> = [
   { href: '/shop', label: DEFAULT_STRINGS.navShop },
+  { href: '/collections', label: DEFAULT_STRINGS.navCollections },
   { href: '/about', label: DEFAULT_STRINGS.navAbout },
   { href: '/events', label: DEFAULT_STRINGS.navEvents },
+  { href: '/testimonials', label: DEFAULT_STRINGS.navTestimonials },
   { href: '/contact', label: DEFAULT_STRINGS.navContact },
 ];
 
-/** Turn the authored nav entries into real `{ href, label }` links. The maker's
- *  authored nav is used verbatim (D46), each label pointed at its target's route.
- *  A nav that is legacy strings (labels that never carried a destination) or empty
- *  falls back to the platform's fixed nav, so old stored rows render unchanged. */
-export function resolveNav(nav: ReadonlyArray<NavEntry>): ReadonlyArray<{ href: string; label: string }> {
-  const authored = nav.filter((n): n is NavItem => typeof n === 'object');
-  if (authored.length > 0 && authored.length === nav.length) {
-    return authored.map((n) => ({ href: linkHref(n.target), label: n.label }));
-  }
+/** Return the store's nav — the fixed page list from `MAIN_STREET_NAV`.
+ *  Exists as a function (not the const directly) so the maker's per-page
+ *  on/off toggles can layer in later without changing every callsite. */
+export function resolveNav(): ReadonlyArray<{ href: string; label: string }> {
   return MAIN_STREET_NAV;
 }
 
@@ -1279,7 +1277,7 @@ export function Nav({
    *  Absent on the home (the wordmark is "home"), so no link is current there. */
   currentHref?: string | undefined;
 }) {
-  const items = resolveNav(identity.nav);
+  const items = resolveNav();
   const allItems = [...items, { href: '/cart', label: DEFAULT_STRINGS.navCart }];
   const variant = identity.navVariant ?? 'standard';
 

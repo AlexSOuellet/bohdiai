@@ -49,7 +49,6 @@ export function normalizeCopy(d: CopywriterDraft): CopywriterDraft {
     identity: {
       ...d.identity,
       wordmark: trim(d.identity.wordmark),
-      nav: d.identity.nav.map((n) => ({ label: trim(n.label), target: n.target })),
     },
     moment: {
       ...d.moment,

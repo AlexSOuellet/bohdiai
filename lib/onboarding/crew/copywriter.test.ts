@@ -312,18 +312,17 @@ describe('copywriter prompt — flat catalog target', () => {
 });
 
 describe('CopywriterDraftSchema — authored link targets (D46)', () => {
-  it('requires nav items to carry a target page, not bare labels', () => {
-    const d = { ...draft, identity: { wordmark: 'Tannery Row', nav: ['Shop', 'About'] } };
-    expect(CopywriterDraftSchema.safeParse(d).success).toBe(false);
+  it('silently drops any nav field the copywriter tries to author — nav is the platform\'s fixed page list (§1.7)', () => {
+    const d = { ...draft, identity: { wordmark: 'Tannery Row', nav: [{ label: 'Blog', target: 'blog' }] } };
+    const parsed = CopywriterDraftSchema.safeParse(d);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect((parsed.data.identity as Record<string, unknown>)['nav']).toBeUndefined();
+    }
   });
 
-  it('accepts nav authored as { label, target } pairs', () => {
+  it('accepts a draft that omits identity.nav — the copywriter no longer authors it', () => {
     expect(CopywriterDraftSchema.safeParse(draft).success).toBe(true);
-  });
-
-  it('rejects a nav target that is not a real page', () => {
-    const d = { ...draft, identity: { wordmark: 'Tannery Row', nav: [{ label: 'Blog', target: 'blog' }, { label: 'Shop', target: 'shop' }] } };
-    expect(CopywriterDraftSchema.safeParse(d).success).toBe(false);
   });
 
   it('requires a target on the primary hero CTA', () => {

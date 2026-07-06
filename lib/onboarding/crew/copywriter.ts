@@ -89,8 +89,7 @@ HEADINGS ARE PHRASES, NOT SENTENCES. The headings and headlines below (goods.tit
 KEEP IT TIGHT. The body-prose fields have NO hard length cap — the build never rejects them for length — but write punchy, not padded: aim for a 1-3 sentence founder quote, 2-4 sentence product descriptions, a few tight sentences per About paragraph, and a short Contact intro. A storefront reads better lean than long.
 
 - shopName: the shop is named "${brief.shopName}". This is the maker's own name for their shop — use it EXACTLY, do not invent, shorten, or alter it.
-- identity.wordmark: "${brief.shopName}" as it shows in the nav — use the exact name.
-- identity.nav (2-6 items): the nav links, each { label (2-18), target }. ALWAYS include shop. Include collections when you author collections.items. Include testimonials when you author the reviews beat. Home is optional (the wordmark is home). Don't cram every link — pick the ones a shopper on THIS store needs first.
+- identity.wordmark: "${brief.shopName}" as it shows in the nav — use the exact name. (The NAV LINKS themselves — Shop, Collections, About, Events, Reviews, Contact — are the platform's fixed page list; you do not author them.)
 ${storyDirective}
 - moment.eyebrow (4-48): a small line above the hero.
 - moment.brand: "${brief.shopName}" — the brand the story lands on; use the exact name.

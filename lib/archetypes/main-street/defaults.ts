@@ -43,8 +43,10 @@ export const DEFAULT_STRINGS = {
 
   // ─── Nav labels (structural — every storefront needs a way to reach these) ─
   navShop: 'Shop',
+  navCollections: 'Collections',
   navAbout: 'About',
   navEvents: 'Events',
+  navTestimonials: 'Reviews',
   navContact: 'Contact',
   navCart: 'Cart',
 

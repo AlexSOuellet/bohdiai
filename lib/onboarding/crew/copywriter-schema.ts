@@ -21,7 +21,7 @@
  * schema just no longer enforces them.
  */
 import { z } from 'zod';
-import { FindUsRow, NavItem } from '@/lib/archetypes/main-street/schemas';
+import { FindUsRow } from '@/lib/archetypes/main-street/schemas';
 import { LINK_TARGETS } from '@/lib/archetypes/main-street/links';
 
 /** A product's words only — no imagePrompt (the Graphic Artist adds that). */
@@ -38,7 +38,6 @@ export const CopywriterDraftSchema = z.object({
   shopName: z.string().min(1),
   identity: z.object({
     wordmark: z.string().min(1),
-    nav: z.array(NavItem).min(1),
   }),
   moment: z.object({
     story: z.array(z.string().min(1)).min(1),
