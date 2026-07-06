@@ -212,6 +212,9 @@ The Tech Arch Spec §14 now includes shipments and shipment_items tables. The or
 
 ### D13. Widgets as a first-class concept, separate from blocks
 
+> **⚠ SUPERSEDED (2026-07-05).** Widgets as a catalog no longer exist. The whole blocks/widgets/layout-engine model was replaced by the single storefront engine (`lib/archetypes/main-street/`) composed by family. See `Full-Plan.md` §1.
+
+
 The platform has two distinct catalogs, not one. Blocks are visual containers — a hero, a feature section, a listing grid, a footer — each with declared slots. Widgets are the functional pieces that fill the slots — a booking calendar, a contact form, a price display, an add-to-cart, a product card, a testimonial, a map, a "book now" CTA.
 
 The AI assembles a storefront by picking blocks (driven by mood and niche), then threading widgets into the slots those blocks expose (driven by what the tenant sells, what their niche needs, and what content the AI generates). A booking calendar isn't a block; it's a widget that fits any block exposing a large enough primary slot. A "book now" button is a widget that fits any block with a CTA slot. Without a widget catalog, blocks are empty frames and the AI has nothing to thread in.
@@ -364,6 +367,9 @@ This replaces the four `tokenHints` sentences per mood in `lib/moods.ts`, which 
 
 ### D22. Block definitions are pure shape, not feel
 
+> **⚠ SUPERSEDED (2026-07-05).** Block definitions no longer exist. Same reason as D13 — the whole block model was replaced by family-composed section treatments.
+
+
 Block metadata today carries fields that encode platform opinions about each block — `moodFit` (which moods this block works in), `tenantTypeFit` (which tenant types it fits), `tier` (which subscription tier unlocks it), and descriptions written in feel-laden language ("editorial hero with image and headline" rather than "two-column layout with photo left, heading and CTA right"). When the AI reads `moodFit`, it's reading our pre-decided judgment rather than making one itself. When it reads a feel-laden description, it's pattern-matching on the language rather than evaluating the shape.
 
 Block definitions going forward describe what the block IS structurally — geometry, content fields, slot shapes — and nothing about feel or fit. `moodFit`, `tenantTypeFit`, and `tier` come out of block metadata. The AI judges fit by reading the structural description against the design intent (niche, mood, style sheets), the same way a designer would. Tier becomes a billing concern surfaced elsewhere (at render time or admin time), not a property of the block. Tenant type fit either disappears entirely or moves to widgets, which do have tenant-type-dependent function in some cases.
@@ -460,6 +466,9 @@ These came out of a long design conversation that reworked the archetype directi
 
 ### D32. The archetype catalog is four storefront shapes plus two shapes that travel
 
+> **⚠ SUPERSEDED (2026-07-05).** Multi-archetype was collapsed to Main Street only (D36 → D37), then to families. There is no archetype catalog and no "shapes that travel." The current model is one storefront engine + six families. See `Full-Plan.md` §1.
+
+
 The storefront catalog is four whole-business *shapes*. **The Shop** (Main Street) — the deep-catalog maker; the workhorse most makers land on. **The Counter** — fresh/seasonal/batch makers who sell a rotating "what's available now" (bakers, farms, preserves), with preorder, pickup, and sold-out mechanics. **The Find** — curated one-of-a-kind (vintage, antique), where every piece is sold once and provenance/condition is the copy. **The Body of Work** — image-first art where the work is beheld and acquired and commerce is kept quiet.
 
 An archetype is now a *business shape*, not a skin. That is the change from Sessions 22–29, where Main Street and Gallery were two looks for the same maker. Because the shape is now structural, the archetype is no longer Bohdi's aesthetic call (see D35).
@@ -469,6 +478,9 @@ An archetype is now a *business shape*, not a skin. That is the change from Sess
 Two pieces are **shapes that travel**, not whole storefronts: the dense wall (above) and **The One** (D34). Commission/made-to-order stays a "request a custom order" CTA mode, not an archetype.
 
 ### D33. The Moment is BohdiAI's signature front door, shared across every storefront
+
+> **⚠ SUPERSEDED BY D54 (2026-06-14).** The portable-Moment concept was retired. The Main Street hero IS the front door; the play-through happens in the hero surface. See D54 for the current model.
+
 
 The hero is no longer welded bespoke into each archetype — this reverses the Session-24 "each archetype owns its hero" decision. Instead there is one portable **Moment** — a cinematic brand intro, the same engine on every storefront — and it is **BohdiAI's signature**: the thing every BohdiAI site does that a Wix or Squarespace site never would. It is the wow, and it embodies the "visibly not AI slop" position.
 
@@ -538,6 +550,9 @@ Generated maker imagery must not hinge on guessing the maker's gender. The name�
 
 ### D43. The Moment plays first as a portable layer, then melts into the hero (clarifies D33)
 
+> **⚠ SUPERSEDED BY D54 (2026-06-14).** The portable Moment layer was killed. The hero surface itself carries the play-through on a cold front-door arrival.
+
+
 A live walk found the Moment was built welded in **as** the Main Street hero — the "each archetype owns its hero" approach D33 explicitly reversed. D33 stands and is clarified here so it can't be misread again: the Moment is ONE **portable front-door layer** that **plays first** on a front-door visit, then resolves via a slow cinematic transition — **melting into the hero on Main Street**, dismissing into the opening on heroless shapes. Playing first (not welded) is precisely what lets the same Moment travel to an archetype that has no hero. The play-once per-shop cookie, the footer "Intro" replay, and the deep-link bypass all belong to that layer. The current implementation must be rebuilt to this.
 
 ---
@@ -545,6 +560,9 @@ A live walk found the Moment was built welded in **as** the Main Street hero —
 ## 2026-06-08 (session 35)
 
 ### D44. The Moment autoplays cold at the front door, plays through, then waits for the customer to click "Enter site" before it melts in (refines D43)
+
+> **⚠ REFINED BY D54 (2026-06-14).** The autoplay-cold-arrival, play-through-and-rest, per-shop seen cookie, and deep-link bypass all survive. What changed: no "Enter Site" click; the play happens in the hero surface, not on a portable overlay; the cookie is written when the timeline lands on the brand phase, not on a click.
+
 
 D43 left the handoff reading as automatic — "plays first, then melts." It isn't. The customer crosses the threshold on purpose, and that click is the whole pivot. The corrected lifecycle:
 
@@ -569,6 +587,9 @@ A live build named "Evening Shadow Candles" published as "Still Burn Co." becaus
 Across every live build the CTAs were wrong because the label was authored freely but the destination was hardcoded in the renderer — a "Shop now" close button went to /contact, an "Our story" hero button went to /shop. The nav was worse: the copywriter authored a nav ("Breads / Order / Classes") that the renderer threw away entirely in favor of a fixed Shop/About/Events/Contact list. The fix: the crew picks each link's destination from the real pages (shop, about, events, contact, a product) and writes the label to match, so what a button SAYS and where it GOES always agree — and the maker's authored nav is actually used (mapped to real routes), not discarded. Alex: "I would like to see the crew build the links with the pages they suggest."
 
 ### D47. The Moment cinematographer always reaches for video; a still is the last resort (next session)
+
+> **⚠ SUPERSEDED BY D55 (2026-06-15).** "Always reach for video" produced tangential invention (candles next to yarn). The current framing: video vs still is an honest judgment with no default; the failure mode named + refused is tangential invention.
+
 
 Two of three live builds (the baker, the ceramicist) got a STILL Moment when motion was the obvious win (steam off fresh bread). Cause: when the crew was built (D40), the cinematographer's video-vs-still choice was made deliberately *neutral* to avoid bias — the prompt just says "video or image" and the only thing it says about video is its loop RESTRICTIONS, so the model reads video as risky and plays safe with a still. But the Moment IS motion — that is its signature wow (D33) — so a strong preference for video is core product intent, not taste-bias. The cinematographer must always reach for video and choose a still ONLY when it genuinely cannot think of a simple ambient motion to capture. Alex: "always reach for video and only do stills if it truly cannot think of a simple motion to capture." (A lesson rides along: over-neutralizing to avoid bias can strip a load-bearing product decision — neutrality and intent are not the same thing.)
 
@@ -605,6 +626,9 @@ The chosen shape is deliberately asymmetric rather than the symmetric "four corn
 Alongside this the slideshow was sped up — the per-slide dwell dropped from 5s to 3.2s and the cross-fade from 1.1s to 0.8s, because it read as sluggish. The slow Ken Burns drift stays; its slowness is intentional.
 
 ### D51. The mood lineup is seven feelings; color is a layer under the mood, not a mood
+
+> **⚠ REFINED (2026-07-05).** The seven-feelings lineup is being collapsed to six families in the Family layer (Full-Plan §1.0 open decision — which mood retires). "Playful" was renamed "Cheerful" (D58). Color-as-a-layer-under-mood: still open — decides in Editor Door 2 (Full-Plan §4).
+
 
 The maker-facing moods change from the old seven (Dark, Rustic, Cozy, Botanical, Sunset, Simple, Modern) to seven *feelings*: **Dark, Rustic, Cozy, Modern, Elegant, Playful, Industrial** — plus **Templated** as a deliberate eighth, built later. This was planned in the Session-34 design conversation but never implemented; the code still carried the old lineup, which is what Alex caught when the onboarding picker still showed Botanical/Sunset/Simple. This supersedes D26.
 

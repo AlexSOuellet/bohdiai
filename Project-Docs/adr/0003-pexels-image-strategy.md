@@ -1,7 +1,7 @@
 # ADR 0003 — Placeholder Product Image Strategy (Pexels + Supabase Cache)
 
 **Date:** 2026-05-25
-**Status:** Accepted
+**Status:** SUPERSEDED — Pexels was replaced by fal.ai FLUX Pro image generation during Bohdi crew work (Session 40 era). The AI Image Studio in Phase 2 remains fal.ai-based. Preserved for the reasoning trail.
 
 ## Context
 

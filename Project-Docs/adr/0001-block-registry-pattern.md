@@ -1,7 +1,7 @@
 # ADR 0001 — Block Registry Pattern
 
 **Date:** 2026-05-25
-**Status:** Accepted
+**Status:** SUPERSEDED (2026-07-05) — the block registry, `page_blocks` table, and every block component were deleted (path B rip, Session 64). The current renderer is the single storefront engine at `lib/archetypes/main-street/`; the tenant's whole envelope stores on `content_pages.layout_tree` as JSONB, no per-block rows. Preserved for the reasoning trail.
 
 ## Context
 

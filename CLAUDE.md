@@ -2,45 +2,48 @@
 
 **Read this first at the start of every BohdiAI session.**
 
-## Required reading at session start (do this BEFORE responding to the user's first message)
+## Required reading at session start (BEFORE responding to the user's first message)
 
-1. This file (`CLAUDE.md`) — orientation
-2. `project-docs/SESSION-BRIEF.md` — operational state (what we did, what's next)
-3. **`project-docs/BohdiAI-Master-Spec.md` — READ IN FULL, every session, every time.** This is the product design. It carries across sessions because Claude has no memory between sessions. Skimming or "pulling sections as needed" is not allowed. Read the whole thing before responding to the user's first message.
-4. `project-docs/BohdiAI-Roles-Workflow.md` — rules of engagement (rank-2 authority). Required for any process question.
-5. The current phase doc (`project-docs/Phase-1-Spec.md`)
-6. `project-docs/Phase-1-Decisions-Log.md` — refinements on top of the Master Spec captured during Phase 1 planning. The Master Spec wins where the decisions log is silent; the decisions log wins where it has spoken.
+1. This file (`CLAUDE.md`) — orientation.
+2. `Project-Docs/SESSION-BRIEF.md` — operational state (where we are, what's next). Under 100 lines by mandate.
+3. **`Project-Docs/Full-Plan.md` — THE OPERATIVE PLAN.** Six phases from now through the top-priority goals. Every session updates its checkboxes as work lands.
+4. **`Project-Docs/BohdiAI-Master-Spec.md` — READ IN FULL, every session, every time.** Retired sections carry a SUPERSEDED banner; the rest is live. Skimming or "pulling sections as needed" is not allowed.
+5. `Project-Docs/BohdiAI-Roles-Workflow.md` — rules of engagement.
+6. `Project-Docs/Phase-1-Decisions-Log.md` — refinements on top of Master Spec. Superseded entries carry a `SUPERSEDED BY Dxx` inline pointer.
 
-Only pull additional docs if the task specifically requires it.
+**Pulled as needed for specific work:**
+- Family / renderer work → `Family-Layout-Model.md` + `Family-Style-Sheets.md`.
+- Editor work → `Editor-Design.md` + `Editor-Design-Notes.md`.
+- Audit context → `Audit-2026-07-05.md`.
 
-**Hard rule — "cite-or-shut-up":** Before opining on architecture (tokens, components, blocks, tenants, niches, schemas, build sequence, agent roles, anything spec-defined), Claude must cite the relevant Master Spec / Roles-Workflow section. If Claude cannot cite it, Claude has not earned the right to opine on it — stop and re-read the spec instead of guessing. This rule exists because guessing has already cost a session.
+Everything else in `Project-Docs/historical/` is archive material — read only when explicitly referenced.
 
-**Hard rule — plain English in chat:** Alex talks to Claude in conversational English and wants the same back. The defaults to avoid:
+**Hard rule — "cite-or-shut-up":** Before opining on architecture (tokens, components, tenants, niches, schemas, build sequence, agent roles, anything spec-defined), Claude must cite the relevant Master Spec / Roles-Workflow section or Full Plan phase. If Claude cannot cite it, Claude has not earned the right to opine on it — stop and re-read the spec instead of guessing.
 
-- No bullet lists when 2-3 sentences would work. Lists are for genuinely parallel items, not for "organized-looking" responses.
+**Hard rule — plain English in chat:** Alex talks to Claude in conversational English and wants the same back. Defaults to avoid:
+
+- No bullet lists when 2-3 sentences would work. Lists are for genuinely parallel items.
 - No headings, no bold labels, no section dividers in chat. Save formatting for documents.
-- No reference IDs in chat — "D5", "§6.2", "per Master Spec §8" all read like a doc index. If you need to refer to a prior decision, describe it in a few words ("the variations-table decision," "the foundation-first rule").
-- No designer or engineer jargon Alex didn't use first. "Warm/cool/traditional," "additive schema design," "extension tables" — these mean nothing to most makers and Alex has explicitly called them out.
+- No reference IDs in chat — "D5", "§6.2", "per Master Spec §8" all read like a doc index. Describe the decision in words instead.
+- No designer or engineer jargon Alex didn't use first.
 - Short sentences over long ones. Conversational over comprehensive.
-- When tempted to summarize with a structured response, ask whether a paragraph would land better. Almost always yes.
-
-The structured-list reflex is a documentation habit. It belongs in `.md` files, not chat.
+- The structured-list reflex is a documentation habit. It belongs in `.md` files, not chat.
 
 ## What this project is
 
-BohdiAI is a multi-tenant AI-powered SaaS that gives makers/artisans (bakers, vintage sellers, farm stands, etc.) a complete AI-generated storefront on a `[shop].bohdiai.com` subdomain in minutes. Subscription-only (one tier at launch, ~$35–$49/mo). **Never takes a cut of sales** — money flows customer → maker's own Stripe/Square; BohdiAI reads webhooks only.
+BohdiAI is a multi-tenant AI-powered SaaS that gives makers/artisans a complete AI-generated storefront on a `[shop].bohdiai.com` subdomain in minutes. Subscription-only (one tier at launch, ~$35–$49/mo). **Never takes a cut of sales** — money flows customer → maker's own Stripe/Square; BohdiAI reads webhooks only.
 
-**Status as of 2026-05-24:** Phase 0 shipped and live. Phase 1 planning complete — D1 through D18 locked. All 33 database tables live in Supabase. Phase 1 Spec written. Build begins next session.
+**Status as of 2026-07-06 (end of Session 64):** Phase 0 (Foundation + cleanup) complete. Codebase clean, database cleaned, renderer fully swept for hardcoding and inline styles, docs archived and superseded sections marked, Full Plan approved as operative doc. **Phase 1 (Family layer wiring) starts next session** — six open decisions to lock with Alex before writing code (Full-Plan §1.0). Two live test tenants: `soul-splatter` and `soul-splatter-bright`. 896 tests pass, tsc + lint clean.
 
 ## Roles
 
 - **Alex Ouellet (publicly "Alex Scott")** — Founder / Product Owner. Vision, approvals, no code.
-- **Claude** — Lead Developer. Builds patterns, writes Agent Guides, escalates ambiguity. **Must push back on scope drift, not silently absorb it.**
-- **Cowork agents (planned)** — Pattern replicators for niche schemas, additional component variants, niche prompts, niche research. Runtime to be evaluated during the Tech Arch Spec phase.
+- **Claude** — Lead Developer. Builds patterns, escalates ambiguity. **Must push back on scope drift, not silently absorb it.**
+- **Cowork agents (planned)** — Pattern replicators for niche schemas, additional variants. Runtime evaluated when Cowork comes online.
 
-## Stack (Phase 0 + 1)
+## Stack
 
-Next.js (App Router) · Supabase (Postgres + RLS + Auth + Storage) · Vercel · Cloudflare (incl. Cloudflare for SaaS for custom-domain SSL) · Anthropic API · Resend · Stripe · Square · Sentry (errors) · PostHog (analytics) · Tailwind CSS · TypeScript (strictest config — see Engineering Standards).
+Next.js 16 (App Router) · Supabase (Postgres + RLS + Auth + Storage) · Vercel · Cloudflare (incl. Cloudflare for SaaS for custom-domain SSL) · Anthropic API · fal.ai · Resend · Stripe · Square (planned) · Sentry + PostHog (env-configured; installation deferred to Phase 6) · Tailwind CSS · TypeScript (strictest config — see `Engineering-Standards.md`).
 
 ## URL ecosystem
 
@@ -48,26 +51,21 @@ Next.js (App Router) · Supabase (Postgres + RLS + Auth + Storage) · Vercel · 
 
 ## Document authority (highest wins)
 
-1. **Golden Rules** (`project-docs/BohdiAI-Golden-Rules.docx`) — inviolable principles. If anything else conflicts, Golden Rules win.
-2. **Master Spec** (`project-docs/BohdiAI-Master-Spec.docx`) — product/technical spec.
-3. **Phase Docs** (`project-docs/Phase-N-Spec.md`) — current phase scope. Phase 0 shipped. Phase 1 spec written and active.
-4. Feature Specs (per-feature, written as needed)
-5. Agent Guides (written when agents come online)
+1. **Golden Rules** (`Project-Docs/BohdiAI-Golden-Rules.docx`) — inviolable principles. Overrides everything.
+2. **Master Spec** (`Project-Docs/BohdiAI-Master-Spec.md`) — product/technical spec. Retired sections carry SUPERSEDED banners.
+3. **Full Plan** (`Project-Docs/Full-Plan.md`) — the operative build plan for now through top-priority goals.
+4. **Decisions Log** (`Project-Docs/Phase-1-Decisions-Log.md`) — refinements. Superseded entries marked inline.
+5. **Roles-Workflow** (`Project-Docs/BohdiAI-Roles-Workflow.md`) — process.
+6. Feature Specs (per-feature, written as needed).
 
-Operating docs (rank 2, alongside Master Spec):
-- `project-docs/Approval-Policy.md` — four-bucket policy. Bucket 4 = stop and ask. APPROVED.
-- `project-docs/Engineering-Standards.md` — strictest TS, 90/85/75% test coverage, no `any`, ADRs required, etc. APPROVED.
-- `project-docs/Daily-Audit.md` — the 19-question audit from Golden Rules + CI automation + session log format. APPROVED.
+## Non-negotiables (locked in Full Plan)
 
-## Phase 0 status — SHIPPED ✓
-
-bohdiai.com is live. Double-opt-in waitlist works. Full stack validated. See `project-docs/Phase-0-Spec.md` for the complete record.
-
-## Phase 1 status — READY TO BUILD
-
-All planning complete. D1 through D18 locked in `project-docs/Phase-1-Decisions-Log.md`. Database live in Supabase (33 tables, RLS on, migration runner at `scripts/db-migrate.mjs`). Phase 1 Spec at `project-docs/Phase-1-Spec.md`.
-
-**Next session goal:** Start Phase 1 build. First priority is the storefront resolver (subdomain → tenant_id middleware), then Supabase Auth wiring, then onboarding flow. See Session Brief and Phase 1 Spec for full sequence.
+- **Bohdi authors CONTENT ONLY.** Structure / nav / sections / treatments come from the family (renderer), never from Bohdi.
+- **Mood is public. Family is internal.** Public copy always says mood. Never expose "family" to a maker.
+- **No hardcoded English in the renderer. No inline styles. No shortcuts.** All strings through `DEFAULT_STRINGS`/`DEFAULT_COUNTS`; all styling through CSS variables + classes.
+- **Tests are part of done.** No feature is complete without tests.
+- **Ship complete, not partial.** Code + tests + types + verification before "done."
+- **No live-site fixes yet.** Beta signups are not open. Security + infra items live in Phase 6 of the Full Plan.
 
 ## Brand context (load-bearing)
 
@@ -79,28 +77,28 @@ All planning complete. D1 through D18 locked in `project-docs/Phase-1-Decisions-
 
 - **No popup questions.** Ask inline in chat, with recommendations clearly marked.
 - **No git worktrees.** Work in main tree on a feature branch instead.
-- **Push back on scope drift.** Alex explicitly wants Claude to keep him in check, not silently absorb out-of-spec requests. Bucket 4 of the Approval Policy applies.
+- **Claude does all commits.** Alex never commits. Commit at natural points on the feature branch.
+- **Push back on scope drift.** Alex explicitly wants Claude to keep him in check, not silently absorb out-of-spec requests.
 - **Stricter > looser** on engineering standards. Alex wants to avoid rewrites at all costs.
 - **One question at a time** when walking through decisions.
-- **Markdown for docs** in `project-docs/`. Don't create .docx files — those are reference originals.
+- **Markdown for docs** in `Project-Docs/`. Don't create `.docx` files — those are reference originals.
 
 ## Files to know
 
-- `project-docs/BohdiAI-Golden-Rules.docx` — rank 1 authority (Word doc, source of 19-question audit)
-- `project-docs/BohdiAI-Master-Spec.docx` — rank 2 authority
-- `project-docs/BohdiAI-Roles-Workflow.docx` — roles reference
-- `project-docs/Phase-1-Spec.md` — current phase spec, ACTIVE
-- `project-docs/Phase-0-Spec.md` — Phase 0 record (shipped)
-- `project-docs/Tech-Arch-Spec.md` — database design, schema live in Supabase
-- `project-docs/Approval-Policy.md` — the four buckets
-- `project-docs/Engineering-Standards.md` — the strict standards
-- `project-docs/Daily-Audit.md` — end-of-session audit
-- `content/niches/candles.md` — reference niche file
-- `content/niches/_queue.yaml` — launch queue of ~260 niche candidates
-- `.claude/skills/niche-writer/SKILL.md` — the niche-writer skill
-- `Design files/BohdiAI/` — extracted Claude Design output. Tailwind + Newsreader/Geist fonts + cream/honey/ink palette.
-- `scripts/db-migrate.mjs` — apply migrations: `node scripts/db-migrate.mjs` (writes `.sql` under `supabase/migrations/` first). Running migrations is Claude's job, not a TODO for Alex.
-- `scripts/gen-types.mjs` — regenerate `lib/database.types.ts` from the live DB: `npm run gen:types`. **Run this after any migration that changes tables/columns.** Uses the linked Supabase project + the CLI's stored login (no Docker, no DB password). This exists because the types had drifted from the DB and got cast around — never hand-write or work around the generated types; regenerate them.
+- `Project-Docs/BohdiAI-Golden-Rules.docx` — rank 1 authority (Word doc).
+- `Project-Docs/BohdiAI-Master-Spec.md` — rank 2 authority (SUPERSEDED sections marked).
+- `Project-Docs/Full-Plan.md` — operative plan.
+- `Project-Docs/SESSION-BRIEF.md` — operational state, under 100 lines.
+- `Project-Docs/Audit-2026-07-05.md` — full audit findings.
+- `Project-Docs/Family-Layout-Model.md` + `Family-Style-Sheets.md` — current family design.
+- `Project-Docs/Editor-Design.md` + `Editor-Design-Notes.md` — current editor design.
+- `Project-Docs/Tech-Arch-Spec.md` — DB design (§7, §8 SUPERSEDED — blocks/widgets/layout-engine gone).
+- `Project-Docs/Engineering-Standards.md` — strict TS standards.
+- `Project-Docs/historical/` — archived docs (superseded systems, shipped phases, retired plans). Read only when explicitly referenced.
+- `content/niches/` — niche markdown files.
+- `.claude/skills/niche-writer/SKILL.md` — the niche-writer skill.
+- `scripts/db-migrate.mjs` — `node scripts/db-migrate.mjs` applies migrations. Claude's job.
+- `scripts/gen-types.mjs` — `npm run gen:types` regenerates `lib/database.types.ts`. **Run after any migration that changes tables/columns.** Never hand-write types or work around the generated ones.
 
 ## Mantras (from Golden Rules)
 

@@ -1,7 +1,7 @@
 # ADR 0002 — Tailwind Token Bridge for Storefront Blocks
 
 **Date:** 2026-05-25
-**Status:** Accepted
+**Status:** SUPERSEDED (2026-07-05) — the `design_tokens` table + storefront-block token bridge were retired with the path B rip (Session 64). The current renderer emits `--ms-*` CSS variables via `skinVarsCss` in `chrome.tsx`; Tailwind classes on tenant storefronts are class-only within the archetype root. Preserved for the reasoning trail.
 
 ## Context
 

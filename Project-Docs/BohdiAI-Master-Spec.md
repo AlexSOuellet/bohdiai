@@ -176,6 +176,9 @@ The result: every storefront feels intentionally designed for the specific maker
 
 ### 6.3 Modular Component Assembly (The Structure)
 
+> **⚠ SUPERSEDED (2026-07-05).** This section describes the retired blocks/widgets/modular-assembly model. The current renderer is a single storefront engine (`lib/archetypes/main-street/`) that composes fixed section treatments (heroes, goods, collections, reviews, find-us, founder) chosen by the tenant's **family** (Cozy / Rustic / Dark / Luxury / Cheerful / Modern), not by Bohdi. See `Full-Plan.md` §1 (Family layer wiring) and `Family-Layout-Model.md` for the current model. Preserved here for the reasoning trail.
+
+
 BohdiAI does not just swap colors. It changes the structural arrangement of the page. Each section type (hero, product grid, about, footer, product detail, and others) has many polished React component variants, with more added over time. The lead developer builds the first foundational variant of each type as the reference pattern; Cowork agents replicate the pattern to add additional variants.
 
 The mood the customer picks at onboarding drives more than which hero variant gets used — it drives **which sections appear and in what order**. A "dark and stormy" storefront might lead with the maker's story; a "summer afternoon" storefront might lead with products front-and-center. Block assembly is part of the design, not separate from it.
@@ -183,6 +186,9 @@ The mood the customer picks at onboarding drives more than which hero variant ge
 Combined with design token variation, the number of unique site appearances is effectively unlimited.
 
 ### 6.4 Widgets — the functional layer
+
+> **⚠ SUPERSEDED (2026-07-05).** Widgets as a first-class layer (D13) are retired. The functional pieces the storefront renders (nav, cart, contact form, product cards, etc.) live inside the single storefront engine and are composed by the family, not threaded into block slots. See `Full-Plan.md` §1. Preserved here for the reasoning trail.
+
 
 Blocks are visual containers with declared slots. Widgets are the functional pieces that fill those slots — a booking calendar, a contact form, a price display, an add-to-cart button, a product card, a testimonial, a map, a "book now" CTA, an image gallery, an availability list.
 
@@ -199,6 +205,9 @@ Located in the AI editor (My Website section of the dashboard). When a maker mov
 When a maker adds their first real product with photos, Claude Vision can analyze the product images, extract the color palette, and offer to update the site's design tokens to match. This happens **after** onboarding, not during it. Available to Pro tier users.
 
 ### 6.7 Build Approach
+
+> **⚠ SUPERSEDED (2026-07-05).** The Lead developer / Cowork agents / block-variant replication model described here is retired for the storefront renderer. Cowork agents remain planned for niche content (see Roles-Workflow.md), but they no longer replicate block/widget variants — those catalogs no longer exist. See `Full-Plan.md` for the current build approach. Preserved here for the reasoning trail.
+
 
 - Lead developer builds the token schema, the first foundational block of each section type, and the first foundational widget of each functional type.
 - Cowork agents build additional block variants and additional widget variants following the established pattern.

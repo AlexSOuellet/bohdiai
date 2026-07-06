@@ -541,6 +541,8 @@ Per D15, a truly novel-product Other-picker who can't find a closest secondary t
 
 ## 7. Blocks and widgets libraries (code-based, not in database)
 
+> **⚠ SUPERSEDED (2026-07-05).** The blocks/widgets libraries described in this section have been deleted from the codebase (path B rip, Session 64). The current renderer is `lib/archetypes/main-street/` — a single storefront engine with fixed section treatments composed by family. See `Full-Plan.md` §1 and `Family-Layout-Model.md`. Preserved here for the reasoning trail.
+
 Per D11 (blocks half) and D13, neither the blocks library nor the widgets library lives in the database. Each block and each widget is a React component file in the repo whose exported metadata is collected at build time into a single manifest the AI and the editor read.
 
 Reasoning: a block is two halves of the same thing — the React component you see on the page and the metadata that describes it. If one half is missing or out of sync, the platform breaks when it tries to render that block. Keeping metadata and component in the same file eliminates that drift bug. (Niches do not have a code half and therefore do not need code-based storage; they live in the database per D17. Blocks and widgets do have a code half and stay in code.)
@@ -657,6 +659,8 @@ Compatibility is shape-based, not enumerated. A new widget with `slot_shape: 'ct
 ---
 
 ## 8. Page blocks
+
+> **⚠ SUPERSEDED (2026-07-05).** The `page_blocks` table has been dropped (migration `20260705000001`). The current renderer stores the whole tenant envelope on `content_pages.layout_tree` as JSONB — no per-block rows. See `Full-Plan.md` §1. Preserved here for the reasoning trail.
 
 The per-tenant compositions. One row per block placed on a page. Together with `content_pages`, this table defines what every storefront actually shows.
 
