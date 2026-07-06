@@ -18,6 +18,7 @@
  * cousins. Selection is Bohdi's call off the menu; nothing here does the picking.
  */
 import type { ArchetypeTheme, TypeRole } from '../types';
+import { REFERENCE_LABELS } from './defaults';
 
 const MOTION = {
   // Slow and deliberate — motion is an event, not a state. Linear, never eased.
@@ -136,7 +137,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Ember — committed ember on warm cream. The cozy morning.
   'main-street-ember': {
     key: 'main-street-ember',
-    label: 'Ember',
+    label: REFERENCE_LABELS.skins.labels['main-street-ember'],
     palette: {
       bg: '#F4EAD7',
       fg: '#2B1A12',
@@ -160,7 +161,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Orchard — golden evening. Honey, jam, harvest, cider.
   'main-street-orchard': {
     key: 'main-street-orchard',
-    label: 'Orchard',
+    label: REFERENCE_LABELS.skins.labels['main-street-orchard'],
     palette: {
       bg: '#EFD9B4',
       fg: '#3A2415',
@@ -184,7 +185,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Pantry — bright farm-fresh kitchen. Baker, preserves, market stall.
   'main-street-pantry': {
     key: 'main-street-pantry',
-    label: 'Pantry',
+    label: REFERENCE_LABELS.skins.labels['main-street-pantry'],
     palette: {
       bg: '#FBF3E2',
       fg: '#2E3A2B',
@@ -208,7 +209,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Hearthstone — candlelit dark warm. Candles, soap, evening fiber.
   'main-street-hearthstone': {
     key: 'main-street-hearthstone',
-    label: 'Hearthstone',
+    label: REFERENCE_LABELS.skins.labels['main-street-hearthstone'],
     palette: {
       bg: '#1B1410',
       fg: '#ECDCC2',
@@ -234,7 +235,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Tannery — warm leather. Leather / wood / saddle.
   'main-street-tannery': {
     key: 'main-street-tannery',
-    label: 'Tannery',
+    label: REFERENCE_LABELS.skins.labels['main-street-tannery'],
     palette: {
       bg: '#1A1410',
       fg: '#E9DCC4',
@@ -259,7 +260,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Forge — cold industrial. Metal / knives / hardware.
   'main-street-forge': {
     key: 'main-street-forge',
-    label: 'Forge',
+    label: REFERENCE_LABELS.skins.labels['main-street-forge'],
     palette: {
       bg: '#14171A',
       fg: '#DDE2E5',
@@ -285,7 +286,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Anvil — butcher-sign monochrome. Butcher / smokehouse / gym.
   'main-street-anvil': {
     key: 'main-street-anvil',
-    label: 'Anvil',
+    label: REFERENCE_LABELS.skins.labels['main-street-anvil'],
     palette: {
       bg: '#0F0F10',
       fg: '#EDEDEA',
@@ -311,7 +312,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Sawdust — daylight woodshop. The workshop with the doors open.
   'main-street-sawdust': {
     key: 'main-street-sawdust',
-    label: 'Sawdust',
+    label: REFERENCE_LABELS.skins.labels['main-street-sawdust'],
     palette: {
       bg: '#E7DAC4',
       fg: '#2A2118',
@@ -337,7 +338,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Porcelain — romantic studio. Jewelry / ceramics / fine goods.
   'main-street-porcelain': {
     key: 'main-street-porcelain',
-    label: 'Porcelain',
+    label: REFERENCE_LABELS.skins.labels['main-street-porcelain'],
     palette: {
       bg: '#F6F2EE',
       fg: '#2C2429',
@@ -362,7 +363,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Atelier — clean modern. A sharp grotesque on bright paper; contemporary, minimal luxury.
   'main-street-atelier': {
     key: 'main-street-atelier',
-    label: 'Atelier',
+    label: REFERENCE_LABELS.skins.labels['main-street-atelier'],
     palette: {
       bg: '#FAF8F5',
       fg: '#14110E',
@@ -387,7 +388,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Gild — dark luxe. Black and thin gold; the lit jewel case.
   'main-street-gild': {
     key: 'main-street-gild',
-    label: 'Gild',
+    label: REFERENCE_LABELS.skins.labels['main-street-gild'],
     palette: {
       bg: '#15120E',
       fg: '#F0E9DC',
@@ -413,7 +414,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Botanical — earthy, seasonal. Florals / apothecary / herbalist.
   'main-street-botanical': {
     key: 'main-street-botanical',
-    label: 'Botanical',
+    label: REFERENCE_LABELS.skins.labels['main-street-botanical'],
     palette: {
       bg: '#F3EFE4',
       fg: '#2A2E22',
@@ -438,7 +439,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Conservatory — airy glasshouse. Light, classical, green.
   'main-street-conservatory': {
     key: 'main-street-conservatory',
-    label: 'Conservatory',
+    label: REFERENCE_LABELS.skins.labels['main-street-conservatory'],
     palette: {
       bg: '#EEF0E4',
       fg: '#283324',
@@ -463,7 +464,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Wildflower — colorful meadow. The bright, blowsy cut-flower stand.
   'main-street-wildflower': {
     key: 'main-street-wildflower',
-    label: 'Wildflower',
+    label: REFERENCE_LABELS.skins.labels['main-street-wildflower'],
     palette: {
       bg: '#F4EFDF',
       fg: '#33301F',
@@ -491,7 +492,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // and Reddit Mono quiets the labels so the display does the talking.
   'main-street-studio': {
     key: 'main-street-studio',
-    label: 'Studio',
+    label: REFERENCE_LABELS.skins.labels['main-street-studio'],
     palette: {
       bg: '#F4F1EA',
       fg: '#16140F',
@@ -516,7 +517,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Darkroom — moody dark gallery. Charcoal wall, cold slate signal.
   'main-street-darkroom': {
     key: 'main-street-darkroom',
-    label: 'Darkroom',
+    label: REFERENCE_LABELS.skins.labels['main-street-darkroom'],
     palette: {
       bg: '#16171A',
       fg: '#E4E2DC',
@@ -541,7 +542,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Pigment — vivid gallery for colorful work. Bright white, hot magenta.
   'main-street-pigment': {
     key: 'main-street-pigment',
-    label: 'Pigment',
+    label: REFERENCE_LABELS.skins.labels['main-street-pigment'],
     palette: {
       bg: '#FBFAF6',
       fg: '#1A1730',
@@ -567,7 +568,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Nightshade — deep occult. Violet-black, moonlight type, electric amethyst.
   'main-street-nightshade': {
     key: 'main-street-nightshade',
-    label: 'Nightshade',
+    label: REFERENCE_LABELS.skins.labels['main-street-nightshade'],
     palette: {
       bg: '#14101F',
       fg: '#E7E2F1',
@@ -592,7 +593,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Celestine — soft celestial. Pale dawn-lilac, dusk-violet, star-chart calm.
   'main-street-celestine': {
     key: 'main-street-celestine',
-    label: 'Celestine',
+    label: REFERENCE_LABELS.skins.labels['main-street-celestine'],
     palette: {
       bg: '#ECE9F2',
       fg: '#2A2540',
@@ -617,7 +618,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Ritual — blood and candle. Near-black, bone type, a single blood red.
   'main-street-ritual': {
     key: 'main-street-ritual',
-    label: 'Ritual',
+    label: REFERENCE_LABELS.skins.labels['main-street-ritual'],
     palette: {
       bg: '#120D0D',
       fg: '#E8DCD2',
@@ -643,7 +644,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Confetti — butter-bright. Rounded heavy type, poppy and grape in tension.
   'main-street-confetti': {
     key: 'main-street-confetti',
-    label: 'Confetti',
+    label: REFERENCE_LABELS.skins.labels['main-street-confetti'],
     palette: {
       bg: '#FCEFD6',
       fg: '#20223A',
@@ -668,7 +669,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Bubblegum — candy loud. Cotton-candy white, bubblegum pink, pool cyan.
   'main-street-bubblegum': {
     key: 'main-street-bubblegum',
-    label: 'Bubblegum',
+    label: REFERENCE_LABELS.skins.labels['main-street-bubblegum'],
     palette: {
       bg: '#FFF0F5',
       fg: '#2A1A3E',
@@ -693,7 +694,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Sprout — gentle pastel. The calm, friendly end of cheerful — a choice, not a shout.
   'main-street-sprout': {
     key: 'main-street-sprout',
-    label: 'Sprout',
+    label: REFERENCE_LABELS.skins.labels['main-street-sprout'],
     palette: {
       bg: '#F2F4E9',
       fg: '#34402F',
@@ -719,7 +720,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Pressroom — riso overprint. Bone paper, off-register red and blue.
   'main-street-pressroom': {
     key: 'main-street-pressroom',
-    label: 'Pressroom',
+    label: REFERENCE_LABELS.skins.labels['main-street-pressroom'],
     palette: {
       bg: '#F1EBDE',
       fg: '#15140F',
@@ -745,7 +746,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Marquee — streetwear poster. Black, one neon-lime, a wall of caps.
   'main-street-marquee': {
     key: 'main-street-marquee',
-    label: 'Marquee',
+    label: REFERENCE_LABELS.skins.labels['main-street-marquee'],
     palette: {
       bg: '#0E0E0E',
       fg: '#F2F2EF',
@@ -771,7 +772,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Broadside — raw zine. Newsprint gray, stamped red, condensed caps.
   'main-street-broadside': {
     key: 'main-street-broadside',
-    label: 'Broadside',
+    label: REFERENCE_LABELS.skins.labels['main-street-broadside'],
     palette: {
       bg: '#E8E4DA',
       fg: '#161514',
@@ -798,7 +799,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Heirloom — aged ochre. Faded paper, sepia ink, worn teal and oxblood.
   'main-street-heirloom': {
     key: 'main-street-heirloom',
-    label: 'Heirloom',
+    label: REFERENCE_LABELS.skins.labels['main-street-heirloom'],
     palette: {
       bg: '#ECE3CE',
       fg: '#36291A',
@@ -823,7 +824,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Curiosity — vintage cabinet. Deep wood, brass, a bottle-green band.
   'main-street-curiosity': {
     key: 'main-street-curiosity',
-    label: 'Curiosity',
+    label: REFERENCE_LABELS.skins.labels['main-street-curiosity'],
     palette: {
       bg: '#1C1A14',
       fg: '#DCCBA6',
@@ -848,7 +849,7 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
   // Postmark — mid-century ephemera. Aged paper, retro orange and teal.
   'main-street-postmark': {
     key: 'main-street-postmark',
-    label: 'Postmark',
+    label: REFERENCE_LABELS.skins.labels['main-street-postmark'],
     palette: {
       bg: '#EDE4D0',
       fg: '#2E2A22',
@@ -914,47 +915,10 @@ export const MAIN_STREET_SKIN_TAGS: Record<string, SkinTag> = {
 
 /** A one-line, plain-language description of each skin — its colors, its type
  *  face, and the world it belongs to. Shown to Bohdi's Graphic Artist (and the
- *  legacy looks menu) so a skin can be chosen by what it actually looks like. */
-export const SKIN_DESCRIPTIONS: Record<string, string> = {
-  // Hearth — warm, handmade, domestic
-  'main-street-ember': 'warm cream and ember, a soft serif — homey, cozy, hand-baked',
-  'main-street-orchard': 'golden amber and terracotta, a warm hand-cut serif — harvest evening',
-  'main-street-pantry': 'bright kitchen cream and garden green, a sturdy slab — fresh and farm-direct',
-  'main-street-hearthstone': 'candlelit dark with ember amber, a high-contrast serif — cozy after dark',
-  // Workshop — rugged, made-to-last
-  'main-street-tannery': 'dark brown-black leather with aged brass, a sturdy slab — rugged and warm',
-  'main-street-forge': 'cold blue-charcoal with mustard, condensed industrial caps — metal and machine',
-  'main-street-anvil': 'near-black with a single blood red, heavy blunt caps — butcher-sign bold',
-  'main-street-sawdust': 'light oak and wood-stain brown, a clean slab — the daylight woodshop',
-  // Fine — refined, quiet, luxe
-  'main-street-porcelain': 'blush white and aubergine, a fine hairline serif — romantic and delicate',
-  'main-street-atelier': 'bright paper with ink and thin gold, a sharp modern grotesque — clean contemporary luxury',
-  'main-street-gild': 'black and thin gold, a high-contrast serif — the lit jewel case',
-  // Garden — botanical, earthy, seasonal
-  'main-street-botanical': 'oat and deep forest green, a soft optical serif — earthy and seasonal',
-  'main-street-conservatory': 'pale leaf-white and garden green, an airy roman serif — the glasshouse',
-  'main-street-wildflower': 'warm meadow cream and cosmos pink, a blowsy display serif — bright and seasonal',
-  // Studio — art-forward, the goods are the art
-  'main-street-studio': 'bone-white gallery wall, huge ink type, one hot vermillion — quiet room, loud art',
-  'main-street-darkroom': 'charcoal wall and cold slate, a characterful grotesque — moody gallery',
-  'main-street-pigment': 'bright white and hot magenta, a big bold grotesque — for vivid, colorful work',
-  // Mystic — esoteric, moody, celestial
-  'main-street-nightshade': 'violet-black and electric amethyst with a gold hairline, a carved gothic — deep occult',
-  'main-street-celestine': 'pale dawn-lilac and dusk violet, an engraved roman — soft and celestial',
-  'main-street-ritual': 'near-black and a single blood red, a dramatic serif — candlelit and intense',
-  // Playroom — cheerful, bright, friendly
-  'main-street-confetti': 'butter cream with poppy and grape, a rounded heavy display — bright and cheerful',
-  'main-street-bubblegum': 'cotton-candy white with bubblegum pink and pool cyan, a rounded display — candy loud',
-  'main-street-sprout': 'soft pistachio and warm apricot, a gentle rounded sans — the friendly, quiet end of cheerful',
-  // Press — graphic, inky, urban
-  'main-street-pressroom': 'bone paper with off-register riso red and blue, condensed poster caps — screenprint',
-  'main-street-marquee': 'black with one neon-lime, a wall of poster caps — streetwear and bold',
-  'main-street-broadside': 'newsprint gray with stamped red, condensed caps — the raw zine',
-  // Relic — vintage, nostalgic, aged
-  'main-street-heirloom': 'faded ochre paper, sepia ink, worn teal and oxblood, an old Caslon — found, not made',
-  'main-street-curiosity': 'deep wood and brass with a bottle-green band, a Victorian display — the vintage cabinet',
-  'main-street-postmark': 'aged paper with retro orange and teal, an ornate display serif — mid-century ephemera',
-};
+ *  legacy looks menu) so a skin can be chosen by what it actually looks like.
+ *  Sources the strings from REFERENCE_LABELS so every user-visible English word
+ *  lives in one file. */
+export const SKIN_DESCRIPTIONS: Record<string, string> = REFERENCE_LABELS.skins.descriptions;
 
 export const MAIN_STREET_FONT_HREFS: Record<string, string> = {
   'main-street-ember':

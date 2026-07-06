@@ -110,27 +110,38 @@ Everything in this plan serves those two.
 
 **Goal.** Every tenant renders through a family (Cozy / Rustic / Dark / Luxury / Cheerful / Modern). Family picks every section variant, section stack, type package, palette, texture, and imagery grade. Bohdi authors CONTENT ONLY.
 
-### 1.0 — Open decisions to lock before writing code
+### 1.0 — Decisions locked (Session 65, 2026-07-06)
 
-Alex decides these first thing in the Phase 1 session. Nothing here can be guessed by Claude.
+All six original open items from the Session 63/64 plan are now settled. Sources of truth are the defaults matrix (`tmp/mockups/defaults-matrix.html`) and the section stack proposal (`tmp/mockups/family-stacks-v2.html`), both approved. Recorded here in one place so Phase 1 code never re-litigates them.
 
-- [ ] **Mood ↔ family map.** Seven moods currently (dark / rustic / cozy / modern / elegant / cheerful / industrial), six families. Which mood collapses?
-- [ ] **Skins vs family paint.** Retire the 29 skins entirely and paint from family palettes only, or keep skins as within-family variants?
-- [ ] **Section stack per family.** Lock the proposal in `tmp/mockups/family-stacks-v2.html` or revisit?
-- [ ] **Nav authoring.** Delete `identity.nav` from copywriter and derive from family + tenant data?
-- [ ] **Founder + Nav per-family defaults.** Lock now or wire with placeholders?
-- [ ] **`tenants.family_key` new column vs. reuse `mood_key`.** Claude recommends new column — keeps public "mood" and internal "family" decoupled forever.
+1. **"Family" is internal, "mood" is public — same concept, one word each.** The maker picks a mood at onboarding; internally that IS the family. There are six of them: Cozy, Rustic, Dark, Luxury (aka Elegant), Cheerful, Modern (aka Minimalist). The seventh mood from the old lineup (Industrial) retires. Any prior "seven moods" reference is stale.
+2. **Storage stays `tenants.mood_key`.** No new `family_key` column, no migration. The column already stores the right value; internally code and docs call it "family" freely. No public copy ever surfaces the word "family."
+3. **Skins stay and grow.** The 29 skins are not retired. They become the maker's within-family edit-time options (Editor Door 1 / Door 2). Onboarding still picks one; the maker can swap it. Adding more skins is expected, not a rewrite.
+4. **v2 stack orders are locked** for all six families as drawn in `family-stacks-v2.html` — with one change: **every section is ON by default for every family at onboarding.** The v2 "some sections off" pattern (length as a shopper-feel lever) is retired for onboarding. Reason: the maker sees their own onboarding output first, not a shopper's view of a competing family. A four-section Dark store on onboarding reads as thin and unfinished, not as premium restraint — which cuts against the "generate the most polished store possible at onboarding" principle. What survives from v2: the section ORDER per family (opens-with — Cozy → maker letter, Rustic → workbench process, Dark → one slow product, Luxury → collection chapters, Cheerful → loud marquee, Modern → the grid), the section VARIANT per position, Hero always first, Close always last, Nav + Footer bracket every family, FAQ in the footer. What flips: length is no longer a family default. Every family ships all eight content sections at onboarding. The on/off dial is an editor feature — the maker turns sections off later if they want. That editor toggle rides in with Editor Door 1.
+5. **Nav lists every page we create at onboarding — every family, every store.** The renderer builds the nav from the actual page inventory (all created at onboarding, so the list is complete on day one). The maker toggles pages on/off from the dashboard. Bohdi does not author nav labels; page names come from the page inventory.
+6. **Sections without per-family designs share one shape for now.** Footer, Close CTA band, Contact page, FAQ page — one design used across every family. Per-family design for these is a later pass, not a Phase 1 blocker.
+7. **Dark hero is Floating Card. Luxury Products is Switcher.** Both were flagged in the matrix as unsold / provisional; both are now locked. The matrix footnotes get cleared in 1.0-doc-cleanup below.
+8. **Reviews seed at onboarding.** The copywriter authors sample testimonials as part of every build; the maker edits them post-onboarding. Verified-purchase reviews remain Phase 2 per D48-vintage reasoning.
+
+**1.0 doc cleanup — one commit before code lands:**
+
+- [ ] Update `tmp/mockups/defaults-matrix.html`: remove the "Dark hero unsold" footnote, change Switcher's provisional amber to locked green, correct the stale "Reviews not built" note if the code confirms Reviews are built (Discrepancy §1.0 note below).
+- [ ] Update `tmp/mockups/family-stacks-v2.html`: strip the "still open" caveat (Reviews/Contact home-block, Dark hero).
+- [ ] Update `CLAUDE.md` required-reading: add the two mockups under "Pulled as needed for family/renderer work."
+- [ ] Update `SESSION-BRIEF.md` Next Actions: remove the six-open-decisions list; replace with the locked-decisions pointer.
+
+**Discrepancy to verify.** `family-stacks-v2.html` says Reviews home-block "not built yet"; `defaults-matrix.html` says four Reviews treatments are built + tested. Matrix is newer. Verify by grepping the codebase before the cleanup commit; correct whichever doc is wrong.
 
 ### 1.1 — Family registry
 
-- [ ] Write `lib/archetypes/main-street/families.ts` with six entries seeded from `Family-Style-Sheets.md`
-- [ ] Each entry: `sectionDefaults`, `sectionStack`, `typePackage`, `palette`, `texture`, `wallpaper`, `imageryGrade`, `fontHref`
+- [ ] Write `lib/archetypes/main-street/families.ts` with six entries. Source: `Family-Style-Sheets.md` for style defaults, `tmp/mockups/defaults-matrix.html` for section variant picks, `tmp/mockups/family-stacks-v2.html` for stack order + on/off state.
+- [ ] Each entry: `sectionDefaults` (Hero, Products, Collections, Reviews, About, Nav, Find-us, Marquee — per matrix), `sectionStack` (ordered list + on/off — per v2), `typePackage`, `palette`, `texture`, `wallpaper`, `imageryGrade`, `fontHref`.
 
-### 1.2 — Mood → family map + tenant persistence
+### 1.2 — Onboarding writes family via mood_key
 
-- [ ] Depends on decisions in 1.0
-- [ ] Migration to add `family_key` column (if that path) + backfill from `mood_key`
-- [ ] Update onboarding to write `family_key` at tenant creation
+- [ ] No migration needed — column stays `mood_key`.
+- [ ] Onboarding continues to write the maker's mood pick to `mood_key`. That value IS the family.
+- [ ] Family lookup helper: `getFamily(tenant.mood_key) → Family` reads from the registry in 1.1.
 
 ### 1.3 — Renderer reads family, not content
 
@@ -144,8 +155,10 @@ Alex decides these first thing in the Phase 1 session. Nothing here can be guess
 
 ### 1.4 — Section stack from family
 
-- [ ] Replace hardcoded section order in `MainStreet.tsx` with a walk of `family.sectionStack`
-- [ ] Handle "off" positions (Marquee etc.)
+- [ ] Replace hardcoded section order in `MainStreet.tsx` with a walk of `family.sectionStack` (v2 orders — opens-with lead per family).
+- [ ] Every section is ON at onboarding for every family. No per-family default-off.
+- [ ] Contact home-block: still off across every family because it isn't built yet (§1.0 open item — one shared design). Once built, it's on by default like the others.
+- [ ] Maker on/off toggles arrive with Editor Door 1 (Phase 3), not Phase 1. Renderer respects the toggle when present; absent = on.
 
 ### 1.5 — Copywriter authors CONTENT ONLY
 
@@ -153,19 +166,24 @@ Alex decides these first thing in the Phase 1 session. Nothing here can be guess
 - [ ] Delete D48 treatment-roll model from `pipeline.ts`
 - [ ] Rewrite copywriter prompt — no "you drew" language, no treatment mentions
 - [ ] Update copywriter tests
+- [ ] **Reviews seeding stays.** Copywriter continues to author sample testimonial content (voice + names + quotes) — this is content, not treatment. The family picks the Reviews *variant* (Guestbook / Pull-Quote / Texts / Rating).
 - [ ] **Also lands here:** publish full Anthropic tool schemas as `input_schema` on all four crew stages (Audit HIGH — copywriter, cinematographer, graphic-artist, directors-cut)
 - [ ] **Also lands here:** wire `AbortController` through `withTimeout` so timed-out Anthropic + fal calls actually cancel (Audit #12)
 
-### 1.6 — Paint per family
+### 1.6 — Paint per family, skins ride on top
 
-- [ ] Depends on 1.0 decision on skins-vs-family-paint
-- [ ] `skinVarsCss` reads family palette + type package + textures instead of 29-skin catalog
-- [ ] Retire 29 skins (or restructure as within-family variants)
+- [ ] Family provides the default paint (palette + type package + textures + wallpaper + imagery grade) — the ★ picks from `Family-Style-Sheets.md`.
+- [ ] The 29 skins stay in the catalog as within-family variants. Onboarding picks the family's default skin; the maker swaps to another within-family skin from the editor.
+- [ ] `skinVarsCss` continues to serve per-skin CSS variables; the family layer sits above it, deciding which skin to hand it by default.
+- [ ] Skin↔family mapping (which skins belong to which family) — one row per skin in the registry with a `family` field. Skins already tagged with mood keys — reuse those tags directly.
 
-### 1.7 — Nav derivation
+### 1.7 — Nav renders every page, maker toggles
 
-- [ ] Depends on 1.0 decision on nav authoring
-- [ ] If derived: delete `identity.nav` from copywriter, derive from family + tenant data (which sections the store HAS)
+- [ ] Renderer builds nav from the tenant's page inventory. Every page created at onboarding is listed by default.
+- [ ] Delete `identity.nav` from the copywriter schema and prompt — Bohdi does not author nav labels.
+- [ ] Page labels come from the page record's own `title` (or a canonical label per page type — "Shop" for products index, "About", "Events", "Contact").
+- [ ] Maker on/off toggles per nav item live in the editor (arrives with the editor); renderer respects them.
+- [ ] The four nav variants (Standard / Split-center / Menu-reveal / CTA-forward) are still chosen by family per the defaults matrix.
 
 ### 1.8 — Imagery grade
 
@@ -178,11 +196,13 @@ Alex decides these first thing in the Phase 1 session. Nothing here can be guess
 
 ### Phase 1 Definition of Done
 
-- All six families have a registry entry.
-- Every section variant renders based on family, not content.
-- Bohdi's schema has zero `.treatment` fields.
-- Copywriter prompt has zero treatment mentions.
-- A test build for each family produces visually distinct output.
+- All six families have a registry entry with the section variants + stack order from `defaults-matrix.html` + `family-stacks-v2.html`.
+- Every section variant renders based on family (via `mood_key` lookup), not from a `.treatment` field on content.
+- Bohdi's schema has zero `.treatment` fields and zero `identity.nav`.
+- Copywriter prompt has zero treatment mentions and zero nav authoring.
+- Nav renders from the tenant's page inventory, with a family-picked variant.
+- The 29 skins remain reachable as within-family editor options.
+- A test build for each family produces visually distinct output — different opens-with lead, different length, family paint, family type.
 - Full test suite green. tsc clean. lint clean.
 - Alex visually approves before commit.
 

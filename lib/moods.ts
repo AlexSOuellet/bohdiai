@@ -1,3 +1,5 @@
+import { REFERENCE_LABELS } from './archetypes/main-street/defaults';
+
 export type MoodKey = 'dark' | 'rustic' | 'cozy' | 'modern' | 'elegant' | 'cheerful' | 'industrial';
 
 export type PaletteTemperature = 'warm' | 'cool' | 'neutral';
@@ -33,8 +35,8 @@ export interface Mood {
 export const MOODS: Record<MoodKey, Mood> = {
   dark: {
     key: 'dark',
-    label: 'Dark',
-    description: 'Low light and deep shadow. Moody and a little mysterious, with drama where most stores play it safe.',
+    label: REFERENCE_LABELS.moods.labels.dark,
+    description: REFERENCE_LABELS.moods.descriptions.dark,
     designDirection: {
       paletteTemperature: 'neutral',
       brightness: 'dark',
@@ -45,8 +47,8 @@ export const MOODS: Record<MoodKey, Mood> = {
   },
   rustic: {
     key: 'rustic',
-    label: 'Rustic',
-    description: 'Warm, worn, and handmade. Natural materials and the feel of things made the old way, with some age in them.',
+    label: REFERENCE_LABELS.moods.labels.rustic,
+    description: REFERENCE_LABELS.moods.descriptions.rustic,
     designDirection: {
       paletteTemperature: 'warm',
       brightness: 'mid',
@@ -57,8 +59,8 @@ export const MOODS: Record<MoodKey, Mood> = {
   },
   cozy: {
     key: 'cozy',
-    label: 'Cozy',
-    description: 'Soft, warm, and welcoming. The calm of a lamp-lit room at the end of the day.',
+    label: REFERENCE_LABELS.moods.labels.cozy,
+    description: REFERENCE_LABELS.moods.descriptions.cozy,
     designDirection: {
       paletteTemperature: 'warm',
       brightness: 'light',
@@ -69,8 +71,8 @@ export const MOODS: Record<MoodKey, Mood> = {
   },
   modern: {
     key: 'modern',
-    label: 'Modern',
-    description: 'Clean, confident, and geometric. Bold and contemporary — not quiet minimalism, design that speaks up.',
+    label: REFERENCE_LABELS.moods.labels.modern,
+    description: REFERENCE_LABELS.moods.descriptions.modern,
     designDirection: {
       paletteTemperature: 'neutral',
       brightness: 'light',
@@ -81,8 +83,8 @@ export const MOODS: Record<MoodKey, Mood> = {
   },
   elegant: {
     key: 'elegant',
-    label: 'Elegant',
-    description: 'Refined and graceful. Quiet luxury, fine detail, the sense that every choice was considered.',
+    label: REFERENCE_LABELS.moods.labels.elegant,
+    description: REFERENCE_LABELS.moods.descriptions.elegant,
     designDirection: {
       paletteTemperature: 'neutral',
       brightness: 'light',
@@ -93,8 +95,8 @@ export const MOODS: Record<MoodKey, Mood> = {
   },
   cheerful: {
     key: 'cheerful',
-    label: 'Cheerful',
-    description: 'Bright and lifted, color-positive. Sun on the page — a store that smiles back.',
+    label: REFERENCE_LABELS.moods.labels.cheerful,
+    description: REFERENCE_LABELS.moods.descriptions.cheerful,
     designDirection: {
       paletteTemperature: 'warm',
       brightness: 'light',
@@ -105,8 +107,8 @@ export const MOODS: Record<MoodKey, Mood> = {
   },
   industrial: {
     key: 'industrial',
-    label: 'Industrial',
-    description: 'Raw, tough, and machined. Concrete, metal, and hard edges — strength over softness.',
+    label: REFERENCE_LABELS.moods.labels.industrial,
+    description: REFERENCE_LABELS.moods.descriptions.industrial,
     designDirection: {
       paletteTemperature: 'cool',
       brightness: 'mid',

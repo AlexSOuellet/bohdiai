@@ -4,31 +4,33 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-07-06, end of Session 64.
+**Last updated:** 2026-07-06, Session 65.
 
 ---
 
 ## Current state
 
-**Phase 0 (Foundation + cleanup) complete.** CI green. Three unused deps deleted (`lenis`, `framer-motion`, `@material/material-color-utilities`). One migration dropped four dead tables (`page_blocks`, `design_tokens`, `style_sheets`, `editor_history`) + enabled RLS on `notify_interest`. Types regenerated + every `as unknown as` shim around `supabaseAdmin()` deleted. Renderer swept — every hardcoded English string routed through `DEFAULT_STRINGS` / `DEFAULT_COUNTS`; missing `<main>` landmarks + About page `<h1>` + `MomentHero` `'use client'` added; nine unnecessary `'use client'` declarations removed; `:focus-visible` ring added. Docs archived to `Project-Docs/historical/`. Audit findings saved to `Audit-2026-07-05.md`. CLAUDE.md required-reading list updated. Master Spec / Tech Arch Spec / Decisions Log superseded sections marked.
+**Phase 0 complete. Phase 1 decisions all locked with Alex (Session 65).**
 
-**896 tests pass, tsc clean, lint clean (0 errors).**
+Phase 0 recap: CI green. Three unused deps deleted. One migration dropped four dead tables + enabled RLS on `notify_interest`. Types regenerated + every `as unknown as` shim around `supabaseAdmin()` deleted. Renderer swept — every hardcoded English string through `DEFAULT_STRINGS`/`DEFAULT_COUNTS`; missing `<main>` landmarks + About page `<h1>` + `MomentHero` `'use client'` added; nine unnecessary `'use client'` declarations removed; `:focus-visible` ring added. Docs archived to `Project-Docs/historical/`. Audit findings saved to `Audit-2026-07-05.md`. Master Spec / Tech Arch Spec / Decisions Log superseded sections marked.
+
+Phase 1 decision lock (see Full-Plan §1.0 for the full record): mood stays public, `mood_key` stays the storage column, family is internal only; skins stay + grow as within-family editor options; v2 stack orders locked for all six families BUT every section is on by default at onboarding (v2's length-as-lever is retired — onboarding always ships the full stack so the maker never sees a thin site); sections without per-family designs (Footer, Close CTA band, Contact page, FAQ page) share one shape for now; nav renders every page created at onboarding, per-section on/off toggles come with the editor in Phase 3; Reviews seed at onboarding as sample content; Dark hero = Floating Card and Luxury Products = Switcher both locked; Industrial mood retires.
+
+**938 tests pass, tsc clean, lint clean (0 errors).**
 
 **Two live test tenants:** `soul-splatter` and `soul-splatter-bright`.
 
 ## Next actions
 
-**Session 65 — start Phase 1 (Family layer wiring).**
+**Session 65 continues — Phase 1 code work.**
 
-Six open decisions to lock with Alex before writing code (Full-Plan §1.0):
-1. Mood ↔ family map — seven moods currently, six families. Which collapses?
-2. Skins vs family paint — retire the 29 skins or keep as within-family variants?
-3. Section stack per family — lock the `tmp/mockups/family-stacks-v2.html` proposal or revisit?
-4. Nav authoring — delete `identity.nav` from copywriter and derive from family?
-5. Founder + Nav per-family defaults — lock now or wire with placeholders?
-6. `tenants.family_key` new column vs. reuse `mood_key`?
-
-Then build: family registry (`families.ts`), mood→family map, renderer reads family not content, section stack from family, copywriter authors CONTENT ONLY, paint per family, nav derivation. Rolls in audit fixes: consolidate duplicate data loads, add storefront status/deleted_at filters, persist collections before "live" flip, wire real AbortController on Bohdi calls, publish full Anthropic tool schemas.
+1. Doc cleanup commit (Full-Plan §1.0 cleanup list): clear the "Dark hero unsold" footnote + Switcher amber in `tmp/mockups/defaults-matrix.html`; strip the stale caveats in `tmp/mockups/family-stacks-v2.html`; verify the Reviews-built claim (confirmed — matrix is right, v2 caveat is stale on Reviews; Contact home-block genuinely not built).
+2. Phase 0 visual sign-off gate: Alex eyeballs `soul-splatter` + `soul-splatter-bright` post-renderer-sweep and confirms they render right.
+3. Family registry (`lib/archetypes/main-street/families.ts`) — six entries seeded from the defaults matrix + v2 stacks + Family-Style-Sheets.
+4. Renderer reads family via `mood_key` lookup, not from `content.<section>.treatment`. Section stack walks `family.sectionStack`.
+5. Copywriter authors CONTENT ONLY — delete `.treatment` fields, delete `identity.nav`. Reviews sample content stays authored.
+6. Nav renders from page inventory with family-picked variant.
+7. Audit fixes ride along in the phases they touch: consolidate duplicate data loads (1.3), add storefront `status='active'` + `deleted_at IS NULL` filters (1.3), persist collections before "live" flip (1.9), wire AbortController on Bohdi calls (1.5), publish full Anthropic tool schemas (1.5).
 
 ---
 

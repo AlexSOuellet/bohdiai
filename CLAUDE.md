@@ -12,7 +12,7 @@
 6. `Project-Docs/Phase-1-Decisions-Log.md` — refinements on top of Master Spec. Superseded entries carry a `SUPERSEDED BY Dxx` inline pointer.
 
 **Pulled as needed for specific work:**
-- Family / renderer work → `Family-Layout-Model.md` + `Family-Style-Sheets.md`.
+- Family / renderer work → `Family-Layout-Model.md` + `Family-Style-Sheets.md` + `tmp/mockups/defaults-matrix.html` (per-family section variant + style picks) + `tmp/mockups/family-stacks-v2.html` (per-family section order + on/off — LOCKED). Both mockups are load-bearing for Phase 1 wiring; read them before opining on family defaults.
 - Editor work → `Editor-Design.md` + `Editor-Design-Notes.md`.
 - Audit context → `Audit-2026-07-05.md`.
 
@@ -33,7 +33,7 @@ Everything else in `Project-Docs/historical/` is archive material — read only 
 
 BohdiAI is a multi-tenant AI-powered SaaS that gives makers/artisans a complete AI-generated storefront on a `[shop].bohdiai.com` subdomain in minutes. Subscription-only (one tier at launch, ~$35–$49/mo). **Never takes a cut of sales** — money flows customer → maker's own Stripe/Square; BohdiAI reads webhooks only.
 
-**Status as of 2026-07-06 (end of Session 64):** Phase 0 (Foundation + cleanup) complete. Codebase clean, database cleaned, renderer fully swept for hardcoding and inline styles, docs archived and superseded sections marked, Full Plan approved as operative doc. **Phase 1 (Family layer wiring) starts next session** — six open decisions to lock with Alex before writing code (Full-Plan §1.0). Two live test tenants: `soul-splatter` and `soul-splatter-bright`. 896 tests pass, tsc + lint clean.
+**Status as of 2026-07-06 (Session 65):** Phase 0 complete. Phase 1 decisions all locked with Alex (Full-Plan §1.0) — mood stays public and `mood_key` stays the column, family layer sits above it internally; skins stay + grow as within-family editor options; v2 stack orders locked BUT every section on at onboarding (length-as-lever retired — onboarding always ships the full stack); sections without per-family designs (Footer, Close CTA, Contact, FAQ) share one shape; nav renders every created page, per-section on/off toggles come with the editor; Reviews seed at onboarding; Dark hero + Luxury Products picks locked. Phase 1 code work is next. Two live test tenants: `soul-splatter` and `soul-splatter-bright`. 938 tests pass, tsc + lint clean.
 
 ## Roles
 
