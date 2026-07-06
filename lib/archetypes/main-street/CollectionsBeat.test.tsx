@@ -48,9 +48,9 @@ describe('CollectionsBeat', () => {
     expect(container.querySelector(ROOT_CLASS.cupboard)).toBeTruthy();
   });
 
-  it("honors the section's authored treatment when no override is given", () => {
+  it('renders the treatment the caller passes (the family picks it)', () => {
     const { container } = render(
-      <CollectionsBeat section={{ ...section, treatment: 'cascade' }} items={makeItems(3)} skin={skin} />,
+      <CollectionsBeat section={section} items={makeItems(3)} skin={skin} treatment="cascade" />,
     );
     expect(container.querySelector(ROOT_CLASS.cascade)).toBeTruthy();
   });

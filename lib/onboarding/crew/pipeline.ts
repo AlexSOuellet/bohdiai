@@ -18,7 +18,6 @@ import { logger } from '@/lib/logger';
 import { withTimeout } from '@/lib/with-timeout';
 import { direct, TIMEOUT_MS as DIRECTOR_TIMEOUT_MS } from './director';
 import { writeCopy, TIMEOUT_MS as COPYWRITER_TIMEOUT_MS } from './copywriter';
-import { rollTreatments } from './treatment-roll';
 import { shootMoment, TIMEOUT_MS as CINEMATOGRAPHER_TIMEOUT_MS } from './cinematographer';
 import { designLook, TIMEOUT_MS as GRAPHIC_ARTIST_TIMEOUT_MS } from './graphic-artist';
 import { directorsCut, TIMEOUT_MS as DIRECTORS_CUT_TIMEOUT_MS } from './directors-cut';
@@ -60,17 +59,11 @@ export interface CrewBuildResult {
    *  executed to. Surfaced for the orchestrator to log against the tenant after
    *  persistence so we can read what Bohdi actually said when reviewing a build. */
   trajectory: Trajectory;
-  /** The three look-driving picks, surfaced for the orchestrator to log against
-   *  the real tenant + niche after persistence (the crew runs before the tenant
-   *  exists, so it records nothing itself). */
+  /** The look-driving picks the crew made. Section treatments (goods, founder,
+   *  reviews, collections, findUs, nav) are the FAMILY's call now (§1.5), so
+   *  only the still-vs-video hero kind is recorded here. */
   choices: {
     heroKind: CrewOutput['moment']['kind'];
-    goodsTreatment: CrewOutput['copy']['goods']['treatment'];
-    founderTreatment: CrewOutput['copy']['founder']['treatment'];
-    /** What the dice dealt before the copywriter played — surfaced alongside the
-     *  pick so logging can spot Bohdi overriding back to one body (reconvergence). */
-    goodsRoll: CrewOutput['copy']['goods']['treatment'];
-    founderRoll: CrewOutput['copy']['founder']['treatment'];
   };
 }
 
@@ -122,15 +115,13 @@ function assembleSubmission(out: CrewOutput, shopName: string): { content: unkno
 /** Run the crew and produce the engine's MainStreetAuthored envelope.
  *  Wrapped in PIPELINE_DEADLINE_MS so a slow collective run aborts cleanly
  *  under the route ceiling instead of being killed by Vercel. */
-export async function directAndProduce(brief: CrewBrief, rand: () => number = Math.random): Promise<CrewBuildResult> {
-  return withTimeout(runCrew(brief, rand), PIPELINE_DEADLINE_MS, 'crew pipeline');
+export async function directAndProduce(brief: CrewBrief): Promise<CrewBuildResult> {
+  return withTimeout(runCrew(brief), PIPELINE_DEADLINE_MS, 'crew pipeline');
 }
 
-async function runCrew(brief: CrewBrief, rand: () => number): Promise<CrewBuildResult> {
+async function runCrew(brief: CrewBrief): Promise<CrewBuildResult> {
   const trajectory = await direct(brief);
-  // Code rolls the dice; the copywriter reads them and plays or overrides (D48).
-  const rolls = rollTreatments(rand);
-  const copy = await writeCopy(brief, trajectory, rolls);
+  const copy = await writeCopy(brief, trajectory);
   const moment = await shootMoment(trajectory, copy.moment.story);
   const look = await designLook(brief, trajectory, copy.moment.story, moment, copy.products);
   // Director's Cut sees the full brief — it's the coherence pass, not a
@@ -149,10 +140,6 @@ async function runCrew(brief: CrewBrief, rand: () => number): Promise<CrewBuildR
     trajectory,
     choices: {
       heroKind: cut.moment.kind,
-      goodsTreatment: cut.copy.goods.treatment,
-      founderTreatment: cut.copy.founder.treatment,
-      goodsRoll: rolls.goods,
-      founderRoll: rolls.founder,
     },
   };
 }

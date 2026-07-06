@@ -44,7 +44,9 @@ export function CollectionsBeat({
   full?: boolean | undefined;
 }) {
   if (items.length === 0) return null;
-  const chosen = treatment ?? section.treatment ?? DEFAULT_COLLECTIONS_TREATMENT;
+  // The family picks the treatment; the caller passes it in. Fallback covers
+  // legacy render paths that don't yet thread one.
+  const chosen = treatment ?? DEFAULT_COLLECTIONS_TREATMENT;
   const shown = full ? items : sampleCollections(items);
   const effectiveViewAll = full ? undefined : viewAll;
   const props = { section, items: shown, skin, viewAll: effectiveViewAll };

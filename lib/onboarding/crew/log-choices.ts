@@ -16,8 +16,6 @@
 import { supabaseAdmin } from '@/lib/supabase';
 import type { Json } from '@/lib/database.types';
 import { logger } from '@/lib/logger';
-import { GOODS_TREATMENTS } from '@/lib/archetypes/main-street/goods';
-import { FOUNDER_TREATMENTS } from '@/lib/archetypes/main-street/schemas';
 import type { Trajectory } from './trajectory';
 
 /** The two kinds of Moment the cinematographer now produces. The legacy 'image'
@@ -26,7 +24,7 @@ import type { Trajectory } from './trajectory';
  *  video or spotlight only. */
 const MOMENT_KINDS = ['video', 'still'] as const;
 
-export type DesignDecisionType = 'trajectory' | 'moment-kind' | 'goods-treatment' | 'founder-treatment';
+export type DesignDecisionType = 'trajectory' | 'moment-kind';
 
 export interface DesignChoice {
   /** The now-created tenant the build belongs to. */
@@ -85,28 +83,14 @@ export interface CrewChoicesLog {
    *  tell a wrong-vision miss apart from a wrong-execution miss. */
   trajectory: Trajectory;
   heroKind: (typeof MOMENT_KINDS)[number];
-  goodsTreatment: string;
-  founderTreatment: string;
-  /** What the dice dealt before the copywriter played — logged beside the pick so
-   *  overriding back to one body (reconvergence) is visible in the data (D48). */
-  goodsRoll: string;
-  founderRoll: string;
-}
-
-/** What got logged for a rolled treatment: the played treatment, the dealt roll,
- *  and whether Bohdi overrode the dice. */
-function treatmentPick(
-  treatment: string,
-  rolled: string,
-): { treatment: string; rolled: string; overrode: boolean } {
-  return { treatment, rolled, overrode: treatment !== rolled };
 }
 
 /**
- * Record the crew's three look-driving choices — the Moment kind and the two
- * section treatments — against the now-created tenant. Fire-and-forget: each
- * write is unawaited and self-swallows failures, so a logging problem never
- * touches the build. Call once from the orchestrator after persistence.
+ * Record the crew's still-live look-driving choices — trajectory + Moment kind
+ *  — against the now-created tenant. Section treatments (goods, founder,
+ *  reviews, collections, findUs, nav) are the FAMILY's call now (§1.5) and are
+ *  not logged per-build; the family is derivable from the tenant's mood_key.
+ *  Fire-and-forget: each write is unawaited and self-swallows failures.
  */
 export function logCrewChoices(c: CrewChoicesLog): void {
   const base = { tenantId: c.tenantId, nicheSlug: c.nicheSlug, moodKey: c.moodKey };
@@ -126,19 +110,5 @@ export function logCrewChoices(c: CrewChoicesLog): void {
     candidates: [...MOMENT_KINDS],
     picked: { kind: c.heroKind },
     reasoning: 'director chose the hero kind from the trajectory; cinematographer executed',
-  });
-  void logDesignChoice({
-    ...base,
-    decisionType: 'goods-treatment',
-    candidates: [...GOODS_TREATMENTS],
-    picked: treatmentPick(c.goodsTreatment, c.goodsRoll),
-    reasoning: 'copywriter played or overrode the dealt goods treatment',
-  });
-  void logDesignChoice({
-    ...base,
-    decisionType: 'founder-treatment',
-    candidates: [...FOUNDER_TREATMENTS],
-    picked: treatmentPick(c.founderTreatment, c.founderRoll),
-    reasoning: 'copywriter played or overrode the dealt founder treatment',
   });
 }

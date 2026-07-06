@@ -116,24 +116,24 @@ describe('GoodsBeat — sampling + the view-all cue', () => {
   });
 });
 
-describe('GoodsBeat — Bohdi-authored treatment', () => {
-  it('wears the treatment authored in goods.treatment', () => {
+describe('GoodsBeat — family-driven treatment', () => {
+  it('wears the treatment passed by the caller (the family picks it)', () => {
     const { container } = render(
-      <GoodsBeat goods={{ title: 'From the bench', treatment: 'slideshow' }} products={makeProducts(3)} skin={skin} />,
+      <GoodsBeat goods={{ title: 'From the bench' }} products={makeProducts(3)} skin={skin} treatment="slideshow" />,
     );
     expect(container.querySelectorAll('.ms-slide-layer').length).toBe(3);
   });
 
-  it('an explicit prop overrides the authored treatment (previews)', () => {
+  it('renders each requested treatment when the caller changes it (previews / editor)', () => {
     const { container } = render(
-      <GoodsBeat goods={{ title: 'From the bench', treatment: 'slideshow' }} products={makeProducts(3)} skin={skin} treatment="switcher" />,
+      <GoodsBeat goods={{ title: 'From the bench' }} products={makeProducts(3)} skin={skin} treatment="switcher" />,
     );
     expect(container.querySelectorAll('[data-ms-switch-row]').length).toBe(3);
   });
 
   it('renders a prominent bottom view-all CTA', () => {
     const { container } = render(
-      <GoodsBeat goods={{ title: 'From the bench', treatment: 'procession' }} products={makeProducts(3)} skin={skin} shopHref="/shop" />,
+      <GoodsBeat goods={{ title: 'From the bench' }} products={makeProducts(3)} skin={skin} treatment="procession" shopHref="/shop" />,
     );
     const cta = container.querySelector('.ms-viewall-cta') as HTMLAnchorElement | null;
     expect(cta).toBeTruthy();

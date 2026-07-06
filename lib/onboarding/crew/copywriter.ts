@@ -16,21 +16,12 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { anthropicClient } from '@/lib/anthropic';
 import { logger } from '@/lib/logger';
 import { withTimeout } from '@/lib/with-timeout';
-import { GOODS_TREATMENT_MENU, type GoodsTreatment } from '@/lib/archetypes/main-street/goods';
-import type { FounderTreatment } from '@/lib/archetypes/main-street/founder';
 import { LINK_TARGETS } from '@/lib/archetypes/main-street/links';
 import { CopywriterDraftSchema, type CopywriterDraft } from './copywriter-schema';
 import { buildResubmitPayload } from './length-feedback';
 import { normalizeCopy } from './normalize-copy';
 import type { Trajectory } from './trajectory';
 import type { CrewBrief } from './types';
-
-/** The starting hand the pipeline deals: a treatment for each of the two beats
- *  that converge. The copywriter plays each unless it genuinely fights the shop. */
-export interface TreatmentRolls {
-  goods: GoodsTreatment;
-  founder: FounderTreatment;
-}
 
 const MODEL = 'claude-sonnet-4-6';
 const MAX_TOKENS = 12000;
@@ -49,12 +40,9 @@ const SUBMIT_COPY_TOOL: Anthropic.Tool = {
 
 const TARGET_PRODUCTS = 5;
 
-export function buildCopywriterPrompt(brief: CrewBrief, trajectory: Trajectory, rolls: TreatmentRolls): string {
+export function buildCopywriterPrompt(brief: CrewBrief, trajectory: Trajectory): string {
   const niche = brief.nicheBody.trim();
   const target = TARGET_PRODUCTS;
-  const goods = (Object.entries(GOODS_TREATMENT_MENU) as Array<[string, string]>)
-    .map(([k, d]) => `      - ${k}: ${d}`)
-    .join('\n');
   const targets = LINK_TARGETS.join(', ');
 
   const makerNameTrimmed = brief.makerName?.trim();
@@ -109,9 +97,7 @@ ${storyDirective}
 - moment.sub: one plain supporting sentence under the headline — what this shop is or makes, in a single clear line (e.g. "Hand-poured soy candles in small batches"). This is NOT the fading story lines; it is the standing sub-headline the other hero styles show. A normal short sentence; internal commas fine, no trailing period needed.
 - moment.ctaLabel (3-24): the hero button. moment.ctaTarget: where it goes.
 - moment.secondaryCtaLabel (3-24, optional): a second hero button. moment.secondaryCtaTarget: where it goes (include when you write the secondary label).
-- goods.title (2-48): the heading of the products beat.
-- goods.treatment: you drew "${rolls.goods}" this build — the dice, not us, so shops stop wearing the same body. Keep your draw unless it genuinely fights this shop; if it does, pick another from these and note why in one line:
-${goods}
+- goods.title (2-48): the heading of the products beat. (The BODY the beat wears — marquee, procession, switcher, slideshow, module, table, index, lookbook — is the family's call, not yours. Just write the words.)
 - goods.label (2-24, optional): a small label on the heading row.
 - goods.viewAllLabel (2-28): the cue to the full Products page (e.g. "See the full catalog", "Shop everything"). ALWAYS author this — the home is a sampling; the shop is the full catalog.
 - collections: the themed groups this shop offers. ALWAYS author — collections is a page like every other; the copywriter writes them; the build persists them as real DB rows the maker edits later. Same "not labeled sample" pattern as the reviews and find-us seeds:
@@ -126,18 +112,10 @@ ${goods}
       - reviews.viewAllLabel (2-28): the cue on the home to the full /testimonials page (e.g. "Read all reviews"). ALWAYS author this — the home shows a handful; the testimonials page shows every one.
       - reviews.summary (optional): an honest aggregate for the star-rating layout — { score (e.g. "4.9 out of 5"), count (e.g. "200+ happy customers" — keep it modest and believable for a small maker, or omit if it would overreach) }.
       - reviews.items (3-6): each { quote (a warm, specific line a real customer would write — about the FEELING the work gave them, never how it is made), author (a first name + last initial, e.g. "Dana R."), location (optional, e.g. "Providence, RI") }. Vary the voices; no two should read alike. No AI-tell.
-- founder.quote (24+, no hard cap): the founder's words in the About beat
+- founder.quote (24+, no hard cap): the founder's words in the About beat. (The BODY the beat wears — quote, portrait, letter, card, workbench, editorial, signature — is the family's call, not yours. Author all supporting fields (eyebrow, heading, about.story) so every family renders cleanly no matter which body it picks.)
 - founder.attribution (4-60): who said it.
-- founder.treatment: you drew "${rolls.founder}" this build — the dice again. Keep your draw unless it genuinely fights this shop; if it does, pick another from these and note why in one line:
-      - quote: a portrait beside a pull-quote.
-      - portrait: a large portrait with the quote over it.
-      - letter: your words as a short note on a paper slip, a snapshot clipped to it, signed by hand.
-      - card: a meet-the-maker card — REQUIRES founder.eyebrow and founder.heading.
-      - workbench: a wide documentary shot of you at work + a short intro (your quote is the caption); set founder.eyebrow as the small label (e.g. "In the workshop").
-      - editorial: a magazine feature — it lays your full about.story in columns with a drop cap and your quote as the pull-quote, so write a rich about.story and an about.heading for this one.
-      - signature: your promise set large as type, no photo — your quote IS the statement, so make it a punchy one-line creed.
-- founder.eyebrow (2-24, optional): the small label above the card heading (also the workbench / editorial kicker).
-- founder.heading (2-28, optional): the card heading (also a fallback editorial headline).
+- founder.eyebrow (2-24, optional): a small label above the beat (a card heading kicker, a workbench / editorial label).
+- founder.heading (2-28, optional): a card or editorial heading.
 - founder.aboutLabel (2-28, optional): the cue to the full About page.
 - founder.findUs (optional): a "find us in person" calendar of markets / workshops / popups the maker sells at. Seed 1-5 plausible sample appearances the maker edits or turns off later: { label (2-28, the small eyebrow on the home band, e.g. "Find us in person"), title (2-48, the Events PAGE heading in this shop's voice, e.g. "Where to find us", "This season's dates"), eventsLabel (2-28, the "see all dates" cue), rows (1-5): { where (4-60, the venue and town), time (1-12, the hours, e.g. "10–4"), kind (optional, one of: market | workshop | event), day (a short placeholder like "This week") } }. Do NOT author real dates — the build stamps current dates onto each row automatically; you write only the venue, hours, and kind. Author findUs whenever this maker plausibly does in-person events; leave it off for pure digital / made-to-order shops.
 - close.label (2-28): the close kicker.
@@ -153,8 +131,8 @@ Call submit_copy now.`;
 }
 
 /** Run the Copywriter: trajectory + niche in, one validated words-only draft out. */
-export async function writeCopy(brief: CrewBrief, trajectory: Trajectory, rolls: TreatmentRolls): Promise<CopywriterDraft> {
-  const system = buildCopywriterPrompt(brief, trajectory, rolls);
+export async function writeCopy(brief: CrewBrief, trajectory: Trajectory): Promise<CopywriterDraft> {
+  const system = buildCopywriterPrompt(brief, trajectory);
   const messages: Anthropic.MessageParam[] = [
     { role: 'user', content: 'Write every word of the store. Call submit_copy.' },
   ];
@@ -183,7 +161,7 @@ export async function writeCopy(brief: CrewBrief, trajectory: Trajectory, rolls:
       // trim whitespace. ACCEPTING transforms, never throw — the build never
       // fails on copy formatting (D53 sharpened).
       const normalized = normalizeCopy(parsed.data);
-      logger.info('crew: copy written', { products: normalized.products.length, goods: normalized.goods.treatment, founder: normalized.founder.treatment });
+      logger.info('crew: copy written', { products: normalized.products.length });
       return normalized;
     }
 

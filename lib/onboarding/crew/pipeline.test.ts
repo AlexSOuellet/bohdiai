@@ -163,20 +163,11 @@ describe('directAndProduce (the crew pipeline)', () => {
       .mockResolvedValueOnce(toolMsg('set_look', look))
       .mockResolvedValueOnce(toolMsg('final_cut', {}));
 
-    // rand: () => 0 deals the first face of each set — goods 'marquee', founder
-    // 'quote'. The mock copy overrides goods to 'procession' and keeps founder.
-    const result = await directAndProduce(brief, () => 0);
+    const result = await directAndProduce(brief);
 
-    // The pipeline does NOT log (the tenant doesn't exist yet); it returns BOTH
-    // what was dealt and what the copywriter landed on, so the orchestrator can
-    // log rolled-vs-picked against the real tenant + niche.
-    expect(result.choices).toEqual({
-      heroKind: 'video',
-      goodsTreatment: 'procession',
-      founderTreatment: 'quote',
-      goodsRoll: 'marquee',
-      founderRoll: 'quote',
-    });
+    // Section treatments are the family's call now (§1.5); the pipeline only
+    // records the still-vs-video hero kind and the trajectory.
+    expect(result.choices).toEqual({ heroKind: 'video' });
   });
 
   it('threads the trajectory heroKind through to the assembled envelope — spotlight path', async () => {
@@ -213,7 +204,7 @@ describe('directAndProduce (the crew pipeline)', () => {
     });
   });
 
-  it('deals the rolled treatments to the copywriter', async () => {
+  it('does not deal any treatment picks to the copywriter (§1.5 — family owns section variants)', async () => {
     create
       .mockResolvedValueOnce(toolMsg('set_trajectory', trajectory))
       .mockResolvedValueOnce(toolMsg('submit_copy', copy))
@@ -221,10 +212,8 @@ describe('directAndProduce (the crew pipeline)', () => {
       .mockResolvedValueOnce(toolMsg('set_look', look))
       .mockResolvedValueOnce(toolMsg('final_cut', {}));
 
-    await directAndProduce(brief, () => 0);
-    // calls[1] is the copywriter; its prompt carries the dealt draw.
+    await directAndProduce(brief);
     const copywriterCall = create.mock.calls[1]![0] as { system: string };
-    expect(copywriterCall.system).toContain('you drew "marquee"');
-    expect(copywriterCall.system).toContain('you drew "quote"');
+    expect(copywriterCall.system).not.toContain('you drew');
   });
 });

@@ -43,7 +43,9 @@ export function FindUsBeat({
   full?: boolean | undefined;
 }) {
   if (findUs.rows.length === 0) return null;
-  const chosen = treatment ?? findUs.treatment ?? DEFAULT_FINDUS_TREATMENT;
+  // The family picks the treatment; the caller passes it in. Fallback covers
+  // legacy render paths that don't yet thread one.
+  const chosen = treatment ?? DEFAULT_FINDUS_TREATMENT;
   const events = full ? findUs.rows : sampleEvents(findUs.rows);
   const viewAll = full ? undefined : { href: eventsHref, label: findUs.eventsLabel ?? DEFAULT_STRINGS.fallbackSeeAllDates };
   const props = { section: findUs, events, skin, viewAll };

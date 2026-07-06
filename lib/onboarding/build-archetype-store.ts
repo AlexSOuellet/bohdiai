@@ -293,10 +293,6 @@ export async function buildArchetypeStore(
     moodKey: input.moodKey,
     trajectory,
     heroKind: choices.heroKind,
-    goodsTreatment: choices.goodsTreatment,
-    founderTreatment: choices.founderTreatment,
-    goodsRoll: choices.goodsRoll,
-    founderRoll: choices.founderRoll,
   });
 
   return result;

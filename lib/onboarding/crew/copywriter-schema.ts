@@ -1,9 +1,10 @@
 /**
- * What the Copywriter produces: every WORD of the store, and the two treatment
- * picks that decide which words exist (a "card" About beat needs an eyebrow and
- * heading; a "letter" needs a signed note). It does NOT carry the Moment scene,
- * the founder photo prompt, or product image prompts — those are the
- * Cinematographer's and Graphic Artist's jobs, assembled in later.
+ * What the Copywriter produces: every WORD of the store. It does NOT carry the
+ * Moment scene, the founder photo prompt, or product image prompts — those are
+ * the Cinematographer's and Graphic Artist's jobs, assembled in later. It also
+ * does NOT carry any structural picks — nav layout, hero variant, goods /
+ * collections / reviews / find-us / founder treatments are ALL the family's
+ * call. Bohdi authors CONTENT ONLY (§1.5).
  *
  * SCHEMA POLICY (D53 sharpened): this schema validates SHAPE — the right fields,
  * the right types, the right enums. It does NOT enforce length on any string,
@@ -20,8 +21,7 @@
  * schema just no longer enforces them.
  */
 import { z } from 'zod';
-import { GOODS_TREATMENTS } from '@/lib/archetypes/main-street/goods';
-import { FindUsRow, FOUNDER_TREATMENTS, NavItem } from '@/lib/archetypes/main-street/schemas';
+import { FindUsRow, NavItem } from '@/lib/archetypes/main-street/schemas';
 import { LINK_TARGETS } from '@/lib/archetypes/main-street/links';
 
 /** A product's words only — no imagePrompt (the Graphic Artist adds that). */
@@ -56,7 +56,6 @@ export const CopywriterDraftSchema = z.object({
   }),
   goods: z.object({
     title: z.string().min(1),
-    treatment: z.enum(GOODS_TREATMENTS),
     label: z.string().min(1).optional(),
     viewAllLabel: z.string().min(1).optional(),
   }),
@@ -120,7 +119,6 @@ export const CopywriterDraftSchema = z.object({
   founder: z.object({
     quote: z.string().min(1),
     attribution: z.string().min(1),
-    treatment: z.enum(FOUNDER_TREATMENTS),
     eyebrow: z.string().min(1).optional(),
     heading: z.string().min(1).optional(),
     aboutLabel: z.string().min(1).optional(),

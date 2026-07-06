@@ -96,8 +96,6 @@ describe('buildArchetypeStore — crew-choice logging seam', () => {
       nicheSlug: 'woodworking',
       moodKey: 'rustic',
       heroKind: 'video',
-      goodsTreatment: 'procession',
-      founderTreatment: 'quote',
     });
   });
 });

@@ -62,8 +62,8 @@ describe('ReviewsBeat', () => {
     expect(container.querySelector(ROOT_CLASS.rating)).toBeTruthy();
   });
 
-  it("honors the section's authored treatment when no override is given", () => {
-    const { container } = render(<ReviewsBeat section={section({ treatment: 'guestbook' })} skin={skin} />);
+  it('renders the treatment the caller passes (the family picks it)', () => {
+    const { container } = render(<ReviewsBeat section={section({})} skin={skin} treatment="guestbook" />);
     expect(container.querySelector(ROOT_CLASS.guestbook)).toBeTruthy();
   });
 

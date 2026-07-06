@@ -38,7 +38,9 @@ export function ReviewsBeat({
   full?: boolean | undefined;
 }) {
   if (section.items.length === 0) return null;
-  const chosen = treatment ?? section.treatment ?? DEFAULT_REVIEWS_TREATMENT;
+  // The family picks the treatment; the caller passes it in. Fallback covers
+  // legacy render paths that don't yet thread one.
+  const chosen = treatment ?? DEFAULT_REVIEWS_TREATMENT;
   const shown = full ? section.items : sampleTestimonials(section.items);
   const effectiveViewAll = full ? undefined : viewAll;
   const props = { section, items: shown, skin, viewAll: effectiveViewAll };

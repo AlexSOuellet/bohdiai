@@ -118,10 +118,14 @@ describe('MainStreetContentSchema', () => {
     expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 
-  it('rejects an unknown goods treatment', () => {
+  it('silently drops an unknown goods treatment field — section variants come from the family, not content', () => {
     const c = valid();
     (c.goods as Record<string, unknown>)['treatment'] = 'mosaic';
-    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+    const parsed = MainStreetContentSchema.safeParse(c);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect((parsed.data.goods as Record<string, unknown>)['treatment']).toBeUndefined();
+    }
   });
 
   it('accepts a single nav item (the renderer requires at least one entry)', () => {
@@ -241,9 +245,13 @@ describe('founder — About treatment + card fields', () => {
     expect(MainStreetContentSchema.safeParse(valid()).success).toBe(true);
   });
 
-  it('rejects an unknown About treatment', () => {
+  it('silently drops an unknown About treatment field — section variants come from the family, not content', () => {
     const c = valid();
     (c.founder as Record<string, unknown>)['treatment'] = 'findus';
-    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+    const parsed = MainStreetContentSchema.safeParse(c);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect((parsed.data.founder as Record<string, unknown>)['treatment']).toBeUndefined();
+    }
   });
 });

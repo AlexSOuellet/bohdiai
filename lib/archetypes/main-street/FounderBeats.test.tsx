@@ -14,7 +14,6 @@ const longQuote =
 const founder: MainStreetContent['founder'] = {
   quote: longQuote,
   attribution: 'Wally',
-  treatment: 'portrait',
   photo: { prompt: 'a maker at the bench', alt: 'maker', url: 'https://example.com/portrait.jpg' },
 };
 

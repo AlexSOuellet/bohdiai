@@ -37,13 +37,13 @@ describe('FindUsBeat — the dispatcher', () => {
     expect(container.querySelector('#find-us')).toBeTruthy();
   });
 
-  it('honors the authored treatment when nothing is forced', () => {
-    const { container } = render(<FindUsBeat findUs={{ ...findUs, treatment: 'poster' }} skin={skin} />);
+  it('renders the treatment the caller passes (the family picks it)', () => {
+    const { container } = render(<FindUsBeat findUs={findUs} skin={skin} treatment="poster" />);
     expect(container.querySelector('.ms-fu-poster')).toBeTruthy();
   });
 
-  it('a forced treatment overrides the authored one (the preview wins)', () => {
-    const { container } = render(<FindUsBeat findUs={{ ...findUs, treatment: 'poster' }} skin={skin} treatment="itinerary" />);
+  it('renders whichever treatment the caller changes to (previews / editor)', () => {
+    const { container } = render(<FindUsBeat findUs={findUs} skin={skin} treatment="itinerary" />);
     expect(container.querySelector('.ms-fu-itin')).toBeTruthy();
     expect(container.querySelector('.ms-fu-poster')).toBeNull();
   });

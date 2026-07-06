@@ -52,10 +52,11 @@ export function GoodsBeat({
    *  catalog" cue — you're already here. */
   full?: boolean | undefined;
 }) {
-  // Bohdi's authored treatment wins; an explicit prop overrides it (previews);
-  // the size-based pick is only a fallback for pre-treatment content. The home
-  // then shows only a SAMPLING (Main Street is a sales page, not a catalog).
-  const chosen = treatment ?? goods.treatment ?? selectGoodsTreatment(catalogSize ?? products.length);
+  // The family picks the treatment; the caller passes it in. A size-based
+  // pick is only the last-resort fallback for legacy render paths that don't
+  // pass one. The home then shows only a SAMPLING (Main Street is a sales
+  // page, not a catalog).
+  const chosen = treatment ?? selectGoodsTreatment(catalogSize ?? products.length);
   const sample = full ? products : sampleForTreatment(products, chosen);
   const viewAll: GoodsViewAll = { href: shopHref, label: goods.viewAllLabel ?? DEFAULT_VIEW_ALL };
   const cta = full ? null : <GoodsViewAllCta viewAll={viewAll} skin={skin} />;

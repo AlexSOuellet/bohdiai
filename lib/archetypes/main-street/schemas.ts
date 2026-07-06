@@ -16,10 +16,7 @@
  */
 import { z } from 'zod';
 import { MAIN_STREET_SKINS } from './skins';
-import { GOODS_TREATMENTS } from './goods';
-import { COLLECTIONS_TREATMENTS } from './collections';
-import { REVIEWS_TREATMENTS } from './reviews';
-import { FINDUS_TREATMENTS, FINDUS_KINDS } from './findus';
+import { FINDUS_KINDS } from './findus';
 import { LINK_TARGETS } from './links';
 
 /** A nav link the crew authors: a label paired with a TARGET page, so the word
@@ -177,13 +174,10 @@ export const MainStreetContentSchema = z.object({
 
   /** BEAT 2 — goods in motion. Just the heading; products are catalog rows. The
    *  home page shows only a SAMPLING — the full catalog lives on the Products
-   *  page, reached via the view-all cue. */
+   *  page, reached via the view-all cue. The BODY (which treatment renders) is
+   *  the family's call, not authored. */
   goods: z.object({
     title: z.string().min(1),
-    /** Which goods body to wear. BOHDI's choice — he picks the one that fits the
-     *  shop. Optional only so content authored before this field still parses
-     *  (the renderer falls back to the legacy size-based pick when it is absent). */
-    treatment: z.enum(GOODS_TREATMENTS).optional(),
     label: z.string().min(1).optional(),
     viewAllLabel: z.string().min(1).optional(),
   }),
@@ -194,12 +188,11 @@ export const MainStreetContentSchema = z.object({
    *  copywriter authors a niche-appropriate set at build time and the maker edits
    *  them later. Optional so content authored before this field still parses; when
    *  present but items is empty, the band still renders once real collections rows
-   *  exist (a later editor add). Mirrors the `goods` shape; `treatment` is the
-   *  family-level band choice (previewable via ?collections=). */
+   *  exist (a later editor add). The BAND SHAPE (which treatment) is the family's
+   *  call, not authored. */
   collections: z
     .object({
       title: z.string().min(1),
-      treatment: z.enum(COLLECTIONS_TREATMENTS).optional(),
       label: z.string().min(1).optional(),
       viewAllLabel: z.string().min(1).optional(),
       /** Authored collections — the copywriter picks a small, niche-appropriate set
@@ -221,14 +214,13 @@ export const MainStreetContentSchema = z.object({
   /** REVIEWS — the maker's testimonials, authored at build time and seeded like the
    *  sample find-us dates (D38): plausible, maker-editable social proof, NOT labeled
    *  "sample". At launch these are curated testimonials (verified-purchase reviews
-   *  are Phase 2). `treatment` is the family-level look choice (previewable via
-   *  ?reviews=); the four are a shared pool. `summary` feeds the Rating treatment's
-   *  aggregate. Optional so content authored before this field still parses and so a
-   *  shop with no testimonials simply omits the beat. */
+   *  are Phase 2). `summary` feeds the Rating treatment's aggregate. Optional so
+   *  content authored before this field still parses and so a shop with no
+   *  testimonials simply omits the beat. The LOOK (which treatment) is the family's
+   *  call, not authored — the copywriter only authors CONTENT. */
   reviews: z
     .object({
       title: z.string().min(1),
-      treatment: z.enum(REVIEWS_TREATMENTS).optional(),
       label: z.string().min(1).optional(),
       viewAllLabel: z.string().min(1).optional(),
       summary: z
@@ -261,11 +253,11 @@ export const MainStreetContentSchema = z.object({
     .optional(),
 
   /** BEAT 3 — the founder + a real "find us this week" calendar. Required: the
-   *  authority the platform is built on. */
+   *  authority the platform is built on. The founder body SHAPE (which treatment)
+   *  is the family's call, not authored. */
   founder: z.object({
     quote: z.string().min(1),
     attribution: z.string().min(1),
-    treatment: z.enum(FOUNDER_TREATMENTS).optional(),
     eyebrow: z.string().min(1).optional(),
     heading: z.string().min(1).optional(),
     photo: PhotoSlot,
@@ -277,10 +269,6 @@ export const MainStreetContentSchema = z.object({
          *  Optional so legacy content still parses; the copywriter authors it every
          *  build so the Events page never falls back to hardcoded English. */
         title: z.string().min(1).optional(),
-        /** The treatment this shop's find-us beat wears (a family-level look choice,
-         *  previewable via ?findus=); the six are a shared pool. Absent → the
-         *  dispatcher falls back to the documented default. */
-        treatment: z.enum(FINDUS_TREATMENTS).optional(),
         eventsLabel: z.string().min(1).optional(),
         rows: z.array(FindUsRow).min(1),
       })

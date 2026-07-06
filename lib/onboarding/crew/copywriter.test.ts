@@ -27,11 +27,8 @@ const trajectory: Trajectory = {
   heroKind: 'video',
 };
 
-// The dice the pipeline deals the copywriter. Matches the draft below so the
-// existing assertions see unchanged behavior; the roll test below uses its own.
-const rolls = { goods: 'procession', founder: 'quote' } as const;
-
-// A minimal valid words-only draft (no image prompts; treatments chosen).
+// A minimal valid words-only draft (no image prompts; no treatments — the
+// family owns those now per §1.5).
 const draft = {
   shopName: 'Tannery Row',
   identity: { wordmark: 'Tannery Row', nav: [{ label: 'Shop', target: 'shop' }, { label: 'Our story', target: 'about' }] },
@@ -43,7 +40,7 @@ const draft = {
     ctaLabel: 'See the work',
     ctaTarget: 'shop',
   },
-  goods: { title: 'The bench', treatment: 'procession' },
+  goods: { title: 'The bench' },
   marquee: { voice: ['Small batch', 'Cut by hand', 'Made to last'] },
   reviews: {
     title: 'Kind words',
@@ -57,7 +54,6 @@ const draft = {
   founder: {
     quote: 'I would rather make one belt that lasts thirty years than ten that fall apart.',
     attribution: 'Sam, founder',
-    treatment: 'quote',
   },
   close: { label: 'Come by', headline: 'Built to outlast us', ctaLabel: 'Order yours', ctaTarget: 'contact' },
   about: {
@@ -86,10 +82,8 @@ beforeEach(() => {
 describe('writeCopy (the Copywriter)', () => {
   it('returns the validated words-only draft from a valid first call', async () => {
     create.mockResolvedValueOnce(toolMsg(draft));
-    const d = await writeCopy(brief, trajectory, rolls);
+    const d = await writeCopy(brief, trajectory);
     expect(d.shopName).toBe('Tannery Row');
-    expect(d.goods.treatment).toBe('procession');
-    expect(d.founder.treatment).toBe('quote');
     expect(d.products).toHaveLength(3);
     expect(CopywriterDraftSchema.safeParse(d).success).toBe(true);
     expect(create).toHaveBeenCalledTimes(1);
@@ -97,7 +91,7 @@ describe('writeCopy (the Copywriter)', () => {
 
   it('puts the trajectory in the prompt and forces the tool', async () => {
     create.mockResolvedValueOnce(toolMsg(draft));
-    await writeCopy(brief, trajectory, rolls);
+    await writeCopy(brief, trajectory);
     const args = create.mock.calls[0]![0] as { system: string; tool_choice?: unknown };
     expect(args.system).toContain(trajectory.feeling);
     expect(args.system).toContain(trajectory.customerWhy);
@@ -109,7 +103,7 @@ describe('writeCopy (the Copywriter)', () => {
     // a schema rejection; normalize-copy strips it after parse succeeds.
     const punctured = { ...draft, moment: { ...draft.moment, story: ['Flour. Water. Salt.', 'Time'] } };
     create.mockResolvedValueOnce(toolMsg(punctured));
-    const d = await writeCopy(brief, trajectory, rolls);
+    const d = await writeCopy(brief, trajectory);
     expect(create).toHaveBeenCalledTimes(1);
     // The forbidden marks are gone; the words remain.
     expect(d.moment.story[0]).toBe('Flour Water Salt');
@@ -120,7 +114,7 @@ describe('writeCopy (the Copywriter)', () => {
     const longShort = 'x'.repeat(220); // would have blown the old 90 cap
     const over = { ...draft, products: [{ ...draft.products[0], shortDescription: longShort }, draft.products[1], draft.products[2]] };
     create.mockResolvedValueOnce(toolMsg(over));
-    const d = await writeCopy(brief, trajectory, rolls);
+    const d = await writeCopy(brief, trajectory);
     expect(create).toHaveBeenCalledTimes(1);
     expect(d.products[0]!.shortDescription).toBe(longShort);
   });
@@ -129,7 +123,7 @@ describe('writeCopy (the Copywriter)', () => {
     const longLine = 'x'.repeat(120); // would have blown the old 48 cap
     const over = { ...draft, moment: { ...draft.moment, story: [longLine, draft.moment.story[1]] } };
     create.mockResolvedValueOnce(toolMsg(over));
-    const d = await writeCopy(brief, trajectory, rolls);
+    const d = await writeCopy(brief, trajectory);
     expect(create).toHaveBeenCalledTimes(1);
     expect(d.moment.story[0]).toBe(longLine);
   });
@@ -138,7 +132,7 @@ describe('writeCopy (the Copywriter)', () => {
     // A non-real link target is an enum miss — that's shape, not length. Schema rejects.
     const badEnum = { ...draft, moment: { ...draft.moment, ctaTarget: 'newsletter' as unknown as 'shop' } };
     create.mockResolvedValueOnce(toolMsg(badEnum)).mockResolvedValueOnce(toolMsg(draft));
-    await writeCopy(brief, trajectory, rolls);
+    await writeCopy(brief, trajectory);
     expect(create).toHaveBeenCalledTimes(2);
   });
 
@@ -148,18 +142,18 @@ describe('writeCopy (the Copywriter)', () => {
     const missing: Record<string, unknown> = { ...draft };
     delete missing['shopName'];
     create.mockResolvedValue(toolMsg(missing));
-    await expect(writeCopy(brief, trajectory, rolls)).rejects.toThrow(/valid copy/);
+    await expect(writeCopy(brief, trajectory)).rejects.toThrow(/valid copy/);
     expect(create).toHaveBeenCalledTimes(4);
   });
 
   it('throws if the model never calls the tool', async () => {
     create.mockResolvedValueOnce({ content: [{ type: 'text', text: 'done' }], stop_reason: 'end_turn' });
-    await expect(writeCopy(brief, trajectory, rolls)).rejects.toThrow(/did not call submit_copy/);
+    await expect(writeCopy(brief, trajectory)).rejects.toThrow(/did not call submit_copy/);
   });
 
   it('instructs the copywriter to author each link target from the real pages', async () => {
     create.mockResolvedValueOnce(toolMsg(draft));
-    await writeCopy(brief, trajectory, rolls);
+    await writeCopy(brief, trajectory);
     const args = create.mock.calls[0]![0] as { system: string };
     expect(args.system).toContain('target');
     // names the real pages the crew can point at
@@ -168,28 +162,26 @@ describe('writeCopy (the Copywriter)', () => {
 
   it('tells the copywriter headlines carry no sentence punctuation', async () => {
     create.mockResolvedValueOnce(toolMsg(draft));
-    await writeCopy(brief, trajectory, rolls);
+    await writeCopy(brief, trajectory);
     const args = create.mock.calls[0]![0] as { system: string };
     expect(args.system.toLowerCase()).toContain('headline');
     expect(args.system.toLowerCase()).toMatch(/no period|not a sentence|no sentence punctuation/);
   });
 
-  it('deals the rolled treatments to the copywriter as a draw it can override', async () => {
+  it('does not deal any treatment picks to the copywriter (§1.5 — family owns section variants)', async () => {
     create.mockResolvedValueOnce(toolMsg(draft));
-    await writeCopy(brief, trajectory, { goods: 'slideshow', founder: 'card' });
+    await writeCopy(brief, trajectory);
     const args = create.mock.calls[0]![0] as { system: string };
-    // the goods and About beats arrive with a starting treatment dealt by code...
-    expect(args.system).toContain('you drew "slideshow"');
-    expect(args.system).toContain('you drew "card"');
-    // ...which Bohdi plays unless it truly fights the shop — he keeps the veto.
-    expect(args.system).toContain('unless it genuinely fights');
+    // The old "you drew X" roll-and-play language is gone — the family picks now.
+    expect(args.system).not.toContain('you drew');
+    expect(args.system).not.toContain('unless it genuinely fights');
   });
 });
 
 describe('buildCopywriterPrompt — story directive does NOT branch on heroKind (D54 — hero renders the brand block at rest)', () => {
   it('directs 1-4 lines regardless of heroKind (the kind chooses the cinematographer\'s shot, not the copy structure)', () => {
-    const videoPrompt = buildCopywriterPrompt(brief, { ...trajectory, heroKind: 'video' as const }, rolls);
-    const stillPrompt = buildCopywriterPrompt(brief, { ...trajectory, heroKind: 'still' as const }, rolls);
+    const videoPrompt = buildCopywriterPrompt(brief, { ...trajectory, heroKind: 'video' as const });
+    const stillPrompt = buildCopywriterPrompt(brief, { ...trajectory, heroKind: 'still' as const });
     expect(videoPrompt).toContain('1-4 lines');
     expect(stillPrompt).toContain('1-4 lines');
     // The old spotlight rise / cross-fade story lifecycle language is gone (D54)
@@ -223,7 +215,7 @@ describe('CopywriterDraftSchema — headlines: schema accepts any string, normal
     const d = { ...draft, about: { ...draft.about, heading: 'One potter. One wheel. One kiln at a time.' } };
     expect(CopywriterDraftSchema.safeParse(d).success).toBe(true);
     create.mockResolvedValueOnce(toolMsg(d));
-    const written = await writeCopy(brief, trajectory, rolls);
+    const written = await writeCopy(brief, trajectory);
     // Periods stripped; the remaining text reads as a phrase.
     expect(written.about.heading).not.toMatch(/[.!?]/);
     expect(written.about.heading).toContain('One potter');
@@ -233,7 +225,7 @@ describe('CopywriterDraftSchema — headlines: schema accepts any string, normal
     const d = { ...draft, close: { ...draft.close, headline: 'Built to outlast us.' } };
     expect(CopywriterDraftSchema.safeParse(d).success).toBe(true);
     create.mockResolvedValueOnce(toolMsg(d));
-    const written = await writeCopy(brief, trajectory, rolls);
+    const written = await writeCopy(brief, trajectory);
     expect(written.close.headline).toBe('Built to outlast us');
   });
 
@@ -259,7 +251,7 @@ describe('CopywriterDraftSchema — shared hero sub-line (the pile)', () => {
 
 describe('copywriter prompt — authors the shared hero sub-line', () => {
   it('instructs the copywriter to write moment.sub (one supporting sentence the non-Story heroes use)', () => {
-    const prompt = buildCopywriterPrompt(brief, trajectory, rolls);
+    const prompt = buildCopywriterPrompt(brief, trajectory);
     expect(prompt).toMatch(/moment\.sub/);
   });
 });
@@ -285,10 +277,8 @@ describe('copywriter prompt — founder-attribution name lock', () => {
     heroKind: 'video',
   };
 
-  const r = { goods: 'marquee', founder: 'quote' } as const;
-
   it("passes the maker's first name into the prompt and locks founder.attribution to it", () => {
-    const prompt = buildCopywriterPrompt(baseBrief, t, r);
+    const prompt = buildCopywriterPrompt(baseBrief, t);
     expect(prompt).toContain('Wally');
     expect(prompt).toMatch(/founder\.attribution[^\n]*Wally/);
     expect(prompt).toMatch(/do not invent/i);
@@ -296,7 +286,7 @@ describe('copywriter prompt — founder-attribution name lock', () => {
 
   it("when makerName is undefined, instructs a generic attribution rather than inventing", () => {
     const briefNoName: CrewBrief = { ...baseBrief, makerName: undefined };
-    const prompt = buildCopywriterPrompt(briefNoName, t, r);
+    const prompt = buildCopywriterPrompt(briefNoName, t);
     expect(prompt).not.toMatch(/founder\.attribution[^\n]*Wally/);
     expect(prompt).toMatch(/maker'?s first name was not captured/i);
   });
@@ -316,7 +306,7 @@ describe('copywriter prompt — flat catalog target', () => {
 
   it('targets exactly 5 products regardless of brief.productCount', () => {
     const b: CrewBrief = { ...baseBrief, productCount: 20 };
-    const prompt = buildCopywriterPrompt(b, trajectory, rolls);
+    const prompt = buildCopywriterPrompt(b, trajectory);
     expect(prompt).toMatch(/write 5/i);
   });
 });

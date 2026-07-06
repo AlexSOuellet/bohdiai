@@ -44,7 +44,9 @@ export function FounderBeat({
    *  cue then (you're already there). Defaults on for the home teaser. */
   showAboutCue?: boolean | undefined;
 }) {
-  const chosen = selectFounderTreatment(treatment ?? founder.treatment);
+  // The family picks the founder treatment; caller passes it in. selectFounderTreatment
+  // still guards for legacy render paths that don't thread one.
+  const chosen = selectFounderTreatment(treatment);
   const about: FounderAbout | undefined = showAboutCue
     ? { href: aboutHref, label: founder.aboutLabel ?? DEFAULT_ABOUT }
     : undefined;

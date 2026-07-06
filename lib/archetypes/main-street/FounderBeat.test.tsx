@@ -72,8 +72,8 @@ describe('FounderBeat — the about teaser cue', () => {
     const { container } = render(<FounderBeat founder={f} skin={skin} treatment="quote" />);
     expect((container.querySelector('.ms-aboutcue') as HTMLElement).textContent).toContain('Meet the baker');
   });
-  it('honors a Bohdi-authored treatment on the founder content', () => {
-    const { getByText } = render(<FounderBeat founder={{ ...cardFounder, treatment: 'card' }} skin={skin} />);
+  it('renders the treatment the caller passes (the family picks it)', () => {
+    const { getByText } = render(<FounderBeat founder={cardFounder} skin={skin} treatment="card" />);
     expect(getByText('Meet June')).toBeTruthy();
   });
 });
