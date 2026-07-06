@@ -18,7 +18,7 @@ import { logger } from '@/lib/logger';
 import type { ProgressEmitter } from '@/lib/progress';
 import { generateMomentVideo, generateMomentStill } from '@/lib/moments/media';
 import type { MediaJob } from '@/lib/archetypes/builder';
-import { writeArchetypeStorefront } from '@/lib/generation/write-archetype-storefront';
+import { writeArchetypeStorefront, publishArchetypeStorefront } from '@/lib/generation/write-archetype-storefront';
 import { withImageDirectives } from '@/lib/onboarding/image-directives';
 import { directAndProduce } from '@/lib/onboarding/crew/pipeline';
 import { logCrewChoices } from '@/lib/onboarding/crew/log-choices';
@@ -258,6 +258,11 @@ export async function buildArchetypeStore(
   });
 
   emit('Publishing your store');
+  // §1.9 / Audit #10 — write everything in draft, persist collections, THEN flip
+  // the tenant to active. The subdomain resolver matches `status=eq.active`, so
+  // this ordering guarantees /collections/[slug] has real rows the moment the
+  // store is reachable. If any draft-state write fails, the tenant stays in
+  // `'draft'` and stays invisible.
   const result = await writeArchetypeStorefront({
     subdomain: input.subdomain,
     shopName: input.shopName,
@@ -274,13 +279,13 @@ export async function buildArchetypeStore(
     products: payload.products,
   });
 
-  // Persist the authored collections as real DB rows and assign each product a
-  // primary collection so /collections/[slug] has content. Collections are a page
-  // like every other — the copywriter authored them; the build makes them real.
-  // Fire-and-verify: any error surfaces in Sentry but doesn't fail the build (the
-  // tenant is already published and viewable; a missing collection row just means
-  // /collections shows the empty state on this build).
+  // Persist collections + assign products to primary collections BEFORE the flip.
+  // Errors are logged but don't fail the build — the store still goes live with
+  // whatever collections landed.
   await persistCollections(result.tenantId, payload.content as MainStreetContent, payload.products);
+
+  // Flip to active — the moment the store is reachable.
+  await publishArchetypeStorefront(result.tenantId);
 
   logger.info('archetype-build: published', { subdomain: result.subdomain, tenantId: result.tenantId, archetype: spec.key, look: chosen.lookKey });
 

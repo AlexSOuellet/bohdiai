@@ -25,7 +25,7 @@ vi.mock('@/lib/supabase', () => ({
   }),
 }));
 
-import { writeArchetypeStorefront } from './write-archetype-storefront';
+import { writeArchetypeStorefront, publishArchetypeStorefront } from './write-archetype-storefront';
 
 const base = {
   subdomain: 'x',
@@ -92,7 +92,7 @@ describe('writeArchetypeStorefront — transactional A2', () => {
     expect(row['status']).toBe('draft');
   });
 
-  it('flips tenant to active AFTER content_pages and listings land', async () => {
+  it('does NOT publish on its own — publishing is now a separate step (§1.9)', async () => {
     await writeArchetypeStorefront({
       ...base,
       primaryNiche: 'candles',
@@ -103,12 +103,9 @@ describe('writeArchetypeStorefront — transactional A2', () => {
       ],
     });
 
-    // Publish call was issued once, with status: active, keyed by the inserted tenant id.
-    expect(tenantUpdateEq).toHaveBeenCalledTimes(1);
-    const [patch, col, id] = tenantUpdateEq.mock.calls[0]!;
-    expect(patch).toEqual({ status: 'active' });
-    expect(col).toBe('id');
-    expect(id).toBe('tn_1');
+    // Draft-only write — the caller runs publishArchetypeStorefront after any
+    // additional draft-state writes (collections, etc.) land.
+    expect(tenantUpdateEq).not.toHaveBeenCalled();
   });
 
   it('leaves the tenant in draft (no publish) when the home page insert fails', async () => {
@@ -148,16 +145,20 @@ describe('writeArchetypeStorefront — transactional A2', () => {
     expect(tenantUpdateEq).not.toHaveBeenCalled();
   });
 
-  it('throws if the final publish flip fails (so the caller can surface it)', async () => {
-    tenantUpdateEq.mockResolvedValue({ error: { message: 'simulated publish failure' } });
+});
 
-    await expect(
-      writeArchetypeStorefront({
-        ...base,
-        primaryNiche: 'candles',
-        nicheFromList: true,
-        nicheDescription: null,
-      }),
-    ).rejects.toThrow(/tenant publish.*failed/);
+describe('publishArchetypeStorefront — the flip', () => {
+  it('flips the given tenant to active', async () => {
+    await publishArchetypeStorefront('tn_1');
+    expect(tenantUpdateEq).toHaveBeenCalledTimes(1);
+    const [patch, col, id] = tenantUpdateEq.mock.calls[0]!;
+    expect(patch).toEqual({ status: 'active' });
+    expect(col).toBe('id');
+    expect(id).toBe('tn_1');
+  });
+
+  it('throws if the flip fails (so the caller can surface it)', async () => {
+    tenantUpdateEq.mockResolvedValue({ error: { message: 'simulated publish failure' } });
+    await expect(publishArchetypeStorefront('tn_1')).rejects.toThrow(/tenant publish.*failed/);
   });
 });

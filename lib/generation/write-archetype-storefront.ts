@@ -39,10 +39,13 @@ export interface ArchetypeWriteResult {
 /**
  * Transactional in spirit (A2): insert the tenant as `status: 'draft'` so the
  * subdomain resolver (which matches `status=eq.active`) can't see a half-built
- * store. Only flip to `'active'` after content_pages AND listings have
- * landed. If any intermediate write fails, the tenant stays in `'draft'` —
- * the store is invisible to visitors and the row is identifiable as an orphan
- * for cleanup, instead of going live half-built.
+ * store. Writes the tenant, the home page, and the listings — everything the
+ * store needs to be internally coherent — but does NOT flip to `'active'`.
+ * The caller flips via `publishArchetypeStorefront` after any additional
+ * draft-state writes land (e.g. collections in §1.9). If any intermediate write
+ * fails, the tenant stays in `'draft'` — the store is invisible to visitors and
+ * the row is identifiable as an orphan for cleanup, instead of going live
+ * half-built.
  *
  * This is the simpler alternative to a Postgres RPC, per the audit fix plan.
  */
@@ -123,18 +126,20 @@ export async function writeArchetypeStorefront(
       throw new Error(`writeArchetypeStorefront: listings insert failed — ${listErr.message}`);
   }
 
-  // All writes landed — publish the store. The resolver matches `status=eq.active`,
-  // so only this flip makes the subdomain reachable.
-  const { error: publishErr } = await db
-    .from('tenants')
-    .update({ status: 'active' })
-    .eq('id', tenantId);
-  if (publishErr)
-    throw new Error(
-      `writeArchetypeStorefront: tenant publish (status→active) failed — ${publishErr.message}`,
-    );
-
   return { tenantId, subdomain: input.subdomain };
+}
+
+/**
+ * Flip a drafted tenant to `'active'` — the moment the subdomain resolver can
+ * see it. Callers run this AFTER every additional draft-state write has
+ * landed (collections via `persistCollections`, any other side-effect writes),
+ * so the store is never live with only some of its rows in place. Audit #10.
+ */
+export async function publishArchetypeStorefront(tenantId: string): Promise<void> {
+  const db = supabaseAdmin();
+  const { error } = await db.from('tenants').update({ status: 'active' }).eq('id', tenantId);
+  if (error)
+    throw new Error(`publishArchetypeStorefront: tenant publish (status→active) failed — ${error.message}`);
 }
 
 /** Parse a display price ("$48", "from $40") back to cents for the listing row. */

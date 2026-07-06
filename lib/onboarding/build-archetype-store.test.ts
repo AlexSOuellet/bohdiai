@@ -13,7 +13,11 @@ const directAndProduce = vi.fn();
 vi.mock('@/lib/onboarding/crew/pipeline', () => ({ directAndProduce: (b: unknown) => directAndProduce(b) }));
 vi.mock('@/lib/moments/media', () => ({ generateMomentVideo: vi.fn(), generateMomentStill: vi.fn() }));
 const writeArchetypeStorefront = vi.fn();
-vi.mock('@/lib/generation/write-archetype-storefront', () => ({ writeArchetypeStorefront: (a: unknown) => writeArchetypeStorefront(a) }));
+const publishArchetypeStorefront = vi.fn().mockResolvedValue(undefined);
+vi.mock('@/lib/generation/write-archetype-storefront', () => ({
+  writeArchetypeStorefront: (a: unknown) => writeArchetypeStorefront(a),
+  publishArchetypeStorefront: (id: string) => publishArchetypeStorefront(id),
+}));
 const logCrewChoices = vi.fn();
 vi.mock('@/lib/onboarding/crew/log-choices', () => ({ logCrewChoices: (c: unknown) => logCrewChoices(c) }));
 
