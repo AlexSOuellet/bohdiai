@@ -4,35 +4,30 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-07-06, Session 65.
+**Last updated:** 2026-07-07, Session 66.
 
 ---
 
 ## Current state
 
-**Phase 1 landed end-to-end.** Family layer wires the whole renderer + build pipeline. Alex ran all six moods (Cozy, Rustic, Dark, Luxury, Cheerful, Modern) through fresh onboardings at the end of Session 65 — all rendered a functional store. Real design + content issues surfaced during the runs; they're carried forward to Session 66 for discussion.
+**Session 66 landed Wave A (four of five items) of `Session-66-Fix-Plan.md`.** Nav lists Shop / Collections / About / Events / Contact (Testimonials moved to footer). Cozy hero drops dead CTAs in favor of a subheading; the actual root cause of "text washing over the hero" was a z-index bug (brand frame was under the scrim) — fixed. SplitHero on Modern now renders its nav across the FULL width instead of being trapped in the text half. Reviews → Testimonials rename shipped throughout the user-facing surface. Modern marquee/CTA overlap resolved.
 
-What's live now (see Full-Plan §1 for the checkbox log):
-- Renderer reads section variants + section order from the family the maker's mood picks. Bohdi authors CONTENT only — treatment fields and identity.nav are gone from the schema.
-- Every family ships all eight content sections at onboarding, in the family's opens-with order (Cozy → maker letter, Rustic → workbench, Dark → slow product, Luxury → chapters, Cheerful → loud marquee, Modern → grid).
-- Family names its default skin — pipeline overrides the Graphic Artist's pick after the crew runs, so paint is deterministic per family. The 29 skins remain reachable for Editor Door 1.
-- Nav lists Shop / Collections / About / Events / Reviews / Contact for every store; four nav variants chosen by family; labels flow through DEFAULT_STRINGS.
-- Storefront queries filter out non-active + soft-deleted rows. Home envelope + tenant chrome cached per-request. Collections persist before the tenant flips to `active`.
+507 tests pass, tsc clean, lint clean.
 
-**Not landed, carrying forward:** two §1.5 reliability audit rollups (publish full Anthropic tool schemas, wire AbortController through withTimeout). Neither affects visible output. §1.8 imagery grade was deferred by the plan text.
+Fix-plan waves still pending: A5 (Rustic collection labels contrast), Waves B (container-absorbs sweep), C (family textures + section-surface variation), D (imagery grade §1.8), E (sub-page compositions), F (Session-65 audit rollups). All six waves must land before Phase 2 begins per Alex.
 
-**940 tests pass, tsc clean, lint clean (0 errors).**
-
-**Test tenants:** `soul-splatter` and `soul-splatter-bright` (Session-64 vintage, may or may not still render cleanly — not verified). Alex's Session-65 fresh onboardings produced additional live tenants across the six moods.
+**Test tenants:** Same seven live from Session 65's onboardings — all now render with the Session-66 nav/hero/testimonials updates via the family-default pipeline (no envelope patches needed). Classic Loafs got a one-off DB patch for its `moment.sub` (long descriptive sentence → "Bread worth coming home to"); the other six still show whatever the crew authored at Session-65 time until re-onboarded or edited.
 
 ## Next actions
 
-**Session 66 — discuss Session-65 onboarding issues + Phase 2 planning.**
+**Session 67 — finish Wave A + start Wave B.**
 
-1. Walk through the issues Alex saw on the six family onboardings. Prioritize: what breaks the onboarding-produces-a-complete-storefront promise vs what's cleanup.
-2. Fix the highest-impact issues from that list.
-3. Land the two §1.5 audit rollups (tool schemas + AbortController) as a follow-up commit — quality of build pipeline, not user-visible.
-4. Decide when to enter Phase 2 (onboarding creates real, complete storefronts — top priority 1). Phase 2 lives on top of the Phase 1 foundation; it's about closing gaps the six-family runs surfaced.
+1. Land A5 (Rustic collections page label contrast).
+2. Wave B — container-absorbs sweep. Six surfaces to audit (About founder attribution, shop CTA button label, testimonials section overlap, Modern navbar edge cases, Cheerful mobile hero, Cozy mobile shop).
+3. Then move to Wave C (textures + Luxury/Modern surface variation) once B is clean.
+4. Session-65 §1.5 audit rollups (tool schemas + AbortController) still owed; slot in Wave F when the surface is settled.
+
+Alex's rule for Session-66-Fix-Plan: all waves land before Phase 2 begins.
 
 ---
 
@@ -66,6 +61,7 @@ What's live now (see Full-Plan §1 for the checkbox log):
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 66 (2026-07-07): Six-family walkthrough with Alex. Drafted `Session-66-Fix-Plan.md` (six waves). Landed Wave A items A1–A4: Cozy hero refactor (CTAs → subheading + z-index/color-mix fix), Reviews → Testimonials rename, Testimonials moved to footer, Modern marquee spacing + SplitHero nav full-width fix. A5 (Rustic labels) carries to Session 67.
 - Session 65 (2026-07-06): Phase 1 landed — family registry, renderer reads family, section stack walking, copywriter authors CONTENT only, family default skin, nav lists every page, collections persist before publish. Alex ran all six moods through fresh onboardings; all rendered pretty well; design + content issues carry to Session 66. Twelve commits.
 - Session 64 (2026-07-05/06): Phase 0 executed — codebase mechanical cleanup, database cleanup, renderer sweep (no hardcoding + no inline styles once and for all), documentation reset. Full Plan approved as operative doc.
 - Session 63 (2026-07-04): substrate cleanup pass — all archetype files class-only, `DEFAULT_STRINGS` map, collections DB persistence, build runner fire-and-forget fixed. Direction correction: family layer wiring is the actual gate.

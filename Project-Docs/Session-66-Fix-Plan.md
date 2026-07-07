@@ -33,10 +33,10 @@ Session-43 D57 said the schema validates SHAPE only — no length caps, the buil
 
 Small, unrelated, one commit each. Ship confidence and clear noise from the list.
 
-- [ ] **A1.** Cozy hero primary + secondary CTA buttons — clicks do nothing. Wire the handlers. (Seen on both Cozy builds; likely a wiring issue on the Story hero variant.)
-- [ ] **A2.** Rename "Reviews" → "Testimonials" throughout — `DEFAULT_STRINGS`, nav labels, section headings, page titles, sub-page routes. One find-replace pass + tests update.
-- [ ] **A3.** Move Testimonials out of the top nav and into the footer — every family. Nav registry drops it; footer gains a testimonials link. Update all four nav variants.
-- [ ] **A4.** Modern marquee → shop-section-CTA overlap — no vertical spacing between the marquee ribbon and the "See the full catalog" button. Add block-margin.
+- [x] **A1.** Cozy hero primary + secondary CTA buttons — **redirected: dropped the CTAs entirely and rendered `moment.sub` as a caption line under the h1.** Along the way found + fixed the actual root-cause "filter" on hero text (z-index: the brand frame was UNDER the scrim). All four hero text classes softened via `color-mix`. Copywriter now writes `sub` as a short catchy tagline. (Session 66)
+- [x] **A2.** Rename "Reviews" → "Testimonials" throughout — `DEFAULT_STRINGS`, count formatter, nav labels, copywriter prompt. Internal-only names (component names, section keys, CSS classes) kept as `reviews` — no user-visible payoff to rename. (Session 66)
+- [x] **A3.** Move Testimonials out of the top nav and into the footer — `MAIN_STREET_NAV` drops it, `MainStreetFooter` gains it between Intro and Privacy. (Session 66)
+- [x] **A4.** Modern marquee → shop-section-CTA overlap — **plus** SplitHero nav-inside-half-width fix: the real Modern-navbar issue was that `SplitHero` rendered `<Nav>` inside `.ms-splithero-text` (50% of viewport). Lifted nav out to span full width; text panel got top padding to clear. (Session 66)
 - [ ] **A5.** Rustic collections page — collection labels ("Kitchen and Table", "Ready to Ship") are unreadable against dark wood photography. Add contrast (label pill, scrim, or darker/higher-opacity type).
 
 **Wave A DoD:** Five items shipped, tests updated, Alex has looked at each on a fresh build and confirmed the specific bug is gone.
