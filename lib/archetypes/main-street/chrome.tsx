@@ -953,16 +953,23 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     /* Split hero — text left, media right; 50/50 desktop, stacks on phone.
        Text panel has a nav at top + content column below; the nav sits by natural
        flow (nothing centers it), the inner content grows to fill and center-justifies. */
-    .arch-main-street .ms-splithero{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
+    /* Split hero — nav spans the full page width above the split, so long
+       wordmarks + all nav items have the whole viewport to breathe (Session
+       66 B4 — the earlier "labels squeezed on Modern" bug was actually the
+       nav being trapped inside the .ms-splithero-text half). The nav sits
+       absolute at the top; the text panel adds top padding so its content
+       clears the nav band. */
+    .arch-main-street .ms-splithero{position:relative;display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
     .arch-main-street .ms-splithero[data-media-side="left"] .ms-splithero-media{order:1}
     .arch-main-street .ms-splithero[data-media-side="left"] .ms-splithero-text{order:2}
-    .arch-main-street .ms-splithero-text{position:relative;padding:clamp(28px,5vw,60px);display:flex;flex-direction:column;background:var(--ms-bg);color:var(--ms-fg);min-height:100vh}
-    .arch-main-street .ms-splithero-nav{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:clamp(24px,5vh,56px)}
+    .arch-main-street .ms-splithero-text{position:relative;padding:clamp(120px,15vh,180px) clamp(28px,5vw,60px) clamp(28px,5vw,60px);display:flex;flex-direction:column;background:var(--ms-bg);color:var(--ms-fg);min-height:100vh}
+    .arch-main-street .ms-splithero-nav{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:clamp(20px,3vh,32px) clamp(28px,5vw,60px)}
     .arch-main-street .ms-splithero-inner{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:540px}
     .arch-main-street .ms-splithero-media{position:relative;overflow:hidden;min-height:100vh;background:var(--ms-contrast-bg)}
     @media(max-width:820px){
       .arch-main-street .ms-splithero{grid-template-columns:1fr;min-height:auto}
-      .arch-main-street .ms-splithero-text{min-height:auto;padding:32px 24px}
+      .arch-main-street .ms-splithero-text{min-height:auto;padding:96px 24px 32px}
+      .arch-main-street .ms-splithero-nav{padding:20px 24px}
       .arch-main-street .ms-splithero-media{min-height:56vh}
     }
     /* Stacked hero — a nav row, a centered text block, then a media band. */
@@ -1033,16 +1040,43 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-momenthero-mediaframe{position:absolute;inset:0;z-index:0;transform-origin:center}
     .arch-main-street .ms-momenthero-mediaframe--push{animation:ms-hero-push 24s ease-in-out infinite alternate}
     @keyframes ms-hero-push{0%{transform:scale(1)}100%{transform:scale(1.03)}}
-    .arch-main-street .ms-momenthero-frame{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:clamp(28px,6vw,96px);opacity:0;transition:opacity .9s linear;pointer-events:none}
+    /* z-index:2 is load-bearing: the scrim below is z-index:1, and without an
+       explicit z on the frame, every text child was painted UNDER the scrim's
+       semi-transparent black — which visually reads as a filter dimming the
+       type on any hero. Lifting the frame above the scrim makes the text sit
+       cleanly on top of the darkened surface (Session 66 A1 — Alex correctly
+       named this "a filter on the text" after several color changes couldn't
+       explain the persistent wash-out). */
+    .arch-main-street .ms-momenthero-frame{position:absolute;inset:0;z-index:2;display:grid;place-items:center;text-align:center;padding:clamp(28px,6vw,96px);opacity:0;transition:opacity .9s linear;pointer-events:none}
     .arch-main-street .ms-momenthero-frame[data-visible="true"]{opacity:1;pointer-events:auto}
-    .arch-main-street .ms-momenthero-storyline{color:var(--ms-on-media);max-width:24ch;margin:0;text-shadow:0 2px 36px rgba(0,0,0,.55)}
-    .arch-main-street .ms-momenthero-brand-eyebrow{color:var(--ms-on-media-muted);display:block;margin-bottom:18px}
-    .arch-main-street .ms-momenthero-brand-h1{color:var(--ms-on-media);margin:0;text-shadow:0 2px 40px rgba(0,0,0,.5)}
-    .arch-main-street .ms-momenthero-brand-actions{display:flex;gap:16px;justify-content:center;margin-top:32px;flex-wrap:wrap}
-    .arch-main-street .ms-momenthero-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:16px 26px;border-radius:2px;display:inline-block}
-    .arch-main-street .ms-momenthero-cta2{border:1px solid var(--ms-on-media-muted);color:var(--ms-on-media);padding:16px 26px;border-radius:2px;display:inline-block}
-    /* Moment hero scrim — center-weighted radial that darkens ONLY where text sits. */
-    .arch-main-street .ms-momenthero-scrim{position:absolute;inset:0;z-index:1;background:radial-gradient(120% 90% at 50% 45%, rgba(0,0,0,.42), rgba(0,0,0,.82))}
+    /* Over-media text — text now sits ABOVE the scrim (z-index:2 on the
+       frame) so it isn't tinted by scrim's semi-transparent black. All four
+       classes are nudged softer than full --ms-on-media via color-mix so
+       they read as refined-editorial rather than shouty-bright — the muted
+       eyebrow (was 74% via --ms-on-media-muted) drops a touch further; the
+       h1, sub, and storyline drop from 100% cream to a soft 85-88% cream.
+       Only the h1 keeps a soft spread shadow (its scale earns the depth);
+       storyline keeps its shadow because it plays alone during the intro,
+       not next to a shadowed h1. (Session 66 A1 — Alex's call after
+       landing the z-index fix.) */
+    .arch-main-street .ms-momenthero-storyline{color:color-mix(in srgb, var(--ms-on-media) 85%, transparent);max-width:24ch;margin:0;text-shadow:0 2px 36px rgba(0,0,0,.55)}
+    .arch-main-street .ms-momenthero-brand-eyebrow{color:color-mix(in srgb, var(--ms-on-media) 60%, transparent);display:block;margin-bottom:18px}
+    .arch-main-street .ms-momenthero-brand-h1{color:color-mix(in srgb, var(--ms-on-media) 88%, transparent);margin:0;text-shadow:0 2px 40px rgba(0,0,0,.5)}
+    /* Brand-phase caption — a short supporting tagline under the h1.
+       Replaces the CTA row that used to live here (Session 66 A1 — CTAs
+       over media of unknown luminance were unwinnable; the nav above
+       carries the shop / about clicks). */
+    .arch-main-street .ms-momenthero-brand-sub{color:color-mix(in srgb, var(--ms-on-media) 82%, transparent);margin:22px auto 0;max-width:36ch}
+    /* Moment hero scrim — the original center-weighted radial vignette
+       (dark corners, brighter middle). This looked GOOD across builds and
+       still does — several iterations trying to darken the middle for the
+       eyebrow's benefit made the whole hero muddy without actually
+       solving readability (the eyebrow's real problem was its muted color
+       token, fixed above). pointer-events:none stays load-bearing —
+       without it, the scrim's z-index:1 catches clicks meant for anything
+       inside the frame. aria-hidden already tells AT the scrim is
+       decorative. */
+    .arch-main-street .ms-momenthero-scrim{position:absolute;inset:0;z-index:1;background:radial-gradient(120% 90% at 50% 45%, rgba(0,0,0,.42), rgba(0,0,0,.82));pointer-events:none}
     /* ══════════════════════════════════════════════════════════════════════
        BEATS.TSX — GoodsHead, the goods marquee card, the "see full catalog" cue,
        and the close section. All class-only. ══════════════════════════════════ */
@@ -1050,8 +1084,11 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-goodshead-eyebrow{color:var(--ms-accent);display:block;margin-bottom:14px}
     .arch-main-street .ms-goodshead-title{color:var(--ms-fg);max-width:16ch;margin:0}
     .arch-main-street .ms-goodshead-cue{color:var(--ms-accent);white-space:nowrap}
-    /* the pill-shaped "See the full catalog" button below the marquee body. */
-    .arch-main-street .ms-shopcue-wrap{display:flex;justify-content:center;margin-top:56px}
+    /* the pill-shaped "See the full catalog" button below the goods sampling.
+       Symmetric top + bottom margin so it breathes from BOTH the section above
+       (goods) and whatever section follows — on Modern that's the marquee,
+       which used to land directly on top of the pill (Session 66 A4). */
+    .arch-main-street .ms-shopcue-wrap{display:flex;justify-content:center;margin-top:56px;margin-bottom:56px}
     .arch-main-street .ms-shopcue-btn{background:var(--ms-accent);color:var(--ms-on-accent);padding:16px 32px;border-radius:100px;display:inline-block}
     /* the marquee goods body — one row of product cards scrolling continuously. */
     .arch-main-street .ms-marq-section{padding:96px 0 110px;overflow:hidden}
@@ -1215,7 +1252,6 @@ export const MAIN_STREET_NAV: ReadonlyArray<{ href: string; label: string }> = [
   { href: '/collections', label: DEFAULT_STRINGS.navCollections },
   { href: '/about', label: DEFAULT_STRINGS.navAbout },
   { href: '/events', label: DEFAULT_STRINGS.navEvents },
-  { href: '/testimonials', label: DEFAULT_STRINGS.navTestimonials },
   { href: '/contact', label: DEFAULT_STRINGS.navContact },
 ];
 
@@ -1369,6 +1405,9 @@ export function MainStreetFooter({ shopName }: { shopName: string }) {
         <IntroReplayLink className="ms-footer-link">
           {DEFAULT_STRINGS.footerIntro}
         </IntroReplayLink>
+        <Type as="a" role="legal" href="/testimonials" className="ms-footer-link">
+          {DEFAULT_STRINGS.footerTestimonials}
+        </Type>
         <Type as="a" role="legal" href="/privacy" className="ms-footer-link">
           {DEFAULT_STRINGS.footerPrivacy}
         </Type>

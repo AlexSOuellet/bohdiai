@@ -20,8 +20,8 @@ export const DEFAULT_STRINGS = {
   emptyShop: 'New pieces are on the way — check back soon.',
   /** Collections index — no collections yet. */
   emptyCollections: 'New collections are on the way — check back soon.',
-  /** Testimonials page — reviews not authored yet. */
-  emptyReviews: 'The kind words are still coming in — check back soon.',
+  /** Testimonials page — no testimonials authored yet. */
+  emptyTestimonials: 'The kind words are still coming in — check back soon.',
   /** Events page — no upcoming dates. */
   emptyEvents: 'No upcoming dates just yet — check back soon to see where we will be next.',
   /** Calendar treatment — empty state for the currently-viewed month. */
@@ -46,13 +46,14 @@ export const DEFAULT_STRINGS = {
   navCollections: 'Collections',
   navAbout: 'About',
   navEvents: 'Events',
-  navTestimonials: 'Reviews',
+  navTestimonials: 'Testimonials',
   navContact: 'Contact',
   navCart: 'Cart',
 
   // ─── Footer labels ────────────────────────────────────────────────────────
   footerHome: 'Home',
   footerIntro: 'Intro',
+  footerTestimonials: 'Testimonials',
   footerPrivacy: 'Privacy',
   footerTerms: 'Terms',
 
@@ -77,7 +78,7 @@ export const DEFAULT_STRINGS = {
   founderPostscript: 'P.S.',
 
   // ─── Attribution / footnotes ─────────────────────────────────────────────
-  reviewsTextsAttribution: 'real messages, shared with permission',
+  testimonialsTextsAttribution: 'real messages, shared with permission',
 
   // ─── Aria labels (accessibility — screen-reader only, do not skimp) ───────
   ariaOpenMenu: 'Open menu',
@@ -238,8 +239,8 @@ export const DEFAULT_COUNTS = {
   pieces: (n: number): string => `${n} ${n === 1 ? 'piece' : 'pieces'}`,
   /** "1 item" / "3 items" — used by cupboard / lanes count suffix. */
   items: (n: number): string => `${n} ${n === 1 ? 'item' : 'items'}`,
-  /** "1 review" / "12 reviews" — reviews aggregate. */
-  reviews: (n: number): string => `${n} ${n === 1 ? 'review' : 'reviews'}`,
+  /** "1 testimonial" / "12 testimonials" — testimonials aggregate. */
+  testimonials: (n: number): string => `${n} ${n === 1 ? 'testimonial' : 'testimonials'}`,
   /** "5 out of 5" — rating treatment. */
   outOfFive: (n: number): string => `${n} out of 5`,
   /** Screen-reader label "Show testimonial 3" — pull-quote treatment. */

@@ -6,7 +6,7 @@
  * D54 (corrected): the hero is the front door. There is no separate portable
  * layer that plays first and melts in. There is no Enter Site click. What plays
  * is the same brand-story timeline as before — held media + each story line
- * fading in and out one at a time, settling on the brand+CTA at rest — but it
+ * fading in and out one at a time, settling on the brand+sub at rest — but it
  * plays IN the hero surface itself, not on an overlay above it.
  *
  * GATE — the timeline only runs on a cold front-door arrival (this visit loaded
@@ -18,7 +18,7 @@
  * `?intro=1` and forces a replay regardless of cookie or arrival kind. (See
  * `./moment-gate` for the decision and the cookie machinery.)
  *
- * SSR — the server renders the resting state (brand + CTA visible, no story
+ * SSR — the server renders the resting state (brand + sub visible, no story
  * lines). On client mount the gate runs in a layout effect; if play is decided
  * we flip to the open phase before paint so there's no flash of brand on a
  * cold visit. Returning visitors and side-door visitors never see a flicker
@@ -40,10 +40,10 @@
  * scroll nav surface values pass as CSS custom properties (--ms-nav-bg / --ms-nav-fg
  * / --ms-nav-shadow) on the nav wrapper — CSS var passthrough, not literal inline.
  */
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetContent } from './schemas';
-import { Media, Nav, linkHref } from './chrome';
+import { Media, Nav } from './chrome';
 import { Type } from './Type';
 import { navContrast, relativeLuminance } from './logo-contrast';
 import { shouldPlayMoment, initialDocumentPath, markMomentSeen, REPLAY_INTRO_EVENT } from './moment-gate';
@@ -95,11 +95,9 @@ export function heroPhaseDurationMs(p: HeroPhase): number | null {
 function HeroStage({
   moment,
   phase,
-  action,
 }: {
   moment: MainStreetContent['moment'];
   phase: HeroPhase;
-  action: ReactNode;
 }) {
   const isStill = moment.media.kind === 'still';
   const landed = phase.kind === 'brand';
@@ -126,30 +124,13 @@ function HeroStage({
           <Type as="h1" role="brand" className="ms-momenthero-brand-h1">
             {moment.brand}
           </Type>
-          <div className="ms-momenthero-brand-actions">{action}</div>
+          {moment.sub && (
+            <Type as="p" role="body" className="ms-momenthero-brand-sub">
+              {moment.sub}
+            </Type>
+          )}
         </div>
       </div>
-    </>
-  );
-}
-
-/** The hero's CTA row — the authored primary and an optional secondary, each
- *  pointed where its label says it goes (D46). When a button has no authored
- *  target the fallback is /shop (the home is a sampling; the catalog lives at
- *  the shop). */
-function HeroCta({ moment }: { moment: MainStreetContent['moment'] }) {
-  const primaryHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';
-  const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
-  return (
-    <>
-      <Type as="a" role="navLabel" href={primaryHref} className="ms-momenthero-cta">
-        {moment.ctaLabel}
-      </Type>
-      {moment.secondaryCtaLabel && (
-        <Type as="a" role="navLabel" href={secondaryHref} className="ms-momenthero-cta2">
-          {moment.secondaryCtaLabel}
-        </Type>
-      )}
     </>
   );
 }
@@ -246,7 +227,7 @@ export function MomentHero({
         <Nav identity={identity} />
       </nav>
       <header ref={heroRef} data-ms-hero className="ms-momenthero">
-        <HeroStage moment={moment} phase={phase} action={<HeroCta moment={moment} />} />
+        <HeroStage moment={moment} phase={phase} />
       </header>
     </>
   );

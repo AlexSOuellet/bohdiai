@@ -78,7 +78,7 @@ says and where it goes always agree. A target is one of: ${targets}.
   reviews (use when you author the reviews beat).
 Choose the target that matches what the label promises — a button that says "Our
 story" targets about, "Shop now" or "See the work" targets shop, "Find us"
-targets events, "Browse collections" targets collections, "Read reviews" targets
+targets events, "Browse collections" targets collections, "Read testimonials" targets
 testimonials. (Targets must come from that list; these are the only pages that
 exist.)
 
@@ -89,11 +89,11 @@ HEADINGS ARE PHRASES, NOT SENTENCES. The headings and headlines below (goods.tit
 KEEP IT TIGHT. The body-prose fields have NO hard length cap — the build never rejects them for length — but write punchy, not padded: aim for a 1-3 sentence founder quote, 2-4 sentence product descriptions, a few tight sentences per About paragraph, and a short Contact intro. A storefront reads better lean than long.
 
 - shopName: the shop is named "${brief.shopName}". This is the maker's own name for their shop — use it EXACTLY, do not invent, shorten, or alter it.
-- identity.wordmark: "${brief.shopName}" as it shows in the nav — use the exact name. (The NAV LINKS themselves — Shop, Collections, About, Events, Reviews, Contact — are the platform's fixed page list; you do not author them.)
+- identity.wordmark: "${brief.shopName}" as it shows in the nav — use the exact name. (The NAV LINKS themselves — Shop, Collections, About, Events, Testimonials, Contact — are the platform's fixed page list; you do not author them.)
 ${storyDirective}
 - moment.eyebrow (4-48): a small line above the hero.
 - moment.brand: "${brief.shopName}" — the brand the story lands on; use the exact name.
-- moment.sub: one plain supporting sentence under the headline — what this shop is or makes, in a single clear line (e.g. "Hand-poured soy candles in small batches"). This is NOT the fading story lines; it is the standing sub-headline the other hero styles show. A normal short sentence; internal commas fine, no trailing period needed.
+- moment.sub: a short catchy tagline (roughly 3-7 words) that sits under the headline. Think tagline, not description — punchy, memorable, evocative of the shop (e.g. "Bread worth waking up for", "Small batches, honest bakes", "Warm loaves, every week"). Fits on ONE line at desktop. NOT a full sentence describing what the shop sells; that lives elsewhere. No trailing period.
 - moment.ctaLabel (3-24): the hero button. moment.ctaTarget: where it goes.
 - moment.secondaryCtaLabel (3-24, optional): a second hero button. moment.secondaryCtaTarget: where it goes (include when you write the secondary label).
 - goods.title (2-48): the heading of the products beat. (The BODY the beat wears — marquee, procession, switcher, slideshow, module, table, index, lookbook — is the family's call, not yours. Just write the words.)
@@ -108,7 +108,7 @@ ${storyDirective}
 - reviews: the testimonials beat — seed it like the find-us dates, plausible placeholder social proof the maker edits or replaces, NOT labeled "sample". Do NOT pick a layout; just write the words:
       - reviews.title (2-40): the heading of the beat (e.g. "Kind words", "What they say").
       - reviews.label (2-24, optional): a small eyebrow over the heading (e.g. "Loved by customers").
-      - reviews.viewAllLabel (2-28): the cue on the home to the full /testimonials page (e.g. "Read all reviews"). ALWAYS author this — the home shows a handful; the testimonials page shows every one.
+      - reviews.viewAllLabel (2-28): the cue on the home to the full /testimonials page (e.g. "Read all testimonials"). ALWAYS author this — the home shows a handful; the testimonials page shows every one.
       - reviews.summary (optional): an honest aggregate for the star-rating layout — { score (e.g. "4.9 out of 5"), count (e.g. "200+ happy customers" — keep it modest and believable for a small maker, or omit if it would overreach) }.
       - reviews.items (3-6): each { quote (a warm, specific line a real customer would write — about the FEELING the work gave them, never how it is made), author (a first name + last initial, e.g. "Dana R."), location (optional, e.g. "Providence, RI") }. Vary the voices; no two should read alike. No AI-tell.
 - founder.quote (24+, no hard cap): the founder's words in the About beat. (The BODY the beat wears — quote, portrait, letter, card, workbench, editorial, signature — is the family's call, not yours. Author all supporting fields (eyebrow, heading, about.story) so every family renders cleanly no matter which body it picks.)

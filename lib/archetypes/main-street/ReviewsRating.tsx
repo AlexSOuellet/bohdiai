@@ -33,7 +33,7 @@ export function ReviewsRating({
   viewAll?: { href: string; label: string } | undefined;
 }) {
   const score = section.summary?.score ?? DEFAULT_COUNTS.outOfFive(5);
-  const count = section.summary?.count ?? DEFAULT_COUNTS.reviews(items.length);
+  const count = section.summary?.count ?? DEFAULT_COUNTS.testimonials(items.length);
   return (
     <section id="reviews" className="ms-rev-section ms-rev-rating">
       <div className="ms-wrap">

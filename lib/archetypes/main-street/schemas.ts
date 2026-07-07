@@ -156,10 +156,12 @@ export const MainStreetContentSchema = z.object({
     eyebrow: z.string().min(1),
     brand: z.string().min(1),
     /** The shared hero SUB-LINE — one plain supporting sentence under the headline.
-     *  This is the pile ingredient every NON-Story hero uses (Split, Stacked,
-     *  Typographic, Floating card, Editorial cover). Story uses its fading `story`
-     *  lines instead and ignores this. Optional so content authored before the
-     *  modular hero work still parses; new builds always author it. */
+     *  Every hero uses it: Split, Stacked, Typographic, Floating card, Editorial
+     *  cover render it beneath the h1; Story shows it on the brand phase after
+     *  the fading `story` lines finish (Session 66 A1 — replaced the CTA row
+     *  that couldn't be made legible on media of unknown luminance). Optional
+     *  so content authored before the modular hero work still parses; new
+     *  builds always author it. */
     sub: z.string().min(1).optional(),
     /** The Collage hero's still scenes (it shows ~3). Optional so content authored
      *  before the Collage hero still parses, and so heroes that don't use them

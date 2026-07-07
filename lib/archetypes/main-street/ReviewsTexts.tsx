@@ -66,7 +66,7 @@ export function ReviewsTexts({
           ))}
         </div>
         <Type as="p" role="legal" className="ms-rev-texts-foot">
-          {DEFAULT_STRINGS.reviewsTextsAttribution}
+          {DEFAULT_STRINGS.testimonialsTextsAttribution}
         </Type>
         {viewAll && (
           <a href={viewAll.href} data-ms-rev-viewall="" className="ms-rev-texts-viewall">

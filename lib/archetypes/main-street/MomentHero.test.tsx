@@ -106,27 +106,31 @@ describe('MomentHero (the hero IS the front door, D54 corrected)', () => {
     expect(container.querySelector('a[href="/cart"]')).toBeTruthy();
   });
 
-  it('sends the primary hero button to its authored target (D46)', () => {
-    const m = { ...moment, ctaLabel: 'Our story', ctaTarget: 'about' as const };
-    const { getByText } = render(<MomentHero identity={identity} moment={m} skin={skin} />);
-    expect(getByText('Our story').closest('a')?.getAttribute('href')).toBe('/about');
+  it('renders no CTA buttons in the hero — the sub caption replaces them (Session 66 A1)', () => {
+    // Over media of unknown luminance, CTA buttons could not be made reliably
+    // legible. Alex chose to drop them from the Story hero entirely; the nav
+    // above carries the shop / about clicks. The sub line replaces the CTA
+    // action row and reads on any hero via the same on-media + text-shadow
+    // pair the h1 uses.
+    const m = { ...moment, ctaLabel: 'See the loaves', secondaryCtaLabel: 'Our story' };
+    const { container } = render(<MomentHero identity={identity} moment={m} skin={skin} />);
+    expect(container.querySelector('.ms-momenthero-cta')).toBeNull();
+    expect(container.querySelector('.ms-momenthero-cta2')).toBeNull();
+    expect(container.querySelector('.ms-momenthero-brand-actions')).toBeNull();
   });
 
-  it('falls back to /shop when the primary has no authored target (the catalog is the destination — the home is a sampling)', () => {
-    const { getByText } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
-    expect(getByText('See the loaves').closest('a')?.getAttribute('href')).toBe('/shop');
+  it('renders the authored sub line in the brand block when present', () => {
+    const m = { ...moment, sub: 'Naturally leavened, baked by hand every week' };
+    const { container } = render(<MomentHero identity={identity} moment={m} skin={skin} />);
+    const sub = container.querySelector('.ms-momenthero-brand-sub');
+    expect(sub).toBeTruthy();
+    expect(sub!.textContent).toBe('Naturally leavened, baked by hand every week');
   });
 
-  it('sends the secondary hero button to its authored target', () => {
-    const m = { ...moment, secondaryCtaLabel: 'Find us', secondaryCtaTarget: 'events' as const };
-    const { getByText } = render(<MomentHero identity={identity} moment={m} skin={skin} />);
-    expect(getByText('Find us').closest('a')?.getAttribute('href')).toBe('/events');
-  });
-
-  it('falls back to /shop for a secondary button with no authored target', () => {
-    const m = { ...moment, secondaryCtaLabel: 'Browse the shelf' };
-    const { getByText } = render(<MomentHero identity={identity} moment={m} skin={skin} />);
-    expect(getByText('Browse the shelf').closest('a')?.getAttribute('href')).toBe('/shop');
+  it('omits the sub line when the crew did not author one (legacy envelopes still parse)', () => {
+    // moment fixture has no sub — element simply isn't rendered
+    const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
+    expect(container.querySelector('.ms-momenthero-brand-sub')).toBeNull();
   });
 });
 

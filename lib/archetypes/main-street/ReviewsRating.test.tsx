@@ -82,6 +82,6 @@ describe('ReviewsRating', () => {
     expect(container.querySelectorAll('[data-ms-rev-item]').length).toBe(4);
     // fallback score + count
     expect(container.textContent).toContain('5 out of 5');
-    expect(container.textContent).toContain('4 reviews');
+    expect(container.textContent).toContain('4 testimonials');
   });
 });

@@ -76,6 +76,39 @@ describe('skinVarsCss', () => {
     const shadowOf = (css: string) => css.match(/--ms-shadow:[^;]+/)![0];
     expect(shadowOf(skinVarsCss(darkSkin))).not.toBe(shadowOf(skinVarsCss(lightSkin)));
   });
+
+  it('marks the moment hero scrim pointer-events:none so it never intercepts CTA clicks (Session-66 regression)', () => {
+    const css = skinVarsCss(skin);
+    const scrimRule = css.match(/\.ms-momenthero-scrim\{[^}]+\}/)![0];
+    expect(scrimRule).toContain('pointer-events:none');
+  });
+
+  it('styles the moment hero brand block for over-media legibility (Session-66 — CTAs replaced by caption)', () => {
+    const css = skinVarsCss(skin);
+    const subRule = css.match(/\.ms-momenthero-brand-sub\{[^}]+\}/)![0];
+    const h1Rule = css.match(/\.ms-momenthero-brand-h1\{[^}]+\}/)![0];
+    const eyebrowRule = css.match(/\.ms-momenthero-brand-eyebrow\{[^}]+\}/)![0];
+    // The h1 keeps its cinematic soft shadow. Eyebrow + sub use full-opacity
+    // cream (--ms-on-media, not --ms-on-media-muted) — the muted 74% variant
+    // was what actually washed the eyebrow out on light heroes (Session 66
+    // walkthrough on Classic Loafs bread crumb). Scale + tracking carry the
+    // hierarchy, not opacity.
+    // All four text elements read a softened variant of --ms-on-media via
+    // color-mix (Session 66 A1 — Alex's "nudge everything down a hair" call
+    // after the z-index fix landed). No element uses a hardcoded color; the
+    // token still drives everything. Eyebrow deliberately no longer uses the
+    // shared --ms-on-media-muted variable — its own soften percentage lives
+    // inside color-mix so we don't have to tune the shared muted var and
+    // affect other beats.
+    expect(h1Rule).toMatch(/color:color-mix\([^)]*var\(--ms-on-media\)/);
+    expect(h1Rule).toContain('text-shadow:');
+    expect(subRule).toMatch(/color:color-mix\([^)]*var\(--ms-on-media\)/);
+    expect(eyebrowRule).toMatch(/color:color-mix\([^)]*var\(--ms-on-media\)/);
+    expect(eyebrowRule).not.toContain('var(--ms-on-media-muted)');
+    // And the old CTA rules must be gone — no ghost / chip / accent chip to fail
+    expect(css).not.toContain('.ms-momenthero-cta{');
+    expect(css).not.toContain('.ms-momenthero-cta2');
+  });
 });
 
 describe('fluidFontSize', () => {
@@ -111,9 +144,10 @@ describe('resolveNav', () => {
     expect(resolveNav()).toEqual(MAIN_STREET_NAV);
   });
 
-  it('lists Shop, Collections, About, Events, Reviews, Contact in reading order', () => {
+  it('lists Shop, Collections, About, Events, Contact in reading order — Testimonials lives in the footer (Session 66 A3)', () => {
     const hrefs = resolveNav().map((n) => n.href);
-    expect(hrefs).toEqual(['/shop', '/collections', '/about', '/events', '/testimonials', '/contact']);
+    expect(hrefs).toEqual(['/shop', '/collections', '/about', '/events', '/contact']);
+    expect(hrefs).not.toContain('/testimonials');
   });
 });
 
@@ -230,5 +264,13 @@ describe('MainStreetFooter', () => {
     expect(getByText("June's Sourdough")).toBeTruthy();
     const links = Array.from(container.querySelectorAll('a')).map((a) => a.textContent);
     expect(links).toEqual(expect.arrayContaining(['Home', 'Privacy', 'Terms']));
+  });
+
+  it('carries the Testimonials link (Session 66 A3 — moved out of the top nav)', () => {
+    const { container } = render(<MainStreetFooter shopName="June's Sourdough" />);
+    const links = Array.from(container.querySelectorAll('a'));
+    const testimonialsLink = links.find((a) => a.textContent === 'Testimonials');
+    expect(testimonialsLink).toBeTruthy();
+    expect(testimonialsLink!.getAttribute('href')).toBe('/testimonials');
   });
 });

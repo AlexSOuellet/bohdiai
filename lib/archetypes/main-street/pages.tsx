@@ -251,7 +251,7 @@ export function TestimonialsPage({ content, skin, treatments }: { content: MainS
       ) : (
         <section data-ms-testimonials className="ms-wrap ms-page ms-page-empty">
           <Type as="p" role="body">
-            {DEFAULT_STRINGS.emptyReviews}
+            {DEFAULT_STRINGS.emptyTestimonials}
           </Type>
         </section>
       )}

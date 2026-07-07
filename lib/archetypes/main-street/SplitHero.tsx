@@ -36,10 +36,10 @@ export function SplitHero({
   const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
   return (
     <header data-ms-hero="split" data-media-side={mediaSide} className="ms-splithero">
+      <div data-ms-hero-nav className="ms-splithero-nav">
+        <Nav identity={identity} />
+      </div>
       <div data-ms-hero-text className="ms-splithero-text">
-        <div data-ms-hero-nav className="ms-splithero-nav">
-          <Nav identity={identity} />
-        </div>
         <div className="ms-splithero-inner">
           <Type as="div" role="eyebrow" className="ms-hero-eyebrow">
             {moment.eyebrow}
