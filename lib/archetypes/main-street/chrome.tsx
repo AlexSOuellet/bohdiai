@@ -476,7 +476,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street [data-type="title"]{max-width:30ch;overflow-wrap:break-word}
     .arch-main-street [data-type="quote"]{max-width:62ch;overflow-wrap:break-word}
     .arch-main-street [data-type="body"]{max-width:70ch;overflow-wrap:break-word}
-    .arch-main-street [data-type="sig"]{display:inline-block;max-width:32ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+    .arch-main-street [data-type="sig"]{display:inline-block;max-width:32ch}
     .arch-main-street [data-type="price"]{white-space:nowrap}
     .arch-main-street [data-type="day"]{white-space:nowrap}
     .arch-main-street [data-type="where"]{display:inline-block;max-width:38ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
