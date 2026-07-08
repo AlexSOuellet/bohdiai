@@ -37,7 +37,7 @@ Small, unrelated, one commit each. Ship confidence and clear noise from the list
 - [x] **A2.** Rename "Reviews" → "Testimonials" throughout — `DEFAULT_STRINGS`, count formatter, nav labels, copywriter prompt. Internal-only names (component names, section keys, CSS classes) kept as `reviews` — no user-visible payoff to rename. (Session 66)
 - [x] **A3.** Move Testimonials out of the top nav and into the footer — `MAIN_STREET_NAV` drops it, `MainStreetFooter` gains it between Intro and Privacy. (Session 66)
 - [x] **A4.** Modern marquee → shop-section-CTA overlap — **plus** SplitHero nav-inside-half-width fix: the real Modern-navbar issue was that `SplitHero` rendered `<Nav>` inside `.ms-splithero-text` (50% of viewport). Lifted nav out to span full width; text panel got top padding to clear. (Session 66)
-- [ ] **A5.** Rustic collections page — collection labels ("Kitchen and Table", "Ready to Ship") are unreadable against dark wood photography. Add contrast (label pill, scrim, or darker/higher-opacity type).
+- [x] **A5.** Rustic collections page — collection labels ("Kitchen and Table", "Ready to Ship") were unreadable against dark wood photography (label bar was 70% black scrim with dark-brown text pulling from `--ms-contrast-fg` — dark on dark). Flipped to a solid `--ms-contrast-bg` plate with dark stencil text and a soft drop shadow; reads as a stenciled plaque nailed to the crate on any skin. (Session 67)
 
 **Wave A DoD:** Five items shipped, tests updated, Alex has looked at each on a fresh build and confirmed the specific bug is gone.
 
