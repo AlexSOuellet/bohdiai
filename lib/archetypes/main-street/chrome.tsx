@@ -763,8 +763,12 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-rev-pq .ms-wrap{max-width:940px}
     .arch-main-street .ms-rev-pq-mark{display:block;color:var(--ms-accent);opacity:.9;line-height:.6;height:.44em;font-size:clamp(120px,20vw,240px)}
     .arch-main-street .ms-rev-pq-eyebrow{display:block;color:var(--ms-accent);margin-bottom:6px}
-    .arch-main-street .ms-rev-pq-stage{position:relative;min-height:clamp(220px,30vh,300px)}
-    .arch-main-street .ms-rev-pq-fig{position:absolute;inset:0;opacity:0;transition:opacity .9s ease;pointer-events:none;margin:0}
+    /* Grid-stack the figures so the stage grows to the tallest one — an absolutely
+       positioned figure whose authored quote+location exceeds the min-height would
+       spill onto the dots and viewall. min-height stays as a floor when quotes are
+       short so the beat still reads editorial-quiet. */
+    .arch-main-street .ms-rev-pq-stage{display:grid;grid-template-areas:"stack";min-height:clamp(220px,30vh,300px)}
+    .arch-main-street .ms-rev-pq-fig{grid-area:stack;opacity:0;transition:opacity .9s ease;pointer-events:none;margin:0}
     .arch-main-street .ms-rev-pq-fig.on{opacity:1;pointer-events:auto}
     .arch-main-street .ms-rev-pq figure [data-type="goodsHead"]{font-style:italic}
     .arch-main-street .ms-rev-pq-quote{display:block;margin:8px auto 34px;max-width:22ch;color:var(--ms-fg)}
