@@ -623,7 +623,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-crate-cover{display:block;width:100%;height:100%;min-height:150px}
     .arch-main-street .ms-crate-item--tall .ms-crate-cover{min-height:322px}
     .arch-main-street .ms-crate-cover .archetype-photo{width:100%;height:100%;min-height:inherit;object-fit:cover}
-    .arch-main-street .ms-crate-label{position:absolute;left:14px;right:14px;bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-radius:2px;background:rgba(0,0,0,.7);border:1px dashed color-mix(in srgb,var(--ms-contrast-fg) 40%,transparent)}
+    .arch-main-street .ms-crate-label{position:absolute;left:14px;right:14px;bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-radius:2px;background:var(--ms-contrast-bg);border:1px dashed color-mix(in srgb,var(--ms-contrast-fg) 40%,transparent);box-shadow:0 4px 12px -4px var(--ms-shadow)}
     .arch-main-street .ms-crate-name{color:var(--ms-contrast-fg);text-transform:uppercase;letter-spacing:.1em}
     .arch-main-street .ms-crate-count{color:var(--ms-accent);transform:rotate(-4deg)}
     .arch-main-street .ms-crate-viewall{display:inline-block;margin-top:32px;color:var(--ms-accent);border-bottom:1px solid var(--ms-rule);padding-bottom:3px}
