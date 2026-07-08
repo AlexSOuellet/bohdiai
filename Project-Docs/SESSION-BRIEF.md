@@ -22,6 +22,10 @@ Fix-plan waves still pending: B3–B6 (testimonials rhythm, Modern navbar split-
 
 **Test tenants:** Same seven live tenants — all now render with Session-66 + Session-67 fixes via the family-default pipeline.
 
+## Parallel workstream — cowork
+
+Cowork runs on Alex's cadence between our sessions, reading `Project-Docs/Cowork-Instructions.md` as its brief. Progress tracked in `content/niches/_queue.yaml`. Files land as drafts; Alex flips to `approved`; cowork never self-approves. Two workstreams: (1) niche-writer batches for the 45 missing niches — 38 remain end of Session 67; (2) library asset generation — cowork prompts, Claude in Chrome runs images (unlimited Nano Banana Pro), cowork runs videos (Kling 3.0 Turbo, paid), everything uploaded via `POST /api/library/ingest`. When starting a fresh session, check `git log` on `content/niches/` to see if cowork advanced between sessions.
+
 ## Next actions
 
 **Session 68 — continue Wave B.**
