@@ -69,9 +69,15 @@ export async function POST(req: Request) {
 }
 
 async function handle(req: Request) {
+  const token = serverEnv().COWORK_INGEST_TOKEN;
+  if (token === undefined) {
+    return NextResponse.json(
+      { error: 'Ingest endpoint is not configured. Set COWORK_INGEST_TOKEN.' },
+      { status: 503 },
+    );
+  }
   const auth = req.headers.get('authorization');
-  const expected = `Bearer ${serverEnv().COWORK_INGEST_TOKEN}`;
-  if (auth !== expected) {
+  if (auth !== `Bearer ${token}`) {
     return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
   }
 

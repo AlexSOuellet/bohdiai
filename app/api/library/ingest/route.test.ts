@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // ── env mock ────────────────────────────────────────────────────────────────
+const envToken = { value: 'test-token' as string | undefined };
 vi.mock('@/lib/env', () => ({
-  serverEnv: () => ({ COWORK_INGEST_TOKEN: 'test-token' }),
+  serverEnv: () => ({ COWORK_INGEST_TOKEN: envToken.value }),
 }));
 
 // ── logger mock (silent) ────────────────────────────────────────────────────
@@ -108,9 +109,16 @@ beforeEach(() => {
     status: 200,
     arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
   });
+  envToken.value = 'test-token';
 });
 
 describe('POST /api/library/ingest — auth', () => {
+  it('returns 503 when COWORK_INGEST_TOKEN is not configured', async () => {
+    envToken.value = undefined;
+    const res = await POST(mkRequest(validBody));
+    expect(res.status).toBe(503);
+  });
+
   it('rejects a missing Authorization header', async () => {
     const req = new Request('http://localhost/api/library/ingest', {
       method: 'POST',
