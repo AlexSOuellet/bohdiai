@@ -4,28 +4,39 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-07-07, Session 66.
+**Last updated:** 2026-07-08, Session 67.
 
 ---
 
 ## Current state
 
-**Session 66 landed Wave A (four of five items) of `Session-66-Fix-Plan.md`.** Nav lists Shop / Collections / About / Events / Contact (Testimonials moved to footer). Cozy hero drops dead CTAs in favor of a subheading; the actual root cause of "text washing over the hero" was a z-index bug (brand frame was under the scrim) — fixed. SplitHero on Modern now renders its nav across the FULL width instead of being trapped in the text half. Reviews → Testimonials rename shipped throughout the user-facing surface. Modern marquee/CTA overlap resolved.
+**Session 67 closed Wave A (A5 — Rustic crate label contrast) and started Wave B with B1 (founder attribution wrap) and B2 (shop CTA button wrap).** Same fix pattern both times: existing CSS was truncating with nowrap + ellipsis + tight max-width; fix drops truncation, keeps a soft max-width, lets containers absorb any authored length.
 
-507 tests pass, tsc clean, lint clean.
+**Also landed this session — image library plumbing.** New workstream Alex opened: cowork will pre-generate a shared library of mood-neutral images (Nano Banana Pro, 2K, unlimited on Alex's Higgsfield plan) and hero videos (Kling 3.0 Turbo, 720p, 3s, ~$0.14 each) so onboarding stops running fal per build. Built: `library_assets` table + `library` Storage bucket + `POST /api/library/ingest` helper endpoint (single-writer pattern — cowork never touches Storage credentials). Docs: `Image-Library-Spec.md`, `Library-Buildout-Plan.md`, `Cowork-Instructions.md` (the last is the consolidated brief cowork reads). Mood-neutral rule enforced (`Family-Style-Sheets.md` rule 5) — family CSS filter paints mood at render time.
 
-Fix-plan waves still pending: A5 (Rustic collection labels contrast), Waves B (container-absorbs sweep), C (family textures + section-surface variation), D (imagery grade §1.8), E (sub-page compositions), F (Session-65 audit rollups). All six waves must land before Phase 2 begins per Alex.
+**Cowork ran in parallel:** drafted 5 niche files from the Session-45 traditional-craft batch (wedding_stationery, resin_artist, embroiderer, calligrapher, macrame_artist) plus their style sheets. 38 of 43 batch niches remain. All landed at `status: draft`.
 
-**Test tenants:** Same seven live from Session 65's onboardings — all now render with the Session-66 nav/hero/testimonials updates via the family-default pipeline (no envelope patches needed). Classic Loafs got a one-off DB patch for its `moment.sub` (long descriptive sentence → "Bread worth coming home to"); the other six still show whatever the crew authored at Session-65 time until re-onboarded or edited.
+954 tests pass, tsc clean, lint clean.
+
+Fix-plan waves still pending: B3–B6 (testimonials rhythm, Modern navbar split-center, Cheerful mobile hero, Cozy mobile Constellation), C (family textures + section-surface variation), D (imagery grade §1.8), E (sub-page compositions), F (Session-65 audit rollups). All must land before Phase 2 begins per Alex.
+
+**Test tenants:** Same seven live tenants — all now render with Session-66 + Session-67 fixes via the family-default pipeline.
 
 ## Next actions
 
-**Session 67 — finish Wave A + start Wave B.**
+**Session 68 — continue Wave B.**
 
-1. Land A5 (Rustic collections page label contrast).
-2. Wave B — container-absorbs sweep. Six surfaces to audit (About founder attribution, shop CTA button label, testimonials section overlap, Modern navbar edge cases, Cheerful mobile hero, Cozy mobile shop).
-3. Then move to Wave C (textures + Luxury/Modern surface variation) once B is clean.
-4. Session-65 §1.5 audit rollups (tool schemas + AbortController) still owed; slot in Wave F when the surface is settled.
+1. Land B3 (testimonials vertical rhythm — Rating / Pull-Quote / Guestbook / Texts, hit Dark / Luxury / Cheerful).
+2. Land B4 (Modern + Luxury navbar split-center wordmark handling).
+3. Then the mobile recompose work: B5 (Cheerful mobile hero overlap) + B6 (Cozy mobile Constellation overlap).
+4. After Wave B: move to Wave C (textures + Luxury/Modern surface variation).
+
+**Owed alongside:**
+- Fix the niche-writer skill's broken `content/style-sheets/niche-leatherworker.json` canonical-bar pointer (file doesn't exist; cowork worked around by using knitter/woodworker/embroiderer as bars).
+- Bulk-approve DB `niches.status = 'approved'` for niches Alex trusts, so the onboarding picker shows more than 2 options.
+- Cowork continues niche-writer batches (38 remaining).
+- Once library has coverage for a few niches, wire onboarding's Graphic Artist stage to read library-first.
+- Session-65 §1.5 audit rollups (tool schemas + AbortController) still owed; slot in Wave F when the surface is settled.
 
 Alex's rule for Session-66-Fix-Plan: all waves land before Phase 2 begins.
 
@@ -54,6 +65,8 @@ Alex's rule for Session-66-Fix-Plan: all waves land before Phase 2 begins.
 - **A "structural fix" that only fixes the failure surface is a shortcut.** Audit every affected surface, not just the loud one.
 - **Don't drift to serif; don't pick safe/lazy.** Bold, distinctive, executed — serif only where it earns it. Don't overcorrect to absolutes.
 - **Every phase in the Full Plan updates its checkboxes as work lands.** Don't let the plan and reality drift.
+- **Assets today's pipeline ignores may be tomorrow's editor fuel.** "Retire it" is not a safe default just because it's unused now. Ask whether the next phase earns it a job before pulling the plug.
+- **Verify agent-reported state instead of trusting it.** Cowork reported "40 uncommitted files"; actual was 4. Read `git status` yourself, don't quote what the agent saw.
 
 ---
 
@@ -61,6 +74,7 @@ Alex's rule for Session-66-Fix-Plan: all waves land before Phase 2 begins.
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 67 (2026-07-08): Closed Wave A (A5 — Rustic crate label contrast) and started Wave B (B1 founder attribution wrap, B2 shop CTA button wrap). Landed image library plumbing (`library_assets` table + Storage bucket + `/api/library/ingest` endpoint + docs). Cowork drafted 5 niches from Session-45 batch in parallel. 954 tests pass.
 - Session 66 (2026-07-07): Six-family walkthrough with Alex. Drafted `Session-66-Fix-Plan.md` (six waves). Landed Wave A items A1–A4: Cozy hero refactor (CTAs → subheading + z-index/color-mix fix), Reviews → Testimonials rename, Testimonials moved to footer, Modern marquee spacing + SplitHero nav full-width fix. A5 (Rustic labels) carries to Session 67.
 - Session 65 (2026-07-06): Phase 1 landed — family registry, renderer reads family, section stack walking, copywriter authors CONTENT only, family default skin, nav lists every page, collections persist before publish. Alex ran all six moods through fresh onboardings; all rendered pretty well; design + content issues carry to Session 66. Twelve commits.
 - Session 64 (2026-07-05/06): Phase 0 executed — codebase mechanical cleanup, database cleanup, renderer sweep (no hardcoding + no inline styles once and for all), documentation reset. Full Plan approved as operative doc.
