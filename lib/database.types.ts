@@ -819,6 +819,57 @@ export type Database = {
           },
         ]
       }
+      library_assets: {
+        Row: {
+          approved: boolean
+          approved_at: string | null
+          duration_ms: number | null
+          generated_at: string
+          generator: string
+          height: number
+          id: string
+          kind: string
+          niche_slug: string
+          prompt: string
+          retired_at: string | null
+          scene: string | null
+          storage_path: string
+          width: number
+        }
+        Insert: {
+          approved?: boolean
+          approved_at?: string | null
+          duration_ms?: number | null
+          generated_at?: string
+          generator: string
+          height: number
+          id?: string
+          kind: string
+          niche_slug: string
+          prompt: string
+          retired_at?: string | null
+          scene?: string | null
+          storage_path: string
+          width: number
+        }
+        Update: {
+          approved?: boolean
+          approved_at?: string | null
+          duration_ms?: number | null
+          generated_at?: string
+          generator?: string
+          height?: number
+          id?: string
+          kind?: string
+          niche_slug?: string
+          prompt?: string
+          retired_at?: string | null
+          scene?: string | null
+          storage_path?: string
+          width?: number
+        }
+        Relationships: []
+      }
       listing_collections: {
         Row: {
           collection_id: string

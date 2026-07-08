@@ -22,6 +22,7 @@ const serverSchema = z.object({
   SENTRY_AUTH_TOKEN: optionalString,
   BOHDIAI_ANTHROPIC_KEY: z.string().min(1),
   FAL_API_KEY: z.string().min(1),
+  COWORK_INGEST_TOKEN: z.string().min(1),
 });
 
 const clientSchema = z.object({
