@@ -1,0 +1,69 @@
+{
+  "kind": "niche-style-sheet",
+  "slug": "wedding_stationery",
+  "note": "Raw materials for a wedding & event stationery designer site. Named only — no role assignments, no feel labels. Bohdi reads this alongside the mood's style sheet and decides which color is background, which font heads, which texture rides where.",
+
+  "palette": [
+    { "name": "Bright White Cotton",   "hex": "#FAF8F3" },
+    { "name": "Ecru Cotton",           "hex": "#EFE7D6" },
+    { "name": "Blush Liner",           "hex": "#E7C9C2" },
+    { "name": "Champagne Foil",        "hex": "#D8C48F" },
+    { "name": "Gilt Edge",             "hex": "#C9A24B" },
+    { "name": "Antique Gold Foil",     "hex": "#B8912E" },
+    { "name": "Rose Gold Foil",        "hex": "#C4967A" },
+    { "name": "Copper Foil",           "hex": "#A6683A" },
+    { "name": "Dusty Sage",            "hex": "#8E9A7C" },
+    { "name": "Eucalyptus",            "hex": "#5F6E58" },
+    { "name": "Ink Navy",              "hex": "#26324A" },
+    { "name": "Dove Grey Envelope",    "hex": "#A9A499" },
+    { "name": "Oxblood Wax",           "hex": "#5E2029" },
+    { "name": "Charcoal Letterpress",  "hex": "#23211E" },
+    { "name": "Onyx Ink",              "hex": "#14120F" }
+  ],
+
+  "fonts": [
+    { "name": "Cormorant Garamond",  "category": "high-contrast-serif" },
+    { "name": "Playfair Display",    "category": "high-contrast-serif" },
+    { "name": "Fraunces",            "category": "high-contrast-serif" },
+    { "name": "EB Garamond",         "category": "old-style-serif" },
+    { "name": "Cardo",               "category": "old-style-serif" },
+    { "name": "Crimson Pro",         "category": "old-style-serif" },
+    { "name": "Spectral",            "category": "refined-serif" },
+    { "name": "Marcellus",           "category": "refined-serif" },
+    { "name": "Cinzel",              "category": "refined-serif" },
+    { "name": "Italiana",            "category": "refined-serif" },
+    { "name": "Tenor Sans",          "category": "humanist-sans" },
+    { "name": "Jost",                "category": "geometric-sans" },
+    { "name": "Josefin Sans",        "category": "geometric-sans" },
+    { "name": "Raleway",             "category": "geometric-sans" },
+    { "name": "Tangerine",           "category": "script" },
+    { "name": "Pinyon Script",       "category": "script" },
+    { "name": "Great Vibes",         "category": "script" }
+  ],
+
+  "wordmark": [
+    { "name": "Pinyon Script",       "category": "script" },
+    { "name": "Tangerine",           "category": "script" },
+    { "name": "Parisienne",          "category": "script" },
+    { "name": "Cinzel Decorative",   "category": "refined-serif" },
+    { "name": "Abril Fatface",       "category": "high-contrast-serif" },
+    { "name": "Yeseva One",          "category": "high-contrast-serif" }
+  ],
+
+  "textures": [
+    "cotton-rag-tooth",
+    "letterpress-deboss",
+    "hot-foil-shine",
+    "engraved-plate-impression",
+    "deckled-edge",
+    "gilded-edge",
+    "vellum-overlay",
+    "blind-emboss",
+    "wax-seal-impression",
+    "envelope-liner-print",
+    "watercolor-wash",
+    "calligraphy-flourish",
+    "linen-weave",
+    "handmade-paper-fleck"
+  ]
+}

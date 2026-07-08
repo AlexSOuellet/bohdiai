@@ -1,0 +1,68 @@
+{
+  "kind": "niche-style-sheet",
+  "slug": "resin_artist",
+  "note": "Raw materials for a resin artist site (cast, domed, and poured epoxy and UV resin goods). Named only — no role assignments, no feel labels. Bohdi reads this alongside the mood's style sheet and decides which color is background, which font heads, which texture rides where.",
+
+  "palette": [
+    { "name": "Clear Pour",          "hex": "#F4F1EA" },
+    { "name": "Pearl Mica",          "hex": "#ECE4D6" },
+    { "name": "Sea Glass",           "hex": "#BCD6CC" },
+    { "name": "Abalone Shimmer",     "hex": "#8FA1A9" },
+    { "name": "Preserved Rose",      "hex": "#A9475A" },
+    { "name": "Petri Magenta",       "hex": "#B02A6C" },
+    { "name": "Geode Amethyst",      "hex": "#6A3C9C" },
+    { "name": "Phthalo Deep",        "hex": "#123A5E" },
+    { "name": "Alcohol Ink Teal",    "hex": "#0E7A84" },
+    { "name": "Pressed Fern",        "hex": "#4C6B48" },
+    { "name": "Mica Gold",           "hex": "#C6982C" },
+    { "name": "Copper Leaf",         "hex": "#A5622C" },
+    { "name": "Live Edge Walnut",    "hex": "#492E1C" },
+    { "name": "Carbon Pigment",      "hex": "#15120E" },
+    { "name": "Cured Ink Black",     "hex": "#0A0A0C" }
+  ],
+
+  "fonts": [
+    { "name": "Cormorant Garamond",  "category": "high-contrast-serif" },
+    { "name": "Fraunces",            "category": "high-contrast-serif" },
+    { "name": "Marcellus",           "category": "refined-serif" },
+    { "name": "Spectral",            "category": "refined-serif" },
+    { "name": "EB Garamond",         "category": "old-style-serif" },
+    { "name": "Lora",                "category": "refined-serif" },
+    { "name": "Italiana",            "category": "high-contrast-serif" },
+    { "name": "Jost",                "category": "geometric-sans" },
+    { "name": "Syne",                "category": "geometric-sans" },
+    { "name": "Space Grotesk",       "category": "geometric-sans" },
+    { "name": "Questrial",           "category": "geometric-sans" },
+    { "name": "Hanken Grotesk",      "category": "humanist-sans" },
+    { "name": "Figtree",             "category": "humanist-sans" },
+    { "name": "Oswald",              "category": "condensed-caps" },
+    { "name": "Sacramento",          "category": "script" },
+    { "name": "Space Mono",          "category": "mono" }
+  ],
+
+  "wordmark": [
+    { "name": "Abril Fatface",       "category": "high-contrast-serif" },
+    { "name": "Yeseva One",          "category": "high-contrast-serif" },
+    { "name": "Bodoni Moda",         "category": "high-contrast-serif" },
+    { "name": "DM Serif Display",    "category": "high-contrast-serif" },
+    { "name": "Parisienne",          "category": "script" },
+    { "name": "Fraunces",            "category": "high-contrast-serif" }
+  ],
+
+  "textures": [
+    "glassy-dome",
+    "ocean-lacing-cells",
+    "alcohol-ink-bloom",
+    "mica-swirl",
+    "petri-bloom",
+    "geode-druzy",
+    "crushed-glass",
+    "pressed-botanical",
+    "preserved-petal",
+    "silicone-mold-matte",
+    "bezel-edge",
+    "live-edge-grain",
+    "resin-river-flow",
+    "gold-leaf-fleck"
+  ]
+}

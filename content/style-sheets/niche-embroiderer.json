@@ -1,0 +1,69 @@
+{
+  "kind": "niche-style-sheet",
+  "slug": "embroiderer",
+  "note": "Raw materials for an embroiderer & needlepoint site (hand embroidery, needlepoint, cross-stitch, machine monogramming, kits and patterns). Named only — no role assignments, no feel labels. Bohdi reads this alongside the mood's style sheet and decides which color is background, which font heads, which texture rides where.",
+
+  "palette": [
+    { "name": "Aida Cloth White",   "hex": "#F6F1E7" },
+    { "name": "Antique Linen",       "hex": "#E6DBC4" },
+    { "name": "Calico Cream",        "hex": "#EFE7D6" },
+    { "name": "Beech Hoop",          "hex": "#D3B084" },
+    { "name": "Raw Canvas Mesh",     "hex": "#D2BE97" },
+    { "name": "Sampler Flax",        "hex": "#C6B085" },
+    { "name": "Floss Gold",          "hex": "#E3B027" },
+    { "name": "Turkey Red",          "hex": "#B21F27" },
+    { "name": "Coral Floss",         "hex": "#E36A50" },
+    { "name": "Celadon Floss",       "hex": "#93AC93" },
+    { "name": "Peacock Thread",      "hex": "#1E6E75" },
+    { "name": "Mulberry Silk",       "hex": "#6C2B49" },
+    { "name": "Indigo Skein",        "hex": "#2C466A" },
+    { "name": "Charcoal Floss",      "hex": "#2B2A27" },
+    { "name": "Ink Backstitch",      "hex": "#131210" }
+  ],
+
+  "fonts": [
+    { "name": "Cormorant Garamond",  "category": "high-contrast-serif" },
+    { "name": "EB Garamond",         "category": "old-style-serif" },
+    { "name": "Fraunces",            "category": "high-contrast-serif" },
+    { "name": "Playfair Display",    "category": "high-contrast-serif" },
+    { "name": "Prata",               "category": "high-contrast-serif" },
+    { "name": "Lora",                "category": "refined-serif" },
+    { "name": "Marcellus",           "category": "refined-serif" },
+    { "name": "Bitter",              "category": "slab-serif" },
+    { "name": "Domine",              "category": "slab-serif" },
+    { "name": "Josefin Sans",        "category": "geometric-sans" },
+    { "name": "Space Grotesk",       "category": "geometric-sans" },
+    { "name": "Commissioner",        "category": "humanist-sans" },
+    { "name": "Work Sans",           "category": "humanist-sans" },
+    { "name": "Special Elite",       "category": "typewriter" },
+    { "name": "Cutive Mono",         "category": "mono" },
+    { "name": "Caveat",              "category": "hand-marker" },
+    { "name": "Homemade Apple",      "category": "hand-marker" }
+  ],
+
+  "wordmark": [
+    { "name": "Abril Fatface",       "category": "high-contrast-serif" },
+    { "name": "Yeseva One",          "category": "high-contrast-serif" },
+    { "name": "DM Serif Display",    "category": "high-contrast-serif" },
+    { "name": "Pinyon Script",       "category": "script" },
+    { "name": "Ultra",               "category": "slab-serif" },
+    { "name": "UnifrakturMaguntia",  "category": "blackletter" }
+  ],
+
+  "textures": [
+    "aida-weave",
+    "evenweave-linen",
+    "cross-stitch-grid",
+    "needlepoint-mesh",
+    "stranded-floss",
+    "satin-stitch-sheen",
+    "french-knot-cluster",
+    "long-and-short-shading",
+    "chain-stitch-line",
+    "backstitch-outline",
+    "beech-hoop-ring",
+    "felt-backing",
+    "stabilizer-tearaway",
+    "sampler-band"
+  ]
+}

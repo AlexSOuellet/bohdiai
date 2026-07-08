@@ -1,0 +1,69 @@
+{
+  "kind": "niche-style-sheet",
+  "slug": "macrame_artist",
+  "note": "Raw materials for a macramé and fiber art site (finished hand-knotted pieces, event work, kits and patterns). Named only — no role assignments, no feel labels. Bohdi reads this alongside the mood's style sheet and decides which color is background, which font heads, which texture rides where.",
+
+  "palette": [
+    { "name": "Raw Cotton",        "hex": "#F4EEE2" },
+    { "name": "Bleached String",   "hex": "#FAF8F1" },
+    { "name": "Wool Roving",       "hex": "#DBD0BD" },
+    { "name": "Sand Dollar",       "hex": "#E7DAC4" },
+    { "name": "Natural Jute",      "hex": "#B69A62" },
+    { "name": "Driftwood",         "hex": "#9C948A" },
+    { "name": "Clay Bead",         "hex": "#C88A5C" },
+    { "name": "Terracotta Pot",    "hex": "#B5603A" },
+    { "name": "Dusty Rose Dye",    "hex": "#B67F7B" },
+    { "name": "Sage Dyed Cotton",  "hex": "#889076" },
+    { "name": "Indigo Vat Dye",    "hex": "#2E4258" },
+    { "name": "Brass Rod",         "hex": "#A8843A" },
+    { "name": "Walnut Dowel",      "hex": "#6A4A2E" },
+    { "name": "Charcoal Cord",     "hex": "#2A2622" },
+    { "name": "Ink-Dyed Cotton",   "hex": "#17130F" }
+  ],
+
+  "fonts": [
+    { "name": "Fraunces",            "category": "high-contrast-serif" },
+    { "name": "Cormorant Garamond",  "category": "high-contrast-serif" },
+    { "name": "Playfair Display",    "category": "high-contrast-serif" },
+    { "name": "EB Garamond",         "category": "old-style-serif" },
+    { "name": "Spectral",            "category": "refined-serif" },
+    { "name": "Lora",                "category": "refined-serif" },
+    { "name": "Marcellus",           "category": "refined-serif" },
+    { "name": "Domine",              "category": "slab-serif" },
+    { "name": "Bitter",              "category": "slab-serif" },
+    { "name": "Josefin Sans",        "category": "geometric-sans" },
+    { "name": "Jost",                "category": "geometric-sans" },
+    { "name": "Quicksand",           "category": "geometric-sans" },
+    { "name": "Work Sans",           "category": "humanist-sans" },
+    { "name": "Karla",               "category": "humanist-sans" },
+    { "name": "Amatic SC",           "category": "hand-marker" },
+    { "name": "Caveat",              "category": "hand-marker" },
+    { "name": "Special Elite",       "category": "typewriter" }
+  ],
+
+  "wordmark": [
+    { "name": "Abril Fatface",   "category": "high-contrast-serif" },
+    { "name": "Yeseva One",      "category": "high-contrast-serif" },
+    { "name": "Prata",           "category": "high-contrast-serif" },
+    { "name": "Cinzel",          "category": "refined-serif" },
+    { "name": "Sacramento",      "category": "script" },
+    { "name": "Pinyon Script",   "category": "script" }
+  ],
+
+  "textures": [
+    "combed-fringe",
+    "square-knot-sennit",
+    "spiral-sennit",
+    "larks-head-mount",
+    "double-half-hitch",
+    "berry-knot-cluster",
+    "twisted-3-ply-cord",
+    "single-twist-string",
+    "brushed-cotton-nap",
+    "jute-weave",
+    "wool-roving-fluff",
+    "driftwood-grain",
+    "brass-rod-sheen",
+    "gathering-knot-wrap"
+  ]
+}
