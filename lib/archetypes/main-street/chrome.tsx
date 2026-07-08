@@ -1089,7 +1089,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
        (goods) and whatever section follows — on Modern that's the marquee,
        which used to land directly on top of the pill (Session 66 A4). */
     .arch-main-street .ms-shopcue-wrap{display:flex;justify-content:center;margin-top:56px;margin-bottom:56px}
-    .arch-main-street .ms-shopcue-btn{background:var(--ms-accent);color:var(--ms-on-accent);padding:16px 32px;border-radius:100px;display:inline-block}
+    .arch-main-street .ms-shopcue-btn{background:var(--ms-accent);color:var(--ms-on-accent);padding:16px 32px;border-radius:100px;display:inline-block;max-width:36ch;white-space:normal;overflow:visible;text-overflow:clip;text-align:center}
     /* the marquee goods body — one row of product cards scrolling continuously. */
     .arch-main-street .ms-marq-section{padding:96px 0 110px;overflow:hidden}
     .arch-main-street .ms-marq-track{display:flex;gap:18px;width:max-content;padding:0 9px}
@@ -1103,7 +1103,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-close-section{padding:130px 40px;text-align:center}
     .arch-main-street .ms-close-eyebrow{color:var(--ms-accent);display:block;margin-bottom:22px}
     .arch-main-street .ms-close-head{color:var(--ms-fg);max-width:16ch;margin:0 auto 36px}
-    .arch-main-street .ms-close-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:18px 34px;border-radius:2px;display:inline-block}
+    .arch-main-street .ms-close-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:18px 34px;border-radius:2px;display:inline-block;max-width:36ch;white-space:normal;overflow:visible;text-overflow:clip;text-align:center}
     /* ══════════════════════════════════════════════════════════════════════
        GOODS TREATMENTS — Procession (Constellation), Switcher, Slideshow. Per-
        instance opacity/transform stays inline as CSS custom props on wrappers. ═ */
