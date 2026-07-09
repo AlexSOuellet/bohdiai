@@ -87,8 +87,54 @@ Also — first pass on the pull-quote fix added defensive rhythm bumps to three 
 - tsc clean
 - lint clean (pre-existing next/image warnings unrelated)
 
+## Also this session — Wave C landed
+
+Session extended past the Wave B close-out into Wave C.
+
+### Wave C1 — family wallpapers paint behind every section (commit `2d20913`)
+
+Each family now paints its declared wallpaper as a fixed material layer behind every section. Six default PNGs shipped in `/public/textures/` — not Supabase Storage. The fix plan said Storage, but these are platform-owned family assets (not tenant content); static assets in `/public/` deploy with the app, CDN-cache via Vercel, no RLS or ingest endpoint needed. Wrong lane for Storage.
+
+Wiring: `Family` type grows `wallpaperUrl` + `textureOpacity`. `MainStreetRoot` accepts optional family, emits `--ms-texture-url` and `--ms-texture-opacity` inline, and renders `.ms-family-texture` at `position:fixed; z-index:0`. Family threaded through `MainStreet` → `MainStreetProduct` → `MainStreetSubPage` and all page components + `builder.tsx` render entries.
+
+Opacity tuning went through a real cycle. First pass with `mix-blend-mode: multiply` killed the light textures — a mostly-white linen multiplied against cream produces cream, so only Confetti (dark dots on pale bg) was visible. Second pass dropped multiply, bumped opacities way up. Alex called Rustic barnwood at 0.55 a "full stop no way." Third pass pulled back to subtle values, and Rustic swapped from barnwood (photo of wood planks — reads as literal boards at any visible opacity) to burlap (fabric grain — actually subtle by nature). Final settings: Cozy Linen 0.18, Rustic Burlap 0.22, Dark Smoke 0.22, Luxury Marble 0.15, Cheerful Confetti 0.30, Modern Concrete 0.22.
+
+Design conversation surfaced the bench decision. When Rustic's default (walnut planks) didn't work universally but the whole platform can't afford to only ship burlap, Alex saw the case for the maker's editor to swap within a curated bench. Locked model: **both family bench + niche shelf**. Onboarding paints the family default (no maker choice). In Editor Door 2, the maker sees BOTH a family bench (three platform-curated textures per family) AND her niche's shelf (three-to-five authored by the niche-writer). A Rustic candle maker sees different combined options than a Rustic leatherworker. Family-Style-Sheets.md grew a "Wallpapers as shipped" section + proposed three-textures-per-family bench for Door 2.
+
+Owed for niche-writer skill: change texture output from 10-14 names to 3-5 texture directions with prompts (cowork/library pipeline generates actual PNGs). The five niches cowork drafted this cycle have the current 10-14 shape and need a light second pass when the shape changes.
+
+### Wave C2 — section-surface variation on Luxury and Modern (commit `e7bc8e0`)
+
+Family-scoped CSS rules flip specific section variants to the contrast surface. Root gets `data-ms-family={family.key}`. At the target section, we redefine `--ms-bg / --ms-fg / --ms-fg-muted` as their contrast counterparts, then paint background+color. Descendants automatically pick up the contrast pair — headings, muted lines, and hairlines all track without per-selector overrides.
+
+Luxury landed on Chapters collections + Pull-Quote reviews. Editorial founder was already contrast via `.ms-founder-band` (every family inherits this). Three contrast surfaces alternating with hero, goods, findUs. Alex confirmed the rhythm reads well.
+
+Modern hit a stack-order problem. Original plan mirrored Luxury's shape — flip Cascade + Rating. But Modern's stack puts founder BETWEEN collections and reviews (`hero → goods → marquee → collections → founder → reviews → findUs`). Flipping either created a three-in-a-row contrast clump with the auto-contrast founder. Alex caught the "last four sections all dark now" result immediately.
+
+His fix suggestion: flip goods instead — it sits at position #2, right after hero, well separated from the founder at #5. Result: `b-c-b-b-c-b-b-b`. Clean alternation with no adjacency. Landed.
+
+**Known open item** — the contrast surface reads as "white and charcoal" across every family because most skins don't declare a `p.contrast` pair, so the default is a full bg/fg inversion. Cozy's cream/ember flips to ember/cream (basically deep charcoal), Modern's paper/ink flips to ink/paper (near-pure-black), and both read the same regardless of accent. Family-appropriate contrast pairs (Rustic → walnut on cream, Cozy → deep ember on linen, Modern → warm gray on paper) is a skin-level design change and follows up separately.
+
+## Also — architectural observations from a long design chat
+
+Wave C prep opened a longer conversation about images, mood-baking, and the editor swap flow. Not landed as code this session but named so Wave D scope carries them.
+
+- Bohdi still runs a skin pick in the Graphic Artist stage even though the pipeline discards it (family.defaultSkin is used instead, per §1.6). Leftover cruft from before Session 65 — should be removed as part of Wave D.
+- Image prompts (founder portrait + product imagePrompt) still come from the Graphic Artist, and those prompts encode mood/trajectory language, so mood is baked into pixels, not applied via filter. Filter-grade approach was §1.8 / Wave D and still deferred. The "mood-neutral library" test from cowork just failed by producing boring images — which is what the mood-neutral rule buys you when neutrality means no composition/atmosphere character, not just no color grade.
+- Cinematic hero shot (single dominant scene image) is used by four of six families, not just Cozy: Cozy (MomentHero), Rustic (StackedHero), Dark (FloatingCardHero), Modern (SplitHero). Cheerful and Luxury use multi-image or type-only heroes. So the mood-neutral image problem affects 2/3 of the platform, not 1/6.
+- Higgsfield unlimited on Chrome extension only pays off if Alex executes each prompt. Cowork can't reach the browser. Real options are (a) pay for fal-callable API for library fill (~$25-50 one-time), (b) accept manual batching ritual, or (c) check if Higgsfield exposes an API cowork could call.
+- Editor swap flow: current onboarding bakes mood into images; if Editor Door 1 shipped today, swapping mood would leave the images looking wrong. Wave D (§1.8 pulled forward — strip mood-baking from image prompts + ship CSS filter grade) is the gate before the tryon swap test on Twilight to Darkness.
+
+## Standing lessons
+
+- **Boring is what "mood-neutral" buys unless composition and atmosphere are pushed hard.** The rule optimizes for filter re-use, not for the wow. Cowork's test produced boring images because the rule was applied at the color-grade layer only — not because the rule is wrong. If Wave D ships the filter grade approach, prompts have to carry compositional character (subject + framing + world) even without color character.
+- **Section-flip decisions have to respect stack order.** Modern's clump wasn't a bad flip choice, it was a bad flip choice given the stack. A section-surface decision that ignores which sections sit next to it will produce clumps regardless of intent.
+- **Bohdi's job is content only. Verify that in code, not just in principle.** The Graphic Artist still runs a discarded skin pick — a rule that lives in docs but not in the actual pipeline. Every session should re-check that "content only" claims match what the code executes.
+
 ## Next session
 
-- Wave C: family textures + Luxury/Modern section-surface variation. Wave C1 needs the six wallpaper PNGs uploaded to Storage and wired via `--ms-texture-url` CSS variables; C2 audits Luxury and Modern for contrast-surface flips on 2 sections each.
+- **Wave D — strip mood-baking + ship CSS filter grade + delete the discarded skin pick.** Then the tryon swap test on Twilight to Darkness through all six families.
+- Wave E (30 sub-page compositions) waits behind the tryon test result. If the family layer holds up under swap, Wave E lands with confidence; if not, E is premature.
 - Cowork continues niche-writer batches (38 remaining in the Session-45 batch).
+- Niche-writer skill update — cut textures section from 10-14 names to 3-5 directions with prompts (feeds Editor Door 2 shelf).
 - DB `niches.status` bulk-approve when Alex is ready.
