@@ -178,7 +178,7 @@ Named for actual textures the niche works with or evokes. "Full-grain veg-tan," 
 - **Specific names, not generic descriptors.** A color named after a real pigment outperforms a color named "primary."
 - **No role assignments.** The schema decides which slot a color fills. The style sheet's job is to give Bohdi a vocabulary, not a recipe.
 - **No feel words anywhere.** Categories are structural. Names are material. If you find yourself writing "moody" or "playful" or "sophisticated" — stop.
-- **The bar is the leatherworker style sheet at `content/style-sheets/niche-leatherworker.json`.** Curate to that level of specificity or higher. Generic palettes get rejected.
+- **The bar is the woodworker style sheet at `content/style-sheets/niche-woodworker.json`.** Curate to that level of specificity or higher. Generic palettes get rejected.
 
 ## Self-check
 
@@ -217,5 +217,5 @@ If the niches table is the source of truth, the prose file can be synced to the 
 
 - Research time scales with how unfamiliar the category is. Familiar categories (candles, jewelry, baked goods) can be researched in a couple of focused passes with parallel fetches. Unfamiliar or niche categories may take longer or may legitimately produce a thinner entry.
 - If a category is so novel that no useful research surfaces, this skill is the wrong tool. The novel-product onboarding branch handles those tenants differently. Stop and surface the issue rather than writing a low-quality entry.
-- The canonical reference is `content/niches/leatherworker.md` paired with `content/style-sheets/niche-leatherworker.json`. Hold every new niche to that bar.
+- The canonical reference is `content/niches/woodworker.md` paired with `content/style-sheets/niche-woodworker.json`. Hold every new niche to that bar. (Prose bar: knitter.md and leatherworker.md are also strong references for the seven-section shape.)
 - The skill produces drafts. Style sheet curation in particular drifts toward safe and generic when authored quickly — review every output for genericness before it lands. "Moss green" is the failure mode; "Walnut Hull" is the bar.
