@@ -29,7 +29,7 @@ import type { ReviewsTreatment } from './reviews';
 import type { FindUsTreatment } from './findus';
 import type { FounderTreatment } from './founder';
 import { Reveal } from './Reveal';
-import { FAMILIES, type FamilySectionStackEntry, type SectionKey } from './families';
+import { FAMILIES, type Family, type FamilySectionStackEntry, type SectionKey } from './families';
 
 export interface MainStreetProps {
   content: MainStreetContent;
@@ -80,9 +80,13 @@ export interface MainStreetProps {
    *  authored treatment, then the documented default. The dates themselves live in
    *  content.founder.findUs (authored); the beat renders only when it has rows. */
   findUsTreatment?: FindUsTreatment | undefined;
+  /** The resolved family — used by MainStreetRoot to paint the wallpaper texture
+   *  behind every section. Optional so preview/test callers that don't have a
+   *  family resolved still render (no texture, just the skin surface color). */
+  family?: Family | undefined;
 }
 
-export function MainStreet({ content, skin, products, sectionStack, catalogSize, goodsTreatment, collections, collectionsTreatment, collectionsHref, founderTreatment, shopHref, aboutHref, eventsHref, testimonialsHref, momentKey, heroVariant, reviewsTreatment, findUsTreatment }: MainStreetProps) {
+export function MainStreet({ content, skin, products, sectionStack, catalogSize, goodsTreatment, collections, collectionsTreatment, collectionsHref, founderTreatment, shopHref, aboutHref, eventsHref, testimonialsHref, momentKey, heroVariant, reviewsTreatment, findUsTreatment, family }: MainStreetProps) {
   const stack = sectionStack ?? FAMILIES.cozy.sectionStack;
 
   // The Collections band appears when BOTH the shop has collection rows AND the
@@ -160,7 +164,7 @@ export function MainStreet({ content, skin, products, sectionStack, catalogSize,
   const bodyEntries = stack.filter((e) => e.section !== 'hero' && e.on);
 
   return (
-    <MainStreetRoot skin={skin}>
+    <MainStreetRoot skin={skin} family={family}>
       {heroEntry?.on ? renderers.hero() : null}
       <main>
         {bodyEntries.map((entry, i) => (

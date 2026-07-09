@@ -21,6 +21,30 @@ There are **six mood families**: Cozy, Rustic, Dark, Luxury/Elegant, Playful, Mo
 
 ---
 
+## Wallpapers as shipped (Wave C1)
+
+Each family paints its default wallpaper behind every section — a fixed material layer, position:fixed, that reads as paper/wood/marble UNDER the store rather than a repeating strip moving with the content. The six default PNGs live at `/public/textures/wp-*.png` (platform assets, not tenant content, CDN-cached by Vercel). The family registry names each URL and per-family opacity; the renderer emits `--ms-texture-url` and `--ms-texture-opacity` at MainStreetRoot and paints via `.ms-family-texture`.
+
+- **Cozy** → `wp-linen.png` @ 0.18 (subtle cream fabric grain)
+- **Rustic** → `wp-burlap.png` @ 0.22 (fabric-grain rustic feel; barnwood photo was too literal at any opacity)
+- **Dark** → `wp-smoke.png` @ 0.22
+- **Luxury** → `wp-marble.png` @ 0.15 (whisper)
+- **Cheerful** → `wp-confetti.png` @ 0.30 (dots read loud on purpose)
+- **Modern** → `wp-concrete.png` @ 0.22
+
+### The three-textures-per-family bench (Editor Door 2 — proposed)
+
+Onboarding always paints the family default (above). In Editor Door 2 the maker sees a combined texture picker: the family's bench of three (below) PLUS the niche's own shelf (from the niche style sheet, 3-5 authored by the niche-writer). A Rustic candle maker sees a different combined shelf than a Rustic leatherworker; both anchored by the same family bench.
+
+Proposed family benches — to be finalized when Editor Door 2's design opens. Only the ★ ships today.
+
+- **Cozy** — Linen ★ · Kraft · Parchment
+- **Rustic** — Burlap ★ · Walnut planks · Rough plaster
+- **Dark** — Smoke ★ · Dark bokeh · Night sky
+- **Luxury** — Marble ★ · Silk · Gold leaf
+- **Cheerful** — Confetti ★ · Paper cut-outs · Botanicals
+- **Modern** — Concrete ★ · Steel · Grid
+
 ## The six families (defaults marked ★; full bench listed)
 
 Content used in every mockup is identical (the same candle shop "Marlow Candle Co.") so only the look changes.

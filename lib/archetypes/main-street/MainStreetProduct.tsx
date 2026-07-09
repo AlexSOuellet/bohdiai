@@ -18,6 +18,7 @@ import type { MainStreetContent } from './schemas';
 import { MainStreetRoot, MainStreetFooter, Nav } from './chrome';
 import { Type } from './Type';
 import { DEFAULT_STRINGS } from './defaults';
+import type { Family } from './families';
 
 /** One media cell — a playable video or a still. A video renders a real
  *  <video> with controls (poster shown until play), so product clips actually
@@ -51,17 +52,19 @@ export function MainStreetProduct({
   content,
   product,
   skin,
+  family,
 }: {
   content: MainStreetContent;
   product: ProductView;
   skin: ArchetypeTheme;
+  family?: Family | undefined;
 }) {
   const primary = product.media[0];
   const rest = product.media.slice(1);
   const soldOut = product.status === 'sold_out';
 
   return (
-    <MainStreetRoot skin={skin}>
+    <MainStreetRoot skin={skin} family={family}>
       <nav data-ms-nav className="ms-product-nav">
         <Nav identity={content.identity} currentHref="/shop" />
       </nav>

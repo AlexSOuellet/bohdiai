@@ -103,6 +103,15 @@ export interface Family {
   palette: FamilyPalette;
   texture: string;
   wallpaper: string;
+  /** Public URL of the family's default wallpaper PNG — painted as a subtle
+   *  material layer behind every section so every store gets the family's feel
+   *  without any per-section opt-in. Lives under /public/textures/ (platform
+   *  asset, not tenant content), CDN-cached by Vercel. When Editor Door 2 ships
+   *  a bench of three wallpapers per family, the maker's pick overrides this. */
+  wallpaperUrl: string;
+  /** How loudly the wallpaper reads over the family surface (0-1). Tuned per
+   *  family — Linen and Marble stay subtle; Concrete and Confetti push harder. */
+  textureOpacity: number;
   imageryGrade: string;
   /** Google Fonts stylesheet URL preloaded on the storefront. */
   fontHref: string;
@@ -159,6 +168,8 @@ const COZY: Family = {
   palette: { name: REFERENCE_LABELS.families.palettes.cozy, bg: '#F4EAD7', fg: '#2B1A12', muted: '#7A6249', accent: '#C8431B' },
   texture: REFERENCE_LABELS.families.textures.cozy,
   wallpaper: REFERENCE_LABELS.families.wallpapers.cozy,
+  wallpaperUrl: '/textures/wp-linen.png',
+  textureOpacity: 0.18,
   imageryGrade: REFERENCE_LABELS.families.imageryGrades.cozy,
   fontHref:
     'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Newsreader:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&family=Pinyon+Script&display=swap',
@@ -198,6 +209,8 @@ const RUSTIC: Family = {
   palette: { name: REFERENCE_LABELS.families.palettes.rustic, bg: '#2E2114', fg: '#E6D8BE', muted: '#9C8A6C', accent: '#B5491F' },
   texture: REFERENCE_LABELS.families.textures.rustic,
   wallpaper: REFERENCE_LABELS.families.wallpapers.rustic,
+  wallpaperUrl: '/textures/wp-burlap.png',
+  textureOpacity: 0.22,
   imageryGrade: REFERENCE_LABELS.families.imageryGrades.rustic,
   fontHref:
     'https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Bitter:wght@400;600;800&family=Cutive+Mono&family=Permanent+Marker&display=swap',
@@ -237,6 +250,8 @@ const DARK: Family = {
   palette: { name: REFERENCE_LABELS.families.palettes.dark, bg: '#14100C', fg: '#E8DCC8', muted: '#9A8A72', accent: '#C9772F' },
   texture: REFERENCE_LABELS.families.textures.dark,
   wallpaper: REFERENCE_LABELS.families.wallpapers.dark,
+  wallpaperUrl: '/textures/wp-smoke.png',
+  textureOpacity: 0.22,
   imageryGrade: REFERENCE_LABELS.families.imageryGrades.dark,
   fontHref:
     'https://fonts.googleapis.com/css2?family=Gloock&family=Spectral:ital,wght@0,400;0,500;1,400&family=Syne:wght@500;600;700&family=Cinzel:wght@500;600&display=swap',
@@ -276,6 +291,8 @@ const LUXURY: Family = {
   palette: { name: REFERENCE_LABELS.families.palettes.luxury, bg: '#F4F1EB', fg: '#1A1714', muted: '#8A8270', accent: '#9C7B3A' },
   texture: REFERENCE_LABELS.families.textures.luxury,
   wallpaper: REFERENCE_LABELS.families.wallpapers.luxury,
+  wallpaperUrl: '/textures/wp-marble.png',
+  textureOpacity: 0.15,
   imageryGrade: REFERENCE_LABELS.families.imageryGrades.luxury,
   fontHref:
     'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Tenor+Sans&family=Cinzel+Decorative:wght@600;700&display=swap',
@@ -315,6 +332,8 @@ const CHEERFUL: Family = {
   palette: { name: REFERENCE_LABELS.families.palettes.cheerful, bg: '#FCEFD6', fg: '#20223A', muted: '#6C4AB6', accent: '#FB4D3D' },
   texture: REFERENCE_LABELS.families.textures.cheerful,
   wallpaper: REFERENCE_LABELS.families.wallpapers.cheerful,
+  wallpaperUrl: '/textures/wp-confetti.png',
+  textureOpacity: 0.30,
   imageryGrade: REFERENCE_LABELS.families.imageryGrades.cheerful,
   fontHref:
     'https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Lilita+One&display=swap',
@@ -354,6 +373,8 @@ const MODERN: Family = {
   palette: { name: REFERENCE_LABELS.families.palettes.modern, bg: '#FAFAF8', fg: '#111110', muted: '#7D7D78', accent: '#E5341B' },
   texture: REFERENCE_LABELS.families.textures.modern,
   wallpaper: REFERENCE_LABELS.families.wallpapers.modern,
+  wallpaperUrl: '/textures/wp-concrete.png',
+  textureOpacity: 0.22,
   imageryGrade: REFERENCE_LABELS.families.imageryGrades.modern,
   fontHref:
     'https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Saira+Condensed:wght@600;700&display=swap',

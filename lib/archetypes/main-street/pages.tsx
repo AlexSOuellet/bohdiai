@@ -21,6 +21,7 @@ import type { CollectionView } from '../content';
 import { MainStreetContactForm } from './MainStreetContactForm';
 import { DEFAULT_STRINGS, DEFAULT_COUNTS } from './defaults';
 import type { MainStreetTreatments } from './builder';
+import type { Family } from './families';
 
 function SubHeader({ content, skin, current }: { content: MainStreetContent; skin: ArchetypeTheme; current?: string | undefined }) {
   // The header is fixed (matching the home hero's pinned nav — Lenis smooth-scroll
@@ -41,9 +42,9 @@ function SubHeader({ content, skin, current }: { content: MainStreetContent; ski
  *  paddingTop on <main> clears the fixed SubHeader (~80px desktop, ~68px mobile)
  *  so content starts below the nav rather than under it. The home hero does not
  *  need this because its 100vh hero already sits under the fixed nav. */
-export function MainStreetSubPage({ content, skin, children, current }: { content: MainStreetContent; skin: ArchetypeTheme; children: ReactNode; current?: string | undefined }) {
+export function MainStreetSubPage({ content, skin, children, current, family }: { content: MainStreetContent; skin: ArchetypeTheme; children: ReactNode; current?: string | undefined; family?: Family | undefined }) {
   return (
-    <MainStreetRoot skin={skin}>
+    <MainStreetRoot skin={skin} family={family}>
       <SubHeader content={content} skin={skin} current={current} />
       <main className="ms-subpage-main">{children}</main>
       <MainStreetFooter shopName={content.shopName} />
@@ -84,17 +85,17 @@ function legalCss(): string {
 /** A plain content page in Main Street chrome. Pass `body` for authored paragraphs
  *  (maker-added pages) OR `html` for pre-rendered markup (legal docs, which carry
  *  their own headings). Used for Privacy/Terms and any maker-added page. */
-export function ContentPage({ content, skin, title, body, html }: { content: MainStreetContent; skin: ArchetypeTheme; title?: string | undefined; body?: string[] | undefined; html?: string | undefined }) {
+export function ContentPage({ content, skin, title, body, html, family }: { content: MainStreetContent; skin: ArchetypeTheme; title?: string | undefined; body?: string[] | undefined; html?: string | undefined; family?: Family | undefined }) {
   if (html !== undefined) {
     return (
-      <MainStreetSubPage content={content} skin={skin}>
+      <MainStreetSubPage content={content} skin={skin} family={family}>
         <style dangerouslySetInnerHTML={{ __html: legalCss() }} />
         <article data-ms-content className="ms-wrap ms-legal ms-page-legal" dangerouslySetInnerHTML={{ __html: html }} />
       </MainStreetSubPage>
     );
   }
   return (
-    <MainStreetSubPage content={content} skin={skin}>
+    <MainStreetSubPage content={content} skin={skin} family={family}>
       {title && <PageHead title={title} />}
       <section data-ms-content className="ms-wrap ms-page ms-page-prose">
         {(body ?? []).map((para, i) => (
@@ -109,9 +110,9 @@ export function ContentPage({ content, skin, title, body, html }: { content: Mai
 
 /** SHOP — the full catalog as a responsive grid (chrome defines .ms-catalog-grid
  *  breakpoints). The home shows a sampling; this shows everything. */
-export function ShopPage({ content, skin, products, treatments }: { content: MainStreetContent; skin: ArchetypeTheme; products: ProductView[]; treatments: MainStreetTreatments }) {
+export function ShopPage({ content, skin, products, treatments, family }: { content: MainStreetContent; skin: ArchetypeTheme; products: ProductView[]; treatments: MainStreetTreatments; family?: Family | undefined }) {
   return (
-    <MainStreetSubPage content={content} skin={skin} current="/shop">
+    <MainStreetSubPage content={content} skin={skin} current="/shop" family={family}>
       <PageHead eyebrow={content.goods.label} title={content.goods.title} />
       <section data-ms-shop className="ms-wrap ms-page">
         {products.length === 0 ? (
@@ -137,7 +138,7 @@ export function ShopPage({ content, skin, products, treatments }: { content: Mai
  *  story runs in full prose — the reason the maker clicked "read the full story."
  *  Editorial already sets the full story in its columns, so we skip the extra
  *  prose block for that treatment (would double up). */
-export function AboutPage({ content, skin, treatments }: { content: MainStreetContent; skin: ArchetypeTheme; treatments: MainStreetTreatments }) {
+export function AboutPage({ content, skin, treatments, family }: { content: MainStreetContent; skin: ArchetypeTheme; treatments: MainStreetTreatments; family?: Family | undefined }) {
   const paragraphs = content.about?.story ?? [content.founder.quote];
   // Editorial is the one treatment that already renders the full story in its
   // own layout (columns + drop cap + pull-quote), so a story block below would
@@ -148,7 +149,7 @@ export function AboutPage({ content, skin, treatments }: { content: MainStreetCo
   // Visually hidden because the founder treatment IS the visual hero; the heading
   // is a structural landmark, not chrome.
   return (
-    <MainStreetSubPage content={content} skin={skin} current="/about">
+    <MainStreetSubPage content={content} skin={skin} current="/about" family={family}>
       {content.about?.heading && (
         <Type as="h1" role="closeHead" className="ms-sr-only">
           {content.about.heading}
@@ -172,11 +173,11 @@ export function AboutPage({ content, skin, treatments }: { content: MainStreetCo
 
 /** CONTACT — an authored invitation to get in touch. Real email/social are the
  *  maker's to add later; at onboarding this is voice, not contact details. */
-export function ContactPage({ content, skin, tenantId }: { content: MainStreetContent; skin: ArchetypeTheme; tenantId?: string | undefined }) {
+export function ContactPage({ content, skin, tenantId, family }: { content: MainStreetContent; skin: ArchetypeTheme; tenantId?: string | undefined; family?: Family | undefined }) {
   const heading = content.contact?.heading;
   const intro = content.contact?.intro;
   return (
-    <MainStreetSubPage content={content} skin={skin} current="/contact">
+    <MainStreetSubPage content={content} skin={skin} current="/contact" family={family}>
       <PageHead title={heading} />
       <section data-ms-contact className="ms-wrap ms-page ms-contactpage">
         {intro && (
@@ -197,10 +198,10 @@ export function ContactPage({ content, skin, tenantId }: { content: MainStreetCo
 /** COLLECTIONS INDEX — the full collections band: the SAME treatment the home
  *  teaser wears (cupboard / crates / portals / chapters / lanes / cascade), now
  *  carrying every collection (not the home handful) and no "see all" cue. */
-export function CollectionsPage({ content, skin, collections, treatments }: { content: MainStreetContent; skin: ArchetypeTheme; collections: CollectionView[]; treatments: MainStreetTreatments }) {
+export function CollectionsPage({ content, skin, collections, treatments, family }: { content: MainStreetContent; skin: ArchetypeTheme; collections: CollectionView[]; treatments: MainStreetTreatments; family?: Family | undefined }) {
   const section = content.collections;
   return (
-    <MainStreetSubPage content={content} skin={skin} current="/collections">
+    <MainStreetSubPage content={content} skin={skin} current="/collections" family={family}>
       <PageHead eyebrow={section?.label} title={section?.title} />
       {collections.length === 0 ? (
         <section data-ms-collections className="ms-wrap ms-page ms-page-empty">
@@ -218,9 +219,9 @@ export function CollectionsPage({ content, skin, collections, treatments }: { co
 /** COLLECTION DETAIL — one collection's page: header (name + count) and the
  *  contents rendered in the store's SAME goods treatment (harmonizes with /shop).
  *  Everything class-only; nothing about the collection is hardcoded. */
-export function CollectionPage({ content, skin, collection, products, treatments }: { content: MainStreetContent; skin: ArchetypeTheme; collection: CollectionView; products: ProductView[]; treatments: MainStreetTreatments }) {
+export function CollectionPage({ content, skin, collection, products, treatments, family }: { content: MainStreetContent; skin: ArchetypeTheme; collection: CollectionView; products: ProductView[]; treatments: MainStreetTreatments; family?: Family | undefined }) {
   return (
-    <MainStreetSubPage content={content} skin={skin} current="/collections">
+    <MainStreetSubPage content={content} skin={skin} current="/collections" family={family}>
       <PageHead eyebrow={DEFAULT_COUNTS.pieces(collection.count)} title={collection.name} />
       <section data-ms-collection className="ms-wrap ms-page">
         {products.length === 0 ? (
@@ -240,11 +241,11 @@ export function CollectionPage({ content, skin, collection, products, treatments
 /** TESTIMONIALS — the full reviews section: the SAME treatment the home teaser
  *  wears (rating / pull-quote / guestbook / texts), now carrying every review
  *  (not the home handful) and no "see all" cue. */
-export function TestimonialsPage({ content, skin, treatments }: { content: MainStreetContent; skin: ArchetypeTheme; treatments: MainStreetTreatments }) {
+export function TestimonialsPage({ content, skin, treatments, family }: { content: MainStreetContent; skin: ArchetypeTheme; treatments: MainStreetTreatments; family?: Family | undefined }) {
   const reviews = content.reviews;
   const hasReviews = !!reviews && reviews.items.length > 0;
   return (
-    <MainStreetSubPage content={content} skin={skin} current="/testimonials">
+    <MainStreetSubPage content={content} skin={skin} current="/testimonials" family={family}>
       <PageHead title={reviews?.title} />
       {hasReviews ? (
         <ReviewsBeat section={reviews!} skin={skin} treatment={treatments.reviews} full />
@@ -262,11 +263,11 @@ export function TestimonialsPage({ content, skin, treatments }: { content: MainS
 /** EVENTS — the full find-us section: the SAME treatment the home teaser wears,
  *  now carrying every date, or a friendly "check back" empty state when the maker
  *  has no upcoming dates (or turned the calendar off). Representative of its teaser. */
-export function EventsPage({ content, skin, treatments }: { content: MainStreetContent; skin: ArchetypeTheme; treatments: MainStreetTreatments }) {
+export function EventsPage({ content, skin, treatments, family }: { content: MainStreetContent; skin: ArchetypeTheme; treatments: MainStreetTreatments; family?: Family | undefined }) {
   const findUs = content.founder.findUs;
   const hasDates = !!findUs && findUs.rows.length > 0;
   return (
-    <MainStreetSubPage content={content} skin={skin} current="/events">
+    <MainStreetSubPage content={content} skin={skin} current="/events" family={family}>
       <PageHead eyebrow={hasDates ? findUs!.label : undefined} title={findUs?.title} />
       {hasDates ? (
         <FindUsBeat findUs={findUs!} skin={skin} treatment={treatments.findUs} eventsHref="/events" full />

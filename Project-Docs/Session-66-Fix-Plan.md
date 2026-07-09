@@ -67,10 +67,10 @@ Two related design gaps that combined make Luxury and Modern read as boring comp
 
 Currently the Family object declares `texture` and `wallpaper` as string labels. Nothing consumes them. Assets from `tmp/mockups/img/wp-*.png` never got uploaded or wired.
 
-- [ ] **C1.1.** Upload the six wallpaper PNGs to Supabase storage under a stable public path.
-- [ ] **C1.2.** Add `--ms-texture-url` + `--ms-texture-opacity` CSS variables per family via the family CSS injection.
-- [ ] **C1.3.** Apply the texture as a background layer over both base and contrast surfaces (opacity tuned per family — Linen and Marble stay subtle, Concrete pushes harder, Confetti dots read loud). Every section variant automatically gets the family's material feel without opting in.
-- [ ] **C1.4.** Doc update — `Family-Style-Sheets.md` grows a bench of three textures per family with a ★ default, matching the fonts-by-role pattern. This is doc-alignment; the extra options don't ship until Editor Door 2, but the spec is the source of truth for the eventual bench.
+- [x] **C1.1.** Copy the six default wallpaper PNGs into `/public/textures/` (platform assets, not tenant content — Supabase Storage is wrong for these; static assets ship with the deploy, CDN-cache via Vercel, no RLS or ingest endpoint needed). Six shipped: `wp-linen.png` (Cozy), `wp-burlap.png` (Rustic — originally barnwood but a wood-plank photo reads as "literal boards" at any visible opacity), `wp-smoke.png` (Dark), `wp-marble.png` (Luxury), `wp-confetti.png` (Cheerful), `wp-concrete.png` (Modern). (Session 68)
+- [x] **C1.2.** Added `wallpaperUrl` + `textureOpacity` to the Family type in `families.ts`; populated on all six family entries. Renderer emits `--ms-texture-url` and `--ms-texture-opacity` inline at MainStreetRoot when a family is passed. (Session 68)
+- [x] **C1.3.** Added `.ms-family-texture` — a `position:fixed` layer at z-index:0 painting the wallpaper across the whole viewport behind sections. No blend mode (multiply killed the light textures against light backgrounds). Opacities tuned per family: Linen 0.18, Burlap 0.22, Smoke 0.22, Marble 0.15, Confetti 0.30, Concrete 0.22. Threaded `family` through `MainStreet` → `MainStreetProduct` → `MainStreetSubPage` and all page components + `builder.tsx` render entries. (Session 68)
+- [x] **C1.4.** Doc update — `Family-Style-Sheets.md` grew a "Wallpapers as shipped" section (current URLs + opacities) and a proposed three-textures-per-family bench for Editor Door 2. Decision locked with Alex: Editor Door 2 texture picker shows BOTH the family bench (platform-curated, 3 per family) AND the niche shelf (niche-writer authored, 3-5 per niche) — so a Rustic candle maker sees different combined options than a Rustic leatherworker, both anchored by the same family default. Specific bench picks proposed but not finalized; ships with Editor Door 2. (Session 68)
 
 ### C2 — Section-surface variation on Luxury and Modern
 
