@@ -173,13 +173,18 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       .arch-main-street .ms-nav-links{display:none}
       .arch-main-street .ms-nav-toggle{display:inline-flex}
     }
-    /* split nav — the wordmark centered with links flanking it. A 1fr/auto/1fr grid
-       keeps the wordmark dead-center regardless of how the links balance. On a phone
-       the link groups hide and the burger appears, so the grid collapses to the same
-       wordmark-left / burger-right shape as the standard bar. */
-    .arch-main-street .ms-nav-split{width:100%;min-width:0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:24px}
+    /* split nav — the wordmark centered with links flanking it. Middle column is
+       fit-content(50%) so a long wordmark ("Heavenly Scents", "Estate Sales of New
+       England") can't consume the whole nav and squeeze the flanking labels down to
+       a letter + ellipsis; caps at half the nav width, and the wordmark itself is
+       allowed to wrap inside its cell (overriding the base wordmark nowrap/ellipsis)
+       instead of truncating. Link groups keep at least ~25% of the nav each.
+       On a phone the link groups hide and the burger appears, so the grid collapses
+       to the same wordmark-left / burger-right shape as the standard bar. */
+    .arch-main-street .ms-nav-split{width:100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) fit-content(50%) minmax(0,1fr);align-items:center;gap:24px}
     .arch-main-street .ms-nav-split-left{justify-content:flex-start;min-width:0}
     .arch-main-street .ms-nav-split-right{justify-content:flex-end;min-width:0}
+    .arch-main-street .ms-nav-split [data-type="wordmark"]{max-width:100%;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.05;text-align:center}
     @media(max-width:640px){
       .arch-main-street .ms-nav-split{grid-template-columns:1fr auto;gap:0}
     }
@@ -437,15 +442,19 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       .arch-main-street .ms-founder-findus{grid-template-columns:1fr!important;gap:40px!important}
       .arch-main-street .ms-marquee [data-ms-card]{width:74vw}
       .arch-main-street .ms-switch-grid{grid-template-columns:1fr!important;gap:32px!important}
-      /* the constellation goes vertical on a phone — a designed drift, not a
-         dead stack: cards hug left then right, vary in width, and overlap. */
-      .arch-main-street .ms-const-stage{aspect-ratio:auto!important;height:auto!important;display:flex;flex-direction:column}
-      .arch-main-street .ms-const-card{position:static!important;left:auto!important;top:auto!important;rotate:0!important}
+      /* Mobile constellation — designed drift, no image-over-image collisions.
+         Cards hug left then right and vary in width (the composition read); the
+         negative margin-tops the original had made left-card and right-card image
+         bounds overlap in the horizontal middle band, which visually collided into
+         the section above/below on a phone. On mobile the wow lives in the width
+         and side alternation, not in Y overlap that reads muddled at small size. */
+      .arch-main-street .ms-const-stage{aspect-ratio:auto!important;height:auto!important;display:flex;flex-direction:column;gap:clamp(20px,4vw,32px)}
+      .arch-main-street .ms-const-card{position:static!important;left:auto!important;top:auto!important;rotate:0!important;margin-top:0!important}
       .arch-main-street .ms-const-card:nth-child(1){width:80%!important;align-self:flex-start}
-      .arch-main-street .ms-const-card:nth-child(2){width:64%!important;align-self:flex-end;margin-top:-7%}
-      .arch-main-street .ms-const-card:nth-child(3){width:88%!important;align-self:flex-start;margin-top:-3%}
-      .arch-main-street .ms-const-card:nth-child(4){width:58%!important;align-self:flex-end;margin-top:-9%}
-      .arch-main-street .ms-const-card:nth-child(5){width:74%!important;align-self:flex-start;margin-top:-2%}
+      .arch-main-street .ms-const-card:nth-child(2){width:64%!important;align-self:flex-end}
+      .arch-main-street .ms-const-card:nth-child(3){width:88%!important;align-self:flex-start}
+      .arch-main-street .ms-const-card:nth-child(4){width:58%!important;align-self:flex-end}
+      .arch-main-street .ms-const-card:nth-child(5){width:74%!important;align-self:flex-start}
       .arch-main-street .ms-catalog-grid{grid-template-columns:repeat(2,1fr)!important}
     }
     @media(max-width:560px){
@@ -1022,7 +1031,12 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     /* Collage hero — a text column beside a cluster of THREE positioned shots.
        Each shot's position + rotation is set via nth-child (not inline) — the three
        positions are fixed structural knobs, not per-tenant values. */
-    .arch-main-street .ms-collage-hero{display:flex;flex-direction:column;min-height:100vh;background:var(--ms-bg);color:var(--ms-fg)}
+    .arch-main-street .ms-collage-hero{display:flex;flex-direction:column;min-height:100vh;background:var(--ms-bg);color:var(--ms-fg);position:relative}
+    /* Nav-zone contrast: the top shot sits at top:0 of the cluster, which lands
+       directly under the right-side nav labels. A gentle vertical fade from the
+       hero surface color at the top gives every nav label a legible backing
+       without imposing a hard plate — the imagery still shows through below. */
+    .arch-main-street .ms-collage-hero .ms-hero-navbar{background:linear-gradient(to bottom,var(--ms-bg) 0%,color-mix(in srgb,var(--ms-bg) 80%,transparent) 55%,transparent 100%);padding-bottom:clamp(20px,3vw,32px)}
     .arch-main-street .ms-collage-body{flex:1;display:grid;grid-template-columns:.92fr 1.08fr;align-items:center;gap:clamp(24px,4vw,48px);padding:clamp(16px,3vh,32px) clamp(24px,5vw,60px) clamp(32px,5vh,56px);min-height:0}
     .arch-main-street .ms-collage-text{display:flex;flex-direction:column}
     .arch-main-street .ms-collage-cluster{position:relative;width:100%;height:100%;min-height:360px}
@@ -1032,8 +1046,12 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-collage-shot:nth-child(2){width:38%;height:44%;right:2%;top:0;transform:rotate(5deg);z-index:2}
     .arch-main-street .ms-collage-shot:nth-child(3){width:42%;height:46%;right:6%;bottom:2%;transform:rotate(-3deg);z-index:3}
     @media(max-width:860px){
-      .arch-main-street .ms-collage-body{grid-template-columns:1fr;gap:clamp(20px,4vh,32px)}
-      .arch-main-street .ms-collage-cluster{min-height:300px}
+      /* Mobile stack: text row above cluster row, both anchored to the top of their
+         cells so the desktop align-items:center can't pull the text down into the
+         cluster's absolutely-positioned shots. Top padding clears the position:absolute
+         navbar; explicit gap keeps a visible break between text and imagery. */
+      .arch-main-street .ms-collage-body{grid-template-columns:1fr;grid-template-rows:auto auto;align-items:start;align-content:start;gap:clamp(28px,5vh,48px);padding-top:clamp(80px,12vh,120px)}
+      .arch-main-street .ms-collage-cluster{min-height:300px;height:auto}
     }
     /* Moment hero — the video/still that IS the front door. Nav is fixed at the top;
        when the visitor scrolls past the hero, the nav's background flips from the
