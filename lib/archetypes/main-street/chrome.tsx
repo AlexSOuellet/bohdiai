@@ -1236,12 +1236,63 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-subs-name{color:var(--ms-fg);margin:0 0 6px}
     .arch-main-street .ms-subs-price{color:var(--ms-accent);margin:0 0 12px}
     .arch-main-street .ms-subs-interval{color:var(--ms-fg-muted)}
+
+    /* ══════════════════════════════════════════════════════════════════════
+       FAMILY SECTION-SURFACE VARIATION (Wave C2)
+
+       Cheerful / Cozy / Rustic / Dark all get visual rhythm down the page because
+       at least one home section paints on the CONTRAST surface (the reversed
+       dark-on-light or light-on-dark pair). Luxury and Modern had no contrast
+       flips beyond the founder-band (which every family already inherits), so
+       both moods read uniformly flat — everything on the same base color.
+
+       Fix: family-scoped rules that flip two additional sections per mood to the
+       contrast surface, so the scroll hits a distinct surface break instead of
+       reading like one long panel. The trick is redefining --ms-bg / --ms-fg /
+       --ms-fg-muted AT the section scope — child rules that read those vars
+       automatically pick up the contrast pair, so headings, muted lines, and
+       hairlines all track without needing per-selector overrides. Accent and
+       shadow stay unchanged (they're designed to work on both surfaces). */
+
+    /* Luxury — flip Chapters collections + Pull-Quote reviews to contrast.
+       Editorial founder is already contrast via .ms-founder-band. That gives
+       Luxury three contrast surfaces (chapters, pull-quote, founder) alternating
+       with hero / goods / find-us — a real magazine page-break rhythm. */
+    .arch-main-street[data-ms-family="luxury"] .ms-chapter,
+    .arch-main-street[data-ms-family="luxury"] .ms-rev-pq{
+      --ms-bg:var(--ms-contrast-bg);
+      --ms-fg:var(--ms-contrast-fg);
+      --ms-fg-muted:var(--ms-contrast-fg-muted);
+      background:var(--ms-bg);
+      color:var(--ms-fg);
+    }
+
+    /* Modern — flip Module goods to contrast (positioned at #2 in the stack,
+       right after the hero). Signature founder is already contrast via
+       .ms-founder-band (positioned at #5). That gives Modern real alternation
+       (b, c, b, b, c, b, b, b) rather than the c-c-c clump the original plan
+       hit — Modern's stack puts founder between collections and reviews, so
+       flipping either of those creates founder-adjacency. Goods is naturally
+       separated from founder by marquee + collections, so its flip breathes.
+
+       KNOWN OPEN — the family contrast pair reads "white and charcoal on every
+       family" today because most skins don't declare a p.contrast pair, so the
+       default is a full bg/fg inversion. Family-appropriate contrast pairs
+       (Rustic → walnut on cream, Cozy → deep ember on linen, Modern → warm
+       gray on paper, etc.) is a skin-level design change and lands separately. */
+    .arch-main-street[data-ms-family="modern"] .ms-module-section{
+      --ms-bg:var(--ms-contrast-bg);
+      --ms-fg:var(--ms-contrast-fg);
+      --ms-fg-muted:var(--ms-contrast-fg-muted);
+      background:var(--ms-bg);
+      color:var(--ms-fg);
+    }
     .arch-main-street .ms-subs-desc{color:var(--ms-fg-muted);margin:0 0 16px}
     .arch-main-street .ms-subs-cue{color:var(--ms-accent)}
   `;
 }
 
-export function MainStreetRoot({ skin, family, children }: { skin: ArchetypeTheme; family?: { wallpaperUrl: string; textureOpacity: number } | undefined; children: React.ReactNode }) {
+export function MainStreetRoot({ skin, family, children }: { skin: ArchetypeTheme; family?: { key: string; wallpaperUrl: string; textureOpacity: number } | undefined; children: React.ReactNode }) {
   return (
     <>
       <link rel="stylesheet" href={fontHref(skin)} />
@@ -1253,7 +1304,7 @@ export function MainStreetRoot({ skin, family, children }: { skin: ArchetypeThem
           }}
         />
       )}
-      <div className="arch-main-street">
+      <div className="arch-main-street" data-ms-family={family?.key}>
         <div className="ms-grain" aria-hidden />
         {family && <div className="ms-family-texture" aria-hidden />}
         {children}
