@@ -1015,6 +1015,13 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-float-card-eyebrow{color:var(--ms-accent);display:block;margin-bottom:18px}
     .arch-main-street .ms-float-card-rule{width:46px;height:2px;background:var(--ms-accent);margin-bottom:20px;display:block}
     .arch-main-street .ms-float-card-brand{color:var(--ms-fg);margin:0}
+    /* The card is narrow (max 460px). A long single word ("Lenticular",
+       "Constellation") at the skin's default brand size overflows the content
+       area, and the global [data-type="brand"] overflow-wrap:break-word rule
+       breaks it mid-character. Cap the brand size here so common long shop
+       names fit at word boundaries, and free the h1 from the 18ch limit so
+       the card's own max-width is the constraint. */
+    .arch-main-street .ms-float-card [data-type="brand"]{font-size:clamp(36px,4.5vw,64px);line-height:1.02;max-width:none}
     .arch-main-street .ms-float-card-sub{color:var(--ms-fg-muted);margin:20px 0 0}
     .arch-main-street .ms-float-card-actions{display:flex;gap:16px;margin-top:28px;flex-wrap:wrap}
     .arch-main-street .ms-float-card-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:15px 24px;border-radius:2px;display:inline-block}

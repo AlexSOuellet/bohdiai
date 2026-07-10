@@ -83,6 +83,17 @@ describe('skinVarsCss', () => {
     expect(scrimRule).toContain('pointer-events:none');
   });
 
+  it('caps the FloatingCard brand size so long shop names fit the narrow card at word boundaries (no mid-word breaks)', () => {
+    // The global [data-type="brand"] rule sets max-width:18ch + overflow-wrap:
+    // break-word, which is fine for wide heroes but breaks long single words
+    // (e.g. "Lenticular") mid-character inside the FloatingCard's narrow
+    // (max 460px) card. Live regression on lenticular-lumens caught this.
+    const css = skinVarsCss(skin);
+    const rule = css.match(/\.arch-main-street \.ms-float-card \[data-type="brand"\]\{[^}]+\}/)![0];
+    expect(rule).toContain('font-size:clamp(');
+    expect(rule).toContain('max-width:none');
+  });
+
   it('styles the moment hero brand block for over-media legibility (Session-66 — CTAs replaced by caption)', () => {
     const css = skinVarsCss(skin);
     const subRule = css.match(/\.ms-momenthero-brand-sub\{[^}]+\}/)![0];
