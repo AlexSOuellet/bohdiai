@@ -4,25 +4,25 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-07-09, Session 68.
+**Last updated:** 2026-07-10, Session 69.
 
 ---
 
 ## Current state
 
-**Session 68 closed Waves B and C end-to-end.** Wave B: pull-quote grid-stack, split-center navbar cap, Cheerful mobile Collage stack, Cozy mobile Constellation, Cheerful navbar fade over Collage image. Wave C: family wallpapers now paint behind every section (six PNGs in `/public/textures/`, per-family opacities tuned subtle), and Luxury + Modern got section-surface variation flips so their page reads as alternating rhythm instead of flat. Modern's flip choice needed a re-do — original plan (Cascade + Rating flip) created a three-in-a-row contrast clump adjacent to the auto-contrast founder; Alex caught it, correct fix was flipping goods (position #2, well separated from founder at #5).
+**Session 69 reshaped Wave D and tested the editor swap.** Alex redirected the original plan (strip mood-baking + ship filter grade) — atmospherics baked into images are fine at onboarding, but PRODUCT identity must stay honest to the maker's real range. Two crew guardrails landed instead: (1) Copywriter authors products from the niche's honest range regardless of mood; a candle maker's line spans black, cream, terracotta, ivory, sage no matter which mood; every product description must name actual material and color. (2) Graphic Artist keeps the authored color and material of the product itself; only setting, light, and framing follow the mood. Verified live — Aurora Candles (pre-guardrail) came back 4/5 dark; Lenticular Lumens (post-guardrail) came back charcoal, black, ivory, oxblood, pale sage. The copywriter narratively bridged Pale Amber ("Not every room earns its shadow"). Saltgrass rendered slightly darker than authored — minor residual worth watching.
 
-**Also landed:** niche-writer skill re-pointed from `niche-leatherworker.json` (never existed) to `niche-woodworker.json` (the de facto bar).
+**Also landed:** Industrial retired from the picker (was still surfacing); Seedance video default dropped from 6s to 4s (~33% cost cut per video-hero build); FloatingCard hero brand-size fix so long shop names don't break mid-character.
 
-**Design decisions locked this session:** (1) Editor Door 2 texture picker shows BOTH family bench (3 platform-curated per family) AND niche shelf (3-5 authored by niche-writer). Rustic candle maker sees different combined options than Rustic leatherworker. (2) Niche-writer texture output needs to change from 10-14 names to 3-5 directions with prompts.
+**Editor Door 1 rediscovered.** I proposed adding a URL-param preview; Alex pushed back — the editor already exists at `/dashboard/website` (mood radios, skin shelf, "Use this look" in-place re-skin). Full-Plan Phase 3 is stale. Alex tried the swap through every mood on Lenticular; Rustic needed a click-away-and-back once on first entry (one-shot UI hiccup, not reproducing).
 
-**Open architectural signal — Wave D scope:** Bohdi's Graphic Artist still runs a discarded skin pick (leftover cruft) AND writes image prompts with mood/trajectory language, so mood is baked into pixels, not filter-applied. The mood-neutral library test cowork ran just failed by producing boring images — because "mood-neutral" was applied as no color grade only, without pushing composition. The cinematic hero shot is used by four of six families (Cozy, Rustic, Dark, Modern), not just one. All this gates the Editor swap test on Twilight to Darkness — Wave D has to ship first.
+**Detours:** three-week-old `editor-test@bohdiai.com` session silently refreshing across four onboardings; created `alex@bohdiai.com` / `password` via `scripts/seed-editor-test-owner.mjs` with admin on Lenticular + Living Beauty. Then `/dashboard/website` 404'd until we upserted an `editor` row into `feature_flags`; dev NODE_ENV bypass fired for onboarding but not editor and we don't know why.
 
-Six commits: `296fc09` (B3), `3b2856e` (B4-B7), `ee92e2b` (niche-writer), `2d20913` (C1 wallpapers), `e7bc8e0` (C2 surface flips), plus docs. 954 tests pass, tsc clean, lint clean.
+**Onboardings run:** Aurora Candles (Dark, pre-guardrail), Lenticular Lumens (Dark, post-guardrail), Living Beauty (Cheerful × florist).
 
-Fix-plan waves still pending: D (imagery grade §1.8), E (sub-page compositions), F (Session-65 audit rollups). Plus known-open: skin-level contrast pair per family so contrast surface stops reading as generic "white and charcoal" on every mood.
+Five commits: `0760bac` (Industrial), `61a0f3a` (crew guardrails), `af2c1e2` (Seedance 4s), `2e7a9b6` (FloatingCard), `991d112` (editor flag script). Tests pass, tsc + lint clean.
 
-**Test tenants:** Same seven live tenants — all now render with Session-66 + Session-67 + Session-68 fixes via the family-default pipeline.
+**Open — carry to Session 70:** reviews-cards fade-out on Cheerful × Living Beauty (bubble CSS is solid; cause is elsewhere). Saltgrass mood-pull residual. Dev feature-flag bypass mystery. Wave D done via guardrails; E (sub-page compositions) and F (audit rollups) still pending.
 
 ## Parallel workstream — cowork
 
@@ -30,21 +30,21 @@ Cowork runs on Alex's cadence between our sessions, reading `Project-Docs/Cowork
 
 ## Next actions
 
-**Session 69 — Wave D, then tryon swap test.**
+**Session 70 — diagnose the fade-out, then move on.**
 
-1. Wave D — strip mood-baking from image prompts (product images become honest/well-lit/real-color per D30; hero + portrait + backdrop still carry family imagery direction). Ship per-image normalize + family CSS filter grade at render time. Delete the discarded Graphic Artist skin-pick cruft in the same commit. Regenerate one build per family, confirm honest product imagery + shop still feels family-distinct.
-2. Then the tryon swap test on Twilight to Darkness through all six families. If mood-samey ghost is dead, family layer earned its keep and Waves E + F land with confidence. If not, foundation needs rework before either.
-3. Wave E (30 sub-page compositions) waits on the tryon result. Wave F (audit rollups) is invisible and can slot anytime.
+1. **Reviews-cards fade-out on Cheerful.** Living Beauty's texts treatment shows the coral bubbles at reduced saturation. Bubble CSS is solid so cause is elsewhere. Suspects: `.ms-family-texture` at 0.30 opacity for Confetti stacking above section content somehow, `.ms-grain` multiply factor, or Confetti's actual `--ms-accent` reading paler than expected against a brightest-mood expectation. Diagnose first; fix or accept.
+2. **Saltgrass residual mood-pull.** Pale sage vessel on Lenticular came back darker than authored. Might need a sharper Graphic Artist nudge on rendering pale colors as pale; might just be a one-off. Look at the actual image before deciding.
+3. **Full Plan Phase 3 checkboxes.** Editor Door 1 is built and working. The plan lists it as unbuilt. Update to reflect reality.
 
 **Owed alongside:**
-- Niche-writer skill update — cut textures section from 10-14 names to 3-5 directions with prompts (feeds Editor Door 2 shelf).
+- Niche-writer skill update — cut textures section from 10-14 names to 3-5 directions with prompts (feeds Editor Door 2 shelf). Blocks cowork redoing texture sections on the five draft style sheets.
 - Bulk-approve DB `niches.status = 'approved'` for niches Alex trusts so the onboarding picker shows more than 2 options.
 - Cowork continues niche-writer batches (38 remaining in the Session-45 batch).
-- Once library has coverage for a few niches, wire onboarding's Graphic Artist stage to read library-first (deferred — library empty until image-gen path settled).
 - Family-appropriate contrast pairs per skin (Rustic → walnut on cream, Modern → warm gray on paper, etc.) so contrast surface stops reading as generic "white and charcoal" across families.
 - Session-65 §1.5 audit rollups (tool schemas + AbortController) still owed; slot in Wave F when the surface is settled.
+- Investigate the dev feature-flag bypass mystery (low priority; DB row overrides it). Alex signs out of the stale editor-test session and stays as alex@bohdiai.com from here.
 
-Alex's rule for Session-66-Fix-Plan: all waves land before Phase 2 begins.
+**Wave state:** D done via crew guardrails (not strip-and-grade). E (sub-page compositions) and F (audit rollups) still pending. Alex's rule stands: all waves land before Phase 2 begins.
 
 ---
 
@@ -80,6 +80,7 @@ Alex's rule for Session-66-Fix-Plan: all waves land before Phase 2 begins.
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 69 (2026-07-10): Wave D reshaped from strip-mood-baking to two crew guardrails — products stay honest to the niche's real range regardless of mood; graphic artist keeps authored color and material, only atmosphere follows the mood. Verified live: Aurora Candles (pre-guardrail, 5/5 dark) vs Lenticular Lumens (post-guardrail, real diversity). Also landed: Industrial retired from the picker, Seedance video 6s → 4s, FloatingCard hero fix for long shop names. Editor Door 1 rediscovered as already-built — the Full Plan Phase 3 checkboxes are stale. Alex tried the swap through every mood on Lenticular; Rustic needed a click-away-and-back once. Detours: three-week-old `editor-test@bohdiai.com` session tangle resolved by seeding `alex@bohdiai.com`; `/dashboard/website` 404 patched by upserting the `editor` feature-flag row (dev NODE_ENV bypass mystery still open). Open: reviews-cards fade-out on Cheerful. Five commits.
 - Session 68 (2026-07-09): Closed Waves B and C. B3 pull-quote grid-stack; B4 split-center navbar cap + wordmark wrap; B5 Cheerful mobile Collage clean stack; B6 Cozy mobile Constellation no-overlap; B7 added mid-session — Cheerful navbar fade over Collage image. C1 family wallpapers paint behind every section (six PNGs in `/public/textures/`, tuned subtle); C2 Luxury flipped Chapters + Pull-Quote to contrast, Modern flipped goods to contrast after original Cascade+Rating plan created a three-in-a-row clump. Also re-pointed niche-writer skill from missing leatherworker.json to woodworker.json. Editor Door 2 texture picker model locked: family bench + niche shelf combined. Long design chat surfaced Wave D scope (Graphic Artist skin-pick cruft, mood-baking still in image prompts, cinematic hero used by 4/6 families, library-image test failed as boring). Six commits (five feature + docs). 954 tests pass.
 - Session 67 (2026-07-08): Closed Wave A (A5 — Rustic crate label contrast) and started Wave B (B1 founder attribution wrap, B2 shop CTA button wrap). Landed image library plumbing (`library_assets` table + Storage bucket + `/api/library/ingest` endpoint + docs). Cowork drafted 5 niches from Session-45 batch in parallel. 954 tests pass.
 - Session 66 (2026-07-07): Six-family walkthrough with Alex. Drafted `Session-66-Fix-Plan.md` (six waves). Landed Wave A items A1–A4: Cozy hero refactor (CTAs → subheading + z-index/color-mix fix), Reviews → Testimonials rename, Testimonials moved to footer, Modern marquee spacing + SplitHero nav full-width fix. A5 (Rustic labels) carries to Session 67.

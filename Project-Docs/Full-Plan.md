@@ -254,31 +254,33 @@ All six original open items from the Session 63/64 plan are now settled. Sources
 
 **Goal.** Alex's second top priority, door 1. A maker can try another mood after onboarding and see their exact content re-rendered under a different family.
 
+**Status (2026-07-10, Session 69):** Built and live-tested on Lenticular Lumens. This section was tracking as unbuilt through Session 68; that was stale. The editor page ships at `/dashboard/website`; `commitLook` server action swaps in-place via `applyLookToEnvelope`; feature-flagged, always-on in dev. Alex tried every mood on Lenticular — all read well except a one-shot Rustic UI hiccup that didn't reproduce.
+
 ### 3.1 — Design
 
-- [ ] Extend `Editor-Design.md` into a full implementation plan for door 1
-- [ ] Split-screen layout — controls left, live scrollable real site right
-- [ ] Seven mood radio buttons (or six, per 1.0 decision)
-- [ ] Full style-sheet preview per mood (palette + real fonts together, not just a color chip)
-- [ ] "Use this look" commit action (persists `family_key` change; reversible)
+- [x] Extend `Editor-Design.md` into a full implementation plan for door 1
+- [x] Split-screen layout — controls left, live scrollable real site right
+- [x] Six mood radio buttons (per 1.0 lock — Industrial retired Session 69)
+- [x] Full style-sheet preview per mood (palette + real fonts together, not just a color chip)
+- [x] "Use this look" commit action (persists mood + skin change; the prior pair is stashed on `root.previousLook` for a one-click revert)
 
 ### 3.2 — Build
 
-- [ ] Pure renderer re-skin — no AI, no regeneration
-- [ ] Re-render same content under a different family key
-- [ ] Instant, no build time
+- [x] Pure renderer re-skin — no AI, no regeneration
+- [x] Re-render same content under a different family key
+- [x] Instant, no build time
 
 ### 3.3 — Live-test
 
 - [ ] Sheri's store: try every family, verify her content flows correctly into each
-- [ ] Alex confirms visually
+- [x] Alex confirms visually — Lenticular Lumens run in Session 69
 
 ### Phase 3 Definition of Done
 
-- Editor door 1 available in the dashboard.
-- Live-tested on a real store with real content.
-- Reversible.
-- Alex signs off.
+- [x] Editor door 1 available in the dashboard.
+- [x] Live-tested on a real store with real content.
+- [x] Reversible.
+- [ ] Alex signs off (pending — Sheri's store still to try; reviews-cards fade-out on Cheerful still to diagnose).
 
 ---
 
