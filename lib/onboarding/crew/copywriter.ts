@@ -124,6 +124,9 @@ ${storyDirective}
 - about.story (2-5 paragraphs, each 40+, no hard cap): the About page body.
 - contact.heading (4-48): the Contact page heading.
 - contact.intro (20+, no hard cap): the Contact page invitation. Real email and phone are unknown at build time and the maker adds them later, so write the voice, not contact details.
+
+PRODUCTS ARE NICHE-DRIVEN, NOT MOOD-DRIVEN. The mood shapes the copy VOICE around each product (how you name it, how you describe the feeling of it, the register of the words) and the store CHROME (palette, type, layout — none of which you author). The mood does NOT dictate what the maker actually makes. A candle maker's real range spans black, cream, terracotta, ivory, and sage vessels; a jeweler's spans gold, silver, brass, and stone; a soap maker's spans white, oatmeal, charcoal, honey, and rose. Pull from the niche's honest range regardless of which mood the maker picked. A Dark-mood candle shop and a Cheerful-mood candle shop should have OVERLAPPING product ranges — a white tea candle in a pale ceramic vessel is honest inventory for both. Every product's shortDescription and description should name the ACTUAL material and color of the piece specifically (e.g. "in a matte cream ceramic vessel", "brushed brass and freshwater pearl"), so the imagery has something honest to anchor to.
+
 - products (write ${target}): each { name (2-40), slug (2-48, lowercase-hyphen), shortDescription (4-90), description (12+, no hard cap), basePriceCents (integer cents, e.g. 4800 = $48) }.
 
 Call submit_copy now.`;

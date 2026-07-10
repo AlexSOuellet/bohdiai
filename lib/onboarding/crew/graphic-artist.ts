@@ -99,7 +99,7 @@ Choose with set_look:
 - skinKey: the store's skin. Pick exactly ONE key from this list — these are the skins that fit the ${brief.moodLabel} mood the maker chose:
 ${skinList}
 - founderPhoto: the maker AT WORK — framed on their hands and their craft at the bench, NOT their face. Never specify the maker's gender, age, or appearance (no "a man", "a woman", "bearded", etc.) — the maker adds their own real photo later; this placeholder is about the work, not the person. { prompt: the setting, framing, and light of the shot; alt: a short, plain description of the shot }. The system enforces the maker's framing and realism; you set the scene and its light.
-- products: an image prompt for EVERY product above — an array of { slug, imagePrompt }, one entry per slug, no extras: the product shot, its surface, and its light, in the same world as the Moment and the skin.
+- products: an image prompt for EVERY product above — an array of { slug, imagePrompt }, one entry per slug, no extras: the product shot, its surface, and its light, in the same world as the Moment and the skin. The product itself keeps its authored color and material — never tint, darken, brighten, or restyle the product to match the mood. A white candle stays white in a Dark store; an orange soap stays orange in a Cheerful store. Only the setting, light, and framing around the product follow the Moment's world.
 
 Set the look now.`;
 }

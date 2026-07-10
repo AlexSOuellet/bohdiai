@@ -89,6 +89,14 @@ describe('designLook (the Graphic Artist)', () => {
     expect(args.tool_choice).toEqual({ type: 'tool', name: 'set_look' });
   });
 
+  it('instructs the artist to keep the product itself honest — mood shapes the setting, not the product', async () => {
+    create.mockResolvedValueOnce(toolMsg(look));
+    await designLook(brief, trajectory, story, scene, products);
+    const args = create.mock.calls[0]![0] as { system: string };
+    expect(args.system).toContain('keeps its authored color and material');
+    expect(args.system).toContain('never tint, darken, brighten, or restyle the product to match the mood');
+  });
+
   it('rejects a skin outside the mood subset, then accepts an in-subset fix (the D41 gate)', async () => {
     const offMood = { ...look, skinKey: 'main-street-marquee' }; // bold/street — not rustic
     create.mockResolvedValueOnce(toolMsg(offMood)).mockResolvedValueOnce(toolMsg(look));

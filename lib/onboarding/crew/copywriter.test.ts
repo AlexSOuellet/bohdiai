@@ -168,6 +168,15 @@ describe('writeCopy (the Copywriter)', () => {
     expect(args.system.toLowerCase()).toMatch(/no period|not a sentence|no sentence punctuation/);
   });
 
+  it('tells the copywriter products are niche-driven, not mood-driven — the mood shapes voice, the niche shapes what the maker actually makes', async () => {
+    create.mockResolvedValueOnce(toolMsg(draft));
+    await writeCopy(brief, trajectory);
+    const args = create.mock.calls[0]![0] as { system: string };
+    expect(args.system).toContain('PRODUCTS ARE NICHE-DRIVEN, NOT MOOD-DRIVEN');
+    expect(args.system).toContain('The mood does NOT dictate what the maker actually makes');
+    expect(args.system).toContain('name the ACTUAL material and color of the piece specifically');
+  });
+
   it('does not deal any treatment picks to the copywriter (§1.5 — family owns section variants)', async () => {
     create.mockResolvedValueOnce(toolMsg(draft));
     await writeCopy(brief, trajectory);
