@@ -26,10 +26,12 @@ export const MOMENT_VIDEO_TIMEOUT_MS = 240_000;
 export const SEEDANCE_VIDEO_MODEL = 'bytedance/seedance-2.0/fast/text-to-video';
 const FLUX_IMAGE_MODEL = 'fal-ai/flux-pro';
 
-// Seedance accepts whole-second durations from 4 to 15. Default to 6 — a short
-// atmospheric loop is plenty for a held moment backdrop. Clamp anything else in.
+// Seedance accepts whole-second durations from 4 to 15. Default to 4 — the
+// shortest clip Seedance allows, which is plenty for a locked-camera atmospheric
+// loop and cuts the per-video cost by a third vs. the prior 6-second default.
+// Clamp anything else in.
 function seedanceDuration(durationSec: number | undefined): string {
-  const n = Math.round(durationSec ?? 6);
+  const n = Math.round(durationSec ?? 4);
   return String(Math.max(4, Math.min(15, n)));
 }
 

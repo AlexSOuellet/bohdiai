@@ -172,7 +172,7 @@ function mediaJobs(a: MainStreetAuthored): MediaJob[] {
   const heroPrompt = sceneToPrompt(a.content.moment.media.prompt, heroKind);
   const hero: MediaJob =
     heroKind === 'video'
-      ? { id: 'hero', kind: 'video', prompt: heroPrompt, aspect: '16:9', durationSec: 6, group: 'feature' }
+      ? { id: 'hero', kind: 'video', prompt: heroPrompt, aspect: '16:9', durationSec: 4, group: 'feature' }
       : { id: 'hero', kind: 'still', prompt: heroPrompt, aspect: '16:9', group: 'feature' };
   const jobs: MediaJob[] = [
     hero,

@@ -91,12 +91,13 @@ describe('generateMomentVideo', () => {
     expect(opts.input.generate_audio).toBe(false);
   });
 
-  it('defaults to a 6-second clip and clamps to Seedance valid range (4-15)', async () => {
+  it('defaults to a 4-second clip and clamps to Seedance valid range (4-15)', async () => {
     subscribeMock.mockResolvedValue({ data: { video: { url: 'https://fal.cdn/c.mp4' } } });
     const { generateMomentVideo } = await import('./media');
-    // default → "6" (a short atmospheric loop; valid on Seedance)
+    // default → "4" (Seedance's minimum; shorter is cheaper and enough for a
+    // held atmospheric loop)
     await generateMomentVideo('x', { subdomain: 'sub' });
-    expect(subscribeMock.mock.calls[0]![1].input.duration).toBe('6');
+    expect(subscribeMock.mock.calls[0]![1].input.duration).toBe('4');
     // 10 passes through
     await generateMomentVideo('x', { subdomain: 'sub', durationSec: 10 });
     expect(subscribeMock.mock.calls[1]![1].input.duration).toBe('10');
