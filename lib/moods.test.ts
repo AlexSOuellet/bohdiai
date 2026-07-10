@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { MOODS, MOOD_LIST, type MoodKey } from './moods';
 
 describe('MOODS', () => {
-  it('has all seven canonical feelings', () => {
+  it('has all six canonical feelings', () => {
     const expected: MoodKey[] = [
       'dark',
       'rustic',
@@ -10,7 +10,6 @@ describe('MOODS', () => {
       'modern',
       'elegant',
       'cheerful',
-      'industrial',
     ];
     for (const k of expected) {
       expect(MOODS[k]).toBeDefined();
@@ -19,11 +18,12 @@ describe('MOODS', () => {
     expect(MOOD_LIST.length).toBe(expected.length);
   });
 
-  it('has retired the color-as-mood keys (botanical / sunset / simple)', () => {
+  it('has retired the color-as-mood keys (botanical / sunset / simple) and industrial', () => {
     const keys = Object.keys(MOODS);
     expect(keys).not.toContain('botanical');
     expect(keys).not.toContain('sunset');
     expect(keys).not.toContain('simple');
+    expect(keys).not.toContain('industrial');
   });
 
   it('every entry has a non-empty label and a feel-based description (no craft lists)', () => {

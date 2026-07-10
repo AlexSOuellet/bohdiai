@@ -171,8 +171,9 @@ describe('getFamily', () => {
   });
 
   it('maps the retired "industrial" mood to Modern (nearest shelf neighbor)', () => {
-    // No tenants currently carry industrial; this is the defensive fallback
-    // until a follow-up migration drops it from MoodKey.
+    // Industrial is no longer in MoodKey (retired at the picker). This is
+    // the defensive fallback for any legacy stored value that still reads
+    // 'industrial' — routes safely to Modern instead of the Cozy default.
     expect(getFamily('industrial').key).toBe('modern');
   });
 

@@ -109,7 +109,6 @@ export const REFERENCE_LABELS = {
       modern: 'Modern',
       elegant: 'Elegant',
       cheerful: 'Cheerful',
-      industrial: 'Industrial',
     },
     descriptions: {
       dark: 'Low light and deep shadow. Moody and a little mysterious, with drama where most stores play it safe.',
@@ -118,7 +117,6 @@ export const REFERENCE_LABELS = {
       modern: 'Clean, confident, and geometric. Bold and contemporary — not quiet minimalism, design that speaks up.',
       elegant: 'Refined and graceful. Quiet luxury, fine detail, the sense that every choice was considered.',
       cheerful: 'Bright and lifted, color-positive. Sun on the page — a store that smiles back.',
-      industrial: 'Raw, tough, and machined. Concrete, metal, and hard edges — strength over softness.',
     },
   },
   families: {

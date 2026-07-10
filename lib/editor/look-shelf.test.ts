@@ -9,7 +9,7 @@ import {
 import { moodAlignedSkins } from '@/lib/archetypes/main-street/skin-selection';
 
 describe('FEELINGS', () => {
-  it('is the seven-feeling lineup in order', () => {
+  it('is the six-feeling lineup in order', () => {
     expect(FEELINGS.map((f) => f.key)).toEqual([
       'dark',
       'rustic',
@@ -17,7 +17,6 @@ describe('FEELINGS', () => {
       'modern',
       'elegant',
       'cheerful',
-      'industrial',
     ]);
   });
 });

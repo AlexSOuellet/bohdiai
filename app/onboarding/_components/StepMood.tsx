@@ -82,15 +82,6 @@ const MOOD_VISUALS: Record<MoodKey, MoodVisual> = {
     uppercase: false,
     weight: 600,
   },
-  // industrial → Forge (cold blue-charcoal + mustard, condensed Oswald caps)
-  industrial: {
-    bg: '#14171A',
-    fg: '#DDE2E5',
-    accent: '#D9A21B',
-    displayFont: "'Oswald', 'Arial Narrow', sans-serif",
-    uppercase: true,
-    weight: 600,
-  },
 };
 
 /** One combined Google Fonts href that loads every display face the picker
@@ -103,7 +94,6 @@ const PICKER_FONTS_HREF =
   '&family=Syne:wght@800' +
   '&family=Cinzel:wght@600' +
   '&family=Fredoka:wght@600' +
-  '&family=Oswald:wght@600' +
   '&display=swap';
 
 interface StepMoodProps {

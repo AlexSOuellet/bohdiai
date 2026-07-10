@@ -53,7 +53,7 @@ export interface SkinStyleSheet {
   fontHref: string;
 }
 
-/** The seven feelings in lineup order, with their maker-facing labels. */
+/** The six feelings in lineup order, with their maker-facing labels. */
 export const FEELINGS: ReadonlyArray<{ key: MoodKey; label: string; description: string }> =
   MOOD_LIST.map((m) => ({ key: m.key, label: m.label, description: m.description }));
 

@@ -1,6 +1,6 @@
 import { REFERENCE_LABELS } from './archetypes/main-street/defaults';
 
-export type MoodKey = 'dark' | 'rustic' | 'cozy' | 'modern' | 'elegant' | 'cheerful' | 'industrial';
+export type MoodKey = 'dark' | 'rustic' | 'cozy' | 'modern' | 'elegant' | 'cheerful';
 
 export type PaletteTemperature = 'warm' | 'cool' | 'neutral';
 export type BrightnessDirection = 'dark' | 'mid' | 'light';
@@ -103,18 +103,6 @@ export const MOODS: Record<MoodKey, Mood> = {
       typeCharacter: 'sans-leaning',
       textureAffinity: 'either',
       defaultScheme: 'light',
-    },
-  },
-  industrial: {
-    key: 'industrial',
-    label: REFERENCE_LABELS.moods.labels.industrial,
-    description: REFERENCE_LABELS.moods.descriptions.industrial,
-    designDirection: {
-      paletteTemperature: 'cool',
-      brightness: 'mid',
-      typeCharacter: 'sans-leaning',
-      textureAffinity: 'rich',
-      defaultScheme: 'dark',
     },
   },
 };
