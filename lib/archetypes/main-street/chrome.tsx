@@ -164,13 +164,15 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     /* Family texture — a fixed material layer painted behind every section using
        the family's default wallpaper. Positioned fixed so the texture doesn't
        scroll (feels like paper/wood/marble UNDER the page, not a repeating strip
-       moving with content). z-index:0 puts it above the surface color but below
-       every section (which run at z-index:auto and stack above via document flow
-       + our isolation:isolate on .arch-main-street). Opacity comes from the
-       family so linen and marble stay whisper-subtle and concrete/confetti read
-       louder. Editor Door 2 will let the maker swap to another wallpaper in the
-       family's bench by rewriting --ms-texture-url. */
-    .arch-main-street .ms-family-texture{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:var(--ms-texture-url);background-size:cover;background-position:center;background-repeat:no-repeat;opacity:var(--ms-texture-opacity,0)}
+       moving with content). z-index:-1 clamps to the bottom of the stacking
+       context created by isolation:isolate on .arch-main-street — so it sits
+       above the container's surface color but below every section. Without the
+       clamp a positioned z-index:0 element paints ABOVE non-positioned in-flow
+       sections, which is the wash bug the layer used to cause. Opacity comes
+       from the family so linen and marble stay whisper-subtle and concrete /
+       confetti read louder. Editor Door 2 will let the maker swap to another
+       wallpaper in the family's bench by rewriting --ms-texture-url. */
+    .arch-main-street .ms-family-texture{position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:var(--ms-texture-url);background-size:cover;background-position:center;background-repeat:no-repeat;opacity:var(--ms-texture-opacity,0)}
     .arch-main-street .archetype-photo{filter:${a.photoFilter ?? 'none'};display:block;width:100%;height:100%;object-fit:cover}
     .arch-main-street .ms-wrap{max-width:1200px;margin-inline:auto;padding-inline:40px}
     @media(max-width:860px){.arch-main-street .ms-wrap{padding-inline:20px}}

@@ -22,7 +22,7 @@
 
 Five commits: `0760bac` (Industrial), `61a0f3a` (crew guardrails), `af2c1e2` (Seedance 4s), `2e7a9b6` (FloatingCard), `991d112` (editor flag script). Tests pass, tsc + lint clean.
 
-**Open — carry to Session 70:** reviews-cards fade-out on Cheerful × Living Beauty (bubble CSS is solid; cause is elsewhere). Saltgrass mood-pull residual. Dev feature-flag bypass mystery. Wave D done via guardrails; E (sub-page compositions) and F (audit rollups) still pending.
+**Open — carry to Session 70:** Dev feature-flag bypass mystery. Wave D done via guardrails; E (sub-page compositions) and F (audit rollups) still pending. (Reviews-cards fade on Cheerful was diagnosed + fixed Session 70 as `.ms-family-texture` z-index — wallpaper layer was painting above sections instead of behind them; changed to z-index:-1 with `isolation:isolate` on the container clamping it to the bottom of the stacking context. Saltgrass "residual" was carried forward from Session 69 as a Claude-inserted observation Alex never reported — dropped from the open list.)
 
 ## Parallel workstream — cowork
 
@@ -30,17 +30,14 @@ Cowork runs on Alex's cadence between our sessions, reading `Project-Docs/Cowork
 
 ## Next actions
 
-**Session 70 — diagnose the fade-out, then move on.**
+**Session 70 — move on after the fade-out fix.**
 
-1. **Reviews-cards fade-out on Cheerful.** Living Beauty's texts treatment shows the coral bubbles at reduced saturation. Bubble CSS is solid so cause is elsewhere. Suspects: `.ms-family-texture` at 0.30 opacity for Confetti stacking above section content somehow, `.ms-grain` multiply factor, or Confetti's actual `--ms-accent` reading paler than expected against a brightest-mood expectation. Diagnose first; fix or accept.
-2. **Saltgrass residual mood-pull.** Pale sage vessel on Lenticular came back darker than authored. Might need a sharper Graphic Artist nudge on rendering pale colors as pale; might just be a one-off. Look at the actual image before deciding.
-3. **Full Plan Phase 3 checkboxes.** Editor Door 1 is built and working. The plan lists it as unbuilt. Update to reflect reality.
+1. **Full Plan Phase 3 checkboxes.** Editor Door 1 is built and working. The plan lists it as unbuilt. Update to reflect reality.
 
 **Owed alongside:**
 - Niche-writer skill update — cut textures section from 10-14 names to 3-5 directions with prompts (feeds Editor Door 2 shelf). Blocks cowork redoing texture sections on the five draft style sheets.
 - Bulk-approve DB `niches.status = 'approved'` for niches Alex trusts so the onboarding picker shows more than 2 options.
 - Cowork continues niche-writer batches (38 remaining in the Session-45 batch).
-- Family-appropriate contrast pairs per skin (Rustic → walnut on cream, Modern → warm gray on paper, etc.) so contrast surface stops reading as generic "white and charcoal" across families.
 - Session-65 §1.5 audit rollups (tool schemas + AbortController) still owed; slot in Wave F when the surface is settled.
 - Investigate the dev feature-flag bypass mystery (low priority; DB row overrides it). Alex signs out of the stale editor-test session and stays as alex@bohdiai.com from here.
 
