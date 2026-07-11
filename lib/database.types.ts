@@ -1794,41 +1794,6 @@ export type Database = {
           },
         ]
       }
-      store_versions: {
-        Row: {
-          created_at: string
-          envelope: Json
-          id: string
-          label: string
-          tenant_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          envelope: Json
-          id?: string
-          label: string
-          tenant_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          envelope?: Json
-          id?: string
-          label?: string
-          tenant_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "store_versions_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       subscriptions: {
         Row: {
           billing_interval: string | null

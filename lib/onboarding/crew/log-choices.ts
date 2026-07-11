@@ -18,10 +18,7 @@ import type { Json } from '@/lib/database.types';
 import { logger } from '@/lib/logger';
 import type { Trajectory } from './trajectory';
 
-/** The two kinds of Moment the cinematographer now produces. The legacy 'image'
- *  kind is excluded — the cinematographer no longer emits it (Task 4). Old stores
- *  with kind: 'image' keep rendering through MediaSlot, but new builds land on
- *  video or spotlight only. */
+/** The two kinds of hero the cinematographer produces. */
 const MOMENT_KINDS = ['video', 'still'] as const;
 
 export type DesignDecisionType = 'trajectory' | 'moment-kind';

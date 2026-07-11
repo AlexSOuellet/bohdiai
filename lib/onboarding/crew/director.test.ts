@@ -77,7 +77,7 @@ describe('direct (the Director)', () => {
   });
 
   it('forwards the director-picked heroKind through to the trajectory', async () => {
-    // same mock pattern as the rest of the suite — override heroKind to spotlight
+    // same mock pattern as the rest of the suite — override heroKind to still
     create.mockResolvedValueOnce(toolMsg({ ...valid, heroKind: 'still' }));
     const t = await direct(brief);
     expect(t.heroKind).toBe('still');

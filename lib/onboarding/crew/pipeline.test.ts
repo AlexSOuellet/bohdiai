@@ -32,12 +32,12 @@ const trajectory = {
 
 const copy = {
   shopName: 'Tannery Row',
-  identity: { wordmark: 'Tannery Row', nav: [{ label: 'Shop', target: 'shop' }, { label: 'Our story', target: 'about' }] },
+  identity: { wordmark: 'Tannery Row' },
   moment: { story: ['Built by hand', 'Made to outlast you'], eyebrow: 'From the workshop', brand: 'Tannery Row', sub: 'Hand-cut leather goods built to outlast you', ctaLabel: 'See the work', ctaTarget: 'shop' },
-  goods: { title: 'The bench', treatment: 'procession' },
+  goods: { title: 'The bench' },
   marquee: { voice: ['Small batch', 'Cut by hand', 'Made to last'] },
   reviews: { title: 'Kind words', items: [{ quote: 'These belts are the real thing and only get better with age.', author: 'Dana R.' }, { quote: 'Worth every penny and then some.', author: 'Marcus T.' }] },
-  founder: { quote: 'I would rather make one belt that lasts thirty years than ten that fall apart.', attribution: 'Sam, founder', treatment: 'quote' },
+  founder: { quote: 'I would rather make one belt that lasts thirty years than ten that fall apart.', attribution: 'Sam, founder' },
   close: { label: 'Come by', headline: 'Built to outlast us', ctaLabel: 'Order yours', ctaTarget: 'contact' },
   about: { heading: 'The story', story: ['We started at a single bench with a knife and more patience than sense, and that has not changed.', 'Everything here is meant to be used hard and handed down the way good things always were.'] },
   contact: { heading: 'Say hello', intro: 'We read everything that comes in and would love to hear what you are looking for.' },
@@ -172,19 +172,19 @@ describe('directAndProduce (the crew pipeline)', () => {
     expect(result.choices).toEqual({ heroKind: 'video' });
   });
 
-  it('threads the trajectory heroKind through to the assembled envelope — spotlight path', async () => {
+  it('threads the trajectory heroKind through to the assembled envelope — still path', async () => {
     // Confirm the kind decision set by the director in the trajectory flows
     // through the cinematographer and survives assembly unchanged.
-    const spotlightTrajectory = { ...trajectory, heroKind: 'still' };
-    const spotlightMoment = {
+    const stillTrajectory = { ...trajectory, heroKind: 'still' };
+    const stillMoment = {
       ...moment,
       kind: 'still',
       prompt: { ...moment.prompt, environment: 'pure black void' },
     };
     create
-      .mockResolvedValueOnce(toolMsg('set_trajectory', spotlightTrajectory))
+      .mockResolvedValueOnce(toolMsg('set_trajectory', stillTrajectory))
       .mockResolvedValueOnce(toolMsg('submit_copy', copy))
-      .mockResolvedValueOnce(toolMsg('set_moment', spotlightMoment))
+      .mockResolvedValueOnce(toolMsg('set_moment', stillMoment))
       .mockResolvedValueOnce(toolMsg('set_look', look))
       .mockResolvedValueOnce(toolMsg('final_cut', { notes: 'coheres' }));
 

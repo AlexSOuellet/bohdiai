@@ -11,7 +11,6 @@
  */
 import type { ReactElement, ReactNode } from 'react';
 import type { ProductView, CollectionView } from './content';
-import type { PortableStore } from './portable';
 
 /** Which page of a multi-page archetype to paint. The home is the default; the
  *  rest are the storefront's standard pages. A maker-added custom page renders
@@ -76,9 +75,6 @@ export interface ArchetypeBuildSpec<T = unknown> {
   fitsCatalog(productCount: number): boolean;
   /** The looks Bohdi may pick for this archetype (its own skins/themes). */
   looks: LookOption[];
-  /** The fields Bohdi authors once he's chosen this archetype (incl. products,
-   *  in whatever shape this archetype holds them). Returned by choose_format. */
-  authoringSpec(brief: AuthoringBrief): string;
   /** Validate Bohdi's full submission for this archetype. */
   parseSubmission(raw: unknown): ParseResult<T>;
   /** Every asset to generate, derived from the submission. */
@@ -87,10 +83,6 @@ export interface ArchetypeBuildSpec<T = unknown> {
   applyMedia(authored: T, urls: Record<string, string | null>): T;
   /** Content + catalog for persistence/render. */
   toPayload(authored: T): RenderPayload;
-  /** Lift the maker's portable content out of THIS archetype's stored content,
-   *  so another archetype can re-express the same maker (try-on). Optional — an
-   *  archetype that can't be a try-on SOURCE omits it. */
-  handOff?(content: T): PortableStore;
   /** Paint a stored store. Products come from the tenant's listing rows (empty
    *  for archetypes that embed products in content). `catalogSize` is the maker's
    *  TRUE catalog size (what they entered at onboarding), which drives treatment

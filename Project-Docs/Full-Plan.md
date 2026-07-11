@@ -357,8 +357,7 @@ Every audit finding not landed in Phases 0-5 lives here. Happens before any real
 - [ ] Rate limiter rebuilt: atomic counter (RPC), fails closed on DB error, trusts only Cloudflare-provided identifier (Audit #3)
 - [ ] Reset `MAX_PER_WINDOW` from 20 to the real launch number
 - [ ] Add authentication guard to `/api/onboarding/start` and `/api/onboarding/generate` (Audit #4)
-- [ ] Gate admin try-on: page + API endpoint require session + founder role (Audit #1)
-- [ ] Validate `label` and `target` params against enums on admin try-on
+- [x] Admin Try-On retired (Session 70) — the whole feature was built for an archetype catalog that no longer exists; Main Street has been the only archetype since Session 31. Page, admin API route, `store_versions` table, and `lib/tryon/` deleted. The two gating items from Audit #1 (session + founder role) no longer apply.
 - [ ] Fix auth callback open redirect: only accept destinations starting with `/`, reject `//` and `/\` prefixes (Audit #5)
 - [ ] Fix Vercel origin bypass: require Cloudflare shared-secret header OR host matching `*.bohdiai.com` (Audit #6)
 - [ ] Confine auth cookies to `app.bohdiai.com`; bounce `/signin` on tenant subdomains (Audit #16)

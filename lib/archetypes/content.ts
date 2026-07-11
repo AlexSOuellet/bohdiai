@@ -1,16 +1,12 @@
 /**
  * Shared catalog content — the maker's data, archetype-agnostic.
  *
- * This is the "shared core" that makes try-on possible. A product lives ONCE
- * (projected from the listings + variations tables), and ANY archetype reads
- * this same shape to render it in its own language. Archetypes must NOT invent
- * bespoke product shapes — they consume these types. When a maker tries on a
- * different archetype, this content flows in unchanged; only the presentation
- * differs.
+ * A product lives ONCE (projected from the listings + variations tables) and
+ * the renderer reads this same shape. Prices are pre-formatted here (from
+ * base_price_cents + currency) so renderers stay presentation-only.
  *
  * Mirrors the real model: supabase `listings` (+ media_ids) and
- * `variation_attributes` / `variation_options`. Prices are pre-formatted here
- * (from base_price_cents + currency) so renderers stay presentation-only.
+ * `variation_attributes` / `variation_options`.
  */
 
 /** A resolved media item (media_ids → image or video). */

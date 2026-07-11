@@ -4,7 +4,7 @@ import { MainStreetContentSchema } from './schemas';
 function valid() {
   return {
     shopName: "June's Sourdough",
-    identity: { wordmark: "June's Sourdough", nav: ['Shop', 'About', 'Find us'] },
+    identity: { wordmark: "June's Sourdough" },
     moment: {
       media: {
         kind: 'video',
@@ -52,8 +52,7 @@ describe('MainStreetContentSchema', () => {
     expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 
-  it('requires at least one story line (a single line is valid — spotlight taglines)', () => {
-    // one line is valid now (spotlight Moment lands a single tagline)
+  it('requires at least one story line (a single line is valid — a hero can land a single tagline)', () => {
     const cOne = valid();
     cOne.moment.story = ['only one'];
     expect(MainStreetContentSchema.safeParse(cOne).success).toBe(true);
@@ -128,12 +127,6 @@ describe('MainStreetContentSchema', () => {
     }
   });
 
-  it('accepts a single nav item (the renderer requires at least one entry)', () => {
-    const c = valid();
-    c.identity.nav = ['Shop'];
-    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
-  });
-
   it('accepts a long close headline — no length cap, the renderer absorbs any length', () => {
     const c = valid();
     c.close.headline = 'x'.repeat(80);
@@ -195,20 +188,14 @@ describe('authored link destinations (D46)', () => {
     expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
   });
 
-  it('still accepts legacy string nav (old stored rows)', () => {
-    // valid() already uses string nav; assert it explicitly here.
+  it('silently strips legacy identity.nav from old stored envelopes — the renderer builds nav from the page list', () => {
     const c = valid();
-    c.identity.nav = ['Shop', 'About'];
-    expect(MainStreetContentSchema.safeParse(c).success).toBe(true);
-  });
-
-  it('rejects a nav item whose target is not a real page', () => {
-    const c = valid();
-    (c.identity as Record<string, unknown>)['nav'] = [
-      { label: 'Blog', target: 'blog' },
-      { label: 'Shop', target: 'shop' },
-    ];
-    expect(MainStreetContentSchema.safeParse(c).success).toBe(false);
+    (c.identity as Record<string, unknown>)['nav'] = ['Shop', 'About'];
+    const parsed = MainStreetContentSchema.safeParse(c);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect((parsed.data.identity as Record<string, unknown>)['nav']).toBeUndefined();
+    }
   });
 
   it('accepts authored hero CTA targets', () => {

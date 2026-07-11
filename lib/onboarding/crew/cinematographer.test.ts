@@ -58,7 +58,7 @@ describe('shootMoment (the Cinematographer)', () => {
     expect(args.tool_choice).toEqual({ type: 'tool', name: 'set_moment' });
   });
 
-  it('accepts spotlight as a real choice (the director calls it — not every scene has natural motion)', async () => {
+  it('accepts still as a real choice (the director calls it — not every scene has natural motion)', async () => {
     // The director sets heroKind — the trajectory and the returned kind must agree.
     create.mockResolvedValueOnce(toolMsg({ ...scene, kind: 'still' }));
     const s = await shootMoment({ ...trajectory, heroKind: 'still' }, story);
@@ -223,16 +223,16 @@ describe('shootMoment (the Cinematographer)', () => {
   // --- Task 8: kind-vs-trajectory cross-check ---
 
   it('rejects a returned kind that does not match the trajectory and asks for a reshoot', async () => {
-    // Trajectory says spotlight; model returns video on the first attempt, then spotlight on retry.
-    const spotlightTrajectory: Trajectory = { ...trajectory, heroKind: 'still' };
-    const spotlightScene = { ...scene, kind: 'still' as const, prompt: { ...scene.prompt, environment: 'pure black void' } };
+    // Trajectory says still; model returns video on the first attempt, then still on retry.
+    const stillTrajectory: Trajectory = { ...trajectory, heroKind: 'still' };
+    const stillScene = { ...scene, kind: 'still' as const, prompt: { ...scene.prompt, environment: 'pure black void' } };
     // First attempt: wrong kind (video) — should trigger the kind-mismatch issue.
-    // Second attempt: correct kind (spotlight) — should resolve.
+    // Second attempt: correct kind (still) — should resolve.
     create
       .mockResolvedValueOnce(toolMsg({ ...scene, kind: 'video' }))
-      .mockResolvedValueOnce(toolMsg(spotlightScene));
+      .mockResolvedValueOnce(toolMsg(stillScene));
 
-    const s = await shootMoment(spotlightTrajectory, story);
+    const s = await shootMoment(stillTrajectory, story);
     expect(s.kind).toBe('still');
     expect(create).toHaveBeenCalledTimes(2);
 

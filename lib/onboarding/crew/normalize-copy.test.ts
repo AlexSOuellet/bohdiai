@@ -4,7 +4,7 @@ import type { CopywriterDraft } from './copywriter-schema';
 
 const full = {
   shopName: '  Evening Shadow  ',
-  identity: { wordmark: ' ES ', nav: [{ label: ' Shop ', target: 'shop' }] },
+  identity: { wordmark: ' ES ' },
   moment: {
     story: ['Lines, with punctuation.', '   ', 'Another!'],
     eyebrow: ' eyebrow ',
@@ -15,7 +15,7 @@ const full = {
     secondaryCtaLabel: ' More ',
     secondaryCtaTarget: 'about',
   },
-  goods: { title: 'Our goods.', treatment: 'marquee', label: ' new ', viewAllLabel: ' all ' },
+  goods: { title: 'Our goods.', label: ' new ', viewAllLabel: ' all ' },
   collections: {
     title: 'Our collections.',
     label: ' groups ',
@@ -36,7 +36,6 @@ const full = {
   founder: {
     quote: ' q ',
     attribution: ' me ',
-    treatment: 'card',
     eyebrow: ' meet ',
     heading: 'Meet June.',
     aboutLabel: ' about ',
@@ -50,12 +49,12 @@ const full = {
 
 const minimal = {
   shopName: 'S',
-  identity: { wordmark: 'S', nav: [{ label: 'Shop', target: 'shop' }] },
+  identity: { wordmark: 'S' },
   moment: { story: ['One'], eyebrow: 'e', brand: 'b', sub: 's', ctaLabel: 'c', ctaTarget: 'shop' },
-  goods: { title: 'Goods', treatment: 'marquee' },
+  goods: { title: 'Goods' },
   marquee: { voice: ['One'] },
   reviews: { title: 'Reviews', items: [{ quote: 'q', author: 'a' }] },
-  founder: { quote: 'q', attribution: 'a', treatment: 'quote' },
+  founder: { quote: 'q', attribution: 'a' },
   close: { label: 'l', headline: 'Close', ctaLabel: 'c', ctaTarget: 'shop' },
   about: { heading: 'About', story: ['x'] },
   contact: { heading: 'Contact', intro: 'i' },

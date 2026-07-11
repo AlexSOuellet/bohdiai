@@ -9,7 +9,7 @@ const skin = MAIN_STREET_SKINS['main-street-ember']!;
 
 const content: MainStreetContent = {
   shopName: 'Tannery Row',
-  identity: { wordmark: 'Tannery Row', nav: ['Shop', 'About'] },
+  identity: { wordmark: 'Tannery Row' },
   moment: {
     media: { kind: 'still', prompt: { composition: 'b', subject: 's', environment: 'e', atmosphere: 'a', camera: 'c', lighting: 'l', style: 'p' }, alt: 'x' },
     story: ['cut by hand', 'stitched to last'],

@@ -30,7 +30,7 @@ Cozy is the one exception we keep: Main Street's layout already works and looks 
 - **Content** is what the site says and shows: words, photos, products. **Presentation** is how it looks: family, section variant per slot, colors, type. They live in separate stores.
 - At onboarding there are **no maker specifics yet** — Bohdi authors the content (copy, library images, stand-in products) and picks the family's presentation defaults.
 - Over time the maker edits the content (rewrites copy, uploads real photos, adds real products). Those edits overwrite their piece of the content store and **persist through any look change**, because look-swapping only ever touches presentation.
-- Their presentation tweaks (a custom color, a chosen font) persist too — **except a full family switch**, which deliberately takes on the new family's whole look. A single-section try-on keeps their colors.
+- Their presentation tweaks (a custom color, a chosen font) persist too — **except a full family switch**, which deliberately takes on the new family's whole look. A single-section preview keeps their colors.
 - Every change is reversible.
 
 ---

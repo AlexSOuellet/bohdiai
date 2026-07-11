@@ -5,7 +5,7 @@ import { MAIN_STREET_SKINS } from './skins';
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 const props: HeroProps = {
-  identity: { wordmark: "June's Sourdough", nav: ['Shop', 'About'] },
+  identity: { wordmark: "June's Sourdough" },
   moment: {
     media: {
       kind: 'video',

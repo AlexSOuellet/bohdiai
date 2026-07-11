@@ -4,11 +4,17 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-07-10, Session 69.
+**Last updated:** 2026-07-11, Session 70.
 
 ---
 
 ## Current state
+
+**Session 70 fixed the wallpaper wash and cleared out retired code.** Diagnosed a broad-family CSS bug Alex noticed: buttons and section backgrounds were fading after they loaded on multiple families. Root cause was `.ms-family-texture` at `z-index:0` painting ABOVE section content instead of behind it inside `.arch-main-street`'s isolation-isolate stacking context. One-line fix (`z-index:-1`) killed both the Session-69 open item (reviews-cards fade on Cheerful × Living Beauty) AND a broader dimming Alex was seeing across families. Alex confirmed "much better" across every family.
+
+Then a systematic cleanup sweep. Alex asked what old-system code the onboarding pipeline still runs before Wave E; audit surfaced the Try-On feature as a retired-concept survivor (built for a multi-archetype world that hasn't existed since Session 31, when Gallery was deleted and Main Street became the sole archetype). Alex confirmed "archetypes are totally dead" and greenlit the sweep. Deleted end-to-end: the whole `lib/tryon/`, admin Try-On page + button + API route, the `store_versions` table (drop migration + regenerated types), the pre-crew `authoringSpec` one-shot Bohdi prompt (~50 lines), the retired Gallery route, the orphan `/api/onboarding/generate` streaming endpoint (unauthenticated dead attack surface), the `generateStorefront` fallback, the `PortableStore` type, the retired mood JSON files, and the legacy `NavItem`/`NavEntry`/`identity.nav` schema fields. Scrubbed vocabulary across skins, tests, comments (`spotlight` → `still`, `sunset` → `dark`, `image` → `still`, `Playful` → `Cheerful`). Renamed two mockup files to match. Doc scrub across Family-Style-Sheets, Family-Layout-Model, Editor docs, Full Plan. **Session 69 rediscovery clarified:** what Alex tested at `/dashboard/website` is Editor Door 1 (new code path via `applyLookToEnvelope`), not the Try-On tool (retired code path via `authoringSpec`). Same word, different features.
+
+Two commits: `afd0f6d` (wallpaper fix + doc updates) and the cleanup sweep. Tests: 925 pass (down from 940; the retired-feature tests came with the deletions).
 
 **Session 69 reshaped Wave D and tested the editor swap.** Alex redirected the original plan (strip mood-baking + ship filter grade) — atmospherics baked into images are fine at onboarding, but PRODUCT identity must stay honest to the maker's real range. Two crew guardrails landed instead: (1) Copywriter authors products from the niche's honest range regardless of mood; a candle maker's line spans black, cream, terracotta, ivory, sage no matter which mood; every product description must name actual material and color. (2) Graphic Artist keeps the authored color and material of the product itself; only setting, light, and framing follow the mood. Verified live — Aurora Candles (pre-guardrail) came back 4/5 dark; Lenticular Lumens (post-guardrail) came back charcoal, black, ivory, oxblood, pale sage. The copywriter narratively bridged Pale Amber ("Not every room earns its shadow"). Saltgrass rendered slightly darker than authored — minor residual worth watching.
 
@@ -22,7 +28,7 @@
 
 Five commits: `0760bac` (Industrial), `61a0f3a` (crew guardrails), `af2c1e2` (Seedance 4s), `2e7a9b6` (FloatingCard), `991d112` (editor flag script). Tests pass, tsc + lint clean.
 
-**Open — carry to Session 70:** Dev feature-flag bypass mystery. Wave D done via guardrails; E (sub-page compositions) and F (audit rollups) still pending. (Reviews-cards fade on Cheerful was diagnosed + fixed Session 70 as `.ms-family-texture` z-index — wallpaper layer was painting above sections instead of behind them; changed to z-index:-1 with `isolation:isolate` on the container clamping it to the bottom of the stacking context. Saltgrass "residual" was carried forward from Session 69 as a Claude-inserted observation Alex never reported — dropped from the open list.)
+**Open — carry to Session 71:** Dev feature-flag bypass mystery (low priority). Waves A/B/C/D closed; E (sub-page compositions) and F (audit rollups) still pending. Turbopack cache corruption from a mid-session `rm -rf .next` on a running dev server — Alex needs to kill the server, delete `.next/` clean, restart.
 
 ## Parallel workstream — cowork
 
@@ -30,9 +36,12 @@ Cowork runs on Alex's cadence between our sessions, reading `Project-Docs/Cowork
 
 ## Next actions
 
-**Session 70 — move on after the fade-out fix.**
+**Session 71 — restart clean, then Waves E and F.**
 
-1. **Full Plan Phase 3 checkboxes.** Editor Door 1 is built and working. The plan lists it as unbuilt. Update to reflect reality.
+1. **Fix the corrupted Turbopack cache.** Kill the dev server, delete `.next/` clean, restart. Session 70 broke it mid-session.
+2. **Full Plan Phase 3 checkboxes.** Editor Door 1 is built and working. The plan lists it as unbuilt. Update to reflect reality. Not landed Session 70.
+3. **Wave E — sub-page compositions.** Thirty compositions (six families × five sub-pages). Biggest remaining wave.
+4. **Wave F — audit rollups.** Publish full Anthropic tool schemas as `input_schema` on the four crew stages; wire `AbortController` through the timeout wrapper so timed-out API calls cancel instead of orphaning.
 
 **Owed alongside:**
 - Niche-writer skill update — cut textures section from 10-14 names to 3-5 directions with prompts (feeds Editor Door 2 shelf). Blocks cowork redoing texture sections on the five draft style sheets.
@@ -77,6 +86,7 @@ Cowork runs on Alex's cadence between our sessions, reading `Project-Docs/Cowork
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 70 (2026-07-11): Fixed the family wallpaper wash (`.ms-family-texture` at `z-index:0` inside `isolation:isolate` was painting ABOVE sections; changed to `z-index:-1`). One CSS line killed the reviews-cards Cheerful fade AND broad-family button/background dimming Alex was seeing. Retired-code cleanup sweep: deleted the whole Try-On feature (admin page + button + API route + `lib/tryon/` + `store_versions` table + `authoringSpec` + Try-On preview branch in StorefrontPage) — Try-On was built for a multi-archetype world that hasn't existed since Session 31 when Gallery was deleted. Also deleted: orphan `/api/onboarding/generate` endpoint, `generateStorefront` fallback, retired Gallery route, `PortableStore` type, retired mood JSON files, three `industrial` skin tags, `simple` mood in Main Street's suitableFor, legacy `NavItem`/`NavEntry`/`identity.nav` in Bohdi's schema. Scrubbed vocabulary: `spotlight`/`sunset`/`image` in crew tests + comments, `Playful` → `Cheerful` in docs + mockup filenames. 15 files deleted, 25 modified, one drop migration. Tests: 925 pass. Two commits. Alex confirmed onboarding + editor swap still work end-to-end.
 - Session 69 (2026-07-10): Wave D reshaped from strip-mood-baking to two crew guardrails — products stay honest to the niche's real range regardless of mood; graphic artist keeps authored color and material, only atmosphere follows the mood. Verified live: Aurora Candles (pre-guardrail, 5/5 dark) vs Lenticular Lumens (post-guardrail, real diversity). Also landed: Industrial retired from the picker, Seedance video 6s → 4s, FloatingCard hero fix for long shop names. Editor Door 1 rediscovered as already-built — the Full Plan Phase 3 checkboxes are stale. Alex tried the swap through every mood on Lenticular; Rustic needed a click-away-and-back once. Detours: three-week-old `editor-test@bohdiai.com` session tangle resolved by seeding `alex@bohdiai.com`; `/dashboard/website` 404 patched by upserting the `editor` feature-flag row (dev NODE_ENV bypass mystery still open). Open: reviews-cards fade-out on Cheerful. Five commits.
 - Session 68 (2026-07-09): Closed Waves B and C. B3 pull-quote grid-stack; B4 split-center navbar cap + wordmark wrap; B5 Cheerful mobile Collage clean stack; B6 Cozy mobile Constellation no-overlap; B7 added mid-session — Cheerful navbar fade over Collage image. C1 family wallpapers paint behind every section (six PNGs in `/public/textures/`, tuned subtle); C2 Luxury flipped Chapters + Pull-Quote to contrast, Modern flipped goods to contrast after original Cascade+Rating plan created a three-in-a-row clump. Also re-pointed niche-writer skill from missing leatherworker.json to woodworker.json. Editor Door 2 texture picker model locked: family bench + niche shelf combined. Long design chat surfaced Wave D scope (Graphic Artist skin-pick cruft, mood-baking still in image prompts, cinematic hero used by 4/6 families, library-image test failed as boring). Six commits (five feature + docs). 954 tests pass.
 - Session 67 (2026-07-08): Closed Wave A (A5 — Rustic crate label contrast) and started Wave B (B1 founder attribution wrap, B2 shop CTA button wrap). Landed image library plumbing (`library_assets` table + Storage bucket + `/api/library/ingest` endpoint + docs). Cowork drafted 5 niches from Session-45 batch in parallel. 954 tests pass.

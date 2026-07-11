@@ -25,7 +25,7 @@ A holding place for design constraints on the maker website editor (chat, highli
 **The levers a strong-brand maker (e.g. Sheri / Soul Splatter) needs — what "make it look like this" decomposes into:**
 
 - **Their colors** — maker supplies brand colors → system derives a balanced, accessible palette → repaints the site. (The maker color layer — top priority, in progress. NEVER raw slot assignment — honor "can't break your site.")
-- **Their structure** — swap to a different skin that matches their energy, with their own content already sitting in it (the try-on, D35), so they see the new look as *their* shop, not an abstract template. Not built.
+- **Their structure** — swap to a different skin that matches their energy, with their own content already sitting in it, so they see the new look as *their* shop, not an abstract template. This is Editor Door 1's job today — mood + skin swap, in-place re-skin on the live envelope, "Use this look" commits.
 - **Their imagery** — today we take logo + product photos. The strong-brand unlock is letting the maker's own **brand artwork become part of the site itself** (backgrounds, hero, section textures), engine-controlled for readability (scrims/contrast) so it can't break layout. Soul Splatter's swirls ARE her brand; a skin + color can't carry them. Not built.
 - **Fine edits** — chat / highlight-and-transform / click-to-edit for "move this, change that." Not built.
 

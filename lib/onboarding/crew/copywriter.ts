@@ -4,10 +4,9 @@
  *
  * No bias: the prompt hands over the role, the trajectory (the materials-derived
  * direction), the full niche file, and a STRUCTURAL spec of every field — its
- * name, where it appears, its hard limits, and which treatment bodies exist. It
- * never says how to write (no "sell emotionally", no "avoid jargon", no "short
- * sentences"); the trajectory is the only direction, and it came from the maker's
- * own materials, not from us.
+ * name, where it appears, and its hard limits. It never says how to write (no
+ * "sell emotionally", no "avoid jargon", no "short sentences"); the trajectory
+ * is the only direction, and it came from the maker's own materials, not from us.
  *
  * Forced single tool use with a short validation-retry loop (more fields = more
  * chance of a miss) and a hard per-call timeout.

@@ -5,7 +5,7 @@ import type { CollectionView } from '../content';
 
 const base: MainStreetContent = {
   shopName: 'Tannery Row',
-  identity: { wordmark: 'Tannery Row', nav: ['Shop', 'About'] },
+  identity: { wordmark: 'Tannery Row' },
   moment: {
     media: {
       kind: 'still',

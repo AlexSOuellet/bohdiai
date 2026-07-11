@@ -8,7 +8,6 @@ import type { ProductView, CatalogMedia, CollectionView } from '@/lib/archetypes
 import { seedPreviewReviews } from '@/lib/archetypes/main-street/reviews';
 import { seedPreviewFindUs } from '@/lib/archetypes/main-street/findus';
 import type { Json } from '@/lib/database.types';
-import { readVersion } from '@/lib/tryon/write-version';
 import { loadHomeEnvelope, loadTenantChrome } from '@/lib/storefront/load-envelope';
 
 /** Extract image_url from a listings.metadata JSONB blob. Returns undefined when
@@ -23,10 +22,8 @@ import { isKnownSkin } from '@/lib/editor/look-shelf';
 
 interface StorefrontPageProps {
   slug: string;
-  /** Try-on preview — render the saved version with this label instead of the live store. */
-  version?: string | undefined;
   /** Editor door-1 preview — re-render the live home in this skin without persisting.
-   *  Re-skins the already-public content only; owner-gating is deferred (like try-on). */
+   *  Re-skins the already-public content only; owner-gating is deferred. */
   previewLook?: string | undefined;
   /** Hero-swap preview — render the home with this hero variant without persisting. */
   previewHero?: string | undefined;
@@ -98,33 +95,10 @@ export async function renderArchetypeShell(tenantId: string, children: ReactNode
   return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, mood: a.mood, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
 }
 
-export default async function StorefrontPage({ slug, version, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs }: StorefrontPageProps) {
+export default async function StorefrontPage({ slug, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs }: StorefrontPageProps) {
   const headerStore = await headers();
   const tenantId = headerStore.get('x-tenant-id');
   if (tenantId === null) notFound();
-
-  // Try-on preview: if ?v=<label> names a saved version, render it in place.
-  // (Owner-gating is deferred — see the try-on spec.) Unknown labels fall
-  // through to the live store below.
-  if (version !== undefined && version !== '') {
-    const env = await readVersion(tenantId, version);
-    if (env && env.kind === 'archetype') {
-      const spec = archetypeSpec(env.archetypeKey);
-      if (spec) {
-        const { logoUrl, brandColors } = await loadTenantChrome(tenantId);
-        return spec.render({
-          content: env.content,
-          lookKey: env.lookKey,
-          products: (env.products ?? []) as ProductView[],
-          mood: env.mood,
-          catalogSize: env.catalogSize,
-          logoUrl,
-          brandColors,
-          tenantId,
-        });
-      }
-    }
-  }
 
   // Sub-page routes (/shop, /events, ...) render off the SAME stored home
   // envelope, painted as a different page.

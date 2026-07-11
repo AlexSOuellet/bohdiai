@@ -13,9 +13,9 @@
  *
  * The kind decision belongs to the DIRECTOR (trajectory.heroKind, see director.ts);
  * this stage executes whichever kind was called for. Video carries real ambient motion
- * belonging to the subject; spotlight carries the cinematic rise of a static hero
- * object (the rise/push happen in CSS at render — see SpotlightStage). The Moment is
- * always cinematic — that is D33 — but cinematic is not always video.
+ * belonging to the subject; a still hero is rendered as a cinematic SCENE (the product
+ * in its world, with a very subtle CSS push-in at render). The hero is always
+ * cinematic — cinematic is not always video.
  */
 import type Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';

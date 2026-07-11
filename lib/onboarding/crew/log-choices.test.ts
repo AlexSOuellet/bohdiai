@@ -19,9 +19,9 @@ describe('logDesignChoice', () => {
     await logDesignChoice({
       tenantId: 'tn_123',
       nicheSlug: 'candles',
-      moodKey: 'sunset',
+      moodKey: 'dark',
       decisionType: 'moment-kind',
-      candidates: ['video', 'image'],
+      candidates: ['video', 'still'],
       picked: { kind: 'video' },
       reasoning: 'cinematographer chose the Moment kind for this build',
     });
@@ -31,7 +31,7 @@ describe('logDesignChoice', () => {
     const row = insert.mock.calls[0]![0] as Record<string, unknown>;
     expect(row['tenant_id']).toBe('tn_123');
     expect(row['niche_slug']).toBe('candles');
-    expect(row['mood_key']).toBe('sunset');
+    expect(row['mood_key']).toBe('dark');
     expect(row['decision_type']).toBe('moment-kind');
     expect(row['picked']).toEqual({ kind: 'video' });
   });

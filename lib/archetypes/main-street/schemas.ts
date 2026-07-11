@@ -19,21 +19,6 @@ import { MAIN_STREET_SKINS } from './skins';
 import { FINDUS_KINDS } from './findus';
 import { LINK_TARGETS } from './links';
 
-/** LEGACY — a nav link the crew used to author under D46 (label + target pair).
- *  Retired in §1.7: nav labels come from the platform's fixed page list, not
- *  from Bohdi. Kept here so legacy stored envelopes (which still carry the
- *  field) parse cleanly; new builds never emit `identity.nav` at all. */
-export const NavItem = z.object({
-  label: z.string().min(1),
-  target: z.enum(LINK_TARGETS),
-});
-export type NavItem = z.infer<typeof NavItem>;
-
-/** LEGACY — a single nav entry (legacy string OR authored NavItem). Retired
- *  in §1.7; retained for backward parsing only. */
-export const NavEntry = z.union([z.string().min(1), NavItem]);
-export type NavEntry = z.infer<typeof NavEntry>;
-
 /** The hero's held media, authored as a STRUCTURED scene rather than a prose
  *  sentence — video models take direction far better from grouped fields, and a
  *  still uses the same groups joined into a description. The generation seam
@@ -129,11 +114,6 @@ export const MainStreetContentSchema = z.object({
 
   identity: z.object({
     wordmark: z.string().min(1),
-    /** LEGACY — Bohdi used to author nav labels here. Retired in §1.7: the
-     *  renderer lists every page the store has, using canonical labels from the
-     *  DEFAULT_STRINGS map. Field kept optional so legacy envelopes still parse;
-     *  never read at render, never authored by the copywriter. */
-    nav: z.array(NavEntry).optional(),
     /** The maker's uploaded logo, if any. NOT authored by Bohdi — injected at
      *  render from the tenant's upload (set in the dashboard, not at onboarding),
      *  and shown beside the wordmark in the nav. */

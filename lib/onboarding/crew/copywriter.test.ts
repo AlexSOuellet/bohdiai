@@ -31,7 +31,7 @@ const trajectory: Trajectory = {
 // family owns those now per §1.5).
 const draft = {
   shopName: 'Tannery Row',
-  identity: { wordmark: 'Tannery Row', nav: [{ label: 'Shop', target: 'shop' }, { label: 'Our story', target: 'about' }] },
+  identity: { wordmark: 'Tannery Row' },
   moment: {
     story: ['Built by hand', 'Made to outlast you'],
     eyebrow: 'From the workshop',
@@ -193,7 +193,7 @@ describe('buildCopywriterPrompt — story directive does NOT branch on heroKind 
     const stillPrompt = buildCopywriterPrompt(brief, { ...trajectory, heroKind: 'still' as const });
     expect(videoPrompt).toContain('1-4 lines');
     expect(stillPrompt).toContain('1-4 lines');
-    // The old spotlight rise / cross-fade story lifecycle language is gone (D54)
+    // The old rise / cross-fade story lifecycle language is gone.
     expect(videoPrompt).not.toMatch(/cross-fading|risen from black|tagline-strength line/i);
     expect(stillPrompt).not.toMatch(/cross-fading|risen from black|tagline-strength line/i);
   });

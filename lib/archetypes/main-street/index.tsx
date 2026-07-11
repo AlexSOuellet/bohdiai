@@ -23,7 +23,7 @@ const META: ArchetypeMeta = {
     "The everyday maker shop as a paced sales page: the brand's moment is the hero, then goods in motion, the maker beside a real find-us calendar, and a big-type close. Niche-neutral by construction — any maker fills the same slots in their own voice, dressed in a skin picked off the shelf.",
   suitableFor: {
     nicheKinds: ['bakery', 'candles', 'ceramics', 'soap', 'food', 'apparel', 'general'],
-    moods: ['cozy', 'rustic', 'simple', 'modern'],
+    moods: ['cozy', 'rustic', 'dark', 'luxury', 'cheerful', 'modern'],
   },
 };
 

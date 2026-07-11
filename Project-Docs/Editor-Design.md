@@ -51,7 +51,7 @@ It does exactly one thing: **show the maker what their existing site would look 
 
 ### Layout — split screen (Alex's call)
 
-Controls on the **left** (feeling radios, then the style-sheet cards for the selected feeling, plus "Use this look"); the maker's **actual, full, scrollable site on the right**, updating live as they choose. Not a thumbnail — the real site, scrollable top to bottom (hero, product procession, the Meet-the-maker beat, footer), because a section that sings in Cozy might be the thing that loses them in Industrial. Live preview beside the controls is the magic of a try-on — watch your own store transform — and it's why "select then click to view" was rejected.
+Controls on the **left** (mood radios, then the style-sheet cards for the selected mood, plus "Use this look"); the maker's **actual, full, scrollable site on the right**, updating live as they choose. Not a thumbnail — the real site, scrollable top to bottom (hero, product procession, the Meet-the-maker beat, footer), because a section that sings in Cozy might be the thing that loses them in Dark. Live preview beside the controls is the magic of trying it on — watch your own store transform — and it's why "select then click to view" was rejected.
 
 The dashboard is desktop-first, so split screen has the room; on a phone it stacks (controls, then preview).
 

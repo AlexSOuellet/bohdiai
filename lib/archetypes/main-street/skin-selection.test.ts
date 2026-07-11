@@ -36,7 +36,7 @@ describe('moodAlignedSkins (the D41 skin gate)', () => {
     expect(dark).not.toContain('main-street-pantry'); // cozy / cheerful
 
     const modern = moodAlignedSkins('modern');
-    expect(modern).toContain('main-street-forge'); // industrial, modern
+    expect(modern).toContain('main-street-forge'); // modern
     expect(modern).not.toContain('main-street-ember'); // rustic, cozy
   });
 
