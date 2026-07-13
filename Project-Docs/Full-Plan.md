@@ -280,7 +280,7 @@ All six original open items from the Session 63/64 plan are now settled. Sources
 - [x] Editor door 1 available in the dashboard.
 - [x] Live-tested on a real store with real content.
 - [x] Reversible.
-- [ ] Alex signs off (pending — Sheri's store still to try; reviews-cards fade-out on Cheerful still to diagnose).
+- [ ] Alex signs off (pending — Sheri's store still to try; the Cheerful reviews-cards fade was fixed in Session 70 via the family-wallpaper z-index change).
 
 ---
 

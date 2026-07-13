@@ -28,7 +28,7 @@ Two commits: `afd0f6d` (wallpaper fix + doc updates) and the cleanup sweep. Test
 
 Five commits: `0760bac` (Industrial), `61a0f3a` (crew guardrails), `af2c1e2` (Seedance 4s), `2e7a9b6` (FloatingCard), `991d112` (editor flag script). Tests pass, tsc + lint clean.
 
-**Open — carry to Session 71:** Dev feature-flag bypass mystery (low priority). Waves A/B/C/D closed; E (sub-page compositions) and F (audit rollups) still pending. Turbopack cache corruption from a mid-session `rm -rf .next` on a running dev server — Alex needs to kill the server, delete `.next/` clean, restart.
+**Open — carry to Session 71:** Dev feature-flag bypass mystery (low priority). Waves A/B/C/D closed; E (sub-page compositions) and F (audit rollups) still pending.
 
 ## Parallel workstream — cowork
 
@@ -38,10 +38,8 @@ Cowork runs on Alex's cadence between our sessions, reading `Project-Docs/Cowork
 
 **Session 71 — restart clean, then Waves E and F.**
 
-1. **Fix the corrupted Turbopack cache.** Kill the dev server, delete `.next/` clean, restart. Session 70 broke it mid-session.
-2. **Full Plan Phase 3 checkboxes.** Editor Door 1 is built and working. The plan lists it as unbuilt. Update to reflect reality. Not landed Session 70.
-3. **Wave E — sub-page compositions.** Thirty compositions (six families × five sub-pages). Biggest remaining wave.
-4. **Wave F — audit rollups.** Publish full Anthropic tool schemas as `input_schema` on the four crew stages; wire `AbortController` through the timeout wrapper so timed-out API calls cancel instead of orphaning.
+1. **Wave E — sub-page compositions.** Thirty compositions (six families × five sub-pages). Biggest remaining wave.
+2. **Wave F — audit rollups.** Publish full Anthropic tool schemas as `input_schema` on the four crew stages; wire `AbortController` through the timeout wrapper so timed-out API calls cancel instead of orphaning.
 
 **Owed alongside:**
 - Niche-writer skill update — cut textures section from 10-14 names to 3-5 directions with prompts (feeds Editor Door 2 shelf). Blocks cowork redoing texture sections on the five draft style sheets.
