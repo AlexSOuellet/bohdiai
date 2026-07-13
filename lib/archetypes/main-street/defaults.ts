@@ -68,6 +68,9 @@ export const DEFAULT_STRINGS = {
   fallbackExploreCollection: 'Explore',
   /** GoodsLookbook per-piece link. */
   fallbackViewPiece: 'View the piece',
+  /** Events sub-page: opens Google Maps for the venue in a new tab. Cue is
+   *  fixed so shoppers know the click leaves the site. */
+  getDirections: 'Get directions →',
 
   // ─── Structural section labels ─────────────────────────────────────────────
   /** Calendar treatment heading for the currently-viewed month. */

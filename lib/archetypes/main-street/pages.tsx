@@ -12,7 +12,8 @@ import type { MainStreetContent } from './schemas';
 import { MainStreetRoot, MainStreetFooter, Nav, Media } from './chrome';
 import { Type } from './Type';
 import { navContrast, relativeLuminance } from './logo-contrast';
-import { FindUsBeat } from './FindUsBeat';
+import { parseFindUsDate, currentYearMonth } from './findus';
+import { FindUsCalendar } from './FindUsCalendar';
 import { GoodsBeat } from './GoodsBeat';
 import { FounderBeat } from './FounderBeat';
 import { ReviewsBeat } from './ReviewsBeat';
@@ -313,17 +314,76 @@ export function TestimonialsPage({ content, skin, treatments, family }: { conten
   );
 }
 
-/** EVENTS — the full find-us section: the SAME treatment the home teaser wears,
- *  now carrying every date, or a friendly "check back" empty state when the maker
- *  has no upcoming dates (or turned the calendar off). Representative of its teaser. */
-export function EventsPage({ content, skin, treatments, family }: { content: MainStreetContent; skin: ArchetypeTheme; treatments: MainStreetTreatments; family?: Family | undefined }) {
+/** EVENTS — a real month calendar as the primary view, with a detailed list
+ *  underneath so every event is clickable. Clicking a day or agenda entry
+ *  anchor-scrolls to that event's full detail row below. One shape across all
+ *  six families; family paint does the differentiation. The home find-us
+ *  treatments (board / calendar / passes / next-stop / itinerary / poster)
+ *  stay as home teasers; the /events page shows the whole season here. Each
+ *  detail row also carries an external "Get directions" link to Google Maps
+ *  for the venue — useful for shoppers who want to actually attend. CSS in
+ *  chrome.tsx under .ms-fu-cal-* (calendar) and .ms-ev-* (detail list). */
+export function EventsPage({ content, skin, family }: { content: MainStreetContent; skin: ArchetypeTheme; family?: Family | undefined }) {
   const findUs = content.founder.findUs;
   const hasDates = !!findUs && findUs.rows.length > 0;
+  const { year, month } = currentYearMonth(new Date());
   return (
     <MainStreetSubPage content={content} skin={skin} current="/events" family={family}>
       <PageHead eyebrow={hasDates ? findUs!.label : undefined} title={findUs?.title} />
       {hasDates ? (
-        <FindUsBeat findUs={findUs!} skin={skin} treatment={treatments.findUs} eventsHref="/events" full />
+        <section data-ms-events className="ms-wrap ms-page">
+          <FindUsCalendar
+            section={findUs!}
+            year={year}
+            month={month}
+            eventHrefs={findUs!.rows.map((_, i) => `#event-${i}`)}
+          />
+          <div className="ms-ev-list">
+            {findUs!.rows.map((e, i) => {
+              const parts = parseFindUsDate(e.date);
+              const directions = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.where)}`;
+              return (
+                <div key={i} id={`event-${i}`} data-ms-ev-row="" className="ms-ev-row">
+                  <div className="ms-ev-date">
+                    {parts ? (
+                      <>
+                        <Type as="span" role="day" className="ms-ev-dow">
+                          {parts.weekdayShort}
+                        </Type>
+                        <Type as="span" role="title" className="ms-ev-num">
+                          {parts.dayNum}
+                        </Type>
+                        <Type as="span" role="day" className="ms-ev-mon">
+                          {parts.monthShort}
+                        </Type>
+                      </>
+                    ) : (
+                      <Type as="span" role="day" className="ms-ev-day">
+                        {e.day}
+                      </Type>
+                    )}
+                  </div>
+                  <div className="ms-ev-info">
+                    {e.kind && (
+                      <Type as="span" role="eyebrow" className="ms-ev-kind">
+                        {e.kind}
+                      </Type>
+                    )}
+                    <Type as="h3" role="cardTitle" className="ms-ev-where">
+                      {e.where}
+                    </Type>
+                    <Type as="a" role="navLabel" className="ms-ev-directions" href={directions} target="_blank" rel="noopener noreferrer">
+                      {DEFAULT_STRINGS.getDirections}
+                    </Type>
+                  </div>
+                  <Type as="span" role="price" className="ms-ev-time">
+                    {e.time}
+                  </Type>
+                </div>
+              );
+            })}
+          </div>
+        </section>
       ) : (
         <section data-ms-events className="ms-wrap ms-page ms-page-empty">
           <Type as="p" role="body">

@@ -17,24 +17,35 @@ import { type FindUsSection, type FindUsEvent, FINDUS_WEEKDAY_HEADERS, buildFind
 import { DEFAULT_STRINGS } from './defaults';
 
 /** The agenda column — the shown month's appearances in full. */
-function Agenda({ events }: { events: FindUsEvent[] }) {
+function Agenda({ items }: { items: { event: FindUsEvent; href?: string | undefined }[] }) {
   return (
     <div className="ms-fu-cal-agenda">
-      {events.map((e, i) => (
-        <div key={i} data-ms-fu-item="" className="ms-fu-cal-ag">
-          <Type as="span" role="day" className="ms-fu-cal-ag-day">
-            {e.day}
-          </Type>
-          <div className="ms-fu-cal-ag-body">
-            <Type as="span" role="where" className="ms-fu-cal-ag-where">
-              {e.where}
+      {items.map(({ event: e, href }, i) => {
+        const body = (
+          <>
+            <Type as="span" role="day" className="ms-fu-cal-ag-day">
+              {e.day}
             </Type>
-            <Type as="span" role="price" className="ms-fu-cal-ag-time">
-              {e.time}
-            </Type>
+            <div className="ms-fu-cal-ag-body">
+              <Type as="span" role="where" className="ms-fu-cal-ag-where">
+                {e.where}
+              </Type>
+              <Type as="span" role="price" className="ms-fu-cal-ag-time">
+                {e.time}
+              </Type>
+            </div>
+          </>
+        );
+        return href ? (
+          <a key={i} href={href} data-ms-fu-item="" className="ms-fu-cal-ag">
+            {body}
+          </a>
+        ) : (
+          <div key={i} data-ms-fu-item="" className="ms-fu-cal-ag">
+            {body}
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -44,12 +55,19 @@ export function FindUsCalendar({
   viewAll,
   year,
   month,
+  eventHrefs,
 }: {
   section: FindUsSection;
   /** The month the calendar opens on — the current real month (server-computed). */
   year: number;
   month: number;
   viewAll?: { href: string; label: string } | undefined;
+  /** When provided, each rendered event (in a cell OR in the agenda) becomes a
+   *  real link. This is a plain array of URLs indexed parallel to `section.rows`
+   *  — a callback would break the RSC boundary since the calendar is a Client
+   *  Component. The home band omits it so home cells stay non-interactive; the
+   *  sub-page passes anchor URLs like `#event-{i}` for scroll-to-detail below. */
+  eventHrefs?: readonly (string | undefined)[] | undefined;
 }) {
   const [view, setView] = useState({ year, month });
   const step = (delta: number) =>
@@ -62,6 +80,11 @@ export function FindUsCalendar({
 
   const grid = buildFindUsMonth(section.rows, view);
   const hasEvents = grid.events.length > 0;
+  // Resolve an event's href by looking up its position in section.rows.
+  // References survive from section.rows through buildFindUsMonth's grid, so
+  // indexOf is exact — no fuzzy matching. O(n) per lookup, fine for typical
+  // event counts. Undefined when no eventHrefs supplied → non-interactive.
+  const hrefFor = (e: FindUsEvent): string | undefined => eventHrefs?.[section.rows.indexOf(e)];
 
   return (
     <section id="find-us" className="ms-fu-section ms-fu-cal">
@@ -90,11 +113,12 @@ export function FindUsCalendar({
               ))}
             </div>
             <div className="ms-fu-cal-month">
-              {grid.cells.map((cell, i) =>
-                cell.dayNum === null ? (
-                  <div key={i} className="ms-fu-cal-cell ms-fu-cal-pad" />
-                ) : (
+              {grid.cells.map((cell, i) => {
+                if (cell.dayNum === null) return <div key={i} className="ms-fu-cal-cell ms-fu-cal-pad" />;
+                const cellHref = cell.events[0] ? hrefFor(cell.events[0]) : undefined;
+                return (
                   <div key={i} className={`ms-fu-cal-cell${cell.events.length > 0 ? ' ms-fu-cal-ev' : ''}`}>
+                    {cellHref && <a href={cellHref} aria-label={cell.events[0]?.where ?? ''} className="ms-fu-cal-cell-hit" />}
                     <Type as="span" role="caption" className="ms-fu-cal-d">
                       {cell.dayNum}
                     </Type>
@@ -107,8 +131,8 @@ export function FindUsCalendar({
                       </>
                     )}
                   </div>
-                ),
-              )}
+                );
+              })}
             </div>
           </div>
           <div className="ms-fu-cal-side">
@@ -116,7 +140,7 @@ export function FindUsCalendar({
               {DEFAULT_STRINGS.eventsThisMonth}
             </Type>
             {hasEvents ? (
-              <Agenda events={grid.events} />
+              <Agenda items={grid.events.map((e) => ({ event: e, href: hrefFor(e) }))} />
             ) : (
               <Type as="p" role="body" className="ms-fu-cal-empty">
                 {DEFAULT_STRINGS.emptyMonth}

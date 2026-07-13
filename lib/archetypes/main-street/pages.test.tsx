@@ -179,12 +179,12 @@ describe('ContentPage', () => {
 describe('EventsPage', () => {
   it('renders the dates when the maker has them', () => {
     const withDates: MainStreetContent = { ...content, founder: { ...content.founder, findUs: { label: 'Find us', rows: [{ day: 'Sat', where: 'Hope St Market', time: '9am' }] } } };
-    const { getByText } = render(<EventsPage content={withDates} skin={skin} treatments={testTreatments} />);
+    const { getByText } = render(<EventsPage content={withDates} skin={skin} />);
     expect(getByText('Hope St Market')).toBeTruthy();
   });
 
   it('shows a check-back empty state with no dates', () => {
-    const { container } = render(<EventsPage content={content} skin={skin} treatments={testTreatments} />);
+    const { container } = render(<EventsPage content={content} skin={skin} />);
     expect(container.querySelector('[data-ms-events]')?.textContent).toMatch(/check back/i);
   });
 });

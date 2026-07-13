@@ -269,7 +269,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       case 'shop':
         return <ShopPage content={c} skin={skin} products={products} family={family} />;
       case 'events':
-        return <EventsPage content={c} skin={skin} treatments={treatments} family={family} />;
+        return <EventsPage content={c} skin={skin} family={family} />;
       case 'about':
         return <AboutPage content={c} skin={skin} treatments={treatments} family={family} />;
       case 'contact':

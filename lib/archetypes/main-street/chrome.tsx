@@ -297,6 +297,35 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       .arch-main-street .ms-cs-spread.right .ms-cs-cover{order:1}
       .arch-main-street .ms-cs-spread.right .ms-cs-body{order:2}
     }
+    /* events — the sub-page chronological list. First (next) event carries a
+       subtle left accent stripe. One shape across all six families; family paint
+       does the differentiation. The home find-us treatments (board / calendar /
+       passes / next-stop / itinerary / poster) stay as teasers on the home only;
+       the /events page has its own library shape here. */
+    .arch-main-street .ms-ev-list{display:flex;flex-direction:column;margin-top:12px}
+    .arch-main-street .ms-ev-row{display:grid;grid-template-columns:150px 1fr auto;gap:32px;padding:28px 0;border-bottom:1px dashed color-mix(in srgb, var(--ms-fg-muted) 40%, transparent);align-items:baseline;transition:background .4s ease}
+    .arch-main-street .ms-ev-row:hover{background:color-mix(in srgb, var(--ms-fg-muted) 6%, transparent)}
+    .arch-main-street .ms-ev-row:first-child{border-top:1px dashed color-mix(in srgb, var(--ms-fg-muted) 40%, transparent);padding-left:20px;border-left:3px solid var(--ms-accent);margin-left:-20px}
+    .arch-main-street .ms-ev-date{display:flex;flex-direction:column;gap:2px;align-self:flex-start}
+    .arch-main-street .ms-ev-dow{color:var(--ms-accent)}
+    .arch-main-street .ms-ev-num{color:var(--ms-fg);line-height:.9}
+    .arch-main-street .ms-ev-mon{color:var(--ms-fg-muted)}
+    .arch-main-street .ms-ev-day{color:var(--ms-fg)}
+    .arch-main-street .ms-ev-info{display:flex;flex-direction:column;gap:8px}
+    .arch-main-street .ms-ev-kind{display:inline-block;color:var(--ms-fg-muted);padding:3px 8px 2px;border:1px solid color-mix(in srgb, var(--ms-fg-muted) 40%, transparent);border-radius:2px;align-self:flex-start}
+    .arch-main-street .ms-ev-where{color:var(--ms-fg);margin:0}
+    .arch-main-street .ms-ev-time{color:var(--ms-fg);white-space:nowrap;align-self:flex-start}
+    .arch-main-street .ms-ev-directions{color:var(--ms-accent);display:inline-block;margin-top:6px}
+    /* the /events sub-page stacks the calendar over the detail list — the list
+       hangs its anchor targets that the calendar cells scroll into */
+    .arch-main-street [data-ms-events] .ms-fu-cal-section{margin-bottom:48px}
+    .arch-main-street [data-ms-events] .ms-ev-row{scroll-margin-top:80px}
+    .arch-main-street [data-ms-events] .ms-ev-row:target{background:color-mix(in srgb, var(--ms-accent) 10%, transparent);transition:background 1.6s ease}
+    @media(max-width:820px){
+      .arch-main-street .ms-ev-row{grid-template-columns:1fr;gap:12px;padding:24px 0}
+      .arch-main-street .ms-ev-row:first-child{padding-left:16px;margin-left:-16px}
+      .arch-main-street .ms-ev-time{justify-self:flex-start}
+    }
     /* about page — the maker's story at length under the family's about look.
        The FounderBeat treatment renders at the top (representative of the home
        teaser); the full authored story renders below in class-only prose (skipped
@@ -908,6 +937,14 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-fu-cal-ev .ms-fu-cal-d{color:var(--ms-fg)}
     .arch-main-street .ms-fu-cal-dot{position:absolute;top:9px;right:9px;width:7px;height:7px;border-radius:50%;background:var(--ms-accent)}
     .arch-main-street .ms-fu-cal-ev-l{display:block;margin-top:4px;color:var(--ms-fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    /* clickable cell — an anchor overlay covering the whole cell area, sits
+       above the day marker and label for the click, invisible itself. Only
+       rendered on the /events sub-page where events carry a real href. */
+    .arch-main-street .ms-fu-cal-cell-hit{position:absolute;inset:0;z-index:2;text-indent:-9999px;overflow:hidden}
+    .arch-main-street .ms-fu-cal-ev:hover{background:color-mix(in srgb, var(--ms-accent) 8%, transparent)}
+    /* agenda item as a link — same shape, real hover feedback */
+    a.arch-main-street .ms-fu-cal-ag,.arch-main-street a.ms-fu-cal-ag{color:inherit;text-decoration:none;cursor:pointer;transition:background .3s ease}
+    .arch-main-street a.ms-fu-cal-ag:hover{background:color-mix(in srgb, var(--ms-accent) 6%, transparent)}
     .arch-main-street .ms-fu-cal-side-head{color:var(--ms-fg-muted);margin:0 0 12px}
     .arch-main-street .ms-fu-cal-ag{display:flex;gap:14px;padding:14px 0;border-top:1px solid var(--ms-rule)}
     .arch-main-street .ms-fu-cal-ag:last-child{border-bottom:1px solid var(--ms-rule)}
