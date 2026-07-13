@@ -275,7 +275,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       case 'contact':
         return <ContactPage content={c} skin={skin} tenantId={tenantId} family={family} />;
       case 'collections':
-        return <CollectionsPage content={c} skin={skin} collections={collections ?? []} treatments={treatments} family={family} />;
+        return <CollectionsPage content={c} skin={skin} collections={collections ?? []} family={family} />;
       case 'collection': {
         // The route already filtered products to this collection's rows; look up
         // the collection itself so we can title the page. Falls back to a stub if

@@ -15,7 +15,6 @@ import { navContrast, relativeLuminance } from './logo-contrast';
 import { FindUsBeat } from './FindUsBeat';
 import { GoodsBeat } from './GoodsBeat';
 import { FounderBeat } from './FounderBeat';
-import { CollectionsBeat } from './CollectionsBeat';
 import { ReviewsBeat } from './ReviewsBeat';
 import type { CollectionView } from '../content';
 import { MainStreetContactForm } from './MainStreetContactForm';
@@ -217,10 +216,13 @@ export function ContactPage({ content, skin, tenantId, family }: { content: Main
   );
 }
 
-/** COLLECTIONS INDEX — the full collections band: the SAME treatment the home
- *  teaser wears (cupboard / crates / portals / chapters / lanes / cascade), now
- *  carrying every collection (not the home handful) and no "see all" cue. */
-export function CollectionsPage({ content, skin, collections, treatments, family }: { content: MainStreetContent; skin: ArchetypeTheme; collections: CollectionView[]; treatments: MainStreetTreatments; family?: Family | undefined }) {
+/** COLLECTIONS INDEX — the editorial spread. One collection per band down the
+ *  page, alternating image left / image right for rhythm. One shape across all
+ *  six families; family paint (colors, type, texture) does the differentiation.
+ *  The home band treatments (cupboard / crates / portals / chapters / lanes /
+ *  cascade) stay as home-only teasers; the /collections page has this library
+ *  shape here. CSS in chrome.tsx under .ms-cs-*. */
+export function CollectionsPage({ content, skin, collections, family }: { content: MainStreetContent; skin: ArchetypeTheme; collections: CollectionView[]; family?: Family | undefined }) {
   const section = content.collections;
   return (
     <MainStreetSubPage content={content} skin={skin} current="/collections" family={family}>
@@ -232,7 +234,36 @@ export function CollectionsPage({ content, skin, collections, treatments, family
           </Type>
         </section>
       ) : (
-        <CollectionsBeat section={section ?? { title: '' }} items={collections} skin={skin} treatment={treatments.collections} full />
+        <section data-ms-collections className="ms-wrap ms-page">
+          <div className="ms-cs-list">
+            {collections.map((c, i) => {
+              const flipped = i % 2 === 1;
+              return (
+                <a
+                  key={c.slug}
+                  href={`/collections/${c.slug}`}
+                  data-ms-coll-item=""
+                  className={flipped ? 'ms-cs-spread right' : 'ms-cs-spread'}
+                >
+                  <div className="ms-cs-cover">
+                    <Media media={c.cover ?? { kind: 'image', alt: c.name }} />
+                  </div>
+                  <div className="ms-cs-body">
+                    <Type as="span" role="legal" className="ms-cs-num">
+                      {DEFAULT_COUNTS.items(c.count)}
+                    </Type>
+                    <Type as="h2" role="goodsHead" className="ms-cs-name">
+                      {c.name}
+                    </Type>
+                    <Type as="span" role="sig" className="ms-cs-enter">
+                      {DEFAULT_STRINGS.fallbackExploreCollection}
+                    </Type>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </section>
       )}
     </MainStreetSubPage>
   );

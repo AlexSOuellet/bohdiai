@@ -274,6 +274,29 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-catalog-price{position:absolute;left:12px;bottom:12px;background:var(--ms-bg);color:var(--ms-fg);padding:6px 10px;border-radius:2px}
     .arch-main-street .ms-catalog-name{color:var(--ms-fg);margin:16px 0 2px}
     .arch-main-street .ms-catalog-desc{color:var(--ms-fg-muted);margin:0}
+    /* collections — the sub-page editorial spread: one collection per band,
+       alternating image left/right down the page. One shape across all six
+       families; family paint (colors, type, texture) does the differentiation.
+       The home band treatments (cupboard/crates/portals/chapters/lanes/cascade)
+       stay as teasers on the home only; the /collections page has its own
+       library shape here. */
+    .arch-main-street .ms-cs-list{display:flex;flex-direction:column}
+    .arch-main-street .ms-cs-spread{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,5vw,88px);align-items:center;padding:clamp(56px,8vw,112px) 0;border-bottom:1px solid color-mix(in srgb, var(--ms-fg-muted) 40%, transparent);color:inherit;text-decoration:none}
+    .arch-main-street .ms-cs-spread:last-child{border-bottom:0}
+    .arch-main-street .ms-cs-spread.right .ms-cs-cover{order:2}
+    .arch-main-street .ms-cs-spread.right .ms-cs-body{order:1}
+    .arch-main-street .ms-cs-cover{position:relative;aspect-ratio:5 / 6;border-radius:4px;overflow:hidden;background:color-mix(in srgb, var(--ms-fg-muted) 40%, var(--ms-bg));box-shadow:0 40px 60px -40px var(--ms-shadow);transition:transform .5s ease,box-shadow .5s ease}
+    .arch-main-street .ms-cs-spread:hover .ms-cs-cover{transform:translateY(-4px);box-shadow:0 46px 66px -38px var(--ms-shadow)}
+    .arch-main-street .ms-cs-cover img,.arch-main-street .ms-cs-cover video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .arch-main-street .ms-cs-body{display:flex;flex-direction:column;gap:20px;padding:12px 0}
+    .arch-main-street .ms-cs-num{color:var(--ms-fg-muted)}
+    .arch-main-street .ms-cs-name{color:var(--ms-fg);margin:0}
+    .arch-main-street .ms-cs-enter{color:var(--ms-fg);border-bottom:2px solid var(--ms-accent);padding-bottom:4px;align-self:flex-start}
+    @media(max-width:820px){
+      .arch-main-street .ms-cs-spread{grid-template-columns:1fr;gap:36px;padding:56px 0}
+      .arch-main-street .ms-cs-spread.right .ms-cs-cover{order:1}
+      .arch-main-street .ms-cs-spread.right .ms-cs-body{order:2}
+    }
     /* about page — the maker's story at length under the family's about look.
        The FounderBeat treatment renders at the top (representative of the home
        teaser); the full authored story renders below in class-only prose (skipped
