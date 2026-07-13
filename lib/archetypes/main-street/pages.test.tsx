@@ -48,7 +48,7 @@ afterEach(cleanup);
 
 describe('ShopPage', () => {
   it('lists every product with a link to its detail page', () => {
-    const { getByText, container } = render(<ShopPage content={content} skin={skin} products={products} treatments={testTreatments} />);
+    const { getByText, container } = render(<ShopPage content={content} skin={skin} products={products} />);
     expect(getByText('The Belt')).toBeTruthy();
     expect(getByText('The Wallet')).toBeTruthy();
     expect(container.querySelector('a[href="/listings/belt"]')).toBeTruthy();
@@ -56,19 +56,19 @@ describe('ShopPage', () => {
   });
 
   it('shows an empty state when there are no products', () => {
-    const { container } = render(<ShopPage content={content} skin={skin} products={[]} treatments={testTreatments} />);
+    const { container } = render(<ShopPage content={content} skin={skin} products={[]} />);
     expect(container.querySelector('[data-ms-shop]')?.textContent).toMatch(/check back/i);
   });
 
   it('renders the shared sub-page nav with real routes', () => {
-    const { container } = render(<ShopPage content={content} skin={skin} products={products} treatments={testTreatments} />);
+    const { container } = render(<ShopPage content={content} skin={skin} products={products} />);
     expect(container.querySelector('a[href="/events"]')).toBeTruthy();
     expect(container.querySelector('a[href="/cart"]')).toBeTruthy();
   });
 
   it('shows the maker logo beside the wordmark in the sub-page header when uploaded', () => {
     const withLogo: MainStreetContent = { ...content, identity: { ...content.identity, logoUrl: 'https://cdn/logo.png' } };
-    const { container } = render(<ShopPage content={withLogo} skin={skin} products={products} treatments={testTreatments} />);
+    const { container } = render(<ShopPage content={withLogo} skin={skin} products={products} />);
     expect((container.querySelector('img[data-ms-logo]') as HTMLImageElement | null)?.getAttribute('src')).toBe('https://cdn/logo.png');
   });
 });

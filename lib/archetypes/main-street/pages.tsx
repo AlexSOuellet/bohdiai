@@ -9,7 +9,7 @@ import type { ReactNode } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
-import { MainStreetRoot, MainStreetFooter, Nav } from './chrome';
+import { MainStreetRoot, MainStreetFooter, Nav, Media } from './chrome';
 import { Type } from './Type';
 import { navContrast, relativeLuminance } from './logo-contrast';
 import { FindUsBeat } from './FindUsBeat';
@@ -108,9 +108,13 @@ export function ContentPage({ content, skin, title, body, html, family }: { cont
   );
 }
 
-/** SHOP — the full catalog as a responsive grid (chrome defines .ms-catalog-grid
- *  breakpoints). The home shows a sampling; this shows everything. */
-export function ShopPage({ content, skin, products, treatments, family }: { content: MainStreetContent; skin: ArchetypeTheme; products: ProductView[]; treatments: MainStreetTreatments; family?: Family | undefined }) {
+/** SHOP — the full catalog as a library-style grid. Every family wears the same
+ *  browsing shape here: a dense scannable grid where the shopper's eye finds the
+ *  product, name and price fast. The paint (colors, type, texture) is what varies
+ *  per family via the skin CSS variables. No motion, no teasers — the home's
+ *  goods treatment stays a teaser; this is where people browse. Grid + card
+ *  styles live in chrome.tsx under .ms-catalog-*. */
+export function ShopPage({ content, skin, products, family }: { content: MainStreetContent; skin: ArchetypeTheme; products: ProductView[]; family?: Family | undefined }) {
   return (
     <MainStreetSubPage content={content} skin={skin} current="/shop" family={family}>
       <PageHead eyebrow={content.goods.label} title={content.goods.title} />
@@ -120,11 +124,29 @@ export function ShopPage({ content, skin, products, treatments, family }: { cont
             {DEFAULT_STRINGS.emptyShop}
           </Type>
         ) : (
-          // The full Shop page wears the SAME treatment the home teaser sold — if
-          // the home is Lookbook, /shop is a full lookbook; if it's Marquee, /shop
-          // is the full marquee. The GoodsBeat's `full` mode drops the sampling and
-          // the "see the full catalog" cue.
-          <GoodsBeat goods={content.goods} products={products} skin={skin} treatment={treatments.goods} catalogSize={products.length} shopHref="/shop" full />
+          <div className="ms-catalog-grid">
+            {products.map((p) => {
+              const shot = p.media.find((m) => m.kind === 'image') ?? p.media[0];
+              return (
+                <a key={p.slug} href={`/listings/${p.slug}`} className="ms-catalog-card">
+                  <div className="ms-catalog-media">
+                    <Media media={shot ?? { kind: 'image', alt: p.name }} />
+                    <Type as="span" role="price" className="ms-catalog-price">
+                      {p.price}
+                    </Type>
+                  </div>
+                  <Type as="h3" role="cardTitle" className="ms-catalog-name">
+                    {p.name}
+                  </Type>
+                  {p.shortDescription && (
+                    <Type as="p" role="body" className="ms-catalog-desc">
+                      {p.shortDescription}
+                    </Type>
+                  )}
+                </a>
+              );
+            })}
+          </div>
         )}
       </section>
     </MainStreetSubPage>

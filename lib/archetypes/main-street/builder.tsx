@@ -267,7 +267,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
     const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), treatments.nav);
     switch (page) {
       case 'shop':
-        return <ShopPage content={c} skin={skin} products={products} treatments={treatments} family={family} />;
+        return <ShopPage content={c} skin={skin} products={products} family={family} />;
       case 'events':
         return <EventsPage content={c} skin={skin} treatments={treatments} family={family} />;
       case 'about':
