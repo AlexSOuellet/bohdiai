@@ -316,6 +316,25 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-ev-where{color:var(--ms-fg);margin:0}
     .arch-main-street .ms-ev-time{color:var(--ms-fg);white-space:nowrap;align-self:flex-start}
     .arch-main-street .ms-ev-directions{color:var(--ms-accent);display:inline-block;margin-top:6px}
+    /* testimonials — the sub-page wall of reviews. A two-column grid of quote
+       cards, each with a big opening mark, the quote, the author, and an
+       optional location. Optional summary bar (score + count) sits above the
+       grid. One shape across all six families; family paint (colors, type,
+       texture) does the differentiation. The home reviews treatments (rating /
+       pull-quote / guestbook / texts) stay as teasers on the home only. */
+    .arch-main-street .ms-tw-summary{display:flex;align-items:baseline;gap:22px;padding:24px 0 20px;border-top:1px solid var(--ms-rule);border-bottom:1px solid var(--ms-rule);margin-top:12px}
+    .arch-main-street .ms-tw-score{color:var(--ms-fg)}
+    .arch-main-street .ms-tw-count{color:var(--ms-fg-muted)}
+    .arch-main-street .ms-tw-grid{display:grid;grid-template-columns:1fr 1fr;gap:36px 32px;margin-top:48px}
+    .arch-main-street .ms-tw-card{display:flex;flex-direction:column;gap:14px;padding:32px 28px;background:color-mix(in srgb, var(--ms-fg-muted) 4%, var(--ms-bg));border:1px solid var(--ms-rule);border-radius:4px}
+    .arch-main-street .ms-tw-mark{color:var(--ms-accent);line-height:.8;margin-bottom:-6px;align-self:flex-start}
+    .arch-main-street .ms-tw-quote{color:var(--ms-fg);margin:0;line-height:1.55;flex:1}
+    .arch-main-street .ms-tw-attribution{margin-top:auto;padding-top:10px;border-top:1px solid color-mix(in srgb, var(--ms-fg-muted) 30%, transparent)}
+    .arch-main-street .ms-tw-author{color:var(--ms-fg);display:block}
+    .arch-main-street .ms-tw-loc{color:var(--ms-fg-muted);display:block;margin-top:2px}
+    @media(max-width:820px){
+      .arch-main-street .ms-tw-grid{grid-template-columns:1fr;gap:24px}
+    }
     /* the /events sub-page stacks the calendar over the detail list — the list
        hangs its anchor targets that the calendar cells scroll into */
     .arch-main-street [data-ms-events] .ms-fu-cal-section{margin-bottom:48px}

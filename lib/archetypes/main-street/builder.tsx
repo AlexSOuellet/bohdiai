@@ -285,7 +285,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
         return <CollectionPage content={c} skin={skin} collection={collection} products={products} treatments={treatments} family={family} />;
       }
       case 'testimonials':
-        return <TestimonialsPage content={c} skin={skin} treatments={treatments} family={family} />;
+        return <TestimonialsPage content={c} skin={skin} family={family} />;
       default:
         return <MainStreet content={c} skin={skin} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} />;
     }

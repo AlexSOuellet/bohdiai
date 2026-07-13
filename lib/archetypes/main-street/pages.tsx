@@ -16,7 +16,6 @@ import { parseFindUsDate, currentYearMonth } from './findus';
 import { FindUsCalendar } from './FindUsCalendar';
 import { GoodsBeat } from './GoodsBeat';
 import { FounderBeat } from './FounderBeat';
-import { ReviewsBeat } from './ReviewsBeat';
 import type { CollectionView } from '../content';
 import { MainStreetContactForm } from './MainStreetContactForm';
 import { DEFAULT_STRINGS, DEFAULT_COUNTS } from './defaults';
@@ -292,17 +291,53 @@ export function CollectionPage({ content, skin, collection, products, treatments
   );
 }
 
-/** TESTIMONIALS — the full reviews section: the SAME treatment the home teaser
- *  wears (rating / pull-quote / guestbook / texts), now carrying every review
- *  (not the home handful) and no "see all" cue. */
-export function TestimonialsPage({ content, skin, treatments, family }: { content: MainStreetContent; skin: ArchetypeTheme; treatments: MainStreetTreatments; family?: Family | undefined }) {
+/** TESTIMONIALS — a wall of quote cards. Optional summary bar (score + count)
+ *  above the grid; two-column responsive grid of cards below, each with a big
+ *  opening mark, the quote, the author, an optional location. One shape across
+ *  all six families; family paint does the differentiation. The home reviews
+ *  treatments (rating / pull-quote / guestbook / texts) stay as home teasers.
+ *  CSS in chrome.tsx under .ms-tw-*. */
+export function TestimonialsPage({ content, skin, family }: { content: MainStreetContent; skin: ArchetypeTheme; family?: Family | undefined }) {
   const reviews = content.reviews;
   const hasReviews = !!reviews && reviews.items.length > 0;
   return (
     <MainStreetSubPage content={content} skin={skin} current="/testimonials" family={family}>
       <PageHead title={reviews?.title} />
       {hasReviews ? (
-        <ReviewsBeat section={reviews!} skin={skin} treatment={treatments.reviews} full />
+        <section data-ms-testimonials className="ms-wrap ms-page">
+          {reviews!.summary && (
+            <div className="ms-tw-summary">
+              <Type as="span" role="goodsHead" className="ms-tw-score">
+                {reviews!.summary.score}
+              </Type>
+              <Type as="span" role="caption" className="ms-tw-count">
+                {reviews!.summary.count}
+              </Type>
+            </div>
+          )}
+          <div className="ms-tw-grid">
+            {reviews!.items.map((r, i) => (
+              <article key={i} data-ms-tw-card="" className="ms-tw-card">
+                <Type as="span" role="goodsHead" className="ms-tw-mark" aria-hidden>
+                  {'“'}
+                </Type>
+                <Type as="blockquote" role="quote" className="ms-tw-quote">
+                  {r.quote}
+                </Type>
+                <div className="ms-tw-attribution">
+                  <Type as="span" role="cardTitle" className="ms-tw-author">
+                    {r.author}
+                  </Type>
+                  {r.location && (
+                    <Type as="span" role="caption" className="ms-tw-loc">
+                      {r.location}
+                    </Type>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
       ) : (
         <section data-ms-testimonials className="ms-wrap ms-page ms-page-empty">
           <Type as="p" role="body">
