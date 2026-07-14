@@ -53,16 +53,24 @@ Run through this list before declaring a niche entry done. Both files — the pr
 - [ ] Distinct from the heading fonts in the general fonts array.
 - [ ] Includes character options beyond the obvious — heavy display, blackletter, oversized geometric, hand-tooled, extreme-contrast serif.
 
-## Style sheet — textures
+## Style sheet — textures (Editor Door 2 shelf feed)
 
-- [ ] 10 to 14 named material textures.
-- [ ] Named for actual textures the niche works with or evokes — "full-grain veg-tan," "linseed-oil-wash," "kraft-paper." Not "rough texture," "natural feel."
+> **⚠ REVISION PENDING (Session 72).** The direction below (photorealistic material-photography prompts per niche) is superseded. Alex clarified that textures should be NEUTRAL atmospheric surface overlays that pick up color from the maker's palette via blend modes, not photos of the niche's materials. Do not run this checklist's texture section until the direction lands. See `session-logs/session-72.md`.
+
+
+- [ ] 3 to 5 texture directions — never fewer (not a shelf) and never more (turns the picker into a scroll).
+- [ ] Each entry has `key` (kebab-case slug, becomes the filename), `name` (title-cased picker label), and `prompt` (self-contained generation prompt).
+- [ ] Each direction is a **genuinely different material world** within the niche — not five variations on the same surface (no shipping five wood grains for a woodworker). If two would look the same at wallpaper opacity, one doesn't earn its slot.
+- [ ] Each `name` is recognizable to someone in this trade — real material vocabulary, not "texture 1."
+- [ ] Every `prompt` includes: specific material with its authentic details; even/diffuse lighting language (`evenly lit`, `no directional shadows`); no-text/no-watermark/no-border/no-vignette guard; a "fills the frame" or "close-up scan" framing hint; `Photorealistic. Real material.` (no illustration, no CGI, no 3D render).
+- [ ] Each prompt is two or three sentences — specific but short enough that a downstream generator won't drift. Model-specific incantations (aspect ratios, "seamless tileable", generator flags) are NOT in the prompt; they belong to the ingestion pipeline.
 
 ## Final read
 
 - [ ] Reading the prose, do you have a clear sense of who's in this category, how they vary, what their customers care about, and what vocabulary the AI should use?
-- [ ] Reading the style sheet, can you picture how a leatherworker × dark site would differ from a leatherworker × simple site using the same materials?
+- [ ] Reading the style sheet, can you picture how a leatherworker × dark site would differ from a leatherworker × cheerful site using the same materials?
 - [ ] Would a maker reading the prose feel seen across the range of possible positionings, or pigeonholed into one?
-- [ ] Does the style sheet match the leatherworker reference's bar of specificity? If anything reads generic ("moss green," "sleek sans," "natural texture") — revise.
+- [ ] Does the style sheet match the woodworker reference's bar of specificity? If anything reads generic ("moss green," "sleek sans," "natural texture") — revise.
+- [ ] Reading the three-to-five texture prompts, can you picture five different material worlds a maker could pick between in Editor Door 2? If two prompts would produce visually similar PNGs, revise or drop one.
 
 If every box is checked, both files are ready for human review.

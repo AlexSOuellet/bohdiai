@@ -137,7 +137,11 @@ The style sheet is a JSON file at `content/style-sheets/niche-<slug>.json`. It c
   ],
 
   "textures": [
-    "named-texture",
+    {
+      "key": "kebab-case-slug",
+      "name": "Display Name Shown in the Picker",
+      "prompt": "A self-contained generation prompt that produces the actual PNG."
+    },
     ...
   ]
 }
@@ -169,16 +173,38 @@ These are heavier, more distinctive, more visually striking than the general fon
 
 This array is what Bohdi reads when picking the wordmark font. He may also draw from the mood's wordmark options. Curate so the typographic wordmark for a site in this niche × mood has somewhere distinctive to land — not a default heading font played louder.
 
-### Textures — 10 to 14 named material textures
+### Textures — 3 to 5 texture directions with generation prompts
 
-Named for actual textures the niche works with or evokes. "Full-grain veg-tan," "saddle-stitch," "linseed-oil-wash," "kraft-paper" — not "rough texture," "natural feel." Bohdi reads these and decides which surface or accent they apply to.
+> **⚠ REVISION PENDING (Session 72, 2026-07-14).** The texture direction is under active discussion. What's below reflects the mid-Session-72 assumption that each niche's textures would be photorealistic material photography (leather grain, wood plank, paper fiber). Alex has since rejected that direction — the textures are meant to be NEUTRAL atmospheric surface overlays (smoke wisp, ink dispersion, particle field, cloud drift, mist) that get color from the maker's palette underneath via blend modes, NOT color from the texture itself. The shape (3-5 objects per niche with `key`, `name`, `prompt` or `sourceUrl`) probably survives; the guidance about photorealistic material photography does NOT. Do NOT run this skill's texture section for a new niche until the direction lands. See `session-logs/session-72.md` for the full thread. Everything else in this file (prose, palette, fonts, wordmark) is unaffected.
+
+The textures array feeds **Editor Door 2's texture shelf**. In the editor, a maker sees a combined shelf: the family's platform-curated bench of three (`Family-Style-Sheets.md` §"three-textures-per-family bench") PLUS this niche's own three-to-five. A Rustic calligrapher sees a different combined shelf than a Rustic woodworker; both anchored by the same Rustic family bench. The niche shelf is what makes a maker's editor picker specific to their craft instead of the same six family benches for every store.
+
+Each entry is a full generation prompt, not just a name — the library pipeline (Cowork + Claude in Chrome on Higgsfield / Nano Banana Pro) generates the actual PNG from the prompt, and that PNG becomes the material the maker can apply as a wallpaper. The niche-writer's job is prompt authorship; PNG generation and ingestion are downstream (per `Project-Docs/Cowork-Instructions.md`).
+
+**How many.** Three at minimum, five at most. A shelf of one is not a shelf; a shelf of ten is a hoard. Three to five gives the maker real variety without turning the picker into a scroll.
+
+**Each direction must be a genuinely different material world within the niche's vocabulary.** Not five variations on the same surface. For a woodworker: wood grain, sawdust drift, linseed wash on paper, blueprint / dark-line drawing paper, worn steel plate — five surfaces that all belong in a woodworker's shop but read as completely different textures. Don't ship five wood grains and call it a shelf. If two entries would look the same at wallpaper opacity (~0.20), one of them doesn't earn its slot.
+
+**Entry shape.**
+
+- `key` — kebab-case slug. Becomes the filename (`niche-<slug>/<key>.png`) and the picker's stable id. Short and specific: `veg-tan-leather`, not `texture-1`.
+- `name` — human-readable label shown in the picker. Title case. `Full-grain veg-tan`, not `veg-tan-leather-scan`. The maker reads this; make it recognizable to someone in this trade.
+- `prompt` — self-contained generation prompt. Written so a generator with no context (Higgsfield, Nano Banana Pro, FLUX) can produce a usable PNG from the prompt alone. Every prompt MUST include:
+    - The specific material and its authentic details (color range, texture particularities, real material vocabulary — same specificity bar as palette names).
+    - Even, diffuse lighting (`evenly lit`, `flat lighting`, `no directional shadows`). A wallpaper renders at ~0.20 opacity — a strong cast shadow reads as a dirty smudge under content.
+    - No text, no logos, no watermarks, no borders (`no text, no watermarks, no borders, no vignette`).
+    - A framing hint that reads as a filling surface, not a subject shot (`fills the frame`, `close-up scan of the surface`, `top-down flat view`).
+    - `Photorealistic. Real material.` — matches Cowork's library-prompt convention (no illustration, no CGI, no 3D render).
+
+Keep each prompt to two or three sentences — long enough to be specific, short enough that a downstream generator won't drift. Model-specific incantations (aspect ratios, "seamless tileable", generator flags) belong in the ingestion pipeline, not the niche prompt.
 
 ### Curation rules
 
 - **Specific names, not generic descriptors.** A color named after a real pigment outperforms a color named "primary."
 - **No role assignments.** The schema decides which slot a color fills. The style sheet's job is to give Bohdi a vocabulary, not a recipe.
 - **No feel words anywhere.** Categories are structural. Names are material. If you find yourself writing "moody" or "playful" or "sophisticated" — stop.
-- **The bar is the woodworker style sheet at `content/style-sheets/niche-woodworker.json`.** Curate to that level of specificity or higher. Generic palettes get rejected.
+- **The bar is the woodworker style sheet at `content/style-sheets/niche-woodworker.json`** — for PALETTE, FONTS, and WORDMARK. Curate to that level of specificity or higher. Generic palettes get rejected.
+- **For TEXTURES the reference is out of date.** Woodworker, knitter, leatherworker, and every previously-approved niche still carry textures as a flat array of 10-14 kebab-case strings — the shape retired when Editor Door 2's shelf design landed. Follow the current spec above (3-5 objects with `key`, `name`, `prompt`) regardless of what any approved reference looks like. The old sheets will be retro-fitted separately.
 
 ## Self-check
 
@@ -196,7 +222,7 @@ Before writing the files, run this list:
 - 15 named colors, each named for a specific material or thing — never "primary," "accent," etc.?
 - At least 14 named fonts, all with structural taxonomy categories, no feel words?
 - 4–6 wordmark fonts that genuinely look ridiculous below 32px — heavy display, distinctive character?
-- 10–14 named textures, each pulling from the niche's actual material vocabulary?
+- 3–5 texture directions, each a distinct material world (not five wood grains), each carrying a self-contained generation prompt with material specifics + even lighting + no-text/no-borders + photoreal directive?
 - Nothing in the sheet that reads as a role assignment or a recipe?
 - At least one character-forward display font and one character-forward heading font (no niche where only utilitarian sans-serifs are available for the big type)?
 
