@@ -170,8 +170,8 @@ All six original open items from the Session 63/64 plan are now settled. Sources
 - [x] log-choices.ts drops `goods-treatment` + `founder-treatment` decision rows (two rows land per build now: trajectory + moment-kind).
 - [x] Reviews seeding stays — copywriter still authors sample testimonial content every build.
 - [x] Tests re-cast across the board.
-- [ ] **Not landed (deferred):** publish full Anthropic tool schemas as `input_schema` on all four crew stages (Audit HIGH).
-- [ ] **Not landed (deferred):** wire `AbortController` through `withTimeout` so timed-out Anthropic + fal calls actually cancel (Audit #12).
+- [x] Published full Anthropic tool schemas as `input_schema` on all four crew stages (Session 72). `submit_copy` / `set_moment` / `set_look` / `final_cut` all now carry named properties + required arrays derived from their Zod schemas; the passthrough `{ properties: {}, additionalProperties: true }` is gone. Regression tests per stage guard against drift back. Zod still runs after parse as defense-in-depth.
+- [x] Wired `AbortController` through `withTimeout` (Session 72). `withTimeout` now takes a factory `(signal: AbortSignal) => Promise<T>`; on timeout the controller aborts, cutting the underlying HTTP call. Threaded through all 5 crew stages (Anthropic `{ signal }`), `lib/fal.ts`, and both `lib/moments/media.ts` calls (fal `abortSignal`). Timed-out Anthropic + fal calls now actually cancel instead of running to completion in the background while retries queue on top.
 
 ### 1.6 — Paint per family, skins ride on top ✅ Session 65
 
@@ -209,7 +209,7 @@ All six original open items from the Session 63/64 plan are now settled. Sources
 - [x] A test build for each family produces visually distinct output — different opens-with lead, different section variants, family paint, family type. **Alex ran all six families through onboarding at end of Session 65 — all rendered pretty well. Real issues carry forward to Session 66 for discussion.**
 - [x] Full test suite green (940 tests). tsc clean. lint clean (0 errors).
 - [x] Alex visually approved by running all six moods through fresh onboardings.
-- [ ] **Not landed:** two §1.5 audit rollups (input schemas, AbortController). Carry forward.
+- [x] Two §1.5 audit rollups landed Session 72 (input schemas + AbortController).
 
 ---
 
