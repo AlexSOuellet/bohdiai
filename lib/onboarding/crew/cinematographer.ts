@@ -87,10 +87,58 @@ function findCameraMovement(camera: string): string | null {
   return m ? m[0] : null;
 }
 
+/**
+ * The seven-phrase rendered-frame prompt, published to Anthropic so the model
+ * doesn't have to guess the shape. Reused for each collageShots entry.
+ */
+const SCENE_PROMPT_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    composition: { type: 'string' },
+    subject: { type: 'string' },
+    environment: { type: 'string' },
+    atmosphere: { type: 'string' },
+    camera: { type: 'string' },
+    lighting: { type: 'string' },
+    style: { type: 'string' },
+  },
+  required: ['composition', 'subject', 'environment', 'atmosphere', 'camera', 'lighting', 'style'],
+};
+
+/**
+ * The JSON schema published to Anthropic as `set_moment`'s input_schema.
+ *
+ * MUST MIRROR MomentSceneSchema above. Zod stays the runtime source of truth
+ * (physics guards — text-in-frame, camera-movement, director-kind cross-check —
+ * still run after parse). Shape only: no length caps on `alt`, no min on
+ * `collageShots` (author-authored quality floor is a graceful degrade, not a
+ * hard fail).
+ */
+export const MOMENT_TOOL_INPUT_SCHEMA = {
+  type: 'object',
+  properties: {
+    kind: { type: 'string', enum: ['video', 'still'] },
+    prompt: SCENE_PROMPT_JSON_SCHEMA,
+    alt: { type: 'string' },
+    collageShots: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          prompt: SCENE_PROMPT_JSON_SCHEMA,
+          alt: { type: 'string' },
+        },
+        required: ['prompt', 'alt'],
+      },
+    },
+  },
+  required: ['kind', 'prompt', 'alt'],
+} satisfies { type: 'object'; properties: Record<string, unknown>; required: string[] };
+
 const SET_MOMENT_TOOL: Anthropic.Tool = {
   name: 'set_moment',
   description: 'Design the Moment hero shot. Returns { ok: true } or { ok: false, issues: [...] } to fix and resubmit.',
-  input_schema: { type: 'object', properties: {}, additionalProperties: true },
+  input_schema: MOMENT_TOOL_INPUT_SCHEMA,
 };
 
 export function buildCinematographerPrompt(trajectory: Trajectory, story: string[]): string {
@@ -147,14 +195,18 @@ export async function shootMoment(trajectory: Trajectory, story: string[]): Prom
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const resp = await withTimeout(
-      anthropicClient().messages.create({
-        model: MODEL,
-        max_tokens: MAX_TOKENS,
-        system,
-        tools: [SET_MOMENT_TOOL],
-        tool_choice: { type: 'tool', name: 'set_moment' },
-        messages,
-      }),
+      (signal) =>
+        anthropicClient().messages.create(
+          {
+            model: MODEL,
+            max_tokens: MAX_TOKENS,
+            system,
+            tools: [SET_MOMENT_TOOL],
+            tool_choice: { type: 'tool', name: 'set_moment' },
+            messages,
+          },
+          { signal },
+        ),
       TIMEOUT_MS,
       'cinematographer',
     );

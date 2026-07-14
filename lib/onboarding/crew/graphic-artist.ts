@@ -52,10 +52,46 @@ export const GraphicSpecSchema = z.object({
 });
 export type GraphicSpec = z.infer<typeof GraphicSpecSchema>;
 
+/**
+ * The JSON schema published to Anthropic as `set_look`'s input_schema.
+ *
+ * MUST MIRROR GraphicSpecSchema above. Zod stays the runtime source of truth
+ * — the skin-gate (D41) and product-slug coverage checks still run after parse.
+ * skinKey stays a plain string here (the mood-aligned subset is dynamic per
+ * build); the enum enforcement happens in the post-parse gate below.
+ */
+export const LOOK_TOOL_INPUT_SCHEMA = {
+  type: 'object',
+  properties: {
+    skinKey: { type: 'string' },
+    founderPhoto: {
+      type: 'object',
+      properties: {
+        prompt: { type: 'string' },
+        alt: { type: 'string' },
+      },
+      required: ['prompt', 'alt'],
+    },
+    products: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          slug: { type: 'string' },
+          imagePrompt: { type: 'string' },
+        },
+        required: ['slug', 'imagePrompt'],
+      },
+      minItems: 1,
+    },
+  },
+  required: ['skinKey', 'founderPhoto', 'products'],
+} satisfies { type: 'object'; properties: Record<string, unknown>; required: string[] };
+
 const SET_LOOK_TOOL: Anthropic.Tool = {
   name: 'set_look',
   description: 'Pick the skin and direct the photography. Returns { ok: true } or { ok: false, issues: [...] } to fix and resubmit.',
-  input_schema: { type: 'object', properties: {}, additionalProperties: true },
+  input_schema: LOOK_TOOL_INPUT_SCHEMA,
 };
 
 function buildGraphicArtistPrompt(
@@ -127,14 +163,18 @@ export async function designLook(
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const resp = await withTimeout(
-      anthropicClient().messages.create({
-        model: MODEL,
-        max_tokens: MAX_TOKENS,
-        system,
-        tools: [SET_LOOK_TOOL],
-        tool_choice: { type: 'tool', name: 'set_look' },
-        messages,
-      }),
+      (signal) =>
+        anthropicClient().messages.create(
+          {
+            model: MODEL,
+            max_tokens: MAX_TOKENS,
+            system,
+            tools: [SET_LOOK_TOOL],
+            tool_choice: { type: 'tool', name: 'set_look' },
+            messages,
+          },
+          { signal },
+        ),
       TIMEOUT_MS,
       'graphic-artist',
     );

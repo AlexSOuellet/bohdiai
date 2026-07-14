@@ -150,4 +150,24 @@ describe('designLook (the Graphic Artist)', () => {
     await designLook(brief, trajectory, story, scene, products);
     expect(JSON.stringify(create.mock.calls[1]![0])).toContain('duplicate product slugs');
   });
+
+  it("publishes a real input_schema on set_look (regression: don't drift back to the {} additionalProperties passthrough)", async () => {
+    create.mockResolvedValueOnce(toolMsg(look));
+    await designLook(brief, trajectory, story, scene, products);
+    const args = create.mock.calls[0]![0] as { tools: Array<{ name: string; input_schema: { type: string; properties: Record<string, unknown>; required?: string[] } }> };
+    const tool = args.tools.find((t) => t.name === 'set_look');
+    expect(tool).toBeDefined();
+    expect(tool!.input_schema.type).toBe('object');
+    expect(Object.keys(tool!.input_schema.properties)).toEqual(
+      expect.arrayContaining(['skinKey', 'founderPhoto', 'products']),
+    );
+    expect(tool!.input_schema.required).toEqual(expect.arrayContaining(['skinKey', 'founderPhoto', 'products']));
+  });
+
+  it("threads the withTimeout AbortSignal through to messages.create so a timed-out call actually cancels", async () => {
+    create.mockResolvedValueOnce(toolMsg(look));
+    await designLook(brief, trajectory, story, scene, products);
+    const options = create.mock.calls[0]![1] as { signal?: AbortSignal } | undefined;
+    expect(options?.signal).toBeInstanceOf(AbortSignal);
+  });
 });

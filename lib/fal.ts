@@ -32,16 +32,18 @@ async function generateAndStore(
 
   try {
     const result = await withTimeout(
-      falClient().subscribe('fal-ai/flux-pro' as string, {
-        input: {
-          prompt,
-          image_size: imageSize,
-          num_inference_steps: 28,
-          guidance_scale: 3.5,
-          num_images: 1,
-          output_format: 'jpeg',
-        },
-      }),
+      (signal) =>
+        falClient().subscribe('fal-ai/flux-pro' as string, {
+          input: {
+            prompt,
+            image_size: imageSize,
+            num_inference_steps: 28,
+            guidance_scale: 3.5,
+            num_images: 1,
+            output_format: 'jpeg',
+          },
+          abortSignal: signal,
+        }),
       FAL_IMAGE_TIMEOUT_MS,
       `fal image (${storagePath})`,
     );

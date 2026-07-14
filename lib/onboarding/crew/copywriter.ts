@@ -16,7 +16,7 @@ import { anthropicClient } from '@/lib/anthropic';
 import { logger } from '@/lib/logger';
 import { withTimeout } from '@/lib/with-timeout';
 import { LINK_TARGETS } from '@/lib/archetypes/main-street/links';
-import { CopywriterDraftSchema, type CopywriterDraft } from './copywriter-schema';
+import { COPY_TOOL_INPUT_SCHEMA, CopywriterDraftSchema, type CopywriterDraft } from './copywriter-schema';
 import { buildResubmitPayload } from './length-feedback';
 import { normalizeCopy } from './normalize-copy';
 import type { Trajectory } from './trajectory';
@@ -34,7 +34,7 @@ export const TIMEOUT_MS = 90_000;
 const SUBMIT_COPY_TOOL: Anthropic.Tool = {
   name: 'submit_copy',
   description: 'Submit every word of the store. Returns { ok: true } or { ok: false, issues: [...] } to fix and resubmit.',
-  input_schema: { type: 'object', properties: {}, additionalProperties: true },
+  input_schema: COPY_TOOL_INPUT_SCHEMA,
 };
 
 const TARGET_PRODUCTS = 5;
@@ -141,14 +141,18 @@ export async function writeCopy(brief: CrewBrief, trajectory: Trajectory): Promi
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const resp = await withTimeout(
-      anthropicClient().messages.create({
-        model: MODEL,
-        max_tokens: MAX_TOKENS,
-        system,
-        tools: [SUBMIT_COPY_TOOL],
-        tool_choice: { type: 'tool', name: 'submit_copy' },
-        messages,
-      }),
+      (signal) =>
+        anthropicClient().messages.create(
+          {
+            model: MODEL,
+            max_tokens: MAX_TOKENS,
+            system,
+            tools: [SUBMIT_COPY_TOOL],
+            tool_choice: { type: 'tool', name: 'submit_copy' },
+            messages,
+          },
+          { signal },
+        ),
       TIMEOUT_MS,
       'copywriter',
     );

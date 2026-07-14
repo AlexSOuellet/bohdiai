@@ -82,5 +82,14 @@ describe('direct (the Director)', () => {
     const t = await direct(brief);
     expect(t.heroKind).toBe('still');
   });
+
+  it("threads the withTimeout AbortSignal through to messages.create so a timed-out call actually cancels (audit HIGH: don't drift back to a fire-and-forget request)", async () => {
+    create.mockResolvedValueOnce(toolMsg(valid));
+    await direct(brief);
+    // messages.create is called with (body, options) — the signal rides in the options bag.
+    const options = create.mock.calls[0]![1] as { signal?: AbortSignal } | undefined;
+    expect(options).toBeDefined();
+    expect(options!.signal).toBeInstanceOf(AbortSignal);
+  });
 });
 

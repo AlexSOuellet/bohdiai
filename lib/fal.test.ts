@@ -181,3 +181,13 @@ describe('generateAboutImage', () => {
     expect(opts.input.prompt.toLowerCase()).not.toContain('a man');
   });
 });
+
+describe('fal AbortSignal wiring', () => {
+  it('threads the withTimeout signal to fal.subscribe as abortSignal so a timed-out image call actually cancels', async () => {
+    subscribeMock.mockResolvedValue({ data: { images: [{ url: 'https://fal.cdn/x.jpg' }] } });
+    const { generateProductImage } = await import('./fal');
+    await generateProductImage('Beeswax Candle', 'A warm taper.', 'Candles', 'sub', 'beeswax');
+    const [, opts] = subscribeMock.mock.calls[0]! as [string, { abortSignal?: AbortSignal }];
+    expect(opts.abortSignal).toBeInstanceOf(AbortSignal);
+  });
+});

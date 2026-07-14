@@ -87,16 +87,18 @@ export async function generateMomentStill(
   const aspect = opts.aspect ?? '16:9';
   try {
     const result = await withTimeout(
-      falClient().subscribe(FLUX_IMAGE_MODEL as string, {
-        input: {
-          prompt,
-          image_size: IMAGE_SIZE[aspect],
-          num_inference_steps: 28,
-          guidance_scale: 3.5,
-          num_images: 1,
-          output_format: 'jpeg',
-        },
-      }),
+      (signal) =>
+        falClient().subscribe(FLUX_IMAGE_MODEL as string, {
+          input: {
+            prompt,
+            image_size: IMAGE_SIZE[aspect],
+            num_inference_steps: 28,
+            guidance_scale: 3.5,
+            num_images: 1,
+            output_format: 'jpeg',
+          },
+          abortSignal: signal,
+        }),
       MOMENT_STILL_TIMEOUT_MS,
       `moment still (${opts.subdomain})`,
     );
@@ -132,15 +134,17 @@ export async function generateMomentVideo(
   const aspect = opts.aspect ?? '16:9';
   try {
     const result = await withTimeout(
-      falClient().subscribe(SEEDANCE_VIDEO_MODEL as string, {
-        input: {
-          prompt,
-          duration: seedanceDuration(opts.durationSec),
-          resolution: '720p',
-          aspect_ratio: aspect,
-          generate_audio: false,
-        },
-      }),
+      (signal) =>
+        falClient().subscribe(SEEDANCE_VIDEO_MODEL as string, {
+          input: {
+            prompt,
+            duration: seedanceDuration(opts.durationSec),
+            resolution: '720p',
+            aspect_ratio: aspect,
+            generate_audio: false,
+          },
+          abortSignal: signal,
+        }),
       MOMENT_VIDEO_TIMEOUT_MS,
       `moment video (${opts.subdomain})`,
     );

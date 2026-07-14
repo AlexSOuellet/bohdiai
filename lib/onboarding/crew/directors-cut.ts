@@ -18,9 +18,9 @@ import { logger } from '@/lib/logger';
 import { withTimeout } from '@/lib/with-timeout';
 import { SKIN_DESCRIPTIONS } from '@/lib/archetypes/main-street/skins';
 import { moodAlignedSkins } from '@/lib/archetypes/main-street/skin-selection';
-import { CopywriterDraftSchema } from './copywriter-schema';
-import { MomentSceneSchema } from './cinematographer';
-import { GraphicSpecSchema } from './graphic-artist';
+import { COPY_TOOL_INPUT_SCHEMA, CopywriterDraftSchema } from './copywriter-schema';
+import { MOMENT_TOOL_INPUT_SCHEMA, MomentSceneSchema } from './cinematographer';
+import { LOOK_TOOL_INPUT_SCHEMA, GraphicSpecSchema } from './graphic-artist';
 import { normalizeCopy } from './normalize-copy';
 import type { Trajectory } from './trajectory';
 import type { CrewBrief, CrewOutput } from './types';
@@ -33,10 +33,31 @@ const MAX_ATTEMPTS = 3;
 // ceiling (see pipeline.ts PIPELINE_DEADLINE_MS + guard test).
 export const TIMEOUT_MS = 25_000;
 
+/**
+ * The JSON schema published to Anthropic as `final_cut`'s input_schema. Each
+ * revision piece is OPTIONAL — Bohdi returns only what he changed, or nothing
+ * if the crew's output already coheres. When he does return a piece, its shape
+ * mirrors the piece's own tool schema (submit_copy / set_moment / set_look) so
+ * a revised copy carries the same required fields as an original copy would.
+ *
+ * The post-parse safety net (skin still in the mood subset; product slugs still
+ * match the look's image prompts) still runs on the FINAL triple, so a revised
+ * skin or a revised copy can't quietly break the invariants.
+ */
+export const FINAL_CUT_TOOL_INPUT_SCHEMA = {
+  type: 'object',
+  properties: {
+    notes: { type: 'string' },
+    copy: COPY_TOOL_INPUT_SCHEMA,
+    moment: MOMENT_TOOL_INPUT_SCHEMA,
+    look: LOOK_TOOL_INPUT_SCHEMA,
+  },
+} satisfies { type: 'object'; properties: Record<string, unknown> };
+
 const FINAL_CUT_TOOL: Anthropic.Tool = {
   name: 'final_cut',
   description: 'Lock the final cut. Return only the pieces you revised. Returns { ok: true } or { ok: false, issues: [...] } to fix and resubmit.',
-  input_schema: { type: 'object', properties: {}, additionalProperties: true },
+  input_schema: FINAL_CUT_TOOL_INPUT_SCHEMA,
 };
 
 function buildDirectorsCutPrompt(trajectory: Trajectory, current: CrewOutput, subset: string[]): string {
@@ -76,14 +97,18 @@ export async function directorsCut(brief: CrewBrief, trajectory: Trajectory, cur
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const resp = await withTimeout(
-      anthropicClient().messages.create({
-        model: MODEL,
-        max_tokens: MAX_TOKENS,
-        system,
-        tools: [FINAL_CUT_TOOL],
-        tool_choice: { type: 'tool', name: 'final_cut' },
-        messages,
-      }),
+      (signal) =>
+        anthropicClient().messages.create(
+          {
+            model: MODEL,
+            max_tokens: MAX_TOKENS,
+            system,
+            tools: [FINAL_CUT_TOOL],
+            tool_choice: { type: 'tool', name: 'final_cut' },
+            messages,
+          },
+          { signal },
+        ),
       TIMEOUT_MS,
       'directors-cut',
     );

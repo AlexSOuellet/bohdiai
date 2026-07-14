@@ -185,6 +185,29 @@ describe('writeCopy (the Copywriter)', () => {
     expect(args.system).not.toContain('you drew');
     expect(args.system).not.toContain('unless it genuinely fights');
   });
+
+  it("publishes a real input_schema on submit_copy (regression: don't drift back to the {} additionalProperties passthrough — the model needs structural guidance up front, or a whole retry attempt burns on a missing required field)", async () => {
+    create.mockResolvedValueOnce(toolMsg(draft));
+    await writeCopy(brief, trajectory);
+    const args = create.mock.calls[0]![0] as { tools: Array<{ name: string; input_schema: { type: string; properties: Record<string, unknown>; required?: string[] } }> };
+    const tool = args.tools.find((t) => t.name === 'submit_copy');
+    expect(tool).toBeDefined();
+    expect(tool!.input_schema.type).toBe('object');
+    // Named top-level fields — passthrough would leave properties empty.
+    expect(Object.keys(tool!.input_schema.properties)).toEqual(
+      expect.arrayContaining(['shopName', 'identity', 'moment', 'goods', 'marquee', 'reviews', 'founder', 'close', 'about', 'contact', 'products']),
+    );
+    expect(tool!.input_schema.required).toEqual(
+      expect.arrayContaining(['shopName', 'identity', 'moment', 'products']),
+    );
+  });
+
+  it("threads the withTimeout AbortSignal through to messages.create so a timed-out call actually cancels", async () => {
+    create.mockResolvedValueOnce(toolMsg(draft));
+    await writeCopy(brief, trajectory);
+    const options = create.mock.calls[0]![1] as { signal?: AbortSignal } | undefined;
+    expect(options?.signal).toBeInstanceOf(AbortSignal);
+  });
 });
 
 describe('buildCopywriterPrompt — story directive does NOT branch on heroKind (D54 — hero renders the brand block at rest)', () => {

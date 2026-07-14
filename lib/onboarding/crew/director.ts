@@ -80,14 +80,18 @@ export async function direct(brief: CrewBrief): Promise<Trajectory> {
 
   for (let attempt = 0; attempt < 2; attempt++) {
     const resp = await withTimeout(
-      anthropicClient().messages.create({
-        model: MODEL,
-        max_tokens: MAX_TOKENS,
-        system,
-        tools: [SET_TRAJECTORY_TOOL],
-        tool_choice: { type: 'tool', name: 'set_trajectory' },
-        messages,
-      }),
+      (signal) =>
+        anthropicClient().messages.create(
+          {
+            model: MODEL,
+            max_tokens: MAX_TOKENS,
+            system,
+            tools: [SET_TRAJECTORY_TOOL],
+            tool_choice: { type: 'tool', name: 'set_trajectory' },
+            messages,
+          },
+          { signal },
+        ),
       TIMEOUT_MS,
       'director',
     );

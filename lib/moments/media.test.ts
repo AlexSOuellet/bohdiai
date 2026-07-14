@@ -120,3 +120,21 @@ describe('generateMomentVideo', () => {
     expect(await generateMomentVideo('x', { subdomain: 'sub' })).toBeNull();
   });
 });
+
+describe('moment media AbortSignal wiring', () => {
+  it('threads the withTimeout signal to fal.subscribe as abortSignal for stills', async () => {
+    subscribeMock.mockResolvedValue({ data: { images: [{ url: 'https://fal.cdn/s.jpg' }] } });
+    const { generateMomentStill } = await import('./media');
+    await generateMomentStill('x', { subdomain: 'sub' });
+    const [, opts] = subscribeMock.mock.calls[0]! as [string, { abortSignal?: AbortSignal }];
+    expect(opts.abortSignal).toBeInstanceOf(AbortSignal);
+  });
+
+  it('threads the withTimeout signal to fal.subscribe as abortSignal for videos (Seedance clips can take minutes — a stalled call MUST be cancelable)', async () => {
+    subscribeMock.mockResolvedValue({ data: { video: { url: 'https://fal.cdn/c.mp4' } } });
+    const { generateMomentVideo } = await import('./media');
+    await generateMomentVideo('x', { subdomain: 'sub' });
+    const [, opts] = subscribeMock.mock.calls[0]! as [string, { abortSignal?: AbortSignal }];
+    expect(opts.abortSignal).toBeInstanceOf(AbortSignal);
+  });
+});

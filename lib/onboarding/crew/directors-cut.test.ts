@@ -154,4 +154,28 @@ describe('directorsCut (the coherence pass)', () => {
     await directorsCut(brief, trajectory, current);
     expect(JSON.stringify(create.mock.calls[1]![0])).toContain('duplicate product slugs');
   });
+
+  it("publishes a real input_schema on final_cut (regression: don't drift back to the {} additionalProperties passthrough) — each revision piece is OPTIONAL but its shape mirrors the source tool", async () => {
+    create.mockResolvedValueOnce(toolMsg({ notes: 'coheres' }));
+    await directorsCut(brief, trajectory, current);
+    const args = create.mock.calls[0]![0] as { tools: Array<{ name: string; input_schema: { type: string; properties: Record<string, unknown>; required?: string[] } }> };
+    const tool = args.tools.find((t) => t.name === 'final_cut');
+    expect(tool).toBeDefined();
+    expect(tool!.input_schema.type).toBe('object');
+    expect(Object.keys(tool!.input_schema.properties)).toEqual(
+      expect.arrayContaining(['notes', 'copy', 'moment', 'look']),
+    );
+    // No `required` at the top — Bohdi returns only what he changed.
+    expect(tool!.input_schema.required).toBeUndefined();
+    // The nested revision pieces carry their own required fields (shape mirror).
+    const copySchema = (tool!.input_schema.properties as { copy: { required?: string[] } }).copy;
+    expect(copySchema.required).toEqual(expect.arrayContaining(['shopName', 'products']));
+  });
+
+  it("threads the withTimeout AbortSignal through to messages.create so a timed-out call actually cancels", async () => {
+    create.mockResolvedValueOnce(toolMsg({ notes: 'coheres' }));
+    await directorsCut(brief, trajectory, current);
+    const options = create.mock.calls[0]![1] as { signal?: AbortSignal } | undefined;
+    expect(options?.signal).toBeInstanceOf(AbortSignal);
+  });
 });

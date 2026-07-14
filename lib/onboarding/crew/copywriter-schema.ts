@@ -23,6 +23,7 @@
 import { z } from 'zod';
 import { FindUsRow } from '@/lib/archetypes/main-street/schemas';
 import { LINK_TARGETS } from '@/lib/archetypes/main-street/links';
+import { FINDUS_KINDS } from '@/lib/archetypes/main-street/findus';
 
 /** A product's words only — no imagePrompt (the Graphic Artist adds that). */
 export const ProductDraftSchema = z.object({
@@ -150,3 +151,201 @@ export const CopywriterDraftSchema = z.object({
   products: z.array(ProductDraftSchema).min(1),
 });
 export type CopywriterDraft = z.infer<typeof CopywriterDraftSchema>;
+
+/**
+ * The JSON schema published to Anthropic as the `submit_copy` tool's input_schema.
+ * Keeps the model's tool-call construction structurally grounded up front — a
+ * missing required field or bad enum is caught by the SDK before we round-trip
+ * through Zod, so a whole retry attempt isn't burned on the model omitting
+ * `close.ctaTarget` or misspelling `moment.brand`.
+ *
+ * MUST MIRROR CopywriterDraftSchema above. Zod stays the runtime source of truth
+ * — the normalize step runs off it, and the .min(1) floors it enforces are the
+ * ones the build depends on. The JSON schema is intentionally shape-only: no
+ * length caps, no punctuation rules (D53/D57 — the schema layer never fails on
+ * copy formatting; normalize + renderer handle any length).
+ */
+export const COPY_TOOL_INPUT_SCHEMA = {
+  type: 'object',
+  properties: {
+    shopName: { type: 'string' },
+    identity: {
+      type: 'object',
+      properties: {
+        wordmark: { type: 'string' },
+      },
+      required: ['wordmark'],
+    },
+    moment: {
+      type: 'object',
+      properties: {
+        story: { type: 'array', items: { type: 'string' }, minItems: 1 },
+        eyebrow: { type: 'string' },
+        brand: { type: 'string' },
+        sub: { type: 'string' },
+        ctaLabel: { type: 'string' },
+        ctaTarget: { type: 'string', enum: [...LINK_TARGETS] },
+        secondaryCtaLabel: { type: 'string' },
+        secondaryCtaTarget: { type: 'string', enum: [...LINK_TARGETS] },
+      },
+      required: ['story', 'eyebrow', 'brand', 'sub', 'ctaLabel', 'ctaTarget'],
+    },
+    goods: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        label: { type: 'string' },
+        viewAllLabel: { type: 'string' },
+      },
+      required: ['title'],
+    },
+    collections: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        label: { type: 'string' },
+        viewAllLabel: { type: 'string' },
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              description: { type: 'string' },
+              slug: { type: 'string' },
+            },
+            required: ['name', 'description', 'slug'],
+          },
+          minItems: 1,
+        },
+      },
+      required: ['title', 'items'],
+    },
+    marquee: {
+      type: 'object',
+      properties: {
+        voice: { type: 'array', items: { type: 'string' }, minItems: 1 },
+      },
+      required: ['voice'],
+    },
+    reviews: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        label: { type: 'string' },
+        viewAllLabel: { type: 'string' },
+        summary: {
+          type: 'object',
+          properties: {
+            score: { type: 'string' },
+            count: { type: 'string' },
+          },
+          required: ['score', 'count'],
+        },
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              quote: { type: 'string' },
+              author: { type: 'string' },
+              location: { type: 'string' },
+            },
+            required: ['quote', 'author'],
+          },
+          minItems: 1,
+        },
+      },
+      required: ['title', 'items'],
+    },
+    founder: {
+      type: 'object',
+      properties: {
+        quote: { type: 'string' },
+        attribution: { type: 'string' },
+        eyebrow: { type: 'string' },
+        heading: { type: 'string' },
+        aboutLabel: { type: 'string' },
+        findUs: {
+          type: 'object',
+          properties: {
+            label: { type: 'string' },
+            title: { type: 'string' },
+            eventsLabel: { type: 'string' },
+            rows: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  day: { type: 'string' },
+                  where: { type: 'string' },
+                  time: { type: 'string' },
+                  date: { type: 'string' },
+                  kind: { type: 'string', enum: [...FINDUS_KINDS] },
+                },
+                required: ['day', 'where', 'time'],
+              },
+              minItems: 1,
+            },
+          },
+          required: ['label', 'rows'],
+        },
+      },
+      required: ['quote', 'attribution'],
+    },
+    close: {
+      type: 'object',
+      properties: {
+        label: { type: 'string' },
+        headline: { type: 'string' },
+        ctaLabel: { type: 'string' },
+        ctaTarget: { type: 'string', enum: [...LINK_TARGETS] },
+      },
+      required: ['label', 'headline', 'ctaLabel', 'ctaTarget'],
+    },
+    about: {
+      type: 'object',
+      properties: {
+        heading: { type: 'string' },
+        story: { type: 'array', items: { type: 'string' }, minItems: 1 },
+      },
+      required: ['heading', 'story'],
+    },
+    contact: {
+      type: 'object',
+      properties: {
+        heading: { type: 'string' },
+        intro: { type: 'string' },
+      },
+      required: ['heading', 'intro'],
+    },
+    products: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          slug: { type: 'string' },
+          shortDescription: { type: 'string' },
+          description: { type: 'string' },
+          basePriceCents: { type: 'integer' },
+        },
+        required: ['name', 'slug', 'shortDescription', 'description', 'basePriceCents'],
+      },
+      minItems: 1,
+    },
+  },
+  required: [
+    'shopName',
+    'identity',
+    'moment',
+    'goods',
+    'marquee',
+    'reviews',
+    'founder',
+    'close',
+    'about',
+    'contact',
+    'products',
+  ],
+} satisfies { type: 'object'; properties: Record<string, unknown>; required: string[] };

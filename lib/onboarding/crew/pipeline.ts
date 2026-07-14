@@ -115,9 +115,13 @@ function assembleSubmission(out: CrewOutput, shopName: string): { content: unkno
 
 /** Run the crew and produce the engine's MainStreetAuthored envelope.
  *  Wrapped in PIPELINE_DEADLINE_MS so a slow collective run aborts cleanly
- *  under the route ceiling instead of being killed by Vercel. */
+ *  under the route ceiling instead of being killed by Vercel.
+ *
+ *  The outer withTimeout ignores its signal — the per-stage timeouts (each with
+ *  its own AbortController) do the actual HTTP-level cancellation. This wrap is
+ *  a wall-clock backstop for the sequential sum. */
 export async function directAndProduce(brief: CrewBrief): Promise<CrewBuildResult> {
-  return withTimeout(runCrew(brief), PIPELINE_DEADLINE_MS, 'crew pipeline');
+  return withTimeout(() => runCrew(brief), PIPELINE_DEADLINE_MS, 'crew pipeline');
 }
 
 async function runCrew(brief: CrewBrief): Promise<CrewBuildResult> {

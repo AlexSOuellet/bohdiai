@@ -280,5 +280,30 @@ describe('shootMoment (the Cinematographer)', () => {
     expect(s.collageShots).toBeUndefined();
     expect(MomentSceneSchema.safeParse(s).success).toBe(true);
   });
+
+  it("publishes a real input_schema on set_moment (regression: don't drift back to the {} additionalProperties passthrough)", async () => {
+    create.mockResolvedValueOnce(toolMsg(scene));
+    await shootMoment(trajectory, story);
+    const args = create.mock.calls[0]![0] as { tools: Array<{ name: string; input_schema: { type: string; properties: Record<string, unknown>; required?: string[] } }> };
+    const tool = args.tools.find((t) => t.name === 'set_moment');
+    expect(tool).toBeDefined();
+    expect(tool!.input_schema.type).toBe('object');
+    expect(Object.keys(tool!.input_schema.properties)).toEqual(
+      expect.arrayContaining(['kind', 'prompt', 'alt', 'collageShots']),
+    );
+    expect(tool!.input_schema.required).toEqual(expect.arrayContaining(['kind', 'prompt', 'alt']));
+    // The seven scene-prompt phrases are all required inside the nested prompt.
+    const promptSchema = (tool!.input_schema.properties as { prompt: { properties: Record<string, unknown>; required: string[] } }).prompt;
+    expect(promptSchema.required).toEqual(
+      expect.arrayContaining(['composition', 'subject', 'environment', 'atmosphere', 'camera', 'lighting', 'style']),
+    );
+  });
+
+  it("threads the withTimeout AbortSignal through to messages.create so a timed-out call actually cancels", async () => {
+    create.mockResolvedValueOnce(toolMsg(scene));
+    await shootMoment(trajectory, story);
+    const options = create.mock.calls[0]![1] as { signal?: AbortSignal } | undefined;
+    expect(options?.signal).toBeInstanceOf(AbortSignal);
+  });
 });
 
