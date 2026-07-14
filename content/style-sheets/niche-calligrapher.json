@@ -22,32 +22,30 @@
   ],
 
   "fonts": [
-    { "name": "Cormorant Garamond",    "category": "high-contrast-serif" },
+    { "name": "Pinyon Script",         "category": "script" },
+    { "name": "Sacramento",            "category": "script" },
+    { "name": "Kaushan Script",        "category": "script" },
+    { "name": "Caveat",                "category": "hand-marker" },
+    { "name": "Amatic SC",             "category": "hand-marker" },
+    { "name": "UnifrakturMaguntia",    "category": "blackletter" },
+    { "name": "Cinzel",                "category": "refined-serif" },
+    { "name": "Marcellus",             "category": "refined-serif" },
     { "name": "Playfair Display",      "category": "high-contrast-serif" },
     { "name": "EB Garamond",           "category": "old-style-serif" },
     { "name": "Cardo",                 "category": "old-style-serif" },
-    { "name": "Marcellus",             "category": "refined-serif" },
-    { "name": "Cinzel",                "category": "refined-serif" },
-    { "name": "Spectral",              "category": "refined-serif" },
-    { "name": "Bitter",                "category": "slab-serif" },
     { "name": "Hanken Grotesk",        "category": "humanist-sans" },
     { "name": "Josefin Sans",          "category": "geometric-sans" },
     { "name": "Big Shoulders Display", "category": "condensed-caps" },
-    { "name": "Tangerine",             "category": "script" },
-    { "name": "Pinyon Script",         "category": "script" },
-    { "name": "Great Vibes",           "category": "script" },
-    { "name": "Sacramento",            "category": "script" },
-    { "name": "Caveat",                "category": "hand-marker" },
     { "name": "Special Elite",         "category": "typewriter" }
   ],
 
   "wordmark": [
     { "name": "Monsieur La Doulaise",  "category": "script" },
-    { "name": "Pinyon Script",         "category": "script" },
-    { "name": "Abril Fatface",         "category": "high-contrast-serif" },
+    { "name": "Kaushan Script",        "category": "script" },
     { "name": "Cinzel Decorative",     "category": "refined-serif" },
-    { "name": "Yeseva One",            "category": "high-contrast-serif" },
-    { "name": "UnifrakturMaguntia",    "category": "blackletter" }
+    { "name": "UnifrakturMaguntia",    "category": "blackletter" },
+    { "name": "Abril Fatface",         "category": "high-contrast-serif" },
+    { "name": "Big Shoulders Display", "category": "condensed-caps" }
   ],
 
   "textures": [

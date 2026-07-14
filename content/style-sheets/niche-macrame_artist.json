@@ -24,30 +24,28 @@
   "fonts": [
     { "name": "Fraunces",            "category": "high-contrast-serif" },
     { "name": "Cormorant Garamond",  "category": "high-contrast-serif" },
-    { "name": "Playfair Display",    "category": "high-contrast-serif" },
-    { "name": "EB Garamond",         "category": "old-style-serif" },
-    { "name": "Spectral",            "category": "refined-serif" },
-    { "name": "Lora",                "category": "refined-serif" },
     { "name": "Marcellus",           "category": "refined-serif" },
+    { "name": "EB Garamond",         "category": "old-style-serif" },
     { "name": "Domine",              "category": "slab-serif" },
-    { "name": "Bitter",              "category": "slab-serif" },
-    { "name": "Josefin Sans",        "category": "geometric-sans" },
-    { "name": "Jost",                "category": "geometric-sans" },
+    { "name": "Aleo",                "category": "slab-serif" },
     { "name": "Quicksand",           "category": "geometric-sans" },
     { "name": "Work Sans",           "category": "humanist-sans" },
     { "name": "Karla",               "category": "humanist-sans" },
+    { "name": "Oswald",              "category": "condensed-caps" },
     { "name": "Amatic SC",           "category": "hand-marker" },
     { "name": "Caveat",              "category": "hand-marker" },
-    { "name": "Special Elite",       "category": "typewriter" }
+    { "name": "Special Elite",       "category": "typewriter" },
+    { "name": "Cutive Mono",         "category": "mono" },
+    { "name": "Sacramento",          "category": "script" }
   ],
 
   "wordmark": [
-    { "name": "Abril Fatface",   "category": "high-contrast-serif" },
-    { "name": "Yeseva One",      "category": "high-contrast-serif" },
-    { "name": "Prata",           "category": "high-contrast-serif" },
-    { "name": "Cinzel",          "category": "refined-serif" },
+    { "name": "Amatic SC",       "category": "hand-marker" },
     { "name": "Sacramento",      "category": "script" },
-    { "name": "Pinyon Script",   "category": "script" }
+    { "name": "Abril Fatface",   "category": "high-contrast-serif" },
+    { "name": "Alfa Slab One",   "category": "slab-serif" },
+    { "name": "Cinzel",          "category": "refined-serif" },
+    { "name": "Yeseva One",      "category": "high-contrast-serif" }
   ],
 
   "textures": [

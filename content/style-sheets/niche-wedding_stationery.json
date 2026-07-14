@@ -24,30 +24,28 @@
   "fonts": [
     { "name": "Cormorant Garamond",  "category": "high-contrast-serif" },
     { "name": "Playfair Display",    "category": "high-contrast-serif" },
-    { "name": "Fraunces",            "category": "high-contrast-serif" },
+    { "name": "Marcellus",           "category": "refined-serif" },
     { "name": "EB Garamond",         "category": "old-style-serif" },
     { "name": "Cardo",               "category": "old-style-serif" },
-    { "name": "Crimson Pro",         "category": "old-style-serif" },
-    { "name": "Spectral",            "category": "refined-serif" },
-    { "name": "Marcellus",           "category": "refined-serif" },
-    { "name": "Cinzel",              "category": "refined-serif" },
-    { "name": "Italiana",            "category": "refined-serif" },
+    { "name": "Bitter",              "category": "slab-serif" },
     { "name": "Tenor Sans",          "category": "humanist-sans" },
     { "name": "Jost",                "category": "geometric-sans" },
-    { "name": "Josefin Sans",        "category": "geometric-sans" },
-    { "name": "Raleway",             "category": "geometric-sans" },
-    { "name": "Tangerine",           "category": "script" },
+    { "name": "Questrial",           "category": "geometric-sans" },
+    { "name": "Archivo Narrow",      "category": "condensed-caps" },
+    { "name": "Special Elite",       "category": "typewriter" },
+    { "name": "Cutive Mono",         "category": "mono" },
     { "name": "Pinyon Script",       "category": "script" },
-    { "name": "Great Vibes",         "category": "script" }
+    { "name": "Tangerine",           "category": "script" },
+    { "name": "Caveat",              "category": "hand-marker" }
   ],
 
   "wordmark": [
     { "name": "Pinyon Script",       "category": "script" },
-    { "name": "Tangerine",           "category": "script" },
     { "name": "Parisienne",          "category": "script" },
     { "name": "Cinzel Decorative",   "category": "refined-serif" },
     { "name": "Abril Fatface",       "category": "high-contrast-serif" },
-    { "name": "Yeseva One",          "category": "high-contrast-serif" }
+    { "name": "Big Shoulders Display","category": "condensed-caps" },
+    { "name": "UnifrakturMaguntia",  "category": "blackletter" }
   ],
 
   "textures": [

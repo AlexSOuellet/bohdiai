@@ -22,31 +22,30 @@
   ],
 
   "fonts": [
-    { "name": "Cormorant Garamond",  "category": "high-contrast-serif" },
     { "name": "Fraunces",            "category": "high-contrast-serif" },
-    { "name": "Marcellus",           "category": "refined-serif" },
+    { "name": "Cormorant Garamond",  "category": "high-contrast-serif" },
     { "name": "Spectral",            "category": "refined-serif" },
     { "name": "EB Garamond",         "category": "old-style-serif" },
-    { "name": "Lora",                "category": "refined-serif" },
-    { "name": "Italiana",            "category": "high-contrast-serif" },
-    { "name": "Jost",                "category": "geometric-sans" },
-    { "name": "Syne",                "category": "geometric-sans" },
+    { "name": "Zilla Slab",          "category": "slab-serif" },
+    { "name": "Domine",              "category": "slab-serif" },
     { "name": "Space Grotesk",       "category": "geometric-sans" },
-    { "name": "Questrial",           "category": "geometric-sans" },
-    { "name": "Hanken Grotesk",      "category": "humanist-sans" },
-    { "name": "Figtree",             "category": "humanist-sans" },
+    { "name": "Syne",                "category": "geometric-sans" },
+    { "name": "Work Sans",           "category": "humanist-sans" },
     { "name": "Oswald",              "category": "condensed-caps" },
+    { "name": "Space Mono",          "category": "mono" },
+    { "name": "Cutive Mono",         "category": "mono" },
     { "name": "Sacramento",          "category": "script" },
-    { "name": "Space Mono",          "category": "mono" }
+    { "name": "Amatic SC",           "category": "hand-marker" },
+    { "name": "Caveat",              "category": "hand-marker" }
   ],
 
   "wordmark": [
-    { "name": "Abril Fatface",       "category": "high-contrast-serif" },
-    { "name": "Yeseva One",          "category": "high-contrast-serif" },
-    { "name": "Bodoni Moda",         "category": "high-contrast-serif" },
-    { "name": "DM Serif Display",    "category": "high-contrast-serif" },
-    { "name": "Parisienne",          "category": "script" },
-    { "name": "Fraunces",            "category": "high-contrast-serif" }
+    { "name": "Bodoni Moda",           "category": "high-contrast-serif" },
+    { "name": "Syne",                  "category": "geometric-sans" },
+    { "name": "Big Shoulders Display", "category": "condensed-caps" },
+    { "name": "Alfa Slab One",         "category": "slab-serif" },
+    { "name": "Sacramento",            "category": "script" },
+    { "name": "Space Mono",            "category": "mono" }
   ],
 
   "textures": [

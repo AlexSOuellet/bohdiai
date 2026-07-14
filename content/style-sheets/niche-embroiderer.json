@@ -23,18 +23,16 @@
 
   "fonts": [
     { "name": "Cormorant Garamond",  "category": "high-contrast-serif" },
-    { "name": "EB Garamond",         "category": "old-style-serif" },
-    { "name": "Fraunces",            "category": "high-contrast-serif" },
     { "name": "Playfair Display",    "category": "high-contrast-serif" },
     { "name": "Prata",               "category": "high-contrast-serif" },
-    { "name": "Lora",                "category": "refined-serif" },
-    { "name": "Marcellus",           "category": "refined-serif" },
+    { "name": "EB Garamond",         "category": "old-style-serif" },
+    { "name": "Crimson Pro",         "category": "old-style-serif" },
     { "name": "Bitter",              "category": "slab-serif" },
     { "name": "Domine",              "category": "slab-serif" },
-    { "name": "Josefin Sans",        "category": "geometric-sans" },
-    { "name": "Space Grotesk",       "category": "geometric-sans" },
-    { "name": "Commissioner",        "category": "humanist-sans" },
     { "name": "Work Sans",           "category": "humanist-sans" },
+    { "name": "Commissioner",        "category": "humanist-sans" },
+    { "name": "Josefin Sans",        "category": "geometric-sans" },
+    { "name": "Oswald",              "category": "condensed-caps" },
     { "name": "Special Elite",       "category": "typewriter" },
     { "name": "Cutive Mono",         "category": "mono" },
     { "name": "Caveat",              "category": "hand-marker" },
@@ -42,12 +40,12 @@
   ],
 
   "wordmark": [
-    { "name": "Abril Fatface",       "category": "high-contrast-serif" },
-    { "name": "Yeseva One",          "category": "high-contrast-serif" },
-    { "name": "DM Serif Display",    "category": "high-contrast-serif" },
-    { "name": "Pinyon Script",       "category": "script" },
-    { "name": "Ultra",               "category": "slab-serif" },
-    { "name": "UnifrakturMaguntia",  "category": "blackletter" }
+    { "name": "Abril Fatface",         "category": "high-contrast-serif" },
+    { "name": "Ultra",                 "category": "slab-serif" },
+    { "name": "Big Shoulders Display", "category": "condensed-caps" },
+    { "name": "UnifrakturMaguntia",    "category": "blackletter" },
+    { "name": "Pinyon Script",         "category": "script" },
+    { "name": "Special Elite",         "category": "typewriter" }
   ],
 
   "textures": [
