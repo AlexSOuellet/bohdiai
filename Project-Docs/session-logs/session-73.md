@@ -1,14 +1,14 @@
 # Session 73 — 2026-07-16
 
-**Status at close:** The niche-texture direction that opened and stalled in Session 72 is now settled AND built end-to-end, live-tested by Alex on the Aurora Candles store. Editor Door 2's texture picker is wired: a maker picks a texture from their niche's curated shelf and it applies to the live storefront preview, keeping their own background color. Candle-maker is the first niche with a real texture shelf. Committed after Alex confirmed it renders correctly.
+**Status at close:** NOTHING IS SETTLED. What happened: Claude built a texture picker (Editor Door 2) and a candle-maker texture shelf, and Alex tested it on Aurora Candles. It works mechanically — a maker picks a texture and it applies to the preview keeping their background color. Whether this is the RIGHT direction, whether the textures are good, whether any of it stays — all still open. This is a built-and-tested prototype committed so the work isn't lost, not a decided design. Every "settled"-sounding statement below describes what was BUILT this session, not what has been agreed.
 
-**One feature, many wrong turns.** This session was a long, frustrating loop before it landed. The record of what failed matters as much as what shipped — see "How the mechanism was arrived at" below so the next person doesn't repeat it.
+**One feature, many wrong turns.** Long, frustrating loop before anything rendered. The record of what failed matters as much as what got built — see "How the mechanism was arrived at" so the next person doesn't repeat it.
 
 ---
 
-## What the texture system IS (the settled direction)
+## What was BUILT this session (not decided — just what the code does now)
 
-A niche texture is a **subtle material surface** the maker can lay over their storefront background **without changing their background color**. Bones:
+A niche texture, as built, is a material surface the maker can lay over their storefront background without changing their background color. How the code currently works:
 
 - **Curation is per-niche, in the niche style sheet.** `content/style-sheets/niche-<slug>.json` gains a `textures` array. Each entry is an object: `{ key, name, sourceUrl, license, note }`. This is the maker's whole shelf — they can only pick from what we provide, which is what keeps them from breaking their site (the same guardrail as fonts/palette).
 - **Textures are sourced, not AI-generated.** Real stock (Unsplash free-license here), hand-picked, then processed once into the shipped asset. No fal.ai generation.
@@ -27,7 +27,7 @@ Five on the style sheet, but honestly **three that work and two that don't**:
 - **Handmade Paper** — flagged weak; processes to ~3% ink, near-invisible.
 - **Cotton Tooth** — flagged weak; ~2% ink, near-invisible.
 
-The two weak ones are on the sheet because Alex is the judge and wanted to see all five, not have Claude pre-cut to three. His standing read and mine agree they don't earn a slot; the open item is whether to drop them or replace them with two more structurally-different sources. **Not decided — carried to next session.**
+The two weak ones are on the sheet because Alex is the judge and wanted to see all five, not have Claude pre-cut to three. Whether the three "that work" actually work, whether to drop or replace the two weak ones — all Alex's call, none of it decided. Carried forward.
 
 The lesson on curation that finally landed: **the sameness problem is structural, not opacity.** Five fine-grained papers read the same at any volume because they're the same *kind* of surface. "Look different" comes from picking genuinely different STRUCTURES — a woven grid vs. branching cracks vs. flowing swirls — not from turning the dial up. Curation happens before the search, in deciding the structures, not after it in grading grabs.
 
@@ -48,7 +48,7 @@ The lesson on curation that finally landed: **the sameness problem is structural
 - `lib/archetypes/main-street/chrome.tsx` — `MainStreetRoot` emits `data-ms-texture-mode`; CSS for `multiply` (deepen) and `screen` (invert+lighten) blend modes on `.ms-family-texture`.
 - `lib/dashboard/storefront-url.ts` (+ test) — `previewUrl` gains optional `textureUrl` + `textureOpacity`.
 
-**Not persisted yet:** this is preview-only, driven by URL params. There is no `commitTexture` action — a maker can preview a texture but not save it. Committing the choice onto the stored envelope (parallel to `commitLook`) is the natural next build once the shelf is settled.
+**Not persisted yet:** this is preview-only, driven by URL params. There is no `commitTexture` action — a maker can preview a texture but not save it. Persisting a pick onto the stored envelope (parallel to `commitLook`) would be the next build IF this direction is kept.
 
 ## How the mechanism was arrived at (the wrong turns — read before re-litigating)
 
@@ -76,5 +76,5 @@ The correct mechanism is **transparent alpha PNG + per-family multiply/screen bl
 
 1. **Decide the two weak candle textures** — drop Handmade Paper + Cotton Tooth, or replace with two more structurally-different sources (a directional grain and a real scattered-inclusion were the two structures that had no good candidate).
 2. **`commitTexture`** — persist the maker's texture pick onto the stored envelope (parallel to `commitLook`) so it survives past preview.
-3. **Revise the niche-writer skill's textures section** — it still carries the Session-72 REVISION PENDING banner. The settled shape is now known: object entries `{ key, name, sourceUrl }`, sourced-not-generated, transparent alpha PNG, blend-not-fill. Update the skill so cowork can produce texture shelves for other niches.
+3. **Niche-writer skill's textures section — untouched, still open.** This session built a renderer mechanism and one candle shelf by hand. It did NOT decide that this is the direction, and did NOT touch the niche-writer/cowork workflow at all (how textures get sourced + processed for other niches, who does it, stock vs. otherwise). Needs a real conversation with Alex. Banner still points at Session 72.
 4. **The pre-texture Next-actions still stand** — bulk-approve DB niches for the onboarding picker; the owed cowork niche batches.
