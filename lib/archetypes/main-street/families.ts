@@ -112,6 +112,13 @@ export interface Family {
   /** How loudly the wallpaper reads over the family surface (0-1). Tuned per
    *  family — Linen and Marble stay subtle; Concrete and Confetti push harder. */
   textureOpacity: number;
+  /** How the texture layer paints. `cover` (default, omitted) paints the
+   *  wallpaper photo directly — the family-default behavior. For Editor Door 2
+   *  niche textures (black-ink-on-transparent PNGs) the mode BLENDS onto the
+   *  background instead of repainting it, so the maker's color is preserved:
+   *  `multiply` on light families (the pattern deepens the existing color) and
+   *  `screen` on dark families (the pattern lightens it, via an invert). */
+  textureMode?: 'cover' | 'multiply' | 'screen';
   imageryGrade: string;
   /** Google Fonts stylesheet URL preloaded on the storefront. */
   fontHref: string;

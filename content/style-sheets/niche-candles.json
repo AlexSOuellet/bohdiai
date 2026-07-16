@@ -1,0 +1,89 @@
+{
+  "kind": "niche-style-sheet",
+  "slug": "candles",
+  "note": "Raw materials for a candle-maker site. Named only — no role assignments, no feel labels. Bohdi reads this alongside the mood's style sheet and decides which color is background, which font heads, which texture rides where.",
+
+  "palette": [
+    { "name": "Coconut Cream",       "hex": "#F5EFE0" },
+    { "name": "Soy Wax",             "hex": "#F0EAD5" },
+    { "name": "Palm Frost",          "hex": "#E8DFC5" },
+    { "name": "Ceramic Matte",       "hex": "#E4D8C0" },
+    { "name": "Wick Cotton",         "hex": "#E4D5B2" },
+    { "name": "Beeswax",             "hex": "#E8C878" },
+    { "name": "Amber Vessel",        "hex": "#B0662A" },
+    { "name": "Cinnabar Seal",       "hex": "#A62A26" },
+    { "name": "Kraft Label",         "hex": "#A67D4F" },
+    { "name": "Sandalwood",          "hex": "#7A5E3F" },
+    { "name": "Vetiver Root",        "hex": "#4A3E2C" },
+    { "name": "Green Glass",         "hex": "#3D5A4A" },
+    { "name": "Cobalt Apothecary",   "hex": "#1F3A5F" },
+    { "name": "Charred Wick",        "hex": "#2A1F16" },
+    { "name": "Sumi Ink",            "hex": "#0F0D0B" }
+  ],
+
+  "fonts": [
+    { "name": "Playfair Display",       "category": "high-contrast-serif" },
+    { "name": "DM Serif Display",       "category": "high-contrast-serif" },
+    { "name": "Cormorant Garamond",     "category": "old-style-serif" },
+    { "name": "EB Garamond",            "category": "old-style-serif" },
+    { "name": "Vollkorn",               "category": "old-style-serif" },
+    { "name": "Marcellus",              "category": "refined-serif" },
+    { "name": "Cinzel",                 "category": "refined-serif" },
+    { "name": "Fraunces",               "category": "refined-serif" },
+    { "name": "Bitter",                 "category": "slab-serif" },
+    { "name": "UnifrakturMaguntia",     "category": "blackletter" },
+    { "name": "Fredoka",                "category": "geometric-sans" },
+    { "name": "Manrope",                "category": "geometric-sans" },
+    { "name": "Hanken Grotesk",         "category": "humanist-sans" },
+    { "name": "Amatic SC",              "category": "hand-marker" },
+    { "name": "Special Elite",          "category": "typewriter" },
+    { "name": "Cutive Mono",            "category": "mono" }
+  ],
+
+  "wordmark": [
+    { "name": "Cinzel Decorative",      "category": "refined-serif" },
+    { "name": "Abril Fatface",          "category": "high-contrast-serif" },
+    { "name": "Alfa Slab One",          "category": "slab-serif" },
+    { "name": "Fredoka",                "category": "geometric-sans" },
+    { "name": "UnifrakturMaguntia",     "category": "blackletter" },
+    { "name": "Yeseva One",             "category": "high-contrast-serif" }
+  ],
+
+  "textures": [
+    {
+      "key": "woven-linen",
+      "name": "Woven Linen",
+      "sourceUrl": "/textures/niche/candles/woven-linen.png",
+      "license": "Unsplash (processed to alpha texture)",
+      "note": "Macro linen weave — a clear crossing-thread grid. The wick-fiber / cloth-wrap register."
+    },
+    {
+      "key": "aged-glaze-cracks",
+      "name": "Aged Glaze",
+      "sourceUrl": "/textures/niche/candles/aged-glaze.png",
+      "license": "Unsplash (processed to alpha texture)",
+      "note": "Fine branching crack network — the crackled-vessel register."
+    },
+    {
+      "key": "marble-swirl",
+      "name": "Marble Swirl",
+      "sourceUrl": "/textures/niche/candles/marble-swirl.png",
+      "license": "Unsplash (processed to alpha texture)",
+      "note": "Flowing marble veins — soft directional liquid movement. The poured-wax / stone-vessel register."
+    },
+    {
+      "key": "handmade-paper",
+      "name": "Handmade Paper",
+      "sourceUrl": "/textures/niche/candles/handmade-paper.png",
+      "license": "Unsplash (processed to alpha texture)",
+      "note": "Cream paper with scattered flecks and fiber inclusions — the deckle / label-stock register. (I flagged this one as weak — you decide.)"
+    },
+    {
+      "key": "cotton-tooth",
+      "name": "Cotton Tooth",
+      "sourceUrl": "/textures/niche/candles/cotton-tooth.png",
+      "license": "Unsplash (processed to alpha texture)",
+      "note": "Fine cotton-rag watercolor tooth — even stipple grain. (I flagged this one as weak — you decide.)"
+    }
+  ]
+}

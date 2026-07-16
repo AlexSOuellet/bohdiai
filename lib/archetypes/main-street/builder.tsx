@@ -23,7 +23,7 @@ import { COLLECTIONS_TREATMENTS, type CollectionsTreatment } from './collections
 import { REVIEWS_TREATMENTS, type ReviewsTreatment } from './reviews';
 import { FINDUS_TREATMENTS, type FindUsTreatment } from './findus';
 import type { FounderTreatment } from './founder';
-import { getFamily } from './families';
+import { getFamily, type Family } from './families';
 import type { HeroVariantKey } from './hero-catalog';
 
 /** Every section variant the family (or a preview override) picks for a render.
@@ -234,6 +234,20 @@ function asFindUsTreatment(v?: string): FindUsTreatment | undefined {
   return (FINDUS_TREATMENTS as readonly string[]).includes(v ?? '') ? (v as FindUsTreatment) : undefined;
 }
 
+/** True when a hex background is dark enough that a black texture would vanish on
+ *  it — used to pick the texture blend mode (multiply on light, screen on dark).
+ *  Uses perceived luminance (sRGB-weighted); threshold 0.4 splits the six
+ *  families cleanly (Dark + Rustic dark; Cozy / Luxury / Cheerful / Modern light). */
+function hexIsDark(hex: string): boolean {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  const digits = m?.[1];
+  if (digits === undefined) return false;
+  const n = Number.parseInt(digits, 16);
+  const r = (n >> 16) & 0xff, g = (n >> 8) & 0xff, b = n & 0xff;
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  return luminance < 0.4;
+}
+
 /** Apply a nav-variant override (the ?nav= preview) onto the content's identity, so
  *  every nav site — each hero, every sub-page header, the product page — reads it. */
 function withNav(content: MainStreetContent, navVariant?: NavVariant): MainStreetContent {
@@ -253,13 +267,40 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   mediaJobs,
   applyMedia,
   toPayload,
-  render: ({ content, lookKey, products, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, tenantId, mood, heroVariant, goodsTreatment, collections, collectionsTreatment, reviewsTreatment, findUsTreatment, founderTreatment, navVariant }) => {
+  render: ({ content, lookKey, products, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, tenantId, mood, heroVariant, goodsTreatment, collections, collectionsTreatment, reviewsTreatment, findUsTreatment, founderTreatment, navVariant, previewTexture, previewTextureOpacity }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
     // Resolve the family AND its section variants from the tenant's mood, then
     // apply any preview URL overrides. Every page below wears the SAME picks so
     // a /shop teaser matches what /home advertised. The home's section ORDER
     // + on/off comes from the family's stack too. Bohdi authors CONTENT ONLY.
-    const family = getFamily(mood);
+    const familyBase = getFamily(mood);
+    // Editor Door 2 texture preview. Three states:
+    //   previewTexture === 'none'  → no texture at all (plain family color)
+    //   previewTexture is a URL     → that niche texture, blended onto the bg
+    //   omitted                     → the family's own default wallpaper
+    //
+    // The texture PNG is black-ink-on-transparent. To keep the maker's BACKGROUND
+    // COLOR (not repaint it), we BLEND rather than fill: on a light family we
+    // multiply (the black pattern darkens the existing color, hue preserved); on
+    // a dark family we invert to white and screen (the pattern lightens it, hue
+    // preserved). Either way the base color stays; the texture only deepens its
+    // own shadow/highlight into it — the way a real material surface reads.
+    let family: Family;
+    if (previewTexture === 'none') {
+      family = { ...familyBase, textureOpacity: 0 };
+    } else if (previewTexture !== undefined && previewTexture !== '') {
+      const bgIsDark = hexIsDark(familyBase.palette.bg);
+      family = {
+        ...familyBase,
+        wallpaperUrl: previewTexture,
+        textureMode: bgIsDark ? 'screen' : 'multiply',
+        textureOpacity: previewTextureOpacity !== undefined && Number.isFinite(previewTextureOpacity)
+          ? previewTextureOpacity
+          : 0.5,
+      };
+    } else {
+      family = familyBase;
+    }
     const treatments = resolveTreatments(mood, {
       hero: heroVariant, goods: goodsTreatment, collections: collectionsTreatment,
       reviews: reviewsTreatment, founder: founderTreatment, findUs: findUsTreatment, nav: navVariant,

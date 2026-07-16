@@ -23,7 +23,16 @@ export function storefrontOrigin(subdomain: string, dashboardHost: string | null
 }
 
 /** The full preview URL: the storefront home with a one-off skin override applied
- *  (re-skins the public content only; see StorefrontPage). */
-export function previewUrl(origin: string, skinKey: string): string {
-  return `${origin}/?previewLook=${encodeURIComponent(skinKey)}`;
+ *  (re-skins the public content only; see StorefrontPage). Optional textureUrl
+ *  layers Editor Door 2's niche-texture preview on top of the skin swap; optional
+ *  textureOpacity (0–1) overrides the family's default opacity for that texture. */
+export function previewUrl(origin: string, skinKey: string, textureUrl?: string | undefined, textureOpacity?: number | undefined): string {
+  let url = `${origin}/?previewLook=${encodeURIComponent(skinKey)}`;
+  if (textureUrl !== undefined && textureUrl !== '') {
+    url += `&previewTexture=${encodeURIComponent(textureUrl)}`;
+  }
+  if (textureOpacity !== undefined && Number.isFinite(textureOpacity)) {
+    url += `&previewTextureOpacity=${textureOpacity.toFixed(2)}`;
+  }
+  return url;
 }

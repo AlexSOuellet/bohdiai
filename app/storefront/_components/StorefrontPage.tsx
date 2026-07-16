@@ -25,6 +25,12 @@ interface StorefrontPageProps {
   /** Editor door-1 preview — re-render the live home in this skin without persisting.
    *  Re-skins the already-public content only; owner-gating is deferred. */
   previewLook?: string | undefined;
+  /** Editor door-2 preview — override the family wallpaper URL with a niche texture
+   *  (from the niche style sheet) without persisting. Full external CDN URL. */
+  previewTexture?: string | undefined;
+  /** Editor door-2 preview — override the wallpaper opacity (0–1) for the texture.
+   *  Optional — omitted keeps the family's default opacity. */
+  previewTextureOpacity?: number | undefined;
   /** Hero-swap preview — render the home with this hero variant without persisting. */
   previewHero?: string | undefined;
   /** Goods-treatment preview — render the goods beat in this treatment without persisting. */
@@ -95,7 +101,7 @@ export async function renderArchetypeShell(tenantId: string, children: ReactNode
   return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, mood: a.mood, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
 }
 
-export default async function StorefrontPage({ slug, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs }: StorefrontPageProps) {
+export default async function StorefrontPage({ slug, previewLook, previewTexture, previewTextureOpacity, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs }: StorefrontPageProps) {
   const headerStore = await headers();
   const tenantId = headerStore.get('x-tenant-id');
   if (tenantId === null) notFound();
@@ -106,7 +112,7 @@ export default async function StorefrontPage({ slug, previewLook, previewHero, p
   if (subPage !== undefined) {
     const env = await loadHomeEnvelope(tenantId);
     if (env === null) notFound();
-    return renderStore(env, tenantId, subPage, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs);
+    return renderStore(env, tenantId, subPage, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity);
   }
 
   // /collections/<slug> — the collection detail page. Same envelope dispatch as
@@ -115,13 +121,13 @@ export default async function StorefrontPage({ slug, previewLook, previewHero, p
     const collectionSlug = slug.slice('/collections/'.length);
     const env = await loadHomeEnvelope(tenantId);
     if (env === null) notFound();
-    return renderStore(env, tenantId, 'collection', previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, collectionSlug);
+    return renderStore(env, tenantId, 'collection', previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity, collectionSlug);
   }
 
   // Home (/): render the store from the tenant's home envelope.
   const env = await loadHomeEnvelope(tenantId);
   if (env === null) notFound();
-  return renderStore(env, tenantId, undefined, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs);
+  return renderStore(env, tenantId, undefined, previewLook, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity);
 }
 
 function formatPrice(cents: number): string {
@@ -181,7 +187,7 @@ function seedPreviewCollections(products: ProductView[]): CollectionView[] {
 /** Render a stored store: load the real catalog rows as ProductViews and paint
  *  via the chosen spec's registered renderer. An `overrideLook` (editor door-1
  *  preview) re-skins the same content without persisting. */
-async function renderStore(env: Record<string, unknown>, tenantId: string, page?: ArchetypePage, overrideLook?: string, previewHero?: string, previewGoods?: string, previewFounder?: string, previewNav?: string, previewCollections?: string, previewReviews?: string, previewFindUs?: string, collectionSlug?: string) {
+async function renderStore(env: Record<string, unknown>, tenantId: string, page?: ArchetypePage, overrideLook?: string, previewHero?: string, previewGoods?: string, previewFounder?: string, previewNav?: string, previewCollections?: string, previewReviews?: string, previewFindUs?: string, previewTexture?: string, previewTextureOpacity?: number, collectionSlug?: string) {
   const archetypeKey = env['archetypeKey'];
   const lookKey = env['lookKey'];
   if (typeof archetypeKey !== 'string' || typeof lookKey !== 'string') notFound();
@@ -272,5 +278,5 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
       content = { ...(content as Record<string, unknown>), founder: { ...(founder as Record<string, unknown>), findUs: seedPreviewFindUs() } };
     }
   }
-  return spec.render({ content, lookKey: effectiveLook, products: effectiveProducts, mood, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, tenantId, heroVariant: previewHero, goodsTreatment: previewGoods, collections, collectionsTreatment: previewCollections, reviewsTreatment: previewReviews, findUsTreatment: previewFindUs, founderTreatment: previewFounder, navVariant: previewNav });
+  return spec.render({ content, lookKey: effectiveLook, products: effectiveProducts, mood, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, tenantId, heroVariant: previewHero, goodsTreatment: previewGoods, collections, collectionsTreatment: previewCollections, reviewsTreatment: previewReviews, findUsTreatment: previewFindUs, founderTreatment: previewFounder, navVariant: previewNav, previewTexture, previewTextureOpacity });
 }

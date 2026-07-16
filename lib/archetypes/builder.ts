@@ -134,6 +134,13 @@ export interface ArchetypeBuildSpec<T = unknown> {
     /** Force the nav layout (the non-persisting ?nav= preview). Optional — omitted
      *  falls back to the family's default nav variant. */
     navVariant?: string | undefined;
+    /** Force the family wallpaper URL to a niche-scoped texture (the non-persisting
+     *  ?previewTexture= preview from Editor Door 2). Optional — omitted uses the
+     *  family's default wallpaper. Full URL (external CDN or local /public path). */
+    previewTexture?: string | undefined;
+    /** Override the wallpaper opacity (0–1) for the texture preview. Optional —
+     *  omitted keeps the family's default opacity (0.15–0.30 per family). */
+    previewTextureOpacity?: number | undefined;
   }): ReactElement;
 
   /** Paint a single product's detail page in the archetype's chrome. The product

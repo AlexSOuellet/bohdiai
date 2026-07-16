@@ -173,6 +173,24 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
        confetti read louder. Editor Door 2 will let the maker swap to another
        wallpaper in the family's bench by rewriting --ms-texture-url. */
     .arch-main-street .ms-family-texture{position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:var(--ms-texture-url);background-size:cover;background-position:center;background-repeat:no-repeat;opacity:var(--ms-texture-opacity,0)}
+    /* Niche texture BLEND modes (Editor Door 2). The texture PNG is black-ink-on-
+       transparent. Rather than repainting the page in an ink color (which shifts
+       the maker's hue), we BLEND the black pattern onto the existing background so
+       the color is preserved and only the pattern's shadow/highlight is added.
+       - multiply (light families): black pattern DEEPENS the current color; the
+         transparent ground leaves the color untouched. Beige stays beige, just
+         woven-darker where the threads sit.
+       - screen (dark families): invert the pattern to white first, then screen so
+         it LIGHTENS the near-black background — same idea in the other direction,
+         since a black pattern would vanish on a dark page. */
+    .arch-main-street[data-ms-texture-mode="multiply"] .ms-family-texture{
+      background-size:cover;background-position:center;background-repeat:no-repeat;
+      mix-blend-mode:multiply;
+    }
+    .arch-main-street[data-ms-texture-mode="screen"] .ms-family-texture{
+      background-size:cover;background-position:center;background-repeat:no-repeat;
+      filter:invert(1);mix-blend-mode:screen;
+    }
     .arch-main-street .archetype-photo{filter:${a.photoFilter ?? 'none'};display:block;width:100%;height:100%;object-fit:cover}
     .arch-main-street .ms-wrap{max-width:1200px;margin-inline:auto;padding-inline:40px}
     @media(max-width:860px){.arch-main-street .ms-wrap{padding-inline:20px}}
@@ -1380,7 +1398,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
   `;
 }
 
-export function MainStreetRoot({ skin, family, children }: { skin: ArchetypeTheme; family?: { key: string; wallpaperUrl: string; textureOpacity: number } | undefined; children: React.ReactNode }) {
+export function MainStreetRoot({ skin, family, children }: { skin: ArchetypeTheme; family?: { key: string; wallpaperUrl: string; textureOpacity: number; textureMode?: 'cover' | 'multiply' | 'screen' } | undefined; children: React.ReactNode }) {
   return (
     <>
       <link rel="stylesheet" href={fontHref(skin)} />
@@ -1392,7 +1410,7 @@ export function MainStreetRoot({ skin, family, children }: { skin: ArchetypeThem
           }}
         />
       )}
-      <div className="arch-main-street" data-ms-family={family?.key}>
+      <div className="arch-main-street" data-ms-family={family?.key} data-ms-texture-mode={family?.textureMode ?? 'cover'}>
         <div className="ms-grain" aria-hidden />
         {family && <div className="ms-family-texture" aria-hidden />}
         {children}

@@ -5,6 +5,7 @@ import { getCurrentShop } from '@/lib/dashboard/current-shop';
 import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
 import { signOutMaker } from '@/lib/auth/actions';
 import DashboardNav from './_components/DashboardNav';
+import ViewLiveSiteLink from './_components/ViewLiveSiteLink';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   // getCurrentShop calls requireUser → logged-out makers are redirected to /signin.
@@ -44,14 +45,10 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             )}
           </div>
           {siteUrl && (
-            <a
-              href={siteUrl}
-              target="_blank"
-              rel="noreferrer"
+            <ViewLiveSiteLink
+              siteUrl={siteUrl}
               className="shrink-0 rounded-lg border border-white/12 px-3 py-1.5 text-sm text-text-soft transition-colors hover:border-honey/50 hover:text-honey-warm"
-            >
-              View live site ↗
-            </a>
+            />
           )}
         </header>
 
