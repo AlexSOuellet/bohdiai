@@ -108,3 +108,22 @@ export const MOODS: Record<MoodKey, Mood> = {
 };
 
 export const MOOD_LIST: readonly Mood[] = Object.values(MOODS);
+
+/** True when `value` is one of the real mood keys. */
+export function isMoodKey(value: unknown): value is MoodKey {
+  return typeof value === 'string' && Object.prototype.hasOwnProperty.call(MOODS, value);
+}
+
+/**
+ * Resolve which feeling a render should use. The editor preview passes the feeling
+ * the maker is trying on as `previewMood`; when it's a real mood key it wins, so the
+ * preview reflects the whole selected look (the family's section layout, wallpaper,
+ * and nav — all mood-driven), not just the skin. Otherwise the store's saved mood
+ * applies. Returns undefined only when neither is present (legacy stores).
+ */
+export function resolvePreviewMood(
+  previewMood: string | undefined,
+  storedMood: string | undefined,
+): string | undefined {
+  return isMoodKey(previewMood) ? previewMood : storedMood;
+}

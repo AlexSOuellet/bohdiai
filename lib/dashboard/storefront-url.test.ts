@@ -37,17 +37,29 @@ describe('previewUrl', () => {
     );
   });
 
-  it('appends an encoded niche-texture override when given one', () => {
+  it('appends an encoded texture-url override when given one (blend path kept for a future library)', () => {
     expect(
-      previewUrl('https://ember.bohdiai.com', 'main-street-studio', '/textures/niche/candles/woven-linen.png'),
+      previewUrl('https://ember.bohdiai.com', 'main-street-studio', '/textures/lib/example.png'),
     ).toBe(
-      'https://ember.bohdiai.com/?previewLook=main-street-studio&previewTexture=%2Ftextures%2Fniche%2Fcandles%2Fwoven-linen.png',
+      'https://ember.bohdiai.com/?previewLook=main-street-studio&previewTexture=%2Ftextures%2Flib%2Fexample.png',
     );
   });
 
   it('appends the opacity override at two decimals when a real texture is set', () => {
     expect(previewUrl('https://ember.bohdiai.com', 'main-street-studio', '/t.png', 0.35)).toBe(
       'https://ember.bohdiai.com/?previewLook=main-street-studio&previewTexture=%2Ft.png&previewTextureOpacity=0.35',
+    );
+  });
+
+  it('carries the previewed feeling as previewMood, right after the look', () => {
+    expect(previewUrl('https://ember.bohdiai.com', 'main-street-studio', undefined, undefined, 'modern')).toBe(
+      'https://ember.bohdiai.com/?previewLook=main-street-studio&previewMood=modern',
+    );
+  });
+
+  it('orders previewMood before the texture params', () => {
+    expect(previewUrl('https://ember.bohdiai.com', 'main-street-studio', 'default', 0.4, 'cozy')).toBe(
+      'https://ember.bohdiai.com/?previewLook=main-street-studio&previewMood=cozy&previewTexture=default&previewTextureOpacity=0.40',
     );
   });
 

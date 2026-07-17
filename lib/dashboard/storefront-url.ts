@@ -22,12 +22,17 @@ export function storefrontOrigin(subdomain: string, dashboardHost: string | null
   return `https://${subdomain}.${apex}`;
 }
 
-/** The full preview URL: the storefront home with a one-off skin override applied
- *  (re-skins the public content only; see StorefrontPage). Optional textureUrl
- *  layers Editor Door 2's niche-texture preview on top of the skin swap; optional
- *  textureOpacity (0–1) overrides the family's default opacity for that texture. */
-export function previewUrl(origin: string, skinKey: string, textureUrl?: string | undefined, textureOpacity?: number | undefined): string {
+/** The full preview URL: the storefront home with a one-off look override applied
+ *  (re-skins the public content only; see StorefrontPage). Optional moodKey renders
+ *  the store in the feeling being tried on, so the preview reflects the whole family
+ *  (section layout, wallpaper, nav), not just the skin. Optional textureUrl layers
+ *  Editor Door 2's texture preview on top; optional textureOpacity (0–1) overrides
+ *  the family's default opacity. */
+export function previewUrl(origin: string, skinKey: string, textureUrl?: string | undefined, textureOpacity?: number | undefined, moodKey?: string | undefined): string {
   let url = `${origin}/?previewLook=${encodeURIComponent(skinKey)}`;
+  if (moodKey !== undefined && moodKey !== '') {
+    url += `&previewMood=${encodeURIComponent(moodKey)}`;
+  }
   if (textureUrl !== undefined && textureUrl !== '') {
     url += `&previewTexture=${encodeURIComponent(textureUrl)}`;
   }

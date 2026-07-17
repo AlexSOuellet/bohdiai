@@ -10,10 +10,14 @@
  */
 import { isKnownSkin } from './look-shelf';
 import type { MoodKey } from '@/lib/moods';
+import type { StoredTexture } from './texture';
 
 export interface LookChange {
   skinKey: string;
   moodKey: MoodKey;
+  /** Editor Door 2 texture setting to persist on `root.texture`. Optional — omitted
+   *  leaves any existing texture setting untouched (Door 1 changes look only). */
+  texture?: StoredTexture;
 }
 
 /** What the prior look was, stashed for a one-click revert. */
@@ -58,6 +62,10 @@ export function applyLookToEnvelope(
     mood: change.moodKey,
     previousLook: prior,
   };
+  // Door 2 texture, when the caller sends one, rides on the same envelope write.
+  if (change.texture !== undefined) {
+    nextRoot['texture'] = { mode: change.texture.mode, opacity: change.texture.opacity };
+  }
 
   return { next: { ...tree, root: nextRoot }, prior };
 }

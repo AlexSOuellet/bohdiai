@@ -795,6 +795,41 @@ Open and unproven: the path has not been stood up in our setup. Before any beta 
 
 ---
 
+## 2026-07-17 (session 74)
+
+### D63. The texture picker is unproven scaffolding; niche-writer texture curation is abandoned; a curated cross-family texture library is the direction to evaluate before launch
+
+Two days across the last sessions went into niche textures and we are no closer to a shippable answer. This entry records where it actually stands so the prototype is not mistaken for a decision.
+
+Having the niche writer curate a texture shelf per niche does not work and is abandoned. It put a sourcing-and-taste job on the wrong worker and produced a candle shelf that was never shown to look great.
+
+The per-niche blended texture the picker offered last session — a transparent texture blended onto the maker's own background color, deepening it on light families and lifting it on dark ones — is unproven. It was never demonstrated to work and look great across families. That blend path (the future library would reuse it) stays in the tree but is endorsed by nothing and should not be assumed to be what ships.
+
+What we did today: stripped the picker back to two honest choices — the family's own default wallpaper, and no texture at all — plus an opacity dial that drives the family wallpaper's strength. The candle prototype textures were removed (the processed images deleted; the candle style sheet kept, its texture list emptied).
+
+One real, self-standing control came out of this and it now SAVES: the maker's choice of family wallpaper vs. no texture, and the wallpaper's strength, persists on the home envelope (`root.texture`) alongside the look, rides in on the same commit (the Publish button — see D64), and re-applies on the live site — not just in the editor preview. This is legitimate because the family wallpaper is already a proven, shipped thing; letting a maker keep or mute it and set how strong it reads is a normal editor control, separate from the unproven library question. (An earlier version of this entry said the picker stays preview-only with nothing worth saving; that was wrong — a live control with no save is half a feature, which is exactly the gap being closed here.)
+
+The direction still to evaluate — not decided — is a single hand-curated texture library, tested to look great, available to every family from the editor, plus a set of niche-specific images a maker can choose as wallpaper. Curated and tested centrally, not sourced per niche by the niche writer.
+
+Timing is undecided, most likely post-launch. It is parked in the final pre-launch phase as a gate to discuss before we launch, and will be planned out fully when we reach it.
+
+### D64. The editor stages changes in-session and goes live on Publish; two buttons — Preview and Publish; no persisted draft yet
+
+The editor's one button saved a look change straight to the live store on click, and a separate "View live site" header link secretly carried the maker's current try-on as URL params — so it showed the try-on, not what was actually live. Three overlapping ways to view or act on the store (the editor's cramped inline preview, "View live site", and the instant save) were confusing.
+
+The model is now two buttons in the editor:
+
+- **Preview** opens the maker's current staged look — feeling, skin, texture, saved or not — full-size in a reused browser tab (the inline pane is too small to judge a store on). When nothing is staged, Preview is just the live store, so it doubles as "see my store" and no separate view-live-site link is needed.
+- **Publish** writes the staged look to the live store. It is enabled only when the staged look differs from what's live. The store is public throughout (live-on-build stands, D60); Publish is the go-live for look edits — there is no separate publish step beyond it.
+
+The confusing "View live site" header link and its try-on carry are removed.
+
+Staging is **session-only**: in-progress changes live in the editor session and reach the store only via Publish. Leaving the editor without publishing discards them — the maker returns to what's live. A saved draft that survives across sessions (a real draft-vs-published split in the store's data) was considered and deferred: it's overkill for a one-click, instantly-reversible look swap, and earns its place later when the editor also stages colors and products and a maker stacks several kinds of change before going live.
+
+A known limitation, accepted for now: Preview shows the staged HOME page; navigating within the preview tab to a sub-page follows plain links and shows the currently-published look, not the staged one. A full staged-navigation preview is a later job.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.

@@ -395,6 +395,10 @@ Every audit finding not landed in Phases 0-5 lives here. Happens before any real
 - [ ] Build founder-admin approval → creates comped Supabase auth account + sends set-password email invite (D61)
 - [ ] Comp flag on account bypasses card-required trial
 
+### 6.7 — Texture / wallpaper library (decide before launch)
+
+- [ ] **Texture / wallpaper library — decide before launch (D63).** Niche-writer-curated textures are abandoned. The per-niche blend path is unproven — kept in the tree, not endorsed. (What did land and ship: the maker can keep or mute the family wallpaper and dial its strength, and that choice now saves — a real, self-standing editor control, separate from the library question.) Direction still to evaluate: one hand-curated, tested texture library available to every family in the editor, plus niche-specific wallpaper images the maker can choose. Timing pre/post launch undecided, likely post. This is the gate to discuss it before launching.
+
 ### Phase 6 Definition of Done
 
 - Every security finding fixed.

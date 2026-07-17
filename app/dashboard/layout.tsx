@@ -1,17 +1,12 @@
 import type { ReactNode } from 'react';
-import { headers } from 'next/headers';
 import Link from 'next/link';
 import { getCurrentShop } from '@/lib/dashboard/current-shop';
-import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
 import { signOutMaker } from '@/lib/auth/actions';
 import DashboardNav from './_components/DashboardNav';
-import ViewLiveSiteLink from './_components/ViewLiveSiteLink';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   // getCurrentShop calls requireUser → logged-out makers are redirected to /signin.
   const shop = await getCurrentShop();
-  const host = (await headers()).get('host');
-  const siteUrl = shop ? storefrontOrigin(shop.subdomain, host) : null;
 
   return (
     <div className="flex min-h-screen bg-bg text-text">
@@ -44,12 +39,6 @@ export default async function DashboardLayout({ children }: { children: ReactNod
               <p className="truncate text-xs text-muted">{shop.subdomain}.bohdiai.com</p>
             )}
           </div>
-          {siteUrl && (
-            <ViewLiveSiteLink
-              siteUrl={siteUrl}
-              className="shrink-0 rounded-lg border border-white/12 px-3 py-1.5 text-sm text-text-soft transition-colors hover:border-honey/50 hover:text-honey-warm"
-            />
-          )}
         </header>
 
         <main id="main" className="min-w-0 flex-1">

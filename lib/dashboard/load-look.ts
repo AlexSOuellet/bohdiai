@@ -8,10 +8,13 @@
 import { supabaseAdmin } from '@/lib/supabase';
 import { MOODS, type MoodKey } from '@/lib/moods';
 import { feelingForSkin } from '@/lib/editor/look-shelf';
+import { readStoredTexture, type StoredTexture } from '@/lib/editor/texture';
 
 export interface CurrentLook {
   lookKey: string;
   moodKey: MoodKey;
+  /** The saved Editor Door 2 texture, when the store has one. Absent → family default. */
+  texture?: StoredTexture;
 }
 
 function isMoodKey(value: unknown): value is MoodKey {
@@ -41,5 +44,6 @@ export async function loadCurrentLook(tenantId: string): Promise<CurrentLook | n
     ? rootObj['mood']
     : (feelingForSkin(lookKey) ?? 'rustic');
 
-  return { lookKey, moodKey };
+  const texture = readStoredTexture(rootObj['texture']);
+  return texture !== null ? { lookKey, moodKey, texture } : { lookKey, moodKey };
 }

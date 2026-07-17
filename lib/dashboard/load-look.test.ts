@@ -36,6 +36,20 @@ describe('loadCurrentLook', () => {
     expect(await loadCurrentLook('t1')).toEqual({ lookKey: 'main-street-ember', moodKey: 'rustic' });
   });
 
+  it('reads a saved texture setting off the root when present', async () => {
+    pageData = tree({ kind: 'archetype', lookKey: 'main-street-ember', mood: 'rustic', texture: { mode: 'default', opacity: 0.4 } });
+    expect(await loadCurrentLook('t1')).toEqual({
+      lookKey: 'main-street-ember',
+      moodKey: 'rustic',
+      texture: { mode: 'default', opacity: 0.4 },
+    });
+  });
+
+  it('omits texture when the stored value is missing or malformed', async () => {
+    pageData = tree({ kind: 'archetype', lookKey: 'main-street-ember', mood: 'rustic', texture: { mode: 'bogus' } });
+    expect(await loadCurrentLook('t1')).toEqual({ lookKey: 'main-street-ember', moodKey: 'rustic' });
+  });
+
   it('derives the feeling from the skin when the stored mood is not a real mood key', async () => {
     feeling = 'modern';
     pageData = tree({ kind: 'archetype', lookKey: 'main-street-anvil', mood: 'not-a-mood' });

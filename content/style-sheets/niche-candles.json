@@ -49,41 +49,5 @@
     { "name": "Yeseva One",             "category": "high-contrast-serif" }
   ],
 
-  "textures": [
-    {
-      "key": "woven-linen",
-      "name": "Woven Linen",
-      "sourceUrl": "/textures/niche/candles/woven-linen.png",
-      "license": "Unsplash (processed to alpha texture)",
-      "note": "Macro linen weave — a clear crossing-thread grid. The wick-fiber / cloth-wrap register."
-    },
-    {
-      "key": "aged-glaze-cracks",
-      "name": "Aged Glaze",
-      "sourceUrl": "/textures/niche/candles/aged-glaze.png",
-      "license": "Unsplash (processed to alpha texture)",
-      "note": "Fine branching crack network — the crackled-vessel register."
-    },
-    {
-      "key": "marble-swirl",
-      "name": "Marble Swirl",
-      "sourceUrl": "/textures/niche/candles/marble-swirl.png",
-      "license": "Unsplash (processed to alpha texture)",
-      "note": "Flowing marble veins — soft directional liquid movement. The poured-wax / stone-vessel register."
-    },
-    {
-      "key": "handmade-paper",
-      "name": "Handmade Paper",
-      "sourceUrl": "/textures/niche/candles/handmade-paper.png",
-      "license": "Unsplash (processed to alpha texture)",
-      "note": "Cream paper with scattered flecks and fiber inclusions — the deckle / label-stock register. (I flagged this one as weak — you decide.)"
-    },
-    {
-      "key": "cotton-tooth",
-      "name": "Cotton Tooth",
-      "sourceUrl": "/textures/niche/candles/cotton-tooth.png",
-      "license": "Unsplash (processed to alpha texture)",
-      "note": "Fine cotton-rag watercolor tooth — even stipple grain. (I flagged this one as weak — you decide.)"
-    }
-  ]
+  "textures": []
 }

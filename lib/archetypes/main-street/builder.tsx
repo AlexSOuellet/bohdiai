@@ -274,29 +274,34 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
     // a /shop teaser matches what /home advertised. The home's section ORDER
     // + on/off comes from the family's stack too. Bohdi authors CONTENT ONLY.
     const familyBase = getFamily(mood);
-    // Editor Door 2 texture preview. Three states:
-    //   previewTexture === 'none'  → no texture at all (plain family color)
-    //   previewTexture is a URL     → that niche texture, blended onto the bg
-    //   omitted                     → the family's own default wallpaper
+    // Editor Door 2 texture. These params come either from the editor preview (URL)
+    // or, on a live visit, from the saved setting resolved in StorefrontPage. States:
+    //   previewTexture === 'none'    → no texture at all (plain family color)
+    //   previewTexture === 'default' → the family's own wallpaper, at its default
+    //                                  strength or a maker-dialed opacity override
+    //   previewTexture is a URL      → that texture, blended onto the bg (unproven
+    //                                  blend path kept for a future curated library; D63)
+    //   omitted                      → the family's own default wallpaper, untouched
     //
-    // The texture PNG is black-ink-on-transparent. To keep the maker's BACKGROUND
-    // COLOR (not repaint it), we BLEND rather than fill: on a light family we
-    // multiply (the black pattern darkens the existing color, hue preserved); on
-    // a dark family we invert to white and screen (the pattern lightens it, hue
-    // preserved). Either way the base color stays; the texture only deepens its
-    // own shadow/highlight into it — the way a real material surface reads.
+    // For the blend (URL) path only: the PNG is black-ink-on-transparent, so to keep
+    // the maker's BACKGROUND COLOR (not repaint it) we BLEND rather than fill — multiply
+    // on a light family (darkens the existing color, hue preserved), invert+screen on a
+    // dark one (lightens it, hue preserved). The base color stays either way.
+    const dialedOpacity = previewTextureOpacity !== undefined && Number.isFinite(previewTextureOpacity)
+      ? previewTextureOpacity
+      : undefined;
     let family: Family;
     if (previewTexture === 'none') {
       family = { ...familyBase, textureOpacity: 0 };
+    } else if (previewTexture === 'default') {
+      family = { ...familyBase, textureOpacity: dialedOpacity ?? familyBase.textureOpacity };
     } else if (previewTexture !== undefined && previewTexture !== '') {
       const bgIsDark = hexIsDark(familyBase.palette.bg);
       family = {
         ...familyBase,
         wallpaperUrl: previewTexture,
         textureMode: bgIsDark ? 'screen' : 'multiply',
-        textureOpacity: previewTextureOpacity !== undefined && Number.isFinite(previewTextureOpacity)
-          ? previewTextureOpacity
-          : 0.5,
+        textureOpacity: dialedOpacity ?? 0.5,
       };
     } else {
       family = familyBase;

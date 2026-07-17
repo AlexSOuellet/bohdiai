@@ -8,6 +8,7 @@ import { revalidatePath } from 'next/cache';
 import { getCurrentShop } from '@/lib/dashboard/current-shop';
 import { applyLookToEnvelope } from '@/lib/editor/apply-look';
 import { isKnownSkin } from '@/lib/editor/look-shelf';
+import { normaliseTexture, type StoredTexture } from '@/lib/editor/texture';
 import { MOODS, type MoodKey } from '@/lib/moods';
 import { supabaseAdmin } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
@@ -22,9 +23,11 @@ function isMoodKey(value: string): value is MoodKey {
 // Named commitLook (not useThisLook) so the hooks linter doesn't mistake this
 // server action for a React hook on its `use` prefix. The button still says
 // "Use this look".
-export async function commitLook(skinKey: string, moodKey: string): Promise<UseLookResult> {
+export async function commitLook(skinKey: string, moodKey: string, texture?: StoredTexture): Promise<UseLookResult> {
   if (!isKnownSkin(skinKey)) return { ok: false, error: 'Unknown look.' };
   if (!isMoodKey(moodKey)) return { ok: false, error: 'Unknown feeling.' };
+  // Texture crosses the client boundary — clamp/normalise before it touches the envelope.
+  const cleanTexture = texture !== undefined ? normaliseTexture(texture) : undefined;
 
   const shop = await getCurrentShop();
   if (shop === null) return { ok: false, error: 'No store to update.' };
@@ -46,7 +49,10 @@ export async function commitLook(skinKey: string, moodKey: string): Promise<UseL
 
   let next: Record<string, unknown>;
   try {
-    ({ next } = applyLookToEnvelope(row.layout_tree, { skinKey, moodKey }));
+    ({ next } = applyLookToEnvelope(
+      row.layout_tree,
+      cleanTexture !== undefined ? { skinKey, moodKey, texture: cleanTexture } : { skinKey, moodKey },
+    ));
   } catch (err) {
     logger.warn('useThisLook: apply failed', { tenantId: shop.tenantId, err: String(err) });
     return { ok: false, error: 'This store can’t take a new look right now.' };

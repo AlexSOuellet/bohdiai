@@ -41,6 +41,25 @@ describe('applyLookToEnvelope', () => {
     expect(next['meta']).toEqual({ title: 'Karen’s Knits' });
   });
 
+  it('writes the texture setting onto the root when one is given', () => {
+    const { next } = applyLookToEnvelope(envelope(), {
+      skinKey: 'main-street-studio',
+      moodKey: 'modern',
+      texture: { mode: 'default', opacity: 0.4 },
+    });
+    const root = next['root'] as Record<string, unknown>;
+    expect(root['texture']).toEqual({ mode: 'default', opacity: 0.4 });
+  });
+
+  it('leaves the root without a texture field when none is given (Door 1 = look only)', () => {
+    const { next } = applyLookToEnvelope(envelope(), {
+      skinKey: 'main-street-studio',
+      moodKey: 'modern',
+    });
+    const root = next['root'] as Record<string, unknown>;
+    expect('texture' in root).toBe(false);
+  });
+
   it('does not mutate the input tree', () => {
     const input = envelope();
     applyLookToEnvelope(input, { skinKey: 'main-street-studio', moodKey: 'modern' });

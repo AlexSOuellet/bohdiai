@@ -3,9 +3,8 @@ import { headers } from 'next/headers';
 import { getCurrentShop } from '@/lib/dashboard/current-shop';
 import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
 import { loadCurrentLook } from '@/lib/dashboard/load-look';
-import { loadNicheTextures } from '@/lib/editor/load-niche-textures';
+import { getFamily } from '@/lib/archetypes/main-street/families';
 import { isFeatureEnabled } from '@/lib/feature-flags';
-import { supabaseAdmin } from '@/lib/supabase';
 import Editor from './_components/Editor';
 
 export const metadata = { title: 'My Website — BohdiAI' };
@@ -33,15 +32,10 @@ export default async function MyWebsitePage() {
     );
   }
 
-  // Door 2 texture shelf — read the tenant's niche and its style-sheet textures.
-  // Empty for tenants on a niche without a style sheet yet (falls back to family
-  // wallpaper only in the editor UI).
-  const { data: tenantRow } = await supabaseAdmin()
-    .from('tenants')
-    .select('primary_niche')
-    .eq('id', shop.tenantId)
-    .maybeSingle();
-  const nicheTextures = await loadNicheTextures(tenantRow?.primary_niche ?? null);
+  // Door 2 texture is just the family's own wallpaper + an opacity dial now (the
+  // per-niche shelf was removed — D63). Seed the dial from the live family's real
+  // wallpaper strength so it doesn't jump on first drag.
+  const defaultTextureOpacity = getFamily(look.moodKey).textureOpacity;
 
   const origin = storefrontOrigin(shop.subdomain, (await headers()).get('host'));
 
@@ -50,7 +44,8 @@ export default async function MyWebsitePage() {
       currentSkin={look.lookKey}
       currentFeeling={look.moodKey}
       previewOrigin={origin}
-      nicheTextures={nicheTextures}
+      defaultTextureOpacity={defaultTextureOpacity}
+      savedTexture={look.texture}
     />
   );
 }
