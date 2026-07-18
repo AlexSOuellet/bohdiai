@@ -6,7 +6,7 @@
 
 1. This file (`CLAUDE.md`) — orientation.
 2. `Project-Docs/SESSION-BRIEF.md` — operational state (where we are, what's next). Under 100 lines by mandate.
-3. **`Project-Docs/Full-Plan.md` — THE OPERATIVE PLAN.** Six phases from now through the top-priority goals. Every session updates its checkboxes as work lands.
+3. **`Project-Docs/Full-Plan.md` — THE OPERATIVE PLAN.** Three phases — Beta, Go Live, Growth. Every session updates its checkboxes as work lands.
 4. **`Project-Docs/BohdiAI-Master-Spec.md` — READ IN FULL, every session, every time.** Retired sections carry a SUPERSEDED banner; the rest is live. Skimming or "pulling sections as needed" is not allowed.
 5. `Project-Docs/BohdiAI-Roles-Workflow.md` — rules of engagement.
 6. `Project-Docs/Phase-1-Decisions-Log.md` — refinements on top of Master Spec. Superseded entries carry a `SUPERSEDED BY Dxx` inline pointer.
@@ -33,7 +33,9 @@ Everything else in `Project-Docs/historical/` is archive material — read only 
 
 BohdiAI is a multi-tenant AI-powered SaaS that gives makers/artisans a complete AI-generated storefront on a `[shop].bohdiai.com` subdomain in minutes. Subscription-only (one tier at launch, ~$35–$49/mo). **Never takes a cut of sales** — money flows customer → maker's own Stripe/Square; BohdiAI reads webhooks only.
 
-**Status as of end of Session 65 (2026-07-06):** Phase 1 landed end-to-end. Every family renders through its own registry (`lib/archetypes/main-street/families.ts`) — section variants, section order, nav variant, default skin, palette, type. Bohdi authors CONTENT only; treatment fields + identity.nav removed from the schema. Alex ran all six moods (Cozy, Rustic, Dark, Luxury, Cheerful, Modern) through fresh onboardings — all produced functional stores. Real design + content issues surfaced during the runs; carry forward to Session 66 for discussion + fixes. Not landed: two §1.5 reliability audit rollups (input schemas, AbortController) and §1.8 imagery grade (plan-deferred). 940 tests pass, tsc + lint clean.
+**Status as of end of Session 75 (2026-07-18):** The storefront is done — onboarding builds a complete, family-styled store and every page a shopper sees works, run live through all six feelings. Editor door one (swap the feeling) is live. Everything a maker does after that is missing: no listings management, no cart, no checkout, no orders, no payments, no market sales, four of six dashboard pages absent, and no founder admin at all. The database is fully built for all of it (38 tables) — the gap is application surface, not schema.
+
+The plan was rewritten this session to reach launch, in three named phases: **Beta** (founding members running real stores with real money), **Go Live** (public signup), **Growth** (after). The old six-phase plan is archived. Read `Launch-Audit-2026-07-18.md` for the verified built-vs-missing picture. 976 tests pass, tsc + lint clean.
 
 ## Roles
 
@@ -53,7 +55,7 @@ Next.js 16 (App Router) · Supabase (Postgres + RLS + Auth + Storage) · Vercel 
 
 1. **Golden Rules** (`Project-Docs/BohdiAI-Golden-Rules.docx`) — inviolable principles. Overrides everything.
 2. **Master Spec** (`Project-Docs/BohdiAI-Master-Spec.md`) — product/technical spec. Retired sections carry SUPERSEDED banners.
-3. **Full Plan** (`Project-Docs/Full-Plan.md`) — the operative build plan for now through top-priority goals.
+3. **Full Plan** (`Project-Docs/Full-Plan.md`) — the operative build plan: Beta, Go Live, Growth.
 4. **Decisions Log** (`Project-Docs/Phase-1-Decisions-Log.md`) — refinements. Superseded entries marked inline.
 5. **Roles-Workflow** (`Project-Docs/BohdiAI-Roles-Workflow.md`) — process.
 6. Feature Specs (per-feature, written as needed).
@@ -87,7 +89,8 @@ Next.js 16 (App Router) · Supabase (Postgres + RLS + Auth + Storage) · Vercel 
 
 - `Project-Docs/BohdiAI-Golden-Rules.docx` — rank 1 authority (Word doc).
 - `Project-Docs/BohdiAI-Master-Spec.md` — rank 2 authority (SUPERSEDED sections marked).
-- `Project-Docs/Full-Plan.md` — operative plan.
+- `Project-Docs/Full-Plan.md` — operative plan (Beta / Go Live / Growth).
+- `Project-Docs/Launch-Audit-2026-07-18.md` — what's actually built vs. what launch needs, verified against code.
 - `Project-Docs/SESSION-BRIEF.md` — operational state, under 100 lines.
 - `Project-Docs/Audit-2026-07-05.md` — full audit findings.
 - `Project-Docs/Family-Layout-Model.md` + `Family-Style-Sheets.md` — current family design.

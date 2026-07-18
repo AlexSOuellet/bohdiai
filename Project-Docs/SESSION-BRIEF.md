@@ -10,13 +10,15 @@
 
 ## Current state
 
-**Session 74 — texture direction settled by subtraction; editor got a real publish model.** The niche-writer-curates-textures approach is **abandoned** (D63): the Session-73 picker was unproven, never shown to look great. Stripped the picker back to Family default + No texture + an opacity dial; deleted the candle prototype textures; kept the candle style sheet with an empty texture list; parked the blend engine + loader (unused, not endorsed). The future curated cross-family texture library is a **pre-launch gate** (Full-Plan §6.7), timing likely post-launch. One control did survive and now **saves**: the maker's family-wallpaper choice (default vs none) and its strength persist on the envelope (`root.texture`), ride in on the look commit, and re-apply on the live site.
+**Session 75 — the plan was rewritten to reach launch.** The old Full Plan was a plan to prove two things worked, not a plan to launch, so it was silent on selling, the dashboard, the admin and getting paid. It's archived at `historical/Full-Plan-2026-07-05.md`.
 
-Two live bugs (Alex-found) fixed at root: the editor preview now carries the selected **feeling** (`previewMood`) so it shows the whole family, not just the skin; and the Publish button now counts a **feeling change** as dirty (`isLookDirty`), fixing Rustic/Cozy not activating when they share the live skin.
+Two new docs drive everything now. `Launch-Audit-2026-07-18.md` says plainly what's built and what isn't, verified against code and the live database rather than checkboxes. The rewritten `Full-Plan.md` is the plan itself, in three named phases: **Beta**, **Go Live**, **Growth**. Named, not numbered, because the Master Spec has its own Phase 1 and 2.
 
-**Editor publish model (D64):** two buttons — **Preview** (full-size staged view in a reused tab) and **Publish** (go-live, enabled only when changed). The confusing "View live site" try-on link is removed. Staging is session-only; a persisted draft is deferred until the editor also stages colors/products.
+**The call that shapes everything: Beta means real stores.** Founding members are comped, but they run real businesses with real shoppers and real money. So anything that stops a maker running their business is Beta — all of commerce, the full editor, listings, the dashboard, market days, the admin, tax, shipping, expenses, and subscription pricing they can see.
 
-Committed `c56442d`. 976 tests pass (+28). tsc + lint clean. Full recap + process lessons in `session-logs/session-74.md`.
+Also settled: the Vibe Slider is dead (families are six layouts, not points on a line — picking a feeling is the honest version). The market POS is our screens around the card the maker already takes on their own reader, not us processing cards. Custom domains move to Go Live. No blog, ever.
+
+Prior session's work (texture direction, editor Preview/Publish) is unchanged and recorded in `session-logs/session-74.md`. 976 tests pass. tsc + lint clean.
 
 ## Parallel workstream — cowork
 
@@ -24,18 +26,18 @@ Cowork runs on Alex's cadence between our sessions, reading `Project-Docs/Cowork
 
 ## Next actions
 
-**Session 75 — pick the next thread.**
+**Session 76 — start Beta.** The plan's Beta section lists the work. The founder admin comes first: it's how a founding member gets an account, so nothing else in Beta can be tested without it. Alex asked for it early and explicitly.
 
-1. **Revise the niche-writer skill's textures section — per-niche curation is abandoned (D63).** It still carries a REVISION PENDING banner from Session 72 and instructions to source textures per niche. Drop that so cowork stops producing abandoned work. The style-sheet `textures` field stays supported but empty.
-2. **Bulk-approve DB `niches.status = 'approved'`** so the onboarding picker shows more than 2 options. Independent of everything else.
-3. **Pick the next editor/product thread — Alex's call.** The editor's next planned door is colors (Phase 4, Door 2). Alternatively, close out Phase 2 onboarding-completeness (six-family runs + evidence — top priority 1, not formally signed off).
-4. **Real testimonials pipeline (when it comes time).** Per-review ratings, click-through, filter, customer photos. Deferred — revisit post-launch when verified-purchase reviews exist.
+Still owed and not yet placed in a session:
+
+1. **Revise the niche-writer skill's textures section** — per-niche curation was abandoned in Session 74 but the skill still tells cowork to source textures per niche. Drop it so cowork stops producing work we've thrown away.
+2. **Multi-tier pricing conversation.** Parked in the plan, needs its own discussion before it lands in a phase.
+3. **Decide the maybes** — CSV importers, Claude Vision product auto-fill, customer inbox. Parked in the plan.
+4. **Check the onboarding niche picker.** 15 niches are approved in the database but the picker reportedly shows fewer. Two-minute look.
 
 **Owed alongside:**
-- Cowork continues niche-writer batches (38 remaining in the Session-45 batch). Prose / palette / fonts / wordmark proceed; leave `textures` empty.
+- Cowork continues niche-writer batches (38 remaining). Prose / palette / fonts / wordmark proceed; leave `textures` empty.
 - Investigate the dev feature-flag bypass mystery (low priority; DB row overrides it).
-
-**Wave state:** A / B / C / D / E / F all closed. Phase 2 begins per Alex's rule when he's ready.
 
 ---
 
