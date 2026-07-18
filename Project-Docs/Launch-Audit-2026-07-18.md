@@ -1,131 +1,85 @@
-# Launch Readiness Audit — 2026-07-18
+# What's Built and What Isn't — 18 July 2026
 
-**Purpose.** Every item the Master Spec puts in the launch scope, checked against the code as it exists today. This is the input the rewritten plan gets built from. The existing `Full-Plan.md` is not a plan to launch — it is a plan to prove two things work (onboarding quality, and the editor) — so it is silent on most of what follows.
+I went through everything the Master Spec says has to be there at launch and checked it against the actual code. Not the checkboxes in the plan — the code. Here's what I found.
 
-**Method.** Each line below was verified against the repository or the database on 2026-07-18, not against a checkbox. Where an item is partial, the specific missing piece is named. Where a claim rests on a file, the file is cited.
+## The short version
 
-**Source of the launch scope.** Master Spec §17 (Phase 1 MVP), §5 (onboarding flow), §7 (commerce), §9 (Market Mode), §10 (tenant dashboard), §11 (founder admin), §12 (marketing site), §13 (Skool).
+The store itself is finished. Everything a shopper sees when they land on a maker's site is built and works. We've run it live plenty of times.
 
----
+Almost everything the maker does *after* their store gets built is not. They can't add a product. They can't take an order. They can't take money. They can't log a sale from a craft fair. Four of the six pages their dashboard is supposed to have don't exist.
 
-## Summary
+Your admin doesn't exist at all. It's two empty folders.
 
-The storefront engine is the finished part of the product. Everything a customer sees on a maker's store — the generation, the family system, the page set — is built and has been run live many times.
+The one piece of good news underneath all that: the database is completely built out. All 38 tables — orders, payments, shipments, product variations, gift cards, everything. We did that early on purpose and it paid off. So none of the missing work needs database changes to start. It's all screens and plumbing, not foundations.
 
-Almost everything a *maker* does after onboarding is not built. Four of the six dashboard sections are missing. There is no way to add a product, take an order, take a payment, or log a sale. The founder admin does not exist in any form.
+## What's done
 
-The database is fully built out for all of it — 38 tables including orders, payments, shipments, variations, promos, and gift cards. The foundation-first discipline held. What is missing is application surface, not schema. That materially lowers the cost of everything in the "not started" list below, because none of it needs a migration to begin.
+Onboarding works. A maker types their name, picks their craft and a feeling, and Bohdi builds them a real store. We've run that through all six feelings.
 
----
+The store itself is complete — home, shop, product pages, about, collections, events, testimonials, contact, privacy, terms. Every one of those pages paints in the maker's own family style.
 
-## Complete
+The event calendar on the storefront works, in six different looks.
 
-| Item | Evidence |
-|---|---|
-| AI onboarding — name, niche, mood, build, account | `app/onboarding/` — six step components, run live across all six families |
-| Storefront generation via the crew | `lib/onboarding/crew/` — director, copywriter, cinematographer, graphic artist, director's cut |
-| Family layer — six families drive every section variant, stack, palette, type | `lib/archetypes/main-street/families.ts` |
-| Storefront page set — home, shop, product, about, collections, collection detail, events, testimonials, contact, privacy, terms | `app/storefront/` — 13 routes |
-| Public event calendar on the storefront | `lib/archetypes/main-street/FindUsCalendar.tsx` + six find-us treatments |
-| Collections — rendering and persistence | `persistCollections` in the build runner; `collections` + `listing_collections` tables |
-| Subdomain hosting | Cloudflare Worker + `x-bohdi-shop` header routing |
-| Authentication — sign-in, OAuth, callback, membership, owner assignment | `lib/auth/` — actions, oauth, membership, assign-owner |
-| Editor Door 1 — change the feeling | `app/dashboard/website/` + `commitLook` |
-| Family wallpaper control — keep, mute, set strength; persists and re-applies live | `lib/editor/texture.ts` (Session 74) |
+Logging in works — email, Google, the whole flow.
 
----
+And the one editor door we built works: the maker can try a different feeling and their store re-paints instantly. They can also keep or mute the family wallpaper and dial how strong it is, and that choice sticks.
 
-## Partially built
+## What's half-done
 
-### The AI editor — the largest gap against the spec
+**The editor is the big one.** The spec promises makers four ways to change their site: talk to Bohdi in chat, highlight some text and tell him to rewrite it, click straight on something and edit it, and a slider that shifts the whole design feel.
 
-Master Spec §10 describes the editor as three editing modes plus a slider: AI chat for complex requests, highlight-and-transform for targeted rewrites, direct click-to-edit for quick manual changes, and the Vibe Slider (§6.5).
+None of those four exist. What we built is a feeling swap. A maker can't change a single word of their own copy today.
 
-What exists is a single door: pick a different feeling, and keep or mute the family wallpaper. Content is not editable by the maker at all — not by chat, not by clicking it, not by highlighting it.
+And the current plan doesn't describe the editor that way either — it talks about three "doors," which are mood, colors, and products. Those three doors are not the same thing as the four editing modes in the spec. The plan quietly changed what the editor is without saying so. That's the biggest question hanging over the rewrite.
 
-None of the three named editing modes exist. The Vibe Slider does not exist.
+**The maker's dashboard has two pages out of six.** Home and My Website are there. Listings, Orders, Log a Sale, and Settings aren't.
 
-This gap is not visible in `Full-Plan.md`, which reframes the editor as three "doors" (mood, colors, products). Those three doors do not add up to the editor the Master Spec promises. **The plan rewrite has to reconcile these two descriptions — they are not the same product.**
+**The trial screen is a fake.** It looks like a trial signup but it takes no card and charges nothing. It just moves to the next step. I also found a bug on it while I was looking — the heading says seven days free and the badge right next to it says fourteen-day trial. One of those is wrong, and the decision we made says seven.
 
-### Maker dashboard — two of six sections
+**The marketing site is still the coming-soon page.** Waitlist only. No pricing, no Get Started button into onboarding.
 
-Built: Dashboard Home (`app/dashboard/page.tsx`), My Website (`app/dashboard/website/page.tsx`).
+**Niches** — 15 approved, 4 sitting in draft, 38 still unwritten. Cowork hasn't touched them since Session 67.
 
-Missing: Listings, Orders, Log a Sale, Settings.
+One correction while I was in there: the session brief says to go approve niches because the picker only shows two. There are already 15 approved. Either that got done and nobody updated the note, or the picker is filtering on something else. Worth a two-minute look before spending real time on it.
 
-### Onboarding trial step — a shell
+## What hasn't been started
 
-`app/onboarding/_components/StepTrial.tsx` renders a trial screen but collects no card and takes no payment; submitting simply advances. There is no Stripe call behind it.
+None of this exists in the code at all.
 
-**Defect found during this audit:** the same screen's heading reads "7 days free, then $35/mo" while the badge beside it reads "14-day trial." One of the two is wrong. D10 sets the trial at seven days.
+The cart is a placeholder page that says "your cart is empty" and nothing else. There's no checkout. There is no Stripe or Square code anywhere in the repo — not a line. No order management, no way to catch a payment notification and turn it into an order the maker can see. No walkthrough to help a maker connect their payment account.
 
-### Marketing site — still the Phase 0 version
+A maker can't create a product. Can't set up their own product options like scent or size, even though the tables for it are sitting there ready. No photo upload that fills in the title and description for them.
 
-`app/page.tsx` is the coming-soon page with the waitlist and founder cap. Master Spec §12's launch version (pricing section, Get Started into onboarding, beta section converted to testimonials) is not built.
+Log a Sale doesn't exist, so Market Mode doesn't exist. Neither does the event log where they'd track booth fees and see which craft shows were worth doing.
 
-### Niche content
+There's no way to put social media links on a store — no field for it, nothing to display.
 
-15 approved, 4 in draft, 38 unwritten from the Session-45 batch. Cowork has not advanced these since Session 67.
+There's no subscription billing. No tier, no trial that actually charges, no card on file.
 
-Note: `SESSION-BRIEF.md` currently lists "bulk-approve niches so the picker shows more than 2 options" as a next action. The database shows 15 already approved — that action appears stale, or the picker is filtering on something other than status. Worth one look before spending time on it.
+Your admin — all three screens missing. User management, revenue, niche management. And the founder invite flow depends on that admin existing first, so it's blocked behind it.
 
----
+Small stuff: the Skool link isn't in the maker's dashboard yet, and learn.bohdiai.com doesn't redirect anywhere. There's also no FAQ content anywhere, even though the plan assumed we had one in the footer.
 
-## Not started
+## Things the plan treats as launch blockers that the spec doesn't
 
-Nothing below exists in the repository today.
+Worth pulling these out so we don't build them before we need to.
 
-| Item | Spec source | Note |
-|---|---|---|
-| Cart — line items, quantities | §7 | `app/storefront/cart/page.tsx` is a 42-line empty-state stub with a comment saying real cart ships with the commerce build |
-| Checkout | §7 | — |
-| Stripe integration | §7 | No payment code anywhere in the repo |
-| Square integration | §7 | — |
-| Order management + webhook capture | §7, §10 | `orders`, `order_items`, `payments` tables exist and are unused |
-| Guided payment-processor setup walkthrough | §7 | — |
-| Listings management — add / edit / archive | §10 | A maker cannot create a product today |
-| Seller-defined variations UI | §8, D4 | `variation_attributes`, `variation_options`, `listing_variants` tables exist and are unused |
-| Claude Vision photo auto-fill | §10 | — |
-| Log a Sale / Market Mode | §9 | — |
-| Internal event log, expenses, per-event profitability | §9 | `events`, `event_expenses` tables exist and are unused |
-| Social media links | §17 | No field in the content schema, no rendering |
-| Subscription billing — one tier, 7-day trial, card required | §4, D10, D19 | — |
-| Founder admin — user management | §11 | `app/admin/` and `app/api/admin/` are empty directories, nothing tracked in git |
-| Founder admin — revenue dashboard | §11 | — |
-| Founder admin — niche management | §11 | — |
-| Founder invite flow — approve, comp, emailed set-password | D61 | Depends on the admin existing |
-| Skool link in the maker dashboard | §13 | Skool link exists in the waitlist confirmation email and confirmed page only |
-| `learn.bohdiai.com` redirect | §3, §13 | — |
-| FAQ content | Full Plan §1.0 item 6 | No `faq` field in the content schema; the plan assumed one in the footer |
+Custom domains. The plan puts the whole Cloudflare hosting setup before beta opens. The spec puts custom domains in Phase 2, after launch. Those disagree and I think the plan is over-scoped there.
+
+Same with customer accounts, verified-purchase reviews, gift cards, discount codes, wishlists, the CSV importers, the full Market Mode phone app, the image studio, and multi-tier pricing. All of those are Phase 2 in the spec.
+
+## Security
+
+There are eleven security fixes waiting from the July audit — rate limiting, a couple of redirect holes, cookie scoping, that sort of thing. One of the twelve went away when we deleted the Try-On feature. The rest are real and they belong right before you let anyone sign up. They carry over to the new plan as-is.
+
+## Three things you have to decide before I can write the new plan
+
+**What does launch mean?** Founding members from the waitlist getting in free on accounts you approve by hand, or public signup with people paying? The first one lets us skip billing, the trial, and the pricing page completely. The second makes all three blockers.
+
+**What is the editor at launch?** All four editing modes from the spec, or something narrower? This is the single biggest scope call in the product.
+
+**Is commerce in the first launch?** Cart, checkout, Stripe, orders — that's a big build that hasn't started. A store that can't take money is a different promise than what the marketing site implies today.
 
 ---
 
-## Explicitly Phase 2 in the Master Spec — not launch blockers
-
-Worth stating so the rewritten plan does not carry them as gates:
-
-- Custom domains (§4, §10). `Full-Plan.md` §6.3 puts Cloudflare for SaaS before beta. The Master Spec puts custom domains in Phase 2. These disagree — the plan appears over-scoped here.
-- Customer accounts, reviews tied to verified purchases, gift cards, promos and discount codes, wishlists.
-- Migration / CSV import.
-- Full Market Mode mobile UI (the lightweight log-a-sale is launch; the dedicated mobile view is not).
-- AI Image Studio, finances, messages, multi-tier pricing.
-
----
-
-## Security and hardening carried forward
-
-`Full-Plan.md` §6.1 holds twelve security findings from the July 5th audit. One (admin Try-On) was retired with the feature in Session 70. The remaining eleven are unaddressed and are correctly placed before any real signup opens. They carry into the rewritten plan unchanged.
-
----
-
-## What this means for the plan
-
-Three things the rewrite has to settle, none of which the current plan answers:
-
-1. **What "launch" means.** Founding members from the waitlist on comped accounts, or public signup with people paying. The first defers subscription billing, the trial, and the pricing page entirely. The second makes them blockers.
-2. **What the editor is at launch.** The Master Spec's four editing modes, or the narrower door model the current plan describes. This is the single biggest scope question in the product.
-3. **Whether commerce is in the first launch.** Cart, checkout, Stripe, and orders are a substantial build that has not started. A store that cannot take money is a different product promise than the marketing site currently makes.
-
----
-
-*Audited by Claude, 2026-07-18. Verified against the working tree at commit `e2f921a` and the production database.*
+*Checked against the code and the live database on 18 July 2026.*
