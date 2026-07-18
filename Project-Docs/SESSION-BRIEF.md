@@ -4,7 +4,7 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-07-17, Session 74.
+**Last updated:** 2026-07-18, Session 75.
 
 ---
 
@@ -92,12 +92,7 @@ Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 - Session 65 (2026-07-06): Phase 1 landed — family registry, renderer reads family, section stack walking, copywriter authors CONTENT only, family default skin, nav lists every page, collections persist before publish. Alex ran all six moods through fresh onboardings; all rendered pretty well; design + content issues carry to Session 66. Twelve commits.
 - Session 64 (2026-07-05/06): Phase 0 executed — codebase mechanical cleanup, database cleanup, renderer sweep (no hardcoding + no inline styles once and for all), documentation reset. Full Plan approved as operative doc.
 - Session 63 (2026-07-04): substrate cleanup pass — all archetype files class-only, `DEFAULT_STRINGS` map, collections DB persistence, build runner fire-and-forget fixed. Direction correction: family layer wiring is the actual gate.
-- Session 62 (2026-07-03): find-us corrections applied + destination pages built. `Onboarding-Readiness-Plan.md` written (now superseded by Full Plan).
-- Session 61 (2026-07-02): find-us section built — six treatments. Not signed off.
-- Session 60 (2026-07-01): reviews/testimonials section built onboarding-complete — four shared treatments.
-- Session 59 (2026-06-30): marquee section built onboarding-complete — one shape all families.
-- Session 58 (2026-06-29): collections section built — six per-family bands.
-- Session 57 (2026-06-28): About went to seven treatments, nav to four registers.
+- Sessions 57-62 (2026-06-28 → 07-03): the per-section build run — About to seven treatments + nav to four registers, collections (six per-family bands), marquee, reviews/testimonials, find-us (six treatments) + destination pages. See individual logs.
 - Sessions 40-56: sections built, families designed, editor design started. See individual logs.
 - Sessions 30-39: Main Street becomes sole archetype, families framework designed, Bohdi crew built.
 - Sessions 20-29: earlier design/build cycles under superseded models (blocks/widgets/layout engine).
