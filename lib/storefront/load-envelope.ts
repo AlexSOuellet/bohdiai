@@ -34,6 +34,23 @@ export const loadHomeEnvelope = cache(async (tenantId: string): Promise<Record<s
   return rootObj['kind'] === 'archetype' ? rootObj : null;
 });
 
+/** Load the tenant's STAGED (draft) home envelope root, or null when there is no
+ *  draft. Same shape and guards as loadHomeEnvelope; reads store_drafts instead of
+ *  the published content_pages row. Owner-gated at the call site (preview token). */
+export const loadDraftEnvelope = cache(async (tenantId: string): Promise<Record<string, unknown> | null> => {
+  const { data } = await supabaseAdmin()
+    .from('store_drafts')
+    .select('layout_tree')
+    .eq('tenant_id', tenantId)
+    .maybeSingle();
+  const tree = data?.layout_tree;
+  if (tree === null || tree === undefined || typeof tree !== 'object' || Array.isArray(tree)) return null;
+  const root = (tree as Record<string, unknown>)['root'];
+  if (root === null || typeof root !== 'object' || Array.isArray(root)) return null;
+  const rootObj = root as Record<string, unknown>;
+  return rootObj['kind'] === 'archetype' ? rootObj : null;
+});
+
 /** Load the tenant's logo URL + brand colors in a single round-trip. Both are
  *  chrome facts, not authored content. `logoUrl` is undefined when no logo is
  *  stored; `brandColors` is [] when no color analysis has run. Cached per-request. */
