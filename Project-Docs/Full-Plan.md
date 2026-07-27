@@ -171,6 +171,7 @@ After launch, ordered by what real makers ask for.
 
 - Gift cards
 - The AI Image Studio (generative) — lifestyle staging, generative relighting, generative mockups. A $5/month add-on with a capped monthly allowance so price maps to cost — not bundled into the base subscription, not unlimited. The non-generative touch-ups already ship at launch (see Beta / Listings). (D65)
+- "Use my own colors" in the editor — the maker's brand colours derived into a safe, readable palette over their chosen feeling. Dropped from Beta and moved here; not needed to prove a founding member can run a real store. How maker colour relates to the skins (takes over vs. tints) is still an open question to settle when it's built.
 - Business tools — pricing calculator, cost worksheet, tax estimator
 - Storefront filtering, like shop by scent
 - Service trades and the whole booking side — plumbers, groomers, tattoo artists

@@ -69,7 +69,9 @@ Alex can't fully judge from a mock. Build it on a real store, look at it, then r
 
 ---
 
-## Door 2 — "Use my own colors" (DEFINED, not yet designed)
+## Door 2 — "Use my own colors" (DEFERRED POST-LAUNCH — Session 76)
+
+> **Status (2026-07-27):** Dropped from Beta. Alex's call — it isn't needed to prove a founding member can run a real store, and the operative Full Plan never listed it in the Beta editor. Moved to Growth ("Use my own colors in the editor"). The material below stands as the design starting point for when it's picked back up. The Beta editor's remaining work is the three AI editing modes (chat, click-to-edit, highlight-and-rewrite), sections on/off + reorder, and undo — not colors.
 
 The maker puts their brand colors on their site, applied safely (balanced, readable, can't-break-your-site) over whatever feeling/skin they're on. We may already have their colors (pulled from their logo at onboarding; `brand_colors` exist on the tenant).
 
