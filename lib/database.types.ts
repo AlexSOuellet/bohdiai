@@ -1794,6 +1794,32 @@ export type Database = {
           },
         ]
       }
+      store_drafts: {
+        Row: {
+          layout_tree: Json
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          layout_tree: Json
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          layout_tree?: Json
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_drafts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           billing_interval: string | null
