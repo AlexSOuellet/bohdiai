@@ -126,6 +126,17 @@ A **structured, stepped** flow — not an open conversation — because the goal
 
 **Publish.** Everything the walkthrough writes is staged. The maker publishes at the end (or whenever they like — Publish is always available), and Reset always returns them to live.
 
+### Where it lives, and re-triggering it
+
+The walkthrough is a **re-enterable mode of the one editor**, not a separate onboarding route. It **auto-launches on first run** — when the store is still all placeholder — and the same editor URL is the normal editor afterward. The maker can **re-trigger it any time** from a "walk me through my store again" button.
+
+First run vs. re-run differ only in framing, not machinery:
+
+- **First run** chases completeness: it tracks which content sections are still placeholder and won't call itself done until each is the maker's (or switched off).
+- **A re-run** has no placeholders to chase — it's the maker's real store. It walks the same steps as a *keep-or-change tour* ("here's your welcome as it stands — change it or leave it?"), every step skippable, no completeness meter. Useful for a maker who rushed the first pass, or who now has testimonials and wants to turn that section on and fill it.
+
+Both run on the same staging engine — stage into the draft, Publish or Reset as normal.
+
 ---
 
 ## Data flow (summary)
@@ -167,10 +178,9 @@ Tests are part of done (no feature ships without them). Visible-output pieces (t
 
 ## Open questions for review
 
-1. **Step order and grouping** — the seven content steps above are a proposal. Right grouping? Right order?
-2. **Where the walkthrough lives** — is it a distinct first-run route the maker is dropped into after onboarding, with the free-form editor as the normal `/dashboard/website`? Or one editor surface that opens in walkthrough mode when the store is still all-placeholder? (Leaning: a first-run mode of the same editor, so there's one place.)
+1. **Step order and grouping** — the seven content steps above are a proposal. Right grouping? Right order? (Default: welcome first, mirroring the store's own top-to-bottom order so the preview fills in from the top as the maker goes.)
 
-*(The reviews and find-us questions are resolved: each optional-section step offers "make it yours, or switch it off" — a brand-new maker with no testimonials simply turns the section off.)*
+*(Resolved during review: reviews and find-us each offer "make it yours, or switch it off"; the walkthrough is a re-enterable first-run mode of the one editor, not a separate route.)*
 
 ---
 
