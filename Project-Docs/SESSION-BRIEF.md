@@ -4,21 +4,17 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-07-18, Session 75.
+**Last updated:** 2026-07-27, Session 76.
 
 ---
 
 ## Current state
 
-**Session 75 — the plan was rewritten to reach launch.** The old Full Plan was a plan to prove two things worked, not a plan to launch, so it was silent on selling, the dashboard, the admin and getting paid. It's archived at `historical/Full-Plan-2026-07-05.md`.
+**Session 76 — editor reprioritised ahead of the founder admin (Alex's call); the whole first-run editor was designed and its staging engine started.** Two product calls landed: **image editing splits by cost (D65)** — basic touch-ups on a maker's own photos are cheap so they're included and ship at launch, generative image work is a post-launch $5/mo capped add-on; and **"use my own colors" deferred** to Growth.
 
-Two new docs drive everything now. `Launch-Audit-2026-07-18.md` says plainly what's built and what isn't, verified against code and the live database rather than checkboxes. The rewritten `Full-Plan.md` is the plan itself, in three named phases: **Beta**, **Go Live**, **Growth**. Named, not numbered, because the Master Spec has its own Phase 1 and 2.
+Design in `Editor-Make-It-Yours-Design.md`. The first-run editor is a **structured "Make It Yours" walkthrough** — Bohdi steps the maker through making each placeholder piece theirs (content only; the look stays the feeling picker) — over a **staging engine**: a persistent owner-only draft every editing function writes to, a preview that reliably renders it, one Publish / one Reset (refines D64 — staging now persists across sessions). Free-form chat is a later face; section on/off (optional sections) is in; products/collections phase in with the Listing Manager; reorder + deep section editing later.
 
-**The call that shapes everything: Beta means real stores.** Founding members are comped, but they run real businesses with real shoppers and real money. So anything that stops a maker running their business is Beta — all of commerce, the full editor, listings, the dashboard, market days, the admin, tax, shipping, expenses, and subscription pricing they can see.
-
-Also settled: the Vibe Slider is dead (families are six layouts, not points on a line — picking a feeling is the honest version). The market POS is our screens around the card the maker already takes on their own reader, not us processing cards. Custom domains move to Go Live. No blog, ever.
-
-Prior session's work (texture direction, editor Preview/Publish) is unchanged and recorded in `session-logs/session-74.md`. 976 tests pass. tsc + lint clean.
+Decomposed into plans; **Plan 1 = staging engine + draft preview** (`plans/2026-07-27-editor-staging-engine.md`, 9 tasks). **Tasks 1–4 built** test-first and green — `store_drafts` table, `lib/editor/draft.ts`, `loadDraftEnvelope`, HMAC preview token (+ a Vitest `server-only` stub). `PREVIEW_TOKEN_SECRET` in `.env.local` (deploy env owes it). Ran in small staged commits (Alex reduced credits). Full recap: `session-logs/session-76.md`.
 
 ## Parallel workstream — cowork
 
@@ -26,20 +22,23 @@ Cowork runs on Alex's cadence between our sessions, reading `Project-Docs/Cowork
 
 ## Next actions
 
-**Session 76 — start Beta.** The plan's Beta section lists the work. The founder admin comes first: it's how a founding member gets an account, so nothing else in Beta can be tested without it. Alex asked for it early and explicitly.
+**Session 77 — resume the staging-engine plan at Task 5.** Plan: `plans/2026-07-27-editor-staging-engine.md`. Tasks 1–4 are done and committed; pick up at:
 
-Still owed and not yet placed in a session:
+1. **Task 5** — storefront renders the draft when a valid preview token matches the tenant (`app/storefront/page.tsx`, `StorefrontPage.tsx`); flesh out the one test against the existing StorefrontPage test scaffold.
+2. **Task 6** — rework editor actions onto the draft (`stageLook`, `publishStore`, `resetStore`).
+3. **Tasks 7–8** — page loads draft + mints token; `Editor.tsx` stages on change, previews the draft, Publish/Reset/Undo.
+4. **Task 9** — full suite + typecheck + lint, then the **manual check on a real store Alex gates** (preview reliably shows staged changes; public untouched until Publish).
 
-1. **Revise the niche-writer skill's textures section** — per-niche curation was abandoned in Session 74 but the skill still tells cowork to source textures per niche. Drop it so cowork stops producing work we've thrown away.
-2. **Multi-tier pricing conversation.** Parked in the plan, needs its own discussion before it lands in a phase.
-3. **Decide the maybes** — CSV importers, Claude Vision product auto-fill, customer inbox. Parked in the plan.
-4. **Check the onboarding niche picker.** 15 niches are approved in the database but the picker reportedly shows fewer. Two-minute look.
-5. **Draft three decision-log entries from Session 75** for Alex to read back: Beta-means-real-stores, the Vibe Slider retirement, and the market POS definition.
-6. **The remaining-phases PDF is stale** — it describes the old six phases. Regenerate against the new plan or delete it.
+After the engine proves out: separate plans for Bohdi content editing → section on/off → walkthrough UI, each on this engine. (Founder admin still precedes the rest of Beta, but the editor is being finished first.)
 
-**Owed alongside:**
-- Cowork continues niche-writer batches (38 remaining). Prose / palette / fonts / wordmark proceed; leave `textures` empty.
-- Investigate the dev feature-flag bypass mystery (low priority; DB row overrides it).
+**Owed / not yet placed in a session:**
+- **Set `PREVIEW_TOKEN_SECRET` in the deploy env** before the preview ships (local `.env.local` is set).
+- Revise the niche-writer skill's textures section (per-niche curation abandoned Session 74; skill still tells cowork to source per-niche textures).
+- Parked in the plan: multi-tier pricing conversation; the maybes (CSV importers, Claude Vision product auto-fill, customer inbox).
+- Check the onboarding niche picker (15 approved, picker reportedly shows fewer).
+- Draft three decision-log entries from Session 75: Beta-means-real-stores, Vibe Slider retirement, market POS definition.
+- Cowork continues niche-writer batches (38 remaining); leave `textures` empty.
+- Housekeeping: stale remaining-phases PDF (regenerate/delete); dev feature-flag bypass mystery (low priority).
 
 ---
 
@@ -79,6 +78,7 @@ Still owed and not yet placed in a session:
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 76 (2026-07-27): Editor reprioritised ahead of founder admin. Two product calls: image editing splits by cost (D65 — basic touch-ups included + ship at launch, generative = post-launch $5/mo capped add-on); "use my own colors" editor deferred to Growth. Designed the whole first-run editor: a structured "Make It Yours" walkthrough (Bohdi steps the maker through making placeholder content theirs; content-only, look stays the feeling picker) over a staging engine (persistent owner-only draft, reliable draft preview, one Publish / one Reset — refines D64). Section on/off for optional sections is in; products/collections phase in with the Listing Manager; free-form chat is a later face; reorder + deep section editing later. Wrote `Editor-Make-It-Yours-Design.md` + decomposed into plans; **Plan 1 (staging engine)** at `plans/2026-07-27-editor-staging-engine.md`. Built Tasks 1–4 test-first (store_drafts table, draft.ts, loadDraftEnvelope, HMAC preview token; + a Vitest server-only stub). Stopped at Task 5, running staged commits (Alex reduced credits). Full recap in `session-logs/session-76.md`.
 - Session 75 (2026-07-18): Plan rewritten to reach launch; no code changed. Audit against real code + live DB: storefront done, almost everything a maker does after onboarding missing (no listings, cart is a stub, no Stripe/Square at all, no orders, no market sales, 4 of 6 dashboard pages absent, admin is two empty directories). DB fully built (38 tables) — the gap is surface, not schema. Biggest gap is the editor: spec promises chat, highlight-and-transform, click-to-edit, Vibe Slider; none exist, and the old plan had swapped in a three-door model without recording it. **Beta means real stores** — that call pulled tax, shipping, pickup, expenses and visible pricing into Beta. Phases named not numbered: Beta / Go Live / Growth. Vibe Slider retired. Market POS = our screens around the card the maker already takes on their own reader. Custom domains → Go Live. No blog. Wrote `Launch-Audit-2026-07-18.md` + rewritten `Full-Plan.md`; archived the old plan. Commits `aa6f585`, `522e39b`, `21f3467`. Full recap + process lessons in `session-logs/session-75.md`.
 - Session 74 (2026-07-17): Texture direction settled by subtraction + editor publish model. Niche-writer texture curation ABANDONED (D63); picker stripped to Family default + No texture + opacity dial; candle prototype textures deleted, candle style sheet kept with empty texture list; blend engine + loader parked. Family-wallpaper choice + strength now SAVES on `root.texture` and re-applies live. Two Alex-found bugs fixed at root: editor preview now carries the selected feeling (`previewMood`/`resolvePreviewMood`) so it shows the whole family not just the skin; Publish now counts a feeling change as dirty (`isLookDirty`), fixing Rustic/Cozy not activating when they share the live skin. Editor publish model (D64): two buttons — Preview (full-size staged view, reused tab) + Publish (go-live, dirty-gated); "View live site" try-on link removed (`ViewLiveSiteLink.tsx` deleted); staging session-only, persisted draft deferred. New `lib/editor/texture.ts` + `lib/editor/look-dirty.ts` (+tests). Committed `c56442d`. 976 tests pass (+28), tsc + lint clean.
 - Session 73 (2026-07-16): NOTHING SETTLED — built a texture prototype and tested it. Editor Door 2 texture picker built + preview-wired: a tenant's `primary_niche` loads its texture shelf from `content/style-sheets/niche-<slug>.json`; the maker picks (Family default / No texture / shelf entry) and the storefront preview re-renders via `previewTexture` + `previewTextureOpacity` URL params. How the prototype works (NOT a decided design): texture is a TRANSPARENT ALPHA PNG (pattern-in-alpha, black RGB), sourced from stock then processed once with `sharp` (grayscale→negate→alpha), not AI-generated; it BLENDS onto the maker's background instead of repainting — `multiply` on light families (deepen), invert+`screen` on dark families (lighten), mode chosen per family from bg luminance (`hexIsDark`, 0.4). Background color preserved. First shelf: candle-maker, 5 entries — 3 that render clearly (Woven Linen / Aged Glaze / Marble Swirl) + 2 near-invisible (Handmade Paper, Cotton Tooth, ~2-3% ink). Alex judges whether any of it stays. New files: `niche-candles.json`, 5 processed PNGs in `public/textures/niche/candles/`, `lib/editor/load-niche-textures.ts` (+test), `ViewLiveSiteLink.tsx` (reused live-site tab carrying try-on via localStorage). Preview-only — no `commitTexture` persist yet. 948 tests pass (+8). tsc+lint clean. Alex live-tested on Aurora Candles, confirmed multiply preserves each palette's color, then approved commit. Long frustrating path to get there — full wrong-turns record (JPG→soft-light→fixed-ink PNG→fg-mask→alpha-blend) and process lessons (stop when told, don't self-grade curation, don't race Alex's dev server, don't reset his password) in the session log.
