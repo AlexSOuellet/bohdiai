@@ -25,12 +25,13 @@ Everything the maker does in the editor stays **staged** and reaches the public 
 1. **The staging engine** — a persistent draft of the store, a reliable draft-backed preview, Publish, Reset, and reworking the already-shipped feeling-swap to ride the same draft.
 2. **Bohdi content editing** — the agent that rewrites the store's *words* (never its structure or look) into the draft.
 3. **The "Make It Yours" walkthrough — content steps only** — the structured first-run flow that turns placeholder *words* into the maker's real words, section by section, Bohdi-led.
+4. **Section on/off** — the maker can switch the optional sections (reviews, collections, marquee, find-us) on or off, so a maker with no testimonials or collections isn't stuck with fakes or placeholders. On/off only; a section's content is kept when it's off.
 
 **Explicitly out of this spec (later phases, same engine):**
 
 - **Product and collection steps of the walkthrough.** Replacing the five placeholder products and asking about collections. This needs basic product/collection editing (shared with the future Listing Manager) and is the next phase after this one proves out. The walkthrough is built as a stepped frame so these slot in additively.
 - **Free-form chat.** The maker-led "change this, reword that" tool. Same engine (draft + Bohdi content editing); a different face, built after the walkthrough.
-- **Sections on/off and reorder.** A later editor mode.
+- **Reordering sections, and deep per-section editing.** Rearranging the section order, and a real editor for what lives *inside* a section (the kind products get). Section on/off is *in* this phase (below); rearranging and deep-editing are later.
 - **"Use my own colors."** Deferred to post-launch (Growth) per Session 76.
 - **The basic image editor** (D65). Rides with the product/Listings work, not this spec.
 
@@ -95,6 +96,16 @@ Bohdi is the writer the walkthrough (and later, free-form chat) drives. He is a 
 
 ---
 
+## Section on/off (switchable sections)
+
+Some sections only make sense when the maker has the content for them. A brand-new store has no real testimonials, may group nothing into collections, may do no markets. Rather than seed fakes or leave placeholders, the maker can **switch these sections off**.
+
+**Which sections.** The genuinely optional ones the store is already built to render-or-skip: reviews, collections, marquee, and find-us (About and Contact too, if we make them optional). The structural sections that make a store a store — the hero, the goods/products, the founder beat, the close — cannot be turned off.
+
+**How it's stored.** A per-section visibility flag lives inside the home envelope (the same staged `layout_tree` in the draft) — a `hidden` marker on the section. No database change. Turning a section off sets the flag but **keeps the content**, so turning it back on later restores the maker's seeded starting point instead of a blank. The renderer already skips absent optional sections; it gains one rule — also skip a section explicitly flagged hidden, even when it has content.
+
+**Where it surfaces.** In the walkthrough, each optional-section step offers "make it yours, or switch it off." Outside the walkthrough it's a normal editor control. This is the first slice of the curated mix-and-match sections direction (reorder and per-section swapping come later).
+
 ## Part 3 — The "Make It Yours" walkthrough (content)
 
 A **structured, stepped** flow — not an open conversation — because the goal is *complete coverage*: when the maker comes out, no placeholder words are left. Visible progress, one section at a time, a sense of "you've made N of M yours."
@@ -105,8 +116,8 @@ A **structured, stepped** flow — not an open conversation — because the goal
 
 1. **Your welcome** — the hero: eyebrow, story lines, tagline, brand line.
 2. **Your story** — the founder quote + the full About page.
-3. **Kind words** — the reviews section (see open question below).
-4. **Where to find you** — the find-us section: real markets/dates or turn it off (turning off is a later section-toggle; for now, replace or leave seeded — see open question).
+3. **Kind words** — the reviews section: enter real testimonials, or switch the section off (no customers yet is the common first-run case).
+4. **Where to find you** — the find-us section: enter real markets and dates, or switch the section off.
 5. **Your sign-off** — the close line + CTA wording.
 6. **Getting in touch** — the contact intro.
 7. **The small stuff** — section headings and the marquee voice lines (goods heading, collections heading, etc.), quick confirms.
@@ -148,6 +159,7 @@ Single source of truth holds throughout: there is one staged envelope (the draft
 - **Apply-then-see** — a rewrite lands in the draft and shows in a draft render; Undo restores the prior snapshot.
 - **Walkthrough completeness** — the flow reports the correct remaining placeholder sections and only completes when content sections are the maker's.
 - **Feeling-swap on the draft** — a staged look change writes to the draft (not live), and Publish takes it live alongside staged words.
+- **Section on/off** — a hidden flag stored in the draft; the renderer skips a hidden section even when it has content; content survives a toggle-off-then-on round trip; the structural sections cannot be hidden.
 
 Tests are part of done (no feature ships without them). Visible-output pieces (the walkthrough UI, the preview) are gated on Alex's eyes before commit — tests-green proves it runs, not that it looks right.
 
@@ -155,10 +167,10 @@ Tests are part of done (no feature ships without them). Visible-output pieces (t
 
 ## Open questions for review
 
-1. **Reviews step.** A brand-new maker has no real testimonials. Options: keep the seeded ones as tasteful placeholders for now, let them enter real ones, or (later, when section-toggle exists) turn the section off. What should this phase do?
-2. **Find-us step.** Same shape — seeded sample dates. Replace with real ones, or leave seeded until the maker has real markets? (Turning the section off is a later toggle.)
-3. **Step order and grouping** — the seven content steps above are a proposal. Right grouping? Right order?
-4. **Where the walkthrough lives** — is it a distinct first-run route the maker is dropped into after onboarding, with the free-form editor as the normal `/dashboard/website`? Or one editor surface that opens in walkthrough mode when the store is still all-placeholder? (Leaning: a first-run mode of the same editor, so there's one place.)
+1. **Step order and grouping** — the seven content steps above are a proposal. Right grouping? Right order?
+2. **Where the walkthrough lives** — is it a distinct first-run route the maker is dropped into after onboarding, with the free-form editor as the normal `/dashboard/website`? Or one editor surface that opens in walkthrough mode when the store is still all-placeholder? (Leaning: a first-run mode of the same editor, so there's one place.)
+
+*(The reviews and find-us questions are resolved: each optional-section step offers "make it yours, or switch it off" — a brand-new maker with no testimonials simply turns the section off.)*
 
 ---
 
