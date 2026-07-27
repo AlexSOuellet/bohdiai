@@ -57,6 +57,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, '.'),
+      // `server-only` throws outside an RSC; swap it for a no-op so server modules
+      // can be unit-tested. The real guard still applies in the Next build.
+      'server-only': path.resolve(__dirname, 'vitest.server-only-stub.ts'),
     },
   },
 });
