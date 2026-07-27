@@ -68,6 +68,7 @@ Money goes customer to maker. We never hold it and never take a cut.
 - [ ] The maker defines their own product options — scent, size, burn time, whatever matters to them. No fixed list from us.
 - [ ] Pricing and stock
 - [ ] Photo upload
+- [ ] Basic image touch-ups on a maker's own photos — background removal, crop and straighten, brightness, warmth, colour and sharpness cleanup, simple lighting adjustments. Included in the base subscription, no cap; these cost us next to nothing to run. The generative side (lifestyle staging, generative relighting) is a post-launch add-on, not this. (D65)
 - [ ] Create and edit collections, assign products, pick a cover image
 - [ ] Upload a logo after onboarding and optionally update the store's accent colour from it
 
@@ -169,7 +170,7 @@ A stranger can find bohdiai.com, understand what it costs, sign up, pay, build a
 After launch, ordered by what real makers ask for.
 
 - Gift cards
-- The AI Image Studio — background removal, photo cleanup, lifestyle mockups
+- The AI Image Studio (generative) — lifestyle staging, generative relighting, generative mockups. A $5/month add-on with a capped monthly allowance so price maps to cost — not bundled into the base subscription, not unlimited. The non-generative touch-ups already ship at launch (see Beta / Listings). (D65)
 - Business tools — pricing calculator, cost worksheet, tax estimator
 - Storefront filtering, like shop by scent
 - Service trades and the whole booking side — plumbers, groomers, tattoo artists

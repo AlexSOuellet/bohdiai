@@ -830,6 +830,24 @@ A known limitation, accepted for now: Preview shows the staged HOME page; naviga
 
 ---
 
+## 2026-07-27 (session 76)
+
+### D65. The image editor splits by cost: basic touch-ups ship at launch and are included; generative image work is a post-launch add-on at $5/month with a cap
+
+Makers will not use AI-generated images for their real products — a real handmade item has to be photographed as itself, and a generated stand-in would be exactly the AI-slop the brand rejects (D31). (The onboarding image library is the one place generated images live, and it's onboarding-only.) So the image work a maker actually does in the editor is *enhancing their own real photos*, not generating new ones — a cheaper and more honest thing.
+
+That enhancement splits cleanly by what it costs us to run, and the cost is the boundary:
+
+**Basic — included in the base subscription, ships at launch.** Background removal, crop and straighten, brightness, warmth, color and sharpness cleanup, and simple lighting adjustments. These cost us next to nothing per operation, so they ride in the base price with no cap, no counter, nothing for the maker to think about. This moves the basic image editor *into launch (Beta)* — the previous plan parked all image editing in Growth. It earns the move on merit: clean product photos are a big part of whether a maker's store looks pro on day one, and bad kitchen-table photos are the single thing this audience is worst at.
+
+**Generative — a post-launch add-on at $5/month, capped.** Anything that costs real generation money: lifestyle staging (putting the product into a styled scene), generative relighting, generative mockups. This stays after launch. It's its own $5/month line, not bundled into the base subscription, so the makers who generate are the ones paying for generation. Critically, the $5 buys a *monthly allowance*, not unlimited — a flat unlimited price just rebuilds the unbounded-cost problem at a lower number. Most makers stay well under the cap and never feel it; the heavy user self-funds.
+
+The boundary is a principle, not a per-feature list: if an operation is cheap for us to run it is basic and included; if it needs real generation it is premium. Relighting sorts by this too — a brightness-and-warmth adjustment is basic and included; regenerating how light falls on the product is generative and premium. Every future image operation sorts itself the same way without re-litigating.
+
+Still open: the exact cap number (calibrated against real fal costs during beta), and whether overflow past the cap is a hard stop or a pay-as-you-go pack — with packs worth considering because generative mockups are a bursty, seasonal need that may not fit a monthly subscription cleanly.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.
