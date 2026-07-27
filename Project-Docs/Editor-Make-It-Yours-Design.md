@@ -1,0 +1,169 @@
+# Editor — "Make It Yours" walkthrough + the staging engine (design)
+
+**Written 2026-07-27, Session 76. Design spec for the next editor build.**
+
+This is the design that came out of the Session-76 brainstorm. It supersedes the "chat with Bohdi" framing as the *first* thing we build: the first trip into the editor is a guided walkthrough, and free-form chat becomes the come-back-later face on the same engine.
+
+Authority: this is a feature spec (rank 4). It sits under the Full Plan's Beta editor scope and the editor design docs (`Editor-Design.md`, `Editor-Design-Notes.md`). Where it refines a shipped decision (D64's session-only staging), that refinement is called out.
+
+---
+
+## Why this exists
+
+The core promise is two halves: we build a maker a polished, unique store, then *they* edit it to fit them. The generator delivers the first half. The editor is the second half, and it has been under-built.
+
+The insight this spec turns on: **the first time a maker opens the editor, almost everything is placeholder.** The About is about an invented person, the reviews are seeded, the find-us dates are made up, the products are stand-ins. A maker at that moment doesn't want to *change* things one at a time through an open chat box — they want to replace their whole imaginary self with their real self. So the first-run editor is a **structured walkthrough that steps them through making each piece theirs**, and it finishes with a store whose *content* is all theirs, sitting in the *look* we generated. Only after that does free-form "tell Bohdi what to change" earn its place, as the ongoing tweak tool.
+
+Everything the maker does in the editor stays **staged** and reaches the public store only when they **Publish**. This is one rule for every editing function — look, words, later products — and it is the thing that was flaky in testing (changes not showing on the edit page). Fixing staging properly is load-bearing for all of it.
+
+---
+
+## Scope of this spec
+
+**In:**
+
+1. **The staging engine** — a persistent draft of the store, a reliable draft-backed preview, Publish, Reset, and reworking the already-shipped feeling-swap to ride the same draft.
+2. **Bohdi content editing** — the agent that rewrites the store's *words* (never its structure or look) into the draft.
+3. **The "Make It Yours" walkthrough — content steps only** — the structured first-run flow that turns placeholder *words* into the maker's real words, section by section, Bohdi-led.
+
+**Explicitly out of this spec (later phases, same engine):**
+
+- **Product and collection steps of the walkthrough.** Replacing the five placeholder products and asking about collections. This needs basic product/collection editing (shared with the future Listing Manager) and is the next phase after this one proves out. The walkthrough is built as a stepped frame so these slot in additively.
+- **Free-form chat.** The maker-led "change this, reword that" tool. Same engine (draft + Bohdi content editing); a different face, built after the walkthrough.
+- **Sections on/off and reorder.** A later editor mode.
+- **"Use my own colors."** Deferred to post-launch (Growth) per Session 76.
+- **The basic image editor** (D65). Rides with the product/Listings work, not this spec.
+
+**Build order within scope:** engine first → content steps of the walkthrough → prove both on a real store → (next phase) product/collection editing + steps.
+
+---
+
+## Part 1 — The staging engine
+
+### The draft
+
+Each store gets one **draft**: a saved-but-not-live copy of its home envelope (the single `layout_tree` on the `/` content-pages row that paints every page, per D37). Every editing function writes to the draft and only the draft. The public store is never touched until Publish.
+
+**Storage.** The `content_pages` table has a unique index on `(tenant_id, lower(slug))` for non-deleted rows, so the draft cannot be a second `/` row. The public RLS policy also lets anyone select any published row's columns, so the draft cannot be a plain column on the live row without becoming publicly fetchable. Therefore the draft gets its **own owner-only table**:
+
+```
+store_drafts (
+  tenant_id   uuid primary key references tenants(id) on delete cascade,
+  layout_tree jsonb not null,       -- the staged home envelope
+  updated_at  timestamptz not null default now()
+)
+```
+
+RLS: tenant-admin only (same `is_tenant_admin(tenant_id)` gate as `content_pages_admin_all`). No anon/public policy — a draft is never publicly readable. One row per tenant; the home envelope is the whole staged store.
+
+**Lifecycle:**
+
+- **Stage a change** → upsert `store_drafts.layout_tree` for the tenant (create the draft from the live envelope on first edit if none exists).
+- **Publish** → copy `store_drafts.layout_tree` onto the live `content_pages.layout_tree` for the `/` row (the existing published path), keep `tenants.mood_key` in step as `commitLook` already does, then delete the draft row. One move, everything staged goes live together.
+- **Reset** → delete the draft row. The maker is back to exactly what's live.
+- **Persistence** → the draft simply sits in the table across sessions until Publish or Reset. No session-only discard (this refines D64, which staged the look client-side and discarded on leave; that was fine for a five-second feeling try-on but cannot carry rewritten words).
+
+### The preview reads the draft
+
+The edit-page preview must show the draft, reliably, without the maker opening the live site — the exact failure seen in testing. The preview iframe loads the tenant's storefront in an **owner-gated preview mode**: when the request is authenticated as the store's owner and carries the preview flag, the storefront renders from `store_drafts.layout_tree` (falling back to the live envelope when no draft exists) instead of the published `content_pages` row. Public visitors, lacking owner auth, always get the published store. After each staged change the editor refreshes the preview so what sits beside the controls is always exactly the draft.
+
+This replaces the current mechanism where the look rides to the preview in URL params and the words never make it into the preview at all.
+
+### Reworking the feeling-swap onto the draft
+
+The shipped feeling-swap (`commitLook` / the Preview + Publish buttons, D64) currently stages the look client-side and writes straight to the live store on Publish. It moves onto the shared draft: choosing a feeling/skin/texture stages into `store_drafts` like everything else, and the single Publish promotes the whole draft (look + words together). Reset discards both. This honors the one-rule-for-everything model and makes "unpublished work persists until publish or reset" true for the look as well as the words.
+
+### Undo
+
+Within an editing session the maker can step back through staged changes (Undo). Implementation: the editor holds a stack of envelope snapshots taken before each applied change; Undo restores the previous snapshot to the draft and refreshes the preview. Reset is the coarse "throw the whole draft away" that returns to live; Undo is the fine "take back the last change." Redo is a nice-to-have, not required for this spec.
+
+---
+
+## Part 2 — Bohdi content editing
+
+Bohdi is the writer the walkthrough (and later, free-form chat) drives. He is a tool-using agent, stateless per D23/D27, that reads the store's current words and rewrites named text fields into the draft.
+
+**What he can touch — an allowlist of editable text fields** drawn from the home envelope: the hero eyebrow/story/brand/tagline and CTA labels, the goods heading, the collection blurbs (name + description text), the seeded review lines, the marquee voice lines, the founder quote/attribution/heading, the close label/headline, the About story, the contact intro. He gets a `set_content(field, value)` tool bound to that allowlist and a view of the current values. Product names/descriptions are **not** in the allowlist — they belong to the Listing Manager phase.
+
+**What he cannot touch:** structure, nav, section order, section on/off, the family/look, the skin, the layout. These are not tools he has, so no phrasing reaches past the words. This is the curated-lever discipline from `Editor-Design-Notes.md` — Bohdi hands the engine *data* (which field, what text); the engine renders.
+
+**Voice grounding.** He writes knowing the shop's niche (its content file) and the store's current copy, so a rewrite sounds like this store, not generic AI copy. Reuses the same niche/voice material the onboarding copywriter already loads.
+
+**Apply-then-see (approach 1, chosen).** Bohdi rewrites straight into the draft; the preview updates; the maker watches. "Try again" gives a fresh take; Undo steps back. Nothing is live, so a wrong guess is cheap. When a request is genuinely ambiguous (which of six headings?), he asks one short question rather than guessing.
+
+**The look boundary.** If the maker asks Bohdi for something that is not words — "make it cozier," meaning the look — he points them at the feeling picker instead of fumbling. His job is the language.
+
+---
+
+## Part 3 — The "Make It Yours" walkthrough (content)
+
+A **structured, stepped** flow — not an open conversation — because the goal is *complete coverage*: when the maker comes out, no placeholder words are left. Visible progress, one section at a time, a sense of "you've made N of M yours."
+
+**Per step:** Bohdi *leads*. He asks the maker for the real information in plain language ("tell me how you got started," "what should the welcome line say — or tell me the feeling and I'll write it"), then writes that section in their voice into the draft. The maker sees it land in the preview and can keep it, ask for another take, or tweak the wording. Then the next step. Every step is apply-then-see on the same staging engine.
+
+**Proposed content steps (order and grouping open for review):**
+
+1. **Your welcome** — the hero: eyebrow, story lines, tagline, brand line.
+2. **Your story** — the founder quote + the full About page.
+3. **Kind words** — the reviews section (see open question below).
+4. **Where to find you** — the find-us section: real markets/dates or turn it off (turning off is a later section-toggle; for now, replace or leave seeded — see open question).
+5. **Your sign-off** — the close line + CTA wording.
+6. **Getting in touch** — the contact intro.
+7. **The small stuff** — section headings and the marquee voice lines (goods heading, collections heading, etc.), quick confirms.
+
+**Completion.** The walkthrough tracks which content sections are still placeholder and does not call itself done until each is the maker's. Products are out of this phase, so this phase's "done" is *content* done; the flow will later gain the product/collection steps before it's the whole first run.
+
+**Publish.** Everything the walkthrough writes is staged. The maker publishes at the end (or whenever they like — Publish is always available), and Reset always returns them to live.
+
+---
+
+## Data flow (summary)
+
+1. Maker enters the editor → if no draft exists, the live envelope is the starting point; the first staged change creates the draft row.
+2. A step (or a look change, or later a free-form chat request) → Bohdi/`commitLook`/etc. writes the new value into `store_drafts.layout_tree`.
+3. The editor snapshots-for-undo, then refreshes the owner-gated preview, which renders the draft.
+4. Publish → draft promoted to the live `content_pages` row, `tenants.mood_key` synced, draft row deleted.
+5. Reset → draft row deleted; back to live.
+
+Single source of truth holds throughout: there is one staged envelope (the draft), every control is a view over it, and the preview renders it. No surface keeps its own copy of the state (`Editor-Design-Notes.md`).
+
+---
+
+## Error handling
+
+- **Bohdi fails / times out** (no valid tool call within the attempt budget, or the API errors): the step surfaces an honest "couldn't write that just now — try again" and leaves the draft untouched. Never a partial write, never a thrown build.
+- **Draft read/write failure** (DB error): the action returns a plain error message; nothing is half-applied. The live store is never at risk because Publish is the only path that touches it.
+- **Ownership:** every draft read/write and Publish/Reset is gated on store ownership before any DB call, exactly as `commitLook` already gates.
+- **Copy length / shape:** the content schema validates shape only, no length caps (D57). The renderer absorbs any length. Bohdi's output runs through the same normalize step the copywriter uses.
+- **A maker with two tabs open:** last write wins on the single draft row; the preview refresh reflects the current draft. A real draft-conflict UI is out of scope.
+
+---
+
+## Testing
+
+- **Draft lifecycle** — unit tests for create-on-first-edit, upsert, publish-promotes-and-deletes, reset-deletes; ownership enforced on each.
+- **Publish correctness** — the promoted live envelope equals the draft; `mood_key` synced; draft gone afterward.
+- **Preview resolution** — owner + preview flag renders the draft; public/anon renders published; no-draft falls back to live.
+- **Bohdi allowlist** — `set_content` accepts allowlisted fields and rejects anything else (structure/look/product paths); the agent cannot mutate outside the allowlist.
+- **Apply-then-see** — a rewrite lands in the draft and shows in a draft render; Undo restores the prior snapshot.
+- **Walkthrough completeness** — the flow reports the correct remaining placeholder sections and only completes when content sections are the maker's.
+- **Feeling-swap on the draft** — a staged look change writes to the draft (not live), and Publish takes it live alongside staged words.
+
+Tests are part of done (no feature ships without them). Visible-output pieces (the walkthrough UI, the preview) are gated on Alex's eyes before commit — tests-green proves it runs, not that it looks right.
+
+---
+
+## Open questions for review
+
+1. **Reviews step.** A brand-new maker has no real testimonials. Options: keep the seeded ones as tasteful placeholders for now, let them enter real ones, or (later, when section-toggle exists) turn the section off. What should this phase do?
+2. **Find-us step.** Same shape — seeded sample dates. Replace with real ones, or leave seeded until the maker has real markets? (Turning the section off is a later toggle.)
+3. **Step order and grouping** — the seven content steps above are a proposal. Right grouping? Right order?
+4. **Where the walkthrough lives** — is it a distinct first-run route the maker is dropped into after onboarding, with the free-form editor as the normal `/dashboard/website`? Or one editor surface that opens in walkthrough mode when the store is still all-placeholder? (Leaning: a first-run mode of the same editor, so there's one place.)
+
+---
+
+## What this refines / relates to
+
+- **Refines D64** — staging moves from session-only/client-side to a persistent owner-only draft, because content editing can't ride URL params and a maker mustn't lose an evening's rewording. Preview/Publish stay; Reset joins them; the feeling-swap migrates onto the draft.
+- **Honors `Editor-Design-Notes.md`** — single source of truth (one draft, controls are views), subjective intent resolves to curated levers (Bohdi hands data, never freehand CSS/layout), sync-the-derived / never-silently-rewrite-the-authored (Bohdi only writes when the maker asks).
+- **Sits under Full Plan Beta / editor** — delivers "chat with Bohdi" (as the walkthrough first, then free-form) and "undo"; sections on/off + reorder and the product side remain their own later work.
