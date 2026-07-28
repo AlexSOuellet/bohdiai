@@ -731,7 +731,7 @@ The editor page passes the editor: the live look (for the "now / dirty" comparis
 **Files:**
 - Modify: `app/dashboard/website/page.tsx`
 
-- [ ] **Step 1: Load the draft look + mint a token, pass to Editor**
+- [x] **Step 1: Load the draft look + mint a token, pass to Editor**
 
 After `const look = await loadCurrentLook(shop.tenantId);` and its null-guard, add:
 
@@ -757,12 +757,9 @@ const previewToken = mintPreviewToken(shop.tenantId);
 
 Pass `stagedLook={draftLook}` and `previewToken={previewToken}` to `<Editor … />` (props added in Task 8).
 
-- [ ] **Step 2: Typecheck**
+- [x] **Step 2: Typecheck** — clean.
 
-Run: `npm run typecheck`
-Expected: PASS (after Task 8 adds the props; if running before Task 8, the new props will error — do Task 8 in the same working session and typecheck at the end).
-
-- [ ] **Step 3: Commit** (with Task 8, since the two are interdependent — see Task 8 Step 6).
+- [x] **Step 3: Commit** — with Task 8 (`5ba63a1`).
 
 ---
 
@@ -773,7 +770,7 @@ Rework `Editor.tsx` so choosing a feeling/skin/texture **stages** (calls `stageL
 **Files:**
 - Modify: `app/dashboard/website/_components/Editor.tsx`
 
-- [ ] **Step 1: New props**
+- [x] **Step 1: New props**
 
 Add to `EditorProps`:
 
@@ -784,56 +781,33 @@ Add to `EditorProps`:
   previewToken: string;
 ```
 
-- [ ] **Step 2: Open on the staged look when a draft exists**
+- [x] **Step 2: Open on the staged look when a draft exists**
 
 Seed `selectedFeeling`/`selectedSkin`/texture state from `stagedLook ?? live`. Keep the `live*` state seeded from the `current*` props (the published look) — "dirty" is staged-vs-live, and a returning maker with a draft opens dirty.
 
-- [ ] **Step 3: Stage on every change**
+- [x] **Step 3: Stage on every change** — consolidated the four look states into one `Selection` object for clean optimistic-revert + undo.
 
-Change `pickFeeling`, the skin `onSelect`, and the texture controls so that after updating local state they call `stageLook(selectedSkin, selectedFeeling, selectedTexture)` inside a transition. On success, push the *previous* staged envelope selection onto an undo stack (see Step 5). On failure, show the error and revert the local state. The preview refreshes when its `src` changes (Step 4).
+- [x] **Step 4: Preview reads the draft** — **changed from the plan during the live check.** Token-only-with-nonce made the preview wait on the background save before repainting, a visible lag (worst on Modern). The preview now shows the selection **instantly via URL params** (`previewLook`/`previewMood`/`previewTexture`), carrying the token so it still renders the maker's own draft content underneath, and the staging write happens in the background. Also adds `&previewStill=1` on the inline iframe (see the reveal fix below). The full-size Preview link keeps the animated, non-still URL.
 
-- [ ] **Step 4: Preview reads the draft**
-
-Change the preview `src` to point at the draft via the token instead of the look URL params. Add a `draftPreviewUrl` helper import or inline:
-
-```typescript
-// The preview now renders the staged draft (words + look + everything), gated by the token.
-const src = `${previewOrigin}/?previewToken=${encodeURIComponent(previewToken)}`;
-```
-
-Keep `key={src}` on the iframe so it reloads after a stage completes (bump a nonce in state after each successful `stageLook` so `src` changes and the iframe re-fetches the freshly-staged draft). The "Preview" link (full-size tab) uses the same URL.
-
-- [ ] **Step 5: Publish / Reset / Undo**
+- [x] **Step 5: Publish / Reset / Undo**
 
 - Replace `commitLook` with `publishStore`. `Publish` is enabled when a draft exists (dirty vs live).
 - Add a `Reset` button that calls `resetStore`, then resets local state to the live look and clears the undo stack.
 - Undo: keep `const [undoStack, setUndoStack] = useState<LookSelection[]>([])`. Before each successful stage, push the prior selection. `Undo` pops the last, re-stages it (calls `stageLook` with the popped values), and updates local state. Disabled when the stack is empty.
 
-- [ ] **Step 6: Typecheck, lint, commit page + editor together**
-
-Run: `npm run typecheck && npm run lint`
-Expected: PASS.
-
-```bash
-git add app/dashboard/website/page.tsx app/dashboard/website/_components/Editor.tsx
-git commit -m "feat(editor): stage-on-change, draft preview, Publish/Reset/Undo"
-```
+- [x] **Step 6: Typecheck, lint, commit page + editor together** — `5ba63a1`.
 
 ---
 
 ## Task 9: Full verification
 
-- [ ] **Step 1: Run the whole suite**
+- [x] **Step 1: Run the whole suite** — 1007 pass.
 
-Run: `npm test`
-Expected: all tests pass (prior count + the new draft/token/action/preview tests).
+- [x] **Step 2: Typecheck + lint** — clean.
 
-- [ ] **Step 2: Typecheck + lint**
-
-Run: `npm run typecheck && npm run lint`
-Expected: clean.
-
-- [ ] **Step 3: Manual check on a real store (Alex's eyes gate this)**
+- [x] **Step 3: Manual check on a real store (Alex's eyes gate this)** — Alex verified live on the candle stores: all six feelings preview correctly, products show on every family, Publish works. Two bugs surfaced and were fixed during this check (both committed):
+  - **Preview lag** → preview now repaints instantly from the selection (Task 8 Step 4 above).
+  - **Products invisible in the preview pane** (`4636404`). Root cause: the static preview iframe never fires the storefront's scroll-in reveal, so reveal-gated sections (the product treatments — module/Modern, constellation/Cozy, table, and the `.ms-reveal`-wrapped ones) stayed at `opacity:0`. Fix: the inline preview sends `previewStill=1`; the storefront then lands every reveal in its resolved state for that render (mirrors the exact `.in` values, non-`!important` so responsive rules still win). The live published store keeps its scroll animation. **Lesson worth carrying:** a scroll-in reveal that starts content at `opacity:0` is invisible in any non-scrolled/embedded context — the reveal must be treated as enhancement over always-visible content, or explicitly resolved when previewing.
 
 Do NOT claim done on tests alone — this has visible output. On a dev store with the `editor` flag on:
 1. Open `/dashboard/website`, change the feeling. Confirm the **preview beside the controls updates** to the new feeling without opening the live site (the bug that motivated this).
@@ -843,14 +817,9 @@ Do NOT claim done on tests alone — this has visible output. On a dev store wit
 5. Change again, hit **Publish** — confirm the **public store now shows the new look** and the editor reads "everything published."
 6. Confirm a logged-out visitor hitting `/?previewToken=<expired-or-forged>` sees the **published** store, never a draft.
 
-- [ ] **Step 4: Update the plan checkboxes and the Full Plan**
+- [x] **Step 4: Update the plan checkboxes and the Full Plan** — this file ticked; Full Plan updated (Undo + staging groundwork).
 
-Tick this plan's boxes. In `Project-Docs/Full-Plan.md`, the editor's "Undo" line and the staging groundwork are now real; note progress. Commit:
-
-```bash
-git add Project-Docs/
-git commit -m "docs(session-76): staging engine landed; plan checkboxes"
-```
+**Staging engine complete.** Every task landed and verified live. Next plans build on this engine: Bohdi content editing → section on/off → the "Make It Yours" walkthrough UI.
 
 ---
 

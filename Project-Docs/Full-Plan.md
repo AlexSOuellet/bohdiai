@@ -34,13 +34,13 @@ The database is fully built for every bit of what follows — all 38 tables. Non
 
 ## The editor
 
-Door one is built — the maker picks a different feeling and their store re-paints. The three real editing modes are not.
+Door one is built — the maker picks a different feeling and their store re-paints. The **staging engine** underneath it is now built too (Session 77): every edit writes to a persistent owner-only draft, the preview reliably shows the draft, and one Publish / one Reset promote or discard it — verified live across all six feelings. The three real editing modes still aren't.
 
 - [ ] **Chat with Bohdi.** The maker tells him what to change in their own words and he changes it. This is the thing that makes him feel like someone they hired.
 - [ ] **Click straight on something and edit it.** Tap a headline, type a new one, done.
 - [ ] **Highlight and rewrite.** Select a paragraph, tell Bohdi to make it shorter or warmer, take his version or keep yours.
 - [ ] Turn sections on and off, and reorder them.
-- [ ] Undo. Every change reversible, nothing that can break their site.
+- [x] Undo. Every change reversible, nothing that can break their site. *(Shipped on the staging engine — Undo/Reset/Publish, Session 77.)*
 
 The Vibe Slider is dead and won't be built. It was designed for a world where a store's look was a pile of numbers you could slide between. Families aren't points on a line — they're six different layouts. Picking a feeling is the honest version of what the slider was reaching for. Dials survive where something genuinely has a strength, like the wallpaper control we shipped.
 
