@@ -562,7 +562,7 @@ Replace `commitLook` (writes straight to the live page) with `stageLook` (writes
 - Modify: `app/dashboard/website/actions.ts`
 - Test: `app/dashboard/website/actions.test.ts` (create if absent)
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```typescript
 // app/dashboard/website/actions.test.ts
@@ -625,12 +625,12 @@ describe('publishStore / resetStore', () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify fail**
+- [x] **Step 2: Run to verify fail**
 
 Run: `npm test -- app/dashboard/website/actions.test.ts`
 Expected: FAIL — new exports don't exist.
 
-- [ ] **Step 3: Rewrite `app/dashboard/website/actions.ts`**
+- [x] **Step 3: Rewrite `app/dashboard/website/actions.ts`**
 
 ```typescript
 'use server';
@@ -710,12 +710,12 @@ export async function resetStore(): Promise<ActionResult> {
 
 > Note: `applyLookToEnvelope` requires `root.kind === 'archetype'`; seeding `baseTree` from `loadHomeEnvelope` (which returns the archetype root) as `{ root }` satisfies that. If `loadHomeEnvelope` returns null (legacy store), `stageLook` fails cleanly with "Could not load your store."
 
-- [ ] **Step 4: Run to verify pass**
+- [x] **Step 4: Run to verify pass**
 
 Run: `npm test -- app/dashboard/website/actions.test.ts`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add app/dashboard/website/actions.ts app/dashboard/website/actions.test.ts
