@@ -8,7 +8,8 @@ import type { ProductView, CatalogMedia, CollectionView } from '@/lib/archetypes
 import { seedPreviewReviews } from '@/lib/archetypes/main-street/reviews';
 import { seedPreviewFindUs } from '@/lib/archetypes/main-street/findus';
 import type { Json } from '@/lib/database.types';
-import { loadHomeEnvelope, loadTenantChrome } from '@/lib/storefront/load-envelope';
+import { loadHomeEnvelope, loadDraftEnvelope, loadTenantChrome } from '@/lib/storefront/load-envelope';
+import { verifyPreviewToken } from '@/lib/editor/preview-token';
 
 /** Extract image_url from a listings.metadata JSONB blob. Returns undefined when
  *  metadata is null, not an object, or has no image_url. Narrows once at the
@@ -24,6 +25,11 @@ import { resolvePreviewMood } from '@/lib/moods';
 
 interface StorefrontPageProps {
   slug: string;
+  /** Owner draft preview — when this verifies (HMAC, unexpired) to the SAME tenant
+   *  the request resolved to, the store renders the STAGED draft envelope instead of
+   *  the published one. Public visitors have no token, so they always get published.
+   *  A token for another tenant, absent, expired, or forged → published. */
+  previewToken?: string | undefined;
   /** Editor door-1 preview — re-render the live home in this skin without persisting.
    *  Re-skins the already-public content only; owner-gating is deferred. */
   previewLook?: string | undefined;
@@ -107,7 +113,20 @@ export async function renderArchetypeShell(tenantId: string, children: ReactNode
   return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, mood: a.mood, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
 }
 
-export default async function StorefrontPage({ slug, previewLook, previewMood, previewTexture, previewTextureOpacity, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs }: StorefrontPageProps) {
+/** Choose the envelope source for a storefront request. A preview token that
+ *  verifies to THIS tenant renders the staged draft (falling back to the published
+ *  envelope when the draft is empty); every other request — no token, a token for
+ *  another tenant, expired, or forged — renders the published envelope. Owner
+ *  draft words therefore show in the preview and never leak to the public. */
+async function envelopeFor(tenantId: string, previewToken: string | undefined): Promise<Record<string, unknown> | null> {
+  if (previewToken !== undefined && verifyPreviewToken(previewToken) === tenantId) {
+    const draft = await loadDraftEnvelope(tenantId);
+    if (draft !== null) return draft;
+  }
+  return loadHomeEnvelope(tenantId);
+}
+
+export default async function StorefrontPage({ slug, previewToken, previewLook, previewMood, previewTexture, previewTextureOpacity, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs }: StorefrontPageProps) {
   const headerStore = await headers();
   const tenantId = headerStore.get('x-tenant-id');
   if (tenantId === null) notFound();
@@ -116,7 +135,7 @@ export default async function StorefrontPage({ slug, previewLook, previewMood, p
   // envelope, painted as a different page.
   const subPage = SLUG_TO_PAGE[slug];
   if (subPage !== undefined) {
-    const env = await loadHomeEnvelope(tenantId);
+    const env = await envelopeFor(tenantId, previewToken);
     if (env === null) notFound();
     return renderStore(env, tenantId, subPage, previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity);
   }
@@ -125,13 +144,13 @@ export default async function StorefrontPage({ slug, previewLook, previewMood, p
   // the other sub-pages; the products list is filtered to this collection's rows.
   if (slug.startsWith('/collections/') && slug.length > '/collections/'.length) {
     const collectionSlug = slug.slice('/collections/'.length);
-    const env = await loadHomeEnvelope(tenantId);
+    const env = await envelopeFor(tenantId, previewToken);
     if (env === null) notFound();
     return renderStore(env, tenantId, 'collection', previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity, collectionSlug);
   }
 
   // Home (/): render the store from the tenant's home envelope.
-  const env = await loadHomeEnvelope(tenantId);
+  const env = await envelopeFor(tenantId, previewToken);
   if (env === null) notFound();
   return renderStore(env, tenantId, undefined, previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity);
 }
