@@ -30,6 +30,10 @@ interface StorefrontPageProps {
    *  the published one. Public visitors have no token, so they always get published.
    *  A token for another tenant, absent, expired, or forged → published. */
   previewToken?: string | undefined;
+  /** Editor preview only — resolve every scroll-in reveal to its landed state so
+   *  reveal-gated sections (products especially) are visible in the static preview
+   *  pane, where the scroll animation never fires. The live store keeps the motion. */
+  previewStill?: boolean | undefined;
   /** Editor door-1 preview — re-render the live home in this skin without persisting.
    *  Re-skins the already-public content only; owner-gating is deferred. */
   previewLook?: string | undefined;
@@ -57,6 +61,29 @@ interface StorefrontPageProps {
   previewReviews?: string | undefined;
   /** Find-us-beat preview — render the find-us beat in this treatment without persisting. */
   previewFindUs?: string | undefined;
+}
+
+/** Editor-preview override: land every scroll-in reveal in its resolved state. The
+ *  static preview pane never fires the scroll animation, which would otherwise leave
+ *  reveal-gated sections — the product treatments above all — invisible. These mirror
+ *  the exact `.in` resting values; non-!important so responsive rules still win. */
+const STILL_REVEAL_CSS = [
+  '.arch-main-street .ms-reveal{opacity:1;transform:none}',
+  '.arch-main-street .ms-const-card{opacity:1;transform:none}',
+  '.arch-main-street .ms-module-item{opacity:1;transform:none}',
+  '.arch-main-street .ms-table-item{opacity:1;transform:translateY(0) rotate(var(--r,0deg))}',
+].join('');
+
+/** Wrap a rendered store with the still-reveal override when previewing. The style
+ *  sits AFTER the store markup so it wins cascade ties against the chrome CSS. */
+function withStillReveal(node: ReactNode, still: boolean | undefined): ReactNode {
+  if (still !== true) return node;
+  return (
+    <>
+      {node}
+      <style dangerouslySetInnerHTML={{ __html: STILL_REVEAL_CSS }} />
+    </>
+  );
 }
 
 /** Storefront routes that paint as a sub-page off the home envelope. */
@@ -126,7 +153,7 @@ async function envelopeFor(tenantId: string, previewToken: string | undefined): 
   return loadHomeEnvelope(tenantId);
 }
 
-export default async function StorefrontPage({ slug, previewToken, previewLook, previewMood, previewTexture, previewTextureOpacity, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs }: StorefrontPageProps) {
+export default async function StorefrontPage({ slug, previewToken, previewStill, previewLook, previewMood, previewTexture, previewTextureOpacity, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs }: StorefrontPageProps) {
   const headerStore = await headers();
   const tenantId = headerStore.get('x-tenant-id');
   if (tenantId === null) notFound();
@@ -137,7 +164,7 @@ export default async function StorefrontPage({ slug, previewToken, previewLook, 
   if (subPage !== undefined) {
     const env = await envelopeFor(tenantId, previewToken);
     if (env === null) notFound();
-    return renderStore(env, tenantId, subPage, previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity);
+    return withStillReveal(await renderStore(env, tenantId, subPage, previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity), previewStill);
   }
 
   // /collections/<slug> — the collection detail page. Same envelope dispatch as
@@ -146,13 +173,13 @@ export default async function StorefrontPage({ slug, previewToken, previewLook, 
     const collectionSlug = slug.slice('/collections/'.length);
     const env = await envelopeFor(tenantId, previewToken);
     if (env === null) notFound();
-    return renderStore(env, tenantId, 'collection', previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity, collectionSlug);
+    return withStillReveal(await renderStore(env, tenantId, 'collection', previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity, collectionSlug), previewStill);
   }
 
   // Home (/): render the store from the tenant's home envelope.
   const env = await envelopeFor(tenantId, previewToken);
   if (env === null) notFound();
-  return renderStore(env, tenantId, undefined, previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity);
+  return withStillReveal(await renderStore(env, tenantId, undefined, previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity), previewStill);
 }
 
 function formatPrice(cents: number): string {

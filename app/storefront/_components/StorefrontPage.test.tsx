@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { ReactElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 // The two assertions that matter for the draft-preview branch:
 //   token verifies to THIS tenant  → loadDraftEnvelope supplies the envelope
@@ -77,5 +79,23 @@ describe('StorefrontPage draft preview', () => {
     expect(loadDraft).toHaveBeenCalledWith('t1');
     expect(loadHome).toHaveBeenCalledWith('t1');
     expect(specRender).toHaveBeenCalledWith(expect.objectContaining({ lookKey: 'live-look' }));
+  });
+});
+
+describe('StorefrontPage still-reveal (editor preview)', () => {
+  it('emits the reveal-resolving override when previewStill is set', async () => {
+    loadHome.mockResolvedValue({ ...ENV });
+    const out = await StorefrontPage({ slug: '/', previewStill: true });
+    const html = renderToStaticMarkup(out as ReactElement);
+    expect(html).toContain('.ms-module-item{opacity:1');
+    expect(html).toContain('.ms-const-card{opacity:1');
+    expect(html).toContain('.ms-reveal{opacity:1');
+  });
+
+  it('does not emit the override on a normal (public) render', async () => {
+    loadHome.mockResolvedValue({ ...ENV });
+    const out = await StorefrontPage({ slug: '/' });
+    const html = renderToStaticMarkup(out as ReactElement);
+    expect(html).not.toContain('.ms-module-item{opacity:1');
   });
 });
