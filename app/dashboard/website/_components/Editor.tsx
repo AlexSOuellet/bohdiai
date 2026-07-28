@@ -1,81 +1,136 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useMemo, useRef, useState, useTransition } from 'react';
 import type { MoodKey } from '@/lib/moods';
 import { FEELINGS, feelingShelf } from '@/lib/editor/look-shelf';
-import { previewUrl } from '@/lib/dashboard/storefront-url';
 import type { StoredTexture } from '@/lib/editor/texture';
 import { isLookDirty } from '@/lib/editor/look-dirty';
 import StyleSheetCard from './StyleSheetCard';
-import { commitLook } from '../actions';
+import { stageLook, publishStore, resetStore } from '../actions';
 
 interface EditorProps {
-  /** The skin currently live on the store. */
+  /** The skin currently live (published) on the store. */
   currentSkin: string;
-  /** The feeling currently live on the store. */
+  /** The feeling currently live (published) on the store. */
   currentFeeling: MoodKey;
+  /** The look staged in the draft, if the maker has an unpublished draft. Absent →
+   *  no draft yet, so the editor opens on the live look. */
+  stagedLook?: { skin: string; feeling: MoodKey; texture?: StoredTexture | undefined } | null;
+  /** Signed token authorising the draft preview for this tenant. */
+  previewToken: string;
   /** Origin of this tenant's storefront, e.g. https://ember.bohdiai.com. */
   previewOrigin: string;
   /** The live family's own wallpaper strength (0–1). Seeds the opacity dial so it
    *  starts where the family default actually sits instead of jumping on first drag. */
   defaultTextureOpacity: number;
-  /** The texture setting currently saved on the store. Absent → family default. */
+  /** The texture setting currently saved (published) on the store. Absent → family default. */
   savedTexture?: StoredTexture | undefined;
 }
 
-export default function Editor({ currentSkin, currentFeeling, previewOrigin, defaultTextureOpacity, savedTexture }: EditorProps) {
-  const liveTextureInit: StoredTexture = savedTexture ?? { mode: 'default', opacity: null };
+/** One complete look selection. Every editing change produces a new one and stages
+ *  it; the preview and the dirty check are both views of it. */
+interface Selection {
+  skin: string;
+  feeling: MoodKey;
+  /** `null` = the family's default wallpaper, `'none'` = no texture at all. */
+  textureKey: 'none' | null;
+  /** Opacity override for the family default (`null` = leave the family strength alone). */
+  opacity: number | null;
+}
 
-  // What's actually saved on the store (updates only when "Use this look" lands).
-  const [liveSkin, setLiveSkin] = useState(currentSkin);
-  const [liveFeeling, setLiveFeeling] = useState<MoodKey>(currentFeeling);
-  const [liveTexture, setLiveTexture] = useState<StoredTexture>(liveTextureInit);
-  // What the maker is trying on right now.
-  const [selectedFeeling, setSelectedFeeling] = useState<MoodKey>(currentFeeling);
-  const [selectedSkin, setSelectedSkin] = useState(currentSkin);
-  // Door 2 texture state: `null` = the family's default wallpaper, `'none'` = no
-  // texture at all. The per-niche shelf was removed (D63); the blend engine in the
-  // renderer is kept for a future curated library but nothing wires it here.
-  const [selectedTextureKey, setSelectedTextureKey] = useState<'none' | null>(
-    liveTextureInit.mode === 'none' ? 'none' : null,
-  );
-  // Door 2 opacity override. `null` = leave the family's own strength alone (the
-  // slider still shows it, seeded from defaultTextureOpacity); a number overrides it.
-  const [textureOpacity, setTextureOpacity] = useState<number | null>(
-    liveTextureInit.mode === 'default' ? liveTextureInit.opacity : null,
-  );
+/** The StoredTexture a selection stages/persists. */
+function toStoredTexture(sel: Selection): StoredTexture {
+  return sel.textureKey === null ? { mode: 'default', opacity: sel.opacity } : { mode: 'none', opacity: null };
+}
+
+/** Turn a saved/staged StoredTexture into the editor's texture selection fields. */
+function textureFields(texture: StoredTexture | undefined): Pick<Selection, 'textureKey' | 'opacity'> {
+  const t: StoredTexture = texture ?? { mode: 'default', opacity: null };
+  return { textureKey: t.mode === 'none' ? 'none' : null, opacity: t.mode === 'default' ? t.opacity : null };
+}
+
+export default function Editor({ currentSkin, currentFeeling, stagedLook, previewToken, previewOrigin, defaultTextureOpacity, savedTexture }: EditorProps) {
+  const liveInit: Selection = { skin: currentSkin, feeling: currentFeeling, ...textureFields(savedTexture) };
+  const stagedInit: Selection = stagedLook
+    ? { skin: stagedLook.skin, feeling: stagedLook.feeling, ...textureFields(stagedLook.texture) }
+    : liveInit;
+
+  // What's published on the store (updates only when Publish lands).
+  const [live, setLive] = useState<Selection>(liveInit);
+  // What the maker is trying on — also exactly what's in the draft (every change stages).
+  const [selected, setSelected] = useState<Selection>(stagedInit);
+  // Prior staged selections, for step-back Undo.
+  const [undoStack, setUndoStack] = useState<Selection[]>([]);
+  // The opacity the preview is currently showing. Discrete changes update the preview
+  // instantly; the opacity slider only reloads the preview on release (via this),
+  // so dragging the dial doesn't reload the iframe on every tick.
+  const [previewOpacity, setPreviewOpacity] = useState<number | null>(stagedInit.opacity);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
+  // The selection at the start of an opacity drag, so one drag is one undo step.
+  const dragStartRef = useRef<Selection | null>(null);
 
-  const shelf = useMemo(() => feelingShelf(selectedFeeling), [selectedFeeling]);
-
-  function pickFeeling(feeling: MoodKey) {
-    setSelectedFeeling(feeling);
-    const next = feelingShelf(feeling);
-    // Keep the live skin selected if it lives in this feeling; else lead with the first.
-    const stay = next.find((s) => s.key === liveSkin);
-    setSelectedSkin(stay ? stay.key : (next[0]?.key ?? selectedSkin));
-    setMessage(null);
-  }
-
-  const isFamilyDefault = selectedTextureKey === null;
-  // The texture setting the maker is currently trying on.
-  const selectedTexture: StoredTexture = isFamilyDefault
-    ? { mode: 'default', opacity: textureOpacity }
-    : { mode: 'none', opacity: null };
+  const shelf = useMemo(() => feelingShelf(selected.feeling), [selected.feeling]);
+  const isFamilyDefault = selected.textureKey === null;
   const dirty = isLookDirty(
-    { skin: selectedSkin, feeling: selectedFeeling, texture: selectedTexture },
-    { skin: liveSkin, feeling: liveFeeling, texture: liveTexture },
+    { skin: selected.skin, feeling: selected.feeling, texture: toStoredTexture(selected) },
+    { skin: live.skin, feeling: live.feeling, texture: toStoredTexture(live) },
   );
 
-  function commit() {
+  /** Apply a new selection. The preview updates immediately from `selected` (no wait
+   *  on the server); the draft save runs in the background for persistence. On success
+   *  the prior selection is pushed onto the undo stack; on failure we revert. */
+  function stage(next: Selection, prior: Selection = selected) {
+    setSelected(next);
+    setPreviewOpacity(next.opacity);
     setMessage(null);
     startTransition(async () => {
-      const result = await commitLook(selectedSkin, selectedFeeling, selectedTexture);
+      const result = await stageLook(next.skin, next.feeling, toStoredTexture(next));
       if (result.ok) {
-        setLiveSkin(selectedSkin);
-        setLiveFeeling(selectedFeeling);
-        setLiveTexture(selectedTexture);
+        setUndoStack((s) => [...s, prior]);
+      } else {
+        setSelected(prior);
+        setPreviewOpacity(prior.opacity);
+        setMessage(result.error);
+      }
+    });
+  }
+
+  function pickFeeling(feeling: MoodKey) {
+    const next = feelingShelf(feeling);
+    // Keep the current skin if it lives in this feeling; else lead with the first.
+    const stay = next.find((s) => s.key === selected.skin);
+    const skin = stay ? stay.key : (next[0]?.key ?? selected.skin);
+    stage({ ...selected, feeling, skin });
+  }
+
+  function undo() {
+    if (undoStack.length === 0) return;
+    const prev = undoStack[undoStack.length - 1];
+    if (prev === undefined) return;
+    const prior = selected;
+    setUndoStack((s) => s.slice(0, -1));
+    setSelected(prev);
+    setPreviewOpacity(prev.opacity);
+    setMessage(null);
+    startTransition(async () => {
+      const result = await stageLook(prev.skin, prev.feeling, toStoredTexture(prev));
+      if (!result.ok) {
+        setUndoStack((s) => [...s, prev]);
+        setSelected(prior);
+        setPreviewOpacity(prior.opacity);
+        setMessage(result.error);
+      }
+    });
+  }
+
+  function publish() {
+    setMessage(null);
+    startTransition(async () => {
+      const result = await publishStore();
+      if (result.ok) {
+        setLive(selected);
+        setUndoStack([]);
         setMessage('Published — this is your store now.');
       } else {
         setMessage(result.error);
@@ -83,15 +138,40 @@ export default function Editor({ currentSkin, currentFeeling, previewOrigin, def
     });
   }
 
-  // Preview params. The editor always sends an explicit texture so the preview
-  // reflects the maker's selection and overrides any saved setting: 'default' for the
-  // family wallpaper (with an opacity override when dialed), 'none' for no texture.
-  const selectedTextureUrl = isFamilyDefault ? 'default' : 'none';
-  const effectiveOpacity = isFamilyDefault && textureOpacity !== null ? textureOpacity : undefined;
-  // Carry the feeling too, so the preview shows the whole selected family (layout,
-  // wallpaper, nav), not just the skin. `src` is both the inline preview iframe and
-  // the target of the full-size Preview button.
-  const src = previewUrl(previewOrigin, selectedSkin, selectedTextureUrl, effectiveOpacity, selectedFeeling);
+  function reset() {
+    setMessage(null);
+    startTransition(async () => {
+      const result = await resetStore();
+      if (result.ok) {
+        setSelected(live);
+        setPreviewOpacity(live.opacity);
+        setUndoStack([]);
+        setMessage('Back to your published look.');
+      } else {
+        setMessage(result.error);
+      }
+    });
+  }
+
+  // The preview shows the selected look immediately via URL params (so it never waits
+  // on the background draft save), carrying the token so it renders the maker's own
+  // draft content underneath rather than the public store. `src` changes the instant
+  // the selection changes, so the iframe reloads right away. Also the full-size Preview.
+  const previewTextureUrl = isFamilyDefault ? 'default' : 'none';
+  const srcParams = new URLSearchParams({
+    previewToken,
+    previewLook: selected.skin,
+    previewMood: selected.feeling,
+    previewTexture: previewTextureUrl,
+  });
+  if (isFamilyDefault && previewOpacity !== null) srcParams.set('previewTextureOpacity', String(previewOpacity));
+  const src = `${previewOrigin}/?${srcParams.toString()}`;
+  // The inline pane is a static snapshot — scroll-in reveals don't fire in it, which
+  // would leave reveal-gated sections (products especially) invisible. `previewStill`
+  // tells the storefront to render those reveals already resolved. The full-size
+  // Preview link keeps the real scroll animation (it works in a real tab).
+  const iframeSrc = `${src}&previewStill=1`;
+  const opacityPct = Math.round((selected.opacity ?? defaultTextureOpacity) * 100);
 
   return (
     <div className="grid h-[calc(100dvh-65px)] grid-cols-1 md:grid-cols-[minmax(380px,440px)_1fr]">
@@ -104,24 +184,26 @@ export default function Editor({ currentSkin, currentFeeling, previewOrigin, def
       <div className="min-h-0 overflow-y-auto border-b border-white/8 px-6 py-8 md:border-b-0 md:border-r">
         <h1 className="font-serif text-2xl text-text">Try a different feeling</h1>
         <p className="mt-2 text-sm text-muted">
-          See your store in another feeling — same products, same words, a new look. Nothing changes
-          until you choose <span className="text-text-soft">Use this look</span>.
+          See your store in another feeling — same products, same words, a new look. Everything you
+          change is saved to a private draft and only goes public when you choose{' '}
+          <span className="text-text-soft">Publish</span>.
         </p>
 
         {/* Feeling radios */}
         <div className="mt-6 flex flex-wrap gap-2" role="radiogroup" aria-label="Feeling">
           {FEELINGS.map((feeling) => {
-            const active = feeling.key === selectedFeeling;
-            const isLive = feeling.key === liveFeeling;
+            const active = feeling.key === selected.feeling;
+            const isLive = feeling.key === live.feeling;
             return (
               <button
                 key={feeling.key}
                 type="button"
                 role="radio"
                 aria-checked={active}
+                disabled={pending}
                 onClick={() => pickFeeling(feeling.key)}
                 className={[
-                  'rounded-full border px-3.5 py-1.5 text-sm transition-colors',
+                  'rounded-full border px-3.5 py-1.5 text-sm transition-colors disabled:opacity-50',
                   active
                     ? 'border-honey bg-honey/15 text-honey-warm'
                     : 'border-white/12 text-text-soft hover:border-white/30 hover:text-text',
@@ -140,12 +222,9 @@ export default function Editor({ currentSkin, currentFeeling, previewOrigin, def
             <StyleSheetCard
               key={sheet.key}
               sheet={sheet}
-              selected={sheet.key === selectedSkin}
-              current={sheet.key === liveSkin}
-              onSelect={(key) => {
-                setSelectedSkin(key);
-                setMessage(null);
-              }}
+              selected={sheet.key === selected.skin}
+              current={sheet.key === live.skin}
+              onSelect={(key) => stage({ ...selected, skin: key })}
             />
           ))}
         </div>
@@ -163,9 +242,10 @@ export default function Editor({ currentSkin, currentFeeling, previewOrigin, def
           <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4">
             <button
               type="button"
-              onClick={() => { setSelectedTextureKey(null); setMessage(null); }}
+              disabled={pending}
+              onClick={() => stage({ ...selected, textureKey: null })}
               className={[
-                'flex aspect-square flex-col items-center justify-center rounded-md border text-[10px] uppercase tracking-wider transition-colors',
+                'flex aspect-square flex-col items-center justify-center rounded-md border text-[10px] uppercase tracking-wider transition-colors disabled:opacity-50',
                 isFamilyDefault
                   ? 'border-honey bg-honey/10 text-honey-warm'
                   : 'border-white/12 text-text-soft hover:border-white/30 hover:text-text',
@@ -179,14 +259,15 @@ export default function Editor({ currentSkin, currentFeeling, previewOrigin, def
             </button>
             <button
               type="button"
-              onClick={() => { setSelectedTextureKey('none'); setMessage(null); }}
+              disabled={pending}
+              onClick={() => stage({ ...selected, textureKey: 'none' })}
               className={[
-                'flex aspect-square flex-col items-center justify-center rounded-md border text-[10px] uppercase tracking-wider transition-colors',
-                selectedTextureKey === 'none'
+                'flex aspect-square flex-col items-center justify-center rounded-md border text-[10px] uppercase tracking-wider transition-colors disabled:opacity-50',
+                selected.textureKey === 'none'
                   ? 'border-honey bg-honey/10 text-honey-warm'
                   : 'border-white/12 text-text-soft hover:border-white/30 hover:text-text',
               ].join(' ')}
-              aria-pressed={selectedTextureKey === 'none'}
+              aria-pressed={selected.textureKey === 'none'}
               title="No texture — plain color"
             >
               No
@@ -201,20 +282,14 @@ export default function Editor({ currentSkin, currentFeeling, previewOrigin, def
               : <span className="text-muted">No texture — plain color</span>}
           </div>
 
-          {/* Opacity dial — live on the family default, moot when No texture. */}
+          {/* Opacity dial — live on the family default, moot when No texture. The thumb
+              tracks on change; one drag stages once on release (pointer/key up). */}
           <div className="mt-4">
             <div className="flex items-baseline justify-between">
-              <label htmlFor="tex-opacity" className={[
-                'text-xs',
-                isFamilyDefault ? 'text-text-soft' : 'text-muted',
-              ].join(' ')}>
+              <label htmlFor="tex-opacity" className={['text-xs', isFamilyDefault ? 'text-text-soft' : 'text-muted'].join(' ')}>
                 Opacity
               </label>
-              <span className="text-xs text-muted">
-                {isFamilyDefault
-                  ? `${Math.round((textureOpacity ?? defaultTextureOpacity) * 100)}%`
-                  : '—'}
-              </span>
+              <span className="text-xs text-muted">{isFamilyDefault ? `${opacityPct}%` : '—'}</span>
             </div>
             <input
               id="tex-opacity"
@@ -222,9 +297,21 @@ export default function Editor({ currentSkin, currentFeeling, previewOrigin, def
               min={5}
               max={100}
               step={1}
-              value={Math.round((textureOpacity ?? defaultTextureOpacity) * 100)}
-              onChange={(e) => { setTextureOpacity(Number.parseInt(e.target.value, 10) / 100); setMessage(null); }}
-              disabled={!isFamilyDefault}
+              value={opacityPct}
+              onPointerDown={() => { dragStartRef.current = selected; }}
+              onChange={(e) => {
+                const opacity = Number.parseInt(e.target.value, 10) / 100;
+                setSelected((s) => ({ ...s, opacity }));
+              }}
+              onPointerUp={() => {
+                if (dragStartRef.current !== null) { stage(selected, dragStartRef.current); dragStartRef.current = null; }
+              }}
+              onKeyUp={() => {
+                if (dragStartRef.current !== null) { stage(selected, dragStartRef.current); dragStartRef.current = null; }
+                else stage(selected);
+              }}
+              onKeyDown={() => { if (dragStartRef.current === null) dragStartRef.current = selected; }}
+              disabled={!isFamilyDefault || pending}
               className="mt-2 w-full disabled:opacity-40"
             />
           </div>
@@ -239,8 +326,25 @@ export default function Editor({ currentSkin, currentFeeling, previewOrigin, def
           </span>
           <div className="flex items-center gap-3">
             {message && <span className="text-xs text-text-soft">{message}</span>}
-            {/* Preview — opens the current staged look full-size in a reused tab.
-                When nothing is staged this is just the live store. */}
+            {/* Undo — step back through staged changes. */}
+            <button
+              type="button"
+              onClick={undo}
+              disabled={undoStack.length === 0 || pending}
+              className="rounded-lg border border-white/12 px-3 py-1.5 text-sm text-text-soft transition-colors hover:border-white/30 hover:text-text disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              Undo
+            </button>
+            {/* Reset — discard the draft, back to the published look. */}
+            <button
+              type="button"
+              onClick={reset}
+              disabled={!dirty || pending}
+              className="rounded-lg border border-white/12 px-3 py-1.5 text-sm text-text-soft transition-colors hover:border-white/30 hover:text-text disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              Reset
+            </button>
+            {/* Preview — opens the staged draft full-size in a reused tab. */}
             <a
               href={src}
               target="bohdi-preview"
@@ -249,20 +353,20 @@ export default function Editor({ currentSkin, currentFeeling, previewOrigin, def
             >
               Preview
             </a>
-            {/* Publish — writes the staged look to the live store. */}
+            {/* Publish — writes the staged draft to the live store. */}
             <button
               type="button"
-              onClick={commit}
+              onClick={publish}
               disabled={!dirty || pending}
               className="rounded-lg bg-honey px-4 py-1.5 text-sm font-medium text-bg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
             >
-              {pending ? 'Publishing…' : 'Publish'}
+              {pending ? 'Working…' : 'Publish'}
             </button>
           </div>
         </div>
         <iframe
-          key={src}
-          src={src}
+          key={iframeSrc}
+          src={iframeSrc}
           title="Storefront preview"
           className="min-h-0 w-full flex-1 border-0 bg-white"
         />
