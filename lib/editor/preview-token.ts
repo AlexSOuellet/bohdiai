@@ -12,7 +12,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 const TTL_MS = 15 * 60 * 1000; // 15 minutes — long enough for an editing pass, short enough to expire.
 
 function secret(): string {
-  const s = process.env.PREVIEW_TOKEN_SECRET;
+  const s = process.env['PREVIEW_TOKEN_SECRET'];
   if (!s) throw new Error('PREVIEW_TOKEN_SECRET is not set');
   return s;
 }

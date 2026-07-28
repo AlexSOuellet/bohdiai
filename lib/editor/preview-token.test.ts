@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 beforeEach(() => {
-  process.env.PREVIEW_TOKEN_SECRET = 'test-secret';
+  process.env['PREVIEW_TOKEN_SECRET'] = 'test-secret';
   vi.useRealTimers();
 });
 afterEach(() => vi.useRealTimers());
@@ -26,7 +26,7 @@ describe('preview token', () => {
 
   it('rejects a token signed with a different secret', () => {
     const token = mintPreviewToken('tenant-123');
-    process.env.PREVIEW_TOKEN_SECRET = 'other-secret';
+    process.env['PREVIEW_TOKEN_SECRET'] = 'other-secret';
     expect(verifyPreviewToken(token)).toBeNull();
   });
 
