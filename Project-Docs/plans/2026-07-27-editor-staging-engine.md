@@ -471,7 +471,7 @@ When the storefront home is requested with `?previewToken=…` and the token ver
 - Modify: `app/storefront/_components/StorefrontPage.tsx`
 - Test: `app/storefront/_components/StorefrontPage.test.tsx` (add a focused case; create if absent)
 
-- [ ] **Step 1: Thread `previewToken` through the route**
+- [x] **Step 1: Thread `previewToken` through the route**
 
 In `app/storefront/page.tsx`, add `previewToken` to the `searchParams` type and pass it to `StorefrontPage`:
 
@@ -480,7 +480,7 @@ In `app/storefront/page.tsx`, add `previewToken` to the `searchParams` type and 
 return <StorefrontPage slug="/" previewToken={sp.previewToken} previewLook={sp.previewLook} previewMood={sp.previewMood} previewTexture={sp.previewTexture} previewTextureOpacity={opacity} previewHero={sp.hero} previewGoods={sp.goods} previewFounder={sp.about} previewNav={sp.nav} previewCollections={sp.collections} previewReviews={sp.reviews} previewFindUs={sp.findus} />;
 ```
 
-- [ ] **Step 2: Add the draft branch in `StorefrontPage.tsx`**
+- [x] **Step 2: Add the draft branch in `StorefrontPage.tsx`**
 
 Add `previewToken?: string | undefined` to `StorefrontPageProps`. Add this import:
 
@@ -500,7 +500,7 @@ const env = useDraft ? (await loadDraftEnvelope(tenantId)) ?? (await loadHomeEnv
 
 (Apply the same `env` selection to the sub-page and collection branches so a draft preview is consistent across pages; the token and helper are already in scope.)
 
-- [ ] **Step 3: Write the test**
+- [x] **Step 3: Write the test** — real render-and-assert (which loader supplies the envelope); four cases: token→draft, token-for-other-tenant→published, no-token→published, token-but-no-draft→published fallback.
 
 ```typescript
 // app/storefront/_components/StorefrontPage.test.tsx
@@ -540,12 +540,12 @@ describe('StorefrontPage draft preview', () => {
 
 > Note for the implementer: match the existing `StorefrontPage` test setup for mocking `archetypeSpec` and `supabaseAdmin` (listings/collections). The two assertions that matter: token-matches-tenant → `loadDraftEnvelope` supplies the envelope; token-mismatch/absent → `loadHomeEnvelope` supplies it. Replace the `expect(true)` placeholders with real render-and-assert once the suite's mock scaffold is in place.
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `npm test -- app/storefront/_components/StorefrontPage.test.tsx`
-Expected: PASS.
+Expected: PASS. (4 pass; typecheck + lint clean.)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit** — `3abb645`. (Also `9f53528`: fixed a pre-existing strict-tsc error in the Task 4 preview-token files — dot-access on `process.env` — that would have blocked the clean typecheck Task 9 gates.)
 
 ```bash
 git add app/storefront/page.tsx app/storefront/_components/StorefrontPage.tsx app/storefront/_components/StorefrontPage.test.tsx
