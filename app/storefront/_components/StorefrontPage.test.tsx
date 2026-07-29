@@ -82,6 +82,23 @@ describe('StorefrontPage draft preview', () => {
   });
 });
 
+describe('StorefrontPage preview-nav forwarder', () => {
+  it('renders the preview-nav forwarder when a preview token is present', async () => {
+    verify.mockReturnValue('t1');
+    loadDraft.mockResolvedValue({ ...ENV });
+    const out = await StorefrontPage({ slug: '/', previewToken: 'ok' });
+    const html = renderToStaticMarkup(out as ReactElement);
+    expect(html).toContain('data-preview-nav');
+  });
+
+  it('does not render the forwarder on a public render (no token)', async () => {
+    loadHome.mockResolvedValue({ ...ENV });
+    const out = await StorefrontPage({ slug: '/' });
+    const html = renderToStaticMarkup(out as ReactElement);
+    expect(html).not.toContain('data-preview-nav');
+  });
+});
+
 describe('StorefrontPage still-reveal (editor preview)', () => {
   it('emits the reveal-resolving override when previewStill is set', async () => {
     loadHome.mockResolvedValue({ ...ENV });

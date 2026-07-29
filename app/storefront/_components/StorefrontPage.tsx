@@ -22,6 +22,7 @@ function imageUrlFromMetadata(m: Json): string | undefined {
 import { isKnownSkin } from '@/lib/editor/look-shelf';
 import { resolveTextureParams } from '@/lib/editor/texture';
 import { resolvePreviewMood } from '@/lib/moods';
+import { PreviewLinkForwarder } from './PreviewLinkForwarder';
 
 interface StorefrontPageProps {
   slug: string;
@@ -74,14 +75,20 @@ const STILL_REVEAL_CSS = [
   '.arch-main-street .ms-table-item{opacity:1;transform:translateY(0) rotate(var(--r,0deg))}',
 ].join('');
 
-/** Wrap a rendered store with the still-reveal override when previewing. The style
- *  sits AFTER the store markup so it wins cascade ties against the chrome CSS. */
-function withStillReveal(node: ReactNode, still: boolean | undefined): ReactNode {
-  if (still !== true) return node;
+/** Wrap a rendered store with editor-preview chrome. In preview mode (any preview
+ *  token present) it mounts PreviewLinkForwarder so every in-store click keeps the
+ *  preview context and the maker stays on the staged draft across pages. When
+ *  `still` is set it also appends the reveal-resolving override so reveal-gated
+ *  sections are visible in the static pane. Both sit AFTER the store markup so the
+ *  style wins cascade ties against the chrome CSS. Public renders (no token, no
+ *  still) return the node untouched. */
+function withPreviewChrome(node: ReactNode, opts: { still: boolean | undefined; preview: boolean }): ReactNode {
+  if (!opts.preview && opts.still !== true) return node;
   return (
     <>
       {node}
-      <style dangerouslySetInnerHTML={{ __html: STILL_REVEAL_CSS }} />
+      {opts.preview ? <PreviewLinkForwarder /> : null}
+      {opts.still === true ? <style dangerouslySetInnerHTML={{ __html: STILL_REVEAL_CSS }} /> : null}
     </>
   );
 }
@@ -164,7 +171,7 @@ export default async function StorefrontPage({ slug, previewToken, previewStill,
   if (subPage !== undefined) {
     const env = await envelopeFor(tenantId, previewToken);
     if (env === null) notFound();
-    return withStillReveal(await renderStore(env, tenantId, subPage, previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity), previewStill);
+    return withPreviewChrome(await renderStore(env, tenantId, subPage, previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity), { still: previewStill, preview: previewToken !== undefined });
   }
 
   // /collections/<slug> — the collection detail page. Same envelope dispatch as
@@ -173,13 +180,13 @@ export default async function StorefrontPage({ slug, previewToken, previewStill,
     const collectionSlug = slug.slice('/collections/'.length);
     const env = await envelopeFor(tenantId, previewToken);
     if (env === null) notFound();
-    return withStillReveal(await renderStore(env, tenantId, 'collection', previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity, collectionSlug), previewStill);
+    return withPreviewChrome(await renderStore(env, tenantId, 'collection', previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity, collectionSlug), { still: previewStill, preview: previewToken !== undefined });
   }
 
   // Home (/): render the store from the tenant's home envelope.
   const env = await envelopeFor(tenantId, previewToken);
   if (env === null) notFound();
-  return withStillReveal(await renderStore(env, tenantId, undefined, previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity), previewStill);
+  return withPreviewChrome(await renderStore(env, tenantId, undefined, previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity), { still: previewStill, preview: previewToken !== undefined });
 }
 
 function formatPrice(cents: number): string {
