@@ -1,6 +1,6 @@
 # Editor Preview — Staged Navigation
 
-> **Status:** planned, not started. Authored 2026-07-28 (Session 77) to build next session.
+> **Status:** COMPLETE — built and verified live (Session 78, 2026-07-29). Authored 2026-07-28 (Session 77).
 > **Depends on:** the staging engine (`2026-07-27-editor-staging-engine.md`, complete). Builds directly on it.
 > **For agentic workers:** use `superpowers:executing-plans` (or `subagent-driven-development`). Test-first. Alex's eyes gate the final visual check — this has visible output.
 
@@ -107,7 +107,7 @@ The obvious alternative — set a "previewing" cookie so every request renders t
 ## Task 3: Full verification (Alex's eyes gate)
 
 - [x] Whole suite green; typecheck + lint clean.
-- [ ] **Manual, on a real store with a staged draft:**
+- [x] **Manual, on a real store with a staged draft:** — Alex verified live, looks good.
   1. In the editor, stage a feeling change (e.g., Cozy → something). Open the preview.
   2. Click **Intro** → it replays / stays on the **staged** home, not the live look.
   3. Click nav items (Shop, About, Events, Contact), the wordmark, a product, a collection → each shows the **staged** look, not the published one.
