@@ -4,17 +4,15 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-07-28, Session 77.
+**Last updated:** 2026-07-29, Session 78.
 
 ---
 
 ## Current state
 
-**Session 77 — the editor's draft-and-publish (editor Plan 1) is COMPLETE and verified live.** All 9 tasks landed: `store_drafts` table, draft data access, draft-backed render under a signed preview token, the reworked editor actions (`stageLook`/`publishStore`/`resetStore`, `commitLook` retired), and the reworked `Editor.tsx` (stage-on-change, instant preview, Publish/Reset/Undo). Alex ran it live on the candle stores — all six feelings preview correctly, products show on every family, Publish works. 1007 tests pass, tsc + lint clean. Plan: `plans/2026-07-27-editor-staging-engine.md` (all boxes ticked).
+**Session 78 — editor preview staged navigation SHIPPED + verified live; the next editor build is planned and phased.** Built the preview link forwarder (`app/storefront/_components/PreviewLinkForwarder.tsx`): clicking any in-store link inside the editor preview (Intro, nav, wordmark, a product) now keeps the staged draft across pages instead of dropping to the live site. Alex verified it live. 1018 tests pass, tsc + lint clean. Also this session: `PREVIEW_TOKEN_SECRET` set on Vercel **production** (owed item closed); a staging **environment** added as a Beta prerequisite (D66, Full Plan); and the editor's draft machinery renamed from "staging engine" → **draft-and-publish** across the docs so it stops colliding with that staging environment.
 
-Two bugs surfaced and were fixed during the live check: **preview lag** (the preview waited on the background save before repainting → now repaints instantly from the selection via URL params, staging in the background), and **products invisible in the preview pane** (the storefront's scroll-in reveals never fire in the static iframe, so reveal-gated sections sat at `opacity:0`; the inline preview now sends `previewStill=1` and the storefront resolves reveals for that render — live store keeps its animation). See the new memory `project_reveal_in_preview_gotcha`.
-
-Recap of the earlier design work (Session 76): the first-run editor is a **structured "Make It Yours" walkthrough** over this draft-and-publish; two product calls — image editing splits by cost (D65), "use my own colors" deferred to Growth. Design in `Editor-Make-It-Yours-Design.md`.
+**The next editor build — the "Make It Yours" first-run walk — is fully planned and phased.** It's how a maker turns the generated store into theirs: Bohdi rewrites any words we wrote, the maker uploads their own photos, optional sections switch on/off — all staged, published together. **Two rules locked (D67):** the maker can rewrite ANYTHING we generated, and the walk replaces every placeholder (words *and* photos), not just words. Built in phases — **Words → Photos → Sections on/off → Products (the listings build) → later editor deepening.** Scope-of-record: `Editor-Make-It-Yours-Phases.md`. Detailed plan for Phases 1–3: `plans/2026-07-29-make-it-yours-walkthrough.md`.
 
 ## Parallel workstream — cowork
 
@@ -22,18 +20,19 @@ Cowork runs on Alex's cadence between our sessions, reading `Project-Docs/Cowork
 
 ## Next actions
 
-**Session 78 (tomorrow) — build editor preview staged navigation.** Alex found that clicking any link inside the preview (Intro, nav, wordmark) drops the preview params and lands on the LIVE site instead of the staged draft — the deferred D64 "staged navigation" gap. He wants it built (his words: "build it now, but not today"). Full plan written and ready: **`plans/2026-07-28-editor-preview-staged-navigation.md`** — a client-side param-forwarder that carries the preview context across in-store clicks (chosen over a cookie, which would leak the draft to the maker's live-site tab). 3 tasks, test-first, Alex's eyes gate the visual check.
+**Session 79 (tomorrow) — start building Phase 1 (Words) of the "Make It Yours" walk.** From `plans/2026-07-29-make-it-yours-walkthrough.md`. Phase 1 = the editable-field registry (all generated text), the content-editing agent (reuses the crew copywriter loop, model `claude-sonnet-4-6`), the niche voice loader, the `editContent` action (stages Bohdi's rewrites into the draft), and the walkthrough's word steps + host in the editor (plan Tasks 1–4, 8, 10, 11). Test-first; Alex's eyes gate the visible walkthrough. **Nothing was built this session on this plan — build starts fresh tomorrow.**
 
-After that: separate plans for Bohdi content editing → section on/off → the "Make It Yours" walkthrough UI, each on the editor's draft-and-publish. (Founder admin still precedes the rest of Beta, but the editor is being finished first.)
+**One open question before building:** how to work — a fresh helper per task with review between each (Claude's recommendation), or inline execution with checkpoints. Alex to pick at the start of Session 79.
 
 **Owed / not yet placed in a session:**
-- **Set `PREVIEW_TOKEN_SECRET` in the deploy env** before the preview ships (local `.env.local` is set).
+- **Stand up the staging environment** (D66) before the first founding member — it's in the Full Plan's Beta phase now (separate Vercel + Supabase, test-mode Stripe/Square, a staging subdomain, full env incl. the preview-token secret).
 - Revise the niche-writer skill's textures section (per-niche curation abandoned Session 74; skill still tells cowork to source per-niche textures).
 - Parked in the plan: multi-tier pricing conversation; the maybes (CSV importers, Claude Vision product auto-fill, customer inbox).
 - Check the onboarding niche picker (15 approved, picker reportedly shows fewer).
 - Draft three decision-log entries from Session 75: Beta-means-real-stores, Vibe Slider retirement, market POS definition.
 - Cowork continues niche-writer batches (38 remaining); leave `textures` empty.
 - Housekeeping: stale remaining-phases PDF (regenerate/delete); dev feature-flag bypass mystery (low priority).
+- **Done this session:** `PREVIEW_TOKEN_SECRET` set on Vercel production.
 
 ---
 
@@ -73,6 +72,7 @@ After that: separate plans for Bohdi content editing → section on/off → the 
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 78 (2026-07-29): Editor preview staged navigation SHIPPED + verified live (`PreviewLinkForwarder` keeps the draft across in-store clicks; 1018 tests). Set `PREVIEW_TOKEN_SECRET` on Vercel production. Added a staging *environment* as a Beta prerequisite (D66). Renamed the editor's "staging engine" → "draft-and-publish" across docs (collided with the staging environment). Planned + phased the "Make It Yours" walk: `Editor-Make-It-Yours-Phases.md` (Words → Photos → Sections on/off → Products) + `plans/2026-07-29-make-it-yours-walkthrough.md`; D67 locks "maker can rewrite anything we generated" + walk-replaces-all-placeholders. No build on the walk yet — starts Session 79. `/fewer-permission-prompts` added read-only allowlist entries. Full recap: `session-logs/session-78.md`.
 - Session 77 (2026-07-28): Editor draft-and-publish (Plan 1) COMPLETE + verified live. Finished Tasks 5–9: draft render under a valid HMAC preview token, editor actions on the draft (`stageLook`/`publishStore`/`resetStore`, retired `commitLook`), and the reworked `Editor.tsx` — stage-on-change, instant preview, Publish/Reset/Undo. Alex verified live on the candle stores (all six feelings, products show, Publish works). Two bugs fixed mid-check: preview lag (now repaints instantly via URL params, staging in background) and products-invisible-in-preview (scroll-in reveals don't fire in the static iframe → `previewStill=1` resolves them; live store keeps animation; new memory `project_reveal_in_preview_gotcha`). Alex then found preview links (Intro/nav) drop preview context and go to the live site (deferred D64) — wrote the full plan `plans/2026-07-28-editor-preview-staged-navigation.md` to build next session. 1007 tests, tsc+lint clean. Commits `9f53528`→`8f6e363`. Full recap: `session-logs/session-77.md`.
 - Session 76 (2026-07-27): Editor reprioritised ahead of founder admin. Two product calls: image editing splits by cost (D65 — basic touch-ups included + ship at launch, generative = post-launch $5/mo capped add-on); "use my own colors" editor deferred to Growth. Designed the whole first-run editor: a structured "Make It Yours" walkthrough (Bohdi steps the maker through making placeholder content theirs; content-only, look stays the feeling picker) over draft-and-publish (persistent owner-only draft, reliable draft preview, one Publish / one Reset — refines D64). Section on/off for optional sections is in; products/collections phase in with the Listing Manager; free-form chat is a later face; reorder + deep section editing later. Wrote `Editor-Make-It-Yours-Design.md` + decomposed into plans; **Plan 1 (draft-and-publish)** at `plans/2026-07-27-editor-staging-engine.md`. Built Tasks 1–4 test-first (store_drafts table, draft.ts, loadDraftEnvelope, HMAC preview token; + a Vitest server-only stub). Stopped at Task 5, running staged commits (Alex reduced credits). Full recap in `session-logs/session-76.md`.
 - Session 75 (2026-07-18): Plan rewritten to reach launch; no code changed. Audit against real code + live DB: storefront done, almost everything a maker does after onboarding missing (no listings, cart is a stub, no Stripe/Square at all, no orders, no market sales, 4 of 6 dashboard pages absent, admin is two empty directories). DB fully built (38 tables) — the gap is surface, not schema. Biggest gap is the editor: spec promises chat, highlight-and-transform, click-to-edit, Vibe Slider; none exist, and the old plan had swapped in a three-door model without recording it. **Beta means real stores** — that call pulled tax, shipping, pickup, expenses and visible pricing into Beta. Phases named not numbered: Beta / Go Live / Growth. Vibe Slider retired. Market POS = our screens around the card the maker already takes on their own reader. Custom domains → Go Live. No blog. Wrote `Launch-Audit-2026-07-18.md` + rewritten `Full-Plan.md`; archived the old plan. Commits `aa6f585`, `522e39b`, `21f3467`. Full recap + process lessons in `session-logs/session-75.md`.
