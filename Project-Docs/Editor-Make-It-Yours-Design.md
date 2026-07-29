@@ -1,4 +1,6 @@
-# Editor — "Make It Yours" walkthrough + the staging engine (design)
+# Editor — "Make It Yours" walkthrough + draft-and-publish (design)
+
+> **Naming note (2026-07-29):** what this doc originally called "the staging engine" is renamed **draft-and-publish** — the editor's private draft, its draft-backed preview, and Publish/Reset/Undo. The word *staging* is reserved for the separate test **environment** (Full Plan → Beta → Staging), so the two never get confused again. "Stage a change" survives as the verb for saving an edit into the draft.
 
 **Written 2026-07-27, Session 76. Design spec for the next editor build.**
 
@@ -22,7 +24,7 @@ Everything the maker does in the editor stays **staged** and reaches the public 
 
 **In:**
 
-1. **The staging engine** — a persistent draft of the store, a reliable draft-backed preview, Publish, Reset, and reworking the already-shipped feeling-swap to ride the same draft.
+1. **Draft-and-publish** — a persistent draft of the store, a reliable draft-backed preview, Publish, Reset, and reworking the already-shipped feeling-swap to ride the same draft.
 2. **Bohdi content editing** — the agent that rewrites the store's *words* (never its structure or look) into the draft.
 3. **The "Make It Yours" walkthrough — content steps only** — the structured first-run flow that turns placeholder *words* into the maker's real words, section by section, Bohdi-led.
 4. **Section on/off** — the maker can switch the optional sections (reviews, collections, marquee, find-us) on or off, so a maker with no testimonials or collections isn't stuck with fakes or placeholders. On/off only; a section's content is kept when it's off.
@@ -39,7 +41,7 @@ Everything the maker does in the editor stays **staged** and reaches the public 
 
 ---
 
-## Part 1 — The staging engine
+## Part 1 — Draft-and-publish
 
 ### The draft
 
@@ -110,7 +112,7 @@ Some sections only make sense when the maker has the content for them. A brand-n
 
 A **structured, stepped** flow — not an open conversation — because the goal is *complete coverage*: when the maker comes out, no placeholder words are left. Visible progress, one section at a time, a sense of "you've made N of M yours."
 
-**Per step:** Bohdi *leads*. He asks the maker for the real information in plain language ("tell me how you got started," "what should the welcome line say — or tell me the feeling and I'll write it"), then writes that section in their voice into the draft. The maker sees it land in the preview and can keep it, ask for another take, or tweak the wording. Then the next step. Every step is apply-then-see on the same staging engine.
+**Per step:** Bohdi *leads*. He asks the maker for the real information in plain language ("tell me how you got started," "what should the welcome line say — or tell me the feeling and I'll write it"), then writes that section in their voice into the draft. The maker sees it land in the preview and can keep it, ask for another take, or tweak the wording. Then the next step. Every step is apply-then-see on the same draft-and-publish.
 
 **Proposed content steps (order and grouping open for review):**
 
@@ -135,7 +137,7 @@ First run vs. re-run differ only in framing, not machinery:
 - **First run** chases completeness: it tracks which content sections are still placeholder and won't call itself done until each is the maker's (or switched off).
 - **A re-run** has no placeholders to chase — it's the maker's real store. It walks the same steps as a *keep-or-change tour* ("here's your welcome as it stands — change it or leave it?"), every step skippable, no completeness meter. Useful for a maker who rushed the first pass, or who now has testimonials and wants to turn that section on and fill it.
 
-Both run on the same staging engine — stage into the draft, Publish or Reset as normal.
+Both run on the same draft-and-publish — stage into the draft, Publish or Reset as normal.
 
 ---
 

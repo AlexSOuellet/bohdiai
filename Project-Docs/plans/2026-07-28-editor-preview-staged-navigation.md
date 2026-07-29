@@ -1,7 +1,7 @@
 # Editor Preview — Staged Navigation
 
 > **Status:** COMPLETE — built and verified live (Session 78, 2026-07-29). Authored 2026-07-28 (Session 77).
-> **Depends on:** the staging engine (`2026-07-27-editor-staging-engine.md`, complete). Builds directly on it.
+> **Depends on:** the editor's draft-and-publish (`2026-07-27-editor-staging-engine.md`, complete). Builds directly on it. *(That plan was authored under the old name "staging engine"; the concept is now called draft-and-publish, and "staging" is reserved for the test environment.)*
 > **For agentic workers:** use `superpowers:executing-plans` (or `subagent-driven-development`). Test-first. Alex's eyes gate the final visual check — this has visible output.
 
 ---
