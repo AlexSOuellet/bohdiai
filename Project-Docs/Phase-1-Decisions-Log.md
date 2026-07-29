@@ -848,6 +848,22 @@ Still open: the exact cap number (calibrated against real fal costs during beta)
 
 ---
 
+## 2026-07-29 (session 78)
+
+### D66. A staging environment is a Beta prerequisite, not a Go Live nicety
+
+Until now we deploy straight to production from the working tree, and that's correct while the site carries no real business — a bad deploy costs only our own noticing it. Beta changes that: Beta means real founding members running real stores with real money, so from the first live founding store a bad deploy can interrupt a stranger's income during their business hours, and because one codebase serves every tenant, it does so to every store at once. That combination is what makes a place-to-test-that-isn't-a-live-store a Beta requirement.
+
+The test suite doesn't remove the need. It mocks everything outside our code — the database and its row-level security, Stripe, Square, the Cloudflare subdomain routing. The failures that hurt at launch live exactly there: a migration that passes in tests but locks a real table, a security policy that blocks a real query, a webhook whose signature doesn't verify against the real endpoint. The payments path is the sharpest case — a real customer paying and the money reaching the maker cannot be honestly proven with mocks.
+
+Minimum shape: a separate Vercel project, its own database project so we never test against a real maker's data, Stripe and Square in test mode, a staging subdomain routed through Cloudflare the way production is, and the full environment set on it (including the preview-token secret — the second home that variable finally earns). It does not have to be an always-on full clone on day one; it must be standable-up-and-real before the deploys that can hurt someone.
+
+The operating rule: schema migrations, anything touching checkout or payments, and renderer changes are proven on staging first, because those three can silently break a live store. Lower-stakes changes — copy, a niche file, a dashboard fix — still ship straight to production behind the test suite, because a maker who hits one of those reports it and we fix it while their store keeps selling.
+
+This adds a Staging subsection to the Full Plan's Beta phase. It supersedes nothing; it fills a gap — the plan listed the security fixes but was silent on where we test.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.

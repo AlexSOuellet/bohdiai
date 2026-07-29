@@ -136,6 +136,18 @@ Eleven findings from the July audit. Fixed as we find them, not batched at the e
 - [ ] Make the build-status endpoint only answer to the person who owns the build
 - [ ] Stop the confirm route leaking whether anyone has confirmed
 
+## Staging
+
+Before a founding member is running a real store with real money, we need a place to test that isn't their live store. Today we deploy straight to production from the working tree, which is fine while no one's business depends on the site — but the moment a real maker is taking real orders, a bad deploy can break a stranger's checkout during their business hours, and because one codebase serves every store, it breaks all of them at once. The test suite can't catch the failures that matter most here: it mocks everything outside our code — the database, Stripe, Square, the Cloudflare routing — and those only break against the real thing.
+
+- [ ] A separate Vercel project mirroring production
+- [ ] Its own Supabase project, so we never test against a real maker's data
+- [ ] Stripe and Square in test mode, so we can run a card all the way through without real money
+- [ ] A staging subdomain routed through Cloudflare the same way production is
+- [ ] The full environment set on it, including the preview-token secret
+- [ ] The rule: schema migrations, anything touching checkout or payments, and renderer changes get proven on staging before production; low-risk changes can still ship direct behind the test suite
+- [ ] In place before the first founding member is on a live store
+
 ## Small things that are actually broken
 
 - [ ] There's no FAQ content anywhere, though we assumed there was
