@@ -22,12 +22,16 @@ Everything the maker does in the editor stays **staged** and reaches the public 
 
 ## Scope of this spec
 
-**In:**
+> **Scope-of-record has moved (2026-07-29):** the build is now phased and the scope lives in `Editor-Make-It-Yours-Phases.md`. Two things changed since this section was written: the walk also replaces **photos** (not words only — Alex, 2026-07-29), and the whole thing is built in phases (Words → Photos → Sections on/off → Products). This section is kept for the design reasoning; read the phases doc for what's in which phase.
+
+**In (across the phases):**
 
 1. **Draft-and-publish** — a persistent draft of the store, a reliable draft-backed preview, Publish, Reset, and reworking the already-shipped feeling-swap to ride the same draft.
 2. **Bohdi content editing** — the agent that rewrites the store's *words* (never its structure or look) into the draft.
-3. **The "Make It Yours" walkthrough — content steps only** — the structured first-run flow that turns placeholder *words* into the maker's real words, section by section, Bohdi-led.
-4. **Section on/off** — the maker can switch the optional sections (reviews, collections, marquee, find-us) on or off, so a maker with no testimonials or collections isn't stuck with fakes or placeholders. On/off only; a section's content is kept when it's off.
+3. **Bohdi rewrites anything we generated** — the editable set is *all* the generated text in the home envelope, not a hand-picked subset. Off-limits only because they aren't ours to rewrite: the maker's own inputs (the shop name), images (handled by upload, below), and structure/treatments (the family's).
+4. **Photo replacement** — the maker uploads their own photo for the hero image and the founder photo; we set its URL in the draft slot. (Product photos ride with the products build; the touch-up editor, D65, is later.)
+5. **The "Make It Yours" walkthrough** — the structured first-run flow that turns every placeholder — words *and* photos — into the maker's own, section by section, Bohdi-led.
+6. **Section on/off** — the maker can switch the optional sections (reviews, collections, marquee, find-us) on or off, so a maker with no testimonials or collections isn't stuck with fakes or placeholders. On/off only; a section's content is kept when it's off.
 
 **Explicitly out of this spec (later phases, same engine):**
 
@@ -35,9 +39,9 @@ Everything the maker does in the editor stays **staged** and reaches the public 
 - **Free-form chat.** The maker-led "change this, reword that" tool. Same engine (draft + Bohdi content editing); a different face, built after the walkthrough.
 - **Reordering sections, and deep per-section editing.** Rearranging the section order, and a real editor for what lives *inside* a section (the kind products get). Section on/off is *in* this phase (below); rearranging and deep-editing are later.
 - **"Use my own colors."** Deferred to post-launch (Growth) per Session 76.
-- **The basic image editor** (D65). Rides with the product/Listings work, not this spec.
+- **The photo touch-up editor** (D65 — background removal, crop, brightness). This is photo *editing*; photo *replacement* (upload your own) is now in scope (Phase 2). Touch-ups stay a later build.
 
-**Build order within scope:** engine first → content steps of the walkthrough → prove both on a real store → (next phase) product/collection editing + steps.
+**Build order:** now phased — Words → Photos → Sections on/off → (next big build) Products. See `Editor-Make-It-Yours-Phases.md`. Draft-and-publish (the engine) is already built.
 
 ---
 

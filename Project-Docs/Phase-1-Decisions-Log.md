@@ -864,6 +864,20 @@ This adds a Staging subsection to the Full Plan's Beta phase. It supersedes noth
 
 ---
 
+## 2026-07-29 (session 78)
+
+### D67. The maker can rewrite anything we generated; the "Make It Yours" walk replaces every placeholder — words and photos — built in phases
+
+Two calls from the editor planning conversation, recorded so they don't drift back.
+
+**The maker can rewrite ANYTHING we generated.** When we planned Bohdi's content editing, the first cut hand-picked a small "safe subset" of text he was allowed to touch. That was backwards. The maker owns their store; they can reword *anything* we wrote — every generated text field, down to the small labels. The editable set is comprehensive, not curated. The only things left out aren't "locked," they simply aren't ours to rewrite: the maker's own inputs (the shop name — it came from them; they change it by renaming, not by Bohdi rewording), images (handled by upload, not rewording), and the store's structure/treatments/link-destinations (the family's call — the content-only non-negotiable). Default to editable; when in doubt, it's editable.
+
+**The walk replaces every placeholder, not just the words.** The "Make It Yours" first-run walk was originally meant — and is meant — to take the maker through replacing everything in the generated store that's ours: their words, their photos, and (later) their real products. An earlier draft narrowed the first build to words only; that narrowing is reversed. Photo *replacement* (the maker uploads their own hero image and founder photo) is in scope. Photo *editing* (touch-ups — D65) stays a later build. Product replacement is the whole listings side, genuinely its own large next build, with a step that slots into the same walk.
+
+**Built in phases.** Because it's a big piece, the walk is built and shipped in phases, each a working increment that adds one more thing the maker can make theirs: Phase 1 Words → Phase 2 Photos → Phase 3 Sections on/off → Phase 4 Products (the listings build) → later, the editor deepens (touch-ups, free-form chat, click-to-edit, highlight-and-rewrite, reorder, use-my-colors). The scope-of-record is `Editor-Make-It-Yours-Phases.md`; the detailed tasks for Phases 1–3 are in `plans/2026-07-29-make-it-yours-walkthrough.md`. This refines the word-only scope in `Editor-Make-It-Yours-Design.md` (Session 76), which is now marked superseded on that point.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.

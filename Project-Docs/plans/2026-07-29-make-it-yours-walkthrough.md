@@ -12,6 +12,10 @@
 
 ---
 
+## Phasing
+
+This plan is built in phases (see `Project-Docs/Editor-Make-It-Yours-Phases.md`), each ending at a shippable, eyes-checked checkpoint: **Phase 1 Words** = Tasks 1–4 + the walkthrough's word steps + host (Tasks 8, 10, 11); **Phase 2 Photos** = Tasks 5, 6, 9 + the photo step; **Phase 3 Sections on/off** = Task 7 + the off-switch in the optional steps. Ship and check each phase before starting the next. Products are the separate next build.
+
 ## What's in, and what's the next build
 
 **In this build:** rewrite any generated words; replace the two home-store photos (hero image, founder photo) with the maker's own uploads; turn optional sections on/off; the stepped walkthrough that drives all three.
