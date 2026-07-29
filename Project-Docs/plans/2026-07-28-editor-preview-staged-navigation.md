@@ -72,7 +72,7 @@ The obvious alternative — set a "previewing" cookie so every request renders t
 
 **Files:** create `PreviewLinkForwarder.tsx`, `PreviewLinkForwarder.test.tsx`.
 
-- [ ] **Step 1: Write failing tests** (jsdom). Mock navigation by spying on a passed-in navigate fn OR `window.location.assign` (jsdom: define a configurable `assign` mock). Cases:
+- [x] **Step 1: Write failing tests** (jsdom). Mock navigation by spying on a passed-in navigate fn OR `window.location.assign` (jsdom: define a configurable `assign` mock). Cases:
   - Renders the component (returns null), attaches a listener; clicking an internal `<a href="/shop">` while the page URL has `?previewToken=T&previewStill=1` → navigates to `/shop?previewToken=T&previewStill=1`.
   - Forwards **all** present params (`previewLook`, `previewMood`, `previewTexture`, `previewTextureOpacity`) and omits absent ones.
   - External link (`https://other.com`) → NOT intercepted.
@@ -82,11 +82,11 @@ The obvious alternative — set a "previewing" cookie so every request renders t
 
   > Tip: make the navigation side-effect injectable (e.g., an internal `navigate = (url) => window.location.assign(url)` you can stub) so the test asserts the computed URL without fighting jsdom's read-only `location`.
 
-- [ ] **Step 2: Implement** the component per the Approach pseudocode. Read the forwarded-key list from a single `const PREVIEW_PARAM_KEYS = [...]`. Attach on mount, remove on unmount. Guard `typeof window !== 'undefined'`.
+- [x] **Step 2: Implement** the component per the Approach pseudocode. Read the forwarded-key list from a single `const PREVIEW_PARAM_KEYS = [...]`. Attach on mount, remove on unmount. Guard `typeof window !== 'undefined'`.
 
-- [ ] **Step 3: Run tests** → PASS. Typecheck + lint.
+- [x] **Step 3: Run tests** → PASS. Typecheck + lint.
 
-- [ ] **Step 4: Commit** — `feat(editor): forward preview params across in-store navigation`.
+- [x] **Step 4: Commit** — `feat(editor): forward preview params across in-store navigation`.
 
 ---
 
@@ -94,19 +94,19 @@ The obvious alternative — set a "previewing" cookie so every request renders t
 
 **Files:** modify `StorefrontPage.tsx`.
 
-- [ ] **Step 1:** Preview mode = `previewToken !== undefined` (only the editor mints a token; covers both the inline iframe and the full-size Preview tab). Render `<PreviewLinkForwarder />` alongside the store output when in preview. Simplest: extend `withStillReveal` into a `withPreviewChrome(node, { still, preview })` that appends the forwarder (always in preview) and the still-CSS (when `still`). Keep the still-CSS placement AFTER the markup as now.
+- [x] **Step 1:** Preview mode = `previewToken !== undefined` (only the editor mints a token; covers both the inline iframe and the full-size Preview tab). Render `<PreviewLinkForwarder />` alongside the store output when in preview. Simplest: extend `withStillReveal` into a `withPreviewChrome(node, { still, preview })` that appends the forwarder (always in preview) and the still-CSS (when `still`). Keep the still-CSS placement AFTER the markup as now.
 
-- [ ] **Step 2:** Add a test to `StorefrontPage.test.tsx`: preview render (token present) includes the forwarder; public render (no token) does not. (Assert via `renderToStaticMarkup` — the forwarder renders null, so assert on a wrapper marker, or assert the component is in the returned tree. Prefer a `data-preview-nav` marker element the forwarder renders, or test the branch by spying.)
+- [x] **Step 2:** Add a test to `StorefrontPage.test.tsx`: preview render (token present) includes the forwarder; public render (no token) does not. (Assert via `renderToStaticMarkup` — the forwarder renders null, so assert on a wrapper marker, or assert the component is in the returned tree. Prefer a `data-preview-nav` marker element the forwarder renders, or test the branch by spying.)
 
-- [ ] **Step 3:** Typecheck + lint + full suite.
+- [x] **Step 3:** Typecheck + lint + full suite.
 
-- [ ] **Step 4: Commit** — `feat(editor): render preview-nav forwarder in the storefront preview`.
+- [x] **Step 4: Commit** — `feat(editor): render preview-nav forwarder in the storefront preview`.
 
 ---
 
 ## Task 3: Full verification (Alex's eyes gate)
 
-- [ ] Whole suite green; typecheck + lint clean.
+- [x] Whole suite green; typecheck + lint clean.
 - [ ] **Manual, on a real store with a staged draft:**
   1. In the editor, stage a feeling change (e.g., Cozy → something). Open the preview.
   2. Click **Intro** → it replays / stays on the **staged** home, not the live look.
