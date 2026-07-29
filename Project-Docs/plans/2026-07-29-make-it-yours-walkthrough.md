@@ -14,7 +14,7 @@
 
 ## Decisions for Alex (flagged — plan proceeds on the recommended default; say the word to change)
 
-1. **The hero brand line / shop name is NOT editable by Bohdi (recommended).** `content.moment.brand`, `content.shopName`, and `content.identity.wordmark` all render the maker's shop name, which is the one fact onboarding locks and the crew is forbidden to overwrite (D45). Letting the editor's Bohdi rewrite it reopens exactly that. So they're excluded from the allowlist; changing the shop name becomes a Settings action later, not a copy rewrite. *(If you want Bohdi able to reword the hero brand line, say so and I'll add `moment.brand` only.)*
+1. **RESOLVED (Alex, 2026-07-29): the maker can rewrite ANYTHING we generated.** Bohdi's editable set is *all* the generated text in the home envelope — comprehensive, not a hand-picked subset. The only things left out are things that aren't ours to rewrite: (a) **the maker's own inputs** — the shop name (`content.shopName`, `content.moment.brand`, `content.identity.wordmark`); it came from the maker, so it's already theirs, and they change it by *renaming* (a later Settings action), not by Bohdi rewording copy; (b) **images** — media slots belong to the image editor (D65), not the writer; (c) **structure / treatments / link destinations** — the family's call, never Bohdi's (the content-only non-negotiable). Everything else generated — including the small labels ("See all", "View the full catalog") — is editable, because the maker can rewrite anything we wrote.
 
 2. **Walkthrough step order = the store's own top-to-bottom order (recommended).** Welcome (hero) → Your story (founder + About) → Kind words (reviews) → Where to find you (find-us) → Your sign-off (close) → Getting in touch (contact) → The small stuff (headings + marquee). The design listed these "open for review"; mirroring the store means the preview fills in from the top as the maker goes.
 
@@ -52,7 +52,7 @@
 
 **Files:** Create `lib/editor/editable-fields.ts`, `lib/editor/editable-fields.test.ts`.
 
-The allowlist is the curated lever: Bohdi can only ever touch a field that appears here. Every path is rooted at the envelope `root.content` (the `MainStreetContent`). Fields come in three kinds: `text` (a single string), `lines` (a `string[]` — story paragraphs, marquee voice), and `items` (an array of `{...}` objects — reviews, collections; the whole array is the value).
+The registry is the content-only lever: it lists **every generated text field** so Bohdi can rewrite anything we wrote, while its existence still keeps him off structure/look (a path not in the registry is a path his tool can't write). The set is comprehensive of generated text, not a cherry-picked subset — the exclusions are principled (see Decision 1): the maker's own inputs (shop name), images, and structure/treatments/link-destinations. Every path is rooted at the envelope `root.content` (the `MainStreetContent`). Fields come in three kinds: `text` (a single string), `lines` (a `string[]` — story paragraphs, marquee voice), and `items` (an array of `{...}` objects — reviews, collections; the whole array is the value).
 
 - [ ] **Step 1: Write the failing test.**
 
@@ -72,12 +72,18 @@ const ENV = () => ({
 });
 
 describe('editable-fields allowlist', () => {
-  it('excludes the locked shop name and identity/media/structure', () => {
+  it('excludes what is not ours to rewrite: shop name, images, structure', () => {
     const ids = EDITABLE_FIELDS.map((f) => f.id);
-    expect(ids).not.toContain('shopName');
-    expect(ids).not.toContain('moment.brand');       // hero brand = shop name (D45)
-    expect(ids.some((i) => i.includes('media'))).toBe(false);
+    expect(ids).not.toContain('shopName');           // maker's own input
+    expect(ids).not.toContain('moment.brand');       // hero brand = shop name
+    expect(ids.some((i) => i.includes('media'))).toBe(false); // images → image editor
     expect(ids.some((i) => i.includes('logo'))).toBe(false);
+  });
+
+  it('includes the small generated labels — the maker can reword anything we wrote', () => {
+    const ids = EDITABLE_FIELDS.map((f) => f.id);
+    expect(ids).toContain('goods.viewAllLabel');
+    expect(ids).toContain('reviews.label');
   });
 
   it('reads a text field by id', () => {
@@ -106,7 +112,7 @@ describe('editable-fields allowlist', () => {
 
 - [ ] **Step 2: Run it — expect FAIL** (`Cannot find module './editable-fields'`). Run: `npx vitest run lib/editor/editable-fields.test.ts`.
 
-- [ ] **Step 3: Implement.** Define `EditableFieldKind = 'text' | 'lines' | 'items'`, an `EditableField` interface (`id`, `path: string[]` rooted at `content`, `kind`, `section: SectionKey`, `label: string`), and the `EDITABLE_FIELDS` registry. Enumerate from the envelope map — hero: `moment.eyebrow` (text), `moment.story` (lines), `moment.sub` (text), `moment.ctaLabel` (text), `moment.secondaryCtaLabel` (text); goods: `goods.title` (text); collections: `collections.title` (text), `collections.items` (items: name+description per row); reviews: `reviews.title` (text), `reviews.items` (items: quote+author); marquee: `marquee.voice` (lines); founder: `founder.quote` (text), `founder.attribution` (text), `founder.eyebrow` (text), `founder.heading` (text); close: `close.label` (text), `close.headline` (text), `close.ctaLabel` (text); about: `about.heading` (text), `about.story` (lines); contact: `contact.heading` (text), `contact.intro` (text). **Exclude** `shopName`, `moment.brand`, `identity.*`, every `*.media`/`photo`/media slot, treatments, and product fields. `getFieldValue`/`setFieldValue` walk `['root','content', ...path]`; `setFieldValue` deep-clones via `structuredClone` and writes at the path, returning the new envelope. `fieldsForSection(section)` filters `EDITABLE_FIELDS`.
+- [ ] **Step 3: Implement.** Define `EditableFieldKind = 'text' | 'lines' | 'items'`, an `EditableField` interface (`id`, `path: string[]` rooted at `content`, `kind`, `section: SectionKey`, `label: string`), and the `EDITABLE_FIELDS` registry. Enumerate **every generated text field** — hero: `moment.eyebrow` (text), `moment.story` (lines), `moment.sub` (text), `moment.ctaLabel` (text), `moment.secondaryCtaLabel` (text); goods: `goods.title` (text), `goods.label` (text), `goods.viewAllLabel` (text); collections: `collections.title` (text), `collections.label` (text), `collections.viewAllLabel` (text), `collections.items` (items: name+description per row); reviews: `reviews.title` (text), `reviews.label` (text), `reviews.viewAllLabel` (text), `reviews.items` (items: quote+author); marquee: `marquee.voice` (lines); founder: `founder.quote` (text), `founder.attribution` (text), `founder.eyebrow` (text), `founder.heading` (text), `founder.aboutLabel` (text); close: `close.label` (text), `close.headline` (text), `close.ctaLabel` (text); about: `about.heading` (text), `about.story` (lines); contact: `contact.heading` (text), `contact.intro` (text). Include the small labels too — they're generated, so the maker can reword them. **Exclude only what isn't ours to rewrite:** `shopName`, `moment.brand`, `identity.*` (the maker's shop name); every `*.media`/`photo` slot (images → image editor); `moment.ctaTarget`/`secondaryCtaTarget` and all treatments (structure/destinations → the family); and product fields (a different surface — the Listing Manager). `getFieldValue`/`setFieldValue` walk `['root','content', ...path]`; `setFieldValue` deep-clones via `structuredClone` and writes at the path, returning the new envelope. `fieldsForSection(section)` filters `EDITABLE_FIELDS`.
 
 - [ ] **Step 4: Run tests — expect PASS.** Run: `npx vitest run lib/editor/editable-fields.test.ts`.
 
