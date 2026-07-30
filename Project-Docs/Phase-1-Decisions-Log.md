@@ -878,6 +878,24 @@ Two calls from the editor planning conversation, recorded so they don't drift ba
 
 ---
 
+## 2026-07-30 (session 79)
+
+### D68. The "Make It Yours" walk: personal content needs the maker's real input; the rest Bohdi can write — and the maker can always write any of it themselves
+
+Writing a maker's story from a feeling word invents their life and puts it on a real person's real store. That's fabrication, not craft, and it's dishonest. So the walk runs at two temperaments, split by whether the content asserts facts about the maker.
+
+**Personal content** — the About, the story, the founder line — is written only from what the maker actually tells us. The About step asks a few targeted questions (how it started, what they make, what makes theirs theirs, who it's for) to pull the real material out; Bohdi arranges their answers into the About beats and the founder quote. There is no "you write it from a feeling" shortcut here. If the maker won't give input, we don't write it — the section stays honestly unfinished and the walk says so. Completeness ("no placeholder left") never justifies fabrication.
+
+**Everything else** — headlines, the hero lines, taglines, section headings, CTAs, product descriptions, the marquee — is brand voice, not biography. Bohdi can write these from a direction, a feeling, or just the niche, apply-then-see, keep/redo/tweak.
+
+**The maker can always write any field themselves.** AI-written is the convenience default, never forced; "type exactly what I want" is a first-class path on every field, and Bohdi takes their words as-is. This holds for the personal fields too — a maker who wants to write their own About just writes it.
+
+**Reviews stay their own case:** real customer quotes only, or switch the section off. A testimonial is never AI-generated — it isn't even the maker's to invent.
+
+This refines D67 and the walkthrough plan (`plans/2026-07-29-make-it-yours-walkthrough.md`) by removing the "you write it, here's the feeling" hatch for personal content, and by making "the maker writes it directly" an explicit first-class path on every field, not just a tweak-after.
+
+---
+
 ## Open items still to be decided
 
 These are things we discussed but did not lock down, or things we haven't gotten to yet. The Tech Arch Spec drafting process will surface most of them as they come up.
