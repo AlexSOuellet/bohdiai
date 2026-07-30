@@ -85,7 +85,7 @@ export async function stageLook(skinKey: string, moodKey: string, texture?: Stor
  *  marking the section made-yours. Never touches live; on a Bohdi failure the draft
  *  is left untouched and a friendly error is returned. */
 export async function editContent(
-  fieldIds: string[],
+  fieldIds: readonly string[],
   instruction: string,
   section?: SectionKey,
 ): Promise<ActionResult> {

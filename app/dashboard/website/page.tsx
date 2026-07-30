@@ -8,6 +8,9 @@ import { isFeatureEnabled } from '@/lib/feature-flags';
 import { readDraftTree } from '@/lib/editor/draft';
 import { mintPreviewToken } from '@/lib/editor/preview-token';
 import { readStoredTexture } from '@/lib/editor/texture';
+import { loadHomeEnvelope } from '@/lib/storefront/load-envelope';
+import { EDITABLE_FIELDS, getFieldValue } from '@/lib/editor/editable-fields';
+import { WALKTHROUGH_STEPS, placeholderSections } from '@/lib/editor/walkthrough';
 import { MOODS, type MoodKey } from '@/lib/moods';
 import Editor from './_components/Editor';
 
@@ -69,6 +72,14 @@ export default async function MyWebsitePage() {
 
   const origin = storefrontOrigin(shop.subdomain, (await headers()).get('host'));
 
+  // The "Make It Yours" walk reads the current words. Use the draft if the maker has
+  // one (so a returning maker resumes their edits), else the live envelope. First run
+  // = nothing has been made-yours yet (every walkable section is still placeholder).
+  const homeEnv = draftTree ?? { root: (await loadHomeEnvelope(shop.tenantId)) ?? {} };
+  const walkValues: Record<string, unknown> = {};
+  for (const f of EDITABLE_FIELDS) walkValues[f.id] = getFieldValue(homeEnv, f.id);
+  const firstRun = placeholderSections(homeEnv).length === WALKTHROUGH_STEPS.length;
+
   return (
     <Editor
       currentSkin={look.lookKey}
@@ -78,6 +89,8 @@ export default async function MyWebsitePage() {
       previewOrigin={origin}
       defaultTextureOpacity={defaultTextureOpacity}
       savedTexture={look.texture}
+      firstRun={firstRun}
+      walkValues={walkValues}
     />
   );
 }
