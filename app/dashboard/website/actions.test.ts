@@ -25,7 +25,7 @@ vi.mock('@/lib/editor/content-agent', () => ({
 }));
 vi.mock('@/lib/editor/niche-voice', () => ({ loadNicheVoice: (id: string) => loadNicheVoice(id) }));
 
-import { stageLook, publishStore, resetStore, editContent } from './actions';
+import { stageLook, publishStore, resetStore, editContent, setFieldValues } from './actions';
 
 beforeEach(() => {
   [getCurrentShop, readDraftTree, stageDraftTree, publishDraft, resetDraft, loadHomeEnvelope, runContentEdit, loadNicheVoice].forEach((m) => m.mockReset());
@@ -156,6 +156,38 @@ describe('editContent', () => {
     const res = await editContent(['goods.title'], 'x', 'goods');
     expect(res.ok).toBe(false);
     expect(runContentEdit).not.toHaveBeenCalled();
+  });
+});
+
+describe('setFieldValues (verbatim direct edit)', () => {
+  const liveEnv = { kind: 'archetype', content: { goods: { title: 'Old goods' }, moment: { story: ['a'] } } };
+
+  it('stages the maker\'s own words verbatim (trim only, keeps punctuation) and marks the section', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    readDraftTree.mockResolvedValue(null);
+    loadHomeEnvelope.mockResolvedValue(structuredClone(liveEnv));
+    stageDraftTree.mockResolvedValue({ ok: true });
+
+    const res = await setFieldValues([{ id: 'goods.title', value: '  Fresh. Daily.  ' }], 'goods');
+    expect(res.ok).toBe(true);
+    const staged = stageDraftTree.mock.calls[0]![1] as { root: { content: { goods: { title: string }; madeYours?: string[] } } };
+    expect(staged.root.content.goods.title).toBe('Fresh. Daily.'); // trimmed, period KEPT
+    expect(staged.root.content.madeYours).toContain('goods');
+    expect(runContentEdit).not.toHaveBeenCalled(); // Bohbi is not involved
+  });
+
+  it('skips unknown ids and reports nothing to save when all are unknown', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    const res = await setFieldValues([{ id: 'not.a.field', value: 'x' }]);
+    expect(res.ok).toBe(false);
+    expect(stageDraftTree).not.toHaveBeenCalled();
+  });
+
+  it('fails cleanly with no store', async () => {
+    getCurrentShop.mockResolvedValue(null);
+    const res = await setFieldValues([{ id: 'goods.title', value: 'x' }], 'goods');
+    expect(res.ok).toBe(false);
+    expect(stageDraftTree).not.toHaveBeenCalled();
   });
 });
 

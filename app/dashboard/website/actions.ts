@@ -133,6 +133,57 @@ export async function editContent(
   return { ok: true };
 }
 
+/** Coerce a maker-typed value to the field's kind, VERBATIM — trim only, keep their
+ *  exact words and punctuation (D68: "type exactly what I want, taken as-is"). Unlike
+ *  Bohdi's output, the maker's own text is never punctuation-stripped. */
+function coerceVerbatim(field: { kind: 'text' | 'lines' | 'items' }, raw: unknown): unknown | undefined {
+  if (field.kind === 'text') return typeof raw === 'string' && raw.trim().length > 0 ? raw.trim() : undefined;
+  if (field.kind === 'lines') {
+    if (!Array.isArray(raw)) return undefined;
+    const lines = raw.filter((x): x is string => typeof x === 'string').map((x) => x.trim()).filter((x) => x.length > 0);
+    return lines.length > 0 ? lines : undefined;
+  }
+  return Array.isArray(raw) ? raw : undefined;
+}
+
+/** Stage the maker's OWN words into the draft, verbatim (no Bohdi). The first-class
+ *  "type exactly what I want" path (D68). Marks the section made-yours. */
+export async function setFieldValues(
+  updates: { id: string; value: unknown }[],
+  section?: SectionKey,
+): Promise<ActionResult> {
+  const clean: { id: string; value: unknown }[] = [];
+  for (const u of updates) {
+    const field = EDITABLE_FIELDS.find((f) => f.id === u.id);
+    if (!field) continue;
+    const v = coerceVerbatim(field, u.value);
+    if (v !== undefined) clean.push({ id: field.id, value: v });
+  }
+  if (clean.length === 0) return { ok: false, error: 'Nothing to save.' };
+
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to update.' };
+
+  const draftTree = await readDraftTree(shop.tenantId);
+  let baseTree: Record<string, unknown>;
+  if (draftTree !== null) {
+    baseTree = draftTree;
+  } else {
+    const live = await loadHomeEnvelope(shop.tenantId);
+    if (live === null) return { ok: false, error: 'Could not load your store.' };
+    baseTree = { root: live };
+  }
+
+  let next = baseTree;
+  for (const c of clean) next = setFieldValue(next, c.id, c.value);
+  if (section !== undefined) next = markSectionMade(next, section);
+
+  const staged = await stageDraftTree(shop.tenantId, next);
+  if (!staged.ok) return { ok: false, error: 'Could not save your changes.' };
+  revalidatePath('/dashboard/website');
+  return { ok: true };
+}
+
 /** Publish the staged draft to the live store (promote + delete the draft). */
 export async function publishStore(): Promise<ActionResult> {
   const shop = await getCurrentShop();
