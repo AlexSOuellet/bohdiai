@@ -13,14 +13,14 @@ import type { CopywriterDraft } from './copywriter-schema';
 /** Strip sentence-terminal punctuation from a headline-style field. Internal
  *  commas and intra-word hyphens stay (they read fine in a phrase). Periods,
  *  exclamation points, question marks, and trailing terminal marks come off. */
-function stripHeadlinePunct(s: string): string {
+export function stripHeadlinePunct(s: string): string {
   // Drop all .!? wherever they appear, then drop any trailing :;,–— and dashes.
   return s.replace(/[.!?]+/g, '').replace(/[:;,–—-]+\s*$/u, '').trim();
 }
 
 /** Strip ALL punctuation we forbid in a story line. The lines cross-fade large;
  *  marks read as smears. Apostrophes and intra-word hyphens stay. */
-function stripStoryPunct(s: string): string {
+export function stripStoryPunct(s: string): string {
   // Remove forbidden marks anywhere, normalize ellipses, trim ends.
   return s.replace(/[.,!?;:…–—"“”]+/g, '').trim();
 }

@@ -20,10 +20,16 @@
  *   - `text`  — a single string
  *   - `lines` — a `string[]` (each element a line/paragraph)
  *   - `items` — an array of objects (reviews, collections); the whole array is the value
+ *
+ * `normalize` is the field's typographic role, used when a rewrite lands (see
+ * `content-agent.ts`): `headline` strips terminal punctuation (headings read as
+ * slop with a trailing period), `story` strips the smear-punctuation the big
+ * cross-fading hero lines forbid, `plain` only trims (prose keeps its sentences).
  */
 import type { SectionKey } from '@/lib/archetypes/main-street/families';
 
 export type EditableFieldKind = 'text' | 'lines' | 'items';
+export type NormalizeStyle = 'headline' | 'story' | 'plain';
 
 export interface EditableField {
   /** Stable id, also the dotted envelope path under `root.content` (e.g. `moment.eyebrow`). */
@@ -33,6 +39,8 @@ export interface EditableField {
   readonly kind: EditableFieldKind;
   /** Which home section this field belongs to (groups the walkthrough steps). */
   readonly section: SectionKey;
+  /** The field's typographic role, driving post-rewrite normalization. */
+  readonly normalize: NormalizeStyle;
   /** Plain human label for editor UI. */
   readonly label: string;
 }
@@ -40,54 +48,54 @@ export interface EditableField {
 export const EDITABLE_FIELDS: readonly EditableField[] = [
   // BEAT 1 — the hero (moment). Excludes brand (shop name), media/collageShots
   // (images), and cta targets (link destinations).
-  { id: 'moment.eyebrow', path: ['moment', 'eyebrow'], kind: 'text', section: 'hero', label: 'Hero eyebrow' },
-  { id: 'moment.story', path: ['moment', 'story'], kind: 'lines', section: 'hero', label: 'Hero story lines' },
-  { id: 'moment.sub', path: ['moment', 'sub'], kind: 'text', section: 'hero', label: 'Hero sub-line' },
-  { id: 'moment.ctaLabel', path: ['moment', 'ctaLabel'], kind: 'text', section: 'hero', label: 'Hero button label' },
-  { id: 'moment.secondaryCtaLabel', path: ['moment', 'secondaryCtaLabel'], kind: 'text', section: 'hero', label: 'Hero secondary button label' },
+  { id: 'moment.eyebrow', path: ['moment', 'eyebrow'], kind: 'text', section: 'hero', normalize: 'plain', label: 'Hero eyebrow' },
+  { id: 'moment.story', path: ['moment', 'story'], kind: 'lines', section: 'hero', normalize: 'story', label: 'Hero story lines' },
+  { id: 'moment.sub', path: ['moment', 'sub'], kind: 'text', section: 'hero', normalize: 'plain', label: 'Hero sub-line' },
+  { id: 'moment.ctaLabel', path: ['moment', 'ctaLabel'], kind: 'text', section: 'hero', normalize: 'plain', label: 'Hero button label' },
+  { id: 'moment.secondaryCtaLabel', path: ['moment', 'secondaryCtaLabel'], kind: 'text', section: 'hero', normalize: 'plain', label: 'Hero secondary button label' },
 
   // BEAT 2 — goods heading (the catalog itself is products, not authored here).
-  { id: 'goods.title', path: ['goods', 'title'], kind: 'text', section: 'goods', label: 'Goods heading' },
-  { id: 'goods.label', path: ['goods', 'label'], kind: 'text', section: 'goods', label: 'Goods label' },
-  { id: 'goods.viewAllLabel', path: ['goods', 'viewAllLabel'], kind: 'text', section: 'goods', label: 'Goods "view all" label' },
+  { id: 'goods.title', path: ['goods', 'title'], kind: 'text', section: 'goods', normalize: 'headline', label: 'Goods heading' },
+  { id: 'goods.label', path: ['goods', 'label'], kind: 'text', section: 'goods', normalize: 'plain', label: 'Goods label' },
+  { id: 'goods.viewAllLabel', path: ['goods', 'viewAllLabel'], kind: 'text', section: 'goods', normalize: 'plain', label: 'Goods "view all" label' },
 
   // COLLECTIONS — heading + the authored collection blurbs (name/description).
-  { id: 'collections.title', path: ['collections', 'title'], kind: 'text', section: 'collections', label: 'Collections heading' },
-  { id: 'collections.label', path: ['collections', 'label'], kind: 'text', section: 'collections', label: 'Collections label' },
-  { id: 'collections.viewAllLabel', path: ['collections', 'viewAllLabel'], kind: 'text', section: 'collections', label: 'Collections "view all" label' },
-  { id: 'collections.items', path: ['collections', 'items'], kind: 'items', section: 'collections', label: 'Collections' },
+  { id: 'collections.title', path: ['collections', 'title'], kind: 'text', section: 'collections', normalize: 'headline', label: 'Collections heading' },
+  { id: 'collections.label', path: ['collections', 'label'], kind: 'text', section: 'collections', normalize: 'plain', label: 'Collections label' },
+  { id: 'collections.viewAllLabel', path: ['collections', 'viewAllLabel'], kind: 'text', section: 'collections', normalize: 'plain', label: 'Collections "view all" label' },
+  { id: 'collections.items', path: ['collections', 'items'], kind: 'items', section: 'collections', normalize: 'plain', label: 'Collections' },
 
   // REVIEWS — heading/labels + the testimonial items. (Testimonials are the maker's
   // real quotes or the section is switched off — never AI-fabricated, D68; that
   // policy lives on the reviews walkthrough step, not this registry.)
-  { id: 'reviews.title', path: ['reviews', 'title'], kind: 'text', section: 'reviews', label: 'Reviews heading' },
-  { id: 'reviews.label', path: ['reviews', 'label'], kind: 'text', section: 'reviews', label: 'Reviews label' },
-  { id: 'reviews.viewAllLabel', path: ['reviews', 'viewAllLabel'], kind: 'text', section: 'reviews', label: 'Reviews "view all" label' },
-  { id: 'reviews.items', path: ['reviews', 'items'], kind: 'items', section: 'reviews', label: 'Testimonials' },
+  { id: 'reviews.title', path: ['reviews', 'title'], kind: 'text', section: 'reviews', normalize: 'headline', label: 'Reviews heading' },
+  { id: 'reviews.label', path: ['reviews', 'label'], kind: 'text', section: 'reviews', normalize: 'plain', label: 'Reviews label' },
+  { id: 'reviews.viewAllLabel', path: ['reviews', 'viewAllLabel'], kind: 'text', section: 'reviews', normalize: 'plain', label: 'Reviews "view all" label' },
+  { id: 'reviews.items', path: ['reviews', 'items'], kind: 'items', section: 'reviews', normalize: 'plain', label: 'Testimonials' },
 
-  // MARQUEE — the authored voice lines.
-  { id: 'marquee.voice', path: ['marquee', 'voice'], kind: 'lines', section: 'marquee', label: 'Marquee lines' },
+  // MARQUEE — the authored voice lines (short, scroll large like headlines).
+  { id: 'marquee.voice', path: ['marquee', 'voice'], kind: 'lines', section: 'marquee', normalize: 'headline', label: 'Marquee lines' },
 
   // BEAT 3 — the founder / About-the-maker beat. Personal (D68).
-  { id: 'founder.quote', path: ['founder', 'quote'], kind: 'text', section: 'founder', label: 'Founder quote' },
-  { id: 'founder.attribution', path: ['founder', 'attribution'], kind: 'text', section: 'founder', label: 'Founder attribution' },
-  { id: 'founder.eyebrow', path: ['founder', 'eyebrow'], kind: 'text', section: 'founder', label: 'Founder eyebrow' },
-  { id: 'founder.heading', path: ['founder', 'heading'], kind: 'text', section: 'founder', label: 'Founder heading' },
-  { id: 'founder.aboutLabel', path: ['founder', 'aboutLabel'], kind: 'text', section: 'founder', label: 'Founder "about" label' },
+  { id: 'founder.quote', path: ['founder', 'quote'], kind: 'text', section: 'founder', normalize: 'plain', label: 'Founder quote' },
+  { id: 'founder.attribution', path: ['founder', 'attribution'], kind: 'text', section: 'founder', normalize: 'plain', label: 'Founder attribution' },
+  { id: 'founder.eyebrow', path: ['founder', 'eyebrow'], kind: 'text', section: 'founder', normalize: 'plain', label: 'Founder eyebrow' },
+  { id: 'founder.heading', path: ['founder', 'heading'], kind: 'text', section: 'founder', normalize: 'headline', label: 'Founder heading' },
+  { id: 'founder.aboutLabel', path: ['founder', 'aboutLabel'], kind: 'text', section: 'founder', normalize: 'plain', label: 'Founder "about" label' },
 
   // BEAT 4 — the close.
-  { id: 'close.label', path: ['close', 'label'], kind: 'text', section: 'close', label: 'Close label' },
-  { id: 'close.headline', path: ['close', 'headline'], kind: 'text', section: 'close', label: 'Close headline' },
-  { id: 'close.ctaLabel', path: ['close', 'ctaLabel'], kind: 'text', section: 'close', label: 'Close button label' },
+  { id: 'close.label', path: ['close', 'label'], kind: 'text', section: 'close', normalize: 'plain', label: 'Close label' },
+  { id: 'close.headline', path: ['close', 'headline'], kind: 'text', section: 'close', normalize: 'headline', label: 'Close headline' },
+  { id: 'close.ctaLabel', path: ['close', 'ctaLabel'], kind: 'text', section: 'close', normalize: 'plain', label: 'Close button label' },
 
   // The full ABOUT page — the maker's story at length. Personal (D68), grouped
-  // with the founder beat as the story step.
-  { id: 'about.heading', path: ['about', 'heading'], kind: 'text', section: 'founder', label: 'About page heading' },
-  { id: 'about.story', path: ['about', 'story'], kind: 'lines', section: 'founder', label: 'About page story' },
+  // with the founder beat as the story step. Prose keeps its sentences.
+  { id: 'about.heading', path: ['about', 'heading'], kind: 'text', section: 'founder', normalize: 'headline', label: 'About page heading' },
+  { id: 'about.story', path: ['about', 'story'], kind: 'lines', section: 'founder', normalize: 'plain', label: 'About page story' },
 
   // The CONTACT page invitation.
-  { id: 'contact.heading', path: ['contact', 'heading'], kind: 'text', section: 'contact', label: 'Contact heading' },
-  { id: 'contact.intro', path: ['contact', 'intro'], kind: 'text', section: 'contact', label: 'Contact intro' },
+  { id: 'contact.heading', path: ['contact', 'heading'], kind: 'text', section: 'contact', normalize: 'headline', label: 'Contact heading' },
+  { id: 'contact.intro', path: ['contact', 'intro'], kind: 'text', section: 'contact', normalize: 'plain', label: 'Contact intro' },
 ] as const;
 
 /** Look a field up by id. */
