@@ -17,10 +17,18 @@ vi.mock('@/lib/editor/draft', () => ({
 vi.mock('@/lib/storefront/load-envelope', () => ({ loadHomeEnvelope: (id: string) => loadHomeEnvelope(id) }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
-import { stageLook, publishStore, resetStore } from './actions';
+const runContentEdit = vi.fn();
+const loadNicheVoice = vi.fn();
+vi.mock('@/lib/editor/content-agent', () => ({
+  runContentEdit: (a: unknown) => runContentEdit(a),
+  ContentEditError: class ContentEditError extends Error {},
+}));
+vi.mock('@/lib/editor/niche-voice', () => ({ loadNicheVoice: (id: string) => loadNicheVoice(id) }));
+
+import { stageLook, publishStore, resetStore, editContent } from './actions';
 
 beforeEach(() => {
-  [getCurrentShop, readDraftTree, stageDraftTree, publishDraft, resetDraft, loadHomeEnvelope].forEach((m) => m.mockReset());
+  [getCurrentShop, readDraftTree, stageDraftTree, publishDraft, resetDraft, loadHomeEnvelope, runContentEdit, loadNicheVoice].forEach((m) => m.mockReset());
 });
 
 describe('stageLook', () => {
@@ -87,6 +95,67 @@ describe('stageLook', () => {
     stageDraftTree.mockResolvedValue({ ok: false });
     const res = await stageLook('main-street-ember', 'rustic');
     expect(res.ok).toBe(false);
+  });
+});
+
+describe('editContent', () => {
+  const liveEnv = { kind: 'archetype', content: { goods: { title: 'Old goods' }, moment: { eyebrow: 'x' } } };
+
+  it("stages Bohdi's rewrites at the right envelope paths and marks the section made-yours, never touching live", async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    readDraftTree.mockResolvedValue(null);
+    loadHomeEnvelope.mockResolvedValue(structuredClone(liveEnv));
+    loadNicheVoice.mockResolvedValue({ displayName: 'Candle maker', body: 'niche' });
+    runContentEdit.mockResolvedValue({ values: { 'goods.title': 'The candles' } });
+    stageDraftTree.mockResolvedValue({ ok: true });
+
+    const res = await editContent(['goods.title'], 'warm it up', 'goods');
+    expect(res.ok).toBe(true);
+    const staged = stageDraftTree.mock.calls[0]![1] as { root: { content: { goods: { title: string }; madeYours?: string[] } } };
+    expect(staged.root.content.goods.title).toBe('The candles');
+    expect(staged.root.content.madeYours).toContain('goods');
+    // Bohdi saw the current value + niche voice.
+    expect(runContentEdit).toHaveBeenCalledWith(
+      expect.objectContaining({ current: { 'goods.title': 'Old goods' }, instruction: 'warm it up', niche: { displayName: 'Candle maker', body: 'niche' } }),
+    );
+  });
+
+  it('returns a friendly error and does NOT stage when Bohdi throws', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    readDraftTree.mockResolvedValue(null);
+    loadHomeEnvelope.mockResolvedValue(structuredClone(liveEnv));
+    loadNicheVoice.mockResolvedValue({ displayName: 'x', body: '' });
+    runContentEdit.mockRejectedValue(new Error('boom'));
+
+    const res = await editContent(['goods.title'], 'warm it up', 'goods');
+    expect(res.ok).toBe(false);
+    expect(stageDraftTree).not.toHaveBeenCalled();
+  });
+
+  it('reports cleanly (and does not stage) when Bohdi changes nothing', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    readDraftTree.mockResolvedValue(null);
+    loadHomeEnvelope.mockResolvedValue(structuredClone(liveEnv));
+    loadNicheVoice.mockResolvedValue({ displayName: 'x', body: '' });
+    runContentEdit.mockResolvedValue({ values: {} });
+
+    const res = await editContent(['goods.title'], 'make it cozier', 'goods');
+    expect(res.ok).toBe(false);
+    expect(stageDraftTree).not.toHaveBeenCalled();
+  });
+
+  it('rejects unknown field ids without calling Bohdi', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    const res = await editContent(['not.a.field'], 'x');
+    expect(res.ok).toBe(false);
+    expect(runContentEdit).not.toHaveBeenCalled();
+  });
+
+  it('fails cleanly with no store', async () => {
+    getCurrentShop.mockResolvedValue(null);
+    const res = await editContent(['goods.title'], 'x', 'goods');
+    expect(res.ok).toBe(false);
+    expect(runContentEdit).not.toHaveBeenCalled();
   });
 });
 

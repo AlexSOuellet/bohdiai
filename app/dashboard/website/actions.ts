@@ -13,9 +13,26 @@ import { normaliseTexture, type StoredTexture } from '@/lib/editor/texture';
 import { MOODS, type MoodKey } from '@/lib/moods';
 import { readDraftTree, stageDraftTree, publishDraft, resetDraft } from '@/lib/editor/draft';
 import { loadHomeEnvelope } from '@/lib/storefront/load-envelope';
+import { EDITABLE_FIELDS, getFieldValue, setFieldValue } from '@/lib/editor/editable-fields';
+import { runContentEdit } from '@/lib/editor/content-agent';
+import { loadNicheVoice } from '@/lib/editor/niche-voice';
+import type { SectionKey } from '@/lib/archetypes/main-street/families';
 import { logger } from '@/lib/logger';
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
+
+/** Mark a section as "made yours" on the envelope (the walkthrough's completeness
+ *  marker — a section not in `madeYours` and not hidden is still placeholder).
+ *  Returns a new tree; never mutates. Shared by editContent / uploadStoreImage /
+ *  toggleSection (extracted to section-visibility when those land). */
+function markSectionMade(tree: Record<string, unknown>, section: SectionKey): Record<string, unknown> {
+  const next = structuredClone(tree);
+  const root = ((next['root'] as Record<string, unknown> | undefined) ?? (next['root'] = {})) as Record<string, unknown>;
+  const content = ((root['content'] as Record<string, unknown> | undefined) ?? (root['content'] = {})) as Record<string, unknown>;
+  const cur = Array.isArray(content['madeYours']) ? (content['madeYours'] as string[]) : [];
+  if (!cur.includes(section)) content['madeYours'] = [...cur, section];
+  return next;
+}
 
 function isMoodKey(value: string): value is MoodKey {
   return Object.prototype.hasOwnProperty.call(MOODS, value);
@@ -55,6 +72,60 @@ export async function stageLook(skinKey: string, moodKey: string, texture?: Stor
     logger.warn('stageLook: apply failed', { tenantId: shop.tenantId, err: String(err) });
     return { ok: false, error: 'This store can’t take a new look right now.' };
   }
+
+  const staged = await stageDraftTree(shop.tenantId, next);
+  if (!staged.ok) return { ok: false, error: 'Could not save your changes.' };
+  revalidatePath('/dashboard/website');
+  return { ok: true };
+}
+
+/** Stage Bohdi's content rewrites into the draft. Resolves the named fields, reads
+ *  their current values from the draft (seeded from live on first edit), grounds
+ *  Bohdi in the shop's niche voice, and folds his rewrites back onto the draft —
+ *  marking the section made-yours. Never touches live; on a Bohdi failure the draft
+ *  is left untouched and a friendly error is returned. */
+export async function editContent(
+  fieldIds: string[],
+  instruction: string,
+  section?: SectionKey,
+): Promise<ActionResult> {
+  const fields = EDITABLE_FIELDS.filter((f) => fieldIds.includes(f.id));
+  if (fields.length === 0) return { ok: false, error: 'Nothing to edit.' };
+
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to update.' };
+
+  // Seed from the current draft, else from live (first edit creates the draft).
+  const draftTree = await readDraftTree(shop.tenantId);
+  let baseTree: Record<string, unknown>;
+  if (draftTree !== null) {
+    baseTree = draftTree;
+  } else {
+    const live = await loadHomeEnvelope(shop.tenantId);
+    if (live === null) return { ok: false, error: 'Could not load your store.' };
+    baseTree = { root: live };
+  }
+
+  const current: Record<string, unknown> = {};
+  for (const f of fields) current[f.id] = getFieldValue(baseTree, f.id);
+
+  const niche = await loadNicheVoice(shop.tenantId);
+
+  let values: Record<string, unknown>;
+  try {
+    ({ values } = await runContentEdit({ fields, current, instruction, niche }));
+  } catch (err) {
+    logger.warn('editContent: Bohdi failed', { tenantId: shop.tenantId, err: String(err) });
+    return { ok: false, error: 'Couldn’t write that just now — try again.' };
+  }
+
+  if (Object.keys(values).length === 0) {
+    return { ok: false, error: 'That didn’t change any words — try saying it a different way, or use the feeling picker for the look.' };
+  }
+
+  let next = baseTree;
+  for (const [id, value] of Object.entries(values)) next = setFieldValue(next, id, value);
+  if (section !== undefined) next = markSectionMade(next, section);
 
   const staged = await stageDraftTree(shop.tenantId, next);
   if (!staged.ok) return { ok: false, error: 'Could not save your changes.' };

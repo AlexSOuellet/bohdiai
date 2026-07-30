@@ -108,35 +108,42 @@ export function fieldsForSection(section: SectionKey): readonly EditableField[] 
   return EDITABLE_FIELDS.filter((f) => f.section === section);
 }
 
-type EnvelopeLike = { root?: { content?: Record<string, unknown> } };
+/** The home envelope is a `layout_tree` — `{ root: { content: {...} } }` — carried
+ *  as a plain `Record` through the draft/staging layer, so these helpers accept and
+ *  return that same loose shape and narrow at runtime. */
+type Tree = Record<string, unknown>;
+
+function asRecord(v: unknown): Record<string, unknown> | undefined {
+  return v != null && typeof v === 'object' ? (v as Record<string, unknown>) : undefined;
+}
 
 /** Read a field's current value from an envelope by id. Returns `undefined` for an
  *  unknown id or a path that isn't present in the envelope. */
-export function getFieldValue(env: EnvelopeLike, id: string): unknown {
+export function getFieldValue(env: Tree, id: string): unknown {
   const field = getField(id);
   if (!field) return undefined;
-  let node: unknown = env?.root?.content;
+  let node: unknown = asRecord(env['root'])?.['content'];
   for (const key of field.path) {
-    if (node == null || typeof node !== 'object') return undefined;
-    node = (node as Record<string, unknown>)[key];
+    const rec = asRecord(node);
+    if (!rec) return undefined;
+    node = rec[key];
   }
   return node;
 }
 
 /** Return a NEW envelope with the field set to `value`, without mutating the input.
  *  An unknown id returns the envelope unchanged (cloned). */
-export function setFieldValue<T extends EnvelopeLike>(env: T, id: string, value: unknown): T {
+export function setFieldValue<T extends Tree>(env: T, id: string, value: unknown): T {
   const field = getField(id);
   const next = structuredClone(env);
   if (!field || field.path.length === 0) return next;
-  const root = (next.root ??= {} as NonNullable<T['root']>);
-  const content = (root.content ??= {});
+  const root = (asRecord(next['root']) ?? ((next as Tree)['root'] = {})) as Record<string, unknown>;
+  const content = (asRecord(root['content']) ?? (root['content'] = {})) as Record<string, unknown>;
   let node: Record<string, unknown> = content;
   const path = field.path;
   for (let i = 0; i < path.length - 1; i += 1) {
     const key = path[i] as string;
-    const child = node[key];
-    if (child == null || typeof child !== 'object') node[key] = {};
+    if (!asRecord(node[key])) node[key] = {};
     node = node[key] as Record<string, unknown>;
   }
   node[path[path.length - 1] as string] = value;
