@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { getCurrentShop } from '@/lib/dashboard/current-shop';
 import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
@@ -7,6 +7,7 @@ import { readDraftTree } from '@/lib/editor/draft';
 import { mintPreviewToken } from '@/lib/editor/preview-token';
 import { loadHomeEnvelope } from '@/lib/storefront/load-envelope';
 import { EDITABLE_FIELDS, getFieldValue } from '@/lib/editor/editable-fields';
+import { walkComplete } from '@/lib/editor/walkthrough';
 import MakeItYours from '@/app/dashboard/website/_components/MakeItYours';
 
 export const metadata = { title: 'Make it yours — BohdiAI' };
@@ -24,6 +25,11 @@ export default async function MakeItYoursPage() {
   // Read the current words from the draft (so a returning maker resumes) or live.
   const draftTree = await readDraftTree(shop.tenantId);
   const homeEnv = draftTree ?? { root: (await loadHomeEnvelope(shop.tenantId)) ?? {} };
+
+  // Once the walk is complete the editor door is open — the walk is one-time (D69),
+  // so a finished maker who lands here is sent on to their editor.
+  if (walkComplete(homeEnv)) redirect('/dashboard/website');
+
   const values: Record<string, unknown> = {};
   for (const f of EDITABLE_FIELDS) values[f.id] = getFieldValue(homeEnv, f.id);
 

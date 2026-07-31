@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, cleanup } from '@testing-library/react';
 
 vi.mock('../actions', () => ({
   stageLook: vi.fn(),
@@ -7,6 +7,8 @@ vi.mock('../actions', () => ({
   resetStore: vi.fn(),
   editContent: vi.fn(),
   setFieldValues: vi.fn(),
+  keepSection: vi.fn(),
+  toggleSection: vi.fn(),
 }));
 
 import Editor from './Editor';
@@ -18,24 +20,16 @@ const baseProps = {
   previewToken: 'tok',
   previewOrigin: 'https://ember.example.com',
   defaultTextureOpacity: 0.5,
-  walkValues: {},
 };
 
 beforeEach(() => cleanup());
 
-describe('Editor hosting the walkthrough', () => {
-  it('auto-opens the walk on a first run', () => {
-    render(<Editor {...baseProps} firstRun />);
-    expect(screen.getByText('Your welcome')).toBeInTheDocument(); // first walk step
-    expect(screen.queryByText('Try a different feeling')).not.toBeInTheDocument();
-  });
-
-  it('a returning maker lands in the look editor, with a re-trigger that opens the walk', () => {
-    render(<Editor {...baseProps} firstRun={false} />);
+describe('Editor', () => {
+  it('opens on the look editor — the walk no longer lives here (D69, one-time walk)', () => {
+    render(<Editor {...baseProps} />);
     expect(screen.getByText('Try a different feeling')).toBeInTheDocument();
+    // the walk is a separate full-screen room now — no re-entry, no walk steps here
+    expect(screen.queryByText(/Walk me through my store again/)).not.toBeInTheDocument();
     expect(screen.queryByText('Your welcome')).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByText(/Walk me through my store again/));
-    expect(screen.getByText('Your welcome')).toBeInTheDocument();
   });
 });

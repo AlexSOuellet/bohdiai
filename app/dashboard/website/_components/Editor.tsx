@@ -6,7 +6,6 @@ import { FEELINGS, feelingShelf } from '@/lib/editor/look-shelf';
 import type { StoredTexture } from '@/lib/editor/texture';
 import { isLookDirty } from '@/lib/editor/look-dirty';
 import StyleSheetCard from './StyleSheetCard';
-import Walkthrough from './Walkthrough';
 import { stageLook, publishStore, resetStore } from '../actions';
 
 interface EditorProps {
@@ -26,10 +25,6 @@ interface EditorProps {
   defaultTextureOpacity: number;
   /** The texture setting currently saved (published) on the store. Absent → family default. */
   savedTexture?: StoredTexture | undefined;
-  /** Nothing made-yours yet — auto-launch the "Make It Yours" walk on mount. */
-  firstRun: boolean;
-  /** id → current word value, seeding the walk's "write it myself" fields. */
-  walkValues: Record<string, unknown>;
 }
 
 /** One complete look selection. Every editing change produces a new one and stages
@@ -54,7 +49,7 @@ function textureFields(texture: StoredTexture | undefined): Pick<Selection, 'tex
   return { textureKey: t.mode === 'none' ? 'none' : null, opacity: t.mode === 'default' ? t.opacity : null };
 }
 
-export default function Editor({ currentSkin, currentFeeling, stagedLook, previewToken, previewOrigin, defaultTextureOpacity, savedTexture, firstRun, walkValues }: EditorProps) {
+export default function Editor({ currentSkin, currentFeeling, stagedLook, previewToken, previewOrigin, defaultTextureOpacity, savedTexture }: EditorProps) {
   const liveInit: Selection = { skin: currentSkin, feeling: currentFeeling, ...textureFields(savedTexture) };
   const stagedInit: Selection = stagedLook
     ? { skin: stagedLook.skin, feeling: stagedLook.feeling, ...textureFields(stagedLook.texture) }
@@ -72,11 +67,6 @@ export default function Editor({ currentSkin, currentFeeling, stagedLook, previe
   const [previewOpacity, setPreviewOpacity] = useState<number | null>(stagedInit.opacity);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
-  // The "Make It Yours" walk auto-opens on a first run; a maker can re-enter it later.
-  const [walkOpen, setWalkOpen] = useState(firstRun);
-  // Bumped after any staged content change to force the preview iframe to re-fetch
-  // the draft (a content edit doesn't change the look params, so the src alone won't).
-  const [previewNonce, setPreviewNonce] = useState(0);
   // The selection at the start of an opacity drag, so one drag is one undo step.
   const dragStartRef = useRef<Selection | null>(null);
 
@@ -180,7 +170,7 @@ export default function Editor({ currentSkin, currentFeeling, stagedLook, previe
   // would leave reveal-gated sections (products especially) invisible. `previewStill`
   // tells the storefront to render those reveals already resolved. The full-size
   // Preview link keeps the real scroll animation (it works in a real tab).
-  const iframeSrc = `${src}&previewStill=1&n=${previewNonce}`;
+  const iframeSrc = `${src}&previewStill=1`;
   const opacityPct = Math.round((selected.opacity ?? defaultTextureOpacity) * 100);
 
   return (
@@ -190,25 +180,9 @@ export default function Editor({ currentSkin, currentFeeling, stagedLook, previe
         <link key={s.key} rel="stylesheet" href={s.fontHref} />
       ))}
 
-      {/* Left column — the "Make It Yours" walk, or the look editor. */}
-      {walkOpen ? (
-        <div className="min-h-0 overflow-y-auto border-b border-white/8 md:border-b-0 md:border-r">
-          <Walkthrough
-            values={walkValues}
-            firstRun={firstRun}
-            onChanged={() => setPreviewNonce((n) => n + 1)}
-            onExit={() => setWalkOpen(false)}
-          />
-        </div>
-      ) : (
+      {/* Left column — the look editor (try on a feeling). The content editing area
+          is a separate area added alongside this. */}
       <div className="min-h-0 overflow-y-auto border-b border-white/8 px-6 py-8 md:border-b-0 md:border-r">
-        <button
-          type="button"
-          onClick={() => setWalkOpen(true)}
-          className="mb-6 w-full rounded-lg border border-honey/30 bg-honey/5 px-4 py-2.5 text-sm text-honey-warm transition-colors hover:border-honey/50 hover:bg-honey/10"
-        >
-          Walk me through my store again
-        </button>
         <h1 className="font-serif text-2xl text-text">Try a different feeling</h1>
         <p className="mt-2 text-sm text-muted">
           See your store in another feeling — same products, same words, a new look. Everything you
@@ -344,7 +318,6 @@ export default function Editor({ currentSkin, currentFeeling, stagedLook, previe
           </div>
         </div>
       </div>
-      )}
 
       {/* Live preview */}
       <div className="relative flex min-h-[60vh] flex-col bg-bg-2/40 md:min-h-0">

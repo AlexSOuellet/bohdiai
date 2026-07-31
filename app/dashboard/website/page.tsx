@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { getCurrentShop } from '@/lib/dashboard/current-shop';
 import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
@@ -9,8 +9,7 @@ import { readDraftTree } from '@/lib/editor/draft';
 import { mintPreviewToken } from '@/lib/editor/preview-token';
 import { readStoredTexture } from '@/lib/editor/texture';
 import { loadHomeEnvelope } from '@/lib/storefront/load-envelope';
-import { EDITABLE_FIELDS, getFieldValue } from '@/lib/editor/editable-fields';
-import { WALKTHROUGH_STEPS, placeholderSections } from '@/lib/editor/walkthrough';
+import { walkComplete } from '@/lib/editor/walkthrough';
 import { MOODS, type MoodKey } from '@/lib/moods';
 import Editor from './_components/Editor';
 
@@ -72,13 +71,10 @@ export default async function MyWebsitePage() {
 
   const origin = storefrontOrigin(shop.subdomain, (await headers()).get('host'));
 
-  // The "Make It Yours" walk reads the current words. Use the draft if the maker has
-  // one (so a returning maker resumes their edits), else the live envelope. First run
-  // = nothing has been made-yours yet (every walkable section is still placeholder).
+  // The editor is gated behind the "Make It Yours" walk (D69): until every section
+  // is resolved, the maker is sent to the full-screen walk instead of the editor.
   const homeEnv = draftTree ?? { root: (await loadHomeEnvelope(shop.tenantId)) ?? {} };
-  const walkValues: Record<string, unknown> = {};
-  for (const f of EDITABLE_FIELDS) walkValues[f.id] = getFieldValue(homeEnv, f.id);
-  const firstRun = placeholderSections(homeEnv).length === WALKTHROUGH_STEPS.length;
+  if (!walkComplete(homeEnv)) redirect('/make-it-yours');
 
   return (
     <Editor
@@ -89,8 +85,6 @@ export default async function MyWebsitePage() {
       previewOrigin={origin}
       defaultTextureOpacity={defaultTextureOpacity}
       savedTexture={look.texture}
-      firstRun={firstRun}
-      walkValues={walkValues}
     />
   );
 }
