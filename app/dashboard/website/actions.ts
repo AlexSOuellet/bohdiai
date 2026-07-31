@@ -14,6 +14,7 @@ import { MOODS, type MoodKey } from '@/lib/moods';
 import { readDraftTree, stageDraftTree, publishDraft, resetDraft } from '@/lib/editor/draft';
 import { loadHomeEnvelope } from '@/lib/storefront/load-envelope';
 import { EDITABLE_FIELDS, getFieldValue, setFieldValue } from '@/lib/editor/editable-fields';
+import { markSectionMade, markSectionKept, setSectionHidden } from '@/lib/editor/section-state';
 import { runContentEdit } from '@/lib/editor/content-agent';
 import { loadNicheVoice } from '@/lib/editor/niche-voice';
 import type { SectionKey } from '@/lib/archetypes/main-street/families';
@@ -21,17 +22,13 @@ import { logger } from '@/lib/logger';
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
-/** Mark a section as "made yours" on the envelope (the walkthrough's completeness
- *  marker — a section not in `madeYours` and not hidden is still placeholder).
- *  Returns a new tree; never mutates. Shared by editContent / uploadStoreImage /
- *  toggleSection (extracted to section-visibility when those land). */
-function markSectionMade(tree: Record<string, unknown>, section: SectionKey): Record<string, unknown> {
-  const next = structuredClone(tree);
-  const root = ((next['root'] as Record<string, unknown> | undefined) ?? (next['root'] = {})) as Record<string, unknown>;
-  const content = ((root['content'] as Record<string, unknown> | undefined) ?? (root['content'] = {})) as Record<string, unknown>;
-  const cur = Array.isArray(content['madeYours']) ? (content['madeYours'] as string[]) : [];
-  if (!cur.includes(section)) content['madeYours'] = [...cur, section];
-  return next;
+/** Load the maker's working base tree — the current draft if there is one, else a
+ *  fresh tree seeded from the live envelope (the first edit creates the draft). */
+async function loadBaseTree(tenantId: string): Promise<Record<string, unknown> | null> {
+  const draftTree = await readDraftTree(tenantId);
+  if (draftTree !== null) return draftTree;
+  const live = await loadHomeEnvelope(tenantId);
+  return live === null ? null : { root: live };
 }
 
 function isMoodKey(value: string): value is MoodKey {
@@ -52,15 +49,8 @@ export async function stageLook(skinKey: string, moodKey: string, texture?: Stor
   if (shop === null) return { ok: false, error: 'No store to update.' };
 
   // Start from the current draft if there is one, else seed from the live envelope.
-  const draftTree = await readDraftTree(shop.tenantId);
-  let baseTree: Record<string, unknown>;
-  if (draftTree !== null) {
-    baseTree = draftTree;
-  } else {
-    const live = await loadHomeEnvelope(shop.tenantId);
-    if (live === null) return { ok: false, error: 'Could not load your store.' };
-    baseTree = { root: live };
-  }
+  const baseTree = await loadBaseTree(shop.tenantId);
+  if (baseTree === null) return { ok: false, error: 'Could not load your store.' };
 
   let next: Record<string, unknown>;
   try {
@@ -96,15 +86,8 @@ export async function editContent(
   if (shop === null) return { ok: false, error: 'No store to update.' };
 
   // Seed from the current draft, else from live (first edit creates the draft).
-  const draftTree = await readDraftTree(shop.tenantId);
-  let baseTree: Record<string, unknown>;
-  if (draftTree !== null) {
-    baseTree = draftTree;
-  } else {
-    const live = await loadHomeEnvelope(shop.tenantId);
-    if (live === null) return { ok: false, error: 'Could not load your store.' };
-    baseTree = { root: live };
-  }
+  const baseTree = await loadBaseTree(shop.tenantId);
+  if (baseTree === null) return { ok: false, error: 'Could not load your store.' };
 
   const current: Record<string, unknown> = {};
   for (const f of fields) current[f.id] = getFieldValue(baseTree, f.id);
@@ -164,21 +147,40 @@ export async function setFieldValues(
   const shop = await getCurrentShop();
   if (shop === null) return { ok: false, error: 'No store to update.' };
 
-  const draftTree = await readDraftTree(shop.tenantId);
-  let baseTree: Record<string, unknown>;
-  if (draftTree !== null) {
-    baseTree = draftTree;
-  } else {
-    const live = await loadHomeEnvelope(shop.tenantId);
-    if (live === null) return { ok: false, error: 'Could not load your store.' };
-    baseTree = { root: live };
-  }
+  const baseTree = await loadBaseTree(shop.tenantId);
+  if (baseTree === null) return { ok: false, error: 'Could not load your store.' };
 
   let next = baseTree;
   for (const c of clean) next = setFieldValue(next, c.id, c.value);
   if (section !== undefined) next = markSectionMade(next, section);
 
   const staged = await stageDraftTree(shop.tenantId, next);
+  if (!staged.ok) return { ok: false, error: 'Could not save your changes.' };
+  revalidatePath('/dashboard/website');
+  return { ok: true };
+}
+
+/** Mark a section kept-as-built — the maker looked at it and is keeping our version
+ *  (D69). Resolves keep-or-change and optional sections without an edit. */
+export async function keepSection(section: SectionKey): Promise<ActionResult> {
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to update.' };
+  const baseTree = await loadBaseTree(shop.tenantId);
+  if (baseTree === null) return { ok: false, error: 'Could not load your store.' };
+  const staged = await stageDraftTree(shop.tenantId, markSectionKept(baseTree, section));
+  if (!staged.ok) return { ok: false, error: 'Could not save your changes.' };
+  revalidatePath('/dashboard/website');
+  return { ok: true };
+}
+
+/** Turn an optional section off or back on (D69). Off keeps the content, so turning
+ *  it back on restores it. Marks nothing made-yours — hiding is its own resolution. */
+export async function toggleSection(section: SectionKey, hidden: boolean): Promise<ActionResult> {
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to update.' };
+  const baseTree = await loadBaseTree(shop.tenantId);
+  if (baseTree === null) return { ok: false, error: 'Could not load your store.' };
+  const staged = await stageDraftTree(shop.tenantId, setSectionHidden(baseTree, section, hidden));
   if (!staged.ok) return { ok: false, error: 'Could not save your changes.' };
   revalidatePath('/dashboard/website');
   return { ok: true };
