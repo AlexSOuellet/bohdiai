@@ -868,6 +868,8 @@ This adds a Staging subsection to the Full Plan's Beta phase. It supersedes noth
 
 ### D67. The maker can rewrite anything we generated; the "Make It Yours" walk replaces every placeholder — words and photos — built in phases
 
+> **⚠ REFINED BY D69 (2026-07-31).** The phased build order (words → photos → sections → products) stands, but the maker-facing model is no longer a walkthrough panel hosted inside the editor. The walk is a mandatory full-screen continuation of onboarding that gates the editor, run section by section. See D69.
+
 Two calls from the editor planning conversation, recorded so they don't drift back.
 
 **The maker can rewrite ANYTHING we generated.** When we planned Bohdi's content editing, the first cut hand-picked a small "safe subset" of text he was allowed to touch. That was backwards. The maker owns their store; they can reword *anything* we wrote — every generated text field, down to the small labels. The editable set is comprehensive, not curated. The only things left out aren't "locked," they simply aren't ours to rewrite: the maker's own inputs (the shop name — it came from them; they change it by renaming, not by Bohdi rewording), images (handled by upload, not rewording), and the store's structure/treatments/link-destinations (the family's call — the content-only non-negotiable). Default to editable; when in doubt, it's editable.
@@ -882,6 +884,8 @@ Two calls from the editor planning conversation, recorded so they don't drift ba
 
 ### D68. The "Make It Yours" walk: personal content needs the maker's real input; the rest Bohdi can write — and the maker can always write any of it themselves
 
+> **⚠ REFINED BY D70 (2026-07-31) on reviews.** The "a testimonial is never AI-generated" clause is softened: placeholder reviews are allowed as draft scaffolding; the publish gate — not the draft — enforces real-or-off. The rest of D68 stands. See D70.
+
 Writing a maker's story from a feeling word invents their life and puts it on a real person's real store. That's fabrication, not craft, and it's dishonest. So the walk runs at two temperaments, split by whether the content asserts facts about the maker.
 
 **Personal content** — the About, the story, the founder line — is written only from what the maker actually tells us. The About step asks a few targeted questions (how it started, what they make, what makes theirs theirs, who it's for) to pull the real material out; Bohdi arranges their answers into the About beats and the founder quote. There is no "you write it from a feeling" shortcut here. If the maker won't give input, we don't write it — the section stays honestly unfinished and the walk says so. Completeness ("no placeholder left") never justifies fabrication.
@@ -893,6 +897,34 @@ Writing a maker's story from a feeling word invents their life and puts it on a 
 **Reviews stay their own case:** real customer quotes only, or switch the section off. A testimonial is never AI-generated — it isn't even the maker's to invent.
 
 This refines D67 and the walkthrough plan (`plans/2026-07-29-make-it-yours-walkthrough.md`) by removing the "you write it, here's the feeling" hatch for personal content, and by making "the maker writes it directly" an explicit first-class path on every field, not just a tweak-after.
+
+---
+
+## 2026-07-31 (session 80)
+
+### D69. The "Make It Yours" walk is a mandatory continuation of onboarding that gates the editor — section by section, everything shown on, with a live preview
+
+The walk is not a feature inside the editor. It's the second half of onboarding. Onboarding today ends when Bohdi builds the store; the maker sees what we made and is sent to log in. The walk picks up the first time they log into their dashboard — it loads full-screen on its own, not behind a prompt or an opt-in. It is mandatory: the maker cannot reach the real editor until they finish it. But it's built to be easy, guided, and reassuring, not a gauntlet.
+
+The walk goes through the store one section at a time. Every section is shown turned **on**, populated with what Bohdi built — nothing is hidden or off by default. For each section the maker's job is to resolve it, and resolving means one of three things: keep it as built, change it, or skip it (which turns the section off). The gate to the editor is that every section has been resolved one of those ways.
+
+Each section opens with plain-English guidance: what this section is, what the maker **must** replace before they can publish, and what's optional. Below that, the individual pieces of the section appear as edit boxes showing their current content. "Leave as is" appears only where it's appropriate — on optional pieces. On pieces that must be replaced there is no leave-as-is; the only path is to edit them (or, for a whole optional section, skip it off). Choosing to edit a piece steps the maker through that edit — light for brand-voice copy (type your own, or ask Bohdi), deeper for personal content (the About questions, per D68).
+
+Alongside the controls the maker sees a live preview of the actual section as it will look, and every change reflects in that preview immediately. Watching their store become theirs is the point — this is what separates the walk from dropping the maker into a bare editor. The walk reuses the draft-preview plumbing already built (the live draft render, the HMAC preview token, staged navigation — Sessions 77–78), rather than inventing a new preview.
+
+Only two sections require the maker's own real input before finishing: the **About** and the **Listings** (real products). Collections and reviews can be skipped off. Everything else can be kept as built. Publishing is separately gated on honesty: the store can't go live while the About is still ours, while products are still placeholders, or while any review is still fabricated (see D70).
+
+The walk is a one-time pass to make the site **legitimate** — real words, real products, no leftover fill-from-us — not a one-and-done editing session. The maker is told this plainly: once the walk is done the editor is always there, and they can come back and rework anything whenever they want. The walk makes the store real; the editor is where they keep refining it afterward.
+
+This refines D67, which framed the walk as phased (words → photos → sections → products) and hosted the walkthrough panel inside the editor. The phased build order stands as a *build-sequencing* choice, but the maker-facing model is now one unified section-by-section pass that gates the editor. A sequencing consequence to hold onto: because Listings is a required section and the full listings build is its own large phase, the hard editor gate can't be fully enforced until listings exists — the words pass (including the required About) can be built and tested first, and the gate tightens as each required piece lands.
+
+**Open item:** whether any structurally load-bearing section (the hero especially) is exempt from "skip → off," or whether everything except About and Listings is genuinely skippable. Alex named collections and reviews as skippable; the full list of what can be turned off vs. must be kept-or-changed isn't settled yet.
+
+### D70. Placeholder reviews are allowed as draft scaffolding; the publish gate — not the draft — enforces real-or-off (refines D68)
+
+D68 said a testimonial is never AI-generated — real customer quotes only, or the section off. This refines that. The generated store is built with every section on and populated, and reviews are no exception: the maker sees AI-generated placeholder reviews in the walk, the same way they see placeholder products, so the section demonstrates itself. Those placeholders are scaffolding for the draft only. In the walk the maker either replaces the placeholder quotes with real ones, or skips the section and it turns off. The honesty rule moves from the draft to the publish gate: the store can't go live while any AI-generated review is still showing. A fabricated review can exist in the draft as scaffolding; it can never reach the published, live store.
+
+So D68's principle holds where it counts — no fake testimonial is ever published, and the maker can't invent one — but "never AI-generated" becomes "never *published* with AI-generated." Reviews now behave like every other placeholder: shown on, made real or skipped off, honesty enforced at publish.
 
 ---
 
