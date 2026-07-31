@@ -8,6 +8,8 @@
 
 **Tech Stack:** Next.js 16 App Router (RSC + server actions), React client components, Vitest + Testing Library, Zod schemas, the existing draft/preview/HMAC-token plumbing.
 
+**Progress (Session 80):** Tasks 1–9 done + committed, each test-first (plus a live-found `fix(proxy)` for `/make-it-yours` on shop subdomains). **Remaining: Tasks 10–15** — single-section preview, editor content area, find-us schema + dates editor, About-story bug, finish screen. Alex live-tested 1–9; first pass good, unspecified fixes flagged (ask him first next session).
+
 **Execution note:** Tasks 1–4 and 12 are pure logic / schema and carry complete test-first code. Tasks 5–11 and 13–15 are components/routes: each names its exact files, the test to write with concrete assertions, and the implementation shape; final JSX is written at execution against the neighbouring component and test patterns already in `app/dashboard/website/_components/` (read the sibling file named in the task before writing). No task is complete without its test green, `tsc`, and lint clean.
 
 ---
