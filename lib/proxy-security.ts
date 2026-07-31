@@ -77,6 +77,11 @@ export function isAppSurfacePath(pathname: string): boolean {
     pathname.startsWith('/signin/') ||
     pathname.startsWith('/auth') ||
     pathname === '/dashboard' ||
-    pathname.startsWith('/dashboard/')
+    pathname.startsWith('/dashboard/') ||
+    // The "Make It Yours" walk (D69) is dashboard-side but lives outside /dashboard
+    // to escape its chrome; it's still an app surface a maker reaches on their own
+    // shop subdomain, so it must pass through rather than paint the storefront.
+    pathname === '/make-it-yours' ||
+    pathname.startsWith('/make-it-yours/')
   );
 }

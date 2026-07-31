@@ -125,6 +125,8 @@ describe('isAppSurfacePath', () => {
     expect(isAppSurfacePath('/auth/callback')).toBe(true);
     expect(isAppSurfacePath('/dashboard')).toBe(true);
     expect(isAppSurfacePath('/dashboard/website')).toBe(true);
+    // the Make It Yours walk lives outside /dashboard but is still an app surface
+    expect(isAppSurfacePath('/make-it-yours')).toBe(true);
   });
 
   it('lets the storefront paint everything else', () => {
