@@ -3,7 +3,8 @@
 import { useMemo, useState, useTransition } from 'react';
 import { getField, type EditableField } from '@/lib/editor/editable-fields';
 import type { SectionKey } from '@/lib/archetypes/main-street/families';
-import { editContent, setFieldValues } from '../actions';
+import type { SectionClass } from '@/lib/editor/walkthrough';
+import { editContent, setFieldValues, keepSection, toggleSection } from '../actions';
 
 /** Bohdi's per-section lead — what he says before the ask. Warm, first person. */
 const LEADS: Record<SectionKey, { title: string; lead: string; placeholder: string }> = {
@@ -79,29 +80,48 @@ function FieldEditor({
   );
 }
 
+/** What the maker has done with a section this session — drives the confirmation
+ *  copy and which controls show. `off` hides the edit area entirely. */
+type Status = 'none' | 'wrote' | 'kept' | 'off';
+
 export interface SectionEditorProps {
   /** The section being edited (drives the lead + which fields show). */
   section: SectionKey;
+  /** How this section may be resolved (drives the keep/turn-off controls). */
+  cls: SectionClass;
+  /** Whether "keep as built" is offered (false for reviews — D70). */
+  keepable: boolean;
   /** The editable text field ids this section rewrites. */
   fieldIds: readonly string[];
   /** id → current value, seeding the "write it myself" fields. */
   values: Record<string, unknown>;
   /** The targeted questions for a personal section (story), if any. */
   questions?: readonly string[] | undefined;
-  /** Whether a change has already landed this session (drives the confirmation +
-   *  the "try another take" label). Owned by the host so it can also light Next. */
-  wrote: boolean;
-  /** Called when a change lands (Bohdi wrote, or the maker saved their words). */
-  onWrote: () => void;
+  /** Whether the section is currently turned off (seeds the control state). */
+  hidden?: boolean | undefined;
+  /** Report resolution up so the host can gate Next: true once made/kept/off,
+   *  false again if the maker turns a section back on. */
+  onResolved: (resolved: boolean) => void;
   /** Ask the host to refresh the preview after a staged change. */
   onChanged: () => void;
 }
 
-/** The reusable per-section text editor — Bohdi writes it from a direction, or the
- *  maker types it verbatim. Hosted by the walk (gated sequence) and the editor's
- *  content area (free navigation). Content-only: it writes text fields to the draft
- *  via the same actions; never touches look, structure, or link destinations. */
-export default function SectionEditor({ section, fieldIds, values, questions, wrote, onWrote, onChanged }: SectionEditorProps) {
+/** The reusable per-section editor — Bohdi writes it from a direction, or the maker
+ *  types it verbatim, or (for optional sections) keeps or turns it off. Hosted by
+ *  the walk (gated sequence) and the editor's content area (free navigation).
+ *  Content-only: writes text fields to the draft via the same actions; never
+ *  touches look, structure, or link destinations. */
+export default function SectionEditor({
+  section,
+  cls,
+  keepable,
+  fieldIds,
+  values,
+  questions,
+  hidden,
+  onResolved,
+  onChanged,
+}: SectionEditorProps) {
   const lead = LEADS[section];
   const fields = useMemo(
     () => fieldIds.map((id) => getField(id)).filter((f): f is EditableField => f !== undefined),
@@ -110,8 +130,11 @@ export default function SectionEditor({ section, fieldIds, values, questions, wr
   const [instruction, setInstruction] = useState('');
   const [mode, setMode] = useState<'ask' | 'own'>('ask');
   const [local, setLocal] = useState<Record<string, unknown>>(values);
+  const [status, setStatus] = useState<Status>(hidden ? 'off' : 'none');
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  const wrote = status === 'wrote';
 
   function askBohdi() {
     if (instruction.trim().length === 0) return;
@@ -119,7 +142,8 @@ export default function SectionEditor({ section, fieldIds, values, questions, wr
     startTransition(async () => {
       const res = await editContent(fieldIds, instruction, section);
       if (res.ok) {
-        onWrote();
+        setStatus('wrote');
+        onResolved(true);
         onChanged();
       } else {
         setMessage(res.error);
@@ -133,13 +157,65 @@ export default function SectionEditor({ section, fieldIds, values, questions, wr
     startTransition(async () => {
       const res = await setFieldValues(updates, section);
       if (res.ok) {
-        onWrote();
+        setStatus('wrote');
+        onResolved(true);
         onChanged();
       } else {
         setMessage(res.error);
       }
     });
   }
+
+  function keep() {
+    setMessage(null);
+    startTransition(async () => {
+      const res = await keepSection(section);
+      if (res.ok) {
+        setStatus('kept');
+        onResolved(true);
+      } else {
+        setMessage(res.error);
+      }
+    });
+  }
+
+  function setOff(off: boolean) {
+    setMessage(null);
+    startTransition(async () => {
+      const res = await toggleSection(section, off);
+      if (res.ok) {
+        setStatus(off ? 'off' : 'none');
+        onResolved(off);
+        onChanged();
+      } else {
+        setMessage(res.error);
+      }
+    });
+  }
+
+  // A turned-off section collapses to a single "turn it back on" affordance.
+  if (status === 'off') {
+    return (
+      <div>
+        <h1 className="font-serif text-2xl text-text">{lead.title}</h1>
+        <p className="mt-3 text-sm leading-relaxed text-text-soft">
+          This section is turned off — it won’t show on your store.
+        </p>
+        <button
+          type="button"
+          onClick={() => setOff(false)}
+          disabled={pending}
+          className="mt-6 rounded-lg border border-white/12 px-4 py-2 text-sm text-text-soft transition-colors hover:border-honey/50 hover:text-honey-warm disabled:opacity-40"
+        >
+          Turn it back on
+        </button>
+        {message && <p className="mt-4 text-sm text-text-soft">{message}</p>}
+      </div>
+    );
+  }
+
+  const canKeep = keepable && cls !== 'must-change';
+  const canTurnOff = cls === 'optional';
 
   return (
     <div>
@@ -221,8 +297,38 @@ export default function SectionEditor({ section, fieldIds, values, questions, wr
             There it is — see it in your store on the right. Keep it, or ask for another take.
           </p>
         )}
+        {status === 'kept' && (
+          <p className="mt-4 text-sm text-honey-warm">Kept — this section stays as it is.</p>
+        )}
         {message && <p className="mt-4 text-sm text-text-soft">{message}</p>}
       </div>
+
+      {/* Keep / turn-off — the resolutions besides an edit. Must-change sections
+          (story, products) show neither; they can only be edited. */}
+      {(canKeep || canTurnOff) && (
+        <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-white/8 pt-5">
+          {canKeep && (
+            <button
+              type="button"
+              onClick={keep}
+              disabled={pending}
+              className="rounded-lg border border-white/12 px-4 py-2 text-sm text-text-soft transition-colors hover:border-honey/50 hover:text-honey-warm disabled:opacity-40"
+            >
+              Keep as built
+            </button>
+          )}
+          {canTurnOff && (
+            <button
+              type="button"
+              onClick={() => setOff(true)}
+              disabled={pending}
+              className="text-sm text-muted underline-offset-4 transition-colors hover:text-text-soft hover:underline disabled:opacity-40"
+            >
+              Turn it off
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

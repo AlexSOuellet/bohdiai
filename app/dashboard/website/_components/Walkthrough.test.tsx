@@ -3,17 +3,20 @@ import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 
 const editContent = vi.fn();
 const setFieldValues = vi.fn();
+const keepSection = vi.fn();
+const toggleSection = vi.fn();
 vi.mock('../actions', () => ({
   editContent: (...a: unknown[]) => editContent(...a),
   setFieldValues: (...a: unknown[]) => setFieldValues(...a),
+  keepSection: (...a: unknown[]) => keepSection(...a),
+  toggleSection: (...a: unknown[]) => toggleSection(...a),
 }));
 
 import Walkthrough from './Walkthrough';
 import { WALKTHROUGH_STEPS } from '@/lib/editor/walkthrough';
 
 beforeEach(() => {
-  editContent.mockReset();
-  setFieldValues.mockReset();
+  [editContent, setFieldValues, keepSection, toggleSection].forEach((m) => m.mockReset());
   cleanup();
 });
 
@@ -31,11 +34,20 @@ describe('Walkthrough', () => {
     expect(screen.getByText(/Step 1 of/)).toBeInTheDocument();
   });
 
-  it('the personal story step shows the targeted questions', () => {
+  it('Next is disabled until the section is resolved', () => {
     renderWalk();
-    // advance to step 2 (story)
-    fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
+    expect(screen.getByRole('button', { name: /Next/ })).toBeDisabled();
+    expect(screen.getByText(/to continue/)).toBeInTheDocument();
+  });
+
+  it('keeping the section resolves it and lets Next advance to the story step', async () => {
+    keepSection.mockResolvedValue({ ok: true });
+    renderWalk();
+    fireEvent.click(screen.getByRole('button', { name: 'Keep as built' }));
+    await screen.findByText(/Kept/);
+    fireEvent.click(screen.getByRole('button', { name: /Next/ }));
     expect(screen.getByText('Your story')).toBeInTheDocument();
+    expect(screen.getByText(/Step 2 of/)).toBeInTheDocument();
     expect(screen.getByText(/How did this start/i)).toBeInTheDocument();
   });
 
@@ -47,17 +59,9 @@ describe('Walkthrough', () => {
     await screen.findByText(/There it is/);
     expect(editContent).toHaveBeenCalledWith(WALKTHROUGH_STEPS[0]!.fieldIds, 'calm and witchy', 'hero');
     expect(onChanged).toHaveBeenCalled();
-  });
-
-  it('Keep it advances to the next step', async () => {
-    editContent.mockResolvedValue({ ok: true });
-    renderWalk();
-    fireEvent.change(screen.getByPlaceholderText(/hand-poured/i), { target: { value: 'x' } });
-    fireEvent.click(screen.getByText('Ask Bohdi to write it'));
-    await screen.findByText(/There it is/);
-    fireEvent.click(screen.getByRole('button', { name: /Keep it/ }));
+    // an edit resolves the step, so Next advances
+    fireEvent.click(screen.getByRole('button', { name: /Next/ }));
     expect(screen.getByText('Your story')).toBeInTheDocument();
-    expect(screen.getByText(/Step 2 of/)).toBeInTheDocument();
   });
 
   it('"write it myself" reveals the fields and saves verbatim via setFieldValues', async () => {

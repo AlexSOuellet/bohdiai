@@ -21,7 +21,7 @@ interface WalkthroughProps {
 export default function Walkthrough({ values, firstRun, onChanged, onExit }: WalkthroughProps) {
   const steps = WALKTHROUGH_STEPS;
   const [index, setIndex] = useState(0);
-  const [wrote, setWrote] = useState(false);
+  const [resolved, setResolved] = useState(false);
 
   const step = steps[index]!;
   const isLast = index === steps.length - 1;
@@ -30,15 +30,20 @@ export default function Walkthrough({ values, firstRun, onChanged, onExit }: Wal
     if (isLast) onExit();
     else {
       setIndex(index + 1);
-      setWrote(false);
+      setResolved(false);
     }
   }
 
   function goBack() {
     if (index === 0) return;
     setIndex(index - 1);
-    setWrote(false);
+    setResolved(false);
   }
+
+  const nextHint =
+    step.cls === 'must-change'
+      ? 'Make this yours to continue'
+      : 'Keep it, change it, or turn it off to continue';
 
   return (
     <div className="flex min-h-0 flex-col px-6 py-8">
@@ -74,16 +79,17 @@ export default function Walkthrough({ values, firstRun, onChanged, onExit }: Wal
         <SectionEditor
           key={step.section}
           section={step.section}
+          cls={step.cls}
+          keepable={step.keepable}
           fieldIds={step.fieldIds}
           values={values}
           questions={step.questions}
-          wrote={wrote}
-          onWrote={() => setWrote(true)}
+          onResolved={setResolved}
           onChanged={onChanged}
         />
       </div>
 
-      {/* Step navigation */}
+      {/* Step navigation — Next waits until this section is resolved (D69). */}
       <div className="mt-6 flex items-center justify-between border-t border-white/8 pt-5">
         <button
           type="button"
@@ -94,17 +100,14 @@ export default function Walkthrough({ values, firstRun, onChanged, onExit }: Wal
           ← Back
         </button>
         <div className="flex items-center gap-4">
-          {!wrote && (
-            <button type="button" onClick={goNext} className="text-sm text-muted transition-colors hover:text-text-soft">
-              Skip for now
-            </button>
-          )}
+          {!resolved && <span className="text-[11px] text-muted">{nextHint}</span>}
           <button
             type="button"
             onClick={goNext}
-            className="rounded-lg border border-white/12 px-4 py-2 text-sm text-text-soft transition-colors hover:border-honey/50 hover:text-honey-warm"
+            disabled={!resolved}
+            className="rounded-lg border border-white/12 px-4 py-2 text-sm text-text-soft transition-colors hover:border-honey/50 hover:text-honey-warm disabled:cursor-not-allowed disabled:opacity-30"
           >
-            {isLast ? 'Finish' : wrote ? 'Keep it →' : 'Next →'}
+            {isLast ? 'Finish' : 'Next →'}
           </button>
         </div>
       </div>
