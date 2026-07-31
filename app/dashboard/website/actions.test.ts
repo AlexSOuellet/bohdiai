@@ -205,6 +205,27 @@ describe('publishStore / resetStore', () => {
     expect((await publishStore()).ok).toBe(false);
   });
 
+  it('publishStore blocks (and does not publish) while the draft is dishonest', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    // A fresh draft — nothing made-yours, nothing hidden — is blocked on all four
+    // honesty sections (about, products, reviews, dates).
+    readDraftTree.mockResolvedValue({ root: { content: {} } });
+    const res = await publishStore();
+    expect(res.ok).toBe(false);
+    expect(publishDraft).not.toHaveBeenCalled();
+  });
+
+  it('publishStore publishes once the draft is honest', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    readDraftTree.mockResolvedValue({
+      root: { content: { madeYours: ['founder', 'goods'], hiddenSections: ['reviews', 'findUs'] } },
+    });
+    publishDraft.mockResolvedValue({ ok: true });
+    const res = await publishStore();
+    expect(res.ok).toBe(true);
+    expect(publishDraft).toHaveBeenCalledWith('t1');
+  });
+
   it('resetStore delegates to resetDraft for the current shop', async () => {
     getCurrentShop.mockResolvedValue({ tenantId: 't1' });
     resetDraft.mockResolvedValue({ ok: true });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { WALKTHROUGH_STEPS, placeholderSections, walkthroughProgress, walkComplete, sectionClass } from './walkthrough';
+import { WALKTHROUGH_STEPS, placeholderSections, walkthroughProgress, walkComplete, sectionClass, sectionResolved } from './walkthrough';
 import { markSectionMade, markSectionKept, setSectionHidden } from './section-state';
 import { EDITABLE_FIELDS } from './editable-fields';
 
@@ -45,6 +45,14 @@ describe('walkthrough', () => {
   it('a must-change section is not resolved by keep or hide — only by an edit', () => {
     expect(walkComplete(markSectionKept({ root: { content: {} } }, 'founder'))).toBe(false);
     expect(walkComplete(setSectionHidden({ root: { content: {} } }, 'goods', true))).toBe(false);
+  });
+
+  it('reviews and find-us are not keepable — keeping the fakes never resolves them', () => {
+    expect(sectionResolved(markSectionKept({ root: { content: {} } }, 'reviews'), 'reviews')).toBe(false);
+    expect(sectionResolved(markSectionKept({ root: { content: {} } }, 'findUs'), 'findUs')).toBe(false);
+    // but turning them off or making them real does resolve them
+    expect(sectionResolved(setSectionHidden({ root: { content: {} } }, 'reviews', true), 'reviews')).toBe(true);
+    expect(sectionResolved(markSectionMade({ root: { content: {} } }, 'findUs'), 'findUs')).toBe(true);
   });
 
   it('walk is complete only when every section is resolved by its allowed states', () => {

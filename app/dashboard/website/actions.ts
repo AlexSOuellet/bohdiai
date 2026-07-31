@@ -15,6 +15,7 @@ import { readDraftTree, stageDraftTree, publishDraft, resetDraft } from '@/lib/e
 import { loadHomeEnvelope } from '@/lib/storefront/load-envelope';
 import { EDITABLE_FIELDS, getFieldValue, setFieldValue } from '@/lib/editor/editable-fields';
 import { markSectionMade, markSectionKept, setSectionHidden } from '@/lib/editor/section-state';
+import { publishBlockers } from '@/lib/editor/publish-gate';
 import { runContentEdit } from '@/lib/editor/content-agent';
 import { loadNicheVoice } from '@/lib/editor/niche-voice';
 import type { SectionKey } from '@/lib/archetypes/main-street/families';
@@ -186,10 +187,22 @@ export async function toggleSection(section: SectionKey, hidden: boolean): Promi
   return { ok: true };
 }
 
-/** Publish the staged draft to the live store (promote + delete the draft). */
+/** Publish the staged draft to the live store (promote + delete the draft). Gated
+ *  by the honesty check (D68/D70): the draft is what's about to go live, so if it
+ *  still shows our About / placeholder products / fake reviews / seeded dates, we
+ *  block and name what's left. */
 export async function publishStore(): Promise<ActionResult> {
   const shop = await getCurrentShop();
   if (shop === null) return { ok: false, error: 'No store to publish.' };
+
+  const draftTree = await readDraftTree(shop.tenantId);
+  if (draftTree != null) {
+    const blockers = publishBlockers(draftTree);
+    if (blockers.length > 0) {
+      return { ok: false, error: `Before your store goes live, finish ${blockers.map((b) => b.label).join(', ')}.` };
+    }
+  }
+
   const res = await publishDraft(shop.tenantId);
   if (!res.ok) return { ok: false, error: 'Nothing to publish, or the store couldn’t be updated.' };
   revalidatePath('/dashboard/website');

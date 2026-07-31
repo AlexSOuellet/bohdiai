@@ -35,6 +35,10 @@ export interface WalkthroughStep {
   readonly fieldIds: readonly string[];
   /** How this section may be resolved (drives the walk's controls + gate). */
   readonly cls: SectionClass;
+  /** Whether "keep as built" is an allowed resolution. False for reviews + find-us:
+   *  keeping seeded fake testimonials or sample dates is dishonest (D70), so those
+   *  can only be made-real or turned off, never kept. */
+  readonly keepable: boolean;
   /** Personal content (story/founder) — needs the maker's real input; no
    *  feeling-only generation (D68). */
   readonly personal: boolean;
@@ -62,18 +66,19 @@ const STEP_META: ReadonlyArray<{
   title: string;
   section: SectionKey;
   cls: SectionClass;
+  keepable: boolean;
   personal: boolean;
   questions?: readonly string[];
 }> = [
-  { id: 'welcome', title: 'Your welcome', section: 'hero', cls: 'keep-or-change', personal: false },
-  { id: 'story', title: 'Your story', section: 'founder', cls: 'must-change', personal: true, questions: STORY_QUESTIONS },
-  { id: 'goods', title: 'Your goods', section: 'goods', cls: 'must-change', personal: false },
-  { id: 'collections', title: 'Your collections', section: 'collections', cls: 'optional', personal: false },
-  { id: 'reviews', title: 'Kind words', section: 'reviews', cls: 'optional', personal: false },
-  { id: 'marquee', title: 'The scrolling line', section: 'marquee', cls: 'optional', personal: false },
-  { id: 'findUs', title: 'Where to find you', section: 'findUs', cls: 'optional', personal: false },
-  { id: 'contact', title: 'Getting in touch', section: 'contact', cls: 'keep-or-change', personal: false },
-  { id: 'close', title: 'Your sign-off', section: 'close', cls: 'keep-or-change', personal: false },
+  { id: 'welcome', title: 'Your welcome', section: 'hero', cls: 'keep-or-change', keepable: true, personal: false },
+  { id: 'story', title: 'Your story', section: 'founder', cls: 'must-change', keepable: false, personal: true, questions: STORY_QUESTIONS },
+  { id: 'goods', title: 'Your goods', section: 'goods', cls: 'must-change', keepable: false, personal: false },
+  { id: 'collections', title: 'Your collections', section: 'collections', cls: 'optional', keepable: true, personal: false },
+  { id: 'reviews', title: 'Kind words', section: 'reviews', cls: 'optional', keepable: false, personal: false },
+  { id: 'marquee', title: 'The scrolling line', section: 'marquee', cls: 'optional', keepable: true, personal: false },
+  { id: 'findUs', title: 'Where to find you', section: 'findUs', cls: 'optional', keepable: false, personal: false },
+  { id: 'contact', title: 'Getting in touch', section: 'contact', cls: 'keep-or-change', keepable: true, personal: false },
+  { id: 'close', title: 'Your sign-off', section: 'close', cls: 'keep-or-change', keepable: true, personal: false },
 ];
 
 export const WALKTHROUGH_STEPS: readonly WalkthroughStep[] = STEP_META.map((m) => ({
@@ -91,13 +96,21 @@ export function sectionClass(section: SectionKey): SectionClass {
 }
 
 /** Whether a step is resolved for the gate, per its class:
- *   must-change → an edit landed; optional → touched at all (made/kept/hidden);
- *   keep-or-change → made-yours or kept (can't be turned off). */
+ *   must-change → an edit landed; optional → made / hidden, or kept when keepable;
+ *   keep-or-change → made-yours or kept. A non-keepable section (reviews, find-us)
+ *   never counts a "kept" — it must be made-real or turned off (D70). */
 function stepResolved(env: Record<string, unknown>, step: WalkthroughStep): boolean {
   const st = sectionState(env, step.section);
-  if (step.cls === 'must-change') return st === 'made';
-  if (step.cls === 'optional') return st !== 'unresolved';
-  return st === 'made' || st === 'kept';
+  if (st === 'made') return true;
+  if (st === 'hidden') return step.cls === 'optional';
+  if (st === 'kept') return step.keepable && step.cls !== 'must-change';
+  return false;
+}
+
+/** Whether a given section is resolved (or isn't a walk section, so doesn't gate). */
+export function sectionResolved(env: Record<string, unknown>, section: SectionKey): boolean {
+  const step = WALKTHROUGH_STEPS.find((s) => s.section === section);
+  return step === undefined ? true : stepResolved(env, step);
 }
 
 /** The walk is complete — and the editor door opens — when every section is
