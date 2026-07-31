@@ -23,18 +23,33 @@ function renderWalk() {
   render(<MakeItYours previewToken="tok-123" previewOrigin="https://ember.test" values={{}} />);
 }
 
+/** Get past the welcome screen into the first section. */
+function start() {
+  fireEvent.click(screen.getByRole('button', { name: /Let’s go/ }));
+}
+
 describe('MakeItYours (full-screen walk)', () => {
-  it('opens full-screen on step 1 with no exit — the editor is gated', () => {
+  it('opens on a welcome screen explaining the walk, then Let’s go starts it', () => {
     renderWalk();
-    expect(screen.getByText('Make it yours')).toBeInTheDocument();
-    expect(screen.getByText('Finish to reach your editor')).toBeInTheDocument();
+    expect(screen.getByText(/Let’s make this store yours/)).toBeInTheDocument();
+    expect(screen.getByText(/one section at a time/)).toBeInTheDocument();
+    expect(screen.queryByText(/Step 1 of/)).not.toBeInTheDocument();
+    start();
     expect(screen.getByText(/Step 1 of/)).toBeInTheDocument();
     expect(screen.getByText('Your welcome')).toBeInTheDocument();
+  });
+
+  it('shows the gated full-screen shell with no exit', () => {
+    renderWalk();
+    start();
+    expect(screen.getByText('Make it yours')).toBeInTheDocument();
+    expect(screen.getByText('Finish to reach your editor')).toBeInTheDocument();
     expect(screen.queryByText('Close')).not.toBeInTheDocument();
   });
 
   it('previews the maker’s own draft', () => {
     renderWalk();
+    start();
     const frame = screen.getByTitle('Your store preview') as HTMLIFrameElement;
     expect(frame.src).toContain('previewToken=tok-123');
     expect(frame.src).toContain('previewStill=1');
@@ -43,6 +58,7 @@ describe('MakeItYours (full-screen walk)', () => {
   it('Next is gated until the section is resolved, then advances', async () => {
     keepSection.mockResolvedValue({ ok: true });
     renderWalk();
+    start();
     expect(screen.getByRole('button', { name: /Next/ })).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: 'Keep as built' }));
     await screen.findByText(/Kept/);

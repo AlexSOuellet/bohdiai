@@ -19,6 +19,7 @@ interface MakeItYoursProps {
  *  section being made yours; right column is the live draft preview. */
 export default function MakeItYours({ previewToken, previewOrigin, values }: MakeItYoursProps) {
   const steps = WALKTHROUGH_STEPS;
+  const [started, setStarted] = useState(false);
   const [index, setIndex] = useState(0);
   const [resolved, setResolved] = useState(false);
   // Bumped after any staged content change to force the preview iframe to re-fetch
@@ -49,6 +50,29 @@ export default function MakeItYours({ previewToken, previewOrigin, values }: Mak
   // scroll-in reveals resolve in the iframe. previewStill keeps reveal-gated sections
   // (products) visible; the nonce forces a reload after each staged edit.
   const previewSrc = `${previewOrigin}/?previewToken=${encodeURIComponent(previewToken)}&previewStill=1&n=${nonce}`;
+
+  // The opening welcome — what this is, before the first section (D69).
+  if (!started) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center bg-bg px-6 text-center text-text">
+        <p className="text-[11px] uppercase tracking-[0.24em] text-honey-warm">Make it yours</p>
+        <h1 className="mt-6 max-w-2xl font-serif text-4xl leading-tight text-text">Let’s make this store yours</h1>
+        <p className="mt-6 max-w-xl text-base leading-relaxed text-text-soft">
+          We built you a complete store to start from. Now we’ll go through it together, one section at a
+          time — keep what you like, change what you don’t, and put your own words where they count. It
+          only takes a few minutes, and once you’re done you can refine anything in your editor whenever
+          you want.
+        </p>
+        <button
+          type="button"
+          onClick={() => setStarted(true)}
+          className="mt-10 rounded-lg bg-honey px-6 py-3 text-sm font-medium text-bg transition-opacity hover:opacity-90"
+        >
+          Let’s go
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="grid h-screen grid-cols-1 bg-bg text-text md:grid-cols-[minmax(380px,460px)_1fr]">
