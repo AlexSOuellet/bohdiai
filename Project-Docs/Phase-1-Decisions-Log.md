@@ -926,6 +926,14 @@ D68 said a testimonial is never AI-generated — real customer quotes only, or t
 
 So D68's principle holds where it counts — no fake testimonial is ever published, and the maker can't invent one — but "never AI-generated" becomes "never *published* with AI-generated." Reviews now behave like every other placeholder: shown on, made real or skipped off, honesty enforced at publish.
 
+### D71. The public events calendar is a standalone "dates of interest," not part of Market Days
+
+The storefront's public calendar — the where-to-find-you section — is a simple standalone feature: a list of dated events the maker keeps, shown on their store. Each event carries three fields: **date, event name, and address** (the address also drives the "get directions" link the calendar already renders). It is not part of Market Days and isn't tied to that functionality. Market Days (log-a-sale, expenses, per-show profit) may refer back to these events — tagging a sale to one — but it doesn't own them, and the calendar doesn't depend on any of it. Technically it's just dates of interest.
+
+This decouples the calendar from Market Mode, where the Master Spec (§9) and D18/D38 had bundled it. The calendar is built on its own, small and simple, and can be made-yours in the "Make It Yours" walk (enter your real dates, or turn the section off) with none of the Market Days sales machinery in place. When Market Days is built, it references these events for attribution rather than owning them.
+
+Because it's standalone and small, the calendar's dates editor is built as part of the Make It Yours walk (the where-to-find-you section), not deferred to a Market Days build with no date on it. This refines the spec at `docs/superpowers/specs/2026-07-31-make-it-yours-onboarding-walk-design.md`, where find-us was first set aside as toggle-only.
+
 ---
 
 ## Open items still to be decided

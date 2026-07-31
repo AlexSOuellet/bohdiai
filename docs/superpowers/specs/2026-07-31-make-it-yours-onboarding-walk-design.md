@@ -18,7 +18,7 @@ Session 79 built the *content* of the walk — the per-section steps, Bohdi writ
 
 ## 2. Scope of this build
 
-**In:** the Words increment. The SectionEditor (words), both hosts (the gating walk + the editor content area), the full-screen gating route, the "kept as built" third state, the publish honesty gate for About and reviews, removal of the walk re-entry, the opening welcome screen, and the About-story bug fix (the required story step must reliably rewrite the About page).
+**In:** the Words increment, plus the standalone find-us dates editor. The SectionEditor (words), both hosts (the gating walk + the editor content area), the full-screen gating route, the "kept as built" third state, the small find-us dates editor (D71 — date/event name/address + optional link), the publish honesty gate for About / reviews / find-us placeholder dates, removal of the walk re-entry, the opening welcome screen, and the About-story bug fix (the required story step must reliably rewrite the About page).
 
 **Out (later increments, unchanged sequencing):** photo replacement (Photos phase — a photo slot rides into the same SectionEditor), real products (the listings build — Goods' hard "real products" gate switches on then), and the editor's deeper faces (free-form chat, click-to-edit, highlight-and-rewrite, reorder, use-my-colors).
 
@@ -37,12 +37,12 @@ Every section is shown **on** and populated — nothing hidden by default (D69).
 | Your goods | `goods` | **must-change** | made-yours only *(real-products gate later)* |
 | Collections | `collections` | optional | made-yours, kept, hidden |
 | Kind words | `reviews` | optional | made-yours, kept, hidden |
-| Where to find you | `findUs` | optional | made-yours, kept, hidden |
+| Where to find you | `findUs` | optional (dates) | made-yours (real dates), hidden |
 | The scrolling line | `marquee` | optional | made-yours, kept, hidden |
 | Getting in touch | `contact` | keep-or-change | made-yours, kept |
 | Your sign-off | `close` | keep-or-change | made-yours, kept |
 
-`findUs` is added to the walk as an optional section (it isn't a step today). Its content is market dates, not words — its "change" path is "add your real dates" and its off path hides the section; this is closer to the data model than the words model, so its step is lighter and mostly keep/turn-off in the Words build.
+`findUs` is added to the walk as an optional section (it isn't a step today). Its content is **dates of interest**, not words — a standalone public calendar, decoupled from Market Days (D71). Each event includes **date, event name, and address** (required), plus an **optional outbound link** to the event's own page. The address drives the "get directions" link the calendar already renders; the event name links out when a link is given. It stays a **simple listing** — no on-store event detail pages (Session 80): the moment entries click into their own on-store view they need descriptions/times/photos and stop being "just dates of interest." Its "change" path is a small standalone dates editor — add / edit / remove events — built into the walk (§4a). Its resolutions are made-yours (real dates entered) or hidden (turned off); it has no "keep as built", because keeping the seeded sample dates published would be dishonest, the same as fake reviews. Publish is blocked while find-us is on with placeholder dates.
 
 **Kept** is a new tracked state. Today the store tracks only made-yours and hidden; without a "kept" marker the gate can't tell "looked at the hero and kept it on purpose" from "hasn't dealt with the hero." Clicking "Keep as built" records the section as kept.
 
@@ -65,6 +65,10 @@ Every section is shown **on** and populated — nothing hidden by default (D69).
 
 **Finish.** After the last section resolves, a closing screen confirms everything's theirs and Publish takes it live. Publish is gated by the honesty check (§3). On publish, the walk is done; the maker lands in the editor.
 
+### 4a. The find-us dates editor (the one non-text section)
+
+The where-to-find-you step doesn't use the text SectionEditor — it uses a small standalone **dates editor** (D71). It shows the seeded sample events and lets the maker add / edit / remove their own. Each event: **date, event name, address** (required) + an **optional link**. It's a plain list-editor — a row per event, an "add a date" affordance, delete per row — not a calendar-picker UI beyond a date input. The single-section preview shows the live find-us section (the calendar/list) updating as rows change. Resolutions: made-yours (the maker's real dates replace the samples) or hidden (turn the section off). No "keep as built" — seeded sample dates can't be published (honesty gate). This is the calendar slice only; Market Days' sales/expense/profit tracking is a separate build that later refers back to these events.
+
 ---
 
 ## 5. The editor content area (Room 2)
@@ -81,6 +85,7 @@ This build adds the content area at the **words** level. Photo swapping slots in
 - **Resolution state.** `root.content.madeYours` (exists), `root.content.hiddenSections` (exists, off-switch to be wired), and a new `root.content.kept` list. A `toggleSection` action writes `hiddenSections`; a `keepSection` action writes `kept`. Both mirror the existing `markSectionMade` helper in `app/dashboard/website/actions.ts`.
 - **SectionEditor component.** Extracted from today's `Walkthrough.tsx` inner step UI into a reusable client component taking a section + its fields + values + a mode (gated | free). The walk host and the editor content host both render it. It calls the existing `editContent` / `setFieldValues` actions (unchanged) plus `keepSection` / `toggleSection`.
 - **Single-section preview.** The storefront preview gains a "focus one section" mode (a preview param, e.g. `previewSection=founder`) so the iframe shows only/primarily that section and doesn't scroll off it. Reuses the existing draft render + HMAC preview token + `previewStill` plumbing (Sessions 77–78). Exact scoping (render-one-section vs scroll-and-lock) is a plan-level decision; the intent is fixed here.
+- **Find-us dates.** The calendar renders from `root.content.findUs.rows` (the existing `FindUsRow` schema — `day`/`where`/`time`/`date`/`kind`). The dates editor writes the maker's real rows here. `FindUsRow` needs fields for **event name**, **address**, and an **optional link** (today it carries `where`/`day`/`time`); this is a small additive schema change on the archetype envelope, not a DB migration. A `setFindUsRows` action stages the rows onto the draft and marks the section made-yours, mirroring the other write actions. The dates editor is its own small client component (not the text SectionEditor), hosted in both the walk step and the editor content area.
 - **About-story bug fix.** Root-cause first (leading hypothesis: Bohdi omits the large optional `about.story` field on many edits because it's `required:[]`; alternate: /about preview falls back to published). The required story step must reliably rewrite the About body — it can't be left to Bohdi's discretion. Confirm the /about preview resolves the draft, not published.
 - **Reuse, unchanged:** the editable-field registry (`lib/editor/editable-fields.ts`), the content agent (`lib/editor/content-agent.ts`), the niche voice loader, the draft/stage/publish plumbing (`lib/editor/draft.ts`), and the look area (`Editor.tsx`'s feeling/skin/texture controls).
 
@@ -91,7 +96,8 @@ This build adds the content area at the **words** level. Photo swapping slots in
 Tests are part of done (every unit). Coverage to add/extend:
 
 - **Walkthrough state** (`walkthrough.test.ts`): the `kept` state; must-change sections not resolvable by keep/hide; optional sections resolvable by keep or hide; walk-complete only when every section is in an allowed resolved state.
-- **Actions:** `keepSection` and `toggleSection` write the right lists and never touch live; the publish honesty gate blocks on unresolved About / AI-placeholder reviews / (later) placeholder products.
+- **Actions:** `keepSection` and `toggleSection` write the right lists and never touch live; `setFindUsRows` stages real event rows and marks find-us made-yours; the publish honesty gate blocks on unresolved About / AI-placeholder reviews / find-us placeholder dates / (later) placeholder products.
+- **Find-us dates editor:** add/edit/remove rows; required fields (date, event name, address) enforced before a row counts; optional link; real rows resolve the section, empty/sample rows don't; the name links out only when a link is present.
 - **Gate:** editor route redirects to the walk when incomplete; walk route redirects to the editor when complete.
 - **SectionEditor:** renders required vs optional control sets; Next disabled until resolved; verbatim vs Bohdi paths call the right action.
 - **About bug:** a single story edit reliably changes `about.story` (regression test for the Session-79 bug).
@@ -100,6 +106,6 @@ Tests are part of done (every unit). Coverage to add/extend:
 
 ## 8. Settled decisions & open items
 
-**Settled this session:** only optional sections (Collections, Kind words, Find-us, Scrolling line) can be turned off — the spine can't (D69 open item resolved to Option A); Goods and Story must be changed; preview shows one section and doesn't scroll off it; the walk is one-time; the editor carries ongoing section editing as a separate area from the look try-on; an opening welcome screen explains the purpose.
+**Settled this session:** only optional sections (Collections, Kind words, Find-us, Scrolling line) can be turned off — the spine can't (D69 open item resolved to Option A); Goods and Story must be changed; preview shows one section and doesn't scroll off it; the walk is one-time; the editor carries ongoing section editing as a separate area from the look try-on; an opening welcome screen explains the purpose; the public calendar is standalone dates-of-interest (D71), a simple listing (date/event name/address + optional link, no on-store event detail pages) built into this walk.
 
-**Open / deferred:** the products (Goods real-products) gate activates with the listings build; photo replacement is the Photos phase; the single-section preview's exact scoping mechanism is a plan-level call.
+**Open / deferred:** the products (Goods real-products) gate activates with the listings build; photo replacement is the Photos phase; the single-section preview's exact scoping mechanism is a plan-level call; Market Days' sales/expense/profit tracking (separate build) later refers back to these events.
