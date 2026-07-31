@@ -16,6 +16,13 @@
  */
 import type { SectionKey } from '@/lib/archetypes/main-street/families';
 import { fieldsForSection } from './editable-fields';
+import { sectionState } from './section-state';
+
+/** How a section is allowed to be resolved in the walk (D69):
+ *   - must-change   — only by an edit (About/story, goods). No keep, no skip.
+ *   - keep-or-change — spine sections; keep-as-built or change, never off.
+ *   - optional      — keep, change, or turn off. */
+export type SectionClass = 'must-change' | 'keep-or-change' | 'optional';
 
 export interface WalkthroughStep {
   /** Stable step id. */
@@ -26,10 +33,12 @@ export interface WalkthroughStep {
   readonly section: SectionKey;
   /** The editable text/lines field ids this step rewrites (items excluded). */
   readonly fieldIds: readonly string[];
+  /** How this section may be resolved (drives the walk's controls + gate). */
+  readonly cls: SectionClass;
   /** Personal content (story/founder) — needs the maker's real input; no
    *  feeling-only generation (D68). */
   readonly personal: boolean;
-  /** An optional section that can be switched off (off-switch wired in Phase 3). */
+  /** Convenience: `cls === 'optional'` (a section the maker can switch off). */
   readonly optional: boolean;
   /** For a personal step, the targeted questions that draw out the real material. */
   readonly questions?: readonly string[];
@@ -52,48 +61,58 @@ const STEP_META: ReadonlyArray<{
   id: string;
   title: string;
   section: SectionKey;
+  cls: SectionClass;
   personal: boolean;
-  optional: boolean;
   questions?: readonly string[];
 }> = [
-  { id: 'welcome', title: 'Your welcome', section: 'hero', personal: false, optional: false },
-  { id: 'story', title: 'Your story', section: 'founder', personal: true, optional: false, questions: STORY_QUESTIONS },
-  { id: 'goods', title: 'Your goods', section: 'goods', personal: false, optional: false },
-  { id: 'collections', title: 'Your collections', section: 'collections', personal: false, optional: true },
-  { id: 'reviews', title: 'Kind words', section: 'reviews', personal: false, optional: true },
-  { id: 'marquee', title: 'The scrolling line', section: 'marquee', personal: false, optional: true },
-  { id: 'contact', title: 'Getting in touch', section: 'contact', personal: false, optional: false },
-  { id: 'close', title: 'Your sign-off', section: 'close', personal: false, optional: false },
+  { id: 'welcome', title: 'Your welcome', section: 'hero', cls: 'keep-or-change', personal: false },
+  { id: 'story', title: 'Your story', section: 'founder', cls: 'must-change', personal: true, questions: STORY_QUESTIONS },
+  { id: 'goods', title: 'Your goods', section: 'goods', cls: 'must-change', personal: false },
+  { id: 'collections', title: 'Your collections', section: 'collections', cls: 'optional', personal: false },
+  { id: 'reviews', title: 'Kind words', section: 'reviews', cls: 'optional', personal: false },
+  { id: 'marquee', title: 'The scrolling line', section: 'marquee', cls: 'optional', personal: false },
+  { id: 'findUs', title: 'Where to find you', section: 'findUs', cls: 'optional', personal: false },
+  { id: 'contact', title: 'Getting in touch', section: 'contact', cls: 'keep-or-change', personal: false },
+  { id: 'close', title: 'Your sign-off', section: 'close', cls: 'keep-or-change', personal: false },
 ];
 
 export const WALKTHROUGH_STEPS: readonly WalkthroughStep[] = STEP_META.map((m) => ({
   ...m,
+  optional: m.cls === 'optional',
   fieldIds: fieldsForSection(m.section)
     .filter((f) => f.kind !== 'items')
     .map((f) => f.id),
 }));
 
-/** The sections a walkthrough covers (one per step). */
-const WALKTHROUGH_SECTIONS: readonly SectionKey[] = WALKTHROUGH_STEPS.map((s) => s.section);
-
-function readSectionList(env: Record<string, unknown>, key: string): readonly string[] {
-  const root = env['root'];
-  const content = root != null && typeof root === 'object' ? (root as Record<string, unknown>)['content'] : undefined;
-  const list = content != null && typeof content === 'object' ? (content as Record<string, unknown>)[key] : undefined;
-  return Array.isArray(list) ? (list as string[]) : [];
+/** The class of a section (how it may be resolved). Sections outside the walk
+ *  default to keep-or-change (never auto-hidden). */
+export function sectionClass(section: SectionKey): SectionClass {
+  return WALKTHROUGH_STEPS.find((s) => s.section === section)?.cls ?? 'keep-or-change';
 }
 
-/** Sections still placeholder — not made-yours and not hidden. */
+/** Whether a step is resolved for the gate, per its class:
+ *   must-change → an edit landed; optional → touched at all (made/kept/hidden);
+ *   keep-or-change → made-yours or kept (can't be turned off). */
+function stepResolved(env: Record<string, unknown>, step: WalkthroughStep): boolean {
+  const st = sectionState(env, step.section);
+  if (step.cls === 'must-change') return st === 'made';
+  if (step.cls === 'optional') return st !== 'unresolved';
+  return st === 'made' || st === 'kept';
+}
+
+/** The walk is complete — and the editor door opens — when every section is
+ *  resolved by its allowed states (D69). */
+export function walkComplete(env: Record<string, unknown>): boolean {
+  return WALKTHROUGH_STEPS.every((s) => stepResolved(env, s));
+}
+
+/** Sections not yet resolved (per their class) — the walk's remaining work. */
 export function placeholderSections(env: Record<string, unknown>): SectionKey[] {
-  const made = new Set(readSectionList(env, 'madeYours'));
-  const hidden = new Set(readSectionList(env, 'hiddenSections'));
-  return WALKTHROUGH_SECTIONS.filter((s) => !made.has(s) && !hidden.has(s));
+  return WALKTHROUGH_STEPS.filter((s) => !stepResolved(env, s)).map((s) => s.section);
 }
 
-/** Progress across the walk — a section counts done once it's made-yours OR hidden. */
+/** Progress across the walk — a section counts done once it's resolved for its class. */
 export function walkthroughProgress(env: Record<string, unknown>): { done: number; total: number } {
-  const made = new Set(readSectionList(env, 'madeYours'));
-  const hidden = new Set(readSectionList(env, 'hiddenSections'));
-  const done = WALKTHROUGH_SECTIONS.filter((s) => made.has(s) || hidden.has(s)).length;
-  return { done, total: WALKTHROUGH_SECTIONS.length };
+  const done = WALKTHROUGH_STEPS.filter((s) => stepResolved(env, s)).length;
+  return { done, total: WALKTHROUGH_STEPS.length };
 }

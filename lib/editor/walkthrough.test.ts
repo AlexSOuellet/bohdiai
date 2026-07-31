@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { WALKTHROUGH_STEPS, placeholderSections, walkthroughProgress } from './walkthrough';
+import { WALKTHROUGH_STEPS, placeholderSections, walkthroughProgress, walkComplete, sectionClass } from './walkthrough';
+import { markSectionMade, markSectionKept, setSectionHidden } from './section-state';
 import { EDITABLE_FIELDS } from './editable-fields';
 
 const IDS = new Set(EDITABLE_FIELDS.map((f) => f.id));
@@ -32,10 +33,29 @@ describe('walkthrough', () => {
     expect(WALKTHROUGH_STEPS.filter((s) => s.personal).length).toBe(1);
   });
 
-  it('marks reviews/collections/marquee optional and the structural sections not', () => {
-    const optional = WALKTHROUGH_STEPS.filter((s) => s.optional).map((s) => s.section).sort();
-    expect(optional).toEqual(['collections', 'marquee', 'reviews']);
-    expect(WALKTHROUGH_STEPS.find((s) => s.section === 'hero')!.optional).toBe(false);
+  it('classes: goods + founder must-change; four sections optional; the rest keep-or-change', () => {
+    expect(sectionClass('goods')).toBe('must-change');
+    expect(sectionClass('founder')).toBe('must-change');
+    expect(sectionClass('hero')).toBe('keep-or-change');
+    expect(sectionClass('contact')).toBe('keep-or-change');
+    const optional = WALKTHROUGH_STEPS.filter((s) => s.cls === 'optional').map((s) => s.section).sort();
+    expect(optional).toEqual(['collections', 'findUs', 'marquee', 'reviews']);
+  });
+
+  it('a must-change section is not resolved by keep or hide — only by an edit', () => {
+    expect(walkComplete(markSectionKept({ root: { content: {} } }, 'founder'))).toBe(false);
+    expect(walkComplete(setSectionHidden({ root: { content: {} } }, 'goods', true))).toBe(false);
+  });
+
+  it('walk is complete only when every section is resolved by its allowed states', () => {
+    let env: Record<string, unknown> = { root: { content: {} } };
+    expect(walkComplete(env)).toBe(false);
+    for (const s of WALKTHROUGH_STEPS) {
+      env = s.cls === 'must-change' ? markSectionMade(env, s.section)
+          : s.cls === 'optional' ? setSectionHidden(env, s.section, true)
+          : markSectionKept(env, s.section);
+    }
+    expect(walkComplete(env)).toBe(true);
   });
 
   it('placeholderSections lists sections not made-yours and not hidden', () => {
