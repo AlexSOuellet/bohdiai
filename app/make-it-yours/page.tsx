@@ -33,8 +33,15 @@ export default async function MakeItYoursPage() {
   const values: Record<string, unknown> = {};
   for (const f of EDITABLE_FIELDS) values[f.id] = getFieldValue(homeEnv, f.id);
 
+  // The hero's first-run intro on/off setting (default on when absent — D54).
+  const root = homeEnv['root'];
+  const content = root !== null && typeof root === 'object' ? (root as Record<string, unknown>)['content'] : undefined;
+  const moment = content !== null && typeof content === 'object' ? (content as Record<string, unknown>)['moment'] : undefined;
+  const heroIntroOn =
+    moment !== null && typeof moment === 'object' ? (moment as Record<string, unknown>)['playIntro'] !== false : true;
+
   const previewToken = mintPreviewToken(shop.tenantId);
   const origin = storefrontOrigin(shop.subdomain, (await headers()).get('host'));
 
-  return <MakeItYours previewToken={previewToken} previewOrigin={origin} values={values} />;
+  return <MakeItYours previewToken={previewToken} previewOrigin={origin} values={values} heroIntroOn={heroIntroOn} />;
 }

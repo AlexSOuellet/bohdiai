@@ -6,12 +6,14 @@ const writeSectionFromConversation = vi.fn();
 const setFieldValues = vi.fn();
 const keepSection = vi.fn();
 const toggleSection = vi.fn();
+const setHeroIntro = vi.fn();
 vi.mock('../actions', () => ({
   converseSection: (...a: unknown[]) => converseSection(...a),
   writeSectionFromConversation: (...a: unknown[]) => writeSectionFromConversation(...a),
   setFieldValues: (...a: unknown[]) => setFieldValues(...a),
   keepSection: (...a: unknown[]) => keepSection(...a),
   toggleSection: (...a: unknown[]) => toggleSection(...a),
+  setHeroIntro: (...a: unknown[]) => setHeroIntro(...a),
 }));
 
 import SectionEditor from './SectionEditor';
@@ -20,12 +22,12 @@ import { WALKTHROUGH_STEPS } from '@/lib/editor/walkthrough';
 const step = (section: string) => WALKTHROUGH_STEPS.find((s) => s.section === section)!;
 
 beforeEach(() => {
-  [converseSection, writeSectionFromConversation, setFieldValues, keepSection, toggleSection].forEach((m) =>
-    m.mockReset(),
+  [converseSection, writeSectionFromConversation, setFieldValues, keepSection, toggleSection, setHeroIntro].forEach(
+    (m) => m.mockReset(),
   );
 });
 
-function renderSection(section: string) {
+function renderSection(section: string, opts: { heroIntroOn?: boolean } = {}) {
   const s = step(section);
   const onResolved = vi.fn();
   const onChanged = vi.fn();
@@ -36,6 +38,7 @@ function renderSection(section: string) {
       keepable={s.keepable}
       fieldIds={s.fieldIds}
       values={{}}
+      heroIntroOn={opts.heroIntroOn ?? true}
       onResolved={onResolved}
       onChanged={onChanged}
     />,
@@ -138,5 +141,33 @@ describe('SectionEditor — conversation', () => {
     renderSection('goods');
     expect(screen.queryByRole('button', { name: 'Keep as built' })).not.toBeInTheDocument();
     expect(screen.queryByText('Turn it off')).not.toBeInTheDocument();
+  });
+});
+
+describe('SectionEditor — hero first-run intro control', () => {
+  it('the hero offers a turn-the-intro-off control; other sections do not', () => {
+    renderSection('hero');
+    expect(screen.getByText('The opening intro')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Turn the intro off' })).toBeInTheDocument();
+  });
+
+  it('no intro control on a non-hero section', () => {
+    renderSection('goods');
+    expect(screen.queryByText('The opening intro')).not.toBeInTheDocument();
+  });
+
+  it('turning the intro off calls setHeroIntro(false), resolves, and refreshes', async () => {
+    setHeroIntro.mockResolvedValue({ ok: true });
+    const { onResolved, onChanged } = renderSection('hero', { heroIntroOn: true });
+    fireEvent.click(screen.getByRole('button', { name: 'Turn the intro off' }));
+    await vi.waitFor(() => expect(setHeroIntro).toHaveBeenCalledWith(false));
+    expect(onResolved).toHaveBeenCalledWith(true);
+    expect(onChanged).toHaveBeenCalled();
+    expect(await screen.findByRole('button', { name: 'Turn the intro back on' })).toBeInTheDocument();
+  });
+
+  it('seeds from heroIntroOn=false with the turn-back-on affordance', () => {
+    renderSection('hero', { heroIntroOn: false });
+    expect(screen.getByRole('button', { name: 'Turn the intro back on' })).toBeInTheDocument();
   });
 });

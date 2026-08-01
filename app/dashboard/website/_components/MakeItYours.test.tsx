@@ -1,26 +1,32 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 
-const editContent = vi.fn();
+const converseSection = vi.fn();
+const writeSectionFromConversation = vi.fn();
 const setFieldValues = vi.fn();
 const keepSection = vi.fn();
 const toggleSection = vi.fn();
+const setHeroIntro = vi.fn();
 vi.mock('../actions', () => ({
-  editContent: (...a: unknown[]) => editContent(...a),
+  converseSection: (...a: unknown[]) => converseSection(...a),
+  writeSectionFromConversation: (...a: unknown[]) => writeSectionFromConversation(...a),
   setFieldValues: (...a: unknown[]) => setFieldValues(...a),
   keepSection: (...a: unknown[]) => keepSection(...a),
   toggleSection: (...a: unknown[]) => toggleSection(...a),
+  setHeroIntro: (...a: unknown[]) => setHeroIntro(...a),
 }));
 
 import MakeItYours from './MakeItYours';
 
 beforeEach(() => {
-  [editContent, setFieldValues, keepSection, toggleSection].forEach((m) => m.mockReset());
+  [converseSection, writeSectionFromConversation, setFieldValues, keepSection, toggleSection, setHeroIntro].forEach(
+    (m) => m.mockReset(),
+  );
   cleanup();
 });
 
 function renderWalk() {
-  render(<MakeItYours previewToken="tok-123" previewOrigin="https://ember.test" values={{}} />);
+  render(<MakeItYours previewToken="tok-123" previewOrigin="https://ember.test" values={{}} heroIntroOn={true} />);
 }
 
 /** Get past the welcome screen into the first section. */

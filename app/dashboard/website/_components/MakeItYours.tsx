@@ -11,13 +11,15 @@ interface MakeItYoursProps {
   previewOrigin: string;
   /** id → current word value, seeding the "write it myself" fields. */
   values: Record<string, unknown>;
+  /** Whether the hero's first-run intro is currently on (seeds the hero control). */
+  heroIntroOn: boolean;
 }
 
 /** The full-screen "Make It Yours" walk — the second half of onboarding (D69). No
  *  dashboard chrome, no way out: it steps through every section, and the editor door
  *  stays closed until it's done (the gate lives on the routes). Left column is the
  *  section being made yours; right column is the live draft preview. */
-export default function MakeItYours({ previewToken, previewOrigin, values }: MakeItYoursProps) {
+export default function MakeItYours({ previewToken, previewOrigin, values, heroIntroOn }: MakeItYoursProps) {
   const steps = WALKTHROUGH_STEPS;
   const [started, setStarted] = useState(false);
   const [index, setIndex] = useState(0);
@@ -49,8 +51,12 @@ export default function MakeItYours({ previewToken, previewOrigin, values }: Mak
   // The preview renders the maker's own draft (previewToken) as a static still so the
   // scroll-in reveals resolve in the iframe. previewStill keeps reveal-gated sections
   // (products) visible; previewSection spotlights just the section being edited so the
-  // maker sees only that one; the nonce forces a reload after each staged edit.
-  const previewSrc = `${previewOrigin}/?previewToken=${encodeURIComponent(previewToken)}&previewStill=1&previewSection=${encodeURIComponent(step.section)}&n=${nonce}`;
+  // maker sees only that one; the nonce forces a reload after each staged edit. On the
+  // hero step we force the first-run intro to play (intro=1) so the maker watches their
+  // opening lines fade in as a visitor would — unless they've turned the intro off, in
+  // which case the draft's playIntro=false keeps it at rest even with intro=1.
+  const intro = step.section === 'hero' ? '&intro=1' : '';
+  const previewSrc = `${previewOrigin}/?previewToken=${encodeURIComponent(previewToken)}&previewStill=1&previewSection=${encodeURIComponent(step.section)}${intro}&n=${nonce}`;
 
   // The opening welcome — what this is, before the first section (D69).
   if (!started) {
@@ -107,6 +113,7 @@ export default function MakeItYours({ previewToken, previewOrigin, values }: Mak
             keepable={step.keepable}
             fieldIds={step.fieldIds}
             values={values}
+            heroIntroOn={heroIntroOn}
             onResolved={setResolved}
             onChanged={() => setNonce((n) => n + 1)}
           />

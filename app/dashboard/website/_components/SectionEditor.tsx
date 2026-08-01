@@ -11,6 +11,7 @@ import {
   setFieldValues,
   keepSection,
   toggleSection,
+  setHeroIntro,
 } from '../actions';
 
 /** Bohdi's opening for each section — he shows what he built and invites the maker in.
@@ -133,6 +134,8 @@ export interface SectionEditorProps {
   values: Record<string, unknown>;
   /** Whether the section is currently turned off (seeds the control state). */
   hidden?: boolean | undefined;
+  /** Hero only — whether the first-run intro is currently on (seeds the intro control). */
+  heroIntroOn?: boolean | undefined;
   /** Report resolution up so the host can gate Next: true once made/kept/off, false
    *  again if the maker turns a section back on. */
   onResolved: (resolved: boolean) => void;
@@ -153,6 +156,7 @@ export default function SectionEditor({
   fieldIds,
   values,
   hidden,
+  heroIntroOn,
   onResolved,
   onChanged,
 }: SectionEditorProps) {
@@ -169,6 +173,7 @@ export default function SectionEditor({
   const [mode, setMode] = useState<'talk' | 'own'>('talk');
   const [local, setLocal] = useState<Record<string, unknown>>(values);
   const [status, setStatus] = useState<Status>(hidden ? 'off' : 'none');
+  const [introOn, setIntroOn] = useState(heroIntroOn ?? true);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -210,6 +215,23 @@ export default function SectionEditor({
       const res = await setFieldValues(updates, section);
       if (res.ok) {
         setStatus('wrote');
+        onResolved(true);
+        onChanged();
+      } else {
+        setMessage(res.error);
+      }
+    });
+  }
+
+  // Hero only — turn the first-run intro play on or off (D54). Off loads the store
+  // straight to the resting hero; turning it off is a deliberate choice that resolves
+  // the hero step.
+  function toggleIntro(on: boolean) {
+    setMessage(null);
+    startTransition(async () => {
+      const res = await setHeroIntro(on);
+      if (res.ok) {
+        setIntroOn(on);
         onResolved(true);
         onChanged();
       } else {
@@ -361,6 +383,28 @@ export default function SectionEditor({
         <p className="mt-4 text-sm text-honey-warm">Kept — this section stays as it is.</p>
       )}
       {message && <p className="mt-4 text-sm text-text-soft">{message}</p>}
+
+      {/* Hero only — the first-run intro play (D54). Keep it, change the words above,
+          or turn it off so the store loads straight to the resting hero. */}
+      {section === 'hero' && (
+        <div className="mt-6 border-t border-white/8 pt-5">
+          <p className="text-[11px] uppercase tracking-wider text-muted">The opening intro</p>
+          <p className="mt-2 text-sm leading-relaxed text-text-soft">
+            On someone’s first visit, your opening lines fade in over the hero, then settle into your store.
+            {introOn
+              ? ' Keep it, change the words above, or turn it off.'
+              : ' It’s off — your store loads straight to the hero every time.'}
+          </p>
+          <button
+            type="button"
+            onClick={() => toggleIntro(!introOn)}
+            disabled={pending}
+            className="mt-4 rounded-lg border border-white/12 px-4 py-2 text-sm text-text-soft transition-colors hover:border-honey/50 hover:text-honey-warm disabled:opacity-40"
+          >
+            {introOn ? 'Turn the intro off' : 'Turn the intro back on'}
+          </button>
+        </div>
+      )}
 
       {/* Keep / turn-off — the resolutions besides an edit. Must-change sections
           (story, products) show neither; they can only be made yours. */}

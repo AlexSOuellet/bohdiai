@@ -212,6 +212,35 @@ export async function writeSectionFromConversation(section: SectionKey, turns: u
   return editContent(fieldIds, instruction, section);
 }
 
+/** Ensure `parent[key]` is a plain object and return it (creating it if missing), so
+ *  a nested envelope path can be written without clobbering siblings. */
+function ensureObject(parent: Record<string, unknown>, key: string): Record<string, unknown> {
+  const cur = parent[key];
+  if (cur !== null && typeof cur === 'object' && !Array.isArray(cur)) return cur as Record<string, unknown>;
+  const fresh: Record<string, unknown> = {};
+  parent[key] = fresh;
+  return fresh;
+}
+
+/** Turn the hero's first-run intro on or off (D54). Writes `moment.playIntro` on the
+ *  draft and marks the hero made-yours — turning the intro off is a deliberate choice
+ *  that resolves the hero step. Off means the store loads straight to the resting hero. */
+export async function setHeroIntro(enabled: boolean): Promise<ActionResult> {
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to update.' };
+  const baseTree = await loadBaseTree(shop.tenantId);
+  if (baseTree === null) return { ok: false, error: 'Could not load your store.' };
+
+  const next = structuredClone(baseTree);
+  const moment = ensureObject(ensureObject(ensureObject(next, 'root'), 'content'), 'moment');
+  moment['playIntro'] = enabled;
+
+  const staged = await stageDraftTree(shop.tenantId, markSectionMade(next, 'hero'));
+  if (!staged.ok) return { ok: false, error: 'Could not save your changes.' };
+  revalidatePath('/dashboard/website');
+  return { ok: true };
+}
+
 /** Mark a section kept-as-built — the maker looked at it and is keeping our version
  *  (D69). Resolves keep-or-change and optional sections without an edit. */
 export async function keepSection(section: SectionKey): Promise<ActionResult> {
