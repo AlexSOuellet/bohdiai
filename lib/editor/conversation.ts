@@ -66,6 +66,16 @@ export interface ConverseArgs {
   readonly depth: ConversationDepth;
 }
 
+/** Which sections get the full interview vs the quick react-and-go. The story
+ *  sections — the opening and the founder / about-you beat — are deep; everything
+ *  else is light (D69: deep where there's a real story to pull, light where there
+ *  isn't). Derived from the section, never trusted from the client. */
+const DEEP_SECTIONS: ReadonlySet<SectionKey> = new Set<SectionKey>(['hero', 'founder']);
+
+export function conversationDepth(section: SectionKey): ConversationDepth {
+  return DEEP_SECTIONS.has(section) ? 'deep' : 'light';
+}
+
 /** A friendly name for the section so the prompt reads like a person, not a key. */
 const SECTION_NAMES: Record<SectionKey, string> = {
   hero: 'opening (the first thing anyone sees)',
@@ -103,6 +113,45 @@ HOW YOU TALK:
 - Keep it short and human: a sentence of reaction, then your one question.
 
 Call next_turn on every turn: "ask" with your question while you're still drawing them out; "ready" (with a warm line like "I think I've got it — want me to write it?") the moment you have enough real material to write something true.`;
+}
+
+/** Sanitise a conversation arriving across the client boundary into clean Turns:
+ *  known speakers only, non-empty trimmed text, anything malformed dropped. */
+export function sanitizeConversation(raw: unknown): Turn[] {
+  if (!Array.isArray(raw)) return [];
+  const out: Turn[] = [];
+  for (const t of raw) {
+    if (t === null || typeof t !== 'object') continue;
+    const rec = t as Record<string, unknown>;
+    const speaker = rec['speaker'];
+    const text = rec['text'];
+    if ((speaker === 'bohdi' || speaker === 'maker') && typeof text === 'string' && text.trim().length > 0) {
+      out.push({ speaker, text: text.trim() });
+    }
+  }
+  return out;
+}
+
+/** Render a finished conversation into the write instruction the one-shot writer
+ *  (`runContentEdit`) consumes: the whole transcript becomes the maker's "ask", plus a
+ *  section-aware directive. For the story (founder) section that directive is
+ *  load-bearing — it forces BOTH the short home-page snippet AND the full About-page
+ *  story (`about.story`) to be written from the maker's real answers, so the story
+ *  reliably lands on both surfaces (D69; fixes the old bug where `about.story` went
+ *  unwritten while the home snippet updated). */
+export function buildConversationWriteInstruction(section: SectionKey, conversation: readonly Turn[]): string {
+  const transcript = conversation
+    .map((t) => `${t.speaker === 'maker' ? 'MAKER' : 'YOU'}: ${t.text}`)
+    .join('\n');
+  const base = `Here is your whole conversation with the maker. Write this section from what they ACTUALLY told you — their real words and details, nothing invented.
+
+${transcript}`;
+  if (section === 'founder') {
+    return `${base}
+
+Write BOTH surfaces of their story from this conversation: the short founder snippet for the home page AND the full story for the About page (about.story). Write the About story at real length — several sentences in their voice, drawn from their answers. Do not leave the About story unchanged.`;
+  }
+  return base;
 }
 
 const NEXT_TURN_TOOL: Anthropic.Tool = {

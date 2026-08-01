@@ -3,7 +3,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const create = vi.fn();
 vi.mock('@/lib/anthropic', () => ({ anthropicClient: () => ({ messages: { create } }) }));
 
-import { bohdiConverse, ConversationError } from './conversation';
+import {
+  bohdiConverse,
+  buildConversationWriteInstruction,
+  conversationDepth,
+  sanitizeConversation,
+  ConversationError,
+} from './conversation';
 
 function turnMsg(input: unknown) {
   return { content: [{ type: 'tool_use', id: 't_turn', name: 'next_turn', input }], stop_reason: 'tool_use' };
@@ -79,5 +85,74 @@ describe('bohdiConverse', () => {
       bohdiConverse({ section: 'founder', niche, current: {}, conversation: [], depth: 'deep' }),
     ).rejects.toBeInstanceOf(ConversationError);
     expect(create).toHaveBeenCalledTimes(4);
+  });
+});
+
+describe('buildConversationWriteInstruction', () => {
+  const conversation = [
+    { speaker: 'bohdi', text: 'What made you start?' },
+    { speaker: 'maker', text: 'My grandmother taught me at her kitchen table.' },
+  ] as const;
+
+  it('renders the whole transcript as the maker material', () => {
+    const inst = buildConversationWriteInstruction('hero', conversation);
+    expect(inst).toContain('MAKER: My grandmother taught me at her kitchen table.');
+    expect(inst).toContain('YOU: What made you start?');
+  });
+
+  it('forces both story surfaces (home snippet + full About page) for the founder section', () => {
+    const inst = buildConversationWriteInstruction('founder', conversation);
+    expect(inst).toContain('about.story');
+    expect(inst.toLowerCase()).toContain('about page');
+    expect(inst.toLowerCase()).toContain('home page');
+  });
+
+  it('does not add the two-surface directive for a non-story section', () => {
+    const inst = buildConversationWriteInstruction('marquee', conversation);
+    expect(inst).not.toContain('about.story');
+  });
+});
+
+describe('sanitizeConversation', () => {
+  it('keeps well-formed turns and trims their text', () => {
+    expect(
+      sanitizeConversation([
+        { speaker: 'bohdi', text: '  Hi there  ' },
+        { speaker: 'maker', text: 'My answer' },
+      ]),
+    ).toEqual([
+      { speaker: 'bohdi', text: 'Hi there' },
+      { speaker: 'maker', text: 'My answer' },
+    ]);
+  });
+
+  it('drops unknown speakers, empty text, and non-objects', () => {
+    expect(
+      sanitizeConversation([
+        { speaker: 'system', text: 'nope' },
+        { speaker: 'maker', text: '   ' },
+        'garbage',
+        null,
+        { speaker: 'maker', text: 'kept' },
+      ]),
+    ).toEqual([{ speaker: 'maker', text: 'kept' }]);
+  });
+
+  it('returns an empty array for non-array input', () => {
+    expect(sanitizeConversation(undefined)).toEqual([]);
+    expect(sanitizeConversation('x')).toEqual([]);
+  });
+});
+
+describe('conversationDepth', () => {
+  it('the story sections (opening, founder) are deep', () => {
+    expect(conversationDepth('hero')).toBe('deep');
+    expect(conversationDepth('founder')).toBe('deep');
+  });
+  it('everything else is light', () => {
+    expect(conversationDepth('marquee')).toBe('light');
+    expect(conversationDepth('reviews')).toBe('light');
+    expect(conversationDepth('goods')).toBe('light');
+    expect(conversationDepth('close')).toBe('light');
   });
 });

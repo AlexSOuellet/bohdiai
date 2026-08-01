@@ -13,10 +13,17 @@ import { normaliseTexture, type StoredTexture } from '@/lib/editor/texture';
 import { MOODS, type MoodKey } from '@/lib/moods';
 import { readDraftTree, stageDraftTree, publishDraft, resetDraft } from '@/lib/editor/draft';
 import { loadHomeEnvelope } from '@/lib/storefront/load-envelope';
-import { EDITABLE_FIELDS, getFieldValue, setFieldValue } from '@/lib/editor/editable-fields';
+import { EDITABLE_FIELDS, fieldsForSection, getFieldValue, setFieldValue } from '@/lib/editor/editable-fields';
 import { markSectionMade, markSectionKept, setSectionHidden } from '@/lib/editor/section-state';
 import { publishBlockers } from '@/lib/editor/publish-gate';
 import { runContentEdit } from '@/lib/editor/content-agent';
+import {
+  bohdiConverse,
+  buildConversationWriteInstruction,
+  conversationDepth,
+  sanitizeConversation,
+  type BohdiTurn,
+} from '@/lib/editor/conversation';
 import { loadNicheVoice } from '@/lib/editor/niche-voice';
 import type { SectionKey } from '@/lib/archetypes/main-street/families';
 import { logger } from '@/lib/logger';
@@ -159,6 +166,50 @@ export async function setFieldValues(
   if (!staged.ok) return { ok: false, error: 'Could not save your changes.' };
   revalidatePath('/dashboard/website');
   return { ok: true };
+}
+
+/** One turn of the "Make It Yours" interview (D69): given the conversation so far,
+ *  Bohdi reacts and asks the next question, or signals he has enough to write. Depth
+ *  (deep story section vs light) is derived from the section, never trusted from the
+ *  client. Read-only — stages nothing; the write happens on writeSectionFromConversation. */
+export async function converseSection(
+  section: SectionKey,
+  turns: unknown,
+): Promise<{ ok: true; turn: BohdiTurn } | { ok: false; error: string }> {
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to work on.' };
+  const baseTree = await loadBaseTree(shop.tenantId);
+  if (baseTree === null) return { ok: false, error: 'Could not load your store.' };
+
+  const current: Record<string, unknown> = {};
+  for (const f of fieldsForSection(section)) current[f.id] = getFieldValue(baseTree, f.id);
+  const niche = await loadNicheVoice(shop.tenantId);
+
+  try {
+    const turn = await bohdiConverse({
+      section,
+      niche,
+      current,
+      conversation: sanitizeConversation(turns),
+      depth: conversationDepth(section),
+    });
+    return { ok: true, turn };
+  } catch (err) {
+    logger.warn('converseSection: Bohdi failed', { tenantId: shop.tenantId, section, err: String(err) });
+    return { ok: false, error: 'Bohdi lost his thread just now — try that again.' };
+  }
+}
+
+/** Write a section from the finished interview (D69): render the conversation into
+ *  the write instruction and hand it to Bohdi the writer over that section's fields.
+ *  For the founder section this writes both the home snippet and the full About page.
+ *  Delegates to editContent, so it stages to the draft and marks the section made-yours. */
+export async function writeSectionFromConversation(section: SectionKey, turns: unknown): Promise<ActionResult> {
+  const conversation = sanitizeConversation(turns);
+  if (conversation.length === 0) return { ok: false, error: 'Tell Bohdi a little first, then he can write it.' };
+  const fieldIds = fieldsForSection(section).map((f) => f.id);
+  const instruction = buildConversationWriteInstruction(section, conversation);
+  return editContent(fieldIds, instruction, section);
 }
 
 /** Mark a section kept-as-built — the maker looked at it and is keeping our version
