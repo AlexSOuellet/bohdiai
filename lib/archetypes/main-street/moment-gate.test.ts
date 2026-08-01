@@ -48,4 +48,13 @@ describe('shouldPlayMoment', () => {
   it('always plays on a deliberate replay, ignoring cold/seen/key', () => {
     expect(shouldPlayMoment({ initialPath: '/product/belt', key, cookieString: 'bohdi_moment_seen_tn_123=1', forceReplay: true })).toBe(true);
   });
+
+  it('never plays when the maker turned the intro off, overriding even a forced replay', () => {
+    expect(shouldPlayMoment({ initialPath: '/', key, cookieString: noCookie, introEnabled: false })).toBe(false);
+    expect(shouldPlayMoment({ initialPath: '/', key, cookieString: noCookie, forceReplay: true, introEnabled: false })).toBe(false);
+  });
+
+  it('plays by default when introEnabled is omitted (prior content stays on)', () => {
+    expect(shouldPlayMoment({ initialPath: '/', key, cookieString: noCookie })).toBe(true);
+  });
 });

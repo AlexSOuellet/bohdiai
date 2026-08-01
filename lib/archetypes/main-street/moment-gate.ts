@@ -44,11 +44,16 @@ export interface MomentPlayDecision {
   cookieString: string;
   /** A deliberate replay (footer "Intro") forces play regardless of cold/seen. */
   forceReplay?: boolean;
+  /** The maker's on/off setting for the intro (D54). Off means the intro is
+   *  disabled outright — it never plays, not even a forced replay. Default on. */
+  introEnabled?: boolean;
 }
 
 /** Whether the Moment timeline should play on this load. */
 export function shouldPlayMoment(d: MomentPlayDecision): boolean {
-  const { initialPath, homePath = '/', key, cookieString, forceReplay = false } = d;
+  const { initialPath, homePath = '/', key, cookieString, forceReplay = false, introEnabled = true } = d;
+  // The maker turned the intro off — it never plays, overriding even a forced replay.
+  if (!introEnabled) return false;
   if (forceReplay) return true;
   if (!key) return false;
   if (!isColdFrontDoorEntry(initialPath, homePath)) return false;

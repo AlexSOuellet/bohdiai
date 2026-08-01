@@ -143,6 +143,12 @@ export const MainStreetContentSchema = z.object({
      *  so content authored before the modular hero work still parses; new
      *  builds always author it. */
     sub: z.string().min(1).optional(),
+    /** Whether the first-run intro plays — the story lines fading in over the media
+     *  on a cold visit, settling onto the static hero. The maker turns this off in
+     *  the walk (D54: default on, maker can disable); off means the store loads
+     *  straight to the resting hero every time. Optional/absent = on, so all prior
+     *  content keeps playing. */
+    playIntro: z.boolean().optional(),
     /** The Collage hero's still scenes (it shows ~3). Optional so content authored
      *  before the Collage hero still parses, and so heroes that don't use them
      *  never require them. Generated as stills at build time. */

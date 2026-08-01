@@ -167,13 +167,15 @@ export function MomentHero({
     const search = typeof window !== 'undefined' ? window.location.search : '';
     const forceReplay = /[?&]intro=1(?:&|$)/.test(search);
     const cookieString = typeof document !== 'undefined' ? document.cookie : '';
-    if (shouldPlayMoment({ initialPath: initialDocumentPath(), key: momentKey ?? null, cookieString, forceReplay })) {
+    // The maker's on/off setting — off disables the intro entirely (D54).
+    const introEnabled = moment.playIntro !== false;
+    if (shouldPlayMoment({ initialPath: initialDocumentPath(), key: momentKey ?? null, cookieString, forceReplay, introEnabled })) {
       // The play decision is client-only; deciding in a layout effect is the
       // correct pattern here.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setStep(0);
     }
-  }, [momentKey]);
+  }, [momentKey, moment.playIntro]);
 
   // Footer "Intro" replay: a client-side signal restarts the timeline without a
   // full reload (covers clicking Intro while already on the home page; arriving
