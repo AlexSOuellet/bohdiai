@@ -8,7 +8,13 @@
 
 **Tech Stack:** Next.js 16 App Router (RSC + server actions), React client components, Vitest + Testing Library, Zod schemas, the existing draft/preview/HMAC-token plumbing.
 
-**Progress (Session 80):** Tasks 1–9 done + committed, each test-first (plus a live-found `fix(proxy)` for `/make-it-yours` on shop subdomains). **Remaining: Tasks 10–15** — single-section preview, editor content area, find-us schema + dates editor, About-story bug, finish screen. Alex live-tested 1–9; first pass good, unspecified fixes flagged (ask him first next session).
+**Progress (Session 80):** Tasks 1–9 done + committed, each test-first (plus a live-found `fix(proxy)` for `/make-it-yours` on shop subdomains).
+
+**⚠ SUPERSEDED IN PART (Session 81) — re-scope this plan before executing the rest.** The per-section walk was reshaped from a form into a **designer conversation** (Bohdi interviews the maker; deep on opening + founder, light elsewhere; writes from the conversation — founder writes both the home snippet AND the full About page). Delivered Session 81: the conversation engine (`lib/editor/conversation.ts`), the converse/write server actions, the reshaped `SectionEditor` (chat), **Task 10 done** (single-section spotlight preview via `data-ms-beat` + `previewSection`), and the hero first-run **intro keep/modify/turn-off** control (`moment.playIntro` + gate `introEnabled`; the hero preview plays it). Commits `168ffeb`→`6e3b3fa`.
+
+**Still remaining, re-scoped:** the editor content area (was Task 11), the find-us dates editor + schema (Tasks 12–13), the finish screen (Task 15), and **Listings — the walk isn't complete until it's in**. Task 14 (About-story bug) is addressed by design in the conversation write step (founder writes both surfaces).
+
+**NEW direction to fold in first (Alex, end of Session 81):** (1) split the **Moment** (first-run intro) and the **Hero** (static state) into two separate walk sections; (2) explain **why** each section is showing, tied to the mood ("showing because you chose the Cozy feel"); (3) rewrite the walk's **too-generic** openers/questions/labels into plain language a non-designer maker understands. See `Project-Docs/session-logs/session-81.md`.
 
 **Execution note:** Tasks 1–4 and 12 are pure logic / schema and carry complete test-first code. Tasks 5–11 and 13–15 are components/routes: each names its exact files, the test to write with concrete assertions, and the implementation shape; final JSX is written at execution against the neighbouring component and test patterns already in `app/dashboard/website/_components/` (read the sibling file named in the task before writing). No task is complete without its test green, `tsc`, and lint clean.
 
