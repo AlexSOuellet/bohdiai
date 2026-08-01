@@ -106,7 +106,6 @@ export default function MakeItYours({ previewToken, previewOrigin, values }: Mak
             keepable={step.keepable}
             fieldIds={step.fieldIds}
             values={values}
-            questions={step.questions}
             onResolved={setResolved}
             onChanged={() => setNonce((n) => n + 1)}
           />

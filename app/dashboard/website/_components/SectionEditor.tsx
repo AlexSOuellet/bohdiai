@@ -4,51 +4,67 @@ import { useMemo, useState, useTransition } from 'react';
 import { getField, type EditableField } from '@/lib/editor/editable-fields';
 import type { SectionKey } from '@/lib/archetypes/main-street/families';
 import type { SectionClass } from '@/lib/editor/walkthrough';
-import { editContent, setFieldValues, keepSection, toggleSection } from '../actions';
+import type { Turn } from '@/lib/editor/conversation';
+import {
+  converseSection,
+  writeSectionFromConversation,
+  setFieldValues,
+  keepSection,
+  toggleSection,
+} from '../actions';
 
-/** Bohdi's per-section lead — what he says before the ask. Warm, first person. */
-const LEADS: Record<SectionKey, { title: string; lead: string; placeholder: string }> = {
+/** Bohdi's opening for each section — he shows what he built and invites the maker in.
+ *  Deep sections (opening, story) open a real conversation; light sections open a quick
+ *  react-and-go. `placeholder` seeds the maker's reply box. */
+const INTRO: Record<SectionKey, { title: string; opener: string; placeholder: string }> = {
   hero: {
-    title: 'Your welcome',
-    lead: "This is the first thing anyone sees. Tell me what your shop is about — or just the feeling you want people to get — and I'll write your opening.",
-    placeholder: 'e.g. hand-poured soy candles, calm and a little witchy',
+    title: 'Your opening',
+    opener:
+      "This is the first thing anyone sees — I took a first swing at it, there on the right. What feels right to you, and what's off?",
+    placeholder: 'Tell me what you think…',
   },
   founder: {
     title: 'Your story',
-    lead: "This one has to be yours — I won't make it up. Tell me about you and your shop and I'll shape it into your story.",
+    opener:
+      "This part has to be yours — I won't make it up. Take a look at what's there, then tell me: how did all this start for you?",
     placeholder: 'Tell me in your own words…',
   },
   goods: {
     title: 'Your goods',
-    lead: "What do you call your work? Give me a word or two and I'll write the heading for your products.",
-    placeholder: 'e.g. small-batch candles',
+    opener: "Here's the heading I gave your products. Does it fit what you actually make, or should we change it?",
+    placeholder: 'e.g. I call them small-batch candles',
   },
   collections: {
     title: 'Your collections',
-    lead: 'If you group your work into collections, tell me about them — or keep it simple for now.',
+    opener: 'If you group your work into collections, here’s a start. Tell me about them, keep this, or turn it off.',
     placeholder: 'e.g. seasonal scents, gift sets',
   },
   reviews: {
     title: 'Kind words',
-    lead: "This is where kind words from customers live. For now let's name the section — you'll add real testimonials once you have them.",
-    placeholder: 'e.g. Loved by customers',
+    opener:
+      "This is where kind words from customers live. You can name the section now and add real ones later — or turn it off until you have some.",
+    placeholder: 'e.g. call it "Loved by locals"',
   },
   marquee: {
     title: 'The scrolling line',
-    lead: 'A few short phrases scroll across your store. Give me the spirit of your shop and I\'ll write them.',
-    placeholder: 'e.g. small batch, poured by hand, made in Rhode Island',
+    opener: "A few short phrases scroll across your store. Here's what I wrote — want them as they are, or different?",
+    placeholder: 'e.g. small batch, poured by hand',
   },
   contact: {
     title: 'Getting in touch',
-    lead: "How would you like people to reach out? Tell me the vibe and I'll write your invitation to get in touch.",
+    opener: "Here's how I'm inviting people to reach out. Keep it, or tell me how you'd like it to sound?",
     placeholder: 'e.g. friendly, happy to take custom orders',
   },
   close: {
     title: 'Your sign-off',
-    lead: "The last word before someone leaves. Tell me how you'd like to send them off and I'll write it.",
+    opener: "The last word before someone leaves. Here's mine — want it warmer, shorter, or in your own words?",
     placeholder: 'e.g. warm, come back soon',
   },
-  findUs: { title: 'Where to find you', lead: '', placeholder: '' },
+  findUs: {
+    title: 'Where to find you',
+    opener: 'This is where you show the markets and events where people can find you in person.',
+    placeholder: '',
+  },
 };
 
 /** Render one editable field for the "write it myself" path. */
@@ -63,7 +79,9 @@ function FieldEditor({
 }) {
   const isLines = field.kind === 'lines';
   const text = isLines
-    ? (Array.isArray(value) ? (value as string[]).join('\n') : '')
+    ? Array.isArray(value)
+      ? (value as string[]).join('\n')
+      : ''
     : typeof value === 'string'
       ? value
       : '';
@@ -80,67 +98,101 @@ function FieldEditor({
   );
 }
 
-/** What the maker has done with a section this session — drives the confirmation
- *  copy and which controls show. `off` hides the edit area entirely. */
+/** One line of the conversation, as a chat bubble (Bohdi left, the maker right). */
+function Bubble({ turn }: { turn: Turn }) {
+  const mine = turn.speaker === 'maker';
+  return (
+    <div className={mine ? 'flex justify-end' : 'flex justify-start'}>
+      <div
+        className={
+          mine
+            ? 'max-w-[85%] rounded-2xl rounded-br-sm bg-honey/15 px-4 py-2.5 text-sm leading-relaxed text-text'
+            : 'max-w-[85%] rounded-2xl rounded-bl-sm bg-white/5 px-4 py-2.5 text-sm leading-relaxed text-text-soft'
+        }
+      >
+        {turn.text}
+      </div>
+    </div>
+  );
+}
+
+/** What the maker has done with this section — drives the confirmation copy and which
+ *  controls show. `off` collapses the section to a turn-back-on affordance. */
 type Status = 'none' | 'wrote' | 'kept' | 'off';
 
 export interface SectionEditorProps {
-  /** The section being edited (drives the lead + which fields show). */
+  /** The section being made yours (drives the opener + which fields the maker can type). */
   section: SectionKey;
-  /** How this section may be resolved (drives the keep/turn-off controls). */
+  /** How this section may be resolved (drives the keep / turn-off controls). */
   cls: SectionClass;
   /** Whether "keep as built" is offered (false for reviews — D70). */
   keepable: boolean;
-  /** The editable text field ids this section rewrites. */
+  /** The editable text field ids this section rewrites (the "write it myself" path). */
   fieldIds: readonly string[];
   /** id → current value, seeding the "write it myself" fields. */
   values: Record<string, unknown>;
-  /** The targeted questions for a personal section (story), if any. */
-  questions?: readonly string[] | undefined;
   /** Whether the section is currently turned off (seeds the control state). */
   hidden?: boolean | undefined;
-  /** Report resolution up so the host can gate Next: true once made/kept/off,
-   *  false again if the maker turns a section back on. */
+  /** Report resolution up so the host can gate Next: true once made/kept/off, false
+   *  again if the maker turns a section back on. */
   onResolved: (resolved: boolean) => void;
   /** Ask the host to refresh the preview after a staged change. */
   onChanged: () => void;
 }
 
-/** The reusable per-section editor — Bohdi writes it from a direction, or the maker
- *  types it verbatim, or (for optional sections) keeps or turns it off. Hosted by
- *  the walk (gated sequence) and the editor's content area (free navigation).
- *  Content-only: writes text fields to the draft via the same actions; never
- *  touches look, structure, or link destinations. */
+/** The reusable per-section editor — a session with Bohdi (D69). He shows what he
+ *  built, the maker reacts, and on a story section it's a real back-and-forth that
+ *  pulls their story out before he writes it; on a light section it's a quick
+ *  react-and-go. The maker can always write it themselves verbatim (D68), and can keep
+ *  or turn off the sections that allow it. Content-only: writes text fields to the
+ *  draft via the same actions; never touches look, structure, or link destinations. */
 export default function SectionEditor({
   section,
   cls,
   keepable,
   fieldIds,
   values,
-  questions,
   hidden,
   onResolved,
   onChanged,
 }: SectionEditorProps) {
-  const lead = LEADS[section];
+  const intro = INTRO[section];
   const fields = useMemo(
     () => fieldIds.map((id) => getField(id)).filter((f): f is EditableField => f !== undefined),
     [fieldIds],
   );
-  const [instruction, setInstruction] = useState('');
-  const [mode, setMode] = useState<'ask' | 'own'>('ask');
+
+  // The conversation starts with Bohdi's opener; the maker's replies and his follow-ups
+  // append as they talk.
+  const [convo, setConvo] = useState<Turn[]>([{ speaker: 'bohdi', text: intro.opener }]);
+  const [reply, setReply] = useState('');
+  const [mode, setMode] = useState<'talk' | 'own'>('talk');
   const [local, setLocal] = useState<Record<string, unknown>>(values);
   const [status, setStatus] = useState<Status>(hidden ? 'off' : 'none');
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
+  const saidSomething = convo.some((t) => t.speaker === 'maker');
   const wrote = status === 'wrote';
 
-  function askBohdi() {
-    if (instruction.trim().length === 0) return;
+  function send() {
+    const text = reply.trim();
+    if (text.length === 0) return;
+    const next: Turn[] = [...convo, { speaker: 'maker', text }];
+    setConvo(next);
+    setReply('');
     setMessage(null);
     startTransition(async () => {
-      const res = await editContent(fieldIds, instruction, section);
+      const res = await converseSection(section, next);
+      if (res.ok) setConvo([...next, { speaker: 'bohdi', text: res.turn.message }]);
+      else setMessage(res.error);
+    });
+  }
+
+  function writeIt() {
+    setMessage(null);
+    startTransition(async () => {
+      const res = await writeSectionFromConversation(section, convo);
       if (res.ok) {
         setStatus('wrote');
         onResolved(true);
@@ -197,7 +249,7 @@ export default function SectionEditor({
   if (status === 'off') {
     return (
       <div>
-        <h1 className="font-serif text-2xl text-text">{lead.title}</h1>
+        <h1 className="font-serif text-2xl text-text">{intro.title}</h1>
         <p className="mt-3 text-sm leading-relaxed text-text-soft">
           This section is turned off — it won’t show on your store.
         </p>
@@ -219,38 +271,45 @@ export default function SectionEditor({
 
   return (
     <div>
-      <h1 className="font-serif text-2xl text-text">{lead.title}</h1>
-      <p className="mt-3 text-sm leading-relaxed text-text-soft">{lead.lead}</p>
+      <h1 className="font-serif text-2xl text-text">{intro.title}</h1>
 
-      {questions && questions.length > 0 && (
-        <ul className="mt-4 space-y-1.5 border-l-2 border-honey/40 pl-4">
-          {questions.map((q) => (
-            <li key={q} className="text-sm text-muted">
-              {q}
-            </li>
-          ))}
-        </ul>
-      )}
+      {mode === 'talk' ? (
+        <div className="mt-4">
+          {/* The conversation so far */}
+          <div className="space-y-3">
+            {convo.map((t, i) => (
+              <Bubble key={i} turn={t} />
+            ))}
+          </div>
 
-      <div className="mt-6">
-        {mode === 'ask' ? (
-          <>
+          {/* The maker's reply box */}
+          <div className="mt-4">
             <textarea
-              value={instruction}
-              rows={questions && questions.length > 0 ? 5 : 3}
-              placeholder={lead.placeholder}
-              onChange={(e) => setInstruction(e.target.value)}
+              value={reply}
+              rows={3}
+              placeholder={intro.placeholder}
+              onChange={(e) => setReply(e.target.value)}
               className="w-full resize-none rounded-xl border border-white/12 bg-bg-2/60 px-4 py-3 text-sm text-text placeholder:text-muted focus:border-honey/50 focus:outline-none"
             />
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <button
                 type="button"
-                onClick={askBohdi}
-                disabled={pending || instruction.trim().length === 0}
-                className="rounded-lg bg-honey px-4 py-2 text-sm font-medium text-bg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
+                onClick={send}
+                disabled={pending || reply.trim().length === 0}
+                className="rounded-lg border border-white/12 px-4 py-2 text-sm text-text-soft transition-colors hover:border-honey/50 hover:text-honey-warm disabled:cursor-not-allowed disabled:opacity-30"
               >
-                {pending ? 'Bohdi’s writing…' : wrote ? 'Try another take' : 'Ask Bohdi to write it'}
+                {pending ? 'Bohdi’s thinking…' : 'Send'}
               </button>
+              {saidSomething && (
+                <button
+                  type="button"
+                  onClick={writeIt}
+                  disabled={pending}
+                  className="rounded-lg bg-honey px-4 py-2 text-sm font-medium text-bg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  {wrote ? 'Write it again' : 'Write it up'}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setMode('own')}
@@ -259,52 +318,52 @@ export default function SectionEditor({
                 I’ll write it myself
               </button>
             </div>
-          </>
-        ) : (
-          <>
-            <div className="space-y-4">
-              {fields.map((f) => (
-                <FieldEditor
-                  key={f.id}
-                  field={f}
-                  value={local[f.id]}
-                  onChange={(next) => setLocal((prev) => ({ ...prev, [f.id]: next }))}
-                />
-              ))}
-            </div>
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={saveOwn}
-                disabled={pending}
-                className="rounded-lg bg-honey px-4 py-2 text-sm font-medium text-bg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
-              >
-                {pending ? 'Saving…' : 'Save my words'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode('ask')}
-                className="text-sm text-text-soft underline-offset-4 transition-colors hover:text-text hover:underline"
-              >
-                Let Bohdi write it instead
-              </button>
-            </div>
-          </>
-        )}
+          </div>
+        </div>
+      ) : (
+        <div className="mt-4">
+          <div className="space-y-4">
+            {fields.map((f) => (
+              <FieldEditor
+                key={f.id}
+                field={f}
+                value={local[f.id]}
+                onChange={(next) => setLocal((prev) => ({ ...prev, [f.id]: next }))}
+              />
+            ))}
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={saveOwn}
+              disabled={pending}
+              className="rounded-lg bg-honey px-4 py-2 text-sm font-medium text-bg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              {pending ? 'Saving…' : 'Save my words'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('talk')}
+              className="text-sm text-text-soft underline-offset-4 transition-colors hover:text-text hover:underline"
+            >
+              Talk it through with Bohdi instead
+            </button>
+          </div>
+        </div>
+      )}
 
-        {wrote && (
-          <p className="mt-4 text-sm text-honey-warm">
-            There it is — see it in your store on the right. Keep it, or ask for another take.
-          </p>
-        )}
-        {status === 'kept' && (
-          <p className="mt-4 text-sm text-honey-warm">Kept — this section stays as it is.</p>
-        )}
-        {message && <p className="mt-4 text-sm text-text-soft">{message}</p>}
-      </div>
+      {wrote && (
+        <p className="mt-4 text-sm text-honey-warm">
+          There it is — see it in your store on the right. Keep talking to refine it, or move on.
+        </p>
+      )}
+      {status === 'kept' && (
+        <p className="mt-4 text-sm text-honey-warm">Kept — this section stays as it is.</p>
+      )}
+      {message && <p className="mt-4 text-sm text-text-soft">{message}</p>}
 
       {/* Keep / turn-off — the resolutions besides an edit. Must-change sections
-          (story, products) show neither; they can only be edited. */}
+          (story, products) show neither; they can only be made yours. */}
       {(canKeep || canTurnOff) && (
         <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-white/8 pt-5">
           {canKeep && (

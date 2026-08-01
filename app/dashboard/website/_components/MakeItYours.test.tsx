@@ -36,7 +36,7 @@ describe('MakeItYours (full-screen walk)', () => {
     expect(screen.queryByText(/Step 1 of/)).not.toBeInTheDocument();
     start();
     expect(screen.getByText(/Step 1 of/)).toBeInTheDocument();
-    expect(screen.getByText('Your welcome')).toBeInTheDocument();
+    expect(screen.getByText('Your opening')).toBeInTheDocument();
   });
 
   it('shows the gated full-screen shell with no exit', () => {

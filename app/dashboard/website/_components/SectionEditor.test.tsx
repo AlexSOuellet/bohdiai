@@ -1,12 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 
-const editContent = vi.fn();
+const converseSection = vi.fn();
+const writeSectionFromConversation = vi.fn();
 const setFieldValues = vi.fn();
 const keepSection = vi.fn();
 const toggleSection = vi.fn();
 vi.mock('../actions', () => ({
-  editContent: (...a: unknown[]) => editContent(...a),
+  converseSection: (...a: unknown[]) => converseSection(...a),
+  writeSectionFromConversation: (...a: unknown[]) => writeSectionFromConversation(...a),
   setFieldValues: (...a: unknown[]) => setFieldValues(...a),
   keepSection: (...a: unknown[]) => keepSection(...a),
   toggleSection: (...a: unknown[]) => toggleSection(...a),
@@ -18,7 +20,9 @@ import { WALKTHROUGH_STEPS } from '@/lib/editor/walkthrough';
 const step = (section: string) => WALKTHROUGH_STEPS.find((s) => s.section === section)!;
 
 beforeEach(() => {
-  [editContent, setFieldValues, keepSection, toggleSection].forEach((m) => m.mockReset());
+  [converseSection, writeSectionFromConversation, setFieldValues, keepSection, toggleSection].forEach((m) =>
+    m.mockReset(),
+  );
 });
 
 function renderSection(section: string) {
@@ -32,7 +36,6 @@ function renderSection(section: string) {
       keepable={s.keepable}
       fieldIds={s.fieldIds}
       values={{}}
-      questions={s.questions}
       onResolved={onResolved}
       onChanged={onChanged}
     />,
@@ -40,22 +43,45 @@ function renderSection(section: string) {
   return { onResolved, onChanged, unmount };
 }
 
-describe('SectionEditor', () => {
-  it('renders the section lead and Ask Bohdi as the primary button', () => {
+describe('SectionEditor — conversation', () => {
+  it('opens with the section title and Bohdi reacting to what he built', () => {
     renderSection('hero');
-    expect(screen.getByText('Your welcome')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Ask Bohdi to write it' })).toBeInTheDocument();
+    expect(screen.getByText('Your opening')).toBeInTheDocument();
+    expect(screen.getByText(/first thing anyone sees/i)).toBeInTheDocument();
   });
 
-  it('typing + Ask Bohdi calls editContent, resolves, refreshes, and confirms', async () => {
-    editContent.mockResolvedValue({ ok: true });
+  it('sending a reply appends the maker turn and Bohdi’s follow-up', async () => {
+    converseSection.mockResolvedValue({ ok: true, turn: { action: 'ask', message: 'And who is it for?' } });
+    renderSection('hero');
+    fireEvent.change(screen.getByPlaceholderText(/tell me what you think/i), {
+      target: { value: 'It should feel calm and a little witchy' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+    expect(await screen.findByText('And who is it for?')).toBeInTheDocument();
+    expect(screen.getByText('It should feel calm and a little witchy')).toBeInTheDocument();
+    // the whole conversation (opener + maker reply) goes to the action
+    const convo = converseSection.mock.calls[0]![1] as { speaker: string; text: string }[];
+    expect(convo[convo.length - 1]).toEqual({ speaker: 'maker', text: 'It should feel calm and a little witchy' });
+  });
+
+  it('once the maker has spoken, Write it up sends the conversation to the writer, resolves, and refreshes', async () => {
+    converseSection.mockResolvedValue({ ok: true, turn: { action: 'ready', message: 'Got it — want me to write it?' } });
+    writeSectionFromConversation.mockResolvedValue({ ok: true });
     const { onResolved, onChanged } = renderSection('hero');
-    fireEvent.change(screen.getByPlaceholderText(/hand-poured/i), { target: { value: 'calm and witchy' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Ask Bohdi to write it' }));
+    fireEvent.change(screen.getByPlaceholderText(/tell me what you think/i), { target: { value: 'calm and witchy' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+    // wait for Bohdi's turn to land (the button is disabled while he's thinking)
+    await screen.findByText('Got it — want me to write it?');
+    fireEvent.click(screen.getByRole('button', { name: 'Write it up' }));
     await screen.findByText(/There it is/);
-    expect(editContent).toHaveBeenCalledWith(step('hero').fieldIds, 'calm and witchy', 'hero');
+    expect(writeSectionFromConversation).toHaveBeenCalledWith('hero', expect.any(Array));
     expect(onResolved).toHaveBeenCalledWith(true);
     expect(onChanged).toHaveBeenCalled();
+  });
+
+  it('does not offer Write it up before the maker has said anything', () => {
+    renderSection('hero');
+    expect(screen.queryByRole('button', { name: /Write it up/ })).not.toBeInTheDocument();
   });
 
   it('"write it myself" reveals the fields and saves verbatim via setFieldValues', async () => {
@@ -66,7 +92,7 @@ describe('SectionEditor', () => {
     fireEvent.click(screen.getByText('Save my words'));
     await vi.waitFor(() => expect(setFieldValues).toHaveBeenCalled());
     expect(setFieldValues.mock.calls[0]![1]).toBe('hero');
-    expect(editContent).not.toHaveBeenCalled();
+    expect(writeSectionFromConversation).not.toHaveBeenCalled();
     expect(onResolved).toHaveBeenCalledWith(true);
   });
 
