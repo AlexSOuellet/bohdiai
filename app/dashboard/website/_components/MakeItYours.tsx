@@ -48,8 +48,9 @@ export default function MakeItYours({ previewToken, previewOrigin, values }: Mak
 
   // The preview renders the maker's own draft (previewToken) as a static still so the
   // scroll-in reveals resolve in the iframe. previewStill keeps reveal-gated sections
-  // (products) visible; the nonce forces a reload after each staged edit.
-  const previewSrc = `${previewOrigin}/?previewToken=${encodeURIComponent(previewToken)}&previewStill=1&n=${nonce}`;
+  // (products) visible; previewSection spotlights just the section being edited so the
+  // maker sees only that one; the nonce forces a reload after each staged edit.
+  const previewSrc = `${previewOrigin}/?previewToken=${encodeURIComponent(previewToken)}&previewStill=1&previewSection=${encodeURIComponent(step.section)}&n=${nonce}`;
 
   // The opening welcome — what this is, before the first section (D69).
   if (!started) {

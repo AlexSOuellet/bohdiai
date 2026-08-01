@@ -20,6 +20,7 @@ function imageUrlFromMetadata(m: Json): string | undefined {
   return typeof url === 'string' ? url : undefined;
 }
 import { isKnownSkin } from '@/lib/editor/look-shelf';
+import { SECTION_KEYS } from '@/lib/archetypes/main-street/families';
 import { resolveTextureParams } from '@/lib/editor/texture';
 import { resolvePreviewMood } from '@/lib/moods';
 import { PreviewLinkForwarder } from './PreviewLinkForwarder';
@@ -62,6 +63,10 @@ interface StorefrontPageProps {
   previewReviews?: string | undefined;
   /** Find-us-beat preview — render the find-us beat in this treatment without persisting. */
   previewFindUs?: string | undefined;
+  /** Single-section spotlight (Make It Yours walk) — show ONLY this home beat, so the
+   *  maker sees just the section they're editing. Validated against SECTION_KEYS before
+   *  it touches a style tag. Ignored on sub-pages (they carry no home beats). */
+  previewSection?: string | undefined;
 }
 
 /** Editor-preview override: land every scroll-in reveal in its resolved state. The
@@ -82,15 +87,33 @@ const STILL_REVEAL_CSS = [
  *  sections are visible in the static pane. Both sit AFTER the store markup so the
  *  style wins cascade ties against the chrome CSS. Public renders (no token, no
  *  still) return the node untouched. */
-function withPreviewChrome(node: ReactNode, opts: { still: boolean | undefined; preview: boolean }): ReactNode {
-  if (!opts.preview && opts.still !== true) return node;
+function withPreviewChrome(
+  node: ReactNode,
+  opts: { still: boolean | undefined; preview: boolean; spotlight?: string | undefined },
+): ReactNode {
+  if (!opts.preview && opts.still !== true && opts.spotlight === undefined) return node;
+  // Spotlight one home beat: hide every other. `spotlight` is a validated SectionKey
+  // (see spotlightSection), so it's safe to interpolate into the rule.
+  const spotlightCss =
+    opts.spotlight !== undefined
+      ? `.arch-main-street .ms-beat:not([data-ms-beat="${opts.spotlight}"]){display:none}`
+      : undefined;
   return (
     <>
       {node}
       {opts.preview ? <PreviewLinkForwarder /> : null}
       {opts.still === true ? <style dangerouslySetInnerHTML={{ __html: STILL_REVEAL_CSS }} /> : null}
+      {spotlightCss ? <style dangerouslySetInnerHTML={{ __html: spotlightCss }} /> : null}
     </>
   );
+}
+
+/** Validate a `previewSection` param down to a known SectionKey, or undefined. Guards
+ *  the value before it can reach a style tag. */
+function spotlightSection(previewSection: string | undefined): string | undefined {
+  return previewSection !== undefined && (SECTION_KEYS as readonly string[]).includes(previewSection)
+    ? previewSection
+    : undefined;
 }
 
 /** Storefront routes that paint as a sub-page off the home envelope. */
@@ -160,7 +183,7 @@ async function envelopeFor(tenantId: string, previewToken: string | undefined): 
   return loadHomeEnvelope(tenantId);
 }
 
-export default async function StorefrontPage({ slug, previewToken, previewStill, previewLook, previewMood, previewTexture, previewTextureOpacity, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs }: StorefrontPageProps) {
+export default async function StorefrontPage({ slug, previewToken, previewStill, previewLook, previewMood, previewTexture, previewTextureOpacity, previewSection, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs }: StorefrontPageProps) {
   const headerStore = await headers();
   const tenantId = headerStore.get('x-tenant-id');
   if (tenantId === null) notFound();
@@ -186,7 +209,7 @@ export default async function StorefrontPage({ slug, previewToken, previewStill,
   // Home (/): render the store from the tenant's home envelope.
   const env = await envelopeFor(tenantId, previewToken);
   if (env === null) notFound();
-  return withPreviewChrome(await renderStore(env, tenantId, undefined, previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity), { still: previewStill, preview: previewToken !== undefined });
+  return withPreviewChrome(await renderStore(env, tenantId, undefined, previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity), { still: previewStill, preview: previewToken !== undefined, spotlight: spotlightSection(previewSection) });
 }
 
 function formatPrice(cents: number): string {

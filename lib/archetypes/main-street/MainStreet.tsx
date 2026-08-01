@@ -9,7 +9,6 @@
  * font is the skin. Catalog rows are passed in — the archetype never authors
  * the catalog.
  */
-import { Fragment } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
@@ -165,10 +164,16 @@ export function MainStreet({ content, skin, products, sectionStack, catalogSize,
 
   return (
     <MainStreetRoot skin={skin} family={family}>
-      {heroEntry?.on ? renderers.hero() : null}
+      {heroEntry?.on ? (
+        <div className="ms-beat" data-ms-beat="hero">
+          {renderers.hero()}
+        </div>
+      ) : null}
       <main>
         {bodyEntries.map((entry, i) => (
-          <Fragment key={`${entry.section}-${i}`}>{renderers[entry.section]()}</Fragment>
+          <div key={`${entry.section}-${i}`} className="ms-beat" data-ms-beat={entry.section}>
+            {renderers[entry.section]()}
+          </div>
         ))}
       </main>
       <MainStreetFooter shopName={content.shopName} />

@@ -48,6 +48,16 @@ describe('MainStreet — find-us beat composition', () => {
   });
 });
 
+describe('MainStreet — per-beat spotlight hooks', () => {
+  it('wraps each home beat in a data-ms-beat hook the single-section preview targets', () => {
+    const { container } = render(<MainStreet content={base} skin={skin} products={[]} />);
+    // Hero and the founder beat both carry their section key so the walk can
+    // spotlight just one (the wrapper is display:contents, so live layout is unchanged).
+    expect(container.querySelector('[data-ms-beat="hero"]')).toBeTruthy();
+    expect(container.querySelector('[data-ms-beat="founder"]')).toBeTruthy();
+  });
+});
+
 describe('MainStreet — marquee band composition', () => {
   it('shows the marquee band with content assembled from the store itself', () => {
     // Every family ships marquee-on at onboarding; Cozy (the default stack) has

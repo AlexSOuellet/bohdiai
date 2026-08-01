@@ -194,6 +194,9 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .archetype-photo{filter:${a.photoFilter ?? 'none'};display:block;width:100%;height:100%;object-fit:cover}
     .arch-main-street .ms-wrap{max-width:1200px;margin-inline:auto;padding-inline:40px}
     @media(max-width:860px){.arch-main-street .ms-wrap{padding-inline:20px}}
+    /* Per-beat wrapper — layout-transparent so the live page is unchanged; a hook
+       the editor's single-section preview spotlights via [data-ms-beat]. */
+    .arch-main-street .ms-beat{display:contents}
     /* Header nav: full link row on desktop, a menu button + full-screen overlay
        on phones. The breakpoint hides one and shows the other; the overlay reads
        the skin's own --ms-* vars so it matches the store. */
