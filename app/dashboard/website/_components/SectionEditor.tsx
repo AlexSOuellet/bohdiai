@@ -23,7 +23,7 @@ const INTRO: Record<SectionKey, { title: string; opener: string; placeholder: st
   hero: {
     title: 'The top of your store',
     opener:
-      "This is the top of your store — your shop name and the words around it, the part every visit lands on. Keep it as is, or tell me how you'd like it to read?",
+      "Now the part that stays put: the very top of your store, where your shop name sits with a short line under it and a button. It’s what every visitor lands on. Read it over on the right — keep it if it’s right, or tell me what to change.",
     placeholder: 'e.g. a little warmer, or shorter',
   },
   founder: {
@@ -328,13 +328,20 @@ export default function SectionEditor({
     <div>
       <h1 className="font-serif text-2xl text-text">{title}</h1>
 
-      {/* Moment step — explain why it's here, tied to the feeling the maker picked. */}
+      {/* Moment step — explain why it's here (tied to the feeling), then tell the
+          maker plainly what to do so it's direction, not a bare menu. */}
       {isMoment && (
-        <p className="mt-3 text-sm leading-relaxed text-text-soft">
-          {moodLabel
-            ? `Because you picked the ${moodLabel} feel, your store opens with a little moment — your first words fade in, one line at a time, then the shop settles into view. It’s the one thing the ${moodLabel} feel does that the others don’t.`
-            : 'Your store opens with a little moment — your first words fade in, one line at a time, then the shop settles into view.'}
-        </p>
+        <>
+          <p className="mt-3 text-sm leading-relaxed text-text-soft">
+            {moodLabel
+              ? `Because you picked the ${moodLabel} feel, your store opens with a little moment — your first words fade in, one line at a time, then the shop settles into view. It’s the one thing the ${moodLabel} feel does that the others don’t.`
+              : 'Your store opens with a little moment — your first words fade in, one line at a time, then the shop settles into view.'}
+          </p>
+          <p className="mt-3 text-sm leading-relaxed text-text-soft">
+            Most makers keep it. If the lines below don’t sound like you, reword them — then choose how
+            often it plays. Watch it any time with “Play it again” on the right.
+          </p>
+        </>
       )}
 
       {/* Moment step — the current lines, always readable (in the preview they fade

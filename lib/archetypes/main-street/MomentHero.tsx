@@ -166,11 +166,14 @@ export function MomentHero({
   useLayoutEffect(() => {
     const search = typeof window !== 'undefined' ? window.location.search : '';
     const forceReplay = /[?&]intro=1(?:&|$)/.test(search);
+    // The editor/walk preview (previewStill=1): the maker's playMode is for live
+    // visitors, so here the intro only plays when explicitly forced (the Moment step).
+    const preview = /[?&]previewStill=1(?:&|$)/.test(search);
     const cookieString = typeof document !== 'undefined' ? document.cookie : '';
     // The maker's play-frequency setting — once / always / off (D54). Resolved
     // from the specific fields (not the whole `moment`) so the effect deps stay precise.
     const playMode = resolveMomentPlayMode({ playMode: moment.playMode, playIntro: moment.playIntro });
-    if (shouldPlayMoment({ initialPath: initialDocumentPath(), key: momentKey ?? null, cookieString, forceReplay, playMode })) {
+    if (shouldPlayMoment({ initialPath: initialDocumentPath(), key: momentKey ?? null, cookieString, forceReplay, playMode, preview })) {
       // The play decision is client-only; deciding in a layout effect is the
       // correct pattern here.
       // eslint-disable-next-line react-hooks/set-state-in-effect

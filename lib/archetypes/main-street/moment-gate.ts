@@ -62,20 +62,29 @@ export interface MomentPlayDecision {
   /** Per-shop key for the seen-cookie (the tenant id). Null disables play (e.g. preview). */
   key: string | null;
   cookieString: string;
-  /** A deliberate replay (footer "Intro") forces play regardless of cold/seen. */
+  /** A deliberate replay (footer "Intro", or the walk's Moment step) forces play
+   *  regardless of cold/seen. */
   forceReplay?: boolean;
   /** How often the Moment plays (D54). `off` disables it outright — it never
    *  plays, not even a forced replay. `always` ignores the seen-cookie so it
    *  replays every cold front-door visit. Default `once`. */
   playMode?: MomentPlayMode;
+  /** The editor/walk preview. The maker's `playMode` governs LIVE visitors, not
+   *  the preview, so in preview the Moment never auto-plays — it plays only when
+   *  explicitly forced (the walk's Moment step passes `forceReplay`). This keeps a
+   *  step that shows the resting hero from being hijacked by an "always" intro. */
+  preview?: boolean;
 }
 
 /** Whether the Moment timeline should play on this load. */
 export function shouldPlayMoment(d: MomentPlayDecision): boolean {
-  const { initialPath, homePath = '/', key, cookieString, forceReplay = false, playMode = 'once' } = d;
+  const { initialPath, homePath = '/', key, cookieString, forceReplay = false, playMode = 'once', preview = false } = d;
   // The maker set the Moment off — it never plays, overriding even a forced replay.
   if (playMode === 'off') return false;
   if (forceReplay) return true;
+  // In the editor preview, the maker's playMode does not auto-play the intro; only
+  // an explicit replay (handled above) does.
+  if (preview) return false;
   if (!key) return false;
   if (!isColdFrontDoorEntry(initialPath, homePath)) return false;
   // `always` replays for every cold front-door visitor; `once` rests after the

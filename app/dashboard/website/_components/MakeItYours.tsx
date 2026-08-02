@@ -51,7 +51,9 @@ export default function MakeItYours({ previewToken, previewOrigin, values, steps
   const nextHint =
     step.cls === 'must-change'
       ? 'Make this yours to continue'
-      : 'Keep it, change it, or turn it off to continue';
+      : step.cls === 'optional'
+        ? 'Keep it, change it, or turn it off to continue'
+        : 'Keep it or change it to continue';
 
   // The preview renders the maker's own draft (previewToken) as a static still so the
   // scroll-in reveals resolve in the iframe. previewStill keeps reveal-gated sections

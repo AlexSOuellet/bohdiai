@@ -74,6 +74,17 @@ describe('shouldPlayMoment', () => {
     expect(shouldPlayMoment({ initialPath: '/', key, cookieString: noCookie })).toBe(true);
     expect(shouldPlayMoment({ initialPath: '/', key, cookieString: 'bohdi_moment_seen_tn_123=1' })).toBe(false);
   });
+
+  it('in the editor preview, ignores the maker’s playMode — only an explicit replay plays', () => {
+    // "always" and "once" would both play on a cold load live; in preview they rest,
+    // so a step showing the resting hero isn’t hijacked by the intro.
+    expect(shouldPlayMoment({ initialPath: '/', key, cookieString: noCookie, playMode: 'always', preview: true })).toBe(false);
+    expect(shouldPlayMoment({ initialPath: '/', key, cookieString: noCookie, playMode: 'once', preview: true })).toBe(false);
+    // An explicit replay (intro=1 — the Moment step) still plays in preview…
+    expect(shouldPlayMoment({ initialPath: '/', key, cookieString: noCookie, forceReplay: true, preview: true })).toBe(true);
+    // …unless the maker set it off, which still wins.
+    expect(shouldPlayMoment({ initialPath: '/', key, cookieString: noCookie, forceReplay: true, playMode: 'off', preview: true })).toBe(false);
+  });
 });
 
 describe('resolveMomentPlayMode', () => {
