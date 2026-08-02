@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { WALKTHROUGH_STEPS, placeholderSections, walkthroughProgress, walkComplete, sectionClass, sectionResolved } from './walkthrough';
+import { WALKTHROUGH_STEPS, walkUiSteps, placeholderSections, walkthroughProgress, walkComplete, sectionClass, sectionResolved } from './walkthrough';
 import { markSectionMade, markSectionKept, setSectionHidden } from './section-state';
 import { EDITABLE_FIELDS } from './editable-fields';
 
@@ -31,6 +31,46 @@ describe('walkthrough', () => {
     expect(story.fieldIds).toContain('founder.quote');
     expect(story.fieldIds).toContain('about.story');
     expect(WALKTHROUGH_STEPS.filter((s) => s.personal).length).toBe(1);
+  });
+
+  it('walkUiSteps keeps one hero step for a non-Moment feeling, holding every hero field', () => {
+    const steps = walkUiSteps('rustic');
+    const hero = steps.filter((s) => s.section === 'hero');
+    expect(hero).toHaveLength(1);
+    expect(hero[0]!.fieldIds).toContain('moment.story');
+    expect(hero[0]!.fieldIds).toContain('moment.ctaLabel');
+    expect(steps.some((s) => s.isMoment)).toBe(false);
+  });
+
+  it('walkUiSteps splits the hero into a Moment step then a Hero step for the Cozy feeling', () => {
+    const steps = walkUiSteps('cozy');
+    const momentIdx = steps.findIndex((s) => s.isMoment);
+    expect(momentIdx).toBeGreaterThanOrEqual(0);
+    const moment = steps[momentIdx]!;
+    const hero = steps[momentIdx + 1]!;
+    expect(moment.section).toBe('hero');
+    expect(moment.fieldIds).toEqual(['moment.story']);
+    expect(hero.section).toBe('hero');
+    expect(hero.isMoment).toBeFalsy();
+    expect(hero.fieldIds).toContain('moment.ctaLabel');
+    expect(hero.fieldIds).not.toContain('moment.story');
+  });
+
+  it('walkUiSteps adds exactly one step for Cozy versus a non-Moment feeling', () => {
+    expect(walkUiSteps('cozy').length).toBe(walkUiSteps('rustic').length + 1);
+  });
+
+  it('walkUiSteps falls back to Cozy behaviour for a missing feeling (matches the renderer)', () => {
+    expect(walkUiSteps(null).some((s) => s.isMoment)).toBe(true);
+  });
+
+  it('walkUiSteps orders the Moment step before the Hero step, both before the story step', () => {
+    const steps = walkUiSteps('cozy');
+    const momentIdx = steps.findIndex((s) => s.isMoment);
+    const heroIdx = steps.findIndex((s) => !s.isMoment && s.section === 'hero');
+    const storyIdx = steps.findIndex((s) => s.section === 'founder');
+    expect(momentIdx).toBeLessThan(heroIdx);
+    expect(heroIdx).toBeLessThan(storyIdx);
   });
 
   it('classes: goods + founder must-change; four sections optional; the rest keep-or-change', () => {

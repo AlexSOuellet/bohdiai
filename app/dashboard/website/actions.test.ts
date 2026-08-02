@@ -25,7 +25,7 @@ vi.mock('@/lib/editor/content-agent', () => ({
 }));
 vi.mock('@/lib/editor/niche-voice', () => ({ loadNicheVoice: (id: string) => loadNicheVoice(id) }));
 
-import { stageLook, publishStore, resetStore, editContent, setFieldValues } from './actions';
+import { stageLook, publishStore, resetStore, editContent, setFieldValues, setMomentPlayMode } from './actions';
 
 beforeEach(() => {
   [getCurrentShop, readDraftTree, stageDraftTree, publishDraft, resetDraft, loadHomeEnvelope, runContentEdit, loadNicheVoice].forEach((m) => m.mockReset());
@@ -186,6 +186,38 @@ describe('setFieldValues (verbatim direct edit)', () => {
   it('fails cleanly with no store', async () => {
     getCurrentShop.mockResolvedValue(null);
     const res = await setFieldValues([{ id: 'goods.title', value: 'x' }], 'goods');
+    expect(res.ok).toBe(false);
+    expect(stageDraftTree).not.toHaveBeenCalled();
+  });
+});
+
+describe('setMomentPlayMode', () => {
+  it('stages the play mode onto the draft moment and marks the hero made-yours', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    readDraftTree.mockResolvedValue(null);
+    loadHomeEnvelope.mockResolvedValue({ kind: 'archetype', content: { moment: { story: ['a'] } } });
+    stageDraftTree.mockResolvedValue({ ok: true });
+
+    const res = await setMomentPlayMode('always');
+    expect(res.ok).toBe(true);
+    const staged = stageDraftTree.mock.calls[0]![1] as {
+      root: { content: { moment: { playMode: string; story: string[] }; madeYours?: string[] } };
+    };
+    expect(staged.root.content.moment.playMode).toBe('always');
+    expect(staged.root.content.moment.story).toEqual(['a']); // leaves the lines alone
+    expect(staged.root.content.madeYours).toContain('hero');
+  });
+
+  it('rejects an unknown mode without touching the draft', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    const res = await setMomentPlayMode('weekly' as never);
+    expect(res.ok).toBe(false);
+    expect(stageDraftTree).not.toHaveBeenCalled();
+  });
+
+  it('fails cleanly with no store', async () => {
+    getCurrentShop.mockResolvedValue(null);
+    const res = await setMomentPlayMode('off');
     expect(res.ok).toBe(false);
     expect(stageDraftTree).not.toHaveBeenCalled();
   });

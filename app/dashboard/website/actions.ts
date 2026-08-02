@@ -26,6 +26,7 @@ import {
 } from '@/lib/editor/conversation';
 import { loadNicheVoice } from '@/lib/editor/niche-voice';
 import type { SectionKey } from '@/lib/archetypes/main-street/families';
+import type { MomentPlayMode } from '@/lib/archetypes/main-street/moment-gate';
 import { logger } from '@/lib/logger';
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -220,6 +221,27 @@ function ensureObject(parent: Record<string, unknown>, key: string): Record<stri
   const fresh: Record<string, unknown> = {};
   parent[key] = fresh;
   return fresh;
+}
+
+/** How often the Moment plays — once per visitor / always / off (D54). Writes
+ *  `moment.playMode` on the draft and marks the hero made-yours, resolving the
+ *  Moment step. The Cozy-only opening play; a maker who adopts Cozy later sets
+ *  this in the editor (its default stays `once`, so nothing breaks unset). */
+export async function setMomentPlayMode(mode: MomentPlayMode): Promise<ActionResult> {
+  if (mode !== 'once' && mode !== 'always' && mode !== 'off') return { ok: false, error: 'Unknown play setting.' };
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to update.' };
+  const baseTree = await loadBaseTree(shop.tenantId);
+  if (baseTree === null) return { ok: false, error: 'Could not load your store.' };
+
+  const next = structuredClone(baseTree);
+  const moment = ensureObject(ensureObject(ensureObject(next, 'root'), 'content'), 'moment');
+  moment['playMode'] = mode;
+
+  const staged = await stageDraftTree(shop.tenantId, markSectionMade(next, 'hero'));
+  if (!staged.ok) return { ok: false, error: 'Could not save your changes.' };
+  revalidatePath('/dashboard/website');
+  return { ok: true };
 }
 
 /** Turn the hero's first-run intro on or off (D54). Writes `moment.playIntro` on the

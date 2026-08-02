@@ -15,6 +15,8 @@
  * made-yours on any edit (pragmatic completeness, not per-field diffing).
  */
 import type { SectionKey } from '@/lib/archetypes/main-street/families';
+import { getFamily } from '@/lib/archetypes/main-street/families';
+import { heroPlaysMoment } from '@/lib/archetypes/main-street/hero-catalog';
 import { fieldsForSection } from './editable-fields';
 import { sectionState } from './section-state';
 
@@ -46,6 +48,10 @@ export interface WalkthroughStep {
   readonly optional: boolean;
   /** For a personal step, the targeted questions that draw out the real material. */
   readonly questions?: readonly string[];
+  /** The Moment step — the Cozy-only opening play (the story lines fading in) with
+   *  its keep / reword / how-often-it-plays controls. Split off the hero step by
+   *  `walkUiSteps` only when the maker's hero plays a Moment. */
+  readonly isMoment?: boolean;
 }
 
 /** The story step's questions — a few asks that pull the maker's real story out,
@@ -88,6 +94,33 @@ export const WALKTHROUGH_STEPS: readonly WalkthroughStep[] = STEP_META.map((m) =
     .filter((f) => f.kind !== 'items')
     .map((f) => f.id),
 }));
+
+/** The hero field that IS the Moment — the story lines that fade in one at a time. */
+const MOMENT_LINES_FIELD = 'moment.story';
+
+/**
+ * The family-aware step list the UI walks the maker through. Identical to the
+ * section gate list (WALKTHROUGH_STEPS) except for the hero: when the maker's
+ * hero plays a Moment (the story hero — Cozy today), the hero step splits into
+ * two — a MOMENT step (the fading opening lines + how-often-it-plays, resolved
+ * on the same hero section) then a HERO step (the resting eyebrow / sub-line /
+ * buttons). Every other feeling keeps one hero step holding all the hero words,
+ * because a static hero fades nothing in. Both split steps carry `section:
+ * 'hero'`, so the gate (walkComplete etc.) is unchanged — it still sees one hero
+ * section. Pure + serialisable, so a server component can compute it and hand the
+ * array to the client walk.
+ */
+export function walkUiSteps(mood: string | null | undefined): readonly WalkthroughStep[] {
+  const hasMoment = heroPlaysMoment(getFamily(mood).sectionDefaults.hero);
+  return WALKTHROUGH_STEPS.flatMap((step) => {
+    if (step.section !== 'hero') return [step];
+    if (!hasMoment) return [{ ...step, title: 'Your hero' }];
+    return [
+      { ...step, id: 'moment', title: 'Your opening moment', isMoment: true, fieldIds: [MOMENT_LINES_FIELD] },
+      { ...step, id: 'hero', title: 'Your hero', fieldIds: step.fieldIds.filter((id) => id !== MOMENT_LINES_FIELD) },
+    ];
+  });
+}
 
 /** The class of a section (how it may be resolved). Sections outside the walk
  *  default to keep-or-change (never auto-hidden). */

@@ -72,3 +72,17 @@ export const HERO_CATALOG: Record<HeroVariantKey, (props: HeroProps) => ReactEle
 export function resolveHero(key: string | undefined): (props: HeroProps) => ReactElement {
   return HERO_CATALOG[(key as HeroVariantKey)] ?? HERO_CATALOG[DEFAULT_HERO_VARIANT];
 }
+
+/** The one hero variant that plays the first-run Moment (the story lines fading
+ *  in over the media). Only `story` runs the timeline; every other hero rests
+ *  static. A store has a Moment exactly when its hero is this one — which is why
+ *  the walk shows a Moment step, and the editor a Moment control, only then. */
+export const MOMENT_HERO_VARIANT: HeroVariantKey = 'story';
+
+/** Whether a hero variant plays the first-run Moment. Unknown/undefined resolves
+ *  the same way `resolveHero` does (to the default hero), so the answer always
+ *  matches what actually renders. */
+export function heroPlaysMoment(key: string | undefined): boolean {
+  const resolved = (key !== undefined && key in HERO_CATALOG ? key : DEFAULT_HERO_VARIANT) as HeroVariantKey;
+  return resolved === MOMENT_HERO_VARIANT;
+}
