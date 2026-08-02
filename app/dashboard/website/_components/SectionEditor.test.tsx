@@ -49,7 +49,7 @@ function renderSection(section: string, opts: { title?: string } = {}) {
 }
 
 /** Render the Cozy Moment step with its play-frequency control. */
-function renderMoment(opts: { momentPlayMode?: 'once' | 'always' | 'off' } = {}) {
+function renderMoment(opts: { momentPlayMode?: 'once' | 'always' | 'off'; lines?: string[] } = {}) {
   const s = momentStep();
   const onResolved = vi.fn();
   const onChanged = vi.fn();
@@ -60,7 +60,7 @@ function renderMoment(opts: { momentPlayMode?: 'once' | 'always' | 'off' } = {})
       cls={s.cls}
       keepable={s.keepable}
       fieldIds={s.fieldIds}
-      values={{}}
+      values={opts.lines ? { 'moment.story': opts.lines } : {}}
       isMoment
       momentPlayMode={opts.momentPlayMode ?? 'once'}
       moodLabel="Cozy"
@@ -209,5 +209,11 @@ describe('SectionEditor — Moment step (play frequency)', () => {
     renderMoment();
     expect(screen.getByRole('button', { name: 'Keep as built' })).toBeInTheDocument();
     expect(screen.getByText(/words that fade in/i)).toBeInTheDocument();
+  });
+
+  it('shows the current opening lines so the maker can read them (they fade away in the preview)', () => {
+    renderMoment({ lines: ['Hand-poured in small batches', 'Lit for slow evenings'] });
+    expect(screen.getByText(/Hand-poured in small batches/)).toBeInTheDocument();
+    expect(screen.getByText(/Lit for slow evenings/)).toBeInTheDocument();
   });
 });

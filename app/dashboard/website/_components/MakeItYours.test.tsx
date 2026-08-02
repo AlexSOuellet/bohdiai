@@ -26,14 +26,15 @@ beforeEach(() => {
   cleanup();
 });
 
-/** A Cozy walk, so the list leads with the Moment step then the Hero step. */
-function renderWalk() {
+/** A walk for the given feeling. Cozy (default) leads with the Moment step then
+ *  the Hero step; other feelings lead straight with the Hero step. */
+function renderWalk(mood = 'cozy') {
   render(
     <MakeItYours
       previewToken="tok-123"
       previewOrigin="https://ember.test"
       values={{}}
-      steps={walkUiSteps('cozy')}
+      steps={walkUiSteps(mood)}
       momentPlayMode="once"
       moodLabel="Cozy"
     />,
@@ -72,6 +73,21 @@ describe('MakeItYours (full-screen walk)', () => {
     const frame = screen.getByTitle('Your store preview') as HTMLIFrameElement;
     expect(frame.src).toContain('previewToken=tok-123');
     expect(frame.src).toContain('previewStill=1');
+  });
+
+  it('offers a replay on the Moment step that reloads the preview to play it again', () => {
+    renderWalk();
+    start();
+    const before = (screen.getByTitle('Your store preview') as HTMLIFrameElement).src;
+    fireEvent.click(screen.getByRole('button', { name: /Play it again/ }));
+    const after = (screen.getByTitle('Your store preview') as HTMLIFrameElement).src;
+    expect(after).not.toBe(before); // nonce bumped → the iframe reloads and the intro replays
+  });
+
+  it('has no replay on a non-Moment step (a static hero fades nothing in)', () => {
+    renderWalk('rustic'); // leads with the resting Hero step, no Moment
+    start();
+    expect(screen.queryByRole('button', { name: /Play it again/ })).not.toBeInTheDocument();
   });
 
   it('Next is gated until the step is resolved, then advances Moment → Hero', async () => {

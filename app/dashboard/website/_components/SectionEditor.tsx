@@ -209,6 +209,11 @@ export default function SectionEditor({
   const saidSomething = convo.some((t) => t.speaker === 'maker');
   const wrote = status === 'wrote';
 
+  // The Moment's opening lines, read from the "write it myself" working copy so the
+  // maker can always READ what fades in (in the preview the lines fade away, leaving
+  // nothing to decide against). Reflects verbatim edits live.
+  const momentLines = Array.isArray(local['moment.story']) ? (local['moment.story'] as string[]) : [];
+
   function send() {
     const text = reply.trim();
     if (text.length === 0) return;
@@ -330,6 +335,25 @@ export default function SectionEditor({
             ? `Because you picked the ${moodLabel} feel, your store opens with a little moment — your first words fade in, one line at a time, then the shop settles into view. It’s the one thing the ${moodLabel} feel does that the others don’t.`
             : 'Your store opens with a little moment — your first words fade in, one line at a time, then the shop settles into view.'}
         </p>
+      )}
+
+      {/* Moment step — the current lines, always readable (in the preview they fade
+          away and leave nothing to decide against). */}
+      {isMoment && (
+        <div className="mt-4 rounded-lg border border-white/10 bg-bg-2/40 px-4 py-3">
+          <p className="text-[11px] uppercase tracking-wider text-muted">Right now it opens with</p>
+          <div className="mt-2 space-y-1">
+            {momentLines.length > 0 ? (
+              momentLines.map((line, i) => (
+                <p key={i} className="font-serif text-base italic leading-relaxed text-text">
+                  “{line}”
+                </p>
+              ))
+            ) : (
+              <p className="text-sm text-text-soft">No opening lines yet.</p>
+            )}
+          </div>
+        </div>
       )}
 
       {mode === 'talk' ? (

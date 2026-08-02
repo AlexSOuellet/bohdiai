@@ -155,6 +155,17 @@ export default function MakeItYours({ previewToken, previewOrigin, values, steps
       <div className="relative flex min-h-[50vh] flex-col bg-[#050403] md:min-h-0">
         <div className="flex items-center justify-between border-b border-white/8 px-5 py-3">
           <span className="text-[11px] uppercase tracking-[0.16em] text-muted">Live preview · {step.title.toLowerCase()}</span>
+          {/* The Moment plays once and settles; a maker judging it needs to watch again.
+              Bumping the nonce reloads the iframe, which replays the intro from the top. */}
+          {step.isMoment && (
+            <button
+              type="button"
+              onClick={() => setNonce((n) => n + 1)}
+              className="rounded-md border border-white/15 px-2.5 py-1 text-[11px] text-text-soft transition-colors hover:border-honey/50 hover:text-honey-warm"
+            >
+              ↻ Play it again
+            </button>
+          )}
         </div>
         <iframe
           key={previewSrc}
