@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { momentSeenCookieName, hasSeenMoment, isColdFrontDoorEntry, shouldPlayMoment } from './moment-gate';
+import {
+  momentSeenCookieName,
+  hasSeenMoment,
+  isColdFrontDoorEntry,
+  shouldPlayMoment,
+  resolveMomentPlayMode,
+} from './moment-gate';
 
 describe('momentSeenCookieName', () => {
   it('keys the cookie per shop', () => {
@@ -49,12 +55,48 @@ describe('shouldPlayMoment', () => {
     expect(shouldPlayMoment({ initialPath: '/product/belt', key, cookieString: 'bohdi_moment_seen_tn_123=1', forceReplay: true })).toBe(true);
   });
 
-  it('never plays when the maker turned the intro off, overriding even a forced replay', () => {
-    expect(shouldPlayMoment({ initialPath: '/', key, cookieString: noCookie, introEnabled: false })).toBe(false);
-    expect(shouldPlayMoment({ initialPath: '/', key, cookieString: noCookie, forceReplay: true, introEnabled: false })).toBe(false);
+  it('never plays when the Moment is set off, overriding even a forced replay', () => {
+    expect(shouldPlayMoment({ initialPath: '/', key, cookieString: noCookie, playMode: 'off' })).toBe(false);
+    expect(shouldPlayMoment({ initialPath: '/', key, cookieString: noCookie, forceReplay: true, playMode: 'off' })).toBe(false);
   });
 
-  it('plays by default when introEnabled is omitted (prior content stays on)', () => {
+  it('replays on every cold front-door visit when set to "always", ignoring the seen-cookie', () => {
+    expect(
+      shouldPlayMoment({ initialPath: '/', key, cookieString: 'bohdi_moment_seen_tn_123=1', playMode: 'always' }),
+    ).toBe(true);
+  });
+
+  it('still respects the cold-front-door gate when set to "always" — a side door gets no Moment', () => {
+    expect(shouldPlayMoment({ initialPath: '/product/belt', key, cookieString: noCookie, playMode: 'always' })).toBe(false);
+  });
+
+  it('plays once per visitor by default when playMode is omitted (prior content stays on)', () => {
     expect(shouldPlayMoment({ initialPath: '/', key, cookieString: noCookie })).toBe(true);
+    expect(shouldPlayMoment({ initialPath: '/', key, cookieString: 'bohdi_moment_seen_tn_123=1' })).toBe(false);
+  });
+});
+
+describe('resolveMomentPlayMode', () => {
+  it('defaults to "once" when nothing is set', () => {
+    expect(resolveMomentPlayMode({})).toBe('once');
+  });
+
+  it('reads the explicit playMode when present', () => {
+    expect(resolveMomentPlayMode({ playMode: 'once' })).toBe('once');
+    expect(resolveMomentPlayMode({ playMode: 'always' })).toBe('always');
+    expect(resolveMomentPlayMode({ playMode: 'off' })).toBe('off');
+  });
+
+  it('maps a legacy playIntro=false to "off" and playIntro=true to "once"', () => {
+    expect(resolveMomentPlayMode({ playIntro: false })).toBe('off');
+    expect(resolveMomentPlayMode({ playIntro: true })).toBe('once');
+  });
+
+  it('prefers an explicit playMode over a legacy playIntro', () => {
+    expect(resolveMomentPlayMode({ playMode: 'always', playIntro: false })).toBe('always');
+  });
+
+  it('falls back to "once" for an unknown playMode value', () => {
+    expect(resolveMomentPlayMode({ playMode: 'weekly' })).toBe('once');
   });
 });

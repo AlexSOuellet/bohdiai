@@ -143,11 +143,15 @@ export const MainStreetContentSchema = z.object({
      *  so content authored before the modular hero work still parses; new
      *  builds always author it. */
     sub: z.string().min(1).optional(),
-    /** Whether the first-run intro plays — the story lines fading in over the media
-     *  on a cold visit, settling onto the static hero. The maker turns this off in
-     *  the walk (D54: default on, maker can disable); off means the store loads
-     *  straight to the resting hero every time. Optional/absent = on, so all prior
-     *  content keeps playing. */
+    /** How often the first-run intro plays — the story lines fading in over the
+     *  media, settling onto the static hero. The maker sets this in the walk /
+     *  editor (D54): `once` (first cold visit per visitor, then rests), `always`
+     *  (every cold visit), or `off` (never — store opens on the resting hero).
+     *  Optional/absent = once. See `resolveMomentPlayMode` in `./moment-gate`. */
+    playMode: z.enum(['once', 'always', 'off']).optional(),
+    /** Legacy on/off intro flag, superseded by `playMode`. Kept optional so
+     *  envelopes authored before the once/always split still parse; the resolver
+     *  reads it as a fallback (false → off, true → once). */
     playIntro: z.boolean().optional(),
     /** The Collage hero's still scenes (it shows ~3). Optional so content authored
      *  before the Collage hero still parses, and so heroes that don't use them

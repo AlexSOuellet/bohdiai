@@ -17,6 +17,26 @@
  *  from another page. */
 export const REPLAY_INTRO_EVENT = 'bohdi:replay-intro';
 
+/** How often the Moment plays, the maker's choice in the walk / editor (D54,
+ *  refined this session):
+ *   - `once`   — plays on a visitor's first cold front-door arrival, then the
+ *                seen-cookie rests it (the long-standing default).
+ *   - `always` — plays on EVERY cold front-door arrival, ignoring the cookie, so
+ *                returning visitors see it again each time they land fresh.
+ *   - `off`    — never plays; the store opens straight to the resting hero. */
+export type MomentPlayMode = 'once' | 'always' | 'off';
+
+const PLAY_MODES: ReadonlySet<string> = new Set<MomentPlayMode>(['once', 'always', 'off']);
+
+/** Resolve the stored moment's play mode. Prefers an explicit `playMode`; falls
+ *  back to the legacy on/off `playIntro` boolean (false → off, true/absent →
+ *  once), so envelopes authored before the once/always split keep playing. */
+export function resolveMomentPlayMode(moment: { playMode?: unknown; playIntro?: unknown } | null | undefined): MomentPlayMode {
+  const raw = moment?.playMode;
+  if (typeof raw === 'string' && PLAY_MODES.has(raw)) return raw as MomentPlayMode;
+  return moment?.playIntro === false ? 'off' : 'once';
+}
+
 export function momentSeenCookieName(key: string): string {
   return `bohdi_moment_seen_${key}`;
 }
@@ -44,19 +64,23 @@ export interface MomentPlayDecision {
   cookieString: string;
   /** A deliberate replay (footer "Intro") forces play regardless of cold/seen. */
   forceReplay?: boolean;
-  /** The maker's on/off setting for the intro (D54). Off means the intro is
-   *  disabled outright — it never plays, not even a forced replay. Default on. */
-  introEnabled?: boolean;
+  /** How often the Moment plays (D54). `off` disables it outright — it never
+   *  plays, not even a forced replay. `always` ignores the seen-cookie so it
+   *  replays every cold front-door visit. Default `once`. */
+  playMode?: MomentPlayMode;
 }
 
 /** Whether the Moment timeline should play on this load. */
 export function shouldPlayMoment(d: MomentPlayDecision): boolean {
-  const { initialPath, homePath = '/', key, cookieString, forceReplay = false, introEnabled = true } = d;
-  // The maker turned the intro off — it never plays, overriding even a forced replay.
-  if (!introEnabled) return false;
+  const { initialPath, homePath = '/', key, cookieString, forceReplay = false, playMode = 'once' } = d;
+  // The maker set the Moment off — it never plays, overriding even a forced replay.
+  if (playMode === 'off') return false;
   if (forceReplay) return true;
   if (!key) return false;
   if (!isColdFrontDoorEntry(initialPath, homePath)) return false;
+  // `always` replays for every cold front-door visitor; `once` rests after the
+  // seen-cookie is written.
+  if (playMode === 'always') return true;
   return !hasSeenMoment(key, cookieString);
 }
 
