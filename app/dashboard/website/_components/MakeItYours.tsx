@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { WALKTHROUGH_STEPS } from '@/lib/editor/walkthrough';
+import type { WalkthroughStep } from '@/lib/editor/walkthrough';
+import type { MomentPlayMode } from '@/lib/archetypes/main-street/moment-gate';
 import SectionEditor from './SectionEditor';
 
 interface MakeItYoursProps {
@@ -11,16 +12,20 @@ interface MakeItYoursProps {
   previewOrigin: string;
   /** id → current word value, seeding the "write it myself" fields. */
   values: Record<string, unknown>;
-  /** Whether the hero's first-run intro is currently on (seeds the hero control). */
-  heroIntroOn: boolean;
+  /** The family-aware walk list (computed server-side from the maker's feeling —
+   *  a Cozy maker's list has a Moment step before the Hero step). */
+  steps: readonly WalkthroughStep[];
+  /** How often the Moment currently plays (seeds the Moment step's control). */
+  momentPlayMode: MomentPlayMode;
+  /** The maker's public feeling label (e.g. "Cozy") — named in the Moment step. */
+  moodLabel: string;
 }
 
 /** The full-screen "Make It Yours" walk — the second half of onboarding (D69). No
  *  dashboard chrome, no way out: it steps through every section, and the editor door
  *  stays closed until it's done (the gate lives on the routes). Left column is the
  *  section being made yours; right column is the live draft preview. */
-export default function MakeItYours({ previewToken, previewOrigin, values, heroIntroOn }: MakeItYoursProps) {
-  const steps = WALKTHROUGH_STEPS;
+export default function MakeItYours({ previewToken, previewOrigin, values, steps, momentPlayMode, moodLabel }: MakeItYoursProps) {
   const [started, setStarted] = useState(false);
   const [index, setIndex] = useState(0);
   const [resolved, setResolved] = useState(false);
@@ -52,10 +57,11 @@ export default function MakeItYours({ previewToken, previewOrigin, values, heroI
   // scroll-in reveals resolve in the iframe. previewStill keeps reveal-gated sections
   // (products) visible; previewSection spotlights just the section being edited so the
   // maker sees only that one; the nonce forces a reload after each staged edit. On the
-  // hero step we force the first-run intro to play (intro=1) so the maker watches their
-  // opening lines fade in as a visitor would — unless they've turned the intro off, in
-  // which case the draft's playIntro=false keeps it at rest even with intro=1.
-  const intro = step.section === 'hero' ? '&intro=1' : '';
+  // Moment step we force the first-run intro to play (intro=1) so the maker watches their
+  // opening lines fade in as a visitor would — unless they've set it off, in which case
+  // the draft's playMode keeps it at rest even with intro=1. The Hero step shows the
+  // resting top (no intro).
+  const intro = step.isMoment ? '&intro=1' : '';
   const previewSrc = `${previewOrigin}/?previewToken=${encodeURIComponent(previewToken)}&previewStill=1&previewSection=${encodeURIComponent(step.section)}${intro}&n=${nonce}`;
 
   // The opening welcome — what this is, before the first section (D69).
@@ -107,13 +113,16 @@ export default function MakeItYours({ previewToken, previewOrigin, values, heroI
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
           <SectionEditor
-            key={step.section}
+            key={step.id}
             section={step.section}
+            title={step.title}
             cls={step.cls}
             keepable={step.keepable}
             fieldIds={step.fieldIds}
             values={values}
-            heroIntroOn={heroIntroOn}
+            isMoment={step.isMoment ?? false}
+            momentPlayMode={momentPlayMode}
+            moodLabel={moodLabel}
             onResolved={setResolved}
             onChanged={() => setNonce((n) => n + 1)}
           />

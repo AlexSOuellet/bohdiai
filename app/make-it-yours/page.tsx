@@ -7,7 +7,9 @@ import { readDraftTree } from '@/lib/editor/draft';
 import { mintPreviewToken } from '@/lib/editor/preview-token';
 import { loadHomeEnvelope } from '@/lib/storefront/load-envelope';
 import { EDITABLE_FIELDS, getFieldValue } from '@/lib/editor/editable-fields';
-import { walkComplete } from '@/lib/editor/walkthrough';
+import { walkComplete, walkUiSteps } from '@/lib/editor/walkthrough';
+import { resolveMomentPlayMode } from '@/lib/archetypes/main-street/moment-gate';
+import { getFamily } from '@/lib/archetypes/main-street/families';
 import MakeItYours from '@/app/dashboard/website/_components/MakeItYours';
 
 export const metadata = { title: 'Make it yours — BohdiAI' };
@@ -33,15 +35,29 @@ export default async function MakeItYoursPage() {
   const values: Record<string, unknown> = {};
   for (const f of EDITABLE_FIELDS) values[f.id] = getFieldValue(homeEnv, f.id);
 
-  // The hero's first-run intro on/off setting (default on when absent — D54).
+  // Resolve the maker's feeling from the envelope, so the walk shows a Moment step
+  // (and names the feeling) only when their hero actually plays a Moment (D54).
   const root = homeEnv['root'];
-  const content = root !== null && typeof root === 'object' ? (root as Record<string, unknown>)['content'] : undefined;
+  const rootRec = root !== null && typeof root === 'object' ? (root as Record<string, unknown>) : undefined;
+  const mood = typeof rootRec?.['mood'] === 'string' ? (rootRec['mood'] as string) : null;
+  const content = rootRec?.['content'];
   const moment = content !== null && typeof content === 'object' ? (content as Record<string, unknown>)['moment'] : undefined;
-  const heroIntroOn =
-    moment !== null && typeof moment === 'object' ? (moment as Record<string, unknown>)['playIntro'] !== false : true;
+  const momentPlayMode = resolveMomentPlayMode(moment as { playMode?: unknown; playIntro?: unknown } | undefined);
+
+  const steps = walkUiSteps(mood);
+  const moodLabel = getFamily(mood).publicMoodLabel;
 
   const previewToken = mintPreviewToken(shop.tenantId);
   const origin = storefrontOrigin(shop.subdomain, (await headers()).get('host'));
 
-  return <MakeItYours previewToken={previewToken} previewOrigin={origin} values={values} heroIntroOn={heroIntroOn} />;
+  return (
+    <MakeItYours
+      previewToken={previewToken}
+      previewOrigin={origin}
+      values={values}
+      steps={steps}
+      momentPlayMode={momentPlayMode}
+      moodLabel={moodLabel}
+    />
+  );
 }

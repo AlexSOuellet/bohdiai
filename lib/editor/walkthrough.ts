@@ -114,10 +114,10 @@ export function walkUiSteps(mood: string | null | undefined): readonly Walkthrou
   const hasMoment = heroPlaysMoment(getFamily(mood).sectionDefaults.hero);
   return WALKTHROUGH_STEPS.flatMap((step) => {
     if (step.section !== 'hero') return [step];
-    if (!hasMoment) return [{ ...step, title: 'Your hero' }];
+    if (!hasMoment) return [{ ...step, title: 'The top of your store' }];
     return [
       { ...step, id: 'moment', title: 'Your opening moment', isMoment: true, fieldIds: [MOMENT_LINES_FIELD] },
-      { ...step, id: 'hero', title: 'Your hero', fieldIds: step.fieldIds.filter((id) => id !== MOMENT_LINES_FIELD) },
+      { ...step, id: 'hero', title: 'The top of your store', fieldIds: step.fieldIds.filter((id) => id !== MOMENT_LINES_FIELD) },
     ];
   });
 }

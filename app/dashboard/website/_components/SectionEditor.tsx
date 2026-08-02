@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from 'react';
 import { getField, type EditableField } from '@/lib/editor/editable-fields';
 import type { SectionKey } from '@/lib/archetypes/main-street/families';
+import type { MomentPlayMode } from '@/lib/archetypes/main-street/moment-gate';
 import type { SectionClass } from '@/lib/editor/walkthrough';
 import type { Turn } from '@/lib/editor/conversation';
 import {
@@ -11,18 +12,19 @@ import {
   setFieldValues,
   keepSection,
   toggleSection,
-  setHeroIntro,
+  setMomentPlayMode,
 } from '../actions';
 
 /** Bohdi's opening for each section — he shows what he built and invites the maker in.
  *  Deep sections (opening, story) open a real conversation; light sections open a quick
- *  react-and-go. `placeholder` seeds the maker's reply box. */
+ *  react-and-go. `placeholder` seeds the maker's reply box. The `hero` entry is the
+ *  resting top of the store (the Hero step); the Moment step uses `MOMENT_INTRO`. */
 const INTRO: Record<SectionKey, { title: string; opener: string; placeholder: string }> = {
   hero: {
-    title: 'Your opening',
+    title: 'The top of your store',
     opener:
-      "This is the first thing anyone sees — I took a first swing at it, there on the right. What feels right to you, and what's off?",
-    placeholder: 'Tell me what you think…',
+      "This is the top of your store — your shop name and the words around it, the part every visit lands on. Keep it as is, or tell me how you'd like it to read?",
+    placeholder: 'e.g. a little warmer, or shorter',
   },
   founder: {
     title: 'Your story',
@@ -67,6 +69,22 @@ const INTRO: Record<SectionKey, { title: string; opener: string; placeholder: st
     placeholder: '',
   },
 };
+
+/** The Moment step opener — the Cozy-only fading opening lines. Its own copy (not
+ *  keyed by section, since it shares the hero section with the resting Hero step). */
+const MOMENT_INTRO = {
+  opener:
+    "These are the words that fade in when your store opens. Keep them as they are, or tell me what you'd rather they say?",
+  placeholder: 'e.g. tell me what they should say',
+} as const;
+
+/** How often the Moment plays — the maker's choice on the Moment step, in plain
+ *  words rather than a designer toggle (D54). */
+const PLAY_OPTIONS: readonly { mode: MomentPlayMode; label: string }[] = [
+  { mode: 'once', label: 'The first time someone visits' },
+  { mode: 'always', label: 'Every time someone visits' },
+  { mode: 'off', label: 'Don’t play it — open straight to my shop' },
+];
 
 /** Render one editable field for the "write it myself" path. */
 function FieldEditor({
@@ -124,18 +142,26 @@ type Status = 'none' | 'wrote' | 'kept' | 'off';
 export interface SectionEditorProps {
   /** The section being made yours (drives the opener + which fields the maker can type). */
   section: SectionKey;
+  /** The maker-facing step title (shown as the heading). */
+  title: string;
   /** How this section may be resolved (drives the keep / turn-off controls). */
   cls: SectionClass;
   /** Whether "keep as built" is offered (false for reviews — D70). */
   keepable: boolean;
-  /** The editable text field ids this section rewrites (the "write it myself" path). */
+  /** The editable text field ids this step rewrites (the "write it myself" path, and
+   *  the scope of a conversation write). */
   fieldIds: readonly string[];
   /** id → current value, seeding the "write it myself" fields. */
   values: Record<string, unknown>;
   /** Whether the section is currently turned off (seeds the control state). */
   hidden?: boolean | undefined;
-  /** Hero only — whether the first-run intro is currently on (seeds the intro control). */
-  heroIntroOn?: boolean | undefined;
+  /** The Moment step — the Cozy-only opening play. Shows the how-often-it-plays
+   *  control + the feeling explanation instead of the plain section controls. */
+  isMoment?: boolean | undefined;
+  /** How often the Moment currently plays (seeds the Moment step's control). */
+  momentPlayMode?: MomentPlayMode | undefined;
+  /** The maker's public feeling label (e.g. "Cozy"), named in the Moment explanation. */
+  moodLabel?: string | undefined;
   /** Report resolution up so the host can gate Next: true once made/kept/off, false
    *  again if the maker turns a section back on. */
   onResolved: (resolved: boolean) => void;
@@ -151,16 +177,19 @@ export interface SectionEditorProps {
  *  draft via the same actions; never touches look, structure, or link destinations. */
 export default function SectionEditor({
   section,
+  title,
   cls,
   keepable,
   fieldIds,
   values,
   hidden,
-  heroIntroOn,
+  isMoment = false,
+  momentPlayMode,
+  moodLabel,
   onResolved,
   onChanged,
 }: SectionEditorProps) {
-  const intro = INTRO[section];
+  const intro = isMoment ? MOMENT_INTRO : INTRO[section];
   const fields = useMemo(
     () => fieldIds.map((id) => getField(id)).filter((f): f is EditableField => f !== undefined),
     [fieldIds],
@@ -173,7 +202,7 @@ export default function SectionEditor({
   const [mode, setMode] = useState<'talk' | 'own'>('talk');
   const [local, setLocal] = useState<Record<string, unknown>>(values);
   const [status, setStatus] = useState<Status>(hidden ? 'off' : 'none');
-  const [introOn, setIntroOn] = useState(heroIntroOn ?? true);
+  const [playMode, setPlayMode] = useState<MomentPlayMode>(momentPlayMode ?? 'once');
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -197,7 +226,7 @@ export default function SectionEditor({
   function writeIt() {
     setMessage(null);
     startTransition(async () => {
-      const res = await writeSectionFromConversation(section, convo);
+      const res = await writeSectionFromConversation(section, convo, fieldIds);
       if (res.ok) {
         setStatus('wrote');
         onResolved(true);
@@ -223,15 +252,14 @@ export default function SectionEditor({
     });
   }
 
-  // Hero only — turn the first-run intro play on or off (D54). Off loads the store
-  // straight to the resting hero; turning it off is a deliberate choice that resolves
-  // the hero step.
-  function toggleIntro(on: boolean) {
+  // Moment step only — set how often the opening plays (once / always / off). Any
+  // choice is a deliberate resolution of the Moment step (D54).
+  function choosePlay(mode: MomentPlayMode) {
     setMessage(null);
     startTransition(async () => {
-      const res = await setHeroIntro(on);
+      const res = await setMomentPlayMode(mode);
       if (res.ok) {
-        setIntroOn(on);
+        setPlayMode(mode);
         onResolved(true);
         onChanged();
       } else {
@@ -271,7 +299,7 @@ export default function SectionEditor({
   if (status === 'off') {
     return (
       <div>
-        <h1 className="font-serif text-2xl text-text">{intro.title}</h1>
+        <h1 className="font-serif text-2xl text-text">{title}</h1>
         <p className="mt-3 text-sm leading-relaxed text-text-soft">
           This section is turned off — it won’t show on your store.
         </p>
@@ -293,7 +321,16 @@ export default function SectionEditor({
 
   return (
     <div>
-      <h1 className="font-serif text-2xl text-text">{intro.title}</h1>
+      <h1 className="font-serif text-2xl text-text">{title}</h1>
+
+      {/* Moment step — explain why it's here, tied to the feeling the maker picked. */}
+      {isMoment && (
+        <p className="mt-3 text-sm leading-relaxed text-text-soft">
+          {moodLabel
+            ? `Because you picked the ${moodLabel} feel, your store opens with a little moment — your first words fade in, one line at a time, then the shop settles into view. It’s the one thing the ${moodLabel} feel does that the others don’t.`
+            : 'Your store opens with a little moment — your first words fade in, one line at a time, then the shop settles into view.'}
+        </p>
+      )}
 
       {mode === 'talk' ? (
         <div className="mt-4">
@@ -384,25 +421,32 @@ export default function SectionEditor({
       )}
       {message && <p className="mt-4 text-sm text-text-soft">{message}</p>}
 
-      {/* Hero only — the first-run intro play (D54). Keep it, change the words above,
-          or turn it off so the store loads straight to the resting hero. */}
-      {section === 'hero' && (
+      {/* Moment step only — how often the opening plays (D54). Keep/reword the lines
+          above; this sets the frequency, and any choice resolves the Moment step. */}
+      {isMoment && (
         <div className="mt-6 border-t border-white/8 pt-5">
-          <p className="text-[11px] uppercase tracking-wider text-muted">The opening intro</p>
-          <p className="mt-2 text-sm leading-relaxed text-text-soft">
-            On someone’s first visit, your opening lines fade in over the hero, then settle into your store.
-            {introOn
-              ? ' Keep it, change the words above, or turn it off.'
-              : ' It’s off — your store loads straight to the hero every time.'}
-          </p>
-          <button
-            type="button"
-            onClick={() => toggleIntro(!introOn)}
-            disabled={pending}
-            className="mt-4 rounded-lg border border-white/12 px-4 py-2 text-sm text-text-soft transition-colors hover:border-honey/50 hover:text-honey-warm disabled:opacity-40"
-          >
-            {introOn ? 'Turn the intro off' : 'Turn the intro back on'}
-          </button>
+          <p className="text-[11px] uppercase tracking-wider text-muted">How often it plays</p>
+          <div className="mt-3 flex flex-col gap-2">
+            {PLAY_OPTIONS.map((opt) => {
+              const active = playMode === opt.mode;
+              return (
+                <button
+                  key={opt.mode}
+                  type="button"
+                  onClick={() => choosePlay(opt.mode)}
+                  disabled={pending}
+                  aria-pressed={active}
+                  className={
+                    active
+                      ? 'rounded-lg border border-honey/60 bg-honey/10 px-4 py-2.5 text-left text-sm text-honey-warm transition-colors disabled:opacity-40'
+                      : 'rounded-lg border border-white/12 px-4 py-2.5 text-left text-sm text-text-soft transition-colors hover:border-honey/50 hover:text-honey-warm disabled:opacity-40'
+                  }
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 

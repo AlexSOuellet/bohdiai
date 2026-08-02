@@ -202,15 +202,28 @@ export async function converseSection(
 }
 
 /** Write a section from the finished interview (D69): render the conversation into
- *  the write instruction and hand it to Bohdi the writer over that section's fields.
- *  For the founder section this writes both the home snippet and the full About page.
- *  Delegates to editContent, so it stages to the draft and marks the section made-yours. */
-export async function writeSectionFromConversation(section: SectionKey, turns: unknown): Promise<ActionResult> {
+ *  the write instruction and hand it to Bohdi the writer over the given fields.
+ *  `fieldIds` scopes the write to the STEP's own fields — load-bearing where a
+ *  section is split across two walk steps (the Moment step writes only the fading
+ *  lines; the Hero step only the resting words), so one doesn't clobber the other.
+ *  Falls back to the section's writable text fields when omitted. For the founder
+ *  section the instruction still writes both the home snippet and the full About
+ *  page. Delegates to editContent, so it stages to the draft and marks made-yours. */
+export async function writeSectionFromConversation(
+  section: SectionKey,
+  turns: unknown,
+  fieldIds?: readonly string[],
+): Promise<ActionResult> {
   const conversation = sanitizeConversation(turns);
   if (conversation.length === 0) return { ok: false, error: 'Tell Bohdi a little first, then he can write it.' };
-  const fieldIds = fieldsForSection(section).map((f) => f.id);
+  const ids =
+    fieldIds !== undefined && fieldIds.length > 0
+      ? fieldIds
+      : fieldsForSection(section)
+          .filter((f) => f.kind !== 'items')
+          .map((f) => f.id);
   const instruction = buildConversationWriteInstruction(section, conversation);
-  return editContent(fieldIds, instruction, section);
+  return editContent(ids, instruction, section);
 }
 
 /** Ensure `parent[key]` is a plain object and return it (creating it if missing), so
@@ -237,25 +250,6 @@ export async function setMomentPlayMode(mode: MomentPlayMode): Promise<ActionRes
   const next = structuredClone(baseTree);
   const moment = ensureObject(ensureObject(ensureObject(next, 'root'), 'content'), 'moment');
   moment['playMode'] = mode;
-
-  const staged = await stageDraftTree(shop.tenantId, markSectionMade(next, 'hero'));
-  if (!staged.ok) return { ok: false, error: 'Could not save your changes.' };
-  revalidatePath('/dashboard/website');
-  return { ok: true };
-}
-
-/** Turn the hero's first-run intro on or off (D54). Writes `moment.playIntro` on the
- *  draft and marks the hero made-yours — turning the intro off is a deliberate choice
- *  that resolves the hero step. Off means the store loads straight to the resting hero. */
-export async function setHeroIntro(enabled: boolean): Promise<ActionResult> {
-  const shop = await getCurrentShop();
-  if (shop === null) return { ok: false, error: 'No store to update.' };
-  const baseTree = await loadBaseTree(shop.tenantId);
-  if (baseTree === null) return { ok: false, error: 'Could not load your store.' };
-
-  const next = structuredClone(baseTree);
-  const moment = ensureObject(ensureObject(ensureObject(next, 'root'), 'content'), 'moment');
-  moment['playIntro'] = enabled;
 
   const staged = await stageDraftTree(shop.tenantId, markSectionMade(next, 'hero'));
   if (!staged.ok) return { ok: false, error: 'Could not save your changes.' };

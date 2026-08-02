@@ -6,39 +6,41 @@ const writeSectionFromConversation = vi.fn();
 const setFieldValues = vi.fn();
 const keepSection = vi.fn();
 const toggleSection = vi.fn();
-const setHeroIntro = vi.fn();
+const setMomentPlayMode = vi.fn();
 vi.mock('../actions', () => ({
   converseSection: (...a: unknown[]) => converseSection(...a),
   writeSectionFromConversation: (...a: unknown[]) => writeSectionFromConversation(...a),
   setFieldValues: (...a: unknown[]) => setFieldValues(...a),
   keepSection: (...a: unknown[]) => keepSection(...a),
   toggleSection: (...a: unknown[]) => toggleSection(...a),
-  setHeroIntro: (...a: unknown[]) => setHeroIntro(...a),
+  setMomentPlayMode: (...a: unknown[]) => setMomentPlayMode(...a),
 }));
 
 import SectionEditor from './SectionEditor';
-import { WALKTHROUGH_STEPS } from '@/lib/editor/walkthrough';
+import { WALKTHROUGH_STEPS, walkUiSteps } from '@/lib/editor/walkthrough';
 
 const step = (section: string) => WALKTHROUGH_STEPS.find((s) => s.section === section)!;
+/** The Moment step, as the walk builds it for a Cozy maker. */
+const momentStep = () => walkUiSteps('cozy').find((s) => s.isMoment)!;
 
 beforeEach(() => {
-  [converseSection, writeSectionFromConversation, setFieldValues, keepSection, toggleSection, setHeroIntro].forEach(
+  [converseSection, writeSectionFromConversation, setFieldValues, keepSection, toggleSection, setMomentPlayMode].forEach(
     (m) => m.mockReset(),
   );
 });
 
-function renderSection(section: string, opts: { heroIntroOn?: boolean } = {}) {
+function renderSection(section: string, opts: { title?: string } = {}) {
   const s = step(section);
   const onResolved = vi.fn();
   const onChanged = vi.fn();
   const { unmount } = render(
     <SectionEditor
       section={s.section}
+      title={opts.title ?? s.title}
       cls={s.cls}
       keepable={s.keepable}
       fieldIds={s.fieldIds}
       values={{}}
-      heroIntroOn={opts.heroIntroOn ?? true}
       onResolved={onResolved}
       onChanged={onChanged}
     />,
@@ -46,17 +48,40 @@ function renderSection(section: string, opts: { heroIntroOn?: boolean } = {}) {
   return { onResolved, onChanged, unmount };
 }
 
+/** Render the Cozy Moment step with its play-frequency control. */
+function renderMoment(opts: { momentPlayMode?: 'once' | 'always' | 'off' } = {}) {
+  const s = momentStep();
+  const onResolved = vi.fn();
+  const onChanged = vi.fn();
+  render(
+    <SectionEditor
+      section={s.section}
+      title={s.title}
+      cls={s.cls}
+      keepable={s.keepable}
+      fieldIds={s.fieldIds}
+      values={{}}
+      isMoment
+      momentPlayMode={opts.momentPlayMode ?? 'once'}
+      moodLabel="Cozy"
+      onResolved={onResolved}
+      onChanged={onChanged}
+    />,
+  );
+  return { onResolved, onChanged };
+}
+
 describe('SectionEditor — conversation', () => {
-  it('opens with the section title and Bohdi reacting to what he built', () => {
+  it('opens with the step title and Bohdi reacting to what he built', () => {
     renderSection('hero');
-    expect(screen.getByText('Your opening')).toBeInTheDocument();
-    expect(screen.getByText(/first thing anyone sees/i)).toBeInTheDocument();
+    expect(screen.getByText(step('hero').title)).toBeInTheDocument();
+    expect(screen.getByText(/top of your store/i)).toBeInTheDocument();
   });
 
   it('sending a reply appends the maker turn and Bohdi’s follow-up', async () => {
     converseSection.mockResolvedValue({ ok: true, turn: { action: 'ask', message: 'And who is it for?' } });
     renderSection('hero');
-    fireEvent.change(screen.getByPlaceholderText(/tell me what you think/i), {
+    fireEvent.change(screen.getByPlaceholderText(/warmer, or shorter/i), {
       target: { value: 'It should feel calm and a little witchy' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Send' }));
@@ -71,13 +96,14 @@ describe('SectionEditor — conversation', () => {
     converseSection.mockResolvedValue({ ok: true, turn: { action: 'ready', message: 'Got it — want me to write it?' } });
     writeSectionFromConversation.mockResolvedValue({ ok: true });
     const { onResolved, onChanged } = renderSection('hero');
-    fireEvent.change(screen.getByPlaceholderText(/tell me what you think/i), { target: { value: 'calm and witchy' } });
+    fireEvent.change(screen.getByPlaceholderText(/warmer, or shorter/i), { target: { value: 'calm and witchy' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send' }));
     // wait for Bohdi's turn to land (the button is disabled while he's thinking)
     await screen.findByText('Got it — want me to write it?');
     fireEvent.click(screen.getByRole('button', { name: 'Write it up' }));
     await screen.findByText(/There it is/);
-    expect(writeSectionFromConversation).toHaveBeenCalledWith('hero', expect.any(Array));
+    // the write is scoped to the step's own fields (so a split hero step doesn't clobber the other)
+    expect(writeSectionFromConversation).toHaveBeenCalledWith('hero', expect.any(Array), expect.any(Array));
     expect(onResolved).toHaveBeenCalledWith(true);
     expect(onChanged).toHaveBeenCalled();
   });
@@ -144,30 +170,44 @@ describe('SectionEditor — conversation', () => {
   });
 });
 
-describe('SectionEditor — hero first-run intro control', () => {
-  it('the hero offers a turn-the-intro-off control; other sections do not', () => {
-    renderSection('hero');
-    expect(screen.getByText('The opening intro')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Turn the intro off' })).toBeInTheDocument();
+describe('SectionEditor — Moment step (play frequency)', () => {
+  it('explains the feeling and offers the three plain play choices', () => {
+    renderMoment();
+    expect(screen.getByText(/Cozy feel/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'The first time someone visits' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Every time someone visits' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Don’t play it/ })).toBeInTheDocument();
   });
 
-  it('no intro control on a non-hero section', () => {
+  it('a normal section shows no play-frequency control', () => {
     renderSection('goods');
-    expect(screen.queryByText('The opening intro')).not.toBeInTheDocument();
+    expect(screen.queryByText('How often it plays')).not.toBeInTheDocument();
   });
 
-  it('turning the intro off calls setHeroIntro(false), resolves, and refreshes', async () => {
-    setHeroIntro.mockResolvedValue({ ok: true });
-    const { onResolved, onChanged } = renderSection('hero', { heroIntroOn: true });
-    fireEvent.click(screen.getByRole('button', { name: 'Turn the intro off' }));
-    await vi.waitFor(() => expect(setHeroIntro).toHaveBeenCalledWith(false));
+  it('the resting Hero step (not the Moment) shows neither explanation nor play control', () => {
+    renderSection('hero');
+    expect(screen.queryByText('How often it plays')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Every time someone visits' })).not.toBeInTheDocument();
+  });
+
+  it('choosing a frequency calls setMomentPlayMode, resolves, and refreshes the preview', async () => {
+    setMomentPlayMode.mockResolvedValue({ ok: true });
+    const { onResolved, onChanged } = renderMoment();
+    fireEvent.click(screen.getByRole('button', { name: 'Every time someone visits' }));
+    await vi.waitFor(() => expect(setMomentPlayMode).toHaveBeenCalledWith('always'));
     expect(onResolved).toHaveBeenCalledWith(true);
     expect(onChanged).toHaveBeenCalled();
-    expect(await screen.findByRole('button', { name: 'Turn the intro back on' })).toBeInTheDocument();
   });
 
-  it('seeds from heroIntroOn=false with the turn-back-on affordance', () => {
-    renderSection('hero', { heroIntroOn: false });
-    expect(screen.getByRole('button', { name: 'Turn the intro back on' })).toBeInTheDocument();
+  it('marks the current play mode as pressed', () => {
+    renderMoment({ momentPlayMode: 'off' });
+    expect(screen.getByRole('button', { name: /Don’t play it/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'The first time someone visits' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('still offers keep-as-built and the reword conversation', () => {
+    renderMoment();
+    expect(screen.getByRole('button', { name: 'Keep as built' })).toBeInTheDocument();
+    expect(screen.getByText(/words that fade in/i)).toBeInTheDocument();
   });
 });
