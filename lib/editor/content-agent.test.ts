@@ -38,9 +38,33 @@ describe('runContentEdit', () => {
     expect(values).toEqual({ 'goods.title': 'Fresh' });
   });
 
-  it('drops a value whose type does not match the field kind', async () => {
+  it('coerces a prose string into a lines field, splitting on blank/newlines (fixes the vanishing About story)', async () => {
+    const fields = [getField('about.story')!];
+    create.mockResolvedValueOnce(
+      toolMsg({ 'about.story': 'It started at my kitchen table.\n\nNow I pour every candle by hand.' }),
+    );
+    const { values } = await runContentEdit({
+      fields,
+      current: { 'about.story': ['old story'] },
+      instruction: 'write my full story',
+      niche,
+    });
+    expect(values['about.story']).toEqual([
+      'It started at my kitchen table.',
+      'Now I pour every candle by hand.',
+    ]);
+  });
+
+  it('a one-paragraph string with no newlines becomes a single line', async () => {
+    const fields = [getField('about.story')!];
+    create.mockResolvedValueOnce(toolMsg({ 'about.story': 'One long paragraph, no breaks.' }));
+    const { values } = await runContentEdit({ fields, current: {}, instruction: 'i', niche });
+    expect(values['about.story']).toEqual(['One long paragraph, no breaks.']);
+  });
+
+  it('drops a genuinely wrong type (not an array and not a string) for a lines field', async () => {
     const fields = [getField('moment.story')!];
-    create.mockResolvedValueOnce(toolMsg({ 'moment.story': 'not an array' }));
+    create.mockResolvedValueOnce(toolMsg({ 'moment.story': 42 }));
     const { values } = await runContentEdit({ fields, current: { 'moment.story': ['a'] }, instruction: 'i', niche });
     expect(values).toEqual({});
   });

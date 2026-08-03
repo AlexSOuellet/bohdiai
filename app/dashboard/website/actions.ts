@@ -131,8 +131,12 @@ export async function editContent(
 function coerceVerbatim(field: { kind: 'text' | 'lines' | 'items' }, raw: unknown): unknown | undefined {
   if (field.kind === 'text') return typeof raw === 'string' && raw.trim().length > 0 ? raw.trim() : undefined;
   if (field.kind === 'lines') {
-    if (!Array.isArray(raw)) return undefined;
-    const lines = raw.filter((x): x is string => typeof x === 'string').map((x) => x.trim()).filter((x) => x.length > 0);
+    // A lines field may arrive as an array, or as a single string the maker typed into a
+    // textarea (e.g. their About story as paragraphs) — split a string on blank/newlines
+    // rather than drop it. Their words are kept verbatim otherwise (D68).
+    const arr = Array.isArray(raw) ? raw : typeof raw === 'string' ? raw.split(/\r?\n+/) : undefined;
+    if (arr === undefined) return undefined;
+    const lines = arr.filter((x): x is string => typeof x === 'string').map((x) => x.trim()).filter((x) => x.length > 0);
     return lines.length > 0 ? lines : undefined;
   }
   return Array.isArray(raw) ? raw : undefined;

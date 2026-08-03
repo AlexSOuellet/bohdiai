@@ -72,8 +72,14 @@ function normalizeFieldValue(field: EditableField, raw: unknown): unknown | unde
     return v.length > 0 ? v : undefined;
   }
   if (field.kind === 'lines') {
-    if (!Array.isArray(raw)) return undefined;
-    const lines = raw
+    // Accept an array of lines OR a single prose string (split on blank/newlines into
+    // lines). Long-form prose fields like `about.story` come back as a string when Bohdi
+    // is asked for "the full story at real length" — coerce it rather than silently drop
+    // it, the same absorb-any-shape discipline the renderer follows (D57). A genuinely
+    // wrong type (number, object) still drops.
+    const arr = Array.isArray(raw) ? raw : typeof raw === 'string' ? raw.split(/\r?\n+/) : undefined;
+    if (arr === undefined) return undefined;
+    const lines = arr
       .filter((x): x is string => typeof x === 'string')
       .map((x) => normalizeString(x, field.normalize))
       .filter((x) => x.length > 0);
