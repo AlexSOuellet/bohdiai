@@ -17,7 +17,8 @@ vi.mock('../actions', () => ({
 }));
 
 import MakeItYours from './MakeItYours';
-import { walkUiSteps } from '@/lib/editor/walkthrough';
+import { walkUiSteps, type WalkthroughStep } from '@/lib/editor/walkthrough';
+import type { SectionResolution } from '@/lib/editor/section-state';
 
 beforeEach(() => {
   [converseSection, writeSectionFromConversation, setFieldValues, keepSection, toggleSection, setMomentPlayMode].forEach(
@@ -88,6 +89,88 @@ describe('MakeItYours (full-screen walk)', () => {
     renderWalk('rustic'); // leads with the resting Hero step, no Moment
     start();
     expect(screen.queryByRole('button', { name: /Play it again/ })).not.toBeInTheDocument();
+  });
+
+  it('starts at the beginning; a section finished earlier opens marked completed with Next open', () => {
+    // Cozy walk: [moment(hero), hero, story, goods, …]. The hero was finished in an
+    // earlier sitting → the first step opens completed, but the walk still starts at the
+    // top (not a jump to goods), so the maker can move through or change anything.
+    const steps = walkUiSteps('cozy');
+    const resolvedFlags = steps.map((_, i) => i < 2);
+    const resolutions: SectionResolution[] = steps.map((_, i) =>
+      i === 0 ? 'made' : i === 1 ? 'kept' : 'unresolved',
+    );
+    render(
+      <MakeItYours
+        previewToken="tok"
+        previewOrigin="https://ember.test"
+        values={{}}
+        steps={steps}
+        momentPlayMode="once"
+        moodLabel="Cozy"
+        resolvedFlags={resolvedFlags}
+        resolutions={resolutions}
+      />,
+    );
+    // Opens on the welcome and starts at the top — no jump past finished sections.
+    fireEvent.click(screen.getByRole('button', { name: /Let’s go/ }));
+    expect(screen.getByText('Your opening moment')).toBeInTheDocument();
+    expect(screen.getByText('Step 1 of 10')).toBeInTheDocument();
+    // Marked completed, and Next is open (already resolved) — breeze past or make changes.
+    expect(screen.getByText('✓ Completed')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Next/ })).not.toBeDisabled();
+  });
+
+  it('has an always-available Back button; from the first section it returns to the welcome', () => {
+    renderWalk('rustic'); // leads with the Hero step (no Moment split), so step 1 is index 0
+    start();
+    const back = screen.getByRole('button', { name: /Back/ });
+    expect(back).not.toBeDisabled();
+    fireEvent.click(back);
+    // Back from the first section lands on the welcome screen, not a dead end.
+    expect(screen.getByRole('button', { name: /Let’s go/ })).toBeInTheDocument();
+  });
+
+  it('the last step finishes into a closing screen that routes to the editor', async () => {
+    keepSection.mockResolvedValue({ ok: true });
+    // A one-step walk so the first step IS the last — reach Finish without walking the
+    // whole store. A keep-or-change section resolves with a single "Keep as built".
+    const oneStep: WalkthroughStep[] = [
+      {
+        id: 'close',
+        title: 'Your sign-off',
+        section: 'close',
+        fieldIds: ['close.headline'],
+        cls: 'keep-or-change',
+        keepable: true,
+        personal: false,
+        optional: false,
+      },
+    ];
+    render(
+      <MakeItYours
+        previewToken="tok"
+        previewOrigin="https://ember.test"
+        values={{}}
+        steps={oneStep}
+        momentPlayMode="once"
+        moodLabel="Cozy"
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Let’s go/ }));
+
+    // The primary button reads Finish on the last step, gated until it's resolved.
+    expect(screen.getByRole('button', { name: 'Finish' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Keep as built' }));
+    await screen.findByText(/Kept/);
+    fireEvent.click(screen.getByRole('button', { name: 'Finish' }));
+
+    // The closing screen appears, with the button that sends the maker to their editor
+    // (the gate lets them in now that every section is resolved).
+    expect(screen.getByText('Your store is yours now')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Go to my editor' })).toBeInTheDocument();
+    // The section list no longer shows — the walk is done, not mid-step.
+    expect(screen.queryByText(/Step 1 of/)).not.toBeInTheDocument();
   });
 
   it('Next is gated until the step is resolved, then advances Moment → Hero', async () => {

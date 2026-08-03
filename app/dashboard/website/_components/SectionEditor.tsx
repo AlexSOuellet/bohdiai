@@ -5,6 +5,7 @@ import { getField, type EditableField } from '@/lib/editor/editable-fields';
 import type { SectionKey } from '@/lib/archetypes/main-street/families';
 import type { MomentPlayMode } from '@/lib/archetypes/main-street/moment-gate';
 import type { SectionClass } from '@/lib/editor/walkthrough';
+import type { SectionResolution } from '@/lib/editor/section-state';
 import type { Turn } from '@/lib/editor/conversation';
 import {
   converseSection,
@@ -29,38 +30,43 @@ const INTRO: Record<SectionKey, { title: string; opener: string; placeholder: st
   founder: {
     title: 'Your story',
     opener:
-      "This part has to be yours — I won't make it up. Take a look at what's there, then tell me: how did all this start for you?",
-    placeholder: 'Tell me in your own words…',
+      "This is the one part I can't write for you — it has to be true, so it has to come from you. Don't worry about saying it well, that's my job. I'll ask a few small things and pull the story out. First one: take me back to when you made your very first piece — where were you, and what got you started?",
+    placeholder: 'e.g. it started at my kitchen table…',
   },
   goods: {
     title: 'Your goods',
-    opener: "Here's the heading I gave your products. Does it fit what you actually make, or should we change it?",
+    opener:
+      "This is your shop floor — a few of your pieces shown together under a heading. It's the part most visitors come for. I've written the heading over on the right; keep it if it fits what you make, or tell me what to call them.",
     placeholder: 'e.g. I call them small-batch candles',
   },
   collections: {
     title: 'Your collections',
-    opener: 'If you group your work into collections, here’s a start. Tell me about them, keep this, or turn it off.',
+    opener:
+      "If you sort your work into groups — seasonal scents, gift sets, that kind of thing — this is where they show, so a shopper can browse by theme. There's a start on the right. Tell me about your real ones, keep this as-is, or turn the section off if you don't group your work.",
     placeholder: 'e.g. seasonal scents, gift sets',
   },
   reviews: {
     title: 'Kind words',
     opener:
-      "This is where kind words from customers live. You can name the section now and add real ones later — or turn it off until you have some.",
+      "This is where kind words from your customers show — the thing that makes a first-time shopper trust you. What's on the right is a placeholder; name the section now and drop in real quotes later, or turn it off until you've got some. It can't go live with made-up reviews.",
     placeholder: 'e.g. call it "Loved by locals"',
   },
   marquee: {
     title: 'The scrolling line',
-    opener: "A few short phrases scroll across your store. Here's what I wrote — want them as they are, or different?",
+    opener:
+      "A little band of short phrases scrolls across your store — small batch, poured by hand, that sort of thing — a quick banner of what makes yours yours. Here's what I wrote, on the right. Keep them, or tell me what they should say.",
     placeholder: 'e.g. small batch, poured by hand',
   },
   contact: {
     title: 'Getting in touch',
-    opener: "Here's how I'm inviting people to reach out. Keep it, or tell me how you'd like it to sound?",
+    opener:
+      "This is where you invite people to get in touch — for a question, a custom order, or just to say hello. Here's how I've worded it, on the right. Keep it, or tell me how you'd like it to sound.",
     placeholder: 'e.g. friendly, happy to take custom orders',
   },
   close: {
     title: 'Your sign-off',
-    opener: "The last word before someone leaves. Here's mine — want it warmer, shorter, or in your own words?",
+    opener:
+      "The very bottom of your store — the last thing someone reads before they go. Here's my sign-off, on the right. Keep it, make it warmer or shorter, or put it in your own words.",
     placeholder: 'e.g. warm, come back soon',
   },
   findUs: {
@@ -155,6 +161,10 @@ export interface SectionEditorProps {
   values: Record<string, unknown>;
   /** Whether the section is currently turned off (seeds the control state). */
   hidden?: boolean | undefined;
+  /** The section's resolution in the draft, so a section the maker already finished in
+   *  an earlier sitting opens marked completed (with its content + make-changes controls
+   *  still there), rather than looking untouched. Defaults to unresolved (a fresh step). */
+  resolution?: SectionResolution | undefined;
   /** The Moment step — the Cozy-only opening play. Shows the how-often-it-plays
    *  control + the feeling explanation instead of the plain section controls. */
   isMoment?: boolean | undefined;
@@ -183,6 +193,7 @@ export default function SectionEditor({
   fieldIds,
   values,
   hidden,
+  resolution,
   isMoment = false,
   momentPlayMode,
   moodLabel,
@@ -201,7 +212,19 @@ export default function SectionEditor({
   const [reply, setReply] = useState('');
   const [mode, setMode] = useState<'talk' | 'own'>('talk');
   const [local, setLocal] = useState<Record<string, unknown>>(values);
-  const [status, setStatus] = useState<Status>(hidden ? 'off' : 'none');
+  // Seed the control state from the draft: a section finished earlier opens marked
+  // completed (made → wrote, kept → kept, hidden → off) so the maker sees it's done and
+  // can make changes, rather than a blank slate. `hidden` stays a fallback for callers
+  // that don't pass a resolution.
+  const initialStatus: Status =
+    resolution === 'made'
+      ? 'wrote'
+      : resolution === 'kept'
+        ? 'kept'
+        : resolution === 'hidden' || hidden
+          ? 'off'
+          : 'none';
+  const [status, setStatus] = useState<Status>(initialStatus);
   const [playMode, setPlayMode] = useState<MomentPlayMode>(momentPlayMode ?? 'once');
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -326,7 +349,16 @@ export default function SectionEditor({
 
   return (
     <div>
-      <h1 className="font-serif text-2xl text-text">{title}</h1>
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="font-serif text-2xl text-text">{title}</h1>
+        {/* A section finished in an earlier sitting opens marked done — the maker can
+            breeze past it or make changes right here. */}
+        {initialStatus !== 'none' && (
+          <span className="rounded-full border border-honey/40 bg-honey/10 px-2.5 py-0.5 text-[11px] text-honey-warm">
+            ✓ Completed
+          </span>
+        )}
+      </div>
 
       {/* Moment step — explain why it's here (tied to the feeling), then tell the
           maker plainly what to do so it's direction, not a bare menu. */}

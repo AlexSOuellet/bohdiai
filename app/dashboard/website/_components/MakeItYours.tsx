@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { WalkthroughStep } from '@/lib/editor/walkthrough';
+import type { SectionResolution } from '@/lib/editor/section-state';
 import type { MomentPlayMode } from '@/lib/archetypes/main-street/moment-gate';
 import SectionEditor from './SectionEditor';
 
@@ -19,33 +20,69 @@ interface MakeItYoursProps {
   momentPlayMode: MomentPlayMode;
   /** The maker's public feeling label (e.g. "Cozy") — named in the Moment step. */
   moodLabel: string;
+  /** Per-step: is this step's section already resolved in the draft? A finished section
+   *  opens marked completed with Next open, so a returning maker can move through the
+   *  walk without redoing it. Defaults to all-false (a fresh walk). Aligned to `steps`. */
+  resolvedFlags?: readonly boolean[];
+  /** Per-step: the section's raw resolution in the draft (made / kept / hidden /
+   *  unresolved), so each step opens in the right state. Aligned to `steps`. */
+  resolutions?: readonly SectionResolution[];
 }
 
 /** The full-screen "Make It Yours" walk — the second half of onboarding (D69). No
  *  dashboard chrome, no way out: it steps through every section, and the editor door
  *  stays closed until it's done (the gate lives on the routes). Left column is the
  *  section being made yours; right column is the live draft preview. */
-export default function MakeItYours({ previewToken, previewOrigin, values, steps, momentPlayMode, moodLabel }: MakeItYoursProps) {
+export default function MakeItYours({ previewToken, previewOrigin, values, steps, momentPlayMode, moodLabel, resolvedFlags, resolutions }: MakeItYoursProps) {
+  // The walk always starts at the beginning and runs top to bottom. Sections the maker
+  // already finished in an earlier sitting open marked completed (Next stays open on
+  // them) so they can breeze past or make changes — nothing is skipped or hidden.
+  const resolvedSeed = steps.map((_, i) => resolvedFlags?.[i] ?? false);
+
   const [started, setStarted] = useState(false);
+  const [finished, setFinished] = useState(false);
   const [index, setIndex] = useState(0);
-  const [resolved, setResolved] = useState(false);
+  const [resolvedIdx, setResolvedIdx] = useState<ReadonlySet<number>>(
+    () => new Set(resolvedSeed.flatMap((r, i) => (r ? [i] : []))),
+  );
   // Bumped after any staged content change to force the preview iframe to re-fetch
   // the draft (a content edit doesn't change the URL, so src alone won't reload it).
   const [nonce, setNonce] = useState(0);
 
   const step = steps[index]!;
   const isLast = index === steps.length - 1;
+  const resolved = resolvedIdx.has(index);
+
+  // A section resolving (or a maker un-resolving it, e.g. turning it back on) updates
+  // the set for the current step — the walk remembers it across Back/Next and reloads.
+  function markResolved(ok: boolean) {
+    setResolvedIdx((prev) => {
+      const next = new Set(prev);
+      if (ok) next.add(index);
+      else next.delete(index);
+      return next;
+    });
+  }
 
   function goNext() {
-    if (isLast) return; // finish screen lands in a later task
     setIndex(index + 1);
-    setResolved(false);
+  }
+
+  // Finishing opens the editor door: every section is resolved (each Next was gated on
+  // it), so `walkComplete` is true and /dashboard/website no longer bounces back here.
+  // The maker's work is staged on their draft — the editor is where they publish it.
+  function finish() {
+    setFinished(true);
   }
 
   function goBack() {
-    if (index === 0) return;
+    // From the first section, Back returns to the welcome screen (there's no section
+    // before it), so the button is always live rather than a dead greyed-out control.
+    if (index === 0) {
+      setStarted(false);
+      return;
+    }
     setIndex(index - 1);
-    setResolved(false);
   }
 
   const nextHint =
@@ -65,6 +102,29 @@ export default function MakeItYours({ previewToken, previewOrigin, values, steps
   // resting top (no intro).
   const intro = step.isMoment ? '&intro=1' : '';
   const previewSrc = `${previewOrigin}/?previewToken=${encodeURIComponent(previewToken)}&previewStill=1&previewSection=${encodeURIComponent(step.section)}${intro}&n=${nonce}`;
+
+  // The closing screen — the walk is done and the editor is now open (D69). Neutral on
+  // publish state: the maker's work is staged on their draft; the editor is where they
+  // choose to publish it, so nothing here claims the live store already reflects it.
+  if (finished) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center bg-bg px-6 text-center text-text">
+        <p className="text-[11px] uppercase tracking-[0.24em] text-honey-warm">All yours</p>
+        <h1 className="mt-6 max-w-2xl font-serif text-4xl leading-tight text-text">Your store is yours now</h1>
+        <p className="mt-6 max-w-xl text-base leading-relaxed text-text-soft">
+          You’ve been through every part and made it your own. Your editor is open from here on — come
+          back and change anything, anytime. Nothing’s ever set in stone.
+        </p>
+        <button
+          type="button"
+          onClick={() => window.location.assign('/dashboard/website')}
+          className="mt-10 rounded-lg bg-honey px-6 py-3 text-sm font-medium text-bg transition-opacity hover:opacity-90"
+        >
+          Go to my editor
+        </button>
+      </div>
+    );
+  }
 
   // The opening welcome — what this is, before the first section (D69).
   if (!started) {
@@ -122,10 +182,11 @@ export default function MakeItYours({ previewToken, previewOrigin, values, steps
             keepable={step.keepable}
             fieldIds={step.fieldIds}
             values={values}
+            resolution={resolutions?.[index]}
             isMoment={step.isMoment ?? false}
             momentPlayMode={momentPlayMode}
             moodLabel={moodLabel}
-            onResolved={setResolved}
+            onResolved={markResolved}
             onChanged={() => setNonce((n) => n + 1)}
           />
         </div>
@@ -134,8 +195,7 @@ export default function MakeItYours({ previewToken, previewOrigin, values, steps
           <button
             type="button"
             onClick={goBack}
-            disabled={index === 0}
-            className="text-sm text-text-soft transition-colors hover:text-text disabled:cursor-not-allowed disabled:opacity-30"
+            className="rounded-lg border border-white/12 px-4 py-2 text-sm text-text-soft transition-colors hover:border-honey/50 hover:text-honey-warm"
           >
             ← Back
           </button>
@@ -143,8 +203,8 @@ export default function MakeItYours({ previewToken, previewOrigin, values, steps
             {!resolved && <span className="text-[11px] text-muted">{nextHint}</span>}
             <button
               type="button"
-              onClick={goNext}
-              disabled={!resolved || isLast}
+              onClick={isLast ? finish : goNext}
+              disabled={!resolved}
               className="rounded-lg border border-white/12 px-4 py-2 text-sm text-text-soft transition-colors hover:border-honey/50 hover:text-honey-warm disabled:cursor-not-allowed disabled:opacity-30"
             >
               {isLast ? 'Finish' : 'Next →'}

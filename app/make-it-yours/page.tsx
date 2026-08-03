@@ -7,7 +7,8 @@ import { readDraftTree } from '@/lib/editor/draft';
 import { mintPreviewToken } from '@/lib/editor/preview-token';
 import { loadHomeEnvelope } from '@/lib/storefront/load-envelope';
 import { EDITABLE_FIELDS, getFieldValue } from '@/lib/editor/editable-fields';
-import { walkComplete, walkUiSteps } from '@/lib/editor/walkthrough';
+import { walkComplete, walkUiSteps, sectionResolved } from '@/lib/editor/walkthrough';
+import { sectionState } from '@/lib/editor/section-state';
 import { resolveMomentPlayMode } from '@/lib/archetypes/main-street/moment-gate';
 import { getFamily } from '@/lib/archetypes/main-street/families';
 import MakeItYours from '@/app/dashboard/website/_components/MakeItYours';
@@ -47,6 +48,11 @@ export default async function MakeItYoursPage() {
   const steps = walkUiSteps(mood);
   const moodLabel = getFamily(mood).publicMoodLabel;
 
+  // Per-step resolution from the draft, so the walk starts at the top with each finished
+  // section already marked completed (and in its right state) instead of untouched.
+  const resolvedFlags = steps.map((s) => sectionResolved(homeEnv, s.section));
+  const resolutions = steps.map((s) => sectionState(homeEnv, s.section));
+
   const previewToken = mintPreviewToken(shop.tenantId);
   const origin = storefrontOrigin(shop.subdomain, (await headers()).get('host'));
 
@@ -58,6 +64,8 @@ export default async function MakeItYoursPage() {
       steps={steps}
       momentPlayMode={momentPlayMode}
       moodLabel={moodLabel}
+      resolvedFlags={resolvedFlags}
+      resolutions={resolutions}
     />
   );
 }

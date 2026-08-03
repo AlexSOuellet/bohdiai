@@ -89,7 +89,11 @@ const SECTION_NAMES: Record<SectionKey, string> = {
   findUs: 'where-to-find-you dates',
 };
 
-const DEEP_BLOCK = `THIS SECTION CARRIES THEIR STORY. Draw out the real, specific stuff — how it started, what makes theirs different from anyone else's, who it's really for, what a regular would say about them. Ask for concrete detail, never a vague "tell me about yourself." Two or three good answers is usually enough; the moment you have real material to write something true, choose "ready" rather than dragging it out.`;
+const DEEP_BLOCK = `THIS SECTION CARRIES THEIR STORY, and it's the hardest one to get. Most makers are shy about themselves and will hand you a thin, generic line — "I just love what I make", "I've always been creative". That is NOT enough to write a real story from. When they give you a vague or generic answer, do NOT accept it and move on: warmly reflect it back and ask for the concrete thing underneath it — a specific moment, a real object, an actual person, a particular day. ("You love it — tell me about the first one you ever sold. Who bought it?")
+
+Interview them one small, concrete question at a time. Good angles to reach for: the moment it started (where they were, what happened), the first piece they ever made or sold, something a customer has actually said to them, who they picture when they're making it, the part of the work they love most or find hardest. Never ask a broad "tell me about yourself" — always ask for a specific, answerable detail.
+
+Keep going until you have at least two genuinely specific, story-worthy details you could build a true story around — then choose "ready". But read the room: if they clearly don't want to say more, take what you have and choose "ready" gracefully rather than pushing.`;
 
 const LIGHT_BLOCK = `THIS IS A LIGHT SECTION — there's no life story to pull here. React to what you built and ask, once, what they'd change about it. The moment they give you a direction — or say it's fine as is — choose "ready".`;
 
