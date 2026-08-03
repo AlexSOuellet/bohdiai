@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import StorefrontPage from '../_components/StorefrontPage';
+import { previewPropsFrom, type PreviewSearchParams } from '../_components/preview-params';
 import { storefrontMetadata } from '@/lib/storefront/metadata';
 
 export function generateMetadata(): Promise<Metadata> {
   return storefrontMetadata({ path: '/about', pageName: 'About' });
 }
 
-export default async function StorefrontAboutPage() {
-  return <StorefrontPage slug="/about" />;
+export default async function StorefrontAboutPage({ searchParams }: { searchParams: Promise<PreviewSearchParams> }) {
+  const sp = await searchParams;
+  return <StorefrontPage slug="/about" {...previewPropsFrom(sp)} />;
 }
