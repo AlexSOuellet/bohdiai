@@ -83,25 +83,36 @@ export interface MainStreetProps {
    *  behind every section. Optional so preview/test callers that don't have a
    *  family resolved still render (no texture, just the skin surface color). */
   family?: Family | undefined;
+  /** Sections the maker turned OFF in the walk — dropped from the render entirely,
+   *  so "turn it off" actually hides the section on the store (not just in the walk's
+   *  bookkeeping). Empty/absent → nothing forced off beyond the family stack. */
+  hiddenSections?: readonly SectionKey[] | undefined;
+  /** Sections the maker has made REAL (kept or edited). The marquee's live-logistics
+   *  line draws only from these, so a store never scrolls seeded sample dates the
+   *  maker never entered. Empty/absent → the info line stays empty. */
+  shownSections?: readonly SectionKey[] | undefined;
 }
 
-export function MainStreet({ content, skin, products, sectionStack, catalogSize, goodsTreatment, collections, collectionsTreatment, collectionsHref, founderTreatment, shopHref, aboutHref, eventsHref, testimonialsHref, momentKey, heroVariant, reviewsTreatment, findUsTreatment, family }: MainStreetProps) {
+export function MainStreet({ content, skin, products, sectionStack, catalogSize, goodsTreatment, collections, collectionsTreatment, collectionsHref, founderTreatment, shopHref, aboutHref, eventsHref, momentKey, heroVariant, reviewsTreatment, findUsTreatment, family, hiddenSections, shownSections }: MainStreetProps) {
   const stack = sectionStack ?? FAMILIES.cozy.sectionStack;
+  // The maker's walk resolutions applied to the render: turned-off sections are
+  // dropped entirely, and the marquee's live logistics draw only from made-real ones.
+  const hidden = new Set(hiddenSections ?? []);
+  const shown = new Set(shownSections ?? []);
 
   // The Collections band appears when BOTH the shop has collection rows AND the
   // copywriter authored the section (heading + treatment). No defensive fallback —
   // if the copywriter didn't author it, the band doesn't render (rule: no hardcoding).
   const collectionsSection = content.collections;
-  // The reviews home band takes its "see all" cue from the authored label — no
-  // hardcoded English fallback. Missing label → no cue rendered.
-  const reviewsViewAll = content.reviews?.viewAllLabel
-    ? { href: testimonialsHref ?? '/testimonials', label: content.reviews.viewAllLabel }
-    : undefined;
+  // The standalone /testimonials page is disabled for now, so the home reviews band
+  // carries NO "see all" cue — reviews live on the home sampling until the full page
+  // returns (with the review system). Re-enable alongside DISABLED_ROUTES.
+  const reviewsViewAll = undefined;
   // The marquee band's content is assembled from THIS store's own copy + data
   // (never hardcoded, never injected). Every family ships marquee-on by default;
   // its POSITION in the stack varies per family (up top for Cheerful/Rustic, as
   // a divider for Modern, near the bottom for Cozy).
-  const marqueeLines = buildMarqueeLines(content, collections);
+  const marqueeLines = buildMarqueeLines(content, collections, shown);
 
   // Section renderers keyed by SectionKey. Each returns null if there's no data
   // to show (a family may have Reviews on, but if the store has none authored
@@ -160,7 +171,9 @@ export function MainStreet({ content, skin, products, sectionStack, catalogSize,
   // frame). Everything else in the stack renders inside <main> in the order
   // the family declares.
   const heroEntry = stack.find((e) => e.section === 'hero');
-  const bodyEntries = stack.filter((e) => e.section !== 'hero' && e.on);
+  // On-entries render, EXCEPT sections the maker turned off in the walk (hero is
+  // keep-or-change, never hidden). This is what makes "turn it off" take effect.
+  const bodyEntries = stack.filter((e) => e.section !== 'hero' && e.on && !hidden.has(e.section));
 
   return (
     <MainStreetRoot skin={skin} family={family}>

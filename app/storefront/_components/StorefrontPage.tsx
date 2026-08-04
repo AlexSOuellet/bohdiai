@@ -126,6 +126,12 @@ const SLUG_TO_PAGE: Record<string, ArchetypePage> = {
   '/testimonials': 'testimonials',
 };
 
+/** Routes that are built but deliberately switched OFF for now. The standalone
+ *  testimonials page is disabled until the review system + enough real reviews exist
+ *  to fill it — reviews live on the home sampling meanwhile. Re-enable by removing the
+ *  entry. Guarded before the SLUG_TO_PAGE lookup so a direct visit 404s. */
+const DISABLED_ROUTES = new Set<string>(['/testimonials']);
+
 /** Resolve the tenant's home envelope + spec, or null when the tenant has no
  *  published home. Shared by the product/content/shell wrappers so every route
  *  paints in the same chrome — including the family-driven nav variant. */
@@ -187,6 +193,9 @@ export default async function StorefrontPage({ slug, previewToken, previewStill,
   const headerStore = await headers();
   const tenantId = headerStore.get('x-tenant-id');
   if (tenantId === null) notFound();
+
+  // A deliberately-disabled route (the standalone testimonials page for now) 404s.
+  if (DISABLED_ROUTES.has(slug)) notFound();
 
   // Sub-page routes (/shop, /events, ...) render off the SAME stored home
   // envelope, painted as a different page.

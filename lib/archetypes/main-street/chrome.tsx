@@ -1605,9 +1605,8 @@ export function MainStreetFooter({ shopName }: { shopName: string }) {
         <IntroReplayLink className="ms-footer-link">
           {DEFAULT_STRINGS.footerIntro}
         </IntroReplayLink>
-        <Type as="a" role="legal" href="/testimonials" className="ms-footer-link">
-          {DEFAULT_STRINGS.footerTestimonials}
-        </Type>
+        {/* The standalone testimonials page is disabled for now (reviews live on the
+            home sampling); no footer link until the full page returns. */}
         <Type as="a" role="legal" href="/privacy" className="ms-footer-link">
           {DEFAULT_STRINGS.footerPrivacy}
         </Type>

@@ -43,19 +43,33 @@ describe('buildMarqueeLines — content is assembled from the store, never hardc
     expect(voice).toContain('Built to outlast us'); // close headline
   });
 
-  it('builds the info line from the store’s live data (find-us dates + collections)', () => {
+  it('builds the info line from the store’s live data once those sections are made real', () => {
     const withData: MainStreetContent = {
       ...base,
       founder: { ...base.founder, findUs: { label: 'Find us', rows: [{ day: 'Sat', where: 'Riverside Market', time: '9am' }] } },
     };
     const collections: CollectionView[] = [{ slug: 'holiday', name: 'Holiday', count: 3 }];
-    const { info } = buildMarqueeLines(withData, collections);
+    const { info } = buildMarqueeLines(withData, collections, new Set(['findUs', 'collections']));
     expect(info).toContain('Riverside Market · Sat 9am');
     expect(info).toContain('Holiday');
   });
 
+  it('keeps seeded data OUT of the info line until the maker has made those sections real', () => {
+    const withData: MainStreetContent = {
+      ...base,
+      founder: { ...base.founder, findUs: { label: 'Find us', rows: [{ day: 'Sat', where: 'Riverside Market', time: '9am' }] } },
+    };
+    const collections: CollectionView[] = [{ slug: 'holiday', name: 'Holiday', count: 3 }];
+    // No `shown` set → nothing made real yet → the info line stays empty even though
+    // the store carries seeded sample dates + collections. This is the fix: a store
+    // never scrolls dates the maker never entered.
+    expect(buildMarqueeLines(withData, collections).info).toEqual([]);
+    // find-us made but collections not → only the dates appear.
+    expect(buildMarqueeLines(withData, collections, new Set(['findUs'])).info).toEqual(['Riverside Market · Sat 9am']);
+  });
+
   it('leaves the info line empty when the store has no dates or collections', () => {
-    const { info } = buildMarqueeLines(base, []);
+    const { info } = buildMarqueeLines(base, [], new Set(['findUs', 'collections']));
     expect(info).toEqual([]);
   });
 

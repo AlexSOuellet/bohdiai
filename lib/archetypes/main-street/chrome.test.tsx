@@ -277,11 +277,9 @@ describe('MainStreetFooter', () => {
     expect(links).toEqual(expect.arrayContaining(['Home', 'Privacy', 'Terms']));
   });
 
-  it('carries the Testimonials link (Session 66 A3 — moved out of the top nav)', () => {
+  it('does NOT link the standalone testimonials page (disabled for now — reviews live on the home sampling)', () => {
     const { container } = render(<MainStreetFooter shopName="June's Sourdough" />);
-    const links = Array.from(container.querySelectorAll('a'));
-    const testimonialsLink = links.find((a) => a.textContent === 'Testimonials');
-    expect(testimonialsLink).toBeTruthy();
-    expect(testimonialsLink!.getAttribute('href')).toBe('/testimonials');
+    const hrefs = Array.from(container.querySelectorAll('a')).map((a) => a.getAttribute('href'));
+    expect(hrefs).not.toContain('/testimonials');
   });
 });

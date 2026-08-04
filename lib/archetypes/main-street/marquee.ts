@@ -9,13 +9,19 @@
  *            existed fall back to deriving the voice from the store's other
  *            authored copy (hero eyebrow, goods label, close sign-off + headline).
  *  - info  — the store's live data: its find-us dates and its collection names.
- *            Assembled from what the store HAS, so it updates itself.
+ *            Assembled from what the store HAS, so it updates itself. Crucially,
+ *            this line draws ONLY from sections the maker has made REAL (the `shown`
+ *            set) — a store must never scroll the seeded sample dates the build
+ *            stamped on before the maker entered any of their own. Before the maker
+ *            enters real dates the info line is simply empty; the voice line still
+ *            scrolls.
  *
  * The only literals here are punctuation separators (structure, not content).
  * Either line can come back empty (a store with no dates, or no authored label);
  * the band renders whichever lines have content, and nothing when both are empty.
  */
 import type { MainStreetContent } from './schemas';
+import type { SectionKey } from './families';
 import type { CollectionView } from '../content';
 
 export interface MarqueeLines {
@@ -45,10 +51,17 @@ function tidy(phrases: Array<string | undefined>): string[] {
 /**
  * Assemble the marquee's two lines from the store's own content and collections.
  * Pure — the dispatcher, MainStreet, and tests all share this one rule.
+ *
+ * `shown` is the set of sections the maker has made real (kept or edited). The info
+ * line draws find-us dates only when `findUs` is in it, and collection names only
+ * when `collections` is in it — so a store never scrolls seeded sample data the
+ * maker never entered. Defaults to empty: with no resolution passed, the info line
+ * stays empty (the safe, honest default).
  */
 export function buildMarqueeLines(
   content: MainStreetContent,
   collections: readonly CollectionView[] = [],
+  shown: ReadonlySet<SectionKey> = new Set(),
 ): MarqueeLines {
   // VOICE — the phrases Bohdi authored for the marquee. Legacy stores (no
   // authored marquee) fall back to deriving the voice from other authored copy.
@@ -59,12 +72,13 @@ export function buildMarqueeLines(
       : [content.moment.eyebrow, content.goods.label, content.close.label, content.close.headline],
   );
 
-  // INFO — live logistics assembled from the store's real data. Each find-us
-  // row becomes "where · day time"; each collection contributes its own name.
-  const findRows = content.founder.findUs?.rows ?? [];
+  // INFO — live logistics, but ONLY from sections the maker has actually made real.
+  // Each find-us row becomes "where · day time"; each collection contributes its name.
+  const findRows = shown.has('findUs') ? (content.founder.findUs?.rows ?? []) : [];
+  const collectionNames = shown.has('collections') ? collections.map((c) => c.name) : [];
   const info = tidy([
     ...findRows.map((r) => `${r.where} · ${r.day} ${r.time}`),
-    ...collections.map((c) => c.name),
+    ...collectionNames,
   ]);
 
   return { voice, info };

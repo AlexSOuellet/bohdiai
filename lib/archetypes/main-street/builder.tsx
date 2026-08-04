@@ -25,6 +25,7 @@ import { FINDUS_TREATMENTS, type FindUsTreatment } from './findus';
 import type { FounderTreatment } from './founder';
 import { getFamily, type Family } from './families';
 import type { HeroVariantKey } from './hero-catalog';
+import { readSectionResolutions } from '@/lib/editor/section-state';
 
 /** Every section variant the family (or a preview override) picks for a render.
  *  Populated at the builder level from the tenant's mood + any active URL previews;
@@ -311,6 +312,10 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       reviews: reviewsTreatment, founder: founderTreatment, findUs: findUsTreatment, nav: navVariant,
     });
     const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), treatments.nav);
+    // The maker's walk resolutions ride on the raw envelope content alongside the
+    // authored fields (the MainStreetContent cast ignores them). Read them here so the
+    // home render can hide turned-off sections and keep seeded dates out of the marquee.
+    const resolutions = readSectionResolutions(content);
     switch (page) {
       case 'shop':
         return <ShopPage content={c} skin={skin} products={products} family={family} />;
@@ -333,7 +338,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       case 'testimonials':
         return <TestimonialsPage content={c} skin={skin} family={family} />;
       default:
-        return <MainStreet content={c} skin={skin} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} />;
+        return <MainStreet content={c} skin={skin} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} hiddenSections={resolutions.hidden} shownSections={resolutions.shown} />;
     }
   },
   renderProduct: ({ content, lookKey, product, mood, logoUrl, brandColors, accentOverride }) => {

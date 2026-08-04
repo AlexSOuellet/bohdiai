@@ -156,6 +156,40 @@ describe('MainStreet — reviews beat composition', () => {
   });
 });
 
+describe('MainStreet — the maker’s walk resolutions applied to the render', () => {
+  const withDates: MainStreetContent = {
+    ...base,
+    founder: { ...base.founder, findUs: { label: 'Find us', rows: [{ day: 'Sat', where: 'Riverside Market', time: '9am' }] } },
+  };
+  const withReviews: MainStreetContent = {
+    ...base,
+    reviews: { title: 'Kind words', items: [{ quote: 'The real thing.', author: 'Dana R.' }] },
+  };
+
+  it('a section the maker turned off does not render at all', () => {
+    const { container } = render(<MainStreet content={withReviews} skin={skin} products={[]} hiddenSections={['reviews']} />);
+    expect(container.querySelector('#reviews')).toBeNull();
+    // and it isn't rendered when NOT hidden (proves the hide is what removed it)
+    cleanup();
+    const { container: shown } = render(<MainStreet content={withReviews} skin={skin} products={[]} />);
+    expect(shown.querySelector('#reviews')).toBeTruthy();
+  });
+
+  it('the marquee scrolls real dates ONLY once find-us is made real, never the seeds', () => {
+    // Scope to the marquee BAND: the find-us beat itself still shows the seeded dates
+    // as an editable placeholder (D38), but the scrolling band must not broadcast them.
+    const { container: seeded } = render(<MainStreet content={withDates} skin={skin} products={[]} />);
+    expect(seeded.querySelector('.ms-mq-band')).toBeTruthy();
+    expect(seeded.querySelector('.ms-mq-band')!.textContent).not.toContain('Riverside Market');
+    cleanup();
+    // Made real (the maker entered them) → the marquee shows them.
+    const { container: real } = render(
+      <MainStreet content={withDates} skin={skin} products={[]} shownSections={['findUs']} />,
+    );
+    expect(real.querySelector('.ms-mq-band')!.textContent).toContain('Riverside Market');
+  });
+});
+
 describe('MainStreet — hero slot resolves through the catalog (the swap)', () => {
   it('renders the Story hero by default (unchanged from before the catalog)', () => {
     const { container } = render(<MainStreet content={base} skin={skin} products={[]} />);

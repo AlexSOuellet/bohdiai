@@ -84,3 +84,22 @@ export function sectionState(tree: Tree, section: SectionKey): SectionResolution
   if (readList(tree, 'kept').includes(section)) return 'kept';
   return 'unresolved';
 }
+
+/**
+ * Read the maker's walk resolutions off a raw envelope CONTENT record (the object at
+ * `root.content`, which carries the made/kept/hidden lists alongside the authored
+ * content). The renderer applies both: `hidden` sections don't render at all, and the
+ * marquee draws its live-logistics line ONLY from `shown` sections — so a store never
+ * broadcasts seeded sample dates the maker hasn't actually entered. A section the
+ * maker hasn't reached is neither hidden nor shown: it still renders as a placeholder
+ * in the walk preview, but contributes nothing to the derived marquee.
+ */
+export function readSectionResolutions(content: unknown): { hidden: SectionKey[]; shown: SectionKey[] } {
+  const rec = content != null && typeof content === 'object' && !Array.isArray(content) ? (content as Record<string, unknown>) : {};
+  const list = (k: string): string[] => (Array.isArray(rec[k]) ? (rec[k] as unknown[]).filter((x): x is string => typeof x === 'string') : []);
+  const hidden = list('hiddenSections');
+  const hiddenSet = new Set(hidden);
+  // Shown-real = the sections the maker resolved to KEEP or MAKE (never a hidden one).
+  const shown = [...new Set([...list('madeYours'), ...list('kept')])].filter((s) => !hiddenSet.has(s));
+  return { hidden: hidden as SectionKey[], shown: shown as SectionKey[] };
+}
