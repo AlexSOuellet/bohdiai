@@ -76,6 +76,28 @@ describe('MakeItYours (full-screen walk)', () => {
     expect(frame.src).toContain('previewStill=1');
   });
 
+  /** Render the walk with a single given step so we can inspect its preview URL. */
+  function renderStep(section: string) {
+    const step = walkUiSteps('rustic').find((s) => s.section === section)!;
+    render(
+      <MakeItYours previewToken="tok-123" previewOrigin="https://ember.test" values={{}} steps={[step]} momentPlayMode="once" moodLabel="Cozy" />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Let’s go/ }));
+    return (screen.getByTitle('Your store preview') as HTMLIFrameElement).src;
+  }
+
+  it('spotlights a home section on the home page for a normal step', () => {
+    const src = renderStep('goods');
+    expect(src).toContain('/?previewToken=');
+    expect(src).toContain('previewSection=goods');
+  });
+
+  it('previews the /contact PAGE on the contact step (contact has no home beat to spotlight)', () => {
+    const src = renderStep('contact');
+    expect(src).toContain('/contact?previewToken=');
+    expect(src).not.toContain('previewSection');
+  });
+
   it('offers a replay on the Moment step that reloads the preview to play it again', () => {
     renderWalk();
     start();

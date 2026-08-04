@@ -76,6 +76,13 @@ export const EDITABLE_FIELDS: readonly EditableField[] = [
   // MARQUEE — the authored voice lines (short, scroll large like headlines).
   { id: 'marquee.voice', path: ['marquee', 'voice'], kind: 'lines', section: 'marquee', normalize: 'headline', label: 'Marquee lines' },
 
+  // FIND US — the event dates the maker keeps (D71). An `items` field like reviews:
+  // the maker types real rows (place / date / time) or turns the section off. Its
+  // path is nested under `founder` (where the renderer reads the calendar), so the
+  // id is NOT the dotted path here — the path array is authoritative. Filtered out of
+  // the walk's Bohdi-written fieldIds (kind `items`); edited through its own rows editor.
+  { id: 'findUs.rows', path: ['founder', 'findUs', 'rows'], kind: 'items', section: 'findUs', normalize: 'plain', label: 'Event dates' },
+
   // BEAT 3 — the founder / About-the-maker beat. Personal (D68).
   { id: 'founder.quote', path: ['founder', 'quote'], kind: 'text', section: 'founder', normalize: 'plain', label: 'Founder quote' },
   { id: 'founder.attribution', path: ['founder', 'attribution'], kind: 'text', section: 'founder', normalize: 'plain', label: 'Founder attribution' },

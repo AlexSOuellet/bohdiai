@@ -25,7 +25,7 @@ vi.mock('@/lib/editor/content-agent', () => ({
 }));
 vi.mock('@/lib/editor/niche-voice', () => ({ loadNicheVoice: (id: string) => loadNicheVoice(id) }));
 
-import { stageLook, publishStore, resetStore, editContent, setFieldValues, setMomentPlayMode } from './actions';
+import { stageLook, publishStore, resetStore, editContent, setFieldValues, setMomentPlayMode, setReviewQuotes, setFindUsRows } from './actions';
 
 beforeEach(() => {
   [getCurrentShop, readDraftTree, stageDraftTree, publishDraft, resetDraft, loadHomeEnvelope, runContentEdit, loadNicheVoice].forEach((m) => m.mockReset());
@@ -218,6 +218,133 @@ describe('setMomentPlayMode', () => {
   it('fails cleanly with no store', async () => {
     getCurrentShop.mockResolvedValue(null);
     const res = await setMomentPlayMode('off');
+    expect(res.ok).toBe(false);
+    expect(stageDraftTree).not.toHaveBeenCalled();
+  });
+});
+
+describe('setReviewQuotes (real testimonials)', () => {
+  const liveEnv = { kind: 'archetype', content: { reviews: { title: 'Old kind words', items: [{ quote: 'seed', author: 'x' }] } } };
+
+  it('stages the maker’s real quotes, preserves the heading, marks reviews made-yours, and un-hides it', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    readDraftTree.mockResolvedValue({ root: { content: { reviews: { title: 'Old kind words' }, hiddenSections: ['reviews'] } } });
+    stageDraftTree.mockResolvedValue({ ok: true });
+
+    const res = await setReviewQuotes([
+      { quote: 'Best candle I have bought', author: 'Dana R.', location: 'RI' },
+      { quote: '', author: '' }, // blank row dropped
+    ]);
+    expect(res.ok).toBe(true);
+    const staged = stageDraftTree.mock.calls[0]![1] as {
+      root: { content: { reviews: { title: string; items: unknown[] }; madeYours?: string[]; hiddenSections?: string[] } };
+    };
+    expect(staged.root.content.reviews.items).toEqual([{ quote: 'Best candle I have bought', author: 'Dana R.', location: 'RI' }]);
+    expect(staged.root.content.reviews.title).toBe('Old kind words'); // heading preserved
+    expect(staged.root.content.madeYours).toContain('reviews');
+    expect(staged.root.content.hiddenSections).not.toContain('reviews'); // real content brings it back on
+  });
+
+  it('drops a blank location so an empty optional never lands', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    readDraftTree.mockResolvedValue(null);
+    loadHomeEnvelope.mockResolvedValue(structuredClone(liveEnv));
+    stageDraftTree.mockResolvedValue({ ok: true });
+    await setReviewQuotes([{ quote: 'Lovely', author: 'Sam', location: '  ' }]);
+    const staged = stageDraftTree.mock.calls[0]![1] as { root: { content: { reviews: { items: Record<string, unknown>[] } } } };
+    expect(staged.root.content.reviews.items[0]).toEqual({ quote: 'Lovely', author: 'Sam' });
+  });
+
+  it('saves a COMPLETE real rating alongside the quotes', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    readDraftTree.mockResolvedValue(null);
+    loadHomeEnvelope.mockResolvedValue(structuredClone(liveEnv));
+    stageDraftTree.mockResolvedValue({ ok: true });
+    await setReviewQuotes([{ quote: 'Great', author: 'Sam' }], { score: ' 4.8 out of 5 ', count: ' 30 reviews ' });
+    const staged = stageDraftTree.mock.calls[0]![1] as { root: { content: { reviews: { summary?: unknown } } } };
+    expect(staged.root.content.reviews.summary).toEqual({ score: '4.8 out of 5', count: '30 reviews' });
+  });
+
+  it('STRIPS a fabricated rating when the maker gives none (or only half of it)', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    // The draft still carries Bohdi's build-time invented rating.
+    readDraftTree.mockResolvedValue({ root: { content: { reviews: { title: 'Kind words', summary: { score: '4.9 out of 5', count: '200+ happy customers' } } } } });
+    stageDraftTree.mockResolvedValue({ ok: true });
+    // No summary → the invented one is deleted, never published.
+    await setReviewQuotes([{ quote: 'Real', author: 'Dana' }]);
+    const staged = stageDraftTree.mock.calls[0]![1] as { root: { content: { reviews: Record<string, unknown> } } };
+    expect(staged.root.content.reviews['summary']).toBeUndefined();
+
+    // A half-filled rating (score but no count) is incomplete → also stripped.
+    stageDraftTree.mockClear();
+    readDraftTree.mockResolvedValue({ root: { content: { reviews: { title: 'Kind words', summary: { score: '4.9 out of 5', count: '200+' } } } } });
+    await setReviewQuotes([{ quote: 'Real', author: 'Dana' }], { score: '5 stars', count: '' });
+    const staged2 = stageDraftTree.mock.calls[0]![1] as { root: { content: { reviews: Record<string, unknown> } } };
+    expect(staged2.root.content.reviews['summary']).toBeUndefined();
+  });
+
+  it('rejects an all-empty submission without touching the draft or the shop', async () => {
+    const res = await setReviewQuotes([{ quote: '', author: '' }]);
+    expect(res.ok).toBe(false);
+    expect(getCurrentShop).not.toHaveBeenCalled();
+    expect(stageDraftTree).not.toHaveBeenCalled();
+  });
+
+  it('fails cleanly with no store', async () => {
+    getCurrentShop.mockResolvedValue(null);
+    const res = await setReviewQuotes([{ quote: 'q', author: 'a' }]);
+    expect(res.ok).toBe(false);
+    expect(stageDraftTree).not.toHaveBeenCalled();
+  });
+});
+
+describe('setFindUsRows (real event dates)', () => {
+  it('stages the maker’s real dates with a derived day echo, marks find-us made, and un-hides it', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    readDraftTree.mockResolvedValue({
+      root: { content: { founder: { findUs: { label: 'Find us', rows: [] } }, hiddenSections: ['findUs'] } },
+    });
+    stageDraftTree.mockResolvedValue({ ok: true });
+
+    const res = await setFindUsRows([
+      { where: 'Providence Winter Market', date: '2026-08-15', time: '9am – 2pm' },
+      { where: '', date: '', time: '' }, // blank row dropped
+    ]);
+    expect(res.ok).toBe(true);
+    const staged = stageDraftTree.mock.calls[0]![1] as {
+      root: { content: { founder: { findUs: { label: string; rows: Record<string, string>[] } }; madeYours?: string[]; hiddenSections?: string[] } };
+    };
+    const rows = staged.root.content.founder.findUs.rows;
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!['where']).toBe('Providence Winter Market');
+    expect(rows[0]!['date']).toBe('2026-08-15');
+    expect(rows[0]!['time']).toBe('9am – 2pm');
+    expect(rows[0]!['day']).toMatch(/Aug 15/); // day echo derived from the date
+    expect(staged.root.content.founder.findUs.label).toBe('Find us'); // preserved
+    expect(staged.root.content.madeYours).toContain('findUs');
+    expect(staged.root.content.hiddenSections).not.toContain('findUs');
+  });
+
+  it('sets a fallback label when the store has no find-us section yet', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    readDraftTree.mockResolvedValue(null);
+    loadHomeEnvelope.mockResolvedValue({ kind: 'archetype', content: { founder: { quote: 'q', attribution: 'a' } } });
+    stageDraftTree.mockResolvedValue({ ok: true });
+    await setFindUsRows([{ where: 'Market', date: '2026-08-15', time: '10am' }]);
+    const staged = stageDraftTree.mock.calls[0]![1] as { root: { content: { founder: { findUs: { label: string } } } } };
+    expect(staged.root.content.founder.findUs.label.length).toBeGreaterThan(0);
+  });
+
+  it('rejects an all-empty submission without touching the draft or the shop', async () => {
+    const res = await setFindUsRows([{ where: '', date: '', time: '' }]);
+    expect(res.ok).toBe(false);
+    expect(getCurrentShop).not.toHaveBeenCalled();
+    expect(stageDraftTree).not.toHaveBeenCalled();
+  });
+
+  it('fails cleanly with no store', async () => {
+    getCurrentShop.mockResolvedValue(null);
+    const res = await setFindUsRows([{ where: 'Market', date: '2026-08-15', time: '10am' }]);
     expect(res.ok).toBe(false);
     expect(stageDraftTree).not.toHaveBeenCalled();
   });

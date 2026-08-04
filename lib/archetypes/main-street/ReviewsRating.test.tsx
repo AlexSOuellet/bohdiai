@@ -69,7 +69,7 @@ describe('ReviewsRating', () => {
     });
   });
 
-  it('falls back to sensible defaults when summary is absent', () => {
+  it('shows NO invented number when summary is absent — stars + quotes carry it', () => {
     const noSummary: ReviewsSection = {
       title: 'Kind words',
       items: makeTestimonials(4),
@@ -80,8 +80,9 @@ describe('ReviewsRating', () => {
     // still five stars, still one quip per item
     expect(container.querySelectorAll('.ms-rev-rating-star').length).toBe(5);
     expect(container.querySelectorAll('[data-ms-rev-item]').length).toBe(4);
-    // fallback score + count
-    expect(container.textContent).toContain('5 out of 5');
-    expect(container.textContent).toContain('4 testimonials');
+    // but NO fabricated score/count — a curated wall never wears an invented average
+    expect(container.querySelector('.ms-rev-rating-score')).toBeNull();
+    expect(container.querySelector('.ms-rev-rating-count')).toBeNull();
+    expect(container.textContent).not.toContain('out of 5');
   });
 });

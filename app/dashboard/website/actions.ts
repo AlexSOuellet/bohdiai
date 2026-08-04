@@ -15,6 +15,7 @@ import { readDraftTree, stageDraftTree, publishDraft, resetDraft } from '@/lib/e
 import { loadHomeEnvelope } from '@/lib/storefront/load-envelope';
 import { EDITABLE_FIELDS, fieldsForSection, getFieldValue, setFieldValue } from '@/lib/editor/editable-fields';
 import { markSectionMade, markSectionKept, setSectionHidden } from '@/lib/editor/section-state';
+import { parseFindUsDate } from '@/lib/archetypes/main-street/findus';
 import { publishBlockers } from '@/lib/editor/publish-gate';
 import { runContentEdit } from '@/lib/editor/content-agent';
 import {
@@ -256,6 +257,138 @@ export async function setMomentPlayMode(mode: MomentPlayMode): Promise<ActionRes
   moment['playMode'] = mode;
 
   const staged = await stageDraftTree(shop.tenantId, markSectionMade(next, 'hero'));
+  if (!staged.ok) return { ok: false, error: 'Could not save your changes.' };
+  revalidatePath('/dashboard/website');
+  return { ok: true };
+}
+
+/** One real testimonial the maker typed — the customer's words, never Bohdi's (D68). */
+export interface ReviewQuoteInput {
+  quote: string;
+  author: string;
+  location?: string;
+}
+
+/** Keep only the complete rows (quote + author both filled), trimmed verbatim; drop
+ *  a location that's blank so the schema's optional-min-1 holds. Silently drops
+ *  half-empty rows rather than erroring on them (accept-or-coerce, D57). */
+function cleanReviewRows(rows: unknown): ReviewQuoteInput[] {
+  if (!Array.isArray(rows)) return [];
+  const out: ReviewQuoteInput[] = [];
+  for (const r of rows) {
+    if (r === null || typeof r !== 'object') continue;
+    const rec = r as Record<string, unknown>;
+    const quote = typeof rec['quote'] === 'string' ? rec['quote'].trim() : '';
+    const author = typeof rec['author'] === 'string' ? rec['author'].trim() : '';
+    if (quote.length === 0 || author.length === 0) continue;
+    const location = typeof rec['location'] === 'string' ? rec['location'].trim() : '';
+    out.push(location.length > 0 ? { quote, author, location } : { quote, author });
+  }
+  return out;
+}
+
+/** The maker's real overall rating for the star-rating layout — an aggregate they
+ *  actually have (their Etsy/Google figure), or nothing. Both parts required together
+ *  (a score with no count, or a count with no score, is dropped as incomplete). */
+export interface ReviewSummaryInput {
+  score: string;
+  count: string;
+}
+
+/** A complete summary (both score AND count filled), trimmed — or undefined. A
+ *  partial one is treated as none, so we never show half a rating. */
+function cleanReviewSummary(summary: unknown): ReviewSummaryInput | undefined {
+  if (summary === null || typeof summary !== 'object') return undefined;
+  const rec = summary as Record<string, unknown>;
+  const score = typeof rec['score'] === 'string' ? rec['score'].trim() : '';
+  const count = typeof rec['count'] === 'string' ? rec['count'].trim() : '';
+  return score.length > 0 && count.length > 0 ? { score, count } : undefined;
+}
+
+/** Save the maker's real testimonial quotes into the draft (D68/D70). Writes
+ *  `reviews.items`, marks the section made-yours, and un-hides it (real content
+ *  brings the beat back on if it was off). No Bohdi — these are the customer's own
+ *  words. An all-empty submission is rejected so the section is never "made" hollow;
+ *  the maker turns it off instead.
+ *
+ *  `summary` is the OPTIONAL real overall rating for stores whose feeling uses the
+ *  star-rating layout. When the maker gives a complete one it's saved; otherwise any
+ *  existing summary is DELETED — this is what strips Bohdi's build-time invented
+ *  rating so a fabricated "4.9 out of 5" never reaches the live store. */
+export async function setReviewQuotes(rows: unknown, summary?: unknown): Promise<ActionResult> {
+  const clean = cleanReviewRows(rows);
+  if (clean.length === 0) return { ok: false, error: 'Add at least one real review (quote and name), or turn the section off.' };
+  const cleanSummary = cleanReviewSummary(summary);
+
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to update.' };
+  const baseTree = await loadBaseTree(shop.tenantId);
+  if (baseTree === null) return { ok: false, error: 'Could not load your store.' };
+
+  const next = structuredClone(baseTree);
+  const reviews = ensureObject(ensureObject(ensureObject(next, 'root'), 'content'), 'reviews');
+  reviews['items'] = clean;
+  // Save a real rating, or delete any existing one (strips a fabricated summary so it
+  // never publishes — a curated wall never wears an invented average).
+  if (cleanSummary) reviews['summary'] = cleanSummary;
+  else delete reviews['summary'];
+  // The section needs a heading to render; preserve the maker's/built one, else a plain
+  // fallback so the schema's required title never lands empty.
+  if (typeof reviews['title'] !== 'string' || reviews['title'].trim().length === 0) reviews['title'] = 'Kind words';
+
+  const staged = await stageDraftTree(shop.tenantId, setSectionHidden(markSectionMade(next, 'reviews'), 'reviews', false));
+  if (!staged.ok) return { ok: false, error: 'Could not save your changes.' };
+  revalidatePath('/dashboard/website');
+  return { ok: true };
+}
+
+/** One real event the maker typed (D71) — a place, a date, and a time. */
+export interface FindUsRowInput {
+  where: string;
+  date: string;
+  time: string;
+}
+
+/** Keep only the complete rows (place + date + time), trimmed verbatim, and stamp the
+ *  human `day` echo the renderer reads from the ISO date (falls back to the raw date
+ *  string so `day` is never empty — accept-or-coerce, D57). */
+function cleanFindUsRows(rows: unknown): { day: string; where: string; time: string; date: string }[] {
+  if (!Array.isArray(rows)) return [];
+  const out: { day: string; where: string; time: string; date: string }[] = [];
+  for (const r of rows) {
+    if (r === null || typeof r !== 'object') continue;
+    const rec = r as Record<string, unknown>;
+    const where = typeof rec['where'] === 'string' ? rec['where'].trim() : '';
+    const date = typeof rec['date'] === 'string' ? rec['date'].trim() : '';
+    const time = typeof rec['time'] === 'string' ? rec['time'].trim() : '';
+    if (where.length === 0 || date.length === 0 || time.length === 0) continue;
+    const p = parseFindUsDate(date);
+    const day = p ? `${p.weekdayShort}, ${p.monthShort} ${p.dayNum}` : date;
+    out.push({ day, where, time, date });
+  }
+  return out;
+}
+
+/** Save the maker's real event dates into the draft (D71). Writes
+ *  `founder.findUs.rows` (where the renderer reads the calendar), marks the section
+ *  made-yours, and un-hides it. Each row's `day` echo is derived from the date at
+ *  save time — the maker sets the date, we shape the label. An all-empty submission
+ *  is rejected; the maker turns the section off instead. */
+export async function setFindUsRows(rows: unknown): Promise<ActionResult> {
+  const clean = cleanFindUsRows(rows);
+  if (clean.length === 0) return { ok: false, error: 'Add at least one date (place, date and time), or turn the section off.' };
+
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to update.' };
+  const baseTree = await loadBaseTree(shop.tenantId);
+  if (baseTree === null) return { ok: false, error: 'Could not load your store.' };
+
+  const next = structuredClone(baseTree);
+  const findUs = ensureObject(ensureObject(ensureObject(ensureObject(next, 'root'), 'content'), 'founder'), 'findUs');
+  findUs['rows'] = clean;
+  if (typeof findUs['label'] !== 'string' || findUs['label'].trim().length === 0) findUs['label'] = 'Where to find us';
+
+  const staged = await stageDraftTree(shop.tenantId, setSectionHidden(markSectionMade(next, 'findUs'), 'findUs', false));
   if (!staged.ok) return { ok: false, error: 'Could not save your changes.' };
   revalidatePath('/dashboard/website');
   return { ok: true };

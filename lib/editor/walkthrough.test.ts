@@ -9,9 +9,17 @@ const ENV = (madeYours: string[] = [], hidden: string[] = []) => ({
 });
 
 describe('walkthrough', () => {
-  it('runs top-to-bottom: hero first, close last', () => {
+  it('runs finishable-first, then the tail in dependency order (…goods → collections → marquee)', () => {
     expect(WALKTHROUGH_STEPS[0]!.section).toBe('hero');
-    expect(WALKTHROUGH_STEPS[WALKTHROUGH_STEPS.length - 1]!.section).toBe('close');
+    // The row/build-dependent sections are the tail, in dependency order.
+    const tail = WALKTHROUGH_STEPS.slice(-5).map((s) => s.section);
+    expect(tail).toEqual(['reviews', 'findUs', 'goods', 'collections', 'marquee']);
+    const order = WALKTHROUGH_STEPS.map((s) => s.section);
+    // Collections groups the products, so it follows goods.
+    expect(order.indexOf('collections')).toBeGreaterThan(order.indexOf('goods'));
+    // The scrolling line is built from the maker's events + collections, so it's last.
+    expect(order.indexOf('marquee')).toBeGreaterThan(order.indexOf('findUs'));
+    expect(order.indexOf('marquee')).toBeGreaterThan(order.indexOf('collections'));
   });
 
   it('every step field id is a real editable text field, and the testimonial items are excluded', () => {

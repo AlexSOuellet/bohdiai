@@ -108,7 +108,7 @@ ${storyDirective}
       - reviews.title (2-40): the heading of the beat (e.g. "Kind words", "What they say").
       - reviews.label (2-24, optional): a small eyebrow over the heading (e.g. "Loved by customers").
       - reviews.viewAllLabel (2-28): the cue on the home to the full /testimonials page (e.g. "Read all testimonials"). ALWAYS author this — the home shows a handful; the testimonials page shows every one.
-      - reviews.summary (optional): an honest aggregate for the star-rating layout — { score (e.g. "4.9 out of 5"), count (e.g. "200+ happy customers" — keep it modest and believable for a small maker, or omit if it would overreach) }.
+      - Do NOT write an overall rating or review count. A "4.9 out of 5 / 200 customers" figure is a factual claim about ALL of a real maker's reviews, not a curated selection — inventing one is dishonest. The maker enters their own real number later where their layout uses it.
       - reviews.items (3-6): each { quote (a warm, specific line a real customer would write — about the FEELING the work gave them, never how it is made), author (a first name + last initial, e.g. "Dana R."), location (optional, e.g. "Providence, RI") }. Vary the voices; no two should read alike. No AI-tell.
 - founder.quote (24+, no hard cap): the founder's words in the About beat. (The BODY the beat wears — quote, portrait, letter, card, workbench, editorial, signature — is the family's call, not yours. Author all supporting fields (eyebrow, heading, about.story) so every family renders cleanly no matter which body it picks.)
 - founder.attribution (4-60): who said it.

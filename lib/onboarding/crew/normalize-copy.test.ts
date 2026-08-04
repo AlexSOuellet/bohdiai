@@ -31,7 +31,6 @@ const full = {
     label: ' testimonials ',
     viewAllLabel: ' read all ',
     items: [{ quote: ' A great candle. ', author: ' Sam ', location: ' Providence ' }],
-    summary: { score: ' 4.9 ', count: ' 142 ' },
   },
   founder: {
     quote: ' q ',

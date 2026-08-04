@@ -6,10 +6,16 @@
  * and whether it's an optional section (switchable off — the off-switch itself
  * lands in Phase 3).
  *
- * Step order is the store's top-to-bottom order (Decision 3): welcome → story →
- * goods → collections → kind words → the scrolling line → getting in touch →
- * sign-off. (Photo replacement and the reviews/find-us "or switch it off" affordances
- * light up in Phases 2 and 3; this file is the word skeleton they extend.)
+ * Step order puts every FINISHABLE section first, then the ones that need real rows
+ * the maker types (or a build that isn't here yet), and orders the tail so nothing
+ * is tuned before the things it depends on exist: welcome → story → getting in touch
+ * → sign-off → kind words (testimonials) → where to find you (events) → goods
+ * (listings) → collections → the scrolling line. Collections comes AFTER goods
+ * because a collection groups the maker's products; the scrolling line comes LAST
+ * because its second line is built from the maker's events + collections, so it can't
+ * be tuned before those are entered. The gate (`walkComplete`) reads every section
+ * regardless of order, so this is purely the order the maker moves through — the
+ * testimonials/events rows editors and the listings build slot into those last steps.
  *
  * "Placeholder" = a section not yet made-yours and not hidden. We mark a section
  * made-yours on any edit (pragmatic completeness, not per-field diffing).
@@ -76,15 +82,20 @@ const STEP_META: ReadonlyArray<{
   personal: boolean;
   questions?: readonly string[];
 }> = [
+  // Finishable-first: everything the maker can fully resolve today.
   { id: 'welcome', title: 'Your welcome', section: 'hero', cls: 'keep-or-change', keepable: true, personal: false },
   { id: 'story', title: 'Your story', section: 'founder', cls: 'must-change', keepable: false, personal: true, questions: STORY_QUESTIONS },
-  { id: 'goods', title: 'Your goods', section: 'goods', cls: 'must-change', keepable: false, personal: false },
-  { id: 'collections', title: 'Your collections', section: 'collections', cls: 'optional', keepable: true, personal: false },
-  { id: 'reviews', title: 'Kind words', section: 'reviews', cls: 'optional', keepable: false, personal: false },
-  { id: 'marquee', title: 'The scrolling line', section: 'marquee', cls: 'optional', keepable: true, personal: false },
-  { id: 'findUs', title: 'Where to find you', section: 'findUs', cls: 'optional', keepable: false, personal: false },
   { id: 'contact', title: 'Getting in touch', section: 'contact', cls: 'keep-or-change', keepable: true, personal: false },
   { id: 'close', title: 'Your sign-off', section: 'close', cls: 'keep-or-change', keepable: true, personal: false },
+  // Last, in dependency order: the row/build steps first (testimonials, events, then
+  // goods/listings, then collections — which groups the products), and the scrolling
+  // line dead last because its second line is built FROM the maker's events +
+  // collections, so it can't be tuned before those exist.
+  { id: 'reviews', title: 'Kind words', section: 'reviews', cls: 'optional', keepable: false, personal: false },
+  { id: 'findUs', title: 'Where to find you', section: 'findUs', cls: 'optional', keepable: false, personal: false },
+  { id: 'goods', title: 'Your goods', section: 'goods', cls: 'must-change', keepable: false, personal: false },
+  { id: 'collections', title: 'Your collections', section: 'collections', cls: 'optional', keepable: true, personal: false },
+  { id: 'marquee', title: 'The scrolling line', section: 'marquee', cls: 'optional', keepable: true, personal: false },
 ];
 
 export const WALKTHROUGH_STEPS: readonly WalkthroughStep[] = STEP_META.map((m) => ({

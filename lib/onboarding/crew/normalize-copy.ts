@@ -112,9 +112,6 @@ export function normalizeCopy(d: CopywriterDraft): CopywriterDraft {
       title: stripHeadlinePunct(d.reviews.title),
       ...(d.reviews.label !== undefined ? { label: trim(d.reviews.label) } : {}),
       ...(d.reviews.viewAllLabel !== undefined ? { viewAllLabel: trim(d.reviews.viewAllLabel) } : {}),
-      ...(d.reviews.summary !== undefined
-        ? { summary: { score: trim(d.reviews.summary.score), count: trim(d.reviews.summary.count) } }
-        : {}),
       items: d.reviews.items.map((r) => ({
         ...r,
         quote: trim(r.quote),

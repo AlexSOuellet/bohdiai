@@ -20,6 +20,12 @@ interface MakeItYoursProps {
   momentPlayMode: MomentPlayMode;
   /** The maker's public feeling label (e.g. "Cozy") — named in the Moment step. */
   moodLabel: string;
+  /** Whether the maker's feeling uses the star-RATING reviews layout — the only one
+   *  that shows an overall number, so the only one whose reviews step offers the
+   *  optional real-rating fields. */
+  reviewsShowsRating?: boolean;
+  /** The current overall rating on the store (seeds the rating fields on resume). */
+  reviewsSummary?: { score?: string | undefined; count?: string | undefined } | undefined;
   /** Per-step: is this step's section already resolved in the draft? A finished section
    *  opens marked completed with Next open, so a returning maker can move through the
    *  walk without redoing it. Defaults to all-false (a fresh walk). Aligned to `steps`. */
@@ -33,7 +39,7 @@ interface MakeItYoursProps {
  *  dashboard chrome, no way out: it steps through every section, and the editor door
  *  stays closed until it's done (the gate lives on the routes). Left column is the
  *  section being made yours; right column is the live draft preview. */
-export default function MakeItYours({ previewToken, previewOrigin, values, steps, momentPlayMode, moodLabel, resolvedFlags, resolutions }: MakeItYoursProps) {
+export default function MakeItYours({ previewToken, previewOrigin, values, steps, momentPlayMode, moodLabel, reviewsShowsRating, reviewsSummary, resolvedFlags, resolutions }: MakeItYoursProps) {
   // The walk always starts at the beginning and runs top to bottom. Sections the maker
   // already finished in an earlier sitting open marked completed (Next stays open on
   // them) so they can breeze past or make changes — nothing is skipped or hidden.
@@ -101,7 +107,13 @@ export default function MakeItYours({ previewToken, previewOrigin, values, steps
   // the draft's playMode keeps it at rest even with intro=1. The Hero step shows the
   // resting top (no intro).
   const intro = step.isMoment ? '&intro=1' : '';
-  const previewSrc = `${previewOrigin}/?previewToken=${encodeURIComponent(previewToken)}&previewStill=1&previewSection=${encodeURIComponent(step.section)}${intro}&n=${nonce}`;
+  // Contact has no home beat — its content lives on the /contact PAGE — so spotlighting
+  // it on the home page would show nothing. Preview the whole /contact page instead
+  // (still under the draft token). Every other step spotlights its home section.
+  const isPageStep = step.section === 'contact';
+  const previewPath = isPageStep ? '/contact' : '/';
+  const sectionParam = isPageStep ? '' : `&previewSection=${encodeURIComponent(step.section)}`;
+  const previewSrc = `${previewOrigin}${previewPath}?previewToken=${encodeURIComponent(previewToken)}&previewStill=1${sectionParam}${intro}&n=${nonce}`;
 
   // The closing screen — the walk is done and the editor is now open (D69). Neutral on
   // publish state: the maker's work is staged on their draft; the editor is where they
@@ -186,6 +198,8 @@ export default function MakeItYours({ previewToken, previewOrigin, values, steps
             isMoment={step.isMoment ?? false}
             momentPlayMode={momentPlayMode}
             moodLabel={moodLabel}
+            reviewsShowsRating={reviewsShowsRating}
+            reviewsSummary={reviewsSummary}
             onResolved={markResolved}
             onChanged={() => setNonce((n) => n + 1)}
           />

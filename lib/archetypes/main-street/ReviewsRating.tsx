@@ -12,14 +12,16 @@
  * is named roles (eyebrow / goodsHead / body / legal); placement and the shadow all
  * live in `skinVarsCss` under `.ms-rev-rating-*` — never inline.
  *
- * The score + count come from `section.summary` (authored, so the wording stays
- * honest and editable). When a shop has no summary yet, the beat falls back to a
- * plain "5 out of 5" and the item count as the proof, so it always renders.
+ * The score + count come from `section.summary` — the maker's OWN real aggregate
+ * (their Etsy/Google figure), entered in the walk. When a shop has no summary, the
+ * beat shows the five stars over the pulled quotes with NO number: a curated wall of
+ * praise never wears an invented "out of 5" average (that would borrow the
+ * credibility of verified reviews without the substance). The stars stay as the
+ * treatment's visual signature — the same praise motif the guestbook uses.
  */
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import type { ReviewsSection, Testimonial } from './reviews';
-import { DEFAULT_COUNTS } from './defaults';
 
 export function ReviewsRating({
   section,
@@ -32,8 +34,10 @@ export function ReviewsRating({
   skin: ArchetypeTheme;
   viewAll?: { href: string; label: string } | undefined;
 }) {
-  const score = section.summary?.score ?? DEFAULT_COUNTS.outOfFive(5);
-  const count = section.summary?.count ?? DEFAULT_COUNTS.testimonials(items.length);
+  // Only the maker's OWN real aggregate shows a number. No summary → no invented
+  // score/count; the stars + quotes carry the beat.
+  const score = section.summary?.score;
+  const count = section.summary?.count;
   return (
     <section id="reviews" className="ms-rev-section ms-rev-rating">
       <div className="ms-wrap">
@@ -49,12 +53,16 @@ export function ReviewsRating({
             </svg>
           ))}
         </div>
-        <Type as="p" role="goodsHead" className="ms-rev-rating-score">
-          {score}
-        </Type>
-        <Type as="p" role="legal" className="ms-rev-rating-count">
-          {count}
-        </Type>
+        {score && (
+          <Type as="p" role="goodsHead" className="ms-rev-rating-score">
+            {score}
+          </Type>
+        )}
+        {count && (
+          <Type as="p" role="legal" className="ms-rev-rating-count">
+            {count}
+          </Type>
+        )}
         <div className="ms-rev-rating-quips">
           {items.map((t, i) => (
             <span key={i} data-ms-rev-item="" className="ms-rev-rating-quip">

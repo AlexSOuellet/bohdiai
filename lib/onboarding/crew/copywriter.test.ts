@@ -45,7 +45,6 @@ const draft = {
   reviews: {
     title: 'Kind words',
     label: 'Loved by customers',
-    summary: { score: '4.9 out of 5', count: '200+ happy customers' },
     items: [
       { quote: 'These belts are the real thing and only get better with age.', author: 'Dana R.' },
       { quote: 'Worth every penny and then some.', author: 'Marcus T.', location: 'Providence, RI' },

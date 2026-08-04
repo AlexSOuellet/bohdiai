@@ -7,6 +7,7 @@ import type { MomentPlayMode } from '@/lib/archetypes/main-street/moment-gate';
 import type { SectionClass } from '@/lib/editor/walkthrough';
 import type { SectionResolution } from '@/lib/editor/section-state';
 import type { Turn } from '@/lib/editor/conversation';
+import RowsEditor, { type RowColumn } from './RowsEditor';
 import {
   converseSection,
   writeSectionFromConversation,
@@ -14,7 +15,53 @@ import {
   keepSection,
   toggleSection,
   setMomentPlayMode,
+  setReviewQuotes,
+  setFindUsRows,
 } from '../actions';
+
+/** The two sections the maker fills with real ROWS rather than a conversation —
+ *  testimonials they were sent, and the dates they'll be somewhere in person. Each
+ *  is real-or-off (D70/D71): no "keep the fakes". */
+const ROW_COLUMNS: Partial<Record<SectionKey, readonly RowColumn[]>> = {
+  reviews: [
+    { key: 'quote', label: 'What they said', kind: 'textarea', required: true, placeholder: 'Paste a real review a customer left you' },
+    { key: 'author', label: 'Who said it', kind: 'text', required: true, placeholder: 'e.g. Dana R.' },
+    { key: 'location', label: 'Where they’re from', kind: 'text', placeholder: 'e.g. Providence, RI' },
+  ],
+  findUs: [
+    { key: 'where', label: 'Place / event', kind: 'text', required: true, placeholder: 'e.g. Providence Winter Market' },
+    { key: 'date', label: 'Date', kind: 'date', required: true },
+    { key: 'time', label: 'Time', kind: 'text', required: true, placeholder: 'e.g. 9am – 2pm' },
+  ],
+};
+
+/** Map the section's current envelope value into the rows editor's seed rows. Reviews
+ *  seed only once they're the maker's own (a made section on resume) — we never
+ *  pre-fill the editor with the seeded fake quotes. Dates always seed from the current
+ *  rows (the sample schedule is meant to be edited, D38). */
+function seedRows(section: SectionKey, value: unknown, resolution: SectionResolution | undefined): Record<string, string>[] {
+  if (!Array.isArray(value)) return [];
+  if (section === 'reviews') {
+    if (resolution !== 'made') return [];
+    return value.map((r) => {
+      const rec = (r ?? {}) as Record<string, unknown>;
+      return {
+        quote: typeof rec['quote'] === 'string' ? rec['quote'] : '',
+        author: typeof rec['author'] === 'string' ? rec['author'] : '',
+        location: typeof rec['location'] === 'string' ? rec['location'] : '',
+      };
+    });
+  }
+  // findUs
+  return value.map((r) => {
+    const rec = (r ?? {}) as Record<string, unknown>;
+    return {
+      where: typeof rec['where'] === 'string' ? rec['where'] : '',
+      date: typeof rec['date'] === 'string' ? rec['date'] : '',
+      time: typeof rec['time'] === 'string' ? rec['time'] : '',
+    };
+  });
+}
 
 /** Bohdi's opening for each section — he shows what he built and invites the maker in.
  *  Deep sections (opening, story) open a real conversation; light sections open a quick
@@ -48,7 +95,7 @@ const INTRO: Record<SectionKey, { title: string; opener: string; placeholder: st
   reviews: {
     title: 'Kind words',
     opener:
-      "This is where kind words from your customers show — the thing that makes a first-time shopper trust you. What's on the right is a placeholder; name the section now and drop in real quotes later, or turn it off until you've got some. It can't go live with made-up reviews.",
+      "This is a curated wall of your actual reviews — real words from real customers, and you choose which ones to show. Paste them in below exactly as they came to you. It's fine to show only your best; what's not fine is making them up, so they have to be ones people genuinely sent you. No customers yet? Turn the section off for now — it can't go live with made-up reviews.",
     placeholder: 'e.g. call it "Loved by locals"',
   },
   marquee: {
@@ -71,7 +118,8 @@ const INTRO: Record<SectionKey, { title: string; opener: string; placeholder: st
   },
   findUs: {
     title: 'Where to find you',
-    opener: 'This is where you show the markets and events where people can find you in person.',
+    opener:
+      "If you sell in person — markets, fairs, popups — this is where those dates show, so a shopper knows where to catch you. Put in your real ones below (the place name is what your store's “get directions” link points to), or turn the section off if you're online only. It can't go live with the sample dates.",
     placeholder: '',
   },
 };
@@ -172,6 +220,13 @@ export interface SectionEditorProps {
   momentPlayMode?: MomentPlayMode | undefined;
   /** The maker's public feeling label (e.g. "Cozy"), named in the Moment explanation. */
   moodLabel?: string | undefined;
+  /** Reviews step only — whether the maker's feeling uses the star-RATING layout (the
+   *  only one that shows an overall number). True → the reviews step offers optional
+   *  real-rating fields; false → no rating field (the other layouts have no number). */
+  reviewsShowsRating?: boolean | undefined;
+  /** Reviews step only — the current overall rating on the store, to seed the rating
+   *  fields when the maker has already made them theirs. */
+  reviewsSummary?: { score?: string | undefined; count?: string | undefined } | undefined;
   /** Report resolution up so the host can gate Next: true once made/kept/off, false
    *  again if the maker turns a section back on. */
   onResolved: (resolved: boolean) => void;
@@ -197,6 +252,8 @@ export default function SectionEditor({
   isMoment = false,
   momentPlayMode,
   moodLabel,
+  reviewsShowsRating = false,
+  reviewsSummary,
   onResolved,
   onChanged,
 }: SectionEditorProps) {
@@ -226,6 +283,12 @@ export default function SectionEditor({
           : 'none';
   const [status, setStatus] = useState<Status>(initialStatus);
   const [playMode, setPlayMode] = useState<MomentPlayMode>(momentPlayMode ?? 'once');
+  // Reviews rating (star-rating layout only): the maker's real overall figure. Seed
+  // from the current summary ONLY when reviews are already the maker's own — never
+  // prefill a build-time invented rating.
+  const seededSummary = resolution === 'made' ? reviewsSummary : undefined;
+  const [ratingScore, setRatingScore] = useState(seededSummary?.score ?? '');
+  const [ratingCount, setRatingCount] = useState(seededSummary?.count ?? '');
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -346,6 +409,94 @@ export default function SectionEditor({
 
   const canKeep = keepable && cls !== 'must-change';
   const canTurnOff = cls === 'optional';
+
+  // Reviews + find-us are made of real ROWS the maker types (real-or-off, D70/D71),
+  // not a Bohdi conversation. Render the rows editor + a turn-off, and nothing else.
+  const rowColumns = ROW_COLUMNS[section];
+  if (rowColumns !== undefined) {
+    const seedId = section === 'reviews' ? 'reviews.items' : 'findUs.rows';
+    // Reviews on a star-rating layout also carry an OPTIONAL real overall rating; every
+    // other layout (and find-us) has no such number. A blank/partial rating saves as
+    // none, which strips any build-time invented figure.
+    const showRating = section === 'reviews' && reviewsShowsRating;
+    const onSaveRows =
+      section === 'reviews'
+        ? (rows: Record<string, string>[]) => setReviewQuotes(rows, showRating ? { score: ratingScore, count: ratingCount } : undefined)
+        : (rows: Record<string, string>[]) => setFindUsRows(rows);
+    return (
+      <div>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="font-serif text-2xl text-text">{title}</h1>
+          {initialStatus !== 'none' && (
+            <span className="rounded-full border border-honey/40 bg-honey/10 px-2.5 py-0.5 text-[11px] text-honey-warm">
+              ✓ Completed
+            </span>
+          )}
+        </div>
+        <p className="mt-3 text-sm leading-relaxed text-text-soft">{intro.opener}</p>
+
+        {showRating && (
+          <div className="mt-4 rounded-xl border border-white/12 bg-bg-2/40 p-4">
+            <p className="text-[11px] uppercase tracking-wider text-muted">Your overall rating (optional)</p>
+            <p className="mt-1 text-sm leading-relaxed text-text-soft">
+              Your store’s look shows a star rating up top. If you have a real one — your Etsy or Google
+              score — put it here. Leave both blank and it just shows stars over your quotes, no number.
+            </p>
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <label className="block">
+                <span className="text-[11px] uppercase tracking-wider text-muted">Rating</span>
+                <input
+                  type="text"
+                  value={ratingScore}
+                  placeholder="e.g. 4.9 out of 5"
+                  onChange={(e) => setRatingScore(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-white/12 bg-bg-2/60 px-3 py-2 text-sm text-text placeholder:text-muted focus:border-honey/50 focus:outline-none"
+                />
+              </label>
+              <label className="block">
+                <span className="text-[11px] uppercase tracking-wider text-muted">How many reviews</span>
+                <input
+                  type="text"
+                  value={ratingCount}
+                  placeholder="e.g. 200+ happy customers"
+                  onChange={(e) => setRatingCount(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-white/12 bg-bg-2/60 px-3 py-2 text-sm text-text placeholder:text-muted focus:border-honey/50 focus:outline-none"
+                />
+              </label>
+            </div>
+          </div>
+        )}
+
+        <RowsEditor
+          columns={rowColumns}
+          initialRows={seedRows(section, values[seedId], resolution)}
+          addLabel={section === 'reviews' ? 'Add another review' : 'Add another date'}
+          saveLabel={section === 'reviews' ? 'Save my reviews' : 'Save my dates'}
+          onSave={onSaveRows}
+          onSaved={() => {
+            setStatus('wrote');
+            onResolved(true);
+            onChanged();
+          }}
+        />
+
+        {message && <p className="mt-4 text-sm text-text-soft">{message}</p>}
+
+        {canTurnOff && (
+          <div className="mt-6 border-t border-white/8 pt-5">
+            <button
+              type="button"
+              onClick={() => setOff(true)}
+              disabled={pending}
+              className="text-sm text-muted underline-offset-4 transition-colors hover:text-text-soft hover:underline disabled:opacity-40"
+            >
+              I don’t have any yet — turn this section off
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div>

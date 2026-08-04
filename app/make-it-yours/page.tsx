@@ -46,7 +46,21 @@ export default async function MakeItYoursPage() {
   const momentPlayMode = resolveMomentPlayMode(moment as { playMode?: unknown; playIntro?: unknown } | undefined);
 
   const steps = walkUiSteps(mood);
-  const moodLabel = getFamily(mood).publicMoodLabel;
+  const family = getFamily(mood);
+  const moodLabel = family.publicMoodLabel;
+  // Only the star-RATING reviews layout shows an overall number, so only that feeling's
+  // reviews step offers the optional real-rating fields. Seed them from the current
+  // summary (if the maker has already entered one).
+  const reviewsShowsRating = family.sectionDefaults.reviews === 'rating';
+  const reviewsRec = content !== null && typeof content === 'object' ? (content as Record<string, unknown>)['reviews'] : undefined;
+  const summaryRec = reviewsRec !== null && typeof reviewsRec === 'object' ? (reviewsRec as Record<string, unknown>)['summary'] : undefined;
+  const reviewsSummary =
+    summaryRec !== null && typeof summaryRec === 'object'
+      ? {
+          score: typeof (summaryRec as Record<string, unknown>)['score'] === 'string' ? ((summaryRec as Record<string, unknown>)['score'] as string) : undefined,
+          count: typeof (summaryRec as Record<string, unknown>)['count'] === 'string' ? ((summaryRec as Record<string, unknown>)['count'] as string) : undefined,
+        }
+      : undefined;
 
   // Per-step resolution from the draft, so the walk starts at the top with each finished
   // section already marked completed (and in its right state) instead of untouched.
@@ -64,6 +78,8 @@ export default async function MakeItYoursPage() {
       steps={steps}
       momentPlayMode={momentPlayMode}
       moodLabel={moodLabel}
+      reviewsShowsRating={reviewsShowsRating}
+      reviewsSummary={reviewsSummary}
       resolvedFlags={resolvedFlags}
       resolutions={resolutions}
     />

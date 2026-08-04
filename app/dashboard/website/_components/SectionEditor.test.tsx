@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 
 const converseSection = vi.fn();
 const writeSectionFromConversation = vi.fn();
@@ -7,6 +7,8 @@ const setFieldValues = vi.fn();
 const keepSection = vi.fn();
 const toggleSection = vi.fn();
 const setMomentPlayMode = vi.fn();
+const setReviewQuotes = vi.fn();
+const setFindUsRows = vi.fn();
 vi.mock('../actions', () => ({
   converseSection: (...a: unknown[]) => converseSection(...a),
   writeSectionFromConversation: (...a: unknown[]) => writeSectionFromConversation(...a),
@@ -14,22 +16,34 @@ vi.mock('../actions', () => ({
   keepSection: (...a: unknown[]) => keepSection(...a),
   toggleSection: (...a: unknown[]) => toggleSection(...a),
   setMomentPlayMode: (...a: unknown[]) => setMomentPlayMode(...a),
+  setReviewQuotes: (...a: unknown[]) => setReviewQuotes(...a),
+  setFindUsRows: (...a: unknown[]) => setFindUsRows(...a),
 }));
 
 import SectionEditor from './SectionEditor';
 import { WALKTHROUGH_STEPS, walkUiSteps } from '@/lib/editor/walkthrough';
+import type { SectionResolution } from '@/lib/editor/section-state';
 
 const step = (section: string) => WALKTHROUGH_STEPS.find((s) => s.section === section)!;
 /** The Moment step, as the walk builds it for a Cozy maker. */
 const momentStep = () => walkUiSteps('cozy').find((s) => s.isMoment)!;
 
 beforeEach(() => {
-  [converseSection, writeSectionFromConversation, setFieldValues, keepSection, toggleSection, setMomentPlayMode].forEach(
+  [converseSection, writeSectionFromConversation, setFieldValues, keepSection, toggleSection, setMomentPlayMode, setReviewQuotes, setFindUsRows].forEach(
     (m) => m.mockReset(),
   );
 });
 
-function renderSection(section: string, opts: { title?: string } = {}) {
+function renderSection(
+  section: string,
+  opts: {
+    title?: string;
+    values?: Record<string, unknown>;
+    resolution?: SectionResolution;
+    reviewsShowsRating?: boolean;
+    reviewsSummary?: { score?: string; count?: string };
+  } = {},
+) {
   const s = step(section);
   const onResolved = vi.fn();
   const onChanged = vi.fn();
@@ -40,7 +54,10 @@ function renderSection(section: string, opts: { title?: string } = {}) {
       cls={s.cls}
       keepable={s.keepable}
       fieldIds={s.fieldIds}
-      values={{}}
+      values={opts.values ?? {}}
+      resolution={opts.resolution}
+      reviewsShowsRating={opts.reviewsShowsRating}
+      reviewsSummary={opts.reviewsSummary}
       onResolved={onResolved}
       onChanged={onChanged}
     />,
@@ -146,10 +163,13 @@ describe('SectionEditor — conversation', () => {
     expect(screen.getByText('Turn it off')).toBeInTheDocument();
   });
 
-  it('reviews (optional, not keepable) offers Turn it off but not Keep as built', () => {
+  it('reviews renders the rows editor (real quotes), not the Bohdi conversation or Keep as built', () => {
     renderSection('reviews');
+    expect(screen.getByText('What they said')).toBeInTheDocument();
+    expect(screen.getByText('Who said it')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Keep as built' })).not.toBeInTheDocument();
-    expect(screen.getByText('Turn it off')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Send' })).not.toBeInTheDocument();
+    expect(screen.getByText(/turn this section off/i)).toBeInTheDocument();
   });
 
   it('Turn it off hides the section and resolves; it can be turned back on', async () => {
@@ -167,6 +187,114 @@ describe('SectionEditor — conversation', () => {
     renderSection('goods');
     expect(screen.queryByRole('button', { name: 'Keep as built' })).not.toBeInTheDocument();
     expect(screen.queryByText('Turn it off')).not.toBeInTheDocument();
+  });
+});
+
+describe('SectionEditor — rows sections (testimonials + events)', () => {
+  it('find-us renders the dates rows editor with place / date / time, and a turn-off', () => {
+    renderSection('findUs');
+    expect(screen.getByLabelText('Place / event')).toBeInTheDocument();
+    expect(screen.getByLabelText('Date')).toBeInTheDocument();
+    expect(screen.getByLabelText('Time')).toBeInTheDocument();
+    expect(screen.getByText(/turn this section off/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Send' })).not.toBeInTheDocument();
+  });
+
+  it('saving real reviews sends the typed rows to setReviewQuotes, resolves, and refreshes', async () => {
+    setReviewQuotes.mockResolvedValue({ ok: true });
+    const { onResolved, onChanged } = renderSection('reviews');
+    fireEvent.change(screen.getByLabelText('What they said'), { target: { value: 'Best candle I have ever bought' } });
+    fireEvent.change(screen.getByLabelText('Who said it'), { target: { value: 'Dana R.' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save my reviews' }));
+    await vi.waitFor(() => expect(setReviewQuotes).toHaveBeenCalled());
+    expect(setReviewQuotes.mock.calls[0]![0]).toEqual([{ quote: 'Best candle I have ever bought', author: 'Dana R.', location: '' }]);
+    expect(onResolved).toHaveBeenCalledWith(true);
+    expect(onChanged).toHaveBeenCalled();
+  });
+
+  it('saving real dates sends the typed rows to setFindUsRows, resolves, and refreshes', async () => {
+    setFindUsRows.mockResolvedValue({ ok: true });
+    const { onResolved, onChanged } = renderSection('findUs');
+    fireEvent.change(screen.getByLabelText('Place / event'), { target: { value: 'Providence Winter Market' } });
+    fireEvent.change(screen.getByLabelText('Date'), { target: { value: '2026-08-15' } });
+    fireEvent.change(screen.getByLabelText('Time'), { target: { value: '9am – 2pm' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save my dates' }));
+    await vi.waitFor(() => expect(setFindUsRows).toHaveBeenCalled());
+    expect(setFindUsRows.mock.calls[0]![0]).toEqual([{ where: 'Providence Winter Market', date: '2026-08-15', time: '9am – 2pm' }]);
+    expect(onResolved).toHaveBeenCalledWith(true);
+    expect(onChanged).toHaveBeenCalled();
+  });
+
+  it('a half-filled row blocks the save with a clear message and calls no action', async () => {
+    const { onResolved } = renderSection('reviews');
+    fireEvent.change(screen.getByLabelText('What they said'), { target: { value: 'A quote with no name' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save my reviews' }));
+    expect(await screen.findByText(/Fill in every field/i)).toBeInTheDocument();
+    expect(setReviewQuotes).not.toHaveBeenCalled();
+    expect(onResolved).not.toHaveBeenCalled();
+  });
+
+  it('does NOT pre-fill the seeded fake reviews when the section is still a placeholder', () => {
+    renderSection('reviews', { values: { 'reviews.items': [{ quote: 'FAKE seeded quote', author: 'nobody' }] } });
+    expect(screen.queryByDisplayValue('FAKE seeded quote')).not.toBeInTheDocument();
+  });
+
+  it('seeds the maker’s own saved reviews for editing on resume (a made section)', () => {
+    renderSection('reviews', {
+      resolution: 'made',
+      values: { 'reviews.items': [{ quote: 'A real one', author: 'Dana', location: 'RI' }] },
+    });
+    expect(screen.getByDisplayValue('A real one')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Dana')).toBeInTheDocument();
+  });
+
+  it('always seeds the current sample dates for editing (they’re meant to be edited)', () => {
+    renderSection('findUs', {
+      values: { 'findUs.rows': [{ where: 'Old Market', date: '2026-01-02', time: '10am', day: 'x' }] },
+    });
+    expect(screen.getByDisplayValue('Old Market')).toBeInTheDocument();
+  });
+
+  it('turning the section off hides it and resolves the step', async () => {
+    toggleSection.mockResolvedValue({ ok: true });
+    const { onResolved } = renderSection('findUs');
+    fireEvent.click(screen.getByText(/turn this section off/i));
+    await vi.waitFor(() => expect(toggleSection).toHaveBeenCalledWith('findUs', true));
+    expect(onResolved).toHaveBeenCalledWith(true);
+  });
+
+  it('offers the optional rating fields ONLY when the store uses the star-rating layout', () => {
+    // Default (no rating layout) → no rating fields.
+    renderSection('reviews');
+    expect(screen.queryByText(/overall rating/i)).not.toBeInTheDocument();
+    cleanup();
+    // Rating layout → the two optional real-rating boxes appear.
+    renderSection('reviews', { reviewsShowsRating: true });
+    expect(screen.getByText(/overall rating/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/4\.9 out of 5/)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/happy customers/)).toBeInTheDocument();
+  });
+
+  it('sends a real rating with the quotes when the maker fills it in', async () => {
+    setReviewQuotes.mockResolvedValue({ ok: true });
+    renderSection('reviews', { reviewsShowsRating: true });
+    fireEvent.change(screen.getByLabelText('What they said'), { target: { value: 'Lovely work' } });
+    fireEvent.change(screen.getByLabelText('Who said it'), { target: { value: 'Dana R.' } });
+    fireEvent.change(screen.getByPlaceholderText(/4\.9 out of 5/), { target: { value: '4.8 out of 5' } });
+    fireEvent.change(screen.getByPlaceholderText(/happy customers/), { target: { value: '30 reviews' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save my reviews' }));
+    await vi.waitFor(() => expect(setReviewQuotes).toHaveBeenCalled());
+    expect(setReviewQuotes.mock.calls[0]![1]).toEqual({ score: '4.8 out of 5', count: '30 reviews' });
+  });
+
+  it('passes no rating when the layout has none (so any fabricated one is stripped)', async () => {
+    setReviewQuotes.mockResolvedValue({ ok: true });
+    renderSection('reviews'); // not a rating layout
+    fireEvent.change(screen.getByLabelText('What they said'), { target: { value: 'Lovely' } });
+    fireEvent.change(screen.getByLabelText('Who said it'), { target: { value: 'Sam' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save my reviews' }));
+    await vi.waitFor(() => expect(setReviewQuotes).toHaveBeenCalled());
+    expect(setReviewQuotes.mock.calls[0]![1]).toBeUndefined();
   });
 });
 
