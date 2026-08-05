@@ -8,6 +8,7 @@ import type { SectionClass } from '@/lib/editor/walkthrough';
 import type { SectionResolution } from '@/lib/editor/section-state';
 import type { Turn } from '@/lib/editor/conversation';
 import RowsEditor, { type RowColumn } from './RowsEditor';
+import ProductsEditor, { type EditorProduct } from './ProductsEditor';
 import {
   converseSection,
   writeSectionFromConversation,
@@ -17,6 +18,11 @@ import {
   setMomentPlayMode,
   setReviewQuotes,
   setFindUsRows,
+  saveWalkProduct,
+  updateWalkProduct,
+  removeWalkProduct,
+  uploadProductPhoto,
+  draftProductCopyAction,
 } from '../actions';
 
 /** The two sections the maker fills with real ROWS rather than a conversation —
@@ -83,8 +89,8 @@ const INTRO: Record<SectionKey, { title: string; opener: string; placeholder: st
   goods: {
     title: 'Your goods',
     opener:
-      "This is your shop floor — a few of your pieces shown together under a heading. It's the part most visitors come for. I've written the heading over on the right; keep it if it fits what you make, or tell me what to call them.",
-    placeholder: 'e.g. I call them small-batch candles',
+      "This is your shop floor — the part most visitors come for. Right now it's showing a few stand-ins I made up so you could picture it. Add your own real products below and they take their place. Upload a photo, set a price, and either write the words yourself or ask me to help. One is enough to move on — add as many as you like.",
+    placeholder: '',
   },
   collections: {
     title: 'Your collections',
@@ -207,6 +213,8 @@ export interface SectionEditorProps {
   fieldIds: readonly string[];
   /** id → current value, seeding the "write it myself" fields. */
   values: Record<string, unknown>;
+  /** Goods step only — the maker's real products so far (seeds the products editor). */
+  initialProducts?: readonly EditorProduct[] | undefined;
   /** Whether the section is currently turned off (seeds the control state). */
   hidden?: boolean | undefined;
   /** The section's resolution in the draft, so a section the maker already finished in
@@ -247,6 +255,7 @@ export default function SectionEditor({
   keepable,
   fieldIds,
   values,
+  initialProducts = [],
   hidden,
   resolution,
   isMoment = false,
@@ -409,6 +418,40 @@ export default function SectionEditor({
 
   const canKeep = keepable && cls !== 'must-change';
   const canTurnOff = cls === 'optional';
+
+  // Goods — the maker's real products (their own photos, D68). Not a Bohdi conversation
+  // and not the rows editor: its own products manager. Saving the first real product
+  // clears the AI placeholders (server-side) and resolves the step.
+  if (section === 'goods') {
+    return (
+      <div>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="font-serif text-2xl text-text">{title}</h1>
+          {initialStatus !== 'none' && (
+            <span className="rounded-full border border-honey/40 bg-honey/10 px-2.5 py-0.5 text-[11px] text-honey-warm">
+              ✓ Completed
+            </span>
+          )}
+        </div>
+        <p className="mt-3 text-sm leading-relaxed text-text-soft">{intro.opener}</p>
+        <ProductsEditor
+          initialProducts={initialProducts}
+          onUpload={(file) => {
+            const fd = new FormData();
+            fd.set('file', file);
+            return uploadProductPhoto(fd);
+          }}
+          onSave={(form) => saveWalkProduct(form)}
+          onUpdate={(id, form) => updateWalkProduct(id, form)}
+          onRemove={(id) => removeWalkProduct(id)}
+          onDraftCopy={(name, hint) => draftProductCopyAction(name, hint)}
+          onResolved={onResolved}
+          onChanged={onChanged}
+        />
+        {message && <p className="mt-4 text-sm text-text-soft">{message}</p>}
+      </div>
+    );
+  }
 
   // Reviews + find-us are made of real ROWS the maker types (real-or-off, D70/D71),
   // not a Bohdi conversation. Render the rows editor + a turn-off, and nothing else.

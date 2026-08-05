@@ -7,18 +7,10 @@ import type { ArchetypePage } from '@/lib/archetypes/builder';
 import type { ProductView, CatalogMedia, CollectionView } from '@/lib/archetypes/content';
 import { seedPreviewReviews } from '@/lib/archetypes/main-street/reviews';
 import { seedPreviewFindUs } from '@/lib/archetypes/main-street/findus';
-import type { Json } from '@/lib/database.types';
 import { loadHomeEnvelope, loadDraftEnvelope, loadTenantChrome } from '@/lib/storefront/load-envelope';
 import { verifyPreviewToken } from '@/lib/editor/preview-token';
 
-/** Extract image_url from a listings.metadata JSONB blob. Returns undefined when
- *  metadata is null, not an object, or has no image_url. Narrows once at the
- *  boundary so downstream code can trust the shape. */
-function imageUrlFromMetadata(m: Json): string | undefined {
-  if (m === null || typeof m !== 'object' || Array.isArray(m)) return undefined;
-  const url = (m as Record<string, unknown>)['image_url'];
-  return typeof url === 'string' ? url : undefined;
-}
+import { loadCatalog, mediaForListing, type ListingRow, type MediaMap } from '@/lib/storefront/catalog';
 import { isKnownSkin } from '@/lib/editor/look-shelf';
 import { SECTION_KEYS } from '@/lib/archetypes/main-street/families';
 import { resolveTextureParams } from '@/lib/editor/texture';
@@ -221,21 +213,6 @@ export default async function StorefrontPage({ slug, previewToken, previewStill,
   return withPreviewChrome(await renderStore(env, tenantId, undefined, previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity), { still: previewStill, preview: previewToken !== undefined, spotlight: spotlightSection(previewSection) });
 }
 
-function formatPrice(cents: number): string {
-  const dollars = cents / 100;
-  return Number.isInteger(dollars) ? `$${dollars}` : `$${dollars.toFixed(2)}`;
-}
-
-interface ListingRow {
-  slug: string;
-  name: string;
-  base_price_cents: number;
-  short_description: string | null;
-  description: string | null;
-  metadata: Json;
-  primary_collection_id: string | null;
-}
-
 interface CollectionRow {
   id: string;
   slug: string;
@@ -244,16 +221,17 @@ interface CollectionRow {
 
 /** Build the home Collections band data from the tenant's `collections` rows, with
  *  the item count and a cover derived from the catalog (the collection's first
- *  product image). Returns [] when the store has no collections. */
-function buildCollectionViews(collRows: CollectionRow[], listingRows: ListingRow[]): CollectionView[] {
+ *  product photo, resolved through the same media map as the products). Returns []
+ *  when the store has no collections. */
+function buildCollectionViews(collRows: CollectionRow[], listingRows: ListingRow[], mediaMap: MediaMap): CollectionView[] {
   const byCollection = new Map<string, { count: number; cover?: CatalogMedia }>();
   for (const r of listingRows) {
     const cid = r.primary_collection_id;
     if (cid === null) continue;
     const entry = byCollection.get(cid) ?? { count: 0 };
     entry.count += 1;
-    const url = imageUrlFromMetadata(r.metadata);
-    if (entry.cover === undefined && url) entry.cover = { kind: 'image', url, alt: r.name };
+    const cover = mediaForListing(r, mediaMap)[0];
+    if (entry.cover === undefined && cover !== undefined) entry.cover = cover;
     byCollection.set(cid, entry);
   }
   return collRows.map((c) => {
@@ -288,29 +266,10 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
   const spec = archetypeSpec(archetypeKey as string);
   if (spec === undefined) notFound();
 
-  const { data: rows } = await supabaseAdmin()
-    .from('listings')
-    .select('slug, name, base_price_cents, short_description, description, metadata, primary_collection_id')
-    .eq('tenant_id', tenantId)
-    .eq('listing_type', 'product')
-    .eq('status', 'active')
-    .is('deleted_at', null)
-    .order('created_at', { ascending: true });
-
-  const products: ProductView[] = (rows ?? []).map((r) => {
-    const url = imageUrlFromMetadata(r.metadata);
-    const media: CatalogMedia[] = url ? [{ kind: 'image', url, alt: r.name }] : [];
-    return {
-      slug: r.slug,
-      name: r.name,
-      price: formatPrice(r.base_price_cents),
-      ...(r.short_description ? { shortDescription: r.short_description } : {}),
-      description: r.description ?? '',
-      status: 'active',
-      media,
-      variations: [],
-    };
-  });
+  // Load the catalog through the shared projection: active product rows → ProductViews,
+  // each photo resolved from its uploaded media (the maker's real photo) with a fallback
+  // to the legacy metadata url (placeholders).
+  const { products, rows, mediaMap } = await loadCatalog(supabaseAdmin(), tenantId);
 
   // Collections band data — the tenant's own collections (count + cover derived
   // from the catalog). When the store has none and ?collections= is set, seed
@@ -322,7 +281,7 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
     .eq('status', 'active')
     .is('deleted_at', null)
     .order('position', { ascending: true });
-  let collections = buildCollectionViews(collRows ?? [], rows ?? []);
+  let collections = buildCollectionViews(collRows ?? [], rows, mediaMap);
   if (collections.length === 0 && previewCollections !== undefined && previewCollections !== '') {
     collections = seedPreviewCollections(products);
   }
@@ -334,9 +293,7 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
     const collection = (collRows ?? []).find((c) => c.slug === collectionSlug);
     if (collection === undefined) notFound();
     const idsInCollection = new Set(
-      (rows ?? [])
-        .filter((r) => r.primary_collection_id === collection.id)
-        .map((r) => r.slug),
+      rows.filter((r) => r.primary_collection_id === collection.id).map((r) => r.slug),
     );
     effectiveProducts = products.filter((p) => idsInCollection.has(p.slug));
   }

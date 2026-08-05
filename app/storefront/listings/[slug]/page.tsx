@@ -5,7 +5,8 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { renderArchetypeProductPage } from '../../_components/StorefrontPage';
 import { storefrontMetadata, storefrontSeoFacts } from '@/lib/storefront/metadata';
 import { tenantProductJsonLd } from '@/lib/storefront/seo';
-import type { ProductView, CatalogMedia } from '@/lib/archetypes/content';
+import { loadMediaMap, mediaForListing, type ListingRow } from '@/lib/storefront/catalog';
+import type { ProductView } from '@/lib/archetypes/content';
 
 interface ListingPageProps {
   params: Promise<{ slug: string }>;
@@ -50,7 +51,7 @@ export default async function StorefrontListingPage({ params }: ListingPageProps
   const { data: listing } = await db
     .from('listings')
     .select(
-      'id, slug, listing_type, name, short_description, description, base_price_cents, is_preview, subscription_interval, primary_collection_id, metadata',
+      'id, slug, listing_type, name, short_description, description, base_price_cents, is_preview, subscription_interval, primary_collection_id, metadata, media_ids',
     )
     .eq('tenant_id', tenantId)
     .eq('slug', slug)
@@ -60,9 +61,11 @@ export default async function StorefrontListingPage({ params }: ListingPageProps
 
   if (listing === null) notFound();
 
-  const meta = (listing.metadata as { image_url?: string | null } | null) ?? null;
-
-  const media: CatalogMedia[] = meta?.image_url ? [{ kind: 'image', url: meta.image_url, alt: listing.name }] : [];
+  // Resolve the product's photo the same way the catalog does: the maker's uploaded
+  // media first, then the legacy metadata url (placeholders).
+  const mediaMap = await loadMediaMap(db, (listing.media_ids ?? []) as string[]);
+  const media = mediaForListing(listing as unknown as ListingRow, mediaMap);
+  const primaryImage = media[0]?.url;
   const productView: ProductView = {
     slug: listing.slug,
     name: listing.name,
@@ -86,7 +89,7 @@ export default async function StorefrontListingPage({ params }: ListingPageProps
               slug: listing.slug,
               description: listing.short_description ?? listing.description ?? undefined,
               priceCents: listing.base_price_cents,
-              imageUrl: meta?.image_url ?? undefined,
+              imageUrl: primaryImage ?? undefined,
               inStock: !listing.is_preview,
             }),
           ),

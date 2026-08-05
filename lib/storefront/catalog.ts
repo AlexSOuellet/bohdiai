@@ -85,6 +85,16 @@ export function listingToProductView(row: ListingRow, mediaMap: MediaMap): Produ
   };
 }
 
+/** Batch-load the media map for a set of upload ids (empty when none). Shared by the
+ *  catalog load, the walk product list, and the product-detail page so a maker's
+ *  uploaded photo resolves the same everywhere. */
+export async function loadMediaMap(db: SupabaseClient<Database>, ids: readonly string[]): Promise<MediaMap> {
+  const unique = [...new Set(ids)];
+  if (unique.length === 0) return new Map();
+  const { data } = await db.from('uploads').select('id, public_url, alt_text').in('id', unique).is('deleted_at', null);
+  return resolveMediaMap((data ?? []) as UploadRow[]);
+}
+
 /** The columns a catalog load selects from `listings`. */
 const LISTING_COLUMNS =
   'slug, name, base_price_cents, short_description, description, metadata, primary_collection_id, media_ids';
@@ -107,17 +117,7 @@ export async function loadCatalog(
     .order('created_at', { ascending: true });
 
   const rows = (data ?? []) as ListingRow[];
-  const ids = [...new Set(rows.flatMap((r) => r.media_ids ?? []))];
-
-  let mediaMap: MediaMap = new Map();
-  if (ids.length > 0) {
-    const { data: uploads } = await db
-      .from('uploads')
-      .select('id, public_url, alt_text')
-      .in('id', ids)
-      .is('deleted_at', null);
-    mediaMap = resolveMediaMap((uploads ?? []) as UploadRow[]);
-  }
+  const mediaMap = await loadMediaMap(db, rows.flatMap((r) => r.media_ids ?? []));
 
   return { products: rows.map((r) => listingToProductView(r, mediaMap)), rows, mediaMap };
 }

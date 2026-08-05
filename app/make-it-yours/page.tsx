@@ -11,6 +11,8 @@ import { walkComplete, walkUiSteps, sectionResolved } from '@/lib/editor/walkthr
 import { sectionState } from '@/lib/editor/section-state';
 import { resolveMomentPlayMode } from '@/lib/archetypes/main-street/moment-gate';
 import { getFamily } from '@/lib/archetypes/main-street/families';
+import { supabaseAdmin } from '@/lib/supabase';
+import { loadWalkProducts } from '@/lib/listings/product-queries';
 import MakeItYours from '@/app/dashboard/website/_components/MakeItYours';
 
 export const metadata = { title: 'Make it yours — BohdiAI' };
@@ -67,6 +69,9 @@ export default async function MakeItYoursPage() {
   const resolvedFlags = steps.map((s) => sectionResolved(homeEnv, s.section));
   const resolutions = steps.map((s) => sectionState(homeEnv, s.section));
 
+  // The maker's real products so far, for the goods step's products editor.
+  const products = await loadWalkProducts(supabaseAdmin(), shop.tenantId);
+
   const previewToken = mintPreviewToken(shop.tenantId);
   const origin = storefrontOrigin(shop.subdomain, (await headers()).get('host'));
 
@@ -82,6 +87,7 @@ export default async function MakeItYoursPage() {
       reviewsSummary={reviewsSummary}
       resolvedFlags={resolvedFlags}
       resolutions={resolutions}
+      products={products}
     />
   );
 }

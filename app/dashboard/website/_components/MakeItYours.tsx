@@ -5,6 +5,7 @@ import type { WalkthroughStep } from '@/lib/editor/walkthrough';
 import type { SectionResolution } from '@/lib/editor/section-state';
 import type { MomentPlayMode } from '@/lib/archetypes/main-street/moment-gate';
 import SectionEditor from './SectionEditor';
+import type { EditorProduct } from './ProductsEditor';
 
 interface MakeItYoursProps {
   /** Signed token authorising the draft preview for this tenant. */
@@ -33,13 +34,15 @@ interface MakeItYoursProps {
   /** Per-step: the section's raw resolution in the draft (made / kept / hidden /
    *  unresolved), so each step opens in the right state. Aligned to `steps`. */
   resolutions?: readonly SectionResolution[];
+  /** The maker's real products (seeds the goods step's products editor). */
+  products?: readonly EditorProduct[];
 }
 
 /** The full-screen "Make It Yours" walk — the second half of onboarding (D69). No
  *  dashboard chrome, no way out: it steps through every section, and the editor door
  *  stays closed until it's done (the gate lives on the routes). Left column is the
  *  section being made yours; right column is the live draft preview. */
-export default function MakeItYours({ previewToken, previewOrigin, values, steps, momentPlayMode, moodLabel, reviewsShowsRating, reviewsSummary, resolvedFlags, resolutions }: MakeItYoursProps) {
+export default function MakeItYours({ previewToken, previewOrigin, values, steps, momentPlayMode, moodLabel, reviewsShowsRating, reviewsSummary, resolvedFlags, resolutions, products }: MakeItYoursProps) {
   // The walk always starts at the beginning and runs top to bottom. Sections the maker
   // already finished in an earlier sitting open marked completed (Next stays open on
   // them) so they can breeze past or make changes — nothing is skipped or hidden.
@@ -194,6 +197,7 @@ export default function MakeItYours({ previewToken, previewOrigin, values, steps
             keepable={step.keepable}
             fieldIds={step.fieldIds}
             values={values}
+            initialProducts={step.section === 'goods' ? products : undefined}
             resolution={resolutions?.[index]}
             isMoment={step.isMoment ?? false}
             momentPlayMode={momentPlayMode}
