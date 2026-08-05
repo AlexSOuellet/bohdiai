@@ -30,6 +30,15 @@ import {
   type WalkProductInput,
 } from '@/lib/listings/product-queries';
 import { draftProductCopy, type ProductCopy } from '@/lib/listings/product-copy';
+import {
+  hasRealCollections,
+  hasPlaceholderCollections,
+  clearPlaceholderCollections,
+  createCollection,
+  updateCollection,
+  deleteCollection,
+  type CollectionInput,
+} from '@/lib/listings/collection-queries';
 import sharp from 'sharp';
 import { runContentEdit } from '@/lib/editor/content-agent';
 import {
@@ -570,7 +579,11 @@ export async function saveWalkProduct(form: WalkProductForm): Promise<ProductSav
   }
 
   if (first) {
+    // The seeded collections grouped the fake products — clear them alongside so the
+    // store never shows made-up, now-empty collections. The maker builds real ones in
+    // the collections step.
     await clearPlaceholderProducts(db, shop.tenantId);
+    await clearPlaceholderCollections(db, shop.tenantId);
     const baseTree = await loadBaseTree(shop.tenantId);
     if (baseTree !== null) await stageDraftTree(shop.tenantId, markSectionMade(baseTree, 'goods'));
   }
@@ -640,19 +653,109 @@ export async function draftProductCopyAction(
   }
 }
 
+// ————————————————————————————————————————————————————————————————————————————
+// Walk collections (the collections step). A collection groups the maker's real
+// products; the storefront reads `listings.primary_collection_id` to fill each band
+// and derive its cover. Real collections are `is_preview = false`; the seeded ones
+// clear when the maker makes their store real (on the first product, and again here).
+// ————————————————————————————————————————————————————————————————————————————
+
+/** The maker's collection form (raw). productIds are the real products it holds. */
+export interface WalkCollectionForm {
+  name: string;
+  description?: string;
+  productIds: string[];
+}
+
+export type CollectionSaveResult = { ok: true; id: string } | { ok: false; error: string };
+
+function validateCollectionForm(form: WalkCollectionForm): { input: CollectionInput } | { error: string } {
+  const name = (form.name ?? '').trim();
+  if (name.length === 0) return { error: 'Give your collection a name.' };
+  const productIds = Array.isArray(form.productIds) ? form.productIds.filter((x): x is string => typeof x === 'string') : [];
+  return { input: { name, description: form.description?.trim() || null, productIds } };
+}
+
+/** Create a real collection and mark the collections section made-yours (resolving the
+ *  step). Any lingering seeded collections clear the moment the maker makes a real one. */
+export async function createWalkCollection(form: WalkCollectionForm): Promise<CollectionSaveResult> {
+  const v = validateCollectionForm(form);
+  if ('error' in v) return { ok: false, error: v.error };
+
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to update.' };
+  const db = supabaseAdmin();
+  await clearPlaceholderCollections(db, shop.tenantId);
+
+  let id: string;
+  try {
+    ({ id } = await createCollection(db, shop.tenantId, v.input));
+  } catch (err) {
+    logger.warn('createWalkCollection: insert failed', { tenantId: shop.tenantId, err: String(err) });
+    return { ok: false, error: 'Could not save your collection — try again.' };
+  }
+
+  const baseTree = await loadBaseTree(shop.tenantId);
+  if (baseTree !== null) await stageDraftTree(shop.tenantId, markSectionMade(baseTree, 'collections'));
+  revalidatePath('/dashboard/website');
+  return { ok: true, id };
+}
+
+/** Update one of the maker's real collections (name/description + which products). */
+export async function updateWalkCollection(id: string, form: WalkCollectionForm): Promise<ActionResult> {
+  const v = validateCollectionForm(form);
+  if ('error' in v) return { ok: false, error: v.error };
+
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to update.' };
+  try {
+    await updateCollection(supabaseAdmin(), shop.tenantId, id, v.input);
+  } catch (err) {
+    logger.warn('updateWalkCollection: update failed', { tenantId: shop.tenantId, err: String(err) });
+    return { ok: false, error: 'Could not save your changes — try again.' };
+  }
+  revalidatePath('/dashboard/website');
+  return { ok: true };
+}
+
+/** Remove one of the maker's real collections. If it was the last, collections drops
+ *  back to unresolved (the maker adds another or turns the section off). */
+export async function removeWalkCollection(id: string): Promise<ActionResult> {
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to update.' };
+  const db = supabaseAdmin();
+  try {
+    await deleteCollection(db, shop.tenantId, id);
+  } catch (err) {
+    logger.warn('removeWalkCollection: delete failed', { tenantId: shop.tenantId, err: String(err) });
+    return { ok: false, error: 'Could not remove that collection — try again.' };
+  }
+  if (!(await hasRealCollections(db, shop.tenantId))) {
+    const baseTree = await loadBaseTree(shop.tenantId);
+    if (baseTree !== null) await stageDraftTree(shop.tenantId, unmarkSectionMade(baseTree, 'collections'));
+  }
+  revalidatePath('/dashboard/website');
+  return { ok: true };
+}
+
 /** Publish the staged draft to the live store (promote + delete the draft). Gated
  *  by the honesty check (D68/D70): the draft is what's about to go live, so if it
  *  still shows our About / placeholder products / fake reviews / seeded dates, we
- *  block and name what's left. A direct placeholder-product check backs the goods
- *  case so a fabricated product can never go live even if the envelope flag drifts. */
+ *  block and name what's left. Direct placeholder-product and -collection checks back
+ *  the goods/collections cases so fabricated ones can never go live even if a flag
+ *  drifts. */
 export async function publishStore(): Promise<ActionResult> {
   const shop = await getCurrentShop();
   if (shop === null) return { ok: false, error: 'No store to publish.' };
 
   const draftTree = await readDraftTree(shop.tenantId);
   const labels: string[] = draftTree != null ? publishBlockers(draftTree).map((b) => b.label) : [];
-  if (await hasPlaceholderProducts(supabaseAdmin(), shop.tenantId)) {
+  const db = supabaseAdmin();
+  if (await hasPlaceholderProducts(db, shop.tenantId)) {
     if (!labels.includes('your products')) labels.push('your products');
+  }
+  if (await hasPlaceholderCollections(db, shop.tenantId)) {
+    labels.push('your collections');
   }
   if (labels.length > 0) {
     return { ok: false, error: `Before your store goes live, finish ${labels.join(', ')}.` };

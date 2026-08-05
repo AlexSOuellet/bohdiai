@@ -45,6 +45,21 @@ vi.mock('@/lib/listings/product-queries', () => ({
 const draftProductCopy = vi.fn();
 vi.mock('@/lib/listings/product-copy', () => ({ draftProductCopy: (...a: unknown[]) => draftProductCopy(...a) }));
 
+const hasRealCollections = vi.fn();
+const hasPlaceholderCollections = vi.fn();
+const clearPlaceholderCollections = vi.fn();
+const createCollection = vi.fn();
+const updateCollection = vi.fn();
+const deleteCollection = vi.fn();
+vi.mock('@/lib/listings/collection-queries', () => ({
+  hasRealCollections: (...a: unknown[]) => hasRealCollections(...a),
+  hasPlaceholderCollections: (...a: unknown[]) => hasPlaceholderCollections(...a),
+  clearPlaceholderCollections: (...a: unknown[]) => clearPlaceholderCollections(...a),
+  createCollection: (...a: unknown[]) => createCollection(...a),
+  updateCollection: (...a: unknown[]) => updateCollection(...a),
+  deleteCollection: (...a: unknown[]) => deleteCollection(...a),
+}));
+
 const requireUser = vi.fn();
 vi.mock('@/lib/auth/session', () => ({ requireUser: () => requireUser() }));
 
@@ -84,15 +99,22 @@ import {
   removeWalkProduct,
   uploadProductPhoto,
   draftProductCopyAction,
+  createWalkCollection,
+  updateWalkCollection,
+  removeWalkCollection,
 } from './actions';
 
 beforeEach(() => {
   [getCurrentShop, readDraftTree, stageDraftTree, publishDraft, resetDraft, loadHomeEnvelope, runContentEdit, loadNicheVoice].forEach((m) => m.mockReset());
   [hasRealProducts, hasPlaceholderProducts, clearPlaceholderProducts, insertRealProduct, updateRealProduct, softDeleteProduct, draftProductCopy, requireUser, storageUpload, storageGetPublicUrl, uploadsInsert].forEach((m) => m.mockReset());
+  [hasRealCollections, hasPlaceholderCollections, clearPlaceholderCollections, createCollection, updateCollection, deleteCollection].forEach((m) => m.mockReset());
   // Safe defaults so unrelated tests (e.g. publishStore) don't trip on the new checks.
   hasRealProducts.mockResolvedValue(false);
   hasPlaceholderProducts.mockResolvedValue(false);
   clearPlaceholderProducts.mockResolvedValue(undefined);
+  hasRealCollections.mockResolvedValue(false);
+  hasPlaceholderCollections.mockResolvedValue(false);
+  clearPlaceholderCollections.mockResolvedValue(undefined);
   requireUser.mockResolvedValue({ id: 'u1' });
   storageUpload.mockResolvedValue({ error: null });
   storageGetPublicUrl.mockReturnValue({ data: { publicUrl: 'https://x/p.jpg' } });
@@ -495,6 +517,8 @@ describe('saveWalkProduct', () => {
     if (res.ok) expect(res.id).toBe('l1');
     expect(insertRealProduct).toHaveBeenCalledWith(expect.anything(), 't1', expect.objectContaining({ name: 'Amber Candle', priceCents: 2400, uploadId: 'up1' }));
     expect(clearPlaceholderProducts).toHaveBeenCalledWith(expect.anything(), 't1');
+    // The seeded collections that grouped the fake products clear too.
+    expect(clearPlaceholderCollections).toHaveBeenCalledWith(expect.anything(), 't1');
     expect(stageDraftTree).toHaveBeenCalledWith(
       't1',
       expect.objectContaining({ root: expect.objectContaining({ content: expect.objectContaining({ madeYours: ['goods'] }) }) }),
@@ -615,6 +639,68 @@ describe('uploadProductPhoto', () => {
     fd.set('file', new File(['x'], 'candle.png', { type: 'image/png' }));
     const res = await uploadProductPhoto(fd);
     expect(res.ok).toBe(false);
+  });
+});
+
+describe('createWalkCollection', () => {
+  it('clears seeded collections, creates a real one, and marks collections made', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    createCollection.mockResolvedValue({ id: 'c1', slug: 'weekend-bakes' });
+    readDraftTree.mockResolvedValue(null);
+    loadHomeEnvelope.mockResolvedValue({ kind: 'archetype', content: {} });
+    stageDraftTree.mockResolvedValue({ ok: true });
+
+    const res = await createWalkCollection({ name: 'Weekend Bakes', productIds: ['l1', 'l2'] });
+    expect(res.ok).toBe(true);
+    if (res.ok) expect(res.id).toBe('c1');
+    expect(clearPlaceholderCollections).toHaveBeenCalledWith(expect.anything(), 't1');
+    expect(createCollection).toHaveBeenCalledWith(expect.anything(), 't1', expect.objectContaining({ name: 'Weekend Bakes', productIds: ['l1', 'l2'] }));
+    expect(stageDraftTree).toHaveBeenCalledWith(
+      't1',
+      expect.objectContaining({ root: expect.objectContaining({ content: expect.objectContaining({ madeYours: ['collections'] }) }) }),
+    );
+  });
+
+  it('rejects a blank name', async () => {
+    const res = await createWalkCollection({ name: '  ', productIds: [] });
+    expect(res.ok).toBe(false);
+    expect(createCollection).not.toHaveBeenCalled();
+  });
+});
+
+describe('updateWalkCollection / removeWalkCollection', () => {
+  it('updates an existing collection', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    updateCollection.mockResolvedValue(undefined);
+    const res = await updateWalkCollection('c1', { name: 'Renamed', productIds: ['l3'] });
+    expect(res.ok).toBe(true);
+    expect(updateCollection).toHaveBeenCalledWith(expect.anything(), 't1', 'c1', expect.objectContaining({ name: 'Renamed', productIds: ['l3'] }));
+  });
+
+  it('un-marks collections when the last real one is removed', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    deleteCollection.mockResolvedValue(undefined);
+    hasRealCollections.mockResolvedValue(false);
+    readDraftTree.mockResolvedValue({ root: { content: { madeYours: ['collections'] } } });
+    stageDraftTree.mockResolvedValue({ ok: true });
+    const res = await removeWalkCollection('c1');
+    expect(res.ok).toBe(true);
+    const staged = stageDraftTree.mock.calls[0]![1] as { root: { content: { madeYours?: string[] } } };
+    expect(staged.root.content.madeYours ?? []).not.toContain('collections');
+  });
+});
+
+describe('publishStore — collections honesty', () => {
+  it('blocks while placeholder collections remain', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    readDraftTree.mockResolvedValue({
+      root: { content: { madeYours: ['founder', 'goods'], hiddenSections: ['reviews', 'findUs'] } },
+    });
+    hasPlaceholderCollections.mockResolvedValue(true);
+    const res = await publishStore();
+    expect(res.ok).toBe(false);
+    if (!res.ok) expect(res.error).toContain('your collections');
+    expect(publishDraft).not.toHaveBeenCalled();
   });
 });
 
