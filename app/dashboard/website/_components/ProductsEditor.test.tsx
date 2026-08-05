@@ -35,6 +35,14 @@ describe('ProductsEditor', () => {
     expect(screen.getByLabelText('Product name')).toBeInTheDocument();
   });
 
+  it('explains what is still missing while Save is disabled', async () => {
+    setup();
+    expect(screen.getByText(/Add a name, a price, a photo to save/)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Product name'), { target: { value: 'Amber' } });
+    // name filled → only price + photo remain in the hint
+    expect(screen.getByText(/Add a price, a photo to save/)).toBeInTheDocument();
+  });
+
   it('keeps Add disabled until name, price, and a photo are all present', async () => {
     const { onUpload } = setup();
     const addBtn = screen.getByRole('button', { name: 'Add this product' });

@@ -77,7 +77,14 @@ export default function ProductsEditor({
   // A product needs a name, a real (parseable) price, and — for a new one — a photo.
   // Editing keeps the existing photo unless the maker uploads a new one.
   const priceOk = parsePriceToCents(form.price) !== null;
-  const canSave = form.name.trim().length > 0 && priceOk && (editingId !== null || uploadId !== null);
+  const needsPhoto = editingId === null && uploadId === null;
+  const canSave = form.name.trim().length > 0 && priceOk && !needsPhoto;
+  // What's still missing, so the disabled Save button explains itself instead of
+  // sitting dead with no reason.
+  const missing: string[] = [];
+  if (form.name.trim().length === 0) missing.push('a name');
+  if (!priceOk) missing.push('a price');
+  if (needsPhoto) missing.push('a photo');
 
   function resetForm() {
     setForm(EMPTY_FORM);
@@ -327,6 +334,9 @@ export default function ProductsEditor({
           >
             {editingId !== null ? 'Save changes' : 'Add this product'}
           </button>
+          {!canSave && missing.length > 0 && (
+            <span className="text-xs text-muted">Add {missing.join(', ')} to save this product.</span>
+          )}
           {editingId !== null && (
             <button
               type="button"
