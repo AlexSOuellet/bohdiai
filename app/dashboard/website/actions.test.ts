@@ -102,6 +102,7 @@ import {
   createWalkCollection,
   updateWalkCollection,
   removeWalkCollection,
+  toggleSection,
 } from './actions';
 
 beforeEach(() => {
@@ -687,6 +688,25 @@ describe('updateWalkCollection / removeWalkCollection', () => {
     expect(res.ok).toBe(true);
     const staged = stageDraftTree.mock.calls[0]![1] as { root: { content: { madeYours?: string[] } } };
     expect(staged.root.content.madeYours ?? []).not.toContain('collections');
+  });
+});
+
+describe('toggleSection — collections cleanup', () => {
+  it('turning collections off clears the seeded placeholder collections', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    readDraftTree.mockResolvedValue({ root: { content: {} } });
+    stageDraftTree.mockResolvedValue({ ok: true });
+    const res = await toggleSection('collections', true);
+    expect(res.ok).toBe(true);
+    expect(clearPlaceholderCollections).toHaveBeenCalledWith(expect.anything(), 't1');
+  });
+
+  it('turning a different section off does not touch collections', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    readDraftTree.mockResolvedValue({ root: { content: {} } });
+    stageDraftTree.mockResolvedValue({ ok: true });
+    await toggleSection('reviews', true);
+    expect(clearPlaceholderCollections).not.toHaveBeenCalled();
   });
 });
 

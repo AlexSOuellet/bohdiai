@@ -431,12 +431,18 @@ export async function keepSection(section: SectionKey): Promise<ActionResult> {
 }
 
 /** Turn an optional section off or back on (D69). Off keeps the content, so turning
- *  it back on restores it. Marks nothing made-yours — hiding is its own resolution. */
+ *  it back on restores it. Marks nothing made-yours — hiding is its own resolution.
+ *  Turning COLLECTIONS off also clears the seeded placeholder collections: hiding
+ *  drops the home band, but the /collections pages read the table directly, so the
+ *  fake collections must actually go — and Publish stays blocked while any remain. */
 export async function toggleSection(section: SectionKey, hidden: boolean): Promise<ActionResult> {
   const shop = await getCurrentShop();
   if (shop === null) return { ok: false, error: 'No store to update.' };
   const baseTree = await loadBaseTree(shop.tenantId);
   if (baseTree === null) return { ok: false, error: 'Could not load your store.' };
+  if (section === 'collections' && hidden) {
+    await clearPlaceholderCollections(supabaseAdmin(), shop.tenantId);
+  }
   const staged = await stageDraftTree(shop.tenantId, setSectionHidden(baseTree, section, hidden));
   if (!staged.ok) return { ok: false, error: 'Could not save your changes.' };
   revalidatePath('/dashboard/website');
