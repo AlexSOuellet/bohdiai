@@ -167,11 +167,9 @@ export default function ProductsEditor({
           return;
         }
         const added: EditorProduct = { id: res.id, ...clean, imageUrl };
-        setProducts((prev) => {
-          const next = [...prev, added];
-          onResolved(next.length > 0);
-          return next;
-        });
+        const next = [...products, added];
+        setProducts(next);
+        onResolved(next.length > 0);
         resetForm();
         onChanged();
       }
@@ -186,11 +184,9 @@ export default function ProductsEditor({
         setMessage(res.error ?? 'Could not remove that product.');
         return;
       }
-      setProducts((prev) => {
-        const next = prev.filter((p) => p.id !== id);
-        onResolved(next.length > 0);
-        return next;
-      });
+      const next = products.filter((p) => p.id !== id);
+      setProducts(next);
+      onResolved(next.length > 0);
       if (editingId === id) resetForm();
       onChanged();
     });

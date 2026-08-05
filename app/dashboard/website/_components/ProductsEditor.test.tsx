@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { useState } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ProductsEditor, { type EditorProduct } from './ProductsEditor';
 
@@ -73,6 +74,44 @@ describe('ProductsEditor', () => {
     await vi.waitFor(() => expect(onDraftCopy).toHaveBeenCalledWith('Amber', 'lavender'));
     await vi.waitFor(() => expect(screen.getByDisplayValue('Hand-poured')).toBeInTheDocument());
     expect(screen.getByDisplayValue('A calming candle.')).toBeInTheDocument();
+  });
+
+  it('does not update the parent during render when adding a product (regression)', async () => {
+    // Reproduces the real bug: onResolved triggers a parent setState. If ProductsEditor
+    // calls it inside a setState updater (which runs during render), React logs
+    // "Cannot update a component while rendering a different component".
+    const errors: string[] = [];
+    const spy = vi.spyOn(console, 'error').mockImplementation((...args) => {
+      errors.push(args.map(String).join(' '));
+    });
+    const onUpload = vi.fn().mockResolvedValue({ ok: true, uploadId: 'up1', url: 'https://x/p.jpg' });
+    const onSave = vi.fn().mockResolvedValue({ ok: true, id: 'l1' });
+    function Host() {
+      const [, setResolved] = useState(false);
+      return (
+        <ProductsEditor
+          initialProducts={[]}
+          onUpload={onUpload}
+          onSave={onSave}
+          onUpdate={vi.fn().mockResolvedValue({ ok: true })}
+          onRemove={vi.fn().mockResolvedValue({ ok: true })}
+          onDraftCopy={vi.fn()}
+          onResolved={(r) => setResolved(r)}
+          onChanged={vi.fn()}
+        />
+      );
+    }
+    render(<Host />);
+    fireEvent.change(screen.getByLabelText('Product name'), { target: { value: 'Amber' } });
+    fireEvent.change(screen.getByLabelText('Price'), { target: { value: '$24' } });
+    fireEvent.change(screen.getByLabelText('Photo'), { target: { files: [pngFile()] } });
+    const addBtn = screen.getByRole('button', { name: 'Add this product' });
+    await vi.waitFor(() => expect(addBtn).toBeEnabled());
+    fireEvent.click(addBtn);
+    await vi.waitFor(() => expect(onSave).toHaveBeenCalled());
+    await vi.waitFor(() => expect(screen.getByText('Amber')).toBeInTheDocument());
+    expect(errors.join('\n')).not.toContain('while rendering a different component');
+    spy.mockRestore();
   });
 
   it('removing a product drops it and reports resolution by remaining count', async () => {
