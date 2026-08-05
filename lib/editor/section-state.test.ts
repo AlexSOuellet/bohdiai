@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { markSectionMade, markSectionKept, setSectionHidden, sectionState } from './section-state';
+import { markSectionMade, markSectionKept, setSectionHidden, unmarkSectionMade, sectionState } from './section-state';
 
 const base = (): Record<string, unknown> => ({ root: { content: {} } });
 
@@ -28,6 +28,12 @@ describe('section-state', () => {
 
   it('an untouched section is unresolved', () => {
     expect(sectionState(base(), 'goods')).toBe('unresolved');
+  });
+
+  it('un-marks a made section back to unresolved (last real product removed)', () => {
+    const made = markSectionMade(base(), 'goods');
+    expect(sectionState(made, 'goods')).toBe('made');
+    expect(sectionState(unmarkSectionMade(made, 'goods'), 'goods')).toBe('unresolved');
   });
 
   it('never mutates its input', () => {

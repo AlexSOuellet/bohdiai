@@ -14,9 +14,22 @@ import { MOODS, type MoodKey } from '@/lib/moods';
 import { readDraftTree, stageDraftTree, publishDraft, resetDraft } from '@/lib/editor/draft';
 import { loadHomeEnvelope } from '@/lib/storefront/load-envelope';
 import { EDITABLE_FIELDS, fieldsForSection, getFieldValue, setFieldValue } from '@/lib/editor/editable-fields';
-import { markSectionMade, markSectionKept, setSectionHidden } from '@/lib/editor/section-state';
+import { markSectionMade, markSectionKept, setSectionHidden, unmarkSectionMade } from '@/lib/editor/section-state';
 import { parseFindUsDate } from '@/lib/archetypes/main-street/findus';
 import { publishBlockers } from '@/lib/editor/publish-gate';
+import { supabaseAdmin } from '@/lib/supabase';
+import { requireUser } from '@/lib/auth/session';
+import { parsePriceToCents } from '@/lib/listings/price';
+import {
+  hasRealProducts,
+  hasPlaceholderProducts,
+  clearPlaceholderProducts,
+  insertRealProduct,
+  updateRealProduct,
+  softDeleteProduct,
+  type WalkProductInput,
+} from '@/lib/listings/product-queries';
+import { draftProductCopy, type ProductCopy } from '@/lib/listings/product-copy';
 import { runContentEdit } from '@/lib/editor/content-agent';
 import {
   bohdiConverse,
@@ -420,20 +433,210 @@ export async function toggleSection(section: SectionKey, hidden: boolean): Promi
   return { ok: true };
 }
 
+// ————————————————————————————————————————————————————————————————————————————
+// Walk products (the goods step). Products live in the `listings` table, not the
+// draft envelope — the renderer reads them directly for both the live store and the
+// preview. So these actions do ownership-gated DB work; the goods envelope FLAG is
+// staged alongside so `walkComplete`/`publishBlockers` (which read the envelope) stay
+// in sync. Real products are `is_preview = false`; the first real one clears the AI
+// placeholders. (This build is the walk's simple editor; the richer Listings Admin —
+// options, several photos, video, stock — is a later build.)
+// ————————————————————————————————————————————————————————————————————————————
+
+/** The maker's product form (raw, as typed). Price is raw text (parsed here); the
+ *  photo is referenced by the id `uploadProductPhoto` returned. */
+export interface WalkProductForm {
+  name: string;
+  price: string;
+  shortDescription?: string;
+  description?: string;
+  uploadId?: string;
+}
+
+export type ProductSaveResult = { ok: true; id: string } | { ok: false; error: string };
+
+const ALLOWED_IMAGE_EXT: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+};
+const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+
+/** Upload a maker's product photo to the tenant-media bucket and record an uploads
+ *  row, returning the id (referenced by the product's media_ids) and the public URL
+ *  (for the editor thumbnail). Ownership-gated; validates mime + size. */
+export async function uploadProductPhoto(
+  formData: FormData,
+): Promise<{ ok: true; uploadId: string; url: string } | { ok: false; error: string }> {
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to update.' };
+
+  const file = formData.get('file');
+  if (!(file instanceof File) || file.size === 0) return { ok: false, error: 'Pick a photo to upload.' };
+  const ext = ALLOWED_IMAGE_EXT[file.type];
+  if (ext === undefined) return { ok: false, error: 'Use a JPG, PNG, or WebP image.' };
+  if (file.size > MAX_PHOTO_BYTES) return { ok: false, error: 'That image is over 10MB — pick a smaller one.' };
+
+  const user = await requireUser();
+  const db = supabaseAdmin();
+  const path = `tenant/${shop.tenantId}/products/${crypto.randomUUID()}.${ext}`;
+
+  const { error: upErr } = await db.storage
+    .from('tenant-media')
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (upErr) {
+    logger.warn('uploadProductPhoto: storage upload failed', { tenantId: shop.tenantId, err: upErr.message });
+    return { ok: false, error: 'Could not upload that photo — try again.' };
+  }
+
+  const publicUrl = db.storage.from('tenant-media').getPublicUrl(path).data.publicUrl;
+  const { data: row, error: insErr } = await db
+    .from('uploads')
+    .insert({
+      tenant_id: shop.tenantId,
+      uploaded_by_user_id: user.id,
+      storage_bucket: 'tenant-media',
+      storage_path: path,
+      public_url: publicUrl,
+      file_name: file.name,
+      mime_type: file.type,
+      size_bytes: file.size,
+      source: 'user_upload',
+      status: 'active',
+    })
+    .select('id')
+    .single();
+  if (insErr || !row) {
+    logger.warn('uploadProductPhoto: uploads insert failed', { tenantId: shop.tenantId, err: insErr?.message });
+    return { ok: false, error: 'Could not save that photo — try again.' };
+  }
+  return { ok: true, uploadId: row.id, url: publicUrl };
+}
+
+/** Coerce a raw product form to a validated `WalkProductInput`, or an error string. */
+function validateProductForm(form: WalkProductForm): { input: WalkProductInput } | { error: string } {
+  const name = (form.name ?? '').trim();
+  if (name.length === 0) return { error: 'Give your product a name.' };
+  const priceCents = parsePriceToCents(form.price ?? '');
+  if (priceCents === null) return { error: 'Add a price, like $24.' };
+  return {
+    input: {
+      name,
+      priceCents,
+      shortDescription: form.shortDescription?.trim() || null,
+      description: form.description?.trim() || null,
+      uploadId: form.uploadId || null,
+    },
+  };
+}
+
+/** Save a new real product. The FIRST real product clears the AI placeholders and
+ *  marks the goods section made-yours (resolving the walk's goods step + unblocking
+ *  Publish); later saves just insert. */
+export async function saveWalkProduct(form: WalkProductForm): Promise<ProductSaveResult> {
+  const v = validateProductForm(form);
+  if ('error' in v) return { ok: false, error: v.error };
+
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to update.' };
+  const db = supabaseAdmin();
+
+  const first = !(await hasRealProducts(db, shop.tenantId));
+  let id: string;
+  try {
+    ({ id } = await insertRealProduct(db, shop.tenantId, v.input));
+  } catch (err) {
+    logger.warn('saveWalkProduct: insert failed', { tenantId: shop.tenantId, err: String(err) });
+    return { ok: false, error: 'Could not save your product — try again.' };
+  }
+
+  if (first) {
+    await clearPlaceholderProducts(db, shop.tenantId);
+    const baseTree = await loadBaseTree(shop.tenantId);
+    if (baseTree !== null) await stageDraftTree(shop.tenantId, markSectionMade(baseTree, 'goods'));
+  }
+  revalidatePath('/dashboard/website');
+  return { ok: true, id };
+}
+
+/** Update one of the maker's real products. */
+export async function updateWalkProduct(id: string, form: WalkProductForm): Promise<ActionResult> {
+  const v = validateProductForm(form);
+  if ('error' in v) return { ok: false, error: v.error };
+
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to update.' };
+  try {
+    await updateRealProduct(supabaseAdmin(), shop.tenantId, id, v.input);
+  } catch (err) {
+    logger.warn('updateWalkProduct: update failed', { tenantId: shop.tenantId, err: String(err) });
+    return { ok: false, error: 'Could not save your changes — try again.' };
+  }
+  revalidatePath('/dashboard/website');
+  return { ok: true };
+}
+
+/** Remove one of the maker's real products. If it was the last real one, goods drops
+ *  back to unresolved (the store honestly has no products again). */
+export async function removeWalkProduct(id: string): Promise<ActionResult> {
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to update.' };
+  const db = supabaseAdmin();
+  try {
+    await softDeleteProduct(db, shop.tenantId, id);
+  } catch (err) {
+    logger.warn('removeWalkProduct: delete failed', { tenantId: shop.tenantId, err: String(err) });
+    return { ok: false, error: 'Could not remove that product — try again.' };
+  }
+  if (!(await hasRealProducts(db, shop.tenantId))) {
+    const baseTree = await loadBaseTree(shop.tenantId);
+    if (baseTree !== null) await stageDraftTree(shop.tenantId, unmarkSectionMade(baseTree, 'goods'));
+  }
+  revalidatePath('/dashboard/website');
+  return { ok: true };
+}
+
+/** Ask Bohdi to draft a product's words (short line + description) from the maker's
+ *  hint, grounded in the shop's niche voice. Returns the copy only — never the photo
+ *  or price. Read-only: the maker reviews/edits before saving. */
+export async function draftProductCopyAction(
+  name: string,
+  hint: string,
+): Promise<{ ok: true; copy: ProductCopy } | { ok: false; error: string }> {
+  const cleanName = (name ?? '').trim();
+  if (cleanName.length === 0) return { ok: false, error: 'Name your product first, then Bohdi can help with the words.' };
+
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to work on.' };
+  const niche = await loadNicheVoice(shop.tenantId);
+  try {
+    const copy = await draftProductCopy({ name: cleanName, hint: hint ?? '', niche });
+    if (copy.shortDescription === undefined && copy.description === undefined) {
+      return { ok: false, error: 'Tell Bohdi a little about the piece and he’ll take another run at it.' };
+    }
+    return { ok: true, copy };
+  } catch (err) {
+    logger.warn('draftProductCopyAction: Bohdi failed', { tenantId: shop.tenantId, err: String(err) });
+    return { ok: false, error: 'Couldn’t write that just now — try again.' };
+  }
+}
+
 /** Publish the staged draft to the live store (promote + delete the draft). Gated
  *  by the honesty check (D68/D70): the draft is what's about to go live, so if it
  *  still shows our About / placeholder products / fake reviews / seeded dates, we
- *  block and name what's left. */
+ *  block and name what's left. A direct placeholder-product check backs the goods
+ *  case so a fabricated product can never go live even if the envelope flag drifts. */
 export async function publishStore(): Promise<ActionResult> {
   const shop = await getCurrentShop();
   if (shop === null) return { ok: false, error: 'No store to publish.' };
 
   const draftTree = await readDraftTree(shop.tenantId);
-  if (draftTree != null) {
-    const blockers = publishBlockers(draftTree);
-    if (blockers.length > 0) {
-      return { ok: false, error: `Before your store goes live, finish ${blockers.map((b) => b.label).join(', ')}.` };
-    }
+  const labels: string[] = draftTree != null ? publishBlockers(draftTree).map((b) => b.label) : [];
+  if (await hasPlaceholderProducts(supabaseAdmin(), shop.tenantId)) {
+    if (!labels.includes('your products')) labels.push('your products');
+  }
+  if (labels.length > 0) {
+    return { ok: false, error: `Before your store goes live, finish ${labels.join(', ')}.` };
   }
 
   const res = await publishDraft(shop.tenantId);

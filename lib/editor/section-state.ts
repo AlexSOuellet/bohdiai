@@ -71,6 +71,13 @@ export function markSectionKept(tree: Tree, section: SectionKey): Tree {
   return addTo(tree, 'kept', section);
 }
 
+/** Un-mark a section made-yours — its real content is gone, so it's no longer
+ *  honestly "made" (e.g. the maker deleted their last real product, so goods drops
+ *  back to unresolved). Leaves kept/hidden alone. */
+export function unmarkSectionMade(tree: Tree, section: SectionKey): Tree {
+  return removeFrom(tree, 'madeYours', section);
+}
+
 /** Turn a section off (`hidden`) or back on. Turning back on returns it to whatever
  *  state its other lists imply (unresolved if never edited/kept). */
 export function setSectionHidden(tree: Tree, section: SectionKey, hidden: boolean): Tree {
