@@ -120,6 +120,7 @@ describe('persistCollections', () => {
         name: c.name,
         description: c.description,
         status: 'active',
+        is_preview: true,
       })),
     });
   });

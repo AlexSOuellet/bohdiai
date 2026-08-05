@@ -9,6 +9,7 @@ import type { SectionResolution } from '@/lib/editor/section-state';
 import type { Turn } from '@/lib/editor/conversation';
 import RowsEditor, { type RowColumn } from './RowsEditor';
 import ProductsEditor, { type EditorProduct } from './ProductsEditor';
+import CollectionsEditor, { type EditorCollection } from './CollectionsEditor';
 import {
   converseSection,
   writeSectionFromConversation,
@@ -23,6 +24,9 @@ import {
   removeWalkProduct,
   uploadProductPhoto,
   draftProductCopyAction,
+  createWalkCollection,
+  updateWalkCollection,
+  removeWalkCollection,
 } from '../actions';
 
 /** The two sections the maker fills with real ROWS rather than a conversation —
@@ -95,8 +99,8 @@ const INTRO: Record<SectionKey, { title: string; opener: string; placeholder: st
   collections: {
     title: 'Your collections',
     opener:
-      "If you sort your work into groups — seasonal scents, gift sets, that kind of thing — this is where they show, so a shopper can browse by theme. There's a start on the right. Tell me about your real ones, keep this as-is, or turn the section off if you don't group your work.",
-    placeholder: 'e.g. seasonal scents, gift sets',
+      "Collections are groups of your products — seasonal scents, gift sets, best-sellers. Name a group and tick which of your products go in it, and it becomes its own section a shopper can browse. Don't group your work? Turn this off.",
+    placeholder: '',
   },
   reviews: {
     title: 'Kind words',
@@ -213,8 +217,11 @@ export interface SectionEditorProps {
   fieldIds: readonly string[];
   /** id → current value, seeding the "write it myself" fields. */
   values: Record<string, unknown>;
-  /** Goods step only — the maker's real products so far (seeds the products editor). */
+  /** Goods step only — the maker's real products so far (seeds the products editor).
+   *  Also passed to the collections step as the pool of products to group. */
   initialProducts?: readonly EditorProduct[] | undefined;
+  /** Collections step only — the maker's real collections so far. */
+  initialCollections?: readonly EditorCollection[] | undefined;
   /** Whether the section is currently turned off (seeds the control state). */
   hidden?: boolean | undefined;
   /** The section's resolution in the draft, so a section the maker already finished in
@@ -256,6 +263,7 @@ export default function SectionEditor({
   fieldIds,
   values,
   initialProducts = [],
+  initialCollections = [],
   hidden,
   resolution,
   isMoment = false,
@@ -449,6 +457,46 @@ export default function SectionEditor({
           onChanged={onChanged}
         />
         {message && <p className="mt-4 text-sm text-text-soft">{message}</p>}
+      </div>
+    );
+  }
+
+  // Collections — the maker groups their real products into their own collections
+  // (real-or-off). Making the first real one clears the seeded ones server-side.
+  if (section === 'collections') {
+    return (
+      <div>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="font-serif text-2xl text-text">{title}</h1>
+          {initialStatus !== 'none' && (
+            <span className="rounded-full border border-honey/40 bg-honey/10 px-2.5 py-0.5 text-[11px] text-honey-warm">
+              ✓ Completed
+            </span>
+          )}
+        </div>
+        <p className="mt-3 text-sm leading-relaxed text-text-soft">{intro.opener}</p>
+        <CollectionsEditor
+          initialCollections={initialCollections}
+          availableProducts={initialProducts.map((p) => ({ id: p.id, name: p.name, imageUrl: p.imageUrl }))}
+          onSave={(form) => createWalkCollection(form)}
+          onUpdate={(id, form) => updateWalkCollection(id, form)}
+          onRemove={(id) => removeWalkCollection(id)}
+          onResolved={onResolved}
+          onChanged={onChanged}
+        />
+        {message && <p className="mt-4 text-sm text-text-soft">{message}</p>}
+        {canTurnOff && (
+          <div className="mt-6 border-t border-white/8 pt-5">
+            <button
+              type="button"
+              onClick={() => setOff(true)}
+              disabled={pending}
+              className="text-sm text-muted underline-offset-4 transition-colors hover:text-text-soft hover:underline disabled:opacity-40"
+            >
+              I don’t group my work — turn this section off
+            </button>
+          </div>
+        )}
       </div>
     );
   }

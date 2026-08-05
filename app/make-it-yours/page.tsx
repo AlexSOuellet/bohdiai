@@ -13,6 +13,7 @@ import { resolveMomentPlayMode } from '@/lib/archetypes/main-street/moment-gate'
 import { getFamily } from '@/lib/archetypes/main-street/families';
 import { supabaseAdmin } from '@/lib/supabase';
 import { loadWalkProducts } from '@/lib/listings/product-queries';
+import { loadWalkCollections } from '@/lib/listings/collection-queries';
 import MakeItYours from '@/app/dashboard/website/_components/MakeItYours';
 
 export const metadata = { title: 'Make it yours — BohdiAI' };
@@ -69,8 +70,9 @@ export default async function MakeItYoursPage() {
   const resolvedFlags = steps.map((s) => sectionResolved(homeEnv, s.section));
   const resolutions = steps.map((s) => sectionState(homeEnv, s.section));
 
-  // The maker's real products so far, for the goods step's products editor.
+  // The maker's real products + collections so far, for the goods and collections steps.
   const products = await loadWalkProducts(supabaseAdmin(), shop.tenantId);
+  const collections = await loadWalkCollections(supabaseAdmin(), shop.tenantId);
 
   const previewToken = mintPreviewToken(shop.tenantId);
   const origin = storefrontOrigin(shop.subdomain, (await headers()).get('host'));
@@ -88,6 +90,7 @@ export default async function MakeItYoursPage() {
       resolvedFlags={resolvedFlags}
       resolutions={resolutions}
       products={products}
+      collections={collections}
     />
   );
 }

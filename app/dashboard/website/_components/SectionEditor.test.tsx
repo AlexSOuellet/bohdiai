@@ -158,7 +158,7 @@ describe('SectionEditor — conversation', () => {
   });
 
   it('an optional keepable section offers both Keep as built and Turn it off', () => {
-    renderSection('collections');
+    renderSection('marquee');
     expect(screen.getByRole('button', { name: 'Keep as built' })).toBeInTheDocument();
     expect(screen.getByText('Turn it off')).toBeInTheDocument();
   });
@@ -174,12 +174,12 @@ describe('SectionEditor — conversation', () => {
 
   it('Turn it off hides the section and resolves; it can be turned back on', async () => {
     toggleSection.mockResolvedValue({ ok: true });
-    const { onResolved } = renderSection('collections');
+    const { onResolved } = renderSection('marquee');
     fireEvent.click(screen.getByText('Turn it off'));
-    await vi.waitFor(() => expect(toggleSection).toHaveBeenCalledWith('collections', true));
+    await vi.waitFor(() => expect(toggleSection).toHaveBeenCalledWith('marquee', true));
     expect(onResolved).toHaveBeenCalledWith(true);
     fireEvent.click(await screen.findByText('Turn it back on'));
-    await vi.waitFor(() => expect(toggleSection).toHaveBeenCalledWith('collections', false));
+    await vi.waitFor(() => expect(toggleSection).toHaveBeenCalledWith('marquee', false));
     expect(onResolved).toHaveBeenLastCalledWith(false);
   });
 

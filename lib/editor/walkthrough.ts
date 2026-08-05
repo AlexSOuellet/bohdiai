@@ -94,7 +94,9 @@ const STEP_META: ReadonlyArray<{
   { id: 'reviews', title: 'Kind words', section: 'reviews', cls: 'optional', keepable: false, personal: false },
   { id: 'findUs', title: 'Where to find you', section: 'findUs', cls: 'optional', keepable: false, personal: false },
   { id: 'goods', title: 'Your goods', section: 'goods', cls: 'must-change', keepable: false, personal: false },
-  { id: 'collections', title: 'Your collections', section: 'collections', cls: 'optional', keepable: true, personal: false },
+  // Real-or-off like reviews/find-us: the maker makes real collections of their own
+  // products, or turns the section off — never the seeded placeholder collections.
+  { id: 'collections', title: 'Your collections', section: 'collections', cls: 'optional', keepable: false, personal: false },
   { id: 'marquee', title: 'The scrolling line', section: 'marquee', cls: 'optional', keepable: true, personal: false },
 ];
 
