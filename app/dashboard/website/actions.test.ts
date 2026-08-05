@@ -48,6 +48,18 @@ vi.mock('@/lib/listings/product-copy', () => ({ draftProductCopy: (...a: unknown
 const requireUser = vi.fn();
 vi.mock('@/lib/auth/session', () => ({ requireUser: () => requireUser() }));
 
+// sharp is native + operates on real image bytes; the tests use tiny fake files, so
+// stub the resize→webp→toBuffer chain to a small buffer.
+vi.mock('sharp', () => ({
+  default: () => ({
+    rotate: () => ({
+      resize: () => ({
+        webp: () => ({ toBuffer: () => Promise.resolve(Buffer.from('optimized-webp')) }),
+      }),
+    }),
+  }),
+}));
+
 const storageUpload = vi.fn();
 const storageGetPublicUrl = vi.fn();
 const uploadsInsert = vi.fn();
@@ -591,6 +603,10 @@ describe('uploadProductPhoto', () => {
     }
     expect(storageUpload).toHaveBeenCalled();
     expect(uploadsInsert).toHaveBeenCalled();
+    // Stored as an optimised WebP, not the raw upload.
+    const row = uploadsInsert.mock.calls[0]![0] as Record<string, unknown>;
+    expect(row['mime_type']).toBe('image/webp');
+    expect(row['storage_path']).toMatch(/\.webp$/);
   });
 
   it('rejects when no store', async () => {

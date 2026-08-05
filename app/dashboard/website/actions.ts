@@ -30,6 +30,7 @@ import {
   type WalkProductInput,
 } from '@/lib/listings/product-queries';
 import { draftProductCopy, type ProductCopy } from '@/lib/listings/product-copy';
+import sharp from 'sharp';
 import { runContentEdit } from '@/lib/editor/content-agent';
 import {
   bohdiConverse,
@@ -455,16 +456,20 @@ export interface WalkProductForm {
 
 export type ProductSaveResult = { ok: true; id: string } | { ok: false; error: string };
 
-const ALLOWED_IMAGE_EXT: Record<string, string> = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-};
-const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+const ALLOWED_INPUT_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
+// Makers shoot on phones — a raw photo is easily 10–30MB. We accept a generous input
+// and shrink it server-side, so nobody has to resize their own photo. The Server
+// Action body limit (next.config.js) sits above this.
+const MAX_UPLOAD_BYTES = 30 * 1024 * 1024;
+// The longest edge we keep. A storefront never needs more than this, and it drops a
+// big photo to a small, fast WebP.
+const MAX_IMAGE_EDGE = 2400;
 
 /** Upload a maker's product photo to the tenant-media bucket and record an uploads
  *  row, returning the id (referenced by the product's media_ids) and the public URL
- *  (for the editor thumbnail). Ownership-gated; validates mime + size. */
+ *  (for the editor thumbnail). Ownership-gated; validates the input, then downscales
+ *  and converts to WebP so a big phone photo just works and the stored file stays
+ *  small. Every failure returns a maker-facing message — never a silent one. */
 export async function uploadProductPhoto(
   formData: FormData,
 ): Promise<{ ok: true; uploadId: string; url: string } | { ok: false; error: string }> {
@@ -473,17 +478,31 @@ export async function uploadProductPhoto(
 
   const file = formData.get('file');
   if (!(file instanceof File) || file.size === 0) return { ok: false, error: 'Pick a photo to upload.' };
-  const ext = ALLOWED_IMAGE_EXT[file.type];
-  if (ext === undefined) return { ok: false, error: 'Use a JPG, PNG, or WebP image.' };
-  if (file.size > MAX_PHOTO_BYTES) return { ok: false, error: 'That image is over 10MB — pick a smaller one.' };
+  if (!ALLOWED_INPUT_MIME.has(file.type)) return { ok: false, error: 'Use a JPG, PNG, or WebP image.' };
+  if (file.size > MAX_UPLOAD_BYTES) return { ok: false, error: 'That image is over 30MB — pick a smaller one.' };
+
+  // Downscale (respecting EXIF orientation) and re-encode to WebP. Any oversized or
+  // odd input becomes a clean, small, web-ready image.
+  let optimized: Buffer;
+  try {
+    const input = Buffer.from(await file.arrayBuffer());
+    optimized = await sharp(input)
+      .rotate()
+      .resize({ width: MAX_IMAGE_EDGE, height: MAX_IMAGE_EDGE, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 82 })
+      .toBuffer();
+  } catch (err) {
+    logger.warn('uploadProductPhoto: image processing failed', { tenantId: shop.tenantId, err: String(err) });
+    return { ok: false, error: 'Couldn’t process that photo — try a different image.' };
+  }
 
   const user = await requireUser();
   const db = supabaseAdmin();
-  const path = `tenant/${shop.tenantId}/products/${crypto.randomUUID()}.${ext}`;
+  const path = `tenant/${shop.tenantId}/products/${crypto.randomUUID()}.webp`;
 
   const { error: upErr } = await db.storage
     .from('tenant-media')
-    .upload(path, file, { contentType: file.type, upsert: false });
+    .upload(path, optimized, { contentType: 'image/webp', upsert: false });
   if (upErr) {
     logger.warn('uploadProductPhoto: storage upload failed', { tenantId: shop.tenantId, err: upErr.message });
     return { ok: false, error: 'Could not upload that photo — try again.' };
@@ -499,8 +518,8 @@ export async function uploadProductPhoto(
       storage_path: path,
       public_url: publicUrl,
       file_name: file.name,
-      mime_type: file.type,
-      size_bytes: file.size,
+      mime_type: 'image/webp',
+      size_bytes: optimized.length,
       source: 'user_upload',
       status: 'active',
     })

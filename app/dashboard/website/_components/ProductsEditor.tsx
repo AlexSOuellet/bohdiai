@@ -131,15 +131,19 @@ export default function ProductsEditor({
     }
     setMessage(null);
     startTransition(async () => {
-      const res = await onDraftCopy(form.name.trim(), hint);
-      if (res.ok) {
-        setForm((f) => ({
-          ...f,
-          shortDescription: res.copy.shortDescription ?? f.shortDescription,
-          description: res.copy.description ?? f.description,
-        }));
-      } else {
-        setMessage(res.error);
+      try {
+        const res = await onDraftCopy(form.name.trim(), hint);
+        if (res.ok) {
+          setForm((f) => ({
+            ...f,
+            shortDescription: res.copy.shortDescription ?? f.shortDescription,
+            description: res.copy.description ?? f.description,
+          }));
+        } else {
+          setMessage(res.error);
+        }
+      } catch {
+        setMessage('Bohdi couldn’t write that just now — try again.');
       }
     });
   }
@@ -162,32 +166,36 @@ export default function ProductsEditor({
       description: form.description.trim(),
     };
     startTransition(async () => {
-      if (editingId !== null) {
-        const res = await onUpdate(editingId, { ...clean, ...(uploadId ? { uploadId } : {}) });
-        if (!res.ok) {
-          setMessage(res.error ?? 'Could not save your changes.');
-          return;
+      try {
+        if (editingId !== null) {
+          const res = await onUpdate(editingId, { ...clean, ...(uploadId ? { uploadId } : {}) });
+          if (!res.ok) {
+            setMessage(res.error ?? 'Could not save your changes.');
+            return;
+          }
+          const nextImage = imageUrl;
+          setProducts((prev) => prev.map((p) => (p.id === editingId ? { ...p, ...clean, imageUrl: nextImage } : p)));
+          resetForm();
+          onChanged();
+        } else {
+          if (uploadId === null) {
+            setMessage('Add a photo of your product first.');
+            return;
+          }
+          const res = await onSave({ ...clean, uploadId });
+          if (!res.ok) {
+            setMessage(res.error);
+            return;
+          }
+          const added: EditorProduct = { id: res.id, ...clean, imageUrl };
+          const next = [...products, added];
+          setProducts(next);
+          onResolved(next.length > 0);
+          resetForm();
+          onChanged();
         }
-        const nextImage = imageUrl;
-        setProducts((prev) => prev.map((p) => (p.id === editingId ? { ...p, ...clean, imageUrl: nextImage } : p)));
-        resetForm();
-        onChanged();
-      } else {
-        if (uploadId === null) {
-          setMessage('Add a photo of your product first.');
-          return;
-        }
-        const res = await onSave({ ...clean, uploadId });
-        if (!res.ok) {
-          setMessage(res.error);
-          return;
-        }
-        const added: EditorProduct = { id: res.id, ...clean, imageUrl };
-        const next = [...products, added];
-        setProducts(next);
-        onResolved(next.length > 0);
-        resetForm();
-        onChanged();
+      } catch {
+        setMessage('Something went wrong saving that product — try again.');
       }
     });
   }
@@ -195,16 +203,20 @@ export default function ProductsEditor({
   function remove(id: string) {
     setMessage(null);
     startTransition(async () => {
-      const res = await onRemove(id);
-      if (!res.ok) {
-        setMessage(res.error ?? 'Could not remove that product.');
-        return;
+      try {
+        const res = await onRemove(id);
+        if (!res.ok) {
+          setMessage(res.error ?? 'Could not remove that product.');
+          return;
+        }
+        const next = products.filter((p) => p.id !== id);
+        setProducts(next);
+        onResolved(next.length > 0);
+        if (editingId === id) resetForm();
+        onChanged();
+      } catch {
+        setMessage('Something went wrong removing that — try again.');
       }
-      const next = products.filter((p) => p.id !== id);
-      setProducts(next);
-      onResolved(next.length > 0);
-      if (editingId === id) resetForm();
-      onChanged();
     });
   }
 
