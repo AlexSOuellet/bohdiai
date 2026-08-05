@@ -74,6 +74,42 @@ describe('ProductsEditor', () => {
     expect(onChanged).toHaveBeenCalled();
   });
 
+  it('surfaces an upload failure instead of failing silently', async () => {
+    const onUpload = vi.fn().mockResolvedValue({ ok: false, error: 'That image is over 10MB — pick a smaller one.' });
+    render(
+      <ProductsEditor
+        initialProducts={[]}
+        onUpload={onUpload}
+        onSave={vi.fn()}
+        onUpdate={vi.fn()}
+        onRemove={vi.fn()}
+        onDraftCopy={vi.fn()}
+        onResolved={vi.fn()}
+        onChanged={vi.fn()}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText('Photo'), { target: { files: [pngFile()] } });
+    await vi.waitFor(() => expect(screen.getByText(/over 10MB/)).toBeInTheDocument());
+  });
+
+  it('surfaces a thrown upload as a friendly error', async () => {
+    const onUpload = vi.fn().mockRejectedValue(new Error('network'));
+    render(
+      <ProductsEditor
+        initialProducts={[]}
+        onUpload={onUpload}
+        onSave={vi.fn()}
+        onUpdate={vi.fn()}
+        onRemove={vi.fn()}
+        onDraftCopy={vi.fn()}
+        onResolved={vi.fn()}
+        onChanged={vi.fn()}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText('Photo'), { target: { files: [pngFile()] } });
+    await vi.waitFor(() => expect(screen.getByText(/didn’t upload/)).toBeInTheDocument());
+  });
+
   it('Ask Bohdi fills the word fields from the draft', async () => {
     const { onDraftCopy } = setup();
     fireEvent.change(screen.getByLabelText('Product name'), { target: { value: 'Amber' } });

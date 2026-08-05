@@ -71,7 +71,10 @@ export default function ProductsEditor({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [hint, setHint] = useState('');
   const [message, setMessage] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  // Bumped to remount the (uncontrolled) file input so it clears after a save.
+  const [fileKey, setFileKey] = useState(0);
   const [pending, startTransition] = useTransition();
 
   // A product needs a name, a real (parseable) price, and — for a new one — a photo.
@@ -92,6 +95,8 @@ export default function ProductsEditor({
     setImageUrl(null);
     setHint('');
     setEditingId(null);
+    setPhotoError(null);
+    setFileKey((k) => k + 1);
   }
 
   function setField(key: keyof ProductForm, value: string) {
@@ -102,6 +107,9 @@ export default function ProductsEditor({
     const file = e.target.files?.[0];
     if (!file) return;
     setMessage(null);
+    setPhotoError(null);
+    setUploadId(null);
+    setImageUrl(null);
     setUploading(true);
     void onUpload(file)
       .then((res) => {
@@ -109,9 +117,10 @@ export default function ProductsEditor({
           setUploadId(res.uploadId);
           setImageUrl(res.url);
         } else {
-          setMessage(res.error);
+          setPhotoError(res.error);
         }
       })
+      .catch(() => setPhotoError('That photo didn’t upload — try again, or pick a smaller image.'))
       .finally(() => setUploading(false));
   }
 
@@ -268,6 +277,7 @@ export default function ProductsEditor({
           <label className="block">
             <span className="text-[11px] uppercase tracking-wider text-muted">Photo</span>
             <input
+              key={fileKey}
               type="file"
               accept="image/jpeg,image/png,image/webp"
               onChange={onPickFile}
@@ -275,9 +285,13 @@ export default function ProductsEditor({
             />
           </label>
           {uploading && <p className="text-xs text-muted">Uploading your photo…</p>}
+          {photoError && <p className="text-xs text-red-400">{photoError}</p>}
           {imageUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={imageUrl} alt="Your product" className="h-24 w-24 rounded-lg object-cover" />
+            <div className="flex items-center gap-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={imageUrl} alt="Your product" className="h-24 w-24 rounded-lg object-cover" />
+              <span className="text-xs text-honey-warm">✓ Photo added</span>
+            </div>
           )}
 
           <label className="block">
