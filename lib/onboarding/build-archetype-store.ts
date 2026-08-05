@@ -51,6 +51,8 @@ export async function persistCollections(
     name: c.name,
     description: c.description,
     status: 'active' as const,
+    // Seeded scaffolding — cleared when the maker makes their store real in the walk.
+    is_preview: true,
   }));
 
   const { data: inserted, error: insertError } = await db

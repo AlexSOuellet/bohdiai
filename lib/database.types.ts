@@ -222,6 +222,7 @@ export type Database = {
           featured_image_id: string | null
           id: string
           is_featured: boolean
+          is_preview: boolean
           name: string
           position: number
           slug: string
@@ -236,6 +237,7 @@ export type Database = {
           featured_image_id?: string | null
           id?: string
           is_featured?: boolean
+          is_preview?: boolean
           name: string
           position?: number
           slug: string
@@ -250,6 +252,7 @@ export type Database = {
           featured_image_id?: string | null
           id?: string
           is_featured?: boolean
+          is_preview?: boolean
           name?: string
           position?: number
           slug?: string
