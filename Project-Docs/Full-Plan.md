@@ -64,12 +64,14 @@ Money goes customer to maker. We never hold it and never take a cut.
 
 ## Listings
 
-- [ ] Add, edit and archive products and digital products
+*The **walk's** goods + collections steps got the simple half in Session 85: add/edit/remove real products (name, price, own photo, short + long copy — typed or Bohdi-drafted), photo upload (auto-downscaled + WebP), and real collections (name + assign real products, cover derived, real-or-off). Placeholders clear when the maker makes their store real; Publish is gated on them. The **standalone Listings admin** below — and the richer product (options, several photos + video, stock, digital, touch-ups, logo) — is the next build.*
+
+- [~] Add, edit and archive products and digital products *(walk: add/edit/remove products ✓; archive, digital, and the standalone admin pending)*
 - [ ] The maker defines their own product options — scent, size, burn time, whatever matters to them. No fixed list from us.
-- [ ] Pricing and stock
-- [ ] Photo upload
+- [~] Pricing and stock *(price ✓ in the walk; stock pending)*
+- [x] Photo upload *(walk — uploads to `tenant-media`, downscaled + WebP; accepts up to 30MB)*
 - [ ] Basic image touch-ups on a maker's own photos — background removal, crop and straighten, brightness, warmth, colour and sharpness cleanup, simple lighting adjustments. Included in the base subscription, no cap; these cost us next to nothing to run. The generative side (lifestyle staging, generative relighting) is a post-launch add-on, not this. (D65)
-- [ ] Create and edit collections, assign products, pick a cover image
+- [~] Create and edit collections, assign products, pick a cover image *(walk: create/edit/remove + assign real products ✓, cover derived from products; a chosen cover image pending)*
 - [ ] Upload a logo after onboarding and optionally update the store's accent colour from it
 
 ## The maker's dashboard
