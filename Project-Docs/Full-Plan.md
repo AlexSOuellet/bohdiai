@@ -40,6 +40,7 @@ Door one is built — the maker picks a different feeling and their store re-pai
 - [ ] **Click straight on something and edit it.** Tap a headline, type a new one, done.
 - [ ] **Highlight and rewrite.** Select a paragraph, tell Bohdi to make it shorter or warmer, take his version or keep yours.
 - [ ] Turn sections on and off, and reorder them.
+- [ ] Try-on Cheerful renders its three-shot collage from the maker's real products (not from AI-generated collage stills). Sparse products render as a sparse collage — no fill (per D73).
 - [x] Undo. Every change reversible, nothing that can break their site. *(Shipped on the editor's draft-and-publish — Undo/Reset/Publish, Session 77.)*
 
 The Vibe Slider is dead and won't be built. It was designed for a world where a store's look was a pile of numbers you could slide between. Families aren't points on a line — they're six different layouts. Picking a feeling is the honest version of what the slider was reaching for. Dials survive where something genuinely has a strength, like the wallpaper control we shipped.
@@ -50,9 +51,9 @@ Nothing here exists. The cart is a placeholder page.
 
 - [ ] Cart — multiple items, quantities, change your mind
 - [ ] Checkout
-- [ ] Stripe
-- [ ] Square
-- [ ] The walkthrough that helps a maker connect their own payment account, in our voice, without sending them off to Stripe's website
+- [ ] Stripe — "Connect with Stripe" flow (OAuth-style; we never hold the maker's secret key), checkout processing, and webhooks
+- [ ] Square — "Connect with Square" flow (same shape), checkout processing, and webhooks
+- [ ] The payment-connect step at the end of the Make It Yours walk — Stripe and Square as two optional connects, either skippable. Skipping points the maker at Settings → Payments; a standing "you can't take orders yet" dashboard nudge stays until at least one processor is connected (per D72)
 - [ ] Orders land in the maker's dashboard with the customer's details
 - [ ] Confirmation email to the customer when they buy, including the maker's post-purchase note if they wrote one
 - [ ] Stock comes down when something sells
@@ -74,6 +75,17 @@ Money goes customer to maker. We never hold it and never take a cut.
 - [~] Create and edit collections, assign products, pick a cover image *(walk: create/edit/remove + assign real products ✓, cover derived from products; a chosen cover image pending)*
 - [ ] Upload a logo after onboarding and optionally update the store's accent colour from it
 
+## Photo library
+
+The `library_assets` table + Storage bucket + `/api/library/ingest` endpoint already exist (Session 67). The remaining work is widening what feeds it, tagging what goes in, and stamping ownership per entry (per D74).
+
+- [ ] Gate the crew's collage-shot generation on `family === 'cheerful'` — non-Cheerful builds stop paying for three fal.ai images they never showed (per D73)
+- [ ] Every crew-generated image auto-ingests into the library as it's rendered — heroes, portraits, product photos, Cheerful collage shots — not just cowork's curated seeds (per D74)
+- [ ] Ownership tier stamped on every library entry: **platform-owned** for crew-generated, **maker-owned** for anything the maker uploaded, prompted-in-the-editor, or edited (edits of platform images cross to maker-owned; the original stays platform-owned) (per D74)
+- [ ] Catalog metadata on platform entries — niche, role, subject kind, family, mood, aspect ratio, prompt, source tenant — so Bohdi can actually find the right image later instead of always generating fresh (per D74)
+- [ ] Lighter catalog on maker entries — prompt (if Bohdi-generated), source image + edit type (if an edit), uploaded flag (if their own), slot placed in (per D74)
+- [ ] Terms of Service reflects the two-tier ownership before the first founding member signs — platform-generated images are BohdiAI's; maker-generated/uploaded/edited images belong to the maker (per D74)
+
 ## The maker's dashboard
 
 Two of six pages exist. These four don't.
@@ -81,19 +93,21 @@ Two of six pages exist. These four don't.
 - [ ] Listings
 - [ ] Orders
 - [ ] Log a Sale
-- [ ] Settings — account, subscription, payment setup
+- [ ] Settings — account and subscription
+- [ ] Settings → Payments — connect Stripe or Square (or disconnect either); the home for the walk's payment step, and where a maker who skipped it in the walk goes to hook it up later (per D72)
 - [ ] Link to the Skool community
 
 ## Market days
 
 The maker's own POS. They take the card the way they always have, on their own reader. Our part is everything around it.
 
-- [ ] Market screen — tap through several items, quantities, running total, record the sale
+- [ ] Market screen — tap through several items, quantities, running total, record the sale with the payment method the customer used (cash, their own card reader, Venmo, CashApp, check, other — we're the record-keeper for payments that happen outside our system, per D72)
 - [ ] Stock drops as they sell
 - [ ] Tag each sale to the market it happened at
 - [ ] Add upcoming markets; they show on the store's public calendar
 - [ ] Log what a show cost — booth fee, gas, supplies
 - [ ] See per-show profit, so they know which shows are worth the drive
+- [ ] Venmo and CashApp QR codes saved once by the maker, shown full-size on the market screen when either is picked as the payment method — one tap, no phone-fumbling. Not required at launch; designed for so we don't paint ourselves out of it later.
 
 This is the thing no big platform gives a craft-fair maker. It's the reason one of them picks us.
 

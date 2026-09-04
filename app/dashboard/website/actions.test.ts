@@ -98,6 +98,9 @@ import {
   updateWalkProduct,
   removeWalkProduct,
   uploadProductPhoto,
+  uploadHeroImage,
+  setHeroMedia,
+  replaceCollageShots,
   draftProductCopyAction,
   createWalkCollection,
   updateWalkCollection,
@@ -639,6 +642,145 @@ describe('uploadProductPhoto', () => {
     const fd = new FormData();
     fd.set('file', new File(['x'], 'candle.png', { type: 'image/png' }));
     const res = await uploadProductPhoto(fd);
+    expect(res.ok).toBe(false);
+  });
+});
+
+describe('uploadHeroImage', () => {
+  it('uploads under the tenant hero folder and records the uploads row', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    const fd = new FormData();
+    fd.set('file', new File(['x'], 'hero.png', { type: 'image/png' }));
+    const res = await uploadHeroImage(fd);
+    expect(res.ok).toBe(true);
+    if (res.ok) {
+      expect(res.uploadId).toBe('up1');
+      expect(res.url).toBe('https://x/p.jpg');
+    }
+    // Storage path lives under a hero folder — keeps hero assets separate from products.
+    const row = uploadsInsert.mock.calls[0]![0] as Record<string, unknown>;
+    expect(row['storage_path']).toMatch(/tenant\/t1\/hero\/.+\.webp$/);
+  });
+
+  it('rejects a disallowed file type', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    const fd = new FormData();
+    fd.set('file', new File(['x'], 'bad.gif', { type: 'image/gif' }));
+    const res = await uploadHeroImage(fd);
+    expect(res.ok).toBe(false);
+    expect(storageUpload).not.toHaveBeenCalled();
+  });
+
+  it('rejects when no store', async () => {
+    getCurrentShop.mockResolvedValue(null);
+    const fd = new FormData();
+    fd.set('file', new File(['x'], 'hero.png', { type: 'image/png' }));
+    const res = await uploadHeroImage(fd);
+    expect(res.ok).toBe(false);
+  });
+});
+
+describe('setHeroMedia', () => {
+  it('writes moment.media as a still with the given url + alt, marks hero made', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    readDraftTree.mockResolvedValue(null);
+    loadHomeEnvelope.mockResolvedValue({ kind: 'archetype', content: { moment: { media: { kind: 'video', url: '/old.mp4', alt: 'old', prompt: {} } } } });
+    stageDraftTree.mockResolvedValue({ ok: true });
+
+    const res = await setHeroMedia('https://cdn.test/hero.webp', 'a photo of my workbench');
+    expect(res.ok).toBe(true);
+    const staged = stageDraftTree.mock.calls[0]![1] as { root: { content: { moment: { media: unknown }; madeYours?: string[] } } };
+    expect(staged.root.content.moment.media).toMatchObject({ kind: 'still', url: 'https://cdn.test/hero.webp', alt: 'a photo of my workbench' });
+    expect(staged.root.content.madeYours).toContain('hero');
+  });
+
+  it('rejects an empty url', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    const res = await setHeroMedia('', 'alt');
+    expect(res.ok).toBe(false);
+    expect(stageDraftTree).not.toHaveBeenCalled();
+  });
+
+  it('rejects when no store', async () => {
+    getCurrentShop.mockResolvedValue(null);
+    const res = await setHeroMedia('https://cdn.test/hero.webp', 'alt');
+    expect(res.ok).toBe(false);
+  });
+});
+
+describe('replaceCollageShots', () => {
+  const seedTree = () => ({
+    kind: 'archetype',
+    content: {
+      moment: {
+        media: { kind: 'still', prompt: {}, alt: 'hero', url: '/hero.jpg' },
+        collageShots: [
+          { url: '/ai0.jpg', alt: 'ai0', prompt: {} },
+          { url: '/ai1.jpg', alt: 'ai1', prompt: {} },
+          { url: '/ai2.jpg', alt: 'ai2', prompt: {} },
+        ],
+      },
+    },
+  });
+
+  it('length 1: replaces the featured slot (0) only, keeps AI in slots 1 and 2', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    readDraftTree.mockResolvedValue(null);
+    loadHomeEnvelope.mockResolvedValue(seedTree());
+    stageDraftTree.mockResolvedValue({ ok: true });
+
+    const res = await replaceCollageShots([{ url: 'https://cdn.test/mine0.webp', alt: 'my featured' }]);
+    expect(res.ok).toBe(true);
+    const staged = stageDraftTree.mock.calls[0]![1] as { root: { content: { moment: { collageShots: { url: string; alt: string }[] }; madeYours?: string[] } } };
+    const shots = staged.root.content.moment.collageShots;
+    expect(shots).toHaveLength(3);
+    expect(shots[0]).toMatchObject({ url: 'https://cdn.test/mine0.webp', alt: 'my featured' });
+    expect(shots[1]!.url).toBe('/ai1.jpg');
+    expect(shots[2]!.url).toBe('/ai2.jpg');
+    expect(staged.root.content.madeYours).toContain('hero');
+  });
+
+  it('length 3: replaces every slot with the maker photos in order', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    readDraftTree.mockResolvedValue(null);
+    loadHomeEnvelope.mockResolvedValue(seedTree());
+    stageDraftTree.mockResolvedValue({ ok: true });
+
+    const res = await replaceCollageShots([
+      { url: 'https://cdn.test/m0.webp', alt: 'a' },
+      { url: 'https://cdn.test/m1.webp', alt: 'b' },
+      { url: 'https://cdn.test/m2.webp', alt: 'c' },
+    ]);
+    expect(res.ok).toBe(true);
+    const staged = stageDraftTree.mock.calls[0]![1] as { root: { content: { moment: { collageShots: { url: string }[] } } } };
+    const shots = staged.root.content.moment.collageShots;
+    expect(shots.map((s) => s.url)).toEqual([
+      'https://cdn.test/m0.webp',
+      'https://cdn.test/m1.webp',
+      'https://cdn.test/m2.webp',
+    ]);
+  });
+
+  it('rejects length 0 (walk step is completed via keepSection instead)', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    const res = await replaceCollageShots([]);
+    expect(res.ok).toBe(false);
+    expect(stageDraftTree).not.toHaveBeenCalled();
+  });
+
+  it('rejects length 2 (design rule: 0 / 1 / 3 only, per D73)', async () => {
+    getCurrentShop.mockResolvedValue({ tenantId: 't1' });
+    const res = await replaceCollageShots([
+      { url: 'https://cdn.test/m0.webp', alt: 'a' },
+      { url: 'https://cdn.test/m1.webp', alt: 'b' },
+    ]);
+    expect(res.ok).toBe(false);
+    expect(stageDraftTree).not.toHaveBeenCalled();
+  });
+
+  it('rejects when no store', async () => {
+    getCurrentShop.mockResolvedValue(null);
+    const res = await replaceCollageShots([{ url: 'https://cdn.test/x.webp', alt: 'x' }]);
     expect(res.ok).toBe(false);
   });
 });

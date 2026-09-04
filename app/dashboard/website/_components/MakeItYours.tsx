@@ -4,9 +4,11 @@ import { useState } from 'react';
 import type { WalkthroughStep } from '@/lib/editor/walkthrough';
 import type { SectionResolution } from '@/lib/editor/section-state';
 import type { MomentPlayMode } from '@/lib/archetypes/main-street/moment-gate';
+import type { FamilyKey } from '@/lib/archetypes/main-street/families';
 import SectionEditor from './SectionEditor';
 import type { EditorProduct } from './ProductsEditor';
 import type { EditorCollection } from './CollectionsEditor';
+import type { HeroMediaSummary, CollageShotSummary } from './HeroPhotoPanel';
 
 interface MakeItYoursProps {
   /** Signed token authorising the draft preview for this tenant. */
@@ -40,13 +42,19 @@ interface MakeItYoursProps {
   products?: readonly EditorProduct[];
   /** The maker's real collections (seeds the collections step). */
   collections?: readonly EditorCollection[];
+  /** The maker's family key — drives the hero step's photo UI (single vs 0/1/3 collage). */
+  family: FamilyKey;
+  /** Current `moment.media` summary — seeds the hero step's photo preview (non-Cheerful). */
+  heroMedia?: HeroMediaSummary | undefined;
+  /** Current `moment.collageShots` summaries — seeds the hero step's collage preview (Cheerful). */
+  heroShots?: readonly CollageShotSummary[] | undefined;
 }
 
 /** The full-screen "Make It Yours" walk — the second half of onboarding (D69). No
  *  dashboard chrome, no way out: it steps through every section, and the editor door
  *  stays closed until it's done (the gate lives on the routes). Left column is the
  *  section being made yours; right column is the live draft preview. */
-export default function MakeItYours({ previewToken, previewOrigin, values, steps, momentPlayMode, moodLabel, reviewsShowsRating, reviewsSummary, resolvedFlags, resolutions, products, collections }: MakeItYoursProps) {
+export default function MakeItYours({ previewToken, previewOrigin, values, steps, momentPlayMode, moodLabel, reviewsShowsRating, reviewsSummary, resolvedFlags, resolutions, products, collections, family, heroMedia, heroShots }: MakeItYoursProps) {
   // The walk always starts at the beginning and runs top to bottom. Sections the maker
   // already finished in an earlier sitting open marked completed (Next stays open on
   // them) so they can breeze past or make changes — nothing is skipped or hidden.
@@ -209,6 +217,9 @@ export default function MakeItYours({ previewToken, previewOrigin, values, steps
             moodLabel={moodLabel}
             reviewsShowsRating={reviewsShowsRating}
             reviewsSummary={reviewsSummary}
+            family={family}
+            heroMedia={heroMedia}
+            heroShots={heroShots}
             onResolved={markResolved}
             onChanged={() => setNonce((n) => n + 1)}
           />

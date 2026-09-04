@@ -29,6 +29,7 @@ import type { FindUsTreatment } from './findus';
 import type { FounderTreatment } from './founder';
 import { Reveal } from './Reveal';
 import { FAMILIES, type Family, type FamilySectionStackEntry, type SectionKey } from './families';
+import { resolveCollageShots } from './collage-source';
 
 export interface MainStreetProps {
   content: MainStreetContent;
@@ -91,9 +92,14 @@ export interface MainStreetProps {
    *  line draws only from these, so a store never scrolls seeded sample dates the
    *  maker never entered. Empty/absent → the info line stays empty. */
   shownSections?: readonly SectionKey[] | undefined;
+  /** The tenant's ORIGINAL mood at onboarding (`tenants.mood_key`). Distinct from
+   *  the current `family` (which may be an editor preview override). Threaded into
+   *  the collage-source projection to distinguish native Cheerful from try-on
+   *  Cheerful (see D73 + collage-source.ts). */
+  originalMood?: string | undefined;
 }
 
-export function MainStreet({ content, skin, products, sectionStack, catalogSize, goodsTreatment, collections, collectionsTreatment, collectionsHref, founderTreatment, shopHref, aboutHref, eventsHref, momentKey, heroVariant, reviewsTreatment, findUsTreatment, family, hiddenSections, shownSections }: MainStreetProps) {
+export function MainStreet({ content, skin, products, sectionStack, catalogSize, goodsTreatment, collections, collectionsTreatment, collectionsHref, founderTreatment, shopHref, aboutHref, eventsHref, momentKey, heroVariant, reviewsTreatment, findUsTreatment, family, hiddenSections, shownSections, originalMood }: MainStreetProps) {
   const stack = sectionStack ?? FAMILIES.cozy.sectionStack;
   // The maker's walk resolutions applied to the render: turned-off sections are
   // dropped entirely, and the marquee's live logistics draw only from made-real ones.
@@ -119,8 +125,13 @@ export function MainStreet({ content, skin, products, sectionStack, catalogSize,
   // yet the section stays hidden). Hero and Close are always rendered from the
   // stack in their fixed positions; Contact returns null everywhere because the
   // home block isn't built yet.
+  // For Cheerful, resolve the collage source: native Cheerful trusts its shots;
+  // try-on Cheerful (originalMood !== 'cheerful') derives from real products. For
+  // every other current family this is a passthrough. See collage-source.ts + D73.
+  const heroMoment = resolveCollageShots(content.moment, family, products, originalMood);
+
   const renderers: Record<SectionKey, () => React.ReactNode | null> = {
-    hero: () => resolveHero(heroVariant)({ identity: content.identity, moment: content.moment, skin, momentKey }),
+    hero: () => resolveHero(heroVariant)({ identity: content.identity, moment: heroMoment, skin, momentKey }),
     founder: () => (
       <Reveal>
         <FounderBeat founder={content.founder} skin={skin} treatment={founderTreatment} aboutHref={aboutHref} aboutPage={content.about} />

@@ -51,6 +51,37 @@ export default async function MakeItYoursPage() {
   const steps = walkUiSteps(mood);
   const family = getFamily(mood);
   const moodLabel = family.publicMoodLabel;
+
+  // Hero step needs the current moment.media (non-Cheerful preview) and
+  // moment.collageShots (Cheerful preview) to render its photo controls.
+  const momentRec = moment !== null && typeof moment === 'object' && !Array.isArray(moment) ? (moment as Record<string, unknown>) : undefined;
+  const mediaRec = momentRec?.['media'];
+  const heroMedia =
+    mediaRec !== null && typeof mediaRec === 'object' && !Array.isArray(mediaRec)
+      ? (() => {
+          const m = mediaRec as Record<string, unknown>;
+          const kind = m['kind'];
+          const url = m['url'];
+          if (typeof url !== 'string' || url.length === 0) return undefined;
+          if (kind !== 'still' && kind !== 'video') return undefined;
+          const alt = typeof m['alt'] === 'string' ? (m['alt'] as string) : '';
+          return { kind: kind as 'still' | 'video', url, alt };
+        })()
+      : undefined;
+  const shotsRaw = momentRec?.['collageShots'];
+  const heroShots = Array.isArray(shotsRaw)
+    ? shotsRaw
+        .map((s) => {
+          if (s === null || typeof s !== 'object' || Array.isArray(s)) return null;
+          const rec = s as Record<string, unknown>;
+          const url = rec['url'];
+          if (typeof url !== 'string' || url.length === 0) return null;
+          const alt = typeof rec['alt'] === 'string' ? (rec['alt'] as string) : '';
+          return { url, alt };
+        })
+        .filter((s): s is { url: string; alt: string } => s !== null)
+        .slice(0, 3)
+    : undefined;
   // Only the star-RATING reviews layout shows an overall number, so only that feeling's
   // reviews step offers the optional real-rating fields. Seed them from the current
   // summary (if the maker has already entered one).
@@ -91,6 +122,9 @@ export default async function MakeItYoursPage() {
       resolutions={resolutions}
       products={products}
       collections={collections}
+      family={family.key}
+      heroMedia={heroMedia}
+      heroShots={heroShots}
     />
   );
 }

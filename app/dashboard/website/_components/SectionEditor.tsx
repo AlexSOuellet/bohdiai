@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { getField, type EditableField } from '@/lib/editor/editable-fields';
-import type { SectionKey } from '@/lib/archetypes/main-street/families';
+import type { SectionKey, FamilyKey } from '@/lib/archetypes/main-street/families';
 import type { MomentPlayMode } from '@/lib/archetypes/main-street/moment-gate';
 import type { SectionClass } from '@/lib/editor/walkthrough';
 import type { SectionResolution } from '@/lib/editor/section-state';
@@ -10,6 +10,7 @@ import type { Turn } from '@/lib/editor/conversation';
 import RowsEditor, { type RowColumn } from './RowsEditor';
 import ProductsEditor, { type EditorProduct } from './ProductsEditor';
 import CollectionsEditor, { type EditorCollection } from './CollectionsEditor';
+import HeroPhotoPanel, { type HeroMediaSummary, type CollageShotSummary } from './HeroPhotoPanel';
 import {
   converseSection,
   writeSectionFromConversation,
@@ -23,6 +24,9 @@ import {
   updateWalkProduct,
   removeWalkProduct,
   uploadProductPhoto,
+  uploadHeroImage,
+  setHeroMedia,
+  replaceCollageShots,
   draftProductCopyAction,
   createWalkCollection,
   updateWalkCollection,
@@ -242,6 +246,14 @@ export interface SectionEditorProps {
   /** Reviews step only — the current overall rating on the store, to seed the rating
    *  fields when the maker has already made them theirs. */
   reviewsSummary?: { score?: string | undefined; count?: string | undefined } | undefined;
+  /** The maker's current family — used by the hero step to decide whether to render
+   *  the single-photo control (non-Cheerful) or the 0/1/3 collage upload (Cheerful).
+   *  Optional so callers on non-hero steps don't have to compute it. */
+  family?: FamilyKey | undefined;
+  /** Hero step only — the current `moment.media` summary, seeds the non-Cheerful preview. */
+  heroMedia?: HeroMediaSummary | undefined;
+  /** Hero step only — the current `moment.collageShots` summaries, seeds the Cheerful preview. */
+  heroShots?: readonly CollageShotSummary[] | undefined;
   /** Report resolution up so the host can gate Next: true once made/kept/off, false
    *  again if the maker turns a section back on. */
   onResolved: (resolved: boolean) => void;
@@ -271,6 +283,9 @@ export default function SectionEditor({
   moodLabel,
   reviewsShowsRating = false,
   reviewsSummary,
+  family,
+  heroMedia,
+  heroShots,
   onResolved,
   onChanged,
 }: SectionEditorProps) {
@@ -725,6 +740,29 @@ export default function SectionEditor({
         <p className="mt-4 text-sm text-honey-warm">Kept — this section stays as it is.</p>
       )}
       {message && <p className="mt-4 text-sm text-text-soft">{message}</p>}
+
+      {/* Hero step only (not the Cozy Moment sub-step) — the maker's own photo(s).
+          Non-Cheerful families see a single-photo control; Cheerful sees the 0/1/3
+          collage upload UI (D73). Rendered here after the conversation so it reads
+          as "your own image, on top of your own words." */}
+      {section === 'hero' && !isMoment && family !== undefined && (
+        <div className="mt-6 border-t border-white/8 pt-5">
+          <HeroPhotoPanel
+            family={family}
+            media={heroMedia}
+            shots={heroShots}
+            onUpload={(file) => {
+              const fd = new FormData();
+              fd.set('file', file);
+              return uploadHeroImage(fd);
+            }}
+            onSetHeroMedia={(url, alt) => setHeroMedia(url, alt)}
+            onReplaceCollageShots={(shots) => replaceCollageShots(shots)}
+            onResolved={onResolved}
+            onChanged={onChanged}
+          />
+        </div>
+      )}
 
       {/* Moment step only — how often the opening plays (D54). Keep/reword the lines
           above; this sets the frequency, and any choice resolves the Moment step. */}

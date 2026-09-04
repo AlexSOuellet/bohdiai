@@ -1102,10 +1102,20 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-stackedhero .ms-hero-navbar{position:relative}
     .arch-main-street .ms-stackedhero-stack{display:flex;flex-direction:column;align-items:center;text-align:center;padding:clamp(32px,6vh,72px) clamp(24px,6vw,64px)}
     .arch-main-street .ms-stackedhero-media{position:relative;overflow:hidden;background:var(--ms-contrast-bg);flex:1;min-height:40vh}
-    /* Typographic hero — no media backdrop; brand headline IS the picture. */
-    .arch-main-street .ms-typohero{display:flex;flex-direction:column;min-height:100vh;background:var(--ms-bg);color:var(--ms-fg)}
-    .arch-main-street .ms-typohero .ms-hero-navbar{position:relative}
-    .arch-main-street .ms-typohero-stack{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(40px,8vh,120px) clamp(24px,6vw,72px)}
+    /* Typographic hero — the type carries it; when moment.media is a still an
+       optional backdrop paints a subtle atmospheric photo layer behind the type,
+       kept quiet by a surface-color overlay so the type stays clearly readable. */
+    .arch-main-street .ms-typohero{position:relative;display:flex;flex-direction:column;min-height:100vh;background:var(--ms-bg);color:var(--ms-fg);isolation:isolate}
+    .arch-main-street .ms-typohero .ms-hero-navbar{position:relative;z-index:2}
+    .arch-main-street .ms-typohero-backdrop{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+    .arch-main-street .ms-typohero-backdrop img,
+    .arch-main-street .ms-typohero-backdrop video{width:100%;height:100%;object-fit:cover;object-position:50% 55%;opacity:.55;filter:contrast(.94) brightness(1.02) saturate(.92);display:block}
+    /* Overlay that pulls the backdrop back to the family's surface color so the
+       type never fights the photo — softer at top for depth, denser toward
+       edges/bottom to hold long copy. Uses ms-bg (family surface) so every family
+       that lands on Typographic reads its own atmosphere. */
+    .arch-main-street .ms-typohero-backdrop::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 100% at 50% 0%, color-mix(in srgb, var(--ms-bg) 55%, transparent), color-mix(in srgb, var(--ms-bg) 78%, transparent) 55%, color-mix(in srgb, var(--ms-bg) 92%, transparent))}
+    .arch-main-street .ms-typohero-stack{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(40px,8vh,120px) clamp(24px,6vw,72px)}
     .arch-main-street .ms-typohero-stack .ms-hero-brand{max-width:16ch}
     .arch-main-street .ms-typohero-stack .ms-hero-sub{max-width:46ch;margin:0}
     /* Floating card hero — media backdrop, then a solid card floating over it. */

@@ -268,7 +268,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   mediaJobs,
   applyMedia,
   toPayload,
-  render: ({ content, lookKey, products, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, tenantId, mood, heroVariant, goodsTreatment, collections, collectionsTreatment, reviewsTreatment, findUsTreatment, founderTreatment, navVariant, previewTexture, previewTextureOpacity }) => {
+  render: ({ content, lookKey, products, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, tenantId, mood, originalMood, heroVariant, goodsTreatment, collections, collectionsTreatment, reviewsTreatment, findUsTreatment, founderTreatment, navVariant, previewTexture, previewTextureOpacity }) => {
     const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
     // Resolve the family AND its section variants from the tenant's mood, then
     // apply any preview URL overrides. Every page below wears the SAME picks so
@@ -338,7 +338,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       case 'testimonials':
         return <TestimonialsPage content={c} skin={skin} family={family} />;
       default:
-        return <MainStreet content={c} skin={skin} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} hiddenSections={resolutions.hidden} shownSections={resolutions.shown} />;
+        return <MainStreet content={c} skin={skin} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} hiddenSections={resolutions.hidden} shownSections={resolutions.shown} originalMood={originalMood} />;
     }
   },
   renderProduct: ({ content, lookKey, product, mood, logoUrl, brandColors, accentOverride }) => {

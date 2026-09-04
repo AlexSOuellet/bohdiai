@@ -54,14 +54,19 @@ export const loadDraftEnvelope = cache(async (tenantId: string): Promise<Record<
 /** Load the tenant's logo URL + brand colors in a single round-trip. Both are
  *  chrome facts, not authored content. `logoUrl` is undefined when no logo is
  *  stored; `brandColors` is [] when no color analysis has run. Cached per-request. */
-export const loadTenantChrome = cache(async (tenantId: string): Promise<{ logoUrl: string | undefined; brandColors: string[] }> => {
+export const loadTenantChrome = cache(async (tenantId: string): Promise<{ logoUrl: string | undefined; brandColors: string[]; moodKey: string | undefined }> => {
   const { data } = await supabaseAdmin()
     .from('tenants')
-    .select('logo_url, brand_colors')
+    .select('logo_url, brand_colors, mood_key')
     .eq('id', tenantId)
     .maybeSingle();
   return {
     logoUrl: data?.logo_url ?? undefined,
     brandColors: data?.brand_colors ?? [],
+    // The tenant's ORIGINAL mood at onboarding (`tenants.mood_key`). Distinct from
+    // any editor preview mood override or draft mood swap — this is the maker's
+    // original family. Downstream renderers (e.g. Cheerful's collage source, D73)
+    // need this to distinguish native-family vs try-on state.
+    moodKey: data?.mood_key ?? undefined,
   };
 });

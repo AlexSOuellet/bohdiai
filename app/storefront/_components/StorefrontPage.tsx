@@ -303,7 +303,7 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
   const mood = resolvePreviewMood(previewMood, storedMood);
   const catalogSize = typeof env['catalogSize'] === 'number' ? (env['catalogSize'] as number) : undefined;
   const accentOverride = typeof env['accentOverride'] === 'string' ? (env['accentOverride'] as string) : undefined;
-  const { logoUrl, brandColors } = await loadTenantChrome(tenantId);
+  const { logoUrl, brandColors, moodKey: originalMood } = await loadTenantChrome(tenantId);
   // ?reviews= names a treatment; when the store has no authored reviews, seed sample
   // testimonials into the content so every treatment is viewable (non-persisting,
   // same "placeholder, not labeled" model as the collections/marquee previews).
@@ -331,5 +331,5 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
   // Editor preview texture params (URL) win; on a normal visit the saved texture
   // setting on the envelope applies. See lib/editor/texture.
   const texture = resolveTextureParams(previewTexture, previewTextureOpacity, env['texture']);
-  return spec.render({ content, lookKey: effectiveLook, products: effectiveProducts, mood, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, tenantId, heroVariant: previewHero, goodsTreatment: previewGoods, collections, collectionsTreatment: previewCollections, reviewsTreatment: previewReviews, findUsTreatment: previewFindUs, founderTreatment: previewFounder, navVariant: previewNav, previewTexture: texture.previewTexture, previewTextureOpacity: texture.previewTextureOpacity });
+  return spec.render({ content, lookKey: effectiveLook, products: effectiveProducts, mood, originalMood, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, tenantId, heroVariant: previewHero, goodsTreatment: previewGoods, collections, collectionsTreatment: previewCollections, reviewsTreatment: previewReviews, findUsTreatment: previewFindUs, founderTreatment: previewFounder, navVariant: previewNav, previewTexture: texture.previewTexture, previewTextureOpacity: texture.previewTextureOpacity });
 }

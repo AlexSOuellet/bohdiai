@@ -38,6 +38,7 @@ function renderWalk(mood = 'cozy') {
       steps={walkUiSteps(mood)}
       momentPlayMode="once"
       moodLabel="Cozy"
+      family="cozy"
     />,
   );
 }
@@ -80,7 +81,7 @@ describe('MakeItYours (full-screen walk)', () => {
   function renderStep(section: string) {
     const step = walkUiSteps('rustic').find((s) => s.section === section)!;
     render(
-      <MakeItYours previewToken="tok-123" previewOrigin="https://ember.test" values={{}} steps={[step]} momentPlayMode="once" moodLabel="Cozy" />,
+      <MakeItYours previewToken="tok-123" previewOrigin="https://ember.test" values={{}} steps={[step]} momentPlayMode="once" moodLabel="Cozy" family="rustic" />,
     );
     fireEvent.click(screen.getByRole('button', { name: /Let’s go/ }));
     return (screen.getByTitle('Your store preview') as HTMLIFrameElement).src;
@@ -132,6 +133,7 @@ describe('MakeItYours (full-screen walk)', () => {
         moodLabel="Cozy"
         resolvedFlags={resolvedFlags}
         resolutions={resolutions}
+        family="cozy"
       />,
     );
     // Opens on the welcome and starts at the top — no jump past finished sections.
@@ -177,6 +179,7 @@ describe('MakeItYours (full-screen walk)', () => {
         steps={oneStep}
         momentPlayMode="once"
         moodLabel="Cozy"
+        family="cozy"
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /Let’s go/ }));

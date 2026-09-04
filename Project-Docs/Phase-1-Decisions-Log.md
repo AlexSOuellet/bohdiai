@@ -920,6 +920,8 @@ This refines D67, which framed the walk as phased (words → photos → sections
 
 **Open item:** whether any structurally load-bearing section (the hero especially) is exempt from "skip → off," or whether everything except About and Listings is genuinely skippable. Alex named collections and reviews as skippable; the full list of what can be turned off vs. must be kept-or-changed isn't settled yet.
 
+Refined by D72: payment setup is added as the walk's closing step — after every personalization section is resolved, the walk ends by giving the maker the chance to connect Stripe and/or Square. It's optional; if skipped, the walk points the maker at Settings → Payments so they know where to find it later. It doesn't gate anything the way About and Listings do at publish time; the safety net is a standing dashboard nudge that lives until at least one processor is connected.
+
 ### D70. Placeholder reviews are allowed as draft scaffolding; the publish gate — not the draft — enforces real-or-off (refines D68)
 
 D68 said a testimonial is never AI-generated — real customer quotes only, or the section off. This refines that. The generated store is built with every section on and populated, and reviews are no exception: the maker sees AI-generated placeholder reviews in the walk, the same way they see placeholder products, so the section demonstrates itself. Those placeholders are scaffolding for the draft only. In the walk the maker either replaces the placeholder quotes with real ones, or skips the section and it turns off. The honesty rule moves from the draft to the publish gate: the store can't go live while any AI-generated review is still showing. A fabricated review can exist in the draft as scaffolding; it can never reach the published, live store.
@@ -933,6 +935,84 @@ The storefront's public calendar — the where-to-find-you section — is a simp
 This decouples the calendar from Market Mode, where the Master Spec (§9) and D18/D38 had bundled it. The calendar is built on its own, small and simple, and can be made-yours in the "Make It Yours" walk (enter your real dates, or turn the section off) with none of the Market Days sales machinery in place. When Market Days is built, it references these events for attribution rather than owning them.
 
 Because it's standalone and small, the calendar's dates editor is built as part of the Make It Yours walk (the where-to-find-you section), not deferred to a Market Days build with no date on it. This refines the spec at `docs/superpowers/specs/2026-07-31-make-it-yours-onboarding-walk-design.md`, where find-us was first set aside as toggle-only.
+
+### D72. Payment setup is the closing step of the "Make It Yours" walk — optional, with a Settings → Payments home the walk points to when skipped
+
+Payment setup was originally listed under Commerce as "a walkthrough that helps a maker connect their own payment account, in our voice." Two things about that were wrong. First, tucking it into Settings for a maker to discover means some of them build a store they love, share it with someone, and only then find out no money can move — the discoverability failure is the whole problem. Second, treating it as a separate one-off walkthrough understates it: it's the single thing standing between a finished store and actually selling. It belongs inside the guided flow the maker is already on.
+
+By the time payment setup runs, onboarding has built the store and the walk has personalized it section by section. Payment setup is the walk's closing step — after the maker has made the store theirs, the last thing the walk does is make sure they can get paid for it. Ending on it means every maker sees it exactly once, at the moment they're most likely to feel ready for it. Starting on it would front-load a business chore before they've finished the personalization pass; ending on it lets the walk crescendo into "you're ready to sell," rather than opening on paperwork.
+
+The connect itself is done through Stripe's and Square's own "Connect with…" buttons — the standard OAuth-style flow every other tool uses. The maker logs in on Stripe's or Square's side; we're handed back a token that only authorizes charging into their account. We never touch their password and never hold their raw secret keys. Stripe's embedded components keep the flow visually inside our app; Square's flow is more likely to bounce out to Square's own login page briefly and bounce back. Both are secure — the security guarantee is precisely that the credential moment happens on the processor's side, not ours. A form in our app that asks the maker to paste in a secret key is the wrong version and won't be built.
+
+The walk offers **both** Stripe and Square as two separate connects, not either-or. Stripe is the online-first path (checkout on the storefront). Square is the market-day path (their own card reader at a craft fair). Most makers will want both — Stripe for the website, Square for the booth, and orders from either landing in the same dashboard.
+
+Both connects are **optional**. A maker who isn't ready to hook up a processor that minute can skip the step and finish the walk. When they skip, the walk tells them plainly where to find it later — **Settings → Payments** — so they never have to hunt for it. The standing **"you can't take orders yet" nudge on the dashboard** carries the reminder forward, staying until at least one processor is connected. Between the plain pointer at skip-time and the standing nudge, a maker who defers payment setup can't lose track of it.
+
+Consumer peer-to-peer apps — **Venmo and CashApp** — are handled as market-day payments only, not storefront payments. Our makers' shoppers who reach for these are the "I'll Venmo you" kind of person standing at their booth, not the "I want to check out online with Venmo" kind. So neither app needs a storefront-checkout integration. In Market Days the maker records the sale on our screen and picks the payment method — Venmo, CashApp, cash, their own card reader, check, other — and we're the record-keeper for a payment that happened outside our system. **CashApp** does come along free-ish on the online side because it appears as a payment option inside Square's checkout (Square owns CashApp) — a nice-to-have, not a driver.
+
+**PayPal** is not added for launch. The only reason to consider it was to accept Venmo online through PayPal's checkout, and if our makers' Venmo shoppers pay in person rather than online, that value largely evaporates. PayPal also carries a well-documented history of freezing small-seller accounts that would fall hardest on our audience. Revisit only if founding members' shoppers actively ask for it — a real signal, not a hypothetical.
+
+Testing is done in Stripe test mode and Square sandbox — real UI, fake money. Alex creates a test Stripe account (instant, no bank details), connects it through the walk, and shops his own store with Stripe's magic test card numbers to see the whole flow end to end without a dollar at risk. Square works the same via its sandbox, including simulating a card-reader tap without buying hardware; a real reader gets involved only when it's time to prove the physical device works. The Full Plan's rule that anything touching checkout or payments proves itself on staging before production still applies.
+
+Two build consequences follow from this decision. First, Settings → Payments has to exist as its own page in the dashboard — the walk's skip pointer is only honest if that page is there for the maker to land on. Second, Stripe and Square as installable connections don't exist yet — Commerce is empty apart from a placeholder cart. So the walk's payment step is designed and specified here, and lands when the Stripe and Square integrations are built. The Full Plan reflects both — the payment-connect walk step under Commerce, and Settings → Payments broken out as its own dashboard page.
+
+This refines D69 (the shape of the walk) and replaces the earlier "walkthrough that helps a maker connect their own payment account" bullet under Commerce.
+
+### D73. Cheerful's collage draws from real content — walk asks for 0/1/3 uploads; try-on renders from the maker's products; non-Cheerful builds stop generating collage shots
+
+Cheerful is the one family whose hero is a three-shot collage; every other family shows one hero photo (or, in Luxury's case, no photo). Today the crew generates three dedicated collage stills for **every** store at build time, regardless of family — the cinematographer is prompted to author three varied scenes on every build, the builder queues them as fal.ai image jobs, and the results sit in `moment.collageShots` unused unless the maker later tries on Cheerful. That's five out of six stores paying for three image generations they never show.
+
+This decision replaces that with three coordinated rules that keep Cheerful's collage design intact while removing the wasted generation.
+
+**In the walk, when the maker's family is Cheerful, the hero step accepts 0, 1, or 3 uploads — never 2.** Zero uploads keeps the three AI-generated collage shots the crew already built. One upload takes the featured (biggest) slot; the two supporting slots keep the AI shots. Three uploads fills all three slots with the maker's photos. Two uploads is excluded because it doesn't produce a clean visual balance — one-real-plus-two-AI has an anchor and a supporting cast; two-real-plus-one-AI reads as an AI photo polluting the real ones. Makers tend to think in "flagship" or "curated set" terms, not "half a set."
+
+**In the walk, for every other family, the hero step accepts 0 or 1 uploads** — keep the AI hero photo or replace it with one of the maker's. This half is unchanged from what the walk was already going to do.
+
+**After the walk, when a maker on a non-Cheerful family tries on Cheerful in the editor, the collage renders from the maker's real products** instead of from AI-generated collage shots. By the time try-on is available, the walk has finished and the maker has real listings (Listings is a required walk section). Cheerful's three slots pull three product photos from the catalog. If the maker has fewer than three products, the collage renders sparse — one or two shots in a corner where three could be — and that's intentional: it's an honest signal to add more products, not something we paper over with fill. Same principle as everywhere else on the platform (render what the maker actually has).
+
+**Because try-on Cheerful can now draw from products, non-Cheerful builds stop generating collage shots entirely.** Gate the cinematographer's collage-shots block and the builder's `collage:0/1/2` media jobs on `family === 'cheerful'`. Every Cozy/Rustic/Dark/Luxury/Modern build stops paying for three fal.ai image generations. On stores that are Cheerful from onboarding, generation stays as-is (three shots at build) and the walk decides what happens next — keep, upload one, upload three.
+
+**Cross-family cascade for makers who walked as Cheerful:** if they later try on Cozy/Rustic/Dark/Modern in the editor and never set a `moment.media` in the walk (because the Cheerful walk asked for collage uploads, not a single hero photo), the featured shot of their collage — their upload if they uploaded, or the featured AI-generated collage shot otherwise — fills the `moment.media` slot for those families. Nothing ever renders empty.
+
+Luxury's typographic hero is unaffected by this decision — Luxury still shows no photo. That's a separate design question left open for another time.
+
+### D74. Every image the platform generates saves to a catalog-tagged library; ownership follows the actor who initiated the generation
+
+The infrastructure for a library exists — Session 67 landed the `library_assets` table, a Storage bucket, and a `/api/library/ingest` endpoint, originally scoped to seed a cowork-curated cross-tenant image library. This decision widens what feeds that library and defines who owns what inside it.
+
+**Every image the crew generates on every build auto-ingests into the library as it's rendered.** Not just the ones cowork explicitly seeded — every hero photo, every founder portrait, every product image, every collage shot (on Cheerful builds), on every store, from now on. Storage is cheap; generation is not; throwing away the pixel result of a paid generation is waste that the library was built to prevent.
+
+**Ownership rule: the actor who initiated the generation owns the output.** Two tiers:
+
+*Platform-owned* — images the crew/build pipeline generated. BohdiAI owns them. Reusable across tenants (subject to sensible provenance rules — don't hand the same maker's founder portrait to a different maker's store). This ownership needs to be reflected in the Terms of Service before the first founding member signs; it's what makes cross-tenant reuse legally clean.
+
+*Maker-owned* — anything the maker generated in the editor by prompting Bohdi, anything they uploaded themselves, and any derivative they created by editing an image (theirs OR ours). Owned by the maker alone. Never crosses into the cross-tenant reusable library.
+
+**Edits of platform images cross the ownership boundary — only the derivative.** If the maker takes a platform-generated product photo and runs a brightness adjustment, a background swap, or a generative relight, the specific edited version belongs to the maker. The original untouched image stays in our platform library exactly as it was. This keeps the "actor determines ownership" rule consistent — the moment the maker's hands did the work, that output is theirs.
+
+**The maker's personal library in the editor shows both tiers together** — everything they can use on their own store — but only the platform-owned tier feeds BohdiAI's cross-tenant reusable library. The maker doesn't need to think about which tier a given image is in day-to-day; the distinction matters at the library-plumbing layer, not at the editing surface.
+
+**Catalog metadata makes the library useful. Without it, it's a pile of pixels.** For platform-owned images the tags at minimum are:
+
+- **niche** — from `tenant.primary_niche` at generation time (candles, dips, woodworking, etc.); the most useful search axis for finding relevant existing images
+- **role** — the slot the image filled: hero, founder-portrait, product, collage-shot
+- **subject kind** — person / product / scene / detail (overlaps with role but not identical — a hero can be a scene OR a product)
+- **family** and **mood** at generation time (visual style varies; a Cheerful shot won't fit cleanly into a Luxury store)
+- **aspect ratio** — 16:9, 1:1, 4:5, etc.
+- **prompt** — the exact prompt text sent to fal.ai; enables "generate something similar" and pattern-analysis on what prompts land well
+- **source tenant** — provenance; also enables "don't reuse this maker's founder portrait on another store"
+- **dominant colors** — later, if useful for palette-based filtering
+
+For maker-owned images the metadata is lighter, because the audience is one maker:
+
+- **prompt** if generated by prompting Bohdi in the editor
+- **source image reference** and **edit type** if it's an edit of an earlier image (theirs or ours)
+- **uploaded** flag if they brought it themselves
+- **slot placed in** if they've committed it to their store
+
+**How this ties to the editor's photo work (D65).** Basic touch-ups ship at launch, included in the base subscription — those are edits that add maker-owned entries to the library. Generative image work is a post-launch add-on at $5/month with a capped monthly allowance — those are generations that also add maker-owned entries. Both consume the library (the maker browses everything they have available before creating something new) and both feed it (the output lands back in their library, tagged).
+
+**Practical benefits of this decision, in order of size.** The library becomes a real Bohdi asset — over time, a well-tagged catalog of thousands of niche-and-family-tagged images the crew can pull from instead of always generating new. Storage cost is measured in cents per store; skipped generation is measured in dimes per generation avoided. The maker's editor experience becomes "browse or generate, then place" — the library IS their personal image bank. And once the ToS captures the platform-ownership tier, the reusable-library flywheel becomes an intentional feature rather than an accident.
 
 ---
 

@@ -35,11 +35,49 @@ describe('TypographicHero — no image, the words carry it', () => {
     expect(container.querySelector('[data-ms-hero-sub]')!.textContent).toBe(moment.sub);
   });
 
-  it('renders NO media — the defining trait of the typographic hero (video/stills unused here)', () => {
-    const { container } = render(<TypographicHero identity={identity} moment={moment} skin={skin} />);
-    expect(container.querySelector('[data-ms-hero-media]')).toBeNull();
-    expect(container.querySelector('video')).toBeNull();
-    expect(container.querySelector('img')).toBeNull();
+  it('renders a subtle backdrop img when moment.media.kind is "still" and a url is present (D73 — Luxury reads moment.media as backdrop)', () => {
+    const stillMoment = { ...moment, media: { ...moment.media, kind: 'still' as const, url: '/hero.jpg' } };
+    const { container } = render(<TypographicHero identity={identity} moment={stillMoment} skin={skin} />);
+    const backdrop = container.querySelector('[data-ms-typohero-backdrop]');
+    expect(backdrop).toBeTruthy();
+    const img = backdrop!.querySelector('img');
+    expect(img).toBeTruthy();
+    expect(img!.getAttribute('src')).toBe('/hero.jpg');
+  });
+
+  it('renders a subtle backdrop video when moment.media.kind is "video" and a url is present — autoplay muted loop (D73)', () => {
+    const videoMoment = { ...moment, media: { ...moment.media, kind: 'video' as const, url: '/clip.mp4' } };
+    const { container } = render(<TypographicHero identity={identity} moment={videoMoment} skin={skin} />);
+    const backdrop = container.querySelector('[data-ms-typohero-backdrop]');
+    expect(backdrop).toBeTruthy();
+    const video = backdrop!.querySelector('video') as HTMLVideoElement | null;
+    expect(video).toBeTruthy();
+    expect(video!.getAttribute('src')).toBe('/clip.mp4');
+    // React sets these as JS properties on HTMLMediaElement, not HTML attributes,
+    // so hasAttribute() lies about them. Read the properties directly.
+    expect(video!.autoplay).toBe(true);
+    expect(video!.loop).toBe(true);
+    expect(video!.muted).toBe(true);
+    expect(video!.playsInline).toBe(true);
+  });
+
+  it('renders NO backdrop when moment.media has no url (still or video)', () => {
+    const noUrlStill = { ...moment, media: { ...moment.media, kind: 'still' as const, url: undefined } };
+    const noUrlVideo = { ...moment, media: { ...moment.media, kind: 'video' as const, url: undefined } };
+    for (const m of [noUrlStill, noUrlVideo]) {
+      const { container } = render(<TypographicHero identity={identity} moment={m} skin={skin} />);
+      expect(container.querySelector('[data-ms-typohero-backdrop]')).toBeNull();
+      cleanup();
+    }
+  });
+
+  it('the backdrop is decorative (empty alt / aria-hidden) — the type is the message, the photo is atmosphere', () => {
+    const stillMoment = { ...moment, media: { ...moment.media, kind: 'still' as const, url: '/hero.jpg', alt: 'a loaf' } };
+    const { container } = render(<TypographicHero identity={identity} moment={stillMoment} skin={skin} />);
+    const backdrop = container.querySelector('[data-ms-typohero-backdrop]') as HTMLElement | null;
+    expect(backdrop!.getAttribute('aria-hidden')).toBe('true');
+    const img = backdrop!.querySelector('img');
+    expect(img!.getAttribute('alt')).toBe('');
   });
 
   it('omits the sub-line when none is authored', () => {

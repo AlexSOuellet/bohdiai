@@ -93,6 +93,11 @@ export interface ArchetypeBuildSpec<T = unknown> {
     lookKey: string;
     products: ProductView[];
     mood?: string | undefined;
+    /** The tenant's ORIGINAL mood key at onboarding (`tenants.mood_key`). Distinct
+     *  from `mood`, which may be an editor preview override. Used to distinguish
+     *  native-family renders from try-on renders (see D73 — Cheerful's collage
+     *  source depends on whether the tenant was ever Cheerful natively). */
+    originalMood?: string | undefined;
     catalogSize?: number | undefined;
     page?: ArchetypePage | undefined;
     /** Which collection to paint when `page === 'collection'`. Ignored otherwise. */

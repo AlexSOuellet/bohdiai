@@ -480,14 +480,17 @@ const MAX_UPLOAD_BYTES = 30 * 1024 * 1024;
 // big photo to a small, fast WebP.
 const MAX_IMAGE_EDGE = 2400;
 
-/** Upload a maker's product photo to the tenant-media bucket and record an uploads
- *  row, returning the id (referenced by the product's media_ids) and the public URL
- *  (for the editor thumbnail). Ownership-gated; validates the input, then downscales
- *  and converts to WebP so a big phone photo just works and the stored file stays
- *  small. Every failure returns a maker-facing message — never a silent one. */
-export async function uploadProductPhoto(
+export type ImageUploadResult = { ok: true; uploadId: string; url: string } | { ok: false; error: string };
+
+/** Shared image-upload helper — validates + resizes + WebP-encodes + stores under
+ *  `tenant/{id}/{folder}/{uuid}.webp` and inserts the uploads row. Callers (product
+ *  upload, hero upload) differ only in the folder segment. Every failure surfaces
+ *  a maker-facing message; nothing silent. */
+async function uploadImageForCurrentShop(
   formData: FormData,
-): Promise<{ ok: true; uploadId: string; url: string } | { ok: false; error: string }> {
+  folder: 'products' | 'hero',
+  label: string,
+): Promise<ImageUploadResult> {
   const shop = await getCurrentShop();
   if (shop === null) return { ok: false, error: 'No store to update.' };
 
@@ -507,19 +510,19 @@ export async function uploadProductPhoto(
       .webp({ quality: 82 })
       .toBuffer();
   } catch (err) {
-    logger.warn('uploadProductPhoto: image processing failed', { tenantId: shop.tenantId, err: String(err) });
+    logger.warn(`${label}: image processing failed`, { tenantId: shop.tenantId, err: String(err) });
     return { ok: false, error: 'Couldn’t process that photo — try a different image.' };
   }
 
   const user = await requireUser();
   const db = supabaseAdmin();
-  const path = `tenant/${shop.tenantId}/products/${crypto.randomUUID()}.webp`;
+  const path = `tenant/${shop.tenantId}/${folder}/${crypto.randomUUID()}.webp`;
 
   const { error: upErr } = await db.storage
     .from('tenant-media')
     .upload(path, optimized, { contentType: 'image/webp', upsert: false });
   if (upErr) {
-    logger.warn('uploadProductPhoto: storage upload failed', { tenantId: shop.tenantId, err: upErr.message });
+    logger.warn(`${label}: storage upload failed`, { tenantId: shop.tenantId, err: upErr.message });
     return { ok: false, error: 'Could not upload that photo — try again.' };
   }
 
@@ -541,10 +544,114 @@ export async function uploadProductPhoto(
     .select('id')
     .single();
   if (insErr || !row) {
-    logger.warn('uploadProductPhoto: uploads insert failed', { tenantId: shop.tenantId, err: insErr?.message });
+    logger.warn(`${label}: uploads insert failed`, { tenantId: shop.tenantId, err: insErr?.message });
     return { ok: false, error: 'Could not save that photo — try again.' };
   }
   return { ok: true, uploadId: row.id, url: publicUrl };
+}
+
+/** Upload a maker's product photo to the tenant-media bucket and record an uploads
+ *  row, returning the id (referenced by the product's media_ids) and the public URL
+ *  (for the editor thumbnail). */
+export async function uploadProductPhoto(formData: FormData): Promise<ImageUploadResult> {
+  return uploadImageForCurrentShop(formData, 'products', 'uploadProductPhoto');
+}
+
+/** Upload a hero photo for the "Make It Yours" walk — the non-Cheerful families use
+ *  the resulting URL as `moment.media`, and Cheerful uses it in `moment.collageShots`.
+ *  Just uploads; the caller wires the URL via `setHeroMedia` or `replaceCollageShots`. */
+export async function uploadHeroImage(formData: FormData): Promise<ImageUploadResult> {
+  return uploadImageForCurrentShop(formData, 'hero', 'uploadHeroImage');
+}
+
+/** Set the hero's single media (non-Cheerful families' hero photo in the walk).
+ *  Writes `moment.media` = { kind: 'still', url, alt } into the draft and marks
+ *  the hero section made. The maker's upload replaces whatever the crew authored
+ *  — a Cozy store built with a video hero shows the still after this runs. */
+export async function setHeroMedia(url: string, alt: string): Promise<ActionResult> {
+  const cleanUrl = url.trim();
+  const cleanAlt = alt.trim();
+  if (cleanUrl.length === 0) return { ok: false, error: 'Missing photo url.' };
+
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to update.' };
+  const baseTree = await loadBaseTree(shop.tenantId);
+  if (baseTree === null) return { ok: false, error: 'Could not load your store.' };
+
+  const next = structuredClone(baseTree);
+  const moment = ensureObject(ensureObject(ensureObject(next, 'root'), 'content'), 'moment');
+  const prevMedia = moment['media'];
+  const prevPrompt = prevMedia !== null && typeof prevMedia === 'object' && !Array.isArray(prevMedia)
+    ? (prevMedia as Record<string, unknown>)['prompt']
+    : undefined;
+  moment['media'] = {
+    kind: 'still',
+    url: cleanUrl,
+    alt: cleanAlt.length > 0 ? cleanAlt : 'the maker’s hero photo',
+    // Preserve the authored prompt if we had one — schema shape stays stable and
+    // the renderer never reads it for stills.
+    ...(prevPrompt !== undefined ? { prompt: prevPrompt } : { prompt: {} }),
+  };
+
+  const staged = await stageDraftTree(shop.tenantId, markSectionMade(next, 'hero'));
+  if (!staged.ok) return { ok: false, error: 'Could not save your changes.' };
+  revalidatePath('/dashboard/website');
+  return { ok: true };
+}
+
+/** Replace the Cheerful hero's collage shots (D73 — accepts length 1 or 3 only).
+ *  Length 1 replaces the featured slot (index 0) and keeps the AI shots in slots
+ *  1 and 2, preserving the anchor + supporting balance. Length 3 replaces every
+ *  slot with the maker's photos. Two-upload is intentionally rejected — it
+ *  produces a visually unbalanced mix (see D73). */
+export async function replaceCollageShots(
+  shots: readonly { url: string; alt: string }[],
+): Promise<ActionResult> {
+  if (shots.length !== 1 && shots.length !== 3) {
+    return { ok: false, error: 'Upload one photo (your featured shot) or all three — a mix of two doesn’t balance.' };
+  }
+  const clean = shots.map((s) => ({ url: s.url.trim(), alt: s.alt.trim() }));
+  if (clean.some((s) => s.url.length === 0)) return { ok: false, error: 'Missing photo url.' };
+
+  const shop = await getCurrentShop();
+  if (shop === null) return { ok: false, error: 'No store to update.' };
+  const baseTree = await loadBaseTree(shop.tenantId);
+  if (baseTree === null) return { ok: false, error: 'Could not load your store.' };
+
+  const next = structuredClone(baseTree);
+  const moment = ensureObject(ensureObject(ensureObject(next, 'root'), 'content'), 'moment');
+  const existingRaw = moment['collageShots'];
+  const existing: Record<string, unknown>[] = Array.isArray(existingRaw)
+    ? (existingRaw as unknown[]).filter((x): x is Record<string, unknown> => x !== null && typeof x === 'object' && !Array.isArray(x))
+    : [];
+
+  // Compose the final 3-slot array. Length-1: maker's photo → slot 0; slots 1 and
+  // 2 keep whatever was there (AI shots on a native Cheerful build). Length-3:
+  // maker's photos fill every slot.
+  const nextShots: Record<string, unknown>[] = [];
+  for (let i = 0; i < 3; i++) {
+    const makerShot = clean[i];
+    if (makerShot !== undefined) {
+      nextShots.push({
+        url: makerShot.url,
+        alt: makerShot.alt.length > 0 ? makerShot.alt : 'the maker’s photo',
+        prompt: {},
+      });
+      continue;
+    }
+    const existingShot = existing[i];
+    if (existingShot !== undefined) {
+      nextShots.push(existingShot);
+    }
+    // If a slot has no maker photo AND no existing entry, we leave it off entirely
+    // (renderer already handles a shorter array — it just renders fewer shots).
+  }
+  moment['collageShots'] = nextShots;
+
+  const staged = await stageDraftTree(shop.tenantId, markSectionMade(next, 'hero'));
+  if (!staged.ok) return { ok: false, error: 'Could not save your changes.' };
+  revalidatePath('/dashboard/website');
+  return { ok: true };
 }
 
 /** Coerce a raw product form to a validated `WalkProductInput`, or an error string. */
