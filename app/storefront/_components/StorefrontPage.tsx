@@ -14,6 +14,7 @@ import { loadCatalog, mediaForListing, type ListingRow, type MediaMap } from '@/
 import { isKnownSkin } from '@/lib/editor/look-shelf';
 import { SECTION_KEYS } from '@/lib/archetypes/main-street/families';
 import { resolveTextureParams } from '@/lib/editor/texture';
+import { readBrandPalette } from '@/lib/storefront/brand-palette';
 import { resolvePreviewMood } from '@/lib/moods';
 import { PreviewLinkForwarder } from './PreviewLinkForwarder';
 
@@ -137,8 +138,9 @@ async function resolveEnvelope(tenantId: string) {
   if (spec === undefined) return null;
   const { logoUrl, brandColors } = await loadTenantChrome(tenantId);
   const accentOverride = typeof env['accentOverride'] === 'string' ? (env['accentOverride'] as string) : undefined;
+  const brandPalette = readBrandPalette(env, tenantId);
   const mood = typeof env['mood'] === 'string' ? (env['mood'] as string) : undefined;
-  return { spec, lookKey, content: env['content'], logoUrl, brandColors, accentOverride, mood };
+  return { spec, lookKey, content: env['content'], logoUrl, brandColors, accentOverride, brandPalette, mood };
 }
 
 /** Render a product detail page in the tenant's chrome, or null when the tenant
@@ -146,7 +148,7 @@ async function resolveEnvelope(tenantId: string) {
 export async function renderArchetypeProductPage(tenantId: string, product: ProductView) {
   const a = await resolveEnvelope(tenantId);
   if (a === null || a.spec.renderProduct === undefined) return null;
-  return a.spec.renderProduct({ content: a.content, lookKey: a.lookKey, product, mood: a.mood, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
+  return a.spec.renderProduct({ content: a.content, lookKey: a.lookKey, product, mood: a.mood, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride, brandPalette: a.brandPalette });
 }
 
 /** Render a plain content page (legal/maker-added) in the tenant's chrome, or
@@ -157,7 +159,7 @@ export async function renderArchetypeContentPage(
 ) {
   const a = await resolveEnvelope(tenantId);
   if (a === null || a.spec.renderContentPage === undefined) return null;
-  return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, ...opts, mood: a.mood, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
+  return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, ...opts, mood: a.mood, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride, brandPalette: a.brandPalette });
 }
 
 /** Wrap a functional page's body (cart, subscriptions, etc.) in the tenant's
@@ -165,7 +167,7 @@ export async function renderArchetypeContentPage(
 export async function renderArchetypeShell(tenantId: string, children: ReactNode) {
   const a = await resolveEnvelope(tenantId);
   if (a === null || a.spec.renderShell === undefined) return null;
-  return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, mood: a.mood, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride });
+  return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, mood: a.mood, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride, brandPalette: a.brandPalette });
 }
 
 /** Choose the envelope source for a storefront request. A preview token that
@@ -303,6 +305,7 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
   const mood = resolvePreviewMood(previewMood, storedMood);
   const catalogSize = typeof env['catalogSize'] === 'number' ? (env['catalogSize'] as number) : undefined;
   const accentOverride = typeof env['accentOverride'] === 'string' ? (env['accentOverride'] as string) : undefined;
+  const brandPalette = readBrandPalette(env, tenantId);
   const { logoUrl, brandColors, moodKey: originalMood } = await loadTenantChrome(tenantId);
   // ?reviews= names a treatment; when the store has no authored reviews, seed sample
   // testimonials into the content so every treatment is viewable (non-persisting,
@@ -331,5 +334,5 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
   // Editor preview texture params (URL) win; on a normal visit the saved texture
   // setting on the envelope applies. See lib/editor/texture.
   const texture = resolveTextureParams(previewTexture, previewTextureOpacity, env['texture']);
-  return spec.render({ content, lookKey: effectiveLook, products: effectiveProducts, mood, originalMood, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, tenantId, heroVariant: previewHero, goodsTreatment: previewGoods, collections, collectionsTreatment: previewCollections, reviewsTreatment: previewReviews, findUsTreatment: previewFindUs, founderTreatment: previewFounder, navVariant: previewNav, previewTexture: texture.previewTexture, previewTextureOpacity: texture.previewTextureOpacity });
+  return spec.render({ content, lookKey: effectiveLook, products: effectiveProducts, mood, originalMood, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, brandPalette, tenantId, heroVariant: previewHero, goodsTreatment: previewGoods, collections, collectionsTreatment: previewCollections, reviewsTreatment: previewReviews, findUsTreatment: previewFindUs, founderTreatment: previewFounder, navVariant: previewNav, previewTexture: texture.previewTexture, previewTextureOpacity: texture.previewTextureOpacity });
 }
