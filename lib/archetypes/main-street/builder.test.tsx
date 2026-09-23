@@ -157,3 +157,46 @@ describe('MAIN_STREET_SPEC — collage shot generation', () => {
     ]);
   });
 });
+
+describe('MAIN_STREET_SPEC.render — brand palette takes over', () => {
+  function content() {
+    const parsed = MAIN_STREET_SPEC.parseSubmission(submission('video'));
+    if (!parsed.ok) throw new Error('fixture failed to parse');
+    return MAIN_STREET_SPEC.toPayload(parsed.authored).content;
+  }
+
+  it('paints the brand base and accent as --ms-bg / --ms-accent', () => {
+    const { container } = render(MAIN_STREET_SPEC.render({
+      content: content(), lookKey: 'main-street-ember', products: [], page: 'about',
+      brandPalette: { base: '#0b0b0b', accent: '#3dae3f' },
+    }));
+    expect(container.innerHTML).toContain('--ms-bg:#0b0b0b');
+    expect(container.innerHTML).toContain('--ms-accent:#3dae3f');
+  });
+
+  it('ignores accentOverride when a brand palette is present', () => {
+    const { container } = render(MAIN_STREET_SPEC.render({
+      content: content(), lookKey: 'main-street-ember', products: [], page: 'about',
+      brandPalette: { base: '#0b0b0b', accent: '#3dae3f' }, accentOverride: '#1d3a2e',
+    }));
+    expect(container.innerHTML).not.toContain('#1d3a2e');
+  });
+
+  it('switches the family wallpaper off under a brand palette', () => {
+    const { container } = render(MAIN_STREET_SPEC.render({
+      content: content(), lookKey: 'main-street-ember', products: [], page: 'about', mood: 'cozy',
+      brandPalette: { base: '#0b0b0b', accent: '#3dae3f' },
+    }));
+    expect(container.innerHTML).toMatch(/--ms-texture-opacity:0\}/);
+  });
+
+  it('applies the brand palette on the shell path too', () => {
+    const renderShell = MAIN_STREET_SPEC.renderShell;
+    if (renderShell === undefined) throw new Error('Main Street has no shell');
+    const { container } = render(renderShell({
+      content: content(), lookKey: 'main-street-ember', children: null,
+      brandPalette: { base: '#0b0b0b', accent: '#3dae3f' },
+    }));
+    expect(container.innerHTML).toContain('--ms-accent:#3dae3f');
+  });
+});

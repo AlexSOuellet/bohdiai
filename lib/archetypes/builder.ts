@@ -11,6 +11,7 @@
  */
 import type { ReactElement, ReactNode } from 'react';
 import type { ProductView, CollectionView } from './content';
+import type { BrandPalette } from '@/lib/color/brand-palette';
 
 /** Which page of a multi-page archetype to paint. The home is the default; the
  *  rest are the storefront's standard pages. A maker-added custom page renders
@@ -110,6 +111,9 @@ export interface ArchetypeBuildSpec<T = unknown> {
     /** Baked brand-accent (build-time) — overrides the skin's accent. Stable across
      *  later logo changes until an explicit re-tint rewrites the envelope. */
     accentOverride?: string | undefined;
+    /** The shop's own brand colors. When set, the derived palette REPLACES the
+     *  skin's palette entirely (and `accentOverride` is ignored). Envelope-stored. */
+    brandPalette?: BrandPalette | undefined;
     /** The tenant's id — needed by interactive sub-pages (e.g. the contact form
      *  posts it to /api/contact). Injected from tenant data, not authored. */
     tenantId?: string | undefined;
@@ -153,15 +157,15 @@ export interface ArchetypeBuildSpec<T = unknown> {
    *  identity/footer). `mood` is the tenant's mood key — the family layer uses
    *  it to pick the nav variant so a product page wears the same nav as the home.
    *  Optional — an archetype without a product page omits it. */
-  renderProduct?(args: { content: unknown; lookKey: string; product: ProductView; mood?: string | undefined; logoUrl?: string | undefined; brandColors?: string[] | undefined; accentOverride?: string | undefined }): ReactElement;
+  renderProduct?(args: { content: unknown; lookKey: string; product: ProductView; mood?: string | undefined; logoUrl?: string | undefined; brandColors?: string[] | undefined; accentOverride?: string | undefined; brandPalette?: BrandPalette | undefined }): ReactElement;
 
   /** Paint a plain content page (legal docs, maker-added pages) in the archetype's
    *  chrome. Pass `body` for authored paragraphs or `html` for pre-rendered markup
    *  (legal docs carry their own headings). Optional. */
-  renderContentPage?(args: { content: unknown; lookKey: string; title?: string | undefined; body?: string[] | undefined; html?: string | undefined; mood?: string | undefined; logoUrl?: string | undefined; brandColors?: string[] | undefined; accentOverride?: string | undefined }): ReactElement;
+  renderContentPage?(args: { content: unknown; lookKey: string; title?: string | undefined; body?: string[] | undefined; html?: string | undefined; mood?: string | undefined; logoUrl?: string | undefined; brandColors?: string[] | undefined; accentOverride?: string | undefined; brandPalette?: BrandPalette | undefined }): ReactElement;
 
   /** Wrap arbitrary children in the archetype's shell (skin bridge + nav + footer).
    *  For functional pages (cart, collections, subscriptions) whose body is bespoke
    *  but which must wear the store's chrome. Optional. */
-  renderShell?(args: { content: unknown; lookKey: string; children: ReactNode; mood?: string | undefined; logoUrl?: string | undefined; brandColors?: string[] | undefined; accentOverride?: string | undefined }): ReactElement;
+  renderShell?(args: { content: unknown; lookKey: string; children: ReactNode; mood?: string | undefined; logoUrl?: string | undefined; brandColors?: string[] | undefined; accentOverride?: string | undefined; brandPalette?: BrandPalette | undefined }): ReactElement;
 }

@@ -67,6 +67,8 @@ function asHeroVariant(v?: string): HeroVariantKey | undefined {
 }
 import { sceneToPrompt } from './scene-prompt';
 import { logoTone, applyAccentOverride } from './logo-contrast';
+import { applyBrandPalette, type BrandPalette } from '@/lib/color/brand-palette';
+import type { ArchetypeTheme } from '../types';
 
 const looks: LookOption[] = Object.values(MAIN_STREET_SKINS).map((s) => ({
   key: s.key,
@@ -249,6 +251,21 @@ function hexIsDark(hex: string): boolean {
   return luminance < 0.4;
 }
 
+/** The skin a page paints in: the shop's brand palette takes over the whole skin
+ *  palette when set; otherwise the mood's skin with any baked accent tint. */
+function themeFor(lookKey: string, brandPalette: BrandPalette | undefined, accentOverride: string | undefined): ArchetypeTheme {
+  const base = mainStreetArchetype.resolveTheme({ skinKey: lookKey });
+  return brandPalette !== undefined ? applyBrandPalette(base, brandPalette) : applyAccentOverride(base, accentOverride);
+}
+
+/** The family a page paints with. Under a brand palette the family wallpaper is
+ *  switched off: it paints as a colored image over the page and would wash the
+ *  brand's own surface toward the mood's color. Grain stays. */
+function familyFor(mood: string | undefined, brandPalette: BrandPalette | undefined): Family {
+  const family = getFamily(mood);
+  return brandPalette !== undefined ? { ...family, textureOpacity: 0 } : family;
+}
+
 /** Apply a nav-variant override (the ?nav= preview) onto the content's identity, so
  *  every nav site — each hero, every sub-page header, the product page — reads it. */
 function withNav(content: MainStreetContent, navVariant?: NavVariant): MainStreetContent {
@@ -268,13 +285,13 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   mediaJobs,
   applyMedia,
   toPayload,
-  render: ({ content, lookKey, products, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, tenantId, mood, originalMood, heroVariant, goodsTreatment, collections, collectionsTreatment, reviewsTreatment, findUsTreatment, founderTreatment, navVariant, previewTexture, previewTextureOpacity }) => {
-    const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
+  render: ({ content, lookKey, products, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, brandPalette, tenantId, mood, originalMood, heroVariant, goodsTreatment, collections, collectionsTreatment, reviewsTreatment, findUsTreatment, founderTreatment, navVariant, previewTexture, previewTextureOpacity }) => {
+    const skin = themeFor(lookKey, brandPalette, accentOverride);
     // Resolve the family AND its section variants from the tenant's mood, then
     // apply any preview URL overrides. Every page below wears the SAME picks so
     // a /shop teaser matches what /home advertised. The home's section ORDER
     // + on/off comes from the family's stack too. Bohdi authors CONTENT ONLY.
-    const familyBase = getFamily(mood);
+    const familyBase = familyFor(mood, brandPalette);
     // Editor Door 2 texture. These params come either from the editor preview (URL)
     // or, on a live visit, from the saved setting resolved in StorefrontPage. States:
     //   previewTexture === 'none'    → no texture at all (plain family color)
@@ -297,7 +314,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
     } else if (previewTexture === 'default') {
       family = { ...familyBase, textureOpacity: dialedOpacity ?? familyBase.textureOpacity };
     } else if (previewTexture !== undefined && previewTexture !== '') {
-      const bgIsDark = hexIsDark(familyBase.palette.bg);
+      const bgIsDark = hexIsDark(brandPalette !== undefined ? skin.palette.bg : familyBase.palette.bg);
       family = {
         ...familyBase,
         wallpaperUrl: previewTexture,
@@ -341,24 +358,24 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
         return <MainStreet content={c} skin={skin} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} hiddenSections={resolutions.hidden} shownSections={resolutions.shown} originalMood={originalMood} />;
     }
   },
-  renderProduct: ({ content, lookKey, product, mood, logoUrl, brandColors, accentOverride }) => {
-    const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
+  renderProduct: ({ content, lookKey, product, mood, logoUrl, brandColors, accentOverride, brandPalette }) => {
+    const skin = themeFor(lookKey, brandPalette, accentOverride);
     // Product pages wear the family's nav variant AND the family's wallpaper.
-    const family = getFamily(mood);
+    const family = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
     const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), treatments.nav);
     return <MainStreetProduct content={c} skin={skin} product={product} family={family} />;
   },
-  renderContentPage: ({ content, lookKey, title, body, html, mood, logoUrl, brandColors, accentOverride }) => {
-    const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
-    const family = getFamily(mood);
+  renderContentPage: ({ content, lookKey, title, body, html, mood, logoUrl, brandColors, accentOverride, brandPalette }) => {
+    const skin = themeFor(lookKey, brandPalette, accentOverride);
+    const family = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
     const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), treatments.nav);
     return <ContentPage content={c} skin={skin} title={title} body={body} html={html} family={family} />;
   },
-  renderShell: ({ content, lookKey, children, mood, logoUrl, brandColors, accentOverride }) => {
-    const skin = applyAccentOverride(mainStreetArchetype.resolveTheme({ skinKey: lookKey }), accentOverride);
-    const family = getFamily(mood);
+  renderShell: ({ content, lookKey, children, mood, logoUrl, brandColors, accentOverride, brandPalette }) => {
+    const skin = themeFor(lookKey, brandPalette, accentOverride);
+    const family = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
     const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), treatments.nav);
     return <MainStreetSubPage content={c} skin={skin} family={family}>{children}</MainStreetSubPage>;
