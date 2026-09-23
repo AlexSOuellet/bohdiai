@@ -74,6 +74,12 @@ export interface ArchetypeBuildSpec<T = unknown> {
    *  minimum catalog it needs to be viable. Catalog size limits which shapes are
    *  on the menu; everything past that stays Bohdi's choice. */
   fitsCatalog(productCount: number): boolean;
+  /** A layout Claude builds BY HAND for a client (e.g. a contractor landing page).
+   *  Never offered on Bohdi's onboarding menu; still rendered like any archetype. */
+  handBuilt?: boolean;
+  /** The sub-pages this archetype paints, beyond the home. Omitted = every
+   *  standard page. A route for a page not listed 404s instead of rendering. */
+  pages?: readonly ArchetypePage[];
   /** The looks Bohdi may pick for this archetype (its own skins/themes). */
   looks: LookOption[];
   /** Validate Bohdi's full submission for this archetype. */

@@ -1,0 +1,66 @@
+/**
+ * Contractor — the build spec. A HAND-BUILT layout: Claude writes a client's
+ * content directly (no Bohdi authoring, no generated media), so it never appears
+ * on the onboarding menu. It renders like any archetype from the stored envelope:
+ * one home page plus the platform's plain content pages (privacy, terms).
+ */
+import { notFound } from 'next/navigation';
+import type { ArchetypeBuildSpec } from '../builder';
+import { deriveBrandPalette, type BrandPalette } from '@/lib/color/brand-palette';
+import { ContractorContentSchema, type ContractorContent } from './schemas';
+import { ContractorLanding, ContractorContentPage, ContractorShell } from './ContractorLanding';
+
+export const CONTRACTOR_LOOK = 'contractor';
+
+/** The palette a contractor site paints in when it has no brand palette of its own. */
+const DEFAULT_BRAND: BrandPalette = { base: '#101210', accent: '#3dae3f' };
+
+function paletteFor(brandPalette: BrandPalette | undefined) {
+  return deriveBrandPalette(brandPalette ?? DEFAULT_BRAND).palette;
+}
+
+/** Stored content is validated on every render: a malformed envelope is a data
+ *  error, so the page 404s rather than painting a half-broken site. */
+function contentOf(raw: unknown): ContractorContent {
+  const parsed = ContractorContentSchema.safeParse(raw);
+  if (!parsed.success) notFound();
+  return parsed.data;
+}
+
+export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
+  key: 'contractor',
+  label: 'Contractor',
+  menuDescription:
+    'A one-page site for a trade that sells on photos of real jobs and closes on an estimate request: their work, what customers said, who shows up, where they work, and the request form.',
+  handBuilt: true,
+  pages: [],
+  fitsCatalog: () => false,
+  looks: [{ key: CONTRACTOR_LOOK, label: 'Contractor', description: 'The business’s own colors on a dark ground.' }],
+  parseSubmission: (raw) => {
+    const parsed = ContractorContentSchema.safeParse(raw);
+    return parsed.success
+      ? { ok: true, authored: parsed.data }
+      : { ok: false, issues: parsed.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message })) };
+  },
+  mediaJobs: () => [],
+  applyMedia: (authored) => authored,
+  toPayload: (authored) => ({ content: authored, products: [] }),
+  render: ({ content, brandPalette, tenantId }) => (
+    <ContractorLanding content={contentOf(content)} palette={paletteFor(brandPalette)} tenantId={tenantId} />
+  ),
+  renderContentPage: ({ content, brandPalette, html, title, body }) => {
+    const c = contentOf(content);
+    const palette = paletteFor(brandPalette);
+    if (html !== undefined) return <ContractorContentPage content={c} palette={palette} html={html} />;
+    return (
+      <ContractorShell content={c} palette={palette}>
+        <main className="cp-section">
+          <div className="cp-wrap cp-prose">
+            {title !== undefined && <h1>{title}</h1>}
+            {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
+          </div>
+        </main>
+      </ContractorShell>
+    );
+  },
+};

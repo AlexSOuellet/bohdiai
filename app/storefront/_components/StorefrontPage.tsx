@@ -267,6 +267,8 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
 
   const spec = archetypeSpec(archetypeKey as string);
   if (spec === undefined) notFound();
+  // An archetype that declares its pages 404s every other sub-page route.
+  if (page !== undefined && spec.pages !== undefined && !spec.pages.includes(page)) notFound();
 
   // Load the catalog through the shared projection: active product rows → ProductViews,
   // each photo resolved from its uploaded media (the maker's real photo) with a fallback
