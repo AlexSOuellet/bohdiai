@@ -139,6 +139,16 @@ export function contractorCss(p: DerivedPalette): string {
 .cp-work__cap{position:absolute;left:0;right:0;bottom:0;padding:48px 18px 16px;background:linear-gradient(to top,color-mix(in srgb,var(--cp-bg) 88%,transparent),transparent);display:flex;justify-content:space-between;align-items:end;gap:12px}
 .cp-work__caption{font-family:var(--cp-label);font-weight:600;font-size:17px;letter-spacing:.06em;text-transform:uppercase;line-height:1.2}
 .cp-work__tag{flex:none;font-family:var(--cp-label);font-weight:700;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;background:var(--cp-accent);color:var(--cp-on-accent);padding:5px 9px}
+/* phones: a two-across wall, not one giant picture per screen */
+@media(max-width:760px){
+  .cp-work{columns:2;column-gap:10px}
+  .cp-work__item{margin-bottom:10px}
+  .cp-work__cap{padding:32px 10px 9px}
+  .cp-work__caption{font-size:13.5px;letter-spacing:.04em}
+  .cp-work__tag{display:none}
+  .cp-vtile__mark{top:8px;right:8px;width:32px;height:32px}
+  .cp-vtile__mark svg{width:14px;height:14px}
+}
 
 /* work-wall clips: still until hovered/tapped */
 .cp-vtile{display:block;position:relative;width:100%;padding:0;border:0;background:none;cursor:pointer;color:inherit}
