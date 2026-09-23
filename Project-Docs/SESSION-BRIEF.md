@@ -1,5 +1,11 @@
 # Session Brief — BohdiAI
 
+> **⚠ STOP — read `Project-Docs/Direction-2026-09-23.md` first.**
+> The direction changed on 23 September 2026. The waitlist and the Beta phase are dropped (the
+> waitlist has zero rows in it), there is no self-serve signup, and first clients are built by
+> hand. Everything below this line, and most of `Full-Plan.md`, describes the previous plan and
+> has not been rewritten yet. Treat both as history until they are.
+
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
