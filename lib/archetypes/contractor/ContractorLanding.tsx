@@ -12,6 +12,7 @@ import { contractorCss, CONTRACTOR_FONTS_HREF } from './styles';
 import { CONTRACTOR_STRINGS as S } from './strings';
 import { EstimateForm } from './EstimateForm';
 import { VideoTile } from './VideoTile';
+import { SlowVideo } from './SlowVideo';
 
 const ESTIMATE_ID = 'estimate';
 
@@ -46,7 +47,7 @@ function Stars(): ReactElement {
 function Media({ media, eager }: { media: ContractorMedia; eager?: boolean }): ReactElement {
   if (media.kind === 'video') {
     return (
-      <video src={media.url} poster={media.poster} autoPlay muted loop playsInline preload={eager === true ? 'auto' : 'metadata'} aria-label={media.alt} />
+      <SlowVideo src={media.url} poster={media.poster} autoPlay muted loop playsInline preload={eager === true ? 'auto' : 'metadata'} aria-label={media.alt} />
     );
   }
   return <img src={media.url} alt={media.alt} loading={eager === true ? 'eager' : 'lazy'} decoding="async" />;

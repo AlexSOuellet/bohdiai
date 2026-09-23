@@ -8,6 +8,7 @@
 import { useRef, useState } from 'react';
 import type { ContractorMedia } from './schemas';
 import { CONTRACTOR_STRINGS as S } from './strings';
+import { SlowVideo } from './SlowVideo';
 
 export function VideoTile({ media }: { media: ContractorMedia }) {
   const ref = useRef<HTMLVideoElement>(null);
@@ -38,7 +39,7 @@ export function VideoTile({ media }: { media: ContractorMedia }) {
       onBlur={stop}
       onClick={() => (playing ? stop() : play())}
     >
-      <video ref={ref} src={media.url} poster={media.poster} muted loop playsInline preload="none" aria-hidden="true" />
+      <SlowVideo ref={ref} src={media.url} poster={media.poster} muted loop playsInline preload="none" aria-hidden="true" />
       <span className="cp-vtile__mark" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z" /></svg>
       </span>

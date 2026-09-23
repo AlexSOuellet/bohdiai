@@ -4,6 +4,7 @@ import { CONTRACTOR_SPEC } from './builder';
 import { CONTRACTOR_FIXTURE } from './fixture.test-data';
 import { EstimateForm, checkEstimate } from './EstimateForm';
 import { CONTRACTOR_STRINGS } from './strings';
+import { PLAYBACK_RATE } from './SlowVideo';
 
 const TENANT = '4b8f0f5e-8f3a-4a57-9a8e-1f2d3c4b5a69';
 
@@ -36,6 +37,14 @@ describe('contractor landing page', () => {
     const tile = container.querySelector('.cp-vtile video') as HTMLVideoElement;
     expect(tile.autoplay).toBe(false);
     expect(tile.getAttribute('preload')).toBe('none');
+  });
+
+  it('plays every video slowed', () => {
+    const { container } = page();
+    for (const v of Array.from(container.querySelectorAll('video'))) {
+      expect(v.playbackRate).toBe(PLAYBACK_RATE);
+      expect(v.defaultPlaybackRate).toBe(PLAYBACK_RATE);
+    }
   });
 
   it('paints the highlight word of the headline in the accent', () => {
