@@ -93,9 +93,9 @@ export function contractorCss(p: DerivedPalette): string {
 .cp-slab::before{content:"";position:absolute;inset:18px -18px -18px 18px;border:2px solid var(--cp-accent);z-index:-1}
 .cp-slab__since{position:absolute;left:-58px;bottom:12%;writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--cp-display);font-size:30px;letter-spacing:.14em;text-transform:uppercase;color:var(--cp-fg)}
 @media(max-width:900px){
-  .cp-hero{padding-top:0}
   .cp-hero__grid{grid-template-columns:1fr}
-  .cp-slab{order:-1;justify-self:stretch;width:calc(100% + 2*var(--cp-gutter));margin-inline:calc(-1*var(--cp-gutter));aspect-ratio:auto;height:62svh;max-height:none}
+  /* phones: the words first, then the video beneath them, edge to edge */
+  .cp-slab{justify-self:stretch;width:calc(100% + 2*var(--cp-gutter));margin-inline:calc(-1*var(--cp-gutter));aspect-ratio:auto;height:62svh;max-height:none}
   .cp-slab::before,.cp-slab__since{display:none}
 }
 @media(prefers-reduced-motion:no-preference){
