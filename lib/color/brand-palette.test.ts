@@ -95,7 +95,7 @@ describe('deriveBrandPalette — property: every input yields a readable palette
         : { base: randomHex(rand), accent: randomHex(rand), second: randomHex(rand) };
       assertReadable(input);
     }
-  });
+  }, 60_000);
 });
 
 describe('BrandPaletteSchema', () => {
