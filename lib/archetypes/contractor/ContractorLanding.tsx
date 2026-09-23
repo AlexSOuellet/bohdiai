@@ -11,6 +11,7 @@ import type { ContractorContent, ContractorMedia } from './schemas';
 import { contractorCss, CONTRACTOR_FONTS_HREF } from './styles';
 import { CONTRACTOR_STRINGS as S } from './strings';
 import { EstimateForm } from './EstimateForm';
+import { VideoTile } from './VideoTile';
 
 const ESTIMATE_ID = 'estimate';
 
@@ -185,7 +186,7 @@ export function ContractorLanding({ content: c, palette, tenantId }: { content: 
               <div className="cp-work">
                 {c.work.items.map((w) => (
                   <figure className="cp-work__item cp-unroll" key={w.media.url}>
-                    <Media media={w.media} />
+                    {w.media.kind === 'video' ? <VideoTile media={w.media} /> : <Media media={w.media} />}
                     <figcaption className="cp-work__cap">
                       <span className="cp-work__caption">{w.caption}</span>
                       {w.tag !== undefined && <span className="cp-work__tag">{w.tag}</span>}

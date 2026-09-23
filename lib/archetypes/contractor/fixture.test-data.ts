@@ -31,6 +31,7 @@ export const CONTRACTOR_FIXTURE: ContractorContent = {
     items: [
       { media: { kind: 'still', url: img(1), alt: 'Striped lawn' }, caption: 'Finished lawn', tag: 'Sod' },
       { media: { kind: 'still', url: img(2), alt: 'Stone path' }, caption: 'Stone walkway' },
+      { media: { kind: 'video', url: 'https://example.com/clip.mp4', poster: img(5), alt: 'Sod going down' }, caption: 'Laying sod' },
     ],
   },
   services: {

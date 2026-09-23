@@ -9,7 +9,8 @@ export const CONTRACTOR_STRINGS = {
   estimateShort: 'Free estimate',
   menuLabel: 'Site',
   skipToEstimate: 'Skip to the estimate form',
-  playVideo: 'Video of our work',
+  playVideo: 'Play video',
+  pauseVideo: 'Pause video',
   serving: 'Serving',
   starsLabel: 'Five out of five stars',
   form: {

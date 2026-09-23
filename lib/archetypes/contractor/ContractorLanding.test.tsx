@@ -28,6 +28,16 @@ describe('contractor landing page', () => {
     expect(container.querySelectorAll('a[href="tel:+14012061566"]').length).toBeGreaterThanOrEqual(4);
   });
 
+  it('autoplays only the hero video; work clips wait to be asked', () => {
+    const { container } = page();
+    expect(container.querySelectorAll('video').length).toBe(2);
+    expect(container.querySelectorAll('video[autoplay]').length).toBe(1);
+    expect(container.querySelector('.cp-slab video[autoplay]')).not.toBeNull();
+    const tile = container.querySelector('.cp-vtile video') as HTMLVideoElement;
+    expect(tile.autoplay).toBe(false);
+    expect(tile.getAttribute('preload')).toBe('none');
+  });
+
   it('paints the highlight word of the headline in the accent', () => {
     const { container } = page();
     expect(container.querySelector('.cp-hero__headline em')?.textContent).toBe('greener');

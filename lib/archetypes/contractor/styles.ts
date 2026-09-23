@@ -37,7 +37,7 @@ export function contractorCss(p: DerivedPalette): string {
   --cp-rule:${p.rule};--cp-bg2:${p.contrast.bg};--cp-fg2:${p.contrast.fg};--cp-muted2:${p.contrast.fgMuted};
   --cp-display:'Anton',Impact,'Arial Narrow',sans-serif;--cp-body:'Barlow',system-ui,sans-serif;
   --cp-label:'Barlow Condensed','Arial Narrow',sans-serif;--cp-marker:'Permanent Marker','Comic Sans MS',cursive;
-  --cp-wrap:1240px;--cp-gutter:clamp(20px,4vw,48px);--cp-section:clamp(88px,12vw,168px);
+  --cp-wrap:1240px;--cp-gutter:clamp(20px,4vw,48px);--cp-section:clamp(72px,9vw,128px);
   position:relative;isolation:isolate;background:var(--cp-bg);color:var(--cp-fg);
   font-family:var(--cp-body);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:clip;
 }
@@ -53,7 +53,7 @@ export function contractorCss(p: DerivedPalette): string {
 /* ── type voices ─────────────────────────────────────────── */
 .cp-eyebrow{font-family:var(--cp-label);font-weight:700;font-size:15px;letter-spacing:.22em;text-transform:uppercase;color:var(--cp-accent);display:flex;align-items:center;gap:14px;margin:0 0 22px}
 .cp-eyebrow::before{content:"";width:34px;height:3px;background:currentColor}
-.cp-title{font-family:var(--cp-display);font-weight:400;text-transform:uppercase;line-height:.92;letter-spacing:.005em;font-size:clamp(46px,7.2vw,104px);margin:0;text-wrap:balance}
+.cp-title{font-family:var(--cp-display);font-weight:400;text-transform:uppercase;line-height:.92;letter-spacing:.005em;font-size:clamp(38px,5vw,68px);margin:0;text-wrap:balance}
 .cp-lede{font-size:clamp(18px,1.6vw,21px);color:var(--cp-muted);max-width:56ch;margin:22px 0 0}
 .cp-brush{display:inline-block;position:relative;font-family:var(--cp-marker);color:var(--cp-on-accent);padding:.18em .7em .12em;transform:rotate(-2.5deg);line-height:1.1}
 .cp-brush::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--cp-accent);-webkit-mask:${BRUSH} center/100% 100% no-repeat;mask:${BRUSH} center/100% 100% no-repeat}
@@ -70,7 +70,7 @@ export function contractorCss(p: DerivedPalette): string {
 .cp-head{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--cp-bg) 86%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--cp-rule)}
 .cp-head__row{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:76px}
 .cp-mark{text-decoration:none;display:flex;flex-direction:column;line-height:1}
-.cp-mark__name{font-family:var(--cp-display);font-size:30px;letter-spacing:.02em;text-transform:uppercase}
+.cp-mark__name{font-family:var(--cp-display);font-size:26px;letter-spacing:.02em;text-transform:uppercase}
 .cp-mark__trade{font-family:var(--cp-label);font-weight:600;font-size:12.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--cp-accent);margin-top:5px}
 .cp-head__actions{display:flex;align-items:center;gap:12px}
 .cp-head .cp-btn{padding:12px 18px;font-size:16px}
@@ -80,8 +80,8 @@ export function contractorCss(p: DerivedPalette): string {
 .cp-hero{position:relative;padding-block:clamp(40px,6vw,88px) clamp(56px,8vw,112px)}
 .cp-hero__grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:clamp(32px,5vw,80px);align-items:center}
 .cp-hero__kicker{font-family:var(--cp-label);font-weight:600;font-size:15px;letter-spacing:.24em;text-transform:uppercase;color:var(--cp-muted);margin:0 0 30px}
-.cp-hero__marker{font-size:clamp(22px,2.4vw,32px);margin:0 0 24px}
-.cp-hero__headline{font-family:var(--cp-display);font-weight:400;text-transform:uppercase;line-height:.9;font-size:clamp(54px,8.4vw,128px);margin:0;text-wrap:balance}
+.cp-hero__marker{font-size:clamp(19px,1.9vw,25px);margin:0 0 20px}
+.cp-hero__headline{font-family:var(--cp-display);font-weight:400;text-transform:uppercase;line-height:.95;font-size:clamp(44px,5.8vw,84px);margin:0;text-wrap:balance}
 .cp-hero__headline em{font-style:normal;color:var(--cp-accent)}
 .cp-hero__sub{font-size:clamp(18px,1.55vw,21px);color:var(--cp-muted);max-width:44ch;margin:28px 0 0}
 .cp-hero__ctas{display:flex;flex-wrap:wrap;gap:14px;margin-top:38px}
@@ -122,7 +122,7 @@ export function contractorCss(p: DerivedPalette): string {
 .cp-proof{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-block:1px solid var(--cp-rule)}
 .cp-proof__cell{padding:36px 28px;border-left:1px solid var(--cp-rule);display:flex;flex-direction:column-reverse;justify-content:flex-end}
 .cp-proof__cell:first-child{border-left:0;padding-left:0}
-.cp-proof__fig{margin:0;font-family:var(--cp-display);font-size:clamp(44px,5vw,72px);line-height:1;color:var(--cp-accent);display:block}
+.cp-proof__fig{margin:0;font-family:var(--cp-display);font-size:clamp(34px,3.6vw,52px);line-height:1;color:var(--cp-accent);display:block}
 .cp-proof__label{display:block;margin-top:12px;font-family:var(--cp-label);font-weight:600;font-size:15.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--cp-muted);line-height:1.35}
 @media(max-width:820px){.cp-proof{grid-template-columns:repeat(2,minmax(0,1fr))}.cp-proof__cell{padding:26px 18px}.cp-proof__cell:nth-child(odd){border-left:0;padding-left:0}.cp-proof__cell:nth-child(n+3){border-top:1px solid var(--cp-rule)}}
 
@@ -140,16 +140,24 @@ export function contractorCss(p: DerivedPalette): string {
 .cp-work__caption{font-family:var(--cp-label);font-weight:600;font-size:17px;letter-spacing:.06em;text-transform:uppercase;line-height:1.2}
 .cp-work__tag{flex:none;font-family:var(--cp-label);font-weight:700;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;background:var(--cp-accent);color:var(--cp-on-accent);padding:5px 9px}
 
+/* work-wall clips: still until hovered/tapped */
+.cp-vtile{display:block;position:relative;width:100%;padding:0;border:0;background:none;cursor:pointer;color:inherit}
+/* clips are encoded tall (9:16); an unloaded video doesn't know its shape, so give it one */
+.cp-vtile video{width:100%;height:auto;aspect-ratio:9/16;object-fit:cover}
+.cp-vtile__mark{position:absolute;top:14px;right:14px;width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:color-mix(in srgb,var(--cp-bg) 70%,transparent);border:1.5px solid var(--cp-accent);color:var(--cp-accent);transition:opacity .3s ease}
+.cp-vtile__mark svg{width:18px;height:18px;margin-left:2px}
+.cp-vtile[data-playing="true"] .cp-vtile__mark{opacity:0}
+
 /* services — numbered rows like a work order */
 .cp-services{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.62fr);gap:clamp(40px,6vw,96px);align-items:start}
 .cp-services__list{list-style:none;margin:0;padding:0;counter-reset:svc;border-top:1px solid var(--cp-rule)}
 .cp-services__row{counter-increment:svc;display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px 20px;padding:28px 0;border-bottom:1px solid var(--cp-rule);transition:padding .35s ease}
 .cp-services__row::before{content:counter(svc,decimal-leading-zero);font-family:var(--cp-label);font-weight:700;font-size:16px;letter-spacing:.1em;color:var(--cp-accent);padding-top:10px}
-.cp-services__name{font-family:var(--cp-display);font-size:clamp(30px,3.4vw,46px);text-transform:uppercase;line-height:1;margin:0;transition:color .3s ease}
+.cp-services__name{font-family:var(--cp-display);font-size:clamp(24px,2.4vw,32px);text-transform:uppercase;line-height:1.05;margin:0;transition:color .3s ease}
 .cp-services__detail{grid-column:2;margin:0;color:var(--cp-muted);max-width:52ch}
 .cp-services__row:hover{padding-left:12px}
 .cp-services__row:hover .cp-services__name{color:var(--cp-accent)}
-.cp-services__note{position:sticky;top:120px;font-family:var(--cp-marker);font-size:clamp(22px,2.2vw,30px);line-height:1.35;margin:0;padding:34px;border:2px solid var(--cp-accent);transform:rotate(1.5deg)}
+.cp-services__note{position:sticky;top:120px;font-style:italic;font-size:clamp(19px,1.6vw,22px);line-height:1.5;margin:0;padding:30px;border-left:4px solid var(--cp-accent);background:var(--cp-bg2);color:var(--cp-fg2)}
 @media(max-width:900px){.cp-services{grid-template-columns:1fr}.cp-services__note{position:static;transform:none}}
 
 /* reviews — one loud, the rest in a grid */
@@ -158,7 +166,7 @@ export function contractorCss(p: DerivedPalette): string {
 .cp-stars{display:flex;gap:4px;color:var(--cp-accent)}
 .cp-stars svg{width:20px;height:20px}
 .cp-feature{margin:0 0 clamp(48px,6vw,80px);padding-left:clamp(22px,3vw,40px);border-left:6px solid var(--cp-accent)}
-.cp-feature blockquote{margin:18px 0 0;font-family:var(--cp-display);font-size:clamp(30px,3.6vw,52px);line-height:1.08;text-transform:uppercase;max-width:28ch}
+.cp-feature blockquote{margin:18px 0 0;font-weight:500;font-size:clamp(24px,2.4vw,34px);line-height:1.3;max-width:36ch}
 .cp-quotes{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
 .cp-quote{margin:0;padding:30px;border:1px solid color-mix(in srgb,var(--cp-fg2) 16%,transparent);display:flex;flex-direction:column;gap:20px;transition:border-color .3s ease,transform .3s ease}
 .cp-quote:hover{border-color:var(--cp-accent);transform:translateY(-3px)}
@@ -174,8 +182,8 @@ export function contractorCss(p: DerivedPalette): string {
 .cp-crew__photo::after{content:"";position:absolute;inset:auto -22px -22px auto;width:62%;height:44%;background:var(--cp-accent);z-index:-1}
 .cp-inset{position:absolute;right:-28px;bottom:-40px;width:42%;margin:0;border:6px solid var(--cp-bg);background:var(--cp-bg);transform:rotate(3deg)}
 .cp-inset img{width:100%;aspect-ratio:1;object-fit:cover}
-.cp-inset figcaption{font-family:var(--cp-marker);font-size:16px;padding:8px 6px 4px;text-align:center}
-.cp-crew__quote{font-family:var(--cp-display);font-size:clamp(40px,5.4vw,80px);line-height:.95;text-transform:uppercase;margin:0}
+.cp-inset figcaption{font-family:var(--cp-label);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:13px;padding:8px 6px 4px;text-align:center}
+.cp-crew__quote{font-family:var(--cp-display);font-size:clamp(34px,3.8vw,56px);line-height:1;text-transform:uppercase;margin:0}
 .cp-crew__quote::before{content:"“";display:block;font-size:1.4em;line-height:.6;color:var(--cp-accent)}
 .cp-crew__who{margin:22px 0 0;font-family:var(--cp-label);font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--cp-accent)}
 .cp-crew__body p{color:var(--cp-muted);margin:18px 0 0;max-width:54ch}
@@ -183,7 +191,7 @@ export function contractorCss(p: DerivedPalette): string {
 
 /* area — the three states, stacked like signage */
 .cp-area__states{margin:0;padding:0;list-style:none}
-.cp-area__state{font-family:var(--cp-display);text-transform:uppercase;line-height:.95;font-size:clamp(52px,10.5vw,168px);color:transparent;-webkit-text-stroke:2px var(--cp-fg);transition:color .35s ease,-webkit-text-stroke-color .35s ease;border-bottom:1px solid var(--cp-rule);padding:6px 0 14px}
+.cp-area__state{font-family:var(--cp-display);text-transform:uppercase;line-height:1;font-size:clamp(36px,5.6vw,80px);color:transparent;-webkit-text-stroke:1.5px var(--cp-fg);transition:color .35s ease,-webkit-text-stroke-color .35s ease;border-bottom:1px solid var(--cp-rule);padding:6px 0 14px}
 .cp-area__state:hover{color:var(--cp-accent);-webkit-text-stroke-color:var(--cp-accent)}
 .cp-area__state:first-child{border-top:1px solid var(--cp-rule)}
 
@@ -193,10 +201,10 @@ export function contractorCss(p: DerivedPalette): string {
 .cp-estimate .cp-lede{color:var(--cp-muted2)}
 .cp-steps{list-style:none;margin:36px 0 0;padding:0;counter-reset:st}
 .cp-steps li{counter-increment:st;display:flex;gap:18px;align-items:baseline;padding:16px 0;border-top:1px solid color-mix(in srgb,var(--cp-fg2) 16%,transparent);font-size:18px}
-.cp-steps li::before{content:counter(st);font-family:var(--cp-display);font-size:30px;color:var(--cp-accent);min-width:28px}
+.cp-steps li::before{content:counter(st);font-family:var(--cp-display);font-size:24px;color:var(--cp-accent);min-width:28px}
 .cp-direct{margin-top:40px}
 .cp-direct__label{font-family:var(--cp-label);font-weight:700;letter-spacing:.2em;text-transform:uppercase;font-size:14px;color:var(--cp-muted2);margin:0 0 6px}
-.cp-direct__phone{font-family:var(--cp-display);font-size:clamp(38px,4vw,56px);line-height:1;text-decoration:none;color:var(--cp-fg2)}
+.cp-direct__phone{font-family:var(--cp-display);font-size:clamp(30px,3vw,42px);line-height:1;text-decoration:none;color:var(--cp-fg2)}
 .cp-direct__phone:hover{color:var(--cp-accent)}
 .cp-direct__email{display:block;margin-top:10px;color:var(--cp-muted2)}
 @media(max-width:900px){.cp-estimate__grid{grid-template-columns:1fr}}
@@ -230,7 +238,7 @@ textarea.cp-input{min-height:120px;resize:vertical}
 .cp-form__foot .cp-btn[disabled]{opacity:.6;cursor:progress}
 .cp-alert{grid-column:span 2;margin:0;padding:14px 16px;border-left:4px solid var(--cp-accent);background:color-mix(in srgb,var(--cp-accent) 12%,transparent)}
 .cp-done{padding:clamp(28px,4vw,48px);background:var(--cp-bg);color:var(--cp-fg);border-top:6px solid var(--cp-accent)}
-.cp-done h3{font-family:var(--cp-display);font-weight:400;text-transform:uppercase;font-size:clamp(34px,4vw,52px);line-height:1;margin:0 0 14px}
+.cp-done h3{font-family:var(--cp-display);font-weight:400;text-transform:uppercase;font-size:clamp(28px,3vw,40px);line-height:1;margin:0 0 14px}
 @media(max-width:640px){.cp-field--half{grid-column:span 2}}
 
 /* prose (privacy / terms) */
@@ -243,7 +251,7 @@ textarea.cp-input{min-height:120px;resize:vertical}
 
 /* footer */
 .cp-foot{position:relative;padding-block:72px 120px;border-top:1px solid var(--cp-rule);overflow:hidden}
-.cp-foot__big{font-family:var(--cp-display);text-transform:uppercase;font-size:clamp(90px,21vw,320px);line-height:.8;margin:0;color:transparent;-webkit-text-stroke:1.5px color-mix(in srgb,var(--cp-fg) 22%,transparent);white-space:nowrap;user-select:none}
+.cp-foot__big{font-family:var(--cp-display);text-transform:uppercase;font-size:clamp(56px,9vw,140px);line-height:.9;margin:0;color:transparent;-webkit-text-stroke:1.5px color-mix(in srgb,var(--cp-fg) 22%,transparent);white-space:nowrap;user-select:none}
 .cp-foot__row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px;margin-top:40px;font-family:var(--cp-label);font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:15px;color:var(--cp-muted)}
 .cp-foot__row a{text-decoration:none}
 .cp-foot__row a:hover{color:var(--cp-accent)}
