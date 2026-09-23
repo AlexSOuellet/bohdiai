@@ -62,9 +62,12 @@ computed with the existing `contrastRatio` / `relativeLuminance`.
 1. **Mode.** Dark if `relativeLuminance(base) < 0.18`, otherwise light.
 2. **`bg`** = `base`, used exactly as given. The surface is the brand, so it never
    shifts.
-3. **`fg`** = near-white (dark mode) or near-black (light mode), carrying a small share
-   of the base hue (chroma ≤ 0.012). It must reach **≥ 7:1** against `bg`. If the
-   tinted version falls short, `fg` walks toward pure white or black until it passes.
+3. **`fg`** = near-white or near-black (whichever side contrasts more with the surface),
+   carrying a small share of the surface hue (chroma ≤ 0.008). Target **≥ 7:1**; if no
+   tinted step reaches it, fall back to pure white/black. *(Plan-time correction: 7:1 is
+   impossible on mid-tone surfaces — the best any color reaches on e.g. #777 is ~4.7:1.
+   Pure white/black guarantees ≥ 4.58:1 on every surface, so the hard floor is 4.5:1 and
+   7:1 is met wherever the surface allows. A fallback is recorded as an adjustment.)*
 4. **`fgMuted`**: step `fg` toward `bg` in OKLCH lightness, and stop at the last step
    that is still **≥ 4.5:1** against `bg`.
 5. **`rule`** = `fg` at 18% alpha, as `rgba()`. This matches how the skins already
@@ -79,10 +82,9 @@ computed with the existing `contrastRatio` / `relativeLuminance`.
    clamped to gamut). Search both directions, take the smallest change that passes on
    both surfaces, and record an adjustment. If no lightness passes on both surfaces,
    satisfy `bg` alone and record a warning adjustment. `bg` carries most of the page.
-8. **`onAccent`**: pick near-black or near-white, whichever has the higher contrast on
-   `accent`. It must reach **≥ 4.5:1**. If neither does, shift the accent's lightness
-   again, choosing the smallest change that keeps step 7 passing, and record an
-   adjustment.
+8. **`onAccent`**: pure black or pure white, whichever contrasts more with `accent`.
+   *(Plan-time correction: one of pure black/white always reaches ≥ 4.58:1 on any color,
+   so no second accent shift is ever needed.)*
 
 `Adjustment` is `{ role: 'accent' | 'second' | 'fg', from: string, to: string, reason: string }`.
 It isn't shown to anyone yet because there's no editor. The script prints it, so Claude
@@ -108,19 +110,19 @@ threshold above. Invalid hex is rejected by a `zod` schema before derivation run
   styles, no section changes.
 - Mood behavior that keys off darkness has to follow the brand palette, not the mood
   default:
-  - the texture blend mode, which is `hexIsDark(familyBase.palette.bg)` in
-    `builder.tsx`
-  - the logo/nav contrast
-  
-  Both must read the **effective** `bg`.
+  - the logo/nav contrast already reads `skin.palette.bg`, so it follows automatically.
+  - **The family wallpaper is switched off under a brand palette.** *(Plan-time finding:
+    family wallpapers paint as `cover` — a colored image laid over the page at 15–30%
+    — so on Cut-Pro's black it would wash the brand surface toward the mood's color.)*
+    Grain stays. The URL-texture blend path keys its blend mode off the effective `bg`.
 
-## Setting it — `scripts/set-brand-palette.mjs`
+## Setting it — `scripts/set-brand-palette.ts`
 
-`node scripts/set-brand-palette.mjs <subdomain> --base #0B0B0B --accent #3DAE3F [--second #...]`
+`npx tsx --env-file=.env.local scripts/set-brand-palette.ts <subdomain> --base "#0B0B0B" --accent "#3DAE3F" [--second "#..."] [--dry] [--clear]`
 
 The script:
 - validates the input
-- runs the same derivation (compiled path or shared JS, decided in the plan)
+- runs the same derivation, imported directly from `lib/color/brand-palette.ts` via `tsx`
 - prints the derived palette and any adjustments
 - writes `brandPalette` to the tenant's draft and published envelopes
 
@@ -129,7 +131,7 @@ It uses the service role and is Claude's tool, not a user surface.
 ## Testing
 
 - **Derivation, property-based.** Run 5,000 seeded-random `{base, accent, second?}`
-  combinations. Every output must meet every threshold: fg ≥ 7, fgMuted ≥ 4.5,
+  combinations. Every output must meet every threshold: fg ≥ 4.5 (≥ 7 unless an fg adjustment was recorded), fgMuted ≥ 4.5,
   accent ≥ 3 on bg (and on contrast.bg unless a warning adjustment was recorded),
   onAccent ≥ 4.5, and a visible second surface.
 - **Derivation, named cases.**
