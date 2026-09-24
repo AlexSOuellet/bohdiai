@@ -32,7 +32,7 @@ Paused under the new direction (see `Direction-2026-09-23.md`). Queue state in `
 
 ## Next actions
 
-1. **Cut-Pro follow-ups:** switch estimate email to cutprochris@gmail.com when the family says so; their copy review (crew-photo names, services list, "since 2009"); better originals from their phones (Facebook reels are stronger); review the privacy-page wording for a contractor.
+1. **Cut-Pro follow-ups:** estimate requests now go to cutprochris@gmail.com; their copy review (crew-photo names, services list, "since 2009"); better originals from their phones (Facebook reels are stronger); review the privacy-page wording for a contractor.
 2. **Push the branch** and decide on deploy-from-git (bring `main` current) vs keep deploying from the working tree.
 3. **Flaky test:** `SectionEditor.test.tsx` "Write it up…" fails only under full-suite load.
 4. **Direction-doc work still open:** the marketing-site rebuild (samples + portfolio — Cut-Pro is portfolio entry #1), price, Vercel vs Cloudflare. Don't reprice unprompted.

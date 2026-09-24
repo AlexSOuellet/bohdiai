@@ -67,7 +67,7 @@ production (two live requests delivered). Branch `cutpro/brand-colors`, 14 commi
   Migration `20260923000001_tenant_media_allow_video.sql` lets tenant-media take mp4 (25MB).
 - **Permanent copies:** `C:\Users\Bohdi\Documents\BohdiAi\Clients\cut-pro-lawncare\`
   (`media-web\` = what's uploaded; `originals\` = 321MB album downloads + URL list).
-- Estimate requests currently go to **alexsouellet@gmail.com** (Alex's call, for now).
+- Estimate requests go to **cutprochris@gmail.com** (switched from Alex's test inbox at end of session, after the form was proven on prod).
 - Facebook page (Chris Bullock, owner, (401) 206-1566, cutprochris@gmail.com) has better,
   more recent reels (17) — not used; originals should come from their phones.
 
@@ -100,8 +100,7 @@ watchdog when testing.
 - Said "I gave you links" — those were from a morning session this session couldn't see.
 
 ## Open / next
-1. Switch estimate email to cutprochris@gmail.com when the family is ready (re-run the
-   build script with `--contact-email`).
+1. ~~Switch estimate email to Chris~~ — done end of session.
 2. Copy review by the family: who's in the crew photo (alt text says "Two of the Cut-Pro team
    in the truck"), confirm services (drainage/stonework/patios), "since 2009".
 3. Better originals from their phones (the Facebook reels are stronger than the album);
