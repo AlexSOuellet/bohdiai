@@ -83,6 +83,16 @@ most crowded product category there is.
 
 ### 1. Alex's daughter's site — Cut Pro Lawncare (working name)
 
+> **UPDATE 2026-09-24 (Session 86): DONE AND LIVE** at https://cut-pro-lawncare.bohdiai.com —
+> the family loves it. It was NOT built the way this section proposed (collections as project
+> types, a no-price listing type, a before/after section). Alex's call: it's a **one-page
+> landing site with an estimate request form**, so it got its own hand-built **contractor**
+> layout (`lib/archetypes/contractor/`) plus a real estimate form (`/api/estimate`, photos
+> attached), and a platform feature letting a client's **brand colors take over** the palette.
+> The name is **Cut-Pro Lawncare & Construction** (matches their Facebook + flyer). Service
+> area RI · MA · CT. See `session-logs/session-86.md`. The three "small things" below are
+> superseded for this client.
+
 Lawn construction — mostly sod, grading, drainage, with stonework and patios secondary. Their
 leads currently come from the sod company that refers them. **They already understand the site
 won't bring traffic on its own** — Alex told them. What they want now is to look legitimate when
