@@ -15,7 +15,18 @@ export const INQUIRY_KIND_LABELS: Record<InquiryKind, string> = {
   other: 'Something else',
 };
 
+export const CONTACT_METHODS = ['email', 'call', 'text'] as const;
+export type ContactMethod = (typeof CONTACT_METHODS)[number];
+
+export const CONTACT_METHOD_LABELS: Record<ContactMethod, string> = {
+  email: 'Email',
+  call: 'Phone call',
+  text: 'Text',
+};
+
 const KIND_ERROR = 'Pick what kind of business you are.';
+export const PHONE_NEEDED_ERROR = 'Add a phone number so I can call or text you.';
+const PHONE_ERROR = 'That phone number doesn’t look right.';
 const LINK_ERROR = 'That link doesn’t look right.';
 
 /** Optional; "facebook.com/x" gets https:// added; only http(s) addresses with a real host pass. */
@@ -38,17 +49,37 @@ const link = z
     }
   }, LINK_ERROR);
 
-export const InquirySchema = z.object({
-  name: z.string().trim().min(1, 'Please add your name.').max(120, 'That name is a bit long.'),
-  email: z.string().trim().toLowerCase().max(254).email('That email doesn’t look right.'),
-  kind: z.enum(INQUIRY_KINDS, { errorMap: () => ({ message: KIND_ERROR }) }),
-  message: z
-    .string()
-    .trim()
-    .min(1, 'Tell me a little about what you need.')
-    .max(5000, 'That message is a bit long. Try trimming it down.'),
-  link,
-});
+/** Optional; free-form (people write numbers every which way), but it needs 7–15 digits. */
+const phone = z
+  .string()
+  .trim()
+  .max(40, PHONE_ERROR)
+  .optional()
+  .transform((v) => (v === undefined || v === '' ? undefined : v))
+  .refine((v) => {
+    if (v === undefined) return true;
+    const digits = v.replace(/\D/g, '').length;
+    return digits >= 7 && digits <= 15;
+  }, PHONE_ERROR);
+
+export const InquirySchema = z
+  .object({
+    name: z.string().trim().min(1, 'Please add your name.').max(120, 'That name is a bit long.'),
+    email: z.string().trim().toLowerCase().max(254).email('That email doesn’t look right.'),
+    kind: z.enum(INQUIRY_KINDS, { errorMap: () => ({ message: KIND_ERROR }) }),
+    message: z
+      .string()
+      .trim()
+      .min(1, 'Tell me a little about what you need.')
+      .max(5000, 'That message is a bit long. Try trimming it down.'),
+    link,
+    phone,
+    contactBy: z.enum(CONTACT_METHODS).default('email'),
+  })
+  .refine((v) => v.contactBy === 'email' || v.phone !== undefined, {
+    message: PHONE_NEEDED_ERROR,
+    path: ['phone'],
+  });
 
 export type InquiryFields = z.infer<typeof InquirySchema>;
 
@@ -72,22 +103,36 @@ export function parseInquiry(body: unknown): ParsedInquiry {
     kind: record['kind'],
     message: record['message'] ?? '',
     link: record['link'],
+    phone: record['phone'],
+    contactBy: record['contactBy'] === '' ? undefined : record['contactBy'],
   });
-  if (!parsed.success) return { kind: 'invalid', error: parsed.error.issues[0]?.message ?? 'Please check the form.' };
+  if (!parsed.success)
+    return { kind: 'invalid', error: parsed.error.issues[0]?.message ?? 'Please check the form.' };
   return { kind: 'ok', fields: parsed.data };
 }
 
 function escapeHtml(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 /** The email Alex gets: every answer labelled, readable on a phone. The route sets Reply-To to the visitor. */
-export function composeInquiryEmail(f: InquiryFields): { subject: string; text: string; html: string } {
+export function composeInquiryEmail(f: InquiryFields): {
+  subject: string;
+  text: string;
+  html: string;
+} {
   const kind = INQUIRY_KIND_LABELS[f.kind];
-  const subject = `New project: ${f.name} (${kind})`;
+  const prefers = f.contactBy === 'email' ? '' : ` · prefers a ${f.contactBy}`;
+  const subject = `New project: ${f.name} (${kind})${prefers}`;
   const rows: Array<[string, string]> = [
     ['Name', f.name],
     ['Email', f.email],
+    ['Phone', f.phone ?? '—'],
+    ['Best way to reach', CONTACT_METHOD_LABELS[f.contactBy]],
     ['Business', kind],
     ['Link', f.link ?? '—'],
   ];
