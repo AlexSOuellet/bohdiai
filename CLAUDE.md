@@ -33,6 +33,8 @@ Everything else in `Project-Docs/historical/` is archive material — read only 
 
 BohdiAI is a multi-tenant AI-powered SaaS that gives makers/artisans a complete AI-generated storefront on a `[shop].bohdiai.com` subdomain in minutes. Subscription-only (one tier at launch, ~$35–$49/mo). **Never takes a cut of sales** — money flows customer → maker's own Stripe/Square; BohdiAI reads webhooks only.
 
+**Status as of Session 87 (2026-09-29):** Direction changed on 2026-09-23 and again on 2026-09-29. Everything is manual: no onboarding and no site editor, and every site is hand-built by Alex + Claude inside the BohdiAI structure (service providers, makers, charities). A Penny-style maker backend will be built. The whole app runs on **Cloudflare Workers**, and Vercel is retired. Read `SESSION-BRIEF.md` and `Cloudflare-Move.md` first; the Session 75 status below is history.
+
 **Status as of end of Session 75 (2026-07-18):** The storefront is done — onboarding builds a complete, family-styled store and every page a shopper sees works, run live through all six feelings. Editor door one (swap the feeling) is live. Everything a maker does after that is missing: no listings management, no cart, no checkout, no orders, no payments, no market sales, four of six dashboard pages absent, and no founder admin at all. The database is fully built for all of it (38 tables) — the gap is application surface, not schema.
 
 The plan was rewritten this session to reach launch, in three named phases: **Beta** (founding members running real stores with real money), **Go Live** (public signup), **Growth** (after). The old six-phase plan is archived. Read `Launch-Audit-2026-07-18.md` for the verified built-vs-missing picture. 976 tests pass, tsc + lint clean.
@@ -45,7 +47,7 @@ The plan was rewritten this session to reach launch, in three named phases: **Be
 
 ## Stack
 
-Next.js 16 (App Router) · Supabase (Postgres + RLS + Auth + Storage) · Vercel · Cloudflare (incl. Cloudflare for SaaS for custom-domain SSL) · Anthropic API · fal.ai · Resend · Stripe · Square (planned) · Sentry + PostHog (env-configured; installation deferred to Phase 6) · Tailwind CSS · TypeScript (strictest config — see `Engineering-Standards.md`).
+Next.js 16 (App Router) · Supabase (Postgres + RLS + Auth + Storage) · **Cloudflare Workers** via OpenNext (deploy = push to `main`; Workers Builds builds it; Vercel retired 2026-09-29) · Cloudflare DNS + email routing · Anthropic API · fal.ai · Resend · Stripe · Square (planned) · Sentry + PostHog (env-configured; installation deferred to Phase 6) · Tailwind CSS · TypeScript (strictest config — see `Engineering-Standards.md`).
 
 ## URL ecosystem
 
@@ -67,7 +69,7 @@ Next.js 16 (App Router) · Supabase (Postgres + RLS + Auth + Storage) · Vercel 
 - **No hardcoded English in the renderer. No inline styles. No shortcuts.** All strings through `DEFAULT_STRINGS`/`DEFAULT_COUNTS`; all styling through CSS variables + classes.
 - **Tests are part of done.** No feature is complete without tests.
 - **Ship complete, not partial.** Code + tests + types + verification before "done."
-- **No live-site fixes yet.** Beta signups are not open. Security + infra items live in Phase 6 of the Full Plan.
+- **Live sites exist (Cut-Pro).** Everything pushed to `main` goes live, so verify before merging.
 
 ## Brand context (load-bearing)
 
@@ -80,6 +82,7 @@ Next.js 16 (App Router) · Supabase (Postgres + RLS + Auth + Storage) · Vercel 
 - **No popup questions.** Ask inline in chat, with recommendations clearly marked.
 - **No git worktrees.** Work in main tree on a feature branch instead.
 - **Claude does all commits.** Alex never commits. Commit at natural points on the feature branch.
+- **Branches are short-lived.** One branch per piece of work, merged into `main` (which deploys) once verified and deleted, usually the same session. At the end of a session, `main` should be the only branch.
 - **Push back on scope drift.** Alex explicitly wants Claude to keep him in check, not silently absorb out-of-spec requests.
 - **Stricter > looser** on engineering standards. Alex wants to avoid rewrites at all costs.
 - **One question at a time** when walking through decisions.

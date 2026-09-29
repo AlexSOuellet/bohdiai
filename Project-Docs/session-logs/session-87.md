@@ -30,5 +30,12 @@ Paid plan → Workers Builds from GitHub → runtime secrets → Cut-Pro route (
 - A heredoc slip deleted the legal .md files; restored from git at once.
 - The GitHub repo is PUBLIC; the history scan found no secrets.
 
+## After the log was first written
+- `*.bohdiai.com` DNS is now AAAA `100::` proxied (no Vercel target). www was added as a Custom Domain (it had worked through the wildcard route).
+- Workers Builds' production branch is `main`. GitHub's default branch is `main`.
+- Deleted every merged branch (beta/founder-admin, infra/cloudflare-move, cutpro/brand-colors, session-9/11/12, port-atmospheric), each verified as contained in main first. **`main` is the only branch.**
+- `shop-proxy` is kept, route-less, as the rollback path until Vercel is cancelled.
+- Next session: rebuild bohdiai.com.
+
 ## Next
 See SESSION-BRIEF next actions: Cloudflare cleanup, cancel Vercel after a few days, homepage rebuild, maker backend scope.
