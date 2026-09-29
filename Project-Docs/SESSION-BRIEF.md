@@ -29,9 +29,9 @@ Full recap: `session-logs/session-87.md`.
 
 ## Next actions
 
+0. **NEXT SESSION = rebuild bohdiai.com (Alex, 2026-09-29).** It becomes the web-development business site with a portfolio (Cut-Pro, Penny) plus samples, and loses the waitlist, founder counter and "built by AI in minutes" framing (see the marketing-site section of `Direction-2026-09-23.md`). Run brainstorming + frontend-design first. Replace the OG image copy too. Push to `main` to ship.
 1. **Cloudflare cleanup (Alex):** delete the `shop-proxy` worker; delete the redundant Cut-Pro route; trim the Build variables to NODE_VERSION + the two NEXT_PUBLIC_*; change the `*.bohdiai.com` DNS row to AAAA `100::` proxied; switch Workers Builds' production branch to `main`; **cancel Vercel after a few quiet days**.
 2. **Cut-Pro follow-ups:** their copy review (crew-photo names, services list, "since 2009"); better originals from their phones; review the privacy-page wording for a contractor.
-3. **Homepage rebuild:** a web-development business site with a portfolio (Cut-Pro, Penny). The OG image still says "beta opening summer 2026 / built by AI in minutes".
 4. **Maker backend:** scope it against Penny's site. Open question: does Penny's store move into BohdiAI or stay standalone?
 5. **Flaky test:** `SectionEditor.test.tsx` "Write it up…" fails only under full-suite load.
 
