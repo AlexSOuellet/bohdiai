@@ -4,6 +4,9 @@ import { isFeatureEnabled } from '@/lib/feature-flags';
 import { getCurrentUser } from '@/lib/auth/session';
 import OnboardingFlow from './_components/OnboardingFlow';
 
+// Reads feature flags and niches from the database, so never pre-built at deploy.
+export const dynamic = 'force-dynamic';
+
 export default async function OnboardingPage() {
   const enabled = await isFeatureEnabled('onboarding');
   if (!enabled) notFound();

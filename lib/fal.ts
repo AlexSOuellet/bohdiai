@@ -12,7 +12,9 @@ const BUCKET = 'generated-images';
 export const FAL_IMAGE_TIMEOUT_MS = 90_000;
 
 function falClient() {
-  return createFalClient({ credentials: serverEnv().FAL_API_KEY });
+  const credentials = serverEnv().FAL_API_KEY;
+  if (credentials === undefined) throw new Error('FAL_API_KEY is not set — image generation can’t run without it');
+  return createFalClient({ credentials });
 }
 
 interface FalImage {

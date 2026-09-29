@@ -14,13 +14,15 @@ vi.mock('@anthropic-ai/sdk', () => {
 });
 
 // Mock env so the wrapper does not blow up when process.env is partial.
+let env: { BOHDIAI_ANTHROPIC_KEY?: string } = { BOHDIAI_ANTHROPIC_KEY: 'test-key-123' };
 vi.mock('./env', () => ({
-  serverEnv: () => ({ BOHDIAI_ANTHROPIC_KEY: 'test-key-123' }),
+  serverEnv: () => env,
 }));
 
 describe('anthropicClient', () => {
   beforeEach(() => {
     ctorSpy.mockClear();
+    env = { BOHDIAI_ANTHROPIC_KEY: 'test-key-123' };
     // Reset the module-level cache so each test reconstructs.
     vi.resetModules();
   });
@@ -34,6 +36,13 @@ describe('anthropicClient', () => {
       apiKey: 'test-key-123',
       baseURL: 'https://api.anthropic.com',
     });
+  });
+
+  it('refuses plainly, naming the key, when the AI key is not set', async () => {
+    env = {};
+    const { anthropicClient } = await import('./anthropic');
+    expect(() => anthropicClient()).toThrow(/BOHDIAI_ANTHROPIC_KEY is not set/);
+    expect(ctorSpy).not.toHaveBeenCalled();
   });
 
   it('memoizes the client across calls — the SDK is only constructed once', async () => {

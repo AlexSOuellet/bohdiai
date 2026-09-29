@@ -11,7 +11,9 @@ import { Footer } from '@/components/Footer';
 import { supabaseAdmin } from '@/lib/supabase';
 import { serverEnv } from '@/lib/env';
 
-export const revalidate = 30;
+// Rendered per request: the founder count is live data, and a copy pre-built at
+// deploy time would need database keys on the build machine and then go stale.
+export const dynamic = 'force-dynamic';
 
 const SITE_URL = process.env['SITE_URL'] ?? 'https://bohdiai.com';
 

@@ -20,8 +20,12 @@ const serverSchema = z.object({
   FOUNDER_CAP: z.coerce.number().int().positive().default(25),
   SENTRY_DSN: optionalUrl,
   SENTRY_AUTH_TOKEN: optionalString,
-  BOHDIAI_ANTHROPIC_KEY: z.string().min(1),
-  FAL_API_KEY: z.string().min(1),
+  // Optional app-wide: only the AI builder and image generation use these, and
+  // they're switched off while sites are built by hand. Each client that needs
+  // one throws a clear error when it's missing (lib/anthropic.ts, lib/fal.ts,
+  // lib/moments/media.ts), so nothing fails silently.
+  BOHDIAI_ANTHROPIC_KEY: optionalString,
+  FAL_API_KEY: optionalString,
   // Optional: /api/library/ingest returns 503 until this is set. Kept optional
   // so a dev server that isn't running cowork doesn't fail to boot.
   COWORK_INGEST_TOKEN: optionalString,

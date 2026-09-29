@@ -44,7 +44,9 @@ const IMAGE_SIZE: Record<MomentAspect, 'landscape_16_9' | 'square_hd' | 'portrai
 };
 
 function falClient() {
-  return createFalClient({ credentials: serverEnv().FAL_API_KEY });
+  const credentials = serverEnv().FAL_API_KEY;
+  if (credentials === undefined) throw new Error('FAL_API_KEY is not set — image generation can’t run without it');
+  return createFalClient({ credentials });
 }
 
 interface StoreOpts {

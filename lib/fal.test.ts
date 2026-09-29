@@ -9,8 +9,9 @@ vi.mock('@fal-ai/client', () => ({
   createFalClient: (...args: unknown[]) => createFalClientSpy(...(args as [])),
 }));
 
+let env: { FAL_API_KEY?: string } = { FAL_API_KEY: 'fal-test-key' };
 vi.mock('@/lib/env', () => ({
-  serverEnv: () => ({ FAL_API_KEY: 'fal-test-key' }),
+  serverEnv: () => env,
 }));
 
 // Mock supabaseAdmin storage. Each test can override these.
@@ -25,8 +26,9 @@ vi.mock('@/lib/supabase', () => ({
   supabaseAdmin: () => ({ storage: { from: storageFromMock } }),
 }));
 
+const logError = vi.fn();
 vi.mock('@/lib/logger', () => ({
-  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+  logger: { info: vi.fn(), warn: vi.fn(), error: (...a: unknown[]) => logError(...a) },
 }));
 
 beforeEach(() => {
@@ -76,6 +78,17 @@ describe('generateProductImage', () => {
     const [, opts] = subscribeMock.mock.calls[0]!;
     expect(opts.input.prompt).toMatch(/^Product photography of Wallet/);
     expect(opts.input.prompt).toMatch(/Mood: Brooding/);
+  });
+
+  it('returns null and logs the missing key when FAL_API_KEY is not set, without calling fal', async () => {
+    env = {};
+    logError.mockClear();
+    const { generateProductImage } = await import('./fal');
+    const url = await generateProductImage('X', 'Y', 'Niche', 'sub', 'slug');
+    env = { FAL_API_KEY: 'fal-test-key' };
+    expect(url).toBeNull();
+    expect(createFalClientSpy).not.toHaveBeenCalled();
+    expect(logError).toHaveBeenCalledWith('fal: generation failed', expect.objectContaining({ error: expect.stringMatching(/FAL_API_KEY is not set/) }));
   });
 
   it('returns null when the SDK throws', async () => {
