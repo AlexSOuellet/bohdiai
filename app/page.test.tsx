@@ -1,0 +1,45 @@
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+
+// eslint-disable-next-line @next/next/no-img-element -- a plain img stands in for next/image in tests
+vi.mock('next/image', () => ({ default: (p: { alt: string; src: string }) => <img alt={p.alt} src={p.src} /> }));
+const { default: HomePage } = await import('./page');
+
+describe('bohdiai.com home', () => {
+  it('leads with the slogan and ends in the contact form', () => {
+    const { container } = render(<HomePage />);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'If you make it, bake it, fix it or fund it, we build it for you',
+    );
+    expect(container.querySelector('#work')).not.toBeNull();
+    expect(container.querySelector('#contact form')).not.toBeNull();
+  });
+
+  it('says nothing about the waitlist, beta, Skool or founder spots', () => {
+    const { container } = render(<HomePage />);
+    expect(container.textContent).not.toMatch(
+      /waitlist|beta|skool|founder spot|reserve your shop|built by ai|live in minutes|youtube/i,
+    );
+  });
+
+  it('never talks about AI; the only "AI" on the page is the BohdiAI name', () => {
+    const { container } = render(<HomePage />);
+    const text = (container.textContent ?? '').replace(/BohdiAI/g, '');
+    expect(text).not.toMatch(/\bAI\b/);
+    expect(text).not.toMatch(/artificial intelligence/i);
+    expect(screen.getByText(/The Bohdi Way/)).toBeInTheDocument();
+  });
+
+  it('shows both clients and labels the samples as samples', () => {
+    render(<HomePage />);
+    expect(screen.getAllByText('Cut-Pro Lawncare & Construction').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Decoupage Digital Designs').length).toBeGreaterThan(0);
+    expect(screen.getByText(/not real businesses/i)).toBeInTheDocument();
+  });
+
+  it('keeps both price promises next to the form', () => {
+    render(<HomePage />);
+    expect(screen.getByText(/know the full price before I start/i)).toBeInTheDocument();
+    expect(screen.getByText(/never take a cut of your sales/i)).toBeInTheDocument();
+  });
+});

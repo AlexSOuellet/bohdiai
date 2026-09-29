@@ -1,7 +1,7 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { logger } from '@/lib/logger';
 
-export type FormName = 'estimate' | 'contact' | 'inquiry' | 'waitlist' | 'waitlist-resend' | 'notify-interest';
+export type FormName = 'estimate' | 'contact' | 'inquiry' | 'notify-interest';
 
 export type FormAllowance = 'allowed' | 'limited' | 'unavailable';
 
@@ -43,8 +43,7 @@ const UNAVAILABLE_MESSAGE = 'This form can’t send right now. Please try again 
 /**
  * The answer for a turned-away submission (429 limited, 503 limiter down), or
  * null when the visitor may go ahead. `toBody` shapes the message the way this
- * form's page reads its errors (`{ error }` on shop forms, `{ ok, message }` on
- * the waitlist).
+ * form's page reads its errors (`{ error }` on every form today).
  */
 export async function formLimitResponse(
   req: Request,

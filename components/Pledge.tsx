@@ -15,25 +15,25 @@ export function Pledge(): React.ReactElement {
 
       <ol className="relative mx-auto flex max-w-[680px] flex-col gap-6 pl-9 md:gap-7 md:pl-9 [&::before]:absolute [&::before]:left-2 [&::before]:top-3 [&::before]:bottom-3 [&::before]:w-px [&::before]:content-['']  [&::before]:[background:linear-gradient(to_bottom,transparent,rgba(243,201,122,0.45)_12%,rgba(243,201,122,0.45)_88%,transparent)]">
         <PledgeItem>
-          I&apos;ll <b>never take a cut</b> of what you sell. Your customers pay you direct — your
-          Stripe, your Square, your bank.
+          I&apos;ll <b>never take a cut</b> of what you sell. Your customers pay you direct, through
+          your Stripe, your Square, your bank.
         </PledgeItem>
         <PledgeItem>
-          I&apos;ll <b>never lock you in</b>. Your customer list, your emails, your order history —
-          yours to export, anytime.
+          I&apos;ll <b>never lock you in</b>. Your words, your photos and your customer list are yours,
+          any time you ask.
         </PledgeItem>
         <PledgeItem>
-          I&apos;ll <b>never sell your data</b> or train AI on your customers. Your shop&apos;s data
-          stays in your shop.
+          I&apos;ll <b>never sell your data</b> or your customers&apos;. What&apos;s on your site stays
+          yours.
         </PledgeItem>
       </ol>
 
       <div className="mx-auto mt-9 flex max-w-[680px] items-center gap-3.5 pl-9 md:mt-10">
         <span className="h-px w-9 bg-honey-warm/50" />
         <span className="font-sans text-[15px] font-semibold tracking-[-0.005em] text-text">
-          Alex Scott
+          Alex
         </span>
-        <span className="ml-1.5 text-[13px] text-muted">Founder, BohdiAI</span>
+        <span className="ml-1.5 text-[13px] text-muted">BohdiAI</span>
       </div>
     </section>
   );

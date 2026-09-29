@@ -27,7 +27,6 @@ export default defineConfig({
         // Phase 0 utility wrappers shipped without unit tests. Write tests
         // (or move to integration) in Phase 1; remove from this list to bring
         // them under the lib/** threshold.
-        'lib/emails.ts',
         'lib/env.ts',
         'lib/resend.ts',
         'lib/supabase.ts',

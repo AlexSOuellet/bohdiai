@@ -1,9 +1,11 @@
 import { ImageResponse } from 'next/og';
 
-export const alt = 'BohdiAI — Your Business Online. Finally Made Easy.';
+export const alt = 'BohdiAI: If you make it, bake it, fix it or fund it, we build it for you';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
+// next/og renders from style objects only — the one place in the app styles are written this way.
+// It also requires display:flex on any box with more than one child.
 export default function OgImage() {
   return new ImageResponse(
     (
@@ -15,8 +17,10 @@ export default function OgImage() {
           flexDirection: 'column',
           justifyContent: 'space-between',
           padding: '72px 88px',
-          background: '#f7f1e6',
-          fontFamily: 'Georgia, serif',
+          background: '#0a0805',
+          backgroundImage:
+            'radial-gradient(ellipse 900px 420px at 50% 115%, rgba(243,201,122,0.42), rgba(233,161,61,0.14) 45%, rgba(10,8,5,0) 75%)',
+          fontFamily: 'sans-serif',
         }}
       >
         <div
@@ -24,10 +28,9 @@ export default function OgImage() {
             display: 'flex',
             alignItems: 'center',
             gap: 16,
-            fontFamily: 'monospace',
             fontSize: 18,
-            letterSpacing: '0.14em',
-            color: '#56493b',
+            letterSpacing: '0.16em',
+            color: '#f3c97a',
             textTransform: 'uppercase',
           }}
         >
@@ -36,44 +39,19 @@ export default function OgImage() {
               width: 14,
               height: 14,
               borderRadius: 999,
-              background: '#d99634',
+              background: '#e9a13d',
+              boxShadow: '0 0 18px #e9a13d',
             }}
           />
-          BohdiAI · beta opening summer 2026
+          BohdiAI · Websites for makers, contractors &amp; charities
         </div>
 
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 18,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 96,
-              lineHeight: 1.0,
-              color: '#1f1a14',
-              letterSpacing: '-0.025em',
-              fontWeight: 300,
-            }}
-          >
-            Your business online.
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ fontSize: 76, lineHeight: 1.05, color: '#f3ede0', letterSpacing: '-0.03em', fontWeight: 500 }}>
+            If you make it, bake it, fix it or fund it,
           </div>
-          <div
-            style={{
-              // The image renderer requires flex on any box with more than one child.
-              display: 'flex',
-              gap: '0.25em',
-              fontSize: 96,
-              lineHeight: 1.0,
-              color: '#1f1a14',
-              letterSpacing: '-0.025em',
-              fontWeight: 300,
-            }}
-          >
-            <span style={{ fontStyle: 'italic', color: '#bf7a1f' }}>Finally</span>
-            <span>made easy.</span>
+          <div style={{ fontSize: 76, lineHeight: 1.05, color: '#f3c97a', letterSpacing: '-0.03em', fontWeight: 500 }}>
+            we build it for you
           </div>
         </div>
 
@@ -83,22 +61,13 @@ export default function OgImage() {
             justifyContent: 'space-between',
             alignItems: 'flex-end',
             fontSize: 22,
-            color: '#3a3127',
+            color: '#d8d2c4',
           }}
         >
-          <div style={{ maxWidth: 720, lineHeight: 1.35 }}>
-            A professional storefront for makers, bakers, vintage sellers and service providers —
-            built by AI in minutes. You keep 100%.
+          <div style={{ display: 'flex', maxWidth: 760, lineHeight: 1.35 }}>
+            Real websites for small makers, local service businesses and charities. You keep every dollar.
           </div>
-          <div
-            style={{
-              fontFamily: 'monospace',
-              fontSize: 16,
-              letterSpacing: '0.12em',
-              color: '#56493b',
-              textTransform: 'uppercase',
-            }}
-          >
+          <div style={{ display: 'flex', fontSize: 18, letterSpacing: '0.12em', color: '#8a8070', textTransform: 'uppercase' }}>
             bohdiai.com
           </div>
         </div>

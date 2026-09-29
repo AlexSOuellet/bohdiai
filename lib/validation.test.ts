@@ -1,58 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { waitlistSchema, resendSchema } from './validation';
+import { contactSchema } from './validation';
 
-describe('waitlistSchema', () => {
-  it('accepts a valid founder signup', () => {
-    const result = waitlistSchema.safeParse({ email: 'alex@example.com', type: 'founder' });
-    expect(result.success).toBe(true);
-  });
+const TENANT = '4b8f0f5e-8f3a-4a57-9a8e-1f2d3c4b5a69';
 
-  it('accepts a valid notify signup', () => {
-    const result = waitlistSchema.safeParse({ email: 'alex@example.com', type: 'notify' });
-    expect(result.success).toBe(true);
-  });
-
-  it('lowercases and trims email', () => {
-    const result = waitlistSchema.safeParse({ email: '  ALEX@Example.COM  ', type: 'notify' });
+describe('contactSchema', () => {
+  it('accepts a complete message and normalises the email', () => {
+    const result = contactSchema.safeParse({ tenantId: TENANT, name: ' Pat ', email: ' Pat@Example.COM ', message: 'Hi' });
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.email).toBe('alex@example.com');
+      expect(result.data.email).toBe('pat@example.com');
+      expect(result.data.name).toBe('Pat');
     }
   });
 
-  it('rejects an invalid email', () => {
-    const result = waitlistSchema.safeParse({ email: 'not-an-email', type: 'founder' });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects an empty email', () => {
-    const result = waitlistSchema.safeParse({ email: '', type: 'founder' });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects an unknown type', () => {
-    const result = waitlistSchema.safeParse({ email: 'alex@example.com', type: 'admin' });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects email longer than 254 chars', () => {
-    const longLocal = 'a'.repeat(250);
-    const result = waitlistSchema.safeParse({
-      email: `${longLocal}@example.com`,
-      type: 'notify',
-    });
-    expect(result.success).toBe(false);
-  });
-});
-
-describe('resendSchema', () => {
-  it('accepts a valid email', () => {
-    const result = resendSchema.safeParse({ email: 'alex@example.com' });
-    expect(result.success).toBe(true);
-  });
-
-  it('rejects an invalid email', () => {
-    const result = resendSchema.safeParse({ email: 'nope' });
-    expect(result.success).toBe(false);
+  it('rejects a missing name, a bad email, an empty message, or a non-uuid shop', () => {
+    expect(contactSchema.safeParse({ tenantId: TENANT, name: '', email: 'a@b.co', message: 'Hi' }).success).toBe(false);
+    expect(contactSchema.safeParse({ tenantId: TENANT, name: 'Pat', email: 'nope', message: 'Hi' }).success).toBe(false);
+    expect(contactSchema.safeParse({ tenantId: TENANT, name: 'Pat', email: 'a@b.co', message: ' ' }).success).toBe(false);
+    expect(contactSchema.safeParse({ tenantId: 'shop', name: 'Pat', email: 'a@b.co', message: 'Hi' }).success).toBe(false);
   });
 });

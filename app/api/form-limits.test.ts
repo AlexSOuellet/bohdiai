@@ -32,8 +32,6 @@ const ROUTES = [
   { name: 'contact', load: () => import('./contact/route'), shape: { error: 'slow down' } },
   { name: 'inquiry', load: () => import('./inquiry/route'), shape: { error: 'slow down' } },
   { name: 'notify-interest', load: () => import('./notify-interest/route'), shape: { error: 'slow down' } },
-  { name: 'waitlist', load: () => import('./waitlist/route'), shape: { ok: false, message: 'slow down' } },
-  { name: 'waitlist-resend', load: () => import('./waitlist/resend/route'), shape: { ok: false, message: 'slow down' } },
 ] as const;
 
 describe('public forms are rate limited', () => {

@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
 
 export const metadata: Metadata = {
   title: 'Privacy — BohdiAI',
   description:
-    'What BohdiAI collects, why, and how to get your data deleted. Short, plain English.',
+    'What bohdiai.com collects, why, and how to get it deleted. Short, plain English.',
 };
 
-const CONTACT_EMAIL = 'alex@bohdiai.com';
-const LAST_UPDATED = 'May 19, 2026';
+const CONTACT_EMAIL = SITE_CONTACT_EMAIL;
+const LAST_UPDATED = 'September 29, 2026';
 
 export default function PrivacyPage(): React.ReactElement {
   return (
@@ -39,85 +40,70 @@ export default function PrivacyPage(): React.ReactElement {
               What I collect
             </h2>
             <p>
-              Right now, only your email address — and only if you put it in the waitlist form on
-              the home page. Nothing else. No name, no phone, no tracking pixels following you
-              around the internet.
-            </p>
-            <p className="mt-3">
-              BohdiAI uses{' '}
-              <a href="https://posthog.com" target="_blank" rel="noopener noreferrer" className="text-honey-warm underline underline-offset-4 decoration-honey-warm/40 hover:decoration-honey-warm">
-                PostHog
-              </a>{' '}
-              for basic, privacy-respecting analytics (page views, button clicks) and{' '}
-              <a href="https://sentry.io" target="_blank" rel="noopener noreferrer" className="text-honey-warm underline underline-offset-4 decoration-honey-warm/40 hover:decoration-honey-warm">
-                Sentry
-              </a>{' '}
-              for error reports when something breaks. Neither sells your data, and neither is
-              tied to your email.
+              Only what you type into the contact form on the home page: your name, your email, your
+              phone number if you give one, how you like to be reached,
+              what kind of business you run, your message, and a link if you add one. Nothing else.
+              No tracking pixels, no analytics following you around the internet.
             </p>
           </section>
-
           <section>
             <h2 className="mb-3 font-sans text-[20px] font-semibold tracking-[-0.01em] text-text md:text-[22px]">
               Why I collect it
             </h2>
             <p>
-              To tell you when BohdiAI opens for real, and occasionally — rarely — when there&apos;s
-              something genuinely worth your attention along the way. That&apos;s it. No promo
-              blasts. No selling the list. No sharing with third parties for marketing.
+              So I can read about your project and write back to you. That&apos;s it. No mailing
+              list, no promo blasts, no selling or sharing it with anyone for marketing.
             </p>
           </section>
-
           <section>
             <h2 className="mb-3 font-sans text-[20px] font-semibold tracking-[-0.01em] text-text md:text-[22px]">
-              Where it lives
+              Where it goes
             </h2>
             <p>
-              Emails are stored in{' '}
-              <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-honey-warm underline underline-offset-4 decoration-honey-warm/40 hover:decoration-honey-warm">
-                Supabase
-              </a>{' '}
-              (Postgres database, encrypted at rest, US region) and synced to{' '}
+              Your message is sent to my inbox by{' '}
               <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-honey-warm underline underline-offset-4 decoration-honey-warm/40 hover:decoration-honey-warm">
                 Resend
-              </a>{' '}
-              so I can actually send you the confirmation and the eventual launch email.
+              </a>
+              , the email service this site uses. It isn&apos;t saved in a database on this site;
+              it lives in my email, the same as if you&apos;d written to me directly.
+            </p>
+            <p className="mt-3">
+              The site runs on{' '}
+              <a href="https://www.cloudflare.com" target="_blank" rel="noopener noreferrer" className="text-honey-warm underline underline-offset-4 decoration-honey-warm/40 hover:decoration-honey-warm">
+                Cloudflare
+              </a>
+              , which sees the ordinary details every website sees, like your IP address, and uses
+              them to keep the site secure and to stop the form from being flooded with spam.
             </p>
           </section>
-
           <section>
             <h2 className="mb-3 font-sans text-[20px] font-semibold tracking-[-0.01em] text-text md:text-[22px]">
-              How to get out
+              How to get it deleted
             </h2>
             <p>
-              Every email I send has a one-click unsubscribe. If you want your record fully
-              deleted (not just unsubscribed), email{' '}
+              Email{' '}
               <a href={`mailto:${CONTACT_EMAIL}`} className="text-honey-warm underline underline-offset-4 decoration-honey-warm/40 hover:decoration-honey-warm">
                 {CONTACT_EMAIL}
               </a>{' '}
-              and I&apos;ll delete it within 7 days. If you&apos;re in the EU/UK, this is your GDPR
-              right to erasure — same process, same response.
+              and I&apos;ll delete your messages within 7 days. If you&apos;re in the EU/UK, this
+              is your GDPR right to erasure. Same process, same response.
             </p>
           </section>
-
           <section>
             <h2 className="mb-3 font-sans text-[20px] font-semibold tracking-[-0.01em] text-text md:text-[22px]">
               Cookies
             </h2>
             <p>
-              No marketing cookies. PostHog uses a first-party cookie to count unique visits;
-              it doesn&apos;t identify you personally. No cross-site tracking, no ad networks.
+              None. This site doesn&apos;t set marketing or tracking cookies, and there are no ad
+              networks.
             </p>
           </section>
-
           <section>
             <h2 className="mb-3 font-sans text-[20px] font-semibold tracking-[-0.01em] text-text md:text-[22px]">
               Changes to this policy
             </h2>
             <p>
-              When BohdiAI opens for real and starts handling maker storefronts, this policy
-              will grow to cover that. I&apos;ll date any update at the top, and material changes
-              will be emailed to people on the waitlist before they take effect.
+              If this ever changes, the new version goes on this page with the date at the top.
             </p>
           </section>
 

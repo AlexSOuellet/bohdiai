@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
 
 export const metadata: Metadata = {
   title: 'Terms — BohdiAI',
-  description: 'The terms for joining the BohdiAI waitlist. Short, plain English.',
+  description: 'The terms for using bohdiai.com. Short, plain English.',
 };
 
-const CONTACT_EMAIL = 'alex@bohdiai.com';
-const LAST_UPDATED = 'May 19, 2026';
+const CONTACT_EMAIL = SITE_CONTACT_EMAIL;
+const LAST_UPDATED = 'September 29, 2026';
 
 export default function TermsPage(): React.ReactElement {
   return (
@@ -38,36 +39,31 @@ export default function TermsPage(): React.ReactElement {
               What this is
             </h2>
             <p>
-              Right now, BohdiAI is a waitlist for an upcoming product. You can put your email in,
-              and I&apos;ll write when it&apos;s ready. That&apos;s the whole transaction. No
-              purchase, no account, no money changes hands.
-            </p>
-            <p className="mt-3">
-              When BohdiAI opens for real and starts handling maker storefronts, these terms will
-              be replaced with the real ones — and anyone on the waitlist will see them before
-              they sign up for a paid plan.
+              bohdiai.com is where I show the websites I build and where you can tell me about
+              yours. Using the site, including sending a message through the contact form, is free
+              and doesn&apos;t sign you up for anything.
             </p>
           </section>
 
           <section>
             <h2 className="mb-3 font-sans text-[20px] font-semibold tracking-[-0.01em] text-text md:text-[22px]">
-              No promises about timing
+              Sending a message isn&apos;t a contract
             </h2>
             <p>
-              Joining the waitlist doesn&apos;t guarantee you&apos;ll get in at launch, or that
-              launch will happen on any particular date, or that pricing won&apos;t change between
-              now and then. I&apos;ll be honest about all of it as it firms up.
+              A message starts a conversation, nothing more. If we decide to work together, what
+              I&apos;ll build, what it costs and when it&apos;s done are agreed in writing before any
+              work starts.
             </p>
           </section>
 
           <section>
             <h2 className="mb-3 font-sans text-[20px] font-semibold tracking-[-0.01em] text-text md:text-[22px]">
-              No promises about the product
+              The samples
             </h2>
             <p>
-              The demo storefronts on the home page are illustrative. The real product will look
-              and behave like them — that&apos;s the goal — but specific features, screens, and
-              wording can change before launch.
+              The sites marked as samples are demonstrations made to show a range of looks. They
+              aren&apos;t real businesses, and nothing on them is for sale. The sites marked as
+              clients are real businesses, and their own terms apply there.
             </p>
           </section>
 
@@ -76,18 +72,17 @@ export default function TermsPage(): React.ReactElement {
               Acceptable use
             </h2>
             <p>
-              Don&apos;t submit someone else&apos;s email. Don&apos;t try to break, scrape, or
-              flood the site. I reserve the right to remove anyone from the waitlist for any
-              reason, without notice, especially in those cases.
+              Don&apos;t send messages in someone else&apos;s name. Don&apos;t try to break, scrape,
+              or flood the site. I may ignore or delete messages that do.
             </p>
           </section>
 
           <section>
             <h2 className="mb-3 font-sans text-[20px] font-semibold tracking-[-0.01em] text-text md:text-[22px]">
-              Sample legal documents for storefronts
+              Sample legal documents for client sites
             </h2>
             <p>
-              When BohdiAI hosts a maker&apos;s storefront, every site is generated with a sample
+              When BohdiAI hosts a client&apos;s site, it comes with a sample
               Terms of Service and Privacy Policy as a starting point. These are templates written
               in plain English to cover the common case — they are not legal advice and they are
               not a substitute for a lawyer.

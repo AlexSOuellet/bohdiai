@@ -76,7 +76,7 @@ describe('formLimitResponse', () => {
     vi.doMock('@opennextjs/cloudflare', () => ({ getCloudflareContext: () => Promise.resolve({ env: { FORM_LIMITER: binding } }) }));
     vi.resetModules();
     const { formLimitResponse: fresh } = await import('./rate-limit');
-    const res = await fresh(req(), 'waitlist', (m) => ({ ok: false, message: m }));
+    const res = await fresh(req(), 'inquiry', (m) => ({ ok: false, message: m }));
     expect(res?.status).toBe(429);
     expect(await res?.json()).toEqual({ ok: false, message: expect.stringMatching(/wait a minute/i) });
   });

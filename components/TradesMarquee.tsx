@@ -5,80 +5,99 @@ import { SectionKicker } from './SectionKicker';
 
 type Trade = { name: string; featured?: boolean };
 
-// Only niches we have built or have locked to build (the 43-niche traditional-
-// craft launch batch). Keep this list in step with content/niches/ — no trades
-// we don't actually cover.
-const TRADES_ROW_1: readonly Trade[] = [
+// The three kinds of business bohdiai.com builds for. Illustrative, not a menu:
+// anyone in these worlds is a fit, listed or not.
+const MAKERS: readonly Trade[] = [
   { name: 'Candle maker', featured: true },
   { name: 'Sourdough baker', featured: true },
+  { name: 'Decoupage artist', featured: true },
   { name: 'Jewelry maker', featured: true },
   { name: 'Soap maker' },
   { name: 'Woodworker' },
   { name: 'Potter' },
-  { name: 'Leatherworker' },
   { name: 'Knitter' },
-  { name: 'Crocheter' },
   { name: 'Quilter' },
   { name: 'Florist' },
-  { name: 'Herbalist' },
   { name: 'Printmaker' },
-  { name: 'Chocolatier' },
   { name: 'Cake decorator' },
-  { name: 'Coffee roaster' },
   { name: 'Hot sauce maker' },
   { name: 'Honey producer' },
-  { name: 'Cheesemaker' },
-];
-
-const TRADES_ROW_2: readonly Trade[] = [
   { name: 'Stained glass artist' },
   { name: 'Resin artist' },
-  { name: 'Macramé artist' },
+  { name: 'Laser engraver' },
   { name: 'Embroiderer' },
-  { name: 'Calligrapher' },
-  { name: 'Wedding stationery' },
-  { name: 'Pins & patches' },
-  { name: 'Toy maker' },
-  { name: 'Plush & doll maker' },
-  { name: 'Glass artist' },
-  { name: 'Mosaic artist' },
-  { name: 'Knife maker' },
-  { name: 'Wood turner' },
-  { name: 'Woodcarver' },
-  { name: 'Weaver' },
-  { name: 'Basket weaver' },
-  { name: 'Tea blender' },
   { name: 'Jam & preserves' },
   { name: 'Vintage seller' },
-  { name: 'Antique dealer' },
 ];
+
+const TRADES: readonly Trade[] = [
+  { name: 'Lawn care', featured: true },
+  { name: 'Landscaper', featured: true },
+  { name: 'House cleaning', featured: true },
+  { name: 'Hardscaping & patios' },
+  { name: 'Sod & grading' },
+  { name: 'Tree service' },
+  { name: 'Snow removal' },
+  { name: 'Handyman' },
+  { name: 'Painter' },
+  { name: 'Power washing' },
+  { name: 'Pet grooming' },
+  { name: 'Photographer' },
+  { name: 'Mobile detailing' },
+  { name: 'Junk removal' },
+  { name: 'Pool service' },
+  { name: 'Fencing' },
+];
+
+const CAUSES: readonly Trade[] = [
+  { name: 'Animal rescue', featured: true },
+  { name: 'Food pantry', featured: true },
+  { name: 'Church' },
+  { name: 'Youth sports league' },
+  { name: 'PTA & PTO' },
+  { name: 'Veterans group' },
+  { name: 'Community garden' },
+  { name: 'Friends of the library' },
+  { name: 'Arts council' },
+  { name: 'Shelter' },
+  { name: 'Scholarship fund' },
+  { name: 'Charity ride' },
+  { name: 'Historical society' },
+  { name: 'Fire department auxiliary' },
+];
+
+const ROWS = [
+  { label: 'Makers', trades: MAKERS, reverse: false },
+  { label: 'Trades & services', trades: TRADES, reverse: true },
+  { label: 'Charities & causes', trades: CAUSES, reverse: false },
+] as const;
 
 export function TradesMarquee(): React.ReactElement {
   return (
-    <section className="relative z-content px-3 pb-16 pt-14 md:pb-24 md:pt-20">
-      <SectionKicker>Built for every kind of small business</SectionKicker>
+    <section id="who-for" className="relative z-content px-3 pb-16 pt-24 md:pb-24 md:pt-32">
+      <SectionKicker>Who I build for</SectionKicker>
 
       <h2 className="mx-auto max-w-[780px] px-3 text-center font-sans text-[30px] font-medium leading-[1.05] tracking-[-0.025em] text-text-soft md:text-[48px] md:tracking-[-0.03em]">
-        If you make it, bake it, teach it, or sell it —{' '}
-        <em className="not-italic text-honey-warm [text-shadow:0_0_32px_rgba(243,201,122,0.5)]">
-          we build it for you
-        </em>
-        .
+        Makers,{' '}
+        <em className="not-italic text-honey-warm [text-shadow:0_0_32px_rgba(243,201,122,0.5)]">trades</em>{' '}
+        and good causes
       </h2>
       <p className="mx-auto mb-10 mt-3.5 max-w-[540px] px-3 text-center text-[14px] leading-[1.55] text-muted md:mb-14 md:mt-4 md:text-[16px]">
-        BohdiAI doesn&apos;t pick a template. It generates a storefront tuned to your specific kind
-        of business.
+        Your site should look like your business, not a template. Here are some of the people I build for.
       </p>
 
-      <MarqueeRow trades={TRADES_ROW_1} reverse={false} />
-      <div className="mt-3.5">
-        <MarqueeRow trades={TRADES_ROW_2} reverse={true} />
-      </div>
+      {ROWS.map((row, i) => (
+        <div key={row.label} className={i === 0 ? '' : 'mt-7 md:mt-8'}>
+          <p className="mb-3 text-center text-[11px] font-medium uppercase tracking-[0.22em] text-muted">{row.label}</p>
+          <MarqueeRow trades={row.trades} reverse={row.reverse} />
+        </div>
+      ))}
 
       <p className="mt-10 text-center text-[14px] font-medium text-text-soft [text-shadow:0_2px_12px_rgba(0,0,0,0.7)] md:text-[15px]">
-        …and <b className="font-bold text-honey-warm">97 more</b> business types and counting.{' '}
-        <span className="text-honey-warm">Don&apos;t see yours?</span> Tell us and we&apos;ll tune
-        one for you.
+        <span className="text-honey-warm">Don&apos;t see yours?</span>{' '}
+        <a href="#contact" className="text-text-soft underline decoration-honey-warm/50 underline-offset-4 hover:decoration-honey-warm">
+          Tell me what you do
+        </a>
       </p>
     </section>
   );

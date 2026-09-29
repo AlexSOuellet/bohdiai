@@ -17,7 +17,6 @@ const serverSchema = z.object({
   RESEND_API_KEY: z.string().min(1),
   RESEND_FROM_EMAIL: z.string().min(1),
   SITE_URL: z.string().url(),
-  FOUNDER_CAP: z.coerce.number().int().positive().default(25),
   SENTRY_DSN: optionalUrl,
   SENTRY_AUTH_TOKEN: optionalString,
   // Optional app-wide: only the AI builder and image generation use these, and

@@ -1,81 +1,44 @@
 import { Scene } from '@/components/Scene';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
-import { HowItWorks } from '@/components/HowItWorks';
+import { Work } from '@/components/Work';
 import { TradesMarquee } from '@/components/TradesMarquee';
-import { Waitlist } from '@/components/Waitlist';
+import { HowItWorks } from '@/components/HowItWorks';
 import { WhoBehind } from '@/components/WhoBehind';
 import { Pledge } from '@/components/Pledge';
-import { Community } from '@/components/Community';
+import { Contact } from '@/components/Contact';
 import { Footer } from '@/components/Footer';
-import { supabaseAdmin } from '@/lib/supabase';
-import { serverEnv } from '@/lib/env';
-
-// Rendered per request: the founder count is live data, and a copy pre-built at
-// deploy time would need database keys on the build machine and then go stale.
-export const dynamic = 'force-dynamic';
+import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
 
 const SITE_URL = process.env['SITE_URL'] ?? 'https://bohdiai.com';
 
-/** BohdiAI's own Organization schema. Lives here on the marketing home — NOT in
- *  the root layout, where it used to leak onto every tenant storefront. */
-const ORGANIZATION_JSON_LD = {
+/** BohdiAI's own business schema. Lives here on the marketing home — NOT in
+ *  the root layout, where it would leak onto every tenant storefront. */
+const BUSINESS_JSON_LD = {
   '@context': 'https://schema.org',
-  '@type': 'Organization',
+  '@type': 'ProfessionalService',
   name: 'BohdiAI',
   url: SITE_URL,
-  description:
-    'AI-powered storefronts for small business owners — makers, bakers, vintage sellers, service providers, farm stands and more.',
+  description: 'Websites for makers, contractors and charities in Rhode Island and beyond.',
+  email: SITE_CONTACT_EMAIL,
+  founder: { '@type': 'Person', name: 'Alex Scott' },
+  areaServed: 'US',
   foundingDate: '2026',
 };
 
-async function getFounderTakenCount(): Promise<number> {
-  try {
-    const supabase = supabaseAdmin();
-    const { count, error } = await supabase
-      .from('waitlist')
-      .select('id', { count: 'exact', head: true })
-      .eq('type', 'founder');
-    if (error) {
-      console.error('founder count error', error.message);
-      return 0;
-    }
-    return count ?? 0;
-  } catch (err) {
-    console.error('founder count fatal', err);
-    return 0;
-  }
-}
-
-function getFounderCap(): number {
-  try {
-    return serverEnv().FOUNDER_CAP;
-  } catch {
-    return 25;
-  }
-}
-
-export default async function HomePage(): Promise<React.ReactElement> {
-  const [founderTakenCount, founderCap] = await Promise.all([
-    getFounderTakenCount(),
-    Promise.resolve(getFounderCap()),
-  ]);
-
+export default function HomePage(): React.ReactElement {
   return (
     <Scene>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(BUSINESS_JSON_LD) }} />
       <Header />
       <main id="main">
         <Hero />
-        <HowItWorks />
+        <Work />
         <TradesMarquee />
-        <Waitlist founderTakenCount={founderTakenCount} founderCap={founderCap} />
+        <HowItWorks />
         <WhoBehind />
         <Pledge />
-        <Community />
+        <Contact />
       </main>
       <Footer />
     </Scene>

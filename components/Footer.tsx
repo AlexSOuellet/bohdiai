@@ -1,6 +1,4 @@
-const SKOOL_URL = 'https://www.skool.com/wits-end-breakthrough-7869';
-const YOUTUBE_URL = 'https://www.youtube.com/@TheAlexScott';
-const CONTACT_EMAIL = 'alex@bohdiai.com';
+import { SITE_CONTACT_EMAIL as CONTACT_EMAIL } from '@/lib/site/contact';
 
 export function Footer(): React.ReactElement {
   return (
@@ -16,24 +14,16 @@ export function Footer(): React.ReactElement {
             </span>
           </div>
           <p className="text-[12px] leading-[1.55] text-muted md:text-[13px]">
-            AI-generated storefronts for makers, artisans, and small businesses. You keep 100% of
-            what you sell.
+            Websites for makers, contractors and charities. You keep 100% of what you sell.
           </p>
         </div>
 
         <div className="flex flex-wrap gap-7 md:gap-12">
-          <FooterCol title="Product">
-            <FLink href="#waitlist">Reserve your shop</FLink>
+          <FooterCol title="Site">
+            <FLink href="#work">Work</FLink>
             <FLink href="#how">How it works</FLink>
             <FLink href="#pledge">Our pledge</FLink>
-          </FooterCol>
-          <FooterCol title="Community">
-            <FLink href={SKOOL_URL} external>
-              Witsend Breakthroughs ↗
-            </FLink>
-            <FLink href={YOUTUBE_URL} external>
-              Alex Scott on YouTube ↗
-            </FLink>
+            <FLink href="#contact">Start a project</FLink>
           </FooterCol>
           <FooterCol title="Contact">
             <FLink href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</FLink>

@@ -4,10 +4,6 @@ import {
   Cormorant_Garamond,
   Manrope,
   JetBrains_Mono,
-  UnifrakturCook,
-  Bebas_Neue,
-  Fredoka,
-  Caveat,
 } from 'next/font/google';
 import './globals.css';
 
@@ -41,64 +37,27 @@ const jetbrains = JetBrains_Mono({
   weight: ['400', '600'],
 });
 
-// Storefront-only display fonts (loaded once, used inside BrowserDemo).
-// Each is a single-style display family — small footprint.
-// Storefront-only fonts: not preloaded so they don't block LCP.
-// Loaded when the browser first encounters them inside BrowserDemo
-// (a few seconds after first paint).
-const unifrakturCook = UnifrakturCook({
-  subsets: ['latin'],
-  display: 'swap',
-  preload: false,
-  variable: '--font-gothic',
-  weight: ['700'],
-});
-
-const bebas = Bebas_Neue({
-  subsets: ['latin'],
-  display: 'swap',
-  preload: false,
-  variable: '--font-bebas',
-  weight: ['400'],
-});
-
-const fredoka = Fredoka({
-  subsets: ['latin'],
-  display: 'swap',
-  preload: false,
-  variable: '--font-fredoka',
-  weight: ['400', '500', '600', '700'],
-});
-
-const caveat = Caveat({
-  subsets: ['latin'],
-  display: 'swap',
-  preload: false,
-  variable: '--font-caveat',
-  weight: ['500', '700'],
-});
-
 const SITE_URL = process.env['SITE_URL'] ?? 'https://bohdiai.com';
+const SITE_TITLE = 'BohdiAI · Websites for makers, contractors and charities';
+const SITE_DESCRIPTION =
+  'If you make it, bake it, fix it or fund it, we build it for you. Real websites for small makers, local service businesses and charities, and you keep every dollar of your sales.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: 'BohdiAI — Your Business Online. Finally Made Easy.',
-  description:
-    'BohdiAI gives makers, bakers, vintage sellers, farm stands and service providers a professional online storefront in minutes. AI-powered, built for your specific kind of business. You keep 100% of your sales.',
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
   openGraph: {
     type: 'website',
     url: SITE_URL,
     siteName: 'BohdiAI',
-    title: 'BohdiAI — Your Business Online. Finally Made Easy.',
-    description:
-      'A professional online storefront, built by AI in minutes — for the way your business actually works. Beta opening soon.',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
     images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'BohdiAI' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'BohdiAI — Your Business Online. Finally Made Easy.',
-    description:
-      'A professional online storefront, built by AI in minutes — for makers, bakers, vintage sellers, farm stands and service providers.',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
   },
   alternates: {
     canonical: SITE_URL,
@@ -116,7 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${interTight.variable} ${cormorant.variable} ${manrope.variable} ${jetbrains.variable} ${unifrakturCook.variable} ${bebas.variable} ${fredoka.variable} ${caveat.variable}`}
+      className={`${interTight.variable} ${cormorant.variable} ${manrope.variable} ${jetbrains.variable}`}
     >
       <body className="bg-bg font-sans text-text antialiased">
         <a
