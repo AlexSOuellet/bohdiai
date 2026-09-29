@@ -125,3 +125,14 @@ export function tenantLookupUrl(supabaseUrl: string, subdomain: string): string 
     `&limit=1`
   );
 }
+
+/**
+ * www.bohdiai.com is not a second copy of the site: send it to the bare domain,
+ * path and query intact (Vercel did this before the move to Cloudflare).
+ * Returns the redirect target, or null when the host needs no redirect.
+ */
+export function apexRedirect(hostname: string, url: URL): string | null {
+  const host = hostname.split(':')[0] ?? '';
+  if (host !== 'www.bohdiai.com') return null;
+  return `https://bohdiai.com${url.pathname}${url.search}`;
+}

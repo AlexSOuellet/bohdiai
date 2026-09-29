@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import type { SetAllCookies } from '@supabase/ssr';
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
-import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost, isAppHost, isAppSurfacePath, isDormantPath, tenantLookupUrl } from '@/lib/proxy-security';
+import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost, isAppHost, isAppSurfacePath, isDormantPath, tenantLookupUrl, apexRedirect } from '@/lib/proxy-security';
 
 const RESERVED = new Set(['www', 'admin', 'app', 'learn']);
 const BASE_DOMAIN = 'bohdiai.com';
@@ -28,6 +28,9 @@ export async function middleware(request: NextRequest) {
     request.headers.get('host'),
   );
   const subdomain = extractSubdomain(hostname);
+
+  const toApex = apexRedirect(hostname, request.nextUrl);
+  if (toApex !== null) return NextResponse.redirect(toApex, 308);
 
   // Switched-off surfaces (builder, dashboard, sign-in, ...) answer 404 on every
   // host before anything else runs. See isDormantPath.

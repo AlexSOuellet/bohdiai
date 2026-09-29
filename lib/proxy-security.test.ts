@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost, isAppHost, isAppSurfacePath, isDormantPath, tenantLookupUrl } from './proxy-security';
+import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost, isAppHost, isAppSurfacePath, isDormantPath, tenantLookupUrl, apexRedirect } from './proxy-security';
 
 describe('resolveProxyHost', () => {
   it('prefers the forwarded host when the edge proxy sets one', () => {
@@ -205,5 +205,17 @@ describe('tenantLookupUrl', () => {
   it('encodes the subdomain so it cannot add its own filters', () => {
     const sneaky = new URL(tenantLookupUrl('https://db.example.co', 'x&status=eq.suspended'));
     expect(sneaky.searchParams.getAll('status')).toEqual(['eq.active']);
+  });
+});
+
+describe('apexRedirect', () => {
+  it('sends www to the bare domain, keeping the path and query', () => {
+    expect(apexRedirect('www.bohdiai.com', new URL('https://www.bohdiai.com/privacy?x=1'))).toBe('https://bohdiai.com/privacy?x=1');
+  });
+
+  it('leaves the bare domain, shops, and local dev alone', () => {
+    expect(apexRedirect('bohdiai.com', new URL('https://bohdiai.com/'))).toBeNull();
+    expect(apexRedirect('cut-pro-lawncare.bohdiai.com', new URL('https://cut-pro-lawncare.bohdiai.com/'))).toBeNull();
+    expect(apexRedirect('localhost:3000', new URL('http://localhost:3000/'))).toBeNull();
   });
 });
