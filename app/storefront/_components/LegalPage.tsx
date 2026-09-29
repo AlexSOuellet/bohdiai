@@ -25,7 +25,7 @@ export default async function LegalPage({ doc }: LegalPageProps) {
   const contactEmail = tenant.contact_email ?? 'hello@example.com';
   const lastUpdated = tenant.created_at.slice(0, 10);
 
-  const markdown = await loadLegalMarkdown(doc, { shopName, contactEmail, lastUpdated });
+  const markdown = loadLegalMarkdown(doc, { shopName, contactEmail, lastUpdated });
   const html = renderLegalHtml(markdown);
 
   const page = await renderArchetypeContentPage(tenantId, { html });

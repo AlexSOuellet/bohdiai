@@ -1,5 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { loadLegalMarkdown, renderLegalHtml } from './legal';
+
+// Shop legal pages render on Cloudflare Workers, which have no filesystem: the
+// templates must be bundled, never read from disk at request time.
+vi.mock('node:fs/promises', () => ({
+  readFile: () => Promise.reject(new Error('no filesystem on Workers')),
+}));
+vi.mock('node:fs', () => ({
+  readFileSync: () => {
+    throw new Error('no filesystem on Workers');
+  },
+}));
 
 const CTX = {
   shopName: 'Flame Works',
@@ -9,25 +20,25 @@ const CTX = {
 
 describe('loadLegalMarkdown', () => {
   it('interpolates shopName into the terms template', async () => {
-    const md = await loadLegalMarkdown('terms', CTX);
+    const md = loadLegalMarkdown('terms', CTX);
     expect(md).toContain('Flame Works');
     expect(md).not.toContain('{{shopName}}');
   });
 
   it('interpolates contactEmail into the privacy template', async () => {
-    const md = await loadLegalMarkdown('privacy', CTX);
+    const md = loadLegalMarkdown('privacy', CTX);
     expect(md).toContain('hello@flameworks.com');
     expect(md).not.toContain('{{contactEmail}}');
   });
 
   it('interpolates lastUpdated', async () => {
-    const md = await loadLegalMarkdown('terms', CTX);
+    const md = loadLegalMarkdown('terms', CTX);
     expect(md).toContain('2026-05-27');
     expect(md).not.toContain('{{lastUpdated}}');
   });
 
   it('escapes HTML special chars in shopName to prevent injection', async () => {
-    const md = await loadLegalMarkdown('terms', { ...CTX, shopName: '<script>x</script>' });
+    const md = loadLegalMarkdown('terms', { ...CTX, shopName: '<script>x</script>' });
     expect(md).not.toContain('<script>');
     expect(md).toContain('&lt;script&gt;');
   });

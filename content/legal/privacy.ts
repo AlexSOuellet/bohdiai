@@ -1,4 +1,7 @@
-# Privacy Policy
+// Shop privacy template. Placeholders: {{shopName}}, {{contactEmail}}, {{lastUpdated}}.
+// Kept as a module, not a .md file read at request time: shop pages render on
+// Cloudflare Workers, which have no filesystem. Rendered by lib/legal.ts.
+export const PRIVACY_TEMPLATE = `# Privacy Policy
 
 _Last updated: {{lastUpdated}}_
 
@@ -37,3 +40,4 @@ We may update this Privacy Policy from time to time. The "Last updated" date abo
 ## 8. Contact
 
 For any questions, requests, or complaints regarding your privacy or this policy, please contact us at [{{contactEmail}}](mailto:{{contactEmail}}).
+`;

@@ -1,5 +1,5 @@
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
+import { PRIVACY_TEMPLATE } from '@/content/legal/privacy';
+import { TERMS_TEMPLATE } from '@/content/legal/terms';
 
 export type LegalDoc = 'terms' | 'privacy';
 
@@ -11,16 +11,18 @@ export interface LegalContext {
 }
 
 /**
- * Loads a legal markdown template from /content/legal and interpolates context
- * placeholders ({{shopName}}, {{contactEmail}}, {{lastUpdated}}).
- *
- * Templates are read from disk at request time. They're small, change rarely,
- * and the Vercel build caches the filesystem so cost is negligible.
+ * Fills a legal template from /content/legal with the shop's details
+ * ({{shopName}}, {{contactEmail}}, {{lastUpdated}}). The templates are bundled
+ * modules, not files read at request time: shop pages render on Cloudflare
+ * Workers, which have no filesystem.
  */
-export async function loadLegalMarkdown(doc: LegalDoc, ctx: LegalContext): Promise<string> {
-  const filePath = path.join(process.cwd(), 'content', 'legal', `${doc}.md`);
-  const raw = await readFile(filePath, 'utf8');
-  return raw
+const TEMPLATES: Readonly<Record<LegalDoc, string>> = {
+  privacy: PRIVACY_TEMPLATE,
+  terms: TERMS_TEMPLATE,
+};
+
+export function loadLegalMarkdown(doc: LegalDoc, ctx: LegalContext): string {
+  return TEMPLATES[doc]
     .replace(/\{\{shopName\}\}/g, escapeHtml(ctx.shopName))
     .replace(/\{\{contactEmail\}\}/g, escapeHtml(ctx.contactEmail))
     .replace(/\{\{lastUpdated\}\}/g, escapeHtml(ctx.lastUpdated));

@@ -1,4 +1,7 @@
-# Terms of Service
+// Shop terms template. Placeholders: {{shopName}}, {{contactEmail}}, {{lastUpdated}}.
+// Kept as a module, not a .md file read at request time: shop pages render on
+// Cloudflare Workers, which have no filesystem. Rendered by lib/legal.ts.
+export const TERMS_TEMPLATE = `# Terms of Service
 
 _Last updated: {{lastUpdated}}_
 
@@ -47,3 +50,4 @@ We may revise these Terms from time to time. The "Last updated" date above indic
 ## 11. Contact
 
 For questions regarding an order, the Site, or these Terms, please contact us at [{{contactEmail}}](mailto:{{contactEmail}}).
+`;
