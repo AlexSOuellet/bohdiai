@@ -14,7 +14,11 @@ export const config = {
   ],
 };
 
-export async function proxy(request: NextRequest) {
+// This stays `middleware.ts` (edge runtime) rather than Next 16's `proxy.ts`:
+// proxy.ts always runs on Node, and the Cloudflare adapter only supports Node
+// middleware experimentally. Edge middleware is its supported path. Next prints
+// a deprecation warning for this file — expected until the adapter catches up.
+export async function middleware(request: NextRequest) {
   // A Cloudflare edge snippet proxies shop subdomains to the apex (the only host
   // with a valid cert) and forwards the real shop host in `x-bohdi-shop`. Prefer
   // it; on the apex and everywhere else this is just the normal Host header.

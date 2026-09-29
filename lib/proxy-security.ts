@@ -55,7 +55,7 @@ export function isUnreachableStorefrontPath(
 /**
  * Return true when the hostname is the maker dashboard host (`app.bohdiai.com`
  * or `app.localhost` in dev). The dashboard lives under `/dashboard/*`; the bare
- * app root redirects there (see proxy.ts). This is a host check only — it does
+ * app root redirects there (see middleware.ts). This is a host check only — it does
  * NOT gate auth (the dashboard routes do that themselves via requireUser).
  */
 export function isAppHost(hostname: string | null): boolean {

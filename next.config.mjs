@@ -11,7 +11,7 @@ const nextConfig = {
       // through uploadProductPhotos. Default 1MB blocks anything past one photo.
       bodySizeLimit: '55mb',
     },
-    // proxy.ts (middleware) sits in front of every request including server
+    // middleware.ts sits in front of every request including server
     // actions; Next.js caps the body it sees at 10MB by default. The proxy
     // doesn't read the body (it only resolves subdomain → tenant), so it's safe
     // to match the server-action cap. Without this, photo uploads fail with
@@ -42,7 +42,7 @@ const nextConfig = {
         source: '/(.*)',
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
-          // Frame protection is set per-surface in proxy.ts: storefronts allow
+          // Frame protection is set per-surface in middleware.ts: storefronts allow
           // framing by our own dashboard (the editor's live preview) and nobody
           // else; the dashboard, marketing, and admin stay un-frameable (DENY).
           // It can't live here because the only thing that distinguishes a

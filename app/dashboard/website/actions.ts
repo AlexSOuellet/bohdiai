@@ -475,7 +475,7 @@ const ALLOWED_INPUT_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
 // Makers shoot on phones — a raw photo is easily 5–15MB. We accept a generous input
 // and shrink it server-side, so nobody has to resize their own photo. 20MB is the
 // most Cloudflare's Images binding will read; the Server Action body limit
-// (next.config.js) sits above this.
+// (next.config.mjs) sits above this.
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 // The longest edge we keep. A storefront never needs more than this, and it drops a
 // big photo to a small, fast WebP.

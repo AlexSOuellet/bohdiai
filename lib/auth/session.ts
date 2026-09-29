@@ -1,6 +1,6 @@
 // Session helpers for server components and route handlers. Read the logged-in
 // maker from the RLS-respecting SSR client (session cookie + anon key). The
-// session itself is refreshed in proxy.ts on every request.
+// session itself is refreshed in middleware.ts on every request.
 
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
