@@ -36,6 +36,16 @@ When OpenNext builds locally, it bakes every value in `.env.local` into the uplo
    If the first deploy's log names a missing variable, add it. The AI, image-generation, Cowork and DB-password keys are **not** needed, because everything that uses them is switched off.
 5. **Deploy** (retry the build). The app comes up on `bohdiai.alexsouellet.workers.dev`, and bohdiai.com is untouched. To start a build on the right branch, push to it; "Retry" re-runs an old build on its old branch.
 
+## Status 2026-09-29: Cut-Pro is live on Cloudflare
+
+Steps 1–7 are done. The `bohdiai` Worker builds from GitHub, and the route `cut-pro-lawncare.bohdiai.com/*` serves Cut-Pro from it. Checked live: home, /privacy, /terms, all 19 media files, all 12 assets, and the form. A real estimate with a 4000×3000 / 5.5MB photo reached Alex's inbox through the Worker, and the form was then pointed back at Chris.
+
+Lessons from the first attempts:
+- There are **two** "Variables and secrets" sections. The one under *Build* exists only during the build. The running app's keys go in the top-level one.
+- Paste values **without** the quote marks `.env.local` wraps them in. Cloudflare keeps the quotes, and Resend rejected the quoted sender.
+- Workers have no filesystem, so nothing may read files at request time (shop legal pages did; now bundled).
+- The Build section needs only `NODE_VERSION` and the two `NEXT_PUBLIC_` values. The other four there can be deleted.
+
 ## Then (Claude + Alex)
 
 6. **Test on workers.dev:** the marketing page, 404s, and the limiter.
