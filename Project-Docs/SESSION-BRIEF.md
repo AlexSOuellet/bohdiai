@@ -10,32 +10,30 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-09-24, Session 86.
+**Last updated:** 2026-09-29, Session 87.
 
 ---
 
 ## Current state
 
-**Session 86 — first real client LIVE: https://cut-pro-lawncare.bohdiai.com (Alex's daughter's lawn-construction business; the family loves it).** Built by hand under the new direction — no onboarding, no editor, no Bohdi. Branch `cutpro/brand-colors`, 14 commits, **local only (not pushed)**. 1335 tests, tsc + lint clean.
+**Session 87 — the whole app now runs on Cloudflare Workers; Vercel serves nothing.** bohdiai.com, www, every shop subdomain and Cut-Pro are all served by the `bohdiai` Worker, verified live (Cut-Pro end to end, including a real photo estimate). `main` is current (fast-forwarded 552 commits). 1364 tests, tsc + lint clean. Runbook + lessons: `Cloudflare-Move.md`.
 
-- **Contractor layout** (`lib/archetypes/contractor/`) — a hand-built one-page archetype (`handBuilt: true`, off Bohdi's menu; `pages: []`, other routes 404). Hero + video, proof numbers, work wall, services, reviews, crew, service area (RI/MA/CT), **working estimate form** (`/api/estimate`: up to 5 photos shrunk to JPEG attachments, emailed to the shop's `contact_email`). Proven on production.
-- **Brand colors take over** (`lib/color/`) — a shop's brand colors replace the mood palette entirely, derived readable. Stored at `root.brandPalette`. Usable by every archetype.
-- **Building a client:** content module in `scripts/sites/<site>.ts`, then `npx tsx --env-file=.env.local scripts/build-contractor-site.ts <site> --media <dir> [--contact-email x]`. Cut-Pro's media lives permanently in `C:\Users\Bohdi\Documents\BohdiAi\Clients\cut-pro-lawncare\`.
-- **Deploy** = Alex runs `vercel --prod` from the project folder (Claude is blocked from prod deploys). Resend key replaced this session — email works.
-- **Machine crashes solved:** a stale Turbopack cache (`.next/dev/cache`) made `next dev` eat all 32GB. Cleared. Ask before starting the dev server; never run it with the full suite.
+- **Direction (2026-09-29):** everything is manual for now. No onboarding, no editor, no automated builder. All site edits go through Alex. A maker **backend** (catalog, pricing, orders, customers, checkout, modeled on Penny's Decoupage Digital Designs site, minus digital downloads) WILL be built. The Facebook poster and financial report come after launch. Sites span service providers, makers and charities, inside the BohdiAI structure.
+- **Deploy** = push to `main`. Cloudflare Workers Builds builds on its own Linux machines and deploys. Never build on the PC for production: OpenNext bakes `.env.local` into the bundle. Runtime keys live in the Worker's top-level "Variables and Secrets" (not the Build section), pasted without .env quotes.
+- **Switched off** (404 on every host, code kept): onboarding, make-it-yours, dashboard/editor, sign-in/auth, library ingest, archetype-test (`DORMANT_PREFIXES`, lib/proxy-security.ts).
+- **Security fixes landed:** the shop resolves from the real Host (`x-bohdi-shop` is retired and stripped); every public form is rate-limited through the Workers Rate Limiting binding (fails closed); deleted shops 404.
+- **Workers constraints:** no filesystem at request time (legal templates are now bundled); photo shrink goes through the Images binding (`lib/images/shrink.ts`, 20MB max); edge `middleware.ts`, not `proxy.ts`.
+- **Building a client:** content module in `scripts/sites/<site>.ts`, then `npx tsx --env-file=.env.local scripts/build-contractor-site.ts <site> --media <dir> [--contact-email x]`. This writes to the DB and storage, so no deploy is needed.
 
-Full recap: `session-logs/session-86.md`.
-
-## Parallel workstream — cowork
-
-Paused under the new direction (see `Direction-2026-09-23.md`). Queue state in `content/niches/_queue.yaml`.
+Full recap: `session-logs/session-87.md`.
 
 ## Next actions
 
-1. **Cut-Pro follow-ups:** estimate requests now go to cutprochris@gmail.com; their copy review (crew-photo names, services list, "since 2009"); better originals from their phones (Facebook reels are stronger); review the privacy-page wording for a contractor.
-2. **Push the branch** and decide on deploy-from-git (bring `main` current) vs keep deploying from the working tree.
-3. **Flaky test:** `SectionEditor.test.tsx` "Write it up…" fails only under full-suite load.
-4. **Direction-doc work still open:** the marketing-site rebuild (samples + portfolio — Cut-Pro is portfolio entry #1), price, Vercel vs Cloudflare. Don't reprice unprompted.
+1. **Cloudflare cleanup (Alex):** delete the `shop-proxy` worker; delete the redundant Cut-Pro route; trim the Build variables to NODE_VERSION + the two NEXT_PUBLIC_*; change the `*.bohdiai.com` DNS row to AAAA `100::` proxied; switch Workers Builds' production branch to `main`; **cancel Vercel after a few quiet days**.
+2. **Cut-Pro follow-ups:** their copy review (crew-photo names, services list, "since 2009"); better originals from their phones; review the privacy-page wording for a contractor.
+3. **Homepage rebuild:** a web-development business site with a portfolio (Cut-Pro, Penny). The OG image still says "beta opening summer 2026 / built by AI in minutes".
+4. **Maker backend:** scope it against Penny's site. Open question: does Penny's store move into BohdiAI or stay standalone?
+5. **Flaky test:** `SectionEditor.test.tsx` "Write it up…" fails only under full-suite load.
 
 `Full-Plan.md` still describes the old Beta plan — history until rewritten.
 
@@ -81,6 +79,7 @@ Paused under the new direction (see `Direction-2026-09-23.md`). Queue state in `
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 87 (2026-09-29): **Moved the whole app from Vercel to Cloudflare Workers**, verified live. Direction: everything manual; maker backend (Penny-style) to come. Switched off automation surfaces; form rate limits; Host-only shop resolution; bundled legal templates; Images-binding photo shrink; Workers Builds from GitHub. `main` current. Full recap: `session-logs/session-87.md`.
 - Session 86 (2026-09-23/24): **Cut-Pro Lawncare's site built by hand and LIVE** (cut-pro-lawncare.bohdiai.com; family loves it). Brand-colors-take-over feature (`lib/color/`, OKLCH derivation, 5k-case property test); new hand-built **contractor** one-page archetype with a working **estimate form** (`/api/estimate`, photos to email attachments); store built by `scripts/build-contractor-site.ts` from `scripts/sites/cut-pro-lawncare.ts` + Google Photos media. tenant-media accepts mp4. Found the PC-crash cause (stale 859MB Turbopack dev cache). Dead Resend key replaced; form proven on prod. Mistakes: dragged the site into maker moods before Alex's correction; uploaded vidstab-garbled clips without looking (reverted). 14 commits, local. Full recap: `session-logs/session-86.md`.
 - Session 85 (2026-08-05): **Listings built into the walk — real products, then real collections.** Goods step became a real product editor (name/price/own photo/short+long copy, typed or Bohdi-drafted); the store already reads products from the `listings` table, so it's DB CRUD + the store/preview follow along. **First real product clears the placeholders**; shared catalog projection (`lib/storefront/catalog.ts`) resolves each photo from `media_ids`→uploaded file (legacy metadata fallback). Photos upload to `tenant-media` and are **downscaled + WebP-converted with sharp** (accepts 30MB — raw phone photos work). Live-testing root-caused (from the DB, not guesses): a **setState-in-render crash** (onResolved inside a setProducts updater), a **dead disabled button** (now says what's missing), and a **silent second-upload failure** (the 10MB cap → raised + WebP). Alex's standing rule: **"no silent failures, always display errors"** — wrapped every call. Then, correcting my mistaken deferral, built **real collections in the walk**: `collections.is_preview` migration, collection CRUD + product assignment (`primary_collection_id`, cover from products), `CollectionsEditor`, collections now **real-or-off**, placeholders clear on product/collection/turn-off, publish-gated. 1230 tests, tsc+lint clean, 20 commits. **NEXT (S86):** gate-verify collections with Alex, then the standalone Listings admin (options/multi-photo/video/stock/digital/touch-ups/logo). Full recap: `session-logs/session-85.md`.
 - Session 84 (2026-08-04): **Finished the simple walk pieces + events editor, reordered the walk by dependency, made the walk's resolutions reach the render, and killed the fabricated review rating.** Reordered to welcome→story→contact→sign-off→**testimonials→events→goods→collections→marquee** (collections after goods; marquee last since its line is built from both). Built a reusable **RowsEditor** → real testimonial quotes + real event dates (place/date/time). Root fix: **`hiddenSections`/made-real were written but never read by the render** — turn-off didn't hide, and the marquee broadcast **seeded sample dates**; now `readSectionResolutions` drops hidden sections and gates the marquee's logistics line to made-real data. Fixed the **contact step's blank preview** (previews `/contact`). Long reviews thread → **no fabricated statistics**: crew stops authoring `reviews.summary`, rating shows stars+quotes with no number when absent, optional **family-aware** real-rating entry (Modern only) that strips any invented figure. Model going forward (Alex): testimonials/ratings come from **real sales** in the commerce build; maker can still **curate real ones now**; **home sampling stays**; **standalone `/testimonials` page disabled** until volume; Etsy migrant handled in the Etsy import. Wrote **`Family-Swap-Data-Map.md`** (only the rating + Cozy Moment play are look-specific extras; only the rating ever fabricated). 1159 tests, tsc+lint clean. Three commits. **NEXT (S85): Listings.** Full recap: `session-logs/session-84.md`.
@@ -96,5 +95,4 @@ Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 - Sessions 57-62 (2026-06-28 → 07-03): the per-section build run — About to seven treatments + nav to four registers, collections (six per-family bands), marquee, reviews/testimonials, find-us (six treatments) + destination pages. See individual logs.
 - Sessions 40-56: sections built, families designed, editor design started. See individual logs.
 - Sessions 30-39: Main Street becomes sole archetype, families framework designed, Bohdi crew built.
-- Sessions 20-29: earlier design/build cycles under superseded models (blocks/widgets/layout engine).
-- Sessions 0-19: Phase 0 build (marketing site + Supabase + waitlist).
+- Sessions 0-29: Phase 0 build, then design/build cycles under superseded models. See individual logs.
