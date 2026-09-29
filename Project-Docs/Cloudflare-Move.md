@@ -46,7 +46,13 @@ Lessons from the first attempts:
 - Workers have no filesystem, so nothing may read files at request time (shop legal pages did; now bundled).
 - The Build section needs only `NODE_VERSION` and the two `NEXT_PUBLIC_` values. The other four there can be deleted.
 
-## Then (Claude + Alex)
+## Status 2026-09-29 (end of day): everything is on Cloudflare
+
+Done: the catch-all `*.bohdiai.com/*` moved from `shop-proxy` to `bohdiai`; bohdiai.com and www are Custom Domains on `bohdiai`; the `*` DNS row is AAAA `100::` proxied (no Vercel target); `main` was fast-forwarded and is the Workers Builds production branch. Vercel serves nothing.
+
+Left: delete the Cut-Pro route (redundant), trim the Build variables, and **after a few quiet days** cancel Vercel and delete `shop-proxy` together. `shop-proxy` is the rollback path until then: re-adding its route sends shops back to Vercel.
+
+## Original plan (Claude + Alex)
 
 6. **Test on workers.dev:** the marketing page, 404s, and the limiter.
 7. **Staged cutover, one shop first.** Add a Worker route `cut-pro-lawncare.bohdiai.com/*` → `bohdiai`. A specific route beats `shop-proxy`'s `*.bohdiai.com/*`, so only Cut-Pro moves. Send one real estimate with photos to Alex's inbox to prove the Images binding end to end. Rollback = delete the route.
