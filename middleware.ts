@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import type { SetAllCookies } from '@supabase/ssr';
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
-import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost, isAppHost, isAppSurfacePath, isDormantPath, tenantLookupUrl, apexRedirect } from '@/lib/proxy-security';
+import { sanitizeTenantHeaders, isUnreachableStorefrontPath, requestHost, isAppHost, isAppSurfacePath, isDormantPath, tenantLookupUrl, apexRedirect } from '@/lib/proxy-security';
 
 const RESERVED = new Set(['www', 'admin', 'app', 'learn']);
 const BASE_DOMAIN = 'bohdiai.com';
@@ -19,14 +19,9 @@ export const config = {
 // middleware experimentally. Edge middleware is its supported path. Next prints
 // a deprecation warning for this file — expected until the adapter catches up.
 export async function middleware(request: NextRequest) {
-  // A Cloudflare edge snippet proxies shop subdomains to the apex (the only host
-  // with a valid cert) and forwards the real shop host in `x-bohdi-shop`. Prefer
-  // it; on the apex and everywhere else this is just the normal Host header.
-  // (NOT x-forwarded-host — Vercel's edge manages/overwrites that one.)
-  const hostname = resolveProxyHost(
-    request.headers.get('x-bohdi-shop'),
-    request.headers.get('host'),
-  );
+  // Every shop subdomain reaches this Worker directly, so the real Host header
+  // says which shop. The old forwarded-shop header is ignored (see requestHost).
+  const hostname = requestHost(request.headers);
   const subdomain = extractSubdomain(hostname);
 
   const toApex = apexRedirect(hostname, request.nextUrl);

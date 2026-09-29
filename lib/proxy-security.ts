@@ -8,7 +8,8 @@
  * server component and API handler that reads it.
  */
 
-const FORGEABLE_TENANT_HEADERS = ['x-tenant-id', 'x-tenant-subdomain'] as const;
+// x-bohdi-shop is the retired Vercel-era shop header (see requestHost).
+const FORGEABLE_TENANT_HEADERS = ['x-tenant-id', 'x-tenant-subdomain', 'x-bohdi-shop'] as const;
 
 /**
  * Drop forgeable tenant-context headers from inbound request headers.
@@ -22,21 +23,16 @@ export function sanitizeTenantHeaders(headers: Headers): void {
 }
 
 /**
- * Pick the hostname the proxy resolves a tenant from.
+ * The hostname the middleware resolves a tenant from: the real `Host` header.
  *
- * Storefront subdomains can't get their own TLS cert from our host while DNS
- * lives on Cloudflare, so a Cloudflare edge snippet proxies `*.bohdiai.com`
- * requests to the apex (which has a valid cert) and forwards the real shop host
- * in a custom `x-bohdi-shop` header (not `x-forwarded-host`, which Vercel's edge
- * manages itself). When that header is present we resolve against it;
- * otherwise we use the actual `host`. Resolving a forged value only ever yields
- * a public storefront or nothing, so this widens no real boundary — the
- * internal `x-tenant-id` is still set by the proxy alone (see sanitize above).
+ * On Vercel, a Cloudflare worker (`shop-proxy`) forwarded shop subdomains to
+ * the apex and passed the real shop in `x-bohdi-shop`, which the app trusted,
+ * so anyone could send it and pose as any shop (July audit, HIGH). On Cloudflare
+ * every subdomain reaches the app directly with its own Host, so that header is
+ * ignored here and stripped by sanitizeTenantHeaders.
  */
-export function resolveProxyHost(forwardedHost: string | null, host: string | null): string {
-  const forwarded = forwardedHost?.trim();
-  if (forwarded) return forwarded;
-  return host ?? '';
+export function requestHost(headers: Headers): string {
+  return headers.get('host') ?? '';
 }
 
 /**

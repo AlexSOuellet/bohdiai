@@ -1,29 +1,28 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost, isAppHost, isAppSurfacePath, isDormantPath, tenantLookupUrl, apexRedirect } from './proxy-security';
+import { sanitizeTenantHeaders, isUnreachableStorefrontPath, requestHost, isAppHost, isAppSurfacePath, isDormantPath, tenantLookupUrl, apexRedirect } from './proxy-security';
 
-describe('resolveProxyHost', () => {
-  it('prefers the forwarded host when the edge proxy sets one', () => {
-    expect(resolveProxyHost('soul-splatter.bohdiai.com', 'bohdiai.com')).toBe('soul-splatter.bohdiai.com');
+describe('requestHost', () => {
+  it('resolves from the real Host header', () => {
+    expect(requestHost(new Headers({ host: 'cut-pro-lawncare.bohdiai.com' }))).toBe('cut-pro-lawncare.bohdiai.com');
   });
 
-  it('trims whitespace from the forwarded host', () => {
-    expect(resolveProxyHost('  ember.bohdiai.com  ', 'bohdiai.com')).toBe('ember.bohdiai.com');
+  it('ignores x-bohdi-shop — a visitor could write it to pose as any shop', () => {
+    const headers = new Headers({ host: 'bohdiai.com', 'x-bohdi-shop': 'cut-pro-lawncare.bohdiai.com' });
+    expect(requestHost(headers)).toBe('bohdiai.com');
   });
 
-  it('falls back to the real host header when no forwarded host is present', () => {
-    expect(resolveProxyHost(null, 'myshop.bohdiai.com')).toBe('myshop.bohdiai.com');
-  });
-
-  it('falls back to the host header when the forwarded host is blank', () => {
-    expect(resolveProxyHost('   ', 'myshop.bohdiai.com')).toBe('myshop.bohdiai.com');
-  });
-
-  it('returns an empty string when neither is present', () => {
-    expect(resolveProxyHost(null, null)).toBe('');
+  it('returns an empty string when there is no Host header', () => {
+    expect(requestHost(new Headers())).toBe('');
   });
 });
 
 describe('sanitizeTenantHeaders', () => {
+  it('drops the retired x-bohdi-shop header so nothing downstream can read it', () => {
+    const headers = new Headers({ 'x-bohdi-shop': 'someone-else.bohdiai.com' });
+    sanitizeTenantHeaders(headers);
+    expect(headers.get('x-bohdi-shop')).toBeNull();
+  });
+
   it('drops a forged x-tenant-id arriving on an inbound request', () => {
     const headers = new Headers({ 'x-tenant-id': 'forged-tenant-uuid' });
     sanitizeTenantHeaders(headers);
