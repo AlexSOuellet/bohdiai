@@ -34,7 +34,7 @@ When OpenNext builds locally, it bakes every value in `.env.local` into the uplo
 4. **Runtime secrets** (Settings → Variables and Secrets, type *Secret*), with values copied from `.env.local`:
    `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `SITE_URL`.
    If the first deploy's log names a missing variable, add it. The AI, image-generation, Cowork and DB-password keys are **not** needed, because everything that uses them is switched off.
-5. **Deploy** (retry the build). The app comes up on `bohdiai.<account>.workers.dev`, and bohdiai.com is untouched.
+5. **Deploy** (retry the build). The app comes up on `bohdiai.alexsouellet.workers.dev`, and bohdiai.com is untouched. To start a build on the right branch, push to it; "Retry" re-runs an old build on its old branch.
 
 ## Then (Claude + Alex)
 
