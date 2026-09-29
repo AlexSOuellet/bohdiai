@@ -147,7 +147,7 @@ describe('HeroPhotoPanel — Cheerful family (0/1/3 collage uploads, D73)', () =
     const props = baseProps();
     props.onUpload
       .mockResolvedValueOnce({ ok: true as const, uploadId: 'u0', url: 'https://cdn.test/m0.webp' })
-      .mockResolvedValueOnce({ ok: false, error: 'That image is over 30MB — pick a smaller one.' } as never);
+      .mockResolvedValueOnce({ ok: false, error: 'That image is over 20MB — pick a smaller one.' } as never);
     const { container, findByText } = render(<HeroPhotoPanel family="cheerful" media={undefined} shots={collageShots} {...props} />);
     const input = container.querySelector('input[type="file"][data-hero-photo-panel-upload="triple"]') as HTMLInputElement;
     fireEvent.change(input, {
@@ -159,7 +159,7 @@ describe('HeroPhotoPanel — Cheerful family (0/1/3 collage uploads, D73)', () =
         ],
       },
     });
-    expect(await findByText(/over 30mb/i)).toBeTruthy();
+    expect(await findByText(/over 20mb/i)).toBeTruthy();
     expect(props.onReplaceCollageShots).not.toHaveBeenCalled();
     expect(props.onResolved).not.toHaveBeenCalled();
   });

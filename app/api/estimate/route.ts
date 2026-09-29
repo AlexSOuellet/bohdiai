@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import sharp from 'sharp';
 import { supabaseAdmin } from '@/lib/supabase';
 import { resend, fromEmail } from '@/lib/resend';
 import { logger } from '@/lib/logger';
+import { shrinkImage } from '@/lib/images/shrink';
 import { parseEstimateForm, composeEstimateEmail } from '@/lib/estimate/request';
 
 export const runtime = 'nodejs';
@@ -52,11 +52,7 @@ async function handle(req: Request) {
   const attachments: Array<{ filename: string; content: Buffer }> = [];
   for (const [i, photo] of photos.entries()) {
     try {
-      const content = await sharp(Buffer.from(await photo.arrayBuffer()))
-        .rotate()
-        .resize({ width: ATTACH_EDGE, height: ATTACH_EDGE, fit: 'inside', withoutEnlargement: true })
-        .jpeg({ quality: 80, mozjpeg: true })
-        .toBuffer();
+      const content = Buffer.from(await shrinkImage(await photo.arrayBuffer(), { maxEdge: ATTACH_EDGE, format: 'jpeg', quality: 80 }));
       attachments.push({ filename: `yard-photo-${i + 1}.jpg`, content });
     } catch (err) {
       logger.warn('estimate: photo processing failed', { tenantId: fields.tenantId, err: String(err) });

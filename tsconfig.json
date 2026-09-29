@@ -55,6 +55,8 @@
     "node_modules",
     "Design files",
     "Project-Docs",
-    "tmp"
+    "tmp",
+    ".open-next",
+    ".wrangler"
   ]
 }

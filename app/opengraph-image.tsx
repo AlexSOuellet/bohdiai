@@ -1,6 +1,5 @@
 import { ImageResponse } from 'next/og';
 
-export const runtime = 'edge';
 export const alt = 'BohdiAI — Your Business Online. Finally Made Easy.';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
@@ -63,6 +62,9 @@ export default function OgImage() {
           </div>
           <div
             style={{
+              // The image renderer requires flex on any box with more than one child.
+              display: 'flex',
+              gap: '0.25em',
               fontSize: 96,
               lineHeight: 1.0,
               color: '#1f1a14',
@@ -70,7 +72,8 @@ export default function OgImage() {
               fontWeight: 300,
             }}
           >
-            <span style={{ fontStyle: 'italic', color: '#bf7a1f' }}>Finally</span> made easy.
+            <span style={{ fontStyle: 'italic', color: '#bf7a1f' }}>Finally</span>
+            <span>made easy.</span>
           </div>
         </div>
 

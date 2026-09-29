@@ -85,3 +85,8 @@ sse-start.txt
 
 # brainstorm visual companion
 .superpowers/
+
+# Cloudflare (OpenNext + wrangler)
+/.open-next/
+/.wrangler/
+.dev.vars

@@ -1,3 +1,5 @@
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -55,3 +57,7 @@ const nextConfig = {
 };
 
 export default nextConfig;
+
+// Under `next dev`, give the app the same Cloudflare bindings (IMAGES, ...) it gets
+// on Workers, read from wrangler.jsonc, so getCloudflareContext() works locally.
+initOpenNextCloudflareForDev();

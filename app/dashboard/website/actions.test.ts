@@ -63,17 +63,8 @@ vi.mock('@/lib/listings/collection-queries', () => ({
 const requireUser = vi.fn();
 vi.mock('@/lib/auth/session', () => ({ requireUser: () => requireUser() }));
 
-// sharp is native + operates on real image bytes; the tests use tiny fake files, so
-// stub the resize→webp→toBuffer chain to a small buffer.
-vi.mock('sharp', () => ({
-  default: () => ({
-    rotate: () => ({
-      resize: () => ({
-        webp: () => ({ toBuffer: () => Promise.resolve(Buffer.from('optimized-webp')) }),
-      }),
-    }),
-  }),
-}));
+// The Images binding only exists on Cloudflare; stub the shrink to a small buffer.
+vi.mock('@/lib/images/shrink', () => ({ shrinkImage: () => Promise.resolve(new TextEncoder().encode('optimized-webp')) }));
 
 const storageUpload = vi.fn();
 const storageGetPublicUrl = vi.fn();

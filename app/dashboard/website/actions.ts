@@ -39,7 +39,7 @@ import {
   deleteCollection,
   type CollectionInput,
 } from '@/lib/listings/collection-queries';
-import sharp from 'sharp';
+import { shrinkImage } from '@/lib/images/shrink';
 import { runContentEdit } from '@/lib/editor/content-agent';
 import {
   bohdiConverse,
@@ -472,10 +472,11 @@ export interface WalkProductForm {
 export type ProductSaveResult = { ok: true; id: string } | { ok: false; error: string };
 
 const ALLOWED_INPUT_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
-// Makers shoot on phones — a raw photo is easily 10–30MB. We accept a generous input
-// and shrink it server-side, so nobody has to resize their own photo. The Server
-// Action body limit (next.config.js) sits above this.
-const MAX_UPLOAD_BYTES = 30 * 1024 * 1024;
+// Makers shoot on phones — a raw photo is easily 5–15MB. We accept a generous input
+// and shrink it server-side, so nobody has to resize their own photo. 20MB is the
+// most Cloudflare's Images binding will read; the Server Action body limit
+// (next.config.js) sits above this.
+const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 // The longest edge we keep. A storefront never needs more than this, and it drops a
 // big photo to a small, fast WebP.
 const MAX_IMAGE_EDGE = 2400;
@@ -497,18 +498,13 @@ async function uploadImageForCurrentShop(
   const file = formData.get('file');
   if (!(file instanceof File) || file.size === 0) return { ok: false, error: 'Pick a photo to upload.' };
   if (!ALLOWED_INPUT_MIME.has(file.type)) return { ok: false, error: 'Use a JPG, PNG, or WebP image.' };
-  if (file.size > MAX_UPLOAD_BYTES) return { ok: false, error: 'That image is over 30MB — pick a smaller one.' };
+  if (file.size > MAX_UPLOAD_BYTES) return { ok: false, error: 'That image is over 20MB — pick a smaller one.' };
 
-  // Downscale (respecting EXIF orientation) and re-encode to WebP. Any oversized or
-  // odd input becomes a clean, small, web-ready image.
-  let optimized: Buffer;
+  // Downscale and re-encode to WebP. Any oversized or odd input becomes a clean,
+  // small, web-ready image.
+  let optimized: Uint8Array;
   try {
-    const input = Buffer.from(await file.arrayBuffer());
-    optimized = await sharp(input)
-      .rotate()
-      .resize({ width: MAX_IMAGE_EDGE, height: MAX_IMAGE_EDGE, fit: 'inside', withoutEnlargement: true })
-      .webp({ quality: 82 })
-      .toBuffer();
+    optimized = await shrinkImage(await file.arrayBuffer(), { maxEdge: MAX_IMAGE_EDGE, format: 'webp', quality: 82 });
   } catch (err) {
     logger.warn(`${label}: image processing failed`, { tenantId: shop.tenantId, err: String(err) });
     return { ok: false, error: 'Couldn’t process that photo — try a different image.' };

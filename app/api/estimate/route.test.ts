@@ -1,6 +1,5 @@
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import sharp from 'sharp';
 
 const TENANT = '4b8f0f5e-8f3a-4a57-9a8e-1f2d3c4b5a69';
 
@@ -17,6 +16,9 @@ vi.mock('@/lib/supabase', () => ({
   }),
 }));
 
+const shrinkImage = vi.fn();
+vi.mock('@/lib/images/shrink', () => ({ shrinkImage: (...a: unknown[]) => shrinkImage(...a) }));
+
 const { POST } = await import('./route');
 
 function request(fields: Record<string, string>, photos: File[] = []): Request {
@@ -32,20 +34,20 @@ describe('POST /api/estimate', () => {
   beforeEach(() => {
     send.mockReset().mockResolvedValue({ data: { id: 'e1' }, error: null });
     tenantRow = { business_name: 'Cut-Pro', contact_email: 'crew@example.com' };
+    shrinkImage.mockReset().mockResolvedValue(new Uint8Array([7, 7, 7]));
   });
 
   it('emails the business with the customer as reply-to and the photos shrunk to JPEG', async () => {
-    const png = await sharp({ create: { width: 3000, height: 2000, channels: 3, background: '#3dae3f' } }).png().toBuffer();
-    const res = await POST(request(good, [new File([new Uint8Array(png)], 'yard.png', { type: 'image/png' })]));
+    const res = await POST(request(good, [new File([new Uint8Array([1, 2, 3])], 'yard.png', { type: 'image/png' })]));
     expect(res.status).toBe(200);
     const msg = send.mock.calls[0]?.[0] as { to: string; replyTo: string; subject: string; attachments: Array<{ filename: string; content: Buffer }> };
     expect(msg.to).toBe('crew@example.com');
     expect(msg.replyTo).toBe('pat@example.com');
     expect(msg.subject).toContain('Warwick, Rhode Island');
     expect(msg.attachments).toHaveLength(1);
-    const meta = await sharp(msg.attachments[0]?.content).metadata();
-    expect(meta.format).toBe('jpeg');
-    expect(Math.max(meta.width ?? 0, meta.height ?? 0)).toBeLessThanOrEqual(1800);
+    expect(msg.attachments[0]?.filename).toBe('yard-photo-1.jpg');
+    expect(Array.from(msg.attachments[0]?.content ?? [])).toEqual([7, 7, 7]);
+    expect(shrinkImage).toHaveBeenCalledWith(expect.any(ArrayBuffer), { maxEdge: 1800, format: 'jpeg', quality: 80 });
   });
 
   it('answers ok to a bot and sends nothing', async () => {
@@ -80,6 +82,7 @@ describe('POST /api/estimate', () => {
   });
 
   it('rejects a photo that is not really an image', async () => {
+    shrinkImage.mockRejectedValue(new Error('9412: not an image'));
     const res = await POST(request(good, [new File(['not an image'], 'yard.jpg', { type: 'image/jpeg' })]));
     expect(res.status).toBe(400);
     expect(send).not.toHaveBeenCalled();
