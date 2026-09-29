@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost, isAppHost, isAppSurfacePath } from './proxy-security';
+import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost, isAppHost, isAppSurfacePath, isDormantPath } from './proxy-security';
 
 describe('resolveProxyHost', () => {
   it('prefers the forwarded host when the edge proxy sets one', () => {
@@ -135,5 +135,54 @@ describe('isAppSurfacePath', () => {
     expect(isAppSurfacePath('/about')).toBe(false);
     // a product slug that merely contains the word is still a storefront path
     expect(isAppSurfacePath('/listings/signing-kit')).toBe(false);
+  });
+});
+
+describe('isDormantPath', () => {
+  it('switches off the automated builder and everything behind a maker login', () => {
+    for (const path of [
+      '/onboarding',
+      '/api/onboarding/start',
+      '/api/onboarding/builds/0b1c',
+      '/make-it-yours',
+      '/dashboard',
+      '/dashboard/website',
+      '/signin',
+      '/auth/callback',
+      '/auth/error',
+      '/api/library/ingest',
+      '/archetype-test/main-street',
+      '/archetype-test/main-street/shop',
+    ]) {
+      expect(isDormantPath(path), path).toBe(true);
+    }
+  });
+
+  it('leaves the live sites, their forms, and the marketing site running', () => {
+    for (const path of [
+      '/',
+      '/about',
+      '/contact',
+      '/privacy',
+      '/terms',
+      '/api/estimate',
+      '/api/contact',
+      '/api/waitlist',
+      '/api/notify-interest',
+      '/confirm',
+      '/confirmed',
+      '/opengraph-image',
+      '/storefront',
+      '/storefront/shop',
+    ]) {
+      expect(isDormantPath(path), path).toBe(false);
+    }
+  });
+
+  it('matches whole path segments, so a shop page that merely starts with the word stays live', () => {
+    expect(isDormantPath('/dashboards-and-desks')).toBe(false);
+    expect(isDormantPath('/onboarding-kit')).toBe(false);
+    expect(isDormantPath('/signing-kit')).toBe(false);
+    expect(isDormantPath('/authentic-oak')).toBe(false);
   });
 });

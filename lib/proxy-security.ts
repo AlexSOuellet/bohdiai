@@ -85,3 +85,27 @@ export function isAppSurfacePath(pathname: string): boolean {
     pathname.startsWith('/make-it-yours/')
   );
 }
+
+/**
+ * Surfaces switched off while every site is built and edited by hand (the
+ * automated builder is on hold — decided 2026-09-29): onboarding, the Make It
+ * Yours walk, the maker dashboard/editor, sign-in, Cowork's library upload, and
+ * the archetype test pages. The code stays; the middleware answers 404 on every
+ * host, so nothing behind them is reachable. Server Actions post to their page's
+ * path, so they are covered too. Take a path off this list to turn it back on.
+ */
+const DORMANT_PREFIXES = [
+  '/onboarding',
+  '/api/onboarding',
+  '/make-it-yours',
+  '/dashboard',
+  '/signin',
+  '/auth',
+  '/api/library',
+  '/archetype-test',
+] as const;
+
+/** True when `pathname` is, or sits under, a switched-off surface (whole segments only). */
+export function isDormantPath(pathname: string): boolean {
+  return DORMANT_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
