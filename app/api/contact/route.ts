@@ -3,6 +3,7 @@ import { contactSchema } from '@/lib/validation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { resend, fromEmail } from '@/lib/resend';
 import { logger } from '@/lib/logger';
+import { formLimitResponse } from '@/lib/forms/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -20,6 +21,9 @@ export async function POST(req: Request) {
 }
 
 async function handle(req: Request) {
+  const turnedAway = await formLimitResponse(req, 'contact', (message) => ({ error: message }));
+  if (turnedAway !== null) return turnedAway;
+
   let payload: unknown;
   try {
     payload = await req.json();

@@ -109,3 +109,19 @@ const DORMANT_PREFIXES = [
 export function isDormantPath(pathname: string): boolean {
   return DORMANT_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
+
+/**
+ * The Supabase REST query that turns a subdomain into the shop it serves: an
+ * active shop that hasn't been deleted. Lowercased to match the unique index
+ * on lower(subdomain).
+ */
+export function tenantLookupUrl(supabaseUrl: string, subdomain: string): string {
+  return (
+    `${supabaseUrl}/rest/v1/tenants` +
+    `?select=id` +
+    `&subdomain=eq.${encodeURIComponent(subdomain.toLowerCase())}` +
+    `&status=eq.active` +
+    `&deleted_at=is.null` +
+    `&limit=1`
+  );
+}

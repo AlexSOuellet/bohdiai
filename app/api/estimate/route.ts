@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { resend, fromEmail } from '@/lib/resend';
 import { logger } from '@/lib/logger';
 import { shrinkImage } from '@/lib/images/shrink';
+import { allowFormSubmit } from '@/lib/forms/rate-limit';
 import { parseEstimateForm, composeEstimateEmail } from '@/lib/estimate/request';
 
 export const runtime = 'nodejs';
@@ -21,6 +22,14 @@ export async function POST(req: Request) {
 }
 
 async function handle(req: Request) {
+  const allowance = await allowFormSubmit(req, 'estimate');
+  if (allowance === 'limited') {
+    return NextResponse.json({ error: 'That’s a lot of requests at once. Please wait a minute and try again, or call us.' }, { status: 429 });
+  }
+  if (allowance === 'unavailable') {
+    return NextResponse.json({ error: 'Requests can’t be sent right now — please call us instead.' }, { status: 503 });
+  }
+
   let form: FormData;
   try {
     form = await req.formData();

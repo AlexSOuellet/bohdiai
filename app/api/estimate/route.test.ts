@@ -19,6 +19,9 @@ vi.mock('@/lib/supabase', () => ({
 const shrinkImage = vi.fn();
 vi.mock('@/lib/images/shrink', () => ({ shrinkImage: (...a: unknown[]) => shrinkImage(...a) }));
 
+const allowFormSubmit = vi.fn();
+vi.mock('@/lib/forms/rate-limit', () => ({ allowFormSubmit: (...a: unknown[]) => allowFormSubmit(...a) }));
+
 const { POST } = await import('./route');
 
 function request(fields: Record<string, string>, photos: File[] = []): Request {
@@ -35,6 +38,7 @@ describe('POST /api/estimate', () => {
     send.mockReset().mockResolvedValue({ data: { id: 'e1' }, error: null });
     tenantRow = { business_name: 'Cut-Pro', contact_email: 'crew@example.com' };
     shrinkImage.mockReset().mockResolvedValue(new Uint8Array([7, 7, 7]));
+    allowFormSubmit.mockReset().mockResolvedValue('allowed');
   });
 
   it('emails the business with the customer as reply-to and the photos shrunk to JPEG', async () => {
@@ -85,6 +89,23 @@ describe('POST /api/estimate', () => {
     shrinkImage.mockRejectedValue(new Error('9412: not an image'));
     const res = await POST(request(good, [new File(['not an image'], 'yard.jpg', { type: 'image/jpeg' })]));
     expect(res.status).toBe(400);
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('turns away a visitor who has sent too many, without sending', async () => {
+    allowFormSubmit.mockResolvedValue('limited');
+    const res = await POST(request(good));
+    expect(res.status).toBe(429);
+    expect(((await res.json()) as { error: string }).error).toMatch(/wait a minute/i);
+    expect(allowFormSubmit).toHaveBeenCalledWith(expect.any(Request), 'estimate');
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('asks the visitor to call when the limiter is down, instead of sending unchecked', async () => {
+    allowFormSubmit.mockResolvedValue('unavailable');
+    const res = await POST(request(good));
+    expect(res.status).toBe(503);
+    expect(((await res.json()) as { error: string }).error).toMatch(/call us/i);
     expect(send).not.toHaveBeenCalled();
   });
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost, isAppHost, isAppSurfacePath, isDormantPath } from './proxy-security';
+import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost, isAppHost, isAppSurfacePath, isDormantPath, tenantLookupUrl } from './proxy-security';
 
 describe('resolveProxyHost', () => {
   it('prefers the forwarded host when the edge proxy sets one', () => {
@@ -184,5 +184,26 @@ describe('isDormantPath', () => {
     expect(isDormantPath('/onboarding-kit')).toBe(false);
     expect(isDormantPath('/signing-kit')).toBe(false);
     expect(isDormantPath('/authentic-oak')).toBe(false);
+  });
+});
+
+describe('tenantLookupUrl', () => {
+  const url = new URL(tenantLookupUrl('https://db.example.co', 'Cut-Pro-Lawncare'));
+
+  it('asks only for active shops that have not been deleted', () => {
+    expect(url.searchParams.get('status')).toBe('eq.active');
+    expect(url.searchParams.get('deleted_at')).toBe('is.null');
+  });
+
+  it('matches the subdomain lowercased, one row, id only', () => {
+    expect(url.pathname).toBe('/rest/v1/tenants');
+    expect(url.searchParams.get('subdomain')).toBe('eq.cut-pro-lawncare');
+    expect(url.searchParams.get('select')).toBe('id');
+    expect(url.searchParams.get('limit')).toBe('1');
+  });
+
+  it('encodes the subdomain so it cannot add its own filters', () => {
+    const sneaky = new URL(tenantLookupUrl('https://db.example.co', 'x&status=eq.suspended'));
+    expect(sneaky.searchParams.getAll('status')).toEqual(['eq.active']);
   });
 });

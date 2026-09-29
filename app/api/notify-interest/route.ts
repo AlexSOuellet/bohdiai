@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
+import { formLimitResponse } from '@/lib/forms/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -24,6 +25,9 @@ export async function POST(req: Request) {
 }
 
 async function handle(req: Request) {
+  const turnedAway = await formLimitResponse(req, 'notify-interest', (message) => ({ error: message }));
+  if (turnedAway !== null) return turnedAway;
+
   let payload: unknown;
   try {
     payload = await req.json();

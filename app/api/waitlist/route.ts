@@ -5,6 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { resend, fromEmail } from '@/lib/resend';
 import { confirmationEmail } from '@/lib/emails';
 import { serverEnv } from '@/lib/env';
+import { formLimitResponse, clientIp } from '@/lib/forms/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -22,6 +23,9 @@ export async function POST(req: Request) {
 }
 
 async function handle(req: Request) {
+  const turnedAway = await formLimitResponse(req, 'waitlist', (message) => ({ ok: false, message }));
+  if (turnedAway !== null) return turnedAway;
+
   let payload: unknown;
   try {
     payload = await req.json();
@@ -74,7 +78,8 @@ async function handle(req: Request) {
     );
   }
 
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null;
+  // The address Cloudflare stamps — x-forwarded-for is visitor-writable.
+  const ip = clientIp(req);
   const userAgent = req.headers.get('user-agent') ?? null;
 
   if (existing) {

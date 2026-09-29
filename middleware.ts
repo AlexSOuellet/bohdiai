@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import type { SetAllCookies } from '@supabase/ssr';
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
-import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost, isAppHost, isAppSurfacePath, isDormantPath } from '@/lib/proxy-security';
+import { sanitizeTenantHeaders, isUnreachableStorefrontPath, resolveProxyHost, isAppHost, isAppSurfacePath, isDormantPath, tenantLookupUrl } from '@/lib/proxy-security';
 
 const RESERVED = new Set(['www', 'admin', 'app', 'learn']);
 const BASE_DOMAIN = 'bohdiai.com';
@@ -181,13 +181,7 @@ async function resolveTenant(subdomain: string): Promise<{ id: string } | null> 
     return null;
   }
 
-  // Lowercase matches the unique index on lower(subdomain)
-  const url =
-    `${supabaseUrl}/rest/v1/tenants` +
-    `?select=id` +
-    `&subdomain=eq.${encodeURIComponent(subdomain.toLowerCase())}` +
-    `&status=eq.active` +
-    `&limit=1`;
+  const url = tenantLookupUrl(supabaseUrl, subdomain);
 
   try {
     const res = await fetch(url, {
