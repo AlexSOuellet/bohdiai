@@ -18,3 +18,7 @@
 - **Alex: turn off "Allow new users to sign up" in Supabase** (Authentication → Sign In / Providers). Still on as of end of session.
 - alexsouellet@gmail.com is now an admin of classic-loafs; alex@bohdiai.com admin of all 39 test shops (old test data).
 - Next: plan + build 1b Catalog, then 1c Video, 1d Custom domains.
+
+## Deploy
+- First deploy failed on Cloudflare: the footer link called serverEnv(), and Cloudflare's build prerenders static pages without runtime secrets. Fixed: `ownerSignInHref()` reads only SITE_URL (falls back to bohdiai.com). **Lesson: anything a static page renders must not need runtime secrets; tests don't catch it — only the Cloudflare build does.**
+- Verified live: app.bohdiai.com/signin 200; shop /signin → app host; /manage → sign-in when signed out; /dashboard 404; owner link in Classic Loafs and Cut-Pro footers; bohdiai.com and Cut-Pro 200.
