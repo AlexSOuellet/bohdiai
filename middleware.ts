@@ -2,7 +2,8 @@ import { createServerClient } from '@supabase/ssr';
 import type { SetAllCookies } from '@supabase/ssr';
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
-import { sanitizeTenantHeaders, isUnreachableStorefrontPath, requestHost, isAppHost, isAppSurfacePath, isDormantPath, tenantLookupUrl, apexRedirect } from '@/lib/proxy-security';
+import { sanitizeTenantHeaders, isUnreachableStorefrontPath, requestHost, isAppHost, isDormantPath, tenantLookupUrl, apexRedirect } from '@/lib/proxy-security';
+import { backendRedirect, isBackendPath } from '@/lib/backend/backend-paths';
 
 const RESERVED = new Set(['www', 'admin', 'app', 'learn']);
 const BASE_DOMAIN = 'bohdiai.com';
@@ -33,12 +34,18 @@ export async function middleware(request: NextRequest) {
     return new NextResponse('Not found', { status: 404 });
   }
 
-  // The maker dashboard lives on app.bohdiai.com under /dashboard/*. Land the
-  // bare app root on the dashboard home so app.bohdiai.com isn't the marketing
-  // page. Other app-host paths (/signin, /onboarding) pass through unchanged.
+  // Sign-in, password setup and the backend live only on the app host; every
+  // other host sends those paths there (spec §1 — the session cookie stays on
+  // app.bohdiai.com).
+  const toApp = backendRedirect(hostname, request.nextUrl);
+  if (toApp !== null) return NextResponse.redirect(toApp, 307);
+
+  // The backend lives on app.bohdiai.com under /manage/*. Land the bare app
+  // root on the backend home so app.bohdiai.com isn't the marketing page.
+  // Other app-host paths (/signin, /auth/*) pass through unchanged.
   if (isAppHost(hostname) && request.nextUrl.pathname === '/') {
     const dest = request.nextUrl.clone();
-    dest.pathname = '/dashboard';
+    dest.pathname = '/manage';
     return NextResponse.redirect(dest);
   }
 
@@ -75,12 +82,9 @@ export async function middleware(request: NextRequest) {
   // EXCEPT /api/* — those route to the shared platform API regardless of which
   // subdomain the request originated from (forms posted from tenant pages
   // hit /api/notify-interest, /api/contact, etc, and need to resolve normally).
-  // On a shop subdomain we still serve the platform API and — so a maker can sign
-  // in on their own site and manage it there — the auth + dashboard surface, with
-  // the shop's tenant context attached. Everything else paints the storefront.
   const isTenantRequest = tenantId !== undefined;
   const originalPath = request.nextUrl.pathname;
-  const skipRewrite = originalPath.startsWith('/api/') || isAppSurfacePath(originalPath);
+  const skipRewrite = originalPath.startsWith('/api/') || isBackendPath(originalPath);
   const rewriteUrl = isTenantRequest && !skipRewrite ? request.nextUrl.clone() : null;
   if (rewriteUrl !== null) {
     rewriteUrl.pathname = '/storefront' + (originalPath === '/' ? '' : originalPath);

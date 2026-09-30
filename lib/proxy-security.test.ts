@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeTenantHeaders, isUnreachableStorefrontPath, requestHost, isAppHost, isAppSurfacePath, isDormantPath, tenantLookupUrl, apexRedirect } from './proxy-security';
+import { sanitizeTenantHeaders, isUnreachableStorefrontPath, requestHost, isAppHost, isDormantPath, tenantLookupUrl, apexRedirect } from './proxy-security';
 
 describe('requestHost', () => {
   it('resolves from the real Host header', () => {
@@ -117,28 +117,8 @@ describe('isAppHost', () => {
   });
 });
 
-describe('isAppSurfacePath', () => {
-  it('keeps auth and dashboard on the app even on a shop subdomain', () => {
-    expect(isAppSurfacePath('/signin')).toBe(true);
-    expect(isAppSurfacePath('/signin/reset')).toBe(true);
-    expect(isAppSurfacePath('/auth/callback')).toBe(true);
-    expect(isAppSurfacePath('/dashboard')).toBe(true);
-    expect(isAppSurfacePath('/dashboard/website')).toBe(true);
-    // the Make It Yours walk lives outside /dashboard but is still an app surface
-    expect(isAppSurfacePath('/make-it-yours')).toBe(true);
-  });
-
-  it('lets the storefront paint everything else', () => {
-    expect(isAppSurfacePath('/')).toBe(false);
-    expect(isAppSurfacePath('/shop')).toBe(false);
-    expect(isAppSurfacePath('/about')).toBe(false);
-    // a product slug that merely contains the word is still a storefront path
-    expect(isAppSurfacePath('/listings/signing-kit')).toBe(false);
-  });
-});
-
 describe('isDormantPath', () => {
-  it('switches off the automated builder and everything behind a maker login', () => {
+  it('switches off the automated builder and the old maker dashboard', () => {
     for (const path of [
       '/onboarding',
       '/api/onboarding/start',
@@ -146,14 +126,17 @@ describe('isDormantPath', () => {
       '/make-it-yours',
       '/dashboard',
       '/dashboard/website',
-      '/signin',
-      '/auth/callback',
-      '/auth/error',
       '/api/library/ingest',
       '/archetype-test/main-street',
       '/archetype-test/main-street/shop',
     ]) {
       expect(isDormantPath(path), path).toBe(true);
+    }
+  });
+
+  it('has the sign-in and backend paths live again', () => {
+    for (const path of ['/signin', '/auth/confirm', '/auth/callback', '/manage', '/forgot-password']) {
+      expect(isDormantPath(path), path).toBe(false);
     }
   });
 

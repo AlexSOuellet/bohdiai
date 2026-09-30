@@ -50,9 +50,9 @@ export function isUnreachableStorefrontPath(
 
 /**
  * Return true when the hostname is the maker dashboard host (`app.bohdiai.com`
- * or `app.localhost` in dev). The dashboard lives under `/dashboard/*`; the bare
+ * or `app.localhost` in dev). The backend lives under `/manage/*`; the bare
  * app root redirects there (see middleware.ts). This is a host check only — it does
- * NOT gate auth (the dashboard routes do that themselves via requireUser).
+ * NOT gate auth (the backend routes do that themselves).
  */
 export function isAppHost(hostname: string | null): boolean {
   const host = (hostname ?? '').split(':')[0] ?? '';
@@ -60,33 +60,10 @@ export function isAppHost(hostname: string | null): boolean {
 }
 
 /**
- * Return true for paths that serve the real app (auth + maker dashboard) even on
- * a shop subdomain, instead of being rewritten to the public storefront. A maker
- * signs in on their OWN site and lands in their dashboard there (the address says
- * which shop); the tenant context the proxy resolved is what the dashboard acts
- * on. Storefronts are our server-rendered code, not maker-authored HTML, so the
- * sign-in form on a shop host is the same trusted page as on the apex.
- */
-export function isAppSurfacePath(pathname: string): boolean {
-  return (
-    pathname === '/signin' ||
-    pathname.startsWith('/signin/') ||
-    pathname.startsWith('/auth') ||
-    pathname === '/dashboard' ||
-    pathname.startsWith('/dashboard/') ||
-    // The "Make It Yours" walk (D69) is dashboard-side but lives outside /dashboard
-    // to escape its chrome; it's still an app surface a maker reaches on their own
-    // shop subdomain, so it must pass through rather than paint the storefront.
-    pathname === '/make-it-yours' ||
-    pathname.startsWith('/make-it-yours/')
-  );
-}
-
-/**
  * Surfaces switched off while every site is built and edited by hand (the
  * automated builder is on hold — decided 2026-09-29): onboarding, the Make It
- * Yours walk, the maker dashboard/editor, sign-in, Cowork's library upload, and
- * the archetype test pages. The code stays; the middleware answers 404 on every
+ * Yours walk, the old maker dashboard/editor, Cowork's library upload, and the
+ * archetype test pages. The code stays; the middleware answers 404 on every
  * host, so nothing behind them is reachable. Server Actions post to their page's
  * path, so they are covered too. Take a path off this list to turn it back on.
  */
@@ -95,8 +72,6 @@ const DORMANT_PREFIXES = [
   '/api/onboarding',
   '/make-it-yours',
   '/dashboard',
-  '/signin',
-  '/auth',
   '/api/library',
   '/archetype-test',
 ] as const;
