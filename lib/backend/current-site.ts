@@ -4,6 +4,7 @@
  * from a cookie set by the picker and is re-checked against their memberships on
  * every request — the browser never chooses a tenant id on its own authority.
  */
+import { cache } from 'react';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
@@ -21,10 +22,13 @@ export type ActingSite = { user: User; site: ShopSummary; sites: ShopSummary[] }
 /** The signed-in admin and their acting site; redirects to /signin, or to the
  *  no-site notice when they administer nothing. Call at the top of every
  *  backend page and every backend server action. */
-export async function requireActingSite(): Promise<ActingSite> {
+async function loadActingSite(): Promise<ActingSite> {
   const user = await requireUser();
   const sites = await getUserShops(user.id);
   const site = pickSite(sites, (await cookies()).get(SITE_COOKIE)?.value ?? null);
   if (site === null) redirect('/auth/error?reason=nosite');
   return { user, site, sites };
 }
+
+/** Cached per request, so the layout and the page share one lookup. */
+export const requireActingSite: () => Promise<ActingSite> = cache(loadActingSite);

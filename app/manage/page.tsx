@@ -1,14 +1,13 @@
 import { requireActingSite } from '@/lib/backend/current-site';
-import { loadSiteFeatures } from '@/lib/backend/features';
+import { getSiteFeatures } from '@/lib/backend/site-features';
 import { HOME_CONTRIBUTORS, collectHome } from '@/lib/backend/home';
-import { supabaseAdmin } from '@/lib/supabase';
 import { StatTile } from './_components/StatTile';
 
 export const dynamic = 'force-dynamic';
 
 export default async function ManageHome(): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
-  const on = await loadSiteFeatures(supabaseAdmin(), site.tenantId);
+  const on = await getSiteFeatures(site.tenantId);
   const home = await collectHome(HOME_CONTRIBUTORS, on, site.tenantId);
   return (
     <>

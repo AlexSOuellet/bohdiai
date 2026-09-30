@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { requireActingSite } from '@/lib/backend/current-site';
-import { loadSiteFeatures } from '@/lib/backend/features';
+import { getSiteFeatures } from '@/lib/backend/site-features';
 import { BACKEND_MODULES, navFor } from '@/lib/backend/modules';
 import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
-import { supabaseAdmin } from '@/lib/supabase';
 import { Shell } from './_components/Shell';
 import { plex } from './fonts';
 import './backend.css';
@@ -13,7 +12,7 @@ export const metadata: Metadata = { title: 'Backend', robots: { index: false, fo
 
 export default async function ManageLayout({ children }: { children: React.ReactNode }): Promise<React.ReactElement> {
   const { user, site, sites } = await requireActingSite();
-  const on = await loadSiteFeatures(supabaseAdmin(), site.tenantId);
+  const on = await getSiteFeatures(site.tenantId);
   const siteUrl = storefrontOrigin(site.subdomain, (await headers()).get('host'));
   return (
     <div className={`bk ${plex.variable}`}>
