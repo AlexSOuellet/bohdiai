@@ -20,6 +20,9 @@ describe('composeAuthEmail', () => {
     expect(e.text).toMatch(words);
     expect(e.text).toContain('https://app.bohdiai.com/auth/confirm?x=1');
     expect(e.html).toContain('href="https://app.bohdiai.com/auth/confirm?x=1"');
+    expect(e.text).toContain('The link works once and expires in an hour.');
+    expect(e.html).toContain('The link works once and expires in an hour.');
+    expect(e.text + e.html).not.toContain('24 hours');
   });
 
   it('escapes the site name in html', () => {

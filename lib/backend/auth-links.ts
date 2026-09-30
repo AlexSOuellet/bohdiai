@@ -27,8 +27,8 @@ export function composeAuthEmail(input: { kind: AuthLinkKind; siteName: string; 
     ? `Your backend for ${input.siteName} is ready. Use the link below to set your password and sign in.`
     : `Someone asked to reset the password for ${input.siteName}. If it was you, use the link below to reset your password. If not, you can ignore this email.`;
   const action = invite ? 'Set your password' : 'Reset your password';
-  const text = `${lead}\n\n${action}: ${input.link}\n\nThe link works once and expires in 24 hours.\n\n— BohdiAI`;
-  const html = `<p>${escapeHtml(lead)}</p><p><a href="${escapeHtml(input.link)}">${action}</a></p><p>The link works once and expires in 24 hours.</p><p>— BohdiAI</p>`;
+  const text = `${lead}\n\n${action}: ${input.link}\n\nThe link works once and expires in an hour.\n\n— BohdiAI`;
+  const html = `<p>${escapeHtml(lead)}</p><p><a href="${escapeHtml(input.link)}">${action}</a></p><p>The link works once and expires in an hour.</p><p>— BohdiAI</p>`;
   return { subject, text, html };
 }
 
