@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { AUTH_LINK_KINDS } from '@/lib/backend/auth-kinds';
+import { requestOrigin, isSameOriginPost } from '@/lib/backend/request-origin';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,11 +24,12 @@ const toError = (origin: string): Response => redirectTo(new URL('/auth/error?re
  */
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
+  const origin = requestOrigin(request);
   const tokenHash = url.searchParams.get('token_hash');
   const type = url.searchParams.get('type');
-  if (tokenHash === null || tokenHash === '' || type === null || !AUTH_LINK_KINDS.has(type)) return toError(url.origin);
+  if (tokenHash === null || tokenHash === '' || type === null || !AUTH_LINK_KINDS.has(type)) return toError(origin);
 
-  const next = new URL('/auth/continue', url.origin);
+  const next = new URL('/auth/continue', origin);
   next.searchParams.set('token_hash', tokenHash);
   next.searchParams.set('type', type);
   return redirectTo(next);
@@ -35,10 +37,9 @@ export async function GET(request: Request): Promise<Response> {
 
 /** Verifies the emailed invite/reset token, starts the session, then asks for a password. */
 export async function POST(request: Request): Promise<Response> {
-  const origin = new URL(request.url).origin;
+  const origin = requestOrigin(request);
   // A cross-site form post must not be able to spend a token.
-  const from = request.headers.get('origin');
-  if (from !== null && from !== origin) return toError(origin);
+  if (!isSameOriginPost(request)) return toError(origin);
   let tokenHash: FormDataEntryValue | null = null;
   let type: FormDataEntryValue | null = null;
   try {

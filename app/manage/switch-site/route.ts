@@ -2,16 +2,16 @@ import { NextResponse } from 'next/server';
 import { requireUser } from '@/lib/auth/session';
 import { getUserShops } from '@/lib/auth/membership';
 import { SITE_COOKIE } from '@/lib/backend/current-site';
+import { requestOrigin, isSameOriginPost } from '@/lib/backend/request-origin';
 
 /** Picker: POST tenantId → set the acting site if the person administers it. */
 export async function POST(request: Request): Promise<Response> {
   const user = await requireUser();
-  const url = new URL(request.url);
-  const home = NextResponse.redirect(new URL('/manage', url), 303);
+  const origin = requestOrigin(request);
+  const home = NextResponse.redirect(new URL('/manage', origin), 303);
 
   // A cross-site form post must not be able to change which site is acted on.
-  const origin = request.headers.get('origin');
-  if (origin !== null && origin !== url.origin) return home;
+  if (!isSameOriginPost(request)) return home;
 
   let tenantId = '';
   try {
@@ -24,7 +24,7 @@ export async function POST(request: Request): Promise<Response> {
   if (sites.some((s) => s.tenantId === tenantId)) {
     home.cookies.set(SITE_COOKIE, tenantId, {
       httpOnly: true,
-      secure: url.protocol === 'https:',
+      secure: origin.startsWith('https:'),
       sameSite: 'lax',
       path: '/',
     });
