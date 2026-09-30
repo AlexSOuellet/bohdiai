@@ -15,20 +15,16 @@ const post = (fields: Record<string, string>) =>
 beforeEach(() => verifyOtp.mockReset());
 
 describe('GET /auth/confirm', () => {
-  it('shows a Continue form and does not spend the token', async () => {
+  it('redirects to the Continue page and does not spend the token', async () => {
     const res = await GET(get('?token_hash=t&type=invite'));
     expect(verifyOtp).not.toHaveBeenCalled();
-    expect(res.headers.get('content-type')).toContain('text/html');
-    const html = await res.text();
-    expect(html).toContain('method="post"');
-    expect(html).toContain('name="token_hash" value="t"');
-    expect(html).toContain('name="type" value="invite"');
-    expect(html).toContain('Continue');
+    expect(res.status).toBe(303);
+    expect(res.headers.get('location')).toBe('https://app.bohdiai.com/auth/continue?token_hash=t&type=invite');
   });
 
-  it('escapes the token in the page', async () => {
-    const html = await (await GET(get('?token_hash=%22%3E%3Cscript%3E&type=recovery'))).text();
-    expect(html).not.toContain('<script>');
+  it('encodes the token in the redirect', async () => {
+    const res = await GET(get('?token_hash=a%26b%3Dc&type=recovery'));
+    expect(res.headers.get('location')).toBe('https://app.bohdiai.com/auth/continue?token_hash=a%26b%3Dc&type=recovery');
   });
 
   it.each(['', '?type=invite', '?token_hash=t', '?token_hash=&type=invite', '?token_hash=t&type=signup'])(

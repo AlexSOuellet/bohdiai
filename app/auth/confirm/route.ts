@@ -5,14 +5,12 @@ export const dynamic = 'force-dynamic';
 
 const KINDS = new Set(['invite', 'recovery']);
 
-const escapeHtml = (s: string): string =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
 const toError = (origin: string): Response => NextResponse.redirect(new URL('/auth/error?reason=link', origin), 303);
 
 /**
- * GET only shows a button. Email scanners prefetch links, and verifying a
- * one-time token on GET would let them burn it before the person clicks.
+ * GET never spends the token: email scanners prefetch links, and verifying a
+ * one-time token on GET would let them burn it before the person clicks. It
+ * hands over to the Continue page, whose button POSTs back here.
  */
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
@@ -20,10 +18,10 @@ export async function GET(request: Request): Promise<Response> {
   const type = url.searchParams.get('type');
   if (tokenHash === null || tokenHash === '' || type === null || !KINDS.has(type)) return toError(url.origin);
 
-  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Continue</title></head><body><main><form method="post" action="/auth/confirm"><input type="hidden" name="token_hash" value="${escapeHtml(tokenHash)}"><input type="hidden" name="type" value="${escapeHtml(type)}"><button type="submit">Continue</button></form></main></body></html>`;
-  return new Response(html, {
-    headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' },
-  });
+  const next = new URL('/auth/continue', url.origin);
+  next.searchParams.set('token_hash', tokenHash);
+  next.searchParams.set('type', type);
+  return NextResponse.redirect(next, 303);
 }
 
 /** Verifies the emailed invite/reset token, starts the session, then asks for a password. */

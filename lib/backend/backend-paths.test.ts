@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { isBackendPath, backendRedirect } from './backend-paths';
 
 describe('isBackendPath', () => {
-  it.each(['/signin', '/forgot-password', '/auth/confirm', '/auth/error', '/manage', '/manage/set-password'])('%s is a backend path', (p) => {
+  it.each(['/signin', '/forgot-password', '/auth/confirm', '/auth/continue', '/auth/error', '/manage', '/manage/set-password'])('%s is a backend path', (p) => {
     expect(isBackendPath(p)).toBe(true);
   });
   it.each(['/', '/shop', '/manager', '/signing', '/authors', '/dashboard'])('%s is not', (p) => {
