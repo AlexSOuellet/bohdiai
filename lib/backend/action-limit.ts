@@ -20,5 +20,18 @@ export async function allowAction(action: Extract<FormName, 'signin' | 'reset'>,
   }
 }
 
+/** Spend one from an arbitrary key (e.g. per-email). Fails closed like allowAction. */
+export async function allowKey(key: string, limiter?: RateLimit): Promise<FormAllowance> {
+  try {
+    const binding = limiter ?? (await getCloudflareContext({ async: true })).env.FORM_LIMITER;
+    if (binding === undefined) throw new Error('FORM_LIMITER binding missing — see "ratelimits" in wrangler.jsonc');
+    const { success } = await binding.limit({ key });
+    return success ? 'allowed' : 'limited';
+  } catch (err) {
+    logger.error('key rate limiter unavailable', { error: err instanceof Error ? err.message : String(err) });
+    return 'unavailable';
+  }
+}
+
 export const ACTION_LIMITED = 'Too many tries. Please wait a minute and try again.';
 export const ACTION_UNAVAILABLE = 'This is unavailable for a moment. Please try again in a few minutes.';
