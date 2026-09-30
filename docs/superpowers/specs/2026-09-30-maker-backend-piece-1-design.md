@@ -28,6 +28,7 @@ A maker signs in at `app.bohdiai.com`, lands on a home screen for their shop, an
 
 - A per-shop record of which features the site has. New table `tenant_features (tenant_id, feature_key, enabled, updated_at)` with a unique `(tenant_id, feature_key)`; RLS so only the service role writes and a shop's admins can read their own.
 - **Feature keys live in one typed list in code**, each with a default. A shop with no row for a key gets that default. Piece 1 defines the list and the keys it needs (`catalog`, `video`, `digital_products`, `custom_domain_panel`); later pieces add their own keys to the same list.
+- **Nothing assumes a shop.** The catalog is a feature like any other, so a contractor or charity site simply does not have it. Each feature registers its own backend screen (nav entry), its own home-screen card and its own Needs-attention items; the backend is assembled from the features the site has. Piece 1 builds this registration so later features (gallery, notices, estimate inbox, donations…) plug in without touching the shell.
 - **Alex controls the switches.** Until his admin exists, Claude flips them with a script (`scripts/set-feature.ts <shop> <feature> on|off`).
 - **The maker never sees a switch.** A feature the shop lacks is absent from the backend and the storefront. Checks happen on the server for every screen and every write, not just by hiding buttons.
 - **Tier-ready:** when tiers exist, a plan flips the same switches, and the backend can show a disabled feature as locked with an upgrade button. Nothing in piece 1 builds tiers.
@@ -35,12 +36,12 @@ A maker signs in at `app.bohdiai.com`, lands on a home screen for their shop, an
 
 ## 3. The home screen
 
-Same shape as Penny's `/admin` home, lighter until selling exists:
+Same shape as Penny's `/admin` home, lighter until selling exists, and **built from the site's features** (each feature contributes its card and its Needs-attention items):
 
-- the shop's name and a **View my shop** link;
-- product and collection counts (live / draft);
-- a **Needs attention** strip, shown only when non-empty: products with no photo, products still in draft, live products that are sold out, a domain problem;
-- the **domain status panel** (section 6).
+- the site's name and a **View my site** link (always);
+- catalog card: product and collection counts (live / draft) — only when the catalog feature is on;
+- a **Needs attention** strip, shown only when non-empty: from the catalog, products with no photo, products still in draft, live products that are sold out; from domains, a domain problem;
+- the **domain status panel** (section 6, always).
 
 Sales numbers and "orders to ship" join this screen in piece 2; charts and top products in piece 5.
 
