@@ -33,7 +33,7 @@ The maker never sees the feature switches. A feature the site does not have is s
 ## The five pieces (built in order, each finished before the next)
 
 1. **Foundation and catalog.** Maker accounts and sign-in, feature switches, the home screen, products (options, stock, photos, one video, physical/digital), collections, and the domain status panel. *Design: piece-1 document.*
-2. **Selling.** Cart, checkout, the maker connecting their own payment accounts (Stripe, Square, PayPal — the hardest single part of the whole backend, because each maker links their own account and BohdiAI never holds their passwords or secret keys), receipts, order emails, download delivery, shipping rates, and the orders screen (shipped, refunded).
+2. **Selling.** Cart, checkout, the maker connecting their own payment accounts (Stripe, Square, PayPal — the hardest single part of the whole backend, because each maker links their own account and BohdiAI never holds their passwords or secret keys), receipts, order emails, the sold-out email to the maker when a stocked item runs out, download delivery, shipping rates, and the orders screen (shipped, refunded).
 3. **Customers.** Customer accounts (a switchable feature — most makers leave it off; guest checkout plus the emailed receipt link covers them), order history, favourites, the maker's customer list, reorder.
 4. **Marketing.** Testimonials and review requests, the customer photo gallery, bundles and promotions (including quantity pricing like "buy 3, save $5"), search, the Facebook post tool.
 5. **Reports.** Dashboard numbers (today, this month, 30-day chart, top products) and the revenue report with Excel export.
