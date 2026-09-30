@@ -1,5 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { isBackendPath, backendRedirect, ownerEntryRedirect } from './backend-paths';
+import { isBackendPath, isManagePath, backendRedirect, ownerEntryRedirect } from './backend-paths';
+
+describe('isManagePath', () => {
+  it('covers the backend and its pages', () => {
+    expect(isManagePath('/manage')).toBe(true);
+    expect(isManagePath('/manage/set-password')).toBe(true);
+  });
+  it('leaves sign-in, links and look-alikes alone', () => {
+    for (const p of ['/signin', '/forgot-password', '/auth/confirm', '/manager', '/']) expect(isManagePath(p)).toBe(false);
+  });
+});
 
 describe('isBackendPath', () => {
   it.each(['/signin', '/forgot-password', '/auth/confirm', '/auth/continue', '/auth/error', '/manage', '/manage/set-password'])('%s is a backend path', (p) => {

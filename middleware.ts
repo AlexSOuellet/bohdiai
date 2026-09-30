@@ -4,7 +4,8 @@ import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 import { sanitizeTenantHeaders, isUnreachableStorefrontPath, requestHost, isAppHost, isDormantPath, tenantLookupUrl, apexRedirect } from '@/lib/proxy-security';
 import { appOrigin } from '@/lib/backend/app-url';
-import { backendRedirect, isBackendPath, ownerEntryRedirect } from '@/lib/backend/backend-paths';
+import { backendRedirect, isBackendPath, isManagePath, ownerEntryRedirect } from '@/lib/backend/backend-paths';
+import { ACTIVITY_COOKIE, IDLE_SECONDS, checkBackendSession, sessionSecret } from '@/lib/backend/session-limits';
 
 const RESERVED = new Set(['www', 'admin', 'app', 'learn']);
 const BASE_DOMAIN = 'bohdiai.com';
@@ -125,7 +126,38 @@ export async function middleware(request: NextRequest) {
         }) satisfies SetAllCookies,
       },
     });
-    await supabase.auth.getUser();
+    if (isAppHost(hostname) && isManagePath(request.nextUrl.pathname)) {
+      // The backend enforces auto sign-out (8h idle, 7 days max). getClaims
+      // refreshes the session like getUser and returns the verified token.
+      const { data } = await supabase.auth.getClaims();
+      if (data !== null) {
+        const { verdict, nextCookie } = await checkBackendSession({
+          claims: data.claims,
+          cookie: request.cookies.get(ACTIVITY_COOKIE)?.value,
+          now: Math.floor(Date.now() / 1000),
+          secret: sessionSecret(process.env['BACKEND_SESSION_SECRET']),
+        });
+        const secure = request.nextUrl.protocol === 'https:';
+        if (verdict !== 'ok') {
+          // Local scope: end this device's session only. Its cookie clearing
+          // lands on `response` through setAll above; carry it onto the redirect.
+          const { error } = await supabase.auth.signOut({ scope: 'local' });
+          if (error !== null) console.error('[middleware] Backend auto sign-out failed:', error.message);
+          const dest = request.nextUrl.clone();
+          dest.pathname = '/signin';
+          dest.search = `?ended=${verdict}`;
+          const ended = NextResponse.redirect(dest, 303);
+          response.cookies.getAll().forEach((c) => ended.cookies.set(c));
+          ended.cookies.set(ACTIVITY_COOKIE, '', { httpOnly: true, secure, sameSite: 'lax', path: '/', maxAge: 0 });
+          return ended;
+        }
+        if (nextCookie !== null) {
+          response.cookies.set(ACTIVITY_COOKIE, nextCookie, { httpOnly: true, secure, sameSite: 'lax', path: '/', maxAge: IDLE_SECONDS });
+        }
+      }
+    } else {
+      await supabase.auth.getUser();
+    }
   }
 
   // Frame protection, per surface. A storefront (the rewritten tenant render) may

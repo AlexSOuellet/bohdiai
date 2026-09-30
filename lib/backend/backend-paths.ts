@@ -13,6 +13,11 @@ export function isBackendPath(pathname: string): boolean {
   return (EXACT as readonly string[]).includes(pathname) || PREFIXES.some((p) => pathname.startsWith(p));
 }
 
+/** The signed-in backend itself (not sign-in or the emailed-link routes). */
+export function isManagePath(pathname: string): boolean {
+  return pathname === '/manage' || pathname.startsWith('/manage/');
+}
+
 /** The app host to send someone to. Never derived from a production request host
  *  (custom domains, workers.dev, trailing dots); only local dev derives it, so it
  *  works whatever SITE_URL is. */
