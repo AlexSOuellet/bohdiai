@@ -11,8 +11,7 @@
  * Colors are skin vars or derivations, type values are named roles, per-tenant
  * media aspect ratios pass as CSS custom properties on the media element.
  */
-import { serverEnv } from '@/lib/env';
-import { ownerSignInUrl } from '@/lib/backend/owner-sign-in-url';
+import { ownerSignInHref } from '@/lib/backend/owner-sign-in-url';
 import type { CSSProperties } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { CatalogMedia, ProductView } from '../content';
@@ -131,7 +130,7 @@ export function MainStreetProduct({
           </Type>
         </section>
       </main>
-      <MainStreetFooter shopName={content.shopName} ownerSignInHref={ownerSignInUrl(serverEnv().SITE_URL)} />
+      <MainStreetFooter shopName={content.shopName} ownerSignInHref={ownerSignInHref()} />
     </MainStreetRoot>
   );
 }

@@ -9,8 +9,7 @@
  * font is the skin. Catalog rows are passed in — the archetype never authors
  * the catalog.
  */
-import { serverEnv } from '@/lib/env';
-import { ownerSignInUrl } from '@/lib/backend/owner-sign-in-url';
+import { ownerSignInHref } from '@/lib/backend/owner-sign-in-url';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
@@ -202,7 +201,7 @@ export function MainStreet({ content, skin, products, sectionStack, catalogSize,
           </div>
         ))}
       </main>
-      <MainStreetFooter shopName={content.shopName} ownerSignInHref={ownerSignInUrl(serverEnv().SITE_URL)} />
+      <MainStreetFooter shopName={content.shopName} ownerSignInHref={ownerSignInHref()} />
     </MainStreetRoot>
   );
 }
