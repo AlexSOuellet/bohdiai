@@ -108,7 +108,7 @@ describe('requestPasswordReset', () => {
   });
 });
 
-const LINK_AGAIN = 'Open the link in your email again to set your password.';
+const LINK_AGAIN = 'This page timed out. Use Forgot password on the sign-in page to get a fresh link.';
 const nowSec = () => Math.floor(Date.now() / 1000);
 const claims = (amr: unknown) => getClaims.mockResolvedValue({ data: { claims: { amr } }, error: null });
 
@@ -133,6 +133,11 @@ describe('setPassword', () => {
   });
   it('rejects a stale link session', async () => {
     claims([{ method: 'otp', timestamp: nowSec() - 16 * 60 }]);
+    expect(await setPassword({ password: 'longenough1', confirm: 'longenough1' })).toEqual({ ok: false, error: LINK_AGAIN });
+    expect(updateUser).not.toHaveBeenCalled();
+  });
+  it('rejects a link timestamp in the future', async () => {
+    claims([{ method: 'otp', timestamp: nowSec() + 120 }]);
     expect(await setPassword({ password: 'longenough1', confirm: 'longenough1' })).toEqual({ ok: false, error: LINK_AGAIN });
     expect(updateUser).not.toHaveBeenCalled();
   });

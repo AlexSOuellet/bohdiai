@@ -29,6 +29,9 @@ export async function GET(request: Request): Promise<Response> {
 /** Verifies the emailed invite/reset token, starts the session, then asks for a password. */
 export async function POST(request: Request): Promise<Response> {
   const origin = new URL(request.url).origin;
+  // A cross-site form post must not be able to spend a token.
+  const from = request.headers.get('origin');
+  if (from !== null && from !== origin) return toError(origin);
   let tokenHash: FormDataEntryValue | null = null;
   let type: FormDataEntryValue | null = null;
   try {

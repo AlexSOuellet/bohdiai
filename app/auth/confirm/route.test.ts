@@ -65,4 +65,25 @@ describe('POST /auth/confirm', () => {
       expect(res.headers.get('location')).toBe(ERROR);
     },
   );
+
+  it('refuses a cross-origin post without calling Supabase', async () => {
+    const req = new Request('https://app.bohdiai.com/auth/confirm', {
+      method: 'POST',
+      headers: { origin: 'https://evil.example' },
+      body: new URLSearchParams({ token_hash: 't', type: 'invite' }),
+    });
+    const res = await POST(req);
+    expect(verifyOtp).not.toHaveBeenCalled();
+    expect(res.headers.get('location')).toBe(ERROR);
+  });
+
+  it('accepts a same-origin post', async () => {
+    verifyOtp.mockResolvedValue({ error: null });
+    const req = new Request('https://app.bohdiai.com/auth/confirm', {
+      method: 'POST',
+      headers: { origin: 'https://app.bohdiai.com' },
+      body: new URLSearchParams({ token_hash: 't', type: 'invite' }),
+    });
+    expect((await POST(req)).headers.get('location')).toBe('https://app.bohdiai.com/manage/set-password');
+  });
 });

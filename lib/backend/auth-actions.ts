@@ -28,10 +28,11 @@ const MIN_PASSWORD = 10;
 // Typed routes don't know /manage until its page lands (plan task 14); the cast can go then.
 const BACKEND_HOME = '/manage' as Route;
 
-const LINK_AGAIN = 'Open the link in your email again to set your password.';
+const LINK_AGAIN = 'This page timed out. Use Forgot password on the sign-in page to get a fresh link.';
 const SIGN_IN_UNAVAILABLE = 'Sign-in is unavailable for a moment. Please try again in a few minutes.';
 /** A password may be set only this long after the emailed link was opened. */
 const LINK_SESSION_SECONDS = 15 * 60;
+const CLOCK_SKEW_SECONDS = 60;
 const LINK_METHODS = new Set(['otp', 'recovery', 'invite', 'magiclink']);
 
 async function sha256Hex(text: string): Promise<string> {
@@ -105,7 +106,10 @@ export async function requestPasswordReset(input: { email: string }): Promise<Ac
 /** True when the session's own sign-in was an emailed link opened moments ago. */
 function fromFreshLink(amr: unknown): boolean {
   if (!Array.isArray(amr)) return false;
-  const cutoff = Math.floor(Date.now() / 1000) - LINK_SESSION_SECONDS;
+  const now = Math.floor(Date.now() / 1000);
+  const cutoff = now - LINK_SESSION_SECONDS;
+  // A timestamp in the future means the units aren't what we think; fail closed.
+  const latest = now + CLOCK_SKEW_SECONDS;
   return amr.some(
     (e: unknown) =>
       typeof e === 'object' &&
@@ -115,7 +119,8 @@ function fromFreshLink(amr: unknown): boolean {
       typeof e.method === 'string' &&
       typeof e.timestamp === 'number' &&
       LINK_METHODS.has(e.method) &&
-      e.timestamp >= cutoff,
+      e.timestamp >= cutoff &&
+      e.timestamp <= latest,
   );
 }
 
