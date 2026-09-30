@@ -21,4 +21,4 @@ export async function allowAction(action: Extract<FormName, 'signin' | 'reset'>,
 }
 
 export const ACTION_LIMITED = 'Too many tries. Please wait a minute and try again.';
-export const ACTION_UNAVAILABLE = 'Sign-in is unavailable for a moment. Please try again in a few minutes.';
+export const ACTION_UNAVAILABLE = 'This is unavailable for a moment. Please try again in a few minutes.';

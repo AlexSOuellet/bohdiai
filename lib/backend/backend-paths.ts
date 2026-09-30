@@ -14,11 +14,12 @@ export function isBackendPath(pathname: string): boolean {
 }
 
 /** Where to send a backend path requested on the wrong host, or null to let it through. */
-export function backendRedirect(hostname: string, url: URL): string | null {
+export function backendRedirect(hostname: string, url: URL, appBase: string): string | null {
   if (!isBackendPath(url.pathname) || isAppHost(hostname)) return null;
   const [host = '', port] = hostname.split(':');
   const local = host === 'localhost' || host.endsWith('.localhost');
-  const apex = local ? 'localhost' : host.split('.').slice(-2).join('.');
-  const origin = local ? `http://app.${apex}${port !== undefined ? `:${port}` : ''}` : `https://app.${apex}`;
+  // Never derive the app origin from a production request host (custom domains,
+  // workers.dev, trailing dots); only local dev derives it, so it works whatever SITE_URL is.
+  const origin = local ? `http://app.localhost${port !== undefined ? `:${port}` : ''}` : appBase;
   return `${origin}${url.pathname}${url.search}`;
 }

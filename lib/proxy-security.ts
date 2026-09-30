@@ -32,7 +32,8 @@ export function sanitizeTenantHeaders(headers: Headers): void {
  * ignored here and stripped by sanitizeTenantHeaders.
  */
 export function requestHost(headers: Headers): string {
-  return headers.get('host') ?? '';
+  // Lowercase, and drop one trailing dot (before any port): 'App.BohdiAI.com.' is the app host.
+  return (headers.get('host') ?? '').toLowerCase().replace(/\.(?=:\d+$|$)/, '');
 }
 
 /**

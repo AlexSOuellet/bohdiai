@@ -3,6 +3,7 @@ import type { SetAllCookies } from '@supabase/ssr';
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 import { sanitizeTenantHeaders, isUnreachableStorefrontPath, requestHost, isAppHost, isDormantPath, tenantLookupUrl, apexRedirect } from '@/lib/proxy-security';
+import { appOrigin } from '@/lib/backend/app-url';
 import { backendRedirect, isBackendPath } from '@/lib/backend/backend-paths';
 
 const RESERVED = new Set(['www', 'admin', 'app', 'learn']);
@@ -37,7 +38,7 @@ export async function middleware(request: NextRequest) {
   // Sign-in, password setup and the backend live only on the app host; every
   // other host sends those paths there (spec §1 — the session cookie stays on
   // app.bohdiai.com).
-  const toApp = backendRedirect(hostname, request.nextUrl);
+  const toApp = backendRedirect(hostname, request.nextUrl, appOrigin(process.env['SITE_URL'] ?? 'https://bohdiai.com'));
   if (toApp !== null) return NextResponse.redirect(toApp, 307);
 
   // The backend lives on app.bohdiai.com under /manage/*. Land the bare app

@@ -11,6 +11,12 @@ describe('requestHost', () => {
     expect(requestHost(headers)).toBe('bohdiai.com');
   });
 
+  it('lowercases and strips a single trailing dot, before any port', () => {
+    expect(requestHost(new Headers({ host: 'App.BohdiAI.com.' }))).toBe('app.bohdiai.com');
+    expect(requestHost(new Headers({ host: 'shop.bohdiai.com.:443' }))).toBe('shop.bohdiai.com:443');
+    expect(isAppHost(requestHost(new Headers({ host: 'App.BohdiAI.com.' })))).toBe(true);
+  });
+
   it('returns an empty string when there is no Host header', () => {
     expect(requestHost(new Headers())).toBe('');
   });
