@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 const KINDS = new Set(['invite', 'recovery']);
 
 /** The link carries a one-time token: never cache it, never leak it in a Referer. */
-const PRIVATE_HEADERS = { 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store' } as const;
+const PRIVATE_HEADERS = { 'Referrer-Policy': 'same-origin', 'Cache-Control': 'no-store' } as const;
 
 function redirectTo(url: URL): Response {
   const res = NextResponse.redirect(url, 303);

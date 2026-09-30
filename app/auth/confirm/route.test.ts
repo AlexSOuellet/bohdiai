@@ -86,10 +86,10 @@ describe('POST /auth/confirm', () => {
 
 describe('private headers', () => {
   const expectPrivate = (res: Response) => {
-    expect(res.headers.get('referrer-policy')).toBe('no-referrer');
+    expect(res.headers.get('referrer-policy')).toBe('same-origin');
     expect(res.headers.get('cache-control')).toBe('no-store');
   };
-  it('GET redirects carry no-referrer and no-store', async () => {
+  it('GET redirects carry same-origin referrer policy and no-store', async () => {
     expectPrivate(await GET(get('?token_hash=t&type=invite')));
     expectPrivate(await GET(get('')));
   });

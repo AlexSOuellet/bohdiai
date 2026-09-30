@@ -37,8 +37,9 @@ describe('/auth/continue', () => {
 });
 
 describe('/auth/continue privacy', () => {
-  it('asks browsers not to send a Referer (the URL carries a one-time token)', async () => {
+  it('sends no cross-site Referer but stays same-origin (no-referrer makes the form POST carry Origin: null and the confirm route rejects it)', async () => {
     const { metadata } = await import('./page');
-    expect(metadata.referrer).toBe('no-referrer');
+    expect(metadata.referrer).toBe('same-origin');
+    expect(metadata.referrer).not.toBe('no-referrer');
   });
 });

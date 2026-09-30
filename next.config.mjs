@@ -54,10 +54,10 @@ const nextConfig = {
       },
       {
         // The emailed-link landing page carries a one-time token in its URL: no
-        // Referer leak, nothing cached. Listed last so it overrides the catch-all above.
+        // cross-site Referer leak, nothing cached (same-origin, not no-referrer: that makes the form POST send Origin: null). Listed last so it overrides the catch-all above.
         source: '/auth/continue',
         headers: [
-          { key: 'Referrer-Policy', value: 'no-referrer' },
+          { key: 'Referrer-Policy', value: 'same-origin' },
           { key: 'Cache-Control', value: 'no-store' },
         ],
       },
