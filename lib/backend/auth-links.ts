@@ -33,10 +33,38 @@ export function composeAuthEmail(input: { kind: AuthLinkKind; siteName: string; 
 }
 
 type GenerateLink = (args: { type: AuthLinkKind; email: string }) => Promise<{
-  data: { properties: { hashed_token: string } } | null;
+  data: { properties: { hashed_token: string }; user?: { id: string } | null } | null;
   error: { message: string } | null;
 }>;
 type Send = (msg: { to: string; subject: string; text: string; html: string }) => Promise<{ error: { message: string } | null }>;
+
+/** Step 1: make the one-time link. `userId` is the account it belongs to, when the generator reports it. */
+export async function createAuthLink(input: {
+  kind: AuthLinkKind;
+  email: string;
+  appOrigin: string;
+  generateLink: GenerateLink;
+}): Promise<{ link: string; userId: string | null }> {
+  const { data, error } = await input.generateLink({ type: input.kind, email: input.email });
+  if (error !== null || data === null) throw new Error(`Could not create the sign-in link: ${error?.message ?? 'no link'}`);
+  return {
+    link: confirmUrl(input.appOrigin, data.properties.hashed_token, input.kind),
+    userId: data.user?.id ?? null,
+  };
+}
+
+/** Step 2: email a link made by createAuthLink. */
+export async function sendAuthEmail(input: {
+  kind: AuthLinkKind;
+  email: string;
+  siteName: string;
+  link: string;
+  send: Send;
+}): Promise<void> {
+  const mail = composeAuthEmail({ kind: input.kind, siteName: input.siteName, link: input.link });
+  const sent = await input.send({ to: input.email, ...mail });
+  if (sent.error !== null) throw new Error(`Could not send the email: ${sent.error.message}`);
+}
 
 export async function sendAuthLink(input: {
   kind: AuthLinkKind;
@@ -46,10 +74,6 @@ export async function sendAuthLink(input: {
   generateLink: GenerateLink;
   send: Send;
 }): Promise<void> {
-  const { data, error } = await input.generateLink({ type: input.kind, email: input.email });
-  if (error !== null || data === null) throw new Error(`Could not create the sign-in link: ${error?.message ?? 'no link'}`);
-  const link = confirmUrl(input.appOrigin, data.properties.hashed_token, input.kind);
-  const mail = composeAuthEmail({ kind: input.kind, siteName: input.siteName, link });
-  const sent = await input.send({ to: input.email, ...mail });
-  if (sent.error !== null) throw new Error(`Could not send the email: ${sent.error.message}`);
+  const { link } = await createAuthLink(input);
+  await sendAuthEmail({ kind: input.kind, email: input.email, siteName: input.siteName, link, send: input.send });
 }

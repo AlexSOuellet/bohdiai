@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { confirmUrl, composeAuthEmail, sendAuthLink, type AuthLinkKind } from './auth-links';
+import { confirmUrl, composeAuthEmail, createAuthLink, sendAuthEmail, sendAuthLink, type AuthLinkKind } from './auth-links';
 
 describe('confirmUrl', () => {
   it('points at /auth/confirm on the app host with the token and kind', () => {
@@ -57,5 +57,42 @@ describe('sendAuthLink', () => {
     await expect(
       sendAuthLink({ kind: 'invite', email: 'a@b.co', siteName: 'S', appOrigin: 'https://app.x', generateLink, send }),
     ).rejects.toThrow('Could not send the email: resend down');
+  });
+});
+
+describe('createAuthLink', () => {
+  it('returns the confirm link and the user id, without sending anything', async () => {
+    const generateLink = vi.fn(async () => ({ data: { properties: { hashed_token: 'tok' }, user: { id: 'u1' } }, error: null }));
+    const out = await createAuthLink({ kind: 'invite', email: 'a@b.co', appOrigin: 'https://app.x', generateLink });
+    expect(generateLink).toHaveBeenCalledWith({ type: 'invite', email: 'a@b.co' });
+    expect(out.userId).toBe('u1');
+    expect(new URL(out.link).searchParams.get('token_hash')).toBe('tok');
+  });
+
+  it('has a null user id when the generator does not report one', async () => {
+    const generateLink = vi.fn(async () => ({ data: { properties: { hashed_token: 't' } }, error: null }));
+    expect((await createAuthLink({ kind: 'recovery', email: 'a@b.co', appOrigin: 'https://app.x', generateLink })).userId).toBeNull();
+  });
+
+  it('throws when the link cannot be made', async () => {
+    const generateLink = vi.fn(async () => ({ data: null, error: { message: 'nope' } }));
+    await expect(createAuthLink({ kind: 'invite', email: 'a@b.co', appOrigin: 'https://app.x', generateLink })).rejects.toThrow(
+      'Could not create the sign-in link: nope',
+    );
+  });
+});
+
+describe('sendAuthEmail', () => {
+  it('sends the composed email with the given link', async () => {
+    const send = vi.fn(async () => ({ error: null }));
+    await sendAuthEmail({ kind: 'invite', email: 'a@b.co', siteName: 'S', link: 'https://app.x/l', send });
+    expect(send).toHaveBeenCalledWith(expect.objectContaining({ to: 'a@b.co', text: expect.stringContaining('https://app.x/l') }));
+  });
+
+  it('throws when the email does not send', async () => {
+    const send = vi.fn(async () => ({ error: { message: 'resend down' } }));
+    await expect(sendAuthEmail({ kind: 'invite', email: 'a@b.co', siteName: 'S', link: 'l', send })).rejects.toThrow(
+      'Could not send the email: resend down',
+    );
   });
 });
