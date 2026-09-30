@@ -8,16 +8,14 @@ import { logger } from '@/lib/logger';
 import type { FormAllowance, FormName } from '@/lib/forms/rate-limit';
 
 export async function allowAction(action: Extract<FormName, 'signin' | 'reset'>, limiter?: RateLimit): Promise<FormAllowance> {
+  let ip: string;
   try {
-    const binding = limiter ?? (await getCloudflareContext({ async: true })).env.FORM_LIMITER;
-    if (binding === undefined) throw new Error('FORM_LIMITER binding missing — see "ratelimits" in wrangler.jsonc');
-    const ip = (await headers()).get('cf-connecting-ip')?.trim() || 'unknown';
-    const { success } = await binding.limit({ key: `${action}:${ip}` });
-    return success ? 'allowed' : 'limited';
+    ip = (await headers()).get('cf-connecting-ip')?.trim() || 'unknown';
   } catch (err) {
     logger.error('action rate limiter unavailable', { action, error: err instanceof Error ? err.message : String(err) });
     return 'unavailable';
   }
+  return allowKey(`${action}:${ip}`, limiter);
 }
 
 /** Spend one from an arbitrary key (e.g. per-email). Fails closed like allowAction. */

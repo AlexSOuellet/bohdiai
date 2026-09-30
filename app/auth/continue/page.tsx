@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { AUTH_LINK_KINDS } from '@/lib/backend/auth-kinds';
 import { plex } from '../../manage/fonts';
 import '../../manage/backend.css';
 
 export const metadata: Metadata = { title: 'Continue', robots: { index: false, follow: false }, referrer: 'same-origin' };
 
-const KINDS = new Set(['invite', 'recovery']);
 
 type Params = { token_hash?: string | string[]; type?: string | string[] };
 
@@ -17,7 +17,7 @@ type Params = { token_hash?: string | string[]; type?: string | string[] };
  */
 export default async function ContinuePage({ searchParams }: { searchParams: Promise<Params> }): Promise<React.ReactElement> {
   const { token_hash: tokenHash, type } = await searchParams;
-  if (typeof tokenHash !== 'string' || tokenHash === '' || typeof type !== 'string' || !KINDS.has(type)) {
+  if (typeof tokenHash !== 'string' || tokenHash === '' || typeof type !== 'string' || !AUTH_LINK_KINDS.has(type)) {
     redirect('/auth/error?reason=link');
   }
   return (

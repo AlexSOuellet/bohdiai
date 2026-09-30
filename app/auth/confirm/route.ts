@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { AUTH_LINK_KINDS } from '@/lib/backend/auth-kinds';
 
 export const dynamic = 'force-dynamic';
 
-const KINDS = new Set(['invite', 'recovery']);
 
 /** The link carries a one-time token: never cache it, never leak it in a Referer. */
 const PRIVATE_HEADERS = { 'Referrer-Policy': 'same-origin', 'Cache-Control': 'no-store' } as const;
@@ -25,7 +25,7 @@ export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const tokenHash = url.searchParams.get('token_hash');
   const type = url.searchParams.get('type');
-  if (tokenHash === null || tokenHash === '' || type === null || !KINDS.has(type)) return toError(url.origin);
+  if (tokenHash === null || tokenHash === '' || type === null || !AUTH_LINK_KINDS.has(type)) return toError(url.origin);
 
   const next = new URL('/auth/continue', url.origin);
   next.searchParams.set('token_hash', tokenHash);
@@ -48,7 +48,7 @@ export async function POST(request: Request): Promise<Response> {
   } catch {
     return toError(origin);
   }
-  if (typeof tokenHash !== 'string' || tokenHash === '' || typeof type !== 'string' || !KINDS.has(type)) return toError(origin);
+  if (typeof tokenHash !== 'string' || tokenHash === '' || typeof type !== 'string' || !AUTH_LINK_KINDS.has(type)) return toError(origin);
 
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: type as 'invite' | 'recovery' });
