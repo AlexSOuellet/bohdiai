@@ -34,6 +34,17 @@ A maker signs in at `app.bohdiai.com`, lands on a home screen for their shop, an
 - **Tier-ready:** when tiers exist, a plan flips the same switches, and the backend can show a disabled feature as locked with an upgrade button. Nothing in piece 1 builds tiers.
 - Home-page placement of features like testimonials and gallery is a **maker** setting, built with those features in piece 4 — not a feature switch.
 
+## 2a. The look — same as Penny's admin
+
+Alex's call: the backend looks like Penny's admin, same format and colours (`components/admin-layout.tsx`, `components/admin-stat-tile.tsx`, `src/styles.css` in her project). Recreated in BohdiAI's own code and CSS variables — not copied as a dependency — and used for every client's backend.
+
+- **Format:** a fixed dark sidebar on desktop (a slide-in drawer with a menu button on phones) holding the brand at the top, nav grouped into labelled sections, and the signed-in person with Account / Sign out at the bottom; a thin top bar with a small kicker and a **View my site** link on the right; a page header with a large display title and the page's action buttons; the content area below. Labelled stat tiles for figures.
+- **Colours** (Penny's palette): walnut-deep sidebar `oklch(0.22 0.03 50)`; paper `oklch(0.928 0.022 67)` and paper-2 `oklch(0.953 0.017 65)` content surfaces; ink `oklch(0.205 0.019 52)` text; oxblood `oklch(0.356 0.066 40)` for the active nav item, accents and primary buttons; brass `oklch(0.72 0.08 75)` for section labels and the brand's second line; hairline ink borders.
+- **Type:** Cormorant Garamond (display — titles, figures, brand) and IBM Plex Sans (everything else); small uppercase tracked labels for kickers and section names.
+- **Brand:** the sidebar shows the client's own site name, not Penny's.
+- **Nav sections come from the features** the site has (section 2) — e.g. a maker sees Catalog; a contractor sees their gallery and estimate inbox.
+- Backend styling is scoped to the backend; it never touches the storefront or bohdiai.com.
+
 ## 3. The home screen
 
 Same shape as Penny's `/admin` home, lighter until selling exists, and **built from the site's features** (each feature contributes its card and its Needs-attention items):
