@@ -22,3 +22,5 @@
 ## Deploy
 - First deploy failed on Cloudflare: the footer link called serverEnv(), and Cloudflare's build prerenders static pages without runtime secrets. Fixed: `ownerSignInHref()` reads only SITE_URL (falls back to bohdiai.com). **Lesson: anything a static page renders must not need runtime secrets; tests don't catch it — only the Cloudflare build does.**
 - Verified live: app.bohdiai.com/signin 200; shop /signin → app host; /manage → sign-in when signed out; /dashboard 404; owner link in Classic Loafs and Cut-Pro footers; bohdiai.com and Cut-Pro 200.
+- **Owner entry changed (Alex):** the footer sign-in link was rejected ("not on the footer"). Removed from both archetypes (tests keep it out). Owners type `/admin` on their own site → `app.bohdiai.com/manage` (sign-in first when signed out), the Shopify pattern. Verified live on Classic Loafs and Cut-Pro.
+- **Agreed next (Alex "ok"):** auto sign-out for the backend — after 8 hours with no activity, and always after 7 days — because makers use shared/public devices. Not built yet.
