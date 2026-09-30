@@ -1604,7 +1604,7 @@ export function Nav({
   );
 }
 
-export function MainStreetFooter({ shopName }: { shopName: string }) {
+export function MainStreetFooter({ shopName, ownerSignInHref }: { shopName: string; ownerSignInHref: string }) {
   return (
     <footer className="ms-footer">
       <Type as="span" role="wordmark">{shopName}</Type>
@@ -1622,6 +1622,9 @@ export function MainStreetFooter({ shopName }: { shopName: string }) {
         </Type>
         <Type as="a" role="legal" href="/terms" className="ms-footer-link">
           {DEFAULT_STRINGS.footerTerms}
+        </Type>
+        <Type as="a" role="legal" href={ownerSignInHref} className="ms-footer-link" rel="nofollow">
+          {DEFAULT_STRINGS.footerOwnerSignIn}
         </Type>
         <Type as="span" role="legal" className="ms-footer-legal">
           &copy; {shopName}

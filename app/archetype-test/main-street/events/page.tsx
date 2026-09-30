@@ -7,6 +7,8 @@
  * cue and no dead link. A proper Events page is its own design; this stub keeps
  * the link live and skinned.
  */
+import { serverEnv } from '@/lib/env';
+import { ownerSignInUrl } from '@/lib/backend/owner-sign-in-url';
 import { mainStreetArchetype, MAIN_STREET_SKINS, type MainStreetContent } from '@/lib/archetypes/main-street';
 import { MainStreetRoot, MainStreetFooter, typeRoleCss, roles } from '@/lib/archetypes/main-street/chrome';
 import juneFixture from '../../main-street-fixture.june.json';
@@ -55,7 +57,7 @@ export default async function MainStreetEventsPage({ searchParams }: { searchPar
         </p>
       </section>
 
-      <MainStreetFooter shopName={f.content.shopName} />
+      <MainStreetFooter shopName={f.content.shopName} ownerSignInHref={ownerSignInUrl(serverEnv().SITE_URL)} />
     </MainStreetRoot>
   );
 }

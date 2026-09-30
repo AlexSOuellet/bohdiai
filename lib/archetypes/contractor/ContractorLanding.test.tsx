@@ -24,6 +24,13 @@ describe('contractor landing page', () => {
     expect(container.innerHTML).toContain('--cp-bg:#101210');
   });
 
+  it('links the owner sign-in in the footer', () => {
+    const { container } = page();
+    const link = screen.getByRole('link', { name: CONTRACTOR_STRINGS.footer.ownerSignIn });
+    expect(link.getAttribute('href')).toMatch(/^https?:\/\/app\..+\/signin$/);
+    expect(container.querySelector('.cp-foot__row')?.contains(link)).toBe(true);
+  });
+
   it('puts a dialable phone link in the header, hero, estimate block and thumb bar', () => {
     const { container } = page();
     expect(container.querySelectorAll('a[href="tel:+14012061566"]').length).toBeGreaterThanOrEqual(4);

@@ -5,6 +5,8 @@
  * bio lives. A proper About page is its OWN archetype design; this stub keeps the
  * cue's link live and skinned until that page is designed.
  */
+import { serverEnv } from '@/lib/env';
+import { ownerSignInUrl } from '@/lib/backend/owner-sign-in-url';
 import { mainStreetArchetype, MAIN_STREET_SKINS, type MainStreetContent } from '@/lib/archetypes/main-street';
 import { MainStreetRoot, MainStreetFooter, Media, typeRoleCss, roles } from '@/lib/archetypes/main-street/chrome';
 import juneFixture from '../../main-street-fixture.june.json';
@@ -54,7 +56,7 @@ export default async function MainStreetAboutPage({ searchParams }: { searchPara
         </p>
       </section>
 
-      <MainStreetFooter shopName={f.content.shopName} />
+      <MainStreetFooter shopName={f.content.shopName} ownerSignInHref={ownerSignInUrl(serverEnv().SITE_URL)} />
     </MainStreetRoot>
   );
 }
