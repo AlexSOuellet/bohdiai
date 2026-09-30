@@ -15,7 +15,7 @@
 - /auth/callback put back on the dormant list (open-redirect `next`).
 
 ## Open
-- **Alex: turn off "Allow new users to sign up" in Supabase** (Authentication → Sign In / Providers). Still on as of end of session.
+- Supabase public sign-up turned OFF by Alex (verified disable_signup: true). Customer sign-up, when built, goes through our own server code (admin API), per site.
 - alexsouellet@gmail.com is now an admin of classic-loafs; alex@bohdiai.com admin of all 39 test shops (old test data).
 - Next: plan + build 1b Catalog, then 1c Video, 1d Custom domains.
 

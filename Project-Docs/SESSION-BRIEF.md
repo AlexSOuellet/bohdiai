@@ -33,7 +33,6 @@ Full recap: `session-logs/session-87.md`.
 
 ## Next actions
 
-00. **Alex: turn off "Allow new users to sign up"** in Supabase (Authentication → Sign In / Providers). Verify with GET /auth/v1/settings → disable_signup true.
 01. **Backend auto sign-out** (Alex agreed): signed out after 8h idle, always after 7 days (app host middleware + a last-activity cookie; Supabase's own timeouts are paid-plan). Owners enter via `/admin` on their site (no visible link).
 02. **Maker backend 1b — Catalog:** write the plan from the piece-1 spec (products, options, stock, photos, collections via listing_collections, one-place price, storefront rendering), then build. Then 1c Video (Cloudflare Stream), 1d Custom domains + status panel.
 0. **bohdiai.com loose ends (Session 89 cleared most):** CI green again (2026-09-30); prod inquiry confirmed in Alex's inbox; Classic Loafs reverted to its original build. Still open: logo from the BohdiAi Facebook page (Alex skipped for now); the Classic Loafs work shot catches the hero words mid-fade (re-time if Alex wants); sample find-us dates are all past July dates; drop "(publicly: Alex Scott)" from privacy/terms? JSON-LD founder name?
