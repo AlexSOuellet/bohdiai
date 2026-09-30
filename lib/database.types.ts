@@ -2332,6 +2332,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      auth_user_id_by_email: { Args: { p_email: string }; Returns: string }
       is_tenant_admin: { Args: { target_tenant_id: string }; Returns: boolean }
       is_tenant_customer: {
         Args: { target_tenant_id: string }
