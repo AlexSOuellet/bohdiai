@@ -32,13 +32,12 @@ Full recap: `session-logs/session-87.md`.
 
 ## Next actions
 
-0. **NEXT SESSION, first: fix GitHub CI (failing since 2026-09-24, emails Alex every push).** Tests all pass; the run dies at the coverage gate (lib branches ~85% vs 90%, .tsx 74.65% vs 75%), so Playwright never runs. Alex chose: (a) delete `e2e/waitlist.spec.ts` + `e2e/browser-demo.spec.ts`, write homepage e2e (form, samples, client links), keep a11y spec; (b) raise coverage PROPERLY with real tests — do NOT lower the thresholds. Also drop `FOUNDER_CAP` from `.github/workflows/test.yml`.
-0b. **Then: brainstorm "MY ADMIN" (Alex, 2026-09-29)** — Alex's own admin that lets him use the original Bohdi builder (the dormant onboarding/crew engine) to build client sites behind the scenes. Brainstorm first; nothing decided.
-0c. **bohdiai.com loose ends:** Alex to send a real inquiry on prod and confirm inbox + Reply-To (a local send returned 200, unconfirmed); logo file from the BohdiAi Facebook page (rainbow wave) → header + favicon, compare full-color vs honey; Classic Loafs cleanup (try-on leftovers; show Alex the list before touching; re-capture with `node scripts/capture-work-shots.mjs classic-loafs`); open: drop "(publicly: Alex Scott)" from privacy/terms? JSON-LD founder name?
+0. **bohdiai.com loose ends (Session 89 cleared most):** CI green again (2026-09-30); prod inquiry confirmed in Alex's inbox; Classic Loafs reverted to its original build. Still open: logo from the BohdiAi Facebook page (Alex skipped for now); the Classic Loafs work shot catches the hero words mid-fade (re-time if Alex wants); sample find-us dates are all past July dates; drop "(publicly: Alex Scott)" from privacy/terms? JSON-LD founder name?
 1. **Cloudflare cleanup (Alex):** delete the redundant Cut-Pro route; trim Build variables to NODE_VERSION + the two NEXT_PUBLIC_*; after a few quiet days cancel Vercel and delete `shop-proxy` together.
 2. **Cut-Pro follow-ups:** their copy review (crew-photo names, services list, "since 2009"); better originals from their phones; review the privacy-page wording for a contractor.
 4. **Maker backend:** scope it against Penny's site. Open question: does Penny's store move into BohdiAI or stay standalone?
 5. **Flaky test:** `SectionEditor.test.tsx` "Write it up…" fails only under full-suite load.
+6. **MY ADMIN — stays in the plan, lower priority (Alex, 2026-09-30).** For now client sites are built here with Claude, following the BohdiAI rules (the Bohdi builder can still be run by script for a fast first draft). The admin comes back later; nothing about its shape is decided.
 
 
 ---
