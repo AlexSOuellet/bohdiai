@@ -12,8 +12,9 @@ import { createAuthLink, sendAuthEmail, type AuthLinkKind } from '../lib/backend
 import { appOrigin } from '../lib/backend/app-url';
 
 async function main(): Promise<void> {
-  const [subdomain, rawEmail] = process.argv.slice(2);
-  if (subdomain === undefined || rawEmail === undefined) throw new Error('usage: invite-maker.ts <subdomain> <email>');
+  const [rawSubdomain, rawEmail] = process.argv.slice(2);
+  if (rawSubdomain === undefined || rawEmail === undefined) throw new Error('usage: invite-maker.ts <subdomain> <email>');
+  const subdomain = rawSubdomain.trim().toLowerCase();
   const email = rawEmail.trim().toLowerCase();
   const need = (name: string): string => {
     const v = (process.env[name] ?? '').trim();
@@ -33,7 +34,8 @@ async function main(): Promise<void> {
   if (error !== null) throw new Error(error.message);
   if (tenant === null) throw new Error(`No site "${subdomain}"`);
 
-  const { data: existingId } = await db.rpc('auth_user_id_by_email', { p_email: email });
+  const { data: existingId, error: lookupErr } = await db.rpc('auth_user_id_by_email', { p_email: email });
+  if (lookupErr !== null) throw new Error(`Nothing was emailed. Looking up the account failed: ${lookupErr.message}`);
   const kind: AuthLinkKind = typeof existingId === 'string' ? 'recovery' : 'invite';
 
   // Order matters: make the link (this creates the account), add them to the site,
