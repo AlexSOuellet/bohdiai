@@ -28,7 +28,7 @@ const MIN_PASSWORD = 10;
 // Typed routes don't know /manage until its page lands (plan task 14); the cast can go then.
 const BACKEND_HOME = '/manage' as Route;
 
-const LINK_AGAIN = 'This page timed out. Use Forgot password on the sign-in page to get a fresh link.';
+const LINK_AGAIN = 'This link is no longer valid. Use Forgot password on the sign-in page to get a fresh one.';
 const SIGN_IN_UNAVAILABLE = 'Sign-in is unavailable for a moment. Please try again in a few minutes.';
 /** A password may be set only this long after the emailed link was opened. */
 const LINK_SESSION_SECONDS = 15 * 60;

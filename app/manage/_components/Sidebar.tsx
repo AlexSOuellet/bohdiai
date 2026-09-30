@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import type { Route } from 'next';
 import { usePathname } from 'next/navigation';
@@ -7,7 +5,12 @@ import type { NavSection } from '@/lib/backend/modules';
 import type { ShopSummary } from '@/lib/auth/membership';
 import { signOut } from '@/lib/backend/auth-actions';
 
-// Typed routes do not know /manage until its page lands (plan task 14); the casts can go then.
+// Typed routes do not know /manage until its page lands (plan task 14); only the literal
+// "/manage" cast goes away then. item.href as Route stays (hrefs come from the module list).
+function isCurrent(pathname: string, href: string): boolean {
+  return pathname === href || (href !== '/manage' && pathname.startsWith(`${href}/`));
+}
+
 export function Sidebar(props: {
   siteName: string;
   email: string;
@@ -31,7 +34,7 @@ export function Sidebar(props: {
       </div>
 
       {props.sites.length > 1 && (
-        <form action="/manage/switch-site" method="post" className="bk-nav-section bk-nav">
+        <form action="/manage/switch-site" method="post" className="bk-switch">
           <label className="bk-nav-label" htmlFor="bk-site">
             Switch site
           </label>
@@ -58,7 +61,7 @@ export function Sidebar(props: {
                   <Link
                     href={item.href as Route}
                     className="bk-nav-link"
-                    aria-current={pathname === item.href ? 'page' : undefined}
+                    aria-current={isCurrent(pathname, item.href) ? 'page' : undefined}
                     onClick={props.onNavigate}
                   >
                     {item.label}

@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-vi.mock('next/navigation', () => ({ usePathname: () => '/manage' }));
+const path = vi.hoisted(() => ({ current: '/manage' }));
+vi.mock('next/navigation', () => ({ usePathname: () => path.current }));
 vi.mock('@/lib/backend/auth-actions', () => ({ signOut: vi.fn() }));
 
 import { Sidebar } from './Sidebar';
@@ -16,6 +17,15 @@ const base = {
 };
 
 describe('Sidebar', () => {
+  it('matches nested pages but keeps Home exact', () => {
+    const nav = [{ section: 'Site', items: [{ label: 'Home', href: '/manage' }, { label: 'Products', href: '/manage/products' }] }];
+    path.current = '/manage/products/123';
+    const { unmount } = render(<Sidebar {...base} nav={nav} />);
+    expect(screen.getByRole('link', { name: 'Products' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Home' })).not.toHaveAttribute('aria-current');
+    unmount();
+    path.current = '/manage';
+  });
   it('shows the client’s own site name, not Penny’s', () => {
     render(<Sidebar {...base} />);
     expect(screen.getByText('Classic Loafs')).toBeInTheDocument();

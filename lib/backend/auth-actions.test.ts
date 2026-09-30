@@ -108,7 +108,7 @@ describe('requestPasswordReset', () => {
   });
 });
 
-const LINK_AGAIN = 'This page timed out. Use Forgot password on the sign-in page to get a fresh link.';
+const LINK_AGAIN = 'This link is no longer valid. Use Forgot password on the sign-in page to get a fresh one.';
 const nowSec = () => Math.floor(Date.now() / 1000);
 const claims = (amr: unknown) => getClaims.mockResolvedValue({ data: { claims: { amr } }, error: null });
 
