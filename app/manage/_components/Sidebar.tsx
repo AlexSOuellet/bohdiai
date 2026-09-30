@@ -5,8 +5,6 @@ import type { NavSection } from '@/lib/backend/modules';
 import type { ShopSummary } from '@/lib/auth/membership';
 import { signOut } from '@/lib/backend/auth-actions';
 
-// Typed routes do not know /manage until its page lands (plan task 14); only the literal
-// "/manage" cast goes away then. item.href as Route stays (hrefs come from the module list).
 function isCurrent(pathname: string, href: string): boolean {
   return pathname === href || (href !== '/manage' && pathname.startsWith(`${href}/`));
 }
@@ -23,7 +21,7 @@ export function Sidebar(props: {
   return (
     <>
       <div className="bk-brand">
-        <Link href={"/manage" as Route} className="bk-brand-name" onClick={props.onNavigate}>
+        <Link href="/manage" className="bk-brand-name" onClick={props.onNavigate}>
           {props.siteName}
           <br />
           <span className="bk-brand-sub">Backend</span>

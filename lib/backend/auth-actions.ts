@@ -7,7 +7,6 @@
  * to send is surfaced to the visitor rather than swallowed. A password is only
  * set from a fresh session that came from an emailed link.
  */
-import type { Route } from 'next';
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { supabaseAdmin } from '@/lib/supabase';
@@ -25,8 +24,7 @@ export type ActionResult = { ok: true; message?: string } | { ok: false; error: 
 
 export const RESET_SENT = 'If that email belongs to a site owner, a reset link is on its way. Check your inbox.';
 const MIN_PASSWORD = 10;
-// Typed routes don't know /manage until its page lands (plan task 14); the cast can go then.
-const BACKEND_HOME = '/manage' as Route;
+const BACKEND_HOME = '/manage';
 
 const LINK_AGAIN = 'This link is no longer valid. Use Forgot password on the sign-in page to get a fresh one.';
 const SIGN_IN_UNAVAILABLE = 'Sign-in is unavailable for a moment. Please try again in a few minutes.';
