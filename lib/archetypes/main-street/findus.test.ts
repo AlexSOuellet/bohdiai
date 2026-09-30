@@ -70,6 +70,11 @@ describe('formatFindUsMonthTitle', () => {
   it('renders the month name and year', () => {
     expect(formatFindUsMonthTitle(2025, 8)).toBe('August 2025');
   });
+
+  it('falls back to just the year for an out-of-range month, never "undefined"', () => {
+    expect(formatFindUsMonthTitle(2025, 13)).toBe('2025');
+    expect(formatFindUsMonthTitle(2025, 0)).toBe('2025');
+  });
 });
 
 describe('currentYearMonth', () => {

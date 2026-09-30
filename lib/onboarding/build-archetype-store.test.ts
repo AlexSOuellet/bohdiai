@@ -271,3 +271,98 @@ describe('buildArchetypeStore — media generation + niche fallbacks', () => {
     ).rejects.toThrow(/Niche not found: ghost/);
   });
 });
+
+describe('buildArchetypeStore — progress, sparse inputs, and failed generations', () => {
+  const applyMedia = vi.fn((authored: unknown, urls: Record<string, string | null>) => ({ authored, urls }));
+  let jobs: MediaJob[] = [];
+  const fakeSpec = { key: 'main-street', mediaJobs: () => jobs, applyMedia, toPayload: () => ({ content: {}, products: [] }) };
+
+  beforeEach(() => {
+    jobs = [];
+    single.mockReset().mockResolvedValue({ data: { display_name: 'Wood', body_markdown: 'b', tenant_type_fit: ['seller', 'service'] }, error: null });
+    directAndProduce.mockReset().mockResolvedValue({
+      chosen: { spec: fakeSpec, lookKey: 'main-street-ember' },
+      authored: {},
+      choices: { heroKind: 'still', goodsTreatment: 'procession', founderTreatment: 'quote' },
+    });
+    writeArchetypeStorefront.mockReset().mockResolvedValue({ subdomain: 'wally', tenantId: 'tn_p' });
+    publishArchetypeStorefront.mockClear();
+    applyMedia.mockClear();
+    vi.mocked(generateMomentVideo).mockReset();
+    vi.mocked(generateMomentStill).mockReset();
+  });
+
+  it('reports each build stage to the progress listener, in order, and publishes the written tenant', async () => {
+    const onProgress = vi.fn();
+    const res = await buildArchetypeStore(
+      { shopName: 'W', subdomain: 'wally', nicheSlug: 'woodworking', moodKey: 'rustic', productCount: 1 },
+      onProgress,
+    );
+    expect(onProgress.mock.calls.map((c) => (c[0] as { label: string }).label)).toEqual([
+      'Designing your store',
+      'Generating your photos and video',
+      'Publishing your store',
+    ]);
+    expect(onProgress.mock.calls.every((c) => (c[0] as { type: string; step: string }).type === 'status' && (c[0] as { step: string }).step === 'composing-home')).toBe(true);
+    expect(publishArchetypeStorefront).toHaveBeenCalledWith('tn_p');
+    expect(res).toEqual({ subdomain: 'wally', tenantId: 'tn_p' });
+    // A list niche keeps its own tenant types and persists as from-list.
+    const writeArg = writeArchetypeStorefront.mock.calls[0]![0] as { tenantTypes: string[]; primaryNiche: string | null; nicheFromList: boolean; nicheDescription: string | null };
+    expect(writeArg).toMatchObject({ tenantTypes: ['seller', 'service'], primaryNiche: 'woodworking', nicheFromList: true, nicheDescription: null });
+  });
+
+  it('an Other maker with no typed description builds from an empty body and persists an empty description', async () => {
+    await buildArchetypeStore({ shopName: 'W', subdomain: 'wally', nicheSlug: 'other', moodKey: 'modern', productCount: 1 });
+    const brief = directAndProduce.mock.calls[0]![0] as { nicheBody: string; nicheDisplayName: string };
+    expect(brief.nicheBody).toBe('');
+    expect(brief.nicheDisplayName).toBe('maker');
+    const writeArg = writeArchetypeStorefront.mock.calls[0]![0] as { nicheDescription: string | null; tenantTypes: string[] };
+    expect(writeArg.nicheDescription).toBe('');
+    expect(writeArg.tenantTypes).toEqual(['seller']);
+  });
+
+  it('throws "no row" when the niche lookup returns nothing without an error', async () => {
+    single.mockResolvedValue({ data: null, error: null });
+    await expect(
+      buildArchetypeStore({ shopName: 'W', subdomain: 'wally', nicheSlug: 'ghost', moodKey: 'rustic', productCount: 1 }),
+    ).rejects.toThrow('Niche not found: ghost (no row)');
+    expect(writeArchetypeStorefront).not.toHaveBeenCalled();
+  });
+
+  it('omits the clip length when a video job has none, and stores each asset under its own path', async () => {
+    jobs = [{ id: 'hero', kind: 'video', prompt: 'h', aspect: '16:9', group: 'feature' }];
+    vi.mocked(generateMomentVideo).mockResolvedValue('vid');
+    await buildArchetypeStore({ shopName: 'W', subdomain: 'wally', nicheSlug: 'woodworking', moodKey: 'rustic', productCount: 0 });
+    const opts = vi.mocked(generateMomentVideo).mock.calls[0]![1];
+    expect(opts).toEqual({ subdomain: 'wally/hero', aspect: '16:9' });
+    expect('durationSec' in opts).toBe(false);
+  });
+
+  it('a failed feature asset lands as null, and failed product photos are dropped before recycling', async () => {
+    jobs = [
+      { id: 'portrait', kind: 'still', prompt: 'p', aspect: '1:1', group: 'feature' },
+      { id: 'product:0', kind: 'still', prompt: 'a', aspect: '1:1', group: 'product' },
+      { id: 'product:1', kind: 'still', prompt: 'b', aspect: '1:1', group: 'product' },
+      { id: 'product:2', kind: 'still', prompt: 'c', aspect: '1:1', group: 'product' },
+    ];
+    // Calls run feature-first: portrait fails; product a fails (null), b fails
+    // (empty string), c succeeds.
+    vi.mocked(generateMomentStill)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce('')
+      .mockResolvedValueOnce('only-good');
+    await buildArchetypeStore({ shopName: 'W', subdomain: 'wally', nicheSlug: 'woodworking', moodKey: 'rustic', productCount: 3 });
+    const urls = applyMedia.mock.calls[0]![1];
+    expect(urls['portrait']).toBeNull();
+    // The one surviving photo is recycled across every product slot.
+    expect([urls['product:0'], urls['product:1'], urls['product:2']]).toEqual(['only-good', 'only-good', 'only-good']);
+  });
+
+  it('every product slot is null when no product photo survives', async () => {
+    jobs = [{ id: 'product:0', kind: 'still', prompt: 'a', aspect: '1:1', group: 'product' }];
+    vi.mocked(generateMomentStill).mockResolvedValue(null);
+    await buildArchetypeStore({ shopName: 'W', subdomain: 'wally', nicheSlug: 'woodworking', moodKey: 'rustic', productCount: 1 });
+    expect(applyMedia.mock.calls[0]![1]).toEqual({ 'product:0': null });
+  });
+});

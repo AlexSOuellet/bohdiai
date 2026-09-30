@@ -1,10 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import {
   momentSeenCookieName,
   hasSeenMoment,
   isColdFrontDoorEntry,
   shouldPlayMoment,
   resolveMomentPlayMode,
+  initialDocumentPath,
+  markMomentSeen,
 } from './moment-gate';
 
 describe('momentSeenCookieName', () => {
@@ -109,5 +111,78 @@ describe('resolveMomentPlayMode', () => {
 
   it('falls back to "once" for an unknown playMode value', () => {
     expect(resolveMomentPlayMode({ playMode: 'weekly' })).toBe('once');
+  });
+});
+
+describe('resolveMomentPlayMode — no moment at all', () => {
+  it('defaults to "once" for a null or missing moment', () => {
+    expect(resolveMomentPlayMode(null)).toBe('once');
+    expect(resolveMomentPlayMode(undefined)).toBe('once');
+  });
+});
+
+describe('isColdFrontDoorEntry — custom home path', () => {
+  it('compares against the given home path', () => {
+    expect(isColdFrontDoorEntry('/shop', '/shop')).toBe(true);
+    expect(isColdFrontDoorEntry('/', '/shop')).toBe(false);
+    expect(shouldPlayMoment({ initialPath: '/shop', homePath: '/shop', key: 'tn_1', cookieString: '' })).toBe(true);
+  });
+});
+
+describe('initialDocumentPath', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  function navEntries(entries: unknown[]): void {
+    vi.spyOn(performance, 'getEntriesByType').mockReturnValue(entries as PerformanceEntryList);
+  }
+
+  it('returns the pathname of the document the visit loaded on', () => {
+    navEntries([{ name: 'https://lumen.bohdiai.com/product/belt?x=1' }]);
+    expect(initialDocumentPath()).toBe('/product/belt');
+  });
+
+  it('returns null when there is no navigation entry, or it has no URL', () => {
+    navEntries([]);
+    expect(initialDocumentPath()).toBeNull();
+    navEntries([{ name: '' }]);
+    expect(initialDocumentPath()).toBeNull();
+  });
+
+  it('returns null for an unparseable entry URL instead of throwing', () => {
+    navEntries([{ name: 'not a url' }]);
+    expect(initialDocumentPath()).toBeNull();
+  });
+
+  it('returns null where the Performance API is unavailable', () => {
+    vi.stubGlobal('performance', undefined);
+    expect(initialDocumentPath()).toBeNull();
+    vi.stubGlobal('performance', {});
+    expect(initialDocumentPath()).toBeNull();
+  });
+});
+
+describe('markMomentSeen', () => {
+  afterEach(() => {
+    document.cookie = 'bohdi_moment_seen_tn_mark=; path=/; max-age=0';
+  });
+
+  it('writes the per-shop seen cookie so the next cold arrival rests', () => {
+    expect(hasSeenMoment('tn_mark', document.cookie)).toBe(false);
+    markMomentSeen('tn_mark');
+    expect(hasSeenMoment('tn_mark', document.cookie)).toBe(true);
+    expect(shouldPlayMoment({ initialPath: '/', key: 'tn_mark', cookieString: document.cookie })).toBe(false);
+  });
+
+  it('is a no-op off the browser (no document)', () => {
+    vi.stubGlobal('document', undefined);
+    try {
+      expect(() => markMomentSeen('tn_mark')).not.toThrow();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    expect(hasSeenMoment('tn_mark', document.cookie)).toBe(false);
   });
 });

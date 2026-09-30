@@ -88,3 +88,88 @@ describe('runContentEdit', () => {
     expect(create).toHaveBeenCalledTimes(4);
   });
 });
+
+describe('runContentEdit — value normalization by field kind', () => {
+  it('trims a plain text field but keeps its sentence punctuation', async () => {
+    const fields = [getField('contact.intro')!];
+    create.mockResolvedValueOnce(toolMsg({ 'contact.intro': '  Write to me any time.  ' }));
+    const { values } = await runContentEdit({ fields, current: {}, instruction: 'i', niche });
+    expect(values).toEqual({ 'contact.intro': 'Write to me any time.' });
+  });
+
+  it('drops a text field that comes back as a non-string, or that normalizes to empty', async () => {
+    const fields = [getField('goods.title')!, getField('contact.intro')!];
+    create.mockResolvedValueOnce(toolMsg({ 'goods.title': ['not', 'a string'], 'contact.intro': '   ' }));
+    const { values } = await runContentEdit({ fields, current: {}, instruction: 'i', niche });
+    expect(values).toEqual({});
+  });
+
+  it('drops a lines field whose every line is blank or not a string', async () => {
+    const fields = [getField('moment.story')!];
+    create.mockResolvedValueOnce(toolMsg({ 'moment.story': ['   ', 3, null, '.'] }));
+    const { values } = await runContentEdit({ fields, current: {}, instruction: 'i', niche });
+    expect(values).toEqual({});
+  });
+
+  it('keeps an items field as the whole array, and drops it when it is not an array', async () => {
+    const reviews = [{ quote: 'Lovely', author: 'Sam' }];
+    create.mockResolvedValueOnce(toolMsg({ 'reviews.items': reviews }));
+    const ok = await runContentEdit({ fields: [getField('reviews.items')!], current: {}, instruction: 'i', niche });
+    expect(ok.values).toEqual({ 'reviews.items': reviews });
+
+    create.mockResolvedValueOnce(toolMsg({ 'reviews.items': 'Lovely — Sam' }));
+    const bad = await runContentEdit({ fields: [getField('reviews.items')!], current: {}, instruction: 'i', niche });
+    expect(bad.values).toEqual({});
+  });
+});
+
+describe('runContentEdit — tool schema + prompt per field kind', () => {
+  it('declares each field in the forced tool with the JSON type its kind needs, none required', async () => {
+    const fields = [getField('goods.title')!, getField('moment.story')!, getField('reviews.items')!];
+    create.mockResolvedValueOnce(toolMsg({}));
+    await runContentEdit({ fields, current: {}, instruction: 'i', niche });
+    const args = create.mock.calls[0]![0] as {
+      tools: Array<{ name: string; input_schema: { properties: Record<string, { type: string; items?: { type: string } }>; required: string[] } }>;
+    };
+    const schema = args.tools[0]!.input_schema;
+    expect(args.tools[0]!.name).toBe('write_fields');
+    expect(schema.properties['goods.title']).toMatchObject({ type: 'string' });
+    expect(schema.properties['moment.story']).toMatchObject({ type: 'array', items: { type: 'string' } });
+    expect(schema.properties['reviews.items']).toMatchObject({ type: 'array', items: { type: 'object' } });
+    expect(schema.required).toEqual([]);
+  });
+
+  it('describes each field kind in plain words and shows its current value (null when unset)', async () => {
+    const fields = [getField('goods.title')!, getField('moment.story')!, getField('reviews.items')!];
+    create.mockResolvedValueOnce(toolMsg({}));
+    await runContentEdit({ fields, current: { 'goods.title': 'Our goods' }, instruction: 'i', niche });
+    const { system } = create.mock.calls[0]![0] as { system: string };
+    expect(system).toContain('- goods.title (one line) — Goods heading. Current: "Our goods"');
+    expect(system).toContain('- moment.story (a list of lines) — Hero story lines. Current: null');
+    expect(system).toContain('- reviews.items (a list) — Testimonials. Current: null');
+  });
+
+  it('an empty tool call is a valid "nothing to change" answer, not a retry', async () => {
+    create.mockResolvedValueOnce(toolMsg({}));
+    const { values } = await runContentEdit({ fields: [getField('goods.title')!], current: {}, instruction: 'make it cozier', niche });
+    expect(values).toEqual({});
+    expect(create).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('runContentEdit — retry on an unusable tool call', () => {
+  it('retries when the tool input is null or an array, nudging the model, then accepts a good call', async () => {
+    const fields = [getField('goods.title')!];
+    create
+      .mockResolvedValueOnce(toolMsg(null))
+      .mockResolvedValueOnce(toolMsg(['goods.title', 'Fresh']))
+      .mockResolvedValueOnce(toolMsg({ 'goods.title': 'Fresh' }));
+    const { values } = await runContentEdit({ fields, current: {}, instruction: 'i', niche });
+    expect(values).toEqual({ 'goods.title': 'Fresh' });
+    expect(create).toHaveBeenCalledTimes(3);
+    const lastMessages = (create.mock.calls[2]![0] as { messages: Array<{ role: string; content: unknown }> }).messages;
+    // original ask + (assistant, nudge) for each of the two failed attempts
+    expect(lastMessages).toHaveLength(5);
+    expect(lastMessages[4]).toMatchObject({ role: 'user', content: expect.stringContaining('write_fields') });
+  });
+});

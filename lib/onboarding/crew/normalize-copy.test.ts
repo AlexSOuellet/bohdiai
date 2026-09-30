@@ -95,6 +95,24 @@ describe('normalizeCopy', () => {
     expect('heading' in out.founder).toBe(false);
     expect('findUs' in out.founder).toBe(false);
   });
+
+  it('normalizes collections and find-us blocks that carry only their required fields', () => {
+    const draft = {
+      ...(minimal as unknown as Record<string, unknown>),
+      collections: { title: 'Our sets.', items: [{ name: ' Gifts ', description: ' For friends ', slug: 'Gift Sets' }] },
+      founder: { quote: 'q', attribution: 'a', findUs: { label: ' find ', rows: [{ day: ' Sun ', where: ' Fair ', time: ' 1-5 ' }] } },
+    } as unknown as CopywriterDraft;
+    const out = normalizeCopy(draft);
+    expect(out.collections).toEqual({
+      title: 'Our sets',
+      items: [{ name: 'Gifts', description: 'For friends', slug: 'gift-sets' }],
+    });
+    expect('label' in out.collections!).toBe(false);
+    expect('viewAllLabel' in out.collections!).toBe(false);
+    expect(out.founder.findUs).toEqual({ label: 'find', rows: [{ day: 'Sun', where: 'Fair', time: '1-5' }] });
+    expect('title' in out.founder.findUs!).toBe(false);
+    expect('eventsLabel' in out.founder.findUs!).toBe(false);
+  });
 });
 
 describe('slugify', () => {

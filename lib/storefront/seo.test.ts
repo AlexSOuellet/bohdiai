@@ -165,3 +165,107 @@ describe('tenantProductJsonLd', () => {
     expect((ld.offers as { seller: { name: string } }).seller.name).toBe('Soul Splatter');
   });
 });
+
+describe('area helpers — edge cases', () => {
+  it('abbreviates a single area on its own', () => {
+    expect(abbreviateAreas([' texas '])).toBe('TX');
+  });
+  it('drops blank entries', () => {
+    expect(abbreviateAreas(['  ', 'Maine'])).toBe('ME');
+    expect(joinAreas(['', '  '])).toBe('');
+  });
+});
+
+describe('buildTenantMetadata — composition fallbacks', () => {
+  it('titles with just the niche when there are no areas', () => {
+    const md = buildTenantMetadata({ shopName: 'Maple & Wick', subdomain: 'mw', nicheLabel: 'Candles' }, { path: '/' });
+    expect(md.title).toBe('Maple & Wick — Candles');
+    expect(md.description).toBe('Candles.');
+  });
+
+  it('titles with just the areas when there is no niche', () => {
+    const md = buildTenantMetadata(
+      { shopName: 'Cut-Pro', subdomain: 'cut-pro', serviceAreas: ['Rhode Island'] },
+      { path: '/' },
+    );
+    expect(md.title).toBe('Cut-Pro — RI');
+    expect(md.description).toBe('Serving Rhode Island.');
+  });
+
+  it('ignores a blank authored title and description', () => {
+    const md = buildTenantMetadata(
+      { shopName: 'Plain Co', subdomain: 'plain-co', seoTitle: '   ', seoDescription: '  ', tagline: 'Made slow' },
+      { path: '/' },
+    );
+    expect(md.title).toBe('Plain Co');
+    expect(md.description).toBe('Made slow');
+  });
+
+  it('omits every description and uses a small twitter card when nothing is known', () => {
+    const md = buildTenantMetadata({ shopName: 'Plain Co', subdomain: 'plain-co' }, { path: '/' });
+    expect('description' in md).toBe(false);
+    expect(md.openGraph && 'description' in md.openGraph).toBe(false);
+    expect(md.openGraph && 'images' in md.openGraph).toBe(false);
+    expect(md.twitter).toEqual({ card: 'summary', title: 'Plain Co' });
+  });
+
+  it('uses a large twitter card and the shop image when one is known', () => {
+    const md = buildTenantMetadata({ ...SHERI, imageUrl: 'https://x/shop.png' }, { path: '/' });
+    expect(md.twitter).toMatchObject({ card: 'summary_large_image', images: [{ url: 'https://x/shop.png' }] });
+    expect(md.openGraph).toMatchObject({ images: [{ url: 'https://x/shop.png' }] });
+  });
+
+  it('prefers the page image over the shop image', () => {
+    const md = buildTenantMetadata(
+      { ...SHERI, imageUrl: 'https://x/shop.png' },
+      { path: '/listings/a', pageName: 'A', imageUrl: 'https://x/product.png' },
+    );
+    expect(md.openGraph).toMatchObject({ images: [{ url: 'https://x/product.png' }] });
+  });
+
+  it('falls back to the shop description when the page description is blank', () => {
+    const md = buildTenantMetadata(SHERI, { path: '/about', pageName: 'About', description: '   ' });
+    expect(md.description).toBe(SHERI.seoDescription);
+  });
+
+  it('titles an unnamed sub-page with just the shop name', () => {
+    const md = buildTenantMetadata(SHERI, { path: '/somewhere' });
+    expect(md.title).toBe('Soul Splatter');
+  });
+});
+
+describe('tenantBusinessJsonLd — sparse facts', () => {
+  it('leaves out description, image and contact when none are known', () => {
+    const ld = tenantBusinessJsonLd({ shopName: 'Plain Co', subdomain: 'plain-co' });
+    expect(ld).toEqual({
+      '@context': 'https://schema.org',
+      '@type': 'Store',
+      name: 'Plain Co',
+      url: 'https://plain-co.bohdiai.com',
+    });
+  });
+});
+
+describe('tenantProductJsonLd — options', () => {
+  it('marks out-of-stock, honors the currency, and leaves out blank description / missing image', () => {
+    const ld = tenantProductJsonLd(SHERI, {
+      name: 'Gift Card',
+      slug: 'gift-card',
+      description: '   ',
+      priceCents: 2550,
+      currency: 'CAD',
+      inStock: false,
+    });
+    expect(ld.offers.priceCurrency).toBe('CAD');
+    expect(ld.offers.price).toBe('25.50');
+    expect(ld.offers.availability).toBe('https://schema.org/OutOfStock');
+    expect('description' in ld).toBe(false);
+    expect('image' in ld).toBe(false);
+  });
+
+  it('is in stock by default and trims the description', () => {
+    const ld = tenantProductJsonLd(SHERI, { name: 'A', slug: 'a', description: '  Nice  ', priceCents: 100, inStock: true });
+    expect(ld.offers.availability).toBe('https://schema.org/InStock');
+    expect(ld.description).toBe('Nice');
+  });
+});

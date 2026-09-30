@@ -78,3 +78,72 @@ describe('composeEstimateEmail', () => {
     expect(e.text).toContain('Needs: Grading');
   });
 });
+
+describe('parseEstimateForm — non-text parts', () => {
+  it('ignores file parts where text is expected and empty file parts among photos', () => {
+    const f = form({ tenantId: TENANT, name: 'Pat', phone: '401', services: 'Mowing' });
+    f.append('services', new File(['x'], 'stray.txt', { type: 'text/plain' }));
+    f.append('photos', 'not-a-file');
+    f.append('photos', new File([], 'empty.jpg', { type: 'image/jpeg' }));
+    const r = parseEstimateForm(f);
+    expect(r.kind).toBe('ok');
+    if (r.kind !== 'ok') return;
+    expect(r.fields.services).toEqual(['Mowing']);
+    expect(r.photos).toEqual([]);
+  });
+
+  it('treats a file sent as the name as a missing name', () => {
+    const f = form({ tenantId: TENANT, phone: '401' });
+    f.append('name', new File(['x'], 'name.txt'));
+    expect(parseEstimateForm(f)).toEqual({ kind: 'invalid', error: 'Please add your name.' });
+  });
+
+  it('ignores a whitespace-only honeypot', () => {
+    expect(parseEstimateForm(form({ tenantId: TENANT, name: 'Pat', phone: '401', company: '   ' })).kind).toBe('ok');
+  });
+
+  it('names the specific photo problem', () => {
+    const base = { tenantId: TENANT, name: 'Pat', phone: '401' };
+    expect(parseEstimateForm(form(base, Array.from({ length: MAX_ESTIMATE_PHOTOS + 1 }, () => jpg())))).toEqual({
+      kind: 'invalid',
+      error: 'Up to 5 photos, please.',
+    });
+    expect(parseEstimateForm(form(base, [new File(['x'], 'a.gif', { type: 'image/gif' })]))).toEqual({
+      kind: 'invalid',
+      error: 'Photos need to be JPG, PNG, or WebP.',
+    });
+    expect(parseEstimateForm(form(base, [jpg(16 * 1024 * 1024)]))).toEqual({
+      kind: 'invalid',
+      error: 'One of those photos is over 15MB. Try a different one.',
+    });
+  });
+});
+
+describe('composeEstimateEmail — sparse request', () => {
+  it('fills every missing answer with a dash and keeps the subject clean', () => {
+    const e = composeEstimateEmail(
+      { tenantId: TENANT, name: 'Pat', phone: undefined, email: 'pat@example.com', town: undefined, state: undefined, details: undefined, services: [] },
+      'Cut & Co "Lawn"',
+      0,
+    );
+    expect(e.subject).toBe('Estimate request: Pat');
+    expect(e.text).toContain('Phone: —');
+    expect(e.text).toContain('Email: pat@example.com');
+    expect(e.text).toContain('Where: —');
+    expect(e.text).toContain('Needs: —');
+    expect(e.text).toContain('Photos: none');
+    expect(e.text.endsWith('About the job:\n—')).toBe(true);
+    expect(e.html).toContain('Cut &amp; Co &quot;Lawn&quot;');
+    expect(e.html).toContain('<br />—</p>');
+  });
+
+  it('uses whichever of town / state is present', () => {
+    const e = composeEstimateEmail(
+      { tenantId: TENANT, name: 'Pat', phone: '401', email: undefined, town: undefined, state: 'RI', details: 'x', services: [] },
+      'Cut-Pro',
+      1,
+    );
+    expect(e.subject).toBe('Estimate request: Pat — RI');
+    expect(e.text).toContain('Photos: 1 attached');
+  });
+});

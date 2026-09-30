@@ -8,6 +8,7 @@ import {
   hasPlaceholderProducts,
   clearPlaceholderProducts,
   insertRealProduct,
+  updateRealProduct,
   softDeleteProduct,
   loadWalkProducts,
 } from './product-queries';
@@ -184,5 +185,116 @@ describe('loadWalkProducts', () => {
     const out = await loadWalkProducts(db, 't1');
     expect(out[0]!.imageUrl).toBe('https://x/legacy.jpg');
     expect(out[0]!.shortDescription).toBe('');
+  });
+});
+
+describe('pickUniqueSlug — no rows', () => {
+  it('treats a null result as no taken slugs', async () => {
+    const { db } = fakeDb({ listings: [{ data: null }] });
+    expect(await pickUniqueSlug(db, 't1', 'Amber Candle')).toBe('amber-candle');
+  });
+});
+
+describe('hasRealProducts / hasPlaceholderProducts — null count', () => {
+  it('treats a missing count as zero for both checks', async () => {
+    const { db } = fakeDb({ listings: [{ data: null }, { data: null }] });
+    expect(await hasRealProducts(db, 't1')).toBe(false);
+    expect(await hasPlaceholderProducts(db, 't1')).toBe(false);
+  });
+});
+
+describe('insertRealProduct — failures and optional fields', () => {
+  it('stores absent short/long descriptions as null', async () => {
+    const { db, recorded } = fakeDb({ listings: [{ data: [] }, { data: { id: 'l3', slug: 'bare' } }] });
+    await insertRealProduct(db, 't1', { name: 'Bare', priceCents: 500 });
+    const row = recorded[1]!.calls.find((c) => c[0] === 'insert')![1] as Record<string, unknown>;
+    expect(row['short_description']).toBeNull();
+    expect(row['description']).toBeNull();
+  });
+
+  it('throws with the database message when the insert errors', async () => {
+    const { db } = fakeDb({ listings: [{ data: [] }, { data: null, error: { message: 'duplicate key' } }] });
+    await expect(insertRealProduct(db, 't1', { name: 'X', priceCents: 1 })).rejects.toThrow(
+      'insertRealProduct failed: duplicate key',
+    );
+  });
+
+  it('throws "no row" when the insert returns neither a row nor an error', async () => {
+    const { db } = fakeDb({ listings: [{ data: [] }, { data: null, error: null }] });
+    await expect(insertRealProduct(db, 't1', { name: 'X', priceCents: 1 })).rejects.toThrow(
+      'insertRealProduct failed: no row',
+    );
+  });
+});
+
+describe('updateRealProduct', () => {
+  it('patches the fields and replaces the photo when a new upload is given', async () => {
+    const { db, recorded } = fakeDb({ listings: [{ error: null }] });
+    await updateRealProduct(db, 't1', 'l1', {
+      name: 'Amber',
+      priceCents: 2600,
+      shortDescription: 'short',
+      description: 'long',
+      uploadId: 'u9',
+    });
+    const calls = recorded[0]!.calls;
+    expect(calls[0]).toEqual([
+      'update',
+      { name: 'Amber', short_description: 'short', description: 'long', base_price_cents: 2600, media_ids: ['u9'] },
+    ]);
+    expect(calls).toContainEqual(['eq', 'tenant_id', 't1']);
+    expect(calls).toContainEqual(['eq', 'id', 'l1']);
+  });
+
+  it('leaves the photo alone and nulls absent descriptions when no upload is given', async () => {
+    const { db, recorded } = fakeDb({ listings: [{ error: null }] });
+    await updateRealProduct(db, 't1', 'l1', { name: 'Amber', priceCents: 2600, uploadId: null });
+    const patch = recorded[0]!.calls[0]![1] as Record<string, unknown>;
+    expect(patch).toEqual({ name: 'Amber', short_description: null, description: null, base_price_cents: 2600 });
+    expect('media_ids' in patch).toBe(false);
+  });
+
+  it('throws with the database message when the update errors', async () => {
+    const { db } = fakeDb({ listings: [{ error: { message: 'rls denied' } }] });
+    await expect(updateRealProduct(db, 't1', 'l1', { name: 'A', priceCents: 1 })).rejects.toThrow(
+      'updateRealProduct failed: rls denied',
+    );
+  });
+});
+
+describe('softDeleteProduct — failure', () => {
+  it('throws with the database message when the update errors', async () => {
+    const { db } = fakeDb({ listings: [{ error: { message: 'boom' } }] });
+    await expect(softDeleteProduct(db, 't1', 'l1')).rejects.toThrow('softDeleteProduct failed: boom');
+  });
+});
+
+describe('loadWalkProducts — fallbacks', () => {
+  it('returns an empty list (and skips the uploads read) when the query returns nothing', async () => {
+    const { db, recorded } = fakeDb({ listings: [{ data: null }] });
+    expect(await loadWalkProducts(db, 't1')).toEqual([]);
+    expect(recorded.some((r) => r.table === 'uploads')).toBe(false);
+  });
+
+  it('dedupes upload ids and falls back to metadata, then null, when an upload does not resolve', async () => {
+    const base = { base_price_cents: 1250, short_description: null, description: null };
+    const { db, recorded } = fakeDb({
+      listings: [
+        {
+          data: [
+            { ...base, id: 'l1', name: 'Gone', metadata: { image_url: 'https://x/legacy.jpg' }, media_ids: ['u1'] },
+            { ...base, id: 'l2', name: 'Bare', metadata: null, media_ids: ['u1'] },
+            { ...base, id: 'l3', name: 'NullMedia', metadata: null, media_ids: null },
+          ],
+        },
+      ],
+      uploads: [{ data: null }],
+    });
+    const out = await loadWalkProducts(db, 't1');
+    expect(out.map((p) => p.imageUrl)).toEqual(['https://x/legacy.jpg', null, null]);
+    expect(out[0]!.price).toBe('$12.50');
+    expect(out[1]!.description).toBe('');
+    const uploadsQuery = recorded.find((r) => r.table === 'uploads')!;
+    expect(uploadsQuery.calls).toContainEqual(['in', 'id', ['u1']]);
   });
 });

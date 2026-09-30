@@ -143,3 +143,106 @@ describe('loadWalkCollections', () => {
     expect(out).toEqual([{ id: 'c1', name: 'Weekend Bakes', description: 'desc', productIds: ['l1', 'l2'] }]);
   });
 });
+
+describe('hasRealCollections / hasPlaceholderCollections — null count', () => {
+  it('treats a missing count as zero for both checks', async () => {
+    const { db } = fakeDb({ collections: [{ data: null }, { data: null }] });
+    expect(await hasRealCollections(db, 't1')).toBe(false);
+    expect(await hasPlaceholderCollections(db, 't1')).toBe(false);
+  });
+});
+
+describe('clearPlaceholderCollections — null result', () => {
+  it('treats a null seeded list as none: no detach, still soft-deletes', async () => {
+    const { db, recorded } = fakeDb({ collections: [{ data: null }, { error: null }] });
+    await clearPlaceholderCollections(db, 't1');
+    expect(recorded.some((r) => r.table === 'listings')).toBe(false);
+    expect(recorded.filter((r) => r.table === 'collections')[1]!.calls[0]![0]).toBe('update');
+  });
+});
+
+describe('createCollection — slugs, empty sets, failures', () => {
+  it('picks the first free numeric suffix when the slug is taken', async () => {
+    const { db, recorded } = fakeDb({
+      collections: [
+        { data: [{ slug: 'weekend-bakes' }, { slug: 'weekend-bakes-2' }] },
+        { data: { id: 'c2', slug: 'weekend-bakes-3' } },
+      ],
+    });
+    await createCollection(db, 't1', { name: 'Weekend Bakes', description: 'Fresh', productIds: [] });
+    const row = recorded[1]!.calls.find((c) => c[0] === 'insert')![1] as Record<string, unknown>;
+    expect(row['slug']).toBe('weekend-bakes-3');
+    expect(row['description']).toBe('Fresh');
+    // No products → no assignment write at all.
+    expect(recorded.some((r) => r.table === 'listings')).toBe(false);
+  });
+
+  it('treats a null slug list as no taken slugs and stores a missing description as null', async () => {
+    const { db, recorded } = fakeDb({
+      collections: [{ data: null }, { data: { id: 'c3', slug: 'gifts' } }],
+    });
+    await createCollection(db, 't1', { name: 'Gifts', productIds: [] });
+    const row = recorded[1]!.calls.find((c) => c[0] === 'insert')![1] as Record<string, unknown>;
+    expect(row['slug']).toBe('gifts');
+    expect(row['description']).toBeNull();
+  });
+
+  it('throws with the database message when the insert errors', async () => {
+    const { db } = fakeDb({ collections: [{ data: [] }, { data: null, error: { message: 'dup' } }] });
+    await expect(createCollection(db, 't1', { name: 'X', productIds: ['l1'] })).rejects.toThrow(
+      'createCollection failed: dup',
+    );
+  });
+
+  it('throws "no row" when the insert returns neither a row nor an error', async () => {
+    const { db, recorded } = fakeDb({ collections: [{ data: [] }, { data: null, error: null }] });
+    await expect(createCollection(db, 't1', { name: 'X', productIds: ['l1'] })).rejects.toThrow(
+      'createCollection failed: no row',
+    );
+    expect(recorded.some((r) => r.table === 'listings')).toBe(false);
+  });
+});
+
+describe('updateCollection — edge cases', () => {
+  it('stores a null description and only detaches when no products remain', async () => {
+    const { db, recorded } = fakeDb({ collections: [{ error: null }], listings: [{ error: null }] });
+    await updateCollection(db, 't1', 'c1', { name: 'Empty', productIds: [] });
+    const patch = recorded.find((r) => r.table === 'collections')!.calls[0]![1];
+    expect(patch).toEqual({ name: 'Empty', description: null });
+    const listingUpdates = recorded.filter((r) => r.table === 'listings');
+    expect(listingUpdates).toHaveLength(1);
+    expect(listingUpdates[0]!.calls).toContainEqual(['eq', 'primary_collection_id', 'c1']);
+  });
+
+  it('throws before touching products when the update errors', async () => {
+    const { db, recorded } = fakeDb({ collections: [{ error: { message: 'denied' } }] });
+    await expect(updateCollection(db, 't1', 'c1', { name: 'X', productIds: ['l1'] })).rejects.toThrow(
+      'updateCollection failed: denied',
+    );
+    expect(recorded.some((r) => r.table === 'listings')).toBe(false);
+  });
+});
+
+describe('deleteCollection — failure', () => {
+  it('throws with the database message when the soft-delete errors', async () => {
+    const { db } = fakeDb({ listings: [{ error: null }], collections: [{ error: { message: 'nope' } }] });
+    await expect(deleteCollection(db, 't1', 'c1')).rejects.toThrow('deleteCollection failed: nope');
+  });
+});
+
+describe('loadWalkCollections — fallbacks', () => {
+  it('returns [] when there are no collections', async () => {
+    const { db } = fakeDb({ collections: [{ data: null }], listings: [{ data: null }] });
+    expect(await loadWalkCollections(db, 't1')).toEqual([]);
+  });
+
+  it('gives an empty description and no products to a collection with none', async () => {
+    const { db } = fakeDb({
+      collections: [{ data: [{ id: 'c1', name: 'Solo', description: null }] }],
+      listings: [{ data: null }],
+    });
+    expect(await loadWalkCollections(db, 't1')).toEqual([
+      { id: 'c1', name: 'Solo', description: '', productIds: [] },
+    ]);
+  });
+});

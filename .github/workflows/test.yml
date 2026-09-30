@@ -20,7 +20,6 @@ jobs:
       RESEND_API_KEY: ci-dummy-resend-key
       RESEND_FROM_EMAIL: ci@bohdiai.com
       SITE_URL: http://localhost:3100
-      FOUNDER_CAP: '25'
       BOHDIAI_ANTHROPIC_KEY: ci-dummy-anthropic-key
       FAL_API_KEY: ci-dummy-fal-key
       NEXT_PUBLIC_SUPABASE_URL: https://ci.supabase.co

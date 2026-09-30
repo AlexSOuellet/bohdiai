@@ -98,3 +98,11 @@ describe('renderLegalHtml', () => {
     expect(html).toBe('<h1>Title</h1>\n<h2>Section</h2>\n<p>A paragraph.</p>\n<p>Another.</p>');
   });
 });
+
+describe('renderLegalHtml — headings end paragraphs', () => {
+  it('closes an open paragraph before an h1 or h2', () => {
+    expect(renderLegalHtml('Intro line\n# Title\nBody\n## Part\nMore')).toBe(
+      '<p>Intro line</p>\n<h1>Title</h1>\n<p>Body</p>\n<h2>Part</h2>\n<p>More</p>',
+    );
+  });
+});

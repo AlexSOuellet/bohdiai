@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { logger } from '@/lib/logger';
 
 // ── Mock SDK + helpers (mirrors lib/fal.test.ts) ──────────────────────────────
 
@@ -9,8 +10,9 @@ vi.mock('@fal-ai/client', () => ({
   createFalClient: (...args: unknown[]) => createFalClientSpy(...(args as [])),
 }));
 
+const envState = vi.hoisted(() => ({ falKey: 'fal-test-key' as string | undefined }));
 vi.mock('@/lib/env', () => ({
-  serverEnv: () => ({ FAL_API_KEY: 'fal-test-key' }),
+  serverEnv: () => ({ FAL_API_KEY: envState.falKey }),
 }));
 
 const uploadMock = vi.fn();
@@ -26,6 +28,7 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 beforeEach(() => {
+  envState.falKey = 'fal-test-key';
   subscribeMock.mockReset();
   createFalClientSpy.mockClear();
   uploadMock.mockReset();
@@ -136,5 +139,67 @@ describe('moment media AbortSignal wiring', () => {
     await generateMomentVideo('x', { subdomain: 'sub' });
     const [, opts] = subscribeMock.mock.calls[0]! as [string, { abortSignal?: AbortSignal }];
     expect(opts.abortSignal).toBeInstanceOf(AbortSignal);
+  });
+});
+
+describe('moment media — fallbacks that never lose the asset', () => {
+  it('returns null (and never calls fal) when the FAL key is not configured', async () => {
+    envState.falKey = undefined;
+    const { generateMomentStill, generateMomentVideo } = await import('./media');
+    expect(await generateMomentStill('x', { subdomain: 'sub' })).toBeNull();
+    expect(await generateMomentVideo('x', { subdomain: 'sub' })).toBeNull();
+    expect(createFalClientSpy).not.toHaveBeenCalled();
+    expect(vi.mocked(logger.error)).toHaveBeenCalledWith(
+      'moment media: still generation failed',
+      expect.objectContaining({ error: expect.stringContaining('FAL_API_KEY') }),
+    );
+  });
+
+  it('returns null when the still response carries no image', async () => {
+    subscribeMock.mockResolvedValue({ data: { images: [] } });
+    const { generateMomentStill } = await import('./media');
+    expect(await generateMomentStill('x', { subdomain: 'sub' })).toBeNull();
+    subscribeMock.mockResolvedValue({ data: {} });
+    expect(await generateMomentStill('x', { subdomain: 'sub' })).toBeNull();
+    expect(uploadMock).not.toHaveBeenCalled();
+  });
+
+  it('defaults a still with no aspect to landscape and stores it under the shop path as a jpeg', async () => {
+    subscribeMock.mockResolvedValue({ data: { images: [{ url: 'https://fal.cdn/s.jpg' }] } });
+    const { generateMomentStill } = await import('./media');
+    await generateMomentStill('x', { subdomain: 'lumen/hero' });
+    expect(subscribeMock.mock.calls[0]![1].input.image_size).toBe('landscape_16_9');
+    expect(storageFromMock).toHaveBeenCalledWith('generated-images');
+    const [path, , opts] = uploadMock.mock.calls[0]!;
+    expect(path).toBe('moment-media/lumen/hero/still.jpg');
+    expect(opts).toEqual({ contentType: 'image/jpeg', upsert: true });
+  });
+
+  it('maps a portrait aspect to portrait_16_9 for stills', async () => {
+    subscribeMock.mockResolvedValue({ data: { images: [{ url: 'https://fal.cdn/s.jpg' }] } });
+    const { generateMomentStill } = await import('./media');
+    await generateMomentStill('x', { subdomain: 'sub', aspect: '9:16' });
+    expect(subscribeMock.mock.calls[0]![1].input.image_size).toBe('portrait_16_9');
+  });
+
+  it('falls back to the provider URL when downloading the generated asset fails', async () => {
+    subscribeMock.mockResolvedValue({ data: { video: { url: 'https://fal.cdn/clip.mp4' } } });
+    globalThis.fetch = vi.fn(async () => new Response(null, { status: 502 })) as unknown as typeof fetch;
+    const { generateMomentVideo } = await import('./media');
+    expect(await generateMomentVideo('x', { subdomain: 'sub' })).toBe('https://fal.cdn/clip.mp4');
+    expect(uploadMock).not.toHaveBeenCalled();
+    expect(vi.mocked(logger.warn)).toHaveBeenCalledWith('moment media: download failed, using direct URL', { status: 502 });
+  });
+
+  it('falls back to the provider URL when the storage upload fails', async () => {
+    subscribeMock.mockResolvedValue({ data: { video: { url: 'https://fal.cdn/clip.mp4' } } });
+    uploadMock.mockResolvedValue({ error: { message: 'bucket full' } });
+    const { generateMomentVideo } = await import('./media');
+    expect(await generateMomentVideo('x', { subdomain: 'sub', aspect: '9:16' })).toBe('https://fal.cdn/clip.mp4');
+    const [path, , opts] = uploadMock.mock.calls[0]!;
+    expect(path).toBe('moment-media/sub/clip.mp4');
+    expect(opts).toEqual({ contentType: 'video/mp4', upsert: true });
+    expect(getPublicUrlMock).not.toHaveBeenCalled();
+    expect(vi.mocked(logger.warn)).toHaveBeenCalledWith('moment media: storage upload failed, using direct URL', { error: 'bucket full' });
   });
 });

@@ -26,6 +26,7 @@ vi.mock('@/lib/supabase', () => ({
 }));
 
 import { writeArchetypeStorefront, publishArchetypeStorefront } from './write-archetype-storefront';
+import type { ProductView } from '@/lib/archetypes/content';
 
 const base = {
   subdomain: 'x',
@@ -160,5 +161,81 @@ describe('publishArchetypeStorefront — the flip', () => {
   it('throws if the flip fails (so the caller can surface it)', async () => {
     tenantUpdateEq.mockResolvedValue({ error: { message: 'simulated publish failure' } });
     await expect(publishArchetypeStorefront('tn_1')).rejects.toThrow(/tenant publish.*failed/);
+  });
+});
+
+describe('writeArchetypeStorefront — tenant row + failures', () => {
+  const niche = { primaryNiche: 'candles', nicheFromList: true, nicheDescription: null };
+
+  it('falls back to a seller tenant when no tenant types are given', async () => {
+    await writeArchetypeStorefront({ ...base, ...niche, tenantTypes: [] });
+    expect((tenantInsert.mock.calls[0]![0] as Record<string, unknown>)['types']).toEqual(['seller']);
+  });
+
+  it('keeps the given tenant types when there are some', async () => {
+    await writeArchetypeStorefront({ ...base, ...niche, tenantTypes: ['seller', 'service'] });
+    expect((tenantInsert.mock.calls[0]![0] as Record<string, unknown>)['types']).toEqual(['seller', 'service']);
+  });
+
+  it('throws with the database message when the tenant insert fails, writing nothing else', async () => {
+    tenantInsert.mockReturnValue({
+      select: () => ({ single: () => Promise.resolve({ data: null, error: { message: 'subdomain taken' } }) }),
+    });
+    await expect(writeArchetypeStorefront({ ...base, ...niche })).rejects.toThrow(/tenant insert failed — subdomain taken/);
+    expect(pageInsert).not.toHaveBeenCalled();
+  });
+
+  it('throws "no id" when the tenant insert returns no row and no error', async () => {
+    tenantInsert.mockReturnValue({ select: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) });
+    await expect(writeArchetypeStorefront({ ...base, ...niche })).rejects.toThrow(/tenant insert failed — no id/);
+  });
+
+  it('writes the home page envelope and returns the new tenant id', async () => {
+    const res = await writeArchetypeStorefront({ ...base, ...niche, content: { shopName: 'X Shop' } });
+    expect(res).toEqual({ tenantId: 'tn_1', subdomain: 'x' });
+    const page = pageInsert.mock.calls[0]![0] as { tenant_id: string; slug: string; layout_tree: { root: Record<string, unknown>; meta: unknown } };
+    expect(page.tenant_id).toBe('tn_1');
+    expect(page.slug).toBe('/');
+    expect(page.layout_tree.root).toMatchObject({
+      kind: 'archetype',
+      archetypeKey: 'main-street',
+      lookKey: 'main-street-ember',
+      mood: 'modern',
+      catalogSize: 3,
+      content: { shopName: 'X Shop' },
+    });
+    expect(page.layout_tree.meta).toEqual({ title: 'X Shop' });
+    expect(listingInsert).not.toHaveBeenCalled(); // no products → no listing write
+  });
+});
+
+describe('writeArchetypeStorefront — listing rows', () => {
+  const niche = { primaryNiche: 'candles', nicheFromList: true, nicheDescription: null };
+  const product = (over: Partial<ProductView>): ProductView => ({
+    name: 'Candle',
+    slug: 'candle',
+    description: 'a hand-poured candle',
+    price: '$28',
+    media: [{ url: 'https://x/y.jpg', kind: 'image', alt: 'a candle' }],
+    status: 'active',
+    variations: [],
+    ...over,
+  });
+
+  it('parses the display price to cents, nulls a missing short description, and blanks a missing image', async () => {
+    await writeArchetypeStorefront({
+      ...base,
+      ...niche,
+      products: [
+        product({ slug: 'a', price: '$28', shortDescription: 'short' }),
+        product({ slug: 'b', price: 'from $12.50', media: [] }),
+        product({ slug: 'c', price: 'Ask for a quote' }),
+      ],
+    });
+    const rows = listingInsert.mock.calls[0]![0] as Array<Record<string, unknown>>;
+    expect(rows.map((r) => r['base_price_cents'])).toEqual([2800, 1250, 0]);
+    expect(rows.map((r) => r['short_description'])).toEqual(['short', null, null]);
+    expect(rows.map((r) => (r['metadata'] as { image_url: string }).image_url)).toEqual(['https://x/y.jpg', '', 'https://x/y.jpg']);
+    expect(rows.every((r) => r['tenant_id'] === 'tn_1' && r['is_preview'] === true && r['listing_type'] === 'product')).toBe(true);
   });
 });

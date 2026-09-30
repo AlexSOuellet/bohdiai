@@ -41,6 +41,17 @@ describe('draftProductCopy', () => {
     expect(out).toEqual({ shortDescription: 'Just the line' });
   });
 
+  it('drops blank or non-string values the runner hands back', async () => {
+    const run = vi.fn().mockResolvedValue({
+      values: { 'product.shortDescription': '', 'product.description': 'Only the body' },
+    });
+    expect(await draftProductCopy({ name: 'X', hint: '', niche }, run)).toEqual({ description: 'Only the body' });
+    const run2 = vi.fn().mockResolvedValue({
+      values: { 'product.shortDescription': 42, 'product.description': '' },
+    });
+    expect(await draftProductCopy({ name: 'X', hint: '', niche }, run2)).toEqual({});
+  });
+
   it('propagates a runner error for the caller to translate', async () => {
     const run = vi.fn().mockRejectedValue(new Error('model down'));
     await expect(draftProductCopy({ name: 'X', hint: '', niche }, run)).rejects.toThrow('model down');

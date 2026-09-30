@@ -100,3 +100,38 @@ describe('composeInquiryEmail — phone', () => {
     expect(e.subject).toBe('New project: Pat Doe (Maker) · prefers a text');
   });
 });
+
+describe('parseInquiry — missing fields', () => {
+  it('treats absent name, email and message as blank (first error is the name)', () => {
+    expect(parseInquiry({ kind: 'maker' })).toEqual({ kind: 'invalid', error: 'Please add your name.' });
+    expect(parseInquiry({ name: 'Pat', kind: 'maker', message: 'hi' })).toEqual({
+      kind: 'invalid',
+      error: 'That email doesn’t look right.',
+    });
+    expect(parseInquiry({ name: 'Pat', email: 'pat@example.com', kind: 'maker' })).toEqual({
+      kind: 'invalid',
+      error: 'Tell me a little about what you need.',
+    });
+  });
+
+  it('treats a blank way-to-reach as the email default', () => {
+    const r = parseInquiry({ ...good, contactBy: '' });
+    expect(r.kind === 'ok' && r.fields.contactBy).toBe('email');
+  });
+
+  it('ignores a whitespace-only honeypot', () => {
+    expect(parseInquiry({ ...good, company: '   ' }).kind).toBe('ok');
+  });
+});
+
+describe('composeInquiryEmail — no link, phone call', () => {
+  it('shows a dash for a missing link and names a phone-call preference', () => {
+    const r = parseInquiry({ name: 'Pat', email: 'pat@example.com', kind: 'charity', message: 'a\nb', phone: '401 555 0100', contactBy: 'call' });
+    if (r.kind !== 'ok') throw new Error('expected ok');
+    const e = composeInquiryEmail(r.fields);
+    expect(e.subject).toBe('New project: Pat (Charity or cause) · prefers a call');
+    expect(e.text).toContain('Link: —');
+    expect(e.text).toContain('Best way to reach: Phone call');
+    expect(e.html).toContain('a<br />b');
+  });
+});
