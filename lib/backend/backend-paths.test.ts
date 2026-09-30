@@ -1,0 +1,34 @@
+import { describe, it, expect } from 'vitest';
+import { isBackendPath, backendRedirect } from './backend-paths';
+
+describe('isBackendPath', () => {
+  it.each(['/signin', '/forgot-password', '/auth/confirm', '/auth/error', '/manage', '/manage/set-password'])('%s is a backend path', (p) => {
+    expect(isBackendPath(p)).toBe(true);
+  });
+  it.each(['/', '/shop', '/manager', '/signing', '/authors', '/dashboard'])('%s is not', (p) => {
+    expect(isBackendPath(p)).toBe(false);
+  });
+});
+
+describe('backendRedirect', () => {
+  const url = (s: string) => new URL(s);
+  it('sends a backend path on a shop host to the app host, keeping path and query', () => {
+    expect(backendRedirect('classic-loafs.bohdiai.com', url('https://classic-loafs.bohdiai.com/signin?next=%2Fmanage'))).toBe(
+      'https://app.bohdiai.com/signin?next=%2Fmanage',
+    );
+  });
+  it('does the same from the marketing apex', () => {
+    expect(backendRedirect('bohdiai.com', url('https://bohdiai.com/manage'))).toBe('https://app.bohdiai.com/manage');
+  });
+  it('works for local dev hosts', () => {
+    expect(backendRedirect('classic-loafs.localhost:3000', url('http://classic-loafs.localhost:3000/signin'))).toBe(
+      'http://app.localhost:3000/signin',
+    );
+  });
+  it('leaves the app host alone', () => {
+    expect(backendRedirect('app.bohdiai.com', url('https://app.bohdiai.com/signin'))).toBeNull();
+  });
+  it('leaves non-backend paths alone', () => {
+    expect(backendRedirect('classic-loafs.bohdiai.com', url('https://classic-loafs.bohdiai.com/shop'))).toBeNull();
+  });
+});
