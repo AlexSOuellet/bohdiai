@@ -25,7 +25,7 @@ vi.mock('@/lib/auth/membership', () => ({ getUserShops }));
 vi.mock('./user-lookup', () => ({ findUserByEmail }));
 vi.mock('next/navigation', () => ({ redirect: vi.fn((p: string) => { throw new Error(`REDIRECT ${p}`); }) }));
 
-import { signIn, requestPasswordReset, setPassword } from './auth-actions';
+import { signIn, signOut as signOutAction, requestPasswordReset, setPassword } from './auth-actions';
 import { RESET_SENT } from './auth-messages';
 
 beforeEach(() => {
@@ -159,5 +159,13 @@ describe('setPassword', () => {
   it('maps a missing session at save time to the same message', async () => {
     updateUser.mockResolvedValue({ error: { message: 'Auth session missing!', name: 'AuthSessionMissingError' } });
     expect(await setPassword({ password: 'longenough1', confirm: 'longenough1' })).toEqual({ ok: false, error: LINK_AGAIN });
+  });
+});
+
+describe('signOut', () => {
+  it('ends only this device’s session and returns to sign-in', async () => {
+    signOut.mockResolvedValue({ error: null });
+    await expect(signOutAction()).rejects.toThrow('REDIRECT /signin');
+    expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
   });
 });

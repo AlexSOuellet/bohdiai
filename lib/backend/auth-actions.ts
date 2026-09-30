@@ -64,7 +64,8 @@ export async function signIn(input: { email: string; password: string }): Promis
 
 export async function signOut(): Promise<void> {
   const supabase = await createSupabaseServerClient();
-  await supabase.auth.signOut();
+  // Local scope: end this device's session only, not the person's other devices.
+  await supabase.auth.signOut({ scope: 'local' });
   redirect('/signin');
 }
 
