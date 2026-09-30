@@ -75,6 +75,8 @@ const DORMANT_PREFIXES = [
   '/dashboard',
   '/api/library',
   '/archetype-test',
+  // OAuth/PKCE code exchange: sign-in is password + emailed link only (spec §1).
+  '/auth/callback',
 ] as const;
 
 /** True when `pathname` is, or sits under, a switched-off surface (whole segments only). */

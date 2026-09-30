@@ -135,13 +135,14 @@ describe('isDormantPath', () => {
       '/api/library/ingest',
       '/archetype-test/main-street',
       '/archetype-test/main-street/shop',
+      '/auth/callback',
     ]) {
       expect(isDormantPath(path), path).toBe(true);
     }
   });
 
   it('has the sign-in and backend paths live again', () => {
-    for (const path of ['/signin', '/auth/confirm', '/auth/callback', '/manage', '/forgot-password']) {
+    for (const path of ['/signin', '/auth/confirm', '/auth/continue', '/auth/error', '/manage', '/forgot-password']) {
       expect(isDormantPath(path), path).toBe(false);
     }
   });
