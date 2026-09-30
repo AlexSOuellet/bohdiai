@@ -5,7 +5,6 @@
  * a solid nav header (not the hero's over-media nav), and the footer. Structure
  * only — colors are skin vars, fonts are named roles, nothing niche or hardcoded.
  */
-import { ownerSignInHref } from '@/lib/backend/owner-sign-in-url';
 import type { ReactNode } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
@@ -47,7 +46,7 @@ export function MainStreetSubPage({ content, skin, children, current, family }: 
     <MainStreetRoot skin={skin} family={family}>
       <SubHeader content={content} skin={skin} current={current} />
       <main className="ms-subpage-main">{children}</main>
-      <MainStreetFooter shopName={content.shopName} ownerSignInHref={ownerSignInHref()} />
+      <MainStreetFooter shopName={content.shopName} />
     </MainStreetRoot>
   );
 }

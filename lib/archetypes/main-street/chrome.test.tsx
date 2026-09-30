@@ -270,20 +270,20 @@ describe('Nav — split-center variant', () => {
 });
 
 describe('MainStreetFooter', () => {
-
-  it('links shop owners to the backend sign-in', () => {
-    const { getByRole } = render(<MainStreetFooter shopName="Classic Loafs" ownerSignInHref="https://app.bohdiai.com/signin" />);
-    expect(getByRole('link', { name: 'Shop owner sign-in' })).toHaveAttribute('href', 'https://app.bohdiai.com/signin');
+  it('shows shoppers no owner sign-in link (owners use /admin)', () => {
+    const { container } = render(<MainStreetFooter shopName="Classic Loafs" />);
+    expect(container.querySelector('a[href*="signin"]')).toBeNull();
   });
+
   it('renders the shop name and the platform-guaranteed legal links', () => {
-    const { getByText, container } = render(<MainStreetFooter shopName="June's Sourdough" ownerSignInHref="https://app.bohdiai.com/signin" />);
+    const { getByText, container } = render(<MainStreetFooter shopName="June's Sourdough" />);
     expect(getByText("June's Sourdough")).toBeTruthy();
     const links = Array.from(container.querySelectorAll('a')).map((a) => a.textContent);
     expect(links).toEqual(expect.arrayContaining(['Home', 'Privacy', 'Terms']));
   });
 
   it('does NOT link the standalone testimonials page (disabled for now — reviews live on the home sampling)', () => {
-    const { container } = render(<MainStreetFooter shopName="June's Sourdough" ownerSignInHref="https://app.bohdiai.com/signin" />);
+    const { container } = render(<MainStreetFooter shopName="June's Sourdough" />);
     const hrefs = Array.from(container.querySelectorAll('a')).map((a) => a.getAttribute('href'));
     expect(hrefs).not.toContain('/testimonials');
   });

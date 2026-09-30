@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isBackendPath, backendRedirect } from './backend-paths';
+import { isBackendPath, backendRedirect, ownerEntryRedirect } from './backend-paths';
 
 describe('isBackendPath', () => {
   it.each(['/signin', '/forgot-password', '/auth/confirm', '/auth/continue', '/auth/error', '/manage', '/manage/set-password'])('%s is a backend path', (p) => {
@@ -34,5 +34,24 @@ describe('backendRedirect', () => {
   });
   it('leaves non-backend paths alone', () => {
     expect(backendRedirect('classic-loafs.bohdiai.com', url('https://classic-loafs.bohdiai.com/shop'), base)).toBeNull();
+  });
+});
+
+describe('ownerEntryRedirect', () => {
+  const url = (s: string) => new URL(s);
+  const APP = 'https://app.bohdiai.com';
+  it('sends /admin on a shop to the backend', () => {
+    expect(ownerEntryRedirect('classic-loafs.bohdiai.com', url('https://classic-loafs.bohdiai.com/admin'), APP, true)).toBe('https://app.bohdiai.com/manage');
+    expect(ownerEntryRedirect('classic-loafs.bohdiai.com', url('https://classic-loafs.bohdiai.com/admin/'), APP, true)).toBe('https://app.bohdiai.com/manage');
+  });
+  it('works on a local shop host', () => {
+    expect(ownerEntryRedirect('classic-loafs.localhost:3000', url('http://classic-loafs.localhost:3000/admin'), APP, true)).toBe('http://app.localhost:3000/manage');
+  });
+  it('leaves other paths alone', () => {
+    expect(ownerEntryRedirect('classic-loafs.bohdiai.com', url('https://classic-loafs.bohdiai.com/administrator'), APP, true)).toBeNull();
+    expect(ownerEntryRedirect('classic-loafs.bohdiai.com', url('https://classic-loafs.bohdiai.com/shop'), APP, true)).toBeNull();
+  });
+  it('leaves non-shop hosts alone', () => {
+    expect(ownerEntryRedirect('bohdiai.com', url('https://bohdiai.com/admin'), APP, false)).toBeNull();
   });
 });

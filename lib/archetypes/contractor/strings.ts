@@ -46,6 +46,5 @@ export const CONTRACTOR_STRINGS = {
   footer: {
     privacy: 'Privacy',
     rights: 'All rights reserved.',
-    ownerSignIn: 'Owner sign-in',
   },
 } as const;

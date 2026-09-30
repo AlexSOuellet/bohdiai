@@ -24,11 +24,9 @@ describe('contractor landing page', () => {
     expect(container.innerHTML).toContain('--cp-bg:#101210');
   });
 
-  it('links the owner sign-in in the footer', () => {
+  it('shows shoppers no owner sign-in link (owners use /admin)', () => {
     const { container } = page();
-    const link = screen.getByRole('link', { name: CONTRACTOR_STRINGS.footer.ownerSignIn });
-    expect(link.getAttribute('href')).toMatch(/^https?:\/\/app\..+\/signin$/);
-    expect(container.querySelector('.cp-foot__row')?.contains(link)).toBe(true);
+    expect(container.querySelector('a[href*="signin"]')).toBeNull();
   });
 
   it('puts a dialable phone link in the header, hero, estimate block and thumb bar', () => {

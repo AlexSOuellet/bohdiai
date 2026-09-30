@@ -56,7 +56,6 @@ export const DEFAULT_STRINGS = {
   footerTestimonials: 'Testimonials',
   footerPrivacy: 'Privacy',
   footerTerms: 'Terms',
-  footerOwnerSignIn: 'Shop owner sign-in',
 
   // ─── Fallback link labels ─────────────────────────────────────────────────
   /** GoodsBeat "see everything" cue when the copywriter didn't author one. */

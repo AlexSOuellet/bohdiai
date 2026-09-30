@@ -4,7 +4,7 @@ import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 import { sanitizeTenantHeaders, isUnreachableStorefrontPath, requestHost, isAppHost, isDormantPath, tenantLookupUrl, apexRedirect } from '@/lib/proxy-security';
 import { appOrigin } from '@/lib/backend/app-url';
-import { backendRedirect, isBackendPath } from '@/lib/backend/backend-paths';
+import { backendRedirect, isBackendPath, ownerEntryRedirect } from '@/lib/backend/backend-paths';
 
 const RESERVED = new Set(['www', 'admin', 'app', 'learn']);
 const BASE_DOMAIN = 'bohdiai.com';
@@ -38,8 +38,14 @@ export async function middleware(request: NextRequest) {
   // Sign-in, password setup and the backend live only on the app host; every
   // other host sends those paths there (spec §1 — the session cookie stays on
   // app.bohdiai.com).
-  const toApp = backendRedirect(hostname, request.nextUrl, appOrigin(process.env['SITE_URL'] ?? 'https://bohdiai.com'));
+  const appBase = appOrigin(process.env['SITE_URL'] || 'https://bohdiai.com');
+  const toApp = backendRedirect(hostname, request.nextUrl, appBase);
   if (toApp !== null) return NextResponse.redirect(toApp, 307);
+
+  // An owner reaches their backend by typing /admin on their own site (no
+  // visible link — shoppers never see it).
+  const toSignIn = ownerEntryRedirect(hostname, request.nextUrl, appBase, subdomain !== null);
+  if (toSignIn !== null) return NextResponse.redirect(toSignIn, 307);
 
   // The backend lives on app.bohdiai.com under /manage/*. Land the bare app
   // root on the backend home so app.bohdiai.com isn't the marketing page.

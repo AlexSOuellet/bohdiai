@@ -6,7 +6,6 @@
  */
 import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
-import { ownerSignInHref } from '@/lib/backend/owner-sign-in-url';
 import type { DerivedPalette } from '@/lib/color/brand-palette';
 import type { ContractorContent, ContractorMedia } from './schemas';
 import { contractorCss, CONTRACTOR_FONTS_HREF } from './styles';
@@ -73,7 +72,6 @@ export function ContractorShell({ content: c, palette, children }: { content: Co
   const b = c.business;
   const tel = `tel:${b.phoneDial}`;
   const year = new Date().getFullYear();
-  const ownerLink = ownerSignInHref();
   return (
     <>
       <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -109,7 +107,6 @@ export function ContractorShell({ content: c, palette, children }: { content: Co
               <span>{S.serving} {b.serviceArea.join(' · ')}</span>
               <a href={tel}>{b.phone}</a>
               <a href="/privacy">{S.footer.privacy}</a>
-              <a href={ownerLink} rel="nofollow">{S.footer.ownerSignIn}</a>
             </div>
           </div>
         </footer>

@@ -19,7 +19,7 @@ A maker signs in at `app.bohdiai.com`, lands on a home screen for their shop, an
 - **No public sign-up.** Alex (by a script Claude runs, until Alex's admin exists) creates the maker's account: an auth user, a `tenant_members` row with `role = 'admin'` for their shop, and an invite email (sent through Resend, from BohdiAI) with a one-time link to set their password. The set-password step only ever runs through that emailed link — never a cold "type a new password" form, so knowing a maker's email is not enough to take the account.
 - **Sign-in:** email + password at `app.bohdiai.com/signin`, with "forgot password" (emailed reset link). The existing sign-in code (`lib/auth/actions.ts`, `app/signin`, `app/auth/callback`) is the starting point; `signUpMaker` and the public sign-up path stay unreachable. Google sign-in (`lib/auth/oauth.ts`) stays off.
 - **Access rule:** a signed-in user sees the backend for a shop only if they hold an active `admin` membership in `tenant_members` for it. Every server action re-checks that membership for the shop it writes to; the browser is never trusted with the tenant id. A user with several shops gets a shop picker.
-- **Reaching it from the shop:** every shop gets a small "Shop owner sign-in" link (footer) to `app.bohdiai.com/signin`. The string goes through the renderer's defaults map like every other storefront string.
+- **Reaching it from the shop:** no visible link (Alex, 2026-09-30 — a footer link was tried and rejected; shoppers shouldn't see a back door). The owner types `/admin` on their own site (`yourshop.bohdiai.com/admin`, later `yourshop.com/admin`), which redirects to `app.bohdiai.com/manage` (sign-in first when signed out) — the Shopify pattern. Emails and bookmarks link straight in.
 - **Sign-in is rate-limited** through the existing Workers Rate Limiting binding (fails closed), like the public forms.
 - **Kept separate from customers:** nothing here assumes shoppers will share this sign-in. Customer accounts (piece 3) decide their own model later.
 - **Switched-off surfaces:** `/signin` and `/auth` come off the dormant list. The old maker dashboard, the editor and the Make It Yours walk stay dormant; the new backend does not reuse their screens. (Route layout — reusing `/dashboard` or a new prefix — is a plan decision; whichever is chosen, the old editor/walk routes remain unreachable.)
@@ -106,7 +106,7 @@ So that what the maker edits is what shoppers see:
 - product pages show several photos and the video, the options as pickers (with each combination's price and sold-out state), and the right price from the one price function;
 - draft and archived products and collections never render;
 - collections read from `listing_collections`, in the maker's order;
-- the "Shop owner sign-in" footer link.
+- `/admin` on every shop host redirects to the backend (no visible link).
 
 All renderer rules hold: no hardcoded English (defaults map), no inline styles (CSS variables + classes), and content only — the family/layout still owns structure. The "Add to cart" behaviour stays as it is until piece 2.
 

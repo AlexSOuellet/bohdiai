@@ -56,7 +56,7 @@ Typical mixes:
 
 ## Where it lives
 
-`app.bohdiai.com`. One sign-in for every client. Makers reach it from a "Shop owner sign-in" link on their own shop, and every email BohdiAI sends them links straight in. Shoppers never go there.
+`app.bohdiai.com`. One sign-in for every client. Makers reach it by typing `/admin` on their own site (no visible link — the Shopify pattern), and every email BohdiAI sends them links straight in. Shoppers never go there.
 
 ## The five pieces (built in order, each finished before the next)
 
