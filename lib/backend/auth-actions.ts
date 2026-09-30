@@ -19,10 +19,10 @@ import { allowAction, allowKey, ACTION_LIMITED, ACTION_UNAVAILABLE } from './act
 import { sendAuthLink } from './auth-links';
 import { findUserByEmail } from './user-lookup';
 import { appOrigin } from './app-url';
+import { RESET_SENT } from './auth-messages';
 
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
-export const RESET_SENT = 'If that email belongs to a site owner, a reset link is on its way. Check your inbox.';
 const MIN_PASSWORD = 10;
 const BACKEND_HOME = '/manage';
 

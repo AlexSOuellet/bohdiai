@@ -83,3 +83,19 @@ describe('POST /auth/confirm', () => {
     expect((await POST(req)).headers.get('location')).toBe('https://app.bohdiai.com/manage/set-password');
   });
 });
+
+describe('private headers', () => {
+  const expectPrivate = (res: Response) => {
+    expect(res.headers.get('referrer-policy')).toBe('no-referrer');
+    expect(res.headers.get('cache-control')).toBe('no-store');
+  };
+  it('GET redirects carry no-referrer and no-store', async () => {
+    expectPrivate(await GET(get('?token_hash=t&type=invite')));
+    expectPrivate(await GET(get('')));
+  });
+  it('POST redirects carry them too', async () => {
+    verifyOtp.mockResolvedValue({ error: null });
+    expectPrivate(await POST(post({ token_hash: 't', type: 'invite' })));
+    expectPrivate(await POST(post({})));
+  });
+});

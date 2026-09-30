@@ -20,16 +20,16 @@ export default async function ManageHome(): Promise<React.ReactElement> {
           <section className="bk-attention" aria-labelledby="bk-attn">
             <p id="bk-attn" className="bk-kicker">Needs attention</p>
             <ul className="bk-attention-list">
-              {home.attention.map((line) => (
-                <li key={line}>{line}</li>
+              {home.attention.map((line, i) => (
+                <li key={`${i}-${line}`}>{line}</li>
               ))}
             </ul>
           </section>
         )}
         {home.tiles.length > 0 ? (
           <div className="bk-tiles">
-            {home.tiles.map((t) => (
-              <StatTile key={t.label} label={t.label} value={t.value} {...(t.note !== undefined ? { note: t.note } : {})} />
+            {home.tiles.map((t, i) => (
+              <StatTile key={`${i}-${t.label}`} label={t.label} value={t.value} {...(t.note !== undefined ? { note: t.note } : {})} />
             ))}
           </div>
         ) : (

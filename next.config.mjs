@@ -52,6 +52,15 @@ const nextConfig = {
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
         ],
       },
+      {
+        // The emailed-link landing page carries a one-time token in its URL: no
+        // Referer leak, nothing cached. Listed last so it overrides the catch-all above.
+        source: '/auth/continue',
+        headers: [
+          { key: 'Referrer-Policy', value: 'no-referrer' },
+          { key: 'Cache-Control', value: 'no-store' },
+        ],
+      },
     ];
   },
 };

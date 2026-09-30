@@ -21,6 +21,17 @@ describe('SignInForm', () => {
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('That email and password don’t match.'));
     expect(signIn).toHaveBeenCalledWith({ email: 'a@b.co', password: 'x' });
   });
+  it('marks the inputs invalid and points them at the error', async () => {
+    signIn.mockResolvedValue({ ok: false, error: 'That email and password don’t match.' });
+    render(<SignInForm />);
+    expect(screen.getByLabelText('Email')).not.toHaveAttribute('aria-describedby');
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    const alert = await screen.findByRole('alert');
+    for (const label of ['Email', 'Password']) {
+      expect(screen.getByLabelText(label)).toHaveAttribute('aria-invalid', 'true');
+      expect(screen.getByLabelText(label)).toHaveAttribute('aria-describedby', alert.id);
+    }
+  });
   it('shows a message when the action itself throws', async () => {
     signIn.mockRejectedValue(new Error('network'));
     render(<SignInForm />);

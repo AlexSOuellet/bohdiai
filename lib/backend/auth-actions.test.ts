@@ -25,7 +25,8 @@ vi.mock('@/lib/auth/membership', () => ({ getUserShops }));
 vi.mock('./user-lookup', () => ({ findUserByEmail }));
 vi.mock('next/navigation', () => ({ redirect: vi.fn((p: string) => { throw new Error(`REDIRECT ${p}`); }) }));
 
-import { signIn, requestPasswordReset, setPassword, RESET_SENT } from './auth-actions';
+import { signIn, requestPasswordReset, setPassword } from './auth-actions';
+import { RESET_SENT } from './auth-messages';
 
 beforeEach(() => {
   vi.clearAllMocks();

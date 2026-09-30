@@ -14,6 +14,12 @@ describe('ForgotForm', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Send reset link' }));
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('reset link is on its way'));
   });
+  it('falls back to the standard confirmation when the action returns no message', async () => {
+    requestPasswordReset.mockResolvedValue({ ok: true });
+    render(<ForgotForm />);
+    fireEvent.click(screen.getByRole('button', { name: 'Send reset link' }));
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('If that email belongs to a site owner, a reset link is on its way. Check your inbox.'));
+  });
   it('shows an error when sending fails', async () => {
     requestPasswordReset.mockResolvedValue({ ok: false, error: 'The reset email didn’t send. Please try again in a few minutes.' });
     render(<ForgotForm />);

@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { plex } from '../../manage/fonts';
 import '../../manage/backend.css';
 
-export const metadata: Metadata = { title: 'Continue', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: 'Continue', robots: { index: false, follow: false }, referrer: 'no-referrer' };
 
 const KINDS = new Set(['invite', 'recovery']);
 

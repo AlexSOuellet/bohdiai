@@ -5,7 +5,16 @@ export const dynamic = 'force-dynamic';
 
 const KINDS = new Set(['invite', 'recovery']);
 
-const toError = (origin: string): Response => NextResponse.redirect(new URL('/auth/error?reason=link', origin), 303);
+/** The link carries a one-time token: never cache it, never leak it in a Referer. */
+const PRIVATE_HEADERS = { 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store' } as const;
+
+function redirectTo(url: URL): Response {
+  const res = NextResponse.redirect(url, 303);
+  for (const [k, v] of Object.entries(PRIVATE_HEADERS)) res.headers.set(k, v);
+  return res;
+}
+
+const toError = (origin: string): Response => redirectTo(new URL('/auth/error?reason=link', origin));
 
 /**
  * GET never spends the token: email scanners prefetch links, and verifying a
@@ -21,7 +30,7 @@ export async function GET(request: Request): Promise<Response> {
   const next = new URL('/auth/continue', url.origin);
   next.searchParams.set('token_hash', tokenHash);
   next.searchParams.set('type', type);
-  return NextResponse.redirect(next, 303);
+  return redirectTo(next);
 }
 
 /** Verifies the emailed invite/reset token, starts the session, then asks for a password. */
@@ -44,5 +53,5 @@ export async function POST(request: Request): Promise<Response> {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: type as 'invite' | 'recovery' });
   if (error !== null) return toError(origin);
-  return NextResponse.redirect(new URL('/manage/set-password', origin), 303);
+  return redirectTo(new URL('/manage/set-password', origin));
 }

@@ -31,13 +31,13 @@ export default function SignInForm(): React.ReactElement {
     <form onSubmit={onSubmit} noValidate>
       <div className="bk-field">
         <label htmlFor="email" className="bk-label">Email</label>
-        <input id="email" type="email" autoComplete="email" className="bk-input" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input id="email" type="email" autoComplete="email" className="bk-input" aria-invalid={error !== ''} aria-describedby={error !== '' ? 'signin-error' : undefined} value={email} onChange={(e) => setEmail(e.target.value)} />
       </div>
       <div className="bk-field">
         <label htmlFor="password" className="bk-label">Password</label>
-        <input id="password" type="password" autoComplete="current-password" className="bk-input" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <input id="password" type="password" autoComplete="current-password" className="bk-input" aria-invalid={error !== ''} aria-describedby={error !== '' ? 'signin-error' : undefined} value={password} onChange={(e) => setPassword(e.target.value)} />
       </div>
-      {error !== '' && <p role="alert" className="bk-error">{error}</p>}
+      {error !== '' && <p id="signin-error" role="alert" className="bk-error">{error}</p>}
       <button type="submit" className="bk-btn" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
       <p className="bk-note"><Link href="/forgot-password" className="bk-link">Forgot password?</Link></p>
     </form>

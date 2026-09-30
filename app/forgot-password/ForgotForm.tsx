@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { requestPasswordReset } from '@/lib/backend/auth-actions';
+import { RESET_SENT } from '@/lib/backend/auth-messages';
 
 export default function ForgotForm(): React.ReactElement {
   const [email, setEmail] = useState('');
@@ -16,7 +17,7 @@ export default function ForgotForm(): React.ReactElement {
     setError('');
     try {
       const result = await requestPasswordReset({ email });
-      if (result.ok) setDone(result.message ?? '');
+      if (result.ok) setDone(result.message !== undefined && result.message !== '' ? result.message : RESET_SENT);
       else setError(result.error);
     } catch {
       setError('Something went wrong. Please try again.');

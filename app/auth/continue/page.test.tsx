@@ -35,3 +35,10 @@ describe('/auth/continue', () => {
     },
   );
 });
+
+describe('/auth/continue privacy', () => {
+  it('asks browsers not to send a Referer (the URL carries a one-time token)', async () => {
+    const { metadata } = await import('./page');
+    expect(metadata.referrer).toBe('no-referrer');
+  });
+});
