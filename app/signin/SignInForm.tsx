@@ -1,95 +1,45 @@
 'use client';
 
 import { useState } from 'react';
-import type { Route } from 'next';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { signInMaker } from '@/lib/auth/actions';
-import GoogleButton from '@/components/auth/GoogleButton';
+import Link from 'next/link';
+import { unstable_rethrow } from 'next/navigation';
+import { signIn } from '@/lib/backend/auth-actions';
 
-const inputClass =
-  'w-full rounded-lg border border-white/10 bg-bg-2 px-4 py-3 text-lg text-text placeholder:text-muted focus:border-honey/60 focus:outline-none focus:ring-1 focus:ring-honey/40';
-
-export default function SignInForm() {
-  const router = useRouter();
-  // Default into the dashboard — on a shop subdomain that lands the maker in that
-  // shop's dashboard; on the app host, their shop (or the picker).
-  const next = useSearchParams().get('next') ?? '/dashboard';
-
+export default function SignInForm(): React.ReactElement {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent): Promise<void> {
     e.preventDefault();
     setBusy(true);
     setError('');
-    const result = await signInMaker({ email, password });
-    if (result.ok) {
-      router.push(next as Route);
-      return;
+    try {
+      const result = await signIn({ email, password });
+      if (!result.ok) setError(result.error);
+    } catch (err) {
+      // A successful sign-in redirects by throwing Next's redirect signal; let Next handle it.
+      unstable_rethrow(err);
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setBusy(false);
     }
-    setError(result.error);
-    setBusy(false);
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="mb-2 font-serif text-3xl text-text">Welcome back.</h1>
-        <p className="text-sm text-muted">Sign in to your shop.</p>
+    <form onSubmit={onSubmit} noValidate>
+      <div className="bk-field">
+        <label htmlFor="email" className="bk-label">Email</label>
+        <input id="email" type="email" autoComplete="email" className="bk-input" value={email} onChange={(e) => setEmail(e.target.value)} />
       </div>
-
-      <GoogleButton next={next} />
-
-      <div className="flex items-center gap-3 text-xs text-muted">
-        <span className="h-px flex-1 bg-white/10" />
-        or
-        <span className="h-px flex-1 bg-white/10" />
+      <div className="bk-field">
+        <label htmlFor="password" className="bk-label">Password</label>
+        <input id="password" type="password" autoComplete="current-password" className="bk-input" value={password} onChange={(e) => setPassword(e.target.value)} />
       </div>
-
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label htmlFor="email" className="mb-2 block text-sm text-text-soft">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            autoFocus
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            className={inputClass}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="password" className="mb-2 block text-sm text-text-soft">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Your password"
-            className={inputClass}
-          />
-        </div>
-
-        {error !== '' && <p className="text-sm text-red-400">{error}</p>}
-
-        <button
-          type="submit"
-          disabled={busy}
-          className="w-full rounded-lg bg-honey px-6 py-3 font-medium text-bg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {busy ? 'Signing in…' : 'Sign in'}
-        </button>
-      </form>
-    </div>
+      {error !== '' && <p role="alert" className="bk-error">{error}</p>}
+      <button type="submit" className="bk-btn" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
+      <p className="bk-note"><Link href="/forgot-password" className="bk-link">Forgot password?</Link></p>
+    </form>
   );
 }
