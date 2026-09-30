@@ -38,4 +38,18 @@ test.describe('Accessibility (axe-core, WCAG 2.1 A + AA)', () => {
     const blocking = seriousOrCritical(results);
     expect(blocking, JSON.stringify(blocking, null, 2)).toEqual([]);
   });
+
+  test('backend sign-in page has no serious or critical violations', async ({ page }) => {
+    await page.goto('http://app.localhost:3100/signin');
+    const results = await scan(page);
+    const blocking = seriousOrCritical(results);
+    expect(blocking, JSON.stringify(blocking, null, 2)).toEqual([]);
+  });
+
+  test('backend forgot-password page has no serious or critical violations', async ({ page }) => {
+    await page.goto('http://app.localhost:3100/forgot-password');
+    const results = await scan(page);
+    const blocking = seriousOrCritical(results);
+    expect(blocking, JSON.stringify(blocking, null, 2)).toEqual([]);
+  });
 });
