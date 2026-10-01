@@ -239,6 +239,10 @@ export const REFERENCE_LABELS = {
 export const DEFAULT_COUNTS = {
   /** "from $24" — a product whose combinations differ in price. */
   priceFrom: (price: string): string => `from ${price}`,
+  /** "Small — sold out" — a choice in the product page's option picker whose combination is sold out. */
+  choiceSoldOut: (value: string): string => `${value} — sold out`,
+  /** "Small — not available" — a choice whose combination (with the other picks) isn't offered. */
+  choiceUnavailable: (value: string): string => `${value} — not available`,
   /** "1 piece" / "3 pieces" — used by collection eyebrows + tiles. */
   pieces: (n: number): string => `${n} ${n === 1 ? 'piece' : 'pieces'}`,
   /** "1 item" / "3 items" — used by cupboard / lanes count suffix. */
