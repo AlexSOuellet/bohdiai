@@ -4,6 +4,13 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import type { Database } from '@/lib/database.types';
 
+/** Only a same-site path is allowed as `next`: it must start with a single "/" and
+ *  not "//" or "/\" (which browsers read as another host). Anything else goes home. */
+function safeNext(next: string | null): string {
+  if (next === null || !next.startsWith('/') || next.startsWith('//') || next.startsWith('/\\')) return '/';
+  return next;
+}
+
 /**
  * Handles the PKCE code exchange for magic link sign-ins and OAuth flows.
  * Supabase redirects back here with ?code=... after the user clicks their link.
@@ -12,7 +19,7 @@ import type { Database } from '@/lib/database.types';
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/';
+  const next = safeNext(searchParams.get('next'));
 
   if (code) {
     const cookieStore = await cookies();
