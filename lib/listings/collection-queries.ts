@@ -88,6 +88,7 @@ export async function clearPlaceholderCollections(db: Db, tenantId: string): Pro
  *  is set, first detach every product currently in this collection — so an edit both
  *  adds newly-checked products and drops unchecked ones. */
 async function assignProducts(db: Db, tenantId: string, collectionId: string, productIds: string[], clearExisting: boolean): Promise<void> {
+  // Dormant surface: the storefront now reads listing_collections, not primary_collection_id.
   if (clearExisting) {
     await db.from('listings').update({ primary_collection_id: null }).eq('tenant_id', tenantId).eq('primary_collection_id', collectionId);
   }

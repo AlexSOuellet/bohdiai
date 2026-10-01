@@ -30,7 +30,8 @@ import type { ProductView } from '@/lib/archetypes/content';
 
 /**
  * Persist the authored collections as real DB rows and round-robin assign each
- * product to one. The copywriter authors `content.collections.items`; we insert
+ * product to one (a `listing_collections` link, which the storefront reads, plus
+ * the legacy `primary_collection_id`). The copywriter authors `content.collections.items`; we insert
  * them here so the Collections page has real content on a fresh build. Errors
  * are logged but never fail the build — the store is already published and
  * navigable; a missing collections row just means /collections shows an empty
@@ -96,11 +97,61 @@ export async function persistCollections(
     ),
   );
 
+  await linkListingsToCollections(db, tenantId, assignments);
+
   logger.info('archetype-build: collections persisted', {
     tenantId,
     collections: inserted.length,
     productsAssigned: assignments.length,
   });
+}
+
+/**
+ * Write the product → collection links the storefront actually reads
+ * (`listing_collections`). `primary_collection_id` above is kept for now but
+ * nothing on the shop reads it. Each collection's products are positioned in
+ * assignment order. Failures are logged, never thrown — same as the rest of
+ * persistCollections.
+ */
+async function linkListingsToCollections(
+  db: ReturnType<typeof supabaseAdmin>,
+  tenantId: string,
+  assignments: ReadonlyArray<{ slug: string; collectionId: string }>,
+): Promise<void> {
+  if (assignments.length === 0) return;
+  const { data: listingRows, error: lookupError } = await db
+    .from('listings')
+    .select('id, slug')
+    .eq('tenant_id', tenantId)
+    .in('slug', assignments.map((a) => a.slug));
+  if (lookupError !== null || listingRows === null) {
+    logger.warn('archetype-build: listing lookup for collection links failed', {
+      tenantId,
+      error: lookupError?.message,
+    });
+    return;
+  }
+
+  const idBySlug = new Map(listingRows.map((r) => [r.slug, r.id]));
+  const nextPosition = new Map<string, number>();
+  const links: Array<{ tenant_id: string; listing_id: string; collection_id: string; position: number }> = [];
+  for (const { slug, collectionId } of assignments) {
+    const listingId = idBySlug.get(slug);
+    if (listingId === undefined) continue;
+    const position = nextPosition.get(collectionId) ?? 0;
+    nextPosition.set(collectionId, position + 1);
+    links.push({ tenant_id: tenantId, listing_id: listingId, collection_id: collectionId, position });
+  }
+  if (links.length === 0) return;
+
+  const { error: linkError } = await db.from('listing_collections').insert(links);
+  if (linkError !== null) {
+    logger.warn('archetype-build: listing_collections insert failed', {
+      tenantId,
+      count: links.length,
+      error: linkError.message,
+    });
+  }
 }
 
 /**

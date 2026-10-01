@@ -26,9 +26,22 @@ vi.mock('@/lib/supabase', () => ({
       return {
         insert(rows: unknown) {
           insertCalls.push({ table, rows });
-          return {
-            select: () => Promise.resolve(insertReturn),
+          const done = Promise.resolve(table === 'collections' ? insertReturn : { data: null, error: null });
+          return Object.assign(done, { select: () => done });
+        },
+        select() {
+          const slugs: string[] = [];
+          const chain: Record<string, unknown> = {
+            eq: () => chain,
+            in(_col: string, val: string[]) {
+              slugs.push(...val);
+              return chain;
+            },
+            then(resolve: (value: unknown) => unknown) {
+              return resolve({ data: slugs.map((slug) => ({ id: `id-${slug}`, slug })), error: null });
+            },
           };
+          return chain;
         },
         update(patch: unknown) {
           const matchers: Record<string, unknown> = {};
@@ -151,6 +164,18 @@ describe('persistCollections', () => {
     expect(updateCalls[2]!.update).toEqual({ primary_collection_id: 'col-a' });
     expect(updateCalls[3]!.update).toEqual({ primary_collection_id: 'col-b' });
     expect(updateCalls[4]!.update).toEqual({ primary_collection_id: 'col-a' });
+
+    // The storefront reads listing_collections, so each product is linked there too.
+    expect(insertCalls[1]).toEqual({
+      table: 'listing_collections',
+      rows: [
+        { tenant_id: 'tenant-1', listing_id: 'id-p-0', collection_id: 'col-a', position: 0 },
+        { tenant_id: 'tenant-1', listing_id: 'id-p-1', collection_id: 'col-b', position: 0 },
+        { tenant_id: 'tenant-1', listing_id: 'id-p-2', collection_id: 'col-a', position: 1 },
+        { tenant_id: 'tenant-1', listing_id: 'id-p-3', collection_id: 'col-b', position: 1 },
+        { tenant_id: 'tenant-1', listing_id: 'id-p-4', collection_id: 'col-a', position: 2 },
+      ],
+    });
   });
 
   it('skips the insert step when the DB errors — never fails the build', async () => {

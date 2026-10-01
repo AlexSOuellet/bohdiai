@@ -764,8 +764,8 @@ export async function draftProductCopyAction(
 
 // ————————————————————————————————————————————————————————————————————————————
 // Walk collections (the collections step). A collection groups the maker's real
-// products; the storefront reads `listings.primary_collection_id` to fill each band
-// and derive its cover. Real collections are `is_preview = false`; the seeded ones
+// products; this dormant surface still writes `listings.primary_collection_id`, but the
+// storefront now reads `listing_collections` to fill each band and derive its cover. Real collections are `is_preview = false`; the seeded ones
 // clear when the maker makes their store real (on the first product, and again here).
 // ————————————————————————————————————————————————————————————————————————————
 
