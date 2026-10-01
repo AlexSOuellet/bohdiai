@@ -2361,6 +2361,18 @@ export type Database = {
         Args: { target_tenant_id: string }
         Returns: boolean
       }
+      order_collections: {
+        Args: { p_ids: string[]; p_tenant_id: string }
+        Returns: undefined
+      }
+      save_collection: {
+        Args: { p: Json; p_collection_id?: string; p_tenant_id: string }
+        Returns: string
+      }
+      save_product: {
+        Args: { p: Json; p_listing_id?: string; p_tenant_id: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
