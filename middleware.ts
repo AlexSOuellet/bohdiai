@@ -115,7 +115,9 @@ export async function middleware(request: NextRequest) {
         // When Supabase needs to update the session cookie it rebuilds the
         // response so the new cookies are included. We recreate with the same
         // requestHeaders and rewriteUrl (if any) so tenant context is preserved.
-        setAll: ((cookiesToSet) => {
+        // `headers` are the no-cache headers the library sends with every auth
+        // cookie write, so a CDN never serves one person's session to another.
+        setAll: ((cookiesToSet, headers) => {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           response = rewriteUrl !== null
             ? NextResponse.rewrite(rewriteUrl, { request: { headers: requestHeaders } })
@@ -123,6 +125,7 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options ?? {});
           });
+          Object.entries(headers).forEach(([key, value]) => response.headers.set(key, value));
         }) satisfies SetAllCookies,
       },
     });
@@ -140,7 +143,8 @@ export async function middleware(request: NextRequest) {
         const secure = request.nextUrl.protocol === 'https:';
         if (verdict !== 'ok') {
           // Local scope: end this device's session only. Its cookie clearing
-          // lands on `response` through setAll above; carry it onto the redirect.
+          // (and no-cache headers) land on `response` through setAll above;
+          // carry them onto the redirect.
           const { error } = await supabase.auth.signOut({ scope: 'local' });
           if (error !== null) console.error('[middleware] Backend auto sign-out failed:', error.message);
           const dest = request.nextUrl.clone();
@@ -148,6 +152,7 @@ export async function middleware(request: NextRequest) {
           dest.search = `?ended=${verdict}`;
           const ended = NextResponse.redirect(dest, 303);
           response.cookies.getAll().forEach((c) => ended.cookies.set(c));
+          ended.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate, max-age=0');
           ended.cookies.set(ACTIVITY_COOKIE, '', { httpOnly: true, secure, sameSite: 'lax', path: '/', maxAge: 0 });
           return ended;
         }

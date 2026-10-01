@@ -16,6 +16,9 @@ export async function GET(request: Request) {
 
   if (code) {
     const cookieStore = await cookies();
+    // No-cache headers the library sends with the session cookies; applied to
+    // the redirect below so a CDN never caches a response that starts a session.
+    const authHeaders: Record<string, string> = {};
 
     const supabase = createServerClient<Database>(
       process.env['NEXT_PUBLIC_SUPABASE_URL']!,
@@ -23,10 +26,11 @@ export async function GET(request: Request) {
       {
         cookies: {
           getAll: () => cookieStore.getAll(),
-          setAll: ((cookiesToSet) => {
+          setAll: ((cookiesToSet, headers) => {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options ?? {});
             });
+            Object.assign(authHeaders, headers);
           }) satisfies SetAllCookies,
         },
       },
@@ -34,7 +38,9 @@ export async function GET(request: Request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+      const res = NextResponse.redirect(`${origin}${next}`);
+      Object.entries(authHeaders).forEach(([key, value]) => res.headers.set(key, value));
+      return res;
     }
   }
 
