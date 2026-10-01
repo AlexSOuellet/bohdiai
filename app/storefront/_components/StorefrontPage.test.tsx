@@ -32,6 +32,14 @@ function supa() {
 }
 vi.mock('@/lib/supabase', () => ({ supabaseAdmin: () => supa() }));
 
+// The shared catalog projection: an empty shop unless a test says otherwise.
+const loadCatalog = vi.fn();
+const loadCollections = vi.fn();
+vi.mock('@/lib/storefront/catalog', () => ({
+  loadCatalog: (...a: unknown[]) => loadCatalog(...a),
+  loadCollections: (...a: unknown[]) => loadCollections(...a),
+}));
+
 import StorefrontPage from './StorefrontPage';
 
 const ENV = { archetypeKey: 'main-street', lookKey: 'ember', content: {} };
@@ -41,6 +49,10 @@ beforeEach(() => {
   loadDraft.mockReset();
   verify.mockReset();
   specRender.mockClear();
+  loadCatalog.mockReset();
+  loadCollections.mockReset();
+  loadCatalog.mockResolvedValue({ products: [], byId: new Map() });
+  loadCollections.mockResolvedValue([]);
 });
 
 describe('StorefrontPage draft preview', () => {
@@ -114,5 +126,36 @@ describe('StorefrontPage still-reveal (editor preview)', () => {
     const out = await StorefrontPage({ slug: '/' });
     const html = renderToStaticMarkup(out as ReactElement);
     expect(html).not.toContain('.ms-module-item{opacity:1');
+  });
+});
+
+describe('collections', () => {
+  const product = (slug: string) => ({ slug, name: slug, price: '$10', description: '', status: 'active' as const, media: [], variations: [] });
+  const fig = product('fig');
+  const pine = product('pine');
+  const autumn = { slug: 'autumn', name: 'Autumn', count: 1, cover: undefined };
+
+  beforeEach(() => {
+    loadHome.mockResolvedValue({ ...ENV });
+    loadCatalog.mockResolvedValue({ products: [fig, pine], byId: new Map([['l1', fig], ['l2', pine]]) });
+    loadCollections.mockResolvedValue([{ id: 'c1', slug: 'autumn', view: autumn, products: [pine] }]);
+  });
+
+  it('passes only that collection’s products, in its order, to the collection page', async () => {
+    await StorefrontPage({ slug: '/collections/autumn' });
+    expect(loadCollections).toHaveBeenCalledWith(expect.anything(), 't1', { products: [fig, pine], byId: expect.any(Map) });
+    expect(specRender).toHaveBeenCalledWith(
+      expect.objectContaining({ page: 'collection', collectionSlug: 'autumn', products: [pine], collections: [autumn] }),
+    );
+  });
+
+  it('gives the home every live product and the live collections band', async () => {
+    await StorefrontPage({ slug: '/' });
+    expect(specRender).toHaveBeenCalledWith(expect.objectContaining({ products: [fig, pine], collections: [autumn] }));
+  });
+
+  it('404s for a collection that is not live', async () => {
+    await expect(StorefrontPage({ slug: '/collections/winter' })).rejects.toThrow('notFound');
+    expect(specRender).not.toHaveBeenCalled();
   });
 });

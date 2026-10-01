@@ -4,13 +4,13 @@ import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { archetypeSpec } from '@/lib/archetypes/registry';
 import type { ArchetypePage } from '@/lib/archetypes/builder';
-import type { ProductView, CatalogMedia, CollectionView } from '@/lib/archetypes/content';
+import type { ProductView, CollectionView } from '@/lib/archetypes/content';
 import { seedPreviewReviews } from '@/lib/archetypes/main-street/reviews';
 import { seedPreviewFindUs } from '@/lib/archetypes/main-street/findus';
 import { loadHomeEnvelope, loadDraftEnvelope, loadTenantChrome } from '@/lib/storefront/load-envelope';
 import { verifyPreviewToken } from '@/lib/editor/preview-token';
 
-import { loadCatalog, mediaForListing, type ListingRow, type MediaMap } from '@/lib/storefront/catalog';
+import { loadCatalog, loadCollections } from '@/lib/storefront/catalog';
 import { isKnownSkin } from '@/lib/editor/look-shelf';
 import { SECTION_KEYS } from '@/lib/archetypes/main-street/families';
 import { resolveTextureParams } from '@/lib/editor/texture';
@@ -215,33 +215,6 @@ export default async function StorefrontPage({ slug, previewToken, previewStill,
   return withPreviewChrome(await renderStore(env, tenantId, undefined, previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity), { still: previewStill, preview: previewToken !== undefined, spotlight: spotlightSection(previewSection) });
 }
 
-interface CollectionRow {
-  id: string;
-  slug: string;
-  name: string;
-}
-
-/** Build the home Collections band data from the tenant's `collections` rows, with
- *  the item count and a cover derived from the catalog (the collection's first
- *  product photo, resolved through the same media map as the products). Returns []
- *  when the store has no collections. */
-function buildCollectionViews(collRows: CollectionRow[], listingRows: ListingRow[], mediaMap: MediaMap): CollectionView[] {
-  const byCollection = new Map<string, { count: number; cover?: CatalogMedia }>();
-  for (const r of listingRows) {
-    const cid = r.primary_collection_id;
-    if (cid === null) continue;
-    const entry = byCollection.get(cid) ?? { count: 0 };
-    entry.count += 1;
-    const cover = mediaForListing(r, mediaMap)[0];
-    if (entry.cover === undefined && cover !== undefined) entry.cover = cover;
-    byCollection.set(cid, entry);
-  }
-  return collRows.map((c) => {
-    const agg = byCollection.get(c.id);
-    return { slug: c.slug, name: c.name, count: agg?.count ?? 0, cover: agg?.cover };
-  });
-}
-
 /** Seed plausible sample collections for the ?collections= preview when a store
  *  has none yet — reusing the catalog's own images so every band is viewable on a
  *  real store (the same "placeholder, not labeled" model as sample products/dates). */
@@ -270,36 +243,26 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
   // An archetype that declares its pages 404s every other sub-page route.
   if (page !== undefined && spec.pages !== undefined && !spec.pages.includes(page)) notFound();
 
-  // Load the catalog through the shared projection: active product rows → ProductViews,
-  // each photo resolved from its uploaded media (the maker's real photo) with a fallback
-  // to the legacy metadata url (placeholders).
-  const { products, rows, mediaMap } = await loadCatalog(supabaseAdmin(), tenantId);
+  // The live catalog through the shared projection (every photo, options, prices,
+  // sold out), then the live collections in the maker's order (listing_collections).
+  const catalog = await loadCatalog(supabaseAdmin(), tenantId);
+  const products = catalog.products;
+  const storeCollections = await loadCollections(supabaseAdmin(), tenantId, catalog);
 
-  // Collections band data — the tenant's own collections (count + cover derived
-  // from the catalog). When the store has none and ?collections= is set, seed
+  // Collections band data. When the store has none and ?collections= is set, seed
   // sample ones so every band is viewable. Absent → no Collections beat renders.
-  const { data: collRows } = await supabaseAdmin()
-    .from('collections')
-    .select('id, slug, name')
-    .eq('tenant_id', tenantId)
-    .eq('status', 'active')
-    .is('deleted_at', null)
-    .order('position', { ascending: true });
-  let collections = buildCollectionViews(collRows ?? [], rows, mediaMap);
+  let collections: CollectionView[] = storeCollections.map((c) => c.view);
   if (collections.length === 0 && previewCollections !== undefined && previewCollections !== '') {
     collections = seedPreviewCollections(products);
   }
 
-  // Collection detail page: filter products down to those whose primary_collection_id
-  // matches this collection. If the slug names no known collection, 404.
+  // Collection detail page: that collection's live products, in the maker's order.
+  // If the slug names no live collection, 404.
   let effectiveProducts = products;
   if (page === 'collection' && collectionSlug !== undefined) {
-    const collection = (collRows ?? []).find((c) => c.slug === collectionSlug);
+    const collection = storeCollections.find((c) => c.slug === collectionSlug);
     if (collection === undefined) notFound();
-    const idsInCollection = new Set(
-      rows.filter((r) => r.primary_collection_id === collection.id).map((r) => r.slug),
-    );
-    effectiveProducts = products.filter((p) => idsInCollection.has(p.slug));
+    effectiveProducts = collection.products;
   }
 
   // Editor door-1 preview overrides the feeling; a normal visit uses the stored mood.

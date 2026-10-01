@@ -1,219 +1,213 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import {
-  loadMediaMap,
-  loadCatalog,
   formatPrice,
   imageUrlFromMetadata,
   resolveMediaMap,
   mediaForListing,
-  listingToProductView,
+  toProductView,
+  loadMediaMap,
+  loadCatalog,
+  loadCollections,
+  loadProduct,
   type ListingRow,
-  type UploadRow,
+  type AttributeRow,
+  type VariantRow,
 } from './catalog';
 
-function row(over: Partial<ListingRow> = {}): ListingRow {
-  return {
-    slug: 'amber-candle',
-    name: 'Amber Candle',
-    base_price_cents: 2400,
-    short_description: 'A short line',
-    description: 'The long body',
-    metadata: null,
-    primary_collection_id: null,
-    media_ids: null,
-    ...over,
-  };
-}
+const row = (over: Partial<ListingRow> = {}): ListingRow => ({
+  id: 'l1',
+  slug: 'fig',
+  name: 'Fig Candle',
+  listing_type: 'product',
+  base_price_cents: 2400,
+  short_description: 'Figs',
+  description: 'Long',
+  metadata: {},
+  media_ids: ['u1', 'u2'],
+  inventory_count: null,
+  is_preview: false,
+  ...over,
+});
+const media = resolveMediaMap([
+  { id: 'u1', public_url: 'https://x/1.webp', alt_text: null },
+  { id: 'u2', public_url: 'https://x/2.webp', alt_text: 'Side' },
+]);
+const sizeAttr: AttributeRow = { listing_id: 'l1', name: 'Size', position: 0, variation_options: [{ value: 'Large', position: 1 }, { value: 'Small', position: 0 }] };
+const variant = (choices: Record<string, string>, price: number | null, stock: number | null): VariantRow => ({ listing_id: 'l1', option_combination: choices, price_cents: price, inventory_count: stock });
 
-describe('formatPrice', () => {
-  it('drops .00 for whole dollars and keeps cents otherwise', () => {
+describe('small helpers', () => {
+  it('formats prices the long-standing way', () => {
     expect(formatPrice(2400)).toBe('$24');
     expect(formatPrice(2450)).toBe('$24.50');
   });
-});
-
-describe('imageUrlFromMetadata', () => {
-  it('reads image_url from a metadata object', () => {
-    expect(imageUrlFromMetadata({ image_url: 'https://x/y.jpg' })).toBe('https://x/y.jpg');
-  });
-  it('returns undefined for null, arrays, or a missing/blank url', () => {
+  it('reads the legacy metadata photo', () => {
+    expect(imageUrlFromMetadata({ image_url: 'https://x/a.jpg' })).toBe('https://x/a.jpg');
     expect(imageUrlFromMetadata(null)).toBeUndefined();
-    expect(imageUrlFromMetadata([1, 2] as never)).toBeUndefined();
     expect(imageUrlFromMetadata({ image_url: '' })).toBeUndefined();
-    expect(imageUrlFromMetadata({})).toBeUndefined();
   });
-});
-
-describe('resolveMediaMap', () => {
-  it('maps id → url + alt, skipping uploads with no url', () => {
-    const uploads: UploadRow[] = [
-      { id: 'u1', public_url: 'https://x/1.jpg', alt_text: 'my candle' },
-      { id: 'u2', public_url: null, alt_text: null },
-    ];
-    const map = resolveMediaMap(uploads);
-    expect(map.get('u1')).toEqual({ url: 'https://x/1.jpg', alt: 'my candle' });
-    expect(map.has('u2')).toBe(false);
+  it('skips uploads with no url', () => {
+    expect(resolveMediaMap([{ id: 'a', public_url: null, alt_text: null }, { id: 'b', public_url: '', alt_text: null }]).size).toBe(0);
   });
 });
 
 describe('mediaForListing', () => {
-  it('resolves the first media_id present in the map', () => {
-    const map = resolveMediaMap([{ id: 'u1', public_url: 'https://x/1.jpg', alt_text: 'alt' }]);
-    const media = mediaForListing(row({ media_ids: ['u1'] }), map);
-    expect(media).toEqual([{ kind: 'image', url: 'https://x/1.jpg', alt: 'alt' }]);
+  it('returns every uploaded photo in the maker’s order, alt falling back to the name', () => {
+    expect(mediaForListing(row(), media)).toEqual([
+      { kind: 'image', url: 'https://x/1.webp', alt: 'Fig Candle' },
+      { kind: 'image', url: 'https://x/2.webp', alt: 'Side' },
+    ]);
   });
-
-  it('falls back to the product name when the upload has no alt', () => {
-    const map = resolveMediaMap([{ id: 'u1', public_url: 'https://x/1.jpg', alt_text: null }]);
-    const media = mediaForListing(row({ media_ids: ['u1'], name: 'Amber Candle' }), map);
-    expect(media[0]?.alt).toBe('Amber Candle');
-  });
-
-  it('falls back to metadata.image_url when no media_id resolves', () => {
-    const media = mediaForListing(
-      row({ media_ids: ['missing'], metadata: { image_url: 'https://x/legacy.jpg' } }),
-      new Map(),
-    );
-    expect(media).toEqual([{ kind: 'image', url: 'https://x/legacy.jpg', alt: 'Amber Candle' }]);
-  });
-
-  it('is empty when there is neither an upload nor a metadata url', () => {
-    expect(mediaForListing(row({ media_ids: null, metadata: null }), new Map())).toEqual([]);
+  it('falls back to the legacy metadata photo, then to nothing', () => {
+    expect(mediaForListing(row({ media_ids: [], metadata: { image_url: 'https://x/m.jpg' } }), media)).toEqual([{ kind: 'image', url: 'https://x/m.jpg', alt: 'Fig Candle' }]);
+    expect(mediaForListing(row({ media_ids: null }), media)).toEqual([]);
   });
 });
 
-describe('listingToProductView', () => {
-  it('projects a full product, resolving the uploaded photo', () => {
-    const map = resolveMediaMap([{ id: 'u1', public_url: 'https://x/1.jpg', alt_text: 'alt' }]);
-    const pv = listingToProductView(row({ media_ids: ['u1'] }), map);
-    expect(pv).toEqual({
-      slug: 'amber-candle',
-      name: 'Amber Candle',
+describe('toProductView', () => {
+  it('projects a product without options', () => {
+    expect(toProductView(row(), [], [], media)).toEqual({
+      slug: 'fig',
+      name: 'Fig Candle',
       price: '$24',
-      shortDescription: 'A short line',
-      description: 'The long body',
+      shortDescription: 'Figs',
+      description: 'Long',
       status: 'active',
-      media: [{ kind: 'image', url: 'https://x/1.jpg', alt: 'alt' }],
+      media: mediaForListing(row(), media),
       variations: [],
     });
   });
-
-  it('omits shortDescription when null and empties description when null', () => {
-    const pv = listingToProductView(row({ short_description: null, description: null }), new Map());
-    expect('shortDescription' in pv).toBe(false);
-    expect(pv.description).toBe('');
+  it('is sold out when its stock is 0, not when it is blank', () => {
+    expect(toProductView(row({ inventory_count: 0 }), [], [], media).status).toBe('sold_out');
+    expect(toProductView(row({ inventory_count: null }), [], [], media).status).toBe('active');
+  });
+  it('lists options in order and each available combination with its own price', () => {
+    const view = toProductView(row(), [sizeAttr], [variant({ Size: 'Large' }, 3000, null), variant({ Size: 'Small' }, null, 2)], media);
+    expect(view.variations).toEqual([{ name: 'Size', options: ['Small', 'Large'] }]);
+    expect(view.offers).toEqual([
+      { choices: { Size: 'Small' }, price: '$24', soldOut: false },
+      { choices: { Size: 'Large' }, price: '$30', soldOut: false },
+    ]);
+    expect(view.price).toBe('$24');
+    expect(view.priceFrom).toBe(true);
+    expect(view.status).toBe('active');
+  });
+  it('prices "from" the cheapest combination that can still be bought', () => {
+    const view = toProductView(row(), [sizeAttr], [variant({ Size: 'Small' }, null, 0), variant({ Size: 'Large' }, 3000, null)], media);
+    expect(view.price).toBe('$30');
+    expect(view.priceFrom).toBeUndefined();
+  });
+  it('is sold out when every combination is, or none is available', () => {
+    expect(toProductView(row(), [sizeAttr], [variant({ Size: 'Small' }, null, 0)], media).status).toBe('sold_out');
+    expect(toProductView(row(), [sizeAttr], [], media)).toMatchObject({ status: 'sold_out', offers: [] });
+  });
+  it('ignores combinations that no longer match the options', () => {
+    const view = toProductView(row(), [sizeAttr], [variant({ Colour: 'Red' }, 100, null), variant({ Size: 'Small' }, null, null)], media);
+    expect(view.offers).toEqual([{ choices: { Size: 'Small' }, price: '$24', soldOut: false }]);
   });
 });
 
-/** Chainable Supabase fake: `from(table)` returns the next scripted result for that
- *  table (queued, consumed in order), recording the method chain for assertions. */
-interface Recorded {
-  table: string;
-  calls: [string, ...unknown[]][];
+/** A fake Supabase client: each table returns its canned rows, and every query records its calls. */
+function fakeDb(tables: Record<string, unknown[]>, failing: string[] = []) {
+  const calls: { table: string; method: string; args: unknown[] }[] = [];
+  const from = vi.fn((table: string) => {
+    const result = failing.includes(table) ? { data: null, error: { message: 'down' } } : { data: tables[table] ?? [], error: null };
+    const q: Record<string, unknown> = {};
+    for (const m of ['select', 'eq', 'in', 'is', 'order']) {
+      q[m] = (...args: unknown[]) => {
+        calls.push({ table, method: m, args });
+        return q;
+      };
+    }
+    q['maybeSingle'] = async () => ({ data: (result.data as unknown[] | null)?.[0] ?? null, error: result.error });
+    q['then'] = (resolve: (v: unknown) => unknown) => resolve(result);
+    return q;
+  });
+  return { db: { from } as unknown as SupabaseClient<Database>, calls, from };
 }
-type Result = { data?: unknown; error?: unknown };
-
-function fakeDb(queues: Record<string, Result[]>): { db: SupabaseClient<Database>; recorded: Recorded[] } {
-  const idx: Record<string, number> = {};
-  const recorded: Recorded[] = [];
-  const db = {
-    from(table: string) {
-      idx[table] = idx[table] ?? 0;
-      // Real Supabase always sets `error` (null on success); default it the same way.
-      const result: Result = { data: null, error: null, ...(queues[table] ?? [])[idx[table]!] };
-      idx[table] += 1;
-      const rec: Recorded = { table, calls: [] };
-      recorded.push(rec);
-      const b: Record<string, unknown> = {};
-      for (const m of ['select', 'eq', 'is', 'in', 'order']) {
-        b[m] = (...a: unknown[]) => {
-          rec.calls.push([m, ...a]);
-          return b;
-        };
-      }
-      (b as { then: unknown }).then = (res: (v: Result) => unknown, rej: (e: unknown) => unknown) =>
-        Promise.resolve(result).then(res, rej);
-      return b;
-    },
-  } as unknown as SupabaseClient<Database>;
-  return { db, recorded };
-}
-
-describe('resolveMediaMap — blank url', () => {
-  it('skips an upload whose url is an empty string', () => {
-    expect(resolveMediaMap([{ id: 'u1', public_url: '', alt_text: 'x' }]).size).toBe(0);
-  });
-});
-
-describe('listingToProductView — blank short description', () => {
-  it('omits shortDescription when it is an empty string', () => {
-    const pv = listingToProductView(row({ short_description: '' }), new Map());
-    expect('shortDescription' in pv).toBe(false);
-  });
-});
 
 describe('loadMediaMap', () => {
   it('does not query when there are no ids', async () => {
-    const { db, recorded } = fakeDb({});
-    const map = await loadMediaMap(db, []);
-    expect(map.size).toBe(0);
-    expect(recorded).toHaveLength(0);
+    const { db, from } = fakeDb({});
+    expect((await loadMediaMap(db, [])).size).toBe(0);
+    expect(from).not.toHaveBeenCalled();
   });
-
-  it('queries live uploads once with de-duplicated ids and maps the rows', async () => {
-    const { db, recorded } = fakeDb({
-      uploads: [{ data: [{ id: 'u1', public_url: 'https://x/1.jpg', alt_text: 'one' }] }],
-    });
+  it('queries live uploads once with de-duplicated ids', async () => {
+    const { db, calls, from } = fakeDb({ uploads: [{ id: 'u1', public_url: 'https://x/1.webp', alt_text: 'one' }] });
     const map = await loadMediaMap(db, ['u1', 'u1', 'u2']);
-    expect(map.get('u1')).toEqual({ url: 'https://x/1.jpg', alt: 'one' });
-    expect(map.has('u2')).toBe(false);
-    expect(recorded).toHaveLength(1);
-    expect(recorded[0]!.calls).toContainEqual(['in', 'id', ['u1', 'u2']]);
-    expect(recorded[0]!.calls).toContainEqual(['is', 'deleted_at', null]);
+    expect(map.get('u1')).toEqual({ url: 'https://x/1.webp', alt: 'one' });
+    expect(from).toHaveBeenCalledTimes(1);
+    expect(calls).toContainEqual({ table: 'uploads', method: 'in', args: ['id', ['u1', 'u2']] });
+    expect(calls).toContainEqual({ table: 'uploads', method: 'is', args: ['deleted_at', null] });
   });
-
-  it('returns an empty map when the uploads query returns nothing', async () => {
-    const { db } = fakeDb({ uploads: [{ data: null }] });
-    expect((await loadMediaMap(db, ['u1'])).size).toBe(0);
-  });
-
-  it('throws when the uploads query fails, so a photo is never silently dropped', async () => {
-    const { db } = fakeDb({ uploads: [{ data: null, error: { message: 'timeout' } }] });
-    await expect(loadMediaMap(db, ['u1'])).rejects.toThrow('Could not load photos: timeout');
+  it('throws when the uploads read fails, so a photo is never silently dropped', async () => {
+    await expect(loadMediaMap(fakeDb({}, ['uploads']).db, ['u1'])).rejects.toThrow('Could not load photos: down');
   });
 });
 
 describe('loadCatalog', () => {
-  it('loads active products for the tenant and resolves their photos in one batch', async () => {
-    const rows = [
-      row({ slug: 'a', name: 'A', media_ids: ['u1'] }),
-      row({ slug: 'b', name: 'B', media_ids: null, metadata: { image_url: 'https://x/legacy.jpg' } }),
-    ];
-    const { db, recorded } = fakeDb({
-      listings: [{ data: rows }],
-      uploads: [{ data: [{ id: 'u1', public_url: 'https://x/1.jpg', alt_text: null }] }],
+  it('loads live products of both kinds, with their options and live combinations', async () => {
+    const { db, calls } = fakeDb({
+      listings: [row()],
+      uploads: [{ id: 'u1', public_url: 'https://x/1.webp', alt_text: null }],
+      variation_attributes: [sizeAttr],
+      listing_variants: [variant({ Size: 'Small' }, null, null)],
     });
-    const out = await loadCatalog(db, 't1');
-    expect(out.rows).toBe(rows);
-    expect(out.products.map((p) => p.media)).toEqual([
-      [{ kind: 'image', url: 'https://x/1.jpg', alt: 'A' }],
-      [{ kind: 'image', url: 'https://x/legacy.jpg', alt: 'B' }],
-    ]);
-    expect(out.mediaMap.get('u1')?.url).toBe('https://x/1.jpg');
-    const listingCalls = recorded.find((r) => r.table === 'listings')!.calls;
-    expect(listingCalls).toContainEqual(['eq', 'tenant_id', 't1']);
-    expect(listingCalls).toContainEqual(['eq', 'listing_type', 'product']);
-    expect(listingCalls).toContainEqual(['eq', 'status', 'active']);
-    expect(listingCalls).toContainEqual(['order', 'created_at', { ascending: true }]);
-    expect(recorded.filter((r) => r.table === 'uploads')).toHaveLength(1);
+    const catalog = await loadCatalog(db, 't1');
+    expect(catalog.products.map((p) => p.slug)).toEqual(['fig']);
+    expect(catalog.byId.get('l1')?.offers).toHaveLength(1);
+    expect(calls).toContainEqual({ table: 'listings', method: 'eq', args: ['tenant_id', 't1'] });
+    expect(calls).toContainEqual({ table: 'listings', method: 'in', args: ['listing_type', ['product', 'digital_product']] });
+    expect(calls).toContainEqual({ table: 'listings', method: 'eq', args: ['status', 'active'] });
+    expect(calls).toContainEqual({ table: 'listing_variants', method: 'eq', args: ['status', 'active'] });
   });
+  it('skips the detail queries for an empty shop', async () => {
+    const { db, from } = fakeDb({ listings: [] });
+    expect((await loadCatalog(db, 't1')).products).toEqual([]);
+    expect(from).toHaveBeenCalledTimes(1);
+  });
+  it('throws rather than show a wrong shop when a read fails', async () => {
+    await expect(loadCatalog(fakeDb({ listings: [row()] }, ['listing_variants']).db, 't1')).rejects.toThrow('Could not load');
+    await expect(loadCatalog(fakeDb({ listings: [row()] }, ['variation_attributes']).db, 't1')).rejects.toThrow('Could not load');
+    await expect(loadCatalog(fakeDb({}, ['listings']).db, 't1')).rejects.toThrow('Could not load');
+  });
+});
 
-  it('returns an empty catalog (and no uploads query) when the tenant has no products', async () => {
-    const { db, recorded } = fakeDb({ listings: [{ data: null }] });
-    const out = await loadCatalog(db, 't1');
-    expect(out).toEqual({ products: [], rows: [], mediaMap: new Map() });
-    expect(recorded.some((r) => r.table === 'uploads')).toBe(false);
+describe('loadCollections', () => {
+  it('orders products as the maker did, counts only live ones, and uses the chosen cover', async () => {
+    const { db, calls } = fakeDb({
+      listings: [row(), row({ id: 'l2', slug: 'pine', name: 'Pine' })],
+      uploads: [{ id: 'u1', public_url: 'https://x/1.webp', alt_text: null }, { id: 'cov', public_url: 'https://x/cover.webp', alt_text: null }],
+      collections: [
+        { id: 'c1', slug: 'autumn', name: 'Autumn', featured_image_id: 'cov', listing_collections: [{ listing_id: 'l2', position: 0 }, { listing_id: 'gone', position: 1 }, { listing_id: 'l1', position: 2 }] },
+        { id: 'c2', slug: 'gifts', name: 'Gifts', featured_image_id: null, listing_collections: [{ listing_id: 'l1', position: 0 }] },
+      ],
+    });
+    const catalog = await loadCatalog(db, 't1');
+    const collections = await loadCollections(db, 't1', catalog);
+    expect(collections[0]!.products.map((p) => p.slug)).toEqual(['pine', 'fig']);
+    expect(collections[0]!.view).toEqual({ slug: 'autumn', name: 'Autumn', count: 2, cover: { kind: 'image', url: 'https://x/cover.webp', alt: 'Autumn' } });
+    expect(collections[1]!.view.cover).toEqual({ kind: 'image', url: 'https://x/1.webp', alt: 'Fig Candle' });
+    expect(calls).toContainEqual({ table: 'collections', method: 'eq', args: ['status', 'active'] });
+    expect(calls).toContainEqual({ table: 'collections', method: 'is', args: ['deleted_at', null] });
+  });
+  it('throws when the collections read fails', async () => {
+    await expect(loadCollections(fakeDb({}, ['collections']).db, 't1', { products: [], byId: new Map() })).rejects.toThrow('Could not load collections');
+  });
+});
+
+describe('loadProduct', () => {
+  it('loads one live product with its lowest price and preview flag', async () => {
+    const { db, calls } = fakeDb({ listings: [row({ is_preview: true })], variation_attributes: [], listing_variants: [] });
+    const result = await loadProduct(db, 't1', 'fig');
+    expect(result).toMatchObject({ isPreview: true, priceCents: 2400, view: { slug: 'fig', price: '$24' } });
+    expect(calls).toContainEqual({ table: 'listings', method: 'eq', args: ['status', 'active'] });
+  });
+  it('is null when there is no such live product', async () => {
+    expect(await loadProduct(fakeDb({ listings: [] }).db, 't1', 'nope')).toBeNull();
+  });
+  it('throws when the read fails', async () => {
+    await expect(loadProduct(fakeDb({}, ['listings']).db, 't1', 'fig')).rejects.toThrow('Could not load the product');
   });
 });

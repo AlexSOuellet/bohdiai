@@ -42,6 +42,15 @@ export interface CatalogVariation {
 
 export type CatalogStatus = 'active' | 'sold_out' | 'unavailable';
 
+/** One buyable combination of a product's options, as the shop shows it. */
+export interface ProductOffer {
+  /** Option name → chosen value, e.g. { Size: 'Large', Scent: 'Fig' }. */
+  choices: Record<string, string>;
+  /** Formatted price for this combination. */
+  price: string;
+  soldOut: boolean;
+}
+
 /** One product, projected from a listing (+ its media and variations). */
 export interface ProductView {
   slug: string;
@@ -55,4 +64,8 @@ export interface ProductView {
   media: CatalogMedia[];
   /** Seller-defined variations. Empty if the product has none. */
   variations: CatalogVariation[];
+  /** Buyable combinations, present when the product has options. */
+  offers?: ProductOffer[];
+  /** True when combinations differ in price; `price` is then the lowest. */
+  priceFrom?: boolean;
 }
