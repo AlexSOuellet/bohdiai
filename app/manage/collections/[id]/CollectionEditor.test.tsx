@@ -61,6 +61,31 @@ describe('CollectionEditor', () => {
     await waitFor(() => expect(saveCollection).toHaveBeenCalledWith(expect.objectContaining({ status: 'archived' })));
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Archive' })).toBeNull());
   });
+  it('archives the saved copy, leaving unsaved edits in the form for a later Save', async () => {
+    saveCollection.mockResolvedValue({ ok: true, id: 'c1' });
+    render(<CollectionEditor initial={{ ...initial, status: 'active' }} products={products} />);
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Autumn gifts' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Pine Soap' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Archive' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, archive it' }));
+    await waitFor(() => expect(saveCollection).toHaveBeenCalledTimes(1));
+    expect(saveCollection).toHaveBeenCalledWith({ ...initial, status: 'archived' });
+    await waitFor(() => expect(screen.getByLabelText('Archived — hidden from the shop, kept here')).toBeChecked());
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Autumn');
+    expect(screen.getByLabelText('Name')).toHaveValue('Autumn gifts');
+    expect(screen.getByRole('button', { name: 'Remove Pine Soap from this collection' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(saveCollection).toHaveBeenLastCalledWith(expect.objectContaining({ name: 'Autumn gifts', status: 'archived', productIds: ['l1', 'l2'] })));
+  });
+  it('goes back to the automatic cover when the product with the chosen photo is removed', () => {
+    render(<CollectionEditor initial={{ ...initial, productIds: ['l1', 'l2'] }} products={products} />);
+    fireEvent.click(screen.getByLabelText('Fig Candle’s photo'));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Pine Soap from this collection' }));
+    expect(screen.getByLabelText('Fig Candle’s photo')).toBeChecked(); // another product's removal leaves it
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Fig Candle from this collection' }));
+    expect(screen.getByLabelText('First product’s photo (automatic)')).toBeChecked();
+    expect(screen.queryByText('The cover photo chosen before')).toBeNull();
+  });
   it('keeps edits made while a save is in flight', async () => {
     let answer: (v: { ok: true; id: string }) => void = () => undefined;
     saveCollection.mockReturnValue(new Promise((r) => { answer = r; }));

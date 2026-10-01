@@ -154,11 +154,23 @@ export function ProductEditor({
     }
   }
 
-  /** Save the form with `patch` on top. On success only the saved copy takes the sent
-   *  version: the form keeps anything typed or uploaded while the save was in flight. */
-  function save(patch: Partial<ProductForm> = {}): void {
+  /** Save everything in the form. */
+  function save(): void {
+    send(form, {}, 'Saved.');
+  }
+
+  /** Archive the SAVED copy, so edits not yet saved stay pending in the form
+   *  (shown as archived now) instead of going out silently with the archive. */
+  function archive(): void {
+    send(stored, { status: 'archived' }, 'Archived.');
+  }
+
+  /** Send `base` with `patch` on top. On success the saved copy takes the sent version
+   *  and the form takes only `patch`: anything else in the form (unsaved edits, or
+   *  anything typed or uploaded while the save was in flight) stays as it is. */
+  function send(base: ProductForm, patch: Partial<ProductForm>, done: string): void {
     if (inFlight.current) return;
-    const next = { ...form, ...patch };
+    const next = { ...base, ...patch };
     const check = buildProductPayload(next, { digital });
     if (!check.ok) {
       notice.showError(check.error);
@@ -173,7 +185,7 @@ export function ProductEditor({
         }
         setStored(next);
         setForm((f) => ({ ...f, ...patch }));
-        notice.showSaved('Saved.');
+        notice.showSaved(done);
         router.refresh();
         return 'stay';
       },
@@ -224,7 +236,7 @@ export function ProductEditor({
             </button>
           )}
           {!isNew && stored.status !== 'archived' && (
-            <ConfirmButton label="Archive" confirmLabel="Yes, archive it" disabled={busy} onConfirm={() => save({ status: 'archived' })} />
+            <ConfirmButton label="Archive" confirmLabel="Yes, archive it" disabled={busy} onConfirm={archive} />
           )}
           {saveButton}
         </div>

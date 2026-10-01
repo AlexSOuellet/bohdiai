@@ -36,11 +36,34 @@ export function CollectionEditor({ initial, products }: { initial: CollectionFor
     notice.clearSaved();
   };
 
-  /** Save the form with `patch` on top. On success only the saved copy takes the sent
-   *  version: the form keeps anything changed while the save was in flight. */
-  async function save(patch: Partial<CollectionForm> = {}): Promise<void> {
+  /** Take a product out. If its photo was the chosen cover, the cover goes back to
+   *  automatic rather than pointing at a photo no longer in the collection. */
+  function remove(p: ProductRowView): void {
+    const productIds = form.productIds.filter((x) => x !== p.id);
+    const coverLeft =
+      form.featuredImageId === null ||
+      p.photoUploadId !== form.featuredImageId ||
+      productIds.some((id) => byId.get(id)?.photoUploadId === form.featuredImageId);
+    update(coverLeft ? { productIds } : { productIds, featuredImageId: null });
+  }
+
+  /** Save everything in the form. */
+  function save(): Promise<void> {
+    return send(form, {}, 'Saved.');
+  }
+
+  /** Archive the SAVED copy, so edits not yet saved stay pending in the form
+   *  (shown as archived now) instead of going out silently with the archive. */
+  function archive(): Promise<void> {
+    return send(stored, { status: 'archived' }, 'Archived.');
+  }
+
+  /** Send `base` with `patch` on top. On success the saved copy takes the sent version
+   *  and the form takes only `patch`: anything else in the form (unsaved edits, or
+   *  changes made while the save was in flight) stays as it is. */
+  async function send(base: CollectionForm, patch: Partial<CollectionForm>, done: string): Promise<void> {
     if (inFlight.current) return;
-    const next = { ...form, ...patch };
+    const next = { ...base, ...patch };
     const check = buildCollectionPayload(next);
     if (!check.ok) {
       notice.showError(check.error);
@@ -54,7 +77,7 @@ export function CollectionEditor({ initial, products }: { initial: CollectionFor
       if (r.ok) {
         setStored(next);
         setForm((f) => ({ ...f, ...patch }));
-        notice.showSaved('Saved.');
+        notice.showSaved(done);
         router.refresh();
       } else notice.showError(r.error);
     } catch (err) {
@@ -72,7 +95,7 @@ export function CollectionEditor({ initial, products }: { initial: CollectionFor
         <h1 className="bk-title">{stored.name}</h1>
         <div className="bk-head-actions">
           {stored.status !== 'archived' && (
-            <ConfirmButton label="Archive" confirmLabel="Yes, archive it" disabled={busy} onConfirm={() => void save({ status: 'archived' })} />
+            <ConfirmButton label="Archive" confirmLabel="Yes, archive it" disabled={busy} onConfirm={() => void archive()} />
           )}
           <button type="button" className="bk-btn" disabled={busy} onClick={() => void save()}>{busy ? 'Saving…' : 'Save'}</button>
         </div>
@@ -113,7 +136,7 @@ export function CollectionEditor({ initial, products }: { initial: CollectionFor
                   <span className="bk-row">
                     <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" disabled={i === 0} aria-label={`Move ${p.name} up`} onClick={() => update({ productIds: moveItem(form.productIds, form.productIds.indexOf(p.id), -1) })}>↑</button>
                     <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" disabled={i === inIt.length - 1} aria-label={`Move ${p.name} down`} onClick={() => update({ productIds: moveItem(form.productIds, form.productIds.indexOf(p.id), 1) })}>↓</button>
-                    <button type="button" className="bk-btn bk-btn-danger bk-btn-small" aria-label={`Remove ${p.name} from this collection`} onClick={() => update({ productIds: form.productIds.filter((x) => x !== p.id) })}>Remove</button>
+                    <button type="button" className="bk-btn bk-btn-danger bk-btn-small" aria-label={`Remove ${p.name} from this collection`} onClick={() => remove(p)}>Remove</button>
                   </span>
                 </li>
               ))}

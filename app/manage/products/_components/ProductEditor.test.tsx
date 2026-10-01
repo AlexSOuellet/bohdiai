@@ -169,6 +169,22 @@ describe('ProductEditor', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Yes, archive it' }));
     await waitFor(() => expect(saveProduct.mock.calls[0]![0]).toMatchObject({ status: 'archived' }));
   });
+  it('archives the saved copy, leaving unsaved edits in the form for a later Save', async () => {
+    saveProduct.mockResolvedValue({ ok: true, id: 'l1' });
+    const initial = existing({ status: 'active' });
+    renderEditor(initial);
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Fig & Clove Candle' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Archive' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, archive it' }));
+    await waitFor(() => expect(saveProduct).toHaveBeenCalledTimes(1));
+    expect(saveProduct).toHaveBeenCalledWith({ ...initial, status: 'archived' });
+    await waitFor(() => expect(screen.getByLabelText('Archived — hidden from the shop, kept here')).toBeChecked());
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Fig Candle');
+    expect(screen.getByLabelText('Name')).toHaveValue('Fig & Clove Candle');
+    expect(screen.getByText('Save your changes first')).toBeInTheDocument(); // the rename is still pending
+    fireEvent.click(saveButtons()[0]!);
+    await waitFor(() => expect(saveProduct).toHaveBeenLastCalledWith(expect.objectContaining({ name: 'Fig & Clove Candle', status: 'archived' })));
+  });
   it('links to the live product on the shop', () => {
     renderEditor(existing({ status: 'active' }));
     expect(screen.getByRole('link', { name: 'View on your shop' })).toHaveAttribute('href', 'https://shop.bohdiai.com/listings/fig');
