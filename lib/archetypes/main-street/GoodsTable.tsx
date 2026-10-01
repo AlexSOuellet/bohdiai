@@ -25,6 +25,7 @@ import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
 import { Media } from './chrome';
 import { Type } from './Type';
+import { REVEAL_OBSERVER_OPTIONS } from './reveal-observer';
 import { GoodsHead, type GoodsViewAll } from './beats';
 
 export function GoodsTable({
@@ -54,7 +55,7 @@ export function GoodsTable({
           io.unobserve(stage);
         });
       },
-      { threshold: 0.2 },
+      REVEAL_OBSERVER_OPTIONS,
     );
     io.observe(stage);
     return () => io.disconnect();

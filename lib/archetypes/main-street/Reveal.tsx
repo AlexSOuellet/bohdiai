@@ -8,6 +8,7 @@
  * in the CSS.
  */
 import React, { useEffect, useRef, useState } from 'react';
+import { REVEAL_OBSERVER_OPTIONS } from './reveal-observer';
 
 export function Reveal({ children, delay }: { children: React.ReactNode; delay?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -24,7 +25,7 @@ export function Reveal({ children, delay }: { children: React.ReactNode; delay?:
             io.unobserve(e.target);
           }
         }),
-      { threshold: 0.18 },
+      REVEAL_OBSERVER_OPTIONS,
     );
     io.observe(el);
     return () => io.disconnect();
