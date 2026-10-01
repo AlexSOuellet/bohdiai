@@ -49,9 +49,23 @@ describe('CollectionList', () => {
     render(<CollectionList collections={list} />);
     fireEvent.click(screen.getByRole('button', { name: 'Move Gifts up' }));
     await waitFor(() => expect(orderCollections).toHaveBeenCalledWith(['c2', 'c1']));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Move Gifts down' })).toBeEnabled());
     fireEvent.click(screen.getByRole('button', { name: 'Move Gifts down' }));
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('The new order couldn’t be saved. Try again.'));
     expect(screen.getAllByRole('listitem')[0]).toHaveTextContent('Gifts');
+  });
+  it('holds the move buttons while an order is saving, so a failure can’t undo a later move', async () => {
+    let finish: (v: { ok: true }) => void = () => {};
+    orderCollections.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+    render(<CollectionList collections={list} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Move Gifts up' }));
+    expect(screen.getByRole('button', { name: 'Move Gifts down' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Move Autumn up' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Move Gifts down' }));
+    expect(orderCollections).toHaveBeenCalledTimes(1);
+    finish({ ok: true });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Move Gifts down' })).toBeEnabled());
+    expect(screen.getByRole('button', { name: 'Move Gifts up' })).toBeDisabled(); // first in line now
   });
   it('puts the order back when saving it throws', async () => {
     orderCollections.mockRejectedValue(new Error('network'));

@@ -19,6 +19,10 @@ export function CollectionList({ collections }: { collections: CollectionRowView
   const [busy, setBusy] = useState(false);
   /** Set the moment an add starts, so a second click before the next render does nothing. */
   const inFlight = useRef(false);
+  /** True while an order save is in flight: the move buttons wait, so a failure
+   *  putting the list back can't undo a later move that did save. */
+  const [ordering, setOrdering] = useState(false);
+  const orderInFlight = useRef(false);
   const { showError, clearError, area } = useNotice();
 
   async function add(e: React.FormEvent): Promise<void> {
@@ -47,6 +51,9 @@ export function CollectionList({ collections }: { collections: CollectionRowView
   }
 
   async function move(index: number, delta: -1 | 1): Promise<void> {
+    if (orderInFlight.current) return;
+    orderInFlight.current = true;
+    setOrdering(true);
     const before = list;
     const next = moveItem(list, index, delta);
     setList(next);
@@ -61,6 +68,9 @@ export function CollectionList({ collections }: { collections: CollectionRowView
       unstable_rethrow(err);
       setList(before);
       showError(FAILED);
+    } finally {
+      orderInFlight.current = false;
+      setOrdering(false);
     }
   }
 
@@ -84,8 +94,8 @@ export function CollectionList({ collections }: { collections: CollectionRowView
               <span className="bk-note">{`${c.productCount} ${c.productCount === 1 ? 'product' : 'products'}`}</span>
               <span className="bk-pill" data-status={c.status}>{STATUS_LABEL[c.status]}</span>
               <span className="bk-row">
-                <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" disabled={i === 0} aria-label={`Move ${c.name} up`} onClick={() => void move(i, -1)}>↑</button>
-                <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" disabled={i === list.length - 1} aria-label={`Move ${c.name} down`} onClick={() => void move(i, 1)}>↓</button>
+                <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" disabled={ordering || i === 0} aria-label={`Move ${c.name} up`} onClick={() => void move(i, -1)}>↑</button>
+                <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" disabled={ordering || i === list.length - 1} aria-label={`Move ${c.name} down`} onClick={() => void move(i, 1)}>↓</button>
                 <Link href={`/manage/collections/${c.id}`} className="bk-btn bk-btn-quiet bk-btn-small" aria-label={`Edit ${c.name}`}>Edit</Link>
               </span>
             </li>
