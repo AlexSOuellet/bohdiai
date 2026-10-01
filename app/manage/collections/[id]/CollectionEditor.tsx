@@ -1,0 +1,184 @@
+'use client';
+
+import { useRef, useState } from 'react';
+import { useRouter, unstable_rethrow } from 'next/navigation';
+import { saveCollection } from '@/lib/backend/catalog/actions';
+import { buildCollectionPayload, moveItem, type CollectionForm } from '@/lib/backend/catalog/collection-form';
+import type { ItemStatus } from '@/lib/backend/catalog/product-form';
+import type { ProductRowView } from '@/lib/backend/catalog/queries';
+import { ConfirmButton } from '../../_components/ConfirmButton';
+
+const FAILED = 'Something went wrong. Check your connection and try again.';
+const STATUSES: { value: ItemStatus; label: string }[] = [
+  { value: 'draft', label: 'Draft — only you can see it' },
+  { value: 'active', label: 'Live on your shop' },
+  { value: 'archived', label: 'Archived — hidden from the shop, kept here' },
+];
+
+/** One form, one Save: the basics, which products and in what order, the cover, the status. */
+export function CollectionEditor({ initial, products }: { initial: CollectionForm; products: ProductRowView[] }): React.ReactElement {
+  const router = useRouter();
+  const [form, setForm] = useState(initial);
+  /** The last saved version — drives the title and the archive button. */
+  const [stored, setStored] = useState(initial);
+  const [error, setError] = useState('');
+  const [saved, setSaved] = useState('');
+  const [busy, setBusy] = useState(false);
+  const notice = useRef<HTMLDivElement>(null);
+
+  const byId = new Map(products.map((p) => [p.id, p]));
+  const inIt = form.productIds.map((id) => byId.get(id)).filter((p): p is ProductRowView => p !== undefined);
+  const addable = products.filter((p) => p.status !== 'archived' && !form.productIds.includes(p.id));
+  const covers = inIt.filter((p): p is ProductRowView & { photoUploadId: string; photoUrl: string } => p.photoUploadId !== null && p.photoUrl !== null);
+  const update = (patch: Partial<CollectionForm>) => {
+    setForm((f) => ({ ...f, ...patch }));
+    setSaved('');
+  };
+  const showError = (message: string) => {
+    setError(message);
+    setSaved('');
+    notice.current?.scrollIntoView({ block: 'nearest' });
+  };
+
+  async function save(next: CollectionForm): Promise<void> {
+    const check = buildCollectionPayload(next);
+    if (!check.ok) {
+      showError(check.error);
+      return;
+    }
+    setBusy(true);
+    setError('');
+    setSaved('');
+    try {
+      const r = await saveCollection(next);
+      if (r.ok) {
+        setForm(next);
+        setStored(next);
+        setSaved('Saved.');
+        router.refresh();
+      } else showError(r.error);
+    } catch (err) {
+      unstable_rethrow(err);
+      showError(FAILED);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <div className="bk-head">
+        <h1 className="bk-title">{stored.name}</h1>
+        <div className="bk-head-actions">
+          {stored.status !== 'archived' && (
+            <ConfirmButton label="Archive" confirmLabel="Yes, archive it" disabled={busy} onConfirm={() => void save({ ...form, status: 'archived' })} />
+          )}
+          <button type="button" className="bk-btn" disabled={busy} onClick={() => void save(form)}>{busy ? 'Saving…' : 'Save'}</button>
+        </div>
+      </div>
+      <main id="main" className="bk-content">
+        <div ref={notice}>
+          {error !== '' && <p role="alert" className="bk-notice">{error}</p>}
+          {saved !== '' && <p role="status" className="bk-notice" data-tone="ok">{saved}</p>}
+        </div>
+
+        <section className="bk-section" aria-labelledby="c-basics">
+          <h2 id="c-basics" className="bk-section-title">The basics</h2>
+          <div className="bk-field">
+            <label htmlFor="c-name" className="bk-label">Name</label>
+            <input id="c-name" className="bk-input" value={form.name} onChange={(e) => update({ name: e.target.value })} />
+          </div>
+          <div className="bk-field">
+            <label htmlFor="c-desc" className="bk-label">Short description</label>
+            <textarea id="c-desc" className="bk-input bk-textarea" value={form.description} onChange={(e) => update({ description: e.target.value })} />
+          </div>
+        </section>
+
+        <section className="bk-section" aria-labelledby="c-products">
+          <h2 id="c-products" className="bk-section-title">Products in this collection</h2>
+          {inIt.length === 0 ? (
+            <p className="bk-note">No products yet. Add some below.</p>
+          ) : (
+            <ul className="bk-list">
+              {inIt.map((p, i) => (
+                <li key={p.id} className="bk-list-item">
+                  {p.photoUrl !== null ? (
+                    <>
+                      {/* Maker photos come from private-bucket signed URLs — a plain img, like the other maker-photo spots. */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={p.photoUrl} alt="" className="bk-thumb" />
+                    </>
+                  ) : (
+                    <span className="bk-thumb bk-thumb-empty">No photo</span>
+                  )}
+                  <span className="bk-list-name">{p.name}</span>
+                  <span className="bk-row">
+                    <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" disabled={i === 0} aria-label={`Move ${p.name} up`} onClick={() => update({ productIds: moveItem(form.productIds, form.productIds.indexOf(p.id), -1) })}>↑</button>
+                    <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" disabled={i === inIt.length - 1} aria-label={`Move ${p.name} down`} onClick={() => update({ productIds: moveItem(form.productIds, form.productIds.indexOf(p.id), 1) })}>↓</button>
+                    <button type="button" className="bk-btn bk-btn-danger bk-btn-small" aria-label={`Remove ${p.name} from this collection`} onClick={() => update({ productIds: form.productIds.filter((x) => x !== p.id) })}>Remove</button>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {addable.length > 0 && (
+            <>
+              <p className="bk-label">Add products</p>
+              <div className="bk-picker">
+                {addable.map((p) => (
+                  <button key={p.id} type="button" className="bk-pick" aria-pressed="false" onClick={() => update({ productIds: [...form.productIds, p.id] })}>
+                    {p.photoUrl !== null ? (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={p.photoUrl} alt="" />
+                      </>
+                    ) : (
+                      <span className="bk-thumb-empty">No photo</span>
+                    )}
+                    <span>{p.name}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+
+        <section className="bk-section" aria-labelledby="c-cover">
+          <h2 id="c-cover" className="bk-section-title">Cover photo</h2>
+          <div className="bk-checks">
+            <label className="bk-check">
+              <input type="radio" name="cover" checked={form.featuredImageId === null} onChange={() => update({ featuredImageId: null })} />
+              First product’s photo (automatic)
+            </label>
+            {covers.map((p) => (
+              <label key={p.id} className="bk-check">
+                <input type="radio" name="cover" checked={form.featuredImageId === p.photoUploadId} onChange={() => update({ featuredImageId: p.photoUploadId })} />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p.photoUrl} alt="" className="bk-thumb" />
+                {`${p.name}’s photo`}
+              </label>
+            ))}
+            {form.featuredImageId !== null && !covers.some((p) => p.photoUploadId === form.featuredImageId) && (
+              <label className="bk-check">
+                <input type="radio" name="cover" checked readOnly />
+                The cover photo chosen before
+              </label>
+            )}
+          </div>
+        </section>
+
+        <section className="bk-section" aria-labelledby="c-status">
+          <h2 id="c-status" className="bk-section-title">Status</h2>
+          <div className="bk-checks">
+            {STATUSES.map((s) => (
+              <label key={s.value} className="bk-check">
+                <input type="radio" name="c-status" checked={form.status === s.value} onChange={() => update({ status: s.value })} />
+                {s.label}
+              </label>
+            ))}
+          </div>
+        </section>
+      </main>
+    </>
+  );
+}
