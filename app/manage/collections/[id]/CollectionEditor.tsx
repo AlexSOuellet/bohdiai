@@ -16,12 +16,14 @@ const STATUSES: { value: ItemStatus; label: string }[] = [
   { value: 'archived', label: 'Archived — hidden from the shop, kept here' },
 ];
 
-/** One form, one Save: the basics, which products and in what order, the cover, the status. */
+/** One form, one Save: the basics, which products and in what order, the cover, the status.
+ *  A save or an archive that works goes back to the list, which says what was done. */
 export function CollectionEditor({ initial, products }: { initial: CollectionForm; products: ProductRowView[] }): React.ReactElement {
   const router = useRouter();
   const [form, setForm] = useState(initial);
-  /** The last saved version — drives the title and the archive button. */
-  const [stored, setStored] = useState(initial);
+  /** The saved version — drives the title, the archive button, and whether there are
+   *  unsaved changes. A save leaves the page, so it never changes. */
+  const stored = initial;
   const [busy, setBusy] = useState(false);
   /** Set the moment a save starts, so a second click before the next render does nothing. */
   const inFlight = useRef(false);
@@ -31,10 +33,8 @@ export function CollectionEditor({ initial, products }: { initial: CollectionFor
   const inIt = form.productIds.map((id) => byId.get(id)).filter((p): p is ProductRowView => p !== undefined);
   const addable = products.filter((p) => p.status !== 'archived' && !form.productIds.includes(p.id));
   const covers = inIt.filter((p): p is ProductRowView & { photoUploadId: string; photoUrl: string } => p.photoUploadId !== null && p.photoUrl !== null);
-  const update = (patch: Partial<CollectionForm>) => {
-    setForm((f) => ({ ...f, ...patch }));
-    notice.clearSaved();
-  };
+  const update = (patch: Partial<CollectionForm>) => setForm((f) => ({ ...f, ...patch }));
+  const unsaved = JSON.stringify(form) !== JSON.stringify(stored);
 
   /** Take a product out. If its photo was the chosen cover, the cover goes back to
    *  automatic rather than pointing at a photo no longer in the collection. */
@@ -49,21 +49,19 @@ export function CollectionEditor({ initial, products }: { initial: CollectionFor
 
   /** Save everything in the form. */
   function save(): Promise<void> {
-    return send(form, {}, 'Saved.');
+    return send(form, 'saved');
   }
 
-  /** Archive the SAVED copy, so edits not yet saved stay pending in the form
-   *  (shown as archived now) instead of going out silently with the archive. */
+  /** Archive the saved copy. Archive is off while there are unsaved edits, so none
+   *  go out unseen with the archive or get dropped when the page leaves. */
   function archive(): Promise<void> {
-    return send(stored, { status: 'archived' }, 'Archived.');
+    return send({ ...stored, status: 'archived' }, 'archived');
   }
 
-  /** Send `base` with `patch` on top. On success the saved copy takes the sent version
-   *  and the form takes only `patch`: anything else in the form (unsaved edits, or
-   *  changes made while the save was in flight) stays as it is. */
-  async function send(base: CollectionForm, patch: Partial<CollectionForm>, done: string): Promise<void> {
+  /** Send `next`; on success go back to the list, which names what was done, and stay
+   *  busy so the buttons can't fire again while it loads. */
+  async function send(next: CollectionForm, done: 'saved' | 'archived'): Promise<void> {
     if (inFlight.current) return;
-    const next = { ...base, ...patch };
     const check = buildCollectionPayload(next);
     if (!check.ok) {
       notice.showError(check.error);
@@ -72,20 +70,21 @@ export function CollectionEditor({ initial, products }: { initial: CollectionFor
     inFlight.current = true;
     setBusy(true);
     notice.clear();
+    let leaving = false;
     try {
       const r = await saveCollection(next);
       if (r.ok) {
-        setStored(next);
-        setForm((f) => ({ ...f, ...patch }));
-        notice.showSaved(done);
-        router.refresh();
+        leaving = true;
+        router.push(`/manage/collections?${done}=${encodeURIComponent(check.payload.name)}`);
       } else notice.showError(r.error);
     } catch (err) {
       unstable_rethrow(err);
       notice.showError(FAILED);
     } finally {
-      inFlight.current = false;
-      setBusy(false);
+      if (!leaving) {
+        inFlight.current = false;
+        setBusy(false);
+      }
     }
   }
 
@@ -94,8 +93,19 @@ export function CollectionEditor({ initial, products }: { initial: CollectionFor
       <div className="bk-head">
         <h1 className="bk-title">{stored.name}</h1>
         <div className="bk-head-actions">
+          {unsaved && (
+            <span id="c-unsaved-note" className="bk-note">
+              Save your changes first
+            </span>
+          )}
           {stored.status !== 'archived' && (
-            <ConfirmButton label="Archive" confirmLabel="Yes, archive it" disabled={busy} onConfirm={() => void archive()} />
+            <ConfirmButton
+              label="Archive"
+              confirmLabel="Yes, archive it"
+              disabled={busy || unsaved}
+              describedBy={unsaved ? 'c-unsaved-note' : undefined}
+              onConfirm={() => void archive()}
+            />
           )}
           <button type="button" className="bk-btn" disabled={busy} onClick={() => void save()}>{busy ? 'Saving…' : 'Save'}</button>
         </div>

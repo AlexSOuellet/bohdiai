@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import type { ProductRowView } from '@/lib/backend/catalog/queries';
 
-const { saveCollection, refresh } = vi.hoisted(() => ({ saveCollection: vi.fn(), refresh: vi.fn() }));
+const { saveCollection, push } = vi.hoisted(() => ({ saveCollection: vi.fn(), push: vi.fn() }));
 vi.mock('@/lib/backend/catalog/actions', () => ({ saveCollection }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }), unstable_rethrow: vi.fn() }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push }), unstable_rethrow: vi.fn() }));
 
 import { CollectionEditor } from './CollectionEditor';
 
@@ -20,16 +20,23 @@ beforeEach(() => {
 });
 
 describe('CollectionEditor', () => {
-  it('adds, orders and removes products, then saves', async () => {
+  it('adds, orders and removes products, then saves and returns to the list', async () => {
     saveCollection.mockResolvedValue({ ok: true, id: 'c1' });
     render(<CollectionEditor initial={initial} products={products} />);
     fireEvent.click(screen.getByRole('button', { name: 'Pine Soap' }));
+    fireEvent.click(screen.getByRole('button', { name: /Mug$/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Move Pine Soap up' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Mug from this collection' }));
+    expect(screen.queryByRole('button', { name: 'Move Mug up' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(saveCollection).toHaveBeenCalledWith(expect.objectContaining({ productIds: ['l2', 'l1'] })));
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Saved.'));
-    fireEvent.click(screen.getByRole('button', { name: 'Remove Fig Candle from this collection' }));
-    expect(screen.queryByRole('button', { name: 'Move Fig Candle up' })).toBeNull();
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/collections?saved=Autumn'));
+  });
+  it('puts the saved name, trimmed and encoded, in the list address', async () => {
+    saveCollection.mockResolvedValue({ ok: true, id: 'c1' });
+    render(<CollectionEditor initial={{ ...initial, name: ' Gifts & more ' }} products={products} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/collections?saved=Gifts%20%26%20more'));
   });
   it('chooses a cover from the products’ photos, or the automatic one', async () => {
     saveCollection.mockResolvedValue({ ok: true, id: 'c1' });
@@ -52,6 +59,8 @@ describe('CollectionEditor', () => {
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('That name is taken.'));
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong.'));
+    expect(push).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
   });
   it('archives after a second confirmation', async () => {
     saveCollection.mockResolvedValue({ ok: true, id: 'c1' });
@@ -59,23 +68,22 @@ describe('CollectionEditor', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Archive' }));
     fireEvent.click(screen.getByRole('button', { name: 'Yes, archive it' }));
     await waitFor(() => expect(saveCollection).toHaveBeenCalledWith(expect.objectContaining({ status: 'archived' })));
-    await waitFor(() => expect(screen.queryByRole('button', { name: 'Archive' })).toBeNull());
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/collections?archived=Autumn'));
   });
-  it('archives the saved copy, leaving unsaved edits in the form for a later Save', async () => {
-    saveCollection.mockResolvedValue({ ok: true, id: 'c1' });
+  it('stays on the page with the message when an archive fails', async () => {
+    saveCollection.mockResolvedValue({ ok: false, error: 'The collection couldn’t be saved. Try again in a moment.' });
     render(<CollectionEditor initial={{ ...initial, status: 'active' }} products={products} />);
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Autumn gifts' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Pine Soap' }));
     fireEvent.click(screen.getByRole('button', { name: 'Archive' }));
     fireEvent.click(screen.getByRole('button', { name: 'Yes, archive it' }));
-    await waitFor(() => expect(saveCollection).toHaveBeenCalledTimes(1));
-    expect(saveCollection).toHaveBeenCalledWith({ ...initial, status: 'archived' });
-    await waitFor(() => expect(screen.getByLabelText('Archived — hidden from the shop, kept here')).toBeChecked());
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Autumn');
-    expect(screen.getByLabelText('Name')).toHaveValue('Autumn gifts');
-    expect(screen.getByRole('button', { name: 'Remove Pine Soap from this collection' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(saveCollection).toHaveBeenLastCalledWith(expect.objectContaining({ name: 'Autumn gifts', status: 'archived', productIds: ['l1', 'l2'] })));
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('The collection couldn’t be saved.'));
+    expect(push).not.toHaveBeenCalled();
+  });
+  it('asks for a save before archiving unsaved changes, so they are never dropped', () => {
+    render(<CollectionEditor initial={{ ...initial, status: 'active' }} products={products} />);
+    expect(screen.queryByText('Save your changes first')).toBeNull();
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Autumn gifts' } });
+    expect(screen.getByRole('button', { name: 'Archive' })).toBeDisabled();
+    expect(screen.getByText('Save your changes first')).toBeInTheDocument();
   });
   it('goes back to the automatic cover when the product with the chosen photo is removed', () => {
     render(<CollectionEditor initial={{ ...initial, productIds: ['l1', 'l2'] }} products={products} />);
@@ -86,15 +94,13 @@ describe('CollectionEditor', () => {
     expect(screen.getByLabelText('First product’s photo (automatic)')).toBeChecked();
     expect(screen.queryByText('The cover photo chosen before')).toBeNull();
   });
-  it('keeps edits made while a save is in flight', async () => {
-    let answer: (v: { ok: true; id: string }) => void = () => undefined;
-    saveCollection.mockReturnValue(new Promise((r) => { answer = r; }));
-    render(<CollectionEditor initial={initial} products={products} />);
+  it('stays busy while returning to the list, so a second click saves nothing twice', async () => {
+    saveCollection.mockResolvedValue({ ok: true, id: 'c1' });
+    render(<CollectionEditor initial={{ ...initial, status: 'active' }} products={products} />);
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Autumn gifts' } });
-    await act(async () => answer({ ok: true, id: 'c1' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Saved.');
-    expect(screen.getByLabelText('Name')).toHaveValue('Autumn gifts');
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/collections?saved=Autumn'));
+    expect(screen.getByRole('button', { name: 'Saving…' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Archive' })).toBeDisabled();
   });
   it('cannot archive while a save is in flight', () => {
     saveCollection.mockReturnValue(new Promise(() => undefined));

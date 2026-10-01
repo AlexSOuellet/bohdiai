@@ -70,22 +70,28 @@ describe('ProductEditor', () => {
     expect(saveProduct).not.toHaveBeenCalled();
     expect(scrollIntoView).toHaveBeenCalled();
   });
-  it('saves a new product and opens it', async () => {
+  it('saves a new product and returns to the list, naming it', async () => {
     saveProduct.mockResolvedValue({ ok: true, id: 'new' });
     renderEditor(emptyProductForm());
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Fig Candle' } });
     fireEvent.change(screen.getByLabelText('Price'), { target: { value: '24' } });
     fireEvent.click(screen.getByLabelText('Autumn'));
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
-    await waitFor(() => expect(replace).toHaveBeenCalledWith('/manage/products/new'));
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products?saved=Fig%20Candle'));
     expect(saveProduct.mock.calls[0]![0]).toMatchObject({ name: 'Fig Candle', price: '24', collectionIds: ['c1'] });
   });
-  it('confirms a save of an existing product', async () => {
+  it('returns to the list after saving an existing product, from either Save button', async () => {
     saveProduct.mockResolvedValue({ ok: true, id: 'l1' });
     renderEditor(existing());
-    fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Saved.'));
-    expect(refresh).toHaveBeenCalled();
+    fireEvent.click(saveButtons()[1]!);
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products?saved=Fig%20Candle'));
+    expect(replace).not.toHaveBeenCalled();
+  });
+  it('puts the saved name, trimmed and encoded, in the list address', async () => {
+    saveProduct.mockResolvedValue({ ok: true, id: 'l1' });
+    renderEditor(existing({ name: '  Fig & Clove?  ' }));
+    fireEvent.click(saveButtons()[0]!);
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products?saved=Fig%20%26%20Clove%3F'));
   });
   it('shows the server’s message, and a plain one when the call throws', async () => {
     saveProduct.mockResolvedValueOnce({ ok: false, error: 'The product couldn’t be saved. Try again in a moment.' });
@@ -95,6 +101,8 @@ describe('ProductEditor', () => {
     saveProduct.mockRejectedValueOnce(new Error('offline'));
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong. Check your connection and try again.'));
+    expect(push).not.toHaveBeenCalled();
+    expect(saveButtons()[0]).toBeEnabled();
   });
   it('builds combinations as options are added', () => {
     renderEditor(existing());
@@ -168,42 +176,41 @@ describe('ProductEditor', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Archive' }));
     fireEvent.click(screen.getByRole('button', { name: 'Yes, archive it' }));
     await waitFor(() => expect(saveProduct.mock.calls[0]![0]).toMatchObject({ status: 'archived' }));
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products?archived=Fig%20Candle'));
   });
-  it('archives the saved copy, leaving unsaved edits in the form for a later Save', async () => {
-    saveProduct.mockResolvedValue({ ok: true, id: 'l1' });
-    const initial = existing({ status: 'active' });
-    renderEditor(initial);
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Fig & Clove Candle' } });
+  it('stays on the page with the message when an archive fails', async () => {
+    saveProduct.mockResolvedValue({ ok: false, error: 'The product couldn’t be saved. Try again in a moment.' });
+    renderEditor(existing({ status: 'active' }));
     fireEvent.click(screen.getByRole('button', { name: 'Archive' }));
     fireEvent.click(screen.getByRole('button', { name: 'Yes, archive it' }));
-    await waitFor(() => expect(saveProduct).toHaveBeenCalledTimes(1));
-    expect(saveProduct).toHaveBeenCalledWith({ ...initial, status: 'archived' });
-    await waitFor(() => expect(screen.getByLabelText('Archived — hidden from the shop, kept here')).toBeChecked());
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Fig Candle');
-    expect(screen.getByLabelText('Name')).toHaveValue('Fig & Clove Candle');
-    expect(screen.getByText('Save your changes first')).toBeInTheDocument(); // the rename is still pending
-    fireEvent.click(saveButtons()[0]!);
-    await waitFor(() => expect(saveProduct).toHaveBeenLastCalledWith(expect.objectContaining({ name: 'Fig & Clove Candle', status: 'archived' })));
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('The product couldn’t be saved.'));
+    expect(push).not.toHaveBeenCalled();
+  });
+  it('asks for a save before archiving unsaved changes, so they are never dropped', () => {
+    renderEditor(existing({ status: 'active' }));
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Fig & Clove Candle' } });
+    expect(screen.getByRole('button', { name: 'Archive' })).toBeDisabled();
+    expect(screen.getByText('Save your changes first')).toBeInTheDocument();
   });
   it('links to the live product on the shop', () => {
     renderEditor(existing({ status: 'active' }));
     expect(screen.getByRole('link', { name: 'View on your shop' })).toHaveAttribute('href', 'https://shop.bohdiai.com/listings/fig');
   });
-  it('keeps edits made while a save is in flight', async () => {
-    const answer = deferred<{ ok: true; id: string }>();
-    saveProduct.mockReturnValue(answer.promise);
+  it('stays busy while returning to the list, so a second click saves nothing twice', async () => {
+    saveProduct.mockResolvedValue({ ok: true, id: 'l1' });
     renderEditor(existing());
     fireEvent.click(saveButtons()[0]!);
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Fig Candle, large' } });
-    await act(async () => answer.resolve({ ok: true, id: 'l1' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Saved.');
-    expect(screen.getByLabelText('Name')).toHaveValue('Fig Candle, large');
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products?saved=Fig%20Candle'));
+    const buttons = screen.getAllByRole('button', { name: 'Saving…' });
+    expect(buttons).toHaveLength(2);
+    for (const b of buttons) expect(b).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Archive' })).toBeDisabled();
   });
-  it('stays busy while a new product opens, so a second click saves nothing twice', async () => {
+  it('stays busy while a new product returns to the list, so a second click saves nothing twice', async () => {
     saveProduct.mockResolvedValue({ ok: true, id: 'new' });
     renderEditor({ ...emptyProductForm(), name: 'Fig Candle', price: '24' });
     fireEvent.click(saveButtons()[0]!);
-    await waitFor(() => expect(replace).toHaveBeenCalledWith('/manage/products/new'));
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products?saved=Fig%20Candle'));
     const buttons = screen.getAllByRole('button', { name: 'Saving…' });
     expect(buttons).toHaveLength(2);
     for (const b of buttons) expect(b).toBeDisabled();
@@ -263,24 +270,13 @@ describe('ProductEditor', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Yes, archive it' }));
     expect(saveProduct).toHaveBeenCalledTimes(1);
   });
-  it('clears “Saved.” when a photo is added after saving', async () => {
-    saveProduct.mockResolvedValue({ ok: true, id: 'l1' });
-    uploadProductPhoto.mockResolvedValue({ ok: true, uploadId: 'p1', url: 'https://x/p1.webp' });
-    renderEditor(existing());
-    fireEvent.click(saveButtons()[0]!);
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Saved.'));
-    fireEvent.change(screen.getByLabelText('Add photos'), { target: { files: [new File(['x'], 'a.jpg', { type: 'image/jpeg' })] } });
-    await waitFor(() => expect(screen.getByAltText('Photo 1')).toBeInTheDocument());
-    expect(screen.getByRole('status')).toHaveTextContent('');
-  });
-  it('clears a stale error when a later save works', async () => {
+  it('returns to the list when a save works after one that failed', async () => {
     saveProduct.mockResolvedValueOnce({ ok: false, error: 'The product couldn’t be saved. Try again in a moment.' }).mockResolvedValueOnce({ ok: true, id: 'l1' });
     renderEditor(existing());
     fireEvent.click(saveButtons()[0]!);
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('The product couldn’t be saved.'));
     fireEvent.click(saveButtons()[0]!);
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Saved.'));
-    expect(screen.getByRole('alert')).toHaveTextContent('');
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products?saved=Fig%20Candle'));
   });
   it('groups the status choices under a name', () => {
     renderEditor(existing());

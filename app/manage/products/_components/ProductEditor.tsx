@@ -41,7 +41,8 @@ const hasChoice = (f: ProductForm, optionIndex: number, value: string): boolean 
   f.options[optionIndex]?.choices.some((c) => c.value === value) === true;
 
 /** One form, one Save (Penny's bundles editor): the basics, photos, price and stock,
- *  options, collections, status. Every failure lands in the notice at the top. */
+ *  options, collections, status. Every failure lands in the notice at the top; a
+ *  save or an archive that works goes back to the list, which says what was done. */
 export function ProductEditor({
   initial,
   collections,
@@ -55,9 +56,9 @@ export function ProductEditor({
 }): React.ReactElement {
   const router = useRouter();
   const [form, setForm] = useState(initial);
-  /** The last saved version — drives the title, the shop link, the archive button, and
-   *  whether there are unsaved changes. */
-  const [stored, setStored] = useState(initial);
+  /** The saved version — drives the title, the shop link, the archive button, and
+   *  whether there are unsaved changes. A save leaves the page, so it never changes. */
+  const stored = initial;
   /** Every combination row typed this session, so a combination that disappears
    *  (choice removed, option renamed or blanked mid-edit) comes back with its values. */
   const [variantMemory, setVariantMemory] = useState<VariantForm[]>(initial.variants);
@@ -74,10 +75,7 @@ export function ProductEditor({
   }, [form]);
   const notice = useNotice();
 
-  const update = (patch: Partial<ProductForm>) => {
-    setForm((f) => ({ ...f, ...patch }));
-    notice.clearSaved();
-  };
+  const update = (patch: Partial<ProductForm>) => setForm((f) => ({ ...f, ...patch }));
   const setVariants = (variants: VariantForm[]) => {
     setVariantMemory((m) => remember(m, variants));
     update({ variants });
@@ -105,7 +103,6 @@ export function ProductEditor({
     memory = remember([], memory); // a rename can land on a key already remembered; keep one row per combination
     setVariantMemory(memory);
     setForm((f) => ({ ...f, options: next, variants: syncVariants(next, memory) }));
-    notice.clearSaved();
   };
   const addPhoto = (photo: PhotoForm) => {
     setForm((f) => ({ ...f, photos: [...f.photos, photo] }));
@@ -131,9 +128,9 @@ export function ProductEditor({
     notice.clear();
   };
 
-  /** Run one server call. When `done` navigates away it returns 'leave' and the page
-   *  stays busy, so the buttons can't fire again while the next page loads. */
-  async function run(action: () => Promise<SaveResult>, done: (id: string) => 'leave' | 'stay'): Promise<void> {
+  /** Run one server call. On success `done` navigates away and the page stays busy,
+   *  so the buttons can't fire again while the next page loads. */
+  async function run(action: () => Promise<SaveResult>, done: (id: string) => void): Promise<void> {
     if (inFlight.current) return;
     inFlight.current = true;
     setBusy(true);
@@ -141,8 +138,10 @@ export function ProductEditor({
     let leaving = false;
     try {
       const r = await action();
-      if (r.ok) leaving = done(r.id) === 'leave';
-      else notice.showError(r.error);
+      if (r.ok) {
+        leaving = true;
+        done(r.id);
+      } else notice.showError(r.error);
     } catch (err) {
       unstable_rethrow(err);
       notice.showError(FAILED);
@@ -156,21 +155,18 @@ export function ProductEditor({
 
   /** Save everything in the form. */
   function save(): void {
-    send(form, {}, 'Saved.');
+    send(form, 'saved');
   }
 
-  /** Archive the SAVED copy, so edits not yet saved stay pending in the form
-   *  (shown as archived now) instead of going out silently with the archive. */
+  /** Archive the saved copy. Archive is off while there are unsaved edits, so none
+   *  go out unseen with the archive or get dropped when the page leaves. */
   function archive(): void {
-    send(stored, { status: 'archived' }, 'Archived.');
+    send({ ...stored, status: 'archived' }, 'archived');
   }
 
-  /** Send `base` with `patch` on top. On success the saved copy takes the sent version
-   *  and the form takes only `patch`: anything else in the form (unsaved edits, or
-   *  anything typed or uploaded while the save was in flight) stays as it is. */
-  function send(base: ProductForm, patch: Partial<ProductForm>, done: string): void {
+  /** Send `next`; on success go back to the list, which names what was done. */
+  function send(next: ProductForm, done: 'saved' | 'archived'): void {
     if (inFlight.current) return;
-    const next = { ...base, ...patch };
     const check = buildProductPayload(next, { digital });
     if (!check.ok) {
       notice.showError(check.error);
@@ -178,17 +174,7 @@ export function ProductEditor({
     }
     void run(
       () => saveProduct(next),
-      (id) => {
-        if (next.id === null) {
-          router.replace(`/manage/products/${id}`);
-          return 'leave';
-        }
-        setStored(next);
-        setForm((f) => ({ ...f, ...patch }));
-        notice.showSaved(done);
-        router.refresh();
-        return 'stay';
-      },
+      () => router.push(`/manage/products?${done}=${encodeURIComponent(check.payload.name)}`),
     );
   }
 
@@ -212,7 +198,7 @@ export function ProductEditor({
             </a>
           )}
           {!isNew && unsaved && (
-            <span id="dup-note" className="bk-note">
+            <span id="unsaved-note" className="bk-note">
               Save your changes first
             </span>
           )}
@@ -221,14 +207,11 @@ export function ProductEditor({
               type="button"
               className="bk-btn bk-btn-quiet"
               disabled={busy || unsaved}
-              aria-describedby={unsaved ? 'dup-note' : undefined}
+              aria-describedby={unsaved ? 'unsaved-note' : undefined}
               onClick={() =>
                 void run(
                   () => duplicateProduct(form),
-                  (id) => {
-                    router.push(`/manage/products/${id}`);
-                    return 'leave';
-                  },
+                  (id) => router.push(`/manage/products/${id}`),
                 )
               }
             >
@@ -236,7 +219,13 @@ export function ProductEditor({
             </button>
           )}
           {!isNew && stored.status !== 'archived' && (
-            <ConfirmButton label="Archive" confirmLabel="Yes, archive it" disabled={busy} onConfirm={archive} />
+            <ConfirmButton
+              label="Archive"
+              confirmLabel="Yes, archive it"
+              disabled={busy || unsaved}
+              describedBy={unsaved ? 'unsaved-note' : undefined}
+              onConfirm={archive}
+            />
           )}
           {saveButton}
         </div>

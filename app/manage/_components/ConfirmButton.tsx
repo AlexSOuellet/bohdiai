@@ -11,12 +11,15 @@ export function ConfirmButton({
   keepLabel = 'Keep it',
   onConfirm,
   disabled = false,
+  describedBy,
 }: {
   label: string;
   confirmLabel: string;
   keepLabel?: string;
   onConfirm: () => void;
   disabled?: boolean;
+  /** Id of a note that explains why the button is off. */
+  describedBy?: string | undefined;
 }): React.ReactElement {
   const [asking, setAsking] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -33,7 +36,7 @@ export function ConfirmButton({
 
   if (!asking) {
     return (
-      <button ref={trigger} type="button" className="bk-btn bk-btn-danger" disabled={disabled} onClick={() => setAsking(true)}>
+      <button ref={trigger} type="button" className="bk-btn bk-btn-danger" disabled={disabled} aria-describedby={describedBy} onClick={() => setAsking(true)}>
         {label}
       </button>
     );
