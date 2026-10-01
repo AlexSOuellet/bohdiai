@@ -74,6 +74,10 @@ describe('saveProduct', () => {
     expect(rpc.mock.calls[0]![1].p).not.toHaveProperty('slug');
     expect(slugRows).not.toHaveBeenCalled();
   });
+  it('looks up taken addresses by a prefix short enough to catch numbered long ones', async () => {
+    await saveProduct(form({ name: 'a'.repeat(70) }));
+    expect(slugRows).toHaveBeenCalledWith('slug', `${'a'.repeat(52)}%`);
+  });
   it('says so when the web address can’t be checked', async () => {
     slugRows.mockResolvedValue({ data: null, error: { message: 'down' } });
     expect(await saveProduct(form())).toEqual({ ok: false, error: 'The web address couldn’t be checked. Try again in a moment.' });

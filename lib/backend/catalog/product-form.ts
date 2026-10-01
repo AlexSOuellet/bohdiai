@@ -106,17 +106,28 @@ export function syncVariants(options: readonly OptionForm[], existing: readonly 
   );
 }
 
+/** Carry typed combination values across an option rename (old name → new name). */
+export function renameOptionInVariants(variants: readonly VariantForm[], from: string, to: string): VariantForm[] {
+  const oldName = from.trim();
+  const newName = to.trim();
+  if (oldName === '' || newName === '' || oldName === newName) return [...variants];
+  return variants.map((v) => ({
+    ...v,
+    choices: Object.fromEntries(Object.entries(v.choices).map(([k, value]) => [k.trim() === oldName ? newName : k, value])),
+  }));
+}
+
 const label = (c: Combination): string => Object.values(c).join(' / ');
 const fail = (error: string): BuildResult => ({ ok: false, error });
 
 export function buildProductPayload(form: ProductForm, site: { digital: boolean }): BuildResult {
   const name = form.name.trim();
   if (name === '') return fail('Give the product a name.');
-  if (name.length > MAX_NAME) return fail(`Keep the name under ${MAX_NAME} characters.`);
+  if (name.length > MAX_NAME) return fail(`Keep the name to ${MAX_NAME} characters or fewer.`);
   const short = form.shortDescription.trim();
-  if (short.length > MAX_SHORT) return fail(`Keep the short description under ${MAX_SHORT} characters.`);
+  if (short.length > MAX_SHORT) return fail(`Keep the short description to ${MAX_SHORT} characters or fewer.`);
   const long = form.description.trim();
-  if (long.length > MAX_LONG) return fail(`Keep the description under ${MAX_LONG} characters.`);
+  if (long.length > MAX_LONG) return fail(`Keep the description to ${MAX_LONG} characters or fewer.`);
 
   const price = parseDollars(form.price);
   if (!price.ok || price.cents === null) return fail('Enter a price, like 24 or 24.50.');
@@ -186,7 +197,7 @@ export function buildProductPayload(form: ProductForm, site: { digital: boolean 
       inventory_count: inventory,
       media_ids: form.photos.map((p) => p.uploadId),
       file_upload_id: digitalProduct ? form.fileUploadId : null,
-      collection_ids: form.collectionIds,
+      collection_ids: [...new Set(form.collectionIds)],
       options,
       variants,
     },

@@ -21,6 +21,11 @@ describe('buildCollectionPayload', () => {
   it('needs a name', () => {
     expect(buildCollectionPayload(form({ name: '  ' }))).toEqual({ ok: false, error: 'Give the collection a name.' });
   });
+  it('states the length limits as a most, not a less-than', () => {
+    expect(buildCollectionPayload(form({ name: 'n'.repeat(81) }))).toEqual({ ok: false, error: 'Keep the name to 80 characters or fewer.' });
+    expect(buildCollectionPayload(form({ name: 'n'.repeat(80) })).ok).toBe(true);
+    expect(buildCollectionPayload(form({ description: 'd'.repeat(501) }))).toEqual({ ok: false, error: 'Keep the description to 500 characters or fewer.' });
+  });
   it('refuses a product listed twice', () => {
     expect(buildCollectionPayload(form({ productIds: ['a', 'a'] }))).toEqual({ ok: false, error: 'A product is in this collection twice. Remove one.' });
   });
@@ -34,5 +39,14 @@ describe('moveItem', () => {
   it('leaves the list alone at the ends', () => {
     expect(moveItem(['a', 'b'], 0, -1)).toEqual(['a', 'b']);
     expect(moveItem(['a', 'b'], 1, 1)).toEqual(['a', 'b']);
+  });
+  it('returns an unchanged copy when the index is out of range', () => {
+    const list = ['a', 'b'];
+    const before = moveItem(list, -1, 1);
+    const after = moveItem(list, 2, -1);
+    expect(before).toEqual(['a', 'b']);
+    expect(after).toEqual(['a', 'b']);
+    expect(before).not.toBe(list);
+    expect(after).not.toBe(list);
   });
 });

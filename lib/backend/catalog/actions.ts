@@ -15,7 +15,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { shrinkImage } from '@/lib/images/shrink';
 import { logger } from '@/lib/logger';
-import { slugify, uniqueSlug } from '@/lib/catalog/slug';
+import { slugify, uniqueSlug, slugLookupPrefix } from '@/lib/catalog/slug';
 import { buildProductPayload, type ProductForm } from './product-form';
 import { buildCollectionPayload, type CollectionForm } from './collection-form';
 import type { SaveResult, PhotoResult, FileResult, DoneResult } from './results';
@@ -56,7 +56,7 @@ async function catalogSite(): Promise<CatalogSite | null> {
 async function freeSlug(table: 'listings' | 'collections', tenantId: string, name: string): Promise<string | null> {
   const base = slugify(name);
   const db = await createSupabaseServerClient();
-  const { data, error } = await db.from(table).select('slug').eq('tenant_id', tenantId).is('deleted_at', null).ilike('slug', `${base}%`);
+  const { data, error } = await db.from(table).select('slug').eq('tenant_id', tenantId).is('deleted_at', null).ilike('slug', `${slugLookupPrefix(base)}%`);
   if (error !== null) {
     logger.error('catalog: slug lookup failed', { tenantId, error: error.message });
     return null;

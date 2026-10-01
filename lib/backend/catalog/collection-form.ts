@@ -24,9 +24,9 @@ const MAX_DESCRIPTION = 500;
 export function buildCollectionPayload(form: CollectionForm): { ok: true; payload: CollectionPayload } | { ok: false; error: string } {
   const name = form.name.trim();
   if (name === '') return { ok: false, error: 'Give the collection a name.' };
-  if (name.length > MAX_NAME) return { ok: false, error: `Keep the name under ${MAX_NAME} characters.` };
+  if (name.length > MAX_NAME) return { ok: false, error: `Keep the name to ${MAX_NAME} characters or fewer.` };
   const description = form.description.trim();
-  if (description.length > MAX_DESCRIPTION) return { ok: false, error: `Keep the description under ${MAX_DESCRIPTION} characters.` };
+  if (description.length > MAX_DESCRIPTION) return { ok: false, error: `Keep the description to ${MAX_DESCRIPTION} characters or fewer.` };
   if (new Set(form.productIds).size !== form.productIds.length) return { ok: false, error: 'A product is in this collection twice. Remove one.' };
   return {
     ok: true,
@@ -34,10 +34,10 @@ export function buildCollectionPayload(form: CollectionForm): { ok: true; payloa
   };
 }
 
-/** The list with item `index` moved one step (`delta` −1 up, +1 down); unchanged at the ends. */
+/** The list with item `index` moved one step (`delta` −1 up, +1 down); unchanged at the ends or for an index out of range. */
 export function moveItem<T>(list: readonly T[], index: number, delta: -1 | 1): T[] {
   const to = index + delta;
-  if (to < 0 || to >= list.length) return [...list];
+  if (index < 0 || index >= list.length || to < 0 || to >= list.length) return [...list];
   const next = [...list];
   const [item] = next.splice(index, 1);
   next.splice(to, 0, item as T);

@@ -5,6 +5,7 @@ import {
   parseStock,
   formatCents,
   syncVariants,
+  renameOptionInVariants,
   buildProductPayload,
   MAX_PHOTOS,
   type ProductForm,
@@ -68,7 +69,38 @@ describe('syncVariants', () => {
   });
 });
 
+describe('renameOptionInVariants', () => {
+  it('keeps typed values when an option is renamed', () => {
+    const typed = syncVariants([size], []).map((v, i) => (i === 1 ? { ...v, price: '30' } : v));
+    const renamed: OptionForm[] = [{ ...size, name: 'Sizes' }];
+    const rows = syncVariants(renamed, renameOptionInVariants(typed, 'Size', 'Sizes'));
+    expect(rows[1]).toEqual({ choices: { Sizes: 'Large' }, price: '30', stock: '', available: true });
+  });
+  it('compares and re-keys trimmed names, leaving other keys alone', () => {
+    const v = [{ choices: { Size: 'Large', Scent: 'Fig' }, price: '5', stock: '1', available: false }];
+    expect(renameOptionInVariants(v, ' Size ', ' Sizes ')).toEqual([{ choices: { Sizes: 'Large', Scent: 'Fig' }, price: '5', stock: '1', available: false }]);
+  });
+  it('returns an unchanged copy for a blank or identical name', () => {
+    const v = [{ choices: { Size: 'Large' }, price: '5', stock: '', available: true }];
+    for (const [from, to] of [['', 'X'], ['Size', ' '], ['Size', 'Size']] as const) {
+      const out = renameOptionInVariants(v, from, to);
+      expect(out).toEqual(v);
+      expect(out).not.toBe(v);
+    }
+  });
+});
+
 describe('buildProductPayload', () => {
+  it('drops repeated collections, keeping the first-seen order', () => {
+    const r = buildProductPayload(base({ collectionIds: ['c', 'c', 'd'] }), { digital: false });
+    expect(r.ok && r.payload.collection_ids).toEqual(['c', 'd']);
+  });
+  it('states the length limits as a most, not a less-than', () => {
+    expect(buildProductPayload(base({ name: 'n'.repeat(121) }), { digital: false })).toEqual({ ok: false, error: 'Keep the name to 120 characters or fewer.' });
+    expect(buildProductPayload(base({ name: 'n'.repeat(120) }), { digital: false }).ok).toBe(true);
+    expect(buildProductPayload(base({ shortDescription: 's'.repeat(301) }), { digital: false })).toEqual({ ok: false, error: 'Keep the short description to 300 characters or fewer.' });
+    expect(buildProductPayload(base({ description: 'd'.repeat(5001) }), { digital: false })).toEqual({ ok: false, error: 'Keep the description to 5000 characters or fewer.' });
+  });
   it('builds a simple product', () => {
     const r = buildProductPayload(base({ shortDescription: ' Smells of figs ', stock: '3', collectionIds: ['c1'] }), { digital: false });
     expect(r).toEqual({
