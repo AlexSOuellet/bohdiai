@@ -85,13 +85,17 @@ export function listingToProductView(row: ListingRow, mediaMap: MediaMap): Produ
   };
 }
 
-/** Batch-load the media map for a set of upload ids (empty when none). Shared by the
+/** Batch-load the media map for a set of upload ids (empty when none; throws when the
+ *  uploads read fails rather than returning an empty map). Shared by the
  *  catalog load, the walk product list, and the product-detail page so a maker's
  *  uploaded photo resolves the same everywhere. */
 export async function loadMediaMap(db: SupabaseClient<Database>, ids: readonly string[]): Promise<MediaMap> {
   const unique = [...new Set(ids)];
   if (unique.length === 0) return new Map();
-  const { data } = await db.from('uploads').select('id, public_url, alt_text').in('id', unique).is('deleted_at', null);
+  const { data, error } = await db.from('uploads').select('id, public_url, alt_text').in('id', unique).is('deleted_at', null);
+  // Never swallow this: an empty map here would show a product with no photos, and a
+  // backend save from that screen would then overwrite its media_ids with [].
+  if (error !== null) throw new Error(`Could not load photos: ${error.message}`);
   return resolveMediaMap((data ?? []) as UploadRow[]);
 }
 

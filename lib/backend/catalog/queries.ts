@@ -26,8 +26,6 @@ export type ProductRowView = {
 
 export type CollectionRowView = { id: string; name: string; status: ItemStatus; productCount: number };
 
-type VariantRow = { option_combination: Json; price_cents: number | null; inventory_count: number | null; status: string };
-
 const PRODUCT_TYPES = ['product', 'digital_product'];
 
 const asStatus = (s: string): ItemStatus => (s === 'active' || s === 'archived' ? s : 'draft');
@@ -61,14 +59,15 @@ export async function listProducts(db: Db, tenantId: string): Promise<ProductRow
     .order('created_at', { ascending: false });
   if (error !== null) throw new Error(`Could not load products: ${error.message}`);
   const rows = data ?? [];
-  const media = await loadMediaMap(db, rows.flatMap((r) => r.media_ids.slice(0, 1)));
+  const media = await loadMediaMap(db, rows.flatMap((r) => r.media_ids));
   return rows.map((r) => {
     const available = r.listing_variants
       .filter((v) => v.status === 'active')
       .map((v) => ({ priceCents: v.price_cents, inventoryCount: v.inventory_count }));
     const hasOptions = r.variation_attributes.length > 0;
     const stock = { inventoryCount: r.inventory_count, hasOptions, combinations: available };
-    const first = r.media_ids[0];
+    // The first photo that still resolves, matching the storefront (mediaForListing).
+    const first = r.media_ids.find((uploadId) => media.has(uploadId));
     const hit = first === undefined ? undefined : media.get(first);
     return {
       id: r.id,
@@ -114,7 +113,7 @@ export async function getProduct(db: Db, tenantId: string, id: string): Promise<
         fileName: o.file_upload_id === null ? null : (names.get(o.file_upload_id) ?? null),
       })),
   }));
-  const stored: VariantForm[] = (r.listing_variants as VariantRow[]).map((v) => ({
+  const stored: VariantForm[] = r.listing_variants.map((v) => ({
     choices: combination(v.option_combination),
     price: formatCents(v.price_cents),
     stock: v.inventory_count === null ? '' : String(v.inventory_count),
@@ -153,12 +152,18 @@ async function fileNames(db: Db, ids: readonly string[]): Promise<Map<string, st
 export async function listCollections(db: Db, tenantId: string): Promise<CollectionRowView[]> {
   const { data, error } = await db
     .from('collections')
-    .select('id, name, status, listing_collections(listing_id)')
+    .select('id, name, status, listing_collections(listing_id, listings(status, deleted_at))')
     .eq('tenant_id', tenantId)
     .is('deleted_at', null)
     .order('position', { ascending: true });
   if (error !== null) throw new Error(`Could not load collections: ${error.message}`);
-  return (data ?? []).map((c) => ({ id: c.id, name: c.name, status: asStatus(c.status), productCount: c.listing_collections.length }));
+  // Count only products a shopper could still reach: not archived, not deleted.
+  return (data ?? []).map((c) => ({
+    id: c.id,
+    name: c.name,
+    status: asStatus(c.status),
+    productCount: c.listing_collections.filter((m) => m.listings !== null && m.listings.status !== 'archived' && m.listings.deleted_at === null).length,
+  }));
 }
 
 export async function getCollection(db: Db, tenantId: string, id: string): Promise<CollectionForm | null> {

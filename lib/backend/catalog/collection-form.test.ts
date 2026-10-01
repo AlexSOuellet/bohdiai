@@ -50,3 +50,16 @@ describe('moveItem', () => {
     expect(after).not.toBe(list);
   });
 });
+
+describe('buildCollectionPayload — crafted input', () => {
+  const odd = { ok: false, error: 'Something about this collection didn’t look right. Reload the page and try again.' };
+  const crafted = (over: Record<string, unknown>): CollectionForm => ({ ...form(), ...over }) as unknown as CollectionForm;
+  it('refuses a status the editor never sends', () => {
+    expect(buildCollectionPayload(crafted({ status: 'published' }))).toEqual(odd);
+  });
+  it('refuses wrong-typed fields instead of throwing', () => {
+    for (const over of [{ id: 4 }, { name: 5 }, { description: null }, { featuredImageId: 3 }, { productIds: 'a' }, { productIds: [1] }]) {
+      expect(buildCollectionPayload(crafted(over))).toEqual(odd);
+    }
+  });
+});

@@ -120,7 +120,35 @@ export function renameOptionInVariants(variants: readonly VariantForm[], from: s
 const label = (c: Combination): string => Object.values(c).join(' / ');
 const fail = (error: string): BuildResult => ({ ok: false, error });
 
+export const STATUSES: readonly ItemStatus[] = ['draft', 'active', 'archived'];
+const KINDS: readonly Kind[] = ['physical', 'digital'];
+const isString = (v: unknown): v is string => typeof v === 'string';
+const isStringOrNull = (v: unknown): boolean => v === null || typeof v === 'string';
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+export const isStatus = (v: unknown): v is ItemStatus => (STATUSES as readonly unknown[]).includes(v);
+const isKind = (v: unknown): v is Kind => (KINDS as readonly unknown[]).includes(v);
+export const isStringArray = (v: unknown): v is string[] => Array.isArray(v) && v.every(isString);
+
+/** The form arrives from the browser, so a crafted request can send anything. Check
+ *  the shape before the rules read it, so bad input gets a message instead of a crash. */
+function hasProductShape(f: unknown): boolean {
+  if (!isRecord(f)) return false;
+  if (![f['name'], f['shortDescription'], f['description'], f['price'], f['stock']].every(isString)) return false;
+  if (!isStringOrNull(f['id']) || !isStatus(f['status']) || !isKind(f['kind']) || !isStringOrNull(f['fileUploadId'])) return false;
+  const photos = f['photos'];
+  if (!Array.isArray(photos) || !photos.every((p) => isRecord(p) && isString(p['uploadId']))) return false;
+  if (!isStringArray(f['collectionIds'])) return false;
+  const options = f['options'];
+  const choiceOk = (c: unknown): boolean => isRecord(c) && isString(c['value']) && isKind(c['kind']) && isStringOrNull(c['fileUploadId']);
+  if (!Array.isArray(options) || !options.every((o) => isRecord(o) && isString(o['name']) && Array.isArray(o['choices']) && o['choices'].every(choiceOk))) return false;
+  const variants = f['variants'];
+  const variantOk = (v: unknown): boolean =>
+    isRecord(v) && isRecord(v['choices']) && Object.values(v['choices']).every(isString) && isString(v['price']) && isString(v['stock']) && typeof v['available'] === 'boolean';
+  return Array.isArray(variants) && variants.every(variantOk);
+}
+
 export function buildProductPayload(form: ProductForm, site: { digital: boolean }): BuildResult {
+  if (!hasProductShape(form)) return fail('Something about this product didn’t look right. Reload the page and try again.');
   const name = form.name.trim();
   if (name === '') return fail('Give the product a name.');
   if (name.length > MAX_NAME) return fail(`Keep the name to ${MAX_NAME} characters or fewer.`);

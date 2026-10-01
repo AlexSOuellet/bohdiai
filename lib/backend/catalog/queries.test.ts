@@ -75,6 +75,14 @@ describe('listProducts', () => {
       },
     ]);
   });
+  it('shows the first photo that still resolves, like the storefront does', async () => {
+    const db = fakeDb({ listings: [{ ...listing, media_ids: ['gone', 'u1'] }], uploads: [{ id: 'u1', public_url: 'https://x/u1.webp', alt_text: null }] });
+    expect(await listProducts(db, 't1')).toMatchObject([{ photoUrl: 'https://x/u1.webp', photoUploadId: 'u1' }]);
+  });
+  it('has no photo when none resolve', async () => {
+    const db = fakeDb({ listings: [{ ...listing, media_ids: ['gone'] }], uploads: [] });
+    expect(await listProducts(db, 't1')).toMatchObject([{ photoUrl: null, photoUploadId: null }]);
+  });
 });
 
 describe('getProduct', () => {
@@ -127,8 +135,26 @@ describe('collections', () => {
       { id: 'c1', tenant_id: 't1', name: 'Autumn', status: 'draft', description: 'Warm', featured_image_id: null, listing_collections: [{ listing_id: 'l2', position: 1 }, { listing_id: 'l1', position: 0 }] },
     ],
   };
-  it('lists them with their product counts', async () => {
-    expect(await listCollections(fakeDb(rows), 't1')).toEqual([{ id: 'c1', name: 'Autumn', status: 'draft', productCount: 2 }]);
+  it('lists them with their product counts, leaving out archived and deleted products', async () => {
+    const live = { status: 'active', deleted_at: null };
+    const listed = {
+      collections: [
+        {
+          id: 'c1',
+          tenant_id: 't1',
+          name: 'Autumn',
+          status: 'draft',
+          listing_collections: [
+            { listing_id: 'l1', listings: live },
+            { listing_id: 'l2', listings: { status: 'draft', deleted_at: null } },
+            { listing_id: 'l3', listings: { status: 'archived', deleted_at: null } },
+            { listing_id: 'l4', listings: { status: 'active', deleted_at: '2026-09-01T00:00:00Z' } },
+            { listing_id: 'l5', listings: null },
+          ],
+        },
+      ],
+    };
+    expect(await listCollections(fakeDb(listed), 't1')).toEqual([{ id: 'c1', name: 'Autumn', status: 'draft', productCount: 2 }]);
   });
   it('loads one as the editor’s form, products in the maker’s order', async () => {
     expect(await getCollection(fakeDb(rows), 't1', 'c1')).toEqual({

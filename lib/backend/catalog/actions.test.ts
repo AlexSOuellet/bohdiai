@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { emptyProductForm, type ProductForm } from './product-form';
 
-const { rpc, slugRows, upload, insertUpload, shrinkImage, features, revalidatePath } = vi.hoisted(() => ({
+const { rpc, slugRows, upload, removeStored, insertUpload, shrinkImage, features, revalidatePath, logger } = vi.hoisted(() => ({
   rpc: vi.fn(),
+  removeStored: vi.fn(),
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
   slugRows: vi.fn(),
   upload: vi.fn(),
   insertUpload: vi.fn(),
@@ -23,12 +25,13 @@ vi.mock('@/lib/supabase-server', () => ({
 }));
 vi.mock('@/lib/supabase', () => ({
   supabaseAdmin: () => ({
-    storage: { from: () => ({ upload, getPublicUrl: () => ({ data: { publicUrl: 'https://cdn/x.webp' } }) }) },
+    storage: { from: (bucket: string) => ({ upload, remove: (paths: string[]) => removeStored(bucket, paths), getPublicUrl: () => ({ data: { publicUrl: 'https://cdn/x.webp' } }) }) },
     from: () => ({ insert: () => ({ select: () => ({ single: insertUpload }) }) }),
   }),
 }));
 vi.mock('@/lib/images/shrink', () => ({ shrinkImage }));
 vi.mock('next/cache', () => ({ revalidatePath }));
+vi.mock('@/lib/logger', () => ({ logger }));
 
 import { saveProduct, duplicateProduct, uploadProductPhoto, uploadProductFile, saveCollection, createCollection, orderCollections } from './actions';
 
@@ -46,6 +49,7 @@ beforeEach(() => {
   slugRows.mockResolvedValue({ data: [], error: null });
   rpc.mockResolvedValue({ data: 'new-id', error: null });
   upload.mockResolvedValue({ error: null });
+  removeStored.mockResolvedValue({ data: [], error: null });
   insertUpload.mockResolvedValue({ data: { id: 'up1' }, error: null });
   shrinkImage.mockResolvedValue(new Uint8Array([1, 2, 3]));
 });
@@ -94,6 +98,31 @@ describe('saveProduct', () => {
     rpc.mockResolvedValue({ data: null, error: { code: 'XX000', message: 'boom' } });
     expect(await saveProduct(form())).toEqual({ ok: false, error: 'The product couldn’t be saved. Try again in a moment.' });
   });
+  it('retries a new product once with a fresh web address when another save took it first', async () => {
+    slugRows.mockResolvedValueOnce({ data: [], error: null }).mockResolvedValueOnce({ data: [{ slug: 'fig-candle' }], error: null });
+    rpc.mockResolvedValueOnce({ data: null, error: { code: '23505', message: 'dup' } }).mockResolvedValueOnce({ data: 'new-id', error: null });
+    expect(await saveProduct(form())).toEqual({ ok: true, id: 'new-id' });
+    expect(rpc).toHaveBeenCalledTimes(2);
+    expect(rpc.mock.calls[0]![1].p).toMatchObject({ slug: 'fig-candle' });
+    expect(rpc.mock.calls[1]![1].p).toMatchObject({ slug: 'fig-candle-2' });
+  });
+  it('gives up after one retry, and never retries an update', async () => {
+    rpc.mockResolvedValue({ data: null, error: { code: '23505', message: 'dup' } });
+    expect(await saveProduct(form())).toEqual({ ok: false, error: 'Another product already uses that web address. Change the name slightly and save again.' });
+    expect(rpc).toHaveBeenCalledTimes(2);
+    rpc.mockClear();
+    expect((await saveProduct(form({ id: 'l1' }))).ok).toBe(false);
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+  it('refuses crafted input with a message instead of throwing', async () => {
+    const crafted = { ...form(), status: 'published' } as unknown as ProductForm;
+    expect(await saveProduct(crafted)).toEqual({ ok: false, error: 'Something about this product didn’t look right. Reload the page and try again.' });
+    expect(await duplicateProduct({ ...form(), name: 5 } as unknown as ProductForm)).toEqual({
+      ok: false,
+      error: 'Something about this product didn’t look right. Reload the page and try again.',
+    });
+    expect(rpc).not.toHaveBeenCalled();
+  });
 });
 
 describe('duplicateProduct', () => {
@@ -123,6 +152,17 @@ describe('uploadProductPhoto', () => {
     insertUpload.mockResolvedValueOnce({ data: null, error: { message: 'down' } });
     expect(await uploadProductPhoto(fd(file('image/png')))).toEqual({ ok: false, error: 'The photo couldn’t be saved. Try again.' });
   });
+  it('removes the stored photo when its record can’t be saved', async () => {
+    insertUpload.mockResolvedValueOnce({ data: null, error: { message: 'down' } });
+    await uploadProductPhoto(fd(file('image/png')));
+    expect(removeStored).toHaveBeenCalledWith('tenant-media', [upload.mock.calls[0]![0]]);
+  });
+  it('logs when that clean-up fails too, and still gives the same message', async () => {
+    insertUpload.mockResolvedValueOnce({ data: null, error: { message: 'down' } });
+    removeStored.mockResolvedValueOnce({ data: null, error: { message: 'gone' } });
+    expect(await uploadProductPhoto(fd(file('image/png')))).toEqual({ ok: false, error: 'The photo couldn’t be saved. Try again.' });
+    expect(logger.error).toHaveBeenCalledWith('catalog: orphaned stored object', expect.objectContaining({ bucket: 'tenant-media', error: 'gone' }));
+  });
 });
 
 describe('uploadProductFile', () => {
@@ -140,6 +180,12 @@ describe('uploadProductFile', () => {
     expect(await uploadProductFile(fd(file('text/html')))).toEqual({ ok: false, error: 'Use a PDF, PNG, JPG, WebP, SVG or ZIP file.' });
     expect(await uploadProductFile(fd(file('application/zip', 50 * 1024 * 1024 + 1)))).toEqual({ ok: false, error: 'That file is over 50MB. Pick a smaller one.' });
   });
+  it('removes the stored file when its record can’t be saved', async () => {
+    features.on = new Set(['catalog', 'digital_products']);
+    insertUpload.mockResolvedValueOnce({ data: null, error: { message: 'down' } });
+    expect(await uploadProductFile(fd(file('application/pdf')))).toEqual({ ok: false, error: 'The file couldn’t be saved. Try again.' });
+    expect(removeStored).toHaveBeenCalledWith('tenant-files', [upload.mock.calls[0]![0]]);
+  });
 });
 
 describe('collections', () => {
@@ -152,6 +198,12 @@ describe('collections', () => {
     rpc.mockResolvedValue({ data: 'c1', error: null });
     expect(await saveCollection({ id: 'c1', name: 'Autumn', description: '', status: 'active', featuredImageId: null, productIds: ['l1'] })).toEqual({ ok: true, id: 'c1' });
     expect(rpc.mock.calls[0]![1]).toMatchObject({ p_collection_id: 'c1', p: { listing_ids: ['l1'] } });
+  });
+  it('retries a new collection once with a fresh web address when another save took it first', async () => {
+    slugRows.mockResolvedValueOnce({ data: [], error: null }).mockResolvedValueOnce({ data: [{ slug: 'autumn' }], error: null });
+    rpc.mockResolvedValueOnce({ data: null, error: { code: '23505', message: 'dup' } }).mockResolvedValueOnce({ data: 'c1', error: null });
+    expect(await createCollection('Autumn')).toEqual({ ok: true, id: 'c1' });
+    expect(rpc.mock.calls[1]![1].p).toMatchObject({ slug: 'autumn-2' });
   });
   it('orders collections', async () => {
     rpc.mockResolvedValue({ data: null, error: null });

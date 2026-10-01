@@ -207,3 +207,36 @@ describe('buildProductPayload', () => {
     expect(r.ok && r.payload.options[0]!.choices[0]!.file_upload_id).toBeNull();
   });
 });
+
+describe('buildProductPayload — crafted input', () => {
+  const odd = { ok: false, error: 'Something about this product didn’t look right. Reload the page and try again.' };
+  const crafted = (over: Record<string, unknown>): ProductForm => ({ ...base(), ...over }) as unknown as ProductForm;
+  it('refuses a status or kind the editor never sends', () => {
+    expect(buildProductPayload(crafted({ status: 'published' }), { digital: true })).toEqual(odd);
+    expect(buildProductPayload(crafted({ kind: 'service' }), { digital: true })).toEqual(odd);
+  });
+  it('refuses wrong-typed fields instead of throwing', () => {
+    for (const over of [
+      { id: undefined },
+      { name: 5 },
+      { shortDescription: null },
+      { description: {} },
+      { price: 24 },
+      { stock: [] },
+      { fileUploadId: 7 },
+      { photos: 'u1' },
+      { photos: [{ uploadId: 3 }] },
+      { collectionIds: 'c1' },
+      { collectionIds: [1] },
+      { options: {} },
+      { options: [{ name: 'Size', choices: 'Small' }] },
+      { options: [{ name: 'Size', choices: [{ value: 1, kind: 'physical', fileUploadId: null }] }] },
+      { options: [{ name: 'Size', choices: [{ value: 'S', kind: 'other', fileUploadId: null }] }] },
+      { variants: null },
+      { variants: [{ choices: { Size: 1 }, price: '', stock: '', available: true }] },
+      { variants: [{ choices: {}, price: '', stock: '', available: 'yes' }] },
+    ]) {
+      expect(buildProductPayload(crafted(over), { digital: true })).toEqual(odd);
+    }
+  });
+});

@@ -66,24 +66,42 @@ async function freeSlug(table: 'listings' | 'collections', tenantId: string, nam
 
 const SLUG_FAILED = 'The web address couldn’t be checked. Try again in a moment.';
 
+type RpcResult = { data: string | null; error: DbError | null };
+
+/** Run a save. When creating (`slugFor` given), pick a free web address first; if
+ *  another save took it in the meantime (23505), pick again and retry once. */
+async function saveWithSlug(
+  save: (p: Record<string, unknown>) => PromiseLike<RpcResult>,
+  payload: Record<string, unknown>,
+  slugFor: (() => Promise<string | null>) | null,
+): Promise<{ data: string | null; error: DbError | 'slug' | null }> {
+  if (slugFor === null) return save(payload);
+  for (let attempt = 0; ; attempt += 1) {
+    const slug = await slugFor();
+    if (slug === null) return { data: null, error: 'slug' };
+    const result = await save({ ...payload, slug });
+    if (result.error?.code !== '23505' || attempt >= 1) return result;
+  }
+}
+
+/** Remove a stored object whose uploads record couldn't be written, so it isn't
+ *  left orphaned in storage. A failed removal is logged, never shown. */
+async function removeStored(admin: ReturnType<typeof supabaseAdmin>, bucket: string, path: string, tenantId: string): Promise<void> {
+  const { error } = await admin.storage.from(bucket).remove([path]);
+  if (error !== null) logger.error('catalog: orphaned stored object', { tenantId, bucket, path, error: error.message });
+}
+
 export async function saveProduct(form: ProductForm): Promise<SaveResult> {
   const site = await catalogSite();
   if (site === null) return { ok: false, error: CATALOG_OFF };
   const built = buildProductPayload(form, { digital: site.on.has('digital_products') });
   if (!built.ok) return built;
 
-  let p: Record<string, unknown> = { ...built.payload };
-  if (form.id === null) {
-    const slug = await freeSlug('listings', site.tenantId, built.payload.name);
-    if (slug === null) return { ok: false, error: SLUG_FAILED };
-    p = { ...p, slug };
-  }
   const db = await createSupabaseServerClient();
-  const { data, error } = await db.rpc('save_product', {
-    p_tenant_id: site.tenantId,
-    p: p as Json,
-    ...(form.id !== null ? { p_listing_id: form.id } : {}),
-  });
+  const save = (p: Record<string, unknown>) =>
+    db.rpc('save_product', { p_tenant_id: site.tenantId, p: p as Json, ...(form.id !== null ? { p_listing_id: form.id } : {}) });
+  const { data, error } = await saveWithSlug(save, { ...built.payload }, form.id === null ? () => freeSlug('listings', site.tenantId, built.payload.name) : null);
+  if (error === 'slug') return { ok: false, error: SLUG_FAILED };
   if (error !== null || data === null) return { ok: false, error: saveError(error ?? { message: 'no id returned' }, 'product', site.tenantId) };
   revalidatePath('/manage/products');
   revalidatePath('/manage');
@@ -92,7 +110,9 @@ export async function saveProduct(form: ProductForm): Promise<SaveResult> {
 
 /** Copy a product (everything but its web address) as a new draft (spec §4). */
 export async function duplicateProduct(form: ProductForm): Promise<SaveResult> {
-  return saveProduct({ ...form, id: null, slug: null, name: `${form.name.trim()} (copy)`.slice(0, 120), status: 'draft' });
+  // A crafted non-string name passes through untouched so saveProduct refuses it.
+  const name = typeof form.name === 'string' ? `${form.name.trim()} (copy)`.slice(0, 120) : form.name;
+  return saveProduct({ ...form, id: null, slug: null, name, status: 'draft' });
 }
 
 export async function uploadProductPhoto(formData: FormData): Promise<PhotoResult> {
@@ -136,6 +156,7 @@ export async function uploadProductPhoto(formData: FormData): Promise<PhotoResul
     .single();
   if (insErr !== null || row === null) {
     logger.warn('catalog: photo record failed', { tenantId: site.tenantId, error: insErr?.message });
+    await removeStored(admin, 'tenant-media', path, site.tenantId);
     return { ok: false, error: 'The photo couldn’t be saved. Try again.' };
   }
   return { ok: true, uploadId: row.id, url };
@@ -178,6 +199,7 @@ export async function uploadProductFile(formData: FormData): Promise<FileResult>
     .single();
   if (insErr !== null || row === null) {
     logger.warn('catalog: file record failed', { tenantId: site.tenantId, error: insErr?.message });
+    await removeStored(admin, 'tenant-files', path, site.tenantId);
     return { ok: false, error: 'The file couldn’t be saved. Try again.' };
   }
   return { ok: true, uploadId: row.id, fileName };
@@ -188,18 +210,11 @@ export async function saveCollection(form: CollectionForm): Promise<SaveResult> 
   if (site === null) return { ok: false, error: CATALOG_OFF };
   const built = buildCollectionPayload(form);
   if (!built.ok) return built;
-  let p: Record<string, unknown> = { ...built.payload };
-  if (form.id === null) {
-    const slug = await freeSlug('collections', site.tenantId, built.payload.name);
-    if (slug === null) return { ok: false, error: SLUG_FAILED };
-    p = { ...p, slug };
-  }
   const db = await createSupabaseServerClient();
-  const { data, error } = await db.rpc('save_collection', {
-    p_tenant_id: site.tenantId,
-    p: p as Json,
-    ...(form.id !== null ? { p_collection_id: form.id } : {}),
-  });
+  const save = (p: Record<string, unknown>) =>
+    db.rpc('save_collection', { p_tenant_id: site.tenantId, p: p as Json, ...(form.id !== null ? { p_collection_id: form.id } : {}) });
+  const { data, error } = await saveWithSlug(save, { ...built.payload }, form.id === null ? () => freeSlug('collections', site.tenantId, built.payload.name) : null);
+  if (error === 'slug') return { ok: false, error: SLUG_FAILED };
   if (error !== null || data === null) return { ok: false, error: saveError(error ?? { message: 'no id returned' }, 'collection', site.tenantId) };
   revalidatePath('/manage/collections');
   revalidatePath('/manage');

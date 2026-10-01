@@ -121,7 +121,8 @@ function fakeDb(queues: Record<string, Result[]>): { db: SupabaseClient<Database
   const db = {
     from(table: string) {
       idx[table] = idx[table] ?? 0;
-      const result = (queues[table] ?? [])[idx[table]!] ?? { data: null, error: null };
+      // Real Supabase always sets `error` (null on success); default it the same way.
+      const result: Result = { data: null, error: null, ...(queues[table] ?? [])[idx[table]!] };
       idx[table] += 1;
       const rec: Recorded = { table, calls: [] };
       recorded.push(rec);
@@ -176,6 +177,11 @@ describe('loadMediaMap', () => {
   it('returns an empty map when the uploads query returns nothing', async () => {
     const { db } = fakeDb({ uploads: [{ data: null }] });
     expect((await loadMediaMap(db, ['u1'])).size).toBe(0);
+  });
+
+  it('throws when the uploads query fails, so a photo is never silently dropped', async () => {
+    const { db } = fakeDb({ uploads: [{ data: null, error: { message: 'timeout' } }] });
+    await expect(loadMediaMap(db, ['u1'])).rejects.toThrow('Could not load photos: timeout');
   });
 });
 

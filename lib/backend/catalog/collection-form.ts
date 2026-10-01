@@ -1,5 +1,5 @@
 /** The collection editor's form and validation (spec piece 1 §5). */
-import type { ItemStatus } from './product-form';
+import { isStatus, isStringArray, type ItemStatus } from './product-form';
 
 export type CollectionForm = {
   id: string | null;
@@ -21,7 +21,23 @@ export type CollectionPayload = {
 const MAX_NAME = 80;
 const MAX_DESCRIPTION = 500;
 
+/** The form arrives from the browser, so a crafted request can send anything. Check
+ *  the shape before the rules read it, so bad input gets a message instead of a crash. */
+function hasCollectionShape(f: unknown): boolean {
+  if (typeof f !== 'object' || f === null || Array.isArray(f)) return false;
+  const r = f as Record<string, unknown>;
+  return (
+    (r['id'] === null || typeof r['id'] === 'string') &&
+    typeof r['name'] === 'string' &&
+    typeof r['description'] === 'string' &&
+    isStatus(r['status']) &&
+    (r['featuredImageId'] === null || typeof r['featuredImageId'] === 'string') &&
+    isStringArray(r['productIds'])
+  );
+}
+
 export function buildCollectionPayload(form: CollectionForm): { ok: true; payload: CollectionPayload } | { ok: false; error: string } {
+  if (!hasCollectionShape(form)) return { ok: false, error: 'Something about this collection didn’t look right. Reload the page and try again.' };
   const name = form.name.trim();
   if (name === '') return { ok: false, error: 'Give the collection a name.' };
   if (name.length > MAX_NAME) return { ok: false, error: `Keep the name to ${MAX_NAME} characters or fewer.` };
