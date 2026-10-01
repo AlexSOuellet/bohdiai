@@ -169,7 +169,7 @@ export async function listCollections(db: Db, tenantId: string): Promise<Collect
 export async function getCollection(db: Db, tenantId: string, id: string): Promise<CollectionForm | null> {
   const { data: c, error } = await db
     .from('collections')
-    .select('id, name, description, status, featured_image_id, listing_collections(listing_id, position)')
+    .select('id, name, description, status, featured_image_id, listing_collections(listing_id, position, listings(deleted_at))')
     .eq('tenant_id', tenantId)
     .eq('id', id)
     .is('deleted_at', null)
@@ -182,6 +182,10 @@ export async function getCollection(db: Db, tenantId: string, id: string): Promi
     description: c.description ?? '',
     status: asStatus(c.status),
     featuredImageId: c.featured_image_id,
-    productIds: [...c.listing_collections].sort((a, b) => a.position - b.position).map((m) => m.listing_id),
+    // Deleted products drop out: the editor can't show them and save_collection refuses them.
+    productIds: c.listing_collections
+      .filter((m) => m.listings !== null && m.listings.deleted_at === null)
+      .sort((a, b) => a.position - b.position)
+      .map((m) => m.listing_id),
   };
 }

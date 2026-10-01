@@ -132,7 +132,12 @@ describe('getProduct', () => {
 describe('collections', () => {
   const rows = {
     collections: [
-      { id: 'c1', tenant_id: 't1', name: 'Autumn', status: 'draft', description: 'Warm', featured_image_id: null, listing_collections: [{ listing_id: 'l2', position: 1 }, { listing_id: 'l1', position: 0 }] },
+      { id: 'c1', tenant_id: 't1', name: 'Autumn', status: 'draft', description: 'Warm', featured_image_id: null, listing_collections: [
+          { listing_id: 'l2', position: 1, listings: { deleted_at: null } },
+          { listing_id: 'l9', position: 2, listings: { deleted_at: '2026-09-01T00:00:00Z' } },
+          { listing_id: 'l8', position: 3, listings: null },
+          { listing_id: 'l1', position: 0, listings: { deleted_at: null } },
+        ] },
     ],
   };
   it('lists them with their product counts, leaving out archived and deleted products', async () => {
@@ -156,7 +161,7 @@ describe('collections', () => {
     };
     expect(await listCollections(fakeDb(listed), 't1')).toEqual([{ id: 'c1', name: 'Autumn', status: 'draft', productCount: 2 }]);
   });
-  it('loads one as the editor’s form, products in the maker’s order', async () => {
+  it('loads one as the editor’s form, products in the maker’s order, leaving out deleted products', async () => {
     expect(await getCollection(fakeDb(rows), 't1', 'c1')).toEqual({
       id: 'c1',
       name: 'Autumn',
