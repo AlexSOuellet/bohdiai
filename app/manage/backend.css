@@ -131,4 +131,11 @@
 .bk-pick:hover { border-color: var(--bk-oxblood); }
 .bk-pick[aria-pressed='true'] { border-color: var(--bk-oxblood); box-shadow: inset 0 0 0 1px var(--bk-oxblood); }
 .bk-pick img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+/* A file input hidden inside a button-styled label: the label shows its focus ring. */
+.bk-btn:has(> .bk-sr:focus-visible) { outline: 2px solid var(--bk-brass); outline-offset: 2px; }
+/* Radio groups: the fieldset names the group, the legend holds the section title. */
+.bk-fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.bk-fieldset > legend { padding: 0; }
+/* The notice takes focus from script only; the message itself is the visible cue. */
+.bk-notices:focus { outline: none; }
 .bk-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

@@ -1,15 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { emptyProductForm, type ProductForm } from '@/lib/backend/catalog/product-form';
 
-const { saveProduct, duplicateProduct, replace, push, refresh } = vi.hoisted(() => ({
+const { saveProduct, duplicateProduct, uploadProductPhoto, uploadProductFile, replace, push, refresh } = vi.hoisted(() => ({
   saveProduct: vi.fn(),
   duplicateProduct: vi.fn(),
+  uploadProductPhoto: vi.fn(),
+  uploadProductFile: vi.fn(),
   replace: vi.fn(),
   push: vi.fn(),
   refresh: vi.fn(),
 }));
-vi.mock('@/lib/backend/catalog/actions', () => ({ saveProduct, duplicateProduct, uploadProductPhoto: vi.fn(), uploadProductFile: vi.fn() }));
+vi.mock('@/lib/backend/catalog/actions', () => ({ saveProduct, duplicateProduct, uploadProductPhoto, uploadProductFile }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace, push, refresh }), unstable_rethrow: vi.fn() }));
 
 import { ProductEditor } from './ProductEditor';
@@ -27,6 +29,31 @@ const sizeSmallAt30 = () => {
   fireEvent.change(input, { target: { value: 'Small' } });
   fireEvent.keyDown(input, { key: 'Enter' });
   fireEvent.change(screen.getByLabelText('Price for Small'), { target: { value: '30' } });
+};
+
+/** A server call that answers only when the test says so. */
+function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void } {
+  let resolve: (value: T) => void = () => undefined;
+  const promise = new Promise<T>((r) => {
+    resolve = r;
+  });
+  return { promise, resolve };
+}
+const saveButtons = () => screen.getAllByRole('button', { name: 'Save' });
+const addChoice = (option: string, value: string) => {
+  const input = screen.getByLabelText(`New choice for ${option}`);
+  fireEvent.change(input, { target: { value } });
+  fireEvent.keyDown(input, { key: 'Enter' });
+};
+const pickFile = (label: string, name: string) =>
+  fireEvent.change(screen.getByLabelText(label), { target: { files: [new File(['x'], name, { type: 'application/pdf' })] } });
+/** Add option "Size" with a download choice "Small", then pick its file. */
+const smallDownloadUploading = () => {
+  fireEvent.click(screen.getByRole('button', { name: 'Add an option' }));
+  fireEvent.change(screen.getByLabelText('Option 1 name'), { target: { value: 'Size' } });
+  addChoice('Size', 'Small');
+  fireEvent.change(screen.getByLabelText('Small is sold as'), { target: { value: 'digital' } });
+  pickFile('Upload the file for Small', 'small.pdf');
 };
 
 const scrollIntoView = vi.fn();
@@ -57,14 +84,14 @@ describe('ProductEditor', () => {
     saveProduct.mockResolvedValue({ ok: true, id: 'l1' });
     renderEditor(existing());
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
-    expect(await screen.findByRole('status')).toHaveTextContent('Saved.');
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Saved.'));
     expect(refresh).toHaveBeenCalled();
   });
   it('shows the server’s message, and a plain one when the call throws', async () => {
     saveProduct.mockResolvedValueOnce({ ok: false, error: 'The product couldn’t be saved. Try again in a moment.' });
     renderEditor(existing());
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
-    expect(await screen.findByRole('alert')).toHaveTextContent('The product couldn’t be saved. Try again in a moment.');
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('The product couldn’t be saved. Try again in a moment.'));
     saveProduct.mockRejectedValueOnce(new Error('offline'));
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong. Check your connection and try again.'));
@@ -145,5 +172,119 @@ describe('ProductEditor', () => {
   it('links to the live product on the shop', () => {
     renderEditor(existing({ status: 'active' }));
     expect(screen.getByRole('link', { name: 'View on your shop' })).toHaveAttribute('href', 'https://shop.bohdiai.com/listings/fig');
+  });
+  it('keeps edits made while a save is in flight', async () => {
+    const answer = deferred<{ ok: true; id: string }>();
+    saveProduct.mockReturnValue(answer.promise);
+    renderEditor(existing());
+    fireEvent.click(saveButtons()[0]!);
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Fig Candle, large' } });
+    await act(async () => answer.resolve({ ok: true, id: 'l1' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Saved.');
+    expect(screen.getByLabelText('Name')).toHaveValue('Fig Candle, large');
+  });
+  it('stays busy while a new product opens, so a second click saves nothing twice', async () => {
+    saveProduct.mockResolvedValue({ ok: true, id: 'new' });
+    renderEditor({ ...emptyProductForm(), name: 'Fig Candle', price: '24' });
+    fireEvent.click(saveButtons()[0]!);
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/manage/products/new'));
+    const buttons = screen.getAllByRole('button', { name: 'Saving…' });
+    expect(buttons).toHaveLength(2);
+    for (const b of buttons) expect(b).toBeDisabled();
+  });
+  it('stays busy while the copy opens, so a second click makes no second copy', async () => {
+    duplicateProduct.mockResolvedValue({ ok: true, id: 'copy' });
+    renderEditor(existing());
+    fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products/copy'));
+    expect(screen.getByRole('button', { name: 'Duplicate' })).toBeDisabled();
+  });
+  it('keeps choices added while a choice’s file uploads', async () => {
+    const upload = deferred<{ ok: true; uploadId: string; fileName: string }>();
+    uploadProductFile.mockReturnValue(upload.promise);
+    renderEditor(existing(), true);
+    smallDownloadUploading();
+    addChoice('Size', 'Large');
+    await act(async () => upload.resolve({ ok: true, uploadId: 'f1', fileName: 'small.pdf' }));
+    expect(screen.getByText('small.pdf')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Remove Large' })).toBeInTheDocument();
+  });
+  it('says so when a choice goes away while its file uploads', async () => {
+    const upload = deferred<{ ok: true; uploadId: string; fileName: string }>();
+    uploadProductFile.mockReturnValue(upload.promise);
+    renderEditor(existing(), true);
+    smallDownloadUploading();
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Small' }));
+    await act(async () => upload.resolve({ ok: true, uploadId: 'f1', fileName: 'small.pdf' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('That choice changed while its file was uploading — upload the file again.');
+    expect(screen.queryByRole('button', { name: 'Remove Small' })).toBeNull();
+  });
+  it('keeps typed prices when an option name is cleared and a new one typed', () => {
+    renderEditor(existing());
+    sizeSmallAt30();
+    fireEvent.change(screen.getByLabelText('Option 1 name'), { target: { value: '' } });
+    fireEvent.change(screen.getByLabelText('Option 1 name'), { target: { value: 'Width' } });
+    expect(screen.getByLabelText('Price for Small')).toHaveValue('30');
+  });
+  it('does not rename typed prices onto a name another option already has', () => {
+    renderEditor(existing());
+    sizeSmallAt30();
+    fireEvent.click(screen.getByRole('button', { name: 'Add an option' }));
+    fireEvent.change(screen.getByLabelText('Option 2 name'), { target: { value: 'Colour' } });
+    addChoice('Colour', 'Red');
+    fireEvent.change(screen.getByLabelText('Price for Small / Red'), { target: { value: '35' } });
+    fireEvent.change(screen.getByLabelText('Option 2 name'), { target: { value: 'Size' } });
+    fireEvent.change(screen.getByLabelText('Option 2 name'), { target: { value: 'Colour' } });
+    expect(screen.getByLabelText('Price for Small / Red')).toHaveValue('35');
+  });
+  it('cannot archive while a save is in flight', () => {
+    saveProduct.mockReturnValue(new Promise(() => undefined));
+    renderEditor(existing({ status: 'active' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Archive' }));
+    fireEvent.click(saveButtons()[0]!);
+    expect(screen.getByRole('button', { name: 'Yes, archive it' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Keep it' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, archive it' }));
+    expect(saveProduct).toHaveBeenCalledTimes(1);
+  });
+  it('clears “Saved.” when a photo is added after saving', async () => {
+    saveProduct.mockResolvedValue({ ok: true, id: 'l1' });
+    uploadProductPhoto.mockResolvedValue({ ok: true, uploadId: 'p1', url: 'https://x/p1.webp' });
+    renderEditor(existing());
+    fireEvent.click(saveButtons()[0]!);
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Saved.'));
+    fireEvent.change(screen.getByLabelText('Add photos'), { target: { files: [new File(['x'], 'a.jpg', { type: 'image/jpeg' })] } });
+    await waitFor(() => expect(screen.getByAltText('Photo 1')).toBeInTheDocument());
+    expect(screen.getByRole('status')).toHaveTextContent('');
+  });
+  it('clears a stale error when a later save works', async () => {
+    saveProduct.mockResolvedValueOnce({ ok: false, error: 'The product couldn’t be saved. Try again in a moment.' }).mockResolvedValueOnce({ ok: true, id: 'l1' });
+    renderEditor(existing());
+    fireEvent.click(saveButtons()[0]!);
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('The product couldn’t be saved.'));
+    fireEvent.click(saveButtons()[0]!);
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Saved.'));
+    expect(screen.getByRole('alert')).toHaveTextContent('');
+  });
+  it('groups the status choices under a name', () => {
+    renderEditor(existing());
+    expect(screen.getByRole('group', { name: 'Status' })).toContainElement(screen.getByLabelText('Live on your shop'));
+  });
+  it('keeps the notice regions in the page and moves focus to a new error', () => {
+    renderEditor(emptyProductForm());
+    expect(screen.getByRole('alert')).toHaveTextContent('');
+    expect(screen.getByRole('status')).toHaveTextContent('');
+    fireEvent.click(saveButtons()[0]!);
+    expect(screen.getByRole('alert').parentElement).toHaveFocus();
+    const first = screen.getByText('Give the product a name.');
+    fireEvent.click(saveButtons()[0]!);
+    expect(screen.getByText('Give the product a name.')).not.toBe(first); // a fresh node, so it is announced again
+  });
+  it('asks for a save before duplicating unsaved changes', () => {
+    renderEditor(existing());
+    expect(screen.queryByText('Save your changes first')).toBeNull();
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Fig Candle, large' } });
+    expect(screen.getByRole('button', { name: 'Duplicate' })).toBeDisabled();
+    expect(screen.getByText('Save your changes first')).toBeInTheDocument();
   });
 });

@@ -46,4 +46,15 @@ describe('PhotosField', () => {
     await waitFor(() => expect(onError).toHaveBeenCalledWith('A product can have up to 12 photos. Remove one to add another.'));
     expect(uploadProductPhoto).not.toHaveBeenCalled();
   });
+  it('says how many were really added when the limit cut the pick short and one failed', async () => {
+    const ten = Array.from({ length: 10 }, (_, i) => ({ uploadId: `p${i}`, url: `https://x/${i}.webp` }));
+    uploadProductPhoto.mockResolvedValueOnce({ ok: true, uploadId: 'c', url: 'https://x/c.webp' }).mockResolvedValueOnce({ ok: false, error: 'Use a JPG, PNG or WebP photo.' });
+    const onError = vi.fn();
+    render(<PhotosField photos={ten} onAdd={vi.fn()} onChange={vi.fn()} onError={onError} />);
+    pick(screen.getByLabelText('Add photos'), ['one.jpg', 'two.gif', 'three.jpg']);
+    await waitFor(() =>
+      expect(onError).toHaveBeenCalledWith('A product can have up to 12 photos, so 1 of the 3 you picked was added. two.gif: Use a JPG, PNG or WebP photo.'),
+    );
+    expect(uploadProductPhoto).toHaveBeenCalledTimes(2);
+  });
 });

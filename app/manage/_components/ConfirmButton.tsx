@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /** Two-step confirm in the page: native confirm() is suppressed by embedded
- *  browsers, so the button swaps to "Yes / Keep it". */
+ *  browsers, so the button swaps to "Yes / Keep it". Focus follows the swap:
+ *  onto "Yes…" when it asks, back to the button after "Keep it". */
 export function ConfirmButton({
   label,
   confirmLabel,
@@ -18,9 +19,21 @@ export function ConfirmButton({
   disabled?: boolean;
 }): React.ReactElement {
   const [asking, setAsking] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const yes = useRef<HTMLButtonElement>(null);
+  const refocus = useRef(false);
+
+  useEffect(() => {
+    if (asking) yes.current?.focus();
+    else if (refocus.current) {
+      refocus.current = false;
+      trigger.current?.focus();
+    }
+  }, [asking]);
+
   if (!asking) {
     return (
-      <button type="button" className="bk-btn bk-btn-danger" disabled={disabled} onClick={() => setAsking(true)}>
+      <button ref={trigger} type="button" className="bk-btn bk-btn-danger" disabled={disabled} onClick={() => setAsking(true)}>
         {label}
       </button>
     );
@@ -28,8 +41,10 @@ export function ConfirmButton({
   return (
     <span className="bk-row">
       <button
+        ref={yes}
         type="button"
         className="bk-btn bk-btn-danger"
+        disabled={disabled}
         onClick={() => {
           setAsking(false);
           onConfirm();
@@ -37,7 +52,15 @@ export function ConfirmButton({
       >
         {confirmLabel}
       </button>
-      <button type="button" className="bk-btn bk-btn-quiet" onClick={() => setAsking(false)}>
+      <button
+        type="button"
+        className="bk-btn bk-btn-quiet"
+        disabled={disabled}
+        onClick={() => {
+          refocus.current = true;
+          setAsking(false);
+        }}
+      >
         {keepLabel}
       </button>
     </span>

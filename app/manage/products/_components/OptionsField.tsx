@@ -15,6 +15,7 @@ export function OptionsField({
   digital,
   onOptions,
   onVariants,
+  onChoiceFile,
   onError,
 }: {
   options: OptionForm[];
@@ -23,6 +24,9 @@ export function OptionsField({
   digital: boolean;
   onOptions: (options: OptionForm[]) => void;
   onVariants: (variants: VariantForm[]) => void;
+  /** A choice's file finished uploading. Named by option position and choice value as they
+   *  were when the upload started; the editor finds that choice in the form as it is now. */
+  onChoiceFile: (optionIndex: number, choiceValue: string, uploadId: string, fileName: string) => void;
   onError: (message: string) => void;
 }): React.ReactElement {
   const [drafts, setDrafts] = useState<Record<number, string>>({});
@@ -72,7 +76,7 @@ export function OptionsField({
                     <FileField
                       fileName={c.fileName}
                       label={`Upload the file for ${c.value}`}
-                      onUploaded={(id, fn) => setChoice(i, k, { ...c, fileUploadId: id, fileName: fn })}
+                      onUploaded={(id, fn) => onChoiceFile(i, c.value, id, fn)}
                       onError={onError}
                     />
                   )}

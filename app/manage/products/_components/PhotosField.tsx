@@ -31,21 +31,27 @@ export function PhotosField({
       return;
     }
     const failures: string[] = [];
-    if (files.length > room) failures.push(`A product can have up to ${MAX_PHOTOS} photos, so only the first ${room} were added.`);
+    let added = 0;
     for (const file of files.slice(0, room)) {
       setUploading((n) => n + 1);
       try {
         const data = new FormData();
         data.set('file', file);
         const r = await uploadProductPhoto(data);
-        if (r.ok) onAdd({ uploadId: r.uploadId, url: r.url });
-        else failures.push(`${file.name}: ${r.error}`);
+        if (r.ok) {
+          onAdd({ uploadId: r.uploadId, url: r.url });
+          added += 1;
+        } else failures.push(`${file.name}: ${r.error}`);
       } catch (err) {
         unstable_rethrow(err);
         failures.push(`${file.name}: The photo couldn’t be uploaded. Check your connection and try again.`);
       } finally {
         setUploading((n) => n - 1);
       }
+    }
+    // Counted after the uploads, so the number is what really landed, not what was tried.
+    if (files.length > room) {
+      failures.unshift(`A product can have up to ${MAX_PHOTOS} photos, so ${added} of the ${files.length} you picked ${added === 1 ? 'was' : 'were'} added.`);
     }
     if (failures.length > 0) onError(failures.join(' '));
   }

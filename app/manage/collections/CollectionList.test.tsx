@@ -30,18 +30,19 @@ describe('CollectionList', () => {
     fireEvent.change(screen.getByLabelText('New collection name'), { target: { value: 'Spring' } });
     fireEvent.click(screen.getByRole('button', { name: 'Add collection' }));
     await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/collections/c3'));
+    expect(screen.getByRole('button', { name: 'Add collection' })).toBeDisabled(); // no second copy while it opens
   });
   it('shows why a collection couldn’t be added', async () => {
     createCollection.mockResolvedValue({ ok: false, error: 'Give the collection a name.' });
     render(<CollectionList collections={list} />);
     fireEvent.click(screen.getByRole('button', { name: 'Add collection' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Give the collection a name.');
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Give the collection a name.'));
   });
   it('shows a message when adding throws', async () => {
     createCollection.mockRejectedValue(new Error('network'));
     render(<CollectionList collections={list} />);
     fireEvent.click(screen.getByRole('button', { name: 'Add collection' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong.');
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong.'));
   });
   it('moves a collection and saves the order, putting it back if saving fails', async () => {
     orderCollections.mockResolvedValueOnce({ ok: true }).mockResolvedValueOnce({ ok: false, error: 'The new order couldn’t be saved. Try again.' });
@@ -49,14 +50,14 @@ describe('CollectionList', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Move Gifts up' }));
     await waitFor(() => expect(orderCollections).toHaveBeenCalledWith(['c2', 'c1']));
     fireEvent.click(screen.getByRole('button', { name: 'Move Gifts down' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('The new order couldn’t be saved. Try again.');
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('The new order couldn’t be saved. Try again.'));
     expect(screen.getAllByRole('listitem')[0]).toHaveTextContent('Gifts');
   });
   it('puts the order back when saving it throws', async () => {
     orderCollections.mockRejectedValue(new Error('network'));
     render(<CollectionList collections={list} />);
     fireEvent.click(screen.getByRole('button', { name: 'Move Gifts up' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong.');
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong.'));
     expect(screen.getAllByRole('listitem')[0]).toHaveTextContent('Autumn');
   });
   it('says when there are none yet', () => {

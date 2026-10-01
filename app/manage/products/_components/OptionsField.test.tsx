@@ -9,8 +9,8 @@ import type { OptionForm, VariantForm } from '@/lib/backend/catalog/product-form
 const size: OptionForm = { name: 'Size', choices: [{ value: 'Small', kind: 'physical', fileUploadId: null, fileName: null }] };
 const variants: VariantForm[] = [{ choices: { Size: 'Small' }, price: '', stock: '', available: true }];
 
-const setup = (over: Partial<Omit<React.ComponentProps<typeof OptionsField>, 'onOptions' | 'onVariants' | 'onError'>> = {}) => {
-  const props = { options: [size], variants, basePrice: '24', digital: false, onOptions: vi.fn(), onVariants: vi.fn(), onError: vi.fn(), ...over };
+const setup = (over: Partial<Omit<React.ComponentProps<typeof OptionsField>, 'onOptions' | 'onVariants' | 'onChoiceFile' | 'onError'>> = {}) => {
+  const props = { options: [size], variants, basePrice: '24', digital: false, onOptions: vi.fn(), onVariants: vi.fn(), onChoiceFile: vi.fn(), onError: vi.fn(), ...over };
   render(<OptionsField {...props} />);
   return props;
 };

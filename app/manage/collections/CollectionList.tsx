@@ -6,6 +6,7 @@ import { useRouter, unstable_rethrow } from 'next/navigation';
 import { createCollection, orderCollections } from '@/lib/backend/catalog/actions';
 import { moveItem } from '@/lib/backend/catalog/collection-form';
 import type { CollectionRowView } from '@/lib/backend/catalog/queries';
+import { useNotice } from '../_components/Notice';
 
 const STATUS_LABEL = { active: 'Live', draft: 'Draft', archived: 'Archived' } as const;
 const FAILED = 'Something went wrong. Check your connection and try again.';
@@ -15,28 +16,33 @@ export function CollectionList({ collections }: { collections: CollectionRowView
   const router = useRouter();
   const [list, setList] = useState(collections);
   const [name, setName] = useState('');
-  const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const notice = useRef<HTMLDivElement>(null);
-
-  const showError = (message: string) => {
-    setError(message);
-    notice.current?.scrollIntoView({ block: 'nearest' });
-  };
+  /** Set the moment an add starts, so a second click before the next render does nothing. */
+  const inFlight = useRef(false);
+  const { showError, clearError, area } = useNotice();
 
   async function add(e: React.FormEvent): Promise<void> {
     e.preventDefault();
+    if (inFlight.current) return;
+    inFlight.current = true;
     setBusy(true);
-    setError('');
+    clearError();
+    let leaving = false;
     try {
       const r = await createCollection(name);
-      if (r.ok) router.push(`/manage/collections/${r.id}`);
-      else showError(r.error);
+      if (r.ok) {
+        // Stay busy while the new collection opens, so a second click adds no second one.
+        leaving = true;
+        router.push(`/manage/collections/${r.id}`);
+      } else showError(r.error);
     } catch (err) {
       unstable_rethrow(err);
       showError(FAILED);
     } finally {
-      setBusy(false);
+      if (!leaving) {
+        inFlight.current = false;
+        setBusy(false);
+      }
     }
   }
 
@@ -44,7 +50,7 @@ export function CollectionList({ collections }: { collections: CollectionRowView
     const before = list;
     const next = moveItem(list, index, delta);
     setList(next);
-    setError('');
+    clearError();
     try {
       const r = await orderCollections(next.map((c) => c.id));
       if (!r.ok) {
@@ -60,7 +66,7 @@ export function CollectionList({ collections }: { collections: CollectionRowView
 
   return (
     <>
-      <div ref={notice}>{error !== '' && <p role="alert" className="bk-notice">{error}</p>}</div>
+      {area}
       <form className="bk-section bk-row" onSubmit={(e) => void add(e)}>
         <div className="bk-field">
           <label htmlFor="new-collection" className="bk-label">New collection name</label>

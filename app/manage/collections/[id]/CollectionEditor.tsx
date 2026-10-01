@@ -7,6 +7,7 @@ import { buildCollectionPayload, moveItem, type CollectionForm } from '@/lib/bac
 import type { ItemStatus } from '@/lib/backend/catalog/product-form';
 import type { ProductRowView } from '@/lib/backend/catalog/queries';
 import { ConfirmButton } from '../../_components/ConfirmButton';
+import { useNotice } from '../../_components/Notice';
 
 const FAILED = 'Something went wrong. Check your connection and try again.';
 const STATUSES: { value: ItemStatus; label: string }[] = [
@@ -21,10 +22,10 @@ export function CollectionEditor({ initial, products }: { initial: CollectionFor
   const [form, setForm] = useState(initial);
   /** The last saved version — drives the title and the archive button. */
   const [stored, setStored] = useState(initial);
-  const [error, setError] = useState('');
-  const [saved, setSaved] = useState('');
   const [busy, setBusy] = useState(false);
-  const notice = useRef<HTMLDivElement>(null);
+  /** Set the moment a save starts, so a second click before the next render does nothing. */
+  const inFlight = useRef(false);
+  const notice = useNotice();
 
   const byId = new Map(products.map((p) => [p.id, p]));
   const inIt = form.productIds.map((id) => byId.get(id)).filter((p): p is ProductRowView => p !== undefined);
@@ -32,35 +33,35 @@ export function CollectionEditor({ initial, products }: { initial: CollectionFor
   const covers = inIt.filter((p): p is ProductRowView & { photoUploadId: string; photoUrl: string } => p.photoUploadId !== null && p.photoUrl !== null);
   const update = (patch: Partial<CollectionForm>) => {
     setForm((f) => ({ ...f, ...patch }));
-    setSaved('');
-  };
-  const showError = (message: string) => {
-    setError(message);
-    setSaved('');
-    notice.current?.scrollIntoView({ block: 'nearest' });
+    notice.clearSaved();
   };
 
-  async function save(next: CollectionForm): Promise<void> {
+  /** Save the form with `patch` on top. On success only the saved copy takes the sent
+   *  version: the form keeps anything changed while the save was in flight. */
+  async function save(patch: Partial<CollectionForm> = {}): Promise<void> {
+    if (inFlight.current) return;
+    const next = { ...form, ...patch };
     const check = buildCollectionPayload(next);
     if (!check.ok) {
-      showError(check.error);
+      notice.showError(check.error);
       return;
     }
+    inFlight.current = true;
     setBusy(true);
-    setError('');
-    setSaved('');
+    notice.clear();
     try {
       const r = await saveCollection(next);
       if (r.ok) {
-        setForm(next);
         setStored(next);
-        setSaved('Saved.');
+        setForm((f) => ({ ...f, ...patch }));
+        notice.showSaved('Saved.');
         router.refresh();
-      } else showError(r.error);
+      } else notice.showError(r.error);
     } catch (err) {
       unstable_rethrow(err);
-      showError(FAILED);
+      notice.showError(FAILED);
     } finally {
+      inFlight.current = false;
       setBusy(false);
     }
   }
@@ -71,16 +72,13 @@ export function CollectionEditor({ initial, products }: { initial: CollectionFor
         <h1 className="bk-title">{stored.name}</h1>
         <div className="bk-head-actions">
           {stored.status !== 'archived' && (
-            <ConfirmButton label="Archive" confirmLabel="Yes, archive it" disabled={busy} onConfirm={() => void save({ ...form, status: 'archived' })} />
+            <ConfirmButton label="Archive" confirmLabel="Yes, archive it" disabled={busy} onConfirm={() => void save({ status: 'archived' })} />
           )}
-          <button type="button" className="bk-btn" disabled={busy} onClick={() => void save(form)}>{busy ? 'Saving…' : 'Save'}</button>
+          <button type="button" className="bk-btn" disabled={busy} onClick={() => void save()}>{busy ? 'Saving…' : 'Save'}</button>
         </div>
       </div>
       <main id="main" className="bk-content">
-        <div ref={notice}>
-          {error !== '' && <p role="alert" className="bk-notice">{error}</p>}
-          {saved !== '' && <p role="status" className="bk-notice" data-tone="ok">{saved}</p>}
-        </div>
+        {notice.area}
 
         <section className="bk-section" aria-labelledby="c-basics">
           <h2 id="c-basics" className="bk-section-title">The basics</h2>
@@ -144,39 +142,47 @@ export function CollectionEditor({ initial, products }: { initial: CollectionFor
         </section>
 
         <section className="bk-section" aria-labelledby="c-cover">
-          <h2 id="c-cover" className="bk-section-title">Cover photo</h2>
-          <div className="bk-checks">
-            <label className="bk-check">
-              <input type="radio" name="cover" checked={form.featuredImageId === null} onChange={() => update({ featuredImageId: null })} />
-              First product’s photo (automatic)
-            </label>
-            {covers.map((p) => (
-              <label key={p.id} className="bk-check">
-                <input type="radio" name="cover" checked={form.featuredImageId === p.photoUploadId} onChange={() => update({ featuredImageId: p.photoUploadId })} />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.photoUrl} alt="" className="bk-thumb" />
-                {`${p.name}’s photo`}
-              </label>
-            ))}
-            {form.featuredImageId !== null && !covers.some((p) => p.photoUploadId === form.featuredImageId) && (
+          <fieldset className="bk-fieldset">
+            <legend>
+              <h2 id="c-cover" className="bk-section-title">Cover photo</h2>
+            </legend>
+            <div className="bk-checks">
               <label className="bk-check">
-                <input type="radio" name="cover" checked readOnly />
-                The cover photo chosen before
+                <input type="radio" name="cover" checked={form.featuredImageId === null} onChange={() => update({ featuredImageId: null })} />
+                First product’s photo (automatic)
               </label>
-            )}
-          </div>
+              {covers.map((p) => (
+                <label key={p.id} className="bk-check">
+                  <input type="radio" name="cover" checked={form.featuredImageId === p.photoUploadId} onChange={() => update({ featuredImageId: p.photoUploadId })} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={p.photoUrl} alt="" className="bk-thumb" />
+                  {`${p.name}’s photo`}
+                </label>
+              ))}
+              {form.featuredImageId !== null && !covers.some((p) => p.photoUploadId === form.featuredImageId) && (
+                <label className="bk-check">
+                  <input type="radio" name="cover" checked readOnly />
+                  The cover photo chosen before
+                </label>
+              )}
+            </div>
+          </fieldset>
         </section>
 
         <section className="bk-section" aria-labelledby="c-status">
-          <h2 id="c-status" className="bk-section-title">Status</h2>
-          <div className="bk-checks">
-            {STATUSES.map((s) => (
-              <label key={s.value} className="bk-check">
-                <input type="radio" name="c-status" checked={form.status === s.value} onChange={() => update({ status: s.value })} />
-                {s.label}
-              </label>
-            ))}
-          </div>
+          <fieldset className="bk-fieldset">
+            <legend>
+              <h2 id="c-status" className="bk-section-title">Status</h2>
+            </legend>
+            <div className="bk-checks">
+              {STATUSES.map((s) => (
+                <label key={s.value} className="bk-check">
+                  <input type="radio" name="c-status" checked={form.status === s.value} onChange={() => update({ status: s.value })} />
+                  {s.label}
+                </label>
+              ))}
+            </div>
+          </fieldset>
         </section>
       </main>
     </>

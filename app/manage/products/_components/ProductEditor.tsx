@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, unstable_rethrow } from 'next/navigation';
 import { saveProduct, duplicateProduct } from '@/lib/backend/catalog/actions';
 import type { SaveResult } from '@/lib/backend/catalog/results';
@@ -16,11 +16,13 @@ import {
   type PhotoForm,
 } from '@/lib/backend/catalog/product-form';
 import { ConfirmButton } from '../../_components/ConfirmButton';
+import { useNotice } from '../../_components/Notice';
 import { PhotosField } from './PhotosField';
 import { OptionsField } from './OptionsField';
 import { FileField } from './FileField';
 
 const FAILED = 'Something went wrong. Check your connection and try again.';
+const CHOICE_GONE = 'That choice changed while its file was uploading — upload the file again.';
 const STATUSES: { value: ItemStatus; label: string }[] = [
   { value: 'draft', label: 'Draft — only you can see it' },
   { value: 'active', label: 'Live on your shop' },
@@ -33,6 +35,10 @@ function remember(memory: readonly VariantForm[], rows: readonly VariantForm[]):
   for (const r of rows) byKey.set(combinationKey(r.choices), r);
   return [...byKey.values()];
 }
+
+/** Does the form still have this choice where it was when its file upload started? */
+const hasChoice = (f: ProductForm, optionIndex: number, value: string): boolean =>
+  f.options[optionIndex]?.choices.some((c) => c.value === value) === true;
 
 /** One form, one Save (Penny's bundles editor): the basics, photos, price and stock,
  *  options, collections, status. Every failure lands in the notice at the top. */
@@ -49,19 +55,28 @@ export function ProductEditor({
 }): React.ReactElement {
   const router = useRouter();
   const [form, setForm] = useState(initial);
-  /** The last saved version — drives the title, the shop link and the archive button. */
+  /** The last saved version — drives the title, the shop link, the archive button, and
+   *  whether there are unsaved changes. */
   const [stored, setStored] = useState(initial);
   /** Every combination row typed this session, so a combination that disappears
    *  (choice removed, option renamed or blanked mid-edit) comes back with its values. */
   const [variantMemory, setVariantMemory] = useState<VariantForm[]>(initial.variants);
-  const [error, setError] = useState('');
-  const [saved, setSaved] = useState('');
+  /** The last non-blank name at each option position, so clearing a name and typing a
+   *  new one is still a rename of what it was. */
+  const lastNames = useRef(initial.options.map((o) => o.name.trim()));
   const [busy, setBusy] = useState(false);
-  const notice = useRef<HTMLDivElement>(null);
+  /** Set the moment a call starts, so a second click before the next render does nothing. */
+  const inFlight = useRef(false);
+  /** The form as last rendered, for upload results that arrive later. */
+  const latest = useRef(form);
+  useEffect(() => {
+    latest.current = form;
+  }, [form]);
+  const notice = useNotice();
 
   const update = (patch: Partial<ProductForm>) => {
     setForm((f) => ({ ...f, ...patch }));
-    setSaved('');
+    notice.clearSaved();
   };
   const setVariants = (variants: VariantForm[]) => {
     setVariantMemory((m) => remember(m, variants));
@@ -73,45 +88,80 @@ export function ProductEditor({
     // Only a same-length change can be a rename: removing an option shifts positions,
     // and pairing names by position then would wrongly rename one option to another.
     let memory = variantMemory;
-    if (next.length === form.options.length) next.forEach((o, i) => {
-      const before = form.options[i];
-      if (before === undefined) return;
-      const from = before.name.trim();
-      const to = o.name.trim();
-      if (from !== '' && to !== '' && from !== to) memory = renameOptionInVariants(memory, from, to);
-    });
+    const names = next.map((o) => o.name.trim());
+    if (next.length === form.options.length) {
+      const last = [...lastNames.current];
+      names.forEach((to, i) => {
+        if (to === '') return; // blanked: keep what it was, for when a name comes back
+        if (names.some((n, j) => j !== i && n === to)) return; // another option has that name
+        const from = last[i] ?? '';
+        if (from !== '' && from !== to) memory = renameOptionInVariants(memory, from, to);
+        last[i] = to;
+      });
+      lastNames.current = last;
+    } else {
+      lastNames.current = names;
+    }
     memory = remember([], memory); // a rename can land on a key already remembered; keep one row per combination
     setVariantMemory(memory);
     setForm((f) => ({ ...f, options: next, variants: syncVariants(next, memory) }));
-    setSaved('');
+    notice.clearSaved();
   };
-  const addPhoto = (photo: PhotoForm) => setForm((f) => ({ ...f, photos: [...f.photos, photo] }));
-  const showError = (message: string) => {
-    setError(message);
-    setSaved('');
-    notice.current?.scrollIntoView({ block: 'nearest' });
+  const addPhoto = (photo: PhotoForm) => {
+    setForm((f) => ({ ...f, photos: [...f.photos, photo] }));
+    notice.clear();
+  };
+  /** A choice's file landed. Options may have changed while it uploaded, so find the
+   *  choice in the form as it is now, never in the arrays from when the upload began. */
+  const setChoiceFile = (optionIndex: number, value: string, uploadId: string, fileName: string) => {
+    if (!hasChoice(latest.current, optionIndex, value)) {
+      notice.showError(CHOICE_GONE);
+      return;
+    }
+    setForm((f) =>
+      !hasChoice(f, optionIndex, value)
+        ? f
+        : {
+            ...f,
+            options: f.options.map((o, i) =>
+              i !== optionIndex ? o : { ...o, choices: o.choices.map((c) => (c.value === value ? { ...c, fileUploadId: uploadId, fileName } : c)) },
+            ),
+          },
+    );
+    notice.clear();
   };
 
-  async function run(action: () => Promise<SaveResult>, done: (id: string) => void): Promise<void> {
+  /** Run one server call. When `done` navigates away it returns 'leave' and the page
+   *  stays busy, so the buttons can't fire again while the next page loads. */
+  async function run(action: () => Promise<SaveResult>, done: (id: string) => 'leave' | 'stay'): Promise<void> {
+    if (inFlight.current) return;
+    inFlight.current = true;
     setBusy(true);
-    setError('');
-    setSaved('');
+    notice.clear();
+    let leaving = false;
     try {
       const r = await action();
-      if (r.ok) done(r.id);
-      else showError(r.error);
+      if (r.ok) leaving = done(r.id) === 'leave';
+      else notice.showError(r.error);
     } catch (err) {
       unstable_rethrow(err);
-      showError(FAILED);
+      notice.showError(FAILED);
     } finally {
-      setBusy(false);
+      if (!leaving) {
+        inFlight.current = false;
+        setBusy(false);
+      }
     }
   }
 
-  function save(next: ProductForm): void {
+  /** Save the form with `patch` on top. On success only the saved copy takes the sent
+   *  version: the form keeps anything typed or uploaded while the save was in flight. */
+  function save(patch: Partial<ProductForm> = {}): void {
+    if (inFlight.current) return;
+    const next = { ...form, ...patch };
     const check = buildProductPayload(next, { digital });
     if (!check.ok) {
-      showError(check.error);
+      notice.showError(check.error);
       return;
     }
     void run(
@@ -119,20 +169,22 @@ export function ProductEditor({
       (id) => {
         if (next.id === null) {
           router.replace(`/manage/products/${id}`);
-          return;
+          return 'leave';
         }
-        setForm(next);
         setStored(next);
-        setSaved('Saved.');
+        setForm((f) => ({ ...f, ...patch }));
+        notice.showSaved('Saved.');
         router.refresh();
+        return 'stay';
       },
     );
   }
 
   const noOptions = form.options.length === 0;
   const isNew = form.id === null;
+  const unsaved = JSON.stringify(form) !== JSON.stringify(stored);
   const saveButton = (
-    <button type="button" className="bk-btn" disabled={busy} onClick={() => save(form)}>
+    <button type="button" className="bk-btn" disabled={busy} onClick={() => save()}>
       {busy ? 'Saving…' : 'Save'}
     </button>
   );
@@ -147,22 +199,38 @@ export function ProductEditor({
               View on your shop
             </a>
           )}
+          {!isNew && unsaved && (
+            <span id="dup-note" className="bk-note">
+              Save your changes first
+            </span>
+          )}
           {!isNew && (
-            <button type="button" className="bk-btn bk-btn-quiet" disabled={busy} onClick={() => void run(() => duplicateProduct(form), (id) => router.push(`/manage/products/${id}`))}>
+            <button
+              type="button"
+              className="bk-btn bk-btn-quiet"
+              disabled={busy || unsaved}
+              aria-describedby={unsaved ? 'dup-note' : undefined}
+              onClick={() =>
+                void run(
+                  () => duplicateProduct(form),
+                  (id) => {
+                    router.push(`/manage/products/${id}`);
+                    return 'leave';
+                  },
+                )
+              }
+            >
               Duplicate
             </button>
           )}
           {!isNew && stored.status !== 'archived' && (
-            <ConfirmButton label="Archive" confirmLabel="Yes, archive it" disabled={busy} onConfirm={() => save({ ...form, status: 'archived' })} />
+            <ConfirmButton label="Archive" confirmLabel="Yes, archive it" disabled={busy} onConfirm={() => save({ status: 'archived' })} />
           )}
           {saveButton}
         </div>
       </div>
       <main id="main" className="bk-content">
-        <div ref={notice}>
-          {error !== '' && <p role="alert" className="bk-notice">{error}</p>}
-          {saved !== '' && <p role="status" className="bk-notice" data-tone="ok">{saved}</p>}
-        </div>
+        {notice.area}
 
         <section className="bk-section" aria-labelledby="s-basics">
           <h2 id="s-basics" className="bk-section-title">The basics</h2>
@@ -182,7 +250,7 @@ export function ProductEditor({
 
         <section className="bk-section" aria-labelledby="s-photos">
           <h2 id="s-photos" className="bk-section-title">Photos</h2>
-          <PhotosField photos={form.photos} onAdd={addPhoto} onChange={(photos) => update({ photos })} onError={showError} />
+          <PhotosField photos={form.photos} onAdd={addPhoto} onChange={(photos) => update({ photos })} onError={notice.showError} />
         </section>
 
         <section className="bk-section" aria-labelledby="s-price">
@@ -201,7 +269,7 @@ export function ProductEditor({
           </div>
           {!noOptions && <p className="bk-note">With options, each combination below has its own stock. A blank combination price uses this one.</p>}
           {digital && noOptions && (
-            <fieldset className="bk-field">
+            <fieldset className="bk-field bk-fieldset">
               <legend className="bk-label">How it’s sold</legend>
               <div className="bk-row">
                 <label className="bk-check">
@@ -214,7 +282,15 @@ export function ProductEditor({
                 </label>
               </div>
               {form.kind === 'digital' && (
-                <FileField fileName={form.fileName} label="Upload the download file" onUploaded={(id, fileName) => update({ fileUploadId: id, fileName })} onError={showError} />
+                <FileField
+                  fileName={form.fileName}
+                  label="Upload the download file"
+                  onUploaded={(id, fileName) => {
+                    update({ fileUploadId: id, fileName });
+                    notice.clearError();
+                  }}
+                  onError={notice.showError}
+                />
               )}
             </fieldset>
           )}
@@ -229,7 +305,8 @@ export function ProductEditor({
             digital={digital}
             onOptions={setOptions}
             onVariants={setVariants}
-            onError={showError}
+            onChoiceFile={setChoiceFile}
+            onError={notice.showError}
           />
         </section>
 
@@ -254,15 +331,19 @@ export function ProductEditor({
         </section>
 
         <section className="bk-section" aria-labelledby="s-status">
-          <h2 id="s-status" className="bk-section-title">Status</h2>
-          <div className="bk-checks">
-            {STATUSES.map((s) => (
-              <label key={s.value} className="bk-check">
-                <input type="radio" name="status" checked={form.status === s.value} onChange={() => update({ status: s.value })} />
-                {s.label}
-              </label>
-            ))}
-          </div>
+          <fieldset className="bk-fieldset">
+            <legend>
+              <h2 id="s-status" className="bk-section-title">Status</h2>
+            </legend>
+            <div className="bk-checks">
+              {STATUSES.map((s) => (
+                <label key={s.value} className="bk-check">
+                  <input type="radio" name="status" checked={form.status === s.value} onChange={() => update({ status: s.value })} />
+                  {s.label}
+                </label>
+              ))}
+            </div>
+          </fieldset>
         </section>
 
         <p className="bk-row">{saveButton}</p>
