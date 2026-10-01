@@ -54,6 +54,8 @@ export function ProductTable({ products }: { products: ProductRowView[] }): Reac
                 <tr key={p.id} aria-label={p.name}>
                   <td>
                     {p.photoUrl !== null ? (
+                      // The maker's own upload, already shrunk to WebP on upload: plain img like the other maker-photo spots.
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img src={p.photoUrl} alt="" className="bk-thumb" />
                     ) : (
                       <span className="bk-thumb bk-thumb-empty">No photo</span>
