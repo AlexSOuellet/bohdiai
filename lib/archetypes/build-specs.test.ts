@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { MAIN_STREET_SPEC } from './main-street/builder';
+import { CONTRACTOR_SPEC } from './contractor/builder';
 
 const msContent = {
   shopName: 'Tannery Row',
@@ -44,6 +45,13 @@ describe('catalog-size gate', () => {
     expect(MAIN_STREET_SPEC.fitsCatalog(45)).toBe(true);
   });
 
+});
+
+describe('catalog use', () => {
+  it('Main Street shows the shop’s products and collections; the contractor page shows none', () => {
+    expect(MAIN_STREET_SPEC.usesCatalog).toBe(true);
+    expect(CONTRACTOR_SPEC.usesCatalog).toBe(false);
+  });
 });
 
 describe('MAIN_STREET_SPEC', () => {

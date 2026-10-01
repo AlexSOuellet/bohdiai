@@ -19,7 +19,9 @@ vi.mock('@/lib/storefront/load-envelope', () => ({
   loadTenantChrome: () => Promise.resolve({ logoUrl: undefined, brandColors: [] }),
 }));
 vi.mock('@/lib/editor/preview-token', () => ({ verifyPreviewToken: (t: string) => verify(t) }));
-vi.mock('@/lib/archetypes/registry', () => ({ archetypeSpec: () => ({ render: specRender }) }));
+// Whether the mocked archetype shows the shop's catalog (Main Street does, the contractor page doesn't).
+let specUsesCatalog = true;
+vi.mock('@/lib/archetypes/registry', () => ({ archetypeSpec: () => ({ render: specRender, usesCatalog: specUsesCatalog }) }));
 vi.mock('next/headers', () => ({ headers: () => Promise.resolve(new Map([['x-tenant-id', 't1']])) }));
 vi.mock('next/navigation', () => ({ notFound: () => { throw new Error('notFound'); } }));
 
@@ -49,6 +51,7 @@ beforeEach(() => {
   loadDraft.mockReset();
   verify.mockReset();
   specRender.mockClear();
+  specUsesCatalog = true;
   loadCatalog.mockReset();
   loadCollections.mockReset();
   loadCatalog.mockResolvedValue({ products: [], byId: new Map() });
@@ -157,5 +160,30 @@ describe('collections', () => {
   it('404s for a collection that is not live', async () => {
     await expect(StorefrontPage({ slug: '/collections/winter' })).rejects.toThrow('notFound');
     expect(specRender).not.toHaveBeenCalled();
+  });
+});
+
+describe('archetypes without a catalog', () => {
+  beforeEach(() => {
+    specUsesCatalog = false;
+    loadHome.mockResolvedValue({ archetypeKey: 'contractor', lookKey: 'contractor', content: {} });
+  });
+
+  it('never reads the catalog, so a catalog outage cannot take the page down', async () => {
+    loadCatalog.mockRejectedValue(new Error('Could not load products'));
+    loadCollections.mockRejectedValue(new Error('Could not load collections'));
+    await StorefrontPage({ slug: '/' });
+    expect(loadCatalog).not.toHaveBeenCalled();
+    expect(loadCollections).not.toHaveBeenCalled();
+    expect(specRender).toHaveBeenCalledWith(expect.objectContaining({ products: [], collections: [] }));
+  });
+});
+
+describe('archetypes with a catalog', () => {
+  it('reads the catalog and collections', async () => {
+    loadHome.mockResolvedValue({ ...ENV });
+    await StorefrontPage({ slug: '/' });
+    expect(loadCatalog).toHaveBeenCalledWith(expect.anything(), 't1');
+    expect(loadCollections).toHaveBeenCalled();
   });
 });

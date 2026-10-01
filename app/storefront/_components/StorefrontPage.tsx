@@ -245,9 +245,15 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
 
   // The live catalog through the shared projection (every photo, options, prices,
   // sold out), then the live collections in the maker's order (listing_collections).
-  const catalog = await loadCatalog(supabaseAdmin(), tenantId);
-  const products = catalog.products;
-  const storeCollections = await loadCollections(supabaseAdmin(), tenantId, catalog);
+  // An archetype with no catalog (the contractor page) never reads it, so a catalog
+  // read failure can't take that page down.
+  let products: ProductView[] = [];
+  let storeCollections: Awaited<ReturnType<typeof loadCollections>> = [];
+  if (spec.usesCatalog) {
+    const catalog = await loadCatalog(supabaseAdmin(), tenantId);
+    products = catalog.products;
+    storeCollections = await loadCollections(supabaseAdmin(), tenantId, catalog);
+  }
 
   // Collections band data. When the store has none and ?collections= is set, seed
   // sample ones so every band is viewable. Absent → no Collections beat renders.

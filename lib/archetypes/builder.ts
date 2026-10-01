@@ -77,6 +77,10 @@ export interface ArchetypeBuildSpec<T = unknown> {
   /** A layout Claude builds BY HAND for a client (e.g. a contractor landing page).
    *  Never offered on Bohdi's onboarding menu; still rendered like any archetype. */
   handBuilt?: boolean;
+  /** Whether this archetype shows the shop's catalog (products + collections).
+   *  Required so every new archetype decides. When false the storefront never
+   *  reads the catalog, so a catalog read failure can't take the page down. */
+  usesCatalog: boolean;
   /** The sub-pages this archetype paints, beyond the home. Omitted = every
    *  standard page. A route for a page not listed 404s instead of rendering. */
   pages?: readonly ArchetypePage[];

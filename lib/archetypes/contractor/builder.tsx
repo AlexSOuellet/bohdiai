@@ -33,6 +33,8 @@ export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
   menuDescription:
     'A one-page site for a trade that sells on photos of real jobs and closes on an estimate request: their work, what customers said, who shows up, where they work, and the request form.',
   handBuilt: true,
+  // A one-page trade site: no products, no collections.
+  usesCatalog: false,
   pages: [],
   fitsCatalog: () => false,
   looks: [{ key: CONTRACTOR_LOOK, label: 'Contractor', description: 'The business’s own colors on a dark ground.' }],

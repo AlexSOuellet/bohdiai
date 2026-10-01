@@ -280,6 +280,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
     'A paced sales page whose hero IS a cinematic moment — a held video with the brand story revealing line by line — then goods in motion, the founder beside a find-us calendar, and a big-type close. For a maker whose pitch is a feeling and a story, with a modest-to-large catalog shown as a sampling.',
   // Works at any catalog size — the home is a sampling, so even a few products read fine.
   fitsCatalog: () => true,
+  usesCatalog: true,
   looks,
   parseSubmission,
   mediaJobs,
