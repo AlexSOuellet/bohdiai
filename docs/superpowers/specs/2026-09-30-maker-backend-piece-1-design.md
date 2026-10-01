@@ -125,3 +125,16 @@ Tests are part of done, and the CI coverage gate holds (lib `.ts` ≥ 90%, `.tsx
 - **End to end:** sign in, add a product with options and photos, put it in two collections, see it on the shop; a user who is not the shop's admin is refused; the domain panel's four states.
 - **Live checks before calling it done:** a real invite → set password → sign in; one real custom domain connected end to end; one real video processed and playing.
 - **Alex's eyes gate visible work** — the backend screens and the storefront product page — before merge.
+
+## 10. Decisions added while building 1b Catalog (Session 90, 2026-10-01)
+
+Approved by Alex; built and live. Plan: `docs/superpowers/plans/2026-10-01-maker-backend-1b-catalog.md`.
+
+- **Limits:** up to 3 options per product, 30 choices per option, 100 combinations, 12 photos.
+- **Prices on the shop:** a product whose combinations differ in price shows "from $X" (lowest buyable price); a sold-out product shows "Sold out" where the price would be. The product page has a dropdown per option; the chosen combination's price shows, and choices that are sold out or not offered are marked.
+- **Archive, not delete** for products and collections (hidden from the shop, kept in the backend).
+- **Look:** Penny's admin look; her admin has no product editor, so the product editor follows her bundles editor (one form, one Save).
+- **Save returns to the list** (Alex, walk-through): saving or archiving a product or collection goes back to its list with a "Saved …" line, because staying on the page looked like nothing had saved. Errors keep the owner on the page with the message.
+- **Home page products — the owner chooses, at most 5** (Alex, walk-through): a Home column on the Products list with a tick per product, saved on click; the database refuses a 6th. With nothing ticked the home page shows the first five live products, as before. The same tick sits near the top of the product editor.
+- **Downloads** attach to the choice that is a download (or to the product when it has no options) and are stored privately; delivery is piece 2 and must force a download (`Content-Disposition: attachment`).
+- **Blank means not set:** a blank combination price uses the product price; blank stock means made to order; stock 0 is sold out.
