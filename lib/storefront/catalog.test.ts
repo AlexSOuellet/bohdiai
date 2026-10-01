@@ -28,6 +28,7 @@ const row = (over: Partial<ListingRow> = {}): ListingRow => ({
   media_ids: ['u1', 'u2'],
   inventory_count: null,
   is_preview: false,
+  on_home: false,
   ...over,
 });
 const media = resolveMediaMap([
@@ -77,6 +78,10 @@ describe('toProductView', () => {
       media: mediaForListing(row(), media),
       variations: [],
     });
+  });
+  it('marks a product the owner put on the home page, and only that one', () => {
+    expect(toProductView(row({ on_home: true }), [], [], media).onHome).toBe(true);
+    expect(toProductView(row(), [], [], media)).not.toHaveProperty('onHome');
   });
   it('is sold out when its stock is 0, not when it is blank', () => {
     expect(toProductView(row({ inventory_count: 0 }), [], [], media).status).toBe('sold_out');

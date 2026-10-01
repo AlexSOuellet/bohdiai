@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import type { ProductRowView } from '@/lib/backend/catalog/queries';
+import { HOME_MAX } from '@/lib/backend/catalog/product-form';
 
 type Show = 'current' | 'active' | 'draft' | 'archived';
 const STATUS_LABEL = { active: 'Live', draft: 'Draft', archived: 'Archived' } as const;
@@ -13,6 +14,7 @@ export function ProductTable({ products }: { products: ProductRowView[] }): Reac
 
   if (products.length === 0) return <p className="bk-note">No products yet. Add your first one to get started.</p>;
 
+  const onHome = products.filter((p) => p.onHome && p.status !== 'archived').length;
   const needle = find.trim().toLowerCase();
   const visible = products.filter(
     (p) => (show === 'current' ? p.status !== 'archived' : p.status === show) && (needle === '' || p.name.toLowerCase().includes(needle)),
@@ -35,6 +37,7 @@ export function ProductTable({ products }: { products: ProductRowView[] }): Reac
           </select>
         </div>
       </div>
+      <p className="bk-note">{`On your home page: ${onHome} of ${HOME_MAX}`}</p>
       {visible.length === 0 ? (
         <p className="bk-note">No products match.</p>
       ) : (
@@ -63,6 +66,7 @@ export function ProductTable({ products }: { products: ProductRowView[] }): Reac
                   </td>
                   <td>
                     <Link href={`/manage/products/${p.id}`} className="bk-link">{p.name}</Link>
+                    {p.onHome && <span className="bk-pill bk-pill-home">Home</span>}
                   </td>
                   <td>{p.priceLabel}</td>
                   <td>{p.stockLabel}</td>

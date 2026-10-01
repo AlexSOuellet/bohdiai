@@ -9,7 +9,7 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push }), unstable_rethro
 import { CollectionEditor } from './CollectionEditor';
 
 const product = (id: string, name: string, photo: string | null = null): ProductRowView => ({
-  id, name, status: 'active', priceLabel: '$1', stockLabel: '', soldOut: false, photoUrl: photo === null ? null : `https://x/${photo}.webp`, photoUploadId: photo, collectionIds: [],
+  id, name, status: 'active', priceLabel: '$1', stockLabel: '', soldOut: false, photoUrl: photo === null ? null : `https://x/${photo}.webp`, photoUploadId: photo, collectionIds: [], onHome: false,
 });
 const products = [product('l1', 'Fig Candle', 'u1'), product('l2', 'Pine Soap', 'u2'), product('l3', 'Mug')];
 const initial = { id: 'c1', name: 'Autumn', description: '', status: 'draft' as const, featuredImageId: null, productIds: ['l1'] };

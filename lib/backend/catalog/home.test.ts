@@ -17,6 +17,7 @@ const p = (status: ProductRowView['status'], over: Partial<ProductRowView> = {})
   photoUrl: 'u',
   photoUploadId: 'x',
   collectionIds: [],
+  onHome: false,
   ...over,
 });
 

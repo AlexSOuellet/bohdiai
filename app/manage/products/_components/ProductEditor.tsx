@@ -14,6 +14,7 @@ import {
   type VariantForm,
   type ItemStatus,
   type PhotoForm,
+  HOME_MAX,
 } from '@/lib/backend/catalog/product-form';
 import { ConfirmButton } from '../../_components/ConfirmButton';
 import { useNotice } from '../../_components/Notice';
@@ -48,11 +49,14 @@ export function ProductEditor({
   collections,
   digital,
   shopUrl,
+  homeCount,
 }: {
   initial: ProductForm;
   collections: { id: string; name: string }[];
   digital: boolean;
   shopUrl: string;
+  /** How many OTHER products are on the home page (not archived, not deleted). */
+  homeCount: number;
 }): React.ReactElement {
   const router = useRouter();
   const [form, setForm] = useState(initial);
@@ -181,6 +185,8 @@ export function ProductEditor({
   const noOptions = form.options.length === 0;
   const isNew = form.id === null;
   const unsaved = JSON.stringify(form) !== JSON.stringify(stored);
+  /** Mirrors the database's limit: a sixth can't be ticked; a ticked one can always be unticked. */
+  const homeFull = homeCount >= HOME_MAX && !form.onHome;
   const saveButton = (
     <button type="button" className="bk-btn" disabled={busy} onClick={() => save()}>
       {busy ? 'Saving…' : 'Save'}
@@ -345,6 +351,23 @@ export function ProductEditor({
               ))}
             </div>
           </fieldset>
+          <div className="bk-field">
+            <label className="bk-check">
+              <input
+                type="checkbox"
+                checked={form.onHome}
+                disabled={homeFull}
+                aria-describedby={homeFull ? 'home-full-note' : undefined}
+                onChange={(e) => update({ onHome: e.target.checked })}
+              />
+              Show on your home page
+            </label>
+            {homeFull && (
+              <p id="home-full-note" className="bk-note">
+                {`Your home page already shows ${HOME_MAX} products. Untick one to add this one.`}
+              </p>
+            )}
+          </div>
         </section>
 
         <p className="bk-row">{saveButton}</p>

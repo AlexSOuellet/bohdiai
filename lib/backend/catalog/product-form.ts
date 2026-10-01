@@ -4,6 +4,9 @@
  * so the rules can't drift. Prices and stock stay text until validated.
  */
 import { combinationsOf, combinationKey, MAX_OPTIONS, MAX_CHOICES, MAX_COMBINATIONS, type Combination } from '@/lib/catalog/combinations';
+import { HOME_MAX } from '@/lib/catalog/home';
+
+export { HOME_MAX };
 
 export type Kind = 'physical' | 'digital';
 export type ItemStatus = 'draft' | 'active' | 'archived';
@@ -31,6 +34,8 @@ export type ProductForm = {
   collectionIds: string[];
   options: OptionForm[];
   variants: VariantForm[];
+  /** The owner put this product on the home page (at most 5; the database enforces it). */
+  onHome: boolean;
 };
 
 export type ProductPayload = {
@@ -46,6 +51,7 @@ export type ProductPayload = {
   collection_ids: string[];
   options: { name: string; choices: { value: string; kind: Kind; file_upload_id: string | null }[] }[];
   variants: { combination: Combination; price_cents: number | null; inventory_count: number | null; available: boolean }[];
+  on_home: boolean;
 };
 
 export type BuildResult = { ok: true; payload: ProductPayload } | { ok: false; error: string };
@@ -73,6 +79,7 @@ export function emptyProductForm(): ProductForm {
     collectionIds: [],
     options: [],
     variants: [],
+    onHome: false,
   };
 }
 
@@ -143,6 +150,7 @@ function hasProductShape(f: unknown): boolean {
   if (!Array.isArray(photos) || !photos.every((p) => isRecord(p) && isString(p['uploadId']))) return false;
   if (!isStringOrNull(f['samplePhotoUrl'])) return false;
   if (!isStringArray(f['collectionIds'])) return false;
+  if (typeof f['onHome'] !== 'boolean') return false;
   const options = f['options'];
   const choiceOk = (c: unknown): boolean => isRecord(c) && isString(c['value']) && isKind(c['kind']) && isStringOrNull(c['fileUploadId']);
   if (!Array.isArray(options) || !options.every((o) => isRecord(o) && isString(o['name']) && Array.isArray(o['choices']) && o['choices'].every(choiceOk))) return false;
@@ -233,6 +241,7 @@ export function buildProductPayload(form: ProductForm, site: { digital: boolean 
       collection_ids: [...new Set(form.collectionIds)],
       options,
       variants,
+      on_home: form.onHome,
     },
   };
 }

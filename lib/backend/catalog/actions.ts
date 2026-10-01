@@ -21,6 +21,8 @@ import { buildCollectionPayload, type CollectionForm } from './collection-form';
 import type { SaveResult, PhotoResult, FileResult, DoneResult } from './results';
 
 const CATALOG_OFF = 'Products aren’t switched on for this site.';
+/** save_product raises this SQLSTATE when a sixth product would go on the home page. */
+const HOME_LIMIT_CODE = 'P0010';
 const DIGITAL_OFF = 'Downloads aren’t switched on for this site.';
 const PHOTO_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const MAX_PHOTO_BYTES = 20 * 1024 * 1024; // the most the Images binding reads
@@ -40,6 +42,7 @@ type CatalogSite = { tenantId: string; userId: string; on: Set<FeatureKey> };
 
 function saveError(error: DbError, what: 'product' | 'collection', tenantId: string): string {
   if (error.code === '23505') return `Another ${what} already uses that web address. Change the name slightly and save again.`;
+  if (error.code === HOME_LIMIT_CODE) return 'Your home page shows up to 5 products. Untick one of the others first.';
   if (error.code === 'P0002') return what === 'product' ? 'That product no longer exists. Go back to Products.' : 'That collection no longer exists. Go back to Collections.';
   if (error.code === 'P0001') return what === 'product' ? 'A photo or file on this product couldn’t be found. Remove it, add it again and save.' : 'A photo or product in this collection couldn’t be found. Remove it, add it again and save.';
   if (error.code === '42501') return 'You don’t have access to change this site.';
@@ -112,7 +115,7 @@ export async function saveProduct(form: ProductForm): Promise<SaveResult> {
 export async function duplicateProduct(form: ProductForm): Promise<SaveResult> {
   // A crafted non-string name passes through untouched so saveProduct refuses it.
   const name = typeof form.name === 'string' ? `${form.name.trim()} (copy)`.slice(0, 120) : form.name;
-  return saveProduct({ ...form, id: null, slug: null, name, status: 'draft' });
+  return saveProduct({ ...form, id: null, slug: null, name, status: 'draft', onHome: false });
 }
 
 export async function uploadProductPhoto(formData: FormData): Promise<PhotoResult> {

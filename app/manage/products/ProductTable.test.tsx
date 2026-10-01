@@ -4,7 +4,7 @@ import { ProductTable } from './ProductTable';
 import type { ProductRowView } from '@/lib/backend/catalog/queries';
 
 const row = (id: string, name: string, status: ProductRowView['status'], over: Partial<ProductRowView> = {}): ProductRowView => ({
-  id, name, status, priceLabel: '$24', stockLabel: 'Made to order', soldOut: false, photoUrl: null, photoUploadId: null, collectionIds: [], ...over,
+  id, name, status, priceLabel: '$24', stockLabel: 'Made to order', soldOut: false, photoUrl: null, photoUploadId: null, collectionIds: [], onHome: false, ...over,
 });
 const rows = [row('1', 'Fig Candle', 'active', { photoUrl: 'https://x/1.webp' }), row('2', 'Pine Soap', 'draft'), row('3', 'Old Mug', 'archived')];
 
@@ -32,5 +32,20 @@ describe('ProductTable', () => {
     expect(screen.getByText('No products match.')).toBeInTheDocument();
     rerender(<ProductTable products={[]} />);
     expect(screen.getByText('No products yet. Add your first one to get started.')).toBeInTheDocument();
+  });
+  it('marks the products on the home page and counts them against the 5', () => {
+    render(
+      <ProductTable
+        products={[
+          row('1', 'Fig Candle', 'active', { onHome: true }),
+          row('2', 'Pine Soap', 'draft', { onHome: true }),
+          row('3', 'Old Mug', 'archived', { onHome: true }),
+          row('4', 'Wax Melt', 'active'),
+        ]}
+      />,
+    );
+    expect(screen.getByText('On your home page: 2 of 5')).toBeInTheDocument();
+    expect(within(screen.getByRole('row', { name: /Fig Candle/ })).getByText('Home')).toBeInTheDocument();
+    expect(within(screen.getByRole('row', { name: /Wax Melt/ })).queryByText('Home')).toBeNull();
   });
 });

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
-import { listProducts, getProduct, listCollections, getCollection, stockLabel, priceRangeLabel } from './queries';
+import { listProducts, getProduct, listCollections, getCollection, countHomeProducts, stockLabel, priceRangeLabel } from './queries';
 
 type Rows = Record<string, unknown[]>;
 function fakeDb(rows: Rows): SupabaseClient<Database> {
@@ -14,6 +14,10 @@ function fakeDb(rows: Rows): SupabaseClient<Database> {
           const v = (r as Record<string, unknown>)[col];
           return v === undefined || v === val;
         });
+        return q;
+      },
+      neq: (col: string, val: unknown) => {
+        data = data.filter((r) => (r as Record<string, unknown>)[col] !== val);
         return q;
       },
       in: () => q,
@@ -41,6 +45,7 @@ const listing = {
   media_ids: ['u1'],
   file_upload_id: null,
   metadata: {},
+  on_home: false,
   variation_attributes: [],
   listing_variants: [],
   listing_collections: [{ collection_id: 'c1' }],
@@ -73,8 +78,13 @@ describe('listProducts', () => {
         photoUrl: 'https://x/u1.webp',
         photoUploadId: 'u1',
         collectionIds: ['c1'],
+        onHome: false,
       },
     ]);
+  });
+  it('marks the products the owner put on the home page', async () => {
+    const db = fakeDb({ listings: [{ ...listing, on_home: true }], uploads: [] });
+    expect(await listProducts(db, 't1')).toMatchObject([{ onHome: true }]);
   });
   it('shows the first photo that still resolves, like the storefront does', async () => {
     const db = fakeDb({ listings: [{ ...listing, media_ids: ['gone', 'u1'] }], uploads: [{ id: 'u1', public_url: 'https://x/u1.webp', alt_text: null }] });
@@ -130,6 +140,7 @@ describe('getProduct', () => {
       photos: [{ uploadId: 'u1', url: 'https://x/u1.webp' }],
       samplePhotoUrl: null,
       collectionIds: ['c1'],
+      onHome: false,
       options: [{ name: 'Size', choices: [{ value: 'Small' }, { value: 'Large' }] }],
       variants: [
         { choices: { Size: 'Small' }, price: '', stock: '2', available: true },
@@ -143,6 +154,10 @@ describe('getProduct', () => {
     const both = { ...listing, metadata: { image_url: 'https://stock/fig.jpg' } };
     const db = fakeDb({ listings: [both], uploads: [{ id: 'u1', public_url: 'https://x/u1.webp', alt_text: null, file_name: 'a.webp' }] });
     expect(await getProduct(db, 't1', 'l1')).toMatchObject({ photos: [{ uploadId: 'u1' }], samplePhotoUrl: null });
+  });
+  it('carries whether the product is on the home page', async () => {
+    const db = fakeDb({ listings: [{ ...listing, on_home: true }], uploads: [] });
+    expect(await getProduct(db, 't1', 'l1')).toMatchObject({ onHome: true });
   });
   it('is null for a product that isn’t there', async () => {
     expect(await getProduct(fakeDb({ listings: [] }), 't1', 'nope')).toBeNull();
@@ -190,5 +205,20 @@ describe('collections', () => {
       featuredImageId: null,
       productIds: ['l1', 'l2'],
     });
+  });
+});
+
+describe('countHomeProducts', () => {
+  const rows = [
+    { id: 'a', tenant_id: 't1', on_home: true, status: 'active' },
+    { id: 'b', tenant_id: 't1', on_home: true, status: 'draft' },
+    { id: 'c', tenant_id: 't1', on_home: true, status: 'archived' },
+    { id: 'd', tenant_id: 't1', on_home: false, status: 'active' },
+  ];
+  it('counts the shop’s non-archived home products', async () => {
+    expect(await countHomeProducts(fakeDb({ listings: rows }), 't1', null)).toBe(2);
+  });
+  it('leaves out the product being edited', async () => {
+    expect(await countHomeProducts(fakeDb({ listings: rows }), 't1', 'a')).toBe(1);
   });
 });

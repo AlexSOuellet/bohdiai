@@ -118,8 +118,13 @@ describe('buildProductPayload', () => {
         collection_ids: ['c1'],
         options: [],
         variants: [],
+        on_home: false,
       },
     });
+  });
+  it('starts off the home page and sends the home choice', () => {
+    expect(emptyProductForm().onHome).toBe(false);
+    expect(buildProductPayload(base({ onHome: true }), { digital: false })).toMatchObject({ ok: true, payload: { on_home: true } });
   });
   it('needs a name and a price', () => {
     expect(buildProductPayload(base({ name: ' ' }), { digital: false })).toEqual({ ok: false, error: 'Give the product a name.' });
@@ -234,6 +239,8 @@ describe('buildProductPayload — crafted input', () => {
       { photos: [{ uploadId: 3 }] },
       { samplePhotoUrl: 5 },
       { samplePhotoUrl: undefined },
+      { onHome: 'yes' },
+      { onHome: undefined },
       { collectionIds: 'c1' },
       { collectionIds: [1] },
       { options: {} },

@@ -31,6 +31,7 @@ export interface ListingRow {
   media_ids: string[] | null;
   inventory_count: number | null;
   is_preview: boolean;
+  on_home: boolean;
 }
 
 /** One option of a listing with its choices, as the projection reads it. */
@@ -74,7 +75,7 @@ export interface StoreCollection {
 }
 
 const LISTING_COLUMNS =
-  'id, slug, name, listing_type, base_price_cents, short_description, description, metadata, media_ids, inventory_count, is_preview';
+  'id, slug, name, listing_type, base_price_cents, short_description, description, metadata, media_ids, inventory_count, is_preview, on_home';
 const PRODUCT_TYPES = ['product', 'digital_product'];
 
 /** Format cents to a display price. Matches the storefront's long-standing format
@@ -143,6 +144,7 @@ function buildProduct(
     description: row.description ?? '',
     media: mediaForListing(row, mediaMap),
     variations,
+    ...(row.on_home ? { onHome: true } : {}),
   };
   const product = { basePriceCents: row.base_price_cents };
 

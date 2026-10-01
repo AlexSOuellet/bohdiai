@@ -18,7 +18,7 @@ describe('goods treatments — module registration', () => {
   });
 
   it('caps the module home sampling to its cap', () => {
-    const big = Array.from({ length: 40 }, (_, i) => i);
+    const big = Array.from({ length: 40 }, (_, i) => ({ i, onHome: false }));
     expect(sampleForTreatment(big, 'module')).toHaveLength(GOODS_SAMPLE_CAP.module);
   });
 });
@@ -42,7 +42,7 @@ describe('goods treatments — table / index / lookbook registration', () => {
   });
 
   it('caps each home sampling to its cap', () => {
-    const big = Array.from({ length: 40 }, (_, i) => i);
+    const big = Array.from({ length: 40 }, (_, i) => ({ i, onHome: false }));
     expect(sampleForTreatment(big, 'table')).toHaveLength(GOODS_SAMPLE_CAP.table);
     expect(sampleForTreatment(big, 'index')).toHaveLength(GOODS_SAMPLE_CAP.index);
     expect(sampleForTreatment(big, 'lookbook')).toHaveLength(GOODS_SAMPLE_CAP.lookbook);
@@ -72,7 +72,7 @@ describe('selectGoodsTreatment', () => {
 });
 
 describe('sampleForTreatment', () => {
-  const big = Array.from({ length: 40 }, (_, i) => i);
+  const big = Array.from({ length: 40 }, (_, i) => ({ i, onHome: false }));
 
   it('caps the home sampling to the treatment cap', () => {
     expect(sampleForTreatment(big, 'marquee')).toHaveLength(GOODS_SAMPLE_CAP.marquee);
@@ -81,10 +81,34 @@ describe('sampleForTreatment', () => {
   });
 
   it('returns everything when the catalog is smaller than the cap', () => {
-    expect(sampleForTreatment([1, 2], 'marquee')).toEqual([1, 2]);
+    expect(sampleForTreatment([{ onHome: false }, { onHome: false }], 'marquee')).toHaveLength(2);
   });
 
   it('keeps the procession short (it is full-width rows)', () => {
     expect(GOODS_SAMPLE_CAP.procession).toBeLessThan(GOODS_SAMPLE_CAP.marquee);
+  });
+});
+
+describe('sampleForTreatment — the owner’s home picks', () => {
+  const item = (i: number, onHome = false) => ({ i, onHome });
+
+  it('shows only the products the owner put on the home page, in catalog order', () => {
+    const products = [item(0), item(1, true), item(2), item(3, true), item(4)];
+    expect(sampleForTreatment(products, 'marquee')).toEqual([item(1, true), item(3, true)]);
+  });
+
+  it('caps the owner’s picks by the treatment', () => {
+    const products = Array.from({ length: 8 }, (_, i) => item(i, true));
+    expect(sampleForTreatment(products, 'lookbook')).toHaveLength(GOODS_SAMPLE_CAP.lookbook);
+  });
+
+  it('never shows more than 5 owner picks, even where the treatment allows more', () => {
+    const products = Array.from({ length: 8 }, (_, i) => item(i, true));
+    expect(sampleForTreatment(products, 'marquee')).toEqual(products.slice(0, 5));
+  });
+
+  it('takes the first products as before when the owner picked none', () => {
+    const products = Array.from({ length: 40 }, (_, i) => item(i));
+    expect(sampleForTreatment(products, 'switcher')).toEqual(products.slice(0, GOODS_SAMPLE_CAP.switcher));
   });
 });

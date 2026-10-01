@@ -18,8 +18,8 @@ import { ProductEditor } from './ProductEditor';
 
 const collections = [{ id: 'c1', name: 'Autumn' }];
 const existing = (over: Partial<ProductForm> = {}): ProductForm => ({ ...emptyProductForm(), id: 'l1', slug: 'fig', name: 'Fig Candle', price: '24', ...over });
-const renderEditor = (initial: ProductForm, digital = false) =>
-  render(<ProductEditor initial={initial} collections={collections} digital={digital} shopUrl="https://shop.bohdiai.com" />);
+const renderEditor = (initial: ProductForm, digital = false, homeCount = 0) =>
+  render(<ProductEditor initial={initial} collections={collections} digital={digital} shopUrl="https://shop.bohdiai.com" homeCount={homeCount} />);
 
 /** Add option "Size" with choice "Small" and type 30 as its price. */
 const sizeSmallAt30 = () => {
@@ -298,6 +298,44 @@ describe('ProductEditor', () => {
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Fig Candle, large' } });
     expect(screen.getByRole('button', { name: 'Duplicate' })).toBeDisabled();
     expect(screen.getByText('Save your changes first')).toBeInTheDocument();
+  });
+});
+
+describe('ProductEditor — home page', () => {
+  const FULL = 'Your home page already shows 5 products. Untick one to add this one.';
+  it('puts the product on the home page with the save', async () => {
+    saveProduct.mockResolvedValue({ ok: true, id: 'l1' });
+    renderEditor(existing(), false, 4);
+    const box = screen.getByLabelText('Show on your home page');
+    expect(screen.getByRole('group', { name: 'Status' }).closest('section')).toContainElement(box);
+    expect(box).not.toBeChecked();
+    fireEvent.click(box);
+    fireEvent.click(saveButtons()[0]!);
+    await waitFor(() => expect(saveProduct).toHaveBeenCalledWith(expect.objectContaining({ onHome: true })));
+    expect(screen.queryByText(FULL)).toBeNull();
+  });
+  it('can’t add a sixth product, and says why', () => {
+    renderEditor(existing(), false, 5);
+    const box = screen.getByLabelText('Show on your home page');
+    expect(box).toBeDisabled();
+    expect(box).toHaveAccessibleDescription(FULL);
+  });
+  it('can always take a product that is on the home page off it', () => {
+    renderEditor(existing({ onHome: true }), false, 5);
+    const box = screen.getByLabelText('Show on your home page');
+    expect(box).toBeChecked();
+    expect(box).toBeEnabled();
+    expect(screen.queryByText(FULL)).toBeNull();
+    fireEvent.click(box);
+    expect(box).not.toBeChecked();
+  });
+  it('stays on the page with the message when the home page is full after all', async () => {
+    saveProduct.mockResolvedValue({ ok: false, error: 'Your home page shows up to 5 products. Untick one of the others first.' });
+    renderEditor(existing(), false, 4);
+    fireEvent.click(screen.getByLabelText('Show on your home page'));
+    fireEvent.click(saveButtons()[0]!);
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Your home page shows up to 5 products.'));
+    expect(push).not.toHaveBeenCalled();
   });
 });
 

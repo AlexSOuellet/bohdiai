@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { requireActingSite } from '@/lib/backend/current-site';
 import { getSiteFeatures } from '@/lib/backend/site-features';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
-import { getProduct, listCollections } from '@/lib/backend/catalog/queries';
+import { getProduct, listCollections, countHomeProducts } from '@/lib/backend/catalog/queries';
 import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
 import { ProductEditor } from '../_components/ProductEditor';
 
@@ -19,7 +19,11 @@ export default async function EditProductPage({ params }: PageProps<'/manage/pro
   const on = await getSiteFeatures(site.tenantId);
   if (!on.has('catalog')) notFound();
   const db = await createSupabaseServerClient();
-  const [product, collections] = await Promise.all([getProduct(db, site.tenantId, id), listCollections(db, site.tenantId)]);
+  const [product, collections, homeCount] = await Promise.all([
+    getProduct(db, site.tenantId, id),
+    listCollections(db, site.tenantId),
+    countHomeProducts(db, site.tenantId, id),
+  ]);
   if (product === null) notFound();
   return (
     <ProductEditor
@@ -28,6 +32,7 @@ export default async function EditProductPage({ params }: PageProps<'/manage/pro
       collections={collections.filter((c) => c.status !== 'archived' || product.collectionIds.includes(c.id)).map((c) => ({ id: c.id, name: c.name }))}
       digital={on.has('digital_products')}
       shopUrl={storefrontOrigin(site.subdomain, (await headers()).get('host'))}
+      homeCount={homeCount}
     />
   );
 }

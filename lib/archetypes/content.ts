@@ -68,4 +68,7 @@ export interface ProductView {
   offers?: ProductOffer[];
   /** True when combinations differ in price; `price` is then the lowest. */
   priceFrom?: boolean;
+  /** The owner chose this product for the home page. When any product has it, the
+   *  home shows only those; absent means not chosen. */
+  onHome?: boolean;
 }

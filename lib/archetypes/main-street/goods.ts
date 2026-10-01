@@ -37,6 +37,8 @@
  * world, the treatment changes the bones of the goods beat.
  */
 
+import { HOME_MAX } from '@/lib/catalog/home';
+
 /** The four goods treatments, as a tuple — the single source the schema enum and
  *  the authoring menu both read so they can never drift apart. */
 export const GOODS_TREATMENTS = ['marquee', 'procession', 'switcher', 'slideshow', 'module', 'table', 'index', 'lookbook'] as const;
@@ -91,8 +93,12 @@ export const GOODS_SAMPLE_CAP: Record<GoodsTreatment, number> = {
   lookbook: 4,
 };
 
-/** Take the home-page sampling for a treatment. Selection still runs off the
- *  TRUE catalog size — this only trims what the home page shows. */
-export function sampleForTreatment<T>(products: T[], treatment: GoodsTreatment): T[] {
+/** Take the home-page sampling for a treatment. When the owner chose products for
+ *  the home page, only those show (catalog order, never more than HOME_MAX);
+ *  otherwise the first ones do. Selection still runs off the TRUE catalog size —
+ *  this only trims what the home page shows. */
+export function sampleForTreatment<T extends { onHome?: boolean | undefined }>(products: T[], treatment: GoodsTreatment): T[] {
+  const chosen = products.filter((p) => p.onHome === true);
+  if (chosen.length > 0) return chosen.slice(0, Math.min(GOODS_SAMPLE_CAP[treatment], HOME_MAX));
   return products.slice(0, GOODS_SAMPLE_CAP[treatment]);
 }

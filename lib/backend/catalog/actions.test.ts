@@ -95,6 +95,8 @@ describe('saveProduct', () => {
     expect(await saveProduct(form())).toEqual({ ok: false, error: 'A photo or file on this product couldn’t be found. Remove it, add it again and save.' });
     rpc.mockResolvedValue({ data: null, error: { code: '42501', message: 'not allowed' } });
     expect(await saveProduct(form())).toEqual({ ok: false, error: 'You don’t have access to change this site.' });
+    rpc.mockResolvedValue({ data: null, error: { code: 'P0010', message: 'home limit' } });
+    expect(await saveProduct(form({ id: 'l1', onHome: true }))).toEqual({ ok: false, error: 'Your home page shows up to 5 products. Untick one of the others first.' });
     rpc.mockResolvedValue({ data: null, error: { code: 'XX000', message: 'boom' } });
     expect(await saveProduct(form())).toEqual({ ok: false, error: 'The product couldn’t be saved. Try again in a moment.' });
   });
@@ -130,6 +132,10 @@ describe('duplicateProduct', () => {
     await duplicateProduct(form({ id: 'l1', slug: 'fig', status: 'active' }));
     expect(rpc.mock.calls[0]![1]).not.toHaveProperty('p_listing_id');
     expect(rpc.mock.calls[0]![1].p).toMatchObject({ name: 'Fig Candle (copy)', status: 'draft', slug: 'fig-candle-copy' });
+  });
+  it('leaves the copy off the home page', async () => {
+    await duplicateProduct(form({ id: 'l1', slug: 'fig', onHome: true }));
+    expect(rpc.mock.calls[0]![1].p).toMatchObject({ on_home: false });
   });
 });
 

@@ -22,6 +22,8 @@ export type ProductRowView = {
   photoUrl: string | null;
   photoUploadId: string | null;
   collectionIds: string[];
+  /** The owner put this product on the home page. */
+  onHome: boolean;
 };
 
 export type CollectionRowView = { id: string; name: string; status: ItemStatus; productCount: number };
@@ -52,7 +54,7 @@ function combination(json: Json): Record<string, string> {
 export async function listProducts(db: Db, tenantId: string): Promise<ProductRowView[]> {
   const { data, error } = await db
     .from('listings')
-    .select('id, name, status, base_price_cents, inventory_count, media_ids, metadata, variation_attributes(id), listing_variants(price_cents, inventory_count, status), listing_collections(collection_id)')
+    .select('id, name, status, base_price_cents, inventory_count, media_ids, metadata, on_home, variation_attributes(id), listing_variants(price_cents, inventory_count, status), listing_collections(collection_id)')
     .eq('tenant_id', tenantId)
     .in('listing_type', PRODUCT_TYPES)
     .is('deleted_at', null)
@@ -80,15 +82,31 @@ export async function listProducts(db: Db, tenantId: string): Promise<ProductRow
       photoUrl: hit?.url ?? imageUrlFromMetadata(r.metadata) ?? null,
       photoUploadId: hit === undefined ? null : (first ?? null),
       collectionIds: r.listing_collections.map((c) => c.collection_id),
+      onHome: r.on_home,
     };
   });
+}
+
+/** How many of the shop's products are on the home page (not archived, not deleted),
+ *  leaving out `exceptId` — the product being edited, whose own tick is in the form. */
+export async function countHomeProducts(db: Db, tenantId: string, exceptId: string | null): Promise<number> {
+  const { data, error } = await db
+    .from('listings')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('on_home', true)
+    .neq('status', 'archived')
+    .in('listing_type', PRODUCT_TYPES)
+    .is('deleted_at', null);
+  if (error !== null) throw new Error(`Could not count home products: ${error.message}`);
+  return (data ?? []).filter((r) => r.id !== exceptId).length;
 }
 
 export async function getProduct(db: Db, tenantId: string, id: string): Promise<ProductForm | null> {
   const { data: r, error } = await db
     .from('listings')
     .select(
-      'id, slug, name, short_description, description, status, listing_type, base_price_cents, inventory_count, media_ids, metadata, file_upload_id, variation_attributes(name, position, variation_options(value, position, kind, file_upload_id)), listing_variants(option_combination, price_cents, inventory_count, status), listing_collections(collection_id)',
+      'id, slug, name, short_description, description, status, listing_type, base_price_cents, inventory_count, media_ids, metadata, file_upload_id, on_home, variation_attributes(name, position, variation_options(value, position, kind, file_upload_id)), listing_variants(option_combination, price_cents, inventory_count, status), listing_collections(collection_id)',
     )
     .eq('tenant_id', tenantId)
     .eq('id', id)
@@ -143,6 +161,7 @@ export async function getProduct(db: Db, tenantId: string, id: string): Promise<
     collectionIds: r.listing_collections.map((c) => c.collection_id),
     options,
     variants: syncVariants(options, stored),
+    onHome: r.on_home,
   };
 }
 

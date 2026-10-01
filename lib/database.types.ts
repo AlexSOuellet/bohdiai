@@ -997,6 +997,7 @@ export type Database = {
           media_ids: string[]
           metadata: Json
           name: string
+          on_home: boolean
           payment_model: string
           post_purchase_note: string | null
           primary_collection_id: string | null
@@ -1028,6 +1029,7 @@ export type Database = {
           media_ids?: string[]
           metadata?: Json
           name: string
+          on_home?: boolean
           payment_model?: string
           post_purchase_note?: string | null
           primary_collection_id?: string | null
@@ -1059,6 +1061,7 @@ export type Database = {
           media_ids?: string[]
           metadata?: Json
           name?: string
+          on_home?: boolean
           payment_model?: string
           post_purchase_note?: string | null
           primary_collection_id?: string | null
