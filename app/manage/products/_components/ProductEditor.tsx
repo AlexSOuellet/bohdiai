@@ -246,6 +246,23 @@ export function ProductEditor({
             <input id="name" className="bk-input" value={form.name} onChange={(e) => update({ name: e.target.value })} />
           </div>
           <div className="bk-field">
+            <label className="bk-check">
+              <input
+                type="checkbox"
+                checked={form.onHome}
+                disabled={homeFull}
+                aria-describedby={homeFull ? 'home-full-note' : undefined}
+                onChange={(e) => update({ onHome: e.target.checked })}
+              />
+              Show on your home page
+            </label>
+            {homeFull && (
+              <p id="home-full-note" className="bk-note">
+                {`Your home page already shows ${HOME_MAX} products. Untick one to add this one.`}
+              </p>
+            )}
+          </div>
+          <div className="bk-field">
             <label htmlFor="short" className="bk-label">Short description</label>
             <input id="short" className="bk-input" value={form.shortDescription} onChange={(e) => update({ shortDescription: e.target.value })} />
           </div>
@@ -351,23 +368,6 @@ export function ProductEditor({
               ))}
             </div>
           </fieldset>
-          <div className="bk-field">
-            <label className="bk-check">
-              <input
-                type="checkbox"
-                checked={form.onHome}
-                disabled={homeFull}
-                aria-describedby={homeFull ? 'home-full-note' : undefined}
-                onChange={(e) => update({ onHome: e.target.checked })}
-              />
-              Show on your home page
-            </label>
-            {homeFull && (
-              <p id="home-full-note" className="bk-note">
-                {`Your home page already shows ${HOME_MAX} products. Untick one to add this one.`}
-              </p>
-            )}
-          </div>
         </section>
 
         <p className="bk-row">{saveButton}</p>

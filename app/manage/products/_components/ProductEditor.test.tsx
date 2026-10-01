@@ -307,7 +307,12 @@ describe('ProductEditor — home page', () => {
     saveProduct.mockResolvedValue({ ok: true, id: 'l1' });
     renderEditor(existing(), false, 4);
     const box = screen.getByLabelText('Show on your home page');
-    expect(screen.getByRole('group', { name: 'Status' }).closest('section')).toContainElement(box);
+    // In the first section, right after the name, so it's seen without scrolling.
+    expect(screen.getByRole('region', { name: 'The basics' })).toContainElement(box);
+    const name = screen.getByLabelText('Name');
+    const short = screen.getByLabelText('Short description');
+    expect(name.compareDocumentPosition(box) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(box.compareDocumentPosition(short) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(box).not.toBeChecked();
     fireEvent.click(box);
     fireEvent.click(saveButtons()[0]!);
