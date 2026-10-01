@@ -23,6 +23,8 @@ import type { SaveResult, PhotoResult, FileResult, DoneResult } from './results'
 const CATALOG_OFF = 'Products aren’t switched on for this site.';
 /** save_product raises this SQLSTATE when a sixth product would go on the home page. */
 const HOME_LIMIT_CODE = 'P0010';
+/** The list's refusal when a sixth product is ticked (the same words the list shows before asking). */
+const HOME_LIMIT = 'Your home page shows up to 5 products. Untick one first.';
 const DIGITAL_OFF = 'Downloads aren’t switched on for this site.';
 const PHOTO_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const MAX_PHOTO_BYTES = 20 * 1024 * 1024; // the most the Images binding reads
@@ -226,6 +228,27 @@ export async function saveCollection(form: CollectionForm): Promise<SaveResult> 
 
 export async function createCollection(name: string): Promise<SaveResult> {
   return saveCollection({ id: null, name, description: '', status: 'draft', featuredImageId: null, productIds: [] });
+}
+
+const HOME_NOT_SAVED = 'That change couldn’t be saved. Try again.';
+
+/** Tick or untick one product for the home page, straight from the products list.
+ *  Writes only that tick; the database keeps the at-most-5 rule in the same step. */
+export async function setProductOnHome(id: string, onHome: boolean): Promise<DoneResult> {
+  const site = await catalogSite();
+  if (site === null) return { ok: false, error: CATALOG_OFF };
+  if (typeof id !== 'string' || typeof onHome !== 'boolean') return { ok: false, error: HOME_NOT_SAVED };
+  const db = await createSupabaseServerClient();
+  const { error } = await db.rpc('set_listing_on_home', { p_tenant_id: site.tenantId, p_listing_id: id, p_on_home: onHome });
+  if (error !== null) {
+    if (error.code === HOME_LIMIT_CODE) return { ok: false, error: HOME_LIMIT };
+    if (error.code === 'P0002') return { ok: false, error: 'That product no longer exists. Reload the page.' };
+    logger.error('catalog: home tick failed', { tenantId: site.tenantId, code: error.code, error: error.message });
+    return { ok: false, error: HOME_NOT_SAVED };
+  }
+  revalidatePath('/manage/products');
+  revalidatePath('/manage');
+  return { ok: true };
 }
 
 export async function orderCollections(ids: string[]): Promise<DoneResult> {

@@ -33,7 +33,7 @@ vi.mock('@/lib/images/shrink', () => ({ shrinkImage }));
 vi.mock('next/cache', () => ({ revalidatePath }));
 vi.mock('@/lib/logger', () => ({ logger }));
 
-import { saveProduct, duplicateProduct, uploadProductPhoto, uploadProductFile, saveCollection, createCollection, orderCollections } from './actions';
+import { saveProduct, duplicateProduct, uploadProductPhoto, uploadProductFile, saveCollection, createCollection, orderCollections, setProductOnHome } from './actions';
 
 const form = (over: Partial<ProductForm> = {}): ProductForm => ({ ...emptyProductForm(), name: 'Fig Candle', price: '24', ...over });
 const file = (type: string, size = 10, name = 'a') => new File([new Uint8Array(size)], name, { type });
@@ -223,5 +223,35 @@ describe('collections', () => {
   it('refuses when the site has no catalog', async () => {
     features.on = new Set();
     expect(await createCollection('Autumn')).toEqual({ ok: false, error: 'Products aren’t switched on for this site.' });
+  });
+});
+
+describe('setProductOnHome', () => {
+  it('writes only the home-page tick for that product, then refreshes the list and the dashboard', async () => {
+    rpc.mockResolvedValue({ data: null, error: null });
+    expect(await setProductOnHome('l1', true)).toEqual({ ok: true });
+    expect(rpc).toHaveBeenCalledWith('set_listing_on_home', { p_tenant_id: 't1', p_listing_id: 'l1', p_on_home: true });
+    expect(revalidatePath).toHaveBeenCalledWith('/manage/products');
+    expect(revalidatePath).toHaveBeenCalledWith('/manage');
+  });
+  it('refuses when the site has no catalog', async () => {
+    features.on = new Set();
+    expect(await setProductOnHome('l1', true)).toEqual({ ok: false, error: 'Products aren’t switched on for this site.' });
+    expect(rpc).not.toHaveBeenCalled();
+  });
+  it('refuses a crafted request without writing', async () => {
+    expect(await setProductOnHome(5 as unknown as string, true)).toEqual({ ok: false, error: 'That change couldn’t be saved. Try again.' });
+    expect(await setProductOnHome('l1', 'yes' as unknown as boolean)).toEqual({ ok: false, error: 'That change couldn’t be saved. Try again.' });
+    expect(rpc).not.toHaveBeenCalled();
+  });
+  it('turns each database refusal into a plain message', async () => {
+    rpc.mockResolvedValue({ data: null, error: { code: 'P0010', message: 'home limit' } });
+    expect(await setProductOnHome('l1', true)).toEqual({ ok: false, error: 'Your home page shows up to 5 products. Untick one first.' });
+    rpc.mockResolvedValue({ data: null, error: { code: 'P0002', message: 'product not found' } });
+    expect(await setProductOnHome('l1', true)).toEqual({ ok: false, error: 'That product no longer exists. Reload the page.' });
+    rpc.mockResolvedValue({ data: null, error: { code: 'XX000', message: 'boom' } });
+    expect(await setProductOnHome('l1', false)).toEqual({ ok: false, error: 'That change couldn’t be saved. Try again.' });
+    expect(logger.error).toHaveBeenCalledTimes(1);
+    expect(revalidatePath).not.toHaveBeenCalled();
   });
 });

@@ -2376,6 +2376,10 @@ export type Database = {
         Args: { p: Json; p_listing_id?: string; p_tenant_id: string }
         Returns: string
       }
+      set_listing_on_home: {
+        Args: { p_listing_id: string; p_on_home: boolean; p_tenant_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
