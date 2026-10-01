@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { navFor, type BackendModule } from './modules';
+import { navFor, BACKEND_MODULES, type BackendModule } from './modules';
 import type { FeatureKey } from './features';
 
 const modules: BackendModule[] = [
@@ -22,5 +22,18 @@ describe('navFor', () => {
   });
   it('drops empty sections', () => {
     expect(navFor(modules, new Set()).map((s) => s.section)).toEqual(['Site']);
+  });
+});
+
+describe('catalog in the menu', () => {
+  it('shows Products and Collections only when the catalog is on', () => {
+    expect(navFor(BACKEND_MODULES, new Set(['catalog']))).toContainEqual({
+      section: 'Catalog',
+      items: [
+        { label: 'Products', href: '/manage/products' },
+        { label: 'Collections', href: '/manage/collections' },
+      ],
+    });
+    expect(navFor(BACKEND_MODULES, new Set()).map((s) => s.section)).not.toContain('Catalog');
   });
 });

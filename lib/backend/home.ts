@@ -5,12 +5,13 @@
  */
 import { logger } from '@/lib/logger';
 import type { FeatureKey } from './features';
+import { catalogHome } from './catalog/home';
 
 export type Tile = { label: string; value: string; note?: string };
 export type HomeData = { tiles: Tile[]; attention: string[] };
 export type HomeContributor = { feature: FeatureKey | null; load: (tenantId: string) => Promise<HomeData> };
 
-export const HOME_CONTRIBUTORS: HomeContributor[] = [];
+export const HOME_CONTRIBUTORS: HomeContributor[] = [catalogHome];
 
 const LOAD_FAILED = 'Part of this page couldn’t load. Refresh to try again.';
 

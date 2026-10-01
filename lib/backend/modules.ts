@@ -10,7 +10,17 @@ export type NavItem = { label: string; href: string };
 export type BackendModule = { feature: FeatureKey | null; section: string; items: NavItem[] };
 export type NavSection = { section: string; items: NavItem[] };
 
-export const BACKEND_MODULES: BackendModule[] = [{ feature: null, section: 'Site', items: [{ label: 'Home', href: '/manage' }] }];
+export const BACKEND_MODULES: BackendModule[] = [
+  { feature: null, section: 'Site', items: [{ label: 'Home', href: '/manage' }] },
+  {
+    feature: 'catalog',
+    section: 'Catalog',
+    items: [
+      { label: 'Products', href: '/manage/products' },
+      { label: 'Collections', href: '/manage/collections' },
+    ],
+  },
+];
 
 export function navFor(modules: readonly BackendModule[], on: ReadonlySet<FeatureKey>): NavSection[] {
   const sections = new Map<string, NavItem[]>();
