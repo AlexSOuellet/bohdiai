@@ -10,13 +10,13 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-09-30, Session 90.
+**Last updated:** 2026-10-01, Session 90.
 
 ---
 
 ## Current state
 
-**Session 90 — backend auto sign-out LIVE.** Signed out after 8h idle, always after 7 days; sign-in says why. Secret `BACKEND_SESSION_SECRET` is in Cloudflare. Full recap: `session-logs/session-90.md`.
+**Session 90 — auto sign-out + maker backend 1b Catalog LIVE.** Owners manage products (photos, options with own price/stock, downloads where switched on, collections, draft/live/archived, home-page picks max 5 from a Home column) and collections; the shop shows it (all photos, option picker, "from $X", sold out, collections from `listing_collections`). Plan: `docs/superpowers/plans/2026-10-01-maker-backend-1b-catalog.md`. Cloudflare turned on "Builds for Preview branches" overnight → deploys failed until Alex switched it off. Full recap: `session-logs/session-90.md`.
 
 **Session 89 — maker backend designed; foundation live.** CI green again; Classic Loafs reverted to its original build; MY ADMIN deferred. Backend spec: `docs/superpowers/specs/2026-09-30-maker-backend-overview.md` + `...-piece-1-design.md` (modeled on Penny's admin, feature switches per site, clients manage lists/facts, Alex keeps words/look, app.bohdiai.com). Plan 1a (foundation: sign-in on app host, invites via `scripts/invite-maker.ts`, feature switches via `scripts/set-feature.ts`, Penny-style shell, home) built, reviewed, live-tested by Alex. Full recap: `session-logs/session-89.md`.
 
@@ -35,7 +35,7 @@ Full recap: `session-logs/session-87.md`.
 
 ## Next actions
 
-02. **Maker backend 1b — Catalog:** write the plan from the piece-1 spec (products, options, stock, photos, collections via listing_collections, one-place price, storefront rendering), then build. Then 1c Video (Cloudflare Stream), 1d Custom domains + status panel.
+02. **Maker backend 1c — Video** (Cloudflare Stream; confirm cost first), then 1d Custom domains + status panel. Options/combinations get their real test with the first real client who sells sizes/scents.
 0. **bohdiai.com loose ends (Session 89 cleared most):** CI green again (2026-09-30); prod inquiry confirmed in Alex's inbox; Classic Loafs reverted to its original build. Still open: logo from the BohdiAi Facebook page (Alex skipped for now); the Classic Loafs work shot catches the hero words mid-fade (re-time if Alex wants); sample find-us dates are all past July dates; drop "(publicly: Alex Scott)" from privacy/terms? JSON-LD founder name?
 1. **Cloudflare cleanup (Alex):** delete the redundant Cut-Pro route; trim Build variables to NODE_VERSION + the two NEXT_PUBLIC_*; after a few quiet days cancel Vercel and delete `shop-proxy` together.
 2. **Cut-Pro follow-ups:** their copy review (crew-photo names, services list, "since 2009"); better originals from their phones; review the privacy-page wording for a contractor.
@@ -86,7 +86,7 @@ Full recap: `session-logs/session-87.md`.
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
-- Session 90 (2026-09-30): **Backend auto sign-out live** (8h idle / 7 days; signed token + HMAC last-seen cookie). Full recap: `session-logs/session-90.md`.
+- Session 90 (2026-09-30 → 10-01): **Auto sign-out live; maker backend 1b Catalog live** (products, options, collections, home picks; shop renders them; scroll-reveal bug on tall sections fixed). Full recap: `session-logs/session-90.md`.
 - Session 89 (2026-09-30): **CI green; maker backend designed; foundation (1a) built + live-tested.** Classic Loafs reverted; MCP popups fixed; MY ADMIN deferred. Full recap: `session-logs/session-89.md`.
 - Session 88 (2026-09-29): **bohdiai.com rebuilt as a web developer site, LIVE.** Real work (Cut-Pro, Penny, 3 samples) with testimonials, new about + The Bohdi Way, inquiry form with phone/best-way, waitlist stack deleted. Found CI red since 09-24 (coverage gate). Next: CI fix, then MY ADMIN brainstorm. Full recap: `session-logs/session-88.md`.
 - Session 87 (2026-09-29): **Moved the whole app from Vercel to Cloudflare Workers**, verified live. Direction: everything manual; maker backend (Penny-style) to come. Switched off automation surfaces; form rate limits; Host-only shop resolution; bundled legal templates; Images-binding photo shrink; Workers Builds from GitHub. `main` current. Full recap: `session-logs/session-87.md`.
