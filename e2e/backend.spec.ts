@@ -15,6 +15,13 @@ test.describe('Backend sign-in', () => {
     await expect(page).toHaveURL(`${APP}/signin`);
   });
 
+  for (const path of ['/manage/products', '/manage/products/new', '/manage/collections']) {
+    test(`${path} sends a signed-out visitor to sign-in`, async ({ page }) => {
+      await page.goto(`${APP}${path}`);
+      await expect(page).toHaveURL(`${APP}/signin`);
+    });
+  }
+
   test('sign-in on the marketing host redirects to the app host', async ({ page }) => {
     const res = await page.request.get('http://localhost:3100/signin', { maxRedirects: 0 });
     expect(res.status()).toBe(307);
