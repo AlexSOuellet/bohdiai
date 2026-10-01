@@ -1,0 +1,177 @@
+import { describe, it, expect } from 'vitest';
+import {
+  emptyProductForm,
+  parseDollars,
+  parseStock,
+  formatCents,
+  syncVariants,
+  buildProductPayload,
+  MAX_PHOTOS,
+  type ProductForm,
+  type OptionForm,
+} from './product-form';
+
+const base = (over: Partial<ProductForm> = {}): ProductForm => ({ ...emptyProductForm(), name: 'Fig Candle', price: '24', ...over });
+const size: OptionForm = {
+  name: 'Size',
+  choices: [
+    { value: 'Small', kind: 'physical', fileUploadId: null, fileName: null },
+    { value: 'Large', kind: 'physical', fileUploadId: null, fileName: null },
+  ],
+};
+
+describe('parseDollars', () => {
+  it('reads whole dollars, cents and a leading $', () => {
+    expect(parseDollars('24')).toEqual({ ok: true, cents: 2400 });
+    expect(parseDollars('$24.5')).toEqual({ ok: true, cents: 2450 });
+    expect(parseDollars(' 0.99 ')).toEqual({ ok: true, cents: 99 });
+  });
+  it('treats blank as not set', () => {
+    expect(parseDollars('  ')).toEqual({ ok: true, cents: null });
+  });
+  it('refuses anything else', () => {
+    for (const bad of ['-1', '1.234', 'abc', '1,000', '12345678']) expect(parseDollars(bad)).toEqual({ ok: false });
+  });
+});
+
+describe('parseStock', () => {
+  it('reads whole numbers and blank', () => {
+    expect(parseStock('0')).toEqual({ ok: true, count: 0 });
+    expect(parseStock('12')).toEqual({ ok: true, count: 12 });
+    expect(parseStock('')).toEqual({ ok: true, count: null });
+  });
+  it('refuses fractions and negatives', () => {
+    expect(parseStock('1.5')).toEqual({ ok: false });
+    expect(parseStock('-2')).toEqual({ ok: false });
+  });
+});
+
+describe('formatCents', () => {
+  it('shows dollars the way the maker would type them', () => {
+    expect(formatCents(2400)).toBe('24');
+    expect(formatCents(2450)).toBe('24.50');
+    expect(formatCents(null)).toBe('');
+  });
+});
+
+describe('syncVariants', () => {
+  it('lists one row per combination and keeps what was typed', () => {
+    const first = syncVariants([size], []);
+    expect(first.map((v) => v.choices)).toEqual([{ Size: 'Small' }, { Size: 'Large' }]);
+    const typed = first.map((v, i) => (i === 1 ? { ...v, price: '30', stock: '2' } : v));
+    const again = syncVariants([size], typed);
+    expect(again[1]).toEqual({ choices: { Size: 'Large' }, price: '30', stock: '2', available: true });
+  });
+  it('ignores options or choices that are still blank', () => {
+    expect(syncVariants([{ name: ' ', choices: size.choices }], [])).toEqual([]);
+    expect(syncVariants([{ name: 'Size', choices: [{ ...size.choices[0]!, value: ' ' }] }], [])).toEqual([]);
+  });
+});
+
+describe('buildProductPayload', () => {
+  it('builds a simple product', () => {
+    const r = buildProductPayload(base({ shortDescription: ' Smells of figs ', stock: '3', collectionIds: ['c1'] }), { digital: false });
+    expect(r).toEqual({
+      ok: true,
+      payload: {
+        listing_type: 'product',
+        name: 'Fig Candle',
+        short_description: 'Smells of figs',
+        description: null,
+        base_price_cents: 2400,
+        status: 'draft',
+        inventory_count: 3,
+        media_ids: [],
+        file_upload_id: null,
+        collection_ids: ['c1'],
+        options: [],
+        variants: [],
+      },
+    });
+  });
+  it('needs a name and a price', () => {
+    expect(buildProductPayload(base({ name: ' ' }), { digital: false })).toEqual({ ok: false, error: 'Give the product a name.' });
+    expect(buildProductPayload(base({ price: '' }), { digital: false })).toEqual({ ok: false, error: 'Enter a price, like 24 or 24.50.' });
+    expect(buildProductPayload(base({ price: 'ten' }), { digital: false })).toEqual({ ok: false, error: 'Enter a price, like 24 or 24.50.' });
+  });
+  it('checks stock', () => {
+    expect(buildProductPayload(base({ stock: '2.5' }), { digital: false })).toEqual({ ok: false, error: 'Stock must be a whole number, 0 or more. Leave it blank if you make to order.' });
+  });
+  it('caps photos', () => {
+    const photos = Array.from({ length: MAX_PHOTOS + 1 }, (_, i) => ({ uploadId: `p${i}`, url: `u${i}` }));
+    expect(buildProductPayload(base({ photos }), { digital: false })).toEqual({ ok: false, error: `A product can have up to ${MAX_PHOTOS} photos.` });
+  });
+  it('builds options and combinations; product stock is ignored once there are options', () => {
+    const variants = syncVariants([size], []).map((v, i) => (i === 0 ? { ...v, price: '', stock: '0' } : { ...v, price: '30', stock: '' }));
+    const r = buildProductPayload(base({ stock: '9', options: [size], variants }), { digital: false });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.payload.inventory_count).toBeNull();
+    expect(r.payload.options).toEqual([
+      { name: 'Size', choices: [{ value: 'Small', kind: 'physical', file_upload_id: null }, { value: 'Large', kind: 'physical', file_upload_id: null }] },
+    ]);
+    expect(r.payload.variants).toEqual([
+      { combination: { Size: 'Small' }, price_cents: null, inventory_count: 0, available: true },
+      { combination: { Size: 'Large' }, price_cents: 3000, inventory_count: null, available: true },
+    ]);
+  });
+  it('explains option mistakes', () => {
+    const blankName = { ...size, name: '' };
+    expect(buildProductPayload(base({ options: [blankName] }), { digital: false })).toEqual({ ok: false, error: 'Name every option (like Size or Scent).' });
+    expect(buildProductPayload(base({ options: [size, { ...size }] }), { digital: false })).toEqual({ ok: false, error: 'Two options can’t share a name.' });
+    expect(buildProductPayload(base({ options: [{ ...size, choices: [] }] }), { digital: false })).toEqual({ ok: false, error: 'Give Size at least one choice.' });
+    const twice = { ...size, choices: [size.choices[0]!, { ...size.choices[0]!, value: 'small' }] };
+    expect(buildProductPayload(base({ options: [twice] }), { digital: false })).toEqual({ ok: false, error: 'Size lists small twice.' });
+    const four = [1, 2, 3, 4].map((n) => ({ ...size, name: `O${n}` }));
+    expect(buildProductPayload(base({ options: four }), { digital: false })).toEqual({ ok: false, error: 'A product can have up to 3 options.' });
+  });
+  it('refuses too many combinations', () => {
+    const many = (name: string) => ({ name, choices: Array.from({ length: 11 }, (_, i) => ({ value: `${name}${i}`, kind: 'physical' as const, fileUploadId: null, fileName: null })) });
+    expect(buildProductPayload(base({ options: [many('A'), many('B')] }), { digital: false })).toEqual({
+      ok: false,
+      error: 'That makes 121 combinations — the most is 100. Remove some choices.',
+    });
+  });
+  it('checks combination prices and stock, naming the combination', () => {
+    const variants = syncVariants([size], []).map((v) => ({ ...v, price: 'x' }));
+    expect(buildProductPayload(base({ options: [size], variants }), { digital: false })).toEqual({ ok: false, error: 'Check the price for Small.' });
+    const stock = syncVariants([size], []).map((v) => ({ ...v, stock: '-1' }));
+    expect(buildProductPayload(base({ options: [size], variants: stock }), { digital: false })).toEqual({ ok: false, error: 'Check the stock for Small.' });
+  });
+  it('needs one available combination to go live', () => {
+    const variants = syncVariants([size], []).map((v) => ({ ...v, available: false }));
+    expect(buildProductPayload(base({ status: 'active', options: [size], variants }), { digital: false })).toEqual({
+      ok: false,
+      error: 'Turn on at least one combination before making this live.',
+    });
+  });
+  it('refuses downloads when the site doesn’t have them', () => {
+    expect(buildProductPayload(base({ kind: 'digital' }), { digital: false })).toEqual({ ok: false, error: 'Downloads aren’t switched on for this site.' });
+    const dl = { ...size, choices: [{ ...size.choices[0]!, kind: 'digital' as const }] };
+    expect(buildProductPayload(base({ options: [dl] }), { digital: false })).toEqual({ ok: false, error: 'Downloads aren’t switched on for this site.' });
+  });
+  it('builds a download product and needs its file to go live', () => {
+    expect(buildProductPayload(base({ kind: 'digital', status: 'active' }), { digital: true })).toEqual({ ok: false, error: 'Add the download file before making this live.' });
+    const r = buildProductPayload(base({ kind: 'digital', fileUploadId: 'f1', fileName: 'sheet.pdf', stock: '4' }), { digital: true });
+    expect(r.ok && r.payload.listing_type).toBe('digital_product');
+    expect(r.ok && r.payload.file_upload_id).toBe('f1');
+    expect(r.ok && r.payload.inventory_count).toBeNull();
+  });
+  it('needs each download choice’s file to go live', () => {
+    const mixed: OptionForm = { name: 'Format', choices: [{ value: 'Print', kind: 'physical', fileUploadId: null, fileName: null }, { value: 'Download', kind: 'digital', fileUploadId: null, fileName: null }] };
+    const variants = syncVariants([mixed], []);
+    expect(buildProductPayload(base({ status: 'active', options: [mixed], variants }), { digital: true })).toEqual({
+      ok: false,
+      error: 'Add the download file for Download before making this live.',
+    });
+    const withFile = { ...mixed, choices: [mixed.choices[0]!, { ...mixed.choices[1]!, fileUploadId: 'f9', fileName: 'x.pdf' }] };
+    const r = buildProductPayload(base({ status: 'active', options: [withFile], variants }), { digital: true });
+    expect(r.ok && r.payload.listing_type).toBe('product');
+    expect(r.ok && r.payload.options[0]!.choices[1]).toEqual({ value: 'Download', kind: 'digital', file_upload_id: 'f9' });
+  });
+  it('drops a choice’s file when the choice is physical', () => {
+    const stray = { ...size, choices: [{ ...size.choices[0]!, fileUploadId: 'f1', fileName: 'x.pdf' }] };
+    const r = buildProductPayload(base({ options: [stray], variants: syncVariants([stray], []) }), { digital: true });
+    expect(r.ok && r.payload.options[0]!.choices[0]!.file_upload_id).toBeNull();
+  });
+});
