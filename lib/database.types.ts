@@ -987,6 +987,7 @@ export type Database = {
           deleted_at: string | null
           description: string | null
           dimensions: Json | null
+          file_upload_id: string | null
           id: string
           inventory_count: number | null
           inventory_tracked: boolean
@@ -1017,6 +1018,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           dimensions?: Json | null
+          file_upload_id?: string | null
           id?: string
           inventory_count?: number | null
           inventory_tracked?: boolean
@@ -1047,6 +1049,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           dimensions?: Json | null
+          file_upload_id?: string | null
           id?: string
           inventory_count?: number | null
           inventory_tracked?: boolean
@@ -1071,6 +1074,13 @@ export type Database = {
           weight_grams?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "listings_file_upload_id_fkey"
+            columns: ["file_upload_id"]
+            isOneToOne: false
+            referencedRelation: "uploads"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "listings_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -2207,7 +2217,9 @@ export type Database = {
         Row: {
           attribute_id: string
           created_at: string
+          file_upload_id: string | null
           id: string
+          kind: string
           position: number
           tenant_id: string
           updated_at: string
@@ -2216,7 +2228,9 @@ export type Database = {
         Insert: {
           attribute_id: string
           created_at?: string
+          file_upload_id?: string | null
           id?: string
+          kind?: string
           position?: number
           tenant_id: string
           updated_at?: string
@@ -2225,7 +2239,9 @@ export type Database = {
         Update: {
           attribute_id?: string
           created_at?: string
+          file_upload_id?: string | null
           id?: string
+          kind?: string
           position?: number
           tenant_id?: string
           updated_at?: string
@@ -2237,6 +2253,13 @@ export type Database = {
             columns: ["attribute_id"]
             isOneToOne: false
             referencedRelation: "variation_attributes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "variation_options_file_upload_id_fkey"
+            columns: ["file_upload_id"]
+            isOneToOne: false
+            referencedRelation: "uploads"
             referencedColumns: ["id"]
           },
           {
