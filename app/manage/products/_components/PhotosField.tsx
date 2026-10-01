@@ -10,11 +10,14 @@ import { moveItem } from '@/lib/backend/catalog/collection-form';
  *  upload one at a time and each failure is named. */
 export function PhotosField({
   photos,
+  samplePhotoUrl = null,
   onAdd,
   onChange,
   onError,
 }: {
   photos: PhotoForm[];
+  /** The legacy sample photo the shop shows while there are no real photos. */
+  samplePhotoUrl?: string | null;
   onAdd: (photo: PhotoForm) => void;
   onChange: (photos: PhotoForm[]) => void;
   onError: (message: string) => void;
@@ -75,6 +78,17 @@ export function PhotosField({
             </li>
           ))}
         </ul>
+      )}
+      {photos.length === 0 && samplePhotoUrl !== null && (
+        <div className="bk-photos">
+          <div className="bk-photo">
+            {/* A stock sample photo from the store's first build, shown as the shop shows it —
+                a plain img like the maker-photo spots above (no next/image optimiser hop). */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={samplePhotoUrl} alt="Sample photo" />
+            <span className="bk-note">Your shop is showing this sample photo. Add your own photos to replace it.</span>
+          </div>
+        </div>
       )}
       <p className="bk-row">
         <label className="bk-btn bk-btn-quiet">

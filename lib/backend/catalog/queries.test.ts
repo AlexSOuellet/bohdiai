@@ -40,6 +40,7 @@ const listing = {
   description: null,
   media_ids: ['u1'],
   file_upload_id: null,
+  metadata: {},
   variation_attributes: [],
   listing_variants: [],
   listing_collections: [{ collection_id: 'c1' }],
@@ -83,6 +84,17 @@ describe('listProducts', () => {
     const db = fakeDb({ listings: [{ ...listing, media_ids: ['gone'] }], uploads: [] });
     expect(await listProducts(db, 't1')).toMatchObject([{ photoUrl: null, photoUploadId: null }]);
   });
+  it('falls back to the legacy sample photo the shop shows, which is not an upload', async () => {
+    const db = fakeDb({ listings: [{ ...listing, media_ids: [], metadata: { image_url: 'https://stock/fig.jpg' } }], uploads: [] });
+    expect(await listProducts(db, 't1')).toMatchObject([{ photoUrl: 'https://stock/fig.jpg', photoUploadId: null }]);
+  });
+  it('prefers a real photo over the sample photo', async () => {
+    const db = fakeDb({
+      listings: [{ ...listing, metadata: { image_url: 'https://stock/fig.jpg' } }],
+      uploads: [{ id: 'u1', public_url: 'https://x/u1.webp', alt_text: null }],
+    });
+    expect(await listProducts(db, 't1')).toMatchObject([{ photoUrl: 'https://x/u1.webp', photoUploadId: 'u1' }]);
+  });
 });
 
 describe('getProduct', () => {
@@ -116,6 +128,7 @@ describe('getProduct', () => {
       status: 'active',
       kind: 'physical',
       photos: [{ uploadId: 'u1', url: 'https://x/u1.webp' }],
+      samplePhotoUrl: null,
       collectionIds: ['c1'],
       options: [{ name: 'Size', choices: [{ value: 'Small' }, { value: 'Large' }] }],
       variants: [
@@ -123,6 +136,13 @@ describe('getProduct', () => {
         { choices: { Size: 'Large' }, price: '30', stock: '', available: false },
       ],
     });
+  });
+  it('carries the legacy sample photo only when the product has no real photos', async () => {
+    const sample = { ...listing, media_ids: [], metadata: { image_url: 'https://stock/fig.jpg' } };
+    expect(await getProduct(fakeDb({ listings: [sample], uploads: [] }), 't1', 'l1')).toMatchObject({ photos: [], samplePhotoUrl: 'https://stock/fig.jpg' });
+    const both = { ...listing, metadata: { image_url: 'https://stock/fig.jpg' } };
+    const db = fakeDb({ listings: [both], uploads: [{ id: 'u1', public_url: 'https://x/u1.webp', alt_text: null, file_name: 'a.webp' }] });
+    expect(await getProduct(db, 't1', 'l1')).toMatchObject({ photos: [{ uploadId: 'u1' }], samplePhotoUrl: null });
   });
   it('is null for a product that isn’t there', async () => {
     expect(await getProduct(fakeDb({ listings: [] }), 't1', 'nope')).toBeNull();
@@ -140,7 +160,7 @@ describe('collections', () => {
         ] },
     ],
   };
-  it('lists them with their product counts, leaving out archived and deleted products', async () => {
+  it('counts only live products — what shoppers see — leaving out drafts, archived and deleted', async () => {
     const live = { status: 'active', deleted_at: null };
     const listed = {
       collections: [
@@ -159,7 +179,7 @@ describe('collections', () => {
         },
       ],
     };
-    expect(await listCollections(fakeDb(listed), 't1')).toEqual([{ id: 'c1', name: 'Autumn', status: 'draft', productCount: 2 }]);
+    expect(await listCollections(fakeDb(listed), 't1')).toEqual([{ id: 'c1', name: 'Autumn', status: 'draft', productCount: 1 }]);
   });
   it('loads one as the editor’s form, products in the maker’s order, leaving out deleted products', async () => {
     expect(await getCollection(fakeDb(rows), 't1', 'c1')).toEqual({

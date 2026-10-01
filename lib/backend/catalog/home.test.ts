@@ -30,10 +30,14 @@ describe('catalogHomeData', () => {
   });
   it('lists what needs attention, in plain words', () => {
     const home = catalogHomeData(
-      [p('active', { photoUrl: null }), p('draft', { photoUrl: null }), p('active', { soldOut: true }), p('archived', { photoUrl: null, soldOut: true })],
+      [p('active', { photoUrl: null, photoUploadId: null }), p('draft', { photoUrl: null, photoUploadId: null }), p('active', { soldOut: true }), p('archived', { photoUrl: null, photoUploadId: null, soldOut: true })],
       [],
     );
     expect(home.attention).toEqual(['2 products have no photo.', '1 product is still a draft.', '1 live product is sold out.']);
+  });
+  it('still counts a product showing only a sample photo as having no photo', () => {
+    const home = catalogHomeData([p('active', { photoUrl: 'https://stock/fig.jpg', photoUploadId: null })], []);
+    expect(home.attention).toEqual(['1 product has no photo.']);
   });
   it('is quiet when nothing needs attention', () => {
     expect(catalogHomeData([p('active')], []).attention).toEqual([]);

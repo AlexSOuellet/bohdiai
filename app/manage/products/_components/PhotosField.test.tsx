@@ -22,6 +22,18 @@ describe('PhotosField', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Remove photo 1' }));
     expect(onChange).toHaveBeenLastCalledWith([photos[1]]);
   });
+  it('shows the shop’s sample photo with a note while there are no real photos', () => {
+    const { rerender } = render(<PhotosField photos={[]} samplePhotoUrl="https://stock/fig.jpg" onAdd={vi.fn()} onChange={vi.fn()} onError={vi.fn()} />);
+    expect(screen.getByRole('img', { name: 'Sample photo' })).toHaveAttribute('src', 'https://stock/fig.jpg');
+    expect(screen.getByText('Your shop is showing this sample photo. Add your own photos to replace it.')).toBeInTheDocument();
+    rerender(<PhotosField photos={photos} samplePhotoUrl="https://stock/fig.jpg" onAdd={vi.fn()} onChange={vi.fn()} onError={vi.fn()} />);
+    expect(screen.queryByRole('img', { name: 'Sample photo' })).toBeNull();
+    expect(screen.queryByText(/sample photo/)).toBeNull();
+  });
+  it('shows no sample note when there is no sample photo', () => {
+    render(<PhotosField photos={[]} onAdd={vi.fn()} onChange={vi.fn()} onError={vi.fn()} />);
+    expect(screen.queryByText(/sample photo/)).toBeNull();
+  });
   it('uploads each picked photo and reports the ones that failed by name', async () => {
     uploadProductPhoto.mockResolvedValueOnce({ ok: true, uploadId: 'c', url: 'https://x/c.webp' }).mockResolvedValueOnce({ ok: false, error: 'Use a JPG, PNG or WebP photo.' });
     const onAdd = vi.fn();

@@ -4,7 +4,7 @@
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json } from '@/lib/database.types';
-import { formatPrice, loadMediaMap } from '@/lib/storefront/catalog';
+import { formatPrice, loadMediaMap, imageUrlFromMetadata } from '@/lib/storefront/catalog';
 import { priceRange } from '@/lib/catalog/price';
 import { isProductSoldOut } from '@/lib/catalog/stock';
 import { syncVariants, formatCents, type ProductForm, type OptionForm, type VariantForm, type ItemStatus, type Kind } from './product-form';
@@ -52,7 +52,7 @@ function combination(json: Json): Record<string, string> {
 export async function listProducts(db: Db, tenantId: string): Promise<ProductRowView[]> {
   const { data, error } = await db
     .from('listings')
-    .select('id, name, status, base_price_cents, inventory_count, media_ids, variation_attributes(id), listing_variants(price_cents, inventory_count, status), listing_collections(collection_id)')
+    .select('id, name, status, base_price_cents, inventory_count, media_ids, metadata, variation_attributes(id), listing_variants(price_cents, inventory_count, status), listing_collections(collection_id)')
     .eq('tenant_id', tenantId)
     .in('listing_type', PRODUCT_TYPES)
     .is('deleted_at', null)
@@ -66,7 +66,8 @@ export async function listProducts(db: Db, tenantId: string): Promise<ProductRow
       .map((v) => ({ priceCents: v.price_cents, inventoryCount: v.inventory_count }));
     const hasOptions = r.variation_attributes.length > 0;
     const stock = { inventoryCount: r.inventory_count, hasOptions, combinations: available };
-    // The first photo that still resolves, matching the storefront (mediaForListing).
+    // The first photo that still resolves, else the legacy sample photo — matching the
+    // storefront (mediaForListing). The sample photo isn't an upload, so its id stays null.
     const first = r.media_ids.find((uploadId) => media.has(uploadId));
     const hit = first === undefined ? undefined : media.get(first);
     return {
@@ -76,7 +77,7 @@ export async function listProducts(db: Db, tenantId: string): Promise<ProductRow
       priceLabel: priceRangeLabel(r.base_price_cents, hasOptions ? available : []),
       stockLabel: stockLabel(stock),
       soldOut: isProductSoldOut(stock),
-      photoUrl: hit?.url ?? null,
+      photoUrl: hit?.url ?? imageUrlFromMetadata(r.metadata) ?? null,
       photoUploadId: hit === undefined ? null : (first ?? null),
       collectionIds: r.listing_collections.map((c) => c.collection_id),
     };
@@ -87,7 +88,7 @@ export async function getProduct(db: Db, tenantId: string, id: string): Promise<
   const { data: r, error } = await db
     .from('listings')
     .select(
-      'id, slug, name, short_description, description, status, listing_type, base_price_cents, inventory_count, media_ids, file_upload_id, variation_attributes(name, position, variation_options(value, position, kind, file_upload_id)), listing_variants(option_combination, price_cents, inventory_count, status), listing_collections(collection_id)',
+      'id, slug, name, short_description, description, status, listing_type, base_price_cents, inventory_count, media_ids, metadata, file_upload_id, variation_attributes(name, position, variation_options(value, position, kind, file_upload_id)), listing_variants(option_combination, price_cents, inventory_count, status), listing_collections(collection_id)',
     )
     .eq('tenant_id', tenantId)
     .eq('id', id)
@@ -120,6 +121,11 @@ export async function getProduct(db: Db, tenantId: string, id: string): Promise<
     available: v.status === 'active',
   }));
 
+  const photos = r.media_ids.flatMap((uploadId) => {
+    const hit = media.get(uploadId);
+    return hit === undefined ? [] : [{ uploadId, url: hit.url }];
+  });
+
   return {
     id: r.id,
     slug: r.slug,
@@ -132,10 +138,8 @@ export async function getProduct(db: Db, tenantId: string, id: string): Promise<
     kind: r.listing_type === 'digital_product' ? 'digital' : 'physical',
     fileUploadId: r.file_upload_id,
     fileName: r.file_upload_id === null ? null : (names.get(r.file_upload_id) ?? null),
-    photos: r.media_ids.flatMap((uploadId) => {
-      const hit = media.get(uploadId);
-      return hit === undefined ? [] : [{ uploadId, url: hit.url }];
-    }),
+    photos,
+    samplePhotoUrl: photos.length === 0 ? (imageUrlFromMetadata(r.metadata) ?? null) : null,
     collectionIds: r.listing_collections.map((c) => c.collection_id),
     options,
     variants: syncVariants(options, stored),
@@ -157,12 +161,12 @@ export async function listCollections(db: Db, tenantId: string): Promise<Collect
     .is('deleted_at', null)
     .order('position', { ascending: true });
   if (error !== null) throw new Error(`Could not load collections: ${error.message}`);
-  // Count only products a shopper could still reach: not archived, not deleted.
+  // Count only live products — what shoppers see: active and not deleted.
   return (data ?? []).map((c) => ({
     id: c.id,
     name: c.name,
     status: asStatus(c.status),
-    productCount: c.listing_collections.filter((m) => m.listings !== null && m.listings.status !== 'archived' && m.listings.deleted_at === null).length,
+    productCount: c.listing_collections.filter((m) => m.listings !== null && m.listings.status === 'active' && m.listings.deleted_at === null).length,
   }));
 }
 

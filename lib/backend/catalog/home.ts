@@ -12,7 +12,8 @@ export function catalogHomeData(products: readonly ProductRowView[], collections
   const liveCollections = collections.filter((c) => c.status === 'active').length;
   const draftCollections = collections.filter((c) => c.status === 'draft').length;
 
-  const noPhoto = current.filter((p) => p.photoUrl === null).length;
+  // A product showing only the legacy sample photo still needs a real one (no upload id).
+  const noPhoto = current.filter((p) => p.photoUploadId === null).length;
   const soldOut = live.filter((p) => p.soldOut).length;
   const attention: string[] = [];
   if (noPhoto > 0) attention.push(`${n(noPhoto, 'product has', 'products have')} no photo.`);

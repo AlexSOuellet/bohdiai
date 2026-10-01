@@ -304,3 +304,11 @@ describe('ProductEditor', () => {
     expect(screen.getByText('Save your changes first')).toBeInTheDocument();
   });
 });
+
+describe('ProductEditor — sample photo', () => {
+  it('shows the shop’s sample photo for a product with no real photos', () => {
+    renderEditor(existing({ samplePhotoUrl: 'https://stock/fig.jpg' }));
+    expect(screen.getByRole('img', { name: 'Sample photo' })).toHaveAttribute('src', 'https://stock/fig.jpg');
+    expect(screen.getByText('Your shop is showing this sample photo. Add your own photos to replace it.')).toBeInTheDocument();
+  });
+});

@@ -25,6 +25,9 @@ export type ProductForm = {
   fileUploadId: string | null;
   fileName: string | null;
   photos: PhotoForm[];
+  /** Display only, never saved: the legacy sample photo the shop shows while the
+   *  product has no real photos (null once it has one). */
+  samplePhotoUrl: string | null;
   collectionIds: string[];
   options: OptionForm[];
   variants: VariantForm[];
@@ -66,6 +69,7 @@ export function emptyProductForm(): ProductForm {
     fileUploadId: null,
     fileName: null,
     photos: [],
+    samplePhotoUrl: null,
     collectionIds: [],
     options: [],
     variants: [],
@@ -137,6 +141,7 @@ function hasProductShape(f: unknown): boolean {
   if (!isStringOrNull(f['id']) || !isStatus(f['status']) || !isKind(f['kind']) || !isStringOrNull(f['fileUploadId'])) return false;
   const photos = f['photos'];
   if (!Array.isArray(photos) || !photos.every((p) => isRecord(p) && isString(p['uploadId']))) return false;
+  if (!isStringOrNull(f['samplePhotoUrl'])) return false;
   if (!isStringArray(f['collectionIds'])) return false;
   const options = f['options'];
   const choiceOk = (c: unknown): boolean => isRecord(c) && isString(c['value']) && isKind(c['kind']) && isStringOrNull(c['fileUploadId']);

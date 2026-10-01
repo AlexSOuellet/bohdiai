@@ -129,6 +129,12 @@ describe('buildProductPayload', () => {
   it('checks stock', () => {
     expect(buildProductPayload(base({ stock: '2.5' }), { digital: false })).toEqual({ ok: false, error: 'Stock must be a whole number, 0 or more. Leave it blank if you make to order.' });
   });
+  it('starts with no sample photo and never sends it in the payload', () => {
+    expect(emptyProductForm().samplePhotoUrl).toBeNull();
+    const built = buildProductPayload(base({ samplePhotoUrl: 'https://stock/fig.jpg' }), { digital: false });
+    expect(built.ok).toBe(true);
+    expect(JSON.stringify(built)).not.toContain('stock/fig.jpg');
+  });
   it('caps photos', () => {
     const photos = Array.from({ length: MAX_PHOTOS + 1 }, (_, i) => ({ uploadId: `p${i}`, url: `u${i}` }));
     expect(buildProductPayload(base({ photos }), { digital: false })).toEqual({ ok: false, error: `A product can have up to ${MAX_PHOTOS} photos.` });
@@ -226,6 +232,8 @@ describe('buildProductPayload — crafted input', () => {
       { fileUploadId: 7 },
       { photos: 'u1' },
       { photos: [{ uploadId: 3 }] },
+      { samplePhotoUrl: 5 },
+      { samplePhotoUrl: undefined },
       { collectionIds: 'c1' },
       { collectionIds: [1] },
       { options: {} },

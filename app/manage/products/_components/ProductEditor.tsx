@@ -262,7 +262,7 @@ export function ProductEditor({
 
         <section className="bk-section" aria-labelledby="s-photos">
           <h2 id="s-photos" className="bk-section-title">Photos</h2>
-          <PhotosField photos={form.photos} onAdd={addPhoto} onChange={(photos) => update({ photos })} onError={notice.showError} />
+          <PhotosField photos={form.photos} samplePhotoUrl={form.samplePhotoUrl} onAdd={addPhoto} onChange={(photos) => update({ photos })} onError={notice.showError} />
         </section>
 
         <section className="bk-section" aria-labelledby="s-price">
