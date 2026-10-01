@@ -9,6 +9,7 @@
  * on hover; does not auto-advance under reduced-motion. Class-only; active-vs-idle
  * state is data-driven (data-on), never inline.
  */
+import { priceLabel } from './price-label';
 import { useEffect, useRef, useState } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
@@ -91,7 +92,7 @@ export function GoodsSlideshow({
             )}
           </div>
           <Type as="span" role="price" className="ms-slide-price">
-            {current?.price}
+            {current !== undefined && priceLabel(current)}
           </Type>
         </a>
         <div role="tablist" aria-label={DEFAULT_STRINGS.ariaSlides} className="ms-slide-dots">

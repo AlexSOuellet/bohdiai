@@ -11,6 +11,7 @@
  * thumbnail is graded by the skin's own `.archetype-photo` filter. The layout and
  * the hover reveal live in skinVarsCss under `.ms-index-*` — no inline styles.
  */
+import { priceLabel } from './price-label';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
@@ -50,7 +51,7 @@ export function GoodsIndex({
                   </Type>
                 )}
                 <Type as="span" role="price" className="ms-index-price">
-                  {p.price}
+                  {priceLabel(p)}
                 </Type>
                 <Media media={shot ?? { kind: 'image', alt: p.name }} className="ms-index-thumb" />
               </a>

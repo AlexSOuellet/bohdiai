@@ -1306,6 +1306,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-product-var-lbl{color:var(--ms-fg)}
     .arch-main-street .ms-product-var-opts{margin-top:var(--ms-tight);display:flex;flex-wrap:wrap;gap:var(--ms-tight)}
     .arch-main-street .ms-product-var-chip{color:var(--ms-fg);border:1px solid var(--ms-rule);padding:7px 12px;border-radius:2px}
+    .arch-main-street .ms-product-select{font:inherit;color:var(--ms-fg);background:var(--ms-bg);border:1px solid var(--ms-rule);border-radius:2px;padding:var(--ms-tight) var(--ms-base);min-width:12rem;max-width:100%}
     .arch-main-street .ms-product-buy{margin-top:var(--ms-loose)}
     .arch-main-street .ms-product-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:var(--ms-base) var(--ms-loose);border-radius:2px;display:inline-block;border:0;cursor:pointer;font:inherit}
     .arch-main-street .ms-product-cta[data-soldout="true"]{background:var(--ms-fg-muted);cursor:default}

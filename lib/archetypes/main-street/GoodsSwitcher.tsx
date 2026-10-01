@@ -10,6 +10,7 @@
  * role. Class-only via .ms-switch-* in skinVarsCss; active-vs-idle state is
  * data-driven (data-on), never inline.
  */
+import { priceLabel } from './price-label';
 import { useState } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
@@ -48,7 +49,7 @@ export function GoodsSwitcher({
           ))}
           {current && (
             <Type as="span" role="price" className="ms-switch-price-tag">
-              {current.price}
+              {priceLabel(current)}
             </Type>
           )}
         </div>
@@ -69,7 +70,7 @@ export function GoodsSwitcher({
                       {p.name}
                     </Type>
                     <Type as="span" role="price" className="ms-switch-price">
-                      {p.price}
+                      {priceLabel(p)}
                     </Type>
                   </span>
                   {on && p.shortDescription && (

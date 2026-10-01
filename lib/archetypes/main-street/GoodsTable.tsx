@@ -18,6 +18,7 @@
  * surface; until that pipeline exists each product photo reads as a print laid on
  * the table — the same tactile idea, achievable with the images we generate today.)
  */
+import { priceLabel } from './price-label';
 import { useEffect, useRef } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
@@ -75,7 +76,7 @@ export function GoodsTable({
                     {p.name}
                   </Type>
                   <Type as="span" role="price" className="ms-table-price">
-                    {p.price}
+                    {priceLabel(p)}
                   </Type>
                 </span>
               </span>

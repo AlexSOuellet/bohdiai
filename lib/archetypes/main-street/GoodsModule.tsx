@@ -17,6 +17,7 @@
  * structural CSS lives in skinVarsCss under `.ms-module-*` — no inline styles,
  * the placement and stagger delays are CSS, never set on the element.
  */
+import { priceLabel } from './price-label';
 import { useEffect, useRef } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
@@ -76,7 +77,7 @@ export function GoodsModule({
                   {p.name}
                 </Type>
                 <Type as="span" role="price" className="ms-module-price">
-                  {p.price}
+                  {priceLabel(p)}
                 </Type>
                 {p.shortDescription && (
                   <Type as="span" role="caption" className="ms-module-spec">

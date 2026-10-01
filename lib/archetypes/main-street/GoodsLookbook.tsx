@@ -11,6 +11,7 @@
  * layout lives in skinVarsCss under `.ms-lookbook-*`; the flip is a modifier
  * class on every other row — no inline styles.
  */
+import { priceLabel } from './price-label';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
@@ -52,7 +53,7 @@ export function GoodsLookbook({
                 {p.name}
               </Type>
               <Type as="span" role="price" className="ms-lookbook-price">
-                {p.price}
+                {priceLabel(p)}
               </Type>
               {p.shortDescription && (
                 <Type as="p" role="body" className="ms-lookbook-desc">

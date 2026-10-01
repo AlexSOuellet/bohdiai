@@ -17,6 +17,7 @@
  * The random stagger delay is set on the card via `--ms-const-d` at mount. All the
  * fade-in and layout rules live in skinVarsCss.
  */
+import { priceLabel } from './price-label';
 import { useEffect, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import type { ArchetypeTheme } from '../types';
@@ -139,7 +140,7 @@ export function GoodsProcession({
                     {p.name}
                   </Type>
                   <Type as="span" role="price" className="ms-const-price">
-                    {p.price}
+                    {priceLabel(p)}
                   </Type>
                 </div>
               </a>

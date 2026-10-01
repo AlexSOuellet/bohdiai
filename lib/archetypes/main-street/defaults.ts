@@ -30,6 +30,7 @@ export const DEFAULT_STRINGS = {
   // ─── Product page ─────────────────────────────────────────────────────────
   productAddToCart: 'Add to cart',
   productSoldOut: 'Sold out',
+  productUnavailable: 'Not available',
   productDetailsLabel: 'Details',
 
   // ─── Contact form ─────────────────────────────────────────────────────────
@@ -236,6 +237,8 @@ export const REFERENCE_LABELS = {
  * when a maker's locale changes, one file changes.
  */
 export const DEFAULT_COUNTS = {
+  /** "from $24" — a product whose combinations differ in price. */
+  priceFrom: (price: string): string => `from ${price}`,
   /** "1 piece" / "3 pieces" — used by collection eyebrows + tiles. */
   pieces: (n: number): string => `${n} ${n === 1 ? 'piece' : 'pieces'}`,
   /** "1 item" / "3 items" — used by cupboard / lanes count suffix. */

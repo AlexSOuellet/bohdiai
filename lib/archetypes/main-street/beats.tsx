@@ -13,6 +13,7 @@
  * every declaration lives in skinVarsCss under .ms-goodshead-*, .ms-marq-*, or
  * .ms-close-*. Nothing inline.
  */
+import { priceLabel } from './price-label';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetContent } from './schemas';
@@ -107,7 +108,7 @@ export function GoodsMarquee({
               <div className="ms-marq-media">
                 <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
                 <Type as="span" role="price" className="ms-marq-price">
-                  {p.price}
+                  {priceLabel(p)}
                 </Type>
               </div>
               <Type as="h3" role="cardTitle" className="ms-marq-name">

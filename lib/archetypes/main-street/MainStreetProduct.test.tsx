@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { render, cleanup } from '@testing-library/react';
+import { render, cleanup, screen } from '@testing-library/react';
+import { DEFAULT_STRINGS } from './defaults';
 import { MainStreetProduct } from './MainStreetProduct';
 import { MAIN_STREET_SKINS } from './skins';
 import type { MainStreetContent } from './schemas';
@@ -51,5 +52,25 @@ describe('MainStreetProduct media gallery', () => {
     expect(video?.getAttribute('poster')).toBe('https://cdn/poster.jpg');
     expect(video?.hasAttribute('controls')).toBe(true);
     expect(container.querySelector('img')).toBeNull(); // the clip is a real player, not an <img> poster
+  });
+});
+
+describe('MainStreetProduct options and stock', () => {
+  const base: ProductView = {
+    slug: 'belt', name: 'The Belt', price: '$98', description: 'A belt.', status: 'active', media: [], variations: [],
+  };
+  it('shows the option picker for a product with options', () => {
+    render(
+      <MainStreetProduct
+        content={content}
+        skin={skin}
+        product={{ ...base, variations: [{ name: 'Size', options: ['Small'] }], offers: [{ choices: { Size: 'Small' }, price: '$24', soldOut: false }] }}
+      />,
+    );
+    expect(screen.getByLabelText('Size')).toBeInTheDocument();
+  });
+  it('disables buying a sold-out product without options', () => {
+    render(<MainStreetProduct content={content} skin={skin} product={{ ...base, status: 'sold_out' }} />);
+    expect(screen.getByRole('button', { name: DEFAULT_STRINGS.productSoldOut })).toBeDisabled();
   });
 });

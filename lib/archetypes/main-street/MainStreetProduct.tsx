@@ -18,6 +18,7 @@ import type { MainStreetContent } from './schemas';
 import { MainStreetRoot, MainStreetFooter, Nav } from './chrome';
 import { Type } from './Type';
 import { DEFAULT_STRINGS } from './defaults';
+import { ProductOptions } from './ProductOptions';
 import type { Family } from './families';
 
 /** One media cell — a playable video or a still. A video renders a real
@@ -84,40 +85,32 @@ export function MainStreetProduct({
             <Type as="h1" role="title" className="ms-product-title">
               {product.name}
             </Type>
-            <Type as="div" role="title" className="ms-product-price">
-              {product.price}
-            </Type>
             {product.shortDescription && (
               <Type as="p" role="body" className="ms-product-desc">
                 {product.shortDescription}
               </Type>
             )}
-            {product.variations.map((v) => (
-              <div key={v.name} className="ms-product-var">
-                <Type as="div" role="eyebrow" className="ms-product-var-lbl">
-                  {v.name}
+            {product.variations.length > 0 ? (
+              <ProductOptions variations={product.variations} offers={product.offers ?? []} fallbackPrice={product.price} />
+            ) : (
+              <>
+                <Type as="div" role="title" className="ms-product-price">
+                  {product.price}
                 </Type>
-                <div className="ms-product-var-opts">
-                  {v.options.map((opt) => (
-                    <Type key={opt} as="span" role="caption" className="ms-product-var-chip">
-                      {opt}
-                    </Type>
-                  ))}
+                <div className="ms-product-buy">
+                  <Type
+                    as="button"
+                    role="navLabel"
+                    type="button"
+                    disabled={soldOut}
+                    className="ms-product-cta"
+                    data-soldout={soldOut ? 'true' : 'false'}
+                  >
+                    {soldOut ? DEFAULT_STRINGS.productSoldOut : DEFAULT_STRINGS.productAddToCart}
+                  </Type>
                 </div>
-              </div>
-            ))}
-            <div className="ms-product-buy">
-              <Type
-                as="button"
-                role="navLabel"
-                type="button"
-                disabled={soldOut}
-                className="ms-product-cta"
-                data-soldout={soldOut ? 'true' : 'false'}
-              >
-                {soldOut ? DEFAULT_STRINGS.productSoldOut : DEFAULT_STRINGS.productAddToCart}
-              </Type>
-            </div>
+              </>
+            )}
           </div>
         </section>
         <section className="ms-product-story">

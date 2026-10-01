@@ -5,6 +5,7 @@
  * a solid nav header (not the hero's over-media nav), and the footer. Structure
  * only — colors are skin vars, fonts are named roles, nothing niche or hardcoded.
  */
+import { priceLabel } from './price-label';
 import type { ReactNode } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
@@ -131,7 +132,7 @@ export function ShopPage({ content, skin, products, family }: { content: MainStr
                   <div className="ms-catalog-media">
                     <Media media={shot ?? { kind: 'image', alt: p.name }} />
                     <Type as="span" role="price" className="ms-catalog-price">
-                      {p.price}
+                      {priceLabel(p)}
                     </Type>
                   </div>
                   <Type as="h3" role="cardTitle" className="ms-catalog-name">
