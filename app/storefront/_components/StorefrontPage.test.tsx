@@ -42,7 +42,7 @@ vi.mock('@/lib/storefront/catalog', () => ({
   loadCollections: (...a: unknown[]) => loadCollections(...a),
 }));
 
-import StorefrontPage from './StorefrontPage';
+import StorefrontPage, { tenantUsesCatalog } from './StorefrontPage';
 
 const ENV = { archetypeKey: 'main-street', lookKey: 'ember', content: {} };
 
@@ -185,5 +185,21 @@ describe('archetypes with a catalog', () => {
     await StorefrontPage({ slug: '/' });
     expect(loadCatalog).toHaveBeenCalledWith(expect.anything(), 't1');
     expect(loadCollections).toHaveBeenCalled();
+  });
+});
+
+describe('tenantUsesCatalog', () => {
+  it('follows the published archetype', async () => {
+    loadHome.mockResolvedValue({ ...ENV });
+    expect(await tenantUsesCatalog('t1')).toBe(true);
+    specUsesCatalog = false;
+    expect(await tenantUsesCatalog('t1')).toBe(false);
+    expect(loadHome).toHaveBeenCalledWith('t1');
+  });
+  it('is false with no published home or no archetype key', async () => {
+    loadHome.mockResolvedValue(null);
+    expect(await tenantUsesCatalog('t1')).toBe(false);
+    loadHome.mockResolvedValue({ lookKey: 'ember' });
+    expect(await tenantUsesCatalog('t1')).toBe(false);
   });
 });

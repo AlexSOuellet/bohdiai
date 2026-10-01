@@ -143,6 +143,15 @@ async function resolveEnvelope(tenantId: string) {
   return { spec, lookKey, content: env['content'], logoUrl, brandColors, accentOverride, brandPalette, mood };
 }
 
+/** Whether the tenant's published archetype shows a catalog. False when there is no
+ *  published home or the archetype is unknown. Routes that read the catalog (the
+ *  product page) check this first, so a page with no catalog never touches it. */
+export async function tenantUsesCatalog(tenantId: string): Promise<boolean> {
+  const env = await loadHomeEnvelope(tenantId);
+  const key = env?.['archetypeKey'];
+  return typeof key === 'string' && archetypeSpec(key)?.usesCatalog === true;
+}
+
 /** Render a product detail page in the tenant's chrome, or null when the tenant
  *  has no published home. */
 export async function renderArchetypeProductPage(tenantId: string, product: ProductView) {

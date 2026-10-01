@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
-import { renderArchetypeProductPage } from '../../_components/StorefrontPage';
+import { renderArchetypeProductPage, tenantUsesCatalog } from '../../_components/StorefrontPage';
 import { storefrontMetadata, storefrontSeoFacts } from '@/lib/storefront/metadata';
 import { tenantProductJsonLd } from '@/lib/storefront/seo';
 import { loadProduct } from '@/lib/storefront/catalog';
@@ -15,6 +15,8 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
   const { slug } = await params;
   const tenantId = (await headers()).get('x-tenant-id');
   if (tenantId === null) return {};
+  // A page with no catalog (the contractor page) has no products to describe.
+  if (!(await tenantUsesCatalog(tenantId))) return {};
   const product = await loadProduct(supabaseAdmin(), tenantId, slug);
   if (product === null) return {};
   const desc = product.view.shortDescription ?? (product.view.description || undefined);
@@ -31,6 +33,8 @@ export default async function StorefrontListingPage({ params }: ListingPageProps
   const { slug } = await params;
   const tenantId = (await headers()).get('x-tenant-id');
   if (tenantId === null) notFound();
+  // A page with no catalog (the contractor page) has no product pages, and never reads the catalog.
+  if (!(await tenantUsesCatalog(tenantId))) notFound();
 
   // The one shared projection: every photo, options, prices, sold out.
   const product = await loadProduct(supabaseAdmin(), tenantId, slug);

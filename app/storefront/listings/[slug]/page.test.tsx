@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const { loadProduct, renderArchetypeProductPage, tenantProductJsonLd, notFound } = vi.hoisted(() => ({
+const { loadProduct, renderArchetypeProductPage, tenantUsesCatalog, tenantProductJsonLd, notFound } = vi.hoisted(() => ({
   loadProduct: vi.fn(),
   renderArchetypeProductPage: vi.fn(),
+  tenantUsesCatalog: vi.fn(),
   tenantProductJsonLd: vi.fn(() => ({})),
   notFound: vi.fn(() => {
     throw new Error('NOT_FOUND');
@@ -12,7 +13,7 @@ vi.mock('next/headers', () => ({ headers: async () => new Headers({ 'x-tenant-id
 vi.mock('next/navigation', () => ({ notFound }));
 vi.mock('@/lib/supabase', () => ({ supabaseAdmin: () => ({}) }));
 vi.mock('@/lib/storefront/catalog', () => ({ loadProduct }));
-vi.mock('../../_components/StorefrontPage', () => ({ renderArchetypeProductPage }));
+vi.mock('../../_components/StorefrontPage', () => ({ renderArchetypeProductPage, tenantUsesCatalog }));
 vi.mock('@/lib/storefront/metadata', () => ({ storefrontMetadata: vi.fn((m: unknown) => m), storefrontSeoFacts: async () => ({ shop: 'facts' }) }));
 vi.mock('@/lib/storefront/seo', () => ({ tenantProductJsonLd }));
 
@@ -24,6 +25,7 @@ const props = { params: Promise.resolve({ slug: 'fig' }) };
 beforeEach(() => {
   vi.clearAllMocks();
   renderArchetypeProductPage.mockResolvedValue('PAGE');
+  tenantUsesCatalog.mockResolvedValue(true);
 });
 
 describe('product page', () => {
@@ -49,5 +51,20 @@ describe('product page', () => {
   it('shares the real photo', async () => {
     loadProduct.mockResolvedValue({ view, isPreview: false, priceCents: 2400 });
     expect(await generateMetadata(props)).toMatchObject({ pageName: 'Fig Candle', imageUrl: 'https://x/1.webp' });
+  });
+});
+
+describe('a shop whose page has no catalog (the contractor page)', () => {
+  it('404s without reading the catalog', async () => {
+    tenantUsesCatalog.mockResolvedValue(false);
+    await expect(StorefrontListingPage(props)).rejects.toThrow('NOT_FOUND');
+    expect(tenantUsesCatalog).toHaveBeenCalledWith('t1');
+    expect(loadProduct).not.toHaveBeenCalled();
+    expect(renderArchetypeProductPage).not.toHaveBeenCalled();
+  });
+  it('has no metadata and never reads the catalog for it', async () => {
+    tenantUsesCatalog.mockResolvedValue(false);
+    expect(await generateMetadata(props)).toEqual({});
+    expect(loadProduct).not.toHaveBeenCalled();
   });
 });
