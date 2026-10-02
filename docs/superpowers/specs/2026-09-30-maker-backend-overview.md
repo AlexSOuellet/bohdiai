@@ -77,6 +77,17 @@ The five pieces are the maker path. Contractor and charity features (estimate in
 - Registrar forwarding/masking is not a supported state. Plain forwarding works but keeps the bohdiai.com address; masking breaks checkout and sign-in and is to be avoided.
 - The first real custom domain is a live test before any client depends on it.
 
+## Staging — required before the first paying customer
+
+Agreed with Alex, 2026-10-02 (Session 91). Every site runs on one codebase, so one bad push breaks every site at once. Once a client pays — and above all once a client takes real orders — changes are proven on a separate copy first.
+
+- **Its own domain:** a second cheap domain just for staging (e.g. `bohdiai-test.com`, ~$10/year at Cloudflare Registrar). Shops live at `<shop>.bohdiai-test.com`, one level deep, so Cloudflare's free certificate covers them (`<shop>.staging.bohdiai.com` would need the ~$10/month certificate add-on). Keeps staging and live from sharing sign-in cookies.
+- **Root domain becomes a setting:** the app stops assuming `bohdiai.com`; each copy is told its own root domain. Also groundwork for custom domains.
+- **Its own Supabase project**, so tests never touch a real client's data. Free once the dead Rhody Strong project is deleted (Alex; back it up first) — that frees the second free-plan slot.
+- **Its own Worker** on the existing Cloudflare account; Stripe and Square in test mode (free).
+- **The routine:** database changes, anything touching checkout or payments, and storefront changes go to staging first and are checked there before `main`. Small low-risk changes may still go straight to live behind the test suite.
+- **When:** in place before the first paying customer, not before.
+
 ## Open, decided later
 
 - **Customer logins across shops.** When customer accounts are built (piece 3): one shared login across BohdiAI shops, or separate per shop. Alex's current view: shared is fine on `*.bohdiai.com` addresses, not on custom domains. Maker sign-in is kept separate so either answer slots in.
