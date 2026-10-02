@@ -8,7 +8,7 @@ import { FaqList } from '@/components/faq/FaqList';
 import { FAQ_GROUPS, faqItem, faqJsonLd } from '@/lib/site/faq';
 
 export const metadata: Metadata = {
-  title: 'Questions — BohdiAI',
+  title: 'FAQ — BohdiAI',
   description:
     'Why the prices are so low, when billing starts, who owns your site, and everything else people ask before they start.',
 };
@@ -27,7 +27,7 @@ export default function FaqPage(): React.ReactElement {
       <Header />
       <main id="main">
         <div className="px-2 pt-10 text-center md:pt-16">
-          <SectionKicker>Questions</SectionKicker>
+          <SectionKicker>FAQ</SectionKicker>
           <h1 className="mx-auto max-w-[900px] font-sans text-[34px] font-medium leading-[1.05] tracking-[-0.02em] text-text md:text-[60px] md:tracking-[-0.03em]">
             Questions, <span className="animate-pulse-glow text-honey-warm">answered straight</span>
           </h1>

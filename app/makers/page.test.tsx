@@ -40,6 +40,6 @@ describe('bohdiai.com/makers — questions', () => {
     render(<MakersPage />);
     expect(screen.getByText('Why are your prices so low compared to everyone else?')).toBeInTheDocument();
     expect(screen.getByText('Do I have to sell online?')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /more questions/i })).toHaveAttribute('href', '/faq');
+    expect(screen.getByRole('link', { name: /full faq/i })).toHaveAttribute('href', '/faq');
   });
 });

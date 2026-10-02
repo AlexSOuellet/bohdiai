@@ -40,6 +40,6 @@ describe('bohdiai.com/contractors — questions', () => {
   it('answers the three most-asked questions and links the full FAQ', () => {
     render(<ContractorsPage />);
     expect(screen.getByText('Do I have to pay for leads?')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /more questions/i })).toHaveAttribute('href', '/faq');
+    expect(screen.getByRole('link', { name: /full faq/i })).toHaveAttribute('href', '/faq');
   });
 });

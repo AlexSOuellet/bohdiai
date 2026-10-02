@@ -70,7 +70,7 @@ export function PricingPage({
         </section>
 
         <section id="questions" className="relative z-content mx-auto max-w-[760px] px-3 pt-24 md:pt-32">
-          <SectionKicker>Questions</SectionKicker>
+          <SectionKicker>FAQ</SectionKicker>
           <div className="mt-6">
             <FaqList items={TOP_QUESTIONS[audience].map((id) => faqItem(id))} />
           </div>
@@ -79,7 +79,7 @@ export function PricingPage({
               href="/faq"
               className="inline-flex items-center gap-2 border-b border-honey-warm/35 pb-0.5 text-[14px] font-semibold text-honey-warm no-underline transition-colors hover:border-honey-warm"
             >
-              More questions →
+              See the full FAQ →
             </Link>
           </p>
         </section>

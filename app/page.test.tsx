@@ -56,7 +56,7 @@ describe('bohdiai.com home', () => {
     const { container } = render(<HomePage />);
     expect(screen.getByText(/Bodhi means awakening/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /why my prices are so low/i })).toHaveAttribute('href', '/faq#why-so-low');
-    expect(container.querySelector('footer a[href="/faq"]')).toHaveTextContent('Questions');
+    expect(container.querySelector('footer a[href="/faq"]')).toHaveTextContent('FAQ');
   });
 
   it('puts plans and prices one tap from the top', () => {

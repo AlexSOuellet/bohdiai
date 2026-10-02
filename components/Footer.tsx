@@ -22,7 +22,7 @@ export function Footer(): React.ReactElement {
           <FooterCol title="Site">
             <FLink href="/makers">For makers</FLink>
             <FLink href="/contractors">For contractors</FLink>
-            <FLink href="/faq">Questions</FLink>
+            <FLink href="/faq">FAQ</FLink>
             <FLink href="/#work">Work</FLink>
             <FLink href="/#how">How it works</FLink>
             <FLink href="/#pledge">Our pledge</FLink>
