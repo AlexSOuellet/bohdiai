@@ -48,6 +48,7 @@ A separate track, not on the maker ladder (a contractor never moves up to sellin
 
 - **Site built free; the contractor pays for hosting:** $29.99/month, or $299/year.
 - Pitched to sit at the do-it-yourself price (Wix / Squarespace ~$17–36/month) while handing over a finished site; below a local designer's $50–150/month maintenance fee. High enough not to look cheap, low enough to be a no-brainer — less than one job a month.
+- **Cut-Pro is family (Alex's daughter and her fiancé) and keeps its own "love pricing"** — not on this price.
 - Same rules as makers: fixes covered, additions paid; no commitment, site pauses if payments stop.
 - Contractor features still to come (job-photo gallery, estimate inbox, booked-days calendar) leave room for a second contractor tier later.
 
@@ -68,6 +69,6 @@ Unchanged: maker backend piece 1 continues (video, then custom domains), then th
 
 ## Open
 
-- **Cut-Pro:** whether it moves onto the contractor price or keeps its own arrangement.
+
 - **Lite's design:** a cut-down Full (same look, fewer pages — upgrades are just switches; recommended) or its own one-page design.
 - **Year-two annual option** (e.g. $99/year for Lite): suggested, not decided.
