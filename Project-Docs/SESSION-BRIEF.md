@@ -16,7 +16,7 @@
 
 ## Current state
 
-**Session 91 — tiers and prices agreed; pricing pages built on branch `site/pricing-pages` (not live).** Every plan built free, monthly or yearly; Maker Lite/Full $14.99/$19.99, Contractor Lite/Full $14.99/$29.99 (`docs/superpowers/specs/2026-10-02-tiers-and-pricing.md`). bohdiai.com gets `/makers`, `/contractors`, two doors and a Pricing link; it goes live only together with the Stripe pay buttons. Full recap: `session-logs/session-91.md`.
+**Session 91 — tiers and prices agreed; pricing pages LIVE with "Talk to us" buttons.** Every plan built free, monthly or yearly; Maker Lite/Full $14.99/$19.99, Contractor Lite/Full $14.99/$29.99 (`docs/superpowers/specs/2026-10-02-tiers-and-pricing.md`). bohdiai.com gets `/makers`, `/contractors`, two doors and a Pricing link; Stripe pay buttons replace "Talk to us" next. Full recap: `session-logs/session-91.md`.
 
 **Session 90 — auto sign-out + maker backend 1b Catalog LIVE.** Owners manage products (photos, options with own price/stock, downloads where switched on, collections, draft/live/archived, home-page picks max 5 from a Home column) and collections; the shop shows it (all photos, option picker, "from $X", sold out, collections from `listing_collections`). Plan: `docs/superpowers/plans/2026-10-01-maker-backend-1b-catalog.md`. Cloudflare turned on "Builds for Preview branches" overnight → deploys failed until Alex switched it off. Full recap: `session-logs/session-90.md`.
 
@@ -37,8 +37,8 @@ Full recap: `session-logs/session-87.md`.
 
 ## Next actions
 
-03. **Stripe pay buttons, then merge `site/pricing-pages` and go live** (Alex: no pricing page without pay buttons). Needs Alex's BohdiAI Stripe account.
-02. **Maker backend 1c — Video** (Cloudflare Stream; confirm cost first), then 1d Custom domains + status panel. Options/combinations get their real test with the first real client who sells sizes/scents.
+03. **Stripe pay buttons** — pricing pages went live 2026-10-02 with "Talk to us" buttons (Alex: fine until tomorrow); pay buttons replace them. Needs Alex's BohdiAI Stripe account.
+02. **Maker backend 1c — Video** (Cloudflare Stream; confirm cost first), then 1d Custom domains + status panel (build the footer credit with it: "2026 Empowered by BohdiAI" on subdomains, the site name on custom domains — tiers spec). Options/combinations get their real test with the first real client who sells sizes/scents.
 01. **Staging before the first paying customer's site goes live** (agreed 2026-10-02; Alex: pay buttons don't need it): own test domain, own Supabase (after Rhody Strong is deleted), root domain as a setting. Detail: backend overview spec, "Staging".
 0. **bohdiai.com loose ends (Session 89 cleared most):** CI green again (2026-09-30); prod inquiry confirmed in Alex's inbox; Classic Loafs reverted to its original build. Still open: logo from the BohdiAi Facebook page (Alex skipped for now); the Classic Loafs work shot catches the hero words mid-fade (re-time if Alex wants); sample find-us dates are all past July dates; drop "(publicly: Alex Scott)" from privacy/terms? JSON-LD founder name?
 1. **Cloudflare cleanup (Alex):** delete the redundant Cut-Pro route; trim Build variables to NODE_VERSION + the two NEXT_PUBLIC_*; after a few quiet days cancel Vercel and delete `shop-proxy` together.
@@ -89,7 +89,7 @@ Full recap: `session-logs/session-87.md`.
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
-- Session 91 (2026-10-02): **Tiers + prices agreed; pricing pages built (branch, not live).** Full recap: `session-logs/session-91.md`.
+- Session 91 (2026-10-02): **Tiers + prices agreed; pricing pages LIVE ("Talk to us" until pay buttons).** Full recap: `session-logs/session-91.md`.
 - Session 90 (2026-09-30 → 10-01): **Auto sign-out live; maker backend 1b Catalog live** (products, options, collections, home picks; shop renders them; scroll-reveal bug on tall sections fixed). Full recap: `session-logs/session-90.md`.
 - Session 89 (2026-09-30): **CI green; maker backend designed; foundation (1a) built + live-tested.** Classic Loafs reverted; MCP popups fixed; MY ADMIN deferred. Full recap: `session-logs/session-89.md`.
 - Session 88 (2026-09-29): **bohdiai.com rebuilt as a web developer site, LIVE.** Real work (Cut-Pro, Penny, 3 samples) with testimonials, new about + The Bohdi Way, inquiry form with phone/best-way, waitlist stack deleted. Found CI red since 09-24 (coverage gate). Next: CI fix, then MY ADMIN brainstorm. Full recap: `session-logs/session-88.md`.

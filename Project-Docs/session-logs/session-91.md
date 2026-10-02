@@ -5,13 +5,13 @@
 - **Staging** — written into the backend overview spec. Alex then pointed out the pay buttons don't need it (Stripe test mode covers them); proposed rule: staging before the first paying customer's **site** goes live. Not yet confirmed — ask.
 - **bohdiai.com shows prices** (reverses the Session 88 "no pricing" call) — design: `docs/superpowers/specs/2026-10-02-bohdiai-com-pricing-design.md`; plan: `docs/superpowers/plans/2026-10-02-bohdiai-com-pricing-pages.md`. Built before video.
 
-## Built (branch `site/pricing-pages`, NOT merged, NOT live)
+## Built and LIVE (merged 2026-10-02, "Talk to us" buttons until the pay buttons)
 - `/makers` and `/contractors`: headline "A real web developer for less than a site builder", Lite/Full cards with monthly/yearly switch, comparison (web designer, Wix/Squarespace, Shopify, Etsy / lead services, Facebook page — prices checked 2026-10-02, recorded in `lib/site/plans.ts`), audience's work, contact form with plan chips (plan in Alex's email).
 - Home: two doors under the hero (`#pricing`), charity "let's talk" line, Pricing link in the header on every screen size, hero button "See plans and prices", How it works for plans, new promise "Built free. You pay nothing until your site is live", phone headline breaks cleanly.
 - 2059+ tests green, typecheck + lint clean.
 
-## Why the branch stays open
-Alex: the pages can't go live without pay buttons. Merging = live (push to main deploys).
+## Go-live call
+Alex first held the pages for pay buttons, then chose to go live with "Talk to us" until tomorrow. Footer-credit rule added (tiers spec).
 
 ## Next (tomorrow)
 Stripe pay buttons (step B of the pricing design): Alex's BohdiAI Stripe account; checkout per plan (card saved, charged at go-live; custom fields business name + socials); thank-you page; webhook emails Alex; full test-mode run. Then merge the branch and go live together.
