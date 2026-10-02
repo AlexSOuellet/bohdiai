@@ -74,7 +74,7 @@ Two tiers, mirroring the makers. The site is built free on both; the contractor 
 
 - **Upgrade Lite → Full:** no up-front fee; they pay the Full monthly price from then on. If they upgrade inside a prepaid year, they pay the difference for the months left, in one payment.
 - **No commitment.** If payments stop, the site pauses until they catch up.
-- **Cancelling Full:** offered Lite at $9.99/month instead (below Lite's normal $14.99 — a one-time save offer). Cancelling Lite: the site pauses, no counter-offer.
+- **Cancelling Full:** offered a move down to Lite at Lite's normal price instead (no discount). Cancelling Lite: the site pauses, no counter-offer.
 - **Downgrading Full → Lite:** extra photos are kept but hidden (they return on upgrade); orders still waiting to ship stay visible until done, although online selling switches off.
 
 ## Selling before features exist
