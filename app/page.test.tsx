@@ -52,6 +52,11 @@ describe('bohdiai.com home', () => {
     expect(screen.getByRole('link', { name: /charity or community group/i })).toHaveAttribute('href', '#contact');
   });
 
+  it('puts plans and prices one tap from the top', () => {
+    render(<HomePage />);
+    expect(screen.getByRole('link', { name: 'See plans and prices' })).toHaveAttribute('href', '#pricing');
+  });
+
   it('has a Pricing link in the header, on every screen size, to the two doors', () => {
     const { container } = render(<HomePage />);
     const pricing = screen.getByRole('banner').querySelector('a[href="/#pricing"]');

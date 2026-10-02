@@ -30,10 +30,10 @@ export function Hero(): React.ReactElement {
           Tell me about your project →
         </a>
         <a
-          href="#work"
+          href="#pricing"
           className="inline-flex items-center justify-center gap-2 rounded-pill border border-white/[0.12] bg-white/[0.03] px-5 py-3 text-[14px] font-semibold text-text-soft no-underline backdrop-blur-[20px] md:px-6"
         >
-          See the work
+          See plans and prices
         </a>
       </div>
 
