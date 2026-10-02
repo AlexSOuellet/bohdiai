@@ -135,3 +135,32 @@ describe('composeInquiryEmail — no link, phone call', () => {
     expect(e.html).toContain('a<br />b');
   });
 });
+
+describe('the plan someone was looking at', () => {
+  it('keeps a known plan and names it in the email and the subject', () => {
+    const r = parseInquiry({ ...good, plan: 'maker-full' });
+    expect(r.kind === 'ok' && r.fields.plan).toBe('maker-full');
+    if (r.kind !== 'ok') throw new Error('expected ok');
+    const email = composeInquiryEmail(r.fields);
+    expect(email.text).toContain('Plan: Maker Full');
+    expect(email.html).toContain('Maker Full');
+    expect(email.subject).toContain('Maker Full');
+  });
+
+  it('drops an unknown or blank plan instead of refusing the message', () => {
+    const a = parseInquiry({ ...good, plan: 'maker-pro' });
+    expect(a.kind === 'ok' && a.fields.plan).toBeUndefined();
+    const b = parseInquiry({ ...good, plan: '' });
+    expect(b.kind === 'ok' && b.fields.plan).toBeUndefined();
+    const c = parseInquiry({ ...good, plan: 42 });
+    expect(c.kind === 'ok' && c.fields.plan).toBeUndefined();
+  });
+
+  it('says no plan was chosen when there is none', () => {
+    const r = parseInquiry(good);
+    if (r.kind !== 'ok') throw new Error('expected ok');
+    const email = composeInquiryEmail(r.fields);
+    expect(email.text).toContain('Plan: Not chosen');
+    expect(email.subject).not.toContain('Not chosen');
+  });
+});

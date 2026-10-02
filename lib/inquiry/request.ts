@@ -4,6 +4,7 @@
  * does the limiting and the send.
  */
 import { z } from 'zod';
+import { isPlanId, planById, type PlanId } from '@/lib/site/plans';
 
 export const INQUIRY_KINDS = ['maker', 'service', 'charity', 'other'] as const;
 export type InquiryKind = (typeof INQUIRY_KINDS)[number];
@@ -75,6 +76,11 @@ export const InquirySchema = z
     link,
     phone,
     contactBy: z.enum(CONTACT_METHODS).default('email'),
+    /** The plan they were looking at. A stale or unknown one is dropped, never an error. */
+    plan: z
+      .unknown()
+      .optional()
+      .transform((v): PlanId | undefined => (typeof v === 'string' && isPlanId(v) ? v : undefined)),
   })
   .refine((v) => v.contactBy === 'email' || v.phone !== undefined, {
     message: PHONE_NEEDED_ERROR,
@@ -105,6 +111,7 @@ export function parseInquiry(body: unknown): ParsedInquiry {
     link: record['link'],
     phone: record['phone'],
     contactBy: record['contactBy'] === '' ? undefined : record['contactBy'],
+    plan: record['plan'],
   });
   if (!parsed.success)
     return { kind: 'invalid', error: parsed.error.issues[0]?.message ?? 'Please check the form.' };
@@ -127,13 +134,15 @@ export function composeInquiryEmail(f: InquiryFields): {
 } {
   const kind = INQUIRY_KIND_LABELS[f.kind];
   const prefers = f.contactBy === 'email' ? '' : ` · prefers a ${f.contactBy}`;
-  const subject = `New project: ${f.name} (${kind})${prefers}`;
+  const planName = f.plan === undefined ? undefined : planById(f.plan).name;
+  const subject = `New project: ${f.name} (${planName ?? kind})${prefers}`;
   const rows: Array<[string, string]> = [
     ['Name', f.name],
     ['Email', f.email],
     ['Phone', f.phone ?? '—'],
     ['Best way to reach', CONTACT_METHOD_LABELS[f.contactBy]],
     ['Business', kind],
+    ['Plan', planName ?? 'Not chosen'],
     ['Link', f.link ?? '—'],
   ];
   const text = [
