@@ -57,6 +57,9 @@ export const DEFAULT_STRINGS = {
   footerTestimonials: 'Testimonials',
   footerPrivacy: 'Privacy',
   footerTerms: 'Terms',
+  /** "2026 Empowered by BohdiAI" on shops served from a bohdiai.com address (Alex, 2026-10-02). */
+  footerCreditPrefix: 'Empowered by',
+  footerCreditBrand: 'BohdiAI',
 
   // ─── Fallback link labels ─────────────────────────────────────────────────
   /** GoodsBeat "see everything" cue when the copywriter didn't author one. */

@@ -13,6 +13,7 @@ import { CONTRACTOR_STRINGS as S } from './strings';
 import { EstimateForm } from './EstimateForm';
 import { VideoTile } from './VideoTile';
 import { SlowVideo } from './SlowVideo';
+import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 
 const ESTIMATE_ID = 'estimate';
 
@@ -68,7 +69,18 @@ function Headline({ text, highlight }: { text: string; highlight?: string | unde
 }
 
 /** Header, footer and the phone thumb bar around any page body. */
-export function ContractorShell({ content: c, palette, children }: { content: ContractorContent; palette: DerivedPalette; children: ReactNode }): ReactElement {
+/** `platformCredit`: the "Empowered by BohdiAI" line on a bohdiai.com address; off on a custom domain (wired with custom domains). */
+export function ContractorShell({
+  content: c,
+  palette,
+  children,
+  platformCredit = true,
+}: {
+  content: ContractorContent;
+  palette: DerivedPalette;
+  children: ReactNode;
+  platformCredit?: boolean;
+}): ReactElement {
   const b = c.business;
   const tel = `tel:${b.phoneDial}`;
   const year = new Date().getFullYear();
@@ -107,6 +119,11 @@ export function ContractorShell({ content: c, palette, children }: { content: Co
               <span>{S.serving} {b.serviceArea.join(' · ')}</span>
               <a href={tel}>{b.phone}</a>
               <a href="/privacy">{S.footer.privacy}</a>
+              {platformCredit && (
+                <a href={PLATFORM_URL}>
+                  {year} {S.footer.creditPrefix} {S.footer.creditBrand}
+                </a>
+              )}
             </div>
           </div>
         </footer>

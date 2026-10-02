@@ -17,6 +17,7 @@ import { MainStreetMobileNav } from './MobileNav';
 import { IntroReplayLink } from './IntroReplayLink';
 import { Type } from './Type';
 import { DEFAULT_STRINGS } from './defaults';
+import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 import { relativeLuminance } from './logo-contrast';
 
 export { LINK_TARGETS, linkHref, type LinkTarget };
@@ -1605,7 +1606,12 @@ export function Nav({
   );
 }
 
-export function MainStreetFooter({ shopName }: { shopName: string }) {
+/**
+ * `platformCredit`: the "Empowered by BohdiAI" line, shown on shops served from a
+ * bohdiai.com address. A shop on its own custom domain shows only its own name
+ * (wired with custom domains; until then every shop is on a subdomain).
+ */
+export function MainStreetFooter({ shopName, platformCredit = true }: { shopName: string; platformCredit?: boolean }) {
   return (
     <footer className="ms-footer">
       <Type as="span" role="wordmark">{shopName}</Type>
@@ -1627,6 +1633,11 @@ export function MainStreetFooter({ shopName }: { shopName: string }) {
         <Type as="span" role="legal" className="ms-footer-legal">
           &copy; {shopName}
         </Type>
+        {platformCredit && (
+          <Type as="a" role="legal" href={PLATFORM_URL} className="ms-footer-link">
+            {new Date().getFullYear()} {DEFAULT_STRINGS.footerCreditPrefix} {DEFAULT_STRINGS.footerCreditBrand}
+          </Type>
+        )}
       </div>
     </footer>
   );

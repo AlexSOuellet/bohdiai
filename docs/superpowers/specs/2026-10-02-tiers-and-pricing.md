@@ -79,7 +79,7 @@ Plan sites are ready in 2 to 5 days. Anything beyond what a plan lists — a spe
 
 - **Site on a `bohdiai.com` subdomain:** the footer carries a line "2026 Empowered by BohdiAI" (year = the current year).
 - **Site on its own custom domain:** that line shows the site's own name instead — no BohdiAI credit.
-- Applies to every plan, makers and contractors. Not built yet; to be built with the custom-domain work (maker backend 1d), which is where a site learns it has a custom domain. Replaces the Master Spec's launch-tier "Footer Branding: None".
+- Applies to every plan, makers and contractors. **Built 2026-10-02** in both footers (maker shops `MainStreetFooter`, contractor sites `ContractorShell`), linking bohdiai.com, behind a `platformCredit` prop that defaults on. Every shop is on a subdomain today; custom domains (maker backend 1d) pass `platformCredit={false}` so only the site's own name shows. Replaces the Master Spec's launch-tier "Footer Branding: None".
 
 ## Upgrading, downgrading, cancelling
 

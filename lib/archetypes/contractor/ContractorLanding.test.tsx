@@ -24,6 +24,12 @@ describe('contractor landing page', () => {
     expect(container.innerHTML).toContain('--cp-bg:#101210');
   });
 
+  it('credits BohdiAI in the footer with the year, linking bohdiai.com', () => {
+    const { container } = page();
+    const credit = container.querySelector('.cp-foot a[href="https://bohdiai.com"]');
+    expect(credit?.textContent).toBe(`${new Date().getFullYear()} Empowered by BohdiAI`);
+  });
+
   it('shows shoppers no owner sign-in link (owners use /admin)', () => {
     const { container } = page();
     expect(container.querySelector('a[href*="signin"]')).toBeNull();

@@ -282,6 +282,19 @@ describe('MainStreetFooter', () => {
     expect(links).toEqual(expect.arrayContaining(['Home', 'Privacy', 'Terms']));
   });
 
+  it('credits BohdiAI with the year on a bohdiai.com address', () => {
+    const { container } = render(<MainStreetFooter shopName="Classic Loafs" />);
+    const credit = container.querySelector('a[href="https://bohdiai.com"]');
+    expect(credit?.textContent).toBe(`${new Date().getFullYear()} Empowered by BohdiAI`);
+  });
+
+  it('shows only the shop’s own name when the credit is off (custom domain)', () => {
+    const { container, getByText } = render(<MainStreetFooter shopName="Classic Loafs" platformCredit={false} />);
+    expect(container.querySelector('a[href="https://bohdiai.com"]')).toBeNull();
+    expect(container.textContent).not.toMatch(/Empowered by/);
+    expect(getByText('© Classic Loafs')).toBeTruthy();
+  });
+
   it('does NOT link the standalone testimonials page (disabled for now — reviews live on the home sampling)', () => {
     const { container } = render(<MainStreetFooter shopName="June's Sourdough" />);
     const hrefs = Array.from(container.querySelectorAll('a')).map((a) => a.getAttribute('href'));

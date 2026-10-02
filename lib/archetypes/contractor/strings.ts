@@ -46,5 +46,8 @@ export const CONTRACTOR_STRINGS = {
   footer: {
     privacy: 'Privacy',
     rights: 'All rights reserved.',
+    /** "2026 Empowered by BohdiAI" on sites served from a bohdiai.com address. */
+    creditPrefix: 'Empowered by',
+    creditBrand: 'BohdiAI',
   },
 } as const;
