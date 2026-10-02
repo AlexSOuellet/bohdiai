@@ -11,6 +11,9 @@ import { Footer } from '@/components/Footer';
 import { SectionKicker } from '@/components/SectionKicker';
 import { PlanCards, type PricingPath } from './PlanCards';
 import { Comparison } from './Comparison';
+import Link from 'next/link';
+import { FaqList } from '@/components/faq/FaqList';
+import { TOP_QUESTIONS, faqItem } from '@/lib/site/faq';
 import type { Audience } from '@/lib/site/plans';
 
 const H2 =
@@ -64,6 +67,21 @@ export function PricingPage({
             {copy.compareSub}
           </p>
           <Comparison audience={audience} />
+        </section>
+
+        <section id="questions" className="relative z-content mx-auto max-w-[760px] px-3 pt-24 md:pt-32">
+          <SectionKicker>Questions</SectionKicker>
+          <div className="mt-6">
+            <FaqList items={TOP_QUESTIONS[audience].map((id) => faqItem(id))} />
+          </div>
+          <p className="mt-6 text-center">
+            <Link
+              href="/faq"
+              className="inline-flex items-center gap-2 border-b border-honey-warm/35 pb-0.5 text-[14px] font-semibold text-honey-warm no-underline transition-colors hover:border-honey-warm"
+            >
+              More questions →
+            </Link>
+          </p>
         </section>
 
         <Work audience={audience} />

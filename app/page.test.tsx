@@ -52,6 +52,13 @@ describe('bohdiai.com home', () => {
     expect(screen.getByRole('link', { name: /charity or community group/i })).toHaveAttribute('href', '#contact');
   });
 
+  it('tells the name story in the About and links the questions page', () => {
+    const { container } = render(<HomePage />);
+    expect(screen.getByText(/Bodhi means awakening/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /why my prices are so low/i })).toHaveAttribute('href', '/faq#why-so-low');
+    expect(container.querySelector('footer a[href="/faq"]')).toHaveTextContent('Questions');
+  });
+
   it('puts plans and prices one tap from the top', () => {
     render(<HomePage />);
     expect(screen.getByRole('link', { name: 'See plans and prices' })).toHaveAttribute('href', '#pricing');

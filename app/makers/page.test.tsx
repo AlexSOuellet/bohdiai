@@ -34,3 +34,12 @@ describe('bohdiai.com/makers', () => {
     expect((container.textContent ?? '').replace(/BohdiAI/g, '')).not.toMatch(/\bAI\b/);
   });
 });
+
+describe('bohdiai.com/makers — questions', () => {
+  it('answers the three most-asked questions and links the full FAQ', () => {
+    render(<MakersPage />);
+    expect(screen.getByText('Why are your prices so low compared to everyone else?')).toBeInTheDocument();
+    expect(screen.getByText('Do I have to sell online?')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /more questions/i })).toHaveAttribute('href', '/faq');
+  });
+});

@@ -38,6 +38,17 @@ export function WhoBehind(): React.ReactElement {
             small businesses: the maker at the craft fair, the crew laying sod, the volunteers keeping a
             good cause going.
           </p>
+          <p className="mt-4 text-[15px] leading-[1.65] text-muted md:mt-5 md:text-[17px]">
+            That moment is why the business is called Bohdi. Bodhi means awakening. To me, it means
+            empowering. I&apos;m not here to charge small businesses a fortune to grow my own wealth. In
+            empowering others, all of us are enriched.{' '}
+            <a
+              href="/faq#why-so-low"
+              className="whitespace-nowrap text-honey-warm underline decoration-honey-warm/40 underline-offset-4 hover:decoration-honey-warm"
+            >
+              Why my prices are so low →
+            </a>
+          </p>
 
           <div className="mt-6 rounded-[14px] border border-honey-warm/[0.16] bg-honey-warm/[0.04] px-5 py-4 text-left md:mt-7 md:px-6 md:py-5">
             <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-honey-warm">
