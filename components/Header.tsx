@@ -22,12 +22,12 @@ export function Header(): React.ReactElement {
         <Link href="/contractors" className={`${BLUR_CHIP} hidden md:inline-flex`}>
           Contractors
         </Link>
-        <a href="/#work" className={`${BLUR_CHIP} hidden lg:inline-flex`}>
+        <Link href="/#work" className={`${BLUR_CHIP} hidden lg:inline-flex`}>
           Work
-        </a>
-        <a href="/#who" className={`${BLUR_CHIP} hidden lg:inline-flex`}>
+        </Link>
+        <Link href="/#who" className={`${BLUR_CHIP} hidden lg:inline-flex`}>
           About
-        </a>
+        </Link>
         <a href="#contact" className={`${BLUR_CHIP} hidden lg:inline-flex`}>
           Contact
         </a>

@@ -47,7 +47,7 @@ const EMPTY: Fields = {
 type Props = {
   /** On a pricing page: ask which of this audience's plans they want. */
   audience?: Audience;
-  initialPlan?: PlanId;
+  initialPlan?: PlanId | undefined;
   initialKind?: InquiryKind;
 };
 const FALLBACK = `Something went wrong. Please try again, or email me at ${SITE_CONTACT_EMAIL}.`;

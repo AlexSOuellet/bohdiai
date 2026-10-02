@@ -11,13 +11,14 @@ import Link from 'next/link';
 import { formatPrice, plansFor, type Audience, type Plan } from '@/lib/site/plans';
 
 type Period = 'monthly' | 'yearly';
+export type PricingPath = '/makers' | '/contractors';
 
 const PERIODS: ReadonlyArray<{ value: Period; label: string }> = [
   { value: 'monthly', label: 'Monthly' },
   { value: 'yearly', label: 'Yearly · 2 months free' },
 ];
 
-export function PlanCards({ audience, path }: { audience: Audience; path: string }): React.ReactElement {
+export function PlanCards({ audience, path }: { audience: Audience; path: PricingPath }): React.ReactElement {
   const [period, setPeriod] = useState<Period>('monthly');
   return (
     <div className="mx-auto max-w-[980px]">
@@ -50,7 +51,7 @@ export function PlanCards({ audience, path }: { audience: Audience; path: string
   );
 }
 
-function PlanCard({ plan, period, path }: { plan: Plan; period: Period; path: string }): React.ReactElement {
+function PlanCard({ plan, period, path }: { plan: Plan; period: Period; path: PricingPath }): React.ReactElement {
   const full = plan.tier === 'full';
   const price = period === 'monthly' ? plan.monthly : plan.yearly;
   const headingId = `plan-${plan.id}`;
@@ -104,7 +105,7 @@ function PlanCard({ plan, period, path }: { plan: Plan; period: Period; path: st
       </ul>
 
       <Link
-        href={`${path}?plan=${plan.id}#contact`}
+        href={{ pathname: path, query: { plan: plan.id }, hash: 'contact' }}
         className={[
           'mt-8 inline-flex items-center justify-center gap-2 rounded-pill px-6 py-3.5 text-[14px] font-semibold no-underline transition-transform hover:-translate-y-px',
           full ? 'bg-honey-warm text-bg shadow-[0_10px_40px_-10px_rgba(243,201,122,0.7)]' : 'bg-text text-bg',

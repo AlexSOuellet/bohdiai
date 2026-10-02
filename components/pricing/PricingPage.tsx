@@ -9,7 +9,7 @@ import { Work } from '@/components/Work';
 import { Contact } from '@/components/Contact';
 import { Footer } from '@/components/Footer';
 import { SectionKicker } from '@/components/SectionKicker';
-import { PlanCards } from './PlanCards';
+import { PlanCards, type PricingPath } from './PlanCards';
 import { Comparison } from './Comparison';
 import type { Audience } from '@/lib/site/plans';
 
@@ -29,7 +29,7 @@ export function PricingPage({
   copy,
 }: {
   audience: Audience;
-  path: string;
+  path: PricingPath;
   copy: PricingCopy;
 }): React.ReactElement {
   return (
