@@ -26,4 +26,11 @@ describe('FaqList', () => {
     expect(container.querySelector('details#contract')).not.toBeNull();
     expect(screen.getByText('Can I move up from Lite to Full?')).toBeInTheDocument();
   });
+
+  it('shows an answer’s link, opening in a new tab', () => {
+    render(<FaqList items={[faqItem('own-domain')]} />);
+    const a = screen.getByRole('link', { name: /cloudflare domains/i });
+    expect(a).toHaveAttribute('href', 'https://www.cloudflare.com/products/registrar/');
+    expect(a).toHaveAttribute('target', '_blank');
+  });
 });

@@ -27,6 +27,16 @@ export function FaqList({ items, openFirst = false }: { items: readonly FaqItem[
             {item.a.map((para) => (
               <p key={para}>{para}</p>
             ))}
+            {item.link !== undefined && (
+              <a
+                href={item.link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-fit border-b border-honey-warm/35 pb-0.5 text-[14px] font-semibold text-honey-warm no-underline transition-colors hover:border-honey-warm"
+              >
+                {item.link.label}
+              </a>
+            )}
           </div>
         </details>
       ))}

@@ -6,7 +6,8 @@
  */
 import { formatPrice, planById, type Audience } from './plans';
 
-export type FaqItem = { id: string; q: string; a: readonly string[] };
+/** `link` shows after the answer, e.g. where to buy a domain. */
+export type FaqItem = { id: string; q: string; a: readonly string[]; link?: { href: string; label: string } };
 export type FaqGroup = { title: string; items: readonly FaqItem[] };
 
 const p = (id: Parameters<typeof planById>[0], period: 'monthly' | 'yearly' = 'monthly'): string =>
@@ -116,8 +117,9 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         id: 'own-domain',
         q: 'Can I use my own domain, like yourshop.com?',
         a: [
-          'Yes. I connect it for you. If you don’t own one yet, I’ll point you to a place that sells them at cost, with no markup, and the domain stays in your name.',
+          'Yes. I connect it for you. If you don’t own one yet, buy it from Cloudflare: they sell domains at cost, with no markup, and it stays in your name. I don’t get anything for sending you there.',
         ],
+        link: { href: 'https://www.cloudflare.com/products/registrar/', label: 'Cloudflare domains ↗' },
       },
     ],
   },
