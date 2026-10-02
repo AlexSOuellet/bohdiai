@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * The contact form on a pricing page. "Get started" links carry `?plan=<id>`;
+ * The contact form on a pricing page. "Talk to us" links carry `?plan=<id>`;
  * this picks that plan up so the form starts on it. A plan from another
  * audience, or one that no longer exists, is ignored.
  */
@@ -19,6 +19,6 @@ export function planFromParam(value: string | null, audience: Audience): PlanId 
 
 export function PlanInquiryForm({ audience }: { audience: Audience }): React.ReactElement {
   const plan = planFromParam(useSearchParams().get('plan'), audience);
-  // Keyed by plan: clicking a different card's "Get started" restarts the form on that plan.
+  // Keyed by plan: clicking a different card’s "Talk to us" restarts the form on that plan.
   return <InquiryForm key={plan ?? 'none'} audience={audience} initialKind={AUDIENCE_KIND[audience]} initialPlan={plan} />;
 }

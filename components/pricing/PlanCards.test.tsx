@@ -25,10 +25,10 @@ describe('PlanCards', () => {
     expect(screen.getByRole('radio', { name: /yearly/i })).toBeChecked();
   });
 
-  it('sends Get started to the contact form with the plan', () => {
+  it('sends Talk to us to the contact form with the plan', () => {
     render(<PlanCards audience="maker" path="/makers" />);
     const full = screen.getByRole('article', { name: 'Maker Full' });
-    expect(within(full).getByRole('link', { name: /get started/i })).toHaveAttribute(
+    expect(within(full).getByRole('link', { name: /talk to us/i })).toHaveAttribute(
       'href',
       '/makers?plan=maker-full#contact',
     );

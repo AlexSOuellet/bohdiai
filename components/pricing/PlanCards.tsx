@@ -2,7 +2,7 @@
 
 /**
  * The two plan cards on a pricing page, with one Monthly / Yearly switch above
- * both. Lite is clear glass; Full is lit with a honey edge. "Get started" goes
+ * both. Lite is clear glass; Full is lit with a honey edge. "Talk to us" goes
  * to the page's contact form with the plan in the address (Stripe checkout
  * replaces it once staging exists — see the pricing design, step B).
  */
@@ -111,7 +111,7 @@ function PlanCard({ plan, period, path }: { plan: Plan; period: Period; path: Pr
           full ? 'bg-honey-warm text-bg shadow-[0_10px_40px_-10px_rgba(243,201,122,0.7)]' : 'bg-text text-bg',
         ].join(' ')}
       >
-        Get started →
+        Talk to us →
       </Link>
     </article>
   );
