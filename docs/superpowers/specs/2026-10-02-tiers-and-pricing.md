@@ -71,6 +71,12 @@ Two tiers, mirroring the makers. The site is built free on both; the contractor 
 - **Cut-Pro is family (Alex's daughter and her fiancé) and keeps its own "love pricing"** — not on these prices.
 - Same rules as makers: fixes covered, additions paid; no commitment, site pauses if payments stop.
 
+## Footer credit on client sites (Alex, 2026-10-02)
+
+- **Site on a `bohdiai.com` subdomain:** the footer carries a line "2026 Empowered by BohdiAI" (year = the current year).
+- **Site on its own custom domain:** that line shows the site's own name instead — no BohdiAI credit.
+- Applies to every plan, makers and contractors. Not built yet; to be built with the custom-domain work (maker backend 1d), which is where a site learns it has a custom domain. Replaces the Master Spec's launch-tier "Footer Branding: None".
+
 ## Upgrading, downgrading, cancelling
 
 - **Upgrade Lite → Full:** no up-front fee; they pay the Full monthly price from then on. If they upgrade inside a prepaid year, they pay the difference for the months left, in one payment.
