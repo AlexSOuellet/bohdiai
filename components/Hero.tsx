@@ -10,7 +10,8 @@ export function Hero(): React.ReactElement {
 
       <h1 className="mx-auto max-w-[900px] font-sans text-[34px] font-medium leading-[1.05] tracking-[-0.02em] text-text-soft md:text-[56px] md:tracking-[-0.03em]">
         {/* Each half wraps as a unit, so a narrow screen breaks between phrases, never inside one. */}
-        <span className="inline-block text-text">If you make it, bake it,</span>{' '}
+        <span className="inline-block text-text">If you make it,</span>{' '}
+        <span className="inline-block text-text">bake it,</span>{' '}
         <span className="inline-block">fix it or fund it,</span>{' '}
         <br />
         <span className="inline-block animate-pulse-glow text-honey-warm">we build it for you</span>
@@ -29,10 +30,10 @@ export function Hero(): React.ReactElement {
           Tell me about your project →
         </a>
         <a
-          href="#work"
+          href="#pricing"
           className="inline-flex items-center justify-center gap-2 rounded-pill border border-white/[0.12] bg-white/[0.03] px-5 py-3 text-[14px] font-semibold text-text-soft no-underline backdrop-blur-[20px] md:px-6"
         >
-          See the work
+          See plans and prices
         </a>
       </div>
 

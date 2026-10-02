@@ -37,9 +37,37 @@ describe('bohdiai.com home', () => {
     expect(screen.getByText(/not real businesses/i)).toBeInTheDocument();
   });
 
-  it('keeps both price promises next to the form', () => {
+  it('keeps the promises next to the form, now that prices are public', () => {
     render(<HomePage />);
-    expect(screen.getByText(/know the full price before I start/i)).toBeInTheDocument();
+    expect(screen.queryByText(/know the full price before I start/i)).toBeNull();
+    expect(screen.getByText(/built free\. you pay nothing until your site is live/i)).toBeInTheDocument();
     expect(screen.getByText(/never take a cut of your sales/i)).toBeInTheDocument();
+  });
+
+  it('opens two doors under the hero, and a word for charities', () => {
+    render(<HomePage />);
+    const doors = screen.getByRole('navigation', { name: /choose your path/i });
+    expect(doors.querySelector('a[href="/makers"]')).toHaveTextContent(/I make things/);
+    expect(doors.querySelector('a[href="/contractors"]')).toHaveTextContent(/I run a service business/);
+    expect(screen.getByRole('link', { name: /charity or community group/i })).toHaveAttribute('href', '#contact');
+  });
+
+  it('puts plans and prices one tap from the top', () => {
+    render(<HomePage />);
+    expect(screen.getByRole('link', { name: 'See plans and prices' })).toHaveAttribute('href', '#pricing');
+  });
+
+  it('has a Pricing link in the header, on every screen size, to the two doors', () => {
+    const { container } = render(<HomePage />);
+    const pricing = screen.getByRole('banner').querySelector('a[href="/#pricing"]');
+    expect(pricing).toHaveTextContent('Pricing');
+    expect(pricing?.className).not.toMatch(/hidden/);
+    expect(container.querySelector('#pricing nav')).not.toBeNull();
+  });
+
+  it('explains how it works with plans and billing at go-live', () => {
+    render(<HomePage />);
+    expect(screen.getByText('Pick your plan')).toBeInTheDocument();
+    expect(screen.getByText(/billing starts the day your site goes live/i)).toBeInTheDocument();
   });
 });

@@ -17,6 +17,7 @@ import {
   type InquiryKind,
 } from '@/lib/inquiry/request';
 import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
+import { plansFor, type Audience, type PlanId } from '@/lib/site/plans';
 
 type Fields = {
   name: string;
@@ -27,10 +28,28 @@ type Fields = {
   message: string;
   link: string;
   company: string;
+  plan: PlanId | '';
 };
 type Status = { kind: 'idle' } | { kind: 'sending' } | { kind: 'sent' } | { kind: 'error'; message: string };
 
-const EMPTY: Fields = { name: '', email: '', phone: '', contactBy: 'email', kind: '', message: '', link: '', company: '' };
+const EMPTY: Fields = {
+  name: '',
+  email: '',
+  phone: '',
+  contactBy: 'email',
+  kind: '',
+  message: '',
+  link: '',
+  company: '',
+  plan: '',
+};
+
+type Props = {
+  /** On a pricing page: ask which of this audience's plans they want. */
+  audience?: Audience;
+  initialPlan?: PlanId | undefined;
+  initialKind?: InquiryKind;
+};
 const FALLBACK = `Something went wrong. Please try again, or email me at ${SITE_CONTACT_EMAIL}.`;
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -50,8 +69,9 @@ const CHIP =
   'cursor-pointer rounded-pill border border-white/[0.1] bg-white/[0.03] px-3.5 py-2 text-[13px] text-text-soft transition-colors has-[:checked]:border-honey-warm/50 has-[:checked]:bg-honey-warm/15 has-[:checked]:text-honey-warm has-[:focus-visible]:shadow-[0_0_0_3px_rgba(243,201,122,0.25)]';
 const LABEL = 'mb-1.5 block text-[12px] font-medium uppercase tracking-[0.14em] text-muted';
 
-export function InquiryForm(): React.ReactElement {
-  const [fields, setFields] = useState<Fields>(EMPTY);
+export function InquiryForm({ audience, initialPlan, initialKind }: Props = {}): React.ReactElement {
+  const start: Fields = { ...EMPTY, kind: initialKind ?? '', plan: initialPlan ?? '' };
+  const [fields, setFields] = useState<Fields>(start);
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
 
   function set<K extends keyof Fields>(key: K, value: Fields[K]): void {
@@ -74,7 +94,8 @@ export function InquiryForm(): React.ReactElement {
         body: JSON.stringify(fields),
       });
       if (res.ok) {
-        setFields(EMPTY);
+        // Keep the business kind and plan: someone sending another is still the same business.
+        setFields({ ...EMPTY, kind: fields.kind, plan: fields.plan });
         setStatus({ kind: 'sent' });
         return;
       }
@@ -198,6 +219,29 @@ export function InquiryForm(): React.ReactElement {
           ))}
         </div>
       </fieldset>
+
+      {audience !== undefined && (
+        <fieldset>
+          <legend className={LABEL}>Which plan?</legend>
+          <div className="flex flex-wrap gap-2">
+            {[...plansFor(audience).map((p) => ({ value: p.id, label: p.name })), { value: '' as const, label: 'Not sure yet' }].map(
+              (o) => (
+                <label key={o.label} className={CHIP}>
+                  <input
+                    type="radio"
+                    name="plan"
+                    value={o.value}
+                    checked={fields.plan === o.value}
+                    onChange={() => set('plan', o.value)}
+                    className="sr-only"
+                  />
+                  {o.label}
+                </label>
+              ),
+            )}
+          </div>
+        </fieldset>
+      )}
 
       <div>
         <label htmlFor="iq-message" className={LABEL}>

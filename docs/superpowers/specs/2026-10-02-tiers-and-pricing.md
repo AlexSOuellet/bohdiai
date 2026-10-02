@@ -35,8 +35,8 @@ For the local maker: people they meet at markets or on Facebook have a place to 
 - Full product list, **one photo per product**, prices shown.
 - No online buying. Each product has an **"Ask about this"** button that opens the contact form with the product already named.
 - Social links and a contact form.
-- **The till** (market POS): tap items, running total, the maker's Venmo / Cash App QR shown full-size, record how the customer paid. Every sale is tagged to the market it happened at, so Full's market numbers show the whole history on upgrade.
-- When pitching the till, don't promise "no fees": Venmo and Cash App business accounts charge fees (roughly 2–3%); personal accounts are not meant for selling goods.
+- **The point of sale** (market POS; public copy says "point of sale", never "till" — Alex 2026-10-02): tap items, running total, the maker's Venmo / Cash App QR shown full-size, record how the customer paid. Every sale is tagged to the market it happened at, so Full's market numbers show the whole history on upgrade.
+- When pitching the point of sale, don't promise "no fees": Venmo and Cash App business accounts charge fees (roughly 2–3%); personal accounts are not meant for selling goods.
 
 **Price:** $14.99/month or $149/year, built free.
 
@@ -46,6 +46,7 @@ Everything in Lite, plus:
 
 - Online selling: cart, checkout, the maker's own Stripe / Square, orders, shipping.
 - Up to 12 photos per product; product video; downloads where switched on.
+- **Cards at markets through the maker's own Stripe or Square** (agreed 2026-10-02): the point of sale totals the sale, then either hands it to the maker's Square app with the total filled in (Square's hand-off for mobile web apps — confirm details before building) or shows a QR for that total so the customer pays on their own phone through the maker's Stripe. Recorded with the other sales, tagged to the market, stock comes off. No reader of our own (the "real POS" stays parked).
 - **Market numbers:** each market's results after costs (booth fee, gas, supplies) and year-against-year comparison — is this market worth going back to.
 
 **Price:** $19.99/month or $199/year, built free.
@@ -70,6 +71,12 @@ Two tiers, mirroring the makers. The site is built free on both; the contractor 
 - **Cut-Pro is family (Alex's daughter and her fiancé) and keeps its own "love pricing"** — not on these prices.
 - Same rules as makers: fixes covered, additions paid; no commitment, site pauses if payments stop.
 
+## Footer credit on client sites (Alex, 2026-10-02)
+
+- **Site on a `bohdiai.com` subdomain:** the footer carries a line "2026 Empowered by BohdiAI" (year = the current year).
+- **Site on its own custom domain:** that line shows the site's own name instead — no BohdiAI credit.
+- Applies to every plan, makers and contractors. Not built yet; to be built with the custom-domain work (maker backend 1d), which is where a site learns it has a custom domain. Replaces the Master Spec's launch-tier "Footer Branding: None".
+
 ## Upgrading, downgrading, cancelling
 
 - **Upgrade Lite → Full:** no up-front fee; they pay the Full monthly price from then on. If they upgrade inside a prepaid year, they pay the difference for the months left, in one payment.
@@ -83,7 +90,7 @@ A maker can sign up for either tier now. What is built is theirs immediately (e.
 
 ## Build order
 
-Unchanged: maker backend piece 1 continues (video, then custom domains), then the remaining pieces. Lite-only items (the one-photo limit, "Ask about this", the till, billing) are added as makers sign up. Staging is required before the first paying customer (overview spec, "Staging").
+Unchanged: maker backend piece 1 continues (video, then custom domains), then the remaining pieces. Lite-only items (the one-photo limit, "Ask about this", the point of sale, billing) are added as makers sign up. Staging is required before the first paying customer (overview spec, "Staging").
 
 ## Open
 

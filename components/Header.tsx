@@ -16,12 +16,16 @@ export function Header(): React.ReactElement {
           </span>
           BohdiAI
         </Link>
-        <a href="#work" className={`${BLUR_CHIP} hidden md:inline-flex`}>
+        {/* Pricing shows on every screen size: nobody should have to hunt for the price. */}
+        <Link href="/#pricing" className={`${BLUR_CHIP} px-3 py-1.5 text-[12px] md:px-4 md:py-2 md:text-[13px]`}>
+          Pricing
+        </Link>
+        <Link href="/#work" className={`${BLUR_CHIP} hidden md:inline-flex`}>
           Work
-        </a>
-        <a href="#who" className={`${BLUR_CHIP} hidden md:inline-flex`}>
+        </Link>
+        <Link href="/#who" className={`${BLUR_CHIP} hidden md:inline-flex`}>
           About
-        </a>
+        </Link>
         <a href="#contact" className={`${BLUR_CHIP} hidden md:inline-flex`}>
           Contact
         </a>
