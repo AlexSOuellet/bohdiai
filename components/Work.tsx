@@ -2,6 +2,9 @@ import Image from 'next/image';
 import { CLIENTS, SAMPLES, type WorkEntry } from '@/lib/site/work';
 import { ClientQuotes } from './ClientQuote';
 import { SectionKicker } from './SectionKicker';
+import type { Audience } from '@/lib/site/plans';
+
+const AUDIENCE_CATEGORY: Record<Audience, string> = { maker: 'Maker', contractor: 'Contractor' };
 
 const H2 =
   'mx-auto max-w-[780px] px-3 text-center font-sans text-[30px] font-medium leading-[1.05] tracking-[-0.025em] text-text-soft md:text-[48px] md:tracking-[-0.03em]';
@@ -103,7 +106,13 @@ const FAN = [
   'md:translate-x-[28%] md:translate-y-[34px] md:rotate-[7deg] md:z-[2] md:hover:-translate-y-2 md:hover:rotate-2',
 ] as const;
 
-export function Work(): React.ReactElement {
+/** With an `audience`, only that audience's clients show (and the sample shops only for makers). */
+export function Work({ audience }: { audience?: Audience } = {}): React.ReactElement {
+  const clients =
+    audience === undefined
+      ? CLIENTS
+      : CLIENTS.filter((c) => c.category === AUDIENCE_CATEGORY[audience]);
+  const showSamples = audience !== 'contractor';
   return (
     <section
       id="work"
@@ -117,44 +126,46 @@ export function Work(): React.ReactElement {
         Every one is different, because every business is. Here’s who I’ve built for so far.
       </p>
 
-      {CLIENTS.map((c, i) => (
+      {clients.map((c, i) => (
         <ClientSpread key={c.slug} entry={c} flip={i % 2 === 1} />
       ))}
 
-      <div className="mt-28 text-center md:mt-40">
-        <SectionKicker>Samples</SectionKicker>
-        <h2 className={H2}>
-          A few <em className={EM}>looks</em> to get you thinking
-        </h2>
-        <p className="mt-4 inline-block rounded-pill border border-dashed border-honey-warm/30 px-3.5 py-1.5 text-[12px] text-muted md:text-[13px]">
-          These are sample shops made to show range, not real businesses
-        </p>
+      {showSamples && (
+        <div className="mt-28 text-center md:mt-40">
+          <SectionKicker>Samples</SectionKicker>
+          <h2 className={H2}>
+            A few <em className={EM}>looks</em> to get you thinking
+          </h2>
+          <p className="mt-4 inline-block rounded-pill border border-dashed border-honey-warm/30 px-3.5 py-1.5 text-[12px] text-muted md:text-[13px]">
+            These are sample shops made to show range, not real businesses
+          </p>
 
-        <div className="group/shelf relative mt-12 grid gap-10 md:mt-14 md:block md:h-[430px]">
-          {SAMPLES.map((s, i) => (
-            <a
-              key={s.slug}
-              href={s.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={[
-                'block text-left no-underline transition-[transform,filter] duration-slow ease-out md:absolute md:left-1/2 md:top-0 md:w-[min(470px,44vw)] md:hover:z-[9] md:hover:scale-[1.04] md:hover:!brightness-100 md:group-hover/shelf:brightness-[0.55]',
-                FAN[i] ?? '',
-              ].join(' ')}
-            >
-              <Shot entry={s} sizes="(max-width: 768px) 100vw, 470px" />
-              <div className="mt-4 px-1.5">
-                <span className="block font-sans text-[18px] font-medium tracking-[-0.01em] text-text">
-                  {s.name}
-                </span>
-                <span className="text-[13px] text-muted">
-                  {s.category} · {s.blurb}
-                </span>
-              </div>
-            </a>
-          ))}
+          <div className="group/shelf relative mt-12 grid gap-10 md:mt-14 md:block md:h-[430px]">
+            {SAMPLES.map((s, i) => (
+              <a
+                key={s.slug}
+                href={s.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={[
+                  'block text-left no-underline transition-[transform,filter] duration-slow ease-out md:absolute md:left-1/2 md:top-0 md:w-[min(470px,44vw)] md:hover:z-[9] md:hover:scale-[1.04] md:hover:!brightness-100 md:group-hover/shelf:brightness-[0.55]',
+                  FAN[i] ?? '',
+                ].join(' ')}
+              >
+                <Shot entry={s} sizes="(max-width: 768px) 100vw, 470px" />
+                <div className="mt-4 px-1.5">
+                  <span className="block font-sans text-[18px] font-medium tracking-[-0.01em] text-text">
+                    {s.name}
+                  </span>
+                  <span className="text-[13px] text-muted">
+                    {s.category} · {s.blurb}
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }
