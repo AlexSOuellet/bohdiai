@@ -10,17 +10,19 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-10-01, Session 90.
+**Last updated:** 2026-10-02, Session 91.
 
 ---
 
 ## Current state
 
+**Session 91 — tiers and prices agreed; pricing pages built on branch `site/pricing-pages` (not live).** Every plan built free, monthly or yearly; Maker Lite/Full $14.99/$19.99, Contractor Lite/Full $14.99/$29.99 (`docs/superpowers/specs/2026-10-02-tiers-and-pricing.md`). bohdiai.com gets `/makers`, `/contractors`, two doors and a Pricing link; it goes live only together with the Stripe pay buttons. Full recap: `session-logs/session-91.md`.
+
 **Session 90 — auto sign-out + maker backend 1b Catalog LIVE.** Owners manage products (photos, options with own price/stock, downloads where switched on, collections, draft/live/archived, home-page picks max 5 from a Home column) and collections; the shop shows it (all photos, option picker, "from $X", sold out, collections from `listing_collections`). Plan: `docs/superpowers/plans/2026-10-01-maker-backend-1b-catalog.md`. Cloudflare turned on "Builds for Preview branches" overnight → deploys failed until Alex switched it off. Full recap: `session-logs/session-90.md`.
 
-**Session 89 — maker backend designed; foundation live.** CI green again; Classic Loafs reverted to its original build; MY ADMIN deferred. Backend spec: `docs/superpowers/specs/2026-09-30-maker-backend-overview.md` + `...-piece-1-design.md` (modeled on Penny's admin, feature switches per site, clients manage lists/facts, Alex keeps words/look, app.bohdiai.com). Plan 1a (foundation: sign-in on app host, invites via `scripts/invite-maker.ts`, feature switches via `scripts/set-feature.ts`, Penny-style shell, home) built, reviewed, live-tested by Alex. Full recap: `session-logs/session-89.md`.
+**Session 89 — maker backend designed; foundation (1a) live.** Spec: `docs/superpowers/specs/2026-09-30-maker-backend-overview.md` + `...-piece-1-design.md`. Full recap: `session-logs/session-89.md`.
 
-**Session 88 — bohdiai.com rebuilt as a web developer site and LIVE.** Slogan "If you make it, bake it, fix it or fund it, we build it for you"; hero browser cycles real screenshots (Cut-Pro, Penny's decodigitaldesigns.com, samples Classic Loafs / Twilight to Darkness / Heavenly Scents); client spreads carry Sheri + Chris (Cut-Pro) and Penny testimonials with read-more; new about (IT trainer 30+ years, The Bohdi Way), signed "Alex"; no AI talk (test enforces it); no pricing, two price promises; contact form → `/api/inquiry` → alex@bohdiai.com (Reply-To = sender; phone + best-way-to-reach). Waitlist stack, founder counter, Skool, fake stores deleted (waitlist table kept). Spec/plan: `docs/superpowers/specs|plans/2026-09-29-bohdiai-com-rebuild*`. 1399 tests, tsc + lint clean. Full recap: `session-logs/session-88.md`.
+**Session 88 — bohdiai.com rebuilt as a web developer site and LIVE.** Full recap: `session-logs/session-88.md`.
 
 **Session 87 — the whole app now runs on Cloudflare Workers; Vercel serves nothing.** bohdiai.com, www, every shop subdomain and Cut-Pro are all served by the `bohdiai` Worker, verified live (Cut-Pro end to end, including a real photo estimate). `main` is current (fast-forwarded 552 commits). 1364 tests, tsc + lint clean. Runbook + lessons: `Cloudflare-Move.md`.
 
@@ -35,15 +37,15 @@ Full recap: `session-logs/session-87.md`.
 
 ## Next actions
 
+03. **Stripe pay buttons, then merge `site/pricing-pages` and go live** (Alex: no pricing page without pay buttons). Needs Alex's BohdiAI Stripe account.
 02. **Maker backend 1c — Video** (Cloudflare Stream; confirm cost first), then 1d Custom domains + status panel. Options/combinations get their real test with the first real client who sells sizes/scents.
-01. **Staging before the first paying customer** (agreed 2026-10-02): own test domain, own Supabase (after Rhody Strong is deleted), root domain as a setting. Detail: backend overview spec, "Staging".
+01. **Staging before the first paying customer's site goes live** (agreed 2026-10-02; Alex: pay buttons don't need it): own test domain, own Supabase (after Rhody Strong is deleted), root domain as a setting. Detail: backend overview spec, "Staging".
 0. **bohdiai.com loose ends (Session 89 cleared most):** CI green again (2026-09-30); prod inquiry confirmed in Alex's inbox; Classic Loafs reverted to its original build. Still open: logo from the BohdiAi Facebook page (Alex skipped for now); the Classic Loafs work shot catches the hero words mid-fade (re-time if Alex wants); sample find-us dates are all past July dates; drop "(publicly: Alex Scott)" from privacy/terms? JSON-LD founder name?
 1. **Cloudflare cleanup (Alex):** delete the redundant Cut-Pro route; trim Build variables to NODE_VERSION + the two NEXT_PUBLIC_*; after a few quiet days cancel Vercel and delete `shop-proxy` together.
 2. **Cut-Pro follow-ups:** their copy review (crew-photo names, services list, "since 2009"); better originals from their phones; review the privacy-page wording for a contractor.
 4. **Maker backend:** scope it against Penny's site. Open question: does Penny's store move into BohdiAI or stay standalone?
 5. **Flaky test:** `SectionEditor.test.tsx` "Write it up…" fails only under full-suite load.
 6. **MY ADMIN — stays in the plan, lower priority (Alex, 2026-09-30).** For now client sites are built here with Claude, following the BohdiAI rules (the Bohdi builder can still be run by script for a fast first draft). The admin comes back later; nothing about its shape is decided.
-
 
 ---
 
@@ -87,15 +89,11 @@ Full recap: `session-logs/session-87.md`.
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 91 (2026-10-02): **Tiers + prices agreed; pricing pages built (branch, not live).** Full recap: `session-logs/session-91.md`.
 - Session 90 (2026-09-30 → 10-01): **Auto sign-out live; maker backend 1b Catalog live** (products, options, collections, home picks; shop renders them; scroll-reveal bug on tall sections fixed). Full recap: `session-logs/session-90.md`.
 - Session 89 (2026-09-30): **CI green; maker backend designed; foundation (1a) built + live-tested.** Classic Loafs reverted; MCP popups fixed; MY ADMIN deferred. Full recap: `session-logs/session-89.md`.
 - Session 88 (2026-09-29): **bohdiai.com rebuilt as a web developer site, LIVE.** Real work (Cut-Pro, Penny, 3 samples) with testimonials, new about + The Bohdi Way, inquiry form with phone/best-way, waitlist stack deleted. Found CI red since 09-24 (coverage gate). Next: CI fix, then MY ADMIN brainstorm. Full recap: `session-logs/session-88.md`.
 - Session 87 (2026-09-29): **Moved the whole app from Vercel to Cloudflare Workers**, verified live. Direction: everything manual; maker backend (Penny-style) to come. Switched off automation surfaces; form rate limits; Host-only shop resolution; bundled legal templates; Images-binding photo shrink; Workers Builds from GitHub. `main` current. Full recap: `session-logs/session-87.md`.
 - Session 86 (2026-09-23/24): **Cut-Pro Lawncare's site built by hand and LIVE** (cut-pro-lawncare.bohdiai.com; family loves it). Brand-colors-take-over feature (`lib/color/`, OKLCH derivation, 5k-case property test); new hand-built **contractor** one-page archetype with a working **estimate form** (`/api/estimate`, photos to email attachments); store built by `scripts/build-contractor-site.ts` from `scripts/sites/cut-pro-lawncare.ts` + Google Photos media. tenant-media accepts mp4. Found the PC-crash cause (stale 859MB Turbopack dev cache). Dead Resend key replaced; form proven on prod. Mistakes: dragged the site into maker moods before Alex's correction; uploaded vidstab-garbled clips without looking (reverted). 14 commits, local. Full recap: `session-logs/session-86.md`.
-- Session 85 (2026-08-05): **Listings built into the walk — real products, then real collections.** Goods step became a real product editor (name/price/own photo/short+long copy, typed or Bohdi-drafted); the store already reads products from the `listings` table, so it's DB CRUD + the store/preview follow along. **First real product clears the placeholders**; shared catalog projection (`lib/storefront/catalog.ts`) resolves each photo from `media_ids`→uploaded file (legacy metadata fallback). Photos upload to `tenant-media` and are **downscaled + WebP-converted with sharp** (accepts 30MB — raw phone photos work). Live-testing root-caused (from the DB, not guesses): a **setState-in-render crash** (onResolved inside a setProducts updater), a **dead disabled button** (now says what's missing), and a **silent second-upload failure** (the 10MB cap → raised + WebP). Alex's standing rule: **"no silent failures, always display errors"** — wrapped every call. Then, correcting my mistaken deferral, built **real collections in the walk**: `collections.is_preview` migration, collection CRUD + product assignment (`primary_collection_id`, cover from products), `CollectionsEditor`, collections now **real-or-off**, placeholders clear on product/collection/turn-off, publish-gated. 1230 tests, tsc+lint clean, 20 commits. **NEXT (S86):** gate-verify collections with Alex, then the standalone Listings admin (options/multi-photo/video/stock/digital/touch-ups/logo). Full recap: `session-logs/session-85.md`.
-- Sessions 80-84 (2026-07-31 → 08-04): the Make It Yours walk (full-screen, section by section), story interview, Moment step, events/testimonials editors, no fabricated ratings. See individual logs.
-- Sessions 66-79 (2026-07-07 → 07-30): six-family walkthrough + fix waves A-F, textures, editor draft-and-publish, the Make It Yours walk (D67-D71). See individual logs.
-- Sessions 63-65 (2026-07-04 → 07-06): substrate cleanup, Phase 0, then Phase 1 family layer landed and run through all six moods. See individual logs.
-- Sessions 40-62 (→ 2026-07-03): sections built (About, nav, collections, marquee, reviews, find-us), families designed, editor design started. See individual logs.
-- Sessions 30-39: Main Street becomes sole archetype, families framework designed, Bohdi crew built.
-- Sessions 0-29: Phase 0 build, then design/build cycles under superseded models. See individual logs.
+- Sessions 66-85 (2026-07-07 → 07-30): six-family walkthrough + fix waves A-F, textures, editor draft-and-publish, the Make It Yours walk (D67-D71). See individual logs.
+- Sessions 0-65: Phase 0, archetypes, families, sections, editor design, the family layer. See individual logs.
