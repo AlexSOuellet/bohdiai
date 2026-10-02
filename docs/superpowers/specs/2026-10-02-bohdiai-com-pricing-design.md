@@ -95,4 +95,4 @@ Stripe secret key and webhook signing secret in the Worker's runtime Variables a
 
 ## Out of scope
 
-Customer-facing billing management (change card, cancel) — handled by Alex in Stripe for now (Stripe's customer portal can be added later). Automatic site pausing. A charity plan. The Lite-only product features (the till, "Ask about this", the one-photo limit) — built as makers sign up, per the tiers spec.
+Customer-facing billing management (change card, cancel) — handled by Alex in Stripe for now (Stripe's customer portal can be added later). Automatic site pausing. A charity plan. The Lite-only product features (the point of sale, "Ask about this", the one-photo limit) — built as makers sign up, per the tiers spec.

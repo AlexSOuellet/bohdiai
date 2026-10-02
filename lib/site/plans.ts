@@ -35,7 +35,7 @@ export const PLANS: readonly Plan[] = [
       'Every product with its photo and price',
       '“Ask about this” on every product, straight to your inbox',
       'Your market dates, so people know where to find you',
-      'A market till that adds up the sale and shows your Venmo or Cash App code',
+      'A point of sale on your phone for markets: it adds up the sale and shows your Venmo or Cash App code',
       'Your Facebook and Instagram, front and center',
     ],
   },
@@ -50,6 +50,7 @@ export const PLANS: readonly Plan[] = [
     includes: [
       'Sell online, paid straight into your own Stripe or Square',
       'Orders and shipping in one place',
+      'Take cards at markets through your own Stripe or Square',
       'Up to 12 photos and a short video for each product',
       'Digital downloads, if you sell them',
       'See which markets made money, this year against last',
