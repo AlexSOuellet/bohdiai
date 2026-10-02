@@ -46,11 +46,16 @@ Everything in Lite, plus:
 
 A separate track, not on the maker ladder (a contractor never moves up to selling products). Contractor sites are the quickest to build (Cut-Pro took about an hour).
 
-- **Site built free; the contractor pays for hosting:** $29.99/month, or $299/year.
-- Pitched to sit at the do-it-yourself price (Wix / Squarespace ~$17–36/month) while handing over a finished site; below a local designer's $50–150/month maintenance fee. High enough not to look cheap, low enough to be a no-brainer — less than one job a month.
-- **Cut-Pro is family (Alex's daughter and her fiancé) and keeps its own "love pricing"** — not on this price.
+Two tiers, mirroring the makers. The site is built free on both; the contractor pays monthly.
+
+- **Contractor Lite — $14.99/month.** A Cut-Pro-style one-page site: the estimate form (photos to email), no backend; changes go through Alex. Sellable today. Priced the same as Maker Lite with nothing up front: a one-page site costs the same whoever buys it.
+- **Contractor Full — $29.99/month, or $299/year.** The contractor backend: estimate inbox (new → contacted → quoted → won/lost), job gallery (photos and short videos), services and service area, booked-days calendar, reviews, FAQ, notices, and **review requests** (after a job, the customer gets a text/email link to leave a Google review — new, not yet in the backend plan). Contractor-only features a maker doesn't need.
+- **Why contractors pay more for Full than makers do:** different product, and contractors read a low price as amateur work. Contractor Full is sold on what it does for their business (estimate requests with photos on their phone, booked-out calendar), never as page count. The two audiences get separate pages (see the bohdiai.com pricing design), so the prices are not shown side by side. Considered and rejected: one value-based contractor price ($29.99 for a one-page site) — publicly it reads as "you can afford it".
+- Contractors are expected to churn less than weekend-warrior makers (the site is how they get work) — reasoning, not data.
+- Upgrade Lite → Full is switches, as for makers.
+- **Selling unbuilt features:** the contractor page advertises the full package; when a contractor signs up for Full, focus switches to building what they need before their site goes live. No delivery date is promised.
+- **Cut-Pro is family (Alex's daughter and her fiancé) and keeps its own "love pricing"** — not on these prices.
 - Same rules as makers: fixes covered, additions paid; no commitment, site pauses if payments stop.
-- Contractor features still to come (job-photo gallery, estimate inbox, booked-days calendar) leave room for a second contractor tier later.
 
 ## Upgrading, downgrading, cancelling
 
