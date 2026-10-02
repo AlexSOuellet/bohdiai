@@ -1,11 +1,15 @@
+import { Suspense } from 'react';
 import { SectionKicker } from './SectionKicker';
 import { InquiryForm } from './InquiryForm';
+import { AUDIENCE_KIND, PlanInquiryForm } from './PlanInquiryForm';
 import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
+import type { Audience } from '@/lib/site/plans';
 
-// True however a project ends up priced — the numbers themselves come up in conversation.
-const PROMISES = ['You’ll know the full price before I start', 'I never take a cut of your sales'] as const;
+// Prices are public now (2026-10-02); these hold on every plan.
+const PROMISES = ['Built free. You pay nothing until your site is live', 'I never take a cut of your sales'] as const;
 
-export function Contact(): React.ReactElement {
+/** `audience` puts the form on a pricing page: it asks which plan and starts on the one clicked. */
+export function Contact({ audience }: { audience?: Audience } = {}): React.ReactElement {
   return (
     <section id="contact" className="relative z-content px-3 py-16 md:py-24">
       <SectionKicker>Contact</SectionKicker>
@@ -25,7 +29,14 @@ export function Contact(): React.ReactElement {
       </ul>
 
       <div className="relative mx-auto mt-9 max-w-[640px] rounded-[18px] border border-honey-warm/[0.18] p-5 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7),0_0_60px_-20px_rgba(243,201,122,0.15)] backdrop-blur-[20px] [background:linear-gradient(180deg,rgba(26,20,16,0.85),rgba(10,8,5,0.75))] md:mt-11 md:rounded-[20px] md:p-8">
-        <InquiryForm />
+        {audience === undefined ? (
+          <InquiryForm />
+        ) : (
+          // Reading ?plan= needs a Suspense boundary; until it resolves the same form shows with no plan.
+          <Suspense fallback={<InquiryForm audience={audience} initialKind={AUDIENCE_KIND[audience]} />}>
+            <PlanInquiryForm audience={audience} />
+          </Suspense>
+        )}
       </div>
 
       <p className="mt-6 text-center text-[13px] text-muted md:text-[14px]">

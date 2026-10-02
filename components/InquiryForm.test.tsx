@@ -106,3 +106,49 @@ describe('InquiryForm', () => {
     expect(screen.getByLabelText(/your name/i)).toHaveValue('');
   });
 });
+
+describe('InquiryForm — on a pricing page', () => {
+  it('offers the audience’s plans and sends the one picked', async () => {
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    render(<InquiryForm audience="maker" initialKind="maker" />);
+    const plans = screen.getByRole('group', { name: /which plan/i });
+    expect(plans).toHaveTextContent('Maker Lite');
+    expect(plans).toHaveTextContent('Maker Full');
+    expect(plans).toHaveTextContent('Not sure yet');
+    expect(plans).not.toHaveTextContent('Contractor');
+    const u = userEvent.setup();
+    await u.click(screen.getByLabelText('Maker Full'));
+    await u.type(screen.getByLabelText(/your name/i), 'Pat');
+    await u.type(screen.getByRole('textbox', { name: /^email$/i }), 'pat@example.com');
+    await u.type(screen.getByLabelText(/what do you need/i), 'Candles');
+    await u.click(screen.getByRole('button', { name: /send/i }));
+    await screen.findByRole('status');
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(String(init.body))).toMatchObject({ kind: 'maker', plan: 'maker-full' });
+  });
+
+  it('starts on the plan they clicked and keeps it for the next message', async () => {
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    render(<InquiryForm audience="contractor" initialKind="service" initialPlan="contractor-full" />);
+    expect(screen.getByLabelText('Contractor Full')).toBeChecked();
+    expect(screen.getByLabelText(/service business/i)).toBeChecked();
+    const u = userEvent.setup();
+    await u.type(screen.getByLabelText(/your name/i), 'Chris');
+    await u.type(screen.getByRole('textbox', { name: /^email$/i }), 'chris@example.com');
+    await u.type(screen.getByLabelText(/what do you need/i), 'Sod jobs');
+    await u.click(screen.getByRole('button', { name: /send/i }));
+    await u.click(await screen.findByRole('button', { name: /send another/i }));
+    expect(screen.getByLabelText('Contractor Full')).toBeChecked();
+  });
+
+  it('sends no plan when they are not sure', async () => {
+    render(<InquiryForm audience="maker" initialPlan="maker-lite" />);
+    await userEvent.setup().click(screen.getByLabelText('Not sure yet'));
+    expect(screen.getByLabelText('Not sure yet')).toBeChecked();
+  });
+
+  it('shows no plan question on the home page', () => {
+    render(<InquiryForm />);
+    expect(screen.queryByRole('group', { name: /which plan/i })).toBeNull();
+  });
+});
