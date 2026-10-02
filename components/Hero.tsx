@@ -10,7 +10,8 @@ export function Hero(): React.ReactElement {
 
       <h1 className="mx-auto max-w-[900px] font-sans text-[34px] font-medium leading-[1.05] tracking-[-0.02em] text-text-soft md:text-[56px] md:tracking-[-0.03em]">
         {/* Each half wraps as a unit, so a narrow screen breaks between phrases, never inside one. */}
-        <span className="inline-block text-text">If you make it, bake it,</span>{' '}
+        <span className="inline-block text-text">If you make it,</span>{' '}
+        <span className="inline-block text-text">bake it,</span>{' '}
         <span className="inline-block">fix it or fund it,</span>{' '}
         <br />
         <span className="inline-block animate-pulse-glow text-honey-warm">we build it for you</span>
