@@ -25,7 +25,6 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
           'I worked in IT for more than 30 years, in the corporate world and for myself, and most of that time was spent helping people: training, support, service. When I retired, that didn’t stop. I still wanted to help.',
           'So I named the business Bohdi. Bodhi means awakening. To me, it means empowering: the moment someone realizes they can do the thing they were sure they couldn’t. The Bohdi Way is built on that. I make the hard parts easy, and you own everything.',
           'I’ve watched too many makers and small crews get quoted thousands of dollars for a website, then pay again every time they need a change. That money should be going into their business, not mine. In empowering others, all of us are enriched.',
-          'There’s a practical side too. I build each piece carefully once, and every site I make shares it. I don’t have to charge every customer for starting from scratch, so I don’t.',
         ],
       },
       {

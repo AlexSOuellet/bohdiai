@@ -11,7 +11,7 @@ Prices are public now, and they raise questions — above all "why so cheap?" Al
 ## Decisions
 
 - **One page, `bohdiai.com/faq`,** grouped by topic; maker-only and contractor-only groups near the end; custom sites last.
-- **"Why are your prices so low?" leads** and gets more room: 30+ years in IT (corporate and his own business), mostly helping — training, support, service; retiring and finding the desire continued; the name; empowering others enriches all of us; plus the practical side (built carefully once, every site shares it). No AI talk (site rule).
+- **"Why are your prices so low?" leads** the page: 30+ years in IT (corporate and his own business), mostly helping — training, support, service; retiring and finding the desire continued; the name; empowering others enriches all of us. No AI talk (site rule). Alex's review: no "practical side" paragraph, and the page opens with every answer closed, this one included.
 - **The name:** "Bodhi means awakening. To me, it means empowering: the moment someone realizes they can do the thing they were sure they couldn't." Accurate about the word; Alex's meaning on it. (Bodhi: Sanskrit/Pali "awakening", root *budh*, "to awaken, to know".)
 - **Build time answer:** most plan sites are ready in 2 to 5 days; custom sites are different.
 - **Custom sites:** anything beyond what a plan lists (special layout, a feature no plan has, a site outside BohdiAI — Penny's is the example) is quoted separately after a conversation. **In the FAQ only for now** — not on the pricing pages.
@@ -30,7 +30,7 @@ Prices are public now, and they raise questions — above all "why so cheap?" Al
 
 ## Page
 
-Same look as the rest of bohdiai.com. Header, a headline ("Questions, answered straight"), the price question open and larger, then the groups as tap-to-open questions (native `<details>`/`<summary>`: accessible, no script), then "Didn't see your question?" with the contact form, footer. FAQ structured data (`FAQPage` JSON-LD) on the page for search.
+Same look as the rest of bohdiai.com. Header, a headline ("Questions, answered straight"), then the groups (price question first; every answer closed until tapped) as tap-to-open questions (native `<details>`/`<summary>`: accessible, no script), then "Didn't see your question?" with the contact form, footer. FAQ structured data (`FAQPage` JSON-LD) on the page for search.
 
 **Data:** one module, `lib/site/faq.ts` — groups, questions, answers (paragraphs), and each pricing page's top three question ids. Prices in answers come from `lib/site/plans.ts`, never typed twice.
 

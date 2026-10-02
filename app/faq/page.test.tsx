@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { allFaqItems, faqItem } from '@/lib/site/faq';
+import { allFaqItems } from '@/lib/site/faq';
 
 vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams('') }));
 const { default: FaqPage } = await import('./page');
@@ -12,11 +12,12 @@ describe('bohdiai.com/faq', () => {
     for (const item of allFaqItems()) expect(screen.getByText(item.q)).toBeInTheDocument();
   });
 
-  it('leads with the price story, fully shown', () => {
+  it('leads with the price question, closed until tapped', () => {
     const { container } = render(<FaqPage />);
-    const lead = container.querySelector('#why-so-low');
-    expect(lead?.tagName).toBe('ARTICLE');
-    expect(lead).toHaveTextContent(faqItem('why-so-low').a[2] ?? '');
+    const first = container.querySelector('details');
+    expect(first?.id).toBe('why-so-low');
+    expect(first?.open).toBe(false);
+    expect(container.querySelectorAll('details[open]')).toHaveLength(0);
   });
 
   it('describes every question for search engines', () => {
