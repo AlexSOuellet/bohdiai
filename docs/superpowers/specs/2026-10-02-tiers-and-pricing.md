@@ -71,6 +71,10 @@ Two tiers, mirroring the makers. The site is built free on both; the contractor 
 - **Cut-Pro is family (Alex's daughter and her fiancé) and keeps its own "love pricing"** — not on these prices.
 - Same rules as makers: fixes covered, additions paid; no commitment, site pauses if payments stop.
 
+## Custom sites (Alex, 2026-10-02)
+
+Plan sites are ready in 2 to 5 days. Anything beyond what a plan lists — a special layout, a feature no plan has, a site that lives outside BohdiAI (Penny's is the example) — is a **custom site, quoted separately** after a conversation. Mentioned in the FAQ only for now, not on the pricing pages.
+
 ## Footer credit on client sites (Alex, 2026-10-02)
 
 - **Site on a `bohdiai.com` subdomain:** the footer carries a line "2026 Empowered by BohdiAI" (year = the current year).
