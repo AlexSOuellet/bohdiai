@@ -16,7 +16,7 @@
 
 ## Current state
 
-**Session 91 — tiers and prices agreed; pricing pages LIVE with "Talk to us" buttons.** Every plan built free, monthly or yearly; Maker Lite/Full $14.99/$19.99, Contractor Lite/Full $14.99/$29.99 (`docs/superpowers/specs/2026-10-02-tiers-and-pricing.md`). bohdiai.com gets `/makers`, `/contractors`, two doors and a Pricing link; Stripe pay buttons replace "Talk to us" next. Full recap: `session-logs/session-91.md`.
+**Session 91 — tiers and prices agreed; pricing pages LIVE with "Talk to us" buttons.** Every plan built free, monthly or yearly; Maker Lite/Full $14.99/$19.99, Contractor Lite/Full $14.99/$29.99 (`docs/superpowers/specs/2026-10-02-tiers-and-pricing.md`). bohdiai.com gets `/makers`, `/contractors`, two doors and a Pricing link; Also live: `/faq`, Pricing + FAQ in the header (phone menu), "Empowered by BohdiAI" in every client-site footer. Stripe pay buttons replace "Talk to us" next. Full recap: `session-logs/session-91.md`.
 
 **Session 90 — auto sign-out + maker backend 1b Catalog LIVE.** Owners manage products (photos, options with own price/stock, downloads where switched on, collections, draft/live/archived, home-page picks max 5 from a Home column) and collections; the shop shows it (all photos, option picker, "from $X", sold out, collections from `listing_collections`). Plan: `docs/superpowers/plans/2026-10-01-maker-backend-1b-catalog.md`. Cloudflare turned on "Builds for Preview branches" overnight → deploys failed until Alex switched it off. Full recap: `session-logs/session-90.md`.
 
@@ -89,7 +89,7 @@ Full recap: `session-logs/session-87.md`.
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
-- Session 91 (2026-10-02): **Tiers + prices agreed; pricing pages LIVE ("Talk to us" until pay buttons).** Full recap: `session-logs/session-91.md`.
+- Session 91 (2026-10-02): **Tiers + prices agreed; pricing pages + FAQ LIVE ("Talk to us" until pay buttons).** Full recap: `session-logs/session-91.md`.
 - Session 90 (2026-09-30 → 10-01): **Auto sign-out live; maker backend 1b Catalog live** (products, options, collections, home picks; shop renders them; scroll-reveal bug on tall sections fixed). Full recap: `session-logs/session-90.md`.
 - Session 89 (2026-09-30): **CI green; maker backend designed; foundation (1a) built + live-tested.** Classic Loafs reverted; MCP popups fixed; MY ADMIN deferred. Full recap: `session-logs/session-89.md`.
 - Session 88 (2026-09-29): **bohdiai.com rebuilt as a web developer site, LIVE.** Real work (Cut-Pro, Penny, 3 samples) with testimonials, new about + The Bohdi Way, inquiry form with phone/best-way, waitlist stack deleted. Found CI red since 09-24 (coverage gate). Next: CI fix, then MY ADMIN brainstorm. Full recap: `session-logs/session-88.md`.

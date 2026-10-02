@@ -15,3 +15,9 @@ Alex first held the pages for pay buttons, then chose to go live with "Talk to u
 
 ## Next (tomorrow)
 Stripe pay buttons (step B of the pricing design): Alex's BohdiAI Stripe account; checkout per plan (card saved, charged at go-live; custom fields business name + socials); thank-you page; webhook emails Alex; full test-mode run. Then merge the branch and go live together.
+
+## Later the same day — FAQ, header, footer credit (LIVE)
+- **`/faq`** (spec `docs/superpowers/specs/2026-10-02-bohdiai-com-faq-design.md`): "Why are your prices so low?" first, told as Alex's story (30+ years in IT helping people; Bodhi means awakening, to him empowering; "in empowering others, all of us are enriched"). Every answer closed until tapped (Alex). Answers agreed: plan sites 2–5 days; custom sites quoted separately (FAQ only); upgrades and monthly↔yearly switches immediate and prorated; cancel = site stays to the end of what's paid, no refunds; domains from Cloudflare at cost, linked (no referral bonus exists). FAQ JSON-LD. Pricing pages show their 3 top questions.
+- **Header:** Pricing and FAQ lead; phone menu (Alex: things people want never only in the footer). Home About gains the name story. "Built in Rhode Island" removed.
+- **"2026 Empowered by BohdiAI"** in every client-site footer (maker shops + contractor sites), behind `platformCredit` (default on); custom domains (1d) must turn it off.
+- 2086 tests green; live-checked bohdiai.com pages, Cut-Pro and Classic Loafs footers, app sign-in.
