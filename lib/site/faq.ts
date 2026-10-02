@@ -82,7 +82,7 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         id: 'monthly-or-yearly',
         q: 'Monthly or yearly? Can I switch?',
         a: [
-          `Either. Yearly works out to about two months free (${p('maker-lite', 'yearly')} a year instead of ${p('maker-lite')} a month on Lite). You can switch when your plan renews.`,
+          `Either. Yearly works out to about two months free (${p('maker-lite', 'yearly')} a year instead of ${p('maker-lite')} a month on Lite). You can switch any time, and your bill is adjusted for the time you’ve already paid for.`,
         ],
       },
       {
@@ -128,7 +128,7 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         id: 'upgrade',
         q: 'Can I move up from Lite to Full?',
         a: [
-          'Any time, with nothing to pay up front. You just pay the Full price from then on. Everything you’ve already added comes with you.',
+          'Any time, and it happens right away. There’s nothing to pay up front: your bill is prorated, so you only pay the difference for the rest of your current billing period, then the Full price from then on. Everything you’ve already added comes with you.',
         ],
       },
       {
