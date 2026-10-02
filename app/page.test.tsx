@@ -52,11 +52,12 @@ describe('bohdiai.com home', () => {
     expect(screen.getByRole('link', { name: /charity or community group/i })).toHaveAttribute('href', '#contact');
   });
 
-  it('links both pricing pages from the header', () => {
-    render(<HomePage />);
-    const header = screen.getByRole('banner');
-    expect(header.querySelector('a[href="/makers"]')).toHaveTextContent('Makers');
-    expect(header.querySelector('a[href="/contractors"]')).toHaveTextContent('Contractors');
+  it('has a Pricing link in the header, on every screen size, to the two doors', () => {
+    const { container } = render(<HomePage />);
+    const pricing = screen.getByRole('banner').querySelector('a[href="/#pricing"]');
+    expect(pricing).toHaveTextContent('Pricing');
+    expect(pricing?.className).not.toMatch(/hidden/);
+    expect(container.querySelector('#pricing nav')).not.toBeNull();
   });
 
   it('explains how it works with plans and billing at go-live', () => {

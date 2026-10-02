@@ -20,7 +20,10 @@ const DOORS = [
 
 export function Doors(): React.ReactElement {
   return (
-    <section className="relative z-content mx-auto max-w-[1000px] px-4 pt-16 md:pt-24">
+    <section
+      id="pricing"
+      className="relative z-content mx-auto max-w-[1000px] scroll-mt-6 px-4 pt-16 md:pt-24"
+    >
       <nav aria-label="Choose your path" className="grid gap-4 md:grid-cols-2 md:gap-6">
         {DOORS.map((d) => (
           <Link
