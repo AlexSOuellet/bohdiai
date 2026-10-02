@@ -1,6 +1,7 @@
 import { Scene } from '@/components/Scene';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
+import { Doors } from '@/components/Doors';
 import { Work } from '@/components/Work';
 import { TradesMarquee } from '@/components/TradesMarquee';
 import { HowItWorks } from '@/components/HowItWorks';
@@ -33,6 +34,7 @@ export default function HomePage(): React.ReactElement {
       <Header />
       <main id="main">
         <Hero />
+        <Doors />
         <Work />
         <TradesMarquee />
         <HowItWorks />

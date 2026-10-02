@@ -16,13 +16,19 @@ export function Header(): React.ReactElement {
           </span>
           BohdiAI
         </Link>
-        <a href="#work" className={`${BLUR_CHIP} hidden md:inline-flex`}>
+        <Link href="/makers" className={`${BLUR_CHIP} hidden md:inline-flex`}>
+          Makers
+        </Link>
+        <Link href="/contractors" className={`${BLUR_CHIP} hidden md:inline-flex`}>
+          Contractors
+        </Link>
+        <a href="/#work" className={`${BLUR_CHIP} hidden lg:inline-flex`}>
           Work
         </a>
-        <a href="#who" className={`${BLUR_CHIP} hidden md:inline-flex`}>
+        <a href="/#who" className={`${BLUR_CHIP} hidden lg:inline-flex`}>
           About
         </a>
-        <a href="#contact" className={`${BLUR_CHIP} hidden md:inline-flex`}>
+        <a href="#contact" className={`${BLUR_CHIP} hidden lg:inline-flex`}>
           Contact
         </a>
       </div>

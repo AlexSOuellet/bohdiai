@@ -23,8 +23,8 @@ export function HowItWorks(): React.ReactElement {
 
         <Step
           num="01"
-          title="Tell me about your business"
-          copy="Fill out the form or send a message. What you do, who buys from you, and what you need the site to do."
+          title="Pick your plan"
+          copy="Choose a plan on the makers or contractors page, or send a message and tell me what you need."
         >
           <MessageCard />
         </Step>
@@ -38,7 +38,7 @@ export function HowItWorks(): React.ReactElement {
         <Step
           num="03"
           title="You go live"
-          copy="Your site goes up on the web. Need a change later? Just ask, and I handle it."
+          copy="Your site goes up on the web, and billing starts the day your site goes live. Fixes are always on me, and on a Full plan you keep your own products, dates and photos up to date."
         >
           <LiveBadge />
         </Step>

@@ -20,9 +20,11 @@ export function Footer(): React.ReactElement {
 
         <div className="flex flex-wrap gap-7 md:gap-12">
           <FooterCol title="Site">
-            <FLink href="#work">Work</FLink>
-            <FLink href="#how">How it works</FLink>
-            <FLink href="#pledge">Our pledge</FLink>
+            <FLink href="/makers">For makers</FLink>
+            <FLink href="/contractors">For contractors</FLink>
+            <FLink href="/#work">Work</FLink>
+            <FLink href="/#how">How it works</FLink>
+            <FLink href="/#pledge">Our pledge</FLink>
             <FLink href="#contact">Start a project</FLink>
           </FooterCol>
           <FooterCol title="Contact">
