@@ -35,7 +35,7 @@ export function Footer(): React.ReactElement {
       </div>
 
       <div className="mx-auto mt-7 flex max-w-[1180px] flex-col items-start justify-between gap-2 border-t border-white/5 px-4 pt-5 text-[11px] tracking-[0.02em] text-muted md:flex-row md:items-center md:px-8">
-        <span>© 2026 BohdiAI · Built in Rhode Island</span>
+        <span>© 2026 BohdiAI</span>
         <span className="flex gap-4 md:gap-[18px]">
           <a
             href="/privacy"

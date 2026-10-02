@@ -64,12 +64,19 @@ describe('bohdiai.com home', () => {
     expect(screen.getByRole('link', { name: 'See plans and prices' })).toHaveAttribute('href', '#pricing');
   });
 
-  it('has a Pricing link in the header, on every screen size, to the two doors', () => {
+  it('leads the header with Pricing and FAQ, and has a phone menu', () => {
     const { container } = render(<HomePage />);
-    const pricing = screen.getByRole('banner').querySelector('a[href="/#pricing"]');
-    expect(pricing).toHaveTextContent('Pricing');
-    expect(pricing?.className).not.toMatch(/hidden/);
+    const main = screen.getByRole('navigation', { name: 'Main' });
+    expect([...main.querySelectorAll('a')].map((a) => a.textContent).slice(0, 2)).toEqual(['Pricing', 'FAQ']);
+    expect(main.querySelector('a[href="/#pricing"]')).not.toBeNull();
+    expect(main.querySelector('a[href="/faq"]')).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Open menu' })).toBeInTheDocument();
     expect(container.querySelector('#pricing nav')).not.toBeNull();
+  });
+
+  it('no longer says where it was built', () => {
+    const { container } = render(<HomePage />);
+    expect(container.querySelector('footer')?.textContent).not.toMatch(/Built in Rhode Island/);
   });
 
   it('explains how it works with plans and billing at go-live', () => {
