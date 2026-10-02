@@ -1,7 +1,7 @@
 # Tiers and Pricing — Launch
 
 **Date:** 2026-10-02 (Session 91)
-**Status:** Agreed with Alex in brainstorming. Maker tiers settled; contractor pricing still under discussion.
+**Status:** Agreed with Alex in brainstorming. Maker and contractor pricing settled.
 **Related:** `2026-09-30-maker-backend-overview.md` (feature switches — a tier is a set of switches turned on).
 
 ## Principles
@@ -42,6 +42,15 @@ Everything in Lite, plus:
 - No separate "Market Maker" middle tier (considered and dropped: without online selling, stock syncing matters little, so it added too little over Lite).
 - Product video is Full only.
 
+## Contractors
+
+A separate track, not on the maker ladder (a contractor never moves up to selling products). Contractor sites are the quickest to build (Cut-Pro took about an hour).
+
+- **Site built free; the contractor pays for hosting:** $29.99/month, or $299/year.
+- Pitched to sit at the do-it-yourself price (Wix / Squarespace ~$17–36/month) while handing over a finished site; below a local designer's $50–150/month maintenance fee. High enough not to look cheap, low enough to be a no-brainer — less than one job a month.
+- Same rules as makers: fixes covered, additions paid; no commitment, site pauses if payments stop.
+- Contractor features still to come (job-photo gallery, estimate inbox, booked-days calendar) leave room for a second contractor tier later.
+
 ## Upgrading, downgrading, cancelling
 
 - **Upgrade Lite → Full:** no up-front fee; they pay the Full monthly price from then on. If they upgrade inside a prepaid year, they pay the difference for the months left, in one payment.
@@ -59,6 +68,6 @@ Unchanged: maker backend piece 1 continues (video, then custom domains), then th
 
 ## Open
 
-- **Contractors:** separate track, not on the maker ladder. Under discussion: site built free, the contractor pays for hosting.
+- **Cut-Pro:** whether it moves onto the contractor price or keeps its own arrangement.
 - **Lite's design:** a cut-down Full (same look, fewer pages — upgrades are just switches; recommended) or its own one-page design.
 - **Year-two annual option** (e.g. $99/year for Lite): suggested, not decided.
