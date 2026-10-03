@@ -12,13 +12,13 @@ describe('bohdiai.com/contractors', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
       'A real web developer for less than a site builder',
     );
-    expect(screen.getByRole('article', { name: 'Contractor Lite' })).toHaveTextContent('$14.99');
-    expect(screen.getByRole('article', { name: 'Contractor Full' })).toHaveTextContent('$29.99');
+    expect(screen.getByRole('article', { name: 'Contractor Lite' })).toHaveTextContent('$15');
+    expect(screen.getByRole('article', { name: 'Contractor Full' })).toHaveTextContent('$30');
   });
 
   it('never shows maker plans or prices', () => {
     const { container } = render(<ContractorsPage />);
-    expect(container.textContent).not.toMatch(/Maker (Lite|Full)|\$19\.99|\$199\b/);
+    expect(container.textContent).not.toMatch(/Maker (Showcase|Lite|Full)|\$5\b|\$20\b|\$200\b/);
   });
 
   it('compares against the lead services, shows Cut-Pro and ends in the form', () => {

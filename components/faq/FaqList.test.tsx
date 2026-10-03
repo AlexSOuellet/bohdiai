@@ -24,7 +24,7 @@ describe('FaqList', () => {
   it('gives each question an anchor for linking', () => {
     const { container } = render(<FaqList items={items} />);
     expect(container.querySelector('details#contract')).not.toBeNull();
-    expect(screen.getByText('Can I move up from Lite to Full?')).toBeInTheDocument();
+    expect(screen.getByText('Can I move up a plan?')).toBeInTheDocument();
   });
 
   it('shows an answer’s link, opening in a new tab', () => {

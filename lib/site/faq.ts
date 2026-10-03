@@ -70,7 +70,7 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         id: 'built-free',
         q: 'What does “built free” mean?',
         a: [
-          `It means there’s no build fee. You don’t pay thousands up front. You pay the monthly price for your plan, starting at ${p('maker-lite')} a month, and that’s it.`,
+          `It means there’s no build fee. You don’t pay thousands up front. You pay the monthly price for your plan, starting at ${p('maker-showcase')} a month for makers and ${p('contractor-lite')} for contractors, and that’s it.`,
         ],
       },
       {
@@ -127,9 +127,9 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
     items: [
       {
         id: 'upgrade',
-        q: 'Can I move up from Lite to Full?',
+        q: 'Can I move up a plan?',
         a: [
-          'Any time, and it happens right away. There’s nothing to pay up front: your bill is prorated, so you only pay the difference for the rest of your current billing period, then the Full price from then on. Everything you’ve already added comes with you.',
+          'Any time, from Showcase to Lite or from Lite to Full, and it happens right away. There’s nothing to pay up front: your bill is prorated, so you only pay the difference for the rest of your current billing period, then the new price from then on. Everything you’ve already added comes with you.',
         ],
       },
       {

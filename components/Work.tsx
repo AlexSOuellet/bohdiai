@@ -98,12 +98,15 @@ function ClientSpread({ entry, flip }: { entry: WorkEntry; flip: boolean }): Rea
   );
 }
 
-// Fanned on wide screens: the outer cards tilt out behind the middle one; hovering a
-// card lifts and straightens it and dims the others. Stacks into one column on phones.
+// Fanned on wide screens: four cards spread evenly across the shelf, the outer two
+// tilted out and dropped a little, each overlapping its neighbour only slightly so
+// every name stays clear; hovering a card lifts and straightens it and dims the
+// others. Stacks into one column on phones.
 const FAN = [
-  'md:-translate-x-[128%] md:translate-y-[34px] md:-rotate-[7deg] md:z-[1] md:hover:-translate-y-2 md:hover:-rotate-2',
-  'md:-translate-x-1/2 md:z-[3] md:hover:-translate-y-3',
-  'md:translate-x-[28%] md:translate-y-[34px] md:rotate-[7deg] md:z-[2] md:hover:-translate-y-2 md:hover:rotate-2',
+  'md:-translate-x-[179%] md:translate-y-[34px] md:-rotate-[6deg] md:z-[1] md:hover:-translate-y-2 md:hover:-rotate-1',
+  'md:-translate-x-[93%] md:translate-y-[6px] md:-rotate-[2deg] md:z-[2] md:hover:-translate-y-3 md:hover:rotate-0',
+  'md:-translate-x-[7%] md:translate-y-[6px] md:rotate-[2deg] md:z-[3] md:hover:-translate-y-3 md:hover:rotate-0',
+  'md:translate-x-[79%] md:translate-y-[34px] md:rotate-[6deg] md:z-[2] md:hover:-translate-y-2 md:hover:rotate-1',
 ] as const;
 
 /** With an `audience`, only that audience's clients show (and the sample shops only for makers). */
@@ -140,7 +143,7 @@ export function Work({ audience }: { audience?: Audience } = {}): React.ReactEle
             These are sample shops made to show range, not real businesses
           </p>
 
-          <div className="group/shelf relative mt-12 grid gap-10 md:mt-14 md:block md:h-[430px]">
+          <div className="group/shelf relative mt-12 grid gap-10 md:mt-14 md:block md:h-[300px]">
             {SAMPLES.map((s, i) => (
               <a
                 key={s.slug}
@@ -148,11 +151,11 @@ export function Work({ audience }: { audience?: Audience } = {}): React.ReactEle
                 target="_blank"
                 rel="noopener noreferrer"
                 className={[
-                  'block text-left no-underline transition-[transform,filter] duration-slow ease-out md:absolute md:left-1/2 md:top-0 md:w-[min(470px,44vw)] md:hover:z-[9] md:hover:scale-[1.04] md:hover:!brightness-100 md:group-hover/shelf:brightness-[0.55]',
+                  'block text-left no-underline transition-[transform,filter] duration-slow ease-out md:absolute md:left-1/2 md:top-0 md:w-[min(320px,25vw)] md:hover:z-[9] md:hover:scale-[1.04] md:hover:!brightness-100 md:group-hover/shelf:brightness-[0.55]',
                   FAN[i] ?? '',
                 ].join(' ')}
               >
-                <Shot entry={s} sizes="(max-width: 768px) 100vw, 470px" />
+                <Shot entry={s} sizes="(max-width: 768px) 100vw, 320px" />
                 <div className="mt-4 px-1.5">
                   <span className="block font-sans text-[18px] font-medium tracking-[-0.01em] text-text">
                     {s.name}

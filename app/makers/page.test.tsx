@@ -7,18 +7,19 @@ vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams('
 const { default: MakersPage } = await import('./page');
 
 describe('bohdiai.com/makers', () => {
-  it('leads with the pitch and shows both maker plans', () => {
+  it('leads with the pitch and shows all three maker plans', () => {
     render(<MakersPage />);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
       'A real web developer for less than a site builder',
     );
-    expect(screen.getByRole('article', { name: 'Maker Lite' })).toHaveTextContent('$14.99');
-    expect(screen.getByRole('article', { name: 'Maker Full' })).toHaveTextContent('$19.99');
+    expect(screen.getByRole('article', { name: 'Maker Showcase' })).toHaveTextContent('$5');
+    expect(screen.getByRole('article', { name: 'Maker Lite' })).toHaveTextContent('$15');
+    expect(screen.getByRole('article', { name: 'Maker Full' })).toHaveTextContent('$20');
   });
 
   it('never shows contractor plans or prices', () => {
     const { container } = render(<MakersPage />);
-    expect(container.textContent).not.toMatch(/Contractor (Lite|Full)|\$29\.99|\$299\b/);
+    expect(container.textContent).not.toMatch(/Contractor (Lite|Full)|\$30\b|\$300\b/);
   });
 
   it('compares against Etsy, shows Penny’s shop and ends in the form', () => {

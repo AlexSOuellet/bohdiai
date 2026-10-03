@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * The two plan cards on a pricing page, with one Monthly / Yearly switch above
- * both. Lite is clear glass; Full is lit with a honey edge. "Talk to us" goes
+ * The plan cards on a pricing page (two or three), with one Monthly / Yearly
+ * switch above them. Showcase and Lite are clear glass; Full is lit with a honey edge. "Talk to us" goes
  * to the page's contact form with the plan in the address (Stripe checkout
  * replaces it once staging exists — see the pricing design, step B).
  */
@@ -20,8 +20,10 @@ const PERIODS: ReadonlyArray<{ value: Period; label: string }> = [
 
 export function PlanCards({ audience, path }: { audience: Audience; path: PricingPath }): React.ReactElement {
   const [period, setPeriod] = useState<Period>('monthly');
+  const plans = plansFor(audience);
+  const three = plans.length === 3;
   return (
-    <div className="mx-auto max-w-[980px]">
+    <div className={`mx-auto ${three ? 'max-w-[1180px]' : 'max-w-[980px]'}`}>
       <fieldset className="mx-auto flex w-fit rounded-pill border border-white/10 bg-black/40 p-1 backdrop-blur-[20px]">
         <legend className="sr-only">Pay monthly or yearly</legend>
         {PERIODS.map((p) => (
@@ -42,8 +44,8 @@ export function PlanCards({ audience, path }: { audience: Audience; path: Pricin
         ))}
       </fieldset>
 
-      <div className="mt-9 grid items-stretch gap-6 md:mt-12 md:grid-cols-2 md:gap-7">
-        {plansFor(audience).map((plan) => (
+      <div className={`mt-9 grid items-stretch gap-6 md:mt-12 md:gap-7 ${three ? 'lg:grid-cols-3 md:grid-cols-2' : 'md:grid-cols-2'}`}>
+        {plans.map((plan) => (
           <PlanCard key={plan.id} plan={plan} period={period} path={path} />
         ))}
       </div>

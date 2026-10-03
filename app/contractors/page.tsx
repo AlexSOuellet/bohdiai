@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import { PricingPage } from '@/components/pricing/PricingPage';
+import { formatPrice, fromPrice } from '@/lib/site/plans';
 
 export const metadata: Metadata = {
   title: 'Websites for contractors — BohdiAI',
   description:
-    'A real web developer for less than a site builder. Built free, from $14.99 a month, and every lead is yours alone.',
+    `A real web developer for less than a site builder. Built free, from ${formatPrice(fromPrice('contractor'))} a month, and every lead is yours alone.`,
 };
 
 export default function ContractorsPage(): React.ReactElement {

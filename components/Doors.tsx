@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { formatPrice, fromPrice } from '@/lib/site/plans';
 
 /**
  * Two doors under the hero: makers and contractors each get their own page with
@@ -8,11 +9,13 @@ import Link from 'next/link';
 const DOORS = [
   {
     href: '/makers',
+    audience: 'maker',
     title: 'I make things',
     sub: 'Candles, soap, jewelry, baked goods, art. A site for your shop and your market days',
   },
   {
     href: '/contractors',
+    audience: 'contractor',
     title: 'I run a service business',
     sub: 'Lawn care, landscaping, cleaning, handyman work. A site that brings in estimate requests',
   },
@@ -36,7 +39,7 @@ export function Doors(): React.ReactElement {
             </span>
             <span className="mt-3 max-w-[380px] text-[14px] leading-[1.55] text-muted md:text-[15px]">{d.sub}</span>
             <span className="mt-7 inline-flex items-center gap-2 text-[13px] font-semibold text-honey-warm">
-              Built free, from $14.99 a month
+              Built free, from {formatPrice(fromPrice(d.audience))} a month
               <span aria-hidden="true" className="transition-transform duration-base group-hover:translate-x-1">
                 →
               </span>

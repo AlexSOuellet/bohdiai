@@ -1,18 +1,19 @@
 /**
  * bohdiai.com's plans and the comparison shown beside them. One list feeds the
  * pricing pages, the contact form's plan chips and Alex's inquiry email, so a
- * price can't drift between them. Agreed with Alex 2026-10-02 — see
+ * price can't drift between them. Agreed with Alex 2026-10-02 (whole-dollar
+ * prices and Maker Showcase added 2026-10-03) — see
  * docs/superpowers/specs/2026-10-02-tiers-and-pricing.md.
  */
 export type Audience = 'maker' | 'contractor';
 
-export const PLAN_IDS = ['maker-lite', 'maker-full', 'contractor-lite', 'contractor-full'] as const;
+export const PLAN_IDS = ['maker-showcase', 'maker-lite', 'maker-full', 'contractor-lite', 'contractor-full'] as const;
 export type PlanId = (typeof PLAN_IDS)[number];
 
 export type Plan = {
   id: PlanId;
   audience: Audience;
-  tier: 'lite' | 'full';
+  tier: 'showcase' | 'lite' | 'full';
   name: string;
   forWho: string;
   monthly: number;
@@ -23,13 +24,30 @@ export type Plan = {
 
 export const PLANS: readonly Plan[] = [
   {
+    id: 'maker-showcase',
+    audience: 'maker',
+    tier: 'showcase',
+    name: 'Maker Showcase',
+    forWho: 'For makers who want a real place to show their work',
+    monthly: 5,
+    yearly: 50,
+    includes: [
+      'A one-page site: who you are, what you make, how to reach you',
+      'Up to 12 photos of your work, with captions',
+      'Your story, in your own words',
+      'A contact form, straight to your inbox',
+      'Your phone, Facebook and Instagram',
+      'Change your photos and words yourself, any time',
+    ],
+  },
+  {
     id: 'maker-lite',
     audience: 'maker',
     tier: 'lite',
     name: 'Maker Lite',
     forWho: 'For makers who sell in person and want a place to send people',
-    monthly: 14.99,
-    yearly: 149,
+    monthly: 15,
+    yearly: 150,
     includes: [
       'Your own site: a home page and a catalog page',
       'Every product with its photo and price',
@@ -45,8 +63,8 @@ export const PLANS: readonly Plan[] = [
     tier: 'full',
     name: 'Maker Full',
     forWho: 'For makers ready to sell online as well as in person',
-    monthly: 19.99,
-    yearly: 199,
+    monthly: 20,
+    yearly: 200,
     includes: [
       'Sell online, paid straight into your own Stripe or Square',
       'Orders and shipping in one place',
@@ -62,8 +80,8 @@ export const PLANS: readonly Plan[] = [
     tier: 'lite',
     name: 'Contractor Lite',
     forWho: 'For contractors who need a real site that works',
-    monthly: 14.99,
-    yearly: 149,
+    monthly: 15,
+    yearly: 150,
     includes: [
       'A one-page site built around your own job photos',
       'An estimate form where customers send photos of the job',
@@ -77,8 +95,8 @@ export const PLANS: readonly Plan[] = [
     tier: 'full',
     name: 'Contractor Full',
     forWho: 'For contractors who want the site to bring in work',
-    monthly: 29.99,
-    yearly: 299,
+    monthly: 30,
+    yearly: 300,
     includes: [
       'An estimate inbox: track every job from request to won',
       'A job gallery you add to from your phone',
@@ -93,6 +111,11 @@ export function plansFor(audience: Audience): readonly Plan[] {
   return PLANS.filter((p) => p.audience === audience);
 }
 
+/** The lowest monthly price an audience can start at. */
+export function fromPrice(audience: Audience): number {
+  return Math.min(...plansFor(audience).map((p) => p.monthly));
+}
+
 export function isPlanId(v: string): v is PlanId {
   return (PLAN_IDS as readonly string[]).includes(v);
 }
@@ -103,7 +126,7 @@ export function planById(id: PlanId): Plan {
   return plan;
 }
 
-/** `$14.99`, `$149` — whole dollars drop the cents. */
+/** `$15`, `$150`, `$4.50` — whole dollars drop the cents. */
 export function formatPrice(n: number): string {
   return Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`;
 }
@@ -151,7 +174,7 @@ export const COMPARISON: Record<Audience, readonly ComparisonRow[]> = {
     },
     {
       name: 'BohdiAI',
-      cost: 'Built free, from $14.99 a month',
+      cost: `Built free, from ${formatPrice(fromPrice('maker'))} a month`,
       you: 'I build it and write it with you. Fixes covered. Never a cut of your sales',
       ours: true,
     },
@@ -175,7 +198,7 @@ export const COMPARISON: Record<Audience, readonly ComparisonRow[]> = {
     },
     {
       name: 'BohdiAI',
-      cost: 'Built free, from $14.99 a month',
+      cost: `Built free, from ${formatPrice(fromPrice('contractor'))} a month`,
       you: 'Estimate requests with photos come straight to you, and every lead is yours alone',
       ours: true,
     },
