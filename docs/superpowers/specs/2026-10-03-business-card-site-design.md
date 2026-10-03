@@ -44,6 +44,8 @@ Where messages go (`tenants.contact_email`) stays set by Alex for now.
 
 The page takes its fonts, texture and colors straight from the family, and its loud moves are modeled on Rustic sections (the marquee band; the Guestbook's pinned paper slips). But its sections (the pinned-prints opening, the taped note, the print wall, the contact slip) are written for this page, not built as family section variants. To give every family its own version, rebuild them the way the store sections are built: one shape per section, a variant per family, picked from the family registry.
 
+Owners on this tier never change the look (Alex, 2026-10-03): they edit words and photos only, and the family and skin are chosen when the site is built. So this job is for our range, not their editing. Do it when the first maker who isn't a Rustic fit signs up.
+
 ## Not in this
 
 The automated signup flow, billing, the price on the pricing page, custom domains. The photo limit is a constant until tiers drive it.
