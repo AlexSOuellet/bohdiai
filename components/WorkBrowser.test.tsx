@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { WORK } from '@/lib/site/work';
 
 // eslint-disable-next-line @next/next/no-img-element -- a plain img stands in for next/image in tests
 vi.mock('next/image', () => ({ default: (p: { alt: string; src: string }) => <img alt={p.alt} src={p.src} /> }));
@@ -26,6 +27,6 @@ describe('WorkBrowser', () => {
 
   it('has one pager button per site', () => {
     render(<WorkBrowser />);
-    expect(screen.getAllByRole('button', { name: /^show /i })).toHaveLength(5);
+    expect(screen.getAllByRole('button', { name: /^show /i })).toHaveLength(WORK.length);
   });
 });

@@ -4,7 +4,7 @@ import path from 'node:path';
 import { WORK, CLIENTS, SAMPLES } from './work';
 
 describe('the work list', () => {
-  it('has two clients then three samples', () => {
+  it('has two clients then four samples', () => {
     expect(CLIENTS.map((w) => w.name)).toEqual([
       'Cut-Pro Lawncare & Construction',
       'Decoupage Digital Designs',
@@ -13,6 +13,7 @@ describe('the work list', () => {
       'Classic Loafs',
       'Twilight to Darkness',
       'Heavenly Scents',
+      'Rustic Rhody',
     ]);
     expect(WORK).toEqual([...CLIENTS, ...SAMPLES]);
     expect(CLIENTS.every((w) => w.kind === 'client')).toBe(true);

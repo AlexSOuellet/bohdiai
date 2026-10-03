@@ -125,6 +125,18 @@ export const SAMPLES: readonly WorkEntry[] = [
     shot: '/work/heavenly-scents.webp',
     testimonials: [],
   },
+  {
+    slug: 'rustic-rhody',
+    name: 'Rustic Rhody',
+    url: 'https://rustic-rhody.bohdiai.com',
+    host: 'rustic-rhody.bohdiai.com',
+    kind: 'sample',
+    category: 'Rustic',
+    blurb: 'Burned-wood flags and signs',
+    features: [],
+    shot: '/work/rustic-rhody.webp',
+    testimonials: [],
+  },
 ];
 
 export const WORK: readonly WorkEntry[] = [...CLIENTS, ...SAMPLES];

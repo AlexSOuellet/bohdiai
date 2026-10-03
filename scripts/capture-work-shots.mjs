@@ -1,4 +1,5 @@
-// Re-capture the bohdiai.com work screenshots: node scripts/capture-work-shots.mjs [slug]
+// Re-capture the bohdiai.com work screenshots: node scripts/capture-work-shots.mjs [slug] [url]
+// Pass a url with the slug to capture a site before it is live (e.g. its local dev address).
 // Headless Chrome at 1440x900, cropped to the top 1440x760 (above cookie banners), saved as WebP
 // in public/work/. Look at every image afterwards — a blank or half-loaded page must not ship.
 import { execFileSync } from 'node:child_process';
@@ -13,6 +14,7 @@ const SITES = {
   'classic-loafs': 'https://classic-loafs.bohdiai.com',
   'twilight-to-darkness': 'https://twilight-to-darkness.bohdiai.com',
   'heavenly-scents': 'https://heavenly-scents.bohdiai.com',
+  'rustic-rhody': 'https://rustic-rhody.bohdiai.com',
 };
 
 const CHROME = [
@@ -23,12 +25,15 @@ const CHROME = [
 if (!CHROME) throw new Error('Chrome not found; set CHROME_PATH');
 
 const only = process.argv[2];
+const urlOverride = process.argv[3];
+if (urlOverride && !only) throw new Error('A url needs a slug in front of it');
 if (only && !(only in SITES)) throw new Error(`Unknown site "${only}". Known: ${Object.keys(SITES).join(', ')}`);
 
 const work = mkdtempSync(path.join(tmpdir(), 'shots-'));
 try {
-  for (const [slug, url] of Object.entries(SITES)) {
+  for (const [slug, siteUrl] of Object.entries(SITES)) {
     if (only && only !== slug) continue;
+    const url = urlOverride ?? siteUrl;
     const png = path.join(work, `${slug}.png`);
     execFileSync(
       CHROME,
