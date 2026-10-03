@@ -167,7 +167,7 @@ describe('uploadProductPhoto', () => {
     insertUpload.mockResolvedValueOnce({ data: null, error: { message: 'down' } });
     removeStored.mockResolvedValueOnce({ data: null, error: { message: 'gone' } });
     expect(await uploadProductPhoto(fd(file('image/png')))).toEqual({ ok: false, error: 'The photo couldn’t be saved. Try again.' });
-    expect(logger.error).toHaveBeenCalledWith('catalog: orphaned stored object', expect.objectContaining({ bucket: 'tenant-media', error: 'gone' }));
+    expect(logger.error).toHaveBeenCalledWith('site photo: orphaned stored object', expect.objectContaining({ path: expect.stringMatching(/^tenant\/t1\/products\//), error: 'gone' }));
   });
 });
 

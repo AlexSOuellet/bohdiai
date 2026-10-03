@@ -13,7 +13,7 @@ import { getSiteFeatures } from '@/lib/backend/site-features';
 import type { FeatureKey } from '@/lib/backend/features';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { shrinkImage } from '@/lib/images/shrink';
+import { storeSitePhoto } from '@/lib/backend/site-photo';
 import { logger } from '@/lib/logger';
 import { slugify, uniqueSlug, slugLookupPrefix } from '@/lib/catalog/slug';
 import { buildProductPayload, type ProductForm } from './product-form';
@@ -26,9 +26,6 @@ const HOME_LIMIT_CODE = 'P0010';
 /** The list's refusal when a sixth product is ticked (the same words the list shows before asking). */
 const HOME_LIMIT = 'Your home page shows up to 5 products. Untick one first.';
 const DIGITAL_OFF = 'Downloads aren’t switched on for this site.';
-const PHOTO_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
-const MAX_PHOTO_BYTES = 20 * 1024 * 1024; // the most the Images binding reads
-const MAX_PHOTO_EDGE = 2400;
 const FILE_TYPES: Readonly<Record<string, string>> = {
   'application/pdf': 'pdf',
   'image/png': 'png',
@@ -123,48 +120,7 @@ export async function duplicateProduct(form: ProductForm): Promise<SaveResult> {
 export async function uploadProductPhoto(formData: FormData): Promise<PhotoResult> {
   const site = await catalogSite();
   if (site === null) return { ok: false, error: CATALOG_OFF };
-  const file = formData.get('file');
-  if (!(file instanceof File) || file.size === 0) return { ok: false, error: 'Pick a photo to upload.' };
-  if (!PHOTO_TYPES.has(file.type)) return { ok: false, error: 'Use a JPG, PNG or WebP photo.' };
-  if (file.size > MAX_PHOTO_BYTES) return { ok: false, error: 'That photo is over 20MB. Pick a smaller one.' };
-
-  let bytes: Uint8Array;
-  try {
-    bytes = await shrinkImage(await file.arrayBuffer(), { maxEdge: MAX_PHOTO_EDGE, format: 'webp', quality: 82 });
-  } catch (err) {
-    logger.warn('catalog: photo shrink failed', { tenantId: site.tenantId, error: String(err) });
-    return { ok: false, error: 'That photo couldn’t be read. Try a different one.' };
-  }
-  const admin = supabaseAdmin();
-  const path = `tenant/${site.tenantId}/products/${crypto.randomUUID()}.webp`;
-  const { error: upErr } = await admin.storage.from('tenant-media').upload(path, bytes, { contentType: 'image/webp', upsert: false });
-  if (upErr !== null) {
-    logger.warn('catalog: photo upload failed', { tenantId: site.tenantId, error: upErr.message });
-    return { ok: false, error: 'The photo couldn’t be uploaded. Try again.' };
-  }
-  const url = admin.storage.from('tenant-media').getPublicUrl(path).data.publicUrl;
-  const { data: row, error: insErr } = await admin
-    .from('uploads')
-    .insert({
-      tenant_id: site.tenantId,
-      uploaded_by_user_id: site.userId,
-      storage_bucket: 'tenant-media',
-      storage_path: path,
-      public_url: url,
-      file_name: file.name.slice(0, 200),
-      mime_type: 'image/webp',
-      size_bytes: bytes.length,
-      source: 'user_upload',
-      status: 'active',
-    })
-    .select('id')
-    .single();
-  if (insErr !== null || row === null) {
-    logger.warn('catalog: photo record failed', { tenantId: site.tenantId, error: insErr?.message });
-    await removeStored(admin, 'tenant-media', path, site.tenantId);
-    return { ok: false, error: 'The photo couldn’t be saved. Try again.' };
-  }
-  return { ok: true, uploadId: row.id, url };
+  return storeSitePhoto({ tenantId: site.tenantId, userId: site.userId, folder: 'products', file: formData.get('file') });
 }
 
 /** A download file, stored privately (plan 1b decision 2). Delivery is piece 2. */

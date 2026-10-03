@@ -37,3 +37,18 @@ describe('catalog in the menu', () => {
     expect(navFor(BACKEND_MODULES, new Set()).map((s) => s.section)).not.toContain('Catalog');
   });
 });
+
+describe('a business card site in the menu', () => {
+  it('shows About you and Gallery under Your site, and no catalog', () => {
+    expect(navFor(BACKEND_MODULES, new Set(['profile', 'gallery']))).toEqual([
+      { section: 'Site', items: [{ label: 'Home', href: '/manage' }] },
+      {
+        section: 'Your site',
+        items: [
+          { label: 'About you', href: '/manage/profile' },
+          { label: 'Gallery', href: '/manage/gallery' },
+        ],
+      },
+    ]);
+  });
+});

@@ -655,6 +655,51 @@ export type Database = {
         }
         Relationships: []
       }
+      gallery_items: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          position: number
+          tenant_id: string
+          updated_at: string
+          upload_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          position: number
+          tenant_id: string
+          updated_at?: string
+          upload_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          position?: number
+          tenant_id?: string
+          updated_at?: string
+          upload_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gallery_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gallery_items_upload_id_fkey"
+            columns: ["upload_id"]
+            isOneToOne: false
+            referencedRelation: "uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       generation_rate_limits: {
         Row: {
           count: number
@@ -1805,6 +1850,53 @@ export type Database = {
             foreignKeyName: "shipments_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_profiles: {
+        Row: {
+          about_title: string | null
+          bio: string | null
+          facebook_url: string | null
+          headline: string | null
+          instagram_url: string | null
+          kicker: string | null
+          phone: string | null
+          signature: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          about_title?: string | null
+          bio?: string | null
+          facebook_url?: string | null
+          headline?: string | null
+          instagram_url?: string | null
+          kicker?: string | null
+          phone?: string | null
+          signature?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          about_title?: string | null
+          bio?: string | null
+          facebook_url?: string | null
+          headline?: string | null
+          instagram_url?: string | null
+          kicker?: string | null
+          phone?: string | null
+          signature?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_profiles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },

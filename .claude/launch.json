@@ -7,6 +7,12 @@
       "runtimeArgs": ["run", "dev"],
       "port": 3000,
       "autoPort": true
+    },
+    {
+      "name": "Mockups",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "http-server", "tmp/mockups", "-p", "4590", "-c-1", "--silent"],
+      "port": 4590
     }
   ]
 }

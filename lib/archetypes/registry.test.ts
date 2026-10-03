@@ -19,4 +19,10 @@ describe('archetype registry', () => {
     expect(archetypeSpec('contractor')?.key).toBe('contractor');
     expect(archetypeMenu().some((s) => s.key === 'contractor')).toBe(false);
   });
+
+  it('renders the business card but never offers it to Bohdi', () => {
+    expect(archetypeSpec('card')?.key).toBe('card');
+    expect(archetypeSpec('card')?.usesCatalog).toBe(false);
+    expect(archetypeMenu().some((s) => s.key === 'card')).toBe(false);
+  });
 });

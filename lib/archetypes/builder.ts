@@ -170,9 +170,9 @@ export interface ArchetypeBuildSpec<T = unknown> {
   renderProduct?(args: { content: unknown; lookKey: string; product: ProductView; mood?: string | undefined; logoUrl?: string | undefined; brandColors?: string[] | undefined; accentOverride?: string | undefined; brandPalette?: BrandPalette | undefined }): ReactElement;
 
   /** Paint a plain content page (legal docs, maker-added pages) in the archetype's
-   *  chrome. Pass `body` for authored paragraphs or `html` for pre-rendered markup
+   *  chrome. `tenantId` lets an archetype whose words live in tables (the card) read them. Pass `body` for authored paragraphs or `html` for pre-rendered markup
    *  (legal docs carry their own headings). Optional. */
-  renderContentPage?(args: { content: unknown; lookKey: string; title?: string | undefined; body?: string[] | undefined; html?: string | undefined; mood?: string | undefined; logoUrl?: string | undefined; brandColors?: string[] | undefined; accentOverride?: string | undefined; brandPalette?: BrandPalette | undefined }): ReactElement;
+  renderContentPage?(args: { content: unknown; lookKey: string; title?: string | undefined; body?: string[] | undefined; html?: string | undefined; mood?: string | undefined; logoUrl?: string | undefined; brandColors?: string[] | undefined; accentOverride?: string | undefined; brandPalette?: BrandPalette | undefined; tenantId?: string | undefined }): ReactElement;
 
   /** Wrap arbitrary children in the archetype's shell (skin bridge + nav + footer).
    *  For functional pages (cart, collections, subscriptions) whose body is bespoke

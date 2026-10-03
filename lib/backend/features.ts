@@ -11,6 +11,8 @@ export const FEATURES = {
   video: { default: false, description: 'One short video per product (Cloudflare Stream)' },
   digital_products: { default: false, description: 'Products or choices sold as downloadable files' },
   custom_domain_panel: { default: true, description: 'Domain status on the home screen and in settings' },
+  profile: { default: false, description: 'About you: the words and contact details on a business card site' },
+  gallery: { default: false, description: 'Gallery photos with captions, in the owner’s order' },
 } as const satisfies Record<string, { default: boolean; description: string }>;
 
 export type FeatureKey = keyof typeof FEATURES;

@@ -2,7 +2,8 @@
  * What each feature contributes to the backend shell (spec §2: nothing assumes a
  * shop). The menu is assembled from the modules whose feature is on; modules with
  * feature null are always present. Later plans append their modules to
- * BACKEND_MODULES (1b adds catalog's Products and Collections; 1d the domain page).
+ * BACKEND_MODULES (1b adds catalog's Products and Collections; the card site adds
+ * About you and Gallery; 1d the domain page).
  */
 import type { FeatureKey } from './features';
 
@@ -20,6 +21,8 @@ export const BACKEND_MODULES: BackendModule[] = [
       { label: 'Collections', href: '/manage/collections' },
     ],
   },
+  { feature: 'profile', section: 'Your site', items: [{ label: 'About you', href: '/manage/profile' }] },
+  { feature: 'gallery', section: 'Your site', items: [{ label: 'Gallery', href: '/manage/gallery' }] },
 ];
 
 export function navFor(modules: readonly BackendModule[], on: ReadonlySet<FeatureKey>): NavSection[] {

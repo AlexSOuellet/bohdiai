@@ -168,7 +168,7 @@ export async function renderArchetypeContentPage(
 ) {
   const a = await resolveEnvelope(tenantId);
   if (a === null || a.spec.renderContentPage === undefined) return null;
-  return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, ...opts, mood: a.mood, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride, brandPalette: a.brandPalette });
+  return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, ...opts, mood: a.mood, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride, brandPalette: a.brandPalette, tenantId });
 }
 
 /** Wrap a functional page's body (cart, subscriptions, etc.) in the tenant's
