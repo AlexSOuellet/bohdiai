@@ -9,11 +9,11 @@ describe('the work list', () => {
       'Cut-Pro Lawncare & Construction',
       'Decoupage Digital Designs',
     ]);
-    expect(SAMPLES.map((w) => w.name)).toEqual([
-      'Classic Loafs',
-      'Twilight to Darkness',
-      'Heavenly Scents',
-      'Rustic Rhody',
+    expect(SAMPLES.map((w) => [w.name, w.plan])).toEqual([
+      ['Rustic Rhody', 'Showcase'],
+      ['Classic Loafs', 'Lite'],
+      ['Twilight to Darkness', 'Full'],
+      ['Heavenly Scents', 'Full'],
     ]);
     expect(WORK).toEqual([...CLIENTS, ...SAMPLES]);
     expect(CLIENTS.every((w) => w.kind === 'client')).toBe(true);

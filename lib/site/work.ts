@@ -25,6 +25,8 @@ export type WorkEntry = {
   features: readonly string[];
   /** Path under public/. */
   shot: string;
+  /** Samples only: which plan the sample shows ("Showcase", "Lite", "Full"). */
+  plan?: string;
   testimonials: readonly Testimonial[];
 };
 
@@ -90,6 +92,19 @@ export const CLIENTS: readonly WorkEntry[] = [
 
 export const SAMPLES: readonly WorkEntry[] = [
   {
+    slug: 'rustic-rhody',
+    name: 'Rustic Rhody',
+    url: 'https://rustic-rhody.bohdiai.com',
+    host: 'rustic-rhody.bohdiai.com',
+    kind: 'sample',
+    category: 'Rustic',
+    blurb: 'Burned-wood flags and signs',
+    features: [],
+    shot: '/work/rustic-rhody.webp',
+    plan: 'Showcase',
+    testimonials: [],
+  },
+  {
     slug: 'classic-loafs',
     name: 'Classic Loafs',
     url: 'https://classic-loafs.bohdiai.com',
@@ -99,6 +114,7 @@ export const SAMPLES: readonly WorkEntry[] = [
     blurb: 'A small-town bakery',
     features: [],
     shot: '/work/classic-loafs.webp',
+    plan: 'Lite',
     testimonials: [],
   },
   {
@@ -111,6 +127,7 @@ export const SAMPLES: readonly WorkEntry[] = [
     blurb: 'Hand-poured candles',
     features: [],
     shot: '/work/twilight-to-darkness.webp',
+    plan: 'Full',
     testimonials: [],
   },
   {
@@ -123,18 +140,7 @@ export const SAMPLES: readonly WorkEntry[] = [
     blurb: 'A floral studio',
     features: [],
     shot: '/work/heavenly-scents.webp',
-    testimonials: [],
-  },
-  {
-    slug: 'rustic-rhody',
-    name: 'Rustic Rhody',
-    url: 'https://rustic-rhody.bohdiai.com',
-    host: 'rustic-rhody.bohdiai.com',
-    kind: 'sample',
-    category: 'Rustic',
-    blurb: 'Burned-wood flags and signs',
-    features: [],
-    shot: '/work/rustic-rhody.webp',
+    plan: 'Full',
     testimonials: [],
   },
 ];

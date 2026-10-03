@@ -126,6 +126,10 @@ export const MainStreetContentSchema = z.object({
      *  absent renders the standard wordmark-left bar; 'split-center' centers the
      *  wordmark with links flanking it. */
     navVariant: z.enum(NAV_VARIANTS).optional(),
+    /** Whether the shop sells online (Maker Full) or not (Maker Lite). Optional —
+     *  absent sells online. Off: no cart in the nav, one photo per product, and
+     *  "Ask about this" (to the contact page) in place of the buy button. */
+    sellsOnline: z.boolean().optional(),
   }),
 
   /** BEAT 1 — the moment is the hero. Held media + a story told one line at a

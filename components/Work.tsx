@@ -157,6 +157,11 @@ export function Work({ audience }: { audience?: Audience } = {}): React.ReactEle
               >
                 <Shot entry={s} sizes="(max-width: 768px) 100vw, 320px" />
                 <div className="mt-4 px-1.5">
+                  {s.plan !== undefined && (
+                    <span className="mb-1.5 inline-block rounded-pill border border-honey-warm/35 bg-honey-warm/[0.08] px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-honey-warm">
+                      {s.plan}
+                    </span>
+                  )}
                   <span className="block font-sans text-[18px] font-medium tracking-[-0.01em] text-text">
                     {s.name}
                   </span>

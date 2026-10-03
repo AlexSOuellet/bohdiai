@@ -29,6 +29,8 @@ export const DEFAULT_STRINGS = {
 
   // ─── Product page ─────────────────────────────────────────────────────────
   productAddToCart: 'Add to cart',
+  /** A shop that doesn't sell online (Maker Lite) asks instead of selling. */
+  productAskAbout: 'Ask about this',
   productSoldOut: 'Sold out',
   productUnavailable: 'Not available',
   productDetailsLabel: 'Details',

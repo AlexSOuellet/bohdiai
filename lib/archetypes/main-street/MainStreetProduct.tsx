@@ -49,6 +49,9 @@ function MediaTile({ media, aspect }: { media: CatalogMedia; aspect: string }) {
   );
 }
 
+/** Where "Ask about this" goes on a shop that doesn't sell online. */
+const ASK_HREF = '/contact';
+
 export function MainStreetProduct({
   content,
   product,
@@ -61,7 +64,9 @@ export function MainStreetProduct({
   family?: Family | undefined;
 }) {
   const primary = product.media[0];
-  const rest = product.media.slice(1);
+  // A shop that doesn't sell online (Maker Lite) shows one photo and asks instead of selling.
+  const sellsOnline = content.identity.sellsOnline !== false;
+  const rest = sellsOnline ? product.media.slice(1) : [];
   const soldOut = product.status === 'sold_out';
 
   return (
@@ -91,23 +96,29 @@ export function MainStreetProduct({
               </Type>
             )}
             {product.variations.length > 0 ? (
-              <ProductOptions variations={product.variations} offers={product.offers ?? []} fallbackPrice={product.price} />
+              <ProductOptions variations={product.variations} offers={product.offers ?? []} fallbackPrice={product.price} askHref={sellsOnline ? undefined : ASK_HREF} />
             ) : (
               <>
                 <Type as="div" role="title" className="ms-product-price">
                   {product.price}
                 </Type>
                 <div className="ms-product-buy">
-                  <Type
-                    as="button"
-                    role="navLabel"
-                    type="button"
-                    disabled={soldOut}
-                    className="ms-product-cta"
-                    data-soldout={soldOut ? 'true' : 'false'}
-                  >
-                    {soldOut ? DEFAULT_STRINGS.productSoldOut : DEFAULT_STRINGS.productAddToCart}
-                  </Type>
+                  {sellsOnline ? (
+                    <Type
+                      as="button"
+                      role="navLabel"
+                      type="button"
+                      disabled={soldOut}
+                      className="ms-product-cta"
+                      data-soldout={soldOut ? 'true' : 'false'}
+                    >
+                      {soldOut ? DEFAULT_STRINGS.productSoldOut : DEFAULT_STRINGS.productAddToCart}
+                    </Type>
+                  ) : (
+                    <Type as="a" role="navLabel" href={ASK_HREF} className="ms-product-cta" data-soldout="false">
+                      {DEFAULT_STRINGS.productAskAbout}
+                    </Type>
+                  )}
                 </div>
               </>
             )}

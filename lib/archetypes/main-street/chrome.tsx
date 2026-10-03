@@ -1526,7 +1526,8 @@ export function Nav({
   currentHref?: string | undefined;
 }) {
   const items = resolveNav();
-  const allItems = [...items, { href: '/cart', label: DEFAULT_STRINGS.navCart }];
+  // A shop that doesn't sell online (Maker Lite) has no cart to link to.
+  const allItems = identity.sellsOnline === false ? [...items] : [...items, { href: '/cart', label: DEFAULT_STRINGS.navCart }];
   const variant = identity.navVariant ?? 'standard';
 
   if (variant === 'split-center') {

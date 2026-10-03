@@ -86,3 +86,12 @@ describe('ProductOptions', () => {
     expect(screen.queryByText('Colour')).toBeNull();
   });
 });
+
+describe('ProductOptions on a shop that does not sell online', () => {
+  it('keeps the choices and prices but asks instead of selling', () => {
+    render(<ProductOptions variations={variations} offers={offers} fallbackPrice="$24" askHref="/contact" />);
+    expect(screen.getByText('$30')).toBeTruthy();
+    expect(screen.getByRole('link', { name: DEFAULT_STRINGS.productAskAbout }).getAttribute('href')).toBe('/contact');
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+});

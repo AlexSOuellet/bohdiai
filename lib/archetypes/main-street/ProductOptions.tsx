@@ -31,10 +31,13 @@ export function ProductOptions({
   variations,
   offers,
   fallbackPrice,
+  askHref,
 }: {
   variations: CatalogVariation[];
   offers: ProductOffer[];
   fallbackPrice: string;
+  /** Set on a shop that doesn't sell online: the buy button becomes "Ask about this" here. */
+  askHref?: string | undefined;
 }) {
   const [choices, setChoices] = useState(() => initialChoices(variations, offers));
   /** Unique per picker, so two on one page never share select ids. */
@@ -71,9 +74,15 @@ export function ProductOptions({
           </div>
         ))}
       <div className="ms-product-buy">
-        <Type as="button" role="navLabel" type="button" disabled={blocked} className="ms-product-cta" data-soldout={blocked ? 'true' : 'false'}>
-          {cta}
-        </Type>
+        {askHref === undefined ? (
+          <Type as="button" role="navLabel" type="button" disabled={blocked} className="ms-product-cta" data-soldout={blocked ? 'true' : 'false'}>
+            {cta}
+          </Type>
+        ) : (
+          <Type as="a" role="navLabel" href={askHref} className="ms-product-cta" data-soldout="false">
+            {DEFAULT_STRINGS.productAskAbout}
+          </Type>
+        )}
       </div>
     </>
   );

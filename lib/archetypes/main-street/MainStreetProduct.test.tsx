@@ -74,3 +74,30 @@ describe('MainStreetProduct options and stock', () => {
     expect(screen.getByRole('button', { name: DEFAULT_STRINGS.productSoldOut })).toBeDisabled();
   });
 });
+
+describe('a shop that does not sell online (Maker Lite)', () => {
+  const lite: MainStreetContent = { ...content, identity: { ...content.identity, sellsOnline: false } };
+  const product: ProductView = {
+    slug: 'belt', name: 'The Belt', price: '$98', description: 'A belt.', status: 'active',
+    media: [
+      { kind: 'image', url: 'https://cdn/1.jpg', alt: 'front' },
+      { kind: 'image', url: 'https://cdn/2.jpg', alt: 'side' },
+    ],
+    variations: [],
+  };
+
+  it('asks instead of selling, shows one photo, and has no cart in the menu', () => {
+    const { container } = render(<MainStreetProduct content={lite} skin={skin} product={product} />);
+    expect(screen.getByRole('link', { name: DEFAULT_STRINGS.productAskAbout }).getAttribute('href')).toBe('/contact');
+    expect(screen.queryByRole('button', { name: DEFAULT_STRINGS.productAddToCart })).toBeNull();
+    expect(container.querySelectorAll('img').length).toBe(1);
+    expect(container.querySelector('a[href="/cart"]')).toBeNull();
+  });
+
+  it('still sells, with every photo and the cart, when the switch is absent', () => {
+    const { container } = render(<MainStreetProduct content={content} skin={skin} product={product} />);
+    expect(screen.getByRole('button', { name: DEFAULT_STRINGS.productAddToCart })).toBeTruthy();
+    expect(container.querySelectorAll('img').length).toBe(2);
+    expect(container.querySelector('a[href="/cart"]')).not.toBeNull();
+  });
+});
