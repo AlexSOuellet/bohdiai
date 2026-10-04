@@ -111,10 +111,10 @@ export function cardCss(p: DerivedPalette, family: Family): string {
 .bc-marquee{position:relative;background:var(--bc-accent);color:var(--bc-on-accent);overflow:hidden;padding:20px 0 26px;transform:rotate(-1.2deg);margin:0 -12px;
   border-block:3px solid var(--bc-fg)}
 .bc-marquee::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:10px;background:var(--bc-bg);-webkit-mask:${TORN} center/100% 100% no-repeat;mask:${TORN} center/100% 100% no-repeat}
-.bc-marquee__row{display:flex;width:max-content;animation:bc-scroll 38s linear infinite}
+.bc-marquee__row{display:flex;width:max-content;animation:bc-scroll 64s linear infinite}
 .bc-marquee__row span{font-family:var(--bc-head);font-size:clamp(34px,5vw,64px);line-height:1;white-space:nowrap;padding-right:.6em}
 .bc-marquee__row span::after{content:"★";padding-left:.6em;font-size:.6em;vertical-align:middle;opacity:.8}
-.bc-marquee__row--quiet{animation-direction:reverse;animation-duration:52s;margin-top:10px;opacity:.75}
+.bc-marquee__row--quiet{animation-direction:reverse;animation-duration:88s;margin-top:10px;opacity:.75}
 .bc-marquee__row--quiet span{font-family:var(--bc-label);font-size:15px;letter-spacing:.2em;text-transform:uppercase;padding-right:2.4em}
 .bc-marquee__row--quiet span::after{content:none}
 
