@@ -15,7 +15,9 @@ import { cardCss } from './styles';
 import { CARD_STRINGS as S } from './strings';
 import { CardGallery } from './CardGallery';
 import { CardContactForm } from './CardContactForm';
-import { bioParagraphs, initials, marqueeWords, ringText, type CardData } from './data';
+import { CardMarquee } from './CardMarquee';
+import { bioParagraphs, initials, marqueeDateLine, marqueeFill, marqueeWords, ringText, type CardData } from './data';
+import { marqueeDatesCss, marqueeDatesSeconds } from './marquee';
 import type { CardPaint } from './paint';
 
 const ABOUT_ID = 'about';
@@ -139,6 +141,13 @@ export function CardLanding({
   const { name, profile: p, photos } = data;
   const wall = photos.slice(0, 3);
   const words = marqueeWords(p.kicker, photos.map((x) => x.caption));
+  const dateLines = data.dates.map(marqueeDateLine);
+  // The quiet row carries the owner's market dates; with none, the business name.
+  const quietFill = marqueeFill(dateLines.length > 0 ? dateLines : [name]);
+  const hasDates = dateLines.length > 0;
+  const quietClass = hasDates ? 'bc-marquee__row bc-marquee__row--quiet bc-marquee__row--dates' : 'bc-marquee__row bc-marquee__row--quiet';
+  // The dates row loops at the big words' speed, timed from both rows' contents.
+  const datesSeconds = hasDates ? marqueeDatesSeconds(words, quietFill.slice(0, quietFill.length / 2)) : null;
   const bio = bioParagraphs(p.bio);
   const hasAbout = p.aboutTitle !== '' || bio.length > 0;
   const hasWork = photos.length > 0;
@@ -195,18 +204,26 @@ export function CardLanding({
       </header>
 
       {words.length > 0 && (
-        <div className="bc-marquee" aria-hidden="true">
+        <CardMarquee>
+          {datesSeconds !== null && <style dangerouslySetInnerHTML={{ __html: marqueeDatesCss(datesSeconds) }} />}
           <div className="bc-marquee__row">
             {[...words, ...words].map((w, i) => (
               <span key={`${i}-${w}`}>{w}</span>
             ))}
           </div>
-          <div className="bc-marquee__row bc-marquee__row--quiet">
-            {Array.from({ length: 12 }, (_, i) => (
-              <span key={i}>{name}</span>
+          <div className={quietClass}>
+            {quietFill.map((w, i) => (
+              <span key={`${i}-${w}`}>{w}</span>
             ))}
           </div>
-        </div>
+        </CardMarquee>
+      )}
+      {hasDates && (
+        <ul className="bc-sr" aria-label={S.dates.label}>
+          {dateLines.map((line, i) => (
+            <li key={`${i}-${line}`}>{line}</li>
+          ))}
+        </ul>
       )}
 
       <main id="main" className="bc-main">

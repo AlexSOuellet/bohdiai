@@ -20,6 +20,7 @@
 import type { DerivedPalette } from '@/lib/color/brand-palette';
 import type { Family } from '@/lib/archetypes/main-street/families';
 import { relativeLuminance } from '@/lib/archetypes/main-street/logo-contrast';
+import { MARQUEE_SECONDS } from './marquee';
 
 const svg = (markup: string): string => `url("data:image/svg+xml,${encodeURIComponent(markup)}")`;
 
@@ -111,12 +112,21 @@ export function cardCss(p: DerivedPalette, family: Family): string {
 .bc-marquee{position:relative;background:var(--bc-accent);color:var(--bc-on-accent);overflow:hidden;padding:20px 0 26px;transform:rotate(-1.2deg);margin:0 -12px;
   border-block:3px solid var(--bc-fg)}
 .bc-marquee::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:10px;background:var(--bc-bg);-webkit-mask:${TORN} center/100% 100% no-repeat;mask:${TORN} center/100% 100% no-repeat}
-.bc-marquee__row{display:flex;width:max-content;animation:bc-scroll 64s linear infinite}
+.bc-marquee__row{display:flex;width:max-content;animation:bc-scroll ${MARQUEE_SECONDS}s linear infinite}
 .bc-marquee__row span{font-family:var(--bc-head);font-size:clamp(34px,5vw,64px);line-height:1;white-space:nowrap;padding-right:.6em}
 .bc-marquee__row span::after{content:"★";padding-left:.6em;font-size:.6em;vertical-align:middle;opacity:.8}
 .bc-marquee__row--quiet{animation-direction:reverse;animation-duration:88s;margin-top:10px;opacity:.75}
 .bc-marquee__row--quiet span{font-family:var(--bc-label);font-size:15px;letter-spacing:.2em;text-transform:uppercase;padding-right:2.4em}
 .bc-marquee__row--quiet span::after{content:none}
+/* Market dates: in the dark ink so they stand apart from the big words. The row's loop time is
+   worked out per site (marqueeDatesSeconds) so the dates travel at the same speed as the words above. */
+.bc-marquee__row--dates{color:var(--bc-fg);opacity:1}
+/* Paused while the pointer is over the band, and held by a click or tap until the next one. */
+.bc-marquee{cursor:pointer}
+.bc-marquee.is-held .bc-marquee__row{animation-play-state:paused}
+@media (hover:hover){.bc-marquee:hover .bc-marquee__row{animation-play-state:paused}}
+.bc-marquee__row--dates span{font-family:var(--bc-body);font-weight:700;font-size:clamp(18px,1.8vw,22px);letter-spacing:.04em;text-transform:none}
+.bc-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
 /* ── About: the pinned note ──────────────── */
 .bc-about{padding-block:var(--bc-band)}

@@ -7,14 +7,16 @@
  * It creates the tenant if missing (status active), uploads every file in --media to
  * tenant-media under tenant/<id>/site/, validates the content against the contractor
  * schema, and writes the published home page. Re-running replaces the content in place.
+ * Every run makes sure Alex's account is an admin of the site (he builds them all).
  * --contact-email sets where estimate requests are emailed (left unchanged if omitted).
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, extname } from 'node:path';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { ContractorContentSchema } from '../lib/archetypes/contractor/schemas';
 import { BrandPaletteSchema } from '../lib/color/brand-palette';
-import type { Json } from '../lib/database.types';
+import type { Database, Json } from '../lib/database.types';
+import { BUILDER_EMAIL, ensureBuilderAccess } from '../lib/backend/builder-access';
 import type * as SiteModule from './sites/cut-pro-lawncare';
 
 const MIME: Record<string, string> = { '.webp': 'image/webp', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.mp4': 'video/mp4' };
@@ -76,6 +78,9 @@ async function main(): Promise<void> {
   } else {
     process.stdout.write(`tenant exists ${tenantId}\n`);
   }
+  const access = await ensureBuilderAccess(db as SupabaseClient<Database>, tenantId);
+  if (!access.ok) fail(`builder access: ${access.error}`);
+  if (access.added) process.stdout.write(`builder login added (${BUILDER_EMAIL})\n`);
   if (contactEmail !== undefined) {
     const { error } = await db.from('tenants').update({ contact_email: contactEmail }).eq('id', tenantId);
     if (error !== null) fail(`contact email update failed: ${error.message}`);

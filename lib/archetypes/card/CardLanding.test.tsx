@@ -24,6 +24,7 @@ const full: CardData = {
     facebookUrl: 'https://www.facebook.com/RhodyStrong',
   },
   photos,
+  dates: [],
 };
 
 afterEach(cleanup);
@@ -72,6 +73,30 @@ describe('business card page', () => {
     expect(words).toHaveLength(4);
   });
 
+  it('runs the business name along the quiet row when there are no market dates', () => {
+    const { container } = page();
+    const quiet = [...container.querySelectorAll('.bc-marquee__row--quiet span')].map((s) => s.textContent);
+    expect(new Set(quiet)).toEqual(new Set(['Rustic Rhody']));
+    expect(quiet).toHaveLength(12);
+    expect(screen.queryByRole('list', { name: S.dates.label })).toBeNull();
+    expect(container.querySelector('.bc-marquee__row--dates')).toBeNull();
+  });
+
+  it('runs the market dates along the quiet row, and lists them for screen readers', () => {
+    const dates = [
+      { id: 'd1', date: '2026-10-11', name: 'Wickford Art Festival', town: 'Wickford' },
+      { id: 'd2', date: '2026-11-01', name: 'Holiday Fair', town: '' },
+    ];
+    const { container } = page({ ...full, dates });
+    const quiet = [...container.querySelectorAll('.bc-marquee__row--quiet span')].map((s) => s.textContent);
+    expect(quiet.slice(0, 2)).toEqual(['Sun Oct 11 · Wickford Art Festival · Wickford', 'Sun Nov 1 · Holiday Fair']);
+    expect(quiet).toHaveLength(12);
+    expect(container.querySelector('.bc-marquee__row--quiet')?.className).toContain('bc-marquee__row--dates');
+    expect(container.querySelector('.bc-marquee style')?.innerHTML).toMatch(/^\.bc-marquee__row--dates\{animation-duration:\d+s\}$/);
+    const list = screen.getByRole('list', { name: S.dates.label });
+    expect(within(list).getAllByRole('listitem').map((li) => li.textContent)).toEqual(quiet.slice(0, 2));
+  });
+
   it('shows all twelve photos in an even grid, captions underneath', () => {
     const { container } = page();
     expect(container.querySelectorAll('.bc-grid > li .bc-tile')).toHaveLength(12);
@@ -107,7 +132,7 @@ describe('business card page', () => {
   });
 
   it('leaves out what the owner hasn’t filled in instead of painting it empty', () => {
-    const { container } = page({ name: 'Frank', profile: EMPTY_PROFILE, photos: [] });
+    const { container } = page({ name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [] });
     expect(container.querySelector('.bc-wall .bc-print')).toBeNull();
     expect(container.querySelector('.bc-marquee')).toBeNull();
     expect(container.querySelector('#about')).toBeNull();
@@ -119,7 +144,7 @@ describe('business card page', () => {
   });
 
   it('drops the form without a tenant id, and the whole section when nothing is left to show', () => {
-    const { container } = render(<CardLanding data={{ name: 'Frank', profile: EMPTY_PROFILE, photos: [] }} paint={paint} tenantId={undefined} />);
+    const { container } = render(<CardLanding data={{ name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [] }} paint={paint} tenantId={undefined} />);
     expect(container.querySelector('#touch')).toBeNull();
   });
 });

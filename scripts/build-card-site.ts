@@ -6,10 +6,11 @@
  *
  * <site> names a module in scripts/sites/ exporting SITE, PROFILE and PHOTOS.
  * Creates the tenant if missing (status active), writes the published home page
- * (archetype "card" in the site's family and skin), switches About you and Gallery on and the
+ * (archetype "card" in the site's family and skin), switches About you, Gallery and Market dates on and the
  * catalog off, and fills About you and the gallery. The owner edits both after,
  * so a re-run leaves them alone unless --replace-profile / --replace-gallery says
- * otherwise. --contact-email sets where the contact form's messages go.
+ * otherwise. --contact-email sets where the contact form's messages go. Every run
+ * makes sure Alex's account is an admin of the site (he builds them all).
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { join, extname } from 'node:path';
@@ -20,6 +21,7 @@ import { buildProfileRow, type ProfileForm } from '../lib/backend/profile/profil
 import { GALLERY_LIMIT, CAPTION_MAX } from '../lib/backend/gallery/gallery-form';
 import { FAMILY_KEYS, FAMILIES, type FamilyKey } from '../lib/archetypes/main-street/families';
 import { cardSkinKey } from '../lib/archetypes/card/paint';
+import { BUILDER_EMAIL, ensureBuilderAccess } from '../lib/backend/builder-access';
 
 export type CardSiteModule = {
   /** Always one of our families: `family` + one of its skins, or the shop's own brand palette. */
@@ -88,16 +90,20 @@ async function main(): Promise<void> {
   } else {
     process.stdout.write(`tenant exists ${tenantId}\n`);
   }
+  const access = await ensureBuilderAccess(db, tenantId);
+  if (!access.ok) fail(`builder access: ${access.error}`);
+  if (access.added) process.stdout.write(`builder login added (${BUILDER_EMAIL})\n`);
   if (contactEmail !== undefined) {
     const { error } = await db.from('tenants').update({ contact_email: contactEmail }).eq('id', tenantId);
     if (error !== null) fail(`contact email update failed: ${error.message}`);
     process.stdout.write(`contact form → ${contactEmail}\n`);
   }
 
-  // 2) Features: About you + Gallery on, the catalog off.
+  // 2) Features: About you, Gallery and Market dates on, the catalog off.
   const { error: featErr } = await db.from('tenant_features').upsert([
     { tenant_id: tenantId, feature_key: 'profile', enabled: true },
     { tenant_id: tenantId, feature_key: 'gallery', enabled: true },
+    { tenant_id: tenantId, feature_key: 'market_dates', enabled: true },
     { tenant_id: tenantId, feature_key: 'catalog', enabled: false },
   ]);
   if (featErr !== null) fail(`features failed: ${featErr.message}`);

@@ -39,6 +39,10 @@ describe('catalog in the menu', () => {
 });
 
 describe('a business card site in the menu', () => {
+  it('adds Market dates under Your site when switched on', () => {
+    expect(navFor(BACKEND_MODULES, new Set(['profile', 'gallery', 'market_dates']))[1]?.items.map((i) => i.label)).toEqual(['About you', 'Gallery', 'Market dates']);
+  });
+
   it('shows About you and Gallery under Your site, and no catalog', () => {
     expect(navFor(BACKEND_MODULES, new Set(['profile', 'gallery']))).toEqual([
       { section: 'Site', items: [{ label: 'Home', href: '/manage' }] },

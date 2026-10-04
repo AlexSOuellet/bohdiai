@@ -9,6 +9,13 @@ export const CARD_STRINGS = {
   seeWork: 'See the work',
   askAbout: 'Get in touch',
   about: { eyebrow: 'About', hand: 'Meet the maker' },
+  dates: {
+    /** Names the screen-reader list of the dates the marquee scrolls. */
+    label: 'Market dates',
+    locale: 'en-US',
+    day: (weekday: string, month: string, day: string) => `${weekday} ${month} ${day}`,
+    line: (when: string, market: string, town: string) => [when, market, town].filter((s) => s !== '').join(' · '),
+  },
   work: {
     eyebrow: 'The work',
     hand: 'Fresh off the bench',
