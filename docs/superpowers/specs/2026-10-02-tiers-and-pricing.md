@@ -36,6 +36,10 @@ For makers who don't sell online or need a catalog: an online place that says wh
 
 **Price:** $5/month or $50/year, built free. Upgrades to Lite are switches.
 
+**2026-10-04 (Alex):** Showcase also gets **market dates, shown only in the marquee's bottom row** (day, market, town; owner-managed, up to 20). Lite keeps the full calendar. Both read the same `events` rows, so an upgrade keeps every date. Alex expects Showcase to be the best seller.
+
+**Pricing page highlight (Alex, 2026-10-04):** never nudge toward Full. The maker page lights up Showcase with a **"Most popular"** badge beside its name (`Plan.badge` in `lib/site/plans.ts`; the badged plan gets the honey edge). Claude flagged that the claim isn't true until Showcase has sales; Alex decided to use it anyway. The contractor page has no highlighted plan.
+
 
 ### Lite
 

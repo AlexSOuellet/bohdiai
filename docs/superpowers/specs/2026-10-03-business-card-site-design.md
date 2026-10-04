@@ -38,7 +38,18 @@ Where messages go (`tenants.contact_email`) stays set by Alex for now.
 
 ## Building one
 
-`scripts/build-card-site.ts <site> --media <dir>`: creates the tenant if missing, writes the envelope, turns `profile` + `gallery` on and `catalog` off, writes the profile, and loads the photos (in order, with captions) into the gallery. The site module lives in `scripts/sites/<site>.ts`. The owner gets in through `scripts/invite-maker.ts`.
+`scripts/build-card-site.ts <site> --media <dir>`: creates the tenant if missing, writes the envelope, turns `profile` + `gallery` on and `catalog` off, writes the profile, and loads the photos (in order, with captions) into the gallery. The site module lives in `scripts/sites/<site>.ts`. The owner gets in through `scripts/invite-maker.ts`. Every run also makes Alex's account (alexsouellet@gmail.com) an admin of the site (`lib/backend/builder-access.ts`; Alex, 2026-10-04: he builds every site, so he has a login to each). The contractor build script does the same.
+
+## Market dates and the marquee (2026-10-04)
+
+- **Market dates** (`market_dates` switch, off by default, on for card sites; `scripts/build-card-site.ts` switches it on). Backend screen `/manage/dates`: add, change, remove; each date is a day, the market's name and an optional town; up to 20. Stored in the existing `events` table (`event_date`, `name`, `location`), which Lite's calendar will also use. Listed earliest first by the market's own day; nothing is hidden by today's date (the owner removes past ones).
+- **The marquee's bottom row** shows the dates as "Sat Oct 17 · Harvest Craft Fair · Wickford" in bold body type and the skin's dark ink; with no dates it shows the business name as before. The dates are also listed as hidden text for screen readers (the band itself is hidden from them).
+- **Speed (Alex):** the big-words row loops in 100s. The dates row's loop time is worked out per site from both rows' contents (`lib/archetypes/card/marquee.ts`) so both rows travel at the same speed.
+- **Pause:** the band pauses while the pointer is over it, and a click or tap holds it paused until the next one (`CardMarquee`).
+
+## Sample sites (2026-10-04)
+
+Sites on bohdiai.com's samples list (`SAMPLES` in `lib/site/work.ts`) carry a fixed dark strip at the top of every page with a red "<Plan> sample" button ("Showcase sample", "Lite sample", "Full sample") linking to the maker plans (`app/storefront/_components/SampleBanner.tsx`). Real client sites can't get it. Fixed site headers sit below it via `--sample-bar-h`. Rustic Rhody's dates are made-up examples, which the banner covers.
 
 ## Later (Alex, 2026-10-03: "we will do that later")
 

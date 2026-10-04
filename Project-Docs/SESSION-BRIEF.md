@@ -10,19 +10,15 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-10-02, Session 91.
+**Last updated:** 2026-10-04, Session 93.
 
 ---
 
 ## Current state
 
-**Session 91 — tiers and prices agreed; pricing pages LIVE with "Talk to us" buttons.** Every plan built free, monthly or yearly; Maker Lite/Full $14.99/$19.99, Contractor Lite/Full $14.99/$29.99 (`docs/superpowers/specs/2026-10-02-tiers-and-pricing.md`). bohdiai.com gets `/makers`, `/contractors`, two doors and a Pricing link; Also live: `/faq`, Pricing + FAQ in the header (phone menu), "Empowered by BohdiAI" in every client-site footer. Stripe pay buttons replace "Talk to us" next. Full recap: `session-logs/session-91.md`.
+**Session 93 — Showcase market dates, sample banners, "Most popular" LIVE.** Showcase owners manage market dates (`/manage/dates`, `events` table); they scroll in the card marquee's bottom row at the big words' speed; the band pauses on hover/tap. The four bohdiai.com samples carry a red "<Plan> sample" banner. The maker pricing page lights up Showcase as "Most popular" (Alex's call). alexsouellet@gmail.com is admin on every site, and the build scripts add it to new ones. Full recap: `session-logs/session-93.md`.
 
-**Session 90 — auto sign-out + maker backend 1b Catalog LIVE.** Owners manage products (photos, options with own price/stock, downloads where switched on, collections, draft/live/archived, home-page picks max 5 from a Home column) and collections; the shop shows it (all photos, option picker, "from $X", sold out, collections from `listing_collections`). Plan: `docs/superpowers/plans/2026-10-01-maker-backend-1b-catalog.md`. Cloudflare turned on "Builds for Preview branches" overnight → deploys failed until Alex switched it off. Full recap: `session-logs/session-90.md`.
-
-**Session 89 — maker backend designed; foundation (1a) live.** Spec: `docs/superpowers/specs/2026-09-30-maker-backend-overview.md` + `...-piece-1-design.md`. Full recap: `session-logs/session-89.md`.
-
-**Session 88 — bohdiai.com rebuilt as a web developer site and LIVE.** Full recap: `session-logs/session-88.md`.
+**Session 91 — tiers and prices agreed; pricing pages LIVE with "Talk to us" buttons.** Every plan built free, monthly or yearly; now whole dollars: Maker Showcase/Lite/Full $5/$15/$20, Contractor Lite/Full $15/$30 (`docs/superpowers/specs/2026-10-02-tiers-and-pricing.md`). bohdiai.com gets `/makers`, `/contractors`, two doors and a Pricing link; Also live: `/faq`, Pricing + FAQ in the header (phone menu), "Empowered by BohdiAI" in every client-site footer. Stripe pay buttons replace "Talk to us" next. Full recap: `session-logs/session-91.md`.
 
 **Session 87 — the whole app now runs on Cloudflare Workers; Vercel serves nothing.** bohdiai.com, www, every shop subdomain and Cut-Pro are all served by the `bohdiai` Worker, verified live (Cut-Pro end to end, including a real photo estimate). `main` is current (fast-forwarded 552 commits). 1364 tests, tsc + lint clean. Runbook + lessons: `Cloudflare-Move.md`.
 
@@ -81,6 +77,7 @@ Full recap: `session-logs/session-87.md`.
 - **Hand-built clients get their own layout, not the maker moods.** Alex had to say "we are NOT using the regular bohdiai formats." Don't drag onboarding/editor/mood/menu machinery into a hand-built site.
 - **Look at processed media before it goes live.** Sample frames across the whole clip; "encoded with 0 errors" shipped smeared garbage once.
 - **Ask before starting the dev server; never alongside the full test suite.** If it chokes, clear `.next/dev/cache` first.
+- **Commit messages via a file on Windows.** PowerShell 5.1 splits an inline message with double quotes into pathspecs; a commit silently failed in Session 93. Use `git commit -F <file>` and check `git log` before merging.
 - **Don't cause side effects Alex didn't ask for.** `seed-editor-test-owner.mjs` resets the password every run — running it "just for the admin row" clobbered his known password. Read what a script does before running it for a narrow purpose.
 
 ---
@@ -89,6 +86,8 @@ Full recap: `session-logs/session-87.md`.
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 93 (2026-10-04): **Showcase market dates in the marquee, marquee pause, red sample banners, Showcase "Most popular", builder login on every site — all LIVE.** Full recap: `session-logs/session-93.md`.
+- Session 92 (2026-10-03): Showcase tier + business card site (Rustic Rhody), whole-dollar prices. No log written; see the business card design and tiers specs.
 - Session 91 (2026-10-02): **Tiers + prices agreed; pricing pages + FAQ LIVE ("Talk to us" until pay buttons).** Full recap: `session-logs/session-91.md`.
 - Session 90 (2026-09-30 → 10-01): **Auto sign-out live; maker backend 1b Catalog live** (products, options, collections, home picks; shop renders them; scroll-reveal bug on tall sections fixed). Full recap: `session-logs/session-90.md`.
 - Session 89 (2026-09-30): **CI green; maker backend designed; foundation (1a) built + live-tested.** Classic Loafs reverted; MCP popups fixed; MY ADMIN deferred. Full recap: `session-logs/session-89.md`.
