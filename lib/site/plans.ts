@@ -20,6 +20,8 @@ export type Plan = {
   yearly: number;
   /** For Full plans, read after "Everything in Lite, plus". */
   includes: readonly string[];
+  /** The one plan a page lights up, with this label beside its name. */
+  badge?: string;
 };
 
 export const PLANS: readonly Plan[] = [
@@ -31,6 +33,7 @@ export const PLANS: readonly Plan[] = [
     forWho: 'For makers who want a real place to show their work',
     monthly: 5,
     yearly: 50,
+    badge: 'Most popular',
     includes: [
       'A one-page site: who you are, what you make, how to reach you',
       'Up to 12 photos of your work, with captions',

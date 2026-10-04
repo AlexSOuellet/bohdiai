@@ -2,7 +2,8 @@
 
 /**
  * The plan cards on a pricing page (two or three), with one Monthly / Yearly
- * switch above them. Showcase and Lite are clear glass; Full is lit with a honey edge. "Talk to us" goes
+ * switch above them. Plans are clear glass; the one plan with a badge (Showcase, "Most popular")
+ * is lit with a honey edge and carries the badge beside its name. "Talk to us" goes
  * to the page's contact form with the plan in the address (Stripe checkout
  * replaces it once staging exists — see the pricing design, step B).
  */
@@ -55,6 +56,7 @@ export function PlanCards({ audience, path }: { audience: Audience; path: Pricin
 
 function PlanCard({ plan, period, path }: { plan: Plan; period: Period; path: PricingPath }): React.ReactElement {
   const full = plan.tier === 'full';
+  const featured = plan.badge !== undefined;
   const price = period === 'monthly' ? plan.monthly : plan.yearly;
   const headingId = `plan-${plan.id}`;
   return (
@@ -62,29 +64,36 @@ function PlanCard({ plan, period, path }: { plan: Plan; period: Period; path: Pr
       aria-labelledby={headingId}
       className={[
         'relative flex flex-col overflow-hidden rounded-[22px] border p-6 backdrop-blur-[20px] md:p-8',
-        full
+        featured
           ? 'border-honey-warm/40 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.85),0_0_80px_-24px_rgba(243,201,122,0.35)] [background:radial-gradient(120%_70%_at_100%_0%,rgba(243,201,122,0.16),transparent_60%),linear-gradient(180deg,rgba(32,24,16,0.92),rgba(12,9,6,0.85))]'
           : 'border-white/10 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.85)] [background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.015))]',
       ].join(' ')}
     >
-      {full && (
+      {featured && (
         <span
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-8 top-0 h-px [background:linear-gradient(90deg,transparent,var(--honey-warm),transparent)]"
         />
       )}
 
-      <h3
-        id={headingId}
-        className={`font-sans text-[22px] font-semibold tracking-[-0.02em] md:text-[24px] ${full ? 'text-honey-warm' : 'text-text'}`}
-      >
-        {plan.name}
-      </h3>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <h3
+          id={headingId}
+          className={`font-sans text-[22px] font-semibold tracking-[-0.02em] md:text-[24px] ${featured ? 'text-honey-warm' : 'text-text'}`}
+        >
+          {plan.name}
+        </h3>
+        {plan.badge !== undefined && (
+          <span className="rounded-pill bg-honey-warm px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-bg shadow-[0_0_20px_-4px_rgba(243,201,122,0.7)]">
+            {plan.badge}
+          </span>
+        )}
+      </div>
       <p className="mt-1.5 min-h-[2.6em] text-[14px] leading-[1.45] text-muted md:text-[15px]">{plan.forWho}</p>
 
       <div className="mt-6 flex items-baseline gap-2">
         <span
-          className={`font-sans text-[52px] font-semibold leading-none tracking-[-0.045em] md:text-[64px] ${full ? 'text-text [text-shadow:0_0_40px_rgba(243,201,122,0.35)]' : 'text-text-soft'}`}
+          className={`font-sans text-[52px] font-semibold leading-none tracking-[-0.045em] md:text-[64px] ${featured ? 'text-text [text-shadow:0_0_40px_rgba(243,201,122,0.35)]' : 'text-text-soft'}`}
         >
           {formatPrice(price)}
         </span>
@@ -110,7 +119,7 @@ function PlanCard({ plan, period, path }: { plan: Plan; period: Period; path: Pr
         href={{ pathname: path, query: { plan: plan.id }, hash: 'contact' }}
         className={[
           'mt-8 inline-flex items-center justify-center gap-2 rounded-pill px-6 py-3.5 text-[14px] font-semibold no-underline transition-transform hover:-translate-y-px',
-          full ? 'bg-honey-warm text-bg shadow-[0_10px_40px_-10px_rgba(243,201,122,0.7)]' : 'bg-text text-bg',
+          featured ? 'bg-honey-warm text-bg shadow-[0_10px_40px_-10px_rgba(243,201,122,0.7)]' : 'bg-text text-bg',
         ].join(' ')}
       >
         Talk to us →

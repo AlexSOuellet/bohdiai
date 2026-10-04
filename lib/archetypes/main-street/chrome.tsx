@@ -274,7 +274,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     /* ── sub-page shell — class-only; the two contrast surfaces mirror navContrast's
        fixed chrome states (like the on-media color), keyed on a data attribute so
        the header never carries an inline style. ── */
-    .arch-main-street .ms-subheader{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;justify-content:space-between;align-items:center;gap:24px;padding:14px 40px;border-bottom:1px solid var(--ms-rule);background:var(--ms-bg);color:var(--ms-fg);flex-wrap:wrap}
+    .arch-main-street .ms-subheader{position:fixed;top:var(--sample-bar-h,0px);left:0;right:0;z-index:50;display:flex;justify-content:space-between;align-items:center;gap:24px;padding:14px 40px;border-bottom:1px solid var(--ms-rule);background:var(--ms-bg);color:var(--ms-fg);flex-wrap:wrap}
     .arch-main-street .ms-subheader[data-ms-subhead="light"]{background:#F7F5F2;color:#1a1a1a}
     .arch-main-street .ms-subheader[data-ms-subhead="dark"]{background:#1b1b1b;color:#F7F5F2}
     @media(max-width:768px){.arch-main-street .ms-subheader{padding-left:20px;padding-right:20px}}
@@ -1187,7 +1187,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
        when the visitor scrolls past the hero, the nav's background flips from the
        over-media wash to a solid surface — driven by CSS variables set inline on the
        nav (--ms-nav-bg / --ms-nav-fg / --ms-nav-shadow), NEVER hardcoded properties. */
-    .arch-main-street .ms-momenthero-nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 40px;background:var(--ms-nav-bg,transparent);color:var(--ms-nav-fg,var(--ms-on-media));box-shadow:var(--ms-nav-shadow,none);transition:background .5s ease,padding .5s ease,color .5s ease}
+    .arch-main-street .ms-momenthero-nav{position:fixed;top:var(--sample-bar-h,0px);left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 40px;background:var(--ms-nav-bg,transparent);color:var(--ms-nav-fg,var(--ms-on-media));box-shadow:var(--ms-nav-shadow,none);transition:background .5s ease,padding .5s ease,color .5s ease}
     .arch-main-street .ms-momenthero{position:relative;min-height:100vh;overflow:hidden;background:var(--ms-contrast-bg);color:var(--ms-on-media)}
     .arch-main-street .ms-momenthero-mediaframe{position:absolute;inset:0;z-index:0;transform-origin:center}
     .arch-main-street .ms-momenthero-mediaframe--push{animation:ms-hero-push 24s ease-in-out infinite alternate}

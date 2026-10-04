@@ -19,6 +19,16 @@ describe('PlanCards', () => {
     expect(screen.queryByText(/contractor/i)).toBeNull();
   });
 
+  it('lights up only the badged plan, with its badge beside the name', () => {
+    render(<PlanCards audience="maker" path="/makers" />);
+    const showcase = screen.getByRole('article', { name: 'Maker Showcase' });
+    const full = screen.getByRole('article', { name: 'Maker Full' });
+    expect(within(showcase).getByText('Most popular')).toBeTruthy();
+    expect(showcase.className).toContain('border-honey-warm/40');
+    expect(full.className).not.toContain('border-honey-warm/40');
+    expect(within(full).queryByText('Most popular')).toBeNull();
+  });
+
   it('switches both cards to the yearly price', async () => {
     render(<PlanCards audience="contractor" path="/contractors" />);
     await userEvent.setup().click(screen.getByRole('radio', { name: /yearly/i }));
