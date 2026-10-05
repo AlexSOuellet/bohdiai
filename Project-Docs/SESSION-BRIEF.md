@@ -10,7 +10,7 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-10-04, Session 93.
+**Last updated:** 2026-10-05, Session 94.
 
 ---
 
@@ -18,7 +18,7 @@
 
 **Session 93 — Showcase market dates, sample banners, "Most popular" LIVE.** Showcase owners manage market dates (`/manage/dates`, `events` table); they scroll in the card marquee's bottom row at the big words' speed; the band pauses on hover/tap. The four bohdiai.com samples carry a red "<Plan> sample" banner. The maker pricing page lights up Showcase as "Most popular" (Alex's call). alexsouellet@gmail.com is admin on every site, and the build scripts add it to new ones. Full recap: `session-logs/session-93.md`.
 
-**Session 91 — tiers and prices agreed; pricing pages LIVE with "Talk to us" buttons.** Every plan built free, monthly or yearly; now whole dollars: Maker Showcase/Lite/Full $5/$15/$20, Contractor Lite/Full $15/$30 (`docs/superpowers/specs/2026-10-02-tiers-and-pricing.md`). bohdiai.com gets `/makers`, `/contractors`, two doors and a Pricing link; Also live: `/faq`, Pricing + FAQ in the header (phone menu), "Empowered by BohdiAI" in every client-site footer. Stripe pay buttons replace "Talk to us" next. Full recap: `session-logs/session-91.md`.
+**Session 94 — card sites get designs; Rustic Rhody is a bulletin board, LIVE.** The card envelope's content names a `design` (`pinned` when it names none). The new `bulletin` design is a kraft flyer on a barn wall, carried over from the agreed mockup and checked side by side against it before Alex looked. About you gains "What I make" (`site_profiles.makes`, up to 3 phrases). Rule retracted: client sites no longer have to use the families. Next designs: the show reel, then the torch (mockups in `tmp/mockups/flyer/`). Spec `docs/superpowers/specs/2026-10-05-card-bulletin-design.md`; recap `session-logs/session-94.md`.
 
 **Session 87 — the whole app now runs on Cloudflare Workers; Vercel serves nothing.** bohdiai.com, www, every shop subdomain and Cut-Pro are all served by the `bohdiai` Worker, verified live (Cut-Pro end to end, including a real photo estimate). `main` is current (fast-forwarded 552 commits). 1364 tests, tsc + lint clean. Runbook + lessons: `Cloudflare-Move.md`.
 
@@ -86,6 +86,7 @@ Full recap: `session-logs/session-87.md`.
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 94 (2026-10-05): **Bulletin board design for card sites; Rustic Rhody switched, LIVE.** What I make field. Full recap: `session-logs/session-94.md`.
 - Session 93 (2026-10-04): **Showcase market dates in the marquee, marquee pause, red sample banners, Showcase "Most popular", builder login on every site — all LIVE.** Full recap: `session-logs/session-93.md`.
 - Session 92 (2026-10-03): Showcase tier + business card site (Rustic Rhody), whole-dollar prices. No log written; see the business card design and tiers specs.
 - Session 91 (2026-10-02): **Tiers + prices agreed; pricing pages + FAQ LIVE ("Talk to us" until pay buttons).** Full recap: `session-logs/session-91.md`.
