@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { CLIENTS, SAMPLES } from '../lib/site/work';
+import { CLIENTS, LISTED_SAMPLES } from '../lib/site/work';
 import { CONTACT_METHOD_LABELS, INQUIRY_KIND_LABELS, PHONE_NEEDED_ERROR } from '../lib/inquiry/request';
 import { SITE_CONTACT_EMAIL } from '../lib/site/contact';
 
@@ -34,7 +34,7 @@ test.describe('Work section', () => {
   test('every sample links to its shop and is labelled as a sample', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByText(/sample shops made to show range, not real businesses/i)).toBeVisible();
-    for (const sample of SAMPLES) {
+    for (const sample of LISTED_SAMPLES) {
       await expect(page.locator(`#work a[href="${sample.url}"]`)).toContainText(sample.name);
     }
   });
