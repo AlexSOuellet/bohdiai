@@ -1,9 +1,9 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import { unstable_rethrow } from 'next/navigation';
 import { saveProfile } from '@/lib/backend/profile/actions';
-import { buildProfileRow, PROFILE_LIMITS, type ProfileForm } from '@/lib/backend/profile/profile-form';
+import { buildProfileRow, MAKE_MAX, MAKES_LIMIT, PROFILE_LIMITS, type ProfileForm } from '@/lib/backend/profile/profile-form';
 import { useNotice } from '../_components/Notice';
 
 const FAILED = 'Something went wrong. Check your connection and try again.';
@@ -18,11 +18,14 @@ const TEXT_FIELDS: { key: TextKey; label: string; hint: string; long?: boolean }
   { key: 'signature', label: 'Sign-off name', hint: 'The name your story is signed with, like your first name.' },
 ];
 
+/** The form always holds three What I make slots; blanks are dropped on save. */
+const withSlots = (f: ProfileForm): ProfileForm => ({ ...f, makes: Array.from({ length: MAKES_LIMIT }, (_, i) => f.makes[i] ?? '') });
+
 /** About you: the words on the business card and how people reach the owner. One
  *  form, one Save; every failure lands in the notice at the top. */
 export function ProfileEditor({ initial, siteUrl }: { initial: ProfileForm; siteUrl: string }): React.ReactElement {
-  const [form, setForm] = useState(initial);
-  const [saved, setSaved] = useState(initial);
+  const [form, setForm] = useState(() => withSlots(initial));
+  const [saved, setSaved] = useState(() => withSlots(initial));
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
   const notice = useNotice();
@@ -32,6 +35,8 @@ export function ProfileEditor({ initial, siteUrl }: { initial: ProfileForm; site
     setForm((f) => ({ ...f, ...patch }));
     notice.clearSaved();
   };
+
+  const setMake = (i: number, value: string): void => update({ makes: form.makes.map((m, j) => (j === i ? value : m)) });
 
   async function save(): Promise<void> {
     if (inFlight.current) return;
@@ -80,7 +85,8 @@ export function ProfileEditor({ initial, siteUrl }: { initial: ProfileForm; site
             const id = `p-${key}`;
             const used = form[key].length;
             return (
-              <div className="bk-field" key={key}>
+              <Fragment key={key}>
+              <div className="bk-field">
                 <label htmlFor={id} className="bk-label">
                   {label}
                 </label>
@@ -93,6 +99,18 @@ export function ProfileEditor({ initial, siteUrl }: { initial: ProfileForm; site
                   {hint} {used}/{PROFILE_LIMITS[key]}
                 </p>
               </div>
+              {key === 'headline' && (
+                <fieldset className="bk-field" aria-describedby="p-makes-hint">
+                  <legend className="bk-label">What I make</legend>
+                  {form.makes.map((m, i) => (
+                    <input key={i} id={`p-make-${i}`} className="bk-input" aria-label={`Thing you make ${i + 1}`} maxLength={MAKE_MAX} value={m} onChange={(e) => setMake(i, e.target.value)} />
+                  ))}
+                  <p id="p-makes-hint" className="bk-note">
+                    Up to {MAKES_LIMIT} short things, like “Carved signs”. Some designs show them under your name.
+                  </p>
+                </fieldset>
+              )}
+              </Fragment>
             );
           })}
         </section>

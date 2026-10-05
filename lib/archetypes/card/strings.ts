@@ -47,6 +47,15 @@ export const CARD_STRINGS = {
     /** Label on the hidden spam trap — never seen by people. */
     honeypot: 'Company',
   },
+  /** The bulletin board design's own words (the maker's words still come from About you). */
+  bulletin: {
+    findMe: 'Find me at',
+    more: 'More off the bench',
+    aboutFallback: 'A little about me',
+    touch: 'Tell me about it',
+    tabs: 'Tear-off tabs',
+    tab: (signature: string) => (signature === '' ? 'Message me' : `Message ${signature}`),
+  },
   footer: {
     label: 'Site links',
     privacy: 'Privacy',

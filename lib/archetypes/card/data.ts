@@ -31,13 +31,18 @@ export async function loadCardData(db: SupabaseClient<Database>, tenantId: strin
   return { name: tenant.data.business_name, profile: profileFormFromRow(profile.data), photos: photos.slice(0, GALLERY_LIMIT), dates };
 }
 
-/** One market date as the marquee says it: "Sat Oct 11 · Wickford Art Festival · Wickford". */
-export function marqueeDateLine(d: MarketDate): string {
+/** A market's day as the site says it: "Sat Oct 11", read on the market's own date. */
+export function marketDay(d: MarketDate): string {
   const parts = new Intl.DateTimeFormat(S.dates.locale, { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).formatToParts(
     new Date(`${d.date}T00:00:00Z`),
   );
   const part = (type: Intl.DateTimeFormatPartTypes): string => parts.find((p) => p.type === type)?.value ?? '';
-  return S.dates.line(S.dates.day(part('weekday'), part('month'), part('day')), d.name, d.town);
+  return S.dates.day(part('weekday'), part('month'), part('day'));
+}
+
+/** One market date as the marquee says it: "Sat Oct 11 · Wickford Art Festival · Wickford". */
+export function marqueeDateLine(d: MarketDate): string {
+  return S.dates.line(marketDay(d), d.name, d.town);
 }
 
 /** Enough copies of the bottom row's items to fill a wide screen, always an even

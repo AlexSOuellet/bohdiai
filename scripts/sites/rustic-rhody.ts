@@ -10,7 +10,8 @@ import type { CardSiteModule } from '../build-card-site';
 export const SITE: CardSiteModule['SITE'] = {
   subdomain: 'rustic-rhody',
   businessName: 'Rustic Rhody',
-  // The Rustic family, in its light Sawdust skin (kraft ground, barnwood type, rust accent).
+  // The bulletin board design (its own look). Family and skin stay for the pinned prints design.
+  design: 'bulletin',
   family: 'rustic',
   skin: 'main-street-sawdust',
 };
@@ -25,6 +26,7 @@ export const PROFILE: ProfileForm = {
     'Most of what I build is custom: a Marine emblem for a homecoming, a team logo for the den, a family name over the door. If it matters to you, tell me about it.',
   ].join('\n\n'),
   signature: 'Alex',
+  makes: ['Burned-wood flags', 'Carved signs', 'Custom work'],
   phone: '',
   facebookUrl: 'https://www.facebook.com/RhodyStrong',
   instagramUrl: '',

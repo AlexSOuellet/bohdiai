@@ -50,6 +50,16 @@ describe('ProfileEditor', () => {
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('Something went wrong. Check your connection and try again.'));
   });
 
+  it('edits the three things the maker makes and saves them', async () => {
+    render(<ProfileEditor initial={{ ...EMPTY_PROFILE, makes: ['Burned-wood flags'] }} siteUrl="https://rustic-rhody.bohdiai.com" />);
+    expect((screen.getByLabelText('Thing you make 1') as HTMLInputElement).value).toBe('Burned-wood flags');
+    expect((screen.getByLabelText('Thing you make 3') as HTMLInputElement).value).toBe('');
+    fireEvent.change(screen.getByLabelText('Thing you make 2'), { target: { value: 'Carved signs' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(saveProfile).toHaveBeenCalled());
+    expect(saveProfile.mock.calls[0]?.[0].makes).toEqual(['Burned-wood flags', 'Carved signs', '']);
+  });
+
   it('counts characters against each limit and links to the live site', () => {
     editor();
     expect(screen.getByText(/One sentence under your name.*3\/160/)).toBeTruthy();

@@ -1,7 +1,7 @@
 # Card Site, Bulletin Board Design
 
 **Date:** 2026-10-05 (Session 94)
-**Status:** Agreed with Alex ("ok"). Rustic Rhody is the first site to use it.
+**Status:** Agreed with Alex ("ok"); built and approved ("looks good", 2026-10-05). Rustic Rhody is the first site to use it.
 **Mockup (the spec for the look):** `tmp/mockups/flyer/a-bulletin.html`, with reference shots in `tmp/mockups/flyer/shots/`.
 **Related:** `2026-10-03-business-card-site-design.md`, the card site this adds a design to.
 

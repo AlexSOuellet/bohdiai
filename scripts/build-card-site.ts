@@ -6,7 +6,7 @@
  *
  * <site> names a module in scripts/sites/ exporting SITE, PROFILE and PHOTOS.
  * Creates the tenant if missing (status active), writes the published home page
- * (archetype "card" in the site's family and skin), switches About you, Gallery and Market dates on and the
+ * (archetype "card": its design, and its family and skin), switches About you, Gallery and Market dates on and the
  * catalog off, and fills About you and the gallery. The owner edits both after,
  * so a re-run leaves them alone unless --replace-profile / --replace-gallery says
  * otherwise. --contact-email sets where the contact form's messages go. Every run
@@ -21,11 +21,13 @@ import { buildProfileRow, type ProfileForm } from '../lib/backend/profile/profil
 import { GALLERY_LIMIT, CAPTION_MAX } from '../lib/backend/gallery/gallery-form';
 import { FAMILY_KEYS, FAMILIES, type FamilyKey } from '../lib/archetypes/main-street/families';
 import { cardSkinKey } from '../lib/archetypes/card/paint';
+import { CARD_DESIGNS, type CardDesign } from '../lib/archetypes/card/design';
 import { BUILDER_EMAIL, ensureBuilderAccess } from '../lib/backend/builder-access';
 
 export type CardSiteModule = {
-  /** Always one of our families: `family` + one of its skins, or the shop's own brand palette. */
-  SITE: { subdomain: string; businessName: string; family: FamilyKey; skin: string; brandPalette?: BrandPalette };
+  /** `design` picks the page (pinned prints when left out). Pinned prints paint in
+   *  `family` + one of its skins, or the shop's own brand palette. */
+  SITE: { subdomain: string; businessName: string; design?: CardDesign; family: FamilyKey; skin: string; brandPalette?: BrandPalette };
   PROFILE: ProfileForm;
   PHOTOS: { file: string; caption: string }[];
 };
@@ -52,6 +54,7 @@ async function main(): Promise<void> {
   if (siteKey === undefined || mediaDir === undefined) fail('usage: build-card-site.ts <site> --media <dir> [--contact-email x] [--replace-profile] [--replace-gallery] [--dry]');
 
   const site = (await import(`./sites/${siteKey}.ts`)) as CardSiteModule;
+  if (site.SITE.design !== undefined && !(CARD_DESIGNS as readonly string[]).includes(site.SITE.design)) fail(`unknown design: ${site.SITE.design}`);
   if (!(FAMILY_KEYS as readonly string[]).includes(site.SITE.family)) fail(`unknown family: ${site.SITE.family}`);
   if (cardSkinKey(FAMILIES[site.SITE.family], site.SITE.skin) !== site.SITE.skin) fail(`skin ${site.SITE.skin} isn't one of the ${site.SITE.family} family's skins`);
   if (site.SITE.brandPalette !== undefined && !BrandPaletteSchema.safeParse(site.SITE.brandPalette).success) fail('site brandPalette is invalid');
@@ -110,7 +113,7 @@ async function main(): Promise<void> {
 
   // 3) The published home page — the card envelope, replaced in place on re-runs.
   const tree = {
-    root: { kind: 'archetype', archetypeKey: 'card', lookKey: site.SITE.skin, mood: site.SITE.family, accentOverride: null, brandPalette: site.SITE.brandPalette ?? null, content: {} },
+    root: { kind: 'archetype', archetypeKey: 'card', lookKey: site.SITE.skin, mood: site.SITE.family, accentOverride: null, brandPalette: site.SITE.brandPalette ?? null, content: site.SITE.design === undefined ? {} : { design: site.SITE.design } },
     meta: { title: site.SITE.businessName },
   } as unknown as Json;
   const { data: home, error: hErr } = await db.from('content_pages').select('id').eq('tenant_id', tenantId).eq('slug', '/').maybeSingle();

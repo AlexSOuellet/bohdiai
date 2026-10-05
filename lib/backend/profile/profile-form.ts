@@ -10,6 +10,8 @@ export type ProfileForm = {
   aboutTitle: string;
   bio: string;
   signature: string;
+  /** What I make: up to three short phrases (the bulletin board's strip). */
+  makes: string[];
   phone: string;
   facebookUrl: string;
   instagramUrl: string;
@@ -21,6 +23,7 @@ export type ProfileRow = {
   about_title: string | null;
   bio: string | null;
   signature: string | null;
+  makes: string[] | null;
   phone: string | null;
   facebook_url: string | null;
   instagram_url: string | null;
@@ -28,12 +31,17 @@ export type ProfileRow = {
 
 export const PROFILE_LIMITS = { kicker: 60, headline: 160, aboutTitle: 80, bio: 1500, signature: 40 } as const;
 
+/** What I make: how many phrases, and how long each may be. */
+export const MAKES_LIMIT = 3;
+export const MAKE_MAX = 30;
+
 export const EMPTY_PROFILE: ProfileForm = {
   kicker: '',
   headline: '',
   aboutTitle: '',
   bio: '',
   signature: '',
+  makes: [],
   phone: '',
   facebookUrl: '',
   instagramUrl: '',
@@ -91,6 +99,11 @@ export function buildProfileRow(form: ProfileForm): { ok: true; row: ProfileRow 
     }
   }
 
+  const makes = form.makes.map((m) => m.trim().replace(/\s+/g, ' ')).filter((m) => m !== '');
+  if (makes.length > MAKES_LIMIT) return { ok: false, error: `List up to ${MAKES_LIMIT} things you make.` };
+  const tooLong = makes.find((m) => m.length > MAKE_MAX);
+  if (tooLong !== undefined) return { ok: false, error: `“${tooLong}” is ${tooLong.length} characters. Keep each thing you make to ${MAKE_MAX}.` };
+
   const phone = form.phone.trim().replace(/\s+/g, ' ');
   const digits = phone.replace(/\D/g, '');
   if (phone !== '' && (digits.length < 7 || digits.length > 15 || !/^[0-9+()\-. ]+$/.test(phone))) {
@@ -110,6 +123,7 @@ export function buildProfileRow(form: ProfileForm): { ok: true; row: ProfileRow 
       about_title: orNull(t.aboutTitle),
       bio: orNull(t.bio),
       signature: orNull(t.signature),
+      makes: makes.length === 0 ? null : makes,
       phone: orNull(phone),
       facebook_url: facebook,
       instagram_url: instagram,
@@ -125,6 +139,7 @@ export function profileFormFromRow(row: ProfileRow | null): ProfileForm {
     aboutTitle: row.about_title ?? '',
     bio: row.bio ?? '',
     signature: row.signature ?? '',
+    makes: row.makes ?? [],
     phone: row.phone ?? '',
     facebookUrl: row.facebook_url ?? '',
     instagramUrl: row.instagram_url ?? '',

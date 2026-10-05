@@ -8,7 +8,7 @@ describe('buildProfileRow', () => {
     const r = buildProfileRow(form());
     expect(r).toEqual({
       ok: true,
-      row: { kicker: null, headline: null, about_title: null, bio: null, signature: null, phone: null, facebook_url: null, instagram_url: null },
+      row: { kicker: null, headline: null, about_title: null, bio: null, signature: null, makes: null, phone: null, facebook_url: null, instagram_url: null },
     });
   });
 
@@ -24,6 +24,20 @@ describe('buildProfileRow', () => {
       error: 'The short line above your name is 61 characters. Keep it to 60.',
     });
     expect(buildProfileRow(form({ bio: 'y'.repeat(1501) })).ok).toBe(false);
+  });
+
+  it('keeps up to three things the maker makes, trimmed, blanks dropped', () => {
+    const r = buildProfileRow(form({ makes: ['  Burned-wood   flags ', '', 'Carved signs'] }));
+    expect(r.ok && r.row.makes).toEqual(['Burned-wood flags', 'Carved signs']);
+    expect(buildProfileRow(form({ makes: ['', ' '] }))).toMatchObject({ ok: true, row: { makes: null } });
+  });
+
+  it('refuses more than three things, or one that is too long', () => {
+    expect(buildProfileRow(form({ makes: ['a', 'b', 'c', 'd'] }))).toEqual({ ok: false, error: 'List up to 3 things you make.' });
+    expect(buildProfileRow(form({ makes: ['x'.repeat(31)] }))).toEqual({
+      ok: false,
+      error: `“${'x'.repeat(31)}” is 31 characters. Keep each thing you make to 30.`,
+    });
   });
 
   it('accepts common phone formats and refuses non-numbers', () => {
@@ -63,9 +77,9 @@ describe('profileFormFromRow', () => {
     expect(profileFormFromRow(null)).toEqual(EMPTY_PROFILE);
   });
   it('round-trips a saved row', () => {
-    const r = buildProfileRow(form({ kicker: 'Handmade in Rhode Island', phone: '(401) 555-0100' }));
+    const r = buildProfileRow(form({ kicker: 'Handmade in Rhode Island', phone: '(401) 555-0100', makes: ['Carved signs'] }));
     if (!r.ok) throw new Error('expected ok');
-    expect(profileFormFromRow(r.row)).toEqual(form({ kicker: 'Handmade in Rhode Island', phone: '(401) 555-0100' }));
+    expect(profileFormFromRow(r.row)).toEqual(form({ kicker: 'Handmade in Rhode Island', phone: '(401) 555-0100', makes: ['Carved signs'] }));
   });
 });
 

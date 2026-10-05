@@ -1863,6 +1863,7 @@ export type Database = {
           headline: string | null
           instagram_url: string | null
           kicker: string | null
+          makes: string[] | null
           phone: string | null
           signature: string | null
           tenant_id: string
@@ -1875,6 +1876,7 @@ export type Database = {
           headline?: string | null
           instagram_url?: string | null
           kicker?: string | null
+          makes?: string[] | null
           phone?: string | null
           signature?: string | null
           tenant_id: string
@@ -1887,6 +1889,7 @@ export type Database = {
           headline?: string | null
           instagram_url?: string | null
           kicker?: string | null
+          makes?: string[] | null
           phone?: string | null
           signature?: string | null
           tenant_id?: string
@@ -2472,6 +2475,7 @@ export type Database = {
         Args: { p_listing_id: string; p_on_home: boolean; p_tenant_id: string }
         Returns: undefined
       }
+      site_profile_makes_ok: { Args: { makes: string[] }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
