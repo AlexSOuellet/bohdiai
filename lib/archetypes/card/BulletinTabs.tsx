@@ -19,7 +19,7 @@ export function BulletinTabs({ target }: { target: TabTarget }): ReactElement {
   const [torn, setTorn] = useState<ReadonlySet<number>>(() => new Set());
 
   function onTear(e: MouseEvent<HTMLAnchorElement>, i: number): void {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (typeof window.matchMedia !== 'function' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     e.preventDefault();
     setTorn((t) => new Set(t).add(i));
     window.setTimeout(() => {

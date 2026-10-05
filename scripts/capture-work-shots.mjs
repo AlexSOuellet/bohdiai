@@ -15,6 +15,8 @@ const SITES = {
   'twilight-to-darkness': 'https://twilight-to-darkness.bohdiai.com',
   'heavenly-scents': 'https://heavenly-scents.bohdiai.com',
   'rustic-rhody': 'https://rustic-rhody.bohdiai.com',
+  'paper-and-patina': 'https://paper-and-patina.bohdiai.com',
+  'ember-and-pine': 'https://ember-and-pine.bohdiai.com',
 };
 
 const CHROME = [

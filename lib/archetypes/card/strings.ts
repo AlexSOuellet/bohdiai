@@ -56,6 +56,27 @@ export const CARD_STRINGS = {
     tabs: 'Tear-off tabs',
     tab: (signature: string) => (signature === '' ? 'Message me' : `Message ${signature}`),
   },
+  /** The show reel design's own words. */
+  showreel: {
+    seeWork: 'See the work ↓',
+    piece: (n: number) => `No. ${String(n).padStart(2, '0')}`,
+    findMe: 'Find me',
+    touch: 'Tell me about it',
+    lede: 'Something in mind? Send me a note and I’ll get back to you.',
+    datesLabel: 'Market dates',
+  },
+  /** The torch design's own words. */
+  torch: {
+    about: 'About',
+    work: 'The work',
+    workTitle: 'Off the bench',
+    find: 'Find me at',
+    findTitle: 'On the road',
+    touch: 'Get in touch',
+    touchTitle: 'Tell me about it',
+    lede: 'Something you’d like made? Send me a note and I’ll get back to you.',
+    scroll: 'Scroll',
+  },
   footer: {
     label: 'Site links',
     privacy: 'Privacy',

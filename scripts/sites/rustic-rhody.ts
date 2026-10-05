@@ -28,7 +28,8 @@ export const PROFILE: ProfileForm = {
   signature: 'Alex',
   makes: ['Burned-wood flags', 'Carved signs', 'Custom work'],
   phone: '',
-  facebookUrl: 'https://www.facebook.com/RhodyStrong',
+  // Sample sites point their Facebook button at BohdiAI's own page (Alex, 2026-10-05).
+  facebookUrl: 'https://www.facebook.com/Bohdiai/',
   instagramUrl: '',
 };
 

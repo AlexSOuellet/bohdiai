@@ -7,7 +7,8 @@
  * <site> names a module in scripts/sites/ exporting SITE, PROFILE and PHOTOS.
  * Creates the tenant if missing (status active), writes the published home page
  * (archetype "card": its design, and its family and skin), switches About you, Gallery and Market dates on and the
- * catalog off, and fills About you and the gallery. The owner edits both after,
+ * catalog off, and fills About you, the gallery and (when the module has DATES)
+ * the market dates. The owner edits both after,
  * so a re-run leaves them alone unless --replace-profile / --replace-gallery says
  * otherwise. --contact-email sets where the contact form's messages go. Every run
  * makes sure Alex's account is an admin of the site (he builds them all).
@@ -23,6 +24,7 @@ import { FAMILY_KEYS, FAMILIES, type FamilyKey } from '../lib/archetypes/main-st
 import { cardSkinKey } from '../lib/archetypes/card/paint';
 import { CARD_DESIGNS, type CardDesign } from '../lib/archetypes/card/design';
 import { BUILDER_EMAIL, ensureBuilderAccess } from '../lib/backend/builder-access';
+import { buildDateRow, type MarketDateForm } from '../lib/backend/dates/dates-form';
 
 export type CardSiteModule = {
   /** `design` picks the page (pinned prints when left out). Pinned prints paint in
@@ -30,6 +32,8 @@ export type CardSiteModule = {
   SITE: { subdomain: string; businessName: string; design?: CardDesign; family: FamilyKey; skin: string; brandPalette?: BrandPalette };
   PROFILE: ProfileForm;
   PHOTOS: { file: string; caption: string }[];
+  /** Market dates to start with (a sample's made-up ones); written only when the site has none. */
+  DATES?: MarketDateForm[];
 };
 
 const MIME: Record<string, string> = { '.webp': 'image/webp', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png' };
@@ -66,6 +70,10 @@ async function main(): Promise<void> {
     if (!existsSync(join(mediaDir, p.file))) fail(`missing photo: ${join(mediaDir, p.file)}`);
     if (p.caption.length > CAPTION_MAX) fail(`caption over ${CAPTION_MAX} characters: ${p.file}`);
   }
+  const dateRows = (site.DATES ?? []).map((d) => {
+    const built = buildDateRow(d);
+    return built.ok ? built.row : fail(`market date invalid (${d.date} ${d.name}): ${built.error}`);
+  });
   process.stdout.write(`site: ${site.SITE.businessName} → ${site.SITE.subdomain}.bohdiai.com (${site.PHOTOS.length} photos)\n`);
   if (dry) {
     process.stdout.write('--dry: site module is valid; nothing written.\n');
@@ -170,6 +178,18 @@ async function main(): Promise<void> {
       if (iErr !== null) fail(`gallery add ${p.file} failed: ${iErr.message}`);
     }
     process.stdout.write(`gallery: ${site.PHOTOS.length} photos\n`);
+  }
+  // 6) Market dates — only when the module has some and the site has none yet.
+  if (dateRows.length > 0) {
+    const { data: existingDates, error: dErr } = await db.from('events').select('id').eq('tenant_id', tenantId);
+    if (dErr !== null) fail(`dates lookup failed: ${dErr.message}`);
+    if ((existingDates ?? []).length > 0) {
+      process.stdout.write('market dates kept (owner’s version)\n');
+    } else {
+      const { error } = await db.from('events').insert(dateRows.map((row) => ({ tenant_id: tenantId, ...row })));
+      if (error !== null) fail(`market dates failed: ${error.message}`);
+      process.stdout.write(`market dates: ${dateRows.length}\n`);
+    }
   }
   process.stdout.write(`done — https://${site.SITE.subdomain}.bohdiai.com\n`);
 }

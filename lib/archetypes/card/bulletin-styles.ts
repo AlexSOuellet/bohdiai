@@ -42,7 +42,7 @@ export function bulletinCss(): string {
 .bb *,.bb *::before,.bb *::after{box-sizing:border-box}
 .bb :where(h1,h2,p,ul,figure){margin:0;padding:0}
 .bb img{display:block;max-width:100%}
-.bb a{color:inherit}
+.bb :where(a){color:inherit}
 .bb :focus-visible{outline:3px solid var(--red);outline-offset:3px}
 .bb-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .bb-skip{position:absolute;left:-9999px;top:8px;z-index:60;background:var(--red);color:#fff;padding:10px 16px;font-family:var(--label)}
@@ -89,16 +89,18 @@ export function bulletinCss(): string {
   background:radial-gradient(circle at 35% 30%,#9fb8ff,#2a4fb3 45%,#0e1f4f);box-shadow:2px 4px 5px rgba(0,0,0,.5)}
 .bb-photo:hover{animation:bb-swing 1.6s ease-in-out}
 @keyframes bb-swing{0%{transform:rotate(var(--r))}20%{transform:rotate(calc(var(--r) + 6deg))}45%{transform:rotate(calc(var(--r) - 4deg))}70%{transform:rotate(calc(var(--r) + 2deg))}100%{transform:rotate(var(--r))}}
-@keyframes bb-drop{0%{transform:translateY(-40px) rotate(calc(var(--r) * 3));opacity:0}100%{transform:rotate(var(--r));opacity:1}}
+/* The drop-in lives on the frame (li), the swing on the photo, so hovering never restarts the drop. */
+@keyframes bb-drop{0%{transform:translateY(-40px) rotate(-6deg);opacity:0}100%{transform:none;opacity:1}}
 .bb-pins{position:relative;height:clamp(300px,42vw,440px);margin:34px 0 20px;list-style:none}
 .bb-pins li{position:absolute}
 .bb-pins li:nth-child(1){left:0;top:10px;width:46%;height:82%}
 .bb-pins li:nth-child(2){left:38%;top:0;width:34%;height:90%;z-index:2}
 .bb-pins li:nth-child(3){right:0;top:30px;width:30%;height:78%}
-.bb-pins li:nth-child(1) .bb-photo{--r:-5deg;animation:bb-drop .7s cubic-bezier(.3,1.5,.5,1) 2.3s both}
-.bb-pins li:nth-child(2) .bb-photo{--r:4deg;animation:bb-drop .7s cubic-bezier(.3,1.5,.5,1) 2.5s both}
-.bb-pins li:nth-child(3) .bb-photo{--r:-2deg;animation:bb-drop .7s cubic-bezier(.3,1.5,.5,1) 2.7s both}
-.bb-pins li .bb-photo:hover{animation:bb-swing 1.6s ease-in-out}
+.bb-pins li{transform-origin:50% 0;animation:bb-drop .7s cubic-bezier(.3,1.5,.5,1) both}
+.bb-pins li:nth-child(1){animation-delay:2.3s}.bb-pins li:nth-child(2){animation-delay:2.5s}.bb-pins li:nth-child(3){animation-delay:2.7s}
+.bb-pins li:nth-child(1) .bb-photo{--r:-5deg}
+.bb-pins li:nth-child(2) .bb-photo{--r:4deg}
+.bb-pins li:nth-child(3) .bb-photo{--r:-2deg}
 
 /* find me — marker list */
 .bb-find{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start;margin:20px 0 30px}

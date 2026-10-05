@@ -1,11 +1,11 @@
 /**
- * Business card — which design a site uses (bulletin board spec). The envelope's
+ * Business card — which design a site uses (bulletin board spec; show reel and torch spec). The envelope's
  * content may name one; a site that names none keeps the original pinned prints.
  * A design is a choice for each site, never a rule for all of them.
  */
 import { z } from 'zod';
 
-export const CARD_DESIGNS = ['pinned', 'bulletin'] as const;
+export const CARD_DESIGNS = ['pinned', 'bulletin', 'showreel', 'torch'] as const;
 export type CardDesign = (typeof CARD_DESIGNS)[number];
 
 /** The envelope's content: only the design, and that only when it isn't the default. */

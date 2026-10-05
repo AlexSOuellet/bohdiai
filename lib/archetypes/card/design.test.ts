@@ -9,6 +9,8 @@ describe('card design', () => {
   it('uses the design the site names', () => {
     expect(cardDesign(CardContentSchema.parse({ design: 'bulletin' }))).toBe('bulletin');
     expect(cardDesign(CardContentSchema.parse({ design: 'pinned' }))).toBe('pinned');
+    expect(cardDesign(CardContentSchema.parse({ design: 'showreel' }))).toBe('showreel');
+    expect(cardDesign(CardContentSchema.parse({ design: 'torch' }))).toBe('torch');
   });
 
   it('refuses a design that does not exist, and anything else in the content', () => {

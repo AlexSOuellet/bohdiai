@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { WORK, CLIENTS, SAMPLES } from './work';
+import { WORK, CLIENTS, SAMPLES, LISTED_SAMPLES } from './work';
 
 describe('the work list', () => {
-  it('has two clients then four samples', () => {
+  it('has two clients then four listed samples, and two more sample sites kept off bohdiai.com', () => {
     expect(CLIENTS.map((w) => w.name)).toEqual([
       'Cut-Pro Lawncare & Construction',
       'Decoupage Digital Designs',
@@ -14,8 +14,11 @@ describe('the work list', () => {
       ['Classic Loafs', 'Lite'],
       ['Twilight to Darkness', 'Full'],
       ['Heavenly Scents', 'Full'],
+      ['Paper & Patina', 'Showcase'],
+      ['Ember & Pine', 'Showcase'],
     ]);
-    expect(WORK).toEqual([...CLIENTS, ...SAMPLES]);
+    expect(LISTED_SAMPLES.map((w) => w.name)).toEqual(['Rustic Rhody', 'Classic Loafs', 'Twilight to Darkness', 'Heavenly Scents']);
+    expect(WORK).toEqual([...CLIENTS, ...LISTED_SAMPLES]);
     expect(CLIENTS.every((w) => w.kind === 'client')).toBe(true);
     expect(SAMPLES.every((w) => w.kind === 'sample')).toBe(true);
   });

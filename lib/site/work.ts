@@ -27,6 +27,8 @@ export type WorkEntry = {
   shot: string;
   /** Samples only: which plan the sample shows ("Showcase", "Lite", "Full"). */
   plan?: string;
+  /** Samples only: false keeps a sample off bohdiai.com (it still carries the sample banner). */
+  listed?: boolean;
   testimonials: readonly Testimonial[];
 };
 
@@ -143,6 +145,37 @@ export const SAMPLES: readonly WorkEntry[] = [
     plan: 'Full',
     testimonials: [],
   },
+  {
+    slug: 'paper-and-patina',
+    name: 'Paper & Patina',
+    url: 'https://paper-and-patina.bohdiai.com',
+    host: 'paper-and-patina.bohdiai.com',
+    kind: 'sample',
+    category: 'Cottage',
+    blurb: 'Mixed media and decoupage',
+    features: [],
+    shot: '/work/paper-and-patina.webp',
+    plan: 'Showcase',
+    listed: false,
+    testimonials: [],
+  },
+  {
+    slug: 'ember-and-pine',
+    name: 'Ember & Pine',
+    url: 'https://ember-and-pine.bohdiai.com',
+    host: 'ember-and-pine.bohdiai.com',
+    kind: 'sample',
+    category: 'Rustic',
+    blurb: 'Wood burning and pyrography',
+    features: [],
+    shot: '/work/ember-and-pine.webp',
+    plan: 'Showcase',
+    listed: false,
+    testimonials: [],
+  },
 ];
 
-export const WORK: readonly WorkEntry[] = [...CLIENTS, ...SAMPLES];
+/** The samples bohdiai.com shows (the rest exist only as sample sites, with the banner). */
+export const LISTED_SAMPLES: readonly WorkEntry[] = SAMPLES.filter((s) => s.listed !== false);
+
+export const WORK: readonly WorkEntry[] = [...CLIENTS, ...LISTED_SAMPLES];

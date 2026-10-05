@@ -7,9 +7,11 @@ describe('sampleBannerFor', () => {
     expect(sampleBannerFor('rustic-rhody')).toEqual({ label: 'Showcase sample', href: 'https://bohdiai.com/makers#plans' });
     expect(sampleBannerFor('classic-loafs')?.label).toBe('Lite sample');
     expect(sampleBannerFor('twilight-to-darkness')?.label).toBe('Full sample');
+    expect(sampleBannerFor('paper-and-patina')?.label).toBe('Showcase sample');
+    expect(sampleBannerFor('ember-and-pine')?.label).toBe('Showcase sample');
   });
 
-  it('gives every listed sample a banner', () => {
+  it('gives every sample a banner, listed on bohdiai.com or not', () => {
     for (const s of SAMPLES) expect(sampleBannerFor(s.host.replace(/\.bohdiai\.com$/, ''))).not.toBeNull();
   });
 

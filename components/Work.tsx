@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { CLIENTS, SAMPLES, type WorkEntry } from '@/lib/site/work';
+import { CLIENTS, LISTED_SAMPLES, type WorkEntry } from '@/lib/site/work';
 import { ClientQuotes } from './ClientQuote';
 import { SectionKicker } from './SectionKicker';
 import type { Audience } from '@/lib/site/plans';
@@ -144,7 +144,7 @@ export function Work({ audience }: { audience?: Audience } = {}): React.ReactEle
           </p>
 
           <div className="group/shelf relative mt-12 grid gap-10 md:mt-14 md:block md:h-[300px]">
-            {SAMPLES.map((s, i) => (
+            {LISTED_SAMPLES.map((s, i) => (
               <a
                 key={s.slug}
                 href={s.url}

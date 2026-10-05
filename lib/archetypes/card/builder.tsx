@@ -12,6 +12,8 @@ import type { ArchetypeBuildSpec } from '../builder';
 import { supabaseAdmin } from '@/lib/supabase';
 import { CardLanding, CardContentPage } from './CardLanding';
 import { BulletinLanding, BulletinContentPage } from './BulletinLanding';
+import { ShowreelLanding, ShowreelContentPage } from './ShowreelLanding';
+import { TorchLanding, TorchContentPage } from './TorchLanding';
 import { CardContentSchema, cardDesign, type CardContent, type CardDesign } from './design';
 import { loadCardData } from './data';
 import { cardPaint, type CardPaint } from './paint';
@@ -30,6 +32,8 @@ function designOf(raw: unknown): CardDesign {
 async function CardSite({ tenantId, paint, design }: { tenantId: string; paint: CardPaint; design: CardDesign }): Promise<ReactElement> {
   const data = await loadCardData(supabaseAdmin(), tenantId);
   if (design === 'bulletin') return <BulletinLanding data={data} tenantId={tenantId} />;
+  if (design === 'showreel') return <ShowreelLanding data={data} tenantId={tenantId} />;
+  if (design === 'torch') return <TorchLanding data={data} tenantId={tenantId} />;
   return <CardLanding data={data} paint={paint} tenantId={tenantId} />;
 }
 
@@ -50,6 +54,8 @@ async function CardPage({
 }): Promise<ReactElement> {
   const { name } = await loadCardData(supabaseAdmin(), tenantId);
   if (design === 'bulletin') return <BulletinContentPage name={name} html={html} title={title} body={body} />;
+  if (design === 'showreel') return <ShowreelContentPage name={name} html={html} title={title} body={body} />;
+  if (design === 'torch') return <TorchContentPage name={name} html={html} title={title} body={body} />;
   return <CardContentPage name={name} paint={paint} html={html} title={title} body={body} />;
 }
 
