@@ -2,7 +2,7 @@
  * Halfmoon Roofing & Gutters — a MADE-UP roofer, a contractor sample for
  * bohdiai.com (Alex, 2026-10-06). Not a real business: the phone is a reserved
  * 555 number, the reviews are labelled as samples, and every photo is stock
- * (Unsplash).
+ * (Unsplash). Wears the ridge design (Cut-Pro's top + the Stitch card middle).
  *
  * `media(name)` resolves a processed media file (see build-contractor-site.ts)
  * to its public storage URL.
@@ -20,6 +20,7 @@ export function content(media: (file: string) => string): ContractorContent {
   const still = (file: string, alt: string) => ({ kind: 'still' as const, url: media(file), alt });
 
   return {
+    design: 'ridge',
     business: {
       name: 'Halfmoon',
       trade: 'Roofing & Gutters',
@@ -33,6 +34,11 @@ export function content(media: (file: string) => string): ContractorContent {
       headline: 'A new roof in a day, the yard clean by supper',
       highlight: 'day',
       sub: 'Asphalt roofs, repairs and gutters along the South County shore. Old roof off, new one on, and every nail picked up with a magnet before we leave.',
+      badges: [
+        { icon: 'schedule', label: 'Most roofs in a day', sub: 'Closed up before dark' },
+        { icon: 'cleaning_services', label: 'Magnet sweep', sub: 'Every nail picked up' },
+        { icon: 'verified_user', label: 'Licensed & insured', sub: 'Sample business' },
+      ],
       media: still('hero.webp', 'A roofer carrying a bundle of shingles across a roof deck'),
       estimateLabel: 'Get a free estimate',
     },
@@ -41,27 +47,27 @@ export function content(media: (file: string) => string): ContractorContent {
       title: 'Down to the deck and back up',
       intro: 'Tear-off, new underlayment, new shingles, new gutters. Here is the kind of work we do.',
       items: [
-        { media: still('tear-off.webp', 'A roofer prying old shingles off a roof'), caption: 'Old shingles off', tag: 'Tear-off' },
-        { media: still('old-roof-off.webp', 'A roofer standing on a stripped roof above a ladder'), caption: 'Down to the deck', tag: 'Tear-off' },
-        { media: still('harness-crew.webp', 'Two roofers in harnesses laying new dark shingles'), caption: 'Tied off, laying new', tag: 'Replacement' },
-        { media: still('new-shingles.webp', 'A roofer nailing new architectural shingles near the eave'), caption: 'New architectural shingles', tag: 'Replacement' },
-        { media: still('finished-roof.webp', 'A finished roof on a large shingled house'), caption: 'Finished, ridge to eave', tag: 'Replacement' },
-        { media: still('aerial-new-roof.webp', 'An aerial view of a house with a new grey roof'), caption: 'From above', tag: 'Replacement' },
-        { media: still('crew-on-ridge.webp', 'Two roofers working near the ridge of a steep roof'), caption: 'Steep pitch, no problem', tag: 'Repairs' },
-        { media: still('dormer.webp', 'A dormer gable framed in a new shingle roof'), caption: 'Dormers and valleys', tag: 'Repairs' },
-        { media: still('gutters.webp', 'A close-up of a new metal gutter under the roof edge'), caption: 'Seamless gutters', tag: 'Gutters' },
-        { media: still('flat-roof-crew.webp', 'A crew working on a low-slope roof on a corner building'), caption: 'Low-slope and flat', tag: 'Repairs' },
+        { media: still('tear-off.webp', 'A roofer prying old shingles off a roof'), caption: 'Old shingles off', tag: 'Tear-off', place: 'Westerly' },
+        { media: still('old-roof-off.webp', 'A roofer standing on a stripped roof above a ladder'), caption: 'Down to the deck', tag: 'Tear-off', place: 'Charlestown' },
+        { media: still('harness-crew.webp', 'Two roofers in harnesses laying new dark shingles'), caption: 'Tied off, laying new', tag: 'Replacement', place: 'South Kingstown' },
+        { media: still('new-shingles.webp', 'A roofer nailing new architectural shingles near the eave'), caption: 'New architectural shingles', tag: 'Replacement', place: 'Westerly' },
+        { media: still('finished-roof.webp', 'A finished roof on a large shingled house'), caption: 'Finished, ridge to eave', tag: 'Replacement', place: 'Narragansett' },
+        { media: still('aerial-new-roof.webp', 'An aerial view of a house with a new grey roof'), caption: 'From above', tag: 'Replacement', place: 'Charlestown' },
+        { media: still('crew-on-ridge.webp', 'Two roofers working near the ridge of a steep roof'), caption: 'Steep pitch, no problem', tag: 'Repairs', place: 'Westerly' },
+        { media: still('dormer.webp', 'A dormer gable framed in a new shingle roof'), caption: 'Dormers and valleys', tag: 'Repairs', place: 'South Kingstown' },
+        { media: still('gutters.webp', 'A close-up of a new metal gutter under the roof edge'), caption: 'Seamless gutters', tag: 'Gutters', place: 'Charlestown' },
+        { media: still('flat-roof-crew.webp', 'A crew working on a low-slope roof on a corner building'), caption: 'Low-slope and flat', tag: 'Repairs', place: 'Westerly' },
       ],
     },
     services: {
       eyebrow: 'What we do',
       title: 'Everything over your head',
       items: [
-        { name: 'Roof replacement', detail: 'Old roof off to the deck, new underlayment, ice and water shield, and new shingles.' },
-        { name: 'Roof repairs', detail: 'Leaks, missing shingles, flashing and storm damage, fixed fast.' },
-        { name: 'Gutters', detail: 'Seamless gutters and downspouts, sized for nor’easter rain.' },
-        { name: 'Skylights & chimneys', detail: 'New flashing where leaks love to start.' },
-        { name: 'Inspections', detail: 'Buying or selling? We’ll go up and tell you straight what the roof needs.' },
+        { name: 'Roof replacement', detail: 'Old roof off to the deck, new underlayment, ice and water shield, and new shingles.', icon: 'roofing', photo: still('finished-roof.webp', 'A finished shingle roof on a large house'), tags: ['Tear-off', 'Ice & water shield', 'Architectural shingles'] },
+        { name: 'Roof repairs', detail: 'Leaks, missing shingles, flashing and storm damage, fixed fast.', icon: 'handyman', photo: still('crew-on-ridge.webp', 'Two roofers working near the ridge of a steep roof'), tags: ['Leaks', 'Storm damage', 'Flashing'] },
+        { name: 'Gutters', detail: 'Seamless gutters and downspouts, sized for nor’easter rain.', icon: 'water_drop', photo: still('gutters.webp', 'A close-up of a new metal gutter under the roof edge'), tags: ['Seamless', 'Downspouts'] },
+        { name: 'Skylights & chimneys', detail: 'New flashing where leaks love to start.', icon: 'light_mode' },
+        { name: 'Inspections', detail: 'Buying or selling? We’ll go up and tell you straight what the roof needs.', icon: 'search' },
       ],
     },
     reviews: {

@@ -138,6 +138,19 @@ describe('contractor designs', () => {
     expect(container.querySelectorAll('.bp-quote')).toHaveLength(1);
   });
 
+  it('renders the ridge design: the Cut-Pro top with the Stitch card middle', () => {
+    const { container } = page(undefined, { ...CONTRACTOR_FIXTURE, design: 'ridge', hero: { ...CONTRACTOR_FIXTURE.hero, badges: [{ icon: 'schedule', label: 'In a day' }] } });
+    expect(container.querySelector('.rg')).not.toBeNull();
+    expect(container.querySelector('.cp, .st, .sw, .at, .hb, .bp')).toBeNull();
+    expect(container.innerHTML).toContain('Permanent+Marker');
+    expect(container.querySelector('.rg-hero .rg-brush')?.textContent).toBe(CONTRACTOR_FIXTURE.hero.marker);
+    expect(container.querySelector('.rg-gable img, .rg-gable video')).not.toBeNull();
+    expect(container.querySelectorAll('.rg-trust__item')).toHaveLength(1);
+    expect(container.querySelectorAll('.rg-cards > li')).toHaveLength(CONTRACTOR_FIXTURE.services.items.length);
+    expect(container.querySelectorAll('.rg-review')).toHaveLength(CONTRACTOR_FIXTURE.reviews?.items.length ?? 0);
+    expect(container.querySelector('#estimate form')).not.toBeNull();
+  });
+
   it('rejects a design it does not know', () => {
     expect(() => page(undefined, { ...CONTRACTOR_FIXTURE, design: 'brutalist' })).toThrow();
   });

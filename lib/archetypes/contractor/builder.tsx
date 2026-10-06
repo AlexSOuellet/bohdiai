@@ -14,6 +14,7 @@ import { SwatchLanding, SwatchContentPage, SwatchShell } from './swatch/SwatchLa
 import { AtelierLanding, AtelierContentPage, AtelierShell } from './atelier/AtelierLanding';
 import { HarborLanding, HarborContentPage, HarborShell } from './harbor/HarborLanding';
 import { BlueprintLanding, BlueprintContentPage, BlueprintShell } from './blueprint/BlueprintLanding';
+import { RidgeLanding, RidgeContentPage, RidgeShell } from './ridge/RidgeLanding';
 
 export const CONTRACTOR_LOOK = 'contractor';
 
@@ -61,6 +62,7 @@ export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
     if (c.design === 'atelier') return <AtelierLanding content={c} palette={palette} tenantId={tenantId} />;
     if (c.design === 'harbor') return <HarborLanding content={c} palette={palette} tenantId={tenantId} />;
     if (c.design === 'blueprint') return <BlueprintLanding content={c} palette={palette} tenantId={tenantId} />;
+    if (c.design === 'ridge') return <RidgeLanding content={c} palette={palette} tenantId={tenantId} />;
     return <ContractorLanding content={c} palette={palette} tenantId={tenantId} />;
   },
   renderContentPage: ({ content, brandPalette, html, title, body }) => {
@@ -77,6 +79,19 @@ export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
             </div>
           </main>
         </StatementShell>
+      );
+    }
+    if (c.design === 'ridge') {
+      if (html !== undefined) return <RidgeContentPage content={c} palette={palette} html={html} />;
+      return (
+        <RidgeShell content={c} palette={palette}>
+          <main className="rg-section rg-light">
+            <div className="rg-wrap rg-prose">
+              {title !== undefined && <h1>{title}</h1>}
+              {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
+            </div>
+          </main>
+        </RidgeShell>
       );
     }
     if (c.design === 'blueprint') {

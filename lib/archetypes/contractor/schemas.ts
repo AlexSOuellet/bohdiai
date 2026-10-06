@@ -37,8 +37,11 @@ export const ContractorMediaSchema = z
  * this one") — a mostly navy page with blueprint grid lines and crop marks,
  * services as one big list whose photo appears as you point at each, and the
  * reviews as one large quote at a time.
+ * `ridge`: Cut-Pro's yard top, crew and lettering combined with the Stitch card
+ * format's middle (trust strip, photo service cards, project cards, star review
+ * cards, form card) on light sections (Alex, 2026-10-06, for Halfmoon).
  */
-export const CONTRACTOR_DESIGNS = ['yard', 'statement', 'swatch', 'atelier', 'harbor', 'blueprint'] as const;
+export const CONTRACTOR_DESIGNS = ['yard', 'statement', 'swatch', 'atelier', 'harbor', 'blueprint', 'ridge'] as const;
 
 /** A Material Symbols icon name, e.g. "verified_user". */
 const icon = z.string().regex(/^[a-z0-9_]+$/);
