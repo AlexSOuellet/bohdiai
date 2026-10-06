@@ -62,6 +62,27 @@ describe('contractor designs', () => {
     expect(container.querySelector('.st-crew__figure img')?.getAttribute('src')).toBe(CONTRACTOR_FIXTURE.crew.photo.url);
   });
 
+  it('renders the swatch design as its own page: color bands, a deck of chips, stir-stick reviews', () => {
+    const items = CONTRACTOR_FIXTURE.work.items.map((item, i) => ({ ...item, swatch: { color: i === 0 ? '#b6a7d8' : '#2f4a3a', name: `Color ${String.fromCharCode(65 + i)}` } }));
+    const { container } = page(undefined, { ...CONTRACTOR_FIXTURE, design: 'swatch', work: { ...CONTRACTOR_FIXTURE.work, items } });
+    expect(container.querySelector('.sw')).not.toBeNull();
+    expect(container.querySelector('.cp, .st')).toBeNull();
+    expect(container.querySelectorAll('.sw-band:not(.sw-band--photo)')).toHaveLength(items.length);
+    expect(container.querySelectorAll('.sw-chip')).toHaveLength(items.length);
+    const first = container.querySelector<HTMLElement>('.sw-chip');
+    expect(first?.style.getPropertyValue('--chip')).toBe('#b6a7d8');
+    expect(first?.style.getPropertyValue('--chip-ink')).toBe('#1b1b1f');
+    expect(container.querySelector<HTMLElement>('.sw-chip:nth-child(2)')?.style.getPropertyValue('--chip-ink')).toBe('#ffffff');
+    expect(container.querySelectorAll('.sw-stick')).toHaveLength(CONTRACTOR_FIXTURE.reviews?.items.length ?? 0);
+    expect(container.querySelector('#estimate form')).not.toBeNull();
+    expect(container.querySelector('ol')).toBeNull();
+  });
+
+  it('rejects a swatch color that is not a hex color', () => {
+    const items = CONTRACTOR_FIXTURE.work.items.map((item) => ({ ...item, swatch: { color: 'purple', name: 'Purple' } }));
+    expect(() => page(undefined, { ...CONTRACTOR_FIXTURE, design: 'swatch', work: { ...CONTRACTOR_FIXTURE.work, items } })).toThrow();
+  });
+
   it('rejects a design it does not know', () => {
     expect(() => page(undefined, { ...CONTRACTOR_FIXTURE, design: 'brutalist' })).toThrow();
   });

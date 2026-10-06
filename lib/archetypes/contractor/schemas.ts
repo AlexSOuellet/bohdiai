@@ -20,11 +20,14 @@ export const ContractorMediaSchema = z
   .strict();
 
 /**
- * Which design the site wears. `yard` (the default) is the Cut-Pro layout laid
- * like sod; `statement` opens on a full-width photo with the owner cut out and
- * oversized in front of it, breaking past the hero's bottom edge (Alex, 2026-10-06).
+ * Which design the site wears — each its own page, sharing only this content
+ * shape (Alex, 2026-10-06: custom sites must each look custom).
+ * `yard` (the default): the Cut-Pro page, laid like sod.
+ * `statement`: a home-magazine feature, the owner cut out on the cover.
+ * `swatch`: a paint-chip card — color bands, the work as a deck of chips,
+ * reviews on paint stir sticks. Work items carry their `swatch`.
  */
-export const CONTRACTOR_DESIGNS = ['yard', 'statement'] as const;
+export const CONTRACTOR_DESIGNS = ['yard', 'statement', 'swatch'] as const;
 export type ContractorDesign = (typeof CONTRACTOR_DESIGNS)[number];
 
 export const ContractorContentSchema = z
@@ -68,7 +71,13 @@ export const ContractorContentSchema = z
         items: z
           .array(
             z
-              .object({ media: ContractorMediaSchema, caption: text, tag: text.optional() })
+              .object({
+                media: ContractorMediaSchema,
+                caption: text,
+                tag: text.optional(),
+                /** Swatch design: the job's main color and a paint-chip name for it. */
+                swatch: z.object({ color: z.string().regex(/^#[0-9a-fA-F]{6}$/), name: text }).strict().optional(),
+              })
               .strict(),
           )
           .min(1),

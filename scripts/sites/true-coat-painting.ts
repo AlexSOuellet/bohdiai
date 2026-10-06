@@ -19,6 +19,7 @@ export function content(media: (file: string) => string): ContractorContent {
   const still = (file: string, alt: string) => ({ kind: 'still' as const, url: media(file), alt });
 
   return {
+    design: 'swatch',
     business: {
       name: 'True Coat',
       trade: 'Painting',
@@ -40,16 +41,16 @@ export function content(media: (file: string) => string): ContractorContent {
       title: 'Outside, inside, and every bit of trim',
       intro: 'Old clapboard, Victorian trim, a front door that needs a little courage. Here is the kind of work we do.',
       items: [
-        { media: still('purple-house-crew.webp', 'Two painters on ladders painting a lavender clapboard house'), caption: 'Full exterior, two ladders', tag: 'Exteriors' },
-        { media: still('white-colonial.webp', 'A white colonial with black shutters behind a lawn'), caption: 'Classic white and black', tag: 'Exteriors' },
-        { media: still('victorian-trim.webp', 'Ornate Victorian trim picked out in blue and white'), caption: 'Victorian trim, by hand', tag: 'Trim' },
-        { media: still('purple-door.webp', 'A purple front door set in pale green clapboard'), caption: 'A front door with nerve', tag: 'Doors' },
-        { media: still('green-bedroom.webp', 'A bedroom painted deep green with white trim'), caption: 'Deep green bedroom', tag: 'Interiors' },
-        { media: still('porch-green.webp', 'A sage green Victorian porch with white railings'), caption: 'Porch and railings', tag: 'Exteriors' },
-        { media: still('victorian-blue.webp', 'A blue Victorian house with a white wraparound porch'), caption: 'Blue with white trim', tag: 'Exteriors' },
-        { media: still('dining-hall.webp', 'A hallway and dining room in soft teal with white doors'), caption: 'Hall and dining room', tag: 'Interiors' },
-        { media: still('porch-homes.webp', 'A two-tone house with burgundy shutters and a front porch'), caption: 'Two tones, one weekend', tag: 'Exteriors' },
-        { media: still('fresh-coat.webp', 'A roller laying a fresh coat of blue paint over white'), caption: 'The first coat', tag: 'Interiors' },
+        { media: still('purple-house-crew.webp', 'Two painters on ladders painting a lavender clapboard house'), caption: 'Full exterior, two ladders', tag: 'Exteriors', swatch: { color: '#b6a7d8', name: 'Lavender Clapboard' } },
+        { media: still('white-colonial.webp', 'A white colonial with black shutters behind a lawn'), caption: 'Classic white and black', tag: 'Exteriors', swatch: { color: '#ece7dc', name: 'Colonial White' } },
+        { media: still('victorian-trim.webp', 'Ornate Victorian trim picked out in blue and white'), caption: 'Victorian trim, by hand', tag: 'Trim', swatch: { color: '#5b7fae', name: 'Bay Window Blue' } },
+        { media: still('purple-door.webp', 'A purple front door set in pale green clapboard'), caption: 'A front door with nerve', tag: 'Doors', swatch: { color: '#5a4fa0', name: 'Front Door Violet' } },
+        { media: still('green-bedroom.webp', 'A bedroom painted deep green with white trim'), caption: 'Deep green bedroom', tag: 'Interiors', swatch: { color: '#2f4a3a', name: 'Bedroom Pine' } },
+        { media: still('porch-green.webp', 'A sage green Victorian porch with white railings'), caption: 'Porch and railings', tag: 'Exteriors', swatch: { color: '#9fb59a', name: 'Porch Sage' } },
+        { media: still('victorian-blue.webp', 'A blue Victorian house with a white wraparound porch'), caption: 'Blue with white trim', tag: 'Exteriors', swatch: { color: '#4f6a86', name: 'Victorian Slate' } },
+        { media: still('dining-hall.webp', 'A hallway and dining room in soft teal with white doors'), caption: 'Hall and dining room', tag: 'Interiors', swatch: { color: '#7fb3b5', name: 'Hallway Teal' } },
+        { media: still('porch-homes.webp', 'A two-tone house with burgundy shutters and a front porch'), caption: 'Two tones, one weekend', tag: 'Exteriors', swatch: { color: '#8b9aa7', name: 'Harbor Grey' } },
+        { media: still('fresh-coat.webp', 'A roller laying a fresh coat of blue paint over white'), caption: 'The first coat', tag: 'Interiors', swatch: { color: '#96b9cc', name: 'First Coat Blue' } },
       ],
     },
     services: {

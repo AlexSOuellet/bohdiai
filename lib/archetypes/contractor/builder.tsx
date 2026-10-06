@@ -10,6 +10,7 @@ import { deriveBrandPalette, type BrandPalette } from '@/lib/color/brand-palette
 import { ContractorContentSchema, type ContractorContent } from './schemas';
 import { ContractorLanding, ContractorContentPage, ContractorShell } from './ContractorLanding';
 import { StatementLanding, StatementContentPage, StatementShell } from './statement/StatementLanding';
+import { SwatchLanding, SwatchContentPage, SwatchShell } from './swatch/SwatchLanding';
 
 export const CONTRACTOR_LOOK = 'contractor';
 
@@ -52,9 +53,9 @@ export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
   render: ({ content, brandPalette, tenantId }) => {
     const c = contentOf(content);
     const palette = paletteFor(brandPalette);
-    return c.design === 'statement'
-      ? <StatementLanding content={c} palette={palette} tenantId={tenantId} />
-      : <ContractorLanding content={c} palette={palette} tenantId={tenantId} />;
+    if (c.design === 'statement') return <StatementLanding content={c} palette={palette} tenantId={tenantId} />;
+    if (c.design === 'swatch') return <SwatchLanding content={c} palette={palette} tenantId={tenantId} />;
+    return <ContractorLanding content={c} palette={palette} tenantId={tenantId} />;
   },
   renderContentPage: ({ content, brandPalette, html, title, body }) => {
     const c = contentOf(content);
@@ -70,6 +71,19 @@ export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
             </div>
           </main>
         </StatementShell>
+      );
+    }
+    if (c.design === 'swatch') {
+      if (html !== undefined) return <SwatchContentPage content={c} palette={palette} html={html} />;
+      return (
+        <SwatchShell content={c} palette={palette}>
+          <main className="sw-section">
+            <div className="sw-wrap sw-prose">
+              {title !== undefined && <h1>{title}</h1>}
+              {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
+            </div>
+          </main>
+        </SwatchShell>
       );
     }
     if (html !== undefined) return <ContractorContentPage content={c} palette={palette} html={html} />;
