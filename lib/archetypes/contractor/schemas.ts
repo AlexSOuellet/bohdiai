@@ -23,9 +23,6 @@ export const ContractorMediaSchema = z
  * Which design the site wears — each its own page, sharing only this content
  * shape (Alex, 2026-10-06: custom sites must each look custom).
  * `yard` (the default): the Cut-Pro page, laid like sod.
- * `statement`: a home-magazine feature, the owner cut out on the cover.
- * `swatch`: a paint-chip card — color bands, the work as a deck of chips,
- * reviews on paint stir sticks. Work items carry their `swatch`.
  * `atelier`: quiet high-end editorial (Alex's Stitch reference, 2026-10-06) —
  * stone and serif, cards with icons and tags, a live ballpark `estimator`, a
  * "typical vs us" `comparison`, case-study job cards.
@@ -33,15 +30,11 @@ export const ContractorMediaSchema = z
  * reference for Joe, 2026-10-06) — the owner cut out over a photo cover, a
  * trust strip, the request form right after the top, photo service cards,
  * project cards, review cards, and the owner's `promises` panel.
- * `blueprint`: harbor's dark sibling (Alex, 2026-10-06: "try it, but do not lose
- * this one") — a mostly navy page with blueprint grid lines and crop marks,
- * services as one big list whose photo appears as you point at each, and the
- * reviews as one large quote at a time.
  * `ridge`: Cut-Pro's yard top, crew and lettering combined with the Stitch card
  * format's middle (trust strip, photo service cards, project cards, star review
  * cards, form card) on light sections (Alex, 2026-10-06, for Halfmoon).
  */
-export const CONTRACTOR_DESIGNS = ['yard', 'statement', 'swatch', 'atelier', 'harbor', 'blueprint', 'ridge'] as const;
+export const CONTRACTOR_DESIGNS = ['yard', 'atelier', 'harbor', 'ridge'] as const;
 
 /** A Material Symbols icon name, e.g. "verified_user". */
 const icon = z.string().regex(/^[a-z0-9_]+$/);
@@ -100,7 +93,7 @@ export const ContractorContentSchema = z
         /** Atelier design: the caption laid over the hero photo. */
         feature: z.object({ label: text, title: text, tag: text.optional() }).strict().optional(),
         media: ContractorMediaSchema,
-        /** Statement design: the owner, background removed (a transparent image), stood large in front of `media`. */
+        /** Harbor design: the owner, background removed (a transparent image), stood large in front of `media`. */
         cutout: ContractorMediaSchema.optional(),
         estimateLabel: text,
       })
@@ -121,7 +114,7 @@ export const ContractorContentSchema = z
                 /** Atelier design: where the job was, and a line about it. */
                 place: text.optional(),
                 detail: text.optional(),
-                /** Swatch design: the job's main color and a paint-chip name for it. */
+                /** Atelier design: the job's paint color, named under the case study. */
                 swatch: z.object({ color: z.string().regex(/^#[0-9a-fA-F]{6}$/), name: text }).strict().optional(),
               })
               .strict(),

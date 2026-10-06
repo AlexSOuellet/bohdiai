@@ -9,11 +9,8 @@ import type { ArchetypeBuildSpec } from '../builder';
 import { deriveBrandPalette, type BrandPalette } from '@/lib/color/brand-palette';
 import { ContractorContentSchema, type ContractorContent } from './schemas';
 import { ContractorLanding, ContractorContentPage, ContractorShell } from './ContractorLanding';
-import { StatementLanding, StatementContentPage, StatementShell } from './statement/StatementLanding';
-import { SwatchLanding, SwatchContentPage, SwatchShell } from './swatch/SwatchLanding';
 import { AtelierLanding, AtelierContentPage, AtelierShell } from './atelier/AtelierLanding';
 import { HarborLanding, HarborContentPage, HarborShell } from './harbor/HarborLanding';
-import { BlueprintLanding, BlueprintContentPage, BlueprintShell } from './blueprint/BlueprintLanding';
 import { RidgeLanding, RidgeContentPage, RidgeShell } from './ridge/RidgeLanding';
 
 export const CONTRACTOR_LOOK = 'contractor';
@@ -53,34 +50,18 @@ export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
   mediaJobs: () => [],
   applyMedia: (authored) => authored,
   toPayload: (authored) => ({ content: authored, products: [] }),
-  // Each design is its own page; the content shape is shared (design: 'yard' | 'statement').
+  // Each design is its own page; the content shape is shared (design: 'yard' | 'atelier' | 'harbor' | 'ridge').
   render: ({ content, brandPalette, tenantId }) => {
     const c = contentOf(content);
     const palette = paletteFor(brandPalette);
-    if (c.design === 'statement') return <StatementLanding content={c} palette={palette} tenantId={tenantId} />;
-    if (c.design === 'swatch') return <SwatchLanding content={c} palette={palette} tenantId={tenantId} />;
     if (c.design === 'atelier') return <AtelierLanding content={c} palette={palette} tenantId={tenantId} />;
     if (c.design === 'harbor') return <HarborLanding content={c} palette={palette} tenantId={tenantId} />;
-    if (c.design === 'blueprint') return <BlueprintLanding content={c} palette={palette} tenantId={tenantId} />;
     if (c.design === 'ridge') return <RidgeLanding content={c} palette={palette} tenantId={tenantId} />;
     return <ContractorLanding content={c} palette={palette} tenantId={tenantId} />;
   },
   renderContentPage: ({ content, brandPalette, html, title, body }) => {
     const c = contentOf(content);
     const palette = paletteFor(brandPalette);
-    if (c.design === 'statement') {
-      if (html !== undefined) return <StatementContentPage content={c} palette={palette} html={html} />;
-      return (
-        <StatementShell content={c} palette={palette}>
-          <main className="st-paper st-section">
-            <div className="st-wrap st-prose">
-              {title !== undefined && <h1>{title}</h1>}
-              {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
-            </div>
-          </main>
-        </StatementShell>
-      );
-    }
     if (c.design === 'ridge') {
       if (html !== undefined) return <RidgeContentPage content={c} palette={palette} html={html} />;
       return (
@@ -92,19 +73,6 @@ export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
             </div>
           </main>
         </RidgeShell>
-      );
-    }
-    if (c.design === 'blueprint') {
-      if (html !== undefined) return <BlueprintContentPage content={c} palette={palette} html={html} />;
-      return (
-        <BlueprintShell content={c} palette={palette}>
-          <main className="bp-section">
-            <div className="bp-wrap bp-prose">
-              {title !== undefined && <h1>{title}</h1>}
-              {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
-            </div>
-          </main>
-        </BlueprintShell>
       );
     }
     if (c.design === 'harbor') {
@@ -131,19 +99,6 @@ export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
             </div>
           </main>
         </AtelierShell>
-      );
-    }
-    if (c.design === 'swatch') {
-      if (html !== undefined) return <SwatchContentPage content={c} palette={palette} html={html} />;
-      return (
-        <SwatchShell content={c} palette={palette}>
-          <main className="sw-section">
-            <div className="sw-wrap sw-prose">
-              {title !== undefined && <h1>{title}</h1>}
-              {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
-            </div>
-          </main>
-        </SwatchShell>
       );
     }
     if (html !== undefined) return <ContractorContentPage content={c} palette={palette} html={html} />;

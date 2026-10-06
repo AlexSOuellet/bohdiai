@@ -8,10 +8,10 @@ type Review = NonNullable<ContractorContent['reviews']>['items'][number];
 
 /**
  * Reviews as one large quote at a time, moved with arrows (they wrap). No
- * autoplay, so nobody loses a quote mid-read. Used by the blueprint and harbor
- * designs; `prefix` names the design's classes (e.g. the harbor quote is hb-quote).
+ * autoplay, so nobody loses a quote mid-read. `prefix` names the design's
+ * classes (the harbor quote is hb-quote).
  */
-export function QuoteRotator({ items, prefix }: { items: readonly Review[]; prefix: 'bp' | 'hb' }): ReactElement | null {
+export function QuoteRotator({ items, prefix }: { items: readonly Review[]; prefix: 'hb' }): ReactElement | null {
   const [i, setI] = useState(0);
   const r = items[i];
   if (r === undefined) return null;

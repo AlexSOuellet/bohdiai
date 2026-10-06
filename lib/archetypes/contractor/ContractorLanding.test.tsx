@@ -12,9 +12,9 @@ function page(brandPalette?: { base: string; accent: string }, content: unknown 
   return render(CONTRACTOR_SPEC.render({ content, lookKey: 'contractor', products: [], tenantId: TENANT, brandPalette }));
 }
 
-const STATEMENT = {
+const OWNER_COVER = {
   ...CONTRACTOR_FIXTURE,
-  design: 'statement',
+  design: 'harbor',
   hero: {
     ...CONTRACTOR_FIXTURE.hero,
     media: { kind: 'still', url: 'https://example.com/kitchen.webp', alt: 'A finished kitchen' },
@@ -23,64 +23,16 @@ const STATEMENT = {
 };
 
 describe('contractor designs', () => {
-  it('wears the yard design by default: the Cut-Pro page, nothing of the statement design', () => {
+  it('wears the yard design by default: the Cut-Pro page, nothing of the other designs', () => {
     const { container } = page();
     expect(container.querySelector('.cp')).not.toBeNull();
     expect(container.querySelector('.cp-hero .cp-slab')).not.toBeNull();
-    expect(container.querySelector('.st')).toBeNull();
+    expect(container.querySelector('.at, .hb, .rg')).toBeNull();
   });
 
-  it('renders the statement design as its own page: the cover photo with the owner cut out in front', () => {
-    const { container } = page(undefined, STATEMENT);
-    expect(container.querySelector('.st')).not.toBeNull();
-    expect(container.querySelector('.cp')).toBeNull();
-    expect(container.innerHTML).not.toContain('Permanent+Marker');
-    expect(container.querySelector('.st-cover__bg img')?.getAttribute('src')).toBe('https://example.com/kitchen.webp');
-    expect(screen.getByRole('img', { name: 'The owner, arms crossed' })).toHaveClass('st-cover__owner');
-    expect(screen.getByRole('heading', { level: 1 })).toHaveClass('st-cover__headline');
-    expect(container.querySelector('.st-cover a[href="#estimate"]')).not.toBeNull();
-    expect(container.querySelectorAll('a[href="tel:+14012061566"]').length).toBeGreaterThanOrEqual(4);
-  });
-
-  it('lists every service and shows every work photo, grouped room by room', () => {
-    const { container } = page(undefined, STATEMENT);
-    expect(container.querySelectorAll('.st-contents__item')).toHaveLength(CONTRACTOR_FIXTURE.services.items.length);
-    expect(container.querySelectorAll('.st-reel__item')).toHaveLength(CONTRACTOR_FIXTURE.work.items.length);
-    const tags = new Set(CONTRACTOR_FIXTURE.work.items.map((i) => i.tag).filter((t) => t !== undefined));
-    expect(container.querySelectorAll('.st-reel__room')).toHaveLength(tags.size);
-  });
-
-  it('sets the first review as the pull-quote and keeps the estimate form', () => {
-    const { container } = page(undefined, STATEMENT);
-    expect(container.querySelector('.st-pull__quote')?.textContent).toBe(CONTRACTOR_FIXTURE.reviews?.items[0]?.quote);
-    expect(container.querySelector('#estimate form')).not.toBeNull();
-  });
-
-  it('runs the statement design without a cutout too: the crew photo stands in', () => {
-    const { container } = page(undefined, { ...STATEMENT, hero: { ...STATEMENT.hero, cutout: undefined } });
-    expect(container.querySelector('.st-cover__owner')).toBeNull();
-    expect(container.querySelector('.st-crew__figure img')?.getAttribute('src')).toBe(CONTRACTOR_FIXTURE.crew.photo.url);
-  });
-
-  it('renders the swatch design as its own page: color bands, a deck of chips, stir-stick reviews', () => {
-    const items = CONTRACTOR_FIXTURE.work.items.map((item, i) => ({ ...item, swatch: { color: i === 0 ? '#b6a7d8' : '#2f4a3a', name: `Color ${String.fromCharCode(65 + i)}` } }));
-    const { container } = page(undefined, { ...CONTRACTOR_FIXTURE, design: 'swatch', work: { ...CONTRACTOR_FIXTURE.work, items } });
-    expect(container.querySelector('.sw')).not.toBeNull();
-    expect(container.querySelector('.cp, .st')).toBeNull();
-    expect(container.querySelectorAll('.sw-band:not(.sw-band--photo)')).toHaveLength(items.length);
-    expect(container.querySelectorAll('.sw-chip')).toHaveLength(items.length);
-    const first = container.querySelector<HTMLElement>('.sw-chip');
-    expect(first?.style.getPropertyValue('--chip')).toBe('#b6a7d8');
-    expect(first?.style.getPropertyValue('--chip-ink')).toBe('#1b1b1f');
-    expect(container.querySelector<HTMLElement>('.sw-chip:nth-child(2)')?.style.getPropertyValue('--chip-ink')).toBe('#ffffff');
-    expect(container.querySelectorAll('.sw-stick')).toHaveLength(CONTRACTOR_FIXTURE.reviews?.items.length ?? 0);
-    expect(container.querySelector('#estimate form')).not.toBeNull();
-    expect(container.querySelector('ol')).toBeNull();
-  });
-
-  it('rejects a swatch color that is not a hex color', () => {
+  it('rejects a work color that is not a hex color', () => {
     const items = CONTRACTOR_FIXTURE.work.items.map((item) => ({ ...item, swatch: { color: 'purple', name: 'Purple' } }));
-    expect(() => page(undefined, { ...CONTRACTOR_FIXTURE, design: 'swatch', work: { ...CONTRACTOR_FIXTURE.work, items } })).toThrow();
+    expect(() => page(undefined, { ...CONTRACTOR_FIXTURE, design: 'atelier', work: { ...CONTRACTOR_FIXTURE.work, items } })).toThrow();
   });
 
   it('renders the atelier design as its own page, with service cards, case studies and the comparison', () => {
@@ -88,7 +40,7 @@ describe('contractor designs', () => {
     const comparison = { eyebrow: 'Why us', title: 'Why it lasts', themLabel: 'Typical', usLabel: 'Us', rows: [{ topic: 'Prep', them: 'Skipped', us: 'Done right' }] };
     const { container } = page(undefined, { ...CONTRACTOR_FIXTURE, design: 'atelier', services, comparison, banner: { label: 'Booking', text: 'Spring' } });
     expect(container.querySelector('.at')).not.toBeNull();
-    expect(container.querySelector('.cp, .st, .sw')).toBeNull();
+    expect(container.querySelector('.cp, .hb, .rg')).toBeNull();
     expect(container.querySelectorAll('.at-services > li')).toHaveLength(CONTRACTOR_FIXTURE.services.items.length);
     expect(container.querySelectorAll('.at-cases > li')).toHaveLength(CONTRACTOR_FIXTURE.work.items.length);
     expect(container.querySelectorAll('.at-compare__row')).toHaveLength(1);
@@ -115,9 +67,9 @@ describe('contractor designs', () => {
   it('renders the harbor design: the owner over the cover, the request form first, one review at a time, his promises', () => {
     const reviews = { ...CONTRACTOR_FIXTURE.reviews!, items: [{ quote: 'Great work.', author: 'Dr. Jeff R.' }] };
     const crew = { ...CONTRACTOR_FIXTURE.crew, promises: [{ icon: 'person', title: 'You deal with Joe', text: 'He comes out himself.' }] };
-    const { container } = page(undefined, { ...STATEMENT, design: 'harbor', reviews, crew });
+    const { container } = page(undefined, { ...OWNER_COVER, design: 'harbor', reviews, crew });
     expect(container.querySelector('.hb')).not.toBeNull();
-    expect(container.querySelector('.cp, .st, .sw, .at')).toBeNull();
+    expect(container.querySelector('.cp, .at, .rg')).toBeNull();
     expect(screen.getAllByRole('img', { name: 'The owner, arms crossed' })[0]).toHaveClass('hb-cover__owner');
     const sections = [...container.querySelectorAll('main > section')];
     expect(sections[1]?.id).toBe('estimate');
@@ -126,48 +78,6 @@ describe('contractor designs', () => {
     expect(container.querySelector('.hb-quote__who')?.textContent).toContain('Dr. Jeff R.');
     expect(container.querySelector('.hb-promises')?.textContent).toContain('You deal with Joe');
     expect(container.querySelector('ol')).toBeNull();
-  });
-
-  it('renders the blueprint design as its own page, with the request form right after the cover', () => {
-    const { container } = page(undefined, { ...STATEMENT, design: 'blueprint' });
-    expect(container.querySelector('.bp')).not.toBeNull();
-    expect(container.querySelector('.cp, .st, .sw, .at, .hb')).toBeNull();
-    expect(container.querySelector('main > section:nth-of-type(2)')?.id).toBe('estimate');
-    expect(container.querySelector('.bp-services__list')).not.toBeNull();
-    expect(container.querySelectorAll('.bp-work__item')).toHaveLength(CONTRACTOR_FIXTURE.work.items.length);
-    expect(container.querySelectorAll('.bp-quote')).toHaveLength(1);
-  });
-
-  it('renders the ridge design: the Cut-Pro top with the Stitch card middle', () => {
-    const { container } = page(undefined, { ...CONTRACTOR_FIXTURE, design: 'ridge', hero: { ...CONTRACTOR_FIXTURE.hero, badges: [{ icon: 'schedule', label: 'In a day' }] } });
-    expect(container.querySelector('.rg')).not.toBeNull();
-    expect(container.querySelector('.cp, .st, .sw, .at, .hb, .bp')).toBeNull();
-    expect(container.innerHTML).toContain('Permanent+Marker');
-    expect(container.querySelector('.rg-hero .rg-brush')?.textContent).toBe(CONTRACTOR_FIXTURE.hero.marker);
-    expect(container.querySelector('.rg-gable img, .rg-gable video')).not.toBeNull();
-    expect(container.querySelectorAll('.rg-trust__item')).toHaveLength(1);
-    expect(container.querySelectorAll('.rg-cards > li')).toHaveLength(CONTRACTOR_FIXTURE.services.items.length);
-    const reviewCount = CONTRACTOR_FIXTURE.reviews?.items.length ?? 0;
-    expect(container.querySelector('.rg-lead-quote__text')?.textContent).toBe(`“${CONTRACTOR_FIXTURE.reviews?.items[0]?.quote}”`);
-    expect(container.querySelectorAll('.rg-review')).toHaveLength(reviewCount - 1);
-    expect(container.querySelector('#estimate form')).not.toBeNull();
-  });
-
-  it('opens the atelier sections differently, never with the small label over a big title', () => {
-    const { container } = page(undefined, { ...CONTRACTOR_FIXTURE, design: 'atelier', faq: { eyebrow: 'Questions', title: 'Ask us', items: [{ q: 'Q?', a: 'A.' }] } });
-    expect(container.querySelector('.at-shead')).toBeNull();
-    expect(container.querySelector('.at-dek #at-services-title')).not.toBeNull();
-    expect(container.querySelector('.at-aftercap #at-work-title')).not.toBeNull();
-    expect(container.querySelector('.at-faq__head #at-faq-title')).not.toBeNull();
-    expect(container.querySelector('.at-formcard #at-estimate-title')).not.toBeNull();
-  });
-
-  it('opens every ridge section differently, never with the small label over a big title', () => {
-    const { container } = page(undefined, { ...CONTRACTOR_FIXTURE, design: 'ridge' });
-    expect(container.querySelector('.rg-eyebrow')).toBeNull();
-    expect(container.querySelector('.rg-side__head #rg-services-title')).not.toBeNull();
-    expect(container.querySelector('.rg-project--lead .rg-project__over #rg-work-title')).not.toBeNull();
-    expect(container.querySelector('.rg-ghost')?.textContent).toBe(CONTRACTOR_FIXTURE.estimate.eyebrow);
   });
 
   it('rejects a design it does not know', () => {

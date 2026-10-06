@@ -22,7 +22,7 @@ export const CONTRACTOR_STRINGS = {
     send: 'Send this to us',
     groupLabel: 'Ballpark estimate',
   },
-  /** Blueprint design: the one-at-a-time review quote. */
+  /** The one-at-a-time review quote (harbor design). */
   quotes: {
     prev: 'Previous review',
     next: 'Next review',
@@ -39,8 +39,6 @@ export const CONTRACTOR_STRINGS = {
   },
   /** Atelier design: the closing call card. */
   callNow: 'Call now',
-  /** Statement design: under the sideways-scrolling work photos. */
-  scrollHint: 'Swipe or scroll for more',
   form: {
     name: 'Your name',
     phone: 'Phone',

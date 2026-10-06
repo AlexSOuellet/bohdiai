@@ -1,6 +1,6 @@
 /**
  * Contractor — the HARBOR design, a website built to Alex's Stitch reference for
- * Joe (2026-10-06), keeping what he liked on Joe's statement page: the owner cut
+ * Joe (2026-10-06), keeping what he liked on an earlier trial of Joe's page: the owner cut
  * out and oversized over the cover photo. Coastal navy with the brand's gold,
  * Playfair Display headlines over Plus Jakarta Sans, cool pale surfaces, an icon
  * on every card. Order: the cover, a trust strip, the request form right away,
