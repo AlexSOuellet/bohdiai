@@ -10,7 +10,7 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-10-05, Session 94.
+**Last updated:** 2026-10-06, Session 95.
 
 ---
 
@@ -18,7 +18,7 @@
 
 **Session 93 — Showcase market dates, sample banners, "Most popular" LIVE.** Showcase owners manage market dates (`/manage/dates`, `events` table); they scroll in the card marquee's bottom row at the big words' speed; the band pauses on hover/tap. The four bohdiai.com samples carry a red "<Plan> sample" banner. The maker pricing page lights up Showcase as "Most popular" (Alex's call). alexsouellet@gmail.com is admin on every site, and the build scripts add it to new ones. Full recap: `session-logs/session-93.md`.
 
-**Session 94 (late) — homepage hero redo, PARKED (Alex frustrated, resume next session).** Plan agreed: a new hero (words unchanged), then a portfolio slideshow of client sites moved by arrows, one sample per tier (Showcase/Lite/Full), a "View more samples" link to a gallery page, and the doors moved lower. Rejected so far: the photo mosaic, photos inside letters, a workbench flat lay, scenes showing trades ("too limiting"), and showing our sites on the devices ("this is the hero for a web designer, not a portfolio"). Liked: the CONCEPT of a laptop/tablet/phone on a desk (branch `feat/site-photo-hero`, WIP) that scales as one on every screen. What the screens show is undecided (Alex said "no" to design-in-progress screens). Run every idea by Alex before building, and build on the page, not mocks. Also parked: branch `fix/bulletin-taken-tab` (a taken tab shows the barn wall), built but not yet OK'd to push.
+**Session 95 — homepage reshaped; three contractor sites with their own designs; Joe's site PUBLIC; Contractor Lead Generation $10.** Hero browser = samples only; clients in an arrow slideshow; sample cards one per tier (Maker Showcase, Maker Lite, Contractor Lead Generation, Contractor Full) + "See more samples" → `/samples`. Contractor designs (`design` in the content): `yard` Cut-Pro, `atelier` True Coat (Contractor Full sample: estimator, calendar, FAQ), `ridge` Halfmoon (Contractor Lead Generation sample), `harbor` Mazzone (Joe's REAL site, public, real facts only; estimates still email Alex). Every section opener varied — no label-over-title. Draft (hidden) sites + private preview links exist (`--draft`, `scripts/site-visibility.ts`), but prod preview links 404 until the Worker's BACKEND_SESSION_SECRET matches .env.local. **Plans:** Contractor Lite → Contractor Lead Generation, $10/$100; ALL sites will get a backend (minimal for Showcase + Lead Generation); Alex considering cutting Maker Lite (undecided). Homepage desk hero still parked (`feat/site-photo-hero`); `fix/bulletin-taken-tab` still parked. Recap: `session-logs/session-95.md`.
 
 **Session 94 — card sites get designs; Rustic Rhody is a bulletin board, LIVE.** The card envelope's content names a `design` (`pinned` when it names none). The new `bulletin` design is a kraft flyer on a barn wall, carried over from the agreed mockup and checked side by side against it before Alex looked. About you gains "What I make" (`site_profiles.makes`, up to 3 phrases). Rule retracted: client sites no longer have to use the families. Next designs: the show reel, then the torch (mockups in `tmp/mockups/flyer/`). Spec `docs/superpowers/specs/2026-10-05-card-bulletin-design.md`; recap `session-logs/session-94.md`.
 
@@ -35,7 +35,11 @@ Full recap: `session-logs/session-87.md`.
 
 ## Next actions
 
-03. **Stripe pay buttons** — pricing pages went live 2026-10-02 with "Talk to us" buttons (Alex: fine until tomorrow); pay buttons replace them. Needs Alex's BohdiAI Stripe account.
+00. **Joe (Mazzone):** his feedback on the site; switch estimate emails to his address when he's in; give his page its own section openers (True Coat and Halfmoon got theirs); his own job photos when he has them.
+01a. **Estimator → request email:** the choices a visitor taps (job, size, finish, range) should travel into the estimate email. Offered, not built.
+01b. **Minimal backend for Maker Showcase + Contractor Lead Generation** — Alex: every site gets a backend; "minimal" is undesigned.
+01c. **Cloudflare:** set the Worker's BACKEND_SESSION_SECRET to match .env.local (preview links for hidden sites).
+03. **Stripe pay buttons — OFF the plan** (Alex 2026-10-05: list prices, no payment on site; payment link by hand after sign-off).
 02. **Maker backend 1c — Video** (Cloudflare Stream; confirm cost first), then 1d Custom domains + status panel (custom domains must pass `platformCredit={false}` to both footers so the "Empowered by BohdiAI" line comes off — tiers spec). Options/combinations get their real test with the first real client who sells sizes/scents.
 01. **Staging before the first paying customer's site goes live** (agreed 2026-10-02; Alex: pay buttons don't need it): own test domain, own Supabase (after Rhody Strong is deleted), root domain as a setting. Detail: backend overview spec, "Staging".
 0. **bohdiai.com loose ends (Session 89 cleared most):** CI green again (2026-09-30); prod inquiry confirmed in Alex's inbox; Classic Loafs reverted to its original build. Still open: logo from the BohdiAi Facebook page (Alex skipped for now); the Classic Loafs work shot catches the hero words mid-fade (re-time if Alex wants); sample find-us dates are all past July dates; drop "(publicly: Alex Scott)" from privacy/terms? JSON-LD founder name?
@@ -88,6 +92,7 @@ Full recap: `session-logs/session-87.md`.
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 95 (2026-10-06): **Homepage reshaped (samples hero, client slideshow, one card per tier + /samples); True Coat, Halfmoon, Mazzone built with their own designs; Joe's site public; hidden drafts; Contractor Lead Generation $10; business cards.** Full recap: `session-logs/session-95.md`.
 - Session 94 (2026-10-05): **Bulletin board design for card sites; Rustic Rhody switched, LIVE.** What I make field. Full recap: `session-logs/session-94.md`.
 - Session 93 (2026-10-04): **Showcase market dates in the marquee, marquee pause, red sample banners, Showcase "Most popular", builder login on every site — all LIVE.** Full recap: `session-logs/session-93.md`.
 - Session 92 (2026-10-03): Showcase tier + business card site (Rustic Rhody), whole-dollar prices. No log written; see the business card design and tiers specs.
