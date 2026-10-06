@@ -18,8 +18,6 @@
 
 **Session 95 — homepage reshaped; three contractor sites with their own designs; Joe's site PUBLIC; Contractor Lead Generation $10.** Hero browser = samples only; clients in an arrow slideshow; sample cards one per tier (Maker Showcase, Maker Lite, Contractor Lead Generation, Contractor Full) + "See more samples" → `/samples`. Contractor designs (`design` in the content): `yard` Cut-Pro, `atelier` True Coat (Contractor Full sample: estimator, calendar, FAQ), `ridge` Halfmoon (Contractor Lead Generation sample), `harbor` Mazzone (Joe's REAL site, public, real facts only; estimates still email Alex). Every section opener varied — no label-over-title. Draft (hidden) sites + private preview links exist (`--draft`, `scripts/site-visibility.ts`), but prod preview links 404 until the Worker's BACKEND_SESSION_SECRET matches .env.local. **Plans:** Contractor Lite → Contractor Lead Generation, $10/$100; ALL sites will get a backend (minimal for Showcase + Lead Generation); Alex considering cutting Maker Lite (undecided). Homepage desk hero still parked (`feat/site-photo-hero`); `fix/bulletin-taken-tab` still parked. Recap: `session-logs/session-95.md`.
 
-**Session 94 — card sites get designs; Rustic Rhody is a bulletin board, LIVE.** The card envelope's content names a `design` (`pinned` when it names none). The new `bulletin` design is a kraft flyer on a barn wall, carried over from the agreed mockup and checked side by side against it before Alex looked. About you gains "What I make" (`site_profiles.makes`, up to 3 phrases). Rule retracted: client sites no longer have to use the families. Next designs: the show reel, then the torch (mockups in `tmp/mockups/flyer/`). Spec `docs/superpowers/specs/2026-10-05-card-bulletin-design.md`; recap `session-logs/session-94.md`.
-
 **Session 87 — the whole app now runs on Cloudflare Workers; Vercel serves nothing.** bohdiai.com, www, every shop subdomain and Cut-Pro are all served by the `bohdiai` Worker, verified live (Cut-Pro end to end, including a real photo estimate). `main` is current (fast-forwarded 552 commits). 1364 tests, tsc + lint clean. Runbook + lessons: `Cloudflare-Move.md`.
 
 - **Direction (2026-09-29):** everything is manual for now. No onboarding, no editor, no automated builder. All site edits go through Alex. A maker **backend** (catalog, pricing, orders, customers, checkout, modeled on Penny's Decoupage Digital Designs site, minus digital downloads) WILL be built. The Facebook poster and financial report come after launch. Sites span service providers, makers and charities, inside the BohdiAI structure.
@@ -29,7 +27,6 @@
 - **Workers constraints:** no filesystem at request time (legal templates are now bundled); photo shrink goes through the Images binding (`lib/images/shrink.ts`, 20MB max); edge `middleware.ts`, not `proxy.ts`.
 - **Building a client:** content module in `scripts/sites/<site>.ts`, then `npx tsx --env-file=.env.local scripts/build-contractor-site.ts <site> --media <dir> [--contact-email x]`. This writes to the DB and storage, so no deploy is needed.
 
-Full recap: `session-logs/session-87.md`.
 
 ## Next actions
 
