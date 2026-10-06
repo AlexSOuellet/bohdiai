@@ -48,7 +48,27 @@ export function ridgeCss(p: DerivedPalette): string {
 .rg-title{margin:0;font-family:var(--rg-display);font-weight:400;text-transform:uppercase;font-size:clamp(38px,4.8vw,64px);line-height:.95;text-wrap:balance}
 .rg-lede{margin:18px 0 0;max-width:56ch;font-size:18px;color:var(--rg-muted)}
 .rg-light .rg-lede{color:var(--rg-soft)}
-.rg-shead{margin-bottom:clamp(32px,4vw,52px)}
+.rg-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* ── section openers, a different one each time ────────── */
+.rg-side{display:grid;grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr);gap:clamp(32px,5vw,72px);align-items:start}
+.rg-side__head{position:sticky;top:110px}
+.rg-side__head .rg-title{font-size:clamp(44px,5.4vw,80px)}
+.rg-cards--two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.rg-projects--lead{grid-template-columns:repeat(3,minmax(0,1fr))}
+.rg-project--lead{grid-column:1 / -1}
+.rg-project--lead .rg-project__photo{aspect-ratio:21/9}
+.rg-project__over{position:absolute;inset:auto 0 0 0;padding:clamp(24px,4vw,56px);background:linear-gradient(0deg,color-mix(in srgb,var(--rg-bg) 88%,transparent),transparent)}
+.rg-project__over .rg-title{font-size:clamp(40px,6vw,96px);max-width:12ch}
+.rg-project__intro{margin:14px 0 0;max-width:52ch;color:var(--rg-fg);opacity:.85}
+.rg-lead-quote{margin:0 0 clamp(40px,5vw,64px);max-width:1080px}
+.rg-lead-quote__text{margin:14px 0 0;font-family:var(--rg-display);font-weight:400;text-transform:uppercase;font-size:clamp(34px,4.6vw,68px);line-height:1;text-wrap:balance}
+.rg-lead-quote .rg-review__who{margin-top:22px}
+.rg-ghosted{position:relative;overflow:hidden}
+.rg-ghost{position:absolute;left:50%;top:clamp(12px,3vw,40px);translate:-50% 0;margin:0;white-space:nowrap;font-family:var(--rg-display);font-size:clamp(110px,20vw,320px);line-height:.8;text-transform:uppercase;color:color-mix(in oklab,var(--rg-accent) 12%,var(--rg-light));pointer-events:none;z-index:0}
+.rg-ghosted .rg-wrap{position:relative;z-index:1;padding-top:clamp(60px,9vw,160px)}
+@media(max-width:900px){.rg-side{grid-template-columns:1fr}.rg-side__head{position:static}.rg-projects--lead{grid-template-columns:1fr}.rg-project--lead .rg-project__photo{aspect-ratio:4/5}}
+@media(max-width:640px){.rg-cards--two{grid-template-columns:1fr}}
 .rg-brush{display:inline-block;position:relative;font-family:var(--rg-marker);color:var(--rg-on-accent);padding:.18em .7em .12em;transform:rotate(-2.5deg);line-height:1.1}
 .rg-brush::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--rg-accent);-webkit-mask:${BRUSH} center/100% 100% no-repeat;mask:${BRUSH} center/100% 100% no-repeat}
 .rg-note{margin:28px 0 0;font-size:14px;color:var(--rg-soft)}

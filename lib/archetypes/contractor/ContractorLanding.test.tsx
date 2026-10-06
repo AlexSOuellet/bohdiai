@@ -147,8 +147,18 @@ describe('contractor designs', () => {
     expect(container.querySelector('.rg-gable img, .rg-gable video')).not.toBeNull();
     expect(container.querySelectorAll('.rg-trust__item')).toHaveLength(1);
     expect(container.querySelectorAll('.rg-cards > li')).toHaveLength(CONTRACTOR_FIXTURE.services.items.length);
-    expect(container.querySelectorAll('.rg-review')).toHaveLength(CONTRACTOR_FIXTURE.reviews?.items.length ?? 0);
+    const reviewCount = CONTRACTOR_FIXTURE.reviews?.items.length ?? 0;
+    expect(container.querySelector('.rg-lead-quote__text')?.textContent).toBe(`“${CONTRACTOR_FIXTURE.reviews?.items[0]?.quote}”`);
+    expect(container.querySelectorAll('.rg-review')).toHaveLength(reviewCount - 1);
     expect(container.querySelector('#estimate form')).not.toBeNull();
+  });
+
+  it('opens every ridge section differently, never with the small label over a big title', () => {
+    const { container } = page(undefined, { ...CONTRACTOR_FIXTURE, design: 'ridge' });
+    expect(container.querySelector('.rg-eyebrow')).toBeNull();
+    expect(container.querySelector('.rg-side__head #rg-services-title')).not.toBeNull();
+    expect(container.querySelector('.rg-project--lead .rg-project__over #rg-work-title')).not.toBeNull();
+    expect(container.querySelector('.rg-ghost')?.textContent).toBe(CONTRACTOR_FIXTURE.estimate.eyebrow);
   });
 
   it('rejects a design it does not know', () => {

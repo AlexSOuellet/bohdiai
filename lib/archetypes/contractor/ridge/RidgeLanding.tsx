@@ -100,16 +100,6 @@ export function RidgeContentPage({ content, palette, html }: { content: Contract
   );
 }
 
-function SectionHead({ eyebrow, title, intro, id }: { eyebrow: string; title: string; intro?: string | undefined; id: string }): ReactElement {
-  return (
-    <div className="rg-shead">
-      <p className="rg-eyebrow">{eyebrow}</p>
-      <h2 className="rg-title" id={id}>{title}</h2>
-      {intro !== undefined && <p className="rg-lede">{intro}</p>}
-    </div>
-  );
-}
-
 export function RidgeLanding({ content: c, palette, tenantId }: { content: ContractorContent; palette: DerivedPalette; tenantId: string | undefined }): ReactElement {
   const b = c.business;
   const tel = `tel:${b.phoneDial}`;
@@ -152,11 +142,14 @@ export function RidgeLanding({ content: c, palette, tenantId }: { content: Contr
           </div>
         )}
 
-        {/* ── services as photo cards, on light ── */}
+        {/* ── services: the headline pinned on the side, the cards beside it ── */}
         <section className="rg-section rg-light" aria-labelledby="rg-services-title">
-          <div className="rg-wrap">
-            <SectionHead eyebrow={c.services.eyebrow} title={c.services.title} intro={c.services.note} id="rg-services-title" />
-            <ul className="rg-cards">
+          <div className="rg-wrap rg-side">
+            <div className="rg-side__head">
+              <h2 className="rg-title" id="rg-services-title">{c.services.title}</h2>
+              {c.services.note !== undefined && <p className="rg-lede">{c.services.note}</p>}
+            </div>
+            <ul className="rg-cards rg-cards--two">
               {c.services.items.map((s) => (
                 <li key={s.name} className={s.photo !== undefined ? 'rg-card' : 'rg-card rg-card--plain'}>
                   {s.photo !== undefined && (
@@ -179,16 +172,21 @@ export function RidgeLanding({ content: c, palette, tenantId }: { content: Contr
           </div>
         </section>
 
-        {/* ── the work as project cards, on dark ── */}
+        {/* ── the work: no heading above; the headline sits across the first, big photo ── */}
         <section className="rg-section" aria-labelledby="rg-work-title">
           <div className="rg-wrap">
-            <SectionHead eyebrow={c.work.eyebrow} title={c.work.title} intro={c.work.intro} id="rg-work-title" />
-            <ul className="rg-projects">
-              {c.work.items.map((item) => (
-                <li key={item.media.url} className="rg-project">
+            <ul className="rg-projects rg-projects--lead">
+              {c.work.items.map((item, i) => (
+                <li key={item.media.url} className={i === 0 ? 'rg-project rg-project--lead' : 'rg-project'}>
                   <div className="rg-project__photo">
                     <Media media={item.media} />
                     {item.tag !== undefined && <span className="rg-card__label rg-card__label--accent">{item.tag}</span>}
+                    {i === 0 && (
+                      <div className="rg-project__over">
+                        <h2 className="rg-title" id="rg-work-title">{c.work.title}</h2>
+                        {c.work.intro !== undefined && <p className="rg-project__intro">{c.work.intro}</p>}
+                      </div>
+                    )}
                   </div>
                   <p className="rg-project__cap">
                     <span className="rg-project__title">{item.caption}</span>
@@ -200,20 +198,30 @@ export function RidgeLanding({ content: c, palette, tenantId }: { content: Contr
           </div>
         </section>
 
-        {/* ── review cards with stars, on light ── */}
-        {reviews !== undefined && (
+        {/* ── reviews: the first customer's words, huge, open the section ── */}
+        {reviews !== undefined && reviews.items[0] !== undefined && (
           <section className="rg-section rg-light" aria-labelledby="rg-reviews-title">
             <div className="rg-wrap">
-              <SectionHead eyebrow={reviews.eyebrow} title={reviews.title} id="rg-reviews-title" />
-              <ul className="rg-reviews">
-                {reviews.items.map((r) => (
-                  <li key={r.quote} className="rg-card rg-review">
-                    <span className="rg-stars" role="img" aria-label={S.starsLabel}>{'star '.repeat(5).trim()}</span>
-                    <blockquote className="rg-review__quote">“{r.quote}”</blockquote>
-                    <p className="rg-review__who"><strong>{r.author}</strong>{r.job !== undefined && <span>{r.job}</span>}</p>
-                  </li>
-                ))}
-              </ul>
+              <h2 className="rg-sr" id="rg-reviews-title">{reviews.title}</h2>
+              <figure className="rg-lead-quote">
+                <span className="rg-stars" role="img" aria-label={S.starsLabel}>{'star '.repeat(5).trim()}</span>
+                <blockquote className="rg-lead-quote__text">“{reviews.items[0].quote}”</blockquote>
+                <figcaption className="rg-review__who">
+                  <strong>{reviews.items[0].author}</strong>
+                  {reviews.items[0].job !== undefined && <span>{reviews.items[0].job}</span>}
+                </figcaption>
+              </figure>
+              {reviews.items.length > 1 && (
+                <ul className="rg-reviews">
+                  {reviews.items.slice(1).map((r) => (
+                    <li key={r.quote} className="rg-card rg-review">
+                      <span className="rg-stars" role="img" aria-label={S.starsLabel}>{'star '.repeat(5).trim()}</span>
+                      <blockquote className="rg-review__quote">“{r.quote}”</blockquote>
+                      <p className="rg-review__who"><strong>{r.author}</strong>{r.job !== undefined && <span>{r.job}</span>}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
               {reviews.note !== undefined && <p className="rg-note">{reviews.note}</p>}
             </div>
           </section>
@@ -224,7 +232,7 @@ export function RidgeLanding({ content: c, palette, tenantId }: { content: Contr
           <div className="rg-wrap rg-crew__grid">
             <div className="rg-crew__photo"><Media media={c.crew.photo} /></div>
             <div>
-              <p className="rg-eyebrow" id="rg-crew-title">{c.crew.eyebrow}</p>
+              <h2 className="rg-sr" id="rg-crew-title">{c.crew.eyebrow}</h2>
               <blockquote className="rg-crew__quote">{c.crew.quote}</blockquote>
               <p className="rg-crew__who">{c.crew.attribution}</p>
               {c.crew.body.map((p) => <p className="rg-crew__body" key={p.slice(0, 32)}>{p}</p>)}
@@ -232,11 +240,13 @@ export function RidgeLanding({ content: c, palette, tenantId }: { content: Contr
           </div>
         </section>
 
-        {/* ── where + the form as a clean card, on light ── */}
-        <section className="rg-section rg-light" id={ESTIMATE_ID} aria-labelledby="rg-estimate-title">
+        {/* ── the estimate: a giant faded word behind the form and its title ── */}
+        <section className="rg-section rg-light rg-ghosted" id={ESTIMATE_ID} aria-labelledby="rg-estimate-title">
+          <p className="rg-ghost" aria-hidden="true">{c.estimate.eyebrow}</p>
           <div className="rg-wrap rg-close">
             <div>
-              <SectionHead eyebrow={c.estimate.eyebrow} title={c.estimate.title} intro={c.estimate.intro} id="rg-estimate-title" />
+              <h2 className="rg-title" id="rg-estimate-title">{c.estimate.title}</h2>
+              <p className="rg-lede">{c.estimate.intro}</p>
               {c.estimate.steps !== undefined && (
                 <ul className="rg-steps">{c.estimate.steps.map((s) => <li key={s}><Icon name="check_circle" /> {s}</li>)}</ul>
               )}
