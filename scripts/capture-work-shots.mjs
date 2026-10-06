@@ -1,6 +1,6 @@
 // Re-capture the bohdiai.com work screenshots: node scripts/capture-work-shots.mjs [slug] [url]
 // Pass a url with the slug to capture a site before it is live (e.g. its local dev address).
-// Headless Chrome at 1440x900, cropped to the top 1440x760 (above cookie banners), saved as WebP
+// Headless Chrome at 1440x900, cropped to 1440x760 (above cookie banners; below the sample banner on samples), saved as WebP
 // in public/work/. Look at every image afterwards — a blank or half-loaded page must not ship.
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, existsSync } from 'node:fs';
@@ -21,6 +21,12 @@ const SITES = {
   'true-coat-painting': 'https://true-coat-painting.bohdiai.com',
   'halfmoon-roofing': 'https://halfmoon-roofing.bohdiai.com',
 };
+
+/** Sample sites carry the 48px sample banner (app/storefront/_components/SampleBanner.tsx).
+ *  Thumbnails leave it out (Alex, 2026-10-06: the banner is for the sites, not the thumbnails),
+ *  so their crop starts below it. */
+const BANNER_H = 48;
+const BANNERED = new Set(['classic-loafs', 'twilight-to-darkness', 'heavenly-scents', 'rustic-rhody', 'paper-and-patina', 'ember-and-pine', 'true-coat-painting', 'halfmoon-roofing']);
 
 const CHROME = [
   process.env.CHROME_PATH,
@@ -57,7 +63,7 @@ try {
     );
     if (!existsSync(png)) throw new Error(`Chrome produced no screenshot for ${url}`);
     await sharp(png)
-      .extract({ left: 0, top: 0, width: 1440, height: 760 })
+      .extract({ left: 0, top: BANNERED.has(slug) ? BANNER_H : 0, width: 1440, height: 760 })
       .webp({ quality: 80 })
       .toFile(path.join('public', 'work', `${slug}.webp`));
     console.log(`captured ${slug}`);
