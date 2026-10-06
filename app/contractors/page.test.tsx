@@ -12,7 +12,7 @@ describe('bohdiai.com/contractors', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
       'A real web developer for less than a site builder',
     );
-    expect(screen.getByRole('article', { name: 'Contractor Lite' })).toHaveTextContent('$15');
+    expect(screen.getByRole('article', { name: 'Contractor Lead Generation' })).toHaveTextContent('$15');
     expect(screen.getByRole('article', { name: 'Contractor Full' })).toHaveTextContent('$30');
   });
 

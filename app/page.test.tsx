@@ -37,6 +37,7 @@ describe('bohdiai.com home', () => {
     fireEvent.click(within(clients).getByRole('button', { name: 'Next client' }));
     expect(within(clients).getByRole('heading', { level: 3 })).toHaveTextContent('Decoupage Digital Designs');
     expect(screen.getByText(/not real businesses/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /see more samples/i })).toHaveAttribute('href', '/samples');
   });
 
   it('keeps the promises next to the form, now that prices are public', () => {

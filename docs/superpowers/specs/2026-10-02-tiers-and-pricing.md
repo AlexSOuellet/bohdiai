@@ -21,7 +21,7 @@ Every plan, maker or contractor: **the site is built free**, then a monthly pric
 | Maker Showcase | $5 | $50 |
 | Maker Lite | $15 | $150 |
 | Maker Full | $20 | $200 |
-| Contractor Lite | $15 | $150 |
+| Contractor Lead Generation | $15 | $150 |
 | Contractor Full | $30 | $300 |
 
 **2026-10-03 (Alex):** every price is whole dollars, rounded up from the .99 prices (round reads as honest, and only the first digit moves a buyer); yearly is exactly ten months. Maker Showcase added below Lite.
@@ -76,7 +76,7 @@ A separate track, not on the maker ladder (a contractor never moves up to sellin
 
 Two tiers, mirroring the makers. The site is built free on both; the contractor pays monthly.
 
-- **Contractor Lite — $15/month.** A Cut-Pro-style one-page site: the estimate form (photos to email), no backend; changes go through Alex. Sellable today. $150/year. Priced the same as Maker Lite: a one-page site costs the same whoever buys it.
+- **Contractor Lead Generation — $15/month** (named Contractor Lite until 2026-10-06; Alex: "I like Contractor Lead Generation"; the plan id stays `contractor-lite` so existing links work). A Cut-Pro-style one-page site: the estimate form (photos to email), no backend; changes go through Alex. Sellable today. $150/year. Priced the same as Maker Lite: a one-page site costs the same whoever buys it.
 - **Contractor Full — $30/month, or $300/year.** The contractor backend: estimate inbox (new → contacted → quoted → won/lost), job gallery (photos and short videos), services and service area, booked-days calendar, reviews, FAQ, notices, and **review requests** (after a job, the customer gets a text/email link to leave a Google review — new, not yet in the backend plan). Contractor-only features a maker doesn't need.
 - **Why contractors pay more for Full than makers do:** different product with contractor-only tools, and contractors read a low price as amateur work. Justified by features, never by "more changes" (that would invite edit requests and break the fixes-not-additions rule). Contractor Full is sold on what it does for their business (estimate requests with photos on their phone, booked-out calendar), never as page count. The two audiences get separate pages (see the bohdiai.com pricing design), so the prices are not shown side by side. Considered and rejected: one value-based contractor price ($29.99, now $30, for a one-page site) — publicly it reads as "you can afford it".
 - Contractors are expected to churn less than weekend-warrior makers (the site is how they get work) — reasoning, not data.

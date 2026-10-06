@@ -1,4 +1,4 @@
-import { CLIENTS, LISTED_SAMPLES, sampleAudience } from '@/lib/site/work';
+import { CLIENTS, LISTED_SAMPLES, planName, sampleAudience } from '@/lib/site/work';
 import { ClientSlideshow } from './ClientSlideshow';
 import { WorkShot } from './WorkShot';
 import { SectionKicker } from './SectionKicker';
@@ -92,7 +92,7 @@ export function Work({ audience }: { audience?: Audience } = {}): React.ReactEle
                 <div className="mt-4 px-1.5">
                   {s.plan !== undefined && (
                     <span className="mb-1.5 inline-block rounded-pill border border-honey-warm/35 bg-honey-warm/[0.08] px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-honey-warm">
-                      {s.plan}
+                      {planName(s.plan)}
                     </span>
                   )}
                   <span className="block font-sans text-[18px] font-medium tracking-[-0.01em] text-text">
@@ -105,6 +105,12 @@ export function Work({ audience }: { audience?: Audience } = {}): React.ReactEle
               </a>
             ))}
           </div>
+          <a
+            href="/samples"
+            className="relative z-content mt-12 inline-flex items-center gap-2 border-b border-honey-warm/35 pb-0.5 text-[14px] font-semibold text-honey-warm no-underline transition-colors hover:border-honey-warm md:mt-20"
+          >
+            See more samples →
+          </a>
         </div>
       )}
     </section>

@@ -18,7 +18,7 @@ describe('PlanInquiryForm', () => {
   it('starts on the plan in the address and the audience’s kind of business', () => {
     query = 'plan=contractor-lite';
     render(<PlanInquiryForm audience="contractor" />);
-    expect(screen.getByLabelText('Contractor Lite')).toBeChecked();
+    expect(screen.getByLabelText('Contractor Lead Generation')).toBeChecked();
     expect(screen.getByLabelText(/service business/i)).toBeChecked();
   });
 

@@ -25,7 +25,7 @@ export type WorkEntry = {
   features: readonly string[];
   /** Path under public/. */
   shot: string;
-  /** Samples only: which plan the sample shows ("Showcase", "Lite", "Full", "Contractor Lite", "Contractor Full"). */
+  /** Samples only: which plan the sample shows ("Showcase", "Lite", "Full", "Contractor Lead Generation", "Contractor Full"). */
   plan?: string;
   /** Samples only: who the sample is for — its banner links to that pricing page. */
   audience?: 'maker' | 'contractor';
@@ -132,6 +132,7 @@ export const SAMPLES: readonly WorkEntry[] = [
     features: [],
     shot: '/work/twilight-to-darkness.webp',
     plan: 'Full',
+    listed: false,
     testimonials: [],
   },
   {
@@ -158,7 +159,7 @@ export const SAMPLES: readonly WorkEntry[] = [
     blurb: 'A one-page site built to bring in estimate requests',
     features: [],
     shot: '/work/halfmoon-roofing.webp',
-    plan: 'Contractor Lite',
+    plan: 'Contractor Lead Generation',
     audience: 'contractor',
     testimonials: [],
   },
@@ -209,9 +210,22 @@ export const SAMPLES: readonly WorkEntry[] = [
 /** The samples bohdiai.com shows (the rest exist only as sample sites, with the banner). */
 export const LISTED_SAMPLES: readonly WorkEntry[] = SAMPLES.filter((s) => s.listed !== false);
 
+/** The plans in the order they are sold — the samples page groups by this. */
+export const SAMPLE_PLAN_ORDER = ['Showcase', 'Lite', 'Full', 'Contractor Lead Generation', 'Contractor Full'] as const;
+
+/** Every sample, listed on the home page or not, grouped by plan in selling order. */
+export function samplesByPlan(): { plan: string; samples: WorkEntry[] }[] {
+  return SAMPLE_PLAN_ORDER.map((plan) => ({ plan, samples: SAMPLES.filter((s) => s.plan === plan) })).filter((g) => g.samples.length > 0);
+}
+
 /** Who a sample is for; a sample with no audience is a maker's. */
 export function sampleAudience(s: WorkEntry): 'maker' | 'contractor' {
   return s.audience ?? 'maker';
+}
+
+/** The plan as the pricing pages name it: "Maker Showcase", "Contractor Full". */
+export function planName(plan: string): string {
+  return plan.startsWith('Contractor') ? plan : `Maker ${plan}`;
 }
 
 export const WORK: readonly WorkEntry[] = [...CLIENTS, ...LISTED_SAMPLES];

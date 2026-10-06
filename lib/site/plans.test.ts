@@ -50,7 +50,7 @@ describe('plans', () => {
     expect(isPlanId('maker-full')).toBe(true);
     expect(isPlanId('maker-pro')).toBe(false);
     expect(isPlanId('')).toBe(false);
-    expect(planById('contractor-lite').name).toBe('Contractor Lite');
+    expect(planById('contractor-lite').name).toBe('Contractor Lead Generation');
   });
 
   it('ends every comparison with BohdiAI and fills every row', () => {
