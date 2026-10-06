@@ -112,7 +112,7 @@ describe('contractor designs', () => {
     expect(container.querySelector('.at-faq__item summary')?.textContent).toContain('Do you move furniture?');
   });
 
-  it('renders the harbor design: the owner over the cover, the request form first, initials on reviews, his promises', () => {
+  it('renders the harbor design: the owner over the cover, the request form first, one review at a time, his promises', () => {
     const reviews = { ...CONTRACTOR_FIXTURE.reviews!, items: [{ quote: 'Great work.', author: 'Dr. Jeff R.' }] };
     const crew = { ...CONTRACTOR_FIXTURE.crew, promises: [{ icon: 'person', title: 'You deal with Joe', text: 'He comes out himself.' }] };
     const { container } = page(undefined, { ...STATEMENT, design: 'harbor', reviews, crew });
@@ -122,7 +122,8 @@ describe('contractor designs', () => {
     const sections = [...container.querySelectorAll('main > section')];
     expect(sections[1]?.id).toBe('estimate');
     expect(container.querySelector('#estimate form')).not.toBeNull();
-    expect(container.querySelector('.hb-avatar')?.textContent).toBe('JR');
+    expect(container.querySelectorAll('.hb-quote')).toHaveLength(1);
+    expect(container.querySelector('.hb-quote__who')?.textContent).toContain('Dr. Jeff R.');
     expect(container.querySelector('.hb-promises')?.textContent).toContain('You deal with Joe');
     expect(container.querySelector('ol')).toBeNull();
   });

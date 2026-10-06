@@ -16,25 +16,12 @@ import { EstimateForm } from '../EstimateForm';
 import { Media } from '../ContractorLanding';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 import { harborCss, HARBOR_FONTS_HREF } from './styles';
+import { QuoteRotator } from '../QuoteRotator';
 
 const ESTIMATE_ID = 'estimate';
 
 function Icon({ name, fill }: { name: string; fill?: boolean }): ReactElement {
   return <span className={fill === true ? 'hb-icon hb-icon--fill' : 'hb-icon'} aria-hidden="true">{name}</span>;
-}
-
-/** Honorifics left out of the initials, so "Dr. Jeff R." reads "JR". */
-const TITLES = new Set(['dr', 'mr', 'mrs', 'ms', 'miss', 'prof']);
-
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter((w) => !TITLES.has(w.replace(/\./g, '').toLowerCase()))
-    .map((w) => w.replace(/[^A-Za-z]/g, '').charAt(0))
-    .filter((ch) => ch !== '')
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
 }
 
 /** Header, footer and the phone thumb bar around any page body. */
@@ -208,7 +195,7 @@ export function HarborLanding({ content: c, palette, tenantId }: { content: Cont
         </section>
 
         {/* ── the work as project cards ─────────────────────────── */}
-        <section className="hb-section" aria-labelledby="hb-work-title">
+        <section className="hb-section hb-warm" aria-labelledby="hb-work-title">
           <div className="hb-wrap">
             <SectionHead eyebrow={c.work.eyebrow} title={c.work.title} intro={c.work.intro} id="hb-work-title" />
             <ul className="hb-projects">
@@ -241,21 +228,7 @@ export function HarborLanding({ content: c, palette, tenantId }: { content: Cont
                   </p>
                 )}
               </div>
-              <ul className="hb-reviews">
-                {reviews.items.map((r) => (
-                  <li key={r.quote} className="hb-card hb-review">
-                    <div className="hb-review__top">
-                      <span className="hb-stars" role="img" aria-label={S.starsLabel}>{'star '.repeat(5).trim()}</span>
-                      {r.job !== undefined && <span className="hb-review__job">{r.job}</span>}
-                    </div>
-                    <blockquote className="hb-review__quote">“{r.quote}”</blockquote>
-                    <p className="hb-review__who">
-                      <span className="hb-avatar" aria-hidden="true">{initials(r.author)}</span>
-                      <strong>{r.author}</strong>
-                    </p>
-                  </li>
-                ))}
-              </ul>
+              <QuoteRotator items={reviews.items} prefix="hb" />
               {reviews.note !== undefined && <p className="hb-note">{reviews.note}</p>}
             </div>
           </section>

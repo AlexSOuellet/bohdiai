@@ -17,7 +17,7 @@ import { Media } from '../ContractorLanding';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 import { blueprintCss, BLUEPRINT_FONTS_HREF } from './styles';
 import { ServiceList } from './ServiceList';
-import { QuoteRotator } from './QuoteRotator';
+import { QuoteRotator } from '../QuoteRotator';
 
 const ESTIMATE_ID = 'estimate';
 
@@ -213,7 +213,7 @@ export function BlueprintLanding({ content: c, palette, tenantId }: { content: C
                   </p>
                 )}
               </div>
-              <QuoteRotator items={reviews.items} />
+              <QuoteRotator items={reviews.items} prefix="bp" />
               {reviews.note !== undefined && <p className="bp-note">{reviews.note}</p>}
             </div>
           </section>
