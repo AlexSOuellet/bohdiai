@@ -1,19 +1,25 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { WORK } from '@/lib/site/work';
+import { HERO_WORK } from '@/lib/site/work';
 
 // eslint-disable-next-line @next/next/no-img-element -- a plain img stands in for next/image in tests
 vi.mock('next/image', () => ({ default: (p: { alt: string; src: string }) => <img alt={p.alt} src={p.src} /> }));
 const { WorkBrowser } = await import('./WorkBrowser');
 
 describe('WorkBrowser', () => {
-  it('starts on the first client with its real address, screenshot and live link', () => {
+  it('starts on the first sample with its real address, screenshot and live link', () => {
     render(<WorkBrowser />);
-    expect(screen.getByText('cut-pro-lawncare.bohdiai.com')).toBeInTheDocument();
-    expect(screen.getByText('Client · Cut-Pro Lawncare & Construction')).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: 'Cut-Pro Lawncare & Construction home page' })).toHaveAttribute('src', '/work/cut-pro-lawncare.webp');
-    expect(screen.getByRole('link', { name: /visit the live site/i })).toHaveAttribute('href', 'https://cut-pro-lawncare.bohdiai.com');
+    expect(screen.getByText('rustic-rhody.bohdiai.com')).toBeInTheDocument();
+    expect(screen.getByText('Sample · Rustic Rhody')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Rustic Rhody home page' })).toHaveAttribute('src', '/work/rustic-rhody.webp');
+    expect(screen.getByRole('link', { name: /visit the live site/i })).toHaveAttribute('href', 'https://rustic-rhody.bohdiai.com');
+  });
+
+  it('shows no client sites; they live in the work section', () => {
+    render(<WorkBrowser />);
+    expect(screen.queryByRole('button', { name: /show cut-pro/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /show decoupage/i })).toBeNull();
   });
 
   it('labels samples as samples when you jump to one', async () => {
@@ -27,6 +33,6 @@ describe('WorkBrowser', () => {
 
   it('has one pager button per site', () => {
     render(<WorkBrowser />);
-    expect(screen.getAllByRole('button', { name: /^show /i })).toHaveLength(WORK.length);
+    expect(screen.getAllByRole('button', { name: /^show /i })).toHaveLength(HERO_WORK.length);
   });
 });

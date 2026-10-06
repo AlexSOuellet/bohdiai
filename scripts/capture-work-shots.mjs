@@ -17,6 +17,7 @@ const SITES = {
   'rustic-rhody': 'https://rustic-rhody.bohdiai.com',
   'paper-and-patina': 'https://paper-and-patina.bohdiai.com',
   'ember-and-pine': 'https://ember-and-pine.bohdiai.com',
+  'knotty-knits': 'https://knotty-knits.bohdiai.com',
 };
 
 const CHROME = [

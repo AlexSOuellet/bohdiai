@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useState, type ReactElement } from 'react';
-import { WORK, type WorkEntry } from '@/lib/site/work';
+import { HERO_WORK, type WorkEntry } from '@/lib/site/work';
 
 const CYCLE_MS = 5000;
 
@@ -25,11 +25,11 @@ function prefersReducedMotion(): boolean {
 export function WorkBrowser(): ReactElement {
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
-  const current = WORK[idx] ?? WORK[0]!;
+  const current = HERO_WORK[idx] ?? HERO_WORK[0]!;
 
   useEffect(() => {
     if (paused || prefersReducedMotion()) return undefined;
-    const t = setInterval(() => setIdx((i) => (i + 1) % WORK.length), CYCLE_MS);
+    const t = setInterval(() => setIdx((i) => (i + 1) % HERO_WORK.length), CYCLE_MS);
     return () => clearInterval(t);
   }, [paused]);
 
@@ -89,7 +89,7 @@ export function WorkBrowser(): ReactElement {
       </div>
 
       <div className="relative z-content mt-6 flex items-center justify-center gap-2 md:mt-7">
-        {WORK.map((w, i) => (
+        {HERO_WORK.map((w, i) => (
           <button
             key={w.slug}
             type="button"
