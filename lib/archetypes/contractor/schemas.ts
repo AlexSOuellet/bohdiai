@@ -140,6 +140,34 @@ export const ContractorContentSchema = z
       })
       .strict(),
     estimator: EstimatorSchema.optional(),
+    /** Contractor Full: a short notice across the top of every page, e.g. "Now booking spring exteriors". */
+    notice: text.optional(),
+    /** Contractor Full: the booked-days calendar, months in the order to show, days as numbers. */
+    calendar: z
+      .object({
+        eyebrow: text,
+        title: text,
+        intro: text.optional(),
+        months: z
+          .array(
+            z
+              .object({
+                year: z.number().int().min(2024).max(2100),
+                month: z.number().int().min(1).max(12),
+                booked: z.array(z.number().int().min(1).max(31)),
+              })
+              .strict(),
+          )
+          .min(1)
+          .max(3),
+      })
+      .strict()
+      .optional(),
+    /** Contractor Full: questions customers ask, answered. */
+    faq: z
+      .object({ eyebrow: text, title: text, items: z.array(z.object({ q: text, a: text }).strict()).min(1) })
+      .strict()
+      .optional(),
     /** Atelier design: the line above the closing call to action, e.g. a booking note. */
     banner: z.object({ label: text, text: text, tag: text.optional() }).strict().optional(),
     /** Atelier design: "typical painters vs us", one row per topic. */

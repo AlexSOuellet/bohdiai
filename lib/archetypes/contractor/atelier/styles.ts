@@ -73,7 +73,7 @@ export function atelierCss(p: DerivedPalette): string {
 
 /* ── hero ──────────────────────────────────────────────── */
 /* ── the cover: one photo edge to edge, the headline on it, a cream card in the corner ── */
-.at-cover{position:relative;isolation:isolate;min-height:max(640px,calc(100svh - 72px));display:flex;color:#fff}
+.at-cover{position:relative;isolation:isolate;min-height:max(640px,min(calc(100svh - 72px),940px));display:flex;color:#fff}
 .at-cover__photo{position:absolute;inset:0;z-index:-1;overflow:hidden}
 .at-cover__photo img,.at-cover__photo video{width:100%;height:100%;object-fit:cover}
 .at-cover__photo::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,13,19,.55) 0%,rgba(8,13,19,.12) 45%,rgba(8,13,19,.05) 60%,rgba(8,13,19,.55) 100%)}
@@ -181,6 +181,36 @@ export function atelierCss(p: DerivedPalette): string {
 .at-review__top{display:flex;flex-direction:column;gap:2px;margin:auto 0 0}
 .at-review__who{font-size:14px;font-weight:700}
 @media(max-width:1000px){.at-reviews{grid-template-columns:1fr}}
+
+/* ── notice strip ──────────────────────────────────────── */
+.at .at-notice{display:flex;align-items:center;justify-content:center;gap:8px;margin:0;padding:9px var(--at-gutter);background:var(--at-dark);color:var(--at-on-dark);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;text-align:center}
+.at-notice .at-icon{font-size:17px}
+
+/* ── booked-days calendar ──────────────────────────────── */
+.at-booked{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(28px,4vw,64px);align-items:start}
+.at-booked__months{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.at-cal{margin:0;padding:20px;border-radius:12px;background:var(--at-white);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.at-cal__name{margin:0 0 14px;font-family:var(--at-serif);font-size:22px}
+.at-cal__grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.at-cal__head{font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--at-faint);padding-bottom:4px}
+.at-cal__day{display:grid;place-items:center;aspect-ratio:1;border-radius:6px;background:var(--at-surface);font-size:13px}
+.at .at-cal__day--booked{background:var(--at-dark);color:var(--at-on-dark);text-decoration:line-through;text-decoration-color:rgba(255,255,255,.35)}
+.at-cal__legend{display:flex;align-items:center;gap:8px;margin:0;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--at-soft)}
+.at-cal__key{display:inline-block;width:14px;height:14px;margin-left:10px;border-radius:4px;background:var(--at-surface);box-shadow:inset 0 0 0 1px var(--at-high)}
+.at-cal__key:first-child{margin-left:0}
+.at-cal__key--booked{background:var(--at-dark);box-shadow:none}
+@media(max-width:900px){.at-booked{grid-template-columns:1fr}}
+
+/* ── FAQ ───────────────────────────────────────────────── */
+.at-faq{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(28px,4vw,64px);align-items:start}
+.at-faq__list{display:grid;gap:8px}
+.at-faq__item{border-radius:10px;background:var(--at-white);box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.at-faq__item summary{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px;cursor:pointer;list-style:none;font-family:var(--at-serif);font-size:19px}
+.at-faq__item summary::-webkit-details-marker{display:none}
+.at-faq__item summary .at-icon{flex:none;transition:transform .25s ease}
+.at-faq__item[open] summary .at-icon{transform:rotate(45deg)}
+.at-faq__item .at-card__text{padding:0 20px 20px}
+@media(max-width:900px){.at-faq{grid-template-columns:1fr}}
 
 /* ── closing call ──────────────────────────────────────── */
 .at-banner{display:flex;align-items:center;gap:14px;margin-bottom:clamp(32px,4vw,48px);padding:18px 22px;border-radius:12px;background:#1f0300;color:#fff}

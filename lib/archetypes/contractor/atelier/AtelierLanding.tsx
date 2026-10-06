@@ -18,6 +18,7 @@ import { Media } from '../ContractorLanding';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 import { atelierCss, ATELIER_FONTS_HREF } from './styles';
 import { Estimator } from './Estimator';
+import { BookedMonth } from './BookedCalendar';
 
 const ESTIMATE_ID = 'estimate';
 const ESTIMATOR_ID = 'ballpark';
@@ -49,6 +50,9 @@ export function AtelierShell({
       <style dangerouslySetInnerHTML={{ __html: atelierCss(palette) }} />
       <div className="at">
         <a className="at-skip" href={`/#${ESTIMATE_ID}`}>{S.skipToEstimate}</a>
+        {c.notice !== undefined && (
+          <p className="at-notice"><Icon name="campaign" /> {c.notice}</p>
+        )}
 
         <header className="at-head">
           <div className="at-wrap at-head__row">
@@ -281,6 +285,44 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
                 ))}
               </ul>
               {reviews.note !== undefined && <p className="at-note">{reviews.note}</p>}
+            </div>
+          </section>
+        )}
+
+        {/* ── when we're booked ─────────────────────────────────── */}
+        {c.calendar !== undefined && (
+          <section className="at-section" aria-labelledby="at-cal-title">
+            <div className="at-wrap at-booked">
+              <div>
+                <SectionHead eyebrow={c.calendar.eyebrow} title={c.calendar.title} intro={c.calendar.intro} />
+                <p className="at-cal__legend">
+                  <span className="at-cal__key at-cal__key--booked" aria-hidden="true" /> {S.calendar.booked}
+                  <span className="at-cal__key" aria-hidden="true" /> {S.calendar.open}
+                </p>
+              </div>
+              <div className="at-booked__months">
+                {c.calendar.months.map((m) => <BookedMonth key={`${m.year}-${m.month}`} month={m} />)}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── questions ─────────────────────────────────────────── */}
+        {c.faq !== undefined && (
+          <section className="at-section at-tint" aria-labelledby="at-faq-title">
+            <div className="at-wrap at-faq">
+              <div className="at-shead">
+                <p className="at-label at-label--accent">{c.faq.eyebrow}</p>
+                <h2 className="at-h2" id="at-faq-title">{c.faq.title}</h2>
+              </div>
+              <div className="at-faq__list">
+                {c.faq.items.map((f) => (
+                  <details key={f.q} className="at-faq__item">
+                    <summary><span>{f.q}</span><Icon name="add" /></summary>
+                    <p className="at-card__text">{f.a}</p>
+                  </details>
+                ))}
+              </div>
             </div>
           </section>
         )}

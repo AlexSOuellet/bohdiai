@@ -22,6 +22,14 @@ export const CONTRACTOR_STRINGS = {
     send: 'Send this to us',
     groupLabel: 'Ballpark estimate',
   },
+  /** The booked-days calendar. */
+  calendar: {
+    booked: 'Booked',
+    open: 'Open',
+    weekdays: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+    monthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+    dayLabel: (month: string, day: number, booked: boolean) => `${month} ${day}: ${booked ? 'booked' : 'open'}`,
+  },
   /** Atelier design: the closing call card. */
   callNow: 'Call now',
   /** Statement design: under the sideways-scrolling work photos. */

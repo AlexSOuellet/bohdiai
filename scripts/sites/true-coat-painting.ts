@@ -191,6 +191,27 @@ export function content(media: (file: string) => string): ContractorContent {
       photo: still('hero.webp', 'A painter in white overalls on a ladder, rolling paint high on a wall'),
     },
     banner: { label: 'Booking now', text: 'Scheduling spring exteriors · a few weeks left', tag: 'Sample' },
+    notice: 'Now booking spring exteriors · interiors all winter',
+    calendar: {
+      eyebrow: 'When we’re booked',
+      title: 'Our calendar, at a glance',
+      intro: 'Dark days are booked. Pick an open week and we’ll do our best to hold it. (Sample calendar.)',
+      months: [
+        { year: 2026, month: 10, booked: [1, 2, 5, 6, 7, 8, 9, 13, 14, 15, 16, 19, 20, 21, 22, 23, 26, 27] },
+        { year: 2026, month: 11, booked: [2, 3, 4, 9, 10, 16, 17, 18, 19] },
+      ],
+    },
+    faq: {
+      eyebrow: 'Questions',
+      title: 'What people ask before we start',
+      items: [
+        { q: 'How long does a typical job take?', a: 'Most single rooms take a day or two. A full exterior usually takes four to six days, depending on prep and the weather.' },
+        { q: 'Do I need to move the furniture?', a: 'No. We move it to the middle of the room, cover it, and put it all back when we’re done.' },
+        { q: 'What paint do you use?', a: 'Benjamin Moore and Sherwin-Williams for most jobs. If you have a favorite brand or a color from somewhere else, we can match it.' },
+        { q: 'Do you paint in the winter?', a: 'Interiors, yes, all winter long. Exteriors start once it stays above 50 degrees, usually in April.' },
+        { q: 'How do I pay?', a: 'A small deposit to hold your dates, and the rest when the job is done and you’ve walked through it with us.' },
+      ],
+    },
     area: {
       eyebrow: 'Where we work',
       title: 'Kent County and nearby',

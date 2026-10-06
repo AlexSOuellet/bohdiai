@@ -99,6 +99,19 @@ describe('contractor designs', () => {
     expect(container.querySelector('.at-mark')?.textContent).toBe(`${CONTRACTOR_FIXTURE.business.name}${CONTRACTOR_FIXTURE.business.trade}`);
   });
 
+  it('shows the Full pieces on the atelier page: the notice, the booked calendar and the questions', () => {
+    const { container } = page(undefined, {
+      ...CONTRACTOR_FIXTURE,
+      design: 'atelier',
+      notice: 'Now booking spring',
+      calendar: { eyebrow: 'Booked', title: 'Our calendar', months: [{ year: 2026, month: 10, booked: [5] }, { year: 2026, month: 11, booked: [] }] },
+      faq: { eyebrow: 'Questions', title: 'Ask us', items: [{ q: 'Do you move furniture?', a: 'Yes.' }] },
+    });
+    expect(container.querySelector('.at-notice')?.textContent).toContain('Now booking spring');
+    expect(container.querySelectorAll('.at-cal')).toHaveLength(2);
+    expect(container.querySelector('.at-faq__item summary')?.textContent).toContain('Do you move furniture?');
+  });
+
   it('rejects a design it does not know', () => {
     expect(() => page(undefined, { ...CONTRACTOR_FIXTURE, design: 'brutalist' })).toThrow();
   });
