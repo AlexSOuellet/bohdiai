@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { WORK, CLIENTS, SAMPLES, LISTED_SAMPLES } from './work';
+import { WORK, CLIENTS, SAMPLES, LISTED_SAMPLES, HERO_WORK } from './work';
 
 describe('the work list', () => {
   it('has two clients then four listed samples, and two more sample sites kept off bohdiai.com', () => {
@@ -21,6 +21,20 @@ describe('the work list', () => {
     expect(WORK).toEqual([...CLIENTS, ...LISTED_SAMPLES]);
     expect(CLIENTS.every((w) => w.kind === 'client')).toBe(true);
     expect(SAMPLES.every((w) => w.kind === 'sample')).toBe(true);
+  });
+
+  it('cycles samples only in the hero, Knotty Knits among them without being a bannered sample', () => {
+    expect(HERO_WORK.map((w) => w.name)).toEqual([
+      'Rustic Rhody',
+      'Paper & Patina',
+      'Classic Loafs',
+      'Knotty Knits',
+      'Twilight to Darkness',
+      'Heavenly Scents',
+    ]);
+    expect(HERO_WORK.every((w) => w.kind === 'sample')).toBe(true);
+    expect(SAMPLES.some((w) => w.slug === 'knotty-knits')).toBe(false);
+    for (const w of HERO_WORK) expect(existsSync(path.join(process.cwd(), 'public', w.shot))).toBe(true);
   });
 
   it('gives every site an https url whose host is what the address bar shows', () => {

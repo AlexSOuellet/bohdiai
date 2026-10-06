@@ -151,6 +151,14 @@ const config: Config = {
           '0%': { opacity: '0', transform: 'translateY(8px) scale(0.99)' },
           '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
+        'slide-from-right': {
+          '0%': { opacity: '0', transform: 'translateX(48px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        'slide-from-left': {
+          '0%': { opacity: '0', transform: 'translateX(-48px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
       },
       animation: {
         breathe: 'breathe 7s ease-in-out infinite',
@@ -170,6 +178,8 @@ const config: Config = {
         'browser-bob': 'browser-bob 6s ease-in-out infinite',
         rise: 'rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both',
         'flash-in': 'flash-in 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both',
+        'slide-from-right': 'slide-from-right 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both',
+        'slide-from-left': 'slide-from-left 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both',
         blink: 'blink 1s steps(1) infinite',
       },
     },

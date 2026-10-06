@@ -22,9 +22,10 @@ async function fillValid(page: Page): Promise<void> {
 }
 
 test.describe('Work section', () => {
-  test('every client has a "Visit the site" link to its real address', async ({ page }) => {
+  test('the client slideshow reaches every client, each with a "Visit the site" link to its real address', async ({ page }) => {
     await page.goto('/');
-    for (const client of CLIENTS) {
+    for (const [i, client] of CLIENTS.entries()) {
+      if (i > 0) await page.getByRole('button', { name: 'Next client' }).click();
       const link = page.getByRole('link', { name: new RegExp(`^Visit the site.*${escape(client.name)}$`) });
       await expect(link).toHaveAttribute('href', client.url);
       await expect(link).toHaveAttribute('target', '_blank');

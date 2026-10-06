@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within, fireEvent } from '@testing-library/react';
 
 // eslint-disable-next-line @next/next/no-img-element -- a plain img stands in for next/image in tests
 vi.mock('next/image', () => ({ default: (p: { alt: string; src: string }) => <img alt={p.alt} src={p.src} /> }));
@@ -30,10 +30,12 @@ describe('bohdiai.com home', () => {
     expect(screen.getByText(/The Bohdi Way/)).toBeInTheDocument();
   });
 
-  it('shows both clients and labels the samples as samples', () => {
+  it('shows the clients in a slideshow, one at a time, and labels the samples as samples', () => {
     render(<HomePage />);
-    expect(screen.getAllByText('Cut-Pro Lawncare & Construction').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Decoupage Digital Designs').length).toBeGreaterThan(0);
+    const clients = screen.getByRole('region', { name: 'Client sites' });
+    expect(within(clients).getByRole('heading', { level: 3 })).toHaveTextContent('Cut-Pro Lawncare & Construction');
+    fireEvent.click(within(clients).getByRole('button', { name: 'Next client' }));
+    expect(within(clients).getByRole('heading', { level: 3 })).toHaveTextContent('Decoupage Digital Designs');
     expect(screen.getByText(/not real businesses/i)).toBeInTheDocument();
   });
 

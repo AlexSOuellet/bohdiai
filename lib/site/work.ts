@@ -179,3 +179,33 @@ export const SAMPLES: readonly WorkEntry[] = [
 export const LISTED_SAMPLES: readonly WorkEntry[] = SAMPLES.filter((s) => s.listed !== false);
 
 export const WORK: readonly WorkEntry[] = [...CLIENTS, ...LISTED_SAMPLES];
+
+/** Knotty Knits shows in the hero only, without a sample banner on its own site (Alex, 2026-10-06), so it sits outside SAMPLES. */
+const KNOTTY_KNITS: WorkEntry = {
+  slug: 'knotty-knits',
+  name: 'Knotty Knits',
+  url: 'https://knotty-knits.bohdiai.com',
+  host: 'knotty-knits.bohdiai.com',
+  kind: 'sample',
+  category: 'Elegant',
+  blurb: 'Hand-knit in small runs',
+  features: [],
+  shot: '/work/knotty-knits.webp',
+  testimonials: [],
+};
+
+function sample(slug: string): WorkEntry {
+  const found = SAMPLES.find((s) => s.slug === slug);
+  if (found === undefined) throw new Error(`No sample "${slug}"`);
+  return found;
+}
+
+/** The hero browser cycles samples only; the clients stay in the work section below. */
+export const HERO_WORK: readonly WorkEntry[] = [
+  sample('rustic-rhody'),
+  sample('paper-and-patina'),
+  sample('classic-loafs'),
+  KNOTTY_KNITS,
+  sample('twilight-to-darkness'),
+  sample('heavenly-scents'),
+];
