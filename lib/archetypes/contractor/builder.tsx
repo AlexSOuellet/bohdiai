@@ -12,6 +12,7 @@ import { ContractorLanding, ContractorContentPage, ContractorShell } from './Con
 import { StatementLanding, StatementContentPage, StatementShell } from './statement/StatementLanding';
 import { SwatchLanding, SwatchContentPage, SwatchShell } from './swatch/SwatchLanding';
 import { AtelierLanding, AtelierContentPage, AtelierShell } from './atelier/AtelierLanding';
+import { HarborLanding, HarborContentPage, HarborShell } from './harbor/HarborLanding';
 
 export const CONTRACTOR_LOOK = 'contractor';
 
@@ -57,6 +58,7 @@ export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
     if (c.design === 'statement') return <StatementLanding content={c} palette={palette} tenantId={tenantId} />;
     if (c.design === 'swatch') return <SwatchLanding content={c} palette={palette} tenantId={tenantId} />;
     if (c.design === 'atelier') return <AtelierLanding content={c} palette={palette} tenantId={tenantId} />;
+    if (c.design === 'harbor') return <HarborLanding content={c} palette={palette} tenantId={tenantId} />;
     return <ContractorLanding content={c} palette={palette} tenantId={tenantId} />;
   },
   renderContentPage: ({ content, brandPalette, html, title, body }) => {
@@ -73,6 +75,19 @@ export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
             </div>
           </main>
         </StatementShell>
+      );
+    }
+    if (c.design === 'harbor') {
+      if (html !== undefined) return <HarborContentPage content={c} palette={palette} html={html} />;
+      return (
+        <HarborShell content={c} palette={palette}>
+          <main className="hb-section">
+            <div className="hb-wrap hb-prose">
+              {title !== undefined && <h1>{title}</h1>}
+              {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
+            </div>
+          </main>
+        </HarborShell>
       );
     }
     if (c.design === 'atelier') {

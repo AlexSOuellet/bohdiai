@@ -6,6 +6,8 @@
  * The hero is Joe himself, cropped from the photo in his Lil Rhody Online feature
  * (Alex's pick; no Lil Rhody branding). Every other photo is a STOCK stand-in
  * (Unsplash) until Joe sends his own, so no caption claims a picture is his job.
+ * Wears the harbor design (Alex's Stitch reference for Joe), real facts only:
+ * no registration number, review count, warranty or price claims until Joe gives them.
  *
  * `media(name)` resolves a processed media file (see build-contractor-site.ts)
  * to its public storage URL.
@@ -24,7 +26,7 @@ export function content(media: (file: string) => string): ContractorContent {
   const still = (file: string, alt: string) => ({ kind: 'still' as const, url: media(file), alt });
 
   return {
-    design: 'statement',
+    design: 'harbor',
     business: {
       name: 'Mazzone',
       trade: 'Home Improvement',
@@ -34,26 +36,26 @@ export function content(media: (file: string) => string): ContractorContent {
       serviceArea: ['Smithfield', 'Rhode Island'],
     },
     hero: {
-      kicker: 'Kitchens · Baths · Floors · Siding · Windows · Decks',
+      kicker: 'Home improvement · Smithfield, RI',
       marker: 'Come home to it…',
       headline: 'Love the house you already live in',
-      highlight: 'Love',
       sub: 'Kitchens, baths, floors and whole-house renovations across Rhode Island. Joe comes out himself, listens to what you want, and is up front about the cost and the wait.',
+      badges: [
+        { icon: 'star', label: '4.5 on Google', sub: 'From his customers' },
+        { icon: 'location_on', label: 'Smithfield, RI', sub: 'Working across the state' },
+        { icon: 'home_work', label: 'One crew', sub: 'Every room in the house' },
+      ],
       media: still('hero-kitchen.webp', 'A bright white farmhouse kitchen with a deep sink under the window'),
       cutout: still('joe-cutout.webp', 'Joe Mazzone in his Mazzone Home Improvement hoodie, arms crossed'),
       estimateLabel: 'Get a free estimate',
     },
     work: {
       eyebrow: 'The work',
-      title: 'Every room in the house',
-      intro: 'A kitchen, a bath, new floors or the whole first floor opened up. One crew, start to finish.',
+      title: 'The kind of work Joe does',
+      intro: 'A kitchen, a bath, new floors or the whole first floor opened up. One crew, start to finish. (Example photos until Joe’s own are in.)',
       items: [
         { media: still('hero-kitchen-remodel.webp', 'A kitchen in the middle of a remodel, new cabinets in and wrapped in plastic'), caption: 'Mid-remodel', tag: 'Kitchens' },
-        { media: still('bath-glass-shower.webp', 'A bright bathroom with a glass shower and a long white vanity'), caption: 'Glass shower, double vanity', tag: 'Baths' },
-        { media: still('open-floor-plan.webp', 'An open living space with new hardwood floors and fresh white walls'), caption: 'Walls out, floors in', tag: 'Renovations' },
-        { media: still('kitchen-builtins.webp', 'Kitchen built-ins with glass-front cabinets and open shelves'), caption: 'Built-ins and shelving', tag: 'Kitchens' },
         { media: still('trim-work.webp', 'A carpenter cutting trim at a miter saw inside a bright room'), caption: 'Trim, cut on site', tag: 'Carpentry' },
-        { media: still('colonial-siding.webp', 'A white New England colonial with black shutters'), caption: 'Siding and windows', tag: 'Exteriors' },
         { media: still('deck-cedar.webp', 'A large two-level cedar deck with planters on the back of a green house'), caption: 'Two-level cedar deck', tag: 'Decks' },
         { media: still('cottage-siding.webp', 'A small cottage freshly sided in bright teal'), caption: 'New siding, new color', tag: 'Exteriors' },
       ],
@@ -62,14 +64,38 @@ export function content(media: (file: string) => string): ContractorContent {
       eyebrow: 'What we do',
       title: 'If it’s in your house, Joe does it',
       items: [
-        { name: 'Kitchens', detail: 'Cabinets, counters, floors and layout, from a refresh to a full gut.' },
-        { name: 'Bathrooms', detail: 'Showers, tubs, tile and vanities, done right the first time.' },
-        { name: 'Whole-house renovations', detail: 'Walls moved, rooms opened up, even stairs relocated.' },
-        { name: 'Flooring', detail: 'Hardwood, tile and more, laid tight and level.' },
-        { name: 'Siding & windows', detail: 'A tighter, better-looking house from the outside in.' },
-        { name: 'Decks', detail: 'New decks built solid, old ones made safe again.' },
-        { name: 'Gutter protection', detail: 'Waterloov gutter guards that keep the leaves out and the water moving.' },
-        { name: 'Repairs', detail: 'The jobs on your list that never seem to get done.' },
+        {
+          name: 'Kitchens',
+          detail: 'Cabinets, counters, floors and layout, from a refresh to a full gut.',
+          icon: 'countertops',
+          photo: still('kitchen-builtins.webp', 'Kitchen built-ins with glass-front cabinets and open shelves'),
+          tags: ['Cabinets', 'Counters', 'Layout'],
+        },
+        {
+          name: 'Bathrooms',
+          detail: 'Showers, tubs, tile and vanities, done right the first time.',
+          icon: 'bathtub',
+          photo: still('bath-glass-shower.webp', 'A bright bathroom with a glass shower and a long white vanity'),
+          tags: ['Showers', 'Tile', 'Vanities'],
+        },
+        {
+          name: 'Whole-house renovations',
+          detail: 'Walls moved, rooms opened up, even stairs relocated.',
+          icon: 'home_work',
+          photo: still('open-floor-plan.webp', 'An open living space with new hardwood floors and fresh white walls'),
+          tags: ['Open layouts', 'Stairs moved'],
+        },
+        {
+          name: 'Siding & windows',
+          detail: 'A tighter, better-looking house from the outside in.',
+          icon: 'window',
+          photo: still('colonial-siding.webp', 'A white New England colonial with black shutters'),
+          tags: ['Siding', 'Windows'],
+        },
+        { name: 'Flooring', detail: 'Hardwood, tile and more, laid tight and level.', icon: 'grid_on' },
+        { name: 'Decks', detail: 'New decks built solid, old ones made safe again.', icon: 'deck' },
+        { name: 'Gutter protection', detail: 'Waterloov gutter guards that keep the leaves out and the water moving.', icon: 'water_drop' },
+        { name: 'Repairs', detail: 'The jobs on your list that never seem to get done.', icon: 'handyman' },
       ],
     },
     reviews: {
@@ -95,11 +121,18 @@ export function content(media: (file: string) => string): ContractorContent {
         { quote: 'Joe runs a very well-oiled operation and does great work. His crew is professional.', author: 'Ayed A.' },
       ],
       note: 'Reviews left by customers on Google.',
+      rating: { score: '4.5', label: 'On Google' },
     },
     crew: {
       eyebrow: 'Who shows up',
-      quote: 'Joe even reached out after the considerable rain to make sure everything was good. He is impressive!',
-      attribution: 'Janet M. — homeowner',
+      quote: 'When you call, you get Joe',
+      attribution: 'Joe Mazzone, owner',
+      promises: [
+        { icon: 'person', title: 'You deal with Joe', text: 'He comes out to see the job himself and brings ideas of his own.' },
+        { icon: 'receipt_long', title: 'Straight answers', text: 'Up front about the cost and how long you’ll wait, before anything starts.' },
+        { icon: 'cleaning_services', title: 'A clean job site', text: 'His crew keeps the place clean and leaves it better than they found it.' },
+        { icon: 'verified', title: 'He checks in after', text: 'After the job, and after a big rain, Joe calls to make sure everything is right.' },
+      ],
       body: [
         'When you call Mazzone Home Improvement, you get Joe. He comes out to see the job himself, gives you a straight answer on cost and timing, and brings ideas of his own.',
         'Then his crew does the work, keeps the place clean, and Joe checks in after to make sure everything is right.',

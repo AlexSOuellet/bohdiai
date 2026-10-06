@@ -29,8 +29,12 @@ export const ContractorMediaSchema = z
  * `atelier`: quiet high-end editorial (Alex's Stitch reference, 2026-10-06) —
  * stone and serif, cards with icons and tags, a live ballpark `estimator`, a
  * "typical vs us" `comparison`, case-study job cards.
+ * `harbor`: coastal navy and gold, Playfair over Plus Jakarta Sans (Alex's Stitch
+ * reference for Joe, 2026-10-06) — the owner cut out over a photo cover, a
+ * trust strip, the request form right after the top, photo service cards,
+ * project cards, review cards, and the owner's `promises` panel.
  */
-export const CONTRACTOR_DESIGNS = ['yard', 'statement', 'swatch', 'atelier'] as const;
+export const CONTRACTOR_DESIGNS = ['yard', 'statement', 'swatch', 'atelier', 'harbor'] as const;
 
 /** A Material Symbols icon name, e.g. "verified_user". */
 const icon = z.string().regex(/^[a-z0-9_]+$/);
@@ -84,8 +88,8 @@ export const ContractorContentSchema = z
         /** One word of the headline painted in the accent (must appear in it). */
         highlight: text.optional(),
         sub: text,
-        /** Atelier design: short trust badges under the headline, each with an icon. */
-        badges: z.array(z.object({ icon, label: text }).strict()).max(4).optional(),
+        /** Atelier and harbor designs: short trust badges, each with an icon (harbor: with a second line). */
+        badges: z.array(z.object({ icon, label: text, sub: text.optional() }).strict()).max(4).optional(),
         /** Atelier design: the caption laid over the hero photo. */
         feature: z.object({ label: text, title: text, tag: text.optional() }).strict().optional(),
         media: ContractorMediaSchema,
@@ -128,6 +132,8 @@ export const ContractorContentSchema = z
               .object({
                 name: text,
                 detail: text,
+                /** Harbor design: the icon beside the service's name. */
+                icon: icon.optional(),
                 /** Atelier design: a photo card with a label on it and a few tags under it. */
                 photo: ContractorMediaSchema.optional(),
                 label: text.optional(),
@@ -199,6 +205,8 @@ export const ContractorContentSchema = z
         quote: text,
         attribution: text,
         body: z.array(text).min(1),
+        /** Harbor design: what the owner promises, each with an icon — only what is true. */
+        promises: z.array(z.object({ icon, title: text, text }).strict()).max(5).optional(),
         photo: ContractorMediaSchema,
         inset: z.object({ media: ContractorMediaSchema, caption: text }).strict().optional(),
       })

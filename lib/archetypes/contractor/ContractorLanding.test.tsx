@@ -112,6 +112,21 @@ describe('contractor designs', () => {
     expect(container.querySelector('.at-faq__item summary')?.textContent).toContain('Do you move furniture?');
   });
 
+  it('renders the harbor design: the owner over the cover, the request form first, initials on reviews, his promises', () => {
+    const reviews = { ...CONTRACTOR_FIXTURE.reviews!, items: [{ quote: 'Great work.', author: 'Dr. Jeff R.' }] };
+    const crew = { ...CONTRACTOR_FIXTURE.crew, promises: [{ icon: 'person', title: 'You deal with Joe', text: 'He comes out himself.' }] };
+    const { container } = page(undefined, { ...STATEMENT, design: 'harbor', reviews, crew });
+    expect(container.querySelector('.hb')).not.toBeNull();
+    expect(container.querySelector('.cp, .st, .sw, .at')).toBeNull();
+    expect(screen.getAllByRole('img', { name: 'The owner, arms crossed' })[0]).toHaveClass('hb-cover__owner');
+    const sections = [...container.querySelectorAll('main > section')];
+    expect(sections[1]?.id).toBe('estimate');
+    expect(container.querySelector('#estimate form')).not.toBeNull();
+    expect(container.querySelector('.hb-avatar')?.textContent).toBe('JR');
+    expect(container.querySelector('.hb-promises')?.textContent).toContain('You deal with Joe');
+    expect(container.querySelector('ol')).toBeNull();
+  });
+
   it('rejects a design it does not know', () => {
     expect(() => page(undefined, { ...CONTRACTOR_FIXTURE, design: 'brutalist' })).toThrow();
   });
