@@ -68,6 +68,38 @@ function Headline({ text, highlight }: { text: string; highlight?: string | unde
   );
 }
 
+/**
+ * The statement hero: one full-width photo, the words on the left at a sane size,
+ * and the owner cut out and oversized on the right, standing past the bottom edge
+ * into the next section. On phones the photo and the owner come first, words below.
+ */
+function StatementHero({ content: c, tel }: { content: ContractorContent; tel: string }): ReactElement {
+  const b = c.business;
+  return (
+    <section className="cp-stmt">
+      <div className="cp-stmt__stage">
+        <div className="cp-stmt__bg"><Media media={c.hero.media} eager /></div>
+        {c.hero.cutout !== undefined && (
+          <img className="cp-stmt__cutout" src={c.hero.cutout.url} alt={c.hero.cutout.alt} loading="eager" decoding="async" />
+        )}
+      </div>
+      <div className="cp-wrap cp-stmt__words">
+        <p className="cp-hero__kicker cp-rise">{c.hero.kicker}</p>
+        <p className="cp-hero__marker cp-rise"><span className="cp-brush">{c.hero.marker}</span></p>
+        <h1 className="cp-stmt__headline cp-rise"><Headline text={c.hero.headline} highlight={c.hero.highlight} /></h1>
+        <p className="cp-hero__sub cp-rise">{c.hero.sub}</p>
+        <div className="cp-hero__ctas cp-rise">
+          <a className="cp-btn cp-btn--solid" href={`#${ESTIMATE_ID}`}>{c.hero.estimateLabel} <ArrowIcon /></a>
+          <a className="cp-btn cp-btn--line" href={tel}><PhoneIcon /> {b.phone}</a>
+        </div>
+        <p className="cp-hero__area cp-rise">
+          {b.serviceArea.map((s) => <span key={s}>{s}</span>)}
+        </p>
+      </div>
+    </section>
+  );
+}
+
 /** Header, footer and the phone thumb bar around any page body. */
 /** `platformCredit`: the "Empowered by BohdiAI" line on a bohdiai.com address; off on a custom domain (wired with custom domains). */
 export function ContractorShell({
@@ -90,7 +122,7 @@ export function ContractorShell({
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       <link rel="stylesheet" href={CONTRACTOR_FONTS_HREF} />
       <style dangerouslySetInnerHTML={{ __html: contractorCss(palette) }} />
-      <div className="cp">
+      <div className={c.design === 'statement' ? 'cp cp--statement' : 'cp'}>
         <a className="cp-skip" href={`/#${ESTIMATE_ID}`}>{S.skipToEstimate}</a>
 
         <header className="cp-head">
@@ -157,6 +189,7 @@ export function ContractorLanding({ content: c, palette, tenantId }: { content: 
   return (
     <ContractorShell content={c} palette={palette}>
         <main>
+          {c.design === 'statement' ? <StatementHero content={c} tel={tel} /> : (
           <section className="cp-hero">
             <div className="cp-wrap cp-hero__grid">
               <div>
@@ -178,6 +211,7 @@ export function ContractorLanding({ content: c, palette, tenantId }: { content: 
               </div>
             </div>
           </section>
+          )}
 
           {c.proof !== undefined && c.proof.length > 0 && (
             <div className="cp-wrap">

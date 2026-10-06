@@ -8,9 +8,49 @@ import { PLAYBACK_RATE } from './SlowVideo';
 
 const TENANT = '4b8f0f5e-8f3a-4a57-9a8e-1f2d3c4b5a69';
 
-function page(brandPalette?: { base: string; accent: string }) {
-  return render(CONTRACTOR_SPEC.render({ content: CONTRACTOR_FIXTURE, lookKey: 'contractor', products: [], tenantId: TENANT, brandPalette }));
+function page(brandPalette?: { base: string; accent: string }, content: unknown = CONTRACTOR_FIXTURE) {
+  return render(CONTRACTOR_SPEC.render({ content, lookKey: 'contractor', products: [], tenantId: TENANT, brandPalette }));
 }
+
+const STATEMENT = {
+  ...CONTRACTOR_FIXTURE,
+  design: 'statement',
+  hero: {
+    ...CONTRACTOR_FIXTURE.hero,
+    media: { kind: 'still', url: 'https://example.com/kitchen.webp', alt: 'A finished kitchen' },
+    cutout: { kind: 'still', url: 'https://example.com/owner.webp', alt: 'The owner, arms crossed' },
+  },
+};
+
+describe('contractor designs', () => {
+  it('wears the yard design by default: the hero slab, no statement stage', () => {
+    const { container } = page();
+    expect(container.querySelector('.cp')?.className).toBe('cp');
+    expect(container.querySelector('.cp-hero .cp-slab')).not.toBeNull();
+    expect(container.querySelector('.cp-stmt')).toBeNull();
+  });
+
+  it('opens the statement design on the full-width photo with the owner cut out in front', () => {
+    const { container } = page(undefined, STATEMENT);
+    expect(container.querySelector('.cp')?.className).toBe('cp cp--statement');
+    expect(container.querySelector('.cp-hero')).toBeNull();
+    expect(container.querySelector('.cp-stmt__bg img')?.getAttribute('src')).toBe('https://example.com/kitchen.webp');
+    expect(screen.getByRole('img', { name: 'The owner, arms crossed' })).toHaveClass('cp-stmt__cutout');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveClass('cp-stmt__headline');
+    expect(container.querySelector('.cp-stmt a[href="#estimate"]')).not.toBeNull();
+    expect(container.querySelector('.cp-stmt a[href="tel:+14012061566"]')).not.toBeNull();
+  });
+
+  it('runs the statement design without a cutout too: just the photo and the words', () => {
+    const { container } = page(undefined, { ...STATEMENT, hero: { ...STATEMENT.hero, cutout: undefined } });
+    expect(container.querySelector('.cp-stmt__bg img')).not.toBeNull();
+    expect(container.querySelector('.cp-stmt__cutout')).toBeNull();
+  });
+
+  it('rejects a design it does not know', () => {
+    expect(() => page(undefined, { ...CONTRACTOR_FIXTURE, design: 'brutalist' })).toThrow();
+  });
+});
 
 describe('contractor landing page', () => {
   it('paints the brand palette through CSS variables', () => {

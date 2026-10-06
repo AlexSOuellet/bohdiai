@@ -19,8 +19,17 @@ export const ContractorMediaSchema = z
   })
   .strict();
 
+/**
+ * Which design the site wears. `yard` (the default) is the Cut-Pro layout laid
+ * like sod; `statement` opens on a full-width photo with the owner cut out and
+ * oversized in front of it, breaking past the hero's bottom edge (Alex, 2026-10-06).
+ */
+export const CONTRACTOR_DESIGNS = ['yard', 'statement'] as const;
+export type ContractorDesign = (typeof CONTRACTOR_DESIGNS)[number];
+
 export const ContractorContentSchema = z
   .object({
+    design: z.enum(CONTRACTOR_DESIGNS).optional(),
     business: z
       .object({
         name: text,
@@ -45,6 +54,8 @@ export const ContractorContentSchema = z
         highlight: text.optional(),
         sub: text,
         media: ContractorMediaSchema,
+        /** Statement design: the owner, background removed (a transparent image), stood large in front of `media`. */
+        cutout: ContractorMediaSchema.optional(),
         estimateLabel: text,
       })
       .strict(),

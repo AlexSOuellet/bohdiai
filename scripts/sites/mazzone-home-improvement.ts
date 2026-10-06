@@ -24,6 +24,7 @@ export function content(media: (file: string) => string): ContractorContent {
   const still = (file: string, alt: string) => ({ kind: 'still' as const, url: media(file), alt });
 
   return {
+    design: 'statement',
     business: {
       name: 'Mazzone',
       trade: 'Home Improvement',
@@ -38,7 +39,8 @@ export function content(media: (file: string) => string): ContractorContent {
       headline: 'Love the house you already live in',
       highlight: 'Love',
       sub: 'Kitchens, baths, floors and whole-house renovations across Rhode Island. Joe comes out himself, listens to what you want, and is up front about the cost and the wait.',
-      media: still('hero-joe.webp', 'Joe Mazzone in his Mazzone Home Improvement hoodie, arms crossed, in front of a house'),
+      media: still('hero-kitchen.webp', 'A bright white farmhouse kitchen with a deep sink under the window'),
+      cutout: still('joe-cutout.webp', 'Joe Mazzone in his Mazzone Home Improvement hoodie, arms crossed'),
       estimateLabel: 'Get a free estimate',
     },
     work: {
@@ -47,7 +49,6 @@ export function content(media: (file: string) => string): ContractorContent {
       intro: 'A kitchen, a bath, new floors or the whole first floor opened up. One crew, start to finish.',
       items: [
         { media: still('hero-kitchen-remodel.webp', 'A kitchen in the middle of a remodel, new cabinets in and wrapped in plastic'), caption: 'Mid-remodel', tag: 'Kitchens' },
-        { media: still('kitchen-farmhouse.webp', 'A white farmhouse kitchen with a deep sink under the window'), caption: 'Farmhouse kitchen', tag: 'Kitchens' },
         { media: still('bath-glass-shower.webp', 'A bright bathroom with a glass shower and a long white vanity'), caption: 'Glass shower, double vanity', tag: 'Baths' },
         { media: still('open-floor-plan.webp', 'An open living space with new hardwood floors and fresh white walls'), caption: 'Walls out, floors in', tag: 'Renovations' },
         { media: still('kitchen-builtins.webp', 'Kitchen built-ins with glass-front cabinets and open shelves'), caption: 'Built-ins and shelving', tag: 'Kitchens' },

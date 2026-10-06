@@ -107,6 +107,28 @@ export function contractorCss(p: DerivedPalette): string {
 @keyframes cp-rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
 @keyframes cp-lay{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 -40px -80px)}}
 
+/* ── statement design: a full-width photo, the owner oversized in front ── */
+.cp-stmt{--cp-stmt-pad:clamp(56px,7vw,104px);position:relative;z-index:2;display:flex;align-items:center;min-height:min(86svh,880px);padding-block:var(--cp-stmt-pad)}
+.cp-stmt__stage{position:absolute;inset:0;z-index:-1}
+.cp-stmt__bg{position:absolute;inset:0;overflow:hidden}
+.cp-stmt__bg img,.cp-stmt__bg video{width:100%;height:100%;object-fit:cover}
+.cp-stmt__bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,color-mix(in srgb,var(--cp-bg) 96%,transparent) 0%,color-mix(in srgb,var(--cp-bg) 84%,transparent) 38%,color-mix(in srgb,var(--cp-bg) 30%,transparent) 66%,color-mix(in srgb,var(--cp-bg) 10%,transparent) 100%),linear-gradient(0deg,var(--cp-bg) 0%,transparent 26%)}
+.cp .cp-stmt__cutout{position:absolute;right:max(var(--cp-gutter),calc((100% - var(--cp-wrap))/2));bottom:-96px;height:calc(100% + 40px);width:auto;max-width:none;filter:drop-shadow(0 34px 44px rgba(0,0,0,.5));pointer-events:none;-webkit-mask:linear-gradient(180deg,#000 82%,transparent);mask:linear-gradient(180deg,#000 82%,transparent)}
+.cp-stmt__words{position:relative}
+.cp-stmt__words>*{max-width:600px}
+.cp-stmt__headline{font-family:var(--cp-display);font-weight:400;text-transform:uppercase;line-height:.96;font-size:clamp(40px,4.4vw,64px);margin:0;text-wrap:balance}
+.cp-stmt__headline em{font-style:normal;color:var(--cp-accent)}
+.cp--statement .cp-strip{height:1px;background:var(--cp-rule);animation:none}
+@media(max-width:900px){
+  .cp-stmt{display:block;min-height:0;padding-block:0 clamp(48px,10vw,72px)}
+  .cp-stmt__stage{position:relative;height:64svh;min-height:380px;overflow:hidden;margin-bottom:32px}
+  .cp .cp-stmt__cutout{right:auto;left:50%;translate:-50% 0;bottom:0;height:94%}
+  .cp-stmt__bg::after{background:linear-gradient(0deg,var(--cp-bg) 0%,transparent 40%)}
+}
+@media(prefers-reduced-motion:no-preference){
+  .cp-stmt__cutout{animation:cp-rise 1.1s cubic-bezier(.2,.7,.2,1) .2s both}
+}
+
 /* ── the sod strip — a seamed green band that unrolls between sections ── */
 .cp-strip{height:18px;background:repeating-linear-gradient(90deg,var(--cp-accent) 0 150px,color-mix(in srgb,var(--cp-accent) 70%,var(--cp-bg)) 150px 153px);transform-origin:left center}
 @supports (animation-timeline:view()){
