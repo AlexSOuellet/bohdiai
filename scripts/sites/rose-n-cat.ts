@@ -32,6 +32,32 @@ export const PROFILE: ProfileForm = {
   instagramUrl: '',
 };
 
+/** Babies who have already gone home — her own past work, from her Facebook page. */
+export const GALLERY: BoutiqueSiteModule['GALLERY'] = [
+  { file: 'g01-christmas-twins.webp', caption: 'Christmas twins' },
+  { file: 'g02-elf-hat.webp', caption: 'Little elf' },
+  { file: 'g03-owl-hat.webp', caption: 'Owl hat and plaid' },
+  { file: 'g04-rainbow-hat.webp', caption: 'Rainbow hat' },
+  { file: 'g05-purple-bow.webp', caption: 'Purple tutu' },
+  { file: 'g06-yellow-hood.webp', caption: 'Sunny yellow hoodie' },
+  { file: 'g07-flower-crown.webp', caption: 'Flower crown' },
+  { file: 'g08-red-bow.webp', caption: 'Red bow' },
+  { file: 'g09-green-wrap.webp', caption: 'Green headwrap' },
+  { file: 'g10-plaid.webp', caption: 'Plaid dress' },
+  { file: 'g11-brown-bow.webp', caption: 'Big brown bow' },
+  { file: 'g12-first-christmas.webp', caption: 'First Christmas' },
+];
+
+/** Where to find her. The Scituate Art Festival is real (this weekend, Alex);
+ *  the rest are made-up sample dates modeled on the fairs she did last fall. */
+export const DATES: BoutiqueSiteModule['DATES'] = [
+  { date: '2026-10-10', name: 'Scituate Art Festival', town: 'Scituate' },
+  { date: '2026-10-17', name: 'Bazaar & Vendor Fair', town: 'Pascoag' },
+  { date: '2026-10-24', name: 'Pumpkin Fest at Bridgeway', town: 'Pascoag' },
+  { date: '2026-11-21', name: 'Holly Fair', town: 'Johnston' },
+  { date: '2026-12-12', name: 'Holiday Fair', town: 'Smithfield' },
+];
+
 const READY = 'Finished, one of a kind, and ready to go home.';
 
 /** In nursery order; the first five are the home page's picks. */

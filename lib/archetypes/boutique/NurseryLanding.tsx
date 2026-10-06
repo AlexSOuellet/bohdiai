@@ -18,9 +18,11 @@ import { CardContactForm } from '@/lib/archetypes/card/CardContactForm';
 import { NURSERY_STRINGS as S } from './strings';
 import { NURSERY_FONTS_HREF, nurseryCss } from './nursery-styles';
 import { NurseryPhotos } from './NurseryPhotos';
+import { PhotoViewerProvider, Snapshot } from '@/lib/archetypes/card/PhotoViewer';
 import {
   bioParagraphs,
   cardTint,
+  clotheslines,
   homeBabies,
   lowestPrice,
   visitDay,
@@ -28,6 +30,7 @@ import {
 } from './data';
 
 const NURSERY_ID = 'nursery';
+const GONE_ID = 'gone';
 const ARTIST_ID = 'artist';
 const VISIT_ID = 'visit';
 const TOUCH_ID = 'touch';
@@ -72,6 +75,7 @@ function Frame({
             </Link>
             <nav className="nn-nav" aria-label={S.nav.label}>
               <a href="/shop">{S.nav.nursery}</a>
+              {data.gone.length > 0 && <a href={at(GONE_ID)}>{S.nav.gone}</a>}
               <a href={at(ARTIST_ID)}>{S.nav.artist}</a>
               {data.dates.length > 0 && <a href={at(VISIT_ID)}>{S.nav.visit}</a>}
               <a className="nn-nav__cta" href={at(TOUCH_ID)}>
@@ -172,6 +176,40 @@ function Beads({ words }: { words: string[] }): ReactElement | null {
         )}
       </div>
     </div>
+  );
+}
+
+/** Past babies on a clothesline: each photo pegged up with its caption, the line
+ *  sagging in short runs. A photo opens full size in the shared viewer. */
+function GoneHome({ photos }: { photos: BoutiqueData['gone'] }): ReactElement | null {
+  if (photos.length === 0) return null;
+  return (
+    <section className="nn-sec nn-gone" id={GONE_ID} aria-labelledby="nn-gone-h">
+      <div className="nn-wrap">
+        <span className="nn-script-tag">{S.gone.tag}</span>
+        <h2 className="nn-h2" id="nn-gone-h">
+          {S.gone.title}
+        </h2>
+        <PhotoViewerProvider photos={photos}>
+          {clotheslines(photos).map((line, li) => (
+            <ul key={li} className="nn-line" role="list">
+              {line.map((p, i) => {
+                const n = li * 4 + i;
+                return (
+                  <li key={p.id} className="nn-peg">
+                    <Snapshot index={n} className="nn-print" label={S.gone.open(p.caption, n + 1)}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={p.url} alt="" loading="lazy" />
+                      {p.caption !== '' && <span className="nn-print__cap">{p.caption}</span>}
+                    </Snapshot>
+                  </li>
+                );
+              })}
+            </ul>
+          ))}
+        </PhotoViewerProvider>
+      </div>
+    </section>
   );
 }
 
@@ -302,6 +340,8 @@ export function NurseryHome({
           )}
         </div>
       </section>
+
+      <GoneHome photos={data.gone} />
 
       {(bio.length > 0 || profile.aboutTitle !== '') && (
         <section className="nn-sec" id={ARTIST_ID} aria-labelledby="nn-artist-h">

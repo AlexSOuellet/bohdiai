@@ -37,8 +37,11 @@ export function nurseryCss(): string {
 .nn-skip:focus{left:16px;top:16px;z-index:50;background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:99px}
 
 /* Top bar */
-.nn-top{position:sticky;top:var(--sample-bar-h,0px);z-index:20;background:rgba(251,245,239,.92);backdrop-filter:blur(8px);border-bottom:1px dashed var(--line)}
-.nn-top__in{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 0}
+/* Pinned, not sticky: the storefront's html/body hide sideways overflow, which stops sticky from sticking. */
+.nn{--nn-top-h:79px;padding-top:var(--nn-top-h)}
+.nn [id]{scroll-margin-top:calc(var(--nn-top-h) + var(--sample-bar-h,0px) + 12px)}
+.nn-top{position:fixed;left:0;right:0;top:var(--sample-bar-h,0px);z-index:40;background:rgba(251,245,239,.92);backdrop-filter:blur(8px);border-bottom:1px dashed var(--line)}
+.nn-top__in{height:calc(var(--nn-top-h) - 1px);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 0}
 .nn-brand{display:flex;align-items:center;text-decoration:none;min-width:0}
 .nn-brand__logo{height:58px;width:auto;mix-blend-mode:multiply}
 .nn-brand__name{font-family:var(--script);font-size:30px;line-height:1;color:var(--rose-deep)}
@@ -46,7 +49,7 @@ export function nurseryCss(): string {
 .nn-nav a{text-decoration:none;padding:6px 0;border-bottom:2px solid transparent}
 .nn-nav a:hover,.nn-nav a:focus-visible{border-bottom-color:var(--rose)}
 .nn-nav__cta{color:var(--rose-deep)}
-@media (max-width:760px){.nn-nav a:not(.nn-nav__cta){display:none}.nn-brand__logo{height:44px}}
+@media (max-width:760px){.nn{--nn-top-h:65px}.nn-nav a:not(.nn-nav__cta){display:none}.nn-brand__logo{height:44px}}
 
 /* Hero */
 .nn-hero{padding:56px 0 40px;position:relative}
@@ -115,6 +118,29 @@ export function nurseryCss(): string {
 .nn-empty{font-family:var(--type);text-align:center;color:var(--ink-soft)}
 @media (max-width:900px){.nn-grid{grid-template-columns:repeat(2,1fr);gap:48px 18px}.nn-grid__item:nth-child(3n+2){transform:none}.nn-grid__item:nth-child(even){transform:translateY(36px)}.nn-glass{padding:30px 14px 60px;border-width:10px}.nn-card{width:min(200px,100%)}.nn-card__name{font-size:36px}}
 @media (max-width:420px){.nn-card__desc{display:none}}
+
+/* Gone home: past babies pegged on a clothesline */
+.nn-gone .nn-h2{margin-bottom:28px}
+.nn-line{list-style:none;margin:0 0 34px;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:26px;position:relative}
+.nn-line::before{content:'';position:absolute;left:0;right:0;top:0;height:44px;border-bottom:2.5px solid var(--sage-deep);border-radius:0 0 50% 50%/0 0 100% 100%;pointer-events:none}
+.nn-peg{position:relative;display:flex;justify-content:center}
+.nn-peg:nth-child(1),.nn-peg:nth-child(4){margin-top:27px}
+.nn-peg:nth-child(2),.nn-peg:nth-child(3){margin-top:41px}
+.nn-peg::before{content:'';position:absolute;top:-12px;left:50%;width:12px;height:30px;margin-left:-6px;z-index:2;border-radius:3px;background:linear-gradient(90deg,#d9b88f,#c79f72 50%,#d9b88f);box-shadow:0 2px 0 rgba(43,34,39,.18)}
+.nn-print{display:block;width:100%;background:var(--card);border:0;padding:10px 10px 12px;cursor:zoom-in;box-shadow:0 18px 30px -20px rgba(43,34,39,.55);transform:rotate(var(--sway,1.5deg));transform-origin:50% 0;transition:transform .35s}
+.nn-peg:nth-child(even) .nn-print{--sway:-1.8deg}
+.nn-print:hover,.nn-print:focus-visible{--sway:0deg}
+.nn-print img{width:100%;aspect-ratio:4/5;object-fit:cover}
+.nn-print__cap{display:block;margin-top:8px;font-family:var(--type);font-size:14px;line-height:1.3;color:var(--ink-soft)}
+.nn .bc-lb{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:rgba(43,34,39,.9);padding:clamp(16px,4vw,60px)}
+.nn .bc-lb figure{display:grid;gap:14px;justify-items:center;max-height:100%;margin:0}
+.nn .bc-lb img{max-height:80vh;max-width:min(1100px,92vw);object-fit:contain;background:var(--card);padding:12px}
+.nn .bc-lb figcaption{font-family:var(--type);color:var(--paper);font-size:17px}
+.nn .bc-lb button{position:absolute;display:grid;place-items:center;background:var(--blush);border:0;color:var(--ink);width:52px;height:52px;border-radius:50%;font-size:24px;line-height:1;cursor:pointer}
+.nn .bc-lb__close{top:18px;right:18px}
+.nn .bc-lb__prev{left:18px;top:50%;margin-top:-26px}
+.nn .bc-lb__next{right:18px;top:50%;margin-top:-26px}
+@media (max-width:760px){.nn-line{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:16px;padding:14px 4px 18px}.nn-line::before{top:14px;height:0;border-bottom:0;border-top:2.5px solid var(--sage-deep);border-radius:0}.nn-peg,.nn-peg:nth-child(n){flex:0 0 62vw;margin-top:12px;scroll-snap-align:center}}
 
 /* The artist's letter */
 .nn-letter{position:relative;max-width:820px;margin-inline:auto;background:var(--card);padding:64px 64px 56px 92px;border-radius:4px;box-shadow:0 30px 60px -40px rgba(43,34,39,.55);transform:rotate(-.6deg);
@@ -211,7 +237,7 @@ export function nurseryCss(): string {
   .nn-baby__crib,.nn-baby .nn-card{animation:nn-up linear both;animation-timeline:view();animation-range:entry 0% entry 55%}
 }
 @media (prefers-reduced-motion:reduce){
-  .nn-rise,.nn-hang,.nn-beads__track,.nn-baby__crib,.nn-baby .nn-card{animation:none !important}
+  .nn-rise,.nn-hang,.nn-beads__track,.nn-print,.nn-baby__crib,.nn-baby .nn-card{animation:none !important}
 }
 `;
 }

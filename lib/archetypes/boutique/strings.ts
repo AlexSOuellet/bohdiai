@@ -7,6 +7,7 @@ export const NURSERY_STRINGS = {
   nav: {
     label: 'Main',
     nursery: 'The nursery',
+    gone: 'Gone home',
     artist: 'The artist',
     visit: 'Visiting hours',
     touch: 'Ask about a baby',
@@ -26,6 +27,12 @@ export const NURSERY_STRINGS = {
     count: (n: number) => (n === 1 ? 'One baby waiting' : `${n} babies waiting`),
     all: (n: number) => `Meet all ${n} babies`,
     empty: 'The nursery is quiet right now. New babies are on the way.',
+  },
+  gone: {
+    tag: 'Gone home',
+    title: 'Babies who found their families',
+    open: (caption: string, n: number) =>
+      caption === '' ? `Open photo ${n}` : `Open photo: ${caption}`,
   },
   artist: { tag: 'From the artist' },
   visit: { tag: 'Visiting hours', title: 'Come say hello in person', locale: 'en-US' },

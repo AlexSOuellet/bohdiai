@@ -35,8 +35,15 @@ const full: BoutiqueData = {
     instagramUrl: 'https://instagram.com/rosencat',
   },
   dates: [{ id: 'd1', date: '2026-10-17', name: 'Scituate Art Festival', town: 'Scituate' }],
+  gone: [
+    { id: 'g1', url: 'https://cdn/g1.webp', caption: 'Christmas twins' },
+    { id: 'g2', url: 'https://cdn/g2.webp', caption: '' },
+    { id: 'g3', url: 'https://cdn/g3.webp', caption: 'Little elf' },
+    { id: 'g4', url: 'https://cdn/g4.webp', caption: 'Owl hat' },
+    { id: 'g5', url: 'https://cdn/g5.webp', caption: 'Sweet pea' },
+  ],
 };
-const bare: BoutiqueData = { name: 'Rose', profile: EMPTY_PROFILE, dates: [] };
+const bare: BoutiqueData = { name: 'Rose', profile: EMPTY_PROFILE, dates: [], gone: [] };
 
 afterEach(cleanup);
 
@@ -114,6 +121,27 @@ describe('nursery home', () => {
     expect(screen.queryByRole('link', { name: S.nav.visit })).toBeNull();
     expect(container.querySelector('.nn-brand__name')?.textContent).toBe('Rose');
     expect(container.querySelector('.nn-sr')?.textContent).toBe('Rose');
+  });
+});
+
+describe('gone home', () => {
+  it('pegs past babies on clotheslines of four, captions under each, opening full size', () => {
+    const { container } = render(<NurseryHome data={full} products={babies} tenantId={TENANT} />);
+    const lines = container.querySelectorAll('#gone .nn-line');
+    expect([...lines].map((l) => l.querySelectorAll('.nn-peg').length)).toEqual([4, 1]);
+    expect(screen.getByText('Christmas twins')).toBeTruthy();
+    expect(screen.getByRole('link', { name: S.nav.gone }).getAttribute('href')).toBe('#gone');
+    fireEvent.click(screen.getByRole('button', { name: S.gone.open('Little elf', 3) }));
+    expect(screen.getByRole('dialog').querySelector('img')?.getAttribute('src')).toBe(
+      'https://cdn/g3.webp',
+    );
+    expect(screen.getByRole('button', { name: S.gone.open('', 2) })).toBeTruthy();
+  });
+
+  it('is left out, with its nav link, when there are no past babies', () => {
+    const { container } = render(<NurseryHome data={bare} products={babies} tenantId={TENANT} />);
+    expect(container.querySelector('#gone')).toBeNull();
+    expect(screen.queryByRole('link', { name: S.nav.gone })).toBeNull();
   });
 });
 

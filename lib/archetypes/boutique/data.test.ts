@@ -6,6 +6,7 @@ import {
   cardTint,
   bioParagraphs,
   visitDay,
+  clotheslines,
   loadBoutiqueData,
 } from './data';
 
@@ -47,6 +48,11 @@ describe('nursery helpers', () => {
     ]);
   });
 
+  it('hangs the gallery in runs of four', () => {
+    expect(clotheslines([1, 2, 3, 4, 5, 6, 7, 8, 9])).toEqual([[1, 2, 3, 4], [5, 6, 7, 8], [9]]);
+    expect(clotheslines([])).toEqual([]);
+  });
+
   it('splits a story into paragraphs', () => {
     expect(bioParagraphs('One.\n\n\nTwo.\n')).toEqual(['One.', 'Two.']);
     expect(bioParagraphs('')).toEqual([]);
@@ -68,12 +74,14 @@ function fakeDb(opts: {
   profileError?: unknown;
   features?: unknown[];
   events?: unknown[];
+  gallery?: unknown[];
 }) {
   const result = (table: string) => {
     if (table === 'tenants') return { data: opts.tenant ?? null, error: opts.tenantError ?? null };
     if (table === 'site_profiles')
       return { data: opts.profile ?? null, error: opts.profileError ?? null };
     if (table === 'tenant_features') return { data: opts.features ?? [], error: null };
+    if (table === 'gallery_items') return { data: opts.gallery ?? [], error: null };
     return { data: opts.events ?? [], error: null };
   };
   return {
@@ -122,6 +130,24 @@ describe('loadBoutiqueData', () => {
     expect(on.dates).toEqual([
       { id: 'd1', date: '2026-10-17', name: 'Art Festival', town: 'Scituate' },
     ]);
+  });
+
+  it('reads past babies only when the gallery is switched on', async () => {
+    const gallery = [
+      { id: 'g1', caption: 'Twins', position: 0, uploads: { public_url: 'https://cdn/g1.webp' } },
+      { id: 'g2', caption: null, position: 1, uploads: null },
+    ];
+    const off = await loadBoutiqueData(fakeDb({ tenant: { business_name: 'R' }, gallery }), 't1');
+    expect(off.gone).toEqual([]);
+    const on = await loadBoutiqueData(
+      fakeDb({
+        tenant: { business_name: 'R' },
+        gallery,
+        features: [{ feature_key: 'gallery', enabled: true }],
+      }),
+      't1',
+    );
+    expect(on.gone).toEqual([{ id: 'g1', url: 'https://cdn/g1.webp', caption: 'Twins' }]);
   });
 
   it('fails loudly when the site can’t be read', async () => {

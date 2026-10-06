@@ -10,10 +10,18 @@ import { profileFormFromRow, type ProfileForm } from '@/lib/backend/profile/prof
 import { PROFILE_COLUMNS } from '@/lib/backend/profile/queries';
 import { loadSiteFeatures } from '@/lib/backend/features';
 import { listMarketDates } from '@/lib/backend/dates/queries';
+import { listGallery } from '@/lib/backend/gallery/queries';
+import { GALLERY_LIMIT, type GalleryItem } from '@/lib/backend/gallery/gallery-form';
 import type { MarketDate } from '@/lib/backend/dates/dates-form';
 import { NURSERY_STRINGS as S } from './strings';
 
-export type BoutiqueData = { name: string; profile: ProfileForm; dates: MarketDate[] };
+/** `gone` is the gallery: the owner's past pieces, shown when Gallery is switched on. */
+export type BoutiqueData = {
+  name: string;
+  profile: ProfileForm;
+  dates: MarketDate[];
+  gone: GalleryItem[];
+};
 
 export async function loadBoutiqueData(
   db: SupabaseClient<Database>,
@@ -27,8 +35,16 @@ export async function loadBoutiqueData(
   if (tenant.error !== null) throw new Error(`Could not load the site: ${tenant.error.message}`);
   if (tenant.data === null) throw new Error('Could not load the site: no such tenant');
   if (profile.error !== null) throw new Error(`Could not load About you: ${profile.error.message}`);
-  const dates = features.has('market_dates') ? await listMarketDates(db, tenantId) : [];
-  return { name: tenant.data.business_name, profile: profileFormFromRow(profile.data), dates };
+  const [dates, gone] = await Promise.all([
+    features.has('market_dates') ? listMarketDates(db, tenantId) : Promise.resolve([]),
+    features.has('gallery') ? listGallery(db, tenantId) : Promise.resolve([]),
+  ]);
+  return {
+    name: tenant.data.business_name,
+    profile: profileFormFromRow(profile.data),
+    dates,
+    gone: gone.slice(0, GALLERY_LIMIT),
+  };
 }
 
 /** The babies the home shows: the owner's home picks, or the first few live ones. */
@@ -77,4 +93,11 @@ export function visitDay(d: MarketDate): { weekday: string; day: string } {
     timeZone: 'UTC',
   }).format(date);
   return { weekday, day };
+}
+
+/** The clothesline hangs the gallery in short runs, so each line sags like a real one. */
+export function clotheslines<T>(items: readonly T[], perLine = 4): T[][] {
+  const lines: T[][] = [];
+  for (let i = 0; i < items.length; i += perLine) lines.push(items.slice(i, i + perLine));
+  return lines;
 }
