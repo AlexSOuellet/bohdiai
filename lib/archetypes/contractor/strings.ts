@@ -22,6 +22,13 @@ export const CONTRACTOR_STRINGS = {
     send: 'Send this to us',
     groupLabel: 'Ballpark estimate',
   },
+  /** Blueprint design: the one-at-a-time review quote. */
+  quotes: {
+    prev: 'Previous review',
+    next: 'Next review',
+    label: 'Customer reviews',
+    position: (n: number, of: number) => `Review ${n} of ${of}`,
+  },
   /** The booked-days calendar. */
   calendar: {
     booked: 'Booked',

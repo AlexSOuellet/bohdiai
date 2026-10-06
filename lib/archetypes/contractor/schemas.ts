@@ -33,8 +33,12 @@ export const ContractorMediaSchema = z
  * reference for Joe, 2026-10-06) — the owner cut out over a photo cover, a
  * trust strip, the request form right after the top, photo service cards,
  * project cards, review cards, and the owner's `promises` panel.
+ * `blueprint`: harbor's dark sibling (Alex, 2026-10-06: "try it, but do not lose
+ * this one") — a mostly navy page with blueprint grid lines and crop marks,
+ * services as one big list whose photo appears as you point at each, and the
+ * reviews as one large quote at a time.
  */
-export const CONTRACTOR_DESIGNS = ['yard', 'statement', 'swatch', 'atelier', 'harbor'] as const;
+export const CONTRACTOR_DESIGNS = ['yard', 'statement', 'swatch', 'atelier', 'harbor', 'blueprint'] as const;
 
 /** A Material Symbols icon name, e.g. "verified_user". */
 const icon = z.string().regex(/^[a-z0-9_]+$/);

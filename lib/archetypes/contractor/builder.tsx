@@ -13,6 +13,7 @@ import { StatementLanding, StatementContentPage, StatementShell } from './statem
 import { SwatchLanding, SwatchContentPage, SwatchShell } from './swatch/SwatchLanding';
 import { AtelierLanding, AtelierContentPage, AtelierShell } from './atelier/AtelierLanding';
 import { HarborLanding, HarborContentPage, HarborShell } from './harbor/HarborLanding';
+import { BlueprintLanding, BlueprintContentPage, BlueprintShell } from './blueprint/BlueprintLanding';
 
 export const CONTRACTOR_LOOK = 'contractor';
 
@@ -59,6 +60,7 @@ export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
     if (c.design === 'swatch') return <SwatchLanding content={c} palette={palette} tenantId={tenantId} />;
     if (c.design === 'atelier') return <AtelierLanding content={c} palette={palette} tenantId={tenantId} />;
     if (c.design === 'harbor') return <HarborLanding content={c} palette={palette} tenantId={tenantId} />;
+    if (c.design === 'blueprint') return <BlueprintLanding content={c} palette={palette} tenantId={tenantId} />;
     return <ContractorLanding content={c} palette={palette} tenantId={tenantId} />;
   },
   renderContentPage: ({ content, brandPalette, html, title, body }) => {
@@ -75,6 +77,19 @@ export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
             </div>
           </main>
         </StatementShell>
+      );
+    }
+    if (c.design === 'blueprint') {
+      if (html !== undefined) return <BlueprintContentPage content={c} palette={palette} html={html} />;
+      return (
+        <BlueprintShell content={c} palette={palette}>
+          <main className="bp-section">
+            <div className="bp-wrap bp-prose">
+              {title !== undefined && <h1>{title}</h1>}
+              {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
+            </div>
+          </main>
+        </BlueprintShell>
       );
     }
     if (c.design === 'harbor') {

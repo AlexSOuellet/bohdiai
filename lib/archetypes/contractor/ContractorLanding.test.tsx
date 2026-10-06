@@ -127,6 +127,16 @@ describe('contractor designs', () => {
     expect(container.querySelector('ol')).toBeNull();
   });
 
+  it('renders the blueprint design as its own page, with the request form right after the cover', () => {
+    const { container } = page(undefined, { ...STATEMENT, design: 'blueprint' });
+    expect(container.querySelector('.bp')).not.toBeNull();
+    expect(container.querySelector('.cp, .st, .sw, .at, .hb')).toBeNull();
+    expect(container.querySelector('main > section:nth-of-type(2)')?.id).toBe('estimate');
+    expect(container.querySelector('.bp-services__list')).not.toBeNull();
+    expect(container.querySelectorAll('.bp-work__item')).toHaveLength(CONTRACTOR_FIXTURE.work.items.length);
+    expect(container.querySelectorAll('.bp-quote')).toHaveLength(1);
+  });
+
   it('rejects a design it does not know', () => {
     expect(() => page(undefined, { ...CONTRACTOR_FIXTURE, design: 'brutalist' })).toThrow();
   });
