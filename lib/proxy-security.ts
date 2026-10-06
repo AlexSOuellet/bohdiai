@@ -86,15 +86,16 @@ export function isDormantPath(pathname: string): boolean {
 
 /**
  * The Supabase REST query that turns a subdomain into the shop it serves: an
- * active shop that hasn't been deleted. Lowercased to match the unique index
- * on lower(subdomain).
+ * active or draft shop that hasn't been deleted, with its status (a draft opens
+ * only to its preview link — see lib/storefront/draft-preview.ts). Lowercased to
+ * match the unique index on lower(subdomain).
  */
 export function tenantLookupUrl(supabaseUrl: string, subdomain: string): string {
   return (
     `${supabaseUrl}/rest/v1/tenants` +
-    `?select=id` +
+    `?select=id,status` +
     `&subdomain=eq.${encodeURIComponent(subdomain.toLowerCase())}` +
-    `&status=eq.active` +
+    `&status=in.(active,draft)` +
     `&deleted_at=is.null` +
     `&limit=1`
   );

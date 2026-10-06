@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const TENANT = '4b8f0f5e-8f3a-4a57-9a8e-1f2d3c4b5a69';
 
 const send = vi.fn();
+let askedStatuses: string[] = [];
 let tenantRow: { business_name: string; contact_email: string | null } | null = { business_name: 'Cut-Pro', contact_email: 'crew@example.com' };
 
 vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() } }));
@@ -11,7 +12,14 @@ vi.mock('@/lib/resend', () => ({ resend: () => ({ emails: { send } }), fromEmail
 vi.mock('@/lib/supabase', () => ({
   supabaseAdmin: () => ({
     from: () => ({
-      select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: async () => ({ data: tenantRow, error: null }) }) }) }),
+      select: () => ({
+        eq: () => ({
+          in: (_col: string, statuses: string[]) => {
+            askedStatuses = statuses;
+            return { maybeSingle: async () => ({ data: tenantRow, error: null }) };
+          },
+        }),
+      }),
     }),
   }),
 }));
@@ -34,6 +42,11 @@ function request(fields: Record<string, string>, photos: File[] = []): Request {
 const good = { tenantId: TENANT, name: 'Pat', phone: '401 555 0100', email: 'pat@example.com', town: 'Warwick', state: 'Rhode Island' };
 
 describe('POST /api/estimate', () => {
+  it('takes requests for live sites and for drafts opened by their preview link', async () => {
+    await POST(request(good));
+    expect(askedStatuses).toEqual(['active', 'draft']);
+  });
+
   beforeEach(() => {
     send.mockReset().mockResolvedValue({ data: { id: 'e1' }, error: null });
     tenantRow = { business_name: 'Cut-Pro', contact_email: 'crew@example.com' };

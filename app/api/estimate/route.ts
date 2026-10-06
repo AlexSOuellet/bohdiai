@@ -46,7 +46,8 @@ async function handle(req: Request) {
     .from('tenants')
     .select('business_name, contact_email')
     .eq('id', fields.tenantId)
-    .eq('status', 'active')
+    // A draft site takes requests too, so its owner can try the form from the preview link.
+    .in('status', ['active', 'draft'])
     .maybeSingle();
   if (lookupError !== null) {
     logger.error('estimate: tenant lookup failed', { tenantId: fields.tenantId, error: lookupError.message });

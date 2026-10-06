@@ -1,7 +1,11 @@
 /**
  * Build (or rebuild) a hand-built contractor site — Claude's tool, not a user surface.
  *
- *   npx tsx --env-file=.env.local scripts/build-contractor-site.ts <site> --media <dir> [--contact-email a@b.com] [--dry]
+ *   npx tsx --env-file=.env.local scripts/build-contractor-site.ts <site> --media <dir> [--contact-email a@b.com] [--draft] [--dry]
+ *
+ * --draft builds the site hidden: the public gets "not found" until it is
+ * switched on (scripts/site-visibility.ts); the run prints the private preview
+ * link. A real client's site is ALWAYS built with --draft (Alex, 2026-10-06).
  *
  * <site> names a module in scripts/sites/ exporting SITE + content(media).
  * It creates the tenant if missing (status active), uploads every file in --media to
@@ -17,6 +21,7 @@ import { ContractorContentSchema } from '../lib/archetypes/contractor/schemas';
 import { BrandPaletteSchema } from '../lib/color/brand-palette';
 import type { Database, Json } from '../lib/database.types';
 import { BUILDER_EMAIL, ensureBuilderAccess } from '../lib/backend/builder-access';
+import { previewCode, previewLink } from '../lib/storefront/draft-preview';
 import type * as SiteModule from './sites/cut-pro-lawncare';
 
 const MIME: Record<string, string> = { '.webp': 'image/webp', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.mp4': 'video/mp4' };
@@ -36,7 +41,8 @@ async function main(): Promise<void> {
   const mediaDir = flag(rest, '--media');
   const contactEmail = flag(rest, '--contact-email');
   const dry = rest.includes('--dry');
-  if (siteKey === undefined || mediaDir === undefined) fail('usage: build-contractor-site.ts <site> --media <dir> [--contact-email x] [--dry]');
+  const draft = rest.includes('--draft');
+  if (siteKey === undefined || mediaDir === undefined) fail('usage: build-contractor-site.ts <site> --media <dir> [--contact-email x] [--draft] [--dry]');
 
   const site = (await import(`./sites/${siteKey}.ts`)) as typeof SiteModule;
   if (!BrandPaletteSchema.safeParse(site.SITE.brandPalette).success) fail('site brandPalette is invalid');
@@ -68,7 +74,7 @@ async function main(): Promise<void> {
         business_name: site.SITE.businessName,
         tier: 'basic',
         types: ['doer'],
-        status: 'active',
+        status: draft ? 'draft' : 'active',
       })
       .select('id')
       .single();
@@ -77,6 +83,10 @@ async function main(): Promise<void> {
     process.stdout.write(`created tenant ${tenantId}\n`);
   } else {
     process.stdout.write(`tenant exists ${tenantId}\n`);
+    if (draft) {
+      const { error } = await db.from('tenants').update({ status: 'draft' }).eq('id', tenantId);
+      if (error !== null) fail(`draft status update failed: ${error.message}`);
+    }
   }
   const access = await ensureBuilderAccess(db as SupabaseClient<Database>, tenantId);
   if (!access.ok) fail(`builder access: ${access.error}`);
@@ -130,6 +140,11 @@ async function main(): Promise<void> {
     if (error !== null) fail(`home update failed: ${error.message}`);
   }
   process.stdout.write(`done — ${site.SITE.subdomain} is built.\n`);
+  if (draft) {
+    const code = await previewCode(process.env['BACKEND_SESSION_SECRET'], site.SITE.subdomain);
+    if (code === null) fail('BACKEND_SESSION_SECRET missing or short — cannot make the preview link');
+    process.stdout.write(`HIDDEN (draft). Private preview link:\n  ${previewLink(site.SITE.subdomain, code)}\n`);
+  }
 }
 
 main().catch((err: unknown) => fail(`build failed: ${err instanceof Error ? err.message : String(err)}`));

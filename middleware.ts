@@ -6,6 +6,7 @@ import { sanitizeTenantHeaders, isUnreachableStorefrontPath, requestHost, isAppH
 import { appOrigin } from '@/lib/backend/app-url';
 import { backendRedirect, isBackendPath, isManagePath, ownerEntryRedirect } from '@/lib/backend/backend-paths';
 import { ACTIVITY_COOKIE, IDLE_SECONDS, checkBackendSession, sessionSecret } from '@/lib/backend/session-limits';
+import { DRAFT_HEADERS, PREVIEW_COOKIE, PREVIEW_MAX_AGE, PREVIEW_PARAM, draftGate } from '@/lib/storefront/draft-preview';
 
 const RESERVED = new Set(['www', 'admin', 'app', 'learn']);
 const BASE_DOMAIN = 'bohdiai.com';
@@ -65,10 +66,41 @@ export async function middleware(request: NextRequest) {
 
   // Storefront subdomains: resolve tenant or return 404
   let tenantId: string | undefined;
+  let isDraft = false;
   if (subdomain !== null) {
     const tenant = await resolveTenant(subdomain);
     if (!tenant) {
       return new NextResponse('Store not found', { status: 404 });
+    }
+    // A draft site is "not found" to everyone but its private preview link.
+    // The link's code is remembered in a cookie for this site only, then the
+    // address is cleaned of it.
+    if (tenant.status === 'draft') {
+      const gate = await draftGate(
+        process.env['BACKEND_SESSION_SECRET'],
+        subdomain,
+        request.nextUrl.searchParams.get(PREVIEW_PARAM),
+        request.cookies.get(PREVIEW_COOKIE)?.value,
+      );
+      if (gate === 'deny') {
+        return new NextResponse('Store not found', { status: 404, headers: DRAFT_HEADERS });
+      }
+      if (gate === 'link') {
+        const clean = request.nextUrl.clone();
+        const code = clean.searchParams.get(PREVIEW_PARAM) ?? '';
+        clean.searchParams.delete(PREVIEW_PARAM);
+        const admitted = NextResponse.redirect(clean, 303);
+        admitted.cookies.set(PREVIEW_COOKIE, code, {
+          httpOnly: true,
+          secure: request.nextUrl.protocol === 'https:',
+          sameSite: 'lax',
+          path: '/',
+          maxAge: PREVIEW_MAX_AGE,
+        });
+        Object.entries(DRAFT_HEADERS).forEach(([k, v]) => admitted.headers.set(k, v));
+        return admitted;
+      }
+      isDraft = true;
     }
     tenantId = tenant.id;
   }
@@ -181,6 +213,8 @@ export async function middleware(request: NextRequest) {
     response.headers.set('X-Frame-Options', 'DENY');
   }
 
+  if (isDraft) Object.entries(DRAFT_HEADERS).forEach(([k, v]) => response.headers.set(k, v));
+
   return response;
 }
 
@@ -218,7 +252,7 @@ function extractSubdomain(hostname: string): string | null {
   return sub !== '' && !RESERVED.has(sub) ? sub : null;
 }
 
-async function resolveTenant(subdomain: string): Promise<{ id: string } | null> {
+async function resolveTenant(subdomain: string): Promise<{ id: string; status: string } | null> {
   const supabaseUrl = process.env['SUPABASE_URL'];
   const serviceRoleKey = process.env['SUPABASE_SERVICE_ROLE_KEY'];
 
@@ -243,7 +277,7 @@ async function resolveTenant(subdomain: string): Promise<{ id: string } | null> 
       return null;
     }
 
-    const rows = (await res.json()) as Array<{ id: string }>;
+    const rows = (await res.json()) as Array<{ id: string; status: string }>;
     return rows[0] ?? null;
   } catch (err) {
     console.error('[middleware] Tenant resolution error:', err);

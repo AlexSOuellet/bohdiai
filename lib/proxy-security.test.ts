@@ -177,21 +177,21 @@ describe('isDormantPath', () => {
 describe('tenantLookupUrl', () => {
   const url = new URL(tenantLookupUrl('https://db.example.co', 'Cut-Pro-Lawncare'));
 
-  it('asks only for active shops that have not been deleted', () => {
-    expect(url.searchParams.get('status')).toBe('eq.active');
+  it('asks only for active or draft shops that have not been deleted', () => {
+    expect(url.searchParams.get('status')).toBe('in.(active,draft)');
     expect(url.searchParams.get('deleted_at')).toBe('is.null');
   });
 
-  it('matches the subdomain lowercased, one row, id only', () => {
+  it('matches the subdomain lowercased, one row, id and status', () => {
     expect(url.pathname).toBe('/rest/v1/tenants');
     expect(url.searchParams.get('subdomain')).toBe('eq.cut-pro-lawncare');
-    expect(url.searchParams.get('select')).toBe('id');
+    expect(url.searchParams.get('select')).toBe('id,status');
     expect(url.searchParams.get('limit')).toBe('1');
   });
 
   it('encodes the subdomain so it cannot add its own filters', () => {
     const sneaky = new URL(tenantLookupUrl('https://db.example.co', 'x&status=eq.suspended'));
-    expect(sneaky.searchParams.getAll('status')).toEqual(['eq.active']);
+    expect(sneaky.searchParams.getAll('status')).toEqual(['in.(active,draft)']);
   });
 });
 
