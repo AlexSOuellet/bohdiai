@@ -13,6 +13,8 @@ export const CONTRACTOR_STRINGS = {
   pauseVideo: 'Pause video',
   serving: 'Serving',
   starsLabel: 'Five out of five stars',
+  /** Statement design: under the sideways-scrolling work photos. */
+  scrollHint: 'Swipe or scroll for more',
   form: {
     name: 'Your name',
     phone: 'Phone',

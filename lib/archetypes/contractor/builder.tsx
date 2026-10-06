@@ -9,6 +9,7 @@ import type { ArchetypeBuildSpec } from '../builder';
 import { deriveBrandPalette, type BrandPalette } from '@/lib/color/brand-palette';
 import { ContractorContentSchema, type ContractorContent } from './schemas';
 import { ContractorLanding, ContractorContentPage, ContractorShell } from './ContractorLanding';
+import { StatementLanding, StatementContentPage, StatementShell } from './statement/StatementLanding';
 
 export const CONTRACTOR_LOOK = 'contractor';
 
@@ -47,12 +48,30 @@ export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
   mediaJobs: () => [],
   applyMedia: (authored) => authored,
   toPayload: (authored) => ({ content: authored, products: [] }),
-  render: ({ content, brandPalette, tenantId }) => (
-    <ContractorLanding content={contentOf(content)} palette={paletteFor(brandPalette)} tenantId={tenantId} />
-  ),
+  // Each design is its own page; the content shape is shared (design: 'yard' | 'statement').
+  render: ({ content, brandPalette, tenantId }) => {
+    const c = contentOf(content);
+    const palette = paletteFor(brandPalette);
+    return c.design === 'statement'
+      ? <StatementLanding content={c} palette={palette} tenantId={tenantId} />
+      : <ContractorLanding content={c} palette={palette} tenantId={tenantId} />;
+  },
   renderContentPage: ({ content, brandPalette, html, title, body }) => {
     const c = contentOf(content);
     const palette = paletteFor(brandPalette);
+    if (c.design === 'statement') {
+      if (html !== undefined) return <StatementContentPage content={c} palette={palette} html={html} />;
+      return (
+        <StatementShell content={c} palette={palette}>
+          <main className="st-paper st-section">
+            <div className="st-wrap st-prose">
+              {title !== undefined && <h1>{title}</h1>}
+              {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
+            </div>
+          </main>
+        </StatementShell>
+      );
+    }
     if (html !== undefined) return <ContractorContentPage content={c} palette={palette} html={html} />;
     return (
       <ContractorShell content={c} palette={palette}>

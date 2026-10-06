@@ -26,7 +26,7 @@ export function checkEstimate(fields: { name: string; phone: string; email: stri
   return null;
 }
 
-export function EstimateForm({ tenantId, services, states }: { tenantId: string; services: string[]; states: string[] }) {
+export function EstimateForm({ tenantId, services, states, detailsHint }: { tenantId: string; services: string[]; states: string[]; detailsHint?: string | undefined }) {
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
   const [photos, setPhotos] = useState<File[]>([]);
 
@@ -124,7 +124,7 @@ export function EstimateForm({ tenantId, services, states }: { tenantId: string;
       </fieldset>
       <div className="cp-field">
         <label htmlFor="cp-details">{S.details} <small>{S.optional}</small></label>
-        <textarea id="cp-details" name="details" className="cp-input" placeholder={S.detailsHint} />
+        <textarea id="cp-details" name="details" className="cp-input" placeholder={detailsHint ?? S.detailsHint} />
       </div>
       <div className="cp-field">
         <label htmlFor="cp-photos">{S.photos} <small>{S.optional}</small></label>

@@ -17,7 +17,7 @@ import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 
 const ESTIMATE_ID = 'estimate';
 
-function PhoneIcon(): ReactElement {
+export function PhoneIcon(): ReactElement {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" />
@@ -25,7 +25,7 @@ function PhoneIcon(): ReactElement {
   );
 }
 
-function ArrowIcon(): ReactElement {
+export function ArrowIcon(): ReactElement {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="square" aria-hidden="true">
       <path d="M4 12h15M13 5l7 7-7 7" />
@@ -33,7 +33,7 @@ function ArrowIcon(): ReactElement {
   );
 }
 
-function Stars(): ReactElement {
+export function Stars(): ReactElement {
   return (
     <div className="cp-stars" role="img" aria-label={S.starsLabel}>
       {[0, 1, 2, 3, 4].map((i) => (
@@ -45,7 +45,7 @@ function Stars(): ReactElement {
   );
 }
 
-function Media({ media, eager }: { media: ContractorMedia; eager?: boolean }): ReactElement {
+export function Media({ media, eager }: { media: ContractorMedia; eager?: boolean }): ReactElement {
   if (media.kind === 'video') {
     return (
       <SlowVideo src={media.url} poster={media.poster} autoPlay muted loop playsInline preload={eager === true ? 'auto' : 'metadata'} aria-label={media.alt} />
@@ -55,7 +55,7 @@ function Media({ media, eager }: { media: ContractorMedia; eager?: boolean }): R
 }
 
 /** The headline with one word painted in the accent, when the content names it. */
-function Headline({ text, highlight }: { text: string; highlight?: string | undefined }): ReactElement {
+export function Headline({ text, highlight }: { text: string; highlight?: string | undefined }): ReactElement {
   if (highlight === undefined) return <>{text}</>;
   const at = text.toLowerCase().indexOf(highlight.toLowerCase());
   if (at < 0) return <>{text}</>;
@@ -65,38 +65,6 @@ function Headline({ text, highlight }: { text: string; highlight?: string | unde
       <em>{text.slice(at, at + highlight.length)}</em>
       {text.slice(at + highlight.length)}
     </>
-  );
-}
-
-/**
- * The statement hero: one full-width photo, the words on the left at a sane size,
- * and the owner cut out and oversized on the right, standing past the bottom edge
- * into the next section. On phones the photo and the owner come first, words below.
- */
-function StatementHero({ content: c, tel }: { content: ContractorContent; tel: string }): ReactElement {
-  const b = c.business;
-  return (
-    <section className="cp-stmt">
-      <div className="cp-stmt__stage">
-        <div className="cp-stmt__bg"><Media media={c.hero.media} eager /></div>
-        {c.hero.cutout !== undefined && (
-          <img className="cp-stmt__cutout" src={c.hero.cutout.url} alt={c.hero.cutout.alt} loading="eager" decoding="async" />
-        )}
-      </div>
-      <div className="cp-wrap cp-stmt__words">
-        <p className="cp-hero__kicker cp-rise">{c.hero.kicker}</p>
-        <p className="cp-hero__marker cp-rise"><span className="cp-brush">{c.hero.marker}</span></p>
-        <h1 className="cp-stmt__headline cp-rise"><Headline text={c.hero.headline} highlight={c.hero.highlight} /></h1>
-        <p className="cp-hero__sub cp-rise">{c.hero.sub}</p>
-        <div className="cp-hero__ctas cp-rise">
-          <a className="cp-btn cp-btn--solid" href={`#${ESTIMATE_ID}`}>{c.hero.estimateLabel} <ArrowIcon /></a>
-          <a className="cp-btn cp-btn--line" href={tel}><PhoneIcon /> {b.phone}</a>
-        </div>
-        <p className="cp-hero__area cp-rise">
-          {b.serviceArea.map((s) => <span key={s}>{s}</span>)}
-        </p>
-      </div>
-    </section>
   );
 }
 
@@ -122,7 +90,7 @@ export function ContractorShell({
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       <link rel="stylesheet" href={CONTRACTOR_FONTS_HREF} />
       <style dangerouslySetInnerHTML={{ __html: contractorCss(palette) }} />
-      <div className={c.design === 'statement' ? 'cp cp--statement' : 'cp'}>
+      <div className="cp">
         <a className="cp-skip" href={`/#${ESTIMATE_ID}`}>{S.skipToEstimate}</a>
 
         <header className="cp-head">
@@ -189,7 +157,6 @@ export function ContractorLanding({ content: c, palette, tenantId }: { content: 
   return (
     <ContractorShell content={c} palette={palette}>
         <main>
-          {c.design === 'statement' ? <StatementHero content={c} tel={tel} /> : (
           <section className="cp-hero">
             <div className="cp-wrap cp-hero__grid">
               <div>
@@ -211,7 +178,6 @@ export function ContractorLanding({ content: c, palette, tenantId }: { content: 
               </div>
             </div>
           </section>
-          )}
 
           {c.proof !== undefined && c.proof.length > 0 && (
             <div className="cp-wrap">
@@ -354,7 +320,7 @@ export function ContractorLanding({ content: c, palette, tenantId }: { content: 
                 </div>
               </div>
               {tenantId !== undefined && (
-                <EstimateForm tenantId={tenantId} services={c.services.items.map((s) => s.name)} states={b.serviceArea} />
+                <EstimateForm tenantId={tenantId} services={c.services.items.map((s) => s.name)} states={c.estimate.states ?? b.serviceArea} detailsHint={c.estimate.detailsHint} />
               )}
             </div>
           </section>

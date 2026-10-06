@@ -98,8 +98,8 @@ export function content(media: (file: string) => string): ContractorContent {
     },
     crew: {
       eyebrow: 'Who shows up',
-      quote: 'Joe came in, listened to our plans and then made a few suggestions of his own.',
-      attribution: 'Robin L. — homeowner',
+      quote: 'Joe even reached out after the considerable rain to make sure everything was good. He is impressive!',
+      attribution: 'Janet M. — homeowner',
       body: [
         'When you call Mazzone Home Improvement, you get Joe. He comes out to see the job himself, gives you a straight answer on cost and timing, and brings ideas of his own.',
         'Then his crew does the work, keeps the place clean, and Joe checks in after to make sure everything is right.',
@@ -116,6 +116,8 @@ export function content(media: (file: string) => string): ContractorContent {
       title: 'Tell Joe about your project',
       intro: 'A few details and some photos of the room or the house are all he needs to get started.',
       steps: ['Send your request, photos help', 'Joe calls or texts you back', 'He comes out, looks, and gives you a price'],
+      detailsHint: 'What the room is like now, what you’d like it to be, and when.',
+      states: ['Rhode Island'],
     },
   };
 }

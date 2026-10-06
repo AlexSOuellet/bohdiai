@@ -108,6 +108,10 @@ export const ContractorContentSchema = z
         title: text,
         intro: text,
         steps: z.array(text).max(4).optional(),
+        /** The details box's placeholder, in the trade's own words (defaults to the lawn wording). */
+        detailsHint: text.optional(),
+        /** The State choices on the form (defaults to the service area). */
+        states: z.array(text).min(1).optional(),
       })
       .strict(),
   })

@@ -23,28 +23,43 @@ const STATEMENT = {
 };
 
 describe('contractor designs', () => {
-  it('wears the yard design by default: the hero slab, no statement stage', () => {
+  it('wears the yard design by default: the Cut-Pro page, nothing of the statement design', () => {
     const { container } = page();
-    expect(container.querySelector('.cp')?.className).toBe('cp');
+    expect(container.querySelector('.cp')).not.toBeNull();
     expect(container.querySelector('.cp-hero .cp-slab')).not.toBeNull();
-    expect(container.querySelector('.cp-stmt')).toBeNull();
+    expect(container.querySelector('.st')).toBeNull();
   });
 
-  it('opens the statement design on the full-width photo with the owner cut out in front', () => {
+  it('renders the statement design as its own page: the cover photo with the owner cut out in front', () => {
     const { container } = page(undefined, STATEMENT);
-    expect(container.querySelector('.cp')?.className).toBe('cp cp--statement');
-    expect(container.querySelector('.cp-hero')).toBeNull();
-    expect(container.querySelector('.cp-stmt__bg img')?.getAttribute('src')).toBe('https://example.com/kitchen.webp');
-    expect(screen.getByRole('img', { name: 'The owner, arms crossed' })).toHaveClass('cp-stmt__cutout');
-    expect(screen.getByRole('heading', { level: 1 })).toHaveClass('cp-stmt__headline');
-    expect(container.querySelector('.cp-stmt a[href="#estimate"]')).not.toBeNull();
-    expect(container.querySelector('.cp-stmt a[href="tel:+14012061566"]')).not.toBeNull();
+    expect(container.querySelector('.st')).not.toBeNull();
+    expect(container.querySelector('.cp')).toBeNull();
+    expect(container.innerHTML).not.toContain('Permanent+Marker');
+    expect(container.querySelector('.st-cover__bg img')?.getAttribute('src')).toBe('https://example.com/kitchen.webp');
+    expect(screen.getByRole('img', { name: 'The owner, arms crossed' })).toHaveClass('st-cover__owner');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveClass('st-cover__headline');
+    expect(container.querySelector('.st-cover a[href="#estimate"]')).not.toBeNull();
+    expect(container.querySelectorAll('a[href="tel:+14012061566"]').length).toBeGreaterThanOrEqual(4);
   });
 
-  it('runs the statement design without a cutout too: just the photo and the words', () => {
+  it('numbers every service and shows every work photo, grouped room by room', () => {
+    const { container } = page(undefined, STATEMENT);
+    expect(container.querySelectorAll('.st-contents__item')).toHaveLength(CONTRACTOR_FIXTURE.services.items.length);
+    expect(container.querySelectorAll('.st-reel__item')).toHaveLength(CONTRACTOR_FIXTURE.work.items.length);
+    const tags = new Set(CONTRACTOR_FIXTURE.work.items.map((i) => i.tag).filter((t) => t !== undefined));
+    expect(container.querySelectorAll('.st-reel__room')).toHaveLength(tags.size);
+  });
+
+  it('sets the first review as the pull-quote and keeps the estimate form', () => {
+    const { container } = page(undefined, STATEMENT);
+    expect(container.querySelector('.st-pull__quote')?.textContent).toBe(CONTRACTOR_FIXTURE.reviews?.items[0]?.quote);
+    expect(container.querySelector('#estimate form')).not.toBeNull();
+  });
+
+  it('runs the statement design without a cutout too: the crew photo stands in', () => {
     const { container } = page(undefined, { ...STATEMENT, hero: { ...STATEMENT.hero, cutout: undefined } });
-    expect(container.querySelector('.cp-stmt__bg img')).not.toBeNull();
-    expect(container.querySelector('.cp-stmt__cutout')).toBeNull();
+    expect(container.querySelector('.st-cover__owner')).toBeNull();
+    expect(container.querySelector('.st-crew__figure img')?.getAttribute('src')).toBe(CONTRACTOR_FIXTURE.crew.photo.url);
   });
 
   it('rejects a design it does not know', () => {
