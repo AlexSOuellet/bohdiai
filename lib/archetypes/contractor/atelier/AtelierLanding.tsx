@@ -118,13 +118,23 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
   return (
     <AtelierShell content={c} palette={palette}>
       <main>
-        {/* ── hero: the words and badges beside the featured photo ── */}
-        <section className="at-hero">
-          <div className="at-wrap at-hero__grid">
-            <div className="at-hero__words">
-              <p className="at-pill"><Icon name="architecture" /> {c.hero.kicker}</p>
-              <h1 className="at-h1">{c.hero.headline}</h1>
-              <p className="at-hero__sub">{c.hero.sub}</p>
+        {/* ── hero: a magazine cover — one photo edge to edge, the headline on it ── */}
+        <section className="at-cover">
+          <div className="at-cover__photo"><Media media={c.hero.media} eager /></div>
+          <div className="at-wrap at-cover__inner">
+            <div className="at-cover__words">
+              <p className="at-pill at-pill--glass"><Icon name="architecture" /> {c.hero.kicker}</p>
+              <h1 className="at-cover__headline">{c.hero.headline}</h1>
+            </div>
+            {c.hero.feature !== undefined && (
+              <p className="at-cover__feature">
+                <span className="at-label at-label--light">{c.hero.feature.label}</span>
+                <span className="at-cover__featuretitle">{c.hero.feature.title}</span>
+                {c.hero.feature.tag !== undefined && <span className="at-glass">{c.hero.feature.tag}</span>}
+              </p>
+            )}
+            <div className="at-cover__card">
+              <p className="at-cover__sub">{c.hero.sub}</p>
               {c.hero.badges !== undefined && (
                 <ul className="at-badges">
                   {c.hero.badges.map((badge) => (
@@ -139,18 +149,6 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
                 <a className="at-btn at-btn--soft at-btn--big" href={tel}><Icon name="phone_in_talk" /> {b.phone}</a>
               </div>
             </div>
-            <figure className="at-hero__photo">
-              <Media media={c.hero.media} eager />
-              {c.hero.feature !== undefined && (
-                <figcaption className="at-hero__feature">
-                  <span>
-                    <span className="at-label at-label--light">{c.hero.feature.label}</span>
-                    <span className="at-hero__featuretitle">{c.hero.feature.title}</span>
-                  </span>
-                  {c.hero.feature.tag !== undefined && <span className="at-glass">{c.hero.feature.tag}</span>}
-                </figcaption>
-              )}
-            </figure>
           </div>
         </section>
 
