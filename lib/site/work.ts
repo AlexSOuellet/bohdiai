@@ -25,8 +25,10 @@ export type WorkEntry = {
   features: readonly string[];
   /** Path under public/. */
   shot: string;
-  /** Samples only: which plan the sample shows ("Showcase", "Lite", "Full"). */
+  /** Samples only: which plan the sample shows ("Showcase", "Lite", "Full", "Contractor Lite", "Contractor Full"). */
   plan?: string;
+  /** Samples only: who the sample is for — its banner links to that pricing page. */
+  audience?: 'maker' | 'contractor';
   /** Samples only: false keeps a sample off bohdiai.com (it still carries the sample banner). */
   listed?: boolean;
   testimonials: readonly Testimonial[];
@@ -133,6 +135,34 @@ export const SAMPLES: readonly WorkEntry[] = [
     testimonials: [],
   },
   {
+    slug: 'true-coat-painting',
+    name: 'True Coat Painting',
+    url: 'https://true-coat-painting.bohdiai.com',
+    host: 'true-coat-painting.bohdiai.com',
+    kind: 'sample',
+    category: 'Painter',
+    blurb: 'House painting, with a live price estimator',
+    features: [],
+    shot: '/work/true-coat-painting.webp',
+    plan: 'Contractor Full',
+    audience: 'contractor',
+    testimonials: [],
+  },
+  {
+    slug: 'halfmoon-roofing',
+    name: 'Halfmoon Roofing',
+    url: 'https://halfmoon-roofing.bohdiai.com',
+    host: 'halfmoon-roofing.bohdiai.com',
+    kind: 'sample',
+    category: 'Roofer',
+    blurb: 'A one-page site built to bring in estimate requests',
+    features: [],
+    shot: '/work/halfmoon-roofing.webp',
+    plan: 'Contractor Lite',
+    audience: 'contractor',
+    testimonials: [],
+  },
+  {
     slug: 'heavenly-scents',
     name: 'Heavenly Scents',
     url: 'https://heavenly-scents.bohdiai.com',
@@ -143,6 +173,7 @@ export const SAMPLES: readonly WorkEntry[] = [
     features: [],
     shot: '/work/heavenly-scents.webp',
     plan: 'Full',
+    listed: false,
     testimonials: [],
   },
   {
@@ -177,6 +208,11 @@ export const SAMPLES: readonly WorkEntry[] = [
 
 /** The samples bohdiai.com shows (the rest exist only as sample sites, with the banner). */
 export const LISTED_SAMPLES: readonly WorkEntry[] = SAMPLES.filter((s) => s.listed !== false);
+
+/** Who a sample is for; a sample with no audience is a maker's. */
+export function sampleAudience(s: WorkEntry): 'maker' | 'contractor' {
+  return s.audience ?? 'maker';
+}
 
 export const WORK: readonly WorkEntry[] = [...CLIENTS, ...LISTED_SAMPLES];
 

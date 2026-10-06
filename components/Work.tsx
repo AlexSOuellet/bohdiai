@@ -1,4 +1,4 @@
-import { CLIENTS, LISTED_SAMPLES } from '@/lib/site/work';
+import { CLIENTS, LISTED_SAMPLES, sampleAudience } from '@/lib/site/work';
 import { ClientSlideshow } from './ClientSlideshow';
 import { WorkShot } from './WorkShot';
 import { SectionKicker } from './SectionKicker';
@@ -10,24 +10,46 @@ const H2 =
   'mx-auto max-w-[780px] px-3 text-center font-sans text-[30px] font-medium leading-[1.05] tracking-[-0.025em] text-text-soft md:text-[48px] md:tracking-[-0.03em]';
 const EM = 'not-italic text-honey-warm [text-shadow:0_0_32px_rgba(243,201,122,0.5)]';
 
-// Fanned on wide screens: four cards spread evenly across the shelf, the outer two
+// Fanned on wide screens: the cards spread evenly across the shelf, the outer ones
 // tilted out and dropped a little, each overlapping its neighbour only slightly so
 // every name stays clear; hovering a card lifts and straightens it and dims the
-// others. Stacks into one column on phones.
-const FAN = [
-  'md:-translate-x-[179%] md:translate-y-[34px] md:-rotate-[6deg] md:z-[1] md:hover:-translate-y-2 md:hover:-rotate-1',
-  'md:-translate-x-[93%] md:translate-y-[6px] md:-rotate-[2deg] md:z-[2] md:hover:-translate-y-3 md:hover:rotate-0',
-  'md:-translate-x-[7%] md:translate-y-[6px] md:rotate-[2deg] md:z-[3] md:hover:-translate-y-3 md:hover:rotate-0',
-  'md:translate-x-[79%] md:translate-y-[34px] md:rotate-[6deg] md:z-[2] md:hover:-translate-y-2 md:hover:rotate-1',
-] as const;
+// others. Stacks into one column on phones. One spread per card count (the home
+// page shows five, the maker page three, the contractor page two).
+const FANS: Record<number, readonly string[]> = {
+  2: [
+    'md:-translate-x-[95%] md:translate-y-[6px] md:-rotate-[2deg] md:z-[1] md:hover:-translate-y-3 md:hover:rotate-0',
+    'md:-translate-x-[5%] md:translate-y-[6px] md:rotate-[2deg] md:z-[2] md:hover:-translate-y-3 md:hover:rotate-0',
+  ],
+  3: [
+    'md:-translate-x-[136%] md:translate-y-[22px] md:-rotate-[4deg] md:z-[1] md:hover:-translate-y-2 md:hover:-rotate-1',
+    'md:-translate-x-[50%] md:translate-y-0 md:rotate-0 md:z-[3] md:hover:-translate-y-3',
+    'md:translate-x-[36%] md:translate-y-[22px] md:rotate-[4deg] md:z-[2] md:hover:-translate-y-2 md:hover:rotate-1',
+  ],
+  4: [
+    'md:-translate-x-[179%] md:translate-y-[34px] md:-rotate-[6deg] md:z-[1] md:hover:-translate-y-2 md:hover:-rotate-1',
+    'md:-translate-x-[93%] md:translate-y-[6px] md:-rotate-[2deg] md:z-[2] md:hover:-translate-y-3 md:hover:rotate-0',
+    'md:-translate-x-[7%] md:translate-y-[6px] md:rotate-[2deg] md:z-[3] md:hover:-translate-y-3 md:hover:rotate-0',
+    'md:translate-x-[79%] md:translate-y-[34px] md:rotate-[6deg] md:z-[2] md:hover:-translate-y-2 md:hover:rotate-1',
+  ],
+  5: [
+    'md:-translate-x-[210%] md:translate-y-[38px] md:-rotate-[6deg] md:z-[1] md:hover:-translate-y-2 md:hover:-rotate-1',
+    'md:-translate-x-[130%] md:translate-y-[12px] md:-rotate-[3deg] md:z-[2] md:hover:-translate-y-3 md:hover:rotate-0',
+    'md:-translate-x-[50%] md:translate-y-0 md:rotate-0 md:z-[3] md:hover:-translate-y-3',
+    'md:translate-x-[30%] md:translate-y-[12px] md:rotate-[3deg] md:z-[2] md:hover:-translate-y-3 md:hover:rotate-0',
+    'md:translate-x-[110%] md:translate-y-[38px] md:rotate-[6deg] md:z-[1] md:hover:-translate-y-2 md:hover:rotate-1',
+  ],
+};
 
-/** With an `audience`, only that audience's clients show (and the sample shops only for makers). */
+/** With an `audience`, only that audience's clients and samples show. */
 export function Work({ audience }: { audience?: Audience } = {}): React.ReactElement {
   const clients =
     audience === undefined
       ? CLIENTS
       : CLIENTS.filter((c) => c.category === AUDIENCE_CATEGORY[audience]);
-  const showSamples = audience !== 'contractor';
+  const samples = audience === undefined ? LISTED_SAMPLES : LISTED_SAMPLES.filter((s) => sampleAudience(s) === audience);
+  const fan = FANS[samples.length] ?? [];
+  const fanWidth = samples.length >= 5 ? 'md:w-[min(270px,19vw)]' : 'md:w-[min(320px,25vw)]';
+  const showSamples = samples.length > 0;
   return (
     <section
       id="work"
@@ -54,15 +76,16 @@ export function Work({ audience }: { audience?: Audience } = {}): React.ReactEle
           </p>
 
           <div className="group/shelf relative mt-12 grid gap-10 md:mt-14 md:block md:h-[300px]">
-            {LISTED_SAMPLES.map((s, i) => (
+            {samples.map((s, i) => (
               <a
                 key={s.slug}
                 href={s.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={[
-                  'block text-left no-underline transition-[transform,filter] duration-slow ease-out md:absolute md:left-1/2 md:top-0 md:w-[min(320px,25vw)] md:hover:z-[9] md:hover:scale-[1.04] md:hover:!brightness-100 md:group-hover/shelf:brightness-[0.55]',
-                  FAN[i] ?? '',
+                  'block text-left no-underline transition-[transform,filter] duration-slow ease-out md:absolute md:left-1/2 md:top-0 md:hover:z-[9] md:hover:scale-[1.04] md:hover:!brightness-100 md:group-hover/shelf:brightness-[0.55]',
+                  fanWidth,
+                  fan[i] ?? '',
                 ].join(' ')}
               >
                 <WorkShot entry={s} sizes="(max-width: 768px) 100vw, 320px" />

@@ -4,7 +4,7 @@
  * sites are samples, and their plans, come from the one list bohdiai.com shows
  * (lib/site/work.ts), so a real client's site can never carry it.
  */
-import { SAMPLES } from '@/lib/site/work';
+import { SAMPLES, sampleAudience } from '@/lib/site/work';
 import { PLATFORM_URL } from './platform-credit';
 
 export const SAMPLE_BANNER_STRINGS = {
@@ -20,5 +20,6 @@ export function sampleBannerFor(subdomain: string | null): SampleBanner | null {
   if (subdomain === null) return null;
   const sample = SAMPLES.find((s) => s.host === `${subdomain}.bohdiai.com`);
   if (sample?.plan === undefined) return null;
-  return { label: SAMPLE_BANNER_STRINGS.label(sample.plan), href: `${PLATFORM_URL}/makers#plans` };
+  const page = sampleAudience(sample) === 'contractor' ? 'contractors' : 'makers';
+  return { label: SAMPLE_BANNER_STRINGS.label(sample.plan), href: `${PLATFORM_URL}/${page}#plans` };
 }

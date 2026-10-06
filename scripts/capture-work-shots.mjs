@@ -18,6 +18,8 @@ const SITES = {
   'paper-and-patina': 'https://paper-and-patina.bohdiai.com',
   'ember-and-pine': 'https://ember-and-pine.bohdiai.com',
   'knotty-knits': 'https://knotty-knits.bohdiai.com',
+  'true-coat-painting': 'https://true-coat-painting.bohdiai.com',
+  'halfmoon-roofing': 'https://halfmoon-roofing.bohdiai.com',
 };
 
 const CHROME = [

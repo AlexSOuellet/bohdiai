@@ -4,7 +4,7 @@ import path from 'node:path';
 import { WORK, CLIENTS, SAMPLES, LISTED_SAMPLES, HERO_WORK } from './work';
 
 describe('the work list', () => {
-  it('has two clients then four listed samples, and two more sample sites kept off bohdiai.com', () => {
+  it('has two clients, five listed samples (three maker plans, two contractor plans), and three more sample sites kept off bohdiai.com', () => {
     expect(CLIENTS.map((w) => w.name)).toEqual([
       'Cut-Pro Lawncare & Construction',
       'Decoupage Digital Designs',
@@ -13,11 +13,13 @@ describe('the work list', () => {
       ['Rustic Rhody', 'Showcase'],
       ['Classic Loafs', 'Lite'],
       ['Twilight to Darkness', 'Full'],
+      ['True Coat Painting', 'Contractor Full'],
+      ['Halfmoon Roofing', 'Contractor Lite'],
       ['Heavenly Scents', 'Full'],
       ['Paper & Patina', 'Showcase'],
       ['Ember & Pine', 'Showcase'],
     ]);
-    expect(LISTED_SAMPLES.map((w) => w.name)).toEqual(['Rustic Rhody', 'Classic Loafs', 'Twilight to Darkness', 'Heavenly Scents']);
+    expect(LISTED_SAMPLES.map((w) => w.name)).toEqual(['Rustic Rhody', 'Classic Loafs', 'Twilight to Darkness', 'True Coat Painting', 'Halfmoon Roofing']);
     expect(WORK).toEqual([...CLIENTS, ...LISTED_SAMPLES]);
     expect(CLIENTS.every((w) => w.kind === 'client')).toBe(true);
     expect(SAMPLES.every((w) => w.kind === 'sample')).toBe(true);

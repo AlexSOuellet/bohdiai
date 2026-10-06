@@ -11,6 +11,11 @@ describe('sampleBannerFor', () => {
     expect(sampleBannerFor('ember-and-pine')?.label).toBe('Showcase sample');
   });
 
+  it('labels the contractor samples and links them to the contractor plans', () => {
+    expect(sampleBannerFor('true-coat-painting')).toEqual({ label: 'Contractor Full sample', href: 'https://bohdiai.com/contractors#plans' });
+    expect(sampleBannerFor('halfmoon-roofing')).toEqual({ label: 'Contractor Lite sample', href: 'https://bohdiai.com/contractors#plans' });
+  });
+
   it('gives every sample a banner, listed on bohdiai.com or not', () => {
     for (const s of SAMPLES) expect(sampleBannerFor(s.host.replace(/\.bohdiai\.com$/, ''))).not.toBeNull();
   });

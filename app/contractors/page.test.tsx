@@ -26,8 +26,15 @@ describe('bohdiai.com/contractors', () => {
     expect(screen.getByText('Angi, HomeAdvisor or Thumbtack')).toBeInTheDocument();
     expect(screen.getAllByText('Cut-Pro Lawncare & Construction').length).toBeGreaterThan(0);
     expect(screen.queryByText('Decoupage Digital Designs')).toBeNull();
-    expect(screen.queryByText(/not real businesses/i)).toBeNull();
     expect(container.querySelector('#contact form')).not.toBeNull();
+  });
+
+  it('shows only the contractor samples, labelled as samples', () => {
+    const { container } = render(<ContractorsPage />);
+    expect(screen.getByText(/not real businesses/i)).toBeInTheDocument();
+    expect(container.querySelector('#work a[href="https://true-coat-painting.bohdiai.com"]')).not.toBeNull();
+    expect(container.querySelector('#work a[href="https://halfmoon-roofing.bohdiai.com"]')).not.toBeNull();
+    expect(container.querySelector('#work a[href="https://rustic-rhody.bohdiai.com"]')).toBeNull();
   });
 
   it('never talks about AI', () => {
