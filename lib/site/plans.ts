@@ -83,8 +83,8 @@ export const PLANS: readonly Plan[] = [
     tier: 'lite',
     name: 'Contractor Lead Generation',
     forWho: 'For contractors who need a real site that works',
-    monthly: 15,
-    yearly: 150,
+    monthly: 10,
+    yearly: 100,
     includes: [
       'A one-page site built around your own job photos',
       'An estimate form where customers send photos of the job',

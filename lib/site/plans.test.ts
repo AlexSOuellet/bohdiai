@@ -17,7 +17,7 @@ describe('plans', () => {
       ['maker-showcase', 5, 50],
       ['maker-lite', 15, 150],
       ['maker-full', 20, 200],
-      ['contractor-lite', 15, 150],
+      ['contractor-lite', 10, 100],
       ['contractor-full', 30, 300],
     ]);
     for (const p of PLANS) expect(Number.isInteger(p.monthly)).toBe(true);
@@ -27,9 +27,9 @@ describe('plans', () => {
     for (const p of PLANS) expect(p.yearly).toBe(p.monthly * 10);
   });
 
-  it('starts makers at Showcase and contractors at Lite', () => {
+  it('starts makers at Showcase and contractors at Lead Generation', () => {
     expect(fromPrice('maker')).toBe(5);
-    expect(fromPrice('contractor')).toBe(15);
+    expect(fromPrice('contractor')).toBe(10);
   });
 
   it('gives each audience its plans in order, and only its own plans', () => {

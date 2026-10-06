@@ -21,7 +21,7 @@ Every plan, maker or contractor: **the site is built free**, then a monthly pric
 | Maker Showcase | $5 | $50 |
 | Maker Lite | $15 | $150 |
 | Maker Full | $20 | $200 |
-| Contractor Lead Generation | $15 | $150 |
+| Contractor Lead Generation | $10 | $100 |
 | Contractor Full | $30 | $300 |
 
 **2026-10-03 (Alex):** every price is whole dollars, rounded up from the .99 prices (round reads as honest, and only the first digit moves a buyer); yearly is exactly ten months. Maker Showcase added below Lite.
@@ -76,7 +76,7 @@ A separate track, not on the maker ladder (a contractor never moves up to sellin
 
 Two tiers, mirroring the makers. The site is built free on both; the contractor pays monthly.
 
-- **Contractor Lead Generation — $15/month** (named Contractor Lite until 2026-10-06; Alex: "I like Contractor Lead Generation"; the plan id stays `contractor-lite` so existing links work). A Cut-Pro-style one-page site: the estimate form (photos to email), no backend; changes go through Alex. Sellable today. $150/year. Priced the same as Maker Lite: a one-page site costs the same whoever buys it.
+- **Contractor Lead Generation — $10/month, $100/year (was $15/$150 until 2026-10-06, Alex)** (named Contractor Lite until 2026-10-06; Alex: "I like Contractor Lead Generation"; the plan id stays `contractor-lite` so existing links work). A one-page lead-generation site (Halfmoon Roofing is the sample): the estimate form (photos to email) with a minimal backend (see "Every site has a backend" below). Sellable today.
 - **Contractor Full — $30/month, or $300/year.** The contractor backend: estimate inbox (new → contacted → quoted → won/lost), job gallery (photos and short videos), services and service area, booked-days calendar, reviews, FAQ, notices, and **review requests** (after a job, the customer gets a text/email link to leave a Google review — new, not yet in the backend plan). Contractor-only features a maker doesn't need.
 - **Why contractors pay more for Full than makers do:** different product with contractor-only tools, and contractors read a low price as amateur work. Justified by features, never by "more changes" (that would invite edit requests and break the fixes-not-additions rule). Contractor Full is sold on what it does for their business (estimate requests with photos on their phone, booked-out calendar), never as page count. The two audiences get separate pages (see the bohdiai.com pricing design), so the prices are not shown side by side. Considered and rejected: one value-based contractor price ($29.99, now $30, for a one-page site) — publicly it reads as "you can afford it".
 - Contractors are expected to churn less than weekend-warrior makers (the site is how they get work) — reasoning, not data.
@@ -113,3 +113,10 @@ Unchanged: maker backend piece 1 continues (video, then custom domains), then th
 ## Open
 
 - **Lite's design:** a cut-down Full (same look, fewer pages — upgrades are just switches; recommended) or its own one-page design.
+
+## Every site has a backend (Alex, 2026-10-06)
+
+Supersedes "Contractor Lite: no backend; changes go through Alex". **All sites will have a backend.** Maker Showcase and Contractor Lead Generation get a **minimal** one; Lite and Full keep the backends described above. What "minimal" covers is not designed yet.
+
+Same day: Contractor Lite renamed **Contractor Lead Generation** and repriced to **$10/month, $100/year**. Alex is *considering* eliminating Maker Lite (undecided).
+

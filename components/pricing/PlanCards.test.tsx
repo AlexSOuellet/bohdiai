@@ -32,7 +32,7 @@ describe('PlanCards', () => {
   it('switches both cards to the yearly price', async () => {
     render(<PlanCards audience="contractor" path="/contractors" />);
     await userEvent.setup().click(screen.getByRole('radio', { name: /yearly/i }));
-    expect(screen.getByRole('article', { name: 'Contractor Lead Generation' })).toHaveTextContent('$150');
+    expect(screen.getByRole('article', { name: 'Contractor Lead Generation' })).toHaveTextContent('$100');
     expect(screen.getByRole('article', { name: 'Contractor Full' })).toHaveTextContent('$300');
     expect(screen.getByRole('article', { name: 'Contractor Full' })).toHaveTextContent(/a year/);
     expect(screen.getByRole('radio', { name: /yearly/i })).toBeChecked();
