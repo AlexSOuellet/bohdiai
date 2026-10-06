@@ -53,8 +53,8 @@ export function AtelierShell({
         <header className="at-head">
           <div className="at-wrap at-head__row">
             <Link className="at-mark" href="/">
-              <span className="at-mark__trade">{b.trade}</span>
               <span className="at-mark__name">{b.name}</span>
+              <span className="at-mark__trade">{b.trade}</span>
             </Link>
             <nav className="at-head__actions" aria-label={S.menuLabel}>
               <a className="at-btn at-btn--soft" href={tel}><Icon name="call" /> <span className="at-head__phone">{b.phone}</span></a>

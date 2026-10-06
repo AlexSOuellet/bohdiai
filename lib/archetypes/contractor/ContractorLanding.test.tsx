@@ -96,6 +96,7 @@ describe('contractor designs', () => {
     expect(container.querySelector('.at-est')).toBeNull();
     expect(container.querySelector('#estimate form')).not.toBeNull();
     expect(container.querySelector('ol')).toBeNull();
+    expect(container.querySelector('.at-mark')?.textContent).toBe(`${CONTRACTOR_FIXTURE.business.name}${CONTRACTOR_FIXTURE.business.trade}`);
   });
 
   it('rejects a design it does not know', () => {
