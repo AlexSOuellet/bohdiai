@@ -7,7 +7,11 @@ import type { ArchetypePage } from '@/lib/archetypes/builder';
 import type { ProductView, CollectionView } from '@/lib/archetypes/content';
 import { seedPreviewReviews } from '@/lib/archetypes/main-street/reviews';
 import { seedPreviewFindUs } from '@/lib/archetypes/main-street/findus';
-import { loadHomeEnvelope, loadDraftEnvelope, loadTenantChrome } from '@/lib/storefront/load-envelope';
+import {
+  loadHomeEnvelope,
+  loadDraftEnvelope,
+  loadTenantChrome,
+} from '@/lib/storefront/load-envelope';
 import { verifyPreviewToken } from '@/lib/editor/preview-token';
 
 import { loadCatalog, loadCollections } from '@/lib/storefront/catalog';
@@ -95,7 +99,9 @@ function withPreviewChrome(
     <>
       {node}
       {opts.preview ? <PreviewLinkForwarder /> : null}
-      {opts.still === true ? <style dangerouslySetInnerHTML={{ __html: STILL_REVEAL_CSS }} /> : null}
+      {opts.still === true ? (
+        <style dangerouslySetInnerHTML={{ __html: STILL_REVEAL_CSS }} />
+      ) : null}
       {spotlightCss ? <style dangerouslySetInnerHTML={{ __html: spotlightCss }} /> : null}
     </>
   );
@@ -104,7 +110,8 @@ function withPreviewChrome(
 /** Validate a `previewSection` param down to a known SectionKey, or undefined. Guards
  *  the value before it can reach a style tag. */
 function spotlightSection(previewSection: string | undefined): string | undefined {
-  return previewSection !== undefined && (SECTION_KEYS as readonly string[]).includes(previewSection)
+  return previewSection !== undefined &&
+    (SECTION_KEYS as readonly string[]).includes(previewSection)
     ? previewSection
     : undefined;
 }
@@ -137,10 +144,20 @@ async function resolveEnvelope(tenantId: string) {
   const spec = archetypeSpec(key);
   if (spec === undefined) return null;
   const { logoUrl, brandColors } = await loadTenantChrome(tenantId);
-  const accentOverride = typeof env['accentOverride'] === 'string' ? (env['accentOverride'] as string) : undefined;
+  const accentOverride =
+    typeof env['accentOverride'] === 'string' ? (env['accentOverride'] as string) : undefined;
   const brandPalette = readBrandPalette(env, tenantId);
   const mood = typeof env['mood'] === 'string' ? (env['mood'] as string) : undefined;
-  return { spec, lookKey, content: env['content'], logoUrl, brandColors, accentOverride, brandPalette, mood };
+  return {
+    spec,
+    lookKey,
+    content: env['content'],
+    logoUrl,
+    brandColors,
+    accentOverride,
+    brandPalette,
+    mood,
+  };
 }
 
 /** Whether the tenant's published archetype shows a catalog. False when there is no
@@ -157,7 +174,17 @@ export async function tenantUsesCatalog(tenantId: string): Promise<boolean> {
 export async function renderArchetypeProductPage(tenantId: string, product: ProductView) {
   const a = await resolveEnvelope(tenantId);
   if (a === null || a.spec.renderProduct === undefined) return null;
-  return a.spec.renderProduct({ content: a.content, lookKey: a.lookKey, product, mood: a.mood, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride, brandPalette: a.brandPalette });
+  return a.spec.renderProduct({
+    content: a.content,
+    lookKey: a.lookKey,
+    product,
+    mood: a.mood,
+    logoUrl: a.logoUrl,
+    brandColors: a.brandColors,
+    accentOverride: a.accentOverride,
+    brandPalette: a.brandPalette,
+    tenantId,
+  });
 }
 
 /** Render a plain content page (legal/maker-added) in the tenant's chrome, or
@@ -168,7 +195,17 @@ export async function renderArchetypeContentPage(
 ) {
   const a = await resolveEnvelope(tenantId);
   if (a === null || a.spec.renderContentPage === undefined) return null;
-  return a.spec.renderContentPage({ content: a.content, lookKey: a.lookKey, ...opts, mood: a.mood, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride, brandPalette: a.brandPalette, tenantId });
+  return a.spec.renderContentPage({
+    content: a.content,
+    lookKey: a.lookKey,
+    ...opts,
+    mood: a.mood,
+    logoUrl: a.logoUrl,
+    brandColors: a.brandColors,
+    accentOverride: a.accentOverride,
+    brandPalette: a.brandPalette,
+    tenantId,
+  });
 }
 
 /** Wrap a functional page's body (cart, subscriptions, etc.) in the tenant's
@@ -176,7 +213,16 @@ export async function renderArchetypeContentPage(
 export async function renderArchetypeShell(tenantId: string, children: ReactNode) {
   const a = await resolveEnvelope(tenantId);
   if (a === null || a.spec.renderShell === undefined) return null;
-  return a.spec.renderShell({ content: a.content, lookKey: a.lookKey, children, mood: a.mood, logoUrl: a.logoUrl, brandColors: a.brandColors, accentOverride: a.accentOverride, brandPalette: a.brandPalette });
+  return a.spec.renderShell({
+    content: a.content,
+    lookKey: a.lookKey,
+    children,
+    mood: a.mood,
+    logoUrl: a.logoUrl,
+    brandColors: a.brandColors,
+    accentOverride: a.accentOverride,
+    brandPalette: a.brandPalette,
+  });
 }
 
 /** Choose the envelope source for a storefront request. A preview token that
@@ -184,7 +230,10 @@ export async function renderArchetypeShell(tenantId: string, children: ReactNode
  *  envelope when the draft is empty); every other request — no token, a token for
  *  another tenant, expired, or forged — renders the published envelope. Owner
  *  draft words therefore show in the preview and never leak to the public. */
-async function envelopeFor(tenantId: string, previewToken: string | undefined): Promise<Record<string, unknown> | null> {
+async function envelopeFor(
+  tenantId: string,
+  previewToken: string | undefined,
+): Promise<Record<string, unknown> | null> {
   if (previewToken !== undefined && verifyPreviewToken(previewToken) === tenantId) {
     const draft = await loadDraftEnvelope(tenantId);
     if (draft !== null) return draft;
@@ -192,7 +241,23 @@ async function envelopeFor(tenantId: string, previewToken: string | undefined): 
   return loadHomeEnvelope(tenantId);
 }
 
-export default async function StorefrontPage({ slug, previewToken, previewStill, previewLook, previewMood, previewTexture, previewTextureOpacity, previewSection, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs }: StorefrontPageProps) {
+export default async function StorefrontPage({
+  slug,
+  previewToken,
+  previewStill,
+  previewLook,
+  previewMood,
+  previewTexture,
+  previewTextureOpacity,
+  previewSection,
+  previewHero,
+  previewGoods,
+  previewFounder,
+  previewNav,
+  previewCollections,
+  previewReviews,
+  previewFindUs,
+}: StorefrontPageProps) {
   const headerStore = await headers();
   const tenantId = headerStore.get('x-tenant-id');
   if (tenantId === null) notFound();
@@ -206,7 +271,25 @@ export default async function StorefrontPage({ slug, previewToken, previewStill,
   if (subPage !== undefined) {
     const env = await envelopeFor(tenantId, previewToken);
     if (env === null) notFound();
-    return withPreviewChrome(await renderStore(env, tenantId, subPage, previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity), { still: previewStill, preview: previewToken !== undefined });
+    return withPreviewChrome(
+      await renderStore(
+        env,
+        tenantId,
+        subPage,
+        previewLook,
+        previewMood,
+        previewHero,
+        previewGoods,
+        previewFounder,
+        previewNav,
+        previewCollections,
+        previewReviews,
+        previewFindUs,
+        previewTexture,
+        previewTextureOpacity,
+      ),
+      { still: previewStill, preview: previewToken !== undefined },
+    );
   }
 
   // /collections/<slug> — the collection detail page. Same envelope dispatch as
@@ -215,13 +298,54 @@ export default async function StorefrontPage({ slug, previewToken, previewStill,
     const collectionSlug = slug.slice('/collections/'.length);
     const env = await envelopeFor(tenantId, previewToken);
     if (env === null) notFound();
-    return withPreviewChrome(await renderStore(env, tenantId, 'collection', previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity, collectionSlug), { still: previewStill, preview: previewToken !== undefined });
+    return withPreviewChrome(
+      await renderStore(
+        env,
+        tenantId,
+        'collection',
+        previewLook,
+        previewMood,
+        previewHero,
+        previewGoods,
+        previewFounder,
+        previewNav,
+        previewCollections,
+        previewReviews,
+        previewFindUs,
+        previewTexture,
+        previewTextureOpacity,
+        collectionSlug,
+      ),
+      { still: previewStill, preview: previewToken !== undefined },
+    );
   }
 
   // Home (/): render the store from the tenant's home envelope.
   const env = await envelopeFor(tenantId, previewToken);
   if (env === null) notFound();
-  return withPreviewChrome(await renderStore(env, tenantId, undefined, previewLook, previewMood, previewHero, previewGoods, previewFounder, previewNav, previewCollections, previewReviews, previewFindUs, previewTexture, previewTextureOpacity), { still: previewStill, preview: previewToken !== undefined, spotlight: spotlightSection(previewSection) });
+  return withPreviewChrome(
+    await renderStore(
+      env,
+      tenantId,
+      undefined,
+      previewLook,
+      previewMood,
+      previewHero,
+      previewGoods,
+      previewFounder,
+      previewNav,
+      previewCollections,
+      previewReviews,
+      previewFindUs,
+      previewTexture,
+      previewTextureOpacity,
+    ),
+    {
+      still: previewStill,
+      preview: previewToken !== undefined,
+      spotlight: spotlightSection(previewSection),
+    },
+  );
 }
 
 /** Seed plausible sample collections for the ?collections= preview when a store
@@ -240,12 +364,30 @@ function seedPreviewCollections(products: ProductView[]): CollectionView[] {
 /** Render a stored store: load the real catalog rows as ProductViews and paint
  *  via the chosen spec's registered renderer. An `overrideLook` (editor door-1
  *  preview) re-skins the same content without persisting. */
-async function renderStore(env: Record<string, unknown>, tenantId: string, page?: ArchetypePage, overrideLook?: string, previewMood?: string, previewHero?: string, previewGoods?: string, previewFounder?: string, previewNav?: string, previewCollections?: string, previewReviews?: string, previewFindUs?: string, previewTexture?: string, previewTextureOpacity?: number, collectionSlug?: string) {
+async function renderStore(
+  env: Record<string, unknown>,
+  tenantId: string,
+  page?: ArchetypePage,
+  overrideLook?: string,
+  previewMood?: string,
+  previewHero?: string,
+  previewGoods?: string,
+  previewFounder?: string,
+  previewNav?: string,
+  previewCollections?: string,
+  previewReviews?: string,
+  previewFindUs?: string,
+  previewTexture?: string,
+  previewTextureOpacity?: number,
+  collectionSlug?: string,
+) {
   const archetypeKey = env['archetypeKey'];
   const lookKey = env['lookKey'];
   if (typeof archetypeKey !== 'string' || typeof lookKey !== 'string') notFound();
   const effectiveLook =
-    overrideLook !== undefined && overrideLook !== '' && isKnownSkin(overrideLook) ? overrideLook : (lookKey as string);
+    overrideLook !== undefined && overrideLook !== '' && isKnownSkin(overrideLook)
+      ? overrideLook
+      : (lookKey as string);
 
   const spec = archetypeSpec(archetypeKey as string);
   if (spec === undefined) notFound();
@@ -283,8 +425,10 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
   // Editor door-1 preview overrides the feeling; a normal visit uses the stored mood.
   const storedMood = typeof env['mood'] === 'string' ? (env['mood'] as string) : undefined;
   const mood = resolvePreviewMood(previewMood, storedMood);
-  const catalogSize = typeof env['catalogSize'] === 'number' ? (env['catalogSize'] as number) : undefined;
-  const accentOverride = typeof env['accentOverride'] === 'string' ? (env['accentOverride'] as string) : undefined;
+  const catalogSize =
+    typeof env['catalogSize'] === 'number' ? (env['catalogSize'] as number) : undefined;
+  const accentOverride =
+    typeof env['accentOverride'] === 'string' ? (env['accentOverride'] as string) : undefined;
   const brandPalette = readBrandPalette(env, tenantId);
   const { logoUrl, brandColors, moodKey: originalMood } = await loadTenantChrome(tenantId);
   // ?reviews= names a treatment; when the store has no authored reviews, seed sample
@@ -307,12 +451,44 @@ async function renderStore(env: Record<string, unknown>, tenantId: string, page?
   const wantFindUs = previewFindUs !== undefined && previewFindUs !== '';
   if (wantFindUs && content !== null && typeof content === 'object' && !Array.isArray(content)) {
     const founder = (content as Record<string, unknown>)['founder'];
-    if (founder !== null && typeof founder === 'object' && !Array.isArray(founder) && (founder as Record<string, unknown>)['findUs'] === undefined) {
-      content = { ...(content as Record<string, unknown>), founder: { ...(founder as Record<string, unknown>), findUs: seedPreviewFindUs() } };
+    if (
+      founder !== null &&
+      typeof founder === 'object' &&
+      !Array.isArray(founder) &&
+      (founder as Record<string, unknown>)['findUs'] === undefined
+    ) {
+      content = {
+        ...(content as Record<string, unknown>),
+        founder: { ...(founder as Record<string, unknown>), findUs: seedPreviewFindUs() },
+      };
     }
   }
   // Editor preview texture params (URL) win; on a normal visit the saved texture
   // setting on the envelope applies. See lib/editor/texture.
   const texture = resolveTextureParams(previewTexture, previewTextureOpacity, env['texture']);
-  return spec.render({ content, lookKey: effectiveLook, products: effectiveProducts, mood, originalMood, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, brandPalette, tenantId, heroVariant: previewHero, goodsTreatment: previewGoods, collections, collectionsTreatment: previewCollections, reviewsTreatment: previewReviews, findUsTreatment: previewFindUs, founderTreatment: previewFounder, navVariant: previewNav, previewTexture: texture.previewTexture, previewTextureOpacity: texture.previewTextureOpacity });
+  return spec.render({
+    content,
+    lookKey: effectiveLook,
+    products: effectiveProducts,
+    mood,
+    originalMood,
+    catalogSize,
+    page,
+    collectionSlug,
+    logoUrl,
+    brandColors,
+    accentOverride,
+    brandPalette,
+    tenantId,
+    heroVariant: previewHero,
+    goodsTreatment: previewGoods,
+    collections,
+    collectionsTreatment: previewCollections,
+    reviewsTreatment: previewReviews,
+    findUsTreatment: previewFindUs,
+    founderTreatment: previewFounder,
+    navVariant: previewNav,
+    previewTexture: texture.previewTexture,
+    previewTextureOpacity: texture.previewTextureOpacity,
+  });
 }

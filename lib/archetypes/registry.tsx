@@ -7,11 +7,13 @@ import type { ArchetypeBuildSpec } from './builder';
 import { MAIN_STREET_SPEC } from './main-street/builder';
 import { CONTRACTOR_SPEC } from './contractor/builder';
 import { CARD_SPEC } from './card/builder';
+import { BOUTIQUE_SPEC } from './boutique/builder';
 
 export const ARCHETYPE_SPECS: Record<string, ArchetypeBuildSpec> = {
   [MAIN_STREET_SPEC.key]: MAIN_STREET_SPEC as ArchetypeBuildSpec,
   [CONTRACTOR_SPEC.key]: CONTRACTOR_SPEC as ArchetypeBuildSpec,
   [CARD_SPEC.key]: CARD_SPEC as ArchetypeBuildSpec,
+  [BOUTIQUE_SPEC.key]: BOUTIQUE_SPEC as ArchetypeBuildSpec,
 };
 
 export function archetypeSpec(key: string): ArchetypeBuildSpec | undefined {
