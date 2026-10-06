@@ -124,6 +124,26 @@ describe('nursery home', () => {
   });
 });
 
+describe('top bar menu', () => {
+  it('opens on phones from the Menu button and closes on a pick or Escape', () => {
+    const { container } = render(<NurseryHome data={full} products={babies} tenantId={TENANT} />);
+    const nav = () => container.querySelector('.nn-nav');
+    const btn = () => container.querySelector<HTMLButtonElement>('.nn-menu-btn');
+    expect(btn()?.textContent).toBe(S.nav.menu);
+    expect(btn()?.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(btn() as HTMLButtonElement);
+    expect(nav()?.getAttribute('data-open')).toBe('true');
+    expect(btn()?.textContent).toBe(S.nav.close);
+    expect(btn()?.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(screen.getByRole('link', { name: S.nav.artist }));
+    expect(nav()?.getAttribute('data-open')).toBe('false');
+    fireEvent.click(btn() as HTMLButtonElement);
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(nav()?.getAttribute('data-open')).toBe('false');
+    expect(screen.getByRole('link', { name: S.nav.touch }).className).toBe('nn-nav__cta');
+  });
+});
+
 describe('gone home', () => {
   it('pegs past babies on clotheslines of four, captions under each, opening full size', () => {
     const { container } = render(<NurseryHome data={full} products={babies} tenantId={TENANT} />);

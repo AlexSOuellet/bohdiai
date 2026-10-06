@@ -6,6 +6,8 @@
 export const NURSERY_STRINGS = {
   nav: {
     label: 'Main',
+    menu: 'Menu',
+    close: 'Close',
     nursery: 'The nursery',
     gone: 'Gone home',
     artist: 'The artist',

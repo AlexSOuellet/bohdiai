@@ -18,6 +18,7 @@ import { CardContactForm } from '@/lib/archetypes/card/CardContactForm';
 import { NURSERY_STRINGS as S } from './strings';
 import { NURSERY_FONTS_HREF, nurseryCss } from './nursery-styles';
 import { NurseryPhotos } from './NurseryPhotos';
+import { NurseryMenu } from './NurseryMenu';
 import { PhotoViewerProvider, Snapshot } from '@/lib/archetypes/card/PhotoViewer';
 import {
   bioParagraphs,
@@ -73,15 +74,15 @@ function Frame({
                 <span className="nn-brand__name">{data.name}</span>
               )}
             </Link>
-            <nav className="nn-nav" aria-label={S.nav.label}>
-              <a href="/shop">{S.nav.nursery}</a>
-              {data.gone.length > 0 && <a href={at(GONE_ID)}>{S.nav.gone}</a>}
-              <a href={at(ARTIST_ID)}>{S.nav.artist}</a>
-              {data.dates.length > 0 && <a href={at(VISIT_ID)}>{S.nav.visit}</a>}
-              <a className="nn-nav__cta" href={at(TOUCH_ID)}>
-                {S.nav.touch}
-              </a>
-            </nav>
+            <NurseryMenu
+              links={[
+                { href: '/shop', label: S.nav.nursery },
+                ...(data.gone.length > 0 ? [{ href: at(GONE_ID), label: S.nav.gone }] : []),
+                { href: at(ARTIST_ID), label: S.nav.artist },
+                ...(data.dates.length > 0 ? [{ href: at(VISIT_ID), label: S.nav.visit }] : []),
+                { href: at(TOUCH_ID), label: S.nav.touch, cta: true },
+              ]}
+            />
           </div>
         </header>
         <main id={MAIN_ID}>{children}</main>

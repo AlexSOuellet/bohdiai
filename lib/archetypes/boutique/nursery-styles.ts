@@ -45,11 +45,22 @@ export function nurseryCss(): string {
 .nn-brand{display:flex;align-items:center;text-decoration:none;min-width:0}
 .nn-brand__logo{height:58px;width:auto;mix-blend-mode:multiply}
 .nn-brand__name{font-family:var(--script);font-size:30px;line-height:1;color:var(--rose-deep)}
-.nn-nav{display:flex;flex-wrap:wrap;gap:4px 22px;font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
-.nn-nav a{text-decoration:none;padding:6px 0;border-bottom:2px solid transparent}
-.nn-nav a:hover,.nn-nav a:focus-visible{border-bottom-color:var(--rose)}
+.nn-nav{position:relative}
+.nn-nav__links{display:flex;flex-wrap:wrap;gap:4px 22px;font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.nn-nav__links a{text-decoration:none;padding:6px 0;border-bottom:2px solid transparent}
+.nn-nav__links a:hover,.nn-nav__links a:focus-visible{border-bottom-color:var(--rose)}
 .nn-nav__cta{color:var(--rose-deep)}
-@media (max-width:760px){.nn{--nn-top-h:65px}.nn-nav a:not(.nn-nav__cta){display:none}.nn-brand__logo{height:44px}}
+.nn-menu-btn{display:none}
+@media (max-width:760px){
+  .nn{--nn-top-h:65px}.nn-brand__logo{height:44px}
+  .nn-menu-btn{display:inline-flex;align-items:center;gap:10px;font:700 13px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--ink);background:var(--card);border:1.5px solid var(--blush);border-radius:99px;padding:10px 16px;cursor:pointer}
+  .nn-menu-btn__icon{width:16px;height:2px;background:var(--rose);box-shadow:0 -5px 0 var(--rose),0 5px 0 var(--rose)}
+  .nn-nav[data-open=true] .nn-menu-btn__icon{box-shadow:none;background:var(--rose-deep)}
+  .nn-nav__links{display:none;position:fixed;left:0;right:0;top:calc(var(--nn-top-h) + var(--sample-bar-h,0px));flex-direction:column;gap:0;background:var(--paper);border-bottom:3px solid var(--blush);box-shadow:0 24px 40px -24px rgba(43,34,39,.5);padding:8px 16px 16px}
+  .nn-nav[data-open=true] .nn-nav__links{display:flex}
+  .nn-nav__links a{font-size:15px;padding:16px 4px;border-bottom:1px dashed var(--line)}
+  .nn-nav__links a:last-child{border-bottom:0}
+}
 
 /* Hero */
 .nn-hero{padding:56px 0 40px;position:relative}
@@ -140,7 +151,7 @@ export function nurseryCss(): string {
 .nn .bc-lb__close{top:18px;right:18px}
 .nn .bc-lb__prev{left:18px;top:50%;margin-top:-26px}
 .nn .bc-lb__next{right:18px;top:50%;margin-top:-26px}
-@media (max-width:760px){.nn-line{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:16px;padding:14px 4px 18px}.nn-line::before{top:14px;height:0;border-bottom:0;border-top:2.5px solid var(--sage-deep);border-radius:0}.nn-peg,.nn-peg:nth-child(n){flex:0 0 62vw;margin-top:12px;scroll-snap-align:center}}
+@media (max-width:760px){.nn-line{grid-template-columns:repeat(2,1fr);gap:30px 14px}.nn-line::before{display:none}.nn-peg,.nn-peg:nth-child(n){margin-top:14px}.nn-peg::after{content:'';position:absolute;top:0;left:-8px;right:-8px;border-top:2.5px solid var(--sage-deep);z-index:1}.nn-print{padding:7px 7px 9px}.nn-print__cap{font-size:12.5px}}
 
 /* The artist's letter */
 .nn-letter{position:relative;max-width:820px;margin-inline:auto;background:var(--card);padding:64px 64px 56px 92px;border-radius:4px;box-shadow:0 30px 60px -40px rgba(43,34,39,.55);transform:rotate(-.6deg);
