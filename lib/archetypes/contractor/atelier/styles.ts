@@ -43,7 +43,31 @@ export function atelierCss(p: DerivedPalette): string {
 .at-h2{margin:10px 0 0;font-family:var(--at-serif);font-weight:400;font-size:clamp(28px,3vw,40px);line-height:1.2;letter-spacing:-.015em;text-wrap:balance}
 .at-h3{margin:0;font-family:var(--at-serif);font-weight:500;font-size:22px;line-height:1.27}
 .at-lede{margin:12px 0 0;max-width:56ch;font-size:16px;color:var(--at-soft)}
-.at-shead{margin-bottom:clamp(32px,4vw,48px)}
+/* ── section openers, a different one each time ────────── */
+.at-estcard{padding:clamp(22px,3vw,40px);border-radius:14px;background:var(--at-white);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.at-estcard__head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 32px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--at-high)}
+.at-estcard__title{margin:0;font-family:var(--at-serif);font-weight:400;font-style:italic;font-size:clamp(34px,3.6vw,52px);line-height:1.05;letter-spacing:-.02em}
+.at-estcard__head .at-lede{margin:0;max-width:44ch}
+.at-estcard .at-est{padding:0;box-shadow:none;background:none}
+.at-dek{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:10px 40px;margin-bottom:clamp(28px,3.4vw,44px);padding-bottom:18px;border-bottom:1px solid var(--at-high)}
+.at-dek__title{margin:0;font-family:var(--at-serif);font-weight:400;font-size:clamp(36px,4.2vw,60px);line-height:1.02;letter-spacing:-.025em}
+.at-dek__note{margin:0;max-width:40ch;font-size:16px;color:var(--at-soft)}
+.at-aftercap{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 28px;margin-top:clamp(28px,3vw,40px)}
+.at-aftercap__title{margin:0;font-family:var(--at-serif);font-weight:400;font-style:italic;font-size:clamp(28px,3vw,42px);letter-spacing:-.015em}
+.at-aftercap__text{margin:0;max-width:52ch;font-size:15px;color:var(--at-soft)}
+.at-h2--italic{font-style:italic}
+.at-h2--big{font-size:clamp(34px,3.8vw,54px)}
+.at-scorehead{display:flex;align-items:center;justify-content:center;gap:clamp(18px,3vw,36px);margin-bottom:clamp(32px,4vw,48px);text-align:left}
+.at-scorehead__score{display:flex;flex-direction:column;align-items:center;margin:0;font-family:var(--at-serif);font-size:clamp(72px,9vw,128px);line-height:.9;letter-spacing:-.04em}
+.at-scorehead__score .at-stars{font-size:18px;letter-spacing:1px}
+.at-scorehead__title{margin:0 0 6px;font-family:var(--at-serif);font-weight:400;font-size:clamp(24px,2.4vw,32px)}
+.at-ghosted{position:relative;overflow:hidden}
+.at-ghost{position:absolute;right:-1vw;top:clamp(8px,2vw,24px);margin:0;white-space:nowrap;font-family:var(--at-serif);font-style:italic;font-size:clamp(120px,20vw,300px);line-height:.8;color:var(--at-mid);pointer-events:none;z-index:0}
+.at-ghosted .at-wrap{position:relative;z-index:1}
+.at-faq__head{position:sticky;top:110px}
+.at-lede--first{margin-top:0;margin-bottom:24px;font-size:18px}
+.at-formcard__title{grid-column:1 / -1;margin:0 0 18px;font-family:var(--at-serif);font-weight:400;font-size:clamp(28px,2.8vw,38px);line-height:1.1}
+@media(max-width:900px){.at-faq__head{position:static}.at-scorehead{flex-direction:column;text-align:center}}
 .at-shead--center{text-align:center}
 .at-shead--center .at-lede{margin-inline:auto}
 .at-pill{display:inline-flex;align-items:center;gap:6px;margin:0;padding:5px 12px;border-radius:999px;background:var(--at-sage-pale);color:var(--at-sage-ink);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}

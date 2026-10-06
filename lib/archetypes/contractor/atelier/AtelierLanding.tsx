@@ -104,16 +104,6 @@ export function AtelierContentPage({ content, palette, html }: { content: Contra
   );
 }
 
-function SectionHead({ eyebrow, title, intro, center }: { eyebrow: string; title: string; intro?: string | undefined; center?: boolean }): ReactElement {
-  return (
-    <div className={center === true ? 'at-shead at-shead--center' : 'at-shead'}>
-      <p className="at-label at-label--accent">{eyebrow}</p>
-      <h2 className="at-h2">{title}</h2>
-      {intro !== undefined && <p className="at-lede">{intro}</p>}
-    </div>
-  );
-}
-
 export function AtelierLanding({ content: c, palette, tenantId }: { content: ContractorContent; palette: DerivedPalette; tenantId: string | undefined }): ReactElement {
   const b = c.business;
   const tel = `tel:${b.phoneDial}`;
@@ -160,12 +150,13 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
         {c.estimator !== undefined && (
           <section className="at-section at-tint" id={ESTIMATOR_ID} aria-labelledby="at-est-title">
             <div className="at-wrap">
-              <div className="at-shead at-shead--center">
-                <p className="at-label at-label--accent">{c.estimator.eyebrow}</p>
-                <h2 className="at-h2" id="at-est-title">{c.estimator.title}</h2>
-                <p className="at-lede">{c.estimator.intro}</p>
+              <div className="at-estcard">
+                <div className="at-estcard__head">
+                  <h2 className="at-estcard__title" id="at-est-title">{c.estimator.title}</h2>
+                  <p className="at-lede">{c.estimator.intro}</p>
+                </div>
+                <Estimator estimator={c.estimator} estimateHref={`#${ESTIMATE_ID}`} />
               </div>
-              <Estimator estimator={c.estimator} estimateHref={`#${ESTIMATE_ID}`} />
             </div>
           </section>
         )}
@@ -173,7 +164,10 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
         {/* ── services as photo cards ───────────────────────────── */}
         <section className="at-section" aria-labelledby="at-services-title">
           <div className="at-wrap">
-            <SectionHead eyebrow={c.services.eyebrow} title={c.services.title} intro={c.services.note} />
+            <div className="at-dek">
+              <h2 className="at-dek__title" id="at-services-title">{c.services.title}</h2>
+              {c.services.note !== undefined && <p className="at-dek__note">{c.services.note}</p>}
+            </div>
             <ul className="at-services">
               {c.services.items.map((s) => (
                 <li key={s.name} className="at-card">
@@ -199,7 +193,6 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
         {/* ── the work as case studies ──────────────────────────── */}
         <section className="at-section at-tint" aria-labelledby="at-work-title">
           <div className="at-wrap">
-            <SectionHead eyebrow={c.work.eyebrow} title={c.work.title} intro={c.work.intro} />
             <ul className="at-cases">
               {c.work.items.map((item) => (
                 <li key={item.media.url} className="at-card at-card--white">
@@ -220,6 +213,10 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
                 </li>
               ))}
             </ul>
+            <div className="at-aftercap">
+              <h2 className="at-aftercap__title" id="at-work-title">{c.work.title}</h2>
+              {c.work.intro !== undefined && <p className="at-aftercap__text">{c.work.intro}</p>}
+            </div>
           </div>
         </section>
 
@@ -228,8 +225,7 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
           <div className="at-wrap at-why">
             {c.comparison !== undefined && (
               <div>
-                <p className="at-pill at-pill--plain">{c.comparison.eyebrow}</p>
-                <h2 className="at-h2" id="at-why-title">{c.comparison.title}</h2>
+                <h2 className="at-h2 at-h2--italic" id="at-why-title">{c.comparison.title}</h2>
                 {c.comparison.intro !== undefined && <p className="at-lede">{c.comparison.intro}</p>}
                 <ul className="at-compare">
                   {c.comparison.rows.map((r) => (
@@ -263,15 +259,17 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
         {reviews !== undefined && (
           <section className="at-section at-tint" aria-labelledby="at-reviews-title">
             <div className="at-wrap">
-              <div className="at-shead at-shead--center">
+              <div className="at-scorehead">
                 {reviews.rating !== undefined && (
-                  <p className="at-rating">
+                  <p className="at-scorehead__score">
+                    {reviews.rating.score}
                     <span className="at-stars" aria-hidden="true">{'star '.repeat(5).trim()}</span>
-                    <span className="at-rating__score">{reviews.rating.score}</span>
-                    <span className="at-label">{reviews.rating.label}</span>
                   </p>
                 )}
-                <h2 className="at-h2" id="at-reviews-title">{reviews.title}</h2>
+                <div>
+                  <h2 className="at-scorehead__title" id="at-reviews-title">{reviews.title}</h2>
+                  {reviews.rating !== undefined && <p className="at-label">{reviews.rating.label}</p>}
+                </div>
               </div>
               <ul className="at-reviews">
                 {reviews.items.map((r) => (
@@ -291,10 +289,12 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
 
         {/* ── when we're booked ─────────────────────────────────── */}
         {c.calendar !== undefined && (
-          <section className="at-section" aria-labelledby="at-cal-title">
+          <section className="at-section at-ghosted" aria-labelledby="at-cal-title">
+            <p className="at-ghost" aria-hidden="true">{S.calendar.booked}</p>
             <div className="at-wrap at-booked">
               <div>
-                <SectionHead eyebrow={c.calendar.eyebrow} title={c.calendar.title} intro={c.calendar.intro} />
+                <h2 className="at-h2" id="at-cal-title">{c.calendar.title}</h2>
+                {c.calendar.intro !== undefined && <p className="at-lede">{c.calendar.intro}</p>}
                 <p className="at-cal__legend">
                   <span className="at-cal__key at-cal__key--booked" aria-hidden="true" /> {S.calendar.booked}
                   <span className="at-cal__key" aria-hidden="true" /> {S.calendar.open}
@@ -311,9 +311,8 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
         {c.faq !== undefined && (
           <section className="at-section at-tint" aria-labelledby="at-faq-title">
             <div className="at-wrap at-faq">
-              <div className="at-shead">
-                <p className="at-label at-label--accent">{c.faq.eyebrow}</p>
-                <h2 className="at-h2" id="at-faq-title">{c.faq.title}</h2>
+              <div className="at-faq__head">
+                <h2 className="at-h2 at-h2--big" id="at-faq-title">{c.faq.title}</h2>
               </div>
               <div className="at-faq__list">
                 {c.faq.items.map((f) => (
@@ -342,7 +341,7 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
             )}
             <div className="at-close">
               <div>
-                <SectionHead eyebrow={c.estimate.eyebrow} title={c.estimate.title} intro={c.estimate.intro} />
+                <p className="at-lede at-lede--first">{c.estimate.intro}</p>
                 {c.estimate.steps !== undefined && (
                   <ul className="at-steps">{c.estimate.steps.map((s) => <li key={s}><Icon name="check_circle" /> {s}</li>)}</ul>
                 )}
@@ -354,6 +353,7 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
               </div>
               {tenantId !== undefined && (
                 <div className="at-formcard">
+                  <h2 className="at-formcard__title" id="at-estimate-title">{c.estimate.title}</h2>
                   <EstimateForm tenantId={tenantId} services={c.services.items.map((s) => s.name)} states={c.estimate.states ?? b.serviceArea} detailsHint={c.estimate.detailsHint} />
                 </div>
               )}

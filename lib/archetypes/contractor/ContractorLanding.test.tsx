@@ -153,6 +153,15 @@ describe('contractor designs', () => {
     expect(container.querySelector('#estimate form')).not.toBeNull();
   });
 
+  it('opens the atelier sections differently, never with the small label over a big title', () => {
+    const { container } = page(undefined, { ...CONTRACTOR_FIXTURE, design: 'atelier', faq: { eyebrow: 'Questions', title: 'Ask us', items: [{ q: 'Q?', a: 'A.' }] } });
+    expect(container.querySelector('.at-shead')).toBeNull();
+    expect(container.querySelector('.at-dek #at-services-title')).not.toBeNull();
+    expect(container.querySelector('.at-aftercap #at-work-title')).not.toBeNull();
+    expect(container.querySelector('.at-faq__head #at-faq-title')).not.toBeNull();
+    expect(container.querySelector('.at-formcard #at-estimate-title')).not.toBeNull();
+  });
+
   it('opens every ridge section differently, never with the small label over a big title', () => {
     const { container } = page(undefined, { ...CONTRACTOR_FIXTURE, design: 'ridge' });
     expect(container.querySelector('.rg-eyebrow')).toBeNull();
