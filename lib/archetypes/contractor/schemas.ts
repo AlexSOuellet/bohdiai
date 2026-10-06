@@ -26,8 +26,36 @@ export const ContractorMediaSchema = z
  * `statement`: a home-magazine feature, the owner cut out on the cover.
  * `swatch`: a paint-chip card — color bands, the work as a deck of chips,
  * reviews on paint stir sticks. Work items carry their `swatch`.
+ * `atelier`: quiet high-end editorial (Alex's Stitch reference, 2026-10-06) —
+ * stone and serif, cards with icons and tags, a live ballpark `estimator`, a
+ * "typical vs us" `comparison`, case-study job cards.
  */
-export const CONTRACTOR_DESIGNS = ['yard', 'statement', 'swatch'] as const;
+export const CONTRACTOR_DESIGNS = ['yard', 'statement', 'swatch', 'atelier'] as const;
+
+/** A Material Symbols icon name, e.g. "verified_user". */
+const icon = z.string().regex(/^[a-z0-9_]+$/);
+
+/** Atelier design: tap the job, the size and the finish; a price range updates live. */
+export const EstimatorSchema = z
+  .object({
+    eyebrow: text,
+    title: text,
+    intro: text,
+    scopes: z.array(z.object({ key: z.string().regex(/^[a-z0-9-]+$/), name: text, detail: text, icon: icon.optional() }).strict()).min(2).max(6),
+    sizes: z.array(z.object({ key: z.string().regex(/^[a-z0-9-]+$/), name: text }).strict()).min(2).max(4),
+    grades: z.array(z.object({ key: z.string().regex(/^[a-z0-9-]+$/), name: text, detail: text, note: text }).strict()).min(2).max(4),
+    /** "scope|size|grade" → the range shown, e.g. "$2,800 – $3,600". Every combination must be priced. */
+    ranges: z.record(z.string(), text),
+    /** Small print under the range, e.g. "Includes setup and prep". */
+    rangeNote: text,
+  })
+  .strict()
+  .superRefine((e, ctx) => {
+    for (const s of e.scopes) for (const z2 of e.sizes) for (const g of e.grades) {
+      const key = `${s.key}|${z2.key}|${g.key}`;
+      if (e.ranges[key] === undefined) ctx.addIssue({ code: 'custom', path: ['ranges', key], message: 'unpriced combination' });
+    }
+  });
 export type ContractorDesign = (typeof CONTRACTOR_DESIGNS)[number];
 
 export const ContractorContentSchema = z
@@ -56,6 +84,10 @@ export const ContractorContentSchema = z
         /** One word of the headline painted in the accent (must appear in it). */
         highlight: text.optional(),
         sub: text,
+        /** Atelier design: short trust badges under the headline, each with an icon. */
+        badges: z.array(z.object({ icon, label: text }).strict()).max(4).optional(),
+        /** Atelier design: the caption laid over the hero photo. */
+        feature: z.object({ label: text, title: text, tag: text.optional() }).strict().optional(),
         media: ContractorMediaSchema,
         /** Statement design: the owner, background removed (a transparent image), stood large in front of `media`. */
         cutout: ContractorMediaSchema.optional(),
@@ -75,6 +107,9 @@ export const ContractorContentSchema = z
                 media: ContractorMediaSchema,
                 caption: text,
                 tag: text.optional(),
+                /** Atelier design: where the job was, and a line about it. */
+                place: text.optional(),
+                detail: text.optional(),
                 /** Swatch design: the job's main color and a paint-chip name for it. */
                 swatch: z.object({ color: z.string().regex(/^#[0-9a-fA-F]{6}$/), name: text }).strict().optional(),
               })
@@ -87,16 +122,46 @@ export const ContractorContentSchema = z
       .object({
         eyebrow: text,
         title: text,
-        items: z.array(z.object({ name: text, detail: text }).strict()).min(1),
+        items: z
+          .array(
+            z
+              .object({
+                name: text,
+                detail: text,
+                /** Atelier design: a photo card with a label on it and a few tags under it. */
+                photo: ContractorMediaSchema.optional(),
+                label: text.optional(),
+                tags: z.array(text).max(4).optional(),
+              })
+              .strict(),
+          )
+          .min(1),
         note: text.optional(),
       })
       .strict(),
+    estimator: EstimatorSchema.optional(),
+    /** Atelier design: the line above the closing call to action, e.g. a booking note. */
+    banner: z.object({ label: text, text: text, tag: text.optional() }).strict().optional(),
+    /** Atelier design: "typical painters vs us", one row per topic. */
+    comparison: z
+      .object({
+        eyebrow: text,
+        title: text,
+        intro: text.optional(),
+        themLabel: text,
+        usLabel: text,
+        rows: z.array(z.object({ topic: text, them: text, us: text }).strict()).min(1).max(5),
+      })
+      .strict()
+      .optional(),
     reviews: z
       .object({
         eyebrow: text,
         title: text,
         items: z.array(z.object({ quote: text, author: text, job: text.optional() }).strict()).min(1),
         note: text.optional(),
+        /** Atelier design: the overall rating line, only when it is true, e.g. { score: "4.5", label: "On Google" }. */
+        rating: z.object({ score: text, label: text }).strict().optional(),
       })
       .strict()
       .optional(),

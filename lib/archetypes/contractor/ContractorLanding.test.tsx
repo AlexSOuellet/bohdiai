@@ -83,6 +83,21 @@ describe('contractor designs', () => {
     expect(() => page(undefined, { ...CONTRACTOR_FIXTURE, design: 'swatch', work: { ...CONTRACTOR_FIXTURE.work, items } })).toThrow();
   });
 
+  it('renders the atelier design as its own page, with service cards, case studies and the comparison', () => {
+    const services = { ...CONTRACTOR_FIXTURE.services, items: CONTRACTOR_FIXTURE.services.items.map((s) => ({ ...s, tags: ['One', 'Two'] })) };
+    const comparison = { eyebrow: 'Why us', title: 'Why it lasts', themLabel: 'Typical', usLabel: 'Us', rows: [{ topic: 'Prep', them: 'Skipped', us: 'Done right' }] };
+    const { container } = page(undefined, { ...CONTRACTOR_FIXTURE, design: 'atelier', services, comparison, banner: { label: 'Booking', text: 'Spring' } });
+    expect(container.querySelector('.at')).not.toBeNull();
+    expect(container.querySelector('.cp, .st, .sw')).toBeNull();
+    expect(container.querySelectorAll('.at-services > li')).toHaveLength(CONTRACTOR_FIXTURE.services.items.length);
+    expect(container.querySelectorAll('.at-cases > li')).toHaveLength(CONTRACTOR_FIXTURE.work.items.length);
+    expect(container.querySelectorAll('.at-compare__row')).toHaveLength(1);
+    expect(container.querySelector('.at-banner')).not.toBeNull();
+    expect(container.querySelector('.at-est')).toBeNull();
+    expect(container.querySelector('#estimate form')).not.toBeNull();
+    expect(container.querySelector('ol')).toBeNull();
+  });
+
   it('rejects a design it does not know', () => {
     expect(() => page(undefined, { ...CONTRACTOR_FIXTURE, design: 'brutalist' })).toThrow();
   });

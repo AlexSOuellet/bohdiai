@@ -13,6 +13,17 @@ export const CONTRACTOR_STRINGS = {
   pauseVideo: 'Pause video',
   serving: 'Serving',
   starsLabel: 'Five out of five stars',
+  /** Atelier design: the estimator's UI words. */
+  estimator: {
+    scope: 'The job',
+    size: 'How big',
+    grade: 'The finish',
+    range: 'Estimated range',
+    send: 'Send this to us',
+    groupLabel: 'Ballpark estimate',
+  },
+  /** Atelier design: the closing call card. */
+  callNow: 'Call now',
   /** Statement design: under the sideways-scrolling work photos. */
   scrollHint: 'Swipe or scroll for more',
   form: {

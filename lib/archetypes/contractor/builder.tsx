@@ -11,6 +11,7 @@ import { ContractorContentSchema, type ContractorContent } from './schemas';
 import { ContractorLanding, ContractorContentPage, ContractorShell } from './ContractorLanding';
 import { StatementLanding, StatementContentPage, StatementShell } from './statement/StatementLanding';
 import { SwatchLanding, SwatchContentPage, SwatchShell } from './swatch/SwatchLanding';
+import { AtelierLanding, AtelierContentPage, AtelierShell } from './atelier/AtelierLanding';
 
 export const CONTRACTOR_LOOK = 'contractor';
 
@@ -55,6 +56,7 @@ export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
     const palette = paletteFor(brandPalette);
     if (c.design === 'statement') return <StatementLanding content={c} palette={palette} tenantId={tenantId} />;
     if (c.design === 'swatch') return <SwatchLanding content={c} palette={palette} tenantId={tenantId} />;
+    if (c.design === 'atelier') return <AtelierLanding content={c} palette={palette} tenantId={tenantId} />;
     return <ContractorLanding content={c} palette={palette} tenantId={tenantId} />;
   },
   renderContentPage: ({ content, brandPalette, html, title, body }) => {
@@ -71,6 +73,19 @@ export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
             </div>
           </main>
         </StatementShell>
+      );
+    }
+    if (c.design === 'atelier') {
+      if (html !== undefined) return <AtelierContentPage content={c} palette={palette} html={html} />;
+      return (
+        <AtelierShell content={c} palette={palette}>
+          <main className="at-section">
+            <div className="at-wrap at-prose">
+              {title !== undefined && <h1>{title}</h1>}
+              {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
+            </div>
+          </main>
+        </AtelierShell>
       );
     }
     if (c.design === 'swatch') {
