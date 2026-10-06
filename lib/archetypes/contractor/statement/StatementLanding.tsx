@@ -18,10 +18,6 @@ import { statementCss, STATEMENT_FONTS_HREF } from './styles';
 
 const ESTIMATE_ID = 'estimate';
 
-function pad(n: number): string {
-  return String(n).padStart(2, '0');
-}
-
 /** Header, footer and the phone thumb bar around any page body. */
 export function StatementShell({
   content: c,
@@ -151,7 +147,7 @@ export function StatementLanding({ content: c, palette, tenantId }: { content: C
           </section>
         )}
 
-        {/* ── what he does: a numbered contents page ─────────── */}
+        {/* ── what he does: a contents page ─────────────────── */}
         <section className="st-paper st-section" aria-labelledby="st-services-title">
           <div className="st-wrap st-split">
             <div className="st-split__head">
@@ -159,17 +155,14 @@ export function StatementLanding({ content: c, palette, tenantId }: { content: C
               <h2 className="st-title" id="st-services-title">{c.services.title}</h2>
               {c.services.note !== undefined && <p className="st-lede">{c.services.note}</p>}
             </div>
-            <ol className="st-contents">
-              {c.services.items.map((s, i) => (
+            <ul className="st-contents">
+              {c.services.items.map((s) => (
                 <li key={s.name} className="st-contents__item">
-                  <span className="st-contents__num" aria-hidden="true">{pad(i + 1)}</span>
-                  <div>
-                    <h3 className="st-contents__name">{s.name}</h3>
-                    <p className="st-contents__detail">{s.detail}</p>
-                  </div>
+                  <h3 className="st-contents__name">{s.name}</h3>
+                  <p className="st-contents__detail">{s.detail}</p>
                 </li>
               ))}
-            </ol>
+            </ul>
           </div>
         </section>
 
@@ -260,11 +253,9 @@ export function StatementLanding({ content: c, palette, tenantId }: { content: C
               <h2 className="st-title" id="st-estimate-title">{c.estimate.title}</h2>
               <p className="st-lede">{c.estimate.intro}</p>
               {c.estimate.steps !== undefined && (
-                <ol className="st-steps">
-                  {c.estimate.steps.map((s, i) => (
-                    <li key={s}><span aria-hidden="true">{pad(i + 1)}</span>{s}</li>
-                  ))}
-                </ol>
+                <ul className="st-steps">
+                  {c.estimate.steps.map((s) => <li key={s}>{s}</li>)}
+                </ul>
               )}
               <div className="st-direct">
                 <p className="st-direct__label">{S.callOrText}</p>

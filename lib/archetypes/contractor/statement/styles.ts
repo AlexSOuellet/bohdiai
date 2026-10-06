@@ -90,12 +90,12 @@ export function statementCss(p: DerivedPalette): string {
 .st-proof__fig{display:block;font-weight:800;font-stretch:125%;font-size:clamp(30px,3vw,44px);color:var(--st-accent);line-height:1}
 .st-proof__label{display:block;margin-top:8px;font-size:15px;color:var(--st-muted)}
 
-/* ── services: a numbered contents page on paper ───────── */
+/* ── services: a contents page on paper ─────────────────── */
 .st-split{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(40px,6vw,96px);align-items:start}
 .st-split__head{position:sticky;top:120px}
 .st-contents{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:0 40px}
-.st-contents__item{display:flex;gap:20px;padding:26px 0;border-top:1px solid color-mix(in srgb,var(--st-ink) 16%,transparent)}
-.st-contents__num{flex:none;width:2.2em;font-weight:900;font-stretch:125%;font-size:26px;line-height:1;color:transparent;-webkit-text-stroke:1.5px color-mix(in oklab,var(--st-accent) 80%,var(--st-ink))}
+.st-contents__item{padding:26px 0;border-top:1px solid color-mix(in srgb,var(--st-ink) 16%,transparent)}
+.st-contents__item::before{content:"";display:block;width:28px;height:3px;margin-bottom:16px;background:color-mix(in oklab,var(--st-accent) 80%,var(--st-ink))}
 .st-contents__name{margin:0;font-weight:700;font-stretch:118%;font-size:19px;line-height:1.2}
 .st-contents__detail{margin:8px 0 0;font-size:16px;line-height:1.5;color:var(--st-ink-muted)}
 @media(max-width:900px){.st-split{grid-template-columns:1fr}.st-split__head{position:static}}
@@ -145,8 +145,8 @@ export function statementCss(p: DerivedPalette): string {
 /* ── the estimate ──────────────────────────────────────── */
 .st-estimate__grid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:clamp(40px,6vw,96px);align-items:start}
 .st-steps{list-style:none;margin:36px 0 0;padding:0;display:grid;gap:18px}
-.st-steps li{display:flex;align-items:baseline;gap:18px;font-size:18px}
-.st-steps span{font-weight:900;font-stretch:125%;font-size:15px;color:color-mix(in oklab,var(--st-accent) 70%,var(--st-ink))}
+.st-steps li{display:flex;align-items:center;gap:16px;font-size:18px}
+.st-steps li::before{content:"";flex:none;width:10px;height:10px;border-radius:50%;background:color-mix(in oklab,var(--st-accent) 80%,var(--st-ink))}
 .st-direct{margin-top:44px;display:grid;gap:6px}
 .st-direct__label{margin:0;font-size:13px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--st-ink-muted)}
 .st-direct__phone{font-weight:900;font-stretch:125%;font-size:clamp(30px,3vw,42px);text-decoration:none;line-height:1.1}

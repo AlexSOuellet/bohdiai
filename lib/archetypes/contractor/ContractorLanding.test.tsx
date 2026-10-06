@@ -42,7 +42,7 @@ describe('contractor designs', () => {
     expect(container.querySelectorAll('a[href="tel:+14012061566"]').length).toBeGreaterThanOrEqual(4);
   });
 
-  it('numbers every service and shows every work photo, grouped room by room', () => {
+  it('lists every service and shows every work photo, grouped room by room', () => {
     const { container } = page(undefined, STATEMENT);
     expect(container.querySelectorAll('.st-contents__item')).toHaveLength(CONTRACTOR_FIXTURE.services.items.length);
     expect(container.querySelectorAll('.st-reel__item')).toHaveLength(CONTRACTOR_FIXTURE.work.items.length);
