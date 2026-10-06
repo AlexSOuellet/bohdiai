@@ -39,7 +39,7 @@ export function atelierCss(p: DerivedPalette): string {
 .at-label{margin:0;font-size:11px;line-height:14px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--at-soft)}
 .at-label--accent{color:var(--at-terra)}
 .at-label--light{color:rgba(255,255,255,.85)}
-.at-h1{margin:18px 0 0;font-family:var(--at-serif);font-weight:400;font-size:clamp(38px,4.6vw,58px);line-height:1.12;letter-spacing:-.02em;text-wrap:balance}
+.at-h1{margin:22px 0 0;font-family:var(--at-serif);font-weight:400;font-size:clamp(44px,5.4vw,76px);line-height:1.04;letter-spacing:-.025em;text-wrap:balance}
 .at-h2{margin:10px 0 0;font-family:var(--at-serif);font-weight:400;font-size:clamp(28px,3vw,40px);line-height:1.2;letter-spacing:-.015em;text-wrap:balance}
 .at-h3{margin:0;font-family:var(--at-serif);font-weight:500;font-size:22px;line-height:1.27}
 .at-lede{margin:12px 0 0;max-width:56ch;font-size:16px;color:var(--at-soft)}
@@ -72,20 +72,21 @@ export function atelierCss(p: DerivedPalette): string {
 @media(max-width:640px){.at-head__phone{display:none}.at-head .at-btn--dark{display:none}}
 
 /* ── hero ──────────────────────────────────────────────── */
-.at-hero{padding-block:clamp(32px,5vw,72px) clamp(56px,7vw,96px)}
-.at-hero__grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(32px,5vw,72px);align-items:center}
+/* the photo is the stage: it runs off the right edge of the screen, nearly the full window tall */
+.at-hero{--at-bleed:calc(max(0px,(100vw - var(--at-wrap)) / 2) + var(--at-gutter));padding-block:clamp(12px,1.5vw,20px) clamp(56px,7vw,96px)}
+.at-hero__grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(36px,5vw,80px);align-items:center;min-height:min(84svh,860px)}
 .at-hero__sub{margin:18px 0 0;max-width:50ch;font-size:18px;line-height:1.55;color:var(--at-soft)}
 .at-badges{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:28px 0 0;padding:0}
 .at-badge{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;background:var(--at-mid);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
 .at-badge .at-icon{color:var(--at-sage);font-size:18px}
-.at-hero__ctas{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
-.at-hero__photo{position:relative;margin:0;aspect-ratio:5/4;border-radius:10px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(0,0,0,.25)}
+.at-hero__ctas{display:flex;flex-wrap:wrap;gap:10px;margin-top:32px}
+.at-hero__photo{position:relative;align-self:stretch;margin:0 calc(-1 * var(--at-bleed)) 0 0;min-height:min(84svh,860px);border-radius:14px 0 0 14px;overflow:hidden;box-shadow:0 24px 60px -30px rgba(0,0,0,.35)}
 .at-hero__photo img,.at-hero__photo video{width:100%;height:100%;object-fit:cover}
-.at-hero__feature{position:absolute;inset:auto 0 0 0;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:22px;color:#fff;background:linear-gradient(0deg,color-mix(in srgb,var(--at-dark) 80%,transparent),transparent)}
+.at-hero__feature{position:absolute;inset:auto 0 0 0;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:28px calc(var(--at-bleed) + 4px) 28px 28px;color:#fff;background:linear-gradient(0deg,color-mix(in srgb,var(--at-dark) 80%,transparent),transparent)}
 .at-hero__feature>span:first-child{display:flex;flex-direction:column;gap:2px}
-.at-hero__featuretitle{font-family:var(--at-serif);font-size:24px;line-height:1.2}
+.at-hero__featuretitle{font-family:var(--at-serif);font-size:clamp(24px,2.2vw,32px);line-height:1.15}
 .at-glass{flex:none;padding:5px 10px;border-radius:4px;background:rgba(255,255,255,.2);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
-@media(max-width:900px){.at-hero__grid{grid-template-columns:1fr}.at-hero__photo{order:2;aspect-ratio:4/3}}
+@media(max-width:900px){.at-hero__grid{grid-template-columns:1fr;min-height:0}.at-hero__photo{order:-1;min-height:0;aspect-ratio:4/3;margin:0 calc(-1 * var(--at-gutter));border-radius:0}.at-hero__feature{padding:20px var(--at-gutter)}}
 
 /* ── estimator ─────────────────────────────────────────── */
 .at-est{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:24px;padding:clamp(18px,2.4vw,32px);border-radius:12px;background:var(--at-white);box-shadow:0 1px 3px rgba(0,0,0,.06)}
