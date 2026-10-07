@@ -68,5 +68,6 @@ export async function getMarket(db: Db, tenantId: string, id: string): Promise<M
     rating: r.rating ?? 0,
     goBack: asGoBack(r.go_back),
     review: r.review ?? '',
+    listingIds: [],
   };
 }

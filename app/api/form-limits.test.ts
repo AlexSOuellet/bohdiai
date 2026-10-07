@@ -31,6 +31,9 @@ vi.mock('@/lib/env', () => ({ serverEnv: () => ({ SITE_URL: 'https://bohdiai.com
 const ROUTES = [
   { name: 'contact', load: () => import('./contact/route'), shape: { error: 'slow down' } },
   { name: 'order', load: () => import('./order-request/route'), shape: { error: 'slow down' } },
+  { name: 'market', load: () => import('./market/hold/route'), shape: { error: 'slow down' } },
+  { name: 'market-step', load: () => import('./market/paid/route'), shape: { error: 'slow down' } },
+  { name: 'market-step', load: () => import('./market/release/route'), shape: { error: 'slow down' } },
   { name: 'inquiry', load: () => import('./inquiry/route'), shape: { error: 'slow down' } },
   { name: 'notify-interest', load: () => import('./notify-interest/route'), shape: { error: 'slow down' } },
 ] as const;

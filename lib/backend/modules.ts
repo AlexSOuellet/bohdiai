@@ -23,6 +23,7 @@ export const BACKEND_MODULES: BackendModule[] = [
   },
   { feature: 'cart', section: 'Selling', items: [{ label: 'Orders', href: '/manage/orders' }] },
   { feature: 'promotions', section: 'Selling', items: [{ label: 'Promotions', href: '/manage/promotions' }] },
+  { feature: 'market_shop', section: 'Selling', items: [{ label: 'Getting paid', href: '/manage/payments' }] },
   { feature: 'profile', section: 'Your site', items: [{ label: 'About you', href: '/manage/profile' }] },
   { feature: 'gallery', section: 'Your site', items: [{ label: 'Gallery', href: '/manage/gallery' }] },
   { feature: 'market_dates', section: 'Selling', items: [{ label: 'Markets', href: '/manage/markets' }] },

@@ -11,7 +11,7 @@
  */
 import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
-import type { CartView, ProductView } from '@/lib/archetypes/content';
+import type { CartView, MarketShopView, ProductView } from '@/lib/archetypes/content';
 import { dialable } from '@/lib/backend/profile/profile-form';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 import { CardContactForm } from '@/lib/archetypes/card/CardContactForm';
@@ -21,6 +21,7 @@ import { NurseryPhotos } from './NurseryPhotos';
 import { NurseryMenu } from './NurseryMenu';
 import { AddToCartButton, PromoCodeForm, RemoveFromCartButton, SyncCart } from '@/lib/storefront/CartControls';
 import { NurseryOrderForm } from './NurseryOrderForm';
+import { NurseryMarketBuyer } from './NurseryMarketBuyer';
 import { PhotoViewerProvider, Snapshot } from '@/lib/archetypes/card/PhotoViewer';
 import {
   bioParagraphs,
@@ -797,3 +798,66 @@ export function NurseryCart({
 
 const LINE_CLASS = 'nn-cart__line';
 const LINE_GONE_CLASS = ['nn-cart__line', 'nn-cart__line--gone'].join(' ');
+
+/** A market's own page, reached from the code at her table: the market's name and
+ *  where to find her, then the buyer's steps while it's on, or what's coming /
+ *  what happened otherwise. */
+export function NurseryMarket({
+  data,
+  market,
+  logoUrl,
+}: {
+  data: BoutiqueData;
+  market: MarketShopView;
+  logoUrl?: string | undefined;
+}): ReactElement {
+  const { weekday, day } = visitDay({
+    id: market.marketId,
+    date: market.date,
+    endDate: market.endDate,
+    name: market.name,
+    town: market.town,
+    hours: '',
+    address: '',
+    booth: market.booth,
+    url: '',
+    canceled: market.state === 'canceled',
+  });
+  const where = S.market.where(market.town, market.booth);
+  return (
+    <Frame chrome={{ data, logoUrl }} onHome={false}>
+      <section className="nn-mk" aria-labelledby="nn-mk-h">
+        <div className="nn-wrap">
+          <span className="nn-script-tag">{S.market.tag}</span>
+          <h1 className="nn-h2" id="nn-mk-h">
+            {market.name}
+          </h1>
+          <p className="nn-mk-when">
+            {weekday} · {day}
+            {where !== '' && ` · ${where}`}
+          </p>
+          {market.state === 'open' &&
+            (market.methods.length === 0 ? (
+              <p className="nn-mk-note">{S.market.noPay}</p>
+            ) : (
+              <NurseryMarketBuyer marketId={market.marketId} pieces={market.pieces} methods={market.methods} codes={market.codes} />
+            ))}
+          {market.state === 'before' && (
+            <>
+              <p className="nn-mk-note">{S.market.before(weekday)}</p>
+              <Nursery ribbons={data.newArrivals} babies={market.pieces} />
+            </>
+          )}
+          {(market.state === 'after' || market.state === 'canceled') && (
+            <div className="nn-mk-card">
+              <p>{market.state === 'after' ? S.market.after : S.market.canceled}</p>
+              <a className="nn-btn" href="/shop">
+                {S.market.toSite}
+              </a>
+            </div>
+          )}
+        </div>
+      </section>
+    </Frame>
+  );
+}

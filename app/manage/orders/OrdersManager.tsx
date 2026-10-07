@@ -94,7 +94,14 @@ export function OrdersManager({ initial, timeZone }: { initial: OrderRow[]; time
                     </span>
                   </div>
                   <p className="bk-note">
-                    {showWhen(o.createdAt, timeZone)} · <a className="bk-link" href={`mailto:${o.email}`}>{o.email}</a>
+                    {showWhen(o.createdAt, timeZone)}
+                    {o.via !== undefined && ` · ${o.via}`}
+                    {o.email !== '' && (
+                      <>
+                        {' · '}
+                        <a className="bk-link" href={`mailto:${o.email}`}>{o.email}</a>
+                      </>
+                    )}
                     {o.phone !== '' && (
                       <>
                         {' · '}

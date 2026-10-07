@@ -3,13 +3,14 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import { formatPrice } from '@/lib/storefront/catalog';
 import { isOrderStatus, type OrderRow } from './orders';
+import { METHOD_LABEL, isPayMethod } from '@/lib/market/pay';
 
 export const ORDERS_SHOWN = 200;
 
 export async function listOrders(db: SupabaseClient<Database>, tenantId: string): Promise<OrderRow[]> {
   const { data, error } = await db
     .from('orders')
-    .select('id, order_number, created_at, status, customer_name, customer_email, customer_phone, customer_note, total_cents, discount_cents, discount_label, order_items(name_snapshot, unit_price_cents, quantity, created_at)')
+    .select('id, order_number, created_at, status, customer_name, customer_email, customer_phone, customer_note, total_cents, discount_cents, discount_label, source, payment_method, order_items(name_snapshot, unit_price_cents, quantity, created_at)')
     .eq('tenant_id', tenantId)
     .order('created_at', { ascending: false })
     .limit(ORDERS_SHOWN);
@@ -24,6 +25,10 @@ export async function listOrders(db: SupabaseClient<Database>, tenantId: string)
     phone: o.customer_phone ?? '',
     note: o.customer_note ?? '',
     total: formatPrice(o.total_cents),
+    via:
+      o.source === 'market_mode'
+        ? ['At the market', o.payment_method === 'card' ? 'Card' : isPayMethod(o.payment_method) ? METHOD_LABEL[o.payment_method] : null].filter((x) => x !== null).join(' · ')
+        : undefined,
     discount: o.discount_cents > 0 ? { label: o.discount_label ?? 'Discount', amount: formatPrice(o.discount_cents) } : undefined,
     items: [...o.order_items]
       .sort((a, b) => a.created_at.localeCompare(b.created_at))

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import Link from 'next/link';
+import type { Route } from 'next';
 import { useRouter, unstable_rethrow } from 'next/navigation';
 import { removeMarket, saveMarket } from '@/lib/backend/markets/actions';
 import {
@@ -14,6 +15,13 @@ import {
   type MarketForm,
 } from '@/lib/backend/markets/market-form';
 import { ConfirmButton } from '../_components/ConfirmButton';
+import { QrCode } from '../_components/QrCode';
+
+import type { ShopPick } from '@/lib/backend/markets/shop-props';
+
+/** The market shop's part of the page, on sites that have it. `marketUrl` is the
+ *  page buyers scan to (null until the market is saved). */
+export type MarketShopProps = { products: ShopPick[]; marketUrl: string | null; fileBase: string; todayHref: string | null };
 import { useNotice } from '../_components/Notice';
 
 const FAILED = 'Something went wrong. Check your connection and try again.';
@@ -49,7 +57,7 @@ function Text({
 
 /** One market: everything about it on one page, Save at the top and bottom. Saving
  *  or removing goes back to the list, which says what happened. */
-export function MarketEditor({ initial }: { initial: MarketForm }): React.ReactElement {
+export function MarketEditor({ initial, shop }: { initial: MarketForm; shop?: MarketShopProps | undefined }): React.ReactElement {
   const router = useRouter();
   const [form, setForm] = useState(initial);
   const [busy, setBusy] = useState(false);
@@ -152,6 +160,63 @@ export function MarketEditor({ initial }: { initial: MarketForm }): React.ReactE
             <p className="bk-note">Your site shows it as canceled, so nobody drives out for it.</p>
           </div>
         </section>
+
+        {shop !== undefined && (
+          <section className="bk-section" aria-labelledby="s-table">
+            <h2 id="s-table" className="bk-section-title">
+              Your table
+            </h2>
+            {shop.todayHref !== null && (
+              <p className="bk-row">
+                <Link className="bk-btn" href={shop.todayHref as Route}>
+                  Open Today: sales at the table
+                </Link>
+              </p>
+            )}
+            <fieldset className="bk-fieldset">
+              <legend className="bk-label">What you’re bringing ({form.listingIds.length})</legend>
+              <p className="bk-note">Buyers who scan this market’s code see only these.</p>
+              {shop.products.length === 0 ? (
+                <p className="bk-note">No live products yet. Add some under Products.</p>
+              ) : (
+                <ul className="bk-picks">
+                  {shop.products.map((p) => (
+                    <li key={p.id}>
+                      <label className="bk-check bk-pick-row">
+                        <input
+                          type="checkbox"
+                          checked={form.listingIds.includes(p.id)}
+                          onChange={(e) =>
+                            update({ listingIds: e.target.checked ? [...form.listingIds, p.id] : form.listingIds.filter((x) => x !== p.id) })
+                          }
+                        />
+                        {p.photoUrl !== null && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img className="bk-thumb" src={p.photoUrl} alt="" />
+                        )}
+                        <span>
+                          {p.name}
+                          {p.soldOut && <span className="bk-note"> · sold</span>}
+                        </span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </fieldset>
+            <div className="bk-field">
+              <p className="bk-label">This market’s QR code</p>
+              {shop.marketUrl === null ? (
+                <p className="bk-note">Save the market first, then its code shows here.</p>
+              ) : (
+                <>
+                  <p className="bk-note bk-qr-url">{shop.marketUrl}</p>
+                  <QrCode url={shop.marketUrl} fileBase={shop.fileBase} />
+                </>
+              )}
+            </div>
+          </section>
+        )}
 
         <section className="bk-section" aria-labelledby="s-costs">
           <h2 id="s-costs" className="bk-section-title">

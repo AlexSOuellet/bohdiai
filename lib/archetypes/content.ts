@@ -110,3 +110,22 @@ export interface CartView {
   /** The code the shopper entered: whether it's the one taking money off, or why not. */
   code?: { value: string; applied: boolean; message?: string | undefined } | undefined;
 }
+
+/** A market's own shop page (Market POS piece 2): the pieces she brought, and
+ *  whether the market is taking orders today. */
+export interface MarketShopView {
+  marketId: string;
+  name: string;
+  /** First day and last day ('' for one day), as stored, for the design to word. */
+  date: string;
+  endDate: string;
+  town: string;
+  booth: string;
+  state: 'before' | 'open' | 'after' | 'canceled';
+  /** The pieces she brought, sale prices on, in her order. */
+  pieces: ProductView[];
+  /** The ways to pay she has switched on. */
+  methods: ('venmo' | 'cashapp' | 'zelle' | 'cash')[];
+  /** Promotions has codes: the page offers a code box. */
+  codes: boolean;
+}

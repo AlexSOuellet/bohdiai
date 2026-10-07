@@ -54,6 +54,7 @@ describe('buildMarketPayload', () => {
           { description: 'Booth fee', amount_cents: 17500 },
           { description: 'Gas', amount_cents: 1250 },
         ],
+        listing_ids: [],
       },
     });
   });

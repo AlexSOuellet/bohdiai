@@ -16,6 +16,14 @@ It lives inside the maker's backend (a phone-sized screen at `/admin` → Market
 2. **The market shop** — per market, the owner ticks the pieces she is bringing. The market gets its own QR code. A buyer scans it, sees only those pieces, picks one and pays by Venmo, Cash App, Zelle or card. Venmo and Cash App open pre-filled with the owner's handle and the amount; Zelle shows her Zelle phone or email; card needs Square (waits on the Square keys, like checkout). None of Venmo, Cash App or Zelle tells us a payment arrived, so the buyer taps "I paid", the piece goes on hold, and the owner taps Confirm on her phone when she sees the money. Confirmed sales are orders with `source = 'market_mode'` and `event_id` set; inventory updates through the same paid step the Orders screen uses. *Own design pass before building.*
 3. **Market results** — per market: what sold, the total, how buyers paid, what came home, sales minus costs, beside her review. *Own design pass before building.*
 
+## Piece 2 — The market shop (agreed 2026-10-07)
+
+- **Getting paid** (backend screen, `market_shop` switch): Venmo username, Cash App $cashtag, Zelle phone or email, Cash at the table — each with its own on/off. Not secrets (they are what she'd print on a table sign); kept behind her login and shown to buyers only on the market payment step. Card waits on Square.
+- **Babies she brings:** ticked on each market's page (`market_listings`). The market's page also shows its QR code (PNG/SVG downloads) and opens her **Today** view.
+- **The buyer** scans the QR (`/market/<market id>` on her site, in her design). The page takes orders only on the market's days (shop's time zone): before, "See you at the market" with the babies; after, a pointer to her site. The buyer picks a baby, types a first name (required) and an email (optional, receipt), picks a method she has on, and may type a discount code (the running sale and the code never stack: whichever saves more). **Continue** puts the baby on hold at once (stock taken, so the website shows it Adopted and the online cart can't take it) and shows the amount with: Venmo / Cash App buttons that open the app pre-filled (her handle, the amount, a note naming the baby), her Zelle phone or email to copy, or "pay at the table". **I paid** marks the hold so she sees it. The buyer can step back and release the hold before saying they paid.
+- **Today** (backend, phone-first, refreshes itself every few seconds): each hold with first name, baby, amount, method and whether they say they paid; **Confirm** (order → paid) or **Not received** (order → canceled, stock back). **Record a sale** for a buyer who just hands her cash: pick a baby and a method, recorded paid at once.
+- **Records:** every market sale is an order with `source = 'market_mode'`, `event_id` = the market and `payment_method`; it shows in Orders and feeds piece 3.
+
 ## Piece 1 — Markets
 
 ### What each market holds

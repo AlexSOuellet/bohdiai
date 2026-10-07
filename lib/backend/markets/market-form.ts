@@ -51,6 +51,8 @@ export type MarketForm = {
   rating: number;
   goBack: GoBack | '';
   review: string;
+  /** The pieces she brings (market shop), in her order. */
+  listingIds: string[];
 };
 
 export type MarketPayload = {
@@ -71,6 +73,7 @@ export type MarketPayload = {
   go_back: GoBack | null;
   review: string | null;
   costs: { description: string; amount_cents: number }[];
+  listing_ids: string[];
 };
 
 export function emptyMarketForm(): MarketForm {
@@ -93,6 +96,7 @@ export function emptyMarketForm(): MarketForm {
     rating: 0,
     goBack: '',
     review: '',
+    listingIds: [],
   };
 }
 
@@ -187,6 +191,7 @@ export function buildMarketPayload(form: MarketForm): { ok: true; payload: Marke
       go_back: form.goBack === '' ? null : form.goBack,
       review: orNull(v['review'] ?? ''),
       costs,
+      listing_ids: [...new Set(form.listingIds)],
     },
   };
 }

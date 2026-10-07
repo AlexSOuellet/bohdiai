@@ -116,9 +116,10 @@ describe('SectionEditor — conversation', () => {
     fireEvent.change(screen.getByPlaceholderText(/warmer, or shorter/i), { target: { value: 'calm and witchy' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send' }));
     // wait for Bohdi's turn to land (the button is disabled while he's thinking)
-    await screen.findByText('Got it — want me to write it?');
+    // Generous waits: two async hops, and the full suite with coverage can be slow.
+    await screen.findByText('Got it — want me to write it?', undefined, { timeout: 5000 });
     fireEvent.click(screen.getByRole('button', { name: 'Write it up' }));
-    await screen.findByText(/There it is/);
+    await screen.findByText(/There it is/, undefined, { timeout: 5000 });
     // the write is scoped to the step's own fields (so a split hero step doesn't clobber the other)
     expect(writeSectionFromConversation).toHaveBeenCalledWith('hero', expect.any(Array), expect.any(Array));
     expect(onResolved).toHaveBeenCalledWith(true);

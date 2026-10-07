@@ -1168,6 +1168,49 @@ export type Database = {
           },
         ]
       }
+      market_listings: {
+        Row: {
+          event_id: string
+          listing_id: string
+          position: number
+          tenant_id: string
+        }
+        Insert: {
+          event_id: string
+          listing_id: string
+          position?: number
+          tenant_id: string
+        }
+        Update: {
+          event_id?: string
+          listing_id?: string
+          position?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_listings_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_listings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       niche_versions: {
         Row: {
           change_reason: string | null
@@ -1370,6 +1413,7 @@ export type Database = {
       orders: {
         Row: {
           billing_address: Json | null
+          buyer_paid_at: string | null
           canceled_at: string | null
           created_at: string
           currency: string
@@ -1387,6 +1431,7 @@ export type Database = {
           notes_to_customer: string | null
           order_number: string
           paid_at: string | null
+          payment_method: string | null
           shipping_address: Json | null
           shipping_cents: number
           source: string
@@ -1399,6 +1444,7 @@ export type Database = {
         }
         Insert: {
           billing_address?: Json | null
+          buyer_paid_at?: string | null
           canceled_at?: string | null
           created_at?: string
           currency?: string
@@ -1416,6 +1462,7 @@ export type Database = {
           notes_to_customer?: string | null
           order_number: string
           paid_at?: string | null
+          payment_method?: string | null
           shipping_address?: Json | null
           shipping_cents?: number
           source?: string
@@ -1428,6 +1475,7 @@ export type Database = {
         }
         Update: {
           billing_address?: Json | null
+          buyer_paid_at?: string | null
           canceled_at?: string | null
           created_at?: string
           currency?: string
@@ -1445,6 +1493,7 @@ export type Database = {
           notes_to_customer?: string | null
           order_number?: string
           paid_at?: string | null
+          payment_method?: string | null
           shipping_address?: Json | null
           shipping_cents?: number
           source?: string
@@ -1467,6 +1516,50 @@ export type Database = {
             foreignKeyName: "orders_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_settings: {
+        Row: {
+          cash_on: boolean
+          cashapp: string | null
+          cashapp_on: boolean
+          tenant_id: string
+          updated_at: string
+          venmo: string | null
+          venmo_on: boolean
+          zelle: string | null
+          zelle_on: boolean
+        }
+        Insert: {
+          cash_on?: boolean
+          cashapp?: string | null
+          cashapp_on?: boolean
+          tenant_id: string
+          updated_at?: string
+          venmo?: string | null
+          venmo_on?: boolean
+          zelle?: string | null
+          zelle_on?: boolean
+        }
+        Update: {
+          cash_on?: boolean
+          cashapp?: string | null
+          cashapp_on?: boolean
+          tenant_id?: string
+          updated_at?: string
+          venmo?: string | null
+          venmo_on?: boolean
+          zelle?: string | null
+          zelle_on?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -2554,6 +2647,62 @@ export type Database = {
         Args: { target_tenant_id: string }
         Returns: boolean
       }
+      market_hold: {
+        Args: {
+          p_discount_cents?: number
+          p_discount_label?: string
+          p_email: string
+          p_event_id: string
+          p_listing_id: string
+          p_method: string
+          p_name: string
+          p_price_cents: number
+          p_promotion_id?: string
+          p_tenant_id: string
+        }
+        Returns: {
+          order_id: string
+          order_number: string
+        }[]
+      }
+      market_mark_paid: {
+        Args: { p_order_id: string; p_tenant_id: string }
+        Returns: undefined
+      }
+      market_order_internal: {
+        Args: {
+          p_discount_cents: number
+          p_discount_label: string
+          p_email: string
+          p_event_id: string
+          p_listing_id: string
+          p_method: string
+          p_name: string
+          p_price_cents: number
+          p_promotion_id: string
+          p_status: string
+          p_tenant_id: string
+        }
+        Returns: {
+          order_id: string
+          order_number: string
+        }[]
+      }
+      market_record_sale: {
+        Args: {
+          p_event_id: string
+          p_listing_id: string
+          p_method: string
+          p_price_cents: number
+          p_tenant_id: string
+        }
+        Returns: string
+      }
+      market_release: {
+        Args: { p_order_id: string; p_tenant_id: string }
+        Returns: undefined
+      }
+      next_order_number: { Args: { p_tenant_id: string }; Returns: number }
       order_collections: {
         Args: { p_ids: string[]; p_tenant_id: string }
         Returns: undefined

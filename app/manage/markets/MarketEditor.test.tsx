@@ -85,3 +85,38 @@ describe('MarketEditor', () => {
     await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/markets?removed=Holly%20Fair'));
   });
 });
+
+describe('MarketEditor — your table', () => {
+  const shop = {
+    products: [
+      { id: 'l1', name: 'Theo', photoUrl: null, soldOut: false },
+      { id: 'l2', name: 'Rosie', photoUrl: 'https://cdn/r.webp', soldOut: true },
+    ],
+    marketUrl: null,
+    fileBase: 'rose-n-cat-market-qr',
+    todayHref: null,
+  };
+
+  it('ticks the babies she brings and saves them with the market', async () => {
+    saveMarket.mockResolvedValue({ ok: true, id: 'm1' });
+    render(<MarketEditor initial={existing()} shop={shop} />);
+    expect(screen.getByText(/Save the market first/)).toBeTruthy();
+    fireEvent.click(screen.getByLabelText(/Theo/));
+    expect(screen.getByText('What you’re bringing (1)')).toBeTruthy();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
+    await waitFor(() => expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ listingIds: ['l1'] })));
+  });
+
+  it('opens Today and shows the code for a saved market', () => {
+    render(<MarketEditor initial={existing({ listingIds: ['l1'] })} shop={{ ...shop, marketUrl: 'https://rose-n-cat.bohdiai.com/market/m1', todayHref: '/manage/markets/m1/today' }} />);
+    expect(screen.getByRole('link', { name: 'Open Today: sales at the table' }).getAttribute('href')).toBe('/manage/markets/m1/today');
+    expect(screen.getByText('https://rose-n-cat.bohdiai.com/market/m1')).toBeTruthy();
+    fireEvent.click(screen.getByLabelText(/Theo/));
+    expect(screen.getByText('What you’re bringing (0)')).toBeTruthy();
+  });
+
+  it('says so when there is nothing live to bring', () => {
+    render(<MarketEditor initial={existing()} shop={{ ...shop, products: [] }} />);
+    expect(screen.getByText(/No live products yet/)).toBeTruthy();
+  });
+});

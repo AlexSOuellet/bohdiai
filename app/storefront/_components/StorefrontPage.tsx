@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { archetypeSpec } from '@/lib/archetypes/registry';
 import type { ArchetypePage } from '@/lib/archetypes/builder';
-import type { ProductView, CollectionView, CartView } from '@/lib/archetypes/content';
+import type { ProductView, CollectionView, CartView, MarketShopView } from '@/lib/archetypes/content';
 import { seedPreviewReviews } from '@/lib/archetypes/main-street/reviews';
 import { seedPreviewFindUs } from '@/lib/archetypes/main-street/findus';
 import {
@@ -221,6 +221,13 @@ export async function renderArchetypeCart(tenantId: string, loadCart: () => Prom
     logoUrl: a.logoUrl,
     tenantId,
   });
+}
+
+/** A market's shop page in the design's own look, or null when the design has none. */
+export async function renderArchetypeMarket(tenantId: string, market: MarketShopView) {
+  const a = await resolveEnvelope(tenantId);
+  if (a === null || a.spec.renderMarket === undefined) return null;
+  return a.spec.renderMarket({ content: a.content, lookKey: a.lookKey, market, logoUrl: a.logoUrl, tenantId });
 }
 
 /** Wrap a functional page's body (cart, subscriptions, etc.) in the tenant's
