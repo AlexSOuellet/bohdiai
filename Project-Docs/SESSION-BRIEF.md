@@ -10,13 +10,13 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-10-06, Session 96.
+**Last updated:** 2026-10-07, Session 97.
 
 ---
 
 ## Current state
 
-**Session 96 — Rose n' Cat Reborn Babies LIVE (sample full maker site for Renee, Joe's wife).** New hand-built **boutique** archetype (catalog + About you + gallery + market dates, all backend-edited), first design **nursery** (bassinet cards, Gone home clothesline, visiting hours, certificate of birth per baby; pinned bar + phone menu). Built by `scripts/build-boutique-site.ts rose-n-cat`. Baby names/prices and four of five dates are placeholders. Recap: `session-logs/session-96.md`.
+**Session 97 — Rose n' Cat is a working shop + the first Market POS (all LIVE, switched on for her).** Cart + order requests (no card yet; emails go to ALEX), Orders, Terms/Privacy links, QR codes, New arrival + "Just born", Promotions (sale or codes, never stacked), **Markets** (replaced Market dates; private costs/organizer/notes/review; anon read on `events` dropped), **market shop** (per-market QR page, holds paid by Venmo/Cash App/Zelle/cash, Getting paid, Today). Design: `docs/superpowers/specs/2026-10-07-market-pos-design.md`. Session 96 built the site itself (boutique archetype, nursery design). Recaps: `session-logs/session-97.md`, `session-96.md`.
 
 **Session 95 — homepage reshaped; three contractor sites with their own designs; Joe's site PUBLIC; Contractor Lead Generation $10.** Hero browser = samples only; clients in an arrow slideshow; sample cards one per tier (Maker Showcase, Maker Lite, Contractor Lead Generation, Contractor Full) + "See more samples" → `/samples`. Contractor designs (`design` in the content): `yard` Cut-Pro, `atelier` True Coat (Contractor Full sample: estimator, calendar, FAQ), `ridge` Halfmoon (Contractor Lead Generation sample), `harbor` Mazzone (Joe's REAL site, public, real facts only; estimates still email Alex). Every section opener varied — no label-over-title. Draft (hidden) sites + private preview links exist (`--draft`, `scripts/site-visibility.ts`), but prod preview links 404 until the Worker's BACKEND_SESSION_SECRET matches .env.local. **Plans:** Contractor Lite → Contractor Lead Generation, $10/$100; ALL sites will get a backend (minimal for Showcase + Lead Generation); Alex considering cutting Maker Lite (undecided). Homepage desk hero still parked (`feat/site-photo-hero`); `fix/bulletin-taken-tab` still parked. Recap: `session-logs/session-95.md`.
 
@@ -31,7 +31,7 @@
 
 ## Next actions
 
-000. **Renee (Rose n' Cat):** show her the site; real baby names, prices, story, dates; invite her to the backend; contact email to hers.
+000. **Rose n' Cat:** Renee hasn't accepted her backend invite (AOL spam? resend via `scripts/invite-maker.ts`); fill Getting paid (only cash shows); tick babies per market; real names/prices. Open asks to Alex: analytics (own cookieless counter?), Square card (build switched off or wait for keys?), a test market to try a buyer order. Next build: **Market POS piece 3 — results** (own design pass). Privacy template's "analytics cookie" line is wrong; fix with analytics.
 00. **Joe (Mazzone):** his feedback on the site; switch estimate emails to his address when he's in; give his page its own section openers (True Coat and Halfmoon got theirs); his own job photos when he has them.
 01a. **Estimator → request email:** the choices a visitor taps (job, size, finish, range) should travel into the estimate email. Offered, not built.
 01b. **Minimal backend for Maker Showcase + Contractor Lead Generation** — Alex: every site gets a backend; "minimal" is undesigned.
@@ -52,7 +52,7 @@
 - **Bohdi authors CONTENT ONLY.** Structure / nav / sections / treatments come from the family (renderer). Never from Bohdi.
 - **Mood is public. Family is internal.** Public copy always says mood. Never expose "family" to a maker.
 - **No hardcoded strings in the renderer. No inline styles. No shortcuts.** All strings through `DEFAULT_STRINGS`/`DEFAULT_COUNTS`. Dynamic per-instance values pass as CSS custom properties or `data-*` attributes.
-- **Tests are part of done.** No feature is complete without tests. Backlog compounds.
+- **Tests are part of done.** No feature is complete without tests. Backlog compounds. CI also gates 90% branch coverage on `lib/**/*.ts` (fake Supabase chain: `lib/market/market-db.test.ts`).
 - **Ship complete, not partial.** Code + tests + types + verification before "done." Ask Alex if exception.
 - **Verify visual work before commit.** Alex's eyes gate any change with visible output. Tests-green ≠ looks-right.
 - **Verify against real code + live data, not memory.** Confident inference is the trap; the check IS the answer. When a live bug is murky, read the DB (the `listings`/`uploads`/`collections` rows tell you what actually happened) instead of guessing at the cause.
@@ -88,6 +88,7 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 97 (2026-10-07): **Rose n' Cat shop + Market POS: cart, orders, promotions, new arrivals, QR, Markets, market shop — LIVE.** Full recap: `session-logs/session-97.md`.
 - Session 96 (2026-10-06): **Rose n' Cat LIVE — boutique archetype + nursery design, tied to the backend.** Full recap: `session-logs/session-96.md`.
 - Session 95 (2026-10-06): **Homepage reshaped (samples hero, client slideshow, one card per tier + /samples); True Coat, Halfmoon, Mazzone built with their own designs; Joe's site public; hidden drafts; Contractor Lead Generation $10; business cards.** Full recap: `session-logs/session-95.md`.
 - Session 94 (2026-10-05): **Bulletin board design for card sites; Rustic Rhody switched, LIVE.** What I make field. Full recap: `session-logs/session-94.md`.
@@ -95,5 +96,4 @@ Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 - Sessions 91–92 (2026-10-02 → 10-03): **Tiers + prices agreed; pricing pages + FAQ live; Showcase tier + business card site (Rustic Rhody).** See `session-logs/session-91.md` and the tiers / business card specs.
 - Sessions 89–90 (2026-09-30 → 10-01): **CI green; maker backend designed, foundation (1a) + Catalog (1b) live; auto sign-out.** See `session-logs/session-89.md`, `session-90.md`.
 - Sessions 86–88 (2026-09-23 → 09-29): **Cut-Pro built by hand and LIVE (86); whole app moved from Vercel to Cloudflare Workers (87); bohdiai.com rebuilt as a web developer site (88).** See `session-logs/session-86.md` – `session-88.md`.
-- Sessions 66-85 (2026-07-07 → 07-30): six-family walkthrough + fix waves A-F, textures, editor draft-and-publish, the Make It Yours walk (D67-D71). See individual logs.
-- Sessions 0-65: Phase 0, archetypes, families, sections, editor design, the family layer. See individual logs.
+- Sessions 0-85: Phase 0 through the Make It Yours walk (archetypes, families, sections, editor). See individual logs.
