@@ -147,3 +147,6 @@
 /* The notice takes focus from script only; the message itself is the visible cue. */
 .bk-notices:focus { outline: none; }
 .bk-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.bk-qr { display: grid; gap: 1rem; justify-items: start; margin-top: 1rem; }
+.bk-qr-img { width: min(280px, 100%); height: auto; border: 1px solid var(--bk-ink-15); border-radius: 8px; image-rendering: pixelated; }
+.bk-qr-url { word-break: break-all; }
