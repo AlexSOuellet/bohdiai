@@ -75,6 +75,10 @@ export interface ProductView {
   onHome?: boolean;
   /** The owner marked it a new arrival; absent means not new. */
   isNew?: boolean;
+  /** The price in cents behind `price` (the lowest buyable one), when projected from the catalog. */
+  priceCents?: number;
+  /** The price during a running sale, formatted; `price` stays the full price. */
+  salePrice?: string;
 }
 
 /** One piece in the shopper's cart, as the cart page shows it. */
@@ -88,10 +92,21 @@ export interface CartLineView {
   photo?: CatalogMedia | undefined;
   /** False once the piece is sold out, taken down, or has options the cart can't pick. */
   available: boolean;
+  /** The piece's price during a running sale; `price` is then the full price. */
+  salePrice?: string | undefined;
 }
 
-/** The shopper's cart, priced from the catalog. `total` counts only available pieces. */
+/** The shopper's cart, priced from the catalog. Totals count only available pieces. */
 export interface CartView {
   lines: CartLineView[];
+  /** Full prices added up. */
+  subtotal: string;
+  /** Money off from the sale or the shopper's code (whichever saves more). */
+  discount?: { label: string; amount: string } | undefined;
+  /** What the order comes to. */
   total: string;
+  /** Promotions are on: the cart offers a box for a discount code. */
+  codes: boolean;
+  /** The code the shopper entered: whether it's the one taking money off, or why not. */
+  code?: { value: string; applied: boolean; message?: string | undefined } | undefined;
 }

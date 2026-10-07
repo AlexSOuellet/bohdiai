@@ -14,6 +14,7 @@ export const FEATURES = {
   profile: { default: false, description: 'About you: the words and contact details on a business card site' },
   gallery: { default: false, description: 'Gallery photos with captions, in the owner’s order' },
   cart: { default: false, description: 'Cart: shoppers gather pieces and send the order (paid by card once payments are connected)' },
+  promotions: { default: false, description: 'Promotions: a site-wide sale or discount codes, taken off in the cart' },
   new_arrivals: { default: false, description: 'New arrivals: a tick on each product, shown in the design’s own home section' },
   qr_codes: { default: true, description: 'QR codes: a printable code for the site, its shop, or one product' },
   market_dates: { default: false, description: 'Market dates: day, market and town, shown in a business card’s marquee' },

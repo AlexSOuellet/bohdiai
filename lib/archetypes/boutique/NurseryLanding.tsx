@@ -19,7 +19,7 @@ import { NURSERY_STRINGS as S } from './strings';
 import { NURSERY_FONTS_HREF, nurseryCss } from './nursery-styles';
 import { NurseryPhotos } from './NurseryPhotos';
 import { NurseryMenu } from './NurseryMenu';
-import { AddToCartButton, RemoveFromCartButton, SyncCart } from '@/lib/storefront/CartControls';
+import { AddToCartButton, PromoCodeForm, RemoveFromCartButton, SyncCart } from '@/lib/storefront/CartControls';
 import { NurseryOrderForm } from './NurseryOrderForm';
 import { PhotoViewerProvider, Snapshot } from '@/lib/archetypes/card/PhotoViewer';
 import {
@@ -89,7 +89,15 @@ export function Frame({
             />
           </div>
         </header>
-        <main id={MAIN_ID}>{children}</main>
+        <main id={MAIN_ID}>
+          {data.sale !== null && (
+            <p className="nn-salebar">
+              {S.sale.banner(data.sale.name, data.sale.percentOff)}
+              {data.sale.endsOn !== null && <span> · {S.sale.until(saleDay(data.sale.endsOn))}</span>}
+            </p>
+          )}
+          {children}
+        </main>
         <footer className="nn-foot">
           <div className="nn-wrap nn-foot__in">
             <span>{S.footer.year(new Date().getFullYear(), data.name)}</span>
@@ -105,6 +113,25 @@ export function Frame({
   );
 }
 
+/** A price, or the full price struck through beside the sale price. */
+/** "Oct 31" for the sale banner, read on the day itself. */
+function saleDay(date: string): string {
+  return new Intl.DateTimeFormat(S.visit.locale, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
+}
+
+function Fee({ baby }: { baby: ProductView }): ReactElement {
+  if (baby.salePrice === undefined) return <>{baby.price}</>;
+  return (
+    <>
+      <s className="nn-was">
+        <span className="nn-sr">{S.sale.was} </span>
+        {baby.price}
+      </s>{' '}
+      {baby.salePrice}
+    </>
+  );
+}
+
 function BassinetCard({ baby, tint }: { baby: ProductView; tint: string }): ReactElement {
   return (
     <div className={`nn-card nn-card--${tint}`}>
@@ -116,7 +143,9 @@ function BassinetCard({ baby, tint }: { baby: ProductView; tint: string }): Reac
       )}
       <span className="nn-card__fee">
         {S.card.fee}
-        <b>{baby.price}</b>
+        <b>
+          <Fee baby={baby} />
+        </b>
       </span>
     </div>
   );
@@ -184,7 +213,9 @@ function JustBorn({ data, babies }: { data: BoutiqueData; babies: ProductView[] 
                   {b.status === 'sold_out' ? (
                     <span className="nn-ann__fee">{S.card.adopted}</span>
                   ) : (
-                    <span className="nn-ann__fee">{b.price}</span>
+                    <span className="nn-ann__fee">
+                      <Fee baby={b} />
+                    </span>
                   )}
                 </a>
               </li>
@@ -546,7 +577,9 @@ export function NurseryCertificate({
                   </div>
                   <div>
                     <dt>{S.certificate.fee}</dt>
-                    <dd className="nn-fee">{product.price}</dd>
+                    <dd className="nn-fee">
+                      <Fee baby={product} />
+                    </dd>
                   </div>
                 </dl>
                 {paragraphs.length > 0 && (
@@ -661,14 +694,56 @@ export function NurseryCart({
                       </a>
                       {!l.available && <span className="nn-cart__gone">{S.cart.gone}</span>}
                     </div>
-                    <span className="nn-cart__fee">{l.price}</span>
+                    <span className="nn-cart__fee">
+                      {l.salePrice === undefined ? (
+                        l.price
+                      ) : (
+                        <>
+                          <s className="nn-was">
+                            <span className="nn-sr">{S.sale.was} </span>
+                            {l.price}
+                          </s>{' '}
+                          {l.salePrice}
+                        </>
+                      )}
+                    </span>
                     <RemoveFromCartButton listingId={l.id} className="nn-cart__out" label={S.cart.remove} ariaLabel={S.cart.removeLabel(l.name)} />
                   </li>
                 ))}
               </ul>
-              <div className="nn-cart__sum">
-                <span>{S.cart.total}</span>
-                <strong>{cart.total}</strong>
+              <div className="nn-cart__sums">
+                {cart.codes && (
+                  <div className="nn-cart__code">
+                    <PromoCodeForm
+                      current={cart.code?.value ?? null}
+                      className="nn-code"
+                      labels={{ field: S.cart.codeField, apply: S.cart.codeApply, applying: S.cart.codeApplying, remove: S.cart.codeRemove }}
+                    />
+                    {cart.code !== undefined && (
+                      <p className="nn-code__msg" role={cart.code.applied ? 'status' : 'alert'}>
+                        {cart.code.applied ? S.cart.codeApplied(cart.code.value) : (cart.code.message ?? '')}
+                      </p>
+                    )}
+                  </div>
+                )}
+                <dl className="nn-cart__sum">
+                  {cart.discount !== undefined && (
+                    <>
+                      <div>
+                        <dt>{S.cart.subtotal}</dt>
+                        <dd>{cart.subtotal}</dd>
+                      </div>
+                      <div className="nn-cart__off">
+                        <dt>{S.cart.discount(cart.discount.label)}</dt>
+                        <dd>−{cart.discount.amount}</dd>
+                      </div>
+                    </>
+                  )}
+                  <div className="nn-cart__total">
+                    <dt>{S.cart.total}</dt>
+                    <dd>{cart.total}</dd>
+                  </div>
+                </dl>
               </div>
               <div className="nn-gift nn-cart__send">
                 <div className="nn-gift__side">
@@ -681,7 +756,7 @@ export function NurseryCart({
                       {S.cart.fix}
                     </p>
                   ) : (
-                    <NurseryOrderForm listingIds={ready.map((l) => l.id)} />
+                    <NurseryOrderForm listingIds={ready.map((l) => l.id)} code={cart.code?.applied === true ? cart.code.value : null} />
                   )}
                 </div>
               </div>

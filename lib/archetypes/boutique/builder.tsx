@@ -11,6 +11,7 @@ import type { CartView, ProductView } from '../content';
 import { supabaseAdmin } from '@/lib/supabase';
 import { BoutiqueContentSchema, type BoutiqueContent } from './design';
 import { loadBoutiqueData } from './data';
+import { withSale } from '@/lib/storefront/promotions';
 import { NurseryHome, NurseryShop, NurseryCertificate, NurseryContentPage, NurseryCart } from './NurseryLanding';
 
 export const BOUTIQUE_LOOK = 'boutique';
@@ -33,8 +34,9 @@ async function Home({
   page: 'home' | 'shop';
 }): Promise<ReactElement> {
   const data = await loadBoutiqueData(supabaseAdmin(), tenantId);
-  if (page === 'shop') return <NurseryShop data={data} products={products} logoUrl={logoUrl} />;
-  return <NurseryHome data={data} products={products} tenantId={tenantId} logoUrl={logoUrl} />;
+  const priced = withSale(products, data.sale);
+  if (page === 'shop') return <NurseryShop data={data} products={priced} logoUrl={logoUrl} />;
+  return <NurseryHome data={data} products={priced} tenantId={tenantId} logoUrl={logoUrl} />;
 }
 
 async function Product({
@@ -47,7 +49,8 @@ async function Product({
   logoUrl?: string | undefined;
 }): Promise<ReactElement> {
   const data = await loadBoutiqueData(supabaseAdmin(), tenantId);
-  return <NurseryCertificate data={data} product={product} logoUrl={logoUrl} />;
+  const [priced = product] = withSale([product], data.sale);
+  return <NurseryCertificate data={data} product={priced} logoUrl={logoUrl} />;
 }
 
 async function Plain({

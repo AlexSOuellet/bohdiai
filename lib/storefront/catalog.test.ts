@@ -74,6 +74,7 @@ describe('toProductView', () => {
       slug: 'fig',
       name: 'Fig Candle',
       price: '$24',
+      priceCents: 2400,
       shortDescription: 'Figs',
       description: 'Long',
       status: 'active',

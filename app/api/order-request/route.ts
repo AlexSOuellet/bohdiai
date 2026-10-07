@@ -6,6 +6,8 @@ import { formLimitResponse } from '@/lib/forms/rate-limit';
 import { loadSiteFeatures } from '@/lib/backend/features';
 import { loadProductsByIds } from '@/lib/storefront/catalog';
 import { orderLines, orderRequestEmail, orderRequestSchema } from '@/lib/storefront/order-request';
+import { bestDiscount, checkCode, runningSale } from '@/lib/storefront/promotions';
+import { loadShopPromotions } from '@/lib/storefront/promotions-load';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -72,6 +74,20 @@ async function handle(req: Request) {
     );
   }
 
+  // The same sale-or-code choice the cart showed, worked out again from the shop's own promotions.
+  const promo = await loadShopPromotions(db, tenantId);
+  let codePromo = null;
+  if (input.code !== '') {
+    const checked = checkCode(promo.promos, input.code, promo.today);
+    if (!checked.ok) return NextResponse.json({ error: `${checked.error} Remove it from your cart to send your order.` }, { status: 409 });
+    codePromo = checked.promo;
+  }
+  const discount = bestDiscount(
+    priced.lines.map((l) => l.priceCents),
+    runningSale(promo.promos, promo.today),
+    codePromo,
+  );
+
   const { data: orderNumber, error: placeError } = await db.rpc('place_order_request', {
     p_tenant_id: tenantId,
     p_customer_name: input.name,
@@ -79,15 +95,28 @@ async function handle(req: Request) {
     p_customer_phone: input.phone,
     p_customer_note: input.note,
     p_items: priced.lines.map((l) => ({ listing_id: l.listingId, name: l.name, unit_price_cents: l.priceCents })),
+    p_discount_cents: discount?.cents ?? 0,
+    ...(discount === null ? {} : { p_discount_label: discount.label }),
+    ...(discount?.promotionId == null ? {} : { p_promotion_id: discount.promotionId }),
   });
   if (placeError !== null) {
     if (placeError.code === 'P0021') {
       return NextResponse.json({ error: 'Something in your cart was just taken. Please check your cart and try again.' }, { status: 409 });
     }
+    if (placeError.code === 'P0022') {
+      return NextResponse.json({ error: 'That discount code just ended or was used up. Remove it from your cart to send your order.' }, { status: 409 });
+    }
     throw new Error(`place_order_request failed: ${placeError.message}`);
   }
 
-  const mail = orderRequestEmail({ shopName: tenant.business_name, orderNumber, input, lines: priced.lines, subtotalCents: priced.subtotalCents });
+  const mail = orderRequestEmail({
+    shopName: tenant.business_name,
+    orderNumber,
+    input,
+    lines: priced.lines,
+    subtotalCents: priced.subtotalCents,
+    discount: discount === null ? null : { label: discount.label, cents: discount.cents },
+  });
   try {
     const result = await resend().emails.send({ from: fromEmail(), to: tenant.contact_email, replyTo: input.email, ...mail });
     if (result.error) {

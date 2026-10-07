@@ -240,8 +240,24 @@ export function nurseryCss(): string {
 .nn-cart__fee{font-family:var(--display);font-size:24px}
 .nn-cart__out{font:700 12px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);background:none;border:0;border-bottom:1.5px dashed;padding:6px 0;cursor:pointer}
 .nn-cart__out:hover,.nn-cart__out:focus-visible{color:var(--rose-deep)}
-.nn-cart__sum{display:flex;justify-content:flex-end;align-items:baseline;gap:18px;font-family:var(--type);font-size:18px;padding-right:22px}
-.nn-cart__sum strong{font-family:var(--display);font-weight:400;font-size:34px;color:var(--rose-deep)}
+.nn-cart__sums{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:24px}
+.nn-cart__code{display:grid;gap:8px}
+.nn-code{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.nn-code label{display:grid;gap:6px;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+.nn-code input{font:inherit;font-size:17px;letter-spacing:.08em;text-transform:uppercase;font-weight:400;color:var(--ink);background:var(--card);border:0;border-bottom:2px solid var(--sage-deep);border-radius:8px 8px 0 0;padding:10px 12px;width:13ch}
+.nn-code input:focus{outline:2px solid var(--rose);outline-offset:2px}
+.nn-code button{font:700 13px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--ink);background:var(--card);border:1.5px solid var(--blush);border-radius:99px;padding:12px 16px;cursor:pointer}
+.nn-code button:hover,.nn-code button:focus-visible{border-color:var(--rose)}
+.nn-code__msg{margin:0;font-family:var(--type);font-size:15px;color:var(--sage-deep)}
+.nn-code__msg[role=alert]{color:var(--rose-deep)}
+.nn-cart__sum{margin:0 0 0 auto;display:grid;gap:6px;font-family:var(--type);font-size:17px;padding-right:22px;min-width:240px}
+.nn-cart__sum div{display:flex;justify-content:space-between;align-items:baseline;gap:18px}
+.nn-cart__sum dd{margin:0}
+.nn-cart__off dd{color:var(--sage-deep)}
+.nn-cart__total{font-size:18px}
+.nn-cart__total dd{font-family:var(--display);font-size:34px;color:var(--rose-deep)}
+.nn-was{color:var(--ink-soft);font-size:.8em;text-decoration-thickness:1.5px}
+.nn-salebar{margin:0;background:var(--rose);color:#fff;text-align:center;font:700 13px/1.4 var(--body);letter-spacing:.14em;text-transform:uppercase;padding:10px 16px;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.12) 0 10px,transparent 10px 20px)}
 .nn-cart__send{margin-top:12px}
 .nn-order__num{font-family:var(--display);font-size:26px;color:var(--rose-deep);margin:0}
 @media (max-width:620px){.nn-cart__line{grid-template-columns:72px 1fr auto;gap:6px 14px;padding:12px 16px 12px 12px}.nn-cart__photo{width:72px;grid-row:span 2}.nn-cart__name{font-size:32px}.nn-cart__fee{font-size:20px}.nn-cart__out{grid-column:2/4;justify-self:start}.nn-cart__sum{padding-right:4px}}

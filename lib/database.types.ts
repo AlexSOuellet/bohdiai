@@ -1352,6 +1352,7 @@ export type Database = {
           customer_phone: string | null
           customer_profile_id: string | null
           discount_cents: number
+          discount_label: string | null
           event_id: string | null
           fulfilled_at: string | null
           id: string
@@ -1380,6 +1381,7 @@ export type Database = {
           customer_phone?: string | null
           customer_profile_id?: string | null
           discount_cents?: number
+          discount_label?: string | null
           event_id?: string | null
           fulfilled_at?: string | null
           id?: string
@@ -1408,6 +1410,7 @@ export type Database = {
           customer_phone?: string | null
           customer_profile_id?: string | null
           discount_cents?: number
+          discount_label?: string | null
           event_id?: string | null
           fulfilled_at?: string | null
           id?: string
@@ -1640,6 +1643,65 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "promos_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promotions: {
+        Row: {
+          active: boolean
+          amount_off_cents: number | null
+          code: string | null
+          created_at: string
+          ends_on: string | null
+          id: string
+          kind: string
+          max_uses: number | null
+          name: string
+          percent_off: number | null
+          starts_on: string | null
+          tenant_id: string
+          updated_at: string
+          uses: number
+        }
+        Insert: {
+          active?: boolean
+          amount_off_cents?: number | null
+          code?: string | null
+          created_at?: string
+          ends_on?: string | null
+          id?: string
+          kind: string
+          max_uses?: number | null
+          name: string
+          percent_off?: number | null
+          starts_on?: string | null
+          tenant_id: string
+          updated_at?: string
+          uses?: number
+        }
+        Update: {
+          active?: boolean
+          amount_off_cents?: number | null
+          code?: string | null
+          created_at?: string
+          ends_on?: string | null
+          id?: string
+          kind?: string
+          max_uses?: number | null
+          name?: string
+          percent_off?: number | null
+          starts_on?: string | null
+          tenant_id?: string
+          updated_at?: string
+          uses?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotions_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -2475,7 +2537,10 @@ export type Database = {
           p_customer_name: string
           p_customer_note: string
           p_customer_phone: string
+          p_discount_cents?: number
+          p_discount_label?: string
           p_items: Json
+          p_promotion_id?: string
           p_tenant_id: string
         }
         Returns: string

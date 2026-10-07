@@ -47,5 +47,7 @@ export type OrderRow = {
   phone: string;
   note: string;
   total: string;
+  /** Money off and what gave it (a code, or the sale's name); absent when none. */
+  discount?: { label: string; amount: string } | undefined;
   items: { name: string; price: string }[];
 };

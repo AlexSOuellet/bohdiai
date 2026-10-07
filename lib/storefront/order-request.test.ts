@@ -53,7 +53,7 @@ describe('orderRequestEmail', () => {
     const mail = orderRequestEmail({
       shopName: 'Rose n’ Cat',
       orderNumber: '1001',
-      input: { name: 'Pat <b>', email: 'pat@example.com', phone: '401 555 0100', note: 'Pick up\nat the fair', listingIds: [A] },
+      input: { name: 'Pat <b>', email: 'pat@example.com', phone: '401 555 0100', note: 'Pick up\nat the fair', code: '', listingIds: [A] },
       lines: [{ listingId: A, name: 'Theo', priceCents: 12000 }],
       subtotalCents: 12000,
     });

@@ -13,6 +13,8 @@ import { listMarketDates } from '@/lib/backend/dates/queries';
 import { listGallery } from '@/lib/backend/gallery/queries';
 import { GALLERY_LIMIT, type GalleryItem } from '@/lib/backend/gallery/gallery-form';
 import type { MarketDate } from '@/lib/backend/dates/dates-form';
+import { loadShopPromotions } from '@/lib/storefront/promotions-load';
+import { runningSale } from '@/lib/storefront/promotions';
 import { NURSERY_STRINGS as S } from './strings';
 
 /** `gone` is the gallery: the owner's past pieces, shown when Gallery is switched on. */
@@ -25,6 +27,8 @@ export type BoutiqueData = {
   cart: boolean;
   /** New arrivals are switched on: babies ticked new get the Just born section and a ribbon. */
   newArrivals: boolean;
+  /** The sale running today, if any: every baby shows its sale price under a banner. */
+  sale: { name: string; percentOff: number; endsOn: string | null } | null;
 };
 
 export async function loadBoutiqueData(
@@ -39,10 +43,12 @@ export async function loadBoutiqueData(
   if (tenant.error !== null) throw new Error(`Could not load the site: ${tenant.error.message}`);
   if (tenant.data === null) throw new Error('Could not load the site: no such tenant');
   if (profile.error !== null) throw new Error(`Could not load About you: ${profile.error.message}`);
-  const [dates, gone] = await Promise.all([
+  const [dates, gone, promo] = await Promise.all([
     features.has('market_dates') ? listMarketDates(db, tenantId) : Promise.resolve([]),
     features.has('gallery') ? listGallery(db, tenantId) : Promise.resolve([]),
+    loadShopPromotions(db, tenantId),
   ]);
+  const sale = runningSale(promo.promos, promo.today);
   return {
     name: tenant.data.business_name,
     profile: profileFormFromRow(profile.data),
@@ -50,6 +56,7 @@ export async function loadBoutiqueData(
     gone: gone.slice(0, GALLERY_LIMIT),
     cart: features.has('cart'),
     newArrivals: features.has('new_arrivals'),
+    sale: sale === null || sale.percentOff === null ? null : { name: sale.name, percentOff: sale.percentOff, endsOn: sale.endsOn },
   };
 }
 
@@ -64,10 +71,11 @@ export function homeBabies(products: readonly ProductView[], max = 5): ProductVi
 export function lowestPrice(products: readonly ProductView[]): string | null {
   let best: { cents: number; label: string } | null = null;
   for (const p of products) {
-    const cents = Math.round(Number(p.price.replace(/[^0-9.]/g, '')) * 100);
+    const shown = p.salePrice ?? p.price;
+    const cents = Math.round(Number(shown.replace(/[^0-9.]/g, '')) * 100);
     if (!Number.isFinite(cents) || cents <= 0) continue;
     if (best === null || cents < best.cents)
-      best = { cents, label: p.price.replace(/^from\s+/i, '') };
+      best = { cents, label: shown.replace(/^from\s+/i, '') };
   }
   return best === null ? null : best.label;
 }

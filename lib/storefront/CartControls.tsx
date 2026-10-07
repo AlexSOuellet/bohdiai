@@ -9,6 +9,7 @@
 import { useEffect, useState, useSyncExternalStore, type ReactElement } from 'react';
 import { useRouter } from 'next/navigation';
 import { CART_EVENT, addToCart, cartCookieString, cartFromCookieHeader, removeFromCart } from './cart';
+import { PROMO_COOKIE, normalizeCode } from './promotions';
 
 function readCart(): string[] {
   return cartFromCookieHeader(document.cookie);
@@ -148,5 +149,63 @@ export function CartLink({
     <a className={className} href="/cart">
       {label(count)}
     </a>
+  );
+}
+
+function writeCode(code: string): void {
+  const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+  const value = normalizeCode(code);
+  document.cookie = `${PROMO_COOKIE}=${encodeURIComponent(value)}; Path=/; Max-Age=${value === '' ? 0 : 60 * 60 * 24 * 7}; SameSite=Lax${secure}`;
+}
+
+/** The cart's discount-code box: apply a code (kept a week in its own cookie, then
+ *  the page re-prices) or take it off. The words come from the design. */
+export function PromoCodeForm({
+  current,
+  labels,
+  className,
+}: {
+  /** The code the cart is holding, if any. */
+  current: string | null;
+  labels: { field: string; apply: string; remove: string; applying: string };
+  className: string;
+}): ReactElement {
+  const router = useRouter();
+  const [value, setValue] = useState('');
+  const [busy, setBusy] = useState(false);
+  if (current !== null) {
+    return (
+      <div className={className}>
+        <button
+          type="button"
+          onClick={() => {
+            writeCode('');
+            router.refresh();
+          }}
+        >
+          {labels.remove}
+        </button>
+      </div>
+    );
+  }
+  return (
+    <form
+      className={className}
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (normalizeCode(value) === '') return;
+        setBusy(true);
+        writeCode(value);
+        router.refresh();
+      }}
+    >
+      <label>
+        {labels.field}
+        <input name="code" value={value} maxLength={40} autoComplete="off" autoCapitalize="characters" onChange={(e) => setValue(e.target.value)} />
+      </label>
+      <button type="submit" disabled={busy}>
+        {busy ? labels.applying : labels.apply}
+      </button>
+    </form>
   );
 }

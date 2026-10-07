@@ -109,6 +109,11 @@ export function OrdersManager({ initial, timeZone }: { initial: OrderRow[]; time
                       </li>
                     ))}
                   </ul>
+                  {o.discount !== undefined && (
+                    <p className="bk-note">
+                      Discount ({o.discount.label}): −{o.discount.amount}
+                    </p>
+                  )}
                   <p>
                     <strong>Total {o.total}</strong>
                   </p>

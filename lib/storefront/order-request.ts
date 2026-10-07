@@ -15,6 +15,8 @@ export const orderRequestSchema = z.object({
   phone: z.string().trim().max(40).default(''),
   note: z.string().trim().max(2000).default(''),
   listingIds: z.array(z.string().uuid()).min(1, 'Your cart is empty.').max(CART_MAX),
+  /** The discount code the cart applied, or ''. */
+  code: z.string().trim().max(40).default(''),
 });
 
 export type OrderRequestInput = z.infer<typeof orderRequestSchema>;
@@ -66,15 +68,19 @@ export function orderRequestEmail(args: {
   input: OrderRequestInput;
   lines: readonly OrderLine[];
   subtotalCents: number;
+  discount?: { label: string; cents: number } | null;
 }): { subject: string; text: string; html: string } {
   const { shopName, orderNumber, input, lines, subtotalCents } = args;
+  const off = args.discount ?? null;
+  const totalCents = subtotalCents - (off?.cents ?? 0);
   const subject = `New order request #${orderNumber} from ${input.name} via ${shopName}`;
   const contact = [input.email, input.phone].filter((s) => s !== '').join(' · ');
   const text = [
     `Order request #${orderNumber}`,
     '',
     ...lines.map((l) => `- ${l.name}: ${formatPrice(l.priceCents)}`),
-    `Total: ${formatPrice(subtotalCents)}`,
+    ...(off === null ? [] : [`Discount (${off.label}): -${formatPrice(off.cents)}`]),
+    `Total: ${formatPrice(totalCents)}`,
     '',
     `From: ${input.name} (${contact})`,
     ...(input.note === '' ? [] : ['', 'Their note:', input.note]),
@@ -84,7 +90,8 @@ export function orderRequestEmail(args: {
   const html = `
     <p><strong>Order request #${escapeHtml(orderNumber)}</strong></p>
     <ul>${lines.map((l) => `<li>${escapeHtml(l.name)}: ${escapeHtml(formatPrice(l.priceCents))}</li>`).join('')}</ul>
-    <p><strong>Total:</strong> ${escapeHtml(formatPrice(subtotalCents))}</p>
+    ${off === null ? '' : `<p>Discount (${escapeHtml(off.label)}): -${escapeHtml(formatPrice(off.cents))}</p>`}
+    <p><strong>Total:</strong> ${escapeHtml(formatPrice(totalCents))}</p>
     <p><strong>From:</strong> ${escapeHtml(input.name)} (${escapeHtml(contact)})</p>
     ${input.note === '' ? '' : `<p><strong>Their note:</strong><br />${escapeHtml(input.note).replace(/\n/g, '<br />')}</p>`}
     <hr />

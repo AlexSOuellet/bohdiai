@@ -36,6 +36,11 @@ export const NURSERY_STRINGS = {
     open: (caption: string, n: number) =>
       caption === '' ? `Open photo ${n}` : `Open photo: ${caption}`,
   },
+  sale: {
+    banner: (name: string, percent: number) => `${name} · ${percent}% off every baby`,
+    until: (day: string) => `until ${day}`,
+    was: 'Was',
+  },
   born: {
     tag: 'Just born',
     title: 'New in the nursery',
@@ -85,7 +90,14 @@ export const NURSERY_STRINGS = {
     remove: 'Take out',
     removeLabel: (name: string) => `Take ${name} out of your cart`,
     gone: 'No longer available',
+    subtotal: 'Babies',
     total: 'Total',
+    discount: (label: string) => `Discount (${label})`,
+    codeField: 'Discount code',
+    codeApply: 'Apply',
+    codeApplying: 'Applying…',
+    codeRemove: 'Remove code',
+    codeApplied: (code: string) => `Code ${code} applied`,
     sendTitle: 'Send your order',
     sendLede: 'Nothing is charged here. I’ll get back to you to arrange payment and how your baby gets home.',
     name: 'Your name',

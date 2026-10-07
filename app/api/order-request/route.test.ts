@@ -15,6 +15,8 @@ vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn(), warn: vi.fn(), info: 
 vi.mock('@/lib/resend', () => ({ resend: () => ({ emails: { send } }), fromEmail: () => 'BohdiAI <site@example.com>' }));
 vi.mock('@/lib/forms/rate-limit', () => ({ formLimitResponse: async () => null }));
 vi.mock('@/lib/backend/features', () => ({ loadSiteFeatures: async () => features }));
+let promos: unknown[] = [];
+vi.mock('@/lib/storefront/promotions-load', () => ({ loadShopPromotions: async () => ({ promos, today: '2026-10-07' }) }));
 vi.mock('@/lib/storefront/catalog', async (orig) => ({
   ...(await orig<typeof Catalog>()),
   loadProductsByIds: async () => loaded,
@@ -49,6 +51,7 @@ describe('POST /api/order-request', () => {
     tenantRow = { business_name: 'Rose n’ Cat', contact_email: 'renee@example.com' };
     features = new Set(['cart']);
     loaded = [theo];
+    promos = [];
   });
 
   it('saves the order priced from the catalog and emails the maker', async () => {
@@ -62,6 +65,7 @@ describe('POST /api/order-request', () => {
       p_customer_phone: '401 555 0100',
       p_customer_note: 'Pickup please',
       p_items: [{ listing_id: A, name: 'Theo', unit_price_cents: 12000 }],
+      p_discount_cents: 0,
     });
     const msg = send.mock.calls[0]?.[0] as { to: string; replyTo: string; subject: string };
     expect(msg.to).toBe('renee@example.com');
@@ -110,5 +114,44 @@ describe('POST /api/order-request', () => {
   it('rejects a missing email', async () => {
     const res = await POST(request({ ...good, email: '' }));
     expect(res.status).toBe(400);
+  });
+});
+
+describe('POST /api/order-request with promotions', () => {
+  const code = { id: 'c1', kind: 'code', name: 'MARKET10', code: 'MARKET10', percentOff: 10, amountOffCents: null, startsOn: null, endsOn: null, maxUses: 5, uses: 0, active: true };
+  beforeEach(() => {
+    send.mockReset().mockResolvedValue({ data: { id: 'e1' }, error: null });
+    rpc.mockReset().mockResolvedValue({ data: '1001', error: null });
+    tenantRow = { business_name: 'Rose n’ Cat', contact_email: 'renee@example.com' };
+    features = new Set(['cart']);
+    loaded = [theo];
+    promos = [code];
+  });
+
+  it('takes the code off, records it, and counts its use', async () => {
+    const res = await POST(request({ ...good, code: 'market10' }));
+    expect(res.status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith('place_order_request', expect.objectContaining({ p_discount_cents: 1200, p_discount_label: 'MARKET10', p_promotion_id: 'c1' }));
+    expect((send.mock.calls[0]?.[0] as { text: string }).text).toContain('Discount (MARKET10): -$12');
+  });
+
+  it('refuses a code that no longer works', async () => {
+    promos = [{ ...code, uses: 5 }];
+    const res = await POST(request({ ...good, code: 'MARKET10' }));
+    expect(res.status).toBe(409);
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it('turns a code used up meanwhile into a clear message', async () => {
+    rpc.mockResolvedValue({ data: null, error: { code: 'P0022', message: 'promotion ended' } });
+    const res = await POST(request({ ...good, code: 'MARKET10' }));
+    expect(res.status).toBe(409);
+  });
+
+  it('applies a running sale with no code', async () => {
+    promos = [{ ...code, id: 's1', kind: 'sale', name: 'Fall Sale', code: null, percentOff: 25, maxUses: null }];
+    await POST(request(good));
+    expect(rpc).toHaveBeenCalledWith('place_order_request', expect.objectContaining({ p_discount_cents: 3000, p_discount_label: 'Fall Sale' }));
+    expect(rpc.mock.calls[0]?.[1]).not.toHaveProperty('p_promotion_id');
   });
 });

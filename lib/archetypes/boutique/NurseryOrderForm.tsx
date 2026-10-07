@@ -15,7 +15,7 @@ type State =
   | { kind: 'sent'; orderNumber: string | null }
   | { kind: 'error'; message: string };
 
-export function NurseryOrderForm({ listingIds }: { listingIds: string[] }): ReactElement {
+export function NurseryOrderForm({ listingIds, code = null }: { listingIds: string[]; code?: string | null }): ReactElement {
   const [state, setState] = useState<State>({ kind: 'idle' });
 
   async function onSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
@@ -28,6 +28,7 @@ export function NurseryOrderForm({ listingIds }: { listingIds: string[] }): Reac
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           listingIds,
+          code: code ?? '',
           name: data.get('name'),
           email: data.get('email'),
           phone: data.get('phone') ?? '',

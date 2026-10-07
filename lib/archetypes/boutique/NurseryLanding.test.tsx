@@ -48,8 +48,9 @@ const full: BoutiqueData = {
   ],
   cart: false,
   newArrivals: false,
+  sale: null,
 };
-const bare: BoutiqueData = { name: 'Rose', profile: EMPTY_PROFILE, dates: [], gone: [], cart: false, newArrivals: false };
+const bare: BoutiqueData = { name: 'Rose', profile: EMPTY_PROFILE, dates: [], gone: [], cart: false, newArrivals: false, sale: null };
 
 afterEach(() => {
   cleanup();
@@ -304,13 +305,13 @@ describe('cart page', () => {
   });
 
   it('says so when the cart is empty', () => {
-    render(<NurseryCart data={{ ...full, cart: true }} cart={{ lines: [], total: '$0' }} />);
+    render(<NurseryCart data={{ ...full, cart: true }} cart={{ lines: [], subtotal: '$0', total: '$0', codes: false }} />);
     expect(screen.getByText(S.cart.empty)).toBeTruthy();
     expect(screen.queryByRole('button', { name: S.cart.send })).toBeNull();
   });
 
   it('lists the babies with the total and the send form', () => {
-    render(<NurseryCart data={{ ...full, cart: true }} cart={{ lines: [line(ID1, 'Theo'), line(ID2, 'Rosie')], total: '$240' }} />);
+    render(<NurseryCart data={{ ...full, cart: true }} cart={{ lines: [line(ID1, 'Theo'), line(ID2, 'Rosie')], subtotal: '$240', total: '$240', codes: false }} />);
     expect(screen.getByRole('link', { name: 'Theo' })).toBeTruthy();
     expect(screen.getByText('$240')).toBeTruthy();
     expect(screen.getByRole('button', { name: S.cart.send })).toBeTruthy();
@@ -318,14 +319,14 @@ describe('cart page', () => {
 
   it('takes a baby out of the cart', () => {
     document.cookie = `${CART_COOKIE}=${ID1}.${ID2}; Path=/`;
-    render(<NurseryCart data={{ ...full, cart: true }} cart={{ lines: [line(ID1, 'Theo'), line(ID2, 'Rosie')], total: '$240' }} />);
+    render(<NurseryCart data={{ ...full, cart: true }} cart={{ lines: [line(ID1, 'Theo'), line(ID2, 'Rosie')], subtotal: '$240', total: '$240', codes: false }} />);
     fireEvent.click(screen.getByRole('button', { name: S.cart.removeLabel('Theo') }));
     expect(document.cookie).toContain(`${CART_COOKIE}=${ID2}`);
     expect(refresh).toHaveBeenCalled();
   });
 
   it('holds the form back until an adopted baby is taken out', () => {
-    render(<NurseryCart data={{ ...full, cart: true }} cart={{ lines: [line(ID1, 'Theo', false)], total: '$0' }} />);
+    render(<NurseryCart data={{ ...full, cart: true }} cart={{ lines: [line(ID1, 'Theo', false)], subtotal: '$0', total: '$0', codes: false }} />);
     expect(screen.getByText(S.cart.gone)).toBeTruthy();
     expect(screen.getByRole('alert').textContent).toBe(S.cart.fix);
     expect(screen.queryByRole('button', { name: S.cart.send })).toBeNull();
@@ -351,5 +352,61 @@ describe('just born', () => {
     expect(container.querySelector('.nn-newborn')).toBeNull();
     rerender(<NurseryHome data={{ ...full, newArrivals: true }} products={[baby('Rosie')]} tenantId={TENANT} />);
     expect(screen.queryByRole('heading', { name: S.born.title })).toBeNull();
+  });
+});
+
+describe('sale', () => {
+  it('flies the sale banner and shows the full price struck through', () => {
+    const data = { ...full, sale: { name: 'Fall Sale', percentOff: 25, endsOn: '2026-10-31' } };
+    const { container } = render(<NurseryCertificate data={data} product={baby('Theo', { salePrice: '$90' })} />);
+    expect(container.querySelector('.nn-salebar')?.textContent).toBe(`${S.sale.banner('Fall Sale', 25)} · ${S.sale.until('Oct 31')}`);
+    const fee = container.querySelector('.nn-fee');
+    expect(fee?.querySelector('s')?.textContent).toBe(`${S.sale.was} $120`);
+    expect(fee?.textContent).toContain('$90');
+  });
+});
+
+describe('cart discounts', () => {
+  const one = [{ id: ID1, slug: 'theo', name: 'Theo', price: '$120', available: true }];
+  it('shows the subtotal, the discount and the total, with the code box', () => {
+    render(
+      <NurseryCart
+        data={{ ...full, cart: true }}
+        cart={{
+          lines: one,
+          subtotal: '$120',
+          discount: { label: 'MARKET10', amount: '$12' },
+          total: '$108',
+          codes: true,
+          code: { value: 'MARKET10', applied: true },
+        }}
+      />,
+    );
+    expect(screen.getByText(S.cart.discount('MARKET10'))).toBeTruthy();
+    expect(screen.getByText('−$12')).toBeTruthy();
+    expect(screen.getByText('$108')).toBeTruthy();
+    expect(screen.getByRole('status').textContent).toBe(S.cart.codeApplied('MARKET10'));
+    expect(screen.getByRole('button', { name: S.cart.codeRemove })).toBeTruthy();
+  });
+
+  it('applies a typed code by keeping it for the page to re-price', () => {
+    render(<NurseryCart data={{ ...full, cart: true }} cart={{ lines: one, subtotal: '$120', total: '$120', codes: true }} />);
+    fireEvent.change(screen.getByLabelText(S.cart.codeField), { target: { value: 'market10' } });
+    fireEvent.click(screen.getByRole('button', { name: S.cart.codeApply }));
+    expect(document.cookie).toContain('bohdi_promo=MARKET10');
+    expect(refresh).toHaveBeenCalled();
+    document.cookie = 'bohdi_promo=; Path=/; Max-Age=0';
+  });
+
+  it('says why a code did not apply, and has no code box when the shop has no codes', () => {
+    const { rerender } = render(
+      <NurseryCart
+        data={{ ...full, cart: true }}
+        cart={{ lines: one, subtotal: '$120', total: '$120', codes: true, code: { value: 'NOPE', applied: false, message: 'That code isn’t valid.' } }}
+      />,
+    );
+    expect(screen.getAllByRole('alert').some((a) => a.textContent === 'That code isn’t valid.')).toBe(true);
+    rerender(<NurseryCart data={{ ...full, cart: true }} cart={{ lines: one, subtotal: '$120', total: '$120', codes: false }} />);
+    expect(screen.queryByLabelText(S.cart.codeField)).toBeNull();
   });
 });

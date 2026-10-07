@@ -5,6 +5,7 @@ import { renderArchetypeCart, renderArchetypeShell } from '../_components/Storef
 import { storefrontMetadata } from '@/lib/storefront/metadata';
 import { supabaseAdmin } from '@/lib/supabase';
 import { CART_COOKIE, parseCart } from '@/lib/storefront/cart';
+import { PROMO_COOKIE } from '@/lib/storefront/promotions';
 import { loadCartView } from '@/lib/storefront/cart-view';
 
 export function generateMetadata(): Promise<Metadata> {
@@ -22,8 +23,10 @@ export default async function StorefrontCartPage() {
   const tenantId = headerStore.get('x-tenant-id');
   if (tenantId === null) notFound();
 
-  const ids = parseCart((await cookies()).get(CART_COOKIE)?.value);
-  const designed = await renderArchetypeCart(tenantId, () => loadCartView(supabaseAdmin(), tenantId, ids));
+  const jar = await cookies();
+  const ids = parseCart(jar.get(CART_COOKIE)?.value);
+  const code = jar.get(PROMO_COOKIE)?.value ?? null;
+  const designed = await renderArchetypeCart(tenantId, () => loadCartView(supabaseAdmin(), tenantId, ids, code === null ? null : decodeURIComponent(code)));
   if (designed !== null) return designed;
 
   const shell = await renderArchetypeShell(

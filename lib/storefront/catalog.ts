@@ -153,7 +153,7 @@ function buildProduct(
 
   if (variations.length === 0) {
     return {
-      view: { ...base, price: formatPrice(row.base_price_cents), status: isStockSoldOut(row.inventory_count) ? 'sold_out' : 'active' },
+      view: { ...base, price: formatPrice(row.base_price_cents), priceCents: row.base_price_cents, status: isStockSoldOut(row.inventory_count) ? 'sold_out' : 'active' },
       minPriceCents: row.base_price_cents,
     };
   }
@@ -179,6 +179,7 @@ function buildProduct(
     view: {
       ...base,
       price: formatPrice(min),
+      priceCents: min,
       ...(min !== max ? { priceFrom: true } : {}),
       status: buyable.length === 0 ? 'sold_out' : 'active',
       offers,
