@@ -25,7 +25,7 @@ export const BACKEND_MODULES: BackendModule[] = [
   { feature: 'promotions', section: 'Selling', items: [{ label: 'Promotions', href: '/manage/promotions' }] },
   { feature: 'profile', section: 'Your site', items: [{ label: 'About you', href: '/manage/profile' }] },
   { feature: 'gallery', section: 'Your site', items: [{ label: 'Gallery', href: '/manage/gallery' }] },
-  { feature: 'market_dates', section: 'Your site', items: [{ label: 'Market dates', href: '/manage/dates' }] },
+  { feature: 'market_dates', section: 'Selling', items: [{ label: 'Markets', href: '/manage/markets' }] },
   { feature: 'qr_codes', section: 'Your site', items: [{ label: 'QR code', href: '/manage/qr' }] },
 ];
 

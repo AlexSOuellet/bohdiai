@@ -40,6 +40,14 @@ const TOUCH_ID = 'touch';
 const BORN_ID = 'just-born';
 const MAIN_ID = 'nn-main';
 const BABY_CLASS = 'nn-baby';
+const VISIT_CANCELED_CLASS = 'nn-visits__canceled';
+
+/** A maps search for the market's address, which every phone opens in its maps app. */
+function mapsLink(address: string, town: string): string {
+  const q = town === '' || address.toLowerCase().includes(town.toLowerCase()) ? address : `${address}, ${town}`;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+}
+
 const ADOPTED_CLASS = ['nn-baby', 'nn-baby--adopted'].join(' ');
 const BEAD_CLASS = 'nn-bead';
 const HEART_CLASS = ['nn-bead', 'nn-bead--heart'].join(' ');
@@ -469,13 +477,32 @@ export function NurseryHome({
                 <ul className="nn-visits" role="list">
                   {data.dates.map((d) => {
                     const { weekday, day } = visitDay(d);
+                    const details = [d.hours, d.booth].filter((s) => s !== '');
                     return (
-                      <li key={d.id}>
+                      <li key={d.id} className={d.canceled ? VISIT_CANCELED_CLASS : undefined}>
                         <span className="nn-visits__when">
                           {weekday}
                           <b>{day}</b>
                         </span>
-                        <span className="nn-visits__what">{d.name}</span>
+                        <span className="nn-visits__what">
+                          {d.name}
+                          {d.canceled && <span className="nn-visits__off">{S.visit.canceled}</span>}
+                          {!d.canceled && details.length > 0 && <small>{details.join(' · ')}</small>}
+                          {!d.canceled && (d.address !== '' || d.url !== '') && (
+                            <span className="nn-visits__links">
+                              {d.address !== '' && (
+                                <a href={mapsLink(d.address, d.town)} rel="noopener" target="_blank" aria-label={S.visit.directionsLabel(d.name)}>
+                                  {S.visit.directions}
+                                </a>
+                              )}
+                              {d.url !== '' && (
+                                <a href={d.url} rel="noopener" target="_blank" aria-label={S.visit.websiteLabel(d.name)}>
+                                  {S.visit.website}
+                                </a>
+                              )}
+                            </span>
+                          )}
+                        </span>
                         {d.town !== '' && <span className="nn-visits__where">{d.town}</span>}
                       </li>
                     );

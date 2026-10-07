@@ -59,7 +59,7 @@ describe('nursery helpers', () => {
   });
 
   it('says a market’s day for the visiting-hours sign', () => {
-    expect(visitDay({ id: 'a', date: '2026-10-17', endDate: '', name: 'Fair', town: '' })).toEqual({
+    expect(visitDay({ id: 'a', date: '2026-10-17', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Fair', town: '' })).toEqual({
       weekday: 'Saturday',
       day: 'Oct 17',
     });
@@ -128,7 +128,7 @@ describe('loadBoutiqueData', () => {
       't1',
     );
     expect(on.dates).toEqual([
-      { id: 'd1', date: '2026-10-17', endDate: '', name: 'Art Festival', town: 'Scituate' },
+      { id: 'd1', date: '2026-10-17', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Art Festival', town: 'Scituate' },
     ]);
   });
 
@@ -166,7 +166,7 @@ describe('loadBoutiqueData', () => {
 
 describe('visitDay over several days', () => {
   it('reads a weekend as a range', () => {
-    const v = visitDay({ id: 'x', date: '2026-10-10', endDate: '2026-10-12', name: 'Scituate Art Festival', town: 'Scituate' });
+    const v = visitDay({ id: 'x', date: '2026-10-10', endDate: '2026-10-12', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Scituate Art Festival', town: 'Scituate' });
     expect(v.weekday).toBe('Saturday – Monday');
     expect(v.day.replace(/\s/g, ' ')).toBe('Oct 10 – 12');
   });

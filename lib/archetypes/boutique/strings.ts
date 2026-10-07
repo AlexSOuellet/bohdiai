@@ -54,6 +54,11 @@ export const NURSERY_STRINGS = {
     title: 'Come say hello in person',
     locale: 'en-US',
     range: (first: string, last: string) => `${first} – ${last}`,
+    canceled: 'Canceled',
+    directions: 'Directions',
+    website: 'Market website',
+    directionsLabel: (market: string) => `Directions to ${market}`,
+    websiteLabel: (market: string) => `${market} website`,
   },
   touch: {
     tag: 'Ask about a baby',

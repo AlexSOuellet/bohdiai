@@ -12,6 +12,8 @@ function first(v: string | string[] | undefined): string {
 }
 
 export function listNotice(params: Params): string | null {
+  const removed = first(params['removed']);
+  if (removed !== '') return `Removed “${removed}”.`;
   const archived = first(params['archived']);
   if (archived !== '') return `Archived “${archived}”.`;
   const saved = first(params['saved']);

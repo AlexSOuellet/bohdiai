@@ -38,7 +38,7 @@ const full: BoutiqueData = {
     facebookUrl: 'https://www.facebook.com/rosencat',
     instagramUrl: 'https://instagram.com/rosencat',
   },
-  dates: [{ id: 'd1', date: '2026-10-17', endDate: '', name: 'Scituate Art Festival', town: 'Scituate' }],
+  dates: [{ id: 'd1', date: '2026-10-17', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Scituate Art Festival', town: 'Scituate' }],
   gone: [
     { id: 'g1', url: 'https://cdn/g1.webp', caption: 'Christmas twins' },
     { id: 'g2', url: 'https://cdn/g2.webp', caption: '' },
@@ -408,5 +408,21 @@ describe('cart discounts', () => {
     expect(screen.getAllByRole('alert').some((a) => a.textContent === 'That code isn’t valid.')).toBe(true);
     rerender(<NurseryCart data={{ ...full, cart: true }} cart={{ lines: one, subtotal: '$120', total: '$120', codes: false }} />);
     expect(screen.queryByLabelText(S.cart.codeField)).toBeNull();
+  });
+});
+
+describe('visiting hours details', () => {
+  const market = { ...full.dates[0]!, hours: '10am – 4pm', booth: 'Booth 12', address: '1 Main St', url: 'https://fair.org/' };
+  it('shows hours, booth, directions and the market’s website', () => {
+    render(<NurseryHome data={{ ...full, dates: [market] }} products={babies} tenantId={TENANT} />);
+    expect(screen.getByText('10am – 4pm · Booth 12')).toBeTruthy();
+    const directions = screen.getByRole('link', { name: S.visit.directionsLabel(market.name) });
+    expect(directions.getAttribute('href')).toBe(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('1 Main St, Scituate')}`);
+    expect(screen.getByRole('link', { name: S.visit.websiteLabel(market.name) }).getAttribute('href')).toBe('https://fair.org/');
+  });
+  it('marks a canceled market instead of dropping it', () => {
+    const { container } = render(<NurseryHome data={{ ...full, dates: [{ ...market, canceled: true }] }} products={babies} tenantId={TENANT} />);
+    expect(container.querySelector('.nn-visits__canceled')?.textContent).toContain(S.visit.canceled);
+    expect(screen.queryByRole('link', { name: S.visit.directionsLabel(market.name) })).toBeNull();
   });
 });

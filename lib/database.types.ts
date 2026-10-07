@@ -580,39 +580,66 @@ export type Database = {
       }
       events: {
         Row: {
+          address: string | null
+          booth: string | null
           created_at: string
           end_date: string | null
           event_date: string
+          go_back: string | null
+          hours: string | null
           id: string
           location: string | null
           name: string
           notes: string | null
+          organizer_email: string | null
+          organizer_name: string | null
+          organizer_phone: string | null
+          rating: number | null
+          review: string | null
           status: string
           tenant_id: string
           updated_at: string
           url: string | null
         }
         Insert: {
+          address?: string | null
+          booth?: string | null
           created_at?: string
           end_date?: string | null
           event_date: string
+          go_back?: string | null
+          hours?: string | null
           id?: string
           location?: string | null
           name: string
           notes?: string | null
+          organizer_email?: string | null
+          organizer_name?: string | null
+          organizer_phone?: string | null
+          rating?: number | null
+          review?: string | null
           status?: string
           tenant_id: string
           updated_at?: string
           url?: string | null
         }
         Update: {
+          address?: string | null
+          booth?: string | null
           created_at?: string
           end_date?: string | null
           event_date?: string
+          go_back?: string | null
+          hours?: string | null
           id?: string
           location?: string | null
           name?: string
           notes?: string | null
+          organizer_email?: string | null
+          organizer_name?: string | null
+          organizer_phone?: string | null
+          rating?: number | null
+          review?: string | null
           status?: string
           tenant_id?: string
           updated_at?: string
@@ -2547,6 +2574,10 @@ export type Database = {
       }
       save_collection: {
         Args: { p: Json; p_collection_id?: string; p_tenant_id: string }
+        Returns: string
+      }
+      save_market: {
+        Args: { p: Json; p_event_id?: string; p_tenant_id: string }
         Returns: string
       }
       save_product: {

@@ -34,7 +34,7 @@ describe('buildDateRow', () => {
 
 describe('byDay', () => {
   it('puts the earliest market first', () => {
-    const d = (id: string, date: string) => ({ id, date, endDate: '', name: id, town: '' });
+    const d = (id: string, date: string) => ({ id, date, endDate: '', name: id, town: '', hours: '', address: '', booth: '', url: '', canceled: false });
     expect([d('b', '2026-11-01'), d('a', '2026-10-11'), d('c', '2027-01-03')].sort(byDay).map((x) => x.id)).toEqual(['a', 'b', 'c']);
   });
 });

@@ -11,8 +11,20 @@ export const DATE_LIMITS = { name: 60, town: 40 } as const;
 /** The longest run one market can have, in days. */
 export const MARKET_MAX_DAYS = 14;
 
-/** `endDate` is the market's last day, or '' when it runs one day. */
-export type MarketDate = { id: string; date: string; endDate: string; name: string; town: string };
+/** A market as the site shows it: only what shoppers may see. `endDate` is the
+ *  last day, or '' for a one-day market; the other texts are '' when not given. */
+export type MarketDate = {
+  id: string;
+  date: string;
+  endDate: string;
+  name: string;
+  town: string;
+  hours: string;
+  address: string;
+  booth: string;
+  url: string;
+  canceled: boolean;
+};
 export type MarketDateForm = { date: string; endDate: string; name: string; town: string };
 export type MarketDateRow = { event_date: string; end_date: string | null; name: string; location: string | null };
 
@@ -54,7 +66,29 @@ function daysBetween(from: string, to: string): number {
   return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
 }
 
-/** The date as saved, back in the shape the owner and the site use. */
-export function marketDateFromRow(id: string, row: MarketDateRow): MarketDate {
-  return { id, date: row.event_date, endDate: row.end_date ?? '', name: row.name, town: row.location ?? '' };
+/** The public columns of a market, as the storefront reads them (never the private ones). */
+export const MARKET_PUBLIC_COLUMNS = 'id, event_date, end_date, name, location, hours, address, booth, url, status, created_at';
+
+type MarketPublicRow = MarketDateRow & {
+  hours?: string | null;
+  address?: string | null;
+  booth?: string | null;
+  url?: string | null;
+  status?: string;
+};
+
+/** A market as saved, back in the shape the site uses. */
+export function marketDateFromRow(id: string, row: MarketPublicRow): MarketDate {
+  return {
+    id,
+    date: row.event_date,
+    endDate: row.end_date ?? '',
+    name: row.name,
+    town: row.location ?? '',
+    hours: row.hours ?? '',
+    address: row.address ?? '',
+    booth: row.booth ?? '',
+    url: row.url ?? '',
+    canceled: row.status === 'canceled',
+  };
 }

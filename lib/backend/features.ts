@@ -17,7 +17,7 @@ export const FEATURES = {
   promotions: { default: false, description: 'Promotions: a site-wide sale or discount codes, taken off in the cart' },
   new_arrivals: { default: false, description: 'New arrivals: a tick on each product, shown in the design’s own home section' },
   qr_codes: { default: true, description: 'QR codes: a printable code for the site, its shop, or one product' },
-  market_dates: { default: false, description: 'Market dates: day, market and town, shown in a business card’s marquee' },
+  market_dates: { default: false, description: 'Markets: every market the owner does, shown on the site (dates, hours, where) with private costs, notes and review' },
 } as const satisfies Record<string, { default: boolean; description: string }>;
 
 export type FeatureKey = keyof typeof FEATURES;

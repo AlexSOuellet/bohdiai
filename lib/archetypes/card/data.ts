@@ -45,9 +45,14 @@ function oneDay(date: string): string {
   return S.dates.day(part('weekday'), part('month'), part('day'));
 }
 
+/** The market's name as the site says it, marked when the owner canceled it. */
+export function marketName(d: MarketDate): string {
+  return d.canceled ? S.dates.canceled(d.name) : d.name;
+}
+
 /** One market date as the marquee says it: "Sat Oct 11 · Wickford Art Festival · Wickford". */
 export function marqueeDateLine(d: MarketDate): string {
-  return S.dates.line(marketDay(d), d.name, d.town);
+  return S.dates.line(marketDay(d), marketName(d), d.town);
 }
 
 /** Enough copies of the bottom row's items to fill a wide screen, always an even

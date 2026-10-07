@@ -22,7 +22,7 @@ const full: CardData = {
     facebookUrl: 'https://www.facebook.com/paperandpatina',
   },
   photos,
-  dates: [{ id: 'd1', date: '2026-10-24', endDate: '', name: 'Fall Festival of Crafts', town: 'Warwick' }],
+  dates: [{ id: 'd1', date: '2026-10-24', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Fall Festival of Crafts', town: 'Warwick' }],
 };
 const empty: CardData = { name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [] };
 

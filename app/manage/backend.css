@@ -150,3 +150,15 @@
 .bk-qr { display: grid; gap: 1rem; justify-items: start; margin-top: 1rem; }
 .bk-qr-img { width: min(280px, 100%); height: auto; border: 1px solid var(--bk-ink-15); border-radius: 8px; image-rendering: pixelated; }
 .bk-qr-url { word-break: break-all; }
+.bk-market-row { justify-content: space-between; }
+.bk-market-link { display: grid; gap: 0.15rem; text-decoration: none; color: inherit; flex: 1 1 14rem; min-width: 0; }
+.bk-market-link:hover .bk-list-name, .bk-market-link:focus-visible .bk-list-name { text-decoration: underline; }
+.bk-market-meta { display: flex; align-items: center; gap: 0.5rem; }
+.bk-stars { color: oklch(0.72 0.14 75); letter-spacing: 0.1em; }
+.bk-stars-off { color: var(--bk-ink-15); }
+.bk-stars-pick { display: flex; gap: 0.25rem; }
+.bk-star { font-size: 2rem; line-height: 1; padding: 0.25rem 0.35rem; background: none; border: 0; cursor: pointer; color: var(--bk-ink-15); }
+.bk-star[data-on='true'] { color: oklch(0.72 0.14 75); }
+.bk-star:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; border-radius: 4px; }
+.bk-cost { align-items: end; }
+.bk-cost .bk-field { margin-bottom: 0; }

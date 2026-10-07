@@ -6,7 +6,7 @@
  */
 import { dialable, type ProfileForm } from '@/lib/backend/profile/profile-form';
 import type { MarketDate } from '@/lib/backend/dates/dates-form';
-import { marketDay } from './data';
+import { marketDay, marketName } from './data';
 import { CARD_STRINGS as S } from './strings';
 
 export const TOUCH_ID = 'touch';
@@ -30,7 +30,7 @@ export function tabTarget(profile: ProfileForm): TabTarget {
 }
 
 export function datePieces(d: MarketDate): { day: string; market: string; town: string } {
-  return { day: marketDay(d), market: d.name, town: d.town };
+  return { day: marketDay(d), market: marketName(d), town: d.town };
 }
 
 /** The torch's burned name: one word per line, but a word of two characters or

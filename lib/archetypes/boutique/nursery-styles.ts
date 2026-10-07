@@ -179,6 +179,11 @@ export function nurseryCss(): string {
 .nn-visits__when b{display:block;font-family:var(--display);font-weight:400;font-size:24px;color:var(--ink)}
 .nn-visits__what{font-family:var(--display);font-size:22px}
 .nn-visits__where{font-family:var(--type);font-size:14px;color:var(--ink-soft)}
+.nn-visits__what small{display:block;font-family:var(--type);font-size:14px;color:var(--ink-soft);margin-top:2px}
+.nn-visits__links{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:6px;font-family:var(--body);font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.nn-visits__links a{text-decoration:none;border-bottom:1.5px dashed;color:var(--sage-deep)}
+.nn-visits__off{display:inline-block;margin-left:12px;font-family:var(--type);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--rose-deep);border:2px solid var(--rose-deep);padding:2px 8px;transform:rotate(-3deg);vertical-align:middle}
+.nn-visits__canceled .nn-visits__when,.nn-visits__canceled .nn-visits__where{opacity:.5}
 @media (max-width:620px){.nn-visits li{grid-template-columns:1fr;gap:2px}}
 
 /* Gift-tag contact */
