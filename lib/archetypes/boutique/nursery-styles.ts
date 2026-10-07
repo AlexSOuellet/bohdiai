@@ -209,7 +209,7 @@ export function nurseryCss(): string {
 .nn-cert__buy [role=alert]{margin:0;color:var(--rose-deep);font-weight:700}
 .nn-cert__ask{font-family:var(--type);font-size:15px;text-decoration:none;border-bottom:1.5px dashed}
 .nn-cart-page{padding:48px 0 30px}
-.nn-cart__tag{display:inline-block;margin:0}
+.nn-cart__tag{display:table;margin:0 0 6px}
 .nn-cart__empty{margin-top:28px;display:grid;gap:22px;justify-items:start;font-family:var(--type);font-size:18px}
 .nn-cart{margin-top:32px;display:grid;gap:28px}
 .nn-cart__list{list-style:none;margin:0;padding:0;display:grid;gap:16px}
