@@ -31,10 +31,15 @@ export async function loadCardData(db: SupabaseClient<Database>, tenantId: strin
   return { name: tenant.data.business_name, profile: profileFormFromRow(profile.data), photos: photos.slice(0, GALLERY_LIMIT), dates };
 }
 
-/** A market's day as the site says it: "Sat Oct 11", read on the market's own date. */
+/** A market's day as the site says it: "Sat Oct 11", read on the market's own date;
+ *  a market over several days reads "Sat Nov 21 – Sun Nov 22". */
 export function marketDay(d: MarketDate): string {
+  return d.endDate === '' ? oneDay(d.date) : S.dates.range(oneDay(d.date), oneDay(d.endDate));
+}
+
+function oneDay(date: string): string {
   const parts = new Intl.DateTimeFormat(S.dates.locale, { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).formatToParts(
-    new Date(`${d.date}T00:00:00Z`),
+    new Date(`${date}T00:00:00Z`),
   );
   const part = (type: Intl.DateTimeFormatPartTypes): string => parts.find((p) => p.type === type)?.value ?? '';
   return S.dates.day(part('weekday'), part('month'), part('day'));

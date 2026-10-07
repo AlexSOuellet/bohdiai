@@ -11,7 +11,7 @@ import { getSiteFeatures } from '@/lib/backend/site-features';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { logger } from '@/lib/logger';
 import type { DoneResult } from '../catalog/results';
-import { DATES_LIMIT, buildDateRow, type MarketDate, type MarketDateForm } from './dates-form';
+import { DATES_LIMIT, buildDateRow, marketDateFromRow, type MarketDate, type MarketDateForm } from './dates-form';
 
 const DATES_OFF = 'Market dates aren’t switched on for this site.';
 const FULL = `You can list up to ${DATES_LIMIT} dates. Remove a past one to add another.`;
@@ -52,7 +52,7 @@ export async function addMarketDate(form: MarketDateForm): Promise<MarketDateRes
     return { ok: false, error: 'The date couldn’t be added. Try again in a moment.' };
   }
   done();
-  return { ok: true, item: { id: row.id, date: built.row.event_date, name: built.row.name, town: built.row.location ?? '' } };
+  return { ok: true, item: marketDateFromRow(row.id, built.row) };
 }
 
 export async function updateMarketDate(id: string, form: MarketDateForm): Promise<MarketDateResult> {
@@ -67,7 +67,7 @@ export async function updateMarketDate(id: string, form: MarketDateForm): Promis
     return { ok: false, error: 'The date couldn’t be saved. Try again in a moment.' };
   }
   done();
-  return { ok: true, item: { id, date: built.row.event_date, name: built.row.name, town: built.row.location ?? '' } };
+  return { ok: true, item: marketDateFromRow(id, built.row) };
 }
 
 export async function removeMarketDate(id: string): Promise<DoneResult> {

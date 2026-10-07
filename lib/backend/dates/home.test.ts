@@ -6,7 +6,7 @@ import { datesHomeData } from './home';
 
 describe('datesHomeData', () => {
   it('counts the dates on the site and never nags', () => {
-    expect(datesHomeData([{ id: 'a', date: '2026-10-11', name: 'Fair', town: '' }])).toEqual({
+    expect(datesHomeData([{ id: 'a', date: '2026-10-11', endDate: '', name: 'Fair', town: '' }])).toEqual({
       tiles: [{ label: 'Market dates', value: '1', note: 'on your site' }],
       attention: [],
     });

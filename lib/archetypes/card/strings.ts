@@ -14,6 +14,7 @@ export const CARD_STRINGS = {
     label: 'Market dates',
     locale: 'en-US',
     day: (weekday: string, month: string, day: string) => `${weekday} ${month} ${day}`,
+    range: (first: string, last: string) => `${first} – ${last}`,
     line: (when: string, market: string, town: string) => [when, market, town].filter((s) => s !== '').join(' · '),
   },
   work: {

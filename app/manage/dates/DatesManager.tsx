@@ -14,14 +14,25 @@ function showDay(date: string): string {
   return new Date(`${date}T00:00:00Z`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 }
 
+/** One day, or "Sat, Nov 21, 2026 to Sun, Nov 22, 2026" for a market over several days. */
+function showDays(d: MarketDate): string {
+  return d.endDate === '' ? showDay(d.date) : `${showDay(d.date)} to ${showDay(d.endDate)}`;
+}
+
 function DateFields({ form, onChange, idPrefix }: { form: MarketDateForm; onChange: (patch: Partial<MarketDateForm>) => void; idPrefix: string }): React.ReactElement {
   return (
     <div className="bk-row">
       <div className="bk-field">
         <label className="bk-label" htmlFor={`${idPrefix}-date`}>
-          Day
+          {form.endDate === '' ? 'Day' : 'First day'}
         </label>
         <input id={`${idPrefix}-date`} className="bk-input" type="date" value={form.date} onChange={(e) => onChange({ date: e.target.value })} />
+      </div>
+      <div className="bk-field">
+        <label className="bk-label" htmlFor={`${idPrefix}-end`}>
+          Last day <span className="bk-note">(if it runs more than one day)</span>
+        </label>
+        <input id={`${idPrefix}-end`} className="bk-input" type="date" min={form.date === '' ? undefined : form.date} value={form.endDate} onChange={(e) => onChange({ endDate: e.target.value })} />
       </div>
       <div className="bk-field">
         <label className="bk-label" htmlFor={`${idPrefix}-name`}>
@@ -168,7 +179,7 @@ export function DatesManager({ initial, siteUrl }: { initial: MarketDate[]; site
                 ) : (
                   <li key={d.id} className="bk-list-item">
                     <span className="bk-list-name">
-                      {showDay(d.date)} · {d.name}
+                      {showDays(d)} · {d.name}
                       {d.town !== '' && ` · ${d.town}`}
                     </span>
                     <div className="bk-row">
@@ -176,8 +187,8 @@ export function DatesManager({ initial, siteUrl }: { initial: MarketDate[]; site
                         type="button"
                         className="bk-btn bk-btn-quiet bk-btn-small"
                         disabled={busy}
-                        aria-label={`Change ${d.name} on ${showDay(d.date)}`}
-                        onClick={() => setEditing({ id: d.id, form: { date: d.date, name: d.name, town: d.town } })}
+                        aria-label={`Change ${d.name} on ${showDays(d)}`}
+                        onClick={() => setEditing({ id: d.id, form: { date: d.date, endDate: d.endDate, name: d.name, town: d.town } })}
                       >
                         Change
                       </button>

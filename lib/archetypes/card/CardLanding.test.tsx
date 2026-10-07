@@ -84,8 +84,8 @@ describe('business card page', () => {
 
   it('runs the market dates along the quiet row, and lists them for screen readers', () => {
     const dates = [
-      { id: 'd1', date: '2026-10-11', name: 'Wickford Art Festival', town: 'Wickford' },
-      { id: 'd2', date: '2026-11-01', name: 'Holiday Fair', town: '' },
+      { id: 'd1', date: '2026-10-11', endDate: '', name: 'Wickford Art Festival', town: 'Wickford' },
+      { id: 'd2', date: '2026-11-01', endDate: '', name: 'Holiday Fair', town: '' },
     ];
     const { container } = page({ ...full, dates });
     const quiet = [...container.querySelectorAll('.bc-marquee__row--quiet span')].map((s) => s.textContent);

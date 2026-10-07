@@ -49,7 +49,7 @@ export const PHOTOS: CardSiteModule['PHOTOS'] = [
 
 /** Made-up market dates for the sample (scripts add them; the owner manages them after). */
 export const DATES = [
-  { date: '2026-10-24', name: 'Fall Festival of Crafts', town: 'Warwick' },
-  { date: '2026-11-14', name: 'Makers Mill Market', town: 'Pawtucket' },
-  { date: '2026-12-13', name: 'Holiday Craft Show', town: 'Providence' },
+  { date: '2026-10-24', endDate: '', name: 'Fall Festival of Crafts', town: 'Warwick' },
+  { date: '2026-11-14', endDate: '', name: 'Makers Mill Market', town: 'Pawtucket' },
+  { date: '2026-12-13', endDate: '', name: 'Holiday Craft Show', town: 'Providence' },
 ];

@@ -38,7 +38,7 @@ const full: BoutiqueData = {
     facebookUrl: 'https://www.facebook.com/rosencat',
     instagramUrl: 'https://instagram.com/rosencat',
   },
-  dates: [{ id: 'd1', date: '2026-10-17', name: 'Scituate Art Festival', town: 'Scituate' }],
+  dates: [{ id: 'd1', date: '2026-10-17', endDate: '', name: 'Scituate Art Festival', town: 'Scituate' }],
   gone: [
     { id: 'g1', url: 'https://cdn/g1.webp', caption: 'Christmas twins' },
     { id: 'g2', url: 'https://cdn/g2.webp', caption: '' },

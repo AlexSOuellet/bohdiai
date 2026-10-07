@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { initials, ringText, bioParagraphs, marqueeWords, marqueeDateLine, marqueeFill, loadCardData } from './data';
+import { initials, ringText, bioParagraphs, marqueeWords, marqueeDateLine, marqueeFill, loadCardData, marketDay } from './data';
 
 describe('card name helpers', () => {
   it('takes up to three initials from the name’s words', () => {
@@ -20,8 +20,8 @@ describe('card name helpers', () => {
   });
 
   it('says a market date the way the marquee does, leaving out a missing town', () => {
-    expect(marqueeDateLine({ id: 'a', date: '2026-10-11', name: 'Wickford Art Festival', town: 'Wickford' })).toBe('Sun Oct 11 · Wickford Art Festival · Wickford');
-    expect(marqueeDateLine({ id: 'b', date: '2026-11-01', name: 'Holiday Fair', town: '' })).toBe('Sun Nov 1 · Holiday Fair');
+    expect(marqueeDateLine({ id: 'a', date: '2026-10-11', endDate: '', name: 'Wickford Art Festival', town: 'Wickford' })).toBe('Sun Oct 11 · Wickford Art Festival · Wickford');
+    expect(marqueeDateLine({ id: 'b', date: '2026-11-01', endDate: '', name: 'Holiday Fair', town: '' })).toBe('Sun Nov 1 · Holiday Fair');
   });
 
   it('fills the quiet row with an even number of whole sets', () => {
@@ -83,11 +83,17 @@ describe('loadCardData', () => {
     const off = await loadCardData(fakeDb({ tenant: { business_name: 'R' }, events }), 't1');
     expect(off.dates).toEqual([]);
     const on = await loadCardData(fakeDb({ tenant: { business_name: 'R' }, events, features: [{ feature_key: 'market_dates', enabled: true }] }), 't1');
-    expect(on.dates).toEqual([{ id: 'd1', date: '2026-10-11', name: 'Wickford Art Festival', town: 'Wickford' }]);
+    expect(on.dates).toEqual([{ id: 'd1', date: '2026-10-11', endDate: '', name: 'Wickford Art Festival', town: 'Wickford' }]);
   });
 
   it('fails loudly when the site can’t be read', async () => {
     await expect(loadCardData(fakeDb({ tenantError: { message: 'down' } }), 't1')).rejects.toThrow('Could not load the site: down');
     await expect(loadCardData(fakeDb({}), 't1')).rejects.toThrow('no such tenant');
+  });
+});
+
+describe('marketDay over several days', () => {
+  it('reads first and last day', () => {
+    expect(marketDay({ id: 'x', date: '2026-11-21', endDate: '2026-11-22', name: 'Holly Fair', town: '' })).toBe('Sat Nov 21 – Sun Nov 22');
   });
 });

@@ -83,19 +83,15 @@ export function bioParagraphs(bio: string): string[] {
     .filter((p) => p !== '');
 }
 
-/** A market's day for the visiting-hours board: weekday, "Oct 17". */
+/** A market's day for the visiting-hours board: "Saturday", "Oct 17". A market over
+ *  several days reads "Saturday – Sunday", "Nov 21 – 22". */
 export function visitDay(d: MarketDate): { weekday: string; day: string } {
-  const date = new Date(`${d.date}T00:00:00Z`);
-  const weekday = new Intl.DateTimeFormat(S.visit.locale, {
-    weekday: 'long',
-    timeZone: 'UTC',
-  }).format(date);
-  const day = new Intl.DateTimeFormat(S.visit.locale, {
-    month: 'short',
-    day: 'numeric',
-    timeZone: 'UTC',
-  }).format(date);
-  return { weekday, day };
+  const first = new Date(`${d.date}T00:00:00Z`);
+  const weekdays = new Intl.DateTimeFormat(S.visit.locale, { weekday: 'long', timeZone: 'UTC' });
+  const days = new Intl.DateTimeFormat(S.visit.locale, { month: 'short', day: 'numeric', timeZone: 'UTC' });
+  if (d.endDate === '' || d.endDate === d.date) return { weekday: weekdays.format(first), day: days.format(first) };
+  const last = new Date(`${d.endDate}T00:00:00Z`);
+  return { weekday: S.visit.range(weekdays.format(first), weekdays.format(last)), day: days.formatRange(first, last) };
 }
 
 /** The clothesline hangs the gallery in short runs, so each line sags like a real one. */

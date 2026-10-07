@@ -37,7 +37,12 @@ export const NURSERY_STRINGS = {
       caption === '' ? `Open photo ${n}` : `Open photo: ${caption}`,
   },
   artist: { tag: 'From the artist' },
-  visit: { tag: 'Visiting hours', title: 'Come say hello in person', locale: 'en-US' },
+  visit: {
+    tag: 'Visiting hours',
+    title: 'Come say hello in person',
+    locale: 'en-US',
+    range: (first: string, last: string) => `${first} – ${last}`,
+  },
   touch: {
     tag: 'Ask about a baby',
     title: 'Fell in love with someone?',

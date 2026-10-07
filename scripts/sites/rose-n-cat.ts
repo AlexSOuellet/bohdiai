@@ -51,11 +51,11 @@ export const GALLERY: BoutiqueSiteModule['GALLERY'] = [
 /** Where to find her. The Scituate Art Festival is real (this weekend, Alex);
  *  the rest are made-up sample dates modeled on the fairs she did last fall. */
 export const DATES: BoutiqueSiteModule['DATES'] = [
-  { date: '2026-10-10', name: 'Scituate Art Festival', town: 'Scituate' },
-  { date: '2026-10-17', name: 'Bazaar & Vendor Fair', town: 'Pascoag' },
-  { date: '2026-10-24', name: 'Pumpkin Fest at Bridgeway', town: 'Pascoag' },
-  { date: '2026-11-21', name: 'Holly Fair', town: 'Johnston' },
-  { date: '2026-12-12', name: 'Holiday Fair', town: 'Smithfield' },
+  { date: '2026-10-10', endDate: '', name: 'Scituate Art Festival', town: 'Scituate' },
+  { date: '2026-10-17', endDate: '', name: 'Bazaar & Vendor Fair', town: 'Pascoag' },
+  { date: '2026-10-24', endDate: '', name: 'Pumpkin Fest at Bridgeway', town: 'Pascoag' },
+  { date: '2026-11-21', endDate: '', name: 'Holly Fair', town: 'Johnston' },
+  { date: '2026-12-12', endDate: '', name: 'Holiday Fair', town: 'Smithfield' },
 ];
 
 const READY = 'Finished, one of a kind, and ready to go home.';

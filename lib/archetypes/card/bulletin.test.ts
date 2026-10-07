@@ -32,12 +32,12 @@ describe('tabTarget', () => {
 
 describe('datePieces', () => {
   it('splits a market date into the circled day, the market and the town', () => {
-    expect(datePieces({ id: 'd1', date: '2026-10-17', name: 'Harvest Craft Fair', town: 'Wickford' })).toEqual({
+    expect(datePieces({ id: 'd1', date: '2026-10-17', endDate: '', name: 'Harvest Craft Fair', town: 'Wickford' })).toEqual({
       day: 'Sat Oct 17',
       market: 'Harvest Craft Fair',
       town: 'Wickford',
     });
-    expect(datePieces({ id: 'd2', date: '2026-12-05', name: 'Christmas on the Green', town: '' }).town).toBe('');
+    expect(datePieces({ id: 'd2', date: '2026-12-05', endDate: '', name: 'Christmas on the Green', town: '' }).town).toBe('');
   });
 });
 

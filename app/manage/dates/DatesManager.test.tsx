@@ -7,7 +7,7 @@ vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined }));
 
 import { DatesManager } from './DatesManager';
 
-const d = (id: string, date: string, name: string, town = '') => ({ id, date, name, town });
+const d = (id: string, date: string, name: string, town = '', endDate = '') => ({ id, date, endDate, name, town });
 
 beforeEach(() => {
   Element.prototype.scrollIntoView = vi.fn(); // jsdom has no layout
@@ -37,7 +37,7 @@ describe('DatesManager', () => {
     fireEvent.change(screen.getByLabelText(/Town/, { selector: '#new-town' }), { target: { value: 'Foster' } });
     fireEvent.click(screen.getByRole('button', { name: 'Add date' }));
     await waitFor(() => expect(screen.getByText('Date added. Your site shows it now.')).toBeTruthy());
-    expect(actions.addMarketDate).toHaveBeenCalledWith({ date: '2026-10-18', name: 'Apple Fest', town: 'Foster' });
+    expect(actions.addMarketDate).toHaveBeenCalledWith({ date: '2026-10-18', endDate: '', name: 'Apple Fest', town: 'Foster' });
     expect(rows()[1]).toBe('Sun, Oct 18, 2026 · Apple Fest · Foster');
     expect((screen.getByLabelText('Market', { selector: '#new-name' }) as HTMLInputElement).value).toBe('');
   });
@@ -56,7 +56,7 @@ describe('DatesManager', () => {
     fireEvent.change(screen.getByLabelText('Market', { selector: '#e-a-name' }), { target: { value: 'Wickford Art Fest' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(screen.getByText('Saved. Your site shows the change now.')).toBeTruthy());
-    expect(actions.updateMarketDate).toHaveBeenCalledWith('a', { date: '2026-10-11', name: 'Wickford Art Fest', town: 'Wickford' });
+    expect(actions.updateMarketDate).toHaveBeenCalledWith('a', { date: '2026-10-11', endDate: '', name: 'Wickford Art Fest', town: 'Wickford' });
     expect(rows()[0]).toBe('Sun, Oct 11, 2026 · Wickford Art Fest · Wickford');
   });
 

@@ -31,7 +31,7 @@ vi.mock('@/lib/logger', () => ({ logger }));
 
 import { addMarketDate, updateMarketDate, removeMarketDate } from './actions';
 
-const form = { date: '2026-10-11', name: 'Wickford Art Festival', town: 'Wickford' };
+const form = { date: '2026-10-11', endDate: '', name: 'Wickford Art Festival', town: 'Wickford' };
 
 beforeEach(() => {
   features.on = new Set(['market_dates']);
@@ -46,8 +46,8 @@ beforeEach(() => {
 
 describe('addMarketDate', () => {
   it('adds the date for the acting site and hands it back', async () => {
-    expect(await addMarketDate(form)).toEqual({ ok: true, item: { id: 'd9', date: '2026-10-11', name: 'Wickford Art Festival', town: 'Wickford' } });
-    expect(db.insert).toHaveBeenCalledWith({ tenant_id: 't1', event_date: '2026-10-11', name: 'Wickford Art Festival', location: 'Wickford' });
+    expect(await addMarketDate(form)).toEqual({ ok: true, item: { id: 'd9', date: '2026-10-11', endDate: '', name: 'Wickford Art Festival', town: 'Wickford' } });
+    expect(db.insert).toHaveBeenCalledWith({ tenant_id: 't1', event_date: '2026-10-11', end_date: null, name: 'Wickford Art Festival', location: 'Wickford' });
     expect(revalidatePath).toHaveBeenCalledWith('/manage/dates');
   });
 
@@ -77,8 +77,8 @@ describe('addMarketDate', () => {
 
 describe('updateMarketDate', () => {
   it('writes the checked date and reports a failed write in plain words', async () => {
-    expect(await updateMarketDate('d1', { ...form, town: '' })).toEqual({ ok: true, item: { id: 'd1', date: '2026-10-11', name: 'Wickford Art Festival', town: '' } });
-    expect(db.update).toHaveBeenCalledWith('d1', { event_date: '2026-10-11', name: 'Wickford Art Festival', location: null });
+    expect(await updateMarketDate('d1', { ...form, town: '' })).toEqual({ ok: true, item: { id: 'd1', date: '2026-10-11', endDate: '', name: 'Wickford Art Festival', town: '' } });
+    expect(db.update).toHaveBeenCalledWith('d1', { event_date: '2026-10-11', end_date: null, name: 'Wickford Art Festival', location: null });
     db.update.mockResolvedValueOnce({ error: { message: 'down' } });
     expect(await updateMarketDate('d1', form)).toEqual({ ok: false, error: 'The date couldn’t be saved. Try again in a moment.' });
   });

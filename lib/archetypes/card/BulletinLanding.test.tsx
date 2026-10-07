@@ -23,8 +23,8 @@ const full: CardData = {
   },
   photos,
   dates: [
-    { id: 'd1', date: '2026-10-17', name: 'Harvest Craft Fair', town: 'Wickford' },
-    { id: 'd2', date: '2026-12-05', name: 'Christmas on the Green', town: '' },
+    { id: 'd1', date: '2026-10-17', endDate: '', name: 'Harvest Craft Fair', town: 'Wickford' },
+    { id: 'd2', date: '2026-12-05', endDate: '', name: 'Christmas on the Green', town: '' },
   ],
 };
 
