@@ -138,6 +138,7 @@ function buildProduct(
     .sort(byPosition)
     .map((a) => ({ name: a.name, options: [...a.variation_options].sort(byPosition).map((o) => o.value) }));
   const base = {
+    id: row.id,
     slug: row.slug,
     name: row.name,
     ...(row.short_description ? { shortDescription: row.short_description } : {}),
@@ -313,4 +314,37 @@ export async function loadProduct(
   const [mediaMap, details] = await Promise.all([loadMediaMap(db, row.media_ids ?? []), loadDetails(db, [row.id])]);
   const built = buildProduct(row, details.attributes.get(row.id) ?? [], details.variants.get(row.id) ?? [], mediaMap);
   return { view: built.view, isPreview: row.is_preview, priceCents: built.minPriceCents };
+}
+
+/** Live products by listing id, for the cart: each with its one price in cents (the
+ *  lowest buyable one), in the order the ids were given. Ids that are not a live
+ *  product of this shop are simply absent, so a stale cart drops them. */
+export async function loadProductsByIds(
+  db: Db,
+  tenantId: string,
+  ids: readonly string[],
+): Promise<{ view: ProductView; priceCents: number; isPreview: boolean }[]> {
+  if (ids.length === 0) return [];
+  const { data, error } = await db
+    .from('listings')
+    .select(LISTING_COLUMNS)
+    .eq('tenant_id', tenantId)
+    .in('id', [...ids])
+    .in('listing_type', PRODUCT_TYPES)
+    .eq('status', 'active')
+    .is('deleted_at', null);
+  if (error !== null) throw new Error(`Could not load the cart: ${error.message}`);
+  const rows = (data ?? []) as ListingRow[];
+  if (rows.length === 0) return [];
+  const [mediaMap, details] = await Promise.all([
+    loadMediaMap(db, rows.flatMap((r) => r.media_ids ?? [])),
+    loadDetails(db, rows.map((r) => r.id)),
+  ]);
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  return ids.flatMap((id) => {
+    const row = byId.get(id);
+    if (row === undefined) return [];
+    const built = buildProduct(row, details.attributes.get(id) ?? [], details.variants.get(id) ?? [], mediaMap);
+    return [{ view: built.view, priceCents: built.minPriceCents, isPreview: row.is_preview }];
+  });
 }

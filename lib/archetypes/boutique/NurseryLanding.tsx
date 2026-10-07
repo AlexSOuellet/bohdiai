@@ -11,7 +11,7 @@
  */
 import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
-import type { ProductView } from '@/lib/archetypes/content';
+import type { CartView, ProductView } from '@/lib/archetypes/content';
 import { dialable } from '@/lib/backend/profile/profile-form';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 import { CardContactForm } from '@/lib/archetypes/card/CardContactForm';
@@ -19,6 +19,8 @@ import { NURSERY_STRINGS as S } from './strings';
 import { NURSERY_FONTS_HREF, nurseryCss } from './nursery-styles';
 import { NurseryPhotos } from './NurseryPhotos';
 import { NurseryMenu } from './NurseryMenu';
+import { AddToCartButton, RemoveFromCartButton, SyncCart } from '@/lib/storefront/CartControls';
+import { NurseryOrderForm } from './NurseryOrderForm';
 import { PhotoViewerProvider, Snapshot } from '@/lib/archetypes/card/PhotoViewer';
 import {
   bioParagraphs,
@@ -43,7 +45,7 @@ const HEART_CLASS = ['nn-bead', 'nn-bead--heart'].join(' ');
 
 type Chrome = { data: BoutiqueData; logoUrl?: string | undefined };
 
-function Frame({
+export function Frame({
   chrome,
   children,
   onHome,
@@ -82,6 +84,7 @@ function Frame({
                 ...(data.dates.length > 0 ? [{ href: at(VISIT_ID), label: S.nav.visit }] : []),
                 { href: at(TOUCH_ID), label: S.nav.touch, cta: true },
               ]}
+              cart={data.cart}
             />
           </div>
         </header>
@@ -446,6 +449,11 @@ export function NurseryShop({
   );
 }
 
+/** A baby the cart can take: the cart is on and there are no options to choose. */
+function canCart(data: BoutiqueData, product: ProductView): boolean {
+  return data.cart && product.variations.length === 0;
+}
+
 export function NurseryCertificate({
   data,
   product,
@@ -503,7 +511,21 @@ export function NurseryCertificate({
                     ))}
                   </div>
                 )}
-                {!adopted && (
+                {!adopted && canCart(data, product) && product.id !== undefined && (
+                  <div className="nn-cert__buy">
+                    <AddToCartButton
+                      listingId={product.id}
+                      className="nn-btn"
+                      addLabel={S.cart.add}
+                      inCartLabel={S.cart.inCart}
+                      fullLabel={S.cart.full}
+                    />
+                    <a className="nn-cert__ask" href={`/#${TOUCH_ID}`}>
+                      {S.cart.ask(product.name)}
+                    </a>
+                  </div>
+                )}
+                {!adopted && !canCart(data, product) && (
                   <a className="nn-btn" href={`/#${TOUCH_ID}`}>
                     {S.certificate.adopt(product.name)}
                   </a>
@@ -543,3 +565,88 @@ export function NurseryContentPage({
     </Frame>
   );
 }
+
+/** The cart: the babies going home, each with a way to take it out, the total,
+ *  and the gift-tag form that sends the order. */
+export function NurseryCart({
+  data,
+  cart,
+  logoUrl,
+}: {
+  data: BoutiqueData;
+  cart: CartView;
+  logoUrl?: string | undefined;
+}): ReactElement {
+  const ready = cart.lines.filter((l) => l.available);
+  const blocked = ready.length !== cart.lines.length;
+  return (
+    <Frame chrome={{ data, logoUrl }} onHome={false}>
+      <SyncCart ids={cart.lines.map((l) => l.id)} />
+      <section className="nn-cart-page" aria-labelledby="nn-cart-h">
+        <div className="nn-wrap">
+          <a className="nn-back" href="/shop">
+            {S.certificate.back}
+          </a>
+          <p className="nn-tag nn-cart__tag">{S.cart.tag}</p>
+          <h1 className="nn-h2" id="nn-cart-h">
+            {S.cart.title}
+          </h1>
+          {cart.lines.length === 0 ? (
+            <div className="nn-cart__empty">
+              <p>{S.cart.empty}</p>
+              <a className="nn-btn" href="/shop">
+                {S.cart.browse}
+              </a>
+            </div>
+          ) : (
+            <div className="nn-cart">
+              <ul className="nn-cart__list">
+                {cart.lines.map((l, i) => (
+                  <li key={l.id} className={l.available ? LINE_CLASS : LINE_GONE_CLASS} data-tint={cardTint(i)}>
+                    <a className="nn-cart__photo" href={`/listings/${l.slug}`} aria-hidden="true" tabIndex={-1}>
+                      {l.photo?.url !== undefined && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={l.photo.url} alt={l.photo.alt} loading="lazy" />
+                      )}
+                    </a>
+                    <div className="nn-cart__who">
+                      <span className="nn-cart__hello">{S.card.hello}</span>
+                      <a className="nn-cart__name" href={`/listings/${l.slug}`}>
+                        {l.name}
+                      </a>
+                      {!l.available && <span className="nn-cart__gone">{S.cart.gone}</span>}
+                    </div>
+                    <span className="nn-cart__fee">{l.price}</span>
+                    <RemoveFromCartButton listingId={l.id} className="nn-cart__out" label={S.cart.remove} ariaLabel={S.cart.removeLabel(l.name)} />
+                  </li>
+                ))}
+              </ul>
+              <div className="nn-cart__sum">
+                <span>{S.cart.total}</span>
+                <strong>{cart.total}</strong>
+              </div>
+              <div className="nn-gift nn-cart__send">
+                <div className="nn-gift__side">
+                  <h2 className="nn-h2">{S.cart.sendTitle}</h2>
+                  <p>{S.cart.sendLede}</p>
+                </div>
+                <div className="nn-gift__form">
+                  {blocked ? (
+                    <p className="bc-form__status" role="alert">
+                      {S.cart.fix}
+                    </p>
+                  ) : (
+                    <NurseryOrderForm listingIds={ready.map((l) => l.id)} />
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+    </Frame>
+  );
+}
+
+const LINE_CLASS = 'nn-cart__line';
+const LINE_GONE_CLASS = ['nn-cart__line', 'nn-cart__line--gone'].join(' ');

@@ -13,6 +13,7 @@ export const FEATURES = {
   custom_domain_panel: { default: true, description: 'Domain status on the home screen and in settings' },
   profile: { default: false, description: 'About you: the words and contact details on a business card site' },
   gallery: { default: false, description: 'Gallery photos with captions, in the owner’s order' },
+  cart: { default: false, description: 'Cart: shoppers gather pieces and send the order (paid by card once payments are connected)' },
   market_dates: { default: false, description: 'Market dates: day, market and town, shown in a business card’s marquee' },
 } as const satisfies Record<string, { default: boolean; description: string }>;
 

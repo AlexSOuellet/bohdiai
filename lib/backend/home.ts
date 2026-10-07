@@ -10,12 +10,13 @@ import { catalogHome } from './catalog/home';
 import { profileHome } from './profile/home';
 import { galleryHome } from './gallery/home';
 import { datesHome } from './dates/home';
+import { ordersHome } from './orders/home';
 
 export type Tile = { label: string; value: string; note?: string };
 export type HomeData = { tiles: Tile[]; attention: string[] };
 export type HomeContributor = { feature: FeatureKey | null; load: (tenantId: string) => Promise<HomeData> };
 
-export const HOME_CONTRIBUTORS: HomeContributor[] = [catalogHome, galleryHome, datesHome, profileHome];
+export const HOME_CONTRIBUTORS: HomeContributor[] = [ordersHome, catalogHome, galleryHome, datesHome, profileHome];
 
 const LOAD_FAILED = 'Part of this page couldn’t load. Refresh to try again.';
 

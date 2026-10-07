@@ -21,6 +21,8 @@ export type BoutiqueData = {
   profile: ProfileForm;
   dates: MarketDate[];
   gone: GalleryItem[];
+  /** The cart is switched on: pieces can be added and the order sent. */
+  cart: boolean;
 };
 
 export async function loadBoutiqueData(
@@ -44,6 +46,7 @@ export async function loadBoutiqueData(
     profile: profileFormFromRow(profile.data),
     dates,
     gone: gone.slice(0, GALLERY_LIMIT),
+    cart: features.has('cart'),
   };
 }
 

@@ -10,7 +10,7 @@
  * asset generates freely; the cap is expressed per media job via `group`.
  */
 import type { ReactElement, ReactNode } from 'react';
-import type { ProductView, CollectionView } from './content';
+import type { ProductView, CollectionView, CartView } from './content';
 import type { BrandPalette } from '@/lib/color/brand-palette';
 
 /** Which page of a multi-page archetype to paint. The home is the default; the
@@ -203,6 +203,16 @@ export interface ArchetypeBuildSpec<T = unknown> {
     accentOverride?: string | undefined;
     brandPalette?: BrandPalette | undefined;
     tenantId?: string | undefined;
+  }): ReactElement;
+
+  /** Paint the cart page in the design's own look, for a shop with the cart
+   *  switched on. Optional — without it the cart page is the plain shell stub. */
+  renderCart?(args: {
+    content: unknown;
+    lookKey: string;
+    cart: CartView;
+    logoUrl?: string | undefined;
+    tenantId: string;
   }): ReactElement;
 
   /** Wrap arbitrary children in the archetype's shell (skin bridge + nav + footer).

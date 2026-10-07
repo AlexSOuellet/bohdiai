@@ -53,6 +53,8 @@ export interface ProductOffer {
 
 /** One product, projected from a listing (+ its media and variations). */
 export interface ProductView {
+  /** The listing id, when projected from the catalog (the cart keys on it). */
+  id?: string;
   slug: string;
   name: string;
   /** Formatted from base_price_cents + currency, e.g. "$148" or "from $40". */
@@ -71,4 +73,23 @@ export interface ProductView {
   /** The owner chose this product for the home page. When any product has it, the
    *  home shows only those; absent means not chosen. */
   onHome?: boolean;
+}
+
+/** One piece in the shopper's cart, as the cart page shows it. */
+export interface CartLineView {
+  /** The listing id (what the cart cookie holds). */
+  id: string;
+  slug: string;
+  name: string;
+  /** Formatted price, e.g. "$120". */
+  price: string;
+  photo?: CatalogMedia | undefined;
+  /** False once the piece is sold out, taken down, or has options the cart can't pick. */
+  available: boolean;
+}
+
+/** The shopper's cart, priced from the catalog. `total` counts only available pieces. */
+export interface CartView {
+  lines: CartLineView[];
+  total: string;
 }

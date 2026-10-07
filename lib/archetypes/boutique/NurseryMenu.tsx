@@ -6,11 +6,14 @@
  * Escape, or on a second tap.
  */
 import { useEffect, useId, useState, type ReactElement } from 'react';
+import { CartLink } from '@/lib/storefront/CartControls';
 import { NURSERY_STRINGS as S } from './strings';
 
 export type MenuLink = { href: string; label: string; cta?: boolean };
 
-export function NurseryMenu({ links }: { links: MenuLink[] }): ReactElement {
+/** `cart` puts the cart link in the bar itself, outside the phone menu, so it
+ *  is always one tap away. */
+export function NurseryMenu({ links, cart = false }: { links: MenuLink[]; cart?: boolean }): ReactElement {
   const [open, setOpen] = useState(false);
   const panelId = useId();
 
@@ -47,6 +50,7 @@ export function NurseryMenu({ links }: { links: MenuLink[] }): ReactElement {
           </a>
         ))}
       </div>
+      {cart && <CartLink className="nn-cartlink" label={S.cart.link} />}
     </nav>
   );
 }

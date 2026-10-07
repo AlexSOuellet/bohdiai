@@ -1345,6 +1345,7 @@ export type Database = {
           currency: string
           customer_email: string
           customer_name: string
+          customer_note: string | null
           customer_phone: string | null
           customer_profile_id: string | null
           discount_cents: number
@@ -1372,6 +1373,7 @@ export type Database = {
           currency?: string
           customer_email: string
           customer_name: string
+          customer_note?: string | null
           customer_phone?: string | null
           customer_profile_id?: string | null
           discount_cents?: number
@@ -1399,6 +1401,7 @@ export type Database = {
           currency?: string
           customer_email?: string
           customer_name?: string
+          customer_note?: string | null
           customer_phone?: string | null
           customer_profile_id?: string | null
           discount_cents?: number
@@ -2463,6 +2466,17 @@ export type Database = {
         Args: { p_ids: string[]; p_tenant_id: string }
         Returns: undefined
       }
+      place_order_request: {
+        Args: {
+          p_customer_email: string
+          p_customer_name: string
+          p_customer_note: string
+          p_customer_phone: string
+          p_items: Json
+          p_tenant_id: string
+        }
+        Returns: string
+      }
       save_collection: {
         Args: { p: Json; p_collection_id?: string; p_tenant_id: string }
         Returns: string
@@ -2473,6 +2487,10 @@ export type Database = {
       }
       set_listing_on_home: {
         Args: { p_listing_id: string; p_on_home: boolean; p_tenant_id: string }
+        Returns: undefined
+      }
+      set_order_status: {
+        Args: { p_order_id: string; p_status: string; p_tenant_id: string }
         Returns: undefined
       }
       site_profile_makes_ok: { Args: { makes: string[] }; Returns: boolean }

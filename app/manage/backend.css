@@ -114,6 +114,12 @@
 .bk-pill { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 999px; background: oklch(0.205 0.019 52 / 10%); color: var(--bk-ink-60); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; }
 .bk-pill[data-status='active'] { background: oklch(0.5 0.08 130 / 15%); color: oklch(0.38 0.07 130); }
 .bk-pill[data-status='draft'] { background: oklch(0.72 0.08 75 / 22%); color: oklch(0.42 0.06 70); }
+.bk-pill[data-status='pending'] { background: oklch(0.72 0.08 75 / 22%); color: oklch(0.42 0.06 70); }
+.bk-pill[data-status='paid'] { background: oklch(0.5 0.08 130 / 15%); color: oklch(0.38 0.07 130); }
+.bk-order { display: block; }
+.bk-order-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.bk-order-items { margin: 0.5rem 0; padding-left: 1.1rem; }
+.bk-order-note { margin: 0.5rem 0; padding-left: 0.75rem; border-left: 2px solid var(--bk-ink-15); font-style: italic; }
 .bk-home-box { width: 1.1rem; height: 1.1rem; accent-color: var(--bk-walnut-deep); cursor: pointer; }
 .bk-home-box:disabled { cursor: progress; }
 .bk-photos { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); }

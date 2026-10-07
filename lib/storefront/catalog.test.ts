@@ -69,6 +69,7 @@ describe('mediaForListing', () => {
 describe('toProductView', () => {
   it('projects a product without options', () => {
     expect(toProductView(row(), [], [], media)).toEqual({
+      id: 'l1',
       slug: 'fig',
       name: 'Fig Candle',
       price: '$24',

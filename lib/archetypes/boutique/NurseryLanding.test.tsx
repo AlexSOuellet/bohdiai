@@ -1,8 +1,12 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
 import type { ProductView } from '@/lib/archetypes/content';
-import { NurseryHome, NurseryShop, NurseryCertificate, NurseryContentPage } from './NurseryLanding';
+import { NurseryHome, NurseryShop, NurseryCertificate, NurseryContentPage, NurseryCart } from './NurseryLanding';
+import { CART_COOKIE } from '@/lib/storefront/cart';
+
+const refresh = vi.fn();
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }) }));
 import { NURSERY_STRINGS as S } from './strings';
 import type { BoutiqueData } from './data';
 
@@ -42,10 +46,14 @@ const full: BoutiqueData = {
     { id: 'g4', url: 'https://cdn/g4.webp', caption: 'Owl hat' },
     { id: 'g5', url: 'https://cdn/g5.webp', caption: 'Sweet pea' },
   ],
+  cart: false,
 };
-const bare: BoutiqueData = { name: 'Rose', profile: EMPTY_PROFILE, dates: [], gone: [] };
+const bare: BoutiqueData = { name: 'Rose', profile: EMPTY_PROFILE, dates: [], gone: [], cart: false };
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  document.cookie = `${CART_COOKIE}=; Path=/; Max-Age=0`;
+});
 
 describe('nursery home', () => {
   it('opens on the first baby in the window, with the shop name, headline and lowest price', () => {
@@ -241,5 +249,84 @@ describe('footer', () => {
     const hrefs = [...(foot?.querySelectorAll('a') ?? [])].map((a) => a.getAttribute('href'));
     expect(hrefs).toContain('/terms');
     expect(hrefs).toContain('/privacy');
+  });
+});
+
+const ID1 = '00000000-0000-4000-8000-000000000001';
+const ID2 = '00000000-0000-4000-8000-000000000002';
+
+describe('cart on the certificate', () => {
+  it('keeps "Ask to adopt" when the cart is off', () => {
+    render(<NurseryCertificate data={full} product={baby('Theo', { id: ID1 })} />);
+    expect(screen.getByRole('link', { name: S.certificate.adopt('Theo') })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: S.cart.add })).toBeNull();
+  });
+
+  it('adds the baby to the cart, then links to the cart', () => {
+    render(<NurseryCertificate data={{ ...full, cart: true }} product={baby('Theo', { id: ID1 })} />);
+    fireEvent.click(screen.getByRole('button', { name: S.cart.add }));
+    expect(document.cookie).toContain(`${CART_COOKIE}=${ID1}`);
+    expect(screen.getByRole('link', { name: S.cart.inCart }).getAttribute('href')).toBe('/cart');
+    expect(screen.getByRole('link', { name: S.cart.ask('Theo') })).toBeTruthy();
+  });
+
+  it('offers no cart button for an adopted baby or one with options', () => {
+    const { rerender } = render(
+      <NurseryCertificate data={{ ...full, cart: true }} product={baby('Theo', { id: ID1, status: 'sold_out' })} />,
+    );
+    expect(screen.queryByRole('button', { name: S.cart.add })).toBeNull();
+    rerender(
+      <NurseryCertificate
+        data={{ ...full, cart: true }}
+        product={baby('Theo', { id: ID1, variations: [{ name: 'Outfit', options: ['Pink'] }] })}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: S.cart.add })).toBeNull();
+    expect(screen.getByRole('link', { name: S.certificate.adopt('Theo') })).toBeTruthy();
+  });
+
+  it('shows the cart link in the bar with the count', () => {
+    document.cookie = `${CART_COOKIE}=${ID1}.${ID2}; Path=/`;
+    const { container } = render(<NurseryContentPage data={{ ...full, cart: true }} title="Privacy" body={['One.']} />);
+    expect(container.querySelector('.nn-cartlink')?.textContent).toBe(S.cart.link(2));
+  });
+});
+
+describe('cart page', () => {
+  const line = (id: string, name: string, available = true) => ({
+    id,
+    slug: name.toLowerCase(),
+    name,
+    price: '$120',
+    photo: { kind: 'image' as const, url: `https://cdn/${name}.webp`, alt: name },
+    available,
+  });
+
+  it('says so when the cart is empty', () => {
+    render(<NurseryCart data={{ ...full, cart: true }} cart={{ lines: [], total: '$0' }} />);
+    expect(screen.getByText(S.cart.empty)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: S.cart.send })).toBeNull();
+  });
+
+  it('lists the babies with the total and the send form', () => {
+    render(<NurseryCart data={{ ...full, cart: true }} cart={{ lines: [line(ID1, 'Theo'), line(ID2, 'Rosie')], total: '$240' }} />);
+    expect(screen.getByRole('link', { name: 'Theo' })).toBeTruthy();
+    expect(screen.getByText('$240')).toBeTruthy();
+    expect(screen.getByRole('button', { name: S.cart.send })).toBeTruthy();
+  });
+
+  it('takes a baby out of the cart', () => {
+    document.cookie = `${CART_COOKIE}=${ID1}.${ID2}; Path=/`;
+    render(<NurseryCart data={{ ...full, cart: true }} cart={{ lines: [line(ID1, 'Theo'), line(ID2, 'Rosie')], total: '$240' }} />);
+    fireEvent.click(screen.getByRole('button', { name: S.cart.removeLabel('Theo') }));
+    expect(document.cookie).toContain(`${CART_COOKIE}=${ID2}`);
+    expect(refresh).toHaveBeenCalled();
+  });
+
+  it('holds the form back until an adopted baby is taken out', () => {
+    render(<NurseryCart data={{ ...full, cart: true }} cart={{ lines: [line(ID1, 'Theo', false)], total: '$0' }} />);
+    expect(screen.getByText(S.cart.gone)).toBeTruthy();
+    expect(screen.getByRole('alert').textContent).toBe(S.cart.fix);
+    expect(screen.queryByRole('button', { name: S.cart.send })).toBeNull();
   });
 });

@@ -7,11 +7,11 @@
 import type { ReactElement } from 'react';
 import { notFound } from 'next/navigation';
 import type { ArchetypeBuildSpec } from '../builder';
-import type { ProductView } from '../content';
+import type { CartView, ProductView } from '../content';
 import { supabaseAdmin } from '@/lib/supabase';
 import { BoutiqueContentSchema, type BoutiqueContent } from './design';
 import { loadBoutiqueData } from './data';
-import { NurseryHome, NurseryShop, NurseryCertificate, NurseryContentPage } from './NurseryLanding';
+import { NurseryHome, NurseryShop, NurseryCertificate, NurseryContentPage, NurseryCart } from './NurseryLanding';
 
 export const BOUTIQUE_LOOK = 'boutique';
 
@@ -67,6 +67,20 @@ async function Plain({
   return <NurseryContentPage data={data} logoUrl={logoUrl} html={html} title={title} body={body} />;
 }
 
+async function Cart({
+  tenantId,
+  cart,
+  logoUrl,
+}: {
+  tenantId: string;
+  cart: CartView;
+  logoUrl?: string | undefined;
+}): Promise<ReactElement> {
+  const data = await loadBoutiqueData(supabaseAdmin(), tenantId);
+  if (!data.cart) notFound();
+  return <NurseryCart data={data} cart={cart} logoUrl={logoUrl} />;
+}
+
 export const BOUTIQUE_SPEC: ArchetypeBuildSpec<BoutiqueContent> = {
   key: 'boutique',
   label: 'Boutique',
@@ -111,6 +125,10 @@ export const BOUTIQUE_SPEC: ArchetypeBuildSpec<BoutiqueContent> = {
     parse(content);
     if (tenantId === undefined) notFound();
     return <Product tenantId={tenantId} product={product} logoUrl={logoUrl} />;
+  },
+  renderCart: ({ content, cart, logoUrl, tenantId }) => {
+    parse(content);
+    return <Cart tenantId={tenantId} cart={cart} logoUrl={logoUrl} />;
   },
   renderContentPage: ({ content, logoUrl, tenantId, html, title, body }) => {
     parse(content);

@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { archetypeSpec } from '@/lib/archetypes/registry';
 import type { ArchetypePage } from '@/lib/archetypes/builder';
-import type { ProductView, CollectionView } from '@/lib/archetypes/content';
+import type { ProductView, CollectionView, CartView } from '@/lib/archetypes/content';
 import { seedPreviewReviews } from '@/lib/archetypes/main-street/reviews';
 import { seedPreviewFindUs } from '@/lib/archetypes/main-street/findus';
 import {
@@ -204,6 +204,21 @@ export async function renderArchetypeContentPage(
     brandColors: a.brandColors,
     accentOverride: a.accentOverride,
     brandPalette: a.brandPalette,
+    tenantId,
+  });
+}
+
+/** The cart page in the design's own look, or null when the design has none
+ *  (the cart route then falls back to the plain shell). `loadCart` runs only
+ *  for a design that paints a cart. */
+export async function renderArchetypeCart(tenantId: string, loadCart: () => Promise<CartView>) {
+  const a = await resolveEnvelope(tenantId);
+  if (a === null || a.spec.renderCart === undefined) return null;
+  return a.spec.renderCart({
+    content: a.content,
+    lookKey: a.lookKey,
+    cart: await loadCart(),
+    logoUrl: a.logoUrl,
     tenantId,
   });
 }

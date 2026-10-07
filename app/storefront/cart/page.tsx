@@ -1,22 +1,30 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { notFound } from 'next/navigation';
-import { renderArchetypeShell } from '../_components/StorefrontPage';
+import { renderArchetypeCart, renderArchetypeShell } from '../_components/StorefrontPage';
 import { storefrontMetadata } from '@/lib/storefront/metadata';
+import { supabaseAdmin } from '@/lib/supabase';
+import { CART_COOKIE, parseCart } from '@/lib/storefront/cart';
+import { loadCartView } from '@/lib/storefront/cart-view';
 
 export function generateMetadata(): Promise<Metadata> {
   return storefrontMetadata({ path: '/cart', pageName: 'Cart', noindex: true });
 }
 
 /**
- * Cart page stub — the empty-cart state painted in the tenant's chrome so the
- * cart link in the nav has a real destination. Real cart functionality (line
- * items, quantities, checkout) ships with the commerce build.
+ * The cart. A design that paints its own cart (the boutique) gets the shopper's
+ * pieces from the cart cookie, priced from the catalog. Every other shop keeps
+ * the empty-cart stub painted in its chrome, so the cart link in its nav has a
+ * real destination.
  */
 export default async function StorefrontCartPage() {
   const headerStore = await headers();
   const tenantId = headerStore.get('x-tenant-id');
   if (tenantId === null) notFound();
+
+  const ids = parseCart((await cookies()).get(CART_COOKIE)?.value);
+  const designed = await renderArchetypeCart(tenantId, () => loadCartView(supabaseAdmin(), tenantId, ids));
+  if (designed !== null) return designed;
 
   const shell = await renderArchetypeShell(
     tenantId,
