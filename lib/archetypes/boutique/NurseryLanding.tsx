@@ -37,6 +37,7 @@ const GONE_ID = 'gone';
 const ARTIST_ID = 'artist';
 const VISIT_ID = 'visit';
 const TOUCH_ID = 'touch';
+const BORN_ID = 'just-born';
 const MAIN_ID = 'nn-main';
 const BABY_CLASS = 'nn-baby';
 const ADOPTED_CLASS = ['nn-baby', 'nn-baby--adopted'].join(' ');
@@ -121,7 +122,7 @@ function BassinetCard({ baby, tint }: { baby: ProductView; tint: string }): Reac
   );
 }
 
-function Nursery({ babies }: { babies: ProductView[] }): ReactElement {
+function Nursery({ babies, ribbons }: { babies: ProductView[]; ribbons: boolean }): ReactElement {
   if (babies.length === 0) return <p className="nn-empty">{S.nursery.empty}</p>;
   return (
     <div className="nn-glass">
@@ -143,6 +144,7 @@ function Nursery({ babies }: { babies: ProductView[] }): ReactElement {
                   )}
                 </div>
                 {adopted && <span className="nn-stamp">{S.card.adopted}</span>}
+                {ribbons && b.isNew === true && <span className="nn-newborn">{S.born.ribbon}</span>}
                 <BassinetCard baby={b} tint={cardTint(i)} />
               </a>
             </li>
@@ -150,6 +152,47 @@ function Nursery({ babies }: { babies: ProductView[] }): ReactElement {
         })}
       </ul>
     </div>
+  );
+}
+
+/** Just born: the babies the owner ticked new, each as a birth announcement. */
+function JustBorn({ data, babies }: { data: BoutiqueData; babies: ProductView[] }): ReactElement | null {
+  const born = data.newArrivals ? babies.filter((b) => b.isNew === true) : [];
+  if (born.length === 0) return null;
+  return (
+    <section className="nn-sec nn-born" id={BORN_ID} aria-labelledby="nn-born-h">
+      <div className="nn-wrap">
+        <span className="nn-script-tag">{S.born.tag}</span>
+        <h2 className="nn-h2" id="nn-born-h">
+          {S.born.title}
+        </h2>
+        <ul className="nn-announce" role="list">
+          {born.map((b, i) => {
+            const photo = b.media.find((m) => m.kind === 'image' && m.url !== undefined);
+            return (
+              <li key={b.slug}>
+                <a className="nn-ann" data-tint={cardTint(i)} href={`/listings/${b.slug}`} aria-label={S.card.open(b.name)}>
+                  <span className="nn-ann__welcome">{S.born.welcome}</span>
+                  <span className="nn-ann__photo">
+                    {photo !== undefined && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={photo.url} alt={photo.alt} loading="lazy" />
+                    )}
+                  </span>
+                  <span className="nn-ann__name">{b.name}</span>
+                  <span className="nn-ann__born">{S.born.bornAt(data.name)}</span>
+                  {b.status === 'sold_out' ? (
+                    <span className="nn-ann__fee">{S.card.adopted}</span>
+                  ) : (
+                    <span className="nn-ann__fee">{b.price}</span>
+                  )}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
   );
 }
 
@@ -323,6 +366,8 @@ export function NurseryHome({
 
       <Beads words={words} />
 
+      <JustBorn data={data} babies={products} />
+
       <section className="nn-sec" id={NURSERY_ID} aria-labelledby="nn-nursery-h">
         <div className="nn-wrap">
           <div className="nn-nursery__head">
@@ -338,7 +383,7 @@ export function NurseryHome({
               </span>
             )}
           </div>
-          <Nursery babies={babies} />
+          <Nursery ribbons={data.newArrivals} babies={babies} />
           {products.length > babies.length && (
             <div className="nn-more">
               <a className="nn-btn" href="/shop">
@@ -442,7 +487,7 @@ export function NurseryShop({
               </span>
             )}
           </div>
-          <Nursery babies={products} />
+          <Nursery ribbons={data.newArrivals} babies={products} />
         </div>
       </section>
     </Frame>

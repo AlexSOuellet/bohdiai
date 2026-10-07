@@ -351,3 +351,16 @@ describe('ProductEditor — sample photo', () => {
     expect(screen.getByText('Your shop is showing this sample photo. Add your own photos to replace it.')).toBeInTheDocument();
   });
 });
+
+describe('ProductEditor — new arrival', () => {
+  it('offers the tick only on sites with new arrivals, and saves it', async () => {
+    saveProduct.mockResolvedValue({ ok: true, id: 'l1' });
+    const { unmount } = renderEditor(existing());
+    expect(screen.queryByLabelText('New arrival')).toBeNull();
+    unmount();
+    render(<ProductEditor initial={existing()} collections={collections} digital={false} newArrivals shopUrl="https://shop.bohdiai.com" homeCount={0} />);
+    fireEvent.click(screen.getByLabelText('New arrival'));
+    fireEvent.click(saveButtons()[0]!);
+    await waitFor(() => expect(saveProduct).toHaveBeenCalledWith(expect.objectContaining({ isNew: true })));
+  });
+});

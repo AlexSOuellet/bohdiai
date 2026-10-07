@@ -114,7 +114,7 @@ export async function saveProduct(form: ProductForm): Promise<SaveResult> {
 export async function duplicateProduct(form: ProductForm): Promise<SaveResult> {
   // A crafted non-string name passes through untouched so saveProduct refuses it.
   const name = typeof form.name === 'string' ? `${form.name.trim()} (copy)`.slice(0, 120) : form.name;
-  return saveProduct({ ...form, id: null, slug: null, name, status: 'draft', onHome: false });
+  return saveProduct({ ...form, id: null, slug: null, name, status: 'draft', onHome: false, isNew: false });
 }
 
 export async function uploadProductPhoto(formData: FormData): Promise<PhotoResult> {

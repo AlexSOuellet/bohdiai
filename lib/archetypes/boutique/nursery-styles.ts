@@ -204,6 +204,21 @@ export function nurseryCss(): string {
 .nn-gift .bc-form__done{display:grid;gap:14px;justify-items:start;font-family:var(--type);font-size:18px}
 @media (max-width:820px){.nn-gift{grid-template-columns:1fr;border-radius:28px}.nn-gift__hole{display:none}.nn-gift__form{padding:32px 22px 40px}.nn-gift .bc-form__row{grid-template-columns:1fr}.nn-gift__side{padding:40px 22px}}
 
+/* Just born */
+.nn-announce{list-style:none;margin:30px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:28px}
+.nn-ann{--tint:var(--blush);display:grid;justify-items:center;text-align:center;gap:8px;text-decoration:none;background:var(--card);border-radius:16px;padding:34px 18px 24px;position:relative;box-shadow:inset 0 0 0 2px var(--tint),0 26px 50px -36px rgba(43,34,39,.6);transition:transform .25s}
+.nn-ann[data-tint=sage]{--tint:var(--sage)}.nn-ann[data-tint=lilac]{--tint:var(--lilac)}.nn-ann[data-tint=sky]{--tint:var(--sky)}
+.nn-ann::before{content:'';position:absolute;top:0;left:0;right:0;height:14px;border-radius:16px 16px 0 0;background:repeating-linear-gradient(90deg,var(--tint) 0 12px,transparent 12px 24px)}
+.nn-ann:hover,.nn-ann:focus-visible{transform:translateY(-4px) rotate(-1deg)}
+.nn-ann__welcome{font:700 11px/1 var(--body);letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
+.nn-ann__photo{display:block;width:156px;aspect-ratio:1;border-radius:50%;overflow:hidden;background:var(--paper-2);border:6px solid var(--paper);box-shadow:0 0 0 3px var(--tint)}
+.nn-ann__photo img{width:100%;height:100%;object-fit:cover}
+.nn-ann__name{font-family:var(--script);font-size:48px;line-height:1.05;color:var(--rose-deep)}
+.nn-ann__born{font-family:var(--type);font-size:14px;color:var(--ink-soft)}
+.nn-ann__fee{font-family:var(--display);font-size:22px}
+.nn-newborn{position:absolute;top:14px;left:-8px;z-index:2;background:var(--rose);color:#fff;font:700 11px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;padding:7px 14px 7px 12px;border-radius:0 99px 99px 0;box-shadow:0 4px 0 var(--rose-deep)}
+@media (max-width:520px){.nn-announce{grid-template-columns:repeat(2,1fr);gap:16px}.nn-ann{padding:28px 10px 18px}.nn-ann__photo{width:110px}.nn-ann__name{font-size:36px}}
+
 /* Cart */
 .nn-cert__buy{display:grid;gap:14px;justify-items:center}
 .nn-cert__buy [role=alert]{margin:0;color:var(--rose-deep);font-weight:700}

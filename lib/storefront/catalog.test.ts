@@ -29,6 +29,7 @@ const row = (over: Partial<ListingRow> = {}): ListingRow => ({
   inventory_count: null,
   is_preview: false,
   on_home: false,
+  is_new: false,
   ...over,
 });
 const media = resolveMediaMap([

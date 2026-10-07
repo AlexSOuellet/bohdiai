@@ -21,6 +21,7 @@ export default async function NewProductPage(): Promise<React.ReactElement> {
       initial={emptyProductForm()}
       collections={collections.filter((c) => c.status !== 'archived').map((c) => ({ id: c.id, name: c.name }))}
       digital={on.has('digital_products')}
+      newArrivals={on.has('new_arrivals')}
       shopUrl={storefrontOrigin(site.subdomain, (await headers()).get('host'))}
       homeCount={homeCount}
     />

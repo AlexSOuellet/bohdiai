@@ -1036,6 +1036,7 @@ export type Database = {
           id: string
           inventory_count: number | null
           inventory_tracked: boolean
+          is_new: boolean
           is_preview: boolean
           listing_type: string
           low_stock_threshold: number | null
@@ -1068,6 +1069,7 @@ export type Database = {
           id?: string
           inventory_count?: number | null
           inventory_tracked?: boolean
+          is_new?: boolean
           is_preview?: boolean
           listing_type: string
           low_stock_threshold?: number | null
@@ -1100,6 +1102,7 @@ export type Database = {
           id?: string
           inventory_count?: number | null
           inventory_tracked?: boolean
+          is_new?: boolean
           is_preview?: boolean
           listing_type?: string
           low_stock_threshold?: number | null

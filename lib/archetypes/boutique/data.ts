@@ -23,6 +23,8 @@ export type BoutiqueData = {
   gone: GalleryItem[];
   /** The cart is switched on: pieces can be added and the order sent. */
   cart: boolean;
+  /** New arrivals are switched on: babies ticked new get the Just born section and a ribbon. */
+  newArrivals: boolean;
 };
 
 export async function loadBoutiqueData(
@@ -47,6 +49,7 @@ export async function loadBoutiqueData(
     dates,
     gone: gone.slice(0, GALLERY_LIMIT),
     cart: features.has('cart'),
+    newArrivals: features.has('new_arrivals'),
   };
 }
 

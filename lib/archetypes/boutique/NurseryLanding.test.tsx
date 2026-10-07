@@ -47,8 +47,9 @@ const full: BoutiqueData = {
     { id: 'g5', url: 'https://cdn/g5.webp', caption: 'Sweet pea' },
   ],
   cart: false,
+  newArrivals: false,
 };
-const bare: BoutiqueData = { name: 'Rose', profile: EMPTY_PROFILE, dates: [], gone: [], cart: false };
+const bare: BoutiqueData = { name: 'Rose', profile: EMPTY_PROFILE, dates: [], gone: [], cart: false, newArrivals: false };
 
 afterEach(() => {
   cleanup();
@@ -328,5 +329,27 @@ describe('cart page', () => {
     expect(screen.getByText(S.cart.gone)).toBeTruthy();
     expect(screen.getByRole('alert').textContent).toBe(S.cart.fix);
     expect(screen.queryByRole('button', { name: S.cart.send })).toBeNull();
+  });
+});
+
+describe('just born', () => {
+  const kids = [baby('Theo', { isNew: true }), baby('Rosie'), baby('Ruby', { isNew: true, status: 'sold_out' })];
+
+  it('announces the babies ticked new, with a ribbon on their nursery cards', () => {
+    const { container } = render(<NurseryHome data={{ ...full, newArrivals: true }} products={kids} tenantId={TENANT} />);
+    const section = screen.getByRole('heading', { level: 2, name: S.born.title }).closest('section');
+    const names = [...(section?.querySelectorAll('.nn-ann__name') ?? [])].map((n) => n.textContent);
+    expect(names).toEqual(['Theo', 'Ruby']);
+    expect(section?.textContent).toContain(S.born.bornAt(full.name));
+    expect(section?.textContent).toContain(S.card.adopted);
+    expect(container.querySelectorAll('.nn-grid .nn-newborn')).toHaveLength(2);
+  });
+
+  it('stays away when new arrivals are off or nothing is ticked', () => {
+    const { container, rerender } = render(<NurseryHome data={full} products={kids} tenantId={TENANT} />);
+    expect(screen.queryByRole('heading', { name: S.born.title })).toBeNull();
+    expect(container.querySelector('.nn-newborn')).toBeNull();
+    rerender(<NurseryHome data={{ ...full, newArrivals: true }} products={[baby('Rosie')]} tenantId={TENANT} />);
+    expect(screen.queryByRole('heading', { name: S.born.title })).toBeNull();
   });
 });

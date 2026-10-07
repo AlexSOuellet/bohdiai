@@ -119,12 +119,14 @@ describe('buildProductPayload', () => {
         options: [],
         variants: [],
         on_home: false,
+        is_new: false,
       },
     });
   });
   it('starts off the home page and sends the home choice', () => {
     expect(emptyProductForm().onHome).toBe(false);
     expect(buildProductPayload(base({ onHome: true }), { digital: false })).toMatchObject({ ok: true, payload: { on_home: true } });
+    expect(buildProductPayload(base({ isNew: true }), { digital: false })).toMatchObject({ ok: true, payload: { is_new: true } });
   });
   it('needs a name and a price', () => {
     expect(buildProductPayload(base({ name: ' ' }), { digital: false })).toEqual({ ok: false, error: 'Give the product a name.' });

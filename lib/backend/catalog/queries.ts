@@ -106,7 +106,7 @@ export async function getProduct(db: Db, tenantId: string, id: string): Promise<
   const { data: r, error } = await db
     .from('listings')
     .select(
-      'id, slug, name, short_description, description, status, listing_type, base_price_cents, inventory_count, media_ids, metadata, file_upload_id, on_home, variation_attributes(name, position, variation_options(value, position, kind, file_upload_id)), listing_variants(option_combination, price_cents, inventory_count, status), listing_collections(collection_id)',
+      'id, slug, name, short_description, description, status, listing_type, base_price_cents, inventory_count, media_ids, metadata, file_upload_id, on_home, is_new, variation_attributes(name, position, variation_options(value, position, kind, file_upload_id)), listing_variants(option_combination, price_cents, inventory_count, status), listing_collections(collection_id)',
     )
     .eq('tenant_id', tenantId)
     .eq('id', id)
@@ -162,6 +162,7 @@ export async function getProduct(db: Db, tenantId: string, id: string): Promise<
     options,
     variants: syncVariants(options, stored),
     onHome: r.on_home,
+    isNew: r.is_new,
   };
 }
 

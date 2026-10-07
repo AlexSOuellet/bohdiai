@@ -36,6 +36,13 @@ export const NURSERY_STRINGS = {
     open: (caption: string, n: number) =>
       caption === '' ? `Open photo ${n}` : `Open photo: ${caption}`,
   },
+  born: {
+    tag: 'Just born',
+    title: 'New in the nursery',
+    welcome: 'Welcome',
+    bornAt: (shop: string) => `Born at ${shop}`,
+    ribbon: 'Newborn',
+  },
   artist: { tag: 'From the artist' },
   visit: {
     tag: 'Visiting hours',

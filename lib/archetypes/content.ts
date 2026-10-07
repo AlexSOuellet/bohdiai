@@ -73,6 +73,8 @@ export interface ProductView {
   /** The owner chose this product for the home page. When any product has it, the
    *  home shows only those; absent means not chosen. */
   onHome?: boolean;
+  /** The owner marked it a new arrival; absent means not new. */
+  isNew?: boolean;
 }
 
 /** One piece in the shopper's cart, as the cart page shows it. */

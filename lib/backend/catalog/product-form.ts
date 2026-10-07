@@ -36,6 +36,8 @@ export type ProductForm = {
   variants: VariantForm[];
   /** The owner put this product on the home page (at most 5; the database enforces it). */
   onHome: boolean;
+  /** The owner marked it a new arrival; designs with a new-arrivals section show it there. */
+  isNew: boolean;
 };
 
 export type ProductPayload = {
@@ -52,6 +54,7 @@ export type ProductPayload = {
   options: { name: string; choices: { value: string; kind: Kind; file_upload_id: string | null }[] }[];
   variants: { combination: Combination; price_cents: number | null; inventory_count: number | null; available: boolean }[];
   on_home: boolean;
+  is_new: boolean;
 };
 
 export type BuildResult = { ok: true; payload: ProductPayload } | { ok: false; error: string };
@@ -80,6 +83,7 @@ export function emptyProductForm(): ProductForm {
     options: [],
     variants: [],
     onHome: false,
+    isNew: false,
   };
 }
 
@@ -150,7 +154,7 @@ function hasProductShape(f: unknown): boolean {
   if (!Array.isArray(photos) || !photos.every((p) => isRecord(p) && isString(p['uploadId']))) return false;
   if (!isStringOrNull(f['samplePhotoUrl'])) return false;
   if (!isStringArray(f['collectionIds'])) return false;
-  if (typeof f['onHome'] !== 'boolean') return false;
+  if (typeof f['onHome'] !== 'boolean' || typeof f['isNew'] !== 'boolean') return false;
   const options = f['options'];
   const choiceOk = (c: unknown): boolean => isRecord(c) && isString(c['value']) && isKind(c['kind']) && isStringOrNull(c['fileUploadId']);
   if (!Array.isArray(options) || !options.every((o) => isRecord(o) && isString(o['name']) && Array.isArray(o['choices']) && o['choices'].every(choiceOk))) return false;
@@ -242,6 +246,7 @@ export function buildProductPayload(form: ProductForm, site: { digital: boolean 
       options,
       variants,
       on_home: form.onHome,
+      is_new: form.isNew,
     },
   };
 }

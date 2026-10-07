@@ -48,12 +48,15 @@ export function ProductEditor({
   initial,
   collections,
   digital,
+  newArrivals = false,
   shopUrl,
   homeCount,
 }: {
   initial: ProductForm;
   collections: { id: string; name: string }[];
   digital: boolean;
+  /** The site shows new arrivals in their own home section, so offer the tick. */
+  newArrivals?: boolean;
   shopUrl: string;
   /** How many OTHER products are on the home page (not archived, not deleted). */
   homeCount: number;
@@ -262,6 +265,15 @@ export function ProductEditor({
               </p>
             )}
           </div>
+          {newArrivals && (
+            <div className="bk-field">
+              <label className="bk-check">
+                <input type="checkbox" checked={form.isNew} onChange={(e) => update({ isNew: e.target.checked })} />
+                New arrival
+              </label>
+              <p className="bk-note">Shows it in the new arrivals section of your home page, with a little “new” ribbon. Untick it when it isn’t new any more.</p>
+            </div>
+          )}
           <div className="bk-field">
             <label htmlFor="short" className="bk-label">Short description</label>
             <input id="short" className="bk-input" value={form.shortDescription} onChange={(e) => update({ shortDescription: e.target.value })} />
