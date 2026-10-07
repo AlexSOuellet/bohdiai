@@ -233,3 +233,13 @@ describe('plain page', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Terms' })).toBeTruthy();
   });
 });
+
+describe('footer', () => {
+  it('links the terms and privacy pages on every page', () => {
+    render(<NurseryContentPage data={full} title="Privacy" body={['One.']} />);
+    const foot = document.querySelector('.nn-foot');
+    const hrefs = [...(foot?.querySelectorAll('a') ?? [])].map((a) => a.getAttribute('href'));
+    expect(hrefs).toContain('/terms');
+    expect(hrefs).toContain('/privacy');
+  });
+});

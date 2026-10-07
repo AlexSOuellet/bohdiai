@@ -205,6 +205,7 @@ export function nurseryCss(): string {
 .nn-foot{margin-top:40px;padding:40px 0 48px;background-color:var(--card);background-image:repeating-linear-gradient(0deg,transparent 0 10px,rgba(244,203,211,.45) 10px 20px),repeating-linear-gradient(90deg,transparent 0 10px,rgba(244,203,211,.45) 10px 20px);border-top:3px solid var(--blush)}
 .nn-foot__in{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-family:var(--type);font-size:14px;background:var(--card);padding:14px 20px;border-radius:99px;box-shadow:0 0 0 2px var(--blush)}
 .nn-foot a{text-decoration:none;border-bottom:1px dashed}
+.nn-foot__legal{display:flex;gap:18px}
 
 /* Certificate (a baby's own page) */
 .nn-cert-page{padding:48px 0 30px}

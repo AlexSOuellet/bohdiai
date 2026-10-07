@@ -89,6 +89,10 @@ function Frame({
         <footer className="nn-foot">
           <div className="nn-wrap nn-foot__in">
             <span>{S.footer.year(new Date().getFullYear(), data.name)}</span>
+            <span className="nn-foot__legal">
+              <Link href="/terms">{S.footer.terms}</Link>
+              <Link href="/privacy">{S.footer.privacy}</Link>
+            </span>
             <a href={PLATFORM_URL}>{S.footer.empowered}</a>
           </div>
         </footer>

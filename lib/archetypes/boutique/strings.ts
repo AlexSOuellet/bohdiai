@@ -62,6 +62,8 @@ export const NURSERY_STRINGS = {
   shop: { title: 'The nursery' },
   footer: {
     empowered: 'Empowered by BohdiAI',
+    terms: 'Terms',
+    privacy: 'Privacy',
     year: (y: number, name: string) => `© ${y} ${name}`,
   },
 } as const;
