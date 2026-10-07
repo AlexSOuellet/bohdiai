@@ -54,7 +54,7 @@ describe('market page', () => {
 
   it('shows who is coming before the market, and points to the site after', () => {
     const { rerender } = render(<NurseryMarket data={data} market={market({ state: 'before' })} />);
-    expect(screen.getByText(S.market.before('Saturday'))).toBeTruthy();
+    expect(screen.getByText(S.market.before)).toBeTruthy();
     expect(screen.queryByText(S.market.pick)).toBeNull();
     rerender(<NurseryMarket data={data} market={market({ state: 'after' })} />);
     expect(screen.getByText(S.market.after)).toBeTruthy();

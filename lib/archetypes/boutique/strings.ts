@@ -44,7 +44,7 @@ export const NURSERY_STRINGS = {
   market: {
     tag: 'At the market',
     where: (town: string, booth: string) => [town, booth].filter((s) => s !== '').join(' · '),
-    before: (day: string) => `See you at the market on ${day}. Here’s who’s coming with me.`,
+    before: 'See you at the market. Here’s who’s coming with me.',
     after: 'This market is over. Thank you for visiting! Every baby still waiting is in the nursery.',
     canceled: 'This market was canceled. Every baby is waiting in the nursery.',
     toSite: 'Visit the nursery',

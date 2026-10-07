@@ -844,7 +844,7 @@ export function NurseryMarket({
             ))}
           {market.state === 'before' && (
             <>
-              <p className="nn-mk-note">{S.market.before(weekday)}</p>
+              <p className="nn-mk-note">{S.market.before}</p>
               <Nursery ribbons={data.newArrivals} babies={market.pieces} />
             </>
           )}
