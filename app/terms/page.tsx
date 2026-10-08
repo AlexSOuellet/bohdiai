@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Wordmark } from '@/components/Wordmark';
 import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
 
 export const metadata: Metadata = {
@@ -15,12 +16,9 @@ export default function TermsPage(): React.ReactElement {
     <main className="min-h-screen px-4 py-10 md:px-8 md:py-14">
       <Link
         href="/"
-        className="inline-flex items-center gap-2.5 rounded-pill border border-white/10 bg-white/5 px-3 py-2 text-[13px] font-medium text-text-soft no-underline backdrop-blur-[20px]"
+        className="inline-flex items-center rounded-pill border border-white/10 bg-white/5 px-4 py-2 no-underline backdrop-blur-[20px]"
       >
-        <span className="grid size-6 place-items-center rounded-[7px] bg-gradient-to-br from-honey-warm to-honey-deep text-[13px] font-bold text-bg-2">
-          B
-        </span>
-        BohdiAI
+        <Wordmark className="text-[22px]" />
       </Link>
 
       <article className="mx-auto max-w-[680px] pb-24 pt-10 md:pt-16">

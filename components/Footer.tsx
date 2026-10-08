@@ -1,18 +1,12 @@
 import { SITE_CONTACT_EMAIL as CONTACT_EMAIL } from '@/lib/site/contact';
+import { Wordmark } from './Wordmark';
 
 export function Footer(): React.ReactElement {
   return (
     <footer className="relative z-content mt-12 pb-9 pt-12 md:mt-20 md:pb-9 md:pt-12 [background:linear-gradient(to_bottom,rgba(243,201,122,0.18),transparent_1px)_top/100%_1px_no-repeat,transparent]">
       <div className="mx-auto flex max-w-[1180px] flex-col gap-8 px-4 md:flex-row md:items-start md:justify-between md:gap-10 md:px-8">
         <div className="md:max-w-[300px] md:shrink-0">
-          <div className="mb-3.5 inline-flex items-center gap-2.5">
-            <span className="grid size-7 place-items-center rounded-md bg-gradient-to-br from-honey-warm to-honey-deep font-sans text-[15px] font-extrabold text-bg-2">
-              B
-            </span>
-            <span className="font-sans text-[18px] font-semibold tracking-[-0.015em] text-text">
-              BohdiAI
-            </span>
-          </div>
+          <Wordmark className="mb-3.5 inline-block text-[22px]" />
           <p className="text-[12px] leading-[1.55] text-muted md:text-[13px]">
             Websites for makers, contractors and charities. You keep 100% of what you sell.
           </p>

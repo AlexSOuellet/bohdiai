@@ -23,7 +23,8 @@ const cormorant = Cormorant_Garamond({
 });
 
 const manrope = Manrope({
-  subsets: ['latin'],
+  // latin-ext carries the dotless i the wordmark's ember sits on.
+  subsets: ['latin', 'latin-ext'],
   display: 'swap',
   preload: false,
   variable: '--font-display',
