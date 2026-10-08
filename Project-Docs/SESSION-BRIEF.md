@@ -10,11 +10,13 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-10-07, Session 97.
+**Last updated:** 2026-10-08, Session 98.
 
 ---
 
 ## Current state
+
+**Session 98 — new logo + sticky header LIVE; Renee is in.** Ember wordmark (`components/Wordmark.tsx`: Bohdi with a flame for the i dot) in header/footer/legal pages, ember tab icon; sticky header with a solid strip once scrolled. Cards, logo files, Facebook cover/profile in `Design files/` (untracked). Renee signed in 2026-10-08. 24-hour invite wording parked on `fix/auth-link-24h` — merge only after Supabase "Email OTP Expiration" = 86400. Recap: `session-logs/session-98.md`.
 
 **Session 97 — Rose n' Cat is a working shop + the first Market POS (all LIVE, switched on for her).** Cart + order requests (no card yet; emails go to ALEX), Orders, Terms/Privacy links, QR codes, New arrival + "Just born", Promotions (sale or codes, never stacked), **Markets** (replaced Market dates; private costs/organizer/notes/review; anon read on `events` dropped), **market shop** (per-market QR page, holds paid by Venmo/Cash App/Zelle/cash, Getting paid, Today). Design: `docs/superpowers/specs/2026-10-07-market-pos-design.md`. Session 96 built the site itself (boutique archetype, nursery design). Recaps: `session-logs/session-97.md`, `session-96.md`.
 
@@ -31,15 +33,15 @@
 
 ## Next actions
 
-000. **Rose n' Cat:** Renee hasn't accepted her backend invite (AOL spam? resend via `scripts/invite-maker.ts`); fill Getting paid (only cash shows); tick babies per market; real names/prices. Open asks to Alex: analytics (own cookieless counter?), Square card (build switched off or wait for keys?), a test market to try a buyer order. Next build: **Market POS piece 3 — results** (own design pass). Privacy template's "analytics cookie" line is wrong; fix with analytics.
+0000. **Invites:** Alex sets Supabase Email OTP Expiration = 86400 → merge `fix/auth-link-24h`. Then the maker-started sign-up ("First time here?", six-digit code, email must already be on a shop) — Alex liked it, not a go yet. Links last 1 hour today; an existing unconfirmed account needs a recovery token sent with invite wording (`invite-maker.ts` sends reset wording).
+000. **Rose n' Cat:** Renee is IN (signed in 2026-10-08). Fill Getting paid (only cash shows); tick babies per market; real names/prices. Open asks to Alex: analytics (own cookieless counter?), Square card (build switched off or wait for keys?), a test market to try a buyer order. Next build: **Market POS piece 3 — results** (own design pass). Privacy template's "analytics cookie" line is wrong; fix with analytics.
 00. **Joe (Mazzone):** his feedback on the site; switch estimate emails to his address when he's in; give his page its own section openers (True Coat and Halfmoon got theirs); his own job photos when he has them.
 01a. **Estimator → request email:** the choices a visitor taps (job, size, finish, range) should travel into the estimate email. Offered, not built.
 01b. **Minimal backend for Maker Showcase + Contractor Lead Generation** — Alex: every site gets a backend; "minimal" is undesigned.
 01c. **Cloudflare:** set the Worker's BACKEND_SESSION_SECRET to match .env.local (preview links for hidden sites).
-03. **Stripe pay buttons — OFF the plan** (Alex 2026-10-05: list prices, no payment on site; payment link by hand after sign-off).
 02. **Maker backend 1c — Video** (Cloudflare Stream; confirm cost first), then 1d Custom domains + status panel (custom domains must pass `platformCredit={false}` to both footers so the "Empowered by BohdiAI" line comes off — tiers spec). Options/combinations get their real test with the first real client who sells sizes/scents.
 01. **Staging before the first paying customer's site goes live** (agreed 2026-10-02; Alex: pay buttons don't need it): own test domain, own Supabase (after Rhody Strong is deleted), root domain as a setting. Detail: backend overview spec, "Staging".
-0. **bohdiai.com loose ends (Session 89 cleared most):** CI green again (2026-09-30); prod inquiry confirmed in Alex's inbox; Classic Loafs reverted to its original build. Still open: logo from the BohdiAi Facebook page (Alex skipped for now); the Classic Loafs work shot catches the hero words mid-fade (re-time if Alex wants); sample find-us dates are all past July dates; drop "(publicly: Alex Scott)" from privacy/terms? JSON-LD founder name?
+0. **bohdiai.com loose ends (Session 89 cleared most):** CI green again (2026-09-30); prod inquiry confirmed in Alex's inbox; Classic Loafs reverted to its original build. Still open (logo DONE Session 98; Stripe pay buttons are OFF the plan, payment links by hand): the Classic Loafs work shot catches the hero words mid-fade (re-time if Alex wants); sample find-us dates are all past July dates; drop "(publicly: Alex Scott)" from privacy/terms? JSON-LD founder name?
 1. **Cloudflare cleanup (Alex):** delete the redundant Cut-Pro route; trim Build variables to NODE_VERSION + the two NEXT_PUBLIC_*; after a few quiet days cancel Vercel and delete `shop-proxy` together.
 2. **Cut-Pro follow-ups:** their copy review (crew-photo names, services list, "since 2009"); better originals from their phones; review the privacy-page wording for a contractor.
 4. **Maker backend:** scope it against Penny's site. Open question: does Penny's store move into BohdiAI or stay standalone?
@@ -88,11 +90,9 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
-- Session 97 (2026-10-07): **Rose n' Cat shop + Market POS: cart, orders, promotions, new arrivals, QR, Markets, market shop — LIVE.** Full recap: `session-logs/session-97.md`.
-- Session 96 (2026-10-06): **Rose n' Cat LIVE — boutique archetype + nursery design, tied to the backend.** Full recap: `session-logs/session-96.md`.
-- Session 95 (2026-10-06): **Homepage reshaped (samples hero, client slideshow, one card per tier + /samples); True Coat, Halfmoon, Mazzone built with their own designs; Joe's site public; hidden drafts; Contractor Lead Generation $10; business cards.** Full recap: `session-logs/session-95.md`.
-- Session 94 (2026-10-05): **Bulletin board design for card sites; Rustic Rhody switched, LIVE.** What I make field. Full recap: `session-logs/session-94.md`.
-- Session 93 (2026-10-04): **Showcase market dates in the marquee, marquee pause, red sample banners, Showcase "Most popular", builder login on every site — all LIVE.** Full recap: `session-logs/session-93.md`.
+- Session 98 (2026-10-08): **Ember logo + sticky header LIVE; business cards, logo files, Facebook cover; Renee in; 24h invite parked.** Full recap: `session-logs/session-98.md`.
+- Sessions 96–97 (2026-10-06 → 10-07): **Rose n' Cat LIVE (boutique/nursery), then cart, orders, promotions, new arrivals, QR, Markets, market shop.** See `session-logs/session-96.md`, `session-97.md`.
+- Sessions 93–95 (2026-10-04 → 10-06): **Showcase marquee + builder login (93); bulletin board design, Rustic Rhody (94); homepage reshaped, three contractor designs, Joe public, Lead Generation $10, business cards (95).** See `session-logs/session-93.md` – `session-95.md`.
 - Sessions 91–92 (2026-10-02 → 10-03): **Tiers + prices agreed; pricing pages + FAQ live; Showcase tier + business card site (Rustic Rhody).** See `session-logs/session-91.md` and the tiers / business card specs.
 - Sessions 89–90 (2026-09-30 → 10-01): **CI green; maker backend designed, foundation (1a) + Catalog (1b) live; auto sign-out.** See `session-logs/session-89.md`, `session-90.md`.
 - Sessions 86–88 (2026-09-23 → 09-29): **Cut-Pro built by hand and LIVE (86); whole app moved from Vercel to Cloudflare Workers (87); bohdiai.com rebuilt as a web developer site (88).** See `session-logs/session-86.md` – `session-88.md`.
