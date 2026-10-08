@@ -12,7 +12,7 @@ export function FaqList({ items, openFirst = false }: { items: readonly FaqItem[
           key={item.id}
           id={item.id}
           open={openFirst && i === 0}
-          className="group scroll-mt-8 rounded-[16px] border border-white/[0.07] bg-white/[0.025] transition-colors duration-base open:border-honey-warm/30 open:bg-white/[0.04]"
+          className="group scroll-mt-24 rounded-[16px] border border-white/[0.07] bg-white/[0.025] transition-colors duration-base open:border-honey-warm/30 open:bg-white/[0.04]"
         >
           <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-sans text-[16px] font-medium tracking-[-0.01em] text-text marker:hidden md:px-6 md:py-5 md:text-[18px] [&::-webkit-details-marker]:hidden">
             {item.q}

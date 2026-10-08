@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { MobileMenu } from './MobileMenu';
 import { Wordmark } from './Wordmark';
+import { HeaderBackdrop } from './HeaderBackdrop';
 
 const BLUR_CHIP =
   'inline-flex items-center gap-2 rounded-pill border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-text-soft no-underline backdrop-blur-[20px]';
@@ -16,7 +17,8 @@ export const NAV_LINKS = [
 
 export function Header(): React.ReactElement {
   return (
-    <header className="relative z-sticky flex items-center justify-between gap-2 pt-0.5 md:pt-2">
+    <header className="sticky top-3 z-sticky flex items-center justify-between gap-2 pt-0.5 md:top-4 md:pt-2">
+      <HeaderBackdrop />
       <div className="flex items-center gap-2">
         <Link href="/" className={BLUR_CHIP}>
           <Wordmark className="text-[22px]" />
