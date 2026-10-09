@@ -21,6 +21,7 @@ describe('MarketList', () => {
   it('lists coming-up markets soonest first and past ones newest first, with stars', () => {
     render(
       <MarketList
+        records
         today="2026-10-15"
         markets={[
           m('a', 'Scituate Art Festival', '2026-10-10', { endDate: '2026-10-12', rating: 4 }),
@@ -40,7 +41,13 @@ describe('MarketList', () => {
   });
 
   it('says what to do when there are none', () => {
-    render(<MarketList markets={[]} today="2026-10-15" />);
+    render(<MarketList markets={[]} today="2026-10-15" records={false} />);
     expect(screen.getByText(/No markets yet/)).toBeTruthy();
+  });
+
+  it('leaves stars and the review nudge out when market records are off (Showcase, Lite)', () => {
+    render(<MarketList records={false} today="2026-10-15" markets={[m('a', 'Scituate Art Festival', '2026-10-10', { rating: 4 })]} />);
+    expect(screen.queryByLabelText('4 of 5 stars')).toBeNull();
+    expect(screen.queryByText(/add your review/)).toBeNull();
   });
 });

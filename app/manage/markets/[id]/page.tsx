@@ -23,11 +23,12 @@ export default async function EditMarketPage({ params }: PageProps<'/manage/mark
   const db = await createSupabaseServerClient();
   const market = await getMarket(db, site.tenantId, id);
   if (market === null) notFound();
-  if (!on.has('market_shop')) return <MarketEditor key={id} initial={market} />;
+  if (!on.has('market_shop')) return <MarketEditor key={id} initial={market} records={on.has('market_records')} />;
   const [picks, listingIds] = await Promise.all([shopPicks(db, site.tenantId), marketListingIds(db, id)]);
   const origin = storefrontOrigin(site.subdomain, (await headers()).get('host'));
   return (
     <MarketEditor
+      records={on.has('market_records')}
       key={id}
       initial={{ ...market, listingIds }}
       shop={{ products: picks, marketUrl: marketPageUrl(origin, id), fileBase: `${site.subdomain}-market-qr`, todayHref: `/manage/markets/${id}/today` }}

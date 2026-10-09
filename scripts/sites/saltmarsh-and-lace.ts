@@ -17,6 +17,8 @@ export const SITE: CardSiteModule['SITE'] = {
   skin: 'main-street-sawdust',
   // Starts at Showcase; the plan switch (stage two) moves it up and down.
   plan: 'showcase',
+  // A demo: Upgrade and Downgrade switch at once through the checkout, no card taken.
+  demo: true,
 };
 
 export const PROFILE: ProfileForm = {

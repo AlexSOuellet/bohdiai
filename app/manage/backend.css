@@ -206,3 +206,22 @@
 .bk-up[data-tier='full'] .bk-up-btn:hover { background: oklch(0.78 0.09 75); }
 .bk-up-btn:focus-visible { outline: 2px solid var(--bk-brass); outline-offset: 3px; }
 .bk-plan-safe { margin: 0; font-size: 0.85rem; color: var(--bk-ink-muted); }
+.bk-downs { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; padding-top: 0.5rem; border-top: 1px solid var(--bk-ink-15); }
+.bk-checkout { max-width: 34rem; display: grid; gap: 1rem; }
+.bk-billing { margin: 0.75rem 0 0.25rem; padding: 0; border: 0; display: grid; gap: 0.5rem; }
+.bk-billing-opt { display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; border: 1px solid var(--bk-ink-15); border-radius: 2px; cursor: pointer; background: var(--bk-paper); }
+.bk-up[data-tier='full'] .bk-billing-opt { background: oklch(0.928 0.022 67 / 8%); border-color: oklch(0.928 0.022 67 / 25%); }
+.bk-billing-opt:has(input:checked) { border-color: var(--bk-brass); box-shadow: inset 0 0 0 1px var(--bk-brass); }
+.bk-billing-opt strong { font-family: var(--bk-display); font-size: 1.6rem; }
+.bk-billing-opt em { margin-left: 0.4rem; font-style: normal; font-size: 0.75rem; font-weight: 600; color: var(--bk-oxblood); }
+.bk-up[data-tier='full'] .bk-billing-opt em { color: var(--bk-brass); }
+.bk-billing-opt input { accent-color: var(--bk-oxblood); width: 1.1rem; height: 1.1rem; }
+.bk-co-total { margin: 0 0 1rem; padding-top: 0.9rem; border-top: 1px solid var(--bk-ink-15); font-size: 0.95rem; }
+.bk-co-total strong { font-family: var(--bk-display); font-size: 1.8rem; }
+.bk-co-total span { opacity: 0.75; font-size: 0.85rem; }
+.bk-co-hidden { margin: 0 0 1rem; padding-left: 1.2rem; display: grid; gap: 0.4rem; font-size: 0.9rem; line-height: 1.45; }
+.bk-co-safe { margin: 0 0 1.25rem; font-size: 0.9rem; font-weight: 600; }
+.bk-co-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+.bk-up-btn:disabled { opacity: 0.6; cursor: progress; }
+button.bk-up-btn { border: 0; cursor: pointer; font: inherit; font-size: 0.9rem; font-weight: 600; }
+.bk-co-demo { margin: 0.75rem 0 0; font-size: 0.75rem; opacity: 0.7; }

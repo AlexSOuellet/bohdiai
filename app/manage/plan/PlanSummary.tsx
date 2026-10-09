@@ -1,5 +1,9 @@
+import Link from 'next/link';
 import type { Plan } from '@/lib/site/plans';
 import { includesLead, moveUpMailto, type PlanView } from '@/lib/backend/plan/plan';
+
+/** How Upgrade works on this site: the demo switches through checkout; a real site emails Alex until billing exists. */
+export type PlanMode = { kind: 'demo' } | { kind: 'email'; siteName: string; contactEmail: string };
 
 function Checks({ lines, className }: { lines: readonly string[]; className: string }): React.ReactElement {
   return (
@@ -11,7 +15,8 @@ function Checks({ lines, className }: { lines: readonly string[]; className: str
   );
 }
 
-function UpgradeCard({ plan, siteName, contactEmail }: { plan: Plan; siteName: string; contactEmail: string }): React.ReactElement {
+function UpgradeCard({ plan, mode }: { plan: Plan; mode: PlanMode }): React.ReactElement {
+  const label = `Upgrade to ${plan.name}`;
   return (
     <section className="bk-up" data-tier={plan.tier} aria-labelledby={`bk-up-${plan.id}`}>
       <h2 id={`bk-up-${plan.id}`} className="bk-up-name">
@@ -25,18 +30,33 @@ function UpgradeCard({ plan, siteName, contactEmail }: { plan: Plan; siteName: s
       <p className="bk-up-year">or ${plan.yearly} a year, two months free</p>
       <p className="bk-up-lead">{includesLead(plan) ?? 'What you’d add'}</p>
       <Checks lines={plan.includes} className="bk-up-list" />
-      <a className="bk-up-btn" href={moveUpMailto(contactEmail, siteName, plan)}>
-        Upgrade to {plan.name}
-      </a>
+      {mode.kind === 'demo' ? (
+        <Link className="bk-up-btn" href={{ pathname: '/manage/plan/change', query: { to: plan.tier } }}>
+          {label}
+        </Link>
+      ) : (
+        <a className="bk-up-btn" href={moveUpMailto(mode.contactEmail, mode.siteName, plan)}>
+          {label}
+        </a>
+      )}
     </section>
   );
 }
 
 /** Your plan: where the site is now, then each plan above it as an invitation to move up. */
-export function PlanSummary({ view, siteName, contactEmail }: { view: PlanView; siteName: string; contactEmail: string }): React.ReactElement {
-  const { current, above } = view;
+export function PlanSummary({ view, mode, changed = null }: { view: PlanView; mode: PlanMode; changed?: string | null }): React.ReactElement {
+  const { current, above, below } = view;
   return (
     <div className="bk-plan">
+      {changed !== null && (
+        <div className="bk-notices">
+          <div role="status">
+            <p className="bk-notice" data-tone="ok">
+              {changed}
+            </p>
+          </div>
+        </div>
+      )}
       <section className="bk-now" aria-labelledby="bk-now-name">
         <div>
           <p className="bk-kicker">You’re on</p>
@@ -55,10 +75,21 @@ export function PlanSummary({ view, siteName, contactEmail }: { view: PlanView; 
           <p className="bk-plan-intro">Ready for more? Move up any time, and everything you’ve added comes with you.</p>
           <div className="bk-ups">
             {above.map((plan) => (
-              <UpgradeCard key={plan.id} plan={plan} siteName={siteName} contactEmail={contactEmail} />
+              <UpgradeCard key={plan.id} plan={plan} mode={mode} />
             ))}
           </div>
         </>
+      )}
+
+      {mode.kind === 'demo' && below.length > 0 && (
+        <div className="bk-downs">
+          <p className="bk-label">Need less for a while?</p>
+          {below.map((plan) => (
+            <Link key={plan.id} className="bk-btn bk-btn-quiet" href={{ pathname: '/manage/plan/change', query: { to: plan.tier } }}>
+              Move down to {plan.name}
+            </Link>
+          ))}
+        </div>
       )}
 
       <p className="bk-plan-safe">Moving down a plan never deletes anything. Your products, photos and dates are kept and come back when you move up again.</p>

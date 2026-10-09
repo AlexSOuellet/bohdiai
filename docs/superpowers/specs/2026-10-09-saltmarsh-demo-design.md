@@ -65,3 +65,22 @@ The four Showcase screens that already exist, switched on for this site: **About
 - Tests for the shoreline design (name, fixed sea, prints, card, tide table, letter, footer; leaves out empty parts; photo viewer works), for the new design key, and for Your plan.
 - tsc, lint, the full test suite, and the 90% branch-coverage gate on `lib/**/*.ts`.
 - Alex looks at the real page on his own screen before it is committed to `main`.
+
+## Stage two — Lite and the plan switch (agreed 2026-10-09)
+
+Built in three pieces, each working before the next.
+
+### Piece one — the switch, checkout and downgrade (built)
+
+- **A plan is a set of switches** (`lib/backend/plan/plan-features.ts`). Showcase: About you, Gallery, Market dates, QR codes, Your plan. Lite adds the catalog and the point of sale (`market_shop`: the QR shop page, Getting paid, Today). Full adds the cart, promotions, new arrivals and **market records**. Moving flips only those switches (`applyPlan`); everything else (domain panel, demo checkout, video) is untouched. Moving down hides; nothing is deleted.
+- **Markets step up by plan** (Alex): Showcase reports dates only (name, dates, hours, town, address, booth, website, canceled). Costs, Organizer, Notes and Review moved behind a new `market_records` switch (Full). Hidden values stay in the form and save untouched. Rose n' Cat keeps them on (migration `20261009000002`).
+- **Checkout** (`/manage/plan/change?to=<plan>`): Upgrade opens it — the plan, monthly or yearly with today's total, what she gets, **Confirm upgrade**. Moving down opens the same page as a confirm: what gets put away, "Nothing is deleted", **Move down**, or stay. On a demo site (`demo_checkout` switch) Confirm switches at once with "Demo site: no card is charged" and returns to Your plan ("You're now on Maker Lite."). A real site has no billing yet, so its Upgrade still emails Alex and it shows no move down.
+- **Build script**: a site module's `plan` is the starting plan, applied through the same switch only when the site has none (a re-run never undoes a change); `demo: true` turns on the demo checkout.
+
+### Piece two — Lite's content on the shoreline page (next)
+
+Same look, more content: a Shop page of every product as a print with its price, a page per product with "Ask about this", and the full market calendar. Lena gets about 15 products with prices.
+
+### Piece three — the point of sale
+
+The Rose n' Cat market tools switch on at Lite; check they cover what the Lite plan list promises.

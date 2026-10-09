@@ -12,7 +12,7 @@ export default async function NewMarketPage(): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
   if (!on.has('market_dates')) notFound();
-  if (!on.has('market_shop')) return <MarketEditor initial={emptyMarketForm()} />;
+  if (!on.has('market_shop')) return <MarketEditor initial={emptyMarketForm()} records={on.has('market_records')} />;
   const picks = await shopPicks(await createSupabaseServerClient(), site.tenantId);
-  return <MarketEditor initial={emptyMarketForm()} shop={{ products: picks, marketUrl: null, fileBase: `${site.subdomain}-market-qr`, todayHref: null }} />;
+  return <MarketEditor initial={emptyMarketForm()} records={on.has('market_records')} shop={{ products: picks, marketUrl: null, fileBase: `${site.subdomain}-market-qr`, todayHref: null }} />;
 }

@@ -12,18 +12,19 @@ export function isSitePlan(value: unknown): value is SitePlan {
   return typeof value === 'string' && (SITE_PLANS as readonly string[]).includes(value);
 }
 
-function makerPlan(tier: SitePlan): Plan {
+/** The pricing list's maker plan for a tier. */
+export function planOf(tier: SitePlan): Plan {
   const plan = PLANS.find((p) => p.audience === 'maker' && p.tier === tier);
   if (plan === undefined) throw new Error(`No maker plan for ${tier}`);
   return plan;
 }
 
-export type PlanView = { current: Plan; above: Plan[] };
+export type PlanView = { current: Plan; above: Plan[]; below: Plan[] };
 
-/** The site's plan and the plans above it, in selling order. */
+/** The site's plan, the plans above it (selling order) and below it (nearest first). */
 export function planView(tier: SitePlan): PlanView {
   const at = SITE_PLANS.indexOf(tier);
-  return { current: makerPlan(tier), above: SITE_PLANS.slice(at + 1).map(makerPlan) };
+  return { current: planOf(tier), above: SITE_PLANS.slice(at + 1).map(planOf), below: SITE_PLANS.slice(0, at).reverse().map(planOf) };
 }
 
 /** How a plan's list opens: Full builds on Lite, the others stand alone. */
