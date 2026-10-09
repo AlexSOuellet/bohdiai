@@ -11,4 +11,4 @@
 - `scripts/demo-reset.ts <site> showcase|lite|full` (Full = 19 priced pieces, download, sale + code, 4 collections, 9 markets, 5 orders, 4 testimonials). Demo login via `scripts/demo-login.ts` (password from env only).
 - Lessons: a function passed from a server component to a client one crashed every Full page and only curl caught it; never reset or upgrade Alex's demo without asking (memory saved).
 
-**Next (2026-10-10):** the public demo, spec stage four: personal copies, welcome page, Learn. Open question: one throwaway login per copy (recommended) or a label only.
+**Next (2026-10-10):** the public demo, spec stage four: personal copies, welcome page, Learn. Login: one throwaway login per copy, prefilled on sign-in.

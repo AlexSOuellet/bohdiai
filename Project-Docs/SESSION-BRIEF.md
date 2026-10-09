@@ -16,7 +16,7 @@
 
 ## Current state
 
-**Session 99 — Saltmarsh & Lace demo shop built (not merged).** On `feat/saltmarsh-showcase`: made-up maker, shoreline design, upgrade/downgrade between Showcase, Lite and Full with checkout and proration, real pages, cart, testimonials, collections, Market POS + results; `scripts/demo-reset.ts` resets it (Full is the default). `feat/site-facebook-link` also waiting. **Next: the public demo** (spec stage four: personal copies, welcome page, Learn; ask Alex the login question first). Spec: `docs/superpowers/specs/2026-10-09-saltmarsh-demo-design.md`. Recap: `session-logs/session-99.md`.
+**Session 99 — Saltmarsh & Lace demo shop built (not merged).** On `feat/saltmarsh-showcase`: made-up maker, shoreline design, upgrade/downgrade between Showcase, Lite and Full with checkout and proration, real pages, cart, testimonials, collections, Market POS + results; `scripts/demo-reset.ts` resets it (Full is the default). `feat/site-facebook-link` also waiting. **Next: the public demo** (spec stage four: personal copies, welcome page, Learn; login: throwaway per copy, prefilled). Spec: `docs/superpowers/specs/2026-10-09-saltmarsh-demo-design.md`. Recap: `session-logs/session-99.md`.
 
 **Session 98 — new logo + sticky header LIVE; Renee is in.** Ember wordmark (`components/Wordmark.tsx`: Bohdi with a flame for the i dot) in header/footer/legal pages, ember tab icon; sticky header with a solid strip once scrolled. Cards, logo files, Facebook cover/profile in `Design files/` (untracked). Renee signed in 2026-10-08. 24-hour invite wording parked on `fix/auth-link-24h` — merge only after Supabase "Email OTP Expiration" = 86400. Recap: `session-logs/session-98.md`.
 

@@ -117,11 +117,11 @@ The design already agreed above (Known follow-ups, "Private demo copies"): each 
 
 "Nothing is saved": the sign-in lasts until the browser closes, and a scheduled cleanup deletes any copy idle for a set time. A browser closing can't be detected directly, so idle time is what actually removes it. Alex's own shared demo stays as it is, for his recordings.
 
-Open question for Alex: the welcome page lists a username and password. With one copy per visitor, a single shared login can't point at everyone's copy. Recommended: each copy gets its own throwaway login, shown on the welcome page, so the footer's Owner login works and teaches the real sign-in. The alternative is to show demo@bohdiai.com as a label only, while the copy signs the visitor in on its own.
+Login (Alex, 2026-10-09: prefilled, throwaway is fine, whichever is most efficient): each copy gets its own throwaway login, made with the copy and deleted with it. A copy needs its own owner account anyway for the backend's per-shop security, so this is the efficient route. The welcome page shows it, and the sign-in form behind the footer's Owner login comes prefilled with it, so the visitor just presses Sign in.
 
 ### Piece two — the welcome page
 
-Visitors land here first, from the samples page and anywhere else that links the demo. It says who Lena is and what the demo shows: her shop as customers see it, and her backend as she runs it. It says the shop starts on Full and can be downgraded to Lite or Showcase and upgraded again, that no payment is ever taken, and that nothing is saved: the copy is theirs alone and is erased afterwards. It lists the login (see the open question above) and has one button that makes the copy and opens it.
+Visitors land here first, from the samples page and anywhere else that links the demo. It says who Lena is and what the demo shows: her shop as customers see it, and her backend as she runs it. It says the shop starts on Full and can be downgraded to Lite or Showcase and upgraded again, that no payment is ever taken, and that nothing is saved: the copy is theirs alone and is erased afterwards. It lists the copy's login and has one button that makes the copy and opens it.
 
 ### Piece three — Learn
 
