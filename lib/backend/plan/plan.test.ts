@@ -38,7 +38,11 @@ describe('Your plan', () => {
 
 type Result = { data: { plan: string | null } | null; error: { message: string } | null };
 function fakeDb(result: Result) {
-  const chain = { select: () => chain, eq: () => chain, maybeSingle: () => Promise.resolve(result) };
+  const chain = {
+    select: () => chain,
+    eq: () => chain,
+    maybeSingle: () => Promise.resolve(result),
+  };
   return { from: () => chain } as unknown as Parameters<typeof loadSitePlan>[0];
 }
 
@@ -54,6 +58,8 @@ describe('loading the plan', () => {
   });
 
   it('says so when the read fails', async () => {
-    await expect(loadSitePlan(fakeDb({ data: null, error: { message: 'down' } }), 't')).rejects.toThrow('Could not load your plan: down');
+    await expect(
+      loadSitePlan(fakeDb({ data: null, error: { message: 'down' } }), 't'),
+    ).rejects.toThrow('Could not load your plan: down');
   });
 });

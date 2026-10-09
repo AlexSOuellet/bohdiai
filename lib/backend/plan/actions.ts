@@ -7,9 +7,9 @@
  * switches on the server, then writes with the service role (owners never write
  * switches directly).
  *
- * Moving up happens now, prorated (lib/backend/plan/billing.ts). Moving down waits
- * for the next renewal, with no refund. On the demo, "skip to renewal" plays that
- * renewal out so the move down can be shown.
+ * An upgrade happens now, prorated (lib/backend/plan/billing.ts). A downgrade waits
+ * for the next renewal, with no refund, billed monthly or yearly from then as she
+ * picks. On the demo, "skip to renewal" plays that renewal out so it can be shown.
  */
 import { revalidatePath } from 'next/cache';
 import { requireActingSite } from '@/lib/backend/current-site';
@@ -20,7 +20,16 @@ import { isSitePlan } from './plan';
 import { loadPlanState, type PlanState } from './queries';
 import { moveOf } from './plan-features';
 import { applyPlan } from './apply';
-import { addDays, addMonths, isBilling, nextRenewal, priceCents, quoteUpgrade, renewalCharge, todayDay } from './billing';
+import {
+  addDays,
+  addMonths,
+  isBilling,
+  nextRenewal,
+  priceCents,
+  quoteUpgrade,
+  renewalCharge,
+  todayDay,
+} from './billing';
 
 export type ChangePlanResult = { ok: true } | { ok: false; error: string };
 
@@ -31,13 +40,30 @@ type Ready = { ok: true; tenantId: string; state: PlanState } | { ok: false; err
 async function demoSite(): Promise<Ready> {
   const { site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
-  if (!on.has('plan') || !on.has('demo_checkout')) return { ok: false, error: 'Plan changes go through Alex for now. Use the email button on Your plan.' };
-  const state = await loadPlanState(supabaseAdmin(), site.tenantId, nextRenewal(todayDay(), 'monthly'));
+  if (!on.has('plan') || !on.has('demo_checkout'))
+    return {
+      ok: false,
+      error: 'Plan changes go through Alex for now. Use the email button on Your plan.',
+    };
+  const state = await loadPlanState(
+    supabaseAdmin(),
+    site.tenantId,
+    nextRenewal(todayDay(), 'monthly'),
+  );
   if (state === null) return { ok: false, error: 'This site isn’t on a plan yet.' };
   return { ok: true, tenantId: site.tenantId, state };
 }
 
-async function writeTerms(tenantId: string, terms: { plan_billing?: string; plan_renews_on?: string; plan_next?: string | null; plan_credit_cents?: number }): Promise<boolean> {
+async function writeTerms(
+  tenantId: string,
+  terms: {
+    plan_billing?: string;
+    plan_renews_on?: string;
+    plan_next?: string | null;
+    plan_next_billing?: string | null;
+    plan_credit_cents?: number;
+  },
+): Promise<boolean> {
   const { error } = await supabaseAdmin().from('tenants').update(terms).eq('id', tenantId);
   if (error !== null) logger.error('plan terms write failed', { tenantId, error: error.message });
   return error === null;
@@ -48,43 +74,65 @@ function done(): ChangePlanResult {
   return { ok: true };
 }
 
-/** Move up now, on `billing`: prorated against what's already paid. Clears any move down waiting. */
+/** Upgrade now, on `billing`: prorated against what's already paid. Clears any downgrade waiting. */
 export async function upgradePlan(to: unknown, billing: unknown): Promise<ChangePlanResult> {
-  if (!isSitePlan(to) || !isBilling(billing)) return { ok: false, error: 'That isn’t one of the plans.' };
+  if (!isSitePlan(to) || !isBilling(billing))
+    return { ok: false, error: 'That isn’t one of the plans.' };
   const ready = await demoSite();
   if (!ready.ok) return ready;
   const { tenantId, state } = ready;
-  if (moveOf(state.plan, to) !== 'up') return { ok: false, error: 'That isn’t a move up from your plan.' };
+  if (moveOf(state.plan, to) !== 'up')
+    return { ok: false, error: 'That isn’t an upgrade from your plan.' };
   const quote = quoteUpgrade(state, to, billing, todayDay());
   const r = await applyPlan(supabaseAdmin(), tenantId, to);
   if (!r.ok) {
     logger.error('plan upgrade failed', { tenantId, to, error: r.error });
     return { ok: false, error: FAILED };
   }
-  if (!(await writeTerms(tenantId, { plan_billing: billing, plan_renews_on: quote.renewsOn, plan_next: null, plan_credit_cents: quote.creditLeftCents }))) return { ok: false, error: FAILED };
+  if (
+    !(await writeTerms(tenantId, {
+      plan_billing: billing,
+      plan_renews_on: quote.renewsOn,
+      plan_next: null,
+      plan_next_billing: null,
+      plan_credit_cents: quote.creditLeftCents,
+    }))
+  )
+    return { ok: false, error: FAILED };
   return done();
 }
 
-/** Move down at the next renewal. Nothing changes until then, and nothing is refunded. */
-export async function scheduleDowngrade(to: unknown): Promise<ChangePlanResult> {
-  if (!isSitePlan(to)) return { ok: false, error: 'That isn’t one of the plans.' };
+/** Downgrade at the next renewal, billed `billing` from then. Nothing changes until then, and nothing is refunded. */
+export async function scheduleDowngrade(to: unknown, billing: unknown): Promise<ChangePlanResult> {
+  if (!isSitePlan(to) || !isBilling(billing))
+    return { ok: false, error: 'That isn’t one of the plans.' };
   const ready = await demoSite();
   if (!ready.ok) return ready;
   const { tenantId, state } = ready;
-  if (moveOf(state.plan, to) !== 'down') return { ok: false, error: 'That isn’t a move down from your plan.' };
-  if (!(await writeTerms(tenantId, { plan_billing: state.billing, plan_renews_on: state.renewsOn, plan_next: to }))) return { ok: false, error: FAILED };
+  if (moveOf(state.plan, to) !== 'down')
+    return { ok: false, error: 'That isn’t a downgrade from your plan.' };
+  if (
+    !(await writeTerms(tenantId, {
+      plan_billing: state.billing,
+      plan_renews_on: state.renewsOn,
+      plan_next: to,
+      plan_next_billing: billing,
+    }))
+  )
+    return { ok: false, error: FAILED };
   return done();
 }
 
-/** Keep the current plan after all: drop the move down waiting for renewal. */
+/** Keep the current plan after all: drop the downgrade waiting for renewal. */
 export async function cancelScheduledChange(): Promise<ChangePlanResult> {
   const ready = await demoSite();
   if (!ready.ok) return ready;
-  if (!(await writeTerms(ready.tenantId, { plan_next: null }))) return { ok: false, error: FAILED };
+  if (!(await writeTerms(ready.tenantId, { plan_next: null, plan_next_billing: null })))
+    return { ok: false, error: FAILED };
   return done();
 }
 
-/** Demo only: play out the next renewal now. A waiting move down takes effect, a new
+/** Demo only: play out the next renewal now. A waiting downgrade takes effect on its billing, a new
  *  period starts, and credit on account pays for it first. */
 export async function skipToRenewal(): Promise<ChangePlanResult> {
   const ready = await demoSite();
@@ -97,9 +145,20 @@ export async function skipToRenewal(): Promise<ChangePlanResult> {
       return { ok: false, error: FAILED };
     }
   }
-  const renewsOn = nextRenewal(state.renewsOn === '' ? todayDay() : state.renewsOn, state.billing);
-  const charge = renewalCharge(priceCents(state.next ?? state.plan, state.billing), state.creditCents);
-  if (!(await writeTerms(tenantId, { plan_billing: state.billing, plan_renews_on: renewsOn, plan_next: null, plan_credit_cents: charge.creditLeftCents }))) {
+  const billing = state.next !== null ? (state.nextBilling ?? state.billing) : state.billing;
+  // The demo's clock never moves, so the renewal happens today and the new period starts
+  // from today; counting from the old renewal day would leave more than a period ahead.
+  const renewsOn = nextRenewal(todayDay(), billing);
+  const charge = renewalCharge(priceCents(state.next ?? state.plan, billing), state.creditCents);
+  if (
+    !(await writeTerms(tenantId, {
+      plan_billing: billing,
+      plan_renews_on: renewsOn,
+      plan_next: null,
+      plan_next_billing: null,
+      plan_credit_cents: charge.creditLeftCents,
+    }))
+  ) {
     return { ok: false, error: FAILED };
   }
   return done();
@@ -114,6 +173,15 @@ export async function setDemoBilling(billing: unknown): Promise<ChangePlanResult
   if (!ready.ok) return ready;
   const today = todayDay();
   const renewsOn = billing === 'yearly' ? addMonths(today, 6) : addDays(today, 20);
-  if (!(await writeTerms(ready.tenantId, { plan_billing: billing, plan_renews_on: renewsOn, plan_next: null, plan_credit_cents: 0 }))) return { ok: false, error: FAILED };
+  if (
+    !(await writeTerms(ready.tenantId, {
+      plan_billing: billing,
+      plan_renews_on: renewsOn,
+      plan_next: null,
+      plan_next_billing: null,
+      plan_credit_cents: 0,
+    }))
+  )
+    return { ok: false, error: FAILED };
   return done();
 }

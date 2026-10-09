@@ -17,7 +17,7 @@ import { useNotice } from '../../_components/Notice';
 
 const FAILED = 'Something went wrong. Check your connection and try again.';
 const YEARLY_TERMS =
-  'Yearly plans aren’t refunded. If you move down later, the change starts at your next renewal.';
+  'Yearly plans aren’t refunded. If you downgrade later, the change starts at your next renewal.';
 const TO_MONTHLY =
   'Your year is turned into credit: the unused part pays your monthly bills until it runs out. Nothing is lost.';
 
@@ -29,7 +29,15 @@ export type PlanChangeProps =
       fromBilling: Billing;
       quotes: Record<Billing, UpgradeQuote | null>;
     }
-  | { kind: 'down'; from: Plan; to: Plan; hidden: readonly string[]; renewsOn: string };
+  | {
+      kind: 'down';
+      from: Plan;
+      to: Plan;
+      hidden: readonly string[];
+      renewsOn: string;
+      fromBilling: Billing;
+      daysLeft: number;
+    };
 
 function useConfirm(): {
   busy: boolean;
@@ -198,28 +206,55 @@ function Downgrade({
   to,
   hidden,
   renewsOn,
+  fromBilling,
+  daysLeft,
 }: Extract<PlanChangeProps, { kind: 'down' }>): React.ReactElement {
   const { busy, area, run } = useConfirm();
+  const [billing, setBilling] = useState<Billing>(fromBilling);
   const when = renewsOn === '' ? 'your next renewal' : longDay(renewsOn);
   return (
     <div className="bk-checkout">
       {area}
       <section className="bk-up" data-tier={to.tier} aria-labelledby="bk-co-plan">
-        <p className="bk-kicker">Moving down to</p>
+        <p className="bk-kicker">Downgrading to</p>
         <h2 id="bk-co-plan" className="bk-up-name">
           {to.name}
         </h2>
-        <p className="bk-up-price">
-          <span className="bk-up-amount">${to.monthly}</span>
-          <span className="bk-up-per">a month</span>
+        <p className="bk-co-credit-note">
+          You have {timeLeft(daysLeft, fromBilling)} left on your {from.name}{' '}
+          {fromBilling === 'monthly' ? 'month' : 'year'}. You keep everything in {from.name} until{' '}
+          {when}, then {to.name} starts.
         </p>
-        <p className="bk-co-terms">
-          The change starts on {when}, when your plan renews. You keep everything in {from.name}{' '}
-          until then. Nothing already paid is refunded.
-        </p>
+        <fieldset className="bk-billing">
+          <legend className="bk-label">From {when}, how would you like to pay?</legend>
+          {(['monthly', 'yearly'] as const).map((b) => (
+            <label key={b} className="bk-billing-opt">
+              <input
+                type="radio"
+                name="billing"
+                value={b}
+                checked={billing === b}
+                onChange={() => setBilling(b)}
+              />
+              <span>
+                {b === 'monthly' ? (
+                  <>
+                    <strong>${to.monthly}</strong> a month
+                  </>
+                ) : (
+                  <>
+                    <strong>${to.yearly}</strong> a year <em>two months free</em>
+                  </>
+                )}
+              </span>
+            </label>
+          ))}
+        </fieldset>
+        {billing === 'yearly' && <p className="bk-co-terms">{YEARLY_TERMS}</p>}
+        <p className="bk-co-terms">Nothing already paid is refunded.</p>
         {hidden.length > 0 && (
           <>
-            <p className="bk-up-lead">Put away until you move back up</p>
+            <p className="bk-up-lead">Put away until you upgrade again</p>
             <ul className="bk-co-hidden">
               {hidden.map((line) => (
                 <li key={line}>{line}</li>
@@ -228,7 +263,7 @@ function Downgrade({
           </>
         )}
         <p className="bk-co-safe">
-          Nothing is deleted. Everything comes back the moment you move up again.
+          Nothing is deleted. Everything comes back the moment you upgrade again.
         </p>
         <div className="bk-co-actions">
           <button
@@ -237,12 +272,12 @@ function Downgrade({
             disabled={busy}
             onClick={() =>
               void run(
-                () => scheduleDowngrade(to.tier),
+                () => scheduleDowngrade(to.tier, billing),
                 (go) => go.push(`/manage/plan?scheduled=${to.tier}`),
               )
             }
           >
-            {busy ? 'Changing…' : `Move down to ${to.name}`}
+            {busy ? 'Changing…' : `Downgrade to ${to.name}`}
           </button>
           <Link className="bk-btn bk-btn-quiet" href="/manage/plan">
             Stay on {from.name}
@@ -253,7 +288,7 @@ function Downgrade({
   );
 }
 
-/** Checkout for moving up, or the confirm page for moving down. On a demo site no card is taken. */
+/** Checkout for an upgrade, or the confirm page for a downgrade. On a demo site no card is taken. */
 export function PlanChange(props: PlanChangeProps): React.ReactElement {
   return props.kind === 'up' ? <Upgrade {...props} /> : <Downgrade {...props} />;
 }

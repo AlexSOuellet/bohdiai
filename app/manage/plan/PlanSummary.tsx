@@ -1,17 +1,35 @@
 import Link from 'next/link';
 import type { Plan } from '@/lib/site/plans';
 import { includesLead, moveUpMailto, planOf, type PlanView } from '@/lib/backend/plan/plan';
-import { longDay, money, priceCents, renewalCharge, type Billing } from '@/lib/backend/plan/billing';
+import {
+  longDay,
+  money,
+  priceCents,
+  renewalCharge,
+  type Billing,
+} from '@/lib/backend/plan/billing';
 import type { SitePlan } from '@/lib/backend/plan/plan';
 import { PlanButtons } from './PlanButtons';
 
 /** How Upgrade works on this site: the demo switches through checkout; a real site emails Alex until billing exists. */
 export type PlanMode = { kind: 'demo' } | { kind: 'email'; siteName: string; contactEmail: string };
 
-/** How the plan is billed, when it renews, and any move down waiting for that renewal. */
-export type PlanTermsView = { billing: Billing; renewsOn: string; next: SitePlan | null; creditCents: number };
+/** How the plan is billed, when it renews, and any downgrade waiting for that renewal (and how it will be billed). */
+export type PlanTermsView = {
+  billing: Billing;
+  renewsOn: string;
+  next: SitePlan | null;
+  nextBilling: Billing | null;
+  creditCents: number;
+};
 
-function Checks({ lines, className }: { lines: readonly string[]; className: string }): React.ReactElement {
+function Checks({
+  lines,
+  className,
+}: {
+  lines: readonly string[];
+  className: string;
+}): React.ReactElement {
   return (
     <ul className={className}>
       {lines.map((line) => (
@@ -37,7 +55,10 @@ function UpgradeCard({ plan, mode }: { plan: Plan; mode: PlanMode }): React.Reac
       <p className="bk-up-lead">{includesLead(plan) ?? 'What you’d add'}</p>
       <Checks lines={plan.includes} className="bk-up-list" />
       {mode.kind === 'demo' ? (
-        <Link className="bk-up-btn" href={{ pathname: '/manage/plan/change', query: { to: plan.tier } }}>
+        <Link
+          className="bk-up-btn"
+          href={{ pathname: '/manage/plan/change', query: { to: plan.tier } }}
+        >
           {label}
         </Link>
       ) : (
@@ -86,11 +107,27 @@ export function PlanSummary({
           </p>
           {terms !== null && terms.renewsOn !== '' && (
             <p className="bk-now-terms">
-              Billed {terms.billing}. Renews {longDay(terms.renewsOn)} for {money(renewalCharge(priceCents(next ?? current.tier, terms.billing), terms.creditCents).paidCents)}
+              Billed {terms.billing}. Renews {longDay(terms.renewsOn)}
+              {next !== null &&
+                ` as ${planOf(next).name}, billed ${terms.nextBilling ?? terms.billing},`}{' '}
+              for{' '}
+              {money(
+                renewalCharge(
+                  priceCents(
+                    next ?? current.tier,
+                    next !== null ? (terms.nextBilling ?? terms.billing) : terms.billing,
+                  ),
+                  terms.creditCents,
+                ).paidCents,
+              )}
               {terms.creditCents > 0 && ', after credit'}.
             </p>
           )}
-          {terms !== null && terms.creditCents > 0 && <p className="bk-now-credit">{money(terms.creditCents)} credit on your account, used on your next bills first.</p>}
+          {terms !== null && terms.creditCents > 0 && (
+            <p className="bk-now-credit">
+              {money(terms.creditCents)} credit on your account, used on your next bills first.
+            </p>
+          )}
         </div>
         <Checks lines={current.includes} className="bk-now-list" />
       </section>
@@ -98,17 +135,28 @@ export function PlanSummary({
       {next !== null && terms !== null && (
         <section className="bk-pending" aria-labelledby="bk-pending-h">
           <h2 id="bk-pending-h" className="bk-pending-h">
-            Changing to {planOf(next).name} on {longDay(terms.renewsOn)}
+            Downgrading to {planOf(next).name} on {longDay(terms.renewsOn)}
           </h2>
-          <p className="bk-note">You keep everything in {current.name} until then. Nothing is deleted; it’s put away until you move back up.</p>
+          <p className="bk-note">
+            You keep everything in {current.name} until then. Nothing is deleted; it’s put away
+            until you upgrade again.
+          </p>
         </section>
       )}
 
-      {demo && <PlanButtons keepLabel={next !== null ? `Keep ${current.name}` : null} demo billing={terms?.billing ?? 'monthly'} />}
+      {demo && (
+        <PlanButtons
+          keepLabel={next !== null ? `Keep ${current.name}` : null}
+          demo
+          billing={terms?.billing ?? 'monthly'}
+        />
+      )}
 
       {above.length > 0 && (
         <>
-          <p className="bk-plan-intro">Ready for more? Move up any time, and everything you’ve added comes with you.</p>
+          <p className="bk-plan-intro">
+            Ready for more? Move up any time, and everything you’ve added comes with you.
+          </p>
           <div className="bk-ups">
             {above.map((plan) => (
               <UpgradeCard key={plan.id} plan={plan} mode={mode} />
@@ -121,14 +169,21 @@ export function PlanSummary({
         <div className="bk-downs">
           <p className="bk-label">Need less for a while?</p>
           {below.map((plan) => (
-            <Link key={plan.id} className="bk-btn bk-btn-quiet" href={{ pathname: '/manage/plan/change', query: { to: plan.tier } }}>
-              Move down to {plan.name}
+            <Link
+              key={plan.id}
+              className="bk-btn bk-btn-quiet"
+              href={{ pathname: '/manage/plan/change', query: { to: plan.tier } }}
+            >
+              Downgrade to {plan.name}
             </Link>
           ))}
         </div>
       )}
 
-      <p className="bk-plan-safe">Moving down a plan never deletes anything. Your products, photos and dates are kept and come back when you move up again.</p>
+      <p className="bk-plan-safe">
+        Downgrading never deletes anything. Your products, photos and dates are kept and come back
+        when you upgrade again.
+      </p>
     </div>
   );
 }

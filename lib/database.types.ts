@@ -2288,6 +2288,7 @@ export type Database = {
           plan_billing: string | null
           plan_credit_cents: number
           plan_next: string | null
+          plan_next_billing: string | null
           plan_renews_on: string | null
           postal_code: string | null
           primary_niche: string | null
@@ -2329,6 +2330,7 @@ export type Database = {
           plan_billing?: string | null
           plan_credit_cents?: number
           plan_next?: string | null
+          plan_next_billing?: string | null
           plan_renews_on?: string | null
           postal_code?: string | null
           primary_niche?: string | null
@@ -2370,6 +2372,7 @@ export type Database = {
           plan_billing?: string | null
           plan_credit_cents?: number
           plan_next?: string | null
+          plan_next_billing?: string | null
           plan_renews_on?: string | null
           postal_code?: string | null
           primary_niche?: string | null

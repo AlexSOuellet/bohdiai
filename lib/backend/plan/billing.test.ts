@@ -1,5 +1,19 @@
 import { describe, it, expect } from 'vitest';
-import { addDays, addMonths, daysLeft, timeLeft, isBilling, longDay, money, nextRenewal, periodLeft, priceCents, quoteUpgrade, renewalCharge, todayDay } from './billing';
+import {
+  addDays,
+  addMonths,
+  daysLeft,
+  timeLeft,
+  isBilling,
+  longDay,
+  money,
+  nextRenewal,
+  periodLeft,
+  priceCents,
+  quoteUpgrade,
+  renewalCharge,
+  todayDay,
+} from './billing';
 
 describe('billing dates', () => {
   it('moves by months and holds to the month’s last day', () => {
@@ -12,6 +26,8 @@ describe('billing dates', () => {
     expect(addDays('2026-12-25', 10)).toBe('2027-01-04');
     expect(daysLeft('2026-10-09', '2027-04-09')).toBe(182);
     expect(daysLeft('2026-11-01', '2026-10-29')).toBe(0);
+    expect(daysLeft('2026-10-09', '2028-04-09', 'yearly')).toBe(366); // 2027-04-09 to 2028-04-09 holds Feb 29
+    expect(daysLeft('2026-10-09', '2027-04-09', 'yearly')).toBe(182);
   });
 
   it('says the time left the way people do', () => {
@@ -43,7 +59,11 @@ describe('billing dates', () => {
 });
 
 describe('moving up, prorated', () => {
-  const monthlyShowcase = { plan: 'showcase' as const, billing: 'monthly' as const, renewsOn: '2026-10-29' };
+  const monthlyShowcase = {
+    plan: 'showcase' as const,
+    billing: 'monthly' as const,
+    renewsOn: '2026-10-29',
+  };
 
   it('charges the difference for the rest of the month and keeps the renewal day', () => {
     const q = quoteUpgrade(monthlyShowcase, 'lite', 'monthly', '2026-10-09');
@@ -56,7 +76,11 @@ describe('moving up, prorated', () => {
   });
 
   it('charges the difference for the months left in a paid year', () => {
-    const yearlyLite = { plan: 'lite' as const, billing: 'yearly' as const, renewsOn: '2027-04-09' };
+    const yearlyLite = {
+      plan: 'lite' as const,
+      billing: 'yearly' as const,
+      renewsOn: '2027-04-09',
+    };
     const q = quoteUpgrade(yearlyLite, 'full', 'yearly', '2026-10-09');
     const left = periodLeft('2026-10-09', '2027-04-09', 'yearly');
     expect(q.todayCents).toBe(Math.round(20000 * left) - Math.round(15000 * left));
@@ -75,7 +99,12 @@ describe('moving up, prorated', () => {
 
   it('turns the unused part of a year into credit when a yearly site goes monthly', () => {
     // Yearly Showcase ($50), half the year left: about $25 unused. Lite monthly is $15.
-    const q = quoteUpgrade({ plan: 'showcase', billing: 'yearly', renewsOn: '2027-04-09' }, 'lite', 'monthly', '2026-10-09');
+    const q = quoteUpgrade(
+      { plan: 'showcase', billing: 'yearly', renewsOn: '2027-04-09' },
+      'lite',
+      'monthly',
+      '2026-10-09',
+    );
     const unused = Math.round(5000 * periodLeft('2026-10-09', '2027-04-09', 'yearly'));
     expect(q.creditCents).toBe(unused);
     expect(q.todayCents).toBe(0);
@@ -85,13 +114,25 @@ describe('moving up, prorated', () => {
   });
 
   it('does the same from yearly Lite to monthly Full', () => {
-    const q = quoteUpgrade({ plan: 'lite', billing: 'yearly', renewsOn: '2027-04-09' }, 'full', 'monthly', '2026-10-09');
+    const q = quoteUpgrade(
+      { plan: 'lite', billing: 'yearly', renewsOn: '2027-04-09' },
+      'full',
+      'monthly',
+      '2026-10-09',
+    );
     expect(q.todayCents).toBe(0);
-    expect(q.creditLeftCents).toBe(Math.round(15000 * periodLeft('2026-10-09', '2027-04-09', 'yearly')) - 2000);
+    expect(q.creditLeftCents).toBe(
+      Math.round(15000 * periodLeft('2026-10-09', '2027-04-09', 'yearly')) - 2000,
+    );
   });
 
   it('uses credit already on account before she pays anything', () => {
-    const q = quoteUpgrade({ plan: 'showcase', billing: 'monthly', renewsOn: '2026-10-29', creditCents: 500 }, 'lite', 'monthly', '2026-10-09');
+    const q = quoteUpgrade(
+      { plan: 'showcase', billing: 'monthly', renewsOn: '2026-10-29', creditCents: 500 },
+      'lite',
+      'monthly',
+      '2026-10-09',
+    );
     expect(q.accountCreditUsedCents).toBe(500);
     expect(q.todayCents).toBe(667 - 500);
     expect(q.creditLeftCents).toBe(0);
@@ -104,7 +145,12 @@ describe('moving up, prorated', () => {
   });
 
   it('never charges less than nothing', () => {
-    const q = quoteUpgrade({ plan: 'showcase', billing: 'monthly', renewsOn: '2026-10-01' }, 'lite', 'monthly', '2026-10-09');
+    const q = quoteUpgrade(
+      { plan: 'showcase', billing: 'monthly', renewsOn: '2026-10-01' },
+      'lite',
+      'monthly',
+      '2026-10-09',
+    );
     expect(q.todayCents).toBe(0);
   });
 });

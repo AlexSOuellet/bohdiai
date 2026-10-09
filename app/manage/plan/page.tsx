@@ -14,13 +14,17 @@ function first(v: string | string[] | undefined): string | undefined {
   return Array.isArray(v) ? v[0] : v;
 }
 
-export default async function PlanPage({ searchParams }: PageProps<'/manage/plan'>): Promise<React.ReactElement> {
+export default async function PlanPage({
+  searchParams,
+}: PageProps<'/manage/plan'>): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
   if (!on.has('plan')) notFound();
   const state = await loadPlanState(await createSupabaseServerClient(), site.tenantId);
   if (state === null) notFound();
-  const mode: PlanMode = on.has('demo_checkout') ? { kind: 'demo' } : { kind: 'email', siteName: site.businessName, contactEmail: SITE_CONTACT_EMAIL };
+  const mode: PlanMode = on.has('demo_checkout')
+    ? { kind: 'demo' }
+    : { kind: 'email', siteName: site.businessName, contactEmail: SITE_CONTACT_EMAIL };
   // After a change the checkout sends her back here; say what happened.
   const params = await searchParams;
   const changedTo = first(params['changed']);
@@ -29,7 +33,7 @@ export default async function PlanPage({ searchParams }: PageProps<'/manage/plan
     isSitePlan(changedTo) && changedTo === state.plan
       ? `You’re now on ${planOf(state.plan).name}.`
       : isSitePlan(scheduledTo) && scheduledTo === state.next && state.renewsOn !== ''
-        ? `You’ll move to ${planOf(scheduledTo).name} on ${longDay(state.renewsOn)}.`
+        ? `You’ll downgrade to ${planOf(scheduledTo).name} on ${longDay(state.renewsOn)}.`
         : null;
   return (
     <>

@@ -24,7 +24,11 @@ export type PlanView = { current: Plan; above: Plan[]; below: Plan[] };
 /** The site's plan, the plans above it (selling order) and below it (nearest first). */
 export function planView(tier: SitePlan): PlanView {
   const at = SITE_PLANS.indexOf(tier);
-  return { current: planOf(tier), above: SITE_PLANS.slice(at + 1).map(planOf), below: SITE_PLANS.slice(0, at).reverse().map(planOf) };
+  return {
+    current: planOf(tier),
+    above: SITE_PLANS.slice(at + 1).map(planOf),
+    below: SITE_PLANS.slice(0, at).reverse().map(planOf),
+  };
 }
 
 /** How a plan's list opens: Full builds on Lite, the others stand alone. */

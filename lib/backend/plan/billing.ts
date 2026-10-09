@@ -6,7 +6,7 @@
  *   she already paid for, and her renewal day stays put. Changing billing starts a
  *   new period today, less the unused part of the old one; anything left over
  *   (yearly to monthly) stays as credit and pays her next bills first.
- * - Moving down takes effect at the next renewal. Nothing is refunded (Alex,
+ * - A downgrade takes effect at the next renewal. Nothing is refunded (Alex,
  *   2026-10-09); a yearly plan says so where it's chosen.
  */
 import type { SitePlan } from './plan';
@@ -36,7 +36,9 @@ function toDay(d: Date): string {
 export function addMonths(day: string, months: number): string {
   const d = toDate(day);
   const target = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + months, 1));
-  const last = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0)).getUTCDate();
+  const last = new Date(
+    Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0),
+  ).getUTCDate();
   target.setUTCDate(Math.min(d.getUTCDate(), last));
   return toDay(target);
 }
@@ -70,9 +72,12 @@ export function periodLeft(today: string, renewsOn: string, billing: Billing): n
   return Math.min(1, Math.max(0, left / total));
 }
 
-/** Days from `today` to `renewsOn`, never below zero. */
-export function daysLeft(today: string, renewsOn: string): number {
-  return Math.max(0, daysBetween(today, renewsOn));
+/** Days from `today` to `renewsOn`, never below zero, and never more than one `billing` period. */
+export function daysLeft(today: string, renewsOn: string, billing?: Billing): number {
+  const left = Math.max(0, daysBetween(today, renewsOn));
+  if (billing === undefined) return left;
+  // Never more than one period: a renewal day further out than that is not a real period.
+  return Math.min(left, daysBetween(addMonths(renewsOn, -periodMonths(billing)), renewsOn));
 }
 
 /** How much of a period is left, as people say it: "about 6 months (182 days)" or "20 days". */
@@ -83,7 +88,12 @@ export function timeLeft(days: number, billing: Billing): string {
 }
 
 /** Where a site stands: its plan, billing, renewal day and any credit on account. */
-export type PlanTerms = { plan: SitePlan; billing: Billing; renewsOn: string; creditCents?: number };
+export type PlanTerms = {
+  plan: SitePlan;
+  billing: Billing;
+  renewsOn: string;
+  creditCents?: number;
+};
 
 export type UpgradeQuote = {
   billing: Billing;
@@ -117,7 +127,12 @@ export type UpgradeQuote = {
  * can leave credit over, which pays the next months until it runs out — Alex,
  * 2026-10-09). Credit already on account is used before she pays anything.
  */
-export function quoteUpgrade(now: PlanTerms, to: SitePlan, billing: Billing, today: string): UpgradeQuote {
+export function quoteUpgrade(
+  now: PlanTerms,
+  to: SitePlan,
+  billing: Billing,
+  today: string,
+): UpgradeQuote {
   const left = periodLeft(today, now.renewsOn, now.billing);
   const paidCents = priceCents(now.plan, now.billing);
   const newCents = priceCents(to, billing);
@@ -135,7 +150,7 @@ export function quoteUpgrade(now: PlanTerms, to: SitePlan, billing: Billing, tod
     prorated: sameBilling,
     creditCents,
     creditUsedCents: Math.min(creditCents, partCents),
-    daysLeft: daysLeft(today, now.renewsOn),
+    daysLeft: daysLeft(today, now.renewsOn, now.billing),
     accountCreditUsedCents,
     todayCents: owed - accountCreditUsedCents,
     creditLeftCents: balance - accountCreditUsedCents + overCredit,
@@ -145,7 +160,10 @@ export function quoteUpgrade(now: PlanTerms, to: SitePlan, billing: Billing, tod
 }
 
 /** A renewal: the price, paid from credit first. */
-export function renewalCharge(priceCents: number, creditCents: number): { paidCents: number; creditLeftCents: number } {
+export function renewalCharge(
+  priceCents: number,
+  creditCents: number,
+): { paidCents: number; creditLeftCents: number } {
   const used = Math.min(priceCents, creditCents);
   return { paidCents: priceCents - used, creditLeftCents: creditCents - used };
 }
@@ -158,7 +176,12 @@ export function money(cents: number): string {
 
 /** A renewal day as the backend says it: "October 29, 2026". */
 export function longDay(day: string): string {
-  return new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(toDate(day));
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(toDate(day));
 }
 
 /** Today in UTC, as a day. */

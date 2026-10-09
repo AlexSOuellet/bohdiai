@@ -1,17 +1,33 @@
 import { describe, it, expect } from 'vitest';
 import { FEATURES } from '../features';
-import { PLAN_FEATURES, PLAN_MANAGED, hiddenByMove, moveOf, planFeatureRows } from './plan-features';
+import {
+  PLAN_FEATURES,
+  PLAN_MANAGED,
+  hiddenByMove,
+  moveOf,
+  planFeatureRows,
+} from './plan-features';
 import { applyPlan } from './apply';
 
 describe('what each plan switches on', () => {
   it('gives Showcase dates-only markets and no shop', () => {
-    expect([...PLAN_FEATURES.showcase].sort()).toEqual(['gallery', 'market_dates', 'plan', 'profile', 'qr_codes']);
+    expect([...PLAN_FEATURES.showcase].sort()).toEqual([
+      'gallery',
+      'market_dates',
+      'plan',
+      'profile',
+      'qr_codes',
+    ]);
   });
 
   it('adds the catalog and the point of sale at Lite, and market records only at Full', () => {
-    expect(PLAN_FEATURES.lite).toEqual(expect.arrayContaining(['catalog', 'market_details', 'market_shop']));
+    expect(PLAN_FEATURES.lite).toEqual(
+      expect.arrayContaining(['catalog', 'market_details', 'market_shop']),
+    );
     expect(PLAN_FEATURES.lite).not.toContain('market_records');
-    expect(PLAN_FEATURES.full).toEqual(expect.arrayContaining(['cart', 'promotions', 'new_arrivals', 'market_records']));
+    expect(PLAN_FEATURES.full).toEqual(
+      expect.arrayContaining(['cart', 'promotions', 'new_arrivals', 'market_records']),
+    );
   });
 
   it('builds on the plan below, and only names real switches', () => {
@@ -21,7 +37,8 @@ describe('what each plan switches on', () => {
   });
 
   it('never touches the switches the plans don’t decide', () => {
-    for (const k of ['demo_checkout', 'custom_domain_panel', 'video', 'digital_products']) expect(PLAN_MANAGED).not.toContain(k);
+    for (const k of ['demo_checkout', 'custom_domain_panel', 'video', 'digital_products'])
+      expect(PLAN_MANAGED).not.toContain(k);
   });
 
   it('writes every managed switch, on or off', () => {
@@ -60,12 +77,16 @@ function fakeDb(fail: { upsert?: string; update?: string } = {}) {
     from: (table: string) => ({
       upsert: (arg: unknown) => {
         calls.push({ table, op: 'upsert', arg });
-        return Promise.resolve({ error: fail.upsert === undefined ? null : { message: fail.upsert } });
+        return Promise.resolve({
+          error: fail.upsert === undefined ? null : { message: fail.upsert },
+        });
       },
       update: (arg: unknown) => ({
         eq: () => {
           calls.push({ table, op: 'update', arg });
-          return Promise.resolve({ error: fail.update === undefined ? null : { message: fail.update } });
+          return Promise.resolve({
+            error: fail.update === undefined ? null : { message: fail.update },
+          });
         },
       }),
     }),
@@ -77,13 +98,26 @@ describe('applying a plan', () => {
   it('sets the switches, then stores the plan', async () => {
     const { db, calls } = fakeDb();
     expect(await applyPlan(db, 't1', 'lite')).toEqual({ ok: true });
-    expect(calls.map((c) => `${c.table}.${c.op}`)).toEqual(['tenant_features.upsert', 'tenants.update']);
-    expect(calls[0]?.arg).toContainEqual({ tenant_id: 't1', feature_key: 'catalog', enabled: true });
+    expect(calls.map((c) => `${c.table}.${c.op}`)).toEqual([
+      'tenant_features.upsert',
+      'tenants.update',
+    ]);
+    expect(calls[0]?.arg).toContainEqual({
+      tenant_id: 't1',
+      feature_key: 'catalog',
+      enabled: true,
+    });
     expect(calls[1]?.arg).toEqual({ plan: 'lite' });
   });
 
   it('stops and says which write failed', async () => {
-    expect(await applyPlan(fakeDb({ upsert: 'down' }).db, 't1', 'lite')).toEqual({ ok: false, error: 'switches: down' });
-    expect(await applyPlan(fakeDb({ update: 'nope' }).db, 't1', 'lite')).toEqual({ ok: false, error: 'plan: nope' });
+    expect(await applyPlan(fakeDb({ upsert: 'down' }).db, 't1', 'lite')).toEqual({
+      ok: false,
+      error: 'switches: down',
+    });
+    expect(await applyPlan(fakeDb({ update: 'nope' }).db, 't1', 'lite')).toEqual({
+      ok: false,
+      error: 'plan: nope',
+    });
   });
 });

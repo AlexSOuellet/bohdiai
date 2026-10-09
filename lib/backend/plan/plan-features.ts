@@ -2,7 +2,7 @@
  * What each maker plan switches on (Saltmarsh & Lace demo spec, stage two). A plan
  * is a set of the per-site feature switches; moving between plans flips only
  * the switches the plans decide and never touches the rest (domain panel, demo
- * checkout, video). Moving down hides; nothing is deleted.
+ * checkout, video). A downgrade hides; nothing is deleted.
  *
  * Markets step up by plan (Alex, 2026-10-09): Showcase reports day, market and town
  * only; Lite adds hours, address, booth, website and the point of sale; Full adds
@@ -13,9 +13,19 @@ import { SITE_PLANS, type SitePlan } from './plan';
 
 const SHOWCASE: readonly FeatureKey[] = ['profile', 'gallery', 'market_dates', 'qr_codes', 'plan'];
 const LITE: readonly FeatureKey[] = [...SHOWCASE, 'catalog', 'market_details', 'market_shop'];
-const FULL: readonly FeatureKey[] = [...LITE, 'cart', 'promotions', 'new_arrivals', 'market_records'];
+const FULL: readonly FeatureKey[] = [
+  ...LITE,
+  'cart',
+  'promotions',
+  'new_arrivals',
+  'market_records',
+];
 
-export const PLAN_FEATURES: Record<SitePlan, readonly FeatureKey[]> = { showcase: SHOWCASE, lite: LITE, full: FULL };
+export const PLAN_FEATURES: Record<SitePlan, readonly FeatureKey[]> = {
+  showcase: SHOWCASE,
+  lite: LITE,
+  full: FULL,
+};
 
 /** Every switch a plan decides. */
 export const PLAN_MANAGED: readonly FeatureKey[] = FULL;
