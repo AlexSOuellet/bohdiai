@@ -9,6 +9,7 @@ import type { Database } from '@/lib/database.types';
 import type { ProductView } from '@/lib/archetypes/content';
 import { loadCatalog } from '@/lib/storefront/catalog';
 import { loadSiteFeatures } from '@/lib/backend/features';
+import { HOME_MAX } from '@/lib/catalog/home';
 import { loadCardData, type CardData } from './data';
 
 export type ShorelineData = {
@@ -28,8 +29,8 @@ export async function loadShorelineData(db: SupabaseClient<Database>, tenantId: 
   return { card, pages, products, marketDetails: features.has('market_details') };
 }
 
-/** The home page's pieces: the ones she marked for the home page, else the first six. */
-export function featuredProducts(products: readonly ProductView[], max = 6): ProductView[] {
+/** The home page's pieces: the ones she marked for the home page, else the first few, up to the home page's limit. */
+export function featuredProducts(products: readonly ProductView[], max = HOME_MAX): ProductView[] {
   const marked = products.filter((p) => p.onHome === true);
   return (marked.length > 0 ? marked : products).slice(0, max);
 }

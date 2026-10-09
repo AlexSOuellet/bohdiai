@@ -118,10 +118,10 @@ describe('a product page', () => {
 });
 
 describe('featured pieces', () => {
-  it('uses the ones marked for the home page, else the first six', () => {
+  it('uses the ones marked for the home page, else the first five', () => {
     expect(featuredProducts(site.products).map((p) => p.slug)).toEqual(['old-saint-nick']);
     const many = Array.from({ length: 9 }, (_, i) => product(`p${i}`));
-    expect(featuredProducts(many)).toHaveLength(6);
+    expect(featuredProducts(many)).toHaveLength(5);
   });
 });
 

@@ -2,9 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import { slugify, uniqueSlug } from '@/lib/catalog/slug';
 import { NO_PRICE_CENTS } from '@/lib/catalog/price';
+import { HOME_MAX } from '@/lib/catalog/home';
 
-/** How many of the new products start on the home page. */
-const HOME_PIECES = 6;
 
 export type GalleryPhoto = { uploadId: string; caption: string };
 
@@ -19,7 +18,8 @@ export type NewProduct = {
 /**
  * Upgrading from Showcase (Saltmarsh & Lace demo spec, stage two): each gallery
  * photo that isn't a product yet becomes one, named from its caption, with no price
- * yet ("Ask for price"), in gallery order; the first few go on the home page.
+ * yet ("Ask for price"), in gallery order; the first ones fill the home page up to
+ * its limit (HOME_MAX, the same limit every product save checks).
  * Pure, so the naming and order are testable.
  */
 export function productsFromGallery(
@@ -29,7 +29,7 @@ export function productsFromGallery(
   homeTaken: number,
 ): NewProduct[] {
   const taken = new Set(takenSlugs);
-  let homeLeft = Math.max(0, HOME_PIECES - homeTaken);
+  let homeLeft = Math.max(0, HOME_MAX - homeTaken);
   return photos
     .filter((p) => !usedUploadIds.has(p.uploadId))
     .map((p, i) => {

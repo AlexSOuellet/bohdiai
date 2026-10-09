@@ -22,10 +22,10 @@ describe('gallery photos become products', () => {
     expect(made.map((p) => p.slug)).toEqual(['the-lady-in-amber-2', 'piece-2', 'carol-star']);
   });
 
-  it('puts the first six on the home page, counting what’s already there', () => {
+  it('fills the home page up to its limit, counting what’s already there', () => {
     const many = Array.from({ length: 9 }, (_, i) => ({ uploadId: `u${i}`, caption: `Piece ${i}` }));
-    expect(productsFromGallery(many, new Set(), new Set(), 0).filter((p) => p.on_home)).toHaveLength(6);
-    expect(productsFromGallery(many, new Set(), new Set(), 4).filter((p) => p.on_home)).toHaveLength(2);
+    expect(productsFromGallery(many, new Set(), new Set(), 0).filter((p) => p.on_home)).toHaveLength(5);
+    expect(productsFromGallery(many, new Set(), new Set(), 4).filter((p) => p.on_home)).toHaveLength(1);
     expect(productsFromGallery(many, new Set(), new Set(), 8).filter((p) => p.on_home)).toHaveLength(0);
   });
 });
