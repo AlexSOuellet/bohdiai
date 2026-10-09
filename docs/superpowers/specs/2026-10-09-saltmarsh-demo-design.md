@@ -106,3 +106,27 @@ Not built, waiting on Alex: product video (Cloudflare Stream cost to confirm), p
 - **Stripe owns proration.** The proration in `lib/backend/plan/billing.ts` is ours and runs the demo. When real billing connects, Stripe's proration is the source of truth (it can differ by cents); ours becomes a preview of it, or is replaced.
 - **One source for prices.** Prices live in `lib/site/plans.ts` today. With Stripe they also live in Stripe; one must feed the other so they can't drift.
 - **Private demo copies** (Alex agreed, to build after Full): each visitor gets their own copy of the demo shop, signed in automatically, deleted after idle time (sign-in ends when the browser closes); photos shared, visitor uploads deleted with the copy, emails caught ("Demo: not sent"), copies rate-limited. Until then the single shared demo is for Alex's recordings only.
+
+## Stage four — the public demo on bohdiai.com (planned 2026-10-09, build 2026-10-10)
+
+Alex, 2026-10-09: the demo goes on bohdiai.com, so personal copies are a go. Three pieces, built in this order because each needs the one before it.
+
+### Piece one — a personal copy for each visitor
+
+The design already agreed above (Known follow-ups, "Private demo copies"): each visitor gets their own copy of Saltmarsh & Lace at Full, made from the clean Full stage, on its own address (`demo-<code>.bohdiai.com`). Photos are shared, not copied, so a copy is only database rows. Anything the visitor uploads is deleted with the copy. Emails a copy would send are caught and shown as "Demo: not sent". Making a copy is rate-limited and there is a cap on live copies.
+
+"Nothing is saved": the sign-in lasts until the browser closes, and a scheduled cleanup deletes any copy idle for a set time. A browser closing can't be detected directly, so idle time is what actually removes it. Alex's own shared demo stays as it is, for his recordings.
+
+Open question for Alex: the welcome page lists a username and password. With one copy per visitor, a single shared login can't point at everyone's copy. Recommended: each copy gets its own throwaway login, shown on the welcome page, so the footer's Owner login works and teaches the real sign-in. The alternative is to show demo@bohdiai.com as a label only, while the copy signs the visitor in on its own.
+
+### Piece two — the welcome page
+
+Visitors land here first, from the samples page and anywhere else that links the demo. It says who Lena is and what the demo shows: her shop as customers see it, and her backend as she runs it. It says the shop starts on Full and can be downgraded to Lite or Showcase and upgraded again, that no payment is ever taken, and that nothing is saved: the copy is theirs alone and is erased afterwards. It lists the login (see the open question above) and has one button that makes the copy and opens it.
+
+### Piece three — Learn
+
+A Learn button on every backend page of a demo copy opens a short explainer for that page: what it does, which plan includes it, and what a customer sees because of it. The storefront gets one too, so a visitor can learn what each part of Lena's site is for. All words live in one strings file, nothing written into the pages. Undecided: whether real makers get Learn later as help. It's built so they could, and switched on only for demo copies for now.
+
+### Before it goes live
+
+Both open branches (`feat/site-facebook-link`, `feat/saltmarsh-showcase`) merge to main first, once Alex has looked. The demo is then linked from the samples page.
