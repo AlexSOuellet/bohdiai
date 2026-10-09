@@ -1,10 +1,13 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen, cleanup, within, fireEvent } from '@testing-library/react';
 import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
 import type { ProductView } from '@/lib/archetypes/content';
-import { ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
+import { ShorelineCart, ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
 import { featuredProducts, type ShorelineData } from './shoreline-data';
 import { CARD_STRINGS as S } from './strings';
+
+// The cart's remove button and code box refresh the page through the router.
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }), notFound: vi.fn() }));
 
 const TENANT = '1b54cb24-c467-4327-ae66-f9857a71a854';
 const W = S.shoreline;
@@ -27,6 +30,7 @@ const site: ShorelineData = {
   products: [product('cabbage-rose-oyster-dish', { askForPrice: true, price: '' }), product('old-saint-nick', { onHome: true, price: '$22' })],
   marketDetails: true,
   allPhotos: true,
+  cart: false,
 };
 
 afterEach(cleanup);
@@ -161,5 +165,52 @@ describe('photos on a product page', () => {
   it('shows the main photo only on Lite', () => {
     const { container } = render(<ShorelineProduct site={{ ...site, allPhotos: false }} product={twoPhotos} tenantId={TENANT} />);
     expect([...container.querySelectorAll('.sl-product-photos img')].map((i) => i.getAttribute('src'))).toEqual(['https://cdn/a.jpg']);
+  });
+});
+
+describe('the cart (Full)', () => {
+  const full = { ...site, cart: true };
+  const priced = { ...site.products[1]!, id: 'l2' };
+
+  it('offers Add to cart on a priced piece, never on “Ask for price”, and only on Full', () => {
+    render(<ShorelineProduct site={full} product={priced} tenantId={TENANT} />);
+    expect(screen.getByRole('button', { name: W.cart.add })).toBeTruthy();
+    expect(screen.getByRole('link', { name: W.cart.nav(0) }).getAttribute('href')).toBe('/cart');
+    cleanup();
+    render(<ShorelineProduct site={full} product={{ ...site.products[0]!, id: 'l1' }} tenantId={TENANT} />);
+    expect(screen.queryByRole('button', { name: W.cart.add })).toBeNull();
+    cleanup();
+    render(<ShorelineProduct site={site} product={priced} tenantId={TENANT} />);
+    expect(screen.queryByRole('button', { name: W.cart.add })).toBeNull();
+    expect(screen.queryByRole('link', { name: /^Cart/ })).toBeNull();
+  });
+
+  it('lists the pieces with the sums and the order letter', () => {
+    const cart = {
+      lines: [
+        { id: 'l2', slug: 'old-saint-nick', name: 'Old Saint Nick', price: '$22', available: true },
+        { id: 'l3', slug: 'gone', name: 'Gone piece', price: '$10', available: false },
+      ],
+      subtotal: '$22',
+      discount: { label: 'Fall sale', amount: '$2' },
+      total: '$20',
+      codes: true,
+    };
+    render(<ShorelineCart site={full} cart={cart} />);
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(W.cart.title);
+    expect(screen.getByText('Old Saint Nick')).toBeTruthy();
+    expect(screen.getByText(W.cart.gone)).toBeTruthy();
+    expect(screen.getByText('$20')).toBeTruthy();
+    expect(screen.getByText('−$2')).toBeTruthy();
+    expect(screen.getByRole('alert').textContent).toBe(W.cart.fix);
+    expect(screen.getByRole('button', { name: W.cart.removeLabel('Old Saint Nick') })).toBeTruthy();
+  });
+
+  it('shows the order form when everything is available, and an empty cart says so', () => {
+    render(<ShorelineCart site={full} cart={{ lines: [{ id: 'l2', slug: 'a', name: 'A', price: '$22', available: true }], subtotal: '$22', total: '$22', codes: false }} />);
+    expect(screen.getByRole('button', { name: W.cart.send })).toBeTruthy();
+    cleanup();
+    render(<ShorelineCart site={full} cart={{ lines: [], subtotal: '$0', total: '$0', codes: false }} />);
+    expect(screen.getByText(W.cart.empty)).toBeTruthy();
   });
 });

@@ -22,6 +22,8 @@ export type ShorelineData = {
   marketDetails: boolean;
   /** Every photo on a product (Full); otherwise its main photo only. */
   allPhotos: boolean;
+  /** The cart and order letter (Full). */
+  cart: boolean;
 };
 
 export async function loadShorelineData(
@@ -40,6 +42,7 @@ export async function loadShorelineData(
     products,
     marketDetails: features.has('market_details'),
     allPhotos: features.has('product_photos'),
+    cart: features.has('cart'),
   };
 }
 

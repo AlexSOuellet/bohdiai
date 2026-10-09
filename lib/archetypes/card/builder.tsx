@@ -15,10 +15,10 @@ import { BulletinLanding, BulletinContentPage } from './BulletinLanding';
 import { ShowreelLanding, ShowreelContentPage } from './ShowreelLanding';
 import { TorchLanding, TorchContentPage } from './TorchLanding';
 import { ShorelineLanding, ShorelineContentPage } from './ShorelineLanding';
-import { ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
+import { ShorelineCart, ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
 import { loadShorelineData } from './shoreline-data';
 import type { ArchetypePage } from '../builder';
-import type { ProductView } from '../content';
+import type { CartView, ProductView } from '../content';
 import { CardContentSchema, cardDesign, type CardContent, type CardDesign } from './design';
 import { loadCardData } from './data';
 import { cardPaint, type CardPaint } from './paint';
@@ -61,6 +61,14 @@ async function CardSite({ tenantId, paint, design, page }: { tenantId: string; p
   if (design === 'showreel') return <ShowreelLanding data={data} tenantId={tenantId} />;
   if (design === 'torch') return <TorchLanding data={data} tenantId={tenantId} />;
   return <CardLanding data={data} paint={paint} tenantId={tenantId} />;
+}
+
+/** The cart — only the shoreline design on Full (the cart switch) has one. */
+async function CardCart({ tenantId, design, cart }: { tenantId: string; design: CardDesign; cart: CartView }): Promise<ReactElement> {
+  if (design !== 'shoreline') notFound();
+  const site = await loadShorelineData(supabaseAdmin(), tenantId);
+  if (!site.cart) notFound();
+  return <ShorelineCart site={site} cart={cart} />;
 }
 
 /** A product's page — only the shoreline design on Lite and Full has them. */
@@ -118,6 +126,11 @@ export const CARD_SPEC: ArchetypeBuildSpec<CardContent> = {
     const design = designOf(content);
     if (tenantId === undefined) notFound();
     return <CardSite tenantId={tenantId} design={design} page={page} paint={cardPaint({ mood, lookKey, brandPalette })} />;
+  },
+  renderCart: ({ content, cart, tenantId }) => {
+    const design = designOf(content);
+    if (tenantId === undefined) notFound();
+    return <CardCart tenantId={tenantId} design={design} cart={cart} />;
   },
   renderProduct: ({ content, product, tenantId }) => {
     const design = designOf(content);

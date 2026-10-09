@@ -10,6 +10,9 @@ import Link from 'next/link';
 import type { ProductView } from '@/lib/archetypes/content';
 import { CARD_STRINGS as S } from './strings';
 import { CardContactForm } from './CardContactForm';
+import { AddToCartButton, CartLink, PromoCodeForm, RemoveFromCartButton, SyncCart } from '@/lib/storefront/CartControls';
+import type { CartView } from '@/lib/archetypes/content';
+import { ShorelineOrderForm } from './ShorelineOrderForm';
 import { PhotoViewerProvider, Snapshot } from './PhotoViewer';
 import { Frame, Footer, nameParts } from './ShorelineLanding';
 import { bioParagraphs, initials, marketDay, type CardData } from './data';
@@ -38,7 +41,7 @@ function Name({ name }: { name: string }): ReactElement {
   );
 }
 
-function Bar({ name, current }: { name: string; current: ShorelinePage | null }): ReactElement {
+function Bar({ name, current, cart = false }: { name: string; current: ShorelinePage | 'cart' | null; cart?: boolean }): ReactElement {
   return (
     <header className="sl-bar">
       <Link className="sl-bar-name" href="/">
@@ -53,6 +56,11 @@ function Bar({ name, current }: { name: string; current: ShorelinePage | null })
               </a>
             </li>
           ))}
+          {cart && (
+            <li>
+              <CartLink label={W.cart.nav} />
+            </li>
+          )}
         </ul>
       </nav>
     </header>
@@ -361,7 +369,7 @@ export function ShorelineSite({
 }): ReactElement {
   return (
     <Frame>
-      <Bar name={site.card.name} current={page} />
+      <Bar name={site.card.name} current={page} cart={site.cart} />
       {page === 'home' && <Home site={site} />}
       {page === 'shop' && <Shop site={site} />}
       {page === 'about' && <About site={site} />}
@@ -393,7 +401,7 @@ export function ShorelineProduct({
   );
   return (
     <Frame>
-      <Bar name={site.card.name} current="shop" />
+      <Bar name={site.card.name} current="shop" cart={site.cart} />
       <div className="sl-head">
         <a className="sl-back" href="/shop">
           ← {W.backToShop}
@@ -432,7 +440,10 @@ export function ShorelineProduct({
                 {bioParagraphs(product.description).map((para) => (
                   <p key={para.slice(0, 40)}>{para}</p>
                 ))}
-                <a className="sl-btn" href="#write">
+                {site.cart && product.askForPrice !== true && product.variations.length === 0 && product.status === 'active' && product.id !== undefined && (
+                  <AddToCartButton listingId={product.id} className="sl-btn sl-btn--cart" addLabel={W.cart.add} inCartLabel={W.cart.inCart} fullLabel={W.cart.full} />
+                )}
+                <a className="sl-btn sl-btn--quiet" href="#write">
                   {W.askAbout}
                 </a>
               </div>
@@ -444,6 +455,98 @@ export function ShorelineProduct({
             </div>
           </article>
         </PhotoViewerProvider>
+      </main>
+      <Footer name={site.card.name} platformCredit={platformCredit} social={site.card.profile} />
+    </Frame>
+  );
+}
+
+/** The cart (Full): her pieces priced from the catalog, a discount code when promotions
+ *  are on, the sums, and the letter that sends the order. Nothing is charged. */
+export function ShorelineCart({ site, cart, platformCredit = true }: { site: ShorelineData; cart: CartView; platformCredit?: boolean }): ReactElement {
+  const C = W.cart;
+  const ready = cart.lines.filter((l) => l.available);
+  const blocked = ready.length !== cart.lines.length;
+  return (
+    <Frame>
+      <Bar name={site.card.name} current="cart" cart />
+      <SyncCart ids={cart.lines.map((l) => l.id)} />
+      <PageHead title={C.title} />
+      <main id="main" className="sl-cart">
+        {cart.lines.length === 0 ? (
+          <div className="sl-empty">
+            <p>{C.empty}</p>
+            <a className="sl-btn" href="/shop">
+              {C.browse}
+            </a>
+          </div>
+        ) : (
+          <div className="sl-cart-grid">
+            <section className="sl-sheet sl-cart-sheet" aria-label={C.title}>
+              <ul className="sl-cart-lines">
+                {cart.lines.map((l) => (
+                  <li key={l.id} className={l.available ? 'sl-cart-line' : 'sl-cart-line sl-cart-line--gone'}>
+                    {l.photo?.url !== undefined && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={l.photo.url} alt="" loading="lazy" />
+                    )}
+                    <div>
+                      <a href={`/listings/${l.slug}`}>{l.name}</a>
+                      {!l.available && <span className="sl-cart-gone">{C.gone}</span>}
+                    </div>
+                    <span className="sl-cart-price">
+                      {l.salePrice === undefined ? (
+                        l.price
+                      ) : (
+                        <>
+                          <s>{l.price}</s> {l.salePrice}
+                        </>
+                      )}
+                    </span>
+                    <RemoveFromCartButton listingId={l.id} className="sl-cart-out" label={C.remove} ariaLabel={C.removeLabel(l.name)} />
+                  </li>
+                ))}
+              </ul>
+              {cart.codes && (
+                <div className="sl-cart-code">
+                  <PromoCodeForm current={cart.code?.value ?? null} className="sl-code" labels={{ field: C.codeField, apply: C.codeApply, applying: C.codeApplying, remove: C.codeRemove }} />
+                  {cart.code !== undefined && (
+                    <p role={cart.code.applied ? 'status' : 'alert'}>{cart.code.applied ? C.codeApplied(cart.code.value) : (cart.code.message ?? '')}</p>
+                  )}
+                </div>
+              )}
+              <dl className="sl-cart-sum">
+                {cart.discount !== undefined && (
+                  <>
+                    <div>
+                      <dt>{C.subtotal}</dt>
+                      <dd>{cart.subtotal}</dd>
+                    </div>
+                    <div>
+                      <dt>{C.discount(cart.discount.label)}</dt>
+                      <dd>−{cart.discount.amount}</dd>
+                    </div>
+                  </>
+                )}
+                <div className="sl-cart-total">
+                  <dt>{C.total}</dt>
+                  <dd>{cart.total}</dd>
+                </div>
+              </dl>
+            </section>
+            <section className="sl-letter sl-cart-letter" aria-labelledby="sl-send">
+              <h2 id="sl-send">{C.sendTitle}</h2>
+              <p>{C.sendLede}</p>
+              {blocked ? (
+                <p className="bc-form__status" role="alert">
+                  {C.fix}
+                </p>
+              ) : (
+                <ShorelineOrderForm listingIds={ready.map((l) => l.id)} code={cart.code?.applied === true ? cart.code.value : null} />
+              )}
+            </section>
+          </div>
+        )}
       </main>
       <Footer name={site.card.name} platformCredit={platformCredit} social={site.card.profile} />
     </Frame>
