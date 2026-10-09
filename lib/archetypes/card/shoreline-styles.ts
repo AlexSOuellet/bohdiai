@@ -131,6 +131,9 @@ ${prints}
 .sl-foot{margin-top:clamp(70px,10vw,110px);padding:24px 16px 32px;background:rgba(14,32,42,.82);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;justify-content:center;flex-wrap:wrap;gap:8px 26px;font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:#cfdcdc}
 .sl-foot a{color:#f3efe6!important;text-decoration:none}
 .sl-foot a:hover{text-decoration:underline}
+.sl-social{display:flex;gap:14px;flex-basis:100%;justify-content:center;margin-bottom:6px}
+.sl-social a{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;border:1px solid rgba(243,239,230,.45);color:#f3efe6!important;transition:background .3s,border-color .3s}
+.sl-social a:hover{background:var(--rust);border-color:var(--rust);text-decoration:none}
 
 /* ── photo viewer ────────────────────────────────────────── */
 .sl .bc-lb{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:rgba(12,24,32,.93);padding:clamp(16px,4vw,60px)}

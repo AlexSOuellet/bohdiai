@@ -13,6 +13,7 @@ import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 import type { GalleryItem } from '@/lib/backend/gallery/gallery-form';
 import { CARD_STRINGS as S } from './strings';
 import { CardContactForm } from './CardContactForm';
+import { SocialIcons } from './SocialIcons';
 import { PhotoViewerProvider, Snapshot } from './PhotoViewer';
 import { SHORELINE_FONTS_HREF, shorelineCss } from './shoreline-styles';
 import { bioParagraphs, initials, marketDay, type CardData } from './data';
@@ -42,9 +43,13 @@ export function Frame({ children }: { children: ReactNode }): ReactElement {
   );
 }
 
-export function Footer({ name, platformCredit }: { name: string; platformCredit: boolean }): ReactElement {
+export type Social = { facebookUrl: string; instagramUrl: string };
+const NO_SOCIAL: Social = { facebookUrl: '', instagramUrl: '' };
+
+export function Footer({ name, platformCredit, social = NO_SOCIAL }: { name: string; platformCredit: boolean; social?: Social }): ReactElement {
   return (
     <footer className="sl-foot" aria-label={S.footer.label}>
+      <SocialIcons facebookUrl={social.facebookUrl} instagramUrl={social.instagramUrl} className="sl-social" />
       <span>
         © {new Date().getFullYear()} {name}
       </span>
@@ -192,7 +197,7 @@ export function ShorelineLanding({
           )}
         </main>
       </PhotoViewerProvider>
-      <Footer name={name} platformCredit={platformCredit} />
+      <Footer name={name} platformCredit={platformCredit} social={p} />
     </Frame>
   );
 }
@@ -201,12 +206,14 @@ export function ShorelineLanding({
  *  pre-rendered from the platform's legal templates (escaped markdown). */
 export function ShorelineContentPage({
   name,
+  social,
   html,
   title,
   body,
   platformCredit = true,
 }: {
   name: string;
+  social?: Social | undefined;
   html?: string | undefined;
   title?: string | undefined;
   body?: string[] | undefined;
@@ -231,7 +238,7 @@ export function ShorelineContentPage({
           )}
         </article>
       </main>
-      <Footer name={name} platformCredit={platformCredit} />
+      <Footer name={name} platformCredit={platformCredit} {...(social !== undefined ? { social } : {})} />
     </Frame>
   );
 }

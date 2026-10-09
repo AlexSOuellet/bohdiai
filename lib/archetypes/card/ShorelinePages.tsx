@@ -326,7 +326,7 @@ export function ShorelineSite({ site, page, tenantId, platformCredit = true }: {
       {page === 'about' && <About site={site} />}
       {page === 'events' && <Markets site={site} />}
       {page === 'contact' && <Contact site={site} tenantId={tenantId} />}
-      <Footer name={site.card.name} platformCredit={platformCredit} />
+      <Footer name={site.card.name} platformCredit={platformCredit} social={site.card.profile} />
     </Frame>
   );
 }
@@ -378,7 +378,7 @@ export function ShorelineProduct({ site, product, tenantId, platformCredit = tru
           </article>
         </PhotoViewerProvider>
       </main>
-      <Footer name={site.card.name} platformCredit={platformCredit} />
+      <Footer name={site.card.name} platformCredit={platformCredit} social={site.card.profile} />
     </Frame>
   );
 }

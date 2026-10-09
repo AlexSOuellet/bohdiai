@@ -124,3 +124,22 @@ describe('featured pieces', () => {
     expect(featuredProducts(many)).toHaveLength(6);
   });
 });
+
+describe('the footer', () => {
+  it('shows her social links as icons, only the ones she set', () => {
+    page('home');
+    const foot = screen.getByRole('contentinfo');
+    expect(within(foot).getByRole('link', { name: S.touch.facebook }).getAttribute('href')).toBe('https://www.facebook.com/bohdiai');
+    expect(within(foot).queryByRole('link', { name: S.touch.instagram })).toBeNull();
+    cleanup();
+    page('home', { ...site, card: { ...site.card, profile: { ...site.card.profile, facebookUrl: '', instagramUrl: 'https://www.instagram.com/x' } } });
+    const foot2 = screen.getByRole('contentinfo');
+    expect(within(foot2).queryByRole('link', { name: S.touch.facebook })).toBeNull();
+    expect(within(foot2).getByRole('link', { name: S.touch.instagram })).toBeTruthy();
+  });
+
+  it('leaves the icons out when she has none', () => {
+    const { container } = page('home', { ...site, card: { ...site.card, profile: { ...site.card.profile, facebookUrl: '', instagramUrl: '' } } });
+    expect(container.querySelector('.sl-social')).toBeNull();
+  });
+});
