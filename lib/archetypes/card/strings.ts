@@ -91,7 +91,7 @@ export const CARD_STRINGS = {
     home: 'Back to the home page',
     /** Lite and Full: the site's pages. */
     nav: { label: 'Site pages', home: 'Home', shop: 'Shop', about: 'About', markets: 'Markets', contact: 'Contact' },
-    pageTitles: { shop: 'The shop', about: 'About', markets: 'Find me at', contact: 'Get in touch' },
+    pageTitles: { about: 'About', markets: 'Find me at', contact: 'Get in touch' },
     featured: 'From the shelf',
     seeShop: 'See everything in the shop',
     readStory: 'Read the whole story',

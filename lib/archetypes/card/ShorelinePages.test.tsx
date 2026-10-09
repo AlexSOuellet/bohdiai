@@ -56,7 +56,7 @@ describe('shoreline pages (Lite and Full)', () => {
 
   it('shows every product in the shop with its price, or “Ask for price” when it has none', () => {
     const { container } = page('shop');
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(W.pageTitles.shop);
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(W.featured);
     expect(container.querySelectorAll('.sl-prints li')).toHaveLength(2);
     expect(screen.getByText(W.askForPrice)).toBeTruthy();
     expect(screen.getByText('$22')).toBeTruthy();

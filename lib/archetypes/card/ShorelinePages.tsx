@@ -205,14 +205,13 @@ function Home({ site }: { site: ShorelineData }): ReactElement {
   );
 }
 
+/** The shop opens like the home page's pieces: the dusk band, "From the shelf", then everything. */
 function Shop({ site }: { site: ShorelineData }): ReactElement {
   return (
-    <>
-      <PageHead title={W.pageTitles.shop} />
-      <main id="main" className="sl-water">
-        {site.products.length > 0 ? <Prints products={site.products} /> : <p className="sl-empty">{W.emptyShop}</p>}
-      </main>
-    </>
+    <main id="main" className="sl-water sl-featured sl-featured--page">
+      <h1 className="sl-section-h">{W.featured}</h1>
+      {site.products.length > 0 ? <Prints products={site.products} /> : <p className="sl-empty">{W.emptyShop}</p>}
+    </main>
   );
 }
 

@@ -162,6 +162,8 @@ ${prints}
 /* The featured band: the bay deepens to dusk behind the section and fades back out, so the
    heading always sits on dark water whatever part of the photo is behind it. */
 .sl-featured{padding-top:clamp(80px,9vw,120px);padding-bottom:clamp(90px,12vw,150px);background:linear-gradient(180deg,rgba(11,30,41,0) 0,rgba(11,30,41,.62) clamp(80px,9vw,120px),rgba(11,30,41,.62) calc(100% - clamp(90px,12vw,150px)),rgba(11,30,41,0) 100%)}
+/* The shop page starts under the menu bar, so its band only needs a short fade in. */
+.sl-featured--page{padding-top:clamp(60px,8vw,110px);margin-top:clamp(40px,6vh,70px)}
 .sl-featured .sl-more{margin-top:clamp(36px,5vw,56px)}
 .sl-featured .sl-more a{background:var(--lace);color:var(--navy)!important}
 .sl-featured .sl-more a:hover{background:var(--rust);color:#f3efe6!important}
