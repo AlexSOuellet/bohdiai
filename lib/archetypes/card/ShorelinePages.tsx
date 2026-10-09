@@ -133,25 +133,6 @@ function Prints({ products, newTag = false }: { products: readonly ProductView[]
   );
 }
 
-function Ways({ card }: { card: CardData }): ReactElement | null {
-  const p = card.profile;
-  if (p.facebookUrl === '' && p.instagramUrl === '') return null;
-  return (
-    <div className="sl-ways">
-      {p.facebookUrl !== '' && (
-        <a href={p.facebookUrl} rel="noopener">
-          {S.touch.facebook}
-        </a>
-      )}
-      {p.instagramUrl !== '' && (
-        <a href={p.instagramUrl} rel="noopener">
-          {S.touch.instagram}
-        </a>
-      )}
-    </div>
-  );
-}
-
 function TideTable({ dates }: { dates: readonly MarketDate[] }): ReactElement {
   return (
     <table>
@@ -306,7 +287,6 @@ function About({ site }: { site: ShorelineData }): ReactElement {
               </p>
             ))}
             {p.signature !== '' && <span className="sl-sig">— {p.signature}</span>}
-            <Ways card={site.card} />
           </div>
         </section>
       </main>

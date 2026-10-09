@@ -92,8 +92,8 @@ export function ShorelineLanding({
   const { name, profile: p, photos, dates } = data;
   const bio = bioParagraphs(p.bio);
   const canWrite = tenantId !== undefined;
-  const hasWays = p.facebookUrl !== '' || p.instagramUrl !== '';
-  const hasAbout = bio.length > 0 || p.aboutTitle !== '' || p.headline !== '' || hasWays;
+  // Her Facebook and Instagram live in the footer, as icons on every page.
+  const hasAbout = bio.length > 0 || p.aboutTitle !== '' || p.headline !== '';
   const hasDates = dates.length > 0;
 
   return (
@@ -145,20 +145,6 @@ export function ShorelineLanding({
                       </p>
                     ))}
                     {p.signature !== '' && <span className="sl-sig">— {p.signature}</span>}
-                    {hasWays && (
-                      <div className="sl-ways">
-                        {p.facebookUrl !== '' && (
-                          <a href={p.facebookUrl} rel="noopener">
-                            {S.touch.facebook}
-                          </a>
-                        )}
-                        {p.instagramUrl !== '' && (
-                          <a href={p.instagramUrl} rel="noopener">
-                            {S.touch.instagram}
-                          </a>
-                        )}
-                      </div>
-                    )}
                   </div>
                 </section>
               )}

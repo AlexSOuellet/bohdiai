@@ -91,15 +91,15 @@ describe('shoreline page', () => {
     expect(bare.querySelector('.sl-makes')).toBeNull();
   });
 
-  it('tells the story on the card with the headline, signature and Facebook', () => {
+  it('tells the story on the card with the headline and signature; her social links stay in the footer', () => {
     const { container } = page();
     const card = container.querySelector('.sl-card') as HTMLElement;
     expect(within(card).getByRole('heading', { level: 2 }).textContent).toBe('From the paint counter');
     expect(card.querySelector('.sl-lead')?.textContent).toBe('Sealed to last');
     expect([...card.querySelectorAll('p:not(.sl-lead)')].map((p) => p.textContent)).toEqual(['I run the paint counter.', 'Every sealer gets tested.']);
     expect(card.querySelector('.sl-sig')?.textContent).toBe('— Lena');
-    expect(within(card).getByRole('link', { name: S.touch.facebook }).getAttribute('href')).toBe('https://www.facebook.com/bohdiai');
-    expect(within(card).queryByRole('link', { name: S.touch.instagram })).toBeNull();
+    expect(within(card).queryByRole('link', { name: S.touch.facebook })).toBeNull();
+    expect(within(screen.getByRole('contentinfo')).getByRole('link', { name: S.touch.facebook }).getAttribute('href')).toBe('https://www.facebook.com/bohdiai');
   });
 
   it('falls back to the renderer’s heading when the owner left the title blank', () => {
