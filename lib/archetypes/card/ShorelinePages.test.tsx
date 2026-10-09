@@ -34,6 +34,7 @@ const site: ShorelineData = {
   testimonials: [],
   sale: null,
   newArrivals: false,
+  collections: [],
 };
 
 afterEach(cleanup);
@@ -262,5 +263,30 @@ describe('sales and new arrivals (Full)', () => {
     const { container: off } = page('shop', { ...site, products: [onSale] });
     expect(off.querySelector('.sl-new')).toBeNull();
     expect(off.querySelector('.sl-sale')).toBeNull();
+  });
+});
+
+describe('collections on the shop (Full)', () => {
+  const shells = { name: 'Shells', slug: 'shells', products: [product('cabbage-rose-oyster-dish', { price: '$28' })] };
+  const withCols: ShorelineData = { ...site, collections: [shells] };
+
+  it('lists her collections over the shelf, with All marked on the shop', () => {
+    page('shop', withCols);
+    const cols = screen.getByRole('navigation', { name: W.collectionsLabel });
+    expect(within(cols).getAllByRole('link').map((a) => a.getAttribute('href'))).toEqual(['/shop', '/collections/shells']);
+    expect(within(cols).getByRole('link', { name: W.allPieces }).getAttribute('aria-current')).toBe('page');
+  });
+
+  it('shows only that collection’s pieces under its name', () => {
+    render(<ShorelineSite site={withCols} page="collection" collection="shells" tenantId={TENANT} />);
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Shells');
+    expect(screen.queryByRole('link', { name: /old saint nick/i })).toBeNull();
+    const cols = screen.getByRole('navigation', { name: W.collectionsLabel });
+    expect(within(cols).getByRole('link', { name: 'Shells' }).getAttribute('aria-current')).toBe('page');
+  });
+
+  it('leaves the row out when she has no collections', () => {
+    page('shop');
+    expect(screen.queryByRole('navigation', { name: W.collectionsLabel })).toBeNull();
   });
 });

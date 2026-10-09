@@ -94,6 +94,8 @@ export const CARD_STRINGS = {
     pageTitles: { about: 'About', markets: 'Find me at', contact: 'Get in touch' },
     featured: 'From the shelf',
     kindWords: 'Kind words',
+    allPieces: 'All',
+    collectionsLabel: 'Browse by collection',
     newTag: 'New',
     saleBanner: (name: string, off: string) => `${name}: ${off} everything`,
     was: 'Was',

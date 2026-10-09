@@ -25,7 +25,7 @@ describe('archetype registry', () => {
     // The shoreline design's Lite and Full pages read the catalog; each render checks
     // the site's switches first, so a Showcase card site still shows no products.
     expect(archetypeSpec('card')?.usesCatalog).toBe(true);
-    expect(archetypeSpec('card')?.pages).toEqual(['shop', 'about', 'events', 'contact', 'testimonials']);
+    expect(archetypeSpec('card')?.pages).toEqual(['shop', 'collection', 'about', 'events', 'contact', 'testimonials']);
     expect(archetypeMenu().some((s) => s.key === 'card')).toBe(false);
   });
 });

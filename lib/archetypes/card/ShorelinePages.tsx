@@ -23,7 +23,7 @@ import type { Testimonial } from '@/lib/backend/testimonials/testimonial-form';
 
 const W = S.shoreline;
 
-export type ShorelinePage = 'home' | 'shop' | 'about' | 'events' | 'contact' | 'testimonials';
+export type ShorelinePage = 'home' | 'shop' | 'about' | 'events' | 'contact' | 'testimonials' | 'collection';
 
 const NAV: readonly { page: ShorelinePage; href: string; label: string }[] = [
   { page: 'home', href: '/', label: W.nav.home },
@@ -257,16 +257,33 @@ function Home({ site }: { site: ShorelineData }): ReactElement {
   );
 }
 
-/** The shop opens like the home page's pieces: the dusk band, "From the shelf", then everything. */
-function Shop({ site }: { site: ShorelineData }): ReactElement {
+/** Her collections as a row of links over the shelf: All, then each one. */
+function CollectionLinks({ site, current }: { site: ShorelineData; current: string | null }): ReactElement | null {
+  if (site.collections.length === 0) return null;
+  return (
+    <nav className="sl-cols" aria-label={W.collectionsLabel}>
+      <a href="/shop" aria-current={current === null ? 'page' : undefined}>
+        {W.allPieces}
+      </a>
+      {site.collections.map((c) => (
+        <a key={c.slug} href={`/collections/${c.slug}`} aria-current={current === c.slug ? 'page' : undefined}>
+          {c.name}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
+/** The shop opens like the home page's pieces: the dusk band, "From the shelf", then
+ *  everything, or one collection when she's browsing by collection. */
+function Shop({ site, collection = null }: { site: ShorelineData; collection?: string | null }): ReactElement {
+  const chosen = collection === null ? null : (site.collections.find((c) => c.slug === collection) ?? null);
+  const products = chosen === null ? site.products : chosen.products;
   return (
     <main id="main" className="sl-water sl-featured sl-featured--page">
-      <h1 className="sl-section-h">{W.featured}</h1>
-      {site.products.length > 0 ? (
-        <Prints products={site.products} newTag={site.newArrivals} />
-      ) : (
-        <p className="sl-empty">{W.emptyShop}</p>
-      )}
+      <h1 className="sl-section-h">{chosen === null ? W.featured : chosen.name}</h1>
+      <CollectionLinks site={site} current={chosen?.slug ?? null} />
+      {products.length > 0 ? <Prints products={products} newTag={site.newArrivals} /> : <p className="sl-empty">{W.emptyShop}</p>}
     </main>
   );
 }
@@ -398,11 +415,13 @@ export function ShorelineSite({
   site,
   page,
   tenantId,
+  collection = null,
   platformCredit = true,
 }: {
   site: ShorelineData;
   page: ShorelinePage;
   tenantId: string;
+  collection?: string | null;
   platformCredit?: boolean;
 }): ReactElement {
   return (
@@ -411,6 +430,7 @@ export function ShorelineSite({
       <SaleBanner sale={site.sale} />
       {page === 'home' && <Home site={site} />}
       {page === 'shop' && <Shop site={site} />}
+      {page === 'collection' && <Shop site={site} collection={collection} />}
       {page === 'about' && <About site={site} />}
       {page === 'events' && <Markets site={site} />}
       {page === 'contact' && <Contact site={site} tenantId={tenantId} />}

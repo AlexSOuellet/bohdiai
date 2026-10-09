@@ -7,7 +7,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import type { ProductView } from '@/lib/archetypes/content';
-import { loadCatalog } from '@/lib/storefront/catalog';
+import { loadCatalog, loadCollections } from '@/lib/storefront/catalog';
 import { loadSiteFeatures } from '@/lib/backend/features';
 import { HOME_MAX } from '@/lib/catalog/home';
 import { listTestimonials } from '@/lib/backend/testimonials/queries';
@@ -34,6 +34,8 @@ export type ShorelineData = {
   sale: { name: string; off: string } | null;
   /** New arrivals are marked on her pieces (Full). */
   newArrivals: boolean;
+  /** Her live collections in her order, each with its pieces (sale prices applied). */
+  collections: { slug: string; name: string; products: ProductView[] }[];
 };
 
 export async function loadShorelineData(
@@ -45,7 +47,8 @@ export async function loadShorelineData(
     loadSiteFeatures(db, tenantId),
   ]);
   const pages = features.has('catalog');
-  const catalog = pages ? (await loadCatalog(db, tenantId)).products : [];
+  const loaded = pages ? await loadCatalog(db, tenantId) : null;
+  const catalog = loaded?.products ?? [];
   // Full: a running sale wears its price on every piece, and gets a banner.
   const running = features.has('promotions') ? await loadRunningSale(db, tenantId) : null;
   const products = withSale(catalog, running);
@@ -58,6 +61,12 @@ export async function loadShorelineData(
     cart: features.has('cart'),
     sale: running === null ? null : { name: running.name, off: offLabel(running) },
     newArrivals: features.has('new_arrivals'),
+    collections:
+      loaded === null
+        ? []
+        : (await loadCollections(db, tenantId, loaded))
+            .filter((c) => c.products.length > 0)
+            .map((c) => ({ slug: c.slug, name: c.view.name, products: withSale(c.products, running) })),
     testimonials: features.has('testimonials') ? await listTestimonials(db, tenantId) : [],
   };
 }

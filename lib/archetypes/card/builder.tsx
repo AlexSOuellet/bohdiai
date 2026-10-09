@@ -35,14 +35,14 @@ function designOf(raw: unknown): CardDesign {
 }
 
 /** The pages the shoreline design paints on Lite and Full; every other design is one page. */
-const SHORELINE_PAGES: readonly ArchetypePage[] = ['shop', 'about', 'events', 'contact', 'testimonials'];
+const SHORELINE_PAGES: readonly ArchetypePage[] = ['shop', 'collection', 'about', 'events', 'contact', 'testimonials'];
 
 function shorelinePage(page: ArchetypePage | undefined): ShorelinePage | null {
   if (page === undefined || page === 'home') return 'home';
   return (SHORELINE_PAGES as readonly string[]).includes(page) ? (page as ShorelinePage) : null;
 }
 
-async function CardSite({ tenantId, paint, design, page }: { tenantId: string; paint: CardPaint; design: CardDesign; page: ArchetypePage | undefined }): Promise<ReactElement> {
+async function CardSite({ tenantId, paint, design, page, collectionSlug }: { tenantId: string; paint: CardPaint; design: CardDesign; page: ArchetypePage | undefined; collectionSlug?: string | undefined }): Promise<ReactElement> {
   const home = page === undefined || page === 'home';
   if (design === 'shoreline') {
     const site = await loadShorelineData(supabaseAdmin(), tenantId);
@@ -55,7 +55,8 @@ async function CardSite({ tenantId, paint, design, page }: { tenantId: string; p
     if (which === null) notFound();
     // The testimonials page is Full's, and only when there is something on it.
     if (which === 'testimonials' && site.testimonials.length === 0) notFound();
-    return <ShorelineSite site={site} page={which} tenantId={tenantId} />;
+    if (which === 'collection' && !site.collections.some((c) => c.slug === collectionSlug)) notFound();
+    return <ShorelineSite site={site} page={which} tenantId={tenantId} collection={collectionSlug ?? null} />;
   }
   if (!home) notFound();
   const data = await loadCardData(supabaseAdmin(), tenantId);
@@ -124,10 +125,10 @@ export const CARD_SPEC: ArchetypeBuildSpec<CardContent> = {
   mediaJobs: () => [],
   applyMedia: (authored) => authored,
   toPayload: (authored) => ({ content: authored, products: [] }),
-  render: ({ content, lookKey, mood, brandPalette, tenantId, page }) => {
+  render: ({ content, lookKey, mood, brandPalette, tenantId, page, collectionSlug }) => {
     const design = designOf(content);
     if (tenantId === undefined) notFound();
-    return <CardSite tenantId={tenantId} design={design} page={page} paint={cardPaint({ mood, lookKey, brandPalette })} />;
+    return <CardSite tenantId={tenantId} design={design} page={page} collectionSlug={collectionSlug} paint={cardPaint({ mood, lookKey, brandPalette })} />;
   },
   renderCart: ({ content, cart, tenantId }) => {
     const design = designOf(content);

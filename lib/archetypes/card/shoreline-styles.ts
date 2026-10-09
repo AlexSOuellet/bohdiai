@@ -217,6 +217,9 @@ a.sl-print{text-decoration:none;cursor:pointer}
 .sl-price s{font-weight:400;color:var(--ink-soft);margin-right:4px}
 .sl-new{display:inline-block;margin-bottom:4px;padding:2px 10px;background:var(--navy);color:#f3efe6;font-family:var(--body);font-style:normal;font-weight:600;font-size:11px;letter-spacing:.2em;text-transform:uppercase}
 .sl-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sl-cols{display:flex;flex-wrap:wrap;gap:10px;margin:-10px auto clamp(28px,4vw,44px);width:min(1180px,100%)}
+.sl-cols a{padding:8px 16px;border:1px solid rgba(243,239,230,.55);color:#f3efe6!important;font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
+.sl-cols a:hover,.sl-cols a[aria-current="page"]{background:#f3efe6;color:var(--navy)!important}
 .sl-btn--cart{margin-right:12px}
 .sl-btn--quiet{background:transparent;color:var(--navy)!important;box-shadow:inset 0 0 0 1.5px var(--navy)}
 .sl-btn--quiet:hover{background:var(--navy);color:#f3efe6!important}
