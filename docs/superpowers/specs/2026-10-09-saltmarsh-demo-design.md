@@ -78,13 +78,28 @@ Built in three pieces, each working before the next.
 - **Billing** (Alex, 2026-10-09; `lib/backend/plan/billing.ts`, columns `plan_billing`, `plan_renews_on`, `plan_next`, `plan_credit_cents`): moving up is **prorated** — she pays the difference for what's left of the period already paid, renewal day unchanged; changing billing starts a new period today, less the unused part of the old one. **A yearly site can go monthly when it moves up** (Showcase to Lite, Lite to Full): the unused part of the year becomes **credit** that pays the next bills until it runs out (Alex chose this over "yearly stays yearly": a forced yearly upgrade feels like a trap). Credit on account is used before she pays. Checkout shows the working (plan for the rest of the period, credit, Today, credit left, then the price and renewal day). Choosing yearly shows: "Yearly plans aren't refunded. If you move down later, the change starts at your next renewal." **Moving down takes effect at the next renewal**, monthly or yearly, with no refund; Your plan shows "Changing to … on …" with Keep, and the demo has **Skip to renewal (demo)** to play it out on camera.
 - **Build script**: a site module's `plan` is the starting plan, applied through the same switch only when the site has none (a re-run never undoes a change); `demo: true` turns on the demo checkout.
 
-### Piece two — Lite's content on the shoreline page (next)
+### Piece two — Lite's content on the shoreline page (built)
 
 Same look, more content: a Shop page of every product as a print with its price, a page per product with "Ask about this", and the full market calendar. Lena gets about 15 products with prices.
 
-### Piece three — the point of sale
+### Piece three — the point of sale (built)
 
-The Rose n' Cat market tools switch on at Lite; check they cover what the Lite plan list promises.
+The Rose n' Cat tools (buyer QR page, Getting paid, Today) recorded one piece at a time and never showed her pay code, so **Sell at the table** was added (`/manage/markets/[id]/sell`): tap the pieces brought to that market, running total (sale prices applied), then a QR that opens Venmo or Cash App with the amount, her Zelle address, or the cash to take; Paid records every piece.
+
+### Also built in stage two (2026-10-09)
+
+- Upgrading from Showcase turns each gallery photo into a product named from its caption with **"Ask for price"** (a base price of 0, `NO_PRICE_CENTS`; the cart and market sales refuse it). At most five go on the home page (the backend's limit).
+- The shoreline site has pages on Lite and Full: Home (tall sky, featured pieces on a **dusk band** under "From the shelf", story teaser, next markets), Shop (same band), product pages (photo in a **weathered window frame**, price or Ask for price, Ask about this starts the letter), About, Markets (hours, address with directions, booth, website), Contact. Same bay behind every page; footer has social icons and **Owner login**.
+- Downgrading to Showcase lets her **pick up to 12 products** for the one page (`plan_next_gallery`), applied at renewal.
+- Lite allows **one photo per product** (`product_photos` switch, on by default for sites without a plan); extras are kept and marked hidden.
+
+## Stage three — Full (built 2026-10-09)
+
+Cart and order letter on the shoreline site (Add to cart, cart page, discount code; no card taken); **testimonials** (`site_testimonials`, backend screen, three on the home page with See more, their own page); a running **sale** shows as a banner and on every price; **New** tags on new arrivals; **market results** (this year against last, best first); downloads (`digital_products`) switch on with Full — delivery is by hand until card payments exist.
+
+`scripts/demo-reset.ts <site> showcase|lite|full` puts the demo back to a clean stage for a recording (refuses any site without the demo switch).
+
+Not built, waiting on Alex: product video (Cloudflare Stream cost to confirm), private demo copies per visitor (only if the demo goes on bohdiai.com), Owner login on the other designs (touches live client sites), the demo on bohdiai.com's samples page, and merging to main.
 
 ## Known follow-ups (named 2026-10-09, before real billing)
 
