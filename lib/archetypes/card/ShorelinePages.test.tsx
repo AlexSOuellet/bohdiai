@@ -69,7 +69,7 @@ describe('shoreline pages (Lite and Full)', () => {
     page('about');
     expect(screen.getByText('Every sealer gets tested.')).toBeTruthy();
     expect(screen.getByText('— Lena')).toBeTruthy();
-    expect(screen.getByRole('link', { name: S.touch.facebook })).toBeTruthy();
+    expect(within(screen.getByRole('main')).getByRole('link', { name: S.touch.facebook })).toBeTruthy();
   });
 
   it('lists every market with its details, directions and website, and marks a canceled one', () => {
