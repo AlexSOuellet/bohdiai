@@ -155,11 +155,18 @@ ${prints}
 .sl-nav a{font-weight:600;font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:var(--navy)!important;text-decoration:none;padding:4px 0;border-bottom:1.5px solid transparent}
 .sl-nav a:hover,.sl-nav a[aria-current="page"]{border-bottom-color:var(--rust)}
 /* With the menu bar above it, the home sky starts higher so the words land where Showcase's do, above the horizon. */
-.sl-bar + .sl-sky{padding-top:clamp(16px,3vh,40px);min-height:min(78vh,740px)}
+.sl-bar + .sl-sky{padding-top:clamp(16px,3vh,40px);padding-bottom:clamp(20px,3vw,40px);min-height:0}
 .sl-head{padding:clamp(40px,8vh,90px) clamp(16px,6vw,90px) clamp(22px,4vh,40px)}
 .sl-head h1{margin:0;font-family:var(--display);font-weight:500;font-size:clamp(40px,7vw,84px);line-height:1;color:var(--navy);text-shadow:0 0 30px rgba(245,240,240,.55);animation:sl-rise 1.4s cubic-bezier(.2,.7,.2,1) .1s both}
 .sl-back{display:inline-block;margin-bottom:14px;font-weight:600;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--navy)!important;text-decoration:none;text-shadow:0 0 8px rgba(245,240,240,.9)}
-.sl-section-h{display:table;margin:0 0 30px max(0px,calc((100% - 1180px) / 2));padding:12px 26px 14px;font-family:var(--hand);font-style:normal;font-weight:400;font-size:clamp(20px,2.4vw,28px);line-height:1.5;color:var(--navy);background:var(--paper);transform:rotate(-1.6deg);box-shadow:0 2px 3px rgba(0,0,0,.18),0 18px 30px -14px rgba(10,24,32,.6)}
+/* The featured band: the bay deepens to dusk behind the section and fades back out, so the
+   heading always sits on dark water whatever part of the photo is behind it. */
+.sl-featured{padding-top:clamp(80px,9vw,120px);padding-bottom:clamp(90px,12vw,150px);background:linear-gradient(180deg,rgba(11,30,41,0) 0,rgba(11,30,41,.62) clamp(80px,9vw,120px),rgba(11,30,41,.62) calc(100% - clamp(90px,12vw,150px)),rgba(11,30,41,0) 100%)}
+.sl-featured .sl-more{margin-top:clamp(36px,5vw,56px)}
+.sl-featured .sl-more a{background:var(--lace);color:var(--navy)!important}
+.sl-featured .sl-more a:hover{background:var(--rust);color:#f3efe6!important}
+.sl-section-h{display:flex;align-items:center;gap:clamp(16px,2vw,28px);margin:0 auto clamp(30px,4vw,48px);width:min(1180px,100%);font-family:var(--display);font-style:italic;font-weight:400;font-size:clamp(36px,4.6vw,60px);line-height:1;color:#f3efe6;text-shadow:0 2px 18px rgba(0,0,0,.35)}
+.sl-section-h::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(243,239,230,.7),rgba(243,239,230,0))}
 a.sl-print{text-decoration:none;cursor:pointer}
 .sl-price{display:block;padding:0 6px 16px;margin-top:-8px;font-weight:600;font-size:15px;letter-spacing:.06em;color:var(--rust)}
 .sl-price--ask{font-style:italic;font-weight:500;letter-spacing:0;color:var(--ink-soft)}
