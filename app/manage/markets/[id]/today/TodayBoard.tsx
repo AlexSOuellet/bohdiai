@@ -89,6 +89,9 @@ export function TodayBoard({
           <Link className="bk-btn bk-btn-quiet" href={`/manage/markets/${eventId}` as Route}>
             Back to the market
           </Link>
+          <Link className="bk-btn" href={`/manage/markets/${eventId}/sell` as Route}>
+            Sell at the table
+          </Link>
         </div>
       </div>
       <main id="main" className="bk-content bk-today">

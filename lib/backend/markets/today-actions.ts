@@ -43,3 +43,20 @@ export async function recordMarketSale(eventId: string, listingId: string, metho
   revalidatePath(`/manage/markets/${eventId}/today`);
   return { ok: true };
 }
+
+/** Sell at the table: record each piece the buyer took, all paid the same way. Stops at
+ *  the first that can't be recorded and says how many went through, so nothing is
+ *  recorded twice when she tries again with what's left. */
+export async function recordMarketSales(eventId: string, listingIds: readonly string[], method: string): Promise<{ ok: true; count: number } | { ok: false; error: string; recorded: string[] }> {
+  if (listingIds.length === 0) return { ok: false, error: 'Tap the pieces they’re taking first.', recorded: [] };
+  const recorded: string[] = [];
+  for (const id of listingIds) {
+    const r = await recordMarketSale(eventId, id, method);
+    if (!r.ok) {
+      const done = recorded.length === 0 ? '' : ` ${recorded.length} of ${listingIds.length} were recorded; the rest are still in the sale.`;
+      return { ok: false, error: `${r.error}${done}`, recorded };
+    }
+    recorded.push(id);
+  }
+  return { ok: true, count: recorded.length };
+}
