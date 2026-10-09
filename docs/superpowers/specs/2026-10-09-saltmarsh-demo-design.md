@@ -85,3 +85,9 @@ Same look, more content: a Shop page of every product as a print with its price,
 ### Piece three — the point of sale
 
 The Rose n' Cat market tools switch on at Lite; check they cover what the Lite plan list promises.
+
+## Known follow-ups (named 2026-10-09, before real billing)
+
+- **Stripe owns proration.** The proration in `lib/backend/plan/billing.ts` is ours and runs the demo. When real billing connects, Stripe's proration is the source of truth (it can differ by cents); ours becomes a preview of it, or is replaced.
+- **One source for prices.** Prices live in `lib/site/plans.ts` today. With Stripe they also live in Stripe; one must feed the other so they can't drift.
+- **Private demo copies** (Alex agreed, to build after Full): each visitor gets their own copy of the demo shop, signed in automatically, deleted after idle time (sign-in ends when the browser closes); photos shared, visitor uploads deleted with the copy, emails caught ("Demo: not sent"), copies rate-limited. Until then the single shared demo is for Alex's recordings only.
