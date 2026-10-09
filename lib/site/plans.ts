@@ -75,6 +75,7 @@ export const PLANS: readonly Plan[] = [
       'Up to 12 photos and a short video for each product',
       'Digital downloads, if you sell them',
       'See which markets made money, this year against last',
+      'Testimonials from your customers, on your home page and their own page',
     ],
   },
   {

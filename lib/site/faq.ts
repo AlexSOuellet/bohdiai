@@ -130,6 +130,15 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         q: 'Can I move up a plan?',
         a: [
           'Any time, from Showcase to Lite or from Lite to Full, and it happens right away. There’s nothing to pay up front: your bill is prorated, so you only pay the difference for the rest of your current billing period, then the new price from then on. Everything you’ve already added comes with you.',
+          'On a yearly plan you can switch to monthly when you move up. The unused part of your year becomes credit that pays your next months until it runs out.',
+        ],
+      },
+      {
+        id: 'downgrade',
+        q: 'Can I move down a plan?',
+        a: [
+          'Yes. Plenty of makers are seasonal, so moving down for the quiet months is better than leaving. The change starts at your next renewal, and you keep everything you have until then. Nothing already paid is refunded.',
+          'Nothing is deleted when you move down. Your products, photos and dates are put away, not removed, and they all come back when you move up again. Moving to Showcase, you pick up to 12 of your products to show on your one page.',
         ],
       },
       {

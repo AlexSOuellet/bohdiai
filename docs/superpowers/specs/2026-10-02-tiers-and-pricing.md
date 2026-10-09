@@ -101,6 +101,7 @@ Plan sites are ready in 2 to 5 days. Anything beyond what a plan lists — a spe
 - **No commitment.** If payments stop, the site pauses until they catch up.
 - **Cancelling Full:** offered a move down to Lite at Lite's normal price instead (no discount). Cancelling Lite: the site pauses, no counter-offer.
 - **Downgrading Full → Lite:** extra photos are kept but hidden (they return on upgrade); orders still waiting to ship stay visible until done, although online selling switches off.
+- **2026-10-09 (Alex, Saltmarsh & Lace demo):** any plan can move down, including to Showcase (seasonal makers: "downgrading to showcase is better than churn"). A downgrade takes effect at the **next renewal**, monthly or yearly, with **no refund**; she keeps everything until then and picks monthly or yearly for after. Moving down to Showcase, she **picks up to 12 products** that become her one-page gallery. Nothing is deleted on any downgrade. Moving up is prorated; a yearly site may switch to monthly on the way up, and the unused part of the year becomes **credit** for the next bills. Choosing yearly says up front that yearly plans aren't refunded. Lite gets **one photo per product** (Full up to 12). Markets step up by plan: Showcase reports day, market and town; Lite adds hours, address, booth, website and the point of sale ("Sell at the table"); Full adds costs, organizer, notes and reviews. **Testimonials** added to Full. Detail and code: `2026-10-09-saltmarsh-demo-design.md`.
 
 ## Selling before features exist
 
