@@ -15,6 +15,15 @@ describe('bohdiai.com home', () => {
     expect(container.querySelector('#contact form')).not.toBeNull();
   });
 
+  it('links the Facebook page from the footer, in a new tab, and names it for Google', () => {
+    const { container } = render(<HomePage />);
+    const fb = within(screen.getByRole('contentinfo')).getByRole('link', { name: 'Facebook' });
+    expect(fb).toHaveAttribute('href', 'https://www.facebook.com/bohdiai');
+    expect(fb).toHaveAttribute('target', '_blank');
+    const ld = JSON.parse(container.querySelector('script[type="application/ld+json"]')?.textContent ?? '{}') as { sameAs?: string[] };
+    expect(ld.sameAs).toEqual(['https://www.facebook.com/bohdiai']);
+  });
+
   it('says nothing about the waitlist, beta, Skool or founder spots', () => {
     const { container } = render(<HomePage />);
     expect(container.textContent).not.toMatch(

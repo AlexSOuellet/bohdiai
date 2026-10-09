@@ -9,7 +9,7 @@ import { WhoBehind } from '@/components/WhoBehind';
 import { Pledge } from '@/components/Pledge';
 import { Contact } from '@/components/Contact';
 import { Footer } from '@/components/Footer';
-import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
+import { SITE_CONTACT_EMAIL, SITE_FACEBOOK_URL } from '@/lib/site/contact';
 
 const SITE_URL = process.env['SITE_URL'] ?? 'https://bohdiai.com';
 
@@ -22,6 +22,7 @@ const BUSINESS_JSON_LD = {
   url: SITE_URL,
   description: 'Websites for makers, contractors and charities in Rhode Island and beyond.',
   email: SITE_CONTACT_EMAIL,
+  sameAs: [SITE_FACEBOOK_URL],
   founder: { '@type': 'Person', name: 'Alex Scott' },
   areaServed: 'US',
   foundingDate: '2026',

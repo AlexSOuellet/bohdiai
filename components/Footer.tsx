@@ -1,4 +1,4 @@
-import { SITE_CONTACT_EMAIL as CONTACT_EMAIL } from '@/lib/site/contact';
+import { SITE_CONTACT_EMAIL as CONTACT_EMAIL, SITE_FACEBOOK_URL } from '@/lib/site/contact';
 import { Wordmark } from './Wordmark';
 
 export function Footer(): React.ReactElement {
@@ -24,6 +24,9 @@ export function Footer(): React.ReactElement {
           </FooterCol>
           <FooterCol title="Contact">
             <FLink href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</FLink>
+            <FLink href={SITE_FACEBOOK_URL} external>
+              Facebook
+            </FLink>
           </FooterCol>
         </div>
       </div>
