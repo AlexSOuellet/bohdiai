@@ -20,7 +20,8 @@ import { isSitePlan } from './plan';
 import { loadPlanState, type PlanState } from './queries';
 import { moveOf } from './plan-features';
 import { applyPlan } from './apply';
-import { galleryToProducts } from './convert';
+import { galleryFromProducts, galleryToProducts, pickedForShowcase, showcaseCandidates } from './convert';
+import { GALLERY_LIMIT } from '../gallery/gallery-form';
 import {
   addDays,
   addMonths,
@@ -57,6 +58,7 @@ async function writeTerms(
     plan_renews_on?: string;
     plan_next?: string | null;
     plan_next_billing?: string | null;
+    plan_next_gallery?: string[] | null;
     plan_credit_cents?: number;
   },
 ): Promise<boolean> {
@@ -100,6 +102,7 @@ export async function upgradePlan(to: unknown, billing: unknown): Promise<Change
       plan_renews_on: quote.renewsOn,
       plan_next: null,
       plan_next_billing: null,
+      plan_next_gallery: null,
       plan_credit_cents: quote.creditLeftCents,
     }))
   )
@@ -108,7 +111,7 @@ export async function upgradePlan(to: unknown, billing: unknown): Promise<Change
 }
 
 /** Downgrade at the next renewal, billed `billing` from then. Nothing changes until then, and nothing is refunded. */
-export async function scheduleDowngrade(to: unknown, billing: unknown): Promise<ChangePlanResult> {
+export async function scheduleDowngrade(to: unknown, billing: unknown, showcase: unknown = []): Promise<ChangePlanResult> {
   if (!isSitePlan(to) || !isBilling(billing))
     return { ok: false, error: 'That isn’t one of the plans.' };
   const ready = await demoSite();
@@ -116,12 +119,26 @@ export async function scheduleDowngrade(to: unknown, billing: unknown): Promise<
   const { tenantId, state } = ready;
   if (moveOf(state.plan, to) !== 'down')
     return { ok: false, error: 'That isn’t a downgrade from your plan.' };
+  // Showcase is one page of up to 12 pieces: she picks which of her products they are.
+  let picked: string[] | null = null;
+  if (to === 'showcase') {
+    const found = await showcaseCandidates(supabaseAdmin(), tenantId);
+    if (!found.ok) {
+      logger.error('showcase candidates failed', { tenantId, error: found.error });
+      return { ok: false, error: FAILED };
+    }
+    const ids = Array.isArray(showcase) ? showcase.filter((x): x is string => typeof x === 'string') : [];
+    picked = pickedForShowcase(ids, found.products, GALLERY_LIMIT).map((p) => p.id);
+    if (picked.length === 0 && found.products.length > 0)
+      return { ok: false, error: 'Pick at least one product to show on your Showcase page.' };
+  }
   if (
     !(await writeTerms(tenantId, {
       plan_billing: state.billing,
       plan_renews_on: state.renewsOn,
       plan_next: to,
       plan_next_billing: billing,
+      plan_next_gallery: picked,
     }))
   )
     return { ok: false, error: FAILED };
@@ -132,7 +149,7 @@ export async function scheduleDowngrade(to: unknown, billing: unknown): Promise<
 export async function cancelScheduledChange(): Promise<ChangePlanResult> {
   const ready = await demoSite();
   if (!ready.ok) return ready;
-  if (!(await writeTerms(ready.tenantId, { plan_next: null, plan_next_billing: null })))
+  if (!(await writeTerms(ready.tenantId, { plan_next: null, plan_next_billing: null, plan_next_gallery: null })))
     return { ok: false, error: FAILED };
   return done();
 }
@@ -143,6 +160,13 @@ export async function skipToRenewal(): Promise<ChangePlanResult> {
   const ready = await demoSite();
   if (!ready.ok) return ready;
   const { tenantId, state } = ready;
+  if (state.next === 'showcase' && state.nextGallery.length > 0) {
+    const g = await galleryFromProducts(supabaseAdmin(), tenantId, state.nextGallery, GALLERY_LIMIT);
+    if (!g.ok) {
+      logger.error('showcase gallery failed', { tenantId, error: g.error });
+      return { ok: false, error: FAILED };
+    }
+  }
   if (state.next !== null) {
     const r = await applyPlan(supabaseAdmin(), tenantId, state.next);
     if (!r.ok) {
@@ -161,6 +185,7 @@ export async function skipToRenewal(): Promise<ChangePlanResult> {
       plan_renews_on: renewsOn,
       plan_next: null,
       plan_next_billing: null,
+      plan_next_gallery: null,
       plan_credit_cents: charge.creditLeftCents,
     }))
   ) {
@@ -184,6 +209,7 @@ export async function setDemoBilling(billing: unknown): Promise<ChangePlanResult
       plan_renews_on: renewsOn,
       plan_next: null,
       plan_next_billing: null,
+      plan_next_gallery: null,
       plan_credit_cents: 0,
     }))
   )

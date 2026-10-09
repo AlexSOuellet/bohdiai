@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { galleryToProducts, productsFromGallery } from './convert';
+import { galleryToProducts, pickedForShowcase, productsFromGallery } from './convert';
 
 const photos = [
   { uploadId: 'u1', caption: 'Cabbage rose oyster dish' },
@@ -74,5 +74,17 @@ describe('writing them', () => {
     expect(await galleryToProducts(fakeDb({ gallery, listings: [], galleryError: 'down' }).db, 't1')).toEqual({ ok: false, error: 'gallery: down' });
     expect(await galleryToProducts(fakeDb({ gallery, listings: [], listingsError: 'down' }).db, 't1')).toEqual({ ok: false, error: 'products: down' });
     expect(await galleryToProducts(fakeDb({ gallery, listings: [], insertError: 'full' }).db, 't1')).toEqual({ ok: false, error: 'products: full' });
+  });
+});
+
+describe('picking products for Showcase', () => {
+  const products = [
+    { id: 'a', name: 'A', uploadId: 'ua' },
+    { id: 'b', name: 'B', uploadId: 'ub' },
+    { id: 'c', name: 'C', uploadId: 'uc' },
+  ];
+  it('keeps her order, drops unknown and repeated ids, and stops at the limit', () => {
+    expect(pickedForShowcase(['c', 'x', 'a', 'c', 'b'], products, 2).map((p) => p.id)).toEqual(['c', 'a']);
+    expect(pickedForShowcase([], products, 12)).toEqual([]);
   });
 });

@@ -77,3 +77,62 @@ export async function galleryToProducts(db: SupabaseClient<Database>, tenantId: 
   if (error !== null) return { ok: false, error: `products: ${error.message}` };
   return { ok: true, added: created.length };
 }
+
+export type ShowcasePick = { id: string; name: string; uploadId: string };
+
+/** The ids she may pick for Showcase: her live products that have a photo, at most
+ *  GALLERY_LIMIT, in the order she ticked them. Unknown ids are dropped. */
+export function pickedForShowcase(ids: readonly string[], products: readonly ShowcasePick[], limit: number): ShowcasePick[] {
+  const byId = new Map(products.map((p) => [p.id, p]));
+  const seen = new Set<string>();
+  const picked: ShowcasePick[] = [];
+  for (const id of ids) {
+    const p = byId.get(id);
+    if (p === undefined || seen.has(id)) continue;
+    seen.add(id);
+    picked.push(p);
+    if (picked.length === limit) break;
+  }
+  return picked;
+}
+
+/** Her live products that can stand in the Showcase gallery: each with its main photo. */
+export async function showcaseCandidates(db: SupabaseClient<Database>, tenantId: string): Promise<{ ok: true; products: (ShowcasePick & { url: string })[] } | { ok: false; error: string }> {
+  const { data, error } = await db
+    .from('listings')
+    .select('id, name, media_ids, on_home, created_at')
+    .eq('tenant_id', tenantId)
+    .eq('status', 'active')
+    .is('deleted_at', null)
+    .in('listing_type', ['product', 'digital_product'])
+    .order('created_at', { ascending: true });
+  if (error !== null) return { ok: false, error: `products: ${error.message}` };
+  const rows = (data ?? []).filter((r) => r.media_ids.length > 0);
+  const firstIds = rows.map((r) => r.media_ids[0] as string);
+  const { data: ups, error: uErr } = firstIds.length === 0 ? { data: [], error: null } : await db.from('uploads').select('id, public_url').in('id', firstIds);
+  if (uErr !== null) return { ok: false, error: `photos: ${uErr.message}` };
+  const urls = new Map((ups ?? []).map((u) => [u.id, u.public_url]));
+  return {
+    ok: true,
+    products: rows.flatMap((r) => {
+      const uploadId = r.media_ids[0] as string;
+      const url = urls.get(uploadId);
+      return url === undefined || url === null ? [] : [{ id: r.id, name: r.name, uploadId, url }];
+    }),
+  };
+}
+
+/** Make the chosen products her Showcase gallery: their main photos, captioned with
+ *  their names, in her order. The old gallery entries are only references to photos,
+ *  so replacing them loses no photo; every product stays saved. */
+export async function galleryFromProducts(db: SupabaseClient<Database>, tenantId: string, ids: readonly string[], limit: number): Promise<{ ok: true; count: number } | { ok: false; error: string }> {
+  const found = await showcaseCandidates(db, tenantId);
+  if (!found.ok) return found;
+  const picked = pickedForShowcase(ids, found.products, limit);
+  if (picked.length === 0) return { ok: true, count: 0 };
+  const { error: dErr } = await db.from('gallery_items').delete().eq('tenant_id', tenantId);
+  if (dErr !== null) return { ok: false, error: `gallery: ${dErr.message}` };
+  const { error } = await db.from('gallery_items').insert(picked.map((p, position) => ({ tenant_id: tenantId, upload_id: p.uploadId, position, caption: p.name })));
+  if (error !== null) return { ok: false, error: `gallery: ${error.message}` };
+  return { ok: true, count: picked.length };
+}

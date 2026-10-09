@@ -6,6 +6,8 @@ import { loadPlanState } from '@/lib/backend/plan/queries';
 import { isSitePlan, planOf } from '@/lib/backend/plan/plan';
 import { hiddenByMove, moveOf } from '@/lib/backend/plan/plan-features';
 import { daysLeft, quoteUpgrade } from '@/lib/backend/plan/billing';
+import { showcaseCandidates } from '@/lib/backend/plan/convert';
+import { supabaseAdmin } from '@/lib/supabase';
 import { PlanChange } from './PlanChange';
 
 export const dynamic = 'force-dynamic';
@@ -25,6 +27,13 @@ export default async function PlanChangePage({
   const today = state.today;
   const move = moveOf(state.plan, to);
   if (move === 'same') redirect('/manage/plan');
+  // Moving down to Showcase: she picks which of her products the one page shows.
+  let showcase: { id: string; name: string; url: string }[] = [];
+  if (to === 'showcase') {
+    const found = await showcaseCandidates(supabaseAdmin(), site.tenantId);
+    if (!found.ok) throw new Error(`Could not load your products: ${found.error}`);
+    showcase = found.products.map((p) => ({ id: p.id, name: p.name, url: p.url }));
+  }
   return (
     <>
       <div className="bk-head">
@@ -51,6 +60,7 @@ export default async function PlanChangePage({
             renewsOn={state.renewsOn}
             fromBilling={state.billing}
             daysLeft={daysLeft(today, state.renewsOn, state.billing)}
+            showcase={showcase}
           />
         )}
       </main>

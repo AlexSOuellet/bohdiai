@@ -135,8 +135,10 @@ describe('checkout (moving up)', () => {
   });
 });
 
+const OPTIONS = Array.from({ length: 14 }, (_, i) => ({ id: `p${i}`, name: `Piece ${i}`, url: `https://cdn/${i}.jpg` }));
+
 describe('downgrade', () => {
-  function down() {
+  function down(showcase = OPTIONS.slice(0, 2)) {
     return render(
       <PlanChange
         kind="down"
@@ -146,6 +148,7 @@ describe('downgrade', () => {
         renewsOn="2027-04-09"
         fromBilling="yearly"
         daysLeft={182}
+        showcase={showcase}
       />,
     );
   }
@@ -181,6 +184,30 @@ describe('downgrade', () => {
     fireEvent.click(screen.getByRole('radio', { name: /a month/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Downgrade to Maker Showcase' }));
     await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/plan?scheduled=showcase'));
-    expect(scheduleDowngrade).toHaveBeenCalledWith('showcase', 'monthly');
+    expect(scheduleDowngrade).toHaveBeenCalledWith('showcase', 'monthly', ['p0', 'p1']);
+  });
+
+  it('starts with the first 12 picked and won’t let a 13th be ticked', () => {
+    down(OPTIONS);
+    expect(screen.getByText(/12 of 12 picked/)).toBeTruthy();
+    expect((screen.getByRole('checkbox', { name: /Piece 12/ }) as HTMLInputElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole('checkbox', { name: /Piece 0/ }));
+    expect(screen.getByText(/11 of 12 picked/)).toBeTruthy();
+    expect((screen.getByRole('checkbox', { name: /Piece 12/ }) as HTMLInputElement).disabled).toBe(false);
+  });
+
+  it('sends the pieces she picked, and can’t go ahead with none', async () => {
+    scheduleDowngrade.mockResolvedValue({ ok: true });
+    down();
+    fireEvent.click(screen.getByRole('checkbox', { name: /Piece 0/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Downgrade to Maker Showcase' }));
+    await waitFor(() => expect(scheduleDowngrade).toHaveBeenCalledWith('showcase', 'yearly', ['p1']));
+    fireEvent.click(screen.getByRole('checkbox', { name: /Piece 1/ }));
+    expect((screen.getByRole('button', { name: /Downgrade to Maker Showcase|Changing/ }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('shows no picker for a downgrade to Lite', () => {
+    render(<PlanChange kind="down" from={planOf('full')} to={planOf('lite')} hidden={hiddenByMove('full', 'lite')} renewsOn="2027-04-09" fromBilling="yearly" daysLeft={182} showcase={[]} />);
+    expect(screen.queryByText(/picked/)).toBeNull();
   });
 });

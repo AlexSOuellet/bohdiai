@@ -16,10 +16,14 @@ import { scheduleDowngrade, upgradePlan, type ChangePlanResult } from '@/lib/bac
 import { useNotice } from '../../_components/Notice';
 
 const FAILED = 'Something went wrong. Check your connection and try again.';
+const SHOWCASE_MAX = 12;
 const YEARLY_TERMS =
   'Yearly plans aren’t refunded. If you downgrade later, the change starts at your next renewal.';
 const TO_MONTHLY =
   'Your year is turned into credit: the unused part pays your monthly bills until it runs out. Nothing is lost.';
+
+/** A product she can pick for her Showcase page. */
+export type ShowcaseOption = { id: string; name: string; url: string };
 
 export type PlanChangeProps =
   | {
@@ -37,6 +41,7 @@ export type PlanChangeProps =
       renewsOn: string;
       fromBilling: Billing;
       daysLeft: number;
+      showcase: ShowcaseOption[];
     };
 
 function useConfirm(): {
@@ -201,6 +206,49 @@ function Upgrade({
   );
 }
 
+function ShowcasePicker({
+  options,
+  picked,
+  onChange,
+}: {
+  options: readonly ShowcaseOption[];
+  picked: readonly string[];
+  onChange: (ids: string[]) => void;
+}): React.ReactElement {
+  const full = picked.length >= SHOWCASE_MAX;
+  const toggle = (id: string): void =>
+    onChange(picked.includes(id) ? picked.filter((p) => p !== id) : [...picked, id]);
+  return (
+    <fieldset className="bk-pickshow">
+      <legend className="bk-label">
+        Pick what your Showcase page shows ({picked.length} of {SHOWCASE_MAX} picked)
+      </legend>
+      <p className="bk-note">Everything else stays saved and comes back when you upgrade again.</p>
+      <ul className="bk-pickshow-grid">
+        {options.map((o) => {
+          const on = picked.includes(o.id);
+          return (
+            <li key={o.id}>
+              <label className="bk-pickshow-item" data-on={on ? 'true' : 'false'}>
+                <input
+                  type="checkbox"
+                  checked={on}
+                  disabled={!on && full}
+                  onChange={() => toggle(o.id)}
+                />
+                {/* The maker's own upload, already shrunk at upload. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={o.url} alt="" />
+                <span>{o.name}</span>
+              </label>
+            </li>
+          );
+        })}
+      </ul>
+    </fieldset>
+  );
+}
+
 function Downgrade({
   from,
   to,
@@ -208,9 +256,14 @@ function Downgrade({
   renewsOn,
   fromBilling,
   daysLeft,
+  showcase,
 }: Extract<PlanChangeProps, { kind: 'down' }>): React.ReactElement {
   const { busy, area, run } = useConfirm();
   const [billing, setBilling] = useState<Billing>(fromBilling);
+  const [picked, setPicked] = useState<string[]>(() =>
+    showcase.slice(0, SHOWCASE_MAX).map((o) => o.id),
+  );
+  const toShowcase = to.tier === 'showcase' && showcase.length > 0;
   const when = renewsOn === '' ? 'your next renewal' : longDay(renewsOn);
   return (
     <div className="bk-checkout">
@@ -252,6 +305,7 @@ function Downgrade({
         </fieldset>
         {billing === 'yearly' && <p className="bk-co-terms">{YEARLY_TERMS}</p>}
         <p className="bk-co-terms">Nothing already paid is refunded.</p>
+        {toShowcase && <ShowcasePicker options={showcase} picked={picked} onChange={setPicked} />}
         {hidden.length > 0 && (
           <>
             <p className="bk-up-lead">Put away until you upgrade again</p>
@@ -269,10 +323,10 @@ function Downgrade({
           <button
             type="button"
             className="bk-up-btn"
-            disabled={busy}
+            disabled={busy || (toShowcase && picked.length === 0)}
             onClick={() =>
               void run(
-                () => scheduleDowngrade(to.tier, billing),
+                () => scheduleDowngrade(to.tier, billing, toShowcase ? picked : []),
                 (go) => go.push(`/manage/plan?scheduled=${to.tier}`),
               )
             }

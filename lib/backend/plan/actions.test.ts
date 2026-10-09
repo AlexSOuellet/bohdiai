@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { PlanState } from './queries';
+import type * as Convert from './convert';
 
 const state: {
   features: Set<string>;
@@ -43,7 +44,18 @@ vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn() } }));
 vi.mock('./queries', () => ({ loadPlanState: () => Promise.resolve(state.plan) }));
 vi.mock('./apply', () => ({ applyPlan }));
 const galleryToProducts = vi.fn(() => Promise.resolve(state.convert));
-vi.mock('./convert', () => ({ galleryToProducts }));
+const candidates = [
+  { id: 'p1', name: 'Carol star', uploadId: 'u1', url: 'https://cdn/1.jpg' },
+  { id: 'p2', name: 'Old Saint Nick', uploadId: 'u2', url: 'https://cdn/2.jpg' },
+];
+const showcaseCandidates = vi.fn(() => Promise.resolve({ ok: true as const, products: candidates }));
+const galleryFromProducts = vi.fn(() => Promise.resolve({ ok: true as const, count: 1 }));
+vi.mock('./convert', async (orig) => ({
+  ...(await orig<typeof Convert>()),
+  galleryToProducts,
+  showcaseCandidates,
+  galleryFromProducts,
+}));
 
 const { upgradePlan, scheduleDowngrade, cancelScheduledChange, skipToRenewal, setDemoBilling } =
   await import('./actions');
@@ -56,6 +68,7 @@ function on(over: Partial<PlanState> = {}): PlanState {
     next: null,
     nextBilling: null,
     creditCents: 0,
+    nextGallery: [],
     today: '2026-10-09',
     ...over,
   };
@@ -97,6 +110,7 @@ describe('upgrade', () => {
         plan_renews_on: '2026-10-29',
         plan_next: null,
         plan_next_billing: null,
+        plan_next_gallery: null,
         plan_credit_cents: 0,
       },
     ]);
@@ -111,6 +125,7 @@ describe('upgrade', () => {
         plan_renews_on: '2027-10-09',
         plan_next: null,
         plan_next_billing: null,
+        plan_next_gallery: null,
         plan_credit_cents: 0,
       },
     ]);
@@ -163,7 +178,7 @@ describe('downgrade', () => {
   });
 
   it('waits for renewal: nothing switches now, the plan and billing to come are stored', async () => {
-    expect(await scheduleDowngrade('showcase', 'monthly')).toEqual({ ok: true });
+    expect(await scheduleDowngrade('showcase', 'monthly', ['p1'])).toEqual({ ok: true });
     expect(applyPlan).not.toHaveBeenCalled();
     expect(writes).toEqual([
       {
@@ -171,6 +186,7 @@ describe('downgrade', () => {
         plan_renews_on: '2027-04-09',
         plan_next: 'showcase',
         plan_next_billing: 'monthly',
+        plan_next_gallery: ['p1'],
       },
     ]);
   });
@@ -184,7 +200,7 @@ describe('downgrade', () => {
 
   it('can be called off', async () => {
     expect(await cancelScheduledChange()).toEqual({ ok: true });
-    expect(writes).toEqual([{ plan_next: null, plan_next_billing: null }]);
+    expect(writes).toEqual([{ plan_next: null, plan_next_billing: null, plan_next_gallery: null }]);
   });
 
   it('takes effect when the demo skips to renewal, and the new period starts today', async () => {
@@ -197,6 +213,7 @@ describe('downgrade', () => {
         plan_renews_on: '2027-10-09',
         plan_next: null,
         plan_next_billing: null,
+        plan_next_gallery: null,
         plan_credit_cents: 0,
       },
     ]);
@@ -218,6 +235,7 @@ describe('downgrade', () => {
         plan_renews_on: '2026-11-09',
         plan_next: null,
         plan_next_billing: null,
+        plan_next_gallery: null,
         plan_credit_cents: 0,
       },
     ]);
@@ -237,6 +255,7 @@ describe('downgrade', () => {
         plan_renews_on: '2026-11-09',
         plan_next: null,
         plan_next_billing: null,
+        plan_next_gallery: null,
         plan_credit_cents: 0,
       },
     ]);
@@ -267,6 +286,7 @@ describe('demo billing switch', () => {
         plan_renews_on: '2027-04-09',
         plan_next: null,
         plan_next_billing: null,
+        plan_next_gallery: null,
         plan_credit_cents: 0,
       },
       {
@@ -274,6 +294,7 @@ describe('demo billing switch', () => {
         plan_renews_on: '2026-10-29',
         plan_next: null,
         plan_next_billing: null,
+        plan_next_gallery: null,
         plan_credit_cents: 0,
       },
     ]);
@@ -284,5 +305,42 @@ describe('demo billing switch', () => {
     state.features = new Set(['plan']);
     expect((await setDemoBilling('yearly')).ok).toBe(false);
     expect(writes).toEqual([]);
+  });
+});
+
+describe('downgrading to Showcase', () => {
+  beforeEach(() => {
+    state.plan = on({ plan: 'lite', billing: 'monthly', renewsOn: '2026-10-29' });
+    galleryFromProducts.mockClear();
+  });
+
+  it('stores the products she picked, in her order, dropping unknown ones', async () => {
+    expect(await scheduleDowngrade('showcase', 'monthly', ['p2', 'nope', 'p1'])).toEqual({ ok: true });
+    expect(writes).toEqual([expect.objectContaining({ plan_next: 'showcase', plan_next_gallery: ['p2', 'p1'] })]);
+  });
+
+  it('asks her to pick at least one when she has products to show', async () => {
+    expect(await scheduleDowngrade('showcase', 'monthly', [])).toEqual({ ok: false, error: 'Pick at least one product to show on your Showcase page.' });
+    expect(writes).toEqual([]);
+  });
+
+  it('turns her picks into the gallery when the downgrade takes effect', async () => {
+    state.plan = on({ plan: 'lite', next: 'showcase', nextGallery: ['p2', 'p1'] });
+    expect(await skipToRenewal()).toEqual({ ok: true });
+    expect(galleryFromProducts).toHaveBeenCalledWith(expect.anything(), 't1', ['p2', 'p1'], 12);
+    expect(applyPlan).toHaveBeenCalledWith(expect.anything(), 't1', 'showcase');
+  });
+
+  it('stops before switching if the gallery can’t be made', async () => {
+    state.plan = on({ plan: 'lite', next: 'showcase', nextGallery: ['p1'] });
+    galleryFromProducts.mockResolvedValueOnce({ ok: false, error: 'gallery: down' } as never);
+    applyPlan.mockClear();
+    expect((await skipToRenewal()).ok).toBe(false);
+    expect(applyPlan).not.toHaveBeenCalled();
+  });
+
+  it('says so when her products can’t be read', async () => {
+    showcaseCandidates.mockResolvedValueOnce({ ok: false, error: 'products: down' } as never);
+    expect((await scheduleDowngrade('showcase', 'monthly', ['p1'])).ok).toBe(false);
   });
 });

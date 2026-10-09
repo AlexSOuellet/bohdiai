@@ -10,6 +10,8 @@ export type PlanState = {
   next: SitePlan | null;
   nextBilling: Billing | null;
   creditCents: number;
+  /** The products she picked to show when a downgrade to Showcase takes effect. */
+  nextGallery: string[];
   /** Today in the shop's time zone. */
   today: string;
 };
@@ -24,7 +26,7 @@ export async function loadPlanState(
   const { data, error } = await db
     .from('tenants')
     .select(
-      'plan, plan_billing, plan_renews_on, plan_next, plan_next_billing, plan_credit_cents, time_zone',
+      'plan, plan_billing, plan_renews_on, plan_next, plan_next_billing, plan_credit_cents, plan_next_gallery, time_zone',
     )
     .eq('id', tenantId)
     .maybeSingle();
@@ -38,6 +40,7 @@ export async function loadPlanState(
     next: isSitePlan(data.plan_next) ? data.plan_next : null,
     nextBilling: isBilling(data.plan_next_billing) ? data.plan_next_billing : null,
     creditCents: data.plan_credit_cents,
+    nextGallery: data.plan_next_gallery ?? [],
     today,
   };
 }
