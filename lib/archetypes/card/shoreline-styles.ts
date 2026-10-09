@@ -213,6 +213,10 @@ a.sl-print{text-decoration:none;cursor:pointer}
 .sl-quote p::before{content:'“';display:block;font-size:3em;line-height:.6;color:var(--rust)}
 .sl-quote footer{font-weight:600;letter-spacing:.06em;color:var(--ink)}
 .sl-quote footer span{display:block;font-weight:500;font-style:italic;letter-spacing:0;color:var(--ink-soft)}
+.sl-sale{margin:0;padding:10px 16px;text-align:center;background:var(--rust);color:#fbefe0;font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:14px}
+.sl-price s{font-weight:400;color:var(--ink-soft);margin-right:4px}
+.sl-new{display:inline-block;margin-bottom:4px;padding:2px 10px;background:var(--navy);color:#f3efe6;font-family:var(--body);font-style:normal;font-weight:600;font-size:11px;letter-spacing:.2em;text-transform:uppercase}
+.sl-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .sl-btn--cart{margin-right:12px}
 .sl-btn--quiet{background:transparent;color:var(--navy)!important;box-shadow:inset 0 0 0 1.5px var(--navy)}
 .sl-btn--quiet:hover{background:var(--navy);color:#f3efe6!important}

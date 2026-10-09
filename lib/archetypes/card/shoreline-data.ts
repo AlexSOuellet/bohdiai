@@ -11,6 +11,8 @@ import { loadCatalog } from '@/lib/storefront/catalog';
 import { loadSiteFeatures } from '@/lib/backend/features';
 import { HOME_MAX } from '@/lib/catalog/home';
 import { listTestimonials } from '@/lib/backend/testimonials/queries';
+import { offLabel, runningSale, withSale, type Promotion } from '@/lib/storefront/promotions';
+import { loadShopPromotions } from '@/lib/storefront/promotions-load';
 import type { Testimonial } from '@/lib/backend/testimonials/testimonial-form';
 import { loadCardData, type CardData } from './data';
 
@@ -28,6 +30,10 @@ export type ShorelineData = {
   cart: boolean;
   /** What her customers say (Full); empty when the switch is off. */
   testimonials: Testimonial[];
+  /** The site-wide sale running today (Full promotions), worded for the banner. */
+  sale: { name: string; off: string } | null;
+  /** New arrivals are marked on her pieces (Full). */
+  newArrivals: boolean;
 };
 
 export async function loadShorelineData(
@@ -39,7 +45,10 @@ export async function loadShorelineData(
     loadSiteFeatures(db, tenantId),
   ]);
   const pages = features.has('catalog');
-  const products = pages ? (await loadCatalog(db, tenantId)).products : [];
+  const catalog = pages ? (await loadCatalog(db, tenantId)).products : [];
+  // Full: a running sale wears its price on every piece, and gets a banner.
+  const running = features.has('promotions') ? await loadRunningSale(db, tenantId) : null;
+  const products = withSale(catalog, running);
   return {
     card,
     pages,
@@ -47,6 +56,8 @@ export async function loadShorelineData(
     marketDetails: features.has('market_details'),
     allPhotos: features.has('product_photos'),
     cart: features.has('cart'),
+    sale: running === null ? null : { name: running.name, off: offLabel(running) },
+    newArrivals: features.has('new_arrivals'),
     testimonials: features.has('testimonials') ? await listTestimonials(db, tenantId) : [],
   };
 }
@@ -55,4 +66,10 @@ export async function loadShorelineData(
 export function featuredProducts(products: readonly ProductView[], max = HOME_MAX): ProductView[] {
   const marked = products.filter((p) => p.onHome === true);
   return (marked.length > 0 ? marked : products).slice(0, max);
+}
+
+/** The site-wide sale on today, if any (a code isn't a sale: it only shows in the cart). */
+async function loadRunningSale(db: SupabaseClient<Database>, tenantId: string): Promise<Promotion | null> {
+  const promo = await loadShopPromotions(db, tenantId);
+  return runningSale(promo.promos, promo.today);
 }

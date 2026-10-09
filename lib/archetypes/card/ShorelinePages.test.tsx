@@ -32,6 +32,8 @@ const site: ShorelineData = {
   allPhotos: true,
   cart: false,
   testimonials: [],
+  sale: null,
+  newArrivals: false,
 };
 
 afterEach(cleanup);
@@ -240,5 +242,25 @@ describe('testimonials (Full)', () => {
     page('testimonials', { ...site, testimonials: words });
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(W.kindWords);
     expect(screen.getByText('Lovely piece 3.')).toBeTruthy();
+  });
+});
+
+describe('sales and new arrivals (Full)', () => {
+  const onSale = { ...site.products[1]!, salePrice: '$17.60', isNew: true };
+
+  it('shows the running sale as a banner and on each price', () => {
+    const { container } = page('shop', { ...site, sale: { name: 'Harvest sale', off: '20% off' }, products: [onSale] });
+    expect(screen.getByText('Harvest sale: 20% off everything')).toBeTruthy();
+    expect(container.querySelector('.sl-price s')?.textContent).toContain('$22');
+    expect(screen.getByText('$17.60', { exact: false })).toBeTruthy();
+  });
+
+  it('marks new pieces only when new arrivals are on', () => {
+    const { container } = page('shop', { ...site, newArrivals: true, products: [onSale] });
+    expect(container.querySelector('.sl-new')?.textContent).toBe(W.newTag);
+    cleanup();
+    const { container: off } = page('shop', { ...site, products: [onSale] });
+    expect(off.querySelector('.sl-new')).toBeNull();
+    expect(off.querySelector('.sl-sale')).toBeNull();
   });
 });

@@ -42,6 +42,11 @@ function Name({ name }: { name: string }): ReactElement {
   );
 }
 
+function SaleBanner({ sale }: { sale: ShorelineData['sale'] }): ReactElement | null {
+  if (sale === null) return null;
+  return <p className="sl-sale">{W.saleBanner(sale.name, sale.off)}</p>;
+}
+
 function Bar({ name, current, cart = false }: { name: string; current: ShorelinePage | 'cart' | null; cart?: boolean }): ReactElement {
   return (
     <header className="sl-bar">
@@ -77,7 +82,7 @@ function PageHead({ title }: { title: string }): ReactElement {
 }
 
 /** One product as a print over the water, linking to its page, with its price or "Ask for price". */
-function ProductPrint({ product, eager }: { product: ProductView; eager: boolean }): ReactElement {
+function ProductPrint({ product, eager, newTag }: { product: ProductView; eager: boolean; newTag: boolean }): ReactElement {
   const photo = product.media.find((m) => m.kind === 'image' && m.url !== undefined);
   return (
     <li>
@@ -92,6 +97,7 @@ function ProductPrint({ product, eager }: { product: ProductView; eager: boolean
           />
         )}
         <span className="sl-label">
+          {newTag && product.isNew === true && <em className="sl-new">{W.newTag}</em>}
           <span>{product.name}</span>
           <Price product={product} />
         </span>
@@ -101,18 +107,26 @@ function ProductPrint({ product, eager }: { product: ProductView; eager: boolean
 }
 
 function Price({ product }: { product: ProductView }): ReactElement {
-  return product.askForPrice === true ? (
-    <em className="sl-price sl-price--ask">{W.askForPrice}</em>
-  ) : (
-    <strong className="sl-price">{product.price}</strong>
-  );
+  if (product.askForPrice === true) return <em className="sl-price sl-price--ask">{W.askForPrice}</em>;
+  if (product.salePrice !== undefined) {
+    return (
+      <strong className="sl-price">
+        <s>
+          <span className="sl-sr">{W.was} </span>
+          {product.price}
+        </s>{' '}
+        {product.salePrice}
+      </strong>
+    );
+  }
+  return <strong className="sl-price">{product.price}</strong>;
 }
 
-function Prints({ products }: { products: readonly ProductView[] }): ReactElement {
+function Prints({ products, newTag = false }: { products: readonly ProductView[]; newTag?: boolean }): ReactElement {
   return (
     <ul className="sl-prints">
       {products.map((p, i) => (
-        <ProductPrint key={p.slug} product={p} eager={i < 3} />
+        <ProductPrint key={p.slug} product={p} eager={i < 3} newTag={newTag} />
       ))}
     </ul>
   );
@@ -208,7 +222,7 @@ function Home({ site }: { site: ShorelineData }): ReactElement {
             <h2 className="sl-section-h" id="sl-featured">
               {W.featured}
             </h2>
-            <Prints products={featured} />
+            <Prints products={featured} newTag={site.newArrivals} />
             <div className="sl-more">
               <a href="/shop">{W.seeShop}</a>
             </div>
@@ -267,7 +281,7 @@ function Shop({ site }: { site: ShorelineData }): ReactElement {
     <main id="main" className="sl-water sl-featured sl-featured--page">
       <h1 className="sl-section-h">{W.featured}</h1>
       {site.products.length > 0 ? (
-        <Prints products={site.products} />
+        <Prints products={site.products} newTag={site.newArrivals} />
       ) : (
         <p className="sl-empty">{W.emptyShop}</p>
       )}
@@ -413,6 +427,7 @@ export function ShorelineSite({
   return (
     <Frame>
       <Bar name={site.card.name} current={page} cart={site.cart} />
+      <SaleBanner sale={site.sale} />
       {page === 'home' && <Home site={site} />}
       {page === 'shop' && <Shop site={site} />}
       {page === 'about' && <About site={site} />}
@@ -446,6 +461,7 @@ export function ShorelineProduct({
   return (
     <Frame>
       <Bar name={site.card.name} current="shop" cart={site.cart} />
+      <SaleBanner sale={site.sale} />
       <div className="sl-head">
         <a className="sl-back" href="/shop">
           ← {W.backToShop}
@@ -476,7 +492,9 @@ export function ShorelineProduct({
                 {product.askForPrice === true ? (
                   <p className="sl-product-price sl-product-price--ask">{W.askForPrice}</p>
                 ) : (
-                  <p className="sl-product-price">{product.price}</p>
+                  <p className="sl-product-price">
+                    <Price product={product} />
+                  </p>
                 )}
                 {product.shortDescription !== undefined && product.shortDescription !== '' && (
                   <p className="sl-product-short">{product.shortDescription}</p>
@@ -514,6 +532,7 @@ export function ShorelineCart({ site, cart, platformCredit = true }: { site: Sho
   return (
     <Frame>
       <Bar name={site.card.name} current="cart" cart />
+      <SaleBanner sale={site.sale} />
       <SyncCart ids={cart.lines.map((l) => l.id)} />
       <PageHead title={C.title} />
       <main id="main" className="sl-cart">
