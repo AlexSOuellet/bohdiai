@@ -33,7 +33,8 @@ describe('checkout (moving up)', () => {
     checkout();
     const sum = screen.getByText('Today').closest('dl') as HTMLElement;
     expect(within(sum).getByText('Maker Lite, rest of this month').nextElementSibling?.textContent).toBe('$10');
-    expect(within(sum).getByText('Credit for the unused part of Maker Showcase').nextElementSibling?.textContent).toBe('−$3.33');
+    expect(within(sum).getByText('Unused Maker Showcase: 20 days left of your month').nextElementSibling?.textContent).toBe('$3.33 credit');
+    expect(within(sum).getByText('Credit used today').nextElementSibling?.textContent).toBe('−$3.33');
     expect(within(sum).getByText('Today').nextElementSibling?.textContent).toBe('$6.67');
     expect(within(sum).getByText('Then $15 a month, from').nextElementSibling?.textContent).toBe('October 29, 2026');
   });
@@ -54,7 +55,9 @@ describe('checkout (moving up)', () => {
     fireEvent.click(screen.getByRole('radio', { name: /a month/ }));
     expect(screen.getByText(/Your year is turned into credit/)).toBeTruthy();
     expect(screen.getByText('Today').nextElementSibling?.textContent).toBe('$0');
-    expect(screen.getByText('Credit left, used on your next bills first')).toBeTruthy();
+    expect(screen.getByText('Unused Maker Showcase: about 6 months (182 days) left of your year').nextElementSibling?.textContent).toBe('$24.93 credit');
+    expect(screen.getByText('Credit used today').nextElementSibling?.textContent).toBe('−$15');
+    expect(screen.getByText('Credit left, used on your next bills first').nextElementSibling?.textContent).toBe('$9.93');
   });
 
   it('switches the plan on Confirm, on the billing she picked, and goes back to Your plan', async () => {

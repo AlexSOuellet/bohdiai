@@ -70,6 +70,18 @@ export function periodLeft(today: string, renewsOn: string, billing: Billing): n
   return Math.min(1, Math.max(0, left / total));
 }
 
+/** Days from `today` to `renewsOn`, never below zero. */
+export function daysLeft(today: string, renewsOn: string): number {
+  return Math.max(0, daysBetween(today, renewsOn));
+}
+
+/** How much of a period is left, as people say it: "about 6 months (182 days)" or "20 days". */
+export function timeLeft(days: number, billing: Billing): string {
+  if (billing === 'monthly' || days < 45) return days === 1 ? '1 day' : `${days} days`;
+  const months = Math.round(days / 30.4);
+  return `about ${months} months (${days} days)`;
+}
+
 /** Where a site stands: its plan, billing, renewal day and any credit on account. */
 export type PlanTerms = { plan: SitePlan; billing: Billing; renewsOn: string; creditCents?: number };
 
@@ -83,6 +95,10 @@ export type UpgradeQuote = {
   prorated: boolean;
   /** The unused part of the period she already paid for. */
   creditCents: number;
+  /** The part of that credit put toward today. */
+  creditUsedCents: number;
+  /** Days left in the period she already paid for. */
+  daysLeft: number;
   /** Credit already on her account, put toward today. */
   accountCreditUsedCents: number;
   /** What she pays today. */
@@ -118,6 +134,8 @@ export function quoteUpgrade(now: PlanTerms, to: SitePlan, billing: Billing, tod
     partCents,
     prorated: sameBilling,
     creditCents,
+    creditUsedCents: Math.min(creditCents, partCents),
+    daysLeft: daysLeft(today, now.renewsOn),
     accountCreditUsedCents,
     todayCents: owed - accountCreditUsedCents,
     creditLeftCents: balance - accountCreditUsedCents + overCredit,

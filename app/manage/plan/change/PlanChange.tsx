@@ -5,7 +5,13 @@ import Link from 'next/link';
 import { useRouter, unstable_rethrow } from 'next/navigation';
 import type { Plan } from '@/lib/site/plans';
 import { includesLead } from '@/lib/backend/plan/plan';
-import { longDay, money, type Billing, type UpgradeQuote } from '@/lib/backend/plan/billing';
+import {
+  longDay,
+  money,
+  timeLeft,
+  type Billing,
+  type UpgradeQuote,
+} from '@/lib/backend/plan/billing';
 import { scheduleDowngrade, upgradePlan, type ChangePlanResult } from '@/lib/backend/plan/actions';
 import { useNotice } from '../../_components/Notice';
 
@@ -125,10 +131,19 @@ function Upgrade({
               <dd>{money(q.partCents)}</dd>
             </div>
             {q.creditCents > 0 && (
-              <div>
-                <dt>Credit for the unused part of {from.name}</dt>
-                <dd>−{money(Math.min(q.creditCents, q.partCents))}</dd>
-              </div>
+              <>
+                <div className="bk-co-credit">
+                  <dt>
+                    Unused {from.name}: {timeLeft(q.daysLeft, fromBilling)} left of your{' '}
+                    {fromBilling === 'monthly' ? 'month' : 'year'}
+                  </dt>
+                  <dd>{money(q.creditCents)} credit</dd>
+                </div>
+                <div>
+                  <dt>Credit used today</dt>
+                  <dd>−{money(q.creditUsedCents)}</dd>
+                </div>
+              </>
             )}
             {q.accountCreditUsedCents > 0 && (
               <div>
