@@ -27,7 +27,7 @@ export function nameParts(name: string): { text: string; amp: boolean }[] {
     .map((text) => ({ text, amp: text === '&' }));
 }
 
-function Frame({ children }: { children: ReactNode }): ReactElement {
+export function Frame({ children }: { children: ReactNode }): ReactElement {
   return (
     <>
       <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -42,7 +42,7 @@ function Frame({ children }: { children: ReactNode }): ReactElement {
   );
 }
 
-function Footer({ name, platformCredit }: { name: string; platformCredit: boolean }): ReactElement {
+export function Footer({ name, platformCredit }: { name: string; platformCredit: boolean }): ReactElement {
   return (
     <footer className="sl-foot" aria-label={S.footer.label}>
       <span>

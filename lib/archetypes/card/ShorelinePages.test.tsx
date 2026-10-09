@@ -1,0 +1,126 @@
+import { describe, it, expect, afterEach } from 'vitest';
+import { render, screen, cleanup, within, fireEvent } from '@testing-library/react';
+import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
+import type { ProductView } from '@/lib/archetypes/content';
+import { ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
+import { featuredProducts, type ShorelineData } from './shoreline-data';
+import { CARD_STRINGS as S } from './strings';
+
+const TENANT = '1b54cb24-c467-4327-ae66-f9857a71a854';
+const W = S.shoreline;
+
+function product(slug: string, over: Pick<ProductView, never> & { askForPrice?: true; price?: string; onHome?: boolean } = {}): ProductView {
+  return { slug, name: slug.replace(/-/g, ' '), price: '$28', status: 'active', description: 'First part.\n\nSecond part.', media: [{ kind: 'image', url: `https://cdn/${slug}.jpg`, alt: '' }], variations: [], ...over };
+}
+
+const site: ShorelineData = {
+  card: {
+    name: 'Saltmarsh & Lace',
+    profile: { ...EMPTY_PROFILE, kicker: 'Decoupage from Bristol', headline: 'Sealed to last', aboutTitle: 'From the paint counter', bio: 'I run the paint counter.\n\nEvery sealer gets tested.', signature: 'Lena', facebookUrl: 'https://www.facebook.com/bohdiai', makes: ['Art bottles'] },
+    photos: [],
+    dates: [
+      { id: 'd1', date: '2026-10-24', endDate: '', hours: '10am – 4pm', address: '2 Main St, Bristol', booth: '12', url: 'https://fair.example', canceled: false, name: 'Harvest Fair', town: 'Bristol' },
+      { id: 'd2', date: '2026-11-14', endDate: '', hours: '', address: '', booth: '', url: '', canceled: true, name: 'Makers Market', town: 'Warren' },
+    ],
+  },
+  pages: true,
+  products: [product('cabbage-rose-oyster-dish', { askForPrice: true, price: '' }), product('old-saint-nick', { onHome: true, price: '$22' })],
+  marketDetails: true,
+};
+
+afterEach(cleanup);
+
+function page(which: ShorelinePage, data: ShorelineData = site) {
+  return render(<ShorelineSite site={data} page={which} tenantId={TENANT} />);
+}
+
+describe('shoreline pages (Lite and Full)', () => {
+  it('keeps the bay behind every page and puts the menu at the top, marking where you are', () => {
+    const { container } = page('shop');
+    expect(container.querySelector('.sl-sea')).not.toBeNull();
+    const nav = screen.getByRole('navigation', { name: W.nav.label });
+    expect(within(nav).getAllByRole('link').map((a) => a.getAttribute('href'))).toEqual(['/', '/shop', '/about', '/events', '/contact']);
+    expect(within(nav).getByRole('link', { name: W.nav.shop }).getAttribute('aria-current')).toBe('page');
+  });
+
+  it('opens the home on the sky, with featured pieces, a story teaser, the next markets and a way to write', () => {
+    page('home');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Saltmarsh & Lace');
+    expect(screen.getByRole('heading', { name: W.featured })).toBeTruthy();
+    expect(screen.getAllByRole('link', { name: /old saint nick/i })[0]?.getAttribute('href')).toBe('/listings/old-saint-nick');
+    expect(screen.queryByText('Every sealer gets tested.')).toBeNull();
+    expect(screen.getByRole('link', { name: W.readStory }).getAttribute('href')).toBe('/about');
+    expect(screen.getByRole('link', { name: W.allMarkets }).getAttribute('href')).toBe('/events');
+    expect(screen.getByRole('link', { name: W.writeCta('Lena') }).getAttribute('href')).toBe('/contact');
+  });
+
+  it('shows every product in the shop with its price, or “Ask for price” when it has none', () => {
+    const { container } = page('shop');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(W.pageTitles.shop);
+    expect(container.querySelectorAll('.sl-prints li')).toHaveLength(2);
+    expect(screen.getByText(W.askForPrice)).toBeTruthy();
+    expect(screen.getByText('$22')).toBeTruthy();
+    cleanup();
+    page('shop', { ...site, products: [] });
+    expect(screen.getByText(W.emptyShop)).toBeTruthy();
+  });
+
+  it('tells the whole story on About', () => {
+    page('about');
+    expect(screen.getByText('Every sealer gets tested.')).toBeTruthy();
+    expect(screen.getByText('— Lena')).toBeTruthy();
+    expect(screen.getByRole('link', { name: S.touch.facebook })).toBeTruthy();
+  });
+
+  it('lists every market with its details, directions and website, and marks a canceled one', () => {
+    const { container } = page('events');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(W.pageTitles.markets);
+    expect(screen.getByText('10am – 4pm')).toBeTruthy();
+    expect(screen.getByText(`${W.marketCols.booth} 12`)).toBeTruthy();
+    expect(screen.getByRole('link', { name: W.directions }).getAttribute('href')).toContain(encodeURIComponent('2 Main St, Bristol'));
+    expect(screen.getByRole('link', { name: W.marketLink }).getAttribute('href')).toBe('https://fair.example');
+    expect(container.querySelector('.sl-market--gone h2')?.textContent).toBe('Makers Market (Canceled)');
+  });
+
+  it('leaves the market details out below Lite, and says so when there are no markets', () => {
+    page('events', { ...site, marketDetails: false });
+    expect(screen.queryByText('10am – 4pm')).toBeNull();
+    expect(screen.queryByRole('link', { name: W.directions })).toBeNull();
+    cleanup();
+    page('events', { ...site, card: { ...site.card, dates: [] } });
+    expect(screen.getByText(W.emptyMarkets)).toBeTruthy();
+  });
+
+  it('puts the letter on Contact', () => {
+    const { container } = page('contact');
+    expect(screen.getByRole('heading', { name: W.touch('Lena') })).toBeTruthy();
+    expect(container.querySelector('#write form')).not.toBeNull();
+  });
+});
+
+describe('a product page', () => {
+  it('shows the photo, “Ask for price”, the story, and starts the letter with the product’s name', () => {
+    render(<ShorelineProduct site={site} product={site.products[0]!} tenantId={TENANT} />);
+    expect(screen.getByRole('heading', { level: 2, name: 'cabbage rose oyster dish' })).toBeTruthy();
+    expect(screen.getByText(W.askForPrice)).toBeTruthy();
+    expect(screen.getByText('Second part.')).toBeTruthy();
+    expect(screen.getByRole('link', { name: new RegExp(W.backToShop) }).getAttribute('href')).toBe('/shop');
+    expect((screen.getByRole('textbox', { name: S.form.message }) as HTMLTextAreaElement).value).toBe(W.askMessage('cabbage rose oyster dish'));
+    fireEvent.click(screen.getByRole('button', { name: S.work.open('cabbage rose oyster dish', 1) }));
+    expect(screen.getByRole('dialog', { name: S.lightbox.label })).toBeTruthy();
+  });
+
+  it('shows the price when it has one', () => {
+    render(<ShorelineProduct site={site} product={site.products[1]!} tenantId={TENANT} />);
+    expect(screen.getByText('$22')).toBeTruthy();
+    expect(screen.queryByText(W.askForPrice)).toBeNull();
+  });
+});
+
+describe('featured pieces', () => {
+  it('uses the ones marked for the home page, else the first six', () => {
+    expect(featuredProducts(site.products).map((p) => p.slug)).toEqual(['old-saint-nick']);
+    const many = Array.from({ length: 9 }, (_, i) => product(`p${i}`));
+    expect(featuredProducts(many)).toHaveLength(6);
+  });
+});

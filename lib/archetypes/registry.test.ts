@@ -22,7 +22,10 @@ describe('archetype registry', () => {
 
   it('renders the business card but never offers it to Bohdi', () => {
     expect(archetypeSpec('card')?.key).toBe('card');
-    expect(archetypeSpec('card')?.usesCatalog).toBe(false);
+    // The shoreline design's Lite and Full pages read the catalog; each render checks
+    // the site's switches first, so a Showcase card site still shows no products.
+    expect(archetypeSpec('card')?.usesCatalog).toBe(true);
+    expect(archetypeSpec('card')?.pages).toEqual(['shop', 'about', 'events', 'contact']);
     expect(archetypeMenu().some((s) => s.key === 'card')).toBe(false);
   });
 });

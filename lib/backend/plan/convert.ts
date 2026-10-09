@@ -68,6 +68,8 @@ export async function galleryToProducts(db: SupabaseClient<Database>, tenantId: 
       listing_type: 'product',
       status: 'active',
       requires_shipping: true,
+      // One moment apart, so the shop keeps gallery order (it sorts by when each was added).
+      created_at: new Date(now + i).toISOString(),
       published_at: new Date(now + i).toISOString(),
       ...p,
     })),
