@@ -1,7 +1,7 @@
 # Saltmarsh & Lace — the demo shop that moves between plans
 
 **Date:** 2026-10-09 (Session 99)
-**Status:** Stage one agreed with Alex ("yes", 2026-10-09). Stages two and three get their own design pass when stage one is live.
+**Status:** Stage one built (shoreline look approved by Alex, 2026-10-09; kept as a draft). Stage two (Lite + the plan switch + checkout) is next, in its own section below once agreed.
 **Related:** `2026-10-02-tiers-and-pricing.md` (plans and switches), `2026-10-03-business-card-site-design.md` (Showcase sites), `2026-09-30-maker-backend-overview.md` (feature switches).
 
 ## Why
@@ -34,40 +34,34 @@ One shop, one set of everything (story, photos, products, markets, orders). A pl
 
 ## Stage one — Showcase
 
-### The look: a cabinet of curiosities
+### The look: the shoreline
 
-One design that grows: at Showcase it is a single glass-fronted shelf; Lite adds drawers (one per line); Full opens a shop counter in front. It is a new design and shares no layout, sections or styling with the other Showcase designs (pinned prints, bulletin board, show reel, torch) or with Rose n' Cat. Its own fixed look; it does not come from the families. Built with the frontend-design skill; bold and specific, not template.
+**2026-10-09:** the first design, a cabinet of curiosities, was built and dropped (Alex: "too cartoony", then "stretching too far to create a theme"). The look Alex chose: a photograph of a Rhode Island bay at dusk (salt marsh, still water, a lighthouse far off) **locked behind the page while everything scrolls in front of it**. Lightly nautical from the name, never costumed. One look for every plan: moving up only adds content (Alex: "Why does the look change? Should just be content").
 
 The page, top to bottom:
 
-1. **The cabinet** against an old Narragansett Bay sea chart, with lace and gilt edges. The business name in gilt on the cabinet's crown, her tag line under it.
-2. **The glass shelf**: up to 12 pieces, each with a handwritten specimen label (name and a line about it). Tapping a piece opens it full size (next, previous, Escape, focus returns), as on the other Showcase sites.
-3. **The door card**: a card tucked into the cabinet door with her story, the "tested on every sealer" note, and her Facebook and Instagram.
-4. **Find me at**: her market dates, set out like a tide table. Left out when there are none.
-5. **Contact form**: the existing card-site form and route, restyled. Goes to the inbox.
-6. **Footer**: © year and name, Privacy, Terms, "Empowered by BohdiAI". Privacy and terms pages render in the same look.
+1. **The sky**: the name large in Bodoni Moda, the ampersand in italic rust, set high in the open sky so it reads; the tag line and What I make under it with a soft light halo.
+2. **The prints**: up to 12 pieces floating over the water as white-matted prints with handwritten captions, each at its own slight tilt and drop. Tapping one opens it full size (next, previous, Escape, focus returns).
+3. **The card and the tide table**: a lace-edged card with the headline, story, signature and Facebook; beside it the market dates set out as a tide table (canceled ones struck through).
+4. **The letter**: the contact form on lined letter paper with a wax seal of the initials, addressed "Write to Lena".
+5. **Footer**: © year and name, Privacy, Terms, "Empowered by BohdiAI". Privacy and terms render on a paper sheet over the same bay.
 
-No opener repeats the label-over-headline pattern, no numbered lists, no headline ends in punctuation. All motion is CSS and slow; under reduced motion everything shows at rest; nothing waits on a scroll observer to become visible. All strings go through the design's strings file; styling through classes and CSS variables, no inline styles.
-
-### The pieces are built to grow
-
-The chart wall, the cabinet frame, the gilt, the shelf and the specimen label are separate pieces, so stage two adds drawers and stage three adds the counter without starting over.
+The sea is a fixed layer (not background-attachment, which phones ignore); the photo lives in `public/designs/shoreline/`. Motion is CSS only and slow (the name and prints rise in once); reduced motion shows everything at rest. Strings go through the card strings; styling through classes and CSS variables, no inline styles.
 
 ### Where it lives
 
-- A fourth Showcase design, `cabinet`, added to the card designs (`lib/archetypes/card/design.ts`), so the site module picks it the same way Rustic Rhody picks the bulletin board.
-- Site module `scripts/sites/saltmarsh-and-lace.ts` (About you, up to 12 photos with captions), built with `scripts/build-card-site.ts`. Subdomain `saltmarsh-and-lace`. It carries the sample banner like the other samples.
+- A Showcase design, `shoreline`, added to the card designs (`lib/archetypes/card/design.ts`): `ShorelineLanding.tsx`, `shoreline-styles.ts`.
+- Site module `scripts/sites/saltmarsh-and-lace.ts` (About you, 12 photos with captions, four made-up market dates, `plan: 'showcase'`), built with `scripts/build-card-site.ts`. Subdomain `saltmarsh-and-lace`, kept as a **draft** (private preview link) while the stages are built. The sample banner and the bohdiai.com samples entry are added when it goes public.
 - Its Facebook button points at BohdiAI's own page, like the other samples.
-- Market dates: a handful of made-up dates at real-sounding Bristol and bay-area events, entered through the existing market dates.
 
 ### The Showcase backend
 
 The four Showcase screens that already exist, switched on for this site: **About you**, **Gallery** (12 max), **Market dates**, **QR codes**. Plus one new screen:
 
-- **Your plan**: shows the plan the site is on (Showcase) and what Lite and Full add, using the same plan list bohdiai.com's pricing pages use (`lib/site/plans.ts`) so wording and prices can't drift. In stage one it is information only; the switch arrives in stage two.
+- **Your plan** (`/manage/plan`, behind the `plan` switch; the plan itself is the new `tenants.plan` column, set by the build when the site module names one): a strip with the current plan, its price and what it includes; then each plan above it as a card (big price, "or $X a year, two months free", what it adds, Full as the dark walnut card) with an **Upgrade to …** button; and a line that moving down never deletes anything. Wording and prices come from `lib/site/plans.ts`, so they can't drift from the pricing pages. In stage one the button opens an email to Alex; stage two points it at the checkout page.
 
 ### Testing and checks
 
-- Tests for the cabinet design (renders the shelf, labels, door card, Find me at, contact form; leaves out empty parts; photo viewer works), for the new design key, and for Your plan.
+- Tests for the shoreline design (name, fixed sea, prints, card, tide table, letter, footer; leaves out empty parts; photo viewer works), for the new design key, and for Your plan.
 - tsc, lint, the full test suite, and the 90% branch-coverage gate on `lib/**/*.ts`.
 - Alex looks at the real page on his own screen before it is committed to `main`.

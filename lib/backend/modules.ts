@@ -28,6 +28,7 @@ export const BACKEND_MODULES: BackendModule[] = [
   { feature: 'gallery', section: 'Your site', items: [{ label: 'Gallery', href: '/manage/gallery' }] },
   { feature: 'market_dates', section: 'Selling', items: [{ label: 'Markets', href: '/manage/markets' }] },
   { feature: 'qr_codes', section: 'Your site', items: [{ label: 'QR code', href: '/manage/qr' }] },
+  { feature: 'plan', section: 'Site', items: [{ label: 'Your plan', href: '/manage/plan' }] },
 ];
 
 export function navFor(modules: readonly BackendModule[], on: ReadonlySet<FeatureKey>): NavSection[] {

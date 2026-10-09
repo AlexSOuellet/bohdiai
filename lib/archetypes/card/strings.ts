@@ -79,6 +79,17 @@ export const CARD_STRINGS = {
     lede: 'Something you’d like made? Send me a note and I’ll get back to you.',
     scroll: 'Scroll',
   },
+  /** The shoreline design's own words. */
+  shoreline: {
+    work: 'The work',
+    makesLabel: 'What I make',
+    aboutFallback: 'A little about me',
+    find: 'Find me at',
+    findCols: { day: 'Day', market: 'Market', town: 'Town' },
+    touch: (signature: string) => (signature === '' ? 'Write to me' : `Write to ${signature}`),
+    lede: 'Something you’d like made, or a question about a piece? Send me a note and I’ll write back.',
+    home: 'Back to the home page',
+  },
   footer: {
     label: 'Site links',
     privacy: 'Privacy',

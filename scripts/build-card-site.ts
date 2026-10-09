@@ -25,11 +25,12 @@ import { cardSkinKey } from '../lib/archetypes/card/paint';
 import { CARD_DESIGNS, type CardDesign } from '../lib/archetypes/card/design';
 import { BUILDER_EMAIL, ensureBuilderAccess } from '../lib/backend/builder-access';
 import { buildDateRow, type MarketDateForm } from '../lib/backend/dates/dates-form';
+import type { SitePlan } from '../lib/backend/plan/plan';
 
 export type CardSiteModule = {
   /** `design` picks the page (pinned prints when left out). Pinned prints paint in
    *  `family` + one of its skins, or the shop's own brand palette. */
-  SITE: { subdomain: string; businessName: string; design?: CardDesign; family: FamilyKey; skin: string; brandPalette?: BrandPalette };
+  SITE: { subdomain: string; businessName: string; design?: CardDesign; family: FamilyKey; skin: string; brandPalette?: BrandPalette; plan?: SitePlan };
   PROFILE: ProfileForm;
   PHOTOS: { file: string; caption: string }[];
   /** Market dates to start with (a sample's made-up ones); written only when the site has none. */
@@ -118,6 +119,15 @@ async function main(): Promise<void> {
     { tenant_id: tenantId, feature_key: 'catalog', enabled: false },
   ]);
   if (featErr !== null) fail(`features failed: ${featErr.message}`);
+
+  // 2b) The plan, when the module names one: stored on the site, and Your plan switched on.
+  if (site.SITE.plan !== undefined) {
+    const { error: planErr } = await db.from('tenants').update({ plan: site.SITE.plan }).eq('id', tenantId);
+    if (planErr !== null) fail(`plan failed: ${planErr.message}`);
+    const { error: pfErr } = await db.from('tenant_features').upsert([{ tenant_id: tenantId, feature_key: 'plan', enabled: true }]);
+    if (pfErr !== null) fail(`plan feature failed: ${pfErr.message}`);
+    process.stdout.write(`plan: ${site.SITE.plan}\n`);
+  }
 
   // 3) The published home page — the card envelope, replaced in place on re-runs.
   const tree = {

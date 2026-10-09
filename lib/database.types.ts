@@ -2284,6 +2284,7 @@ export type Database = {
           niche_description: string | null
           niche_from_list: boolean
           phone: string | null
+          plan: string | null
           postal_code: string | null
           primary_niche: string | null
           secondary_niche: string | null
@@ -2320,6 +2321,7 @@ export type Database = {
           niche_description?: string | null
           niche_from_list?: boolean
           phone?: string | null
+          plan?: string | null
           postal_code?: string | null
           primary_niche?: string | null
           secondary_niche?: string | null
@@ -2356,6 +2358,7 @@ export type Database = {
           niche_description?: string | null
           niche_from_list?: boolean
           phone?: string | null
+          plan?: string | null
           postal_code?: string | null
           primary_niche?: string | null
           secondary_niche?: string | null
