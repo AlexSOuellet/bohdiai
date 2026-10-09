@@ -1,8 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { planView } from '@/lib/backend/plan/plan';
 import { PLANS } from '@/lib/site/plans';
-import { PlanSummary, type PlanMode } from './PlanSummary';
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }), unstable_rethrow: () => undefined }));
+vi.mock('@/lib/backend/plan/actions', () => ({ cancelScheduledChange: vi.fn(), skipToRenewal: vi.fn() }));
+
+const { PlanSummary } = await import('./PlanSummary');
+import type { PlanMode } from './PlanSummary';
 
 const lite = PLANS.find((p) => p.id === 'maker-lite')!;
 const full = PLANS.find((p) => p.id === 'maker-full')!;
@@ -61,6 +65,6 @@ describe('Your plan', () => {
 
   it('says where she is after a change', () => {
     show('lite', DEMO, 'You’re now on Maker Lite.');
-    expect(screen.getByRole('status').textContent).toBe('You’re now on Maker Lite.');
+    expect(screen.getByText('You’re now on Maker Lite.').closest('[role="status"]')).not.toBeNull();
   });
 });

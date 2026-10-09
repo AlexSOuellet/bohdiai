@@ -2285,6 +2285,10 @@ export type Database = {
           niche_from_list: boolean
           phone: string | null
           plan: string | null
+          plan_billing: string | null
+          plan_credit_cents: number
+          plan_next: string | null
+          plan_renews_on: string | null
           postal_code: string | null
           primary_niche: string | null
           secondary_niche: string | null
@@ -2322,6 +2326,10 @@ export type Database = {
           niche_from_list?: boolean
           phone?: string | null
           plan?: string | null
+          plan_billing?: string | null
+          plan_credit_cents?: number
+          plan_next?: string | null
+          plan_renews_on?: string | null
           postal_code?: string | null
           primary_niche?: string | null
           secondary_niche?: string | null
@@ -2359,6 +2367,10 @@ export type Database = {
           niche_from_list?: boolean
           phone?: string | null
           plan?: string | null
+          plan_billing?: string | null
+          plan_credit_cents?: number
+          plan_next?: string | null
+          plan_renews_on?: string | null
           postal_code?: string | null
           primary_niche?: string | null
           secondary_niche?: string | null

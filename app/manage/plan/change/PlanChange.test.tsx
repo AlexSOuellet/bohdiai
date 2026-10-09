@@ -2,11 +2,13 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup, within } from '@testing-library/react';
 import { planOf } from '@/lib/backend/plan/plan';
 import { hiddenByMove } from '@/lib/backend/plan/plan-features';
+import { quoteUpgrade } from '@/lib/backend/plan/billing';
 
 const push = vi.fn();
-const changePlan = vi.fn();
+const upgradePlan = vi.fn();
+const scheduleDowngrade = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }), unstable_rethrow: () => undefined }));
-vi.mock('@/lib/backend/plan/actions', () => ({ changePlan }));
+vi.mock('@/lib/backend/plan/actions', () => ({ upgradePlan, scheduleDowngrade }));
 Element.prototype.scrollIntoView = vi.fn(); // jsdom has no layout
 
 const { PlanChange } = await import('./PlanChange');
@@ -14,35 +16,62 @@ const { PlanChange } = await import('./PlanChange');
 afterEach(() => {
   cleanup();
   push.mockReset();
-  changePlan.mockReset();
+  upgradePlan.mockReset();
+  scheduleDowngrade.mockReset();
 });
 
+const monthly = { plan: 'showcase' as const, billing: 'monthly' as const, renewsOn: '2026-10-29' };
+const TODAY = '2026-10-09';
+const quotes = { monthly: quoteUpgrade(monthly, 'lite', 'monthly', TODAY), yearly: quoteUpgrade(monthly, 'lite', 'yearly', TODAY) };
+
+function checkout() {
+  return render(<PlanChange kind="up" from={planOf('showcase')} to={planOf('lite')} fromBilling="monthly" quotes={quotes} />);
+}
+
 describe('checkout (moving up)', () => {
-  it('shows the plan, monthly or yearly, what she gets and today’s total', () => {
-    render(<PlanChange from={planOf('showcase')} to={planOf('lite')} move="up" hidden={[]} />);
-    expect(screen.getByRole('heading', { name: 'Maker Lite' })).toBeTruthy();
-    expect(screen.getByText(planOf('lite').includes[0]!)).toBeTruthy();
-    const total = () => screen.getByText(/Today:/).textContent;
-    expect(total()).toContain('$15');
-    fireEvent.click(screen.getByRole('radio', { name: /a year/ }));
-    expect(total()).toContain('$150');
-    expect(screen.getByText('Demo site: no card is charged.')).toBeTruthy();
+  it('shows the prorated working: the rest of the month, the credit, today, and the renewal', () => {
+    checkout();
+    const sum = screen.getByText('Today').closest('dl') as HTMLElement;
+    expect(within(sum).getByText('Maker Lite, rest of this month').nextElementSibling?.textContent).toBe('$10');
+    expect(within(sum).getByText('Credit for the unused part of Maker Showcase').nextElementSibling?.textContent).toBe('−$3.33');
+    expect(within(sum).getByText('Today').nextElementSibling?.textContent).toBe('$6.67');
+    expect(within(sum).getByText('Then $15 a month, from').nextElementSibling?.textContent).toBe('October 29, 2026');
   });
 
-  it('switches the plan on Confirm and goes back to Your plan', async () => {
-    changePlan.mockResolvedValue({ ok: true });
-    render(<PlanChange from={planOf('showcase')} to={planOf('lite')} move="up" hidden={[]} />);
+  it('starts a new year on yearly, and says yearly plans aren’t refunded', () => {
+    checkout();
+    expect(screen.queryByText(/aren’t refunded/)).toBeNull();
+    fireEvent.click(screen.getByRole('radio', { name: /a year/ }));
+    expect(screen.getByText(/Yearly plans aren’t refunded\. If you move down later, the change starts at your next renewal\./)).toBeTruthy();
+    expect(screen.getByText('Today').nextElementSibling?.textContent).toBe('$146.67');
+    expect(screen.getByText('Then $150 a year, from').nextElementSibling?.textContent).toBe('October 9, 2027');
+  });
+
+  it('lets a yearly site go monthly, showing the unused year as credit for her next bills', () => {
+    const yearly = { plan: 'showcase' as const, billing: 'yearly' as const, renewsOn: '2027-04-09' };
+    render(<PlanChange kind="up" from={planOf('showcase')} to={planOf('lite')} fromBilling="yearly" quotes={{ monthly: quoteUpgrade(yearly, 'lite', 'monthly', TODAY), yearly: quoteUpgrade(yearly, 'lite', 'yearly', TODAY) }} />);
+    expect(screen.getByText(/aren’t refunded/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('radio', { name: /a month/ }));
+    expect(screen.getByText(/Your year is turned into credit/)).toBeTruthy();
+    expect(screen.getByText('Today').nextElementSibling?.textContent).toBe('$0');
+    expect(screen.getByText('Credit left, used on your next bills first')).toBeTruthy();
+  });
+
+  it('switches the plan on Confirm, on the billing she picked, and goes back to Your plan', async () => {
+    upgradePlan.mockResolvedValue({ ok: true });
+    checkout();
+    fireEvent.click(screen.getByRole('radio', { name: /a year/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Confirm upgrade to Maker Lite' }));
     await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/plan?changed=lite'));
-    expect(changePlan).toHaveBeenCalledWith('lite');
+    expect(upgradePlan).toHaveBeenCalledWith('lite', 'yearly');
   });
 
   it('shows the error and stays put when the change fails, or the call throws', async () => {
-    changePlan.mockResolvedValueOnce({ ok: false, error: 'You’re already on that plan.' });
-    render(<PlanChange from={planOf('showcase')} to={planOf('lite')} move="up" hidden={[]} />);
+    upgradePlan.mockResolvedValueOnce({ ok: false, error: 'That isn’t a move up from your plan.' });
+    checkout();
     fireEvent.click(screen.getByRole('button', { name: /Confirm upgrade/ }));
-    await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('You’re already on that plan.'));
-    changePlan.mockRejectedValueOnce(new Error('offline'));
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('That isn’t a move up from your plan.'));
+    upgradePlan.mockRejectedValueOnce(new Error('offline'));
     fireEvent.click(screen.getByRole('button', { name: /Confirm upgrade/ }));
     await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('Check your connection'));
     expect(push).not.toHaveBeenCalled();
@@ -50,13 +79,25 @@ describe('checkout (moving up)', () => {
 });
 
 describe('moving down', () => {
-  it('lists what gets put away, says nothing is deleted, and offers to stay', () => {
-    render(<PlanChange from={planOf('full')} to={planOf('showcase')} move="down" hidden={hiddenByMove('full', 'showcase')} />);
+  function down() {
+    return render(<PlanChange kind="down" from={planOf('full')} to={planOf('showcase')} hidden={hiddenByMove('full', 'showcase')} renewsOn="2026-10-29" />);
+  }
+
+  it('says it starts at renewal with no refund, lists what gets put away, and offers to stay', () => {
+    down();
+    expect(screen.getByText(/The change starts on October 29, 2026, when your plan renews\..*Nothing already paid is refunded\./)).toBeTruthy();
     const list = screen.getByText('Put away until you move back up').nextElementSibling as HTMLElement;
     expect(within(list).getByText('The cart and online orders')).toBeTruthy();
     expect(screen.getByText(/Nothing is deleted/)).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Move down to Maker Showcase' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Stay on Maker Full' }).getAttribute('href')).toBe('/manage/plan');
     expect(screen.queryByRole('radio')).toBeNull();
+  });
+
+  it('schedules the move and goes back to Your plan', async () => {
+    scheduleDowngrade.mockResolvedValue({ ok: true });
+    down();
+    fireEvent.click(screen.getByRole('button', { name: 'Move down to Maker Showcase' }));
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/plan?scheduled=showcase'));
+    expect(scheduleDowngrade).toHaveBeenCalledWith('showcase');
   });
 });

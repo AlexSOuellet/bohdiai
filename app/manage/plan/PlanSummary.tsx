@@ -1,9 +1,15 @@
 import Link from 'next/link';
 import type { Plan } from '@/lib/site/plans';
-import { includesLead, moveUpMailto, type PlanView } from '@/lib/backend/plan/plan';
+import { includesLead, moveUpMailto, planOf, type PlanView } from '@/lib/backend/plan/plan';
+import { longDay, money, priceCents, renewalCharge, type Billing } from '@/lib/backend/plan/billing';
+import type { SitePlan } from '@/lib/backend/plan/plan';
+import { PlanButtons } from './PlanButtons';
 
 /** How Upgrade works on this site: the demo switches through checkout; a real site emails Alex until billing exists. */
 export type PlanMode = { kind: 'demo' } | { kind: 'email'; siteName: string; contactEmail: string };
+
+/** How the plan is billed, when it renews, and any move down waiting for that renewal. */
+export type PlanTermsView = { billing: Billing; renewsOn: string; next: SitePlan | null; creditCents: number };
 
 function Checks({ lines, className }: { lines: readonly string[]; className: string }): React.ReactElement {
   return (
@@ -44,8 +50,20 @@ function UpgradeCard({ plan, mode }: { plan: Plan; mode: PlanMode }): React.Reac
 }
 
 /** Your plan: where the site is now, then each plan above it as an invitation to move up. */
-export function PlanSummary({ view, mode, changed = null }: { view: PlanView; mode: PlanMode; changed?: string | null }): React.ReactElement {
+export function PlanSummary({
+  view,
+  mode,
+  terms = null,
+  changed = null,
+}: {
+  view: PlanView;
+  mode: PlanMode;
+  terms?: PlanTermsView | null;
+  changed?: string | null;
+}): React.ReactElement {
   const { current, above, below } = view;
+  const demo = mode.kind === 'demo';
+  const next = terms?.next ?? null;
   return (
     <div className="bk-plan">
       {changed !== null && (
@@ -66,9 +84,27 @@ export function PlanSummary({ view, mode, changed = null }: { view: PlanView; mo
           <p className="bk-now-price">
             ${current.monthly} a month, or ${current.yearly} a year
           </p>
+          {terms !== null && terms.renewsOn !== '' && (
+            <p className="bk-now-terms">
+              Billed {terms.billing}. Renews {longDay(terms.renewsOn)} for {money(renewalCharge(priceCents(next ?? current.tier, terms.billing), terms.creditCents).paidCents)}
+              {terms.creditCents > 0 && ', after credit'}.
+            </p>
+          )}
+          {terms !== null && terms.creditCents > 0 && <p className="bk-now-credit">{money(terms.creditCents)} credit on your account, used on your next bills first.</p>}
         </div>
         <Checks lines={current.includes} className="bk-now-list" />
       </section>
+
+      {next !== null && terms !== null && (
+        <section className="bk-pending" aria-labelledby="bk-pending-h">
+          <h2 id="bk-pending-h" className="bk-pending-h">
+            Changing to {planOf(next).name} on {longDay(terms.renewsOn)}
+          </h2>
+          <p className="bk-note">You keep everything in {current.name} until then. Nothing is deleted; it’s put away until you move back up.</p>
+        </section>
+      )}
+
+      {demo && <PlanButtons keepLabel={next !== null ? `Keep ${current.name}` : null} demo />}
 
       {above.length > 0 && (
         <>
@@ -81,7 +117,7 @@ export function PlanSummary({ view, mode, changed = null }: { view: PlanView; mo
         </>
       )}
 
-      {mode.kind === 'demo' && below.length > 0 && (
+      {demo && next === null && below.length > 0 && (
         <div className="bk-downs">
           <p className="bk-label">Need less for a while?</p>
           {below.map((plan) => (

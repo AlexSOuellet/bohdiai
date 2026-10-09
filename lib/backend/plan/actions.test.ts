@@ -1,54 +1,139 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { PlanState } from './queries';
+import type * as Billing from './billing';
 
-const state = { features: new Set<string>(['plan', 'demo_checkout']), plan: 'showcase' as string | null, apply: { ok: true } as { ok: true } | { ok: false; error: string } };
+const state: { features: Set<string>; plan: PlanState | null; apply: { ok: true } | { ok: false; error: string }; writeError: string | null } = {
+  features: new Set(['plan', 'demo_checkout']),
+  plan: null,
+  apply: { ok: true },
+  writeError: null,
+};
 const applyPlan = vi.fn(() => Promise.resolve(state.apply));
 const revalidatePath = vi.fn();
+const writes: unknown[] = [];
 
 vi.mock('next/cache', () => ({ revalidatePath }));
 vi.mock('@/lib/backend/current-site', () => ({ requireActingSite: () => Promise.resolve({ site: { tenantId: 't1' } }) }));
 vi.mock('@/lib/backend/site-features', () => ({ getSiteFeatures: () => Promise.resolve(state.features) }));
-vi.mock('@/lib/supabase-server', () => ({ createSupabaseServerClient: () => Promise.resolve({}) }));
-vi.mock('@/lib/supabase', () => ({ supabaseAdmin: () => ({}) }));
+vi.mock('@/lib/supabase', () => ({
+  supabaseAdmin: () => ({
+    from: () => ({
+      update: (arg: unknown) => ({
+        eq: () => {
+          writes.push(arg);
+          return Promise.resolve({ error: state.writeError === null ? null : { message: state.writeError } });
+        },
+      }),
+    }),
+  }),
+}));
 vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn() } }));
-vi.mock('./queries', () => ({ loadSitePlan: () => Promise.resolve(state.plan) }));
+vi.mock('./queries', () => ({ loadPlanState: () => Promise.resolve(state.plan) }));
 vi.mock('./apply', () => ({ applyPlan }));
+vi.mock('./billing', async (orig) => ({ ...(await orig<typeof Billing>()), todayDay: () => '2026-10-09' }));
 
-const { changePlan } = await import('./actions');
+const { upgradePlan, scheduleDowngrade, cancelScheduledChange, skipToRenewal } = await import('./actions');
 
 beforeEach(() => {
   state.features = new Set(['plan', 'demo_checkout']);
-  state.plan = 'showcase';
+  state.plan = { plan: 'showcase', billing: 'monthly', renewsOn: '2026-10-29', next: null, creditCents: 0 };
   state.apply = { ok: true };
+  state.writeError = null;
   applyPlan.mockClear();
   revalidatePath.mockClear();
+  writes.length = 0;
 });
 
-describe('changing the plan', () => {
-  it('switches a demo site and refreshes the whole backend', async () => {
-    expect(await changePlan('lite')).toEqual({ ok: true });
-    expect(applyPlan).toHaveBeenCalledWith({}, 't1', 'lite');
+describe('moving up', () => {
+  it('switches now, keeps the renewal day on the same billing, and refreshes the backend', async () => {
+    expect(await upgradePlan('lite', 'monthly')).toEqual({ ok: true });
+    expect(applyPlan).toHaveBeenCalledWith(expect.anything(), 't1', 'lite');
+    expect(writes).toEqual([{ plan_billing: 'monthly', plan_renews_on: '2026-10-29', plan_next: null, plan_credit_cents: 0 }]);
     expect(revalidatePath).toHaveBeenCalledWith('/manage', 'layout');
   });
 
-  it('refuses a real site (no demo checkout) and points at the email', async () => {
+  it('starts a new year from today when she picks yearly', async () => {
+    await upgradePlan('full', 'yearly');
+    expect(writes).toEqual([{ plan_billing: 'yearly', plan_renews_on: '2027-10-09', plan_next: null, plan_credit_cents: 0 }]);
+  });
+
+  it('lets a yearly site go monthly, keeping the unused year as credit', async () => {
+    state.plan = { plan: 'showcase', billing: 'yearly', renewsOn: '2027-04-09', next: null, creditCents: 0 };
+    expect(await upgradePlan('lite', 'monthly')).toEqual({ ok: true });
+    const w = writes[0] as { plan_billing: string; plan_renews_on: string; plan_credit_cents: number };
+    expect(w.plan_billing).toBe('monthly');
+    expect(w.plan_renews_on).toBe('2026-11-09');
+    expect(w.plan_credit_cents).toBeGreaterThan(0);
+  });
+
+  it('refuses a real site and a move that isn’t up', async () => {
     state.features = new Set(['plan']);
-    const r = await changePlan('lite');
-    expect(r.ok).toBe(false);
+    expect((await upgradePlan('lite', 'monthly')).ok).toBe(false);
+    state.features = new Set(['plan', 'demo_checkout']);
+    expect(await upgradePlan('showcase', 'monthly')).toEqual({ ok: false, error: 'That isn’t a move up from your plan.' });
+    expect((await upgradePlan('pro', 'monthly')).ok).toBe(false);
     expect(applyPlan).not.toHaveBeenCalled();
   });
 
-  it('refuses nonsense, no plan yet, and the plan it is already on', async () => {
-    expect((await changePlan('pro')).ok).toBe(false);
+  it('refuses a site with no plan, and says so when a write fails', async () => {
     state.plan = null;
-    expect((await changePlan('lite')).ok).toBe(false);
-    state.plan = 'lite';
-    expect(await changePlan('lite')).toEqual({ ok: false, error: 'You’re already on that plan.' });
-    expect(applyPlan).not.toHaveBeenCalled();
+    expect(await upgradePlan('lite', 'monthly')).toEqual({ ok: false, error: 'This site isn’t on a plan yet.' });
+    state.plan = { plan: 'showcase', billing: 'monthly', renewsOn: '2026-10-29', next: null, creditCents: 0 };
+    state.apply = { ok: false, error: 'switches: down' };
+    expect((await upgradePlan('lite', 'monthly')).ok).toBe(false);
+    state.apply = { ok: true };
+    state.writeError = 'down';
+    expect((await upgradePlan('lite', 'monthly')).ok).toBe(false);
+    expect(revalidatePath).not.toHaveBeenCalled();
+  });
+});
+
+describe('moving down', () => {
+  beforeEach(() => {
+    state.plan = { plan: 'full', billing: 'yearly', renewsOn: '2027-04-09', next: null, creditCents: 0 };
   });
 
-  it('says so when the switch fails', async () => {
-    state.apply = { ok: false, error: 'switches: down' };
-    expect(await changePlan('full')).toEqual({ ok: false, error: 'The plan couldn’t be changed. Try again in a moment.' });
-    expect(revalidatePath).not.toHaveBeenCalled();
+  it('waits for renewal: nothing switches now, the move is stored', async () => {
+    expect(await scheduleDowngrade('showcase')).toEqual({ ok: true });
+    expect(applyPlan).not.toHaveBeenCalled();
+    expect(writes).toEqual([{ plan_billing: 'yearly', plan_renews_on: '2027-04-09', plan_next: 'showcase' }]);
+  });
+
+  it('refuses a move that isn’t down, or isn’t a plan', async () => {
+    expect((await scheduleDowngrade('full')).ok).toBe(false);
+    expect((await scheduleDowngrade('pro')).ok).toBe(false);
+    expect(writes).toEqual([]);
+  });
+
+  it('can be called off', async () => {
+    expect(await cancelScheduledChange()).toEqual({ ok: true });
+    expect(writes).toEqual([{ plan_next: null }]);
+  });
+
+  it('takes effect when the demo skips to renewal, and a new period starts', async () => {
+    state.plan = { plan: 'full', billing: 'yearly', renewsOn: '2027-04-09', next: 'lite', creditCents: 0 };
+    expect(await skipToRenewal()).toEqual({ ok: true });
+    expect(applyPlan).toHaveBeenCalledWith(expect.anything(), 't1', 'lite');
+    expect(writes).toEqual([{ plan_billing: 'yearly', plan_renews_on: '2028-04-09', plan_next: null, plan_credit_cents: 0 }]);
+  });
+
+  it('pays a renewal from credit first', async () => {
+    state.plan = { plan: 'lite', billing: 'monthly', renewsOn: '2026-11-09', next: null, creditCents: 1000 };
+    await skipToRenewal();
+    expect(writes).toEqual([{ plan_billing: 'monthly', plan_renews_on: '2026-12-09', plan_next: null, plan_credit_cents: 0 }]);
+  });
+
+  it('just renews when nothing is waiting, and stops if the switch fails', async () => {
+    expect(await skipToRenewal()).toEqual({ ok: true });
+    expect(applyPlan).not.toHaveBeenCalled();
+    state.plan = { plan: 'full', billing: 'monthly', renewsOn: '', next: 'lite', creditCents: 0 };
+    state.apply = { ok: false, error: 'x' };
+    expect((await skipToRenewal()).ok).toBe(false);
+  });
+
+  it('refuses a real site', async () => {
+    state.features = new Set(['plan']);
+    expect((await cancelScheduledChange()).ok).toBe(false);
+    expect((await skipToRenewal()).ok).toBe(false);
   });
 });
