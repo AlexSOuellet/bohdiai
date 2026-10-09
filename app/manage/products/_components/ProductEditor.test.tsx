@@ -2,7 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { emptyProductForm, type ProductForm } from '@/lib/backend/catalog/product-form';
 
-const { saveProduct, duplicateProduct, uploadProductPhoto, uploadProductFile, replace, push, refresh } = vi.hoisted(() => ({
+const {
+  saveProduct,
+  duplicateProduct,
+  uploadProductPhoto,
+  uploadProductFile,
+  replace,
+  push,
+  refresh,
+} = vi.hoisted(() => ({
   saveProduct: vi.fn(),
   duplicateProduct: vi.fn(),
   uploadProductPhoto: vi.fn(),
@@ -11,15 +19,39 @@ const { saveProduct, duplicateProduct, uploadProductPhoto, uploadProductFile, re
   push: vi.fn(),
   refresh: vi.fn(),
 }));
-vi.mock('@/lib/backend/catalog/actions', () => ({ saveProduct, duplicateProduct, uploadProductPhoto, uploadProductFile }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ replace, push, refresh }), unstable_rethrow: vi.fn() }));
+vi.mock('@/lib/backend/catalog/actions', () => ({
+  saveProduct,
+  duplicateProduct,
+  uploadProductPhoto,
+  uploadProductFile,
+}));
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ replace, push, refresh }),
+  unstable_rethrow: vi.fn(),
+}));
 
 import { ProductEditor } from './ProductEditor';
 
 const collections = [{ id: 'c1', name: 'Autumn' }];
-const existing = (over: Partial<ProductForm> = {}): ProductForm => ({ ...emptyProductForm(), id: 'l1', slug: 'fig', name: 'Fig Candle', price: '24', ...over });
-const renderEditor = (initial: ProductForm, digital = false, homeCount = 0) =>
-  render(<ProductEditor initial={initial} collections={collections} digital={digital} shopUrl="https://shop.bohdiai.com" homeCount={homeCount} />);
+const existing = (over: Partial<ProductForm> = {}): ProductForm => ({
+  ...emptyProductForm(),
+  id: 'l1',
+  slug: 'fig',
+  name: 'Fig Candle',
+  price: '24',
+  ...over,
+});
+const renderEditor = (initial: ProductForm, digital = false, homeCount = 0, photoLimit = 12) =>
+  render(
+    <ProductEditor
+      initial={initial}
+      photoLimit={photoLimit}
+      collections={collections}
+      digital={digital}
+      shopUrl="https://shop.bohdiai.com"
+      homeCount={homeCount}
+    />,
+  );
 
 /** Add option "Size" with choice "Small" and type 30 as its price. */
 const sizeSmallAt30 = () => {
@@ -46,7 +78,9 @@ const addChoice = (option: string, value: string) => {
   fireEvent.keyDown(input, { key: 'Enter' });
 };
 const pickFile = (label: string, name: string) =>
-  fireEvent.change(screen.getByLabelText(label), { target: { files: [new File(['x'], name, { type: 'application/pdf' })] } });
+  fireEvent.change(screen.getByLabelText(label), {
+    target: { files: [new File(['x'], name, { type: 'application/pdf' })] },
+  });
 /** Add option "Size" with a download choice "Small", then pick its file. */
 const smallDownloadUploading = () => {
   fireEvent.click(screen.getByRole('button', { name: 'Add an option' }));
@@ -78,7 +112,11 @@ describe('ProductEditor', () => {
     fireEvent.click(screen.getByLabelText('Autumn'));
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
     await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products?saved=Fig%20Candle'));
-    expect(saveProduct.mock.calls[0]![0]).toMatchObject({ name: 'Fig Candle', price: '24', collectionIds: ['c1'] });
+    expect(saveProduct.mock.calls[0]![0]).toMatchObject({
+      name: 'Fig Candle',
+      price: '24',
+      collectionIds: ['c1'],
+    });
   });
   it('returns to the list after saving an existing product, from either Save button', async () => {
     saveProduct.mockResolvedValue({ ok: true, id: 'l1' });
@@ -91,16 +129,29 @@ describe('ProductEditor', () => {
     saveProduct.mockResolvedValue({ ok: true, id: 'l1' });
     renderEditor(existing({ name: '  Fig & Clove?  ' }));
     fireEvent.click(saveButtons()[0]!);
-    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products?saved=Fig%20%26%20Clove%3F'));
+    await waitFor(() =>
+      expect(push).toHaveBeenCalledWith('/manage/products?saved=Fig%20%26%20Clove%3F'),
+    );
   });
   it('shows the server’s message, and a plain one when the call throws', async () => {
-    saveProduct.mockResolvedValueOnce({ ok: false, error: 'The product couldn’t be saved. Try again in a moment.' });
+    saveProduct.mockResolvedValueOnce({
+      ok: false,
+      error: 'The product couldn’t be saved. Try again in a moment.',
+    });
     renderEditor(existing());
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
-    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('The product couldn’t be saved. Try again in a moment.'));
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'The product couldn’t be saved. Try again in a moment.',
+      ),
+    );
     saveProduct.mockRejectedValueOnce(new Error('offline'));
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
-    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong. Check your connection and try again.'));
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Something went wrong. Check your connection and try again.',
+      ),
+    );
     expect(push).not.toHaveBeenCalled();
     expect(saveButtons()[0]).toBeEnabled();
   });
@@ -175,15 +226,24 @@ describe('ProductEditor', () => {
     renderEditor(existing({ status: 'active' }));
     fireEvent.click(screen.getByRole('button', { name: 'Archive' }));
     fireEvent.click(screen.getByRole('button', { name: 'Yes, archive it' }));
-    await waitFor(() => expect(saveProduct.mock.calls[0]![0]).toMatchObject({ status: 'archived' }));
-    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products?archived=Fig%20Candle'));
+    await waitFor(() =>
+      expect(saveProduct.mock.calls[0]![0]).toMatchObject({ status: 'archived' }),
+    );
+    await waitFor(() =>
+      expect(push).toHaveBeenCalledWith('/manage/products?archived=Fig%20Candle'),
+    );
   });
   it('stays on the page with the message when an archive fails', async () => {
-    saveProduct.mockResolvedValue({ ok: false, error: 'The product couldn’t be saved. Try again in a moment.' });
+    saveProduct.mockResolvedValue({
+      ok: false,
+      error: 'The product couldn’t be saved. Try again in a moment.',
+    });
     renderEditor(existing({ status: 'active' }));
     fireEvent.click(screen.getByRole('button', { name: 'Archive' }));
     fireEvent.click(screen.getByRole('button', { name: 'Yes, archive it' }));
-    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('The product couldn’t be saved.'));
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent('The product couldn’t be saved.'),
+    );
     expect(push).not.toHaveBeenCalled();
   });
   it('asks for a save before archiving unsaved changes, so they are never dropped', () => {
@@ -194,7 +254,10 @@ describe('ProductEditor', () => {
   });
   it('links to the live product on the shop', () => {
     renderEditor(existing({ status: 'active' }));
-    expect(screen.getByRole('link', { name: 'View on your shop' })).toHaveAttribute('href', 'https://shop.bohdiai.com/listings/fig');
+    expect(screen.getByRole('link', { name: 'View on your shop' })).toHaveAttribute(
+      'href',
+      'https://shop.bohdiai.com/listings/fig',
+    );
   });
   it('stays busy while returning to the list, so a second click saves nothing twice', async () => {
     saveProduct.mockResolvedValue({ ok: true, id: 'l1' });
@@ -239,7 +302,9 @@ describe('ProductEditor', () => {
     smallDownloadUploading();
     fireEvent.click(screen.getByRole('button', { name: 'Remove Small' }));
     await act(async () => upload.resolve({ ok: true, uploadId: 'f1', fileName: 'small.pdf' }));
-    expect(screen.getByRole('alert')).toHaveTextContent('That choice changed while its file was uploading — upload the file again.');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'That choice changed while its file was uploading — upload the file again.',
+    );
     expect(screen.queryByRole('button', { name: 'Remove Small' })).toBeNull();
   });
   it('keeps typed prices when an option name is cleared and a new one typed', () => {
@@ -271,16 +336,25 @@ describe('ProductEditor', () => {
     expect(saveProduct).toHaveBeenCalledTimes(1);
   });
   it('returns to the list when a save works after one that failed', async () => {
-    saveProduct.mockResolvedValueOnce({ ok: false, error: 'The product couldn’t be saved. Try again in a moment.' }).mockResolvedValueOnce({ ok: true, id: 'l1' });
+    saveProduct
+      .mockResolvedValueOnce({
+        ok: false,
+        error: 'The product couldn’t be saved. Try again in a moment.',
+      })
+      .mockResolvedValueOnce({ ok: true, id: 'l1' });
     renderEditor(existing());
     fireEvent.click(saveButtons()[0]!);
-    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('The product couldn’t be saved.'));
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent('The product couldn’t be saved.'),
+    );
     fireEvent.click(saveButtons()[0]!);
     await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products?saved=Fig%20Candle'));
   });
   it('groups the status choices under a name', () => {
     renderEditor(existing());
-    expect(screen.getByRole('group', { name: 'Status' })).toContainElement(screen.getByLabelText('Live on your shop'));
+    expect(screen.getByRole('group', { name: 'Status' })).toContainElement(
+      screen.getByLabelText('Live on your shop'),
+    );
   });
   it('keeps the notice regions in the page and moves focus to a new error', () => {
     renderEditor(emptyProductForm());
@@ -316,7 +390,9 @@ describe('ProductEditor — home page', () => {
     expect(box).not.toBeChecked();
     fireEvent.click(box);
     fireEvent.click(saveButtons()[0]!);
-    await waitFor(() => expect(saveProduct).toHaveBeenCalledWith(expect.objectContaining({ onHome: true })));
+    await waitFor(() =>
+      expect(saveProduct).toHaveBeenCalledWith(expect.objectContaining({ onHome: true })),
+    );
     expect(screen.queryByText(FULL)).toBeNull();
   });
   it('can’t add a sixth product, and says why', () => {
@@ -335,11 +411,16 @@ describe('ProductEditor — home page', () => {
     expect(box).not.toBeChecked();
   });
   it('stays on the page with the message when the home page is full after all', async () => {
-    saveProduct.mockResolvedValue({ ok: false, error: 'Your home page shows up to 5 products. Untick one of the others first.' });
+    saveProduct.mockResolvedValue({
+      ok: false,
+      error: 'Your home page shows up to 5 products. Untick one of the others first.',
+    });
     renderEditor(existing(), false, 4);
     fireEvent.click(screen.getByLabelText('Show on your home page'));
     fireEvent.click(saveButtons()[0]!);
-    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Your home page shows up to 5 products.'));
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent('Your home page shows up to 5 products.'),
+    );
     expect(push).not.toHaveBeenCalled();
   });
 });
@@ -347,8 +428,15 @@ describe('ProductEditor — home page', () => {
 describe('ProductEditor — sample photo', () => {
   it('shows the shop’s sample photo for a product with no real photos', () => {
     renderEditor(existing({ samplePhotoUrl: 'https://stock/fig.jpg' }));
-    expect(screen.getByRole('img', { name: 'Sample photo' })).toHaveAttribute('src', 'https://stock/fig.jpg');
-    expect(screen.getByText('Your shop is showing this sample photo. Add your own photos to replace it.')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Sample photo' })).toHaveAttribute(
+      'src',
+      'https://stock/fig.jpg',
+    );
+    expect(
+      screen.getByText(
+        'Your shop is showing this sample photo. Add your own photos to replace it.',
+      ),
+    ).toBeInTheDocument();
   });
 });
 
@@ -358,9 +446,39 @@ describe('ProductEditor — new arrival', () => {
     const { unmount } = renderEditor(existing());
     expect(screen.queryByLabelText('New arrival')).toBeNull();
     unmount();
-    render(<ProductEditor initial={existing()} collections={collections} digital={false} newArrivals shopUrl="https://shop.bohdiai.com" homeCount={0} />);
+    render(
+      <ProductEditor
+        initial={existing()}
+        photoLimit={12}
+        collections={collections}
+        digital={false}
+        newArrivals
+        shopUrl="https://shop.bohdiai.com"
+        homeCount={0}
+      />,
+    );
     fireEvent.click(screen.getByLabelText('New arrival'));
     fireEvent.click(saveButtons()[0]!);
-    await waitFor(() => expect(saveProduct).toHaveBeenCalledWith(expect.objectContaining({ isNew: true })));
+    await waitFor(() =>
+      expect(saveProduct).toHaveBeenCalledWith(expect.objectContaining({ isNew: true })),
+    );
+  });
+
+  it('allows one photo on Lite: no add button once it has one, and says why', () => {
+    renderEditor({ ...existing(), photos: [{ uploadId: 'u1', url: 'https://cdn/1.webp' }] }, false, 0, 1);
+    expect(screen.queryByLabelText('Add photos')).toBeNull();
+    expect(screen.getByText('Your plan shows one photo per product. Maker Full shows up to 12.')).toBeTruthy();
+  });
+
+  it('keeps the extra photos a product had on Full, marked hidden, and still saves', async () => {
+    saveProduct.mockResolvedValue({ ok: true, id: 'l1' });
+    const photos = [
+      { uploadId: 'u1', url: 'https://cdn/1.webp' },
+      { uploadId: 'u2', url: 'https://cdn/2.webp' },
+    ];
+    renderEditor({ ...existing(), photos }, false, 0, 1);
+    expect(screen.getByText('Hidden on your plan')).toBeTruthy();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
+    await waitFor(() => expect(saveProduct).toHaveBeenCalled());
   });
 });

@@ -20,13 +20,27 @@ export type ShorelineData = {
   products: ProductView[];
   /** Hours, address, booth and website show on markets (Lite up). */
   marketDetails: boolean;
+  /** Every photo on a product (Full); otherwise its main photo only. */
+  allPhotos: boolean;
 };
 
-export async function loadShorelineData(db: SupabaseClient<Database>, tenantId: string): Promise<ShorelineData> {
-  const [card, features] = await Promise.all([loadCardData(db, tenantId), loadSiteFeatures(db, tenantId)]);
+export async function loadShorelineData(
+  db: SupabaseClient<Database>,
+  tenantId: string,
+): Promise<ShorelineData> {
+  const [card, features] = await Promise.all([
+    loadCardData(db, tenantId),
+    loadSiteFeatures(db, tenantId),
+  ]);
   const pages = features.has('catalog');
   const products = pages ? (await loadCatalog(db, tenantId)).products : [];
-  return { card, pages, products, marketDetails: features.has('market_details') };
+  return {
+    card,
+    pages,
+    products,
+    marketDetails: features.has('market_details'),
+    allPhotos: features.has('product_photos'),
+  };
 }
 
 /** The home page's pieces: the ones she marked for the home page, else the first few, up to the home page's limit. */

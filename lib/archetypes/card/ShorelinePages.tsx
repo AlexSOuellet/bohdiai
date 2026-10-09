@@ -31,7 +31,9 @@ const NAV: readonly { page: ShorelinePage; href: string; label: string }[] = [
 function Name({ name }: { name: string }): ReactElement {
   return (
     <>
-      {nameParts(name).map((part, i) => (part.amp ? <em key={i}>{part.text}</em> : <span key={i}>{part.text}</span>))}
+      {nameParts(name).map((part, i) =>
+        part.amp ? <em key={i}>{part.text}</em> : <span key={i}>{part.text}</span>,
+      )}
     </>
   );
 }
@@ -74,7 +76,11 @@ function ProductPrint({ product, eager }: { product: ProductView; eager: boolean
         {photo?.url !== undefined && (
           // The owner's own upload, already shrunk at upload — a plain img like the other maker-photo spots.
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={photo.url} alt={photo.alt === '' ? product.name : photo.alt} loading={eager ? 'eager' : 'lazy'} />
+          <img
+            src={photo.url}
+            alt={photo.alt === '' ? product.name : photo.alt}
+            loading={eager ? 'eager' : 'lazy'}
+          />
         )}
         <span className="sl-label">
           <span>{product.name}</span>
@@ -86,7 +92,11 @@ function ProductPrint({ product, eager }: { product: ProductView; eager: boolean
 }
 
 function Price({ product }: { product: ProductView }): ReactElement {
-  return product.askForPrice === true ? <em className="sl-price sl-price--ask">{W.askForPrice}</em> : <strong className="sl-price">{product.price}</strong>;
+  return product.askForPrice === true ? (
+    <em className="sl-price sl-price--ask">{W.askForPrice}</em>
+  ) : (
+    <strong className="sl-price">{product.price}</strong>
+  );
 }
 
 function Prints({ products }: { products: readonly ProductView[] }): ReactElement {
@@ -176,7 +186,9 @@ function Home({ site }: { site: ShorelineData }): ReactElement {
           </section>
         )}
         {(bio.length > 0 || p.headline !== '' || soon.length > 0) && (
-          <div className={bio.length > 0 && soon.length > 0 ? 'sl-below' : 'sl-below sl-below--one'}>
+          <div
+            className={bio.length > 0 && soon.length > 0 ? 'sl-below' : 'sl-below sl-below--one'}
+          >
             {(bio.length > 0 || p.headline !== '') && (
               <section className="sl-card">
                 <div className="sl-card__in">
@@ -212,7 +224,11 @@ function Shop({ site }: { site: ShorelineData }): ReactElement {
   return (
     <main id="main" className="sl-water sl-featured sl-featured--page">
       <h1 className="sl-section-h">{W.featured}</h1>
-      {site.products.length > 0 ? <Prints products={site.products} /> : <p className="sl-empty">{W.emptyShop}</p>}
+      {site.products.length > 0 ? (
+        <Prints products={site.products} />
+      ) : (
+        <p className="sl-empty">{W.emptyShop}</p>
+      )}
     </main>
   );
 }
@@ -256,7 +272,11 @@ function Markets({ site }: { site: ShorelineData }): ReactElement {
           <ul className="sl-markets">
             {site.card.dates.map((d) => {
               const showDetails = site.marketDetails;
-              const facts = [d.town, showDetails ? d.hours : '', showDetails && d.booth !== '' ? `${W.marketCols.booth} ${d.booth}` : ''].filter((f) => f !== '');
+              const facts = [
+                d.town,
+                showDetails ? d.hours : '',
+                showDetails && d.booth !== '' ? `${W.marketCols.booth} ${d.booth}` : '',
+              ].filter((f) => f !== '');
               return (
                 <li key={d.id} className={d.canceled ? 'sl-market sl-market--gone' : 'sl-market'}>
                   <span className="sl-market-day">{marketDay(d)}</span>
@@ -292,7 +312,15 @@ function Markets({ site }: { site: ShorelineData }): ReactElement {
   );
 }
 
-function Letter({ card, tenantId, initialMessage }: { card: CardData; tenantId: string; initialMessage?: string }): ReactElement {
+function Letter({
+  card,
+  tenantId,
+  initialMessage,
+}: {
+  card: CardData;
+  tenantId: string;
+  initialMessage?: string;
+}): ReactElement {
   return (
     <section className="sl-letter" id="write">
       <span className="sl-seal" aria-hidden="true">
@@ -300,7 +328,10 @@ function Letter({ card, tenantId, initialMessage }: { card: CardData; tenantId: 
       </span>
       <h2>{W.touch(card.profile.signature)}</h2>
       <p>{W.lede}</p>
-      <CardContactForm tenantId={tenantId} {...(initialMessage !== undefined ? { initialMessage } : {})} />
+      <CardContactForm
+        tenantId={tenantId}
+        {...(initialMessage !== undefined ? { initialMessage } : {})}
+      />
     </section>
   );
 }
@@ -317,7 +348,17 @@ function Contact({ site, tenantId }: { site: ShorelineData; tenantId: string }):
 }
 
 /** A Lite or Full page of the shoreline site. */
-export function ShorelineSite({ site, page, tenantId, platformCredit = true }: { site: ShorelineData; page: ShorelinePage; tenantId: string; platformCredit?: boolean }): ReactElement {
+export function ShorelineSite({
+  site,
+  page,
+  tenantId,
+  platformCredit = true,
+}: {
+  site: ShorelineData;
+  page: ShorelinePage;
+  tenantId: string;
+  platformCredit?: boolean;
+}): ReactElement {
   return (
     <Frame>
       <Bar name={site.card.name} current={page} />
@@ -333,8 +374,23 @@ export function ShorelineSite({ site, page, tenantId, platformCredit = true }: {
 
 /** One product's page: its photo (tap for full size), price or "Ask for price", the
  *  story, and "Ask about this" — the letter, started with the product's name. */
-export function ShorelineProduct({ site, product, tenantId, platformCredit = true }: { site: ShorelineData; product: ProductView; tenantId: string; platformCredit?: boolean }): ReactElement {
-  const photos = product.media.flatMap((m, i) => (m.kind === 'image' && m.url !== undefined ? [{ id: `${product.slug}-${i}`, url: m.url, caption: m.alt === '' ? product.name : m.alt }] : []));
+export function ShorelineProduct({
+  site,
+  product,
+  tenantId,
+  platformCredit = true,
+}: {
+  site: ShorelineData;
+  product: ProductView;
+  tenantId: string;
+  platformCredit?: boolean;
+}): ReactElement {
+  const media = site.allPhotos ? product.media : product.media.slice(0, 1);
+  const photos = media.flatMap((m, i) =>
+    m.kind === 'image' && m.url !== undefined
+      ? [{ id: `${product.slug}-${i}`, url: m.url, caption: m.alt === '' ? product.name : m.alt }]
+      : [],
+  );
   return (
     <Frame>
       <Bar name={site.card.name} current="shop" />
@@ -349,7 +405,12 @@ export function ShorelineProduct({ site, product, tenantId, platformCredit = tru
             {photos.length > 0 && (
               <div className="sl-product-photos">
                 {photos.map((ph, i) => (
-                  <Snapshot key={ph.id} index={i} className="sl-print" label={S.work.open(ph.caption, i + 1)}>
+                  <Snapshot
+                    key={ph.id}
+                    index={i}
+                    className="sl-print"
+                    label={S.work.open(ph.caption, i + 1)}
+                  >
                     {/* The owner's own upload, already shrunk at upload. */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={ph.url} alt={ph.caption} loading={i === 0 ? 'eager' : 'lazy'} />
@@ -365,7 +426,9 @@ export function ShorelineProduct({ site, product, tenantId, platformCredit = tru
                 ) : (
                   <p className="sl-product-price">{product.price}</p>
                 )}
-                {product.shortDescription !== undefined && product.shortDescription !== '' && <p className="sl-product-short">{product.shortDescription}</p>}
+                {product.shortDescription !== undefined && product.shortDescription !== '' && (
+                  <p className="sl-product-short">{product.shortDescription}</p>
+                )}
                 {bioParagraphs(product.description).map((para) => (
                   <p key={para.slice(0, 40)}>{para}</p>
                 ))}
@@ -373,7 +436,11 @@ export function ShorelineProduct({ site, product, tenantId, platformCredit = tru
                   {W.askAbout}
                 </a>
               </div>
-              <Letter card={site.card} tenantId={tenantId} initialMessage={W.askMessage(product.name)} />
+              <Letter
+                card={site.card}
+                tenantId={tenantId}
+                initialMessage={W.askMessage(product.name)}
+              />
             </div>
           </article>
         </PhotoViewerProvider>

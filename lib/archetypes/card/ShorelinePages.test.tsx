@@ -26,6 +26,7 @@ const site: ShorelineData = {
   pages: true,
   products: [product('cabbage-rose-oyster-dish', { askForPrice: true, price: '' }), product('old-saint-nick', { onHome: true, price: '$22' })],
   marketDetails: true,
+  allPhotos: true,
 };
 
 afterEach(cleanup);
@@ -146,5 +147,19 @@ describe('the footer', () => {
   it('has a quiet Owner login that goes to sign-in', () => {
     page('home');
     expect(within(screen.getByRole('contentinfo')).getByRole('link', { name: S.footer.ownerLogin }).getAttribute('href')).toBe('/admin');
+  });
+});
+
+describe('photos on a product page', () => {
+  const twoPhotos = { ...site.products[1]!, media: [{ kind: 'image' as const, url: 'https://cdn/a.jpg', alt: '' }, { kind: 'image' as const, url: 'https://cdn/b.jpg', alt: '' }] };
+
+  it('shows every photo on Full', () => {
+    const { container } = render(<ShorelineProduct site={site} product={twoPhotos} tenantId={TENANT} />);
+    expect(container.querySelectorAll('.sl-product-photos img')).toHaveLength(2);
+  });
+
+  it('shows the main photo only on Lite', () => {
+    const { container } = render(<ShorelineProduct site={{ ...site, allPhotos: false }} product={twoPhotos} tenantId={TENANT} />);
+    expect([...container.querySelectorAll('.sl-product-photos img')].map((i) => i.getAttribute('src'))).toEqual(['https://cdn/a.jpg']);
   });
 });

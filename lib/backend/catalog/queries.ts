@@ -7,7 +7,15 @@ import type { Database, Json } from '@/lib/database.types';
 import { formatPrice, loadMediaMap, imageUrlFromMetadata } from '@/lib/storefront/catalog';
 import { hasPrice, priceRange } from '@/lib/catalog/price';
 import { isProductSoldOut } from '@/lib/catalog/stock';
-import { syncVariants, formatCents, type ProductForm, type OptionForm, type VariantForm, type ItemStatus, type Kind } from './product-form';
+import {
+  syncVariants,
+  formatCents,
+  type ProductForm,
+  type OptionForm,
+  type VariantForm,
+  type ItemStatus,
+  type Kind,
+} from './product-form';
 import type { CollectionForm } from './collection-form';
 
 type Db = SupabaseClient<Database>;
@@ -26,21 +34,35 @@ export type ProductRowView = {
   onHome: boolean;
 };
 
-export type CollectionRowView = { id: string; name: string; status: ItemStatus; productCount: number };
+export type CollectionRowView = {
+  id: string;
+  name: string;
+  status: ItemStatus;
+  productCount: number;
+};
 
 const PRODUCT_TYPES = ['product', 'digital_product'];
 
 const asStatus = (s: string): ItemStatus => (s === 'active' || s === 'archived' ? s : 'draft');
 
-export function priceRangeLabel(baseCents: number, combinations: readonly { priceCents: number | null }[]): string {
+export function priceRangeLabel(
+  baseCents: number,
+  combinations: readonly { priceCents: number | null }[],
+): string {
   if (combinations.length === 0 && !hasPrice(baseCents)) return 'Ask for price';
   const { min, max } = priceRange({ basePriceCents: baseCents }, combinations);
   return min === max ? formatPrice(min) : `${formatPrice(min)}–${formatPrice(max)}`;
 }
 
-export function stockLabel(input: { inventoryCount: number | null; hasOptions: boolean; combinations: readonly { inventoryCount: number | null }[] }): string {
+export function stockLabel(input: {
+  inventoryCount: number | null;
+  hasOptions: boolean;
+  combinations: readonly { inventoryCount: number | null }[];
+}): string {
   if (isProductSoldOut(input)) return 'Sold out';
-  const counts = input.hasOptions ? input.combinations.map((c) => c.inventoryCount) : [input.inventoryCount];
+  const counts = input.hasOptions
+    ? input.combinations.map((c) => c.inventoryCount)
+    : [input.inventoryCount];
   const tracked = counts.filter((c): c is number => c !== null);
   return tracked.length === 0 ? 'Made to order' : `${tracked.reduce((a, b) => a + b, 0)} in stock`;
 }
@@ -55,14 +77,19 @@ function combination(json: Json): Record<string, string> {
 export async function listProducts(db: Db, tenantId: string): Promise<ProductRowView[]> {
   const { data, error } = await db
     .from('listings')
-    .select('id, name, status, base_price_cents, inventory_count, media_ids, metadata, on_home, variation_attributes(id), listing_variants(price_cents, inventory_count, status), listing_collections(collection_id)')
+    .select(
+      'id, name, status, base_price_cents, inventory_count, media_ids, metadata, on_home, variation_attributes(id), listing_variants(price_cents, inventory_count, status), listing_collections(collection_id)',
+    )
     .eq('tenant_id', tenantId)
     .in('listing_type', PRODUCT_TYPES)
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
   if (error !== null) throw new Error(`Could not load products: ${error.message}`);
   const rows = data ?? [];
-  const media = await loadMediaMap(db, rows.flatMap((r) => r.media_ids));
+  const media = await loadMediaMap(
+    db,
+    rows.flatMap((r) => r.media_ids),
+  );
   return rows.map((r) => {
     const available = r.listing_variants
       .filter((v) => v.status === 'active')
@@ -90,7 +117,11 @@ export async function listProducts(db: Db, tenantId: string): Promise<ProductRow
 
 /** How many of the shop's products are on the home page (not archived, not deleted),
  *  leaving out `exceptId` — the product being edited, whose own tick is in the form. */
-export async function countHomeProducts(db: Db, tenantId: string, exceptId: string | null): Promise<number> {
+export async function countHomeProducts(
+  db: Db,
+  tenantId: string,
+  exceptId: string | null,
+): Promise<number> {
   const { data, error } = await db
     .from('listings')
     .select('id')
@@ -103,7 +134,11 @@ export async function countHomeProducts(db: Db, tenantId: string, exceptId: stri
   return (data ?? []).filter((r) => r.id !== exceptId).length;
 }
 
-export async function getProduct(db: Db, tenantId: string, id: string): Promise<ProductForm | null> {
+export async function getProduct(
+  db: Db,
+  tenantId: string,
+  id: string,
+): Promise<ProductForm | null> {
   const { data: r, error } = await db
     .from('listings')
     .select(
@@ -118,7 +153,10 @@ export async function getProduct(db: Db, tenantId: string, id: string): Promise<
   if (r === null) return null;
 
   const attrs = [...r.variation_attributes].sort((a, b) => a.position - b.position);
-  const fileIds = [r.file_upload_id, ...attrs.flatMap((a) => a.variation_options.map((o) => o.file_upload_id))].filter((x): x is string => x !== null);
+  const fileIds = [
+    r.file_upload_id,
+    ...attrs.flatMap((a) => a.variation_options.map((o) => o.file_upload_id)),
+  ].filter((x): x is string => x !== null);
   const names = await fileNames(db, fileIds);
   const media = await loadMediaMap(db, r.media_ids);
 
@@ -169,7 +207,10 @@ export async function getProduct(db: Db, tenantId: string, id: string): Promise<
 
 async function fileNames(db: Db, ids: readonly string[]): Promise<Map<string, string>> {
   if (ids.length === 0) return new Map();
-  const { data, error } = await db.from('uploads').select('id, file_name').in('id', [...new Set(ids)]);
+  const { data, error } = await db
+    .from('uploads')
+    .select('id, file_name')
+    .in('id', [...new Set(ids)]);
   if (error !== null) throw new Error(`Could not load file names: ${error.message}`);
   return new Map((data ?? []).map((u) => [u.id, u.file_name]));
 }
@@ -187,14 +228,23 @@ export async function listCollections(db: Db, tenantId: string): Promise<Collect
     id: c.id,
     name: c.name,
     status: asStatus(c.status),
-    productCount: c.listing_collections.filter((m) => m.listings !== null && m.listings.status === 'active' && m.listings.deleted_at === null).length,
+    productCount: c.listing_collections.filter(
+      (m) =>
+        m.listings !== null && m.listings.status === 'active' && m.listings.deleted_at === null,
+    ).length,
   }));
 }
 
-export async function getCollection(db: Db, tenantId: string, id: string): Promise<CollectionForm | null> {
+export async function getCollection(
+  db: Db,
+  tenantId: string,
+  id: string,
+): Promise<CollectionForm | null> {
   const { data: c, error } = await db
     .from('collections')
-    .select('id, name, description, status, featured_image_id, listing_collections(listing_id, position, listings(deleted_at))')
+    .select(
+      'id, name, description, status, featured_image_id, listing_collections(listing_id, position, listings(deleted_at))',
+    )
     .eq('tenant_id', tenantId)
     .eq('id', id)
     .is('deleted_at', null)

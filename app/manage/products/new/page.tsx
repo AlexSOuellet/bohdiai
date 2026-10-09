@@ -1,3 +1,4 @@
+import { photoLimit } from '@/lib/backend/catalog/photo-limit';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { requireActingSite } from '@/lib/backend/current-site';
@@ -15,12 +16,18 @@ export default async function NewProductPage(): Promise<React.ReactElement> {
   const on = await getSiteFeatures(site.tenantId);
   if (!on.has('catalog')) notFound();
   const db = await createSupabaseServerClient();
-  const [collections, homeCount] = await Promise.all([listCollections(db, site.tenantId), countHomeProducts(db, site.tenantId, null)]);
+  const [collections, homeCount] = await Promise.all([
+    listCollections(db, site.tenantId),
+    countHomeProducts(db, site.tenantId, null),
+  ]);
   return (
     <ProductEditor
       initial={emptyProductForm()}
-      collections={collections.filter((c) => c.status !== 'archived').map((c) => ({ id: c.id, name: c.name }))}
+      collections={collections
+        .filter((c) => c.status !== 'archived')
+        .map((c) => ({ id: c.id, name: c.name }))}
       digital={on.has('digital_products')}
+      photoLimit={photoLimit(on)}
       newArrivals={on.has('new_arrivals')}
       shopUrl={storefrontOrigin(site.subdomain, (await headers()).get('host'))}
       homeCount={homeCount}

@@ -25,11 +25,14 @@ export function ProductTable({ products }: { products: ProductRowView[] }): Reac
   const [shown, setShown] = useState(products);
   if (shown !== products) {
     setShown(products);
-    setTicked((t) => Object.fromEntries(Object.entries(t).filter(([id]) => inFlight.current.has(id))));
+    setTicked((t) =>
+      Object.fromEntries(Object.entries(t).filter(([id]) => inFlight.current.has(id))),
+    );
   }
   const notice = useNotice();
 
-  if (products.length === 0) return <p className="bk-note">No products yet. Add your first one to get started.</p>;
+  if (products.length === 0)
+    return <p className="bk-note">No products yet. Add your first one to get started.</p>;
 
   const isOnHome = (p: ProductRowView): boolean => ticked[p.id] ?? p.onHome;
   const onHome = products.filter((p) => isOnHome(p) && p.status !== 'archived').length;
@@ -67,7 +70,9 @@ export function ProductTable({ products }: { products: ProductRowView[] }): Reac
   }
   const needle = find.trim().toLowerCase();
   const visible = products.filter(
-    (p) => (show === 'current' ? p.status !== 'archived' : p.status === show) && (needle === '' || p.name.toLowerCase().includes(needle)),
+    (p) =>
+      (show === 'current' ? p.status !== 'archived' : p.status === show) &&
+      (needle === '' || p.name.toLowerCase().includes(needle)),
   );
 
   return (
@@ -75,12 +80,26 @@ export function ProductTable({ products }: { products: ProductRowView[] }): Reac
       {notice.area}
       <div className="bk-filters">
         <div className="bk-field">
-          <label htmlFor="find" className="bk-label">Find a product</label>
-          <input id="find" className="bk-input" value={find} onChange={(e) => setFind(e.target.value)} />
+          <label htmlFor="find" className="bk-label">
+            Find a product
+          </label>
+          <input
+            id="find"
+            className="bk-input"
+            value={find}
+            onChange={(e) => setFind(e.target.value)}
+          />
         </div>
         <div className="bk-field">
-          <label htmlFor="show" className="bk-label">Show</label>
-          <select id="show" className="bk-input" value={show} onChange={(e) => setShow(e.target.value as Show)}>
+          <label htmlFor="show" className="bk-label">
+            Show
+          </label>
+          <select
+            id="show"
+            className="bk-input"
+            value={show}
+            onChange={(e) => setShow(e.target.value as Show)}
+          >
             <option value="current">Live and drafts</option>
             <option value="active">Live</option>
             <option value="draft">Drafts</option>
@@ -96,7 +115,9 @@ export function ProductTable({ products }: { products: ProductRowView[] }): Reac
           <table className="bk-table">
             <thead>
               <tr>
-                <th scope="col"><span className="bk-sr">Photo</span></th>
+                <th scope="col">
+                  <span className="bk-sr">Photo</span>
+                </th>
                 <th scope="col">Name</th>
                 <th scope="col">Price</th>
                 <th scope="col">Stock</th>
@@ -117,12 +138,16 @@ export function ProductTable({ products }: { products: ProductRowView[] }): Reac
                     )}
                   </td>
                   <td>
-                    <Link href={`/manage/products/${p.id}`} className="bk-link">{p.name}</Link>
+                    <Link href={`/manage/products/${p.id}`} className="bk-link">
+                      {p.name}
+                    </Link>
                   </td>
                   <td>{p.priceLabel}</td>
                   <td>{p.stockLabel}</td>
                   <td>
-                    <span className="bk-pill" data-status={p.status}>{STATUS_LABEL[p.status]}</span>
+                    <span className="bk-pill" data-status={p.status}>
+                      {STATUS_LABEL[p.status]}
+                    </span>
                   </td>
                   <td>
                     {p.status !== 'archived' && (

@@ -9,7 +9,9 @@ import { ListNotice, listNotice } from '../_components/ListNotice';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ProductsPage({ searchParams }: PageProps<'/manage/products'>): Promise<React.ReactElement> {
+export default async function ProductsPage({
+  searchParams,
+}: PageProps<'/manage/products'>): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
   if (!(await getSiteFeatures(site.tenantId)).has('catalog')) notFound();
   const products = await listProducts(await createSupabaseServerClient(), site.tenantId);
@@ -18,7 +20,9 @@ export default async function ProductsPage({ searchParams }: PageProps<'/manage/
       <div className="bk-head">
         <h1 className="bk-title">Products</h1>
         <div className="bk-head-actions">
-          <Link href="/manage/products/new" className="bk-btn">Add product</Link>
+          <Link href="/manage/products/new" className="bk-btn">
+            Add product
+          </Link>
         </div>
       </div>
       <main id="main" className="bk-content">
