@@ -21,6 +21,11 @@ export default async function MarketsPage({ searchParams }: PageProps<'/manage/m
       <div className="bk-head">
         <h1 className="bk-title">Markets</h1>
         <div className="bk-head-actions">
+          {on.has('market_records') && (
+            <Link href="/manage/markets/results" className="bk-btn bk-btn-quiet">
+              Results
+            </Link>
+          )}
           <Link href="/manage/markets/new" className="bk-btn">
             Add market
           </Link>

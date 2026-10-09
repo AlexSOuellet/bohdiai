@@ -265,3 +265,4 @@ button.bk-up-btn { border: 0; cursor: pointer; font: inherit; font-size: 0.9rem;
 .bk-testi blockquote p { margin: 0 0 0.3rem; font-family: var(--bk-display); font-size: 1.15rem; font-style: italic; line-height: 1.4; }
 .bk-testi blockquote footer { font-size: 0.85rem; color: var(--bk-ink-muted); }
 .bk-testi-edit > .bk-section { flex: 1; margin: 0; }
+.bk-results tr[data-loss='true'] td strong { color: var(--bk-danger); }
