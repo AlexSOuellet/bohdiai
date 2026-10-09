@@ -3,23 +3,34 @@
  * demo spec) — Claude's tool, not a user surface. Refuses any site that isn't a
  * demo (the demo_checkout switch), so a real client can never be reset.
  *
- *   npx tsx --env-file=.env.local scripts/demo-reset.ts <site> showcase|lite|full
+ *   npx tsx --env-file=.env.local scripts/demo-reset.ts <site> showcase|lite|full [--media <dir>]
  *
  * <site> names a module in scripts/sites/ (the same one build-card-site.ts uses).
  *   showcase  her gallery from the module's photos, no products, no testimonials,
  *             monthly billing 20 days from renewal, nothing waiting
  *   lite      showcase, then the real upgrade: each photo becomes a product with
  *             "Ask for price", and the Lite switches
- *   full      lite, then the Full switches and the module's TESTIMONIALS
+ *   full      lite, then the Full switches, the module's CATALOG (prices and words
+ *             for her converted pieces, plus new pieces with their own photos) and
+ *             its TESTIMONIALS. The demo's normal starting point.
+ *
+ * --media names the folder holding CATALOG photos not uploaded yet; once uploaded
+ * they are reused by file name, so later resets don't need it.
  */
+import { readFileSync } from 'node:fs';
+import { extname, join } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
+import { slugify, uniqueSlug } from '../lib/catalog/slug';
 import type { Database } from '../lib/database.types';
 import { applyPlan } from '../lib/backend/plan/apply';
 import { galleryToProducts } from '../lib/backend/plan/convert';
 import { addDays, todayDay } from '../lib/backend/plan/billing';
 import type { CardSiteModule } from './build-card-site';
 
-type DemoModule = CardSiteModule & { TESTIMONIALS?: { quote: string; name: string; detail?: string }[] };
+type CatalogPiece = { photo: string; name: string; short: string; description: string; priceCents: number; onHome?: boolean; isNew?: boolean };
+type DemoModule = CardSiteModule & { TESTIMONIALS?: { quote: string; name: string; detail?: string }[]; CATALOG?: CatalogPiece[] };
+
+const MIME: Record<string, string> = { '.webp': 'image/webp', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png' };
 
 function fail(message: string): never {
   process.stderr.write(`${message}\n`);
@@ -27,7 +38,9 @@ function fail(message: string): never {
 }
 
 async function main(): Promise<void> {
-  const [siteKey, stage] = process.argv.slice(2);
+  const [siteKey, stage, ...rest] = process.argv.slice(2);
+  const mediaAt = rest.indexOf('--media');
+  const mediaDir = mediaAt >= 0 ? rest[mediaAt + 1] : undefined;
   if (siteKey === undefined || (stage !== 'showcase' && stage !== 'lite' && stage !== 'full')) fail('usage: demo-reset.ts <site> showcase|lite|full');
   const site = (await import(`./sites/${siteKey}.ts`)) as DemoModule;
   const url = process.env['SUPABASE_URL'];
@@ -82,9 +95,54 @@ async function main(): Promise<void> {
   process.stdout.write(`lite: ${made.added} products, "Ask for price"\n`);
   if (stage === 'lite') return;
 
-  // Full: the Full switches and her testimonials.
+  // Full: the Full switches, her priced catalog and her testimonials.
   const full = await applyPlan(db, tid, 'full');
   if (!full.ok) fail(`plan failed: ${full.error}`);
+  const catalog = site.CATALOG ?? [];
+  if (catalog.length > 0) {
+    const bucket = db.storage.from('tenant-media');
+    const photoId = async (file: string): Promise<string> => {
+      const have = byFile.get(file);
+      if (have !== undefined) return have;
+      if (mediaDir === undefined) fail(`photo ${file} isn't uploaded yet — pass --media <dir>`);
+      const bytes = readFileSync(join(mediaDir, file));
+      const mime = MIME[extname(file).toLowerCase()] ?? fail(`unknown type: ${file}`);
+      const path = `tenant/${tid}/products/${crypto.randomUUID()}${extname(file).toLowerCase()}`;
+      const { error: upErr } = await bucket.upload(path, bytes, { contentType: mime, upsert: false });
+      if (upErr !== null) fail(`upload ${file} failed: ${upErr.message}`);
+      const { data: up, error: rErr } = await db
+        .from('uploads')
+        .insert({ tenant_id: tid, storage_bucket: 'tenant-media', storage_path: path, public_url: bucket.getPublicUrl(path).data.publicUrl, file_name: file, mime_type: mime, size_bytes: bytes.length, source: 'imported', status: 'active' })
+        .select('id')
+        .single();
+      if (rErr !== null) fail(`record ${file} failed: ${rErr.message}`);
+      byFile.set(file, up.id);
+      return up.id;
+    };
+    const { data: now, error: nErr } = await db.from('listings').select('id, name, slug').eq('tenant_id', tid);
+    if (nErr !== null) fail(`products lookup failed: ${nErr.message}`);
+    const byName = new Map((now ?? []).map((l) => [l.name, l.id]));
+    const slugs = new Set((now ?? []).map((l) => l.slug));
+    // The home page holds five; clear it first so the catalog's picks fit.
+    await step('home page', () => db.from('listings').update({ on_home: false }).eq('tenant_id', tid));
+    const start = Date.now() + 1000;
+    for (const [i, piece] of catalog.entries()) {
+      const fields = { short_description: piece.short, description: piece.description, base_price_cents: piece.priceCents, on_home: piece.onHome === true, is_new: piece.isNew === true };
+      const id = byName.get(piece.name);
+      if (id !== undefined) {
+        await step(piece.name, () => db.from('listings').update(fields).eq('id', id));
+        continue;
+      }
+      const media = await photoId(piece.photo);
+      const slug = uniqueSlug(slugify(piece.name), slugs);
+      slugs.add(slug);
+      const at = new Date(start + i).toISOString();
+      await step(piece.name, () =>
+        db.from('listings').insert({ tenant_id: tid, listing_type: 'product', status: 'active', requires_shipping: true, name: piece.name, slug, media_ids: [media], created_at: at, published_at: at, ...fields }),
+      );
+    }
+    process.stdout.write(`full: ${catalog.length} priced products\n`);
+  }
   const words = site.TESTIMONIALS ?? [];
   if (words.length > 0) {
     await step('testimonials', () => db.from('site_testimonials').insert(words.map((t, position) => ({ tenant_id: tid, position, quote: t.quote, name: t.name, detail: t.detail ?? null }))));
