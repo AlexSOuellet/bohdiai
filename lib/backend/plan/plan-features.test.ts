@@ -9,7 +9,7 @@ describe('what each plan switches on', () => {
   });
 
   it('adds the catalog and the point of sale at Lite, and market records only at Full', () => {
-    expect(PLAN_FEATURES.lite).toEqual(expect.arrayContaining(['catalog', 'market_shop']));
+    expect(PLAN_FEATURES.lite).toEqual(expect.arrayContaining(['catalog', 'market_details', 'market_shop']));
     expect(PLAN_FEATURES.lite).not.toContain('market_records');
     expect(PLAN_FEATURES.full).toEqual(expect.arrayContaining(['cart', 'promotions', 'new_arrivals', 'market_records']));
   });
@@ -42,6 +42,7 @@ describe('moving between plans', () => {
   it('names what a move down puts away, and nothing for a move up', () => {
     expect(hiddenByMove('full', 'showcase')).toEqual([
       'Your products and collections, with prices',
+      'Market hours, addresses, booths and websites',
       'The point of sale at markets: the QR shop page, Getting paid and Today',
       'The cart and online orders',
       'Sales and discount codes',

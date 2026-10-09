@@ -4,14 +4,15 @@
  * the switches the plans decide and never touches the rest (domain panel, demo
  * checkout, video). Moving down hides; nothing is deleted.
  *
- * Markets step up by plan (Alex, 2026-10-09): Showcase reports dates only; Lite
- * adds the point of sale; Full adds costs, organizer, notes, reviews.
+ * Markets step up by plan (Alex, 2026-10-09): Showcase reports day, market and town
+ * only; Lite adds hours, address, booth, website and the point of sale; Full adds
+ * costs, organizer, notes, reviews.
  */
 import type { FeatureKey } from '../features';
 import { SITE_PLANS, type SitePlan } from './plan';
 
 const SHOWCASE: readonly FeatureKey[] = ['profile', 'gallery', 'market_dates', 'qr_codes', 'plan'];
-const LITE: readonly FeatureKey[] = [...SHOWCASE, 'catalog', 'market_shop'];
+const LITE: readonly FeatureKey[] = [...SHOWCASE, 'catalog', 'market_details', 'market_shop'];
 const FULL: readonly FeatureKey[] = [...LITE, 'cart', 'promotions', 'new_arrivals', 'market_records'];
 
 export const PLAN_FEATURES: Record<SitePlan, readonly FeatureKey[]> = { showcase: SHOWCASE, lite: LITE, full: FULL };
@@ -35,6 +36,7 @@ export function moveOf(from: SitePlan, to: SitePlan): Move {
 /** What a maker sees named for each switch a move adds or hides. */
 export const FEATURE_WORDS: Partial<Record<FeatureKey, string>> = {
   catalog: 'Your products and collections, with prices',
+  market_details: 'Market hours, addresses, booths and websites',
   market_shop: 'The point of sale at markets: the QR shop page, Getting paid and Today',
   cart: 'The cart and online orders',
   promotions: 'Sales and discount codes',

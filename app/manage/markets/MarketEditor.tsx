@@ -70,16 +70,19 @@ function Text({
 
 /** One market: everything about it on one page, Save at the top and bottom. Saving
  *  or removing goes back to the list, which says what happened. */
-/** `records` shows the private Costs, Organizer, Notes and Review (Full); without it the
- *  market is dates only (Showcase, Lite). Hidden values stay in the form and are saved
- *  untouched, so moving down never loses them. */
+/** What each plan asks (Saltmarsh & Lace demo spec): Showcase reports the day, market
+ *  and town only; `details` (Lite up) adds hours, address, booth and website; `records`
+ *  (Full) adds the private Costs, Organizer, Notes and Review. Hidden values stay in the
+ *  form and are saved untouched, so moving down never loses them. */
 export function MarketEditor({
   initial,
   shop,
+  details,
   records,
 }: {
   initial: MarketForm;
   shop?: MarketShopProps | undefined;
+  details: boolean;
   records: boolean;
 }): React.ReactElement {
   const router = useRouter();
@@ -196,46 +199,50 @@ export function MarketEditor({
             </div>
           </div>
           <Text
-            id="m-hours"
-            label="Hours"
-            note="like 10am – 4pm"
-            value={form.hours}
-            max={L.hours}
-            onChange={(v) => update({ hours: v })}
-          />
-          <Text
             id="m-town"
             label="Town"
             value={form.town}
             max={L.town}
             onChange={(v) => update({ town: v })}
           />
-          <Text
-            id="m-address"
-            label="Address"
-            note="shoppers can tap it for directions"
-            value={form.address}
-            max={L.address}
-            onChange={(v) => update({ address: v })}
-          />
-          <Text
-            id="m-booth"
-            label="Booth or table"
-            note="like Booth 12"
-            value={form.booth}
-            max={L.booth}
-            onChange={(v) => update({ booth: v })}
-          />
-          <Text
-            id="m-url"
-            label="The market’s website"
-            note="optional"
-            type="url"
-            inputMode="url"
-            value={form.url}
-            max={L.url}
-            onChange={(v) => update({ url: v })}
-          />
+          {details && (
+            <>
+              <Text
+                id="m-hours"
+                label="Hours"
+                note="like 10am – 4pm"
+                value={form.hours}
+                max={L.hours}
+                onChange={(v) => update({ hours: v })}
+              />
+              <Text
+                id="m-address"
+                label="Address"
+                note="shoppers can tap it for directions"
+                value={form.address}
+                max={L.address}
+                onChange={(v) => update({ address: v })}
+              />
+              <Text
+                id="m-booth"
+                label="Booth or table"
+                note="like Booth 12"
+                value={form.booth}
+                max={L.booth}
+                onChange={(v) => update({ booth: v })}
+              />
+              <Text
+                id="m-url"
+                label="The market’s website"
+                note="optional"
+                type="url"
+                inputMode="url"
+                value={form.url}
+                max={L.url}
+                onChange={(v) => update({ url: v })}
+              />
+            </>
+          )}
           <div className="bk-field">
             <label className="bk-check">
               <input

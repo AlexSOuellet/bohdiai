@@ -19,6 +19,7 @@ export const FEATURES = {
   new_arrivals: { default: false, description: 'New arrivals: a tick on each product, shown in the design’s own home section' },
   qr_codes: { default: true, description: 'QR codes: a printable code for the site, its shop, or one product' },
   plan: { default: false, description: 'Your plan: the plan the site is on and what moving up adds' },
+  market_details: { default: false, description: 'Market details: hours, address, booth and website on each market (Lite up; Showcase is day, market and town)' },
   market_records: { default: false, description: 'Market records: private costs, organizer, notes and a review on each market (Full)' },
   demo_checkout: { default: false, description: 'Demo checkout: Upgrade and Downgrade switch the plan at once, no card taken (demo sites only)' },
   market_dates: { default: false, description: 'Markets: every market the owner does, shown on the site (dates, hours, where) with private costs, notes and review' },
