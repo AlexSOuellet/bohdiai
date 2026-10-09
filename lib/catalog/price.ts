@@ -5,6 +5,15 @@
  * plus additive data.
  */
 export type PricedProduct = { basePriceCents: number };
+
+/** A product with no price yet (a Showcase photo just turned into a product, or a
+ *  maker who left the price empty) stores this as its base price. It shows "Ask for
+ *  price" and can never be bought — the cart and market sales check hasPrice. */
+export const NO_PRICE_CENTS = 0;
+
+export function hasPrice(cents: number): boolean {
+  return cents > NO_PRICE_CENTS;
+}
 export type PricedCombination = { priceCents: number | null };
 
 export function effectivePriceCents(product: PricedProduct, combination?: PricedCombination | null): number {

@@ -6,11 +6,13 @@ const state: {
   plan: PlanState | null;
   apply: { ok: true } | { ok: false; error: string };
   writeError: string | null;
+  convert: { ok: true; added: number } | { ok: false; error: string };
 } = {
   features: new Set(['plan', 'demo_checkout']),
   plan: null,
   apply: { ok: true },
   writeError: null,
+  convert: { ok: true, added: 0 },
 };
 const applyPlan = vi.fn(() => Promise.resolve(state.apply));
 const revalidatePath = vi.fn();
@@ -40,6 +42,8 @@ vi.mock('@/lib/supabase', () => ({
 vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn() } }));
 vi.mock('./queries', () => ({ loadPlanState: () => Promise.resolve(state.plan) }));
 vi.mock('./apply', () => ({ applyPlan }));
+const galleryToProducts = vi.fn(() => Promise.resolve(state.convert));
+vi.mock('./convert', () => ({ galleryToProducts }));
 
 const { upgradePlan, scheduleDowngrade, cancelScheduledChange, skipToRenewal, setDemoBilling } =
   await import('./actions');
@@ -62,12 +66,28 @@ beforeEach(() => {
   state.plan = on();
   state.apply = { ok: true };
   state.writeError = null;
+  state.convert = { ok: true, added: 0 };
+  galleryToProducts.mockClear();
   applyPlan.mockClear();
   revalidatePath.mockClear();
   writes.length = 0;
 });
 
 describe('upgrade', () => {
+  it('turns the gallery into products when leaving Showcase, and stops if that fails', async () => {
+    await upgradePlan('lite', 'monthly');
+    expect(galleryToProducts).toHaveBeenCalledWith(expect.anything(), 't1');
+    state.plan = on({ plan: 'lite' });
+    galleryToProducts.mockClear();
+    await upgradePlan('full', 'monthly');
+    expect(galleryToProducts).not.toHaveBeenCalled();
+    state.plan = on();
+    state.convert = { ok: false, error: 'products: full' };
+    applyPlan.mockClear();
+    expect((await upgradePlan('lite', 'monthly')).ok).toBe(false);
+    expect(applyPlan).not.toHaveBeenCalled();
+  });
+
   it('switches now, keeps the renewal day on the same billing, and refreshes the backend', async () => {
     expect(await upgradePlan('lite', 'monthly')).toEqual({ ok: true });
     expect(applyPlan).toHaveBeenCalledWith(expect.anything(), 't1', 'lite');

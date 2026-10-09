@@ -128,10 +128,14 @@ describe('buildProductPayload', () => {
     expect(buildProductPayload(base({ onHome: true }), { digital: false })).toMatchObject({ ok: true, payload: { on_home: true } });
     expect(buildProductPayload(base({ isNew: true }), { digital: false })).toMatchObject({ ok: true, payload: { is_new: true } });
   });
-  it('needs a name and a price', () => {
+  it('needs a name, and a price that reads as money', () => {
     expect(buildProductPayload(base({ name: ' ' }), { digital: false })).toEqual({ ok: false, error: 'Give the product a name.' });
-    expect(buildProductPayload(base({ price: '' }), { digital: false })).toEqual({ ok: false, error: 'Enter a price, like 24 or 24.50.' });
-    expect(buildProductPayload(base({ price: 'ten' }), { digital: false })).toEqual({ ok: false, error: 'Enter a price, like 24 or 24.50.' });
+    expect(buildProductPayload(base({ price: 'ten' }), { digital: false })).toEqual({ ok: false, error: 'Enter a price, like 24 or 24.50, or leave it empty to show “Ask for price”.' });
+  });
+  it('saves an empty price as no price yet (“Ask for price”)', () => {
+    const r = buildProductPayload(base({ price: '' }), { digital: false });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.payload.base_price_cents).toBe(0);
   });
   it('checks stock', () => {
     expect(buildProductPayload(base({ stock: '2.5' }), { digital: false })).toEqual({ ok: false, error: 'Stock must be a whole number, 0 or more. Leave it blank if you make to order.' });

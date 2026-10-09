@@ -4,6 +4,7 @@
  * charged; the maker answers by hand (an invoice, pickup or delivery). Every
  * price comes from the catalog, never from the shopper.
  */
+import { hasPrice } from '@/lib/catalog/price';
 import { z } from 'zod';
 import type { ProductView } from '@/lib/archetypes/content';
 import { CART_MAX } from './cart';
@@ -54,7 +55,7 @@ export function orderLines(
 
 /** A piece the cart can take: live, in stock, a real listing, no options to pick. */
 export function isCartable(p: LoadedPiece): boolean {
-  return p.view.status === 'active' && !p.isPreview && p.view.variations.length === 0 && p.priceCents > 0;
+  return p.view.status === 'active' && !p.isPreview && p.view.variations.length === 0 && hasPrice(p.priceCents);
 }
 
 function escapeHtml(s: string): string {

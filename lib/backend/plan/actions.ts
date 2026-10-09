@@ -20,6 +20,7 @@ import { isSitePlan } from './plan';
 import { loadPlanState, type PlanState } from './queries';
 import { moveOf } from './plan-features';
 import { applyPlan } from './apply';
+import { galleryToProducts } from './convert';
 import {
   addDays,
   addMonths,
@@ -79,6 +80,15 @@ export async function upgradePlan(to: unknown, billing: unknown): Promise<Change
   if (moveOf(state.plan, to) !== 'up')
     return { ok: false, error: 'That isn’t an upgrade from your plan.' };
   const quote = quoteUpgrade(state, to, billing, state.today);
+  // Leaving Showcase: her gallery photos become her first products ("Ask for price")
+  // before the catalog switches on, so the shop is never empty.
+  if (state.plan === 'showcase') {
+    const made = await galleryToProducts(supabaseAdmin(), tenantId);
+    if (!made.ok) {
+      logger.error('gallery to products failed', { tenantId, error: made.error });
+      return { ok: false, error: FAILED };
+    }
+  }
   const r = await applyPlan(supabaseAdmin(), tenantId, to);
   if (!r.ok) {
     logger.error('plan upgrade failed', { tenantId, to, error: r.error });

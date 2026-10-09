@@ -3,6 +3,7 @@
  * editor (instant messages) and the save action (which re-checks before writing),
  * so the rules can't drift. Prices and stock stay text until validated.
  */
+import { NO_PRICE_CENTS } from '@/lib/catalog/price';
 import { combinationsOf, combinationKey, MAX_OPTIONS, MAX_CHOICES, MAX_COMBINATIONS, type Combination } from '@/lib/catalog/combinations';
 import { HOME_MAX } from '@/lib/catalog/home';
 
@@ -175,7 +176,7 @@ export function buildProductPayload(form: ProductForm, site: { digital: boolean 
   if (long.length > MAX_LONG) return fail(`Keep the description to ${MAX_LONG} characters or fewer.`);
 
   const price = parseDollars(form.price);
-  if (!price.ok || price.cents === null) return fail('Enter a price, like 24 or 24.50.');
+  if (!price.ok) return fail('Enter a price, like 24 or 24.50, or leave it empty to show “Ask for price”.');
   if (form.photos.length > MAX_PHOTOS) return fail(`A product can have up to ${MAX_PHOTOS} photos.`);
 
   const hasOptions = form.options.length > 0;
@@ -237,7 +238,7 @@ export function buildProductPayload(form: ProductForm, site: { digital: boolean 
       name,
       short_description: short === '' ? null : short,
       description: long === '' ? null : long,
-      base_price_cents: price.cents,
+      base_price_cents: price.cents ?? NO_PRICE_CENTS,
       status: form.status,
       inventory_count: inventory,
       media_ids: form.photos.map((p) => p.uploadId),

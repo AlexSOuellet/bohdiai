@@ -1,0 +1,77 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/lib/database.types';
+import { slugify, uniqueSlug } from '@/lib/catalog/slug';
+import { NO_PRICE_CENTS } from '@/lib/catalog/price';
+
+/** How many of the new products start on the home page. */
+const HOME_PIECES = 6;
+
+export type GalleryPhoto = { uploadId: string; caption: string };
+
+export type NewProduct = {
+  slug: string;
+  name: string;
+  media_ids: string[];
+  base_price_cents: number;
+  on_home: boolean;
+};
+
+/**
+ * Upgrading from Showcase (Saltmarsh & Lace demo spec, stage two): each gallery
+ * photo that isn't a product yet becomes one, named from its caption, with no price
+ * yet ("Ask for price"), in gallery order; the first few go on the home page.
+ * Pure, so the naming and order are testable.
+ */
+export function productsFromGallery(
+  photos: readonly GalleryPhoto[],
+  usedUploadIds: ReadonlySet<string>,
+  takenSlugs: ReadonlySet<string>,
+  homeTaken: number,
+): NewProduct[] {
+  const taken = new Set(takenSlugs);
+  let homeLeft = Math.max(0, HOME_PIECES - homeTaken);
+  return photos
+    .filter((p) => !usedUploadIds.has(p.uploadId))
+    .map((p, i) => {
+      const name = p.caption.trim() === '' ? `Piece ${i + 1}` : p.caption.trim();
+      const slug = uniqueSlug(slugify(name), taken);
+      taken.add(slug);
+      const onHome = homeLeft > 0;
+      if (onHome) homeLeft -= 1;
+      return { slug, name, media_ids: [p.uploadId], base_price_cents: NO_PRICE_CENTS, on_home: onHome };
+    });
+}
+
+/** Write the products for a site's gallery photos. Runs with the service role
+ *  inside a plan change the caller has already allowed. Adds only; never edits or
+ *  removes a product, so running it twice adds nothing the second time. */
+export async function galleryToProducts(db: SupabaseClient<Database>, tenantId: string): Promise<{ ok: true; added: number } | { ok: false; error: string }> {
+  const [gallery, listings] = await Promise.all([
+    db.from('gallery_items').select('upload_id, caption, position, created_at').eq('tenant_id', tenantId).order('position', { ascending: true }).order('created_at', { ascending: true }),
+    db.from('listings').select('slug, media_ids, on_home, deleted_at').eq('tenant_id', tenantId),
+  ]);
+  if (gallery.error !== null) return { ok: false, error: `gallery: ${gallery.error.message}` };
+  if (listings.error !== null) return { ok: false, error: `products: ${listings.error.message}` };
+  const rows = listings.data ?? [];
+  const live = rows.filter((r) => r.deleted_at === null);
+  const created = productsFromGallery(
+    (gallery.data ?? []).map((g) => ({ uploadId: g.upload_id, caption: g.caption ?? '' })),
+    new Set(live.flatMap((r) => r.media_ids)),
+    new Set(rows.map((r) => r.slug)),
+    live.filter((r) => r.on_home).length,
+  );
+  if (created.length === 0) return { ok: true, added: 0 };
+  const now = Date.now();
+  const { error } = await db.from('listings').insert(
+    created.map((p, i) => ({
+      tenant_id: tenantId,
+      listing_type: 'product',
+      status: 'active',
+      requires_shipping: true,
+      published_at: new Date(now + i).toISOString(),
+      ...p,
+    })),
+  );
+  if (error !== null) return { ok: false, error: `products: ${error.message}` };
+  return { ok: true, added: created.length };
+}

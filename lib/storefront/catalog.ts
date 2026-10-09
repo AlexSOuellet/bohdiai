@@ -12,7 +12,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json } from '@/lib/database.types';
 import type { ProductView, CatalogMedia, CollectionView, CatalogVariation, ProductOffer } from '@/lib/archetypes/content';
-import { effectivePriceCents, priceRange } from '@/lib/catalog/price';
+import { hasPrice, effectivePriceCents, priceRange } from '@/lib/catalog/price';
 import { isStockSoldOut } from '@/lib/catalog/stock';
 import { combinationsOf, combinationKey } from '@/lib/catalog/combinations';
 
@@ -153,7 +153,13 @@ function buildProduct(
 
   if (variations.length === 0) {
     return {
-      view: { ...base, price: formatPrice(row.base_price_cents), priceCents: row.base_price_cents, status: isStockSoldOut(row.inventory_count) ? 'sold_out' : 'active' },
+      view: {
+        ...base,
+        price: hasPrice(row.base_price_cents) ? formatPrice(row.base_price_cents) : '',
+        priceCents: row.base_price_cents,
+        ...(hasPrice(row.base_price_cents) ? {} : { askForPrice: true as const }),
+        status: isStockSoldOut(row.inventory_count) ? 'sold_out' : 'active',
+      },
       minPriceCents: row.base_price_cents,
     };
   }

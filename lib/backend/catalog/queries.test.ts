@@ -60,6 +60,7 @@ describe('labels', () => {
   });
   it('shows a price range only when prices differ', () => {
     expect(priceRangeLabel(2400, [])).toBe('$24');
+    expect(priceRangeLabel(0, [])).toBe('Ask for price');
     expect(priceRangeLabel(2400, [{ priceCents: 1800 }, { priceCents: null }])).toBe('$18–$24');
   });
 });

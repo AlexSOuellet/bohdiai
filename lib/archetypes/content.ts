@@ -75,6 +75,8 @@ export interface ProductView {
   onHome?: boolean;
   /** The owner marked it a new arrival; absent means not new. */
   isNew?: boolean;
+  /** No price yet: `price` is empty, the design shows "Ask for price", and it can't be bought. */
+  askForPrice?: true;
   /** The price in cents behind `price` (the lowest buyable one), when projected from the catalog. */
   priceCents?: number;
   /** The price during a running sale, formatted; `price` stays the full price. */

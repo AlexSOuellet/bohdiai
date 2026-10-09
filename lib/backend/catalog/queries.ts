@@ -5,7 +5,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json } from '@/lib/database.types';
 import { formatPrice, loadMediaMap, imageUrlFromMetadata } from '@/lib/storefront/catalog';
-import { priceRange } from '@/lib/catalog/price';
+import { hasPrice, priceRange } from '@/lib/catalog/price';
 import { isProductSoldOut } from '@/lib/catalog/stock';
 import { syncVariants, formatCents, type ProductForm, type OptionForm, type VariantForm, type ItemStatus, type Kind } from './product-form';
 import type { CollectionForm } from './collection-form';
@@ -33,6 +33,7 @@ const PRODUCT_TYPES = ['product', 'digital_product'];
 const asStatus = (s: string): ItemStatus => (s === 'active' || s === 'archived' ? s : 'draft');
 
 export function priceRangeLabel(baseCents: number, combinations: readonly { priceCents: number | null }[]): string {
+  if (combinations.length === 0 && !hasPrice(baseCents)) return 'Ask for price';
   const { min, max } = priceRange({ basePriceCents: baseCents }, combinations);
   return min === max ? formatPrice(min) : `${formatPrice(min)}–${formatPrice(max)}`;
 }
@@ -150,7 +151,7 @@ export async function getProduct(db: Db, tenantId: string, id: string): Promise<
     name: r.name,
     shortDescription: r.short_description ?? '',
     description: r.description ?? '',
-    price: formatCents(r.base_price_cents),
+    price: hasPrice(r.base_price_cents) ? formatCents(r.base_price_cents) : '',
     stock: r.inventory_count === null ? '' : String(r.inventory_count),
     status: asStatus(r.status),
     kind: r.listing_type === 'digital_product' ? 'digital' : 'physical',

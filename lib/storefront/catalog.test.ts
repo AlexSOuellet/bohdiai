@@ -88,6 +88,10 @@ describe('toProductView', () => {
   });
   it('is sold out when its stock is 0, not when it is blank', () => {
     expect(toProductView(row({ inventory_count: 0 }), [], [], media).status).toBe('sold_out');
+    const unpriced = toProductView(row({ base_price_cents: 0 }), [], [], media);
+    expect(unpriced.askForPrice).toBe(true);
+    expect(unpriced.price).toBe('');
+    expect(toProductView(row(), [], [], media)).not.toHaveProperty('askForPrice');
     expect(toProductView(row({ inventory_count: null }), [], [], media).status).toBe('active');
   });
   it('lists options in order and each available combination with its own price', () => {
