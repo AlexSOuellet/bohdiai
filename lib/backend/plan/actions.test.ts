@@ -1,8 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { PlanState } from './queries';
-import type * as Billing from './billing';
 
-const state: { features: Set<string>; plan: PlanState | null; apply: { ok: true } | { ok: false; error: string }; writeError: string | null } = {
+const state: {
+  features: Set<string>;
+  plan: PlanState | null;
+  apply: { ok: true } | { ok: false; error: string };
+  writeError: string | null;
+} = {
   features: new Set(['plan', 'demo_checkout']),
   plan: null,
   apply: { ok: true },
@@ -13,15 +17,21 @@ const revalidatePath = vi.fn();
 const writes: unknown[] = [];
 
 vi.mock('next/cache', () => ({ revalidatePath }));
-vi.mock('@/lib/backend/current-site', () => ({ requireActingSite: () => Promise.resolve({ site: { tenantId: 't1' } }) }));
-vi.mock('@/lib/backend/site-features', () => ({ getSiteFeatures: () => Promise.resolve(state.features) }));
+vi.mock('@/lib/backend/current-site', () => ({
+  requireActingSite: () => Promise.resolve({ site: { tenantId: 't1' } }),
+}));
+vi.mock('@/lib/backend/site-features', () => ({
+  getSiteFeatures: () => Promise.resolve(state.features),
+}));
 vi.mock('@/lib/supabase', () => ({
   supabaseAdmin: () => ({
     from: () => ({
       update: (arg: unknown) => ({
         eq: () => {
           writes.push(arg);
-          return Promise.resolve({ error: state.writeError === null ? null : { message: state.writeError } });
+          return Promise.resolve({
+            error: state.writeError === null ? null : { message: state.writeError },
+          });
         },
       }),
     }),
@@ -30,12 +40,21 @@ vi.mock('@/lib/supabase', () => ({
 vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn() } }));
 vi.mock('./queries', () => ({ loadPlanState: () => Promise.resolve(state.plan) }));
 vi.mock('./apply', () => ({ applyPlan }));
-vi.mock('./billing', async (orig) => ({ ...(await orig<typeof Billing>()), todayDay: () => '2026-10-09' }));
 
-const { upgradePlan, scheduleDowngrade, cancelScheduledChange, skipToRenewal, setDemoBilling } = await import('./actions');
+const { upgradePlan, scheduleDowngrade, cancelScheduledChange, skipToRenewal, setDemoBilling } =
+  await import('./actions');
 
 function on(over: Partial<PlanState> = {}): PlanState {
-  return { plan: 'showcase', billing: 'monthly', renewsOn: '2026-10-29', next: null, nextBilling: null, creditCents: 0, ...over };
+  return {
+    plan: 'showcase',
+    billing: 'monthly',
+    renewsOn: '2026-10-29',
+    next: null,
+    nextBilling: null,
+    creditCents: 0,
+    today: '2026-10-09',
+    ...over,
+  };
 }
 
 beforeEach(() => {
@@ -52,19 +71,39 @@ describe('upgrade', () => {
   it('switches now, keeps the renewal day on the same billing, and refreshes the backend', async () => {
     expect(await upgradePlan('lite', 'monthly')).toEqual({ ok: true });
     expect(applyPlan).toHaveBeenCalledWith(expect.anything(), 't1', 'lite');
-    expect(writes).toEqual([{ plan_billing: 'monthly', plan_renews_on: '2026-10-29', plan_next: null, plan_next_billing: null, plan_credit_cents: 0 }]);
+    expect(writes).toEqual([
+      {
+        plan_billing: 'monthly',
+        plan_renews_on: '2026-10-29',
+        plan_next: null,
+        plan_next_billing: null,
+        plan_credit_cents: 0,
+      },
+    ]);
     expect(revalidatePath).toHaveBeenCalledWith('/manage', 'layout');
   });
 
   it('starts a new year from today when she picks yearly', async () => {
     await upgradePlan('full', 'yearly');
-    expect(writes).toEqual([{ plan_billing: 'yearly', plan_renews_on: '2027-10-09', plan_next: null, plan_next_billing: null, plan_credit_cents: 0 }]);
+    expect(writes).toEqual([
+      {
+        plan_billing: 'yearly',
+        plan_renews_on: '2027-10-09',
+        plan_next: null,
+        plan_next_billing: null,
+        plan_credit_cents: 0,
+      },
+    ]);
   });
 
   it('lets a yearly site go monthly, keeping the unused year as credit', async () => {
     state.plan = on({ billing: 'yearly', renewsOn: '2027-04-09' });
     expect(await upgradePlan('lite', 'monthly')).toEqual({ ok: true });
-    const w = writes[0] as { plan_billing: string; plan_renews_on: string; plan_credit_cents: number };
+    const w = writes[0] as {
+      plan_billing: string;
+      plan_renews_on: string;
+      plan_credit_cents: number;
+    };
     expect(w.plan_billing).toBe('monthly');
     expect(w.plan_renews_on).toBe('2026-11-09');
     expect(w.plan_credit_cents).toBeGreaterThan(0);
@@ -74,14 +113,20 @@ describe('upgrade', () => {
     state.features = new Set(['plan']);
     expect((await upgradePlan('lite', 'monthly')).ok).toBe(false);
     state.features = new Set(['plan', 'demo_checkout']);
-    expect(await upgradePlan('showcase', 'monthly')).toEqual({ ok: false, error: 'That isn’t an upgrade from your plan.' });
+    expect(await upgradePlan('showcase', 'monthly')).toEqual({
+      ok: false,
+      error: 'That isn’t an upgrade from your plan.',
+    });
     expect((await upgradePlan('pro', 'monthly')).ok).toBe(false);
     expect(applyPlan).not.toHaveBeenCalled();
   });
 
   it('refuses a site with no plan, and says so when a write fails', async () => {
     state.plan = null;
-    expect(await upgradePlan('lite', 'monthly')).toEqual({ ok: false, error: 'This site isn’t on a plan yet.' });
+    expect(await upgradePlan('lite', 'monthly')).toEqual({
+      ok: false,
+      error: 'This site isn’t on a plan yet.',
+    });
     state.plan = on();
     state.apply = { ok: false, error: 'switches: down' };
     expect((await upgradePlan('lite', 'monthly')).ok).toBe(false);
@@ -100,7 +145,14 @@ describe('downgrade', () => {
   it('waits for renewal: nothing switches now, the plan and billing to come are stored', async () => {
     expect(await scheduleDowngrade('showcase', 'monthly')).toEqual({ ok: true });
     expect(applyPlan).not.toHaveBeenCalled();
-    expect(writes).toEqual([{ plan_billing: 'yearly', plan_renews_on: '2027-04-09', plan_next: 'showcase', plan_next_billing: 'monthly' }]);
+    expect(writes).toEqual([
+      {
+        plan_billing: 'yearly',
+        plan_renews_on: '2027-04-09',
+        plan_next: 'showcase',
+        plan_next_billing: 'monthly',
+      },
+    ]);
   });
 
   it('refuses a move that isn’t a downgrade, a plan that doesn’t exist, or a billing that doesn’t', async () => {
@@ -119,20 +171,55 @@ describe('downgrade', () => {
     state.plan = on({ plan: 'full', billing: 'yearly', renewsOn: '2027-04-09', next: 'lite' });
     expect(await skipToRenewal()).toEqual({ ok: true });
     expect(applyPlan).toHaveBeenCalledWith(expect.anything(), 't1', 'lite');
-    expect(writes).toEqual([{ plan_billing: 'yearly', plan_renews_on: '2027-10-09', plan_next: null, plan_next_billing: null, plan_credit_cents: 0 }]);
+    expect(writes).toEqual([
+      {
+        plan_billing: 'yearly',
+        plan_renews_on: '2027-10-09',
+        plan_next: null,
+        plan_next_billing: null,
+        plan_credit_cents: 0,
+      },
+    ]);
   });
 
   it('starts the downgraded plan on the billing she picked', async () => {
-    state.plan = on({ plan: 'full', billing: 'yearly', renewsOn: '2027-04-09', next: 'showcase', nextBilling: 'monthly' });
+    state.plan = on({
+      plan: 'full',
+      billing: 'yearly',
+      renewsOn: '2027-04-09',
+      next: 'showcase',
+      nextBilling: 'monthly',
+    });
     await skipToRenewal();
     expect(applyPlan).toHaveBeenCalledWith(expect.anything(), 't1', 'showcase');
-    expect(writes).toEqual([{ plan_billing: 'monthly', plan_renews_on: '2026-11-09', plan_next: null, plan_next_billing: null, plan_credit_cents: 0 }]);
+    expect(writes).toEqual([
+      {
+        plan_billing: 'monthly',
+        plan_renews_on: '2026-11-09',
+        plan_next: null,
+        plan_next_billing: null,
+        plan_credit_cents: 0,
+      },
+    ]);
   });
 
   it('pays a renewal from credit first', async () => {
-    state.plan = on({ plan: 'lite', billing: 'monthly', renewsOn: '2026-11-09', creditCents: 1000 });
+    state.plan = on({
+      plan: 'lite',
+      billing: 'monthly',
+      renewsOn: '2026-11-09',
+      creditCents: 1000,
+    });
     await skipToRenewal();
-    expect(writes).toEqual([{ plan_billing: 'monthly', plan_renews_on: '2026-11-09', plan_next: null, plan_next_billing: null, plan_credit_cents: 0 }]);
+    expect(writes).toEqual([
+      {
+        plan_billing: 'monthly',
+        plan_renews_on: '2026-11-09',
+        plan_next: null,
+        plan_next_billing: null,
+        plan_credit_cents: 0,
+      },
+    ]);
   });
 
   it('just renews when nothing is waiting, and stops if the switch fails', async () => {
@@ -155,8 +242,20 @@ describe('demo billing switch', () => {
     expect(await setDemoBilling('yearly')).toEqual({ ok: true });
     expect(await setDemoBilling('monthly')).toEqual({ ok: true });
     expect(writes).toEqual([
-      { plan_billing: 'yearly', plan_renews_on: '2027-04-09', plan_next: null, plan_next_billing: null, plan_credit_cents: 0 },
-      { plan_billing: 'monthly', plan_renews_on: '2026-10-29', plan_next: null, plan_next_billing: null, plan_credit_cents: 0 },
+      {
+        plan_billing: 'yearly',
+        plan_renews_on: '2027-04-09',
+        plan_next: null,
+        plan_next_billing: null,
+        plan_credit_cents: 0,
+      },
+      {
+        plan_billing: 'monthly',
+        plan_renews_on: '2026-10-29',
+        plan_next: null,
+        plan_next_billing: null,
+        plan_credit_cents: 0,
+      },
     ]);
   });
 

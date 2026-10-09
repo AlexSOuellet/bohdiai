@@ -47,7 +47,10 @@ describe('billing dates', () => {
     expect(longDay('2026-10-29')).toBe('October 29, 2026');
     expect(money(1500)).toBe('$15');
     expect(money(667)).toBe('$6.67');
-    expect(todayDay(new Date('2026-10-09T15:00:00Z'))).toBe('2026-10-09');
+    expect(todayDay('America/New_York', new Date('2026-10-09T15:00:00Z'))).toBe('2026-10-09');
+    // 11:30pm in Rhode Island is already tomorrow in UTC; the shop's own day counts.
+    expect(todayDay('America/New_York', new Date('2026-10-10T03:30:00Z'))).toBe('2026-10-09');
+    expect(todayDay(null, new Date('2026-10-10T03:30:00Z'))).toBe('2026-10-09');
     expect(isBilling('yearly')).toBe(true);
     expect(isBilling('weekly')).toBe(false);
   });

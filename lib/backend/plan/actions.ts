@@ -28,7 +28,6 @@ import {
   priceCents,
   quoteUpgrade,
   renewalCharge,
-  todayDay,
 } from './billing';
 
 export type ChangePlanResult = { ok: true } | { ok: false; error: string };
@@ -45,11 +44,7 @@ async function demoSite(): Promise<Ready> {
       ok: false,
       error: 'Plan changes go through Alex for now. Use the email button on Your plan.',
     };
-  const state = await loadPlanState(
-    supabaseAdmin(),
-    site.tenantId,
-    nextRenewal(todayDay(), 'monthly'),
-  );
+  const state = await loadPlanState(supabaseAdmin(), site.tenantId);
   if (state === null) return { ok: false, error: 'This site isn’t on a plan yet.' };
   return { ok: true, tenantId: site.tenantId, state };
 }
@@ -83,7 +78,7 @@ export async function upgradePlan(to: unknown, billing: unknown): Promise<Change
   const { tenantId, state } = ready;
   if (moveOf(state.plan, to) !== 'up')
     return { ok: false, error: 'That isn’t an upgrade from your plan.' };
-  const quote = quoteUpgrade(state, to, billing, todayDay());
+  const quote = quoteUpgrade(state, to, billing, state.today);
   const r = await applyPlan(supabaseAdmin(), tenantId, to);
   if (!r.ok) {
     logger.error('plan upgrade failed', { tenantId, to, error: r.error });
@@ -148,7 +143,7 @@ export async function skipToRenewal(): Promise<ChangePlanResult> {
   const billing = state.next !== null ? (state.nextBilling ?? state.billing) : state.billing;
   // The demo's clock never moves, so the renewal happens today and the new period starts
   // from today; counting from the old renewal day would leave more than a period ahead.
-  const renewsOn = nextRenewal(todayDay(), billing);
+  const renewsOn = nextRenewal(state.today, billing);
   const charge = renewalCharge(priceCents(state.next ?? state.plan, billing), state.creditCents);
   if (
     !(await writeTerms(tenantId, {
@@ -171,7 +166,7 @@ export async function setDemoBilling(billing: unknown): Promise<ChangePlanResult
   if (!isBilling(billing)) return { ok: false, error: 'That isn’t a billing choice.' };
   const ready = await demoSite();
   if (!ready.ok) return ready;
-  const today = todayDay();
+  const today = ready.state.today;
   const renewsOn = billing === 'yearly' ? addMonths(today, 6) : addDays(today, 20);
   if (
     !(await writeTerms(ready.tenantId, {

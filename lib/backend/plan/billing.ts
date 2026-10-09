@@ -9,6 +9,7 @@
  * - A downgrade takes effect at the next renewal. Nothing is refunded (Alex,
  *   2026-10-09); a yearly plan says so where it's chosen.
  */
+import { shopToday } from '@/lib/storefront/promotions';
 import type { SitePlan } from './plan';
 import { planOf } from './plan';
 
@@ -184,7 +185,7 @@ export function longDay(day: string): string {
   }).format(toDate(day));
 }
 
-/** Today in UTC, as a day. */
-export function todayDay(now: Date = new Date()): string {
-  return toDay(now);
+/** Today in the shop's own time zone, as a day (the shop's day decides renewals and proration). */
+export function todayDay(timeZone: string | null, now: Date = new Date()): string {
+  return shopToday(timeZone, now);
 }

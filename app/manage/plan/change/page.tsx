@@ -5,7 +5,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { loadPlanState } from '@/lib/backend/plan/queries';
 import { isSitePlan, planOf } from '@/lib/backend/plan/plan';
 import { hiddenByMove, moveOf } from '@/lib/backend/plan/plan-features';
-import { daysLeft, nextRenewal, quoteUpgrade, todayDay } from '@/lib/backend/plan/billing';
+import { daysLeft, quoteUpgrade } from '@/lib/backend/plan/billing';
 import { PlanChange } from './PlanChange';
 
 export const dynamic = 'force-dynamic';
@@ -18,15 +18,11 @@ export default async function PlanChangePage({
   const on = await getSiteFeatures(site.tenantId);
   if (!on.has('plan')) notFound();
   if (!on.has('demo_checkout')) redirect('/manage/plan');
-  const today = todayDay();
-  const state = await loadPlanState(
-    await createSupabaseServerClient(),
-    site.tenantId,
-    nextRenewal(today, 'monthly'),
-  );
+  const state = await loadPlanState(await createSupabaseServerClient(), site.tenantId);
   const raw = (await searchParams)['to'];
   const to = Array.isArray(raw) ? raw[0] : raw;
   if (state === null || !isSitePlan(to)) redirect('/manage/plan');
+  const today = state.today;
   const move = moveOf(state.plan, to);
   if (move === 'same') redirect('/manage/plan');
   return (

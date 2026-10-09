@@ -137,17 +137,34 @@ describe('checkout (moving up)', () => {
 
 describe('downgrade', () => {
   function down() {
-    return render(<PlanChange kind="down" from={planOf('full')} to={planOf('showcase')} hidden={hiddenByMove('full', 'showcase')} renewsOn="2027-04-09" fromBilling="yearly" daysLeft={182} />);
+    return render(
+      <PlanChange
+        kind="down"
+        from={planOf('full')}
+        to={planOf('showcase')}
+        hidden={hiddenByMove('full', 'showcase')}
+        renewsOn="2027-04-09"
+        fromBilling="yearly"
+        daysLeft={182}
+      />,
+    );
   }
 
   it('says how much time is left, that it starts at renewal, and that nothing is refunded', () => {
     down();
     expect(screen.getByText('Downgrading to')).toBeTruthy();
-    expect(screen.getByText(/You have about 6 months \(182 days\) left on your Maker Full year\. You keep everything in Maker Full until April 9, 2027, then Maker Showcase starts\./)).toBeTruthy();
+    expect(
+      screen.getByText(
+        /You have about 6 months \(182 days\) left on your Maker Full year\. You keep everything in Maker Full until April 9, 2027, then Maker Showcase starts\./,
+      ),
+    ).toBeTruthy();
     expect(screen.getByText('Nothing already paid is refunded.')).toBeTruthy();
-    const list = screen.getByText('Put away until you upgrade again').nextElementSibling as HTMLElement;
+    const list = screen.getByText('Put away until you upgrade again')
+      .nextElementSibling as HTMLElement;
     expect(within(list).getByText('The cart and online orders')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Stay on Maker Full' }).getAttribute('href')).toBe('/manage/plan');
+    expect(screen.getByRole('link', { name: 'Stay on Maker Full' }).getAttribute('href')).toBe(
+      '/manage/plan',
+    );
   });
 
   it('lets her pick monthly or yearly from renewal, with the yearly terms on yearly', () => {

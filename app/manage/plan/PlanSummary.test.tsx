@@ -84,10 +84,9 @@ describe('Your plan', () => {
     show('full', DEMO);
     expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(1);
     expect(screen.queryByText(/Ready for more/)).toBeNull();
-    expect(screen.getAllByRole('link', { name: /Downgrade to/ }).map((a) => a.textContent)).toEqual([
-      'Downgrade to Maker Lite',
-      'Downgrade to Maker Showcase',
-    ]);
+    expect(screen.getAllByRole('link', { name: /Downgrade to/ }).map((a) => a.textContent)).toEqual(
+      ['Downgrade to Maker Lite', 'Downgrade to Maker Showcase'],
+    );
     expect(screen.getByText(/Downgrading never deletes anything/)).toBeTruthy();
   });
 
@@ -101,7 +100,13 @@ describe('Your plan', () => {
       <PlanSummary
         view={planView('lite')}
         mode={DEMO}
-        terms={{ billing: 'monthly', renewsOn: '2026-11-09', next: null, nextBilling: null, creditCents: 1000 }}
+        terms={{
+          billing: 'monthly',
+          renewsOn: '2026-11-09',
+          next: null,
+          nextBilling: null,
+          creditCents: 1000,
+        }}
       />,
     );
     expect(
@@ -122,14 +127,22 @@ describe('Your plan', () => {
       <PlanSummary
         view={planView('full')}
         mode={DEMO}
-        terms={{ billing: 'yearly', renewsOn: '2027-04-09', next: 'showcase', nextBilling: 'monthly', creditCents: 0 }}
+        terms={{
+          billing: 'yearly',
+          renewsOn: '2027-04-09',
+          next: 'showcase',
+          nextBilling: 'monthly',
+          creditCents: 0,
+        }}
       />,
     );
     expect(
       screen.getByRole('heading', { name: 'Downgrading to Maker Showcase on April 9, 2027' }),
     ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Keep Maker Full' })).toBeTruthy();
-    expect(screen.getByText(/Renews April 9, 2027 as Maker Showcase, billed monthly, for \$5\./)).toBeTruthy();
+    expect(
+      screen.getByText(/Renews April 9, 2027 as Maker Showcase, billed monthly, for \$5\./),
+    ).toBeTruthy();
     expect(screen.queryByRole('link', { name: /Downgrade to/ })).toBeNull();
   });
 
@@ -138,7 +151,13 @@ describe('Your plan', () => {
       <PlanSummary
         view={planView('lite')}
         mode={EMAIL}
-        terms={{ billing: 'monthly', renewsOn: '2026-11-09', next: null, nextBilling: null, creditCents: 0 }}
+        terms={{
+          billing: 'monthly',
+          renewsOn: '2026-11-09',
+          next: null,
+          nextBilling: null,
+          creditCents: 0,
+        }}
       />,
     );
     expect(screen.queryByRole('button', { name: /demo/ })).toBeNull();

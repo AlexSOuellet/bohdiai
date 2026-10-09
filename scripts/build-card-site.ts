@@ -123,8 +123,8 @@ async function main(): Promise<void> {
     if (current.plan === null) {
       const applied = await applyPlan(db, tenantId, site.SITE.plan);
       if (!applied.ok) fail(`plan failed: ${applied.error}`);
-      // Billing starts monthly, renewing a month from today.
-      const { error: bErr } = await db.from('tenants').update({ plan_billing: 'monthly', plan_renews_on: nextRenewal(todayDay(), 'monthly'), plan_next: null }).eq('id', tenantId);
+      // Billing starts monthly, renewing a month from today (the shop's default time zone).
+      const { error: bErr } = await db.from('tenants').update({ plan_billing: 'monthly', plan_renews_on: nextRenewal(todayDay(null), 'monthly'), plan_next: null }).eq('id', tenantId);
       if (bErr !== null) fail(`billing start failed: ${bErr.message}`);
       process.stdout.write(`plan: ${site.SITE.plan}\n`);
     } else {
