@@ -10,11 +10,13 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-10-08, Session 98.
+**Last updated:** 2026-10-09, Session 99.
 
 ---
 
 ## Current state
+
+**Session 99 — Saltmarsh & Lace demo shop built (not merged).** On `feat/saltmarsh-showcase`: made-up maker, shoreline design, upgrade/downgrade between Showcase, Lite and Full with checkout and proration, real pages, cart, testimonials, collections, Market POS + results; `scripts/demo-reset.ts` resets it (Full is the default). `feat/site-facebook-link` also waiting. **Next: the public demo** (spec stage four: personal copies, welcome page, Learn; ask Alex the login question first). Spec: `docs/superpowers/specs/2026-10-09-saltmarsh-demo-design.md`. Recap: `session-logs/session-99.md`.
 
 **Session 98 — new logo + sticky header LIVE; Renee is in.** Ember wordmark (`components/Wordmark.tsx`: Bohdi with a flame for the i dot) in header/footer/legal pages, ember tab icon; sticky header with a solid strip once scrolled. Cards, logo files, Facebook cover/profile in `Design files/` (untracked). Renee signed in 2026-10-08. 24-hour invite wording parked on `fix/auth-link-24h` — merge only after Supabase "Email OTP Expiration" = 86400. Recap: `session-logs/session-98.md`.
 
@@ -90,10 +92,9 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 99 (2026-10-09): **Saltmarsh & Lace demo shop: plans switch both ways, real pages, cart, POS, results; public demo planned.** Full recap: `session-logs/session-99.md`.
 - Session 98 (2026-10-08): **Ember logo + sticky header LIVE; business cards, logo files, Facebook cover; Renee in; 24h invite parked.** Full recap: `session-logs/session-98.md`.
-- Sessions 96–97 (2026-10-06 → 10-07): **Rose n' Cat LIVE (boutique/nursery), then cart, orders, promotions, new arrivals, QR, Markets, market shop.** See `session-logs/session-96.md`, `session-97.md`.
-- Sessions 93–95 (2026-10-04 → 10-06): **Showcase marquee + builder login (93); bulletin board design, Rustic Rhody (94); homepage reshaped, three contractor designs, Joe public, Lead Generation $10, business cards (95).** See `session-logs/session-93.md` – `session-95.md`.
+- Sessions 93–97 (2026-10-04 → 10-07): **Showcase marquee + builder login (93); Rustic Rhody (94); homepage reshaped, contractor designs, Joe public (95); Rose n' Cat LIVE with cart, orders, promotions, Markets, market shop (96–97).** See `session-logs/session-93.md` – `session-97.md`.
 - Sessions 91–92 (2026-10-02 → 10-03): **Tiers + prices agreed; pricing pages + FAQ live; Showcase tier + business card site (Rustic Rhody).** See `session-logs/session-91.md` and the tiers / business card specs.
-- Sessions 89–90 (2026-09-30 → 10-01): **CI green; maker backend designed, foundation (1a) + Catalog (1b) live; auto sign-out.** See `session-logs/session-89.md`, `session-90.md`.
-- Sessions 86–88 (2026-09-23 → 09-29): **Cut-Pro built by hand and LIVE (86); whole app moved from Vercel to Cloudflare Workers (87); bohdiai.com rebuilt as a web developer site (88).** See `session-logs/session-86.md` – `session-88.md`.
+- Sessions 86–90 (2026-09-23 → 10-01): **Cut-Pro LIVE (86); app moved to Cloudflare Workers (87); bohdiai.com rebuilt (88); CI green, maker backend foundation + Catalog live (89–90).** See `session-logs/session-86.md` – `session-90.md`.
 - Sessions 0-85: Phase 0 through the Make It Yours walk (archetypes, families, sections, editor). See individual logs.
