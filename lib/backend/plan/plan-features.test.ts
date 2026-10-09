@@ -37,8 +37,8 @@ describe('what each plan switches on', () => {
   });
 
   it('never touches the switches the plans don’t decide', () => {
-    for (const k of ['demo_checkout', 'custom_domain_panel', 'video', 'digital_products'])
-      expect(PLAN_MANAGED).not.toContain(k);
+    for (const k of ['demo_checkout', 'custom_domain_panel', 'video']) expect(PLAN_MANAGED).not.toContain(k);
+    expect(PLAN_MANAGED).toContain('digital_products');
   });
 
   it('writes every managed switch, on or off', () => {
@@ -62,6 +62,7 @@ describe('moving between plans', () => {
       'Market hours, addresses, booths and websites',
       'The point of sale at markets: the QR shop page, Getting paid and Today',
       'Extra photos on each product (the main photo stays)',
+      'Selling downloads (your download products are kept)',
       'Testimonials on your site',
       'The cart and online orders',
       'Sales and discount codes',

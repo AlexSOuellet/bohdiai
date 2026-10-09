@@ -2,7 +2,7 @@
  * What each maker plan switches on (Saltmarsh & Lace demo spec, stage two). A plan
  * is a set of the per-site feature switches; moving between plans flips only
  * the switches the plans decide and never touches the rest (domain panel, demo
- * checkout, video). A downgrade hides; nothing is deleted.
+ * checkout, video until it's built). A downgrade hides; nothing is deleted.
  *
  * Markets step up by plan (Alex, 2026-10-09): Showcase reports day, market and town
  * only; Lite adds hours, address, booth, website and the point of sale; Full adds
@@ -16,6 +16,7 @@ const LITE: readonly FeatureKey[] = [...SHOWCASE, 'catalog', 'market_details', '
 const FULL: readonly FeatureKey[] = [
   ...LITE,
   'product_photos',
+  'digital_products',
   'testimonials',
   'cart',
   'promotions',
@@ -51,6 +52,7 @@ export const FEATURE_WORDS: Partial<Record<FeatureKey, string>> = {
   market_details: 'Market hours, addresses, booths and websites',
   market_shop: 'The point of sale at markets: the QR shop page, Getting paid and Today',
   product_photos: 'Extra photos on each product (the main photo stays)',
+  digital_products: 'Selling downloads (your download products are kept)',
   testimonials: 'Testimonials on your site',
   cart: 'The cart and online orders',
   promotions: 'Sales and discount codes',
