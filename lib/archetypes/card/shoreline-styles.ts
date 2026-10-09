@@ -20,8 +20,9 @@ const GRAIN = svg(
   "<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .25  0 0 0 0 .12  0 0 0 .35 0'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>",
 );
 
-/** The bay at dusk (public/designs/shoreline/). */
+/** The bay at dusk and the weathered window frame (public/designs/shoreline/). */
 const SEA = '/designs/shoreline/sea.webp';
+const WINDOW = '/designs/shoreline/window-frame.webp';
 
 export const SHORELINE_FONTS_HREF =
   'https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,400&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Homemade+Apple&display=swap';
@@ -68,10 +69,13 @@ export function shorelineCss(): string {
 ${prints}
 .sl-prints li{transform:translateY(var(--y,0px));animation:sl-rise 1.6s cubic-bezier(.2,.7,.2,1) both}
 .sl-prints li:nth-child(-n+3){animation-delay:1.1s}
-.sl-print{display:block;width:100%;padding:12px 12px 0;border:0;background:var(--paper);cursor:zoom-in;text-align:center;transform:rotate(var(--r,0deg));box-shadow:0 2px 3px rgba(0,0,0,.18),0 24px 40px -18px rgba(10,24,32,.6);transition:transform .8s cubic-bezier(.2,.7,.2,1),box-shadow .8s}
-.sl-print img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;background:#ddd}
-.sl-print span{display:block;padding:12px 6px 16px;font-family:var(--hand);font-size:clamp(12px,1.25vw,15px);line-height:1.7;color:var(--ink)}
-.sl-print:hover,.sl-print:focus-visible{transform:rotate(0deg) translateY(-6px);box-shadow:0 2px 3px rgba(0,0,0,.18),0 34px 50px -18px rgba(10,24,32,.7)}
+/* Each piece is seen through an old weathered cottage window (a photographed frame, no
+   panes) with its name on a paper label beneath. */
+.sl-print{display:block;width:100%;padding:0;border:0;background:none;cursor:zoom-in;text-align:center;transform:rotate(var(--r,0deg));transition:transform .8s cubic-bezier(.2,.7,.2,1),filter .8s;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25)) drop-shadow(0 22px 26px rgba(10,24,32,.45))}
+.sl-print img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;background:#ddd;box-sizing:border-box;border:clamp(14px,1.7vw,24px) solid #e9e4d8;border-image:url('${WINDOW}') 136 stretch}
+.sl-print > span,.sl-label{display:block;width:84%;margin:10px auto 0;padding:10px 8px 12px;background:var(--paper);font-family:var(--hand);font-size:clamp(12px,1.25vw,15px);line-height:1.7;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.sl-label > span{display:block}
+.sl-print:hover,.sl-print:focus-visible{transform:rotate(0deg) translateY(-6px);filter:drop-shadow(0 2px 2px rgba(0,0,0,.25)) drop-shadow(0 32px 34px rgba(10,24,32,.55))}
 .sl-print:focus-visible{outline:3px solid var(--navy);outline-offset:4px}
 
 /* ── the card and the tide table ─────────────────────────── */
@@ -170,7 +174,7 @@ ${prints}
 .sl-section-h{display:flex;align-items:center;gap:clamp(16px,2vw,28px);margin:0 auto clamp(30px,4vw,48px);width:min(1180px,100%);font-family:var(--display);font-style:italic;font-weight:400;font-size:clamp(36px,4.6vw,60px);line-height:1;color:#f3efe6;text-shadow:0 2px 18px rgba(0,0,0,.35)}
 .sl-section-h::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(243,239,230,.7),rgba(243,239,230,0))}
 a.sl-print{text-decoration:none;cursor:pointer}
-.sl-price{display:block;padding:0 6px 16px;margin-top:-8px;font-weight:600;font-size:15px;letter-spacing:.06em;color:var(--rust)}
+.sl-price{display:block;padding:2px 0 0;margin-top:0;font-weight:600;font-size:15px;letter-spacing:.06em;color:var(--rust)}
 .sl-price--ask{font-style:italic;font-weight:500;letter-spacing:0;color:var(--ink-soft)}
 .sl-more{display:flex;justify-content:center;margin:clamp(40px,6vw,64px) 0 0}
 .sl-more a,.sl-btn{display:inline-block;padding:14px 26px;background:var(--navy);color:#f3efe6!important;font-weight:600;font-size:14px;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;box-shadow:0 10px 24px -10px rgba(10,24,32,.7);transition:background .3s}
@@ -181,7 +185,7 @@ a.sl-print{text-decoration:none;cursor:pointer}
 .sl-product{width:min(1100px,calc(100% - 32px));margin:0 auto;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(24px,4vw,48px);align-items:start}
 .sl-product-photos{display:grid;gap:14px}
 .sl-product-photos .sl-print{transform:none}
-.sl-product-photos .sl-print img{aspect-ratio:auto;max-height:76vh;object-fit:contain;background:#f1ece4}
+.sl-product-photos .sl-print img{aspect-ratio:auto;max-height:76vh;object-fit:contain;background:#f1ece4;border-width:clamp(18px,2vw,28px)}
 .sl-product-sheet{padding:clamp(24px,4vw,42px);background:var(--grain),linear-gradient(180deg,#fdf8ec,#f1e6cc);box-shadow:0 26px 44px -16px rgba(10,24,32,.55)}
 .sl-product-sheet h2{margin:0 0 8px;font-family:var(--display);font-weight:500;font-size:clamp(30px,3.6vw,44px);line-height:1.05;color:var(--navy)}
 .sl-product-price{margin:0 0 18px;font-weight:600;font-size:22px;color:var(--rust)}

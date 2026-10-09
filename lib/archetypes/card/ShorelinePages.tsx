@@ -76,8 +76,10 @@ function ProductPrint({ product, eager }: { product: ProductView; eager: boolean
           // eslint-disable-next-line @next/next/no-img-element
           <img src={photo.url} alt={photo.alt === '' ? product.name : photo.alt} loading={eager ? 'eager' : 'lazy'} />
         )}
-        <span>{product.name}</span>
-        <Price product={product} />
+        <span className="sl-label">
+          <span>{product.name}</span>
+          <Price product={product} />
+        </span>
       </a>
     </li>
   );
