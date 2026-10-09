@@ -127,6 +127,12 @@ Visitors land here first, from the samples page and anywhere else that links the
 
 A Learn button on every backend page of a demo copy opens a short explainer for that page: what it does, which plan includes it, and what a customer sees because of it. The storefront gets one too, so a visitor can learn what each part of Lena's site is for. All words live in one strings file, nothing written into the pages. Undecided: whether real makers get Learn later as help. It's built so they could, and switched on only for demo copies for now.
 
+### Piece four — Orders vs the market app (Alex, 2026-10-09)
+
+An online sale is paid at checkout, so it never needs marking paid. Anything that needs attention (a market hold waiting on Venmo, Cash App, Zelle or cash) belongs in the market app only. The Orders page shows paid orders with only the steps after payment: mark it shipped (a physical piece, or a digital item sent by hand, as Penny's are), or cancel. Orders made at a market show there too, labeled with the market's name, as a record only, and only once they're marked paid in the market app. Mark paid, mark handed over and the "New and paid" view all come off it; confirming a market payment and handing a piece over happen in the market app.
+
+Catch: card checkout isn't built yet, so today an online order arrives as a request and the maker collects payment by hand. Rose n' Cat uses Mark paid live for exactly that. So the change applies once card checkout exists; until then live sites keep Mark paid. The demo shows it the new way: its online orders arrive paid, since checkout is the one thing the demo doesn't run.
+
 ### Before it goes live
 
 Both open branches (`feat/site-facebook-link`, `feat/saltmarsh-showcase`) merge to main first, once Alex has looked. The demo is then linked from the samples page.
