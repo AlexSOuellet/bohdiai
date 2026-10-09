@@ -164,7 +164,7 @@ function Home({ site }: { site: ShorelineData }): ReactElement {
       <main id="main">
         {featured.length > 0 && (
           <section className="sl-water" aria-labelledby="sl-featured">
-            <h2 className="sl-section-h" id="sl-featured">
+            <h2 className="sl-water-h" id="sl-featured">
               {W.featured}
             </h2>
             <Prints products={featured} />
