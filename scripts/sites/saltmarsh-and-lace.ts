@@ -62,3 +62,11 @@ export const DATES = [
   { date: '2026-12-05', endDate: '2026-12-06', name: 'Christmas Fair at the Grange', town: 'Barrington' },
   { date: '2026-12-19', endDate: '', name: 'Last-Minute Gift Market', town: 'Tiverton' },
 ];
+
+/** Made-up customer words for the demo's Full stage (scripts/demo-reset.ts full). */
+export const TESTIMONIALS = [
+  { quote: 'I bought the lighthouse dish for my mother, who grew up in Jamestown. She cried. It sits on her windowsill now and she tells everyone about it.', name: 'Karen M.', detail: 'Barrington' },
+  { quote: 'Lena told me exactly how to care for the cutting board, and two years later it still looks brand new.', name: 'Diane R.', detail: 'Lemon blossom board' },
+  { quote: 'We give her ornaments as teacher gifts every Christmas. Every one is different, and the teachers fight over them.', name: 'Jess T.', detail: 'Warren' },
+  { quote: 'Found her at the Colt State Park fair. Came home with three oyster dishes and a bottle. Worth every penny.', name: 'Mike and Ann P.', detail: 'Bristol' },
+];

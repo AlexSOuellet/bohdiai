@@ -10,7 +10,8 @@ import Link from 'next/link';
 import type { ProductView } from '@/lib/archetypes/content';
 import { CARD_STRINGS as S } from './strings';
 import { CardContactForm } from './CardContactForm';
-import { AddToCartButton, CartLink, PromoCodeForm, RemoveFromCartButton, SyncCart } from '@/lib/storefront/CartControls';
+import { AddToCartButton, PromoCodeForm, RemoveFromCartButton, SyncCart } from '@/lib/storefront/CartControls';
+import { ShorelineCartLink } from './ShorelineCartLink';
 import type { CartView } from '@/lib/archetypes/content';
 import { ShorelineOrderForm } from './ShorelineOrderForm';
 import { PhotoViewerProvider, Snapshot } from './PhotoViewer';
@@ -64,7 +65,7 @@ function Bar({ name, current, cart = false }: { name: string; current: Shoreline
           ))}
           {cart && (
             <li>
-              <CartLink label={W.cart.nav} />
+              <ShorelineCartLink />
             </li>
           )}
         </ul>
