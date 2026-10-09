@@ -31,6 +31,7 @@ const site: ShorelineData = {
   marketDetails: true,
   allPhotos: true,
   cart: false,
+  testimonials: [],
 };
 
 afterEach(cleanup);
@@ -212,5 +213,32 @@ describe('the cart (Full)', () => {
     cleanup();
     render(<ShorelineCart site={full} cart={{ lines: [], subtotal: '$0', total: '$0', codes: false }} />);
     expect(screen.getByText(W.cart.empty)).toBeTruthy();
+  });
+});
+
+describe('testimonials (Full)', () => {
+  const words = Array.from({ length: 4 }, (_, i) => ({ id: `t${i}`, quote: `Lovely piece ${i}.`, name: `Maria ${i}`, detail: i === 0 ? 'Bristol' : '' }));
+
+  it('shows the first three on the home page with See more', () => {
+    page('home', { ...site, testimonials: words });
+    expect(screen.getByRole('heading', { name: W.kindWords })).toBeTruthy();
+    expect(screen.getByText('Lovely piece 2.')).toBeTruthy();
+    expect(screen.queryByText('Lovely piece 3.')).toBeNull();
+    expect(screen.getByRole('link', { name: W.seeMoreWords }).getAttribute('href')).toBe('/testimonials');
+    expect(within(document.querySelector('.sl-quotes') as HTMLElement).getByText('Bristol')).toBeTruthy();
+  });
+
+  it('leaves See more out when there are three or fewer, and the section out when there are none', () => {
+    page('home', { ...site, testimonials: words.slice(0, 2) });
+    expect(screen.queryByRole('link', { name: W.seeMoreWords })).toBeNull();
+    cleanup();
+    page('home');
+    expect(screen.queryByRole('heading', { name: W.kindWords })).toBeNull();
+  });
+
+  it('shows them all on their own page', () => {
+    page('testimonials', { ...site, testimonials: words });
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(W.kindWords);
+    expect(screen.getByText('Lovely piece 3.')).toBeTruthy();
   });
 });

@@ -207,6 +207,12 @@ a.sl-print{text-decoration:none;cursor:pointer}
 .sl-market-links a{font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--rust)!important}
 .sl-contact .sl-letter{margin-top:0}
 .sl-about .sl-card{width:min(760px,calc(100% - 32px));margin:0 auto}
+.sl-quotes{list-style:none;margin:0 auto;padding:0;width:min(1180px,100%);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:clamp(22px,3vw,40px)}
+.sl-quote{margin:0;padding:clamp(24px,3vw,34px);background:var(--grain),linear-gradient(180deg,#fdf8ec,#f1e6cc);box-shadow:0 18px 30px -14px rgba(0,0,0,.5);height:100%}
+.sl-quote p{margin:0 0 16px;font-family:var(--display);font-style:italic;font-size:clamp(19px,1.8vw,23px);line-height:1.45;color:var(--navy)}
+.sl-quote p::before{content:'“';display:block;font-size:3em;line-height:.6;color:var(--rust)}
+.sl-quote footer{font-weight:600;letter-spacing:.06em;color:var(--ink)}
+.sl-quote footer span{display:block;font-weight:500;font-style:italic;letter-spacing:0;color:var(--ink-soft)}
 .sl-btn--cart{margin-right:12px}
 .sl-btn--quiet{background:transparent;color:var(--navy)!important;box-shadow:inset 0 0 0 1.5px var(--navy)}
 .sl-btn--quiet:hover{background:var(--navy);color:#f3efe6!important}

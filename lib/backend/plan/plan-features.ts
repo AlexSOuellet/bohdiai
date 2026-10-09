@@ -16,6 +16,7 @@ const LITE: readonly FeatureKey[] = [...SHOWCASE, 'catalog', 'market_details', '
 const FULL: readonly FeatureKey[] = [
   ...LITE,
   'product_photos',
+  'testimonials',
   'cart',
   'promotions',
   'new_arrivals',
@@ -50,6 +51,7 @@ export const FEATURE_WORDS: Partial<Record<FeatureKey, string>> = {
   market_details: 'Market hours, addresses, booths and websites',
   market_shop: 'The point of sale at markets: the QR shop page, Getting paid and Today',
   product_photos: 'Extra photos on each product (the main photo stays)',
+  testimonials: 'Testimonials on your site',
   cart: 'The cart and online orders',
   promotions: 'Sales and discount codes',
   new_arrivals: 'New arrivals on your home page',

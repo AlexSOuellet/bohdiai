@@ -27,6 +27,7 @@ export const BACKEND_MODULES: BackendModule[] = [
   { feature: 'profile', section: 'Your site', items: [{ label: 'About you', href: '/manage/profile' }] },
   { feature: 'gallery', section: 'Your site', items: [{ label: 'Gallery', href: '/manage/gallery' }] },
   { feature: 'market_dates', section: 'Selling', items: [{ label: 'Markets', href: '/manage/markets' }] },
+  { feature: 'testimonials', section: 'Your site', items: [{ label: 'Testimonials', href: '/manage/testimonials' }] },
   { feature: 'qr_codes', section: 'Your site', items: [{ label: 'QR code', href: '/manage/qr' }] },
   { feature: 'plan', section: 'Site', items: [{ label: 'Your plan', href: '/manage/plan' }] },
 ];

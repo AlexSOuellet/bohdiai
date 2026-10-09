@@ -93,6 +93,8 @@ export const CARD_STRINGS = {
     nav: { label: 'Site pages', home: 'Home', shop: 'Shop', about: 'About', markets: 'Markets', contact: 'Contact' },
     pageTitles: { about: 'About', markets: 'Find me at', contact: 'Get in touch' },
     featured: 'From the shelf',
+    kindWords: 'Kind words',
+    seeMoreWords: 'See more',
     seeShop: 'See everything in the shop',
     readStory: 'Read the whole story',
     allMarkets: 'All market dates',

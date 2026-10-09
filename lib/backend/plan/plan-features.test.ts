@@ -62,6 +62,7 @@ describe('moving between plans', () => {
       'Market hours, addresses, booths and websites',
       'The point of sale at markets: the QR shop page, Getting paid and Today',
       'Extra photos on each product (the main photo stays)',
+      'Testimonials on your site',
       'The cart and online orders',
       'Sales and discount codes',
       'New arrivals on your home page',

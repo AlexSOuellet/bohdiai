@@ -2093,6 +2093,47 @@ export type Database = {
           },
         ]
       }
+      site_testimonials: {
+        Row: {
+          created_at: string
+          detail: string | null
+          id: string
+          name: string
+          position: number
+          quote: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          id?: string
+          name: string
+          position: number
+          quote: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          id?: string
+          name?: string
+          position?: number
+          quote?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_testimonials_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_drafts: {
         Row: {
           layout_tree: Json

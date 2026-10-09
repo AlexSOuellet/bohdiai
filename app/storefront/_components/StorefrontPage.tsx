@@ -129,7 +129,7 @@ const SLUG_TO_PAGE: Record<string, ArchetypePage> = {
 /** Routes that are built but deliberately switched OFF for now. The standalone
  *  testimonials page is disabled until the review system + enough real reviews exist
  *  to fill it — reviews live on the home sampling meanwhile. Re-enable by removing the
- *  entry. Guarded before the SLUG_TO_PAGE lookup so a direct visit 404s. */
+ *  entry, or name the page in a design's own `pages`. A direct visit 404s otherwise. */
 const DISABLED_ROUTES = new Set<string>(['/testimonials']);
 
 /** Resolve the tenant's home envelope + spec, or null when the tenant has no
@@ -284,8 +284,6 @@ export default async function StorefrontPage({
   const tenantId = headerStore.get('x-tenant-id');
   if (tenantId === null) notFound();
 
-  // A deliberately-disabled route (the standalone testimonials page for now) 404s.
-  if (DISABLED_ROUTES.has(slug)) notFound();
 
   // Sub-page routes (/shop, /events, ...) render off the SAME stored home
   // envelope, painted as a different page.
@@ -293,6 +291,13 @@ export default async function StorefrontPage({
   if (subPage !== undefined) {
     const env = await envelopeFor(tenantId, previewToken);
     if (env === null) notFound();
+    // A deliberately-disabled route (the standalone testimonials page) 404s unless the
+    // design names it among its own pages (the shoreline design's Full testimonials).
+    if (DISABLED_ROUTES.has(slug)) {
+      const key = env['archetypeKey'];
+      const named = typeof key === 'string' ? archetypeSpec(key)?.pages : undefined;
+      if (named === undefined || !named.includes(subPage)) notFound();
+    }
     return withPreviewChrome(
       await renderStore(
         env,

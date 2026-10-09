@@ -18,10 +18,11 @@ import { Frame, Footer, nameParts } from './ShorelineLanding';
 import { bioParagraphs, initials, marketDay, type CardData } from './data';
 import { featuredProducts, type ShorelineData } from './shoreline-data';
 import type { MarketDate } from '@/lib/backend/dates/dates-form';
+import type { Testimonial } from '@/lib/backend/testimonials/testimonial-form';
 
 const W = S.shoreline;
 
-export type ShorelinePage = 'home' | 'shop' | 'about' | 'events' | 'contact';
+export type ShorelinePage = 'home' | 'shop' | 'about' | 'events' | 'contact' | 'testimonials';
 
 const NAV: readonly { page: ShorelinePage; href: string; label: string }[] = [
   { page: 'home', href: '/', label: W.nav.home },
@@ -160,6 +161,26 @@ function TideTable({ dates }: { dates: readonly MarketDate[] }): ReactElement {
   );
 }
 
+function Quotes({ items }: { items: readonly Testimonial[] }): ReactElement {
+  return (
+    <ul className="sl-quotes">
+      {items.map((t) => (
+        <li key={t.id}>
+          <blockquote className="sl-quote">
+            <p>{t.quote}</p>
+            <footer>
+              {t.name}
+              {t.detail !== '' && <span>{t.detail}</span>}
+            </footer>
+          </blockquote>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+const HOME_QUOTES = 3;
+
 function Home({ site }: { site: ShorelineData }): ReactElement {
   const { card } = site;
   const p = card.profile;
@@ -191,6 +212,19 @@ function Home({ site }: { site: ShorelineData }): ReactElement {
             <div className="sl-more">
               <a href="/shop">{W.seeShop}</a>
             </div>
+          </section>
+        )}
+        {site.testimonials.length > 0 && (
+          <section className="sl-water sl-featured" aria-labelledby="sl-kind">
+            <h2 className="sl-section-h" id="sl-kind">
+              {W.kindWords}
+            </h2>
+            <Quotes items={site.testimonials.slice(0, HOME_QUOTES)} />
+            {site.testimonials.length > HOME_QUOTES && (
+              <div className="sl-more">
+                <a href="/testimonials">{W.seeMoreWords}</a>
+              </div>
+            )}
           </section>
         )}
         {(bio.length > 0 || p.headline !== '' || soon.length > 0) && (
@@ -355,6 +389,15 @@ function Contact({ site, tenantId }: { site: ShorelineData; tenantId: string }):
   );
 }
 
+function Testimonials({ site }: { site: ShorelineData }): ReactElement {
+  return (
+    <main id="main" className="sl-water sl-featured sl-featured--page">
+      <h1 className="sl-section-h">{W.kindWords}</h1>
+      <Quotes items={site.testimonials} />
+    </main>
+  );
+}
+
 /** A Lite or Full page of the shoreline site. */
 export function ShorelineSite({
   site,
@@ -375,6 +418,7 @@ export function ShorelineSite({
       {page === 'about' && <About site={site} />}
       {page === 'events' && <Markets site={site} />}
       {page === 'contact' && <Contact site={site} tenantId={tenantId} />}
+      {page === 'testimonials' && <Testimonials site={site} />}
       <Footer name={site.card.name} platformCredit={platformCredit} social={site.card.profile} />
     </Frame>
   );

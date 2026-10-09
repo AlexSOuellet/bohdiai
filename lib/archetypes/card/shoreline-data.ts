@@ -10,6 +10,8 @@ import type { ProductView } from '@/lib/archetypes/content';
 import { loadCatalog } from '@/lib/storefront/catalog';
 import { loadSiteFeatures } from '@/lib/backend/features';
 import { HOME_MAX } from '@/lib/catalog/home';
+import { listTestimonials } from '@/lib/backend/testimonials/queries';
+import type { Testimonial } from '@/lib/backend/testimonials/testimonial-form';
 import { loadCardData, type CardData } from './data';
 
 export type ShorelineData = {
@@ -24,6 +26,8 @@ export type ShorelineData = {
   allPhotos: boolean;
   /** The cart and order letter (Full). */
   cart: boolean;
+  /** What her customers say (Full); empty when the switch is off. */
+  testimonials: Testimonial[];
 };
 
 export async function loadShorelineData(
@@ -43,6 +47,7 @@ export async function loadShorelineData(
     marketDetails: features.has('market_details'),
     allPhotos: features.has('product_photos'),
     cart: features.has('cart'),
+    testimonials: features.has('testimonials') ? await listTestimonials(db, tenantId) : [],
   };
 }
 

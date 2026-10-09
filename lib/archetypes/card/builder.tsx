@@ -35,7 +35,7 @@ function designOf(raw: unknown): CardDesign {
 }
 
 /** The pages the shoreline design paints on Lite and Full; every other design is one page. */
-const SHORELINE_PAGES: readonly ArchetypePage[] = ['shop', 'about', 'events', 'contact'];
+const SHORELINE_PAGES: readonly ArchetypePage[] = ['shop', 'about', 'events', 'contact', 'testimonials'];
 
 function shorelinePage(page: ArchetypePage | undefined): ShorelinePage | null {
   if (page === undefined || page === 'home') return 'home';
@@ -53,6 +53,8 @@ async function CardSite({ tenantId, paint, design, page }: { tenantId: string; p
     }
     const which = shorelinePage(page);
     if (which === null) notFound();
+    // The testimonials page is Full's, and only when there is something on it.
+    if (which === 'testimonials' && site.testimonials.length === 0) notFound();
     return <ShorelineSite site={site} page={which} tenantId={tenantId} />;
   }
   if (!home) notFound();
