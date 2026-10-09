@@ -104,7 +104,7 @@ export function PlanSummary({
         </section>
       )}
 
-      {demo && <PlanButtons keepLabel={next !== null ? `Keep ${current.name}` : null} demo />}
+      {demo && <PlanButtons keepLabel={next !== null ? `Keep ${current.name}` : null} demo billing={terms?.billing ?? 'monthly'} />}
 
       {above.length > 0 && (
         <>

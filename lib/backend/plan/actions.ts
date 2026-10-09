@@ -20,7 +20,7 @@ import { isSitePlan } from './plan';
 import { loadPlanState, type PlanState } from './queries';
 import { moveOf } from './plan-features';
 import { applyPlan } from './apply';
-import { isBilling, nextRenewal, priceCents, quoteUpgrade, renewalCharge, todayDay } from './billing';
+import { addDays, addMonths, isBilling, nextRenewal, priceCents, quoteUpgrade, renewalCharge, todayDay } from './billing';
 
 export type ChangePlanResult = { ok: true } | { ok: false; error: string };
 
@@ -102,5 +102,18 @@ export async function skipToRenewal(): Promise<ChangePlanResult> {
   if (!(await writeTerms(tenantId, { plan_billing: state.billing, plan_renews_on: renewsOn, plan_next: null, plan_credit_cents: charge.creditLeftCents }))) {
     return { ok: false, error: FAILED };
   }
+  return done();
+}
+
+/** Demo only: put the site on monthly or yearly billing, partway through a paid
+ *  period (yearly: six months left; monthly: 20 days left), so proration and the
+ *  yearly credit can be shown on camera. Clears any credit and waiting move. */
+export async function setDemoBilling(billing: unknown): Promise<ChangePlanResult> {
+  if (!isBilling(billing)) return { ok: false, error: 'That isn’t a billing choice.' };
+  const ready = await demoSite();
+  if (!ready.ok) return ready;
+  const today = todayDay();
+  const renewsOn = billing === 'yearly' ? addMonths(today, 6) : addDays(today, 20);
+  if (!(await writeTerms(ready.tenantId, { plan_billing: billing, plan_renews_on: renewsOn, plan_next: null, plan_credit_cents: 0 }))) return { ok: false, error: FAILED };
   return done();
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { addMonths, isBilling, longDay, money, nextRenewal, periodLeft, priceCents, quoteUpgrade, renewalCharge, todayDay } from './billing';
+import { addDays, addMonths, isBilling, longDay, money, nextRenewal, periodLeft, priceCents, quoteUpgrade, renewalCharge, todayDay } from './billing';
 
 describe('billing dates', () => {
   it('moves by months and holds to the month’s last day', () => {
@@ -8,6 +8,8 @@ describe('billing dates', () => {
     expect(addMonths('2026-03-31', -1)).toBe('2026-02-28');
     expect(addMonths('2026-10-09', 12)).toBe('2027-10-09');
     expect(nextRenewal('2026-10-09', 'yearly')).toBe('2027-10-09');
+    expect(addDays('2026-10-09', 20)).toBe('2026-10-29');
+    expect(addDays('2026-12-25', 10)).toBe('2027-01-04');
   });
 
   it('knows how much of the period is left', () => {

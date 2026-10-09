@@ -236,3 +236,5 @@ button.bk-up-btn { border: 0; cursor: pointer; font: inherit; font-size: 0.9rem;
 .bk-co-due dt, .bk-co-due dd { font-family: var(--bk-display); font-size: 1.6rem; font-weight: 600; opacity: 1; }
 .bk-up[data-tier='full'] .bk-co-sum, .bk-up[data-tier='full'] .bk-co-due { border-color: oklch(0.928 0.022 67 / 20%); }
 .bk-now-credit { margin: 0.35rem 0 0; display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; background: oklch(0.5 0.08 130 / 15%); color: oklch(0.38 0.07 130); font-size: 0.75rem; font-weight: 600; }
+.bk-demo-billing { display: inline-flex; align-items: center; gap: 0.4rem; margin-left: auto; }
+.bk-demo-billing .bk-btn[aria-pressed='true'] { background: var(--bk-walnut-deep); color: var(--bk-paper); }

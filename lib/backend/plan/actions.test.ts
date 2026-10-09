@@ -32,7 +32,7 @@ vi.mock('./queries', () => ({ loadPlanState: () => Promise.resolve(state.plan) }
 vi.mock('./apply', () => ({ applyPlan }));
 vi.mock('./billing', async (orig) => ({ ...(await orig<typeof Billing>()), todayDay: () => '2026-10-09' }));
 
-const { upgradePlan, scheduleDowngrade, cancelScheduledChange, skipToRenewal } = await import('./actions');
+const { upgradePlan, scheduleDowngrade, cancelScheduledChange, skipToRenewal, setDemoBilling } = await import('./actions');
 
 beforeEach(() => {
   state.features = new Set(['plan', 'demo_checkout']);
@@ -135,5 +135,23 @@ describe('moving down', () => {
     state.features = new Set(['plan']);
     expect((await cancelScheduledChange()).ok).toBe(false);
     expect((await skipToRenewal()).ok).toBe(false);
+  });
+});
+
+describe('demo billing switch', () => {
+  it('puts the demo six months into a paid year, or 20 days from a monthly renewal', async () => {
+    expect(await setDemoBilling('yearly')).toEqual({ ok: true });
+    expect(await setDemoBilling('monthly')).toEqual({ ok: true });
+    expect(writes).toEqual([
+      { plan_billing: 'yearly', plan_renews_on: '2027-04-09', plan_next: null, plan_credit_cents: 0 },
+      { plan_billing: 'monthly', plan_renews_on: '2026-10-29', plan_next: null, plan_credit_cents: 0 },
+    ]);
+  });
+
+  it('refuses nonsense and real sites', async () => {
+    expect((await setDemoBilling('weekly')).ok).toBe(false);
+    state.features = new Set(['plan']);
+    expect((await setDemoBilling('yearly')).ok).toBe(false);
+    expect(writes).toEqual([]);
   });
 });

@@ -3,7 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import { planView } from '@/lib/backend/plan/plan';
 import { PLANS } from '@/lib/site/plans';
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }), unstable_rethrow: () => undefined }));
-vi.mock('@/lib/backend/plan/actions', () => ({ cancelScheduledChange: vi.fn(), skipToRenewal: vi.fn() }));
+vi.mock('@/lib/backend/plan/actions', () => ({ cancelScheduledChange: vi.fn(), skipToRenewal: vi.fn(), setDemoBilling: vi.fn() }));
 
 const { PlanSummary } = await import('./PlanSummary');
 import type { PlanMode } from './PlanSummary';
@@ -66,5 +66,26 @@ describe('Your plan', () => {
   it('says where she is after a change', () => {
     show('lite', DEMO, 'You’re now on Maker Lite.');
     expect(screen.getByText('You’re now on Maker Lite.').closest('[role="status"]')).not.toBeNull();
+  });
+
+  it('shows billing, renewal and credit, and on the demo the billing switch', () => {
+    render(<PlanSummary view={planView('lite')} mode={DEMO} terms={{ billing: 'monthly', renewsOn: '2026-11-09', next: null, creditCents: 1000 }} />);
+    expect(screen.getByText(/Billed monthly\. Renews November 9, 2026 for \$5, after credit\./)).toBeTruthy();
+    expect(screen.getByText('$10 credit on your account, used on your next bills first.')).toBeTruthy();
+    const group = screen.getByRole('group', { name: 'Billing (demo)' });
+    expect(within(group).getByRole('button', { name: 'Monthly' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: 'Skip to renewal (demo)' })).toBeTruthy();
+  });
+
+  it('shows a waiting move down with Keep, and hides the move-down links', () => {
+    render(<PlanSummary view={planView('full')} mode={DEMO} terms={{ billing: 'yearly', renewsOn: '2027-04-09', next: 'showcase', creditCents: 0 }} />);
+    expect(screen.getByRole('heading', { name: 'Changing to Maker Showcase on April 9, 2027' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Keep Maker Full' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: /Move down/ })).toBeNull();
+  });
+
+  it('shows no demo buttons on a real site', () => {
+    render(<PlanSummary view={planView('lite')} mode={EMAIL} terms={{ billing: 'monthly', renewsOn: '2026-11-09', next: null, creditCents: 0 }} />);
+    expect(screen.queryByRole('button', { name: /demo/ })).toBeNull();
   });
 });

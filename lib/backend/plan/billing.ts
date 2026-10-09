@@ -41,6 +41,13 @@ export function addMonths(day: string, months: number): string {
   return toDay(target);
 }
 
+/** `day` moved by whole days. */
+export function addDays(day: string, days: number): string {
+  const d = toDate(day);
+  d.setUTCDate(d.getUTCDate() + days);
+  return toDay(d);
+}
+
 export function periodMonths(billing: Billing): number {
   return billing === 'monthly' ? 1 : 12;
 }
