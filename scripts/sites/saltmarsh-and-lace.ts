@@ -76,10 +76,11 @@ export const TESTIMONIALS = [
  * pieces her gallery photos became (matched by name) get their prices and words,
  * and the rest are added with their own photos. Made up for the demo.
  */
-export const CATALOG: { photo: string; name: string; short: string; description: string; priceCents: number; onHome?: boolean; isNew?: boolean }[] = [
+export const CATALOG: { photo: string; extraPhotos?: string[]; name: string; short: string; description: string; priceCents: number; onHome?: boolean; isNew?: boolean }[] = [
   {
     photo: 'oyster1.jpg',
     name: 'Cabbage rose oyster dish',
+    extraPhotos: ['oyster1-detail.jpg'],
     short: 'A real Narragansett Bay oyster shell with faded cabbage roses and a hand-gilded rim',
     description:
       'Every shell comes from the raw bars along the Bristol waterfront, scrubbed and cured before the paper goes on. This one carries soft pink cabbage roses over a lace pattern, with the rim gilded by hand so no two edges match.\n\nSealed with six coats, so it holds rings, earrings or a tea bag without a mark. Wipe clean with a damp cloth.',
@@ -89,6 +90,7 @@ export const CATALOG: { photo: string; name: string; short: string; description:
   {
     photo: 'bottle1.jpg',
     name: 'The lady in amber',
+    extraPhotos: ['bottle1-detail.jpg'],
     short: 'Tall amber apothecary bottle with a Victorian portrait, lace and a brass key',
     description: 'An old amber apothecary bottle dressed with a Victorian portrait and French script paper, wrapped in jute and lace, with a little brass key on the twine.\n\nThe paper is sealed under a satin finish that won’t yellow. A shelf piece, not for liquids.',
     priceCents: 4400,
@@ -113,6 +115,7 @@ export const CATALOG: { photo: string; name: string; short: string; description:
   {
     photo: 'box1.jpg',
     name: 'Bay chart keepsake box',
+    extraPhotos: ['box1-detail.jpg'],
     short: 'Wooden box with an old Narragansett Bay chart and a compass rose',
     description: 'A small wooden keepsake box with an antique chart of Narragansett Bay on the lid, distressed edges and little brass hinges. Good for letters, shells, or a ring before the wedding.\n\nThe chart is sealed under a hard satin coat.',
     priceCents: 4200,
@@ -141,6 +144,7 @@ export const CATALOG: { photo: string; name: string; short: string; description:
   {
     photo: 'tray1.jpg',
     name: 'Midnight garden tray',
+    extraPhotos: ['tray1-detail.jpg'],
     short: 'Serving tray with dark Dutch florals and antique gold handles',
     description: 'A wooden serving tray with dark, moody Dutch still-life florals and handles painted antique gold. Big enough for coffee for two.\n\nThe top is sealed with a heat-resistant finish, so a hot mug won’t leave a ring.',
     priceCents: 7800,
@@ -220,3 +224,50 @@ export const CATALOG: { photo: string; name: string; short: string; description:
     priceCents: 3400,
   },
 ]
+
+/**
+ * Everything else the demo's Full stage fills in (scripts/demo-reset.ts full), all
+ * made up for the demo. Market days are counted from the day of the reset, so the
+ * demo never goes stale: negative is past, 0 is today, positive is coming up.
+ */
+export const FULL_DEMO = {
+  download: {
+    file: 'saltmarsh-sealing-guide.pdf',
+    name: 'The Saltmarsh sealing guide',
+    short: 'My printable guide to sealing decoupage so it holds up (PDF download)',
+    description: 'Everything I learned testing every sealer on our store shelf: preparing shells, glass and wood, thin coats, which finish for which piece, gold leaf, curing, and the care card I send home with every piece.\n\nA two-page PDF you can print. Sent to you after your order.',
+    priceCents: 1200,
+    photo: 'board1.jpg',
+  },
+  pay: { venmo: 'saltmarsh-lace', cashapp: 'saltmarshlace', zelle: 'lena@saltmarshandlace.example' },
+  sale: { name: 'Harvest sale', percentOff: 15, startedDaysAgo: 3, endsInDays: 11 },
+  code: { name: 'Newsletter thank-you', code: 'BAY10', percentOff: 10 },
+  collections: [
+    { name: 'Shells', pieces: ['Cabbage rose oyster dish', 'Lighthouse ring dish', 'Sea chart oyster trio', 'Blue toile scallop tray', 'Hydrangea quahog dish'] },
+    { name: 'Bottles and jars', pieces: ['The lady in amber', 'Fourth of July bottle', 'Garden apothecary trio', 'Lace and roses lantern', 'Seashell votive'] },
+    { name: 'Boards and trays', pieces: ['Lemon blossom board', 'Midnight garden tray', 'Hydrangea serving board', 'Shell study coasters'] },
+    { name: 'Christmas', pieces: ['Old Saint Nick', 'Carol star', 'Snowman and cardinal ornament'] },
+  ],
+  markets: [
+    // last year
+    { day: -352, name: 'Harvest Fair at Colt State Park', town: 'Bristol', hours: '10am – 4pm', address: 'Colt State Park, Hope Street, Bristol, RI', booth: '14', costs: [['Booth fee', 6000], ['Gas', 1200]], rating: 4, goBack: 'yes', review: 'Steady all day. Oyster dishes sold out by two.', sales: [['Cabbage rose oyster dish', 'cash'], ['Lighthouse ring dish', 'venmo'], ['Sea chart oyster trio', 'cashapp'], ['Carol star', 'cash'], ['Old Saint Nick', 'cash']] },
+    { day: -330, name: 'Holiday Makers Market', town: 'Warren', hours: '9am – 3pm', address: 'Warren Town Hall, Main Street, Warren, RI', booth: '6', costs: [['Booth fee', 8500], ['Table rental', 1500]], rating: 3, goBack: 'maybe', review: 'Quiet morning, busy after lunch. Indoor, good light.', sales: [['Old Saint Nick', 'cash'], ['Carol star', 'venmo'], ['Blue toile scallop tray', 'zelle']] },
+    { day: -310, name: 'Christmas Fair at the Grange', town: 'Barrington', hours: '10am – 5pm', address: 'Barrington Grange Hall, Barrington, RI', booth: '22', costs: [['Booth fee', 12000], ['Gas', 900]], rating: 5, goBack: 'yes', review: 'Best fair of the year. Bring twice the ornaments.', sales: [['Old Saint Nick', 'venmo'], ['Carol star', 'cash'], ['Lace and roses lantern', 'cashapp'], ['Midnight garden tray', 'venmo'], ['Bay chart keepsake box', 'cash'], ['Lemon blossom board', 'venmo']] },
+    // this year
+    { day: -120, name: 'Spring Craft Fair', town: 'Tiverton', hours: '10am – 3pm', address: 'Tiverton Four Corners, Tiverton, RI', booth: '3', costs: [['Booth fee', 5000], ['Gas', 1400]], rating: 2, goBack: 'no', review: 'Rained most of the day. Not worth the drive.', sales: [['Lighthouse ring dish', 'cash']] },
+    { day: -96, name: 'Fourth of July Arts Market', town: 'Bristol', hours: '9am – 6pm', address: 'Independence Park, Bristol, RI', booth: '41', costs: [['Booth fee', 9000], ['Tent weights', 2500]], rating: 5, goBack: 'yes', review: 'Biggest day of my year. Every flag bottle gone by noon.', sales: [['Fourth of July bottle', 'venmo'], ['Fourth of July bottle', 'cash'], ['Sea chart oyster trio', 'cashapp'], ['Cabbage rose oyster dish', 'venmo'], ['Blue toile scallop tray', 'cash'], ['Shell study coasters', 'venmo']] },
+    { day: -21, name: 'Harvest Fair at Colt State Park', town: 'Bristol', hours: '10am – 4pm', address: 'Colt State Park, Hope Street, Bristol, RI', booth: '14', costs: [['Booth fee', 6500], ['Gas', 1300]], rating: 4, goBack: 'yes', review: 'Up on last year. The quahog dishes were the talk of the row.', sales: [['Hydrangea quahog dish', 'venmo'], ['Lighthouse ring dish', 'cash'], ['Garden apothecary trio', 'cashapp'], ['Lemon blossom board', 'zelle']] },
+    // today, so Sell at the table and the market's own page work live
+    { day: 0, name: 'Saturday Market on the Common', town: 'Bristol', hours: '9am – 2pm', address: 'Bristol Town Common, Bristol, RI', booth: '9', costs: [['Booth fee', 4000]], bring: ['Peony trinket box', 'Seashell votive', 'Snowman and cardinal ornament', 'Hydrangea serving board', 'Carol star', 'Old Saint Nick', 'Shell study coasters', 'Blue toile scallop tray'], holds: [['Peony trinket box', 'venmo', 'Rachel'], ['Seashell votive', 'cash', 'Tom']] },
+    // coming up
+    { day: 21, name: 'Holiday Makers Market', town: 'Warren', hours: '9am – 3pm', address: 'Warren Town Hall, Main Street, Warren, RI', booth: '6', costs: [['Booth fee', 8500]], bring: ['Old Saint Nick', 'Carol star', 'Snowman and cardinal ornament', 'Lace and roses lantern'] },
+    { day: 45, name: 'Christmas Fair at the Grange', town: 'Barrington', hours: '10am – 5pm', address: 'Barrington Grange Hall, Barrington, RI', booth: '22', costs: [] },
+  ],
+  orders: [
+    { daysAgo: 0, name: 'Karen Mello', email: 'karen.mello@example.com', phone: '(401) 555-0142', status: 'pending', note: 'Is the quahog dish big enough for a ring and earrings? Pickup in Bristol is fine.', pieces: ['Hydrangea quahog dish', 'Peony trinket box'] },
+    { daysAgo: 1, name: 'Jess Tavares', email: 'jess.t@example.com', phone: '', status: 'pending', note: 'Teacher gifts! Could you wrap them separately?', pieces: ['Carol star', 'Old Saint Nick', 'Snowman and cardinal ornament'] },
+    { daysAgo: 4, name: 'Diane Rocha', email: 'drocha@example.com', phone: '(401) 555-0177', status: 'paid', note: '', pieces: ['Midnight garden tray'], code: true },
+    { daysAgo: 9, name: 'Mike Pereira', email: 'mpereira@example.com', phone: '', status: 'fulfilled', note: 'Shipping to my daughter in Boston.', pieces: ['Sea chart oyster trio', 'The Saltmarsh sealing guide'] },
+    { daysAgo: 15, name: 'Ann Souza', email: 'ann.souza@example.com', phone: '', status: 'canceled', note: 'Found one at the fair instead, sorry!', pieces: ['Lemon blossom board'] },
+  ],
+} as const;
