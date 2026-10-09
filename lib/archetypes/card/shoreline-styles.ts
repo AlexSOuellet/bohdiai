@@ -58,7 +58,7 @@ export function shorelineCss(): string {
 .sl-name{margin:0;font-family:var(--display);font-weight:500;font-size:clamp(46px,10vw,132px);line-height:.95;letter-spacing:-.01em;color:var(--navy);text-shadow:0 0 30px rgba(245,240,240,.55);animation:sl-rise 1.8s cubic-bezier(.2,.7,.2,1) .2s both}
 .sl-name em{font-style:italic;font-weight:400;color:var(--rust)}
 .sl-kicker{margin:clamp(14px,2vw,22px) 0 0;max-width:34ch;font-style:italic;font-size:clamp(19px,2.4vw,26px);line-height:1.35;color:var(--ink);font-weight:600;text-shadow:0 0 6px rgba(245,240,240,.95),0 0 18px rgba(245,240,240,.85);animation:sl-rise 1.8s cubic-bezier(.2,.7,.2,1) .6s both}
-.sl-makes{display:flex;flex-wrap:wrap;gap:4px 0;margin:clamp(20px,3vw,30px) 0 0;padding:0;list-style:none;font-family:var(--body);font-weight:600;font-size:clamp(13px,1.5vw,15px);letter-spacing:.22em;text-transform:uppercase;color:var(--navy);font-weight:700;text-shadow:0 0 6px rgba(245,240,240,.95),0 0 18px rgba(245,240,240,.85);animation:sl-rise 1.8s cubic-bezier(.2,.7,.2,1) .9s both}
+.sl-makes{display:inline-flex;align-self:flex-start;flex-wrap:wrap;gap:4px 0;margin:clamp(20px,3vw,30px) 0 0;padding:10px 18px;background:rgba(250,246,240,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);list-style:none;font-family:var(--body);font-weight:600;font-size:clamp(13px,1.5vw,15px);letter-spacing:.22em;text-transform:uppercase;color:var(--navy);font-weight:700;text-shadow:0 0 6px rgba(245,240,240,.95),0 0 18px rgba(245,240,240,.85);animation:sl-rise 1.8s cubic-bezier(.2,.7,.2,1) .9s both}
 .sl-makes li+li::before{content:'';display:inline-block;width:22px;height:1px;margin:0 14px;vertical-align:middle;background:currentColor;opacity:.5}
 
 /* ── prints floating over the water ───────────────────────── */
