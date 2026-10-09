@@ -111,6 +111,8 @@ export const CARD_STRINGS = {
     label: 'Site links',
     privacy: 'Privacy',
     terms: 'Terms',
+    /** The owner's way into her backend (/admin sends her to sign in). */
+    ownerLogin: 'Owner login',
     creditPrefix: 'Empowered by',
     creditBrand: 'BohdiAI',
   },

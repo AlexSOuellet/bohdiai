@@ -55,6 +55,9 @@ export function Footer({ name, platformCredit, social = NO_SOCIAL }: { name: str
       </span>
       <a href="/privacy">{S.footer.privacy}</a>
       <a href="/terms">{S.footer.terms}</a>
+      <a href="/admin" rel="nofollow">
+        {S.footer.ownerLogin}
+      </a>
       {platformCredit && (
         <a href={PLATFORM_URL}>
           {S.footer.creditPrefix} {S.footer.creditBrand}

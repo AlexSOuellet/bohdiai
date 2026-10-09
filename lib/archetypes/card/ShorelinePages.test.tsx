@@ -142,4 +142,9 @@ describe('the footer', () => {
     const { container } = page('home', { ...site, card: { ...site.card, profile: { ...site.card.profile, facebookUrl: '', instagramUrl: '' } } });
     expect(container.querySelector('.sl-social')).toBeNull();
   });
+
+  it('has a quiet Owner login that goes to sign-in', () => {
+    page('home');
+    expect(within(screen.getByRole('contentinfo')).getByRole('link', { name: S.footer.ownerLogin }).getAttribute('href')).toBe('/admin');
+  });
 });
