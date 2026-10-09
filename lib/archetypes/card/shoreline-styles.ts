@@ -159,6 +159,7 @@ ${prints}
 .sl-head{padding:clamp(40px,8vh,90px) clamp(16px,6vw,90px) clamp(22px,4vh,40px)}
 .sl-head h1{margin:0;font-family:var(--display);font-weight:500;font-size:clamp(40px,7vw,84px);line-height:1;color:var(--navy);text-shadow:0 0 30px rgba(245,240,240,.55);animation:sl-rise 1.4s cubic-bezier(.2,.7,.2,1) .1s both}
 .sl-back{display:inline-block;margin-bottom:14px;font-weight:600;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--navy)!important;text-decoration:none;text-shadow:0 0 8px rgba(245,240,240,.9)}
+.sl-section-h{display:table;margin:0 0 30px max(0px,calc((100% - 1180px) / 2));padding:12px 26px 14px;font-family:var(--hand);font-style:normal;font-weight:400;font-size:clamp(20px,2.4vw,28px);line-height:1.5;color:var(--navy);background:var(--paper);transform:rotate(-1.6deg);box-shadow:0 2px 3px rgba(0,0,0,.18),0 18px 30px -14px rgba(10,24,32,.6)}
 a.sl-print{text-decoration:none;cursor:pointer}
 .sl-price{display:block;padding:0 6px 16px;margin-top:-8px;font-weight:600;font-size:15px;letter-spacing:.06em;color:var(--rust)}
 .sl-price--ask{font-style:italic;font-weight:500;letter-spacing:0;color:var(--ink-soft)}
