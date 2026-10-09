@@ -131,7 +131,7 @@ A Learn button on every backend page of a demo copy opens a short explainer for 
 
 An online sale is paid at checkout, so it never needs marking paid. Anything that needs attention (a market hold waiting on Venmo, Cash App, Zelle or cash) belongs in the market app only. The Orders page shows paid orders with only the steps after payment: mark it shipped (a physical piece, or a digital item sent by hand, as Penny's are), or cancel. Orders made at a market show there too, labeled with the market's name, as a record only, and only once they're marked paid in the market app. Mark paid, mark handed over and the "New and paid" view all come off it; confirming a market payment and handing a piece over happen in the market app.
 
-Catch: card checkout isn't built yet, so today an online order arrives as a request and the maker collects payment by hand. Rose n' Cat uses Mark paid live for exactly that. So the change applies once card checkout exists; until then live sites keep Mark paid. The demo shows it the new way: its online orders arrive paid, since checkout is the one thing the demo doesn't run.
+No live site takes orders yet (Rose n' Cat is not live), so this applies everywhere, not just the demo.
 
 ### Before it goes live
 
