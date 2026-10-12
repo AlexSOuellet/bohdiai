@@ -29,19 +29,28 @@ A guided, app-like experience on bohdiai.com for **makers** (contractors not inc
 - Multi-path analysis, non-BohdiAI recommendations allowed.
 - Comprehensive is the goal — Alex wants depth, and all the question areas below are in.
 
-## Built — second pass, AI-driven (2026-10-11, branch `feat/maker-checkup`, not merged)
+## Built — current state (2026-10-12, branch `feat/maker-checkup`, pushed, NOT merged)
 
-- Lives at `/checkup` (working name "maker checkup"). Full screen, no site header, Alex's handwriting (Caveat) for asides and notes, answers as kraft hang tags on the ember background.
-- First pass was a fixed question list with skip rules. Alex: hourly rate would make hobby sellers quit, questions came out of nowhere, nothing felt like it came from his answers. Thrown out.
-- Now: two fixed opening questions ("What do you make?" typed; the goal, tapped). After that the model (Claude Opus 5.5, low effort) writes every question: a short reaction to the last answer, the question, tap choices or a text box, optional "Something else". It stops when it knows enough (hard cap 28). Write-up: same model, medium effort.
-- The instructions it follows: `lib/checkup/prompt.ts` — goals and what each may/may not be asked (no hourly unless real business), the list of things it may need to learn, how to ask (grow from the last answer, only ask what gets used, too many choices → text), Alex's lines close to verbatim, his offers and when they fit.
-- Server: `/api/checkup/next`, `/api/checkup/writeup`; own rate limit `CHECKUP_LIMITER` (30/min per visitor). Nothing stored on our side; the visitor's browser holds the conversation.
-- Newsletter: `/api/newsletter` → beehiiv, needs `BEEHIIV_API_KEY` + `BEEHIIV_PUBLICATION_ID`.
-- Not built yet: Etsy shop lookup, anonymous answer data, video links.
+How it got here: pass 1 was a fixed list with skip rules (felt like a survey; hourly rate scared hobby sellers). Pass 2 had the AI write every question (Opus, then Sonnet, then Haiku) — Haiku kept breaking rules (assumed a Facebook page, mixed two questions, contradictory choices), Sonnet cost ~9-11¢/run. Pass 3 (now) fixes both.
+
+- **Lives at `/checkup`.** Full screen, no site header. Alex's handwriting (Caveat) for asides. Answers are kraft hang tags on the ember background. Mostly taps; "What do you make?" is typed; every tap question has a "Something else, or anything to add" line.
+- **Opening:** "What do you make?" (typed) and the goal (3 choices: pay for itself / real money to test / real business). The hobby-only choice was removed (Alex: who takes a make-money checkup if they don't want to).
+- **Question bank** (`lib/checkup/bank.ts`, reviewed copy in `Checkup-Question-Bank.md`): ~50 fixed questions, word for word. Code decides which are allowed (`when`) and which are must-cover; **Claude Haiku 5.5 only picks the next id and writes a one-line reaction**. Can't finish while a must-cover is unanswered. Hard cap 24. `How often do you do a market?` is must-cover for market sellers (decides market site vs showcase).
+- **Write-up** (Haiku 5.5): summary, two first steps (must be doable in order — set up a place before a card/sign points to it), advice grouped "Do more with what you have / When you're ready to grow / How to think about it". The advice never names Alex's products; it names the need.
+- **Pricing read is decided in code** (`lib/checkup/pricing.ts`): thin / thin + priced low out of nerves / room (mixed) / fine / unknown. "Some shoppers hesitate" is NOT evidence. The AI only explains the read.
+- **How I can help** (end section): a paragraph + small product cards (sample image, name, AI's few sentences, "Learn more" → `/makers`). **Which offers and their order are decided in code** (`lib/checkup/offers.ts`): markets often → Market site then Showcase; markets now and then → Showcase then Market; nowhere to send people and no markets → Showcase; regular seller who ships and wants online → Full shop first; already has a site/page → none. No prices on the cards.
+- **Card images:** `public/checkup/offer-*.webp`, built by `scripts/checkup-offer-shots.mjs` (needs local dev + Saltmarsh preview token) then `scripts/checkup-offer-compose.mjs`. The Market image uses the Saltmarsh market page from branch `feat/saltmarsh-market-page`.
+- **Instructions** (`lib/checkup/prompt.ts`): picker prompt + write-up prompt. No sample wording (models copy it). Alex's analogies are ideas to retell, never quotes.
+- **Cost:** ~1¢ per full run (logged per call as `checkup cost`). `scripts/checkup-sim.ts <case> [model] [effort]` replays a saved maker (`scripts/checkup-cases/`) with a stand-in model playing the maker.
+- **Server:** `/api/checkup/next`, `/api/checkup/writeup`; rate limit `CHECKUP_LIMITER` (30/min per visitor, new binding in wrangler.jsonc). Nothing stored on our side.
+- **Newsletter:** `/api/newsletter` → beehiiv. Needs `BEEHIIV_API_KEY` + `BEEHIIV_PUBLICATION_ID` (Alex hasn't sent them). Signup copy says the write-up's ideas go deeper in the tips.
+- **Tests:** checkup + bank + offers + pricing + routes + components all pass on the branch.
+
+**Still open on the checkup:** beehiiv keys; more test runs against Alex's own answers (write-up quality); "Learn more" goes to `/makers` (no per-product pages yet); welcome/goal wording to match Alex's ad line ("curious, serious or somewhere in between"); not on bohdiai.com navigation; Etsy shop lookup, anonymous answer data, video links not built; Worker needs `BOHDIAI_ANTHROPIC_KEY` (already set) and the new rate-limit binding deploys with it.
 
 ## Open — decide when we get there
 
-- ~~How the analysis is written~~ **DECIDED 2026-10-11: AI is part of this, and always was** (Alex: "There is no way you can build for every answer"). The first pass's pre-written rules were Claude defaulting without asking.
+- ~~How the analysis is written~~ **DECIDED 2026-10-11: AI is part of this, and always was** (Alex: "There is no way you can build for every answer"). Now: fixed question bank + Haiku picking, AI write-up, code-decided offers and pricing.
 - Question order (goal first vs. situation first).
 - The shared follow-up set under "How do your buyers find you?" (Alex, 2026-10-11: same questions for all channels).
 - Exact URL, name, visual direction.
