@@ -10,11 +10,13 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-10-12, Session 101.
+**Last updated:** 2026-10-12, Session 101 (end).
 
 ---
 
 ## Current state
+
+**Session 101 — Saltmarsh public; demo always today; Market POS live (phone screen, home-screen app, button per market).** Recap: `session-logs/session-101.md`. **Tomorrow (Alex): sales tax**, then market discounts + Publish on the setup page. Open asks: morning sales in the demo start, discount per market or per piece, Handed over step.
 
 **Session 100 — maker checkup built (branch), Maker Market + Full $25 LIVE, Saltmarsh merged (still a draft).** Checkup at bohdiai.com/checkup on `feat/maker-checkup` (question bank + Haiku, code-decided offers and pricing, How I can help product cards); Saltmarsh shoreline market page on `feat/saltmarsh-market-page`. Recap + decisions: `session-logs/session-100.md`. **Start next session with the OPEN PIECES list below and prioritize with Alex.**
 
@@ -32,7 +34,7 @@
 **Priorities set with Alex, Session 101 (2026-10-12). Makers come first.**
 
 1. **Saltmarsh demo** (top). `feat/saltmarsh-market-page` pushed, not merged; the buy steps only show on a market day (ask before moving a demo market's date). Then the public demo (personal copies, welcome page, Learn).
-1b. **Market app (Session 101, live):** Market POS (`/manage/markets/[id]/day`, phone screen, no menu; button on every coming-up market) replaces Today + Sell (old screens still exist; retire once Alex is happy). Next: on the setup page, **market discounts** set by the seller (no codes for buyers) and a **Publish** step; then **sales tax**: seller's home rate, each market its own rate via a state picker (editable for local add-ons), each seller picks tax included or on top, every sale records its tax and state, market results show tax collected per state. Open: does a buyer's order need a "Handed over" step after Paid?
+1b. **Market app (Session 101, live):** Market POS (`/manage/markets/[id]/day` + `/manage/pos` home-screen app, 7-day sign-in) replaces Today + Sell (old screens still exist; retire once Alex is happy). **Next: sales tax (Alex: tomorrow)**, then on the setup page **market discounts** set by the seller (no codes for buyers) and a **Publish** step; then **sales tax**: seller's home rate, each market its own rate via a state picker (editable for local add-ons), each seller picks tax included or on top, every sale records its tax and state, market results show tax collected per state. Open: does a buyer's order need a "Handed over" step after Paid?
 2. **Staging** (moved up): own test domain, own Supabase, root domain as a setting. Detail: backend overview spec, "Staging".
 3. **Alex's dashboard (admin)**: look at any client site as that client; site statistics; see each demo run and each checkup taken; send invites (if we go that way) and reset passwords; messages stored in the dashboard; add FAQs and other content. Client sites then need a "contact support" link. Not designed yet.
 4. **Square card payments on BOTH Maker Market and Maker Full.** Alex is getting the Square developer account. Shopper pays on their phone; maker charges at the table with their own reader via the Square app.
@@ -87,6 +89,7 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 101 (2026-10-12): **Priorities reset; Saltmarsh public; demo always today; Market POS + home-screen app live; no codes at markets.** Full recap: `session-logs/session-101.md`.
 - Session 100 (2026-10-10 → 10-12): **Maker checkup built (branch); Maker Market + Full $25 live; Saltmarsh merged as draft; shoreline market page (branch).** Full recap: `session-logs/session-100.md`.
 - Sessions 86–99 (2026-09-23 → 10-09): **Cut-Pro LIVE, Cloudflare move, bohdiai.com rebuilt, backend + Catalog (86–90); tiers + pricing pages (91–92); Rustic Rhody, contractor designs, Joe public (93–95); Rose n' Cat + Market POS, not live (96–97); ember logo (98); Saltmarsh demo (99).** See `session-logs/session-86.md` – `session-99.md`.
 - Sessions 0-85: Phase 0 through the Make It Yours walk (archetypes, families, sections, editor). See individual logs.
