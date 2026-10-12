@@ -16,7 +16,7 @@
 
 ## Current state
 
-**Session 101 — Saltmarsh public; demo always today; Market POS live (phone screen, home-screen app, button per market).** Recap: `session-logs/session-101.md`. **Tomorrow (Alex): sales tax**, then market discounts + Publish on the setup page. Open asks: morning sales in the demo start, discount per market or per piece, Handed over step.
+**Session 101 — Saltmarsh public; demo always today; Market POS live (phone screen, home-screen app, button per market).** Recap: `session-logs/session-101.md`. **Tomorrow (Alex): sales tax**, then market discounts + Publish on the setup page. Open asks: does the demo POS start empty (Alex: the two waiting buyers were confusing), discount per market or per piece. Paid is enough (no Handed over step).
 
 **Session 100 — maker checkup built (branch), Maker Market + Full $25 LIVE, Saltmarsh merged (still a draft).** Checkup at bohdiai.com/checkup on `feat/maker-checkup` (question bank + Haiku, code-decided offers and pricing, How I can help product cards); Saltmarsh shoreline market page on `feat/saltmarsh-market-page`. Recap + decisions: `session-logs/session-100.md`. **Start next session with the OPEN PIECES list below and prioritize with Alex.**
 
