@@ -129,6 +129,10 @@ Visitors land here first, from the samples page and anywhere else that links the
 
 **Every payment is simulated (Alex, 2026-10-12):** on the demo, every way money changes hands plays out as if it went through, with nothing real charged or sent. Each one is marked "Demo: no card is charged" (or "no money is sent"). That covers: the online cart (a card form shaped like the coming Square form, test card prefilled, Pay makes a paid order that shows in Orders); the market page on the day (card by phone, and Venmo / Cash App / Zelle / cash, each finishing as paid in the market app under that market); the maker's Sell at the table (QR and the "charge on your own reader" step through the Square app both finish as a paid sale); downloads (delivered as if bought); and plan upgrades and downgrades (already simulated by the demo checkout). The visitor can always flip to the backend and see the same sale there. Real sites never get the simulated paths (behind the demo switch).
 
+**Both sides on one phone (Alex, 2026-10-12):** a buyer can't scan their own screen, so the demo has a **Buyer / Seller switch** at the top on phones: Buyer is the market page (pick, pay), Seller is the Market POS with that same order waiting; Paid there, switch back, and the buyer sees the thank-you. On a computer the two phones show **side by side** so the order visibly moves across. Demo only.
+
+**The POS starts empty (Alex, 2026-10-12):** no buyers waiting and nothing sold at today's market when a demo starts (two pre-made holds read as "where did those come from"). The visitor makes the first sale; the Learn explainer on the POS tells them to try buying.
+
 ### Piece three — Learn
 
 A Learn button on every backend page of a demo copy opens a short explainer for that page: what it does, which plan includes it, and what a customer sees because of it. The storefront gets one too, so a visitor can learn what each part of Lena's site is for. All words live in one strings file, nothing written into the pages. Undecided: whether real makers get Learn later as help. It's built so they could, and switched on only for demo copies for now.
