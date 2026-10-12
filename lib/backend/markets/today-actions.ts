@@ -2,7 +2,8 @@
 
 /**
  * Today at the table — the owner records a sale herself (a buyer who just hands
- * her cash). Confirm / Not received use the Orders screen's setOrderStatus.
+ * her cash), and confirms or turns away a buyer's hold. Needs only the market
+ * shop, so it works on Maker Market too (no online orders there).
  */
 import { revalidatePath } from 'next/cache';
 import { requireActingSite } from '@/lib/backend/current-site';
@@ -59,4 +60,21 @@ export async function recordMarketSales(eventId: string, listingIds: readonly st
     recorded.push(id);
   }
   return { ok: true, count: recorded.length };
+}
+
+/** A buyer's hold at the table: Paid (the money arrived) or Not received (back on
+ *  the shelf). */
+export async function settleMarketOrder(eventId: string, orderId: string, outcome: 'paid' | 'canceled'): Promise<DoneResult> {
+  const { site } = await requireActingSite();
+  if (!(await getSiteFeatures(site.tenantId)).has('market_shop')) return { ok: false, error: 'The market shop isn’t switched on for this site.' };
+  if (outcome !== 'paid' && outcome !== 'canceled') return { ok: false, error: 'That isn’t a step an order can take.' };
+  const db = await createSupabaseServerClient();
+  const { error } = await db.rpc('set_order_status', { p_tenant_id: site.tenantId, p_order_id: orderId, p_status: outcome });
+  if (error !== null) {
+    logger.error('market: settle hold failed', { tenantId: site.tenantId, orderId, outcome, error: error.message });
+    return { ok: false, error: 'That order couldn’t be updated. Try again in a moment.' };
+  }
+  revalidatePath(`/manage/markets/${eventId}/day`);
+  revalidatePath(`/manage/markets/${eventId}/today`);
+  return { ok: true };
 }

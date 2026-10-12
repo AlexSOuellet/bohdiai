@@ -1,9 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import type { NavSection } from '@/lib/backend/modules';
 import type { ShopSummary } from '@/lib/auth/membership';
+
+/** Screens that fill the phone with no backend menu (the market day at the table). */
+export const BARE_PATH = /^\/manage\/markets\/[^/]+\/day$/;
 
 export function Shell(props: {
   siteName: string;
@@ -23,6 +27,7 @@ export function Shell(props: {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
+  if (BARE_PATH.test(usePathname())) return <>{props.children}</>;
   return (
     <div className="bk-frame">
       <aside id="bk-side" className="bk-side" data-open={open}>

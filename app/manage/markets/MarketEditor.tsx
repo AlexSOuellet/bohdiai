@@ -264,7 +264,7 @@ export function MarketEditor({
             {shop.todayHref !== null && (
               <p className="bk-row">
                 <Link className="bk-btn" href={shop.todayHref as Route}>
-                  Open Today: sales at the table
+                  Open market day
                 </Link>
               </p>
             )}

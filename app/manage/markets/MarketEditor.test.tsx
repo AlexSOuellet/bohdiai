@@ -108,8 +108,8 @@ describe('MarketEditor — your table', () => {
   });
 
   it('opens Today and shows the code for a saved market', () => {
-    render(<MarketEditor details records initial={existing({ listingIds: ['l1'] })} shop={{ ...shop, marketUrl: 'https://rose-n-cat.bohdiai.com/market/m1', todayHref: '/manage/markets/m1/today' }} />);
-    expect(screen.getByRole('link', { name: 'Open Today: sales at the table' }).getAttribute('href')).toBe('/manage/markets/m1/today');
+    render(<MarketEditor details records initial={existing({ listingIds: ['l1'] })} shop={{ ...shop, marketUrl: 'https://rose-n-cat.bohdiai.com/market/m1', todayHref: '/manage/markets/m1/day' }} />);
+    expect(screen.getByRole('link', { name: 'Open market day' }).getAttribute('href')).toBe('/manage/markets/m1/day');
     expect(screen.getByText('https://rose-n-cat.bohdiai.com/market/m1')).toBeTruthy();
     fireEvent.click(screen.getByLabelText(/Theo/));
     expect(screen.getByText('What you’re bringing (0)')).toBeTruthy();

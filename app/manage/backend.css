@@ -266,3 +266,52 @@ button.bk-up-btn { border: 0; cursor: pointer; font: inherit; font-size: 0.9rem;
 .bk-testi blockquote footer { font-size: 0.85rem; color: var(--bk-ink-muted); }
 .bk-testi-edit > .bk-section { flex: 1; margin: 0; }
 .bk-results tr[data-loss='true'] td strong { color: var(--bk-danger); }
+
+/* The market day (/manage/markets/[id]/day): one phone screen at the table, no
+   backend menu. Buyers waiting to pay are ticket slips with a perforated top; the
+   till is docked at the bottom in walnut with a brass key. Big targets for a phone
+   held in one hand outdoors. */
+.bk-day { --bk-day-gutter: 16px; max-width: 36rem; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+.bk-day-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; padding: 1.25rem var(--bk-day-gutter) 0.75rem; }
+.bk-day-name { margin: 0; font-family: var(--bk-display); font-size: clamp(1.7rem, 7vw, 2.2rem); font-weight: 600; line-height: 1.05; }
+.bk-day-where { margin: 0.35rem 0 0; display: flex; flex-wrap: wrap; gap: 0 0.9rem; color: var(--bk-ink-muted); font-size: 0.95rem; }
+.bk-day-exit { flex-shrink: 0; min-height: 44px; display: inline-flex; align-items: center; padding: 0 0.9rem; border: 1px solid var(--bk-ink-15); background: transparent; color: var(--bk-ink); font: inherit; font-size: 0.9rem; text-decoration: none; cursor: pointer; }
+.bk-day-exit:focus-visible, .bk-day-paid:focus-visible, .bk-day-not:focus-visible, .bk-day-ring:focus-visible { outline: 3px solid var(--bk-brass); outline-offset: 2px; }
+.bk-day-main { flex: 1; padding: 0 var(--bk-day-gutter) 2rem; display: grid; gap: 1.75rem; align-content: start; }
+.bk-day-closed { margin: 0; padding: 0.75rem 0.9rem; border-left: 4px solid var(--bk-brass); background: var(--bk-paper-2); }
+.bk-day-h { margin: 0 0 0.75rem; display: flex; align-items: baseline; gap: 0.6rem; font-size: 1.05rem; font-weight: 600; }
+.bk-day-count { font-family: var(--bk-display); font-size: 1.5rem; font-weight: 600; color: var(--bk-oxblood); }
+.bk-day-empty { margin: 0; color: var(--bk-ink-muted); }
+
+.bk-day-slips { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.1rem; }
+.bk-day-slip { position: relative; padding: 1.15rem 1rem 1rem; background: oklch(0.985 0.008 80); box-shadow: 0 1px 0 var(--bk-ink-15); }
+.bk-day-slip::before { content: ''; position: absolute; left: 0; right: 0; top: -6px; height: 12px; background: radial-gradient(circle at 6px 6px, var(--bk-paper) 4.5px, transparent 5px) 0 0 / 12px 12px repeat-x; }
+.bk-day-slip[data-says-paid='true'] { box-shadow: inset 5px 0 0 var(--bk-brass), 0 1px 0 var(--bk-ink-15); }
+.bk-day-slip-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.bk-day-buyer { font-size: 1.3rem; font-weight: 600; }
+.bk-day-amount { font-family: var(--bk-display); font-size: 1.9rem; font-weight: 600; line-height: 1; }
+.bk-day-piece { margin: 0.2rem 0 0; font-size: 1.05rem; }
+.bk-day-meta { margin: 0.5rem 0 0; display: flex; flex-wrap: wrap; gap: 0.15rem 0.9rem; font-size: 0.9rem; color: var(--bk-ink-muted); }
+.bk-day-slip[data-says-paid='true'] .bk-day-status { color: var(--bk-ink); font-weight: 600; }
+.bk-day-acts { margin-top: 0.9rem; display: grid; grid-template-columns: 2fr 1fr; gap: 0.6rem; }
+.bk-day-paid, .bk-day-not { min-height: 52px; font: inherit; font-size: 1.05rem; cursor: pointer; }
+.bk-day-paid { border: 0; background: var(--bk-oxblood); color: var(--bk-paper-2); font-weight: 600; }
+.bk-day-not { border: 1px solid var(--bk-ink-15); background: transparent; color: var(--bk-ink); font-size: 0.95rem; }
+.bk-day-paid:disabled, .bk-day-not:disabled, .bk-day-ring:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.bk-day-sold { list-style: none; margin: 0; padding: 0; }
+.bk-day-sold li { display: grid; grid-template-columns: 1fr auto; gap: 0 1rem; padding: 0.65rem 0; border-bottom: 1px solid var(--bk-ink-15); }
+.bk-day-sold-piece { font-weight: 600; }
+.bk-day-sold-amt { font-family: var(--bk-display); font-size: 1.25rem; font-weight: 600; }
+.bk-day-sold-who { grid-column: 1 / -1; font-size: 0.85rem; color: var(--bk-ink-muted); }
+
+.bk-day-till { position: sticky; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.9rem var(--bk-day-gutter) calc(0.9rem + env(safe-area-inset-bottom)); background: var(--bk-walnut-deep); color: var(--bk-paper); }
+.bk-day-take { margin: 0; display: grid; line-height: 1.15; }
+.bk-day-take span { font-size: 0.85rem; color: var(--bk-paper-muted); }
+.bk-day-take strong { font-family: var(--bk-display); font-size: 2rem; font-weight: 600; color: var(--bk-brass); }
+.bk-day-take .bk-day-take-by { font-size: 0.8rem; }
+.bk-day-ring { min-height: 56px; padding: 0 1.4rem; border: 0; background: var(--bk-brass); color: var(--bk-walnut-deep); font: inherit; font-size: 1.1rem; font-weight: 600; cursor: pointer; }
+
+.bk-day-sheet { position: fixed; inset: 0; z-index: 50; overflow-y: auto; background: var(--bk-paper); padding: 1.25rem var(--bk-day-gutter) 2rem; }
+.bk-day-sheet-top { max-width: 36rem; margin: 0 auto 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.bk-day-sheet .bk-sell { max-width: 36rem; margin: 0 auto; }
