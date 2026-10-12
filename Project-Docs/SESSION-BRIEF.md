@@ -32,6 +32,7 @@
 **Priorities set with Alex, Session 101 (2026-10-12). Makers come first.**
 
 1. **Saltmarsh demo** (top). `feat/saltmarsh-market-page` pushed, not merged; the buy steps only show on a market day (ask before moving a demo market's date). Then the public demo (personal copies, welcome page, Learn).
+1b. **Market app (Session 101, live):** Market POS (`/manage/markets/[id]/day`, phone screen, no menu; button on every coming-up market) replaces Today + Sell (old screens still exist; retire once Alex is happy). Next: on the setup page, **market discounts** set by the seller (no codes for buyers) and a **Publish** step; then **sales tax**: seller's home rate, each market its own rate via a state picker (editable for local add-ons), each seller picks tax included or on top, every sale records its tax and state, market results show tax collected per state. Open: does a buyer's order need a "Handed over" step after Paid?
 2. **Staging** (moved up): own test domain, own Supabase, root domain as a setting. Detail: backend overview spec, "Staging".
 3. **Alex's dashboard (admin)**: look at any client site as that client; site statistics; see each demo run and each checkup taken; send invites (if we go that way) and reset passwords; messages stored in the dashboard; add FAQs and other content. Client sites then need a "contact support" link. Not designed yet.
 4. **Square card payments on BOTH Maker Market and Maker Full.** Alex is getting the Square developer account. Shopper pays on their phone; maker charges at the table with their own reader via the Square app.
