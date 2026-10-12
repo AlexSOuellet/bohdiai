@@ -619,15 +619,16 @@ export function ShorelineCart({ site, cart, platformCredit = true }: { site: Sho
 }
 
 /** A market's own page (Market POS): the buyer scans the code at her table and buys
- *  one of the pieces she brought. Before the market it shows what's coming; after,
- *  or if it was canceled, it points to the shop. */
+ *  one of the pieces she brought. No menu and no footer: nothing leads away while
+ *  they're buying (Alex, 2026-10-12). One "Visit the shop" link shows only when
+ *  there's nothing to buy (before, after, canceled) or once they're done. */
 export function ShorelineMarket({
   site,
   market,
-  platformCredit = true,
 }: {
   site: ShorelineData;
   market: MarketShopView;
+  /** Accepted like every page, but unused: the market page has no footer. */
   platformCredit?: boolean;
 }): ReactElement {
   const M = W.market;
@@ -646,7 +647,11 @@ export function ShorelineMarket({
   const where = M.where(market.town, market.booth);
   return (
     <Frame>
-      <Bar name={site.card.name} current="events" cart={site.cart} />
+      <header className="sl-bar">
+        <span className="sl-bar-name">
+          <Name name={site.card.name} />
+        </span>
+      </header>
       <SaleBanner sale={site.sale} />
       <PageHead title={market.name} />
       <main id="main" className="sl-mk">
@@ -671,6 +676,11 @@ export function ShorelineMarket({
           <>
             <p className="sl-mk-lede">{M.before}</p>
             {market.pieces.length > 0 ? <Prints products={market.pieces} /> : <p className="sl-empty">{M.none}</p>}
+            <p className="sl-empty">
+              <a className="sl-btn" href="/shop">
+                {M.toShop}
+              </a>
+            </p>
           </>
         )}
         {(market.state === 'after' || market.state === 'canceled') && (
@@ -682,7 +692,6 @@ export function ShorelineMarket({
           </div>
         )}
       </main>
-      <Footer name={site.card.name} platformCredit={platformCredit} social={site.card.profile} />
     </Frame>
   );
 }

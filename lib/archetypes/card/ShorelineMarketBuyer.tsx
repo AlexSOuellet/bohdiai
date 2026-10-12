@@ -18,5 +18,5 @@ export function ShorelineMarketBuyer(props: {
   methods: PayMethod[];
   codes: boolean;
 }): ReactElement {
-  return <MarketBuyer {...props} strings={S.shoreline.market} prefix="sl" />;
+  return <MarketBuyer {...props} strings={S.shoreline.market} prefix="sl" shop={{ href: '/shop', label: S.shoreline.market.toShop }} />;
 }

@@ -306,12 +306,23 @@ describe('a market’s own page (Market POS)', () => {
     ...over,
   });
 
-  it('names the market, its day and where, under the site’s own menu', () => {
-    render(<ShorelineMarket site={site} market={market()} />);
+  it('names the market, its day and where, with no menu, footer or link while buying', () => {
+    const { container } = render(<ShorelineMarket site={site} market={market()} />);
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Holiday Makers Market');
     expect(screen.getByText(/Bristol · Table 12/)).toBeTruthy();
-    const nav = screen.getByRole('navigation', { name: W.nav.label });
-    expect(within(nav).getByRole('link', { name: W.nav.markets }).getAttribute('aria-current')).toBe('page');
+    expect(screen.queryByRole('navigation')).toBeNull();
+    expect(container.querySelector('footer')).toBeNull();
+    expect(container.querySelectorAll('a')).toHaveLength(0);
+  });
+
+  it('offers one way to the shop when there is nothing to buy', () => {
+    for (const state of ['before', 'after', 'canceled'] as const) {
+      const { container, unmount } = render(<ShorelineMarket site={site} market={market({ state })} />);
+      expect(screen.getByRole('link', { name: W.market.toShop }).getAttribute('href')).toBe('/shop');
+      expect(screen.queryByRole('navigation')).toBeNull();
+      expect(container.querySelector('footer')).toBeNull();
+      unmount();
+    }
   });
 
   it('lets a buyer pick a piece on market day, with a sold piece shown but not pickable', () => {

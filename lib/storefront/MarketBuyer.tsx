@@ -105,6 +105,7 @@ export function MarketBuyer({
   codes,
   strings: S,
   prefix: p,
+  shop,
 }: {
   marketId: string;
   pieces: ProductView[];
@@ -112,6 +113,8 @@ export function MarketBuyer({
   codes: boolean;
   strings: MarketBuyerStrings;
   prefix: 'nn' | 'sl';
+  /** One way back to the site, shown only once the buyer is done (no links while buying). */
+  shop?: { href: string; label: string };
 }): ReactElement {
   const [step, setStep] = useState<Step>({ kind: 'pick' });
   const [busy, setBusy] = useState(false);
@@ -166,6 +169,11 @@ export function MarketBuyer({
         <p className={c('mk-big')}>{S.doneTitle(step.name)}</p>
         <p>{S.done(step.held.piece)}</p>
         <p className={c('mk-small')}>{S.order(step.held.orderNumber)}</p>
+        {shop !== undefined && (
+          <a className={c('btn')} href={shop.href}>
+            {shop.label}
+          </a>
+        )}
       </div>
     );
   }
