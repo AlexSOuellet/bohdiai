@@ -3,6 +3,7 @@
 // Runtime types generated with workerd@1.20260926.1 2026-09-01 global_fetch_strictly_public,nodejs_compat
 interface __BaseEnv_CloudflareEnv {
 	FORM_LIMITER: RateLimit;
+	CHECKUP_LIMITER: RateLimit;
 	IMAGES: ImagesBinding;
 	ASSETS: Fetcher;
 	BOHDIAI_ANTHROPIC_KEY: string;

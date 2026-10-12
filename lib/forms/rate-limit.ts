@@ -1,7 +1,17 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { logger } from '@/lib/logger';
 
-export type FormName = 'estimate' | 'order' | 'market' | 'market-step' | 'contact' | 'inquiry' | 'notify-interest' | 'signin' | 'reset';
+export type FormName =
+  | 'estimate'
+  | 'order'
+  | 'market'
+  | 'market-step'
+  | 'contact'
+  | 'inquiry'
+  | 'notify-interest'
+  | 'newsletter'
+  | 'signin'
+  | 'reset';
 
 export type FormAllowance = 'allowed' | 'limited' | 'unavailable';
 
