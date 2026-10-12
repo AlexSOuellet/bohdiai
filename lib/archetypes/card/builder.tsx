@@ -15,10 +15,10 @@ import { BulletinLanding, BulletinContentPage } from './BulletinLanding';
 import { ShowreelLanding, ShowreelContentPage } from './ShowreelLanding';
 import { TorchLanding, TorchContentPage } from './TorchLanding';
 import { ShorelineLanding, ShorelineContentPage } from './ShorelineLanding';
-import { ShorelineCart, ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
+import { ShorelineCart, ShorelineMarket, ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
 import { loadShorelineData } from './shoreline-data';
 import type { ArchetypePage } from '../builder';
-import type { CartView, ProductView } from '../content';
+import type { CartView, ProductView, MarketShopView } from '../content';
 import { CardContentSchema, cardDesign, type CardContent, type CardDesign } from './design';
 import { loadCardData } from './data';
 import { cardPaint, type CardPaint } from './paint';
@@ -72,6 +72,14 @@ async function CardCart({ tenantId, design, cart }: { tenantId: string; design: 
   const site = await loadShorelineData(supabaseAdmin(), tenantId);
   if (!site.cart) notFound();
   return <ShorelineCart site={site} cart={cart} />;
+}
+
+/** A market's own page — only the shoreline design on Lite and Full has one. */
+async function CardMarket({ tenantId, design, market }: { tenantId: string; design: CardDesign; market: MarketShopView }): Promise<ReactElement> {
+  if (design !== 'shoreline') notFound();
+  const site = await loadShorelineData(supabaseAdmin(), tenantId);
+  if (!site.pages) notFound();
+  return <ShorelineMarket site={site} market={market} />;
 }
 
 /** A product's page — only the shoreline design on Lite and Full has them. */
@@ -139,6 +147,10 @@ export const CARD_SPEC: ArchetypeBuildSpec<CardContent> = {
     const design = designOf(content);
     if (tenantId === undefined) notFound();
     return <CardProduct tenantId={tenantId} design={design} product={product} />;
+  },
+  renderMarket: ({ content, market, tenantId }) => {
+    const design = designOf(content);
+    return <CardMarket tenantId={tenantId} design={design} market={market} />;
   },
   renderContentPage: ({ content, lookKey, mood, brandPalette, tenantId, html, title, body }) => {
     const design = designOf(content);

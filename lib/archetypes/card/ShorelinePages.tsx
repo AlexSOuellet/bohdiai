@@ -12,7 +12,8 @@ import { CARD_STRINGS as S } from './strings';
 import { CardContactForm } from './CardContactForm';
 import { AddToCartButton, PromoCodeForm, RemoveFromCartButton, SyncCart } from '@/lib/storefront/CartControls';
 import { ShorelineCartLink } from './ShorelineCartLink';
-import type { CartView } from '@/lib/archetypes/content';
+import type { CartView, MarketShopView } from '@/lib/archetypes/content';
+import { MarketBuyer } from '@/lib/storefront/MarketBuyer';
 import { ShorelineOrderForm } from './ShorelineOrderForm';
 import { PhotoViewerProvider, Snapshot } from './PhotoViewer';
 import { Frame, Footer, nameParts } from './ShorelineLanding';
@@ -609,6 +610,77 @@ export function ShorelineCart({ site, cart, platformCredit = true }: { site: Sho
                 <ShorelineOrderForm listingIds={ready.map((l) => l.id)} code={cart.code?.applied === true ? cart.code.value : null} />
               )}
             </section>
+          </div>
+        )}
+      </main>
+      <Footer name={site.card.name} platformCredit={platformCredit} social={site.card.profile} />
+    </Frame>
+  );
+}
+
+/** A market's own page (Market POS): the buyer scans the code at her table and buys
+ *  one of the pieces she brought. Before the market it shows what's coming; after,
+ *  or if it was canceled, it points to the shop. */
+export function ShorelineMarket({
+  site,
+  market,
+  platformCredit = true,
+}: {
+  site: ShorelineData;
+  market: MarketShopView;
+  platformCredit?: boolean;
+}): ReactElement {
+  const M = W.market;
+  const day = marketDay({
+    id: market.marketId,
+    date: market.date,
+    endDate: market.endDate,
+    name: market.name,
+    town: market.town,
+    hours: '',
+    address: '',
+    booth: market.booth,
+    url: '',
+    canceled: market.state === 'canceled',
+  });
+  const where = M.where(market.town, market.booth);
+  return (
+    <Frame>
+      <Bar name={site.card.name} current="events" cart={site.cart} />
+      <SaleBanner sale={site.sale} />
+      <PageHead title={market.name} />
+      <main id="main" className="sl-mk">
+        <p className="sl-mk-when">
+          {day}
+          {where !== '' && ` · ${where}`}
+        </p>
+        {market.state === 'open' &&
+          (market.methods.length === 0 ? (
+            <p className="sl-empty">{M.noPay}</p>
+          ) : (
+            <div className="sl-mk-buy">
+              <MarketBuyer
+                marketId={market.marketId}
+                pieces={market.pieces}
+                methods={market.methods}
+                codes={market.codes}
+                strings={M}
+                prefix="sl"
+              />
+            </div>
+          ))}
+        {market.state === 'before' && (
+          <>
+            <p className="sl-mk-lede">{M.before}</p>
+            {market.pieces.length > 0 ? <Prints products={market.pieces} /> : <p className="sl-empty">{M.none}</p>}
+          </>
+        )}
+        {(market.state === 'after' || market.state === 'canceled') && (
+          <div className="sl-empty">
+            <p>{market.state === 'after' ? M.after : M.canceled}</p>
+            <a className="sl-btn" href="/shop">
+              {M.toShop}
+            </a>
           </div>
         )}
       </main>
