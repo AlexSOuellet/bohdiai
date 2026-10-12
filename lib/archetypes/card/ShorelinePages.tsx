@@ -668,7 +668,6 @@ export function ShorelineMarket({
                 marketId={market.marketId}
                 pieces={market.pieces}
                 methods={market.methods}
-                codes={market.codes}
               />
             </div>
           ))}

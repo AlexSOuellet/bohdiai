@@ -30,7 +30,7 @@ describe('ShorelineMarketBuyer', () => {
   // The server page hands over only plain data; the words (some are functions)
   // are read here on the client. Passing them from the server crashed the page.
   it('takes only plain data and shows the shoreline words', () => {
-    render(<ShorelineMarketBuyer marketId="00000000-0000-4000-8000-0000000000e1" pieces={[piece]} methods={['venmo', 'cash']} codes={false} />);
+    render(<ShorelineMarketBuyer marketId="00000000-0000-4000-8000-0000000000e1" pieces={[piece]} methods={['venmo', 'cash']} />);
     expect(screen.getByText(S.shoreline.market.pick)).toBeTruthy();
     expect(screen.getByRole('button', { name: /Lighthouse ring dish/ })).toBeTruthy();
   });
@@ -38,7 +38,7 @@ describe('ShorelineMarketBuyer', () => {
   it('has no links while buying, and one way to the shop once done', async () => {
     fetchMock.mockReturnValueOnce(reply(200, { ok: true, orderId: 'o1', orderNumber: '1004', piece: piece.name, amount: '$28', discount: null, pay: { method: 'cash' } }));
     fetchMock.mockReturnValueOnce(reply(200, { ok: true }));
-    const { container } = render(<ShorelineMarketBuyer marketId="00000000-0000-4000-8000-0000000000e1" pieces={[piece]} methods={['cash']} codes={false} />);
+    const { container } = render(<ShorelineMarketBuyer marketId="00000000-0000-4000-8000-0000000000e1" pieces={[piece]} methods={['cash']} />);
     expect(container.querySelectorAll('a')).toHaveLength(0);
     fireEvent.click(screen.getByRole('button', { name: /Lighthouse ring dish/ }));
     fireEvent.change(screen.getByLabelText(S.shoreline.market.yourName), { target: { value: 'Pat' } });

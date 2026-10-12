@@ -32,7 +32,6 @@ const market = (over: Partial<MarketShopView> = {}): MarketShopView => ({
   state: 'open',
   pieces: [baby('Theo'), baby('Rosie', { status: 'sold_out' })],
   methods: ['venmo', 'cash'],
-  codes: true,
   ...over,
 });
 
@@ -66,7 +65,7 @@ describe('market page', () => {
 });
 
 describe('buying at the table', () => {
-  const props = { marketId: '00000000-0000-4000-8000-0000000000e1', pieces: [baby('Theo'), baby('Rosie', { status: 'sold_out' })], methods: ['venmo', 'zelle', 'cash'] as const, codes: true };
+  const props = { marketId: '00000000-0000-4000-8000-0000000000e1', pieces: [baby('Theo'), baby('Rosie', { status: 'sold_out' })], methods: ['venmo', 'zelle', 'cash'] as const };
 
   it('picks a baby, holds it, pays with Venmo and says so', async () => {
     fetchMock.mockReturnValueOnce(
@@ -77,11 +76,11 @@ describe('buying at the table', () => {
     expect((screen.getByRole('button', { name: /Rosie/ }) as HTMLButtonElement).disabled).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: /Theo/ }));
     fireEvent.change(screen.getByLabelText(S.market.yourName), { target: { value: 'Pat' } });
-    fireEvent.change(screen.getByLabelText(S.market.code), { target: { value: 'market10' } });
     fireEvent.click(screen.getByRole('button', { name: S.market.continue }));
     await waitFor(() => expect(screen.getByText(S.market.payTitle('Theo'))).toBeTruthy());
     const sent = JSON.parse(String((fetchMock.mock.calls[0]?.[1] as RequestInit).body)) as Record<string, string>;
-    expect(sent).toMatchObject({ listingId: props.pieces[0]?.id, name: 'Pat', method: 'venmo', code: 'market10' });
+    expect(sent).toMatchObject({ listingId: props.pieces[0]?.id, name: 'Pat', method: 'venmo' });
+    expect(sent).not.toHaveProperty('code');
     expect(screen.getByText('$108')).toBeTruthy();
     expect(screen.getByText(S.market.discount('MARKET10', '$12'))).toBeTruthy();
     expect(screen.getByRole('link', { name: S.market.open('Venmo') }).getAttribute('href')).toBe('https://venmo.com/renee?txn=pay');
@@ -106,9 +105,9 @@ describe('buying at the table', () => {
 
   it('says why a hold failed and stays put', async () => {
     fetchMock.mockReturnValueOnce(reply(409, { error: 'Sorry, that one was just taken. Pick another.' }));
-    render(<NurseryMarketBuyer {...props} methods={['cash']} codes={false} />);
+    render(<NurseryMarketBuyer {...props} methods={['cash']} />);
     fireEvent.click(screen.getByRole('button', { name: /Theo/ }));
-    expect(screen.queryByLabelText(S.market.code)).toBeNull();
+    expect(screen.queryByLabelText(/code/i)).toBeNull();
     fireEvent.change(screen.getByLabelText(S.market.yourName), { target: { value: 'Pat' } });
     fireEvent.click(screen.getByRole('button', { name: S.market.continue }));
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('Sorry, that one was just taken. Pick another.'));

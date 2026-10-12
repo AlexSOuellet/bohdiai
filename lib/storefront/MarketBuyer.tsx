@@ -21,7 +21,6 @@ export interface MarketBuyerStrings {
   readonly yourName: string;
   readonly yourEmail: string;
   readonly payWith: string;
-  readonly code: string;
   readonly continue: string;
   readonly holding: string;
   readonly payTitle: (piece: string) => string;
@@ -102,7 +101,6 @@ export function MarketBuyer({
   marketId,
   pieces,
   methods,
-  codes,
   strings: S,
   prefix: p,
   shop,
@@ -110,7 +108,6 @@ export function MarketBuyer({
   marketId: string;
   pieces: ProductView[];
   methods: PayMethod[];
-  codes: boolean;
   strings: MarketBuyerStrings;
   prefix: 'nn' | 'sl';
   /** One way back to the site, shown only once the buyer is done (no links while buying). */
@@ -137,7 +134,6 @@ export function MarketBuyer({
         name,
         email: String(data.get('email') ?? ''),
         method: String(data.get('method') ?? ''),
-        code: String(data.get('code') ?? ''),
       },
       S,
     );
@@ -274,12 +270,6 @@ export function MarketBuyer({
               ))}
             </div>
           </fieldset>
-          {codes && (
-            <label>
-              {S.code}
-              <input name="code" maxLength={40} autoCapitalize="characters" autoComplete="off" />
-            </label>
-          )}
           {alert}
           <button className={c('btn')} type="submit" disabled={busy}>
             {busy ? S.holding : S.continue}

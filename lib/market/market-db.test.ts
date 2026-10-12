@@ -96,7 +96,7 @@ describe('loadMarketShop', () => {
     state.promos = [{ id: 's', kind: 'sale', name: 'Fall', code: null, percentOff: 25, amountOffCents: null, startsOn: null, endsOn: null, maxUses: null, uses: 0, active: true }];
     state.queue = [{ data: event, error: null }, { data: [{ listing_id: 'l1', position: 0 }], error: null }, { data: null, error: null }];
     const view = await loadMarketShop(db(), 't1', 'e1');
-    expect(view).toMatchObject({ marketId: 'e1', name: 'Holly Fair', state: 'open', booth: 'B4', methods: ['cash'], codes: false });
+    expect(view).toMatchObject({ marketId: 'e1', name: 'Holly Fair', state: 'open', booth: 'B4', methods: ['cash'] });
     expect(view?.pieces[0]?.salePrice).toBe('$90');
   });
   it('is null without the market shop or the market, and throws a failed read', async () => {

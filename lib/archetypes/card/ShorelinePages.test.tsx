@@ -302,7 +302,6 @@ describe('a market’s own page (Market POS)', () => {
     state: 'open',
     pieces: [{ ...product('the-lady-in-amber'), id: 'l1' }, { ...product('lemon-blossom-board'), id: 'l2', status: 'sold_out' }],
     methods: ['venmo', 'cash'],
-    codes: false,
     ...over,
   });
 

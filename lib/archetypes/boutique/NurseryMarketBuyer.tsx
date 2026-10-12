@@ -15,7 +15,6 @@ export function NurseryMarketBuyer(props: {
   marketId: string;
   pieces: ProductView[];
   methods: PayMethod[];
-  codes: boolean;
 }): ReactElement {
   return <MarketBuyer {...props} strings={{ ...S.market, gone: S.card.adopted }} prefix="nn" />;
 }

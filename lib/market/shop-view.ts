@@ -39,6 +39,5 @@ export async function loadMarketShop(db: SupabaseClient<Database>, tenantId: str
     state: marketState(market, promo.today),
     pieces,
     methods: methodsOn(pay),
-    codes: promo.promos.some((p) => p.kind === 'code'),
   };
 }

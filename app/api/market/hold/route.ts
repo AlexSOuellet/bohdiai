@@ -5,7 +5,7 @@ import { formLimitResponse } from '@/lib/forms/rate-limit';
 import { loadSiteFeatures } from '@/lib/backend/features';
 import { loadProductsByIds, formatPrice } from '@/lib/storefront/catalog';
 import { isCartable } from '@/lib/storefront/order-request';
-import { bestDiscount, checkCode, runningSale } from '@/lib/storefront/promotions';
+import { bestDiscount, runningSale } from '@/lib/storefront/promotions';
 import { loadShopPromotions } from '@/lib/storefront/promotions-load';
 import { holdSchema, payNote, payStep } from '@/lib/market/buyer';
 import { loadPaySettings, marketListingIds } from '@/lib/market/queries';
@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * A buyer at a market puts a piece on hold and gets the payment step: the amount
- * (sale or code taken off) and how to pay her. The piece leaves the shelf at once.
+ * (her running sale taken off) and how to pay her. The piece leaves the shelf at once.
  * The shop comes from the host (x-tenant-id), never from the body.
  */
 export async function POST(req: Request) {
@@ -58,14 +58,9 @@ async function handle(req: Request) {
   const [piece] = await loadProductsByIds(db, tenantId, [input.listingId]);
   if (piece === undefined || !isCartable(piece)) return refuse('Sorry, that one was just taken. Pick another.');
 
+  // No discount codes at a market (Alex, 2026-10-12): only the shop's running sale applies.
   const promo = await loadShopPromotions(db, tenantId);
-  let codePromo = null;
-  if (input.code !== '') {
-    const checked = checkCode(promo.promos, input.code, promo.today);
-    if (!checked.ok) return refuse(checked.error);
-    codePromo = checked.promo;
-  }
-  const discount = bestDiscount([piece.priceCents], runningSale(promo.promos, promo.today), codePromo);
+  const discount = bestDiscount([piece.priceCents], runningSale(promo.promos, promo.today), null);
 
   const { data, error } = await db.rpc('market_hold', {
     p_tenant_id: tenantId,
@@ -83,7 +78,7 @@ async function handle(req: Request) {
     if (error.code === 'P0040') return refuse('This market isn’t taking orders right now.');
     if (error.code === 'P0021') return refuse('Sorry, that one was just taken. Pick another.');
     if (error.code === 'P0041') return refuse('That way to pay isn’t available. Pick another.');
-    if (error.code === 'P0022') return refuse('That code just ended or was used up.');
+    if (error.code === 'P0022') return refuse('That sale just ended. Please try again.');
     throw new Error(`market_hold failed: ${error.message}`);
   }
   const held = Array.isArray(data) ? data[0] : null;
