@@ -43,7 +43,7 @@
 10. **Later:** contractor Lead Generation backend (makers first); bohdiai.com sample dates are past July dates; Classic Loafs shot catches the hero mid-fade.
 
 **Not ours to push:** Rose n' Cat and Joe come to Alex when they're ready. Cut-Pro follow-ups are on Cut-Pro.
-**Closed:** Penny's site never moves into BohdiAI. "Alex Scott" dropped everywhere (live). Facebook link in the bohdiai.com footer (live). Photo-hero and business-card branches dropped (delete them: Alex OK pending).
+**Closed:** Penny's site never moves into BohdiAI. "Alex Scott" dropped everywhere (live). Facebook link in the bohdiai.com footer (live). Photo-hero and business-card branches deleted. Saltmarsh & Lace is LIVE (public, 2026-10-12).
 
 ---
 
