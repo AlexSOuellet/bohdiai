@@ -15,6 +15,16 @@ export const IDLE_SECONDS = 8 * 60 * 60;
 export const MAX_SECONDS = 7 * 24 * 60 * 60;
 export const ACTIVITY_COOKIE = 'bk_seen';
 
+/** The Market POS (its starting point and each market's day screen) is used on the
+ *  maker's own phone at the table, opened from a home-screen icon, so it only ends
+ *  at the 7-day limit (Alex, 2026-10-12). Every other backend page keeps 8 hours. */
+export const POS_PATH = /^\/manage\/(?:pos|markets\/[^/]+\/day)$/;
+
+/** How long a request to this path may sit idle before the session ends. */
+export function idleLimitFor(pathname: string): number {
+  return POS_PATH.test(pathname) ? MAX_SECONDS : IDLE_SECONDS;
+}
+
 export type SessionVerdict = 'ok' | 'idle' | 'max';
 type Ended = Exclude<SessionVerdict, 'ok'>;
 
@@ -69,11 +79,11 @@ export async function readActivity(value: string, sessionId: string, secret: str
 }
 
 /** Whether a session may continue. Activity outside [sign-in, now] doesn't count. */
-export function sessionVerdict(input: { signedInAt: number; lastSeen: number; now: number }): SessionVerdict {
-  const { signedInAt: start, now } = input;
+export function sessionVerdict(input: { signedInAt: number; lastSeen: number; now: number; idleSeconds?: number }): SessionVerdict {
+  const { signedInAt: start, now, idleSeconds = IDLE_SECONDS } = input;
   if (now - start > MAX_SECONDS) return 'max';
   const lastSeen = input.lastSeen >= start && input.lastSeen <= now ? input.lastSeen : start;
-  return now - lastSeen > IDLE_SECONDS ? 'idle' : 'ok';
+  return now - lastSeen > idleSeconds ? 'idle' : 'ok';
 }
 
 /**
@@ -86,15 +96,17 @@ export async function checkBackendSession(input: {
   cookie: string | undefined;
   now: number;
   secret: string | undefined;
+  /** Idle limit for this request (idleLimitFor); 8 hours unless given. */
+  idleSeconds?: number;
 }): Promise<{ verdict: SessionVerdict; nextCookie: string | null }> {
-  const { claims, cookie, now, secret } = input;
+  const { claims, cookie, now, secret, idleSeconds = IDLE_SECONDS } = input;
   const start = signedInAt(claims);
   const sessionId = claims['session_id'];
   // A token we can't date or tie to a session is ended rather than trusted.
   if (start === null || typeof sessionId !== 'string' || sessionId === '') return { verdict: 'max', nextCookie: null };
 
   const seen = cookie !== undefined && secret !== undefined ? await readActivity(cookie, sessionId, secret) : null;
-  const verdict = sessionVerdict({ signedInAt: start, lastSeen: seen ?? start, now });
+  const verdict = sessionVerdict({ signedInAt: start, lastSeen: seen ?? start, now, idleSeconds });
   if (verdict !== 'ok' || secret === undefined) return { verdict, nextCookie: null };
   return { verdict, nextCookie: await signActivity(sessionId, now, secret) };
 }

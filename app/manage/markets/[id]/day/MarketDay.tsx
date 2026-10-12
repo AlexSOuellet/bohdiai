@@ -11,6 +11,7 @@ import { takings, type TodayOrder } from '@/lib/backend/markets/today';
 import { settleMarketOrder } from '@/lib/backend/markets/today-actions';
 import { useNotice } from '../../../_components/Notice';
 import { RingUp } from '../sell/RingUp';
+import { InstallTip } from '../../../pos/InstallTip';
 
 const FAILED = 'Something went wrong. Check your connection and try again.';
 /** How often the screen looks for buyers who just picked a piece. */
@@ -115,6 +116,7 @@ export function MarketDay({
 
       <main id="main" className="bk-day-main">
         {notice.area}
+        <InstallTip />
         {!open && <p className="bk-day-closed">This market isn’t on today. Buyers can pay and you can ring up sales on its own day.</p>}
 
         <section aria-labelledby="d-wait">

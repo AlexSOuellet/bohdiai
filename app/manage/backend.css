@@ -315,3 +315,6 @@ button.bk-up-btn { border: 0; cursor: pointer; font: inherit; font-size: 0.9rem;
 .bk-day-sheet { position: fixed; inset: 0; z-index: 50; overflow-y: auto; background: var(--bk-paper); padding: 1.25rem var(--bk-day-gutter) 2rem; }
 .bk-day-sheet-top { max-width: 36rem; margin: 0 auto 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
 .bk-day-sheet .bk-sell { max-width: 36rem; margin: 0 auto; }
+.bk-day-tip { display: grid; gap: 0.4rem; justify-items: start; padding: 0.8rem 0.9rem; border: 1px dashed var(--bk-ink-15); font-size: 0.92rem; }
+.bk-day-tip p { margin: 0; }
+.bk-day-sold a.bk-day-sold-piece { color: var(--bk-ink); text-underline-offset: 3px; }

@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { POS_PATH } from '@/lib/backend/session-limits';
 import { Sidebar } from './Sidebar';
 import type { NavSection } from '@/lib/backend/modules';
 import type { ShopSummary } from '@/lib/auth/membership';
 
-/** Screens that fill the phone with no backend menu (the market day at the table). */
-export const BARE_PATH = /^\/manage\/markets\/[^/]+\/day$/;
+/** Screens that fill the phone with no backend menu: the Market POS. */
+export const BARE_PATH = POS_PATH;
 
 export function Shell(props: {
   siteName: string;

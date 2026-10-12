@@ -9,9 +9,16 @@ import { loadSellPieces } from '@/lib/backend/markets/sell-pieces';
 import { loadPaySettings, marketListingIds } from '@/lib/market/queries';
 import { marketState } from '@/lib/market/buyer';
 import { shopToday } from '@/lib/storefront/promotions';
+import { posMetadata, posViewport } from '@/lib/backend/pos-app';
 import { MarketDay } from './MarketDay';
 
 export const dynamic = 'force-dynamic';
+export const viewport = posViewport;
+
+export async function generateMetadata(): Promise<ReturnType<typeof posMetadata>> {
+  const { site } = await requireActingSite();
+  return posMetadata(site.subdomain);
+}
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

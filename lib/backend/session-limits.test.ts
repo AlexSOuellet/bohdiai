@@ -9,6 +9,7 @@ import {
   checkBackendSession,
   endedReason,
   sessionSecret,
+  idleLimitFor,
 } from './session-limits';
 
 describe('sessionSecret', () => {
@@ -130,5 +131,29 @@ describe('checkBackendSession', () => {
   it('issues no cookie once the session has ended', async () => {
     const result = await checkBackendSession({ claims, cookie: undefined, now: T0 + MAX_SECONDS + 1, secret: SECRET });
     expect(result).toEqual({ verdict: 'max', nextCookie: null });
+  });
+});
+
+describe('the Market POS stays signed in longer', () => {
+  const claims = { session_id: SESSION, amr: [{ method: 'password', timestamp: T0 }] };
+
+  it('gives the POS starting point and each market day the 7-day limit, every other page 8 hours', () => {
+    expect(idleLimitFor('/manage/pos')).toBe(MAX_SECONDS);
+    expect(idleLimitFor('/manage/markets/0391df71-4d4b-4ef6-bec9-80d3c5c6ef7a/day')).toBe(MAX_SECONDS);
+    expect(idleLimitFor('/manage/markets/0391df71-4d4b-4ef6-bec9-80d3c5c6ef7a')).toBe(IDLE_SECONDS);
+    expect(idleLimitFor('/manage/markets/m1/day/extra')).toBe(IDLE_SECONDS);
+    expect(idleLimitFor('/manage')).toBe(IDLE_SECONDS);
+  });
+
+  it('a POS opened the next morning still works; the rest of the backend asks to sign in', async () => {
+    const cookie = await signActivity(SESSION, T0 + 60, SECRET);
+    const nextDay = T0 + 26 * 60 * 60;
+    expect((await checkBackendSession({ claims, cookie, now: nextDay, secret: SECRET, idleSeconds: idleLimitFor('/manage/pos') })).verdict).toBe('ok');
+    expect((await checkBackendSession({ claims, cookie, now: nextDay, secret: SECRET, idleSeconds: idleLimitFor('/manage') })).verdict).toBe('idle');
+  });
+
+  it('still ends at 7 days', () => {
+    const now = T0 + MAX_SECONDS + 1;
+    expect(sessionVerdict({ signedInAt: T0, lastSeen: now - 5, now, idleSeconds: MAX_SECONDS })).toBe('max');
   });
 });

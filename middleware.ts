@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 import { sanitizeTenantHeaders, isUnreachableStorefrontPath, requestHost, isAppHost, isDormantPath, tenantLookupUrl, apexRedirect } from '@/lib/proxy-security';
 import { appOrigin } from '@/lib/backend/app-url';
 import { backendRedirect, isBackendPath, isManagePath, ownerEntryRedirect } from '@/lib/backend/backend-paths';
-import { ACTIVITY_COOKIE, IDLE_SECONDS, checkBackendSession, sessionSecret } from '@/lib/backend/session-limits';
+import { ACTIVITY_COOKIE, checkBackendSession, idleLimitFor, sessionSecret } from '@/lib/backend/session-limits';
 import { DRAFT_HEADERS, PREVIEW_COOKIE, PREVIEW_MAX_AGE, PREVIEW_PARAM, draftGate } from '@/lib/storefront/draft-preview';
 
 const RESERVED = new Set(['www', 'admin', 'app', 'learn']);
@@ -171,6 +171,7 @@ export async function middleware(request: NextRequest) {
           cookie: request.cookies.get(ACTIVITY_COOKIE)?.value,
           now: Math.floor(Date.now() / 1000),
           secret: sessionSecret(process.env['BACKEND_SESSION_SECRET']),
+          idleSeconds: idleLimitFor(request.nextUrl.pathname),
         });
         const secure = request.nextUrl.protocol === 'https:';
         if (verdict !== 'ok') {
@@ -189,7 +190,7 @@ export async function middleware(request: NextRequest) {
           return ended;
         }
         if (nextCookie !== null) {
-          response.cookies.set(ACTIVITY_COOKIE, nextCookie, { httpOnly: true, secure, sameSite: 'lax', path: '/', maxAge: IDLE_SECONDS });
+          response.cookies.set(ACTIVITY_COOKIE, nextCookie, { httpOnly: true, secure, sameSite: 'lax', path: '/', maxAge: idleLimitFor(request.nextUrl.pathname) });
         }
       }
     } else {
