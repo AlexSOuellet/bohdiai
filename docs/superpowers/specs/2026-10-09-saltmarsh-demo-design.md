@@ -123,6 +123,10 @@ Login (Alex, 2026-10-09: prefilled, throwaway is fine, whichever is most efficie
 
 Visitors land here first, from the samples page and anywhere else that links the demo. It says who Lena is and what the demo shows: her shop as customers see it, and her backend as she runs it. It says the shop starts on Full and can be downgraded to Lite or Showcase and upgraded again, that no payment is ever taken, and that nothing is saved: the copy is theirs alone and is erased afterwards. It lists the copy's login and has one button that makes the copy and opens it.
 
+**Email (Alex, 2026-10-12):** the welcome page asks for the visitor's email before the button makes the copy. It is required, one box, no confirmation code (a fake address is accepted rather than losing real ones to friction). No newsletter tick box on the demo. The email is stored with the demo run so Alex's dashboard can show who ran it. The privacy page gains a line saying what demo emails are used for.
+
+**The market is always today (Alex, 2026-10-12):** the demo must always have a market happening today, so the market page always shows its on-the-day buy steps. Each personal copy is made with one market dated today; the shared demo (Alex's recordings) gets its market moved to today by a daily job. This is a demo-only rule; real sites still show the dates their owners set.
+
 ### Piece three — Learn
 
 A Learn button on every backend page of a demo copy opens a short explainer for that page: what it does, which plan includes it, and what a customer sees because of it. The storefront gets one too, so a visitor can learn what each part of Lena's site is for. All words live in one strings file, nothing written into the pages. Undecided: whether real makers get Learn later as help. It's built so they could, and switched on only for demo copies for now.
@@ -135,4 +139,4 @@ No live site takes orders yet (Rose n' Cat is not live), so this applies everywh
 
 ### Before it goes live
 
-Both open branches (`feat/site-facebook-link`, `feat/saltmarsh-showcase`) merge to main first, once Alex has looked. The demo is then linked from the samples page.
+Both earlier branches are merged and Saltmarsh & Lace is public (2026-10-12). Still to merge: `feat/saltmarsh-market-page`. The demo is then linked from the samples page.
