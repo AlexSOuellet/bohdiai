@@ -5,7 +5,7 @@
  */
 import { z } from 'zod';
 
-export const CARD_DESIGNS = ['pinned', 'bulletin', 'showreel', 'torch'] as const;
+export const CARD_DESIGNS = ['pinned', 'bulletin', 'showreel', 'torch', 'shoreline'] as const;
 export type CardDesign = (typeof CARD_DESIGNS)[number];
 
 /** The envelope's content: only the design, and that only when it isn't the default. */

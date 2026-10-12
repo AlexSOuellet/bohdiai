@@ -25,11 +25,14 @@ import { cardSkinKey } from '../lib/archetypes/card/paint';
 import { CARD_DESIGNS, type CardDesign } from '../lib/archetypes/card/design';
 import { BUILDER_EMAIL, ensureBuilderAccess } from '../lib/backend/builder-access';
 import { buildDateRow, type MarketDateForm } from '../lib/backend/dates/dates-form';
+import type { SitePlan } from '../lib/backend/plan/plan';
+import { applyPlan } from '../lib/backend/plan/apply';
+import { nextRenewal, todayDay } from '../lib/backend/plan/billing';
 
 export type CardSiteModule = {
   /** `design` picks the page (pinned prints when left out). Pinned prints paint in
    *  `family` + one of its skins, or the shop's own brand palette. */
-  SITE: { subdomain: string; businessName: string; design?: CardDesign; family: FamilyKey; skin: string; brandPalette?: BrandPalette };
+  SITE: { subdomain: string; businessName: string; design?: CardDesign; family: FamilyKey; skin: string; brandPalette?: BrandPalette; plan?: SitePlan; demo?: boolean };
   PROFILE: ProfileForm;
   PHOTOS: { file: string; caption: string }[];
   /** Market dates to start with (a sample's made-up ones); written only when the site has none. */
@@ -110,14 +113,37 @@ async function main(): Promise<void> {
     process.stdout.write(`contact form → ${contactEmail}\n`);
   }
 
-  // 2) Features: About you, Gallery and Market dates on, the catalog off.
-  const { error: featErr } = await db.from('tenant_features').upsert([
-    { tenant_id: tenantId, feature_key: 'profile', enabled: true },
-    { tenant_id: tenantId, feature_key: 'gallery', enabled: true },
-    { tenant_id: tenantId, feature_key: 'market_dates', enabled: true },
-    { tenant_id: tenantId, feature_key: 'catalog', enabled: false },
-  ]);
-  if (featErr !== null) fail(`features failed: ${featErr.message}`);
+  // 2) Features. A module that names a plan starts on it, set through the same switch
+  // the backend uses, and only when the site has no plan yet, so a re-run never undoes
+  // an upgrade or downgrade made since. Without a plan: About you, Gallery and Market
+  // dates on, the catalog off.
+  if (site.SITE.plan !== undefined) {
+    const { data: current, error: cpErr } = await db.from('tenants').select('plan').eq('id', tenantId).single();
+    if (cpErr !== null) fail(`plan lookup failed: ${cpErr.message}`);
+    if (current.plan === null) {
+      const applied = await applyPlan(db, tenantId, site.SITE.plan);
+      if (!applied.ok) fail(`plan failed: ${applied.error}`);
+      // Billing starts monthly, renewing a month from today (the shop's default time zone).
+      const { error: bErr } = await db.from('tenants').update({ plan_billing: 'monthly', plan_renews_on: nextRenewal(todayDay(null), 'monthly'), plan_next: null }).eq('id', tenantId);
+      if (bErr !== null) fail(`billing start failed: ${bErr.message}`);
+      process.stdout.write(`plan: ${site.SITE.plan}\n`);
+    } else {
+      process.stdout.write(`plan kept: ${current.plan}\n`);
+    }
+  } else {
+    const { error: featErr } = await db.from('tenant_features').upsert([
+      { tenant_id: tenantId, feature_key: 'profile', enabled: true },
+      { tenant_id: tenantId, feature_key: 'gallery', enabled: true },
+      { tenant_id: tenantId, feature_key: 'market_dates', enabled: true },
+      { tenant_id: tenantId, feature_key: 'catalog', enabled: false },
+    ]);
+    if (featErr !== null) fail(`features failed: ${featErr.message}`);
+  }
+  // `demo` lets Upgrade and Downgrade switch at once, with no card taken.
+  if (site.SITE.demo === true) {
+    const { error } = await db.from('tenant_features').upsert([{ tenant_id: tenantId, feature_key: 'demo_checkout', enabled: true }]);
+    if (error !== null) fail(`demo checkout failed: ${error.message}`);
+  }
 
   // 3) The published home page — the card envelope, replaced in place on re-runs.
   const tree = {

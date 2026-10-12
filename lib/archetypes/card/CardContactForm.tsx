@@ -9,7 +9,8 @@ import { CARD_STRINGS as S } from './strings';
 
 type State = { kind: 'idle' } | { kind: 'sending' } | { kind: 'sent' } | { kind: 'error'; message: string };
 
-export function CardContactForm({ tenantId }: { tenantId: string }): ReactElement {
+/** `initialMessage` starts the message box with words she can change (a product's "Ask about this"). */
+export function CardContactForm({ tenantId, initialMessage = '' }: { tenantId: string; initialMessage?: string }): ReactElement {
   const [state, setState] = useState<State>({ kind: 'idle' });
 
   async function onSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
@@ -65,7 +66,7 @@ export function CardContactForm({ tenantId }: { tenantId: string }): ReactElemen
       </div>
       <label>
         {S.form.message}
-        <textarea name="message" required maxLength={5000} />
+        <textarea name="message" required maxLength={5000} defaultValue={initialMessage} />
       </label>
       <label className="bc-form__trap" aria-hidden="true">
         {S.form.honeypot}

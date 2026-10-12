@@ -15,19 +15,37 @@ describe('buildCollectionPayload', () => {
   it('builds the payload in the maker’s product order', () => {
     expect(buildCollectionPayload(form({ description: ' Warm things ' }))).toEqual({
       ok: true,
-      payload: { name: 'Autumn', description: 'Warm things', status: 'draft', featured_image_id: null, listing_ids: ['a', 'b'] },
+      payload: {
+        name: 'Autumn',
+        description: 'Warm things',
+        status: 'draft',
+        featured_image_id: null,
+        listing_ids: ['a', 'b'],
+      },
     });
   });
   it('needs a name', () => {
-    expect(buildCollectionPayload(form({ name: '  ' }))).toEqual({ ok: false, error: 'Give the collection a name.' });
+    expect(buildCollectionPayload(form({ name: '  ' }))).toEqual({
+      ok: false,
+      error: 'Give the collection a name.',
+    });
   });
   it('states the length limits as a most, not a less-than', () => {
-    expect(buildCollectionPayload(form({ name: 'n'.repeat(81) }))).toEqual({ ok: false, error: 'Keep the name to 80 characters or fewer.' });
+    expect(buildCollectionPayload(form({ name: 'n'.repeat(81) }))).toEqual({
+      ok: false,
+      error: 'Keep the name to 80 characters or fewer.',
+    });
     expect(buildCollectionPayload(form({ name: 'n'.repeat(80) })).ok).toBe(true);
-    expect(buildCollectionPayload(form({ description: 'd'.repeat(501) }))).toEqual({ ok: false, error: 'Keep the description to 500 characters or fewer.' });
+    expect(buildCollectionPayload(form({ description: 'd'.repeat(501) }))).toEqual({
+      ok: false,
+      error: 'Keep the description to 500 characters or fewer.',
+    });
   });
   it('refuses a product listed twice', () => {
-    expect(buildCollectionPayload(form({ productIds: ['a', 'a'] }))).toEqual({ ok: false, error: 'A product is in this collection twice. Remove one.' });
+    expect(buildCollectionPayload(form({ productIds: ['a', 'a'] }))).toEqual({
+      ok: false,
+      error: 'A product is in this collection twice. Remove one.',
+    });
   });
 });
 
@@ -52,13 +70,24 @@ describe('moveItem', () => {
 });
 
 describe('buildCollectionPayload — crafted input', () => {
-  const odd = { ok: false, error: 'Something about this collection didn’t look right. Reload the page and try again.' };
-  const crafted = (over: Record<string, unknown>): CollectionForm => ({ ...form(), ...over }) as unknown as CollectionForm;
+  const odd = {
+    ok: false,
+    error: 'Something about this collection didn’t look right. Reload the page and try again.',
+  };
+  const crafted = (over: Record<string, unknown>): CollectionForm =>
+    ({ ...form(), ...over }) as unknown as CollectionForm;
   it('refuses a status the editor never sends', () => {
     expect(buildCollectionPayload(crafted({ status: 'published' }))).toEqual(odd);
   });
   it('refuses wrong-typed fields instead of throwing', () => {
-    for (const over of [{ id: 4 }, { name: 5 }, { description: null }, { featuredImageId: 3 }, { productIds: 'a' }, { productIds: [1] }]) {
+    for (const over of [
+      { id: 4 },
+      { name: 5 },
+      { description: null },
+      { featuredImageId: 3 },
+      { productIds: 'a' },
+      { productIds: [1] },
+    ]) {
       expect(buildCollectionPayload(crafted(over))).toEqual(odd);
     }
   });

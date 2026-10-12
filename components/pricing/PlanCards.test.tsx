@@ -7,15 +7,15 @@ describe('PlanCards', () => {
   it('shows all of the audience’s plans, monthly by default, built free', () => {
     render(<PlanCards audience="maker" path="/makers" />);
     const showcase = screen.getByRole('article', { name: 'Maker Showcase' });
-    const lite = screen.getByRole('article', { name: 'Maker Lite' });
+    const lite = screen.getByRole('article', { name: 'Maker Market' });
     const full = screen.getByRole('article', { name: 'Maker Full' });
     expect(showcase).toHaveTextContent('$5');
-    expect(showcase).not.toHaveTextContent(/everything in lite/i);
+    expect(showcase).not.toHaveTextContent(/everything in/i);
     expect(lite).toHaveTextContent('$15');
     expect(lite).toHaveTextContent(/a month/);
-    expect(full).toHaveTextContent('$20');
+    expect(full).toHaveTextContent('$25');
     expect(lite).toHaveTextContent(/built free/i);
-    expect(full).toHaveTextContent(/everything in lite, plus/i);
+    expect(full).toHaveTextContent(/everything in maker market, plus/i);
     expect(screen.queryByText(/contractor/i)).toBeNull();
   });
 

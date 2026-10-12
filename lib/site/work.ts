@@ -25,7 +25,7 @@ export type WorkEntry = {
   features: readonly string[];
   /** Path under public/. */
   shot: string;
-  /** Samples only: which plan the sample shows ("Showcase", "Lite", "Full", "Contractor Lead Generation", "Contractor Full"). */
+  /** Samples only: which plan the sample shows ("Showcase", "Market", "Full", "Contractor Lead Generation", "Contractor Full"). */
   plan?: string;
   /** Samples only: who the sample is for — its banner links to that pricing page. */
   audience?: 'maker' | 'contractor';
@@ -118,7 +118,7 @@ export const SAMPLES: readonly WorkEntry[] = [
     blurb: 'A small-town bakery',
     features: [],
     shot: '/work/classic-loafs.webp',
-    plan: 'Lite',
+    plan: 'Market',
     testimonials: [],
   },
   {
@@ -211,7 +211,7 @@ export const SAMPLES: readonly WorkEntry[] = [
 export const LISTED_SAMPLES: readonly WorkEntry[] = SAMPLES.filter((s) => s.listed !== false);
 
 /** The plans in the order they are sold — the samples page groups by this. */
-export const SAMPLE_PLAN_ORDER = ['Showcase', 'Lite', 'Full', 'Contractor Lead Generation', 'Contractor Full'] as const;
+export const SAMPLE_PLAN_ORDER = ['Showcase', 'Market', 'Full', 'Contractor Lead Generation', 'Contractor Full'] as const;
 
 /** Every sample, listed on the home page or not, grouped by plan in selling order. */
 export function samplesByPlan(): { plan: string; samples: WorkEntry[] }[] {

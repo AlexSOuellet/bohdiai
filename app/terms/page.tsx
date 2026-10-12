@@ -126,7 +126,7 @@ export default function TermsPage(): React.ReactElement {
               Contact
             </h2>
             <p>
-              BohdiAI is built and operated by Alex Ouellet (publicly: Alex Scott) in Rhode
+              BohdiAI is built and operated by Alex Ouellet in Rhode
               Island, USA.{' '}
               <a href={`mailto:${CONTACT_EMAIL}`} className="text-honey-warm underline underline-offset-4 decoration-honey-warm/40 hover:decoration-honey-warm">
                 {CONTACT_EMAIL}

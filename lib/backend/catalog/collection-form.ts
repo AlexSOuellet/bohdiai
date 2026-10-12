@@ -36,17 +36,32 @@ function hasCollectionShape(f: unknown): boolean {
   );
 }
 
-export function buildCollectionPayload(form: CollectionForm): { ok: true; payload: CollectionPayload } | { ok: false; error: string } {
-  if (!hasCollectionShape(form)) return { ok: false, error: 'Something about this collection didn’t look right. Reload the page and try again.' };
+export function buildCollectionPayload(
+  form: CollectionForm,
+): { ok: true; payload: CollectionPayload } | { ok: false; error: string } {
+  if (!hasCollectionShape(form))
+    return {
+      ok: false,
+      error: 'Something about this collection didn’t look right. Reload the page and try again.',
+    };
   const name = form.name.trim();
   if (name === '') return { ok: false, error: 'Give the collection a name.' };
-  if (name.length > MAX_NAME) return { ok: false, error: `Keep the name to ${MAX_NAME} characters or fewer.` };
+  if (name.length > MAX_NAME)
+    return { ok: false, error: `Keep the name to ${MAX_NAME} characters or fewer.` };
   const description = form.description.trim();
-  if (description.length > MAX_DESCRIPTION) return { ok: false, error: `Keep the description to ${MAX_DESCRIPTION} characters or fewer.` };
-  if (new Set(form.productIds).size !== form.productIds.length) return { ok: false, error: 'A product is in this collection twice. Remove one.' };
+  if (description.length > MAX_DESCRIPTION)
+    return { ok: false, error: `Keep the description to ${MAX_DESCRIPTION} characters or fewer.` };
+  if (new Set(form.productIds).size !== form.productIds.length)
+    return { ok: false, error: 'A product is in this collection twice. Remove one.' };
   return {
     ok: true,
-    payload: { name, description: description === '' ? null : description, status: form.status, featured_image_id: form.featuredImageId, listing_ids: form.productIds },
+    payload: {
+      name,
+      description: description === '' ? null : description,
+      status: form.status,
+      featured_image_id: form.featuredImageId,
+      listing_ids: form.productIds,
+    },
   };
 }
 

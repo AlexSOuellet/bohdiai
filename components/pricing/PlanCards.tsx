@@ -9,7 +9,7 @@
  */
 import { useState } from 'react';
 import Link from 'next/link';
-import { formatPrice, plansFor, type Audience, type Plan } from '@/lib/site/plans';
+import { formatPrice, includesLead, plansFor, type Audience, type Plan } from '@/lib/site/plans';
 
 type Period = 'monthly' | 'yearly';
 export type PricingPath = '/makers' | '/contractors';
@@ -105,7 +105,7 @@ function PlanCard({ plan, period, path }: { plan: Plan; period: Period; path: Pr
         Built free
       </p>
 
-      {full && <p className="mt-6 text-[13px] font-semibold text-text-soft">Everything in Lite, plus</p>}
+      {full && <p className="mt-6 text-[13px] font-semibold text-text-soft">{includesLead(plan)}</p>}
       <ul className={`${full ? 'mt-3' : 'mt-6'} flex flex-1 flex-col gap-3`}>
         {plan.includes.map((item) => (
           <li key={item} className="flex gap-3 text-[14px] leading-[1.5] text-text-soft md:text-[15px]">

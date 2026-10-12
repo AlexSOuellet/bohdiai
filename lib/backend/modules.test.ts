@@ -58,3 +58,16 @@ describe('a business card site in the menu', () => {
     ]);
   });
 });
+
+describe('Your plan in the menu', () => {
+  it('sits under Site, after Home, only when switched on', () => {
+    expect(navFor(BACKEND_MODULES, new Set(['plan']))[0]).toEqual({
+      section: 'Site',
+      items: [
+        { label: 'Home', href: '/manage' },
+        { label: 'Your plan', href: '/manage/plan' },
+      ],
+    });
+    expect(navFor(BACKEND_MODULES, new Set())[0]?.items).toEqual([{ label: 'Home', href: '/manage' }]);
+  });
+});

@@ -41,7 +41,7 @@ The plan was rewritten this session to reach launch, in three named phases: **Be
 
 ## Roles
 
-- **Alex Ouellet (publicly "Alex Scott")** — Founder / Product Owner. Vision, approvals, no code.
+- **Alex Ouellet** — Founder / Product Owner. Vision, approvals, no code.
 - **Claude** — Lead Developer. Builds patterns, escalates ambiguity. **Must push back on scope drift, not silently absorb it.**
 - **Cowork agents (planned)** — Pattern replicators for niche schemas, additional variants. Runtime evaluated when Cowork comes online.
 
@@ -73,7 +73,7 @@ Next.js 16 (App Router) · Supabase (Postgres + RLS + Auth + Storage) · **Cloud
 
 ## Brand context (load-bearing)
 
-- Alex publicly brands as "Alex Scott." 1990s ran "Witsend" helping people through the home-computer transition. 2026 launches "Witsend Breakthroughs" (Skool community) helping people through the AI transition. BohdiAI is the product layer.
+- Alex goes by his own name, Alex Ouellet (never "Alex Scott", dropped 2026-10-12). 1990s ran "Witsend" helping people through the home-computer transition. 2026 launches "Witsend Breakthroughs" (Skool community) helping people through the AI transition. BohdiAI is the product layer.
 - The authority story IS the differentiation against Etsy/Shopify (faceless platforms). Don't write copy as a faceless company.
 - Voice: warm, direct, no SaaS jargon. Matches Alex's YouTube voice.
 

@@ -6,6 +6,7 @@
  * and writes through the person's own client so RLS applies. Every failure returns
  * a message the maker can act on.
  */
+import { photoLimit } from './photo-limit';
 import { revalidatePath } from 'next/cache';
 import type { Json } from '@/lib/database.types';
 import { requireActingSite } from '@/lib/backend/current-site';
@@ -40,12 +41,24 @@ type DbError = { code?: string; message: string };
 type CatalogSite = { tenantId: string; userId: string; on: Set<FeatureKey> };
 
 function saveError(error: DbError, what: 'product' | 'collection', tenantId: string): string {
-  if (error.code === '23505') return `Another ${what} already uses that web address. Change the name slightly and save again.`;
-  if (error.code === HOME_LIMIT_CODE) return 'Your home page shows up to 5 products. Untick one of the others first.';
-  if (error.code === 'P0002') return what === 'product' ? 'That product no longer exists. Go back to Products.' : 'That collection no longer exists. Go back to Collections.';
-  if (error.code === 'P0001') return what === 'product' ? 'A photo or file on this product couldn’t be found. Remove it, add it again and save.' : 'A photo or product in this collection couldn’t be found. Remove it, add it again and save.';
+  if (error.code === '23505')
+    return `Another ${what} already uses that web address. Change the name slightly and save again.`;
+  if (error.code === HOME_LIMIT_CODE)
+    return 'Your home page shows up to 5 products. Untick one of the others first.';
+  if (error.code === 'P0002')
+    return what === 'product'
+      ? 'That product no longer exists. Go back to Products.'
+      : 'That collection no longer exists. Go back to Collections.';
+  if (error.code === 'P0001')
+    return what === 'product'
+      ? 'A photo or file on this product couldn’t be found. Remove it, add it again and save.'
+      : 'A photo or product in this collection couldn’t be found. Remove it, add it again and save.';
   if (error.code === '42501') return 'You don’t have access to change this site.';
-  logger.error(`catalog: ${what} save failed`, { tenantId, code: error.code, error: error.message });
+  logger.error(`catalog: ${what} save failed`, {
+    tenantId,
+    code: error.code,
+    error: error.message,
+  });
   return `The ${what} couldn’t be saved. Try again in a moment.`;
 }
 
@@ -55,10 +68,19 @@ async function catalogSite(): Promise<CatalogSite | null> {
   return on.has('catalog') ? { tenantId: site.tenantId, userId: user.id, on } : null;
 }
 
-async function freeSlug(table: 'listings' | 'collections', tenantId: string, name: string): Promise<string | null> {
+async function freeSlug(
+  table: 'listings' | 'collections',
+  tenantId: string,
+  name: string,
+): Promise<string | null> {
   const base = slugify(name);
   const db = await createSupabaseServerClient();
-  const { data, error } = await db.from(table).select('slug').eq('tenant_id', tenantId).is('deleted_at', null).ilike('slug', `${slugLookupPrefix(base)}%`);
+  const { data, error } = await db
+    .from(table)
+    .select('slug')
+    .eq('tenant_id', tenantId)
+    .is('deleted_at', null)
+    .ilike('slug', `${slugLookupPrefix(base)}%`);
   if (error !== null) {
     logger.error('catalog: slug lookup failed', { tenantId, error: error.message });
     return null;
@@ -88,23 +110,59 @@ async function saveWithSlug(
 
 /** Remove a stored object whose uploads record couldn't be written, so it isn't
  *  left orphaned in storage. A failed removal is logged, never shown. */
-async function removeStored(admin: ReturnType<typeof supabaseAdmin>, bucket: string, path: string, tenantId: string): Promise<void> {
+async function removeStored(
+  admin: ReturnType<typeof supabaseAdmin>,
+  bucket: string,
+  path: string,
+  tenantId: string,
+): Promise<void> {
   const { error } = await admin.storage.from(bucket).remove([path]);
-  if (error !== null) logger.error('catalog: orphaned stored object', { tenantId, bucket, path, error: error.message });
+  if (error !== null)
+    logger.error('catalog: orphaned stored object', {
+      tenantId,
+      bucket,
+      path,
+      error: error.message,
+    });
 }
 
 export async function saveProduct(form: ProductForm): Promise<SaveResult> {
   const site = await catalogSite();
   if (site === null) return { ok: false, error: CATALOG_OFF };
-  const built = buildProductPayload(form, { digital: site.on.has('digital_products') });
+  const db = await createSupabaseServerClient();
+  let kept = 0;
+  if (form.id !== null) {
+    const { data: current } = await db
+      .from('listings')
+      .select('media_ids')
+      .eq('id', form.id)
+      .eq('tenant_id', site.tenantId)
+      .maybeSingle();
+    kept = current?.media_ids.length ?? 0;
+  }
+  const built = buildProductPayload(form, {
+    digital: site.on.has('digital_products'),
+    photos: { limit: photoLimit(site.on), kept },
+  });
   if (!built.ok) return built;
 
-  const db = await createSupabaseServerClient();
   const save = (p: Record<string, unknown>) =>
-    db.rpc('save_product', { p_tenant_id: site.tenantId, p: p as Json, ...(form.id !== null ? { p_listing_id: form.id } : {}) });
-  const { data, error } = await saveWithSlug(save, { ...built.payload }, form.id === null ? () => freeSlug('listings', site.tenantId, built.payload.name) : null);
+    db.rpc('save_product', {
+      p_tenant_id: site.tenantId,
+      p: p as Json,
+      ...(form.id !== null ? { p_listing_id: form.id } : {}),
+    });
+  const { data, error } = await saveWithSlug(
+    save,
+    { ...built.payload },
+    form.id === null ? () => freeSlug('listings', site.tenantId, built.payload.name) : null,
+  );
   if (error === 'slug') return { ok: false, error: SLUG_FAILED };
-  if (error !== null || data === null) return { ok: false, error: saveError(error ?? { message: 'no id returned' }, 'product', site.tenantId) };
+  if (error !== null || data === null)
+    return {
+      ok: false,
+      error: saveError(error ?? { message: 'no id returned' }, 'product', site.tenantId),
+    };
   revalidatePath('/manage/products');
   revalidatePath('/manage');
   return { ok: true, id: data };
@@ -113,14 +171,28 @@ export async function saveProduct(form: ProductForm): Promise<SaveResult> {
 /** Copy a product (everything but its web address) as a new draft (spec §4). */
 export async function duplicateProduct(form: ProductForm): Promise<SaveResult> {
   // A crafted non-string name passes through untouched so saveProduct refuses it.
-  const name = typeof form.name === 'string' ? `${form.name.trim()} (copy)`.slice(0, 120) : form.name;
-  return saveProduct({ ...form, id: null, slug: null, name, status: 'draft', onHome: false, isNew: false });
+  const name =
+    typeof form.name === 'string' ? `${form.name.trim()} (copy)`.slice(0, 120) : form.name;
+  return saveProduct({
+    ...form,
+    id: null,
+    slug: null,
+    name,
+    status: 'draft',
+    onHome: false,
+    isNew: false,
+  });
 }
 
 export async function uploadProductPhoto(formData: FormData): Promise<PhotoResult> {
   const site = await catalogSite();
   if (site === null) return { ok: false, error: CATALOG_OFF };
-  return storeSitePhoto({ tenantId: site.tenantId, userId: site.userId, folder: 'products', file: formData.get('file') });
+  return storeSitePhoto({
+    tenantId: site.tenantId,
+    userId: site.userId,
+    folder: 'products',
+    file: formData.get('file'),
+  });
 }
 
 /** A download file, stored privately (plan 1b decision 2). Delivery is piece 2. */
@@ -129,14 +201,18 @@ export async function uploadProductFile(formData: FormData): Promise<FileResult>
   if (site === null) return { ok: false, error: CATALOG_OFF };
   if (!site.on.has('digital_products')) return { ok: false, error: DIGITAL_OFF };
   const file = formData.get('file');
-  if (!(file instanceof File) || file.size === 0) return { ok: false, error: 'Pick a file to upload.' };
+  if (!(file instanceof File) || file.size === 0)
+    return { ok: false, error: 'Pick a file to upload.' };
   const ext = FILE_TYPES[file.type];
   if (ext === undefined) return { ok: false, error: 'Use a PDF, PNG, JPG, WebP, SVG or ZIP file.' };
-  if (file.size > MAX_FILE_BYTES) return { ok: false, error: 'That file is over 50MB. Pick a smaller one.' };
+  if (file.size > MAX_FILE_BYTES)
+    return { ok: false, error: 'That file is over 50MB. Pick a smaller one.' };
 
   const admin = supabaseAdmin();
   const path = `tenant/${site.tenantId}/files/${crypto.randomUUID()}.${ext}`;
-  const { error: upErr } = await admin.storage.from('tenant-files').upload(path, await file.arrayBuffer(), { contentType: file.type, upsert: false });
+  const { error: upErr } = await admin.storage
+    .from('tenant-files')
+    .upload(path, await file.arrayBuffer(), { contentType: file.type, upsert: false });
   if (upErr !== null) {
     logger.warn('catalog: file upload failed', { tenantId: site.tenantId, error: upErr.message });
     return { ok: false, error: 'The file couldn’t be uploaded. Try again.' };
@@ -173,17 +249,36 @@ export async function saveCollection(form: CollectionForm): Promise<SaveResult> 
   if (!built.ok) return built;
   const db = await createSupabaseServerClient();
   const save = (p: Record<string, unknown>) =>
-    db.rpc('save_collection', { p_tenant_id: site.tenantId, p: p as Json, ...(form.id !== null ? { p_collection_id: form.id } : {}) });
-  const { data, error } = await saveWithSlug(save, { ...built.payload }, form.id === null ? () => freeSlug('collections', site.tenantId, built.payload.name) : null);
+    db.rpc('save_collection', {
+      p_tenant_id: site.tenantId,
+      p: p as Json,
+      ...(form.id !== null ? { p_collection_id: form.id } : {}),
+    });
+  const { data, error } = await saveWithSlug(
+    save,
+    { ...built.payload },
+    form.id === null ? () => freeSlug('collections', site.tenantId, built.payload.name) : null,
+  );
   if (error === 'slug') return { ok: false, error: SLUG_FAILED };
-  if (error !== null || data === null) return { ok: false, error: saveError(error ?? { message: 'no id returned' }, 'collection', site.tenantId) };
+  if (error !== null || data === null)
+    return {
+      ok: false,
+      error: saveError(error ?? { message: 'no id returned' }, 'collection', site.tenantId),
+    };
   revalidatePath('/manage/collections');
   revalidatePath('/manage');
   return { ok: true, id: data };
 }
 
 export async function createCollection(name: string): Promise<SaveResult> {
-  return saveCollection({ id: null, name, description: '', status: 'draft', featuredImageId: null, productIds: [] });
+  return saveCollection({
+    id: null,
+    name,
+    description: '',
+    status: 'draft',
+    featuredImageId: null,
+    productIds: [],
+  });
 }
 
 const HOME_NOT_SAVED = 'That change couldn’t be saved. Try again.';
@@ -193,13 +288,23 @@ const HOME_NOT_SAVED = 'That change couldn’t be saved. Try again.';
 export async function setProductOnHome(id: string, onHome: boolean): Promise<DoneResult> {
   const site = await catalogSite();
   if (site === null) return { ok: false, error: CATALOG_OFF };
-  if (typeof id !== 'string' || typeof onHome !== 'boolean') return { ok: false, error: HOME_NOT_SAVED };
+  if (typeof id !== 'string' || typeof onHome !== 'boolean')
+    return { ok: false, error: HOME_NOT_SAVED };
   const db = await createSupabaseServerClient();
-  const { error } = await db.rpc('set_listing_on_home', { p_tenant_id: site.tenantId, p_listing_id: id, p_on_home: onHome });
+  const { error } = await db.rpc('set_listing_on_home', {
+    p_tenant_id: site.tenantId,
+    p_listing_id: id,
+    p_on_home: onHome,
+  });
   if (error !== null) {
     if (error.code === HOME_LIMIT_CODE) return { ok: false, error: HOME_LIMIT };
-    if (error.code === 'P0002') return { ok: false, error: 'That product no longer exists. Reload the page.' };
-    logger.error('catalog: home tick failed', { tenantId: site.tenantId, code: error.code, error: error.message });
+    if (error.code === 'P0002')
+      return { ok: false, error: 'That product no longer exists. Reload the page.' };
+    logger.error('catalog: home tick failed', {
+      tenantId: site.tenantId,
+      code: error.code,
+      error: error.message,
+    });
     return { ok: false, error: HOME_NOT_SAVED };
   }
   revalidatePath('/manage/products');
@@ -213,7 +318,10 @@ export async function orderCollections(ids: string[]): Promise<DoneResult> {
   const db = await createSupabaseServerClient();
   const { error } = await db.rpc('order_collections', { p_tenant_id: site.tenantId, p_ids: ids });
   if (error !== null) {
-    logger.error('catalog: order collections failed', { tenantId: site.tenantId, error: error.message });
+    logger.error('catalog: order collections failed', {
+      tenantId: site.tenantId,
+      error: error.message,
+    });
     return { ok: false, error: 'The new order couldn’t be saved. Try again.' };
   }
   revalidatePath('/manage/collections');

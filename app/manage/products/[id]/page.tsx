@@ -1,3 +1,4 @@
+import { photoLimit } from '@/lib/backend/catalog/photo-limit';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { requireActingSite } from '@/lib/backend/current-site';
@@ -12,7 +13,9 @@ export const dynamic = 'force-dynamic';
 /** A mistyped address is "not found", not a database error. */
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export default async function EditProductPage({ params }: PageProps<'/manage/products/[id]'>): Promise<React.ReactElement> {
+export default async function EditProductPage({
+  params,
+}: PageProps<'/manage/products/[id]'>): Promise<React.ReactElement> {
   const { id } = await params;
   if (!ID.test(id)) notFound();
   const { site } = await requireActingSite();
@@ -29,8 +32,11 @@ export default async function EditProductPage({ params }: PageProps<'/manage/pro
     <ProductEditor
       key={id}
       initial={product}
-      collections={collections.filter((c) => c.status !== 'archived' || product.collectionIds.includes(c.id)).map((c) => ({ id: c.id, name: c.name }))}
+      collections={collections
+        .filter((c) => c.status !== 'archived' || product.collectionIds.includes(c.id))
+        .map((c) => ({ id: c.id, name: c.name }))}
       digital={on.has('digital_products')}
+      photoLimit={photoLimit(on)}
       newArrivals={on.has('new_arrivals')}
       shopUrl={storefrontOrigin(site.subdomain, (await headers()).get('host'))}
       homeCount={homeCount}

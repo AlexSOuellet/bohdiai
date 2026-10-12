@@ -2093,6 +2093,47 @@ export type Database = {
           },
         ]
       }
+      site_testimonials: {
+        Row: {
+          created_at: string
+          detail: string | null
+          id: string
+          name: string
+          position: number
+          quote: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          id?: string
+          name: string
+          position: number
+          quote: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          id?: string
+          name?: string
+          position?: number
+          quote?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_testimonials_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_drafts: {
         Row: {
           layout_tree: Json
@@ -2284,6 +2325,13 @@ export type Database = {
           niche_description: string | null
           niche_from_list: boolean
           phone: string | null
+          plan: string | null
+          plan_billing: string | null
+          plan_credit_cents: number
+          plan_next: string | null
+          plan_next_billing: string | null
+          plan_next_gallery: string[] | null
+          plan_renews_on: string | null
           postal_code: string | null
           primary_niche: string | null
           secondary_niche: string | null
@@ -2320,6 +2368,13 @@ export type Database = {
           niche_description?: string | null
           niche_from_list?: boolean
           phone?: string | null
+          plan?: string | null
+          plan_billing?: string | null
+          plan_credit_cents?: number
+          plan_next?: string | null
+          plan_next_billing?: string | null
+          plan_next_gallery?: string[] | null
+          plan_renews_on?: string | null
           postal_code?: string | null
           primary_niche?: string | null
           secondary_niche?: string | null
@@ -2356,6 +2411,13 @@ export type Database = {
           niche_description?: string | null
           niche_from_list?: boolean
           phone?: string | null
+          plan?: string | null
+          plan_billing?: string | null
+          plan_credit_cents?: number
+          plan_next?: string | null
+          plan_next_billing?: string | null
+          plan_next_gallery?: string[] | null
+          plan_renews_on?: string | null
           postal_code?: string | null
           primary_niche?: string | null
           secondary_niche?: string | null

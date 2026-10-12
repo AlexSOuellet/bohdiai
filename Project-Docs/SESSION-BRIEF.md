@@ -10,17 +10,13 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-10-08, Session 98.
+**Last updated:** 2026-10-12, Session 100.
 
 ---
 
 ## Current state
 
-**Session 98 — new logo + sticky header LIVE; Renee is in.** Ember wordmark (`components/Wordmark.tsx`: Bohdi with a flame for the i dot) in header/footer/legal pages, ember tab icon; sticky header with a solid strip once scrolled. Cards, logo files, Facebook cover/profile in `Design files/` (untracked). Renee signed in 2026-10-08. 24-hour invite wording parked on `fix/auth-link-24h` — merge only after Supabase "Email OTP Expiration" = 86400. Recap: `session-logs/session-98.md`.
-
-**Session 97 — Rose n' Cat is a working shop + the first Market POS (all LIVE, switched on for her).** Cart + order requests (no card yet; emails go to ALEX), Orders, Terms/Privacy links, QR codes, New arrival + "Just born", Promotions (sale or codes, never stacked), **Markets** (replaced Market dates; private costs/organizer/notes/review; anon read on `events` dropped), **market shop** (per-market QR page, holds paid by Venmo/Cash App/Zelle/cash, Getting paid, Today). Design: `docs/superpowers/specs/2026-10-07-market-pos-design.md`. Session 96 built the site itself (boutique archetype, nursery design). Recaps: `session-logs/session-97.md`, `session-96.md`.
-
-**Session 95 — homepage reshaped; three contractor sites with their own designs; Joe's site PUBLIC; Contractor Lead Generation $10.** Hero browser = samples only; clients in an arrow slideshow; sample cards one per tier (Maker Showcase, Maker Lite, Contractor Lead Generation, Contractor Full) + "See more samples" → `/samples`. Contractor designs (`design` in the content): `yard` Cut-Pro, `atelier` True Coat (Contractor Full sample: estimator, calendar, FAQ), `ridge` Halfmoon (Contractor Lead Generation sample), `harbor` Mazzone (Joe's REAL site, public, real facts only; estimates still email Alex). Every section opener varied — no label-over-title. Draft (hidden) sites + private preview links exist (`--draft`, `scripts/site-visibility.ts`), but prod preview links 404 until the Worker's BACKEND_SESSION_SECRET matches .env.local. **Plans:** Contractor Lite → Contractor Lead Generation, $10/$100; ALL sites will get a backend (minimal for Showcase + Lead Generation); Alex considering cutting Maker Lite (undecided). Homepage desk hero still parked (`feat/site-photo-hero`); `fix/bulletin-taken-tab` still parked. Recap: `session-logs/session-95.md`.
+**Session 100 — maker checkup built (branch), Maker Market + Full $25 LIVE, Saltmarsh merged (still a draft).** Checkup at bohdiai.com/checkup on `feat/maker-checkup` (question bank + Haiku, code-decided offers and pricing, How I can help product cards); Saltmarsh shoreline market page on `feat/saltmarsh-market-page`. Recap + decisions: `session-logs/session-100.md`. **Start next session with the OPEN PIECES list below and prioritize with Alex.**
 
 **Session 87 — the whole app now runs on Cloudflare Workers; Vercel serves nothing.** bohdiai.com, www, every shop subdomain and Cut-Pro are all served by the `bohdiai` Worker, verified live (Cut-Pro end to end, including a real photo estimate). `main` is current (fast-forwarded 552 commits). 1364 tests, tsc + lint clean. Runbook + lessons: `Cloudflare-Move.md`.
 
@@ -33,6 +29,16 @@
 
 ## Next actions
 
+**OPEN PIECES — status (2026-10-12). Prioritize these with Alex at the start of Session 101.**
+
+A. **Maker checkup** — `feat/maker-checkup`, pushed, not merged. Works end to end locally (~1¢/run). Open: Alex's test runs + review; beehiiv API key + Publication ID (Alex); "Learn more" goes to /makers (no product pages); welcome/goal wording to match the ad line; not linked from the site yet. Notes: `Need-A-Site-App.md` on that branch.
+B. **Saltmarsh market page** — `feat/saltmarsh-market-page`, pushed, not merged. Before-day view checked; buy steps only show on a market day (ask Alex before moving a demo market's date). Needed so the demo shows Maker Market properly.
+C. **Square card payments** (top build) — see 00000 below. Blocked on Alex: Square developer account.
+D. **Maker Market follow-ups** — card-taking at markets: Full or Maker Market? (Alex thinking). Market app beef-ups under discussion (buyer "tell me where you'll be next" tick, custom orders with deposit, application tracker, what to bring). `Market-Plan.md` lives on `feat/maker-checkup`.
+E. **Public demo** (from Session 99: personal copies, welcome page, Learn) — not started.
+F. **Parked branches** (all pushed as backup, none merged): `feat/site-facebook-link` (Alex said hold), `fix/auth-link-24h` (waits on Supabase OTP 86400), `feat/site-photo-hero`, `fix/bulletin-taken-tab`. Everything below (invites, Rose n' Cat, Joe, estimator email, minimal backend, preview-link secret, video, staging, bohdiai.com loose ends, Cloudflare cleanup, Cut-Pro, maker backend scope, MY ADMIN) is unchanged from before.
+
+00000. **Square card payments for the market app — SOONER THAN LATER (Alex, 2026-10-12).** Belongs on Maker Market (was Lite), not just Full: most makers already use Square. Two pieces, money straight to the maker's own Square: (1) shopper self-checkout pays by card on their phone via Square's web card form + Apple/Google Pay, sold the moment Square confirms (no "I paid"); (2) maker charges at the table: market app opens the Square app with amount + piece filled in, maker uses their own reader, Square returns to the app and the sale lands under that market. Needs: a BohdiAI Square developer account + "Connect Square" per maker (OAuth). Later, maybe: matching sales rung up only inside Square.
 0000. **Invites:** Alex sets Supabase Email OTP Expiration = 86400 → merge `fix/auth-link-24h`. Then the maker-started sign-up ("First time here?", six-digit code, email must already be on a shop) — Alex liked it, not a go yet. Links last 1 hour today; an existing unconfirmed account needs a recovery token sent with invite wording (`invite-maker.ts` sends reset wording).
 000. **Rose n' Cat:** Renee is IN (signed in 2026-10-08). Fill Getting paid (only cash shows); tick babies per market; real names/prices. Open asks to Alex: analytics (own cookieless counter?), Square card (build switched off or wait for keys?), a test market to try a buyer order. Next build: **Market POS piece 3 — results** (own design pass). Privacy template's "analytics cookie" line is wrong; fix with analytics.
 00. **Joe (Mazzone):** his feedback on the site; switch estimate emails to his address when he's in; give his page its own section openers (True Coat and Halfmoon got theirs); his own job photos when he has them.
@@ -67,8 +73,7 @@
 - **When asked "is this a shortcut?", separate root-cause from convenient. Don't defend the easy version.**
 - **Show, don't describe, for visible-output decisions.** Font, color, layout, treatment — render a specimen, don't argue.
 - **Plain English in chat. One idea per line.** No doc-speak, no shorthand (`§6.2`, `D5`), no jargon Alex didn't use first.
-- **No flattery. No reflexive agreement.** Rank ideas by merit, concede only on principle.
-- **Don't invent under pushback.** Acknowledge and wait; don't fill the gap with a new guess.
+- **No flattery. No reflexive agreement.** Rank ideas by merit, concede only on principle. **Don't invent under pushback.** Acknowledge and wait; don't fill the gap with a new guess.
 - **Design discipline is not restraint.** Match the maker's real brand energy (Sheri's saturated maximalism). Don't default to clean/white/minimal.
 - **A "structural fix" that only fixes the failure surface is a shortcut.** Audit every affected surface, not just the loud one.
 - **Don't drift to serif; don't pick safe/lazy.** Bold, distinctive, executed — serif only where it earns it. Don't overcorrect to absolutes.
@@ -77,10 +82,9 @@
 - **Verify agent-reported state instead of trusting it.** Cowork reported "40 uncommitted files"; actual was 4. Read `git status` yourself, don't quote what the agent saw.
 - **When Alex says stop / don't change, STOP — even mid-fix.** Session 73 repeatedly edited before he'd said go; he had to say "I did not tell you to change anything."
 - **Don't grade your own homework on a comparison set.** Curation = viewing a wide set AND rejecting, including saying "I'm two short," not padding to a target count with near-identical grabs. Sameness across a set is STRUCTURAL (same kind of thing), not fixable by turning up a dial.
-- **Never race Alex's dev server.** Don't force-kill his `next dev` or delete `.next` under a running server — it corrupts the Turbopack cache ("missing required error components"). Use the Bash tool for headless checks on your own port; let him own his server.
+- **Never race Alex's dev server.** Don't force-kill his `next dev` or delete `.next` under a running server — it corrupts the Turbopack cache ("missing required error components"). Use the Bash tool for headless checks on your own port; let him own his server. **Ask before starting the dev server; never alongside the full test suite.** If it chokes, clear `.next/dev/cache` first.
 - **Hand-built clients get their own layout, not the maker moods.** Alex had to say "we are NOT using the regular bohdiai formats." Don't drag onboarding/editor/mood/menu machinery into a hand-built site.
 - **Look at processed media before it goes live.** Sample frames across the whole clip; "encoded with 0 errors" shipped smeared garbage once.
-- **Ask before starting the dev server; never alongside the full test suite.** If it chokes, clear `.next/dev/cache` first.
 - **Commit messages via a file on Windows.** PowerShell 5.1 splits an inline message with double quotes into pathspecs; a commit silently failed in Session 93. Use `git commit -F <file>` and check `git log` before merging.
 - **Don't cause side effects Alex didn't ask for.** `seed-editor-test-owner.mjs` resets the password every run — running it "just for the admin row" clobbered his known password. Read what a script does before running it for a narrow purpose.
 
@@ -90,10 +94,6 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
-- Session 98 (2026-10-08): **Ember logo + sticky header LIVE; business cards, logo files, Facebook cover; Renee in; 24h invite parked.** Full recap: `session-logs/session-98.md`.
-- Sessions 96–97 (2026-10-06 → 10-07): **Rose n' Cat LIVE (boutique/nursery), then cart, orders, promotions, new arrivals, QR, Markets, market shop.** See `session-logs/session-96.md`, `session-97.md`.
-- Sessions 93–95 (2026-10-04 → 10-06): **Showcase marquee + builder login (93); bulletin board design, Rustic Rhody (94); homepage reshaped, three contractor designs, Joe public, Lead Generation $10, business cards (95).** See `session-logs/session-93.md` – `session-95.md`.
-- Sessions 91–92 (2026-10-02 → 10-03): **Tiers + prices agreed; pricing pages + FAQ live; Showcase tier + business card site (Rustic Rhody).** See `session-logs/session-91.md` and the tiers / business card specs.
-- Sessions 89–90 (2026-09-30 → 10-01): **CI green; maker backend designed, foundation (1a) + Catalog (1b) live; auto sign-out.** See `session-logs/session-89.md`, `session-90.md`.
-- Sessions 86–88 (2026-09-23 → 09-29): **Cut-Pro built by hand and LIVE (86); whole app moved from Vercel to Cloudflare Workers (87); bohdiai.com rebuilt as a web developer site (88).** See `session-logs/session-86.md` – `session-88.md`.
+- Session 100 (2026-10-10 → 10-12): **Maker checkup built (branch); Maker Market + Full $25 live; Saltmarsh merged as draft; shoreline market page (branch).** Full recap: `session-logs/session-100.md`.
+- Sessions 86–99 (2026-09-23 → 10-09): **Cut-Pro LIVE, Cloudflare move, bohdiai.com rebuilt, backend + Catalog (86–90); tiers + pricing pages (91–92); Rustic Rhody, contractor designs, Joe public (93–95); Rose n' Cat + Market POS, not live (96–97); ember logo (98); Saltmarsh demo (99).** See `session-logs/session-86.md` – `session-99.md`.
 - Sessions 0-85: Phase 0 through the Make It Yours walk (archetypes, families, sections, editor). See individual logs.

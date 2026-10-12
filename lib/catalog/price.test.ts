@@ -21,3 +21,12 @@ describe('priceRange', () => {
     expect(priceRange({ basePriceCents: 2400 }, [{ priceCents: 3000 }, { priceCents: null }, { priceCents: 1800 }])).toEqual({ min: 1800, max: 3000 });
   });
 });
+
+describe('no price yet', () => {
+  it('reads a zero base price as no price, and any real price as a price', async () => {
+    const { hasPrice, NO_PRICE_CENTS } = await import('./price');
+    expect(hasPrice(NO_PRICE_CENTS)).toBe(false);
+    expect(hasPrice(1)).toBe(true);
+    expect(hasPrice(2800)).toBe(true);
+  });
+});

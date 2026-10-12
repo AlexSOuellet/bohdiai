@@ -14,7 +14,9 @@ export const dynamic = 'force-dynamic';
 /** A mistyped address is "not found", not a database error. */
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export default async function EditMarketPage({ params }: PageProps<'/manage/markets/[id]'>): Promise<React.ReactElement> {
+export default async function EditMarketPage({
+  params,
+}: PageProps<'/manage/markets/[id]'>): Promise<React.ReactElement> {
   const { id } = await params;
   if (!ID.test(id)) notFound();
   const { site } = await requireActingSite();
@@ -23,14 +25,32 @@ export default async function EditMarketPage({ params }: PageProps<'/manage/mark
   const db = await createSupabaseServerClient();
   const market = await getMarket(db, site.tenantId, id);
   if (market === null) notFound();
-  if (!on.has('market_shop')) return <MarketEditor key={id} initial={market} />;
-  const [picks, listingIds] = await Promise.all([shopPicks(db, site.tenantId), marketListingIds(db, id)]);
+  if (!on.has('market_shop'))
+    return (
+      <MarketEditor
+        key={id}
+        initial={market}
+        details={on.has('market_details')}
+        records={on.has('market_records')}
+      />
+    );
+  const [picks, listingIds] = await Promise.all([
+    shopPicks(db, site.tenantId),
+    marketListingIds(db, id),
+  ]);
   const origin = storefrontOrigin(site.subdomain, (await headers()).get('host'));
   return (
     <MarketEditor
+      details={on.has('market_details')}
+      records={on.has('market_records')}
       key={id}
       initial={{ ...market, listingIds }}
-      shop={{ products: picks, marketUrl: marketPageUrl(origin, id), fileBase: `${site.subdomain}-market-qr`, todayHref: `/manage/markets/${id}/today` }}
+      shop={{
+        products: picks,
+        marketUrl: marketPageUrl(origin, id),
+        fileBase: `${site.subdomain}-market-qr`,
+        todayHref: `/manage/markets/${id}/today`,
+      }}
     />
   );
 }

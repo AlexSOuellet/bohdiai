@@ -6,9 +6,14 @@ vi.mock('@/lib/backend/catalog/actions', () => ({ uploadProductPhoto }));
 
 import { PhotosField } from './PhotosField';
 
-const photos = [{ uploadId: 'a', url: 'https://x/a.webp' }, { uploadId: 'b', url: 'https://x/b.webp' }];
+const photos = [
+  { uploadId: 'a', url: 'https://x/a.webp' },
+  { uploadId: 'b', url: 'https://x/b.webp' },
+];
 const pick = (input: HTMLElement, names: string[]) =>
-  fireEvent.change(input, { target: { files: names.map((n) => new File(['x'], n, { type: 'image/jpeg' })) } });
+  fireEvent.change(input, {
+    target: { files: names.map((n) => new File(['x'], n, { type: 'image/jpeg' })) },
+  });
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -23,10 +28,33 @@ describe('PhotosField', () => {
     expect(onChange).toHaveBeenLastCalledWith([photos[1]]);
   });
   it('shows the shop’s sample photo with a note while there are no real photos', () => {
-    const { rerender } = render(<PhotosField photos={[]} samplePhotoUrl="https://stock/fig.jpg" onAdd={vi.fn()} onChange={vi.fn()} onError={vi.fn()} />);
-    expect(screen.getByRole('img', { name: 'Sample photo' })).toHaveAttribute('src', 'https://stock/fig.jpg');
-    expect(screen.getByText('Your shop is showing this sample photo. Add your own photos to replace it.')).toBeInTheDocument();
-    rerender(<PhotosField photos={photos} samplePhotoUrl="https://stock/fig.jpg" onAdd={vi.fn()} onChange={vi.fn()} onError={vi.fn()} />);
+    const { rerender } = render(
+      <PhotosField
+        photos={[]}
+        samplePhotoUrl="https://stock/fig.jpg"
+        onAdd={vi.fn()}
+        onChange={vi.fn()}
+        onError={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('img', { name: 'Sample photo' })).toHaveAttribute(
+      'src',
+      'https://stock/fig.jpg',
+    );
+    expect(
+      screen.getByText(
+        'Your shop is showing this sample photo. Add your own photos to replace it.',
+      ),
+    ).toBeInTheDocument();
+    rerender(
+      <PhotosField
+        photos={photos}
+        samplePhotoUrl="https://stock/fig.jpg"
+        onAdd={vi.fn()}
+        onChange={vi.fn()}
+        onError={vi.fn()}
+      />,
+    );
     expect(screen.queryByRole('img', { name: 'Sample photo' })).toBeNull();
     expect(screen.queryByText(/sample photo/)).toBeNull();
   });
@@ -35,12 +63,16 @@ describe('PhotosField', () => {
     expect(screen.queryByText(/sample photo/)).toBeNull();
   });
   it('uploads each picked photo and reports the ones that failed by name', async () => {
-    uploadProductPhoto.mockResolvedValueOnce({ ok: true, uploadId: 'c', url: 'https://x/c.webp' }).mockResolvedValueOnce({ ok: false, error: 'Use a JPG, PNG or WebP photo.' });
+    uploadProductPhoto
+      .mockResolvedValueOnce({ ok: true, uploadId: 'c', url: 'https://x/c.webp' })
+      .mockResolvedValueOnce({ ok: false, error: 'Use a JPG, PNG or WebP photo.' });
     const onAdd = vi.fn();
     const onError = vi.fn();
     render(<PhotosField photos={[]} onAdd={onAdd} onChange={vi.fn()} onError={onError} />);
     pick(screen.getByLabelText('Add photos'), ['one.jpg', 'two.gif']);
-    await waitFor(() => expect(onError).toHaveBeenCalledWith('two.gif: Use a JPG, PNG or WebP photo.'));
+    await waitFor(() =>
+      expect(onError).toHaveBeenCalledWith('two.gif: Use a JPG, PNG or WebP photo.'),
+    );
     expect(onAdd).toHaveBeenCalledWith({ uploadId: 'c', url: 'https://x/c.webp' });
   });
   it('says so when an upload throws', async () => {
@@ -48,24 +80,42 @@ describe('PhotosField', () => {
     const onError = vi.fn();
     render(<PhotosField photos={[]} onAdd={vi.fn()} onChange={vi.fn()} onError={onError} />);
     pick(screen.getByLabelText('Add photos'), ['one.jpg']);
-    await waitFor(() => expect(onError).toHaveBeenCalledWith('one.jpg: The photo couldn’t be uploaded. Check your connection and try again.'));
+    await waitFor(() =>
+      expect(onError).toHaveBeenCalledWith(
+        'one.jpg: The photo couldn’t be uploaded. Check your connection and try again.',
+      ),
+    );
   });
   it('stops at the photo limit and says so', async () => {
-    const twelve = Array.from({ length: 12 }, (_, i) => ({ uploadId: `p${i}`, url: `https://x/${i}.webp` }));
+    const twelve = Array.from({ length: 12 }, (_, i) => ({
+      uploadId: `p${i}`,
+      url: `https://x/${i}.webp`,
+    }));
     const onError = vi.fn();
     render(<PhotosField photos={twelve} onAdd={vi.fn()} onChange={vi.fn()} onError={onError} />);
     pick(screen.getByLabelText('Add photos'), ['one.jpg']);
-    await waitFor(() => expect(onError).toHaveBeenCalledWith('A product can have up to 12 photos. Remove one to add another.'));
+    await waitFor(() =>
+      expect(onError).toHaveBeenCalledWith(
+        'A product can have up to 12 photos. Remove one to add another.',
+      ),
+    );
     expect(uploadProductPhoto).not.toHaveBeenCalled();
   });
   it('says how many were really added when the limit cut the pick short and one failed', async () => {
-    const ten = Array.from({ length: 10 }, (_, i) => ({ uploadId: `p${i}`, url: `https://x/${i}.webp` }));
-    uploadProductPhoto.mockResolvedValueOnce({ ok: true, uploadId: 'c', url: 'https://x/c.webp' }).mockResolvedValueOnce({ ok: false, error: 'Use a JPG, PNG or WebP photo.' });
+    const ten = Array.from({ length: 10 }, (_, i) => ({
+      uploadId: `p${i}`,
+      url: `https://x/${i}.webp`,
+    }));
+    uploadProductPhoto
+      .mockResolvedValueOnce({ ok: true, uploadId: 'c', url: 'https://x/c.webp' })
+      .mockResolvedValueOnce({ ok: false, error: 'Use a JPG, PNG or WebP photo.' });
     const onError = vi.fn();
     render(<PhotosField photos={ten} onAdd={vi.fn()} onChange={vi.fn()} onError={onError} />);
     pick(screen.getByLabelText('Add photos'), ['one.jpg', 'two.gif', 'three.jpg']);
     await waitFor(() =>
-      expect(onError).toHaveBeenCalledWith('A product can have up to 12 photos, so 1 of the 3 you picked was added. two.gif: Use a JPG, PNG or WebP photo.'),
+      expect(onError).toHaveBeenCalledWith(
+        'A product can have up to 12 photos, so 1 of the 3 you picked was added. two.gif: Use a JPG, PNG or WebP photo.',
+      ),
     );
     expect(uploadProductPhoto).toHaveBeenCalledTimes(2);
   });

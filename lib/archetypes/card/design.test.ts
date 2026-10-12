@@ -11,6 +11,7 @@ describe('card design', () => {
     expect(cardDesign(CardContentSchema.parse({ design: 'pinned' }))).toBe('pinned');
     expect(cardDesign(CardContentSchema.parse({ design: 'showreel' }))).toBe('showreel');
     expect(cardDesign(CardContentSchema.parse({ design: 'torch' }))).toBe('torch');
+    expect(cardDesign(CardContentSchema.parse({ design: 'shoreline' }))).toBe('shoreline');
   });
 
   it('refuses a design that does not exist, and anything else in the content', () => {

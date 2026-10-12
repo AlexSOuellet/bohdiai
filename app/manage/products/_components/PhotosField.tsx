@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { unstable_rethrow } from 'next/navigation';
 import { uploadProductPhoto } from '@/lib/backend/catalog/actions';
 import { MAX_PHOTOS, type PhotoForm } from '@/lib/backend/catalog/product-form';
+import { limitNote } from '@/lib/backend/catalog/photo-limit';
 import { moveItem } from '@/lib/backend/catalog/collection-form';
 
 /** Several photos; the first is the main one; the maker reorders (spec §4). Photos
@@ -11,6 +12,7 @@ import { moveItem } from '@/lib/backend/catalog/collection-form';
 export function PhotosField({
   photos,
   samplePhotoUrl = null,
+  limit = MAX_PHOTOS,
   onAdd,
   onChange,
   onError,
@@ -18,6 +20,8 @@ export function PhotosField({
   photos: PhotoForm[];
   /** The legacy sample photo the shop shows while there are no real photos. */
   samplePhotoUrl?: string | null;
+  /** How many photos the site's plan allows; past it the add button gives way to a note. */
+  limit?: number;
   onAdd: (photo: PhotoForm) => void;
   onChange: (photos: PhotoForm[]) => void;
   onError: (message: string) => void;
@@ -28,9 +32,11 @@ export function PhotosField({
     const files = [...(e.target.files ?? [])];
     e.target.value = '';
     if (files.length === 0) return;
-    const room = MAX_PHOTOS - photos.length;
+    const room = limit - photos.length;
     if (room <= 0) {
-      onError(`A product can have up to ${MAX_PHOTOS} photos. Remove one to add another.`);
+      onError(
+        limitNote(limit) ?? `A product can have up to ${limit} photos. Remove one to add another.`,
+      );
       return;
     }
     const failures: string[] = [];
@@ -47,14 +53,18 @@ export function PhotosField({
         } else failures.push(`${file.name}: ${r.error}`);
       } catch (err) {
         unstable_rethrow(err);
-        failures.push(`${file.name}: The photo couldn’t be uploaded. Check your connection and try again.`);
+        failures.push(
+          `${file.name}: The photo couldn’t be uploaded. Check your connection and try again.`,
+        );
       } finally {
         setUploading((n) => n - 1);
       }
     }
     // Counted after the uploads, so the number is what really landed, not what was tried.
     if (files.length > room) {
-      failures.unshift(`A product can have up to ${MAX_PHOTOS} photos, so ${added} of the ${files.length} you picked ${added === 1 ? 'was' : 'were'} added.`);
+      failures.unshift(
+        `A product can have up to ${limit} photos, so ${added} of the ${files.length} you picked ${added === 1 ? 'was' : 'were'} added.`,
+      );
     }
     if (failures.length > 0) onError(failures.join(' '));
   }
@@ -70,10 +80,34 @@ export function PhotosField({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={p.url} alt={`Photo ${i + 1}`} />
               {i === 0 && <span className="bk-tag">Main photo</span>}
+              {i >= limit && <span className="bk-tag">Hidden on your plan</span>}
               <div className="bk-row">
-                <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" disabled={i === 0} aria-label={`Move photo ${i + 1} earlier`} onClick={() => onChange(moveItem(photos, i, -1))}>←</button>
-                <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" disabled={i === photos.length - 1} aria-label={`Move photo ${i + 1} later`} onClick={() => onChange(moveItem(photos, i, 1))}>→</button>
-                <button type="button" className="bk-btn bk-btn-danger bk-btn-small" aria-label={`Remove photo ${i + 1}`} onClick={() => onChange(photos.filter((_, j) => j !== i))}>Remove</button>
+                <button
+                  type="button"
+                  className="bk-btn bk-btn-quiet bk-btn-small"
+                  disabled={i === 0}
+                  aria-label={`Move photo ${i + 1} earlier`}
+                  onClick={() => onChange(moveItem(photos, i, -1))}
+                >
+                  ←
+                </button>
+                <button
+                  type="button"
+                  className="bk-btn bk-btn-quiet bk-btn-small"
+                  disabled={i === photos.length - 1}
+                  aria-label={`Move photo ${i + 1} later`}
+                  onClick={() => onChange(moveItem(photos, i, 1))}
+                >
+                  →
+                </button>
+                <button
+                  type="button"
+                  className="bk-btn bk-btn-danger bk-btn-small"
+                  aria-label={`Remove photo ${i + 1}`}
+                  onClick={() => onChange(photos.filter((_, j) => j !== i))}
+                >
+                  Remove
+                </button>
               </div>
             </li>
           ))}
@@ -86,17 +120,33 @@ export function PhotosField({
                 a plain img like the maker-photo spots above (no next/image optimiser hop). */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={samplePhotoUrl} alt="Sample photo" />
-            <span className="bk-note">Your shop is showing this sample photo. Add your own photos to replace it.</span>
+            <span className="bk-note">
+              Your shop is showing this sample photo. Add your own photos to replace it.
+            </span>
           </div>
         </div>
       )}
-      <p className="bk-row">
-        <label className="bk-btn bk-btn-quiet">
-          {uploading > 0 ? 'Uploading…' : 'Add photos'}
-          <input type="file" className="bk-sr" accept="image/jpeg,image/png,image/webp" multiple aria-label="Add photos" disabled={uploading > 0} onChange={(e) => void add(e)} />
-        </label>
-        <span className="bk-note">JPG, PNG or WebP, up to 20MB each. Big photos are made smaller for you.</span>
-      </p>
+      {photos.length >= limit && limitNote(limit) !== null ? (
+        <p className="bk-note">{limitNote(limit)}</p>
+      ) : (
+        <p className="bk-row">
+          <label className="bk-btn bk-btn-quiet">
+            {uploading > 0 ? 'Uploading…' : 'Add photos'}
+            <input
+              type="file"
+              className="bk-sr"
+              accept="image/jpeg,image/png,image/webp"
+              multiple={limit > 1}
+              aria-label="Add photos"
+              disabled={uploading > 0}
+              onChange={(e) => void add(e)}
+            />
+          </label>
+          <span className="bk-note">
+            JPG, PNG or WebP, up to 20MB each. Big photos are made smaller for you.
+          </span>
+        </p>
+      )}
     </div>
   );
 }

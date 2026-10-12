@@ -5,7 +5,7 @@ import { SAMPLES, CLIENTS } from '@/lib/site/work';
 describe('sampleBannerFor', () => {
   it('names the plan each sample shows and links to the maker plans', () => {
     expect(sampleBannerFor('rustic-rhody')).toEqual({ label: 'Showcase sample', href: 'https://bohdiai.com/makers#plans' });
-    expect(sampleBannerFor('classic-loafs')?.label).toBe('Lite sample');
+    expect(sampleBannerFor('classic-loafs')?.label).toBe('Market sample');
     expect(sampleBannerFor('twilight-to-darkness')?.label).toBe('Full sample');
     expect(sampleBannerFor('paper-and-patina')?.label).toBe('Showcase sample');
     expect(sampleBannerFor('ember-and-pine')?.label).toBe('Showcase sample');

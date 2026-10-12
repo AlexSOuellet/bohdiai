@@ -44,7 +44,14 @@ export function FileField({
       <span className="bk-note">{fileName ?? 'No file yet'}</span>
       <label className="bk-btn bk-btn-quiet bk-btn-small">
         {busy ? 'Uploading…' : fileName === null ? 'Upload file' : 'Replace file'}
-        <input type="file" className="bk-sr" accept={ACCEPT} aria-label={label} disabled={busy} onChange={(e) => void pick(e)} />
+        <input
+          type="file"
+          className="bk-sr"
+          accept={ACCEPT}
+          aria-label={label}
+          disabled={busy}
+          onChange={(e) => void pick(e)}
+        />
       </label>
     </div>
   );

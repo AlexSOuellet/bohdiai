@@ -23,7 +23,7 @@ const BUSINESS_JSON_LD = {
   description: 'Websites for makers, contractors and charities in Rhode Island and beyond.',
   email: SITE_CONTACT_EMAIL,
   sameAs: [SITE_FACEBOOK_URL],
-  founder: { '@type': 'Person', name: 'Alex Scott' },
+  founder: { '@type': 'Person', name: 'Alex Ouellet' },
   areaServed: 'US',
   foundingDate: '2026',
 };

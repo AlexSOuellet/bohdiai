@@ -82,7 +82,7 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         id: 'monthly-or-yearly',
         q: 'Monthly or yearly? Can I switch?',
         a: [
-          `Either. Yearly works out to about two months free (${p('maker-lite', 'yearly')} a year instead of ${p('maker-lite')} a month on Lite). You can switch any time, and your bill is adjusted for the time you’ve already paid for.`,
+          `Either. Yearly works out to about two months free (${p('maker-lite', 'yearly')} a year instead of ${p('maker-lite')} a month on Maker Market). You can switch any time, and your bill is adjusted for the time you’ve already paid for.`,
         ],
       },
       {
@@ -129,14 +129,23 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         id: 'upgrade',
         q: 'Can I move up a plan?',
         a: [
-          'Any time, from Showcase to Lite or from Lite to Full, and it happens right away. There’s nothing to pay up front: your bill is prorated, so you only pay the difference for the rest of your current billing period, then the new price from then on. Everything you’ve already added comes with you.',
+          'Any time, from Showcase to Maker Market or from Maker Market to Full, and it happens right away. There’s nothing to pay up front: your bill is prorated, so you only pay the difference for the rest of your current billing period, then the new price from then on. Everything you’ve already added comes with you.',
+          'On a yearly plan you can switch to monthly when you move up. The unused part of your year becomes credit that pays your next months until it runs out.',
+        ],
+      },
+      {
+        id: 'downgrade',
+        q: 'Can I move down a plan?',
+        a: [
+          'Yes. Plenty of makers are seasonal, so moving down for the quiet months is better than leaving. The change starts at your next renewal, and you keep everything you have until then. Nothing already paid is refunded.',
+          'Nothing is deleted when you move down. Your products, photos and dates are put away, not removed, and they all come back when you move up again. Moving to Showcase, you pick up to 12 of your products to show on your one page.',
         ],
       },
       {
         id: 'cancel',
         q: 'What happens if I cancel?',
         a: [
-          'Your site comes down at the end of what you’ve paid for. If you’re on Full and it’s more than you need, I’ll offer you Lite instead, so you keep your site at the lower price.',
+          'Your site comes down at the end of what you’ve paid for. If you’re on Full and it’s more than you need, I’ll offer you Maker Market instead, so you keep your site at the lower price.',
         ],
       },
       {
@@ -153,7 +162,7 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         id: 'must-sell-online',
         q: 'Do I have to sell online?',
         a: [
-          'No. Lite is made for makers who sell in person: your site shows what you make, with prices, and people can ask about anything with one tap. When you’re ready to sell online, move up to Full.',
+          'No. Maker Market is made for makers who sell in person: your site shows what you make, with prices, and people can ask about anything with one tap. When you’re ready to sell online, move up to Full.',
         ],
       },
       {

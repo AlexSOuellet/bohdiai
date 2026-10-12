@@ -33,7 +33,7 @@ afterEach(() => {
 describe('MarketEditor', () => {
   it('saves a new market with its details and goes back to the list', async () => {
     saveMarket.mockResolvedValue({ ok: true, id: 'm9' });
-    render(<MarketEditor initial={emptyMarketForm()} />);
+    render(<MarketEditor initial={emptyMarketForm()} details records />);
     expect(screen.getByRole('heading', { level: 1, name: 'Add a market' })).toBeTruthy();
     fireEvent.change(screen.getByLabelText('Market name'), { target: { value: 'Holly Fair' } });
     fireEvent.change(screen.getByLabelText('Day'), { target: { value: '2026-11-21' } });
@@ -44,7 +44,7 @@ describe('MarketEditor', () => {
   });
 
   it('adds costs and shows their total', () => {
-    render(<MarketEditor initial={existing()} />);
+    render(<MarketEditor initial={existing()} details records />);
     fireEvent.click(screen.getByRole('button', { name: 'Add a cost' }));
     expect((screen.getByLabelText('What') as HTMLInputElement).value).toBe('Booth fee');
     fireEvent.change(screen.getByLabelText('Amount'), { target: { value: '40' } });
@@ -53,7 +53,7 @@ describe('MarketEditor', () => {
 
   it('takes a star rating and go-back answer', async () => {
     saveMarket.mockResolvedValue({ ok: true, id: 'm1' });
-    render(<MarketEditor initial={existing()} />);
+    render(<MarketEditor initial={existing()} details records />);
     fireEvent.click(screen.getByRole('button', { name: '4 stars' }));
     expect(screen.getByRole('button', { name: '4 stars' }).getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(screen.getByLabelText('Maybe'));
@@ -62,7 +62,7 @@ describe('MarketEditor', () => {
   });
 
   it('stops a market with no day before saving, and says why', async () => {
-    render(<MarketEditor initial={emptyMarketForm()} />);
+    render(<MarketEditor initial={emptyMarketForm()} details records />);
     fireEvent.change(screen.getByLabelText('Market name'), { target: { value: 'Holly Fair' } });
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
     await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('first day'));
@@ -71,7 +71,7 @@ describe('MarketEditor', () => {
 
   it('shows a failed save and stays on the page', async () => {
     saveMarket.mockResolvedValue({ ok: false, error: 'The market couldn’t be saved. Try again in a moment.' });
-    render(<MarketEditor initial={existing()} />);
+    render(<MarketEditor initial={existing()} details records />);
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
     await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('couldn’t be saved'));
     expect(push).not.toHaveBeenCalled();
@@ -79,7 +79,7 @@ describe('MarketEditor', () => {
 
   it('removes a market after a confirm', async () => {
     removeMarket.mockResolvedValue({ ok: true });
-    render(<MarketEditor initial={existing()} />);
+    render(<MarketEditor initial={existing()} details records />);
     fireEvent.click(screen.getByRole('button', { name: 'Remove this market' }));
     fireEvent.click(screen.getByRole('button', { name: 'Yes, remove it' }));
     await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/markets?removed=Holly%20Fair'));
@@ -99,7 +99,7 @@ describe('MarketEditor — your table', () => {
 
   it('ticks the babies she brings and saves them with the market', async () => {
     saveMarket.mockResolvedValue({ ok: true, id: 'm1' });
-    render(<MarketEditor initial={existing()} shop={shop} />);
+    render(<MarketEditor details records initial={existing()} shop={shop} />);
     expect(screen.getByText(/Save the market first/)).toBeTruthy();
     fireEvent.click(screen.getByLabelText(/Theo/));
     expect(screen.getByText('What you’re bringing (1)')).toBeTruthy();
@@ -108,7 +108,7 @@ describe('MarketEditor — your table', () => {
   });
 
   it('opens Today and shows the code for a saved market', () => {
-    render(<MarketEditor initial={existing({ listingIds: ['l1'] })} shop={{ ...shop, marketUrl: 'https://rose-n-cat.bohdiai.com/market/m1', todayHref: '/manage/markets/m1/today' }} />);
+    render(<MarketEditor details records initial={existing({ listingIds: ['l1'] })} shop={{ ...shop, marketUrl: 'https://rose-n-cat.bohdiai.com/market/m1', todayHref: '/manage/markets/m1/today' }} />);
     expect(screen.getByRole('link', { name: 'Open Today: sales at the table' }).getAttribute('href')).toBe('/manage/markets/m1/today');
     expect(screen.getByText('https://rose-n-cat.bohdiai.com/market/m1')).toBeTruthy();
     fireEvent.click(screen.getByLabelText(/Theo/));
@@ -116,7 +116,29 @@ describe('MarketEditor — your table', () => {
   });
 
   it('says so when there is nothing live to bring', () => {
-    render(<MarketEditor initial={existing()} shop={{ ...shop, products: [] }} />);
+    render(<MarketEditor details records initial={existing()} shop={{ ...shop, products: [] }} />);
     expect(screen.getByText(/No live products yet/)).toBeTruthy();
+  });
+
+  it('asks only day, market and town at Showcase, and saves the hidden details untouched', async () => {
+    saveMarket.mockResolvedValue({ ok: true, id: 'm1' });
+    render(<MarketEditor details={false} records={false} initial={existing({ organizerName: 'Pat', notes: 'Bring tent weights', rating: 4, hours: '10am – 4pm', booth: 'Booth 4' })} />);
+    expect(screen.getByLabelText('Market name')).toBeTruthy();
+    expect(screen.getByLabelText('Town')).toBeTruthy();
+    for (const label of ['Hours', 'Address', 'Booth or table', 'The market’s website']) expect(screen.queryByLabelText(new RegExp(label))).toBeNull();
+    for (const name of ['Costs', 'Organizer', 'Notes', 'Your review']) expect(screen.queryByRole('heading', { name })).toBeNull();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
+    await waitFor(() => expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ organizerName: 'Pat', notes: 'Bring tent weights', rating: 4, hours: '10am – 4pm', booth: 'Booth 4' })));
+  });
+
+  it('adds hours, address, booth and website at Lite, without the private records', () => {
+    render(<MarketEditor details records={false} initial={existing()} />);
+    expect(screen.getByLabelText(/Booth or table/)).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Costs' })).toBeNull();
+  });
+
+  it('shows costs, organizer, notes and the review with market records', () => {
+    render(<MarketEditor details records initial={existing()} />);
+    for (const name of ['Costs', 'Organizer', 'Notes', 'Your review']) expect(screen.getByRole('heading', { name })).toBeTruthy();
   });
 });

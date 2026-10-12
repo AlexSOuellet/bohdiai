@@ -10,7 +10,7 @@ export function marketDays(m: { date: string; endDate: string }): string {
   return m.endDate === '' ? day(m.date) : `${day(m.date)} to ${day(m.endDate)}`;
 }
 
-function Row({ m }: { m: MarketRowView }): React.ReactElement {
+function Row({ m, records }: { m: MarketRowView; records: boolean }): React.ReactElement {
   return (
     <li className="bk-list-item bk-market-row">
       <Link className="bk-market-link" href={`/manage/markets/${m.id}` as Route}>
@@ -22,7 +22,7 @@ function Row({ m }: { m: MarketRowView }): React.ReactElement {
       </Link>
       <span className="bk-market-meta">
         {m.canceled && <span className="bk-pill">Canceled</span>}
-        {m.rating > 0 && (
+        {records && m.rating > 0 && (
           <span className="bk-stars" aria-label={`${m.rating} of 5 stars`}>
             {'★'.repeat(m.rating)}
             <span className="bk-stars-off">{'★'.repeat(5 - m.rating)}</span>
@@ -35,7 +35,7 @@ function Row({ m }: { m: MarketRowView }): React.ReactElement {
 
 /** Markets: coming up soonest first, then past ones newest first so her reviews
  *  stay handy. The split is only in her backend; the site never hides a market. */
-export function MarketList({ markets, today }: { markets: MarketRowView[]; today: string }): React.ReactElement {
+export function MarketList({ markets, today, records }: { markets: MarketRowView[]; today: string; records: boolean }): React.ReactElement {
   const upcoming = markets.filter((m) => !isPastMarket(m, today));
   const past = markets.filter((m) => isPastMarket(m, today)).reverse();
   if (markets.length === 0) {
@@ -52,7 +52,7 @@ export function MarketList({ markets, today }: { markets: MarketRowView[]; today
         ) : (
           <ul className="bk-list" aria-label="Coming up">
             {upcoming.map((m) => (
-              <Row key={m.id} m={m} />
+              <Row key={m.id} m={m} records={records} />
             ))}
           </ul>
         )}
@@ -62,10 +62,10 @@ export function MarketList({ markets, today }: { markets: MarketRowView[]; today
           <h2 id="s-past" className="bk-section-title">
             Past markets
           </h2>
-          <p className="bk-note">Open one to add your review: how it went, and whether to go back.</p>
+          {records && <p className="bk-note">Open one to add your review: how it went, and whether to go back.</p>}
           <ul className="bk-list" aria-label="Past markets">
             {past.map((m) => (
-              <Row key={m.id} m={m} />
+              <Row key={m.id} m={m} records={records} />
             ))}
           </ul>
         </section>

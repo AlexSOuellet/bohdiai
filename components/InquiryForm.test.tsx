@@ -112,7 +112,7 @@ describe('InquiryForm — on a pricing page', () => {
     fetchMock.mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
     render(<InquiryForm audience="maker" initialKind="maker" />);
     const plans = screen.getByRole('group', { name: /which plan/i });
-    expect(plans).toHaveTextContent('Maker Lite');
+    expect(plans).toHaveTextContent('Maker Market');
     expect(plans).toHaveTextContent('Maker Full');
     expect(plans).toHaveTextContent('Not sure yet');
     expect(plans).not.toHaveTextContent('Contractor');

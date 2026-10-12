@@ -48,6 +48,7 @@ export function ProductEditor({
   initial,
   collections,
   digital,
+  photoLimit,
   newArrivals = false,
   shopUrl,
   homeCount,
@@ -55,6 +56,8 @@ export function ProductEditor({
   initial: ProductForm;
   collections: { id: string; name: string }[];
   digital: boolean;
+  /** How many photos this site's plan allows a product. */
+  photoLimit: number;
   /** The site shows new arrivals in their own home section, so offer the tick. */
   newArrivals?: boolean;
   shopUrl: string;
@@ -117,7 +120,12 @@ export function ProductEditor({
   };
   /** A choice's file landed. Options may have changed while it uploaded, so find the
    *  choice in the form as it is now, never in the arrays from when the upload began. */
-  const setChoiceFile = (optionIndex: number, value: string, uploadId: string, fileName: string) => {
+  const setChoiceFile = (
+    optionIndex: number,
+    value: string,
+    uploadId: string,
+    fileName: string,
+  ) => {
     if (!hasChoice(latest.current, optionIndex, value)) {
       notice.showError(CHOICE_GONE);
       return;
@@ -128,7 +136,14 @@ export function ProductEditor({
         : {
             ...f,
             options: f.options.map((o, i) =>
-              i !== optionIndex ? o : { ...o, choices: o.choices.map((c) => (c.value === value ? { ...c, fileUploadId: uploadId, fileName } : c)) },
+              i !== optionIndex
+                ? o
+                : {
+                    ...o,
+                    choices: o.choices.map((c) =>
+                      c.value === value ? { ...c, fileUploadId: uploadId, fileName } : c,
+                    ),
+                  },
             ),
           },
     );
@@ -174,7 +189,10 @@ export function ProductEditor({
   /** Send `next`; on success go back to the list, which names what was done. */
   function send(next: ProductForm, done: 'saved' | 'archived'): void {
     if (inFlight.current) return;
-    const check = buildProductPayload(next, { digital });
+    const check = buildProductPayload(next, {
+      digital,
+      photos: { limit: photoLimit, kept: stored.photos.length },
+    });
     if (!check.ok) {
       notice.showError(check.error);
       return;
@@ -202,7 +220,12 @@ export function ProductEditor({
         <h1 className="bk-title">{isNew ? 'New product' : stored.name}</h1>
         <div className="bk-head-actions">
           {!isNew && stored.status === 'active' && stored.slug !== null && (
-            <a className="bk-btn bk-btn-quiet" href={`${shopUrl}/listings/${stored.slug}`} target="_blank" rel="noopener noreferrer">
+            <a
+              className="bk-btn bk-btn-quiet"
+              href={`${shopUrl}/listings/${stored.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               View on your shop
             </a>
           )}
@@ -243,10 +266,19 @@ export function ProductEditor({
         {notice.area}
 
         <section className="bk-section" aria-labelledby="s-basics">
-          <h2 id="s-basics" className="bk-section-title">The basics</h2>
+          <h2 id="s-basics" className="bk-section-title">
+            The basics
+          </h2>
           <div className="bk-field">
-            <label htmlFor="name" className="bk-label">Name</label>
-            <input id="name" className="bk-input" value={form.name} onChange={(e) => update({ name: e.target.value })} />
+            <label htmlFor="name" className="bk-label">
+              Name
+            </label>
+            <input
+              id="name"
+              className="bk-input"
+              value={form.name}
+              onChange={(e) => update({ name: e.target.value })}
+            />
           </div>
           <div className="bk-field">
             <label className="bk-check">
@@ -268,52 +300,117 @@ export function ProductEditor({
           {newArrivals && (
             <div className="bk-field">
               <label className="bk-check">
-                <input type="checkbox" checked={form.isNew} onChange={(e) => update({ isNew: e.target.checked })} />
+                <input
+                  type="checkbox"
+                  checked={form.isNew}
+                  onChange={(e) => update({ isNew: e.target.checked })}
+                />
                 New arrival
               </label>
-              <p className="bk-note">Shows it in the new arrivals section of your home page, with a little “new” ribbon. Untick it when it isn’t new any more.</p>
+              <p className="bk-note">
+                Shows it in the new arrivals section of your home page, with a little “new” ribbon.
+                Untick it when it isn’t new any more.
+              </p>
             </div>
           )}
           <div className="bk-field">
-            <label htmlFor="short" className="bk-label">Short description</label>
-            <input id="short" className="bk-input" value={form.shortDescription} onChange={(e) => update({ shortDescription: e.target.value })} />
+            <label htmlFor="short" className="bk-label">
+              Short description
+            </label>
+            <input
+              id="short"
+              className="bk-input"
+              value={form.shortDescription}
+              onChange={(e) => update({ shortDescription: e.target.value })}
+            />
           </div>
           <div className="bk-field">
-            <label htmlFor="long" className="bk-label">Description</label>
-            <textarea id="long" className="bk-input bk-textarea" value={form.description} onChange={(e) => update({ description: e.target.value })} />
+            <label htmlFor="long" className="bk-label">
+              Description
+            </label>
+            <textarea
+              id="long"
+              className="bk-input bk-textarea"
+              value={form.description}
+              onChange={(e) => update({ description: e.target.value })}
+            />
           </div>
         </section>
 
         <section className="bk-section" aria-labelledby="s-photos">
-          <h2 id="s-photos" className="bk-section-title">Photos</h2>
-          <PhotosField photos={form.photos} samplePhotoUrl={form.samplePhotoUrl} onAdd={addPhoto} onChange={(photos) => update({ photos })} onError={notice.showError} />
+          <h2 id="s-photos" className="bk-section-title">
+            Photos
+          </h2>
+          <PhotosField
+            photos={form.photos}
+            samplePhotoUrl={form.samplePhotoUrl}
+            limit={photoLimit}
+            onAdd={addPhoto}
+            onChange={(photos) => update({ photos })}
+            onError={notice.showError}
+          />
         </section>
 
         <section className="bk-section" aria-labelledby="s-price">
-          <h2 id="s-price" className="bk-section-title">Price and stock</h2>
+          <h2 id="s-price" className="bk-section-title">
+            Price and stock
+          </h2>
           <div className="bk-grid-2">
             <div className="bk-field">
-              <label htmlFor="price" className="bk-label">Price</label>
-              <input id="price" className="bk-input" inputMode="decimal" placeholder="24 or 24.50" value={form.price} onChange={(e) => update({ price: e.target.value })} />
+              <label htmlFor="price" className="bk-label">
+                Price
+              </label>
+              <input
+                id="price"
+                className="bk-input"
+                inputMode="decimal"
+                placeholder="24 or 24.50"
+                value={form.price}
+                onChange={(e) => update({ price: e.target.value })}
+              />
             </div>
             {noOptions && form.kind === 'physical' && (
               <div className="bk-field">
-                <label htmlFor="stock" className="bk-label">Stock</label>
-                <input id="stock" className="bk-input" inputMode="numeric" placeholder="Blank = made to order" value={form.stock} onChange={(e) => update({ stock: e.target.value })} />
+                <label htmlFor="stock" className="bk-label">
+                  Stock
+                </label>
+                <input
+                  id="stock"
+                  className="bk-input"
+                  inputMode="numeric"
+                  placeholder="Blank = made to order"
+                  value={form.stock}
+                  onChange={(e) => update({ stock: e.target.value })}
+                />
               </div>
             )}
           </div>
-          {!noOptions && <p className="bk-note">With options, each combination below has its own stock. A blank combination price uses this one.</p>}
+          {!noOptions && (
+            <p className="bk-note">
+              With options, each combination below has its own stock. A blank combination price uses
+              this one.
+            </p>
+          )}
           {digital && noOptions && (
             <fieldset className="bk-field bk-fieldset">
               <legend className="bk-label">How it’s sold</legend>
               <div className="bk-row">
                 <label className="bk-check">
-                  <input type="radio" name="kind" checked={form.kind === 'physical'} onChange={() => update({ kind: 'physical' })} />
+                  <input
+                    type="radio"
+                    name="kind"
+                    checked={form.kind === 'physical'}
+                    onChange={() => update({ kind: 'physical' })}
+                  />
                   Ships
                 </label>
                 <label className="bk-check">
-                  <input type="radio" name="kind" checked={form.kind === 'digital'} onChange={() => update({ kind: 'digital' })} />
+                  <input
+                    type="radio"
+                    name="kind"
+                    checked={form.kind === 'digital'}
+                    onChange={() => update({ kind: 'digital' })}
+                  />
                   Download
                 </label>
               </div>
@@ -333,7 +430,9 @@ export function ProductEditor({
         </section>
 
         <section className="bk-section" aria-labelledby="s-options">
-          <h2 id="s-options" className="bk-section-title">Options</h2>
+          <h2 id="s-options" className="bk-section-title">
+            Options
+          </h2>
           <OptionsField
             options={form.options}
             variants={form.variants}
@@ -347,7 +446,9 @@ export function ProductEditor({
         </section>
 
         <section className="bk-section" aria-labelledby="s-collections">
-          <h2 id="s-collections" className="bk-section-title">Collections</h2>
+          <h2 id="s-collections" className="bk-section-title">
+            Collections
+          </h2>
           {collections.length === 0 ? (
             <p className="bk-note">No collections yet. You can make them under Collections.</p>
           ) : (
@@ -357,7 +458,13 @@ export function ProductEditor({
                   <input
                     type="checkbox"
                     checked={form.collectionIds.includes(c.id)}
-                    onChange={(e) => update({ collectionIds: e.target.checked ? [...form.collectionIds, c.id] : form.collectionIds.filter((x) => x !== c.id) })}
+                    onChange={(e) =>
+                      update({
+                        collectionIds: e.target.checked
+                          ? [...form.collectionIds, c.id]
+                          : form.collectionIds.filter((x) => x !== c.id),
+                      })
+                    }
                   />
                   {c.name}
                 </label>
@@ -369,12 +476,19 @@ export function ProductEditor({
         <section className="bk-section" aria-labelledby="s-status">
           <fieldset className="bk-fieldset">
             <legend>
-              <h2 id="s-status" className="bk-section-title">Status</h2>
+              <h2 id="s-status" className="bk-section-title">
+                Status
+              </h2>
             </legend>
             <div className="bk-checks">
               {STATUSES.map((s) => (
                 <label key={s.value} className="bk-check">
-                  <input type="radio" name="status" checked={form.status === s.value} onChange={() => update({ status: s.value })} />
+                  <input
+                    type="radio"
+                    name="status"
+                    checked={form.status === s.value}
+                    onChange={() => update({ status: s.value })}
+                  />
                   {s.label}
                 </label>
               ))}

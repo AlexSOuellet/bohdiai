@@ -12,7 +12,8 @@ export const dynamic = 'force-dynamic';
 
 export default async function MarketsPage({ searchParams }: PageProps<'/manage/markets'>): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
-  if (!(await getSiteFeatures(site.tenantId)).has('market_dates')) notFound();
+  const on = await getSiteFeatures(site.tenantId);
+  if (!on.has('market_dates')) notFound();
   const db = await createSupabaseServerClient();
   const [markets, tenant] = await Promise.all([listMarkets(db, site.tenantId), db.from('tenants').select('time_zone').eq('id', site.tenantId).maybeSingle()]);
   return (
@@ -20,6 +21,11 @@ export default async function MarketsPage({ searchParams }: PageProps<'/manage/m
       <div className="bk-head">
         <h1 className="bk-title">Markets</h1>
         <div className="bk-head-actions">
+          {on.has('market_records') && (
+            <Link href="/manage/markets/results" className="bk-btn bk-btn-quiet">
+              Results
+            </Link>
+          )}
           <Link href="/manage/markets/new" className="bk-btn">
             Add market
           </Link>
@@ -27,7 +33,7 @@ export default async function MarketsPage({ searchParams }: PageProps<'/manage/m
       </div>
       <main id="main" className="bk-content">
         <ListNotice message={listNotice(await searchParams)} />
-        <MarketList markets={markets} today={shopToday(tenant.data?.time_zone ?? null)} />
+        <MarketList markets={markets} today={shopToday(tenant.data?.time_zone ?? null)} records={on.has('market_records')} />
       </main>
     </>
   );

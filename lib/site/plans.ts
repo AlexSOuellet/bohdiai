@@ -18,7 +18,7 @@ export type Plan = {
   forWho: string;
   monthly: number;
   yearly: number;
-  /** For Full plans, read after "Everything in Lite, plus". */
+  /** For Full plans, read after "Everything in <the plan below>, plus" (includesLead). */
   includes: readonly string[];
   /** The one plan a page lights up, with this label beside its name. */
   badge?: string;
@@ -47,17 +47,17 @@ export const PLANS: readonly Plan[] = [
     id: 'maker-lite',
     audience: 'maker',
     tier: 'lite',
-    name: 'Maker Lite',
-    forWho: 'For makers who sell in person and want a place to send people',
+    // The market plan (Alex, 2026-10-12): for makers who sell at craft shows and markets. No online selling.
+    name: 'Maker Market',
+    forWho: 'For makers who sell at craft shows and markets and want those sales to grow',
     monthly: 15,
     yearly: 150,
     includes: [
-      'Your own site: a home page and a catalog page',
-      'Every product with its photo and price',
-      '“Ask about this” on every product, straight to your inbox',
-      'Your market dates, so people know where to find you',
-      'A point of sale on your phone for markets: it adds up the sale and shows your Venmo or Cash App code',
-      'Your Facebook and Instagram, front and center',
+      'Your own site with your whole catalog, a photo and price on every piece',
+      '“Ask about this” on every piece, straight to your inbox',
+      'Where you’ll be next: every market with its day, hours and booth',
+      'The market app: shoppers scan a code at your table, pick a piece and pay with Venmo, Cash App, Zelle or cash',
+      'Every sale filed under its market, so you see what each one really made after costs, this year against last',
     ],
   },
   {
@@ -66,15 +66,15 @@ export const PLANS: readonly Plan[] = [
     tier: 'full',
     name: 'Maker Full',
     forWho: 'For makers ready to sell online as well as in person',
-    monthly: 20,
-    yearly: 200,
+    monthly: 25,
+    yearly: 250,
     includes: [
       'Sell online, paid straight into your own Stripe or Square',
       'Orders and shipping in one place',
       'Take cards at markets through your own Stripe or Square',
       'Up to 12 photos and a short video for each product',
       'Digital downloads, if you sell them',
-      'See which markets made money, this year against last',
+      'Testimonials from your customers, on your home page and their own page',
     ],
   },
   {
@@ -207,3 +207,10 @@ export const COMPARISON: Record<Audience, readonly ComparisonRow[]> = {
     },
   ],
 };
+
+/** How a Full plan's list opens: it builds on the plan below it ("Everything in Maker Market, plus"). */
+export function includesLead(plan: Plan): string | null {
+  if (plan.tier !== 'full') return null;
+  const below = PLANS.find((p) => p.audience === plan.audience && p.tier === 'lite');
+  return below === undefined ? null : `Everything in ${below.name}, plus`;
+}

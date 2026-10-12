@@ -3,16 +3,34 @@
  * editor (instant messages) and the save action (which re-checks before writing),
  * so the rules can't drift. Prices and stock stay text until validated.
  */
-import { combinationsOf, combinationKey, MAX_OPTIONS, MAX_CHOICES, MAX_COMBINATIONS, type Combination } from '@/lib/catalog/combinations';
+import { NO_PRICE_CENTS } from '@/lib/catalog/price';
+import {
+  combinationsOf,
+  combinationKey,
+  MAX_OPTIONS,
+  MAX_CHOICES,
+  MAX_COMBINATIONS,
+  type Combination,
+} from '@/lib/catalog/combinations';
 import { HOME_MAX } from '@/lib/catalog/home';
 
 export { HOME_MAX };
 
 export type Kind = 'physical' | 'digital';
 export type ItemStatus = 'draft' | 'active' | 'archived';
-export type ChoiceForm = { value: string; kind: Kind; fileUploadId: string | null; fileName: string | null };
+export type ChoiceForm = {
+  value: string;
+  kind: Kind;
+  fileUploadId: string | null;
+  fileName: string | null;
+};
 export type OptionForm = { name: string; choices: ChoiceForm[] };
-export type VariantForm = { choices: Combination; price: string; stock: string; available: boolean };
+export type VariantForm = {
+  choices: Combination;
+  price: string;
+  stock: string;
+  available: boolean;
+};
 export type PhotoForm = { uploadId: string; url: string };
 
 export type ProductForm = {
@@ -51,8 +69,16 @@ export type ProductPayload = {
   media_ids: string[];
   file_upload_id: string | null;
   collection_ids: string[];
-  options: { name: string; choices: { value: string; kind: Kind; file_upload_id: string | null }[] }[];
-  variants: { combination: Combination; price_cents: number | null; inventory_count: number | null; available: boolean }[];
+  options: {
+    name: string;
+    choices: { value: string; kind: Kind; file_upload_id: string | null }[];
+  }[];
+  variants: {
+    combination: Combination;
+    price_cents: number | null;
+    inventory_count: number | null;
+    available: boolean;
+  }[];
   on_home: boolean;
   is_new: boolean;
 };
@@ -109,26 +135,39 @@ export function formatCents(cents: number | null): string {
 /** The options with blank names/choices dropped — what combinations are built from. */
 function filledOptions(options: readonly OptionForm[]): { name: string; choices: string[] }[] {
   return options
-    .map((o) => ({ name: o.name.trim(), choices: o.choices.map((c) => c.value.trim()).filter((v) => v !== '') }))
+    .map((o) => ({
+      name: o.name.trim(),
+      choices: o.choices.map((c) => c.value.trim()).filter((v) => v !== ''),
+    }))
     .filter((o) => o.name !== '');
 }
 
 /** One row per combination of the current options, keeping what was already typed. */
-export function syncVariants(options: readonly OptionForm[], existing: readonly VariantForm[]): VariantForm[] {
+export function syncVariants(
+  options: readonly OptionForm[],
+  existing: readonly VariantForm[],
+): VariantForm[] {
   const byKey = new Map(existing.map((v) => [combinationKey(v.choices), v]));
   return combinationsOf(filledOptions(options)).map(
-    (choices) => byKey.get(combinationKey(choices)) ?? { choices, price: '', stock: '', available: true },
+    (choices) =>
+      byKey.get(combinationKey(choices)) ?? { choices, price: '', stock: '', available: true },
   );
 }
 
 /** Carry typed combination values across an option rename (old name → new name). */
-export function renameOptionInVariants(variants: readonly VariantForm[], from: string, to: string): VariantForm[] {
+export function renameOptionInVariants(
+  variants: readonly VariantForm[],
+  from: string,
+  to: string,
+): VariantForm[] {
   const oldName = from.trim();
   const newName = to.trim();
   if (oldName === '' || newName === '' || oldName === newName) return [...variants];
   return variants.map((v) => ({
     ...v,
-    choices: Object.fromEntries(Object.entries(v.choices).map(([k, value]) => [k.trim() === oldName ? newName : k, value])),
+    choices: Object.fromEntries(
+      Object.entries(v.choices).map(([k, value]) => [k.trim() === oldName ? newName : k, value]),
+    ),
   }));
 }
 
@@ -139,8 +178,10 @@ export const STATUSES: readonly ItemStatus[] = ['draft', 'active', 'archived'];
 const KINDS: readonly Kind[] = ['physical', 'digital'];
 const isString = (v: unknown): v is string => typeof v === 'string';
 const isStringOrNull = (v: unknown): boolean => v === null || typeof v === 'string';
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
-export const isStatus = (v: unknown): v is ItemStatus => (STATUSES as readonly unknown[]).includes(v);
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
+export const isStatus = (v: unknown): v is ItemStatus =>
+  (STATUSES as readonly unknown[]).includes(v);
 const isKind = (v: unknown): v is Kind => (KINDS as readonly unknown[]).includes(v);
 export const isStringArray = (v: unknown): v is string[] => Array.isArray(v) && v.every(isString);
 
@@ -148,42 +189,86 @@ export const isStringArray = (v: unknown): v is string[] => Array.isArray(v) && 
  *  the shape before the rules read it, so bad input gets a message instead of a crash. */
 function hasProductShape(f: unknown): boolean {
   if (!isRecord(f)) return false;
-  if (![f['name'], f['shortDescription'], f['description'], f['price'], f['stock']].every(isString)) return false;
-  if (!isStringOrNull(f['id']) || !isStatus(f['status']) || !isKind(f['kind']) || !isStringOrNull(f['fileUploadId'])) return false;
+  if (![f['name'], f['shortDescription'], f['description'], f['price'], f['stock']].every(isString))
+    return false;
+  if (
+    !isStringOrNull(f['id']) ||
+    !isStatus(f['status']) ||
+    !isKind(f['kind']) ||
+    !isStringOrNull(f['fileUploadId'])
+  )
+    return false;
   const photos = f['photos'];
-  if (!Array.isArray(photos) || !photos.every((p) => isRecord(p) && isString(p['uploadId']))) return false;
+  if (!Array.isArray(photos) || !photos.every((p) => isRecord(p) && isString(p['uploadId'])))
+    return false;
   if (!isStringOrNull(f['samplePhotoUrl'])) return false;
   if (!isStringArray(f['collectionIds'])) return false;
   if (typeof f['onHome'] !== 'boolean' || typeof f['isNew'] !== 'boolean') return false;
   const options = f['options'];
-  const choiceOk = (c: unknown): boolean => isRecord(c) && isString(c['value']) && isKind(c['kind']) && isStringOrNull(c['fileUploadId']);
-  if (!Array.isArray(options) || !options.every((o) => isRecord(o) && isString(o['name']) && Array.isArray(o['choices']) && o['choices'].every(choiceOk))) return false;
+  const choiceOk = (c: unknown): boolean =>
+    isRecord(c) && isString(c['value']) && isKind(c['kind']) && isStringOrNull(c['fileUploadId']);
+  if (
+    !Array.isArray(options) ||
+    !options.every(
+      (o) =>
+        isRecord(o) &&
+        isString(o['name']) &&
+        Array.isArray(o['choices']) &&
+        o['choices'].every(choiceOk),
+    )
+  )
+    return false;
   const variants = f['variants'];
   const variantOk = (v: unknown): boolean =>
-    isRecord(v) && isRecord(v['choices']) && Object.values(v['choices']).every(isString) && isString(v['price']) && isString(v['stock']) && typeof v['available'] === 'boolean';
+    isRecord(v) &&
+    isRecord(v['choices']) &&
+    Object.values(v['choices']).every(isString) &&
+    isString(v['price']) &&
+    isString(v['stock']) &&
+    typeof v['available'] === 'boolean';
   return Array.isArray(variants) && variants.every(variantOk);
 }
 
-export function buildProductPayload(form: ProductForm, site: { digital: boolean }): BuildResult {
-  if (!hasProductShape(form)) return fail('Something about this product didn’t look right. Reload the page and try again.');
+/** `photos`: how many this site allows and how many the saved product already has (kept after a downgrade). */
+export function buildProductPayload(
+  form: ProductForm,
+  site: { digital: boolean; photos?: { limit: number; kept: number } },
+): BuildResult {
+  if (!hasProductShape(form))
+    return fail('Something about this product didn’t look right. Reload the page and try again.');
   const name = form.name.trim();
   if (name === '') return fail('Give the product a name.');
   if (name.length > MAX_NAME) return fail(`Keep the name to ${MAX_NAME} characters or fewer.`);
   const short = form.shortDescription.trim();
-  if (short.length > MAX_SHORT) return fail(`Keep the short description to ${MAX_SHORT} characters or fewer.`);
+  if (short.length > MAX_SHORT)
+    return fail(`Keep the short description to ${MAX_SHORT} characters or fewer.`);
   const long = form.description.trim();
-  if (long.length > MAX_LONG) return fail(`Keep the description to ${MAX_LONG} characters or fewer.`);
+  if (long.length > MAX_LONG)
+    return fail(`Keep the description to ${MAX_LONG} characters or fewer.`);
 
   const price = parseDollars(form.price);
-  if (!price.ok || price.cents === null) return fail('Enter a price, like 24 or 24.50.');
-  if (form.photos.length > MAX_PHOTOS) return fail(`A product can have up to ${MAX_PHOTOS} photos.`);
+  if (!price.ok)
+    return fail('Enter a price, like 24 or 24.50, or leave it empty to show “Ask for price”.');
+  if (form.photos.length > MAX_PHOTOS)
+    return fail(`A product can have up to ${MAX_PHOTOS} photos.`);
+  const limit = site.photos?.limit ?? MAX_PHOTOS;
+  if (form.photos.length > Math.max(limit, Math.min(site.photos?.kept ?? 0, MAX_PHOTOS))) {
+    return fail(
+      limit === 1
+        ? 'Your plan shows one photo per product. Remove the extra photo to save.'
+        : `A product can have up to ${limit} photos.`,
+    );
+  }
 
   const hasOptions = form.options.length > 0;
-  const usesDigital = hasOptions ? form.options.some((o) => o.choices.some((c) => c.kind === 'digital')) : form.kind === 'digital';
+  const usesDigital = hasOptions
+    ? form.options.some((o) => o.choices.some((c) => c.kind === 'digital'))
+    : form.kind === 'digital';
   if (usesDigital && !site.digital) return fail('Downloads aren’t switched on for this site.');
   const live = form.status === 'active';
 
-  if (form.options.length > MAX_OPTIONS) return fail(`A product can have up to ${MAX_OPTIONS} options.`);
+  if (form.options.length > MAX_OPTIONS)
+    return fail(`A product can have up to ${MAX_OPTIONS} options.`);
   const names = new Set<string>();
   const options: ProductPayload['options'] = [];
   for (const o of form.options) {
@@ -192,7 +277,8 @@ export function buildProductPayload(form: ProductForm, site: { digital: boolean 
     if (names.has(oname.toLowerCase())) return fail('Two options can’t share a name.');
     names.add(oname.toLowerCase());
     if (o.choices.length === 0) return fail(`Give ${oname} at least one choice.`);
-    if (o.choices.length > MAX_CHOICES) return fail(`${oname} can have up to ${MAX_CHOICES} choices.`);
+    if (o.choices.length > MAX_CHOICES)
+      return fail(`${oname} can have up to ${MAX_CHOICES} choices.`);
     const seen = new Set<string>();
     const choices: ProductPayload['options'][number]['choices'] = [];
     for (const c of o.choices) {
@@ -200,35 +286,58 @@ export function buildProductPayload(form: ProductForm, site: { digital: boolean 
       if (value === '') return fail(`Fill in every choice for ${oname}.`);
       if (seen.has(value.toLowerCase())) return fail(`${oname} lists ${value} twice.`);
       seen.add(value.toLowerCase());
-      if (live && c.kind === 'digital' && c.fileUploadId === null) return fail(`Add the download file for ${value} before making this live.`);
-      choices.push({ value, kind: c.kind, file_upload_id: c.kind === 'digital' ? c.fileUploadId : null });
+      if (live && c.kind === 'digital' && c.fileUploadId === null)
+        return fail(`Add the download file for ${value} before making this live.`);
+      choices.push({
+        value,
+        kind: c.kind,
+        file_upload_id: c.kind === 'digital' ? c.fileUploadId : null,
+      });
     }
     options.push({ name: oname, choices });
   }
 
-  const combos = combinationsOf(options.map((o) => ({ name: o.name, choices: o.choices.map((c) => c.value) })));
-  if (combos.length > MAX_COMBINATIONS) return fail(`That makes ${combos.length} combinations — the most is ${MAX_COMBINATIONS}. Remove some choices.`);
+  const combos = combinationsOf(
+    options.map((o) => ({ name: o.name, choices: o.choices.map((c) => c.value) })),
+  );
+  if (combos.length > MAX_COMBINATIONS)
+    return fail(
+      `That makes ${combos.length} combinations — the most is ${MAX_COMBINATIONS}. Remove some choices.`,
+    );
   const typed = new Map(form.variants.map((v) => [combinationKey(v.choices), v]));
   const variants: ProductPayload['variants'] = [];
   for (const combination of combos) {
-    const v = typed.get(combinationKey(combination)) ?? { choices: combination, price: '', stock: '', available: true };
+    const v = typed.get(combinationKey(combination)) ?? {
+      choices: combination,
+      price: '',
+      stock: '',
+      available: true,
+    };
     const vp = parseDollars(v.price);
     if (!vp.ok) return fail(`Check the price for ${label(combination)}.`);
     const vs = parseStock(v.stock);
     if (!vs.ok) return fail(`Check the stock for ${label(combination)}.`);
-    variants.push({ combination, price_cents: vp.cents, inventory_count: vs.count, available: v.available });
+    variants.push({
+      combination,
+      price_cents: vp.cents,
+      inventory_count: vs.count,
+      available: v.available,
+    });
   }
-  if (live && hasOptions && !variants.some((v) => v.available)) return fail('Turn on at least one combination before making this live.');
+  if (live && hasOptions && !variants.some((v) => v.available))
+    return fail('Turn on at least one combination before making this live.');
 
   // Product-level stock and file apply only without options (plan decision 5).
   let inventory: number | null = null;
   if (!hasOptions && form.kind === 'physical') {
     const s = parseStock(form.stock);
-    if (!s.ok) return fail('Stock must be a whole number, 0 or more. Leave it blank if you make to order.');
+    if (!s.ok)
+      return fail('Stock must be a whole number, 0 or more. Leave it blank if you make to order.');
     inventory = s.count;
   }
   const digitalProduct = !hasOptions && form.kind === 'digital';
-  if (live && digitalProduct && form.fileUploadId === null) return fail('Add the download file before making this live.');
+  if (live && digitalProduct && form.fileUploadId === null)
+    return fail('Add the download file before making this live.');
 
   return {
     ok: true,
@@ -237,7 +346,7 @@ export function buildProductPayload(form: ProductForm, site: { digital: boolean 
       name,
       short_description: short === '' ? null : short,
       description: long === '' ? null : long,
-      base_price_cents: price.cents,
+      base_price_cents: price.cents ?? NO_PRICE_CENTS,
       status: form.status,
       inventory_count: inventory,
       media_ids: form.photos.map((p) => p.uploadId),
