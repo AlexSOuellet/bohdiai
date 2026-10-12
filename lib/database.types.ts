@@ -2317,6 +2317,7 @@ export type Database = {
           currency: string
           custom_domain: string | null
           deleted_at: string | null
+          demo_day: string | null
           id: string
           inspiration_urls: string[]
           logo_contains_wordmark: boolean | null
@@ -2360,6 +2361,7 @@ export type Database = {
           currency?: string
           custom_domain?: string | null
           deleted_at?: string | null
+          demo_day?: string | null
           id?: string
           inspiration_urls?: string[]
           logo_contains_wordmark?: boolean | null
@@ -2403,6 +2405,7 @@ export type Database = {
           currency?: string
           custom_domain?: string | null
           deleted_at?: string | null
+          demo_day?: string | null
           id?: string
           inspiration_urls?: string[]
           logo_contains_wordmark?: boolean | null
@@ -2704,6 +2707,11 @@ export type Database = {
     }
     Functions: {
       auth_user_id_by_email: { Args: { p_email: string }; Returns: string }
+      demo_keep_today: { Args: { p_now?: string }; Returns: number }
+      demo_shift_tenant: {
+        Args: { p_days: number; p_tenant: string }
+        Returns: undefined
+      }
       is_tenant_admin: { Args: { target_tenant_id: string }; Returns: boolean }
       is_tenant_customer: {
         Args: { target_tenant_id: string }

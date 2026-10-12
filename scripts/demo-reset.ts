@@ -14,6 +14,9 @@
  *             for her converted pieces, plus new pieces with their own photos) and
  *             its TESTIMONIALS. The demo's normal starting point.
  *
+ * Every reset anchors the timeline to today (tenants.demo_day). A database job
+ * (migration 20261012000001) moves it forward each day, so the demo is always today.
+ *
  * --media names the folder holding CATALOG photos not uploaded yet; once uploaded
  * they are reused by file name, so later resets don't need it.
  */
@@ -116,7 +119,7 @@ async function main(): Promise<void> {
   await step('billing', () =>
     db
       .from('tenants')
-      .update({ plan_billing: 'monthly', plan_renews_on: addDays(todayDay(tenant.time_zone), 20), plan_next: null, plan_next_billing: null, plan_next_gallery: null, plan_credit_cents: 0 })
+      .update({ plan_billing: 'monthly', plan_renews_on: addDays(todayDay(tenant.time_zone), 20), plan_next: null, plan_next_billing: null, plan_next_gallery: null, plan_credit_cents: 0, demo_day: todayDay(tenant.time_zone) })
       .eq('id', tid),
   );
   process.stdout.write(`showcase: ${gallery.length} photos, no products\n`);
