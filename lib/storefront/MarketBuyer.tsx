@@ -88,6 +88,16 @@ function Photo({ piece }: { piece: ProductView }): ReactElement | null {
   return <img src={photo.url} alt={photo.alt} />;
 }
 
+/** The price, or the old price struck through beside the sale price. */
+function Fee({ piece, prefix }: { piece: ProductView; prefix: 'nn' | 'sl' }): ReactElement {
+  if (piece.salePrice === undefined) return <>{piece.price}</>;
+  return (
+    <>
+      <s className={`${prefix}-was`}>{piece.price}</s> {piece.salePrice}
+    </>
+  );
+}
+
 export function MarketBuyer({
   marketId,
   pieces,
@@ -109,15 +119,6 @@ export function MarketBuyer({
   const [copied, setCopied] = useState(false);
 
   const c = (...names: string[]): string => names.map((n) => `${p}-${n}`).join(' ');
-
-  function Fee({ piece }: { piece: ProductView }): ReactElement {
-    if (piece.salePrice === undefined) return <>{piece.price}</>;
-    return (
-      <>
-        <s className={c('was')}>{piece.price}</s> {piece.salePrice}
-      </>
-    );
-  }
 
   async function hold(e: FormEvent<HTMLFormElement>, piece: ProductView): Promise<void> {
     e.preventDefault();
@@ -241,7 +242,7 @@ export function MarketBuyer({
           <span>
             <span className={c('mk-name')}>{piece.name}</span>
             <span className={c('mk-fee')}>
-              <Fee piece={piece} />
+              <Fee piece={piece} prefix={p} />
             </span>
           </span>
         </div>
@@ -302,7 +303,7 @@ export function MarketBuyer({
                   <Photo piece={piece} />
                 </span>
                 <span className={c('mk-name')}>{piece.name}</span>
-                <span className={c('mk-fee')}>{gone ? S.gone : <Fee piece={piece} />}</span>
+                <span className={c('mk-fee')}>{gone ? S.gone : <Fee piece={piece} prefix={p} />}</span>
               </button>
             </li>
           );
