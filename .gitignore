@@ -90,3 +90,6 @@ sse-start.txt
 /.open-next/
 /.wrangler/
 .dev.vars
+
+# Alex's design working files: never committed (Alex, 2026-10-12)
+/Design files/
