@@ -44,10 +44,10 @@ describe('Your plan', () => {
     show('showcase');
     expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
       'Maker Showcase',
-      'Maker Lite',
+      'Maker Market',
       'Maker Full',
     ]);
-    const up = screen.getByRole('region', { name: 'Maker Lite' });
+    const up = screen.getByRole('region', { name: 'Maker Market' });
     expect(up.getAttribute('data-tier')).toBe('lite');
     expect(within(up).getByText('$15')).toBeTruthy();
     expect(within(up).getByText('or $150 a year, two months free')).toBeTruthy();
@@ -76,7 +76,7 @@ describe('Your plan', () => {
   it('opens Full’s list with Lite', () => {
     show('lite');
     const up = screen.getByRole('region', { name: 'Maker Full' });
-    expect(within(up).getByText('Everything in Lite, plus')).toBeTruthy();
+    expect(within(up).getByText('Everything in Maker Market, plus')).toBeTruthy();
     expect(within(up).getByText(full.includes[0]!)).toBeTruthy();
   });
 
@@ -85,14 +85,14 @@ describe('Your plan', () => {
     expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(1);
     expect(screen.queryByText(/Ready for more/)).toBeNull();
     expect(screen.getAllByRole('link', { name: /Downgrade to/ }).map((a) => a.textContent)).toEqual(
-      ['Downgrade to Maker Lite', 'Downgrade to Maker Showcase'],
+      ['Downgrade to Maker Market', 'Downgrade to Maker Showcase'],
     );
     expect(screen.getByText(/Downgrading never deletes anything/)).toBeTruthy();
   });
 
   it('says where she is after a change', () => {
-    show('lite', DEMO, 'You’re now on Maker Lite.');
-    expect(screen.getByText('You’re now on Maker Lite.').closest('[role="status"]')).not.toBeNull();
+    show('lite', DEMO, 'You’re now on Maker Market.');
+    expect(screen.getByText('You’re now on Maker Market.').closest('[role="status"]')).not.toBeNull();
   });
 
   it('shows billing, renewal and credit, and on the demo the billing switch', () => {

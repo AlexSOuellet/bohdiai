@@ -75,7 +75,7 @@ describe('MainStreetProduct options and stock', () => {
   });
 });
 
-describe('a shop that does not sell online (Maker Lite)', () => {
+describe('a shop that does not sell online (Maker Market)', () => {
   const lite: MainStreetContent = { ...content, identity: { ...content.identity, sellsOnline: false } };
   const product: ProductView = {
     slug: 'belt', name: 'The Belt', price: '$98', description: 'A belt.', status: 'active',

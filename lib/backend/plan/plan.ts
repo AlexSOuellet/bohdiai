@@ -31,10 +31,8 @@ export function planView(tier: SitePlan): PlanView {
   };
 }
 
-/** How a plan's list opens: Full builds on Lite, the others stand alone. */
-export function includesLead(plan: Plan): string | null {
-  return plan.tier === 'full' ? 'Everything in Lite, plus' : null;
-}
+/** How a plan's list opens: Full builds on the plan below it, the others stand alone. */
+export { includesLead } from '@/lib/site/plans';
 
 /** An email to Alex asking to move the site up to `plan`, subject already filled in. */
 export function moveUpMailto(contactEmail: string, siteName: string, plan: Plan): string {

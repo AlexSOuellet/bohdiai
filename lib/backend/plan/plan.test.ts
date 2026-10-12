@@ -23,7 +23,7 @@ describe('Your plan', () => {
   });
 
   it('opens Full’s list with Lite and leaves the others alone', () => {
-    expect(includesLead(planView('full').current)).toBe('Everything in Lite, plus');
+    expect(includesLead(planView('full').current)).toBe('Everything in Maker Market, plus');
     expect(includesLead(planView('lite').current)).toBeNull();
   });
 
@@ -31,7 +31,7 @@ describe('Your plan', () => {
     const url = moveUpMailto('alex@bohdiai.com', 'Saltmarsh & Lace', planView('lite').current);
     expect(url.startsWith('mailto:alex@bohdiai.com?subject=')).toBe(true);
     const params = new URLSearchParams(url.split('?')[1]);
-    expect(params.get('subject')).toBe('Upgrade Saltmarsh & Lace to Maker Lite');
+    expect(params.get('subject')).toBe('Upgrade Saltmarsh & Lace to Maker Market');
     expect(params.get('body')).toContain('Saltmarsh & Lace');
   });
 });

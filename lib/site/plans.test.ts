@@ -6,6 +6,7 @@ import {
   PLAN_IDS,
   formatPrice,
   fromPrice,
+  includesLead,
   isPlanId,
   planById,
   plansFor,
@@ -16,7 +17,7 @@ describe('plans', () => {
     expect(PLANS.map((p) => [p.id, p.monthly, p.yearly])).toEqual([
       ['maker-showcase', 5, 50],
       ['maker-lite', 15, 150],
-      ['maker-full', 20, 200],
+      ['maker-full', 25, 250],
       ['contractor-lite', 10, 100],
       ['contractor-full', 30, 300],
     ]);
@@ -77,5 +78,13 @@ describe('plans', () => {
   it('formats prices the way the page shows them', () => {
     expect(formatPrice(15)).toBe('$15');
     expect(formatPrice(4.5)).toBe('$4.50');
+  });
+});
+
+describe('includesLead', () => {
+  it('opens each Full plan with the plan below it, by name', () => {
+    expect(includesLead(planById('maker-full'))).toBe('Everything in Maker Market, plus');
+    expect(includesLead(planById('contractor-full'))).toBe('Everything in Contractor Lead Generation, plus');
+    expect(includesLead(planById('maker-lite'))).toBeNull();
   });
 });

@@ -13,8 +13,8 @@ describe('bohdiai.com/makers', () => {
       'A real web developer for less than a site builder',
     );
     expect(screen.getByRole('article', { name: 'Maker Showcase' })).toHaveTextContent('$5');
-    expect(screen.getByRole('article', { name: 'Maker Lite' })).toHaveTextContent('$15');
-    expect(screen.getByRole('article', { name: 'Maker Full' })).toHaveTextContent('$20');
+    expect(screen.getByRole('article', { name: 'Maker Market' })).toHaveTextContent('$15');
+    expect(screen.getByRole('article', { name: 'Maker Full' })).toHaveTextContent('$25');
   });
 
   it('never shows contractor plans or prices', () => {

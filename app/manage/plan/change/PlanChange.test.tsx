@@ -47,7 +47,7 @@ describe('checkout (moving up)', () => {
     checkout();
     const sum = screen.getByText('Today').closest('dl') as HTMLElement;
     expect(
-      within(sum).getByText('Maker Lite, rest of this month').nextElementSibling?.textContent,
+      within(sum).getByText('Maker Market, rest of this month').nextElementSibling?.textContent,
     ).toBe('$10');
     expect(
       within(sum).getByText('Unused Maker Showcase: 20 days left of your month').nextElementSibling
@@ -114,7 +114,7 @@ describe('checkout (moving up)', () => {
     upgradePlan.mockResolvedValue({ ok: true });
     checkout();
     fireEvent.click(screen.getByRole('radio', { name: /a year/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm upgrade to Maker Lite' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm upgrade to Maker Market' }));
     await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/plan?changed=lite'));
     expect(upgradePlan).toHaveBeenCalledWith('lite', 'yearly');
   });

@@ -18,7 +18,7 @@ describe('bohdiai.com/samples', () => {
     const { container } = render(<SamplesPage />);
     expect([...container.querySelectorAll('section[aria-labelledby^="samples-"] h2')].map((h) => h.textContent)).toEqual([
       'Maker Showcase',
-      'Maker Lite',
+      'Maker Market',
       'Maker Full',
       'Contractor Lead Generation',
       'Contractor Full',

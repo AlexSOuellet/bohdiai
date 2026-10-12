@@ -57,7 +57,7 @@ describe('billing dates', () => {
 
   it('prices from the pricing list', () => {
     expect(priceCents('lite', 'monthly')).toBe(1500);
-    expect(priceCents('full', 'yearly')).toBe(20000);
+    expect(priceCents('full', 'yearly')).toBe(25000);
   });
 });
 
@@ -86,9 +86,9 @@ describe('moving up, prorated', () => {
     };
     const q = quoteUpgrade(yearlyLite, 'full', 'yearly', '2026-10-09');
     const left = periodLeft('2026-10-09', '2027-04-09', 'yearly');
-    expect(q.todayCents).toBe(Math.round(20000 * left) - Math.round(15000 * left));
+    expect(q.todayCents).toBe(Math.round(25000 * left) - Math.round(15000 * left));
     expect(q.renewsOn).toBe('2027-04-09');
-    expect(q.renewalCents).toBe(20000);
+    expect(q.renewalCents).toBe(25000);
   });
 
   it('starts a new year today when moving from monthly to yearly, less the unused month', () => {
@@ -125,7 +125,7 @@ describe('moving up, prorated', () => {
     );
     expect(q.todayCents).toBe(0);
     expect(q.creditLeftCents).toBe(
-      Math.round(15000 * periodLeft('2026-10-09', '2027-04-09', 'yearly')) - 2000,
+      Math.round(15000 * periodLeft('2026-10-09', '2027-04-09', 'yearly')) - 2500,
     );
   });
 

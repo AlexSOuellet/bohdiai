@@ -4,14 +4,14 @@ import path from 'node:path';
 import { WORK, CLIENTS, SAMPLES, LISTED_SAMPLES, HERO_WORK } from './work';
 
 describe('the work list', () => {
-  it('has two clients, one listed sample per plan on the home page (Maker Showcase, Maker Lite, Contractor Full, Contractor Lead Generation), and the rest kept for the samples page', () => {
+  it('has two clients, one listed sample per plan on the home page (Maker Showcase, Maker Market, Contractor Full, Contractor Lead Generation), and the rest kept for the samples page', () => {
     expect(CLIENTS.map((w) => w.name)).toEqual([
       'Cut-Pro Lawncare & Construction',
       'Decoupage Digital Designs',
     ]);
     expect(SAMPLES.map((w) => [w.name, w.plan])).toEqual([
       ['Rustic Rhody', 'Showcase'],
-      ['Classic Loafs', 'Lite'],
+      ['Classic Loafs', 'Market'],
       ['Twilight to Darkness', 'Full'],
       ['True Coat Painting', 'Contractor Full'],
       ['Halfmoon Roofing', 'Contractor Lead Generation'],
