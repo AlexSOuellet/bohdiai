@@ -10,7 +10,8 @@ export function marketDays(m: { date: string; endDate: string }): string {
   return m.endDate === '' ? day(m.date) : `${day(m.date)} to ${day(m.endDate)}`;
 }
 
-function Row({ m, records }: { m: MarketRowView; records: boolean }): React.ReactElement {
+/** pos: the market shop is on and the market isn't over, so the row opens its Market POS. */
+function Row({ m, records, pos = false }: { m: MarketRowView; records: boolean; pos?: boolean }): React.ReactElement {
   return (
     <li className="bk-list-item bk-market-row">
       <Link className="bk-market-link" href={`/manage/markets/${m.id}` as Route}>
@@ -28,6 +29,11 @@ function Row({ m, records }: { m: MarketRowView; records: boolean }): React.Reac
             <span className="bk-stars-off">{'★'.repeat(5 - m.rating)}</span>
           </span>
         )}
+        {pos && !m.canceled && (
+          <Link className="bk-btn bk-btn-small" href={`/manage/markets/${m.id}/day` as Route} aria-label={`Market POS for ${m.name}`}>
+            Market POS
+          </Link>
+        )}
       </span>
     </li>
   );
@@ -35,7 +41,7 @@ function Row({ m, records }: { m: MarketRowView; records: boolean }): React.Reac
 
 /** Markets: coming up soonest first, then past ones newest first so her reviews
  *  stay handy. The split is only in her backend; the site never hides a market. */
-export function MarketList({ markets, today, records }: { markets: MarketRowView[]; today: string; records: boolean }): React.ReactElement {
+export function MarketList({ markets, today, records, pos = false }: { markets: MarketRowView[]; today: string; records: boolean; pos?: boolean }): React.ReactElement {
   const upcoming = markets.filter((m) => !isPastMarket(m, today));
   const past = markets.filter((m) => isPastMarket(m, today)).reverse();
   if (markets.length === 0) {
@@ -52,7 +58,7 @@ export function MarketList({ markets, today, records }: { markets: MarketRowView
         ) : (
           <ul className="bk-list" aria-label="Coming up">
             {upcoming.map((m) => (
-              <Row key={m.id} m={m} records={records} />
+              <Row key={m.id} m={m} records={records} pos={pos} />
             ))}
           </ul>
         )}
