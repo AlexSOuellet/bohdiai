@@ -50,4 +50,23 @@ describe('MarketList', () => {
     expect(screen.queryByLabelText('4 of 5 stars')).toBeNull();
     expect(screen.queryByText(/add your review/)).toBeNull();
   });
+
+  it('opens the Market POS straight from a coming-up market, never a past or canceled one', () => {
+    render(
+      <MarketList
+        records
+        pos
+        today="2026-10-15"
+        markets={[m('a', 'Pumpkin Fest', '2026-10-10'), m('b', 'Bazaar', '2026-10-15'), m('c', 'Holly Fair', '2026-11-21', { canceled: true })]}
+      />,
+    );
+    expect(screen.getByRole('link', { name: 'Market POS for Bazaar' }).getAttribute('href')).toBe('/manage/markets/b/day');
+    expect(screen.queryByRole('link', { name: 'Market POS for Pumpkin Fest' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Market POS for Holly Fair' })).toBeNull();
+  });
+
+  it('has no Market POS when the market shop is off (Showcase)', () => {
+    render(<MarketList records={false} today="2026-10-15" markets={[m('b', 'Bazaar', '2026-10-15')]} />);
+    expect(screen.queryByRole('link', { name: /Market POS/ })).toBeNull();
+  });
 });

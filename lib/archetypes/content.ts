@@ -128,6 +128,4 @@ export interface MarketShopView {
   pieces: ProductView[];
   /** The ways to pay she has switched on. */
   methods: ('venmo' | 'cashapp' | 'zelle' | 'cash')[];
-  /** Promotions has codes: the page offers a code box. */
-  codes: boolean;
 }

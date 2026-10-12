@@ -49,7 +49,7 @@ export default async function EditMarketPage({
         products: picks,
         marketUrl: marketPageUrl(origin, id),
         fileBase: `${site.subdomain}-market-qr`,
-        todayHref: `/manage/markets/${id}/today`,
+        todayHref: `/manage/markets/${id}/day`,
       }}
     />
   );

@@ -1,8 +1,8 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen, cleanup, within, fireEvent } from '@testing-library/react';
 import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
-import type { ProductView } from '@/lib/archetypes/content';
-import { ShorelineCart, ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
+import type { MarketShopView, ProductView } from '@/lib/archetypes/content';
+import { ShorelineCart, ShorelineMarket, ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
 import { featuredProducts, type ShorelineData } from './shoreline-data';
 import { CARD_STRINGS as S } from './strings';
 
@@ -288,5 +288,73 @@ describe('collections on the shop (Full)', () => {
   it('leaves the row out when she has no collections', () => {
     page('shop');
     expect(screen.queryByRole('navigation', { name: W.collectionsLabel })).toBeNull();
+  });
+});
+
+describe('a market’s own page (Market POS)', () => {
+  const market = (over: Partial<MarketShopView> = {}): MarketShopView => ({
+    marketId: 'm1',
+    name: 'Holiday Makers Market',
+    date: '2026-10-30',
+    endDate: '',
+    town: 'Bristol',
+    booth: 'Table 12',
+    state: 'open',
+    pieces: [{ ...product('the-lady-in-amber'), id: 'l1' }, { ...product('lemon-blossom-board'), id: 'l2', status: 'sold_out' }],
+    methods: ['venmo', 'cash'],
+    ...over,
+  });
+
+  it('names the market, its day and where, with no menu, footer or link while buying', () => {
+    const { container } = render(<ShorelineMarket site={site} market={market()} />);
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Holiday Makers Market');
+    expect(screen.getByText(/Bristol · Table 12/)).toBeTruthy();
+    expect(screen.queryByRole('navigation')).toBeNull();
+    expect(container.querySelector('footer')).toBeNull();
+    expect(container.querySelectorAll('a')).toHaveLength(0);
+  });
+
+  it('offers one way to the shop when there is nothing to buy', () => {
+    for (const state of ['before', 'after', 'canceled'] as const) {
+      const { container, unmount } = render(<ShorelineMarket site={site} market={market({ state })} />);
+      expect(screen.getByRole('link', { name: W.market.toShop }).getAttribute('href')).toBe('/shop');
+      expect(screen.queryByRole('navigation')).toBeNull();
+      expect(container.querySelector('footer')).toBeNull();
+      unmount();
+    }
+  });
+
+  it('lets a buyer pick a piece on market day, with a sold piece shown but not pickable', () => {
+    render(<ShorelineMarket site={site} market={market()} />);
+    expect(screen.getByText(W.market.pick)).toBeTruthy();
+    const sold = screen.getByRole('button', { name: /lemon blossom board/i });
+    expect(sold).toHaveProperty('disabled', true);
+    expect(within(sold).getByText(W.market.gone)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /the lady in amber/i }));
+    expect(screen.getByLabelText(W.market.yourName)).toBeTruthy();
+    expect(screen.getByRole('radio', { name: 'Venmo' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: W.market.continue })).toBeTruthy();
+  });
+
+  it('says to ask at the table when no way to pay is on', () => {
+    render(<ShorelineMarket site={site} market={market({ methods: [] })} />);
+    expect(screen.getByText(W.market.noPay)).toBeTruthy();
+  });
+
+  it('shows what’s coming before the market day', () => {
+    const { container } = render(<ShorelineMarket site={site} market={market({ state: 'before' })} />);
+    expect(screen.getByText(W.market.before)).toBeTruthy();
+    expect(container.querySelectorAll('.sl-prints li')).toHaveLength(2);
+    render(<ShorelineMarket site={site} market={market({ state: 'before', pieces: [] })} />);
+    expect(screen.getByText(W.market.none)).toBeTruthy();
+  });
+
+  it('points to the shop after the market or when it was canceled', () => {
+    render(<ShorelineMarket site={site} market={market({ state: 'after' })} />);
+    expect(screen.getByText(W.market.after)).toBeTruthy();
+    expect(screen.getByRole('link', { name: W.market.toShop }).getAttribute('href')).toBe('/shop');
+    cleanup();
+    render(<ShorelineMarket site={site} market={market({ state: 'canceled', endDate: '2026-10-31' })} />);
+    expect(screen.getByText(W.market.canceled)).toBeTruthy();
   });
 });

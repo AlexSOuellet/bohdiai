@@ -67,11 +67,11 @@ describe('POST /api/market/hold', () => {
     expect(rpc).toHaveBeenCalledWith('market_hold', expect.objectContaining({ p_event_id: EVENT, p_listing_id: THEO, p_name: 'Pat', p_method: 'venmo', p_price_cents: 12000, p_discount_cents: 0 }));
   });
 
-  it('takes a market code off and counts it', async () => {
+  it('never takes a discount code at a market, even one sent anyway', async () => {
     state.promos = [{ id: 'c1', kind: 'code', name: 'MARKET10', code: 'MARKET10', percentOff: 10, amountOffCents: null, startsOn: null, endsOn: null, maxUses: null, uses: 0, active: true }];
     const res = await hold(request('/api/market/hold', { ...good, code: 'market10' }));
-    expect(((await res.json()) as { amount: string }).amount).toBe('$108');
-    expect(rpc).toHaveBeenCalledWith('market_hold', expect.objectContaining({ p_discount_cents: 1200, p_discount_label: 'MARKET10', p_promotion_id: 'c1' }));
+    expect(((await res.json()) as { amount: string }).amount).toBe('$120');
+    expect(rpc).toHaveBeenCalledWith('market_hold', expect.objectContaining({ p_discount_cents: 0 }));
   });
 
   it('refuses what it should, in plain words', async () => {
@@ -85,8 +85,6 @@ describe('POST /api/market/hold', () => {
     state.brought = [THEO];
     state.loaded = [{ ...theo, view: { ...theo.view, status: 'sold_out' } }];
     expect((await hold(request('/api/market/hold', good))).status).toBe(409);
-    state.loaded = [theo];
-    expect((await hold(request('/api/market/hold', { ...good, code: 'NOPE' }))).status).toBe(409);
     expect(rpc).not.toHaveBeenCalled();
   });
 

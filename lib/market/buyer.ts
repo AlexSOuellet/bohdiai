@@ -12,7 +12,6 @@ export const holdSchema = z.object({
   name: z.string().trim().min(1, 'Please type your first name.').max(40, 'Just your first name, please.'),
   email: z.union([z.literal(''), z.string().trim().toLowerCase().email('That email doesn’t look right.').max(254)]).default(''),
   method: z.enum(['venmo', 'cashapp', 'zelle', 'cash']),
-  code: z.string().trim().max(40).default(''),
 });
 
 export type HoldInput = z.infer<typeof holdSchema>;

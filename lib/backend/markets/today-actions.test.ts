@@ -22,7 +22,7 @@ vi.mock('@/lib/storefront/catalog', () => ({
 }));
 vi.mock('@/lib/storefront/promotions-load', () => ({ loadShopPromotions: async () => ({ promos: [], today: '2026-10-24' }) }));
 
-const { recordMarketSale, recordMarketSales } = await import('./today-actions');
+const { recordMarketSale, recordMarketSales, settleMarketOrder } = await import('./today-actions');
 
 beforeEach(() => {
   state.features = new Set(['market_shop']);
@@ -67,5 +67,23 @@ describe('selling several at the table', () => {
 
   it('asks for pieces first', async () => {
     expect(await recordMarketSales('e1', [], 'cash')).toEqual({ ok: false, error: 'Tap the pieces they’re taking first.', recorded: [] });
+  });
+});
+
+describe('settling a buyer’s hold', () => {
+  it('marks it paid or not received, on the market shop alone (no online orders needed)', async () => {
+    expect(await settleMarketOrder('e1', 'o1', 'paid')).toEqual({ ok: true });
+    expect(rpc).toHaveBeenCalledWith('set_order_status', { p_tenant_id: 't1', p_order_id: 'o1', p_status: 'paid' });
+    expect(await settleMarketOrder('e1', 'o1', 'canceled')).toEqual({ ok: true });
+    expect(revalidatePath).toHaveBeenCalledWith('/manage/markets/e1/day');
+  });
+
+  it('refuses when the market shop is off or the step is unknown, and says when it fails', async () => {
+    state.features = new Set();
+    expect(await settleMarketOrder('e1', 'o1', 'paid')).toMatchObject({ ok: false });
+    state.features = new Set(['market_shop']);
+    expect(await settleMarketOrder('e1', 'o1', 'fulfilled' as 'paid')).toMatchObject({ ok: false });
+    state.rpcErrors = [{ code: 'XX000', message: 'x' }];
+    expect(await settleMarketOrder('e1', 'o1', 'paid')).toEqual({ ok: false, error: 'That order couldn’t be updated. Try again in a moment.' });
   });
 });

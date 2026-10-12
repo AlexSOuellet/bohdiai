@@ -55,7 +55,6 @@ export const NURSERY_STRINGS = {
     yourName: 'Your first name',
     yourEmail: 'Email for a receipt (optional)',
     payWith: 'How are you paying?',
-    code: 'Discount code (optional)',
     continue: 'Continue to pay',
     holding: 'Holding your baby…',
     payTitle: (piece: string) => `${piece} is held for you`,

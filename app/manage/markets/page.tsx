@@ -33,7 +33,7 @@ export default async function MarketsPage({ searchParams }: PageProps<'/manage/m
       </div>
       <main id="main" className="bk-content">
         <ListNotice message={listNotice(await searchParams)} />
-        <MarketList markets={markets} today={shopToday(tenant.data?.time_zone ?? null)} records={on.has('market_records')} />
+        <MarketList markets={markets} today={shopToday(tenant.data?.time_zone ?? null)} records={on.has('market_records')} pos={on.has('market_shop')} />
       </main>
     </>
   );
