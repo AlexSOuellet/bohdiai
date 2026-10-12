@@ -13,7 +13,7 @@ import { CardContactForm } from './CardContactForm';
 import { AddToCartButton, PromoCodeForm, RemoveFromCartButton, SyncCart } from '@/lib/storefront/CartControls';
 import { ShorelineCartLink } from './ShorelineCartLink';
 import type { CartView, MarketShopView } from '@/lib/archetypes/content';
-import { MarketBuyer } from '@/lib/storefront/MarketBuyer';
+import { ShorelineMarketBuyer } from './ShorelineMarketBuyer';
 import { ShorelineOrderForm } from './ShorelineOrderForm';
 import { PhotoViewerProvider, Snapshot } from './PhotoViewer';
 import { Frame, Footer, nameParts } from './ShorelineLanding';
@@ -659,13 +659,11 @@ export function ShorelineMarket({
             <p className="sl-empty">{M.noPay}</p>
           ) : (
             <div className="sl-mk-buy">
-              <MarketBuyer
+              <ShorelineMarketBuyer
                 marketId={market.marketId}
                 pieces={market.pieces}
                 methods={market.methods}
                 codes={market.codes}
-                strings={M}
-                prefix="sl"
               />
             </div>
           ))}
