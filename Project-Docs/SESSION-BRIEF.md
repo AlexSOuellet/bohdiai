@@ -10,7 +10,7 @@
 
 **Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
 
-**Last updated:** 2026-10-12, Session 100.
+**Last updated:** 2026-10-12, Session 101.
 
 ---
 
@@ -29,29 +29,21 @@
 
 ## Next actions
 
-**OPEN PIECES — status (2026-10-12). Prioritize these with Alex at the start of Session 101.**
+**Priorities set with Alex, Session 101 (2026-10-12). Makers come first.**
 
-A. **Maker checkup** — `feat/maker-checkup`, pushed, not merged. Works end to end locally (~1¢/run). Open: Alex's test runs + review; beehiiv API key + Publication ID (Alex); "Learn more" goes to /makers (no product pages); welcome/goal wording to match the ad line; not linked from the site yet. Notes: `Need-A-Site-App.md` on that branch.
-B. **Saltmarsh market page** — `feat/saltmarsh-market-page`, pushed, not merged. Before-day view checked; buy steps only show on a market day (ask Alex before moving a demo market's date). Needed so the demo shows Maker Market properly.
-C. **Square card payments** (top build) — see 00000 below. Blocked on Alex: Square developer account.
-D. **Maker Market follow-ups** — card-taking at markets: Full or Maker Market? (Alex thinking). Market app beef-ups under discussion (buyer "tell me where you'll be next" tick, custom orders with deposit, application tracker, what to bring). `Market-Plan.md` lives on `feat/maker-checkup`.
-E. **Public demo** (from Session 99: personal copies, welcome page, Learn) — not started.
-F. **Parked branches** (all pushed as backup, none merged): `feat/site-facebook-link` (Alex said hold), `fix/auth-link-24h` (waits on Supabase OTP 86400), `feat/site-photo-hero`, `fix/bulletin-taken-tab`. Everything below (invites, Rose n' Cat, Joe, estimator email, minimal backend, preview-link secret, video, staging, bohdiai.com loose ends, Cloudflare cleanup, Cut-Pro, maker backend scope, MY ADMIN) is unchanged from before.
+1. **Saltmarsh demo** (top). `feat/saltmarsh-market-page` pushed, not merged; the buy steps only show on a market day (ask before moving a demo market's date). Then the public demo (personal copies, welcome page, Learn).
+2. **Staging** (moved up): own test domain, own Supabase, root domain as a setting. Detail: backend overview spec, "Staging".
+3. **Alex's dashboard (admin)**: look at any client site as that client; site statistics; see each demo run and each checkup taken; send invites (if we go that way) and reset passwords; messages stored in the dashboard; add FAQs and other content. Client sites then need a "contact support" link. Not designed yet.
+4. **Square card payments on BOTH Maker Market and Maker Full.** Alex is getting the Square developer account. Shopper pays on their phone; maker charges at the table with their own reader via the Square app.
+5. **Invites**: talk through with Alex before anything (`fix/auth-link-24h` parked).
+6. **Video**: price Cloudflare Stream first, then build. Then custom domains + status panel.
+7. **True Coat estimator**: the visitor's picks (job, size, finish, range) go into the request email.
+8. **Cloudflare cleanup**: step through it with Alex (redundant Cut-Pro route, trim Build variables, cancel Vercel + delete shop-proxy).
+9. **Maker checkup** (marketing tool, waits): `feat/maker-checkup` pushed, not merged.
+10. **Later:** contractor Lead Generation backend (makers first); bohdiai.com sample dates are past July dates; Classic Loafs shot catches the hero mid-fade.
 
-00000. **Square card payments for the market app — SOONER THAN LATER (Alex, 2026-10-12).** Belongs on Maker Market (was Lite), not just Full: most makers already use Square. Two pieces, money straight to the maker's own Square: (1) shopper self-checkout pays by card on their phone via Square's web card form + Apple/Google Pay, sold the moment Square confirms (no "I paid"); (2) maker charges at the table: market app opens the Square app with amount + piece filled in, maker uses their own reader, Square returns to the app and the sale lands under that market. Needs: a BohdiAI Square developer account + "Connect Square" per maker (OAuth). Later, maybe: matching sales rung up only inside Square.
-0000. **Invites:** Alex sets Supabase Email OTP Expiration = 86400 → merge `fix/auth-link-24h`. Then the maker-started sign-up ("First time here?", six-digit code, email must already be on a shop) — Alex liked it, not a go yet. Links last 1 hour today; an existing unconfirmed account needs a recovery token sent with invite wording (`invite-maker.ts` sends reset wording).
-000. **Rose n' Cat:** Renee is IN (signed in 2026-10-08). Fill Getting paid (only cash shows); tick babies per market; real names/prices. Open asks to Alex: analytics (own cookieless counter?), Square card (build switched off or wait for keys?), a test market to try a buyer order. Next build: **Market POS piece 3 — results** (own design pass). Privacy template's "analytics cookie" line is wrong; fix with analytics.
-00. **Joe (Mazzone):** his feedback on the site; switch estimate emails to his address when he's in; give his page its own section openers (True Coat and Halfmoon got theirs); his own job photos when he has them.
-01a. **Estimator → request email:** the choices a visitor taps (job, size, finish, range) should travel into the estimate email. Offered, not built.
-01b. **Minimal backend for Maker Showcase + Contractor Lead Generation** — Alex: every site gets a backend; "minimal" is undesigned.
-01c. **Cloudflare:** set the Worker's BACKEND_SESSION_SECRET to match .env.local (preview links for hidden sites).
-02. **Maker backend 1c — Video** (Cloudflare Stream; confirm cost first), then 1d Custom domains + status panel (custom domains must pass `platformCredit={false}` to both footers so the "Empowered by BohdiAI" line comes off — tiers spec). Options/combinations get their real test with the first real client who sells sizes/scents.
-01. **Staging before the first paying customer's site goes live** (agreed 2026-10-02; Alex: pay buttons don't need it): own test domain, own Supabase (after Rhody Strong is deleted), root domain as a setting. Detail: backend overview spec, "Staging".
-0. **bohdiai.com loose ends (Session 89 cleared most):** CI green again (2026-09-30); prod inquiry confirmed in Alex's inbox; Classic Loafs reverted to its original build. Still open (logo DONE Session 98; Stripe pay buttons are OFF the plan, payment links by hand): the Classic Loafs work shot catches the hero words mid-fade (re-time if Alex wants); sample find-us dates are all past July dates; drop "(publicly: Alex Scott)" from privacy/terms? JSON-LD founder name?
-1. **Cloudflare cleanup (Alex):** delete the redundant Cut-Pro route; trim Build variables to NODE_VERSION + the two NEXT_PUBLIC_*; after a few quiet days cancel Vercel and delete `shop-proxy` together.
-2. **Cut-Pro follow-ups:** their copy review (crew-photo names, services list, "since 2009"); better originals from their phones; review the privacy-page wording for a contractor.
-4. **Maker backend:** scope it against Penny's site. Open question: does Penny's store move into BohdiAI or stay standalone?
-6. **MY ADMIN — stays in the plan, lower priority (Alex, 2026-09-30).** For now client sites are built here with Claude, following the BohdiAI rules (the Bohdi builder can still be run by script for a fast first draft). The admin comes back later; nothing about its shape is decided.
+**Not ours to push:** Rose n' Cat and Joe come to Alex when they're ready. Cut-Pro follow-ups are on Cut-Pro.
+**Closed:** Penny's site never moves into BohdiAI. "Alex Scott" dropped everywhere (live). Facebook link in the bohdiai.com footer (live). Photo-hero and business-card branches dropped (delete them: Alex OK pending).
 
 ---
 
