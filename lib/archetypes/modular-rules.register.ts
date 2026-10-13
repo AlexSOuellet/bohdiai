@@ -169,7 +169,7 @@ export const WORD_REGISTER: Record<string, WordRegister> = {
   },
   'main-street/DEFAULT_COUNTS': {
     site: [],
-    platform: ['priceFrom', 'choiceSoldOut', 'choiceUnavailable', 'pieces', 'items', 'testimonials', 'outOfFive', 'showTestimonial', 'numberOf'],
+    platform: ['priceFrom', 'choiceSoldOut', 'choiceUnavailable', 'pieces', 'items', 'testimonials', 'outOfFive', 'showTestimonial', 'numberOf', 'marketDay', 'marketRange', 'marketCanceled', 'marketWhere'],
   },
 };
 

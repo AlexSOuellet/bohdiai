@@ -260,4 +260,15 @@ export const DEFAULT_COUNTS = {
   showTestimonial: (n: number): string => `Show testimonial ${n}`,
   /** "No. 3" — lookbook eyebrow. */
   numberOf: (n: number): string => `No. ${n}`,
+  /** "Sat Oct 11" — one market day, from its parts. */
+  marketDay: (weekday: string, month: string, day: string): string => `${weekday} ${month} ${day}`,
+  /** "Sat Nov 21 – Sun Nov 22" — a market over several days. */
+  marketRange: (first: string, last: string): string => `${first} – ${last}`,
+  /** "Holiday Fair (Canceled)" — a market the owner canceled. */
+  marketCanceled: (market: string): string => `${market} (Canceled)`,
+  /** "Wickford Art Festival, Wickford" — where a market is. */
+  marketWhere: (market: string, town: string): string => (town === '' ? market : `${market}, ${town}`),
 } as const;
+
+/** The locale market days are written in. */
+export const DATE_LOCALE = 'en-US';

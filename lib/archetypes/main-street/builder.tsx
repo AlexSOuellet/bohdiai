@@ -26,6 +26,10 @@ import type { FounderTreatment } from './founder';
 import { getFamily, type Family } from './families';
 import type { HeroVariantKey } from './hero-catalog';
 import { readSectionResolutions } from '@/lib/editor/section-state';
+import { notFound } from 'next/navigation';
+import type { ReactElement } from 'react';
+import { supabaseAdmin } from '@/lib/supabase';
+import { familyViewFromHomes, holdsLegacyContent, loadFamilyHomes } from './from-homes';
 
 /** Every section variant the family (or a preview override) picks for a render.
  *  Populated at the builder level from the tenant's mood + any active URL previews;
@@ -273,6 +277,19 @@ function withNav(content: MainStreetView, navVariant?: NavVariant): MainStreetVi
   return { ...content, identity: { ...content.identity, navVariant } };
 }
 
+/** A family page's content comes from the site's homes. The old samples, whose
+ *  page record still holds their content, read it from there until the clean-up
+ *  step retires them (Modular Plan steps 3 and 6). */
+function withFamilyContent(content: unknown, tenantId: string | undefined, paint: (view: MainStreetView) => ReactElement): ReactElement {
+  if (holdsLegacyContent(content)) return paint(content as MainStreetView);
+  if (tenantId === undefined) notFound();
+  return <FamilyFromHomes tenantId={tenantId} paint={paint} />;
+}
+
+async function FamilyFromHomes({ tenantId, paint }: { tenantId: string; paint: (view: MainStreetView) => ReactElement }): Promise<ReactElement> {
+  return paint(familyViewFromHomes(await loadFamilyHomes(supabaseAdmin(), tenantId)));
+}
+
 export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   key: 'main-street',
   label: 'Main Street',
@@ -329,11 +346,12 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       hero: heroVariant, goods: goodsTreatment, collections: collectionsTreatment,
       reviews: reviewsTreatment, founder: founderTreatment, findUs: findUsTreatment, nav: navVariant,
     });
-    const c = withNav(withLogo(content as MainStreetView, logoUrl, brandColors), treatments.nav);
     // The maker's walk resolutions ride on the raw envelope content alongside the
-    // authored fields (the MainStreetView cast ignores them). Read them here so the
-    // home render can hide turned-off sections and keep seeded dates out of the marquee.
+    // authored fields (old samples only). Read them here so the home render can hide
+    // turned-off sections and keep seeded dates out of the marquee.
     const resolutions = readSectionResolutions(content);
+    return withFamilyContent(content, tenantId, (view) => {
+    const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
     switch (page) {
       case 'shop':
         return <ShopPage content={c} skin={skin} products={products} family={family} />;
@@ -358,27 +376,34 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       default:
         return <MainStreet content={c} skin={skin} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} hiddenSections={resolutions.hidden} shownSections={resolutions.shown} originalMood={originalMood} />;
     }
+    });
   },
-  renderProduct: ({ content, lookKey, product, mood, logoUrl, brandColors, accentOverride, brandPalette }) => {
+  renderProduct: ({ content, lookKey, product, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
     // Product pages wear the family's nav variant AND the family's wallpaper.
     const family = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
-    const c = withNav(withLogo(content as MainStreetView, logoUrl, brandColors), treatments.nav);
-    return <MainStreetProduct content={c} skin={skin} product={product} family={family} />;
+    return withFamilyContent(content, tenantId, (view) => {
+      const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
+      return <MainStreetProduct content={c} skin={skin} product={product} family={family} />;
+    });
   },
-  renderContentPage: ({ content, lookKey, title, body, html, mood, logoUrl, brandColors, accentOverride, brandPalette }) => {
+  renderContentPage: ({ content, lookKey, title, body, html, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
     const family = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
-    const c = withNav(withLogo(content as MainStreetView, logoUrl, brandColors), treatments.nav);
-    return <ContentPage content={c} skin={skin} title={title} body={body} html={html} family={family} />;
+    return withFamilyContent(content, tenantId, (view) => {
+      const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
+      return <ContentPage content={c} skin={skin} title={title} body={body} html={html} family={family} />;
+    });
   },
-  renderShell: ({ content, lookKey, children, mood, logoUrl, brandColors, accentOverride, brandPalette }) => {
+  renderShell: ({ content, lookKey, children, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
     const family = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
-    const c = withNav(withLogo(content as MainStreetView, logoUrl, brandColors), treatments.nav);
-    return <MainStreetSubPage content={c} skin={skin} family={family}>{children}</MainStreetSubPage>;
+    return withFamilyContent(content, tenantId, (view) => {
+      const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
+      return <MainStreetSubPage content={c} skin={skin} family={family}>{children}</MainStreetSubPage>;
+    });
   },
 };

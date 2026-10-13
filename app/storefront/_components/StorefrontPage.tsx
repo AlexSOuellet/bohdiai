@@ -239,6 +239,7 @@ export async function renderArchetypeShell(tenantId: string, children: ReactNode
     content: a.content,
     lookKey: a.lookKey,
     children,
+    tenantId,
     mood: a.mood,
     logoUrl: a.logoUrl,
     brandColors: a.brandColors,

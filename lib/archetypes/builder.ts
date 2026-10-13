@@ -226,6 +226,8 @@ export interface ArchetypeBuildSpec<T = unknown> {
     content: unknown;
     lookKey: string;
     children: ReactNode;
+    /** Lets a design whose words live in the homes read them for its chrome. */
+    tenantId?: string | undefined;
     mood?: string | undefined;
     logoUrl?: string | undefined;
     brandColors?: string[] | undefined;
