@@ -6,7 +6,7 @@
 
 1. This file (`CLAUDE.md`) — orientation.
 2. `Project-Docs/SESSION-BRIEF.md` — operational state (where we are, what's next). Under 100 lines by mandate.
-3. **`Project-Docs/Full-Plan.md` — THE OPERATIVE PLAN.** Three phases — Beta, Go Live, Growth. Every session updates its checkboxes as work lands.
+3. **`Project-Docs/Modular-Plan.md` — THE OPERATIVE PLAN (since Session 102, 2026-10-13).** Every piece of content has its own home; designs are fixed shapes; every site can add shared sections; no custom work ever. **`Project-Docs/Open-Work.md`** lists every open item; update it as work lands. (`Full-Plan.md` is history.)
 4. **`Project-Docs/BohdiAI-Master-Spec.md` — READ IN FULL, every session, every time.** Retired sections carry a SUPERSEDED banner; the rest is live. Skimming or "pulling sections as needed" is not allowed.
 5. `Project-Docs/BohdiAI-Roles-Workflow.md` — rules of engagement.
 6. `Project-Docs/Phase-1-Decisions-Log.md` — refinements on top of Master Spec. Superseded entries carry a `SUPERSEDED BY Dxx` inline pointer.
@@ -18,7 +18,9 @@
 
 Everything else in `Project-Docs/historical/` is archive material — read only when explicitly referenced.
 
-**Hard rule — "cite-or-shut-up":** Before opining on architecture (tokens, components, tenants, niches, schemas, build sequence, agent roles, anything spec-defined), Claude must cite the relevant Master Spec / Roles-Workflow section or Full Plan phase. If Claude cannot cite it, Claude has not earned the right to opine on it — stop and re-read the spec instead of guessing.
+**Hard rule — check, don't recall:** Before telling Alex how something is built or stored, check the real code and database. Session 102's contradictions all came from answering from memory.
+
+**Hard rule — "cite-or-shut-up":** Before opining on architecture (tokens, components, tenants, niches, schemas, build sequence, agent roles, anything spec-defined), Claude must cite the relevant Master Spec / Roles-Workflow section or Modular Plan step. If Claude cannot cite it, Claude has not earned the right to opine on it — stop and re-read the spec instead of guessing.
 
 **Hard rule — plain English in chat:** Alex talks to Claude in conversational English and wants the same back. Defaults to avoid:
 
@@ -32,6 +34,8 @@ Everything else in `Project-Docs/historical/` is archive material — read only 
 ## What this project is
 
 BohdiAI is a multi-tenant AI-powered SaaS that gives makers/artisans a complete AI-generated storefront on a `[shop].bohdiai.com` subdomain in minutes. Subscription-only (one tier at launch, ~$35–$49/mo). **Never takes a cut of sales** — money flows customer → maker's own Stripe/Square; BohdiAI reads webhooks only.
+
+**Status as of Session 102 (2026-10-13):** The structure was reset. Family sites and contractor sites keep their content in one page record, so they can't use the backend or switch designs. The newer maker sites store content correctly but hardcode their headings. The work now follows `Modular-Plan.md`, and the next session starts with Alex reviewing it, then Phase 1 (safeguards). Sites are still built by hand for now, with automation added step by step, ending in same-day self-serve signup.
 
 **Status as of Session 87 (2026-09-29):** Direction changed on 2026-09-23 and again on 2026-09-29. Everything is manual: no onboarding and no site editor, and every site is hand-built by Alex + Claude inside the BohdiAI structure (service providers, makers, charities). A Penny-style maker backend will be built. The whole app runs on **Cloudflare Workers**, and Vercel is retired. Read `SESSION-BRIEF.md` and `Cloudflare-Move.md` first; the Session 75 status below is history.
 

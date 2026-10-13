@@ -1,14 +1,13 @@
 # Session Brief — BohdiAI
 
-> **⚠ STOP — read `Project-Docs/Direction-2026-09-23.md` first.**
-> The direction changed on 23 September 2026. The waitlist and the Beta phase are dropped (the
-> waitlist has zero rows in it), there is no self-serve signup, and first clients are built by
-> hand. Current state + next actions below are current (Session 86). `Full-Plan.md` still
-> describes the previous plan and has not been rewritten yet — treat it as history.
+> **⚠ START HERE (Session 102, 2026-10-13):** read `Project-Docs/Modular-Plan.md` (the operative
+> plan) and `Project-Docs/Open-Work.md` (every open item), then `session-logs/session-102.md`.
+> First thing next session: Alex reviews Modular-Plan.md; then build Phase 1 (safeguards).
+> `Full-Plan.md` and `Direction-2026-09-23.md` are history.
 
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 
-**Operative plan doc:** `Project-Docs/Full-Plan.md`. Every session reads it. Every session updates its checkboxes.
+**Operative plan doc:** `Project-Docs/Modular-Plan.md`; open items in `Project-Docs/Open-Work.md`. Every session updates Open-Work as items land.
 
 **Last updated:** 2026-10-13, Session 102 (end).
 
@@ -20,7 +19,7 @@
 
 **Session 101 — Saltmarsh public; demo always today; Market POS live (phone screen, home-screen app, button per market).** Recap: `session-logs/session-101.md`. **Tomorrow (Alex): sales tax**, then market discounts + Publish on the setup page. Decided: demo POS starts empty; Buyer/Seller switch on phones, side by side on computers; market discount = one percent for the market, overridable per piece; Paid is enough (no Handed over step).
 
-**Session 100 — maker checkup built (branch), Maker Market + Full $25 LIVE, Saltmarsh merged (still a draft).** Checkup at bohdiai.com/checkup on `feat/maker-checkup` (question bank + Haiku, code-decided offers and pricing, How I can help product cards); Saltmarsh shoreline market page on `feat/saltmarsh-market-page`. Recap + decisions: `session-logs/session-100.md`. **Start next session with the OPEN PIECES list below and prioritize with Alex.**
+**Session 100 — maker checkup built (branch), Maker Market + Full $25 LIVE, Saltmarsh merged (still a draft).** Checkup at bohdiai.com/checkup on `feat/maker-checkup` (question bank + Haiku, code-decided offers and pricing, How I can help product cards); Saltmarsh shoreline market page on `feat/saltmarsh-market-page`. Recap + decisions: `session-logs/session-100.md`.
 
 **Session 87 — the whole app now runs on Cloudflare Workers; Vercel serves nothing.** bohdiai.com, www, every shop subdomain and Cut-Pro are all served by the `bohdiai` Worker, verified live (Cut-Pro end to end, including a real photo estimate). `main` is current (fast-forwarded 552 commits). 1364 tests, tsc + lint clean. Runbook + lessons: `Cloudflare-Move.md`.
 
