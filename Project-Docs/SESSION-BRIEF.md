@@ -1,25 +1,28 @@
 # Session Brief — BohdiAI
 
-> **⚠ START HERE (Session 102, 2026-10-13):** read `Project-Docs/Modular-Plan.md` (the operative
-> plan) and `Project-Docs/Open-Work.md` (every open item), then `session-logs/session-102.md`.
-> First thing next session: Alex reviews Modular-Plan.md; then build Phase 1 (safeguards).
-> `Full-Plan.md` and `Direction-2026-09-23.md` are history.
+> **⚠ START HERE (Session 103, 2026-10-13):** read `Project-Docs/Modular-Plan.md` (the operative
+> plan) and `Project-Docs/Open-Work.md` (every open item), then `session-logs/session-103.md`.
+> Steps 1 and 2 are done; step 3 is underway. First thing next session: the maker-backend
+> screens for the moment, section words and new About you pieces. `Full-Plan.md` and
+> `Direction-2026-09-23.md` are history.
 
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 
 **Operative plan doc:** `Project-Docs/Modular-Plan.md`; open items in `Project-Docs/Open-Work.md`. Every session updates Open-Work as items land.
 
-**Last updated:** 2026-10-13, Session 102 (end).
+**Last updated:** 2026-10-13, Session 103 (end).
 
 ---
 
 ## Current state
 
-**Session 102: no code shipped; the structure got reset.** Read `Modular-Plan.md` (the operative plan) and `Open-Work.md` (every open item) first. "Modular" means the content: every piece has its own home, designs are fixed shapes, and any site can switch family (cozy to modern) with everything landing in its section. Family and contractor sites keep their content in one page record, which breaks that; the newer maker sites store content correctly but hardcode headings. No custom work, ever: requests become shared added sections. Coastal (from Saltmarsh) and Sweet (from Rose n' Cat, name to confirm) families are planned, and background is its own setting. Recap: `session-logs/session-102.md`. **Start next session: Alex reviews Modular-Plan.md, then Phase 1 (safeguards).**
+**Session 103: the fix began. Modular Plan steps 1 and 2 done, step 3 started; all merged.** Safeguards: a hook asks Alex once when a database change is applied (after Claude explains it in chat), a database rule refuses words/photos/dates in page records, and `lib/archetypes/modular-rules.test.ts` + its shrinking register block content read from the wrong place and words typed into designs. Homes built: `site_sections` (every section's words), `site_moments` + `site_moment_photos`, About you + quote/portrait/marquee, with backend read/save code. Family pages now read from the homes (`lib/archetypes/main-street/from-homes.ts`); old samples keep their page record until cleanup. Proof: `aurora-candles-homes` (draft copy of aurora-candles via `scripts/copy-family-sample.ts`) matches word for word. Decided: the build fills every piece, the maker edits it all; no site is truly live (Cut-Pro and Rose n' Cat will be real, Saltmarsh is the demo); the market tag was removed (built only to match a test site). Recap: `session-logs/session-103.md`. **Start next session: the maker-backend screens for the moment, section words and the new About you pieces (Modular Plan step 3).**
+
+**Session 102 — structure reset; `Modular-Plan.md` + `Open-Work.md` written.** Recap: `session-logs/session-102.md`.
 
 **Session 101 — Saltmarsh public; demo always today; Market POS live (phone screen, home-screen app, button per market).** Recap: `session-logs/session-101.md`. **Tomorrow (Alex): sales tax**, then market discounts + Publish on the setup page. Decided: demo POS starts empty; Buyer/Seller switch on phones, side by side on computers; market discount = one percent for the market, overridable per piece; Paid is enough (no Handed over step).
 
-**Session 100 — maker checkup built (branch), Maker Market + Full $25 LIVE, Saltmarsh merged (still a draft).** Checkup at bohdiai.com/checkup on `feat/maker-checkup` (question bank + Haiku, code-decided offers and pricing, How I can help product cards); Saltmarsh shoreline market page on `feat/saltmarsh-market-page`. Recap + decisions: `session-logs/session-100.md`.
+**Session 100 — maker checkup (branch `feat/maker-checkup`), Maker Market + Full $25 live.** Recap: `session-logs/session-100.md`.
 
 **Session 87 — the whole app now runs on Cloudflare Workers; Vercel serves nothing.** bohdiai.com, www, every shop subdomain and Cut-Pro are all served by the `bohdiai` Worker, verified live (Cut-Pro end to end, including a real photo estimate). `main` is current (fast-forwarded 552 commits). 1364 tests, tsc + lint clean. Runbook + lessons: `Cloudflare-Move.md`.
 
@@ -32,22 +35,7 @@
 
 ## Next actions
 
-**Superseded by `Open-Work.md` (Session 102); kept for reference.** Priorities set with Alex, Session 101 (2026-10-12). Makers come first.
-
-1. **Saltmarsh demo** (top). `feat/saltmarsh-market-page` pushed, not merged; the buy steps only show on a market day (ask before moving a demo market's date). Then the public demo (personal copies, welcome page, Learn).
-1b. **Market app (Session 101, live):** Market POS (`/manage/markets/[id]/day` + `/manage/pos` home-screen app, 7-day sign-in) replaces Today + Sell (old screens still exist; retire once Alex is happy). **Next: sales tax (Alex: tomorrow)**, then on the setup page **market discounts** set by the seller (one percent off for the market, overridable per piece; no codes for buyers) and a **Publish** step; then **sales tax**: seller's home rate, each market its own rate via a state picker (editable for local add-ons), each seller picks tax included or on top, every sale records its tax and state, market results show tax collected per state. Open: does a buyer's order need a "Handed over" step after Paid?
-2. **Staging** (moved up): own test domain, own Supabase, root domain as a setting. Detail: backend overview spec, "Staging".
-3. **Alex's dashboard (admin)**: look at any client site as that client; site statistics; see each demo run and each checkup taken; send invites (if we go that way) and reset passwords; messages stored in the dashboard; add FAQs and other content. Client sites then need a "contact support" link. Not designed yet.
-4. **Square card payments on BOTH Maker Market and Maker Full.** Alex is getting the Square developer account. Shopper pays on their phone; maker charges at the table with their own reader via the Square app.
-5. **Invites**: talk through with Alex before anything (`fix/auth-link-24h` parked).
-6. **Video**: price Cloudflare Stream first, then build. Then custom domains + status panel.
-7. **True Coat estimator**: the visitor's picks (job, size, finish, range) go into the request email.
-8. **Cloudflare cleanup**: step through it with Alex (redundant Cut-Pro route, trim Build variables, cancel Vercel + delete shop-proxy).
-9. **Maker checkup** (marketing tool, waits): `feat/maker-checkup` pushed, not merged.
-10. **Later:** contractor Lead Generation backend (makers first); bohdiai.com sample dates are past July dates; Classic Loafs shot catches the hero mid-fade.
-
-**Not ours to push:** Rose n' Cat and Joe come to Alex when they're ready. Cut-Pro follow-ups are on Cut-Pro.
-**Closed:** Penny's site never moves into BohdiAI. "Alex Scott" dropped everywhere (live). Facebook link in the bohdiai.com footer (live). Photo-hero and business-card branches deleted. Saltmarsh & Lace is LIVE (public, 2026-10-12).
+**Every open item is in `Open-Work.md`**; the order of the fix is `Modular-Plan.md`. Next: the step 3 screens, then each design's suggested headings, family sales/plans/cart, and the newer designs reading their headings from `site_sections`. Waiting on others: Rose n' Cat and Joe come to Alex when ready. Closed: Penny's site never moves into BohdiAI; "Alex Scott" dropped everywhere.
 
 ---
 
@@ -81,6 +69,8 @@
 - **Never race Alex's dev server.** Don't force-kill his `next dev` or delete `.next` under a running server — it corrupts the Turbopack cache ("missing required error components"). Use the Bash tool for headless checks on your own port; let him own his server. **Ask before starting the dev server; never alongside the full test suite.** If it chokes, clear `.next/dev/cache` first.
 - **Hand-built clients get their own layout, not the maker moods.** Alex had to say "we are NOT using the regular bohdiai formats." Don't drag onboarding/editor/mood/menu machinery into a hand-built site.
 - **Look at processed media before it goes live.** Sample frames across the whole clip; "encoded with 0 errors" shipped smeared garbage once.
+- **Never build to match a test.** A diff or a copy finds differences; ask whether the thing should exist before building it (Session 103 market tag).
+- **The type check can pass falsely.** A broken `.next/dev/types` file stops `tsc` at syntax errors before it checks any code. Check with `.next` excluded.
 - **Commit messages via a file on Windows.** PowerShell 5.1 splits an inline message with double quotes into pathspecs; a commit silently failed in Session 93. Use `git commit -F <file>` and check `git log` before merging.
 - **Don't cause side effects Alex didn't ask for.** `seed-editor-test-owner.mjs` resets the password every run — running it "just for the admin row" clobbered his known password. Read what a script does before running it for a narrow purpose.
 
@@ -90,7 +80,8 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
-- Session 102 (2026-10-13): **Business and design review, then structural reckoning: family and contractor content is stuck in page records. Modular-Plan.md + Open-Work.md written; Coastal/Sweet families; no custom work ever.** Full recap: `session-logs/session-102.md`.
+- Session 103 (2026-10-13): **Modular Plan steps 1–2 done (safeguards, homes), step 3 started: family pages read from the homes; Aurora copy proven identical; market tag added then removed.** Full recap: `session-logs/session-103.md`.
+- Session 102 (2026-10-13): **Structural reckoning: content stuck in page records. Modular-Plan.md + Open-Work.md written.** Full recap: `session-logs/session-102.md`.
 - Session 101 (2026-10-12): **Priorities reset; Saltmarsh public; demo always today; Market POS + home-screen app live; no codes at markets.** Full recap: `session-logs/session-101.md`.
 - Session 100 (2026-10-10 → 10-12): **Maker checkup built (branch); Maker Market + Full $25 live; Saltmarsh merged as draft; shoreline market page (branch).** Full recap: `session-logs/session-100.md`.
 - Sessions 86–99 (2026-09-23 → 10-09): **Cut-Pro LIVE, Cloudflare move, bohdiai.com rebuilt, backend + Catalog (86–90); tiers + pricing pages (91–92); Rustic Rhody, contractor designs, Joe public (93–95); Rose n' Cat + Market POS, not live (96–97); ember logo (98); Saltmarsh demo (99).** See `session-logs/session-86.md` – `session-99.md`.

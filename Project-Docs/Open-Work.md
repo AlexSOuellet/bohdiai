@@ -1,6 +1,6 @@
 # Open Work — everything still to do
 
-**Written 2026-10-13 (Session 102).** One list of every open item: the modular plan, decisions from Session 102, and everything carried over from earlier sessions. Update it as items land; don't let it drift. Order within a group is not priority. Alex sets priority at the start of a session.
+**Written 2026-10-13 (Session 102); last updated Session 103 (2026-10-13).** One list of every open item: the modular plan, decisions from Session 102, and everything carried over from earlier sessions. Update it as items land; don't let it drift. Order within a group is not priority. Alex sets priority at the start of a session.
 
 ## Make content modular (the operative plan: `Modular-Plan.md`)
 1. Safeguards (done 2026-10-13, Session 103):
@@ -8,13 +8,19 @@
    - [x] page records hold settings only (database rule on page records and editor drafts)
    - [x] tests block content read from the wrong place and hardcoded words (their list of known offenders can only shrink)
    - [x] the rules go in the session instructions (CLAUDE.md)
-2. Homes for family-only content: moment, founder quote and portrait, marquee, closing line, contact intro, section headings. All photos become proper uploads.
+2. Homes for family-only content (homes built, Session 103): moment, founder quote and portrait, marquee, closing line, contact intro, section headings. All photos become proper uploads.
    - [x] the homes and their code, read and saved, with tests (2026-10-13, Session 103): section words for every site, the moment and its photos, and the founder quote, portrait and marquee in About you
    - [ ] the screens to fill them come with step 3, when the designs read from them
    - [ ] each design's suggested headings, copied into a new site's section words
    - [ ] product photos that are only a web address exist only on the old family samples; nothing live writes them
 3. Family designs read from the homes, show sales, follow the three plans, and get the cart, order request and market page.
-4. Newer designs read their headings from the homes instead of code.
+   - [x] family pages read every piece from the homes; old samples keep their page record until clean-up (Session 103)
+   - [x] proof: `aurora-candles-homes`, a draft copy of aurora-candles made with `scripts/copy-family-sample.ts`, matches the sample word for word (throwaway; delete at clean-up)
+   - [ ] **next:** the maker-backend screens for the moment, section words, and About you's quote, portrait and marquee (the build fills them, the maker edits them)
+   - [ ] each family's empty messages and fallback link words come from the section words, not code
+   - [ ] running sales, the plan switches, the cart, order request and market page
+   - [ ] decide: the made-up "4.9 out of 5, 180+ customers" line on reviews has no home. Drop it, or let the maker enter a real one?
+4. Newer designs read their headings from the homes instead of code. About you's `about_title` moves into the section words too, so the about heading has one home.
 5. Added sections (plug-ins):
    - every design publishes its look and has plug-in spots
    - the first shared sections: text block, testimonials, FAQ, gallery, market dates, booked-days calendar, video, sale banner, price estimator
@@ -29,7 +35,7 @@
    - an estimate inbox
    - move Cut-Pro, Mazzone, Halfmoon and True Coat over, with Alex checking each
 9. Prove it: a fresh site in cozy, switched through every family and plan.
-10. Clean up: delete the old family samples, the old page-record code, and the `explore/bulletin-scene-look` branch, if it still exists.
+10. Clean up: delete the old family samples (and the `aurora-candles-homes` proof copy), the old page-record code, and the `explore/bulletin-scene-look` branch, if it still exists.
 
 ## Automated build, then self-serve (`Modular-Plan.md` section 7)
 11. Build by hand first. Then automate one step at a time:

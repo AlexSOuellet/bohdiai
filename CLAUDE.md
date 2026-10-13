@@ -35,6 +35,8 @@ Everything else in `Project-Docs/historical/` is archive material — read only 
 
 BohdiAI is a multi-tenant AI-powered SaaS that gives makers/artisans a complete AI-generated storefront on a `[shop].bohdiai.com` subdomain in minutes. Subscription-only (one tier at launch, ~$35–$49/mo). **Never takes a cut of sales** — money flows customer → maker's own Stripe/Square; BohdiAI reads webhooks only.
 
+**Status as of Session 103 (2026-10-13):** The fix began. Modular Plan steps 1 (safeguards) and 2 (homes) are done, and step 3 is underway: family pages read every piece from the homes, and a copy built purely from them matches its old sample word for word. Next: the maker-backend screens for the moment, section words and the new About you pieces. The build fills every piece; the maker edits it.
+
 **Status as of Session 102 (2026-10-13):** The structure was reset. Family sites and contractor sites keep their content in one page record, so they can't use the backend or switch designs. The newer maker sites store content correctly but hardcode their headings. The work now follows `Modular-Plan.md`, and the next session starts with Alex reviewing it, then Phase 1 (safeguards). Sites are still built by hand for now, with automation added step by step, ending in same-day self-serve signup.
 
 **Status as of Session 87 (2026-09-29):** Direction changed on 2026-09-23 and again on 2026-09-29. Everything is manual: no onboarding and no site editor, and every site is hand-built by Alex + Claude inside the BohdiAI structure (service providers, makers, charities). A Penny-style maker backend will be built. The whole app runs on **Cloudflare Workers**, and Vercel is retired. Read `SESSION-BRIEF.md` and `Cloudflare-Move.md` first; the Session 75 status below is history.
@@ -61,7 +63,7 @@ Next.js 16 (App Router) · Supabase (Postgres + RLS + Auth + Storage) · **Cloud
 
 1. **Golden Rules** (`Project-Docs/BohdiAI-Golden-Rules.docx`) — inviolable principles. Overrides everything.
 2. **Master Spec** (`Project-Docs/BohdiAI-Master-Spec.md`) — product/technical spec. Retired sections carry SUPERSEDED banners.
-3. **Full Plan** (`Project-Docs/Full-Plan.md`) — the operative build plan: Beta, Go Live, Growth.
+3. **Modular Plan** (`Project-Docs/Modular-Plan.md`) — the operative build plan since Session 102; every open item in `Open-Work.md`. (`Full-Plan.md` is history.)
 4. **Decisions Log** (`Project-Docs/Phase-1-Decisions-Log.md`) — refinements. Superseded entries marked inline.
 5. **Roles-Workflow** (`Project-Docs/BohdiAI-Roles-Workflow.md`) — process.
 6. Feature Specs (per-feature, written as needed).
@@ -112,7 +114,7 @@ Next.js 16 (App Router) · Supabase (Postgres + RLS + Auth + Storage) · **Cloud
 
 - `Project-Docs/BohdiAI-Golden-Rules.docx` — rank 1 authority (Word doc).
 - `Project-Docs/BohdiAI-Master-Spec.md` — rank 2 authority (SUPERSEDED sections marked).
-- `Project-Docs/Full-Plan.md` — operative plan (Beta / Go Live / Growth).
+- `Project-Docs/Modular-Plan.md` — operative plan; `Project-Docs/Open-Work.md` — every open item. (`Full-Plan.md` is history.)
 - `Project-Docs/Launch-Audit-2026-07-18.md` — what's actually built vs. what launch needs, verified against code.
 - `Project-Docs/SESSION-BRIEF.md` — operational state, under 100 lines.
 - `Project-Docs/Audit-2026-07-05.md` — full audit findings.

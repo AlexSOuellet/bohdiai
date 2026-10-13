@@ -1,6 +1,6 @@
 # BohdiAI Modular Plan
 
-**Rewritten 2026-10-13 around Alex's actual goal. Status: for Alex to review. Nothing here is built yet.**
+**Rewritten 2026-10-13 around Alex's actual goal. Status (Session 103, 2026-10-13): steps 1 and 2 done; step 3 underway (family pages read from the homes). See `Open-Work.md` for each item.**
 
 ## The goal
 
@@ -38,7 +38,9 @@ Built: the approval stop (`.claude/hooks/db-change-gate.mjs`, one prompt when a 
 3. **A test that blocks bad changes.** Every change runs a check that each design reads content only from the homes, and that no design contains display words of its own.
 4. **Rules in the instructions loaded every session.** Before any new design or home is built, Alex sees a plain list of where each piece of content goes.
 
-### 2. Homes for the family pieces that don't have one
+### 2. Homes for the family pieces that don't have one (done 2026-10-13)
+Built: `site_sections` (each section's words; the closing line and contact intro live here), `site_moments` + `site_moment_photos`, and About you's quote, attribution, portrait upload and marquee phrases, with backend read and save code. Screens come with step 3.
+
 5. **Moment:** story lines, tagline, buttons, video or photo (as a proper upload), play setting.
 6. **Founder quote and portrait,** added to About you.
 7. **Marquee phrases, closing line, contact intro.**
@@ -47,7 +49,9 @@ Built: the approval stop (`.claude/hooks/db-change-gate.mjs`, one prompt when a 
 
 Everything else already has a home: About you, gallery, Markets, Testimonials, products, collections, sales.
 
-### 3. Family designs read from the homes
+### 3. Family designs read from the homes (underway)
+Done: every family page reads from the homes (`lib/archetypes/main-street/from-homes.ts`); old samples keep their page record until step 6. Proven on `aurora-candles-homes`, a copy that matches the sample word for word.
+
 10. **Every family section reads from the homes:**
     - the about from About you
     - "find us" from Markets
@@ -153,5 +157,5 @@ At first Alex curates every site. Eventually a maker signs up, pays and is live 
 ## Decisions Alex makes along the way (one at a time)
 
 1. **Who edits each new piece:** the moment story, headings, marquee, closing line, contact intro and founder quote. Is it the maker, or Alex? **Decided 2026-10-13 (Alex): "when we generate the site we fill it in then they edit it."** The build fills every piece; the maker edits all of them in their backend.
-2. **The made-up "4.9 out of 5, 180+ customers" line** on family reviews. Drop it, or let the maker enter a real one?
+2. **The made-up "4.9 out of 5, 180+ customers" line** on family reviews. Drop it, or let the maker enter a real one? (Still open. The homes have no place for it, so sites built from the homes don't show it.)
 3. **Contractor backend screens:** which contractor homes get maker screens as part of step 4.
