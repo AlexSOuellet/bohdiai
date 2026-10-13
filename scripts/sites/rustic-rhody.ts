@@ -27,6 +27,9 @@ export const PROFILE: ProfileForm = {
   ].join('\n\n'),
   signature: 'Alex',
   makes: ['Burned-wood flags', 'Carved signs', 'Custom work'],
+  quote: '',
+  quoteAttribution: '',
+  marqueePhrases: [],
   phone: '',
   // Sample sites point their Facebook button at BohdiAI's own page (Alex, 2026-10-05).
   facebookUrl: 'https://www.facebook.com/Bohdiai/',

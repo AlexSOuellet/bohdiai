@@ -26,6 +26,9 @@ export const PROFILE: ProfileForm = {
   ].join('\n\n'),
   signature: 'Jen',
   makes: ['Shou sugi ban', 'Pyrography', 'House signs'],
+  quote: '',
+  quoteAttribution: '',
+  marqueePhrases: [],
   phone: '',
   // Sample sites point their Facebook button at BohdiAI's own page (Alex, 2026-10-05).
   facebookUrl: 'https://www.facebook.com/Bohdiai/',

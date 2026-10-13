@@ -12,6 +12,11 @@ export type ProfileForm = {
   signature: string;
   /** What I make: up to three short phrases (the bulletin board's strip). */
   makes: string[];
+  /** The founder quote: the maker in their own words, and who it's from. */
+  quote: string;
+  quoteAttribution: string;
+  /** Short phrases a design runs in its marquee band, in the owner's order. */
+  marqueePhrases: string[];
   phone: string;
   facebookUrl: string;
   instagramUrl: string;
@@ -24,16 +29,23 @@ export type ProfileRow = {
   bio: string | null;
   signature: string | null;
   makes: string[] | null;
+  quote: string | null;
+  quote_attribution: string | null;
+  marquee_phrases: string[] | null;
   phone: string | null;
   facebook_url: string | null;
   instagram_url: string | null;
 };
 
-export const PROFILE_LIMITS = { kicker: 60, headline: 160, aboutTitle: 80, bio: 1500, signature: 40 } as const;
+export const PROFILE_LIMITS = { kicker: 60, headline: 160, aboutTitle: 80, bio: 5000, signature: 40, quote: 600, quoteAttribution: 80 } as const;
 
 /** What I make: how many phrases, and how long each may be. */
 export const MAKES_LIMIT = 3;
 export const MAKE_MAX = 30;
+
+/** Marquee phrases: how many, and how long each may be. */
+export const MARQUEE_LIMIT = 12;
+export const MARQUEE_PHRASE_MAX = 60;
 
 export const EMPTY_PROFILE: ProfileForm = {
   kicker: '',
@@ -42,6 +54,9 @@ export const EMPTY_PROFILE: ProfileForm = {
   bio: '',
   signature: '',
   makes: [],
+  quote: '',
+  quoteAttribution: '',
+  marqueePhrases: [],
   phone: '',
   facebookUrl: '',
   instagramUrl: '',
@@ -53,6 +68,8 @@ const LABELS: Record<keyof typeof PROFILE_LIMITS, string> = {
   aboutTitle: 'The About heading',
   bio: 'Your story',
   signature: 'Your sign-off name',
+  quote: 'Your quote',
+  quoteAttribution: 'Who the quote is from',
 };
 
 const orNull = (s: string): string | null => (s === '' ? null : s);
@@ -92,6 +109,8 @@ export function buildProfileRow(form: ProfileForm): { ok: true; row: ProfileRow 
     aboutTitle: form.aboutTitle.trim().replace(/\s+/g, ' '),
     bio: normalizeBio(form.bio),
     signature: form.signature.trim().replace(/\s+/g, ' '),
+    quote: form.quote.trim().replace(/\s+/g, ' '),
+    quoteAttribution: form.quoteAttribution.trim().replace(/\s+/g, ' '),
   };
   for (const key of Object.keys(PROFILE_LIMITS) as (keyof typeof PROFILE_LIMITS)[]) {
     if (t[key].length > PROFILE_LIMITS[key]) {
@@ -103,6 +122,14 @@ export function buildProfileRow(form: ProfileForm): { ok: true; row: ProfileRow 
   if (makes.length > MAKES_LIMIT) return { ok: false, error: `List up to ${MAKES_LIMIT} things you make.` };
   const tooLong = makes.find((m) => m.length > MAKE_MAX);
   if (tooLong !== undefined) return { ok: false, error: `“${tooLong}” is ${tooLong.length} characters. Keep each thing you make to ${MAKE_MAX}.` };
+
+  const marquee = form.marqueePhrases.map((m) => m.trim().replace(/\s+/g, ' ')).filter((m) => m !== '');
+  if (marquee.length > MARQUEE_LIMIT) return { ok: false, error: `The marquee holds up to ${MARQUEE_LIMIT} phrases.` };
+  const longPhrase = marquee.find((m) => m.length > MARQUEE_PHRASE_MAX);
+  if (longPhrase !== undefined) {
+    return { ok: false, error: `“${longPhrase}” is ${longPhrase.length} characters. Keep each marquee phrase to ${MARQUEE_PHRASE_MAX}.` };
+  }
+  if (t.quoteAttribution !== '' && t.quote === '') return { ok: false, error: 'Add the quote, or clear who it’s from.' };
 
   const phone = form.phone.trim().replace(/\s+/g, ' ');
   const digits = phone.replace(/\D/g, '');
@@ -124,6 +151,9 @@ export function buildProfileRow(form: ProfileForm): { ok: true; row: ProfileRow 
       bio: orNull(t.bio),
       signature: orNull(t.signature),
       makes: makes.length === 0 ? null : makes,
+      quote: orNull(t.quote),
+      quote_attribution: orNull(t.quoteAttribution),
+      marquee_phrases: marquee.length === 0 ? null : marquee,
       phone: orNull(phone),
       facebook_url: facebook,
       instagram_url: instagram,
@@ -140,6 +170,9 @@ export function profileFormFromRow(row: ProfileRow | null): ProfileForm {
     bio: row.bio ?? '',
     signature: row.signature ?? '',
     makes: row.makes ?? [],
+    quote: row.quote ?? '',
+    quoteAttribution: row.quote_attribution ?? '',
+    marqueePhrases: row.marquee_phrases ?? [],
     phone: row.phone ?? '',
     facebookUrl: row.facebook_url ?? '',
     instagramUrl: row.instagram_url ?? '',

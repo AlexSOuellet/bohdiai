@@ -27,6 +27,9 @@ export const PROFILE: ProfileForm = {
   ].join('\n\n'),
   signature: 'Dana',
   makes: ['Furniture flips', 'Decoupage', 'Mixed media'],
+  quote: '',
+  quoteAttribution: '',
+  marqueePhrases: [],
   phone: '',
   // The sample points its Facebook button at BohdiAI's own page (Alex, 2026-10-05).
   facebookUrl: 'https://www.facebook.com/Bohdiai/',

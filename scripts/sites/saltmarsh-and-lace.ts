@@ -33,6 +33,9 @@ export const PROFILE: ProfileForm = {
   ].join('\n\n'),
   signature: 'Lena',
   makes: ['Art bottles', 'Boards and trays', 'Oyster dishes'],
+  quote: '',
+  quoteAttribution: '',
+  marqueePhrases: [],
   phone: '',
   // Sample sites point their Facebook button at BohdiAI's own page (Alex, 2026-10-05).
   facebookUrl: 'https://www.facebook.com/bohdiai',

@@ -8,7 +8,11 @@ describe('buildProfileRow', () => {
     const r = buildProfileRow(form());
     expect(r).toEqual({
       ok: true,
-      row: { kicker: null, headline: null, about_title: null, bio: null, signature: null, makes: null, phone: null, facebook_url: null, instagram_url: null },
+      row: {
+        kicker: null, headline: null, about_title: null, bio: null, signature: null, makes: null,
+        quote: null, quote_attribution: null, marquee_phrases: null,
+        phone: null, facebook_url: null, instagram_url: null,
+      },
     });
   });
 
@@ -23,7 +27,8 @@ describe('buildProfileRow', () => {
       ok: false,
       error: 'The short line above your name is 61 characters. Keep it to 60.',
     });
-    expect(buildProfileRow(form({ bio: 'y'.repeat(1501) })).ok).toBe(false);
+    expect(buildProfileRow(form({ bio: 'y'.repeat(5000) })).ok).toBe(true);
+    expect(buildProfileRow(form({ bio: 'y'.repeat(5001) })).ok).toBe(false);
   });
 
   it('keeps up to three things the maker makes, trimmed, blanks dropped', () => {
@@ -40,6 +45,27 @@ describe('buildProfileRow', () => {
     });
   });
 
+  it('keeps the founder quote and who it is from, trimmed', () => {
+    const r = buildProfileRow(form({ quote: '  Every board   starts as a tree. ', quoteAttribution: ' June,  founder ' }));
+    expect(r.ok && r.row.quote).toBe('Every board starts as a tree.');
+    expect(r.ok && r.row.quote_attribution).toBe('June, founder');
+    expect(buildProfileRow(form({ quote: 'q'.repeat(601) }))).toEqual({ ok: false, error: 'Your quote is 601 characters. Keep it to 600.' });
+  });
+  it('refuses a name for the quote without the quote', () => {
+    expect(buildProfileRow(form({ quoteAttribution: 'June' }))).toEqual({ ok: false, error: 'Add the quote, or clear who it’s from.' });
+  });
+  it('keeps marquee phrases in order, trimmed, blanks dropped', () => {
+    const r = buildProfileRow(form({ marqueePhrases: [' Small  batch ', '', 'Poured by hand'] }));
+    expect(r.ok && r.row.marquee_phrases).toEqual(['Small batch', 'Poured by hand']);
+    expect(buildProfileRow(form({ marqueePhrases: [' '] }))).toMatchObject({ ok: true, row: { marquee_phrases: null } });
+  });
+  it('refuses too many marquee phrases, or one that is too long', () => {
+    expect(buildProfileRow(form({ marqueePhrases: Array.from({ length: 13 }, (_, i) => `p${i}`) }))).toEqual({ ok: false, error: 'The marquee holds up to 12 phrases.' });
+    expect(buildProfileRow(form({ marqueePhrases: ['x'.repeat(61)] }))).toEqual({
+      ok: false,
+      error: `“${'x'.repeat(61)}” is 61 characters. Keep each marquee phrase to 60.`,
+    });
+  });
   it('accepts common phone formats and refuses non-numbers', () => {
     expect(buildProfileRow(form({ phone: '(401) 555-0100' })).ok).toBe(true);
     expect(buildProfileRow(form({ phone: '+1 401.555.0100' })).ok).toBe(true);
@@ -77,9 +103,10 @@ describe('profileFormFromRow', () => {
     expect(profileFormFromRow(null)).toEqual(EMPTY_PROFILE);
   });
   it('round-trips a saved row', () => {
-    const r = buildProfileRow(form({ kicker: 'Handmade in Rhode Island', phone: '(401) 555-0100', makes: ['Carved signs'] }));
+    const filled = { kicker: 'Handmade in Rhode Island', phone: '(401) 555-0100', makes: ['Carved signs'], quote: 'Every board starts as a tree.', quoteAttribution: 'June', marqueePhrases: ['Small batch'] };
+    const r = buildProfileRow(form(filled));
     if (!r.ok) throw new Error('expected ok');
-    expect(profileFormFromRow(r.row)).toEqual(form({ kicker: 'Handmade in Rhode Island', phone: '(401) 555-0100', makes: ['Carved signs'] }));
+    expect(profileFormFromRow(r.row)).toEqual(form(filled));
   });
 });
 

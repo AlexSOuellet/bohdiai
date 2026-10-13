@@ -2043,6 +2043,118 @@ export type Database = {
           },
         ]
       }
+      site_moment_photos: {
+        Row: {
+          created_at: string
+          id: string
+          position: number
+          tenant_id: string
+          updated_at: string
+          upload_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          position: number
+          tenant_id: string
+          updated_at?: string
+          upload_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          position?: number
+          tenant_id?: string
+          updated_at?: string
+          upload_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_moment_photos_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_moment_photos_upload_id_fkey"
+            columns: ["upload_id"]
+            isOneToOne: false
+            referencedRelation: "uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_moments: {
+        Row: {
+          cta_label: string | null
+          cta_target: string | null
+          headline: string | null
+          kicker: string | null
+          media_upload_id: string | null
+          play_mode: string
+          poster_upload_id: string | null
+          second_cta_label: string | null
+          second_cta_target: string | null
+          story: string[] | null
+          sub: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          cta_label?: string | null
+          cta_target?: string | null
+          headline?: string | null
+          kicker?: string | null
+          media_upload_id?: string | null
+          play_mode?: string
+          poster_upload_id?: string | null
+          second_cta_label?: string | null
+          second_cta_target?: string | null
+          story?: string[] | null
+          sub?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          cta_label?: string | null
+          cta_target?: string | null
+          headline?: string | null
+          kicker?: string | null
+          media_upload_id?: string | null
+          play_mode?: string
+          poster_upload_id?: string | null
+          second_cta_label?: string | null
+          second_cta_target?: string | null
+          story?: string[] | null
+          sub?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_moments_media_upload_id_fkey"
+            columns: ["media_upload_id"]
+            isOneToOne: false
+            referencedRelation: "uploads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_moments_poster_upload_id_fkey"
+            columns: ["poster_upload_id"]
+            isOneToOne: false
+            referencedRelation: "uploads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_moments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_profiles: {
         Row: {
           about_title: string | null
@@ -2052,7 +2164,11 @@ export type Database = {
           instagram_url: string | null
           kicker: string | null
           makes: string[] | null
+          marquee_phrases: string[] | null
           phone: string | null
+          portrait_upload_id: string | null
+          quote: string | null
+          quote_attribution: string | null
           signature: string | null
           tenant_id: string
           updated_at: string
@@ -2065,7 +2181,11 @@ export type Database = {
           instagram_url?: string | null
           kicker?: string | null
           makes?: string[] | null
+          marquee_phrases?: string[] | null
           phone?: string | null
+          portrait_upload_id?: string | null
+          quote?: string | null
+          quote_attribution?: string | null
           signature?: string | null
           tenant_id: string
           updated_at?: string
@@ -2078,16 +2198,77 @@ export type Database = {
           instagram_url?: string | null
           kicker?: string | null
           makes?: string[] | null
+          marquee_phrases?: string[] | null
           phone?: string | null
+          portrait_upload_id?: string | null
+          quote?: string | null
+          quote_attribution?: string | null
           signature?: string | null
           tenant_id?: string
           updated_at?: string
         }
         Relationships: [
           {
+            foreignKeyName: "site_profiles_portrait_upload_id_fkey"
+            columns: ["portrait_upload_id"]
+            isOneToOne: false
+            referencedRelation: "uploads"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "site_profiles_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_sections: {
+        Row: {
+          empty_text: string | null
+          kicker: string | null
+          lede: string | null
+          more_label: string | null
+          more_target: string | null
+          nav_label: string | null
+          page_title: string | null
+          section: string
+          tenant_id: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          empty_text?: string | null
+          kicker?: string | null
+          lede?: string | null
+          more_label?: string | null
+          more_target?: string | null
+          nav_label?: string | null
+          page_title?: string | null
+          section: string
+          tenant_id: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          empty_text?: string | null
+          kicker?: string | null
+          lede?: string | null
+          more_label?: string | null
+          more_target?: string | null
+          nav_label?: string | null
+          page_title?: string | null
+          section?: string
+          tenant_id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_sections_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -2777,6 +2958,7 @@ export type Database = {
         Args: { p_ids: string[]; p_tenant_id: string }
         Returns: undefined
       }
+      page_tree_settings_problem: { Args: { p_tree: Json }; Returns: string }
       place_order_request: {
         Args: {
           p_customer_email: string
@@ -2811,6 +2993,11 @@ export type Database = {
         Args: { p_order_id: string; p_status: string; p_tenant_id: string }
         Returns: undefined
       }
+      site_marquee_phrases_ok: {
+        Args: { p_phrases: string[] }
+        Returns: boolean
+      }
+      site_moment_story_ok: { Args: { p_story: string[] }; Returns: boolean }
       site_profile_makes_ok: { Args: { makes: string[] }; Returns: boolean }
     }
     Enums: {
