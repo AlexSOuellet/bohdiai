@@ -30,7 +30,9 @@ The same goes for every other design: any family, and the newer designs like sho
 
 ## The steps
 
-### 1. Safeguards
+### 1. Safeguards (done 2026-10-13)
+Built: the approval stop (`.claude/hooks/db-change-gate.mjs`, one prompt when a change is applied, after Claude explains it in chat), the database rule (`supabase/migrations/20261013000001_page_records_settings_only.sql`, proven by `scripts/check-page-rule.mjs`), the test (`lib/archetypes/modular-rules.test.ts` with its shrinking register), and the rules in `CLAUDE.md`. Alex's line on words: site words (headings, ledes, empty states, the maker's voice and vocabulary) get homes; platform words (buttons, labels, mechanics, errors) stay in code.
+
 1. **You approve every database change.** Claude Code stops and asks you before any table is created or changed, with one plain sentence saying what it's for.
 2. **Database rule.** A page's saved record can only hold settings. It applies to new saves; old samples stay readable.
 3. **A test that blocks bad changes.** Every change runs a check that each design reads content only from the homes, and that no design contains display words of its own.

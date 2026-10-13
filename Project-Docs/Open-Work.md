@@ -3,11 +3,11 @@
 **Written 2026-10-13 (Session 102).** One list of every open item: the modular plan, decisions from Session 102, and everything carried over from earlier sessions. Update it as items land; don't let it drift. Order within a group is not priority. Alex sets priority at the start of a session.
 
 ## Make content modular (the operative plan: `Modular-Plan.md`)
-1. Safeguards:
-   - Alex approves every database change
-   - page records hold settings only (database rule)
-   - tests block content read from the wrong place and hardcoded words
-   - the rules go in the session instructions
+1. Safeguards (done 2026-10-13, Session 103):
+   - [x] Alex approves every database change (explained in chat first; a hook stops at the moment a change is applied)
+   - [x] page records hold settings only (database rule on page records and editor drafts)
+   - [x] tests block content read from the wrong place and hardcoded words (their list of known offenders can only shrink)
+   - [x] the rules go in the session instructions (CLAUDE.md)
 2. Homes for family-only content: moment, founder quote and portrait, marquee, closing line, contact intro, section headings. All photos become proper uploads.
 3. Family designs read from the homes, show sales, follow the three plans, and get the cart, order request and market page.
 4. Newer designs read their headings from the homes instead of code.

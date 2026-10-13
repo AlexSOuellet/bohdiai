@@ -73,7 +73,23 @@ Next.js 16 (App Router) · Supabase (Postgres + RLS + Auth + Storage) · **Cloud
 - **No hardcoded English in the renderer. No inline styles. No shortcuts.** All strings through `DEFAULT_STRINGS`/`DEFAULT_COUNTS`; all styling through CSS variables + classes.
 - **Tests are part of done.** No feature is complete without tests.
 - **Ship complete, not partial.** Code + tests + types + verification before "done."
-- **Live sites exist (Cut-Pro).** Everything pushed to `main` goes live, so verify before merging.
+- **No site is truly live yet (Alex, 2026-10-13).** Cut-Pro and Rose n' Cat will be real; Saltmarsh is the demo. Everything pushed to `main` still deploys, so verify before merging.
+
+## The modular rules (Modular Plan; Alex 2026-10-13). Read before touching any design, home or database table.
+
+1. **Every piece of content has its own home** (a table or field) that any design can read.
+2. **Pages hold settings only.** A page record says which design and which look, never words, photos or dates.
+3. **Designs only display.** A design never stores content of its own.
+4. **No hardcoding.** No display words inside a design. Section headings come from the site's own content.
+5. **No site ever requires custom work.** A new need becomes a shared added section or a new design any site can use. Nothing is built for one site only.
+
+**Site words vs platform words (Alex's line).** Site words belong to the site and need a home per site: section names and headings, the lines under them, empty-state messages, anything in the maker's voice, the site's own vocabulary. Platform words are how the site works and stay in a design's strings file: buttons, form labels, cart and payment mechanics, statuses, errors, screen-reader labels, date formats, footer links.
+
+**The safeguards (they don't depend on Claude remembering):**
+- **Database changes:** before any table or column is created or changed, tell Alex in chat, in plain words, what it is and why, and wait for his yes. He approves database changes so Claude can't bend the database into a shortcut. A project hook (`.claude/hooks/db-change-gate.mjs`) also stops for approval at the moment a change is applied.
+- **Database rule:** a trigger on `content_pages` and `store_drafts` refuses any page record carrying words, photos or dates (`supabase/migrations/20261013000001_page_records_settings_only.sql`; proof: `node scripts/check-page-rule.mjs`). Never weaken it to get a save through. Move the content to its home.
+- **Test:** `lib/archetypes/modular-rules.test.ts` fails on page-record content a design reads, on any unsorted word in a strings file, and on words typed straight into a design or shop page. Its register (`modular-rules.register.ts`) can only shrink. Never add an offender to it to get a build green.
+- **Plain list first:** before any new design or home is built, show Alex a plain list of where each piece of content goes, and wait for his yes.
 
 ## Brand context (load-bearing)
 
