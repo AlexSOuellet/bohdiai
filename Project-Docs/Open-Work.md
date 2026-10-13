@@ -9,6 +9,10 @@
    - [x] tests block content read from the wrong place and hardcoded words (their list of known offenders can only shrink)
    - [x] the rules go in the session instructions (CLAUDE.md)
 2. Homes for family-only content: moment, founder quote and portrait, marquee, closing line, contact intro, section headings. All photos become proper uploads.
+   - [x] the homes and their code, read and saved, with tests (2026-10-13, Session 103): section words for every site, the moment and its photos, and the founder quote, portrait and marquee in About you
+   - [ ] the screens to fill them come with step 3, when the designs read from them
+   - [ ] each design's suggested headings, copied into a new site's section words
+   - [ ] product photos that are only a web address exist only on the old family samples; nothing live writes them
 3. Family designs read from the homes, show sales, follow the three plans, and get the cart, order request and market page.
 4. Newer designs read their headings from the homes instead of code.
 5. Added sections (plug-ins):
