@@ -24,8 +24,8 @@ const full: CardData = {
   },
   photos,
   dates: [
-    { id: 'd1', date: '2026-10-24', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Harvest Fair', town: 'Bristol' },
-    { id: 'd2', date: '2026-12-05', endDate: '2026-12-06', hours: '', address: '', booth: '', url: '', canceled: true, name: 'Christmas Fair', town: 'Barrington' },
+    { id: 'd1', date: '2026-10-24', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, kind: '', name: 'Harvest Fair', town: 'Bristol' },
+    { id: 'd2', date: '2026-12-05', endDate: '2026-12-06', hours: '', address: '', booth: '', url: '', canceled: true, kind: '', name: 'Christmas Fair', town: 'Barrington' },
   ],
 };
 

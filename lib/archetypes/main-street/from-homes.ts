@@ -63,6 +63,7 @@ function findUsFrom(markets: SectionWords, dates: readonly MarketDate[]): FindUs
       where: DEFAULT_COUNTS.marketWhere(d.canceled ? DEFAULT_COUNTS.marketCanceled(d.name) : d.name, d.town),
       time: d.hours,
       date: d.date,
+      ...(d.kind === '' ? {} : { kind: d.kind }),
     })),
   };
 }

@@ -12,7 +12,7 @@
 import { buildMomentRow, EMPTY_MOMENT, type MomentForm, type MomentRow } from '@/lib/backend/moment/moment-form';
 import { buildSectionRow, EMPTY_SECTION, type SectionKey, type SectionRow, type SectionWords } from '@/lib/backend/sections/sections-form';
 import { buildProfileRow, EMPTY_PROFILE, type ProfileRow } from '@/lib/backend/profile/profile-form';
-import { isCalendarDate } from '@/lib/backend/dates/dates-form';
+import { isCalendarDate, type MarketKind } from '@/lib/backend/dates/dates-form';
 import type { MainStreetView } from './schemas';
 
 export type LegacyHomes = {
@@ -25,7 +25,7 @@ export type LegacyHomes = {
   profile: ProfileRow;
   portraitUrl: string | null;
   testimonials: { quote: string; name: string; detail: string | null }[];
-  markets: { date: string; name: string; hours: string }[];
+  markets: { date: string; name: string; hours: string; kind: MarketKind | null }[];
   /** Market rows written as free text ("Saturdays") with no date to place them. */
   undatedMarkets: string[];
 };
@@ -92,7 +92,7 @@ export function homesFromLegacy(c: MainStreetView): LegacyHomes {
     profile: profile.row,
     portraitUrl: f.photo.url ?? null,
     testimonials: (c.reviews?.items ?? []).map((t) => ({ quote: t.quote, name: t.author, detail: t.location ?? null })),
-    markets: dated.map((r) => ({ date: r.date ?? '', name: r.where, hours: r.time })),
+    markets: dated.map((r) => ({ date: r.date ?? '', name: r.where, hours: r.time, kind: r.kind ?? null })),
     undatedMarkets: rows.filter((r) => !dated.includes(r)).map((r) => `${r.day} · ${r.where} · ${r.time}`),
   };
 }

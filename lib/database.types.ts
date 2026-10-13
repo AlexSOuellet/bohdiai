@@ -588,6 +588,7 @@ export type Database = {
           go_back: string | null
           hours: string | null
           id: string
+          kind: string | null
           location: string | null
           name: string
           notes: string | null
@@ -610,6 +611,7 @@ export type Database = {
           go_back?: string | null
           hours?: string | null
           id?: string
+          kind?: string | null
           location?: string | null
           name: string
           notes?: string | null
@@ -632,6 +634,7 @@ export type Database = {
           go_back?: string | null
           hours?: string | null
           id?: string
+          kind?: string | null
           location?: string | null
           name?: string
           notes?: string | null

@@ -1,3 +1,4 @@
+import type { MarketDate } from '@/lib/backend/dates/dates-form';
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, within } from '@testing-library/react';
 import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
@@ -83,9 +84,9 @@ describe('business card page', () => {
   });
 
   it('runs the market dates along the quiet row, and lists them for screen readers', () => {
-    const dates = [
-      { id: 'd1', date: '2026-10-11', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Wickford Art Festival', town: 'Wickford' },
-      { id: 'd2', date: '2026-11-01', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Holiday Fair', town: '' },
+    const dates: MarketDate[] = [
+      { id: 'd1', date: '2026-10-11', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, kind: '', name: 'Wickford Art Festival', town: 'Wickford' },
+      { id: 'd2', date: '2026-11-01', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, kind: '', name: 'Holiday Fair', town: '' },
     ];
     const { container } = page({ ...full, dates });
     const quiet = [...container.querySelectorAll('.bc-marquee__row--quiet span')].map((s) => s.textContent);

@@ -42,7 +42,7 @@ const legacy: MainStreetView = {
       title: 'Where we’ll be',
       eventsLabel: 'See all dates',
       rows: [
-        { day: 'Sat Oct 17', where: 'Wickford Art Festival', time: '10–5', date: '2026-10-17' },
+        { day: 'Sat Oct 17', where: 'Wickford Art Festival', time: '10–5', date: '2026-10-17', kind: 'event' },
         { day: 'Saturdays', where: 'Downtown Makers Market', time: '9–3' },
       ],
     },
@@ -77,7 +77,7 @@ describe('homesFromLegacy', () => {
 
   it('keeps testimonials, and only dated markets, naming the ones it can’t place', () => {
     expect(h.testimonials).toEqual([{ quote: 'My whole house smells like a cabin', name: 'Dana', detail: 'Cranston' }, { quote: 'Burns for days', name: 'Lee', detail: null }]);
-    expect(h.markets).toEqual([{ date: '2026-10-17', name: 'Wickford Art Festival', hours: '10–5' }]);
+    expect(h.markets).toEqual([{ date: '2026-10-17', name: 'Wickford Art Festival', hours: '10–5', kind: 'event' }]);
     expect(h.undatedMarkets).toEqual(['Saturdays · Downtown Makers Market · 9–3']);
   });
 
@@ -125,7 +125,7 @@ describe('a round trip through the homes', () => {
       profile: profileFormFromRow(h.profile),
       portraitUrl: h.portraitUrl,
       testimonials: h.testimonials.map((t, i) => ({ id: `t${i}`, quote: t.quote, name: t.name, detail: t.detail ?? '' })),
-      dates: h.markets.map((m, i) => ({ id: `d${i}`, date: m.date, endDate: '', name: m.name, town: '', hours: m.hours, address: '', booth: '', url: '', canceled: false })),
+      dates: h.markets.map((m, i) => ({ id: `d${i}`, date: m.date, endDate: '', name: m.name, town: '', hours: m.hours, address: '', booth: '', url: '', canceled: false, kind: m.kind ?? '' })),
     });
     expect(view.moment).toMatchObject({
       story: legacy.moment.story, eyebrow: legacy.moment.eyebrow, brand: legacy.moment.brand, sub: legacy.moment.sub,
@@ -137,7 +137,7 @@ describe('a round trip through the homes', () => {
     expect(view.reviews?.items).toEqual(legacy.reviews?.items.map((t) => ({ ...t, location: t.location })));
     expect(view.marquee).toEqual(legacy.marquee);
     expect(view.founder).toMatchObject({ quote: legacy.founder.quote, attribution: legacy.founder.attribution, eyebrow: 'Meet the maker', heading: 'Hi, I’m June', aboutLabel: 'Read my story', photo: { url: 'https://cdn/portrait.jpg' } });
-    expect(view.founder.findUs).toMatchObject({ label: 'Find us in person', title: 'Where we’ll be', eventsLabel: 'See all dates', rows: [{ where: 'Wickford Art Festival', time: '10–5', date: '2026-10-17' }] });
+    expect(view.founder.findUs).toMatchObject({ label: 'Find us in person', title: 'Where we’ll be', eventsLabel: 'See all dates', rows: [{ where: 'Wickford Art Festival', time: '10–5', date: '2026-10-17', kind: 'event' }] });
     expect(view.close).toEqual(legacy.close);
     expect(view.about).toEqual(legacy.about);
     expect(view.contact).toEqual(legacy.contact);

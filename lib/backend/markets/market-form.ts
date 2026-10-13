@@ -5,7 +5,7 @@
  * notes, her review. Spec: docs/superpowers/specs/2026-10-07-market-pos-design.md
  */
 import { parseDollars } from '@/lib/backend/catalog/product-form';
-import { MARKET_MAX_DAYS, isCalendarDate } from '@/lib/backend/dates/dates-form';
+import { MARKET_MAX_DAYS, isCalendarDate, isMarketKind, type MarketKind } from '@/lib/backend/dates/dates-form';
 import { formatPrice } from '@/lib/storefront/catalog';
 
 export const MARKETS_LIMIT = 40;
@@ -29,6 +29,9 @@ export const MARKET_LIMITS = {
 export type GoBack = 'yes' | 'maybe' | 'no';
 export const GO_BACK_LABEL: Readonly<Record<GoBack, string>> = { yes: 'Yes', maybe: 'Maybe', no: 'No' };
 
+/** The choices for what kind of date a market is, as the owner sees them. */
+export const MARKET_KIND_LABEL: Readonly<Record<MarketKind | '', string>> = { '': 'None', market: 'Market', workshop: 'Workshop', event: 'Event' };
+
 export type CostLine = { description: string; amount: string };
 
 export type MarketForm = {
@@ -42,6 +45,8 @@ export type MarketForm = {
   booth: string;
   url: string;
   canceled: boolean;
+  /** What kind of date it is, shown as a tag on the site; '' for none. */
+  kind: MarketKind | '';
   costs: CostLine[];
   organizerName: string;
   organizerPhone: string;
@@ -65,6 +70,7 @@ export type MarketPayload = {
   booth: string | null;
   url: string | null;
   status: 'upcoming' | 'canceled';
+  kind: MarketKind | null;
   organizer_name: string | null;
   organizer_phone: string | null;
   organizer_email: string | null;
@@ -88,6 +94,7 @@ export function emptyMarketForm(): MarketForm {
     booth: '',
     url: '',
     canceled: false,
+    kind: '',
     costs: [],
     organizerName: '',
     organizerPhone: '',
@@ -170,6 +177,7 @@ export function buildMarketPayload(form: MarketForm): { ok: true; payload: Marke
   }
 
   if (!Number.isInteger(form.rating) || form.rating < 0 || form.rating > 5) return fail('Pick from one to five stars.');
+  if (form.kind !== '' && !isMarketKind(form.kind)) return fail('Pick what kind of date this is, or none.');
 
   return {
     ok: true,
@@ -183,6 +191,7 @@ export function buildMarketPayload(form: MarketForm): { ok: true; payload: Marke
       booth: orNull(v['booth'] ?? ''),
       url: orNull(url),
       status: form.canceled ? 'canceled' : 'upcoming',
+      kind: form.kind === '' ? null : form.kind,
       organizer_name: orNull(v['organizerName'] ?? ''),
       organizer_phone: orNull(v['organizerPhone'] ?? ''),
       organizer_email: orNull(email),

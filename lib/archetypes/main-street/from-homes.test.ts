@@ -23,7 +23,7 @@ function sections(over: Partial<Record<keyof SiteSections, Partial<typeof EMPTY_
 }
 
 const market = (over: Partial<MarketDate> = {}): MarketDate => ({
-  id: 'd1', date: '2026-10-17', endDate: '', name: 'Wickford Art Festival', town: 'Wickford', hours: '9am–4pm', address: '', booth: '', url: '', canceled: false, ...over,
+  id: 'd1', date: '2026-10-17', endDate: '', name: 'Wickford Art Festival', town: 'Wickford', hours: '9am–4pm', address: '', booth: '', url: '', canceled: false, kind: '', ...over,
 });
 
 const empty: FamilyHomes = {
@@ -107,8 +107,14 @@ describe('familyViewFromHomes', () => {
   });
 
   it('marks a canceled market and writes a market with no town by its name', () => {
-    const v = familyViewFromHomes({ ...empty, dates: [market({ canceled: true, town: '' })] });
+    const v = familyViewFromHomes({ ...empty, dates: [market({ canceled: true, kind: '', town: '' })] });
     expect(v.founder.findUs?.rows[0]?.where).toBe('Wickford Art Festival (Canceled)');
+  });
+
+  it('carries a market’s tag, and leaves it off a market without one', () => {
+    const rows = familyViewFromHomes({ ...empty, dates: [market({ kind: 'workshop' }), market({ id: 'd2' })] }).founder.findUs?.rows ?? [];
+    expect(rows[0]?.kind).toBe('workshop');
+    expect(rows[1]).not.toHaveProperty('kind');
   });
 
   it('keeps a contact section with only an intro', () => {

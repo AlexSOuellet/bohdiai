@@ -1,5 +1,6 @@
+import type { MarketDate } from './dates-form';
 import { describe, it, expect } from 'vitest';
-import { buildDateRow, byDay, isCalendarDate } from './dates-form';
+import { buildDateRow, byDay, isCalendarDate, marketDateFromRow } from './dates-form';
 
 describe('isCalendarDate', () => {
   it('takes real days written YYYY-MM-DD and nothing else', () => {
@@ -34,7 +35,7 @@ describe('buildDateRow', () => {
 
 describe('byDay', () => {
   it('puts the earliest market first', () => {
-    const d = (id: string, date: string) => ({ id, date, endDate: '', name: id, town: '', hours: '', address: '', booth: '', url: '', canceled: false });
+    const d = (id: string, date: string): MarketDate => ({ id, date, endDate: '', name: id, town: '', hours: '', address: '', booth: '', url: '', canceled: false, kind: '' });
     expect([d('b', '2026-11-01'), d('a', '2026-10-11'), d('c', '2027-01-03')].sort(byDay).map((x) => x.id)).toEqual(['a', 'b', 'c']);
   });
 });
@@ -54,5 +55,15 @@ describe('markets over several days', () => {
     expect(buildDateRow({ ...base, endDate: '2026-11-20' })).toEqual({ ok: false, error: 'The last day comes before the first day. Check the two days.' });
     expect(buildDateRow({ ...base, endDate: '2026-12-21' }).ok).toBe(false);
     expect(buildDateRow({ ...base, endDate: '2026-02-30' }).ok).toBe(false);
+  });
+});
+
+describe('marketDateFromRow', () => {
+  const row = { event_date: '2026-10-17', end_date: null, name: 'Fair', location: null };
+  it('reads a saved tag, and treats none or an unknown one as no tag', () => {
+    expect(marketDateFromRow('d1', { ...row, kind: 'workshop' }).kind).toBe('workshop');
+    expect(marketDateFromRow('d1', { ...row, kind: null }).kind).toBe('');
+    expect(marketDateFromRow('d1', { ...row, kind: 'party' }).kind).toBe('');
+    expect(marketDateFromRow('d1', row).kind).toBe('');
   });
 });

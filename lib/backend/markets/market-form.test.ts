@@ -43,6 +43,7 @@ describe('buildMarketPayload', () => {
         booth: 'Booth 12',
         url: 'https://scituateartfestival.org/',
         status: 'upcoming',
+        kind: null,
         organizer_name: null,
         organizer_phone: null,
         organizer_email: 'info@example.org',
@@ -91,5 +92,15 @@ describe('helpers', () => {
   });
   it('never lets the site read a private column', () => {
     for (const col of ['notes', 'organizer', 'rating', 'go_back', 'review', 'expenses']) expect(MARKET_PUBLIC_COLUMNS).not.toContain(col);
+  });
+});
+
+describe('a market’s tag', () => {
+  it('saves the tag it was given, or nothing for none', () => {
+    expect(buildMarketPayload(form({ kind: 'workshop' }))).toMatchObject({ ok: true, payload: { kind: 'workshop' } });
+    expect(buildMarketPayload(form({ kind: '' }))).toMatchObject({ ok: true, payload: { kind: null } });
+  });
+  it('refuses a tag it doesn’t know', () => {
+    expect(buildMarketPayload(form({ kind: 'party' as MarketForm['kind'] }))).toEqual({ ok: false, error: 'Pick what kind of date this is, or none.' });
   });
 });

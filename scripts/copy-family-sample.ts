@@ -151,7 +151,7 @@ async function main(): Promise<void> {
     if (error !== null) fail(`testimonials failed: ${error.message}`);
   }
   if (homes.markets.length > 0) {
-    const { error } = await db.from('events').insert(homes.markets.map((m) => ({ tenant_id: tid, name: m.name, event_date: m.date, hours: m.hours, status: 'upcoming' })));
+    const { error } = await db.from('events').insert(homes.markets.map((m) => ({ tenant_id: tid, name: m.name, event_date: m.date, hours: m.hours, kind: m.kind, status: 'upcoming' })));
     if (error !== null) fail(`markets failed: ${error.message}`);
   }
 

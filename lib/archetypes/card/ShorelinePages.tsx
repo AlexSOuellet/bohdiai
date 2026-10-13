@@ -643,6 +643,7 @@ export function ShorelineMarket({
     booth: market.booth,
     url: '',
     canceled: market.state === 'canceled',
+    kind: '',
   });
   const where = M.where(market.town, market.booth);
   return (
