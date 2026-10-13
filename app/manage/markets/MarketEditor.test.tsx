@@ -61,15 +61,6 @@ describe('MarketEditor', () => {
     await waitFor(() => expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ rating: 4, goBack: 'maybe' })));
   });
 
-  it('takes what kind of date it is, starting at none', async () => {
-    saveMarket.mockResolvedValue({ ok: true, id: 'm1' });
-    render(<MarketEditor initial={existing()} details records />);
-    expect((screen.getByLabelText('None') as HTMLInputElement).checked).toBe(true);
-    fireEvent.click(screen.getByLabelText('Workshop'));
-    fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
-    await waitFor(() => expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ kind: 'workshop' })));
-  });
-
   it('stops a market with no day before saving, and says why', async () => {
     render(<MarketEditor initial={emptyMarketForm()} details records />);
     fireEvent.change(screen.getByLabelText('Market name'), { target: { value: 'Holly Fair' } });

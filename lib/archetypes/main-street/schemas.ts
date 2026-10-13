@@ -16,7 +16,6 @@
  */
 import { z } from 'zod';
 import { MAIN_STREET_SKINS } from './skins';
-import { FINDUS_KINDS } from './findus';
 import { LINK_TARGETS } from './links';
 
 /** The hero's held media, authored as a STRUCTURED scene rather than a prose
@@ -83,14 +82,13 @@ export const StoryLine = z.string().min(1);
 /** One "find us this week" row. `day`/`where`/`time` are the authored human strings
  *  (also read by the events-page list + the marquee). `date` (ISO YYYY-MM-DD) is
  *  optional and lets the date-shaped treatments (Calendar, Next Stop) place + sort;
- *  `kind` tags an optional pill. Both optional so content authored before they
- *  existed still parses. Shape only — no length caps (D57). */
+ *  optional so content authored before it existed still parses. Shape only — no
+ *  length caps (D57). */
 export const FindUsRow = z.object({
   day: z.string().min(1),
   where: z.string().min(1),
   time: z.string().min(1),
   date: z.string().min(1).optional(),
-  kind: z.enum(FINDUS_KINDS).optional(),
 });
 
 /** The About-beat bodies. A tuple so the content schema and the copywriter's

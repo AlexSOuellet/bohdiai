@@ -22,8 +22,8 @@ const site: ShorelineData = {
     profile: { ...EMPTY_PROFILE, kicker: 'Decoupage from Bristol', headline: 'Sealed to last', aboutTitle: 'From the paint counter', bio: 'I run the paint counter.\n\nEvery sealer gets tested.', signature: 'Lena', facebookUrl: 'https://www.facebook.com/bohdiai', makes: ['Art bottles'] },
     photos: [],
     dates: [
-      { id: 'd1', date: '2026-10-24', endDate: '', hours: '10am – 4pm', address: '2 Main St, Bristol', booth: '12', url: 'https://fair.example', canceled: false, kind: '', name: 'Harvest Fair', town: 'Bristol' },
-      { id: 'd2', date: '2026-11-14', endDate: '', hours: '', address: '', booth: '', url: '', canceled: true, kind: '', name: 'Makers Market', town: 'Warren' },
+      { id: 'd1', date: '2026-10-24', endDate: '', hours: '10am – 4pm', address: '2 Main St, Bristol', booth: '12', url: 'https://fair.example', canceled: false, name: 'Harvest Fair', town: 'Bristol' },
+      { id: 'd2', date: '2026-11-14', endDate: '', hours: '', address: '', booth: '', url: '', canceled: true, name: 'Makers Market', town: 'Warren' },
     ],
   },
   pages: true,

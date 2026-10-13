@@ -6,7 +6,6 @@ import type { Route } from 'next';
 import { useRouter, unstable_rethrow } from 'next/navigation';
 import { removeMarket, saveMarket } from '@/lib/backend/markets/actions';
 import {
-  MARKET_KIND_LABEL,
   COSTS_LIMIT,
   GO_BACK_LABEL,
   MARKET_LIMITS as L,
@@ -206,23 +205,6 @@ export function MarketEditor({
             max={L.town}
             onChange={(v) => update({ town: v })}
           />
-          <fieldset className="bk-fieldset">
-            <legend className="bk-label">What kind of date is it?</legend>
-            <div className="bk-row">
-              {(Object.keys(MARKET_KIND_LABEL) as (keyof typeof MARKET_KIND_LABEL)[]).map((k) => (
-                <label key={k === '' ? 'none' : k} className="bk-check">
-                  <input
-                    type="radio"
-                    name="m-kind"
-                    checked={form.kind === k}
-                    onChange={() => update({ kind: k })}
-                  />
-                  {MARKET_KIND_LABEL[k]}
-                </label>
-              ))}
-            </div>
-            <p className="bk-note">Your site may show it as a small tag beside the date.</p>
-          </fieldset>
           {details && (
             <>
               <Text

@@ -26,7 +26,6 @@
  * arrives with the family layer. Until then the dispatcher falls back to the
  * documented default below. Per-family defaults live in `Family-Style-Sheets.md`.
  */
-import { MARKET_KINDS } from '@/lib/backend/dates/dates-form';
 
 /** The six find-us treatments, as a tuple — the single source the schema enum and
  *  the authoring menu both read so they can never drift apart. */
@@ -57,11 +56,6 @@ export const FINDUS_TREATMENT_MENU: Record<FindUsTreatment, string> = {
  */
 export const DEFAULT_FINDUS_TREATMENT: FindUsTreatment = 'board';
 
-/** What kind of appearance a row is — drives an optional pill/marker in some
- *  treatments. Optional on the row; absent → no pill. */
-export const FINDUS_KINDS = MARKET_KINDS;
-export type FindUsKind = (typeof FINDUS_KINDS)[number];
-
 /**
  * One appearance as a renderer sees it.
  *
@@ -76,7 +70,6 @@ export interface FindUsEvent {
   where: string;
   time: string;
   date?: string | undefined;
-  kind?: FindUsKind | undefined;
 }
 
 /** The find-us SECTION content — the authored heading + cue + the dates themselves.

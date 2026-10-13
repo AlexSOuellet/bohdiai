@@ -36,7 +36,7 @@ export function FindUsPasses({
               <div key={i} data-ms-fu-item="" className="ms-fu-pass-ticket">
                 <div className="ms-fu-pass-stub" aria-hidden>
                   <Type as="span" role="day" className="ms-fu-pass-stub-l">
-                    {parts ? parts.weekdayShort : e.kind ?? ''}
+                    {parts ? parts.weekdayShort : ''}
                   </Type>
                 </div>
                 <div className="ms-fu-pass-body">

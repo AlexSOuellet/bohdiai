@@ -1,5 +1,4 @@
 /** Market reads for the backend, through the owner's own client (RLS applies). */
-import { isMarketKind } from '@/lib/backend/dates/dates-form';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import { formatPrice } from '@/lib/storefront/catalog';
@@ -8,7 +7,7 @@ import type { GoBack, MarketForm } from './market-form';
 type Db = SupabaseClient<Database>;
 
 const COLUMNS =
-  'id, name, event_date, end_date, hours, location, address, booth, url, status, kind, organizer_name, organizer_phone, organizer_email, notes, rating, go_back, review, created_at, event_expenses(description, amount_cents, created_at)';
+  'id, name, event_date, end_date, hours, location, address, booth, url, status, organizer_name, organizer_phone, organizer_email, notes, rating, go_back, review, created_at, event_expenses(description, amount_cents, created_at)';
 
 export type MarketRowView = {
   id: string;
@@ -59,7 +58,6 @@ export async function getMarket(db: Db, tenantId: string, id: string): Promise<M
     booth: r.booth ?? '',
     url: r.url ?? '',
     canceled: r.status === 'canceled',
-    kind: r.kind !== null && isMarketKind(r.kind) ? r.kind : '',
     costs: [...r.event_expenses]
       .sort((a, b) => a.created_at.localeCompare(b.created_at))
       .map((e) => ({ description: e.description, amount: cents(e.amount_cents) })),

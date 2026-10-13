@@ -822,7 +822,6 @@ export function NurseryMarket({
     booth: market.booth,
     url: '',
     canceled: market.state === 'canceled',
-    kind: '',
   });
   const where = S.market.where(market.town, market.booth);
   return (

@@ -129,7 +129,7 @@ describe('stampFindUsDates', () => {
   it('stamps ascending near-future dates from today, first ones within the week', () => {
     const out = stampFindUsDates(
       [
-        { day: 'x', where: 'A', time: '10–4', kind: 'market' },
+        { day: 'x', where: 'A', time: '10–4' },
         { day: 'x', where: 'B', time: '9–1' },
       ],
       today,
@@ -140,12 +140,11 @@ describe('stampFindUsDates', () => {
     expect(out[0]!.date! < out[1]!.date!).toBe(true);
   });
 
-  it('rewrites the day echo to match the stamped date and keeps where/time/kind', () => {
-    const out = stampFindUsDates([{ day: 'stale', where: 'A', time: '10–4', kind: 'market' }], today);
+  it('rewrites the day echo to match the stamped date and keeps where/time', () => {
+    const out = stampFindUsDates([{ day: 'stale', where: 'A', time: '10–4' }], today);
     expect(out[0]!.day).toBe('Sun, Jul 5');
     expect(out[0]!.where).toBe('A');
     expect(out[0]!.time).toBe('10–4');
-    expect(out[0]!.kind).toBe('market');
   });
 
   it('handles more rows than the offset table without collision', () => {
@@ -159,7 +158,7 @@ describe('stampFindUsDates', () => {
 });
 
 describe('seedPreviewFindUs', () => {
-  it('seeds dated rows with kinds relative to today so every treatment previews live', () => {
+  it('seeds dated rows relative to today so every treatment previews live', () => {
     const today = new Date(Date.UTC(2026, 6, 3));
     const seed = seedPreviewFindUs(today);
     expect(seed.rows.length).toBeGreaterThan(0);
@@ -167,6 +166,5 @@ describe('seedPreviewFindUs', () => {
       expect(parseFindUsDate(r.date)).toBeDefined();
       expect(r.date! >= '2026-07-03').toBe(true); // never in the past
     }
-    expect(seed.rows.some((r) => r.kind === 'workshop')).toBe(true);
   });
 });

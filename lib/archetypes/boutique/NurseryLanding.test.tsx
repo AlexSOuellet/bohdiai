@@ -38,7 +38,7 @@ const full: BoutiqueData = {
     facebookUrl: 'https://www.facebook.com/rosencat',
     instagramUrl: 'https://instagram.com/rosencat',
   },
-  dates: [{ id: 'd1', date: '2026-10-17', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, kind: '', name: 'Scituate Art Festival', town: 'Scituate' }],
+  dates: [{ id: 'd1', date: '2026-10-17', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Scituate Art Festival', town: 'Scituate' }],
   gone: [
     { id: 'g1', url: 'https://cdn/g1.webp', caption: 'Christmas twins' },
     { id: 'g2', url: 'https://cdn/g2.webp', caption: '' },
@@ -421,7 +421,7 @@ describe('visiting hours details', () => {
     expect(screen.getByRole('link', { name: S.visit.websiteLabel(market.name) }).getAttribute('href')).toBe('https://fair.org/');
   });
   it('marks a canceled market instead of dropping it', () => {
-    const { container } = render(<NurseryHome data={{ ...full, dates: [{ ...market, canceled: true, kind: '' }] }} products={babies} tenantId={TENANT} />);
+    const { container } = render(<NurseryHome data={{ ...full, dates: [{ ...market, canceled: true }] }} products={babies} tenantId={TENANT} />);
     expect(container.querySelector('.nn-visits__canceled')?.textContent).toContain(S.visit.canceled);
     expect(screen.queryByRole('link', { name: S.visit.directionsLabel(market.name) })).toBeNull();
   });

@@ -11,18 +11,17 @@ import { FindUsPoster } from './FindUsPoster';
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 const section: FindUsSection = { label: 'Find us in person', eventsLabel: 'See all dates', rows: [] };
-const dated: FindUsEvent = { date: '2025-08-02', day: 'Sat, Aug 2', where: 'Wickford Festival', time: '10–5', kind: 'market' };
+const dated: FindUsEvent = { date: '2025-08-02', day: 'Sat, Aug 2', where: 'Wickford Festival', time: '10–5' };
 const undatedRow: FindUsEvent = { day: 'Every Saturday', where: 'Hope St Market', time: '9–1' };
 const viewAll = { href: '/events', label: 'See all dates' };
 
 afterEach(cleanup);
 
 describe('FindUsBoard', () => {
-  it('splits an ISO date into a weekday / number / month block and shows the kind pill', () => {
+  it('splits an ISO date into a weekday / number / month block', () => {
     const { container, getByText } = render(<FindUsBoard section={section} events={[dated]} skin={skin} viewAll={viewAll} />);
     expect(container.querySelector('.ms-fu-board-num')!.textContent).toBe('2');
     expect(getByText('Sat')).toBeTruthy();
-    expect(container.querySelector('[data-ms-fu-kind="market"]')).toBeTruthy();
   });
 
   it('falls back to the authored day string when a row has no ISO date', () => {
@@ -67,14 +66,13 @@ describe('FindUsCalendar', () => {
 });
 
 describe('FindUsPasses', () => {
-  it('shows the day number for a dated row and the kind on the stub for an undated one', () => {
+  it('shows the day number for a dated row and an empty stub for an undated one', () => {
     const { container } = render(<FindUsPasses section={section} events={[dated]} skin={skin} />);
     expect(container.querySelector('.ms-fu-pass-num')!.textContent).toBe('2');
     cleanup();
-    const undatedWithKind: FindUsEvent = { ...undatedRow, kind: 'workshop' };
-    const { container: c2 } = render(<FindUsPasses section={section} events={[undatedWithKind]} skin={skin} />);
+    const { container: c2 } = render(<FindUsPasses section={section} events={[undatedRow]} skin={skin} />);
     expect(c2.querySelector('.ms-fu-pass-num')).toBeNull();
-    expect(c2.querySelector('.ms-fu-pass-stub-l')!.textContent).toBe('workshop');
+    expect(c2.querySelector('.ms-fu-pass-stub-l')!.textContent).toBe('');
   });
 });
 
@@ -102,11 +100,12 @@ describe('FindUsNextStop', () => {
 });
 
 describe('FindUsItinerary', () => {
-  it('marks a workshop node and renders the kind pill', () => {
-    const workshop: FindUsEvent = { date: '2025-07-24', day: 'Thu, Jul 24', where: 'Pouring Workshop', time: '6–8pm', kind: 'workshop' };
+  it('lists each stop with its date, place and hours, and no tag', () => {
+    const workshop: FindUsEvent = { date: '2025-07-24', day: 'Thu, Jul 24', where: 'Pouring Workshop', time: '6–8pm' };
     const { container } = render(<FindUsItinerary section={section} events={[workshop]} skin={skin} viewAll={viewAll} />);
-    expect(container.querySelector('.ms-fu-itin-wk')).toBeTruthy();
-    expect(container.querySelector('[data-ms-fu-kind="workshop"]')).toBeTruthy();
+    expect(container.querySelector('.ms-fu-itin-where')!.textContent).toBe('Pouring Workshop');
+    expect(container.querySelector('.ms-fu-itin-time')!.textContent).toBe('6–8pm');
+    expect(container.querySelector('[data-ms-fu-kind]')).toBeNull();
   });
 });
 

@@ -23,7 +23,6 @@
 import { z } from 'zod';
 import { FindUsRow } from '@/lib/archetypes/main-street/schemas';
 import { LINK_TARGETS } from '@/lib/archetypes/main-street/links';
-import { FINDUS_KINDS } from '@/lib/archetypes/main-street/findus';
 
 /** A product's words only — no imagePrompt (the Graphic Artist adds that). */
 export const ProductDraftSchema = z.object({
@@ -272,7 +271,6 @@ export const COPY_TOOL_INPUT_SCHEMA = {
                   where: { type: 'string' },
                   time: { type: 'string' },
                   date: { type: 'string' },
-                  kind: { type: 'string', enum: [...FINDUS_KINDS] },
                 },
                 required: ['day', 'where', 'time'],
               },

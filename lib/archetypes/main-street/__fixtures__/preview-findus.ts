@@ -14,11 +14,11 @@ import type { FindUsEvent, FindUsSection } from '../findus';
 import { stampFindUsDates } from '../findus';
 
 const PREVIEW_ROWS: FindUsEvent[] = [
-  { day: '', where: 'Providence Flea — India Point Park', time: '10–4', kind: 'market' },
-  { day: '', where: 'Hope Street Market — Lippitt Park', time: '9–1', kind: 'market' },
-  { day: '', where: 'Candle-Pouring Workshop — The Studio, Pawtucket', time: '6–8pm', kind: 'workshop' },
-  { day: '', where: 'Wickford Art Festival — Wickford Village', time: '10–5', kind: 'event' },
-  { day: '', where: 'WaterFire — Downtown Providence', time: '7–11pm', kind: 'event' },
+  { day: '', where: 'Providence Flea — India Point Park', time: '10–4' },
+  { day: '', where: 'Hope Street Market — Lippitt Park', time: '9–1' },
+  { day: '', where: 'Candle-Pouring Workshop — The Studio, Pawtucket', time: '6–8pm' },
+  { day: '', where: 'Wickford Art Festival — Wickford Village', time: '10–5' },
+  { day: '', where: 'WaterFire — Downtown Providence', time: '7–11pm' },
 ];
 
 /** Build a preview-only find-us section. Dates are stamped relative to `today`

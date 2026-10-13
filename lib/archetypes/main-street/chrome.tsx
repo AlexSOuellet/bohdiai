@@ -334,7 +334,6 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-ev-mon{color:var(--ms-fg-muted)}
     .arch-main-street .ms-ev-day{color:var(--ms-fg)}
     .arch-main-street .ms-ev-info{display:flex;flex-direction:column;gap:8px}
-    .arch-main-street .ms-ev-kind{display:inline-block;color:var(--ms-fg-muted);padding:3px 8px 2px;border:1px solid color-mix(in srgb, var(--ms-fg-muted) 40%, transparent);border-radius:2px;align-self:flex-start}
     .arch-main-street .ms-ev-where{color:var(--ms-fg);margin:0}
     .arch-main-street .ms-ev-time{color:var(--ms-fg);white-space:nowrap;align-self:flex-start}
     .arch-main-street .ms-ev-directions{color:var(--ms-accent);display:inline-block;margin-top:6px}
@@ -959,7 +958,6 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-fu-board-day{color:var(--ms-accent)}
     .arch-main-street .ms-fu-board-where{color:var(--ms-fg);margin:0}
     .arch-main-street .ms-fu-board-time{color:var(--ms-fg-muted);margin:5px 0 0}
-    .arch-main-street .ms-fu-board-kind{color:var(--ms-accent);border:1px solid var(--ms-rule);border-radius:100px;padding:5px 11px;white-space:nowrap}
     .arch-main-street .ms-fu-board-viewall{display:inline-block;margin-top:26px;color:var(--ms-accent)}
     /* calendar — a real month grid + an agenda column; the recurring-schedule view. */
     .arch-main-street .ms-fu-cal-grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:clamp(28px,5vw,64px);align-items:start}
@@ -1025,10 +1023,8 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-fu-itin-stop{position:relative;padding:0 0 30px}
     .arch-main-street .ms-fu-itin-stop:last-child{padding-bottom:4px}
     .arch-main-street .ms-fu-itin-node{position:absolute;left:-44px;top:5px;width:16px;height:16px;border-radius:50%;background:var(--ms-bg);border:3px solid var(--ms-accent)}
-    .arch-main-street .ms-fu-itin-wk .ms-fu-itin-node{background:var(--ms-accent)}
     .arch-main-street .ms-fu-itin-dt{color:var(--ms-accent);display:block}
     .arch-main-street .ms-fu-itin-where{color:var(--ms-fg);margin:5px 0 4px;display:flex;align-items:center;flex-wrap:wrap;gap:10px}
-    .arch-main-street .ms-fu-itin-kind{color:var(--ms-accent);border:1px solid var(--ms-rule);border-radius:3px;padding:2px 8px}
     .arch-main-street .ms-fu-itin-time{color:var(--ms-fg-muted);margin:0}
     .arch-main-street .ms-fu-itin-viewall{display:inline-block;margin-top:8px;margin-left:52px;color:var(--ms-accent)}
     /* poster — one printed broadside, the run of dates set as a playbill. */
@@ -1049,7 +1045,6 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       .arch-main-street .ms-fu-section{padding:64px 0 76px}
       .arch-main-street .ms-fu-cal-grid2{grid-template-columns:1fr}
       .arch-main-street .ms-fu-board-row{grid-template-columns:70px 1fr;column-gap:20px;row-gap:4px}
-      .arch-main-street .ms-fu-board-kind{grid-column:2;justify-self:start;margin-top:2px}
       .arch-main-street .ms-fu-poster .ms-wrap{max-width:none}
       .arch-main-street .ms-fu-poster-ln{grid-template-columns:1fr}
     }

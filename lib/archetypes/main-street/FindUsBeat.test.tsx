@@ -10,8 +10,8 @@ const findUs: FindUsSection = {
   label: 'Find us in person',
   eventsLabel: 'See all our markets',
   rows: [
-    { date: '2025-07-12', day: 'Sat, Jul 12', where: 'Hope St Farmers Market', time: '9–11am', kind: 'market' },
-    { date: '2025-07-24', day: 'Thu, Jul 24', where: 'Pouring Workshop', time: '6–8pm', kind: 'workshop' },
+    { date: '2025-07-12', day: 'Sat, Jul 12', where: 'Hope St Farmers Market', time: '9–11am' },
+    { date: '2025-07-24', day: 'Thu, Jul 24', where: 'Pouring Workshop', time: '6–8pm' },
   ],
 };
 

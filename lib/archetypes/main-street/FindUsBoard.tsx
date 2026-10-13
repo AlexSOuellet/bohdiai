@@ -65,11 +65,6 @@ export function FindUsBoard({
                     {e.time}
                   </Type>
                 </div>
-                {e.kind && (
-                  <Type as="span" role="eyebrow" data-ms-fu-kind={e.kind} className="ms-fu-board-kind">
-                    {e.kind}
-                  </Type>
-                )}
               </div>
             );
           })}

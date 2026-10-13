@@ -36,18 +36,13 @@ export function FindUsItinerary({
         </Type>
         <div className="ms-fu-itin-route">
           {events.map((e, i) => (
-            <div key={i} data-ms-fu-item="" className={`ms-fu-itin-stop${e.kind === 'workshop' ? ' ms-fu-itin-wk' : ''}`}>
+            <div key={i} data-ms-fu-item="" className="ms-fu-itin-stop">
               <span className="ms-fu-itin-node" aria-hidden />
               <Type as="span" role="day" className="ms-fu-itin-dt">
                 {stopDate(e)}
               </Type>
               <Type as="h3" role="cardTitle" className="ms-fu-itin-where">
                 {e.where}
-                {e.kind && (
-                  <Type as="span" role="eyebrow" data-ms-fu-kind={e.kind} className="ms-fu-itin-kind">
-                    {e.kind}
-                  </Type>
-                )}
               </Type>
               <Type as="p" role="where" className="ms-fu-itin-time">
                 {e.time}

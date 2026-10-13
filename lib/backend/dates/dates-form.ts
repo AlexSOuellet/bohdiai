@@ -13,14 +13,6 @@ export const MARKET_MAX_DAYS = 14;
 
 /** A market as the site shows it: only what shoppers may see. `endDate` is the
  *  last day, or '' for a one-day market; the other texts are '' when not given. */
-/** What kind of date a market is, shown as a tag by designs that tag dates (optional). */
-export const MARKET_KINDS = ['market', 'workshop', 'event'] as const;
-export type MarketKind = (typeof MARKET_KINDS)[number];
-
-export function isMarketKind(value: string): value is MarketKind {
-  return (MARKET_KINDS as readonly string[]).includes(value);
-}
-
 export type MarketDate = {
   id: string;
   date: string;
@@ -32,8 +24,6 @@ export type MarketDate = {
   booth: string;
   url: string;
   canceled: boolean;
-  /** '' when the market has no tag. */
-  kind: MarketKind | '';
 };
 export type MarketDateForm = { date: string; endDate: string; name: string; town: string };
 export type MarketDateRow = { event_date: string; end_date: string | null; name: string; location: string | null };
@@ -77,7 +67,7 @@ function daysBetween(from: string, to: string): number {
 }
 
 /** The public columns of a market, as the storefront reads them (never the private ones). */
-export const MARKET_PUBLIC_COLUMNS = 'id, event_date, end_date, name, location, hours, address, booth, url, status, kind, created_at';
+export const MARKET_PUBLIC_COLUMNS = 'id, event_date, end_date, name, location, hours, address, booth, url, status, created_at';
 
 type MarketPublicRow = MarketDateRow & {
   hours?: string | null;
@@ -85,7 +75,6 @@ type MarketPublicRow = MarketDateRow & {
   booth?: string | null;
   url?: string | null;
   status?: string;
-  kind?: string | null;
 };
 
 /** A market as saved, back in the shape the site uses. */
@@ -101,6 +90,5 @@ export function marketDateFromRow(id: string, row: MarketPublicRow): MarketDate 
     booth: row.booth ?? '',
     url: row.url ?? '',
     canceled: row.status === 'canceled',
-    kind: row.kind !== undefined && row.kind !== null && isMarketKind(row.kind) ? row.kind : '',
   };
 }

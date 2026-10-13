@@ -400,11 +400,6 @@ export function EventsPage({ content, skin, family }: { content: MainStreetView;
                     )}
                   </div>
                   <div className="ms-ev-info">
-                    {e.kind && (
-                      <Type as="span" role="eyebrow" className="ms-ev-kind">
-                        {e.kind}
-                      </Type>
-                    )}
                     <Type as="h3" role="cardTitle" className="ms-ev-where">
                       {e.where}
                     </Type>
