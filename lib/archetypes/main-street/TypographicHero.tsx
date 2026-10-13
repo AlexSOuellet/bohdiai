@@ -15,7 +15,7 @@
  * Class-only via .ms-typohero-* in skinVarsCss.
  */
 import type { ArchetypeTheme } from '../types';
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import { Nav, linkHref } from './chrome';
 import { Type } from './Type';
 
@@ -23,8 +23,8 @@ export function TypographicHero({
   identity,
   moment,
 }: {
-  identity: MainStreetContent['identity'];
-  moment: MainStreetContent['moment'];
+  identity: MainStreetView['identity'];
+  moment: MainStreetView['moment'];
   skin: ArchetypeTheme;
 }) {
   const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';

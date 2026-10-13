@@ -42,7 +42,7 @@
  */
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import type { ArchetypeTheme } from '../types';
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import { Media, Nav } from './chrome';
 import { Type } from './Type';
 import { navContrast, relativeLuminance } from './logo-contrast';
@@ -96,7 +96,7 @@ function HeroStage({
   moment,
   phase,
 }: {
-  moment: MainStreetContent['moment'];
+  moment: MainStreetView['moment'];
   phase: HeroPhase;
 }) {
   const isStill = moment.media.kind === 'still';
@@ -141,8 +141,8 @@ export function MomentHero({
   skin,
   momentKey,
 }: {
-  identity: MainStreetContent['identity'];
-  moment: MainStreetContent['moment'];
+  identity: MainStreetView['identity'];
+  moment: MainStreetView['moment'];
   skin: ArchetypeTheme;
   /** Per-shop key (tenant id) for the seen-cookie. Without it the timeline never
    *  plays and the hero renders at rest — used in previews / tests / SSR. */

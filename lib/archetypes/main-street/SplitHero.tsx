@@ -16,7 +16,7 @@
  * mirror). On a phone the two panels stack into one column.
  */
 import type { ArchetypeTheme } from '../types';
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import { Media, Nav, linkHref } from './chrome';
 import { Type } from './Type';
 
@@ -25,8 +25,8 @@ export function SplitHero({
   moment,
   mediaSide = 'right',
 }: {
-  identity: MainStreetContent['identity'];
-  moment: MainStreetContent['moment'];
+  identity: MainStreetView['identity'];
+  moment: MainStreetView['moment'];
   skin: ArchetypeTheme;
   /** Which side the media sits on. 'right' (default) puts the text first; 'left'
    *  is the mirror. The only structural variation Split carries. */

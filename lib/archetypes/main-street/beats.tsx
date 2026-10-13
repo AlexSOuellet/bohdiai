@@ -16,7 +16,7 @@
 import { priceLabel } from './price-label';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import { Media, linkHref } from './chrome';
 import { Type } from './Type';
 
@@ -34,7 +34,7 @@ export function GoodsHead({
   goods,
   viewAll,
 }: {
-  goods: MainStreetContent['goods'];
+  goods: MainStreetView['goods'];
   skin?: ArchetypeTheme;
   viewAll?: GoodsViewAll | undefined;
 }) {
@@ -90,7 +90,7 @@ export function GoodsMarquee({
   skin,
   viewAll,
 }: {
-  goods: MainStreetContent['goods'];
+  goods: MainStreetView['goods'];
   products: ProductView[];
   skin: ArchetypeTheme;
   viewAll?: GoodsViewAll | undefined;
@@ -127,7 +127,7 @@ export function GoodsMarquee({
   );
 }
 
-export function Close({ close }: { close: MainStreetContent['close']; skin?: ArchetypeTheme }) {
+export function Close({ close }: { close: MainStreetView['close']; skin?: ArchetypeTheme }) {
   // The close button goes where its label says (D46); legacy rows with no
   // authored target keep the old /contact destination.
   const ctaHref = close.ctaTarget ? linkHref(close.ctaTarget) : '/contact';

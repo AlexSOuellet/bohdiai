@@ -305,6 +305,20 @@ export const MainStreetContentSchema = z.object({
 
 export type MainStreetContent = z.infer<typeof MainStreetContentSchema>;
 
+type Moment = MainStreetContent['moment'];
+type Founder = MainStreetContent['founder'];
+
+/** What a family page shows: the content without the prompts that only feed image
+ *  generation at build time. Assembled from the site's homes (Modular Plan) or, for
+ *  the old samples, read from the page record. Authored content fits it as-is. */
+export type MainStreetView = Omit<MainStreetContent, 'moment' | 'founder'> & {
+  moment: Omit<Moment, 'media' | 'collageShots'> & {
+    media: Omit<Moment['media'], 'prompt'>;
+    collageShots?: Omit<CollageShot, 'prompt'>[] | undefined;
+  };
+  founder: Omit<Founder, 'photo'> & { photo: { url?: string | undefined; alt: string } };
+};
+
 /** The only skin choice is which curated skin to wear. Everything inside it is
  *  the archetype's, not Bohdi's. */
 export const MainStreetSkinSchema = z.object({

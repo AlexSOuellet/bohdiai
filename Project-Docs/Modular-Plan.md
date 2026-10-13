@@ -152,6 +152,6 @@ At first Alex curates every site. Eventually a maker signs up, pays and is live 
 
 ## Decisions Alex makes along the way (one at a time)
 
-1. **Who edits each new piece:** the moment story, headings, marquee, closing line, contact intro and founder quote. Is it the maker, or Alex?
+1. **Who edits each new piece:** the moment story, headings, marquee, closing line, contact intro and founder quote. Is it the maker, or Alex? **Decided 2026-10-13 (Alex): "when we generate the site we fill it in then they edit it."** The build fills every piece; the maker edits all of them in their backend.
 2. **The made-up "4.9 out of 5, 180+ customers" line** on family reviews. Drop it, or let the maker enter a real one?
 3. **Contractor backend screens:** which contractor homes get maker screens as part of step 4.

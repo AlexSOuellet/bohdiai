@@ -52,6 +52,7 @@ export {
   MainStreetContentSchema,
   MainStreetSkinSchema,
   type MainStreetContent,
+  type MainStreetView,
   type MainStreetSkinPick,
 } from './schemas';
 export { MainStreet } from './MainStreet';

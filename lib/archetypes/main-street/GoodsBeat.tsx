@@ -12,7 +12,7 @@
  */
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import { selectGoodsTreatment, sampleForTreatment, type GoodsTreatment } from './goods';
 import { GoodsMarquee, GoodsViewAllCta, type GoodsViewAll } from './beats';
 import { GoodsProcession } from './GoodsProcession';
@@ -37,7 +37,7 @@ export function GoodsBeat({
   shopHref = '/shop',
   full = false,
 }: {
-  goods: MainStreetContent['goods'];
+  goods: MainStreetView['goods'];
   products: ProductView[];
   skin: ArchetypeTheme;
   /** Force a treatment (previews/tests). When omitted it is selected. */

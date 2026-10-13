@@ -16,7 +16,7 @@ import { MainStreet } from './MainStreet';
 import { MainStreetProduct } from './MainStreetProduct';
 import { ShopPage, EventsPage, AboutPage, ContactPage, ContentPage, CollectionsPage, CollectionPage, TestimonialsPage, MainStreetSubPage } from './pages';
 import { mainStreetArchetype } from './index';
-import { MainStreetContentSchema, FOUNDER_TREATMENTS, NAV_VARIANTS, type MainStreetContent, type NavVariant } from './schemas';
+import { MainStreetContentSchema, FOUNDER_TREATMENTS, NAV_VARIANTS, type MainStreetContent, type MainStreetView, type NavVariant } from './schemas';
 import { MAIN_STREET_SKINS, SKIN_DESCRIPTIONS } from './skins';
 import { GOODS_TREATMENTS, type GoodsTreatment } from './goods';
 import { COLLECTIONS_TREATMENTS, type CollectionsTreatment } from './collections';
@@ -167,10 +167,10 @@ function applyMedia(a: MainStreetAuthored, urls: Record<string, string | null>):
  *  content) into the content's identity so the chrome can show the logo and apply
  *  the correct contrast surface. No-op when neither is present. */
 function withLogo(
-  content: MainStreetContent,
+  content: MainStreetView,
   logoUrl?: string,
   brandColors?: string[],
-): MainStreetContent {
+): MainStreetView {
   const hasLogo = logoUrl !== undefined && logoUrl !== '';
   const hasColors = brandColors !== undefined && brandColors.length > 0;
   if (!hasLogo && !hasColors) return content;
@@ -268,7 +268,7 @@ function familyFor(mood: string | undefined, brandPalette: BrandPalette | undefi
 
 /** Apply a nav-variant override (the ?nav= preview) onto the content's identity, so
  *  every nav site — each hero, every sub-page header, the product page — reads it. */
-function withNav(content: MainStreetContent, navVariant?: NavVariant): MainStreetContent {
+function withNav(content: MainStreetView, navVariant?: NavVariant): MainStreetView {
   if (!navVariant) return content;
   return { ...content, identity: { ...content.identity, navVariant } };
 }
@@ -329,9 +329,9 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       hero: heroVariant, goods: goodsTreatment, collections: collectionsTreatment,
       reviews: reviewsTreatment, founder: founderTreatment, findUs: findUsTreatment, nav: navVariant,
     });
-    const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), treatments.nav);
+    const c = withNav(withLogo(content as MainStreetView, logoUrl, brandColors), treatments.nav);
     // The maker's walk resolutions ride on the raw envelope content alongside the
-    // authored fields (the MainStreetContent cast ignores them). Read them here so the
+    // authored fields (the MainStreetView cast ignores them). Read them here so the
     // home render can hide turned-off sections and keep seeded dates out of the marquee.
     const resolutions = readSectionResolutions(content);
     switch (page) {
@@ -364,21 +364,21 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
     // Product pages wear the family's nav variant AND the family's wallpaper.
     const family = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
-    const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), treatments.nav);
+    const c = withNav(withLogo(content as MainStreetView, logoUrl, brandColors), treatments.nav);
     return <MainStreetProduct content={c} skin={skin} product={product} family={family} />;
   },
   renderContentPage: ({ content, lookKey, title, body, html, mood, logoUrl, brandColors, accentOverride, brandPalette }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
     const family = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
-    const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), treatments.nav);
+    const c = withNav(withLogo(content as MainStreetView, logoUrl, brandColors), treatments.nav);
     return <ContentPage content={c} skin={skin} title={title} body={body} html={html} family={family} />;
   },
   renderShell: ({ content, lookKey, children, mood, logoUrl, brandColors, accentOverride, brandPalette }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
     const family = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
-    const c = withNav(withLogo(content as MainStreetContent, logoUrl, brandColors), treatments.nav);
+    const c = withNav(withLogo(content as MainStreetView, logoUrl, brandColors), treatments.nav);
     return <MainStreetSubPage content={c} skin={skin} family={family}>{children}</MainStreetSubPage>;
   },
 };

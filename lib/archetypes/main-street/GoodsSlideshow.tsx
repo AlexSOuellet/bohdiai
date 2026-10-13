@@ -13,7 +13,7 @@ import { priceLabel } from './price-label';
 import { useEffect, useRef, useState } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import { Media } from './chrome';
 import { Type } from './Type';
 import { GoodsHead, type GoodsViewAll } from './beats';
@@ -27,7 +27,7 @@ export function GoodsSlideshow({
   skin,
   viewAll,
 }: {
-  goods: MainStreetContent['goods'];
+  goods: MainStreetView['goods'];
   products: ProductView[];
   skin: ArchetypeTheme;
   viewAll?: GoodsViewAll | undefined;

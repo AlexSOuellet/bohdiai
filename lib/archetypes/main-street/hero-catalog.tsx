@@ -26,7 +26,7 @@
  */
 import type { ReactElement } from 'react';
 import type { ArchetypeTheme } from '../types';
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import { MomentHero } from './MomentHero';
 import { SplitHero } from './SplitHero';
 import { StackedHero } from './StackedHero';
@@ -37,8 +37,8 @@ import { CollageHero } from './CollageHero';
 
 /** The shared shape every hero variant is handed — the hero content contract. */
 export interface HeroProps {
-  identity: MainStreetContent['identity'];
-  moment: MainStreetContent['moment'];
+  identity: MainStreetView['identity'];
+  moment: MainStreetView['moment'];
   skin: ArchetypeTheme;
   /** Per-shop key (tenant id) for the Story hero's seen-cookie. Heroes that have
    *  no play-through (Split, etc.) ignore it. */

@@ -11,7 +11,7 @@
  */
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import { MainStreetRoot, MainStreetFooter } from './chrome';
 import { resolveHero } from './hero-catalog';
 import { Close } from './beats';
@@ -32,7 +32,7 @@ import { FAMILIES, type Family, type FamilySectionStackEntry, type SectionKey } 
 import { resolveCollageShots } from './collage-source';
 
 export interface MainStreetProps {
-  content: MainStreetContent;
+  content: MainStreetView;
   skin: ArchetypeTheme;
   products: ProductView[];
   /** The family's section stack — the order + on/off state for every section

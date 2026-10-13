@@ -13,12 +13,12 @@
  */
 import type { ReactNode } from 'react';
 import type { ArchetypeTheme } from '../types';
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import { Media } from './chrome';
 import { Type } from './Type';
 import { DEFAULT_STRINGS } from './defaults';
 
-type Founder = MainStreetContent['founder'];
+type Founder = MainStreetView['founder'];
 
 export interface FounderAbout {
   href: string;
@@ -224,7 +224,7 @@ export function FounderEditorial({
   founder,
   about,
   aboutPage,
-}: TreatmentProps & { aboutPage?: MainStreetContent['about'] }) {
+}: TreatmentProps & { aboutPage?: MainStreetView['about'] }) {
   const paragraphs = aboutPage?.story ?? [founder.quote];
   const headline = aboutPage?.heading ?? founder.heading;
   return (

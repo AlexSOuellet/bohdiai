@@ -8,7 +8,7 @@
  * Class-only through .ms-floating-hero/.ms-float-* in skinVarsCss.
  */
 import type { ArchetypeTheme } from '../types';
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import { Media, Nav, linkHref } from './chrome';
 import { Type } from './Type';
 
@@ -16,8 +16,8 @@ export function FloatingCardHero({
   identity,
   moment,
 }: {
-  identity: MainStreetContent['identity'];
-  moment: MainStreetContent['moment'];
+  identity: MainStreetView['identity'];
+  moment: MainStreetView['moment'];
   skin: ArchetypeTheme;
 }) {
   const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';

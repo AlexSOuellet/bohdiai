@@ -10,7 +10,7 @@
 import React from 'react';
 import Link from 'next/link';
 import type { ArchetypeTheme, TypeRole } from '../types';
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import { MAIN_STREET_FONT_HREFS, type MainStreetRoles } from './skins';
 import { LINK_TARGETS, linkHref, type LinkTarget } from './links';
 import { MainStreetMobileNav } from './MobileNav';
@@ -1520,7 +1520,7 @@ export function Nav({
   identity,
   currentHref,
 }: {
-  identity: MainStreetContent['identity'];
+  identity: MainStreetView['identity'];
   /** The href of the page being viewed — the matching nav link is marked active.
    *  Absent on the home (the wordmark is "home"), so no link is current there. */
   currentHref?: string | undefined;

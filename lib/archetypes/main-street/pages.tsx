@@ -9,7 +9,7 @@ import { priceLabel } from './price-label';
 import type { ReactNode } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import { MainStreetRoot, MainStreetFooter, Nav, Media } from './chrome';
 import { Type } from './Type';
 import { navContrast, relativeLuminance } from './logo-contrast';
@@ -23,7 +23,7 @@ import { DEFAULT_STRINGS, DEFAULT_COUNTS } from './defaults';
 import type { MainStreetTreatments } from './builder';
 import type { Family } from './families';
 
-function SubHeader({ content, skin, current }: { content: MainStreetContent; skin: ArchetypeTheme; current?: string | undefined }) {
+function SubHeader({ content, skin, current }: { content: MainStreetView; skin: ArchetypeTheme; current?: string | undefined }) {
   // The header is fixed (matching the home hero's pinned nav — Lenis smooth-scroll
   // breaks `sticky` here). When the bare logo would wash out on the skin, it takes a
   // fixed contrasting chrome surface, expressed as a data attribute so the header
@@ -42,7 +42,7 @@ function SubHeader({ content, skin, current }: { content: MainStreetContent; ski
  *  paddingTop on <main> clears the fixed SubHeader (~80px desktop, ~68px mobile)
  *  so content starts below the nav rather than under it. The home hero does not
  *  need this because its 100vh hero already sits under the fixed nav. */
-export function MainStreetSubPage({ content, skin, children, current, family }: { content: MainStreetContent; skin: ArchetypeTheme; children: ReactNode; current?: string | undefined; family?: Family | undefined }) {
+export function MainStreetSubPage({ content, skin, children, current, family }: { content: MainStreetView; skin: ArchetypeTheme; children: ReactNode; current?: string | undefined; family?: Family | undefined }) {
   return (
     <MainStreetRoot skin={skin} family={family}>
       <SubHeader content={content} skin={skin} current={current} />
@@ -85,7 +85,7 @@ function legalCss(): string {
 /** A plain content page in Main Street chrome. Pass `body` for authored paragraphs
  *  (maker-added pages) OR `html` for pre-rendered markup (legal docs, which carry
  *  their own headings). Used for Privacy/Terms and any maker-added page. */
-export function ContentPage({ content, skin, title, body, html, family }: { content: MainStreetContent; skin: ArchetypeTheme; title?: string | undefined; body?: string[] | undefined; html?: string | undefined; family?: Family | undefined }) {
+export function ContentPage({ content, skin, title, body, html, family }: { content: MainStreetView; skin: ArchetypeTheme; title?: string | undefined; body?: string[] | undefined; html?: string | undefined; family?: Family | undefined }) {
   if (html !== undefined) {
     return (
       <MainStreetSubPage content={content} skin={skin} family={family}>
@@ -114,7 +114,7 @@ export function ContentPage({ content, skin, title, body, html, family }: { cont
  *  per family via the skin CSS variables. No motion, no teasers — the home's
  *  goods treatment stays a teaser; this is where people browse. Grid + card
  *  styles live in chrome.tsx under .ms-catalog-*. */
-export function ShopPage({ content, skin, products, family }: { content: MainStreetContent; skin: ArchetypeTheme; products: ProductView[]; family?: Family | undefined }) {
+export function ShopPage({ content, skin, products, family }: { content: MainStreetView; skin: ArchetypeTheme; products: ProductView[]; family?: Family | undefined }) {
   return (
     <MainStreetSubPage content={content} skin={skin} current="/shop" family={family}>
       <PageHead eyebrow={content.goods.label} title={content.goods.title} />
@@ -160,7 +160,7 @@ export function ShopPage({ content, skin, products, family }: { content: MainStr
  *  story runs in full prose — the reason the maker clicked "read the full story."
  *  Editorial already sets the full story in its columns, so we skip the extra
  *  prose block for that treatment (would double up). */
-export function AboutPage({ content, skin, treatments, family }: { content: MainStreetContent; skin: ArchetypeTheme; treatments: MainStreetTreatments; family?: Family | undefined }) {
+export function AboutPage({ content, skin, treatments, family }: { content: MainStreetView; skin: ArchetypeTheme; treatments: MainStreetTreatments; family?: Family | undefined }) {
   const paragraphs = content.about?.story ?? [content.founder.quote];
   // Editorial is the one treatment that already renders the full story in its
   // own layout (columns + drop cap + pull-quote), so a story block below would
@@ -195,7 +195,7 @@ export function AboutPage({ content, skin, treatments, family }: { content: Main
 
 /** CONTACT — an authored invitation to get in touch. Real email/social are the
  *  maker's to add later; at onboarding this is voice, not contact details. */
-export function ContactPage({ content, skin, tenantId, family }: { content: MainStreetContent; skin: ArchetypeTheme; tenantId?: string | undefined; family?: Family | undefined }) {
+export function ContactPage({ content, skin, tenantId, family }: { content: MainStreetView; skin: ArchetypeTheme; tenantId?: string | undefined; family?: Family | undefined }) {
   const heading = content.contact?.heading;
   const intro = content.contact?.intro;
   return (
@@ -223,7 +223,7 @@ export function ContactPage({ content, skin, tenantId, family }: { content: Main
  *  The home band treatments (cupboard / crates / portals / chapters / lanes /
  *  cascade) stay as home-only teasers; the /collections page has this library
  *  shape here. CSS in chrome.tsx under .ms-cs-*. */
-export function CollectionsPage({ content, skin, collections, family }: { content: MainStreetContent; skin: ArchetypeTheme; collections: CollectionView[]; family?: Family | undefined }) {
+export function CollectionsPage({ content, skin, collections, family }: { content: MainStreetView; skin: ArchetypeTheme; collections: CollectionView[]; family?: Family | undefined }) {
   const section = content.collections;
   return (
     <MainStreetSubPage content={content} skin={skin} current="/collections" family={family}>
@@ -273,7 +273,7 @@ export function CollectionsPage({ content, skin, collections, family }: { conten
 /** COLLECTION DETAIL — one collection's page: header (name + count) and the
  *  contents rendered in the store's SAME goods treatment (harmonizes with /shop).
  *  Everything class-only; nothing about the collection is hardcoded. */
-export function CollectionPage({ content, skin, collection, products, treatments, family }: { content: MainStreetContent; skin: ArchetypeTheme; collection: CollectionView; products: ProductView[]; treatments: MainStreetTreatments; family?: Family | undefined }) {
+export function CollectionPage({ content, skin, collection, products, treatments, family }: { content: MainStreetView; skin: ArchetypeTheme; collection: CollectionView; products: ProductView[]; treatments: MainStreetTreatments; family?: Family | undefined }) {
   return (
     <MainStreetSubPage content={content} skin={skin} current="/collections" family={family}>
       <PageHead eyebrow={DEFAULT_COUNTS.pieces(collection.count)} title={collection.name} />
@@ -298,7 +298,7 @@ export function CollectionPage({ content, skin, collection, products, treatments
  *  all six families; family paint does the differentiation. The home reviews
  *  treatments (rating / pull-quote / guestbook / texts) stay as home teasers.
  *  CSS in chrome.tsx under .ms-tw-*. */
-export function TestimonialsPage({ content, skin, family }: { content: MainStreetContent; skin: ArchetypeTheme; family?: Family | undefined }) {
+export function TestimonialsPage({ content, skin, family }: { content: MainStreetView; skin: ArchetypeTheme; family?: Family | undefined }) {
   const reviews = content.reviews;
   const hasReviews = !!reviews && reviews.items.length > 0;
   return (
@@ -359,7 +359,7 @@ export function TestimonialsPage({ content, skin, family }: { content: MainStree
  *  detail row also carries an external "Get directions" link to Google Maps
  *  for the venue — useful for shoppers who want to actually attend. CSS in
  *  chrome.tsx under .ms-fu-cal-* (calendar) and .ms-ev-* (detail list). */
-export function EventsPage({ content, skin, family }: { content: MainStreetContent; skin: ArchetypeTheme; family?: Family | undefined }) {
+export function EventsPage({ content, skin, family }: { content: MainStreetView; skin: ArchetypeTheme; family?: Family | undefined }) {
   const findUs = content.founder.findUs;
   const hasDates = !!findUs && findUs.rows.length > 0;
   const { year, month } = currentYearMonth(new Date());

@@ -14,7 +14,7 @@
  * or the hero media clip.
  */
 import type { ArchetypeTheme } from '../types';
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import { Nav, linkHref } from './chrome';
 import { Type } from './Type';
 import { DEFAULT_STRINGS } from './defaults';
@@ -25,8 +25,8 @@ export function CollageHero({
   identity,
   moment,
 }: {
-  identity: MainStreetContent['identity'];
-  moment: MainStreetContent['moment'];
+  identity: MainStreetView['identity'];
+  moment: MainStreetView['moment'];
   skin: ArchetypeTheme;
 }) {
   const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';

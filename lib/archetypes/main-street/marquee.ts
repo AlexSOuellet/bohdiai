@@ -20,7 +20,7 @@
  * Either line can come back empty (a store with no dates, or no authored label);
  * the band renders whichever lines have content, and nothing when both are empty.
  */
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import type { SectionKey } from './families';
 import type { CollectionView } from '../content';
 
@@ -59,7 +59,7 @@ function tidy(phrases: Array<string | undefined>): string[] {
  * stays empty (the safe, honest default).
  */
 export function buildMarqueeLines(
-  content: MainStreetContent,
+  content: MainStreetView,
   collections: readonly CollectionView[] = [],
   shown: ReadonlySet<SectionKey> = new Set(),
 ): MarqueeLines {

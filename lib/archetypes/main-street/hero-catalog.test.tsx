@@ -9,7 +9,6 @@ const props: HeroProps = {
   moment: {
     media: {
       kind: 'video',
-      prompt: { composition: 'a', subject: 'b', environment: 'c', atmosphere: 'd', camera: 'e', lighting: 'f', style: 'g' },
       url: '/clip.mp4',
       alt: 'a loaf',
     },

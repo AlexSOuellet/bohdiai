@@ -7,7 +7,7 @@
  * fits any mood. The market calendar is its OWN beat (FindUsBeat), never here.
  */
 import type { ArchetypeTheme } from '../types';
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import { selectFounderTreatment, type FounderTreatment } from './founder';
 import {
   FounderQuote,
@@ -31,7 +31,7 @@ export function FounderBeat({
   aboutPage,
   showAboutCue = true,
 }: {
-  founder: MainStreetContent['founder'];
+  founder: MainStreetView['founder'];
   skin: ArchetypeTheme;
   /** Force a treatment (previews/tests). Otherwise Bohdi's pick, then the quote. */
   treatment?: FounderTreatment | undefined;
@@ -39,7 +39,7 @@ export function FounderBeat({
   aboutHref?: string | undefined;
   /** The full About-page story — the editorial treatment surfaces it as a feature
    *  on the home. Absent for legacy rows; editorial then falls back to the quote. */
-  aboutPage?: MainStreetContent['about'] | undefined;
+  aboutPage?: MainStreetView['about'] | undefined;
   /** The About page itself renders the beat as its hero — no "read the full story"
    *  cue then (you're already there). Defaults on for the home teaser. */
   showAboutCue?: boolean | undefined;

@@ -14,7 +14,7 @@
 import type { CSSProperties } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { CatalogMedia, ProductView } from '../content';
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import { MainStreetRoot, MainStreetFooter, Nav } from './chrome';
 import { Type } from './Type';
 import { DEFAULT_STRINGS } from './defaults';
@@ -58,7 +58,7 @@ export function MainStreetProduct({
   skin,
   family,
 }: {
-  content: MainStreetContent;
+  content: MainStreetView;
   product: ProductView;
   skin: ArchetypeTheme;
   family?: Family | undefined;

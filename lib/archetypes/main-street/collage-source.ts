@@ -24,7 +24,7 @@
  * already filters shots without urls, so the cluster simply doesn't render — an
  * honest sparse signal to add more products, not something we paper over with fill.
  */
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import type { ProductView } from '../content';
 import type { Family } from './families';
 
@@ -41,11 +41,11 @@ const COLLAGE_SLOTS = 3;
  * moment passes through unchanged — the Collage hero isn't in play.
  */
 export function resolveCollageShots(
-  moment: MainStreetContent['moment'],
+  moment: MainStreetView['moment'],
   family: Family | undefined,
   products: readonly ProductView[],
   originalMood?: string,
-): MainStreetContent['moment'] {
+): MainStreetView['moment'] {
   if (family?.key !== 'cheerful') return moment;
   const nativeCheerful = originalMood === 'cheerful';
   if (nativeCheerful) {
@@ -62,14 +62,12 @@ export function resolveCollageShots(
 }
 
 /** Build up to `limit` collage shots from the products list, taking each product's
- *  first image and skipping any without one. The `prompt` fields exist to satisfy
- *  the CollageShot schema — they carry a truthful marker string but are never sent
- *  to a generator (product-derived shots are never regenerated). */
+ *  first image and skipping any without one. */
 function productsToCollageShots(
   products: readonly ProductView[],
   limit: number,
-): NonNullable<MainStreetContent['moment']['collageShots']> {
-  const shots: NonNullable<MainStreetContent['moment']['collageShots']> = [];
+): NonNullable<MainStreetView['moment']['collageShots']> {
+  const shots: NonNullable<MainStreetView['moment']['collageShots']> = [];
   for (const p of products) {
     if (shots.length >= limit) break;
     const image = p.media.find(
@@ -77,15 +75,6 @@ function productsToCollageShots(
     );
     if (image === undefined || image.url === undefined) continue;
     shots.push({
-      prompt: {
-        composition: 'product-derived',
-        subject: p.name,
-        environment: 'product-derived',
-        atmosphere: 'product-derived',
-        camera: 'product-derived',
-        lighting: 'product-derived',
-        style: 'product-derived',
-      },
       url: image.url,
       alt: image.alt,
     });
