@@ -34,9 +34,10 @@ const full: CardData = {
   },
   photos,
   dates: [{ id: 'd1', date: '2026-10-24', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Fall Festival of Crafts', town: 'Warwick' }],
+  portrait: null,
   words: S,
 };
-const empty: CardData = { name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [], words: S };
+const empty: CardData = { name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [], portrait: null, words: S };
 
 afterEach(cleanup);
 

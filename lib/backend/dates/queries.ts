@@ -14,3 +14,17 @@ export async function listMarketDates(db: SupabaseClient<Database>, tenantId: st
   if (error !== null) throw new Error(`Could not load the market dates: ${error.message}`);
   return (data ?? []).map((r) => marketDateFromRow(r.id, r));
 }
+
+/** The markets a visitor sees: every one except those marked finished, earliest
+ *  first. A finished market stays on record for the owner's results. */
+export async function listVisitorMarketDates(db: SupabaseClient<Database>, tenantId: string): Promise<MarketDate[]> {
+  const { data, error } = await db
+    .from('events')
+    .select(MARKET_PUBLIC_COLUMNS)
+    .eq('tenant_id', tenantId)
+    .neq('status', 'completed')
+    .order('event_date', { ascending: true })
+    .order('created_at', { ascending: true });
+  if (error !== null) throw new Error(`Could not load the market dates: ${error.message}`);
+  return (data ?? []).map((r) => marketDateFromRow(r.id, r));
+}

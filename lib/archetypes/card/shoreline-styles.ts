@@ -61,6 +61,14 @@ export function shorelineCss(): string {
 .sl-kicker{margin:clamp(14px,2vw,22px) 0 0;max-width:34ch;font-style:italic;font-size:clamp(19px,2.4vw,26px);line-height:1.35;color:var(--ink);font-weight:600;text-shadow:0 0 6px rgba(245,240,240,.95),0 0 18px rgba(245,240,240,.85);animation:sl-rise 1.8s cubic-bezier(.2,.7,.2,1) .6s both}
 .sl-makes{display:inline-flex;align-self:flex-start;flex-wrap:wrap;gap:4px 0;margin:clamp(20px,3vw,30px) 0 0;padding:10px 18px;background:rgba(250,246,240,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);list-style:none;font-family:var(--body);font-weight:600;font-size:clamp(13px,1.5vw,15px);letter-spacing:.22em;text-transform:uppercase;color:var(--navy);font-weight:700;text-shadow:0 0 6px rgba(245,240,240,.95),0 0 18px rgba(245,240,240,.85);animation:sl-rise 1.8s cubic-bezier(.2,.7,.2,1) .9s both}
 .sl-makes li+li::before{content:'';display:inline-block;width:22px;height:1px;margin:0 14px;vertical-align:middle;background:currentColor;opacity:.5}
+/* The home's first screen: the name on the sky, then her words and one of her pieces set on
+   the windowsill beside them, so the work and the way into the shop show before any scroll. */
+.sl-sky--home{min-height:0;padding-bottom:clamp(36px,6vw,70px)}
+.sl-sky-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,clamp(210px,23vw,310px));gap:clamp(20px,4vw,64px);align-items:start}
+.sl-sky-words{min-width:0}
+.sl-sky-cta{margin:clamp(22px,3vw,32px) 0 0;animation:sl-rise 1.8s cubic-bezier(.2,.7,.2,1) 1.05s both}
+.sl-sky-piece{--r:2.2deg;margin-top:clamp(4px,1vw,14px);animation:sl-rise 1.8s cubic-bezier(.2,.7,.2,1) .8s both}
+.sl-sky-piece .sl-label{width:88%}
 
 /* ── prints floating over the water ───────────────────────── */
 .sl-water{padding:0 clamp(16px,5vw,70px)}
@@ -79,7 +87,7 @@ ${prints}
 .sl-print:focus-visible{outline:3px solid var(--navy);outline-offset:4px}
 
 /* ── the card and the tide table ─────────────────────────── */
-.sl-below{position:relative;width:min(1100px,100%);margin:clamp(70px,10vw,130px) auto 0;padding:0 clamp(16px,4vw,40px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(28px,5vw,64px);align-items:start}
+.sl-below{position:relative;width:min(1100px,100%);margin:clamp(40px,7vw,100px) auto 0;padding:0 clamp(16px,4vw,40px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(28px,5vw,64px);align-items:start}
 .sl-below--one{grid-template-columns:minmax(0,1fr);justify-items:center}
 .sl-card{position:relative;padding:18px;background:radial-gradient(circle at center,transparent 3px,var(--lace) 3.6px) 0 0/14px 14px;transform:rotate(-1.2deg);
   -webkit-mask:radial-gradient(circle 9px at 9px 9px,#000 96%,#0000) 0 0/18px 18px round,linear-gradient(#000 0 0) 9px 9px/calc(100% - 18px) calc(100% - 18px) no-repeat;
@@ -89,6 +97,8 @@ ${prints}
 .sl-card__in{background:var(--grain),linear-gradient(180deg,#fdf8ec,#f1e6cc);padding:clamp(24px,4vw,40px) clamp(22px,4vw,38px)}
 .sl-card h2{margin:0 0 14px;font-family:var(--hand);font-weight:400;font-size:clamp(22px,3vw,30px);line-height:1.5;color:var(--navy)}
 .sl-card p{margin:0 0 14px}
+.sl-portrait{float:right;width:min(42%,240px);margin:-4px -6px 14px 20px;transform:rotate(2deg);filter:drop-shadow(0 2px 2px rgba(0,0,0,.25)) drop-shadow(0 16px 20px rgba(10,24,32,.4))}
+.sl-portrait img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;object-position:center 30%;background:#ddd;border:clamp(10px,1.3vw,16px) solid #e9e4d8;border-image:url('${WINDOW}') 136 stretch}
 .sl-lead{font-style:italic;font-size:1.08em;color:var(--ink-soft)}
 .sl-card .sl-first::first-letter{font-family:var(--display);float:left;font-size:3.2em;line-height:.85;padding:6px 8px 0 0;color:var(--rust)}
 .sl-sig{display:block;margin-top:6px;font-family:var(--hand);font-size:22px;color:var(--rust);text-align:right}
@@ -96,7 +106,7 @@ ${prints}
 .sl-ways a{font-weight:600;font-size:14px;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;color:var(--lace)!important;background:var(--navy);padding:10px 16px;border-radius:2px}
 .sl-ways a:hover{background:var(--rust)}
 
-.sl-tide{position:relative;margin-top:clamp(40px,8vw,110px);padding:clamp(20px,3vw,30px);background:var(--grain),#f3ecdb;border:1px solid #7f8a86;box-shadow:inset 0 0 0 5px #f3ecdb,inset 0 0 0 6px #7f8a86,0 18px 30px -12px rgba(10,24,32,.45);transform:rotate(.8deg)}
+.sl-tide{position:relative;margin-top:clamp(28px,6vw,90px);padding:clamp(20px,3vw,30px);background:var(--grain),#f3ecdb;border:1px solid #7f8a86;box-shadow:inset 0 0 0 5px #f3ecdb,inset 0 0 0 6px #7f8a86,0 18px 30px -12px rgba(10,24,32,.45);transform:rotate(.8deg)}
 .sl-tide table{width:100%;border-collapse:collapse;font-variant-numeric:oldstyle-nums}
 .sl-tide caption{caption-side:top;padding:0 0 12px;font-family:var(--display);font-style:italic;font-weight:400;font-size:clamp(26px,3.2vw,34px);color:var(--navy);text-align:center}
 .sl-tide caption::after{content:'';display:block;height:10px;margin:8px auto 0;width:60%;background:radial-gradient(circle at 10px -4px,transparent 8px,var(--sea) 8.5px 10px,transparent 10.5px) 0 0/20px 10px repeat-x;opacity:.7}
@@ -107,7 +117,7 @@ ${prints}
 .sl-tide .sl-gone td{text-decoration:line-through;opacity:.6}
 
 /* ── the letter ───────────────────────────────────────────── */
-.sl-letter{position:relative;width:min(760px,calc(100% - 32px));margin:clamp(70px,10vw,120px) auto 0;padding:clamp(30px,5vw,56px) clamp(22px,5vw,58px) clamp(34px,5vw,56px);
+.sl-letter{position:relative;width:min(760px,calc(100% - 32px));margin:clamp(48px,8vw,100px) auto 0;padding:clamp(30px,5vw,56px) clamp(22px,5vw,58px) clamp(34px,5vw,56px);
   background:var(--grain),repeating-linear-gradient(180deg,transparent 0 35px,rgba(93,127,134,.28) 35px 36px),linear-gradient(180deg,#fffaf0,#f4ead3);
   box-shadow:0 1px 0 #e6d7b6,0 26px 44px -16px rgba(10,24,32,.55);transform:rotate(-.6deg)}
 .sl-letter::before{content:'';position:absolute;top:0;bottom:0;left:clamp(14px,3vw,34px);width:2px;background:rgba(140,59,42,.35)}
@@ -128,7 +138,7 @@ ${prints}
 .sl-letter .bc-form__done p{font-family:var(--hand);font-size:20px;line-height:1.7;color:var(--navy)}
 
 /* ── footer ──────────────────────────────────────────────── */
-.sl-foot{margin-top:clamp(70px,10vw,110px);padding:24px 16px 32px;background:rgba(14,32,42,.82);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;justify-content:center;flex-wrap:wrap;gap:8px 26px;font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:#cfdcdc}
+.sl-foot{margin-top:clamp(48px,8vw,90px);padding:24px 16px 32px;background:rgba(14,32,42,.82);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;justify-content:center;flex-wrap:wrap;gap:8px 26px;font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:#cfdcdc}
 .sl-foot a{color:#f3efe6!important;text-decoration:none}
 .sl-foot a:hover{text-decoration:underline}
 .sl-social{display:flex;gap:14px;flex-basis:100%;justify-content:center;margin-bottom:6px}
@@ -168,18 +178,18 @@ ${prints}
 .sl-back{display:inline-block;margin-bottom:14px;font-weight:600;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--navy)!important;text-decoration:none;text-shadow:0 0 8px rgba(245,240,240,.9)}
 /* The featured band: the bay deepens to dusk behind the section and fades back out, so the
    heading always sits on dark water whatever part of the photo is behind it. */
-.sl-featured{padding-top:clamp(80px,9vw,120px);padding-bottom:clamp(90px,12vw,150px);background:linear-gradient(180deg,rgba(11,30,41,0) 0,rgba(11,30,41,.62) clamp(80px,9vw,120px),rgba(11,30,41,.62) calc(100% - clamp(90px,12vw,150px)),rgba(11,30,41,0) 100%)}
+.sl-featured{--fade-in:clamp(56px,7vw,100px);--fade-out:clamp(60px,8vw,110px);padding-top:var(--fade-in);padding-bottom:var(--fade-out);background:linear-gradient(180deg,rgba(11,30,41,0) 0,rgba(11,30,41,.62) var(--fade-in),rgba(11,30,41,.62) calc(100% - var(--fade-out)),rgba(11,30,41,0) 100%)}
 /* The shop page starts under the menu bar, so its band only needs a short fade in. */
-.sl-featured--page{padding-top:clamp(60px,8vw,110px);margin-top:clamp(40px,6vh,70px)}
-.sl-featured .sl-more{margin-top:clamp(36px,5vw,56px)}
+.sl-featured--page{--fade-in:clamp(40px,6vw,80px);margin-top:clamp(20px,4vh,50px)}
+.sl-featured .sl-more{margin-top:clamp(28px,4vw,48px)}
 .sl-featured .sl-more a{background:var(--lace);color:var(--navy)!important}
 .sl-featured .sl-more a:hover{background:var(--rust);color:#f3efe6!important}
 .sl-section-h{display:flex;align-items:center;gap:clamp(16px,2vw,28px);margin:0 auto clamp(30px,4vw,48px);width:min(1180px,100%);font-family:var(--display);font-style:italic;font-weight:400;font-size:clamp(36px,4.6vw,60px);line-height:1;color:#f3efe6;text-shadow:0 2px 18px rgba(0,0,0,.35)}
 .sl-section-h::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(243,239,230,.7),rgba(243,239,230,0))}
 a.sl-print{text-decoration:none;cursor:pointer}
-.sl-price{display:block;padding:2px 0 0;margin-top:0;font-weight:600;font-size:15px;letter-spacing:.06em;color:var(--rust)}
+.sl-price{display:block;padding:4px 0 0;margin-top:0;font-family:var(--body);font-style:normal;font-weight:700;font-size:17px;line-height:1.3;letter-spacing:.02em;color:var(--rust)}
 .sl-price--ask{font-style:italic;font-weight:500;letter-spacing:0;color:var(--ink-soft)}
-.sl-more{display:flex;justify-content:center;margin:clamp(40px,6vw,64px) 0 0}
+.sl-more{display:flex;justify-content:center;margin:clamp(28px,5vw,56px) 0 0}
 .sl-more a,.sl-btn{display:inline-block;padding:14px 26px;background:var(--navy);color:#f3efe6!important;font-weight:600;font-size:14px;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;box-shadow:0 10px 24px -10px rgba(10,24,32,.7);transition:background .3s}
 .sl-more a:hover,.sl-btn:hover{background:var(--rust)}
 .sl-card .sl-more{justify-content:flex-start;margin-top:18px}
@@ -214,11 +224,11 @@ a.sl-print{text-decoration:none;cursor:pointer}
 .sl-quote footer{font-weight:600;letter-spacing:.06em;color:var(--ink)}
 .sl-quote footer span{display:block;font-weight:500;font-style:italic;letter-spacing:0;color:var(--ink-soft)}
 .sl-sale{margin:0;padding:10px 16px;text-align:center;background:var(--rust);color:#fbefe0;font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:14px}
-.sl-price s{font-weight:400;color:var(--ink-soft);margin-right:4px}
+.sl-price s{font-weight:500;color:var(--ink-soft);margin-right:6px}
 .sl-new{display:inline-block;margin-bottom:4px;padding:2px 10px;background:var(--navy);color:#f3efe6;font-family:var(--body);font-style:normal;font-weight:600;font-size:11px;letter-spacing:.2em;text-transform:uppercase}
 .sl-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .sl-cols{display:flex;flex-wrap:wrap;gap:10px;margin:-10px auto clamp(28px,4vw,44px);width:min(1180px,100%)}
-.sl-cols a{padding:8px 16px;border:1px solid rgba(243,239,230,.55);color:#f3efe6!important;font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
+.sl-cols a{padding:8px 16px;border:1px solid rgba(243,239,230,.7);background:rgba(11,30,41,.72);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);color:#f3efe6!important;font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
 .sl-cols a:hover,.sl-cols a[aria-current="page"]{background:#f3efe6;color:var(--navy)!important}
 .sl-btn--cart{margin-right:12px}
 .sl-btn--quiet{background:transparent;color:var(--navy)!important;box-shadow:inset 0 0 0 1.5px var(--navy)}
@@ -302,6 +312,7 @@ a.sl-print{text-decoration:none;cursor:pointer}
   .sl-market-day{grid-row:auto}
 }
 @media (max-width:860px){
+  .sl-sky-row{grid-template-columns:minmax(0,1fr) minmax(0,42%);gap:18px 24px}
   .sl-prints{grid-template-columns:repeat(2,minmax(0,1fr))}
   .sl-below{grid-template-columns:minmax(0,1fr)}
   .sl-tide{margin-top:10px}
@@ -311,6 +322,22 @@ a.sl-print{text-decoration:none;cursor:pointer}
 }
 @media (max-width:520px){
   .sl{font-size:18px}
+  /* 4. A light header: the name on one line, the menu on one line under it, a slim sale strip. */
+  .sl-bar{gap:2px 0;padding:10px 16px 6px}
+  .sl-bar-name{font-size:19px}
+  .sl-bar nav{width:100%}
+  .sl-nav{flex-wrap:nowrap;gap:0 14px;overflow-x:auto;scrollbar-width:none}
+  .sl-nav::-webkit-scrollbar{display:none}
+  .sl-nav a{display:inline-block;font-size:12px;letter-spacing:.08em;white-space:nowrap;padding:6px 0}
+  .sl-sale{padding:6px 12px;font-size:12px;letter-spacing:.06em}
+  .sl-sky--home{padding-top:22px;padding-bottom:28px}
+  .sl-sky-row{grid-template-columns:minmax(0,1fr);gap:20px}
+  .sl-sky-piece{width:62%;justify-self:end;margin:-6px 6px 0 0}
+  .sl-featured{--fade-in:44px;--fade-out:52px}
+  .sl-featured--page{--fade-in:32px;margin-top:12px}
+  .sl-below{margin-top:28px}
+  .sl-letter{margin-top:40px}
+  .sl-portrait{width:44%;margin:-2px -4px 10px 14px}
   .sl-prints{gap:26px 16px}
   .sl-prints li{--y:0px!important}
   .sl-print{padding:8px 8px 0}

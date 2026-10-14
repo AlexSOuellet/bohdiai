@@ -96,6 +96,7 @@ export const CARD_WORD_SPOTS = {
     scroll: '',
   },
   shoreline: {
+    skyCta: '',
     work: '',
     makesLabel: '',
     aboutFallback: '',

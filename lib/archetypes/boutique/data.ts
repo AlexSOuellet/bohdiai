@@ -9,7 +9,7 @@ import type { ProductView } from '@/lib/archetypes/content';
 import { profileFormFromRow, type ProfileForm } from '@/lib/backend/profile/profile-form';
 import { PROFILE_COLUMNS } from '@/lib/backend/profile/queries';
 import { loadSiteFeatures } from '@/lib/backend/features';
-import { listMarketDates } from '@/lib/backend/dates/queries';
+import { listVisitorMarketDates } from '@/lib/backend/dates/queries';
 import { listGallery } from '@/lib/backend/gallery/queries';
 import { GALLERY_LIMIT, type GalleryItem } from '@/lib/backend/gallery/gallery-form';
 import type { MarketDate } from '@/lib/backend/dates/dates-form';
@@ -49,7 +49,7 @@ export async function loadBoutiqueData(
   if (tenant.data === null) throw new Error('Could not load the site: no such tenant');
   if (profile.error !== null) throw new Error(`Could not load About you: ${profile.error.message}`);
   const [dates, gone, promo] = await Promise.all([
-    features.has('market_dates') ? listMarketDates(db, tenantId) : Promise.resolve([]),
+    features.has('market_dates') ? listVisitorMarketDates(db, tenantId) : Promise.resolve([]),
     features.has('gallery') ? listGallery(db, tenantId) : Promise.resolve([]),
     loadShopPromotions(db, tenantId),
   ]);

@@ -17,7 +17,7 @@ import type { CartView, MarketShopView } from '@/lib/archetypes/content';
 import { ShorelineMarketBuyer } from './ShorelineMarketBuyer';
 import { ShorelineOrderForm } from './ShorelineOrderForm';
 import { PhotoViewerProvider, Snapshot } from './PhotoViewer';
-import { Frame, Footer, nameParts } from './ShorelineLanding';
+import { Frame, Footer, nameParts, PortraitPrint } from './ShorelineLanding';
 import { bioParagraphs, initials, marketDay, marketName, photoLabel, type CardData } from './data';
 import { featuredProducts, type ShorelineData } from './shoreline-data';
 import type { MarketDate } from '@/lib/backend/dates/dates-form';
@@ -127,6 +127,24 @@ function Price({ product, W }: { product: ProductView; W: SW }): ReactElement {
   return <strong className="sl-price">{product.price}</strong>;
 }
 
+/** The first screen's piece: her first featured piece, set on the windowsill beside her name. */
+function SkyPiece({ product, W }: { product: ProductView | undefined; W: SW }): ReactElement | null {
+  if (product === undefined) return null;
+  const photo = product.media.find((m) => m.kind === 'image' && m.url !== undefined);
+  if (photo?.url === undefined) return null;
+  return (
+    <a className="sl-print sl-sky-piece" href={`/listings/${product.slug}`}>
+      {/* The owner's own upload, already shrunk at upload. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={photo.url} alt={photo.alt === '' ? product.name : photo.alt} fetchPriority="high" />
+      <span className="sl-label">
+        <span>{product.name}</span>
+        <Price product={product} W={W} />
+      </span>
+    </a>
+  );
+}
+
 function Prints({ products, newTag = false, W }: { products: readonly ProductView[]; newTag?: boolean; W: SW }): ReactElement {
   return (
     <ul className="sl-prints">
@@ -191,26 +209,38 @@ function Home({ site }: { site: ShorelineData }): ReactElement {
   const soon = card.dates.slice(0, 3);
   return (
     <>
-      <div className="sl-sky">
+      <div className="sl-sky sl-sky--home">
         <h1 className="sl-name">
           <Name name={card.name} />
         </h1>
-        {p.kicker !== '' && <p className="sl-kicker">{p.kicker}</p>}
-        {p.makes.length > 0 && (
-          <ul className="sl-makes" aria-label={W.makesLabel}>
-            {p.makes.map((m) => (
-              <li key={m}>{m}</li>
-            ))}
-          </ul>
-        )}
+        <div className="sl-sky-row">
+          <div className="sl-sky-words">
+            {p.kicker !== '' && <p className="sl-kicker">{p.kicker}</p>}
+            {p.makes.length > 0 && (
+              <ul className="sl-makes" aria-label={W.makesLabel}>
+                {p.makes.map((m) => (
+                  <li key={m}>{m}</li>
+                ))}
+              </ul>
+            )}
+            {site.products.length > 0 && (
+              <p className="sl-sky-cta">
+                <a className="sl-btn" href="/shop">
+                  {W.skyCta}
+                </a>
+              </p>
+            )}
+          </div>
+          <SkyPiece product={featured[0]} W={W} />
+        </div>
       </div>
       <main id="main">
-        {featured.length > 0 && (
+        {featured.length > 1 && (
           <section className="sl-water sl-featured" aria-labelledby="sl-featured">
             <h2 className="sl-section-h" id="sl-featured">
               {W.featured}
             </h2>
-            <Prints products={featured} newTag={site.newArrivals} W={W} />
+            <Prints products={featured.slice(1)} newTag={site.newArrivals} W={W} />
             <div className="sl-more">
               <a href="/shop">{W.seeShop}</a>
             </div>
@@ -236,6 +266,7 @@ function Home({ site }: { site: ShorelineData }): ReactElement {
             {(bio.length > 0 || p.headline !== '') && (
               <section className="sl-card">
                 <div className="sl-card__in">
+                  <PortraitPrint portrait={card.portrait} />
                   <h2>{p.aboutTitle !== '' ? p.aboutTitle : W.aboutFallback}</h2>
                   {p.headline !== '' && <p className="sl-lead">{p.headline}</p>}
                   {bio[0] !== undefined && <p className="sl-first">{bio[0]}</p>}
@@ -305,6 +336,7 @@ function About({ site }: { site: ShorelineData }): ReactElement {
       <main id="main" className="sl-about">
         <section className="sl-card">
           <div className="sl-card__in">
+            <PortraitPrint portrait={site.card.portrait} />
             <h2>{p.aboutTitle !== '' ? p.aboutTitle : W.aboutFallback}</h2>
             {p.headline !== '' && <p className="sl-lead">{p.headline}</p>}
             {bioParagraphs(p.bio).map((para, i) => (

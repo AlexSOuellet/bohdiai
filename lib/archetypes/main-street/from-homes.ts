@@ -18,7 +18,7 @@ import { getPortraitUrl, getProfileForm } from '@/lib/backend/profile/queries';
 import type { ProfileForm } from '@/lib/backend/profile/profile-form';
 import { listTestimonials } from '@/lib/backend/testimonials/queries';
 import type { Testimonial } from '@/lib/backend/testimonials/testimonial-form';
-import { listMarketDates } from '@/lib/backend/dates/queries';
+import { listVisitorMarketDates } from '@/lib/backend/dates/queries';
 import type { MarketDate } from '@/lib/backend/dates/dates-form';
 import { fill } from '@/lib/site-words/words';
 import { findUsLocale } from './findus';
@@ -153,7 +153,7 @@ export async function loadFamilyHomes(db: SupabaseClient<Database>, tenantId: st
   if (tenant.data === null) throw new Error('Could not load the site: no such tenant');
   const [testimonials, dates] = await Promise.all([
     features.has('testimonials') ? listTestimonials(db, tenantId) : Promise.resolve([]),
-    features.has('market_dates') ? listMarketDates(db, tenantId) : Promise.resolve([]),
+    features.has('market_dates') ? listVisitorMarketDates(db, tenantId) : Promise.resolve([]),
   ]);
   return {
     name: tenant.data.business_name,

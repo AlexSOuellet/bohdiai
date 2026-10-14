@@ -36,6 +36,7 @@ const full: CardData = {
   },
   photos,
   dates: [],
+  portrait: null,
   words: S,
 };
 
@@ -144,7 +145,7 @@ describe('business card page', () => {
   });
 
   it('leaves out what the owner hasn’t filled in instead of painting it empty', () => {
-    const { container } = page({ name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [], words: S });
+    const { container } = page({ name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [], portrait: null, words: S });
     expect(container.querySelector('.bc-wall .bc-print')).toBeNull();
     expect(container.querySelector('.bc-marquee')).toBeNull();
     expect(container.querySelector('#about')).toBeNull();
@@ -156,7 +157,7 @@ describe('business card page', () => {
   });
 
   it('drops the form without a tenant id, and the whole section when nothing is left to show', () => {
-    const { container } = render(<CardLanding data={{ name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [], words: S }} paint={paint} tenantId={undefined} />);
+    const { container } = render(<CardLanding data={{ name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [], portrait: null, words: S }} paint={paint} tenantId={undefined} />);
     expect(container.querySelector('#touch')).toBeNull();
   });
 });

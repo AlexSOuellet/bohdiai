@@ -38,6 +38,7 @@ const full: CardData = {
     { id: 'd1', date: '2026-10-17', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Harvest Craft Fair', town: 'Wickford' },
     { id: 'd2', date: '2026-12-05', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Christmas on the Green', town: '' },
   ],
+  portrait: null,
   words: S,
 };
 
@@ -131,7 +132,7 @@ describe('bulletin board page', () => {
   });
 
   it('shows only the name and the footer for an owner who has filled in nothing', () => {
-    const { container } = render(<BulletinLanding data={{ name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [], words: S }} tenantId={undefined} />);
+    const { container } = render(<BulletinLanding data={{ name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [], portrait: null, words: S }} tenantId={undefined} />);
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Frank');
     for (const sel of ['.bb-stamp', '.bb-strip', '.bb-lede', '.bb-pins', '.bb-find', '.bb-tabs', '.bb-cards']) expect(container.querySelector(sel)).toBeNull();
     expect(screen.getByRole('link', { name: `${S.footer.creditPrefix} ${S.footer.creditBrand}` })).toBeTruthy();

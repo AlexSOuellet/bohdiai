@@ -14,7 +14,7 @@ vi.mock('@/lib/backend/moment/queries', () => ({ getMoment: async () => ({ ...EM
 vi.mock('@/lib/backend/sections/queries', () => ({ getSiteSections: async () => sections({ work: { title: 'Fresh off the shelf' } }) }));
 vi.mock('@/lib/backend/profile/queries', () => ({ getProfileForm: async () => EMPTY_PROFILE, getPortraitUrl: async () => null }));
 vi.mock('@/lib/backend/testimonials/queries', () => ({ listTestimonials: loaders.testimonials }));
-vi.mock('@/lib/backend/dates/queries', () => ({ listMarketDates: loaders.dates }));
+vi.mock('@/lib/backend/dates/queries', () => ({ listVisitorMarketDates: loaders.dates }));
 
 import { familyMarketDay, familyViewFromHomes, holdsLegacyContent, loadFamilyHomes, type FamilyHomes } from './from-homes';
 import { keyWords } from '@/lib/site-words/words';

@@ -11,18 +11,21 @@ import { PROFILE_COLUMNS } from '@/lib/backend/profile/queries';
 import { listGallery } from '@/lib/backend/gallery/queries';
 import { GALLERY_LIMIT, type GalleryItem } from '@/lib/backend/gallery/gallery-form';
 import { loadSiteFeatures } from '@/lib/backend/features';
-import { listMarketDates } from '@/lib/backend/dates/queries';
+import { listVisitorMarketDates } from '@/lib/backend/dates/queries';
 import type { MarketDate } from '@/lib/backend/dates/dates-form';
 import { getSiteWords } from '@/lib/site-words/queries';
 import { fill } from '@/lib/site-words/words';
 import { CARD_WORD_SPOTS, CARD_WORDS_PREFIX, type CardWords } from './words';
 
-export type CardData = { name: string; profile: ProfileForm; photos: GalleryItem[]; dates: MarketDate[]; words: CardWords };
+/** The maker's own photo of themselves (About you's portrait), when they have one. */
+export type Portrait = { url: string; alt: string };
+
+export type CardData = { name: string; profile: ProfileForm; portrait: Portrait | null; photos: GalleryItem[]; dates: MarketDate[]; words: CardWords };
 
 export async function loadCardData(db: SupabaseClient<Database>, tenantId: string): Promise<CardData> {
   const [tenant, profile, photos, features, words] = await Promise.all([
     db.from('tenants').select('business_name').eq('id', tenantId).maybeSingle(),
-    db.from('site_profiles').select(PROFILE_COLUMNS).eq('tenant_id', tenantId).maybeSingle(),
+    db.from('site_profiles').select(`${PROFILE_COLUMNS}, portrait:uploads(public_url, alt_text)`).eq('tenant_id', tenantId).maybeSingle(),
     listGallery(db, tenantId),
     loadSiteFeatures(db, tenantId),
     getSiteWords(db, tenantId, CARD_WORD_SPOTS, CARD_WORDS_PREFIX),
@@ -30,8 +33,10 @@ export async function loadCardData(db: SupabaseClient<Database>, tenantId: strin
   if (tenant.error !== null) throw new Error(`Could not load the site: ${tenant.error.message}`);
   if (tenant.data === null) throw new Error('Could not load the site: no such tenant');
   if (profile.error !== null) throw new Error(`Could not load About you: ${profile.error.message}`);
-  const dates = features.has('market_dates') ? await listMarketDates(db, tenantId) : [];
-  return { name: tenant.data.business_name, profile: profileFormFromRow(profile.data), photos: photos.slice(0, GALLERY_LIMIT), dates, words };
+  const dates = features.has('market_dates') ? await listVisitorMarketDates(db, tenantId) : [];
+  const portraitUrl = profile.data?.portrait?.public_url ?? null;
+  const portrait = portraitUrl === null ? null : { url: portraitUrl, alt: profile.data?.portrait?.alt_text ?? '' };
+  return { name: tenant.data.business_name, profile: profileFormFromRow(profile.data), portrait, photos: photos.slice(0, GALLERY_LIMIT), dates, words };
 }
 
 /** A market's day as the site says it: "Sat Oct 11", read on the market's own date;

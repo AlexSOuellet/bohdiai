@@ -111,6 +111,7 @@ function fakeDb(opts: {
         select: () => chain,
         eq: () => chain,
         like: () => chain,
+        neq: () => chain,
         order: () => chain,
         maybeSingle: async () => result(table),
         then: (resolve: (v: unknown) => void) => resolve(result(table)),

@@ -60,6 +60,7 @@ function fakeDb(opts: { tenant?: unknown; tenantError?: unknown; profile?: unkno
         select: () => chain,
         eq: () => chain,
         like: () => chain,
+        neq: () => chain,
         order: () => chain,
         maybeSingle: async () => result(table),
         then: (resolve: (v: unknown) => void) => resolve(result(table)),
