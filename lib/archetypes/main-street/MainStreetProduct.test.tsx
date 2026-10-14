@@ -1,10 +1,15 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, cleanup, screen } from '@testing-library/react';
-import { DEFAULT_STRINGS } from './defaults';
+
 import { MainStreetProduct } from './MainStreetProduct';
 import { MAIN_STREET_SKINS } from './skins';
 import type { MainStreetContent } from './schemas';
 import type { ProductView } from '../content';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 
@@ -36,7 +41,7 @@ describe('MainStreetProduct media gallery', () => {
       ],
       variations: [],
     };
-    const { container } = render(<MainStreetProduct content={content} skin={skin} product={product} />);
+    const { container } = render(<MainStreetProduct words={W} content={content} skin={skin} product={product} />);
     expect(container.querySelectorAll('img').length).toBe(3);
   });
 
@@ -46,7 +51,7 @@ describe('MainStreetProduct media gallery', () => {
       media: [{ kind: 'video', url: 'https://cdn/clip.mp4', poster: 'https://cdn/poster.jpg', alt: 'demo' }],
       variations: [],
     };
-    const { container } = render(<MainStreetProduct content={content} skin={skin} product={product} />);
+    const { container } = render(<MainStreetProduct words={W} content={content} skin={skin} product={product} />);
     const video = container.querySelector('video') as HTMLVideoElement | null;
     expect(video?.getAttribute('src')).toBe('https://cdn/clip.mp4');
     expect(video?.getAttribute('poster')).toBe('https://cdn/poster.jpg');
@@ -61,7 +66,7 @@ describe('MainStreetProduct options and stock', () => {
   };
   it('shows the option picker for a product with options', () => {
     render(
-      <MainStreetProduct
+      <MainStreetProduct words={W}
         content={content}
         skin={skin}
         product={{ ...base, variations: [{ name: 'Size', options: ['Small'] }], offers: [{ choices: { Size: 'Small' }, price: '$24', soldOut: false }] }}
@@ -70,8 +75,8 @@ describe('MainStreetProduct options and stock', () => {
     expect(screen.getByLabelText('Size')).toBeInTheDocument();
   });
   it('disables buying a sold-out product without options', () => {
-    render(<MainStreetProduct content={content} skin={skin} product={{ ...base, status: 'sold_out' }} />);
-    expect(screen.getByRole('button', { name: DEFAULT_STRINGS.productSoldOut })).toBeDisabled();
+    render(<MainStreetProduct words={W} content={content} skin={skin} product={{ ...base, status: 'sold_out' }} />);
+    expect(screen.getByRole('button', { name: W.productSoldOut })).toBeDisabled();
   });
 });
 
@@ -87,16 +92,16 @@ describe('a shop that does not sell online (Maker Market)', () => {
   };
 
   it('asks instead of selling, shows one photo, and has no cart in the menu', () => {
-    const { container } = render(<MainStreetProduct content={lite} skin={skin} product={product} />);
-    expect(screen.getByRole('link', { name: DEFAULT_STRINGS.productAskAbout }).getAttribute('href')).toBe('/contact');
-    expect(screen.queryByRole('button', { name: DEFAULT_STRINGS.productAddToCart })).toBeNull();
+    const { container } = render(<MainStreetProduct words={W} content={lite} skin={skin} product={product} />);
+    expect(screen.getByRole('link', { name: W.productAskAbout }).getAttribute('href')).toBe('/contact');
+    expect(screen.queryByRole('button', { name: W.productAddToCart })).toBeNull();
     expect(container.querySelectorAll('img').length).toBe(1);
     expect(container.querySelector('a[href="/cart"]')).toBeNull();
   });
 
   it('still sells, with every photo and the cart, when the switch is absent', () => {
-    const { container } = render(<MainStreetProduct content={content} skin={skin} product={product} />);
-    expect(screen.getByRole('button', { name: DEFAULT_STRINGS.productAddToCart })).toBeTruthy();
+    const { container } = render(<MainStreetProduct words={W} content={content} skin={skin} product={product} />);
+    expect(screen.getByRole('button', { name: W.productAddToCart })).toBeTruthy();
     expect(container.querySelectorAll('img').length).toBe(2);
     expect(container.querySelector('a[href="/cart"]')).not.toBeNull();
   });

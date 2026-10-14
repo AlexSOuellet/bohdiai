@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { DEFAULT_STRINGS } from './defaults';
+import type { FamilyWords } from './words';
 
 export interface MobileNavItem {
   href: string;
@@ -23,10 +23,13 @@ export interface MobileNavItem {
  */
 export function MainStreetMobileNav({
   items,
+  words,
   label,
   always = false,
 }: {
   items: MobileNavItem[];
+  /** The site's words for the menu's screen-reader labels. */
+  words: FamilyWords;
   label?: string;
   always?: boolean;
 }) {
@@ -54,7 +57,7 @@ export function MainStreetMobileNav({
       <button
         ref={toggleRef}
         type="button"
-        aria-label={DEFAULT_STRINGS.ariaOpenMenu}
+        aria-label={words.ariaOpenMenu}
         aria-expanded={open}
         onClick={() => setOpen(true)}
         className={label ? 'ms-menu-trigger' : 'ms-burger'}
@@ -73,11 +76,11 @@ export function MainStreetMobileNav({
       </button>
 
       {open && (
-        <div className="ms-mobile-overlay" role="dialog" aria-modal="true" aria-label={DEFAULT_STRINGS.ariaMenu}>
+        <div className="ms-mobile-overlay" role="dialog" aria-modal="true" aria-label={words.ariaMenu}>
           <button
             ref={closeRef}
             type="button"
-            aria-label={DEFAULT_STRINGS.ariaCloseMenu}
+            aria-label={words.ariaCloseMenu}
             onClick={() => {
               setOpen(false);
               toggleRef.current?.focus();
@@ -87,7 +90,7 @@ export function MainStreetMobileNav({
             <span className="ms-burger-x" />
             <span className="ms-burger-x" />
           </button>
-          <nav className="ms-mobile-links" aria-label={DEFAULT_STRINGS.ariaSiteNav}>
+          <nav className="ms-mobile-links" aria-label={words.ariaSiteNav}>
             {items.map((item, i) => (
               <a
                 key={item.href}

@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * Shoreline design — the menu's cart link with its count (Full). A client component
- * of its own so the wording function stays on this side of the server boundary.
+ * Shoreline design — the menu's cart link with its count (Full), in the site's
+ * own words. A client component of its own: the count lives in the browser.
  */
 import type { ReactElement } from 'react';
 import { CartLink } from '@/lib/storefront/CartControls';
-import { CARD_STRINGS } from './strings';
+import type { CardWords } from './words';
 
-export function ShorelineCartLink(): ReactElement {
-  return <CartLink label={CARD_STRINGS.shoreline.cart.nav} />;
+export function ShorelineCartLink({ w }: { w: CardWords['shoreline']['cart'] }): ReactElement {
+  return <CartLink label={w.nav} labelEmpty={w.navEmpty} />;
 }

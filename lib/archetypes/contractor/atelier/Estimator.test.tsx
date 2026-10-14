@@ -3,6 +3,10 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Estimator } from './Estimator';
 import { EstimatorSchema } from '../schemas';
+import { keyWords } from '@/lib/site-words/words';
+import { CONTRACTOR_WORD_SPOTS, CONTRACTOR_WORDS_PREFIX } from '../words';
+
+const W = keyWords(CONTRACTOR_WORD_SPOTS, CONTRACTOR_WORDS_PREFIX).estimator;
 
 const ESTIMATOR = EstimatorSchema.parse({
   eyebrow: 'Ballpark',
@@ -26,15 +30,15 @@ const ESTIMATOR = EstimatorSchema.parse({
 
 describe('atelier estimator', () => {
   it('starts on the first job, size and finish, with that range', () => {
-    render(<Estimator estimator={ESTIMATOR} estimateHref="#estimate" />);
+    render(<Estimator estimator={ESTIMATOR} estimateHref="#estimate" words={W} />);
     expect(screen.getByText('$1 – $2')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /interior/i })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('link', { name: 'Send this to us' })).toHaveAttribute('href', '#estimate');
+    expect(screen.getByRole('link', { name: W.send })).toHaveAttribute('href', '#estimate');
   });
 
   it('shows the authored range for whatever is picked', async () => {
     const user = userEvent.setup();
-    render(<Estimator estimator={ESTIMATOR} estimateHref="#estimate" />);
+    render(<Estimator estimator={ESTIMATOR} estimateHref="#estimate" words={W} />);
     await user.click(screen.getByRole('button', { name: /exterior/i }));
     expect(screen.getByText('$9 – $10')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'The house' }));

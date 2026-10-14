@@ -2,8 +2,19 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, within } from '@testing-library/react';
 import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
 import { CardLanding, CardContentPage } from './CardLanding';
-import { CARD_STRINGS as S } from './strings';
+import { fill, keyWords } from '@/lib/site-words/words';
+import { CARD_WORD_SPOTS, CARD_WORDS_PREFIX, type CardWords } from './words';
 import type { CardData } from './data';
+
+const K = keyWords(CARD_WORD_SPOTS, CARD_WORDS_PREFIX);
+/** Test words: every spot says its own key; a spot with blanks keeps them, and the
+ *  date spots read a real locale so a date can be checked. */
+const S: CardWords = {
+  ...K,
+  dates: { ...K.dates, locale: 'en-US', day: '{weekday} {month} {day}' },
+  work: { ...K.work, open: 'card.work.open {caption}', openNumbered: 'card.work.openNumbered {n}' },
+  lightbox: { ...K.lightbox, count: 'card.lightbox.count {n}/{of}' },
+};
 import { cardPaint } from './paint';
 
 const TENANT = '4b8f0f5e-8f3a-4a57-9a8e-1f2d3c4b5a69';
@@ -25,6 +36,7 @@ const full: CardData = {
   },
   photos,
   dates: [],
+  words: S,
 };
 
 afterEach(cleanup);
@@ -89,7 +101,7 @@ describe('business card page', () => {
     ];
     const { container } = page({ ...full, dates });
     const quiet = [...container.querySelectorAll('.bc-marquee__row--quiet span')].map((s) => s.textContent);
-    expect(quiet.slice(0, 2)).toEqual(['Sun Oct 11 · Wickford Art Festival · Wickford', 'Sun Nov 1 · Holiday Fair']);
+    expect(quiet.slice(0, 2)).toEqual([['Sun Oct 11', 'Wickford Art Festival', 'Wickford'].join(S.dates.separator), ['Sun Nov 1', 'Holiday Fair'].join(S.dates.separator)]);
     expect(quiet).toHaveLength(12);
     expect(container.querySelector('.bc-marquee__row--quiet')?.className).toContain('bc-marquee__row--dates');
     expect(container.querySelector('.bc-marquee style')?.innerHTML).toMatch(/^\.bc-marquee__row--dates\{animation-duration:\d+s\}$/);
@@ -105,14 +117,14 @@ describe('business card page', () => {
 
   it('opens a photo full size, steps through and closes with Escape', () => {
     page();
-    fireEvent.click(screen.getByRole('button', { name: S.work.open('Army flag', 1) }));
+    fireEvent.click(screen.getByRole('button', { name: fill(S.work.open, { caption: 'Army flag' }) }));
     const dialog = screen.getByRole('dialog', { name: S.lightbox.label });
-    expect(within(dialog).getByText(`Army flag · ${S.lightbox.count(1, 12)}`)).toBeTruthy();
+    expect(within(dialog).getByText(`Army flag${S.lightbox.separator}${fill(S.lightbox.count, { n: 1, of: 12 })}`)).toBeTruthy();
     fireEvent.click(within(dialog).getByRole('button', { name: S.lightbox.next }));
-    expect(within(dialog).getByText(S.lightbox.count(2, 12))).toBeTruthy();
+    expect(within(dialog).getByText(fill(S.lightbox.count, { n: 2, of: 12 }))).toBeTruthy();
     fireEvent.keyDown(window, { key: 'ArrowLeft' });
     fireEvent.keyDown(window, { key: 'ArrowLeft' });
-    expect(within(dialog).getByText(S.lightbox.count(12, 12))).toBeTruthy();
+    expect(within(dialog).getByText(fill(S.lightbox.count, { n: 12, of: 12 }))).toBeTruthy();
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(screen.queryByRole('dialog')).toBeNull();
   });
@@ -126,13 +138,13 @@ describe('business card page', () => {
 
   it('credits BohdiAI and links privacy and terms in the footer', () => {
     const { container } = page();
-    expect(container.querySelector('.bc-foot a[href="https://bohdiai.com"]')?.textContent).toBe('Empowered by BohdiAI');
+    expect(container.querySelector('.bc-foot a[href="https://bohdiai.com"]')?.textContent).toBe(`${S.footer.creditPrefix} ${S.footer.creditBrand}`);
     expect(container.querySelector('.bc-foot a[href="/privacy"]')).not.toBeNull();
     expect(container.querySelector('.bc-foot a[href="/terms"]')).not.toBeNull();
   });
 
   it('leaves out what the owner hasn’t filled in instead of painting it empty', () => {
-    const { container } = page({ name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [] });
+    const { container } = page({ name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [], words: S });
     expect(container.querySelector('.bc-wall .bc-print')).toBeNull();
     expect(container.querySelector('.bc-marquee')).toBeNull();
     expect(container.querySelector('#about')).toBeNull();
@@ -144,14 +156,14 @@ describe('business card page', () => {
   });
 
   it('drops the form without a tenant id, and the whole section when nothing is left to show', () => {
-    const { container } = render(<CardLanding data={{ name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [] }} paint={paint} tenantId={undefined} />);
+    const { container } = render(<CardLanding data={{ name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [], words: S }} paint={paint} tenantId={undefined} />);
     expect(container.querySelector('#touch')).toBeNull();
   });
 });
 
 describe('card content page', () => {
   it('wraps legal html in the card’s chrome with a link home', () => {
-    const { container } = render(<CardContentPage name="Rustic Rhody" paint={paint} html="<h1>Privacy</h1>" />);
+    const { container } = render(<CardContentPage name="Rustic Rhody" paint={paint} words={S} html="<h1>Privacy</h1>" />);
     expect(container.querySelector('.bc-brand[href="/"]')?.textContent).toBe('Rustic Rhody');
     expect(container.querySelector('.bc-prose h1')?.textContent).toBe('Privacy');
   });

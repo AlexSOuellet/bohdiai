@@ -3,6 +3,11 @@ import { render, cleanup } from '@testing-library/react';
 import { ReviewsGuestbook } from './ReviewsGuestbook';
 import { MAIN_STREET_SKINS } from './skins';
 import type { ReviewsSection, Testimonial } from './reviews';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 const section: ReviewsSection = { title: 'Kind words', label: 'Loved by customers', items: [] };
@@ -19,14 +24,14 @@ afterEach(cleanup);
 describe('ReviewsGuestbook', () => {
   it('renders one slip per testimonial', () => {
     const { container } = render(
-      <ReviewsGuestbook section={section} items={makeTestimonials(4)} skin={skin} />,
+      <ReviewsGuestbook words={W} section={section} items={makeTestimonials(4)} skin={skin} />,
     );
     expect(container.querySelectorAll('[data-ms-rev-item]').length).toBe(4);
   });
 
   it('shows every author and quote', () => {
     const { container } = render(
-      <ReviewsGuestbook section={section} items={makeTestimonials(4)} skin={skin} />,
+      <ReviewsGuestbook words={W} section={section} items={makeTestimonials(4)} skin={skin} />,
     );
     for (let i = 0; i < 4; i++) {
       expect(container.textContent).toContain(`Author ${i}`);
@@ -36,7 +41,7 @@ describe('ReviewsGuestbook', () => {
 
   it('shows the five-star string on every slip', () => {
     const { container } = render(
-      <ReviewsGuestbook section={section} items={makeTestimonials(4)} skin={skin} />,
+      <ReviewsGuestbook words={W} section={section} items={makeTestimonials(4)} skin={skin} />,
     );
     const slips = container.querySelectorAll('[data-ms-rev-item]');
     expect(slips.length).toBe(4);
@@ -47,14 +52,14 @@ describe('ReviewsGuestbook', () => {
 
   it('renders text through named type roles', () => {
     const { container } = render(
-      <ReviewsGuestbook section={section} items={makeTestimonials(3)} skin={skin} />,
+      <ReviewsGuestbook words={W} section={section} items={makeTestimonials(3)} skin={skin} />,
     );
     expect(container.querySelectorAll('[data-type]').length).toBeGreaterThan(0);
   });
 
   it('uses classes, not inline style objects, on its slips', () => {
     const { container } = render(
-      <ReviewsGuestbook section={section} items={makeTestimonials(3)} skin={skin} />,
+      <ReviewsGuestbook words={W} section={section} items={makeTestimonials(3)} skin={skin} />,
     );
     container.querySelectorAll('[data-ms-rev-item]').forEach((el) => {
       expect((el as HTMLElement).getAttribute('style')).toBeFalsy();

@@ -8,13 +8,14 @@
  */
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
 import type { GalleryItem } from '@/lib/backend/gallery/gallery-form';
-import { CARD_STRINGS as S } from './strings';
+import { fill } from '@/lib/site-words/words';
+import type { CardWords } from './words';
 
 type Opener = (index: number, from: HTMLButtonElement) => void;
 
 const ViewerContext = createContext<Opener | null>(null);
 
-export function PhotoViewerProvider({ photos, children }: { photos: GalleryItem[]; children: ReactNode }): ReactElement {
+export function PhotoViewerProvider({ photos, w, children }: { photos: GalleryItem[]; w: CardWords['lightbox']; children: ReactNode }): ReactElement {
   const [open, setOpen] = useState<number | null>(null);
   const opener = useRef<HTMLButtonElement | null>(null);
   const closeBtn = useRef<HTMLButtonElement | null>(null);
@@ -51,16 +52,16 @@ export function PhotoViewerProvider({ photos, children }: { photos: GalleryItem[
           className="bc-lb"
           role="dialog"
           aria-modal="true"
-          aria-label={S.lightbox.label}
+          aria-label={w.label}
           onClick={(e) => {
             if (e.target === e.currentTarget) close();
           }}
         >
-          <button ref={closeBtn} type="button" className="bc-lb__close" aria-label={S.lightbox.close} onClick={close}>
+          <button ref={closeBtn} type="button" className="bc-lb__close" aria-label={w.close} onClick={close}>
             ✕
           </button>
           {photos.length > 1 && (
-            <button type="button" className="bc-lb__prev" aria-label={S.lightbox.prev} onClick={() => step(-1)}>
+            <button type="button" className="bc-lb__prev" aria-label={w.prev} onClick={() => step(-1)}>
               ‹
             </button>
           )}
@@ -68,12 +69,12 @@ export function PhotoViewerProvider({ photos, children }: { photos: GalleryItem[
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={shown.url} alt={shown.caption} />
             <figcaption>
-              {shown.caption !== '' ? `${shown.caption} · ` : ''}
-              {S.lightbox.count(open + 1, photos.length)}
+              {shown.caption !== '' ? `${shown.caption}${w.separator}` : ''}
+              {fill(w.count, { n: open + 1, of: photos.length })}
             </figcaption>
           </figure>
           {photos.length > 1 && (
-            <button type="button" className="bc-lb__next" aria-label={S.lightbox.next} onClick={() => step(1)}>
+            <button type="button" className="bc-lb__next" aria-label={w.next} onClick={() => step(1)}>
               ›
             </button>
           )}

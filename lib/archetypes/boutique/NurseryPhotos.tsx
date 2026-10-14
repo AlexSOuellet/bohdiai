@@ -7,14 +7,17 @@
  */
 import { useState, type ReactElement } from 'react';
 import type { CatalogMedia } from '@/lib/archetypes/content';
-import { NURSERY_STRINGS as S } from './strings';
+import { fill } from '@/lib/site-words/words';
+import type { NurseryWords } from './words';
 
 export function NurseryPhotos({
   name,
   media,
+  w,
 }: {
   name: string;
   media: CatalogMedia[];
+  w: NurseryWords['certificate'];
 }): ReactElement | null {
   const photos = media.filter((m) => m.kind === 'image' && m.url !== undefined);
   const [current, setCurrent] = useState(0);
@@ -26,7 +29,7 @@ export function NurseryPhotos({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={shown.url}
-          alt={shown.alt === '' ? S.certificate.photo(name, current + 1) : shown.alt}
+          alt={shown.alt === '' ? fill(w.photo, { name, n: current + 1 }) : shown.alt}
         />
       </div>
       {photos.length > 1 && (
@@ -37,7 +40,7 @@ export function NurseryPhotos({
               type="button"
               className="nn-thumb"
               aria-current={i === current ? 'true' : 'false'}
-              aria-label={S.certificate.showPhoto(i + 1)}
+              aria-label={fill(w.showPhoto, { n: i + 1 })}
               onClick={() => setCurrent(i)}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}

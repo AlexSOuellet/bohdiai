@@ -2,6 +2,11 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
 import { MomentHero, buildHeroTimeline, heroPhaseDurationMs } from './MomentHero';
 import { MAIN_STREET_SKINS } from './skins';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 const identity = { wordmark: "June's Sourdough", nav: ['Shop', 'About'] };
@@ -30,14 +35,14 @@ afterEach(cleanup);
 
 describe('MomentHero (the hero IS the front door, D54 corrected)', () => {
   it('renders a full-screen hero with held media and the brand block landed at rest', () => {
-    const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<MomentHero words={W} identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('[data-ms-hero]')).toBeTruthy();
     expect(container.querySelector('video')).toBeTruthy();
     expect(container.querySelector('[data-ms-hero-brand]')).toBeTruthy();
   });
 
   it('puts the authored story lines in the DOM (for the play-through to reveal one at a time) but renders them invisible at rest', () => {
-    const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<MomentHero words={W} identity={identity} moment={moment} skin={skin} />);
     const lines = container.querySelectorAll('[data-ms-hero-story-line]');
     expect(lines).toHaveLength(moment.story.length);
     expect(lines[0]!.textContent).toBe(moment.story[0]);
@@ -54,12 +59,12 @@ describe('MomentHero (the hero IS the front door, D54 corrected)', () => {
 
   it('renders no story-line frames when no story lines are authored', () => {
     const noStory = { ...moment, story: [] };
-    const { container } = render(<MomentHero identity={identity} moment={noStory} skin={skin} />);
+    const { container } = render(<MomentHero words={W} identity={identity} moment={noStory} skin={skin} />);
     expect(container.querySelectorAll('[data-ms-hero-story-line]')).toHaveLength(0);
   });
 
   it('does NOT mount a portable Moment intro overlay (the portable layer retired in D54)', () => {
-    const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<MomentHero words={W} identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('[data-moment-intro]')).toBeNull();
     expect(container.querySelector('[data-moment-enter]')).toBeNull();
     expect(container.querySelector('[data-spotlight-stage]')).toBeNull();
@@ -70,7 +75,7 @@ describe('MomentHero (the hero IS the front door, D54 corrected)', () => {
       ...moment,
       media: { ...moment.media, kind: 'still' as const, url: '/scene.jpg' },
     };
-    const { container } = render(<MomentHero identity={identity} moment={stillMoment} skin={skin} />);
+    const { container } = render(<MomentHero words={W} identity={identity} moment={stillMoment} skin={skin} />);
     expect(container.querySelector('img')).toBeTruthy();
     expect(container.querySelector('video')).toBeNull();
     // Class-only: the push-in animation is applied via the --push modifier on the
@@ -82,7 +87,7 @@ describe('MomentHero (the hero IS the front door, D54 corrected)', () => {
 
   it('lets a real logo sit beside the typographic wordmark — a true lockup, not a replacement, and bare (no plate)', () => {
     const withLogo = { ...identity, logoUrl: 'https://cdn/logo.png' };
-    const { container } = render(<MomentHero identity={withLogo} moment={moment} skin={skin} />);
+    const { container } = render(<MomentHero words={W} identity={withLogo} moment={moment} skin={skin} />);
     const logo = container.querySelector('img[data-ms-logo]') as HTMLImageElement | null;
     expect(logo?.getAttribute('src')).toBe('https://cdn/logo.png');
     expect(logo?.getAttribute('alt')).toBe('');
@@ -92,14 +97,14 @@ describe('MomentHero (the hero IS the front door, D54 corrected)', () => {
   });
 
   it('falls back to the typographic wordmark when the maker uploaded no logo', () => {
-    const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<MomentHero words={W} identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('img[data-ms-logo]')).toBeNull();
     const mark = container.querySelector('[data-type="wordmark"]') as HTMLElement;
     expect(mark.textContent).toContain("June's Sourdough");
   });
 
   it('renders nav links to real routes — never a dead "#" placeholder', () => {
-    const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<MomentHero words={W} identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('a[href="#"]')).toBeNull();
     expect(container.querySelector('a[href="/shop"]')).toBeTruthy();
     expect(container.querySelector('a[href="/about"]')).toBeTruthy();
@@ -113,7 +118,7 @@ describe('MomentHero (the hero IS the front door, D54 corrected)', () => {
     // action row and reads on any hero via the same on-media + text-shadow
     // pair the h1 uses.
     const m = { ...moment, ctaLabel: 'See the loaves', secondaryCtaLabel: 'Our story' };
-    const { container } = render(<MomentHero identity={identity} moment={m} skin={skin} />);
+    const { container } = render(<MomentHero words={W} identity={identity} moment={m} skin={skin} />);
     expect(container.querySelector('.ms-momenthero-cta')).toBeNull();
     expect(container.querySelector('.ms-momenthero-cta2')).toBeNull();
     expect(container.querySelector('.ms-momenthero-brand-actions')).toBeNull();
@@ -121,7 +126,7 @@ describe('MomentHero (the hero IS the front door, D54 corrected)', () => {
 
   it('renders the authored sub line in the brand block when present', () => {
     const m = { ...moment, sub: 'Naturally leavened, baked by hand every week' };
-    const { container } = render(<MomentHero identity={identity} moment={m} skin={skin} />);
+    const { container } = render(<MomentHero words={W} identity={identity} moment={m} skin={skin} />);
     const sub = container.querySelector('.ms-momenthero-brand-sub');
     expect(sub).toBeTruthy();
     expect(sub!.textContent).toBe('Naturally leavened, baked by hand every week');
@@ -129,7 +134,7 @@ describe('MomentHero (the hero IS the front door, D54 corrected)', () => {
 
   it('omits the sub line when the crew did not author one (legacy envelopes still parse)', () => {
     // moment fixture has no sub — element simply isn't rendered
-    const { container } = render(<MomentHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<MomentHero words={W} identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('.ms-momenthero-brand-sub')).toBeNull();
   });
 });
@@ -137,7 +142,7 @@ describe('MomentHero (the hero IS the front door, D54 corrected)', () => {
 describe('MomentHero — nav contrast (4c)', () => {
   it('gives the over-media nav a light surface for a dark logo (instead of staying transparent)', () => {
     const darkLogoIdentity = { ...identity, logoUrl: 'https://cdn/logo.png', logoTone: 'dark' as const };
-    const { container } = render(<MomentHero identity={darkLogoIdentity} moment={moment} skin={skin} />);
+    const { container } = render(<MomentHero words={W} identity={darkLogoIdentity} moment={moment} skin={skin} />);
     const nav = container.querySelector('[data-ms-nav]')!;
     const style = nav.getAttribute('style') ?? '';
     expect(style.includes('#F7F5F2') || style.includes('rgb(247, 245, 242)') || style.includes('rgb(247,245,242)')).toBe(true);

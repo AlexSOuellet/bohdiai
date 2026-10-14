@@ -27,6 +27,7 @@
 import type { ReactElement } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetView } from './schemas';
+import type { FamilyWords } from './words';
 import { MomentHero } from './MomentHero';
 import { SplitHero } from './SplitHero';
 import { StackedHero } from './StackedHero';
@@ -40,6 +41,8 @@ export interface HeroProps {
   identity: MainStreetView['identity'];
   moment: MainStreetView['moment'];
   skin: ArchetypeTheme;
+  /** The site's words (the nav's page names and labels). */
+  words: FamilyWords;
   /** Per-shop key (tenant id) for the Story hero's seen-cookie. Heroes that have
    *  no play-through (Split, etc.) ignore it. */
   momentKey?: string | undefined;
@@ -57,14 +60,14 @@ export const DEFAULT_HERO_VARIANT: HeroVariantKey = 'story';
 /** key → a render function over the shared HeroProps. Each entry pins its own
  *  structural knobs (e.g. Split's media side) so the recipe only picks a key. */
 export const HERO_CATALOG: Record<HeroVariantKey, (props: HeroProps) => ReactElement> = {
-  story: (p) => <MomentHero identity={p.identity} moment={p.moment} skin={p.skin} momentKey={p.momentKey} />,
-  split: (p) => <SplitHero identity={p.identity} moment={p.moment} skin={p.skin} mediaSide="right" />,
-  'split-left': (p) => <SplitHero identity={p.identity} moment={p.moment} skin={p.skin} mediaSide="left" />,
-  stacked: (p) => <StackedHero identity={p.identity} moment={p.moment} skin={p.skin} />,
-  typographic: (p) => <TypographicHero identity={p.identity} moment={p.moment} skin={p.skin} />,
-  'floating-card': (p) => <FloatingCardHero identity={p.identity} moment={p.moment} skin={p.skin} />,
-  'editorial-cover': (p) => <EditorialCoverHero identity={p.identity} moment={p.moment} skin={p.skin} />,
-  collage: (p) => <CollageHero identity={p.identity} moment={p.moment} skin={p.skin} />,
+  story: (p) => <MomentHero identity={p.identity} moment={p.moment} skin={p.skin} words={p.words} momentKey={p.momentKey} />,
+  split: (p) => <SplitHero identity={p.identity} moment={p.moment} skin={p.skin} words={p.words} mediaSide="right" />,
+  'split-left': (p) => <SplitHero identity={p.identity} moment={p.moment} skin={p.skin} words={p.words} mediaSide="left" />,
+  stacked: (p) => <StackedHero identity={p.identity} moment={p.moment} skin={p.skin} words={p.words} />,
+  typographic: (p) => <TypographicHero identity={p.identity} moment={p.moment} skin={p.skin} words={p.words} />,
+  'floating-card': (p) => <FloatingCardHero identity={p.identity} moment={p.moment} skin={p.skin} words={p.words} />,
+  'editorial-cover': (p) => <EditorialCoverHero identity={p.identity} moment={p.moment} skin={p.skin} words={p.words} />,
+  collage: (p) => <CollageHero identity={p.identity} moment={p.moment} skin={p.skin} words={p.words} />,
 };
 
 /** Resolve a (possibly unknown) variant key to a hero render function. Falls

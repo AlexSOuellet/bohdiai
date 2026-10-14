@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { EstimateForm, checkEstimate, MAX_PHOTO_BYTES } from './EstimateForm';
-import { CONTRACTOR_STRINGS } from './strings';
+import { fill, keyWords } from '@/lib/site-words/words';
+import { CONTRACTOR_WORD_SPOTS, CONTRACTOR_WORDS_PREFIX } from './words';
 
-const S = CONTRACTOR_STRINGS.form;
+const S = keyWords(CONTRACTOR_WORD_SPOTS, CONTRACTOR_WORDS_PREFIX).form;
 const TENANT = '4b8f0f5e-8f3a-4a57-9a8e-1f2d3c4b5a69';
 
 afterEach(() => {
@@ -18,7 +19,7 @@ function photo(name: string, type = 'image/jpeg', size = 10): File {
 }
 
 function renderForm() {
-  render(<EstimateForm tenantId={TENANT} services={['Grading', 'Drainage']} states={['Rhode Island', 'Massachusetts']} />);
+  render(<EstimateForm tenantId={TENANT} services={['Grading', 'Drainage']} states={['Rhode Island', 'Massachusetts']} words={S} />);
   fireEvent.change(screen.getByLabelText(S.name), { target: { value: 'Pat' } });
   fireEvent.change(screen.getByLabelText(S.email), { target: { value: 'pat@example.com' } });
 }
@@ -33,12 +34,12 @@ function submit(): void {
 
 describe('checkEstimate — photo size', () => {
   it('refuses a photo over the size cap', () => {
-    expect(checkEstimate({ name: 'Pat', phone: '1', email: '' }, [photo('big.jpg', 'image/jpeg', MAX_PHOTO_BYTES + 1)])).toBe(S.errorPhotoTooBig);
-    expect(checkEstimate({ name: 'Pat', phone: '1', email: '' }, [photo('ok.jpg', 'image/jpeg', MAX_PHOTO_BYTES)])).toBeNull();
+    expect(checkEstimate({ name: 'Pat', phone: '1', email: '' }, [photo('big.jpg', 'image/jpeg', MAX_PHOTO_BYTES + 1)], S)).toBe(S.errorPhotoTooBig);
+    expect(checkEstimate({ name: 'Pat', phone: '1', email: '' }, [photo('ok.jpg', 'image/jpeg', MAX_PHOTO_BYTES)], S)).toBeNull();
   });
 
   it('treats a whitespace-only name as missing', () => {
-    expect(checkEstimate({ name: '   ', phone: '1', email: '' }, [])).toBe(S.errorName);
+    expect(checkEstimate({ name: '   ', phone: '1', email: '' }, [], S)).toBe(S.errorName);
   });
 });
 
@@ -48,7 +49,7 @@ describe('EstimateForm — photos', () => {
     vi.stubGlobal('fetch', fetchMock);
     renderForm();
     choosePhotos([photo('a.jpg'), photo('b.png', 'image/png')]);
-    expect(screen.getByText(S.photosChosen(2))).toBeTruthy();
+    expect(screen.getByText(fill(S.photosChosen, { n: 2 }))).toBeTruthy();
     expect(screen.queryByRole('alert')).toBeNull();
     submit();
     await waitFor(() => expect(screen.getByText(S.successTitle)).toBeTruthy());
@@ -74,9 +75,9 @@ describe('EstimateForm — photos', () => {
     expect(screen.getByRole('alert').textContent).toBe(S.errorPhotoTooBig);
     choosePhotos([photo('ok.jpg')]);
     expect(screen.queryByRole('alert')).toBeNull();
-    expect(screen.getByText(S.photosChosen(1))).toBeTruthy();
+    expect(screen.getByText(S.photosChosenOne)).toBeTruthy();
     choosePhotos(null);
-    expect(screen.queryByText(S.photosChosen(1))).toBeNull();
+    expect(screen.queryByText(S.photosChosenOne)).toBeNull();
   });
 });
 
@@ -126,7 +127,7 @@ describe('EstimateForm — sending and the result', () => {
   it('never sends without a name', () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
-    render(<EstimateForm tenantId={TENANT} services={[]} states={[]} />);
+    render(<EstimateForm tenantId={TENANT} services={[]} states={[]} words={S} />);
     fireEvent.change(screen.getByLabelText(S.phone), { target: { value: '401 555 0100' } });
     submit();
     expect(screen.getByRole('alert').textContent).toBe(S.errorName);

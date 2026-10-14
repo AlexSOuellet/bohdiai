@@ -18,16 +18,20 @@ import type { MainStreetView } from './schemas';
 import { Media } from './chrome';
 import { Type } from './Type';
 import { GoodsHead, type GoodsViewAll } from './beats';
+import type { FamilyWords } from './words';
 
 export function GoodsSwitcher({
   goods,
   products,
   skin,
+  words,
   viewAll,
 }: {
   goods: MainStreetView['goods'];
   products: ProductView[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: GoodsViewAll | undefined;
 }) {
   const [active, setActive] = useState(0);
@@ -49,7 +53,7 @@ export function GoodsSwitcher({
           ))}
           {current && (
             <Type as="span" role="price" className="ms-switch-price-tag">
-              {priceLabel(current)}
+              {priceLabel(current, words)}
             </Type>
           )}
         </div>
@@ -70,7 +74,7 @@ export function GoodsSwitcher({
                       {p.name}
                     </Type>
                     <Type as="span" role="price" className="ms-switch-price">
-                      {priceLabel(p)}
+                      {priceLabel(p, words)}
                     </Type>
                   </span>
                   {on && p.shortDescription && (

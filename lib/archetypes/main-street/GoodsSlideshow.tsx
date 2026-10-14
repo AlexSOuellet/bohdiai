@@ -17,7 +17,8 @@ import type { MainStreetView } from './schemas';
 import { Media } from './chrome';
 import { Type } from './Type';
 import { GoodsHead, type GoodsViewAll } from './beats';
-import { DEFAULT_STRINGS } from './defaults';
+
+import type { FamilyWords } from './words';
 
 const DWELL_MS = 3200;
 
@@ -25,11 +26,14 @@ export function GoodsSlideshow({
   goods,
   products,
   skin,
+  words,
   viewAll,
 }: {
   goods: MainStreetView['goods'];
   products: ProductView[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: GoodsViewAll | undefined;
 }) {
   const [active, setActive] = useState(0);
@@ -92,10 +96,10 @@ export function GoodsSlideshow({
             )}
           </div>
           <Type as="span" role="price" className="ms-slide-price">
-            {current !== undefined && priceLabel(current)}
+            {current !== undefined && priceLabel(current, words)}
           </Type>
         </a>
-        <div role="tablist" aria-label={DEFAULT_STRINGS.ariaSlides} className="ms-slide-dots">
+        <div role="tablist" aria-label={words.ariaSlides} className="ms-slide-dots">
           {products.map((p, i) => (
             <button
               key={p.slug}

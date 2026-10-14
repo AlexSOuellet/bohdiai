@@ -24,7 +24,8 @@ import { useEffect, useState } from 'react';
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import type { ReviewsSection, Testimonial } from './reviews';
-import { DEFAULT_COUNTS } from './defaults';
+import { fill } from '@/lib/site-words/words';
+import type { FamilyWords } from './words';
 
 /** How long a voice holds before the stage advances (ms). Slow and deliberate,
  *  in the spirit of the hero's pace — long enough to read the quote once. */
@@ -41,11 +42,14 @@ export function ReviewsPullQuote({
   section,
   items,
   skin: _skin,
+  words,
   viewAll,
 }: {
   section: ReviewsSection;
   items: Testimonial[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: { href: string; label: string } | undefined;
 }) {
   const [active, setActive] = useState(0);
@@ -99,7 +103,7 @@ export function ReviewsPullQuote({
               <button
                 key={i}
                 type="button"
-                aria-label={DEFAULT_COUNTS.showTestimonial(i + 1)}
+                aria-label={fill(words.showTestimonial, { n: i + 1 })}
                 className={i === active ? 'ms-rev-pq-dot on' : 'ms-rev-pq-dot'}
                 onClick={() => setActive(i)}
               />

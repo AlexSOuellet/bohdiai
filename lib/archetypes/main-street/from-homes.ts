@@ -20,7 +20,9 @@ import { listTestimonials } from '@/lib/backend/testimonials/queries';
 import type { Testimonial } from '@/lib/backend/testimonials/testimonial-form';
 import { listMarketDates } from '@/lib/backend/dates/queries';
 import type { MarketDate } from '@/lib/backend/dates/dates-form';
-import { DATE_LOCALE, DEFAULT_COUNTS } from './defaults';
+import { fill } from '@/lib/site-words/words';
+import { findUsLocale } from './findus';
+import type { FamilyWords } from './words';
 import type { MainStreetView } from './schemas';
 
 /** Everything a family page reads, gathered from the homes. */
@@ -38,29 +40,35 @@ export type FamilyHomes = {
 
 const orUndefined = (s: string): string | undefined => (s === '' ? undefined : s);
 
-/** A market's day as a family page writes it: "Sat Oct 11", or a range. */
-export function familyMarketDay(d: Pick<MarketDate, 'date' | 'endDate'>): string {
+/** A market's day as a family page writes it, in the site's words: "Sat Oct 11", or a range. */
+export function familyMarketDay(d: Pick<MarketDate, 'date' | 'endDate'>, w: FamilyWords): string {
   const one = (date: string): string => {
-    const parts = new Intl.DateTimeFormat(DATE_LOCALE, { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).formatToParts(
+    const parts = new Intl.DateTimeFormat(findUsLocale(w.dateLocale), { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).formatToParts(
       new Date(`${date}T00:00:00Z`),
     );
     const part = (type: Intl.DateTimeFormatPartTypes): string => parts.find((p) => p.type === type)?.value ?? '';
-    return DEFAULT_COUNTS.marketDay(part('weekday'), part('month'), part('day'));
+    return fill(w.marketDay, { weekday: part('weekday'), month: part('month'), day: part('day') });
   };
-  return d.endDate === '' ? one(d.date) : DEFAULT_COUNTS.marketRange(one(d.date), one(d.endDate));
+  return d.endDate === '' ? one(d.date) : fill(w.marketRange, { first: one(d.date), last: one(d.endDate) });
+}
+
+/** Where a market is, in the site's words: "Wickford Art Festival, Wickford", marked when canceled. */
+function marketWhere(d: MarketDate, w: FamilyWords): string {
+  const market = d.canceled ? fill(w.marketCanceled, { market: d.name }) : d.name;
+  return d.town === '' ? market : fill(w.marketWhere, { market, town: d.town });
 }
 
 type FindUs = NonNullable<MainStreetView['founder']['findUs']>;
 
-function findUsFrom(markets: SectionWords, dates: readonly MarketDate[]): FindUs | undefined {
+function findUsFrom(markets: SectionWords, dates: readonly MarketDate[], w: FamilyWords): FindUs | undefined {
   if (dates.length === 0) return undefined;
   return {
     label: markets.title,
     title: orUndefined(markets.pageTitle),
     eventsLabel: orUndefined(markets.moreLabel),
     rows: dates.map((d) => ({
-      day: familyMarketDay(d),
-      where: DEFAULT_COUNTS.marketWhere(d.canceled ? DEFAULT_COUNTS.marketCanceled(d.name) : d.name, d.town),
+      day: familyMarketDay(d, w),
+      where: marketWhere(d, w),
       time: d.hours,
       date: d.date,
     })),
@@ -72,7 +80,8 @@ function paragraphs(bio: string): string[] {
   return bio.split(/\n\s*\n/).map((p) => p.trim()).filter((p) => p !== '');
 }
 
-export function familyViewFromHomes(h: FamilyHomes): MainStreetView {
+/** A family page's view from the homes; `w` is the site's words, for its market dates. */
+export function familyViewFromHomes(h: FamilyHomes, w: FamilyWords): MainStreetView {
   const { moment: m, sections: s, profile: p } = h;
   const story = paragraphs(p.bio);
   return {
@@ -116,7 +125,7 @@ export function familyViewFromHomes(h: FamilyHomes): MainStreetView {
       heading: orUndefined(s.about.title),
       photo: { url: h.portraitUrl ?? undefined, alt: '' },
       aboutLabel: orUndefined(s.about.moreLabel),
-      findUs: findUsFrom(s.markets, h.dates),
+      findUs: findUsFrom(s.markets, h.dates, w),
     },
     close: {
       label: s.close.kicker,

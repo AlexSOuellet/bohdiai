@@ -22,17 +22,21 @@
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import type { ReviewsSection, Testimonial } from './reviews';
-import { DEFAULT_STRINGS } from './defaults';
+
+import type { FamilyWords } from './words';
 
 export function ReviewsTexts({
   section,
   items,
   skin: _skin,
+  words,
   viewAll,
 }: {
   section: ReviewsSection;
   items: Testimonial[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: { href: string; label: string } | undefined;
 }) {
   return (
@@ -66,7 +70,7 @@ export function ReviewsTexts({
           ))}
         </div>
         <Type as="p" role="legal" className="ms-rev-texts-foot">
-          {DEFAULT_STRINGS.testimonialsTextsAttribution}
+          {words.testimonialsTextsAttribution}
         </Type>
         {viewAll && (
           <a href={viewAll.href} data-ms-rev-viewall="" className="ms-rev-texts-viewall">

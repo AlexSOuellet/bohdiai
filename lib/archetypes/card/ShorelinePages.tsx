@@ -3,12 +3,13 @@
  * & Lace demo spec, stage two). Same bay locked behind every page; the home gets
  * the tall sky, the other pages a short title over the same sky. Pages: Home, Shop,
  * a page per product, About, Markets, Contact. Every word the maker wrote comes
- * from her data; the renderer adds only CARD_STRINGS.
+ * from her data, and every other word is the site's own (`site.card.words`).
  */
 import type { ReactElement } from 'react';
 import Link from 'next/link';
 import type { ProductView } from '@/lib/archetypes/content';
-import { CARD_STRINGS as S } from './strings';
+import { fill } from '@/lib/site-words/words';
+import type { CardWords } from './words';
 import { CardContactForm } from './CardContactForm';
 import { AddToCartButton, PromoCodeForm, RemoveFromCartButton, SyncCart } from '@/lib/storefront/CartControls';
 import { ShorelineCartLink } from './ShorelineCartLink';
@@ -17,22 +18,24 @@ import { ShorelineMarketBuyer } from './ShorelineMarketBuyer';
 import { ShorelineOrderForm } from './ShorelineOrderForm';
 import { PhotoViewerProvider, Snapshot } from './PhotoViewer';
 import { Frame, Footer, nameParts } from './ShorelineLanding';
-import { bioParagraphs, initials, marketDay, type CardData } from './data';
+import { bioParagraphs, initials, marketDay, marketName, photoLabel, type CardData } from './data';
 import { featuredProducts, type ShorelineData } from './shoreline-data';
 import type { MarketDate } from '@/lib/backend/dates/dates-form';
 import type { Testimonial } from '@/lib/backend/testimonials/testimonial-form';
 
-const W = S.shoreline;
-
 export type ShorelinePage = 'home' | 'shop' | 'about' | 'events' | 'contact' | 'testimonials' | 'collection';
 
-const NAV: readonly { page: ShorelinePage; href: string; label: string }[] = [
-  { page: 'home', href: '/', label: W.nav.home },
-  { page: 'shop', href: '/shop', label: W.nav.shop },
-  { page: 'about', href: '/about', label: W.nav.about },
-  { page: 'events', href: '/events', label: W.nav.markets },
-  { page: 'contact', href: '/contact', label: W.nav.contact },
-];
+type SW = CardWords['shoreline'];
+
+function nav(W: SW): { page: ShorelinePage; href: string; label: string }[] {
+  return [
+    { page: 'home', href: '/', label: W.nav.home },
+    { page: 'shop', href: '/shop', label: W.nav.shop },
+    { page: 'about', href: '/about', label: W.nav.about },
+    { page: 'events', href: '/events', label: W.nav.markets },
+    { page: 'contact', href: '/contact', label: W.nav.contact },
+  ];
+}
 
 function Name({ name }: { name: string }): ReactElement {
   return (
@@ -44,12 +47,12 @@ function Name({ name }: { name: string }): ReactElement {
   );
 }
 
-function SaleBanner({ sale }: { sale: ShorelineData['sale'] }): ReactElement | null {
+function SaleBanner({ sale, W }: { sale: ShorelineData['sale']; W: SW }): ReactElement | null {
   if (sale === null) return null;
-  return <p className="sl-sale">{W.saleBanner(sale.name, sale.off)}</p>;
+  return <p className="sl-sale">{fill(W.saleBanner, { name: sale.name, off: sale.off })}</p>;
 }
 
-function Bar({ name, current, cart = false }: { name: string; current: ShorelinePage | 'cart' | null; cart?: boolean }): ReactElement {
+function Bar({ name, current, cart = false, W }: { name: string; current: ShorelinePage | 'cart' | null; cart?: boolean; W: SW }): ReactElement {
   return (
     <header className="sl-bar">
       <Link className="sl-bar-name" href="/">
@@ -57,7 +60,7 @@ function Bar({ name, current, cart = false }: { name: string; current: Shoreline
       </Link>
       <nav aria-label={W.nav.label}>
         <ul className="sl-nav">
-          {NAV.map((n) => (
+          {nav(W).map((n) => (
             <li key={n.page}>
               <a href={n.href} aria-current={n.page === current ? 'page' : undefined}>
                 {n.label}
@@ -66,7 +69,7 @@ function Bar({ name, current, cart = false }: { name: string; current: Shoreline
           ))}
           {cart && (
             <li>
-              <ShorelineCartLink />
+              <ShorelineCartLink w={W.cart} />
             </li>
           )}
         </ul>
@@ -84,7 +87,7 @@ function PageHead({ title }: { title: string }): ReactElement {
 }
 
 /** One product as a print over the water, linking to its page, with its price or "Ask for price". */
-function ProductPrint({ product, eager, newTag }: { product: ProductView; eager: boolean; newTag: boolean }): ReactElement {
+function ProductPrint({ product, eager, newTag, W }: { product: ProductView; eager: boolean; newTag: boolean; W: SW }): ReactElement {
   const photo = product.media.find((m) => m.kind === 'image' && m.url !== undefined);
   return (
     <li>
@@ -101,14 +104,14 @@ function ProductPrint({ product, eager, newTag }: { product: ProductView; eager:
         <span className="sl-label">
           {newTag && product.isNew === true && <em className="sl-new">{W.newTag}</em>}
           <span>{product.name}</span>
-          <Price product={product} />
+          <Price product={product} W={W} />
         </span>
       </a>
     </li>
   );
 }
 
-function Price({ product }: { product: ProductView }): ReactElement {
+function Price({ product, W }: { product: ProductView; W: SW }): ReactElement {
   if (product.askForPrice === true) return <em className="sl-price sl-price--ask">{W.askForPrice}</em>;
   if (product.salePrice !== undefined) {
     return (
@@ -124,17 +127,18 @@ function Price({ product }: { product: ProductView }): ReactElement {
   return <strong className="sl-price">{product.price}</strong>;
 }
 
-function Prints({ products, newTag = false }: { products: readonly ProductView[]; newTag?: boolean }): ReactElement {
+function Prints({ products, newTag = false, W }: { products: readonly ProductView[]; newTag?: boolean; W: SW }): ReactElement {
   return (
     <ul className="sl-prints">
       {products.map((p, i) => (
-        <ProductPrint key={p.slug} product={p} eager={i < 3} newTag={newTag} />
+        <ProductPrint key={p.slug} product={p} eager={i < 3} newTag={newTag} W={W} />
       ))}
     </ul>
   );
 }
 
-function TideTable({ dates }: { dates: readonly MarketDate[] }): ReactElement {
+function TideTable({ dates, w }: { dates: readonly MarketDate[]; w: CardWords }): ReactElement {
+  const W = w.shoreline;
   return (
     <table>
       <caption>{W.find}</caption>
@@ -148,8 +152,8 @@ function TideTable({ dates }: { dates: readonly MarketDate[] }): ReactElement {
       <tbody>
         {dates.map((d) => (
           <tr key={d.id} className={d.canceled ? 'sl-gone' : undefined}>
-            <td>{marketDay(d)}</td>
-            <td>{d.canceled ? S.dates.canceled(d.name) : d.name}</td>
+            <td>{marketDay(d, w.dates)}</td>
+            <td>{marketName(d, w.dates)}</td>
             <td>{d.town}</td>
           </tr>
         ))}
@@ -179,6 +183,7 @@ function Quotes({ items }: { items: readonly Testimonial[] }): ReactElement {
 const HOME_QUOTES = 3;
 
 function Home({ site }: { site: ShorelineData }): ReactElement {
+  const W = site.card.words.shoreline;
   const { card } = site;
   const p = card.profile;
   const bio = bioParagraphs(p.bio);
@@ -205,7 +210,7 @@ function Home({ site }: { site: ShorelineData }): ReactElement {
             <h2 className="sl-section-h" id="sl-featured">
               {W.featured}
             </h2>
-            <Prints products={featured} newTag={site.newArrivals} />
+            <Prints products={featured} newTag={site.newArrivals} W={W} />
             <div className="sl-more">
               <a href="/shop">{W.seeShop}</a>
             </div>
@@ -242,7 +247,7 @@ function Home({ site }: { site: ShorelineData }): ReactElement {
             )}
             {soon.length > 0 && (
               <section className="sl-tide">
-                <TideTable dates={soon} />
+                <TideTable dates={soon} w={card.words} />
                 <div className="sl-more">
                   <a href="/events">{W.allMarkets}</a>
                 </div>
@@ -251,7 +256,7 @@ function Home({ site }: { site: ShorelineData }): ReactElement {
           </div>
         )}
         <div className="sl-more">
-          <a href="/contact">{W.writeCta(p.signature)}</a>
+          <a href="/contact">{p.signature === '' ? W.writeCtaNoName : fill(W.writeCta, { name: p.signature })}</a>
         </div>
       </main>
     </>
@@ -260,6 +265,7 @@ function Home({ site }: { site: ShorelineData }): ReactElement {
 
 /** Her collections as a row of links over the shelf: All, then each one. */
 function CollectionLinks({ site, current }: { site: ShorelineData; current: string | null }): ReactElement | null {
+  const W = site.card.words.shoreline;
   if (site.collections.length === 0) return null;
   return (
     <nav className="sl-cols" aria-label={W.collectionsLabel}>
@@ -278,18 +284,20 @@ function CollectionLinks({ site, current }: { site: ShorelineData; current: stri
 /** The shop opens like the home page's pieces: the dusk band, "From the shelf", then
  *  everything, or one collection when she's browsing by collection. */
 function Shop({ site, collection = null }: { site: ShorelineData; collection?: string | null }): ReactElement {
+  const W = site.card.words.shoreline;
   const chosen = collection === null ? null : (site.collections.find((c) => c.slug === collection) ?? null);
   const products = chosen === null ? site.products : chosen.products;
   return (
     <main id="main" className="sl-water sl-featured sl-featured--page">
       <h1 className="sl-section-h">{chosen === null ? W.featured : chosen.name}</h1>
       <CollectionLinks site={site} current={chosen?.slug ?? null} />
-      {products.length > 0 ? <Prints products={products} newTag={site.newArrivals} /> : <p className="sl-empty">{W.emptyShop}</p>}
+      {products.length > 0 ? <Prints products={products} newTag={site.newArrivals} W={W} /> : <p className="sl-empty">{W.emptyShop}</p>}
     </main>
   );
 }
 
 function About({ site }: { site: ShorelineData }): ReactElement {
+  const W = site.card.words.shoreline;
   const p = site.card.profile;
   return (
     <>
@@ -317,6 +325,7 @@ function directionsUrl(address: string): string {
 }
 
 function Markets({ site }: { site: ShorelineData }): ReactElement {
+  const W = site.card.words.shoreline;
   return (
     <>
       <PageHead title={W.pageTitles.markets} />
@@ -334,8 +343,8 @@ function Markets({ site }: { site: ShorelineData }): ReactElement {
               ].filter((f) => f !== '');
               return (
                 <li key={d.id} className={d.canceled ? 'sl-market sl-market--gone' : 'sl-market'}>
-                  <span className="sl-market-day">{marketDay(d)}</span>
-                  <h2>{d.canceled ? S.dates.canceled(d.name) : d.name}</h2>
+                  <span className="sl-market-day">{marketDay(d, site.card.words.dates)}</span>
+                  <h2>{marketName(d, site.card.words.dates)}</h2>
                   {facts.length > 0 && (
                     <p className="sl-market-facts">
                       {facts.map((f) => (
@@ -376,15 +385,17 @@ function Letter({
   tenantId: string;
   initialMessage?: string;
 }): ReactElement {
+  const W = card.words.shoreline;
   return (
     <section className="sl-letter" id="write">
       <span className="sl-seal" aria-hidden="true">
         {initials(card.name)}
       </span>
-      <h2>{W.touch(card.profile.signature)}</h2>
+      <h2>{card.profile.signature === '' ? W.touchNoName : fill(W.touch, { name: card.profile.signature })}</h2>
       <p>{W.lede}</p>
       <CardContactForm
         tenantId={tenantId}
+        w={card.words.form}
         {...(initialMessage !== undefined ? { initialMessage } : {})}
       />
     </section>
@@ -392,6 +403,7 @@ function Letter({
 }
 
 function Contact({ site, tenantId }: { site: ShorelineData; tenantId: string }): ReactElement {
+  const W = site.card.words.shoreline;
   return (
     <>
       <PageHead title={W.pageTitles.contact} />
@@ -403,6 +415,7 @@ function Contact({ site, tenantId }: { site: ShorelineData; tenantId: string }):
 }
 
 function Testimonials({ site }: { site: ShorelineData }): ReactElement {
+  const W = site.card.words.shoreline;
   return (
     <main id="main" className="sl-water sl-featured sl-featured--page">
       <h1 className="sl-section-h">{W.kindWords}</h1>
@@ -425,10 +438,11 @@ export function ShorelineSite({
   collection?: string | null;
   platformCredit?: boolean;
 }): ReactElement {
+  const W = site.card.words.shoreline;
   return (
     <Frame>
-      <Bar name={site.card.name} current={page} cart={site.cart} />
-      <SaleBanner sale={site.sale} />
+      <Bar name={site.card.name} current={page} cart={site.cart} W={W} />
+      <SaleBanner sale={site.sale} W={W} />
       {page === 'home' && <Home site={site} />}
       {page === 'shop' && <Shop site={site} />}
       {page === 'collection' && <Shop site={site} collection={collection} />}
@@ -436,7 +450,7 @@ export function ShorelineSite({
       {page === 'events' && <Markets site={site} />}
       {page === 'contact' && <Contact site={site} tenantId={tenantId} />}
       {page === 'testimonials' && <Testimonials site={site} />}
-      <Footer name={site.card.name} platformCredit={platformCredit} social={site.card.profile} />
+      <Footer name={site.card.name} platformCredit={platformCredit} social={site.card.profile} w={site.card.words} />
     </Frame>
   );
 }
@@ -460,17 +474,18 @@ export function ShorelineProduct({
       ? [{ id: `${product.slug}-${i}`, url: m.url, caption: m.alt === '' ? product.name : m.alt }]
       : [],
   );
+  const W = site.card.words.shoreline;
   return (
     <Frame>
-      <Bar name={site.card.name} current="shop" cart={site.cart} />
-      <SaleBanner sale={site.sale} />
+      <Bar name={site.card.name} current="shop" cart={site.cart} W={W} />
+      <SaleBanner sale={site.sale} W={W} />
       <div className="sl-head">
         <a className="sl-back" href="/shop">
           ← {W.backToShop}
         </a>
       </div>
       <main id="main">
-        <PhotoViewerProvider photos={photos}>
+        <PhotoViewerProvider photos={photos} w={site.card.words.lightbox}>
           <article className="sl-product">
             {photos.length > 0 && (
               <div className="sl-product-photos">
@@ -479,7 +494,7 @@ export function ShorelineProduct({
                     key={ph.id}
                     index={i}
                     className="sl-print"
-                    label={S.work.open(ph.caption, i + 1)}
+                    label={photoLabel(ph.caption, i + 1, site.card.words.work)}
                   >
                     {/* The owner's own upload, already shrunk at upload. */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -495,7 +510,7 @@ export function ShorelineProduct({
                   <p className="sl-product-price sl-product-price--ask">{W.askForPrice}</p>
                 ) : (
                   <p className="sl-product-price">
-                    <Price product={product} />
+                    <Price product={product} W={W} />
                   </p>
                 )}
                 {product.shortDescription !== undefined && product.shortDescription !== '' && (
@@ -514,13 +529,13 @@ export function ShorelineProduct({
               <Letter
                 card={site.card}
                 tenantId={tenantId}
-                initialMessage={W.askMessage(product.name)}
+                initialMessage={fill(W.askMessage, { name: product.name })}
               />
             </div>
           </article>
         </PhotoViewerProvider>
       </main>
-      <Footer name={site.card.name} platformCredit={platformCredit} social={site.card.profile} />
+      <Footer name={site.card.name} platformCredit={platformCredit} social={site.card.profile} w={site.card.words} />
     </Frame>
   );
 }
@@ -528,13 +543,14 @@ export function ShorelineProduct({
 /** The cart (Full): her pieces priced from the catalog, a discount code when promotions
  *  are on, the sums, and the letter that sends the order. Nothing is charged. */
 export function ShorelineCart({ site, cart, platformCredit = true }: { site: ShorelineData; cart: CartView; platformCredit?: boolean }): ReactElement {
+  const W = site.card.words.shoreline;
   const C = W.cart;
   const ready = cart.lines.filter((l) => l.available);
   const blocked = ready.length !== cart.lines.length;
   return (
     <Frame>
-      <Bar name={site.card.name} current="cart" cart />
-      <SaleBanner sale={site.sale} />
+      <Bar name={site.card.name} current="cart" cart W={W} />
+      <SaleBanner sale={site.sale} W={W} />
       <SyncCart ids={cart.lines.map((l) => l.id)} />
       <PageHead title={C.title} />
       <main id="main" className="sl-cart">
@@ -568,7 +584,7 @@ export function ShorelineCart({ site, cart, platformCredit = true }: { site: Sho
                         </>
                       )}
                     </span>
-                    <RemoveFromCartButton listingId={l.id} className="sl-cart-out" label={C.remove} ariaLabel={C.removeLabel(l.name)} />
+                    <RemoveFromCartButton listingId={l.id} className="sl-cart-out" label={C.remove} ariaLabel={fill(C.removeLabel, { name: l.name })} />
                   </li>
                 ))}
               </ul>
@@ -576,7 +592,7 @@ export function ShorelineCart({ site, cart, platformCredit = true }: { site: Sho
                 <div className="sl-cart-code">
                   <PromoCodeForm current={cart.code?.value ?? null} className="sl-code" labels={{ field: C.codeField, apply: C.codeApply, applying: C.codeApplying, remove: C.codeRemove }} />
                   {cart.code !== undefined && (
-                    <p role={cart.code.applied ? 'status' : 'alert'}>{cart.code.applied ? C.codeApplied(cart.code.value) : (cart.code.message ?? '')}</p>
+                    <p role={cart.code.applied ? 'status' : 'alert'}>{cart.code.applied ? fill(C.codeApplied, { code: cart.code.value }) : (cart.code.message ?? '')}</p>
                   )}
                 </div>
               )}
@@ -588,7 +604,7 @@ export function ShorelineCart({ site, cart, platformCredit = true }: { site: Sho
                       <dd>{cart.subtotal}</dd>
                     </div>
                     <div>
-                      <dt>{C.discount(cart.discount.label)}</dt>
+                      <dt>{cart.discount.label}</dt>
                       <dd>−{cart.discount.amount}</dd>
                     </div>
                   </>
@@ -607,13 +623,13 @@ export function ShorelineCart({ site, cart, platformCredit = true }: { site: Sho
                   {C.fix}
                 </p>
               ) : (
-                <ShorelineOrderForm listingIds={ready.map((l) => l.id)} code={cart.code?.applied === true ? cart.code.value : null} />
+                <ShorelineOrderForm listingIds={ready.map((l) => l.id)} code={cart.code?.applied === true ? cart.code.value : null} w={C} honeypot={site.card.words.form.honeypot} />
               )}
             </section>
           </div>
         )}
       </main>
-      <Footer name={site.card.name} platformCredit={platformCredit} social={site.card.profile} />
+      <Footer name={site.card.name} platformCredit={platformCredit} social={site.card.profile} w={site.card.words} />
     </Frame>
   );
 }
@@ -631,6 +647,7 @@ export function ShorelineMarket({
   /** Accepted like every page, but unused: the market page has no footer. */
   platformCredit?: boolean;
 }): ReactElement {
+  const W = site.card.words.shoreline;
   const M = W.market;
   const day = marketDay({
     id: market.marketId,
@@ -643,8 +660,8 @@ export function ShorelineMarket({
     booth: market.booth,
     url: '',
     canceled: market.state === 'canceled',
-  });
-  const where = M.where(market.town, market.booth);
+  }, site.card.words.dates);
+  const where = [market.town, market.booth].filter((x) => x !== '').join(M.separator);
   return (
     <Frame>
       <header className="sl-bar">
@@ -652,12 +669,12 @@ export function ShorelineMarket({
           <Name name={site.card.name} />
         </span>
       </header>
-      <SaleBanner sale={site.sale} />
+      <SaleBanner sale={site.sale} W={W} />
       <PageHead title={market.name} />
       <main id="main" className="sl-mk">
         <p className="sl-mk-when">
           {day}
-          {where !== '' && ` · ${where}`}
+          {where !== '' && `${M.separator}${where}`}
         </p>
         {market.state === 'open' &&
           (market.methods.length === 0 ? (
@@ -668,13 +685,14 @@ export function ShorelineMarket({
                 marketId={market.marketId}
                 pieces={market.pieces}
                 methods={market.methods}
+                w={M}
               />
             </div>
           ))}
         {market.state === 'before' && (
           <>
             <p className="sl-mk-lede">{M.before}</p>
-            {market.pieces.length > 0 ? <Prints products={market.pieces} /> : <p className="sl-empty">{M.none}</p>}
+            {market.pieces.length > 0 ? <Prints products={market.pieces} W={W} /> : <p className="sl-empty">{M.none}</p>}
             <p className="sl-empty">
               <a className="sl-btn" href="/shop">
                 {M.toShop}

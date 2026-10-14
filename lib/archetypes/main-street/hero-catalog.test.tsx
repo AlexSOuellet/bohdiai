@@ -2,6 +2,11 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
 import { resolveHero, HERO_CATALOG, DEFAULT_HERO_VARIANT, type HeroProps } from './hero-catalog';
 import { MAIN_STREET_SKINS } from './skins';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 const props: HeroProps = {
@@ -20,6 +25,7 @@ const props: HeroProps = {
     ctaTarget: 'shop',
   },
   skin,
+  words: W,
 };
 
 afterEach(cleanup);

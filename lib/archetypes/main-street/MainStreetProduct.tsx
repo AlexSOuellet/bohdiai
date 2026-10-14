@@ -17,7 +17,7 @@ import type { CatalogMedia, ProductView } from '../content';
 import type { MainStreetView } from './schemas';
 import { MainStreetRoot, MainStreetFooter, Nav } from './chrome';
 import { Type } from './Type';
-import { DEFAULT_STRINGS } from './defaults';
+import type { FamilyWords } from './words';
 import { ProductOptions } from './ProductOptions';
 import type { Family } from './families';
 
@@ -56,11 +56,14 @@ export function MainStreetProduct({
   content,
   product,
   skin,
+  words,
   family,
 }: {
   content: MainStreetView;
   product: ProductView;
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   family?: Family | undefined;
 }) {
   const primary = product.media[0];
@@ -72,7 +75,7 @@ export function MainStreetProduct({
   return (
     <MainStreetRoot skin={skin} family={family}>
       <nav data-ms-nav className="ms-product-nav">
-        <Nav identity={content.identity} currentHref="/shop" />
+        <Nav identity={content.identity} words={words} currentHref="/shop" />
       </nav>
       <main className="ms-wrap ms-product-section">
         <section className="ms-product-grid">
@@ -96,7 +99,7 @@ export function MainStreetProduct({
               </Type>
             )}
             {product.variations.length > 0 ? (
-              <ProductOptions variations={product.variations} offers={product.offers ?? []} fallbackPrice={product.price} askHref={sellsOnline ? undefined : ASK_HREF} />
+              <ProductOptions variations={product.variations} offers={product.offers ?? []} fallbackPrice={product.price} words={words} askHref={sellsOnline ? undefined : ASK_HREF} />
             ) : (
               <>
                 <Type as="div" role="title" className="ms-product-price">
@@ -112,11 +115,11 @@ export function MainStreetProduct({
                       className="ms-product-cta"
                       data-soldout={soldOut ? 'true' : 'false'}
                     >
-                      {soldOut ? DEFAULT_STRINGS.productSoldOut : DEFAULT_STRINGS.productAddToCart}
+                      {soldOut ? words.productSoldOut : words.productAddToCart}
                     </Type>
                   ) : (
                     <Type as="a" role="navLabel" href={ASK_HREF} className="ms-product-cta" data-soldout="false">
-                      {DEFAULT_STRINGS.productAskAbout}
+                      {words.productAskAbout}
                     </Type>
                   )}
                 </div>
@@ -126,14 +129,14 @@ export function MainStreetProduct({
         </section>
         <section className="ms-product-story">
           <Type as="div" role="eyebrow" className="ms-product-story-eyebrow">
-            {DEFAULT_STRINGS.productDetailsLabel}
+            {words.productDetailsLabel}
           </Type>
           <Type as="p" role="body" className="ms-product-story-body">
             {product.description}
           </Type>
         </section>
       </main>
-      <MainStreetFooter shopName={content.shopName} />
+      <MainStreetFooter shopName={content.shopName} words={words} />
     </MainStreetRoot>
   );
 }

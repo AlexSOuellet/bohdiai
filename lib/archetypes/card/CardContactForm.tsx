@@ -5,12 +5,12 @@
  * plus the tenant id), which emails the owner. Every failure says so.
  */
 import { useState, type FormEvent, type ReactElement } from 'react';
-import { CARD_STRINGS as S } from './strings';
+import type { CardWords } from './words';
 
 type State = { kind: 'idle' } | { kind: 'sending' } | { kind: 'sent' } | { kind: 'error'; message: string };
 
 /** `initialMessage` starts the message box with words she can change (a product's "Ask about this"). */
-export function CardContactForm({ tenantId, initialMessage = '' }: { tenantId: string; initialMessage?: string }): ReactElement {
+export function CardContactForm({ tenantId, w, initialMessage = '' }: { tenantId: string; w: CardWords['form']; initialMessage?: string }): ReactElement {
   const [state, setState] = useState<State>({ kind: 'idle' });
 
   async function onSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
@@ -34,19 +34,19 @@ export function CardContactForm({ tenantId, initialMessage = '' }: { tenantId: s
         return;
       }
       const body: unknown = await res.json().catch(() => null);
-      const message = body !== null && typeof body === 'object' && 'error' in body && typeof body.error === 'string' ? body.error : S.form.error;
+      const message = body !== null && typeof body === 'object' && 'error' in body && typeof body.error === 'string' ? body.error : w.error;
       setState({ kind: 'error', message });
     } catch {
-      setState({ kind: 'error', message: S.form.errorNetwork });
+      setState({ kind: 'error', message: w.errorNetwork });
     }
   }
 
   if (state.kind === 'sent') {
     return (
       <div className="bc-form__done" role="status">
-        <p>{S.form.sent}</p>
+        <p>{w.sent}</p>
         <button type="button" className="bc-btn" onClick={() => setState({ kind: 'idle' })}>
-          {S.form.sendAnother}
+          {w.sendAnother}
         </button>
       </div>
     );
@@ -56,24 +56,24 @@ export function CardContactForm({ tenantId, initialMessage = '' }: { tenantId: s
     <form className="bc-form" id="contact-form" onSubmit={onSubmit}>
       <div className="bc-form__row">
         <label>
-          {S.form.name}
+          {w.name}
           <input name="name" required maxLength={120} autoComplete="name" />
         </label>
         <label>
-          {S.form.email}
+          {w.email}
           <input name="email" type="email" required maxLength={254} autoComplete="email" />
         </label>
       </div>
       <label>
-        {S.form.message}
+        {w.message}
         <textarea name="message" required maxLength={5000} defaultValue={initialMessage} />
       </label>
       <label className="bc-form__trap" aria-hidden="true">
-        {S.form.honeypot}
+        {w.honeypot}
         <input name="company" tabIndex={-1} autoComplete="off" />
       </label>
       <button className="bc-btn" type="submit" disabled={state.kind === 'sending'}>
-        {state.kind === 'sending' ? S.form.sending : S.form.send}
+        {state.kind === 'sending' ? w.sending : w.send}
       </button>
       {state.kind === 'error' && (
         <p className="bc-form__status" role="alert">

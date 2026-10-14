@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
 import { nameLines, tabTarget, datePieces, torchLines, halves, ringFill } from './bulletin';
+import { fill, keyWords } from '@/lib/site-words/words';
+import { CARD_WORD_SPOTS, CARD_WORDS_PREFIX } from './words';
+
+const S = keyWords(CARD_WORD_SPOTS, CARD_WORDS_PREFIX);
+/** The tab word carries its blank so the owner's name can be seen going in. */
+const B = { ...S.bulletin, tab: 'card.bulletin.tab {name}' };
+/** Date words that read a real locale, with the day template's blanks. */
+const D = { ...S.dates, locale: 'en-US', day: '{weekday} {month} {day}' };
 
 describe('nameLines', () => {
   it('puts each word of the name on its own line', () => {
@@ -17,7 +25,7 @@ describe('nameLines', () => {
 
 describe('tabTarget', () => {
   it('calls the owner when there is a phone number', () => {
-    expect(tabTarget({ ...EMPTY_PROFILE, phone: '(401) 555-0100', signature: 'Alex' })).toEqual({
+    expect(tabTarget({ ...EMPTY_PROFILE, phone: '(401) 555-0100', signature: 'Alex' }, B)).toEqual({
       kind: 'call',
       href: 'tel:+14015550100',
       label: '(401) 555-0100',
@@ -25,19 +33,19 @@ describe('tabTarget', () => {
   });
 
   it('sends people to the contact form otherwise, by the owner’s name', () => {
-    expect(tabTarget({ ...EMPTY_PROFILE, signature: 'Alex' })).toEqual({ kind: 'message', href: '#touch', label: 'Message Alex' });
-    expect(tabTarget(EMPTY_PROFILE)).toEqual({ kind: 'message', href: '#touch', label: 'Message me' });
+    expect(tabTarget({ ...EMPTY_PROFILE, signature: 'Alex' }, B)).toEqual({ kind: 'message', href: '#touch', label: fill(B.tab, { name: 'Alex' }) });
+    expect(tabTarget(EMPTY_PROFILE, B)).toEqual({ kind: 'message', href: '#touch', label: S.bulletin.tabNoName });
   });
 });
 
 describe('datePieces', () => {
   it('splits a market date into the circled day, the market and the town', () => {
-    expect(datePieces({ id: 'd1', date: '2026-10-17', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Harvest Craft Fair', town: 'Wickford' })).toEqual({
+    expect(datePieces({ id: 'd1', date: '2026-10-17', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Harvest Craft Fair', town: 'Wickford' }, D)).toEqual({
       day: 'Sat Oct 17',
       market: 'Harvest Craft Fair',
       town: 'Wickford',
     });
-    expect(datePieces({ id: 'd2', date: '2026-12-05', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Christmas on the Green', town: '' }).town).toBe('');
+    expect(datePieces({ id: 'd2', date: '2026-12-05', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Christmas on the Green', town: '' }, D).town).toBe('');
   });
 });
 
@@ -67,10 +75,10 @@ describe('halves', () => {
 
 describe('ringFill', () => {
   it('rings the name and tag line when they fit once around', () => {
-    expect(ringFill('Rustic Rhody', 'Handmade in RI')).toBe('Rustic Rhody · Handmade in RI · ');
+    expect(ringFill('Rustic Rhody', 'Handmade in RI', ' / ')).toBe('Rustic Rhody / Handmade in RI / ');
   });
   it('repeats the name when the tag line is too long, or missing', () => {
-    expect(ringFill('Ember & Pine', 'Burned by hand on Aquidneck Island')).toBe('Ember & Pine · Ember & Pine · Ember & Pine · ');
-    expect(ringFill('Ember & Pine', '')).toBe('Ember & Pine · Ember & Pine · Ember & Pine · ');
+    expect(ringFill('Ember & Pine', 'Burned by hand on Aquidneck Island', ' / ')).toBe('Ember & Pine / Ember & Pine / Ember & Pine / ');
+    expect(ringFill('Ember & Pine', '', ' / ')).toBe('Ember & Pine / Ember & Pine / Ember & Pine / ');
   });
 });

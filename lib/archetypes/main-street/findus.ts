@@ -96,12 +96,29 @@ export function sampleEvents(rows: readonly FindUsEvent[]): FindUsEvent[] {
   return rows.slice(0, HOME_FINDUS_SAMPLE);
 }
 
-const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
-const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
-const MONTHS_LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as const;
+/** The site's date locale word as Intl reads it. Blank, or a tag Intl can't read,
+ *  leaves the runtime's locale in charge rather than breaking the page. */
+export function findUsLocale(word: string): string | undefined {
+  if (word === '') return undefined;
+  try {
+    return Intl.getCanonicalLocales(word)[0];
+  } catch {
+    return undefined;
+  }
+}
 
-/** The weekday header labels a calendar grid reads, Sunday-first. */
-export const FINDUS_WEEKDAY_HEADERS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+/** The names of one UTC calendar date in the site's locale. */
+function dateNames(dt: Date, locale: string): { weekday: string; weekdayShort: string; monthShort: string } {
+  const loc = findUsLocale(locale);
+  const name = (opts: Intl.DateTimeFormatOptions): string => new Intl.DateTimeFormat(loc, { ...opts, timeZone: 'UTC' }).format(dt);
+  return { weekday: name({ weekday: 'long' }), weekdayShort: name({ weekday: 'short' }), monthShort: name({ month: 'short' }) };
+}
+
+/** The weekday header labels a calendar grid reads, Sunday-first, in the site's locale. */
+export function findUsWeekdayHeaders(locale: string): string[] {
+  // 2023-01-01 was a Sunday.
+  return Array.from({ length: 7 }, (_, i) => dateNames(new Date(Date.UTC(2023, 0, 1 + i)), locale).weekdayShort);
+}
 
 /** The pieces a date-shaped treatment needs, computed from an ISO date WITHOUT
  *  timezone drift (the string is a plain calendar date, read in UTC). */
@@ -120,10 +137,11 @@ export interface FindUsDateParts {
   monthShort: string;
 }
 
-/** Parse an ISO `YYYY-MM-DD` into its display pieces. Returns undefined for a
+/** Parse an ISO `YYYY-MM-DD` into its display pieces, named in the site's locale
+ *  (its date locale word; blank reads the runtime's). Returns undefined for a
  *  missing or malformed date so callers fall back to the authored `day` string —
  *  never throws (accept-or-coerce, never fail; D57). */
-export function parseFindUsDate(iso?: string): FindUsDateParts | undefined {
+export function parseFindUsDate(iso?: string, locale = ''): FindUsDateParts | undefined {
   if (!iso) return undefined;
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso.trim());
   if (!m) return undefined;
@@ -131,21 +149,14 @@ export function parseFindUsDate(iso?: string): FindUsDateParts | undefined {
   const month = Number(m[2]);
   const dayNum = Number(m[3]);
   if (month < 1 || month > 12 || dayNum < 1 || dayNum > 31) return undefined;
-  const dt = new Date(Date.UTC(year, month - 1, dayNum));
-  const wd = dt.getUTCDay();
-  return {
-    year,
-    month,
-    dayNum,
-    weekday: WEEKDAYS[wd] ?? '',
-    weekdayShort: (WEEKDAYS[wd] ?? '').slice(0, 3),
-    monthShort: MONTHS_SHORT[month - 1] ?? '',
-  };
+  return { year, month, dayNum, ...dateNames(new Date(Date.UTC(year, month - 1, dayNum)), locale) };
 }
 
-/** "August 2025" for a month/year — the Calendar treatment's heading. */
-export function formatFindUsMonthTitle(year: number, month: number): string {
-  return `${MONTHS_LONG[month - 1] ?? ''} ${year}`.trim();
+/** "August 2025" for a month/year in the site's locale — the Calendar treatment's
+ *  heading. A month out of range leaves just the year. */
+export function formatFindUsMonthTitle(year: number, month: number, locale = ''): string {
+  if (month < 1 || month > 12) return String(year);
+  return new Intl.DateTimeFormat(findUsLocale(locale), { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(year, month - 1, 1)));
 }
 
 /** One cell of a calendar month grid: a padding cell (`dayNum` null) before the 1st,
@@ -181,7 +192,7 @@ export function currentYearMonth(today: Date): { year: number; month: number } {
  * date order (empty when none fall in the month — the "no dates this month" state).
  * A real calendar, not a soonest-event hunt. Pure + deterministic.
  */
-export function buildFindUsMonth(rows: readonly FindUsEvent[], target: { year: number; month: number }): FindUsMonth {
+export function buildFindUsMonth(rows: readonly FindUsEvent[], target: { year: number; month: number }, locale = ''): FindUsMonth {
   const { year, month } = target;
   const inMonth = rows
     .map((e) => ({ e, p: parseFindUsDate(e.date) }))
@@ -201,7 +212,7 @@ export function buildFindUsMonth(rows: readonly FindUsEvent[], target: { year: n
   for (let i = 0; i < firstWeekday; i += 1) cells.push({ dayNum: null, events: [] });
   for (let d = 1; d <= daysInMonth; d += 1) cells.push({ dayNum: d, events: eventsByDay.get(d) ?? [] });
 
-  return { title: formatFindUsMonthTitle(year, month), year, month, cells, events: inMonth.map((x) => x.e) };
+  return { title: formatFindUsMonthTitle(year, month, locale), year, month, cells, events: inMonth.map((x) => x.e) };
 }
 
 /** Where the seeded sample appearances land relative to the build day: a couple this

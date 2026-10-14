@@ -1,15 +1,19 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { CONTRACTOR_SPEC } from './builder';
+import { CONTRACTOR_SPEC, contractorContentPage, contractorHome, contractorPalette } from './builder';
 import { CONTRACTOR_FIXTURE } from './fixture.test-data';
+import { ContractorContentSchema } from './schemas';
 import { EstimateForm, checkEstimate } from './EstimateForm';
-import { CONTRACTOR_STRINGS } from './strings';
+import { keyWords } from '@/lib/site-words/words';
+import { CONTRACTOR_WORD_SPOTS, CONTRACTOR_WORDS_PREFIX } from './words';
 import { PLAYBACK_RATE } from './SlowVideo';
 
+const W = keyWords(CONTRACTOR_WORD_SPOTS, CONTRACTOR_WORDS_PREFIX);
 const TENANT = '4b8f0f5e-8f3a-4a57-9a8e-1f2d3c4b5a69';
 
+/** The home page as the spec paints it once the site's words are loaded (stored content is validated first). */
 function page(brandPalette?: { base: string; accent: string }, content: unknown = CONTRACTOR_FIXTURE) {
-  return render(CONTRACTOR_SPEC.render({ content, lookKey: 'contractor', products: [], tenantId: TENANT, brandPalette }));
+  return render(contractorHome({ content: ContractorContentSchema.parse(content), palette: contractorPalette(brandPalette), words: W, tenantId: TENANT }));
 }
 
 const OWNER_COVER = {
@@ -100,7 +104,7 @@ describe('contractor landing page', () => {
   it('credits BohdiAI in the footer with the year, linking bohdiai.com', () => {
     const { container } = page();
     const credit = container.querySelector('.cp-foot a[href="https://bohdiai.com"]');
-    expect(credit?.textContent).toBe(`${new Date().getFullYear()} Empowered by BohdiAI`);
+    expect(credit?.textContent).toBe(`${new Date().getFullYear()} contractor.footer.creditPrefix contractor.footer.creditBrand`);
   });
 
   it('shows shoppers no owner sign-in link (owners use /admin)', () => {
@@ -158,12 +162,24 @@ describe('contractor landing page', () => {
   it('skips the reviews section when there are none', () => {
     const noReviews = { ...CONTRACTOR_FIXTURE };
     delete noReviews.reviews;
-    const { container } = render(CONTRACTOR_SPEC.render({ content: noReviews, lookKey: 'contractor', products: [], tenantId: TENANT }));
+    const { container } = page(undefined, noReviews);
     expect(container.querySelector('.cp-reviews')).toBeNull();
   });
 
   it('refuses to paint malformed stored content', () => {
-    expect(() => CONTRACTOR_SPEC.render({ content: { business: {} }, lookKey: 'contractor', products: [] })).toThrow();
+    expect(() => CONTRACTOR_SPEC.render({ content: { business: {} }, lookKey: 'contractor', products: [], tenantId: TENANT })).toThrow();
+  });
+
+  it('paints nothing without a site to read the words from', () => {
+    expect(() => CONTRACTOR_SPEC.render({ content: CONTRACTOR_FIXTURE, lookKey: 'contractor', products: [] })).toThrow();
+  });
+
+  it('paints every word from the site’s own words', () => {
+    const { container } = page();
+    expect(container.querySelector('.cp-skip')?.textContent).toBe('contractor.skipToEstimate');
+    expect(container.querySelector('.cp-direct__label')?.textContent).toBe('contractor.callOrText');
+    expect(container.querySelector('.cp-stars')?.getAttribute('aria-label')).toBe('contractor.starsLabel');
+    expect(container.querySelector('.cp-foot__row')?.textContent).toContain(`contractor.footer.copyright ${new Date().getFullYear()}`);
   });
 
   it('declares no sub-pages and stays off Bohdi’s menu', () => {
@@ -174,25 +190,28 @@ describe('contractor landing page', () => {
   it('wraps a legal page in the same chrome', () => {
     const renderContentPage = CONTRACTOR_SPEC.renderContentPage;
     if (renderContentPage === undefined) throw new Error('no content page');
-    const { container } = render(renderContentPage({ content: CONTRACTOR_FIXTURE, lookKey: 'contractor', html: '<h1>Privacy</h1>' }));
+    expect(() => renderContentPage({ content: CONTRACTOR_FIXTURE, lookKey: 'contractor', html: '<h1>Privacy</h1>' })).toThrow();
+    const { container } = render(
+      contractorContentPage({ content: ContractorContentSchema.parse(CONTRACTOR_FIXTURE), palette: contractorPalette(undefined), words: W, html: '<h1>Privacy</h1>' }),
+    );
     expect(container.querySelector('.cp-prose h1')?.textContent).toBe('Privacy');
     expect(container.querySelector('.cp-head')).not.toBeNull();
   });
 });
 
 describe('checkEstimate', () => {
-  const S = CONTRACTOR_STRINGS.form;
+  const S = W.form;
   const jpg = new File(['x'], 'a.jpg', { type: 'image/jpeg' });
   it('asks for a name, then for a way to reach them', () => {
-    expect(checkEstimate({ name: '', phone: '1', email: '' }, [])).toBe(S.errorName);
-    expect(checkEstimate({ name: 'Pat', phone: '', email: '' }, [])).toBe(S.errorNeedContact);
+    expect(checkEstimate({ name: '', phone: '1', email: '' }, [], S)).toBe(S.errorName);
+    expect(checkEstimate({ name: 'Pat', phone: '', email: '' }, [], S)).toBe(S.errorNeedContact);
   });
   it('checks photo count and type', () => {
-    expect(checkEstimate({ name: 'Pat', phone: '1', email: '' }, Array.from({ length: 6 }, () => jpg))).toBe(S.errorTooManyPhotos);
-    expect(checkEstimate({ name: 'Pat', phone: '1', email: '' }, [new File(['x'], 'a.gif', { type: 'image/gif' })])).toBe(S.errorPhotoType);
+    expect(checkEstimate({ name: 'Pat', phone: '1', email: '' }, Array.from({ length: 6 }, () => jpg), S)).toBe(S.errorTooManyPhotos);
+    expect(checkEstimate({ name: 'Pat', phone: '1', email: '' }, [new File(['x'], 'a.gif', { type: 'image/gif' })], S)).toBe(S.errorPhotoType);
   });
   it('passes a good request', () => {
-    expect(checkEstimate({ name: 'Pat', phone: '', email: 'p@x.com' }, [jpg])).toBeNull();
+    expect(checkEstimate({ name: 'Pat', phone: '', email: 'p@x.com' }, [jpg], S)).toBeNull();
   });
 });
 
@@ -200,17 +219,17 @@ describe('EstimateForm', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   function fill() {
-    render(<EstimateForm tenantId={TENANT} services={['Grading']} states={['Rhode Island']} />);
-    fireEvent.change(screen.getByLabelText(CONTRACTOR_STRINGS.form.name), { target: { value: 'Pat' } });
-    fireEvent.change(screen.getByLabelText(CONTRACTOR_STRINGS.form.phone), { target: { value: '401 555 0100' } });
+    render(<EstimateForm tenantId={TENANT} services={['Grading']} states={['Rhode Island']} words={W.form} />);
+    fireEvent.change(screen.getByLabelText(W.form.name), { target: { value: 'Pat' } });
+    fireEvent.change(screen.getByLabelText(W.form.phone), { target: { value: '401 555 0100' } });
   }
 
   it('shows the thank-you after a successful send', async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
     fill();
-    fireEvent.click(screen.getByRole('button', { name: CONTRACTOR_STRINGS.form.submit }));
-    await waitFor(() => expect(screen.getByText(CONTRACTOR_STRINGS.form.successTitle)).toBeTruthy());
+    fireEvent.click(screen.getByRole('button', { name: W.form.submit }));
+    await waitFor(() => expect(screen.getByText(W.form.successTitle)).toBeTruthy());
     const body = fetchMock.mock.calls[0]?.[1]?.body as FormData;
     expect(body.get('tenantId')).toBe(TENANT);
     expect(body.get('name')).toBe('Pat');
@@ -219,24 +238,24 @@ describe('EstimateForm', () => {
   it('shows the server’s message when the send is refused', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: 'Requests can’t be sent right now' }), { status: 503 })));
     fill();
-    fireEvent.click(screen.getByRole('button', { name: CONTRACTOR_STRINGS.form.submit }));
+    fireEvent.click(screen.getByRole('button', { name: W.form.submit }));
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('Requests can’t be sent right now'));
   });
 
   it('shows a network message when the request throws', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
     fill();
-    fireEvent.click(screen.getByRole('button', { name: CONTRACTOR_STRINGS.form.submit }));
-    await waitFor(() => expect(screen.getByRole('alert').textContent).toBe(CONTRACTOR_STRINGS.form.errorNetwork));
+    fireEvent.click(screen.getByRole('button', { name: W.form.submit }));
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toBe(W.form.errorNetwork));
   });
 
   it('never sends without a way to reach them', () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
-    render(<EstimateForm tenantId={TENANT} services={[]} states={[]} />);
-    fireEvent.change(screen.getByLabelText(CONTRACTOR_STRINGS.form.name), { target: { value: 'Pat' } });
-    fireEvent.click(screen.getByRole('button', { name: CONTRACTOR_STRINGS.form.submit }));
-    expect(screen.getByRole('alert').textContent).toBe(CONTRACTOR_STRINGS.form.errorNeedContact);
+    render(<EstimateForm tenantId={TENANT} services={[]} states={[]} words={W.form} />);
+    fireEvent.change(screen.getByLabelText(W.form.name), { target: { value: 'Pat' } });
+    fireEvent.click(screen.getByRole('button', { name: W.form.submit }));
+    expect(screen.getByRole('alert').textContent).toBe(W.form.errorNeedContact);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });

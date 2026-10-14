@@ -21,6 +21,7 @@
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import type { ReviewsSection, Testimonial } from './reviews';
+import type { FamilyWords } from './words';
 
 export function ReviewsGuestbook({
   section,
@@ -31,6 +32,8 @@ export function ReviewsGuestbook({
   section: ReviewsSection;
   items: Testimonial[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: { href: string; label: string } | undefined;
 }) {
   return (

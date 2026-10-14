@@ -6,13 +6,14 @@
  * The page does something: a live ballpark estimator. Then services as photo
  * cards, the work as case studies, a "typical vs us" comparison, the owner,
  * the rating and reviews, and a closing call. Shares only the content shape,
- * the estimate form's workings and the UI strings with the other designs.
+ * the estimate form's workings and the site's words with the other designs.
  */
 import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
 import type { DerivedPalette } from '@/lib/color/brand-palette';
 import type { ContractorContent } from '../schemas';
-import { CONTRACTOR_STRINGS as S } from '../strings';
+import { fill } from '@/lib/site-words/words';
+import type { ContractorWords } from '../words';
 import { EstimateForm } from '../EstimateForm';
 import { Media } from '../ContractorLanding';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
@@ -31,11 +32,13 @@ function Icon({ name }: { name: string }): ReactElement {
 export function AtelierShell({
   content: c,
   palette,
+  words: w,
   children,
   platformCredit = true,
 }: {
   content: ContractorContent;
   palette: DerivedPalette;
+  words: ContractorWords;
   children: ReactNode;
   platformCredit?: boolean;
 }): ReactElement {
@@ -49,7 +52,7 @@ export function AtelierShell({
       <link rel="stylesheet" href={ATELIER_FONTS_HREF} />
       <style dangerouslySetInnerHTML={{ __html: atelierCss(palette) }} />
       <div className="at">
-        <a className="at-skip" href={`/#${ESTIMATE_ID}`}>{S.skipToEstimate}</a>
+        <a className="at-skip" href={`/#${ESTIMATE_ID}`}>{w.skipToEstimate}</a>
         {c.notice !== undefined && (
           <p className="at-notice"><Icon name="campaign" /> {c.notice}</p>
         )}
@@ -60,9 +63,9 @@ export function AtelierShell({
               <span className="at-mark__name">{b.name}</span>
               <span className="at-mark__trade">{b.trade}</span>
             </Link>
-            <nav className="at-head__actions" aria-label={S.menuLabel}>
+            <nav className="at-head__actions" aria-label={w.menuLabel}>
               <a className="at-btn at-btn--soft" href={tel}><Icon name="call" /> <span className="at-head__phone">{b.phone}</span></a>
-              <a className="at-btn at-btn--dark" href={`/#${ESTIMATE_ID}`}><Icon name="request_quote" /> {S.estimateShort}</a>
+              <a className="at-btn at-btn--dark" href={`/#${ESTIMATE_ID}`}><Icon name="request_quote" /> {w.estimateShort}</a>
             </nav>
           </div>
         </header>
@@ -72,21 +75,21 @@ export function AtelierShell({
         <footer className="at-foot">
           <div className="at-wrap at-foot__row">
             <span className="at-foot__name">{b.name} {b.trade}</span>
-            <span>{S.serving} {b.serviceArea.join(' · ')}</span>
+            <span>{w.serving} {b.serviceArea.join(w.separator)}</span>
             <a href={tel}>{b.phone}</a>
-            <a href="/privacy">{S.footer.privacy}</a>
-            <span>© {year} · {S.footer.rights}</span>
+            <a href="/privacy">{w.footer.privacy}</a>
+            <span>{w.footer.copyright} {year}{w.separator}{w.footer.rights}</span>
             {platformCredit && (
               <a href={PLATFORM_URL}>
-                {year} {S.footer.creditPrefix} {S.footer.creditBrand}
+                {year} {w.footer.creditPrefix} {w.footer.creditBrand}
               </a>
             )}
           </div>
         </footer>
 
         <div className="at-thumb">
-          <a href={tel}><Icon name="call" /> {S.call}</a>
-          <a href={`/#${ESTIMATE_ID}`}><Icon name="request_quote" /> {S.estimateShort}</a>
+          <a href={tel}><Icon name="call" /> {w.call}</a>
+          <a href={`/#${ESTIMATE_ID}`}><Icon name="request_quote" /> {w.estimateShort}</a>
         </div>
       </div>
     </>
@@ -94,9 +97,9 @@ export function AtelierShell({
 }
 
 /** A plain content page (privacy, terms) in the atelier chrome. */
-export function AtelierContentPage({ content, palette, html }: { content: ContractorContent; palette: DerivedPalette; html: string }): ReactElement {
+export function AtelierContentPage({ content, palette, words, html }: { content: ContractorContent; palette: DerivedPalette; words: ContractorWords; html: string }): ReactElement {
   return (
-    <AtelierShell content={content} palette={palette}>
+    <AtelierShell content={content} palette={palette} words={words}>
       <main className="at-section">
         <div className="at-wrap at-prose" dangerouslySetInnerHTML={{ __html: html }} />
       </main>
@@ -104,13 +107,23 @@ export function AtelierContentPage({ content, palette, html }: { content: Contra
   );
 }
 
-export function AtelierLanding({ content: c, palette, tenantId }: { content: ContractorContent; palette: DerivedPalette; tenantId: string | undefined }): ReactElement {
+export function AtelierLanding({
+  content: c,
+  palette,
+  words: w,
+  tenantId,
+}: {
+  content: ContractorContent;
+  palette: DerivedPalette;
+  words: ContractorWords;
+  tenantId: string | undefined;
+}): ReactElement {
   const b = c.business;
   const tel = `tel:${b.phoneDial}`;
   const reviews = c.reviews;
 
   return (
-    <AtelierShell content={c} palette={palette}>
+    <AtelierShell content={c} palette={palette} words={w}>
       <main>
         {/* ── hero: a magazine cover — one photo edge to edge, the headline on it ── */}
         <section className="at-cover">
@@ -155,7 +168,7 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
                   <h2 className="at-estcard__title" id="at-est-title">{c.estimator.title}</h2>
                   <p className="at-lede">{c.estimator.intro}</p>
                 </div>
-                <Estimator estimator={c.estimator} estimateHref={`#${ESTIMATE_ID}`} />
+                <Estimator estimator={c.estimator} estimateHref={`#${ESTIMATE_ID}`} words={w.estimator} />
               </div>
             </div>
           </section>
@@ -248,7 +261,7 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
             )}
             <figure className="at-owner">
               <div className="at-owner__photo"><Media media={c.crew.photo} /></div>
-              <blockquote className="at-owner__quote">“{c.crew.quote}”</blockquote>
+              <blockquote className="at-owner__quote">{fill(w.quoted, { quote: c.crew.quote })}</blockquote>
               <figcaption className="at-label at-label--accent">{c.crew.attribution}</figcaption>
               {c.crew.body.map((p) => <p className="at-card__text" key={p.slice(0, 32)}>{p}</p>)}
             </figure>
@@ -274,7 +287,7 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
               <ul className="at-reviews">
                 {reviews.items.map((r) => (
                   <li key={r.quote} className="at-card at-card--white at-review">
-                    <blockquote className="at-review__quote">“{r.quote}”</blockquote>
+                    <blockquote className="at-review__quote">{fill(w.quoted, { quote: r.quote })}</blockquote>
                     <p className="at-review__top">
                       <strong className="at-review__who">{r.author}</strong>
                       {r.job !== undefined && <span className="at-label">{r.job}</span>}
@@ -290,18 +303,18 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
         {/* ── when we're booked ─────────────────────────────────── */}
         {c.calendar !== undefined && (
           <section className="at-section at-ghosted" aria-labelledby="at-cal-title">
-            <p className="at-ghost" aria-hidden="true">{S.calendar.booked}</p>
+            <p className="at-ghost" aria-hidden="true">{w.calendar.booked}</p>
             <div className="at-wrap at-booked">
               <div>
                 <h2 className="at-h2" id="at-cal-title">{c.calendar.title}</h2>
                 {c.calendar.intro !== undefined && <p className="at-lede">{c.calendar.intro}</p>}
                 <p className="at-cal__legend">
-                  <span className="at-cal__key at-cal__key--booked" aria-hidden="true" /> {S.calendar.booked}
-                  <span className="at-cal__key" aria-hidden="true" /> {S.calendar.open}
+                  <span className="at-cal__key at-cal__key--booked" aria-hidden="true" /> {w.calendar.booked}
+                  <span className="at-cal__key" aria-hidden="true" /> {w.calendar.open}
                 </p>
               </div>
               <div className="at-booked__months">
-                {c.calendar.months.map((m) => <BookedMonth key={`${m.year}-${m.month}`} month={m} />)}
+                {c.calendar.months.map((m) => <BookedMonth key={`${m.year}-${m.month}`} month={m} words={w.calendar} />)}
               </div>
             </div>
           </section>
@@ -348,13 +361,13 @@ export function AtelierLanding({ content: c, palette, tenantId }: { content: Con
                 <div className="at-callcard">
                   <p className="at-label">{c.area.title}</p>
                   <p className="at-card__text">{c.area.intro}</p>
-                  <a className="at-callcard__phone" href={tel}><Icon name="call" /> {S.callNow}: {b.phone}</a>
+                  <a className="at-callcard__phone" href={tel}><Icon name="call" /> {fill(w.callNow, { phone: b.phone })}</a>
                 </div>
               </div>
               {tenantId !== undefined && (
                 <div className="at-formcard">
                   <h2 className="at-formcard__title" id="at-estimate-title">{c.estimate.title}</h2>
-                  <EstimateForm tenantId={tenantId} services={c.services.items.map((s) => s.name)} states={c.estimate.states ?? b.serviceArea} detailsHint={c.estimate.detailsHint} />
+                  <EstimateForm tenantId={tenantId} services={c.services.items.map((s) => s.name)} states={c.estimate.states ?? b.serviceArea} detailsHint={c.estimate.detailsHint} words={w.form} />
                 </div>
               )}
             </div>

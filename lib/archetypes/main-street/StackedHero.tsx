@@ -12,23 +12,27 @@
  */
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetView } from './schemas';
+import type { FamilyWords } from './words';
 import { Media, Nav, linkHref } from './chrome';
 import { Type } from './Type';
 
 export function StackedHero({
   identity,
   moment,
+  words,
 }: {
   identity: MainStreetView['identity'];
   moment: MainStreetView['moment'];
   skin: ArchetypeTheme;
+  /** The site's words: the nav's page names and labels. */
+  words: FamilyWords;
 }) {
   const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';
   const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
   return (
     <header data-ms-hero="stacked" className="ms-stackedhero">
       <div data-ms-hero-nav className="ms-hero-navbar">
-        <Nav identity={identity} />
+        <Nav identity={identity} words={words} />
       </div>
       <div data-ms-hero-text className="ms-stackedhero-stack">
         <Type as="div" role="eyebrow" className="ms-hero-eyebrow">

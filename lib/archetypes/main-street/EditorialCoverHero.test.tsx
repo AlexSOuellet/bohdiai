@@ -2,6 +2,11 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
 import { EditorialCoverHero } from './EditorialCoverHero';
 import { MAIN_STREET_SKINS } from './skins';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 const identity = { wordmark: "June's Sourdough", nav: ['Shop', 'About'] };
@@ -24,37 +29,37 @@ afterEach(cleanup);
 
 describe('EditorialCoverHero — giant masthead, brand-as-hero over media', () => {
   it('renders the hero with full-bleed media and the brand as a masthead', () => {
-    const { container } = render(<EditorialCoverHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<EditorialCoverHero words={W} identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('[data-ms-hero="editorial-cover"]')).toBeTruthy();
     expect(container.querySelector('[data-ms-hero-media]')).toBeTruthy();
     expect(container.querySelector('[data-type="brand"]')!.textContent).toBe(moment.brand);
   });
 
   it('renders the eyebrow and the shared sub-line', () => {
-    const { container } = render(<EditorialCoverHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<EditorialCoverHero words={W} identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('[data-type="eyebrow"]')!.textContent).toBe(moment.eyebrow);
     expect(container.querySelector('[data-ms-hero-sub]')!.textContent).toBe(moment.sub);
   });
 
   it('renders the media (a video) in the background', () => {
-    const { container } = render(<EditorialCoverHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<EditorialCoverHero words={W} identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('[data-ms-hero-media] video')).toBeTruthy();
   });
 
   it('omits the sub-line when none is authored', () => {
     const { sub, ...noSub } = moment;
     void sub;
-    const { container } = render(<EditorialCoverHero identity={identity} moment={noSub} skin={skin} />);
+    const { container } = render(<EditorialCoverHero words={W} identity={identity} moment={noSub} skin={skin} />);
     expect(container.querySelector('[data-ms-hero-sub]')).toBeNull();
   });
 
   it('does NOT render the Story fading lines', () => {
-    const { container } = render(<EditorialCoverHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<EditorialCoverHero words={W} identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('[data-ms-hero-story-line]')).toBeNull();
   });
 
   it('points the primary CTA at the authored target page', () => {
-    const { container } = render(<EditorialCoverHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<EditorialCoverHero words={W} identity={identity} moment={moment} skin={skin} />);
     const ctaLink = Array.from(container.querySelectorAll('a')).find((a) => a.textContent === moment.ctaLabel)!;
     expect(ctaLink.getAttribute('href')).toBe('/shop');
   });
@@ -62,14 +67,14 @@ describe('EditorialCoverHero — giant masthead, brand-as-hero over media', () =
   it('falls back to /shop when the primary CTA has no authored target', () => {
     const { ctaTarget, ...noTarget } = moment;
     void ctaTarget;
-    const { container } = render(<EditorialCoverHero identity={identity} moment={noTarget} skin={skin} />);
+    const { container } = render(<EditorialCoverHero words={W} identity={identity} moment={noTarget} skin={skin} />);
     const ctaLink = Array.from(container.querySelectorAll('a')).find((a) => a.textContent === moment.ctaLabel)!;
     expect(ctaLink.getAttribute('href')).toBe('/shop');
   });
 
   it('renders a second CTA when a secondary label and target are authored', () => {
     const withSecondary = { ...moment, secondaryCtaLabel: 'Our story', secondaryCtaTarget: 'about' as const };
-    const { container } = render(<EditorialCoverHero identity={identity} moment={withSecondary} skin={skin} />);
+    const { container } = render(<EditorialCoverHero words={W} identity={identity} moment={withSecondary} skin={skin} />);
     const secondary = Array.from(container.querySelectorAll('a')).find((a) => a.textContent === 'Our story')!;
     expect(secondary).toBeTruthy();
     expect(secondary.getAttribute('href')).toBeTruthy();
@@ -85,7 +90,7 @@ describe('EditorialCoverHero — giant masthead, brand-as-hero over media', () =
     // is still declared in skinVarsCss — the amplification is a rule about a class
     // that appears on the DOM, and skinVarsCss owns it (asserted separately in the
     // chrome tests). Here we assert the class hook is present so the rule applies.
-    const { container } = render(<EditorialCoverHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<EditorialCoverHero words={W} identity={identity} moment={moment} skin={skin} />);
     const masthead = container.querySelector('.ms-cover-masthead');
     expect(masthead).toBeTruthy();
     expect(masthead!.querySelector('[data-type="brand"]')).toBeTruthy();
@@ -93,7 +98,7 @@ describe('EditorialCoverHero — giant masthead, brand-as-hero over media', () =
 
   it('renders the nav bar as a class-only horizontal row', () => {
     // Class-only: horizontal-bar rule lives in skinVarsCss under .ms-cover-nav.
-    const { container } = render(<EditorialCoverHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<EditorialCoverHero words={W} identity={identity} moment={moment} skin={skin} />);
     const navBar = container.querySelector('[data-ms-hero-nav]') as HTMLElement | null;
     expect(navBar).toBeTruthy();
     expect(navBar!.className).toContain('ms-cover-nav');

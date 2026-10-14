@@ -11,16 +11,20 @@
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import { type FindUsSection, type FindUsEvent, parseFindUsDate } from './findus';
+import type { FamilyWords } from './words';
 
 export function FindUsPasses({
   section,
   events,
   skin: _skin,
+  words,
   viewAll,
 }: {
   section: FindUsSection;
   events: FindUsEvent[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: { href: string; label: string } | undefined;
 }) {
   return (
@@ -31,7 +35,7 @@ export function FindUsPasses({
         </Type>
         <div className="ms-fu-pass-rail">
           {events.map((e, i) => {
-            const parts = parseFindUsDate(e.date);
+            const parts = parseFindUsDate(e.date, words.dateLocale);
             return (
               <div key={i} data-ms-fu-item="" className="ms-fu-pass-ticket">
                 <div className="ms-fu-pass-stub" aria-hidden>

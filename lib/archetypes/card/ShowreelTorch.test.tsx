@@ -3,8 +3,19 @@ import { render, screen, fireEvent, cleanup, within } from '@testing-library/rea
 import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
 import { ShowreelLanding, ShowreelContentPage } from './ShowreelLanding';
 import { TorchLanding, TorchContentPage } from './TorchLanding';
-import { CARD_STRINGS as S } from './strings';
+import { fill, keyWords } from '@/lib/site-words/words';
+import { CARD_WORD_SPOTS, CARD_WORDS_PREFIX, type CardWords } from './words';
 import type { CardData } from './data';
+
+const K = keyWords(CARD_WORD_SPOTS, CARD_WORDS_PREFIX);
+/** Test words: every spot says its own key; a spot with blanks keeps them, and the
+ *  date spots read a real locale so a date can be checked. */
+const S: CardWords = {
+  ...K,
+  dates: { ...K.dates, locale: 'en-US', day: '{weekday} {month} {day}' },
+  work: { ...K.work, open: 'card.work.open {caption}', openNumbered: 'card.work.openNumbered {n}' },
+  lightbox: { ...K.lightbox, count: 'card.lightbox.count {n}/{of}' },
+};
 
 const TENANT = '4b8f0f5e-8f3a-4a57-9a8e-1f2d3c4b5a69';
 const photos = Array.from({ length: 10 }, (_, i) => ({ id: `m${i}`, url: `https://cdn/m${i}.webp`, caption: i === 0 ? 'The studio' : `Piece ${i}` }));
@@ -23,8 +34,9 @@ const full: CardData = {
   },
   photos,
   dates: [{ id: 'd1', date: '2026-10-24', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Fall Festival of Crafts', town: 'Warwick' }],
+  words: S,
 };
-const empty: CardData = { name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [] };
+const empty: CardData = { name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [], words: S };
 
 afterEach(cleanup);
 
@@ -61,7 +73,7 @@ describe('show reel page', () => {
     expect(within(end).getByRole('heading', { name: S.showreel.touch })).toBeTruthy();
     expect(within(end).getByRole('link', { name: '(401) 555-0100' }).getAttribute('href')).toBe('tel:+14015550100');
     expect(end.querySelector('form')).toBeTruthy();
-    expect(screen.getByRole('list', { name: S.showreel.datesLabel }).textContent).toBe('Sat Oct 24 · Fall Festival of Crafts · Warwick');
+    expect(screen.getByRole('list', { name: S.showreel.datesLabel }).textContent).toBe(['Sat Oct 24', 'Fall Festival of Crafts', 'Warwick'].join(S.dates.separator));
     expect(container.querySelector('.sr-ticker')).toBeTruthy();
   });
 
@@ -78,7 +90,7 @@ describe('show reel page', () => {
   });
 
   it('puts privacy and terms on the bone panel', () => {
-    render(<ShowreelContentPage name="Paper & Patina" title="Privacy" body={['We keep what you send us.']} />);
+    render(<ShowreelContentPage name="Paper & Patina" words={S} title="Privacy" body={['We keep what you send us.']} />);
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Privacy');
     expect(screen.getByRole('link', { name: 'Paper & Patina' }).getAttribute('href')).toBe('/');
   });
@@ -108,8 +120,8 @@ describe('torch page', () => {
     expect(container.querySelector('.tt-initials')?.textContent).toBe('EP');
     expect(container.querySelector('#about .tt-sig')?.textContent).toBe('— Dana');
     expect(container.querySelectorAll('.tt-piece')).toHaveLength(10);
-    fireEvent.click(screen.getByRole('button', { name: S.work.open('Piece 3', 4) }));
-    expect(within(screen.getByRole('dialog', { name: S.lightbox.label })).getByText(`Piece 3 · ${S.lightbox.count(4, 10)}`)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: fill(S.work.open, { caption: 'Piece 3' }) }));
+    expect(within(screen.getByRole('dialog', { name: S.lightbox.label })).getByText(`Piece 3${S.lightbox.separator}${fill(S.lightbox.count, { n: 4, of: 10 })}`)).toBeTruthy();
   });
 
   it('puts the market dates on planks and the form on the char card', () => {
@@ -131,7 +143,7 @@ describe('torch page', () => {
   });
 
   it('puts privacy and terms on the pine board', () => {
-    render(<TorchContentPage name="Ember & Pine" title="Terms" body={['Be kind.']} />);
+    render(<TorchContentPage name="Ember & Pine" words={S} title="Terms" body={['Be kind.']} />);
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Terms');
   });
 });

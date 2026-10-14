@@ -4,7 +4,7 @@
  * headline, buttons) beside the best three photos pinned up with the maker's
  * stamp; the family's loud marquee band of the owner's own words; About on a
  * pinned note; the work as taped prints; Get in touch; the footer. Every sentence the maker wrote comes
- * from `data`; the renderer adds only CARD_STRINGS. Sections with nothing to show
+ * from `data`, and so does every other word: the site's own words (`data.words`). Sections with nothing to show
  * are left out rather than painted empty.
  */
 import type { ReactElement, ReactNode } from 'react';
@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { dialable } from '@/lib/backend/profile/profile-form';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 import { cardCss } from './styles';
-import { CARD_STRINGS as S } from './strings';
+import type { CardWords } from './words';
 import { CardGallery } from './CardGallery';
 import { CardContactForm } from './CardContactForm';
 import { CardMarquee } from './CardMarquee';
@@ -51,7 +51,7 @@ function InstagramIcon(): ReactElement {
 }
 
 /** The maker's round stamp: initials inside a ring of words, pressed into the opening. */
-function Mark({ name, kicker }: { name: string; kicker: string }): ReactElement {
+function Mark({ name, kicker, separator }: { name: string; kicker: string; separator: string }): ReactElement {
   return (
     <span className="bc-mark" aria-hidden="true">
       <svg viewBox="0 0 100 100">
@@ -59,7 +59,7 @@ function Mark({ name, kicker }: { name: string; kicker: string }): ReactElement 
           <path id="bc-ring" d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0" />
         </defs>
         <text>
-          <textPath href="#bc-ring">{ringText(name, kicker)}</textPath>
+          <textPath href="#bc-ring">{ringText(name, kicker, separator)}</textPath>
         </text>
       </svg>
       <b>{initials(name)}</b>
@@ -69,7 +69,7 @@ function Mark({ name, kicker }: { name: string; kicker: string }): ReactElement 
 
 /** Footer around every page. `platformCredit`: the "Empowered by BohdiAI" line on
  *  a bohdiai.com address; off on a custom domain (wired with custom domains). */
-function Footer({ name, platformCredit }: { name: string; platformCredit: boolean }): ReactElement {
+function Footer({ name, platformCredit, w }: { name: string; platformCredit: boolean; w: CardWords['footer'] }): ReactElement {
   const year = new Date().getFullYear();
   return (
     <footer className="bc-foot">
@@ -80,12 +80,12 @@ function Footer({ name, platformCredit }: { name: string; platformCredit: boolea
       <span>
         © {year} {name}
       </span>
-      <nav aria-label={S.footer.label}>
-        <a href="/privacy">{S.footer.privacy}</a>
-        <a href="/terms">{S.footer.terms}</a>
+      <nav aria-label={w.label}>
+        <a href="/privacy">{w.privacy}</a>
+        <a href="/terms">{w.terms}</a>
         {platformCredit && (
           <a href={PLATFORM_URL}>
-            {S.footer.creditPrefix} {S.footer.creditBrand}
+            {w.creditPrefix} {w.creditBrand}
           </a>
         )}
       </nav>
@@ -108,14 +108,14 @@ function Frame({ paint, children }: { paint: CardPaint; children: ReactNode }): 
   );
 }
 
-function TopBar({ name, links }: { name: string; links: { id: string; label: string }[] }): ReactElement {
+function TopBar({ name, links, label }: { name: string; links: { id: string; label: string }[]; label: string }): ReactElement {
   return (
     <div className="bc-bar">
       <Link className="bc-brand" href="/">
         {name}
       </Link>
       {links.length > 0 && (
-        <nav aria-label={S.nav.label}>
+        <nav aria-label={label}>
           {links.map((l) => (
             <a key={l.id} href={`#${l.id}`}>
               {l.label}
@@ -138,10 +138,10 @@ export function CardLanding({
   tenantId: string | undefined;
   platformCredit?: boolean;
 }): ReactElement {
-  const { name, profile: p, photos } = data;
+  const { name, profile: p, photos, words: w } = data;
   const wall = photos.slice(0, 3);
   const words = marqueeWords(p.kicker, photos.map((x) => x.caption));
-  const dateLines = data.dates.map(marqueeDateLine);
+  const dateLines = data.dates.map((d) => marqueeDateLine(d, w.dates));
   // The quiet row carries the owner's market dates; with none, the business name.
   const quietFill = marqueeFill(dateLines.length > 0 ? dateLines : [name]);
   const hasDates = dateLines.length > 0;
@@ -155,20 +155,20 @@ export function CardLanding({
   const hasWays = p.phone !== '' || p.facebookUrl !== '' || p.instagramUrl !== '';
   const hasTouch = canWrite || hasWays;
   const links = [
-    ...(hasAbout ? [{ id: ABOUT_ID, label: S.nav.about }] : []),
-    ...(hasWork ? [{ id: WORK_ID, label: S.nav.work }] : []),
-    ...(hasTouch ? [{ id: TOUCH_ID, label: S.nav.touch }] : []),
+    ...(hasAbout ? [{ id: ABOUT_ID, label: w.nav.about }] : []),
+    ...(hasWork ? [{ id: WORK_ID, label: w.nav.work }] : []),
+    ...(hasTouch ? [{ id: TOUCH_ID, label: w.nav.touch }] : []),
   ];
 
   return (
     <Frame paint={paint}>
       {canWrite && (
         <a className="bc-skip" href={`#${TOUCH_ID}`}>
-          {S.skip}
+          {w.skip}
         </a>
       )}
       <header>
-        <TopBar name={name} links={links} />
+        <TopBar name={name} links={links} label={w.nav.label} />
         <div className="bc-open">
           <div>
             {p.kicker !== '' && <span className="bc-over bc-hand">{p.kicker}</span>}
@@ -179,12 +179,12 @@ export function CardLanding({
               <div className="bc-actions">
                 {hasWork && (
                   <a className="bc-btn bc-btn--solid" href={`#${WORK_ID}`}>
-                    {S.seeWork}
+                    {w.seeWork}
                   </a>
                 )}
                 {hasTouch && (
                   <a className="bc-btn" href={`#${TOUCH_ID}`}>
-                    {S.askAbout}
+                    {w.askAbout}
                   </a>
                 )}
               </div>
@@ -198,7 +198,7 @@ export function CardLanding({
                 <img src={photo.url} alt={photo.caption} fetchPriority={i === 0 ? 'high' : 'auto'} />
               </span>
             ))}
-            <Mark name={name} kicker={p.kicker} />
+            <Mark name={name} kicker={p.kicker} separator={w.dates.separator} />
           </div>
         </div>
       </header>
@@ -219,7 +219,7 @@ export function CardLanding({
         </CardMarquee>
       )}
       {hasDates && (
-        <ul className="bc-sr" aria-label={S.dates.label}>
+        <ul className="bc-sr" aria-label={w.dates.label}>
           {dateLines.map((line, i) => (
             <li key={`${i}-${line}`}>{line}</li>
           ))}
@@ -231,8 +231,8 @@ export function CardLanding({
           <section className="bc-about" id={ABOUT_ID}>
             <div className="bc-wrap bc-about__in">
               <div className="bc-about__head">
-                <span className="bc-hand">{S.about.hand}</span>
-                <h2 className="bc-shout">{p.aboutTitle !== '' ? p.aboutTitle : S.about.eyebrow}</h2>
+                <span className="bc-hand">{w.about.hand}</span>
+                <h2 className="bc-shout">{p.aboutTitle !== '' ? p.aboutTitle : w.about.eyebrow}</h2>
               </div>
               <div className="bc-note">
                 {bio.map((para) => (
@@ -249,12 +249,12 @@ export function CardLanding({
             <div className="bc-wrap">
               <div className="bc-work__head">
                 <div>
-                  <span className="bc-hand">{S.work.hand}</span>
-                  <h2 className="bc-shout">{S.work.title}</h2>
+                  <span className="bc-hand">{w.work.hand}</span>
+                  <h2 className="bc-shout">{w.work.title}</h2>
                 </div>
-                <p>{S.work.lede}</p>
+                <p>{w.work.lede}</p>
               </div>
-              <CardGallery photos={photos} />
+              <CardGallery photos={photos} w={w} />
             </div>
           </section>
         )}
@@ -263,16 +263,16 @@ export function CardLanding({
           <section className="bc-touch" id={TOUCH_ID}>
             <div className="bc-wrap bc-touch__in">
               <div className="bc-touch__head">
-                <span className="bc-hand">{S.touch.hand}</span>
-                <h2 className="bc-shout">{S.touch.title}</h2>
-                <p className="bc-touch__lede">{S.touch.lede}</p>
+                <span className="bc-hand">{w.touch.hand}</span>
+                <h2 className="bc-shout">{w.touch.title}</h2>
+                <p className="bc-touch__lede">{w.touch.lede}</p>
                 {hasWays && (
                   <div className="bc-ways">
                     {p.phone !== '' && (
                       <a className="bc-way" href={`tel:${dialable(p.phone)}`}>
                         <PhoneIcon />
                         <span>
-                          <small>{S.touch.callOrText}</small>
+                          <small>{w.touch.callOrText}</small>
                           {p.phone}
                         </span>
                       </a>
@@ -281,8 +281,8 @@ export function CardLanding({
                       <a className="bc-way" href={p.facebookUrl} rel="noopener">
                         <FacebookIcon />
                         <span>
-                          <small>{S.touch.facebook}</small>
-                          {S.touch.followOn}
+                          <small>{w.touch.facebook}</small>
+                          {w.touch.followOn}
                         </span>
                       </a>
                     )}
@@ -290,8 +290,8 @@ export function CardLanding({
                       <a className="bc-way" href={p.instagramUrl} rel="noopener">
                         <InstagramIcon />
                         <span>
-                          <small>{S.touch.instagram}</small>
-                          {S.touch.followOn}
+                          <small>{w.touch.instagram}</small>
+                          {w.touch.followOn}
                         </span>
                       </a>
                     )}
@@ -300,7 +300,7 @@ export function CardLanding({
               </div>
               {canWrite && (
                 <div className="bc-slip">
-                  <CardContactForm tenantId={tenantId} />
+                  <CardContactForm tenantId={tenantId} w={w.form} />
                 </div>
               )}
             </div>
@@ -308,7 +308,7 @@ export function CardLanding({
         )}
       </main>
 
-      <Footer name={name} platformCredit={platformCredit} />
+      <Footer name={name} platformCredit={platformCredit} w={w.footer} />
     </Frame>
   );
 }
@@ -318,6 +318,7 @@ export function CardLanding({
 export function CardContentPage({
   name,
   paint,
+  words: w,
   html,
   title,
   body,
@@ -325,6 +326,7 @@ export function CardContentPage({
 }: {
   name: string;
   paint: CardPaint;
+  words: CardWords;
   html?: string | undefined;
   title?: string | undefined;
   body?: string[] | undefined;
@@ -333,7 +335,7 @@ export function CardContentPage({
   return (
     <Frame paint={paint}>
       <header>
-        <TopBar name={name} links={[]} />
+        <TopBar name={name} links={[]} label={w.nav.label} />
       </header>
       <main id="main">
         {html !== undefined ? (
@@ -347,7 +349,7 @@ export function CardContentPage({
           </div>
         )}
       </main>
-      <Footer name={name} platformCredit={platformCredit} />
+      <Footer name={name} platformCredit={platformCredit} w={w.footer} />
     </Frame>
   );
 }

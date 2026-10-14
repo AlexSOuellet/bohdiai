@@ -19,16 +19,20 @@ import { ReviewsRating } from './ReviewsRating';
 import { ReviewsPullQuote } from './ReviewsPullQuote';
 import { ReviewsGuestbook } from './ReviewsGuestbook';
 import { ReviewsTexts } from './ReviewsTexts';
+import type { FamilyWords } from './words';
 
 export function ReviewsBeat({
   section,
   skin,
+  words,
   treatment,
   viewAll,
   full = false,
 }: {
   section: ReviewsSection;
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   /** Force a treatment (the ?reviews= preview / tests). When omitted the authored
    *  `section.treatment` wins, then the documented default. */
   treatment?: ReviewsTreatment | undefined;
@@ -43,7 +47,7 @@ export function ReviewsBeat({
   const chosen = treatment ?? DEFAULT_REVIEWS_TREATMENT;
   const shown = full ? section.items : sampleTestimonials(section.items);
   const effectiveViewAll = full ? undefined : viewAll;
-  const props = { section, items: shown, skin, viewAll: effectiveViewAll };
+  const props = { section, items: shown, skin, words, viewAll: effectiveViewAll };
 
   switch (chosen) {
     case 'pull-quote':

@@ -15,19 +15,22 @@
  */
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetView } from './schemas';
+import type { FamilyWords } from './words';
 import { Nav, linkHref } from './chrome';
 import { Type } from './Type';
-import { DEFAULT_STRINGS } from './defaults';
 
 const MAX_SHOTS = 3;
 
 export function CollageHero({
   identity,
   moment,
+  words,
 }: {
   identity: MainStreetView['identity'];
   moment: MainStreetView['moment'];
   skin: ArchetypeTheme;
+  /** The site's words: the nav's page names and labels. */
+  words: FamilyWords;
 }) {
   const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';
   const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
@@ -35,7 +38,7 @@ export function CollageHero({
   return (
     <header data-ms-hero="collage" className="ms-collage-hero">
       <div data-ms-hero-nav className="ms-hero-navbar">
-        <Nav identity={identity} />
+        <Nav identity={identity} words={words} />
       </div>
       <div className="ms-collage-body">
         <div data-ms-hero-text className="ms-collage-text">
@@ -62,7 +65,7 @@ export function CollageHero({
           </div>
         </div>
         {shots.length > 0 && (
-          <div className="ms-collage-cluster" aria-label={DEFAULT_STRINGS.ariaCollageMoments}>
+          <div className="ms-collage-cluster" aria-label={words.ariaCollageMoments}>
             {shots.map((s, i) => (
               <div key={i} data-ms-collage-shot className="ms-collage-shot">
                 <img src={s.url} alt={s.alt} />

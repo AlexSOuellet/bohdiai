@@ -2,8 +2,20 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, within } from '@testing-library/react';
 import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
 import { BulletinLanding, BulletinContentPage } from './BulletinLanding';
-import { CARD_STRINGS as S } from './strings';
+import { fill, keyWords } from '@/lib/site-words/words';
+import { CARD_WORD_SPOTS, CARD_WORDS_PREFIX, type CardWords } from './words';
 import type { CardData } from './data';
+
+const K = keyWords(CARD_WORD_SPOTS, CARD_WORDS_PREFIX);
+/** Test words: every spot says its own key; a spot with blanks keeps them, and the
+ *  date spots read a real locale so a date can be checked. */
+const S: CardWords = {
+  ...K,
+  dates: { ...K.dates, locale: 'en-US', day: '{weekday} {month} {day}' },
+  work: { ...K.work, open: 'card.work.open {caption}', openNumbered: 'card.work.openNumbered {n}' },
+  lightbox: { ...K.lightbox, count: 'card.lightbox.count {n}/{of}' },
+  bulletin: { ...K.bulletin, tab: 'card.bulletin.tab {name}' },
+};
 
 const TENANT = '4b8f0f5e-8f3a-4a57-9a8e-1f2d3c4b5a69';
 
@@ -26,6 +38,7 @@ const full: CardData = {
     { id: 'd1', date: '2026-10-17', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Harvest Craft Fair', town: 'Wickford' },
     { id: 'd2', date: '2026-12-05', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Christmas on the Green', town: '' },
   ],
+  words: S,
 };
 
 afterEach(cleanup);
@@ -73,11 +86,11 @@ describe('bulletin board page', () => {
 
   it('opens any photo full size and steps through all of them', () => {
     page();
-    fireEvent.click(screen.getByRole('button', { name: S.work.open('Piece 4', 5) }));
+    fireEvent.click(screen.getByRole('button', { name: fill(S.work.open, { caption: 'Piece 4' }) }));
     const dialog = screen.getByRole('dialog', { name: S.lightbox.label });
-    expect(within(dialog).getByText(`Piece 4 · ${S.lightbox.count(5, 12)}`)).toBeTruthy();
+    expect(within(dialog).getByText(`Piece 4${S.lightbox.separator}${fill(S.lightbox.count, { n: 5, of: 12 })}`)).toBeTruthy();
     fireEvent.click(within(dialog).getByRole('button', { name: S.lightbox.next }));
-    expect(within(dialog).getByText(`Piece 5 · ${S.lightbox.count(6, 12)}`)).toBeTruthy();
+    expect(within(dialog).getByText(`Piece 5${S.lightbox.separator}${fill(S.lightbox.count, { n: 6, of: 12 })}`)).toBeTruthy();
     fireEvent.click(within(dialog).getByRole('button', { name: S.lightbox.close }));
     expect(screen.queryByRole('dialog')).toBeNull();
   });
@@ -86,7 +99,7 @@ describe('bulletin board page', () => {
     const { container } = page();
     expect(screen.getByRole('heading', { name: S.bulletin.findMe })).toBeTruthy();
     expect([...container.querySelectorAll('.bb-find b')].map((b) => b.textContent)).toEqual(['Sat Oct 17', 'Sat Dec 5']);
-    expect(container.querySelector('.bb-find li')?.textContent).toBe('Sat Oct 17 Harvest Craft Fair · Wickford');
+    expect(container.querySelector('.bb-find li')?.textContent).toBe(`Sat Oct 17 Harvest Craft Fair${S.dates.separator}Wickford`);
     cleanup();
     page({ ...full, dates: [] });
     expect(screen.queryByRole('heading', { name: S.bulletin.findMe })).toBeNull();
@@ -96,7 +109,7 @@ describe('bulletin board page', () => {
     const { container } = page();
     const tabs = within(screen.getByRole('navigation', { name: S.bulletin.tabs })).getAllByRole('link');
     expect(tabs).toHaveLength(8);
-    expect(tabs.every((t) => t.getAttribute('href') === '#touch' && t.textContent === 'Message Alex')).toBe(true);
+    expect(tabs.every((t) => t.getAttribute('href') === '#touch' && t.textContent === fill(S.bulletin.tab, { name: 'Alex' }))).toBe(true);
     expect(container.querySelectorAll('.bb-tab--gone')).toHaveLength(1);
     expect(container.querySelector('#touch form')).toBeTruthy();
   });
@@ -118,7 +131,7 @@ describe('bulletin board page', () => {
   });
 
   it('shows only the name and the footer for an owner who has filled in nothing', () => {
-    const { container } = render(<BulletinLanding data={{ name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [] }} tenantId={undefined} />);
+    const { container } = render(<BulletinLanding data={{ name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [], words: S }} tenantId={undefined} />);
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Frank');
     for (const sel of ['.bb-stamp', '.bb-strip', '.bb-lede', '.bb-pins', '.bb-find', '.bb-tabs', '.bb-cards']) expect(container.querySelector(sel)).toBeNull();
     expect(screen.getByRole('link', { name: `${S.footer.creditPrefix} ${S.footer.creditBrand}` })).toBeTruthy();
@@ -132,7 +145,7 @@ describe('bulletin board page', () => {
 
 describe('bulletin board content page', () => {
   it('puts privacy and terms on a kraft sheet with a way home', () => {
-    const { container } = render(<BulletinContentPage name="Rustic Rhody" title="Privacy" body={['We keep what you send us.']} />);
+    const { container } = render(<BulletinContentPage name="Rustic Rhody" words={S} title="Privacy" body={['We keep what you send us.']} />);
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Privacy');
     expect(screen.getByRole('link', { name: 'Rustic Rhody' }).getAttribute('href')).toBe('/');
     expect(container.querySelector('.bb-flyer--prose')).toBeTruthy();

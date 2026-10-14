@@ -9,7 +9,7 @@ import Link from 'next/link';
 import type { DerivedPalette } from '@/lib/color/brand-palette';
 import type { ContractorContent, ContractorMedia } from './schemas';
 import { contractorCss, CONTRACTOR_FONTS_HREF } from './styles';
-import { CONTRACTOR_STRINGS as S } from './strings';
+import type { ContractorWords } from './words';
 import { EstimateForm } from './EstimateForm';
 import { VideoTile } from './VideoTile';
 import { SlowVideo } from './SlowVideo';
@@ -33,9 +33,9 @@ export function ArrowIcon(): ReactElement {
   );
 }
 
-export function Stars(): ReactElement {
+export function Stars({ label }: { label: string }): ReactElement {
   return (
-    <div className="cp-stars" role="img" aria-label={S.starsLabel}>
+    <div className="cp-stars" role="img" aria-label={label}>
       {[0, 1, 2, 3, 4].map((i) => (
         <svg key={i} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" />
@@ -73,11 +73,13 @@ export function Headline({ text, highlight }: { text: string; highlight?: string
 export function ContractorShell({
   content: c,
   palette,
+  words: w,
   children,
   platformCredit = true,
 }: {
   content: ContractorContent;
   palette: DerivedPalette;
+  words: ContractorWords;
   children: ReactNode;
   platformCredit?: boolean;
 }): ReactElement {
@@ -91,7 +93,7 @@ export function ContractorShell({
       <link rel="stylesheet" href={CONTRACTOR_FONTS_HREF} />
       <style dangerouslySetInnerHTML={{ __html: contractorCss(palette) }} />
       <div className="cp">
-        <a className="cp-skip" href={`/#${ESTIMATE_ID}`}>{S.skipToEstimate}</a>
+        <a className="cp-skip" href={`/#${ESTIMATE_ID}`}>{w.skipToEstimate}</a>
 
         <header className="cp-head">
           <div className="cp-wrap cp-head__row">
@@ -99,8 +101,8 @@ export function ContractorShell({
               <span className="cp-mark__name">{b.name}</span>
               <span className="cp-mark__trade">{b.trade}</span>
             </Link>
-            <nav className="cp-head__actions" aria-label={S.menuLabel}>
-              <a className="cp-btn cp-btn--line" href={`/#${ESTIMATE_ID}`}>{S.estimateShort}</a>
+            <nav className="cp-head__actions" aria-label={w.menuLabel}>
+              <a className="cp-btn cp-btn--line" href={`/#${ESTIMATE_ID}`}>{w.estimateShort}</a>
               <a className="cp-btn cp-btn--solid" href={tel}>
                 <PhoneIcon />
                 <span className="cp-btn__text">{b.phone}</span>
@@ -115,13 +117,13 @@ export function ContractorShell({
           <div className="cp-wrap">
             <p className="cp-foot__big" aria-hidden="true">{b.name}</p>
             <div className="cp-foot__row">
-              <span>© {year} {b.name} · {S.footer.rights}</span>
-              <span>{S.serving} {b.serviceArea.join(' · ')}</span>
+              <span>{w.footer.copyright} {year} {b.name}{w.separator}{w.footer.rights}</span>
+              <span>{w.serving} {b.serviceArea.join(w.separator)}</span>
               <a href={tel}>{b.phone}</a>
-              <a href="/privacy">{S.footer.privacy}</a>
+              <a href="/privacy">{w.footer.privacy}</a>
               {platformCredit && (
                 <a href={PLATFORM_URL}>
-                  {year} {S.footer.creditPrefix} {S.footer.creditBrand}
+                  {year} {w.footer.creditPrefix} {w.footer.creditBrand}
                 </a>
               )}
             </div>
@@ -129,8 +131,8 @@ export function ContractorShell({
         </footer>
 
         <div className="cp-thumb">
-          <a href={tel}><PhoneIcon /> {S.call}</a>
-          <a href={`/#${ESTIMATE_ID}`}>{S.estimateShort}</a>
+          <a href={tel}><PhoneIcon /> {w.call}</a>
+          <a href={`/#${ESTIMATE_ID}`}>{w.estimateShort}</a>
         </div>
       </div>
     </>
@@ -139,9 +141,9 @@ export function ContractorShell({
 
 /** A plain content page (privacy, terms) in the site's chrome. The html is
  *  pre-rendered from the platform's legal templates (escaped markdown). */
-export function ContractorContentPage({ content, palette, html }: { content: ContractorContent; palette: DerivedPalette; html: string }): ReactElement {
+export function ContractorContentPage({ content, palette, words, html }: { content: ContractorContent; palette: DerivedPalette; words: ContractorWords; html: string }): ReactElement {
   return (
-    <ContractorShell content={content} palette={palette}>
+    <ContractorShell content={content} palette={palette} words={words}>
       <main className="cp-section">
         <div className="cp-wrap cp-prose" dangerouslySetInnerHTML={{ __html: html }} />
       </main>
@@ -149,13 +151,23 @@ export function ContractorContentPage({ content, palette, html }: { content: Con
   );
 }
 
-export function ContractorLanding({ content: c, palette, tenantId }: { content: ContractorContent; palette: DerivedPalette; tenantId: string | undefined }): ReactElement {
+export function ContractorLanding({
+  content: c,
+  palette,
+  words: w,
+  tenantId,
+}: {
+  content: ContractorContent;
+  palette: DerivedPalette;
+  words: ContractorWords;
+  tenantId: string | undefined;
+}): ReactElement {
   const b = c.business;
   const tel = `tel:${b.phoneDial}`;
   const [featured, ...others] = c.reviews?.items ?? [];
 
   return (
-    <ContractorShell content={c} palette={palette}>
+    <ContractorShell content={c} palette={palette} words={w}>
         <main>
           <section className="cp-hero">
             <div className="cp-wrap cp-hero__grid">
@@ -202,12 +214,12 @@ export function ContractorLanding({ content: c, palette, tenantId }: { content: 
                 {c.work.intro !== undefined && <p className="cp-lede">{c.work.intro}</p>}
               </div>
               <div className="cp-work">
-                {c.work.items.map((w) => (
-                  <figure className="cp-work__item cp-unroll" key={w.media.url}>
-                    {w.media.kind === 'video' ? <VideoTile media={w.media} /> : <Media media={w.media} />}
+                {c.work.items.map((item) => (
+                  <figure className="cp-work__item cp-unroll" key={item.media.url}>
+                    {item.media.kind === 'video' ? <VideoTile media={item.media} words={w} /> : <Media media={item.media} />}
                     <figcaption className="cp-work__cap">
-                      <span className="cp-work__caption">{w.caption}</span>
-                      {w.tag !== undefined && <span className="cp-work__tag">{w.tag}</span>}
+                      <span className="cp-work__caption">{item.caption}</span>
+                      {item.tag !== undefined && <span className="cp-work__tag">{item.tag}</span>}
                     </figcaption>
                   </figure>
                 ))}
@@ -249,14 +261,14 @@ export function ContractorLanding({ content: c, palette, tenantId }: { content: 
                   </div>
                 </div>
                 <figure className="cp-feature">
-                  <Stars />
+                  <Stars label={w.starsLabel} />
                   <blockquote>{featured.quote}</blockquote>
                   <figcaption className="cp-cite">{featured.author}{featured.job !== undefined && <small>{featured.job}</small>}</figcaption>
                 </figure>
                 <div className="cp-quotes">
                   {others.map((r) => (
                     <figure className="cp-quote" key={r.author + r.quote.slice(0, 16)}>
-                      <Stars />
+                      <Stars label={w.starsLabel} />
                       <blockquote>{r.quote}</blockquote>
                       <figcaption className="cp-cite">{r.author}{r.job !== undefined && <small>{r.job}</small>}</figcaption>
                     </figure>
@@ -314,13 +326,13 @@ export function ContractorLanding({ content: c, palette, tenantId }: { content: 
                   <ol className="cp-steps">{c.estimate.steps.map((s) => <li key={s}>{s}</li>)}</ol>
                 )}
                 <div className="cp-direct">
-                  <p className="cp-direct__label">{S.callOrText}</p>
+                  <p className="cp-direct__label">{w.callOrText}</p>
                   <a className="cp-direct__phone" href={tel}>{b.phone}</a>
                   {b.email !== undefined && <a className="cp-direct__email" href={`mailto:${b.email}`}>{b.email}</a>}
                 </div>
               </div>
               {tenantId !== undefined && (
-                <EstimateForm tenantId={tenantId} services={c.services.items.map((s) => s.name)} states={c.estimate.states ?? b.serviceArea} detailsHint={c.estimate.detailsHint} />
+                <EstimateForm tenantId={tenantId} services={c.services.items.map((s) => s.name)} states={c.estimate.states ?? b.serviceArea} detailsHint={c.estimate.detailsHint} words={w.form} />
               )}
             </div>
           </section>

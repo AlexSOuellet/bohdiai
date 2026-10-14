@@ -12,6 +12,7 @@
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetView } from './schemas';
+import type { FamilyWords } from './words';
 import { MainStreetRoot, MainStreetFooter } from './chrome';
 import { resolveHero } from './hero-catalog';
 import { Close } from './beats';
@@ -34,6 +35,8 @@ import { resolveCollageShots } from './collage-source';
 export interface MainStreetProps {
   content: MainStreetView;
   skin: ArchetypeTheme;
+  /** The site's words, from `site_words`. */
+  words: FamilyWords;
   products: ProductView[];
   /** The family's section stack — the order + on/off state for every section
    *  on the home page. Walked in order; on-entries render, off-entries skip.
@@ -99,7 +102,7 @@ export interface MainStreetProps {
   originalMood?: string | undefined;
 }
 
-export function MainStreet({ content, skin, products, sectionStack, catalogSize, goodsTreatment, collections, collectionsTreatment, collectionsHref, founderTreatment, shopHref, aboutHref, eventsHref, momentKey, heroVariant, reviewsTreatment, findUsTreatment, family, hiddenSections, shownSections, originalMood }: MainStreetProps) {
+export function MainStreet({ content, skin, words, products, sectionStack, catalogSize, goodsTreatment, collections, collectionsTreatment, collectionsHref, founderTreatment, shopHref, aboutHref, eventsHref, momentKey, heroVariant, reviewsTreatment, findUsTreatment, family, hiddenSections, shownSections, originalMood }: MainStreetProps) {
   const stack = sectionStack ?? FAMILIES.cozy.sectionStack;
   // The maker's walk resolutions applied to the render: turned-off sections are
   // dropped entirely, and the marquee's live logistics draw only from made-real ones.
@@ -131,14 +134,14 @@ export function MainStreet({ content, skin, products, sectionStack, catalogSize,
   const heroMoment = resolveCollageShots(content.moment, family, products, originalMood);
 
   const renderers: Record<SectionKey, () => React.ReactNode | null> = {
-    hero: () => resolveHero(heroVariant)({ identity: content.identity, moment: heroMoment, skin, momentKey }),
+    hero: () => resolveHero(heroVariant)({ identity: content.identity, moment: heroMoment, skin, words, momentKey }),
     founder: () => (
       <Reveal>
-        <FounderBeat founder={content.founder} skin={skin} treatment={founderTreatment} aboutHref={aboutHref} aboutPage={content.about} />
+        <FounderBeat founder={content.founder} skin={skin} words={words} treatment={founderTreatment} aboutHref={aboutHref} aboutPage={content.about} />
       </Reveal>
     ),
     goods: () => (
-      <GoodsBeat goods={content.goods} products={products} skin={skin} treatment={goodsTreatment} catalogSize={catalogSize} shopHref={shopHref} />
+      <GoodsBeat goods={content.goods} products={products} skin={skin} words={words} treatment={goodsTreatment} catalogSize={catalogSize} shopHref={shopHref} />
     ),
     collections: () => (collectionsSection && collections && collections.length > 0
       ? (
@@ -147,6 +150,7 @@ export function MainStreet({ content, skin, products, sectionStack, catalogSize,
             section={collectionsSection}
             items={collections}
             skin={skin}
+            words={words}
             treatment={collectionsTreatment}
             viewAll={collectionsSection.viewAllLabel ? { href: collectionsHref ?? '/collections', label: collectionsSection.viewAllLabel } : undefined}
           />
@@ -156,19 +160,19 @@ export function MainStreet({ content, skin, products, sectionStack, catalogSize,
     reviews: () => (content.reviews && content.reviews.items.length > 0
       ? (
         <Reveal>
-          <ReviewsBeat section={content.reviews} skin={skin} treatment={reviewsTreatment} viewAll={reviewsViewAll} />
+          <ReviewsBeat section={content.reviews} skin={skin} words={words} treatment={reviewsTreatment} viewAll={reviewsViewAll} />
         </Reveal>
       )
       : null),
     findUs: () => (content.founder.findUs && content.founder.findUs.rows.length > 0
       ? (
         <Reveal>
-          <FindUsBeat findUs={content.founder.findUs} skin={skin} treatment={findUsTreatment} eventsHref={eventsHref} />
+          <FindUsBeat findUs={content.founder.findUs} skin={skin} words={words} treatment={findUsTreatment} eventsHref={eventsHref} />
         </Reveal>
       )
       : null),
     marquee: () => (marqueeLines.voice.length > 0 || marqueeLines.info.length > 0
-      ? <MarqueeBeat lines={marqueeLines} skin={skin} />
+      ? <MarqueeBeat lines={marqueeLines} skin={skin} words={words} />
       : null),
     contact: () => null,
     close: () => (
@@ -200,7 +204,7 @@ export function MainStreet({ content, skin, products, sectionStack, catalogSize,
           </div>
         ))}
       </main>
-      <MainStreetFooter shopName={content.shopName} />
+      <MainStreetFooter shopName={content.shopName} words={words} />
     </MainStreetRoot>
   );
 }

@@ -23,15 +23,13 @@ import { GoodsLookbook } from './GoodsLookbook';
 import { GoodsSwitcher } from './GoodsSwitcher';
 import { GoodsSlideshow } from './GoodsSlideshow';
 import { Reveal } from './Reveal';
-import { DEFAULT_STRINGS } from './defaults';
-
-/** Neutral fallback when the maker hasn't authored a view-all cue. */
-const DEFAULT_VIEW_ALL = DEFAULT_STRINGS.fallbackSeeAllGoods;
+import type { FamilyWords } from './words';
 
 export function GoodsBeat({
   goods,
   products,
   skin,
+  words,
   treatment,
   catalogSize,
   shopHref = '/shop',
@@ -40,6 +38,8 @@ export function GoodsBeat({
   goods: MainStreetView['goods'];
   products: ProductView[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   /** Force a treatment (previews/tests). When omitted it is selected. */
   treatment?: GoodsTreatment | undefined;
   /** The maker's TRUE catalog size. Treatment is chosen from this, even though
@@ -58,13 +58,14 @@ export function GoodsBeat({
   // page, not a catalog).
   const chosen = treatment ?? selectGoodsTreatment(catalogSize ?? products.length);
   const sample = full ? products : sampleForTreatment(products, chosen);
-  const viewAll: GoodsViewAll = { href: shopHref, label: goods.viewAllLabel ?? DEFAULT_VIEW_ALL };
+  // The site's own words for the cue when the section has none of its own.
+  const viewAll: GoodsViewAll = { href: shopHref, label: goods.viewAllLabel ?? words.fallbackSeeAllGoods };
   const cta = full ? null : <GoodsViewAllCta viewAll={viewAll} skin={skin} />;
 
   if (chosen === 'procession') {
     return (
       <>
-        <GoodsProcession goods={goods} products={sample} skin={skin} viewAll={viewAll} />
+        <GoodsProcession goods={goods} products={sample} skin={skin} words={words} viewAll={viewAll} />
         {cta}
       </>
     );
@@ -75,7 +76,7 @@ export function GoodsBeat({
   if (chosen === 'module') {
     return (
       <>
-        <GoodsModule goods={goods} products={sample} skin={skin} viewAll={viewAll} />
+        <GoodsModule goods={goods} products={sample} skin={skin} words={words} viewAll={viewAll} />
         {cta}
       </>
     );
@@ -83,7 +84,7 @@ export function GoodsBeat({
   if (chosen === 'table') {
     return (
       <>
-        <GoodsTable goods={goods} products={sample} skin={skin} viewAll={viewAll} />
+        <GoodsTable goods={goods} products={sample} skin={skin} words={words} viewAll={viewAll} />
         {cta}
       </>
     );
@@ -91,15 +92,15 @@ export function GoodsBeat({
 
   const body =
     chosen === 'switcher' ? (
-      <GoodsSwitcher goods={goods} products={sample} skin={skin} viewAll={viewAll} />
+      <GoodsSwitcher goods={goods} products={sample} skin={skin} words={words} viewAll={viewAll} />
     ) : chosen === 'slideshow' ? (
-      <GoodsSlideshow goods={goods} products={sample} skin={skin} viewAll={viewAll} />
+      <GoodsSlideshow goods={goods} products={sample} skin={skin} words={words} viewAll={viewAll} />
     ) : chosen === 'index' ? (
-      <GoodsIndex goods={goods} products={sample} skin={skin} viewAll={viewAll} />
+      <GoodsIndex goods={goods} products={sample} skin={skin} words={words} viewAll={viewAll} />
     ) : chosen === 'lookbook' ? (
-      <GoodsLookbook goods={goods} products={sample} skin={skin} viewAll={viewAll} />
+      <GoodsLookbook goods={goods} products={sample} skin={skin} words={words} viewAll={viewAll} />
     ) : (
-      <GoodsMarquee goods={goods} products={sample} skin={skin} viewAll={viewAll} />
+      <GoodsMarquee goods={goods} products={sample} skin={skin} words={words} viewAll={viewAll} />
     );
 
   return (

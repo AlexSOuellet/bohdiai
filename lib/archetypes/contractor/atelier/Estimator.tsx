@@ -3,7 +3,7 @@
 import { useState, type ReactElement } from 'react';
 import type { z } from 'zod';
 import type { EstimatorSchema } from '../schemas';
-import { CONTRACTOR_STRINGS as S } from '../strings';
+import type { ContractorWords } from '../words';
 
 type Estimator = z.infer<typeof EstimatorSchema>;
 
@@ -13,7 +13,7 @@ type Estimator = z.infer<typeof EstimatorSchema>;
  * choices start on the first of each; nothing is computed, every range is
  * written in the content.
  */
-export function Estimator({ estimator: e, estimateHref }: { estimator: Estimator; estimateHref: string }): ReactElement {
+export function Estimator({ estimator: e, estimateHref, words: w }: { estimator: Estimator; estimateHref: string; words: ContractorWords['estimator'] }): ReactElement {
   const [scope, setScope] = useState(e.scopes[0]?.key ?? '');
   const [size, setSize] = useState(e.sizes[0]?.key ?? '');
   const [grade, setGrade] = useState(e.grades[0]?.key ?? '');
@@ -21,10 +21,10 @@ export function Estimator({ estimator: e, estimateHref }: { estimator: Estimator
   const scopeName = e.scopes.find((s) => s.key === scope)?.name ?? '';
 
   return (
-    <div className="at-est" role="group" aria-label={S.estimator.groupLabel}>
+    <div className="at-est" role="group" aria-label={w.groupLabel}>
       <div className="at-est__choices">
         <fieldset className="at-est__step">
-          <legend className="at-label">{S.estimator.scope}</legend>
+          <legend className="at-label">{w.scope}</legend>
           <div className="at-est__scopes">
             {e.scopes.map((s) => (
               <button key={s.key} type="button" className="at-scope" aria-pressed={s.key === scope} onClick={() => setScope(s.key)}>
@@ -36,7 +36,7 @@ export function Estimator({ estimator: e, estimateHref }: { estimator: Estimator
           </div>
         </fieldset>
         <fieldset className="at-est__step">
-          <legend className="at-label">{S.estimator.size}</legend>
+          <legend className="at-label">{w.size}</legend>
           <div className="at-est__sizes">
             {e.sizes.map((s) => (
               <button key={s.key} type="button" className="at-size" aria-pressed={s.key === size} onClick={() => setSize(s.key)}>{s.name}</button>
@@ -44,7 +44,7 @@ export function Estimator({ estimator: e, estimateHref }: { estimator: Estimator
           </div>
         </fieldset>
         <fieldset className="at-est__step">
-          <legend className="at-label">{S.estimator.grade}</legend>
+          <legend className="at-label">{w.grade}</legend>
           <div className="at-est__grades">
             {e.grades.map((g) => (
               <label key={g.key} className="at-grade" data-on={g.key === grade}>
@@ -60,11 +60,11 @@ export function Estimator({ estimator: e, estimateHref }: { estimator: Estimator
         </fieldset>
       </div>
       <div className="at-est__result">
-        <p className="at-label">{S.estimator.range}</p>
+        <p className="at-label">{w.range}</p>
         <p className="at-est__scope">{scopeName}</p>
         <p className="at-est__range" aria-live="polite">{range}</p>
         <p className="at-est__note">{e.rangeNote}</p>
-        <a className="at-btn at-btn--dark at-btn--wide" href={estimateHref}>{S.estimator.send}</a>
+        <a className="at-btn at-btn--dark at-btn--wide" href={estimateHref}>{w.send}</a>
       </div>
     </div>
   );

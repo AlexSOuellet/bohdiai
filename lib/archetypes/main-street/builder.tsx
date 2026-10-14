@@ -30,6 +30,8 @@ import { notFound } from 'next/navigation';
 import type { ReactElement } from 'react';
 import { supabaseAdmin } from '@/lib/supabase';
 import { familyViewFromHomes, holdsLegacyContent, loadFamilyHomes } from './from-homes';
+import { getSiteWords } from '@/lib/site-words/queries';
+import { FAMILY_NO_WORDS, FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX, type FamilyWords } from './words';
 
 /** Every section variant the family (or a preview override) picks for a render.
  *  Populated at the builder level from the tenant's mood + any active URL previews;
@@ -277,17 +279,29 @@ function withNav(content: MainStreetView, navVariant?: NavVariant): MainStreetVi
   return { ...content, identity: { ...content.identity, navVariant } };
 }
 
+/** Paints a family page from its view and the site's words. */
+type FamilyPaint = (view: MainStreetView, words: FamilyWords) => ReactElement;
+
 /** A family page's content comes from the site's homes. The old samples, whose
  *  page record still holds their content, read it from there until the clean-up
- *  step retires them (Modular Plan steps 3 and 6). */
-function withFamilyContent(content: unknown, tenantId: string | undefined, paint: (view: MainStreetView) => ReactElement): ReactElement {
-  if (holdsLegacyContent(content)) return paint(content as MainStreetView);
-  if (tenantId === undefined) notFound();
-  return <FamilyFromHomes tenantId={tenantId} paint={paint} />;
+ *  step retires them (Modular Plan steps 3 and 6). Both paths read the site's
+ *  words from `site_words`; a page with no site behind it has none to read. */
+function withFamilyContent(content: unknown, tenantId: string | undefined, paint: FamilyPaint): ReactElement {
+  if (tenantId === undefined) {
+    if (holdsLegacyContent(content)) return paint(content as MainStreetView, FAMILY_NO_WORDS);
+    notFound();
+  }
+  return <FamilyFromHomes content={content} tenantId={tenantId} paint={paint} />;
 }
 
-async function FamilyFromHomes({ tenantId, paint }: { tenantId: string; paint: (view: MainStreetView) => ReactElement }): Promise<ReactElement> {
-  return paint(familyViewFromHomes(await loadFamilyHomes(supabaseAdmin(), tenantId)));
+async function FamilyFromHomes({ content, tenantId, paint }: { content: unknown; tenantId: string; paint: FamilyPaint }): Promise<ReactElement> {
+  const db = supabaseAdmin();
+  const legacy = holdsLegacyContent(content);
+  const [words, homes] = await Promise.all([
+    getSiteWords(db, tenantId, FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX),
+    legacy ? Promise.resolve(null) : loadFamilyHomes(db, tenantId),
+  ]);
+  return paint(homes === null ? (content as MainStreetView) : familyViewFromHomes(homes, words), words);
 }
 
 export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
@@ -350,31 +364,31 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
     // authored fields (old samples only). Read them here so the home render can hide
     // turned-off sections and keep seeded dates out of the marquee.
     const resolutions = readSectionResolutions(content);
-    return withFamilyContent(content, tenantId, (view) => {
+    return withFamilyContent(content, tenantId, (view, words) => {
     const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
     switch (page) {
       case 'shop':
-        return <ShopPage content={c} skin={skin} products={products} family={family} />;
+        return <ShopPage content={c} skin={skin} words={words} products={products} family={family} />;
       case 'events':
-        return <EventsPage content={c} skin={skin} family={family} />;
+        return <EventsPage content={c} skin={skin} words={words} family={family} />;
       case 'about':
-        return <AboutPage content={c} skin={skin} treatments={treatments} family={family} />;
+        return <AboutPage content={c} skin={skin} words={words} treatments={treatments} family={family} />;
       case 'contact':
-        return <ContactPage content={c} skin={skin} tenantId={tenantId} family={family} />;
+        return <ContactPage content={c} skin={skin} words={words} tenantId={tenantId} family={family} />;
       case 'collections':
-        return <CollectionsPage content={c} skin={skin} collections={collections ?? []} family={family} />;
+        return <CollectionsPage content={c} skin={skin} words={words} collections={collections ?? []} family={family} />;
       case 'collection': {
         // The route already filtered products to this collection's rows; look up
-        // the collection itself so we can title the page. Falls back to a stub if
-        // the slug wasn't in the list (shouldn't happen — route 404s first).
+        // the collection itself so we can title the page. Falls back to an untitled
+        // stub if the slug wasn't in the list (shouldn't happen — route 404s first).
         const collection = (collections ?? []).find((x) => x.slug === collectionSlug)
-          ?? { slug: collectionSlug ?? '', name: 'Collection', count: products.length };
-        return <CollectionPage content={c} skin={skin} collection={collection} products={products} treatments={treatments} family={family} />;
+          ?? { slug: collectionSlug ?? '', name: '', count: products.length };
+        return <CollectionPage content={c} skin={skin} words={words} collection={collection} products={products} treatments={treatments} family={family} />;
       }
       case 'testimonials':
-        return <TestimonialsPage content={c} skin={skin} family={family} />;
+        return <TestimonialsPage content={c} skin={skin} words={words} family={family} />;
       default:
-        return <MainStreet content={c} skin={skin} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} hiddenSections={resolutions.hidden} shownSections={resolutions.shown} originalMood={originalMood} />;
+        return <MainStreet content={c} skin={skin} words={words} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} hiddenSections={resolutions.hidden} shownSections={resolutions.shown} originalMood={originalMood} />;
     }
     });
   },
@@ -383,27 +397,27 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
     // Product pages wear the family's nav variant AND the family's wallpaper.
     const family = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
-    return withFamilyContent(content, tenantId, (view) => {
+    return withFamilyContent(content, tenantId, (view, words) => {
       const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
-      return <MainStreetProduct content={c} skin={skin} product={product} family={family} />;
+      return <MainStreetProduct content={c} skin={skin} words={words} product={product} family={family} />;
     });
   },
   renderContentPage: ({ content, lookKey, title, body, html, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
     const family = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
-    return withFamilyContent(content, tenantId, (view) => {
+    return withFamilyContent(content, tenantId, (view, words) => {
       const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
-      return <ContentPage content={c} skin={skin} title={title} body={body} html={html} family={family} />;
+      return <ContentPage content={c} skin={skin} words={words} title={title} body={body} html={html} family={family} />;
     });
   },
   renderShell: ({ content, lookKey, children, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
     const family = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
-    return withFamilyContent(content, tenantId, (view) => {
+    return withFamilyContent(content, tenantId, (view, words) => {
       const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
-      return <MainStreetSubPage content={c} skin={skin} family={family}>{children}</MainStreetSubPage>;
+      return <MainStreetSubPage content={c} skin={skin} words={words} family={family}>{children}</MainStreetSubPage>;
     });
   },
 };

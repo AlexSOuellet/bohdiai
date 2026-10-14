@@ -7,7 +7,8 @@
 import { dialable, type ProfileForm } from '@/lib/backend/profile/profile-form';
 import type { MarketDate } from '@/lib/backend/dates/dates-form';
 import { marketDay, marketName } from './data';
-import { CARD_STRINGS as S } from './strings';
+import { fill } from '@/lib/site-words/words';
+import type { CardWords } from './words';
 
 export const TOUCH_ID = 'touch';
 
@@ -24,13 +25,14 @@ export function nameLines(name: string): { lines: string[]; size: NameSize } {
 export type TabTarget = { kind: 'call' | 'message'; href: string; label: string };
 
 /** Like a real flyer: the tabs carry the phone number when there is one; otherwise they lead to the contact form. */
-export function tabTarget(profile: ProfileForm): TabTarget {
+export function tabTarget(profile: ProfileForm, w: CardWords['bulletin']): TabTarget {
   if (profile.phone !== '') return { kind: 'call', href: `tel:${dialable(profile.phone)}`, label: profile.phone };
-  return { kind: 'message', href: `#${TOUCH_ID}`, label: S.bulletin.tab(profile.signature) };
+  const label = profile.signature === '' ? w.tabNoName : fill(w.tab, { name: profile.signature });
+  return { kind: 'message', href: `#${TOUCH_ID}`, label };
 }
 
-export function datePieces(d: MarketDate): { day: string; market: string; town: string } {
-  return { day: marketDay(d), market: marketName(d), town: d.town };
+export function datePieces(d: MarketDate, w: CardWords['dates']): { day: string; market: string; town: string } {
+  return { day: marketDay(d, w), market: marketName(d, w), town: d.town };
 }
 
 /** The torch's burned name: one word per line, but a word of two characters or
@@ -75,9 +77,9 @@ export function halves(text: string): [string, string] {
 
 /** The torch's brand ring: "Name · Tag line · " when that fits once around,
  *  otherwise the name repeated until the ring is full. */
-export function ringFill(name: string, kicker: string, fits = 46): string {
-  const both = `${name} · ${kicker} · `;
+export function ringFill(name: string, kicker: string, separator: string, fits = 46): string {
+  const both = `${name}${separator}${kicker}${separator}`;
   if (kicker !== '' && both.length <= fits) return both;
-  const once = `${name} · `;
+  const once = `${name}${separator}`;
   return once.repeat(Math.max(1, Math.floor(fits / once.length)));
 }

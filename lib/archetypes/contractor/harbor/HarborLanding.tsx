@@ -11,7 +11,8 @@ import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
 import type { DerivedPalette } from '@/lib/color/brand-palette';
 import type { ContractorContent } from '../schemas';
-import { CONTRACTOR_STRINGS as S } from '../strings';
+import { fill } from '@/lib/site-words/words';
+import type { ContractorWords } from '../words';
 import { EstimateForm } from '../EstimateForm';
 import { Media } from '../ContractorLanding';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
@@ -28,11 +29,13 @@ function Icon({ name, fill }: { name: string; fill?: boolean }): ReactElement {
 export function HarborShell({
   content: c,
   palette,
+  words: w,
   children,
   platformCredit = true,
 }: {
   content: ContractorContent;
   palette: DerivedPalette;
+  words: ContractorWords;
   children: ReactNode;
   platformCredit?: boolean;
 }): ReactElement {
@@ -46,7 +49,7 @@ export function HarborShell({
       <link rel="stylesheet" href={HARBOR_FONTS_HREF} />
       <style dangerouslySetInnerHTML={{ __html: harborCss(palette) }} />
       <div className="hb">
-        <a className="hb-skip" href={`/#${ESTIMATE_ID}`}>{S.skipToEstimate}</a>
+        <a className="hb-skip" href={`/#${ESTIMATE_ID}`}>{w.skipToEstimate}</a>
         {c.notice !== undefined && <p className="hb-notice"><Icon name="campaign" /> {c.notice}</p>}
 
         <header className="hb-head">
@@ -55,9 +58,9 @@ export function HarborShell({
               <span className="hb-mark__name">{b.name}</span>
               <span className="hb-mark__trade">{b.trade}</span>
             </Link>
-            <nav className="hb-head__actions" aria-label={S.menuLabel}>
+            <nav className="hb-head__actions" aria-label={w.menuLabel}>
               <a className="hb-head__phone" href={tel}><Icon name="call" /> <span>{b.phone}</span></a>
-              <a className="hb-btn hb-btn--gold" href={`/#${ESTIMATE_ID}`}>{S.estimateShort}</a>
+              <a className="hb-btn hb-btn--gold" href={`/#${ESTIMATE_ID}`}>{w.estimateShort}</a>
             </nav>
           </div>
         </header>
@@ -67,21 +70,21 @@ export function HarborShell({
         <footer className="hb-foot">
           <div className="hb-wrap hb-foot__row">
             <span className="hb-foot__name">{b.name} {b.trade}</span>
-            <span>{S.serving} {b.serviceArea.join(' · ')}</span>
+            <span>{w.serving} {b.serviceArea.join(w.separator)}</span>
             <a href={tel}>{b.phone}</a>
-            <a href="/privacy">{S.footer.privacy}</a>
-            <span>© {year} · {S.footer.rights}</span>
+            <a href="/privacy">{w.footer.privacy}</a>
+            <span>{w.footer.copyright} {year}{w.separator}{w.footer.rights}</span>
             {platformCredit && (
               <a href={PLATFORM_URL}>
-                {year} {S.footer.creditPrefix} {S.footer.creditBrand}
+                {year} {w.footer.creditPrefix} {w.footer.creditBrand}
               </a>
             )}
           </div>
         </footer>
 
         <div className="hb-thumb">
-          <a href={tel}><Icon name="call" /> {S.call}</a>
-          <a href={`/#${ESTIMATE_ID}`}><Icon name="architecture" /> {S.estimateShort}</a>
+          <a href={tel}><Icon name="call" /> {w.call}</a>
+          <a href={`/#${ESTIMATE_ID}`}><Icon name="architecture" /> {w.estimateShort}</a>
         </div>
       </div>
     </>
@@ -89,9 +92,9 @@ export function HarborShell({
 }
 
 /** A plain content page (privacy, terms) in the harbor chrome. */
-export function HarborContentPage({ content, palette, html }: { content: ContractorContent; palette: DerivedPalette; html: string }): ReactElement {
+export function HarborContentPage({ content, palette, words, html }: { content: ContractorContent; palette: DerivedPalette; words: ContractorWords; html: string }): ReactElement {
   return (
-    <HarborShell content={content} palette={palette}>
+    <HarborShell content={content} palette={palette} words={words}>
       <main className="hb-section">
         <div className="hb-wrap hb-prose" dangerouslySetInnerHTML={{ __html: html }} />
       </main>
@@ -109,14 +112,24 @@ function SectionHead({ eyebrow, title, intro, id }: { eyebrow: string; title: st
   );
 }
 
-export function HarborLanding({ content: c, palette, tenantId }: { content: ContractorContent; palette: DerivedPalette; tenantId: string | undefined }): ReactElement {
+export function HarborLanding({
+  content: c,
+  palette,
+  words: w,
+  tenantId,
+}: {
+  content: ContractorContent;
+  palette: DerivedPalette;
+  words: ContractorWords;
+  tenantId: string | undefined;
+}): ReactElement {
   const b = c.business;
   const tel = `tel:${b.phoneDial}`;
   const owner = c.hero.cutout;
   const reviews = c.reviews;
 
   return (
-    <HarborShell content={c} palette={palette}>
+    <HarborShell content={c} palette={palette} words={w}>
       <main>
         {/* ── the cover: photo, words on it, the owner large in front ── */}
         <section className="hb-cover">
@@ -160,13 +173,13 @@ export function HarborLanding({ content: c, palette, tenantId }: { content: Cont
                 <ul className="hb-steps">{c.estimate.steps.map((s) => <li key={s}><Icon name="check_circle" /> {s}</li>)}</ul>
               )}
               <a className="hb-direct" href={tel}>
-                <span className="hb-direct__label">{S.callOrText}</span>
+                <span className="hb-direct__label">{w.callOrText}</span>
                 <span className="hb-direct__phone">{b.phone}</span>
               </a>
             </div>
             {tenantId !== undefined && (
               <div className="hb-formcard">
-                <EstimateForm tenantId={tenantId} services={c.services.items.map((s) => s.name)} states={c.estimate.states ?? b.serviceArea} detailsHint={c.estimate.detailsHint} />
+                <EstimateForm tenantId={tenantId} services={c.services.items.map((s) => s.name)} states={c.estimate.states ?? b.serviceArea} detailsHint={c.estimate.detailsHint} words={w.form} />
               </div>
             )}
           </div>
@@ -228,7 +241,7 @@ export function HarborLanding({ content: c, palette, tenantId }: { content: Cont
                   </p>
                 )}
               </div>
-              <QuoteRotator items={reviews.items} prefix="hb" />
+              <QuoteRotator items={reviews.items} prefix="hb" words={w} />
               {reviews.note !== undefined && <p className="hb-note">{reviews.note}</p>}
             </div>
           </section>
@@ -263,7 +276,7 @@ export function HarborLanding({ content: c, palette, tenantId }: { content: Cont
               ) : (
                 c.crew.body.map((p) => <p className="hb-promise__body" key={p.slice(0, 32)}>{p}</p>)
               )}
-              <a className="hb-btn hb-btn--gold hb-btn--big" href={tel}><Icon name="phone_in_talk" /> {S.callNow}: {b.phone}</a>
+              <a className="hb-btn hb-btn--gold hb-btn--big" href={tel}><Icon name="phone_in_talk" /> {fill(w.callNow, { phone: b.phone })}</a>
             </div>
             <div className={owner !== undefined ? 'hb-promise__figure hb-promise__figure--owner' : 'hb-promise__figure'}>
               {owner !== undefined ? <img src={owner.url} alt="" loading="lazy" decoding="async" /> : <Media media={c.crew.photo} />}

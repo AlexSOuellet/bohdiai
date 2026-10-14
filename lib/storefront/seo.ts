@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
+import { fill } from '@/lib/site-words/words';
+import type { ShopTitleSpot, ShopWords } from './words';
 
 /**
  * Per-tenant storefront SEO. Pure builders here (fully unit-tested); the DB load
  * lives in `seo-data.ts`. Every storefront route calls `buildTenantMetadata` from
  * its `generateMetadata`, and the storefront layout injects `tenantBusinessJsonLd`
- * so a shop identifies as ITSELF to search engines — not as BohdiAI.
+ * so a shop identifies as ITSELF to search engines — not as BohdiAI. Every word
+ * a title or description shows is the site's own (`ShopWords`), passed in.
  */
 
 export const BASE_DOMAIN = 'bohdiai.com';
@@ -32,8 +35,10 @@ export interface TenantSeoFacts {
 export interface PageSeo {
   /** The storefront path, e.g. '/', '/about', '/listings/festival-package'. */
   path: string;
-  /** Human page name for sub-page titles ('About', 'Shop', a product name). */
+  /** The page's own name from its content (a product or collection name). */
   pageName?: string | undefined;
+  /** The site's word for this route's name, used when the page has no content name. */
+  titleSpot?: ShopTitleSpot | undefined;
   /** Page-specific description (e.g. a product's short description). */
   description?: string | undefined;
   /** Page-specific share image (e.g. a product photo). */
@@ -42,6 +47,7 @@ export interface PageSeo {
   noindex?: boolean | undefined;
 }
 
+/** Postal abbreviations: reference data for short titles, not a site's words. */
 const US_STATE_ABBR: Record<string, string> = {
   alabama: 'AL', alaska: 'AK', arizona: 'AZ', arkansas: 'AR', california: 'CA',
   colorado: 'CO', connecticut: 'CT', delaware: 'DE', florida: 'FL', georgia: 'GA',
@@ -61,60 +67,62 @@ export function storefrontOrigin(subdomain: string): string {
   return `https://${subdomain.toLowerCase()}.${BASE_DOMAIN}`;
 }
 
-/** Short, title-friendly area list: "RI, CT & MA". Unknown areas pass through. */
-export function abbreviateAreas(areas: readonly string[]): string {
+/** Short, title-friendly area list ("RI, CT & MA" in the site's words). Unknown areas pass through. */
+export function abbreviateAreas(areas: readonly string[], w: ShopWords['areas']): string {
   const parts = areas.map((a) => US_STATE_ABBR[a.trim().toLowerCase()] ?? a.trim()).filter(Boolean);
   if (parts.length === 0) return '';
   if (parts.length === 1) return parts[0] ?? '';
-  return `${parts.slice(0, -1).join(', ')} & ${parts[parts.length - 1]}`;
+  return fill(w.shortLast, { list: parts.slice(0, -1).join(w.shortJoin), last: parts[parts.length - 1] ?? '' });
 }
 
-/** Full-name area list for prose: "Rhode Island, Connecticut, and Massachusetts". */
-export function joinAreas(areas: readonly string[]): string {
+/** Full-name area list for prose ("Rhode Island, Connecticut, and Massachusetts" in the site's words). */
+export function joinAreas(areas: readonly string[], w: ShopWords['areas']): string {
   const parts = areas.map((a) => a.trim()).filter(Boolean);
   if (parts.length === 0) return '';
   if (parts.length === 1) return parts[0] ?? '';
-  if (parts.length === 2) return `${parts[0]} and ${parts[1]}`;
-  return `${parts.slice(0, -1).join(', ')}, and ${parts[parts.length - 1]}`;
+  if (parts.length === 2) return fill(w.pair, { first: parts[0] ?? '', last: parts[1] ?? '' });
+  return fill(w.listLast, { list: parts.slice(0, -1).join(w.listJoin), last: parts[parts.length - 1] ?? '' });
 }
 
-function composeTitle(facts: TenantSeoFacts): string {
+function composeTitle(facts: TenantSeoFacts, w: ShopWords): string {
   if (facts.seoTitle && facts.seoTitle.trim() !== '') return facts.seoTitle.trim();
   const areas = facts.serviceAreas ?? [];
-  const abbr = abbreviateAreas(areas);
-  if (facts.nicheLabel && abbr !== '') return `${facts.shopName} — ${facts.nicheLabel} in ${abbr}`;
-  if (facts.nicheLabel) return `${facts.shopName} — ${facts.nicheLabel}`;
-  if (abbr !== '') return `${facts.shopName} — ${abbr}`;
-  return facts.shopName;
+  const abbr = abbreviateAreas(areas, w.areas);
+  const shop = facts.shopName;
+  if (facts.nicheLabel && abbr !== '') return fill(w.seo.titleNicheAreas, { shop, niche: facts.nicheLabel, areas: abbr });
+  if (facts.nicheLabel) return fill(w.seo.titleNiche, { shop, niche: facts.nicheLabel });
+  if (abbr !== '') return fill(w.seo.titleAreas, { shop, areas: abbr });
+  return shop;
 }
 
-function composeDescription(facts: TenantSeoFacts): string | undefined {
+function composeDescription(facts: TenantSeoFacts, w: ShopWords): string | undefined {
   if (facts.seoDescription && facts.seoDescription.trim() !== '') return facts.seoDescription.trim();
   const areas = facts.serviceAreas ?? [];
-  const where = joinAreas(areas);
+  const where = joinAreas(areas, w.areas);
   const lead = facts.tagline?.trim();
   const what = facts.nicheLabel ? facts.nicheLabel.toLowerCase() : undefined;
   // Compose from whatever we honestly have — never invent business specifics.
-  const tail = [what, where !== '' ? `serving ${where}` : undefined].filter(Boolean).join(' ');
-  const parts = [lead, tail !== '' ? `${tail.charAt(0).toUpperCase()}${tail.slice(1)}.` : undefined].filter(Boolean);
-  const out = parts.join(' — ').trim();
+  const tail = [what, where !== '' ? fill(w.seo.serving, { areas: where }) : undefined].filter(Boolean).join(w.seo.tailJoin);
+  const parts = [lead, tail !== '' ? fill(w.seo.sentence, { text: `${tail.charAt(0).toUpperCase()}${tail.slice(1)}` }) : undefined].filter(Boolean);
+  const out = parts.join(w.seo.descriptionJoin).trim();
   return out === '' ? undefined : out;
 }
 
 /** Build the Next.js Metadata for one storefront page. */
-export function buildTenantMetadata(facts: TenantSeoFacts, page: PageSeo): Metadata {
+export function buildTenantMetadata(facts: TenantSeoFacts, page: PageSeo, w: ShopWords): Metadata {
   const origin = storefrontOrigin(facts.subdomain);
   const url = `${origin}${page.path}`;
   const isHome = page.path === '/';
 
-  const homeTitle = composeTitle(facts);
+  const homeTitle = composeTitle(facts, w);
+  const pageName = page.pageName ?? (page.titleSpot === undefined ? undefined : w.pages[page.titleSpot]);
   const title = isHome
     ? homeTitle
-    : page.pageName
-      ? `${page.pageName} — ${facts.shopName}`
+    : pageName
+      ? fill(w.seo.pageTitle, { page: pageName, shop: facts.shopName })
       : facts.shopName;
 
-  const description = page.description?.trim() || composeDescription(facts);
+  const description = page.description?.trim() || composeDescription(facts, w);
   const imageUrl = page.imageUrl ?? facts.imageUrl;
   const images = imageUrl ? [{ url: imageUrl }] : undefined;
 
@@ -159,9 +167,9 @@ export interface BusinessJsonLd {
 
 /** Structured data identifying the shop. LocalBusiness (with areaServed) for a
  *  maker who serves a region; Store otherwise. This is the local-SEO signal. */
-export function tenantBusinessJsonLd(facts: TenantSeoFacts): BusinessJsonLd {
+export function tenantBusinessJsonLd(facts: TenantSeoFacts, w: ShopWords): BusinessJsonLd {
   const areas = facts.serviceAreas ?? [];
-  const description = composeDescription(facts);
+  const description = composeDescription(facts, w);
   const ld: BusinessJsonLd = {
     '@context': 'https://schema.org',
     '@type': areas.length > 0 ? 'LocalBusiness' : 'Store',

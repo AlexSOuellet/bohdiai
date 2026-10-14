@@ -2,6 +2,11 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
 import { SplitHero } from './SplitHero';
 import { MAIN_STREET_SKINS } from './skins';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 const identity = { wordmark: "June's Sourdough", nav: ['Shop', 'About'] };
@@ -32,39 +37,39 @@ afterEach(cleanup);
 
 describe('SplitHero — a skin-agnostic swappable hero (text panel + media panel)', () => {
   it('renders a split hero with a text panel and a media panel', () => {
-    const { container } = render(<SplitHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<SplitHero words={W} identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('[data-ms-hero="split"]')).toBeTruthy();
     expect(container.querySelector('[data-ms-hero-text]')).toBeTruthy();
     expect(container.querySelector('[data-ms-hero-media]')).toBeTruthy();
   });
 
   it('renders the headline, eyebrow, and the shared sub-line (the pile ingredient, NOT the Story fading lines)', () => {
-    const { container } = render(<SplitHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<SplitHero words={W} identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('[data-type="brand"]')!.textContent).toBe(moment.brand);
     expect(container.querySelector('[data-type="eyebrow"]')!.textContent).toBe(moment.eyebrow);
     expect(container.querySelector('[data-ms-hero-sub]')!.textContent).toBe(moment.sub);
   });
 
   it('does NOT render the Story fading lines (those belong to the Story hero only)', () => {
-    const { container } = render(<SplitHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<SplitHero words={W} identity={identity} moment={moment} skin={skin} />);
     expect(container.querySelector('[data-ms-hero-story-line]')).toBeNull();
   });
 
   it('omits the sub-line element when no sub is authored (legacy content)', () => {
     const { sub, ...noSub } = moment;
     void sub;
-    const { container } = render(<SplitHero identity={identity} moment={noSub} skin={skin} />);
+    const { container } = render(<SplitHero words={W} identity={identity} moment={noSub} skin={skin} />);
     expect(container.querySelector('[data-ms-hero-sub]')).toBeNull();
   });
 
   it('renders the media (a video for a video kind) in the media panel', () => {
-    const { container } = render(<SplitHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<SplitHero words={W} identity={identity} moment={moment} skin={skin} />);
     const panel = container.querySelector('[data-ms-hero-media]')!;
     expect(panel.querySelector('video')).toBeTruthy();
   });
 
   it('points the primary CTA at the authored target page', () => {
-    const { container } = render(<SplitHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<SplitHero words={W} identity={identity} moment={moment} skin={skin} />);
     const cta = container.querySelector('[data-ms-hero-text] a[href]')!;
     // ctaTarget 'shop' resolves to the shop page
     const ctaLink = Array.from(container.querySelectorAll('[data-ms-hero-text] a')).find((a) => a.textContent === moment.ctaLabel)!;
@@ -75,13 +80,13 @@ describe('SplitHero — a skin-agnostic swappable hero (text panel + media panel
   it('falls back to /shop when the primary CTA has no authored target', () => {
     const { ctaTarget, ...noTarget } = moment;
     void ctaTarget;
-    const { container } = render(<SplitHero identity={identity} moment={noTarget} skin={skin} />);
+    const { container } = render(<SplitHero words={W} identity={identity} moment={noTarget} skin={skin} />);
     const ctaLink = Array.from(container.querySelectorAll('[data-ms-hero-text] a')).find((a) => a.textContent === moment.ctaLabel)!;
     expect(ctaLink.getAttribute('href')).toBe('/shop');
   });
 
   it('defaults the media to the right (text panel comes first in the DOM)', () => {
-    const { container } = render(<SplitHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<SplitHero words={W} identity={identity} moment={moment} skin={skin} />);
     const hero = container.querySelector('[data-ms-hero="split"]')!;
     const panels = hero.querySelectorAll('[data-ms-hero-text], [data-ms-hero-media]');
     expect(panels[0]!.getAttribute('data-ms-hero-text')).not.toBeNull();
@@ -92,7 +97,7 @@ describe('SplitHero — a skin-agnostic swappable hero (text panel + media panel
     // Class-only: the DOM order stays text-first, media-second; the mirror layout
     // is achieved by CSS `order` scoped to `[data-media-side="left"]` in skinVarsCss.
     // The test asserts the data attribute that drives the CSS, not DOM reordering.
-    const { container } = render(<SplitHero identity={identity} moment={moment} skin={skin} mediaSide="left" />);
+    const { container } = render(<SplitHero words={W} identity={identity} moment={moment} skin={skin} mediaSide="left" />);
     const hero = container.querySelector('[data-ms-hero="split"]')!;
     expect(hero.getAttribute('data-media-side')).toBe('left');
     expect(container.querySelector('[data-ms-hero-media]')).toBeTruthy();
@@ -100,7 +105,7 @@ describe('SplitHero — a skin-agnostic swappable hero (text panel + media panel
   });
 
   it('renders the nav (the wordmark) inside the hero', () => {
-    const { container } = render(<SplitHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<SplitHero words={W} identity={identity} moment={moment} skin={skin} />);
     expect(container.textContent).toContain(identity.wordmark);
   });
 
@@ -108,7 +113,7 @@ describe('SplitHero — a skin-agnostic swappable hero (text panel + media panel
     // Layout is class-only: the horizontal-bar rule lives in skinVarsCss under
     // `.ms-splithero-nav` (display:flex; justify-content:space-between). Assert the
     // class hook that carries the layout, not a resolved inline `style.display`.
-    const { container } = render(<SplitHero identity={identity} moment={moment} skin={skin} />);
+    const { container } = render(<SplitHero words={W} identity={identity} moment={moment} skin={skin} />);
     const navBar = container.querySelector('[data-ms-hero-nav]') as HTMLElement | null;
     expect(navBar).toBeTruthy();
     expect(navBar!.className).toContain('ms-splithero-nav');

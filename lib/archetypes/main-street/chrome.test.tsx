@@ -3,6 +3,11 @@ import { render, cleanup } from '@testing-library/react';
 import { MainStreetRoot, MainStreetFooter, WordmarkLink, Nav, skinVarsCss, fluidFontSize, linkHref, LINK_TARGETS, resolveNav, MAIN_STREET_NAV } from './chrome';
 import { MAIN_STREET_SKINS } from './skins';
 import { relativeLuminance } from './logo-contrast';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 afterEach(cleanup);
@@ -151,12 +156,13 @@ describe('fluidFontSize', () => {
 });
 
 describe('resolveNav', () => {
-  it('returns the platform nav — the fixed list of pages every storefront has (§1.7)', () => {
-    expect(resolveNav()).toEqual(MAIN_STREET_NAV);
+  it('returns the platform nav — the fixed list of pages every storefront has (§1.7), named in the site’s words', () => {
+    expect(resolveNav(W)).toEqual(MAIN_STREET_NAV.map((n) => ({ href: n.href, label: W[n.word] })));
+    expect(resolveNav(W).map((n) => n.label)).toEqual(['family.navShop', 'family.navCollections', 'family.navAbout', 'family.navEvents', 'family.navContact']);
   });
 
   it('lists Shop, Collections, About, Events, Contact in reading order — Testimonials lives in the footer (Session 66 A3)', () => {
-    const hrefs = resolveNav().map((n) => n.href);
+    const hrefs = resolveNav(W).map((n) => n.href);
     expect(hrefs).toEqual(['/shop', '/collections', '/about', '/events', '/contact']);
     expect(hrefs).not.toContain('/testimonials');
   });
@@ -212,13 +218,13 @@ describe('Nav — split-center variant', () => {
   };
 
   it('renders the standard bar with no split grid by default', () => {
-    const { container } = render(<Nav identity={baseIdentity} />);
+    const { container } = render(<Nav words={W} identity={baseIdentity} />);
     expect(container.querySelector('.ms-nav-split')).toBeNull();
     expect(container.querySelector('.ms-nav-links')).not.toBeNull();
   });
 
   it('centers the wordmark between two link groups when navVariant is split-center', () => {
-    const { container, getByText } = render(<Nav identity={{ ...baseIdentity, navVariant: 'split-center' }} />);
+    const { container, getByText } = render(<Nav words={W} identity={{ ...baseIdentity, navVariant: 'split-center' }} />);
     const split = container.querySelector('.ms-nav-split');
     const left = container.querySelector('.ms-nav-split-left');
     const right = container.querySelector('.ms-nav-split-right');
@@ -235,17 +241,17 @@ describe('Nav — split-center variant', () => {
   });
 
   it('hides the links behind an always-on Menu trigger for the menu-reveal variant', () => {
-    const { container, getByText } = render(<Nav identity={{ ...baseIdentity, navVariant: 'menu-reveal' }} />);
+    const { container, getByText } = render(<Nav words={W} identity={{ ...baseIdentity, navVariant: 'menu-reveal' }} />);
     // no inline desktop link row — the links live in the overlay
     expect(container.querySelector('.ms-nav-links')).toBeNull();
     // a word trigger, shown at all widths (not the mobile-only burger)
     expect(container.querySelector('.ms-nav-toggle--always')).not.toBeNull();
     expect(container.querySelector('.ms-menu-trigger')).not.toBeNull();
-    expect(getByText('Menu')).toBeTruthy();
+    expect(getByText('family.ariaMenu')).toBeTruthy();
   });
 
   it('elevates the shop link to a filled CTA button for the cta-forward variant', () => {
-    const { container } = render(<Nav identity={{ ...baseIdentity, navVariant: 'cta-forward' }} />);
+    const { container } = render(<Nav words={W} identity={{ ...baseIdentity, navVariant: 'cta-forward' }} />);
     const cta = container.querySelector('.ms-nav-cta');
     expect(cta).not.toBeNull();
     expect(cta!.getAttribute('href')).toBe('/shop');
@@ -255,7 +261,7 @@ describe('Nav — split-center variant', () => {
   });
 
   it('marks the current-page link active, and only that one', () => {
-    const { container } = render(<Nav identity={baseIdentity} currentHref="/about" />);
+    const { container } = render(<Nav words={W} identity={baseIdentity} currentHref="/about" />);
     const active = container.querySelector('.ms-nav-link--active');
     expect(active).not.toBeNull();
     expect(active!.getAttribute('href')).toBe('/about');
@@ -264,39 +270,39 @@ describe('Nav — split-center variant', () => {
   });
 
   it('marks no link active on the home (no current page)', () => {
-    const { container } = render(<Nav identity={baseIdentity} />);
+    const { container } = render(<Nav words={W} identity={baseIdentity} />);
     expect(container.querySelector('.ms-nav-link--active')).toBeNull();
   });
 });
 
 describe('MainStreetFooter', () => {
   it('shows shoppers no owner sign-in link (owners use /admin)', () => {
-    const { container } = render(<MainStreetFooter shopName="Classic Loafs" />);
+    const { container } = render(<MainStreetFooter words={W} shopName="Classic Loafs" />);
     expect(container.querySelector('a[href*="signin"]')).toBeNull();
   });
 
   it('renders the shop name and the platform-guaranteed legal links', () => {
-    const { getByText, container } = render(<MainStreetFooter shopName="June's Sourdough" />);
+    const { getByText, container } = render(<MainStreetFooter words={W} shopName="June's Sourdough" />);
     expect(getByText("June's Sourdough")).toBeTruthy();
     const links = Array.from(container.querySelectorAll('a')).map((a) => a.textContent);
-    expect(links).toEqual(expect.arrayContaining(['Home', 'Privacy', 'Terms']));
+    expect(links).toEqual(expect.arrayContaining(['family.footerHome', 'family.footerPrivacy', 'family.footerTerms']));
   });
 
   it('credits BohdiAI with the year on a bohdiai.com address', () => {
-    const { container } = render(<MainStreetFooter shopName="Classic Loafs" />);
+    const { container } = render(<MainStreetFooter words={W} shopName="Classic Loafs" />);
     const credit = container.querySelector('a[href="https://bohdiai.com"]');
-    expect(credit?.textContent).toBe(`${new Date().getFullYear()} Empowered by BohdiAI`);
+    expect(credit?.textContent).toBe(`${new Date().getFullYear()} family.footerCreditPrefix family.footerCreditBrand`);
   });
 
   it('shows only the shop’s own name when the credit is off (custom domain)', () => {
-    const { container, getByText } = render(<MainStreetFooter shopName="Classic Loafs" platformCredit={false} />);
+    const { container, getByText } = render(<MainStreetFooter words={W} shopName="Classic Loafs" platformCredit={false} />);
     expect(container.querySelector('a[href="https://bohdiai.com"]')).toBeNull();
-    expect(container.textContent).not.toMatch(/Empowered by/);
+    expect(container.textContent).not.toMatch(/family\.footerCreditPrefix/);
     expect(getByText('© Classic Loafs')).toBeTruthy();
   });
 
   it('does NOT link the standalone testimonials page (disabled for now — reviews live on the home sampling)', () => {
-    const { container } = render(<MainStreetFooter shopName="June's Sourdough" />);
+    const { container } = render(<MainStreetFooter words={W} shopName="June's Sourdough" />);
     const hrefs = Array.from(container.querySelectorAll('a')).map((a) => a.getAttribute('href'));
     expect(hrefs).not.toContain('/testimonials');
   });

@@ -16,16 +16,20 @@
  */
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetView } from './schemas';
+import type { FamilyWords } from './words';
 import { Nav, linkHref } from './chrome';
 import { Type } from './Type';
 
 export function TypographicHero({
   identity,
   moment,
+  words,
 }: {
   identity: MainStreetView['identity'];
   moment: MainStreetView['moment'];
   skin: ArchetypeTheme;
+  /** The site's words: the nav's page names and labels. */
+  words: FamilyWords;
 }) {
   const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';
   const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
@@ -47,7 +51,7 @@ export function TypographicHero({
         </div>
       )}
       <div data-ms-hero-nav className="ms-hero-navbar">
-        <Nav identity={identity} />
+        <Nav identity={identity} words={words} />
       </div>
       <div data-ms-hero-text className="ms-typohero-stack">
         <Type as="div" role="eyebrow" className="ms-hero-eyebrow">

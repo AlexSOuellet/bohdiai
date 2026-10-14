@@ -22,6 +22,7 @@ import type { ArchetypeTheme } from '../types';
 import { Media } from './chrome';
 import { Type } from './Type';
 import type { CollectionView, CollectionsSection } from './collections';
+import type { FamilyWords } from './words';
 
 export function CollectionsCascade({
   section,
@@ -32,6 +33,8 @@ export function CollectionsCascade({
   section: CollectionsSection;
   items: CollectionView[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: { href: string; label: string } | undefined;
 }) {
   return (

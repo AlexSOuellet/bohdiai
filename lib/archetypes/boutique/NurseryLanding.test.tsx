@@ -7,8 +7,50 @@ import { CART_COOKIE } from '@/lib/storefront/cart';
 
 const refresh = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }) }));
-import { NURSERY_STRINGS as S } from './strings';
+import { fill, keyWords } from '@/lib/site-words/words';
+import { NURSERY_WORD_SPOTS, NURSERY_WORDS_PREFIX, type NurseryWords } from './words';
 import type { BoutiqueData } from './data';
+
+const K = keyWords(NURSERY_WORD_SPOTS, NURSERY_WORDS_PREFIX);
+/** A test word: the spot's own key, then its blanks, so a test can see the values went in. */
+const b = (key: string, ...blanks: string[]): string => [`${NURSERY_WORDS_PREFIX}.${key}`, ...blanks.map((n) => `{${n}}`)].join(' ');
+/** Test words: every spot says its own key; a spot with blanks keeps them, and the
+ *  dates read a real locale so a date can be checked. */
+const S: NurseryWords = {
+  ...K,
+  nav: { ...K.nav, home: b('nav.home', 'name') },
+  hero: { ...K.hero, from: b('hero.from', 'price') },
+  card: { ...K.card, open: b('card.open', 'name') },
+  nursery: { ...K.nursery, count: b('nursery.count', 'n'), all: b('nursery.all', 'n') },
+  gone: { ...K.gone, open: b('gone.open', 'caption'), openNumbered: b('gone.openNumbered', 'n') },
+  sale: { ...K.sale, banner: b('sale.banner', 'name', 'percent'), until: b('sale.until', 'day') },
+  born: { ...K.born, bornAt: b('born.bornAt', 'shop') },
+  visit: {
+    ...K.visit,
+    locale: 'en-US',
+    range: b('visit.range', 'first', 'last'),
+    directionsLabel: b('visit.directionsLabel', 'market'),
+    websiteLabel: b('visit.websiteLabel', 'market'),
+  },
+  certificate: {
+    ...K.certificate,
+    adopt: b('certificate.adopt', 'name'),
+    photo: b('certificate.photo', 'name', 'n'),
+    showPhoto: b('certificate.showPhoto', 'n'),
+  },
+  cart: {
+    ...K.cart,
+    link: b('cart.link', 'n'),
+    ask: b('cart.ask', 'name'),
+    removeLabel: b('cart.removeLabel', 'name'),
+    discount: b('cart.discount', 'label'),
+    off: b('cart.off', 'amount'),
+    codeApplied: b('cart.codeApplied', 'code'),
+    sentTitle: b('cart.sentTitle', 'n'),
+  },
+  footer: { ...K.footer, year: b('footer.year', 'year', 'name') },
+  lightbox: { ...K.lightbox, count: b('lightbox.count', 'n', 'of') },
+};
 
 const TENANT = '4b8f0f5e-8f3a-4a57-9a8e-1f2d3c4b5a69';
 const baby = (name: string, extra: Partial<ProductView> = {}): ProductView => ({
@@ -49,8 +91,9 @@ const full: BoutiqueData = {
   cart: false,
   newArrivals: false,
   sale: null,
+  words: S,
 };
-const bare: BoutiqueData = { name: 'Rose', profile: EMPTY_PROFILE, dates: [], gone: [], cart: false, newArrivals: false, sale: null };
+const bare: BoutiqueData = { name: 'Rose', profile: EMPTY_PROFILE, dates: [], gone: [], cart: false, newArrivals: false, sale: null, words: S };
 
 afterEach(() => {
   cleanup();
@@ -69,7 +112,7 @@ describe('nursery home', () => {
     );
     expect(screen.getByRole('heading', { level: 1, name: full.name })).toBeTruthy();
     expect(screen.getByText('One-of-a-kind reborn babies')).toBeTruthy();
-    expect(screen.getByText(S.hero.from('$120'))).toBeTruthy();
+    expect(screen.getByText(fill(S.hero.from, { price: '$120' }))).toBeTruthy();
     expect(container.querySelector('.nn-window__arch img')?.getAttribute('src')).toBe(
       'https://cdn/Theo.webp',
     );
@@ -88,14 +131,14 @@ describe('nursery home', () => {
       '/listings/ava',
       '/listings/holly',
     ]);
-    expect(screen.getByRole('link', { name: S.nursery.all(7) }).getAttribute('href')).toBe('/shop');
-    expect(screen.getByText(S.nursery.count(7))).toBeTruthy();
+    expect(screen.getByRole('link', { name: fill(S.nursery.all, { n: 7 }) }).getAttribute('href')).toBe('/shop');
+    expect(screen.getByText(fill(S.nursery.count, { n: 7 }))).toBeTruthy();
   });
 
   it('writes the bracelet beads from what she makes, read whole by screen readers', () => {
     const { container } = render(<NurseryHome data={full} products={babies} tenantId={TENANT} />);
     expect(container.querySelector('.nn-beads .nn-sr')?.textContent).toBe(
-      'Reborn babies · One of a kind',
+      ['Reborn babies', 'One of a kind'].join(S.separator),
     );
     expect(container.querySelectorAll('.nn-bead--heart').length).toBe(4);
   });
@@ -161,11 +204,11 @@ describe('gone home', () => {
     expect([...lines].map((l) => l.querySelectorAll('.nn-peg').length)).toEqual([4, 1]);
     expect(screen.getByText('Christmas twins')).toBeTruthy();
     expect(screen.getByRole('link', { name: S.nav.gone }).getAttribute('href')).toBe('#gone');
-    fireEvent.click(screen.getByRole('button', { name: S.gone.open('Little elf', 3) }));
+    fireEvent.click(screen.getByRole('button', { name: fill(S.gone.open, { caption: 'Little elf' }) }));
     expect(screen.getByRole('dialog').querySelector('img')?.getAttribute('src')).toBe(
       'https://cdn/g3.webp',
     );
-    expect(screen.getByRole('button', { name: S.gone.open('', 2) })).toBeTruthy();
+    expect(screen.getByRole('button', { name: fill(S.gone.openNumbered, { n: 2 }) })).toBeTruthy();
   });
 
   it('is left out, with its nav link, when there are no past babies', () => {
@@ -184,7 +227,7 @@ describe('nursery page', () => {
       '/listings/finn',
     );
     expect(screen.getByText(S.card.adopted)).toBeTruthy();
-    expect(screen.getByText(S.nursery.count(7))).toBeTruthy();
+    expect(screen.getByText(fill(S.nursery.count, { n: 7 }))).toBeTruthy();
     expect(screen.getByRole('link', { name: S.nav.artist }).getAttribute('href')).toBe('/#artist');
   });
 });
@@ -205,15 +248,15 @@ describe('certificate of birth', () => {
     expect(screen.getByText(S.card.ready)).toBeTruthy();
     expect(screen.getByText('Ready to go home.')).toBeTruthy();
     expect(
-      screen.getByRole('link', { name: S.certificate.adopt('Theo') }).getAttribute('href'),
+      screen.getByRole('link', { name: fill(S.certificate.adopt, { name: 'Theo' }) }).getAttribute('href'),
     ).toBe('/#touch');
   });
 
   it('swaps the big photo from the thumbnails', () => {
     const { container } = render(<NurseryCertificate data={full} product={theo} />);
     const main = () => container.querySelector('.nn-photos__main img');
-    expect(main()?.getAttribute('alt')).toBe(S.certificate.photo('Theo', 1));
-    fireEvent.click(screen.getByRole('button', { name: S.certificate.showPhoto(2) }));
+    expect(main()?.getAttribute('alt')).toBe(fill(S.certificate.photo, { name: 'Theo', n: 1 }));
+    fireEvent.click(screen.getByRole('button', { name: fill(S.certificate.showPhoto, { n: 2 }) }));
     expect(main()?.getAttribute('src')).toBe('https://cdn/t2.webp');
     expect(main()?.getAttribute('alt')).toBe('Theo, photo 2');
   });
@@ -226,7 +269,7 @@ describe('certificate of birth', () => {
       />,
     );
     expect(screen.getByText(S.card.adopted)).toBeTruthy();
-    expect(screen.queryByRole('link', { name: S.certificate.adopt('Finn') })).toBeNull();
+    expect(screen.queryByRole('link', { name: fill(S.certificate.adopt, { name: 'Finn' }) })).toBeNull();
     expect(container.querySelector('.nn-photos')).toBeNull();
     expect(container.querySelector('.nn-cert__desc')).toBeNull();
   });
@@ -260,7 +303,7 @@ const ID2 = '00000000-0000-4000-8000-000000000002';
 describe('cart on the certificate', () => {
   it('keeps "Ask to adopt" when the cart is off', () => {
     render(<NurseryCertificate data={full} product={baby('Theo', { id: ID1 })} />);
-    expect(screen.getByRole('link', { name: S.certificate.adopt('Theo') })).toBeTruthy();
+    expect(screen.getByRole('link', { name: fill(S.certificate.adopt, { name: 'Theo' }) })).toBeTruthy();
     expect(screen.queryByRole('button', { name: S.cart.add })).toBeNull();
   });
 
@@ -269,7 +312,7 @@ describe('cart on the certificate', () => {
     fireEvent.click(screen.getByRole('button', { name: S.cart.add }));
     expect(document.cookie).toContain(`${CART_COOKIE}=${ID1}`);
     expect(screen.getByRole('link', { name: S.cart.inCart }).getAttribute('href')).toBe('/cart');
-    expect(screen.getByRole('link', { name: S.cart.ask('Theo') })).toBeTruthy();
+    expect(screen.getByRole('link', { name: fill(S.cart.ask, { name: 'Theo' }) })).toBeTruthy();
   });
 
   it('offers no cart button for an adopted baby or one with options', () => {
@@ -284,13 +327,13 @@ describe('cart on the certificate', () => {
       />,
     );
     expect(screen.queryByRole('button', { name: S.cart.add })).toBeNull();
-    expect(screen.getByRole('link', { name: S.certificate.adopt('Theo') })).toBeTruthy();
+    expect(screen.getByRole('link', { name: fill(S.certificate.adopt, { name: 'Theo' }) })).toBeTruthy();
   });
 
   it('shows the cart link in the bar with the count', () => {
     document.cookie = `${CART_COOKIE}=${ID1}.${ID2}; Path=/`;
     const { container } = render(<NurseryContentPage data={{ ...full, cart: true }} title="Privacy" body={['One.']} />);
-    expect(container.querySelector('.nn-cartlink')?.textContent).toBe(S.cart.link(2));
+    expect(container.querySelector('.nn-cartlink')?.textContent).toBe(fill(S.cart.link, { n: 2 }));
   });
 });
 
@@ -320,7 +363,7 @@ describe('cart page', () => {
   it('takes a baby out of the cart', () => {
     document.cookie = `${CART_COOKIE}=${ID1}.${ID2}; Path=/`;
     render(<NurseryCart data={{ ...full, cart: true }} cart={{ lines: [line(ID1, 'Theo'), line(ID2, 'Rosie')], subtotal: '$240', total: '$240', codes: false }} />);
-    fireEvent.click(screen.getByRole('button', { name: S.cart.removeLabel('Theo') }));
+    fireEvent.click(screen.getByRole('button', { name: fill(S.cart.removeLabel, { name: 'Theo' }) }));
     expect(document.cookie).toContain(`${CART_COOKIE}=${ID2}`);
     expect(refresh).toHaveBeenCalled();
   });
@@ -341,7 +384,7 @@ describe('just born', () => {
     const section = screen.getByRole('heading', { level: 2, name: S.born.title }).closest('section');
     const names = [...(section?.querySelectorAll('.nn-ann__name') ?? [])].map((n) => n.textContent);
     expect(names).toEqual(['Theo', 'Ruby']);
-    expect(section?.textContent).toContain(S.born.bornAt(full.name));
+    expect(section?.textContent).toContain(fill(S.born.bornAt, { shop: full.name }));
     expect(section?.textContent).toContain(S.card.adopted);
     expect(container.querySelectorAll('.nn-grid .nn-newborn')).toHaveLength(2);
   });
@@ -359,7 +402,7 @@ describe('sale', () => {
   it('flies the sale banner and shows the full price struck through', () => {
     const data = { ...full, sale: { name: 'Fall Sale', percentOff: 25, endsOn: '2026-10-31' } };
     const { container } = render(<NurseryCertificate data={data} product={baby('Theo', { salePrice: '$90' })} />);
-    expect(container.querySelector('.nn-salebar')?.textContent).toBe(`${S.sale.banner('Fall Sale', 25)} · ${S.sale.until('Oct 31')}`);
+    expect(container.querySelector('.nn-salebar')?.textContent).toBe(`${fill(S.sale.banner, { name: 'Fall Sale', percent: 25 })}${S.separator}${fill(S.sale.until, { day: 'Oct 31' })}`);
     const fee = container.querySelector('.nn-fee');
     expect(fee?.querySelector('s')?.textContent).toBe(`${S.sale.was} $120`);
     expect(fee?.textContent).toContain('$90');
@@ -382,10 +425,10 @@ describe('cart discounts', () => {
         }}
       />,
     );
-    expect(screen.getByText(S.cart.discount('MARKET10'))).toBeTruthy();
-    expect(screen.getByText('−$12')).toBeTruthy();
+    expect(screen.getByText(fill(S.cart.discount, { label: 'MARKET10' }))).toBeTruthy();
+    expect(screen.getByText(fill(S.cart.off, { amount: '$12' }))).toBeTruthy();
     expect(screen.getByText('$108')).toBeTruthy();
-    expect(screen.getByRole('status').textContent).toBe(S.cart.codeApplied('MARKET10'));
+    expect(screen.getByRole('status').textContent).toBe(fill(S.cart.codeApplied, { code: 'MARKET10' }));
     expect(screen.getByRole('button', { name: S.cart.codeRemove })).toBeTruthy();
   });
 
@@ -415,14 +458,14 @@ describe('visiting hours details', () => {
   const market = { ...full.dates[0]!, hours: '10am – 4pm', booth: 'Booth 12', address: '1 Main St', url: 'https://fair.org/' };
   it('shows hours, booth, directions and the market’s website', () => {
     render(<NurseryHome data={{ ...full, dates: [market] }} products={babies} tenantId={TENANT} />);
-    expect(screen.getByText('10am – 4pm · Booth 12')).toBeTruthy();
-    const directions = screen.getByRole('link', { name: S.visit.directionsLabel(market.name) });
+    expect(screen.getByText(['10am – 4pm', 'Booth 12'].join(S.separator))).toBeTruthy();
+    const directions = screen.getByRole('link', { name: fill(S.visit.directionsLabel, { market: market.name }) });
     expect(directions.getAttribute('href')).toBe(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('1 Main St, Scituate')}`);
-    expect(screen.getByRole('link', { name: S.visit.websiteLabel(market.name) }).getAttribute('href')).toBe('https://fair.org/');
+    expect(screen.getByRole('link', { name: fill(S.visit.websiteLabel, { market: market.name }) }).getAttribute('href')).toBe('https://fair.org/');
   });
   it('marks a canceled market instead of dropping it', () => {
     const { container } = render(<NurseryHome data={{ ...full, dates: [{ ...market, canceled: true }] }} products={babies} tenantId={TENANT} />);
     expect(container.querySelector('.nn-visits__canceled')?.textContent).toContain(S.visit.canceled);
-    expect(screen.queryByRole('link', { name: S.visit.directionsLabel(market.name) })).toBeNull();
+    expect(screen.queryByRole('link', { name: fill(S.visit.directionsLabel, { market: market.name }) })).toBeNull();
   });
 });

@@ -15,6 +15,7 @@ import type { FounderTreatment } from '@/lib/archetypes/main-street/founder';
 import juneFixture from '../main-street-fixture.june.json';
 import bohdiFixture from '../main-street-fixture.bohdi.json';
 import { PREVIEW_PRODUCTS } from './preview-products';
+import { FAMILY_NO_WORDS } from '@/lib/archetypes/main-street/words';
 
 interface Fixture {
   content: MainStreetContent;
@@ -62,6 +63,7 @@ export default async function MainStreetTestPage({
     <MainStreet
       content={content}
       skin={skin}
+      words={FAMILY_NO_WORDS}
       products={products}
       goodsTreatment={goodsTreatment}
       founderTreatment={founderTreatment}

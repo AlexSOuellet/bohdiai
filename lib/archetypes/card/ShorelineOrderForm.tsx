@@ -8,13 +8,23 @@
  */
 import { useState, type FormEvent, type ReactElement } from 'react';
 import { ClearCart } from '@/lib/storefront/CartControls';
-import { CARD_STRINGS } from './strings';
-
-const C = CARD_STRINGS.shoreline.cart;
+import { fill } from '@/lib/site-words/words';
+import type { CardWords } from './words';
 
 type State = { kind: 'idle' } | { kind: 'sending' } | { kind: 'sent'; orderNumber: string | null } | { kind: 'error'; message: string };
 
-export function ShorelineOrderForm({ listingIds, code = null }: { listingIds: string[]; code?: string | null }): ReactElement {
+export function ShorelineOrderForm({
+  listingIds,
+  code = null,
+  w: C,
+  honeypot,
+}: {
+  listingIds: string[];
+  code?: string | null;
+  w: CardWords['shoreline']['cart'];
+  /** The hidden spam trap's label. */
+  honeypot: string;
+}): ReactElement {
   const [state, setState] = useState<State>({ kind: 'idle' });
 
   async function onSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
@@ -52,7 +62,7 @@ export function ShorelineOrderForm({ listingIds, code = null }: { listingIds: st
     return (
       <div className="bc-form__done" role="status">
         <ClearCart />
-        {state.orderNumber !== null && <p className="sl-order-num">{C.sentTitle(state.orderNumber)}</p>}
+        {state.orderNumber !== null && <p className="sl-order-num">{fill(C.sentTitle, { n: state.orderNumber })}</p>}
         <p>{C.sent}</p>
       </div>
     );
@@ -79,7 +89,7 @@ export function ShorelineOrderForm({ listingIds, code = null }: { listingIds: st
         <textarea name="note" maxLength={2000} />
       </label>
       <label className="bc-form__trap" aria-hidden="true">
-        {CARD_STRINGS.form.honeypot}
+        {honeypot}
         <input name="company" tabIndex={-1} autoComplete="off" />
       </label>
       <button className="bc-btn" type="submit" disabled={state.kind === 'sending'}>

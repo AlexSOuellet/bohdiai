@@ -15,16 +15,20 @@
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import { type FindUsSection, type FindUsEvent, parseFindUsDate } from './findus';
+import type { FamilyWords } from './words';
 
 export function FindUsBoard({
   section,
   events,
   skin: _skin,
+  words,
   viewAll,
 }: {
   section: FindUsSection;
   events: FindUsEvent[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: { href: string; label: string } | undefined;
 }) {
   return (
@@ -35,7 +39,7 @@ export function FindUsBoard({
         </Type>
         <div className="ms-fu-board-rows">
           {events.map((e, i) => {
-            const parts = parseFindUsDate(e.date);
+            const parts = parseFindUsDate(e.date, words.dateLocale);
             return (
               <div key={i} data-ms-fu-item="" className="ms-fu-board-row">
                 <div className="ms-fu-board-date">

@@ -19,6 +19,7 @@ import type { ProductView } from '../content';
 import type { MainStreetView } from './schemas';
 import { Media, linkHref } from './chrome';
 import { Type } from './Type';
+import type { FamilyWords } from './words';
 
 /** The view-all cue pointing home's sampling at the full Products page. */
 export interface GoodsViewAll {
@@ -88,11 +89,14 @@ export function GoodsMarquee({
   goods,
   products,
   skin,
+  words,
   viewAll,
 }: {
   goods: MainStreetView['goods'];
   products: ProductView[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: GoodsViewAll | undefined;
 }) {
   // Fill thin catalogs, then duplicate so the -50% scroll loops seamlessly.
@@ -108,7 +112,7 @@ export function GoodsMarquee({
               <div className="ms-marq-media">
                 <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
                 <Type as="span" role="price" className="ms-marq-price">
-                  {priceLabel(p)}
+                  {priceLabel(p, words)}
                 </Type>
               </div>
               <Type as="h3" role="cardTitle" className="ms-marq-name">

@@ -5,6 +5,11 @@ import { MAIN_STREET_SKINS } from './skins';
 import type { MainStreetContent } from './schemas';
 import type { ProductView } from '../content';
 import type { MainStreetTreatments } from './builder';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 /** Default treatments for sub-page tests — one plausible family (Cozy). Every
  *  sub-page needs these; individual tests can spread + override to test other
@@ -48,7 +53,7 @@ afterEach(cleanup);
 
 describe('ShopPage', () => {
   it('lists every product with a link to its detail page', () => {
-    const { getByText, container } = render(<ShopPage content={content} skin={skin} products={products} />);
+    const { getByText, container } = render(<ShopPage words={W} content={content} skin={skin} products={products} />);
     expect(getByText('The Belt')).toBeTruthy();
     expect(getByText('The Wallet')).toBeTruthy();
     expect(container.querySelector('a[href="/listings/belt"]')).toBeTruthy();
@@ -56,19 +61,19 @@ describe('ShopPage', () => {
   });
 
   it('shows an empty state when there are no products', () => {
-    const { container } = render(<ShopPage content={content} skin={skin} products={[]} />);
-    expect(container.querySelector('[data-ms-shop]')?.textContent).toMatch(/check back/i);
+    const { container } = render(<ShopPage words={W} content={content} skin={skin} products={[]} />);
+    expect(container.querySelector('[data-ms-shop]')?.textContent).toBe(W.emptyShop);
   });
 
   it('renders the shared sub-page nav with real routes', () => {
-    const { container } = render(<ShopPage content={content} skin={skin} products={products} />);
+    const { container } = render(<ShopPage words={W} content={content} skin={skin} products={products} />);
     expect(container.querySelector('a[href="/events"]')).toBeTruthy();
     expect(container.querySelector('a[href="/cart"]')).toBeTruthy();
   });
 
   it('shows the maker logo beside the wordmark in the sub-page header when uploaded', () => {
     const withLogo: MainStreetContent = { ...content, identity: { ...content.identity, logoUrl: 'https://cdn/logo.png' } };
-    const { container } = render(<ShopPage content={withLogo} skin={skin} products={products} />);
+    const { container } = render(<ShopPage words={W} content={withLogo} skin={skin} products={products} />);
     expect((container.querySelector('img[data-ms-logo]') as HTMLImageElement | null)?.getAttribute('src')).toBe('https://cdn/logo.png');
   });
 });
@@ -76,7 +81,7 @@ describe('ShopPage', () => {
 describe('AboutPage — logo plate removal + header contrast (4b)', () => {
   it('renders the logo bare — no white plate element', () => {
     const c: MainStreetContent = { ...content, identity: { ...content.identity, logoUrl: 'https://cdn/logo.png', logoTone: 'dark' } };
-    const { container } = render(<AboutPage content={c} skin={skin} treatments={testTreatments} />);
+    const { container } = render(<AboutPage words={W} content={c} skin={skin} treatments={testTreatments} />);
     expect(container.querySelector('.ms-logo-plate')).toBeNull();
     expect(container.querySelector('[data-ms-logo]')).not.toBeNull();
   });
@@ -85,7 +90,7 @@ describe('AboutPage — logo plate removal + header contrast (4b)', () => {
     // dark logo on a dark skin → header takes the LIGHT contrast surface, expressed as
     // a data attribute (class-only; the CSS for it lives in skinVarsCss), no inline style.
     const c: MainStreetContent = { ...content, identity: { ...content.identity, logoUrl: 'https://cdn/logo.png', logoTone: 'dark' } };
-    const { container } = render(<AboutPage content={c} skin={darkSkin} treatments={testTreatments} />);
+    const { container } = render(<AboutPage words={W} content={c} skin={darkSkin} treatments={testTreatments} />);
     const header = container.querySelector('header')!;
     expect(header.getAttribute('data-ms-subhead')).toBe('light');
     expect(header.getAttribute('style')).toBeNull(); // no inline styling
@@ -98,12 +103,12 @@ describe('AboutPage', () => {
     // home teaser) and then renders the full story below in class-only prose. The
     // paragraphs get `data-ms-story` for the reader to hook into.
     const withAbout: MainStreetContent = { ...content, about: { heading: 'How Tannery Row began', story: ['I learned to stitch leather from my grandfather in his garage workshop over many summers.', 'Today every belt is cut from a single full-grain hide and saddle-stitched by hand.'] } };
-    const { container } = render(<AboutPage content={withAbout} skin={skin} treatments={testTreatments} />);
+    const { container } = render(<AboutPage words={W} content={withAbout} skin={skin} treatments={testTreatments} />);
     expect(container.querySelectorAll('[data-ms-story]').length).toBe(2);
   });
 
   it('falls back to the founder quote when no about story was authored', () => {
-    const { container } = render(<AboutPage content={content} skin={skin} treatments={testTreatments} />);
+    const { container } = render(<AboutPage words={W} content={content} skin={skin} treatments={testTreatments} />);
     expect(container.querySelector('[data-ms-about]')?.textContent).toMatch(/one good belt/);
   });
 });
@@ -111,7 +116,7 @@ describe('AboutPage', () => {
 describe('ContactPage', () => {
   it('renders the authored intro', () => {
     const withContact: MainStreetContent = { ...content, contact: { heading: 'Say hello', intro: 'Reach out about a custom belt or a repair and we will write back within a day.' } };
-    const { getByText } = render(<ContactPage content={withContact} skin={skin} />);
+    const { getByText } = render(<ContactPage words={W} content={withContact} skin={skin} />);
     expect(getByText('Say hello')).toBeTruthy();
     expect(getByText(/custom belt/)).toBeTruthy();
   });
@@ -120,7 +125,7 @@ describe('ContactPage', () => {
     // Missing content.contact means the ContactPage renders no heading and no
     // intro; the renderer never papers over a missing authored value with hardcoded
     // English. This is the rule: if the crew missed it, that's a copywriter bug.
-    const { container } = render(<ContactPage content={content} skin={skin} />);
+    const { container } = render(<ContactPage words={W} content={content} skin={skin} />);
     expect(container.querySelector('.ms-contactpage-intro')).toBeNull();
     // The section is still there (may hold the form when tenantId is passed).
     expect(container.querySelector('[data-ms-contact]')).toBeTruthy();
@@ -130,7 +135,7 @@ describe('ContactPage', () => {
 describe('MainStreetSubPage (the shared shell)', () => {
   it('wraps arbitrary children with the nav and footer', () => {
     const { getByText, container } = render(
-      <MainStreetSubPage content={content} skin={skin}><div data-testid="body">cart goes here</div></MainStreetSubPage>,
+      <MainStreetSubPage words={W} content={content} skin={skin}><div data-testid="body">cart goes here</div></MainStreetSubPage>,
     );
     expect(getByText('cart goes here')).toBeTruthy();
     expect(container.querySelector('a[href="/shop"]')).toBeTruthy(); // nav
@@ -139,7 +144,7 @@ describe('MainStreetSubPage (the shared shell)', () => {
 
   it('pins the nav to the top so it anchors as the page scrolls (parity with the home hero nav)', () => {
     const { container } = render(
-      <MainStreetSubPage content={content} skin={skin}><div /></MainStreetSubPage>,
+      <MainStreetSubPage words={W} content={content} skin={skin}><div /></MainStreetSubPage>,
     );
     const nav = container.querySelector('[data-ms-nav]') as HTMLElement | null;
     expect(nav).toBeTruthy();
@@ -152,7 +157,7 @@ describe('MainStreetSubPage (the shared shell)', () => {
 
   it('pads <main> down so content does not slide under the fixed nav', () => {
     const { container } = render(
-      <MainStreetSubPage content={content} skin={skin}><div /></MainStreetSubPage>,
+      <MainStreetSubPage words={W} content={content} skin={skin}><div /></MainStreetSubPage>,
     );
     const main = container.querySelector('main.ms-subpage-main');
     expect(main).toBeTruthy();
@@ -161,7 +166,7 @@ describe('MainStreetSubPage (the shared shell)', () => {
 
 describe('ContentPage', () => {
   it('renders a title and body paragraphs in the Main Street shell', () => {
-    const { getByText, container } = render(<ContentPage content={content} skin={skin} title="Privacy Policy" body={['We respect your privacy.', 'We never sell your data.']} />);
+    const { getByText, container } = render(<ContentPage words={W} content={content} skin={skin} title="Privacy Policy" body={['We respect your privacy.', 'We never sell your data.']} />);
     expect(getByText('Privacy Policy')).toBeTruthy();
     expect(container.querySelectorAll('[data-ms-content] p').length).toBe(2);
     // wears the shared sub-page nav
@@ -169,7 +174,7 @@ describe('ContentPage', () => {
   });
 
   it('renders pre-rendered HTML (legal docs) inside the shell', () => {
-    const { container } = render(<ContentPage content={content} skin={skin} html={'<h1>Privacy</h1><p>We respect it.</p>'} />);
+    const { container } = render(<ContentPage words={W} content={content} skin={skin} html={'<h1>Privacy</h1><p>We respect it.</p>'} />);
     const article = container.querySelector('.ms-legal') as HTMLElement;
     expect(article.querySelector('h1')?.textContent).toBe('Privacy');
     expect(article.querySelector('p')?.textContent).toBe('We respect it.');
@@ -179,12 +184,12 @@ describe('ContentPage', () => {
 describe('EventsPage', () => {
   it('renders the dates when the maker has them', () => {
     const withDates: MainStreetContent = { ...content, founder: { ...content.founder, findUs: { label: 'Find us', rows: [{ day: 'Sat', where: 'Hope St Market', time: '9am' }] } } };
-    const { getByText } = render(<EventsPage content={withDates} skin={skin} />);
+    const { getByText } = render(<EventsPage words={W} content={withDates} skin={skin} />);
     expect(getByText('Hope St Market')).toBeTruthy();
   });
 
   it('shows a check-back empty state with no dates', () => {
-    const { container } = render(<EventsPage content={content} skin={skin} />);
-    expect(container.querySelector('[data-ms-events]')?.textContent).toMatch(/check back/i);
+    const { container } = render(<EventsPage words={W} content={content} skin={skin} />);
+    expect(container.querySelector('[data-ms-events]')?.textContent).toBe(W.emptyEvents);
   });
 });

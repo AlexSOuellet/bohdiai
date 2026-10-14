@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: CollectionPageProps): Promise
     .maybeSingle();
   return storefrontMetadata({
     path: `/collections/${slug}`,
-    pageName: collection?.name ?? 'Collection',
+    ...(collection === null ? { titleSpot: 'collection' as const } : { pageName: collection.name }),
     ...(collection?.description ? { description: collection.description } : {}),
   });
 }

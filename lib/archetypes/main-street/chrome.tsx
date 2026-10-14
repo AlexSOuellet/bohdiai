@@ -16,7 +16,7 @@ import { LINK_TARGETS, linkHref, type LinkTarget } from './links';
 import { MainStreetMobileNav } from './MobileNav';
 import { IntroReplayLink } from './IntroReplayLink';
 import { Type } from './Type';
-import { DEFAULT_STRINGS } from './defaults';
+import type { FamilyWords } from './words';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 import { relativeLuminance } from './logo-contrast';
 
@@ -1451,22 +1451,21 @@ export function Media({
 
 /** The Main Street nav — every page created at onboarding, in reading order.
  *  Fixed under §1.7: Bohdi does not author nav; the renderer lists the pages
- *  the store actually has. Labels route through DEFAULT_STRINGS so a copy edit
- *  or a locale change touches one file. Maker per-page on/off toggles arrive
- *  with Editor Door 1 (Phase 3); until then every page shows. */
-export const MAIN_STREET_NAV: ReadonlyArray<{ href: string; label: string }> = [
-  { href: '/shop', label: DEFAULT_STRINGS.navShop },
-  { href: '/collections', label: DEFAULT_STRINGS.navCollections },
-  { href: '/about', label: DEFAULT_STRINGS.navAbout },
-  { href: '/events', label: DEFAULT_STRINGS.navEvents },
-  { href: '/contact', label: DEFAULT_STRINGS.navContact },
+ *  the store actually has, named in the site's own words. Maker per-page on/off
+ *  toggles arrive with Editor Door 1 (Phase 3); until then every page shows. */
+export const MAIN_STREET_NAV: ReadonlyArray<{ href: string; word: 'navShop' | 'navCollections' | 'navAbout' | 'navEvents' | 'navContact' }> = [
+  { href: '/shop', word: 'navShop' },
+  { href: '/collections', word: 'navCollections' },
+  { href: '/about', word: 'navAbout' },
+  { href: '/events', word: 'navEvents' },
+  { href: '/contact', word: 'navContact' },
 ];
 
-/** Return the store's nav — the fixed page list from `MAIN_STREET_NAV`.
- *  Exists as a function (not the const directly) so the maker's per-page
- *  on/off toggles can layer in later without changing every callsite. */
-export function resolveNav(): ReadonlyArray<{ href: string; label: string }> {
-  return MAIN_STREET_NAV;
+/** Return the store's nav — the fixed page list from `MAIN_STREET_NAV`, in the
+ *  site's words. Exists as a function so the maker's per-page on/off toggles can
+ *  layer in later without changing every callsite. */
+export function resolveNav(words: FamilyWords): ReadonlyArray<{ href: string; label: string }> {
+  return MAIN_STREET_NAV.map((n) => ({ href: n.href, label: words[n.word] }));
 }
 
 /** The brand lockup in a header. When the maker has uploaded a logo (a dashboard
@@ -1513,16 +1512,19 @@ function NavLink({ href, label, active = false }: { href: string; label: string;
  *  page) picks the variant up from the identity with no extra wiring. */
 export function Nav({
   identity,
+  words,
   currentHref,
 }: {
   identity: MainStreetView['identity'];
+  /** The site's words: the page names and the menu's labels. */
+  words: FamilyWords;
   /** The href of the page being viewed — the matching nav link is marked active.
    *  Absent on the home (the wordmark is "home"), so no link is current there. */
   currentHref?: string | undefined;
 }) {
-  const items = resolveNav();
+  const items = resolveNav(words);
   // A shop that doesn't sell online (Maker Lite) has no cart to link to.
-  const allItems = identity.sellsOnline === false ? [...items] : [...items, { href: '/cart', label: DEFAULT_STRINGS.navCart }];
+  const allItems = identity.sellsOnline === false ? [...items] : [...items, { href: '/cart', label: words.navCart }];
   const variant = identity.navVariant ?? 'standard';
 
   if (variant === 'split-center') {
@@ -1542,7 +1544,7 @@ export function Nav({
             <NavLink key={item.href} href={item.href} label={item.label} active={item.href === currentHref} />
           ))}
         </div>
-        <MainStreetMobileNav items={allItems} />
+        <MainStreetMobileNav items={allItems} words={words} />
       </div>
     );
   }
@@ -1553,7 +1555,7 @@ export function Nav({
     return (
       <>
         <WordmarkLink wordmark={identity.wordmark} logoUrl={identity.logoUrl} />
-        <MainStreetMobileNav items={allItems} label={DEFAULT_STRINGS.ariaMenu} always />
+        <MainStreetMobileNav items={allItems} words={words} label={words.ariaMenu} always />
       </>
     );
   }
@@ -1584,7 +1586,7 @@ export function Nav({
             ),
           )}
         </div>
-        <MainStreetMobileNav items={allItems} />
+        <MainStreetMobileNav items={allItems} words={words} />
       </>
     );
   }
@@ -1597,7 +1599,7 @@ export function Nav({
           <NavLink key={item.href} href={item.href} label={item.label} active={item.href === currentHref} />
         ))}
       </div>
-      <MainStreetMobileNav items={allItems} />
+      <MainStreetMobileNav items={allItems} words={words} />
     </>
   );
 }
@@ -1607,31 +1609,31 @@ export function Nav({
  * bohdiai.com address. A shop on its own custom domain shows only its own name
  * (wired with custom domains; until then every shop is on a subdomain).
  */
-export function MainStreetFooter({ shopName, platformCredit = true }: { shopName: string; platformCredit?: boolean }) {
+export function MainStreetFooter({ shopName, words, platformCredit = true }: { shopName: string; words: FamilyWords; platformCredit?: boolean }) {
   return (
     <footer className="ms-footer">
       <Type as="span" role="wordmark">{shopName}</Type>
       <div className="ms-footer-row">
         <Type as={Link} role="legal" href="/" className="ms-footer-link">
-          {DEFAULT_STRINGS.footerHome}
+          {words.footerHome}
         </Type>
         <IntroReplayLink className="ms-footer-link">
-          {DEFAULT_STRINGS.footerIntro}
+          {words.footerIntro}
         </IntroReplayLink>
         {/* The standalone testimonials page is disabled for now (reviews live on the
             home sampling); no footer link until the full page returns. */}
         <Type as="a" role="legal" href="/privacy" className="ms-footer-link">
-          {DEFAULT_STRINGS.footerPrivacy}
+          {words.footerPrivacy}
         </Type>
         <Type as="a" role="legal" href="/terms" className="ms-footer-link">
-          {DEFAULT_STRINGS.footerTerms}
+          {words.footerTerms}
         </Type>
         <Type as="span" role="legal" className="ms-footer-legal">
           &copy; {shopName}
         </Type>
         {platformCredit && (
           <Type as="a" role="legal" href={PLATFORM_URL} className="ms-footer-link">
-            {new Date().getFullYear()} {DEFAULT_STRINGS.footerCreditPrefix} {DEFAULT_STRINGS.footerCreditBrand}
+            {new Date().getFullYear()} {words.footerCreditPrefix} {words.footerCreditBrand}
           </Type>
         )}
       </div>

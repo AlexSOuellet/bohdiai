@@ -3,6 +3,11 @@ import { render, cleanup } from '@testing-library/react';
 import { GoodsLookbook } from './GoodsLookbook';
 import { MAIN_STREET_SKINS } from './skins';
 import type { ProductView } from '../content';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 const goods = { title: 'The Collection' };
@@ -24,14 +29,14 @@ afterEach(cleanup);
 
 describe('GoodsLookbook', () => {
   it('renders one spread per product, each a link to its listing', () => {
-    const { container } = render(<GoodsLookbook goods={goods} products={makeProducts(4)} skin={skin} />);
+    const { container } = render(<GoodsLookbook words={W} goods={goods} products={makeProducts(4)} skin={skin} />);
     const rows = container.querySelectorAll('[data-ms-lookbook-row]');
     expect(rows.length).toBe(4);
     expect((rows[0] as HTMLAnchorElement).getAttribute('href')).toBe('/listings/p-0');
   });
 
   it('alternates the layout — every other spread is flipped', () => {
-    const { container } = render(<GoodsLookbook goods={goods} products={makeProducts(4)} skin={skin} />);
+    const { container } = render(<GoodsLookbook words={W} goods={goods} products={makeProducts(4)} skin={skin} />);
     const rows = container.querySelectorAll('[data-ms-lookbook-row]');
     // even-indexed (0,2) are normal, odd-indexed (1,3) carry the flip modifier
     expect((rows[1] as HTMLElement).className).toContain('ms-lookbook-row--flip');
@@ -39,13 +44,13 @@ describe('GoodsLookbook', () => {
   });
 
   it('shows the name and price for each piece', () => {
-    const { container } = render(<GoodsLookbook goods={goods} products={makeProducts(2)} skin={skin} />);
+    const { container } = render(<GoodsLookbook words={W} goods={goods} products={makeProducts(2)} skin={skin} />);
     expect(container.textContent).toContain('Piece 0');
     expect(container.textContent).toContain('$1');
   });
 
   it('renders text through named type roles', () => {
-    const { container } = render(<GoodsLookbook goods={goods} products={makeProducts(2)} skin={skin} />);
+    const { container } = render(<GoodsLookbook words={W} goods={goods} products={makeProducts(2)} skin={skin} />);
     expect(container.querySelectorAll('[data-type]').length).toBeGreaterThan(0);
   });
 });

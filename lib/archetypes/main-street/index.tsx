@@ -15,6 +15,7 @@ import type { Archetype, ArchetypeMeta } from '../types';
 import { MainStreet } from './MainStreet';
 import { MainStreetContentSchema, MainStreetSkinSchema, type MainStreetSkinPick } from './schemas';
 import { MAIN_STREET_SKINS } from './skins';
+import { FAMILY_NO_WORDS } from './words';
 
 const META: ArchetypeMeta = {
   key: 'main-street',
@@ -44,7 +45,8 @@ export const mainStreetArchetype: Archetype<typeof MainStreetContentSchema, type
   // Contract render: catalog rows are wired by the engine at integration time.
   // Until then this renders with no goods; the test routes call <MainStreet>
   // directly with real ProductView fixtures.
-  render: ({ content, theme }) => <MainStreet content={content} skin={theme} products={[]} />,
+  // No site behind the contract render, so no site words: every spot blank.
+  render: ({ content, theme }) => <MainStreet content={content} skin={theme} words={FAMILY_NO_WORDS} products={[]} />,
 };
 
 export { MAIN_STREET_SKINS } from './skins';

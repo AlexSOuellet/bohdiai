@@ -13,46 +13,49 @@ import { GALLERY_LIMIT, type GalleryItem } from '@/lib/backend/gallery/gallery-f
 import { loadSiteFeatures } from '@/lib/backend/features';
 import { listMarketDates } from '@/lib/backend/dates/queries';
 import type { MarketDate } from '@/lib/backend/dates/dates-form';
-import { CARD_STRINGS as S } from './strings';
+import { getSiteWords } from '@/lib/site-words/queries';
+import { fill } from '@/lib/site-words/words';
+import { CARD_WORD_SPOTS, CARD_WORDS_PREFIX, type CardWords } from './words';
 
-export type CardData = { name: string; profile: ProfileForm; photos: GalleryItem[]; dates: MarketDate[] };
+export type CardData = { name: string; profile: ProfileForm; photos: GalleryItem[]; dates: MarketDate[]; words: CardWords };
 
 export async function loadCardData(db: SupabaseClient<Database>, tenantId: string): Promise<CardData> {
-  const [tenant, profile, photos, features] = await Promise.all([
+  const [tenant, profile, photos, features, words] = await Promise.all([
     db.from('tenants').select('business_name').eq('id', tenantId).maybeSingle(),
     db.from('site_profiles').select(PROFILE_COLUMNS).eq('tenant_id', tenantId).maybeSingle(),
     listGallery(db, tenantId),
     loadSiteFeatures(db, tenantId),
+    getSiteWords(db, tenantId, CARD_WORD_SPOTS, CARD_WORDS_PREFIX),
   ]);
   if (tenant.error !== null) throw new Error(`Could not load the site: ${tenant.error.message}`);
   if (tenant.data === null) throw new Error('Could not load the site: no such tenant');
   if (profile.error !== null) throw new Error(`Could not load About you: ${profile.error.message}`);
   const dates = features.has('market_dates') ? await listMarketDates(db, tenantId) : [];
-  return { name: tenant.data.business_name, profile: profileFormFromRow(profile.data), photos: photos.slice(0, GALLERY_LIMIT), dates };
+  return { name: tenant.data.business_name, profile: profileFormFromRow(profile.data), photos: photos.slice(0, GALLERY_LIMIT), dates, words };
 }
 
 /** A market's day as the site says it: "Sat Oct 11", read on the market's own date;
  *  a market over several days reads "Sat Nov 21 – Sun Nov 22". */
-export function marketDay(d: MarketDate): string {
-  return d.endDate === '' ? oneDay(d.date) : S.dates.range(oneDay(d.date), oneDay(d.endDate));
+export function marketDay(d: MarketDate, w: CardWords['dates']): string {
+  return d.endDate === '' ? oneDay(d.date, w) : fill(w.range, { first: oneDay(d.date, w), last: oneDay(d.endDate, w) });
 }
 
-function oneDay(date: string): string {
-  const parts = new Intl.DateTimeFormat(S.dates.locale, { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).formatToParts(
+function oneDay(date: string, w: CardWords['dates']): string {
+  const parts = new Intl.DateTimeFormat(w.locale === '' ? undefined : w.locale, { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).formatToParts(
     new Date(`${date}T00:00:00Z`),
   );
   const part = (type: Intl.DateTimeFormatPartTypes): string => parts.find((p) => p.type === type)?.value ?? '';
-  return S.dates.day(part('weekday'), part('month'), part('day'));
+  return fill(w.day, { weekday: part('weekday'), month: part('month'), day: part('day') });
 }
 
 /** The market's name as the site says it, marked when the owner canceled it. */
-export function marketName(d: MarketDate): string {
-  return d.canceled ? S.dates.canceled(d.name) : d.name;
+export function marketName(d: MarketDate, w: CardWords['dates']): string {
+  return d.canceled ? fill(w.canceled, { market: d.name }) : d.name;
 }
 
 /** One market date as the marquee says it: "Sat Oct 11 · Wickford Art Festival · Wickford". */
-export function marqueeDateLine(d: MarketDate): string {
-  return S.dates.line(marketDay(d), marketName(d), d.town);
+export function marqueeDateLine(d: MarketDate, w: CardWords['dates']): string {
+  return [marketDay(d, w), marketName(d, w), d.town].filter((s) => s !== '').join(w.separator);
 }
 
 /** Enough copies of the bottom row's items to fill a wide screen, always an even
@@ -73,9 +76,14 @@ export function initials(name: string): string {
 }
 
 /** The ring of words around the stamp, kept short enough to fit once around. */
-export function ringText(name: string, kicker: string): string {
-  const full = kicker === '' ? `${name} · ${name} · ` : `${name} · ${kicker} · `;
-  return full.length > 34 ? `${name.slice(0, 30)} · ` : full;
+export function ringText(name: string, kicker: string, separator: string): string {
+  const full = kicker === '' ? `${name}${separator}${name}${separator}` : `${name}${separator}${kicker}${separator}`;
+  return full.length > 34 ? `${name.slice(0, 30)}${separator}` : full;
+}
+
+/** A photo's name for screen readers: its caption, or its number when it has none. */
+export function photoLabel(caption: string, n: number, w: CardWords['work']): string {
+  return caption === '' ? fill(w.openNumbered, { n }) : fill(w.open, { caption });
 }
 
 export function bioParagraphs(bio: string): string[] {

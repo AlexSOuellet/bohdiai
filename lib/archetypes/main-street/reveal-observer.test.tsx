@@ -7,6 +7,11 @@ import { GoodsTable } from './GoodsTable';
 import { GoodsProcession } from './GoodsProcession';
 import { MAIN_STREET_SKINS } from './skins';
 import type { ProductView } from '../content';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 const goods = { title: 'The Collection' };
@@ -59,17 +64,17 @@ describe('scroll reveals share the height-independent observer options', () => {
     expect(captured).toEqual([REVEAL_OBSERVER_OPTIONS]);
   });
   it('GoodsModule', () => {
-    render(<GoodsModule goods={goods} products={makeProducts(3)} skin={skin} />);
+    render(<GoodsModule words={W} goods={goods} products={makeProducts(3)} skin={skin} />);
     expect(captured.length).toBeGreaterThan(0);
     captured.forEach((o) => expect(o).toEqual(REVEAL_OBSERVER_OPTIONS));
   });
   it('GoodsTable', () => {
-    render(<GoodsTable goods={goods} products={makeProducts(3)} skin={skin} />);
+    render(<GoodsTable words={W} goods={goods} products={makeProducts(3)} skin={skin} />);
     expect(captured.length).toBeGreaterThan(0);
     captured.forEach((o) => expect(o).toEqual(REVEAL_OBSERVER_OPTIONS));
   });
   it('GoodsProcession', () => {
-    render(<GoodsProcession goods={goods} products={makeProducts(3)} skin={skin} />);
+    render(<GoodsProcession words={W} goods={goods} products={makeProducts(3)} skin={skin} />);
     expect(captured.length).toBeGreaterThan(0);
     captured.forEach((o) => expect(o).toEqual(REVEAL_OBSERVER_OPTIONS));
   });

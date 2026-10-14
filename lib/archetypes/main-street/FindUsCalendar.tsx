@@ -13,8 +13,8 @@
  */
 import { useState } from 'react';
 import { Type } from './Type';
-import { type FindUsSection, type FindUsEvent, FINDUS_WEEKDAY_HEADERS, buildFindUsMonth } from './findus';
-import { DEFAULT_STRINGS } from './defaults';
+import { type FindUsSection, type FindUsEvent, findUsWeekdayHeaders, buildFindUsMonth } from './findus';
+import type { FamilyWords } from './words';
 
 /** The agenda column — the shown month's appearances in full. */
 function Agenda({ items }: { items: { event: FindUsEvent; href?: string | undefined }[] }) {
@@ -52,12 +52,15 @@ function Agenda({ items }: { items: { event: FindUsEvent; href?: string | undefi
 
 export function FindUsCalendar({
   section,
+  words,
   viewAll,
   year,
   month,
   eventHrefs,
 }: {
   section: FindUsSection;
+  /** The site's words: the calendar's labels and its date locale. */
+  words: FamilyWords;
   /** The month the calendar opens on — the current real month (server-computed). */
   year: number;
   month: number;
@@ -78,7 +81,7 @@ export function FindUsCalendar({
       return { year: v.year, month: m };
     });
 
-  const grid = buildFindUsMonth(section.rows, view);
+  const grid = buildFindUsMonth(section.rows, view, words.dateLocale);
   const hasEvents = grid.events.length > 0;
   // Resolve an event's href by looking up its position in section.rows.
   // References survive from section.rows through buildFindUsMonth's grid, so
@@ -95,19 +98,19 @@ export function FindUsCalendar({
               {section.label}
             </Type>
             <div className="ms-fu-cal-nav">
-              <button type="button" aria-label={DEFAULT_STRINGS.ariaPreviousMonth} className="ms-fu-cal-arrow" onClick={() => step(-1)}>
+              <button type="button" aria-label={words.ariaPreviousMonth} className="ms-fu-cal-arrow" onClick={() => step(-1)}>
                 &larr;
               </button>
               <Type as="h2" role="goodsHead" className="ms-fu-cal-title">
                 {grid.title}
               </Type>
-              <button type="button" aria-label={DEFAULT_STRINGS.ariaNextMonth} className="ms-fu-cal-arrow" onClick={() => step(1)}>
+              <button type="button" aria-label={words.ariaNextMonth} className="ms-fu-cal-arrow" onClick={() => step(1)}>
                 &rarr;
               </button>
             </div>
             <div className="ms-fu-cal-dows" aria-hidden>
-              {FINDUS_WEEKDAY_HEADERS.map((d) => (
-                <Type as="span" role="day" key={d} className="ms-fu-cal-dow">
+              {findUsWeekdayHeaders(words.dateLocale).map((d, i) => (
+                <Type as="span" role="day" key={i} className="ms-fu-cal-dow">
                   {d}
                 </Type>
               ))}
@@ -137,13 +140,13 @@ export function FindUsCalendar({
           </div>
           <div className="ms-fu-cal-side">
             <Type as="h3" role="day" className="ms-fu-cal-side-head">
-              {DEFAULT_STRINGS.eventsThisMonth}
+              {words.eventsThisMonth}
             </Type>
             {hasEvents ? (
               <Agenda items={grid.events.map((e) => ({ event: e, href: hrefFor(e) }))} />
             ) : (
               <Type as="p" role="body" className="ms-fu-cal-empty">
-                {DEFAULT_STRINGS.emptyMonth}
+                {words.emptyMonth}
               </Type>
             )}
             {viewAll && (

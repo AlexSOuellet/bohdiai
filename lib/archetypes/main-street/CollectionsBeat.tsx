@@ -23,11 +23,13 @@ import { CollectionsPortals } from './CollectionsPortals';
 import { CollectionsChapters } from './CollectionsChapters';
 import { CollectionsLanes } from './CollectionsLanes';
 import { CollectionsCascade } from './CollectionsCascade';
+import type { FamilyWords } from './words';
 
 export function CollectionsBeat({
   section,
   items,
   skin,
+  words,
   treatment,
   viewAll,
   full = false,
@@ -35,6 +37,8 @@ export function CollectionsBeat({
   section: CollectionsSection;
   items: CollectionView[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   /** Force a treatment (the ?collections= preview / tests). When omitted the
    *  authored `section.treatment` wins, then the documented default. */
   treatment?: CollectionsTreatment | undefined;
@@ -49,7 +53,7 @@ export function CollectionsBeat({
   const chosen = treatment ?? DEFAULT_COLLECTIONS_TREATMENT;
   const shown = full ? items : sampleCollections(items);
   const effectiveViewAll = full ? undefined : viewAll;
-  const props = { section, items: shown, skin, viewAll: effectiveViewAll };
+  const props = { section, items: shown, skin, words, viewAll: effectiveViewAll };
 
   switch (chosen) {
     case 'crates':

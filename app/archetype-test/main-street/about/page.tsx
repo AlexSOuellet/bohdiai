@@ -7,6 +7,7 @@
  */
 import { mainStreetArchetype, MAIN_STREET_SKINS, type MainStreetContent } from '@/lib/archetypes/main-street';
 import { MainStreetRoot, MainStreetFooter, Media, typeRoleCss, roles } from '@/lib/archetypes/main-street/chrome';
+import { FAMILY_NO_WORDS } from '@/lib/archetypes/main-street/words';
 import juneFixture from '../../main-street-fixture.june.json';
 
 interface Fixture {
@@ -54,7 +55,7 @@ export default async function MainStreetAboutPage({ searchParams }: { searchPara
         </p>
       </section>
 
-      <MainStreetFooter shopName={f.content.shopName} />
+      <MainStreetFooter shopName={f.content.shopName} words={FAMILY_NO_WORDS} />
     </MainStreetRoot>
   );
 }

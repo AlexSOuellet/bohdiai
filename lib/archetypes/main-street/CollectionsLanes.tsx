@@ -20,18 +20,22 @@
 import type { ArchetypeTheme } from '../types';
 import { Media } from './chrome';
 import { Type } from './Type';
-import { DEFAULT_COUNTS } from './defaults';
-import type { CollectionView, CollectionsSection } from './collections';
+
+import { itemsLabel, type CollectionView, type CollectionsSection } from './collections';
+import type { FamilyWords } from './words';
 
 export function CollectionsLanes({
   section,
   items,
   skin: _skin,
+  words,
   viewAll: _viewAll,
 }: {
   section: CollectionsSection;
   items: CollectionView[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: { href: string; label: string } | undefined;
 }) {
   return (
@@ -62,7 +66,7 @@ export function CollectionsLanes({
                 {c.name}
               </Type>
               <Type as="span" role="legal" className="ms-lane-count">
-                {DEFAULT_COUNTS.items(c.count)}
+                {itemsLabel(c.count, words)}
               </Type>
               <Type as="span" role="legal" className="ms-lane-arr" aria-hidden="true">
                 →

@@ -18,16 +18,20 @@ import type { MainStreetView } from './schemas';
 import { Media } from './chrome';
 import { Type } from './Type';
 import { GoodsHead, type GoodsViewAll } from './beats';
+import type { FamilyWords } from './words';
 
 export function GoodsIndex({
   goods,
   products,
   skin,
+  words,
   viewAll,
 }: {
   goods: MainStreetView['goods'];
   products: ProductView[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: GoodsViewAll | undefined;
 }) {
   return (
@@ -51,7 +55,7 @@ export function GoodsIndex({
                   </Type>
                 )}
                 <Type as="span" role="price" className="ms-index-price">
-                  {priceLabel(p)}
+                  {priceLabel(p, words)}
                 </Type>
                 <Media media={shot ?? { kind: 'image', alt: p.name }} className="ms-index-thumb" />
               </a>

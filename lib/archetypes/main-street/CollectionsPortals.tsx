@@ -17,20 +17,24 @@
  * single-column collapse live in skinVarsCss under `.ms-portal-*` — never inline.
  */
 import type { ArchetypeTheme } from '../types';
-import type { CollectionView, CollectionsSection } from './collections';
+import { piecesLabel, type CollectionView, type CollectionsSection } from './collections';
 import { Media } from './chrome';
 import { Type } from './Type';
-import { DEFAULT_COUNTS } from './defaults';
+
+import type { FamilyWords } from './words';
 
 export function CollectionsPortals({
   section,
   items,
   skin: _skin,
+  words,
   viewAll,
 }: {
   section: CollectionsSection;
   items: CollectionView[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: { href: string; label: string } | undefined;
 }) {
   return (
@@ -60,7 +64,7 @@ export function CollectionsPortals({
                 </Type>
                 <span className="ms-portal-rule" aria-hidden />
                 <Type as="span" role="legal" className="ms-portal-count">
-                  {DEFAULT_COUNTS.pieces(c.count)}
+                  {piecesLabel(c.count, words)}
                 </Type>
               </span>
             </a>

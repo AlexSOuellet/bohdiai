@@ -16,7 +16,7 @@ import type { ArchetypeTheme } from '../types';
 import type { MainStreetView } from './schemas';
 import { Media } from './chrome';
 import { Type } from './Type';
-import { DEFAULT_STRINGS } from './defaults';
+import type { FamilyWords } from './words';
 
 type Founder = MainStreetView['founder'];
 
@@ -125,7 +125,7 @@ function splitAttribution(attribution: string): [string, string] {
  *  the structural opposite of the centered card. Paper + ink derive from the skin's
  *  base surface; placement, rotation, the clip, and the signed hand are all classes
  *  in skinVarsCss, never inline. */
-export function FounderLetter({ founder, about }: TreatmentProps) {
+export function FounderLetter({ founder, words, about }: TreatmentProps & { words: FamilyWords }) {
   const [name, role] = splitAttribution(founder.attribution);
   return (
     <FounderBand>
@@ -146,7 +146,7 @@ export function FounderLetter({ founder, about }: TreatmentProps) {
           )}
           {about && (
             <Type as="a" role="navLabel" href={about.href} className="ms-letter-ps">
-              {DEFAULT_STRINGS.founderPostscript} {about.label} &rarr;
+              {words.founderPostscript} {about.label} &rarr;
             </Type>
           )}
         </div>

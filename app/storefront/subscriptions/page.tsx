@@ -4,10 +4,11 @@ import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import NotifyForm from '../_components/NotifyForm';
 import { renderArchetypeShell } from '../_components/StorefrontPage';
-import { storefrontMetadata } from '@/lib/storefront/metadata';
+import { loadShopWords, storefrontMetadata } from '@/lib/storefront/metadata';
+import type { ShopWords } from '@/lib/storefront/words';
 
 export function generateMetadata(): Promise<Metadata> {
-  return storefrontMetadata({ path: '/subscriptions', pageName: 'Subscriptions' });
+  return storefrontMetadata({ path: '/subscriptions', titleSpot: 'subscriptions' });
 }
 
 interface Subscription {
@@ -22,15 +23,16 @@ interface Subscription {
   metadata: { image_url?: string | null } | null;
 }
 
-function formatPrice(cents: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
+function formatPrice(cents: number, locale: string): string {
+  return new Intl.NumberFormat(locale === '' ? undefined : locale, { style: 'currency', currency: 'USD' }).format(cents / 100);
 }
 
-function intervalLabel(interval: string | null): string {
-  if (interval === 'week') return '/wk';
-  if (interval === 'quarter') return '/qtr';
-  if (interval === 'year') return '/yr';
-  return '/mo';
+/** The site's word for how often a subscription bills; monthly when unset. */
+function intervalLabel(interval: string | null, w: ShopWords['subscriptions']['interval']): string {
+  if (interval === 'week') return w.week;
+  if (interval === 'quarter') return w.quarter;
+  if (interval === 'year') return w.year;
+  return w.month;
 }
 
 export default async function StorefrontSubscriptionsPage() {
@@ -57,12 +59,14 @@ export default async function StorefrontSubscriptionsPage() {
     metadata: (s.metadata as { image_url?: string | null } | null) ?? null,
   }));
 
+  const words = await loadShopWords(tenantId);
+  const w = words.subscriptions;
   const shell = await renderArchetypeShell(
     tenantId,
     <section className="ms-subs-section">
       <div className="ms-wrap ms-subs-head">
-        <span data-type="eyebrow" className="ms-subs-eyebrow">Subscriptions</span>
-        <h1 data-type="closeHead" className="ms-subs-title">Join a subscription</h1>
+        <span data-type="eyebrow" className="ms-subs-eyebrow">{w.eyebrow}</span>
+        <h1 data-type="closeHead" className="ms-subs-title">{w.title}</h1>
       </div>
       <div className="ms-wrap ms-subs-grid">
         {items.map((sub) => (
@@ -75,13 +79,13 @@ export default async function StorefrontSubscriptionsPage() {
             <div className="ms-subs-body">
               <h2 data-type="title" className="ms-subs-name">{sub.name}</h2>
               <p data-type="price" className="ms-subs-price">
-                {formatPrice(sub.base_price_cents)}<span className="ms-subs-interval">{intervalLabel(sub.subscription_interval)}</span>
+                {formatPrice(sub.base_price_cents, w.locale)}<span className="ms-subs-interval">{intervalLabel(sub.subscription_interval, w.interval)}</span>
               </p>
               {sub.short_description !== null && (
                 <p data-type="body" className="ms-subs-desc">{sub.short_description}</p>
               )}
-              {sub.is_preview ? <NotifyForm tenantId={tenantId} listingId={sub.id} /> : (
-                <a href={`/listings/${sub.slug}`} data-type="navLabel" className="ms-subs-cue">View &rarr;</a>
+              {sub.is_preview ? <NotifyForm tenantId={tenantId} listingId={sub.id} words={words.notify} /> : (
+                <a href={`/listings/${sub.slug}`} data-type="navLabel" className="ms-subs-cue">{w.view}</a>
               )}
             </div>
           </div>

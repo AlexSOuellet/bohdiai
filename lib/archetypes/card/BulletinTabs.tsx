@@ -8,14 +8,13 @@
  */
 import { useState, type MouseEvent, type ReactElement } from 'react';
 import type { TabTarget } from './bulletin';
-import { CARD_STRINGS as S } from './strings';
 
 export const TAB_COUNT = 9;
 /** The tab someone already took. */
 export const TAKEN_TAB = 6;
 const TEAR_MS = 650;
 
-export function BulletinTabs({ target }: { target: TabTarget }): ReactElement {
+export function BulletinTabs({ target, label }: { target: TabTarget; label: string }): ReactElement {
   const [torn, setTorn] = useState<ReadonlySet<number>>(() => new Set());
 
   function onTear(e: MouseEvent<HTMLAnchorElement>, i: number): void {
@@ -28,7 +27,7 @@ export function BulletinTabs({ target }: { target: TabTarget }): ReactElement {
   }
 
   return (
-    <nav className="bb-tabs" aria-label={S.bulletin.tabs}>
+    <nav className="bb-tabs" aria-label={label}>
       {Array.from({ length: TAB_COUNT }, (_, i) => {
         if (i === TAKEN_TAB) return <span key={i} className="bb-tab bb-tab--gone" aria-hidden="true" />;
         return (

@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { VideoTile } from './VideoTile';
-import { CONTRACTOR_STRINGS as S } from './strings';
+import { fill, keyWords } from '@/lib/site-words/words';
+import { CONTRACTOR_WORD_SPOTS, CONTRACTOR_WORDS_PREFIX } from './words';
+
+const S = keyWords(CONTRACTOR_WORD_SPOTS, CONTRACTOR_WORDS_PREFIX);
 import { PLAYBACK_RATE } from './SlowVideo';
 
 // jsdom has no media playback — stand in for play()/pause() on the element.
@@ -23,7 +26,7 @@ afterEach(() => {
 const MEDIA = { kind: 'video' as const, url: 'https://cdn.example/job.mp4', poster: 'https://cdn.example/job.jpg', alt: 'Regrading a driveway' };
 
 function tile() {
-  render(<VideoTile media={MEDIA} />);
+  render(<VideoTile media={MEDIA} words={S} />);
   return screen.getByRole('button');
 }
 
@@ -32,7 +35,7 @@ describe('VideoTile', () => {
     const btn = tile();
     expect(btn.getAttribute('data-playing')).toBe('false');
     expect(btn.getAttribute('aria-pressed')).toBe('false');
-    expect(btn.getAttribute('aria-label')).toBe(`${S.playVideo}: ${MEDIA.alt}`);
+    expect(btn.getAttribute('aria-label')).toBe(fill(S.playVideo, { alt: MEDIA.alt }));
     const video = btn.querySelector('video')!;
     expect(video.getAttribute('src')).toBe(MEDIA.url);
     expect(video.getAttribute('poster')).toBe(MEDIA.poster);
@@ -45,7 +48,7 @@ describe('VideoTile', () => {
     const btn = tile();
     fireEvent.mouseEnter(btn);
     await waitFor(() => expect(btn.getAttribute('data-playing')).toBe('true'));
-    expect(btn.getAttribute('aria-label')).toBe(`${S.pauseVideo}: ${MEDIA.alt}`);
+    expect(btn.getAttribute('aria-label')).toBe(fill(S.pauseVideo, { alt: MEDIA.alt }));
     expect(btn.getAttribute('aria-pressed')).toBe('true');
     fireEvent.mouseLeave(btn);
     expect(pause).toHaveBeenCalledTimes(1);
@@ -80,6 +83,6 @@ describe('VideoTile', () => {
     await Promise.resolve();
     await Promise.resolve();
     expect(btn.getAttribute('data-playing')).toBe('false');
-    expect(btn.getAttribute('aria-label')).toBe(`${S.playVideo}: ${MEDIA.alt}`);
+    expect(btn.getAttribute('aria-label')).toBe(fill(S.playVideo, { alt: MEDIA.alt }));
   });
 });

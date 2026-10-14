@@ -5,7 +5,8 @@
  * design that has one: pick a piece, give a first name and how you're paying,
  * Continue (the piece is held), pay with the app button / Zelle handle / at the
  * table, then "I paid". Every failure says so; a buyer can step back before
- * paying. Each design passes its own words and its class prefix (`nn` nursery,
+ * paying. Each design passes the site's own words (with named blanks, filled
+ * here) and its class prefix (`nn` nursery,
  * `sl` shoreline); the classes it uses are `<prefix>-mk-*`, `<prefix>-btn` and
  * `<prefix>-was`.
  */
@@ -13,6 +14,7 @@ import { useState, type FormEvent, type ReactElement } from 'react';
 import type { ProductView } from '@/lib/archetypes/content';
 import { METHOD_LABEL, type PayMethod } from '@/lib/market/pay';
 import type { PayStep } from '@/lib/market/buyer';
+import { fill } from '@/lib/site-words/words';
 
 export interface MarketBuyerStrings {
   readonly pick: string;
@@ -23,21 +25,29 @@ export interface MarketBuyerStrings {
   readonly payWith: string;
   readonly continue: string;
   readonly holding: string;
-  readonly payTitle: (piece: string) => string;
+  /** {piece} */
+  readonly payTitle: string;
   readonly amount: string;
-  readonly discount: (label: string, amount: string) => string;
-  readonly open: (app: string) => string;
-  readonly send: (app: string, handle: string) => string;
-  readonly zelle: (handle: string) => string;
+  /** {label} {amount} */
+  readonly discount: string;
+  /** {app} */
+  readonly open: string;
+  /** {app} {handle} */
+  readonly send: string;
+  /** {handle} */
+  readonly zelle: string;
   readonly copy: string;
   readonly copied: string;
   readonly cash: string;
   readonly paid: string;
   readonly sending: string;
   readonly another: string;
-  readonly doneTitle: (name: string) => string;
-  readonly done: (piece: string) => string;
-  readonly order: (n: string) => string;
+  /** {name} */
+  readonly doneTitle: string;
+  /** {piece} */
+  readonly done: string;
+  /** {n} */
+  readonly order: string;
   readonly error: string;
   readonly errorNetwork: string;
   /** Shown in place of the price on a piece that's already gone. */
@@ -162,9 +172,9 @@ export function MarketBuyer({
   if (step.kind === 'done') {
     return (
       <div className={c('mk-card', 'mk-done')} role="status">
-        <p className={c('mk-big')}>{S.doneTitle(step.name)}</p>
-        <p>{S.done(step.held.piece)}</p>
-        <p className={c('mk-small')}>{S.order(step.held.orderNumber)}</p>
+        <p className={c('mk-big')}>{fill(S.doneTitle, { name: step.name })}</p>
+        <p>{fill(S.done, { piece: step.held.piece })}</p>
+        <p className={c('mk-small')}>{fill(S.order, { n: step.held.orderNumber })}</p>
         {shop !== undefined && (
           <a className={c('btn')} href={shop.href}>
             {shop.label}
@@ -179,21 +189,21 @@ export function MarketBuyer({
     const pay = held.pay;
     return (
       <div className={c('mk-card')}>
-        <p className={c('mk-title')}>{S.payTitle(held.piece)}</p>
+        <p className={c('mk-title')}>{fill(S.payTitle, { piece: held.piece })}</p>
         <p className={c('mk-label')}>{S.amount}</p>
         <p className={c('mk-big')}>{held.amount}</p>
-        {held.discount !== null && <p className={c('mk-small')}>{S.discount(held.discount.label, held.discount.amount)}</p>}
+        {held.discount !== null && <p className={c('mk-small')}>{fill(S.discount, { label: held.discount.label, amount: held.discount.amount })}</p>}
         {(pay.method === 'venmo' || pay.method === 'cashapp') && (
           <>
-            <p>{S.send(METHOD_LABEL[pay.method], pay.handle)}</p>
+            <p>{fill(S.send, { app: METHOD_LABEL[pay.method], handle: pay.handle })}</p>
             <a className={c('btn', 'mk-app')} href={pay.link} target="_blank" rel="noopener">
-              {S.open(METHOD_LABEL[pay.method])}
+              {fill(S.open, { app: METHOD_LABEL[pay.method] })}
             </a>
           </>
         )}
         {pay.method === 'zelle' && (
           <p className={c('mk-zelle')}>
-            {S.zelle(pay.handle)}{' '}
+            {fill(S.zelle, { handle: pay.handle })}{' '}
             <button
               type="button"
               className={c('mk-copy')}

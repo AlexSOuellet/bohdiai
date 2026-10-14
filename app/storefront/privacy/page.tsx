@@ -3,7 +3,7 @@ import LegalPage from '../_components/LegalPage';
 import { storefrontMetadata } from '@/lib/storefront/metadata';
 
 export function generateMetadata(): Promise<Metadata> {
-  return storefrontMetadata({ path: '/privacy', pageName: 'Privacy', noindex: true });
+  return storefrontMetadata({ path: '/privacy', titleSpot: 'privacy', noindex: true });
 }
 
 export default async function StorefrontPrivacyPage() {

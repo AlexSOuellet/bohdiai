@@ -7,10 +7,11 @@
  */
 import { useRef, useState } from 'react';
 import type { ContractorMedia } from './schemas';
-import { CONTRACTOR_STRINGS as S } from './strings';
+import { fill } from '@/lib/site-words/words';
+import type { ContractorWords } from './words';
 import { SlowVideo } from './SlowVideo';
 
-export function VideoTile({ media }: { media: ContractorMedia }) {
+export function VideoTile({ media, words: w }: { media: ContractorMedia; words: Pick<ContractorWords, 'playVideo' | 'pauseVideo'> }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
 
@@ -31,7 +32,7 @@ export function VideoTile({ media }: { media: ContractorMedia }) {
       type="button"
       className="cp-vtile"
       data-playing={playing ? 'true' : 'false'}
-      aria-label={`${playing ? S.pauseVideo : S.playVideo}: ${media.alt}`}
+      aria-label={fill(playing ? w.pauseVideo : w.playVideo, { alt: media.alt })}
       aria-pressed={playing}
       onMouseEnter={play}
       onMouseLeave={stop}

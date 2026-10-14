@@ -3,6 +3,11 @@ import { render, cleanup } from '@testing-library/react';
 import { ReviewsRating } from './ReviewsRating';
 import { MAIN_STREET_SKINS } from './skins';
 import type { ReviewsSection, Testimonial } from './reviews';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 
@@ -25,21 +30,21 @@ afterEach(cleanup);
 describe('ReviewsRating', () => {
   it('renders exactly five hero stars', () => {
     const { container } = render(
-      <ReviewsRating section={section} items={makeTestimonials(3)} skin={skin} />,
+      <ReviewsRating words={W} section={section} items={makeTestimonials(3)} skin={skin} />,
     );
     expect(container.querySelectorAll('.ms-rev-rating-star').length).toBe(5);
   });
 
   it('renders one quip per testimonial', () => {
     const { container } = render(
-      <ReviewsRating section={section} items={makeTestimonials(3)} skin={skin} />,
+      <ReviewsRating words={W} section={section} items={makeTestimonials(3)} skin={skin} />,
     );
     expect(container.querySelectorAll('[data-ms-rev-item]').length).toBe(3);
   });
 
   it('shows the authored score and count', () => {
     const { container } = render(
-      <ReviewsRating section={section} items={makeTestimonials(3)} skin={skin} />,
+      <ReviewsRating words={W} section={section} items={makeTestimonials(3)} skin={skin} />,
     );
     expect(container.textContent).toContain('4.9 out of 5');
     expect(container.textContent).toContain('214 happy customers');
@@ -47,7 +52,7 @@ describe('ReviewsRating', () => {
 
   it('shows each quote and author', () => {
     const { container } = render(
-      <ReviewsRating section={section} items={makeTestimonials(3)} skin={skin} />,
+      <ReviewsRating words={W} section={section} items={makeTestimonials(3)} skin={skin} />,
     );
     expect(container.textContent).toContain('Quote number 0');
     expect(container.textContent).toContain('Author 2');
@@ -55,14 +60,14 @@ describe('ReviewsRating', () => {
 
   it('renders text through named type roles', () => {
     const { container } = render(
-      <ReviewsRating section={section} items={makeTestimonials(3)} skin={skin} />,
+      <ReviewsRating words={W} section={section} items={makeTestimonials(3)} skin={skin} />,
     );
     expect(container.querySelectorAll('[data-type]').length).toBeGreaterThan(0);
   });
 
   it('uses classes, not inline style objects, on its quips', () => {
     const { container } = render(
-      <ReviewsRating section={section} items={makeTestimonials(3)} skin={skin} />,
+      <ReviewsRating words={W} section={section} items={makeTestimonials(3)} skin={skin} />,
     );
     container.querySelectorAll('[data-ms-rev-item]').forEach((el) => {
       expect((el as HTMLElement).getAttribute('style')).toBeFalsy();
@@ -75,7 +80,7 @@ describe('ReviewsRating', () => {
       items: makeTestimonials(4),
     };
     const { container } = render(
-      <ReviewsRating section={noSummary} items={makeTestimonials(4)} skin={skin} />,
+      <ReviewsRating words={W} section={noSummary} items={makeTestimonials(4)} skin={skin} />,
     );
     // still five stars, still one quip per item
     expect(container.querySelectorAll('.ms-rev-rating-star').length).toBe(5);

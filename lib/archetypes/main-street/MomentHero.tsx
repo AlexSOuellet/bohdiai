@@ -43,6 +43,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetView } from './schemas';
+import type { FamilyWords } from './words';
 import { Media, Nav } from './chrome';
 import { Type } from './Type';
 import { navContrast, relativeLuminance } from './logo-contrast';
@@ -138,12 +139,15 @@ function HeroStage({
 export function MomentHero({
   identity,
   moment,
+  words,
   skin,
   momentKey,
 }: {
   identity: MainStreetView['identity'];
   moment: MainStreetView['moment'];
   skin: ArchetypeTheme;
+  /** The site's words: the nav's page names and labels. */
+  words: FamilyWords;
   /** Per-shop key (tenant id) for the seen-cookie. Without it the timeline never
    *  plays and the hero renders at rest — used in previews / tests / SSR. */
   momentKey?: string | undefined;
@@ -230,7 +234,7 @@ export function MomentHero({
   return (
     <>
       <nav data-ms-nav className="ms-momenthero-nav" style={navVars}>
-        <Nav identity={identity} />
+        <Nav identity={identity} words={words} />
       </nav>
       <header ref={heroRef} data-ms-hero className="ms-momenthero">
         <HeroStage moment={moment} phase={phase} />

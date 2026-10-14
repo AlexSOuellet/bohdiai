@@ -18,17 +18,21 @@ import type { MainStreetView } from './schemas';
 import { Media } from './chrome';
 import { Type } from './Type';
 import { GoodsHead, type GoodsViewAll } from './beats';
-import { DEFAULT_STRINGS, DEFAULT_COUNTS } from './defaults';
+import { fill } from '@/lib/site-words/words';
+import type { FamilyWords } from './words';
 
 export function GoodsLookbook({
   goods,
   products,
   skin,
+  words,
   viewAll,
 }: {
   goods: MainStreetView['goods'];
   products: ProductView[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: GoodsViewAll | undefined;
 }) {
   return (
@@ -47,13 +51,13 @@ export function GoodsLookbook({
             </div>
             <div className="ms-lookbook-text">
               <Type as="span" role="eyebrow" className="ms-lookbook-eyebrow">
-                {DEFAULT_COUNTS.numberOf(i + 1)}
+                {fill(words.numberOf, { n: i + 1 })}
               </Type>
               <Type as="h3" role="title" className="ms-lookbook-name">
                 {p.name}
               </Type>
               <Type as="span" role="price" className="ms-lookbook-price">
-                {priceLabel(p)}
+                {priceLabel(p, words)}
               </Type>
               {p.shortDescription && (
                 <Type as="p" role="body" className="ms-lookbook-desc">
@@ -61,7 +65,7 @@ export function GoodsLookbook({
                 </Type>
               )}
               <Type as="span" role="navLabel" className="ms-lookbook-view">
-                {DEFAULT_STRINGS.fallbackViewPiece} &rarr;
+                {words.fallbackViewPiece} &rarr;
               </Type>
             </div>
           </a>

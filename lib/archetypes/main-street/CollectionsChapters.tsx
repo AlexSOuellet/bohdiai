@@ -21,8 +21,9 @@
 import type { ArchetypeTheme } from '../types';
 import { Media } from './chrome';
 import { Type } from './Type';
-import { DEFAULT_COUNTS } from './defaults';
-import type { CollectionView, CollectionsSection } from './collections';
+
+import { piecesLabel, type CollectionView, type CollectionsSection } from './collections';
+import type { FamilyWords } from './words';
 
 /** Tiny roman-numeral helper — chapters only ever number a handful, so a simple
  *  subtractive table covers every realistic catalog without a library. */
@@ -57,11 +58,14 @@ export function CollectionsChapters({
   section,
   items,
   skin: _skin,
+  words,
   viewAll: _viewAll,
 }: {
   section: CollectionsSection;
   items: CollectionView[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: { href: string; label: string } | undefined;
 }) {
   return (
@@ -93,7 +97,7 @@ export function CollectionsChapters({
                   {c.name}
                 </Type>
                 <Type as="span" role="caption" className="ms-chapter-count">
-                  {DEFAULT_COUNTS.pieces(c.count)}
+                  {piecesLabel(c.count, words)}
                 </Type>
               </span>
               <span className="ms-chapter-plate">

@@ -2,7 +2,7 @@
  * Contractor — the content shape for a hand-built, one-page contractor site
  * (lawn construction, hardscape, grading, trades that sell on photos of real
  * work and close on an estimate request). Every visible sentence is authored
- * content; the renderer adds only UI strings from CONTRACTOR_STRINGS.
+ * content; the renderer adds only the site's own words, from `site_words` (words.ts).
  */
 import { z } from 'zod';
 

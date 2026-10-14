@@ -1,15 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import type { ShopWords } from '@/lib/storefront/words';
 
 interface NotifyFormProps {
   tenantId: string;
   listingId: string;
+  /** The site's own words for the form (a client component, so they come in). */
+  words: ShopWords['notify'];
 }
 
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 
-export default function NotifyForm({ tenantId, listingId }: NotifyFormProps) {
+export default function NotifyForm({ tenantId, listingId, words }: NotifyFormProps) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<Status>('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -27,21 +30,21 @@ export default function NotifyForm({ tenantId, listingId }: NotifyFormProps) {
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
         setStatus('error');
-        setErrorMessage(data.error ?? 'Something went wrong. Please try again.');
+        setErrorMessage(data.error ?? words.failed);
         return;
       }
       setStatus('success');
       setEmail('');
     } catch {
       setStatus('error');
-      setErrorMessage('Network error. Please try again.');
+      setErrorMessage(words.network);
     }
   };
 
   if (status === 'success') {
     return (
       <p className="font-s-body text-sm text-s-text/70 italic">
-        Thanks — we&apos;ll let you know when this launches.
+        {words.thanks}
       </p>
     );
   }
@@ -55,8 +58,8 @@ export default function NotifyForm({ tenantId, listingId }: NotifyFormProps) {
         required
         maxLength={254}
         disabled={status === 'submitting'}
-        placeholder="you@email.com"
-        aria-label="Email address"
+        placeholder={words.placeholder}
+        aria-label={words.emailLabel}
         className="flex-1 px-3 py-2 bg-s-surface border border-s-border text-s-text placeholder:text-s-text/40 font-s-body text-sm focus:outline-none focus:border-s-accent transition-colors"
       />
       <button
@@ -64,7 +67,7 @@ export default function NotifyForm({ tenantId, listingId }: NotifyFormProps) {
         disabled={status === 'submitting'}
         className="px-4 py-2 bg-s-accent text-white font-s-body uppercase tracking-[0.15em] text-xs hover:opacity-90 disabled:opacity-50 transition-opacity whitespace-nowrap"
       >
-        {status === 'submitting' ? 'Sending…' : 'Get Notified'}
+        {status === 'submitting' ? words.sending : words.send}
       </button>
       {status === 'error' && (
         <p className="font-s-body text-xs text-red-600 w-full" role="alert">

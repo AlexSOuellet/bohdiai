@@ -27,6 +27,7 @@ import { Media } from './chrome';
 import { Type } from './Type';
 import { REVEAL_OBSERVER_OPTIONS } from './reveal-observer';
 import { GoodsHead, type GoodsViewAll } from './beats';
+import type { FamilyWords } from './words';
 
 interface Slot {
   l: number;
@@ -76,11 +77,14 @@ export function GoodsProcession({
   goods,
   products,
   skin,
+  words,
   viewAll,
 }: {
   goods: MainStreetView['goods'];
   products: ProductView[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: GoodsViewAll | undefined;
 }) {
   const stageRef = useRef<HTMLDivElement>(null);
@@ -141,7 +145,7 @@ export function GoodsProcession({
                     {p.name}
                   </Type>
                   <Type as="span" role="price" className="ms-const-price">
-                    {priceLabel(p)}
+                    {priceLabel(p, words)}
                   </Type>
                 </div>
               </a>

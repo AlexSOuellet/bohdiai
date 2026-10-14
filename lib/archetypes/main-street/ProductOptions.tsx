@@ -9,7 +9,8 @@ import { useId, useState } from 'react';
 import type { CatalogVariation, ProductOffer } from '../content';
 import { combinationKey } from '@/lib/catalog/combinations';
 import { Type } from './Type';
-import { DEFAULT_COUNTS, DEFAULT_STRINGS } from './defaults';
+import { fill } from '@/lib/site-words/words';
+import type { FamilyWords } from './words';
 
 export function initialChoices(variations: readonly CatalogVariation[], offers: readonly ProductOffer[]): Record<string, string> {
   const start = offers.find((o) => !o.soldOut) ?? offers[0];
@@ -19,23 +20,27 @@ export function initialChoices(variations: readonly CatalogVariation[], offers: 
 }
 
 /** What a choice reads as in its dropdown, given the other current picks: plain when
- *  that combination can be bought, otherwise marked sold out or not available. */
-function choiceLabel(offers: readonly ProductOffer[], choices: Record<string, string>, name: string, value: string): string {
+ *  that combination can be bought, otherwise marked sold out or not available in
+ *  the site's words. */
+function choiceLabel(offers: readonly ProductOffer[], choices: Record<string, string>, name: string, value: string, w: FamilyWords): string {
   const key = combinationKey({ ...choices, [name]: value });
   const offer = offers.find((o) => combinationKey(o.choices) === key);
-  if (offer === undefined) return DEFAULT_COUNTS.choiceUnavailable(value);
-  return offer.soldOut ? DEFAULT_COUNTS.choiceSoldOut(value) : value;
+  if (offer === undefined) return fill(w.choiceUnavailable, { value });
+  return offer.soldOut ? fill(w.choiceSoldOut, { value }) : value;
 }
 
 export function ProductOptions({
   variations,
   offers,
   fallbackPrice,
+  words,
   askHref,
 }: {
   variations: CatalogVariation[];
   offers: ProductOffer[];
   fallbackPrice: string;
+  /** The site's words: the buy button and the choice marks. */
+  words: FamilyWords;
   /** Set on a shop that doesn't sell online: the buy button becomes "Ask about this" here. */
   askHref?: string | undefined;
 }) {
@@ -44,7 +49,7 @@ export function ProductOptions({
   const idBase = useId();
   const match = offers.find((o) => combinationKey(o.choices) === combinationKey(choices));
   const blocked = match === undefined || match.soldOut;
-  const cta = match === undefined ? DEFAULT_STRINGS.productUnavailable : match.soldOut ? DEFAULT_STRINGS.productSoldOut : DEFAULT_STRINGS.productAddToCart;
+  const cta = match === undefined ? words.productUnavailable : match.soldOut ? words.productSoldOut : words.productAddToCart;
 
   return (
     <>
@@ -67,7 +72,7 @@ export function ProductOptions({
             >
               {v.options.map((opt) => (
                 <option key={opt} value={opt}>
-                  {choiceLabel(offers, choices, v.name, opt)}
+                  {choiceLabel(offers, choices, v.name, opt, words)}
                 </option>
               ))}
             </select>
@@ -80,7 +85,7 @@ export function ProductOptions({
           </Type>
         ) : (
           <Type as="a" role="navLabel" href={askHref} className="ms-product-cta" data-soldout="false">
-            {DEFAULT_STRINGS.productAskAbout}
+            {words.productAskAbout}
           </Type>
         )}
       </div>

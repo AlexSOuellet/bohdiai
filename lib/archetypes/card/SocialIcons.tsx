@@ -4,7 +4,6 @@
  * for screen readers; the drawing is decorative.
  */
 import type { ReactElement } from 'react';
-import { CARD_STRINGS as S } from './strings';
 
 function Facebook(): ReactElement {
   return (
@@ -24,17 +23,28 @@ function Instagram(): ReactElement {
   );
 }
 
-export function SocialIcons({ facebookUrl, instagramUrl, className }: { facebookUrl: string; instagramUrl: string; className: string }): ReactElement | null {
+export function SocialIcons({
+  facebookUrl,
+  instagramUrl,
+  className,
+  labels,
+}: {
+  facebookUrl: string;
+  instagramUrl: string;
+  className: string;
+  /** The site's words naming each link for screen readers. */
+  labels: { facebook: string; instagram: string };
+}): ReactElement | null {
   if (facebookUrl === '' && instagramUrl === '') return null;
   return (
     <span className={className}>
       {facebookUrl !== '' && (
-        <a href={facebookUrl} rel="noopener" aria-label={S.touch.facebook}>
+        <a href={facebookUrl} rel="noopener" aria-label={labels.facebook}>
           <Facebook />
         </a>
       )}
       {instagramUrl !== '' && (
-        <a href={instagramUrl} rel="noopener" aria-label={S.touch.instagram}>
+        <a href={instagramUrl} rel="noopener" aria-label={labels.instagram}>
           <Instagram />
         </a>
       )}

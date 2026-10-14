@@ -7,7 +7,7 @@
  * baby's own page is a certificate of birth.
  *
  * Every word the owner wrote comes from `data` (About you, Market dates) or the
- * catalog; the renderer adds only NURSERY_STRINGS.
+ * catalog, and so does every other word: the site's own words (`data.words`).
  */
 import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
@@ -15,7 +15,8 @@ import type { CartView, MarketShopView, ProductView } from '@/lib/archetypes/con
 import { dialable } from '@/lib/backend/profile/profile-form';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 import { CardContactForm } from '@/lib/archetypes/card/CardContactForm';
-import { NURSERY_STRINGS as S } from './strings';
+import { fill } from '@/lib/site-words/words';
+import type { NurseryWords } from './words';
 import { NURSERY_FONTS_HREF, nurseryCss } from './nursery-styles';
 import { NurseryPhotos } from './NurseryPhotos';
 import { NurseryMenu } from './NurseryMenu';
@@ -29,7 +30,9 @@ import {
   clotheslines,
   homeBabies,
   lowestPrice,
+  photoLabel,
   visitDay,
+  waitingCount,
   type BoutiqueData,
 } from './data';
 
@@ -65,6 +68,7 @@ export function Frame({
   onHome: boolean;
 }): ReactElement {
   const { data, logoUrl } = chrome;
+  const w = data.words;
   const at = (id: string): string => (onHome ? `#${id}` : `/#${id}`);
   return (
     <>
@@ -74,11 +78,11 @@ export function Frame({
       <style dangerouslySetInnerHTML={{ __html: nurseryCss() }} />
       <div className="nn" data-design="nursery">
         <a className="nn-skip" href={`#${MAIN_ID}`}>
-          {S.nav.nursery}
+          {w.nav.nursery}
         </a>
         <header className="nn-top">
           <div className="nn-wrap nn-top__in">
-            <Link className="nn-brand" href="/" aria-label={`${data.name} — ${S.nav.home}`}>
+            <Link className="nn-brand" href="/" aria-label={fill(w.nav.home, { name: data.name })}>
               {logoUrl !== undefined ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img className="nn-brand__logo" src={logoUrl} alt={data.name} />
@@ -88,12 +92,14 @@ export function Frame({
             </Link>
             <NurseryMenu
               links={[
-                { href: '/shop', label: S.nav.nursery },
-                ...(data.gone.length > 0 ? [{ href: at(GONE_ID), label: S.nav.gone }] : []),
-                { href: at(ARTIST_ID), label: S.nav.artist },
-                ...(data.dates.length > 0 ? [{ href: at(VISIT_ID), label: S.nav.visit }] : []),
-                { href: at(TOUCH_ID), label: S.nav.touch, cta: true },
+                { href: '/shop', label: w.nav.nursery },
+                ...(data.gone.length > 0 ? [{ href: at(GONE_ID), label: w.nav.gone }] : []),
+                { href: at(ARTIST_ID), label: w.nav.artist },
+                ...(data.dates.length > 0 ? [{ href: at(VISIT_ID), label: w.nav.visit }] : []),
+                { href: at(TOUCH_ID), label: w.nav.touch, cta: true },
               ]}
+              w={w.nav}
+              cartWords={w.cart}
               cart={data.cart}
             />
           </div>
@@ -101,20 +107,25 @@ export function Frame({
         <main id={MAIN_ID}>
           {data.sale !== null && (
             <p className="nn-salebar">
-              {S.sale.banner(data.sale.name, data.sale.percentOff)}
-              {data.sale.endsOn !== null && <span> · {S.sale.until(saleDay(data.sale.endsOn))}</span>}
+              {fill(w.sale.banner, { name: data.sale.name, percent: data.sale.percentOff })}
+              {data.sale.endsOn !== null && (
+                <span>
+                  {w.separator}
+                  {fill(w.sale.until, { day: saleDay(data.sale.endsOn, w.visit) })}
+                </span>
+              )}
             </p>
           )}
           {children}
         </main>
         <footer className="nn-foot">
           <div className="nn-wrap nn-foot__in">
-            <span>{S.footer.year(new Date().getFullYear(), data.name)}</span>
+            <span>{fill(w.footer.year, { year: new Date().getFullYear(), name: data.name })}</span>
             <span className="nn-foot__legal">
-              <Link href="/terms">{S.footer.terms}</Link>
-              <Link href="/privacy">{S.footer.privacy}</Link>
+              <Link href="/terms">{w.footer.terms}</Link>
+              <Link href="/privacy">{w.footer.privacy}</Link>
             </span>
-            <a href={PLATFORM_URL}>{S.footer.empowered}</a>
+            <a href={PLATFORM_URL}>{w.footer.empowered}</a>
           </div>
         </footer>
       </div>
@@ -124,16 +135,16 @@ export function Frame({
 
 /** A price, or the full price struck through beside the sale price. */
 /** "Oct 31" for the sale banner, read on the day itself. */
-function saleDay(date: string): string {
-  return new Intl.DateTimeFormat(S.visit.locale, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
+function saleDay(date: string, w: NurseryWords['visit']): string {
+  return new Intl.DateTimeFormat(w.locale === '' ? undefined : w.locale, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
 }
 
-function Fee({ baby }: { baby: ProductView }): ReactElement {
+function Fee({ baby, was }: { baby: ProductView; was: string }): ReactElement {
   if (baby.salePrice === undefined) return <>{baby.price}</>;
   return (
     <>
       <s className="nn-was">
-        <span className="nn-sr">{S.sale.was} </span>
+        <span className="nn-sr">{was} </span>
         {baby.price}
       </s>{' '}
       {baby.salePrice}
@@ -141,27 +152,27 @@ function Fee({ baby }: { baby: ProductView }): ReactElement {
   );
 }
 
-function BassinetCard({ baby, tint }: { baby: ProductView; tint: string }): ReactElement {
+function BassinetCard({ baby, tint, w }: { baby: ProductView; tint: string; w: NurseryWords }): ReactElement {
   return (
     <div className={`nn-card nn-card--${tint}`}>
       <div className="nn-card__top" aria-hidden="true" />
-      <p className="nn-card__hello">{S.card.hello}</p>
+      <p className="nn-card__hello">{w.card.hello}</p>
       <p className="nn-card__name">{baby.name}</p>
       {baby.shortDescription !== undefined && baby.shortDescription !== '' && (
         <p className="nn-card__desc">{baby.shortDescription}</p>
       )}
       <span className="nn-card__fee">
-        {S.card.fee}
+        {w.card.fee}
         <b>
-          <Fee baby={baby} />
+          <Fee baby={baby} was={w.sale.was} />
         </b>
       </span>
     </div>
   );
 }
 
-function Nursery({ babies, ribbons }: { babies: ProductView[]; ribbons: boolean }): ReactElement {
-  if (babies.length === 0) return <p className="nn-empty">{S.nursery.empty}</p>;
+function Nursery({ babies, ribbons, w }: { babies: ProductView[]; ribbons: boolean; w: NurseryWords }): ReactElement {
+  if (babies.length === 0) return <p className="nn-empty">{w.nursery.empty}</p>;
   return (
     <div className="nn-glass">
       <ul className="nn-grid" role="list">
@@ -173,7 +184,7 @@ function Nursery({ babies, ribbons }: { babies: ProductView[]; ribbons: boolean 
               <a
                 className={adopted ? ADOPTED_CLASS : BABY_CLASS}
                 href={`/listings/${b.slug}`}
-                aria-label={S.card.open(b.name)}
+                aria-label={fill(w.card.open, { name: b.name })}
               >
                 <div className="nn-baby__crib">
                   {photo !== undefined && (
@@ -181,9 +192,9 @@ function Nursery({ babies, ribbons }: { babies: ProductView[]; ribbons: boolean 
                     <img src={photo.url} alt={photo.alt} loading="lazy" />
                   )}
                 </div>
-                {adopted && <span className="nn-stamp">{S.card.adopted}</span>}
-                {ribbons && b.isNew === true && <span className="nn-newborn">{S.born.ribbon}</span>}
-                <BassinetCard baby={b} tint={cardTint(i)} />
+                {adopted && <span className="nn-stamp">{w.card.adopted}</span>}
+                {ribbons && b.isNew === true && <span className="nn-newborn">{w.born.ribbon}</span>}
+                <BassinetCard baby={b} tint={cardTint(i)} w={w} />
               </a>
             </li>
           );
@@ -197,20 +208,21 @@ function Nursery({ babies, ribbons }: { babies: ProductView[]; ribbons: boolean 
 function JustBorn({ data, babies }: { data: BoutiqueData; babies: ProductView[] }): ReactElement | null {
   const born = data.newArrivals ? babies.filter((b) => b.isNew === true) : [];
   if (born.length === 0) return null;
+  const w = data.words;
   return (
     <section className="nn-sec nn-born" id={BORN_ID} aria-labelledby="nn-born-h">
       <div className="nn-wrap">
-        <span className="nn-script-tag">{S.born.tag}</span>
+        <span className="nn-script-tag">{w.born.tag}</span>
         <h2 className="nn-h2" id="nn-born-h">
-          {S.born.title}
+          {w.born.title}
         </h2>
         <ul className="nn-announce" role="list">
           {born.map((b, i) => {
             const photo = b.media.find((m) => m.kind === 'image' && m.url !== undefined);
             return (
               <li key={b.slug}>
-                <a className="nn-ann" data-tint={cardTint(i)} href={`/listings/${b.slug}`} aria-label={S.card.open(b.name)}>
-                  <span className="nn-ann__welcome">{S.born.welcome}</span>
+                <a className="nn-ann" data-tint={cardTint(i)} href={`/listings/${b.slug}`} aria-label={fill(w.card.open, { name: b.name })}>
+                  <span className="nn-ann__welcome">{w.born.welcome}</span>
                   <span className="nn-ann__photo">
                     {photo !== undefined && (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -218,12 +230,12 @@ function JustBorn({ data, babies }: { data: BoutiqueData; babies: ProductView[] 
                     )}
                   </span>
                   <span className="nn-ann__name">{b.name}</span>
-                  <span className="nn-ann__born">{S.born.bornAt(data.name)}</span>
+                  <span className="nn-ann__born">{fill(w.born.bornAt, { shop: data.name })}</span>
                   {b.status === 'sold_out' ? (
-                    <span className="nn-ann__fee">{S.card.adopted}</span>
+                    <span className="nn-ann__fee">{w.card.adopted}</span>
                   ) : (
                     <span className="nn-ann__fee">
-                      <Fee baby={b} />
+                      <Fee baby={b} was={w.sale.was} />
                     </span>
                   )}
                 </a>
@@ -237,20 +249,20 @@ function JustBorn({ data, babies }: { data: BoutiqueData; babies: ProductView[] 
 }
 
 /** The bracelet's beads: each word of the owner's "what I make", hearts between. */
-function Beads({ words }: { words: string[] }): ReactElement | null {
+function Beads({ words, w }: { words: string[]; w: NurseryWords }): ReactElement | null {
   if (words.length === 0) return null;
-  const beads = words.flatMap((w, wi) => [
-    ...[...w].map((ch, ci) =>
+  const beads = words.flatMap((word, wi) => [
+    ...[...word].map((ch, ci) =>
       ch === ' '
         ? { k: `${wi}-${ci}`, kind: 'gap' as const, ch: '' }
         : { k: `${wi}-${ci}`, kind: 'letter' as const, ch: ch.toUpperCase() },
     ),
-    { k: `${wi}-h`, kind: 'heart' as const, ch: '♥' },
+    { k: `${wi}-h`, kind: 'heart' as const, ch: w.beads.heart },
   ]);
   const run = [...beads, ...beads];
   return (
     <div className="nn-beads">
-      <p className="nn-sr">{words.join(' · ')}</p>
+      <p className="nn-sr">{words.join(w.separator)}</p>
       <div className="nn-beads__track" aria-hidden="true">
         {run.map((b, i) =>
           b.kind === 'gap' ? (
@@ -272,23 +284,23 @@ function Beads({ words }: { words: string[] }): ReactElement | null {
 
 /** Past babies on a clothesline: each photo pegged up with its caption, the line
  *  sagging in short runs. A photo opens full size in the shared viewer. */
-function GoneHome({ photos }: { photos: BoutiqueData['gone'] }): ReactElement | null {
+function GoneHome({ photos, w }: { photos: BoutiqueData['gone']; w: NurseryWords }): ReactElement | null {
   if (photos.length === 0) return null;
   return (
     <section className="nn-sec nn-gone" id={GONE_ID} aria-labelledby="nn-gone-h">
       <div className="nn-wrap">
-        <span className="nn-script-tag">{S.gone.tag}</span>
+        <span className="nn-script-tag">{w.gone.tag}</span>
         <h2 className="nn-h2" id="nn-gone-h">
-          {S.gone.title}
+          {w.gone.title}
         </h2>
-        <PhotoViewerProvider photos={photos}>
+        <PhotoViewerProvider photos={photos} w={w.lightbox}>
           {clotheslines(photos).map((line, li) => (
             <ul key={li} className="nn-line" role="list">
               {line.map((p, i) => {
                 const n = li * 4 + i;
                 return (
                   <li key={p.id} className="nn-peg">
-                    <Snapshot index={n} className="nn-print" label={S.gone.open(p.caption, n + 1)}>
+                    <Snapshot index={n} className="nn-print" label={photoLabel(p.caption, n + 1, w.gone)}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={p.url} alt="" loading="lazy" />
                       {p.caption !== '' && <span className="nn-print__cap">{p.caption}</span>}
@@ -305,35 +317,35 @@ function GoneHome({ photos }: { photos: BoutiqueData['gone'] }): ReactElement | 
 }
 
 function Touch({ data, tenantId }: { data: BoutiqueData; tenantId: string }): ReactElement {
-  const { profile } = data;
+  const { profile, words: w } = data;
   return (
     <section className="nn-sec" id={TOUCH_ID} aria-labelledby="nn-touch-h">
       <div className="nn-wrap">
         <div className="nn-gift">
           <div className="nn-gift__side">
-            <span className="nn-script-tag">{S.touch.tag}</span>
+            <span className="nn-script-tag">{w.touch.tag}</span>
             <h2 className="nn-h2" id="nn-touch-h">
-              {S.touch.title}
+              {w.touch.title}
             </h2>
-            <p>{S.touch.lede}</p>
+            <p>{w.touch.lede}</p>
             <ul className="nn-reach">
               {profile.phone !== '' && (
                 <li>
-                  <small>{S.touch.call}</small>
+                  <small>{w.touch.call}</small>
                   <a href={`tel:${dialable(profile.phone)}`}>{profile.phone}</a>
                 </li>
               )}
               {profile.facebookUrl !== '' && (
                 <li>
                   <a href={profile.facebookUrl} rel="noopener">
-                    {S.touch.facebook}
+                    {w.touch.facebook}
                   </a>
                 </li>
               )}
               {profile.instagramUrl !== '' && (
                 <li>
                   <a href={profile.instagramUrl} rel="noopener">
-                    {S.touch.instagram}
+                    {w.touch.instagram}
                   </a>
                 </li>
               )}
@@ -341,7 +353,7 @@ function Touch({ data, tenantId }: { data: BoutiqueData; tenantId: string }): Re
             <span className="nn-gift__hole" aria-hidden="true" />
           </div>
           <div className="nn-gift__form">
-            <CardContactForm tenantId={tenantId} />
+            <CardContactForm tenantId={tenantId} w={w.form} />
           </div>
         </div>
       </div>
@@ -360,7 +372,7 @@ export function NurseryHome({
   tenantId: string;
   logoUrl?: string | undefined;
 }): ReactElement {
-  const { profile } = data;
+  const { profile, words: w } = data;
   const babies = homeBabies(products);
   const first = babies[0];
   const firstPhoto = first?.media.find((m) => m.kind === 'image' && m.url !== undefined);
@@ -381,9 +393,9 @@ export function NurseryHome({
             )}
             <div className="nn-hero__ctas nn-rise nn-rise--3">
               <a className="nn-btn" href={`#${NURSERY_ID}`}>
-                {S.hero.meet}
+                {w.hero.meet}
               </a>
-              {from !== null && <span className="nn-tag">{S.hero.from(from)}</span>}
+              {from !== null && <span className="nn-tag">{fill(w.hero.from, { price: from })}</span>}
             </div>
           </div>
           {first !== undefined && firstPhoto !== undefined && (
@@ -395,16 +407,16 @@ export function NurseryHome({
               <a
                 className="nn-hang"
                 href={`/listings/${first.slug}`}
-                aria-label={S.card.open(first.name)}
+                aria-label={fill(w.card.open, { name: first.name })}
               >
-                <BassinetCard baby={first} tint="blush" />
+                <BassinetCard baby={first} tint="blush" w={w} />
               </a>
             </div>
           )}
         </div>
       </section>
 
-      <Beads words={words} />
+      <Beads words={words} w={w} />
 
       <JustBorn data={data} babies={products} />
 
@@ -412,29 +424,29 @@ export function NurseryHome({
         <div className="nn-wrap">
           <div className="nn-nursery__head">
             <div>
-              <span className="nn-script-tag">{S.nursery.tag}</span>
+              <span className="nn-script-tag">{w.nursery.tag}</span>
               <h2 className="nn-h2" id="nn-nursery-h">
-                {S.nursery.title}
+                {w.nursery.title}
               </h2>
             </div>
             {products.length > 0 && (
               <span className="nn-count">
-                {S.nursery.count(products.filter((p) => p.status !== 'sold_out').length)}
+                {waitingCount(products.filter((p) => p.status !== 'sold_out').length, w.nursery)}
               </span>
             )}
           </div>
-          <Nursery ribbons={data.newArrivals} babies={babies} />
+          <Nursery ribbons={data.newArrivals} babies={babies} w={w} />
           {products.length > babies.length && (
             <div className="nn-more">
               <a className="nn-btn" href="/shop">
-                {S.nursery.all(products.length)}
+                {fill(w.nursery.all, { n: products.length })}
               </a>
             </div>
           )}
         </div>
       </section>
 
-      <GoneHome photos={data.gone} />
+      <GoneHome photos={data.gone} w={w} />
 
       {(bio.length > 0 || profile.aboutTitle !== '') && (
         <section className="nn-sec" id={ARTIST_ID} aria-labelledby="nn-artist-h">
@@ -446,7 +458,7 @@ export function NurseryHome({
                   <img src={logoUrl} alt="" />
                 </span>
               )}
-              <span className="nn-script-tag">{S.artist.tag}</span>
+              <span className="nn-script-tag">{w.artist.tag}</span>
               <h2 className="nn-h2" id="nn-artist-h">
                 {profile.aboutTitle !== '' ? profile.aboutTitle : data.name}
               </h2>
@@ -471,13 +483,13 @@ export function NurseryHome({
           <div className="nn-wrap">
             <div className="nn-sign-board">
               <div className="nn-sign-board__in">
-                <span className="nn-script-tag">{S.visit.tag}</span>
+                <span className="nn-script-tag">{w.visit.tag}</span>
                 <h2 className="nn-sign-board__title" id="nn-visit-h">
-                  {S.visit.title}
+                  {w.visit.title}
                 </h2>
                 <ul className="nn-visits" role="list">
                   {data.dates.map((d) => {
-                    const { weekday, day } = visitDay(d);
+                    const { weekday, day } = visitDay(d, w.visit);
                     const details = [d.hours, d.booth].filter((s) => s !== '');
                     return (
                       <li key={d.id} className={d.canceled ? VISIT_CANCELED_CLASS : undefined}>
@@ -487,18 +499,18 @@ export function NurseryHome({
                         </span>
                         <span className="nn-visits__what">
                           {d.name}
-                          {d.canceled && <span className="nn-visits__off">{S.visit.canceled}</span>}
-                          {!d.canceled && details.length > 0 && <small>{details.join(' · ')}</small>}
+                          {d.canceled && <span className="nn-visits__off">{w.visit.canceled}</span>}
+                          {!d.canceled && details.length > 0 && <small>{details.join(w.separator)}</small>}
                           {!d.canceled && (d.address !== '' || d.url !== '') && (
                             <span className="nn-visits__links">
                               {d.address !== '' && (
-                                <a href={mapsLink(d.address, d.town)} rel="noopener" target="_blank" aria-label={S.visit.directionsLabel(d.name)}>
-                                  {S.visit.directions}
+                                <a href={mapsLink(d.address, d.town)} rel="noopener" target="_blank" aria-label={fill(w.visit.directionsLabel, { market: d.name })}>
+                                  {w.visit.directions}
                                 </a>
                               )}
                               {d.url !== '' && (
-                                <a href={d.url} rel="noopener" target="_blank" aria-label={S.visit.websiteLabel(d.name)}>
-                                  {S.visit.website}
+                                <a href={d.url} rel="noopener" target="_blank" aria-label={fill(w.visit.websiteLabel, { market: d.name })}>
+                                  {w.visit.website}
                                 </a>
                               )}
                             </span>
@@ -529,24 +541,25 @@ export function NurseryShop({
   products: ProductView[];
   logoUrl?: string | undefined;
 }): ReactElement {
+  const w = data.words;
   return (
     <Frame chrome={{ data, logoUrl }} onHome={false}>
       <section className="nn-sec" aria-labelledby="nn-shop-h">
         <div className="nn-wrap">
           <div className="nn-nursery__head">
             <div>
-              <span className="nn-script-tag">{S.nursery.tag}</span>
+              <span className="nn-script-tag">{w.nursery.tag}</span>
               <h1 className="nn-h2" id="nn-shop-h">
-                {S.shop.title}
+                {w.shop.title}
               </h1>
             </div>
             {products.length > 0 && (
               <span className="nn-count">
-                {S.nursery.count(products.filter((p) => p.status !== 'sold_out').length)}
+                {waitingCount(products.filter((p) => p.status !== 'sold_out').length, w.nursery)}
               </span>
             )}
           </div>
-          <Nursery ribbons={data.newArrivals} babies={products} />
+          <Nursery ribbons={data.newArrivals} babies={products} w={w} />
         </div>
       </section>
     </Frame>
@@ -569,19 +582,20 @@ export function NurseryCertificate({
 }): ReactElement {
   const adopted = product.status === 'sold_out';
   const paragraphs = bioParagraphs(product.description);
+  const w = data.words;
   return (
     <Frame chrome={{ data, logoUrl }} onHome={false}>
       <section className="nn-cert-page">
         <div className="nn-wrap">
           <a className="nn-back" href="/shop">
-            {S.certificate.back}
+            {w.certificate.back}
           </a>
           <div className="nn-cert-grid">
-            <NurseryPhotos name={product.name} media={product.media} />
+            <NurseryPhotos name={product.name} media={product.media} w={w.certificate} />
             <article className="nn-cert" aria-labelledby="nn-cert-h">
               <div className="nn-cert__in">
-                <p className="nn-cert__title">{S.certificate.title}</p>
-                <p className="nn-cert__hello">{S.card.hello}</p>
+                <p className="nn-cert__title">{w.certificate.title}</p>
+                <p className="nn-cert__hello">{w.card.hello}</p>
                 <h1 className="nn-cert__name" id="nn-cert-h">
                   {product.name}
                 </h1>
@@ -590,23 +604,23 @@ export function NurseryCertificate({
                 )}
                 <dl className="nn-fields">
                   <div>
-                    <dt>{S.certificate.born}</dt>
+                    <dt>{w.certificate.born}</dt>
                     <dd>{data.name}</dd>
                   </div>
                   {data.profile.signature !== '' && (
                     <div>
-                      <dt>{S.certificate.artist}</dt>
+                      <dt>{w.certificate.artist}</dt>
                       <dd>{data.profile.signature}</dd>
                     </div>
                   )}
                   <div>
-                    <dt>{S.certificate.status}</dt>
-                    <dd>{adopted ? S.card.adopted : S.card.ready}</dd>
+                    <dt>{w.certificate.status}</dt>
+                    <dd>{adopted ? w.card.adopted : w.card.ready}</dd>
                   </div>
                   <div>
-                    <dt>{S.certificate.fee}</dt>
+                    <dt>{w.certificate.fee}</dt>
                     <dd className="nn-fee">
-                      <Fee baby={product} />
+                      <Fee baby={product} was={w.sale.was} />
                     </dd>
                   </div>
                 </dl>
@@ -622,18 +636,18 @@ export function NurseryCertificate({
                     <AddToCartButton
                       listingId={product.id}
                       className="nn-btn"
-                      addLabel={S.cart.add}
-                      inCartLabel={S.cart.inCart}
-                      fullLabel={S.cart.full}
+                      addLabel={w.cart.add}
+                      inCartLabel={w.cart.inCart}
+                      fullLabel={w.cart.full}
                     />
                     <a className="nn-cert__ask" href={`/#${TOUCH_ID}`}>
-                      {S.cart.ask(product.name)}
+                      {fill(w.cart.ask, { name: product.name })}
                     </a>
                   </div>
                 )}
                 {!adopted && !canCart(data, product) && (
                   <a className="nn-btn" href={`/#${TOUCH_ID}`}>
-                    {S.certificate.adopt(product.name)}
+                    {fill(w.certificate.adopt, { name: product.name })}
                   </a>
                 )}
               </div>
@@ -685,23 +699,24 @@ export function NurseryCart({
 }): ReactElement {
   const ready = cart.lines.filter((l) => l.available);
   const blocked = ready.length !== cart.lines.length;
+  const w = data.words;
   return (
     <Frame chrome={{ data, logoUrl }} onHome={false}>
       <SyncCart ids={cart.lines.map((l) => l.id)} />
       <section className="nn-cart-page" aria-labelledby="nn-cart-h">
         <div className="nn-wrap">
           <a className="nn-back" href="/shop">
-            {S.certificate.back}
+            {w.certificate.back}
           </a>
-          <p className="nn-tag nn-cart__tag">{S.cart.tag}</p>
+          <p className="nn-tag nn-cart__tag">{w.cart.tag}</p>
           <h1 className="nn-h2" id="nn-cart-h">
-            {S.cart.title}
+            {w.cart.title}
           </h1>
           {cart.lines.length === 0 ? (
             <div className="nn-cart__empty">
-              <p>{S.cart.empty}</p>
+              <p>{w.cart.empty}</p>
               <a className="nn-btn" href="/shop">
-                {S.cart.browse}
+                {w.cart.browse}
               </a>
             </div>
           ) : (
@@ -716,11 +731,11 @@ export function NurseryCart({
                       )}
                     </a>
                     <div className="nn-cart__who">
-                      <span className="nn-cart__hello">{S.card.hello}</span>
+                      <span className="nn-cart__hello">{w.card.hello}</span>
                       <a className="nn-cart__name" href={`/listings/${l.slug}`}>
                         {l.name}
                       </a>
-                      {!l.available && <span className="nn-cart__gone">{S.cart.gone}</span>}
+                      {!l.available && <span className="nn-cart__gone">{w.cart.gone}</span>}
                     </div>
                     <span className="nn-cart__fee">
                       {l.salePrice === undefined ? (
@@ -728,14 +743,14 @@ export function NurseryCart({
                       ) : (
                         <>
                           <s className="nn-was">
-                            <span className="nn-sr">{S.sale.was} </span>
+                            <span className="nn-sr">{w.sale.was} </span>
                             {l.price}
                           </s>{' '}
                           {l.salePrice}
                         </>
                       )}
                     </span>
-                    <RemoveFromCartButton listingId={l.id} className="nn-cart__out" label={S.cart.remove} ariaLabel={S.cart.removeLabel(l.name)} />
+                    <RemoveFromCartButton listingId={l.id} className="nn-cart__out" label={w.cart.remove} ariaLabel={fill(w.cart.removeLabel, { name: l.name })} />
                   </li>
                 ))}
               </ul>
@@ -745,11 +760,11 @@ export function NurseryCart({
                     <PromoCodeForm
                       current={cart.code?.value ?? null}
                       className="nn-code"
-                      labels={{ field: S.cart.codeField, apply: S.cart.codeApply, applying: S.cart.codeApplying, remove: S.cart.codeRemove }}
+                      labels={{ field: w.cart.codeField, apply: w.cart.codeApply, applying: w.cart.codeApplying, remove: w.cart.codeRemove }}
                     />
                     {cart.code !== undefined && (
                       <p className="nn-code__msg" role={cart.code.applied ? 'status' : 'alert'}>
-                        {cart.code.applied ? S.cart.codeApplied(cart.code.value) : (cart.code.message ?? '')}
+                        {cart.code.applied ? fill(w.cart.codeApplied, { code: cart.code.value }) : (cart.code.message ?? '')}
                       </p>
                     )}
                   </div>
@@ -758,33 +773,33 @@ export function NurseryCart({
                   {cart.discount !== undefined && (
                     <>
                       <div>
-                        <dt>{S.cart.subtotal}</dt>
+                        <dt>{w.cart.subtotal}</dt>
                         <dd>{cart.subtotal}</dd>
                       </div>
                       <div className="nn-cart__off">
-                        <dt>{S.cart.discount(cart.discount.label)}</dt>
-                        <dd>−{cart.discount.amount}</dd>
+                        <dt>{fill(w.cart.discount, { label: cart.discount.label })}</dt>
+                        <dd>{fill(w.cart.off, { amount: cart.discount.amount })}</dd>
                       </div>
                     </>
                   )}
                   <div className="nn-cart__total">
-                    <dt>{S.cart.total}</dt>
+                    <dt>{w.cart.total}</dt>
                     <dd>{cart.total}</dd>
                   </div>
                 </dl>
               </div>
               <div className="nn-gift nn-cart__send">
                 <div className="nn-gift__side">
-                  <h2 className="nn-h2">{S.cart.sendTitle}</h2>
-                  <p>{S.cart.sendLede}</p>
+                  <h2 className="nn-h2">{w.cart.sendTitle}</h2>
+                  <p>{w.cart.sendLede}</p>
                 </div>
                 <div className="nn-gift__form">
                   {blocked ? (
                     <p className="bc-form__status" role="alert">
-                      {S.cart.fix}
+                      {w.cart.fix}
                     </p>
                   ) : (
-                    <NurseryOrderForm listingIds={ready.map((l) => l.id)} code={cart.code?.applied === true ? cart.code.value : null} />
+                    <NurseryOrderForm listingIds={ready.map((l) => l.id)} w={w.cart} code={cart.code?.applied === true ? cart.code.value : null} />
                   )}
                 </div>
               </div>
@@ -811,6 +826,7 @@ export function NurseryMarket({
   market: MarketShopView;
   logoUrl?: string | undefined;
 }): ReactElement {
+  const w = data.words;
   const { weekday, day } = visitDay({
     id: market.marketId,
     date: market.date,
@@ -822,37 +838,35 @@ export function NurseryMarket({
     booth: market.booth,
     url: '',
     canceled: market.state === 'canceled',
-  });
-  const where = S.market.where(market.town, market.booth);
+  }, w.visit);
   return (
     <Frame chrome={{ data, logoUrl }} onHome={false}>
       <section className="nn-mk" aria-labelledby="nn-mk-h">
         <div className="nn-wrap">
-          <span className="nn-script-tag">{S.market.tag}</span>
+          <span className="nn-script-tag">{w.market.tag}</span>
           <h1 className="nn-h2" id="nn-mk-h">
             {market.name}
           </h1>
           <p className="nn-mk-when">
-            {weekday} · {day}
-            {where !== '' && ` · ${where}`}
+            {[weekday, day, market.town, market.booth].filter((s) => s !== '').join(w.separator)}
           </p>
           {market.state === 'open' &&
             (market.methods.length === 0 ? (
-              <p className="nn-mk-note">{S.market.noPay}</p>
+              <p className="nn-mk-note">{w.market.noPay}</p>
             ) : (
-              <NurseryMarketBuyer marketId={market.marketId} pieces={market.pieces} methods={market.methods} />
+              <NurseryMarketBuyer marketId={market.marketId} pieces={market.pieces} methods={market.methods} w={w.market} />
             ))}
           {market.state === 'before' && (
             <>
-              <p className="nn-mk-note">{S.market.before}</p>
-              <Nursery ribbons={data.newArrivals} babies={market.pieces} />
+              <p className="nn-mk-note">{w.market.before}</p>
+              <Nursery ribbons={data.newArrivals} babies={market.pieces} w={w} />
             </>
           )}
           {(market.state === 'after' || market.state === 'canceled') && (
             <div className="nn-mk-card">
-              <p>{market.state === 'after' ? S.market.after : S.market.canceled}</p>
+              <p>{market.state === 'after' ? w.market.after : w.market.canceled}</p>
               <a className="nn-btn" href="/shop">
-                {S.market.toSite}
+                {w.market.toSite}
               </a>
             </div>
           )}

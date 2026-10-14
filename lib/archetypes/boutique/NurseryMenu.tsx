@@ -7,13 +7,23 @@
  */
 import { useEffect, useId, useState, type ReactElement } from 'react';
 import { CartLink } from '@/lib/storefront/CartControls';
-import { NURSERY_STRINGS as S } from './strings';
+import type { NurseryWords } from './words';
 
 export type MenuLink = { href: string; label: string; cta?: boolean };
 
 /** `cart` puts the cart link in the bar itself, outside the phone menu, so it
  *  is always one tap away. */
-export function NurseryMenu({ links, cart = false }: { links: MenuLink[]; cart?: boolean }): ReactElement {
+export function NurseryMenu({
+  links,
+  w,
+  cartWords,
+  cart = false,
+}: {
+  links: MenuLink[];
+  w: NurseryWords['nav'];
+  cartWords: NurseryWords['cart'];
+  cart?: boolean;
+}): ReactElement {
   const [open, setOpen] = useState(false);
   const panelId = useId();
 
@@ -27,7 +37,7 @@ export function NurseryMenu({ links, cart = false }: { links: MenuLink[]; cart?:
   }, [open]);
 
   return (
-    <nav className="nn-nav" aria-label={S.nav.label} data-open={open ? 'true' : 'false'}>
+    <nav className="nn-nav" aria-label={w.label} data-open={open ? 'true' : 'false'}>
       <button
         type="button"
         className="nn-menu-btn"
@@ -36,7 +46,7 @@ export function NurseryMenu({ links, cart = false }: { links: MenuLink[]; cart?:
         onClick={() => setOpen((o) => !o)}
       >
         <span className="nn-menu-btn__icon" aria-hidden="true" />
-        {open ? S.nav.close : S.nav.menu}
+        {open ? w.close : w.menu}
       </button>
       <div className="nn-nav__links" id={panelId}>
         {links.map((l) => (
@@ -50,7 +60,7 @@ export function NurseryMenu({ links, cart = false }: { links: MenuLink[]; cart?:
           </a>
         ))}
       </div>
-      {cart && <CartLink className="nn-cartlink" label={S.cart.link} />}
+      {cart && <CartLink className="nn-cartlink" label={cartWords.link} labelEmpty={cartWords.linkEmpty} />}
     </nav>
   );
 }

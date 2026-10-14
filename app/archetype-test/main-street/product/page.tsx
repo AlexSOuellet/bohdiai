@@ -13,6 +13,7 @@ import {
   type CatalogMedia,
 } from '@/lib/archetypes/main-street';
 import { mainStreetArchetype } from '@/lib/archetypes/main-street';
+import { FAMILY_NO_WORDS } from '@/lib/archetypes/main-street/words';
 import homeFixture from '../../main-street-fixture.june.json';
 import productFixture from '../../main-street-product-fixture.json';
 
@@ -34,5 +35,5 @@ export default function MainStreetProductTestPage() {
 
   const product: ProductView = { ...base, media };
 
-  return <MainStreetProduct content={home.content} product={product} skin={skin} />;
+  return <MainStreetProduct content={home.content} product={product} skin={skin} words={FAMILY_NO_WORDS} />;
 }

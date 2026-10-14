@@ -1,8 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
-import { CONTRACTOR_SPEC } from './builder';
+import { contractorContentPage, contractorHome, contractorPalette } from './builder';
 import { CONTRACTOR_FIXTURE } from './fixture.test-data';
 import type { ContractorContent } from './schemas';
+import { keyWords } from '@/lib/site-words/words';
+import { CONTRACTOR_WORD_SPOTS, CONTRACTOR_WORDS_PREFIX } from './words';
+
+const W = keyWords(CONTRACTOR_WORD_SPOTS, CONTRACTOR_WORDS_PREFIX);
 
 const TENANT = '4b8f0f5e-8f3a-4a57-9a8e-1f2d3c4b5a69';
 const DESIGNS = ['atelier', 'harbor', 'ridge'] as const;
@@ -67,8 +71,8 @@ function full(design: (typeof DESIGNS)[number]): ContractorContent {
   };
 }
 
-const page = (content: ContractorContent, tenantId: string | undefined) =>
-  render(CONTRACTOR_SPEC.render({ content, lookKey: 'contractor', products: [], tenantId, brandPalette: { base: '#0f1b2d', accent: '#d9a441' } }));
+const palette = contractorPalette({ base: '#0f1b2d', accent: '#d9a441' });
+const page = (content: ContractorContent, tenantId: string | undefined) => render(contractorHome({ content, palette, words: W, tenantId }));
 
 describe.each(DESIGNS)('the %s design', (design) => {
   it('renders with every optional part missing, and shows no form without a tenant', () => {
@@ -88,10 +92,10 @@ describe.each(DESIGNS)('the %s design', (design) => {
   });
 
   it('wraps a legal page and a plain content page in its own chrome', () => {
-    const legal = render(CONTRACTOR_SPEC.renderContentPage!({ content: full(design), brandPalette: undefined, html: '<h1>Privacy</h1>' } as never));
+    const legal = render(contractorContentPage({ content: full(design), palette, words: W, html: '<h1>Privacy</h1>' }));
     expect(legal.container.querySelector('h1')?.textContent).toBe('Privacy');
     legal.unmount();
-    const plain = render(CONTRACTOR_SPEC.renderContentPage!({ content: bare(design), brandPalette: undefined, title: 'Terms', body: ['First.', 'Second.'] } as never));
+    const plain = render(contractorContentPage({ content: bare(design), palette, words: W, title: 'Terms', body: ['First.', 'Second.'] }));
     expect(plain.container.querySelector('h1')?.textContent).toBe('Terms');
     expect(plain.container.textContent).toContain('Second.');
   });

@@ -17,6 +17,7 @@ import type { ArchetypeTheme } from '../types';
 import type { CollectionView, CollectionsSection } from './collections';
 import { Media } from './chrome';
 import { Type } from './Type';
+import type { FamilyWords } from './words';
 
 export function CollectionsCrates({
   section,
@@ -27,6 +28,8 @@ export function CollectionsCrates({
   section: CollectionsSection;
   items: CollectionView[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: { href: string; label: string } | undefined;
 }) {
   return (

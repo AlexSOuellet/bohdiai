@@ -4,6 +4,11 @@ import { FounderBeat } from './FounderBeat';
 import { selectFounderTreatment } from './founder';
 import { MAIN_STREET_SKINS } from './skins';
 import type { MainStreetContent } from './schemas';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 
@@ -40,7 +45,7 @@ describe('selectFounderTreatment', () => {
 describe('FounderBeat — maker-only treatments on the contrast band', () => {
   for (const treatment of ['quote', 'portrait', 'letter', 'card', 'workbench', 'editorial', 'signature'] as const) {
     it(`${treatment} renders the maker quote on the contrast surface and no calendar`, () => {
-      const { getByText, container } = render(<FounderBeat founder={cardFounder} skin={skin} treatment={treatment} />);
+      const { getByText, container } = render(<FounderBeat words={W} founder={cardFounder} skin={skin} treatment={treatment} />);
       expect(getByText(/cast-iron oven/)).toBeTruthy();
       const band = container.querySelector('[data-ms-founder]') as HTMLElement;
       // Class-only: the contrast surface comes from the .ms-founder-band class in
@@ -54,7 +59,7 @@ describe('FounderBeat — maker-only treatments on the contrast band', () => {
   }
 
   it('the card treatment shows the eyebrow and heading', () => {
-    const { getByText } = render(<FounderBeat founder={cardFounder} skin={skin} treatment="card" />);
+    const { getByText } = render(<FounderBeat words={W} founder={cardFounder} skin={skin} treatment="card" />);
     expect(getByText('Meet June')).toBeTruthy();
     expect(getByText('Since 2019')).toBeTruthy();
   });
@@ -62,18 +67,18 @@ describe('FounderBeat — maker-only treatments on the contrast band', () => {
 
 describe('FounderBeat — the about teaser cue', () => {
   it('renders the about cue pointing at the bio page', () => {
-    const { container } = render(<FounderBeat founder={baseFounder} skin={skin} treatment="quote" aboutHref="/about" />);
+    const { container } = render(<FounderBeat words={W} founder={baseFounder} skin={skin} treatment="quote" aboutHref="/about" />);
     const cue = container.querySelector('.ms-aboutcue') as HTMLAnchorElement;
     expect(cue.getAttribute('href')).toBe('/about');
-    expect(cue.textContent).toContain('Read the full story');
+    expect(cue.textContent).toContain(W.fallbackReadFullStory);
   });
   it('uses the maker-authored about label when present', () => {
     const f = { ...baseFounder, aboutLabel: 'Meet the baker' };
-    const { container } = render(<FounderBeat founder={f} skin={skin} treatment="quote" />);
+    const { container } = render(<FounderBeat words={W} founder={f} skin={skin} treatment="quote" />);
     expect((container.querySelector('.ms-aboutcue') as HTMLElement).textContent).toContain('Meet the baker');
   });
   it('renders the treatment the caller passes (the family picks it)', () => {
-    const { getByText } = render(<FounderBeat founder={cardFounder} skin={skin} treatment="card" />);
+    const { getByText } = render(<FounderBeat words={W} founder={cardFounder} skin={skin} treatment="card" />);
     expect(getByText('Meet June')).toBeTruthy();
   });
 });

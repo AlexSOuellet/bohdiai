@@ -4,14 +4,15 @@
  * slammed over it; every other photo gets its own screen with its number and
  * caption; a red panel carries the about heading and bio; the end panel is the
  * contact form; a red ticker scrolls the market dates. Every word the maker
- * wrote comes from `data`; the renderer adds only CARD_STRINGS.
+ * wrote comes from `data`; the site's own words (`data.words`) fill everything else.
  */
 import { Fragment, type ReactElement, type ReactNode } from 'react';
 import Link from 'next/link';
 import { dialable } from '@/lib/backend/profile/profile-form';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 import type { GalleryItem } from '@/lib/backend/gallery/gallery-form';
-import { CARD_STRINGS as S } from './strings';
+import { fill } from '@/lib/site-words/words';
+import type { CardWords } from './words';
 import { CardContactForm } from './CardContactForm';
 import { ShowreelMotion } from './ShowreelMotion';
 import { SHOWREEL_FONTS_HREF, SLAM_LETTERS, showreelCss } from './showreel-styles';
@@ -37,17 +38,17 @@ function Frame({ children }: { children: ReactNode }): ReactElement {
   );
 }
 
-function FooterLinks({ name, platformCredit }: { name: string; platformCredit: boolean }): ReactElement {
+function FooterLinks({ name, platformCredit, w }: { name: string; platformCredit: boolean; w: CardWords['footer'] }): ReactElement {
   return (
     <>
       <span>
         © {new Date().getFullYear()} {name}
       </span>
-      <a href="/privacy">{S.footer.privacy}</a>
-      <a href="/terms">{S.footer.terms}</a>
+      <a href="/privacy">{w.privacy}</a>
+      <a href="/terms">{w.terms}</a>
       {platformCredit && (
         <a href={PLATFORM_URL}>
-          {S.footer.creditPrefix} {S.footer.creditBrand}
+          {w.creditPrefix} {w.creditBrand}
         </a>
       )}
     </>
@@ -81,9 +82,9 @@ function Slam({ name }: { name: string }): ReactElement {
   );
 }
 
-function Piece({ photo, n }: { photo: GalleryItem; n: number }): ReactElement {
+function Piece({ photo, n, label }: { photo: GalleryItem; n: number; label: string }): ReactElement {
   return (
-    <section className="sr-slide sr-shade" data-piece={n} aria-label={photo.caption === '' ? S.showreel.piece(n) : photo.caption}>
+    <section className="sr-slide sr-shade" data-piece={n} aria-label={photo.caption === '' ? fill(label, { n: String(n).padStart(2, '0') }) : photo.caption}>
       {/* The owner's own uploads, already shrunk at upload — plain imgs like the other maker-photo spots. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img className="sr-bg" src={photo.url} alt="" aria-hidden="true" loading="lazy" />
@@ -114,7 +115,7 @@ export function ShowreelLanding({
   tenantId: string | undefined;
   platformCredit?: boolean;
 }): ReactElement {
-  const { name, profile: p, photos, dates } = data;
+  const { name, profile: p, photos, dates, words: w } = data;
   const [opener, ...pieces] = photos;
   const bio = bioParagraphs(p.bio);
   const [sayA, sayB] = halves(p.aboutTitle);
@@ -122,7 +123,7 @@ export function ShowreelLanding({
   const sayAt = Math.min(SAY_AFTER, pieces.length);
   const canWrite = tenantId !== undefined;
   const hasWays = p.phone !== '' || p.facebookUrl !== '' || p.instagramUrl !== '';
-  const dateLines = dates.map(marqueeDateLine);
+  const dateLines = dates.map((d) => marqueeDateLine(d, w.dates));
   const tickerFill = marqueeFill(dateLines, 6);
 
   const say = hasSay && (
@@ -146,7 +147,7 @@ export function ShowreelLanding({
     <Frame>
       {canWrite && (
         <a className="sr-skip" href={`#${TOUCH_ID}`}>
-          {S.skip}
+          {w.skip}
         </a>
       )}
       <header className="sr-bar">
@@ -166,7 +167,7 @@ export function ShowreelLanding({
             {p.headline !== '' && <p className="sr-head">{p.headline}</p>}
             {pieces.length > 0 && (
               <a className="sr-go" href="#piece-1">
-                {S.showreel.seeWork}
+                {w.showreel.seeWork}
               </a>
             )}
           </div>
@@ -174,7 +175,7 @@ export function ShowreelLanding({
 
         {pieces.map((photo, i) => (
           <div key={photo.id} id={`piece-${i + 1}`} className="sr-anchor">
-            <Piece photo={photo} n={i + 1} />
+            <Piece photo={photo} n={i + 1} label={w.showreel.piece} />
             {i + 1 === sayAt && say}
           </div>
         ))}
@@ -183,27 +184,27 @@ export function ShowreelLanding({
         <section className="sr-slide sr-end" id={TOUCH_ID}>
           <div className="sr-wrap">
             <div>
-              <h2>{S.showreel.touch}</h2>
-              <p>{S.showreel.lede}</p>
+              <h2>{w.showreel.touch}</h2>
+              <p>{w.showreel.lede}</p>
               {hasWays && (
                 <div className="sr-ways">
                   {p.phone !== '' && <a href={`tel:${dialable(p.phone)}`}>{p.phone}</a>}
                   {p.facebookUrl !== '' && (
                     <a href={p.facebookUrl} rel="noopener">
-                      {S.touch.facebook}
+                      {w.touch.facebook}
                     </a>
                   )}
                   {p.instagramUrl !== '' && (
                     <a href={p.instagramUrl} rel="noopener">
-                      {S.touch.instagram}
+                      {w.touch.instagram}
                     </a>
                   )}
                 </div>
               )}
             </div>
-            {canWrite && <CardContactForm tenantId={tenantId} />}
+            {canWrite && <CardContactForm tenantId={tenantId} w={w.form} />}
             <footer className="sr-foot">
-              <FooterLinks name={name} platformCredit={platformCredit} />
+              <FooterLinks name={name} platformCredit={platformCredit} w={w.footer} />
             </footer>
           </div>
         </section>
@@ -215,13 +216,13 @@ export function ShowreelLanding({
             <div>
               {tickerFill.map((line, i) => (
                 <span key={`${i}-${line}`}>
-                  {i % dateLines.length === 0 && <b>{S.showreel.findMe}</b>}
+                  {i % dateLines.length === 0 && <b>{w.showreel.findMe}</b>}
                   {line}
                 </span>
               ))}
             </div>
           </div>
-          <ul className="sr-sr" aria-label={S.showreel.datesLabel}>
+          <ul className="sr-sr" aria-label={w.showreel.datesLabel}>
             {dateLines.map((line, i) => (
               <li key={`${i}-${line}`}>{line}</li>
             ))}
@@ -235,12 +236,14 @@ export function ShowreelLanding({
 /** Privacy and terms on the bone panel, with the top bar. */
 export function ShowreelContentPage({
   name,
+  words: w,
   html,
   title,
   body,
   platformCredit = true,
 }: {
   name: string;
+  words: CardWords;
   html?: string | undefined;
   title?: string | undefined;
   body?: string[] | undefined;
@@ -263,7 +266,7 @@ export function ShowreelContentPage({
           </div>
         )}
         <footer className="sr-prose-foot">
-          <FooterLinks name={name} platformCredit={platformCredit} />
+          <FooterLinks name={name} platformCredit={platformCredit} w={w.footer} />
         </footer>
       </main>
     </Frame>

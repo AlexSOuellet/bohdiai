@@ -13,30 +13,34 @@
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import { type FindUsSection, type FindUsEvent, parseFindUsDate } from './findus';
-import { DEFAULT_STRINGS } from './defaults';
+import type { FamilyWords } from './words';
+import { fill } from '@/lib/site-words/words';
 
 /** A trailing appearance: its short date, venue, and time on one line. */
-function alsoLabel(e: FindUsEvent): string {
-  const p = parseFindUsDate(e.date);
-  return p ? `${p.monthShort} ${p.dayNum}` : e.day;
+function alsoLabel(e: FindUsEvent, w: FamilyWords): string {
+  const p = parseFindUsDate(e.date, w.dateLocale);
+  return p ? fill(w.nextStopDay, { month: p.monthShort, day: p.dayNum }) : e.day;
 }
 
-/** The spotlight's supporting accent: the full date and the hours. */
-function dateAccent(e: FindUsEvent): string {
-  const p = parseFindUsDate(e.date);
-  const when = p ? `${p.weekday}, ${p.monthShort} ${p.dayNum}` : e.day;
-  return `${when} · ${e.time}`;
+/** The spotlight's supporting accent: the full date and the hours, in the site's words. */
+function dateAccent(e: FindUsEvent, w: FamilyWords): string {
+  const p = parseFindUsDate(e.date, w.dateLocale);
+  const when = p ? fill(w.nextStopWhen, { weekday: p.weekday, month: p.monthShort, day: p.dayNum }) : e.day;
+  return fill(w.nextStopAccent, { when, time: e.time });
 }
 
 export function FindUsNextStop({
   section,
   events,
   skin: _skin,
+  words,
   viewAll,
 }: {
   section: FindUsSection;
   events: FindUsEvent[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: { href: string; label: string } | undefined;
 }) {
   const [spotlight, ...rest] = events;
@@ -48,7 +52,7 @@ export function FindUsNextStop({
           {section.label}
         </Type>
         <Type as="span" role="day" className="ms-fu-next-date">
-          {dateAccent(spotlight)}
+          {dateAccent(spotlight, words)}
         </Type>
         <Type as="p" role="closeHead" className="ms-fu-next-where">
           {spotlight.where}
@@ -61,13 +65,13 @@ export function FindUsNextStop({
         {rest.length > 0 && (
           <div className="ms-fu-next-also">
             <Type as="span" role="day" className="ms-fu-next-also-lbl">
-              {DEFAULT_STRINGS.findUsAlsoComingUp}
+              {words.findUsAlsoComingUp}
             </Type>
             <div className="ms-fu-next-strip">
               {rest.map((e, i) => (
                 <div key={i} data-ms-fu-item="" className="ms-fu-next-s">
                   <Type as="span" role="day" className="ms-fu-next-sd">
-                    {alsoLabel(e)}
+                    {alsoLabel(e, words)}
                   </Type>
                   <Type as="span" role="where" className="ms-fu-next-sv">
                     {e.where}

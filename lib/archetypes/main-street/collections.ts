@@ -26,7 +26,9 @@
  * family layer (same as goods / About / Nav). Until then the dispatcher falls back
  * to the documented default below.
  */
+import { fill } from '@/lib/site-words/words';
 import type { CollectionView } from '../content';
+import type { FamilyWords } from './words';
 
 export type { CollectionView } from '../content';
 
@@ -76,4 +78,14 @@ export const HOME_COLLECTIONS_SAMPLE = 3;
  *  ordered by `position`). Pure so the dispatcher and tests share one rule. */
 export function sampleCollections(collections: readonly CollectionView[]): CollectionView[] {
   return collections.slice(0, HOME_COLLECTIONS_SAMPLE);
+}
+
+/** A collection's size as the site words it: "1 piece" / "3 pieces". */
+export function piecesLabel(n: number, w: FamilyWords): string {
+  return fill(n === 1 ? w.piecesOne : w.pieces, { n });
+}
+
+/** A collection's size in the cupboard / lanes count: "1 item" / "3 items". */
+export function itemsLabel(n: number, w: FamilyWords): string {
+  return fill(n === 1 ? w.itemsOne : w.items, { n });
 }

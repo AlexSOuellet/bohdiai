@@ -9,7 +9,7 @@ import { loadMarketShop } from '@/lib/market/shop-view';
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function generateMetadata(): Promise<Metadata> {
-  return storefrontMetadata({ path: '/market', pageName: 'At the market', noindex: true });
+  return storefrontMetadata({ path: '/market', titleSpot: 'market', noindex: true });
 }
 
 /** A market's own shop: the page buyers reach by scanning the code at her table. */

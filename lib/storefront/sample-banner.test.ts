@@ -4,16 +4,16 @@ import { SAMPLES, CLIENTS } from '@/lib/site/work';
 
 describe('sampleBannerFor', () => {
   it('names the plan each sample shows and links to the maker plans', () => {
-    expect(sampleBannerFor('rustic-rhody')).toEqual({ label: 'Showcase sample', href: 'https://bohdiai.com/makers#plans' });
-    expect(sampleBannerFor('classic-loafs')?.label).toBe('Market sample');
-    expect(sampleBannerFor('twilight-to-darkness')?.label).toBe('Full sample');
-    expect(sampleBannerFor('paper-and-patina')?.label).toBe('Showcase sample');
-    expect(sampleBannerFor('ember-and-pine')?.label).toBe('Showcase sample');
+    expect(sampleBannerFor('rustic-rhody')).toEqual({ plan: 'Showcase', href: 'https://bohdiai.com/makers#plans' });
+    expect(sampleBannerFor('classic-loafs')?.plan).toBe('Market');
+    expect(sampleBannerFor('twilight-to-darkness')?.plan).toBe('Full');
+    expect(sampleBannerFor('paper-and-patina')?.plan).toBe('Showcase');
+    expect(sampleBannerFor('ember-and-pine')?.plan).toBe('Showcase');
   });
 
   it('labels the contractor samples and links them to the contractor plans', () => {
-    expect(sampleBannerFor('true-coat-painting')).toEqual({ label: 'Contractor Full sample', href: 'https://bohdiai.com/contractors#plans' });
-    expect(sampleBannerFor('halfmoon-roofing')).toEqual({ label: 'Contractor Lead Generation sample', href: 'https://bohdiai.com/contractors#plans' });
+    expect(sampleBannerFor('true-coat-painting')).toEqual({ plan: 'Contractor Full', href: 'https://bohdiai.com/contractors#plans' });
+    expect(sampleBannerFor('halfmoon-roofing')).toEqual({ plan: 'Contractor Lead Generation', href: 'https://bohdiai.com/contractors#plans' });
   });
 
   it('gives every sample a banner, listed on bohdiai.com or not', () => {

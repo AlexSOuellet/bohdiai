@@ -1,8 +1,13 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { ProductOptions, initialChoices } from './ProductOptions';
-import { DEFAULT_STRINGS, DEFAULT_COUNTS } from './defaults';
+
 import type { CatalogVariation, ProductOffer } from '../content';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key; the choice marks show their blank. */
+const W = { ...keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX), choiceSoldOut: 'soldout:{value}', choiceUnavailable: 'na:{value}' };
 
 afterEach(cleanup);
 
@@ -23,17 +28,17 @@ describe('initialChoices', () => {
 
 describe('ProductOptions', () => {
   it('shows the chosen combination’s price and whether it can be bought', () => {
-    render(<ProductOptions variations={variations} offers={offers} fallbackPrice="$24" />);
+    render(<ProductOptions words={W} variations={variations} offers={offers} fallbackPrice="$24" />);
     expect(screen.getByText('$30')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: DEFAULT_STRINGS.productAddToCart })).toBeEnabled();
+    expect(screen.getByRole('button', { name: W.productAddToCart })).toBeEnabled();
     fireEvent.change(screen.getByLabelText('Size'), { target: { value: 'Small' } });
     expect(screen.getByText('$24')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: DEFAULT_STRINGS.productSoldOut })).toBeDisabled();
+    expect(screen.getByRole('button', { name: W.productSoldOut })).toBeDisabled();
   });
   it('says a combination isn’t available when the maker turned it off', () => {
-    render(<ProductOptions variations={[{ name: 'Size', options: ['Small', 'Large'] }]} offers={[offers[1]!]} fallbackPrice="$24" />);
+    render(<ProductOptions words={W} variations={[{ name: 'Size', options: ['Small', 'Large'] }]} offers={[offers[1]!]} fallbackPrice="$24" />);
     fireEvent.change(screen.getByLabelText('Size'), { target: { value: 'Small' } });
-    expect(screen.getByRole('button', { name: DEFAULT_STRINGS.productUnavailable })).toBeDisabled();
+    expect(screen.getByRole('button', { name: W.productUnavailable })).toBeDisabled();
     expect(screen.getByText('$24')).toBeInTheDocument();
   });
   it('marks each choice with what picking it would give, keeping the raw value', () => {
@@ -46,31 +51,32 @@ describe('ProductOptions', () => {
       { choices: { Size: 'Small', Scent: 'Fig' }, price: '$24', soldOut: true },
       { choices: { Size: 'Large', Scent: 'Pine' }, price: '$30', soldOut: false },
     ];
-    render(<ProductOptions variations={two} offers={grid} fallbackPrice="$24" />);
+    render(<ProductOptions words={W} variations={two} offers={grid} fallbackPrice="$24" />);
     // Starts on Large + Fig. Small + Fig is sold out; Pine with Large is fine.
     const size = screen.getByLabelText('Size');
-    expect(screen.getByRole('option', { name: DEFAULT_COUNTS.choiceSoldOut('Small') })).toHaveValue('Small');
+    expect(screen.getByRole('option', { name: 'soldout:Small' })).toHaveValue('Small');
     expect(screen.getByRole('option', { name: 'Large' })).toHaveValue('Large');
     expect(screen.getByRole('option', { name: 'Pine' })).toHaveValue('Pine');
     // On Pine, Small + Pine isn't offered at all.
     fireEvent.change(screen.getByLabelText('Scent'), { target: { value: 'Pine' } });
-    expect(screen.getByRole('option', { name: DEFAULT_COUNTS.choiceUnavailable('Small') })).toHaveValue('Small');
+    expect(screen.getByRole('option', { name: 'na:Small' })).toHaveValue('Small');
     // On Small, Pine isn't offered and Fig is sold out.
     fireEvent.change(size, { target: { value: 'Small' } });
-    expect(screen.getByRole('option', { name: DEFAULT_COUNTS.choiceUnavailable('Pine') })).toHaveValue('Pine');
+    expect(screen.getByRole('option', { name: 'na:Pine' })).toHaveValue('Pine');
     fireEvent.change(screen.getByLabelText('Scent'), { target: { value: 'Fig' } });
-    expect(screen.getByRole('option', { name: DEFAULT_COUNTS.choiceSoldOut('Fig') })).toHaveValue('Fig');
+    expect(screen.getByRole('option', { name: 'soldout:Fig' })).toHaveValue('Fig');
     expect(size).toHaveValue('Small');
   });
-  it('words the marks in plain English', () => {
-    expect(DEFAULT_COUNTS.choiceSoldOut('Small')).toBe('Small — sold out');
-    expect(DEFAULT_COUNTS.choiceUnavailable('Small')).toBe('Small — not available');
+  it('words the marks in the site’s own words, with the choice in the blank', () => {
+    const own = { ...W, choiceSoldOut: '{value} is gone' };
+    render(<ProductOptions words={own} variations={variations} offers={offers} fallbackPrice="$24" />);
+    expect(screen.getByRole('option', { name: 'Small is gone' })).toHaveValue('Small');
   });
   it('gives two pickers on one page different ids', () => {
     const { container } = render(
       <>
-        <ProductOptions variations={variations} offers={offers} fallbackPrice="$24" />
-        <ProductOptions variations={variations} offers={offers} fallbackPrice="$24" />
+        <ProductOptions words={W} variations={variations} offers={offers} fallbackPrice="$24" />
+        <ProductOptions words={W} variations={variations} offers={offers} fallbackPrice="$24" />
       </>,
     );
     const ids = [...container.querySelectorAll('select')].map((el) => el.id);
@@ -80,7 +86,7 @@ describe('ProductOptions', () => {
   });
   it('shows no picker for an option with no choices', () => {
     const { container } = render(
-      <ProductOptions variations={[{ name: 'Size', options: ['Small', 'Large'] }, { name: 'Colour', options: [] }]} offers={offers} fallbackPrice="$24" />,
+      <ProductOptions words={W} variations={[{ name: 'Size', options: ['Small', 'Large'] }, { name: 'Colour', options: [] }]} offers={offers} fallbackPrice="$24" />,
     );
     expect(container.querySelectorAll('select')).toHaveLength(1);
     expect(screen.queryByText('Colour')).toBeNull();
@@ -89,9 +95,9 @@ describe('ProductOptions', () => {
 
 describe('ProductOptions on a shop that does not sell online', () => {
   it('keeps the choices and prices but asks instead of selling', () => {
-    render(<ProductOptions variations={variations} offers={offers} fallbackPrice="$24" askHref="/contact" />);
+    render(<ProductOptions words={W} variations={variations} offers={offers} fallbackPrice="$24" askHref="/contact" />);
     expect(screen.getByText('$30')).toBeTruthy();
-    expect(screen.getByRole('link', { name: DEFAULT_STRINGS.productAskAbout }).getAttribute('href')).toBe('/contact');
+    expect(screen.getByRole('link', { name: W.productAskAbout }).getAttribute('href')).toBe('/contact');
     expect(screen.queryByRole('button')).toBeNull();
   });
 });

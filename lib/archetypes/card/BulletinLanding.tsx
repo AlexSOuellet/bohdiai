@@ -5,19 +5,19 @@
  * photos pinned on; Find me at with the market days circled; tear-off tabs.
  * Then the rest of the photos pinned on the wall, and two cards: the about
  * note and the contact form. Every word the maker wrote comes from `data`; the
- * renderer adds only CARD_STRINGS. Anything with nothing to show is left out.
+ * site's own words (`data.words`) fill everything else. Anything with nothing to show is left out.
  */
 import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 import type { GalleryItem } from '@/lib/backend/gallery/gallery-form';
-import { CARD_STRINGS as S } from './strings';
+import type { CardWords } from './words';
 import { CardContactForm } from './CardContactForm';
 import { PhotoViewerProvider, Snapshot } from './PhotoViewer';
 import { BulletinTabs } from './BulletinTabs';
 import { BULLETIN_FONTS_HREF, bulletinCss } from './bulletin-styles';
 import { datePieces, nameLines, tabTarget, TOUCH_ID } from './bulletin';
-import { bioParagraphs, type CardData } from './data';
+import { bioParagraphs, photoLabel, type CardData } from './data';
 
 const PINNED = 3;
 
@@ -35,26 +35,26 @@ function Frame({ children }: { children: ReactNode }): ReactElement {
   );
 }
 
-function Footer({ name, platformCredit }: { name: string; platformCredit: boolean }): ReactElement {
+function Footer({ name, platformCredit, w }: { name: string; platformCredit: boolean; w: CardWords['footer'] }): ReactElement {
   return (
     <footer className="bb-foot">
       <span>
         © {new Date().getFullYear()} {name}
       </span>
-      <a href="/privacy">{S.footer.privacy}</a>
-      <a href="/terms">{S.footer.terms}</a>
+      <a href="/privacy">{w.privacy}</a>
+      <a href="/terms">{w.terms}</a>
       {platformCredit && (
         <a href={PLATFORM_URL}>
-          {S.footer.creditPrefix} {S.footer.creditBrand}
+          {w.creditPrefix} {w.creditBrand}
         </a>
       )}
     </footer>
   );
 }
 
-function Photo({ photo, index, eager }: { photo: GalleryItem; index: number; eager: boolean }): ReactElement {
+function Photo({ photo, index, eager, w }: { photo: GalleryItem; index: number; eager: boolean; w: CardWords['work'] }): ReactElement {
   return (
-    <Snapshot index={index} className="bb-photo" label={S.work.open(photo.caption, index + 1)}>
+    <Snapshot index={index} className="bb-photo" label={photoLabel(photo.caption, index + 1, w)}>
       {/* The owner's own upload, already shrunk at upload — a plain img like the other maker-photo spots. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={photo.url} alt={photo.caption} loading={eager ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'auto'} />
@@ -72,7 +72,7 @@ export function BulletinLanding({
   tenantId: string | undefined;
   platformCredit?: boolean;
 }): ReactElement {
-  const { name, profile: p, photos, dates } = data;
+  const { name, profile: p, photos, dates, words: w } = data;
   const title = nameLines(name);
   const pinned = photos.slice(0, PINNED);
   const wall = photos.slice(PINNED);
@@ -81,17 +81,17 @@ export function BulletinLanding({
   const hasWays = p.facebookUrl !== '' || p.instagramUrl !== '';
   const hasAbout = bio.length > 0 || p.aboutTitle !== '' || hasWays;
   // With no phone the tabs lead to the form, so they only show when there is one to reach.
-  const target = tabTarget(p);
+  const target = tabTarget(p, w.bulletin);
   const hasTabs = target.kind === 'call' || canWrite;
 
   return (
     <Frame>
       {canWrite && (
         <a className="bb-skip" href={`#${TOUCH_ID}`}>
-          {S.skip}
+          {w.skip}
         </a>
       )}
-      <PhotoViewerProvider photos={photos}>
+      <PhotoViewerProvider photos={photos} w={w.lightbox}>
         <div className="bb-wall">
           <header className="bb-flyer">
             <span className="bb-tack bb-tack--l" aria-hidden="true" />
@@ -114,38 +114,38 @@ export function BulletinLanding({
               <ul className="bb-pins">
                 {pinned.map((photo, i) => (
                   <li key={photo.id}>
-                    <Photo photo={photo} index={i} eager />
+                    <Photo photo={photo} index={i} eager w={w.work} />
                   </li>
                 ))}
               </ul>
             )}
             {dates.length > 0 && (
               <section className="bb-find">
-                <h2>{S.bulletin.findMe}</h2>
+                <h2>{w.bulletin.findMe}</h2>
                 <ul>
                   {dates.map((d) => {
-                    const piece = datePieces(d);
+                    const piece = datePieces(d, w.dates);
                     return (
                       <li key={d.id}>
                         <b>{piece.day}</b> {piece.market}
-                        {piece.town !== '' && <span> · {piece.town}</span>}
+                        {piece.town !== '' && <span>{w.dates.separator}{piece.town}</span>}
                       </li>
                     );
                   })}
                 </ul>
               </section>
             )}
-            {hasTabs && <BulletinTabs target={target} />}
+            {hasTabs && <BulletinTabs target={target} label={w.bulletin.tabs} />}
           </header>
 
           <main id="main" className="bb-wall bb-wall--inner">
             {wall.length > 0 && (
               <section className="bb-more">
-                <h2 className="bb-board-h">{S.bulletin.more}</h2>
+                <h2 className="bb-board-h">{w.bulletin.more}</h2>
                 <ul className="bb-scatter">
                   {wall.map((photo, i) => (
                     <li key={photo.id}>
-                      <Photo photo={photo} index={PINNED + i} eager={false} />
+                      <Photo photo={photo} index={PINNED + i} eager={false} w={w.work} />
                     </li>
                   ))}
                 </ul>
@@ -156,7 +156,7 @@ export function BulletinLanding({
               <div className="bb-cards">
                 {hasAbout && (
                   <section className="bb-card bb-card--about" id="about">
-                    <h2>{p.aboutTitle !== '' ? p.aboutTitle : S.bulletin.aboutFallback}</h2>
+                    <h2>{p.aboutTitle !== '' ? p.aboutTitle : w.bulletin.aboutFallback}</h2>
                     {bio.map((para) => (
                       <p key={para.slice(0, 40)}>{para}</p>
                     ))}
@@ -165,12 +165,12 @@ export function BulletinLanding({
                       <div className="bb-ways">
                         {p.facebookUrl !== '' && (
                           <a href={p.facebookUrl} rel="noopener">
-                            {S.touch.facebook}
+                            {w.touch.facebook}
                           </a>
                         )}
                         {p.instagramUrl !== '' && (
                           <a href={p.instagramUrl} rel="noopener">
-                            {S.touch.instagram}
+                            {w.touch.instagram}
                           </a>
                         )}
                       </div>
@@ -179,8 +179,8 @@ export function BulletinLanding({
                 )}
                 {canWrite && (
                   <section className="bb-card bb-card--touch" id={TOUCH_ID}>
-                    <h2>{S.bulletin.touch}</h2>
-                    <CardContactForm tenantId={tenantId} />
+                    <h2>{w.bulletin.touch}</h2>
+                    <CardContactForm tenantId={tenantId} w={w.form} />
                   </section>
                 )}
               </div>
@@ -188,7 +188,7 @@ export function BulletinLanding({
           </main>
         </div>
       </PhotoViewerProvider>
-      <Footer name={name} platformCredit={platformCredit} />
+      <Footer name={name} platformCredit={platformCredit} w={w.footer} />
     </Frame>
   );
 }
@@ -197,12 +197,14 @@ export function BulletinLanding({
  *  pre-rendered from the platform's legal templates (escaped markdown). */
 export function BulletinContentPage({
   name,
+  words: w,
   html,
   title,
   body,
   platformCredit = true,
 }: {
   name: string;
+  words: CardWords;
   html?: string | undefined;
   title?: string | undefined;
   body?: string[] | undefined;
@@ -229,7 +231,7 @@ export function BulletinContentPage({
           )}
         </article>
       </main>
-      <Footer name={name} platformCredit={platformCredit} />
+      <Footer name={name} platformCredit={platformCredit} w={w.footer} />
     </Frame>
   );
 }

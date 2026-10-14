@@ -21,7 +21,7 @@
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import type { MarqueeLines } from './marquee';
-import { DEFAULT_STRINGS } from './defaults';
+import type { FamilyWords } from './words';
 
 import type { TypeRoleName } from './Type';
 
@@ -59,15 +59,18 @@ function MarqueeRow({ items, role, variant }: { items: readonly string[]; role: 
 export function MarqueeBeat({
   lines,
   skin: _skin,
+  words,
 }: {
   lines: MarqueeLines;
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
 }) {
   const hasVoice = lines.voice.length > 0;
   const hasInfo = lines.info.length > 0;
   if (!hasVoice && !hasInfo) return null;
   return (
-    <section className="ms-mq-band" aria-label={DEFAULT_STRINGS.ariaMarqueeHighlights}>
+    <section className="ms-mq-band" aria-label={words.ariaMarqueeHighlights}>
       {/* Voice line loud (goodsHead); info line a step down (cardTitle) so the two
           registers read as hierarchy and never crowd each other vertically. */}
       {hasVoice && <MarqueeRow items={lines.voice} role="goodsHead" />}

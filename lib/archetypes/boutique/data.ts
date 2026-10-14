@@ -15,7 +15,9 @@ import { GALLERY_LIMIT, type GalleryItem } from '@/lib/backend/gallery/gallery-f
 import type { MarketDate } from '@/lib/backend/dates/dates-form';
 import { loadShopPromotions } from '@/lib/storefront/promotions-load';
 import { runningSale } from '@/lib/storefront/promotions';
-import { NURSERY_STRINGS as S } from './strings';
+import { getSiteWords } from '@/lib/site-words/queries';
+import { fill } from '@/lib/site-words/words';
+import { NURSERY_WORD_SPOTS, NURSERY_WORDS_PREFIX, type NurseryWords } from './words';
 
 /** `gone` is the gallery: the owner's past pieces, shown when Gallery is switched on. */
 export type BoutiqueData = {
@@ -29,16 +31,19 @@ export type BoutiqueData = {
   newArrivals: boolean;
   /** The sale running today, if any: every baby shows its sale price under a banner. */
   sale: { name: string; percentOff: number; endsOn: string | null } | null;
+  /** The site's own words for every spot the design paints. */
+  words: NurseryWords;
 };
 
 export async function loadBoutiqueData(
   db: SupabaseClient<Database>,
   tenantId: string,
 ): Promise<BoutiqueData> {
-  const [tenant, profile, features] = await Promise.all([
+  const [tenant, profile, features, words] = await Promise.all([
     db.from('tenants').select('business_name').eq('id', tenantId).maybeSingle(),
     db.from('site_profiles').select(PROFILE_COLUMNS).eq('tenant_id', tenantId).maybeSingle(),
     loadSiteFeatures(db, tenantId),
+    getSiteWords(db, tenantId, NURSERY_WORD_SPOTS, NURSERY_WORDS_PREFIX),
   ]);
   if (tenant.error !== null) throw new Error(`Could not load the site: ${tenant.error.message}`);
   if (tenant.data === null) throw new Error('Could not load the site: no such tenant');
@@ -57,6 +62,7 @@ export async function loadBoutiqueData(
     cart: features.has('cart'),
     newArrivals: features.has('new_arrivals'),
     sale: sale === null || sale.percentOff === null ? null : { name: sale.name, percentOff: sale.percentOff, endsOn: sale.endsOn },
+    words,
   };
 }
 
@@ -96,13 +102,24 @@ export function bioParagraphs(bio: string): string[] {
 
 /** A market's day for the visiting-hours board: "Saturday", "Oct 17". A market over
  *  several days reads "Saturday – Sunday", "Nov 21 – 22". */
-export function visitDay(d: MarketDate): { weekday: string; day: string } {
+export function visitDay(d: MarketDate, w: NurseryWords['visit']): { weekday: string; day: string } {
   const first = new Date(`${d.date}T00:00:00Z`);
-  const weekdays = new Intl.DateTimeFormat(S.visit.locale, { weekday: 'long', timeZone: 'UTC' });
-  const days = new Intl.DateTimeFormat(S.visit.locale, { month: 'short', day: 'numeric', timeZone: 'UTC' });
+  const locale = w.locale === '' ? undefined : w.locale;
+  const weekdays = new Intl.DateTimeFormat(locale, { weekday: 'long', timeZone: 'UTC' });
+  const days = new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' });
   if (d.endDate === '' || d.endDate === d.date) return { weekday: weekdays.format(first), day: days.format(first) };
   const last = new Date(`${d.endDate}T00:00:00Z`);
-  return { weekday: S.visit.range(weekdays.format(first), weekdays.format(last)), day: days.formatRange(first, last) };
+  return { weekday: fill(w.range, { first: weekdays.format(first), last: weekdays.format(last) }), day: days.formatRange(first, last) };
+}
+
+/** A photo's name for screen readers: its caption, or its number when it has none. */
+export function photoLabel(caption: string, n: number, w: NurseryWords['gone']): string {
+  return caption === '' ? fill(w.openNumbered, { n }) : fill(w.open, { caption });
+}
+
+/** How many babies are waiting, as the site says it: one, or a count. */
+export function waitingCount(n: number, w: NurseryWords['nursery']): string {
+  return n === 1 ? w.countOne : fill(w.count, { n });
 }
 
 /** The clothesline hangs the gallery in short runs, so each line sags like a real one. */

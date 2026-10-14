@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { CardContactForm } from './CardContactForm';
-import { CARD_STRINGS } from './strings';
+import { keyWords } from '@/lib/site-words/words';
+import { CARD_WORD_SPOTS, CARD_WORDS_PREFIX } from './words';
+
+const CARD_STRINGS = keyWords(CARD_WORD_SPOTS, CARD_WORDS_PREFIX);
 
 const S = CARD_STRINGS.form;
 const TENANT = '4b8f0f5e-8f3a-4a57-9a8e-1f2d3c4b5a69';
@@ -12,7 +15,7 @@ afterEach(() => {
 });
 
 function fill(): void {
-  render(<CardContactForm tenantId={TENANT} />);
+  render(<CardContactForm tenantId={TENANT} w={S} />);
   fireEvent.change(screen.getByLabelText(S.name), { target: { value: 'Pat' } });
   fireEvent.change(screen.getByLabelText(S.email), { target: { value: 'pat@example.com' } });
   fireEvent.change(screen.getByLabelText(S.message), { target: { value: 'A Navy flag please' } });
@@ -53,7 +56,7 @@ describe('CardContactForm', () => {
   it('quietly drops a bot that fills the hidden field', async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
-    render(<CardContactForm tenantId={TENANT} />);
+    render(<CardContactForm tenantId={TENANT} w={S} />);
     fireEvent.change(screen.getByLabelText(S.honeypot), { target: { value: 'Acme' } });
     fireEvent.submit(screen.getByRole('button', { name: S.send }).closest('form') as HTMLFormElement);
     await waitFor(() => expect(screen.getByText(S.sent)).toBeTruthy());

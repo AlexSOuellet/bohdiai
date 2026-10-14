@@ -15,16 +15,20 @@
  */
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetView } from './schemas';
+import type { FamilyWords } from './words';
 import { Media, Nav, linkHref } from './chrome';
 import { Type } from './Type';
 
 export function EditorialCoverHero({
   identity,
   moment,
+  words,
 }: {
   identity: MainStreetView['identity'];
   moment: MainStreetView['moment'];
   skin: ArchetypeTheme;
+  /** The site's words: the nav's page names and labels. */
+  words: FamilyWords;
 }) {
   const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';
   const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
@@ -36,7 +40,7 @@ export function EditorialCoverHero({
       <div aria-hidden className="ms-cover-grad" />
       <div className="ms-cover-inner">
         <nav data-ms-hero-nav className="ms-cover-nav">
-          <Nav identity={identity} />
+          <Nav identity={identity} words={words} />
         </nav>
         <div className="ms-cover-masthead">
           <Type as="div" role="eyebrow" className="ms-cover-eyebrow">

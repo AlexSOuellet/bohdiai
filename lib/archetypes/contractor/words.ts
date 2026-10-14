@@ -1,0 +1,108 @@
+/**
+ * The contractor designs' word spots (yard, atelier, harbor, ridge). Only the
+ * names of the spots live here; every word is the site's own, in `site_words`
+ * under "contractor.". A word with a blank names it: "Review {n} of {of}".
+ */
+import type { WordShape, Words } from '@/lib/site-words/words';
+
+export const CONTRACTOR_WORDS_PREFIX = 'contractor';
+
+export const CONTRACTOR_WORD_SPOTS = {
+  call: '',
+  callOrText: '',
+  estimateShort: '',
+  menuLabel: '',
+  skipToEstimate: '',
+  playVideo: '',
+  pauseVideo: '',
+  serving: '',
+  starsLabel: '',
+  estimator: {
+    scope: '',
+    size: '',
+    grade: '',
+    range: '',
+    send: '',
+    groupLabel: '',
+  },
+  quotes: {
+    prev: '',
+    next: '',
+    label: '',
+    position: '',
+    carousel: '',
+    slide: '',
+  },
+  calendar: {
+    booked: '',
+    open: '',
+    weekdays: {
+      sun: '',
+      mon: '',
+      tue: '',
+      wed: '',
+      thu: '',
+      fri: '',
+      sat: '',
+    },
+    months: {
+      jan: '',
+      feb: '',
+      mar: '',
+      apr: '',
+      may: '',
+      jun: '',
+      jul: '',
+      aug: '',
+      sep: '',
+      oct: '',
+      nov: '',
+      dec: '',
+    },
+    monthTitle: '',
+    dayBooked: '',
+    dayOpen: '',
+  },
+  callNow: '',
+  form: {
+    name: '',
+    phone: '',
+    email: '',
+    contactHint: '',
+    town: '',
+    state: '',
+    statePlaceholder: '',
+    services: '',
+    details: '',
+    detailsHint: '',
+    photos: '',
+    photosHint: '',
+    photosChosen: '',
+    photosChosenOne: '',
+    optional: '',
+    honeypot: '',
+    submit: '',
+    sending: '',
+    successTitle: '',
+    successBody: '',
+    sendAnother: '',
+    errorGeneric: '',
+    errorNetwork: '',
+    errorNeedContact: '',
+    errorName: '',
+    errorTooManyPhotos: '',
+    errorPhotoTooBig: '',
+    errorPhotoType: '',
+  },
+  footer: {
+    privacy: '',
+    rights: '',
+    creditPrefix: '',
+    creditBrand: '',
+    copyright: '',
+  },
+  separator: '',
+  quoted: '',
+} as const satisfies WordShape;
+
+export type ContractorWords = Words<typeof CONTRACTOR_WORD_SPOTS>;

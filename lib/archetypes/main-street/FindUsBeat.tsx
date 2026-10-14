@@ -23,17 +23,21 @@ import { FindUsPasses } from './FindUsPasses';
 import { FindUsNextStop } from './FindUsNextStop';
 import { FindUsItinerary } from './FindUsItinerary';
 import { FindUsPoster } from './FindUsPoster';
-import { DEFAULT_STRINGS } from './defaults';
+
+import type { FamilyWords } from './words';
 
 export function FindUsBeat({
   findUs,
   skin,
+  words,
   treatment,
   eventsHref = '/events',
   full = false,
 }: {
   findUs: FindUsSection;
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   /** Force a treatment (the ?findus= preview / tests). When omitted the authored
    *  `findUs.treatment` wins, then the documented default. */
   treatment?: FindUsTreatment | undefined;
@@ -47,15 +51,15 @@ export function FindUsBeat({
   // legacy render paths that don't yet thread one.
   const chosen = treatment ?? DEFAULT_FINDUS_TREATMENT;
   const events = full ? findUs.rows : sampleEvents(findUs.rows);
-  const viewAll = full ? undefined : { href: eventsHref, label: findUs.eventsLabel ?? DEFAULT_STRINGS.fallbackSeeAllDates };
-  const props = { section: findUs, events, skin, viewAll };
+  const viewAll = full ? undefined : { href: eventsHref, label: findUs.eventsLabel ?? words.fallbackSeeAllDates };
+  const props = { section: findUs, events, skin, words, viewAll };
 
   switch (chosen) {
     case 'calendar': {
       // A real calendar opens on the current month (server-computed so it tracks
       // today) and pages from there over the shop's full date list — not the handful.
       const { year, month } = currentYearMonth(new Date());
-      return <FindUsCalendar section={findUs} viewAll={viewAll} year={year} month={month} />;
+      return <FindUsCalendar section={findUs} words={words} viewAll={viewAll} year={year} month={month} />;
     }
     case 'passes':
       return <FindUsPasses {...props} />;

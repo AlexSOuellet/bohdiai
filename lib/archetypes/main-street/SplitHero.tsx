@@ -17,17 +17,21 @@
  */
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetView } from './schemas';
+import type { FamilyWords } from './words';
 import { Media, Nav, linkHref } from './chrome';
 import { Type } from './Type';
 
 export function SplitHero({
   identity,
   moment,
+  words,
   mediaSide = 'right',
 }: {
   identity: MainStreetView['identity'];
   moment: MainStreetView['moment'];
   skin: ArchetypeTheme;
+  /** The site's words: the nav's page names and labels. */
+  words: FamilyWords;
   /** Which side the media sits on. 'right' (default) puts the text first; 'left'
    *  is the mirror. The only structural variation Split carries. */
   mediaSide?: 'left' | 'right';
@@ -37,7 +41,7 @@ export function SplitHero({
   return (
     <header data-ms-hero="split" data-media-side={mediaSide} className="ms-splithero">
       <div data-ms-hero-nav className="ms-splithero-nav">
-        <Nav identity={identity} />
+        <Nav identity={identity} words={words} />
       </div>
       <div data-ms-hero-text className="ms-splithero-text">
         <div className="ms-splithero-inner">

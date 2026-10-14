@@ -19,13 +19,12 @@ import {
   FounderSignature,
   type FounderAbout,
 } from './FounderBeats';
-import { DEFAULT_STRINGS } from './defaults';
-
-const DEFAULT_ABOUT = DEFAULT_STRINGS.fallbackReadFullStory;
+import type { FamilyWords } from './words';
 
 export function FounderBeat({
   founder,
   skin,
+  words,
   treatment,
   aboutHref = '/about',
   aboutPage,
@@ -33,6 +32,8 @@ export function FounderBeat({
 }: {
   founder: MainStreetView['founder'];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   /** Force a treatment (previews/tests). Otherwise Bohdi's pick, then the quote. */
   treatment?: FounderTreatment | undefined;
   /** Where the "about" cue points — the full bio page. */
@@ -48,14 +49,14 @@ export function FounderBeat({
   // still guards for legacy render paths that don't thread one.
   const chosen = selectFounderTreatment(treatment);
   const about: FounderAbout | undefined = showAboutCue
-    ? { href: aboutHref, label: founder.aboutLabel ?? DEFAULT_ABOUT }
+    ? { href: aboutHref, label: founder.aboutLabel ?? words.fallbackReadFullStory }
     : undefined;
 
   switch (chosen) {
     case 'portrait':
       return <FounderPortrait founder={founder} skin={skin} about={about} />;
     case 'letter':
-      return <FounderLetter founder={founder} skin={skin} about={about} />;
+      return <FounderLetter founder={founder} skin={skin} words={words} about={about} />;
     case 'card':
       return <FounderCard founder={founder} skin={skin} about={about} />;
     case 'workbench':

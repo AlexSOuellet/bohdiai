@@ -2,23 +2,28 @@
  * Contractor — the build spec. A HAND-BUILT layout: Claude writes a client's
  * content directly (no Bohdi authoring, no generated media), so it never appears
  * on the onboarding menu. It renders like any archetype from the stored envelope:
- * one home page plus the platform's plain content pages (privacy, terms).
+ * one home page plus the platform's plain content pages (privacy, terms). Every
+ * word the designs show is the site's own, read from `site_words` at render.
  */
+import type { ReactElement } from 'react';
 import { notFound } from 'next/navigation';
 import type { ArchetypeBuildSpec } from '../builder';
-import { deriveBrandPalette, type BrandPalette } from '@/lib/color/brand-palette';
+import { supabaseAdmin } from '@/lib/supabase';
+import { getSiteWords } from '@/lib/site-words/queries';
+import { deriveBrandPalette, type BrandPalette, type DerivedPalette } from '@/lib/color/brand-palette';
 import { ContractorContentSchema, type ContractorContent } from './schemas';
 import { ContractorLanding, ContractorContentPage, ContractorShell } from './ContractorLanding';
 import { AtelierLanding, AtelierContentPage, AtelierShell } from './atelier/AtelierLanding';
 import { HarborLanding, HarborContentPage, HarborShell } from './harbor/HarborLanding';
 import { RidgeLanding, RidgeContentPage, RidgeShell } from './ridge/RidgeLanding';
+import { CONTRACTOR_WORD_SPOTS, CONTRACTOR_WORDS_PREFIX, type ContractorWords } from './words';
 
 export const CONTRACTOR_LOOK = 'contractor';
 
 /** The palette a contractor site paints in when it has no brand palette of its own. */
 const DEFAULT_BRAND: BrandPalette = { base: '#101210', accent: '#3dae3f' };
 
-function paletteFor(brandPalette: BrandPalette | undefined) {
+export function contractorPalette(brandPalette: BrandPalette | undefined): DerivedPalette {
   return deriveBrandPalette(brandPalette ?? DEFAULT_BRAND).palette;
 }
 
@@ -28,6 +33,107 @@ function contentOf(raw: unknown): ContractorContent {
   const parsed = ContractorContentSchema.safeParse(raw);
   if (!parsed.success) notFound();
   return parsed.data;
+}
+
+/** The site's home page in its design, with the site's words. Tests paint this
+ *  directly; the spec loads the words first. No tenant: no estimate form. */
+export function contractorHome({ content, palette, words, tenantId }: { content: ContractorContent; palette: DerivedPalette; words: ContractorWords; tenantId: string | undefined }): ReactElement {
+  const c = content;
+  if (c.design === 'atelier') return <AtelierLanding content={c} palette={palette} words={words} tenantId={tenantId} />;
+  if (c.design === 'harbor') return <HarborLanding content={c} palette={palette} words={words} tenantId={tenantId} />;
+  if (c.design === 'ridge') return <RidgeLanding content={c} palette={palette} words={words} tenantId={tenantId} />;
+  return <ContractorLanding content={c} palette={palette} words={words} tenantId={tenantId} />;
+}
+
+/** A plain content page (legal docs, maker pages) in the design's chrome, with the site's words. */
+export function contractorContentPage({
+  content: c,
+  palette,
+  words,
+  html,
+  title,
+  body,
+}: {
+  content: ContractorContent;
+  palette: DerivedPalette;
+  words: ContractorWords;
+  html?: string | undefined;
+  title?: string | undefined;
+  body?: string[] | undefined;
+}): ReactElement {
+  if (c.design === 'ridge') {
+    if (html !== undefined) return <RidgeContentPage content={c} palette={palette} words={words} html={html} />;
+    return (
+      <RidgeShell content={c} palette={palette} words={words}>
+        <main className="rg-section rg-light">
+          <div className="rg-wrap rg-prose">
+            {title !== undefined && <h1>{title}</h1>}
+            {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
+          </div>
+        </main>
+      </RidgeShell>
+    );
+  }
+  if (c.design === 'harbor') {
+    if (html !== undefined) return <HarborContentPage content={c} palette={palette} words={words} html={html} />;
+    return (
+      <HarborShell content={c} palette={palette} words={words}>
+        <main className="hb-section">
+          <div className="hb-wrap hb-prose">
+            {title !== undefined && <h1>{title}</h1>}
+            {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
+          </div>
+        </main>
+      </HarborShell>
+    );
+  }
+  if (c.design === 'atelier') {
+    if (html !== undefined) return <AtelierContentPage content={c} palette={palette} words={words} html={html} />;
+    return (
+      <AtelierShell content={c} palette={palette} words={words}>
+        <main className="at-section">
+          <div className="at-wrap at-prose">
+            {title !== undefined && <h1>{title}</h1>}
+            {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
+          </div>
+        </main>
+      </AtelierShell>
+    );
+  }
+  if (html !== undefined) return <ContractorContentPage content={c} palette={palette} words={words} html={html} />;
+  return (
+    <ContractorShell content={c} palette={palette} words={words}>
+      <main className="cp-section">
+        <div className="cp-wrap cp-prose">
+          {title !== undefined && <h1>{title}</h1>}
+          {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
+        </div>
+      </main>
+    </ContractorShell>
+  );
+}
+
+/** The site's words for the contractor designs. */
+function loadWords(tenantId: string): Promise<ContractorWords> {
+  return getSiteWords(supabaseAdmin(), tenantId, CONTRACTOR_WORD_SPOTS, CONTRACTOR_WORDS_PREFIX);
+}
+
+async function ContractorSite({ content, palette, tenantId }: { content: ContractorContent; palette: DerivedPalette; tenantId: string }): Promise<ReactElement> {
+  return contractorHome({ content, palette, words: await loadWords(tenantId), tenantId });
+}
+
+async function ContractorPage({
+  tenantId,
+  ...page
+}: {
+  tenantId: string;
+  content: ContractorContent;
+  palette: DerivedPalette;
+  html?: string | undefined;
+  title?: string | undefined;
+  body?: string[] | undefined;
+}): Promise<ReactElement> {
+  return contractorContentPage({ ...page, words: await loadWords(tenantId) });
 }
 
 export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
@@ -51,66 +157,15 @@ export const CONTRACTOR_SPEC: ArchetypeBuildSpec<ContractorContent> = {
   applyMedia: (authored) => authored,
   toPayload: (authored) => ({ content: authored, products: [] }),
   // Each design is its own page; the content shape is shared (design: 'yard' | 'atelier' | 'harbor' | 'ridge').
+  // The words are the site's own, so a page needs its site.
   render: ({ content, brandPalette, tenantId }) => {
     const c = contentOf(content);
-    const palette = paletteFor(brandPalette);
-    if (c.design === 'atelier') return <AtelierLanding content={c} palette={palette} tenantId={tenantId} />;
-    if (c.design === 'harbor') return <HarborLanding content={c} palette={palette} tenantId={tenantId} />;
-    if (c.design === 'ridge') return <RidgeLanding content={c} palette={palette} tenantId={tenantId} />;
-    return <ContractorLanding content={c} palette={palette} tenantId={tenantId} />;
+    if (tenantId === undefined) notFound();
+    return <ContractorSite content={c} palette={contractorPalette(brandPalette)} tenantId={tenantId} />;
   },
-  renderContentPage: ({ content, brandPalette, html, title, body }) => {
+  renderContentPage: ({ content, brandPalette, tenantId, html, title, body }) => {
     const c = contentOf(content);
-    const palette = paletteFor(brandPalette);
-    if (c.design === 'ridge') {
-      if (html !== undefined) return <RidgeContentPage content={c} palette={palette} html={html} />;
-      return (
-        <RidgeShell content={c} palette={palette}>
-          <main className="rg-section rg-light">
-            <div className="rg-wrap rg-prose">
-              {title !== undefined && <h1>{title}</h1>}
-              {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
-            </div>
-          </main>
-        </RidgeShell>
-      );
-    }
-    if (c.design === 'harbor') {
-      if (html !== undefined) return <HarborContentPage content={c} palette={palette} html={html} />;
-      return (
-        <HarborShell content={c} palette={palette}>
-          <main className="hb-section">
-            <div className="hb-wrap hb-prose">
-              {title !== undefined && <h1>{title}</h1>}
-              {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
-            </div>
-          </main>
-        </HarborShell>
-      );
-    }
-    if (c.design === 'atelier') {
-      if (html !== undefined) return <AtelierContentPage content={c} palette={palette} html={html} />;
-      return (
-        <AtelierShell content={c} palette={palette}>
-          <main className="at-section">
-            <div className="at-wrap at-prose">
-              {title !== undefined && <h1>{title}</h1>}
-              {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
-            </div>
-          </main>
-        </AtelierShell>
-      );
-    }
-    if (html !== undefined) return <ContractorContentPage content={c} palette={palette} html={html} />;
-    return (
-      <ContractorShell content={c} palette={palette}>
-        <main className="cp-section">
-          <div className="cp-wrap cp-prose">
-            {title !== undefined && <h1>{title}</h1>}
-            {(body ?? []).map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
-          </div>
-        </main>
-      </ContractorShell>
-    );
+    if (tenantId === undefined) notFound();
+    return <ContractorPage tenantId={tenantId} content={c} palette={contractorPalette(brandPalette)} html={html} title={title} body={body} />;
   },
 };

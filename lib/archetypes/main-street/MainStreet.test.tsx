@@ -4,6 +4,11 @@ import { MainStreet } from './MainStreet';
 import { MAIN_STREET_SKINS } from './skins';
 import { FAMILIES } from './families';
 import type { MainStreetContent } from './schemas';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 
@@ -38,19 +43,19 @@ describe('MainStreet — find-us beat composition', () => {
       ...base,
       founder: { ...base.founder, findUs: { label: 'Find us', rows: [{ day: 'Sat', where: 'Market', time: '9am' }] } },
     };
-    const { container } = render(<MainStreet content={withDates} skin={skin} products={[]} />);
+    const { container } = render(<MainStreet words={W} content={withDates} skin={skin} products={[]} />);
     expect(container.querySelector('#find-us')).toBeTruthy();
   });
 
   it('shows no find-us beat when the maker has no dates', () => {
-    const { container } = render(<MainStreet content={base} skin={skin} products={[]} />);
+    const { container } = render(<MainStreet words={W} content={base} skin={skin} products={[]} />);
     expect(container.querySelector('#find-us')).toBeNull();
   });
 });
 
 describe('MainStreet — per-beat spotlight hooks', () => {
   it('wraps each home beat in a data-ms-beat hook the single-section preview targets', () => {
-    const { container } = render(<MainStreet content={base} skin={skin} products={[]} />);
+    const { container } = render(<MainStreet words={W} content={base} skin={skin} products={[]} />);
     // Hero and the founder beat both carry their section key so the walk can
     // spotlight just one (the wrapper is display:contents, so live layout is unchanged).
     expect(container.querySelector('[data-ms-beat="hero"]')).toBeTruthy();
@@ -63,7 +68,7 @@ describe('MainStreet — marquee band composition', () => {
     // Every family ships marquee-on at onboarding; Cozy (the default stack) has
     // it near the bottom of the page but always renders when the store has copy
     // to fill it (the marquee never carries hardcoded lines).
-    const { container } = render(<MainStreet content={base} skin={skin} products={[]} />);
+    const { container } = render(<MainStreet words={W} content={base} skin={skin} products={[]} />);
     expect(container.querySelector('.ms-mq-band')).toBeTruthy();
     // The voice line is assembled from base's own authored copy.
     expect(container.textContent).toContain(base.moment.eyebrow);
@@ -76,7 +81,7 @@ describe('MainStreet — marquee band composition', () => {
     const withoutMarquee = FAMILIES.cozy.sectionStack.map((e) =>
       e.section === 'marquee' ? { ...e, on: false } : e,
     );
-    const { container } = render(<MainStreet content={base} skin={skin} products={[]} sectionStack={withoutMarquee} />);
+    const { container } = render(<MainStreet words={W} content={base} skin={skin} products={[]} sectionStack={withoutMarquee} />);
     expect(container.querySelector('.ms-mq-band')).toBeNull();
   });
 
@@ -84,7 +89,7 @@ describe('MainStreet — marquee band composition', () => {
     // Rustic's opens-with is the workbench (About), but a scrolling marquee band
     // sits at position 2 — market energy, right after the hero. Verify the walk
     // renders in stack order, not a fixed slot.
-    const { container } = render(<MainStreet content={base} skin={skin} products={[]} sectionStack={FAMILIES.rustic.sectionStack} />);
+    const { container } = render(<MainStreet words={W} content={base} skin={skin} products={[]} sectionStack={FAMILIES.rustic.sectionStack} />);
     const hero = container.querySelector('[data-ms-hero]');
     const marquee = container.querySelector('.ms-mq-band');
     const goods = container.querySelector('#goods');
@@ -100,7 +105,7 @@ describe('MainStreet — section stack walking (§1.4)', () => {
     // Cozy opens with the maker (About Letter as the lead, position 2 after
     // hero). The founder beat should render before the goods beat, unlike a
     // family that leads with goods.
-    const { container } = render(<MainStreet content={base} skin={skin} products={[]} sectionStack={FAMILIES.cozy.sectionStack} />);
+    const { container } = render(<MainStreet words={W} content={base} skin={skin} products={[]} sectionStack={FAMILIES.cozy.sectionStack} />);
     const founder = container.querySelector('[data-ms-founder]');
     const goods = container.querySelector('#goods');
     expect(founder && goods).toBeTruthy();
@@ -108,7 +113,7 @@ describe('MainStreet — section stack walking (§1.4)', () => {
   });
 
   it('renders Dark with goods as the lead (position 2), before the About beat', () => {
-    const { container } = render(<MainStreet content={base} skin={skin} products={[]} sectionStack={FAMILIES.dark.sectionStack} />);
+    const { container } = render(<MainStreet words={W} content={base} skin={skin} products={[]} sectionStack={FAMILIES.dark.sectionStack} />);
     const goods = container.querySelector('#goods');
     const founder = container.querySelector('[data-ms-founder]');
     expect(goods && founder).toBeTruthy();
@@ -129,18 +134,18 @@ describe('MainStreet — reviews beat composition', () => {
   };
 
   it('shows the reviews beat when the store has testimonials', () => {
-    const { container } = render(<MainStreet content={withReviews} skin={skin} products={[]} />);
+    const { container } = render(<MainStreet words={W} content={withReviews} skin={skin} products={[]} />);
     expect(container.querySelector('#reviews')).toBeTruthy();
     expect(container.textContent).toContain('Dana R.');
   });
 
   it('shows no reviews beat when the store has none', () => {
-    const { container } = render(<MainStreet content={base} skin={skin} products={[]} />);
+    const { container } = render(<MainStreet words={W} content={base} skin={skin} products={[]} />);
     expect(container.querySelector('#reviews')).toBeNull();
   });
 
   it('places the reviews beat after the goods and before the footer', () => {
-    const { container } = render(<MainStreet content={withReviews} skin={skin} products={[]} />);
+    const { container } = render(<MainStreet words={W} content={withReviews} skin={skin} products={[]} />);
     const goods = container.querySelector('#goods');
     const reviews = container.querySelector('#reviews');
     const footer = container.querySelector('footer');
@@ -151,7 +156,7 @@ describe('MainStreet — reviews beat composition', () => {
   });
 
   it('honors a forced treatment (the ?reviews= preview)', () => {
-    const { container } = render(<MainStreet content={withReviews} skin={skin} products={[]} reviewsTreatment="guestbook" />);
+    const { container } = render(<MainStreet words={W} content={withReviews} skin={skin} products={[]} reviewsTreatment="guestbook" />);
     expect(container.querySelector('.ms-rev-book')).toBeTruthy();
   });
 });
@@ -167,24 +172,24 @@ describe('MainStreet — the maker’s walk resolutions applied to the render', 
   };
 
   it('a section the maker turned off does not render at all', () => {
-    const { container } = render(<MainStreet content={withReviews} skin={skin} products={[]} hiddenSections={['reviews']} />);
+    const { container } = render(<MainStreet words={W} content={withReviews} skin={skin} products={[]} hiddenSections={['reviews']} />);
     expect(container.querySelector('#reviews')).toBeNull();
     // and it isn't rendered when NOT hidden (proves the hide is what removed it)
     cleanup();
-    const { container: shown } = render(<MainStreet content={withReviews} skin={skin} products={[]} />);
+    const { container: shown } = render(<MainStreet words={W} content={withReviews} skin={skin} products={[]} />);
     expect(shown.querySelector('#reviews')).toBeTruthy();
   });
 
   it('the marquee scrolls real dates ONLY once find-us is made real, never the seeds', () => {
     // Scope to the marquee BAND: the find-us beat itself still shows the seeded dates
     // as an editable placeholder (D38), but the scrolling band must not broadcast them.
-    const { container: seeded } = render(<MainStreet content={withDates} skin={skin} products={[]} />);
+    const { container: seeded } = render(<MainStreet words={W} content={withDates} skin={skin} products={[]} />);
     expect(seeded.querySelector('.ms-mq-band')).toBeTruthy();
     expect(seeded.querySelector('.ms-mq-band')!.textContent).not.toContain('Riverside Market');
     cleanup();
     // Made real (the maker entered them) → the marquee shows them.
     const { container: real } = render(
-      <MainStreet content={withDates} skin={skin} products={[]} shownSections={['findUs']} />,
+      <MainStreet words={W} content={withDates} skin={skin} products={[]} shownSections={['findUs']} />,
     );
     expect(real.querySelector('.ms-mq-band')!.textContent).toContain('Riverside Market');
   });
@@ -192,18 +197,18 @@ describe('MainStreet — the maker’s walk resolutions applied to the render', 
 
 describe('MainStreet — hero slot resolves through the catalog (the swap)', () => {
   it('renders the Story hero by default (unchanged from before the catalog)', () => {
-    const { container } = render(<MainStreet content={base} skin={skin} products={[]} />);
+    const { container } = render(<MainStreet words={W} content={base} skin={skin} products={[]} />);
     expect(container.querySelector('[data-ms-hero]')).toBeTruthy();
     expect(container.querySelector('[data-ms-hero="split"]')).toBeNull();
   });
 
   it('renders the Split hero when the recipe names heroVariant "split"', () => {
-    const { container } = render(<MainStreet content={base} skin={skin} products={[]} heroVariant="split" />);
+    const { container } = render(<MainStreet words={W} content={base} skin={skin} products={[]} heroVariant="split" />);
     expect(container.querySelector('[data-ms-hero="split"]')).toBeTruthy();
   });
 
   it('keeps the rest of the page (close beat) regardless of which hero the recipe picks', () => {
-    const { container } = render(<MainStreet content={base} skin={skin} products={[]} heroVariant="split" />);
+    const { container } = render(<MainStreet words={W} content={base} skin={skin} products={[]} heroVariant="split" />);
     expect(container.textContent).toContain(base.close.headline);
   });
 });

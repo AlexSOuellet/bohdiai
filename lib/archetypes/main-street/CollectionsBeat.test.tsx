@@ -3,6 +3,11 @@ import { render, cleanup } from '@testing-library/react';
 import { CollectionsBeat } from './CollectionsBeat';
 import { MAIN_STREET_SKINS } from './skins';
 import type { CollectionView, CollectionsSection, CollectionsTreatment } from './collections';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 const section: CollectionsSection = { title: 'Collections' };
@@ -31,32 +36,32 @@ afterEach(cleanup);
 
 describe('CollectionsBeat', () => {
   it('renders nothing when the shop has no collections', () => {
-    const { container } = render(<CollectionsBeat section={section} items={[]} skin={skin} />);
+    const { container } = render(<CollectionsBeat words={W} section={section} items={[]} skin={skin} />);
     expect(container.firstChild).toBeNull();
   });
 
   it('dispatches to each treatment when forced', () => {
     for (const t of Object.keys(ROOT_CLASS) as CollectionsTreatment[]) {
-      const { container } = render(<CollectionsBeat section={section} items={makeItems(3)} skin={skin} treatment={t} />);
+      const { container } = render(<CollectionsBeat words={W} section={section} items={makeItems(3)} skin={skin} treatment={t} />);
       expect(container.querySelector(ROOT_CLASS[t])).toBeTruthy();
       cleanup();
     }
   });
 
   it('falls back to the documented default with no authored or forced treatment', () => {
-    const { container } = render(<CollectionsBeat section={section} items={makeItems(3)} skin={skin} />);
+    const { container } = render(<CollectionsBeat words={W} section={section} items={makeItems(3)} skin={skin} />);
     expect(container.querySelector(ROOT_CLASS.cupboard)).toBeTruthy();
   });
 
   it('renders the treatment the caller passes (the family picks it)', () => {
     const { container } = render(
-      <CollectionsBeat section={section} items={makeItems(3)} skin={skin} treatment="cascade" />,
+      <CollectionsBeat words={W} section={section} items={makeItems(3)} skin={skin} treatment="cascade" />,
     );
     expect(container.querySelector(ROOT_CLASS.cascade)).toBeTruthy();
   });
 
   it('samples to the home teaser size', () => {
-    const { container } = render(<CollectionsBeat section={section} items={makeItems(6)} skin={skin} treatment="cupboard" />);
+    const { container } = render(<CollectionsBeat words={W} section={section} items={makeItems(6)} skin={skin} treatment="cupboard" />);
     expect(container.querySelectorAll('[data-ms-coll-item]').length).toBe(3);
   });
 });

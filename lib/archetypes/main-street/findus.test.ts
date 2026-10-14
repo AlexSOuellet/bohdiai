@@ -6,6 +6,8 @@ import {
   HOME_FINDUS_SAMPLE,
   sampleEvents,
   parseFindUsDate,
+  findUsLocale,
+  findUsWeekdayHeaders,
   formatFindUsMonthTitle,
   buildFindUsMonth,
   currentYearMonth,
@@ -45,8 +47,8 @@ describe('findus registry', () => {
 });
 
 describe('parseFindUsDate', () => {
-  it('reads an ISO date into its display pieces without timezone drift', () => {
-    const p = parseFindUsDate('2025-07-12');
+  it('reads an ISO date into its display pieces, named in the site’s locale, without timezone drift', () => {
+    const p = parseFindUsDate('2025-07-12', 'en-US');
     expect(p).toEqual({
       year: 2025,
       month: 7,
@@ -64,11 +66,28 @@ describe('parseFindUsDate', () => {
     expect(parseFindUsDate('2025-13-01')).toBeUndefined();
     expect(parseFindUsDate('2025-02-40')).toBeUndefined();
   });
+
+  it('names the date in another locale when the site’s locale word says so', () => {
+    expect(parseFindUsDate('2025-07-12', 'fr-FR')?.monthShort).toBe(new Intl.DateTimeFormat('fr-FR', { month: 'short', timeZone: 'UTC' }).format(new Date(Date.UTC(2025, 6, 12))));
+  });
+
+  it('reads a locale word Intl can’t read as no locale, rather than breaking the page', () => {
+    expect(findUsLocale('family.dateLocale')).toBeUndefined();
+    expect(findUsLocale('')).toBeUndefined();
+    expect(findUsLocale('en-US')).toBe('en-US');
+    expect(parseFindUsDate('2025-07-12', 'family.dateLocale')?.dayNum).toBe(12);
+  });
+});
+
+describe('findUsWeekdayHeaders', () => {
+  it('lists the weekdays Sunday-first in the site’s locale', () => {
+    expect(findUsWeekdayHeaders('en-US')).toEqual(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']);
+  });
 });
 
 describe('formatFindUsMonthTitle', () => {
   it('renders the month name and year', () => {
-    expect(formatFindUsMonthTitle(2025, 8)).toBe('August 2025');
+    expect(formatFindUsMonthTitle(2025, 8, 'en-US')).toBe('August 2025');
   });
 
   it('falls back to just the year for an out-of-range month, never "undefined"', () => {

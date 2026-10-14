@@ -6,6 +6,7 @@
  * one cart cookie (lib/storefront/cart.ts) and tells the page it changed. The
  * words and classes come from the design that places them.
  */
+import { fill } from '@/lib/site-words/words';
 import { useEffect, useState, useSyncExternalStore, type ReactElement } from 'react';
 import { useRouter } from 'next/navigation';
 import { CART_EVENT, addToCart, cartCookieString, cartFromCookieHeader, removeFromCart } from './cart';
@@ -139,15 +140,19 @@ export function SyncCart({ ids }: { ids: string[] }): null {
 /** The nav's cart link with its count; `label(n)` words it. */
 export function CartLink({
   label,
+  labelEmpty,
   className,
 }: {
-  label: (count: number) => string;
+  /** The site's words with the count's blank: "Cart ({n})". */
+  label: string;
+  /** The site's words when the cart is empty. */
+  labelEmpty: string;
   className?: string | undefined;
 }): ReactElement {
   const count = useCartIds().length;
   return (
     <a className={className} href="/cart">
-      {label(count)}
+      {count === 0 ? labelEmpty : fill(label, { n: count })}
     </a>
   );
 }

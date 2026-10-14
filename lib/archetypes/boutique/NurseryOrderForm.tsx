@@ -7,7 +7,8 @@
  */
 import { useState, type FormEvent, type ReactElement } from 'react';
 import { ClearCart } from '@/lib/storefront/CartControls';
-import { NURSERY_STRINGS as S } from './strings';
+import { fill } from '@/lib/site-words/words';
+import type { NurseryWords } from './words';
 
 type State =
   | { kind: 'idle' }
@@ -15,7 +16,15 @@ type State =
   | { kind: 'sent'; orderNumber: string | null }
   | { kind: 'error'; message: string };
 
-export function NurseryOrderForm({ listingIds, code = null }: { listingIds: string[]; code?: string | null }): ReactElement {
+export function NurseryOrderForm({
+  listingIds,
+  w,
+  code = null,
+}: {
+  listingIds: string[];
+  w: NurseryWords['cart'];
+  code?: string | null;
+}): ReactElement {
   const [state, setState] = useState<State>({ kind: 'idle' });
 
   async function onSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
@@ -42,10 +51,10 @@ export function NurseryOrderForm({ listingIds, code = null }: { listingIds: stri
         setState({ kind: 'sent', orderNumber: n });
         return;
       }
-      const message = body !== null && typeof body === 'object' && 'error' in body && typeof body.error === 'string' ? body.error : S.cart.error;
+      const message = body !== null && typeof body === 'object' && 'error' in body && typeof body.error === 'string' ? body.error : w.error;
       setState({ kind: 'error', message });
     } catch {
-      setState({ kind: 'error', message: S.cart.errorNetwork });
+      setState({ kind: 'error', message: w.errorNetwork });
     }
   }
 
@@ -53,8 +62,8 @@ export function NurseryOrderForm({ listingIds, code = null }: { listingIds: stri
     return (
       <div className="bc-form__done" role="status">
         <ClearCart />
-        {state.orderNumber !== null && <p className="nn-order__num">{S.cart.sentTitle(state.orderNumber)}</p>}
-        <p>{S.cart.sent}</p>
+        {state.orderNumber !== null && <p className="nn-order__num">{fill(w.sentTitle, { n: state.orderNumber })}</p>}
+        <p>{w.sent}</p>
       </div>
     );
   }
@@ -63,28 +72,28 @@ export function NurseryOrderForm({ listingIds, code = null }: { listingIds: stri
     <form className="bc-form" onSubmit={onSubmit}>
       <div className="bc-form__row">
         <label>
-          {S.cart.name}
+          {w.name}
           <input name="name" required maxLength={120} autoComplete="name" />
         </label>
         <label>
-          {S.cart.email}
+          {w.email}
           <input name="email" type="email" required maxLength={254} autoComplete="email" />
         </label>
       </div>
       <label>
-        {S.cart.phone}
+        {w.phone}
         <input name="phone" type="tel" maxLength={40} autoComplete="tel" />
       </label>
       <label>
-        {S.cart.note}
+        {w.note}
         <textarea name="note" maxLength={2000} />
       </label>
       <label className="bc-form__trap" aria-hidden="true">
-        {S.cart.honeypot}
+        {w.honeypot}
         <input name="company" tabIndex={-1} autoComplete="off" />
       </label>
       <button className="bc-btn" type="submit" disabled={state.kind === 'sending'}>
-        {state.kind === 'sending' ? S.cart.sending : S.cart.send}
+        {state.kind === 'sending' ? w.sending : w.send}
       </button>
       {state.kind === 'error' && (
         <p className="bc-form__status" role="alert">

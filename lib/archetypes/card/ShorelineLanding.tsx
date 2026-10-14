@@ -5,18 +5,19 @@
  * matted prints with their captions; then the lace-edged card holds the story
  * and the tide table holds the market days; then the letter (contact form).
  * Every word the maker wrote comes from `data`; the renderer adds only
- * CARD_STRINGS. Anything with nothing to show is left out.
+ * the site's own words (`data.words`). Anything with nothing to show is left out.
  */
 import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 import type { GalleryItem } from '@/lib/backend/gallery/gallery-form';
-import { CARD_STRINGS as S } from './strings';
+import { fill } from '@/lib/site-words/words';
+import type { CardWords } from './words';
 import { CardContactForm } from './CardContactForm';
 import { SocialIcons } from './SocialIcons';
 import { PhotoViewerProvider, Snapshot } from './PhotoViewer';
 import { SHORELINE_FONTS_HREF, shorelineCss } from './shoreline-styles';
-import { bioParagraphs, initials, marketDay, type CardData } from './data';
+import { bioParagraphs, initials, marketDay, marketName, photoLabel, type CardData } from './data';
 
 const TOUCH_ID = 'write';
 
@@ -46,31 +47,41 @@ export function Frame({ children }: { children: ReactNode }): ReactElement {
 export type Social = { facebookUrl: string; instagramUrl: string };
 const NO_SOCIAL: Social = { facebookUrl: '', instagramUrl: '' };
 
-export function Footer({ name, platformCredit, social = NO_SOCIAL }: { name: string; platformCredit: boolean; social?: Social }): ReactElement {
+export function Footer({
+  name,
+  platformCredit,
+  social = NO_SOCIAL,
+  w,
+}: {
+  name: string;
+  platformCredit: boolean;
+  social?: Social;
+  w: CardWords;
+}): ReactElement {
   return (
-    <footer className="sl-foot" aria-label={S.footer.label}>
-      <SocialIcons facebookUrl={social.facebookUrl} instagramUrl={social.instagramUrl} className="sl-social" />
+    <footer className="sl-foot" aria-label={w.footer.label}>
+      <SocialIcons facebookUrl={social.facebookUrl} instagramUrl={social.instagramUrl} className="sl-social" labels={w.touch} />
       <span>
         © {new Date().getFullYear()} {name}
       </span>
-      <a href="/privacy">{S.footer.privacy}</a>
-      <a href="/terms">{S.footer.terms}</a>
+      <a href="/privacy">{w.footer.privacy}</a>
+      <a href="/terms">{w.footer.terms}</a>
       <a href="/admin" rel="nofollow">
-        {S.footer.ownerLogin}
+        {w.footer.ownerLogin}
       </a>
       {platformCredit && (
         <a href={PLATFORM_URL}>
-          {S.footer.creditPrefix} {S.footer.creditBrand}
+          {w.footer.creditPrefix} {w.footer.creditBrand}
         </a>
       )}
     </footer>
   );
 }
 
-function Print({ photo, index }: { photo: GalleryItem; index: number }): ReactElement {
+function Print({ photo, index, w }: { photo: GalleryItem; index: number; w: CardWords['work'] }): ReactElement {
   return (
     <li>
-      <Snapshot index={index} className="sl-print" label={S.work.open(photo.caption, index + 1)}>
+      <Snapshot index={index} className="sl-print" label={photoLabel(photo.caption, index + 1, w)}>
         {/* The owner's own upload, already shrunk at upload — a plain img like the other maker-photo spots. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={photo.url} alt={photo.caption} loading={index < 3 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'auto'} />
@@ -89,7 +100,7 @@ export function ShorelineLanding({
   tenantId: string | undefined;
   platformCredit?: boolean;
 }): ReactElement {
-  const { name, profile: p, photos, dates } = data;
+  const { name, profile: p, photos, dates, words: w } = data;
   const bio = bioParagraphs(p.bio);
   const canWrite = tenantId !== undefined;
   // Her Facebook and Instagram live in the footer, as icons on every page.
@@ -100,17 +111,17 @@ export function ShorelineLanding({
     <Frame>
       {canWrite && (
         <a className="sl-skip" href={`#${TOUCH_ID}`}>
-          {S.skip}
+          {w.skip}
         </a>
       )}
-      <PhotoViewerProvider photos={photos}>
+      <PhotoViewerProvider photos={photos} w={w.lightbox}>
         <header className="sl-sky">
           <h1 className="sl-name">
             {nameParts(name).map((part, i) => (part.amp ? <em key={i}>{part.text}</em> : <span key={i}>{part.text}</span>))}
           </h1>
           {p.kicker !== '' && <p className="sl-kicker">{p.kicker}</p>}
           {p.makes.length > 0 && (
-            <ul className="sl-makes" aria-label={S.shoreline.makesLabel}>
+            <ul className="sl-makes" aria-label={w.shoreline.makesLabel}>
               {p.makes.map((m) => (
                 <li key={m}>{m}</li>
               ))}
@@ -122,11 +133,11 @@ export function ShorelineLanding({
           {photos.length > 0 && (
             <section className="sl-water" aria-labelledby="sl-work">
               <h2 className="sl-water-h" id="sl-work">
-                {S.shoreline.work}
+                {w.shoreline.work}
               </h2>
               <ul className="sl-prints">
                 {photos.map((photo, i) => (
-                  <Print key={photo.id} photo={photo} index={i} />
+                  <Print key={photo.id} photo={photo} index={i} w={w.work} />
                 ))}
               </ul>
             </section>
@@ -137,7 +148,7 @@ export function ShorelineLanding({
               {hasAbout && (
                 <section className="sl-card" id="about">
                   <div className="sl-card__in">
-                    <h2>{p.aboutTitle !== '' ? p.aboutTitle : S.shoreline.aboutFallback}</h2>
+                    <h2>{p.aboutTitle !== '' ? p.aboutTitle : w.shoreline.aboutFallback}</h2>
                     {p.headline !== '' && <p className="sl-lead">{p.headline}</p>}
                     {bio.map((para, i) => (
                       <p key={para.slice(0, 40)} className={i === 0 ? 'sl-first' : undefined}>
@@ -151,19 +162,19 @@ export function ShorelineLanding({
               {hasDates && (
                 <section className="sl-tide">
                   <table>
-                    <caption>{S.shoreline.find}</caption>
+                    <caption>{w.shoreline.find}</caption>
                     <thead>
                       <tr>
-                        <th scope="col">{S.shoreline.findCols.day}</th>
-                        <th scope="col">{S.shoreline.findCols.market}</th>
-                        <th scope="col">{S.shoreline.findCols.town}</th>
+                        <th scope="col">{w.shoreline.findCols.day}</th>
+                        <th scope="col">{w.shoreline.findCols.market}</th>
+                        <th scope="col">{w.shoreline.findCols.town}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {dates.map((d) => (
                         <tr key={d.id} className={d.canceled ? 'sl-gone' : undefined}>
-                          <td>{marketDay(d)}</td>
-                          <td>{d.canceled ? S.dates.canceled(d.name) : d.name}</td>
+                          <td>{marketDay(d, w.dates)}</td>
+                          <td>{marketName(d, w.dates)}</td>
                           <td>{d.town}</td>
                         </tr>
                       ))}
@@ -179,14 +190,14 @@ export function ShorelineLanding({
               <span className="sl-seal" aria-hidden="true">
                 {initials(name)}
               </span>
-              <h2>{S.shoreline.touch(p.signature)}</h2>
-              <p>{S.shoreline.lede}</p>
-              <CardContactForm tenantId={tenantId} />
+              <h2>{p.signature === '' ? w.shoreline.touchNoName : fill(w.shoreline.touch, { name: p.signature })}</h2>
+              <p>{w.shoreline.lede}</p>
+              <CardContactForm tenantId={tenantId} w={w.form} />
             </section>
           )}
         </main>
       </PhotoViewerProvider>
-      <Footer name={name} platformCredit={platformCredit} social={p} />
+      <Footer name={name} platformCredit={platformCredit} social={p} w={w} />
     </Frame>
   );
 }
@@ -196,6 +207,7 @@ export function ShorelineLanding({
 export function ShorelineContentPage({
   name,
   social,
+  words: w,
   html,
   title,
   body,
@@ -203,6 +215,7 @@ export function ShorelineContentPage({
 }: {
   name: string;
   social?: Social | undefined;
+  words: CardWords;
   html?: string | undefined;
   title?: string | undefined;
   body?: string[] | undefined;
@@ -212,7 +225,7 @@ export function ShorelineContentPage({
     <Frame>
       <main id="main" className="sl-page">
         <article className="sl-sheet">
-          <Link className="sl-home" href="/" aria-label={S.shoreline.home}>
+          <Link className="sl-home" href="/" aria-label={w.shoreline.home}>
             {name}
           </Link>
           {html !== undefined ? (
@@ -227,7 +240,7 @@ export function ShorelineContentPage({
           )}
         </article>
       </main>
-      <Footer name={name} platformCredit={platformCredit} {...(social !== undefined ? { social } : {})} />
+      <Footer name={name} platformCredit={platformCredit} w={w} {...(social !== undefined ? { social } : {})} />
     </Frame>
   );
 }

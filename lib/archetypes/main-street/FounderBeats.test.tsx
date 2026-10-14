@@ -3,6 +3,11 @@ import { render, cleanup } from '@testing-library/react';
 import { FounderPortrait, FounderLetter, FounderWorkbench, FounderEditorial, FounderSignature } from './FounderBeats';
 import { MAIN_STREET_SKINS } from './skins';
 import type { MainStreetContent } from './schemas';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 
@@ -42,7 +47,7 @@ const about = { href: '/about', label: 'Read our story' };
 
 describe('FounderLetter — a note on paper, not a centered card', () => {
   it('lays the words on a paper slip with a clipped snapshot and a signed name', () => {
-    const { container, getByText } = render(<FounderLetter founder={founder} skin={skin} about={about} />);
+    const { container, getByText } = render(<FounderLetter words={W} founder={founder} skin={skin} about={about} />);
     // the paper slip + the clipped snapshot are what make it a letter, not a card
     expect(container.querySelector('.ms-letter-paper')).not.toBeNull();
     expect(container.querySelector('.ms-letter-clip')).not.toBeNull();

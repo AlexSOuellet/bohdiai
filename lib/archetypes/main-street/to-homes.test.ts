@@ -3,6 +3,8 @@ import { momentFormFromRow } from '@/lib/backend/moment/moment-form';
 import { sectionsFromRows } from '@/lib/backend/sections/sections-form';
 import { profileFormFromRow } from '@/lib/backend/profile/profile-form';
 import { familyViewFromHomes } from './from-homes';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
 import { homesFromLegacy } from './to-homes';
 import type { MainStreetView } from './schemas';
 
@@ -126,7 +128,7 @@ describe('a round trip through the homes', () => {
       portraitUrl: h.portraitUrl,
       testimonials: h.testimonials.map((t, i) => ({ id: `t${i}`, quote: t.quote, name: t.name, detail: t.detail ?? '' })),
       dates: h.markets.map((m, i) => ({ id: `d${i}`, date: m.date, endDate: '', name: m.name, town: '', hours: m.hours, address: '', booth: '', url: '', canceled: false })),
-    });
+    }, keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX));
     expect(view.moment).toMatchObject({
       story: legacy.moment.story, eyebrow: legacy.moment.eyebrow, brand: legacy.moment.brand, sub: legacy.moment.sub,
       ctaLabel: legacy.moment.ctaLabel, ctaTarget: 'shop', secondaryCtaLabel: 'Our story', secondaryCtaTarget: 'about',

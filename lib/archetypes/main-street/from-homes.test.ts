@@ -17,6 +17,19 @@ vi.mock('@/lib/backend/testimonials/queries', () => ({ listTestimonials: loaders
 vi.mock('@/lib/backend/dates/queries', () => ({ listMarketDates: loaders.dates }));
 
 import { familyMarketDay, familyViewFromHomes, holdsLegacyContent, loadFamilyHomes, type FamilyHomes } from './from-homes';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key; dates read in en-US and each date
+ *  word marks its blanks so a test sees which word wrote a market. */
+const W = {
+  ...keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX),
+  dateLocale: 'en-US',
+  marketDay: 'day:{weekday} {month} {day}',
+  marketRange: '{first}..{last}',
+  marketCanceled: 'canceled:{market}',
+  marketWhere: '{market} @ {town}',
+};
 
 function sections(over: Partial<Record<keyof SiteSections, Partial<typeof EMPTY_SECTION>>> = {}): SiteSections {
   return Object.fromEntries(SECTION_KEYS.map((k) => [k, { ...EMPTY_SECTION, ...(over[k] ?? {}) }])) as SiteSections;
@@ -61,7 +74,7 @@ describe('familyViewFromHomes', () => {
       portraitUrl: 'https://cdn/me.webp',
       testimonials: [{ id: 't1', quote: 'Smells like home', name: 'Ann', detail: 'Providence' }, { id: 't2', quote: 'Lovely', name: 'Bo', detail: '' }],
       dates: [market()],
-    });
+    }, W);
     expect(v.shopName).toBe('Ember Candle Co');
     expect(v.identity).toEqual({ wordmark: 'Ember Candle Co', sellsOnline: true });
     expect(v.moment).toEqual({
@@ -80,7 +93,7 @@ describe('familyViewFromHomes', () => {
     expect(v.founder).toEqual({
       quote: 'Every candle is a small fire.', attribution: 'June', eyebrow: 'Meet the maker', heading: 'Hi, I’m June',
       photo: { url: 'https://cdn/me.webp', alt: '' }, aboutLabel: 'Read my story',
-      findUs: { label: 'Find me at', title: 'Where I’ll be', eventsLabel: 'All dates', rows: [{ day: 'Sat Oct 17', where: 'Wickford Art Festival, Wickford', time: '9am–4pm', date: '2026-10-17' }] },
+      findUs: { label: 'Find me at', title: 'Where I’ll be', eventsLabel: 'All dates', rows: [{ day: 'day:Sat Oct 17', where: 'Wickford Art Festival @ Wickford', time: '9am–4pm', date: '2026-10-17' }] },
     });
     expect(v.close).toEqual({ label: 'Come by', headline: 'Light one tonight', ctaLabel: 'Shop candles', ctaTarget: 'shop' });
     expect(v.about).toEqual({ heading: 'How it started', story: ['It started in a kitchen.', 'Now it’s a shop.'] });
@@ -88,7 +101,7 @@ describe('familyViewFromHomes', () => {
   });
 
   it('leaves what the site hasn’t filled empty, inventing nothing', () => {
-    const v = familyViewFromHomes(empty);
+    const v = familyViewFromHomes(empty, W);
     expect(v.moment.media).toEqual({ kind: 'still', alt: '' });
     expect(v.moment).toMatchObject({ story: [], eyebrow: '', brand: '', sub: undefined, collageShots: undefined, ctaLabel: '', ctaTarget: undefined });
     expect(v.goods).toEqual({ title: '', label: undefined, viewAllLabel: undefined });
@@ -102,24 +115,24 @@ describe('familyViewFromHomes', () => {
   });
 
   it('reads a photo moment as a still, without a poster', () => {
-    const v = familyViewFromHomes({ ...empty, moment: { ...empty.moment, media: { kind: 'image', url: 'https://cdn/a.webp', alt: 'Candles', posterUrl: '' } } });
+    const v = familyViewFromHomes({ ...empty, moment: { ...empty.moment, media: { kind: 'image', url: 'https://cdn/a.webp', alt: 'Candles', posterUrl: '' } } }, W);
     expect(v.moment.media).toEqual({ kind: 'still', url: 'https://cdn/a.webp', alt: 'Candles' });
   });
 
   it('marks a canceled market and writes a market with no town by its name', () => {
-    const v = familyViewFromHomes({ ...empty, dates: [market({ canceled: true, town: '' })] });
-    expect(v.founder.findUs?.rows[0]?.where).toBe('Wickford Art Festival (Canceled)');
+    const v = familyViewFromHomes({ ...empty, dates: [market({ canceled: true, town: '' })] }, W);
+    expect(v.founder.findUs?.rows[0]?.where).toBe('canceled:Wickford Art Festival');
   });
 
   it('keeps a contact section with only an intro', () => {
-    expect(familyViewFromHomes({ ...empty, sections: sections({ contact: { lede: 'Write any time.' } }) }).contact).toEqual({ heading: '', intro: 'Write any time.' });
+    expect(familyViewFromHomes({ ...empty, sections: sections({ contact: { lede: 'Write any time.' } }) }, W).contact).toEqual({ heading: '', intro: 'Write any time.' });
   });
 });
 
 describe('familyMarketDay', () => {
   it('writes one day, or a range', () => {
-    expect(familyMarketDay({ date: '2026-10-17', endDate: '' })).toBe('Sat Oct 17');
-    expect(familyMarketDay({ date: '2026-11-21', endDate: '2026-11-22' })).toBe('Sat Nov 21 – Sun Nov 22');
+    expect(familyMarketDay({ date: '2026-10-17', endDate: '' }, W)).toBe('day:Sat Oct 17');
+    expect(familyMarketDay({ date: '2026-11-21', endDate: '2026-11-22' }, W)).toBe('day:Sat Nov 21..day:Sun Nov 22');
   });
 });
 

@@ -1,7 +1,33 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
+import { isValidElement, type ReactElement } from 'react';
+import { EMPTY_MOMENT } from '@/lib/backend/moment/moment-form';
+import { EMPTY_SECTION, SECTION_KEYS, type SiteSections } from '@/lib/backend/sections/sections-form';
+import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+import type * as FromHomes from './from-homes';
+import type { FamilyHomes } from './from-homes';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
+
+const site = vi.hoisted(() => ({ getSiteWords: vi.fn(), loadFamilyHomes: vi.fn() }));
+vi.mock('@/lib/supabase', () => ({ supabaseAdmin: () => ({}) }));
+vi.mock('@/lib/site-words/queries', () => ({ getSiteWords: site.getSiteWords }));
+vi.mock('./from-homes', async (importOriginal) => ({ ...(await importOriginal<typeof FromHomes>()), loadFamilyHomes: site.loadFamilyHomes }));
+
 import { MAIN_STREET_SPEC } from './builder';
 import type { ProductView } from '../content';
+
+/** A family page with a site behind it renders through an async server component;
+ *  run it to the element it paints. */
+async function painted(el: ReactElement): Promise<ReactElement> {
+  const { type, props } = el as ReactElement<Record<string, unknown>, (p: Record<string, unknown>) => Promise<ReactElement>>;
+  const out = await type(props);
+  expect(isValidElement(out)).toBe(true);
+  return out;
+}
 
 function productRows(n: number): ProductView[] {
   return Array.from({ length: n }, (_, i) => ({
@@ -55,6 +81,41 @@ function submission(kind: 'video' | 'still') {
     ],
   };
 }
+
+describe('MAIN_STREET_SPEC.render — the site’s words', () => {
+  beforeEach(() => {
+    site.getSiteWords.mockReset().mockResolvedValue(W);
+    site.loadFamilyHomes.mockReset();
+  });
+
+  it('reads the site’s words for an old sample whose page record holds its content', async () => {
+    const parsed = MAIN_STREET_SPEC.parseSubmission(submission('video'));
+    if (!parsed.ok) throw new Error('fixture failed to parse');
+    const content = MAIN_STREET_SPEC.toPayload(parsed.authored).content;
+    const el = MAIN_STREET_SPEC.render({ content, lookKey: 'main-street-ember', products: [], page: 'shop', tenantId: 't1' });
+    const { container } = render(await painted(el));
+    expect(site.getSiteWords).toHaveBeenCalledWith(expect.anything(), 't1', FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
+    expect(site.loadFamilyHomes).not.toHaveBeenCalled();
+    expect(container.querySelector('a[href="/shop"]')?.textContent).toBe(W.navShop);
+    expect(container.querySelector('[data-ms-shop]')?.textContent).toBe(W.emptyShop);
+  });
+
+  it('reads the site’s words for a site built from its homes, down to its market dates', async () => {
+    const sections = Object.fromEntries(SECTION_KEYS.map((k) => [k, { ...EMPTY_SECTION, ...(k === 'markets' ? { title: 'Find me at' } : {}) }])) as SiteSections;
+    const homes: FamilyHomes = {
+      name: 'Ember Candle Co', sellsOnline: true, moment: { ...EMPTY_MOMENT, media: null, photos: [] }, sections, profile: EMPTY_PROFILE,
+      portraitUrl: null, testimonials: [],
+      dates: [{ id: 'd1', date: '2026-10-17', endDate: '', name: 'Harvest Fair', town: 'Wickford', hours: '9–4', address: '', booth: '', url: '', canceled: false }],
+    };
+    site.loadFamilyHomes.mockResolvedValue(homes);
+    const el = MAIN_STREET_SPEC.render({ content: { design: 'family' }, lookKey: 'main-street-ember', products: [], page: 'events', tenantId: 't1' });
+    const { container } = render(await painted(el));
+    expect(site.loadFamilyHomes).toHaveBeenCalledWith(expect.anything(), 't1');
+    expect(container.querySelector('a[href="/cart"]')?.textContent).toBe(W.navCart);
+    expect(container.querySelector('.ms-ev-where')?.textContent).toBe(W.marketWhere);
+    expect(container.querySelector('.ms-ev-directions')?.textContent).toBe(W.getDirections);
+  });
+});
 
 describe('MAIN_STREET_SPEC.render — accentOverride baked into skin', () => {
   it('paints the baked accentOverride as the store accent (emitted as --ms-accent in the style tag)', () => {

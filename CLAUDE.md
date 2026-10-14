@@ -72,7 +72,7 @@ Next.js 16 (App Router) · Supabase (Postgres + RLS + Auth + Storage) · **Cloud
 
 - **Bohdi authors CONTENT ONLY.** Structure / nav / sections / treatments come from the family (renderer), never from Bohdi.
 - **Mood is public. Family is internal.** Public copy always says mood. Never expose "family" to a maker.
-- **No hardcoded English in the renderer. No inline styles. No shortcuts.** All strings through `DEFAULT_STRINGS`/`DEFAULT_COUNTS`; all styling through CSS variables + classes.
+- **No words in the code. No inline styles. No shortcuts.** Every word a site shows lives in that site's own data (`site_words`, `site_sections` and the other homes); all styling through CSS variables + classes.
 - **Tests are part of done.** No feature is complete without tests.
 - **Ship complete, not partial.** Code + tests + types + verification before "done."
 - **No site is truly live yet (Alex, 2026-10-13).** Cut-Pro and Rose n' Cat will be real; Saltmarsh is the demo. Everything pushed to `main` still deploys, so verify before merging.
@@ -85,7 +85,7 @@ Next.js 16 (App Router) · Supabase (Postgres + RLS + Auth + Storage) · **Cloud
 4. **No hardcoding.** No display words inside a design. Section headings come from the site's own content.
 5. **No site ever requires custom work.** A new need becomes a shared added section or a new design any site can use. Nothing is built for one site only.
 
-**Site words vs platform words (Alex's line).** Site words belong to the site and need a home per site: section names and headings, the lines under them, empty-state messages, anything in the maker's voice, the site's own vocabulary. Platform words are how the site works and stay in a design's strings file: buttons, form labels, cart and payment mechanics, statuses, errors, screen-reader labels, date formats, footer links.
+**NOTHING is ever written into the code (Alex, 2026-10-14).** Every word a site shows, buttons, form labels, menu names, messages and screen-reader labels included, lives per site in `site_words` (one row per spot: `card.form.send` → "Send message"; blanks are named, "Order {n}"). Section headings live in `site_sections`. A design only names its spots (`<design>/words.ts`, every leaf blank) and reads the site's words into them (`lib/site-words`). A new site's words are written when it's built (`scripts/site-words.ts copy` from a site of the same design). No backend screen for these words yet (Alex). This replaces the 2026-10-13 line that kept platform words in code.
 
 **The safeguards (they don't depend on Claude remembering):**
 - **Database changes:** before any table or column is created or changed, tell Alex in chat, in plain words, what it is and why, and wait for his yes. He approves database changes so Claude can't bend the database into a shortcut. A project hook (`.claude/hooks/db-change-gate.mjs`) also stops for approval at the moment a change is applied.

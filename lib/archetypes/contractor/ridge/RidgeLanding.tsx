@@ -11,7 +11,8 @@ import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
 import type { DerivedPalette } from '@/lib/color/brand-palette';
 import type { ContractorContent } from '../schemas';
-import { CONTRACTOR_STRINGS as S } from '../strings';
+import { fill } from '@/lib/site-words/words';
+import type { ContractorWords } from '../words';
 import { EstimateForm } from '../EstimateForm';
 import { ArrowIcon, Headline, Media, PhoneIcon } from '../ContractorLanding';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
@@ -27,11 +28,13 @@ function Icon({ name, fill }: { name: string; fill?: boolean }): ReactElement {
 export function RidgeShell({
   content: c,
   palette,
+  words: w,
   children,
   platformCredit = true,
 }: {
   content: ContractorContent;
   palette: DerivedPalette;
+  words: ContractorWords;
   children: ReactNode;
   platformCredit?: boolean;
 }): ReactElement {
@@ -45,7 +48,7 @@ export function RidgeShell({
       <link rel="stylesheet" href={RIDGE_FONTS_HREF} />
       <style dangerouslySetInnerHTML={{ __html: ridgeCss(palette) }} />
       <div className="rg">
-        <a className="rg-skip" href={`/#${ESTIMATE_ID}`}>{S.skipToEstimate}</a>
+        <a className="rg-skip" href={`/#${ESTIMATE_ID}`}>{w.skipToEstimate}</a>
         {c.notice !== undefined && <p className="rg-notice"><Icon name="campaign" /> {c.notice}</p>}
 
         <header className="rg-head">
@@ -54,8 +57,8 @@ export function RidgeShell({
               <span className="rg-mark__name">{b.name}</span>
               <span className="rg-mark__trade">{b.trade}</span>
             </Link>
-            <nav className="rg-head__actions" aria-label={S.menuLabel}>
-              <a className="rg-btn rg-btn--line" href={`/#${ESTIMATE_ID}`}>{S.estimateShort}</a>
+            <nav className="rg-head__actions" aria-label={w.menuLabel}>
+              <a className="rg-btn rg-btn--line" href={`/#${ESTIMATE_ID}`}>{w.estimateShort}</a>
               <a className="rg-btn rg-btn--solid" href={tel}><PhoneIcon /> <span className="rg-btn__text">{b.phone}</span></a>
             </nav>
           </div>
@@ -67,13 +70,13 @@ export function RidgeShell({
           <div className="rg-wrap">
             <p className="rg-foot__big" aria-hidden="true">{b.name}</p>
             <div className="rg-foot__row">
-              <span>© {year} {b.name} · {S.footer.rights}</span>
-              <span>{S.serving} {b.serviceArea.join(' · ')}</span>
+              <span>{w.footer.copyright} {year} {b.name}{w.separator}{w.footer.rights}</span>
+              <span>{w.serving} {b.serviceArea.join(w.separator)}</span>
               <a href={tel}>{b.phone}</a>
-              <a href="/privacy">{S.footer.privacy}</a>
+              <a href="/privacy">{w.footer.privacy}</a>
               {platformCredit && (
                 <a href={PLATFORM_URL}>
-                  {year} {S.footer.creditPrefix} {S.footer.creditBrand}
+                  {year} {w.footer.creditPrefix} {w.footer.creditBrand}
                 </a>
               )}
             </div>
@@ -81,8 +84,8 @@ export function RidgeShell({
         </footer>
 
         <div className="rg-thumb">
-          <a href={tel}><PhoneIcon /> {S.call}</a>
-          <a href={`/#${ESTIMATE_ID}`}>{S.estimateShort}</a>
+          <a href={tel}><PhoneIcon /> {w.call}</a>
+          <a href={`/#${ESTIMATE_ID}`}>{w.estimateShort}</a>
         </div>
       </div>
     </>
@@ -90,9 +93,9 @@ export function RidgeShell({
 }
 
 /** A plain content page (privacy, terms) in the ridge chrome. */
-export function RidgeContentPage({ content, palette, html }: { content: ContractorContent; palette: DerivedPalette; html: string }): ReactElement {
+export function RidgeContentPage({ content, palette, words, html }: { content: ContractorContent; palette: DerivedPalette; words: ContractorWords; html: string }): ReactElement {
   return (
-    <RidgeShell content={content} palette={palette}>
+    <RidgeShell content={content} palette={palette} words={words}>
       <main className="rg-section rg-light">
         <div className="rg-wrap rg-prose" dangerouslySetInnerHTML={{ __html: html }} />
       </main>
@@ -100,13 +103,23 @@ export function RidgeContentPage({ content, palette, html }: { content: Contract
   );
 }
 
-export function RidgeLanding({ content: c, palette, tenantId }: { content: ContractorContent; palette: DerivedPalette; tenantId: string | undefined }): ReactElement {
+export function RidgeLanding({
+  content: c,
+  palette,
+  words: w,
+  tenantId,
+}: {
+  content: ContractorContent;
+  palette: DerivedPalette;
+  words: ContractorWords;
+  tenantId: string | undefined;
+}): ReactElement {
   const b = c.business;
   const tel = `tel:${b.phoneDial}`;
   const reviews = c.reviews;
 
   return (
-    <RidgeShell content={c} palette={palette}>
+    <RidgeShell content={c} palette={palette} words={w}>
       <main>
         {/* ── Cut-Pro's top: big capitals, the marker, the photo cut at a roof pitch ── */}
         <section className="rg-hero">
@@ -204,8 +217,8 @@ export function RidgeLanding({ content: c, palette, tenantId }: { content: Contr
             <div className="rg-wrap">
               <h2 className="rg-sr" id="rg-reviews-title">{reviews.title}</h2>
               <figure className="rg-lead-quote">
-                <span className="rg-stars" role="img" aria-label={S.starsLabel}>{'star '.repeat(5).trim()}</span>
-                <blockquote className="rg-lead-quote__text">“{reviews.items[0].quote}”</blockquote>
+                <span className="rg-stars" role="img" aria-label={w.starsLabel}>{'star '.repeat(5).trim()}</span>
+                <blockquote className="rg-lead-quote__text">{fill(w.quoted, { quote: reviews.items[0].quote })}</blockquote>
                 <figcaption className="rg-review__who">
                   <strong>{reviews.items[0].author}</strong>
                   {reviews.items[0].job !== undefined && <span>{reviews.items[0].job}</span>}
@@ -215,8 +228,8 @@ export function RidgeLanding({ content: c, palette, tenantId }: { content: Contr
                 <ul className="rg-reviews">
                   {reviews.items.slice(1).map((r) => (
                     <li key={r.quote} className="rg-card rg-review">
-                      <span className="rg-stars" role="img" aria-label={S.starsLabel}>{'star '.repeat(5).trim()}</span>
-                      <blockquote className="rg-review__quote">“{r.quote}”</blockquote>
+                      <span className="rg-stars" role="img" aria-label={w.starsLabel}>{'star '.repeat(5).trim()}</span>
+                      <blockquote className="rg-review__quote">{fill(w.quoted, { quote: r.quote })}</blockquote>
                       <p className="rg-review__who"><strong>{r.author}</strong>{r.job !== undefined && <span>{r.job}</span>}</p>
                     </li>
                   ))}
@@ -257,7 +270,7 @@ export function RidgeLanding({ content: c, palette, tenantId }: { content: Contr
             </div>
             {tenantId !== undefined && (
               <div className="rg-formcard">
-                <EstimateForm tenantId={tenantId} services={c.services.items.map((s) => s.name)} states={c.estimate.states ?? b.serviceArea} detailsHint={c.estimate.detailsHint} />
+                <EstimateForm tenantId={tenantId} services={c.services.items.map((s) => s.name)} states={c.estimate.states ?? b.serviceArea} detailsHint={c.estimate.detailsHint} words={w.form} />
               </div>
             )}
           </div>

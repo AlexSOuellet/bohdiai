@@ -105,12 +105,12 @@ async function CardPage({
   title?: string | undefined;
   body?: string[] | undefined;
 }): Promise<ReactElement> {
-  const { name, profile } = await loadCardData(supabaseAdmin(), tenantId);
-  if (design === 'bulletin') return <BulletinContentPage name={name} html={html} title={title} body={body} />;
-  if (design === 'showreel') return <ShowreelContentPage name={name} html={html} title={title} body={body} />;
-  if (design === 'torch') return <TorchContentPage name={name} html={html} title={title} body={body} />;
-  if (design === 'shoreline') return <ShorelineContentPage name={name} social={profile} html={html} title={title} body={body} />;
-  return <CardContentPage name={name} paint={paint} html={html} title={title} body={body} />;
+  const { name, profile, words } = await loadCardData(supabaseAdmin(), tenantId);
+  if (design === 'bulletin') return <BulletinContentPage name={name} words={words} html={html} title={title} body={body} />;
+  if (design === 'showreel') return <ShowreelContentPage name={name} words={words} html={html} title={title} body={body} />;
+  if (design === 'torch') return <TorchContentPage name={name} words={words} html={html} title={title} body={body} />;
+  if (design === 'shoreline') return <ShorelineContentPage name={name} social={profile} words={words} html={html} title={title} body={body} />;
+  return <CardContentPage name={name} paint={paint} words={words} html={html} title={title} body={body} />;
 }
 
 export const CARD_SPEC: ArchetypeBuildSpec<CardContent> = {

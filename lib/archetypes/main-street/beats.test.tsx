@@ -3,6 +3,11 @@ import { render, cleanup } from '@testing-library/react';
 import { GoodsMarquee, Close } from './beats';
 import { MAIN_STREET_SKINS } from './skins';
 import type { ProductView } from '../content';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 const products: ProductView[] = [
@@ -22,7 +27,7 @@ afterEach(cleanup);
 describe('GoodsMarquee', () => {
   it('renders the heading and at least one card per product (duplicated for the loop)', () => {
     const { container, getByText } = render(
-      <GoodsMarquee goods={{ title: 'Pulled from the oven' }} products={products} skin={skin} />,
+      <GoodsMarquee words={W} goods={{ title: 'Pulled from the oven' }} products={products} skin={skin} />,
     );
     expect(getByText('Pulled from the oven')).toBeTruthy();
     expect(container.querySelectorAll('[data-ms-card]').length).toBeGreaterThanOrEqual(products.length);

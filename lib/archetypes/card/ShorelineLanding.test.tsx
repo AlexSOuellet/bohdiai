@@ -3,8 +3,19 @@ import { render, screen, fireEvent, cleanup, within } from '@testing-library/rea
 import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
 import { ShorelineLanding, ShorelineContentPage, nameParts } from './ShorelineLanding';
 import { shorelineCss } from './shoreline-styles';
-import { CARD_STRINGS as S } from './strings';
+import { fill, keyWords } from '@/lib/site-words/words';
+import { CARD_WORD_SPOTS, CARD_WORDS_PREFIX, type CardWords } from './words';
 import type { CardData } from './data';
+
+const K = keyWords(CARD_WORD_SPOTS, CARD_WORDS_PREFIX);
+/** Test words: every spot says its own key; a spot with blanks keeps them, and the
+ *  date spots read a real locale so a date can be checked. */
+const S: CardWords = {
+  ...K,
+  dates: { ...K.dates, locale: 'en-US', day: '{weekday} {month} {day}', range: 'card.dates.range {first}|{last}', canceled: 'card.dates.canceled {market}' },
+  work: { ...K.work, open: 'card.work.open {caption}', openNumbered: 'card.work.openNumbered {n}' },
+  shoreline: { ...K.shoreline, touch: 'card.shoreline.touch {name}' },
+};
 
 const TENANT = '1b54cb24-c467-4327-ae66-f9857a71a854';
 
@@ -27,6 +38,7 @@ const full: CardData = {
     { id: 'd1', date: '2026-10-24', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Harvest Fair', town: 'Bristol' },
     { id: 'd2', date: '2026-12-05', endDate: '2026-12-06', hours: '', address: '', booth: '', url: '', canceled: true, name: 'Christmas Fair', town: 'Barrington' },
   ],
+  words: S,
 };
 
 afterEach(cleanup);
@@ -67,7 +79,7 @@ describe('shoreline page', () => {
 
   it('opens a piece full size and steps to the next', () => {
     page();
-    fireEvent.click(screen.getByRole('button', { name: S.work.open('Cabbage rose oyster dish', 1) }));
+    fireEvent.click(screen.getByRole('button', { name: fill(S.work.open, { caption: 'Cabbage rose oyster dish' }) }));
     const viewer = screen.getByRole('dialog', { name: S.lightbox.label });
     expect(within(viewer).getByRole('img').getAttribute('src')).toBe('https://cdn/p0.jpg');
     fireEvent.click(within(viewer).getByRole('button', { name: S.lightbox.next }));
@@ -80,7 +92,7 @@ describe('shoreline page', () => {
     cleanup();
     const { container: blank } = page({ ...full, photos: [{ id: 'x', url: 'https://cdn/x.jpg', caption: '' }] });
     expect(blank.querySelector('.sl-print span')).toBeNull();
-    expect(screen.getByRole('button', { name: S.work.open('', 1) })).toBeTruthy();
+    expect(screen.getByRole('button', { name: fill(S.work.openNumbered, { n: 1 }) })).toBeTruthy();
   });
 
   it('lists What I make under the tag line, and leaves it out when there is nothing', () => {
@@ -113,7 +125,7 @@ describe('shoreline page', () => {
     const rows = within(table).getAllByRole('row').slice(1);
     expect(rows.map((r) => [...r.querySelectorAll('td')].map((td) => td.textContent))).toEqual([
       ['Sat Oct 24', 'Harvest Fair', 'Bristol'],
-      ['Sat Dec 5 – Sun Dec 6', 'Christmas Fair (Canceled)', 'Barrington'],
+      [fill(S.dates.range, { first: 'Sat Dec 5', last: 'Sun Dec 6' }), fill(S.dates.canceled, { market: 'Christmas Fair' }), 'Barrington'],
     ]);
     expect(rows[1]?.className).toBe('sl-gone');
   });
@@ -129,13 +141,13 @@ describe('shoreline page', () => {
 
   it('addresses the letter to the signature, with the initials on the seal', () => {
     const { container } = page();
-    expect(screen.getByRole('heading', { name: 'Write to Lena' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: fill(S.shoreline.touch, { name: 'Lena' }) })).toBeTruthy();
     expect(container.querySelector('.sl-seal')?.textContent).toBe('SL');
     expect(container.querySelector('#write form')).not.toBeNull();
     expect(container.querySelector('.sl-skip')?.getAttribute('href')).toBe('#write');
     cleanup();
     page({ ...full, profile: { ...full.profile, signature: '' } });
-    expect(screen.getByRole('heading', { name: 'Write to me' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: S.shoreline.touchNoName })).toBeTruthy();
   });
 
   it('leaves the letter and skip link out when there is no site to send to', () => {
@@ -162,13 +174,13 @@ describe('shoreline page', () => {
 
 describe('shoreline content page', () => {
   it('renders the legal html on a sheet with the name linking home', () => {
-    render(<ShorelineContentPage name="Saltmarsh & Lace" html="<h1>Privacy</h1><p>We keep little.</p>" />);
+    render(<ShorelineContentPage name="Saltmarsh & Lace" words={S} html="<h1>Privacy</h1><p>We keep little.</p>" />);
     expect(screen.getByRole('link', { name: S.shoreline.home }).getAttribute('href')).toBe('/');
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Privacy');
   });
 
   it('renders a title and paragraphs when there is no html', () => {
-    render(<ShorelineContentPage name="Saltmarsh & Lace" title="Terms" body={['One.', 'Two.']} platformCredit={false} />);
+    render(<ShorelineContentPage name="Saltmarsh & Lace" words={S} title="Terms" body={['One.', 'Two.']} platformCredit={false} />);
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Terms');
     expect(screen.getByText('Two.')).toBeTruthy();
   });

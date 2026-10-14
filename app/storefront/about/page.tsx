@@ -4,7 +4,7 @@ import { previewPropsFrom, type PreviewSearchParams } from '../_components/previ
 import { storefrontMetadata } from '@/lib/storefront/metadata';
 
 export function generateMetadata(): Promise<Metadata> {
-  return storefrontMetadata({ path: '/about', pageName: 'About' });
+  return storefrontMetadata({ path: '/about', titleSpot: 'about' });
 }
 
 export default async function StorefrontAboutPage({ searchParams }: { searchParams: Promise<PreviewSearchParams> }) {

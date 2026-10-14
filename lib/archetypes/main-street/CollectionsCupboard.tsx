@@ -19,18 +19,22 @@
 import type { ArchetypeTheme } from '../types';
 import { Media } from './chrome';
 import { Type } from './Type';
-import { DEFAULT_STRINGS, DEFAULT_COUNTS } from './defaults';
-import type { CollectionView, CollectionsSection } from './collections';
+
+import { itemsLabel, type CollectionView, type CollectionsSection } from './collections';
+import type { FamilyWords } from './words';
 
 export function CollectionsCupboard({
   section,
   items,
   skin: _skin,
+  words,
   viewAll,
 }: {
   section: CollectionsSection;
   items: CollectionView[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: { href: string; label: string } | undefined;
 }) {
   return (
@@ -59,13 +63,13 @@ export function CollectionsCupboard({
               </span>
               <span className="ms-cup-slip">
                 <Type as="span" role="legal" className="ms-cup-num">
-                  {`${String(i + 1).padStart(2, '0')} — ${DEFAULT_COUNTS.items(c.count)}`}
+                  {`${String(i + 1).padStart(2, '0')} — ${itemsLabel(c.count, words)}`}
                 </Type>
                 <Type as="span" role="cardTitle" className="ms-cup-name">
                   {c.name}
                 </Type>
                 <Type as="span" role="sig" className="ms-cup-go">
-                  {viewAll?.label ?? DEFAULT_STRINGS.fallbackExploreCollection}
+                  {viewAll?.label ?? words.fallbackExploreCollection}
                 </Type>
               </span>
             </a>

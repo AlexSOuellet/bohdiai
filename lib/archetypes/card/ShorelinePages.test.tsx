@@ -4,7 +4,25 @@ import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
 import type { MarketShopView, ProductView } from '@/lib/archetypes/content';
 import { ShorelineCart, ShorelineMarket, ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
 import { featuredProducts, type ShorelineData } from './shoreline-data';
-import { CARD_STRINGS as S } from './strings';
+import { fill, keyWords } from '@/lib/site-words/words';
+import { CARD_WORD_SPOTS, CARD_WORDS_PREFIX, type CardWords } from './words';
+
+const K = keyWords(CARD_WORD_SPOTS, CARD_WORDS_PREFIX);
+/** Test words: every spot says its own key; a spot with blanks keeps them, and the
+ *  date spots read a real locale so a date can be checked. */
+const S: CardWords = {
+  ...K,
+  dates: { ...K.dates, locale: 'en-US', day: '{weekday} {month} {day}', canceled: 'card.dates.canceled {market}' },
+  work: { ...K.work, open: 'card.work.open {caption}', openNumbered: 'card.work.openNumbered {n}' },
+  shoreline: {
+    ...K.shoreline,
+    touch: 'card.shoreline.touch {name}',
+    writeCta: 'card.shoreline.writeCta {name}',
+    askMessage: 'card.shoreline.askMessage {name}',
+    saleBanner: 'card.shoreline.saleBanner {name}|{off}',
+    cart: { ...K.shoreline.cart, nav: 'card.shoreline.cart.nav {n}', removeLabel: 'card.shoreline.cart.removeLabel {name}' },
+  },
+};
 
 // The cart's remove button and code box refresh the page through the router.
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }), notFound: vi.fn() }));
@@ -25,6 +43,7 @@ const site: ShorelineData = {
       { id: 'd1', date: '2026-10-24', endDate: '', hours: '10am – 4pm', address: '2 Main St, Bristol', booth: '12', url: 'https://fair.example', canceled: false, name: 'Harvest Fair', town: 'Bristol' },
       { id: 'd2', date: '2026-11-14', endDate: '', hours: '', address: '', booth: '', url: '', canceled: true, name: 'Makers Market', town: 'Warren' },
     ],
+    words: S,
   },
   pages: true,
   products: [product('cabbage-rose-oyster-dish', { askForPrice: true, price: '' }), product('old-saint-nick', { onHome: true, price: '$22' })],
@@ -60,7 +79,7 @@ describe('shoreline pages (Lite and Full)', () => {
     expect(screen.queryByText('Every sealer gets tested.')).toBeNull();
     expect(screen.getByRole('link', { name: W.readStory }).getAttribute('href')).toBe('/about');
     expect(screen.getByRole('link', { name: W.allMarkets }).getAttribute('href')).toBe('/events');
-    expect(screen.getByRole('link', { name: W.writeCta('Lena') }).getAttribute('href')).toBe('/contact');
+    expect(screen.getByRole('link', { name: fill(W.writeCta, { name: 'Lena' }) }).getAttribute('href')).toBe('/contact');
   });
 
   it('shows every product in the shop with its price, or “Ask for price” when it has none', () => {
@@ -88,7 +107,7 @@ describe('shoreline pages (Lite and Full)', () => {
     expect(screen.getByText(`${W.marketCols.booth} 12`)).toBeTruthy();
     expect(screen.getByRole('link', { name: W.directions }).getAttribute('href')).toContain(encodeURIComponent('2 Main St, Bristol'));
     expect(screen.getByRole('link', { name: W.marketLink }).getAttribute('href')).toBe('https://fair.example');
-    expect(container.querySelector('.sl-market--gone h2')?.textContent).toBe('Makers Market (Canceled)');
+    expect(container.querySelector('.sl-market--gone h2')?.textContent).toBe(fill(S.dates.canceled, { market: 'Makers Market' }));
   });
 
   it('leaves the market details out below Lite, and says so when there are no markets', () => {
@@ -102,7 +121,7 @@ describe('shoreline pages (Lite and Full)', () => {
 
   it('puts the letter on Contact', () => {
     const { container } = page('contact');
-    expect(screen.getByRole('heading', { name: W.touch('Lena') })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: fill(W.touch, { name: 'Lena' }) })).toBeTruthy();
     expect(container.querySelector('#write form')).not.toBeNull();
   });
 });
@@ -114,8 +133,8 @@ describe('a product page', () => {
     expect(screen.getByText(W.askForPrice)).toBeTruthy();
     expect(screen.getByText('Second part.')).toBeTruthy();
     expect(screen.getByRole('link', { name: new RegExp(W.backToShop) }).getAttribute('href')).toBe('/shop');
-    expect((screen.getByRole('textbox', { name: S.form.message }) as HTMLTextAreaElement).value).toBe(W.askMessage('cabbage rose oyster dish'));
-    fireEvent.click(screen.getByRole('button', { name: S.work.open('cabbage rose oyster dish', 1) }));
+    expect((screen.getByRole('textbox', { name: S.form.message }) as HTMLTextAreaElement).value).toBe(fill(W.askMessage, { name: 'cabbage rose oyster dish' }));
+    fireEvent.click(screen.getByRole('button', { name: fill(S.work.open, { caption: 'cabbage rose oyster dish' }) }));
     expect(screen.getByRole('dialog', { name: S.lightbox.label })).toBeTruthy();
   });
 
@@ -179,14 +198,14 @@ describe('the cart (Full)', () => {
   it('offers Add to cart on a priced piece, never on “Ask for price”, and only on Full', () => {
     render(<ShorelineProduct site={full} product={priced} tenantId={TENANT} />);
     expect(screen.getByRole('button', { name: W.cart.add })).toBeTruthy();
-    expect(screen.getByRole('link', { name: W.cart.nav(0) }).getAttribute('href')).toBe('/cart');
+    expect(screen.getByRole('link', { name: W.cart.navEmpty }).getAttribute('href')).toBe('/cart');
     cleanup();
     render(<ShorelineProduct site={full} product={{ ...site.products[0]!, id: 'l1' }} tenantId={TENANT} />);
     expect(screen.queryByRole('button', { name: W.cart.add })).toBeNull();
     cleanup();
     render(<ShorelineProduct site={site} product={priced} tenantId={TENANT} />);
     expect(screen.queryByRole('button', { name: W.cart.add })).toBeNull();
-    expect(screen.queryByRole('link', { name: /^Cart/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: W.cart.navEmpty })).toBeNull();
   });
 
   it('lists the pieces with the sums and the order letter', () => {
@@ -207,7 +226,7 @@ describe('the cart (Full)', () => {
     expect(screen.getByText('$20')).toBeTruthy();
     expect(screen.getByText('−$2')).toBeTruthy();
     expect(screen.getByRole('alert').textContent).toBe(W.cart.fix);
-    expect(screen.getByRole('button', { name: W.cart.removeLabel('Old Saint Nick') })).toBeTruthy();
+    expect(screen.getByRole('button', { name: fill(W.cart.removeLabel, { name: 'Old Saint Nick' }) })).toBeTruthy();
   });
 
   it('shows the order form when everything is available, and an empty cart says so', () => {
@@ -251,7 +270,7 @@ describe('sales and new arrivals (Full)', () => {
 
   it('shows the running sale as a banner and on each price', () => {
     const { container } = page('shop', { ...site, sale: { name: 'Harvest sale', off: '20% off' }, products: [onSale] });
-    expect(screen.getByText('Harvest sale: 20% off everything')).toBeTruthy();
+    expect(screen.getByText(fill(W.saleBanner, { name: 'Harvest sale', off: '20% off' }))).toBeTruthy();
     expect(container.querySelector('.sl-price s')?.textContent).toContain('$22');
     expect(screen.getByText('$17.60', { exact: false })).toBeTruthy();
   });
@@ -308,7 +327,7 @@ describe('a market’s own page (Market POS)', () => {
   it('names the market, its day and where, with no menu, footer or link while buying', () => {
     const { container } = render(<ShorelineMarket site={site} market={market()} />);
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Holiday Makers Market');
-    expect(screen.getByText(/Bristol · Table 12/)).toBeTruthy();
+    expect(screen.getByText(['Bristol', 'Table 12'].join(W.market.separator), { exact: false })).toBeTruthy();
     expect(screen.queryByRole('navigation')).toBeNull();
     expect(container.querySelector('footer')).toBeNull();
     expect(container.querySelectorAll('a')).toHaveLength(0);

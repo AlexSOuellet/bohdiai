@@ -3,6 +3,11 @@ import { render, cleanup } from '@testing-library/react';
 import { ReviewsTexts } from './ReviewsTexts';
 import { MAIN_STREET_SKINS } from './skins';
 import type { ReviewsSection, Testimonial } from './reviews';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 
@@ -24,14 +29,14 @@ afterEach(cleanup);
 describe('ReviewsTexts', () => {
   it('renders one thread per testimonial', () => {
     const { container } = render(
-      <ReviewsTexts section={section} items={makeTestimonials(3)} skin={skin} />,
+      <ReviewsTexts words={W} section={section} items={makeTestimonials(3)} skin={skin} />,
     );
     expect(container.querySelectorAll('[data-ms-rev-item]').length).toBe(3);
   });
 
   it('shows every author and quote', () => {
     const { container } = render(
-      <ReviewsTexts section={section} items={makeTestimonials(3)} skin={skin} />,
+      <ReviewsTexts words={W} section={section} items={makeTestimonials(3)} skin={skin} />,
     );
     expect(container.textContent).toContain('Author 0');
     expect(container.textContent).toContain('Author 2');
@@ -44,21 +49,21 @@ describe('ReviewsTexts', () => {
       { quote: 'A joy to open.', author: 'Dana Reyes', location: 'Providence, RI' },
     ];
     const { container } = render(
-      <ReviewsTexts section={section} items={withLocation} skin={skin} />,
+      <ReviewsTexts words={W} section={section} items={withLocation} skin={skin} />,
     );
     expect(container.textContent).toContain('Providence, RI');
   });
 
   it('renders text through named type roles', () => {
     const { container } = render(
-      <ReviewsTexts section={section} items={makeTestimonials(3)} skin={skin} />,
+      <ReviewsTexts words={W} section={section} items={makeTestimonials(3)} skin={skin} />,
     );
     expect(container.querySelectorAll('[data-type]').length).toBeGreaterThan(0);
   });
 
   it('uses classes, not inline style objects, on its threads', () => {
     const { container } = render(
-      <ReviewsTexts section={section} items={makeTestimonials(3)} skin={skin} />,
+      <ReviewsTexts words={W} section={section} items={makeTestimonials(3)} skin={skin} />,
     );
     container.querySelectorAll('[data-ms-rev-item]').forEach((el) => {
       expect((el as HTMLElement).getAttribute('style')).toBeFalsy();

@@ -6,16 +6,17 @@
  */
 import type { ReactElement } from 'react';
 import type { GalleryItem } from '@/lib/backend/gallery/gallery-form';
-import { CARD_STRINGS as S } from './strings';
+import { photoLabel } from './data';
+import type { CardWords } from './words';
 import { PhotoViewerProvider, Snapshot } from './PhotoViewer';
 
-export function CardGallery({ photos }: { photos: GalleryItem[] }): ReactElement {
+export function CardGallery({ photos, w }: { photos: GalleryItem[]; w: CardWords }): ReactElement {
   return (
-    <PhotoViewerProvider photos={photos}>
+    <PhotoViewerProvider photos={photos} w={w.lightbox}>
       <ul className="bc-grid">
         {photos.map((p, i) => (
           <li key={p.id}>
-            <Snapshot index={i} className="bc-tile" label={S.work.open(p.caption, i + 1)}>
+            <Snapshot index={i} className="bc-tile" label={photoLabel(p.caption, i + 1, w.work)}>
               <span className="bc-print">
                 {/* The owner's own upload, already shrunk at upload — a plain img like the other maker-photo spots. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { initials, ringText, bioParagraphs, marqueeWords, marqueeDateLine, marqueeFill, loadCardData, marketDay, marqueeDateLine as line } from './data';
+import { keyWords } from '@/lib/site-words/words';
+import { CARD_WORD_SPOTS, CARD_WORDS_PREFIX } from './words';
+
+const S = keyWords(CARD_WORD_SPOTS, CARD_WORDS_PREFIX);
+/** Test date words: the templates carry their blanks so a date can be read; the separator says its own key. */
+const D = { ...S.dates, locale: 'en-US', day: '{weekday} {month} {day}', range: '{first} to {last}', canceled: '{market} (card.dates.canceled)' };
+const sep = S.dates.separator;
 
 describe('card name helpers', () => {
   it('takes up to three initials from the name’s words', () => {
@@ -9,9 +16,9 @@ describe('card name helpers', () => {
   });
 
   it('keeps the stamp’s ring short enough to go round once', () => {
-    expect(ringText('Rustic Rhody', 'Handmade')).toBe('Rustic Rhody · Handmade · ');
-    expect(ringText('Rustic Rhody', 'Handmade in Rhode Island since 2018').length).toBeLessThanOrEqual(34);
-    expect(ringText('Frank', '')).toBe('Frank · Frank · ');
+    expect(ringText('Rustic Rhody', 'Handmade', ' / ')).toBe('Rustic Rhody / Handmade / ');
+    expect(ringText('Rustic Rhody', 'Handmade in Rhode Island since 2018', ' / ').length).toBeLessThanOrEqual(34);
+    expect(ringText('Frank', '', ' / ')).toBe('Frank / Frank / ');
   });
 
   it('builds the marquee from the tag line and captions, each once', () => {
@@ -20,8 +27,8 @@ describe('card name helpers', () => {
   });
 
   it('says a market date the way the marquee does, leaving out a missing town', () => {
-    expect(marqueeDateLine({ id: 'a', date: '2026-10-11', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Wickford Art Festival', town: 'Wickford' })).toBe('Sun Oct 11 · Wickford Art Festival · Wickford');
-    expect(marqueeDateLine({ id: 'b', date: '2026-11-01', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Holiday Fair', town: '' })).toBe('Sun Nov 1 · Holiday Fair');
+    expect(marqueeDateLine({ id: 'a', date: '2026-10-11', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Wickford Art Festival', town: 'Wickford' }, D)).toBe(['Sun Oct 11', 'Wickford Art Festival', 'Wickford'].join(sep));
+    expect(marqueeDateLine({ id: 'b', date: '2026-11-01', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Holiday Fair', town: '' }, D)).toBe(['Sun Nov 1', 'Holiday Fair'].join(sep));
   });
 
   it('fills the quiet row with an even number of whole sets', () => {
@@ -38,8 +45,9 @@ describe('card name helpers', () => {
 });
 
 /** A read-only stand-in for the tables the card reads. */
-function fakeDb(opts: { tenant?: unknown; tenantError?: unknown; profile?: unknown; gallery?: unknown[]; features?: unknown[]; events?: unknown[] }) {
+function fakeDb(opts: { tenant?: unknown; tenantError?: unknown; profile?: unknown; gallery?: unknown[]; features?: unknown[]; events?: unknown[]; words?: unknown[] }) {
   const result = (table: string) => {
+    if (table === 'site_words') return { data: opts.words ?? [], error: null };
     if (table === 'tenants') return { data: opts.tenant ?? null, error: opts.tenantError ?? null };
     if (table === 'site_profiles') return { data: opts.profile ?? null, error: null };
     if (table === 'tenant_features') return { data: opts.features ?? [], error: null };
@@ -51,6 +59,7 @@ function fakeDb(opts: { tenant?: unknown; tenantError?: unknown; profile?: unkno
       const chain = {
         select: () => chain,
         eq: () => chain,
+        like: () => chain,
         order: () => chain,
         maybeSingle: async () => result(table),
         then: (resolve: (v: unknown) => void) => resolve(result(table)),
@@ -78,6 +87,12 @@ describe('loadCardData', () => {
     expect(data.photos).toEqual([{ id: 'a', url: 'https://cdn/a.webp', caption: 'Flag' }]);
   });
 
+  it('reads the site’s own words, leaving a spot it has no word for blank', async () => {
+    const data = await loadCardData(fakeDb({ tenant: { business_name: 'R' }, words: [{ key: 'card.form.send', text: 'card.form.send' }] }), 't1');
+    expect(data.words.form.send).toBe('card.form.send');
+    expect(data.words.form.sent).toBe('');
+  });
+
   it('reads the market dates only when the site has them switched on', async () => {
     const events = [{ id: 'd1', event_date: '2026-10-11', name: 'Wickford Art Festival', location: 'Wickford' }];
     const off = await loadCardData(fakeDb({ tenant: { business_name: 'R' }, events }), 't1');
@@ -94,12 +109,12 @@ describe('loadCardData', () => {
 
 describe('marketDay over several days', () => {
   it('reads first and last day', () => {
-    expect(marketDay({ id: 'x', date: '2026-11-21', endDate: '2026-11-22', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Holly Fair', town: '' })).toBe('Sat Nov 21 – Sun Nov 22');
+    expect(marketDay({ id: 'x', date: '2026-11-21', endDate: '2026-11-22', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Holly Fair', town: '' }, D)).toBe('Sat Nov 21 to Sun Nov 22');
   });
 });
 
 describe('a canceled market', () => {
   it('says so in the date line', () => {
-    expect(line({ id: 'x', date: '2026-11-21', endDate: '', hours: '', address: '', booth: '', url: '', canceled: true, name: 'Holly Fair', town: 'Johnston' })).toBe('Sat Nov 21 · Holly Fair (Canceled) · Johnston');
+    expect(line({ id: 'x', date: '2026-11-21', endDate: '', hours: '', address: '', booth: '', url: '', canceled: true, name: 'Holly Fair', town: 'Johnston' }, D)).toBe(['Sat Nov 21', 'Holly Fair (card.dates.canceled)', 'Johnston'].join(sep));
   });
 });

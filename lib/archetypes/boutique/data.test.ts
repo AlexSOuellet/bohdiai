@@ -8,7 +8,16 @@ import {
   visitDay,
   clotheslines,
   loadBoutiqueData,
+  photoLabel,
+  waitingCount,
 } from './data';
+import { fill, keyWords } from '@/lib/site-words/words';
+import { NURSERY_WORD_SPOTS, NURSERY_WORDS_PREFIX } from './words';
+
+const K = keyWords(NURSERY_WORD_SPOTS, NURSERY_WORDS_PREFIX);
+/** The visiting-hours words for the tests: a real locale so a date can be checked,
+ *  and the range spot keeping its blanks. */
+const VISIT = { ...K.visit, locale: 'en-US', range: 'nursery.visit.range {first} {last}' };
 
 const baby = (name: string, price: string, extra: Partial<ProductView> = {}): ProductView => ({
   slug: name.toLowerCase(),
@@ -58,8 +67,18 @@ describe('nursery helpers', () => {
     expect(bioParagraphs('')).toEqual([]);
   });
 
+  it('names a photo by its caption, or by its number when it has none', () => {
+    expect(photoLabel('Twins', 3, K.gone)).toBe(K.gone.open);
+    expect(photoLabel('', 2, { ...K.gone, openNumbered: 'nursery.gone.openNumbered {n}' })).toBe('nursery.gone.openNumbered 2');
+  });
+
+  it('counts the babies waiting, with its own words for one', () => {
+    expect(waitingCount(1, K.nursery)).toBe(K.nursery.countOne);
+    expect(waitingCount(7, { ...K.nursery, count: 'nursery.nursery.count {n}' })).toBe('nursery.nursery.count 7');
+  });
+
   it('says a market’s day for the visiting-hours sign', () => {
-    expect(visitDay({ id: 'a', date: '2026-10-17', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Fair', town: '' })).toEqual({
+    expect(visitDay({ id: 'a', date: '2026-10-17', endDate: '', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Fair', town: '' }, VISIT)).toEqual({
       weekday: 'Saturday',
       day: 'Oct 17',
     });
@@ -75,6 +94,7 @@ function fakeDb(opts: {
   features?: unknown[];
   events?: unknown[];
   gallery?: unknown[];
+  words?: unknown[];
 }) {
   const result = (table: string) => {
     if (table === 'tenants') return { data: opts.tenant ?? null, error: opts.tenantError ?? null };
@@ -82,6 +102,7 @@ function fakeDb(opts: {
       return { data: opts.profile ?? null, error: opts.profileError ?? null };
     if (table === 'tenant_features') return { data: opts.features ?? [], error: null };
     if (table === 'gallery_items') return { data: opts.gallery ?? [], error: null };
+    if (table === 'site_words') return { data: opts.words ?? [], error: null };
     return { data: opts.events ?? [], error: null };
   };
   return {
@@ -89,6 +110,7 @@ function fakeDb(opts: {
       const chain = {
         select: () => chain,
         eq: () => chain,
+        like: () => chain,
         order: () => chain,
         maybeSingle: async () => result(table),
         then: (resolve: (v: unknown) => void) => resolve(result(table)),
@@ -150,6 +172,15 @@ describe('loadBoutiqueData', () => {
     expect(on.gone).toEqual([{ id: 'g1', url: 'https://cdn/g1.webp', caption: 'Twins' }]);
   });
 
+  it('reads the site’s own words into the nursery’s spots, blank where it has none', async () => {
+    const data = await loadBoutiqueData(
+      fakeDb({ tenant: { business_name: 'R' }, words: [{ key: 'nursery.cart.add', text: 'nursery.cart.add' }] }),
+      't1',
+    );
+    expect(data.words.cart.add).toBe('nursery.cart.add');
+    expect(data.words.cart.send).toBe('');
+  });
+
   it('fails loudly when the site can’t be read', async () => {
     await expect(
       loadBoutiqueData(fakeDb({ tenantError: { message: 'down' } }), 't1'),
@@ -166,8 +197,8 @@ describe('loadBoutiqueData', () => {
 
 describe('visitDay over several days', () => {
   it('reads a weekend as a range', () => {
-    const v = visitDay({ id: 'x', date: '2026-10-10', endDate: '2026-10-12', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Scituate Art Festival', town: 'Scituate' });
-    expect(v.weekday).toBe('Saturday – Monday');
+    const v = visitDay({ id: 'x', date: '2026-10-10', endDate: '2026-10-12', hours: '', address: '', booth: '', url: '', canceled: false, name: 'Scituate Art Festival', town: 'Scituate' }, VISIT);
+    expect(v.weekday).toBe(fill(VISIT.range, { first: 'Saturday', last: 'Monday' }));
     expect(v.day.replace(/\s/g, ' ')).toBe('Oct 10 – 12');
   });
 });

@@ -7,9 +7,10 @@
  * business. Every failure path shows the visitor something; nothing is silent.
  */
 import { useState, type ChangeEvent, type FormEvent } from 'react';
-import { CONTRACTOR_STRINGS } from './strings';
+import { fill } from '@/lib/site-words/words';
+import type { ContractorWords } from './words';
 
-const S = CONTRACTOR_STRINGS.form;
+type FormWords = ContractorWords['form'];
 export const MAX_PHOTOS = 5;
 export const MAX_PHOTO_BYTES = 15 * 1024 * 1024;
 export const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
@@ -17,7 +18,7 @@ export const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 type Status = { kind: 'idle' } | { kind: 'sending' } | { kind: 'sent' } | { kind: 'error'; message: string };
 
 /** Client-side checks that mirror the server's, so most mistakes never leave the page. */
-export function checkEstimate(fields: { name: string; phone: string; email: string }, photos: File[]): string | null {
+export function checkEstimate(fields: { name: string; phone: string; email: string }, photos: File[], S: FormWords): string | null {
   if (fields.name.trim() === '') return S.errorName;
   if (fields.phone.trim() === '' && fields.email.trim() === '') return S.errorNeedContact;
   if (photos.length > MAX_PHOTOS) return S.errorTooManyPhotos;
@@ -26,14 +27,26 @@ export function checkEstimate(fields: { name: string; phone: string; email: stri
   return null;
 }
 
-export function EstimateForm({ tenantId, services, states, detailsHint }: { tenantId: string; services: string[]; states: string[]; detailsHint?: string | undefined }) {
+export function EstimateForm({
+  tenantId,
+  services,
+  states,
+  detailsHint,
+  words: S,
+}: {
+  tenantId: string;
+  services: string[];
+  states: string[];
+  detailsHint?: string | undefined;
+  words: FormWords;
+}) {
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
   const [photos, setPhotos] = useState<File[]>([]);
 
   function onPhotos(e: ChangeEvent<HTMLInputElement>): void {
     const list = Array.from(e.target.files ?? []);
     setPhotos(list);
-    const problem = checkEstimate({ name: 'x', phone: 'x', email: '' }, list);
+    const problem = checkEstimate({ name: 'x', phone: 'x', email: '' }, list, S);
     setStatus(problem === null ? { kind: 'idle' } : { kind: 'error', message: problem });
   }
 
@@ -44,6 +57,7 @@ export function EstimateForm({ tenantId, services, states, detailsHint }: { tena
     const problem = checkEstimate(
       { name: String(data.get('name') ?? ''), phone: String(data.get('phone') ?? ''), email: String(data.get('email') ?? '') },
       photos,
+      S,
     );
     if (problem !== null) {
       setStatus({ kind: 'error', message: problem });
@@ -131,7 +145,7 @@ export function EstimateForm({ tenantId, services, states, detailsHint }: { tena
         <div className="cp-drop">
           <input id="cp-photos" name="photos" type="file" accept={PHOTO_TYPES.join(',')} multiple onChange={onPhotos} />
           <p className="cp-hint">{S.photosHint}</p>
-          {photos.length > 0 && <p className="cp-drop__count">{S.photosChosen(photos.length)}</p>}
+          {photos.length > 0 && <p className="cp-drop__count">{photos.length === 1 ? S.photosChosenOne : fill(S.photosChosen, { n: photos.length })}</p>}
         </div>
       </div>
       <div className="cp-hp" aria-hidden="true">

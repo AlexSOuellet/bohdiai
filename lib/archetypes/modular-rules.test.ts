@@ -1,9 +1,11 @@
 /**
- * Modular rules (Modular Plan, step 1.3; Alex 2026-10-13). Three checks that
- * stop a design from drifting back to storing or inventing content:
+ * Modular rules (Modular Plan, step 1.3; Alex 2026-10-13 and 2026-10-14). Three
+ * checks that stop a design from drifting back to storing or inventing content:
  *
  * 1. A design reads page-record content only where the register still lists it.
- * 2. Every word in a design's strings file is sorted into site or platform.
+ * 2. No design holds a word: its word list names spots only, every one blank, and
+ *    the old strings files are gone (Alex: "NOTHING should EVER be written into
+ *    the code ... buttons too"). Every word is the site's own, in `site_words`.
  * 3. No words are typed straight into a design or shop page.
  *
  * Each list in the register can only shrink. A new offender fails; so does a
@@ -14,15 +16,17 @@ import path from 'node:path';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { CARD_STRINGS } from './card/strings';
 import { CardContentSchema } from './card/design';
-import { NURSERY_STRINGS } from './boutique/strings';
+import { CARD_WORD_SPOTS } from './card/words';
 import { BoutiqueContentSchema } from './boutique/design';
-import { CONTRACTOR_STRINGS } from './contractor/strings';
+import { NURSERY_WORD_SPOTS } from './boutique/words';
 import { ContractorContentSchema } from './contractor/schemas';
-import { DEFAULT_COUNTS, DEFAULT_STRINGS, REFERENCE_LABELS } from './main-street/defaults';
+import { CONTRACTOR_WORD_SPOTS } from './contractor/words';
+import * as MAIN_STREET_DEFAULTS from './main-street/defaults';
 import { MainStreetContentSchema } from './main-street/schemas';
-import { PAGE_RECORD_READS, TYPED_IN_WORDS, WORD_REGISTER } from './modular-rules.register';
+import { FAMILY_WORD_SPOTS } from './main-street/words';
+import { PAGE_RECORD_READS, TYPED_IN_WORDS } from './modular-rules.register';
+import { SHOP_WORD_SPOTS } from '../storefront/words';
 
 const ROOT = path.resolve(__dirname, '..', '..');
 
@@ -34,14 +38,11 @@ function schemaKeys(schema: z.ZodTypeAny): string[] {
   return Object.keys(s.shape as Record<string, unknown>);
 }
 
-/** Every leaf key path in a strings object ("form.send", "calendar.weekdays.0"). */
-function leafPaths(value: unknown, prefix = ''): string[] {
-  if (value === null || typeof value !== 'object') return [prefix];
-  return Object.entries(value as Record<string, unknown>).flatMap(([k, v]) => leafPaths(v, prefix === '' ? k : `${prefix}.${k}`));
-}
-
-function matches(pattern: string, key: string): boolean {
-  return pattern.endsWith('.*') ? key.startsWith(pattern.slice(0, -1)) : pattern === key;
+/** Every leaf of a word list that isn't blank: a word that got into the code. */
+function wordsIn(value: unknown, prefix = ''): string[] {
+  if (typeof value === 'string') return value === '' ? [] : [`${prefix}: ${value}`];
+  if (value === null || typeof value !== 'object') return [`${prefix}: not a spot`];
+  return Object.entries(value as Record<string, unknown>).flatMap(([k, v]) => wordsIn(v, prefix === '' ? k : `${prefix}.${k}`));
 }
 
 describe('modular rules: page records hold settings only', () => {
@@ -66,40 +67,27 @@ describe('modular rules: page records hold settings only', () => {
   }
 });
 
-describe('modular rules: every design word is sorted into site or platform', () => {
-  const files: Record<string, unknown> = {
-    'card/CARD_STRINGS': CARD_STRINGS,
-    'boutique/NURSERY_STRINGS': NURSERY_STRINGS,
-    'contractor/CONTRACTOR_STRINGS': CONTRACTOR_STRINGS,
-    'main-street/DEFAULT_STRINGS': DEFAULT_STRINGS,
-    'main-street/REFERENCE_LABELS': REFERENCE_LABELS,
-    'main-street/DEFAULT_COUNTS': DEFAULT_COUNTS,
+describe('modular rules: no design holds a word', () => {
+  const spots: Record<string, unknown> = {
+    card: CARD_WORD_SPOTS,
+    boutique: NURSERY_WORD_SPOTS,
+    contractor: CONTRACTOR_WORD_SPOTS,
+    'main-street': FAMILY_WORD_SPOTS,
+    shop: SHOP_WORD_SPOTS,
   };
 
-  it('covers every strings file', () => {
-    expect(Object.keys(WORD_REGISTER).sort()).toEqual(Object.keys(files).sort());
-  });
-
-  for (const [name, strings] of Object.entries(files)) {
-    const register = WORD_REGISTER[name];
-    if (register === undefined) continue;
-    const keys = leafPaths(strings);
-
-    it(`${name}: each word is sorted into exactly one kind`, () => {
-      const unsorted = keys.filter((k) => ![...register.site, ...register.platform].some((p) => matches(p, k)));
-      const both = keys.filter((k) => register.site.some((p) => matches(p, k)) && register.platform.some((p) => matches(p, k)));
-      // Unsorted: a new word. Decide whether it's the site's (it needs a home) or
-      // the platform's, and add it to the register.
-      expect(unsorted).toEqual([]);
-      expect(both).toEqual([]);
-    });
-
-    it(`${name}: the register lists no word that's gone`, () => {
-      const stale = [...register.site, ...register.platform].filter((p) => !keys.some((k) => matches(p, k)));
-      // Stale: the word moved to its home or was removed. Take it off the list.
-      expect(stale).toEqual([]);
+  for (const [design, list] of Object.entries(spots)) {
+    it(`${design}: its word list names spots only, every one blank`, () => {
+      // A word here is a word in the code: it belongs in the site's own words.
+      expect(wordsIn(list)).toEqual([]);
     });
   }
+
+  it('the old strings files are gone', () => {
+    const gone = ['card/strings.ts', 'boutique/strings.ts', 'contractor/strings.ts'].filter((f) => fs.existsSync(path.join(__dirname, f)));
+    expect(gone).toEqual([]);
+    expect(Object.keys(MAIN_STREET_DEFAULTS).sort()).toEqual(['REFERENCE_LABELS']);
+  });
 });
 
 describe('modular rules: no words typed straight into designs or shop pages', () => {
@@ -155,8 +143,8 @@ describe('modular rules: no words typed straight into designs or shop pages', ()
       if (words.length > 0) actual[rel] = [...new Set(words)].sort();
     }
     const expected = Object.fromEntries(Object.entries(TYPED_IN_WORDS).map(([f, w]) => [f, [...w].sort()]));
-    // A new entry: put the words in the strings file (platform) or the site's
-    // content (site). A missing one: it was fixed, take it off the list.
+    // A new entry: give the words a spot and put them in the site's own words.
+    // A missing one: it was fixed, take it off the list.
     expect(actual).toEqual(expected);
   });
 });

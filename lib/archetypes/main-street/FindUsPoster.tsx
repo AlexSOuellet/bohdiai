@@ -12,21 +12,27 @@
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import { type FindUsSection, type FindUsEvent, parseFindUsDate } from './findus';
+import type { FamilyWords } from './words';
+import { fill } from '@/lib/site-words/words';
 
-function posterDate(e: FindUsEvent): string {
-  const p = parseFindUsDate(e.date);
-  return p ? `${p.weekdayShort} ${p.monthShort} ${p.dayNum}` : e.day;
+/** A poster date in the site's words: "Sat Jul 12". */
+function posterDate(e: FindUsEvent, w: FamilyWords): string {
+  const p = parseFindUsDate(e.date, w.dateLocale);
+  return p ? fill(w.posterDay, { weekday: p.weekdayShort, month: p.monthShort, day: p.dayNum }) : e.day;
 }
 
 export function FindUsPoster({
   section,
   events,
   skin: _skin,
+  words,
   viewAll,
 }: {
   section: FindUsSection;
   events: FindUsEvent[];
   skin: ArchetypeTheme;
+  /** The site's words. */
+  words: FamilyWords;
   viewAll?: { href: string; label: string } | undefined;
 }) {
   return (
@@ -43,7 +49,7 @@ export function FindUsPoster({
             {events.map((e, i) => (
               <div key={i} data-ms-fu-item="" className="ms-fu-poster-ln">
                 <Type as="span" role="day" className="ms-fu-poster-dd">
-                  {posterDate(e)}
+                  {posterDate(e, words)}
                 </Type>
                 <Type as="span" role="cardTitle" className="ms-fu-poster-de">
                   {e.where}

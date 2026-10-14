@@ -4,19 +4,19 @@
  * with the maker's round brand pressed in, every photo as a big framed panel
  * with its caption burned onto a pine plate, the market dates on stained
  * planks, and the contact form on a char card. Every word the maker wrote comes
- * from `data`; the renderer adds only CARD_STRINGS.
+ * from `data`; the site's own words (`data.words`) fill everything else.
  */
 import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
 import { dialable } from '@/lib/backend/profile/profile-form';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
-import { CARD_STRINGS as S } from './strings';
+import type { CardWords } from './words';
 import { CardContactForm } from './CardContactForm';
 import { PhotoViewerProvider, Snapshot } from './PhotoViewer';
 import { TorchFire } from './TorchFire';
 import { BURN_TIMING, TORCH_FONTS_HREF, torchCss, type BurnKind } from './torch-styles';
 import { datePieces, ringFill, torchLines } from './bulletin';
-import { bioParagraphs, initials, type CardData } from './data';
+import { bioParagraphs, initials, type CardData, photoLabel } from './data';
 
 const ROOT_ID = 'tt-root';
 const ABOUT_ID = 'about';
@@ -81,7 +81,7 @@ function Frame({ children }: { children: ReactNode }): ReactElement {
   );
 }
 
-function Footer({ name, platformCredit }: { name: string; platformCredit: boolean }): ReactElement {
+function Footer({ name, platformCredit, w }: { name: string; platformCredit: boolean; w: CardWords['footer'] }): ReactElement {
   return (
     <footer className="tt-foot">
       <span className="tt-foot__big" aria-hidden="true">
@@ -91,11 +91,11 @@ function Footer({ name, platformCredit }: { name: string; platformCredit: boolea
         <span>
           © {new Date().getFullYear()} {name}
         </span>
-        <a href="/privacy">{S.footer.privacy}</a>
-        <a href="/terms">{S.footer.terms}</a>
+        <a href="/privacy">{w.privacy}</a>
+        <a href="/terms">{w.terms}</a>
         {platformCredit && (
           <a href={PLATFORM_URL}>
-            {S.footer.creditPrefix} {S.footer.creditBrand}
+            {w.creditPrefix} {w.creditBrand}
           </a>
         )}
       </div>
@@ -104,7 +104,7 @@ function Footer({ name, platformCredit }: { name: string; platformCredit: boolea
 }
 
 /** The maker's round brand: initials inside a ring of words, pressed into the board. */
-function Brand({ name, kicker }: { name: string; kicker: string }): ReactElement {
+function Brand({ name, kicker, separator }: { name: string; kicker: string; separator: string }): ReactElement {
   return (
     <div className="tt-brand" data-lit="" aria-hidden="true">
       <svg viewBox="0 0 300 300">
@@ -114,7 +114,7 @@ function Brand({ name, kicker }: { name: string; kicker: string }): ReactElement
         <circle className="tt-ring" cx="150" cy="150" r="138" />
         <circle className="tt-ring tt-ring--in" cx="150" cy="150" r="88" />
         <text>
-          <textPath href="#tt-ring">{ringFill(name, kicker).toUpperCase()}</textPath>
+          <textPath href="#tt-ring">{ringFill(name, kicker, separator).toUpperCase()}</textPath>
         </text>
         <text className="tt-initials" x="150" y="182" textAnchor="middle">
           {initials(name)}
@@ -133,7 +133,7 @@ export function TorchLanding({
   tenantId: string | undefined;
   platformCredit?: boolean;
 }): ReactElement {
-  const { name, profile: p, photos, dates } = data;
+  const { name, profile: p, photos, dates, words: w } = data;
   const lines = torchLines(name).slice(0, NAME_KINDS.length);
   const longName = Math.max(...lines.map((l) => l.length)) > 9;
   const bio = bioParagraphs(p.bio);
@@ -144,10 +144,10 @@ export function TorchLanding({
   const hasWays = p.phone !== '' || p.facebookUrl !== '' || p.instagramUrl !== '';
   const hasTouch = canWrite || hasWays;
   const links = [
-    ...(hasAbout ? [{ id: ABOUT_ID, label: S.torch.about }] : []),
-    ...(hasWork ? [{ id: WORK_ID, label: S.torch.work }] : []),
-    ...(hasDates ? [{ id: DATES_ID, label: S.torch.find }] : []),
-    ...(hasTouch ? [{ id: TOUCH_ID, label: S.torch.touch }] : []),
+    ...(hasAbout ? [{ id: ABOUT_ID, label: w.torch.about }] : []),
+    ...(hasWork ? [{ id: WORK_ID, label: w.torch.work }] : []),
+    ...(hasDates ? [{ id: DATES_ID, label: w.torch.find }] : []),
+    ...(hasTouch ? [{ id: TOUCH_ID, label: w.torch.touch }] : []),
   ];
   // Stripes alternate char and red between the sections that are there.
   let stripe = 0;
@@ -157,14 +157,14 @@ export function TorchLanding({
     <Frame>
       {canWrite && (
         <a className="tt-skip" href={`#${TOUCH_ID}`}>
-          {S.skip}
+          {w.skip}
         </a>
       )}
       <TorchFire rootId={ROOT_ID} />
       <header className="tt-bar">
         <Link href="/">{name}</Link>
         {links.length > 0 && (
-          <nav aria-label={S.nav.label}>
+          <nav aria-label={w.nav.label}>
             {links.map((l) => (
               <a key={l.id} href={`#${l.id}`}>
                 {l.label}
@@ -194,19 +194,19 @@ export function TorchLanding({
               <div className="tt-btns">
                 {hasWork && (
                   <a className="tt-tag" href={`#${WORK_ID}`}>
-                    {S.seeWork}
+                    {w.seeWork}
                   </a>
                 )}
                 {hasTouch && (
                   <a className="tt-tag tt-tag--ghost" href={`#${TOUCH_ID}`}>
-                    {S.askAbout}
+                    {w.askAbout}
                   </a>
                 )}
               </div>
             )}
           </div>
           <span className="tt-cue" aria-hidden="true">
-            {S.torch.scroll}
+            {w.torch.scroll}
           </span>
         </section>
 
@@ -216,7 +216,7 @@ export function TorchLanding({
             <section className="tt-about" id={ABOUT_ID}>
               <div className="tt-wrap">
                 <div>
-                  <div className="tt-label">{S.torch.about}</div>
+                  <div className="tt-label">{w.torch.about}</div>
                   {p.aboutTitle !== '' && (
                     <h2 className="tt-h2">
                       <Burn lines={[p.aboutTitle]} kind="head" />
@@ -227,7 +227,7 @@ export function TorchLanding({
                   ))}
                   {p.signature !== '' && <span className="tt-sig">— {p.signature}</span>}
                 </div>
-                <Brand name={name} kicker={p.kicker} />
+                <Brand name={name} kicker={p.kicker} separator={w.dates.separator} />
               </div>
             </section>
           </>
@@ -238,16 +238,16 @@ export function TorchLanding({
             {scorch()}
             <section className="tt-work" id={WORK_ID}>
               <div className="tt-wrap">
-                <div className="tt-label">{S.torch.work}</div>
+                <div className="tt-label">{w.torch.work}</div>
                 <h2 className="tt-h2">
-                  <Burn lines={[S.torch.workTitle]} kind="head" />
+                  <Burn lines={[w.torch.workTitle]} kind="head" />
                 </h2>
-                <PhotoViewerProvider photos={photos}>
+                <PhotoViewerProvider photos={photos} w={w.lightbox}>
                   <ul className="tt-reel">
                     {photos.map((photo, i) => (
                       <li key={photo.id} className="tt-piece" data-lit="">
                         <figure>
-                          <Snapshot index={i} className="tt-shot" label={S.work.open(photo.caption, i + 1)}>
+                          <Snapshot index={i} className="tt-shot" label={photoLabel(photo.caption, i + 1, w.work)}>
                             {/* The owner's own upload, already shrunk at upload — a plain img like the other maker-photo spots. */}
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={photo.url} alt={photo.caption} loading={i < 2 ? 'eager' : 'lazy'} />
@@ -273,13 +273,13 @@ export function TorchLanding({
             {scorch()}
             <section className="tt-dates" id={DATES_ID} data-lit="">
               <div className="tt-wrap">
-                <div className="tt-label">{S.torch.find}</div>
+                <div className="tt-label">{w.torch.find}</div>
                 <h2 className="tt-h2">
-                  <Burn lines={[S.torch.findTitle]} kind="head" />
+                  <Burn lines={[w.torch.findTitle]} kind="head" />
                 </h2>
                 <ul className="tt-planks">
                   {dates.map((d) => {
-                    const piece = datePieces(d);
+                    const piece = datePieces(d, w.dates);
                     return (
                       <li key={d.id} className="tt-plank">
                         <b>{piece.day}</b>
@@ -300,11 +300,11 @@ export function TorchLanding({
             <section className="tt-touch" id={TOUCH_ID}>
               <div className="tt-wrap">
                 <div>
-                  <div className="tt-label">{S.torch.touch}</div>
+                  <div className="tt-label">{w.torch.touch}</div>
                   <h2 className="tt-h2">
-                    <Burn lines={[S.torch.touchTitle]} kind="head" />
+                    <Burn lines={[w.torch.touchTitle]} kind="head" />
                   </h2>
-                  <p className="tt-lede">{S.torch.lede}</p>
+                  <p className="tt-lede">{w.torch.lede}</p>
                   {hasWays && (
                     <div className="tt-links">
                       {p.phone !== '' && (
@@ -314,12 +314,12 @@ export function TorchLanding({
                       )}
                       {p.facebookUrl !== '' && (
                         <a className="tt-tag" href={p.facebookUrl} rel="noopener">
-                          {S.touch.facebook}
+                          {w.touch.facebook}
                         </a>
                       )}
                       {p.instagramUrl !== '' && (
                         <a className="tt-tag" href={p.instagramUrl} rel="noopener">
-                          {S.touch.instagram}
+                          {w.touch.instagram}
                         </a>
                       )}
                     </div>
@@ -327,7 +327,7 @@ export function TorchLanding({
                 </div>
                 {canWrite && (
                   <div className="tt-form">
-                    <CardContactForm tenantId={tenantId} />
+                    <CardContactForm tenantId={tenantId} w={w.form} />
                   </div>
                 )}
               </div>
@@ -335,7 +335,7 @@ export function TorchLanding({
           </>
         )}
       </main>
-      <Footer name={name} platformCredit={platformCredit} />
+      <Footer name={name} platformCredit={platformCredit} w={w.footer} />
     </Frame>
   );
 }
@@ -343,12 +343,14 @@ export function TorchLanding({
 /** Privacy and terms on the pine board, with the top bar. */
 export function TorchContentPage({
   name,
+  words: w,
   html,
   title,
   body,
   platformCredit = true,
 }: {
   name: string;
+  words: CardWords;
   html?: string | undefined;
   title?: string | undefined;
   body?: string[] | undefined;
@@ -371,7 +373,7 @@ export function TorchContentPage({
           </div>
         )}
       </main>
-      <Footer name={name} platformCredit={platformCredit} />
+      <Footer name={name} platformCredit={platformCredit} w={w.footer} />
     </Frame>
   );
 }

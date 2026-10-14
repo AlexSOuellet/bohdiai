@@ -3,6 +3,11 @@ import { render, cleanup } from '@testing-library/react';
 import { ReviewsPullQuote } from './ReviewsPullQuote';
 import { MAIN_STREET_SKINS } from './skins';
 import type { ReviewsSection, Testimonial } from './reviews';
+import { keyWords } from '@/lib/site-words/words';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+
+/** Test words: every spot says its own key. */
+const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
 const section: ReviewsSection = { title: 'Kind words', label: 'In their words', items: [] };
@@ -37,14 +42,14 @@ afterEach(cleanup);
 describe('ReviewsPullQuote', () => {
   it('renders one figure per testimonial', () => {
     const { container } = render(
-      <ReviewsPullQuote section={section} items={makeTestimonials(3)} skin={skin} />,
+      <ReviewsPullQuote words={W} section={section} items={makeTestimonials(3)} skin={skin} />,
     );
     expect(container.querySelectorAll('[data-ms-rev-item]').length).toBe(3);
   });
 
   it('renders every testimonial quote in the DOM (all present, just faded)', () => {
     const { container } = render(
-      <ReviewsPullQuote section={section} items={makeTestimonials(3)} skin={skin} />,
+      <ReviewsPullQuote words={W} section={section} items={makeTestimonials(3)} skin={skin} />,
     );
     expect(container.textContent).toContain('Quote number 0 is unmistakable');
     expect(container.textContent).toContain('Quote number 1 is unmistakable');
@@ -53,14 +58,14 @@ describe('ReviewsPullQuote', () => {
 
   it('renders one dot per testimonial when there are several', () => {
     const { container } = render(
-      <ReviewsPullQuote section={section} items={makeTestimonials(3)} skin={skin} />,
+      <ReviewsPullQuote words={W} section={section} items={makeTestimonials(3)} skin={skin} />,
     );
     expect(container.querySelectorAll('.ms-rev-pq-dot').length).toBe(3);
   });
 
   it('renders no dots for a single testimonial', () => {
     const { container } = render(
-      <ReviewsPullQuote section={section} items={makeTestimonials(1)} skin={skin} />,
+      <ReviewsPullQuote words={W} section={section} items={makeTestimonials(1)} skin={skin} />,
     );
     expect(container.querySelectorAll('.ms-rev-pq-dot').length).toBe(0);
     expect(container.querySelectorAll('[data-ms-rev-item]').length).toBe(1);
@@ -68,14 +73,14 @@ describe('ReviewsPullQuote', () => {
 
   it('renders text through named type roles', () => {
     const { container } = render(
-      <ReviewsPullQuote section={section} items={makeTestimonials(3)} skin={skin} />,
+      <ReviewsPullQuote words={W} section={section} items={makeTestimonials(3)} skin={skin} />,
     );
     expect(container.querySelectorAll('[data-type]').length).toBeGreaterThan(0);
   });
 
   it('uses classes, not inline style objects, on its figures', () => {
     const { container } = render(
-      <ReviewsPullQuote section={section} items={makeTestimonials(3)} skin={skin} />,
+      <ReviewsPullQuote words={W} section={section} items={makeTestimonials(3)} skin={skin} />,
     );
     container.querySelectorAll('[data-ms-rev-item]').forEach((el) => {
       expect((el as HTMLElement).getAttribute('style')).toBeFalsy();
