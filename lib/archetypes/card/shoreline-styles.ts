@@ -61,14 +61,10 @@ export function shorelineCss(): string {
 .sl-kicker{margin:clamp(14px,2vw,22px) 0 0;max-width:34ch;font-style:italic;font-size:clamp(19px,2.4vw,26px);line-height:1.35;color:var(--ink);font-weight:600;text-shadow:0 0 6px rgba(245,240,240,.95),0 0 18px rgba(245,240,240,.85);animation:sl-rise 1.8s cubic-bezier(.2,.7,.2,1) .6s both}
 .sl-makes{display:inline-flex;align-self:flex-start;flex-wrap:wrap;gap:4px 0;margin:clamp(20px,3vw,30px) 0 0;padding:10px 18px;background:rgba(250,246,240,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);list-style:none;font-family:var(--body);font-weight:600;font-size:clamp(13px,1.5vw,15px);letter-spacing:.22em;text-transform:uppercase;color:var(--navy);font-weight:700;text-shadow:0 0 6px rgba(245,240,240,.95),0 0 18px rgba(245,240,240,.85);animation:sl-rise 1.8s cubic-bezier(.2,.7,.2,1) .9s both}
 .sl-makes li+li::before{content:'';display:inline-block;width:22px;height:1px;margin:0 14px;vertical-align:middle;background:currentColor;opacity:.5}
-/* The home's first screen: the name on the sky, then her words and one of her pieces set on
-   the windowsill beside them, so the work and the way into the shop show before any scroll. */
-.sl-sky--home{min-height:0;padding-bottom:clamp(36px,6vw,70px)}
-.sl-sky-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,clamp(210px,23vw,310px));gap:clamp(20px,4vw,64px);align-items:start}
-.sl-sky-words{min-width:0}
+/* The home's first screen: the name on the sky with her words and the way into the shop,
+   and only as much sky as it needs, so the shelf comes up soon after. */
+.sl-sky--home{min-height:0;padding-bottom:clamp(40px,7vw,90px)}
 .sl-sky-cta{margin:clamp(22px,3vw,32px) 0 0;animation:sl-rise 1.8s cubic-bezier(.2,.7,.2,1) 1.05s both}
-.sl-sky-piece{--r:2.2deg;margin-top:clamp(4px,1vw,14px);animation:sl-rise 1.8s cubic-bezier(.2,.7,.2,1) .8s both}
-.sl-sky-piece .sl-label{width:88%}
 
 /* ── prints floating over the water ───────────────────────── */
 .sl-water{padding:0 clamp(16px,5vw,70px)}
@@ -312,7 +308,6 @@ a.sl-print{text-decoration:none;cursor:pointer}
   .sl-market-day{grid-row:auto}
 }
 @media (max-width:860px){
-  .sl-sky-row{grid-template-columns:minmax(0,1fr) minmax(0,42%);gap:18px 24px}
   .sl-prints{grid-template-columns:repeat(2,minmax(0,1fr))}
   .sl-below{grid-template-columns:minmax(0,1fr)}
   .sl-tide{margin-top:10px}
@@ -331,8 +326,7 @@ a.sl-print{text-decoration:none;cursor:pointer}
   .sl-nav a{display:inline-block;font-size:12px;letter-spacing:.08em;white-space:nowrap;padding:6px 0}
   .sl-sale{padding:6px 12px;font-size:12px;letter-spacing:.06em}
   .sl-sky--home{padding-top:22px;padding-bottom:28px}
-  .sl-sky-row{grid-template-columns:minmax(0,1fr);gap:20px}
-  .sl-sky-piece{width:62%;justify-self:end;margin:-6px 6px 0 0}
+
   .sl-featured{--fade-in:44px;--fade-out:52px}
   .sl-featured--page{--fade-in:32px;margin-top:12px}
   .sl-below{margin-top:28px}

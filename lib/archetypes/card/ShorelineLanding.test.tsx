@@ -71,11 +71,10 @@ describe('shoreline page', () => {
     expect(shorelineCss()).toMatch(/\.sl-sea\{position:fixed;inset:0;z-index:-1/);
   });
 
-  it('sets her first photo on the sky beside her name, and floats the rest over the water in her order', () => {
+  it('floats every photo over the water as a print with its caption, in the owner’s order', () => {
     const { container } = page();
-    expect(container.querySelector('.sl-sky .sl-sky-piece img')?.getAttribute('src')).toBe(photos[0]?.url);
-    expect(container.querySelector('.sl-sky-piece span')?.textContent).toBe('Cabbage rose oyster dish');
-    expect([...container.querySelectorAll('.sl-prints img')].map((i) => i.getAttribute('src'))).toEqual(photos.slice(1).map((p) => p.url));
+    expect([...container.querySelectorAll('.sl-prints img')].map((i) => i.getAttribute('src'))).toEqual(photos.map((p) => p.url));
+    expect(container.querySelector('.sl-print span')?.textContent).toBe('Cabbage rose oyster dish');
     expect(screen.getByRole('region', { name: S.shoreline.work })).toBeTruthy();
   });
 

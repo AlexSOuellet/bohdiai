@@ -72,28 +72,20 @@ describe('shoreline pages (Lite and Full)', () => {
     expect(within(nav).getByRole('link', { name: W.nav.shop }).getAttribute('aria-current')).toBe('page');
   });
 
-  it('opens the home on the sky, with a piece and the way into the shop, a story teaser, the next markets and a way to write', () => {
-    const { container } = page('home');
+  it('opens the home on the sky with the way into the shop, then featured pieces, a story teaser, the next markets and a way to write', () => {
+    page('home');
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Saltmarsh & Lace');
-    // Her first featured piece sits on the sky beside the name, with the way into the shop.
-    expect(container.querySelector('.sl-sky .sl-sky-piece')?.getAttribute('href')).toBe('/listings/old-saint-nick');
     expect(screen.getByRole('link', { name: W.skyCta }).getAttribute('href')).toBe('/shop');
-    // With one featured piece, it's on the sky, so the shelf below has nothing more to show.
-    expect(screen.queryByRole('heading', { name: W.featured })).toBeNull();
+    expect(screen.getByRole('heading', { name: W.featured })).toBeTruthy();
+    expect(screen.getAllByRole('link', { name: /old saint nick/i })[0]?.getAttribute('href')).toBe('/listings/old-saint-nick');
     expect(screen.queryByText('Every sealer gets tested.')).toBeNull();
     expect(screen.getByRole('link', { name: W.readStory }).getAttribute('href')).toBe('/about');
     expect(screen.getByRole('link', { name: W.allMarkets }).getAttribute('href')).toBe('/events');
     expect(screen.getByRole('link', { name: fill(W.writeCta, { name: 'Lena' }) }).getAttribute('href')).toBe('/contact');
   });
 
-  it('puts the rest of the featured pieces on the shelf under the sky, and leaves the shop button out with nothing to sell', () => {
-    const { container } = page('home', { ...site, products: [product('a', { onHome: true }), product('b', { onHome: true }), product('c', { onHome: true })] });
-    expect(container.querySelector('.sl-sky-piece')?.getAttribute('href')).toBe('/listings/a');
-    expect(screen.getByRole('heading', { name: W.featured })).toBeTruthy();
-    expect([...container.querySelectorAll('.sl-prints a')].map((a) => a.getAttribute('href'))).toEqual(['/listings/b', '/listings/c']);
-    cleanup();
-    const { container: empty } = page('home', { ...site, products: [] });
-    expect(empty.querySelector('.sl-sky-piece')).toBeNull();
+  it('leaves the shop button out when there is nothing to sell', () => {
+    page('home', { ...site, products: [] });
     expect(screen.queryByRole('link', { name: W.skyCta })).toBeNull();
   });
 

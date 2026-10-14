@@ -113,7 +113,6 @@ export function ShorelineLanding({
   platformCredit?: boolean;
 }): ReactElement {
   const { name, profile: p, photos, dates, words: w } = data;
-  const first = photos[0];
   const bio = bioParagraphs(p.bio);
   const canWrite = tenantId !== undefined;
   // Her Facebook and Instagram live in the footer, as icons on every page.
@@ -132,37 +131,25 @@ export function ShorelineLanding({
           <h1 className="sl-name">
             {nameParts(name).map((part, i) => (part.amp ? <em key={i}>{part.text}</em> : <span key={i}>{part.text}</span>))}
           </h1>
-          <div className="sl-sky-row">
-            <div className="sl-sky-words">
-              {p.kicker !== '' && <p className="sl-kicker">{p.kicker}</p>}
-              {p.makes.length > 0 && (
-                <ul className="sl-makes" aria-label={w.shoreline.makesLabel}>
-                  {p.makes.map((m) => (
-                    <li key={m}>{m}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            {first !== undefined && (
-              <Snapshot index={0} className="sl-print sl-sky-piece" label={photoLabel(first.caption, 1, w.work)}>
-                {/* The owner's own upload, already shrunk at upload. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={first.url} alt={first.caption} fetchPriority="high" />
-                {first.caption !== '' && <span aria-hidden="true">{first.caption}</span>}
-              </Snapshot>
-            )}
-          </div>
+          {p.kicker !== '' && <p className="sl-kicker">{p.kicker}</p>}
+          {p.makes.length > 0 && (
+            <ul className="sl-makes" aria-label={w.shoreline.makesLabel}>
+              {p.makes.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+          )}
         </header>
 
         <main id="main">
-          {photos.length > 1 && (
+          {photos.length > 0 && (
             <section className="sl-water" aria-labelledby="sl-work">
               <h2 className="sl-water-h" id="sl-work">
                 {w.shoreline.work}
               </h2>
               <ul className="sl-prints">
-                {photos.slice(1).map((photo, i) => (
-                  <Print key={photo.id} photo={photo} index={i + 1} w={w.work} />
+                {photos.map((photo, i) => (
+                  <Print key={photo.id} photo={photo} index={i} w={w.work} />
                 ))}
               </ul>
             </section>
