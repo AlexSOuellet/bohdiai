@@ -14,8 +14,9 @@
  *             for her converted pieces, plus new pieces with their own photos) and
  *             its TESTIMONIALS. The demo's normal starting point.
  *
- * Every reset anchors the timeline to today (tenants.demo_day). A database job
- * (migration 20261012000001) moves it forward each day, so the demo is always today.
+ * Every reset anchors the timeline to today (tenants.demo_day and demo_week_day).
+ * A database job (migrations 20261012000001, 20261014000003) moves the timeline
+ * forward by whole weeks, so fairs stay on Saturdays, and today's market to today.
  *
  * --media names the folder holding CATALOG photos not uploaded yet; once uploaded
  * they are reused by file name, so later resets don't need it.
@@ -28,6 +29,7 @@ import type { Database } from '../lib/database.types';
 import { applyPlan } from '../lib/backend/plan/apply';
 import { galleryToProducts } from '../lib/backend/plan/convert';
 import { addDays, todayDay } from '../lib/backend/plan/billing';
+import { demoMarketDay } from '../lib/backend/demo-days';
 import type { CardSiteModule } from './build-card-site';
 
 type CatalogPiece = { photo: string; extraPhotos?: readonly string[]; name: string; short: string; description: string; priceCents: number; onHome?: boolean; isNew?: boolean };
@@ -119,7 +121,7 @@ async function main(): Promise<void> {
   await step('billing', () =>
     db
       .from('tenants')
-      .update({ plan_billing: 'monthly', plan_renews_on: addDays(todayDay(tenant.time_zone), 20), plan_next: null, plan_next_billing: null, plan_next_gallery: null, plan_credit_cents: 0, demo_day: todayDay(tenant.time_zone) })
+      .update({ plan_billing: 'monthly', plan_renews_on: addDays(todayDay(tenant.time_zone), 20), plan_next: null, plan_next_billing: null, plan_next_gallery: null, plan_credit_cents: 0, demo_day: todayDay(tenant.time_zone), demo_week_day: todayDay(tenant.time_zone) })
       .eq('id', tid),
   );
   process.stdout.write(`showcase: ${gallery.length} photos, no products\n`);
@@ -280,7 +282,8 @@ async function fullDemo(db: Db, tid: string, timeZone: string | null, demo: Full
   };
   const buyers = ['Maria', 'Tom', 'Rachel', 'Linda', 'Joe', 'Kate', 'Paul', 'Sue', 'Ben', 'Amy'];
   for (const m of demo.markets) {
-    const date = day(m.day);
+    // Fairs land on Saturdays; today's market stays today (lib/backend/demo-days).
+    const date = demoMarketDay(today, m.day);
     const { data: ev, error } = await db
       .from('events')
       .insert({ tenant_id: tid, name: m.name, event_date: date, location: m.town, hours: m.hours, address: m.address, booth: m.booth, status: m.day < 0 ? 'completed' : 'upcoming', rating: m.rating ?? null, go_back: m.goBack ?? null, review: m.review ?? null })
