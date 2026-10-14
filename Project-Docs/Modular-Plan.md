@@ -1,6 +1,6 @@
 # BohdiAI Modular Plan
 
-**Rewritten 2026-10-13 around Alex's actual goal. Status (Session 103, 2026-10-13): steps 1 and 2 done; step 3 underway (family pages read from the homes). See `Open-Work.md` for each item.**
+**Rewritten 2026-10-13 around Alex's actual goal. Status (Session 104, 2026-10-14): steps 1 and 2 done; step 3 underway (family pages read from the homes); no word is written into the code (every word in `site_words`, rule 4 widened to buttons and labels). Alex: the sites look good first, screens wait. See `Open-Work.md` for each item.**
 
 ## The goal
 
@@ -19,7 +19,7 @@ The same goes for every other design: any family, and the newer designs like sho
 1. **Every piece of content has its own home** (a table or field in the database) that any design can read.
 2. **Pages hold settings only.** A page's saved record says which design and which look, never words, photos or dates.
 3. **Designs only display.** A design never stores content of its own.
-4. **No hardcoding.** No display words inside a design. Section headings come from the site's own content.
+4. **No hardcoding.** No display words inside a design, buttons and labels included (Alex, 2026-10-14). Section headings come from the site's own content; every other word from the site's own words (`site_words`).
 5. **No site ever requires custom work.** Every site is a design plus content plus added sections. New needs become new shared sections or new designs that any site can use. Nothing is ever built for one site only.
 
 ## Where things stand (checked against code and database 2026-10-13)

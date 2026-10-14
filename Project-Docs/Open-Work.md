@@ -100,15 +100,9 @@
 26. Rename the middle plan from "lite" to "market" in the code.
 
 ## Saltmarsh and the demo
-27. Demo dates move by whole weeks, so Saturdays stay Saturdays.
-28. Today's market shows in "Find me at."
-29. Saltmarsh design work:
-    - work on the first screen
-    - a photo of Lena
-    - prices in plain font
-    - a lighter phone header
-    - readable labels
-    - shorter gaps
+27. [x] Demo dates move by whole weeks, so Saturdays stay Saturdays; today's market stays today (Session 104)
+28. [x] Today's market shows in "Find me at" (visitors don't see markets marked finished; Session 104)
+29. [x] Saltmarsh design work (Session 104): a "Visit the shop" button under the opening (Alex: the demo's opening shows what a site can be, no pieces in the sky), Lena's portrait on the story card, plain-font prices, a lighter phone header, readable collection buttons, shorter gaps
 30. The public demo:
     - personal copies
     - a welcome page that requires an email

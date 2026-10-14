@@ -1,22 +1,24 @@
 # Session Brief — BohdiAI
 
-> **⚠ START HERE (Session 103, 2026-10-13):** read `Project-Docs/Modular-Plan.md` (the operative
-> plan) and `Project-Docs/Open-Work.md` (every open item), then `session-logs/session-103.md`.
-> Steps 1 and 2 are done; step 3 is underway. First thing next session: the maker-backend
-> screens for the moment, section words and new About you pieces. `Full-Plan.md` and
-> `Direction-2026-09-23.md` are history.
+> **⚠ START HERE (Session 104, 2026-10-14):** read `Project-Docs/Modular-Plan.md` (the operative
+> plan) and `Project-Docs/Open-Work.md` (every open item), then `session-logs/session-104.md`.
+> **Nothing is written into the code** (every word is the site's own, in `site_words`). Alex's
+> order now: **the sites look good first**; backend screens wait. Ask Alex what's next.
+> `Full-Plan.md` and `Direction-2026-09-23.md` are history.
 
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 
 **Operative plan doc:** `Project-Docs/Modular-Plan.md`; open items in `Project-Docs/Open-Work.md`. Every session updates Open-Work as items land.
 
-**Last updated:** 2026-10-13, Session 103 (end).
+**Last updated:** 2026-10-14, Session 104 (end).
 
 ---
 
 ## Current state
 
-**Session 103: the fix began. Modular Plan steps 1 and 2 done, step 3 started; all merged.** Safeguards: a hook asks Alex once when a database change is applied (after Claude explains it in chat), a database rule refuses words/photos/dates in page records, and `lib/archetypes/modular-rules.test.ts` + its shrinking register block content read from the wrong place and words typed into designs. Homes built: `site_sections` (every section's words), `site_moments` + `site_moment_photos`, About you + quote/portrait/marquee, with backend read/save code. Family pages now read from the homes (`lib/archetypes/main-street/from-homes.ts`); old samples keep their page record until cleanup. Proof: `aurora-candles-homes` (draft copy of aurora-candles via `scripts/copy-family-sample.ts`) matches word for word. Decided: the build fills every piece, the maker edits it all; no site is truly live (Cut-Pro and Rose n' Cat will be real, Saltmarsh is the demo); the market tag was removed (built only to match a test site). Recap: `session-logs/session-103.md`. **Start next session: the maker-backend screens for the moment, section words and the new About you pieces (Modular Plan step 3).**
+**Session 104: no word is written into the code; Saltmarsh polished; the demo keeps its weekdays. All merged and live.** Every word a site shows (buttons, menu names, labels, messages, page and search titles) lives per site in `site_words`; designs only name their spots (`<design>/words.ts`) and read them (`lib/site-words`). All 51 sites filled (`scripts/site-words.ts load`; a new site: `copy <from> <to> <prefix>`), live vs local compared word for word: identical. The modular-rules test fails on any word in code. Still in code, "fine for now": legal templates, server error messages, payment app names, symbols. Saltmarsh: Lena's portrait on the story card, plain-lettered prices, light phone header, solid category buttons, tighter gaps, a "Visit the shop" button under the opening (Alex: "it is a DEMO", the opening shows what a site can be), today's market leads "Find me at" (visitors don't see finished markets), fairs stay on Saturdays (`tenants.demo_week_day`, weekly moves; today's market still moves daily), today's market is "Market on the Common". About you has the quote/portrait/marquee screen. **Open:** the top-of-page line has two homes (About you vs the moment); Alex: "the About page should NOT change the hero"; talk it through before touching it. Recap: `session-logs/session-104.md`.
+
+**Session 103: the fix began. Modular Plan steps 1 and 2 done, step 3 started; all merged.** Safeguards: a hook asks Alex once when a database change is applied (after Claude explains it in chat), a database rule refuses words/photos/dates in page records, and `lib/archetypes/modular-rules.test.ts` + its shrinking register block content read from the wrong place and words typed into designs. Homes built: `site_sections` (every section's words), `site_moments` + `site_moment_photos`, About you + quote/portrait/marquee, with backend read/save code. Family pages now read from the homes (`lib/archetypes/main-street/from-homes.ts`); old samples keep their page record until cleanup. Proof: `aurora-candles-homes` (draft copy of aurora-candles via `scripts/copy-family-sample.ts`) matches word for word. Decided: the build fills every piece, the maker edits it all; no site is truly live (Cut-Pro and Rose n' Cat will be real, Saltmarsh is the demo); the market tag was removed (built only to match a test site). Recap: `session-logs/session-103.md`. 
 
 **Session 102 — structure reset; `Modular-Plan.md` + `Open-Work.md` written.** Recap: `session-logs/session-102.md`.
 
@@ -35,7 +37,7 @@
 
 ## Next actions
 
-**Every open item is in `Open-Work.md`**; the order of the fix is `Modular-Plan.md`. Next: the step 3 screens, then each design's suggested headings, family sales/plans/cart, and the newer designs reading their headings from `site_sections`. Waiting on others: Rose n' Cat and Joe come to Alex when ready. Closed: Penny's site never moves into BohdiAI; "Alex Scott" dropped everywhere.
+**Every open item is in `Open-Work.md`**; the order of the fix is `Modular-Plan.md`. Alex (2026-10-14): the sites look good first, the edit screens wait. Candidates: Rustic Rhody's hero, the public demo, the top-of-page line's two homes (talk first), the newer designs' headings into `site_sections`. Waiting on others: Rose n' Cat and Joe come to Alex when ready. Closed: Penny's site never moves into BohdiAI; "Alex Scott" dropped everywhere.
 
 ---
 
@@ -71,6 +73,8 @@
 - **Look at processed media before it goes live.** Sample frames across the whole clip; "encoded with 0 errors" shipped smeared garbage once.
 - **Never build to match a test.** A diff or a copy finds differences; ask whether the thing should exist before building it (Session 103 market tag).
 - **The type check can pass falsely.** A broken `.next/dev/types` file stops `tsc` at syntax errors before it checks any code. Check with `.next` excluded.
+- **Keep it short; ask when a remark has several readings.** Session 104: long option lists lost Alex ("STOP complicating this"); "it is a DEMO" had three readings and asking saved a wrong build.
+- **No words in the code, ever (Alex 2026-10-14).** A new word gets a spot in `<design>/words.ts` and a row in every site's `site_words`. Never a fallback word.
 - **Commit messages via a file on Windows.** PowerShell 5.1 splits an inline message with double quotes into pathspecs; a commit silently failed in Session 93. Use `git commit -F <file>` and check `git log` before merging.
 - **Don't cause side effects Alex didn't ask for.** `seed-editor-test-owner.mjs` resets the password every run — running it "just for the admin row" clobbered his known password. Read what a script does before running it for a narrow purpose.
 
@@ -80,6 +84,7 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 104 (2026-10-14): **No word written into the code (`site_words`, all 51 sites, proven identical); Saltmarsh polish from the review; Saturday fairs stay on Saturdays; About you quote/portrait/marquee screen.** Full recap: `session-logs/session-104.md`.
 - Session 103 (2026-10-13): **Modular Plan steps 1–2 done (safeguards, homes), step 3 started: family pages read from the homes; Aurora copy proven identical; market tag added then removed.** Full recap: `session-logs/session-103.md`.
 - Session 102 (2026-10-13): **Structural reckoning: content stuck in page records. Modular-Plan.md + Open-Work.md written.** Full recap: `session-logs/session-102.md`.
 - Session 101 (2026-10-12): **Priorities reset; Saltmarsh public; demo always today; Market POS + home-screen app live; no codes at markets.** Full recap: `session-logs/session-101.md`.

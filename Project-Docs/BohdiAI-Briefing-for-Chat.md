@@ -1,6 +1,6 @@
 # BohdiAI — Full Project Briefing
 
-**Written 2026-10-08 (after Session 97); updated 2026-10-14 (after Session 103).** One document to bring a fresh chat up to speed on the whole project: who, what, why, what's built, how it's built, what's decided, what's open, and how Alex likes to work. Upload this at the start of a conversation.
+**Written 2026-10-08 (after Session 97); updated 2026-10-14 (after Session 104).** One document to bring a fresh chat up to speed on the whole project: who, what, why, what's built, how it's built, what's decided, what's open, and how Alex likes to work. Upload this at the start of a conversation.
 
 ---
 
@@ -59,7 +59,7 @@ The goal now, in Alex's words: **"Build a site today in cozy, change it to moder
 4. No hardcoding. Section headings come from the site's own content.
 5. No site ever requires custom work. A new need becomes a shared **added section** (plug-in) or a new design that every site can use. It arrives switched off everywhere.
 
-Alex's line on words: **site words** (headings, the line under them, empty-state messages, the maker's voice and vocabulary) get a home per site; **platform words** (buttons, form labels, cart mechanics, errors) stay in code.
+**Nothing is ever written into the code (Alex, 2026-10-14):** every word a site shows, buttons, labels and messages included, lives per site in the `site_words` table; designs only name their spots. A new site's words are written when it's built. No screen to edit them yet (Alex's call). This replaced an earlier line that kept "platform words" in code.
 
 Further calls from the reset:
 - **Makers never switch designs.** Alex might.
@@ -175,11 +175,11 @@ Lives at **app.bohdiai.com**. Owners reach it by typing `/admin` on their own si
 
 ## 8. What's open right now
 
-- **Modular plan step 3 (next):** backend screens for the moment, section words and About you's quote/portrait/marquee; each design's suggested headings filled into a new site; family designs get running sales, the plan switches, cart, order request and market page; the newer designs read headings from the homes.
+- **Modular plan step 3:** Alex's order (2026-10-14) is the sites look good first; the backend screens (moment, section words) wait. Open: the line at the top of the page has two homes (About you and the moment), and Alex wants the About screen never to change the top of the page; talk it through first.
 - **Then:** added sections (plug-ins) for every design, background as its own setting with a scene library, the Coastal and Sweet families, contractor sites onto the homes (each checked by Alex before switching), a fresh sample proven across every family and plan, then cleanup of the old samples and old code.
 - **Open decision:** the made-up "4.9 out of 5, 180+ customers" line on family reviews — drop it, or let the maker enter a real one.
 - **Market app:** sales tax, market discounts, Publish step, baskets, offline POS, retire the old Today and Sell screens, Square card payments.
-- **Saltmarsh:** design fixes (first screen, a photo of Lena, plain-font prices, lighter phone header, readable labels, shorter gaps), demo dates moving by whole weeks, today's market in "Find me at", then the public demo (personal copies, welcome page with email, every payment simulated, Learn explainers).
+- **Saltmarsh:** the design-review polish is live (Lena's portrait, plain prices, light phone header, tighter gaps, a shop button under the opening, today's market first, fairs always on Saturdays). Next: the public demo (personal copies, welcome page with email, every payment simulated, Learn explainers). Alex: the demo's opening shows what a site can be.
 - **Other sites:** Rustic Rhody's hero; True Coat's estimator picks into the email; Classic Loafs screenshot and bohdiai.com sample dates.
 - **Platform:** staging, Alex's dashboard, invites (24-hour links parked on a branch), video pricing, custom domains, analytics decision, Cloudflare cleanup with Alex (redundant Cut-Pro route, build variables, cancel Vercel and the old proxy).
 - **Maker checkup** (bohdiai.com/checkup, a maker business analysis with a fixed question bank and Haiku reactions): built on a branch, not merged.

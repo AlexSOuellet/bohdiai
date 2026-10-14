@@ -35,6 +35,8 @@ Everything else in `Project-Docs/historical/` is archive material — read only 
 
 BohdiAI is a multi-tenant AI-powered SaaS that gives makers/artisans a complete AI-generated storefront on a `[shop].bohdiai.com` subdomain in minutes. Subscription-only (one tier at launch, ~$35–$49/mo). **Never takes a cut of sales** — money flows customer → maker's own Stripe/Square; BohdiAI reads webhooks only.
 
+**Status as of Session 104 (2026-10-14):** Nothing is written into the code any more: every word a site shows, buttons and labels included, lives per site in `site_words` (all 51 sites filled, proven identical). Saltmarsh got the design-review polish and its fairs stay on Saturdays. Alex: the sites look good first; the backend screens wait. Open: the line at the top of the page has two homes (About you and the moment); talk it through with Alex before touching it.
+
 **Status as of Session 103 (2026-10-13):** The fix began. Modular Plan steps 1 (safeguards) and 2 (homes) are done, and step 3 is underway: family pages read every piece from the homes, and a copy built purely from them matches its old sample word for word. Next: the maker-backend screens for the moment, section words and the new About you pieces. The build fills every piece; the maker edits it.
 
 **Status as of Session 102 (2026-10-13):** The structure was reset. Family sites and contractor sites keep their content in one page record, so they can't use the backend or switch designs. The newer maker sites store content correctly but hardcode their headings. The work now follows `Modular-Plan.md`, and the next session starts with Alex reviewing it, then Phase 1 (safeguards). Sites are still built by hand for now, with automation added step by step, ending in same-day self-serve signup.
