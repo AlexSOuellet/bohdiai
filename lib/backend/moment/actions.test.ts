@@ -79,8 +79,8 @@ describe('every moment action', () => {
 
 describe('saveMoment', () => {
   it('saves the checked row for the acting site', async () => {
-    expect(await saveMoment({ ...EMPTY_MOMENT, headline: ' Poured by hand ' })).toEqual({ ok: true });
-    expect(db.upsert).toHaveBeenCalledWith(expect.objectContaining({ tenant_id: 't1', headline: 'Poured by hand', play_mode: 'once' }));
+    expect(await saveMoment({ ...EMPTY_MOMENT, story: [' Poured by hand '] })).toEqual({ ok: true });
+    expect(db.upsert).toHaveBeenCalledWith(expect.objectContaining({ tenant_id: 't1', story: ['Poured by hand'], play_mode: 'once' }));
     expect(revalidatePath).toHaveBeenCalledWith('/manage/moment');
   });
   it('returns the validation message without saving', async () => {

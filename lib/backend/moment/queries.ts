@@ -5,7 +5,7 @@ import type { Database } from '@/lib/database.types';
 import { momentFormFromRow, type MomentMedia, type MomentView } from './moment-form';
 
 const MOMENT_COLUMNS =
-  'kicker, headline, sub, story, cta_label, cta_target, second_cta_label, second_cta_target, play_mode, media:uploads!site_moments_media_upload_id_fkey(public_url, mime_type, alt_text), poster:uploads!site_moments_poster_upload_id_fkey(public_url)' as const;
+  'story, cta_label, cta_target, second_cta_label, second_cta_target, play_mode, media:uploads!site_moments_media_upload_id_fkey(public_url, mime_type, alt_text), poster:uploads!site_moments_poster_upload_id_fkey(public_url)' as const;
 
 type UploadRef = { public_url: string | null; mime_type?: string; alt_text?: string | null } | null;
 

@@ -1,9 +1,12 @@
 /**
- * The moment (Modular Plan step 2): the first thing a visitor sees. Its words
- * live in `site_moments`; its photo is an upload, and its extra photos (a design
+ * The moment (Modular Plan step 2): the first thing a visitor sees. Its story
+ * and buttons live in `site_moments`; its photo is an upload, and its extra photos (a design
  * that shows several) live in `site_moment_photos`. The form holds plain strings;
  * an empty field means "not set". Validation turns the form into the row and
  * names the field that needs fixing.
+ *
+ * The line above the name and the line under it are About you's (one home each);
+ * the name is the business name.
  */
 import { LINK_TARGETS, type LinkTarget } from '@/lib/archetypes/main-street/links';
 
@@ -11,11 +14,6 @@ export const PLAY_MODES = ['once', 'always', 'off'] as const;
 export type PlayMode = (typeof PLAY_MODES)[number];
 
 export type MomentForm = {
-  /** The short line above the headline. */
-  kicker: string;
-  headline: string;
-  /** One plain sentence under the headline. */
-  sub: string;
   /** The story told one line at a time before the moment settles. */
   story: string[];
   ctaLabel: string;
@@ -27,9 +25,6 @@ export type MomentForm = {
 };
 
 export type MomentRow = {
-  kicker: string | null;
-  headline: string | null;
-  sub: string | null;
   story: string[] | null;
   cta_label: string | null;
   cta_target: string | null;
@@ -38,16 +33,13 @@ export type MomentRow = {
   play_mode: string;
 };
 
-export const MOMENT_LIMITS = { kicker: 60, headline: 160, sub: 300, ctaLabel: 40, secondCtaLabel: 40 } as const;
+export const MOMENT_LIMITS = { ctaLabel: 40, secondCtaLabel: 40 } as const;
 export const STORY_LINES_MAX = 8;
 export const STORY_LINE_MAX = 120;
 /** How many extra photos the moment holds. */
 export const MOMENT_PHOTOS_LIMIT = 3;
 
 export const EMPTY_MOMENT: MomentForm = {
-  kicker: '',
-  headline: '',
-  sub: '',
   story: [],
   ctaLabel: '',
   ctaTarget: '',
@@ -57,9 +49,6 @@ export const EMPTY_MOMENT: MomentForm = {
 };
 
 const LABELS: Record<keyof typeof MOMENT_LIMITS, string> = {
-  kicker: 'The short line above the headline',
-  headline: 'The headline',
-  sub: 'The line under the headline',
   ctaLabel: 'The main button',
   secondCtaLabel: 'The second button',
 };
@@ -85,9 +74,6 @@ function button(label: string, target: string, name: string): { ok: true; target
 
 export function buildMomentRow(form: MomentForm): { ok: true; row: MomentRow } | { ok: false; error: string } {
   const t = {
-    kicker: oneLine(form.kicker),
-    headline: oneLine(form.headline),
-    sub: oneLine(form.sub),
     ctaLabel: oneLine(form.ctaLabel),
     secondCtaLabel: oneLine(form.secondCtaLabel),
   };
@@ -112,9 +98,6 @@ export function buildMomentRow(form: MomentForm): { ok: true; row: MomentRow } |
   return {
     ok: true,
     row: {
-      kicker: orNull(t.kicker),
-      headline: orNull(t.headline),
-      sub: orNull(t.sub),
       story: story.length === 0 ? null : story,
       cta_label: orNull(t.ctaLabel),
       cta_target: main.target,
@@ -129,9 +112,6 @@ export function momentFormFromRow(row: MomentRow | null): MomentForm {
   if (row === null) return EMPTY_MOMENT;
   const target = (v: string | null): LinkTarget | '' => (v !== null && isLinkTarget(v) ? v : '');
   return {
-    kicker: row.kicker ?? '',
-    headline: row.headline ?? '',
-    sub: row.sub ?? '',
     story: row.story ?? [],
     ctaLabel: row.cta_label ?? '',
     ctaTarget: target(row.cta_target),

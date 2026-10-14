@@ -8,15 +8,14 @@ describe('buildMomentRow', () => {
   it('turns empty fields into nulls and keeps the play setting', () => {
     expect(buildMomentRow(form())).toEqual({
       ok: true,
-      row: { kicker: null, headline: null, sub: null, story: null, cta_label: null, cta_target: null, second_cta_label: null, second_cta_target: null, play_mode: 'once' },
+      row: { story: null, cta_label: null, cta_target: null, second_cta_label: null, second_cta_target: null, play_mode: 'once' },
     });
   });
   it('trims every field and drops blank story lines', () => {
-    const r = buildMomentRow(form({ headline: '  Poured   by hand ', story: [' The wick ', '', ' the wax  '], ctaLabel: ' Shop ', ctaTarget: 'shop', playMode: 'always' }));
-    expect(r).toMatchObject({ ok: true, row: { headline: 'Poured by hand', story: ['The wick', 'the wax'], cta_label: 'Shop', cta_target: 'shop', play_mode: 'always' } });
+    const r = buildMomentRow(form({ story: [' The wick ', '', ' the wax  '], ctaLabel: ' Shop ', ctaTarget: 'shop', playMode: 'always' }));
+    expect(r).toMatchObject({ ok: true, row: { story: ['The wick', 'the wax'], cta_label: 'Shop', cta_target: 'shop', play_mode: 'always' } });
   });
   it('names the field that is too long', () => {
-    expect(buildMomentRow(form({ sub: 's'.repeat(301) }))).toEqual({ ok: false, error: 'The line under the headline is 301 characters. Keep it to 300.' });
     expect(buildMomentRow(form({ ctaLabel: 'c'.repeat(41), ctaTarget: 'shop' }))).toEqual({ ok: false, error: 'The main button is 41 characters. Keep it to 40.' });
   });
   it('refuses too many story lines, or one that is too long', () => {
@@ -46,7 +45,7 @@ describe('momentFormFromRow', () => {
     expect(momentFormFromRow(null)).toEqual(EMPTY_MOMENT);
   });
   it('round-trips a saved row', () => {
-    const filled = form({ kicker: 'Small batch', headline: 'Poured by hand', sub: 'Soy candles from Bristol', story: ['The wick', 'The wax'], ctaLabel: 'Shop', ctaTarget: 'shop', secondCtaLabel: 'Our story', secondCtaTarget: 'about', playMode: 'off' });
+    const filled = form({ story: ['The wick', 'The wax'], ctaLabel: 'Shop', ctaTarget: 'shop', secondCtaLabel: 'Our story', secondCtaTarget: 'about', playMode: 'off' });
     const r = buildMomentRow(filled);
     if (!r.ok) throw new Error('expected ok');
     expect(momentFormFromRow(r.row)).toEqual(filled);

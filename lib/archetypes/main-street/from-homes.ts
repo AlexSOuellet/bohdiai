@@ -1,7 +1,8 @@
 /**
  * A family page's content, assembled from the site's homes (Modular Plan step 3).
  * Every piece comes from where it lives: the moment from `site_moments`, each
- * section's words from `site_sections`, the founder and marquee from About you,
+ * section's words from `site_sections`; the line above the name, the line under
+ * it, the founder and marquee from About you; the name from the business name;
  * testimonials and market dates from their own tables. Nothing is read from the
  * page record, so a site keeps every word when it changes design.
  *
@@ -88,9 +89,9 @@ export function familyViewFromHomes(h: FamilyHomes): MainStreetView {
             alt: m.media.alt,
           },
       story: m.story,
-      eyebrow: m.kicker,
-      brand: m.headline,
-      sub: orUndefined(m.sub),
+      eyebrow: p.kicker,
+      brand: h.name,
+      sub: orUndefined(p.headline),
       playMode: m.playMode,
       collageShots: m.photos.length === 0 ? undefined : m.photos.map((x) => ({ url: x.url, alt: x.alt })),
       ctaLabel: m.ctaLabel,

@@ -24,7 +24,7 @@ const TEXT_FIELDS: { key: TextKey; label: string; hint: string; long?: boolean }
   { key: 'headline', label: 'Headline', hint: 'One sentence under your name: what you make, in your words.' },
   { key: 'aboutTitle', label: 'About heading', hint: 'The big heading over your story.' },
   { key: 'bio', label: 'Your story', hint: 'A few short paragraphs. Leave a blank line between paragraphs.', long: true },
-  { key: 'signature', label: 'Sign-off name', hint: 'The name your story is signed with, like your first name.' },
+  { key: 'signature', label: 'Sign-off name', hint: 'The name your story is signed with, like your first name. Some designs show this.' },
 ];
 
 /** The form always holds three What I make slots; blanks are dropped on save. */
