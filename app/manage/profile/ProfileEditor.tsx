@@ -3,8 +3,17 @@
 import { Fragment, useRef, useState } from 'react';
 import { unstable_rethrow } from 'next/navigation';
 import { saveProfile } from '@/lib/backend/profile/actions';
-import { buildProfileRow, MAKE_MAX, MAKES_LIMIT, PROFILE_LIMITS, type ProfileForm } from '@/lib/backend/profile/profile-form';
+import {
+  buildProfileRow,
+  MAKE_MAX,
+  MAKES_LIMIT,
+  MARQUEE_LIMIT,
+  MARQUEE_PHRASE_MAX,
+  PROFILE_LIMITS,
+  type ProfileForm,
+} from '@/lib/backend/profile/profile-form';
 import { useNotice } from '../_components/Notice';
+import { PortraitField } from './PortraitField';
 
 const FAILED = 'Something went wrong. Check your connection and try again.';
 
@@ -21,9 +30,17 @@ const TEXT_FIELDS: { key: TextKey; label: string; hint: string; long?: boolean }
 /** The form always holds three What I make slots; blanks are dropped on save. */
 const withSlots = (f: ProfileForm): ProfileForm => ({ ...f, makes: Array.from({ length: MAKES_LIMIT }, (_, i) => f.makes[i] ?? '') });
 
+/** Marquee boxes: the phrases typed so far plus one empty box, up to the limit. */
+export function marqueeSlots(phrases: readonly string[]): string[] {
+  const kept = [...phrases];
+  while (kept.length > 0 && kept[kept.length - 1] === '') kept.pop();
+  return kept.length < MARQUEE_LIMIT ? [...kept, ''] : kept.slice(0, MARQUEE_LIMIT);
+}
+
 /** About you: the words on the business card and how people reach the owner. One
- *  form, one Save; every failure lands in the notice at the top. */
-export function ProfileEditor({ initial, siteUrl }: { initial: ProfileForm; siteUrl: string }): React.ReactElement {
+ *  form, one Save (the portrait saves on its own); every failure lands in the
+ *  notice at the top. */
+export function ProfileEditor({ initial, portraitUrl, siteUrl }: { initial: ProfileForm; portraitUrl: string | null; siteUrl: string }): React.ReactElement {
   const [form, setForm] = useState(() => withSlots(initial));
   const [saved, setSaved] = useState(() => withSlots(initial));
   const [busy, setBusy] = useState(false);
@@ -37,6 +54,12 @@ export function ProfileEditor({ initial, siteUrl }: { initial: ProfileForm; site
   };
 
   const setMake = (i: number, value: string): void => update({ makes: form.makes.map((m, j) => (j === i ? value : m)) });
+  const marquee = marqueeSlots(form.marqueePhrases);
+  const setPhrase = (i: number, value: string): void => {
+    const next = marquee.map((m, j) => (j === i ? value : m));
+    while (next.length > 0 && next[next.length - 1] === '') next.pop();
+    update({ marqueePhrases: next });
+  };
 
   async function save(): Promise<void> {
     if (inFlight.current) return;
@@ -113,6 +136,43 @@ export function ProfileEditor({ initial, siteUrl }: { initial: ProfileForm; site
               </Fragment>
             );
           })}
+        </section>
+
+        <section className="bk-section" aria-labelledby="s-quote">
+          <h2 id="s-quote" className="bk-section-title">In your words</h2>
+          <p className="bk-note">A line in your own voice, with your photo beside it. Some designs show this.</p>
+          <div className="bk-field">
+            <label htmlFor="p-quote" className="bk-label">
+              Your quote
+            </label>
+            <textarea id="p-quote" className="bk-input bk-textarea" aria-describedby="p-quote-hint" value={form.quote} onChange={(e) => update({ quote: e.target.value })} />
+            <p id="p-quote-hint" className="bk-note">
+              Something you’d say about your work. {form.quote.length}/{PROFILE_LIMITS.quote}
+            </p>
+          </div>
+          <div className="bk-field">
+            <label htmlFor="p-quoteAttribution" className="bk-label">
+              Who it’s from
+            </label>
+            <input id="p-quoteAttribution" className="bk-input" aria-describedby="p-quoteAttribution-hint" value={form.quoteAttribution} onChange={(e) => update({ quoteAttribution: e.target.value })} />
+            <p id="p-quoteAttribution-hint" className="bk-note">
+              Your name, and a word about you if you like. {form.quoteAttribution.length}/{PROFILE_LIMITS.quoteAttribution}
+            </p>
+          </div>
+          <PortraitField initialUrl={portraitUrl} notice={notice} />
+        </section>
+
+        <section className="bk-section" aria-labelledby="s-marquee">
+          <h2 id="s-marquee" className="bk-section-title">Marquee</h2>
+          <fieldset className="bk-field" aria-describedby="p-marquee-hint">
+            <legend className="bk-label">Marquee phrases</legend>
+            {marquee.map((m, i) => (
+              <input key={i} id={`p-marquee-${i}`} className="bk-input" aria-label={`Marquee phrase ${i + 1}`} maxLength={MARQUEE_PHRASE_MAX} value={m} onChange={(e) => setPhrase(i, e.target.value)} />
+            ))}
+            <p id="p-marquee-hint" className="bk-note">
+              Short phrases that scroll across your site, in this order. Up to {MARQUEE_LIMIT}, {MARQUEE_PHRASE_MAX} characters each. A new box appears as you fill the last one; clear a box to drop it. Some designs show this.
+            </p>
+          </fieldset>
         </section>
 
         <section className="bk-section" aria-labelledby="s-reach">

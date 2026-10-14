@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { requireActingSite } from '@/lib/backend/current-site';
 import { getSiteFeatures } from '@/lib/backend/site-features';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
-import { getProfileForm } from '@/lib/backend/profile/queries';
+import { getPortraitUrl, getProfileForm } from '@/lib/backend/profile/queries';
 import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
 import { ProfileEditor } from './ProfileEditor';
 
@@ -13,6 +13,7 @@ export default async function ProfilePage(): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
   if (!on.has('profile')) notFound();
-  const initial = await getProfileForm(await createSupabaseServerClient(), site.tenantId);
-  return <ProfileEditor initial={initial} siteUrl={storefrontOrigin(site.subdomain, (await headers()).get('host'))} />;
+  const db = await createSupabaseServerClient();
+  const [initial, portraitUrl] = await Promise.all([getProfileForm(db, site.tenantId), getPortraitUrl(db, site.tenantId)]);
+  return <ProfileEditor initial={initial} portraitUrl={portraitUrl} siteUrl={storefrontOrigin(site.subdomain, (await headers()).get('host'))} />;
 }
