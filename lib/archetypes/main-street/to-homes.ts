@@ -44,6 +44,9 @@ export function homesFromLegacy(c: MainStreetView): LegacyHomes {
   const m = c.moment;
   const momentForm: MomentForm = {
     ...EMPTY_MOMENT,
+    kicker: m.eyebrow,
+    headline: m.brand,
+    sub: opt(m.sub),
     story: m.story,
     ctaLabel: m.ctaLabel,
     ctaTarget: m.ctaTarget ?? (m.ctaLabel === '' ? '' : 'shop'),
@@ -71,8 +74,6 @@ export function homesFromLegacy(c: MainStreetView): LegacyHomes {
 
   const profile = buildProfileRow({
     ...EMPTY_PROFILE,
-    kicker: m.eyebrow,
-    headline: opt(m.sub),
     bio: (c.about?.story ?? []).join('\n\n'),
     quote: f.quote,
     quoteAttribution: f.attribution,

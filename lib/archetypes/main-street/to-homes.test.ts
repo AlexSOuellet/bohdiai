@@ -56,7 +56,7 @@ describe('homesFromLegacy', () => {
   const h = homesFromLegacy(legacy);
 
   it('sorts the moment into its home, with its media as addresses', () => {
-    expect(h.moment).toMatchObject({ story: ['Light that lingers', 'Poured in small batches'], cta_label: 'Shop the candles', cta_target: 'shop', second_cta_target: 'about', play_mode: 'once' });
+    expect(h.moment).toMatchObject({ kicker: 'Hand-poured in Rhode Island', headline: 'Aurora Candles', story: ['Light that lingers', 'Poured in small batches'], cta_label: 'Shop the candles', cta_target: 'shop', second_cta_target: 'about', play_mode: 'once' });
     expect(h.momentMediaUrl).toBe('https://cdn/hero/clip.mp4');
     expect(h.momentPosterUrl).toBe('https://cdn/hero/poster.jpg');
     expect(h.momentPhotoUrls).toEqual([{ url: 'https://cdn/c1.jpg', alt: 'Shelf' }]);
@@ -70,8 +70,8 @@ describe('homesFromLegacy', () => {
     expect(h.sections.contact).toMatchObject({ title: 'Say hello', lede: 'Questions about a scent? Write any time.' });
   });
 
-  it('puts the lines around the name, story, quote and marquee in About you, and the portrait aside', () => {
-    expect(h.profile).toMatchObject({ kicker: 'Hand-poured in Rhode Island', headline: 'Soy candles that burn clean and slow', bio: 'It started in my kitchen.\n\nNow it fills a barn.', quote: 'Every candle starts with a memory.', quote_attribution: 'June, founder of Aurora', marquee_phrases: ['Small batch', 'Clean burn', 'Made in RI'] });
+  it('puts the story, quote and marquee in About you, and the portrait aside', () => {
+    expect(h.profile).toMatchObject({ bio: 'It started in my kitchen.\n\nNow it fills a barn.', quote: 'Every candle starts with a memory.', quote_attribution: 'June, founder of Aurora', marquee_phrases: ['Small batch', 'Clean burn', 'Made in RI'] });
     expect(h.portraitUrl).toBe('https://cdn/portrait.jpg');
   });
 
@@ -103,8 +103,7 @@ describe('homesFromLegacy', () => {
   });
 
   it('refuses words that don’t fit a home rather than cutting them', () => {
-    expect(() => homesFromLegacy({ ...legacy, moment: { ...legacy.moment, eyebrow: 'x'.repeat(61) } })).toThrow('About you doesn’t fit');
-    expect(() => homesFromLegacy({ ...legacy, moment: { ...legacy.moment, ctaLabel: 'x'.repeat(41) } })).toThrow('The moment’s words don’t fit');
+    expect(() => homesFromLegacy({ ...legacy, moment: { ...legacy.moment, eyebrow: 'x'.repeat(61) } })).toThrow('The moment’s words don’t fit');
     expect(() => homesFromLegacy({ ...legacy, goods: { title: 'x'.repeat(161) } })).toThrow('The work section’s words don’t fit');
     expect(() => homesFromLegacy({ ...legacy, founder: { ...legacy.founder, quote: 'q'.repeat(601) } })).toThrow('About you doesn’t fit');
   });

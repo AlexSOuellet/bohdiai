@@ -10,7 +10,7 @@ const loaders = vi.hoisted(() => ({
   dates: vi.fn(),
 }));
 vi.mock('@/lib/backend/features', () => ({ loadSiteFeatures: async () => loaders.features }));
-vi.mock('@/lib/backend/moment/queries', () => ({ getMoment: async () => ({ ...EMPTY_MOMENT, story: ['Poured by hand'], media: null, photos: [] }) }));
+vi.mock('@/lib/backend/moment/queries', () => ({ getMoment: async () => ({ ...EMPTY_MOMENT, headline: 'Poured by hand', media: null, photos: [] }) }));
 vi.mock('@/lib/backend/sections/queries', () => ({ getSiteSections: async () => sections({ work: { title: 'Fresh off the shelf' } }) }));
 vi.mock('@/lib/backend/profile/queries', () => ({ getProfileForm: async () => EMPTY_PROFILE, getPortraitUrl: async () => null }));
 vi.mock('@/lib/backend/testimonials/queries', () => ({ listTestimonials: loaders.testimonials }));
@@ -43,7 +43,7 @@ describe('familyViewFromHomes', () => {
       ...empty,
       sellsOnline: true,
       moment: {
-        ...EMPTY_MOMENT, story: ['The wick', 'The wax'],
+        ...EMPTY_MOMENT, kicker: 'Small batch', headline: 'Poured by hand', sub: 'Soy candles', story: ['The wick', 'The wax'],
         ctaLabel: 'Shop', ctaTarget: 'shop', secondCtaLabel: 'Our story', secondCtaTarget: 'about', playMode: 'always',
         media: { kind: 'video', url: 'https://cdn/m.mp4', alt: 'A flame', posterUrl: 'https://cdn/p.webp' },
         photos: [{ id: 'p1', url: 'https://cdn/1.webp', alt: 'One' }],
@@ -57,7 +57,7 @@ describe('familyViewFromHomes', () => {
         close: { kicker: 'Come by', title: 'Light one tonight', moreLabel: 'Shop candles', moreTarget: 'shop' },
         contact: { title: 'Say hello', lede: 'Write any time.' },
       }),
-      profile: { ...EMPTY_PROFILE, kicker: 'Small batch', headline: 'Soy candles', bio: 'It started in a kitchen.\n\nNow it’s a shop.', quote: 'Every candle is a small fire.', quoteAttribution: 'June', marqueePhrases: ['Small batch', 'Soy wax'] },
+      profile: { ...EMPTY_PROFILE, bio: 'It started in a kitchen.\n\nNow it’s a shop.', quote: 'Every candle is a small fire.', quoteAttribution: 'June', marqueePhrases: ['Small batch', 'Soy wax'] },
       portraitUrl: 'https://cdn/me.webp',
       testimonials: [{ id: 't1', quote: 'Smells like home', name: 'Ann', detail: 'Providence' }, { id: 't2', quote: 'Lovely', name: 'Bo', detail: '' }],
       dates: [market()],
@@ -66,7 +66,7 @@ describe('familyViewFromHomes', () => {
     expect(v.identity).toEqual({ wordmark: 'Ember Candle Co', sellsOnline: true });
     expect(v.moment).toEqual({
       media: { kind: 'video', url: 'https://cdn/m.mp4', poster: 'https://cdn/p.webp', alt: 'A flame' },
-      story: ['The wick', 'The wax'], eyebrow: 'Small batch', brand: 'Ember Candle Co', sub: 'Soy candles', playMode: 'always',
+      story: ['The wick', 'The wax'], eyebrow: 'Small batch', brand: 'Poured by hand', sub: 'Soy candles', playMode: 'always',
       collageShots: [{ url: 'https://cdn/1.webp', alt: 'One' }],
       ctaLabel: 'Shop', ctaTarget: 'shop', secondaryCtaLabel: 'Our story', secondaryCtaTarget: 'about',
     });
@@ -90,7 +90,7 @@ describe('familyViewFromHomes', () => {
   it('leaves what the site hasn’t filled empty, inventing nothing', () => {
     const v = familyViewFromHomes(empty);
     expect(v.moment.media).toEqual({ kind: 'still', alt: '' });
-    expect(v.moment).toMatchObject({ story: [], eyebrow: '', brand: 'Ember Candle Co', sub: undefined, collageShots: undefined, ctaLabel: '', ctaTarget: undefined });
+    expect(v.moment).toMatchObject({ story: [], eyebrow: '', brand: '', sub: undefined, collageShots: undefined, ctaLabel: '', ctaTarget: undefined });
     expect(v.goods).toEqual({ title: '', label: undefined, viewAllLabel: undefined });
     expect(v.reviews).toBeUndefined();
     expect(v.marquee).toBeUndefined();
@@ -147,7 +147,7 @@ describe('loadFamilyHomes', () => {
   it('reads every home, leaving switched-off testimonials and dates out', async () => {
     const h = await loadFamilyHomes(db({ data: { business_name: 'Ember' }, error: null }), 't1');
     expect(h).toMatchObject({ name: 'Ember', sellsOnline: false, testimonials: [], dates: [], portraitUrl: null });
-    expect(h.moment.story).toEqual(['Poured by hand']);
+    expect(h.moment.headline).toBe('Poured by hand');
     expect(h.sections.work.title).toBe('Fresh off the shelf');
     expect(loaders.testimonials).not.toHaveBeenCalled();
     expect(loaders.dates).not.toHaveBeenCalled();

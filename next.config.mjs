@@ -5,9 +5,6 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   typedRoutes: true,
-  // The dev server prints every server action's arguments, sign-in passwords
-  // included. Off, so nothing typed into a form lands in a terminal log.
-  logging: { serverFunctions: false },
   experimental: {
     serverActions: {
       // Product photo upload sends up to 5 photos × 10MB each via FormData

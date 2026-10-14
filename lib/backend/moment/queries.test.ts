@@ -20,7 +20,7 @@ function fakeDb(moment: Result, photos: Result) {
 }
 
 const row = {
-  story: ['The wick'], cta_label: 'Shop', cta_target: 'shop',
+  kicker: 'Small batch', headline: 'Poured by hand', sub: null, story: ['The wick'], cta_label: 'Shop', cta_target: 'shop',
   second_cta_label: null, second_cta_target: null, play_mode: 'always',
   media: { public_url: 'https://cdn/m.webp', mime_type: 'image/webp', alt_text: 'Candles' }, poster: null,
 };
@@ -33,7 +33,7 @@ describe('getMoment', () => {
       { id: 'p3', uploads: { public_url: 'https://cdn/3.webp', alt_text: null } },
     ];
     const m = await getMoment(fakeDb({ data: row, error: null }, { data: photos, error: null }), 't1');
-    expect(m).toMatchObject({ story: ['The wick'], ctaTarget: 'shop', playMode: 'always' });
+    expect(m).toMatchObject({ headline: 'Poured by hand', story: ['The wick'], ctaTarget: 'shop', playMode: 'always' });
     expect(m.media).toEqual({ kind: 'image', url: 'https://cdn/m.webp', alt: 'Candles', posterUrl: '' });
     expect(m.photos).toEqual([{ id: 'p1', url: 'https://cdn/1.webp', alt: 'One' }, { id: 'p3', url: 'https://cdn/3.webp', alt: '' }]);
   });
