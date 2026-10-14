@@ -2315,6 +2315,35 @@ export type Database = {
           },
         ]
       }
+      site_words: {
+        Row: {
+          key: string
+          tenant_id: string
+          text: string
+          updated_at: string
+        }
+        Insert: {
+          key: string
+          tenant_id: string
+          text: string
+          updated_at?: string
+        }
+        Update: {
+          key?: string
+          tenant_id?: string
+          text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_words_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_drafts: {
         Row: {
           layout_tree: Json
