@@ -34,7 +34,7 @@ export type { CollectionView } from '../content';
 
 /** The six collections treatments, as a tuple — the single source the schema enum
  *  and the authoring menu both read so they can never drift apart. */
-export const COLLECTIONS_TREATMENTS = ['cupboard', 'crates', 'portals', 'chapters', 'lanes', 'cascade'] as const;
+export const COLLECTIONS_TREATMENTS = ['cupboard', 'crates', 'portals', 'chapters', 'lanes', 'cascade', 'drawers'] as const;
 export type CollectionsTreatment = (typeof COLLECTIONS_TREATMENTS)[number];
 
 /** One-line purpose for each treatment, shown to Bohdi so he picks the one that
@@ -46,6 +46,7 @@ export const COLLECTIONS_TREATMENT_MENU: Record<CollectionsTreatment, string> = 
   chapters: 'a couture lookbook contents page — roman numerals, gold hairlines, generous air, one refined plate per chapter; elegant',
   lanes: 'full-width candy-colored bands with a punched circular cover — bold, blocky, color-positive; the store that smiles back',
   cascade: 'a diagonal of overlapping covers stepping across the band — image-forward and minimal; not rows, columns, or a grid',
+  drawers: 'a specimen cabinet — each collection a wooden drawer with a brass label holder and a knob, its cover peeking out above; curious and collected',
 };
 
 /**

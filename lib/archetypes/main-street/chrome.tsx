@@ -17,6 +17,7 @@ import { MainStreetMobileNav, type MobileNavItem } from './MobileNav';
 import { CartCount } from '@/lib/storefront/CartControls';
 import { IntroReplayLink } from './IntroReplayLink';
 import { Type } from './Type';
+import { VINTAGE_CSS } from './vintage-styles';
 import type { FamilyWords } from './words';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 import { relativeLuminance } from './logo-contrast';
@@ -401,6 +402,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-mq-run{display:flex;align-items:center;flex:0 0 auto}
     .arch-main-street .ms-mq-cell{display:inline-flex;align-items:center;flex:0 0 auto}
     .arch-main-street .ms-mq-item{white-space:nowrap;padding:0 30px;line-height:1}
+    .arch-main-street .ms-mq-item[data-type]{max-width:none}
     .arch-main-street .ms-mq-sep{white-space:nowrap;opacity:.5;line-height:1}
     @media(prefers-reduced-motion:reduce){.arch-main-street .ms-mq-track{animation:none}}
     /* goods switcher — image cross-fades as you point down the list */
@@ -1249,7 +1251,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-marq-desc{color:var(--ms-fg-muted);margin:0}
     /* close — the big-type sign-off at the bottom of the home. */
     .arch-main-street .ms-close-section{padding:130px 40px;text-align:center}
-    .arch-main-street .ms-close-eyebrow{color:var(--ms-accent);display:block;margin-bottom:22px}
+    .arch-main-street .ms-close-eyebrow{color:var(--ms-accent);display:block;margin:0 auto 22px}
     .arch-main-street .ms-close-head{color:var(--ms-fg);max-width:16ch;margin:0 auto 36px}
     .arch-main-street .ms-close-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:18px 34px;border-radius:2px;display:inline-block;max-width:36ch;white-space:normal;overflow:visible;text-overflow:clip;text-align:center}
     /* ══════════════════════════════════════════════════════════════════════
@@ -1490,6 +1492,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     }
     .arch-main-street .ms-subs-desc{color:var(--ms-fg-muted);margin:0 0 16px}
     .arch-main-street .ms-subs-cue{color:var(--ms-accent)}
+    ${VINTAGE_CSS}
   `;
 }
 

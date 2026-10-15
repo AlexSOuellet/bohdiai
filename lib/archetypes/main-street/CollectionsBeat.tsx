@@ -18,6 +18,7 @@ import {
   sampleCollections,
 } from './collections';
 import { CollectionsCupboard } from './CollectionsCupboard';
+import { CollectionsDrawers } from './VintagePieces';
 import { CollectionsCrates } from './CollectionsCrates';
 import { CollectionsPortals } from './CollectionsPortals';
 import { CollectionsChapters } from './CollectionsChapters';
@@ -66,6 +67,8 @@ export function CollectionsBeat({
       return <CollectionsLanes {...props} />;
     case 'cascade':
       return <CollectionsCascade {...props} />;
+    case 'drawers':
+      return <CollectionsDrawers {...props} />;
     case 'cupboard':
     default:
       return <CollectionsCupboard {...props} />;

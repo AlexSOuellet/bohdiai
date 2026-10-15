@@ -389,20 +389,21 @@ const MODERN: Family = {
 };
 
 /** Vintage (Alex, 2026-10-15; inspired by decoupage): old paper and ornament, a
- *  look any maker can pick that suits one-of-a-kind pieces especially well. Built
- *  from section styles no other family uses: the catalog-cover opening, the
- *  lookbook (each piece a spread with room for its story), and the maker's quote. */
+ *  look any maker can pick that suits one-of-a-kind pieces especially well. The
+ *  whole page is a Victorian scrapbook album, with section styles of its own: the
+ *  trade-card opening, the scrapbook page of pieces, the cabinet-card about, the
+ *  specimen drawers, the ticket stubs and the postcards. */
 const VINTAGE: Family = {
   key: 'vintage',
   publicMoodLabel: REFERENCE_LABELS.moods.labels.vintage,
   sectionDefaults: {
-    hero: 'editorial-cover',
-    goods: 'lookbook',
-    collections: 'cupboard',
-    reviews: 'guestbook',
-    founder: 'quote',
+    hero: 'trade-card',
+    goods: 'scrapbook',
+    collections: 'drawers',
+    reviews: 'postcards',
+    founder: 'cabinet-card',
     nav: 'standard',
-    findUs: 'poster',
+    findUs: 'tickets',
   },
   sectionStack: [
     on('hero'),

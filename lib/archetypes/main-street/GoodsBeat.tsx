@@ -20,6 +20,7 @@ import { GoodsModule } from './GoodsModule';
 import { GoodsTable } from './GoodsTable';
 import { GoodsIndex } from './GoodsIndex';
 import { GoodsLookbook } from './GoodsLookbook';
+import { GoodsScrapbook } from './GoodsScrapbook';
 import { GoodsSwitcher } from './GoodsSwitcher';
 import { GoodsSlideshow } from './GoodsSlideshow';
 import { Reveal } from './Reveal';
@@ -97,6 +98,8 @@ export function GoodsBeat({
       <GoodsSlideshow goods={goods} products={sample} skin={skin} words={words} viewAll={viewAll} />
     ) : chosen === 'index' ? (
       <GoodsIndex goods={goods} products={sample} skin={skin} words={words} viewAll={viewAll} />
+    ) : chosen === 'scrapbook' ? (
+      <GoodsScrapbook goods={goods} products={sample} skin={skin} words={words} viewAll={viewAll} />
     ) : chosen === 'lookbook' ? (
       <GoodsLookbook goods={goods} products={sample} skin={skin} words={words} viewAll={viewAll} />
     ) : (

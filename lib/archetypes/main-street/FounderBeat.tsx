@@ -19,6 +19,7 @@ import {
   FounderSignature,
   type FounderAbout,
 } from './FounderBeats';
+import { FounderCabinet } from './VintagePieces';
 import type { FamilyWords } from './words';
 
 export function FounderBeat({
@@ -65,6 +66,8 @@ export function FounderBeat({
       return <FounderEditorial founder={founder} skin={skin} about={about} aboutPage={aboutPage} />;
     case 'signature':
       return <FounderSignature founder={founder} skin={skin} about={about} />;
+    case 'cabinet-card':
+      return <FounderCabinet founder={founder} skin={skin} about={about} />;
     default:
       return <FounderQuote founder={founder} skin={skin} about={about} />;
   }

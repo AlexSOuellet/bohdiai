@@ -75,7 +75,7 @@ function resolveTreatments(mood: string | null | undefined, previews: {
   };
 }
 
-const HERO_KEYS: readonly HeroVariantKey[] = ['story', 'split', 'split-left', 'stacked', 'typographic', 'floating-card', 'editorial-cover', 'collage'];
+const HERO_KEYS: readonly HeroVariantKey[] = ['story', 'split', 'split-left', 'stacked', 'typographic', 'floating-card', 'editorial-cover', 'collage', 'trade-card'];
 function asHeroVariant(v?: string): HeroVariantKey | undefined {
   return (HERO_KEYS as readonly string[]).includes(v ?? '') ? (v as HeroVariantKey) : undefined;
 }

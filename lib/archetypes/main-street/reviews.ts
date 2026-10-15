@@ -28,7 +28,7 @@
 
 /** The four reviews treatments, as a tuple — the single source the schema enum and
  *  the authoring menu both read so they can never drift apart. */
-export const REVIEWS_TREATMENTS = ['rating', 'pull-quote', 'guestbook', 'texts'] as const;
+export const REVIEWS_TREATMENTS = ['rating', 'pull-quote', 'guestbook', 'texts', 'postcards'] as const;
 export type ReviewsTreatment = (typeof REVIEWS_TREATMENTS)[number];
 
 /** One-line purpose for each treatment, shown to Bohdi so he picks the one that
@@ -42,6 +42,8 @@ export const REVIEWS_TREATMENT_MENU: Record<ReviewsTreatment, string> = {
     'testimonials as pinned paper slips scattered on a surface, hand-placed and slightly rotated — a warm wall of thank-you notes',
   texts:
     'testimonials as the real messages customers sent — chat bubbles with names and timestamps; authentic and human',
+  postcards:
+    'testimonials as old postcards — the words on the message side, a stamp and a postmark in the corner, signed where the address goes',
 };
 
 /**
