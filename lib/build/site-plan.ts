@@ -1,0 +1,306 @@
+/**
+ * The one builder (Modular Plan 4b, Session 105): every new site is one content
+ * file plus its family and skin. This half is pure: it checks a site's content
+ * file and lays out exactly what goes in each home (rows, and which photos fill
+ * which spot), so nothing is written unless the whole site is right. The script
+ * (scripts/build-site.ts) uploads the photos and writes the rows.
+ *
+ * Every word the site shows comes in the content file: the words for its design's
+ * spots and the shop's spots, all of them, none left blank, none unknown.
+ */
+import { FAMILY_KEYS, FAMILIES, type FamilyKey } from '@/lib/archetypes/main-street/families';
+import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from '@/lib/archetypes/main-street/words';
+import { CARD_WORD_SPOTS, CARD_WORDS_PREFIX } from '@/lib/archetypes/card/words';
+import { cardSkinKey } from '@/lib/archetypes/card/paint';
+import { MAIN_STREET_SKINS } from '@/lib/archetypes/main-street/skins';
+import { SHOP_WORD_SPOTS, SHOP_WORDS_PREFIX } from '@/lib/storefront/words';
+import { wordKeys } from '@/lib/site-words/words';
+import { buildProfileRow, type ProfileForm, type ProfileRow } from '@/lib/backend/profile/profile-form';
+import { buildMomentRow, MOMENT_PHOTOS_LIMIT, type MomentForm, type MomentRow } from '@/lib/backend/moment/moment-form';
+import { buildSectionRow, EMPTY_SECTION, SECTION_KEYS, type SectionKey, type SectionRow, type SectionWords } from '@/lib/backend/sections/sections-form';
+import { buildTestimonialRow, TESTIMONIALS_LIMIT, type TestimonialRow } from '@/lib/backend/testimonials/testimonial-form';
+import { buildDateRow, DATES_LIMIT, type MarketDateForm, type MarketDateRow } from '@/lib/backend/dates/dates-form';
+import { CAPTION_MAX, GALLERY_LIMIT } from '@/lib/backend/gallery/gallery-form';
+import { MAX_PHOTOS } from '@/lib/backend/catalog/product-form';
+import { isSitePlan, type SitePlan } from '@/lib/backend/plan/plan';
+
+/** Which design a site is built on: one of the families, or (until they become
+ *  the Scenic and Spotlight families) the shoreline or show reel page. */
+export const BUILD_DESIGNS = ['family', 'shoreline', 'showreel'] as const;
+export type BuildDesign = (typeof BUILD_DESIGNS)[number];
+
+/** A photo from the build's media folder, and what it shows. */
+export type PhotoFile = { file: string; alt: string };
+
+export type ProductFile = {
+  name: string;
+  /** Left out: made from the name. */
+  slug?: string;
+  /** In cents; null is "Ask for price". */
+  priceCents: number | null;
+  description: string;
+  short?: string;
+  /** First is the main photo. */
+  photos: PhotoFile[];
+  /** How many she has; left out, one. */
+  stock?: number;
+  onHome?: boolean;
+  isNew?: boolean;
+  /** Slugs of the collections it's in. */
+  collections?: string[];
+};
+
+export type MarketFile = MarketDateForm & { hours?: string; address?: string; booth?: string; url?: string };
+
+/** A site's content file. */
+export type SiteFile = {
+  site: {
+    subdomain: string;
+    businessName: string;
+    design: BuildDesign;
+    family: FamilyKey;
+    skin: string;
+    plan: SitePlan;
+    /** Where the contact form and orders go. */
+    contactEmail?: string;
+    /** Her craft, a niche slug ("candles"): it names the site in search results. */
+    niche?: string;
+  };
+  profile: ProfileForm;
+  portrait?: PhotoFile;
+  /** The family's opening (families only). */
+  moment?: MomentForm & { media?: PhotoFile & { kind: 'image' | 'video' }; poster?: PhotoFile; photos?: PhotoFile[] };
+  /** Each family section's words (families only); a section left out is empty. */
+  sections?: Partial<Record<SectionKey, Partial<SectionWords>>>;
+  gallery?: { file: string; caption: string }[];
+  collections?: { slug: string; name: string; description?: string }[];
+  products?: ProductFile[];
+  markets?: MarketFile[];
+  testimonials?: { quote: string; name: string; detail?: string }[];
+  /** Every word the site shows, by spot ("family.cart.send" → "Send my order"). */
+  words: Readonly<Record<string, string>>;
+};
+
+export type ProductPlan = {
+  slug: string;
+  name: string;
+  short: string | null;
+  description: string;
+  priceCents: number | null;
+  stock: number;
+  onHome: boolean;
+  isNew: boolean;
+  photos: PhotoFile[];
+  collections: string[];
+};
+
+export type MarketPlan = MarketDateRow & { hours: string | null; address: string | null; booth: string | null; url: string | null };
+
+/** Everything the site is, home by home, ready to write. */
+export type SitePlanned = {
+  subdomain: string;
+  businessName: string;
+  contactEmail: string | null;
+  niche: string | null;
+  plan: SitePlan;
+  /** The page record: settings only (which design, which family and skin). */
+  pageRoot: Record<string, unknown>;
+  /** Switches the content decides, beyond the plan's own. */
+  features: { key: string; enabled: boolean }[];
+  profile: ProfileRow;
+  portrait: PhotoFile | null;
+  moment: { row: MomentRow; media: (PhotoFile & { kind: 'image' | 'video' }) | null; poster: PhotoFile | null; photos: PhotoFile[] } | null;
+  sections: { section: SectionKey; row: SectionRow }[];
+  gallery: { photo: PhotoFile; caption: string | null }[];
+  collections: { slug: string; name: string; description: string | null }[];
+  products: ProductPlan[];
+  markets: MarketPlan[];
+  testimonials: TestimonialRow[];
+  words: { key: string; text: string }[];
+  /** Every photo the site uses, once each, for the upload step. */
+  files: string[];
+};
+
+export type PlanResult = { ok: true; plan: SitePlanned } | { ok: false; errors: string[] };
+
+const SUBDOMAIN = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/;
+const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const PHOTO = /\.(webp|jpe?g|png)$/i;
+const VIDEO = /\.(mp4|webm)$/i;
+
+/** A slug from a name: "Tide & Pine candle" → "tide-pine-candle". */
+export function slugOf(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+/** Every spot the design shows a word in: its own spots and the shop's. */
+export function designWordKeys(design: BuildDesign): string[] {
+  const own = design === 'family' ? wordKeys(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX) : wordKeys(CARD_WORD_SPOTS, CARD_WORDS_PREFIX);
+  return [...own, ...wordKeys(SHOP_WORD_SPOTS, SHOP_WORDS_PREFIX)];
+}
+
+/** True when the skin is one of the family's skins (its moods include the family's public word). */
+function skinFits(family: FamilyKey, skin: string): boolean {
+  if (MAIN_STREET_SKINS[skin] === undefined) return false;
+  return cardSkinKey(FAMILIES[family], skin) === skin;
+}
+
+function sectionWords(partial: Partial<SectionWords> | undefined): SectionWords {
+  return { ...EMPTY_SECTION, ...(partial ?? {}) };
+}
+
+/** Checks a site's content file and lays out what goes in each home. Every
+ *  problem is listed at once; nothing is half-built. */
+export function planSite(f: SiteFile): PlanResult {
+  const errors: string[] = [];
+  const s = f.site;
+  if (!SUBDOMAIN.test(s.subdomain)) errors.push(`site: "${s.subdomain}" isn't a valid subdomain`);
+  if (s.businessName.trim() === '') errors.push('site: the business name is empty');
+  if (!(BUILD_DESIGNS as readonly string[]).includes(s.design)) errors.push(`site: unknown design "${s.design}"`);
+  if (!(FAMILY_KEYS as readonly string[]).includes(s.family)) errors.push(`site: unknown family "${s.family}"`);
+  else if (!skinFits(s.family, s.skin)) errors.push(`site: the skin "${s.skin}" isn't one of the ${s.family} family's skins`);
+  if (!isSitePlan(s.plan)) errors.push(`site: unknown plan "${s.plan}"`);
+  if (s.niche !== undefined && !SLUG.test(s.niche)) errors.push(`site: "${s.niche}" isn't a niche slug`);
+  const family = s.design === 'family';
+
+  // About you.
+  const profile = buildProfileRow(f.profile);
+  if (!profile.ok) errors.push(`profile: ${profile.error}`);
+
+  // The opening and the section words belong to the families.
+  let moment: SitePlanned['moment'] = null;
+  if (family) {
+    if (f.moment === undefined) errors.push('moment: a family site needs its opening');
+    else {
+      const built = buildMomentRow(f.moment);
+      if (!built.ok) errors.push(`moment: ${built.error}`);
+      const photos = f.moment.photos ?? [];
+      if (photos.length > MOMENT_PHOTOS_LIMIT) errors.push(`moment: at most ${MOMENT_PHOTOS_LIMIT} extra photos (got ${photos.length})`);
+      const media = f.moment.media ?? null;
+      if (media !== null && !(media.kind === 'video' ? VIDEO : PHOTO).test(media.file)) errors.push(`moment: "${media.file}" isn't a ${media.kind === 'video' ? 'video' : 'photo'}`);
+      if (built.ok) moment = { row: built.row, media, poster: f.moment.poster ?? null, photos };
+    }
+  } else {
+    if (f.moment !== undefined) errors.push(`moment: the ${s.design} design has no opening of its own (its top line is in About you)`);
+    if (f.sections !== undefined) errors.push(`sections: the ${s.design} design reads its headings from its words`);
+  }
+  const sections: SitePlanned['sections'] = [];
+  for (const key of Object.keys(f.sections ?? {})) {
+    if (!(SECTION_KEYS as readonly string[]).includes(key)) errors.push(`sections: unknown section "${key}"`);
+  }
+  if (family) {
+    for (const key of SECTION_KEYS) {
+      const built = buildSectionRow(sectionWords(f.sections?.[key]));
+      if (!built.ok) errors.push(`sections.${key}: ${built.error}`);
+      else sections.push({ section: key, row: built.row });
+    }
+  }
+
+  // Gallery.
+  const gallery = (f.gallery ?? []).map((g) => ({ photo: { file: g.file, alt: g.caption }, caption: g.caption.trim() === '' ? null : g.caption.trim() }));
+  if (gallery.length > GALLERY_LIMIT) errors.push(`gallery: at most ${GALLERY_LIMIT} photos (got ${gallery.length})`);
+  for (const g of f.gallery ?? []) if (g.caption.length > CAPTION_MAX) errors.push(`gallery: caption over ${CAPTION_MAX} characters: ${g.file}`);
+
+  // Collections and products.
+  const collections = (f.collections ?? []).map((c) => ({ slug: c.slug, name: c.name.trim(), description: c.description?.trim() || null }));
+  const colSlugs = new Set<string>();
+  for (const c of collections) {
+    if (!SLUG.test(c.slug)) errors.push(`collections: "${c.slug}" isn't a valid slug`);
+    if (colSlugs.has(c.slug)) errors.push(`collections: "${c.slug}" is listed twice`);
+    if (c.name === '') errors.push(`collections: "${c.slug}" has no name`);
+    colSlugs.add(c.slug);
+  }
+  const productSlugs = new Set<string>();
+  const products: ProductPlan[] = (f.products ?? []).map((p) => {
+    const slug = p.slug ?? slugOf(p.name);
+    if (p.name.trim() === '') errors.push('products: a piece has no name');
+    if (!SLUG.test(slug)) errors.push(`products: "${slug}" isn't a valid slug`);
+    if (productSlugs.has(slug)) errors.push(`products: "${slug}" is listed twice`);
+    productSlugs.add(slug);
+    if (p.priceCents !== null && (!Number.isInteger(p.priceCents) || p.priceCents < 0)) errors.push(`products: ${slug}'s price isn't whole cents`);
+    if (p.photos.length > MAX_PHOTOS) errors.push(`products: ${slug} has more than ${MAX_PHOTOS} photos`);
+    for (const c of p.collections ?? []) if (!colSlugs.has(c)) errors.push(`products: ${slug} names a collection that isn't listed: "${c}"`);
+    return {
+      slug,
+      name: p.name.trim(),
+      short: p.short?.trim() || null,
+      description: p.description.trim(),
+      priceCents: p.priceCents,
+      stock: p.stock ?? 1,
+      onHome: p.onHome === true,
+      isNew: p.isNew === true,
+      photos: p.photos,
+      collections: p.collections ?? [],
+    };
+  });
+
+  // Markets and testimonials.
+  if ((f.markets ?? []).length > DATES_LIMIT) errors.push(`markets: at most ${DATES_LIMIT} (got ${(f.markets ?? []).length})`);
+  const markets: MarketPlan[] = [];
+  for (const m of f.markets ?? []) {
+    const built = buildDateRow(m);
+    if (!built.ok) errors.push(`markets: ${m.date} ${m.name}: ${built.error}`);
+    else markets.push({ ...built.row, hours: m.hours?.trim() || null, address: m.address?.trim() || null, booth: m.booth?.trim() || null, url: m.url?.trim() || null });
+  }
+  if ((f.testimonials ?? []).length > TESTIMONIALS_LIMIT) errors.push(`testimonials: at most ${TESTIMONIALS_LIMIT}`);
+  const testimonials: TestimonialRow[] = [];
+  for (const t of f.testimonials ?? []) {
+    const built = buildTestimonialRow({ id: null, quote: t.quote, name: t.name, detail: t.detail ?? '' });
+    if (!built.ok) errors.push(`testimonials: ${t.name}: ${built.error}`);
+    else testimonials.push(built.row);
+  }
+
+  // Words: every spot the design shows, none blank, none unknown.
+  const want = designWordKeys(s.design);
+  const wanted = new Set(want);
+  const missing = want.filter((k) => (f.words[k] ?? '') === '');
+  if (missing.length > 0) errors.push(`words: ${missing.length} spot(s) have no word: ${missing.slice(0, 12).join(', ')}${missing.length > 12 ? ', …' : ''}`);
+  const unknown = Object.keys(f.words).filter((k) => !wanted.has(k));
+  if (unknown.length > 0) errors.push(`words: not spots of the ${s.design} design: ${unknown.slice(0, 12).join(', ')}${unknown.length > 12 ? ', …' : ''}`);
+
+  if (errors.length > 0 || !profile.ok) return { ok: false, errors };
+
+  const portrait = f.portrait ?? null;
+  const files = [
+    ...(portrait === null ? [] : [portrait.file]),
+    ...(moment === null ? [] : [moment.media?.file, moment.poster?.file, ...moment.photos.map((p) => p.file)]),
+    ...gallery.map((g) => g.photo.file),
+    ...products.flatMap((p) => p.photos.map((ph) => ph.file)),
+  ].filter((x): x is string => x !== undefined);
+
+  return {
+    ok: true,
+    plan: {
+      subdomain: s.subdomain,
+      businessName: s.businessName.trim(),
+      contactEmail: s.contactEmail?.trim() || null,
+      niche: s.niche ?? null,
+      plan: s.plan,
+      pageRoot: family
+        ? { kind: 'archetype', archetypeKey: 'main-street', mood: s.family, lookKey: s.skin, accentOverride: null, content: {} }
+        : { kind: 'archetype', archetypeKey: 'card', mood: s.family, lookKey: s.skin, accentOverride: null, brandPalette: null, content: { design: s.design } },
+      features: [
+        { key: 'profile', enabled: true },
+        { key: 'moment', enabled: family },
+        { key: 'gallery', enabled: gallery.length > 0 },
+        { key: 'market_dates', enabled: markets.length > 0 },
+      ],
+      profile: profile.row,
+      portrait,
+      moment,
+      sections,
+      gallery,
+      collections,
+      products,
+      markets,
+      testimonials,
+      words: want.map((key) => ({ key, text: f.words[key] as string })),
+      files: [...new Set(files)],
+    },
+  };
+}
