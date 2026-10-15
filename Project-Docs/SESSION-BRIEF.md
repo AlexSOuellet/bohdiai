@@ -1,9 +1,10 @@
 # Session Brief — BohdiAI
 
-> **⚠ START HERE (Session 104, 2026-10-14):** read `Project-Docs/Modular-Plan.md` (the operative
-> plan) and `Project-Docs/Open-Work.md` (every open item), then `session-logs/session-104.md`.
-> **Nothing is written into the code** (every word is the site's own, in `site_words`). Alex's
-> order now: **the sites look good first**; backend screens wait. Ask Alex what's next.
+> **⚠ START HERE (Session 105, 2026-10-15):** read `Project-Docs/Modular-Plan.md` (the operative
+> plan; **"The lineup" section was decided Session 105**) and `Project-Docs/Open-Work.md`.
+> Makers first; eight families (the six + Scenic + Spotlight); custom sites Rose n' Cat, Cut-Pro,
+> Mazzone; one builder; every family sells. Proposed order awaits Alex's OK. Don't pitch per-site
+> polish or editing screens unless Alex raises them.
 > `Full-Plan.md` and `Direction-2026-09-23.md` are history.
 
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.

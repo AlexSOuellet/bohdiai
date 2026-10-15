@@ -1,6 +1,35 @@
 # BohdiAI Modular Plan
 
-**Rewritten 2026-10-13 around Alex's actual goal. Status (Session 104, 2026-10-14): steps 1 and 2 done; step 3 underway (family pages read from the homes); no word is written into the code (every word in `site_words`, rule 4 widened to buttons and labels). Alex: the sites look good first, screens wait. See `Open-Work.md` for each item.**
+**Rewritten 2026-10-13 around Alex's actual goal. Status (Session 105, 2026-10-15): steps 1 and 2 done; step 3 underway (family pages read from the homes); no word is written into the code. Session 105 reset the design lineup (see "The lineup" below): makers first, eight families (the six plus Scenic and Spotlight), three custom sites, one builder for every new site, and every family can sell. The order of work is proposed at the end, for Alex to confirm. See `Open-Work.md` for each item.**
+
+## The lineup (decided 2026-10-15, Session 105)
+
+**Makers first.** BohdiAI concentrates on makers and grows that side. Contractors come back later as their own marketing leg, with their own landing page, and likely with the marketing services they need (a contractor wants the phone to ring, and that field is crowded). Until then bohdiai.com stops selling to contractors.
+
+**A standard site is a family, a skin and a background.**
+- **Family** is the layout: how the products show, how the collections show, where the About sits, how the market dates show, the order of the sections, the menu style.
+- **Skin** is the colors and fonts (each of today's 29 skins already carries both), designed together and named. Variety grows by adding skins.
+- **Background** is chosen per site (a family texture, a scene photo, or the maker's own photo).
+- Handmade finishing touches (lace edges, matted frames, window frames) are **custom-site only**. Most makers want a site that sells their work, not lace.
+- Family names don't have to be moods. They name what the site does or feels like.
+
+**The families (eight):** cozy, rustic, dark, elegant, cheerful, modern, plus:
+- **Scenic**, from Saltmarsh's Shoreline design. Its bones: a photo locked behind the page with the content floating over it. Saltmarsh's colors and fonts become one Scenic skin; the marsh photo is its background. The family is not about the shore.
+- **Spotlight**, from Paper & Patina's Showreel design. Its bones: each piece fills the screen one at a time, with bold color panels between and a scrolling market-dates ticker. Its section styles join the family engine as new choices, and Spotlight picks them.
+
+More families are added as BohdiAI grows. A good custom shape can become a new family.
+
+**Custom sites** (handmade, a paid option for makers who want one; content still lives in the same homes): Rose n' Cat (the nursery design stays hers), Cut-Pro and Mazzone. Cut-Pro and Mazzone are already built; they get homes for exactly what they show, so they fit the structure, and nothing is built for contractors in general. If they need customizing later, we deal with it then.
+
+**Going away:** the old family sample sites, Halfmoon, True Coat, Ember & Pine with the Torch design, and the contractor page, prices and FAQ section on bohdiai.com. Rustic Rhody will be changed (off the Bulletin design, which then goes too).
+
+**The demo** shows what a site can do (plans, shop, cart, markets, the market app, the backend), not a promise of a look. Saltmarsh stays as it is.
+
+**Who picks the family and skin:** Alex for now, with Claude suggesting. It moves to the maker for automation; building real sites shows the best way.
+
+**One builder for every new site.** One content file (every word the site shows included) plus three settings (family, skin, background) fill the homes and upload the photos, for any of the eight families. It replaces the separate card, nursery and contractor build tools and the old onboarding builder.
+
+**Every family can sell:** a working "Add to cart", the cart page, order request, market page, running sales, and the three plans. Today only Shoreline and the nursery design can.
 
 ## The goal
 
@@ -10,7 +39,7 @@ Each design decides its own section order and its own look. If modern puts testi
 
 The same goes for every other design: any family, and the newer designs like shoreline and nursery. The content belongs to the site, and the design only shows it.
 
-**Who switches designs:** makers never switch designs. Alex might.
+**Who switches designs:** makers never switch designs. Alex might. (2026-10-15: picking the family and skin moves to the maker when the build is automated.)
 
 **When a maker wants something no design has, it becomes a feature for every site.** Its content gets its own home. It is built once as an added section that takes on any design's look, and it gets its own switch. It arrives switched off everywhere, so building it changes no existing site. Turning it on for a site is seamless. See 3b. A whole new design is only made when a new shape is wanted, never to add one feature.
 
@@ -20,7 +49,7 @@ The same goes for every other design: any family, and the newer designs like sho
 2. **Pages hold settings only.** A page's saved record says which design and which look, never words, photos or dates.
 3. **Designs only display.** A design never stores content of its own.
 4. **No hardcoding.** No display words inside a design, buttons and labels included (Alex, 2026-10-14). Section headings come from the site's own content; every other word from the site's own words (`site_words`).
-5. **No site ever requires custom work.** Every site is a design plus content plus added sections. New needs become new shared sections or new designs that any site can use. Nothing is ever built for one site only.
+5. **No standard site ever requires custom work.** Every standard site is a family, a skin, a background, content and added sections. New needs become new shared sections, skins or families that any site can use. Custom sites (2026-10-15) are a paid option with their own handmade touches; their content still lives in the same homes.
 
 ## Where things stand (checked against code and database 2026-10-13)
 
@@ -59,7 +88,7 @@ Done: every family page reads from the homes (`lib/archetypes/main-street/from-h
     - the moment, marquee, closing line, contact and headings from step 2
 11. **Family designs show running sales** and respect the plan switches: Showcase shows the gallery instead of the shop, Market shows prices with buying by asking or at markets, Full has the cart.
 12. **Family designs get the cart, order request and market page** the newer designs already have, dressed in each family's look.
-13. **The newer designs read their headings from the homes** (step 8) instead of their code.
+13. **The newer designs read their headings from the homes** (step 8) instead of their code. (2026-10-15: Shoreline and Showreel get this by becoming the Scenic and Spotlight families.)
 
 ### 3b. Every site can add sections (plug-ins)
 Every site must be able to add sections without a new design and without touching other sites.
@@ -88,47 +117,43 @@ Every site must be able to add sections without a new design and without touchin
 
    Any family can sit on any background. Example: rustic on a workshop scene.
 13g. **Scene library:** scene photos in their own home, tagged with the crafts and families they suit. A new scene is available to every family at once. Readability over photos is handled by each family (panels and scrim), and is checked by the design test.
-13h. **Saltmarsh's design becomes the Coastal family:**
-   - **sections:** the shelf of framed pieces with tags, the scalloped story card, the market table, testimonial cards
-   - **feel:** dusky rose and navy, the elegant name, italic headings, handwriting
-
-   It has no default background. The marsh photo goes into the scene library like any other scene.
-13i. **Rose n' Cat's nursery design becomes the Sweet family** (name recommended by Claude; Alex to confirm):
-   - **sections:** the arched window opening, the name cards, the bead strip, the clothesline gallery, the artist's letter, visiting hours
-   - **feel:** soft pastels (blush, sage, lilac, sky), script name, dotted paper
-
-   The doll wording ("adoption fee", "Hello, my name is", "Gone home") becomes Rose n' Cat's own content in the homes, not part of the family. The birth-certificate product page is the one doll-specific piece; it stays as Rose n' Cat's product page style within Sweet.
-13j. **Family vs background vs design words:**
-   - the family is the shape and feel
+13h. **Saltmarsh's Shoreline design becomes the Scenic family** (replaces "Coastal", 2026-10-15): the photo locked behind the page with the content floating over it, built on the family engine with its own section styles. Saltmarsh's colors and fonts become its first skin; the marsh photo goes into the scene library like any other scene. Lace edges and matted frames are Saltmarsh's handmade touches, not part of the family.
+13i. **Paper & Patina's Showreel design becomes the Spotlight family** (2026-10-15): one piece per full screen, bold color panels, the market-dates ticker. Those become section styles in the family engine (so any later family can use them too), and Spotlight picks them.
+13j. **Family vs skin vs background vs words:**
+   - the family is the layout
+   - the skin is the colors and fonts
    - the background is chosen per site
    - every word on the page comes from the site's content
 
-   Families are listed publicly as moods (cozy, rustic, dark, elegant, cheerful, modern, coastal, sweet).
+   Family names don't have to be moods (cozy, rustic, dark, elegant, cheerful, modern, Scenic, Spotlight). The nursery design is not a family: it stays Rose n' Cat's custom design (replaces "Sweet").
 
-### 4. Contractor sites onto the same footing
-14. **Homes for contractor content:**
-    - business facts (trade, phone, service area)
-    - services
-    - crew bio and promises
-    - work photos with their details
-    - reviews, in Testimonials
-    - FAQ
-    - proof figures and comparison
-    - booked days
-    - estimator prices
-    - notice line
-15. **Contractor photos become proper uploads.**
+### 4. Cut-Pro and Mazzone onto the same footing (narrowed 2026-10-15)
+Contractors are set aside until they come back as their own leg. Only Cut-Pro and Mazzone stay, as custom sites, and they only need to fit.
+14. **Homes for exactly what Cut-Pro and Mazzone show,** nothing for contractors in general.
+15. **Their photos become proper uploads.**
 16. **Estimate requests are saved** in an inbox as well as emailed.
-17. **The contractor designs read from those homes.** Each live site is copied over and shown to Alex before and after, and nothing switches until he's seen it. That covers Cut-Pro and Mazzone, then Halfmoon and True Coat.
+17. **Their designs read from those homes.** Each is copied over and shown to Alex before and after, and nothing switches until he's seen it. They are already built, so they don't go through the new builder. Halfmoon and True Coat are switched off, not moved.
+
+### 4b. One builder for every new site (2026-10-15)
+17a. **One builder:** a site's content file, every word included, plus its family, skin and background. It fills every home and uploads the photos, for any of the eight families. It replaces the card, nursery and contractor build tools, the family copy tool and the old onboarding builder (which still writes the page record the old way and is switched off).
 
 ### 5. Prove it
-18. **Build a fresh sample site in cozy,** with every piece of content entered through the normal screens.
-19. **Switch it to every other family and to the newer designs,** on all three plans. Every piece of content lands in its section every time.
+18. **Build a fresh sample site in cozy with the one builder.**
+19. **Switch it to every other family, Scenic and Spotlight included,** on all three plans. Every piece of content lands in its section every time, and it can sell on Full.
 20. **Alex looks and approves.**
 
 ### 6. Clean up
-21. **Delete the old family samples.** They are never moved; they stay untouched as reference until then.
-22. **Remove the old code that reads content from the page record,** and today's Rustic Rhody experiment branch.
+21. **Delete the old family samples** (and the `aurora-candles-homes` proof copy). They no longer need protecting while the families change.
+22. **Remove the old code that reads content from the page record,** the old build tools once the one builder replaces them, and the Torch design.
+22a. **Take down** Halfmoon, True Coat and Ember & Pine, and the contractor page, prices and FAQ section on bohdiai.com (a plain list goes to Alex before anything comes down).
+22b. **Rustic Rhody** moves onto a family; then the Bulletin design goes.
+
+### Proposed order of work (Session 105, for Alex to confirm)
+1. Every family can sell (step 3, items 11 and 12): the six families first, since Scenic and Spotlight will sit on the same engine.
+2. The one builder (4b).
+3. Scenic and Spotlight become families (13h, 13i), with skins.
+4. Prove it (step 5), then clean up (step 6).
+5. Cut-Pro and Mazzone fit the homes (step 4).
 
 ### 7. The automated build, then self-serve (built step by step on top of the above)
 
@@ -158,4 +183,4 @@ At first Alex curates every site. Eventually a maker signs up, pays and is live 
 
 1. **Who edits each new piece:** the moment story, headings, marquee, closing line, contact intro and founder quote. Is it the maker, or Alex? **Decided 2026-10-13 (Alex): "when we generate the site we fill it in then they edit it."** The build fills every piece; the maker edits all of them in their backend.
 2. **The made-up "4.9 out of 5, 180+ customers" line** on family reviews. Drop it, or let the maker enter a real one? (Still open. The homes have no place for it, so sites built from the homes don't show it.)
-3. **Contractor backend screens:** which contractor homes get maker screens as part of step 4.
+3. **Contractor backend screens:** which contractor homes get maker screens as part of step 4. (Set aside 2026-10-15 with contractors.)

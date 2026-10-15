@@ -35,6 +35,8 @@ Everything else in `Project-Docs/historical/` is archive material — read only 
 
 BohdiAI is a multi-tenant AI-powered SaaS that gives makers/artisans a complete AI-generated storefront on a `[shop].bohdiai.com` subdomain in minutes. Subscription-only (one tier at launch, ~$35–$49/mo). **Never takes a cut of sales** — money flows customer → maker's own Stripe/Square; BohdiAI reads webhooks only.
 
+**Status as of Session 105 (2026-10-15):** The design lineup was reset (read "The lineup" in `Modular-Plan.md`). Makers first; contractors set aside until they return as their own leg. A standard site is a family (layout) + a skin (colors and fonts) + a background. Eight families: cozy, rustic, dark, elegant, cheerful, modern, plus **Scenic** (from Shoreline) and **Spotlight** (from Showreel). Custom sites (handmade touches, paid): Rose n' Cat, Cut-Pro, Mazzone. Going away: old family samples, Halfmoon, True Coat, Ember & Pine/Torch, contractor selling on bohdiai.com; Rustic Rhody moves to a family. One builder for every new site. Every family must be able to sell. Proposed order (Alex to confirm): family selling, the one builder, Scenic + Spotlight, prove it, clean up.
+
 **Status as of Session 104 (2026-10-14):** Nothing is written into the code any more: every word a site shows, buttons and labels included, lives per site in `site_words` (all 51 sites filled, proven identical). Saltmarsh got the design-review polish and its fairs stay on Saturdays. Alex: the sites look good first; the backend screens wait. Open: the line at the top of the page has two homes (About you and the moment); talk it through with Alex before touching it.
 
 **Status as of Session 103 (2026-10-13):** The fix began. Modular Plan steps 1 (safeguards) and 2 (homes) are done, and step 3 is underway: family pages read every piece from the homes, and a copy built purely from them matches its old sample word for word. Next: the maker-backend screens for the moment, section words and the new About you pieces. The build fills every piece; the maker edits it.
@@ -73,7 +75,7 @@ Next.js 16 (App Router) · Supabase (Postgres + RLS + Auth + Storage) · **Cloud
 ## Non-negotiables (locked in Full Plan)
 
 - **Bohdi authors CONTENT ONLY.** Structure / nav / sections / treatments come from the family (renderer), never from Bohdi.
-- **Mood is public. Family is internal.** Public copy always says mood. Never expose "family" to a maker.
+- **Mood is public. Family is internal.** Public copy always says mood. Never expose "family" to a maker. (2026-10-15: family names don't have to be moods, e.g. Scenic, Spotlight.)
 - **No words in the code. No inline styles. No shortcuts.** Every word a site shows lives in that site's own data (`site_words`, `site_sections` and the other homes); all styling through CSS variables + classes.
 - **Tests are part of done.** No feature is complete without tests.
 - **Ship complete, not partial.** Code + tests + types + verification before "done."
@@ -85,7 +87,7 @@ Next.js 16 (App Router) · Supabase (Postgres + RLS + Auth + Storage) · **Cloud
 2. **Pages hold settings only.** A page record says which design and which look, never words, photos or dates.
 3. **Designs only display.** A design never stores content of its own.
 4. **No hardcoding.** No display words inside a design. Section headings come from the site's own content.
-5. **No site ever requires custom work.** A new need becomes a shared added section or a new design any site can use. Nothing is built for one site only.
+5. **No standard site ever requires custom work.** A new need becomes a shared added section, skin or family any site can use. Custom sites (a paid option, 2026-10-15) may have handmade touches, but their content still lives in the same homes.
 
 **NOTHING is ever written into the code (Alex, 2026-10-14).** Every word a site shows, buttons, form labels, menu names, messages and screen-reader labels included, lives per site in `site_words` (one row per spot: `card.form.send` → "Send message"; blanks are named, "Order {n}"). Section headings live in `site_sections`. A design only names its spots (`<design>/words.ts`, every leaf blank) and reads the site's words into them (`lib/site-words`). A new site's words are written when it's built (`scripts/site-words.ts copy` from a site of the same design). No backend screen for these words yet (Alex). This replaces the 2026-10-13 line that kept platform words in code.
 

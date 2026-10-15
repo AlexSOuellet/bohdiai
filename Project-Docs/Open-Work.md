@@ -1,6 +1,6 @@
 # Open Work — everything still to do
 
-**Written 2026-10-13 (Session 102); last updated Session 104 (2026-10-14).** One list of every open item: the modular plan, decisions from Session 102, and everything carried over from earlier sessions. Update it as items land; don't let it drift. Order within a group is not priority. Alex sets priority at the start of a session.
+**Written 2026-10-13 (Session 102); last updated Session 105 (2026-10-15): the design lineup reset (makers first; eight families incl. Scenic and Spotlight; custom sites Rose n' Cat, Cut-Pro, Mazzone; one builder; every family sells). See "The lineup" in `Modular-Plan.md`.** One list of every open item: the modular plan, decisions from Session 102, and everything carried over from earlier sessions. Update it as items land; don't let it drift. Order within a group is not priority. Alex sets priority at the start of a session.
 
 ## Make content modular (the operative plan: `Modular-Plan.md`)
 1. Safeguards (done 2026-10-13, Session 103):
@@ -18,29 +18,34 @@
    - [x] family pages read every piece from the homes; old samples keep their page record until clean-up (Session 103)
    - [x] proof: `aurora-candles-homes`, a draft copy of aurora-candles made with `scripts/copy-family-sample.ts`, matches the sample word for word (throwaway; delete at clean-up)
    - [ ] **next:** the maker-backend screens for the moment, section words, and About you's quote, portrait and marquee (the build fills them, the maker edits them)
-   - [ ] each family's empty messages and fallback link words come from the section words, not code
-   - [ ] running sales, the plan switches, the cart, order request and market page
+   - [x] each family's empty messages and fallback link words come out of the code (they are the site's own words since Session 104)
+   - [ ] **proposed first (Session 105):** every family can sell: a working "Add to cart" (today it's a dead button), the cart page, order request, market page, running sales, and the three plans. Today only Shoreline and the nursery design can sell
    - [ ] decide: the made-up "4.9 out of 5, 180+ customers" line on reviews has no home. Drop it, or let the maker enter a real one?
 4. Newer designs read their headings from the homes instead of code. About you's `about_title` moves into the section words too, so the about heading has one home.
    - [x] no word is written into the code (Alex, 2026-10-14, "buttons too"): every design and shop word lives per site in `site_words` (Session 104). Headings are there too for now; moving the newer designs' headings into `site_sections` (so they survive a design switch) is still this item
    - [ ] words still in code, "fine for now" (Alex 2026-10-14): the privacy and terms templates, server error messages (estimate, contact, order, market), the payment app names (Venmo, Cash App, Zelle), symbols (the dash before a signature, the discount's minus, arrows)
-   - [ ] the site build scripts write each new site's words (today: `scripts/site-words.ts copy <from> <to> <prefix>` from a site of the same design)
+   - [ ] a new site's words are written when it's built, as part of its content file in the one builder (item 10b)
    - [ ] a backend screen for a site's words (Alex: not now)
 5. Added sections (plug-ins):
    - every design publishes its look and has plug-in spots
    - the first shared sections: text block, testimonials, FAQ, gallery, market dates, booked-days calendar, video, sale banner, price estimator
    - each one is tested in every design
 6. Background as its own setting: family texture, scene library or the maker's own photo, with no default. Build the scene library.
-7. New families:
-   - Saltmarsh's design becomes **Coastal**
-   - Rose n' Cat's design becomes **Sweet** (name to confirm)
-8. Contractor sites:
-   - content homes
+7. New families (decided 2026-10-15; replaces Coastal and Sweet):
+   - Saltmarsh's Shoreline design becomes **Scenic**: a photo locked behind the page, content floating over it. Saltmarsh's colors and fonts become its first skin
+   - Paper & Patina's Showreel design becomes **Spotlight**: one piece per full screen, bold color panels, the market-dates ticker, as section styles in the family engine
+   - skins: colors and fonts designed together; handmade touches (lace, frames) are custom-site only
+   - the nursery design stays Rose n' Cat's custom design, not a family
+8. Cut-Pro and Mazzone fit the homes (narrowed 2026-10-15; contractors set aside until their own leg):
+   - homes for exactly what those two show, nothing for contractors in general
    - photos as uploads
    - an estimate inbox
-   - move Cut-Pro, Mazzone, Halfmoon and True Coat over, with Alex checking each
-9. Prove it: a fresh site in cozy, switched through every family and plan.
-10. Clean up: delete the old family samples (and the `aurora-candles-homes` proof copy), the old page-record code, and the `explore/bulletin-scene-look` branch, if it still exists.
+   - move both over, with Alex checking each before and after
+9. Prove it: a fresh site in cozy, built with the one builder, switched through every family (Scenic and Spotlight included) and plan.
+10. Clean up: delete the old family samples (and the `aurora-candles-homes` proof copy), the old page-record code, the old build tools, the Torch design, and the `explore/bulletin-scene-look` branch, if it still exists.
+10a. Take down (plain list to Alex first): Halfmoon, True Coat, Ember & Pine, and bohdiai.com's contractor page, prices, FAQ section and True Coat portfolio entry.
+10b. **One builder for every new site:** a content file (every word included) plus family, skin and background; fills every home and uploads the photos. Replaces the card, nursery and contractor build tools, the family copy tool and the old onboarding builder.
+10c. Rustic Rhody moves onto a family; then the Bulletin design goes.
 
 ## Automated build, then self-serve (`Modular-Plan.md` section 7)
 11. Build by hand first. Then automate one step at a time:
@@ -96,7 +101,7 @@
     - open orders and holds are settled first
     - market QR codes land on the home page
     - promotions pause
-25. A minimal backend for Showcase and Contractor Lead Generation (not designed).
+25. A minimal backend for Showcase (not designed). Contractor Lead Generation is set aside with contractors (2026-10-15).
 26. Rename the middle plan from "lite" to "market" in the code.
 
 ## Saltmarsh and the demo
@@ -111,8 +116,8 @@
     - open question: morning sales in the demo start
 
 ## Other sites
-31. Rustic Rhody's hero needs a new idea. Alex dislikes the flyer and liked the photo background over the fake barn wood.
-32. True Coat's estimator picks go into the request email.
+31. Rustic Rhody moves onto a family (item 10c); its hero question goes with it.
+32. (Dropped 2026-10-15: True Coat is switched off.)
 33. The Classic Loafs screenshot catches the hero mid-fade, and bohdiai.com's sample dates are past July dates.
 34. Waiting on others, not ours to push:
     - Rose n' Cat: Renee's payment handles, real names and prices (she accepted her invite and signed in 2026-10-08)
@@ -135,7 +140,7 @@
 38. Video: price Cloudflare Stream, then build.
 39. Custom domains and a status panel.
 40. Analytics: decide on a cookie-free visit counter, and fix the privacy page's analytics line.
-41. Contractor Lead Generation backend.
+41. Contractor Lead Generation backend: set aside until contractors come back as their own leg (2026-10-15).
 42. Cloudflare cleanup with Alex:
     - the redundant Cut-Pro route
     - trim the build variables
