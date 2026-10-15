@@ -143,7 +143,7 @@ Contractors are set aside until they come back as their own leg. Only Cut-Pro an
 20. **Alex looks and approves.**
 
 ### 6. Clean up
-21. **Delete the old family samples** (and the `aurora-candles-homes` proof copy). They no longer need protecting while the families change.
+21. **Delete the old family samples** (and the `aurora-candles-homes` proof copy). They no longer need protecting while the families change. First, bohdiai.com gets **new sample sites** built with the one builder (Alex, 2026-10-15), since its hero and samples page show the old ones today.
 22. **Remove the old code that reads content from the page record,** the old build tools once the one builder replaces them, and the Torch design.
 22a. **Take down** Halfmoon, True Coat and Ember & Pine, and the contractor page, prices and FAQ section on bohdiai.com (a plain list goes to Alex before anything comes down).
 22b. **Rustic Rhody** moves onto a family; then the Bulletin design goes.
@@ -182,5 +182,5 @@ At first Alex curates every site. Eventually a maker signs up, pays and is live 
 ## Decisions Alex makes along the way (one at a time)
 
 1. **Who edits each new piece:** the moment story, headings, marquee, closing line, contact intro and founder quote. Is it the maker, or Alex? **Decided 2026-10-13 (Alex): "when we generate the site we fill it in then they edit it."** The build fills every piece; the maker edits all of them in their backend.
-2. **The made-up "4.9 out of 5, 180+ customers" line** on family reviews. Drop it, or let the maker enter a real one? (Still open. The homes have no place for it, so sites built from the homes don't show it.)
+2. **The made-up "4.9 out of 5, 180+ customers" line** on family reviews. **Decided 2026-10-15 (Alex): drop it.** The homes have no place for it, so sites built from the homes already don't show it.
 3. **Contractor backend screens:** which contractor homes get maker screens as part of step 4. (Set aside 2026-10-15 with contractors.)

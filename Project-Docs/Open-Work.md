@@ -20,7 +20,7 @@
    - [ ] **next:** the maker-backend screens for the moment, section words, and About you's quote, portrait and marquee (the build fills them, the maker edits them)
    - [x] each family's empty messages and fallback link words come out of the code (they are the site's own words since Session 104)
    - [ ] **proposed first (Session 105):** every family can sell: a working "Add to cart" (today it's a dead button), the cart page, order request, market page, running sales, and the three plans. Today only Shoreline and the nursery design can sell
-   - [ ] decide: the made-up "4.9 out of 5, 180+ customers" line on reviews has no home. Drop it, or let the maker enter a real one?
+   - [x] decided 2026-10-15 (Alex): drop the made-up "4.9 out of 5, 180+ customers" line. Sites built from the homes already don't show it; it goes with the old samples
 4. Newer designs read their headings from the homes instead of code. About you's `about_title` moves into the section words too, so the about heading has one home.
    - [x] no word is written into the code (Alex, 2026-10-14, "buttons too"): every design and shop word lives per site in `site_words` (Session 104). Headings are there too for now; moving the newer designs' headings into `site_sections` (so they survive a design switch) is still this item
    - [ ] words still in code, "fine for now" (Alex 2026-10-14): the privacy and terms templates, server error messages (estimate, contact, order, market), the payment app names (Venmo, Cash App, Zelle), symbols (the dash before a signature, the discount's minus, arrows)
@@ -118,7 +118,7 @@
 ## Other sites
 31. Rustic Rhody moves onto a family (item 10c); its hero question goes with it.
 32. (Dropped 2026-10-15: True Coat is switched off.)
-33. The Classic Loafs screenshot catches the hero mid-fade, and bohdiai.com's sample dates are past July dates.
+33. bohdiai.com gets new sample sites (Alex, 2026-10-15), built on the families with the one builder, before the old family samples are deleted (its hero and samples page show them today, with stale July market dates).
 34. Waiting on others, not ours to push:
     - Rose n' Cat: Renee's payment handles, real names and prices (she accepted her invite and signed in 2026-10-08)
     - Joe: his feedback, and switching estimate emails to him
