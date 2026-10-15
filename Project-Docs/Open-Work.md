@@ -147,3 +147,4 @@
     - cancel Vercel and delete the old proxy
 43. Maker checkup (`feat/maker-checkup` pushed, not merged).
 44. Spotlight trial (`feat/spotlight-trial`, pushed, NOT merged; Alex 2026-10-15: "one big push later"): Showreel work two to a row, quieter text, shop and piece pages when the catalog is on. Alex likes it "ok", isn't into very large product photos; three to a row only if people complain. Private test copy `paper-and-patina-trial` (draft, its own photo copies) stays until the selling work.
+45. Family plans (`feat/family-plans`, pushed, NOT merged, for the big push; Session 105): Full cart, Add to cart, sales, market page and Showcase rules on every family; cart and market words loaded on all family sites. Still open: on Showcase a family opening's buttons can still point at /shop (the opening's button targets come from the site's moment; the builder must only offer pages the plan has). Test copy `aurora-candles-homes` now has its market page switched on.
