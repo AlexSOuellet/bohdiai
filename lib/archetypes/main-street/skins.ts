@@ -895,6 +895,56 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
     atmosphere: { grain: GRAIN, photoFilter: 'sepia(0.1) saturate(0.95) contrast(1.02)' },
     motion: MOTION,
   },
+
+  // Playbill — a music-hall bill. Kraft paper, brown-black ink, oxblood; Tuscan woodtype.
+  'main-street-playbill': {
+    key: 'main-street-playbill',
+    label: REFERENCE_LABELS.skins.labels['main-street-playbill'],
+    palette: {
+      bg: '#E6D3AE',
+      fg: '#2A1C10',
+      fgMuted: 'rgba(42,28,16,0.64)',
+      accent: '#8E2A1F',
+      onAccent: '#F3E6CB',
+      rule: 'rgba(42,28,16,0.24)',
+      contrast: { bg: '#2A1C10', fg: '#E6D3AE', fgMuted: 'rgba(230,211,174,0.68)' },
+    },
+    type: makeType({
+      display: "'Rye', Georgia, serif",
+      displayWeight: 400,
+      body: "'Old Standard TT', Georgia, serif",
+      label: "'Bodoni Moda', Georgia, serif",
+      labelWeight: 700,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'sepia(0.22) saturate(0.88) contrast(1.04)' },
+    motion: MOTION,
+  },
+
+  // Apothecary — a chemist's label. Parchment, deep green ink, red; fat-face lettering.
+  'main-street-apothecary': {
+    key: 'main-street-apothecary',
+    label: REFERENCE_LABELS.skins.labels['main-street-apothecary'],
+    palette: {
+      bg: '#EFE3C8',
+      fg: '#1F3328',
+      fgMuted: 'rgba(31,51,40,0.62)',
+      accent: '#A3382B',
+      onAccent: '#F7EEDA',
+      rule: 'rgba(31,51,40,0.22)',
+      contrast: { bg: '#1F3328', fg: '#EFE3C8', fgMuted: 'rgba(239,227,200,0.68)' },
+    },
+    type: makeType({
+      display: "'Ultra', Georgia, serif",
+      displayWeight: 400,
+      body: "'IM Fell English', Georgia, serif",
+      label: "'Oswald', 'Arial Narrow', sans-serif",
+      labelWeight: 500,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'sepia(0.16) saturate(0.92) contrast(1.03)' },
+    motion: MOTION,
+  },
 };
 
 /** Selection tags — world + the maker-facing feelings each skin can wear. The
@@ -937,6 +987,8 @@ export const MAIN_STREET_SKIN_TAGS: Record<string, SkinTag> = {
   'main-street-curiosity': { world: 'Relic', moods: ['dark', 'vintage'] },
   'main-street-postmark': { world: 'Relic', moods: ['rustic', 'vintage'] },
   'main-street-parlor': { world: 'Relic', moods: ['vintage'] },
+  'main-street-playbill': { world: 'Relic', moods: ['vintage'] },
+  'main-street-apothecary': { world: 'Relic', moods: ['vintage'] },
 };
 
 /** A one-line, plain-language description of each skin — its colors, its type
@@ -1005,6 +1057,10 @@ export const MAIN_STREET_FONT_HREFS: Record<string, string> = {
     'https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Lora:ital,wght@0,400;0,600;1,400&family=Anonymous+Pro:wght@400;700&display=swap',
   'main-street-postmark':
     'https://fonts.googleapis.com/css2?family=Rozha+One&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Sometype+Mono:wght@400;500&display=swap',
+  'main-street-playbill':
+    'https://fonts.googleapis.com/css2?family=Rye&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Bodoni+Moda:opsz,wght@6..96,600;6..96,700&display=swap',
+  'main-street-apothecary':
+    'https://fonts.googleapis.com/css2?family=Ultra&family=IM+Fell+English:ital@0;1&family=Oswald:wght@400;500;600&display=swap',
   'main-street-parlor':
     'https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap',
 };

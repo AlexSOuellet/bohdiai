@@ -20,6 +20,20 @@ export function CornerFlourish({ className }: { className: string }) {
   );
 }
 
+/** A rosette: the round printer's flower that punctuates a playbill rule. */
+export function Rosette({ className }: { className: string }) {
+  const petals = Array.from({ length: 8 }, (_, i) => i * 45);
+  return (
+    <svg className={className} viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+      <circle cx="20" cy="20" r="18" fill="none" stroke="currentColor" strokeWidth="1.2" />
+      {petals.map((a) => (
+        <ellipse key={a} cx="20" cy="10" rx="3.4" ry="7" fill="currentColor" transform={`rotate(${a} 20 20)`} />
+      ))}
+      <circle cx="20" cy="20" r="3.6" fill="none" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
 /** A horizontal scroll ornament for between lines of a card or a section. */
 export function Flourish({ className }: { className: string }) {
   return (

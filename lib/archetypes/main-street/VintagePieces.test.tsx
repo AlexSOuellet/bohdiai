@@ -3,7 +3,8 @@ import { render, screen, cleanup } from '@testing-library/react';
 import { keyWords } from '@/lib/site-words/words';
 import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
 import { MAIN_STREET_SKINS } from './skins';
-import { TradeCardHero } from './TradeCardHero';
+import { PlaybillHero, arcLength } from './PlaybillHero';
+import { GoodsTags } from './GoodsTags';
 import { GoodsScrapbook } from './GoodsScrapbook';
 import { CollectionsDrawers, FindUsTickets, FounderCabinet, ReviewsPostcards } from './VintagePieces';
 import { FAMILIES } from './families';
@@ -31,31 +32,62 @@ afterEach(cleanup);
 
 describe('the Vintage family wears its own scrapbook pieces', () => {
   it('picks them by default', () => {
-    expect(FAMILIES.vintage.sectionDefaults).toMatchObject({ hero: 'trade-card', goods: 'scrapbook', founder: 'cabinet-card', collections: 'drawers', findUs: 'tickets', reviews: 'postcards' });
+    expect(FAMILIES.vintage.sectionDefaults).toMatchObject({ hero: 'playbill', goods: 'tags', founder: 'cabinet-card', collections: 'drawers', findUs: 'tickets', reviews: 'postcards' });
   });
 });
 
-describe('TradeCardHero', () => {
-  it('sets the name in an ornamental card with its line, sentence and buttons, the photo pasted beside it', () => {
-    const { container } = render(<TradeCardHero identity={identity} moment={moment} skin={skin} words={W} />);
+describe('PlaybillHero', () => {
+  it('prints the bill: the line on an arc, the photo in a medallion, the name, the sentence on a ribbon and the buttons', () => {
+    const { container } = render(<PlaybillHero identity={identity} moment={moment} skin={skin} words={W} />);
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Saltmarsh & Lace');
-    expect(container.querySelectorAll('.ms-trade-corner')).toHaveLength(4);
-    expect(container.querySelector('.ms-trade-eyebrow')?.textContent).toBe('Decoupage from Bristol');
+    expect(container.querySelectorAll('.ms-bill-corner')).toHaveLength(4);
+    const arch = screen.getByRole('img', { name: 'Decoupage from Bristol' });
+    const path = arch.querySelector('path');
+    expect(arch.querySelector('textPath')?.getAttribute('href')).toBe(`#${path?.getAttribute('id')}`);
+    expect(arch.querySelector('textPath')?.textContent).toBe('Decoupage from Bristol');
+    expect(container.querySelector('.ms-bill-kicker')?.getAttribute('data-length')).toBe('s');
+    expect(container.querySelector('.ms-bill-medallion img')?.getAttribute('alt')).toBe('A bottle');
+    expect(container.querySelector('.ms-bill-ribbon .ms-bill-sub')?.textContent).toBe('Old prints, given a second life.');
     expect(screen.getByRole('link', { name: 'See the pieces' }).getAttribute('href')).toBe('/shop');
     expect(screen.getByRole('link', { name: 'Read the story' }).getAttribute('href')).toBe('/about');
-    expect(container.querySelector('.ms-trade-scrap img')?.getAttribute('alt')).toBe('A bottle');
     expect(container.querySelector('[style]')).toBeNull();
   });
 
-  it('with no photo, the card stands alone; with no sentence, line or second button, they are left out', () => {
+  it('with no photo, line, sentence or second button, those are left out', () => {
     const bare = { ...moment, media: { kind: 'still', alt: '' }, sub: undefined, eyebrow: '', secondaryCtaLabel: undefined, ctaTarget: undefined, secondaryCtaTarget: undefined } as unknown as MainStreetView['moment'];
-    const { container } = render(<TradeCardHero identity={identity} moment={bare} skin={skin} words={W} />);
-    expect(container.querySelector('.ms-trade-scrap')).toBeNull();
-    expect(container.querySelector('.ms-trade-stage')?.getAttribute('data-photo')).toBe('false');
-    expect(container.querySelector('.ms-trade-sub')).toBeNull();
-    expect(container.querySelector('.ms-trade-eyebrow')).toBeNull();
-    expect(container.querySelector('.ms-trade-cta2')).toBeNull();
+    const { container } = render(<PlaybillHero identity={identity} moment={bare} skin={skin} words={W} />);
+    expect(container.querySelector('.ms-bill-medallion')).toBeNull();
+    expect(container.querySelector('.ms-bill-arch')).toBeNull();
+    expect(container.querySelector('.ms-bill-kicker')).toBeNull();
+    expect(container.querySelector('.ms-bill-ribbon')).toBeNull();
+    expect(container.querySelector('.ms-bill-cta2')).toBeNull();
     expect(screen.getByRole('link', { name: 'See the pieces' }).getAttribute('href')).toBe('/shop');
+  });
+});
+
+describe('arcLength', () => {
+  it('sets a longer arched line smaller so it fits the arc', () => {
+    expect(arcLength('x'.repeat(22))).toBe('s');
+    expect(arcLength('x'.repeat(32))).toBe('m');
+    expect(arcLength('x'.repeat(44))).toBe('l');
+    expect(arcLength('x'.repeat(45))).toBe('xl');
+  });
+});
+
+describe('GoodsTags', () => {
+  it('puts each piece on its own tag with an eyelet, a framed photo and a label, each opening its page', () => {
+    const { container } = render(<GoodsTags goods={{ title: 'From the workbench' }} products={[piece(1), piece(2)]} skin={skin} words={W} />);
+    const tags = container.querySelectorAll('[data-ms-tag-piece]');
+    expect([...tags].map((a) => a.getAttribute('href'))).toEqual(['/listings/p1', '/listings/p2']);
+    expect(tags[0]?.querySelector('.ms-tag-eyelet')).not.toBeNull();
+    expect(tags[0]?.querySelector('.ms-tag-frame img')?.getAttribute('alt')).toBe('Piece 1');
+    expect(tags[0]?.querySelector('.ms-tag-name')?.textContent).toBe('Piece 1');
+    expect(tags[0]?.querySelector('.ms-tag-price')?.textContent).toBe('$10');
+  });
+
+  it('a piece with no photo still has its tag', () => {
+    const { container } = render(<GoodsTags goods={{ title: 'Work' }} products={[{ ...piece(3), media: [] }]} skin={skin} words={W} />);
+    expect(container.querySelector('.ms-tag-frame .archetype-photo-empty')).not.toBeNull();
   });
 });
 

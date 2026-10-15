@@ -38,7 +38,7 @@ export const REFERENCE_LABELS = {
       luxury: 'Ivory & Gold',
       cheerful: 'Confetti',
       modern: 'Paper & Ink',
-      vintage: 'Parchment & Claret',
+      vintage: 'Kraft & Oxblood',
     },
     typePackages: {
       cozy: 'The Journal',
@@ -47,7 +47,7 @@ export const REFERENCE_LABELS = {
       luxury: 'The Maison',
       cheerful: 'Confetti',
       modern: 'The Grid',
-      vintage: 'The Scrapbook',
+      vintage: 'The Playbill',
     },
     textures: {
       cozy: 'Linen',
@@ -56,7 +56,7 @@ export const REFERENCE_LABELS = {
       luxury: 'Marble',
       cheerful: 'Confetti',
       modern: 'Concrete',
-      vintage: 'Aged paper',
+      vintage: 'Printed ephemera',
     },
     wallpapers: {
       cozy: 'Cream linen',
@@ -65,7 +65,7 @@ export const REFERENCE_LABELS = {
       luxury: 'White marble',
       cheerful: 'Paper cut-outs',
       modern: 'Concrete',
-      vintage: 'Foxed paper',
+      vintage: 'Script, music and newsprint'
     },
     imageryGrades: {
       cozy: 'Soft & warm',
@@ -109,6 +109,8 @@ export const REFERENCE_LABELS = {
       'main-street-curiosity': 'Curiosity',
       'main-street-postmark': 'Postmark',
       'main-street-parlor': 'Parlor',
+      'main-street-playbill': 'Playbill',
+      'main-street-apothecary': 'Apothecary',
     },
     descriptions: {
       'main-street-ember': 'warm cream and ember, a soft serif — homey, cozy, hand-baked',
@@ -141,6 +143,8 @@ export const REFERENCE_LABELS = {
       'main-street-curiosity': 'deep wood and brass with a bottle-green band, a Victorian display — the vintage cabinet',
       'main-street-postmark': 'aged paper with retro orange and teal, an ornate display serif — mid-century ephemera',
       'main-street-parlor': 'rose-tinted parchment with plum ink and claret, an old letterpress serif — Victorian scrapbook and decoupage',
+      'main-street-playbill': 'kraft paper with brown-black ink and oxblood, Tuscan woodtype — a Victorian music-hall bill',
+      'main-street-apothecary': 'parchment with deep green ink and red, fat-face lettering — an old chemist\'s label',
     },
   },
 } as const;

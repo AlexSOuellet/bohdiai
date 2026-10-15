@@ -390,15 +390,16 @@ const MODERN: Family = {
 
 /** Vintage (Alex, 2026-10-15; inspired by decoupage): old paper and ornament, a
  *  look any maker can pick that suits one-of-a-kind pieces especially well. The
- *  whole page is a Victorian scrapbook album, with section styles of its own: the
- *  trade-card opening, the scrapbook page of pieces, the cabinet-card about, the
- *  specimen drawers, the ticket stubs and the postcards. */
+ *  page is Victorian printed ephemera (Alex's references: music-hall bills,
+ *  apothecary tags), with section styles of its own: the playbill opening, the
+ *  pieces as die-cut tags, the cabinet-card about, the specimen drawers, the
+ *  ticket stubs and the postcards. */
 const VINTAGE: Family = {
   key: 'vintage',
   publicMoodLabel: REFERENCE_LABELS.moods.labels.vintage,
   sectionDefaults: {
-    hero: 'trade-card',
-    goods: 'scrapbook',
+    hero: 'playbill',
+    goods: 'tags',
     collections: 'drawers',
     reviews: 'postcards',
     founder: 'cabinet-card',
@@ -418,20 +419,20 @@ const VINTAGE: Family = {
   ],
   typePackage: {
     name: REFERENCE_LABELS.families.typePackages.vintage,
-    header: 'IM Fell English',
-    body: 'Libre Baskerville',
-    label: 'Courier Prime',
+    header: 'Rye',
+    body: 'Old Standard TT',
+    label: 'Bodoni Moda',
     accent: 'Pinyon Script',
   },
-  palette: { name: REFERENCE_LABELS.families.palettes.vintage, bg: '#EFE4DA', fg: '#3B2232', muted: '#8A6F7C', accent: '#8C2F45' },
+  palette: { name: REFERENCE_LABELS.families.palettes.vintage, bg: '#E6D3AE', fg: '#2A1C10', muted: '#7A6247', accent: '#8E2A1F' },
   texture: REFERENCE_LABELS.families.textures.vintage,
   wallpaper: REFERENCE_LABELS.families.wallpapers.vintage,
-  wallpaperUrl: '/textures/wp-paper.png',
-  textureOpacity: 0.32,
+  wallpaperUrl: '/textures/wp-ephemera.png',
+  textureOpacity: 0.55,
   imageryGrade: REFERENCE_LABELS.families.imageryGrades.vintage,
   fontHref:
-    'https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Courier+Prime:wght@400;700&family=Pinyon+Script&display=swap',
-  defaultSkin: 'main-street-parlor',
+    'https://fonts.googleapis.com/css2?family=Rye&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Bodoni+Moda:opsz,wght@6..96,600;6..96,700&family=Pinyon+Script&display=swap',
+  defaultSkin: 'main-street-playbill',
 };
 
 export const FAMILIES: Record<FamilyKey, Family> = {

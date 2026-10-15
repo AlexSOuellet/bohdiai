@@ -6,29 +6,59 @@
  * them; sizes and turns are nth-child rules, never inline.
  */
 export const VINTAGE_CSS = `
-    /* ── TRADE CARD — the opening ─────────────────────────────────────────── */
-    .arch-main-street .ms-trade-hero{position:relative;padding-bottom:var(--ms-section);color:var(--ms-fg)}
-    .arch-main-street .ms-trade-nav{display:flex;align-items:center;justify-content:space-between;padding:14px 40px;color:var(--ms-fg)}
-    .arch-main-street .ms-trade-stage{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:clamp(28px,5vw,80px);align-items:center;padding-top:clamp(24px,5vw,64px)}
-    .arch-main-street .ms-trade-stage[data-photo="false"]{grid-template-columns:minmax(0,760px);justify-content:center}
-    .arch-main-street .ms-trade-card{position:relative;text-align:center;color:var(--ms-fg);background:color-mix(in srgb,var(--ms-bg) 78%,#fff);border:2px solid var(--ms-fg);outline:1px solid var(--ms-fg);outline-offset:-12px;padding:clamp(48px,7vw,88px) clamp(32px,5vw,72px);box-shadow:0 26px 44px -30px rgba(40,22,12,.6)}
-    .arch-main-street .ms-trade-corner{position:absolute;width:clamp(40px,5vw,60px);height:auto;color:var(--ms-accent)}
-    .arch-main-street .ms-trade-corner--tl{top:18px;left:18px}
-    .arch-main-street .ms-trade-corner--tr{top:18px;right:18px;transform:scaleX(-1)}
-    .arch-main-street .ms-trade-corner--bl{bottom:18px;left:18px;transform:scaleY(-1)}
-    .arch-main-street .ms-trade-corner--br{bottom:18px;right:18px;transform:scale(-1,-1)}
-    .arch-main-street .ms-trade-eyebrow{color:var(--ms-accent);margin-bottom:20px}
-    .arch-main-street .ms-trade-brand{margin:0;color:var(--ms-fg);font-size:clamp(46px,7.2vw,112px);line-height:.95;text-wrap:balance}
-    .arch-main-street .ms-trade-flourish{display:block;width:min(260px,72%);height:auto;margin:26px auto;color:var(--ms-accent)}
-    .arch-main-street .ms-trade-sub{color:var(--ms-fg-muted);max-width:36ch;margin:0 auto 30px}
-    .arch-main-street .ms-trade-actions{display:flex;gap:18px;justify-content:center;align-items:center;flex-wrap:wrap}
-    .arch-main-street .ms-trade-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:14px 28px;border-radius:2px;max-width:100%;white-space:normal}
-    .arch-main-street .ms-trade-cta2{color:var(--ms-fg);border-bottom:1px solid currentColor;padding:6px 2px;max-width:100%;white-space:normal}
-    /* The opening photo, pasted in as a die-cut scrap: a scalloped edge cut by the mask. */
-    .arch-main-street .ms-trade-scrap{justify-self:center;width:min(100%,440px);padding:16px;background:color-mix(in srgb,var(--ms-bg) 55%,#fff);transform:rotate(3deg);
-      -webkit-mask:radial-gradient(circle,#000 68%,#0000 70%) 0 0/20px 20px round,linear-gradient(#000 0 0) 10px 10px/calc(100% - 20px) calc(100% - 20px) no-repeat;
-              mask:radial-gradient(circle,#000 68%,#0000 70%) 0 0/20px 20px round,linear-gradient(#000 0 0) 10px 10px/calc(100% - 20px) calc(100% - 20px) no-repeat}
-    .arch-main-street .ms-trade-scrap .archetype-photo{display:block;width:100%;aspect-ratio:4/5;object-fit:cover}
+    /* ── PLAYBILL — the opening (Alex's music-hall bill) ────────────────── */
+    .arch-main-street .ms-bill-hero{padding-bottom:var(--ms-section);color:var(--ms-fg)}
+    .arch-main-street .ms-bill-nav{display:flex;align-items:center;justify-content:space-between;padding:14px 40px;color:var(--ms-fg)}
+    .arch-main-street .ms-bill-sheet{position:relative;max-width:980px;margin:clamp(10px,3vw,34px) auto 0;padding:clamp(44px,6vw,84px) clamp(26px,6vw,92px) clamp(46px,6vw,80px);text-align:center;border:3px solid var(--ms-fg);outline:1px solid var(--ms-fg);outline-offset:-14px}
+    .arch-main-street .ms-bill-corner{position:absolute;width:clamp(40px,5vw,62px);height:auto;color:var(--ms-fg)}
+    .arch-main-street .ms-bill-corner--tl{top:22px;left:22px}
+    .arch-main-street .ms-bill-corner--tr{top:22px;right:22px;transform:scaleX(-1)}
+    .arch-main-street .ms-bill-corner--bl{bottom:22px;left:22px;transform:scaleY(-1)}
+    .arch-main-street .ms-bill-corner--br{bottom:22px;right:22px;transform:scale(-1,-1)}
+    .arch-main-street .ms-bill-arch{display:block;width:min(640px,94%);height:auto;margin:0 auto -4px;overflow:visible}
+    .arch-main-street .ms-bill-arch-text{fill:var(--ms-accent);font-size:30px;letter-spacing:.16em}
+    /* A longer line sets smaller and tighter so it always fits the arc. */
+    .arch-main-street .ms-bill-arch[data-length="m"] .ms-bill-arch-text{font-size:24px;letter-spacing:.12em}
+    .arch-main-street .ms-bill-arch[data-length="l"] .ms-bill-arch-text{font-size:19px;letter-spacing:.08em}
+    .arch-main-street .ms-bill-arch[data-length="xl"] .ms-bill-arch-text{font-size:15px;letter-spacing:.05em}
+    /* The line set flat: only on phones, in place of an arc too long to read small. */
+    .arch-main-street .ms-bill-kicker{display:none;color:var(--ms-accent);margin:0 auto 18px;max-width:none}
+    .arch-main-street .ms-bill-medallion{width:clamp(150px,18vw,220px);aspect-ratio:4/5;margin:8px auto 26px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 4px var(--ms-bg),0 0 0 6px var(--ms-fg),0 0 0 10px var(--ms-bg),0 0 0 11px var(--ms-fg)}
+    .arch-main-street .ms-bill-medallion .archetype-photo{display:block;width:100%;height:100%;object-fit:cover}
+    .arch-main-street .ms-bill-brand{margin:0 auto;max-width:14ch;color:var(--ms-fg);font-size:clamp(54px,9.4vw,136px);line-height:.92;text-shadow:3px 3px 0 var(--ms-accent);text-wrap:balance}
+    .arch-main-street .ms-bill-ribbon{display:inline-block;margin:30px auto 0;padding:13px 52px;background:var(--ms-accent);clip-path:polygon(0 0,100% 0,calc(100% - 20px) 50%,100% 100%,0 100%,20px 50%)}
+    .arch-main-street .ms-bill-sub{margin:0;max-width:46ch;color:var(--ms-on-accent);font-style:italic}
+    .arch-main-street .ms-bill-rule{display:flex;align-items:center;justify-content:center;gap:16px;margin:30px auto 28px;color:var(--ms-fg)}
+    .arch-main-street .ms-bill-rosette{width:30px;height:30px;flex:none}
+    .arch-main-street .ms-bill-flourish{width:min(300px,52%);height:auto}
+    .arch-main-street .ms-bill-actions{display:flex;gap:22px;justify-content:center;align-items:center;flex-wrap:wrap}
+    .arch-main-street .ms-bill-cta{background:var(--ms-fg);color:var(--ms-bg);padding:15px 32px;outline:1px solid var(--ms-fg);outline-offset:3px;max-width:100%;white-space:normal}
+    .arch-main-street .ms-bill-cta:hover{background:var(--ms-accent);outline-color:var(--ms-accent)}
+    .arch-main-street .ms-bill-cta2{color:var(--ms-fg);border-bottom:1px solid currentColor;padding:6px 2px;max-width:100%;white-space:normal}
+
+    /* ── TAGS — the pieces (Alex's apothecary tags) ─────────────────────── */
+    .arch-main-street .ms-tag-section{padding:var(--ms-section) 0}
+    .arch-main-street .ms-tag-rank{--ms-tag-gap:clamp(18px,2.4vw,30px);list-style:none;margin:var(--ms-loose) 0 0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:var(--ms-tag-gap)}
+    .arch-main-street .ms-tag-item{flex:0 0 calc((100% - 3 * var(--ms-tag-gap)) / 4)}
+    .arch-main-street .ms-tag{position:relative;display:flex;flex-direction:column;align-items:center;gap:16px;height:100%;padding:46px 18px 22px;color:var(--ms-fg);background-color:color-mix(in srgb,var(--ms-bg) 82%,#fff);background-image:var(--ms-texture-url);background-size:640px;background-position:center;background-blend-mode:multiply;transition:transform .35s ease;
+      -webkit-mask:radial-gradient(circle 18px at 0 0,#0000 98%,#000) top left/51% 51% no-repeat,radial-gradient(circle 18px at 100% 0,#0000 98%,#000) top right/51% 51% no-repeat,radial-gradient(circle 18px at 0 100%,#0000 98%,#000) bottom left/51% 51% no-repeat,radial-gradient(circle 18px at 100% 100%,#0000 98%,#000) bottom right/51% 51% no-repeat;
+              mask:radial-gradient(circle 18px at 0 0,#0000 98%,#000) top left/51% 51% no-repeat,radial-gradient(circle 18px at 100% 0,#0000 98%,#000) top right/51% 51% no-repeat,radial-gradient(circle 18px at 0 100%,#0000 98%,#000) bottom left/51% 51% no-repeat,radial-gradient(circle 18px at 100% 100%,#0000 98%,#000) bottom right/51% 51% no-repeat}
+    .arch-main-street .ms-tag:hover,.arch-main-street .ms-tag:focus-visible{transform:translateY(-5px)}
+    .arch-main-street .ms-tag-eyelet{position:absolute;top:16px;left:50%;width:15px;height:15px;margin-left:-7.5px;border-radius:50%;background:var(--ms-bg);box-shadow:inset 0 0 0 3px color-mix(in srgb,var(--ms-accent) 55%,var(--ms-fg)),0 0 0 1px var(--ms-rule)}
+    .arch-main-street .ms-tag-frame{display:block;width:100%;aspect-ratio:1;overflow:hidden;box-shadow:0 0 0 1px var(--ms-fg)}
+    /* The photo is printed onto the tag: white backgrounds take on the old paper. */
+    .arch-main-street .ms-tag-frame .archetype-photo{display:block;width:100%;height:100%;object-fit:cover;mix-blend-mode:multiply}
+    .arch-main-street .ms-tag-label{display:flex;flex-direction:column;align-items:center;gap:5px;width:100%;margin-top:auto;padding:12px 12px 11px;text-align:center;border:1px solid var(--ms-fg);outline:1px solid var(--ms-fg);outline-offset:3px;border-radius:40px/16px;background:color-mix(in srgb,var(--ms-bg) 70%,#fff)}
+    .arch-main-street .ms-tag-name{color:var(--ms-fg);font-size:clamp(17px,1.5vw,21px);line-height:1.12}
+    .arch-main-street .ms-tag-price{color:var(--ms-accent)}
+
+    /* The end-of-sampling button, printed like the bill's own: square, ink on paper. */
+    .arch-main-street[data-ms-family="vintage"] .ms-shopcue-btn{border-radius:0;background:var(--ms-fg);color:var(--ms-bg);outline:1px solid var(--ms-fg);outline-offset:3px}
+
+    /* ── HEADINGS — every section head set like a bill line, centered over a double rule. */
+    .arch-main-street[data-ms-family="vintage"] .ms-goodshead{flex-direction:column;align-items:center;text-align:center;gap:14px}
+    .arch-main-street[data-ms-family="vintage"] .ms-goodshead-title,.arch-main-street[data-ms-family="vintage"] .ms-drawers-title,.arch-main-street[data-ms-family="vintage"] .ms-tix-title,.arch-main-street[data-ms-family="vintage"] .ms-post-title{max-width:none;margin-inline:auto}
+    .arch-main-street[data-ms-family="vintage"] .ms-goodshead-title::after,.arch-main-street[data-ms-family="vintage"] .ms-drawers-title::after,.arch-main-street[data-ms-family="vintage"] .ms-tix-title::after,.arch-main-street[data-ms-family="vintage"] .ms-post-title::after{content:"";display:block;width:170px;margin:18px auto 0;border-top:4px double var(--ms-accent)}
 
     /* ── SCRAPBOOK — the pieces ───────────────────────────────────────────── */
     .arch-main-street .ms-scrap-section{padding:var(--ms-section) 0}
@@ -126,9 +156,11 @@ export const VINTAGE_CSS = `
     .arch-main-street .ms-post-all{display:table;margin:var(--ms-loose) auto 0;color:var(--ms-fg);border-bottom:1px solid currentColor}
 
     @media(max-width:860px){
-      .arch-main-street .ms-trade-nav{padding-inline:20px}
-      .arch-main-street .ms-trade-stage{grid-template-columns:1fr}
-      .arch-main-street .ms-trade-scrap{width:min(78%,360px);order:-1}
+      .arch-main-street .ms-bill-nav{padding-inline:20px}
+      .arch-main-street .ms-bill-sheet{outline-offset:-10px}
+      .arch-main-street .ms-bill-ribbon{padding:12px 34px}
+      .arch-main-street .ms-tag-item{flex-basis:calc((100% - var(--ms-tag-gap)) / 2)}
+      .arch-main-street .ms-tag{padding:40px 12px 16px}
       .arch-main-street .ms-scrap-page{grid-template-columns:repeat(2,minmax(0,1fr));padding:22px}
       .arch-main-street .ms-scrap-page > .ms-scrap-item:nth-child(n){grid-column:auto;margin-top:0}
       .arch-main-street .ms-scrap-page > .ms-scrap-item:nth-child(even){margin-top:28px}
@@ -142,11 +174,13 @@ export const VINTAGE_CSS = `
     }
     /* Phones: the album page runs one piece at a time, each a little off-center the other way. */
     @media(max-width:560px){
+      .arch-main-street .ms-bill-arch[data-length="l"],.arch-main-street .ms-bill-arch[data-length="xl"]{display:none}
+      .arch-main-street .ms-bill-kicker[data-length="l"],.arch-main-street .ms-bill-kicker[data-length="xl"]{display:block;white-space:normal;padding:4px 40px 0}
       .arch-main-street .ms-scrap-page{grid-template-columns:1fr;gap:34px}
       .arch-main-street .ms-scrap-page > .ms-scrap-item:nth-child(n){width:86%;margin-top:0;justify-self:start}
       .arch-main-street .ms-scrap-page > .ms-scrap-item:nth-child(even){justify-self:end}
     }
     @media(prefers-reduced-motion:reduce){
-      .arch-main-street .ms-scrap-link,.arch-main-street .ms-drawer-peek{transition:none}
+      .arch-main-street .ms-scrap-link,.arch-main-street .ms-drawer-peek,.arch-main-street .ms-tag{transition:none}
     }
 `;
