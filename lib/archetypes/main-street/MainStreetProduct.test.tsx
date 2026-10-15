@@ -7,6 +7,7 @@ import type { MainStreetContent } from './schemas';
 import type { ProductView } from '../content';
 import { keyWords } from '@/lib/site-words/words';
 import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+import { CART_COOKIE } from '@/lib/storefront/cart';
 
 /** Test words: every spot says its own key. */
 const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
@@ -100,7 +101,14 @@ describe('a shop that sells online (Full)', () => {
     const { container } = render(<MainStreetProduct words={W} content={full} skin={skin} product={product} />);
     const add = screen.getByRole('button', { name: W.productAddToCart });
     expect(add.getAttribute('data-type')).toBe('navLabel');
-    expect(container.querySelector('a[href="/cart"]')).not.toBeNull();
+    expect(container.querySelector('a[href="/cart"]')?.textContent).toBe(W.navCart);
+  });
+
+  it('the menu’s cart shows how many pieces it holds', () => {
+    document.cookie = `${CART_COOKIE}=4b8f0f5e-8f3a-4a57-9a8e-1f2d3c4b5a69.5c9f1f6e-9f4b-4b68-8a9f-2f3d4c5b6a70; Path=/`;
+    const { container } = render(<MainStreetProduct words={{ ...W, cart: { ...W.cart, navCount: 'Cart ({n})' } }} content={full} skin={skin} product={product} />);
+    expect(container.querySelector('a[href="/cart"]')?.textContent).toBe('Cart (2)');
+    document.cookie = `${CART_COOKIE}=; Path=/; Max-Age=0`;
   });
 
   it('shows a running sale beside the struck full price', () => {

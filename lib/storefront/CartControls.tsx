@@ -161,6 +161,13 @@ export function CartLink({
   );
 }
 
+/** The cart's name with how many pieces it holds, for a design that draws its own
+ *  link around it (the family menus). The count lives in the browser. */
+export function CartCount({ label, labelEmpty }: { label: string; labelEmpty: string }): ReactElement {
+  const count = useCartIds().length;
+  return <>{count === 0 ? labelEmpty : fill(label, { n: count })}</>;
+}
+
 function writeCode(code: string): void {
   const secure = window.location.protocol === 'https:' ? '; Secure' : '';
   const value = normalizeCode(code);

@@ -77,6 +77,8 @@ export const FAMILY_WORD_SPOTS = {
   posterDay: '',
   /** The cart and its order form (Full). */
   cart: {
+    /** The menu's cart with its count: "Cart ({n})" (empty, it's `navCart`). */
+    navCount: '',
     inCart: '',
     full: '',
     title: '',

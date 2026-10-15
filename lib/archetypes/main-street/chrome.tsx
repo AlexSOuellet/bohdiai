@@ -13,7 +13,8 @@ import type { ArchetypeTheme, TypeRole } from '../types';
 import type { MainStreetView } from './schemas';
 import { MAIN_STREET_FONT_HREFS, type MainStreetRoles } from './skins';
 import { LINK_TARGETS, linkHref, type LinkTarget } from './links';
-import { MainStreetMobileNav } from './MobileNav';
+import { MainStreetMobileNav, type MobileNavItem } from './MobileNav';
+import { CartCount } from '@/lib/storefront/CartControls';
 import { IntroReplayLink } from './IntroReplayLink';
 import { Type } from './Type';
 import type { FamilyWords } from './words';
@@ -1572,7 +1573,7 @@ export function WordmarkLink({
   );
 }
 
-function NavLink({ href, label, active = false }: { href: string; label: string; active?: boolean }) {
+function NavLink({ href, label, active = false }: { href: string; label: React.ReactNode; active?: boolean }) {
   return (
     <Type
       as="a"
@@ -1607,7 +1608,7 @@ export function Nav({
   // Showcase has no shop or collections to link to.
   const items = identity.showsShop === false ? resolveNav(words).filter((n) => n.href !== '/shop' && n.href !== '/collections') : resolveNav(words);
   // Only a shop that sells online (Full) has a cart to link to.
-  const allItems = identity.sellsOnline === true ? [...items, { href: "/cart", label: words.navCart }] : [...items];
+  const allItems: MobileNavItem[] = identity.sellsOnline === true ? [...items, { href: '/cart', label: <CartCount label={words.cart.navCount} labelEmpty={words.navCart} /> }] : [...items];
   const variant = identity.navVariant ?? 'standard';
 
   if (variant === 'split-center') {
