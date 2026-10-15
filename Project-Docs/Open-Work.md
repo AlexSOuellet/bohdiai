@@ -146,3 +146,4 @@
     - trim the build variables
     - cancel Vercel and delete the old proxy
 43. Maker checkup (`feat/maker-checkup` pushed, not merged).
+44. Spotlight trial (`feat/spotlight-trial`, pushed, NOT merged; Alex 2026-10-15: "one big push later"): Showreel work two to a row, quieter text, shop and piece pages when the catalog is on. Alex likes it "ok", isn't into very large product photos; three to a row only if people complain. Private test copy `paper-and-patina-trial` (draft, its own photo copies) stays until the selling work.
