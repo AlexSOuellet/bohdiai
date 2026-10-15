@@ -33,7 +33,7 @@
 6. Backgrounds are part of the skin (decided 2026-10-15). The six families use textures; on Scenic the maker picks the photo from the scene library or provides their own. Build the scene photo library for Scenic.
 7. New families (decided 2026-10-15; replaces Coastal and Sweet):
    - Saltmarsh's Shoreline design becomes **Scenic**: a photo locked behind the page, content floating over it. Saltmarsh's colors and fonts become its first skin
-   - Paper & Patina's Showreel design becomes **Spotlight**: one piece per full screen, bold color panels, the market-dates ticker, as section styles in the family engine
+   - Paper & Patina's Showreel design becomes **Spotlight**: one piece per full screen, bold color panels, the market-dates ticker, as section styles in the family engine. Alex (2026-10-15): keep the hero, the market-dates ticker and the big images; the text is too large; try two pieces to a row. First, try a shop page and product page on Paper & Patina locally for Alex to see (it was built as Showcase)
    - skins: colors and fonts designed together; handmade touches (lace, frames) are custom-site only
    - the nursery design stays Rose n' Cat's custom design, not a family
 8. Cut-Pro and Mazzone fit the homes (narrowed 2026-10-15; contractors set aside until their own leg):
