@@ -428,7 +428,8 @@ const VINTAGE: Family = {
   texture: REFERENCE_LABELS.families.textures.vintage,
   wallpaper: REFERENCE_LABELS.families.wallpapers.vintage,
   wallpaperUrl: '/textures/wp-ephemera.png',
-  textureOpacity: 0.42,
+  textureOpacity: 1,
+  textureMode: 'multiply',
   imageryGrade: REFERENCE_LABELS.families.imageryGrades.vintage,
   fontHref:
     'https://fonts.googleapis.com/css2?family=Rye&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Bodoni+Moda:opsz,wght@6..96,600;6..96,700&family=Pinyon+Script&display=swap',
