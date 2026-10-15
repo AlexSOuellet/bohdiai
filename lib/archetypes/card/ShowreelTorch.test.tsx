@@ -1,7 +1,8 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, within } from '@testing-library/react';
 import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
-import { ShowreelLanding, ShowreelContentPage } from './ShowreelLanding';
+import { ShowreelLanding, ShowreelContentPage, ShowreelProduct, ShowreelShop } from './ShowreelLanding';
+import type { ProductView } from '@/lib/archetypes/content';
 import { TorchLanding, TorchContentPage } from './TorchLanding';
 import { fill, keyWords } from '@/lib/site-words/words';
 import { CARD_WORD_SPOTS, CARD_WORDS_PREFIX, type CardWords } from './words';
@@ -39,6 +40,11 @@ const full: CardData = {
 };
 const empty: CardData = { name: 'Frank', profile: EMPTY_PROFILE, photos: [], dates: [], portrait: null, words: S };
 
+const piece = (over: Partial<ProductView>): ProductView => ({ slug: 'x', name: 'x', price: '$1', description: '', status: 'active', media: [], variations: [], ...over });
+const dresser = piece({ slug: 'peony-dresser', name: 'Peony dresser', price: '$485', description: 'Sanded back to the grain.', media: [{ kind: 'image', url: 'https://cdn/p1.webp', alt: 'The peony dresser' }, { kind: 'image', url: 'https://cdn/p2.webp', alt: '' }] });
+const tray = piece({ slug: 'french-botanical-tray', name: 'French botanical tray', price: '$68', salePrice: '$54', media: [{ kind: 'image', url: 'https://cdn/t.webp', alt: '' }] });
+const asking = piece({ slug: 'garden-collage', name: 'Garden collage', price: '', askForPrice: true });
+
 afterEach(cleanup);
 
 describe('show reel page', () => {
@@ -48,24 +54,64 @@ describe('show reel page', () => {
     const h1 = screen.getByRole('heading', { level: 1, name: 'Paper & Patina' });
     expect([...h1.querySelectorAll('.sr-word')].map((w) => w.textContent)).toEqual(['Paper', '& Patina']);
     expect(container.querySelector('.sr-kick')?.textContent).toBe('Mixed media in Warwick, RI');
-    expect(screen.getByRole('link', { name: S.showreel.seeWork }).getAttribute('href')).toBe('#piece-1');
+    expect(screen.getByRole('link', { name: S.showreel.seeWork }).getAttribute('href')).toBe('#work');
   });
 
-  it('gives every other photo its own screen with its caption, and no number badge', () => {
+  it('shows the rest of the gallery two to a row with quiet captions on Showcase, no shop link', () => {
     const { container } = render(<ShowreelLanding data={full} tenantId={TENANT} />);
-    const pieces = container.querySelectorAll('[data-piece]');
-    expect(pieces).toHaveLength(9);
-    expect(container.querySelector('.sr-no')).toBeNull();
-    expect(pieces[0]?.querySelector('.sr-name')?.textContent).toBe('Piece 1');
-    expect(pieces[0]?.querySelector('.sr-main')?.getAttribute('alt')).toBe('Piece 1');
+    const work = container.querySelector('#work') as HTMLElement;
+    const tiles = work.querySelectorAll('.sr-grid > .sr-tile');
+    expect(tiles).toHaveLength(9);
+    expect(tiles[0]?.querySelector('img')?.getAttribute('alt')).toBe('Piece 1');
+    expect(tiles[0]?.querySelector('figcaption')?.textContent).toBe('Piece 1');
+    expect(work.getAttribute('aria-label')).toBe(S.shoreline.work);
+    expect(container.querySelector('a[href="/shop"]')).toBeNull();
   });
 
-  it('puts the red about panel after the fourth piece, heading split in two', () => {
+  it('puts the red about panel after the work, heading split in two', () => {
     const { container } = render(<ShowreelLanding data={full} tenantId={TENANT} />);
     const say = container.querySelector('#about');
-    expect(say?.previousElementSibling?.getAttribute('data-piece')).toBe('4');
+    expect(say?.previousElementSibling?.id).toBe('work');
     expect([...(say?.querySelectorAll('h2 span') ?? [])].map((s) => s.textContent)).toEqual(['Nothing is', 'too far gone']);
     expect(say?.querySelector('.sr-sig')?.textContent).toBe('— Dana');
+  });
+
+  it('with the catalog on, shows her pieces with prices, each opening its page, and links the shop', () => {
+    const { container } = render(<ShowreelLanding data={full} tenantId={TENANT} products={[dresser, tray]} />);
+    const tiles = container.querySelectorAll('#work .sr-tile a');
+    expect([...tiles].map((a) => a.getAttribute('href'))).toEqual(['/listings/peony-dresser', '/listings/french-botanical-tray']);
+    expect(tiles[0]?.querySelector('img')?.getAttribute('alt')).toBe('The peony dresser');
+    expect(tiles[0]?.querySelector('.sr-price')?.textContent).toBe('$485');
+    expect(tiles[1]?.querySelector('.sr-price')?.textContent).toBe(`${S.shoreline.was} $68 $54`);
+    expect(screen.getByRole('link', { name: S.shoreline.seeShop }).getAttribute('href')).toBe('/shop');
+    expect(within(screen.getByRole('navigation', { name: S.shoreline.nav.label })).getByRole('link', { name: S.shoreline.nav.shop }).getAttribute('href')).toBe('/shop');
+  });
+
+  it('the shop shows every piece two to a row, or her empty-shop words', () => {
+    const { container } = render(<ShowreelShop data={full} products={[dresser, tray, asking]} />);
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(S.shoreline.work);
+    expect(container.querySelectorAll('.sr-grid > .sr-tile')).toHaveLength(3);
+    expect(container.querySelectorAll('.sr-tile')[2]?.querySelector('.sr-price')?.textContent).toBe(S.shoreline.askForPrice);
+    expect(container.querySelector('.sr-ticker')).toBeTruthy();
+    cleanup();
+    render(<ShowreelShop data={full} products={[]} />);
+    expect(screen.getByText(S.shoreline.emptyShop)).toBeTruthy();
+  });
+
+  it('a piece shows its photo, name, price and story, with a note already asking about it', () => {
+    const { container } = render(<ShowreelProduct data={full} product={dresser} tenantId={TENANT} allPhotos={false} />);
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Peony dresser');
+    expect(container.querySelectorAll('.sr-piece-photos img')).toHaveLength(1);
+    expect(container.querySelector('.sr-piece-price')?.textContent).toBe('$485');
+    expect(screen.getByText('Sanded back to the grain.')).toBeTruthy();
+    expect(screen.getByRole('link', { name: S.shoreline.backToShop }).getAttribute('href')).toBe('/shop');
+    expect(screen.getByRole('link', { name: S.shoreline.askAbout }).getAttribute('href')).toBe('#ask');
+    expect((container.querySelector('#ask textarea') as HTMLTextAreaElement).value).toBe(fill(S.shoreline.askMessage, { name: 'Peony dresser' }));
+  });
+
+  it('a piece on Full shows all its photos', () => {
+    const { container } = render(<ShowreelProduct data={full} product={dresser} tenantId={TENANT} allPhotos />);
+    expect(container.querySelectorAll('.sr-piece-photos img')).toHaveLength(2);
   });
 
   it('ends with the contact form and the ways to reach the owner, and ticks the market dates', () => {
@@ -80,7 +126,7 @@ describe('show reel page', () => {
 
   it('shows only the name and footer for an owner who has filled in nothing', () => {
     const { container } = render(<ShowreelLanding data={empty} tenantId={undefined} />);
-    for (const sel of ['.sr-kick', '.sr-head', '.sr-go', '[data-piece]', '#about', '.sr-ticker', 'form']) expect(container.querySelector(sel)).toBeNull();
+    for (const sel of ['.sr-kick', '.sr-head', '.sr-go', '#work', '#about', '.sr-ticker', 'form']) expect(container.querySelector(sel)).toBeNull();
     expect(screen.getByRole('link', { name: `${S.footer.creditPrefix} ${S.footer.creditBrand}` })).toBeTruthy();
   });
 

@@ -93,7 +93,7 @@
 
 ## Plans and gallery (decided 2026-10-13)
 23. The gallery is built from the catalog plus other photos:
-    - Showcase shows unlimited work as a gallery with no prices: a short hand-picked set on the page, "see all my work" opens the rest
+    - Showcase: the maker adds their full catalog, and the site displays 12 pieces with no prices (Alex, 2026-10-15)
     - Market and Full get the same gallery, where tapping a for-sale piece opens its page
     - sold pieces stay
 24. Canceling offers Showcase for the off-season:
