@@ -1307,6 +1307,8 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-product-buy{margin-top:var(--ms-loose)}
     .arch-main-street .ms-product-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:var(--ms-base) var(--ms-loose);border-radius:2px;display:inline-block;border:0;cursor:pointer;font:inherit}
     .arch-main-street .ms-product-cta[data-soldout="true"]{background:var(--ms-fg-muted);cursor:default}
+    /* Buttons wear the menu's lettering but not its one-line cap: their words show whole. */
+    .arch-main-street .ms-product-cta[data-type],.arch-main-street .ms-btn[data-type],.arch-main-street .ms-simple-cta[data-type]{max-width:100%;white-space:normal;overflow:visible}
     .arch-main-street .ms-product-story{padding-top:var(--ms-section)}
     .arch-main-street .ms-product-story-eyebrow{color:var(--ms-accent);display:block;margin-bottom:var(--ms-base)}
     .arch-main-street .ms-product-story-body{color:var(--ms-fg);max-width:640px;margin:0}
