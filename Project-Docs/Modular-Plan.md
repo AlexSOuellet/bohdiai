@@ -86,7 +86,7 @@ Done: every family page reads from the homes (`lib/archetypes/main-street/from-h
     - "find us" from Markets
     - reviews from Testimonials
     - the moment, marquee, closing line, contact and headings from step 2
-11. **Family designs show running sales** and respect the plan switches: Showcase shows the gallery instead of the shop, Market shows prices with buying by asking or at markets, Full has the cart.
+11. **Family designs show running sales** and respect the plans (Alex, 2026-10-15): **Showcase** never has a shop page or prices. **Market** shows prices and an "Ask about this" button on each piece; at a market, the market app takes the payment. **Full** adds the cart, the only place to buy online.
 12. **Family designs get the cart, order request and market page** the newer designs already have, dressed in each family's look.
 13. **The newer designs read their headings from the homes** (step 8) instead of their code. (2026-10-15: Shoreline and Showreel get this by becoming the Scenic and Spotlight families.)
 
