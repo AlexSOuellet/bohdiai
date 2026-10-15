@@ -115,7 +115,7 @@
 32. True Coat's estimator picks go into the request email.
 33. The Classic Loafs screenshot catches the hero mid-fade, and bohdiai.com's sample dates are past July dates.
 34. Waiting on others, not ours to push:
-    - Rose n' Cat: Renee's invite, her payment handles, real names and prices
+    - Rose n' Cat: Renee's payment handles, real names and prices (she accepted her invite and signed in 2026-10-08)
     - Joe: his feedback, and switching estimate emails to him
     - Cut-Pro: follow-ups are on them
 
