@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { MOODS, MOOD_LIST, isMoodKey, resolvePreviewMood, type MoodKey } from './moods';
 
 describe('MOODS', () => {
-  it('has all six canonical feelings', () => {
+  it('has all seven canonical feelings (Vintage added 2026-10-15)', () => {
     const expected: MoodKey[] = [
       'dark',
       'rustic',
@@ -10,6 +10,7 @@ describe('MOODS', () => {
       'modern',
       'elegant',
       'cheerful',
+      'vintage',
     ];
     for (const k of expected) {
       expect(MOODS[k]).toBeDefined();

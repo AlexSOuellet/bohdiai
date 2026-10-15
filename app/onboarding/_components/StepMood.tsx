@@ -82,6 +82,15 @@ const MOOD_VISUALS: Record<MoodKey, MoodVisual> = {
     uppercase: false,
     weight: 600,
   },
+  // vintage → Parlor (rose parchment, plum ink, claret, IM Fell English)
+  vintage: {
+    bg: '#EFE4DA',
+    fg: '#3B2232',
+    accent: '#8C2F45',
+    displayFont: "'IM Fell English', Georgia, serif",
+    uppercase: false,
+    weight: 400,
+  },
 };
 
 /** One combined Google Fonts href that loads every display face the picker

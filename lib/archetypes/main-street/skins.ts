@@ -870,6 +870,31 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
     atmosphere: { grain: GRAIN, photoFilter: 'sepia(0.14) saturate(0.95) contrast(1.02)' },
     motion: MOTION,
   },
+
+  // Parlor — Victorian scrapbook. Rose-tinted parchment, plum ink, claret and old gold.
+  'main-street-parlor': {
+    key: 'main-street-parlor',
+    label: REFERENCE_LABELS.skins.labels['main-street-parlor'],
+    palette: {
+      bg: '#EFE4DA',
+      fg: '#3B2232',
+      fgMuted: 'rgba(59,34,50,0.58)',
+      accent: '#8C2F45',
+      onAccent: '#F6EEE6',
+      rule: 'rgba(59,34,50,0.16)',
+      contrast: { bg: '#3B2232', fg: '#EFE4DA', fgMuted: 'rgba(239,228,218,0.66)' },
+    },
+    type: makeType({
+      display: "'IM Fell English', Georgia, serif",
+      displayWeight: 400,
+      body: "'Libre Baskerville', Georgia, serif",
+      label: "'Courier Prime', ui-monospace, monospace",
+      labelWeight: 700,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'sepia(0.1) saturate(0.95) contrast(1.02)' },
+    motion: MOTION,
+  },
 };
 
 /** Selection tags — world + the maker-facing feelings each skin can wear. The
@@ -908,9 +933,10 @@ export const MAIN_STREET_SKIN_TAGS: Record<string, SkinTag> = {
   'main-street-pressroom': { world: 'Press', moods: ['modern'] },
   'main-street-marquee': { world: 'Press', moods: ['modern'] },
   'main-street-broadside': { world: 'Press', moods: ['modern'] },
-  'main-street-heirloom': { world: 'Relic', moods: ['rustic'] },
-  'main-street-curiosity': { world: 'Relic', moods: ['dark'] },
-  'main-street-postmark': { world: 'Relic', moods: ['rustic'] },
+  'main-street-heirloom': { world: 'Relic', moods: ['rustic', 'vintage'] },
+  'main-street-curiosity': { world: 'Relic', moods: ['dark', 'vintage'] },
+  'main-street-postmark': { world: 'Relic', moods: ['rustic', 'vintage'] },
+  'main-street-parlor': { world: 'Relic', moods: ['vintage'] },
 };
 
 /** A one-line, plain-language description of each skin — its colors, its type
@@ -979,6 +1005,8 @@ export const MAIN_STREET_FONT_HREFS: Record<string, string> = {
     'https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Lora:ital,wght@0,400;0,600;1,400&family=Anonymous+Pro:wght@400;700&display=swap',
   'main-street-postmark':
     'https://fonts.googleapis.com/css2?family=Rozha+One&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Sometype+Mono:wght@400;500&display=swap',
+  'main-street-parlor':
+    'https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap',
 };
 
 export type MainStreetSkinKey = keyof typeof MAIN_STREET_SKINS;

@@ -35,7 +35,7 @@ import type { NavVariant } from './schemas';
 import type { MoodKey } from '../../moods';
 import { REFERENCE_LABELS } from './defaults';
 
-export const FAMILY_KEYS = ['cozy', 'rustic', 'dark', 'luxury', 'cheerful', 'modern'] as const;
+export const FAMILY_KEYS = ['cozy', 'rustic', 'dark', 'luxury', 'cheerful', 'modern', 'vintage'] as const;
 export type FamilyKey = (typeof FAMILY_KEYS)[number];
 
 /** The nine positions in every family's home page.
@@ -388,6 +388,51 @@ const MODERN: Family = {
   defaultSkin: 'main-street-studio',
 };
 
+/** Vintage (Alex, 2026-10-15; inspired by decoupage): old paper and ornament, a
+ *  look any maker can pick that suits one-of-a-kind pieces especially well. Built
+ *  from section styles no other family uses: the catalog-cover opening, the
+ *  lookbook (each piece a spread with room for its story), and the maker's quote. */
+const VINTAGE: Family = {
+  key: 'vintage',
+  publicMoodLabel: REFERENCE_LABELS.moods.labels.vintage,
+  sectionDefaults: {
+    hero: 'editorial-cover',
+    goods: 'lookbook',
+    collections: 'cupboard',
+    reviews: 'guestbook',
+    founder: 'quote',
+    nav: 'standard',
+    findUs: 'poster',
+  },
+  sectionStack: [
+    on('hero'),
+    on('goods', { lead: true }),
+    on('founder'),
+    on('collections'),
+    on('findUs'),
+    on('reviews'),
+    on('marquee'),
+    contactOff,
+    on('close'),
+  ],
+  typePackage: {
+    name: REFERENCE_LABELS.families.typePackages.vintage,
+    header: 'IM Fell English',
+    body: 'Libre Baskerville',
+    label: 'Courier Prime',
+    accent: 'Pinyon Script',
+  },
+  palette: { name: REFERENCE_LABELS.families.palettes.vintage, bg: '#EFE4DA', fg: '#3B2232', muted: '#8A6F7C', accent: '#8C2F45' },
+  texture: REFERENCE_LABELS.families.textures.vintage,
+  wallpaper: REFERENCE_LABELS.families.wallpapers.vintage,
+  wallpaperUrl: '/textures/wp-paper.png',
+  textureOpacity: 0.32,
+  imageryGrade: REFERENCE_LABELS.families.imageryGrades.vintage,
+  fontHref:
+    'https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Courier+Prime:wght@400;700&family=Pinyon+Script&display=swap',
+  defaultSkin: 'main-street-parlor',
+};
+
 export const FAMILIES: Record<FamilyKey, Family> = {
   cozy: COZY,
   rustic: RUSTIC,
@@ -395,6 +440,7 @@ export const FAMILIES: Record<FamilyKey, Family> = {
   luxury: LUXURY,
   cheerful: CHEERFUL,
   modern: MODERN,
+  vintage: VINTAGE,
 };
 
 /**

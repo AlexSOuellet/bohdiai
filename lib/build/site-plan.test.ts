@@ -14,7 +14,7 @@ type Over = { [K in keyof SiteFile]?: SiteFile[K] | undefined };
 
 function familySite(over: Over = {}): SiteFile {
   return {
-    site: { subdomain: 'flag-and-field', businessName: 'Flag & Field', design: 'family', family: 'cozy', skin: 'main-street-ember', plan: 'full', contactEmail: ' alex@example.com ', niche: 'flags' },
+    site: { subdomain: 'flag-and-field', businessName: 'Flag & Field', design: 'family', family: 'cozy', skin: 'main-street-ember', plan: 'full', contactEmail: ' alex@example.com ', niche: 'jewelry_maker' },
     profile: { ...EMPTY_PROFILE, headline: 'Flags sewn by hand', bio: 'I sew flags.' },
     portrait: { file: 'portrait.webp', alt: 'At the machine' },
     moment: { ...EMPTY_MOMENT, headline: 'Flag & Field', story: ['stitched by hand'], media: { file: 'open.webp', alt: 'A flag in the wind', kind: 'image' }, photos: [{ file: 'p1.webp', alt: 'one' }] },
@@ -53,7 +53,7 @@ describe('planSite — a family site', () => {
     if (!r.ok) return;
     const p = r.plan;
     expect(p.contactEmail).toBe('alex@example.com');
-    expect(p.niche).toBe('flags');
+    expect(p.niche).toBe('jewelry_maker');
     expect(p.pageRoot).toEqual({ kind: 'archetype', archetypeKey: 'main-street', mood: 'cozy', lookKey: 'main-street-ember', accentOverride: null, content: {} });
     expect(p.features).toContainEqual({ key: 'moment', enabled: true });
     expect(p.features).toContainEqual({ key: 'gallery', enabled: true });
