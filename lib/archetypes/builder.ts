@@ -213,11 +213,25 @@ export interface ArchetypeBuildSpec<T = unknown> {
     cart: CartView;
     logoUrl?: string | undefined;
     tenantId: string;
+    mood?: string | undefined;
+    brandColors?: string[] | undefined;
+    accentOverride?: string | undefined;
+    brandPalette?: BrandPalette | undefined;
   }): ReactElement;
 
   /** Paint a market's own shop page (the QR page buyers scan at her table).
    *  Optional — a design without one has no market page. */
-  renderMarket?(args: { content: unknown; lookKey: string; market: MarketShopView; logoUrl?: string | undefined; tenantId: string }): ReactElement;
+  renderMarket?(args: {
+    content: unknown;
+    lookKey: string;
+    market: MarketShopView;
+    logoUrl?: string | undefined;
+    tenantId: string;
+    mood?: string | undefined;
+    brandColors?: string[] | undefined;
+    accentOverride?: string | undefined;
+    brandPalette?: BrandPalette | undefined;
+  }): ReactElement;
 
   /** Wrap arbitrary children in the archetype's shell (skin bridge + nav + footer).
    *  For functional pages (cart, collections, subscriptions) whose body is bespoke

@@ -19,6 +19,7 @@ import { MainStreetRoot, MainStreetFooter, Nav } from './chrome';
 import { Type } from './Type';
 import type { FamilyWords } from './words';
 import { ProductOptions } from './ProductOptions';
+import { AddToCartButton } from '@/lib/storefront/CartControls';
 import type { Family } from './families';
 
 /** One media cell — a playable video or a still. A video renders a real
@@ -67,8 +68,8 @@ export function MainStreetProduct({
   family?: Family | undefined;
 }) {
   const primary = product.media[0];
-  // A shop that doesn't sell online (Maker Lite) shows one photo and asks instead of selling.
-  const sellsOnline = content.identity.sellsOnline !== false;
+  // Only Full sells online (the cart switch); Market shows one photo and asks instead.
+  const sellsOnline = content.identity.sellsOnline === true;
   const rest = sellsOnline ? product.media.slice(1) : [];
   const soldOut = product.status === 'sold_out';
 
@@ -99,24 +100,30 @@ export function MainStreetProduct({
               </Type>
             )}
             {product.variations.length > 0 ? (
-              <ProductOptions variations={product.variations} offers={product.offers ?? []} fallbackPrice={product.price} words={words} askHref={sellsOnline ? undefined : ASK_HREF} />
+              // The cart can't pick options yet, so a piece with options is asked about on every plan.
+              <ProductOptions variations={product.variations} offers={product.offers ?? []} fallbackPrice={product.price} words={words} askHref={ASK_HREF} />
             ) : (
               <>
                 <Type as="div" role="title" className="ms-product-price">
-                  {product.price}
+                  {product.salePrice === undefined ? (
+                    product.price
+                  ) : (
+                    <>
+                      <s>
+                        <span className="ms-sr">{words.cart.was} </span>
+                        {product.price}
+                      </s>{' '}
+                      {product.salePrice}
+                    </>
+                  )}
                 </Type>
                 <div className="ms-product-buy">
-                  {sellsOnline ? (
-                    <Type
-                      as="button"
-                      role="navLabel"
-                      type="button"
-                      disabled={soldOut}
-                      className="ms-product-cta"
-                      data-soldout={soldOut ? 'true' : 'false'}
-                    >
-                      {soldOut ? words.productSoldOut : words.productAddToCart}
+                  {sellsOnline && soldOut ? (
+                    <Type as="button" role="navLabel" type="button" disabled className="ms-product-cta" data-soldout="true">
+                      {words.productSoldOut}
                     </Type>
+                  ) : sellsOnline && product.id !== undefined && product.askForPrice !== true ? (
+                    <AddToCartButton listingId={product.id} className="ms-product-cta" typeRole="navLabel" addLabel={words.productAddToCart} inCartLabel={words.cart.inCart} fullLabel={words.cart.full} />
                   ) : (
                     <Type as="a" role="navLabel" href={ASK_HREF} className="ms-product-cta" data-soldout="false">
                       {words.productAskAbout}

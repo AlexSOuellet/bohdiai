@@ -251,7 +251,7 @@ a.sl-print{text-decoration:none;cursor:pointer}
 .sl-cart-total{padding-top:10px;border-top:2px solid var(--ink);font-family:var(--display);font-size:26px}
 .sl-cart-letter{width:auto;margin:0;transform:none}
 .sl-cart-letter h2{margin-bottom:6px}
-.sl-order-num{font-family:var(--display);font-size:28px;color:var(--navy)}
+.sl .order-num{font-family:var(--display);font-size:28px;color:var(--navy)}
 .sl-empty .sl-btn{margin-top:14px}
 /* A market's own page (Market POS): what's coming, then pick, hold, pay, "I paid". */
 .sl-mk{padding:0 clamp(16px,6vw,90px) clamp(50px,9vh,100px)}

@@ -52,6 +52,7 @@ export function AddToCartButton({
   inCartLabel,
   fullLabel,
   className,
+  typeRole,
 }: {
   listingId: string;
   addLabel: string;
@@ -59,12 +60,14 @@ export function AddToCartButton({
   /** Shown when the cart already holds as many pieces as it can. */
   fullLabel: string;
   className: string;
+  /** The design's type role for the button's lettering (the family designs set it as `data-type`). */
+  typeRole?: string | undefined;
 }): ReactElement {
   const ids = useCartIds();
   const [refused, setRefused] = useState(false);
   if (ids.includes(listingId)) {
     return (
-      <a className={className} href="/cart">
+      <a className={className} href="/cart" data-type={typeRole}>
         {inCartLabel}
       </a>
     );
@@ -74,6 +77,7 @@ export function AddToCartButton({
       <button
         type="button"
         className={className}
+        data-type={typeRole}
         onClick={() => {
           const next = addToCart(readCart(), listingId);
           if (!next.includes(listingId)) {

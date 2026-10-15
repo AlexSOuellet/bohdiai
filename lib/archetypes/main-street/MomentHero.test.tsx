@@ -108,7 +108,8 @@ describe('MomentHero (the hero IS the front door, D54 corrected)', () => {
     expect(container.querySelector('a[href="#"]')).toBeNull();
     expect(container.querySelector('a[href="/shop"]')).toBeTruthy();
     expect(container.querySelector('a[href="/about"]')).toBeTruthy();
-    expect(container.querySelector('a[href="/cart"]')).toBeTruthy();
+    // Only a shop that sells online (Full) has the cart in its menu.
+    expect(container.querySelector('a[href="/cart"]')).toBeNull();
   });
 
   it('renders no CTA buttons in the hero — the sub caption replaces them (Session 66 A1)', () => {

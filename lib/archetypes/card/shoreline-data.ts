@@ -11,8 +11,8 @@ import { loadCatalog, loadCollections } from '@/lib/storefront/catalog';
 import { loadSiteFeatures } from '@/lib/backend/features';
 import { HOME_MAX } from '@/lib/catalog/home';
 import { listTestimonials } from '@/lib/backend/testimonials/queries';
-import { offLabel, runningSale, withSale, type Promotion } from '@/lib/storefront/promotions';
-import { loadShopPromotions } from '@/lib/storefront/promotions-load';
+import { offLabel, withSale } from '@/lib/storefront/promotions';
+import { loadRunningSale } from '@/lib/storefront/promotions-load';
 import type { Testimonial } from '@/lib/backend/testimonials/testimonial-form';
 import { loadCardData, type CardData } from './data';
 
@@ -75,10 +75,4 @@ export async function loadShorelineData(
 export function featuredProducts(products: readonly ProductView[], max = HOME_MAX): ProductView[] {
   const marked = products.filter((p) => p.onHome === true);
   return (marked.length > 0 ? marked : products).slice(0, max);
-}
-
-/** The site-wide sale on today, if any (a code isn't a sale: it only shows in the cart). */
-async function loadRunningSale(db: SupabaseClient<Database>, tenantId: string): Promise<Promotion | null> {
-  const promo = await loadShopPromotions(db, tenantId);
-  return runningSale(promo.promos, promo.today);
 }

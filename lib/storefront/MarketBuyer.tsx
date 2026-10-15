@@ -6,7 +6,7 @@
  * Continue (the piece is held), pay with the app button / Zelle handle / at the
  * table, then "I paid". Every failure says so; a buyer can step back before
  * paying. Each design passes the site's own words (with named blanks, filled
- * here) and its class prefix (`nn` nursery,
+ * here) and its class prefix (`nn` nursery, `ms` the families,
  * `sl` shoreline); the classes it uses are `<prefix>-mk-*`, `<prefix>-btn` and
  * `<prefix>-was`.
  */
@@ -98,7 +98,7 @@ function Photo({ piece }: { piece: ProductView }): ReactElement | null {
 }
 
 /** The price, or the old price struck through beside the sale price. */
-function Fee({ piece, prefix }: { piece: ProductView; prefix: 'nn' | 'sl' }): ReactElement {
+function Fee({ piece, prefix }: { piece: ProductView; prefix: 'nn' | 'sl' | 'ms' }): ReactElement {
   if (piece.salePrice === undefined) return <>{piece.price}</>;
   return (
     <>
@@ -119,7 +119,7 @@ export function MarketBuyer({
   pieces: ProductView[];
   methods: PayMethod[];
   strings: MarketBuyerStrings;
-  prefix: 'nn' | 'sl';
+  prefix: 'nn' | 'sl' | 'ms';
   /** One way back to the site, shown only once the buyer is done (no links while buying). */
   shop?: { href: string; label: string };
 }): ReactElement {

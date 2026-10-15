@@ -87,7 +87,9 @@ async function CardProduct({ tenantId, design, product }: { tenantId: string; de
   if (design !== 'shoreline') notFound();
   const site = await loadShorelineData(supabaseAdmin(), tenantId);
   if (!site.pages) notFound();
-  return <ShorelineProduct site={site} product={product} tenantId={tenantId} />;
+  // Her catalog carries the running sale's price (Full); the route's copy doesn't.
+  const priced = site.products.find((p) => p.slug === product.slug) ?? product;
+  return <ShorelineProduct site={site} product={priced} tenantId={tenantId} />;
 }
 
 async function CardPage({
