@@ -60,8 +60,8 @@ export function FounderCabinet({ founder, about }: { founder: Founder; skin: Arc
   );
 }
 
-/** collections — a specimen cabinet: each collection a drawer with a brass label
- *  holder (its name and how many pieces) and a knob, its cover peeking above. */
+/** collections — a specimen cabinet: each collection's cover shown whole above
+ *  its drawer front, with a brass label holder (its name and how many pieces) and a knob. */
 export function CollectionsDrawers({
   section,
   items,

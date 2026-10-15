@@ -107,9 +107,9 @@ export const VINTAGE_CSS = `
     .arch-main-street .ms-drawers-title{display:block;max-width:none;margin:0;color:var(--ms-fg)}
     .arch-main-street .ms-drawers-cabinet{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;padding:16px;background:var(--ms-contrast-bg);border-radius:4px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 34px 46px -32px rgba(20,10,4,.7)}
     .arch-main-street .ms-drawer{display:flex;flex-direction:column;color:var(--ms-fg);background:rgba(0,0,0,.28)}
-    .arch-main-street .ms-drawer-peek{display:block;height:84px;overflow:hidden;transition:height .5s ease}
-    .arch-main-street .ms-drawer-peek .archetype-photo{display:block;width:100%;height:200px;object-fit:cover}
-    .arch-main-street .ms-drawer:hover .ms-drawer-peek,.arch-main-street .ms-drawer:focus-visible .ms-drawer-peek{height:180px}
+    .arch-main-street .ms-drawer-peek{display:block;aspect-ratio:4/3;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+    .arch-main-street .ms-drawer-peek .archetype-photo{display:block;width:100%;height:100%;object-fit:cover;transition:transform .6s ease}
+    .arch-main-street .ms-drawer:hover .ms-drawer-peek .archetype-photo,.arch-main-street .ms-drawer:focus-visible .ms-drawer-peek .archetype-photo{transform:scale(1.04)}
     .arch-main-street .ms-drawer-face{display:flex;flex-direction:column;align-items:center;gap:16px;padding:22px 16px 18px;background:linear-gradient(180deg,color-mix(in srgb,var(--ms-contrast-bg) 78%,#fff),var(--ms-contrast-bg));box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 -8px 12px rgba(0,0,0,.28)}
     .arch-main-street .ms-drawer-plate{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:72%;padding:10px 16px;text-align:center;background:var(--ms-bg);color:var(--ms-fg);border:2px solid var(--ms-accent);border-radius:3px;box-shadow:0 0 0 3px color-mix(in srgb,var(--ms-accent) 35%,transparent)}
     .arch-main-street .ms-drawer-count{color:var(--ms-fg-muted)}
@@ -181,6 +181,6 @@ export const VINTAGE_CSS = `
       .arch-main-street .ms-scrap-page > .ms-scrap-item:nth-child(even){justify-self:end}
     }
     @media(prefers-reduced-motion:reduce){
-      .arch-main-street .ms-scrap-link,.arch-main-street .ms-drawer-peek,.arch-main-street .ms-tag{transition:none}
+      .arch-main-street .ms-scrap-link,.arch-main-street .ms-drawer-peek .archetype-photo,.arch-main-street .ms-tag{transition:none}
     }
 `;
