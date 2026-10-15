@@ -17,7 +17,7 @@
 - **Scenic**, from Saltmarsh's Shoreline design. Its bones: a photo locked behind the page with the content floating over it. Saltmarsh's colors and fonts become one Scenic skin, with the marsh photo as its photo. The family is not about the shore.
 - **Spotlight**, from Paper & Patina's Showreel design. Its bones: each piece fills the screen one at a time, with bold color panels between and a scrolling market-dates ticker. Its section styles join the family engine as new choices, and Spotlight picks them.
 
-More families are added as BohdiAI grows. A good custom shape can become a new family.
+More families are added as BohdiAI grows. A good custom shape can become a new family. **Vintage** (Alex, 2026-10-15, inspired by decoupage) is the first one added this way: Victorian printed ephemera with section styles of its own (playbill opening, apothecary tags, cabinet card, specimen drawers, ticket stubs, postcards), in progress on `feat/vintage-family`; its ornament and paper are to be rebuilt from real art.
 
 **Custom sites** (handmade, a paid option for makers who want one; content still lives in the same homes): Rose n' Cat (the nursery design stays hers), Cut-Pro and Mazzone. Cut-Pro and Mazzone are already built; they get homes for exactly what they show, so they fit the structure, and nothing is built for contractors in general. If they need customizing later, we deal with it then.
 
