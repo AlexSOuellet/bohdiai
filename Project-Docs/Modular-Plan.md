@@ -6,15 +6,15 @@
 
 **Makers first.** BohdiAI concentrates on makers and grows that side. Contractors come back later as their own marketing leg, with their own landing page, and likely with the marketing services they need (a contractor wants the phone to ring, and that field is crowded). Until then bohdiai.com stops selling to contractors.
 
-**A standard site is a family, a skin and a background.**
+**A standard site is a family and a skin.**
 - **Family** is the layout: how the products show, how the collections show, where the About sits, how the market dates show, the order of the sections, the menu style.
-- **Skin** is the colors and fonts (each of today's 29 skins already carries both), designed together and named. Variety grows by adding skins.
-- **Background** is chosen per site (a family texture, a scene photo, or the maker's own photo).
+- **Skin** is the colors, fonts and background (each of today's 29 skins already carries colors and fonts), designed together and named. Variety grows by adding skins.
+- **The background is part of the skin.** The six families sit on textures (linen, burlap, smoke, marble, confetti, concrete). Scenic is the only family with a photo behind the page: on Scenic the maker picks the photo from the scene library or provides their own.
 - Handmade finishing touches (lace edges, matted frames, window frames) are **custom-site only**. Most makers want a site that sells their work, not lace.
 - Family names don't have to be moods. They name what the site does or feels like.
 
 **The families (eight):** cozy, rustic, dark, elegant, cheerful, modern, plus:
-- **Scenic**, from Saltmarsh's Shoreline design. Its bones: a photo locked behind the page with the content floating over it. Saltmarsh's colors and fonts become one Scenic skin; the marsh photo is its background. The family is not about the shore.
+- **Scenic**, from Saltmarsh's Shoreline design. Its bones: a photo locked behind the page with the content floating over it. Saltmarsh's colors and fonts become one Scenic skin, with the marsh photo as its photo. The family is not about the shore.
 - **Spotlight**, from Paper & Patina's Showreel design. Its bones: each piece fills the screen one at a time, with bold color panels between and a scrolling market-dates ticker. Its section styles join the family engine as new choices, and Spotlight picks them.
 
 More families are added as BohdiAI grows. A good custom shape can become a new family.
@@ -27,7 +27,7 @@ More families are added as BohdiAI grows. A good custom shape can become a new f
 
 **Who picks the family and skin:** Alex for now, with Claude suggesting. It moves to the maker for automation; building real sites shows the best way.
 
-**One builder for every new site.** One content file (every word the site shows included) plus three settings (family, skin, background) fill the homes and upload the photos, for any of the eight families. It replaces the separate card, nursery and contractor build tools and the old onboarding builder.
+**One builder for every new site.** One content file (every word the site shows included) plus two settings (family and skin; on Scenic, the photo too) fill the homes and upload the photos, for any of the eight families. It replaces the separate card, nursery and contractor build tools and the old onboarding builder.
 
 **Every family can sell:** a working "Add to cart", the cart page, order request, market page, running sales, and the three plans. Today only Shoreline and the nursery design can.
 
@@ -49,7 +49,7 @@ The same goes for every other design: any family, and the newer designs like sho
 2. **Pages hold settings only.** A page's saved record says which design and which look, never words, photos or dates.
 3. **Designs only display.** A design never stores content of its own.
 4. **No hardcoding.** No display words inside a design, buttons and labels included (Alex, 2026-10-14). Section headings come from the site's own content; every other word from the site's own words (`site_words`).
-5. **No standard site ever requires custom work.** Every standard site is a family, a skin, a background, content and added sections. New needs become new shared sections, skins or families that any site can use. Custom sites (2026-10-15) are a paid option with their own handmade touches; their content still lives in the same homes.
+5. **No standard site ever requires custom work.** Every standard site is a family, a skin, content and added sections. New needs become new shared sections, skins or families that any site can use. Custom sites (2026-10-15) are a paid option with their own handmade touches; their content still lives in the same homes.
 
 ## Where things stand (checked against code and database 2026-10-13)
 
@@ -109,8 +109,8 @@ Every site must be able to add sections without a new design and without touchin
 13d. **Each site saves which plug-ins it has, in which spot and in what order,** as settings only. Adding one is a switch plus filling in its content. No code change and no other site touched.
 13e. **Features that today are hand-written into one design become plug-ins:** True Coat's calendar and estimator, Saltmarsh's testimonials, Rose n' Cat's sale banner. Each design keeps its own built-in version only where it is part of the design's shape.
 
-### 3c. Background as its own setting, and the Coastal and Sweet families
-13f. **Every site has two look settings:** its family (cozy, rustic, dark, luxury, cheerful, modern, coastal, sweet) and its background. No family has a default background; the background is always chosen for the site. It is one of three things:
+### 3c. Backgrounds and the new families
+13f. **SUPERSEDED 2026-10-15: the background is part of the skin, not its own setting; on Scenic the maker picks the photo from the scene library or provides their own** (see "The lineup"). Kept for the record: **Every site has two look settings:** its family (cozy, rustic, dark, luxury, cheerful, modern, coastal, sweet) and its background. No family has a default background; the background is always chosen for the site. It is one of three things:
    - a family texture
    - a scene photo from the shared scene library
    - the maker's own photo of their shop, booth or view, as an upload
@@ -122,7 +122,7 @@ Every site must be able to add sections without a new design and without touchin
 13j. **Family vs skin vs background vs words:**
    - the family is the layout
    - the skin is the colors and fonts
-   - the background is chosen per site
+   - the background comes with the skin (on Scenic the maker picks the photo from the scene library or provides their own)
    - every word on the page comes from the site's content
 
    Family names don't have to be moods (cozy, rustic, dark, elegant, cheerful, modern, Scenic, Spotlight). The nursery design is not a family: it stays Rose n' Cat's custom design (replaces "Sweet").
@@ -135,7 +135,7 @@ Contractors are set aside until they come back as their own leg. Only Cut-Pro an
 17. **Their designs read from those homes.** Each is copied over and shown to Alex before and after, and nothing switches until he's seen it. They are already built, so they don't go through the new builder. Halfmoon and True Coat are switched off, not moved.
 
 ### 4b. One builder for every new site (2026-10-15)
-17a. **One builder:** a site's content file, every word included, plus its family, skin and background. It fills every home and uploads the photos, for any of the eight families. It replaces the card, nursery and contractor build tools, the family copy tool and the old onboarding builder (which still writes the page record the old way and is switched off).
+17a. **One builder:** a site's content file, every word included, plus its family and skin (and its photo on Scenic). It fills every home and uploads the photos, for any of the eight families. It replaces the card, nursery and contractor build tools, the family copy tool and the old onboarding builder (which still writes the page record the old way and is switched off).
 
 ### 5. Prove it
 18. **Build a fresh sample site in cozy with the one builder.**
@@ -159,12 +159,12 @@ Contractors are set aside until they come back as their own leg. Only Cut-Pro an
 
 At first Alex curates every site. Eventually a maker signs up, pays and is live the same day, with no one in the loop.
 
-23. **Build by hand first.** Create the site, pick its family and background, fill the content through the normal screens, turn on added sections. There is no custom code.
+23. **Build by hand first.** Create the site, pick its family and skin, fill the content through the normal screens, turn on added sections. There is no custom code.
 24. **Automate one hand step at a time:**
     - an intake form fills the homes
     - the AI writes first drafts of the words
     - the maker sees their own content in each family and picks one, with the AI marking its two best fits
-    - the maker sees their own content over background choices: textures, scenes tagged for their craft, or their own photo
+    - the maker sees their own content in each skin (on Scenic, over library scenes tagged for their craft, or their own photo)
     - the moment gets made once
 25. **"Alex approves" is a switch from day one.** It is on while Alex curates. When it is off, the maker pays and goes live the same day.
 26. **Automatic quality checks** replace Alex's eyes before anything publishes:

@@ -30,7 +30,7 @@
    - every design publishes its look and has plug-in spots
    - the first shared sections: text block, testimonials, FAQ, gallery, market dates, booked-days calendar, video, sale banner, price estimator
    - each one is tested in every design
-6. Background as its own setting: family texture, scene library or the maker's own photo, with no default. Build the scene library.
+6. Backgrounds are part of the skin (decided 2026-10-15). The six families use textures; on Scenic the maker picks the photo from the scene library or provides their own. Build the scene photo library for Scenic.
 7. New families (decided 2026-10-15; replaces Coastal and Sweet):
    - Saltmarsh's Shoreline design becomes **Scenic**: a photo locked behind the page, content floating over it. Saltmarsh's colors and fonts become its first skin
    - Paper & Patina's Showreel design becomes **Spotlight**: one piece per full screen, bold color panels, the market-dates ticker, as section styles in the family engine
@@ -44,7 +44,7 @@
 9. Prove it: a fresh site in cozy, built with the one builder, switched through every family (Scenic and Spotlight included) and plan.
 10. Clean up: delete the old family samples (and the `aurora-candles-homes` proof copy), the old page-record code, the old build tools, the Torch design, and the `explore/bulletin-scene-look` branch, if it still exists.
 10a. Take down (plain list to Alex first): Halfmoon, True Coat, Ember & Pine, and bohdiai.com's contractor page, prices, FAQ section and True Coat portfolio entry.
-10b. **One builder for every new site:** a content file (every word included) plus family, skin and background; fills every home and uploads the photos. Replaces the card, nursery and contractor build tools, the family copy tool and the old onboarding builder.
+10b. **One builder for every new site:** a content file (every word included) plus family and skin (and the photo on Scenic); fills every home and uploads the photos. Replaces the card, nursery and contractor build tools, the family copy tool and the old onboarding builder.
 10c. Rustic Rhody moves onto a family; then the Bulletin design goes.
 
 ## Automated build, then self-serve (`Modular-Plan.md` section 7)
@@ -52,7 +52,7 @@
     - intake form
     - AI first drafts
     - the maker picks a family from their own content
-    - the maker picks a background
+    - the maker picks a skin (and, on Scenic, a library photo or their own)
     - the moment
 12. "Alex approves" switch: on while curating, off for same-day self-serve signup and payment.
 13. Automatic quality checks: content fits, nothing empty, photos usable.
