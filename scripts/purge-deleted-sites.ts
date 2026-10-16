@@ -1,15 +1,15 @@
 /**
- * Permanently remove the sites that are already marked deleted (Alex, 2026-10-16).
- * Alex runs this himself: it can't be undone.
+ * Permanently remove the sites that are already marked deleted, and everything
+ * that was theirs (Alex, 2026-10-16: "we do not need to keep anything from deleted
+ * sites"). Alex runs this himself: it can't be undone.
  *
  *   npx tsx --env-file=.env.local scripts/purge-deleted-sites.ts          (check only: lists what goes)
  *   npx tsx --env-file=.env.local scripts/purge-deleted-sites.ts --yes    (removes them)
  *
  * Only sites with deleted_at set are touched, by id, so a live site that shares an
- * old deleted site's address is left alone. Kept on purpose: their photos (the
- * upload records and the files, reusable later) and the logged design decisions;
- * both are unlinked from the site first. Everything else that belongs only to the
- * site goes with it: pages, pieces, collections, members, words and the rest.
+ * old deleted site's address is left alone. For each: its photo files in storage,
+ * then the site itself, which takes every row that belongs to it (pages, pieces,
+ * collections, photo records, members, words, logged design decisions...).
  */
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../lib/database.types';
@@ -33,21 +33,28 @@ async function main(): Promise<void> {
     process.stdout.write('no deleted sites\n');
     return;
   }
+
+  const files = new Map<string, { bucket: string; path: string }[]>();
   for (const s of list) {
     const { count } = await db.from('listings').select('id', { count: 'exact', head: true }).eq('tenant_id', s.id);
-    process.stdout.write(`${s.subdomain} (deleted ${s.deleted_at?.slice(0, 10)}): ${count ?? 0} pieces\n`);
+    const { data: ups, error: upErr } = await db.from('uploads').select('storage_bucket, storage_path').eq('tenant_id', s.id);
+    if (upErr !== null) fail(`${s.subdomain}: reading its photos failed: ${upErr.message}`);
+    files.set(s.id, (ups ?? []).map((u) => ({ bucket: u.storage_bucket, path: u.storage_path })));
+    process.stdout.write(`${s.subdomain} (deleted ${s.deleted_at?.slice(0, 10)}): ${count ?? 0} pieces, ${files.get(s.id)?.length ?? 0} photos\n`);
   }
   if (!yes) {
-    process.stdout.write(`\n${list.length} sites would be removed for good. Their photos and design decisions are kept.\nRun again with --yes to remove them.\n`);
+    process.stdout.write(`\n${list.length} sites, and everything that was theirs, would be removed for good.\nRun again with --yes to remove them.\n`);
     return;
   }
 
   let removed = 0;
   for (const s of list) {
-    const keepPhotos = await db.from('uploads').update({ tenant_id: null }).eq('tenant_id', s.id);
-    if (keepPhotos.error !== null) fail(`${s.subdomain}: keeping its photos failed (${keepPhotos.error.message}); stopped, nothing more removed`);
-    const keepChoices = await db.from('design_choices').update({ tenant_id: null }).eq('tenant_id', s.id);
-    if (keepChoices.error !== null) fail(`${s.subdomain}: keeping its design decisions failed (${keepChoices.error.message}); stopped`);
+    const byBucket = new Map<string, string[]>();
+    for (const f of files.get(s.id) ?? []) byBucket.set(f.bucket, [...(byBucket.get(f.bucket) ?? []), f.path]);
+    for (const [bucket, paths] of byBucket) {
+      const { error: rmErr } = await db.storage.from(bucket).remove(paths);
+      if (rmErr !== null) fail(`${s.subdomain}: removing its photo files failed (${rmErr.message}); stopped after ${removed}`);
+    }
     const gone = await db.from('tenants').delete().eq('id', s.id).not('deleted_at', 'is', null);
     if (gone.error !== null) fail(`${s.subdomain}: removing it failed (${gone.error.message}); stopped after ${removed}`);
     removed += 1;
