@@ -101,6 +101,23 @@ describe('planSite — a family site', () => {
     expect(video.ok && video.plan.files).toContain('poster.webp');
   });
 
+  it('a button may only point at a page the plan has', () => {
+    const showcase = (over: Over = {}): SiteFile => {
+      const base = familySite(over);
+      return { ...base, site: { ...base.site, plan: 'showcase' } };
+    };
+    const toShop = { ...EMPTY_MOMENT, headline: 'Flag & Field', ctaLabel: 'See the flags', ctaTarget: 'shop' as const, secondCtaLabel: 'Groups', secondCtaTarget: 'collections' as const };
+    const errs = errorsOf(showcase({ moment: toShop, sections: { about: { moreLabel: 'Shop', moreTarget: 'shop' }, makes: { moreLabel: 'About', moreTarget: 'about' } } }));
+    expect(errs).toEqual([
+      `moment: the main button points at "shop", a page the showcase plan doesn't have`,
+      `moment: the second button points at "collections", a page the showcase plan doesn't have`,
+      `sections.about: the link at the bottom points at "shop", a page the showcase plan doesn't have`,
+    ]);
+    expect(errorsOf(showcase({ moment: { ...toShop, ctaTarget: 'about', secondCtaLabel: '', secondCtaTarget: '' } }))).toEqual([]);
+    // Market and Full have the shop.
+    expect(errorsOf(familySite({ moment: toShop }))).toEqual([]);
+  });
+
   it('checks the section words', () => {
     expect(errorsOf(familySite({ sections: { work: { title: 'x'.repeat(500) } } })).some((e) => e.startsWith('sections.work: '))).toBe(true);
     expect(errorsOf(familySite({ sections: { nope: {} } as SiteFile['sections'] }))).toContain('sections: unknown section "nope"');

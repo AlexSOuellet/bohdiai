@@ -124,3 +124,13 @@ describe('applying a plan', () => {
     });
   });
 });
+
+describe('the pages a link can point at', () => {
+  it('Showcase has no shop and no collections; Market and Full have every page', async () => {
+    const { planLinkTargets } = await import('./plan-features');
+    const { LINK_TARGETS } = await import('@/lib/archetypes/main-street/links');
+    expect(planLinkTargets('showcase')).toEqual(LINK_TARGETS.filter((t) => t !== 'shop' && t !== 'collections'));
+    expect(planLinkTargets('lite')).toEqual(LINK_TARGETS);
+    expect(planLinkTargets('full')).toEqual(LINK_TARGETS);
+  });
+});
