@@ -12,11 +12,11 @@ import type { ArchetypeBuildSpec } from '../builder';
 import { supabaseAdmin } from '@/lib/supabase';
 import { CardLanding, CardContentPage } from './CardLanding';
 import { BulletinLanding, BulletinContentPage } from './BulletinLanding';
-import { ShowreelLanding, ShowreelContentPage } from './ShowreelLanding';
+import { ShowreelLanding, ShowreelContentPage, ShowreelProduct, ShowreelShop } from './ShowreelLanding';
 import { TorchLanding, TorchContentPage } from './TorchLanding';
 import { ShorelineLanding, ShorelineContentPage } from './ShorelineLanding';
 import { ShorelineCart, ShorelineMarket, ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
-import { loadShorelineData } from './shoreline-data';
+import { featuredProducts, loadShorelineData } from './shoreline-data';
 import type { ArchetypePage } from '../builder';
 import type { CartView, ProductView, MarketShopView } from '../content';
 import { CardContentSchema, cardDesign, type CardContent, type CardDesign } from './design';
@@ -58,10 +58,21 @@ async function CardSite({ tenantId, paint, design, page, collectionSlug }: { ten
     if (which === 'collection' && !site.collections.some((c) => c.slug === collectionSlug)) notFound();
     return <ShorelineSite site={site} page={which} tenantId={tenantId} collection={collectionSlug ?? null} />;
   }
+  if (design === 'showreel') {
+    // Showcase is the one page (the gallery is the work); with the catalog on, her
+    // pieces are the work and the site has a shop (Spotlight trial, 2026-10-15).
+    const site = await loadShorelineData(supabaseAdmin(), tenantId);
+    if (!site.pages) {
+      if (!home) notFound();
+      return <ShowreelLanding data={site.card} tenantId={tenantId} />;
+    }
+    if (home) return <ShowreelLanding data={site.card} tenantId={tenantId} products={featuredProducts(site.products)} />;
+    if (page === 'shop') return <ShowreelShop data={site.card} products={site.products} />;
+    notFound();
+  }
   if (!home) notFound();
   const data = await loadCardData(supabaseAdmin(), tenantId);
   if (design === 'bulletin') return <BulletinLanding data={data} tenantId={tenantId} />;
-  if (design === 'showreel') return <ShowreelLanding data={data} tenantId={tenantId} />;
   if (design === 'torch') return <TorchLanding data={data} tenantId={tenantId} />;
   return <CardLanding data={data} paint={paint} tenantId={tenantId} />;
 }
@@ -82,11 +93,12 @@ async function CardMarket({ tenantId, design, market }: { tenantId: string; desi
   return <ShorelineMarket site={site} market={market} />;
 }
 
-/** A product's page — only the shoreline design on Lite and Full has them. */
+/** A product's page — the shoreline and show reel designs have them on Lite and Full. */
 async function CardProduct({ tenantId, design, product }: { tenantId: string; design: CardDesign; product: ProductView }): Promise<ReactElement> {
-  if (design !== 'shoreline') notFound();
+  if (design !== 'shoreline' && design !== 'showreel') notFound();
   const site = await loadShorelineData(supabaseAdmin(), tenantId);
   if (!site.pages) notFound();
+  if (design === 'showreel') return <ShowreelProduct data={site.card} product={product} tenantId={tenantId} allPhotos={site.allPhotos} />;
   return <ShorelineProduct site={site} product={product} tenantId={tenantId} />;
 }
 

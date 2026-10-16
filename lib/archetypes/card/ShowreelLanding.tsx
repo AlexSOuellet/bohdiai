@@ -1,16 +1,18 @@
 /**
- * Business card, show reel design (show reel and torch spec): the work full
- * screen, one piece at a time. The opening is the first photo with the name
- * slammed over it; every other photo gets its own screen with its number and
- * caption; a red panel carries the about heading and bio; the end panel is the
- * contact form; a red ticker scrolls the market dates. Every word the maker
- * wrote comes from `data`; the site's own words (`data.words`) fill everything else.
+ * Business card, show reel design (show reel and torch spec; Spotlight trial,
+ * Alex 2026-10-15). The opening is the first photo with the name slammed over
+ * it; then the work, big, two to a row with quiet captions; a red panel carries
+ * the about heading and bio; the end panel is the contact form; a red ticker
+ * scrolls the market dates on every page. On Showcase the work is the gallery;
+ * when the catalog is on it is her pieces (those marked for the home page), with
+ * a shop page and a page for each piece. Every word the maker wrote comes from
+ * `data`; the site's own words (`data.words`) fill everything else.
  */
 import { Fragment, type ReactElement, type ReactNode } from 'react';
 import Link from 'next/link';
 import { dialable } from '@/lib/backend/profile/profile-form';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
-import type { GalleryItem } from '@/lib/backend/gallery/gallery-form';
+import type { ProductView } from '@/lib/archetypes/content';
 import { fill } from '@/lib/site-words/words';
 import type { CardWords } from './words';
 import { CardContactForm } from './CardContactForm';
@@ -21,8 +23,8 @@ import { bioParagraphs, marqueeDateLine, marqueeFill, type CardData } from './da
 
 const ROOT_ID = 'sr-root';
 const TOUCH_ID = 'touch';
-/** The red panel comes after this many pieces (or after the last, if fewer). */
-const SAY_AFTER = 4;
+const WORK_ID = 'work';
+const ASK_ID = 'ask';
 
 function Frame({ children }: { children: ReactNode }): ReactElement {
   return (
@@ -82,66 +84,159 @@ function Slam({ name }: { name: string }): ReactElement {
   );
 }
 
-function Piece({ photo, n, label }: { photo: GalleryItem; n: number; label: string }): ReactElement {
+/** A caption whose first word stands and the rest lean (the show reel's voice). */
+function Caption({ text }: { text: string }): ReactElement {
   return (
-    <section className="sr-slide sr-shade" data-piece={n} aria-label={photo.caption === '' ? fill(label, { n: String(n).padStart(2, '0') }) : photo.caption}>
-      {/* The owner's own uploads, already shrunk at upload — plain imgs like the other maker-photo spots. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="sr-bg" src={photo.url} alt="" aria-hidden="true" loading="lazy" />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="sr-main" src={photo.url} alt={photo.caption} loading="lazy" />
-      <div className="sr-txt">
-        {photo.caption !== '' && (
-          <div className="sr-name" aria-hidden="true">
-            {photo.caption.split(/\s+/).map((w, i) => (
-              <Fragment key={`${i}-${w}`}>
-                {i > 0 && ' '}
-                <span className={i === 0 ? undefined : 'sr-soft'}>{w}</span>
-              </Fragment>
-            ))}
-          </div>
-        )}
-      </div>
+    <>
+      {text.split(/\s+/).map((word, i) => (
+        <Fragment key={`${i}-${word}`}>
+          {i > 0 && ' '}
+          <span className={i === 0 ? undefined : 'sr-soft'}>{word}</span>
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
+/** The piece's price as the shop shows it: the sale price beside the struck full one, or "Ask for price". */
+function Price({ product, w }: { product: ProductView; w: CardWords['shoreline'] }): ReactElement {
+  if (product.askForPrice === true) return <span className="sr-price sr-price--ask">{w.askForPrice}</span>;
+  if (product.salePrice !== undefined) {
+    return (
+      <span className="sr-price">
+        <s>
+          <span className="sr-sr">{w.was} </span>
+          {product.price}
+        </s>{' '}
+        {product.salePrice}
+      </span>
+    );
+  }
+  return <span className="sr-price">{product.price}</span>;
+}
+
+/** The piece's first photo, when it has one. */
+function firstPhoto(product: ProductView): { url: string; alt: string } | null {
+  const m = product.media.find((x) => x.kind === 'image' && x.url !== undefined);
+  return m?.url === undefined ? null : { url: m.url, alt: m.alt === '' ? product.name : m.alt };
+}
+
+/** The work, big, two to a row: gallery photos (Showcase) or her pieces, each opening its own page. */
+function Work({ items, label }: { items: ReactElement[]; label: string }): ReactElement | null {
+  if (items.length === 0) return null;
+  return (
+    <section className="sr-work" id={WORK_ID} aria-label={label}>
+      <ul className="sr-grid">{items}</ul>
     </section>
+  );
+}
+
+function PhotoTile({ url, caption }: { url: string; caption: string }): ReactElement {
+  return (
+    <li className="sr-tile">
+      <figure>
+        <div className="sr-tile-img">
+          {/* The owner's own uploads, already shrunk at upload — plain imgs like the other maker-photo spots. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={url} alt={caption} loading="lazy" />
+        </div>
+        {caption !== '' && (
+          <figcaption className="sr-cap">
+            <span className="sr-cap-name">
+              <Caption text={caption} />
+            </span>
+          </figcaption>
+        )}
+      </figure>
+    </li>
+  );
+}
+
+function ProductTile({ product, w }: { product: ProductView; w: CardWords['shoreline'] }): ReactElement {
+  const photo = firstPhoto(product);
+  return (
+    <li className="sr-tile">
+      <a href={`/listings/${product.slug}`}>
+        <div className="sr-tile-img">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {photo !== null && <img src={photo.url} alt={photo.alt} loading="lazy" />}
+        </div>
+        <span className="sr-cap">
+          <span className="sr-cap-name">
+            <Caption text={product.name} />
+          </span>
+          <Price product={product} w={w} />
+        </span>
+      </a>
+    </li>
+  );
+}
+
+/** The top bar: her name home, and the shop when the site has one. */
+function Bar({ name, shop, w, motion }: { name: string; shop: boolean; w: CardWords['shoreline']; motion: boolean }): ReactElement {
+  return (
+    <header className="sr-bar">
+      <Link href="/">{name}</Link>
+      {shop && (
+        <nav aria-label={w.nav.label}>
+          <a href="/shop">{w.nav.shop}</a>
+        </nav>
+      )}
+      {motion && <ShowreelMotion rootId={ROOT_ID} />}
+    </header>
+  );
+}
+
+/** The red ticker of market dates, fixed at the foot of every page, and the same dates for screen readers. */
+function Ticker({ data }: { data: CardData }): ReactElement | null {
+  const w = data.words;
+  const dateLines = data.dates.map((d) => marqueeDateLine(d, w.dates));
+  if (dateLines.length === 0) return null;
+  const tickerFill = marqueeFill(dateLines, 6);
+  return (
+    <>
+      <div className="sr-ticker" aria-hidden="true">
+        <div>
+          {tickerFill.map((line, i) => (
+            <span key={`${i}-${line}`}>
+              {i % dateLines.length === 0 && <b>{w.showreel.findMe}</b>}
+              {line}
+            </span>
+          ))}
+        </div>
+      </div>
+      <ul className="sr-sr" aria-label={w.showreel.datesLabel}>
+        {dateLines.map((line, i) => (
+          <li key={`${i}-${line}`}>{line}</li>
+        ))}
+      </ul>
+    </>
   );
 }
 
 export function ShowreelLanding({
   data,
   tenantId,
+  products,
   platformCredit = true,
 }: {
   data: CardData;
   tenantId: string | undefined;
+  /** Her pieces for the home page when the catalog is on; left out on Showcase, where the gallery is the work. */
+  products?: ProductView[] | undefined;
   platformCredit?: boolean;
 }): ReactElement {
-  const { name, profile: p, photos, dates, words: w } = data;
-  const [opener, ...pieces] = photos;
+  const { name, profile: p, photos, words: w } = data;
+  const shop = products !== undefined;
+  const [opener, ...rest] = photos;
+  const tiles = shop
+    ? products.map((product) => <ProductTile key={product.slug} product={product} w={w.shoreline} />)
+    : rest.map((photo) => <PhotoTile key={photo.id} url={photo.url} caption={photo.caption} />);
   const bio = bioParagraphs(p.bio);
   const [sayA, sayB] = halves(p.aboutTitle);
   const hasSay = p.aboutTitle !== '' || bio.length > 0;
-  const sayAt = Math.min(SAY_AFTER, pieces.length);
   const canWrite = tenantId !== undefined;
   const hasWays = p.phone !== '' || p.facebookUrl !== '' || p.instagramUrl !== '';
-  const dateLines = dates.map((d) => marqueeDateLine(d, w.dates));
-  const tickerFill = marqueeFill(dateLines, 6);
-
-  const say = hasSay && (
-    <section className="sr-slide sr-say" id="about" key="say">
-      <div>
-        {p.aboutTitle !== '' && (
-          <h2>
-            <span>{sayA}</span>
-            {sayB !== '' && <span>{sayB}</span>}
-          </h2>
-        )}
-        {bio.map((para) => (
-          <p key={para.slice(0, 40)}>{para}</p>
-        ))}
-        {p.signature !== '' && <span className="sr-sig">— {p.signature}</span>}
-      </div>
-    </section>
-  );
 
   return (
     <Frame>
@@ -150,10 +245,7 @@ export function ShowreelLanding({
           {w.skip}
         </a>
       )}
-      <header className="sr-bar">
-        <Link href="/">{name}</Link>
-        <ShowreelMotion rootId={ROOT_ID} />
-      </header>
+      <Bar name={name} shop={shop} w={w.shoreline} motion />
 
       <main id="main">
         <section className="sr-slide sr-open sr-on">
@@ -165,21 +257,37 @@ export function ShowreelLanding({
             {p.kicker !== '' && <div className="sr-kick">{p.kicker}</div>}
             <Slam name={name} />
             {p.headline !== '' && <p className="sr-head">{p.headline}</p>}
-            {pieces.length > 0 && (
-              <a className="sr-go" href="#piece-1">
+            {tiles.length > 0 && (
+              <a className="sr-go" href={`#${WORK_ID}`}>
                 {w.showreel.seeWork}
               </a>
             )}
           </div>
         </section>
 
-        {pieces.map((photo, i) => (
-          <div key={photo.id} id={`piece-${i + 1}`} className="sr-anchor">
-            <Piece photo={photo} n={i + 1} label={w.showreel.piece} />
-            {i + 1 === sayAt && say}
-          </div>
-        ))}
-        {pieces.length === 0 && say}
+        <Work items={tiles} label={w.shoreline.work} />
+        {shop && (
+          <p className="sr-more">
+            <a href="/shop">{w.shoreline.seeShop}</a>
+          </p>
+        )}
+
+        {hasSay && (
+          <section className="sr-slide sr-say" id="about">
+            <div>
+              {p.aboutTitle !== '' && (
+                <h2>
+                  <span>{sayA}</span>
+                  {sayB !== '' && <span>{sayB}</span>}
+                </h2>
+              )}
+              {bio.map((para) => (
+                <p key={para.slice(0, 40)}>{para}</p>
+              ))}
+              {p.signature !== '' && <span className="sr-sig">— {p.signature}</span>}
+            </div>
+          </section>
+        )}
 
         <section className="sr-slide sr-end" id={TOUCH_ID}>
           <div className="sr-wrap">
@@ -210,25 +318,103 @@ export function ShowreelLanding({
         </section>
       </main>
 
-      {dateLines.length > 0 && (
-        <>
-          <div className="sr-ticker" aria-hidden="true">
-            <div>
-              {tickerFill.map((line, i) => (
-                <span key={`${i}-${line}`}>
-                  {i % dateLines.length === 0 && <b>{w.showreel.findMe}</b>}
-                  {line}
-                </span>
-              ))}
-            </div>
-          </div>
-          <ul className="sr-sr" aria-label={w.showreel.datesLabel}>
-            {dateLines.map((line, i) => (
-              <li key={`${i}-${line}`}>{line}</li>
+      <Ticker data={data} />
+    </Frame>
+  );
+}
+
+/** The shop (catalog on): every live piece, two to a row, each opening its own page. */
+export function ShowreelShop({
+  data,
+  products,
+  platformCredit = true,
+}: {
+  data: CardData;
+  products: ProductView[];
+  platformCredit?: boolean;
+}): ReactElement {
+  const w = data.words;
+  return (
+    <Frame>
+      <Bar name={data.name} shop w={w.shoreline} motion={false} />
+      <main id="main" className="sr-page">
+        <h1 className="sr-page-title">{w.shoreline.work}</h1>
+        {products.length === 0 ? (
+          <p className="sr-empty">{w.shoreline.emptyShop}</p>
+        ) : (
+          <ul className="sr-grid">
+            {products.map((product) => (
+              <ProductTile key={product.slug} product={product} w={w.shoreline} />
             ))}
           </ul>
-        </>
-      )}
+        )}
+        <footer className="sr-page-foot">
+          <FooterLinks name={data.name} platformCredit={platformCredit} w={w.footer} />
+        </footer>
+      </main>
+      <Ticker data={data} />
+    </Frame>
+  );
+}
+
+/** One piece: its photos large, its name, price and story, and a note to ask about it. */
+export function ShowreelProduct({
+  data,
+  product,
+  tenantId,
+  allPhotos,
+  platformCredit = true,
+}: {
+  data: CardData;
+  product: ProductView;
+  tenantId: string;
+  /** Every photo on the piece (Full); otherwise its first only. */
+  allPhotos: boolean;
+  platformCredit?: boolean;
+}): ReactElement {
+  const w = data.words;
+  const W = w.shoreline;
+  const photos = (allPhotos ? product.media : product.media.slice(0, 1)).flatMap((m) =>
+    m.kind === 'image' && m.url !== undefined ? [{ url: m.url, alt: m.alt === '' ? product.name : m.alt }] : [],
+  );
+  return (
+    <Frame>
+      <Bar name={data.name} shop w={W} motion={false} />
+      <main id="main" className="sr-page">
+        <p className="sr-back">
+          <a href="/shop">{W.backToShop}</a>
+        </p>
+        <article className="sr-piece">
+          <div className="sr-piece-photos">
+            {photos.map((ph, i) => (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img key={`${i}-${ph.url}`} src={ph.url} alt={ph.alt} loading={i === 0 ? 'eager' : 'lazy'} />
+            ))}
+          </div>
+          <div className="sr-piece-sheet">
+            <h1>
+              <Caption text={product.name} />
+            </h1>
+            <p className="sr-piece-price">
+              <Price product={product} w={W} />
+            </p>
+            {product.shortDescription !== undefined && product.shortDescription !== '' && <p className="sr-piece-short">{product.shortDescription}</p>}
+            {bioParagraphs(product.description).map((para) => (
+              <p key={para.slice(0, 40)}>{para}</p>
+            ))}
+            <a className="sr-go sr-go--dark" href={`#${ASK_ID}`}>
+              {W.askAbout}
+            </a>
+          </div>
+        </article>
+        <section className="sr-ask" id={ASK_ID} aria-label={W.askAbout}>
+          <CardContactForm tenantId={tenantId} w={w.form} initialMessage={fill(W.askMessage, { name: product.name })} />
+        </section>
+        <footer className="sr-page-foot">
+          <FooterLinks name={data.name} platformCredit={platformCredit} w={w.footer} />
+        </footer>
+      </main>
+      <Ticker data={data} />
     </Frame>
   );
 }
