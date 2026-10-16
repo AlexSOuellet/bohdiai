@@ -160,7 +160,7 @@ Contractors are set aside until they come back as their own leg. Only Cut-Pro an
 At first Alex curates every site. Eventually a maker signs up, pays and is live the same day, with no one in the loop.
 
 23. **Build by hand first.** Create the site, pick its family and skin, fill the content through the normal screens, turn on added sections. There is no custom code.
-24. **Automate one hand step at a time:**
+24. **Automate one hand step at a time:** (Session 106: the intake form is live at bohdiai.com/start, the maker makes their account there, and `scripts/intake-to-site.ts` builds the site with Claude's first drafts of the words; the maker publishes it from their backend. Still by hand: running the command, and picking the skin, and the family on "you pick".)
     - an intake form fills the homes
     - the AI writes first drafts of the words
     - the maker sees their own content in each family and picks one, with the AI marking its two best fits
