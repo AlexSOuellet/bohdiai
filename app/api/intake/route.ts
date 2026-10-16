@@ -9,6 +9,7 @@ import { saveIntake } from '@/lib/intake/save';
 import { getIntakeWords } from '@/lib/intake/queries';
 import { composeIntakeEmail } from '@/lib/intake/email';
 import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
+import { FAMILY_KEYS } from '@/lib/archetypes/main-street/families';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -39,7 +40,7 @@ async function handle(req: Request) {
     return NextResponse.json({ failed: true }, { status: 400 });
   }
 
-  const parsed = parseIntake(form);
+  const parsed = parseIntake(form, FAMILY_KEYS);
   if (parsed.kind === 'spam') return NextResponse.json({ ok: true });
   if (parsed.kind === 'invalid') return NextResponse.json({ problem: parsed.problem }, { status: 400 });
 

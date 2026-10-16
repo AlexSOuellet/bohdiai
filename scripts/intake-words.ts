@@ -2,11 +2,12 @@
  * Fill in the intake form's words (`intake_words`). Nothing is written into the
  * code, so the form (bohdiai.com/start) gets its words from data.
  *
- *   npx tsx --env-file=.env.local scripts/intake-words.ts load <words.json> [--update]
+ *   npx tsx --env-file=.env.local scripts/intake-words.ts load <words.json> [--update] [--prune]
  *
  * The file maps each spot to its words ("intake.send.button": "Send it to me").
  * Every spot the form has must be in it, and nothing else. Without --update only
- * missing spots are written; with it, changed words are rewritten too.
+ * missing spots are written; with it, changed words are rewritten too. --prune
+ * removes rows for spots the form no longer has (say, after a spot is renamed).
  */
 import { readFileSync } from 'node:fs';
 import { createClient } from '@supabase/supabase-js';
@@ -20,8 +21,10 @@ function fail(message: string): never {
 }
 
 async function main(): Promise<void> {
-  const [mode, file, flag] = process.argv.slice(2);
-  if (mode !== 'load' || file === undefined) fail('usage: scripts/intake-words.ts load <words.json> [--update]');
+  const [mode, file, ...flags] = process.argv.slice(2);
+  if (mode !== 'load' || file === undefined) fail('usage: scripts/intake-words.ts load <words.json> [--update] [--prune]');
+  const update = flags.includes('--update');
+  const prune = flags.includes('--prune');
   const url = process.env['SUPABASE_URL'];
   const key = process.env['SUPABASE_SERVICE_ROLE_KEY'];
   if (url === undefined || key === undefined) fail('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are needed (use --env-file=.env.local)');
@@ -43,13 +46,18 @@ async function main(): Promise<void> {
   if (error !== null) fail(`reading words failed: ${error.message}`);
   const have = new Map((data ?? []).map((r) => [r.key, r.text]));
   const rows = [...words]
-    .filter(([k, t]) => !have.has(k) || (flag === '--update' && have.get(k) !== t))
+    .filter(([k, t]) => !have.has(k) || (update && have.get(k) !== t))
     .map(([k, t]) => ({ key: k, text: t }));
   if (rows.length > 0) {
     const { error: upErr } = await db.from('intake_words').upsert(rows, { onConflict: 'key' });
     if (upErr !== null) fail(`writing words failed: ${upErr.message}`);
   }
-  process.stdout.write(`${rows.length} words written (${spots.size} spots)\n`);
+  const stale = prune ? [...have.keys()].filter((k) => !spots.has(k)) : [];
+  if (stale.length > 0) {
+    const { error: delErr } = await db.from('intake_words').delete().in('key', stale);
+    if (delErr !== null) fail(`removing old words failed: ${delErr.message}`);
+  }
+  process.stdout.write(`${rows.length} words written, ${stale.length} old removed (${spots.size} spots)\n`);
 }
 
 void main();

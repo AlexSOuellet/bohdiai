@@ -959,10 +959,10 @@ export type Database = {
           business_name: string
           created_at: string
           email: string
+          family: string | null
           id: string
           maker_name: string
           makes: string
-          mood: string | null
           portrait_path: string | null
           status: string
           tenant_id: string | null
@@ -973,10 +973,10 @@ export type Database = {
           business_name: string
           created_at?: string
           email: string
+          family?: string | null
           id?: string
           maker_name: string
           makes: string
-          mood?: string | null
           portrait_path?: string | null
           status?: string
           tenant_id?: string | null
@@ -987,10 +987,10 @@ export type Database = {
           business_name?: string
           created_at?: string
           email?: string
+          family?: string | null
           id?: string
           maker_name?: string
           makes?: string
-          mood?: string | null
           portrait_path?: string | null
           status?: string
           tenant_id?: string | null

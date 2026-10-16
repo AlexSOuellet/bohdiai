@@ -4,10 +4,15 @@
  * `intake_words`, one row per spot. This names the spots; every leaf is blank.
  */
 import type { WordShape } from '@/lib/site-words/words';
+import { FAMILY_KEYS, type FamilyKey } from '@/lib/archetypes/main-street/families';
 
 export const INTAKE_WORDS_PREFIX = 'intake';
 
-const MOOD = { label: '', line: '' } as const;
+const LOOK = { label: '', line: '' } as const;
+
+/** One tile per family there is, now and later: a new family gets its spots here
+ *  the day it's added (Alex, 2026-10-16). Makers see these as moods. */
+const FAMILY_SPOTS = Object.fromEntries(FAMILY_KEYS.map((k) => [k, LOOK])) as Record<FamilyKey, typeof LOOK>;
 
 export const INTAKE_WORD_SPOTS = {
   page: { title: '', lede: '', metaTitle: '', metaDescription: '' },
@@ -38,14 +43,9 @@ export const INTAKE_WORD_SPOTS = {
   mood: {
     heading: '',
     hint: '',
-    cozy: MOOD,
-    rustic: MOOD,
-    dark: MOOD,
-    elegant: MOOD,
-    cheerful: MOOD,
-    modern: MOOD,
-    pick: MOOD,
+    pick: LOOK,
   },
+  families: FAMILY_SPOTS,
   send: { button: '', sending: '' },
   sent: { title: '', body: '' },
   errors: {

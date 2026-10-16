@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { keyWords } from '@/lib/site-words/words';
 import { INTAKE_WORD_SPOTS } from '@/lib/intake/words';
 import { FIELD, MAX_PIECES, MIN_PIECES } from '@/lib/intake/request';
+import { FAMILY_KEYS } from '@/lib/archetypes/main-street/families';
 
 const shrink = vi.fn((f: File) => Promise.resolve(new File([new Uint8Array(2)], f.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' })));
 vi.mock('@/lib/intake/browser-photo', () => ({ shrinkInBrowser: (f: File) => shrink(f) }));
@@ -11,7 +12,7 @@ vi.mock('@/lib/intake/browser-photo', () => ({ shrinkInBrowser: (f: File) => shr
 import { IntakeForm } from './IntakeForm';
 
 const words = keyWords(INTAKE_WORD_SPOTS, 'intake');
-const textures = { cozy: '/t/c.png', rustic: '/t/r.png', dark: '/t/d.png', elegant: '/t/e.png', cheerful: '/t/ch.png', modern: '/t/m.png' };
+const looks = FAMILY_KEYS.map((key) => ({ key, texture: `/t/${key}.png` }));
 const fetchMock = vi.fn();
 const photos = (n: number): File[] => Array.from({ length: n }, (_, i) => new File([new Uint8Array(4)], `p${i}.png`, { type: 'image/png' }));
 
@@ -26,7 +27,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 function setup() {
   const u = userEvent.setup({ delay: null });
-  const view = render(<IntakeForm words={words} textures={textures} contactEmail="alex@example.com" />);
+  const view = render(<IntakeForm words={words} looks={looks} contactEmail="alex@example.com" />);
   return { u, view };
 }
 
@@ -40,17 +41,18 @@ async function fillAll(u: ReturnType<typeof userEvent.setup>, count = MIN_PIECES
   for (const [i, input] of names.entries()) await u.type(input, `Piece ${i + 1}`);
   await u.type(screen.getAllByLabelText('intake.pieces.price')[0]!, '25');
   await u.type(screen.getByRole('textbox', { name: 'intake.about.heading' }), 'I started on the porch.');
-  await u.click(screen.getByRole('radio', { name: /intake\.mood\.rustic\.label/ }));
+  await u.click(screen.getByRole('radio', { name: /intake\.families\.rustic\.label/ }));
 }
 
 describe('IntakeForm', { timeout: 20_000 }, () => {
-  it('shows every word from the form’s own words, and a tile per mood with its texture', () => {
+  it('shows every word from the form’s own words, and a tile for every family on its own background', () => {
     setup();
     expect(screen.getByRole('heading', { name: 'intake.you.heading' })).toBeInTheDocument();
     expect(screen.getByText('intake.pieces.needed')).toBeInTheDocument();
-    expect(screen.getAllByRole('radio')).toHaveLength(7);
+    expect(screen.getAllByRole('radio')).toHaveLength(FAMILY_KEYS.length + 1);
+    for (const key of FAMILY_KEYS) expect(screen.getByRole('radio', { name: new RegExp(`intake\\.families\\.${key}\\.label`) })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'intake.send.button' })).toBeInTheDocument();
-    expect(document.querySelector('img[src="/t/e.png"]')).not.toBeNull();
+    expect(document.querySelector('img[src="/t/luxury.png"]')).not.toBeNull();
   });
 
   it('sends everything as one form and shows the thank-you', async () => {
@@ -65,7 +67,7 @@ describe('IntakeForm', { timeout: 20_000 }, () => {
     expect(url).toBe('/api/intake');
     const sent = init.body as FormData;
     expect(sent.get(FIELD.name)).toBe('Lena');
-    expect(sent.get(FIELD.mood)).toBe('rustic');
+    expect(sent.get(FIELD.family)).toBe('rustic');
     expect(sent.getAll(FIELD.pieceName)).toEqual(['Piece 1', 'Piece 2', 'Piece 3', 'Piece 4', 'Piece 5']);
     expect(sent.getAll(FIELD.piecePrice)).toEqual(['25', '', '', '', '']);
     expect(sent.getAll(FIELD.piecePhoto)).toHaveLength(MIN_PIECES);
@@ -141,7 +143,7 @@ describe('IntakeForm', { timeout: 20_000 }, () => {
     await u.click(screen.getByRole('radio', { name: /intake\.mood\.pick\.label/ }));
     await u.click(screen.getByRole('button', { name: 'intake.send.button' }));
     await screen.findByRole('status');
-    expect(((fetchMock.mock.calls[0] as [string, RequestInit])[1].body as FormData).get(FIELD.mood)).toBe('pick');
+    expect(((fetchMock.mock.calls[0] as [string, RequestInit])[1].body as FormData).get(FIELD.family)).toBe('pick');
     expect(within(screen.getByRole('status')).getByText('intake.sent.body')).toBeInTheDocument();
   });
 });

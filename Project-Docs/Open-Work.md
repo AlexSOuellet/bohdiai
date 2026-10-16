@@ -50,7 +50,7 @@
 
 ## Automated build, then self-serve (`Modular-Plan.md` section 7)
 11. Build by hand first. Then automate one step at a time:
-    - intake form: built (Session 106, branch `feat/maker-intake`): bohdiai.com/start takes name, business, email, what they make, 5 to 10 pieces (one photo each), about, an optional photo of them, and a mood; saved to `intakes` + `intake_pieces`, photos in the private `intake-photos` bucket, Alex emailed; its words in `intake_words` (`scripts/intake-words.ts`). Next: turn a submission into a site with the one builder (after the big push)
+    - intake form: built (Session 106, branch `feat/maker-intake`): bohdiai.com/start takes name, business, email, what they make, 5 to 10 pieces (one photo each), about, an optional photo of them, and a mood (one tile per family, read from the family list in the code, so every new family appears on its own); saved to `intakes` + `intake_pieces`, photos in the private `intake-photos` bucket, Alex emailed; its words in `intake_words` (`scripts/intake-words.ts`). Next: turn a submission into a site with the one builder (after the big push)
     - AI first drafts
     - the maker picks a family from their own content
     - the maker picks a skin (and, on Scenic, a library photo or their own)
@@ -149,6 +149,6 @@
 43. Maker checkup (`feat/maker-checkup` pushed, not merged).
 44. Spotlight trial (`feat/spotlight-trial`, pushed, NOT merged; Alex 2026-10-15: "one big push later"): Showreel work two to a row, quieter text, shop and piece pages when the catalog is on. Alex likes it "ok", isn't into very large product photos; three to a row only if people complain. Private test copy `paper-and-patina-trial` (draft, its own photo copies) stays until the selling work.
 45. Family plans (`feat/family-plans`, pushed, NOT merged, for the big push; Session 105): Full cart, Add to cart, sales, market page and Showcase rules on every family; cart and market words loaded on all family sites. Still open: on Showcase a family opening's buttons can still point at /shop (the opening's button targets come from the site's moment; the builder must only offer pages the plan has). Test copy `aurora-candles-homes` now has its market page switched on.
-47. Vintage family (`feat/vintage-family`, stacked on `feat/one-builder`, pushed, NOT merged): see item 7.
+47. Vintage family (`feat/vintage-family`, stacked on `feat/one-builder`, pushed, NOT merged): see item 7. When it merges, load its intake-form tile words (`intake.families.vintage.label` and `.line`) with `scripts/intake-words.ts`, or its tile shows blank.
 48. Test drafts to delete at clean-up: `paper-and-patina-trial`, `aurora-built`, `vintage-test`, `aurora-candles-homes`.
 46. One builder (`feat/one-builder`, stacked on `feat/family-plans`, pushed, NOT merged, for the big push): `scripts/build-site.ts <site> --media <dir>` builds a new site on any family or the shoreline/show reel page from one content file (`lib/build/site-plan.ts` checks it whole first); a new site's starting words: `scripts/site-words.ts dump <site> <prefix> [shop]`. Proof site `aurora-built` (draft) matches `aurora-candles-homes` word for word. Still to do: retire the card, nursery and contractor build tools and the family copy tool at clean-up; re-runs (it builds new sites only; an existing site is changed in its backend).

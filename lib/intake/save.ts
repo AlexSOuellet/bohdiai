@@ -68,7 +68,7 @@ export async function saveIntake(args: {
     email: fields.email,
     makes: fields.makes,
     about: fields.about,
-    mood: fields.mood,
+    family: fields.family,
     portrait_path: portrait === null ? null : `${id}/portrait.webp`,
   });
   if (intakeErr !== null) return undo('saving the intake failed', intakeErr.message);

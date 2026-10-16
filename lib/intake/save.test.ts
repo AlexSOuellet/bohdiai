@@ -46,7 +46,7 @@ function fakeDb(fail: Fail = {}) {
   return { db: db as unknown as SupabaseClient<Database>, calls };
 }
 
-const fields: IntakeFields = { makerName: 'Lena', businessName: 'Saltmarsh', email: 'l@example.com', makes: 'Lace', about: 'Porch', mood: null };
+const fields: IntakeFields = { makerName: 'Lena', businessName: 'Saltmarsh', email: 'l@example.com', makes: 'Lace', about: 'Porch', family: null };
 const file = (): File => new File([new Uint8Array(4)], 'a.jpg', { type: 'image/jpeg' });
 const pieces: IntakePiece[] = [
   { name: 'One', priceCents: 100, description: null, photo: file() },
@@ -66,7 +66,7 @@ describe('saveIntake', () => {
     expect(shrink).toHaveBeenCalledWith(expect.any(ArrayBuffer), { maxEdge: 2400, format: 'webp', quality: 82 });
     expect(calls.inserts[0]).toEqual({
       table: 'intakes',
-      row: { id: 'i1', maker_name: 'Lena', business_name: 'Saltmarsh', email: 'l@example.com', makes: 'Lace', about: 'Porch', mood: null, portrait_path: 'i1/portrait.webp' },
+      row: { id: 'i1', maker_name: 'Lena', business_name: 'Saltmarsh', email: 'l@example.com', makes: 'Lace', about: 'Porch', family: null, portrait_path: 'i1/portrait.webp' },
     });
     expect(calls.inserts[1]).toEqual({
       table: 'intake_pieces',

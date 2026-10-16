@@ -3,33 +3,32 @@
 /**
  * bohdiai.com/start: what a maker sends us to start their site. Six things: who
  * they are, what they make, 5 to 10 pieces (one photo each), a few sentences
- * about themselves, their photo if they want, and a mood. Photos are shrunk here
+ * about themselves, their photo if they want, and a mood (one tile per family). Photos are shrunk here
  * before they're sent. Every word comes from the form's own words, and every
  * failure shows the maker something.
  */
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { fill } from '@/lib/site-words/words';
 import type { IntakeWords } from '@/lib/intake/queries';
+import type { FamilyKey } from '@/lib/archetypes/main-street/families';
 import { shrinkInBrowser } from '@/lib/intake/browser-photo';
 import { answerStatus, type IntakeAnswer } from '@/lib/intake/answer';
 import {
   checkIntake,
   FIELD,
   INTAKE_LIMITS,
-  INTAKE_MOODS,
   MAX_PIECES,
   MIN_PIECES,
   MOOD_PICK,
-  type IntakeMood,
   type IntakeProblem,
 } from '@/lib/intake/request';
 
 type Photo = { file: File; url: string };
 type Piece = { key: string; name: string; price: string; description: string; photo: Photo | null };
-type Fields = { makerName: string; businessName: string; email: string; makes: string; about: string; mood: IntakeMood | typeof MOOD_PICK | ''; company: string };
+type Fields = { makerName: string; businessName: string; email: string; makes: string; about: string; family: FamilyKey | typeof MOOD_PICK | ''; company: string };
 type Status = { kind: 'idle' } | { kind: 'sending' } | { kind: 'sent' } | IntakeAnswer;
 
-const EMPTY: Fields = { makerName: '', businessName: '', email: '', makes: '', about: '', mood: '', company: '' };
+const EMPTY: Fields = { makerName: '', businessName: '', email: '', makes: '', about: '', family: '', company: '' };
 
 const INPUT =
   'w-full appearance-none rounded-[10px] border border-white/[0.1] bg-black/40 px-3.5 py-3 font-sans text-[15px] text-text placeholder:text-text-soft/35 focus:border-honey-warm/50 focus:shadow-[0_0_0_3px_rgba(243,201,122,0.12)] focus:outline-none';
@@ -41,7 +40,7 @@ const SECTION = 'flex flex-col gap-4 border-t border-white/[0.08] pt-8 md:pt-10'
 let nextKey = 0;
 const newKey = (): string => `piece-${(nextKey += 1)}`;
 
-export function IntakeForm({ words, textures, contactEmail }: { words: IntakeWords; textures: Record<IntakeMood, string>; contactEmail: string }): React.ReactElement {
+export function IntakeForm({ words, looks, contactEmail }: { words: IntakeWords; looks: readonly { key: FamilyKey; texture: string }[]; contactEmail: string }): React.ReactElement {
   const w = words;
   const [fields, setFields] = useState<Fields>(EMPTY);
   const [pieces, setPieces] = useState<Piece[]>([]);
@@ -126,8 +125,8 @@ export function IntakeForm({ words, textures, contactEmail }: { words: IntakeWor
     e.preventDefault();
     const problem = checkIntake({
       ...fields,
-      mood: fields.mood === '' || fields.mood === MOOD_PICK ? null : fields.mood,
-      moodChosen: fields.mood !== '',
+      family: fields.family === '' || fields.family === MOOD_PICK ? null : fields.family,
+      familyChosen: fields.family !== '',
       portrait: portrait?.file ?? null,
       pieces: pieces.map((p) => ({ name: p.name, price: p.price, description: p.description, photo: p.photo?.file ?? null })),
     });
@@ -141,7 +140,7 @@ export function IntakeForm({ words, textures, contactEmail }: { words: IntakeWor
     form.set(FIELD.email, fields.email);
     form.set(FIELD.makes, fields.makes);
     form.set(FIELD.about, fields.about);
-    form.set(FIELD.mood, fields.mood);
+    form.set(FIELD.family, fields.family);
     form.set(FIELD.honeypot, fields.company);
     if (portrait !== null) form.set(FIELD.portrait, portrait.file);
     for (const p of pieces) {
@@ -376,21 +375,21 @@ export function IntakeForm({ words, textures, contactEmail }: { words: IntakeWor
         <legend className={HEADING}>{w.mood.heading}</legend>
         <p className={`${HINT} -mt-2.5`}>{w.mood.hint}</p>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-          {INTAKE_MOODS.map((m) => (
+          {looks.map(({ key: m, texture }) => (
             <label
               key={m}
               className="group relative isolate flex min-h-[132px] cursor-pointer flex-col justify-end overflow-hidden rounded-[14px] border border-white/[0.1] p-4 transition-colors has-[:checked]:border-honey-warm/70 has-[:checked]:shadow-[0_0_0_1px_rgba(243,201,122,0.5),0_0_32px_-8px_rgba(243,201,122,0.5)] has-[:focus-visible]:shadow-[0_0_0_3px_rgba(243,201,122,0.35)]"
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- a small texture swatch, painted as the tile's ground */}
-              <img src={textures[m]} alt="" aria-hidden="true" className="absolute inset-0 -z-10 size-full object-cover opacity-70 transition-opacity group-hover:opacity-90" />
+              <img src={texture} alt="" aria-hidden="true" className="absolute inset-0 -z-10 size-full object-cover opacity-70 transition-opacity group-hover:opacity-90" />
               <span aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/45 to-black/10" />
-              <input type="radio" name="mood" value={m} checked={fields.mood === m} onChange={() => set('mood', m)} className="sr-only" />
-              <span className="font-sans text-[18px] font-medium text-text">{w.mood[m].label}</span>
-              <span className="mt-1 text-[13px] leading-[1.45] text-text-soft">{w.mood[m].line}</span>
+              <input type="radio" name="family" value={m} checked={fields.family === m} onChange={() => set('family', m)} className="sr-only" />
+              <span className="font-sans text-[18px] font-medium text-text">{w.families[m].label}</span>
+              <span className="mt-1 text-[13px] leading-[1.45] text-text-soft">{w.families[m].line}</span>
             </label>
           ))}
           <label className="relative flex min-h-[132px] cursor-pointer flex-col justify-end rounded-[14px] border border-dashed border-white/[0.16] bg-white/[0.02] p-4 transition-colors has-[:checked]:border-honey-warm/70 has-[:checked]:bg-honey-warm/[0.06] has-[:focus-visible]:shadow-[0_0_0_3px_rgba(243,201,122,0.35)] col-span-2 md:col-span-3">
-            <input type="radio" name="mood" value={MOOD_PICK} checked={fields.mood === MOOD_PICK} onChange={() => set('mood', MOOD_PICK)} className="sr-only" />
+            <input type="radio" name="family" value={MOOD_PICK} checked={fields.family === MOOD_PICK} onChange={() => set('family', MOOD_PICK)} className="sr-only" />
             <span className="font-sans text-[18px] font-medium text-text">{w.mood.pick.label}</span>
             <span className="mt-1 text-[13px] leading-[1.45] text-text-soft">{w.mood.pick.line}</span>
           </label>

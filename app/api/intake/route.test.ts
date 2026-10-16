@@ -26,7 +26,7 @@ function body(extra: Record<string, string> = {}): FormData {
   f.set(FIELD.email, 'lena@example.com');
   f.set(FIELD.makes, 'Lace');
   f.set(FIELD.about, 'Porch');
-  f.set(FIELD.mood, MOOD_PICK);
+  f.set(FIELD.family, MOOD_PICK);
   for (let i = 0; i < MIN_PIECES; i += 1) {
     f.append(FIELD.pieceName, `P${i}`);
     f.append(FIELD.piecePrice, '10');
@@ -50,7 +50,7 @@ describe('POST /api/intake', () => {
     const res = await post(body());
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
-    expect(saveIntake).toHaveBeenCalledWith(expect.objectContaining({ fields: expect.objectContaining({ makerName: 'Lena', mood: null }), portrait: null }));
+    expect(saveIntake).toHaveBeenCalledWith(expect.objectContaining({ fields: expect.objectContaining({ makerName: 'Lena', family: null }), portrait: null }));
     expect(saveIntake.mock.calls[0]?.[0].pieces).toHaveLength(MIN_PIECES);
     expect(send).toHaveBeenCalledWith(expect.objectContaining({ to: 'alex@bohdiai.com', replyTo: 'lena@example.com', subject: 'intake.email.subject' }));
   });

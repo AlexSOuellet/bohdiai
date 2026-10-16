@@ -4,7 +4,7 @@
  * its own) or hands back exactly what to save. Shared by the page (instant
  * messages) and the route (which checks again before saving).
  */
-import type { MoodKey } from '@/lib/moods';
+import type { FamilyKey } from '@/lib/archetypes/main-street/families';
 
 export const MIN_PIECES = 5;
 export const MAX_PIECES = 10;
@@ -14,10 +14,6 @@ export const MAX_PHOTO_BYTES = 20 * 1024 * 1024;
 
 export const INTAKE_LIMITS = { name: 120, business: 120, email: 254, makes: 600, about: 5000, pieceName: 120, pieceAbout: 2000, price: 20 } as const;
 
-/** The feelings a maker can pick, in the order the form shows them. */
-export const INTAKE_MOODS = ['cozy', 'rustic', 'dark', 'elegant', 'cheerful', 'modern'] as const satisfies readonly MoodKey[];
-export type IntakeMood = (typeof INTAKE_MOODS)[number];
-
 /** Field names the page posts and the route reads. Pieces repeat, in order. */
 export const FIELD = {
   name: 'makerName',
@@ -25,7 +21,7 @@ export const FIELD = {
   email: 'email',
   makes: 'makes',
   about: 'about',
-  mood: 'mood',
+  family: 'family',
   portrait: 'portrait',
   pieceName: 'pieceName',
   piecePrice: 'piecePrice',
@@ -34,7 +30,7 @@ export const FIELD = {
   honeypot: 'company',
 } as const;
 
-/** The mood field's value for "you pick for me". */
+/** The family field's value for "you pick for me". */
 export const MOOD_PICK = 'pick';
 
 /** Every problem the form can name; each is a spot in the form's words (errors.*). */
@@ -70,8 +66,8 @@ export type IntakeFields = {
   email: string;
   makes: string;
   about: string;
-  /** Null is "you pick for me". */
-  mood: IntakeMood | null;
+  /** The family they picked (makers see it as a mood); null is "you pick for me". */
+  family: FamilyKey | null;
 };
 
 export type IntakePiece = { name: string; priceCents: number | null; description: string | null; photo: File };
@@ -105,8 +101,8 @@ export function photoProblem(file: File): ErrorSpot | null {
 export type IntakeDraft = IntakeFields & {
   pieces: { name: string; price: string; description: string; photo: File | null }[];
   portrait: File | null;
-  /** True once a mood (or "you pick") is chosen. */
-  moodChosen: boolean;
+  /** True once a family (or "you pick") is chosen. */
+  familyChosen: boolean;
 };
 
 /** The first thing wrong with a draft, top of the form first; null when it's ready. */
@@ -132,7 +128,7 @@ export function checkIntake(d: IntakeDraft): IntakeProblem | null {
     const bad = photoProblem(d.portrait);
     if (bad !== null) return p(bad, { n: 0 });
   }
-  if (!d.moodChosen) return p('mood');
+  if (!d.familyChosen) return p('mood');
   const long =
     d.makerName.trim().length > INTAKE_LIMITS.name ||
     d.businessName.trim().length > INTAKE_LIMITS.business ||
@@ -151,14 +147,15 @@ function file(v: FormDataEntryValue | null | undefined): File | null {
   return v instanceof File && v.size > 0 ? v : null;
 }
 
-function isMood(v: string): v is IntakeMood {
-  return (INTAKE_MOODS as readonly string[]).includes(v);
+function isFamily(v: string, families: readonly FamilyKey[]): v is FamilyKey {
+  return (families as readonly string[]).includes(v);
 }
 
-/** The posted form, checked whole. A filled honeypot is spam: answered as sent, saved nowhere. */
-export function parseIntake(form: FormData): IntakeParsed {
+/** The posted form, checked whole against the families there are. A filled
+ *  honeypot is spam: answered as sent, saved nowhere. */
+export function parseIntake(form: FormData, families: readonly FamilyKey[]): IntakeParsed {
   if (text(form, FIELD.honeypot).trim() !== '') return { kind: 'spam' };
-  const moodValue = text(form, FIELD.mood);
+  const familyValue = text(form, FIELD.family);
   const names = form.getAll(FIELD.pieceName);
   const prices = form.getAll(FIELD.piecePrice);
   const abouts = form.getAll(FIELD.pieceAbout);
@@ -170,8 +167,8 @@ export function parseIntake(form: FormData): IntakeParsed {
     email: text(form, FIELD.email),
     makes: text(form, FIELD.makes),
     about: text(form, FIELD.about),
-    mood: isMood(moodValue) ? moodValue : null,
-    moodChosen: isMood(moodValue) || moodValue === MOOD_PICK,
+    family: isFamily(familyValue, families) ? familyValue : null,
+    familyChosen: isFamily(familyValue, families) || familyValue === MOOD_PICK,
     portrait: file(form.get(FIELD.portrait)),
     pieces: names.map((name, i) => ({ name: str(name), price: str(prices[i]), description: str(abouts[i]), photo: file(photos[i]) })),
   };
@@ -185,7 +182,7 @@ export function parseIntake(form: FormData): IntakeParsed {
       email: draft.email.trim(),
       makes: draft.makes.trim(),
       about: draft.about.trim(),
-      mood: draft.mood,
+      family: draft.family,
     },
     portrait: draft.portrait,
     // checkIntake proved every piece has its photo and every price reads.

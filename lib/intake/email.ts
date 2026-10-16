@@ -16,7 +16,7 @@ function money(cents: number): string {
 export function composeIntakeEmail(args: { id: string; fields: IntakeFields; pieces: readonly IntakePiece[]; hasPortrait: boolean; words: IntakeWords }): IntakeEmail {
   const { id, fields: f, pieces, hasPortrait, words } = args;
   const e = words.email;
-  const mood = f.mood === null ? words.mood.pick.label : words.mood[f.mood].label;
+  const mood = f.family === null ? words.mood.pick.label : words.families[f.family].label;
   const rows: [string, string][] = [
     [e.name, f.makerName],
     [e.business, f.businessName],
