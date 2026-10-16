@@ -50,7 +50,7 @@
 
 ## Automated build, then self-serve (`Modular-Plan.md` section 7)
 11. Build by hand first. Then automate one step at a time:
-    - intake form
+    - intake form: built (Session 106, branch `feat/maker-intake`): bohdiai.com/start takes name, business, email, what they make, 5 to 10 pieces (one photo each), about, an optional photo of them, and a mood; saved to `intakes` + `intake_pieces`, photos in the private `intake-photos` bucket, Alex emailed; its words in `intake_words` (`scripts/intake-words.ts`). Next: turn a submission into a site with the one builder (after the big push)
     - AI first drafts
     - the maker picks a family from their own content
     - the maker picks a skin (and, on Scenic, a library photo or their own)

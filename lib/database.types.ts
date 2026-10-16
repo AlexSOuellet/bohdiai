@@ -894,6 +894,118 @@ export type Database = {
           },
         ]
       }
+      intake_pieces: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          intake_id: string
+          name: string
+          photo_path: string
+          position: number
+          price_cents: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          intake_id: string
+          name: string
+          photo_path: string
+          position: number
+          price_cents?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          intake_id?: string
+          name?: string
+          photo_path?: string
+          position?: number
+          price_cents?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intake_pieces_intake_id_fkey"
+            columns: ["intake_id"]
+            isOneToOne: false
+            referencedRelation: "intakes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intake_words: {
+        Row: {
+          key: string
+          text: string
+          updated_at: string
+        }
+        Insert: {
+          key: string
+          text: string
+          updated_at?: string
+        }
+        Update: {
+          key?: string
+          text?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      intakes: {
+        Row: {
+          about: string
+          business_name: string
+          created_at: string
+          email: string
+          id: string
+          maker_name: string
+          makes: string
+          mood: string | null
+          portrait_path: string | null
+          status: string
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          about: string
+          business_name: string
+          created_at?: string
+          email: string
+          id?: string
+          maker_name: string
+          makes: string
+          mood?: string | null
+          portrait_path?: string | null
+          status?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          about?: string
+          business_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          maker_name?: string
+          makes?: string
+          mood?: string | null
+          portrait_path?: string | null
+          status?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intakes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       library_assets: {
         Row: {
           approved: boolean

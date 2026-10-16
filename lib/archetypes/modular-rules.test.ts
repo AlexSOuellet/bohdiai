@@ -130,7 +130,8 @@ describe('modular rules: no words typed straight into designs or shop pages', ()
     return found.filter((s) => s !== '');
   }
 
-  const files = [...sourceFiles('lib/archetypes'), ...sourceFiles('lib/storefront'), ...sourceFiles('app/storefront')];
+  // The intake form (bohdiai.com/start) becomes the onboarding: its words live in intake_words.
+  const files = [...sourceFiles('lib/archetypes'), ...sourceFiles('lib/storefront'), ...sourceFiles('app/storefront'), ...sourceFiles('components/intake'), ...sourceFiles('app/start')];
 
   it('finds the files it is meant to scan', () => {
     expect(files.length).toBeGreaterThan(20);

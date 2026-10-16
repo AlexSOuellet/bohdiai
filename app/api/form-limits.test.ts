@@ -36,6 +36,7 @@ const ROUTES = [
   { name: 'market-step', load: () => import('./market/release/route'), shape: { error: 'slow down' } },
   { name: 'inquiry', load: () => import('./inquiry/route'), shape: { error: 'slow down' } },
   { name: 'notify-interest', load: () => import('./notify-interest/route'), shape: { error: 'slow down' } },
+  { name: 'intake', load: () => import('./intake/route'), shape: { error: 'slow down' } },
 ] as const;
 
 describe('public forms are rate limited', () => {
