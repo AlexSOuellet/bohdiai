@@ -56,8 +56,9 @@ describe('planSite — a family site', () => {
     expect(p.niche).toBe('jewelry_maker');
     expect(p.pageRoot).toEqual({ kind: 'archetype', archetypeKey: 'main-street', mood: 'cozy', lookKey: 'main-street-ember', accentOverride: null, content: {} });
     expect(p.features).toContainEqual({ key: 'moment', enabled: true });
-    expect(p.features).toContainEqual({ key: 'gallery', enabled: true });
-    expect(p.features).toContainEqual({ key: 'market_dates', enabled: true });
+    // Markets and Gallery are the plan's, never switched by the content.
+    expect(p.features.map((f) => f.key)).not.toContain('gallery');
+    expect(p.features.map((f) => f.key)).not.toContain('market_dates');
     expect(p.sections.map((s) => s.section)).toEqual([...SECTION_KEYS]);
     expect(p.sections.find((s) => s.section === 'work')?.row.title).toBe('The flags');
     expect(p.moment?.photos).toHaveLength(1);
@@ -80,8 +81,8 @@ describe('planSite — a family site', () => {
     expect(r.plan.portrait).toBeNull();
     expect(r.plan.moment?.media).toBeNull();
     expect(r.plan.moment?.poster).toBeNull();
-    expect(r.plan.features).toContainEqual({ key: 'gallery', enabled: false });
-    expect(r.plan.features).toContainEqual({ key: 'market_dates', enabled: false });
+    expect(r.plan.features.map((f) => f.key)).not.toContain('gallery');
+    expect(r.plan.features.map((f) => f.key)).not.toContain('market_dates');
     expect(r.plan.files).toEqual([]);
     expect(r.plan.contactEmail).toBe('alex@example.com');
   });

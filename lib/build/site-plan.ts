@@ -302,8 +302,8 @@ export function planSite(f: SiteFile): PlanResult {
       features: [
         { key: 'profile', enabled: true },
         { key: 'moment', enabled: family },
-        { key: 'gallery', enabled: gallery.length > 0 },
-        { key: 'market_dates', enabled: markets.length > 0 },
+        // Markets and Gallery follow the plan (every plan has both), never the
+        // content: a maker adds markets and photos later in their backend (Alex).
       ],
       profile: profile.row,
       portrait,
