@@ -2,6 +2,10 @@ import { requireActingSite } from '@/lib/backend/current-site';
 import { getSiteFeatures } from '@/lib/backend/site-features';
 import { HOME_CONTRIBUTORS, collectHome } from '@/lib/backend/home';
 import { StatTile } from './_components/StatTile';
+import { PublishPanel } from './_components/PublishPanel';
+import { supabaseAdmin } from '@/lib/supabase';
+import { getPublishView } from '@/lib/backend/publish/queries';
+import { publishSite } from '@/lib/backend/publish/actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,12 +13,14 @@ export default async function ManageHome(): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
   const home = await collectHome(HOME_CONTRIBUTORS, on, site.tenantId);
+  const publish = await getPublishView(supabaseAdmin(), site.tenantId, site.subdomain, process.env['BACKEND_SESSION_SECRET']);
   return (
     <>
       <div className="bk-head">
         <h1 className="bk-title">{site.businessName}</h1>
       </div>
       <main id="main" className="bk-content">
+        {publish.draft && <PublishPanel siteUrl={`https://${site.subdomain}.bohdiai.com`} previewUrl={publish.previewUrl} publish={publishSite} />}
         {home.attention.length > 0 && (
           <section className="bk-attention" aria-labelledby="bk-attn">
             <p id="bk-attn" className="bk-kicker">Needs attention</p>

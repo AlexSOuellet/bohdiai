@@ -12,6 +12,7 @@ export function ConfirmButton({
   onConfirm,
   disabled = false,
   describedBy,
+  tone = 'danger',
 }: {
   label: string;
   confirmLabel: string;
@@ -20,6 +21,8 @@ export function ConfirmButton({
   disabled?: boolean;
   /** Id of a note that explains why the button is off. */
   describedBy?: string | undefined;
+  /** Danger for removing things; plain for a step forward like publishing. */
+  tone?: 'danger' | 'plain';
 }): React.ReactElement {
   const [asking, setAsking] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -36,7 +39,7 @@ export function ConfirmButton({
 
   if (!asking) {
     return (
-      <button ref={trigger} type="button" className="bk-btn bk-btn-danger" disabled={disabled} aria-describedby={describedBy} onClick={() => setAsking(true)}>
+      <button ref={trigger} type="button" className={tone === 'danger' ? 'bk-btn bk-btn-danger' : 'bk-btn'} disabled={disabled} aria-describedby={describedBy} onClick={() => setAsking(true)}>
         {label}
       </button>
     );
@@ -46,7 +49,7 @@ export function ConfirmButton({
       <button
         ref={yes}
         type="button"
-        className="bk-btn bk-btn-danger"
+        className={tone === 'danger' ? 'bk-btn bk-btn-danger' : 'bk-btn'}
         disabled={disabled}
         onClick={() => {
           setAsking(false);
