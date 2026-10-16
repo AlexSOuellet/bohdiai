@@ -6,6 +6,8 @@
  *     npx tsx --env-file=.env.local scripts/site-words.ts load <archetype> <prefix> <words.json>
  *   A new site, copying another site's words for one design:
  *     npx tsx --env-file=.env.local scripts/site-words.ts copy <from-subdomain> <to-subdomain> <prefix>
+ *   A new site's starting words for its content file (scripts/build-site.ts), from a site of the same design:
+ *     npx tsx --env-file=.env.local scripts/site-words.ts dump <subdomain> <prefix> [<prefix>] > words.json
  *
  * Only spots a site has no word for are written: a word a site already has is
  * never overwritten. Prints what it wrote per site.
@@ -86,7 +88,22 @@ async function main(): Promise<void> {
     process.stdout.write(`${b}: ${n} words copied from ${a}\n`);
     return;
   }
-  fail('usage: site-words.ts load <archetype> <prefix> <words.json> | copy <from-subdomain> <to-subdomain> <prefix>');
+  if (mode === 'dump' && a !== undefined && b !== undefined) {
+    // A new site's starting words: another site's words for the given prefixes, as a
+    // words file to put in the new site's content file and edit there.
+    const from = await tenantId(db, a);
+    const prefixes = [b, ...(c === undefined ? [] : [c])];
+    const out: Record<string, string> = {};
+    for (const prefix of prefixes) {
+      const { data, error } = await db.from('site_words').select('key, text').eq('tenant_id', from).like('key', `${prefix}.%`).order('key');
+      if (error !== null) fail(`reading ${a}'s words failed: ${error.message}`);
+      for (const r of data ?? []) out[r.key] = r.text;
+    }
+    process.stdout.write(`${JSON.stringify(out, null, 2)}
+`);
+    return;
+  }
+  fail('usage: site-words.ts load <archetype> <prefix> <words.json> | copy <from-subdomain> <to-subdomain> <prefix> | dump <subdomain> <prefix> [<prefix>]');
 }
 
 void main();

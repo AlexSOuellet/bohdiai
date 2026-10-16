@@ -10,6 +10,7 @@
  */
 import type { FeatureKey } from '../features';
 import { SITE_PLANS, type SitePlan } from './plan';
+import { LINK_TARGETS, type LinkTarget } from '@/lib/archetypes/main-street/links';
 
 const SHOWCASE: readonly FeatureKey[] = ['profile', 'gallery', 'market_dates', 'qr_codes', 'plan'];
 const LITE: readonly FeatureKey[] = [...SHOWCASE, 'catalog', 'market_details', 'market_shop'];
@@ -64,4 +65,11 @@ export const FEATURE_WORDS: Partial<Record<FeatureKey, string>> = {
 export function hiddenByMove(from: SitePlan, to: SitePlan): string[] {
   const keep = new Set(PLAN_FEATURES[to]);
   return PLAN_FEATURES[from].filter((k) => !keep.has(k)).flatMap((k) => FEATURE_WORDS[k] ?? []);
+}
+
+/** The pages a link can point at on a plan. Without the catalog (Showcase) there is
+ *  no shop and no collections, so no button may point at them. */
+export function planLinkTargets(plan: SitePlan): readonly LinkTarget[] {
+  if (PLAN_FEATURES[plan].includes('catalog')) return LINK_TARGETS;
+  return LINK_TARGETS.filter((t) => t !== 'shop' && t !== 'collections');
 }
