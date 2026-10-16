@@ -44,7 +44,8 @@
    - move both over, with Alex checking each before and after
 9. Prove it: a fresh site in cozy, built with the one builder, switched through every family (Scenic and Spotlight included) and plan.
 10. Clean up: delete the old family samples (and the `aurora-candles-homes` proof copy), the old page-record code, the old build tools, the Torch design, and the `explore/bulletin-scene-look` branch, if it still exists.
-10a. Take down (plain list to Alex first): Halfmoon, True Coat, Ember & Pine, and bohdiai.com's contractor page, prices, FAQ section and True Coat portfolio entry.
+10a. Take down (plain list to Alex first): Ember & Pine (and the Torch design), and bohdiai.com's contractor page, prices, FAQ section and contractor portfolio entries. **The contractor sites stay (Alex, 2026-10-16):** Halfmoon and True Coat come off bohdiai.com for now, the sites themselves are kept.
+10d. **Clean-up plan (Session 106, Alex):** new bohdiai.com samples, one per family, each built through the real path (form, builder, Publish); then the work page switches to them; then the old samples and test drafts are deleted and purged (`scripts/purge-deleted-sites.ts --yes`, Alex runs it; it removes everything from deleted sites). 28 already-deleted sites are waiting for that purge.
 10b. **One builder for every new site** (built Session 105, item 46): a content file (every word included) plus family and skin (and the photo on Scenic); fills every home and uploads the photos. Replaces the card, nursery and contractor build tools, the family copy tool and the old onboarding builder.
 10c. Rustic Rhody moves onto a family; then the Bulletin design goes.
 

@@ -21,7 +21,7 @@ More families are added as BohdiAI grows. A good custom shape can become a new f
 
 **Custom sites** (handmade, a paid option for makers who want one; content still lives in the same homes): Rose n' Cat (the nursery design stays hers), Cut-Pro and Mazzone. Cut-Pro and Mazzone are already built; they get homes for exactly what they show, so they fit the structure, and nothing is built for contractors in general. If they need customizing later, we deal with it then.
 
-**Going away:** the old family sample sites, Halfmoon, True Coat, Ember & Pine with the Torch design, and the contractor page, prices and FAQ section on bohdiai.com. Rustic Rhody will be changed (off the Bulletin design, which then goes too).
+**Going away:** the old family sample sites, Ember & Pine with the Torch design, and the contractor page, prices and FAQ section on bohdiai.com. (2026-10-16, Alex: the contractor sites, Halfmoon and True Coat included, are not going away; they only come off bohdiai.com for now.) Rustic Rhody will be changed (off the Bulletin design, which then goes too).
 
 **The demo** shows what a site can do (plans, shop, cart, markets, the market app, the backend), not a promise of a look. Saltmarsh stays as it is.
 
@@ -145,7 +145,7 @@ Contractors are set aside until they come back as their own leg. Only Cut-Pro an
 ### 6. Clean up
 21. **Delete the old family samples** (and the `aurora-candles-homes` proof copy). They no longer need protecting while the families change. First, bohdiai.com gets **new sample sites** built with the one builder (Alex, 2026-10-15), since its hero and samples page show the old ones today.
 22. **Remove the old code that reads content from the page record,** the old build tools once the one builder replaces them, and the Torch design.
-22a. **Take down** Halfmoon, True Coat and Ember & Pine, and the contractor page, prices and FAQ section on bohdiai.com (a plain list goes to Alex before anything comes down).
+22a. **Take down** Ember & Pine (Halfmoon and True Coat stay, off bohdiai.com; Alex 2026-10-16), and the contractor page, prices and FAQ section on bohdiai.com (a plain list goes to Alex before anything comes down).
 22b. **Rustic Rhody** moves onto a family; then the Bulletin design goes.
 
 ### Proposed order of work (Session 105, for Alex to confirm)
