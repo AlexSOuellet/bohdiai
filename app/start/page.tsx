@@ -7,6 +7,8 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { getIntakeWords } from '@/lib/intake/queries';
 import { FAMILIES, FAMILY_KEYS } from '@/lib/archetypes/main-street/families';
 import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
+import { plansFor } from '@/lib/site/plans';
+import { startingPlan } from '@/lib/intake/start';
 
 // The form's words live in the database and can change without a deploy.
 export const dynamic = 'force-dynamic';
@@ -16,8 +18,12 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: w.metaTitle, description: w.metaDescription };
 }
 
+type Search = Promise<Record<string, string | string[] | undefined>>;
+
 /** bohdiai.com/start: a maker sends what we need to start their site. */
-export default async function StartPage(): Promise<React.ReactElement> {
+export default async function StartPage({ searchParams }: { searchParams: Search }): Promise<React.ReactElement> {
+  const start = startingPlan(await searchParams);
+  const plans = plansFor('maker').map((p) => ({ tier: p.tier, name: p.name, monthly: p.monthly, yearly: p.yearly }));
   const words = await getIntakeWords(supabaseAdmin());
   // Every family there is, now and later, each on its own background (makers see moods).
   const looks = FAMILY_KEYS.map((key) => ({ key, texture: FAMILIES[key].wallpaperUrl }));
@@ -30,7 +36,7 @@ export default async function StartPage(): Promise<React.ReactElement> {
         </h1>
         <p className="mx-auto mt-5 max-w-[560px] text-center text-[15px] leading-[1.6] text-text-soft md:text-[17px]">{words.page.lede}</p>
         <div className="mx-auto mt-12 max-w-[760px] md:mt-16">
-          <IntakeForm words={words} looks={looks} contactEmail={SITE_CONTACT_EMAIL} />
+          <IntakeForm words={words} looks={looks} plans={plans} initialPlan={start.plan} initialBilling={start.billing} contactEmail={SITE_CONTACT_EMAIL} />
         </div>
       </main>
       <Footer />

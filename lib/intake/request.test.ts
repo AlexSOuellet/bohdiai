@@ -2,10 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { FAMILY_KEYS } from '@/lib/archetypes/main-street/families';
 import { checkIntake, FIELD, isErrorSpot, MAX_PIECES, MIN_PIECES, MOOD_PICK, parseIntake, photoProblem, priceToCents, type IntakeDraft } from './request';
 
+const CHOICES = { families: FAMILY_KEYS, plans: ['showcase', 'lite', 'full'] as const };
 const photo = (name = 'a.jpg', type = 'image/jpeg', size = 10): File => new File([new Uint8Array(size)], name, { type });
 
 function draft(over: Partial<IntakeDraft> = {}): IntakeDraft {
   return {
+    plan: 'lite',
+    billing: 'monthly',
     makerName: 'Lena',
     businessName: 'Saltmarsh & Lace',
     email: 'lena@example.com',
@@ -21,6 +24,8 @@ function draft(over: Partial<IntakeDraft> = {}): IntakeDraft {
 
 function form(d: IntakeDraft, extra: Record<string, string> = {}): FormData {
   const f = new FormData();
+  f.set(FIELD.plan, d.plan ?? '');
+  f.set(FIELD.billing, d.billing);
   f.set(FIELD.name, d.makerName);
   f.set(FIELD.business, d.businessName);
   f.set(FIELD.email, d.email);
@@ -70,6 +75,10 @@ describe('checkIntake', () => {
     expect(checkIntake(draft())).toBeNull();
   });
 
+  it('needs a plan first', () => {
+    expect(checkIntake(draft({ plan: null, makerName: '' }))?.spot).toBe('plan');
+  });
+
   it('names the first thing wrong, top of the form first', () => {
     expect(checkIntake(draft({ makerName: ' ', email: 'x' }))?.spot).toBe('name');
     expect(checkIntake(draft({ businessName: '' }))?.spot).toBe('business');
@@ -116,17 +125,17 @@ describe('checkIntake', () => {
 
 describe('parseIntake', () => {
   it('a filled honeypot is spam', () => {
-    expect(parseIntake(form(draft(), { [FIELD.honeypot]: 'Acme' }), FAMILY_KEYS)).toEqual({ kind: 'spam' });
+    expect(parseIntake(form(draft(), { [FIELD.honeypot]: 'Acme' }), CHOICES)).toEqual({ kind: 'spam' });
   });
 
   it('hands back exactly what to save, trimmed', () => {
     const d = draft({ makerName: ' Lena ', portrait: photo('me.jpg') });
     d.pieces[0] = { name: ' Tide pool ', price: '$40', description: ' Blue glass ', photo: photo('p.jpg') };
     d.pieces[1] = { ...d.pieces[1]!, price: '' };
-    const out = parseIntake(form(d), FAMILY_KEYS);
+    const out = parseIntake(form(d), CHOICES);
     expect(out.kind).toBe('ok');
     if (out.kind !== 'ok') return;
-    expect(out.fields).toEqual({ makerName: 'Lena', businessName: 'Saltmarsh & Lace', email: 'lena@example.com', makes: 'Lace and sea glass', about: 'I started on the porch.', family: 'cozy' });
+    expect(out.fields).toEqual({ plan: 'lite', billing: 'monthly', makerName: 'Lena', businessName: 'Saltmarsh & Lace', email: 'lena@example.com', makes: 'Lace and sea glass', about: 'I started on the porch.', family: 'cozy' });
     expect(out.portrait?.name).toBe('me.jpg');
     expect(out.pieces).toHaveLength(MIN_PIECES);
     expect(out.pieces[0]).toMatchObject({ name: 'Tide pool', priceCents: 4000, description: 'Blue glass' });
@@ -134,36 +143,46 @@ describe('parseIntake', () => {
   });
 
   it('"you pick for me" saves no mood', () => {
-    const out = parseIntake(form(draft({ family: null, familyChosen: true })), FAMILY_KEYS);
+    const out = parseIntake(form(draft({ family: null, familyChosen: true })), CHOICES);
     expect(out.kind === 'ok' && out.fields.family).toBeNull();
   });
 
   it('takes any family there is, by its own name', () => {
     for (const key of FAMILY_KEYS) {
-      const out = parseIntake(form(draft({ family: key })), FAMILY_KEYS);
+      const out = parseIntake(form(draft({ family: key })), CHOICES);
       expect(out.kind === 'ok' && out.fields.family).toBe(key);
     }
     // A family the code doesn't have yet isn't a choice.
-    expect(parseIntake(form(draft({ family: 'luxury' })), ['cozy'])).toMatchObject({ kind: 'invalid', problem: { spot: 'mood' } });
+    expect(parseIntake(form(draft({ family: 'luxury' })), { ...CHOICES, families: ['cozy'] })).toMatchObject({ kind: 'invalid', problem: { spot: 'mood' } });
+  });
+
+  it('takes the plan they signed up on, and how they pay', () => {
+    const yearly = parseIntake(form(draft({ plan: 'full', billing: 'yearly' })), CHOICES);
+    expect(yearly.kind === 'ok' && [yearly.fields.plan, yearly.fields.billing]).toEqual(['full', 'yearly']);
+    // A plan the list doesn't have is no plan.
+    expect(parseIntake(form(draft(), { [FIELD.plan]: 'gold' }), CHOICES)).toEqual({ kind: 'invalid', problem: { spot: 'plan', values: {} } });
+    // Anything but yearly is monthly.
+    const odd = parseIntake(form(draft(), { [FIELD.billing]: 'weekly' }), CHOICES);
+    expect(odd.kind === 'ok' && odd.fields.billing).toBe('monthly');
   });
 
   it('an unknown family is no mood chosen', () => {
-    const out = parseIntake(form(draft(), { [FIELD.family]: 'gothic' }), FAMILY_KEYS);
+    const out = parseIntake(form(draft(), { [FIELD.family]: 'gothic' }), CHOICES);
     expect(out).toEqual({ kind: 'invalid', problem: { spot: 'mood', values: {} } });
   });
 
   it('a missing photo is named, even when the other pieces have theirs', () => {
     const d = draft();
     d.pieces[4] = { ...d.pieces[4]!, photo: null };
-    expect(parseIntake(form(d), FAMILY_KEYS)).toEqual({ kind: 'invalid', problem: { spot: 'piecePhoto', values: { n: 5 } } });
+    expect(parseIntake(form(d), CHOICES)).toEqual({ kind: 'invalid', problem: { spot: 'piecePhoto', values: { n: 5 } } });
   });
 
   it('an empty form has no pieces', () => {
     const f = new FormData();
-    expect(parseIntake(f, FAMILY_KEYS)).toEqual({ kind: 'invalid', problem: { spot: 'name', values: {} } });
+    expect(parseIntake(f, CHOICES)).toEqual({ kind: 'invalid', problem: { spot: 'plan', values: {} } });
     const g = form(draft({ pieces: [] }));
     g.set(FIELD.portrait, 'not a file');
-    expect(parseIntake(g, FAMILY_KEYS)).toEqual({ kind: 'invalid', problem: { spot: 'piecesFew', values: { min: MIN_PIECES } } });
+    expect(parseIntake(g, CHOICES)).toEqual({ kind: 'invalid', problem: { spot: 'piecesFew', values: { min: MIN_PIECES } } });
   });
 });
 

@@ -12,6 +12,11 @@ vi.mock('@/lib/intake/browser-photo', () => ({ shrinkInBrowser: (f: File) => shr
 import { IntakeForm } from './IntakeForm';
 
 const words = keyWords(INTAKE_WORD_SPOTS, 'intake');
+const plans = [
+  { tier: 'showcase' as const, name: 'Maker Showcase', monthly: 5, yearly: 50 },
+  { tier: 'lite' as const, name: 'Maker Market', monthly: 15, yearly: 150 },
+  { tier: 'full' as const, name: 'Maker Full', monthly: 25, yearly: 250 },
+];
 const looks = FAMILY_KEYS.map((key) => ({ key, texture: `/t/${key}.png` }));
 const fetchMock = vi.fn();
 const photos = (n: number): File[] => Array.from({ length: n }, (_, i) => new File([new Uint8Array(4)], `p${i}.png`, { type: 'image/png' }));
@@ -25,9 +30,9 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
-function setup() {
+function setup(initialPlan: 'showcase' | 'lite' | 'full' | null = 'full', initialBilling: 'monthly' | 'yearly' = 'yearly') {
   const u = userEvent.setup({ delay: null });
-  const view = render(<IntakeForm words={words} looks={looks} contactEmail="alex@example.com" />);
+  const view = render(<IntakeForm words={words} looks={looks} plans={plans} initialPlan={initialPlan} initialBilling={initialBilling} contactEmail="alex@example.com" />);
   return { u, view };
 }
 
@@ -49,7 +54,7 @@ describe('IntakeForm', { timeout: 20_000 }, () => {
     setup();
     expect(screen.getByRole('heading', { name: 'intake.you.heading' })).toBeInTheDocument();
     expect(screen.getByText('intake.pieces.needed')).toBeInTheDocument();
-    expect(screen.getAllByRole('radio')).toHaveLength(FAMILY_KEYS.length + 1);
+    expect(document.querySelectorAll('input[name="family"]')).toHaveLength(FAMILY_KEYS.length + 1);
     for (const key of FAMILY_KEYS) expect(screen.getByRole('radio', { name: new RegExp(`intake\\.families\\.${key}\\.label`) })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'intake.send.button' })).toBeInTheDocument();
     expect(document.querySelector('img[src="/t/luxury.png"]')).not.toBeNull();
@@ -67,12 +72,32 @@ describe('IntakeForm', { timeout: 20_000 }, () => {
     expect(url).toBe('/api/intake');
     const sent = init.body as FormData;
     expect(sent.get(FIELD.name)).toBe('Lena');
+    expect(sent.get(FIELD.plan)).toBe('full');
+    expect(sent.get(FIELD.billing)).toBe('yearly');
     expect(sent.get(FIELD.family)).toBe('rustic');
     expect(sent.getAll(FIELD.pieceName)).toEqual(['Piece 1', 'Piece 2', 'Piece 3', 'Piece 4', 'Piece 5']);
     expect(sent.getAll(FIELD.piecePrice)).toEqual(['25', '', '', '', '']);
     expect(sent.getAll(FIELD.piecePhoto)).toHaveLength(MIN_PIECES);
     expect((sent.get(FIELD.portrait) as File).type).toBe('image/jpeg');
     expect(shrink).toHaveBeenCalledTimes(MIN_PIECES + 1);
+  });
+
+  it('starts on the plan the pricing page sent, and shows its price the way they pay', async () => {
+    const { u } = setup('lite', 'monthly');
+    expect(screen.getByRole('radio', { name: /Maker Market/ })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'intake.plan.monthly' })).toBeChecked();
+    expect(screen.getAllByText('intake.plan.perMonth')).toHaveLength(3);
+    await u.click(screen.getByRole('radio', { name: 'intake.plan.yearly' }));
+    expect(screen.getAllByText('intake.plan.perYear')).toHaveLength(3);
+    await u.click(screen.getByRole('radio', { name: /Maker Full/ }));
+    expect(screen.getByRole('radio', { name: /Maker Full/ })).toBeChecked();
+  });
+
+  it('asks for a plan when they came without one', async () => {
+    const { u } = setup(null);
+    expect(screen.getAllByRole('radio', { name: /Maker/ }).every((r) => !(r as HTMLInputElement).checked)).toBe(true);
+    await u.click(screen.getByRole('button', { name: 'intake.send.button' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('intake.errors.plan');
   });
 
   it('checks before sending, in the form’s own words', async () => {

@@ -21,6 +21,8 @@ import { INTAKE_WORD_SPOTS } from '@/lib/intake/words';
 
 function body(extra: Record<string, string> = {}): FormData {
   const f = new FormData();
+  f.set(FIELD.plan, 'full');
+  f.set(FIELD.billing, 'yearly');
   f.set(FIELD.name, 'Lena');
   f.set(FIELD.business, 'Saltmarsh');
   f.set(FIELD.email, 'lena@example.com');
@@ -50,7 +52,7 @@ describe('POST /api/intake', () => {
     const res = await post(body());
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
-    expect(saveIntake).toHaveBeenCalledWith(expect.objectContaining({ fields: expect.objectContaining({ makerName: 'Lena', family: null }), portrait: null }));
+    expect(saveIntake).toHaveBeenCalledWith(expect.objectContaining({ fields: expect.objectContaining({ plan: 'full', billing: 'yearly', makerName: 'Lena', family: null }), portrait: null }));
     expect(saveIntake.mock.calls[0]?.[0].pieces).toHaveLength(MIN_PIECES);
     expect(send).toHaveBeenCalledWith(expect.objectContaining({ to: 'alex@bohdiai.com', replyTo: 'lena@example.com', subject: 'intake.email.subject' }));
   });

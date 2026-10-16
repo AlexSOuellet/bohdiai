@@ -16,6 +16,16 @@ const FAMILY_SPOTS = Object.fromEntries(FAMILY_KEYS.map((k) => [k, LOOK])) as Re
 
 export const INTAKE_WORD_SPOTS = {
   page: { title: '', lede: '', metaTitle: '', metaDescription: '' },
+  plan: {
+    heading: '',
+    hint: '',
+    monthly: '',
+    yearly: '',
+    /** "{price}". */
+    perMonth: '',
+    /** "{price}". */
+    perYear: '',
+  },
   you: { heading: '', name: '', business: '', email: '' },
   makes: { heading: '', hint: '' },
   pieces: {
@@ -49,6 +59,7 @@ export const INTAKE_WORD_SPOTS = {
   send: { button: '', sending: '' },
   sent: { title: '', body: '' },
   errors: {
+    plan: '',
     name: '',
     business: '',
     email: '',
@@ -74,6 +85,11 @@ export const INTAKE_WORD_SPOTS = {
     /** "{business}". */
     subject: '',
     intro: '',
+    plan: '',
+    /** "{plan}". */
+    planMonthly: '',
+    /** "{plan}". */
+    planYearly: '',
     name: '',
     business: '',
     email: '',

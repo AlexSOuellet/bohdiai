@@ -10,6 +10,7 @@ import { getIntakeWords } from '@/lib/intake/queries';
 import { composeIntakeEmail } from '@/lib/intake/email';
 import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
 import { FAMILY_KEYS } from '@/lib/archetypes/main-street/families';
+import { plansFor } from '@/lib/site/plans';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -40,7 +41,7 @@ async function handle(req: Request) {
     return NextResponse.json({ failed: true }, { status: 400 });
   }
 
-  const parsed = parseIntake(form, FAMILY_KEYS);
+  const parsed = parseIntake(form, { families: FAMILY_KEYS, plans: plansFor('maker').map((p) => p.tier) });
   if (parsed.kind === 'spam') return NextResponse.json({ ok: true });
   if (parsed.kind === 'invalid') return NextResponse.json({ problem: parsed.problem }, { status: 400 });
 

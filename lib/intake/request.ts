@@ -5,6 +5,12 @@
  * messages) and the route (which checks again before saving).
  */
 import type { FamilyKey } from '@/lib/archetypes/main-street/families';
+import type { Plan } from '@/lib/site/plans';
+
+/** A maker plan by its tier (showcase, lite or full), as the pricing list names it. */
+export type PlanTier = Plan['tier'];
+export const BILLINGS = ['monthly', 'yearly'] as const;
+export type Billing = (typeof BILLINGS)[number];
 
 export const MIN_PIECES = 5;
 export const MAX_PIECES = 10;
@@ -16,6 +22,8 @@ export const INTAKE_LIMITS = { name: 120, business: 120, email: 254, makes: 600,
 
 /** Field names the page posts and the route reads. Pieces repeat, in order. */
 export const FIELD = {
+  plan: 'plan',
+  billing: 'billing',
   name: 'makerName',
   business: 'businessName',
   email: 'email',
@@ -35,6 +43,7 @@ export const MOOD_PICK = 'pick';
 
 /** Every problem the form can name; each is a spot in the form's words (errors.*). */
 export const ERROR_SPOTS = [
+  'plan',
   'name',
   'business',
   'email',
@@ -61,6 +70,9 @@ export function isErrorSpot(v: unknown): v is ErrorSpot {
 export type IntakeProblem = { spot: ErrorSpot; values: Record<string, string | number> };
 
 export type IntakeFields = {
+  /** The plan they signed up on, and how they pay for it. */
+  plan: PlanTier;
+  billing: Billing;
   makerName: string;
   businessName: string;
   email: string;
@@ -98,7 +110,9 @@ export function photoProblem(file: File): ErrorSpot | null {
 }
 
 /** The form's own fields, before the pieces, so the page can check as it goes. */
-export type IntakeDraft = IntakeFields & {
+export type IntakeDraft = Omit<IntakeFields, 'plan'> & {
+  /** Null until a plan is chosen. */
+  plan: PlanTier | null;
   pieces: { name: string; price: string; description: string; photo: File | null }[];
   portrait: File | null;
   /** True once a family (or "you pick") is chosen. */
@@ -108,6 +122,7 @@ export type IntakeDraft = IntakeFields & {
 /** The first thing wrong with a draft, top of the form first; null when it's ready. */
 export function checkIntake(d: IntakeDraft): IntakeProblem | null {
   const p = (spot: ErrorSpot, values: Record<string, string | number> = {}): IntakeProblem => ({ spot, values });
+  if (d.plan === null) return p('plan');
   if (d.makerName.trim() === '') return p('name');
   if (d.businessName.trim() === '') return p('business');
   if (!EMAIL_SHAPE.test(d.email.trim())) return p('email');
@@ -151,9 +166,16 @@ function isFamily(v: string, families: readonly FamilyKey[]): v is FamilyKey {
   return (families as readonly string[]).includes(v);
 }
 
-/** The posted form, checked whole against the families there are. A filled
- *  honeypot is spam: answered as sent, saved nowhere. */
-export function parseIntake(form: FormData, families: readonly FamilyKey[]): IntakeParsed {
+function isTier(v: string, plans: readonly PlanTier[]): v is PlanTier {
+  return (plans as readonly string[]).includes(v);
+}
+
+/** What the form is checked against: the families and the maker plans there are. */
+export type IntakeChoices = { families: readonly FamilyKey[]; plans: readonly PlanTier[] };
+
+/** The posted form, checked whole against the families and plans there are. A
+ *  filled honeypot is spam: answered as sent, saved nowhere. */
+export function parseIntake(form: FormData, { families, plans }: IntakeChoices): IntakeParsed {
   if (text(form, FIELD.honeypot).trim() !== '') return { kind: 'spam' };
   const familyValue = text(form, FIELD.family);
   const names = form.getAll(FIELD.pieceName);
@@ -161,7 +183,10 @@ export function parseIntake(form: FormData, families: readonly FamilyKey[]): Int
   const abouts = form.getAll(FIELD.pieceAbout);
   const photos = form.getAll(FIELD.piecePhoto);
   const str = (v: FormDataEntryValue | undefined): string => (typeof v === 'string' ? v : '');
+  const planValue = text(form, FIELD.plan);
   const draft: IntakeDraft = {
+    plan: isTier(planValue, plans) ? planValue : null,
+    billing: text(form, FIELD.billing) === 'yearly' ? 'yearly' : 'monthly',
     makerName: text(form, FIELD.name),
     businessName: text(form, FIELD.business),
     email: text(form, FIELD.email),
@@ -173,10 +198,12 @@ export function parseIntake(form: FormData, families: readonly FamilyKey[]): Int
     pieces: names.map((name, i) => ({ name: str(name), price: str(prices[i]), description: str(abouts[i]), photo: file(photos[i]) })),
   };
   const problem = checkIntake(draft);
-  if (problem !== null) return { kind: 'invalid', problem };
+  if (problem !== null || draft.plan === null) return { kind: 'invalid', problem: problem ?? { spot: 'plan', values: {} } };
   return {
     kind: 'ok',
     fields: {
+      plan: draft.plan,
+      billing: draft.billing,
       makerName: draft.makerName.trim(),
       businessName: draft.businessName.trim(),
       email: draft.email.trim(),

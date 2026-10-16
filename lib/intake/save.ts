@@ -63,6 +63,8 @@ export async function saveIntake(args: {
 
   const { error: intakeErr } = await db.from('intakes').insert({
     id,
+    plan: fields.plan,
+    billing: fields.billing,
     maker_name: fields.makerName,
     business_name: fields.businessName,
     email: fields.email,

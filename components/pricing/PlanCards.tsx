@@ -3,9 +3,11 @@
 /**
  * The plan cards on a pricing page (two or three), with one Monthly / Yearly
  * switch above them. Plans are clear glass; the one plan with a badge (Showcase, "Most popular")
- * is lit with a honey edge and carries the badge beside its name. "Talk to us" goes
- * to the page's contact form with the plan in the address (Stripe checkout
- * replaces it once staging exists — see the pricing design, step B).
+ * is lit with a honey edge and carries the badge beside its name. A maker plan's
+ * button opens the intake form (bohdiai.com/start) with the plan and monthly or
+ * yearly filled in; a contractor plan's "Talk to us" goes to the page's contact
+ * form with the plan (Stripe checkout replaces both once staging exists — see the
+ * pricing design, step B).
  */
 import { useState } from 'react';
 import Link from 'next/link';
@@ -116,13 +118,13 @@ function PlanCard({ plan, period, path }: { plan: Plan; period: Period; path: Pr
       </ul>
 
       <Link
-        href={{ pathname: path, query: { plan: plan.id }, hash: 'contact' }}
+        href={plan.audience === 'maker' ? { pathname: '/start', query: { plan: plan.id, billing: period } } : { pathname: path, query: { plan: plan.id }, hash: 'contact' }}
         className={[
           'mt-8 inline-flex items-center justify-center gap-2 rounded-pill px-6 py-3.5 text-[14px] font-semibold no-underline transition-transform hover:-translate-y-px',
           featured ? 'bg-honey-warm text-bg shadow-[0_10px_40px_-10px_rgba(243,201,122,0.7)]' : 'bg-text text-bg',
         ].join(' ')}
       >
-        Talk to us →
+        {plan.audience === 'maker' ? 'Start your site →' : 'Talk to us →'}
       </Link>
     </article>
   );

@@ -1,7 +1,8 @@
 'use client';
 
 /**
- * bohdiai.com/start: what a maker sends us to start their site. Six things: who
+ * bohdiai.com/start: what a maker sends us to start their site: the plan they
+ * signed up on (filled in from the pricing page), then six things: who
  * they are, what they make, 5 to 10 pieces (one photo each), a few sentences
  * about themselves, their photo if they want, and a mood (one tile per family). Photos are shrunk here
  * before they're sent. Every word comes from the form's own words, and every
@@ -11,6 +12,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { fill } from '@/lib/site-words/words';
 import type { IntakeWords } from '@/lib/intake/queries';
 import type { FamilyKey } from '@/lib/archetypes/main-street/families';
+import { formatPrice } from '@/lib/site/plans';
 import { shrinkInBrowser } from '@/lib/intake/browser-photo';
 import { answerStatus, type IntakeAnswer } from '@/lib/intake/answer';
 import {
@@ -20,15 +22,18 @@ import {
   MAX_PIECES,
   MIN_PIECES,
   MOOD_PICK,
+  BILLINGS,
+  type Billing,
+  type PlanTier,
   type IntakeProblem,
 } from '@/lib/intake/request';
 
 type Photo = { file: File; url: string };
 type Piece = { key: string; name: string; price: string; description: string; photo: Photo | null };
-type Fields = { makerName: string; businessName: string; email: string; makes: string; about: string; family: FamilyKey | typeof MOOD_PICK | ''; company: string };
+type Fields = { plan: PlanTier | null; billing: Billing; makerName: string; businessName: string; email: string; makes: string; about: string; family: FamilyKey | typeof MOOD_PICK | ''; company: string };
 type Status = { kind: 'idle' } | { kind: 'sending' } | { kind: 'sent' } | IntakeAnswer;
 
-const EMPTY: Fields = { makerName: '', businessName: '', email: '', makes: '', about: '', family: '', company: '' };
+const EMPTY: Fields = { plan: null, billing: 'monthly', makerName: '', businessName: '', email: '', makes: '', about: '', family: '', company: '' };
 
 const INPUT =
   'w-full appearance-none rounded-[10px] border border-white/[0.1] bg-black/40 px-3.5 py-3 font-sans text-[15px] text-text placeholder:text-text-soft/35 focus:border-honey-warm/50 focus:shadow-[0_0_0_3px_rgba(243,201,122,0.12)] focus:outline-none';
@@ -40,9 +45,22 @@ const SECTION = 'flex flex-col gap-4 border-t border-white/[0.08] pt-8 md:pt-10'
 let nextKey = 0;
 const newKey = (): string => `piece-${(nextKey += 1)}`;
 
-export function IntakeForm({ words, looks, contactEmail }: { words: IntakeWords; looks: readonly { key: FamilyKey; texture: string }[]; contactEmail: string }): React.ReactElement {
+/** A maker plan as the pricing list has it. */
+export type IntakePlan = { tier: PlanTier; name: string; monthly: number; yearly: number };
+
+type Props = {
+  words: IntakeWords;
+  looks: readonly { key: FamilyKey; texture: string }[];
+  plans: readonly IntakePlan[];
+  /** Filled in from the pricing page's button. */
+  initialPlan: PlanTier | null;
+  initialBilling: Billing;
+  contactEmail: string;
+};
+
+export function IntakeForm({ words, looks, plans, initialPlan, initialBilling, contactEmail }: Props): React.ReactElement {
   const w = words;
-  const [fields, setFields] = useState<Fields>(EMPTY);
+  const [fields, setFields] = useState<Fields>({ ...EMPTY, plan: initialPlan, billing: initialBilling });
   const [pieces, setPieces] = useState<Piece[]>([]);
   const [reading, setReading] = useState(0);
   const [portrait, setPortrait] = useState<Photo | null>(null);
@@ -135,6 +153,8 @@ export function IntakeForm({ words, looks, contactEmail }: { words: IntakeWords;
       return;
     }
     const form = new FormData();
+    form.set(FIELD.plan, fields.plan ?? '');
+    form.set(FIELD.billing, fields.billing);
     form.set(FIELD.name, fields.makerName);
     form.set(FIELD.business, fields.businessName);
     form.set(FIELD.email, fields.email);
@@ -183,7 +203,37 @@ export function IntakeForm({ words, looks, contactEmail }: { words: IntakeWords;
 
   return (
     <form onSubmit={onSubmit} noValidate aria-busy={sending} className="flex flex-col gap-8 text-left md:gap-10">
-      <section aria-labelledby="in-you" className="flex flex-col gap-4">
+      <fieldset className="flex flex-col gap-4">
+        <legend className={HEADING}>{w.plan.heading}</legend>
+        <p className={`${HINT} -mt-2.5`}>{w.plan.hint}</p>
+        <div className="flex w-fit rounded-pill border border-white/10 bg-black/40 p-1">
+          {BILLINGS.map((b) => (
+            <label
+              key={b}
+              className="cursor-pointer rounded-pill px-4 py-2 text-[13px] font-semibold text-muted transition-colors has-[:checked]:bg-honey-warm has-[:checked]:text-bg has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-honey-warm"
+            >
+              <input type="radio" name="billing" value={b} checked={fields.billing === b} onChange={() => set('billing', b)} className="sr-only" />
+              {b === 'monthly' ? w.plan.monthly : w.plan.yearly}
+            </label>
+          ))}
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {plans.map((p) => (
+            <label
+              key={p.tier}
+              className="flex cursor-pointer flex-col gap-1 rounded-[14px] border border-white/[0.1] bg-black/30 p-4 transition-colors has-[:checked]:border-honey-warm/70 has-[:checked]:bg-honey-warm/[0.06] has-[:checked]:shadow-[0_0_0_1px_rgba(243,201,122,0.5)] has-[:focus-visible]:shadow-[0_0_0_3px_rgba(243,201,122,0.35)]"
+            >
+              <input type="radio" name="plan" value={p.tier} checked={fields.plan === p.tier} onChange={() => set('plan', p.tier)} className="sr-only" />
+              <span className="font-sans text-[18px] font-medium text-text">{p.name}</span>
+              <span className="text-[14px] text-text-soft">
+                {fill(fields.billing === 'monthly' ? w.plan.perMonth : w.plan.perYear, { price: formatPrice(fields.billing === 'monthly' ? p.monthly : p.yearly) })}
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <section aria-labelledby="in-you" className={SECTION}>
         <h2 id="in-you" className={HEADING}>
           {w.you.heading}
         </h2>

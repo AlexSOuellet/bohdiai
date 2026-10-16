@@ -956,6 +956,7 @@ export type Database = {
       intakes: {
         Row: {
           about: string
+          billing: string | null
           business_name: string
           created_at: string
           email: string
@@ -963,6 +964,7 @@ export type Database = {
           id: string
           maker_name: string
           makes: string
+          plan: string | null
           portrait_path: string | null
           status: string
           tenant_id: string | null
@@ -970,6 +972,7 @@ export type Database = {
         }
         Insert: {
           about: string
+          billing?: string | null
           business_name: string
           created_at?: string
           email: string
@@ -977,6 +980,7 @@ export type Database = {
           id?: string
           maker_name: string
           makes: string
+          plan?: string | null
           portrait_path?: string | null
           status?: string
           tenant_id?: string | null
@@ -984,6 +988,7 @@ export type Database = {
         }
         Update: {
           about?: string
+          billing?: string | null
           business_name?: string
           created_at?: string
           email?: string
@@ -991,6 +996,7 @@ export type Database = {
           id?: string
           maker_name?: string
           makes?: string
+          plan?: string | null
           portrait_path?: string | null
           status?: string
           tenant_id?: string | null

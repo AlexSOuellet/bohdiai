@@ -2,6 +2,7 @@
 import { fill } from '@/lib/site-words/words';
 import type { IntakeWords } from './queries';
 import type { IntakeFields, IntakePiece } from './request';
+import { plansFor } from '@/lib/site/plans';
 
 export type IntakeEmail = { subject: string; text: string; html: string };
 
@@ -17,7 +18,9 @@ export function composeIntakeEmail(args: { id: string; fields: IntakeFields; pie
   const { id, fields: f, pieces, hasPortrait, words } = args;
   const e = words.email;
   const mood = f.family === null ? words.mood.pick.label : words.families[f.family].label;
+  const planName = plansFor('maker').find((p) => p.tier === f.plan)?.name ?? f.plan;
   const rows: [string, string][] = [
+    [e.plan, fill(f.billing === 'yearly' ? e.planYearly : e.planMonthly, { plan: planName })],
     [e.name, f.makerName],
     [e.business, f.businessName],
     [e.email, f.email],
