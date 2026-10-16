@@ -39,8 +39,8 @@ export function nurseryCss(): string {
 /* Top bar */
 /* Pinned, not sticky: the storefront's html/body hide sideways overflow, which stops sticky from sticking. */
 .nn{--nn-top-h:79px;padding-top:var(--nn-top-h)}
-.nn [id]{scroll-margin-top:calc(var(--nn-top-h) + var(--sample-bar-h,0px) + 12px)}
-.nn-top{position:fixed;left:0;right:0;top:var(--sample-bar-h,0px);z-index:40;background:rgba(251,245,239,.92);backdrop-filter:blur(8px);border-bottom:1px dashed var(--line)}
+.nn [id]{scroll-margin-top:calc(var(--nn-top-h) + 12px)}
+.nn-top{position:fixed;left:0;right:0;top:0;z-index:40;background:rgba(251,245,239,.92);backdrop-filter:blur(8px);border-bottom:1px dashed var(--line)}
 .nn-top__in{height:calc(var(--nn-top-h) - 1px);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 0}
 .nn-brand{display:flex;align-items:center;text-decoration:none;min-width:0}
 .nn-brand__logo{height:58px;width:auto;mix-blend-mode:multiply}
@@ -59,7 +59,7 @@ export function nurseryCss(): string {
   .nn-menu-btn{display:inline-flex;align-items:center;gap:10px;font:700 13px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--ink);background:var(--card);border:1.5px solid var(--blush);border-radius:99px;padding:10px 16px;cursor:pointer}
   .nn-menu-btn__icon{width:16px;height:2px;background:var(--rose);box-shadow:0 -5px 0 var(--rose),0 5px 0 var(--rose)}
   .nn-nav[data-open=true] .nn-menu-btn__icon{box-shadow:none;background:var(--rose-deep)}
-  .nn-nav__links{display:none;position:fixed;left:0;right:0;top:calc(var(--nn-top-h) + var(--sample-bar-h,0px));flex-direction:column;gap:0;background:var(--paper);border-bottom:3px solid var(--blush);box-shadow:0 24px 40px -24px rgba(43,34,39,.5);padding:8px 16px 16px}
+  .nn-nav__links{display:none;position:fixed;left:0;right:0;top:calc(var(--nn-top-h));flex-direction:column;gap:0;background:var(--paper);border-bottom:3px solid var(--blush);box-shadow:0 24px 40px -24px rgba(43,34,39,.5);padding:8px 16px 16px}
   .nn-nav[data-open=true] .nn-nav__links{display:flex}
   .nn-nav__links a{font-size:15px;padding:16px 4px;border-bottom:1px dashed var(--line)}
   .nn-nav__links a:last-child{border-bottom:0}

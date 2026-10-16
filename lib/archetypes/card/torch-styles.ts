@@ -93,7 +93,7 @@ ${timing}
 .tt-spark{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--ember-hot);box-shadow:0 0 6px 2px var(--ember);pointer-events:none;z-index:5}
 
 /* top bar */
-.tt-bar{position:fixed;top:var(--sample-bar-h,0px);left:0;right:0;z-index:40;display:flex;justify-content:space-between;align-items:center;gap:16px;
+.tt-bar{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;justify-content:space-between;align-items:center;gap:16px;
   padding:14px clamp(16px,4vw,48px);font-family:var(--cond);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:14px;
   background:linear-gradient(180deg,rgba(29,13,4,.92),rgba(29,13,4,.75));color:var(--pine-hi);backdrop-filter:blur(3px)}
 .tt-bar > a{font-family:var(--stencil);font-weight:400;letter-spacing:.06em;font-size:20px;text-decoration:none}
@@ -102,7 +102,7 @@ ${timing}
 .tt-bar a:hover{color:var(--ember)}
 
 /* opening */
-.tt-open{min-height:100svh;display:grid;place-items:center;text-align:center;padding:calc(110px + var(--sample-bar-h,0px)) 16px 60px;position:relative}
+.tt-open{min-height:100svh;display:grid;place-items:center;text-align:center;padding:calc(110px) 16px 60px;position:relative}
 .tt-kick{font-family:var(--cond);font-weight:700;letter-spacing:.32em;text-transform:uppercase;font-size:clamp(13px,1.4vw,17px)}
 .tt-name{font-family:var(--stencil);font-weight:400;font-size:clamp(76px,12vw,184px);line-height:.9;letter-spacing:.01em;margin:.18em 0 .22em;white-space:nowrap}
 .tt-name--long{font-size:clamp(52px,9vw,140px)}
@@ -222,7 +222,7 @@ ${after}
 .tt .bc-lb__next{right:18px;top:50%;margin-top:-27px}
 
 /* privacy / terms */
-.tt-prose{padding:calc(110px + var(--sample-bar-h,0px)) 16px 80px}
+.tt-prose{padding:calc(110px) 16px 80px}
 .tt-prose > div{width:min(820px,100%);margin:0 auto}
 .tt-prose h1{font-family:var(--stencil);font-weight:400;font-size:clamp(40px,6vw,72px);line-height:.95;margin-bottom:20px}
 .tt-prose h2{font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:20px;margin:26px 0 8px}

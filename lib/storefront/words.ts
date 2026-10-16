@@ -1,6 +1,6 @@
 /**
  * The shared storefront pieces' word spots: page titles and search text, the
- * sample strip, the empty cart, the subscriptions page and its notify form. Only
+ * empty cart, the subscriptions page and its notify form. Only
  * the names of the spots live here; every word is the site's own, in
  * `site_words` under "shop.". A word with a blank names it: "{page} — {shop}".
  */
@@ -43,11 +43,6 @@ export const SHOP_WORD_SPOTS = {
     listLast: '',
     shortJoin: '',
     shortLast: '',
-  },
-  sample: {
-    label: '',
-    arrow: '',
-    linkHint: '',
   },
   cart: {
     eyebrow: '',

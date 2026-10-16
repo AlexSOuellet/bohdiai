@@ -48,7 +48,7 @@ export function bulletinCss(): string {
 .bb-skip{position:absolute;left:-9999px;top:8px;z-index:60;background:var(--red);color:#fff;padding:10px 16px;font-family:var(--label)}
 .bb-skip:focus{left:8px}
 
-.bb-wall{padding:calc(clamp(70px,8vw,110px) + var(--sample-bar-h,0px)) 16px 80px;display:flex;flex-direction:column;align-items:center;gap:70px}
+.bb-wall{padding:calc(clamp(70px,8vw,110px)) 16px 80px;display:flex;flex-direction:column;align-items:center;gap:70px}
 .bb-wall--inner{padding:0;width:100%}
 .bb-more{display:flex;flex-direction:column;align-items:center;gap:40px;width:100%}
 
