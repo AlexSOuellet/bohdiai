@@ -5,6 +5,8 @@ import {
   longDay,
   money,
   priceCents,
+  isFreeOn,
+  type PlanComp,
   renewalCharge,
   type Billing,
 } from '@/lib/backend/plan/billing';
@@ -21,6 +23,7 @@ export type PlanTermsView = {
   next: SitePlan | null;
   nextBilling: Billing | null;
   creditCents: number;
+  comp?: PlanComp | null;
 };
 
 function Checks({
@@ -39,7 +42,7 @@ function Checks({
   );
 }
 
-function UpgradeCard({ plan, mode }: { plan: Plan; mode: PlanMode }): React.ReactElement {
+function UpgradeCard({ plan, mode, comp }: { plan: Plan; mode: PlanMode; comp: PlanComp | null }): React.ReactElement {
   const label = `Upgrade to ${plan.name}`;
   return (
     <section className="bk-up" data-tier={plan.tier} aria-labelledby={`bk-up-${plan.id}`}>
@@ -52,6 +55,7 @@ function UpgradeCard({ plan, mode }: { plan: Plan; mode: PlanMode }): React.Reac
         <span className="bk-up-per">a month</span>
       </p>
       <p className="bk-up-year">or ${plan.yearly} a year, two months free</p>
+      {isFreeOn(plan.tier, comp) && <p className="bk-up-year">Free for you</p>}
       <p className="bk-up-lead">{includesLead(plan) ?? 'What you’d add'}</p>
       <Checks lines={plan.includes} className="bk-up-list" />
       {mode.kind === 'demo' ? (
@@ -103,9 +107,14 @@ export function PlanSummary({
             {current.name}
           </h2>
           <p className="bk-now-price">
-            ${current.monthly} a month, or ${current.yearly} a year
+            {isFreeOn(current.tier, terms?.comp) ? 'Free for you' : `$${current.monthly} a month, or $${current.yearly} a year`}
           </p>
-          {terms !== null && terms.renewsOn !== '' && (
+          {terms !== null && terms.renewsOn !== '' && isFreeOn(next ?? current.tier, terms.comp) && (
+            <p className="bk-now-terms">
+              Nothing to pay{next !== null && `. Moves to ${planOf(next).name} on ${longDay(terms.renewsOn)}`}.
+            </p>
+          )}
+          {terms !== null && terms.renewsOn !== '' && !isFreeOn(next ?? current.tier, terms.comp) && (
             <p className="bk-now-terms">
               Billed {terms.billing}. Renews {longDay(terms.renewsOn)}
               {next !== null &&
@@ -116,6 +125,7 @@ export function PlanSummary({
                   priceCents(
                     next ?? current.tier,
                     next !== null ? (terms.nextBilling ?? terms.billing) : terms.billing,
+                    terms.comp,
                   ),
                   terms.creditCents,
                 ).paidCents,
@@ -159,7 +169,7 @@ export function PlanSummary({
           </p>
           <div className="bk-ups">
             {above.map((plan) => (
-              <UpgradeCard key={plan.id} plan={plan} mode={mode} />
+              <UpgradeCard comp={terms?.comp ?? null} key={plan.id} plan={plan} mode={mode} />
             ))}
           </div>
         </>

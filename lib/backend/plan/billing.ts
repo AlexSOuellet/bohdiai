@@ -20,7 +20,25 @@ export function isBilling(value: unknown): value is Billing {
   return typeof value === 'string' && (BILLINGS as readonly string[]).includes(value);
 }
 
-export function priceCents(plan: SitePlan, billing: Billing): number {
+/**
+ * A free site (Alex, 2026-10-16): `free` pays nothing on any plan; `showcase` pays
+ * nothing on Showcase and the normal price on Market or Full. Null pays normally.
+ */
+export const PLAN_COMPS = ['free', 'showcase'] as const;
+export type PlanComp = (typeof PLAN_COMPS)[number];
+
+export function isPlanComp(value: unknown): value is PlanComp {
+  return typeof value === 'string' && (PLAN_COMPS as readonly string[]).includes(value);
+}
+
+/** True when the site pays nothing for `plan`. */
+export function isFreeOn(plan: SitePlan, comp: PlanComp | null | undefined): boolean {
+  return comp === 'free' || (comp === 'showcase' && plan === 'showcase');
+}
+
+/** What one period of `plan` costs this site: its price, or nothing when it's free on it. */
+export function priceCents(plan: SitePlan, billing: Billing, comp: PlanComp | null = null): number {
+  if (isFreeOn(plan, comp)) return 0;
   const p = planOf(plan);
   return (billing === 'monthly' ? p.monthly : p.yearly) * 100;
 }
@@ -94,6 +112,8 @@ export type PlanTerms = {
   billing: Billing;
   renewsOn: string;
   creditCents?: number;
+  /** Free on some or all plans. */
+  comp?: PlanComp | null;
 };
 
 export type UpgradeQuote = {
@@ -135,8 +155,9 @@ export function quoteUpgrade(
   today: string,
 ): UpgradeQuote {
   const left = periodLeft(today, now.renewsOn, now.billing);
-  const paidCents = priceCents(now.plan, now.billing);
-  const newCents = priceCents(to, billing);
+  const comp = now.comp ?? null;
+  const paidCents = priceCents(now.plan, now.billing, comp);
+  const newCents = priceCents(to, billing, comp);
   const balance = now.creditCents ?? 0;
   const sameBilling = billing === now.billing;
   const partCents = sameBilling ? Math.round(newCents * left) : newCents;

@@ -68,6 +68,7 @@ function on(over: Partial<PlanState> = {}): PlanState {
     next: null,
     nextBilling: null,
     creditCents: 0,
+    comp: null,
     nextGallery: [],
     today: '2026-10-09',
     ...over,

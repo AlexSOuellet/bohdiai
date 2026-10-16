@@ -157,3 +157,30 @@ describe('moving up, prorated', () => {
     expect(q.todayCents).toBe(0);
   });
 });
+
+describe('free sites', () => {
+  it('free pays nothing on any plan; free Showcase pays nothing only on Showcase', async () => {
+    const { isFreeOn, isPlanComp } = await import('./billing');
+    expect(priceCents('full', 'yearly', 'free')).toBe(0);
+    expect(priceCents('showcase', 'monthly', 'showcase')).toBe(0);
+    expect(priceCents('lite', 'monthly', 'showcase')).toBe(priceCents('lite', 'monthly'));
+    expect(priceCents('lite', 'monthly', null)).toBeGreaterThan(0);
+    expect(isFreeOn('full', 'showcase')).toBe(false);
+    expect(isFreeOn('showcase', undefined)).toBe(false);
+    expect(isPlanComp('showcase')).toBe(true);
+    expect(isPlanComp('half')).toBe(false);
+  });
+
+  it('moving up from a free Showcase pays the new plan for the rest of the month, with no credit', () => {
+    const q = quoteUpgrade({ plan: 'showcase', billing: 'monthly', renewsOn: '2026-10-29', comp: 'showcase' }, 'lite', 'monthly', '2026-10-09');
+    expect(q.creditCents).toBe(0);
+    expect(q.todayCents).toBe(q.partCents);
+    expect(q.renewalCents).toBe(priceCents('lite', 'monthly'));
+  });
+
+  it('a site that is free on every plan moves up for nothing', () => {
+    const q = quoteUpgrade({ plan: 'showcase', billing: 'monthly', renewsOn: '2026-10-29', comp: 'free' }, 'full', 'yearly', '2026-10-09');
+    expect(q.todayCents).toBe(0);
+    expect(q.renewalCents).toBe(0);
+  });
+});

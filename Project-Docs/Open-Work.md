@@ -104,6 +104,7 @@
     - promotions pause
 25. A minimal backend for Showcase (not designed). Contractor Lead Generation is set aside with contractors (2026-10-15).
 26. Rename the middle plan from "lite" to "market" in the code.
+26a. Free sites (Session 106, Alex): `tenants.plan_comp` is `free` (nothing to pay on any plan: Cut-Pro, Mazzone, Rose n' Cat) or `showcase` (Showcase free, Market and Full at their normal price), with a private note; set with `scripts/plan-comp.ts` until Alex's dashboard has a screen. The plan screen says "Free for you" and plan changes charge the right amount. Later (Alex): a one-month Market trial, or a percent off, as more kinds of this setting
 
 ## Saltmarsh and the demo
 27. [x] Demo dates move by whole weeks, so Saturdays stay Saturdays; today's market stays today (Session 104)

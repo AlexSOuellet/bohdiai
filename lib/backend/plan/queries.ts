@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import { isSitePlan, type SitePlan } from './plan';
-import { isBilling, nextRenewal, todayDay, type Billing } from './billing';
+import { isBilling, isPlanComp, nextRenewal, todayDay, type Billing, type PlanComp } from './billing';
 
 export type PlanState = {
   plan: SitePlan;
@@ -10,6 +10,8 @@ export type PlanState = {
   next: SitePlan | null;
   nextBilling: Billing | null;
   creditCents: number;
+  /** Free on some or all plans (Alex sets it); null pays normally. */
+  comp: PlanComp | null;
   /** The products she picked to show when a downgrade to Showcase takes effect. */
   nextGallery: string[];
   /** Today in the shop's time zone. */
@@ -26,7 +28,7 @@ export async function loadPlanState(
   const { data, error } = await db
     .from('tenants')
     .select(
-      'plan, plan_billing, plan_renews_on, plan_next, plan_next_billing, plan_credit_cents, plan_next_gallery, time_zone',
+      'plan, plan_billing, plan_renews_on, plan_next, plan_next_billing, plan_credit_cents, plan_next_gallery, plan_comp, time_zone',
     )
     .eq('id', tenantId)
     .maybeSingle();
@@ -40,6 +42,7 @@ export async function loadPlanState(
     next: isSitePlan(data.plan_next) ? data.plan_next : null,
     nextBilling: isBilling(data.plan_next_billing) ? data.plan_next_billing : null,
     creditCents: data.plan_credit_cents,
+    comp: isPlanComp(data.plan_comp) ? data.plan_comp : null,
     nextGallery: data.plan_next_gallery ?? [],
     today,
   };

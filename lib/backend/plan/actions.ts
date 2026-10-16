@@ -178,7 +178,7 @@ export async function skipToRenewal(): Promise<ChangePlanResult> {
   // The demo's clock never moves, so the renewal happens today and the new period starts
   // from today; counting from the old renewal day would leave more than a period ahead.
   const renewsOn = nextRenewal(state.today, billing);
-  const charge = renewalCharge(priceCents(state.next ?? state.plan, billing), state.creditCents);
+  const charge = renewalCharge(priceCents(state.next ?? state.plan, billing, state.comp), state.creditCents);
   if (
     !(await writeTerms(tenantId, {
       plan_billing: billing,

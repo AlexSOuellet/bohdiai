@@ -162,4 +162,16 @@ describe('Your plan', () => {
     );
     expect(screen.queryByRole('button', { name: /demo/ })).toBeNull();
   });
+
+  it('a free site says so, and shows the price of any plan it would pay for', () => {
+    render(<PlanSummary view={planView('showcase')} mode={DEMO} terms={{ billing: 'monthly', renewsOn: '2026-11-09', next: null, nextBilling: null, creditCents: 0, comp: 'showcase' }} />);
+    expect(screen.getByText('Free for you')).toBeTruthy();
+    expect(screen.getByText('Nothing to pay.')).toBeTruthy();
+    expect(screen.getAllByText('Free for you')).toHaveLength(1);
+  });
+
+  it('free on every plan marks the plans above as free too', () => {
+    render(<PlanSummary view={planView('showcase')} mode={DEMO} terms={{ billing: 'monthly', renewsOn: '2026-11-09', next: null, nextBilling: null, creditCents: 0, comp: 'free' }} />);
+    expect(screen.getAllByText('Free for you')).toHaveLength(3);
+  });
 });
