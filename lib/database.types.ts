@@ -969,6 +969,7 @@ export type Database = {
           status: string
           tenant_id: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           about: string
@@ -985,6 +986,7 @@ export type Database = {
           status?: string
           tenant_id?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           about?: string
@@ -1001,6 +1003,7 @@ export type Database = {
           status?: string
           tenant_id?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {

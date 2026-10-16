@@ -12,6 +12,7 @@ function draft(over: Partial<IntakeDraft> = {}): IntakeDraft {
     makerName: 'Lena',
     businessName: 'Saltmarsh & Lace',
     email: 'lena@example.com',
+    password: 'tide pools 22',
     makes: 'Lace and sea glass',
     about: 'I started on the porch.',
     family: 'cozy',
@@ -29,6 +30,7 @@ function form(d: IntakeDraft, extra: Record<string, string> = {}): FormData {
   f.set(FIELD.name, d.makerName);
   f.set(FIELD.business, d.businessName);
   f.set(FIELD.email, d.email);
+  f.set(FIELD.password, d.password);
   f.set(FIELD.makes, d.makes);
   f.set(FIELD.about, d.about);
   f.set(FIELD.family, d.family ?? (d.familyChosen ? MOOD_PICK : ''));
@@ -73,6 +75,12 @@ describe('photoProblem', () => {
 describe('checkIntake', () => {
   it('a complete form is ready', () => {
     expect(checkIntake(draft())).toBeNull();
+  });
+
+  it('needs a password of 8 to 72 characters, taken as typed', () => {
+    expect(checkIntake(draft({ password: 'short' }))).toEqual({ spot: 'password', values: { min: 8, max: 72 } });
+    expect(checkIntake(draft({ password: 'x'.repeat(73) }))?.spot).toBe('password');
+    expect(checkIntake(draft({ password: '        ' }))).toBeNull();
   });
 
   it('needs a plan first', () => {
@@ -137,6 +145,7 @@ describe('parseIntake', () => {
     if (out.kind !== 'ok') return;
     expect(out.fields).toEqual({ plan: 'lite', billing: 'monthly', makerName: 'Lena', businessName: 'Saltmarsh & Lace', email: 'lena@example.com', makes: 'Lace and sea glass', about: 'I started on the porch.', family: 'cozy' });
     expect(out.portrait?.name).toBe('me.jpg');
+    expect(out.password).toBe('tide pools 22');
     expect(out.pieces).toHaveLength(MIN_PIECES);
     expect(out.pieces[0]).toMatchObject({ name: 'Tide pool', priceCents: 4000, description: 'Blue glass' });
     expect(out.pieces[1]).toMatchObject({ priceCents: null, description: null });

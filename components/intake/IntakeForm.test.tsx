@@ -40,6 +40,7 @@ async function fillAll(u: ReturnType<typeof userEvent.setup>, count = MIN_PIECES
   await u.type(screen.getByLabelText('intake.you.name'), 'Lena');
   await u.type(screen.getByLabelText('intake.you.business'), 'Saltmarsh');
   await u.type(screen.getByLabelText('intake.you.email'), 'lena@example.com');
+  await u.type(screen.getByLabelText('intake.you.password'), 'tide pools 22');
   await u.type(screen.getByRole('textbox', { name: 'intake.makes.heading' }), 'Lace');
   await u.upload(screen.getByLabelText(/intake.pieces.add/), photos(count));
   const names = await screen.findAllByLabelText('intake.pieces.name');
@@ -73,6 +74,7 @@ describe('IntakeForm', { timeout: 20_000 }, () => {
     const sent = init.body as FormData;
     expect(sent.get(FIELD.name)).toBe('Lena');
     expect(sent.get(FIELD.plan)).toBe('full');
+    expect(sent.get(FIELD.password)).toBe('tide pools 22');
     expect(sent.get(FIELD.billing)).toBe('yearly');
     expect(sent.get(FIELD.family)).toBe('rustic');
     expect(sent.getAll(FIELD.pieceName)).toEqual(['Piece 1', 'Piece 2', 'Piece 3', 'Piece 4', 'Piece 5']);
@@ -91,6 +93,17 @@ describe('IntakeForm', { timeout: 20_000 }, () => {
     expect(screen.getAllByText('intake.plan.perYear')).toHaveLength(3);
     await u.click(screen.getByRole('radio', { name: /Maker Full/ }));
     expect(screen.getByRole('radio', { name: /Maker Full/ })).toBeChecked();
+  });
+
+  it('the password can be shown and hidden', async () => {
+    const { u } = setup();
+    const box = screen.getByLabelText('intake.you.password');
+    expect(box).toHaveAttribute('type', 'password');
+    expect(box).toHaveAttribute('autocomplete', 'new-password');
+    await u.click(screen.getByRole('button', { name: 'intake.you.show' }));
+    expect(box).toHaveAttribute('type', 'text');
+    await u.click(screen.getByRole('button', { name: 'intake.you.hide' }));
+    expect(box).toHaveAttribute('type', 'password');
   });
 
   it('asks for a plan when they came without one', async () => {

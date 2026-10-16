@@ -22,6 +22,8 @@ import {
   MAX_PIECES,
   MIN_PIECES,
   MOOD_PICK,
+  PASSWORD_MAX,
+  PASSWORD_MIN,
   BILLINGS,
   type Billing,
   type PlanTier,
@@ -30,10 +32,10 @@ import {
 
 type Photo = { file: File; url: string };
 type Piece = { key: string; name: string; price: string; description: string; photo: Photo | null };
-type Fields = { plan: PlanTier | null; billing: Billing; makerName: string; businessName: string; email: string; makes: string; about: string; family: FamilyKey | typeof MOOD_PICK | ''; company: string };
+type Fields = { plan: PlanTier | null; billing: Billing; password: string; makerName: string; businessName: string; email: string; makes: string; about: string; family: FamilyKey | typeof MOOD_PICK | ''; company: string };
 type Status = { kind: 'idle' } | { kind: 'sending' } | { kind: 'sent' } | IntakeAnswer;
 
-const EMPTY: Fields = { plan: null, billing: 'monthly', makerName: '', businessName: '', email: '', makes: '', about: '', family: '', company: '' };
+const EMPTY: Fields = { plan: null, billing: 'monthly', password: '', makerName: '', businessName: '', email: '', makes: '', about: '', family: '', company: '' };
 
 const INPUT =
   'w-full appearance-none rounded-[10px] border border-white/[0.1] bg-black/40 px-3.5 py-3 font-sans text-[15px] text-text placeholder:text-text-soft/35 focus:border-honey-warm/50 focus:shadow-[0_0_0_3px_rgba(243,201,122,0.12)] focus:outline-none';
@@ -63,6 +65,7 @@ export function IntakeForm({ words, looks, plans, initialPlan, initialBilling, c
   const [fields, setFields] = useState<Fields>({ ...EMPTY, plan: initialPlan, billing: initialBilling });
   const [pieces, setPieces] = useState<Piece[]>([]);
   const [reading, setReading] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
   const [portrait, setPortrait] = useState<Photo | null>(null);
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
   const urls = useRef(new Set<string>());
@@ -158,6 +161,7 @@ export function IntakeForm({ words, looks, plans, initialPlan, initialBilling, c
     form.set(FIELD.name, fields.makerName);
     form.set(FIELD.business, fields.businessName);
     form.set(FIELD.email, fields.email);
+    form.set(FIELD.password, fields.password);
     form.set(FIELD.makes, fields.makes);
     form.set(FIELD.about, fields.about);
     form.set(FIELD.family, fields.family);
@@ -251,11 +255,41 @@ export function IntakeForm({ words, looks, plans, initialPlan, initialBilling, c
             <input id="in-business" autoComplete="organization" maxLength={INTAKE_LIMITS.business} value={fields.businessName} onChange={(e) => set('businessName', e.target.value)} className={INPUT} />
           </div>
         </div>
-        <div>
-          <label htmlFor="in-email" className={LABEL}>
-            {w.you.email}
-          </label>
-          <input id="in-email" type="email" inputMode="email" autoComplete="email" maxLength={INTAKE_LIMITS.email} value={fields.email} onChange={(e) => set('email', e.target.value)} className={INPUT} />
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <label htmlFor="in-email" className={LABEL}>
+              {w.you.email}
+            </label>
+            <input id="in-email" type="email" inputMode="email" autoComplete="email" maxLength={INTAKE_LIMITS.email} value={fields.email} onChange={(e) => set('email', e.target.value)} className={INPUT} />
+          </div>
+          <div>
+            <label htmlFor="in-password" className={LABEL}>
+              {w.you.password}
+            </label>
+            <div className="relative">
+              <input
+                id="in-password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="new-password"
+                maxLength={PASSWORD_MAX}
+                value={fields.password}
+                onChange={(e) => set('password', e.target.value)}
+                aria-describedby="in-password-hint"
+                className={`${INPUT} pr-20`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-pressed={showPassword}
+                className="absolute inset-y-0 right-0 px-3.5 text-[13px] font-medium text-text-soft hover:text-text focus-visible:text-honey-warm focus-visible:outline-none"
+              >
+                {showPassword ? w.you.hide : w.you.show}
+              </button>
+            </div>
+            <p id="in-password-hint" className="mt-1 text-[12px] text-muted">
+              {fill(w.you.passwordHint, { min: PASSWORD_MIN })}
+            </p>
+          </div>
         </div>
       </section>
 

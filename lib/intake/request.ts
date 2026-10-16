@@ -18,6 +18,10 @@ export const PHOTO_TYPES: readonly string[] = ['image/jpeg', 'image/png', 'image
 /** The most the Images binding reads. The page shrinks photos well under this first. */
 export const MAX_PHOTO_BYTES = 20 * 1024 * 1024;
 
+/** A password Supabase's sign-in takes: at least 8, at most 72 (what it hashes). */
+export const PASSWORD_MIN = 8;
+export const PASSWORD_MAX = 72;
+
 export const INTAKE_LIMITS = { name: 120, business: 120, email: 254, makes: 600, about: 5000, pieceName: 120, pieceAbout: 2000, price: 20 } as const;
 
 /** Field names the page posts and the route reads. Pieces repeat, in order. */
@@ -27,6 +31,7 @@ export const FIELD = {
   name: 'makerName',
   business: 'businessName',
   email: 'email',
+  password: 'password',
   makes: 'makes',
   about: 'about',
   family: 'family',
@@ -47,6 +52,8 @@ export const ERROR_SPOTS = [
   'name',
   'business',
   'email',
+  'password',
+  'accountExists',
   'makes',
   'about',
   'piecesFew',
@@ -87,7 +94,7 @@ export type IntakePiece = { name: string; priceCents: number | null; description
 export type IntakeParsed =
   | { kind: 'spam' }
   | { kind: 'invalid'; problem: IntakeProblem }
-  | { kind: 'ok'; fields: IntakeFields; pieces: IntakePiece[]; portrait: File | null };
+  | { kind: 'ok'; fields: IntakeFields; password: string; pieces: IntakePiece[]; portrait: File | null };
 
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -111,6 +118,8 @@ export function photoProblem(file: File): ErrorSpot | null {
 
 /** The form's own fields, before the pieces, so the page can check as it goes. */
 export type IntakeDraft = Omit<IntakeFields, 'plan'> & {
+  /** Their new password, as typed (never trimmed). */
+  password: string;
   /** Null until a plan is chosen. */
   plan: PlanTier | null;
   pieces: { name: string; price: string; description: string; photo: File | null }[];
@@ -126,6 +135,7 @@ export function checkIntake(d: IntakeDraft): IntakeProblem | null {
   if (d.makerName.trim() === '') return p('name');
   if (d.businessName.trim() === '') return p('business');
   if (!EMAIL_SHAPE.test(d.email.trim())) return p('email');
+  if (d.password.length < PASSWORD_MIN || d.password.length > PASSWORD_MAX) return p('password', { min: PASSWORD_MIN, max: PASSWORD_MAX });
   if (d.makes.trim() === '') return p('makes');
   if (d.pieces.length < MIN_PIECES) return p('piecesFew', { min: MIN_PIECES });
   if (d.pieces.length > MAX_PIECES) return p('piecesMany', { max: MAX_PIECES });
@@ -190,6 +200,7 @@ export function parseIntake(form: FormData, { families, plans }: IntakeChoices):
     makerName: text(form, FIELD.name),
     businessName: text(form, FIELD.business),
     email: text(form, FIELD.email),
+    password: text(form, FIELD.password),
     makes: text(form, FIELD.makes),
     about: text(form, FIELD.about),
     family: isFamily(familyValue, families) ? familyValue : null,
@@ -211,6 +222,7 @@ export function parseIntake(form: FormData, { families, plans }: IntakeChoices):
       about: draft.about.trim(),
       family: draft.family,
     },
+    password: draft.password,
     portrait: draft.portrait,
     // checkIntake proved every piece has its photo and every price reads.
     pieces: draft.pieces.flatMap((p) =>

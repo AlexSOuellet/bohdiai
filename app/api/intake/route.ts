@@ -6,6 +6,8 @@ import { formLimitResponse } from '@/lib/forms/rate-limit';
 import { shrinkImage } from '@/lib/images/shrink';
 import { parseIntake } from '@/lib/intake/request';
 import { saveIntake } from '@/lib/intake/save';
+import { ensureAccount, removeNewAccount } from '@/lib/intake/account';
+import { createClient } from '@supabase/supabase-js';
 import { getIntakeWords } from '@/lib/intake/queries';
 import { composeIntakeEmail } from '@/lib/intake/email';
 import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
@@ -30,6 +32,16 @@ export async function POST(req: Request) {
   }
 }
 
+/** Signs in with the anon key to check an existing account's password; nothing is kept. */
+async function checkPassword(email: string, password: string): Promise<string | null> {
+  const url = process.env['SUPABASE_URL'] ?? process.env['NEXT_PUBLIC_SUPABASE_URL'];
+  const anon = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
+  if (url === undefined || anon === undefined) throw new Error('Supabase url / anon key missing');
+  const client = createClient(url, anon, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { data, error } = await client.auth.signInWithPassword({ email, password });
+  return error === null && data.user !== null ? data.user.id : null;
+}
+
 async function handle(req: Request) {
   const turnedAway = await formLimitResponse(req, 'intake', (message) => ({ error: message }));
   if (turnedAway !== null) return turnedAway;
@@ -46,8 +58,16 @@ async function handle(req: Request) {
   if (parsed.kind === 'invalid') return NextResponse.json({ problem: parsed.problem }, { status: 400 });
 
   const db = supabaseAdmin();
-  const saved = await saveIntake({ db, shrink: shrinkImage, fields: parsed.fields, pieces: parsed.pieces, portrait: parsed.portrait });
+  // Their account first: a new one, or the one their email already has (with its own password).
+  const account = await ensureAccount(db, checkPassword, parsed.fields.email, parsed.password);
+  if (!account.ok) {
+    if (account.reason === 'accountExists') return NextResponse.json({ problem: { spot: 'accountExists', values: {} } }, { status: 400 });
+    return NextResponse.json({ failed: true }, { status: 502 });
+  }
+  const saved = await saveIntake({ db, shrink: shrinkImage, fields: parsed.fields, pieces: parsed.pieces, portrait: parsed.portrait, userId: account.userId });
   if (!saved.ok) {
+    // All or nothing: an account this send made goes with it.
+    if (account.created) await removeNewAccount(db, account.userId);
     if (saved.reason === 'photoUnread') return NextResponse.json({ problem: { spot: 'photoUnread', values: {} } }, { status: 400 });
     return NextResponse.json({ failed: true }, { status: 502 });
   }

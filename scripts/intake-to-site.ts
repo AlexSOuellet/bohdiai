@@ -1,17 +1,19 @@
 /**
- * An intake submission (bohdiai.com/start) into a private preview site — Claude's
+ * An intake submission (bohdiai.com/start) into a site its maker publishes — Claude's
  * tool, not a user surface. Alex picks the family (when the maker said "you pick")
  * and the skin.
  *
- *   npx tsx --env-file=.env.local scripts/intake-to-site.ts <intake-id> --subdomain <s> --skin <skin> [--family <f>] [--niche <slug>] [--words-from <site>] [--build] [--live]
+ *   npx tsx --env-file=.env.local scripts/intake-to-site.ts <intake-id> --subdomain <s> --skin <skin> [--family <f>] [--niche <slug>] [--words-from <site>] [--build] [--live] [--no-email]
  *
  * 1. Saves the maker's photos from the private intake folder into tmp/intake-sites/<s>/media.
  * 2. Claude drafts the words the maker didn't give (lib/build/intake-drafts), looking
  *    at the photos; the whole content file is checked (lib/build/site-plan) and the
  *    problems sent back once.
  * 3. Writes the content file tmp/intake-sites/<s>/site.ts (and drafts.json) to read.
- * 4. With --build: builds it with the one builder (a private draft unless --live) and
- *    marks the intake built.
+ * 4. With --build: builds it with the one builder (private until the maker
+ *    publishes it from their backend; --live skips that), makes the maker's account
+ *    (from the form) the site's owner, emails them that it's ready to sign in to
+ *    (--no-email skips it), and marks the intake built.
  *
  * Buttons and labels are copied from a family site that has all of them
  * (--words-from, or the first one found).
@@ -28,6 +30,10 @@ import { designWordKeys, planSite } from '../lib/build/site-plan';
 import { siteFromIntake, type BuildSettings, type IntakeForBuild } from '../lib/build/from-intake';
 import { draftIntake, type PiecePhoto } from '../lib/build/intake-drafts';
 import { INTAKE_BUCKET } from '../lib/intake/save';
+import { ensureBuilderAccess } from '../lib/backend/builder-access';
+import { getIntakeWords } from '../lib/intake/queries';
+import { composeReadyEmail } from '../lib/intake/ready-email';
+import { resend, fromEmail } from '../lib/resend';
 
 type Db = ReturnType<typeof createClient<Database>>;
 
@@ -76,7 +82,7 @@ async function main(): Promise<void> {
   const subdomain = flag(rest, '--subdomain');
   const skin = flag(rest, '--skin');
   if (intakeId === undefined || subdomain === undefined || skin === undefined) {
-    fail('usage: intake-to-site.ts <intake-id> --subdomain <s> --skin <skin> [--family <f>] [--niche <slug>] [--words-from <site>] [--build] [--live]');
+    fail('usage: intake-to-site.ts <intake-id> --subdomain <s> --skin <skin> [--family <f>] [--niche <slug>] [--words-from <site>] [--build] [--live] [--no-email]');
   }
   const url = process.env['NEXT_PUBLIC_SUPABASE_URL'] ?? process.env['SUPABASE_URL'];
   const key = process.env['SUPABASE_SERVICE_ROLE_KEY'];
@@ -88,6 +94,7 @@ async function main(): Promise<void> {
   if (intake === null) fail(`no intake ${intakeId}`);
   if (intake.status === 'built') fail(`intake ${intakeId} is already built`);
   if (!isSitePlan(intake.plan)) fail(`intake ${intakeId} has no plan (sent before the form asked for one)`);
+  if (intake.user_id === null) fail(`intake ${intakeId} has no account (sent before the form made one)`);
   const familyFlag = flag(rest, '--family');
   const family = familyFlag ?? intake.family;
   if (family === null) fail('they said "you pick for me": pass --family');
@@ -156,9 +163,19 @@ async function main(): Promise<void> {
   if (build.status !== 0) fail('the build failed (above); the intake stays new');
   const { data: built } = await db.from('tenants').select('id').eq('subdomain', subdomain).maybeSingle();
   if (built === null) fail(`built, but ${subdomain} wasn't found to mark the intake`);
+  // The maker owns it: their account from the form becomes the site's admin.
+  const owner = await ensureBuilderAccess(db, built.id, intake.email);
+  if (!owner.ok) fail(`built, but making ${intake.email} the owner failed: ${owner.error}`);
   const { error: markErr } = await db.from('intakes').update({ status: 'built', tenant_id: built.id }).eq('id', intakeId);
   if (markErr !== null) fail(`built, but marking the intake failed: ${markErr.message}`);
-  process.stdout.write(`intake ${intakeId} is built as ${subdomain}\n`);
+  process.stdout.write(`intake ${intakeId} is built as ${subdomain}; ${intake.email} owns it\n`);
+
+  // Tell them it's ready: sign in with the email and password they chose.
+  if (rest.includes('--no-email')) return;
+  const email = composeReadyEmail({ makerName: intake.maker_name, businessName: intake.business_name, email: intake.email, words: await getIntakeWords(db) });
+  const sent = await resend().emails.send({ from: fromEmail(), to: intake.email, subject: email.subject, text: email.text, html: email.html });
+  if (sent.error) fail(`built and owned, but the ready email to ${intake.email} failed: ${sent.error.message}`);
+  process.stdout.write(`told ${intake.email} their site is ready\n`);
 }
 
 void main();

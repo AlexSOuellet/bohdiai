@@ -26,7 +26,17 @@ export const INTAKE_WORD_SPOTS = {
     /** "{price}". */
     perYear: '',
   },
-  you: { heading: '', name: '', business: '', email: '' },
+  you: {
+    heading: '',
+    name: '',
+    business: '',
+    email: '',
+    password: '',
+    /** "{min}". */
+    passwordHint: '',
+    show: '',
+    hide: '',
+  },
   makes: { heading: '', hint: '' },
   pieces: {
     heading: '',
@@ -60,6 +70,9 @@ export const INTAKE_WORD_SPOTS = {
   sent: { title: '', body: '' },
   errors: {
     plan: '',
+    /** "{min}" and "{max}". */
+    password: '',
+    accountExists: '',
     name: '',
     business: '',
     email: '',
@@ -80,6 +93,19 @@ export const INTAKE_WORD_SPOTS = {
     mood: '',
     /** "{email}": Alex's address, so nobody is lost to a bad send. */
     failed: '',
+  },
+  /** The email the maker gets when their site is built. */
+  ready: {
+    /** "{business}". */
+    subject: '',
+    /** "{name}". */
+    greeting: '',
+    /** "{business}". */
+    body: '',
+    /** "{email}": the email they signed up with. */
+    signIn: '',
+    button: '',
+    signoff: '',
   },
   email: {
     /** "{business}". */
