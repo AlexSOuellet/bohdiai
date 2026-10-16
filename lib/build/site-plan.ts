@@ -23,6 +23,7 @@ import { buildDateRow, DATES_LIMIT, type MarketDateForm, type MarketDateRow } fr
 import { CAPTION_MAX, GALLERY_LIMIT } from '@/lib/backend/gallery/gallery-form';
 import { MAX_PHOTOS } from '@/lib/backend/catalog/product-form';
 import { isSitePlan, type SitePlan } from '@/lib/backend/plan/plan';
+import { planLinkTargets } from '@/lib/backend/plan/plan-features';
 
 /** Which design a site is built on: one of the families, or (until they become
  *  the Scenic and Spotlight families) the shoreline or show reel page. */
@@ -190,6 +191,18 @@ export function planSite(f: SiteFile): PlanResult {
   } else {
     if (f.moment !== undefined) errors.push(`moment: the ${s.design} design has no opening of its own (its top line is in About you)`);
     if (f.sections !== undefined) errors.push(`sections: the ${s.design} design reads its headings from its words`);
+  }
+  // A button may only point at a page the site's plan has (Showcase has no shop).
+  if (family && isSitePlan(s.plan)) {
+    const open = new Set<string>(planLinkTargets(s.plan));
+    const buttons: [string, string | undefined][] = [
+      ['moment: the main button', f.moment?.ctaTarget],
+      ['moment: the second button', f.moment?.secondCtaTarget],
+      ...Object.entries(f.sections ?? {}).map(([key, w]): [string, string | undefined] => [`sections.${key}: the link at the bottom`, w?.moreTarget]),
+    ];
+    for (const [where, target] of buttons) {
+      if (target !== undefined && target !== '' && !open.has(target)) errors.push(`${where} points at "${target}", a page the ${s.plan} plan doesn't have`);
+    }
   }
   const sections: SitePlanned['sections'] = [];
   for (const key of Object.keys(f.sections ?? {})) {
