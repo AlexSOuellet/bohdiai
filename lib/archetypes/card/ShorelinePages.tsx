@@ -15,7 +15,7 @@ import { AddToCartButton, PromoCodeForm, RemoveFromCartButton, SyncCart } from '
 import { ShorelineCartLink } from './ShorelineCartLink';
 import type { CartView, MarketShopView } from '@/lib/archetypes/content';
 import { ShorelineMarketBuyer } from './ShorelineMarketBuyer';
-import { ShorelineOrderForm } from './ShorelineOrderForm';
+import { OrderRequestForm } from '@/lib/storefront/OrderRequestForm';
 import { PhotoViewerProvider, Snapshot } from './PhotoViewer';
 import { Frame, Footer, nameParts, PortraitPrint } from './ShorelineLanding';
 import { bioParagraphs, initials, marketDay, marketName, photoLabel, type CardData } from './data';
@@ -632,7 +632,7 @@ export function ShorelineCart({ site, cart, platformCredit = true }: { site: Sho
                   {C.fix}
                 </p>
               ) : (
-                <ShorelineOrderForm listingIds={ready.map((l) => l.id)} code={cart.code?.applied === true ? cart.code.value : null} w={C} honeypot={site.card.words.form.honeypot} />
+                <OrderRequestForm listingIds={ready.map((l) => l.id)} code={cart.code?.applied === true ? cart.code.value : null} w={C} honeypot={site.card.words.form.honeypot} />
               )}
             </section>
           </div>

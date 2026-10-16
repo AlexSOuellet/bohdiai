@@ -12,10 +12,14 @@ import type { FamilyHomes } from './from-homes';
 /** Test words: every spot says its own key. */
 const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 
-const site = vi.hoisted(() => ({ getSiteWords: vi.fn(), loadFamilyHomes: vi.fn() }));
+const site = vi.hoisted(() => ({ getSiteWords: vi.fn(), loadFamilyHomes: vi.fn(), features: { cart: true, catalog: true } }));
 vi.mock('@/lib/supabase', () => ({ supabaseAdmin: () => ({}) }));
+vi.mock('next/navigation', async (importOriginal) => ({ ...(await importOriginal<object>()), useRouter: () => ({ refresh: () => undefined }) }));
 vi.mock('@/lib/site-words/queries', () => ({ getSiteWords: site.getSiteWords }));
 vi.mock('./from-homes', async (importOriginal) => ({ ...(await importOriginal<typeof FromHomes>()), loadFamilyHomes: site.loadFamilyHomes }));
+vi.mock('@/lib/backend/site-features', () => ({ getSiteFeatures: async () => new Set(Object.entries(site.features).flatMap(([k, on]) => (on ? [k] : []))) }));
+vi.mock('@/lib/storefront/metadata', () => ({ loadShopWords: async () => ({ cart: { eyebrow: 'shop.cart.eyebrow', title: 'shop.cart.title', body: 'shop.cart.body', cta: 'shop.cart.cta' } }) }));
+vi.mock('@/lib/storefront/promotions-load', () => ({ loadRunningSale: async () => ({ percentOff: 20 }) }));
 
 import { MAIN_STREET_SPEC } from './builder';
 import type { ProductView } from '../content';
@@ -114,6 +118,107 @@ describe('MAIN_STREET_SPEC.render — the site’s words', () => {
     expect(container.querySelector('a[href="/cart"]')?.textContent).toBe(W.navCart);
     expect(container.querySelector('.ms-ev-where')?.textContent).toBe(W.marketWhere);
     expect(container.querySelector('.ms-ev-directions')?.textContent).toBe(W.getDirections);
+  });
+});
+
+describe('MAIN_STREET_SPEC — the plans (Full sells online)', () => {
+  const sections = Object.fromEntries(SECTION_KEYS.map((k) => [k, EMPTY_SECTION])) as SiteSections;
+  const homes = (sellsOnline: boolean): FamilyHomes => ({
+    name: 'Ember Candle Co', sellsOnline, moment: { ...EMPTY_MOMENT, media: null, photos: [] }, sections, profile: EMPTY_PROFILE, portraitUrl: null, testimonials: [], dates: [],
+  });
+  const cart = {
+    lines: [{ id: 'l1', slug: 'tide', name: 'Tide candle', price: '$40', available: true }],
+    codes: false,
+    subtotal: '$40',
+    total: '$40',
+  };
+
+  beforeEach(() => {
+    site.getSiteWords.mockResolvedValue(W);
+    site.features.cart = true;
+    site.features.catalog = true;
+  });
+
+  describe('Showcase (no catalog): no shop, no prices', () => {
+    beforeEach(() => {
+      site.features.cart = false;
+      site.features.catalog = false;
+      site.loadFamilyHomes.mockResolvedValue(homes(false));
+    });
+
+    it('has no shop, collections or collection page', async () => {
+      for (const page of ['shop', 'collections', 'collection'] as const) {
+        const el = MAIN_STREET_SPEC.render({ content: { design: 'family' }, lookKey: 'main-street-ember', products: productRows(2), page, tenantId: 't1' });
+        await expect(painted(el)).rejects.toThrow();
+      }
+    });
+
+    it('has no page for a piece, and no cart page', async () => {
+      const product = MAIN_STREET_SPEC.renderProduct!({ content: { design: 'family' }, lookKey: 'main-street-ember', product: productRows(1)[0]!, tenantId: 't1' });
+      await expect(painted(product)).rejects.toThrow();
+      const el = MAIN_STREET_SPEC.renderCart!({ content: { design: 'family' }, lookKey: 'main-street-ember', cart, tenantId: 't1' });
+      const chrome = await painted(el);
+      await expect(painted((chrome.props as { children: ReactElement }).children)).rejects.toThrow();
+    });
+
+    it('the home shows no pieces and no prices, and the menu has no shop', async () => {
+      const products = productRows(3).map((p) => ({ ...p, price: '$50' }));
+      const el = MAIN_STREET_SPEC.render({ content: { design: 'family' }, lookKey: 'main-street-ember', products, tenantId: 't1' });
+      const { container } = render(await painted(el));
+      expect(container.textContent).not.toContain('$50');
+      expect(container.textContent).not.toContain('Piece 0');
+      expect(container.querySelector('a[href="/shop"]')).toBeNull();
+      expect(container.querySelector('a[href="/collections"]')).toBeNull();
+    });
+  });
+
+  it('a market’s page is there on Market and Full, never on Showcase', async () => {
+    site.loadFamilyHomes.mockResolvedValue(homes(false));
+    const market = { marketId: 'm1', name: 'Harvest Fair', date: '2026-10-17', endDate: '', town: '', booth: '', state: 'after' as const, pieces: [], methods: [] };
+    const run = async (): Promise<ReactElement> => {
+      const chrome = await painted(MAIN_STREET_SPEC.renderMarket!({ content: { design: 'family' }, lookKey: 'main-street-ember', market, tenantId: 't1' }));
+      return painted(chrome);
+    };
+    (site.features as Record<string, boolean>)['market_shop'] = true;
+    const { container } = render(await run());
+    expect(container.querySelector('h1')?.textContent).toBe('Harvest Fair');
+    (site.features as Record<string, boolean>)['market_shop'] = false;
+    await expect(run()).rejects.toThrow();
+  });
+
+  it('shows the running sale price on the pieces in the shop', async () => {
+    site.loadFamilyHomes.mockResolvedValue(homes(true));
+    const products = productRows(1).map((p) => ({ ...p, price: '$50', priceCents: 5000 }));
+    const el = MAIN_STREET_SPEC.render({ content: { design: 'family' }, lookKey: 'main-street-ember', products, page: 'shop', tenantId: 't1' });
+    const { container } = render(await painted(el));
+    expect(container.textContent).toContain('$40');
+    expect(container.textContent).not.toContain('$50');
+  });
+
+  /** The cart page's body (an async piece inside the family chrome), run to what it paints. */
+  async function cartBody(): Promise<HTMLElement> {
+    const el = MAIN_STREET_SPEC.renderCart!({ content: { design: 'family' }, lookKey: 'main-street-ember', cart, tenantId: 't1' });
+    const chrome = await painted(el);
+    const body = await painted((chrome.props as { children: ReactElement }).children);
+    return render(body).container;
+  }
+
+  it('paints the cart with her pieces, the sums and the order form on Full', async () => {
+    site.loadFamilyHomes.mockResolvedValue(homes(true));
+    const c = await cartBody();
+    expect(c.querySelector('.ms-cart-title')?.textContent).toBe(W.cart.title);
+    expect(c.querySelector('.ms-cart-line a')?.getAttribute('href')).toBe('/listings/tide');
+    expect(c.querySelector('.ms-cart-total dd')?.textContent).toBe('$40');
+    expect(c.querySelector('form')).not.toBeNull();
+  });
+
+  it('a site without the cart lands on the plain page in its own words', async () => {
+    site.loadFamilyHomes.mockResolvedValue(homes(false));
+    site.features.cart = false;
+    const c = await cartBody();
+    expect(c.querySelector('.ms-cart')).toBeNull();
+    expect(c.querySelector('h1')?.textContent).toBe('shop.cart.title');
+    expect(c.querySelector('a')?.getAttribute('href')).toBe('/shop');
   });
 });
 

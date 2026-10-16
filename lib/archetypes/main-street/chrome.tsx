@@ -13,7 +13,8 @@ import type { ArchetypeTheme, TypeRole } from '../types';
 import type { MainStreetView } from './schemas';
 import { MAIN_STREET_FONT_HREFS, type MainStreetRoles } from './skins';
 import { LINK_TARGETS, linkHref, type LinkTarget } from './links';
-import { MainStreetMobileNav } from './MobileNav';
+import { MainStreetMobileNav, type MobileNavItem } from './MobileNav';
+import { CartCount } from '@/lib/storefront/CartControls';
 import { IntroReplayLink } from './IntroReplayLink';
 import { Type } from './Type';
 import type { FamilyWords } from './words';
@@ -1306,6 +1307,8 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-product-buy{margin-top:var(--ms-loose)}
     .arch-main-street .ms-product-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:var(--ms-base) var(--ms-loose);border-radius:2px;display:inline-block;border:0;cursor:pointer;font:inherit}
     .arch-main-street .ms-product-cta[data-soldout="true"]{background:var(--ms-fg-muted);cursor:default}
+    /* Buttons wear the menu's lettering but not its one-line cap: their words show whole. */
+    .arch-main-street .ms-product-cta[data-type],.arch-main-street .ms-btn[data-type],.arch-main-street .ms-simple-cta[data-type]{max-width:100%;white-space:normal;overflow:visible}
     .arch-main-street .ms-product-story{padding-top:var(--ms-section)}
     .arch-main-street .ms-product-story-eyebrow{color:var(--ms-accent);display:block;margin-bottom:var(--ms-base)}
     .arch-main-street .ms-product-story-body{color:var(--ms-fg);max-width:640px;margin:0}
@@ -1339,6 +1342,88 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-simple-head{color:var(--ms-fg);margin:0 0 16px}
     .arch-main-street .ms-simple-body{color:var(--ms-fg-muted);margin:0 0 32px}
     .arch-main-street .ms-simple-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:15px 28px;border-radius:2px;display:inline-block}
+    /* The cart (Full) — FamilyCart. Her pieces on the left, the order form on the right. */
+    .arch-main-street .ms-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+    .arch-main-street .ms-cart{padding-top:88px;padding-bottom:var(--ms-section)}
+    .arch-main-street .ms-cart-title{color:var(--ms-fg);margin:0 0 var(--ms-loose)}
+    .arch-main-street .ms-cart-empty{display:grid;gap:var(--ms-base);justify-items:start;color:var(--ms-fg-muted)}
+    .arch-main-street .ms-cart-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:var(--ms-section);align-items:start}
+    .arch-main-street .ms-cart-lines{list-style:none;margin:0;padding:0;border-top:1px solid var(--ms-rule)}
+    .arch-main-street .ms-cart-line{display:grid;grid-template-columns:76px minmax(0,1fr) auto auto;gap:var(--ms-base);align-items:center;padding:var(--ms-base) 0;border-bottom:1px solid var(--ms-rule);color:var(--ms-fg)}
+    .arch-main-street .ms-cart-line[data-gone="true"]{opacity:.55}
+    .arch-main-street .ms-cart-photo{width:76px;height:95px;object-fit:cover;display:block}
+    .arch-main-street .ms-cart-name a{color:var(--ms-fg)}
+    .arch-main-street .ms-cart-gone{display:block;color:var(--ms-accent);margin-top:4px}
+    .arch-main-street .ms-cart-price s{color:var(--ms-fg-muted);margin-right:4px}
+    .arch-main-street .ms-cart-out{background:none;border:0;padding:4px 0;color:var(--ms-fg-muted);font:inherit;text-decoration:underline;cursor:pointer}
+    .arch-main-street .ms-cart-code{margin-top:var(--ms-loose);color:var(--ms-fg)}
+    .arch-main-street .ms-code{display:flex;flex-wrap:wrap;gap:var(--ms-tight);align-items:center}
+    .arch-main-street .ms-code input{font:inherit;color:var(--ms-fg);background:var(--ms-bg);border:1px solid var(--ms-rule);border-radius:2px;padding:10px 12px}
+    .arch-main-street .ms-code button{font:inherit;background:none;color:var(--ms-fg);border:1px solid var(--ms-fg);border-radius:2px;padding:10px 16px;cursor:pointer}
+    .arch-main-street .ms-cart-sum{margin:var(--ms-loose) 0 0;color:var(--ms-fg)}
+    .arch-main-street .ms-cart-sum div{display:flex;justify-content:space-between;padding:6px 0}
+    .arch-main-street .ms-cart-sum dd{margin:0}
+    .arch-main-street .ms-cart-total{border-top:1px solid var(--ms-fg);margin-top:6px;padding-top:12px;font-weight:700}
+    .arch-main-street .ms-cart-send{background:var(--ms-contrast-bg);color:var(--ms-contrast-fg);padding:var(--ms-loose)}
+    .arch-main-street .ms-cart-send-title{margin:0 0 var(--ms-tight)}
+    .arch-main-street .ms-cart-send-lede{opacity:.8;margin:0 0 var(--ms-base)}
+    .arch-main-street .ms-cart-send .bc-form{display:grid;gap:12px}
+    .arch-main-street .ms-cart-send .bc-form__row{display:grid;gap:12px}
+    .arch-main-street .ms-cart-send .bc-form label{display:block;font-size:.9em;opacity:.85}
+    .arch-main-street .ms-cart-send .bc-form input,.arch-main-street .ms-cart-send .bc-form textarea{display:block;width:100%;margin-top:6px;font:inherit;color:var(--ms-contrast-fg);background:transparent;border:1px solid currentColor;border-radius:2px;padding:12px 14px}
+    .arch-main-street .ms-cart-send .bc-form textarea{min-height:110px;resize:vertical}
+    .arch-main-street .ms-cart-send .bc-form__trap{position:absolute;left:-9999px}
+    .arch-main-street .ms-cart-send .bc-btn{font:inherit;background:var(--ms-accent);color:var(--ms-on-accent);border:0;border-radius:2px;padding:14px 24px;cursor:pointer}
+    .arch-main-street .ms-cart-send .bc-btn:disabled{opacity:.6;cursor:progress}
+    .arch-main-street .ms-cart .bc-form__status{color:var(--ms-accent)}
+    .arch-main-street .ms-cart .order-num{font-size:1.4em;margin:0 0 6px}
+    /* A market's own page — FamilyMarket + the shared buyer steps (ms-mk-*, ms-btn, ms-was). */
+    .arch-main-street .ms-mk-bar{padding:18px 40px;border-bottom:1px solid var(--ms-rule);color:var(--ms-fg)}
+    .arch-main-street .ms-mk{padding-top:var(--ms-loose);padding-bottom:var(--ms-section);color:var(--ms-fg)}
+    .arch-main-street .ms-mk-head{margin:0}
+    .arch-main-street .ms-mk-when{color:var(--ms-fg-muted);margin:var(--ms-tight) 0 var(--ms-loose)}
+    .arch-main-street .ms-mk-lede{max-width:620px;margin:0 0 var(--ms-loose)}
+    .arch-main-street .ms-mk-end{margin-top:var(--ms-loose)}
+    .arch-main-street .ms-btn{display:inline-block;background:var(--ms-accent);color:var(--ms-on-accent);padding:14px 24px;border-radius:2px;border:0;cursor:pointer;font:inherit;text-decoration:none}
+    .arch-main-street .ms-btn:disabled{opacity:.6;cursor:progress}
+    .arch-main-street .ms-was{color:var(--ms-fg-muted);margin-right:6px}
+    .arch-main-street .ms-mk-buy{max-width:900px}
+    .arch-main-street .ms-mk-note{margin:0 0 var(--ms-base);color:var(--ms-fg-muted)}
+    .arch-main-street .ms-mk-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:var(--ms-base)}
+    .arch-main-street .ms-mk-piece{width:100%;display:grid;gap:8px;padding:0 0 10px;background:none;border:0;cursor:pointer;font:inherit;color:var(--ms-fg);text-align:left}
+    .arch-main-street .ms-mk-piece:focus-visible{outline:2px solid var(--ms-accent);outline-offset:3px}
+    .arch-main-street .ms-mk-piece--gone{cursor:default;opacity:.55}
+    .arch-main-street .ms-mk-thumb{display:block;aspect-ratio:4/5;overflow:hidden;background:var(--ms-rule)}
+    .arch-main-street .ms-mk-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .arch-main-street .ms-mk-name{display:block;line-height:1.2}
+    .arch-main-street .ms-mk-fee{display:block;font-weight:700;color:var(--ms-accent)}
+    .arch-main-street .ms-mk-card{max-width:560px;display:grid;gap:14px;padding:var(--ms-loose);border:1px solid var(--ms-rule);background:var(--ms-bg)}
+    .arch-main-street .ms-mk-card p{margin:0}
+    .arch-main-street .ms-mk-chosen{display:flex;align-items:center;gap:16px}
+    .arch-main-street .ms-mk-chosen .ms-mk-thumb{width:84px;flex:none}
+    .arch-main-street .ms-mk-form{display:grid;gap:16px}
+    .arch-main-street .ms-mk-form label,.arch-main-street .ms-mk-form legend{display:grid;gap:6px;color:var(--ms-fg-muted)}
+    .arch-main-street .ms-mk-form fieldset{border:0;margin:0;padding:0}
+    .arch-main-street .ms-mk-form input:not([type=radio]){font:inherit;color:var(--ms-fg);background:var(--ms-bg);border:1px solid var(--ms-rule);border-radius:2px;padding:12px 14px}
+    .arch-main-street .ms-mk-methods{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+    .arch-main-street .ms-mk-method{display:block;position:relative}
+    .arch-main-street .ms-mk-method input{position:absolute;opacity:0;width:1px;height:1px}
+    .arch-main-street .ms-mk-method span{display:inline-block;color:var(--ms-fg);border:1px solid var(--ms-fg);border-radius:2px;padding:12px 16px;cursor:pointer}
+    .arch-main-street .ms-mk-method input:checked+span{background:var(--ms-fg);color:var(--ms-bg)}
+    .arch-main-street .ms-mk-method input:focus-visible+span{outline:2px solid var(--ms-accent);outline-offset:2px}
+    .arch-main-street .ms-mk-title{font-size:1.4em}
+    .arch-main-street .ms-mk-label{color:var(--ms-fg-muted)}
+    .arch-main-street .ms-mk-big{font-size:2.6em;line-height:1;color:var(--ms-accent)}
+    .arch-main-street .ms-mk-small{color:var(--ms-fg-muted)}
+    .arch-main-street .ms-mk-zelle{word-break:break-word}
+    .arch-main-street .ms-mk-copy{font:inherit;background:none;border:1px solid var(--ms-fg);border-radius:2px;color:var(--ms-fg);padding:6px 10px;margin-left:6px;cursor:pointer}
+    .arch-main-street .ms-mk-actions{display:flex;flex-wrap:wrap;align-items:center;gap:18px;margin-top:6px}
+    .arch-main-street .ms-mk-link{font:inherit;background:none;border:0;border-bottom:1px solid;padding:4px 0;cursor:pointer;color:var(--ms-fg);justify-self:start}
+    .arch-main-street .ms-mk-error{color:var(--ms-accent);font-weight:700}
+    .arch-main-street .ms-mk-card .ms-btn{justify-self:start}
+    @media(max-width:420px){.arch-main-street .ms-mk-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:860px){.arch-main-street .ms-mk-bar{padding-inline:20px}}
+    @media(max-width:860px){.arch-main-street .ms-cart-grid{grid-template-columns:1fr}.arch-main-street .ms-cart-line{grid-template-columns:60px minmax(0,1fr) auto}.arch-main-street .ms-cart-photo{width:60px;height:75px}.arch-main-street .ms-cart-out{grid-column:2}}
     /* Subscriptions list — card grid in Main Street chrome. */
     .arch-main-street .ms-subs-section{padding:88px 40px 110px}
     .arch-main-street .ms-subs-head{text-align:center;margin-bottom:52px}
@@ -1490,7 +1575,7 @@ export function WordmarkLink({
   );
 }
 
-function NavLink({ href, label, active = false }: { href: string; label: string; active?: boolean }) {
+function NavLink({ href, label, active = false }: { href: string; label: React.ReactNode; active?: boolean }) {
   return (
     <Type
       as="a"
@@ -1522,9 +1607,10 @@ export function Nav({
    *  Absent on the home (the wordmark is "home"), so no link is current there. */
   currentHref?: string | undefined;
 }) {
-  const items = resolveNav(words);
-  // A shop that doesn't sell online (Maker Lite) has no cart to link to.
-  const allItems = identity.sellsOnline === false ? [...items] : [...items, { href: '/cart', label: words.navCart }];
+  // Showcase has no shop or collections to link to.
+  const items = identity.showsShop === false ? resolveNav(words).filter((n) => n.href !== '/shop' && n.href !== '/collections') : resolveNav(words);
+  // Only a shop that sells online (Full) has a cart to link to.
+  const allItems: MobileNavItem[] = identity.sellsOnline === true ? [...items, { href: '/cart', label: <CartCount label={words.cart.navCount} labelEmpty={words.navCart} /> }] : [...items];
   const variant = identity.navVariant ?? 'standard';
 
   if (variant === 'split-center') {

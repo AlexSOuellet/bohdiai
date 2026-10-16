@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { FamilyWords } from './words';
 
 export interface MobileNavItem {
   href: string;
-  label: string;
+  /** The page's name; the cart's carries its live count. */
+  label: ReactNode;
 }
 
 /**

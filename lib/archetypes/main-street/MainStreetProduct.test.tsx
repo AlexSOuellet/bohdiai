@@ -7,6 +7,7 @@ import type { MainStreetContent } from './schemas';
 import type { ProductView } from '../content';
 import { keyWords } from '@/lib/site-words/words';
 import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+import { CART_COOKIE } from '@/lib/storefront/cart';
 
 /** Test words: every spot says its own key. */
 const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
@@ -28,6 +29,9 @@ const content: MainStreetContent = {
   close: { label: 'Come by', headline: 'Built to outlast us', ctaLabel: 'Order yours' },
 };
 
+/** A shop that sells online (Full: the cart switch on). */
+const full: MainStreetContent = { ...content, identity: { ...content.identity, sellsOnline: true } };
+
 afterEach(cleanup);
 
 describe('MainStreetProduct media gallery', () => {
@@ -41,7 +45,7 @@ describe('MainStreetProduct media gallery', () => {
       ],
       variations: [],
     };
-    const { container } = render(<MainStreetProduct words={W} content={content} skin={skin} product={product} />);
+    const { container } = render(<MainStreetProduct words={W} content={full} skin={skin} product={product} />);
     expect(container.querySelectorAll('img').length).toBe(3);
   });
 
@@ -75,8 +79,46 @@ describe('MainStreetProduct options and stock', () => {
     expect(screen.getByLabelText('Size')).toBeInTheDocument();
   });
   it('disables buying a sold-out product without options', () => {
-    render(<MainStreetProduct words={W} content={content} skin={skin} product={{ ...base, status: 'sold_out' }} />);
+    render(<MainStreetProduct words={W} content={full} skin={skin} product={{ ...base, status: 'sold_out' }} />);
     expect(screen.getByRole('button', { name: W.productSoldOut })).toBeDisabled();
+  });
+  it('asks about a piece with options on Full too (the cart cannot pick options yet)', () => {
+    render(
+      <MainStreetProduct words={W}
+        content={full}
+        skin={skin}
+        product={{ ...base, id: 'l1', variations: [{ name: 'Size', options: ['Small'] }], offers: [{ choices: { Size: 'Small' }, price: '$24', soldOut: false }] }}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: W.productAddToCart })).toBeNull();
+  });
+});
+
+describe('a shop that sells online (Full)', () => {
+  const product: ProductView = { slug: 'belt', id: 'l1', name: 'The Belt', price: '$98', description: 'A belt.', status: 'active', media: [], variations: [] };
+
+  it('adds the piece to the cart, and the menu has the cart', () => {
+    const { container } = render(<MainStreetProduct words={W} content={full} skin={skin} product={product} />);
+    const add = screen.getByRole('button', { name: W.productAddToCart });
+    expect(add.getAttribute('data-type')).toBe('navLabel');
+    expect(container.querySelector('a[href="/cart"]')?.textContent).toBe(W.navCart);
+  });
+
+  it('the menu’s cart shows how many pieces it holds', () => {
+    document.cookie = `${CART_COOKIE}=4b8f0f5e-8f3a-4a57-9a8e-1f2d3c4b5a69.5c9f1f6e-9f4b-4b68-8a9f-2f3d4c5b6a70; Path=/`;
+    const { container } = render(<MainStreetProduct words={{ ...W, cart: { ...W.cart, navCount: 'Cart ({n})' } }} content={full} skin={skin} product={product} />);
+    expect(container.querySelector('a[href="/cart"]')?.textContent).toBe('Cart (2)');
+    document.cookie = `${CART_COOKIE}=; Path=/; Max-Age=0`;
+  });
+
+  it('shows a running sale beside the struck full price', () => {
+    const { container } = render(<MainStreetProduct words={W} content={full} skin={skin} product={{ ...product, salePrice: '$78' }} />);
+    expect(container.querySelector('.ms-product-price')?.textContent).toBe(`${W.cart.was} $98 $78`);
+  });
+
+  it('asks about a piece with no price yet', () => {
+    render(<MainStreetProduct words={W} content={full} skin={skin} product={{ ...product, price: '', askForPrice: true }} />);
+    expect(screen.getByRole('link', { name: W.productAskAbout }).getAttribute('href')).toBe('/contact');
   });
 });
 
@@ -99,10 +141,10 @@ describe('a shop that does not sell online (Maker Market)', () => {
     expect(container.querySelector('a[href="/cart"]')).toBeNull();
   });
 
-  it('still sells, with every photo and the cart, when the switch is absent', () => {
+  it('asks too when the switch is absent: only Full sells online', () => {
     const { container } = render(<MainStreetProduct words={W} content={content} skin={skin} product={product} />);
-    expect(screen.getByRole('button', { name: W.productAddToCart })).toBeTruthy();
-    expect(container.querySelectorAll('img').length).toBe(2);
-    expect(container.querySelector('a[href="/cart"]')).not.toBeNull();
+    expect(screen.getByRole('link', { name: W.productAskAbout })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: W.productAddToCart })).toBeNull();
+    expect(container.querySelector('a[href="/cart"]')).toBeNull();
   });
 });

@@ -1,19 +1,32 @@
 'use client';
 
 /**
- * Shoreline design — the cart's "send my order" letter (Full). Posts the cart's
- * pieces and the shopper's details to /api/order-request; nothing is charged (card
- * payment is off on the demo). On success the cart empties and the order number
- * shows. Every failure says so.
+ * The cart's "send my order" form (Full), shared by every design with a cart.
+ * Posts the cart's pieces and the shopper's details to /api/order-request; nothing
+ * is charged (card payment isn't connected yet). On success the cart empties and
+ * the order number shows. Every failure says so.
  */
 import { useState, type FormEvent, type ReactElement } from 'react';
 import { ClearCart } from '@/lib/storefront/CartControls';
 import { fill } from '@/lib/site-words/words';
-import type { CardWords } from './words';
+
+/** The site's words the order form shows (each design keeps them under its own spots). */
+export type OrderFormWords = {
+  name: string;
+  email: string;
+  phone: string;
+  note: string;
+  send: string;
+  sending: string;
+  sentTitle: string;
+  sent: string;
+  error: string;
+  errorNetwork: string;
+};
 
 type State = { kind: 'idle' } | { kind: 'sending' } | { kind: 'sent'; orderNumber: string | null } | { kind: 'error'; message: string };
 
-export function ShorelineOrderForm({
+export function OrderRequestForm({
   listingIds,
   code = null,
   w: C,
@@ -21,7 +34,7 @@ export function ShorelineOrderForm({
 }: {
   listingIds: string[];
   code?: string | null;
-  w: CardWords['shoreline']['cart'];
+  w: OrderFormWords;
   /** The hidden spam trap's label. */
   honeypot: string;
 }): ReactElement {
@@ -62,7 +75,7 @@ export function ShorelineOrderForm({
     return (
       <div className="bc-form__done" role="status">
         <ClearCart />
-        {state.orderNumber !== null && <p className="sl-order-num">{fill(C.sentTitle, { n: state.orderNumber })}</p>}
+        {state.orderNumber !== null && <p className="order-num">{fill(C.sentTitle, { n: state.orderNumber })}</p>}
         <p>{C.sent}</p>
       </div>
     );

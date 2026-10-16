@@ -98,8 +98,10 @@ async function CardProduct({ tenantId, design, product }: { tenantId: string; de
   if (design !== 'shoreline' && design !== 'showreel') notFound();
   const site = await loadShorelineData(supabaseAdmin(), tenantId);
   if (!site.pages) notFound();
-  if (design === 'showreel') return <ShowreelProduct data={site.card} product={product} tenantId={tenantId} allPhotos={site.allPhotos} />;
-  return <ShorelineProduct site={site} product={product} tenantId={tenantId} />;
+  // Her catalog carries the running sale's price (Full); the route's copy doesn't.
+  const priced = site.products.find((p) => p.slug === product.slug) ?? product;
+  if (design === 'showreel') return <ShowreelProduct data={site.card} product={priced} tenantId={tenantId} allPhotos={site.allPhotos} />;
+  return <ShorelineProduct site={site} product={priced} tenantId={tenantId} />;
 }
 
 async function CardPage({

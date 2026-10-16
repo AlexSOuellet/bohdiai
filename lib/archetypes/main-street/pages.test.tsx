@@ -68,7 +68,8 @@ describe('ShopPage', () => {
   it('renders the shared sub-page nav with real routes', () => {
     const { container } = render(<ShopPage words={W} content={content} skin={skin} products={products} />);
     expect(container.querySelector('a[href="/events"]')).toBeTruthy();
-    expect(container.querySelector('a[href="/cart"]')).toBeTruthy();
+    // Only a shop that sells online (Full) has the cart in its menu.
+    expect(container.querySelector('a[href="/cart"]')).toBeNull();
   });
 
   it('shows the maker logo beside the wordmark in the sub-page header when uploaded', () => {

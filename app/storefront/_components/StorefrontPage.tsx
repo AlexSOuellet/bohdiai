@@ -220,6 +220,10 @@ export async function renderArchetypeCart(tenantId: string, loadCart: () => Prom
     cart: await loadCart(),
     logoUrl: a.logoUrl,
     tenantId,
+    mood: a.mood,
+    brandColors: a.brandColors,
+    accentOverride: a.accentOverride,
+    brandPalette: a.brandPalette,
   });
 }
 
@@ -227,7 +231,7 @@ export async function renderArchetypeCart(tenantId: string, loadCart: () => Prom
 export async function renderArchetypeMarket(tenantId: string, market: MarketShopView) {
   const a = await resolveEnvelope(tenantId);
   if (a === null || a.spec.renderMarket === undefined) return null;
-  return a.spec.renderMarket({ content: a.content, lookKey: a.lookKey, market, logoUrl: a.logoUrl, tenantId });
+  return a.spec.renderMarket({ content: a.content, lookKey: a.lookKey, market, logoUrl: a.logoUrl, tenantId, mood: a.mood, brandColors: a.brandColors, accentOverride: a.accentOverride, brandPalette: a.brandPalette });
 }
 
 /** Wrap a functional page's body (cart, subscriptions, etc.) in the tenant's

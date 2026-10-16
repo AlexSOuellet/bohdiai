@@ -3,7 +3,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import { loadSiteFeatures } from '@/lib/backend/features';
-import { shopToday, type Promotion } from './promotions';
+import { runningSale, shopToday, type Promotion } from './promotions';
 
 type Db = SupabaseClient<Database>;
 
@@ -54,4 +54,10 @@ export async function loadShopPromotions(db: Db, tenantId: string): Promise<{ pr
   const today = shopToday(tenant.data?.time_zone ?? null);
   if (!features.has('promotions')) return { promos: [], today };
   return { promos: await listPromotions(db, tenantId), today };
+}
+
+/** The site-wide sale running today, or null (Promotions off, or none running). A code isn't a sale: it only shows in the cart. */
+export async function loadRunningSale(db: Db, tenantId: string): Promise<Promotion | null> {
+  const promo = await loadShopPromotions(db, tenantId);
+  return runningSale(promo.promos, promo.today);
 }

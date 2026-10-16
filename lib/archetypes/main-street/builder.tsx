@@ -11,7 +11,7 @@ import type {
   ParseResult,
   RenderPayload,
 } from '../builder';
-import type { ProductView } from '../content';
+import type { CartView, ProductView } from '../content';
 import { MainStreet } from './MainStreet';
 import { MainStreetProduct } from './MainStreetProduct';
 import { ShopPage, EventsPage, AboutPage, ContactPage, ContentPage, CollectionsPage, CollectionPage, TestimonialsPage, MainStreetSubPage } from './pages';
@@ -31,6 +31,14 @@ import type { ReactElement } from 'react';
 import { supabaseAdmin } from '@/lib/supabase';
 import { familyViewFromHomes, holdsLegacyContent, loadFamilyHomes } from './from-homes';
 import { getSiteWords } from '@/lib/site-words/queries';
+import { getSiteFeatures } from '@/lib/backend/site-features';
+import { loadRunningSale } from '@/lib/storefront/promotions-load';
+import { withSale, type Promotion } from '@/lib/storefront/promotions';
+import { loadShopWords } from '@/lib/storefront/metadata';
+import { FamilyCart } from './FamilyCart';
+import { FamilyMarket } from './FamilyMarket';
+import { MainStreetRoot } from './chrome';
+import { Type } from './Type';
 import { FAMILY_NO_WORDS, FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX, type FamilyWords } from './words';
 
 /** Every section variant the family (or a preview override) picks for a render.
@@ -279,8 +287,8 @@ function withNav(content: MainStreetView, navVariant?: NavVariant): MainStreetVi
   return { ...content, identity: { ...content.identity, navVariant } };
 }
 
-/** Paints a family page from its view and the site's words. */
-type FamilyPaint = (view: MainStreetView, words: FamilyWords) => ReactElement;
+/** Paints a family page from its view, the site's words and the sale running today (Full promotions). */
+type FamilyPaint = (view: MainStreetView, words: FamilyWords, sale: Promotion | null) => ReactElement;
 
 /** A family page's content comes from the site's homes. The old samples, whose
  *  page record still holds their content, read it from there until the clean-up
@@ -288,7 +296,7 @@ type FamilyPaint = (view: MainStreetView, words: FamilyWords) => ReactElement;
  *  words from `site_words`; a page with no site behind it has none to read. */
 function withFamilyContent(content: unknown, tenantId: string | undefined, paint: FamilyPaint): ReactElement {
   if (tenantId === undefined) {
-    if (holdsLegacyContent(content)) return paint(content as MainStreetView, FAMILY_NO_WORDS);
+    if (holdsLegacyContent(content)) return paint(content as MainStreetView, FAMILY_NO_WORDS, null);
     notFound();
   }
   return <FamilyFromHomes content={content} tenantId={tenantId} paint={paint} />;
@@ -297,11 +305,48 @@ function withFamilyContent(content: unknown, tenantId: string | undefined, paint
 async function FamilyFromHomes({ content, tenantId, paint }: { content: unknown; tenantId: string; paint: FamilyPaint }): Promise<ReactElement> {
   const db = supabaseAdmin();
   const legacy = holdsLegacyContent(content);
-  const [words, homes] = await Promise.all([
+  const [words, homes, features, sale] = await Promise.all([
     getSiteWords(db, tenantId, FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX),
     legacy ? Promise.resolve(null) : loadFamilyHomes(db, tenantId),
+    getSiteFeatures(tenantId),
+    loadRunningSale(db, tenantId),
   ]);
-  return paint(homes === null ? (content as MainStreetView) : familyViewFromHomes(homes, words), words);
+  // The plans, from the site's switches (old samples too): only Full sells online
+  // (cart), and Showcase has no shop at all (catalog off).
+  const view = homes !== null ? familyViewFromHomes(homes, words) : (content as MainStreetView);
+  return paint({ ...view, identity: { ...view.identity, sellsOnline: features.has('cart'), showsShop: features.has('catalog') } }, words, sale);
+}
+
+/** The pieces as the lists show them during a running sale: the sale price in place of the full one. */
+function salePriced(products: readonly ProductView[], sale: Promotion | null): ProductView[] {
+  return withSale(products, sale).map((p) => (p.salePrice === undefined ? p : { ...p, price: p.salePrice }));
+}
+
+/** The cart page's body: the cart (Full), or for a site without one the plain
+ *  "nothing to buy here" page in the site's own words, so a stale cart link still lands somewhere. */
+async function FamilyCartBody({ view, words, cart, tenantId }: { view: MainStreetView; words: FamilyWords; cart: CartView; tenantId: string }): Promise<ReactElement> {
+  // Showcase has no shop, so no cart page either.
+  if (view.identity.showsShop === false) notFound();
+  if (view.identity.sellsOnline === true) return <FamilyCart cart={cart} words={words} />;
+  const w = (await loadShopWords(tenantId)).cart;
+  return (
+    <section className="ms-simple-page">
+      <div className="ms-simple-inner">
+        <Type as="span" role="eyebrow" className="ms-simple-eyebrow">
+          {w.eyebrow}
+        </Type>
+        <Type as="h1" role="closeHead" className="ms-simple-head">
+          {w.title}
+        </Type>
+        <Type as="p" role="body" className="ms-simple-body">
+          {w.body}
+        </Type>
+        <Type as="a" role="navLabel" href="/shop" className="ms-simple-cta">
+          {w.cta}
+        </Type>
+      </div>
+    </section>
+  );
 }
 
 export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
@@ -317,7 +362,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   mediaJobs,
   applyMedia,
   toPayload,
-  render: ({ content, lookKey, products, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, brandPalette, tenantId, mood, originalMood, heroVariant, goodsTreatment, collections, collectionsTreatment, reviewsTreatment, findUsTreatment, founderTreatment, navVariant, previewTexture, previewTextureOpacity }) => {
+  render: ({ content, lookKey, products: rawProducts, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, brandPalette, tenantId, mood, originalMood, heroVariant, goodsTreatment, collections, collectionsTreatment, reviewsTreatment, findUsTreatment, founderTreatment, navVariant, previewTexture, previewTextureOpacity }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
     // Resolve the family AND its section variants from the tenant's mood, then
     // apply any preview URL overrides. Every page below wears the SAME picks so
@@ -364,8 +409,13 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
     // authored fields (old samples only). Read them here so the home render can hide
     // turned-off sections and keep seeded dates out of the marquee.
     const resolutions = readSectionResolutions(content);
-    return withFamilyContent(content, tenantId, (view, words) => {
+    return withFamilyContent(content, tenantId, (view, words, sale) => {
     const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
+    // A running sale (Full) shows its price on every piece in the lists; the piece's own page shows both.
+    const products = salePriced(rawProducts, sale);
+    // Showcase has no shop: its shop, collections and collection pages don't exist.
+    const showsShop = c.identity.showsShop !== false;
+    if (!showsShop && (page === 'shop' || page === 'collections' || page === 'collection')) notFound();
     switch (page) {
       case 'shop':
         return <ShopPage content={c} skin={skin} words={words} products={products} family={family} />;
@@ -388,7 +438,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       case 'testimonials':
         return <TestimonialsPage content={c} skin={skin} words={words} family={family} />;
       default:
-        return <MainStreet content={c} skin={skin} words={words} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} hiddenSections={resolutions.hidden} shownSections={resolutions.shown} originalMood={originalMood} />;
+        return <MainStreet content={c} skin={skin} words={words} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} hiddenSections={showsShop ? resolutions.hidden : [...resolutions.hidden, 'goods', 'collections']} shownSections={resolutions.shown} originalMood={originalMood} />;
     }
     });
   },
@@ -397,9 +447,12 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
     // Product pages wear the family's nav variant AND the family's wallpaper.
     const family = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
-    return withFamilyContent(content, tenantId, (view, words) => {
+    return withFamilyContent(content, tenantId, (view, words, sale) => {
+      // Showcase has no shop, so no page for a piece.
+      if (view.identity.showsShop === false) notFound();
       const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
-      return <MainStreetProduct content={c} skin={skin} words={words} product={product} family={family} />;
+      const [priced = product] = withSale([product], sale);
+      return <MainStreetProduct content={c} skin={skin} words={words} product={priced} family={family} />;
     });
   },
   renderContentPage: ({ content, lookKey, title, body, html, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
@@ -420,4 +473,34 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       return <MainStreetSubPage content={c} skin={skin} words={words} family={family}>{children}</MainStreetSubPage>;
     });
   },
+  renderCart: ({ content, lookKey, cart, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
+    const skin = themeFor(lookKey, brandPalette, accentOverride);
+    const family = familyFor(mood, brandPalette);
+    const treatments = resolveTreatments(mood, {});
+    return withFamilyContent(content, tenantId, (view, words) => {
+      const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
+      return (
+        <MainStreetSubPage content={c} skin={skin} words={words} family={family} current="/cart">
+          <FamilyCartBody view={view} words={words} cart={cart} tenantId={tenantId} />
+        </MainStreetSubPage>
+      );
+    });
+  },
+  renderMarket: ({ content, lookKey, market, mood, accentOverride, brandPalette, tenantId }) => {
+    const skin = themeFor(lookKey, brandPalette, accentOverride);
+    const family = familyFor(mood, brandPalette);
+    return withFamilyContent(content, tenantId, (view, words) => (
+      <FamilyMarketPage tenantId={tenantId}>
+        <MainStreetRoot skin={skin} family={family}>
+          <FamilyMarket shopName={view.shopName} market={market} words={words} />
+        </MainStreetRoot>
+      </FamilyMarketPage>
+    ));
+  },
 };
+
+/** A market's page is there on Market and Full (the market shop switch), never on Showcase. */
+async function FamilyMarketPage({ tenantId, children }: { tenantId: string; children: ReactElement }): Promise<ReactElement> {
+  if (!(await getSiteFeatures(tenantId)).has('market_shop')) notFound();
+  return children;
+}
