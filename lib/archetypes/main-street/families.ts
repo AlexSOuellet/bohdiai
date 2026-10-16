@@ -35,7 +35,7 @@ import type { NavVariant } from './schemas';
 import type { MoodKey } from '../../moods';
 import { REFERENCE_LABELS } from './defaults';
 
-export const FAMILY_KEYS = ['cozy', 'rustic', 'dark', 'luxury', 'cheerful', 'modern'] as const;
+export const FAMILY_KEYS = ['cozy', 'rustic', 'dark', 'luxury', 'cheerful', 'modern', 'vintage'] as const;
 export type FamilyKey = (typeof FAMILY_KEYS)[number];
 
 /** The nine positions in every family's home page.
@@ -388,6 +388,54 @@ const MODERN: Family = {
   defaultSkin: 'main-street-studio',
 };
 
+/** Vintage (Alex, 2026-10-15; inspired by decoupage): old paper and ornament, a
+ *  look any maker can pick that suits one-of-a-kind pieces especially well. The
+ *  page is Victorian printed ephemera (Alex's references: music-hall bills,
+ *  apothecary tags), with section styles of its own: the playbill opening, the
+ *  pieces as die-cut tags, the cabinet-card about, the specimen drawers, the
+ *  ticket stubs and the postcards. */
+const VINTAGE: Family = {
+  key: 'vintage',
+  publicMoodLabel: REFERENCE_LABELS.moods.labels.vintage,
+  sectionDefaults: {
+    hero: 'playbill',
+    goods: 'tags',
+    collections: 'drawers',
+    reviews: 'postcards',
+    founder: 'cabinet-card',
+    nav: 'standard',
+    findUs: 'tickets',
+  },
+  sectionStack: [
+    on('hero'),
+    on('goods', { lead: true }),
+    on('founder'),
+    on('collections'),
+    on('findUs'),
+    on('reviews'),
+    on('marquee'),
+    contactOff,
+    on('close'),
+  ],
+  typePackage: {
+    name: REFERENCE_LABELS.families.typePackages.vintage,
+    header: 'Rye',
+    body: 'Old Standard TT',
+    label: 'Bodoni Moda',
+    accent: 'Pinyon Script',
+  },
+  palette: { name: REFERENCE_LABELS.families.palettes.vintage, bg: '#E6D3AE', fg: '#2A1C10', muted: '#7A6247', accent: '#8E2A1F' },
+  texture: REFERENCE_LABELS.families.textures.vintage,
+  wallpaper: REFERENCE_LABELS.families.wallpapers.vintage,
+  wallpaperUrl: '/textures/wp-ephemera.png',
+  textureOpacity: 1,
+  textureMode: 'multiply',
+  imageryGrade: REFERENCE_LABELS.families.imageryGrades.vintage,
+  fontHref:
+    'https://fonts.googleapis.com/css2?family=Rye&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Bodoni+Moda:opsz,wght@6..96,600;6..96,700&family=Pinyon+Script&display=swap',
+  defaultSkin: 'main-street-playbill',
+};
+
 export const FAMILIES: Record<FamilyKey, Family> = {
   cozy: COZY,
   rustic: RUSTIC,
@@ -395,6 +443,7 @@ export const FAMILIES: Record<FamilyKey, Family> = {
   luxury: LUXURY,
   cheerful: CHEERFUL,
   modern: MODERN,
+  vintage: VINTAGE,
 };
 
 /**

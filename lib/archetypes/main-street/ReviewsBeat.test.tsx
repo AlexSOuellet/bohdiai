@@ -44,6 +44,7 @@ const ROOT_CLASS: Record<ReviewsTreatment, string> = {
   'pull-quote': '.ms-rev-pq',
   guestbook: '.ms-rev-book',
   texts: '.ms-rev-texts',
+  postcards: '.ms-post',
 };
 
 afterEach(cleanup);

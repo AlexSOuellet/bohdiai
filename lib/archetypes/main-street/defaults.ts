@@ -18,6 +18,7 @@ export const REFERENCE_LABELS = {
       modern: 'Modern',
       elegant: 'Elegant',
       cheerful: 'Cheerful',
+      vintage: 'Vintage',
     },
     descriptions: {
       dark: 'Low light and deep shadow. Moody and a little mysterious, with drama where most stores play it safe.',
@@ -26,6 +27,7 @@ export const REFERENCE_LABELS = {
       modern: 'Clean, confident, and geometric. Bold and contemporary — not quiet minimalism, design that speaks up.',
       elegant: 'Refined and graceful. Quiet luxury, fine detail, the sense that every choice was considered.',
       cheerful: 'Bright and lifted, color-positive. Sun on the page — a store that smiles back.',
+      vintage: 'Old paper and ornament. The charm of another century, every piece with a story behind it.',
     },
   },
   families: {
@@ -36,6 +38,7 @@ export const REFERENCE_LABELS = {
       luxury: 'Ivory & Gold',
       cheerful: 'Confetti',
       modern: 'Paper & Ink',
+      vintage: 'Kraft & Oxblood',
     },
     typePackages: {
       cozy: 'The Journal',
@@ -44,6 +47,7 @@ export const REFERENCE_LABELS = {
       luxury: 'The Maison',
       cheerful: 'Confetti',
       modern: 'The Grid',
+      vintage: 'The Playbill',
     },
     textures: {
       cozy: 'Linen',
@@ -52,6 +56,7 @@ export const REFERENCE_LABELS = {
       luxury: 'Marble',
       cheerful: 'Confetti',
       modern: 'Concrete',
+      vintage: 'Printed ephemera',
     },
     wallpapers: {
       cozy: 'Cream linen',
@@ -60,6 +65,7 @@ export const REFERENCE_LABELS = {
       luxury: 'White marble',
       cheerful: 'Paper cut-outs',
       modern: 'Concrete',
+      vintage: 'Script, music and newsprint'
     },
     imageryGrades: {
       cozy: 'Soft & warm',
@@ -68,6 +74,7 @@ export const REFERENCE_LABELS = {
       luxury: 'Clean & bright',
       cheerful: 'On a color card',
       modern: 'Clean & cool',
+      vintage: 'Faded sepia',
     },
   },
   skins: {
@@ -101,6 +108,9 @@ export const REFERENCE_LABELS = {
       'main-street-heirloom': 'Heirloom',
       'main-street-curiosity': 'Curiosity',
       'main-street-postmark': 'Postmark',
+      'main-street-parlor': 'Parlor',
+      'main-street-playbill': 'Playbill',
+      'main-street-apothecary': 'Apothecary',
     },
     descriptions: {
       'main-street-ember': 'warm cream and ember, a soft serif — homey, cozy, hand-baked',
@@ -132,6 +142,9 @@ export const REFERENCE_LABELS = {
       'main-street-heirloom': 'faded ochre paper, sepia ink, worn teal and oxblood, an old Caslon — found, not made',
       'main-street-curiosity': 'deep wood and brass with a bottle-green band, a Victorian display — the vintage cabinet',
       'main-street-postmark': 'aged paper with retro orange and teal, an ornate display serif — mid-century ephemera',
+      'main-street-parlor': 'rose-tinted parchment with plum ink and claret, an old letterpress serif — Victorian scrapbook and decoupage',
+      'main-street-playbill': 'kraft paper with brown-black ink and oxblood, Tuscan woodtype — a Victorian music-hall bill',
+      'main-street-apothecary': 'parchment with deep green ink and red, fat-face lettering — an old chemist\'s label',
     },
   },
 } as const;

@@ -30,6 +30,7 @@ const ROOT_CLASS: Record<CollectionsTreatment, string> = {
   chapters: '.ms-chapter',
   lanes: '.ms-lane-band',
   cascade: '.ms-cascade',
+  drawers: '.ms-drawers',
 };
 
 afterEach(cleanup);

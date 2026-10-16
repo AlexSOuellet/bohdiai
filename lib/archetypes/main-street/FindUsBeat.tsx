@@ -23,6 +23,7 @@ import { FindUsPasses } from './FindUsPasses';
 import { FindUsNextStop } from './FindUsNextStop';
 import { FindUsItinerary } from './FindUsItinerary';
 import { FindUsPoster } from './FindUsPoster';
+import { FindUsTickets } from './VintagePieces';
 
 import type { FamilyWords } from './words';
 
@@ -69,6 +70,8 @@ export function FindUsBeat({
       return <FindUsItinerary {...props} />;
     case 'poster':
       return <FindUsPoster {...props} />;
+    case 'tickets':
+      return <FindUsTickets {...props} />;
     case 'board':
     default:
       return <FindUsBoard {...props} />;

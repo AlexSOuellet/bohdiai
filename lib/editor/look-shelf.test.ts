@@ -11,7 +11,7 @@ import { MAIN_STREET_SKINS } from '@/lib/archetypes/main-street/skins';
 import type { ArchetypeTheme } from '@/lib/archetypes/types';
 
 describe('FEELINGS', () => {
-  it('is the six-feeling lineup in order', () => {
+  it('is the feeling lineup in order, Vintage seventh', () => {
     expect(FEELINGS.map((f) => f.key)).toEqual([
       'dark',
       'rustic',
@@ -19,6 +19,7 @@ describe('FEELINGS', () => {
       'modern',
       'elegant',
       'cheerful',
+      'vintage',
     ]);
   });
 });

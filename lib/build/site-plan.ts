@@ -64,7 +64,7 @@ export type SiteFile = {
     plan: SitePlan;
     /** Where the contact form and orders go. */
     contactEmail?: string;
-    /** Her craft, a niche slug ("candles"): it names the site in search results. */
+    /** Her craft, a niche slug ("candles", "jewelry_maker"): it names the site in search results. */
     niche?: string;
   };
   profile: ProfileForm;
@@ -126,6 +126,8 @@ export type PlanResult = { ok: true; plan: SitePlanned } | { ok: false; errors: 
 
 const SUBDOMAIN = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/;
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+/** Niche slugs join their words with underscores ("jewelry_maker"). */
+const NICHE = /^[a-z0-9]+(_[a-z0-9]+)*$/;
 const PHOTO = /\.(webp|jpe?g|png)$/i;
 const VIDEO = /\.(mp4|webm)$/i;
 
@@ -166,7 +168,7 @@ export function planSite(f: SiteFile): PlanResult {
   if (!(FAMILY_KEYS as readonly string[]).includes(s.family)) errors.push(`site: unknown family "${s.family}"`);
   else if (!skinFits(s.family, s.skin)) errors.push(`site: the skin "${s.skin}" isn't one of the ${s.family} family's skins`);
   if (!isSitePlan(s.plan)) errors.push(`site: unknown plan "${s.plan}"`);
-  if (s.niche !== undefined && !SLUG.test(s.niche)) errors.push(`site: "${s.niche}" isn't a niche slug`);
+  if (s.niche !== undefined && !NICHE.test(s.niche)) errors.push(`site: "${s.niche}" isn't a niche slug`);
   const family = s.design === 'family';
 
   // About you.

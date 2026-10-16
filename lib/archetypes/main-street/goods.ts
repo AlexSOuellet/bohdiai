@@ -41,7 +41,7 @@ import { HOME_MAX } from '@/lib/catalog/home';
 
 /** The four goods treatments, as a tuple — the single source the schema enum and
  *  the authoring menu both read so they can never drift apart. */
-export const GOODS_TREATMENTS = ['marquee', 'procession', 'switcher', 'slideshow', 'module', 'table', 'index', 'lookbook'] as const;
+export const GOODS_TREATMENTS = ['marquee', 'procession', 'switcher', 'slideshow', 'module', 'table', 'index', 'lookbook', 'scrapbook', 'tags'] as const;
 export type GoodsTreatment = (typeof GOODS_TREATMENTS)[number];
 
 /** One-line purpose for each treatment, shown to Bohdi so he picks the one that
@@ -55,6 +55,8 @@ export const GOODS_TREATMENT_MENU: Record<GoodsTreatment, string> = {
   table: 'products laid on a surface like real objects — overlapping, softly shadowed, a little rotated; tactile and abundant, a styled tabletop you look down onto',
   index: 'a type-led catalog list — each piece a big typographic row (number, name, a short line, price) with hairline rules; the photo flicks in on hover, the words carry it',
   lookbook: 'big alternating spreads you scroll through — image one side, the words the other, then flipped; each piece gets a full generous moment, magazine-style',
+  scrapbook: 'an album page — photos held by paper corners, pasted a little crooked in mixed sizes, each with a paper tag for its name and price; kept and treasured, not a shop grid',
+  tags: 'a rank of die-cut tags like printed apothecary labels — notched corners, a tab with an eyelet, printed ephemera behind, the photo framed and an ornate label for the name and price',
 };
 
 /** Catalog-size thresholds. A deep catalog loops in the marquee; a mid catalog
@@ -91,6 +93,8 @@ export const GOODS_SAMPLE_CAP: Record<GoodsTreatment, number> = {
   table: 6,
   index: 8,
   lookbook: 4,
+  scrapbook: 6,
+  tags: 8,
 };
 
 /** Take the home-page sampling for a treatment. When the owner chose products for

@@ -29,7 +29,7 @@
 
 /** The six find-us treatments, as a tuple — the single source the schema enum and
  *  the authoring menu both read so they can never drift apart. */
-export const FINDUS_TREATMENTS = ['board', 'calendar', 'passes', 'next-stop', 'itinerary', 'poster'] as const;
+export const FINDUS_TREATMENTS = ['board', 'calendar', 'passes', 'next-stop', 'itinerary', 'poster', 'tickets'] as const;
 export type FindUsTreatment = (typeof FINDUS_TREATMENTS)[number];
 
 /** One-line purpose for each treatment. The SHAPE is the idea; the family's own
@@ -47,6 +47,8 @@ export const FINDUS_TREATMENT_MENU: Record<FindUsTreatment, string> = {
     'the season as a stitched route line, stop after stop, town after town — a travel-log of where the maker is headed',
   poster:
     'one printed broadside, the whole run of dates set as a playbill — the season as the artwork',
+  tickets:
+    'a ticket stub for each date — perforated edge, punched notches, the day set large; collected admissions to the season',
 };
 
 /**

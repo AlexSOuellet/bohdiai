@@ -19,6 +19,7 @@ import { ReviewsRating } from './ReviewsRating';
 import { ReviewsPullQuote } from './ReviewsPullQuote';
 import { ReviewsGuestbook } from './ReviewsGuestbook';
 import { ReviewsTexts } from './ReviewsTexts';
+import { ReviewsPostcards } from './VintagePieces';
 import type { FamilyWords } from './words';
 
 export function ReviewsBeat({
@@ -56,6 +57,8 @@ export function ReviewsBeat({
       return <ReviewsGuestbook {...props} />;
     case 'texts':
       return <ReviewsTexts {...props} />;
+    case 'postcards':
+      return <ReviewsPostcards {...props} />;
     case 'rating':
     default:
       return <ReviewsRating {...props} />;

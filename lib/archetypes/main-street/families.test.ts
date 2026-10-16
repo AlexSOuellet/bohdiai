@@ -10,8 +10,8 @@ import { HERO_CATALOG } from './hero-catalog';
 const ALL_FAMILY_KEYS: readonly FamilyKey[] = FAMILY_KEYS;
 
 describe('FAMILIES registry', () => {
-  it('has exactly six families in the locked order', () => {
-    expect(FAMILY_KEYS).toEqual(['cozy', 'rustic', 'dark', 'luxury', 'cheerful', 'modern']);
+  it('has exactly seven families in the locked order (Vintage added 2026-10-15)', () => {
+    expect(FAMILY_KEYS).toEqual(['cozy', 'rustic', 'dark', 'luxury', 'cheerful', 'modern', 'vintage']);
     expect(Object.keys(FAMILIES).sort()).toEqual([...ALL_FAMILY_KEYS].sort());
   });
 

@@ -17,8 +17,8 @@ function makeTestimonials(n: number): Testimonial[] {
 }
 
 describe('reviews registry', () => {
-  it('has the four designed treatments', () => {
-    expect([...REVIEWS_TREATMENTS]).toEqual(['rating', 'pull-quote', 'guestbook', 'texts']);
+  it('has the five designed treatments (postcards: Vintage)', () => {
+    expect([...REVIEWS_TREATMENTS]).toEqual(['rating', 'pull-quote', 'guestbook', 'texts', 'postcards']);
   });
 
   it('carries a one-line menu entry for every treatment', () => {
