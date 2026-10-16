@@ -179,7 +179,7 @@ function Bar({ name, shop, w, motion }: { name: string; shop: boolean; w: CardWo
       <Link href="/">{name}</Link>
       {shop && (
         <nav aria-label={w.nav.label}>
-          <Link href="/shop">{w.nav.shop}</Link>
+          <a href="/shop">{w.nav.shop}</a>
         </nav>
       )}
       {motion && <ShowreelMotion rootId={ROOT_ID} />}
@@ -268,7 +268,7 @@ export function ShowreelLanding({
         <Work items={tiles} label={w.shoreline.work} />
         {shop && (
           <p className="sr-more">
-            <Link href="/shop">{w.shoreline.seeShop}</Link>
+            <a href="/shop">{w.shoreline.seeShop}</a>
           </p>
         )}
 
@@ -382,7 +382,7 @@ export function ShowreelProduct({
       <Bar name={data.name} shop w={W} motion={false} />
       <main id="main" className="sr-page">
         <p className="sr-back">
-          <Link href="/shop">{W.backToShop}</Link>
+          <a href="/shop">{W.backToShop}</a>
         </p>
         <article className="sr-piece">
           <div className="sr-piece-photos">
