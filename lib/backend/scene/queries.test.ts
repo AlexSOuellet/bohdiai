@@ -20,15 +20,17 @@ function fakeDb(read: Result, write: { error: { message: string } | null } = { e
 
 describe('getSiteScene', () => {
   it('a library scene paints the library photo at its focus', async () => {
-    const { db } = fakeDb({ data: { scene_key: 'marsh', tone: 'light', upload: null, video: null }, error: null });
+    const { db } = fakeDb({ data: { tone: 'light', scene: { url: '/scenes/marsh.webp', focus: 'center 62%', tone: 'light' }, upload: null, video: null }, error: null });
     expect(await getSiteScene(db, 't1')).toEqual({ url: '/scenes/marsh.webp', focus: 'center 62%' });
+    const dark = fakeDb({ data: { tone: 'light', scene: { url: 'https://cdn/night.webp', focus: 'center', tone: 'dark' }, upload: null, video: null }, error: null });
+    expect(await getSiteScene(dark.db, 't1')).toEqual({ url: 'https://cdn/night.webp', focus: 'center', tone: 'dark' });
   });
   it('the maker’s own photo paints from its upload', async () => {
-    const { db } = fakeDb({ data: { scene_key: null, tone: 'light', upload: { public_url: 'https://cdn/bay.webp' }, video: null }, error: null });
+    const { db } = fakeDb({ data: { tone: 'light', scene: null, upload: { public_url: 'https://cdn/bay.webp' }, video: null }, error: null });
     expect(await getSiteScene(db, 't1')).toEqual({ url: 'https://cdn/bay.webp', focus: 'center' });
   });
   it('a dark photo with a clip carries both', async () => {
-    const { db } = fakeDb({ data: { scene_key: null, tone: 'dark', upload: { public_url: 'https://cdn/still.webp' }, video: { public_url: 'https://cdn/clip.mp4' } }, error: null });
+    const { db } = fakeDb({ data: { tone: 'dark', scene: null, upload: { public_url: 'https://cdn/still.webp' }, video: { public_url: 'https://cdn/clip.mp4' } }, error: null });
     expect(await getSiteScene(db, 't1')).toEqual({ url: 'https://cdn/still.webp', focus: 'center', tone: 'dark', video: 'https://cdn/clip.mp4' });
   });
   it('a site with no row (any family but Scenic) has none', async () => {
@@ -52,8 +54,8 @@ describe('saveSiteScene', () => {
     ]);
   });
   it('refuses a scene that isn’t in the library, and says when the save fails', async () => {
-    const { db } = fakeDb({ data: null, error: null });
-    await expect(saveSiteScene(db, 't1', { kind: 'library', key: 'moon' })).rejects.toThrow('No scene called "moon" in the library');
+    const missing = fakeDb({ data: null, error: null }, { error: { message: 'violates foreign key', code: '23503' } as { message: string } });
+    await expect(saveSiteScene(missing.db, 't1', { kind: 'library', key: 'moon' })).rejects.toThrow('No scene called "moon" in the library');
     const failing = fakeDb({ data: null, error: null }, { error: { message: 'nope' } });
     await expect(saveSiteScene(failing.db, 't1', { kind: 'library', key: 'marsh' })).rejects.toThrow('Could not save the background photo: nope');
   });

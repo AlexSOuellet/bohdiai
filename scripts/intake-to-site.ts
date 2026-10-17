@@ -3,13 +3,18 @@
  * tool, not a user surface. Alex picks the family (when the maker said "you pick")
  * and the skin.
  *
- *   npx tsx --env-file=.env.local scripts/intake-to-site.ts <intake-id> --subdomain <s> --skin <skin> [--family <f>] [--scene <scene>] [--niche <slug>] [--words-from <site>] [--build] [--live] [--no-email]
+ *   npx tsx --env-file=.env.local scripts/intake-to-site.ts <intake-id> --subdomain <s> --skin <skin> [--family <f>] [--scene <scene> | --scenes <2-4>] [--niche <slug>] [--words-from <site>] [--build] [--live] [--no-email]
  *
  * 1. Saves the maker's photos from the private intake folder into tmp/intake-sites/<s>/media.
  * 2. Claude drafts the words the maker didn't give (lib/build/intake-drafts), looking
  *    at the photos; the whole content file is checked (lib/build/site-plan) and the
  *    problems sent back once.
  * 3. Writes the content file tmp/intake-sites/<s>/site.ts (and drafts.json) to read.
+ * Scenic (Alex, Session 107): with --build, the build first makes the photos behind
+ *   the page from the maker's own words (lib/build/scene-art; three, or --scenes 2-4),
+ *   adds them all to the scene library, tagged and searchable, and puts the first
+ *   behind the site; the others are printed to swap to. --scene <name> uses a
+ *   library scene instead and makes none.
  * 4. With --build: builds it with the one builder (private until the maker
  *    publishes it from their backend; --live skips that), makes the maker's account
  *    (from the form) the site's owner, emails them that it's ready to sign in to
@@ -29,6 +34,9 @@ import { isSitePlan } from '../lib/backend/plan/plan';
 import { designWordKeys, planSite } from '../lib/build/site-plan';
 import { siteFromIntake, type BuildSettings, type IntakeForBuild } from '../lib/build/from-intake';
 import { draftIntake, type PiecePhoto } from '../lib/build/intake-drafts';
+import { makeScenes, sceneKeys, SCENES_DEFAULT, SCENES_MAX, SCENES_MIN } from '../lib/build/scene-art';
+import { falPainter } from '../lib/build/scene-painter';
+import { addScenes } from '../lib/backend/scene/library';
 import { INTAKE_BUCKET } from '../lib/intake/save';
 import { ensureBuilderAccess } from '../lib/backend/builder-access';
 import { getIntakeWords } from '../lib/intake/queries';
@@ -36,6 +44,9 @@ import { composeReadyEmail } from '../lib/intake/ready-email';
 import { resend, fromEmail } from '../lib/resend';
 
 type Db = ReturnType<typeof createClient<Database>>;
+
+/** Platform storage for the scene library's photos (not any one site's folder). */
+const SCENE_BUCKET = 'generated-images';
 
 function fail(message: string): never {
   process.stderr.write(`${message}\n`);
@@ -138,9 +149,21 @@ async function main(): Promise<void> {
   // 2) The words we write, checked against the whole content file.
   const words = await referenceWords(db, flag(rest, '--words-from'));
   const niche = flag(rest, '--niche');
-  // Scenic: the library scene behind the page (left out: the default scene).
-  const scene = flag(rest, '--scene');
-  if (scene !== undefined && family !== 'scenic') fail('--scene is only for a Scenic site');
+  // Scenic: a library scene by name, or photos made for this site (named before
+  // drafting, so the content file is checked whole; made at build).
+  const chosenScene = flag(rest, '--scene');
+  const scenesFlag = flag(rest, '--scenes');
+  if ((chosenScene !== undefined || scenesFlag !== undefined) && family !== 'scenic') fail('--scene and --scenes are only for a Scenic site');
+  if (chosenScene !== undefined && scenesFlag !== undefined) fail('pass --scene or --scenes, not both');
+  const sceneCount = scenesFlag === undefined ? SCENES_DEFAULT : Number(scenesFlag);
+  if (!Number.isInteger(sceneCount) || sceneCount < SCENES_MIN || sceneCount > SCENES_MAX) fail(`--scenes takes ${SCENES_MIN} to ${SCENES_MAX}`);
+  let newSceneKeys: string[] = [];
+  if (family === 'scenic' && chosenScene === undefined) {
+    const { data: takenRows, error: takenErr } = await db.from('scenes').select('key').like('key', `${subdomain}-%`);
+    if (takenErr !== null) fail(`reading the scene library failed: ${takenErr.message}`);
+    newSceneKeys = sceneKeys(subdomain, sceneCount, new Set((takenRows ?? []).map((r) => r.key)));
+  }
+  const scene = chosenScene ?? newSceneKeys[0];
   const settings: BuildSettings = { subdomain, family, skin, ...(niche === undefined ? {} : { niche }), ...(scene === undefined ? {} : { scene }) };
   const { data: moodWord } = await db.from('intake_words').select('text').eq('key', `intake.families.${family}.label`).maybeSingle();
   process.stdout.write(`drafting the words for ${forBuild.businessName} (${forBuild.pieces.length} pieces)…\n`);
@@ -159,8 +182,32 @@ async function main(): Promise<void> {
 
   // 4) The site.
   if (!rest.includes('--build')) {
-    process.stdout.write(`build it with: npx tsx --env-file=.env.local scripts/build-site.ts ${siteFile} --media ${mediaDir}\n`);
+    if (newSceneKeys.length > 0) process.stdout.write('Scenic: the photos behind the page are made when this is run again with --build\n');
+    else process.stdout.write(`build it with: npx tsx --env-file=.env.local scripts/build-site.ts ${siteFile} --media ${mediaDir}\n`);
     return;
+  }
+  if (newSceneKeys.length > 0) {
+    const falKey = process.env['FAL_API_KEY'];
+    if (falKey === undefined || falKey === '') fail('FAL_API_KEY is needed to make the photos behind a Scenic page');
+    process.stdout.write(`making ${newSceneKeys.length} background photos for ${forBuild.businessName}…\n`);
+    const made = await makeScenes(
+      {
+        client: anthropicClient(),
+        painter: falPainter(falKey),
+        store: async (key, webp) => {
+          const path = `scenes/${key}.webp`;
+          const { error: upErr } = await db.storage.from(SCENE_BUCKET).upload(path, webp, { contentType: 'image/webp', upsert: false });
+          if (upErr !== null) throw new Error(`saving ${path} failed: ${upErr.message}`);
+          return db.storage.from(SCENE_BUCKET).getPublicUrl(path).data.publicUrl;
+        },
+        add: (scenes) => addScenes(db, scenes.map((m) => ({ ...m, focus: 'center', source: 'generated' as const, madeFor: null }))),
+      },
+      { businessName: forBuild.businessName, makes: forBuild.makes, about: forBuild.about },
+      newSceneKeys,
+    );
+    if (!made.ok) fail(`the background photos failed: ${made.error}`);
+    for (const m of made.scenes) process.stdout.write(`  ${m.key} (${m.tone}) ${m.url}\n    ${m.tags.join(', ')}\n`);
+    process.stdout.write(`behind the page: ${newSceneKeys[0]}; the others are in the library to swap to\n`);
   }
   const build = spawnSync('npx', ['tsx', '--env-file=.env.local', 'scripts/build-site.ts', siteFile, '--media', mediaDir, ...(rest.includes('--live') ? ['--live'] : [])], { stdio: 'inherit', shell: true });
   if (build.status !== 0) fail('the build failed (above); the intake stays new');
@@ -171,6 +218,10 @@ async function main(): Promise<void> {
   if (!owner.ok) fail(`built, but making ${intake.email} the owner failed: ${owner.error}`);
   const { error: markErr } = await db.from('intakes').update({ status: 'built', tenant_id: built.id }).eq('id', intakeId);
   if (markErr !== null) fail(`built, but marking the intake failed: ${markErr.message}`);
+  if (newSceneKeys.length > 0) {
+    const { error: madeForErr } = await db.from('scenes').update({ made_for: built.id }).in('key', newSceneKeys);
+    if (madeForErr !== null) fail(`built, but noting which site the background photos were made for failed: ${madeForErr.message}`);
+  }
   process.stdout.write(`intake ${intakeId} is built as ${subdomain}; ${intake.email} owns it\n`);
 
   // Tell them it's ready: sign in with the email and password they chose.

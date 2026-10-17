@@ -7,7 +7,6 @@
  */
 import { z } from 'zod/v4';
 import type { FamilyKey } from '@/lib/archetypes/main-street/families';
-import { DEFAULT_SCENE } from '@/lib/archetypes/main-street/scenes';
 import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
 import { EMPTY_MOMENT } from '@/lib/backend/moment/moment-form';
 import { SECTION_KEYS, type SectionKey, type SectionWords } from '@/lib/backend/sections/sections-form';
@@ -28,7 +27,7 @@ export type IntakeForBuild = {
   portraitFile: string | null;
 };
 
-/** How to build a submission: its subdomain, family and skin; on Scenic, the library scene behind the page (left out: the default scene). */
+/** How to build a submission: its subdomain, family and skin; on Scenic, the library scene behind the page (made for it first). */
 export type BuildSettings = { subdomain: string; family: FamilyKey; skin: string; niche?: string; scene?: string };
 
 const SECTION_DRAFT = z.object({ kicker: z.string(), title: z.string(), lede: z.string(), moreLabel: z.string(), pageTitle: z.string() });
@@ -127,7 +126,8 @@ export function siteFromIntake(intake: IntakeForBuild, d: IntakeDrafts, settings
       ...(opening === undefined ? {} : { media: { file: opening.file, alt: opening.name, kind: 'image' as const } }),
     },
     sections: Object.fromEntries(SECTION_KEYS.map((k) => [k, section(d.sections[k], k === 'close' ? d.closeTarget : '')])) as Record<SectionKey, Partial<SectionWords>>,
-    ...(settings.family === 'scenic' ? { scene: { library: settings.scene ?? DEFAULT_SCENE } } : {}),
+    // Scenic: the library scene made for this site (a Scenic build makes them first).
+    ...(settings.family === 'scenic' && settings.scene !== undefined ? { scene: { library: settings.scene } } : {}),
     ...(showcase
       ? { gallery: intake.pieces.map((p) => ({ file: p.file, caption: p.name })) }
       : {

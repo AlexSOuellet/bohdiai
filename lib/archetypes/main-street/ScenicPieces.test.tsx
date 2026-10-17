@@ -5,7 +5,7 @@ import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
 import { MAIN_STREET_SKINS } from './skins';
 import { CollectionsFrames, FindUsTide, FounderPane, GoodsPrints, HorizonHero, ReviewsNotes } from './ScenicPieces';
 import { FAMILIES } from './families';
-import { SCENES, DEFAULT_SCENE } from './scenes';
+import { SCENIC_PREVIEW } from './scenes';
 import { MainStreetRoot } from './chrome';
 import type { ProductView } from '../content';
 import type { MainStreetView } from './schemas';
@@ -41,10 +41,10 @@ describe('the Scenic family', () => {
     expect(FAMILIES.scenic.sectionDefaults).toMatchObject({ hero: 'horizon', goods: 'prints', founder: 'pane', collections: 'frames', findUs: 'tide', reviews: 'notes' });
     expect(FAMILIES.scenic.sectionStack.find((e) => e.lead)?.section).toBe('goods');
   });
-  it('paints the default scene behind the page at full strength, where its focus sits', () => {
-    expect(FAMILIES.scenic.wallpaperUrl).toBe(SCENES[DEFAULT_SCENE].url);
+  it('paints its preview picture at full strength until the site’s own scene replaces it', () => {
+    expect(FAMILIES.scenic.wallpaperUrl).toBe(SCENIC_PREVIEW.url);
     expect(FAMILIES.scenic.textureOpacity).toBe(1);
-    expect(FAMILIES.scenic.textureFocus).toBe(SCENES[DEFAULT_SCENE].focus);
+    expect(FAMILIES.scenic.textureFocus).toBe(SCENIC_PREVIEW.focus);
     expect(FAMILIES.scenic.defaultSkin).toBe('main-street-saltmarsh');
   });
   it('the page root carries the scene photo and its focus as variables', () => {

@@ -52,13 +52,14 @@ describe('siteFromIntake', () => {
     expect(planned.ok ? [] : planned.errors).toEqual([]);
   });
 
-  it('a Scenic site gets the photo behind its page: the scene asked for, else the default', () => {
+  it('a Scenic site gets the library scene made for it; without one the builder refuses it', () => {
     const scenic = { ...settings, family: 'scenic' as const, skin: 'main-street-saltmarsh' };
-    expect(siteFromIntake(intake(), drafts(), scenic, words).scene).toEqual({ library: 'marsh' });
-    expect(siteFromIntake(intake(), drafts(), { ...scenic, scene: 'marsh' }, words).scene).toEqual({ library: 'marsh' });
+    expect(siteFromIntake(intake(), drafts(), { ...scenic, scene: 'tide-and-twine-1' }, words).scene).toEqual({ library: 'tide-and-twine-1' });
     expect(siteFromIntake(intake(), drafts(), settings, words).scene).toBeUndefined();
-    const planned = planSite(siteFromIntake(intake(), drafts(), scenic, words));
+    const planned = planSite(siteFromIntake(intake(), drafts(), { ...scenic, scene: 'tide-and-twine-1' }, words));
     expect(planned.ok ? [] : planned.errors).toEqual([]);
+    const without = planSite(siteFromIntake(intake(), drafts(), scenic, words));
+    expect(without.ok ? [] : without.errors).toContain('scene: a Scenic site needs the photo behind its page (a library scene or its own photo)');
   });
 
   it('keeps the maker’s own words as they wrote them', () => {

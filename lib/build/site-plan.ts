@@ -13,7 +13,7 @@ import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from '@/lib/archetypes/main-st
 import { CARD_WORD_SPOTS, CARD_WORDS_PREFIX } from '@/lib/archetypes/card/words';
 import { cardSkinKey } from '@/lib/archetypes/card/paint';
 import { MAIN_STREET_SKINS } from '@/lib/archetypes/main-street/skins';
-import { isSceneKey } from '@/lib/archetypes/main-street/scenes';
+import { SCENE_KEY } from '@/lib/archetypes/main-street/scenes';
 import { SHOP_WORD_SPOTS, SHOP_WORDS_PREFIX } from '@/lib/storefront/words';
 import { wordKeys } from '@/lib/site-words/words';
 import { buildProfileRow, type ProfileForm, type ProfileRow } from '@/lib/backend/profile/profile-form';
@@ -192,7 +192,7 @@ export function planSite(f: SiteFile): PlanResult {
   const scene = f.scene ?? null;
   if (scenic && scene === null) errors.push('scene: a Scenic site needs the photo behind its page (a library scene or its own photo)');
   if (!scenic && scene !== null) errors.push('scene: only a Scenic site has a photo behind its page');
-  if (scene !== null && 'library' in scene && !isSceneKey(scene.library)) errors.push(`scene: no scene called "${scene.library}" in the library`);
+  if (scene !== null && 'library' in scene && !SCENE_KEY.test(scene.library)) errors.push(`scene: "${scene.library}" isn't a scene name`);
   if (scene !== null && 'photo' in scene && !PHOTO.test(scene.photo.file)) errors.push(`scene: "${scene.photo.file}" isn't a photo`);
   if (scene !== null && 'photo' in scene && scene.video !== undefined && !VIDEO.test(scene.video.file)) errors.push(`scene: "${scene.video.file}" isn't a video`);
   if (scene !== null && 'photo' in scene && scene.tone !== undefined && scene.tone !== 'light' && scene.tone !== 'dark') errors.push(`scene: "${String(scene.tone)}" is neither light nor dark`);

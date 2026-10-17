@@ -168,7 +168,7 @@ describe('planSite — the photo behind a Scenic site', () => {
 
   it('a Scenic site needs one, and only from the library or a photo file', () => {
     expect(errorsOf(scenic())).toContain('scene: a Scenic site needs the photo behind its page (a library scene or its own photo)');
-    expect(errorsOf(scenic({ scene: { library: 'moon' } }))).toContain('scene: no scene called "moon" in the library');
+    expect(errorsOf(scenic({ scene: { library: 'Moon Rise' } }))).toContain(`scene: "Moon Rise" isn't a scene name`);
     expect(errorsOf(scenic({ scene: { photo: { file: 'bay.mp4', alt: '' } } }))).toContain(`scene: "bay.mp4" isn't a photo`);
   });
 

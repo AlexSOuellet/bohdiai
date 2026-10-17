@@ -34,7 +34,7 @@ import type { FounderTreatment } from './founder';
 import type { NavVariant } from './schemas';
 import type { MoodKey } from '../../moods';
 import { REFERENCE_LABELS } from './defaults';
-import { DEFAULT_SCENE, SCENES } from './scenes';
+import { SCENIC_PREVIEW } from './scenes';
 
 export const FAMILY_KEYS = ['cozy', 'rustic', 'dark', 'luxury', 'cheerful', 'modern', 'vintage', 'scenic', 'spotlight'] as const;
 export type FamilyKey = (typeof FAMILY_KEYS)[number];
@@ -482,10 +482,10 @@ const SCENIC: Family = {
   palette: { name: REFERENCE_LABELS.families.palettes.scenic, bg: '#F7F2E8', fg: '#14232B', muted: '#4C5A5F', accent: '#8C3B2A' },
   texture: REFERENCE_LABELS.families.textures.scenic,
   wallpaper: REFERENCE_LABELS.families.wallpapers.scenic,
-  wallpaperUrl: SCENES[DEFAULT_SCENE].url,
+  wallpaperUrl: SCENIC_PREVIEW.url,
   textureOpacity: 1,
   textureMode: 'cover',
-  textureFocus: SCENES[DEFAULT_SCENE].focus,
+  textureFocus: SCENIC_PREVIEW.focus,
   imageryGrade: REFERENCE_LABELS.families.imageryGrades.scenic,
   fontHref:
     'https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,400&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap',

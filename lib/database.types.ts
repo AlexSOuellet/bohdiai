@@ -2046,6 +2046,53 @@ export type Database = {
           },
         ]
       }
+      scenes: {
+        Row: {
+          created_at: string
+          description: string
+          focus: string
+          key: string
+          made_for: string | null
+          search: unknown
+          source: string
+          tags: string[]
+          tone: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          focus?: string
+          key: string
+          made_for?: string | null
+          search?: unknown
+          source: string
+          tags?: string[]
+          tone?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          focus?: string
+          key?: string
+          made_for?: string | null
+          search?: unknown
+          source?: string
+          tags?: string[]
+          tone?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scenes_made_for_fkey"
+            columns: ["made_for"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shipment_items: {
         Row: {
           created_at: string
@@ -2371,6 +2418,13 @@ export type Database = {
           video_upload_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "site_scenes_scene_key_fkey"
+            columns: ["scene_key"]
+            isOneToOne: false
+            referencedRelation: "scenes"
+            referencedColumns: ["key"]
+          },
           {
             foreignKeyName: "site_scenes_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -3195,6 +3249,10 @@ export type Database = {
       }
       save_product: {
         Args: { p: Json; p_listing_id?: string; p_tenant_id: string }
+        Returns: string
+      }
+      scene_search_text: {
+        Args: { p_description: string; p_tags: string[] }
         Returns: string
       }
       set_listing_on_home: {
