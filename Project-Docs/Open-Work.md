@@ -4,7 +4,7 @@
 
 ## Priority order (Alex, Session 107, 2026-10-17)
 1. ~~**Scenic and Spotlight finished as real families**~~ Done and live (Session 107). Still open: more scenes for Scenic's library (it has one, the marsh; where the photos come from is Alex's call), and whether Paper & Patina moves onto Spotlight (items 6, 7).
-2. **bohdiai.com samples:** not one per family; a handful that look clearly different, Alex picks which. Built through the real path (form, `scripts/intake-to-site.ts`, Publish). Fix the known build bugs as they come up: Vintage's phone name break, the empty about frame with no maker photo, Showcase opening buttons pointing at /shop, preview links that don't open on the live site (item 11).
+2. **bohdiai.com samples:** (Alex, Session 107) Classic Loafs is the one sample for every mood: **bohdiai.com/looks** is live (the real site in a window, one row of the nine moods, a Computer/Phone switch), not yet linked from the site (with the rework, item 3). Earlier idea, superseded: a handful that look clearly different. Built through the real path (form, `scripts/intake-to-site.ts`, Publish). Fix the known build bugs as they come up: Vintage's phone name break, the empty about frame with no maker photo, Showcase opening buttons pointing at /shop, preview links that don't open on the live site (item 11).
 3. **The whole bohdiai.com site reworked**, not just the work page (items 10a, 33).
 4. **Maker-backend screens** for the moment, section words and About you (item 3), with **try on a look** for Full (item 9a).
 5. **Alex's admin** (item 36), moved up.
