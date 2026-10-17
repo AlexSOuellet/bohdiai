@@ -60,6 +60,29 @@ describe('the Scenic family', () => {
   });
 });
 
+describe('a clip behind the page', () => {
+  it('loops muted over its still, marked dark so the lettering turns light', () => {
+    const { container } = render(
+      <MainStreetRoot skin={skin} family={{ ...FAMILIES.scenic, wallpaperUrl: 'https://cdn/still.webp', textureTone: 'dark', textureVideo: 'https://cdn/clip.mp4' }}>
+        <p>x</p>
+      </MainStreetRoot>,
+    );
+    const root = container.querySelector('.arch-main-street');
+    expect(root?.getAttribute('data-ms-texture-tone')).toBe('dark');
+    const video = container.querySelector('video.ms-family-video') as HTMLVideoElement | null;
+    expect(video?.getAttribute('src')).toBe('https://cdn/clip.mp4');
+    expect(video?.getAttribute('poster')).toBe('https://cdn/still.webp');
+    expect(video?.muted).toBe(true);
+    expect(video?.loop).toBe(true);
+    expect(video?.getAttribute('aria-hidden')).toBe('true');
+  });
+  it('with no clip, there is no video and no tone mark', () => {
+    const { container } = render(<MainStreetRoot skin={skin} family={FAMILIES.scenic}><p>x</p></MainStreetRoot>);
+    expect(container.querySelector('video')).toBeNull();
+    expect(container.querySelector('.arch-main-street')?.hasAttribute('data-ms-texture-tone')).toBe(false);
+  });
+});
+
 describe('HorizonHero', () => {
   it('sets the name on the sky with the moment’s lines and buttons, and nothing else', () => {
     const { container } = render(<HorizonHero identity={identity} moment={moment} words={W} />);

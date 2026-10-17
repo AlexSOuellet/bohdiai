@@ -1500,7 +1500,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
   `;
 }
 
-export function MainStreetRoot({ skin, family, children }: { skin: ArchetypeTheme; family?: { key: string; wallpaperUrl: string; textureOpacity: number; textureMode?: 'cover' | 'multiply' | 'screen'; textureFocus?: string } | undefined; children: React.ReactNode }) {
+export function MainStreetRoot({ skin, family, children }: { skin: ArchetypeTheme; family?: { key: string; wallpaperUrl: string; textureOpacity: number; textureMode?: 'cover' | 'multiply' | 'screen'; textureFocus?: string; textureTone?: 'light' | 'dark'; textureVideo?: string } | undefined; children: React.ReactNode }) {
   return (
     <>
       <link rel="stylesheet" href={fontHref(skin)} />
@@ -1512,9 +1512,10 @@ export function MainStreetRoot({ skin, family, children }: { skin: ArchetypeThem
           }}
         />
       )}
-      <div className="arch-main-street" data-ms-family={family?.key} data-ms-texture-mode={family?.textureMode ?? 'cover'}>
+      <div className="arch-main-street" data-ms-family={family?.key} data-ms-texture-mode={family?.textureMode ?? 'cover'} data-ms-texture-tone={family?.textureTone}>
         <div className="ms-grain" aria-hidden />
         {family && <div className="ms-family-texture" aria-hidden />}
+        {family?.textureVideo !== undefined && <video className="ms-family-video" src={family.textureVideo} poster={family.wallpaperUrl} autoPlay muted loop playsInline aria-hidden />}
         {children}
       </div>
     </>

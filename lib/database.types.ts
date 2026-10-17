@@ -2349,20 +2349,26 @@ export type Database = {
         Row: {
           scene_key: string | null
           tenant_id: string
+          tone: string
           updated_at: string
           upload_id: string | null
+          video_upload_id: string | null
         }
         Insert: {
           scene_key?: string | null
           tenant_id: string
+          tone?: string
           updated_at?: string
           upload_id?: string | null
+          video_upload_id?: string | null
         }
         Update: {
           scene_key?: string | null
           tenant_id?: string
+          tone?: string
           updated_at?: string
           upload_id?: string | null
+          video_upload_id?: string | null
         }
         Relationships: [
           {
@@ -2375,6 +2381,13 @@ export type Database = {
           {
             foreignKeyName: "site_scenes_upload_id_fkey"
             columns: ["upload_id"]
+            isOneToOne: false
+            referencedRelation: "uploads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_scenes_video_upload_id_fkey"
+            columns: ["video_upload_id"]
             isOneToOne: false
             referencedRelation: "uploads"
             referencedColumns: ["id"]

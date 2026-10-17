@@ -86,7 +86,15 @@ export type SiteFile = {
 };
 
 /** The photo behind a Scenic site, as the content file names it. */
-export type SceneFile = { library: string } | { photo: PhotoFile };
+export type SceneFile =
+  | { library: string }
+  | {
+      photo: PhotoFile;
+      /** How light the photo is (left out: light); a dark one takes light lettering. */
+      tone?: 'light' | 'dark';
+      /** A short muted clip that loops behind the page over the photo. */
+      video?: PhotoFile;
+    };
 
 export type ProductPlan = {
   slug: string;
@@ -186,6 +194,8 @@ export function planSite(f: SiteFile): PlanResult {
   if (!scenic && scene !== null) errors.push('scene: only a Scenic site has a photo behind its page');
   if (scene !== null && 'library' in scene && !isSceneKey(scene.library)) errors.push(`scene: no scene called "${scene.library}" in the library`);
   if (scene !== null && 'photo' in scene && !PHOTO.test(scene.photo.file)) errors.push(`scene: "${scene.photo.file}" isn't a photo`);
+  if (scene !== null && 'photo' in scene && scene.video !== undefined && !VIDEO.test(scene.video.file)) errors.push(`scene: "${scene.video.file}" isn't a video`);
+  if (scene !== null && 'photo' in scene && scene.tone !== undefined && scene.tone !== 'light' && scene.tone !== 'dark') errors.push(`scene: "${String(scene.tone)}" is neither light nor dark`);
 
   // About you.
   const profile = buildProfileRow(f.profile);
@@ -299,7 +309,7 @@ export function planSite(f: SiteFile): PlanResult {
   const portrait = f.portrait ?? null;
   const files = [
     ...(portrait === null ? [] : [portrait.file]),
-    ...(scene !== null && 'photo' in scene ? [scene.photo.file] : []),
+    ...(scene !== null && 'photo' in scene ? [scene.photo.file, scene.video?.file] : []),
     ...(moment === null ? [] : [moment.media?.file, moment.poster?.file, ...moment.photos.map((p) => p.file)]),
     ...gallery.map((g) => g.photo.file),
     ...products.flatMap((p) => p.photos.map((ph) => ph.file)),

@@ -159,6 +159,13 @@ describe('planSite — the photo behind a Scenic site', () => {
     expect(r.ok && r.plan.files.includes('bay.webp')).toBe(true);
   });
 
+  it('plans a dark photo with a clip that loops over it, both uploaded', () => {
+    const r = planSite(scenic({ scene: { photo: { file: 'still.webp', alt: '' }, tone: 'dark', video: { file: 'clip.mp4', alt: '' } } }));
+    expect(r.ok ? r.plan.scene : r.errors).toEqual({ photo: { file: 'still.webp', alt: '' }, tone: 'dark', video: { file: 'clip.mp4', alt: '' } });
+    expect(r.ok && r.plan.files.includes('clip.mp4') && r.plan.files.includes('still.webp')).toBe(true);
+    expect(errorsOf(scenic({ scene: { photo: { file: 'still.webp', alt: '' }, video: { file: 'clip.webp', alt: '' } } }))).toContain(`scene: "clip.webp" isn't a video`);
+  });
+
   it('a Scenic site needs one, and only from the library or a photo file', () => {
     expect(errorsOf(scenic())).toContain('scene: a Scenic site needs the photo behind its page (a library scene or its own photo)');
     expect(errorsOf(scenic({ scene: { library: 'moon' } }))).toContain('scene: no scene called "moon" in the library');

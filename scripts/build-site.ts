@@ -61,7 +61,10 @@ async function uploadAll(db: Db, tenantId: string, mediaDir: string, plan: SiteP
     if (file !== undefined && !alts.has(file)) alts.set(file, alt);
   };
   note(plan.portrait?.file, plan.portrait?.alt ?? '');
-  if (plan.scene !== null && 'photo' in plan.scene) note(plan.scene.photo.file, plan.scene.photo.alt);
+  if (plan.scene !== null && 'photo' in plan.scene) {
+    note(plan.scene.photo.file, plan.scene.photo.alt);
+    note(plan.scene.video?.file, plan.scene.video?.alt ?? '');
+  }
   note(plan.moment?.media?.file, plan.moment?.media?.alt ?? '');
   note(plan.moment?.poster?.file, plan.moment?.poster?.alt ?? '');
   for (const p of plan.moment?.photos ?? []) note(p.file, p.alt);
@@ -157,7 +160,7 @@ async function main(): Promise<void> {
   // Scenic: the photo behind the page, a library scene or its own upload.
   if (plan.scene !== null) {
     const scene = plan.scene;
-    await check('the photo behind the page', db.from('site_scenes').insert('library' in scene ? { tenant_id: tid, scene_key: scene.library } : { tenant_id: tid, upload_id: idOf(scene.photo.file) }));
+    await check('the photo behind the page', db.from('site_scenes').insert('library' in scene ? { tenant_id: tid, scene_key: scene.library } : { tenant_id: tid, upload_id: idOf(scene.photo.file), tone: scene.tone ?? 'light', video_upload_id: scene.video === undefined ? null : idOf(scene.video.file) }));
   }
   if (plan.sections.length > 0) await check('section words', db.from('site_sections').insert(plan.sections.map((s) => ({ tenant_id: tid, section: s.section, ...s.row }))));
   if (plan.gallery.length > 0) await check('gallery', db.from('gallery_items').insert(plan.gallery.map((g, position) => ({ tenant_id: tid, upload_id: idOf(g.photo.file), caption: g.caption, position }))));

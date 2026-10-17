@@ -284,7 +284,7 @@ function familyFor(mood: string | undefined, brandPalette: BrandPalette | undefi
 
 /** Scenic: the site's chosen photo (a library scene or its own) replaces the family's default scene. */
 function withScene(family: Family, scene: ScenePhoto | null): Family {
-  return scene === null ? family : { ...family, wallpaperUrl: scene.url, textureFocus: scene.focus };
+  return scene === null ? family : { ...family, wallpaperUrl: scene.url, textureFocus: scene.focus, ...(scene.tone === undefined ? {} : { textureTone: scene.tone }), ...(scene.video === undefined ? {} : { textureVideo: scene.video }) };
 }
 
 /** Apply a nav-variant override (the ?nav= preview) onto the content's identity, so

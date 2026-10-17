@@ -123,6 +123,10 @@ export interface Family {
   /** Where a cover-painted photo keeps its point of interest (CSS background-position).
    *  Scenic paints the site's scene photo and sets this from the scene. */
   textureFocus?: string;
+  /** How light the painted photo is, so the words over it can flip to light lettering on a dark one. */
+  textureTone?: 'light' | 'dark';
+  /** A short muted clip that loops behind the page over its still (Scenic). */
+  textureVideo?: string;
   imageryGrade: string;
   /** Google Fonts stylesheet URL preloaded on the storefront. */
   fontHref: string;

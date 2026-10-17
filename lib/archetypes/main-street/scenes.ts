@@ -18,6 +18,8 @@ export interface Scene {
   focus: string;
   /** The kinds of work it suits (internal tags, matched against what a maker makes). */
   suits: readonly string[];
+  /** How light the photo is: a dark one takes light lettering in the opening. */
+  tone: 'light' | 'dark';
 }
 
 export const SCENES = {
@@ -27,6 +29,7 @@ export const SCENES = {
     url: '/scenes/marsh.webp',
     focus: 'center 62%',
     suits: ['coastal', 'decoupage', 'pottery', 'jewelry', 'glass', 'painting', 'any'],
+    tone: 'light',
   },
 } as const satisfies Record<string, Scene>;
 
@@ -43,10 +46,14 @@ export function isSceneKey(key: string): key is SceneKey {
 export interface ScenePhoto {
   url: string;
   focus: string;
+  /** A dark photo takes light lettering in the opening. Left out: light. */
+  tone?: 'light' | 'dark';
+  /** A short muted clip that loops behind the page; the photo is its still frame. */
+  video?: string;
 }
 
 /** A library scene as a photo to paint; unknown keys fall back to the default scene. */
 export function scenePhoto(key: string): ScenePhoto {
   const scene: Scene = isSceneKey(key) ? SCENES[key] : SCENES[DEFAULT_SCENE];
-  return { url: scene.url, focus: scene.focus };
+  return { url: scene.url, focus: scene.focus, ...(scene.tone === 'dark' ? { tone: 'dark' as const } : {}) };
 }

@@ -56,6 +56,15 @@ export const SCENIC_CSS = `
     .arch-main-street .ms-sc-cta:hover{background:var(--ms-accent);color:var(--ms-on-accent)}
     .arch-main-street .ms-sc-cta2{background:var(--sc-glass);color:var(--ms-fg);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
     .arch-main-street .ms-sc-cta2:hover{background:var(--ms-bg)}
+    /* A dark photo behind: the opening's words turn light, glowing dark so they hold. */
+    ${F}[data-ms-texture-tone="dark"] .ms-sc-brand{color:var(--ms-contrast-fg);text-shadow:0 2px 30px rgba(0,0,0,.45)}
+    ${F}[data-ms-texture-tone="dark"] .ms-sc-line{color:var(--ms-contrast-fg);text-shadow:0 1px 12px rgba(0,0,0,.6)}
+    ${F}[data-ms-texture-tone="dark"] .ms-sc-cta{background:var(--ms-bg);color:var(--ms-contrast-bg)}
+    ${F}[data-ms-texture-tone="dark"]::after{background:none}
+    /* A clip behind the page loops over its still, softened (and dimmed on a dark photo, like the still); motion off shows the still. */
+    .arch-main-street .ms-family-video{position:fixed;inset:0;z-index:-1;width:100%;height:100%;object-fit:cover;pointer-events:none;filter:blur(5px);transform:scale(1.04)}
+    ${F}[data-ms-texture-tone="dark"] .ms-family-video{filter:brightness(.42) blur(5px) saturate(.9)}
+    @media (prefers-reduced-motion:reduce){.arch-main-street .ms-family-video{display:none}}
     @keyframes ms-sc-rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
 
     /* ── PRINTS — the pieces hung in the air, a plain mat and a paper label ── */
