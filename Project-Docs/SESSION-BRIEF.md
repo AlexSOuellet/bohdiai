@@ -1,7 +1,7 @@
 # Session Brief — BohdiAI
 
 > **⚠ START HERE (Session 107):** read `Open-Work.md` first: its **Priority order** (Alex, 2026-10-17) sets the work.
-> Top: **Scenic and Spotlight finished as real families**, then a handful of bohdiai.com samples (Alex picks
+> **Scenic and Spotlight are live families (Session 107).** Next: a handful of bohdiai.com samples (Alex picks
 > which) through the real path, then the whole bohdiai.com site reworked. No private/copy sites; act in place;
 > don't build while Alex is still discussing. `Full-Plan.md` and `Direction-2026-09-23.md` are history.
 
@@ -34,7 +34,7 @@
 
 ## Next actions
 
-**Every open item is in `Open-Work.md`; follow its Priority order (Alex, Session 107).** Top: Scenic and Spotlight as real families; then bohdiai.com samples (a handful, Alex picks) and the bohdiai.com rework; then backend screens, Alex's admin, Stripe + Square payments, the market app done right. Settled: makers' saves go live at once, no Unpublish (cancelling takes a site down), no design switching, the top line is never edited from About. Waiting on Alex: the purge (after testing); whether Vintage still gets real art. Waiting on others: Joe's feedback, Renee's details.
+**Every open item is in `Open-Work.md`; follow its Priority order (Alex, Session 107).** Done: Scenic and Spotlight are live families (`ScenicPieces.tsx`, `SpotlightPieces.tsx`, each site's Scenic photo in `site_scenes`). Next: bohdiai.com samples (a handful, Alex picks) and the bohdiai.com rework; then backend screens, Alex's admin, Stripe + Square payments, the market app done right. Settled: makers' saves go live at once, no Unpublish (cancelling takes a site down), no design switching, the top line is never edited from About. Waiting on Alex: the purge (after testing); whether Vintage still gets real art. Waiting on others: Joe's feedback, Renee's details.
 
 ---
 
