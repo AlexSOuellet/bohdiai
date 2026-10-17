@@ -202,12 +202,12 @@ export async function middleware(request: NextRequest) {
   // be framed by our own dashboard for the editor's live preview, and by nobody
   // else — `frame-ancestors` lists our origins (same-origin 'self' covers a maker
   // editing on their own shop subdomain; *.bohdiai.com covers the app host
-  // framing a shop). Everything else — the dashboard itself, marketing, admin —
+  // framing a shop; bohdiai.com itself frames the sample on its looks page). Everything else — the dashboard itself, marketing, admin —
   // stays un-frameable.
   if (rewriteUrl !== null) {
     response.headers.set(
       'Content-Security-Policy',
-      "frame-ancestors 'self' https://*.bohdiai.com http://*.localhost:3000",
+      "frame-ancestors 'self' https://bohdiai.com https://*.bohdiai.com http://localhost:3000 http://*.localhost:3000",
     );
     response.headers.delete('X-Frame-Options');
   } else {
