@@ -1,19 +1,21 @@
 # Session Brief — BohdiAI
 
-> **⚠ START HERE (Session 107):** read `Open-Work.md` first: its **Priority order** (Alex, 2026-10-17) sets the work.
-> **Scenic and Spotlight are live families (Session 107).** Next: a handful of bohdiai.com samples (Alex picks
-> which) through the real path, then the whole bohdiai.com site reworked. No private/copy sites; act in place;
-> don't build while Alex is still discussing. `Full-Plan.md` and `Direction-2026-09-23.md` are history.
+> **⚠ START HERE (Session 108):** read `session-logs/session-107.md`, then `Open-Work.md` (its **Priority order**).
+> Next: **the bohdiai.com split** (parent + makers.bohdiai.com + service.bohdiai.com), mid-discussion with Alex,
+> one question at a time. The open question: below the two doors, which sections stay on the parent and which move
+> into the arms. Don't build until Alex says go; hold a reasoned view, concede only what was wrong.
 
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 
 **Operative plan doc:** `Project-Docs/Modular-Plan.md`; open items in `Project-Docs/Open-Work.md`. Every session updates Open-Work as items land.
 
-**Last updated:** 2026-10-16, Session 106 (end).
+**Last updated:** 2026-10-17, Session 107 (end).
 
 ---
 
 ## Current state
+
+**Session 107: priority order reset; Scenic + Spotlight live (nine families); Scenic backgrounds = own photo/clip or generated scenes in a searchable library (every Scenic build makes its own); Classic Loafs (maker Christina) is the all-moods sample at bohdiai.com/looks; bohdiai.com to split into parent + two marketing arms (decided, not built).** Recap: `session-logs/session-107.md`.
 
 **Session 106: intake form live; submission → site in one command; big push merged; makers sign up on the form and publish; free sites; old samples converted.** bohdiai.com/start takes the plan (from the pricing buttons), name, business, email + their own password (their account), what they make, 5–10 pieces (one photo each), about, their photo, and a mood (one tile per family, read from code). Photos go to the private `intake-photos` bucket; words in `intake_words`. `scripts/intake-to-site.ts <id> --subdomain --skin [--family] --build`: Claude drafts the missing words from their words and photos, the one builder builds it private, the maker owns it and is emailed to sign in; a **Publish** button on their backend home puts it live (Unpublish still to build). Free sites: `tenants.plan_comp` free / showcase (`scripts/plan-comp.ts`; Cut-Pro, Mazzone, Rose n' Cat free). Markets and Gallery follow the plan. Old samples converted in place on Full (`scripts/convert-family-sample.ts`); four removed + two copies marked deleted; Alex runs `scripts/purge-deleted-sites.ts --yes` (Claude can't permanently delete). Sample strip removed. Search details come from the homes (`lib/storefront/seo-homes.ts`). Contractor sites stay, off bohdiai.com for now. Recap: `session-logs/session-106.md`.
 
@@ -34,7 +36,7 @@
 
 ## Next actions
 
-**Every open item is in `Open-Work.md`; follow its Priority order (Alex, Session 107).** Done: Scenic and Spotlight are live families (`ScenicPieces.tsx`, `SpotlightPieces.tsx`, each site's Scenic photo in `site_scenes`). Next: bohdiai.com samples (a handful, Alex picks) and the bohdiai.com rework; then backend screens, Alex's admin, Stripe + Square payments, the market app done right. Settled: makers' saves go live at once, no Unpublish (cancelling takes a site down), no design switching, the top line is never edited from About. Waiting on Alex: the purge (after testing); whether Vintage still gets real art. Waiting on others: Joe's feedback, Renee's details.
+**Every open item is in `Open-Work.md`; follow its Priority order.** Next: the bohdiai.com split (parent keeps the headline, a sample window alternating Classic Loafs / Halfmoon / Paper & Patina / True Coat / Saltmarsh, and doors "I make things" / "I fix things"; arms makers.bohdiai.com pushed first, service.bohdiai.com quiet; reserve the names). Open question: what sits below the doors. Then link /looks, retire /samples, fix the cancel FAQ answer (Showcase, not Market). Waiting on Alex: the purge (after testing); whether Paper & Patina moves onto Spotlight. Waiting on others: Joe's feedback, Renee's details.
 
 ---
 
@@ -84,6 +86,7 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 107 (2026-10-17): **Priority reset; Scenic + Spotlight live; Scenic photos/clips + generated searchable scene library; Classic Loafs = all-moods sample (/looks live); bohdiai.com parent + makers/service arms decided.** Full recap: `session-logs/session-107.md`.
 - Session 106 (2026-10-16): **Intake form live (account, plan, mood per family); submission → site with Claude-drafted words; big push merged; Publish button; free sites; old samples converted in place; search details from the homes.** Full recap: `session-logs/session-106.md`.
 - Session 105 (2026-10-15): **Lineup reset (makers first, family + skin, Scenic/Spotlight, custom sites); every family sells; one builder; Spotlight trial; Vintage begun from Alex's references. All on unmerged branches.** Full recap: `session-logs/session-105.md`.
 - Session 104 (2026-10-14): **No word written into the code (`site_words`, all 51 sites, proven identical); Saltmarsh polish from the review; Saturday fairs stay on Saturdays; About you quote/portrait/marquee screen.** Full recap: `session-logs/session-104.md`.
