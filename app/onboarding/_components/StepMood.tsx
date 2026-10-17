@@ -91,6 +91,24 @@ const MOOD_VISUALS: Record<MoodKey, MoodVisual> = {
     uppercase: false,
     weight: 400,
   },
+  // scenic → Saltmarsh (warm paper, dusk-navy ink, rust, Bodoni Moda)
+  scenic: {
+    bg: '#F7F2E8',
+    fg: '#14232B',
+    accent: '#8C3B2A',
+    displayFont: "'Bodoni Moda', Georgia, serif",
+    uppercase: false,
+    weight: 500,
+  },
+  // spotlight → Reel (near-black, bone, brick red, Playfair Display)
+  spotlight: {
+    bg: '#0E0B09',
+    fg: '#F1E6D2',
+    accent: '#B5543F',
+    displayFont: "'Playfair Display', Georgia, serif",
+    uppercase: false,
+    weight: 900,
+  },
 };
 
 /** One combined Google Fonts href that loads every display face the picker

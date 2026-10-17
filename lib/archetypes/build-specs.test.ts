@@ -56,7 +56,7 @@ describe('catalog use', () => {
 
 describe('MAIN_STREET_SPEC', () => {
   it('offers the full deep skin shelf as looks and a menu description', () => {
-    expect(MAIN_STREET_SPEC.looks.length).toBe(32);
+    expect(MAIN_STREET_SPEC.looks.length).toBe(34);
     expect(MAIN_STREET_SPEC.menuDescription.length).toBeGreaterThan(20);
   });
 

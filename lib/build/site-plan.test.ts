@@ -145,6 +145,33 @@ describe('planSite — the shoreline and show reel pages', () => {
   });
 });
 
+describe('planSite — the photo behind a Scenic site', () => {
+  const scenic = (over: Over = {}): SiteFile => familySite({ site: { ...familySite().site, family: 'scenic', skin: 'main-street-saltmarsh' }, ...over });
+
+  it('plans a library scene', () => {
+    const r = planSite(scenic({ scene: { library: 'marsh' } }));
+    expect(r.ok ? r.plan.scene : r.errors).toEqual({ library: 'marsh' });
+  });
+
+  it('plans the maker’s own photo, uploaded with the rest', () => {
+    const r = planSite(scenic({ scene: { photo: { file: 'bay.webp', alt: 'The bay' } } }));
+    expect(r.ok ? r.plan.scene : r.errors).toEqual({ photo: { file: 'bay.webp', alt: 'The bay' } });
+    expect(r.ok && r.plan.files.includes('bay.webp')).toBe(true);
+  });
+
+  it('a Scenic site needs one, and only from the library or a photo file', () => {
+    expect(errorsOf(scenic())).toContain('scene: a Scenic site needs the photo behind its page (a library scene or its own photo)');
+    expect(errorsOf(scenic({ scene: { library: 'moon' } }))).toContain('scene: no scene called "moon" in the library');
+    expect(errorsOf(scenic({ scene: { photo: { file: 'bay.mp4', alt: '' } } }))).toContain(`scene: "bay.mp4" isn't a photo`);
+  });
+
+  it('no other family has one', () => {
+    expect(errorsOf(familySite({ scene: { library: 'marsh' } }))).toContain('scene: only a Scenic site has a photo behind its page');
+    const r = planSite(familySite());
+    expect(r.ok ? r.plan.scene : r.errors).toBeNull();
+  });
+});
+
 describe('planSite — what it refuses', () => {
   it('checks the site itself', () => {
     const errs = errorsOf(familySite({ site: { subdomain: 'Bad Name', businessName: ' ', design: 'nope' as BuildDesign, family: 'nope' as 'cozy', skin: 'x', plan: 'gold' as 'full', niche: 'Not A Slug' } }));

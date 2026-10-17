@@ -18,6 +18,8 @@ import { CartCount } from '@/lib/storefront/CartControls';
 import { IntroReplayLink } from './IntroReplayLink';
 import { Type } from './Type';
 import { VINTAGE_CSS } from './vintage-styles';
+import { SCENIC_CSS } from './scenic-styles';
+import { SPOTLIGHT_CSS } from './spotlight-styles';
 import type { FamilyWords } from './words';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 import { relativeLuminance } from './logo-contrast';
@@ -175,7 +177,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
        from the family so linen and marble stay whisper-subtle and concrete /
        confetti read louder. Editor Door 2 will let the maker swap to another
        wallpaper in the family's bench by rewriting --ms-texture-url. */
-    .arch-main-street .ms-family-texture{position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:var(--ms-texture-url);background-size:cover;background-position:center;background-repeat:no-repeat;opacity:var(--ms-texture-opacity,0)}
+    .arch-main-street .ms-family-texture{position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:var(--ms-texture-url);background-size:cover;background-position:var(--ms-texture-focus,center);background-repeat:no-repeat;opacity:var(--ms-texture-opacity,0)}
     /* Niche texture BLEND modes (Editor Door 2). The texture PNG is black-ink-on-
        transparent. Rather than repainting the page in an ink color (which shifts
        the maker's hue), we BLEND the black pattern onto the existing background so
@@ -1493,10 +1495,12 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-subs-desc{color:var(--ms-fg-muted);margin:0 0 16px}
     .arch-main-street .ms-subs-cue{color:var(--ms-accent)}
     ${VINTAGE_CSS}
+    ${SCENIC_CSS}
+    ${SPOTLIGHT_CSS}
   `;
 }
 
-export function MainStreetRoot({ skin, family, children }: { skin: ArchetypeTheme; family?: { key: string; wallpaperUrl: string; textureOpacity: number; textureMode?: 'cover' | 'multiply' | 'screen' } | undefined; children: React.ReactNode }) {
+export function MainStreetRoot({ skin, family, children }: { skin: ArchetypeTheme; family?: { key: string; wallpaperUrl: string; textureOpacity: number; textureMode?: 'cover' | 'multiply' | 'screen'; textureFocus?: string } | undefined; children: React.ReactNode }) {
   return (
     <>
       <link rel="stylesheet" href={fontHref(skin)} />
@@ -1504,7 +1508,7 @@ export function MainStreetRoot({ skin, family, children }: { skin: ArchetypeThem
       {family && (
         <style
           dangerouslySetInnerHTML={{
-            __html: `.arch-main-street{--ms-texture-url:url("${family.wallpaperUrl}");--ms-texture-opacity:${family.textureOpacity}}`,
+            __html: `.arch-main-street{--ms-texture-url:url("${family.wallpaperUrl}");--ms-texture-opacity:${family.textureOpacity}${family.textureFocus === undefined ? '' : `;--ms-texture-focus:${family.textureFocus}`}}`,
           }}
         />
       )}

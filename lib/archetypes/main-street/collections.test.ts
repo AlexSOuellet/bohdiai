@@ -18,8 +18,8 @@ function makeCollections(n: number): CollectionView[] {
 }
 
 describe('collections registry', () => {
-  it('has the seven designed treatments (drawers: Vintage)', () => {
-    expect([...COLLECTIONS_TREATMENTS]).toEqual(['cupboard', 'crates', 'portals', 'chapters', 'lanes', 'cascade', 'drawers']);
+  it('has the nine designed treatments (drawers: Vintage; frames: Scenic; billboards: Spotlight)', () => {
+    expect([...COLLECTIONS_TREATMENTS]).toEqual(['cupboard', 'crates', 'portals', 'chapters', 'lanes', 'cascade', 'drawers', 'frames', 'billboards']);
   });
 
   it('carries a one-line menu entry for every treatment', () => {

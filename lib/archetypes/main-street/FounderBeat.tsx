@@ -20,6 +20,8 @@ import {
   type FounderAbout,
 } from './FounderBeats';
 import { FounderCabinet } from './VintagePieces';
+import { FounderPane } from './ScenicPieces';
+import { FounderPanel } from './SpotlightPieces';
 import type { FamilyWords } from './words';
 
 export function FounderBeat({
@@ -66,6 +68,10 @@ export function FounderBeat({
       return <FounderEditorial founder={founder} skin={skin} about={about} aboutPage={aboutPage} />;
     case 'signature':
       return <FounderSignature founder={founder} skin={skin} about={about} />;
+    case 'pane':
+      return <FounderPane founder={founder} skin={skin} about={about} />;
+    case 'panel':
+      return <FounderPanel founder={founder} skin={skin} about={about} />;
     case 'cabinet-card':
       return <FounderCabinet founder={founder} skin={skin} about={about} />;
     default:

@@ -2345,6 +2345,42 @@ export type Database = {
           },
         ]
       }
+      site_scenes: {
+        Row: {
+          scene_key: string | null
+          tenant_id: string
+          updated_at: string
+          upload_id: string | null
+        }
+        Insert: {
+          scene_key?: string | null
+          tenant_id: string
+          updated_at?: string
+          upload_id?: string | null
+        }
+        Update: {
+          scene_key?: string | null
+          tenant_id?: string
+          updated_at?: string
+          upload_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_scenes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_scenes_upload_id_fkey"
+            columns: ["upload_id"]
+            isOneToOne: false
+            referencedRelation: "uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_sections: {
         Row: {
           empty_text: string | null

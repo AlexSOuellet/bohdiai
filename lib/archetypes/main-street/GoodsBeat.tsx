@@ -22,6 +22,8 @@ import { GoodsIndex } from './GoodsIndex';
 import { GoodsLookbook } from './GoodsLookbook';
 import { GoodsScrapbook } from './GoodsScrapbook';
 import { GoodsTags } from './GoodsTags';
+import { GoodsPrints } from './ScenicPieces';
+import { GoodsReel } from './SpotlightPieces';
 import { GoodsSwitcher } from './GoodsSwitcher';
 import { GoodsSlideshow } from './GoodsSlideshow';
 import { Reveal } from './Reveal';
@@ -101,6 +103,10 @@ export function GoodsBeat({
       <GoodsIndex goods={goods} products={sample} skin={skin} words={words} viewAll={viewAll} />
     ) : chosen === 'tags' ? (
       <GoodsTags goods={goods} products={sample} skin={skin} words={words} viewAll={viewAll} />
+    ) : chosen === 'prints' ? (
+      <GoodsPrints goods={goods} products={sample} skin={skin} words={words} viewAll={viewAll} />
+    ) : chosen === 'reel' ? (
+      <GoodsReel goods={goods} products={sample} skin={skin} words={words} viewAll={viewAll} />
     ) : chosen === 'scrapbook' ? (
       <GoodsScrapbook goods={goods} products={sample} skin={skin} words={words} viewAll={viewAll} />
     ) : chosen === 'lookbook' ? (

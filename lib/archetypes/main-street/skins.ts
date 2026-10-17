@@ -945,6 +945,58 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
     atmosphere: { grain: GRAIN, photoFilter: 'sepia(0.16) saturate(0.92) contrast(1.03)' },
     motion: MOTION,
   },
+  // ══ SCENIC + SPOTLIGHT (Session 107) ══ the first skin of each new family ══
+  // Saltmarsh — Saltmarsh & Lace's colors and fonts: dusk navy ink, rust, warm paper; Bodoni over Cormorant.
+  'main-street-saltmarsh': {
+    key: 'main-street-saltmarsh',
+    label: REFERENCE_LABELS.skins.labels['main-street-saltmarsh'],
+    palette: {
+      bg: '#F7F2E8',
+      fg: '#14232B',
+      fgMuted: 'rgba(20,35,43,0.66)',
+      accent: '#8C3B2A',
+      onAccent: '#FBF6EA',
+      rule: 'rgba(20,35,43,0.2)',
+      contrast: { bg: '#0E2633', fg: '#F3EFE6', fgMuted: 'rgba(243,239,230,0.72)' },
+    },
+    type: makeType({
+      display: "'Bodoni Moda', Didot, Georgia, serif",
+      displayWeight: 500,
+      body: "'Cormorant Garamond', Georgia, serif",
+      bodyWeight: 500,
+      label: "'Cormorant Garamond', Georgia, serif",
+      labelWeight: 700,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'none' },
+    motion: MOTION,
+  },
+
+  // Reel — Paper & Patina's show reel: near-black, bone, brick red, a navy note; a heavy display over Karla.
+  'main-street-reel': {
+    key: 'main-street-reel',
+    label: REFERENCE_LABELS.skins.labels['main-street-reel'],
+    palette: {
+      bg: '#0E0B09',
+      fg: '#F1E6D2',
+      fgMuted: 'rgba(241,230,210,0.62)',
+      accent: '#B5543F',
+      onAccent: '#FFFFFF',
+      rule: 'rgba(241,230,210,0.18)',
+      contrast: { bg: '#F1E6D2', fg: '#0E0B09', fgMuted: 'rgba(14,11,9,0.66)' },
+    },
+    type: makeType({
+      display: "'Playfair Display', Georgia, serif",
+      displayWeight: 900,
+      body: "'Karla', system-ui, sans-serif",
+      bodyWeight: 500,
+      label: "'Karla', system-ui, sans-serif",
+      labelWeight: 800,
+    }),
+    spacing: SPACING,
+    atmosphere: { grain: GRAIN, photoFilter: 'none' },
+    motion: MOTION,
+  },
 };
 
 /** Selection tags — world + the maker-facing feelings each skin can wear. The
@@ -989,6 +1041,8 @@ export const MAIN_STREET_SKIN_TAGS: Record<string, SkinTag> = {
   'main-street-parlor': { world: 'Relic', moods: ['vintage'] },
   'main-street-playbill': { world: 'Relic', moods: ['vintage'] },
   'main-street-apothecary': { world: 'Relic', moods: ['vintage'] },
+  'main-street-saltmarsh': { world: 'Garden', moods: ['scenic'] },
+  'main-street-reel': { world: 'Press', moods: ['spotlight'] },
 };
 
 /** A one-line, plain-language description of each skin — its colors, its type
@@ -1063,6 +1117,10 @@ export const MAIN_STREET_FONT_HREFS: Record<string, string> = {
     'https://fonts.googleapis.com/css2?family=Ultra&family=IM+Fell+English:ital@0;1&family=Oswald:wght@400;500;600&display=swap',
   'main-street-parlor':
     'https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap',
+  'main-street-saltmarsh':
+    'https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,400&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap',
+  'main-street-reel':
+    'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Karla:wght@400;500;600;700;800&display=swap',
 };
 
 export type MainStreetSkinKey = keyof typeof MAIN_STREET_SKINS;

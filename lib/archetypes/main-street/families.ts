@@ -34,8 +34,9 @@ import type { FounderTreatment } from './founder';
 import type { NavVariant } from './schemas';
 import type { MoodKey } from '../../moods';
 import { REFERENCE_LABELS } from './defaults';
+import { DEFAULT_SCENE, SCENES } from './scenes';
 
-export const FAMILY_KEYS = ['cozy', 'rustic', 'dark', 'luxury', 'cheerful', 'modern', 'vintage'] as const;
+export const FAMILY_KEYS = ['cozy', 'rustic', 'dark', 'luxury', 'cheerful', 'modern', 'vintage', 'scenic', 'spotlight'] as const;
 export type FamilyKey = (typeof FAMILY_KEYS)[number];
 
 /** The nine positions in every family's home page.
@@ -119,6 +120,9 @@ export interface Family {
    *  `multiply` on light families (the pattern deepens the existing color) and
    *  `screen` on dark families (the pattern lightens it, via an invert). */
   textureMode?: 'cover' | 'multiply' | 'screen';
+  /** Where a cover-painted photo keeps its point of interest (CSS background-position).
+   *  Scenic paints the site's scene photo and sets this from the scene. */
+  textureFocus?: string;
   imageryGrade: string;
   /** Google Fonts stylesheet URL preloaded on the storefront. */
   fontHref: string;
@@ -436,6 +440,99 @@ const VINTAGE: Family = {
   defaultSkin: 'main-street-playbill',
 };
 
+/** Scenic (Session 107; from Saltmarsh's Shoreline design): a photo locked behind
+ *  the whole page with the content floating over it. The photo is the site's own
+ *  (a library scene or the maker's photo, `site_scenes`); the family's wallpaper
+ *  is only the default scene. The name sits on the open sky, the pieces hang as
+ *  matted prints, the about is a frosted pane, the markets a tide table. */
+const SCENIC: Family = {
+  key: 'scenic',
+  publicMoodLabel: REFERENCE_LABELS.moods.labels.scenic,
+  sectionDefaults: {
+    hero: 'horizon',
+    goods: 'prints',
+    collections: 'frames',
+    reviews: 'notes',
+    founder: 'pane',
+    nav: 'standard',
+    findUs: 'tide',
+  },
+  sectionStack: [
+    on('hero'),
+    on('goods', { lead: true }),
+    on('founder'),
+    on('findUs'),
+    on('collections'),
+    on('reviews'),
+    on('marquee'),
+    contactOff,
+    on('close'),
+  ],
+  typePackage: {
+    name: REFERENCE_LABELS.families.typePackages.scenic,
+    header: 'Bodoni Moda',
+    body: 'Cormorant Garamond',
+    label: 'Cormorant Garamond',
+    accent: 'Bodoni Moda',
+  },
+  palette: { name: REFERENCE_LABELS.families.palettes.scenic, bg: '#F7F2E8', fg: '#14232B', muted: '#4C5A5F', accent: '#8C3B2A' },
+  texture: REFERENCE_LABELS.families.textures.scenic,
+  wallpaper: REFERENCE_LABELS.families.wallpapers.scenic,
+  wallpaperUrl: SCENES[DEFAULT_SCENE].url,
+  textureOpacity: 1,
+  textureMode: 'cover',
+  textureFocus: SCENES[DEFAULT_SCENE].focus,
+  imageryGrade: REFERENCE_LABELS.families.imageryGrades.scenic,
+  fontHref:
+    'https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,400&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap',
+  defaultSkin: 'main-street-saltmarsh',
+};
+
+/** Spotlight (Session 107; from Paper & Patina's Show reel design): a show reel
+ *  for the shop. The name slammed over the opening photo, the work big two to a
+ *  row, bold color panels for the about and reviews, collections as billboards,
+ *  the market dates on a ticker. Flat color, no texture: the photos are the look. */
+const SPOTLIGHT: Family = {
+  key: 'spotlight',
+  publicMoodLabel: REFERENCE_LABELS.moods.labels.spotlight,
+  sectionDefaults: {
+    hero: 'slam',
+    goods: 'reel',
+    collections: 'billboards',
+    reviews: 'spotlight',
+    founder: 'panel',
+    nav: 'standard',
+    findUs: 'ticker',
+  },
+  sectionStack: [
+    on('hero'),
+    on('findUs'),
+    on('goods', { lead: true }),
+    on('founder'),
+    on('collections'),
+    on('reviews'),
+    on('marquee'),
+    contactOff,
+    on('close'),
+  ],
+  typePackage: {
+    name: REFERENCE_LABELS.families.typePackages.spotlight,
+    header: 'Playfair Display',
+    body: 'Karla',
+    label: 'Karla',
+    accent: 'Playfair Display',
+  },
+  palette: { name: REFERENCE_LABELS.families.palettes.spotlight, bg: '#0E0B09', fg: '#F1E6D2', muted: '#9E9384', accent: '#B5543F' },
+  texture: REFERENCE_LABELS.families.textures.spotlight,
+  wallpaper: REFERENCE_LABELS.families.wallpapers.spotlight,
+  wallpaperUrl: '/textures/wp-spotlight.svg',
+  textureOpacity: 0,
+  imageryGrade: REFERENCE_LABELS.families.imageryGrades.spotlight,
+  fontHref:
+    'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Karla:wght@400;500;600;700;800&display=swap',
+  defaultSkin: 'main-street-reel',
+};
+
 export const FAMILIES: Record<FamilyKey, Family> = {
   cozy: COZY,
   rustic: RUSTIC,
@@ -444,6 +541,8 @@ export const FAMILIES: Record<FamilyKey, Family> = {
   cheerful: CHEERFUL,
   modern: MODERN,
   vintage: VINTAGE,
+  scenic: SCENIC,
+  spotlight: SPOTLIGHT,
 };
 
 /**

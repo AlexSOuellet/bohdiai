@@ -93,7 +93,7 @@ export const FindUsRow = z.object({
 
 /** The About-beat bodies. A tuple so the content schema and the copywriter's
  *  draft schema read the same source and can never drift apart. */
-export const FOUNDER_TREATMENTS = ['quote', 'portrait', 'letter', 'card', 'workbench', 'editorial', 'signature', 'cabinet-card'] as const;
+export const FOUNDER_TREATMENTS = ['quote', 'portrait', 'letter', 'card', 'workbench', 'editorial', 'signature', 'cabinet-card', 'pane', 'panel'] as const;
 
 /** The nav layouts a store can wear — four distinct registers, not reshuffles:
  *   - standard     — wordmark left, links right. The classic workhorse.

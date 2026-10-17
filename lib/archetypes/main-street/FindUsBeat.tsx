@@ -24,6 +24,8 @@ import { FindUsNextStop } from './FindUsNextStop';
 import { FindUsItinerary } from './FindUsItinerary';
 import { FindUsPoster } from './FindUsPoster';
 import { FindUsTickets } from './VintagePieces';
+import { FindUsTide } from './ScenicPieces';
+import { FindUsTicker } from './SpotlightPieces';
 
 import type { FamilyWords } from './words';
 
@@ -70,6 +72,10 @@ export function FindUsBeat({
       return <FindUsItinerary {...props} />;
     case 'poster':
       return <FindUsPoster {...props} />;
+    case 'tide':
+      return <FindUsTide {...props} />;
+    case 'ticker':
+      return <FindUsTicker {...props} />;
     case 'tickets':
       return <FindUsTickets {...props} />;
     case 'board':

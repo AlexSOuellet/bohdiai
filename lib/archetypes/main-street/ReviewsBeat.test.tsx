@@ -45,6 +45,8 @@ const ROOT_CLASS: Record<ReviewsTreatment, string> = {
   guestbook: '.ms-rev-book',
   texts: '.ms-rev-texts',
   postcards: '.ms-post',
+  notes: '.ms-sc-notes',
+  spotlight: '.ms-sp-says',
 };
 
 afterEach(cleanup);

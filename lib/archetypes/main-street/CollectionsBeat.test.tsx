@@ -31,6 +31,8 @@ const ROOT_CLASS: Record<CollectionsTreatment, string> = {
   lanes: '.ms-lane-band',
   cascade: '.ms-cascade',
   drawers: '.ms-drawers',
+  frames: '.ms-sc-frames',
+  billboards: '.ms-sp-boards',
 };
 
 afterEach(cleanup);

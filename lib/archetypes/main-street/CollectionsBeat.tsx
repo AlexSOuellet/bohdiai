@@ -19,6 +19,8 @@ import {
 } from './collections';
 import { CollectionsCupboard } from './CollectionsCupboard';
 import { CollectionsDrawers } from './VintagePieces';
+import { CollectionsFrames } from './ScenicPieces';
+import { CollectionsBillboards } from './SpotlightPieces';
 import { CollectionsCrates } from './CollectionsCrates';
 import { CollectionsPortals } from './CollectionsPortals';
 import { CollectionsChapters } from './CollectionsChapters';
@@ -67,6 +69,10 @@ export function CollectionsBeat({
       return <CollectionsLanes {...props} />;
     case 'cascade':
       return <CollectionsCascade {...props} />;
+    case 'frames':
+      return <CollectionsFrames {...props} />;
+    case 'billboards':
+      return <CollectionsBillboards {...props} />;
     case 'drawers':
       return <CollectionsDrawers {...props} />;
     case 'cupboard':

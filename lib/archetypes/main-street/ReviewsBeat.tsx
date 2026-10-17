@@ -20,6 +20,8 @@ import { ReviewsPullQuote } from './ReviewsPullQuote';
 import { ReviewsGuestbook } from './ReviewsGuestbook';
 import { ReviewsTexts } from './ReviewsTexts';
 import { ReviewsPostcards } from './VintagePieces';
+import { ReviewsNotes } from './ScenicPieces';
+import { ReviewsSpotlight } from './SpotlightPieces';
 import type { FamilyWords } from './words';
 
 export function ReviewsBeat({
@@ -57,6 +59,10 @@ export function ReviewsBeat({
       return <ReviewsGuestbook {...props} />;
     case 'texts':
       return <ReviewsTexts {...props} />;
+    case 'notes':
+      return <ReviewsNotes {...props} />;
+    case 'spotlight':
+      return <ReviewsSpotlight {...props} />;
     case 'postcards':
       return <ReviewsPostcards {...props} />;
     case 'rating':

@@ -38,6 +38,8 @@ import { loadShopWords } from '@/lib/storefront/metadata';
 import { FamilyCart } from './FamilyCart';
 import { FamilyMarket } from './FamilyMarket';
 import { MainStreetRoot } from './chrome';
+import { getSiteScene } from '@/lib/backend/scene/queries';
+import type { ScenePhoto } from './scenes';
 import { Type } from './Type';
 import { FAMILY_NO_WORDS, FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX, type FamilyWords } from './words';
 
@@ -280,6 +282,11 @@ function familyFor(mood: string | undefined, brandPalette: BrandPalette | undefi
   return brandPalette !== undefined ? { ...family, textureOpacity: 0 } : family;
 }
 
+/** Scenic: the site's chosen photo (a library scene or its own) replaces the family's default scene. */
+function withScene(family: Family, scene: ScenePhoto | null): Family {
+  return scene === null ? family : { ...family, wallpaperUrl: scene.url, textureFocus: scene.focus };
+}
+
 /** Apply a nav-variant override (the ?nav= preview) onto the content's identity, so
  *  every nav site — each hero, every sub-page header, the product page — reads it. */
 function withNav(content: MainStreetView, navVariant?: NavVariant): MainStreetView {
@@ -288,33 +295,35 @@ function withNav(content: MainStreetView, navVariant?: NavVariant): MainStreetVi
 }
 
 /** Paints a family page from its view, the site's words and the sale running today (Full promotions). */
-type FamilyPaint = (view: MainStreetView, words: FamilyWords, sale: Promotion | null) => ReactElement;
+type FamilyPaint = (view: MainStreetView, words: FamilyWords, sale: Promotion | null, scene: ScenePhoto | null) => ReactElement;
 
 /** A family page's content comes from the site's homes. The old samples, whose
  *  page record still holds their content, read it from there until the clean-up
  *  step retires them (Modular Plan steps 3 and 6). Both paths read the site's
  *  words from `site_words`; a page with no site behind it has none to read. */
-function withFamilyContent(content: unknown, tenantId: string | undefined, paint: FamilyPaint): ReactElement {
+function withFamilyContent(content: unknown, tenantId: string | undefined, paint: FamilyPaint, scenic: boolean): ReactElement {
   if (tenantId === undefined) {
-    if (holdsLegacyContent(content)) return paint(content as MainStreetView, FAMILY_NO_WORDS, null);
+    if (holdsLegacyContent(content)) return paint(content as MainStreetView, FAMILY_NO_WORDS, null, null);
     notFound();
   }
-  return <FamilyFromHomes content={content} tenantId={tenantId} paint={paint} />;
+  return <FamilyFromHomes content={content} tenantId={tenantId} paint={paint} scenic={scenic} />;
 }
 
-async function FamilyFromHomes({ content, tenantId, paint }: { content: unknown; tenantId: string; paint: FamilyPaint }): Promise<ReactElement> {
+async function FamilyFromHomes({ content, tenantId, paint, scenic }: { content: unknown; tenantId: string; paint: FamilyPaint; scenic: boolean }): Promise<ReactElement> {
   const db = supabaseAdmin();
   const legacy = holdsLegacyContent(content);
-  const [words, homes, features, sale] = await Promise.all([
+  // Scenic paints the site's own photo behind the page (a library scene or the maker's photo).
+  const [words, homes, features, sale, scene] = await Promise.all([
     getSiteWords(db, tenantId, FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX),
     legacy ? Promise.resolve(null) : loadFamilyHomes(db, tenantId),
     getSiteFeatures(tenantId),
     loadRunningSale(db, tenantId),
+    scenic ? getSiteScene(db, tenantId) : Promise.resolve(null),
   ]);
   // The plans, from the site's switches (old samples too): only Full sells online
   // (cart), and Showcase has no shop at all (catalog off).
   const view = homes !== null ? familyViewFromHomes(homes, words) : (content as MainStreetView);
-  return paint({ ...view, identity: { ...view.identity, sellsOnline: features.has('cart'), showsShop: features.has('catalog') } }, words, sale);
+  return paint({ ...view, identity: { ...view.identity, sellsOnline: features.has('cart'), showsShop: features.has('catalog') } }, words, sale, scene);
 }
 
 /** The pieces as the lists show them during a running sale: the sale price in place of the full one. */
@@ -385,21 +394,21 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
     const dialedOpacity = previewTextureOpacity !== undefined && Number.isFinite(previewTextureOpacity)
       ? previewTextureOpacity
       : undefined;
-    let family: Family;
+    let familyPainted: Family;
     if (previewTexture === 'none') {
-      family = { ...familyBase, textureOpacity: 0 };
+      familyPainted = { ...familyBase, textureOpacity: 0 };
     } else if (previewTexture === 'default') {
-      family = { ...familyBase, textureOpacity: dialedOpacity ?? familyBase.textureOpacity };
+      familyPainted = { ...familyBase, textureOpacity: dialedOpacity ?? familyBase.textureOpacity };
     } else if (previewTexture !== undefined && previewTexture !== '') {
       const bgIsDark = hexIsDark(brandPalette !== undefined ? skin.palette.bg : familyBase.palette.bg);
-      family = {
+      familyPainted = {
         ...familyBase,
         wallpaperUrl: previewTexture,
         textureMode: bgIsDark ? 'screen' : 'multiply',
         textureOpacity: dialedOpacity ?? 0.5,
       };
     } else {
-      family = familyBase;
+      familyPainted = familyBase;
     }
     const treatments = resolveTreatments(mood, {
       hero: heroVariant, goods: goodsTreatment, collections: collectionsTreatment,
@@ -409,7 +418,8 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
     // authored fields (old samples only). Read them here so the home render can hide
     // turned-off sections and keep seeded dates out of the marquee.
     const resolutions = readSectionResolutions(content);
-    return withFamilyContent(content, tenantId, (view, words, sale) => {
+    return withFamilyContent(content, tenantId, (view, words, sale, scene) => {
+    const family = withScene(familyPainted, scene);
     const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
     // A running sale (Full) shows its price on every piece in the lists; the piece's own page shows both.
     const products = salePriced(rawProducts, sale);
@@ -440,62 +450,66 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       default:
         return <MainStreet content={c} skin={skin} words={words} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} hiddenSections={showsShop ? resolutions.hidden : [...resolutions.hidden, 'goods', 'collections']} shownSections={resolutions.shown} originalMood={originalMood} />;
     }
-    });
+    }, familyPainted.key === 'scenic');
   },
   renderProduct: ({ content, lookKey, product, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
     // Product pages wear the family's nav variant AND the family's wallpaper.
-    const family = familyFor(mood, brandPalette);
+    const familyBase = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
-    return withFamilyContent(content, tenantId, (view, words, sale) => {
+    return withFamilyContent(content, tenantId, (view, words, sale, scene) => {
+      const family = withScene(familyBase, scene);
       // Showcase has no shop, so no page for a piece.
       if (view.identity.showsShop === false) notFound();
       const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
       const [priced = product] = withSale([product], sale);
       return <MainStreetProduct content={c} skin={skin} words={words} product={priced} family={family} />;
-    });
+    }, familyBase.key === 'scenic');
   },
   renderContentPage: ({ content, lookKey, title, body, html, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
-    const family = familyFor(mood, brandPalette);
+    const familyBase = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
-    return withFamilyContent(content, tenantId, (view, words) => {
+    return withFamilyContent(content, tenantId, (view, words, _sale, scene) => {
+      const family = withScene(familyBase, scene);
       const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
       return <ContentPage content={c} skin={skin} words={words} title={title} body={body} html={html} family={family} />;
-    });
+    }, familyBase.key === 'scenic');
   },
   renderShell: ({ content, lookKey, children, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
-    const family = familyFor(mood, brandPalette);
+    const familyBase = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
-    return withFamilyContent(content, tenantId, (view, words) => {
+    return withFamilyContent(content, tenantId, (view, words, _sale, scene) => {
+      const family = withScene(familyBase, scene);
       const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
       return <MainStreetSubPage content={c} skin={skin} words={words} family={family}>{children}</MainStreetSubPage>;
-    });
+    }, familyBase.key === 'scenic');
   },
   renderCart: ({ content, lookKey, cart, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
-    const family = familyFor(mood, brandPalette);
+    const familyBase = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
-    return withFamilyContent(content, tenantId, (view, words) => {
+    return withFamilyContent(content, tenantId, (view, words, _sale, scene) => {
+      const family = withScene(familyBase, scene);
       const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
       return (
         <MainStreetSubPage content={c} skin={skin} words={words} family={family} current="/cart">
           <FamilyCartBody view={view} words={words} cart={cart} tenantId={tenantId} />
         </MainStreetSubPage>
       );
-    });
+    }, familyBase.key === 'scenic');
   },
   renderMarket: ({ content, lookKey, market, mood, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
-    const family = familyFor(mood, brandPalette);
-    return withFamilyContent(content, tenantId, (view, words) => (
+    const familyBase = familyFor(mood, brandPalette);
+    return withFamilyContent(content, tenantId, (view, words, _sale, scene) => (
       <FamilyMarketPage tenantId={tenantId}>
-        <MainStreetRoot skin={skin} family={family}>
+        <MainStreetRoot skin={skin} family={withScene(familyBase, scene)}>
           <FamilyMarket shopName={view.shopName} market={market} words={words} />
         </MainStreetRoot>
       </FamilyMarketPage>
-    ));
+    ), familyBase.key === 'scenic');
   },
 };
 

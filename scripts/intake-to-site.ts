@@ -3,7 +3,7 @@
  * tool, not a user surface. Alex picks the family (when the maker said "you pick")
  * and the skin.
  *
- *   npx tsx --env-file=.env.local scripts/intake-to-site.ts <intake-id> --subdomain <s> --skin <skin> [--family <f>] [--niche <slug>] [--words-from <site>] [--build] [--live] [--no-email]
+ *   npx tsx --env-file=.env.local scripts/intake-to-site.ts <intake-id> --subdomain <s> --skin <skin> [--family <f>] [--scene <scene>] [--niche <slug>] [--words-from <site>] [--build] [--live] [--no-email]
  *
  * 1. Saves the maker's photos from the private intake folder into tmp/intake-sites/<s>/media.
  * 2. Claude drafts the words the maker didn't give (lib/build/intake-drafts), looking
@@ -82,7 +82,7 @@ async function main(): Promise<void> {
   const subdomain = flag(rest, '--subdomain');
   const skin = flag(rest, '--skin');
   if (intakeId === undefined || subdomain === undefined || skin === undefined) {
-    fail('usage: intake-to-site.ts <intake-id> --subdomain <s> --skin <skin> [--family <f>] [--niche <slug>] [--words-from <site>] [--build] [--live] [--no-email]');
+    fail('usage: intake-to-site.ts <intake-id> --subdomain <s> --skin <skin> [--family <f>] [--scene <scene>] [--niche <slug>] [--words-from <site>] [--build] [--live] [--no-email]');
   }
   const url = process.env['NEXT_PUBLIC_SUPABASE_URL'] ?? process.env['SUPABASE_URL'];
   const key = process.env['SUPABASE_SERVICE_ROLE_KEY'];
@@ -138,7 +138,10 @@ async function main(): Promise<void> {
   // 2) The words we write, checked against the whole content file.
   const words = await referenceWords(db, flag(rest, '--words-from'));
   const niche = flag(rest, '--niche');
-  const settings: BuildSettings = { subdomain, family, skin, ...(niche === undefined ? {} : { niche }) };
+  // Scenic: the library scene behind the page (left out: the default scene).
+  const scene = flag(rest, '--scene');
+  if (scene !== undefined && family !== 'scenic') fail('--scene is only for a Scenic site');
+  const settings: BuildSettings = { subdomain, family, skin, ...(niche === undefined ? {} : { niche }), ...(scene === undefined ? {} : { scene }) };
   const { data: moodWord } = await db.from('intake_words').select('text').eq('key', `intake.families.${family}.label`).maybeSingle();
   process.stdout.write(`drafting the words for ${forBuild.businessName} (${forBuild.pieces.length} pieces)…\n`);
   const drafted = await draftIntake(anthropicClient(), forBuild, moodWord?.text ?? family, photos, (d) => {

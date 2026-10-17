@@ -52,6 +52,15 @@ describe('siteFromIntake', () => {
     expect(planned.ok ? [] : planned.errors).toEqual([]);
   });
 
+  it('a Scenic site gets the photo behind its page: the scene asked for, else the default', () => {
+    const scenic = { ...settings, family: 'scenic' as const, skin: 'main-street-saltmarsh' };
+    expect(siteFromIntake(intake(), drafts(), scenic, words).scene).toEqual({ library: 'marsh' });
+    expect(siteFromIntake(intake(), drafts(), { ...scenic, scene: 'marsh' }, words).scene).toEqual({ library: 'marsh' });
+    expect(siteFromIntake(intake(), drafts(), settings, words).scene).toBeUndefined();
+    const planned = planSite(siteFromIntake(intake(), drafts(), scenic, words));
+    expect(planned.ok ? [] : planned.errors).toEqual([]);
+  });
+
   it('keeps the maker’s own words as they wrote them', () => {
     const file = siteFromIntake(intake(), drafts(), settings, words);
     expect(file.site).toMatchObject({ businessName: 'Tide & Twine', plan: 'lite', family: 'cozy', contactEmail: 'lena@example.com' });

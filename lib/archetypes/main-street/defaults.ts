@@ -19,6 +19,8 @@ export const REFERENCE_LABELS = {
       elegant: 'Elegant',
       cheerful: 'Cheerful',
       vintage: 'Vintage',
+      scenic: 'Scenic',
+      spotlight: 'Spotlight',
     },
     descriptions: {
       dark: 'Low light and deep shadow. Moody and a little mysterious, with drama where most stores play it safe.',
@@ -28,6 +30,8 @@ export const REFERENCE_LABELS = {
       elegant: 'Refined and graceful. Quiet luxury, fine detail, the sense that every choice was considered.',
       cheerful: 'Bright and lifted, color-positive. Sun on the page — a store that smiles back.',
       vintage: 'Old paper and ornament. The charm of another century, every piece with a story behind it.',
+      scenic: 'A photo held behind the whole page, with the work floating over it. Open air and a sense of place.',
+      spotlight: 'Bold and big. Each piece fills the screen, with strong color between them, like a show reel.',
     },
   },
   families: {
@@ -39,6 +43,8 @@ export const REFERENCE_LABELS = {
       cheerful: 'Confetti',
       modern: 'Paper & Ink',
       vintage: 'Kraft & Oxblood',
+      scenic: 'Dusk & Driftwood',
+      spotlight: 'Ink & Brick',
     },
     typePackages: {
       cozy: 'The Journal',
@@ -48,6 +54,8 @@ export const REFERENCE_LABELS = {
       cheerful: 'Confetti',
       modern: 'The Grid',
       vintage: 'The Playbill',
+      scenic: 'The Shoreline',
+      spotlight: 'The Show Reel',
     },
     textures: {
       cozy: 'Linen',
@@ -57,6 +65,8 @@ export const REFERENCE_LABELS = {
       cheerful: 'Confetti',
       modern: 'Concrete',
       vintage: 'Printed ephemera',
+      scenic: 'A scene photo',
+      spotlight: 'None (flat color panels)',
     },
     wallpapers: {
       cozy: 'Cream linen',
@@ -65,7 +75,9 @@ export const REFERENCE_LABELS = {
       luxury: 'White marble',
       cheerful: 'Paper cut-outs',
       modern: 'Concrete',
-      vintage: 'Script, music and newsprint'
+      vintage: 'Script, music and newsprint',
+      scenic: 'The site’s chosen scene',
+      spotlight: 'None',
     },
     imageryGrades: {
       cozy: 'Soft & warm',
@@ -75,6 +87,8 @@ export const REFERENCE_LABELS = {
       cheerful: 'On a color card',
       modern: 'Clean & cool',
       vintage: 'Faded sepia',
+      scenic: 'Natural light',
+      spotlight: 'Full bleed, dramatic',
     },
   },
   skins: {
@@ -111,6 +125,8 @@ export const REFERENCE_LABELS = {
       'main-street-parlor': 'Parlor',
       'main-street-playbill': 'Playbill',
       'main-street-apothecary': 'Apothecary',
+      'main-street-saltmarsh': 'Saltmarsh',
+      'main-street-reel': 'Reel',
     },
     descriptions: {
       'main-street-ember': 'warm cream and ember, a soft serif — homey, cozy, hand-baked',
@@ -145,6 +161,8 @@ export const REFERENCE_LABELS = {
       'main-street-parlor': 'rose-tinted parchment with plum ink and claret, an old letterpress serif — Victorian scrapbook and decoupage',
       'main-street-playbill': 'kraft paper with brown-black ink and oxblood, Tuscan woodtype — a Victorian music-hall bill',
       'main-street-apothecary': 'parchment with deep green ink and red, fat-face lettering — an old chemist\'s label',
+      'main-street-saltmarsh': 'warm paper with dusk-navy ink and rust, Bodoni over Cormorant — a shoreline at the end of the day',
+      'main-street-reel': 'near-black with bone and brick red, a heavy display face over Karla — a show reel at the movies',
     },
   },
 } as const;

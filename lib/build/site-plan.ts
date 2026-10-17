@@ -13,6 +13,7 @@ import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from '@/lib/archetypes/main-st
 import { CARD_WORD_SPOTS, CARD_WORDS_PREFIX } from '@/lib/archetypes/card/words';
 import { cardSkinKey } from '@/lib/archetypes/card/paint';
 import { MAIN_STREET_SKINS } from '@/lib/archetypes/main-street/skins';
+import { isSceneKey } from '@/lib/archetypes/main-street/scenes';
 import { SHOP_WORD_SPOTS, SHOP_WORDS_PREFIX } from '@/lib/storefront/words';
 import { wordKeys } from '@/lib/site-words/words';
 import { buildProfileRow, type ProfileForm, type ProfileRow } from '@/lib/backend/profile/profile-form';
@@ -73,6 +74,8 @@ export type SiteFile = {
   moment?: MomentForm & { media?: PhotoFile & { kind: 'image' | 'video' }; poster?: PhotoFile; photos?: PhotoFile[] };
   /** Each family section's words (families only); a section left out is empty. */
   sections?: Partial<Record<SectionKey, Partial<SectionWords>>>;
+  /** The photo behind a Scenic site: a library scene, or the maker's own photo (Scenic only). */
+  scene?: SceneFile;
   gallery?: { file: string; caption: string }[];
   collections?: { slug: string; name: string; description?: string }[];
   products?: ProductFile[];
@@ -81,6 +84,9 @@ export type SiteFile = {
   /** Every word the site shows, by spot ("family.cart.send" → "Send my order"). */
   words: Readonly<Record<string, string>>;
 };
+
+/** The photo behind a Scenic site, as the content file names it. */
+export type SceneFile = { library: string } | { photo: PhotoFile };
 
 export type ProductPlan = {
   slug: string;
@@ -112,6 +118,8 @@ export type SitePlanned = {
   portrait: PhotoFile | null;
   moment: { row: MomentRow; media: (PhotoFile & { kind: 'image' | 'video' }) | null; poster: PhotoFile | null; photos: PhotoFile[] } | null;
   sections: { section: SectionKey; row: SectionRow }[];
+  /** The photo behind the page (Scenic only). */
+  scene: SceneFile | null;
   gallery: { photo: PhotoFile; caption: string | null }[];
   collections: { slug: string; name: string; description: string | null }[];
   products: ProductPlan[];
@@ -170,6 +178,14 @@ export function planSite(f: SiteFile): PlanResult {
   if (!isSitePlan(s.plan)) errors.push(`site: unknown plan "${s.plan}"`);
   if (s.niche !== undefined && !NICHE.test(s.niche)) errors.push(`site: "${s.niche}" isn't a niche slug`);
   const family = s.design === 'family';
+
+  // Scenic paints a photo behind the page; no other family has one.
+  const scenic = family && s.family === 'scenic';
+  const scene = f.scene ?? null;
+  if (scenic && scene === null) errors.push('scene: a Scenic site needs the photo behind its page (a library scene or its own photo)');
+  if (!scenic && scene !== null) errors.push('scene: only a Scenic site has a photo behind its page');
+  if (scene !== null && 'library' in scene && !isSceneKey(scene.library)) errors.push(`scene: no scene called "${scene.library}" in the library`);
+  if (scene !== null && 'photo' in scene && !PHOTO.test(scene.photo.file)) errors.push(`scene: "${scene.photo.file}" isn't a photo`);
 
   // About you.
   const profile = buildProfileRow(f.profile);
@@ -283,6 +299,7 @@ export function planSite(f: SiteFile): PlanResult {
   const portrait = f.portrait ?? null;
   const files = [
     ...(portrait === null ? [] : [portrait.file]),
+    ...(scene !== null && 'photo' in scene ? [scene.photo.file] : []),
     ...(moment === null ? [] : [moment.media?.file, moment.poster?.file, ...moment.photos.map((p) => p.file)]),
     ...gallery.map((g) => g.photo.file),
     ...products.flatMap((p) => p.photos.map((ph) => ph.file)),
@@ -309,6 +326,7 @@ export function planSite(f: SiteFile): PlanResult {
       portrait,
       moment,
       sections,
+      scene: scenic ? scene : null,
       gallery,
       collections,
       products,
