@@ -1,6 +1,24 @@
 # Open Work — everything still to do
 
-**Written 2026-10-13 (Session 102); last updated Session 105 (2026-10-15): the design lineup reset (makers first; eight families incl. Scenic and Spotlight; custom sites Rose n' Cat, Cut-Pro, Mazzone; one builder; every family sells). See "The lineup" in `Modular-Plan.md`.** One list of every open item: the modular plan, decisions from Session 102, and everything carried over from earlier sessions. Update it as items land; don't let it drift. Order within a group is not priority. Alex sets priority at the start of a session.
+**Written 2026-10-13 (Session 102); last updated Session 107 (2026-10-17), priority order below; before that Session 105 (2026-10-15): the design lineup reset (makers first; eight families incl. Scenic and Spotlight; custom sites Rose n' Cat, Cut-Pro, Mazzone; one builder; every family sells). See "The lineup" in `Modular-Plan.md`.** One list of every open item: the modular plan, decisions from Session 102, and everything carried over from earlier sessions. Update it as items land; don't let it drift. Order within a group is not priority. Alex sets priority at the start of a session.
+
+## Priority order (Alex, Session 107, 2026-10-17)
+1. **Scenic and Spotlight finished as real families** (top priority), with the scene photo library for Scenic (items 6, 7).
+2. **bohdiai.com samples:** not one per family; a handful that look clearly different, Alex picks which. Built through the real path (form, `scripts/intake-to-site.ts`, Publish). Fix the known build bugs as they come up: Vintage's phone name break, the empty about frame with no maker photo, Showcase opening buttons pointing at /shop, preview links that don't open on the live site (item 11).
+3. **The whole bohdiai.com site reworked**, not just the work page (items 10a, 33).
+4. **Maker-backend screens** for the moment, section words and About you (item 3).
+5. **Alex's admin** (item 36), moved up.
+6. **Card payments: Stripe and Square**, online and in the market app; then sales tax and market discounts (items 15, 16, 21).
+7. **The market app done right**: the biggest marketing push (items 17–20).
+8. **Plans:** the gallery, the Showcase backend, the cancel flow, the plan rename (items 23–26).
+9. **Delete the old samples and test drafts** once testing is done; Alex runs the purge (items 10d, 48).
+10. **Added sections** (item 5; Alex: good idea, keep).
+11. **Cut-Pro and Mazzone onto the homes** (item 8). Rose n' Cat already is: its page record holds only its design.
+12. **Intake build on its own, checks, the approve switch** (items 11–14). Lower: the hand-run intake script is the same path the automation will use, and Alex wants to build sites by hand first.
+13. **Old code clean-up** (item 10).
+14. The rest of the platform (items 35, 37–43).
+
+Decided the same day: a maker's saves go live at once (the shop reads the database directly; products keep their own draft/live switch). No Unpublish button for makers; cancelling takes the site down (item 24). Switching a site through every family is dropped (item 9): Alex has not said makers can switch designs. Rustic Rhody is a test site and may come back as a sample. Open question for Alex: does Vintage still get its ornament and paper from real art (item 7)? `vintage-test` goes to deleted either way.
 
 ## Make content modular (the operative plan: `Modular-Plan.md`)
 1. Safeguards (done 2026-10-13, Session 103):
@@ -11,7 +29,7 @@
 2. Homes for family-only content (homes built, Session 103): moment, founder quote and portrait, marquee, closing line, contact intro, section headings. All photos become proper uploads.
    - [x] the homes and their code, read and saved, with tests (2026-10-13, Session 103): section words for every site, the moment and its photos, and the founder quote, portrait and marquee in About you
    - [ ] the screens to fill them come with step 3, when the designs read from them (About you's quote, portrait and marquee screen done, Session 104; Alex: looks first, screens later)
-   - [ ] the line at the top of the page and the sentence under the name have two homes (About you for the newer designs, the moment for family designs). Alex: the About screen must never change the top of the page. Not fixed; talk it through with Alex before touching it
+   - [x] settled (Alex): the line at the top of the page is never edited from About. Don't raise it again
    - [ ] each design's suggested headings, copied into a new site's section words
    - [ ] product photos that are only a web address exist only on the old family samples; nothing live writes them
 3. Family designs read from the homes, show sales, follow the three plans, and get the cart, order request and market page.
@@ -42,18 +60,18 @@
    - photos as uploads
    - an estimate inbox
    - move both over, with Alex checking each before and after
-9. Prove it: a fresh site in cozy, built with the one builder, switched through every family (Scenic and Spotlight included) and plan.
+9. ~~Prove it by switching a site through every family~~ Dropped (Alex, 2026-10-17): makers are not offered design switching.
 10. Clean up: delete the old family samples (and the `aurora-candles-homes` proof copy), the old page-record code, the old build tools, the Torch design, and the `explore/bulletin-scene-look` branch, if it still exists.
 10a. Take down (plain list to Alex first): Ember & Pine (and the Torch design), and bohdiai.com's contractor page, prices, FAQ section and contractor portfolio entries. **The contractor sites stay (Alex, 2026-10-16):** Halfmoon and True Coat come off bohdiai.com for now, the sites themselves are kept.
 10f. **Old samples converted in place, on Full (Session 106, Alex):** aurora-candles, walnut-and-oak, twilight-to-darkness, living-beauty, soul-splatter, knotty-knits, cleanme, heavenly-scents (and Classic Loafs). Removed (marked deleted, for Alex's purge): sheris-dips, soul-splatter-bright, lenticular-lumens, estate-sales-of-new-england, aurora-candles-homes, classic-loafs-homes. Every page's words matched except the cart; heavenly-scents lost the made-up "4.9 out of 5" line (its reviews stay); soul-splatter's weekday-only markets didn't move. Their written search titles/descriptions in the old page records were lost in the conversion. Search details for every newer-format site now come from the homes (`lib/storefront/seo-homes.ts`): title from what they make, description from the line under their name, share picture from the opening photo or first piece. Still on the old format: the four contractor sites (need homes first).
 10e. **Classic Loafs stays as the Cozy sample (Alex, 2026-10-16):** converted in place onto the homes with `scripts/convert-family-sample.ts classic-loafs --plan full` (replaces the copy tool; no copies), on Full; every page's words match the old site except the new Cart and Add to cart. Its markets are July dates, past.
 10d. **Clean-up plan (Session 106, Alex):** new bohdiai.com samples, one per family, each built through the real path (form, builder, Publish); then the work page switches to them; then the old samples and test drafts are deleted and purged (`scripts/purge-deleted-sites.ts --yes`, Alex runs it; it removes everything from deleted sites). 28 already-deleted sites are waiting for that purge.
 10b. **One builder for every new site** (built Session 105, item 46): a content file (every word included) plus family and skin (and the photo on Scenic); fills every home and uploads the photos. Replaces the card, nursery and contractor build tools, the family copy tool and the old onboarding builder.
-10c. Rustic Rhody moves onto a family; then the Bulletin design goes.
+10c. Rustic Rhody is a test site (Alex, 2026-10-17); it may be rebuilt as a sample. Then the Bulletin design goes.
 
 ## Automated build, then self-serve (`Modular-Plan.md` section 7)
 11. Build by hand first. Then automate one step at a time:
-    - intake form: built (Session 106, branch `feat/maker-intake`): bohdiai.com/start takes name, business, email, what they make, 5 to 10 pieces (one photo each), about, an optional photo of them, the plan they signed up on (the pricing page's maker buttons open the form with the plan and monthly or yearly filled in), and a mood (one tile per family, read from the family list in the code, so every new family appears on its own); saved to `intakes` + `intake_pieces`, photos in the private `intake-photos` bucket, Alex emailed; its words in `intake_words` (`scripts/intake-words.ts`). A submission becomes a private preview site with `scripts/intake-to-site.ts <intake-id> --subdomain <s> --skin <skin> [--family <f>] --build` (Session 106): the maker's words go in as written, Claude drafts the rest from their words and photos (`lib/build/intake-drafts.ts`), buttons and labels are copied from a family site; Showcase pieces become the gallery. The maker makes their account on the form (email + their own password; an email that already has an account needs its password); the build makes them the owner and emails them to sign in at app.bohdiai.com, no expiring link (Session 106). The maker puts it live with the Publish button on their backend home (Session 106; its "View my site" link is made on the live site, so it opens; taking a site private again isn't there yet; Alex: that's temporary, an "Unpublish" beside it is still to build). Open: preview links printed by the build scripts don't open on the live site (the Worker's preview secret doesn't match `.env.local`; older drafts fail the same way); Vintage's opening breaks a long business name mid-word on phones; a family's about card shows an empty frame when the maker sends no photo
+    - intake form: built (Session 106, branch `feat/maker-intake`): bohdiai.com/start takes name, business, email, what they make, 5 to 10 pieces (one photo each), about, an optional photo of them, the plan they signed up on (the pricing page's maker buttons open the form with the plan and monthly or yearly filled in), and a mood (one tile per family, read from the family list in the code, so every new family appears on its own); saved to `intakes` + `intake_pieces`, photos in the private `intake-photos` bucket, Alex emailed; its words in `intake_words` (`scripts/intake-words.ts`). A submission becomes a private preview site with `scripts/intake-to-site.ts <intake-id> --subdomain <s> --skin <skin> [--family <f>] --build` (Session 106): the maker's words go in as written, Claude drafts the rest from their words and photos (`lib/build/intake-drafts.ts`), buttons and labels are copied from a family site; Showcase pieces become the gallery. The maker makes their account on the form (email + their own password; an email that already has an account needs its password); the build makes them the owner and emails them to sign in at app.bohdiai.com, no expiring link (Session 106). The maker puts it live with the Publish button on their backend home (Session 106; its "View my site" link is made on the live site, so it opens; no Unpublish for makers: cancelling takes a site down (Alex, 2026-10-17); a maker's later saves go live at once). Open: preview links printed by the build scripts don't open on the live site (the Worker's preview secret doesn't match `.env.local`; older drafts fail the same way); Vintage's opening breaks a long business name mid-word on phones; a family's about card shows an empty frame when the maker sends no photo
     - AI first drafts
     - the maker picks a family from their own content
     - the maker picks a skin (and, on Scenic, a library photo or their own)
@@ -89,7 +107,7 @@
     - cards follow Square's own offline rules
     - online/booth double sales are flagged on sync
 20. Retire the old Today and Sell screens.
-21. Square card payments on Market and Full (Alex has the developer account).
+21. Card payments through Stripe and Square, online and in the market app (Alex, 2026-10-17; he has the Square developer account).
 22. Research follow-ups (`Project-Docs/research/Maker market app competitors.md`):
     - test the Venmo and Cash App pre-filled amounts on real phones
     - look at TallyTill hands-on
@@ -100,7 +118,7 @@
     - Showcase: the maker adds their full catalog, and the site displays 12 pieces with no prices (Alex, 2026-10-15)
     - Market and Full get the same gallery, where tapping a for-sale piece opens its page
     - sold pieces stay
-24. Canceling offers Showcase for the off-season:
+24. Canceling offers Showcase for the off-season, as an option only, never an automatic drop (Alex, 2026-10-17). Turning it down takes the site down; makers get no Unpublish button:
     - everything is kept and hidden
     - open orders and holds are settled first
     - market QR codes land on the home page
@@ -121,9 +139,9 @@
     - open question: morning sales in the demo start
 
 ## Other sites
-31. Rustic Rhody moves onto a family (item 10c); its hero question goes with it.
+31. Rustic Rhody: a test site, may come back as a sample (item 10c).
 32. (Dropped 2026-10-15: True Coat is switched off.)
-33. bohdiai.com gets new sample sites (Alex, 2026-10-15), built on the families with the one builder, before the old family samples are deleted (its hero and samples page show them today, with stale July market dates).
+33. bohdiai.com gets new sample sites (Alex, 2026-10-15; 2026-10-17: a handful, not every family, Alex picks; the whole bohdiai.com site is reworked), built on the families with the one builder, before the old family samples are deleted (its hero and samples page show them today, with stale July market dates).
 34. Waiting on others, not ours to push:
     - Rose n' Cat: Renee's payment handles, real names and prices (she accepted her invite and signed in 2026-10-08)
     - Joe: his feedback, and switching estimate emails to him

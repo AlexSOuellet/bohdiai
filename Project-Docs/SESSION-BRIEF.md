@@ -1,10 +1,9 @@
 # Session Brief — BohdiAI
 
-> **⚠ START HERE (Session 107):** read `session-logs/session-106.md`, then `Modular-Plan.md` ("The lineup")
-> and `Open-Work.md` (items 10d–10f, the clean-up plan). Everything is merged and live; `main` is the
-> working branch. **Next: new bohdiai.com samples, one per family** (Classic Loafs is Cozy), built through the
-> real path (form → `scripts/intake-to-site.ts` → Publish). No private/copy sites; act in place; don't build
-> while Alex is still discussing. `Full-Plan.md` and `Direction-2026-09-23.md` are history.
+> **⚠ START HERE (Session 107):** read `Open-Work.md` first: its **Priority order** (Alex, 2026-10-17) sets the work.
+> Top: **Scenic and Spotlight finished as real families**, then a handful of bohdiai.com samples (Alex picks
+> which) through the real path, then the whole bohdiai.com site reworked. No private/copy sites; act in place;
+> don't build while Alex is still discussing. `Full-Plan.md` and `Direction-2026-09-23.md` are history.
 
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 
@@ -35,7 +34,7 @@
 
 ## Next actions
 
-**Every open item is in `Open-Work.md`.** Next (Alex's clean-up plan, items 10d–10f): new bohdiai.com samples, one per family, through the real path; switch the work page to them (contractor entries off the page); then old samples and test drafts deleted and purged. Also open: the intake build starting on its own; Unpublish; Vintage's phone name break; the empty about frame with no maker photo; contractor sites need homes before converting (database change, plain list first); Scenic + Spotlight as families. Waiting on Alex: running the purge. Waiting on others: Joe's feedback.
+**Every open item is in `Open-Work.md`; follow its Priority order (Alex, Session 107).** Top: Scenic and Spotlight as real families; then bohdiai.com samples (a handful, Alex picks) and the bohdiai.com rework; then backend screens, Alex's admin, Stripe + Square payments, the market app done right. Settled: makers' saves go live at once, no Unpublish (cancelling takes a site down), no design switching, the top line is never edited from About. Waiting on Alex: the purge (after testing); whether Vintage still gets real art. Waiting on others: Joe's feedback, Renee's details.
 
 ---
 
