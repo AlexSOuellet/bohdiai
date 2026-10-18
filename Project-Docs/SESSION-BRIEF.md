@@ -1,29 +1,30 @@
 # Session Brief — BohdiAI
 
-> **⚠ START HERE (Session 108):** read `session-logs/session-107.md`, then `Open-Work.md` (its **Priority order**).
-> Next: **the bohdiai.com split** (parent + makers.bohdiai.com + service.bohdiai.com), mid-discussion with Alex,
-> one question at a time. The open question: below the two doors, which sections stay on the parent and which move
-> into the arms. Don't build until Alex says go; hold a reasoned view, concede only what was wrong.
+> **⚠ START HERE (Session 109):** read `session-logs/session-108.md`, then `Open-Work.md` (its **Priority order**).
+> Next: **the maker-backend screens** (the moment, section headings, About you's quote/portrait/marquee) with
+> **try on a look** for Full. Plain list to Alex first for anything new; don't build until he says go.
 
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 
 **Operative plan doc:** `Project-Docs/Modular-Plan.md`; open items in `Project-Docs/Open-Work.md`. Every session updates Open-Work as items land.
 
-**Last updated:** 2026-10-17, Session 107 (end).
+**Last updated:** 2026-10-18, Session 108 (end).
 
 ---
 
 ## Current state
 
-**Session 107: priority order reset; Scenic + Spotlight live (nine families); Scenic backgrounds = own photo/clip or generated scenes in a searchable library (every Scenic build makes its own); Classic Loafs (maker Christina) is the all-moods sample at bohdiai.com/looks; bohdiai.com to split into parent + two marketing arms (decided, not built).** Recap: `session-logs/session-107.md`.
+**Session 108: bohdiai.com split live (parent + makers.bohdiai.com + service.bohdiai.com); makers arm written for an automated build (makers pay at sign-up, nothing says "built free"); three build bugs fixed; /samples retired.** The middleware shows /makers and /contractors at the arms (`lib/site/arms.ts`), "makers"/"service" reserved. Parent: headline, sample window, doors, Penny then Cut-Pro, story, pledge, "Need something else" box. Makers arm: "Your work online, the way you sell it", looks, plans built up as three steps, how it works (form, site, Publish), prices, comparison, custom sites (Penny), questions, "Start your site" + question box. Service arm unchanged (hand-built voice). Recap: `session-logs/session-108.md`.
 
-**Session 106: intake form live; submission → site in one command; big push merged; makers sign up on the form and publish; free sites; old samples converted.** bohdiai.com/start takes the plan (from the pricing buttons), name, business, email + their own password (their account), what they make, 5–10 pieces (one photo each), about, their photo, and a mood (one tile per family, read from code). Photos go to the private `intake-photos` bucket; words in `intake_words`. `scripts/intake-to-site.ts <id> --subdomain --skin [--family] --build`: Claude drafts the missing words from their words and photos, the one builder builds it private, the maker owns it and is emailed to sign in; a **Publish** button on their backend home puts it live (Unpublish still to build). Free sites: `tenants.plan_comp` free / showcase (`scripts/plan-comp.ts`; Cut-Pro, Mazzone, Rose n' Cat free). Markets and Gallery follow the plan. Old samples converted in place on Full (`scripts/convert-family-sample.ts`); four removed + two copies marked deleted; Alex runs `scripts/purge-deleted-sites.ts --yes` (Claude can't permanently delete). Sample strip removed. Search details come from the homes (`lib/storefront/seo-homes.ts`). Contractor sites stay, off bohdiai.com for now. Recap: `session-logs/session-106.md`.
+**Session 107: priority reset; Scenic + Spotlight live (nine families); Scenic photos/clips + generated searchable scene library; Classic Loafs = the all-moods sample (/looks).** Recap: `session-logs/session-107.md`.
+
+**Session 106: intake form live (bohdiai.com/start, account on the form, mood per family); `scripts/intake-to-site.ts` turns a submission into a site with Claude-drafted words; Publish button; free sites (`tenants.plan_comp`); old samples converted in place.** Recap: `session-logs/session-106.md`.
 
 **Session 105: lineup reset (makers first, family + skin, Scenic/Spotlight, custom sites), every family sells, one builder, Spotlight trial, Vintage — all merged in Session 106.** Recap: `session-logs/session-105.md`.
 
-**Session 104: no word is written into the code; Saltmarsh polished; the demo keeps its weekdays. All merged and live.** Every word a site shows (buttons, menu names, labels, messages, page and search titles) lives per site in `site_words`; designs only name their spots (`<design>/words.ts`) and read them (`lib/site-words`). All 51 sites filled (`scripts/site-words.ts load`; a new site: `copy <from> <to> <prefix>`), live vs local compared word for word: identical. The modular-rules test fails on any word in code. Still in code, "fine for now": legal templates, server error messages, payment app names, symbols. Saltmarsh: Lena's portrait on the story card, plain-lettered prices, light phone header, solid category buttons, tighter gaps, a "Visit the shop" button under the opening (Alex: "it is a DEMO", the opening shows what a site can be), today's market leads "Find me at" (visitors don't see finished markets), fairs stay on Saturdays (`tenants.demo_week_day`, weekly moves; today's market still moves daily), today's market is "Market on the Common". About you has the quote/portrait/marquee screen. **Open:** the top-of-page line has two homes (About you vs the moment); Alex: "the About page should NOT change the hero"; talk it through before touching it. Recap: `session-logs/session-104.md`.
+**Session 104: no word is written into the code: every word lives per site in `site_words` (`<design>/words.ts` names the spots). Saltmarsh polished.** Recap: `session-logs/session-104.md`.
 
-**Session 103: the fix began. Modular Plan steps 1 and 2 done, step 3 started; all merged.** Safeguards: a hook asks Alex once when a database change is applied (after Claude explains it in chat), a database rule refuses words/photos/dates in page records, and `lib/archetypes/modular-rules.test.ts` + its shrinking register block content read from the wrong place and words typed into designs. Homes built: `site_sections` (every section's words), `site_moments` + `site_moment_photos`, About you + quote/portrait/marquee, with backend read/save code. Family pages now read from the homes (`lib/archetypes/main-street/from-homes.ts`); old samples keep their page record until cleanup. Proof: `aurora-candles-homes` (draft copy of aurora-candles via `scripts/copy-family-sample.ts`) matches word for word. Decided: the build fills every piece, the maker edits it all; no site is truly live (Cut-Pro and Rose n' Cat will be real, Saltmarsh is the demo); the market tag was removed (built only to match a test site). Recap: `session-logs/session-103.md`. 
+**Session 103: Modular Plan steps 1 (safeguards: db-change hook, page-record rule, modular-rules test) and 2 (homes) done; family pages read from the homes (`from-homes.ts`).** Recap: `session-logs/session-103.md`.
 
 **Session 87 — the whole app now runs on Cloudflare Workers; Vercel serves nothing.** bohdiai.com, www, every shop subdomain and Cut-Pro are all served by the `bohdiai` Worker, verified live (Cut-Pro end to end, including a real photo estimate). `main` is current (fast-forwarded 552 commits). 1364 tests, tsc + lint clean. Runbook + lessons: `Cloudflare-Move.md`.
 
@@ -36,7 +37,7 @@
 
 ## Next actions
 
-**Every open item is in `Open-Work.md`; follow its Priority order.** Next: the bohdiai.com split (parent keeps the headline, a sample window alternating Classic Loafs / Halfmoon / Paper & Patina / True Coat / Saltmarsh, and doors "I make things" / "I fix things"; arms makers.bohdiai.com pushed first, service.bohdiai.com quiet; reserve the names). Open question: what sits below the doors. Then link /looks, retire /samples, fix the cancel FAQ answer (Showcase, not Market). Waiting on Alex: the purge (after testing); whether Paper & Patina moves onto Spotlight. Waiting on others: Joe's feedback, Renee's details.
+**Every open item is in `Open-Work.md`; follow its Priority order.** Next: the maker-backend screens with try on a look for Full (priority 4), then Alex's admin. Waiting on Alex: the purge (after testing); whether Paper & Patina moves onto Spotlight. Waiting on others: Joe's feedback, Renee's details.
 
 ---
 
@@ -73,7 +74,8 @@
 - **Hand-built clients get their own layout, not the maker moods.** Alex had to say "we are NOT using the regular bohdiai formats." Don't drag onboarding/editor/mood/menu machinery into a hand-built site.
 - **Look at processed media before it goes live.** Sample frames across the whole clip; "encoded with 0 errors" shipped smeared garbage once.
 - **Never build to match a test.** A diff or a copy finds differences; ask whether the thing should exist before building it (Session 103 market tag).
-- **The type check can pass falsely.** A broken `.next/dev/types` file stops `tsc` at syntax errors before it checks any code. Check with `.next` excluded.
+- **The type check can pass falsely.** A broken `.next/dev/types` file stops `tsc` before it checks any code (two Cloudflare builds failed on it, Session 108). Before every push: a temp tsconfig excluding `.next`, `--listFilesOnly` to confirm, then check the Workers Builds result (`gh api repos/{owner}/{repo}/commits/<sha>/check-runs`) before saying it's live. Run the e2e tests too when a marketing page changes.
+- **No markers in test data (Alex 2026-10-18).** Never "(Claude)" or "Test" in a test submission's names or words: the build prints them on the page. Give Alex clickable local links, not screenshots.
 - **Keep it short; ask when a remark has several readings.** Session 104: long option lists lost Alex ("STOP complicating this"); "it is a DEMO" had three readings and asking saved a wrong build.
 - **Ornament-heavy looks need real art (Session 105).** Code-drawn ornament, paper and handwriting read thin ("scribble"); build structure in code, but take the art from real assets (Alex's papers, copyright-free scans). Look at your own full-page shots (`tmp/shot.mjs`) before handing over.
 - **No words in the code, ever (Alex 2026-10-14).** A new word gets a spot in `<design>/words.ts` and a row in every site's `site_words`. Never a fallback word.
@@ -86,13 +88,12 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 108 (2026-10-18): **bohdiai.com split live (parent + makers/service arms); makers arm for an automated build, pay at sign-up; three build bugs fixed; /samples retired.** Full recap: `session-logs/session-108.md`.
 - Session 107 (2026-10-17): **Priority reset; Scenic + Spotlight live; Scenic photos/clips + generated searchable scene library; Classic Loafs = all-moods sample (/looks live); bohdiai.com parent + makers/service arms decided.** Full recap: `session-logs/session-107.md`.
 - Session 106 (2026-10-16): **Intake form live (account, plan, mood per family); submission → site with Claude-drafted words; big push merged; Publish button; free sites; old samples converted in place; search details from the homes.** Full recap: `session-logs/session-106.md`.
 - Session 105 (2026-10-15): **Lineup reset (makers first, family + skin, Scenic/Spotlight, custom sites); every family sells; one builder; Spotlight trial; Vintage begun from Alex's references. All on unmerged branches.** Full recap: `session-logs/session-105.md`.
 - Session 104 (2026-10-14): **No word written into the code (`site_words`, all 51 sites, proven identical); Saltmarsh polish from the review; Saturday fairs stay on Saturdays; About you quote/portrait/marquee screen.** Full recap: `session-logs/session-104.md`.
-- Session 103 (2026-10-13): **Modular Plan steps 1–2 done (safeguards, homes), step 3 started: family pages read from the homes; Aurora copy proven identical; market tag added then removed.** Full recap: `session-logs/session-103.md`.
-- Session 102 (2026-10-13): **Structural reckoning: content stuck in page records. Modular-Plan.md + Open-Work.md written.** Full recap: `session-logs/session-102.md`.
-- Session 101 (2026-10-12): **Priorities reset; Saltmarsh public; demo always today; Market POS + home-screen app live; no codes at markets.** Full recap: `session-logs/session-101.md`.
+- Sessions 101–103 (2026-10-12 → 10-13): **priorities reset, Saltmarsh public, market POS (101); structural reckoning, Modular-Plan.md + Open-Work.md (102); safeguards + homes, family pages read from the homes (103).** See `session-logs/session-101.md` – `session-103.md`.
 - Session 100 (2026-10-10 → 10-12): **Maker checkup built (branch); Maker Market + Full $25 live; Saltmarsh merged as draft; shoreline market page (branch).** Full recap: `session-logs/session-100.md`.
 - Sessions 86–99 (2026-09-23 → 10-09): **Cut-Pro LIVE, Cloudflare move, bohdiai.com rebuilt, backend + Catalog (86–90); tiers + pricing pages (91–92); Rustic Rhody, contractor designs, Joe public (93–95); Rose n' Cat + Market POS, not live (96–97); ember logo (98); Saltmarsh demo (99).** See `session-logs/session-86.md` – `session-99.md`.
 - Sessions 0-85: Phase 0 through the Make It Yours walk (archetypes, families, sections, editor). See individual logs.

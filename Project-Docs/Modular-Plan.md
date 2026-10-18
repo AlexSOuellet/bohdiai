@@ -21,6 +21,8 @@ More families are added as BohdiAI grows. A good custom shape can become a new f
 
 **Custom sites** (handmade, a paid option for makers who want one; content still lives in the same homes): Rose n' Cat (the nursery design stays hers), Cut-Pro and Mazzone. Cut-Pro and Mazzone are already built; they get homes for exactly what they show, so they fit the structure, and nothing is built for contractors in general. If they need customizing later, we deal with it then.
 
+**bohdiai.com (built and live, Session 108):** a parent with two marketing arms, makers.bohdiai.com (written for an automated build; makers pay at sign-up) and service.bohdiai.com (hand-built voice). /samples is retired; the makers arm's looks window replaces it.
+
 **Going away:** the old family sample sites, Ember & Pine with the Torch design, and the contractor page, prices and FAQ section on bohdiai.com. (2026-10-16, Alex: the contractor sites, Halfmoon and True Coat included, are not going away; they only come off bohdiai.com for now.) Rustic Rhody will be changed (off the Bulletin design, which then goes too). **Corrected (Alex, 2026-10-17):** nothing service comes off bohdiai.com; Alex meant the emphasis comes off service, not removal. bohdiai.com becomes a parent with two arms: makers.bohdiai.com (pushed first) and service.bohdiai.com (complete, quiet until pushed). Halfmoon and True Coat stay, and cycle in the parent's sample window.
 
 **The demo** shows what a site can do (plans, shop, cart, markets, the market app, the backend), not a promise of a look. Saltmarsh stays as it is.
