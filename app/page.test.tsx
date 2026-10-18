@@ -48,12 +48,12 @@ describe('bohdiai.com home', () => {
     expect(screen.queryByText(/not real businesses/i)).toBeNull();
   });
 
-  it('keeps the promises next to the form, now that prices are public', () => {
-    render(<HomePage />);
-    expect(screen.queryByText(/know the full price before I start/i)).toBeNull();
-    expect(screen.queryByText(/you pay nothing until your site is live/i)).toBeNull();
-    expect(screen.getByText('One small monthly price')).toBeInTheDocument();
-    expect(screen.getByText(/never take a cut of your sales/i)).toBeInTheDocument();
+  it('ends with a small box for anything that fits neither door, not the full project form (Session 108)', () => {
+    const { container } = render(<HomePage />);
+    expect(screen.getByRole('heading', { name: 'Need something else' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Send it to me →' })).toBeInTheDocument();
+    expect(container.querySelector('#contact')).not.toHaveTextContent(/which plan|what kind of business/i);
+    expect(screen.getByLabelText('Your question')).toBeInTheDocument();
   });
 
   it('opens two doors under the hero, and a word for charities', () => {

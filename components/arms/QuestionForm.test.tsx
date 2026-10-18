@@ -23,7 +23,7 @@ describe('QuestionForm', () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
     const user = userEvent.setup();
-    render(<QuestionForm />);
+    render(<QuestionForm kind="maker" />);
     await user.click(screen.getByRole('button', { name: 'Send my question' }));
     expect(screen.getByRole('alert')).toHaveTextContent('Please add your name.');
     expect(fetchMock).not.toHaveBeenCalled();
@@ -33,7 +33,7 @@ describe('QuestionForm', () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
     const user = userEvent.setup();
-    render(<QuestionForm />);
+    render(<QuestionForm kind="maker" />);
     await fill(user);
     await user.click(screen.getByRole('button', { name: 'Send my question' }));
     expect(await screen.findByRole('status')).toHaveTextContent('Thanks, it’s on its way');
@@ -42,10 +42,22 @@ describe('QuestionForm', () => {
     expect(JSON.parse(String(init.body))).toMatchObject({ name: 'June', kind: 'maker', contactBy: 'email', message: 'Can I sell digital patterns?' });
   });
 
+  it('sends as whatever kind its page is', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const user = userEvent.setup();
+    render(<QuestionForm kind="other" />);
+    await fill(user);
+    await user.click(screen.getByRole('button', { name: 'Send my question' }));
+    await screen.findByRole('status');
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(String(init.body))).toMatchObject({ kind: 'other' });
+  });
+
   it('shows the server’s message, or the fallback with Alex’s address when sending fails', async () => {
     const user = userEvent.setup();
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: 'Too many messages.' }), { status: 429 })));
-    render(<QuestionForm />);
+    render(<QuestionForm kind="maker" />);
     await fill(user);
     await user.click(screen.getByRole('button', { name: 'Send my question' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Too many messages.');

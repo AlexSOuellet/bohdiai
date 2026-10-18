@@ -1,14 +1,16 @@
 'use client';
 
 /**
- * The makers arm's small question box (Alex, Session 108): for a question
- * before signing up, or to ask about a custom site. Only a name, an email and
- * the question; it posts to /api/inquiry as a maker, like the full form. Every
+ * The small question box (Alex, Session 108): on the makers arm for a question
+ * before signing up or a custom site, on the parent for anything that fits
+ * neither door. Only a name, an email and the question; it posts to
+ * /api/inquiry like the full form, as `kind`. Every
  * failure path shows the visitor something, with Alex's address as the way out.
  */
 import { useState, type FormEvent } from 'react';
 import { INPUT, LABEL } from '@/components/InquiryForm';
 import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
+import type { InquiryKind } from '@/lib/inquiry/request';
 
 type Fields = { name: string; email: string; message: string; company: string };
 type Status = { kind: 'idle' } | { kind: 'sending' } | { kind: 'sent' } | { kind: 'error'; message: string };
@@ -25,7 +27,8 @@ export function checkQuestion(f: Fields): string | null {
   return null;
 }
 
-export function QuestionForm(): React.ReactElement {
+/** `lit` when the box is the page's own ending (the parent); quiet under a bigger call to start (the makers arm). */
+export function QuestionForm({ kind, lit = false }: { kind: InquiryKind; lit?: boolean }): React.ReactElement {
   const [fields, setFields] = useState<Fields>(EMPTY);
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
 
@@ -46,7 +49,7 @@ export function QuestionForm(): React.ReactElement {
       const res = await fetch('/api/inquiry', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ ...fields, kind: 'maker', contactBy: 'email' }),
+        body: JSON.stringify({ ...fields, kind, contactBy: 'email' }),
       });
       if (res.ok) {
         setFields(EMPTY);
@@ -134,9 +137,13 @@ export function QuestionForm(): React.ReactElement {
       <button
         type="submit"
         disabled={sending}
-        className="inline-flex items-center justify-center gap-2 rounded-pill border border-white/[0.12] bg-white/[0.05] px-5 py-3 text-[14px] font-semibold text-text-soft transition-colors hover:border-honey-warm/50 disabled:cursor-wait disabled:opacity-60"
+        className={
+          lit
+            ? 'inline-flex items-center justify-center gap-2 rounded-pill bg-honey-warm px-6 py-3.5 text-[15px] font-semibold text-bg shadow-[0_10px_40px_-10px_rgba(243,201,122,0.7)] transition-transform hover:-translate-y-px disabled:cursor-wait disabled:opacity-60'
+            : 'inline-flex items-center justify-center gap-2 rounded-pill border border-white/[0.12] bg-white/[0.05] px-5 py-3 text-[14px] font-semibold text-text-soft transition-colors hover:border-honey-warm/50 disabled:cursor-wait disabled:opacity-60'
+        }
       >
-        {sending ? 'Sending…' : 'Send my question'}
+        {sending ? 'Sending…' : lit ? 'Send it to me →' : 'Send my question'}
       </button>
     </form>
   );

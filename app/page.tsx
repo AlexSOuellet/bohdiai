@@ -5,7 +5,7 @@ import { Doors } from '@/components/Doors';
 import { Work } from '@/components/Work';
 import { WhoBehind } from '@/components/WhoBehind';
 import { Pledge } from '@/components/Pledge';
-import { Contact } from '@/components/Contact';
+import { SomethingElse } from '@/components/SomethingElse';
 import { Footer } from '@/components/Footer';
 import { SITE_CONTACT_EMAIL, SITE_FACEBOOK_URL } from '@/lib/site/contact';
 
@@ -34,12 +34,12 @@ export default function HomePage(): React.ReactElement {
       <main id="main">
         <Hero />
         <Doors />
-        {/* The parent keeps the real clients, the story, the pledge and contact; the
+        {/* The parent keeps the real clients, the story, the pledge and a box for anything else; the
             trades and how it works live on each arm (Alex, Session 108). */}
         <Work clientsOnly />
         <WhoBehind />
         <Pledge />
-        <Contact />
+        <SomethingElse />
       </main>
       <Footer />
     </Scene>
