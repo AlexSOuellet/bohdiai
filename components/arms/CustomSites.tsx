@@ -33,7 +33,7 @@ export function CustomSites(): React.ReactElement {
           href="#contact"
           className="inline-flex items-center justify-center gap-2 rounded-pill bg-text px-5 py-3 text-[14px] font-semibold text-bg no-underline md:px-6"
         >
-          Ask about a custom site →
+          Request a custom site →
         </a>
       </p>
     </section>
