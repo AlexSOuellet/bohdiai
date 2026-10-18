@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { LINK_TARGETS } from './links';
 import { render } from '@testing-library/react';
 import { isValidElement, type ReactElement } from 'react';
 import { EMPTY_MOMENT } from '@/lib/backend/moment/moment-form';
@@ -107,7 +108,7 @@ describe('MAIN_STREET_SPEC.render — the site’s words', () => {
   it('reads the site’s words for a site built from its homes, down to its market dates', async () => {
     const sections = Object.fromEntries(SECTION_KEYS.map((k) => [k, { ...EMPTY_SECTION, ...(k === 'markets' ? { title: 'Find me at' } : {}) }])) as SiteSections;
     const homes: FamilyHomes = {
-      name: 'Ember Candle Co', sellsOnline: true, moment: { ...EMPTY_MOMENT, media: null, photos: [] }, sections, profile: EMPTY_PROFILE,
+      name: 'Ember Candle Co', sellsOnline: true, linkTargets: LINK_TARGETS, moment: { ...EMPTY_MOMENT, media: null, photos: [] }, sections, profile: EMPTY_PROFILE,
       portraitUrl: null, testimonials: [],
       dates: [{ id: 'd1', date: '2026-10-17', endDate: '', name: 'Harvest Fair', town: 'Wickford', hours: '9–4', address: '', booth: '', url: '', canceled: false }],
     };
@@ -124,7 +125,7 @@ describe('MAIN_STREET_SPEC.render — the site’s words', () => {
 describe('MAIN_STREET_SPEC — the plans (Full sells online)', () => {
   const sections = Object.fromEntries(SECTION_KEYS.map((k) => [k, EMPTY_SECTION])) as SiteSections;
   const homes = (sellsOnline: boolean): FamilyHomes => ({
-    name: 'Ember Candle Co', sellsOnline, moment: { ...EMPTY_MOMENT, media: null, photos: [] }, sections, profile: EMPTY_PROFILE, portraitUrl: null, testimonials: [], dates: [],
+    name: 'Ember Candle Co', sellsOnline, linkTargets: LINK_TARGETS, moment: { ...EMPTY_MOMENT, media: null, photos: [] }, sections, profile: EMPTY_PROFILE, portraitUrl: null, testimonials: [], dates: [],
   });
   const cart = {
     lines: [{ id: 'l1', slug: 'tide', name: 'Tide candle', price: '$40', available: true }],

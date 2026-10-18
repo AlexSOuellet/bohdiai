@@ -5,22 +5,22 @@ import { FounderCabinet } from './VintagePieces';
 import { longestWord } from './PlaybillHero';
 import { BILL_LONGEST_WORD, VINTAGE_CSS } from './vintage-styles';
 import { MAIN_STREET_SKINS } from './skins';
-import type { MainStreetContent } from './schemas';
+import type { MainStreetView } from './schemas';
 import { keyWords } from '@/lib/site-words/words';
 import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
 
 /** A maker who sent no photo of themselves must never get an empty frame (Session 108). */
 const W = keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX);
 const skin = MAIN_STREET_SKINS['main-street-ember']!;
-const noPhoto: MainStreetContent['founder'] = { quote: 'Every candle is a small fire.', attribution: 'June, maker', photo: { prompt: '', alt: '' } };
-const withPhoto: MainStreetContent['founder'] = { ...noPhoto, photo: { prompt: '', alt: 'June', url: 'https://cdn/june.webp' } };
+const noPhoto: MainStreetView['founder'] = { quote: 'Every candle is a small fire.', attribution: 'June, maker', photo: { alt: '' } };
+const withPhoto: MainStreetView['founder'] = { ...noPhoto, photo: { alt: 'June', url: 'https://cdn/june.webp' } };
 
 afterEach(cleanup);
 
 describe('about designs with no photo of the maker', () => {
   it('knows a photo only by its address', () => {
     expect(hasFounderPhoto(noPhoto)).toBe(false);
-    expect(hasFounderPhoto({ photo: { prompt: '', alt: '', url: '' } })).toBe(false);
+    expect(hasFounderPhoto({ photo: { alt: '', url: '' } })).toBe(false);
     expect(hasFounderPhoto(withPhoto)).toBe(true);
   });
 
