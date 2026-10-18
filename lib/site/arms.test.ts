@@ -34,6 +34,13 @@ describe('the marketing arms', () => {
     expect(armRoute('bohdiai.com', new URL('https://bohdiai.com/'))).toBeNull();
   });
 
+  it('sends the retired samples page to the makers arm’s looks page', () => {
+    expect(armRoute('bohdiai.com', new URL('https://bohdiai.com/samples'))).toEqual({ kind: 'redirect', url: 'https://makers.bohdiai.com/looks' });
+    expect(armRoute('service.bohdiai.com', new URL('https://service.bohdiai.com/samples'))).toEqual({ kind: 'redirect', url: 'https://makers.bohdiai.com/looks' });
+    expect(armRoute('localhost:3000', new URL('http://localhost:3000/samples'))).toEqual({ kind: 'redirect', url: 'http://makers.localhost:3000/looks' });
+    expect(armRoute('classic-loafs.bohdiai.com', new URL('https://classic-loafs.bohdiai.com/samples'))).toBeNull();
+  });
+
   it('never routes a shop', () => {
     expect(armRoute('classic-loafs.bohdiai.com', new URL('https://classic-loafs.bohdiai.com/makers'))).toBeNull();
   });

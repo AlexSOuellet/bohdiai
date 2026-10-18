@@ -58,10 +58,14 @@ export type ArmRoute = { kind: 'rewrite'; pathname: string } | { kind: 'redirect
  * How the middleware answers a marketing request, or null to pass it through.
  * On an arm, `/` shows the arm's page and the page's own path folds back to `/`.
  * On the parent, the old /makers and /contractors addresses move to their arm,
- * so each page has one address.
+ * so each page has one address. The retired samples page (Session 108) moves to
+ * the makers arm's looks page from any marketing host.
  */
 export function armRoute(hostname: string, url: URL): ArmRoute | null {
   const arm = armForHost(hostname);
+  if (url.pathname === '/samples' && (arm !== null || isParentHost(hostname))) {
+    return { kind: 'redirect', url: `${siteOrigin('makers', { protocol: url.protocol, hostname, port: url.port })}/looks` };
+  }
   if (arm !== null) {
     const { page } = ARMS[arm];
     if (url.pathname === '/') return { kind: 'rewrite', pathname: page };

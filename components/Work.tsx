@@ -106,12 +106,6 @@ export function Work({ audience, clientsOnly = false }: { audience?: Audience; c
               </a>
             ))}
           </div>
-          <a
-            href="/samples"
-            className="relative z-content mt-12 inline-flex items-center gap-2 border-b border-honey-warm/35 pb-0.5 text-[14px] font-semibold text-honey-warm no-underline transition-colors hover:border-honey-warm md:mt-20"
-          >
-            See more samples →
-          </a>
         </div>
       )}
     </section>

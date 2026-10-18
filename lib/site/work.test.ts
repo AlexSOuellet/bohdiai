@@ -4,7 +4,7 @@ import path from 'node:path';
 import { WORK, CLIENTS, SAMPLES, LISTED_SAMPLES, HERO_WORK } from './work';
 
 describe('the work list', () => {
-  it('has two clients, Penny first (Alex, Session 108), one listed sample per plan on the home page (Maker Showcase, Maker Market, Contractor Full, Contractor Lead Generation), and the rest kept for the samples page', () => {
+  it('has two clients, Penny first (Alex, Session 108), one listed sample per plan on the home page (Maker Showcase, Maker Market, Contractor Full, Contractor Lead Generation), and the rest kept off bohdiai.com', () => {
     expect(CLIENTS.map((w) => w.name)).toEqual([
       'Decoupage Digital Designs',
       'Cut-Pro Lawncare & Construction',
