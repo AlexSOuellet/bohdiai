@@ -1,7 +1,7 @@
 /**
  * Custom sites on the makers arm (Alex, Session 108): made by hand for one
- * business, a paid option with no set price yet, so the section ends in the
- * form. Penny's shop is the example; it is custom, so it never stands in for
+ * business, a paid option with no set price yet; the question box at the end
+ * of the page takes requests for one. Penny's shop is the example; it is custom, so it never stands in for
  * what a standard plan looks like.
  */
 import { SectionKicker } from '@/components/SectionKicker';
@@ -27,15 +27,6 @@ export function CustomSites(): React.ReactElement {
       </p>
 
       <ClientSlideshow clients={CUSTOM_EXAMPLES} />
-
-      <p className="mt-10 text-center">
-        <a
-          href="#contact"
-          className="inline-flex items-center justify-center gap-2 rounded-pill bg-text px-5 py-3 text-[14px] font-semibold text-bg no-underline md:px-6"
-        >
-          Request a custom site →
-        </a>
-      </p>
     </section>
   );
 }
