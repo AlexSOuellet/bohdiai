@@ -13,7 +13,7 @@ import { formatPrice, fromPrice } from '@/lib/site/plans';
 export const metadata: Metadata = {
   title: 'Websites for makers — BohdiAI',
   description:
-    `Your work online, the way you sell it: be found, sell at your markets, sell online. Built free, from ${formatPrice(fromPrice('maker'))} a month, and never a cut of your sales.`,
+    `Your work online, the way you sell it: be found, sell at your markets, sell online. From ${formatPrice(fromPrice('maker'))} a month, and never a cut of your sales.`,
   alternates: { canonical: 'https://makers.bohdiai.com' },
   openGraph: { url: 'https://makers.bohdiai.com' },
 };
@@ -33,7 +33,7 @@ export default async function MakersPage(): Promise<React.ReactElement> {
         <ArmHero
           badge="Websites for makers"
           title={['Your work online', 'the way you sell it']}
-          sub="Show what you make, tell people where to find you, take the sale at your market table, and sell online when you’re ready. Built free, and every dollar your customers pay goes straight to you."
+          sub="Show what you make, tell people where to find you, take the sale at your market table, and sell online when you’re ready. Every dollar your customers pay goes straight to you."
           primary={{ href: '/start', label: 'Start your site →' }}
           secondary={{ href: '#ladder', label: 'See the plans' }}
         />

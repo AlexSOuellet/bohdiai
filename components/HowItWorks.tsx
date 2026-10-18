@@ -23,7 +23,7 @@ const STEPS: Record<Audience, Steps> = {
       },
       {
         title: 'Publish it',
-        copy: 'Sign in to your own backend and press Publish. Billing starts the day your site goes live, and you change your words, photos and dates yourself, any time.',
+        copy: 'Sign in to your own backend and press Publish, and your site is live. Change your words, photos and dates yourself, any time.',
       },
     ],
   },

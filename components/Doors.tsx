@@ -38,7 +38,7 @@ export function Doors(): React.ReactElement {
             </span>
             <span className="mt-3 max-w-[380px] text-[14px] leading-[1.55] text-muted md:text-[15px]">{d.sub}</span>
             <span className="mt-7 inline-flex items-center gap-2 text-[13px] font-semibold text-honey-warm">
-              Built free, from {formatPrice(fromPrice(d.audience))} a month
+              {d.audience === 'contractor' ? 'Built free, from' : 'From'} {formatPrice(fromPrice(d.audience))} a month
               <span aria-hidden="true" className="transition-transform duration-base group-hover:translate-x-1">
                 →
               </span>

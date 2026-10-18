@@ -5,8 +5,14 @@ import { AUDIENCE_KIND, PlanInquiryForm } from './PlanInquiryForm';
 import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
 import type { Audience } from '@/lib/site/plans';
 
-// Prices are public now (2026-10-02); these hold on every plan.
-const PROMISES = ['Built free. You pay nothing until your site is live', 'I never take a cut of your sales'] as const;
+// Prices are public now (2026-10-02). Makers pay from sign-up and service sites
+// are built free (Alex, Session 108), so only the service page promises "built free".
+const NO_CUT = 'I never take a cut of your sales';
+const PROMISES: Record<Audience | 'parent', readonly string[]> = {
+  parent: ['One small monthly price', NO_CUT],
+  maker: ['Change your words and photos yourself, any time', NO_CUT],
+  contractor: ['Built free. You pay nothing until your site is live', NO_CUT],
+};
 
 /** `audience` puts the form on a pricing page: it asks which plan and starts on the one clicked. */
 export function Contact({ audience }: { audience?: Audience } = {}): React.ReactElement {
@@ -20,7 +26,7 @@ export function Contact({ audience }: { audience?: Audience } = {}): React.React
       </h2>
 
       <ul className="mx-auto mt-6 flex max-w-[640px] flex-col items-center gap-2.5 md:flex-row md:justify-center md:gap-7">
-        {PROMISES.map((p) => (
+        {PROMISES[audience ?? 'parent'].map((p) => (
           <li key={p} className="inline-flex items-center gap-2.5 text-[14px] text-text-soft md:text-[15px]">
             <span className="size-1.5 rounded-full bg-honey shadow-[0_0_12px_var(--honey)]" />
             {p}

@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { PlanCards } from './PlanCards';
 
 describe('PlanCards', () => {
-  it('shows all of the audience’s plans, monthly by default, built free', () => {
+  it('shows all of the audience’s plans, monthly by default; makers pay from sign-up, so no “built free”', () => {
     render(<PlanCards audience="maker" />);
     const showcase = screen.getByRole('article', { name: 'Maker Showcase' });
     const lite = screen.getByRole('article', { name: 'Maker Market' });
@@ -14,7 +14,7 @@ describe('PlanCards', () => {
     expect(lite).toHaveTextContent('$15');
     expect(lite).toHaveTextContent(/a month/);
     expect(full).toHaveTextContent('$25');
-    expect(lite).toHaveTextContent(/built free/i);
+    expect(screen.queryByText(/built free/i)).toBeNull();
     expect(full).toHaveTextContent(/everything in maker market, plus/i);
     expect(screen.queryByText(/contractor/i)).toBeNull();
   });
@@ -50,5 +50,10 @@ describe('PlanCards', () => {
     render(<PlanCards audience="contractor" />);
     const full = screen.getByRole('article', { name: 'Contractor Full' });
     expect(within(full).getByRole('link', { name: /talk to us/i })).toHaveAttribute('href', '/?plan=contractor-full#contact');
+  });
+
+  it('marks contractor plans built free: service sites are made by hand and billed once live', () => {
+    render(<PlanCards audience="contractor" />);
+    expect(screen.getAllByText(/built free/i)).toHaveLength(2);
   });
 });

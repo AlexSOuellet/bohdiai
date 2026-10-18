@@ -101,10 +101,13 @@ function PlanCard({ plan, period }: { plan: Plan; period: Period }): React.React
         <span className="text-[14px] text-muted">{period === 'monthly' ? 'a month' : 'a year'}</span>
       </div>
 
-      <p className="mt-3 inline-flex w-fit items-center gap-2 rounded-pill border border-honey-warm/30 bg-honey-warm/[0.08] px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-honey-warm">
-        <span className="size-1.5 rounded-full bg-honey-warm shadow-[0_0_10px_var(--honey-warm)]" />
-        Built free
-      </p>
+      {/* Service sites are made by hand with no build fee; makers pay from sign-up (Alex, Session 108). */}
+      {plan.audience === 'contractor' && (
+        <p className="mt-3 inline-flex w-fit items-center gap-2 rounded-pill border border-honey-warm/30 bg-honey-warm/[0.08] px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-honey-warm">
+          <span className="size-1.5 rounded-full bg-honey-warm shadow-[0_0_10px_var(--honey-warm)]" />
+          Built free
+        </p>
+      )}
 
       {full && <p className="mt-6 text-[13px] font-semibold text-text-soft">{includesLead(plan)}</p>}
       <ul className={`${full ? 'mt-3' : 'mt-6'} flex flex-1 flex-col gap-3`}>

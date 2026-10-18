@@ -177,8 +177,8 @@ export const COMPARISON: Record<Audience, readonly ComparisonRow[]> = {
     },
     {
       name: 'BohdiAI',
-      cost: `Built free, from ${formatPrice(fromPrice('maker'))} a month`,
-      you: 'I build it and write it with you. Fixes covered. Never a cut of your sales',
+      cost: `From ${formatPrice(fromPrice('maker'))} a month`,
+      you: 'Made from your own words and photos. Change anything yourself, any time. Never a cut of your sales',
       ours: true,
     },
   ],

@@ -79,12 +79,19 @@ export function LooksSection({ local }: { local: boolean }): React.ReactElement 
   );
 }
 
+/** Makers pay from sign-up; service sites are built free and billed once live (Alex, Session 108). */
+const PLANS_TITLE: Record<Audience, readonly [string, string]> = {
+  maker: ['One small price,', 'never a cut of your sales'],
+  contractor: ['Built free,', 'paid once it’s live'],
+};
+
 export function PlansSection({ audience }: { audience: Audience }): React.ReactElement {
+  const [plain, glow] = PLANS_TITLE[audience];
   return (
     <section id="plans" aria-label="Plans" className="relative z-content scroll-mt-20 px-3 pt-24 md:pt-32">
       <SectionKicker>Pricing</SectionKicker>
       <h2 className={H2}>
-        Built free, <em className={EM}>paid once it’s live</em>
+        {plain} <em className={EM}>{glow}</em>
       </h2>
       <div className="mt-10 md:mt-14">
         <PlanCards audience={audience} />

@@ -51,7 +51,8 @@ describe('bohdiai.com home', () => {
   it('keeps the promises next to the form, now that prices are public', () => {
     render(<HomePage />);
     expect(screen.queryByText(/know the full price before I start/i)).toBeNull();
-    expect(screen.getByText(/built free\. you pay nothing until your site is live/i)).toBeInTheDocument();
+    expect(screen.queryByText(/you pay nothing until your site is live/i)).toBeNull();
+    expect(screen.getByText('One small monthly price')).toBeInTheDocument();
     expect(screen.getByText(/never take a cut of your sales/i)).toBeInTheDocument();
   });
 

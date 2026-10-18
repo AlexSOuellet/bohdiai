@@ -34,7 +34,9 @@ describe('faq', () => {
     const text = allFaqItems()
       .flatMap((i) => i.a)
       .join(' ');
-    expect(text).toContain('$5 a month for makers and $10 for contractors');
+    expect(text).toContain('starting at $10 a month');
+    expect(text).toContain('starting at $5 a month, from the day you sign up');
+    expect(faqItem('when-billing-starts').a[0]).toMatch(/makers pay from the day they sign up/i);
     expect(text).toContain('2 to 5 days');
     expect(faqItem('custom').a.join(' ')).toMatch(/quote/i);
   });

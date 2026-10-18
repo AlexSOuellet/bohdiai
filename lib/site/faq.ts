@@ -70,13 +70,17 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         id: 'built-free',
         q: 'What does “built free” mean?',
         a: [
-          `It means there’s no build fee. You don’t pay thousands up front. You pay the monthly price for your plan, starting at ${p('maker-showcase')} a month for makers and ${p('contractor-lite')} for contractors, and that’s it.`,
+          `For a service business, it means there’s no build fee. You don’t pay thousands up front. You pay the monthly price for your plan, starting at ${p('contractor-lite')} a month, and that’s it.`,
+          `Makers have no build fee either: you pay your plan’s monthly price, starting at ${p('maker-showcase')} a month, from the day you sign up.`,
         ],
       },
       {
         id: 'when-billing-starts',
         q: 'When does billing start?',
-        a: ['The day your site goes live. You don’t pay anything while I’m building it.'],
+        a: [
+          'Makers pay from the day they sign up on the form.',
+          'For a service business, billing starts the day your site goes live. You don’t pay anything while I’m building it.',
+        ],
       },
       {
         id: 'monthly-or-yearly',
