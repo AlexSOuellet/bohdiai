@@ -4,10 +4,10 @@ import path from 'node:path';
 import { WORK, CLIENTS, SAMPLES, LISTED_SAMPLES, HERO_WORK } from './work';
 
 describe('the work list', () => {
-  it('has two clients, one listed sample per plan on the home page (Maker Showcase, Maker Market, Contractor Full, Contractor Lead Generation), and the rest kept for the samples page', () => {
+  it('has two clients, Penny first (Alex, Session 108), one listed sample per plan on the home page (Maker Showcase, Maker Market, Contractor Full, Contractor Lead Generation), and the rest kept for the samples page', () => {
     expect(CLIENTS.map((w) => w.name)).toEqual([
-      'Cut-Pro Lawncare & Construction',
       'Decoupage Digital Designs',
+      'Cut-Pro Lawncare & Construction',
     ]);
     expect(SAMPLES.map((w) => [w.name, w.plan])).toEqual([
       ['Rustic Rhody', 'Showcase'],
@@ -25,16 +25,16 @@ describe('the work list', () => {
     expect(SAMPLES.every((w) => w.kind === 'sample')).toBe(true);
   });
 
-  it('cycles samples only in the hero, Knotty Knits among them without being a bannered sample', () => {
+  it('cycles samples only in the hero, makers and service businesses in turn, Saltmarsh among them without being a bannered sample', () => {
     expect(HERO_WORK.map((w) => w.name)).toEqual([
-      'Rustic Rhody',
-      'Paper & Patina',
       'Classic Loafs',
-      'Knotty Knits',
-      'Twilight to Darkness',
-      'Heavenly Scents',
+      'Halfmoon Roofing',
+      'Paper & Patina',
+      'True Coat Painting',
+      'Saltmarsh & Lace',
     ]);
     expect(HERO_WORK.every((w) => w.kind === 'sample')).toBe(true);
+    expect(SAMPLES.some((w) => w.slug === 'saltmarsh-and-lace')).toBe(false);
     expect(SAMPLES.some((w) => w.slug === 'knotty-knits')).toBe(false);
     for (const w of HERO_WORK) expect(existsSync(path.join(process.cwd(), 'public', w.shot))).toBe(true);
   });
@@ -55,7 +55,7 @@ describe('the work list', () => {
     for (const w of CLIENTS) {
       for (const q of w.testimonials) expect(q.paragraphs[0]).toContain(q.highlight);
     }
-    expect(CLIENTS[0]?.testimonials.map((q) => q.name)).toEqual([
+    expect(CLIENTS[1]?.testimonials.map((q) => q.name)).toEqual([
       'Sheri Giannattasio',
       'Chris Bullock',
     ]);

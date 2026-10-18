@@ -39,14 +39,13 @@ describe('bohdiai.com home', () => {
     expect(screen.getByText(/The Bohdi Way/)).toBeInTheDocument();
   });
 
-  it('shows the clients in a slideshow, one at a time, and labels the samples as samples', () => {
+  it('shows the two real clients, Penny first, and no sample shelf (the samples live on the arms)', () => {
     render(<HomePage />);
     const clients = screen.getByRole('region', { name: 'Client sites' });
-    expect(within(clients).getByRole('heading', { level: 3 })).toHaveTextContent('Cut-Pro Lawncare & Construction');
-    fireEvent.click(within(clients).getByRole('button', { name: 'Next client' }));
     expect(within(clients).getByRole('heading', { level: 3 })).toHaveTextContent('Decoupage Digital Designs');
-    expect(screen.getByText(/not real businesses/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /see more samples/i })).toHaveAttribute('href', '/samples');
+    fireEvent.click(within(clients).getByRole('button', { name: 'Next client' }));
+    expect(within(clients).getByRole('heading', { level: 3 })).toHaveTextContent('Cut-Pro Lawncare & Construction');
+    expect(screen.queryByText(/not real businesses/i)).toBeNull();
   });
 
   it('keeps the promises next to the form, now that prices are public', () => {
@@ -59,8 +58,11 @@ describe('bohdiai.com home', () => {
   it('opens two doors under the hero, and a word for charities', () => {
     render(<HomePage />);
     const doors = screen.getByRole('navigation', { name: /choose your path/i });
-    expect(doors.querySelector('a[href="/makers"]')).toHaveTextContent(/I make things/);
-    expect(doors.querySelector('a[href="/contractors"]')).toHaveTextContent(/I run a service business/);
+    const [makers, service] = [...doors.querySelectorAll('a')];
+    expect(makers).toHaveTextContent(/I make things/);
+    expect(makers?.getAttribute('href')).toMatch(/^https?:\/\/makers\.(bohdiai\.com|localhost)/);
+    expect(service).toHaveTextContent(/I fix things/);
+    expect(service?.getAttribute('href')).toMatch(/^https?:\/\/service\.(bohdiai\.com|localhost)/);
     expect(screen.getByRole('link', { name: /charity or community group/i })).toHaveAttribute('href', '#contact');
   });
 
@@ -91,9 +93,9 @@ describe('bohdiai.com home', () => {
     expect(container.querySelector('footer')?.textContent).not.toMatch(/Built in Rhode Island/);
   });
 
-  it('explains how it works with plans and billing at go-live', () => {
-    render(<HomePage />);
-    expect(screen.getByText('Pick your plan')).toBeInTheDocument();
-    expect(screen.getByText(/billing starts the day your site goes live/i)).toBeInTheDocument();
+  it('leaves how it works and the trades to the arms', () => {
+    const { container } = render(<HomePage />);
+    expect(screen.queryByText('Pick your plan')).toBeNull();
+    expect(container.querySelector('#who-for')).toBeNull();
   });
 });

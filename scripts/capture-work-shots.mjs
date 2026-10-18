@@ -20,6 +20,7 @@ const SITES = {
   'knotty-knits': 'https://knotty-knits.bohdiai.com',
   'true-coat-painting': 'https://true-coat-painting.bohdiai.com',
   'halfmoon-roofing': 'https://halfmoon-roofing.bohdiai.com',
+  'saltmarsh-and-lace': 'https://saltmarsh-and-lace.bohdiai.com',
 };
 
 /** Sample sites carry the 48px sample banner (app/storefront/_components/SampleBanner.tsx).

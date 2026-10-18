@@ -3,8 +3,6 @@ import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { Doors } from '@/components/Doors';
 import { Work } from '@/components/Work';
-import { TradesMarquee } from '@/components/TradesMarquee';
-import { HowItWorks } from '@/components/HowItWorks';
 import { WhoBehind } from '@/components/WhoBehind';
 import { Pledge } from '@/components/Pledge';
 import { Contact } from '@/components/Contact';
@@ -36,9 +34,9 @@ export default function HomePage(): React.ReactElement {
       <main id="main">
         <Hero />
         <Doors />
-        <Work />
-        <TradesMarquee />
-        <HowItWorks />
+        {/* The parent keeps the real clients, the story, the pledge and contact; the
+            trades and how it works live on each arm (Alex, Session 108). */}
+        <Work clientsOnly />
         <WhoBehind />
         <Pledge />
         <Contact />

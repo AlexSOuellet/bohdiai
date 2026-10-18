@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { SectionKicker } from './SectionKicker';
+import type { Audience } from '@/lib/site/plans';
 
 type Trade = { name: string; featured?: boolean };
 
-// The three kinds of business bohdiai.com builds for. Illustrative, not a menu:
+// The kinds of business each arm builds for. Illustrative, not a menu:
 // anyone in these worlds is a fit, listed or not.
 const MAKERS: readonly Trade[] = [
   { name: 'Candle maker', featured: true },
@@ -49,49 +50,37 @@ const TRADES: readonly Trade[] = [
   { name: 'Fencing' },
 ];
 
-const CAUSES: readonly Trade[] = [
-  { name: 'Animal rescue', featured: true },
-  { name: 'Food pantry', featured: true },
-  { name: 'Church' },
-  { name: 'Youth sports league' },
-  { name: 'PTA & PTO' },
-  { name: 'Veterans group' },
-  { name: 'Community garden' },
-  { name: 'Friends of the library' },
-  { name: 'Arts council' },
-  { name: 'Shelter' },
-  { name: 'Scholarship fund' },
-  { name: 'Charity ride' },
-  { name: 'Historical society' },
-  { name: 'Fire department auxiliary' },
-];
+/** Each arm shows its own row only (Alex, Session 107). */
+const ROWS: Record<Audience, { title: string; emphasis: string; lede: string; trades: readonly Trade[] }> = {
+  maker: {
+    title: 'Makers of',
+    emphasis: 'every kind',
+    lede: 'Your site should look like your work, not a template. Here are some of the makers I build for.',
+    trades: MAKERS,
+  },
+  contractor: {
+    title: 'Local trades and',
+    emphasis: 'services',
+    lede: 'Your site should look like your business, not a template. Here are some of the businesses I build for.',
+    trades: TRADES,
+  },
+};
 
-const ROWS = [
-  { label: 'Makers', trades: MAKERS, reverse: false },
-  { label: 'Trades & services', trades: TRADES, reverse: true },
-  { label: 'Charities & causes', trades: CAUSES, reverse: false },
-] as const;
-
-export function TradesMarquee(): React.ReactElement {
+export function TradesMarquee({ audience }: { audience: Audience }): React.ReactElement {
+  const row = ROWS[audience];
   return (
     <section id="who-for" className="relative z-content px-3 pb-16 pt-24 md:pb-24 md:pt-32">
       <SectionKicker>Who I build for</SectionKicker>
 
       <h2 className="mx-auto max-w-[780px] px-3 text-center font-sans text-[30px] font-medium leading-[1.05] tracking-[-0.025em] text-text-soft md:text-[48px] md:tracking-[-0.03em]">
-        Makers,{' '}
-        <em className="not-italic text-honey-warm [text-shadow:0_0_32px_rgba(243,201,122,0.5)]">trades</em>{' '}
-        and good causes
+        {row.title}{' '}
+        <em className="not-italic text-honey-warm [text-shadow:0_0_32px_rgba(243,201,122,0.5)]">{row.emphasis}</em>
       </h2>
       <p className="mx-auto mb-10 mt-3.5 max-w-[540px] px-3 text-center text-[14px] leading-[1.55] text-muted md:mb-14 md:mt-4 md:text-[16px]">
-        Your site should look like your business, not a template. Here are some of the people I build for.
+        {row.lede}
       </p>
 
-      {ROWS.map((row, i) => (
-        <div key={row.label} className={i === 0 ? '' : 'mt-7 md:mt-8'}>
-          <p className="mb-3 text-center text-[11px] font-medium uppercase tracking-[0.22em] text-muted">{row.label}</p>
-          <MarqueeRow trades={row.trades} reverse={row.reverse} />
-        </div>
-      ))}
+      <MarqueeRow trades={row.trades} reverse={false} />
 
       <p className="mt-10 text-center text-[14px] font-medium text-text-soft [text-shadow:0_2px_12px_rgba(0,0,0,0.7)] md:text-[15px]">
         <span className="text-honey-warm">Don&apos;t see yours?</span>{' '}

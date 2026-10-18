@@ -36,6 +36,31 @@ export type WorkEntry = {
 
 export const CLIENTS: readonly WorkEntry[] = [
   {
+    slug: 'decodigitaldesigns',
+    name: 'Decoupage Digital Designs',
+    url: 'https://decodigitaldesigns.com',
+    host: 'decodigitaldesigns.com',
+    kind: 'client',
+    category: 'Maker',
+    blurb:
+      'Penny’s decoupage designs, in a full online shop with collections, a gallery, a cart and checkout, on her own domain.',
+    features: ['Online shop', 'Collections & gallery', 'Own domain'],
+    shot: '/work/decodigitaldesigns.webp',
+    testimonials: [
+      {
+        paragraphs: [
+          'I cannot say enough wonderful things about Alex! Alex designed and built my website from top to bottom, and I truly couldn’t be happier with what he created. He brought my dream of having a website to life.',
+          'Alex was knowledgeable, friendly, professional, and incredibly attentive to every detail. He listened to my thoughts, cared about the details, and made sure the finished website truly reflected my vision and my business.',
+          'What truly makes Alex stand out is the care and dedication he puts into his work. He doesn’t just build a website—he takes the time to understand your vision and creates something you can be proud of.',
+          'If you are looking for a website developer who is talented, creative, dependable, professional, easy to communicate with, and who will genuinely care about your vision and your business, I wholeheartedly recommend Alex. He went above and beyond my expectations, and I would choose him again without hesitation.',
+        ],
+        highlight: 'He brought my dream of having a website to life',
+        name: 'Penny C.',
+        role: 'Decoupage Digital Designs · Troy, MO',
+      },
+    ],
+  },
+  {
     slug: 'cut-pro-lawncare',
     name: 'Cut-Pro Lawncare & Construction',
     url: 'https://cut-pro-lawncare.bohdiai.com',
@@ -64,31 +89,6 @@ export const CLIENTS: readonly WorkEntry[] = [
         highlight: 'nailed the design right out of the gate',
         name: 'Chris Bullock',
         role: 'Cut-Pro Lawncare & Construction',
-      },
-    ],
-  },
-  {
-    slug: 'decodigitaldesigns',
-    name: 'Decoupage Digital Designs',
-    url: 'https://decodigitaldesigns.com',
-    host: 'decodigitaldesigns.com',
-    kind: 'client',
-    category: 'Maker',
-    blurb:
-      'Penny’s decoupage designs, in a full online shop with collections, a gallery, a cart and checkout, on her own domain.',
-    features: ['Online shop', 'Collections & gallery', 'Own domain'],
-    shot: '/work/decodigitaldesigns.webp',
-    testimonials: [
-      {
-        paragraphs: [
-          'I cannot say enough wonderful things about Alex! Alex designed and built my website from top to bottom, and I truly couldn’t be happier with what he created. He brought my dream of having a website to life.',
-          'Alex was knowledgeable, friendly, professional, and incredibly attentive to every detail. He listened to my thoughts, cared about the details, and made sure the finished website truly reflected my vision and my business.',
-          'What truly makes Alex stand out is the care and dedication he puts into his work. He doesn’t just build a website—he takes the time to understand your vision and creates something you can be proud of.',
-          'If you are looking for a website developer who is talented, creative, dependable, professional, easy to communicate with, and who will genuinely care about your vision and your business, I wholeheartedly recommend Alex. He went above and beyond my expectations, and I would choose him again without hesitation.',
-        ],
-        highlight: 'He brought my dream of having a website to life',
-        name: 'Penny C.',
-        role: 'Decoupage Digital Designs · Troy, MO',
       },
     ],
   },
@@ -230,32 +230,34 @@ export function planName(plan: string): string {
 
 export const WORK: readonly WorkEntry[] = [...CLIENTS, ...LISTED_SAMPLES];
 
-/** Knotty Knits shows in the hero only, without a sample banner on its own site (Alex, 2026-10-06), so it sits outside SAMPLES. */
-const KNOTTY_KNITS: WorkEntry = {
-  slug: 'knotty-knits',
-  name: 'Knotty Knits',
-  url: 'https://knotty-knits.bohdiai.com',
-  host: 'knotty-knits.bohdiai.com',
-  kind: 'sample',
-  category: 'Elegant',
-  blurb: 'Hand-knit in small runs',
-  features: [],
-  shot: '/work/knotty-knits.webp',
-  testimonials: [],
-};
-
 function sample(slug: string): WorkEntry {
   const found = SAMPLES.find((s) => s.slug === slug);
   if (found === undefined) throw new Error(`No sample "${slug}"`);
   return found;
 }
 
-/** The hero browser cycles samples only; the clients stay in the work section below. */
+/** Saltmarsh is the demo, not a sample shop: it shows in the hero only and carries no sample banner, so it sits outside SAMPLES. */
+const SALTMARSH: WorkEntry = {
+  slug: 'saltmarsh-and-lace',
+  name: 'Saltmarsh & Lace',
+  url: 'https://saltmarsh-and-lace.bohdiai.com',
+  host: 'saltmarsh-and-lace.bohdiai.com',
+  kind: 'sample',
+  category: 'Scenic',
+  blurb: 'Decoupage and altered art from Bristol, Rhode Island',
+  features: [],
+  shot: '/work/saltmarsh-and-lace.webp',
+  testimonials: [],
+};
+
+/**
+ * The parent's sample window: samples only, nothing real, alternating makers and
+ * service businesses (Alex, Session 107). The clients stay in the work strip below.
+ */
 export const HERO_WORK: readonly WorkEntry[] = [
-  sample('rustic-rhody'),
-  sample('paper-and-patina'),
   sample('classic-loafs'),
-  KNOTTY_KNITS,
-  sample('twilight-to-darkness'),
-  sample('heavenly-scents'),
+  sample('halfmoon-roofing'),
+  sample('paper-and-patina'),
+  sample('true-coat-painting'),
+  SALTMARSH,
 ];

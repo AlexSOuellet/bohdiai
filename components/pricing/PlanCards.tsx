@@ -14,14 +14,13 @@ import Link from 'next/link';
 import { formatPrice, includesLead, plansFor, type Audience, type Plan } from '@/lib/site/plans';
 
 type Period = 'monthly' | 'yearly';
-export type PricingPath = '/makers' | '/contractors';
 
 const PERIODS: ReadonlyArray<{ value: Period; label: string }> = [
   { value: 'monthly', label: 'Monthly' },
   { value: 'yearly', label: 'Yearly · 2 months free' },
 ];
 
-export function PlanCards({ audience, path }: { audience: Audience; path: PricingPath }): React.ReactElement {
+export function PlanCards({ audience }: { audience: Audience }): React.ReactElement {
   const [period, setPeriod] = useState<Period>('monthly');
   const plans = plansFor(audience);
   const three = plans.length === 3;
@@ -49,14 +48,14 @@ export function PlanCards({ audience, path }: { audience: Audience; path: Pricin
 
       <div className={`mt-9 grid items-stretch gap-6 md:mt-12 md:gap-7 ${three ? 'lg:grid-cols-3 md:grid-cols-2' : 'md:grid-cols-2'}`}>
         {plans.map((plan) => (
-          <PlanCard key={plan.id} plan={plan} period={period} path={path} />
+          <PlanCard key={plan.id} plan={plan} period={period} />
         ))}
       </div>
     </div>
   );
 }
 
-function PlanCard({ plan, period, path }: { plan: Plan; period: Period; path: PricingPath }): React.ReactElement {
+function PlanCard({ plan, period }: { plan: Plan; period: Period }): React.ReactElement {
   const full = plan.tier === 'full';
   const featured = plan.badge !== undefined;
   const price = period === 'monthly' ? plan.monthly : plan.yearly;
@@ -118,7 +117,7 @@ function PlanCard({ plan, period, path }: { plan: Plan; period: Period; path: Pr
       </ul>
 
       <Link
-        href={plan.audience === 'maker' ? { pathname: '/start', query: { plan: plan.id, billing: period } } : { pathname: path, query: { plan: plan.id }, hash: 'contact' }}
+        href={plan.audience === 'maker' ? { pathname: '/start', query: { plan: plan.id, billing: period } } : { pathname: '/', query: { plan: plan.id }, hash: 'contact' }}
         className={[
           'mt-8 inline-flex items-center justify-center gap-2 rounded-pill px-6 py-3.5 text-[14px] font-semibold no-underline transition-transform hover:-translate-y-px',
           featured ? 'bg-honey-warm text-bg shadow-[0_10px_40px_-10px_rgba(243,201,122,0.7)]' : 'bg-text text-bg',

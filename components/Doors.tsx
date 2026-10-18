@@ -1,22 +1,21 @@
-import Link from 'next/link';
 import { formatPrice, fromPrice } from '@/lib/site/plans';
+import { ARM_FOR_AUDIENCE } from '@/lib/site/arms';
+import { SiteLink } from './SiteLink';
 
 /**
- * Two doors under the hero: makers and contractors each get their own page with
- * their own prices (never shown side by side). Charities have no plan yet, so
- * they get a quiet line to the contact form.
+ * Two doors under the hero, each to its own arm: makers.bohdiai.com and
+ * service.bohdiai.com, with their own prices (never shown side by side).
+ * Charities have no plan yet, so they get a quiet line to the contact form.
  */
 const DOORS = [
   {
-    href: '/makers',
     audience: 'maker',
     title: 'I make things',
     sub: 'Candles, soap, jewelry, baked goods, art. A site for your shop and your market days',
   },
   {
-    href: '/contractors',
     audience: 'contractor',
-    title: 'I run a service business',
+    title: 'I fix things',
     sub: 'Lawn care, landscaping, cleaning, handyman work. A site that brings in estimate requests',
   },
 ] as const;
@@ -29,9 +28,9 @@ export function Doors(): React.ReactElement {
     >
       <nav aria-label="Choose your path" className="grid gap-4 md:grid-cols-2 md:gap-6">
         {DOORS.map((d) => (
-          <Link
-            key={d.href}
-            href={d.href}
+          <SiteLink
+            key={d.audience}
+            to={ARM_FOR_AUDIENCE[d.audience]}
             className="group relative flex flex-col overflow-hidden rounded-[22px] border border-white/10 p-6 no-underline shadow-[0_40px_90px_-30px_rgba(0,0,0,0.85)] backdrop-blur-[20px] transition-[border-color,transform,box-shadow] duration-slow ease-out [background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.015))] hover:-translate-y-1 hover:border-honey-warm/45 hover:shadow-[0_40px_90px_-30px_rgba(0,0,0,0.85),0_0_70px_-20px_rgba(243,201,122,0.4)] md:p-9"
           >
             <span className="font-sans text-[28px] font-medium leading-[1.05] tracking-[-0.025em] text-text transition-colors duration-base group-hover:text-honey-warm md:text-[36px]">
@@ -44,7 +43,7 @@ export function Doors(): React.ReactElement {
                 →
               </span>
             </span>
-          </Link>
+          </SiteLink>
         ))}
       </nav>
       <p className="mt-6 text-center text-[14px] text-muted">

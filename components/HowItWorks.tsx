@@ -1,6 +1,13 @@
 import { SectionKicker } from './SectionKicker';
+import type { Audience } from '@/lib/site/plans';
 
-export function HowItWorks(): React.ReactElement {
+/** Makers sign up on the short form; service businesses pick a plan and send a message. */
+const FIRST_STEP: Record<Audience, string> = {
+  maker: 'Choose a plan below and fill in the short form: what you make, a few photos of your work, and the mood you like.',
+  contractor: 'Choose a plan below, or send a message and tell me what you need.',
+};
+
+export function HowItWorks({ audience }: { audience: Audience }): React.ReactElement {
   return (
     <section id="how" className="relative z-content px-3 pb-12 pt-16 md:pb-20 md:pt-32">
       <SectionKicker>How it works</SectionKicker>
@@ -24,7 +31,7 @@ export function HowItWorks(): React.ReactElement {
         <Step
           num="01"
           title="Pick your plan"
-          copy="Choose a plan on the makers or contractors page, or send a message and tell me what you need."
+          copy={FIRST_STEP[audience]}
         >
           <MessageCard />
         </Step>

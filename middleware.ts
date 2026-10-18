@@ -7,8 +7,9 @@ import { appOrigin } from '@/lib/backend/app-url';
 import { backendRedirect, isBackendPath, isManagePath, ownerEntryRedirect } from '@/lib/backend/backend-paths';
 import { ACTIVITY_COOKIE, checkBackendSession, idleLimitFor, sessionSecret } from '@/lib/backend/session-limits';
 import { DRAFT_HEADERS, PREVIEW_COOKIE, PREVIEW_MAX_AGE, PREVIEW_PARAM, draftGate } from '@/lib/storefront/draft-preview';
+import { isReservedSubdomain } from '@/lib/reserved-subdomains';
+import { armRoute } from '@/lib/site/arms';
 
-const RESERVED = new Set(['www', 'admin', 'app', 'learn']);
 const BASE_DOMAIN = 'bohdiai.com';
 
 export const config = {
@@ -57,6 +58,12 @@ export async function middleware(request: NextRequest) {
     dest.pathname = '/manage';
     return NextResponse.redirect(dest);
   }
+
+  // The marketing arms: makers.bohdiai.com and service.bohdiai.com show their
+  // own page at `/`; bohdiai.com/makers and /contractors move to their arm.
+  const arm = armRoute(hostname, request.nextUrl);
+  if (arm?.kind === 'redirect') return NextResponse.redirect(arm.url, 308);
+  const armRewrite = arm?.kind === 'rewrite' ? arm.pathname : null;
 
   // /storefront/* is an internal rewrite target — on the apex (no subdomain)
   // it is never directly addressable. 404 instead of leaking the rewrite shape.
@@ -131,9 +138,15 @@ export async function middleware(request: NextRequest) {
   }
 
   // Start response — rewrite for tenant requests, pass-through for marketing/app.
-  let response = rewriteUrl !== null
-    ? NextResponse.rewrite(rewriteUrl, { request: { headers: requestHeaders } })
-    : NextResponse.next({ request: { headers: requestHeaders } });
+  const armUrl = armRewrite !== null ? request.nextUrl.clone() : null;
+  if (armUrl !== null && armRewrite !== null) armUrl.pathname = armRewrite;
+  const pass = (): NextResponse =>
+    rewriteUrl !== null
+      ? NextResponse.rewrite(rewriteUrl, { request: { headers: requestHeaders } })
+      : armUrl !== null
+        ? NextResponse.rewrite(armUrl, { request: { headers: requestHeaders } })
+        : NextResponse.next({ request: { headers: requestHeaders } });
+  let response = pass();
 
   // Refresh the Supabase auth session on every request so JWTs stay current.
   // If NEXT_PUBLIC_SUPABASE_* vars are missing (e.g. during early dev), skip gracefully.
@@ -151,9 +164,7 @@ export async function middleware(request: NextRequest) {
         // cookie write, so a CDN never serves one person's session to another.
         setAll: ((cookiesToSet, headers) => {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = rewriteUrl !== null
-            ? NextResponse.rewrite(rewriteUrl, { request: { headers: requestHeaders } })
-            : NextResponse.next({ request: { headers: requestHeaders } });
+          response = pass();
           cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options ?? {});
           });
@@ -238,7 +249,7 @@ function extractSubdomain(hostname: string): string | null {
 
   if (host.endsWith('.localhost')) {
     const sub = host.slice(0, -'.localhost'.length);
-    return sub !== '' && !RESERVED.has(sub) ? sub : null;
+    return sub !== '' && !isReservedSubdomain(sub) ? sub : null;
   }
 
   if (host === BASE_DOMAIN || host === `www.${BASE_DOMAIN}`) return null;
@@ -250,7 +261,7 @@ function extractSubdomain(hostname: string): string | null {
   // Reject nested subdomains (e.g. a.b.bohdiai.com)
   if (sub.includes('.')) return null;
 
-  return sub !== '' && !RESERVED.has(sub) ? sub : null;
+  return sub !== '' && !isReservedSubdomain(sub) ? sub : null;
 }
 
 async function resolveTenant(subdomain: string): Promise<{ id: string; status: string } | null> {

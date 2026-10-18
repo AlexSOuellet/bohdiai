@@ -40,8 +40,9 @@ const FANS: Record<number, readonly string[]> = {
   ],
 };
 
-/** With an `audience`, only that audience's clients and samples show. */
-export function Work({ audience }: { audience?: Audience } = {}): React.ReactElement {
+/** With an `audience`, only that audience's clients and samples show. `clientsOnly`
+ *  is the parent's strip: the real clients, no sample shelf. */
+export function Work({ audience, clientsOnly = false }: { audience?: Audience; clientsOnly?: boolean } = {}): React.ReactElement {
   const clients =
     audience === undefined
       ? CLIENTS
@@ -49,7 +50,7 @@ export function Work({ audience }: { audience?: Audience } = {}): React.ReactEle
   const samples = audience === undefined ? LISTED_SAMPLES : LISTED_SAMPLES.filter((s) => sampleAudience(s) === audience);
   const fan = FANS[samples.length] ?? [];
   const fanWidth = samples.length >= 5 ? 'md:w-[min(270px,19vw)]' : 'md:w-[min(320px,25vw)]';
-  const showSamples = samples.length > 0;
+  const showSamples = !clientsOnly && samples.length > 0;
   return (
     <section
       id="work"

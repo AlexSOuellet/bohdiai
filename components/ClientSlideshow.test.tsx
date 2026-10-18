@@ -12,36 +12,36 @@ const heading = (): string | null => screen.getByRole('heading', { level: 3 }).t
 describe('ClientSlideshow', () => {
   it('shows one client at a time, starting with the first, with its testimonials', () => {
     render(<ClientSlideshow clients={CLIENTS} />);
-    expect(heading()).toBe('Cut-Pro Lawncare & Construction');
+    expect(heading()).toBe('Decoupage Digital Designs');
     expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(1);
     expect(screen.getByText('01')).toBeInTheDocument();
-    expect(screen.getByText(/Sheri Giannattasio/)).toBeInTheDocument();
+    expect(screen.getByText(/Penny C\./)).toBeInTheDocument();
   });
 
   it('moves forward and back with the arrows, wrapping at both ends', async () => {
     const user = userEvent.setup();
     render(<ClientSlideshow clients={CLIENTS} />);
     await user.click(screen.getByRole('button', { name: 'Next client' }));
-    expect(heading()).toBe('Decoupage Digital Designs');
-    expect(screen.getByRole('link', { name: /visit the site/i })).toHaveAttribute('href', 'https://decodigitaldesigns.com');
-    await user.click(screen.getByRole('button', { name: 'Next client' }));
     expect(heading()).toBe('Cut-Pro Lawncare & Construction');
-    await user.click(screen.getByRole('button', { name: 'Previous client' }));
+    expect(screen.getByRole('link', { name: /visit the site/i })).toHaveAttribute('href', 'https://cut-pro-lawncare.bohdiai.com');
+    await user.click(screen.getByRole('button', { name: 'Next client' }));
     expect(heading()).toBe('Decoupage Digital Designs');
+    await user.click(screen.getByRole('button', { name: 'Previous client' }));
+    expect(heading()).toBe('Cut-Pro Lawncare & Construction');
   });
 
   it('answers the keyboard arrow keys', () => {
     render(<ClientSlideshow clients={CLIENTS} />);
     const carousel = screen.getByRole('region', { name: 'Client sites' });
     fireEvent.keyDown(carousel, { key: 'ArrowRight' });
-    expect(heading()).toBe('Decoupage Digital Designs');
-    fireEvent.keyDown(carousel, { key: 'ArrowLeft' });
     expect(heading()).toBe('Cut-Pro Lawncare & Construction');
+    fireEvent.keyDown(carousel, { key: 'ArrowLeft' });
+    expect(heading()).toBe('Decoupage Digital Designs');
   });
 
   it('shows no arrows when there is only one client', () => {
     render(<ClientSlideshow clients={CLIENTS.slice(0, 1)} />);
     expect(screen.queryByRole('button', { name: /client$/i })).toBeNull();
-    expect(heading()).toBe('Cut-Pro Lawncare & Construction');
+    expect(heading()).toBe('Decoupage Digital Designs');
   });
 });

@@ -6,7 +6,14 @@ vi.mock('next/image', () => ({ default: (p: { alt: string; src: string }) => <im
 vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams('') }));
 const { default: ContractorsPage } = await import('./page');
 
-describe('bohdiai.com/contractors', () => {
+describe('service.bohdiai.com', () => {
+  it('shows only the service row of trades and how a service business starts', () => {
+    const { container } = render(<ContractorsPage />);
+    expect(container.querySelector('#who-for')).toHaveTextContent('Lawn care');
+    expect(container.querySelector('#who-for')).not.toHaveTextContent('Candle maker');
+    expect(screen.getByText(/send a message and tell me what you need/i)).toBeInTheDocument();
+  });
+
   it('leads with the pitch and shows both contractor plans', () => {
     render(<ContractorsPage />);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(

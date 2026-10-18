@@ -194,6 +194,12 @@ describe('planSite — what it refuses', () => {
     );
   });
 
+  it('refuses BohdiAI’s own addresses, the marketing arms included', () => {
+    for (const subdomain of ['makers', 'service', 'app', 'www']) {
+      expect(errorsOf(familySite({ site: { ...familySite().site, subdomain } }))).toContain(`site: "${subdomain}" is one of BohdiAI's own addresses`);
+    }
+  });
+
   it('a skin has to be one of the family’s', () => {
     expect(errorsOf(familySite({ site: { ...familySite().site, skin: 'main-street-confetti' } }))).toContain('site: the skin "main-street-confetti" isn\'t one of the cozy family\'s skins');
     expect(errorsOf(familySite({ site: { ...familySite().site, skin: 'no-such-skin' } }))).toContain('site: the skin "no-such-skin" isn\'t one of the cozy family\'s skins');

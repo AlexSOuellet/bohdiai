@@ -5,7 +5,7 @@ import { PlanCards } from './PlanCards';
 
 describe('PlanCards', () => {
   it('shows all of the audience’s plans, monthly by default, built free', () => {
-    render(<PlanCards audience="maker" path="/makers" />);
+    render(<PlanCards audience="maker" />);
     const showcase = screen.getByRole('article', { name: 'Maker Showcase' });
     const lite = screen.getByRole('article', { name: 'Maker Market' });
     const full = screen.getByRole('article', { name: 'Maker Full' });
@@ -20,7 +20,7 @@ describe('PlanCards', () => {
   });
 
   it('lights up only the badged plan, with its badge beside the name', () => {
-    render(<PlanCards audience="maker" path="/makers" />);
+    render(<PlanCards audience="maker" />);
     const showcase = screen.getByRole('article', { name: 'Maker Showcase' });
     const full = screen.getByRole('article', { name: 'Maker Full' });
     expect(within(showcase).getByText('Most popular')).toBeTruthy();
@@ -30,7 +30,7 @@ describe('PlanCards', () => {
   });
 
   it('switches both cards to the yearly price', async () => {
-    render(<PlanCards audience="contractor" path="/contractors" />);
+    render(<PlanCards audience="contractor" />);
     await userEvent.setup().click(screen.getByRole('radio', { name: /yearly/i }));
     expect(screen.getByRole('article', { name: 'Contractor Lead Generation' })).toHaveTextContent('$100');
     expect(screen.getByRole('article', { name: 'Contractor Full' })).toHaveTextContent('$300');
@@ -39,7 +39,7 @@ describe('PlanCards', () => {
   });
 
   it('sends a maker plan to the intake form with the plan and how they pay', async () => {
-    render(<PlanCards audience="maker" path="/makers" />);
+    render(<PlanCards audience="maker" />);
     const full = screen.getByRole('article', { name: 'Maker Full' });
     expect(within(full).getByRole('link', { name: /start your site/i })).toHaveAttribute('href', '/start?plan=maker-full&billing=monthly');
     await userEvent.setup().click(screen.getByRole('radio', { name: /yearly/i }));
@@ -47,8 +47,8 @@ describe('PlanCards', () => {
   });
 
   it('sends Talk to us on a contractor plan to the contact form with the plan', () => {
-    render(<PlanCards audience="contractor" path="/contractors" />);
+    render(<PlanCards audience="contractor" />);
     const full = screen.getByRole('article', { name: 'Contractor Full' });
-    expect(within(full).getByRole('link', { name: /talk to us/i })).toHaveAttribute('href', '/contractors?plan=contractor-full#contact');
+    expect(within(full).getByRole('link', { name: /talk to us/i })).toHaveAttribute('href', '/?plan=contractor-full#contact');
   });
 });

@@ -25,6 +25,7 @@ import { CAPTION_MAX, GALLERY_LIMIT } from '@/lib/backend/gallery/gallery-form';
 import { MAX_PHOTOS } from '@/lib/backend/catalog/product-form';
 import { isSitePlan, type SitePlan } from '@/lib/backend/plan/plan';
 import { planLinkTargets } from '@/lib/backend/plan/plan-features';
+import { isReservedSubdomain } from '@/lib/reserved-subdomains';
 
 /** Which design a site is built on: one of the families, or (until they become
  *  the Scenic and Spotlight families) the shoreline or show reel page. */
@@ -179,6 +180,7 @@ export function planSite(f: SiteFile): PlanResult {
   const errors: string[] = [];
   const s = f.site;
   if (!SUBDOMAIN.test(s.subdomain)) errors.push(`site: "${s.subdomain}" isn't a valid subdomain`);
+  else if (isReservedSubdomain(s.subdomain)) errors.push(`site: "${s.subdomain}" is one of BohdiAI's own addresses`);
   if (s.businessName.trim() === '') errors.push('site: the business name is empty');
   if (!(BUILD_DESIGNS as readonly string[]).includes(s.design)) errors.push(`site: unknown design "${s.design}"`);
   if (!(FAMILY_KEYS as readonly string[]).includes(s.family)) errors.push(`site: unknown family "${s.family}"`);

@@ -10,10 +10,10 @@ const { WorkBrowser } = await import('./WorkBrowser');
 describe('WorkBrowser', () => {
   it('starts on the first sample with its real address, screenshot and live link', () => {
     render(<WorkBrowser />);
-    expect(screen.getByText('rustic-rhody.bohdiai.com')).toBeInTheDocument();
-    expect(screen.getByText('Sample · Rustic Rhody')).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: 'Rustic Rhody home page' })).toHaveAttribute('src', '/work/rustic-rhody.webp');
-    expect(screen.getByRole('link', { name: /visit the live site/i })).toHaveAttribute('href', 'https://rustic-rhody.bohdiai.com');
+    expect(screen.getByText('classic-loafs.bohdiai.com')).toBeInTheDocument();
+    expect(screen.getByText('Sample · Classic Loafs')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Classic Loafs home page' })).toHaveAttribute('src', '/work/classic-loafs.webp');
+    expect(screen.getByRole('link', { name: /visit the live site/i })).toHaveAttribute('href', 'https://classic-loafs.bohdiai.com');
   });
 
   it('shows no client sites; they live in the work section', () => {
@@ -24,11 +24,11 @@ describe('WorkBrowser', () => {
 
   it('labels samples as samples when you jump to one', async () => {
     render(<WorkBrowser />);
-    const button = screen.getByRole('button', { name: /show twilight to darkness/i });
+    const button = screen.getByRole('button', { name: /show saltmarsh & lace/i });
     await userEvent.setup().click(button);
-    expect(screen.getByText('Sample · Twilight to Darkness')).toBeInTheDocument();
+    expect(screen.getByText('Sample · Saltmarsh & Lace')).toBeInTheDocument();
     expect(button).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('link', { name: /visit the live site/i })).toHaveAttribute('href', 'https://twilight-to-darkness.bohdiai.com');
+    expect(screen.getByRole('link', { name: /visit the live site/i })).toHaveAttribute('href', 'https://saltmarsh-and-lace.bohdiai.com');
   });
 
   it('has one pager button per site', () => {
