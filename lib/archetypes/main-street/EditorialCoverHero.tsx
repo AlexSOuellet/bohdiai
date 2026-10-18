@@ -30,8 +30,9 @@ export function EditorialCoverHero({
   /** The site's words: the nav's page names and labels. */
   words: FamilyWords;
 }) {
-  const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';
-  const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
+  // No target, no button: never a guessed page (a Showcase site has no shop).
+  const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : undefined;
+  const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : undefined;
   return (
     <header data-ms-hero="editorial-cover" className="ms-editorial-hero">
       <div data-ms-hero-media>
@@ -59,10 +60,12 @@ export function EditorialCoverHero({
             </Type>
           )}
           <div className="ms-cover-actions">
-            <Type as="a" role="navLabel" href={ctaHref} className="ms-cover-cta">
-              {moment.ctaLabel}
-            </Type>
-            {moment.secondaryCtaLabel && (
+            {ctaHref !== undefined && (
+              <Type as="a" role="navLabel" href={ctaHref} className="ms-cover-cta">
+                {moment.ctaLabel}
+              </Type>
+            )}
+            {moment.secondaryCtaLabel && secondaryHref !== undefined && (
               <Type as="a" role="navLabel" href={secondaryHref} className="ms-cover-cta2">
                 {moment.secondaryCtaLabel}
               </Type>

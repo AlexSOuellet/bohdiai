@@ -613,6 +613,8 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     /* quote — a two-column pull-quote: portrait left, quote+attribution right. */
     .arch-main-street .ms-founder-quote{display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center}
     .arch-main-street .ms-founder-quote-photo{position:relative;aspect-ratio:4 / 5;border-radius:3px;overflow:hidden}
+    /* no photo of the maker: the quote stands alone in one centered column */
+    .arch-main-street .ms-founder-quote--words{display:block;max-width:760px;margin:0 auto;text-align:center}
     .arch-main-street .ms-founder-quote-body{color:var(--ms-contrast-fg);margin:0}
     .arch-main-street .ms-founder-quote-sig{color:var(--ms-contrast-fg-muted);margin-top:26px}
     /* portrait — a large CONTAINED portrait with the quote anchored to the bottom.
@@ -670,6 +672,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
        (eyebrow + name | intro). The environment is the subject, not a headshot. */
     .arch-main-street .ms-wb-photo{display:block;aspect-ratio:24 / 9;overflow:hidden;border-radius:4px;box-shadow:0 26px 60px var(--ms-shadow)}
     .arch-main-street .ms-wb-cap{display:grid;grid-template-columns:.8fr 1.2fr;gap:48px;margin-top:32px;align-items:start}
+    .arch-main-street .ms-founder-workbench > .ms-wb-cap:first-child{margin-top:0}
     .arch-main-street .ms-wb-eye{color:var(--ms-accent);display:block}
     .arch-main-street .ms-wb-name{color:var(--ms-contrast-fg);margin-top:10px}
     .arch-main-street .ms-wb-intro{color:var(--ms-contrast-fg);margin:0;max-width:62ch}

@@ -7,6 +7,7 @@ import { keyWords } from '@/lib/site-words/words';
 import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
 import { homesFromLegacy } from './to-homes';
 import type { MainStreetView } from './schemas';
+import { LINK_TARGETS } from './links';
 
 const legacy: MainStreetView = {
   shopName: 'Aurora Candles',
@@ -118,6 +119,7 @@ describe('a round trip through the homes', () => {
     const view = familyViewFromHomes({
       name: 'Aurora Candles',
       sellsOnline: true,
+      linkTargets: LINK_TARGETS,
       moment: {
         ...momentFormFromRow(h.moment),
         media: { kind: 'video', url: h.momentMediaUrl ?? '', alt: 'A candle flickering', posterUrl: h.momentPosterUrl ?? '' },

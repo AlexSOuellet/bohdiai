@@ -50,8 +50,9 @@ export function SlamHero({
   moment: MainStreetView['moment'];
   words: FamilyWords;
 }) {
-  const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';
-  const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
+  // No target, no button: never a guessed page (a Showcase site has no shop).
+  const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : undefined;
+  const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : undefined;
   const hasPhoto = moment.media.url !== undefined && moment.media.url !== '';
   return (
     <header data-ms-hero="slam" className={hasPhoto ? 'ms-sp-hero' : 'ms-sp-hero ms-sp-hero--bare'}>
@@ -86,10 +87,12 @@ export function SlamHero({
           </Type>
         )}
         <div className="ms-sp-actions">
-          <Type as="a" role="navLabel" href={ctaHref} className="ms-sp-go">
-            {moment.ctaLabel}
-          </Type>
-          {moment.secondaryCtaLabel && (
+          {ctaHref !== undefined && (
+            <Type as="a" role="navLabel" href={ctaHref} className="ms-sp-go">
+              {moment.ctaLabel}
+            </Type>
+          )}
+          {moment.secondaryCtaLabel && secondaryHref !== undefined && (
             <Type as="a" role="navLabel" href={secondaryHref} className="ms-sp-go ms-sp-go--quiet">
               {moment.secondaryCtaLabel}
             </Type>

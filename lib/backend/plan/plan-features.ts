@@ -70,6 +70,10 @@ export function hiddenByMove(from: SitePlan, to: SitePlan): string[] {
 /** The pages a link can point at on a plan. Without the catalog (Showcase) there is
  *  no shop and no collections, so no button may point at them. */
 export function planLinkTargets(plan: SitePlan): readonly LinkTarget[] {
-  if (PLAN_FEATURES[plan].includes('catalog')) return LINK_TARGETS;
-  return LINK_TARGETS.filter((t) => t !== 'shop' && t !== 'collections');
+  return linkTargetsFor(PLAN_FEATURES[plan].includes('catalog'));
+}
+
+/** The same, from whether a site has its catalog switched on. */
+export function linkTargetsFor(hasCatalog: boolean): readonly LinkTarget[] {
+  return hasCatalog ? LINK_TARGETS : LINK_TARGETS.filter((t) => t !== 'shop' && t !== 'collections');
 }

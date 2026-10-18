@@ -61,7 +61,8 @@ describe('PlaybillHero', () => {
     expect(container.querySelector('.ms-bill-kicker')).toBeNull();
     expect(container.querySelector('.ms-bill-ribbon')).toBeNull();
     expect(container.querySelector('.ms-bill-cta2')).toBeNull();
-    expect(screen.getByRole('link', { name: 'See the pieces' }).getAttribute('href')).toBe('/shop');
+    // No target, no button: never a guessed /shop (a Showcase site has none).
+    expect(screen.queryByRole('link', { name: 'See the pieces' })).toBeNull();
   });
 });
 

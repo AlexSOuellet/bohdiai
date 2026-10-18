@@ -15,6 +15,7 @@ import type { FamilyWords } from './words';
 import { Media, Nav, linkHref } from './chrome';
 import { Type } from './Type';
 import { CornerFlourish, Flourish, Rosette } from './Ornament';
+import { BILL_LONGEST_WORD } from './vintage-styles';
 
 /** How long the arched line is, so the stylesheet can set a longer one smaller to fit the arc. */
 export function arcLength(text: string): 's' | 'm' | 'l' | 'xl' {
@@ -22,6 +23,14 @@ export function arcLength(text: string): 's' | 'm' | 'l' | 'xl' {
   if (text.length <= 32) return 'm';
   if (text.length <= 44) return 'l';
   return 'xl';
+}
+
+/** The longest word in the business name, in letters (capped at the longest the
+ *  styles size for). The name sets so that word always fits whole, never broken
+ *  mid-word on a phone. */
+export function longestWord(text: string): number {
+  const n = Math.max(0, ...text.split(/\s+/).map((w) => w.length));
+  return Math.min(n, BILL_LONGEST_WORD);
 }
 
 export function PlaybillHero({
@@ -36,8 +45,9 @@ export function PlaybillHero({
   words: FamilyWords;
 }) {
   const arcId = `ms-bill-arc-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
-  const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';
-  const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
+  // No target, no button: never a guessed page (a Showcase site has no shop).
+  const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : undefined;
+  const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : undefined;
   const hasPhoto = moment.media.url !== undefined && moment.media.url !== '';
   return (
     <header data-ms-hero="playbill" className="ms-bill-hero">
@@ -70,7 +80,7 @@ export function PlaybillHero({
               <Media media={moment.media} />
             </div>
           )}
-          <Type as="h1" role="brand" className="ms-bill-brand">
+          <Type as="h1" role="brand" className="ms-bill-brand" data-word={longestWord(moment.brand)}>
             {moment.brand}
           </Type>
           {moment.sub && (
@@ -86,10 +96,12 @@ export function PlaybillHero({
             <Rosette className="ms-bill-rosette" />
           </div>
           <div className="ms-bill-actions">
-            <Type as="a" role="navLabel" href={ctaHref} className="ms-bill-cta">
-              {moment.ctaLabel}
-            </Type>
-            {moment.secondaryCtaLabel && (
+            {ctaHref !== undefined && (
+              <Type as="a" role="navLabel" href={ctaHref} className="ms-bill-cta">
+                {moment.ctaLabel}
+              </Type>
+            )}
+            {moment.secondaryCtaLabel && secondaryHref !== undefined && (
               <Type as="a" role="navLabel" href={secondaryHref} className="ms-bill-cta2">
                 {moment.secondaryCtaLabel}
               </Type>

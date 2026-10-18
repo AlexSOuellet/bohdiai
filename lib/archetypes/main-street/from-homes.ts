@@ -10,6 +10,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import { loadSiteFeatures } from '@/lib/backend/features';
+import { linkTargetsFor } from '@/lib/backend/plan/plan-features';
+import type { LinkTarget } from './links';
 import { getMoment } from '@/lib/backend/moment/queries';
 import type { MomentView } from '@/lib/backend/moment/moment-form';
 import { getSiteSections } from '@/lib/backend/sections/queries';
@@ -30,6 +32,8 @@ export type FamilyHomes = {
   name: string;
   /** Maker Full: the site sells online (the cart is on). */
   sellsOnline: boolean;
+  /** The pages a button may point at on this site's plan (Showcase has no shop). */
+  linkTargets: readonly LinkTarget[];
   moment: MomentView;
   sections: SiteSections;
   profile: ProfileForm;
@@ -39,6 +43,12 @@ export type FamilyHomes = {
 };
 
 const orUndefined = (s: string): string | undefined => (s === '' ? undefined : s);
+
+/** A button's target, kept only when the site's plan has that page; otherwise no
+ *  button (a site moved down to Showcase must not point at a shop it no longer has). */
+function openTarget<T extends string>(target: T | '', open: readonly LinkTarget[]): (T & LinkTarget) | undefined {
+  return target !== '' && (open as readonly string[]).includes(target) ? (target as T & LinkTarget) : undefined;
+}
 
 /** A market's day as a family page writes it, in the site's words: "Sat Oct 11", or a range. */
 export function familyMarketDay(d: Pick<MarketDate, 'date' | 'endDate'>, w: FamilyWords): string {
@@ -103,9 +113,9 @@ export function familyViewFromHomes(h: FamilyHomes, w: FamilyWords): MainStreetV
       playMode: m.playMode,
       collageShots: m.photos.length === 0 ? undefined : m.photos.map((x) => ({ url: x.url, alt: x.alt })),
       ctaLabel: m.ctaLabel,
-      ctaTarget: m.ctaTarget === '' ? undefined : m.ctaTarget,
+      ctaTarget: openTarget(m.ctaTarget, h.linkTargets),
       secondaryCtaLabel: orUndefined(m.secondCtaLabel),
-      secondaryCtaTarget: m.secondCtaTarget === '' ? undefined : m.secondCtaTarget,
+      secondaryCtaTarget: openTarget(m.secondCtaTarget, h.linkTargets),
     },
     goods: { title: s.work.title, label: orUndefined(s.work.kicker), viewAllLabel: orUndefined(s.work.moreLabel) },
     collections: { title: s.collections.title, label: orUndefined(s.collections.kicker), viewAllLabel: orUndefined(s.collections.moreLabel) },
@@ -131,7 +141,7 @@ export function familyViewFromHomes(h: FamilyHomes, w: FamilyWords): MainStreetV
       label: s.close.kicker,
       headline: s.close.title,
       ctaLabel: s.close.moreLabel,
-      ctaTarget: s.close.moreTarget === '' ? undefined : s.close.moreTarget,
+      ctaTarget: openTarget(s.close.moreTarget, h.linkTargets),
     },
     about: story.length === 0 ? undefined : { heading: s.about.pageTitle, story },
     contact: s.contact.title === '' && s.contact.lede === '' ? undefined : { heading: s.contact.title, intro: s.contact.lede },
@@ -158,6 +168,7 @@ export async function loadFamilyHomes(db: SupabaseClient<Database>, tenantId: st
   return {
     name: tenant.data.business_name,
     sellsOnline: features.has('cart'),
+    linkTargets: linkTargetsFor(features.has('catalog')),
     moment,
     sections,
     profile,

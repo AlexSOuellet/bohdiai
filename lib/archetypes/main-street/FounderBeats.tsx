@@ -72,14 +72,23 @@ export function FindUsList({ findUs, eventsHref, heading = 'eyebrow', onContrast
 
 type TreatmentProps = { founder: Founder; skin: ArchetypeTheme; about?: FounderAbout | undefined };
 
+/** True when the maker gave a photo of themselves. Without one, every treatment
+ *  leaves the frame out instead of showing an empty one. */
+export function hasFounderPhoto(founder: Pick<Founder, 'photo'>): boolean {
+  return founder.photo.url !== undefined && founder.photo.url !== '';
+}
+
 /** quote — portrait beside a pull-quote (the calm, authority-forward default). */
 export function FounderQuote({ founder, about }: TreatmentProps) {
+  const photo = hasFounderPhoto(founder);
   return (
     <FounderBand>
-      <div className="ms-founder-quote ms-founder-grid">
-        <div className="ms-founder-quote-photo">
-          <Media media={founder.photo} />
-        </div>
+      <div className={photo ? 'ms-founder-quote ms-founder-grid' : 'ms-founder-quote ms-founder-quote--words'}>
+        {photo && (
+          <div className="ms-founder-quote-photo">
+            <Media media={founder.photo} />
+          </div>
+        )}
         <div>
           <Type as="p" role="quote" className="ms-founder-quote-body">{founder.quote}</Type>
           <Type as="div" role="sig" className="ms-founder-quote-sig">&mdash; {founder.attribution}</Type>
@@ -93,7 +102,9 @@ export function FounderQuote({ founder, about }: TreatmentProps) {
 /** portrait — a large CONTAINED portrait with the quote anchored to the bottom.
  *  The scrim sits BEHIND the text container and follows its bounding box, so a
  *  long quote that pushes upward never sticks out into unscrimmed image area. */
-export function FounderPortrait({ founder, about }: TreatmentProps) {
+export function FounderPortrait({ founder, skin, about }: TreatmentProps) {
+  // The portrait IS the photo; with no photo the maker's words stand alone.
+  if (!hasFounderPhoto(founder)) return <FounderQuote founder={founder} skin={skin} about={about} />;
   return (
     <FounderBand>
       <div className="ms-founder-portrait ms-founder-portrait-frame">
@@ -131,9 +142,11 @@ export function FounderLetter({ founder, words, about }: TreatmentProps & { word
     <FounderBand>
       <div className="ms-letter-stage">
         <div className="ms-founder-letter ms-letter-paper">
-          <span className="ms-letter-clip">
-            <Media media={founder.photo} />
-          </span>
+          {hasFounderPhoto(founder) && (
+            <span className="ms-letter-clip">
+              <Media media={founder.photo} />
+            </span>
+          )}
           {founder.eyebrow && (
             <Type as="span" role="eyebrow" className="ms-letter-kicker">
               {founder.eyebrow}
@@ -172,9 +185,11 @@ export function FounderCard({ founder, about }: TreatmentProps) {
             {founder.heading}
           </Type>
         )}
-        <div className="ms-founder-card-avatar">
-          <Media media={founder.photo} />
-        </div>
+        {hasFounderPhoto(founder) && (
+          <div className="ms-founder-card-avatar">
+            <Media media={founder.photo} />
+          </div>
+        )}
         <Type as="p" role="quote" className="ms-founder-card-quote">{founder.quote}</Type>
         <Type as="div" role="sig" className="ms-founder-card-sig">&mdash; {founder.attribution}</Type>
         <AboutCue about={about} />
@@ -192,9 +207,11 @@ export function FounderWorkbench({ founder, about }: TreatmentProps) {
   return (
     <FounderBand>
       <div className="ms-founder-workbench">
-        <span className="ms-wb-photo">
-          <Media media={founder.photo} />
-        </span>
+        {hasFounderPhoto(founder) && (
+          <span className="ms-wb-photo">
+            <Media media={founder.photo} />
+          </span>
+        )}
         <div className="ms-wb-cap">
           <div className="ms-wb-head">
             {founder.eyebrow && (

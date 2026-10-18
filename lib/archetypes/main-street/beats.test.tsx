@@ -37,7 +37,7 @@ describe('GoodsMarquee', () => {
 describe('Close', () => {
   it('renders the close headline and CTA', () => {
     const { getByText } = render(
-      <Close close={{ label: 'Come say hello', headline: 'Warm bread by seven', ctaLabel: 'Order for pickup' }} skin={skin} />,
+      <Close close={{ label: 'Come say hello', headline: 'Warm bread by seven', ctaLabel: 'Order for pickup', ctaTarget: 'contact' }} skin={skin} />,
     );
     expect(getByText('Warm bread by seven')).toBeTruthy();
     expect(getByText('Order for pickup')).toBeTruthy();
@@ -50,10 +50,11 @@ describe('Close', () => {
     expect(getByText('Shop now').closest('a')?.getAttribute('href')).toBe('/shop');
   });
 
-  it('falls back to /contact when the close CTA has no authored target (legacy)', () => {
-    const { getByText } = render(
+  it('shows no close button when it has no target (never a guessed page)', () => {
+    const { queryByText, getByText } = render(
       <Close close={{ label: 'Come say hello', headline: 'Warm bread by seven', ctaLabel: 'Order for pickup' }} skin={skin} />,
     );
-    expect(getByText('Order for pickup').closest('a')?.getAttribute('href')).toBe('/contact');
+    expect(getByText('Warm bread by seven')).toBeTruthy();
+    expect(queryByText('Order for pickup')).toBeNull();
   });
 });

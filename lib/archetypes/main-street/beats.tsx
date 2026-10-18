@@ -132,9 +132,9 @@ export function GoodsMarquee({
 }
 
 export function Close({ close }: { close: MainStreetView['close']; skin?: ArchetypeTheme }) {
-  // The close button goes where its label says (D46); legacy rows with no
-  // authored target keep the old /contact destination.
-  const ctaHref = close.ctaTarget ? linkHref(close.ctaTarget) : '/contact';
+  // The close button goes where its label says (D46). No target, no button:
+  // never a guessed page.
+  const ctaHref = close.ctaTarget ? linkHref(close.ctaTarget) : undefined;
   return (
     <section className="ms-close-section">
       <Type as="span" role="eyebrow" className="ms-close-eyebrow">
@@ -143,9 +143,11 @@ export function Close({ close }: { close: MainStreetView['close']; skin?: Archet
       <Type as="h2" role="closeHead" className="ms-close-head">
         {close.headline}
       </Type>
-      <Type as="a" role="navLabel" href={ctaHref} className="ms-close-cta">
-        {close.ctaLabel}
-      </Type>
+      {ctaHref !== undefined && (
+        <Type as="a" role="navLabel" href={ctaHref} className="ms-close-cta">
+          {close.ctaLabel}
+        </Type>
+      )}
     </section>
   );
 }

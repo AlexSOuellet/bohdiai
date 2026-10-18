@@ -10,6 +10,7 @@ import type { MainStreetView } from './schemas';
 import { Media } from './chrome';
 import { Type } from './Type';
 import { Flourish } from './Ornament';
+import { hasFounderPhoto } from './FounderBeats';
 import { itemsLabel, type CollectionView, type CollectionsSection } from './collections';
 import type { FindUsEvent, FindUsSection } from './findus';
 import type { ReviewsSection, Testimonial } from './reviews';
@@ -22,19 +23,21 @@ type Founder = MainStreetView['founder'];
 export function FounderCabinet({ founder, about }: { founder: Founder; skin: ArchetypeTheme; about?: { href: string; label: string } | undefined }) {
   return (
     <section data-ms-founder className="ms-cab-section">
-      <div className="ms-wrap ms-cab-grid">
-        <figure className="ms-cab-card">
-          <span className="ms-cab-window">
-            <Media media={founder.photo} />
-          </span>
-          {founder.attribution !== '' && (
-            <figcaption className="ms-cab-imprint">
-              <Type as="span" role="legal">
-                {founder.attribution}
-              </Type>
-            </figcaption>
-          )}
-        </figure>
+      <div className={hasFounderPhoto(founder) ? 'ms-wrap ms-cab-grid' : 'ms-wrap ms-cab-grid ms-cab-grid--words'}>
+        {hasFounderPhoto(founder) && (
+          <figure className="ms-cab-card">
+            <span className="ms-cab-window">
+              <Media media={founder.photo} />
+            </span>
+            {founder.attribution !== '' && (
+              <figcaption className="ms-cab-imprint">
+                <Type as="span" role="legal">
+                  {founder.attribution}
+                </Type>
+              </figcaption>
+            )}
+          </figure>
+        )}
         <div className="ms-cab-words">
           {founder.quote !== '' && (
             <>

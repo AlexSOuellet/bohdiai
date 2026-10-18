@@ -8,6 +8,29 @@
 /** The filigree band between sections: a symmetric scroll, used as a mask so the skin's ink prints it. */
 const FILIGREE = `url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%2056%22%3E%0A%3Cg%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22%3E%0A%3Cpath%20d%3D%22M300%2028%20C300%2014%20312%206%20322%2012%20C332%2018%20328%2032%20318%2032%22%20%2F%3E%0A%3Cpath%20d%3D%22M318%2032%20C340%2034%20352%2020%20372%2022%20C392%2024%20398%2040%20388%2046%20C378%2052%20368%2042%20376%2036%22%20%2F%3E%0A%3Cpath%20d%3D%22M372%2022%20C384%208%20404%206%20414%2014%22%20%2F%3E%0A%3Cpath%20d%3D%22M388%2046%20C410%2050%20430%2038%20452%2038%20C474%2038%20486%2030%20500%2028%22%20%2F%3E%0A%3Cpath%20d%3D%22M414%2014%20C426%2022%20440%2020%20448%2012%20C452%208%20450%202%20444%204%22%20%2F%3E%0A%3Cpath%20d%3D%22M452%2038%20C462%2026%20478%2024%20486%2030%22%20%2F%3E%0A%3Cpath%20d%3D%22M500%2028%20L592%2028%22%20%2F%3E%0A%3Cpath%20d%3D%22M330%2040%20C340%2050%20354%2052%20362%2046%22%20%2F%3E%0A%3Cg%20transform%3D%22translate(600%200)%20scale(-1%201)%22%3E%0A%3Cpath%20d%3D%22M300%2028%20C300%2014%20312%206%20322%2012%20C332%2018%20328%2032%20318%2032%22%20%2F%3E%0A%3Cpath%20d%3D%22M318%2032%20C340%2034%20352%2020%20372%2022%20C392%2024%20398%2040%20388%2046%20C378%2052%20368%2042%20376%2036%22%20%2F%3E%0A%3Cpath%20d%3D%22M372%2022%20C384%208%20404%206%20414%2014%22%20%2F%3E%0A%3Cpath%20d%3D%22M388%2046%20C410%2050%20430%2038%20452%2038%20C474%2038%20486%2030%20500%2028%22%20%2F%3E%0A%3Cpath%20d%3D%22M414%2014%20C426%2022%20440%2020%20448%2012%20C452%208%20450%202%20444%204%22%20%2F%3E%0A%3Cpath%20d%3D%22M452%2038%20C462%2026%20478%2024%20486%2030%22%20%2F%3E%0A%3Cpath%20d%3D%22M500%2028%20L592%2028%22%20%2F%3E%0A%3Cpath%20d%3D%22M330%2040%20C340%2050%20354%2052%20362%2046%22%20%2F%3E%0A%3C%2Fg%3E%3C%2Fg%3E%0A%3Cg%20fill%3D%22%23000%22%3E%0A%3Cellipse%20cx%3D%22404%22%20cy%3D%2230%22%20rx%3D%229%22%20ry%3D%223.4%22%20transform%3D%22rotate(-20%20404%2030)%22%20%2F%3E%0A%3Cellipse%20cx%3D%22432%22%20cy%3D%2226%22%20rx%3D%227%22%20ry%3D%222.8%22%20transform%3D%22rotate(18%20432%2026)%22%20%2F%3E%0A%3Cellipse%20cx%3D%22470%22%20cy%3D%2244%22%20rx%3D%227%22%20ry%3D%222.8%22%20transform%3D%22rotate(-12%20470%2044)%22%20%2F%3E%0A%3Ccircle%20cx%3D%22592%22%20cy%3D%2228%22%20r%3D%223%22%20%2F%3E%0A%3Cg%20transform%3D%22translate(600%200)%20scale(-1%201)%22%3E%0A%3Cellipse%20cx%3D%22404%22%20cy%3D%2230%22%20rx%3D%229%22%20ry%3D%223.4%22%20transform%3D%22rotate(-20%20404%2030)%22%20%2F%3E%0A%3Cellipse%20cx%3D%22432%22%20cy%3D%2226%22%20rx%3D%227%22%20ry%3D%222.8%22%20transform%3D%22rotate(18%20432%2026)%22%20%2F%3E%0A%3Cellipse%20cx%3D%22470%22%20cy%3D%2244%22%20rx%3D%227%22%20ry%3D%222.8%22%20transform%3D%22rotate(-12%20470%2044)%22%20%2F%3E%0A%3Ccircle%20cx%3D%22592%22%20cy%3D%2228%22%20r%3D%223%22%20%2F%3E%0A%3C%2Fg%3E%3C%2Fg%3E%0A%3Cg%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M300%206%20L316%2028%20L300%2050%20L284%2028%20Z%22%2F%3E%3C%2Fg%3E%0A%3Ccircle%20cx%3D%22300%22%20cy%3D%2228%22%20r%3D%225%22%20fill%3D%22%23000%22%2F%3E%0A%3C%2Fsvg%3E")`;
 
+/** The longest word the playbill name sizes for; longer words may still break. */
+export const BILL_LONGEST_WORD = 24;
+
+/**
+ * The playbill name sets so its longest word fits whole: the size is the smaller
+ * of the usual size and the width inside the sheet divided by that word's width
+ * (the display faces run about 0.6 of the size per letter; 0.63 leaves room for
+ * the offset shadow). Inside the sheet = the page width less the wrap's margins
+ * (40px a side, 20px on phones), capped at the sheet's 980px, less the sheet's
+ * own padding. Measured on the Vintage skins at 320, 375 and 414 wide. Long
+ * words also drop the 14ch measure, which alone can't hold eleven letters.
+ */
+function billFit(wrap: number): string {
+  const rules: string[] = [];
+  for (let n = 7; n <= BILL_LONGEST_WORD; n++) {
+    const measure = n >= 11 ? 'max-width:none;' : '';
+    rules.push(
+      `.arch-main-street .ms-bill-brand[data-word="${n}"]{${measure}font-size:min(clamp(54px,9.4vw,136px),calc((min(100vw - ${wrap * 2}px,980px) - 2 * clamp(26px,6vw,92px) - 6px) / ${(0.63 * n).toFixed(2)}))}`,
+    );
+  }
+  return rules.join(' ');
+}
+
 export const VINTAGE_CSS = `
 
     /* ── THE PAGE — Alex's Victorian backgrounds: mottled, aged parchment that runs
@@ -39,6 +62,10 @@ export const VINTAGE_CSS = `
     .arch-main-street .ms-bill-medallion{width:clamp(150px,18vw,220px);aspect-ratio:4/5;margin:8px auto 26px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 4px var(--ms-bg),0 0 0 6px var(--ms-fg),0 0 0 10px var(--ms-bg),0 0 0 11px var(--ms-fg)}
     .arch-main-street .ms-bill-medallion .archetype-photo{display:block;width:100%;height:100%;object-fit:cover}
     .arch-main-street .ms-bill-brand{margin:0 auto;max-width:14ch;color:var(--ms-fg);font-size:clamp(54px,9.4vw,136px);line-height:.92;text-shadow:3px 3px 0 var(--ms-accent);text-wrap:balance}
+    ${billFit(40)}
+    @media(max-width:860px){
+    ${billFit(20)}
+    }
     .arch-main-street .ms-bill-ribbon{display:inline-block;margin:30px auto 0;padding:13px 52px;background:var(--ms-accent);clip-path:polygon(0 0,100% 0,calc(100% - 20px) 50%,100% 100%,0 100%,20px 50%)}
     .arch-main-street .ms-bill-sub{margin:0;max-width:46ch;color:var(--ms-on-accent);font-style:italic}
     .arch-main-street .ms-bill-rule{display:flex;align-items:center;justify-content:center;gap:16px;margin:30px auto 28px;color:var(--ms-fg)}
@@ -104,6 +131,7 @@ export const VINTAGE_CSS = `
     /* ── CABINET CARD — the about ─────────────────────────────────────────── */
     .arch-main-street .ms-cab-section{padding:var(--ms-section) 0;background:var(--ms-contrast-bg);color:var(--ms-contrast-fg)}
     .arch-main-street .ms-cab-grid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(36px,6vw,96px);align-items:center}
+    .arch-main-street .ms-cab-grid--words{grid-template-columns:minmax(0,1fr);max-width:760px}
     .arch-main-street .ms-cab-card{justify-self:center;width:min(100%,380px);margin:0;padding:18px 18px 48px;background:var(--ms-bg);border-radius:6px;transform:rotate(-2deg);box-shadow:inset 0 0 0 7px var(--ms-bg),inset 0 0 0 8px var(--ms-accent),0 30px 44px -26px rgba(0,0,0,.6)}
     .arch-main-street .ms-cab-window{display:block;overflow:hidden;aspect-ratio:3/4;border-radius:999px 999px 6px 6px;box-shadow:inset 0 0 0 1px var(--ms-rule)}
     .arch-main-street .ms-cab-window .archetype-photo{display:block;width:100%;height:100%;object-fit:cover}

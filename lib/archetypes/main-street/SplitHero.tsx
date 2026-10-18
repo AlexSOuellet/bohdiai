@@ -36,8 +36,9 @@ export function SplitHero({
    *  is the mirror. The only structural variation Split carries. */
   mediaSide?: 'left' | 'right';
 }) {
-  const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';
-  const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
+  // No target, no button: never a guessed page (a Showcase site has no shop).
+  const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : undefined;
+  const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : undefined;
   return (
     <header data-ms-hero="split" data-media-side={mediaSide} className="ms-splithero">
       <div data-ms-hero-nav className="ms-splithero-nav">
@@ -57,10 +58,12 @@ export function SplitHero({
             </Type>
           )}
           <div className="ms-hero-actions">
-            <Type as="a" role="navLabel" href={ctaHref} className="ms-cta-primary">
-              {moment.ctaLabel}
-            </Type>
-            {moment.secondaryCtaLabel && (
+            {ctaHref !== undefined && (
+              <Type as="a" role="navLabel" href={ctaHref} className="ms-cta-primary">
+                {moment.ctaLabel}
+              </Type>
+            )}
+            {moment.secondaryCtaLabel && secondaryHref !== undefined && (
               <Type as="a" role="navLabel" href={secondaryHref} className="ms-cta-secondary">
                 {moment.secondaryCtaLabel}
               </Type>

@@ -19,6 +19,8 @@ vi.mock('@/lib/backend/dates/queries', () => ({ listVisitorMarketDates: loaders.
 import { familyMarketDay, familyViewFromHomes, holdsLegacyContent, loadFamilyHomes, type FamilyHomes } from './from-homes';
 import { keyWords } from '@/lib/site-words/words';
 import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
+import { LINK_TARGETS } from './links';
+import { linkTargetsFor } from '@/lib/backend/plan/plan-features';
 
 /** Test words: every spot says its own key; dates read in en-US and each date
  *  word marks its blanks so a test sees which word wrote a market. */
@@ -42,6 +44,7 @@ const market = (over: Partial<MarketDate> = {}): MarketDate => ({
 const empty: FamilyHomes = {
   name: 'Ember Candle Co',
   sellsOnline: false,
+  linkTargets: LINK_TARGETS,
   moment: { ...EMPTY_MOMENT, media: null, photos: [] },
   sections: sections(),
   profile: EMPTY_PROFILE,
@@ -51,6 +54,18 @@ const empty: FamilyHomes = {
 };
 
 describe('familyViewFromHomes', () => {
+  it('drops a button whose page the plan doesn’t have, so a Showcase site never points at a shop', () => {
+    const v = familyViewFromHomes({
+      ...empty,
+      linkTargets: linkTargetsFor(false),
+      moment: { ...EMPTY_MOMENT, media: null, photos: [], ctaLabel: 'Shop', ctaTarget: 'shop', secondCtaLabel: 'Our story', secondCtaTarget: 'about' },
+      sections: sections({ close: { kicker: 'Come by', title: 'Light one tonight', moreLabel: 'See collections', moreTarget: 'collections' } }),
+    }, W);
+    expect(v.moment.ctaTarget).toBeUndefined();
+    expect(v.moment.secondaryCtaTarget).toBe('about');
+    expect(v.close.ctaTarget).toBeUndefined();
+  });
+
   it('puts every piece in its section', () => {
     const v = familyViewFromHomes({
       ...empty,
@@ -162,14 +177,23 @@ describe('loadFamilyHomes', () => {
     expect(h).toMatchObject({ name: 'Ember', sellsOnline: false, testimonials: [], dates: [], portraitUrl: null });
     expect(h.moment.headline).toBe('Poured by hand');
     expect(h.sections.work.title).toBe('Fresh off the shelf');
+    expect(h.linkTargets).not.toContain('shop');
     expect(loaders.testimonials).not.toHaveBeenCalled();
     expect(loaders.dates).not.toHaveBeenCalled();
+  });
+
+  it('opens the shop and collections to buttons only when the catalog is on', async () => {
+    loaders.features = new Set(['catalog']);
+    const h = await loadFamilyHomes(db({ data: { business_name: 'Ember' }, error: null }), 't1');
+    expect(h.linkTargets).toContain('shop');
+    expect(h.linkTargets).toContain('collections');
   });
 
   it('reads testimonials, dates and the cart when they’re switched on', async () => {
     loaders.features = new Set(['testimonials', 'market_dates', 'cart']);
     const h = await loadFamilyHomes(db({ data: { business_name: 'Ember' }, error: null }), 't1');
     expect(h.sellsOnline).toBe(true);
+    expect(h.linkTargets).not.toContain('shop');
     expect(h.testimonials).toHaveLength(1);
     expect(h.dates).toHaveLength(1);
   });

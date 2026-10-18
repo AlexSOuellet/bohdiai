@@ -32,8 +32,9 @@ export function CollageHero({
   /** The site's words: the nav's page names and labels. */
   words: FamilyWords;
 }) {
-  const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';
-  const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
+  // No target, no button: never a guessed page (a Showcase site has no shop).
+  const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : undefined;
+  const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : undefined;
   const shots = (moment.collageShots ?? []).filter((s) => typeof s.url === 'string' && s.url !== '').slice(0, MAX_SHOTS);
   return (
     <header data-ms-hero="collage" className="ms-collage-hero">
@@ -54,10 +55,12 @@ export function CollageHero({
             </Type>
           )}
           <div className="ms-hero-actions">
-            <Type as="a" role="navLabel" href={ctaHref} className="ms-cta-primary">
-              {moment.ctaLabel}
-            </Type>
-            {moment.secondaryCtaLabel && (
+            {ctaHref !== undefined && (
+              <Type as="a" role="navLabel" href={ctaHref} className="ms-cta-primary">
+                {moment.ctaLabel}
+              </Type>
+            )}
+            {moment.secondaryCtaLabel && secondaryHref !== undefined && (
               <Type as="a" role="navLabel" href={secondaryHref} className="ms-cta-secondary">
                 {moment.secondaryCtaLabel}
               </Type>

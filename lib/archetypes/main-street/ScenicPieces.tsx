@@ -36,8 +36,9 @@ export function HorizonHero({
   moment: MainStreetView['moment'];
   words: FamilyWords;
 }) {
-  const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : '/shop';
-  const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : '/shop';
+  // No target, no button: never a guessed page (a Showcase site has no shop).
+  const ctaHref = moment.ctaTarget ? linkHref(moment.ctaTarget) : undefined;
+  const secondaryHref = moment.secondaryCtaTarget ? linkHref(moment.secondaryCtaTarget) : undefined;
   return (
     <header data-ms-hero="horizon" className="ms-sc-hero">
       <nav data-ms-hero-nav className="ms-sc-nav">
@@ -58,10 +59,12 @@ export function HorizonHero({
           </Type>
         )}
         <div className="ms-sc-actions">
-          <Type as="a" role="navLabel" href={ctaHref} className="ms-sc-cta">
-            {moment.ctaLabel}
-          </Type>
-          {moment.secondaryCtaLabel && (
+          {ctaHref !== undefined && (
+            <Type as="a" role="navLabel" href={ctaHref} className="ms-sc-cta">
+              {moment.ctaLabel}
+            </Type>
+          )}
+          {moment.secondaryCtaLabel && secondaryHref !== undefined && (
             <Type as="a" role="navLabel" href={secondaryHref} className="ms-sc-cta2">
               {moment.secondaryCtaLabel}
             </Type>

@@ -77,12 +77,12 @@ describe('SplitHero — a skin-agnostic swappable hero (text panel + media panel
     expect(cta).toBeTruthy();
   });
 
-  it('falls back to /shop when the primary CTA has no authored target', () => {
+  it('shows no primary button when it has no target (never a guessed page)', () => {
     const { ctaTarget, ...noTarget } = moment;
     void ctaTarget;
     const { container } = render(<SplitHero words={W} identity={identity} moment={noTarget} skin={skin} />);
-    const ctaLink = Array.from(container.querySelectorAll('[data-ms-hero-text] a')).find((a) => a.textContent === moment.ctaLabel)!;
-    expect(ctaLink.getAttribute('href')).toBe('/shop');
+    const ctaLink = Array.from(container.querySelectorAll('[data-ms-hero-text] a')).find((a) => a.textContent === moment.ctaLabel);
+    expect(ctaLink).toBeUndefined();
   });
 
   it('defaults the media to the right (text panel comes first in the DOM)', () => {

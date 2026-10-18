@@ -66,12 +66,12 @@ describe('FloatingCardHero — a card on the skin surface over full-bleed media'
     expect(ctaLink.getAttribute('href')).toBe('/shop');
   });
 
-  it('falls back to /shop when the primary CTA has no authored target', () => {
+  it('shows no primary button when it has no target (never a guessed page)', () => {
     const { ctaTarget, ...noTarget } = moment;
     void ctaTarget;
     const { container } = render(<FloatingCardHero words={W} identity={identity} moment={noTarget} skin={skin} />);
-    const ctaLink = Array.from(container.querySelectorAll('a')).find((a) => a.textContent === moment.ctaLabel)!;
-    expect(ctaLink.getAttribute('href')).toBe('/shop');
+    const ctaLink = Array.from(container.querySelectorAll('a')).find((a) => a.textContent === moment.ctaLabel);
+    expect(ctaLink).toBeUndefined();
   });
 
   it('renders a second CTA when a secondary label and target are authored', () => {
