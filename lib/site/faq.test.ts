@@ -41,6 +41,21 @@ describe('faq', () => {
     expect(faqItem('custom').a.join(' ')).toMatch(/quote/i);
   });
 
+  it('offers Showcase, never Maker Market, when a maker cancels, and only as a choice', () => {
+    const cancel = faqItem('cancel').a.join(' ');
+    expect(cancel).toMatch(/move to Showcase/);
+    expect(cancel).not.toMatch(/Maker Market/);
+    expect(cancel).toMatch(/never automatic/);
+  });
+
+  it('describes the maker path as the form and Publish, not a hand build (Session 108)', () => {
+    const how = faqItem('how-it-works').a;
+    expect(how[0]).toMatch(/fill in the short form/);
+    expect(how[0]).toMatch(/Publish/);
+    expect(how[0]).not.toMatch(/I build/);
+    expect(faqItem('cheap-not-good').a.join(' ')).not.toMatch(/designed and built by me/);
+  });
+
   it('tells the name story in the price answer', () => {
     expect(faqItem('why-so-low').a.join(' ')).toMatch(/Bodhi means awakening/);
     expect(faqItem('why-so-low').a.join(' ')).toMatch(/all of us are enriched/);

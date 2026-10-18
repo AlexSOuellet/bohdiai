@@ -31,7 +31,7 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         id: 'cheap-not-good',
         q: 'Does cheap mean it isn’t as good?',
         a: [
-          'No. Look at the work on the home page, and read what Sheri, Chris and Penny say about it. Every site is designed and built by me, around your business and your own photos.',
+          'No. Every site is built around your own work and your own photos, in a design made to show them off. You can see every look on a real shop on the looks page, and read what Sheri, Chris and Penny say about the sites I made for them.',
           'What you’re not paying for is a big agency’s overhead, or a template you have to wrestle with every night.',
         ],
       },
@@ -44,21 +44,24 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         id: 'how-it-works',
         q: 'How does it work?',
         a: [
-          'Pick a plan on the makers or contractors page, or just send me a message. We talk about your business, I build the site, and you see the real thing before it goes live. We change whatever isn’t right, then it goes up.',
+          'Makers pick a plan and fill in the short form: what you make, 5 to 10 pieces with a photo of each, a little about you, and the mood you like. Your site is built from it and stays private until you press Publish in your own backend.',
+          'A service business picks a plan or just sends me a message. We talk about your business, I build the site, and you see the real thing before it goes live. We change whatever isn’t right, then it goes up.',
         ],
       },
       {
         id: 'what-to-have-ready',
         q: 'What do I need to have ready?',
         a: [
-          'Not much. Your logo if you have one, some photos of your work (phone photos are fine), a few sentences about what you do, and your Facebook or Instagram if you have them. If you don’t have something, we figure it out together.',
+          'Not much. Makers need 5 to 10 of their pieces with a photo of each (phone photos are fine), a few sentences about themselves and their work, and their Facebook or Instagram if they have them. A photo of you is welcome, not required.',
+          'A service business needs its logo if it has one, some photos of the work, a few sentences about what you do, and your Facebook or Instagram if you have them. If you don’t have something, we figure it out together.',
         ],
       },
       {
         id: 'how-long',
         q: 'How long does it take?',
         a: [
-          'Most sites on a plan are ready in 2 to 5 days. A custom site takes longer, and we’ll agree on the timing before I start.',
+          'A maker’s site is built from the form, usually the same day you send it.',
+          'Most service sites on a plan are ready in 2 to 5 days. A custom site takes longer, and we’ll agree on the timing before I start.',
         ],
       },
     ],
@@ -112,8 +115,8 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         id: 'fix-or-addition',
         q: 'What’s a fix, and what’s an addition?',
         a: [
-          'A fix is something that isn’t working the way it should: a broken link, a typo I made, a page that looks wrong on a phone. Fixes are always on me, free.',
-          'An addition is something new: a new page, a new section, a feature your plan doesn’t include. Additions are priced separately, or they come with moving up a plan. On a Full plan you keep your own products, dates and photos current yourself, any time, without asking me.',
+          'A fix is something that isn’t working the way it should: a broken link, a page that looks wrong on a phone. Fixes are always on me, free.',
+          'An addition is something new: a new page, a new section, a feature your plan doesn’t include. Additions are priced separately, or they come with moving up a plan. Makers keep their own words, photos, products and dates current themselves, any time, from their own backend.',
         ],
       },
       {
@@ -149,7 +152,7 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         id: 'cancel',
         q: 'What happens if I cancel?',
         a: [
-          'Your site comes down at the end of what you’ve paid for. If you’re on Full and it’s more than you need, I’ll offer you Maker Market instead, so you keep your site at the lower price.',
+          'Your site comes down at the end of what you’ve paid for. If you’re a maker heading into a quiet season, you can move to Showcase instead and keep a simple page up at the lowest price. It’s your choice, never automatic.',
         ],
       },
       {
@@ -173,8 +176,8 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         id: 'point-of-sale',
         q: 'What does the point of sale do?',
         a: [
-          'It runs on your phone at markets. Tap what someone’s buying, and it adds up the sale and shows your Venmo or Cash App code for them to scan. Every sale is kept, tagged to the market it happened at.',
-          'On Full it also takes cards through your own Stripe or Square, and shows you which markets actually made money after the booth fee and gas.',
+          'It runs on your phone at markets. Tap what someone’s buying, and it adds up the sale and shows your Venmo or Cash App code for them to scan. Every sale is kept, tagged to the market it happened at, so you can see which markets actually made money after the booth fee and gas.',
+          'On Full it also takes cards through your own Stripe or Square.',
         ],
       },
     ],
