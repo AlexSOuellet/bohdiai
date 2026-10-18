@@ -1,13 +1,47 @@
 import { SectionKicker } from './SectionKicker';
 import type { Audience } from '@/lib/site/plans';
 
-/** Makers sign up on the short form; service businesses pick a plan and send a message. */
-const FIRST_STEP: Record<Audience, string> = {
-  maker: 'Choose a plan below and fill in the short form: what you make, a few photos of your work, and the mood you like.',
-  contractor: 'Choose a plan below, or send a message and tell me what you need.',
+type Steps = { lede: string; steps: readonly [StepWords, StepWords, StepWords] };
+type StepWords = { title: string; copy: string };
+
+/**
+ * Makers sign up on the short form, see their site built from it and publish it
+ * from their own backend (Alex, Session 108: nothing that stops being true once
+ * the build is automated). Service sites are still made by hand.
+ */
+const STEPS: Record<Audience, Steps> = {
+  maker: {
+    lede: 'You know your work. Your site is built from it.',
+    steps: [
+      {
+        title: 'Tell us about your work',
+        copy: 'Pick a plan and fill in the short form: what you make, 5 to 10 pieces with a photo of each, a little about you, and the mood you like.',
+      },
+      {
+        title: 'See your site',
+        copy: 'Your site is built from your own words and photos, and it stays private until you put it live.',
+      },
+      {
+        title: 'Publish it',
+        copy: 'Sign in to your own backend and press Publish. Billing starts the day your site goes live, and you change your words, photos and dates yourself, any time.',
+      },
+    ],
+  },
+  contractor: {
+    lede: 'You know your business. I know websites. That’s the whole arrangement.',
+    steps: [
+      { title: 'Pick your plan', copy: 'Choose a plan below, or send a message and tell me what you need.' },
+      { title: 'I build it and show you', copy: 'You see the real site before it goes live, and we change whatever isn’t right.' },
+      {
+        title: 'You go live',
+        copy: 'Your site goes up on the web, and billing starts the day your site goes live. Fixes are always on me, and on a Full plan you keep your own products, dates and photos up to date.',
+      },
+    ],
+  },
 };
 
 export function HowItWorks({ audience }: { audience: Audience }): React.ReactElement {
+  const { lede, steps } = STEPS[audience];
   return (
     <section id="how" className="relative z-content px-3 pb-12 pt-16 md:pb-20 md:pt-32">
       <SectionKicker>How it works</SectionKicker>
@@ -18,7 +52,7 @@ export function HowItWorks({ audience }: { audience: Audience }): React.ReactEle
         your end.
       </h2>
       <p className="mx-auto mt-3.5 max-w-[560px] px-3 text-center text-[14px] leading-[1.55] text-muted md:mt-5 md:text-[16px]">
-        You know your business. I know websites. That&apos;s the whole arrangement.
+        {lede}
       </p>
 
       <div className="relative mt-11 grid grid-cols-1 gap-9 md:mt-18 md:grid-cols-3 md:gap-5">
@@ -30,22 +64,22 @@ export function HowItWorks({ audience }: { audience: Audience }): React.ReactEle
 
         <Step
           num="01"
-          title="Pick your plan"
-          copy={FIRST_STEP[audience]}
+          title={steps[0].title}
+          copy={steps[0].copy}
         >
           <MessageCard />
         </Step>
         <Step
           num="02"
-          title="I build it and show you"
-          copy="You see the real site before it goes live, and we change whatever isn't right."
+          title={steps[1].title}
+          copy={steps[1].copy}
         >
           <Orb />
         </Step>
         <Step
           num="03"
-          title="You go live"
-          copy="Your site goes up on the web, and billing starts the day your site goes live. Fixes are always on me, and on a Full plan you keep your own products, dates and photos up to date."
+          title={steps[2].title}
+          copy={steps[2].copy}
         >
           <LiveBadge />
         </Step>

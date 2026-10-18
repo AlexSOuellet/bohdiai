@@ -23,11 +23,14 @@ type Action = { href: string; label: string };
 
 export function ArmHero({
   badge,
+  title,
   sub,
   primary,
   secondary,
 }: {
   badge: string;
+  /** Two lines; the second glows. */
+  title: readonly [string, string];
   sub: string;
   primary: Action;
   secondary: Action;
@@ -39,9 +42,9 @@ export function ArmHero({
         {badge}
       </div>
       <h1 className="mx-auto max-w-[900px] font-sans text-[34px] font-medium leading-[1.05] tracking-[-0.02em] text-text-soft md:text-[60px] md:tracking-[-0.03em]">
-        <span className="inline-block text-text">A real web developer</span>{' '}
+        <span className="inline-block text-text">{title[0]}</span>{' '}
         <br />
-        <span className="inline-block animate-pulse-glow text-honey-warm">for less than a site builder</span>
+        <span className="inline-block animate-pulse-glow text-honey-warm">{title[1]}</span>
       </h1>
       <p className="mx-auto mt-4 max-w-[600px] px-1 text-[15px] leading-[1.55] text-muted md:mt-5 md:text-[17px]">{sub}</p>
       <div className="mt-6 flex flex-col items-stretch gap-2.5 px-6 md:mt-7 md:flex-row md:items-center md:justify-center md:gap-3 md:px-0">

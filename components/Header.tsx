@@ -21,9 +21,10 @@ export const NAV_LINKS = [
 export const ARM_NAV_LINKS: Record<Arm, ReadonlyArray<{ href: string; label: string }>> = {
   makers: [
     { href: '/#looks', label: 'Looks' },
+    { href: '/#ladder', label: 'Plans' },
     { href: '/#how', label: 'How it works' },
-    { href: '/#work', label: 'Work' },
     { href: '/#plans', label: 'Pricing' },
+    { href: '/#custom', label: 'Custom sites' },
     { href: '/faq', label: 'FAQ' },
     { href: '#contact', label: 'Contact' },
   ],

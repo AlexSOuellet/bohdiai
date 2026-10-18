@@ -28,6 +28,7 @@ export default function ContractorsPage(): React.ReactElement {
       <main id="main">
         <ArmHero
           badge="Websites for contractors"
+          title={['A real web developer', 'for less than a site builder']}
           sub="A site that brings in work. Customers send photos of the job, and the estimate request lands with you. Built free, and every lead is yours alone."
           primary={{ href: '#contact', label: 'Tell me about your business →' }}
           secondary={{ href: '#plans', label: 'See the plans' }}
