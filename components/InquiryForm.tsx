@@ -63,11 +63,11 @@ export function checkInquiry(f: Fields): string | null {
   return null;
 }
 
-const INPUT =
+export const INPUT =
   'w-full appearance-none rounded-[10px] border border-white/[0.1] bg-black/40 px-3.5 py-3 font-sans text-[15px] text-text placeholder:text-text-soft/35 focus:border-honey-warm/50 focus:shadow-[0_0_0_3px_rgba(243,201,122,0.12)] focus:outline-none md:px-4';
 const CHIP =
   'cursor-pointer rounded-pill border border-white/[0.1] bg-white/[0.03] px-3.5 py-2 text-[13px] text-text-soft transition-colors has-[:checked]:border-honey-warm/50 has-[:checked]:bg-honey-warm/15 has-[:checked]:text-honey-warm has-[:focus-visible]:shadow-[0_0_0_3px_rgba(243,201,122,0.25)]';
-const LABEL = 'mb-1.5 block text-[12px] font-medium uppercase tracking-[0.14em] text-muted';
+export const LABEL = 'mb-1.5 block text-[12px] font-medium uppercase tracking-[0.14em] text-muted';
 
 export function InquiryForm({ audience, initialPlan, initialKind }: Props = {}): React.ReactElement {
   const start: Fields = { ...EMPTY, kind: initialKind ?? '', plan: initialPlan ?? '' };

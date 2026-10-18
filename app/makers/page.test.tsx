@@ -19,8 +19,8 @@ describe('makers.bohdiai.com', () => {
     expect(ladder).toHaveTextContent('Everything in Maker Showcase, plus');
     expect(screen.getByRole('heading', { name: 'One shop, every mood' })).toBeInTheDocument();
     const starts = screen.getAllByRole('link', { name: 'Start your site →' });
-    // the header and the opening open the bare form; each plan card opens it with its plan
-    expect(starts.filter((a) => a.getAttribute('href') === '/start')).toHaveLength(2);
+    // the header, the opening and the close open the bare form; each plan card opens it with its plan
+    expect(starts.filter((a) => a.getAttribute('href') === '/start')).toHaveLength(3);
     expect(screen.queryByText('Trades & services')).toBeNull();
   });
 
@@ -44,6 +44,10 @@ describe('makers.bohdiai.com', () => {
     expect(container.querySelector('#custom')).toHaveTextContent('Decoupage Digital Designs');
     expect(container.querySelector('#work')).toBeNull();
     expect(screen.getByText('Publish it')).toBeInTheDocument();
+    // The close invites them to the sign-up form; the question box has no plan or business picker.
+    expect(container.querySelector('#contact a[href="/start"]')).not.toBeNull();
+    expect(container.querySelector('#contact')).toHaveTextContent('Questions, or want a custom site?');
+    expect(container.querySelector('#contact')).not.toHaveTextContent(/which plan|what kind of business/i);
     expect(screen.queryByText('I build it and show you')).toBeNull();
     expect(screen.queryByText('Cut-Pro Lawncare & Construction')).toBeNull();
     expect(container.querySelector('#contact form')).not.toBeNull();

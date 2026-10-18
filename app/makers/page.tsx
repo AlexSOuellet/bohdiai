@@ -3,11 +3,11 @@ import { headers } from 'next/headers';
 import { Scene } from '@/components/Scene';
 import { Header } from '@/components/Header';
 import { HowItWorks } from '@/components/HowItWorks';
-import { Contact } from '@/components/Contact';
 import { Footer } from '@/components/Footer';
 import { ArmHero, CompareSection, FaqSection, LooksSection, PlansSection } from '@/components/arms/ArmSections';
 import { PlanLadder } from '@/components/arms/PlanLadder';
 import { CustomSites } from '@/components/arms/CustomSites';
+import { MakerClose } from '@/components/arms/MakerClose';
 import { formatPrice, fromPrice } from '@/lib/site/plans';
 
 export const metadata: Metadata = {
@@ -47,7 +47,7 @@ export default async function MakersPage(): Promise<React.ReactElement> {
         />
         <CustomSites />
         <FaqSection audience="maker" />
-        <Contact audience="maker" />
+        <MakerClose />
       </main>
       <Footer />
     </Scene>
