@@ -25,6 +25,15 @@ test.describe('Accessibility (axe-core, WCAG 2.1 A + AA)', () => {
     expect(blocking, JSON.stringify(blocking, null, 2)).toEqual([]);
   });
 
+  for (const arm of ['makers', 'service']) {
+    test(`${arm} arm has no serious or critical violations`, async ({ page }) => {
+      await page.goto(`http://${arm}.localhost:3100/`);
+      const results = await scan(page);
+      const blocking = seriousOrCritical(results);
+      expect(blocking, JSON.stringify(blocking, null, 2)).toEqual([]);
+    });
+  }
+
   test('privacy page has no serious or critical violations', async ({ page }) => {
     await page.goto('/privacy');
     const results = await scan(page);
