@@ -1,18 +1,21 @@
 # Session Brief — BohdiAI
 
-> **⚠ START HERE (Session 109):** read `session-logs/session-108.md`, then `Open-Work.md` (its **Priority order**).
-> Next: **the maker-backend screens** (the moment, section headings, About you's quote/portrait/marquee) with
-> **try on a look** for Full. Plain list to Alex first for anything new; don't build until he says go.
+> **⚠ START HERE (Session 110):** read `session-logs/session-109.md`, then `Plan-Backends.md`, then `Open-Work.md`.
+> Today's work is on **`feat/showcase-backend` (committed, NOT merged)**. Alex reviews it first. Then: **better social
+> icons** and **a line above the bottom navigation**; merge; drop the old `site_profiles` columns after it's live.
+> Build everything Alex decides; ask in plain text (no button questions); ask before any change he didn't ask for.
 
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 
 **Operative plan doc:** `Project-Docs/Modular-Plan.md`; open items in `Project-Docs/Open-Work.md`. Every session updates Open-Work as items land.
 
-**Last updated:** 2026-10-18, Session 108 (end).
+**Last updated:** 2026-10-19, Session 109 (end).
 
 ---
 
 ## Current state
+
+**Session 109: Showcase backend defined and built (Plan-Backends.md), the gallery section in every family, About you split into its own homes and screens (Headline, Scrolling line, Contact information, Socials), Cancel at end of term, Billing, Contact support, plan-change emails, folding menu, three backgrounds per build. All on `feat/showcase-backend`, unmerged.** Live sites briefly down from a column drop (fixed; old columns stay until the merge is live). Paying at sign-up is now the top priority. Recap: `session-logs/session-109.md`.
 
 **Session 108: bohdiai.com split live (parent + makers.bohdiai.com + service.bohdiai.com); makers arm written for an automated build (makers pay at sign-up, nothing says "built free"); three build bugs fixed; /samples retired.** The middleware shows /makers and /contractors at the arms (`lib/site/arms.ts`), "makers"/"service" reserved. Parent: headline, sample window, doors, Penny then Cut-Pro, story, pledge, "Need something else" box. Makers arm: "Your work online, the way you sell it", looks, plans built up as three steps, how it works (form, site, Publish), prices, comparison, custom sites (Penny), questions, "Start your site" + question box. Service arm unchanged (hand-built voice). Recap: `session-logs/session-108.md`.
 
@@ -36,6 +39,8 @@
 - **Building a client:** content module in `scripts/sites/<site>.ts`, then `npx tsx --env-file=.env.local scripts/build-contractor-site.ts <site> --media <dir> [--contact-email x]`. This writes to the DB and storage, so no deploy is needed.
 
 ## Next actions
+
+**Session 110:** Alex reviews `feat/showcase-backend`; better social icons; a line above the bottom navigation; merge and check the Cloudflare build; then drop the old `site_profiles` columns; then define Market and Full; paying at sign-up (top).
 
 **Every open item is in `Open-Work.md`; follow its Priority order.** Next: the maker-backend screens with try on a look for Full (priority 4), then Alex's admin. Waiting on Alex: the purge (after testing); whether Paper & Patina moves onto Spotlight. Waiting on others: Joe's feedback, Renee's details.
 
@@ -88,6 +93,7 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 109 (2026-10-19): **Showcase backend + gallery section + About you split into its homes; Cancel, Billing, Contact support, plan emails; on `feat/showcase-backend`, unmerged.** Full recap: `session-logs/session-109.md`.
 - Session 108 (2026-10-18): **bohdiai.com split live (parent + makers/service arms); makers arm for an automated build, pay at sign-up; three build bugs fixed; /samples retired.** Full recap: `session-logs/session-108.md`.
 - Session 107 (2026-10-17): **Priority reset; Scenic + Spotlight live; Scenic photos/clips + generated searchable scene library; Classic Loafs = all-moods sample (/looks live); bohdiai.com parent + makers/service arms decided.** Full recap: `session-logs/session-107.md`.
 - Session 106 (2026-10-16): **Intake form live (account, plan, mood per family); submission → site with Claude-drafted words; big push merged; Publish button; free sites; old samples converted in place; search details from the homes.** Full recap: `session-logs/session-106.md`.
