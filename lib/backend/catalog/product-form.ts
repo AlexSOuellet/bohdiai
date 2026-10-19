@@ -12,9 +12,9 @@ import {
   MAX_COMBINATIONS,
   type Combination,
 } from '@/lib/catalog/combinations';
-import { HOME_MAX } from '@/lib/catalog/home';
+import { HOME_MAX, GALLERY_MAX } from '@/lib/catalog/home';
 
-export { HOME_MAX };
+export { HOME_MAX, GALLERY_MAX };
 
 export type Kind = 'physical' | 'digital';
 export type ItemStatus = 'draft' | 'active' | 'archived';

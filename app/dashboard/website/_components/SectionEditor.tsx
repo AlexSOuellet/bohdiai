@@ -94,6 +94,11 @@ const INTRO: Record<SectionKey, { title: string; opener: string; placeholder: st
       "This is the one part I can't write for you — it has to be true, so it has to come from you. Don't worry about saying it well, that's my job. I'll ask a few small things and pull the story out. First one: take me back to when you made your very first piece — where were you, and what got you started?",
     placeholder: 'e.g. it started at my kitchen table…',
   },
+  gallery: {
+    title: 'Your gallery',
+    opener: 'Your gallery shows photos of your work, with no prices. Pick which pieces show from your products list.',
+    placeholder: '',
+  },
   goods: {
     title: 'Your goods',
     opener:

@@ -143,7 +143,7 @@ export function MainStreetProduct({
           </Type>
         </section>
       </main>
-      <MainStreetFooter shopName={content.shopName} words={words} />
+      <MainStreetFooter shopName={content.shopName} words={words} socials={content.socials} />
     </MainStreetRoot>
   );
 }

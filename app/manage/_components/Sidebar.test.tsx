@@ -46,3 +46,34 @@ describe('Sidebar', () => {
     expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument();
   });
 });
+
+describe('Sidebar groups', () => {
+  const nav = [
+    { section: 'Site', items: [{ label: 'Home', href: '/manage' }] },
+    { section: 'Your site', items: [{ label: 'Headline', href: '/manage/headline' }, { label: 'About you', href: '/manage/profile' }] },
+    { section: 'Selling', items: [{ label: 'Markets', href: '/manage/markets' }, { label: 'QR code', href: '/manage/qr' }] },
+  ];
+
+  it('starts a group of several folded, opens it on a click, and shows a one-item group as it is', async () => {
+    const { fireEvent } = await import('@testing-library/react');
+    path.current = '/manage';
+    render(<Sidebar {...base} nav={nav} />);
+    expect(screen.getByRole('link', { name: 'Home' })).toBeVisible();
+    const yours = screen.getByRole('button', { name: 'Your site' });
+    expect(yours).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('link', { name: 'Headline' })).toBeNull();
+    fireEvent.click(yours);
+    expect(yours).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('link', { name: 'Headline' })).toBeInTheDocument();
+    fireEvent.click(yours);
+    expect(screen.queryByRole('link', { name: 'Headline' })).toBeNull();
+  });
+
+  it('opens the group holding the screen you are on, and only that one', () => {
+    path.current = '/manage/profile';
+    render(<Sidebar {...base} nav={nav} />);
+    expect(screen.getByRole('button', { name: 'Your site' })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'Selling' })).toHaveAttribute('aria-expanded', 'false');
+    path.current = '/manage';
+  });
+});

@@ -16,7 +16,7 @@ import { MAIN_STREET_SKINS } from '@/lib/archetypes/main-street/skins';
 import { SCENE_KEY } from '@/lib/archetypes/main-street/scenes';
 import { SHOP_WORD_SPOTS, SHOP_WORDS_PREFIX } from '@/lib/storefront/words';
 import { wordKeys } from '@/lib/site-words/words';
-import { buildProfileRow, type ProfileForm, type ProfileRow } from '@/lib/backend/profile/profile-form';
+import { buildProfileHomes, type ProfileForm, type ProfileHomes } from '@/lib/backend/profile/profile-form';
 import { buildMomentRow, MOMENT_PHOTOS_LIMIT, type MomentForm, type MomentRow } from '@/lib/backend/moment/moment-form';
 import { buildSectionRow, EMPTY_SECTION, SECTION_KEYS, type SectionKey, type SectionRow, type SectionWords } from '@/lib/backend/sections/sections-form';
 import { buildTestimonialRow, TESTIMONIALS_LIMIT, type TestimonialRow } from '@/lib/backend/testimonials/testimonial-form';
@@ -75,7 +75,9 @@ export type SiteFile = {
   moment?: MomentForm & { media?: PhotoFile & { kind: 'image' | 'video' }; poster?: PhotoFile; photos?: PhotoFile[] };
   /** Each family section's words (families only); a section left out is empty. */
   sections?: Partial<Record<SectionKey, Partial<SectionWords>>>;
-  /** The photo behind a Scenic site: a library scene, or the maker's own photo (Scenic only). */
+  /** The photo behind a Scenic page: a library scene, or the maker's own photo. A Scenic site needs
+   *  one; any other family site may have one too, so it shows its own background if it ever wears
+   *  Scenic (try on a look, the looks page) and never falls back to the marsh (Alex, 2026-10-19). */
   scene?: SceneFile;
   gallery?: { file: string; caption: string }[];
   collections?: { slug: string; name: string; description?: string }[];
@@ -123,7 +125,8 @@ export type SitePlanned = {
   pageRoot: Record<string, unknown>;
   /** Switches the content decides, beyond the plan's own. */
   features: { key: string; enabled: boolean }[];
-  profile: ProfileRow;
+  /** About the maker, split into its homes. */
+  profile: ProfileHomes;
   portrait: PhotoFile | null;
   moment: { row: MomentRow; media: (PhotoFile & { kind: 'image' | 'video' }) | null; poster: PhotoFile | null; photos: PhotoFile[] } | null;
   sections: { section: SectionKey; row: SectionRow }[];
@@ -193,14 +196,14 @@ export function planSite(f: SiteFile): PlanResult {
   const scenic = family && s.family === 'scenic';
   const scene = f.scene ?? null;
   if (scenic && scene === null) errors.push('scene: a Scenic site needs the photo behind its page (a library scene or its own photo)');
-  if (!scenic && scene !== null) errors.push('scene: only a Scenic site has a photo behind its page');
+  if (!family && scene !== null) errors.push('scene: only a family site has a photo behind its page');
   if (scene !== null && 'library' in scene && !SCENE_KEY.test(scene.library)) errors.push(`scene: "${scene.library}" isn't a scene name`);
   if (scene !== null && 'photo' in scene && !PHOTO.test(scene.photo.file)) errors.push(`scene: "${scene.photo.file}" isn't a photo`);
   if (scene !== null && 'photo' in scene && scene.video !== undefined && !VIDEO.test(scene.video.file)) errors.push(`scene: "${scene.video.file}" isn't a video`);
   if (scene !== null && 'photo' in scene && scene.tone !== undefined && scene.tone !== 'light' && scene.tone !== 'dark') errors.push(`scene: "${String(scene.tone)}" is neither light nor dark`);
 
   // About you.
-  const profile = buildProfileRow(f.profile);
+  const profile = buildProfileHomes(f.profile);
   if (!profile.ok) errors.push(`profile: ${profile.error}`);
 
   // The opening and the section words belong to the families.
@@ -331,14 +334,14 @@ export function planSite(f: SiteFile): PlanResult {
       features: [
         { key: 'profile', enabled: true },
         { key: 'moment', enabled: family },
-        // Markets and Gallery follow the plan (every plan has both), never the
+        // Markets, the gallery and the catalog screens follow the plan, never the
         // content: a maker adds markets and photos later in their backend (Alex).
       ],
-      profile: profile.row,
+      profile: profile.homes,
       portrait,
       moment,
       sections,
-      scene: scenic ? scene : null,
+      scene: family ? scene : null,
       gallery,
       collections,
       products,

@@ -26,6 +26,8 @@ export const FEATURES = {
   demo_checkout: { default: false, description: 'Demo checkout: Upgrade and Downgrade switch the plan at once, no card taken (demo sites only)' },
   moment: { default: false, description: 'The moment: the first thing a visitor sees (story lines, headline, buttons, its photo and extra photos)' },
   market_dates: { default: false, description: 'Markets: every market the owner does, shown on the site (dates, hours, where) with private costs, notes and review' },
+  headline: { default: false, description: 'Headline: the big words at the top of the home page and the line under it (every plan; the rest of the moment stays as built)' },
+  gallery_pieces: { default: false, description: 'Gallery from the catalog (Showcase): the whole catalog in the backend, no shop; the site shows up to 12 ticked pieces (newest 12 when none are ticked), no prices' },
 } as const satisfies Record<string, { default: boolean; description: string }>;
 
 export type FeatureKey = keyof typeof FEATURES;
@@ -48,6 +50,12 @@ export async function loadSiteFeatures(db: SupabaseClient<Database>, tenantId: s
   const { data, error } = await db.from('tenant_features').select('feature_key, enabled').eq('tenant_id', tenantId);
   if (error !== null) throw new Error(`Could not load site features: ${error.message}`);
   return resolveFeatures((data ?? []) as FeatureRow[]);
+}
+
+/** The Products screen is open when the site has its shop (catalog) or shows its
+ *  gallery from the catalog (Showcase: products in the backend, no shop). */
+export function hasProducts(on: ReadonlySet<FeatureKey>): boolean {
+  return on.has('catalog') || on.has('gallery_pieces');
 }
 
 export function hasFeature(on: ReadonlySet<FeatureKey>, key: FeatureKey): boolean {

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, within, waitFor } from '@testing-library/react';
 
-const { setProductOnHome } = vi.hoisted(() => ({ setProductOnHome: vi.fn() }));
-vi.mock('@/lib/backend/catalog/actions', () => ({ setProductOnHome }));
+const { setProductOnHome, setProductInGallery } = vi.hoisted(() => ({ setProductOnHome: vi.fn(), setProductInGallery: vi.fn() }));
+vi.mock('@/lib/backend/catalog/actions', () => ({ setProductOnHome, setProductInGallery }));
 vi.mock('next/navigation', () => ({ unstable_rethrow: vi.fn() }));
 import { ProductTable } from './ProductTable';
 import type { ProductRowView } from '@/lib/backend/catalog/queries';
@@ -23,11 +23,14 @@ const row = (
   photoUploadId: null,
   collectionIds: [],
   onHome: false,
+  inGallery: false,
   ...over,
 });
 beforeEach(() => {
   setProductOnHome.mockReset();
   setProductOnHome.mockResolvedValue({ ok: true });
+  setProductInGallery.mockReset();
+  setProductInGallery.mockResolvedValue({ ok: true });
   Element.prototype.scrollIntoView = vi.fn(); // jsdom has no layout
 });
 
@@ -161,5 +164,44 @@ describe('ProductTable', () => {
     fireEvent.click(screen.getByRole('checkbox', { name: 'Show A on your home page' }));
     expect(setProductOnHome).toHaveBeenCalledWith('0', false);
     await waitFor(() => expect(screen.getByText('On your home page: 4 of 5')).toBeInTheDocument());
+  });
+});
+
+describe('ProductTable on Showcase (gallery picks)', () => {
+  it('shows a Gallery tick instead of Home, and no prices or stock', () => {
+    render(<ProductTable products={rows} picks={['gallery']} />);
+    expect(screen.getByRole('columnheader', { name: 'Gallery' })).toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Home' })).toBeNull();
+    expect(screen.queryByRole('columnheader', { name: 'Price' })).toBeNull();
+    expect(screen.queryByText('$24')).toBeNull();
+    expect(screen.getByText('In your gallery: none picked, so your site shows your newest 12')).toBeInTheDocument();
+  });
+  it('ticks a piece into the gallery and counts it', async () => {
+    render(<ProductTable products={rows} picks={['gallery']} />);
+    fireEvent.click(screen.getByLabelText('Show Fig Candle in your gallery'));
+    expect(setProductInGallery).toHaveBeenCalledWith('1', true);
+    expect(setProductOnHome).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.getByText('In your gallery: 1 of 12')).toBeInTheDocument());
+  });
+  it('refuses a thirteenth before asking the server', () => {
+    const many = Array.from({ length: 13 }, (_, i) => row(String(i + 1), `Piece ${i + 1}`, 'active', { inGallery: i < 12 }));
+    render(<ProductTable products={many} picks={['gallery']} />);
+    fireEvent.click(screen.getByLabelText('Show Piece 13 in your gallery'));
+    expect(setProductInGallery).not.toHaveBeenCalled();
+    expect(screen.getByText('Your gallery shows up to 12 pieces. Untick one first.')).toBeInTheDocument();
+  });
+});
+
+describe('ProductTable on a standard Market or Full site', () => {
+  it('shows both the Home and the Gallery tick, and the gallery has no limit', async () => {
+    const many = Array.from({ length: 14 }, (_, i) => row(String(i + 1), `Piece ${i + 1}`, 'active', { inGallery: i < 13 }));
+    render(<ProductTable products={many} picks={['home', 'gallery-open']} />);
+    expect(screen.getByRole('columnheader', { name: 'Home' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Gallery' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Price' })).toBeInTheDocument();
+    expect(screen.getByText('In your gallery: 13')).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText('Show Piece 14 in your gallery'));
+    expect(setProductInGallery).toHaveBeenCalledWith('14', true);
+    await waitFor(() => expect(screen.getByText('In your gallery: 14')).toBeInTheDocument());
   });
 });

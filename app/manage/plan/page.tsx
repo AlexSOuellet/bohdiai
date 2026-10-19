@@ -7,6 +7,7 @@ import { isSitePlan, planOf, planView } from '@/lib/backend/plan/plan';
 import { longDay } from '@/lib/backend/plan/billing';
 import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
 import { PlanSummary, type PlanMode } from './PlanSummary';
+import { CancelPanel } from './CancelPanel';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,6 +43,7 @@ export default async function PlanPage({
       </div>
       <main id="main" className="bk-content">
         <PlanSummary view={planView(state.plan)} mode={mode} terms={state} changed={changed} />
+        <CancelPanel cancels={state.cancels} endsOn={longDay(state.renewsOn)} offerShowcase={state.plan !== 'showcase'} />
       </main>
     </>
   );

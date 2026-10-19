@@ -134,5 +134,10 @@ export async function galleryFromProducts(db: SupabaseClient<Database>, tenantId
   if (dErr !== null) return { ok: false, error: `gallery: ${dErr.message}` };
   const { error } = await db.from('gallery_items').insert(picked.map((p, position) => ({ tenant_id: tenantId, upload_id: p.uploadId, position, caption: p.name })));
   if (error !== null) return { ok: false, error: `gallery: ${error.message}` };
+  // The family designs read Showcase's gallery from the catalog's ticks: tick exactly the picked ones.
+  const { error: cErr } = await db.from('listings').update({ in_gallery: false }).eq('tenant_id', tenantId).eq('in_gallery', true);
+  if (cErr !== null) return { ok: false, error: `gallery ticks: ${cErr.message}` };
+  const { error: tErr } = await db.from('listings').update({ in_gallery: true }).eq('tenant_id', tenantId).in('id', picked.map((p) => p.id));
+  if (tErr !== null) return { ok: false, error: `gallery ticks: ${tErr.message}` };
   return { ok: true, count: picked.length };
 }

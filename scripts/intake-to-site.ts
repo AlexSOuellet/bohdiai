@@ -10,11 +10,12 @@
  *    at the photos; the whole content file is checked (lib/build/site-plan) and the
  *    problems sent back once.
  * 3. Writes the content file tmp/intake-sites/<s>/site.ts (and drafts.json) to read.
- * Scenic (Alex, Session 107): with --build, the build first makes the photos behind
- *   the page from the maker's own words (lib/build/scene-art; three, or --scenes 2-4),
- *   adds them all to the scene library, tagged and searchable, and puts the first
- *   behind the site; the others are printed to swap to. --scene <name> uses a
- *   library scene instead and makes none.
+ * Backgrounds (Alex, Sessions 107 and 109): with --build, every build first makes the
+ *   site's background photos from the maker's own words, whatever its family
+ *   (lib/build/scene-art; three, or --scenes 2-4), adds them all to the scene library,
+ *   tagged and searchable, and sets the first as the site's background (behind the
+ *   page on Scenic; ready for any other family to wear Scenic). The others are printed
+ *   to swap to. On Scenic, --scene <name> uses a library scene instead and makes none.
  * 4. With --build: builds it with the one builder (private until the maker
  *    publishes it from their backend; --live skips that), makes the maker's account
  *    (from the form) the site's owner, emails them that it's ready to sign in to
@@ -149,16 +150,18 @@ async function main(): Promise<void> {
   // 2) The words we write, checked against the whole content file.
   const words = await referenceWords(db, flag(rest, '--words-from'));
   const niche = flag(rest, '--niche');
-  // Scenic: a library scene by name, or photos made for this site (named before
-  // drafting, so the content file is checked whole; made at build).
+  // Every build makes three backgrounds for the site, whatever its family, into the
+  // library (Alex, 2026-10-19: three until the library is big enough to pick from).
+  // On Scenic --scene can name a library scene instead. Named before drafting, so the
+  // content file is checked whole; made at build.
   const chosenScene = flag(rest, '--scene');
   const scenesFlag = flag(rest, '--scenes');
-  if ((chosenScene !== undefined || scenesFlag !== undefined) && family !== 'scenic') fail('--scene and --scenes are only for a Scenic site');
+  if (chosenScene !== undefined && family !== 'scenic') fail('--scene is only for a Scenic site');
   if (chosenScene !== undefined && scenesFlag !== undefined) fail('pass --scene or --scenes, not both');
   const sceneCount = scenesFlag === undefined ? SCENES_DEFAULT : Number(scenesFlag);
   if (!Number.isInteger(sceneCount) || sceneCount < SCENES_MIN || sceneCount > SCENES_MAX) fail(`--scenes takes ${SCENES_MIN} to ${SCENES_MAX}`);
   let newSceneKeys: string[] = [];
-  if (family === 'scenic' && chosenScene === undefined) {
+  if (chosenScene === undefined) {
     const { data: takenRows, error: takenErr } = await db.from('scenes').select('key').like('key', `${subdomain}-%`);
     if (takenErr !== null) fail(`reading the scene library failed: ${takenErr.message}`);
     newSceneKeys = sceneKeys(subdomain, sceneCount, new Set((takenRows ?? []).map((r) => r.key)));
@@ -182,13 +185,13 @@ async function main(): Promise<void> {
 
   // 4) The site.
   if (!rest.includes('--build')) {
-    if (newSceneKeys.length > 0) process.stdout.write('Scenic: the photos behind the page are made when this is run again with --build\n');
+    if (newSceneKeys.length > 0) process.stdout.write('the background photos are made when this is run again with --build\n');
     else process.stdout.write(`build it with: npx tsx --env-file=.env.local scripts/build-site.ts ${siteFile} --media ${mediaDir}\n`);
     return;
   }
   if (newSceneKeys.length > 0) {
     const falKey = process.env['FAL_API_KEY'];
-    if (falKey === undefined || falKey === '') fail('FAL_API_KEY is needed to make the photos behind a Scenic page');
+    if (falKey === undefined || falKey === '') fail('FAL_API_KEY is needed to make the site’s background photos');
     process.stdout.write(`making ${newSceneKeys.length} background photos for ${forBuild.businessName}…\n`);
     const made = await makeScenes(
       {
@@ -207,7 +210,7 @@ async function main(): Promise<void> {
     );
     if (!made.ok) fail(`the background photos failed: ${made.error}`);
     for (const m of made.scenes) process.stdout.write(`  ${m.key} (${m.tone}) ${m.url}\n    ${m.tags.join(', ')}\n`);
-    process.stdout.write(`behind the page: ${newSceneKeys[0]}; the others are in the library to swap to\n`);
+    process.stdout.write(`the site’s background: ${newSceneKeys[0]}; the others are in the library to swap to\n`);
   }
   const build = spawnSync('npx', ['tsx', '--env-file=.env.local', 'scripts/build-site.ts', siteFile, '--media', mediaDir, ...(rest.includes('--live') ? ['--live'] : [])], { stdio: 'inherit', shell: true });
   if (build.status !== 0) fail('the build failed (above); the intake stays new');

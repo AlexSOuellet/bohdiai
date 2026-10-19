@@ -10,14 +10,19 @@ import {
 import { applyPlan } from './apply';
 
 describe('what each plan switches on', () => {
-  it('gives Showcase dates-only markets and no shop', () => {
+  it('gives Showcase its catalog with no shop, its headline, and dates-only markets', () => {
     expect([...PLAN_FEATURES.showcase].sort()).toEqual([
-      'gallery',
+      'gallery_pieces',
+      'headline',
       'market_dates',
       'plan',
       'profile',
       'qr_codes',
     ]);
+  });
+
+  it('gives every plan the headline', () => {
+    for (const plan of ['showcase', 'lite', 'full'] as const) expect(PLAN_FEATURES[plan]).toContain('headline');
   });
 
   it('adds the catalog and the point of sale at Lite, and market records only at Full', () => {
@@ -31,7 +36,9 @@ describe('what each plan switches on', () => {
   });
 
   it('builds on the plan below, and only names real switches', () => {
-    for (const k of PLAN_FEATURES.showcase) expect(PLAN_FEATURES.lite).toContain(k);
+    // Showcase's gallery from the catalog gives way to the shop itself on Market.
+    for (const k of PLAN_FEATURES.showcase) expect(PLAN_FEATURES.lite).toContain(k === 'gallery_pieces' ? 'catalog' : k);
+    expect(PLAN_FEATURES.lite).not.toContain('gallery_pieces');
     for (const k of PLAN_FEATURES.lite) expect(PLAN_FEATURES.full).toContain(k);
     for (const k of PLAN_MANAGED) expect(Object.keys(FEATURES)).toContain(k);
   });
@@ -45,7 +52,10 @@ describe('what each plan switches on', () => {
     const rows = planFeatureRows('showcase');
     expect(rows).toHaveLength(PLAN_MANAGED.length);
     expect(rows.find((r) => r.feature_key === 'catalog')?.enabled).toBe(false);
-    expect(rows.find((r) => r.feature_key === 'gallery')?.enabled).toBe(true);
+    expect(rows.find((r) => r.feature_key === 'gallery_pieces')?.enabled).toBe(true);
+    // The old Gallery screen of loose photos is off on Showcase and back on above it.
+    expect(rows.find((r) => r.feature_key === 'gallery')?.enabled).toBe(false);
+    expect(planFeatureRows('lite').find((r) => r.feature_key === 'gallery_pieces')?.enabled).toBe(false);
   });
 });
 
@@ -58,7 +68,7 @@ describe('moving between plans', () => {
 
   it('names what a move down puts away, and nothing for a move up', () => {
     expect(hiddenByMove('full', 'showcase')).toEqual([
-      'Your products and collections, with prices',
+      'Your shop page, collections and prices (your products are kept)',
       'Market hours, addresses, booths and websites',
       'The point of sale at markets: the QR shop page, Getting paid and Today',
       'Extra photos on each product (the main photo stays)',

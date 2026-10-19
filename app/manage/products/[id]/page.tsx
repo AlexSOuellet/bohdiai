@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { requireActingSite } from '@/lib/backend/current-site';
 import { getSiteFeatures } from '@/lib/backend/site-features';
+import { hasProducts } from '@/lib/backend/features';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { getProduct, listCollections, countHomeProducts } from '@/lib/backend/catalog/queries';
 import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
@@ -20,7 +21,7 @@ export default async function EditProductPage({
   if (!ID.test(id)) notFound();
   const { site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
-  if (!on.has('catalog')) notFound();
+  if (!hasProducts(on)) notFound();
   const db = await createSupabaseServerClient();
   const [product, collections, homeCount] = await Promise.all([
     getProduct(db, site.tenantId, id),
@@ -40,6 +41,7 @@ export default async function EditProductPage({
       newArrivals={on.has('new_arrivals')}
       shopUrl={storefrontOrigin(site.subdomain, (await headers()).get('host'))}
       homeCount={homeCount}
+      showcase={!on.has('catalog')}
     />
   );
 }

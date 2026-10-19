@@ -17,7 +17,8 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 import type { Database, Json } from '../lib/database.types';
-import { buildProfileRow, type ProfileForm } from '../lib/backend/profile/profile-form';
+import { buildProfileHomes, type ProfileForm } from '../lib/backend/profile/profile-form';
+import { writeProfileHomes } from '../lib/backend/profile/homes';
 import { BOUTIQUE_DESIGNS, type BoutiqueDesign } from '../lib/archetypes/boutique/design';
 import { BUILDER_EMAIL, ensureBuilderAccess } from '../lib/backend/builder-access';
 import { GALLERY_LIMIT, CAPTION_MAX } from '../lib/backend/gallery/gallery-form';
@@ -84,7 +85,7 @@ async function main(): Promise<void> {
   const site = (await import(`./sites/${siteKey}.ts`)) as BoutiqueSiteModule;
   if (!(BOUTIQUE_DESIGNS as readonly string[]).includes(site.SITE.design))
     fail(`unknown design: ${site.SITE.design}`);
-  const profile = buildProfileRow(site.PROFILE);
+  const profile = buildProfileHomes(site.PROFILE);
   if (!profile.ok) fail(`profile invalid: ${profile.error}`);
   const files = [
     ...site.BABIES.flatMap((b) => b.photos),
@@ -267,8 +268,11 @@ async function main(): Promise<void> {
     .maybeSingle();
   if (pErr !== null) fail(`profile lookup failed: ${pErr.message}`);
   if (existingProfile === null || replaceProfile) {
-    const { error } = await db.from('site_profiles').upsert({ tenant_id: tid, ...profile.row });
-    if (error !== null) fail(`profile write failed: ${error.message}`);
+    try {
+      await writeProfileHomes(db, tid, profile.homes);
+    } catch (err) {
+      fail(`profile write failed: ${err instanceof Error ? err.message : String(err)}`);
+    }
     process.stdout.write('About you written\n');
   } else {
     process.stdout.write('About you kept (owner’s version; --replace-profile to overwrite)\n');

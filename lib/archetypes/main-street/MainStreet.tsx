@@ -17,12 +17,15 @@ import { MainStreetRoot, MainStreetFooter } from './chrome';
 import { resolveHero } from './hero-catalog';
 import { Close } from './beats';
 import { GoodsBeat } from './GoodsBeat';
+import { GalleryBeat } from './GalleryBeat';
 import { MarqueeBeat } from './MarqueeBeat';
 import { buildMarqueeLines } from './marquee';
 import { CollectionsBeat } from './CollectionsBeat';
 import { ReviewsBeat } from './ReviewsBeat';
 import { FounderBeat } from './FounderBeat';
 import { FindUsBeat } from './FindUsBeat';
+import { OnePageStory, STORY_ID } from './OnePageStory';
+import { ContactBeat } from './ContactBeat';
 import type { GoodsTreatment } from './goods';
 import type { CollectionView, CollectionsTreatment } from './collections';
 import type { ReviewsTreatment } from './reviews';
@@ -132,17 +135,30 @@ export function MainStreet({ content, skin, words, products, sectionStack, catal
   // try-on Cheerful (originalMood !== 'cheerful') derives from real products. For
   // every other current family this is a passthrough. See collage-source.ts + D73.
   const heroMoment = resolveCollageShots(content.moment, family, products, originalMood);
+  // A one-page site (Showcase): the whole story and the contact form on the home
+  // page, every date in the dates section (there is no Events page to send anyone to).
+  const onePage = content.identity.onePage === true;
 
   const renderers: Record<SectionKey, () => React.ReactNode | null> = {
     hero: () => resolveHero(heroVariant)({ identity: content.identity, moment: heroMoment, skin, words, momentKey }),
-    founder: () => (
-      <Reveal>
-        <FounderBeat founder={content.founder} skin={skin} words={words} treatment={founderTreatment} aboutHref={aboutHref} aboutPage={content.about} />
-      </Reveal>
-    ),
+    founder: () => (onePage
+      ? (
+        <>
+          <Reveal>
+            <FounderBeat founder={content.founder} skin={skin} words={words} treatment={founderTreatment} aboutPage={content.about} aboutHref={`#${STORY_ID}`} showAboutCue={(content.about?.story.length ?? 0) > 0} />
+          </Reveal>
+          <OnePageStory story={content.about?.story ?? []} />
+        </>
+      )
+      : (
+        <Reveal>
+          <FounderBeat founder={content.founder} skin={skin} words={words} treatment={founderTreatment} aboutHref={aboutHref} aboutPage={content.about} />
+        </Reveal>
+      )),
     goods: () => (
       <GoodsBeat goods={content.goods} products={products} skin={skin} words={words} treatment={goodsTreatment} catalogSize={catalogSize} shopHref={shopHref} />
     ),
+    gallery: () => (content.gallery ? <GalleryBeat gallery={content.gallery} words={words} /> : null),
     collections: () => (collectionsSection && collections && collections.length > 0
       ? (
         <Reveal>
@@ -167,7 +183,7 @@ export function MainStreet({ content, skin, words, products, sectionStack, catal
     findUs: () => (content.founder.findUs && content.founder.findUs.rows.length > 0
       ? (
         <Reveal>
-          <FindUsBeat findUs={content.founder.findUs} skin={skin} words={words} treatment={findUsTreatment} eventsHref={eventsHref} />
+          <FindUsBeat findUs={content.founder.findUs} skin={skin} words={words} treatment={findUsTreatment} eventsHref={eventsHref} full={onePage} />
         </Reveal>
       )
       : null),
@@ -200,11 +216,21 @@ export function MainStreet({ content, skin, words, products, sectionStack, catal
       <main>
         {bodyEntries.map((entry, i) => (
           <div key={`${entry.section}-${i}`} className="ms-beat" data-ms-beat={entry.section}>
+            {/* The beat wrapper takes no space of its own, so a one-page jump needs a marker with a box. */}
+            {onePage && entry.section === 'founder' && <span id="about" className="ms-anchor" aria-hidden="true" />}
             {renderers[entry.section]()}
           </div>
         ))}
+        {onePage && momentKey !== undefined && (
+          <div className="ms-beat" data-ms-beat="contact">
+            <span id="contact" className="ms-anchor" aria-hidden="true" />
+            <Reveal>
+              <ContactBeat contact={content.contact} phone={content.phone} words={words} tenantId={momentKey} />
+            </Reveal>
+          </div>
+        )}
       </main>
-      <MainStreetFooter shopName={content.shopName} words={words} />
+      <MainStreetFooter shopName={content.shopName} words={words} socials={content.socials} />
     </MainStreetRoot>
   );
 }

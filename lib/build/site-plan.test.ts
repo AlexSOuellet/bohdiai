@@ -172,8 +172,9 @@ describe('planSite — the photo behind a Scenic site', () => {
     expect(errorsOf(scenic({ scene: { photo: { file: 'bay.mp4', alt: '' } } }))).toContain(`scene: "bay.mp4" isn't a photo`);
   });
 
-  it('no other family has one', () => {
-    expect(errorsOf(familySite({ scene: { library: 'marsh' } }))).toContain('scene: only a Scenic site has a photo behind its page');
+  it('any other family may have one (for wearing Scenic later), and needn’t', () => {
+    const withScene = planSite(familySite({ scene: { library: 'marsh' } }));
+    expect(withScene.ok ? withScene.plan.scene : withScene.errors).toEqual({ library: 'marsh' });
     const r = planSite(familySite());
     expect(r.ok ? r.plan.scene : r.errors).toBeNull();
   });

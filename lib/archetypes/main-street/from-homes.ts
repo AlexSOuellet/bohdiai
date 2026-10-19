@@ -26,6 +26,7 @@ import { fill } from '@/lib/site-words/words';
 import { findUsLocale } from './findus';
 import type { FamilyWords } from './words';
 import type { MainStreetView } from './schemas';
+import { loadSiteGallery, type GalleryPiece } from '@/lib/storefront/site-gallery';
 
 /** Everything a family page reads, gathered from the homes. */
 export type FamilyHomes = {
@@ -40,6 +41,8 @@ export type FamilyHomes = {
   portraitUrl: string | null;
   testimonials: Testimonial[];
   dates: MarketDate[];
+  /** The gallery section's pieces (empty when the site has none). */
+  gallery: GalleryPiece[];
 };
 
 const orUndefined = (s: string): string | undefined => (s === '' ? undefined : s);
@@ -118,6 +121,9 @@ export function familyViewFromHomes(h: FamilyHomes, w: FamilyWords): MainStreetV
       secondaryCtaTarget: openTarget(m.secondCtaTarget, h.linkTargets),
     },
     goods: { title: s.work.title, label: orUndefined(s.work.kicker), viewAllLabel: orUndefined(s.work.moreLabel) },
+    gallery: h.gallery.length === 0 ? undefined : { title: s.gallery.title, label: orUndefined(s.gallery.kicker), items: h.gallery },
+    socials: p.facebookUrl === '' && p.instagramUrl === '' ? undefined : { facebookUrl: p.facebookUrl, instagramUrl: p.instagramUrl },
+    phone: orUndefined(p.phone),
     collections: { title: s.collections.title, label: orUndefined(s.collections.kicker), viewAllLabel: orUndefined(s.collections.moreLabel) },
     reviews: h.testimonials.length === 0
       ? undefined
@@ -161,9 +167,10 @@ export async function loadFamilyHomes(db: SupabaseClient<Database>, tenantId: st
   ]);
   if (tenant.error !== null) throw new Error(`Could not load the site: ${tenant.error.message}`);
   if (tenant.data === null) throw new Error('Could not load the site: no such tenant');
-  const [testimonials, dates] = await Promise.all([
+  const [testimonials, dates, gallery] = await Promise.all([
     features.has('testimonials') ? listTestimonials(db, tenantId) : Promise.resolve([]),
     features.has('market_dates') ? listVisitorMarketDates(db, tenantId) : Promise.resolve([]),
+    loadSiteGallery(db, tenantId, features),
   ]);
   return {
     name: tenant.data.business_name,
@@ -175,6 +182,7 @@ export async function loadFamilyHomes(db: SupabaseClient<Database>, tenantId: st
     portraitUrl,
     testimonials,
     dates,
+    gallery,
   };
 }
 

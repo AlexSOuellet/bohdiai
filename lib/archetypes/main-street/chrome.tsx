@@ -7,6 +7,7 @@
  * the goods marquee, responsive rules). The beats then reference vars and
  * `color-mix` derivations — never literals. Structure only; no niche words.
  */
+import { SocialIcons } from '../card/SocialIcons';
 import React from 'react';
 import Link from 'next/link';
 import type { ArchetypeTheme, TypeRole } from '../types';
@@ -19,6 +20,8 @@ import { IntroReplayLink } from './IntroReplayLink';
 import { Type } from './Type';
 import { VINTAGE_CSS } from './vintage-styles';
 import { SCENIC_CSS } from './scenic-styles';
+import { GALLERY_CSS } from './gallery-styles';
+import { ONE_PAGE_CSS } from './onepage-styles';
 import { SPOTLIGHT_CSS } from './spotlight-styles';
 import type { FamilyWords } from './words';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
@@ -1102,10 +1105,13 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       .arch-main-street .ms-splithero-media{min-height:56vh}
     }
     /* Stacked hero — a nav row, a centered text block, then a media band. */
-    .arch-main-street .ms-stackedhero{display:flex;flex-direction:column;min-height:100vh;background:var(--ms-bg);color:var(--ms-fg)}
+    .arch-main-street .ms-stackedhero{display:flex;flex-direction:column;background:var(--ms-bg);color:var(--ms-fg)}
     .arch-main-street .ms-stackedhero .ms-hero-navbar{position:relative}
     .arch-main-street .ms-stackedhero-stack{display:flex;flex-direction:column;align-items:center;text-align:center;padding:clamp(32px,6vh,72px) clamp(24px,6vw,64px)}
-    .arch-main-street .ms-stackedhero-media{position:relative;overflow:hidden;background:var(--ms-contrast-bg);flex:1;min-height:40vh}
+    .arch-main-street .ms-stackedhero-media{position:relative;overflow:hidden;background:var(--ms-contrast-bg);flex:none;height:min(56.25vw,82vh);min-height:40vh}
+    /* The photo fills a widescreen band, cropped to fit, so a tall photo can't
+       stretch the opening to several screens and a wide one isn't squashed. */
+    .arch-main-street .ms-stackedhero-media > .archetype-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
     /* Typographic hero — the type carries it; when moment.media is a still an
        optional backdrop paints a subtle atmospheric photo layer behind the type,
        kept quiet by a surface-color overlay so the type stays clearly readable. */
@@ -1497,6 +1503,8 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     }
     .arch-main-street .ms-subs-desc{color:var(--ms-fg-muted);margin:0 0 16px}
     .arch-main-street .ms-subs-cue{color:var(--ms-accent)}
+    ${GALLERY_CSS}
+    ${ONE_PAGE_CSS}
     ${VINTAGE_CSS}
     ${SCENIC_CSS}
     ${SPOTLIGHT_CSS}
@@ -1555,6 +1563,12 @@ export const MAIN_STREET_NAV: ReadonlyArray<{ href: string; word: 'navShop' | 'n
   { href: '/about', word: 'navAbout' },
   { href: '/events', word: 'navEvents' },
   { href: '/contact', word: 'navContact' },
+];
+
+/** A one-page site's menu: About and Contact, each a jump down the home page (no Events: Showcase has a small dates section only). */
+export const ONE_PAGE_NAV: ReadonlyArray<{ href: string; word: 'navAbout' | 'navContact' }> = [
+  { href: '/#about', word: 'navAbout' },
+  { href: '/#contact', word: 'navContact' },
 ];
 
 /** Return the store's nav — the fixed page list from `MAIN_STREET_NAV`, in the
@@ -1618,8 +1632,10 @@ export function Nav({
    *  Absent on the home (the wordmark is "home"), so no link is current there. */
   currentHref?: string | undefined;
 }) {
-  // Showcase has no shop or collections to link to.
-  const items = identity.showsShop === false ? resolveNav(words).filter((n) => n.href !== '/shop' && n.href !== '/collections') : resolveNav(words);
+  // A one-page site (Showcase) jumps down its home page; otherwise Showcase still has no shop or collections.
+  const items = identity.onePage === true
+    ? ONE_PAGE_NAV.map((n) => ({ href: n.href, label: words[n.word] }))
+    : identity.showsShop === false ? resolveNav(words).filter((n) => n.href !== '/shop' && n.href !== '/collections') : resolveNav(words);
   // Only a shop that sells online (Full) has a cart to link to.
   const allItems: MobileNavItem[] = identity.sellsOnline === true ? [...items, { href: '/cart', label: <CartCount label={words.cart.navCount} labelEmpty={words.navCart} /> }] : [...items];
   const variant = identity.navVariant ?? 'standard';
@@ -1706,10 +1722,13 @@ export function Nav({
  * bohdiai.com address. A shop on its own custom domain shows only its own name
  * (wired with custom domains; until then every shop is on a subdomain).
  */
-export function MainStreetFooter({ shopName, words, platformCredit = true }: { shopName: string; words: FamilyWords; platformCredit?: boolean }) {
+export function MainStreetFooter({ shopName, words, platformCredit = true, socials }: { shopName: string; words: FamilyWords; platformCredit?: boolean; socials?: MainStreetView['socials'] }) {
   return (
     <footer className="ms-footer">
       <Type as="span" role="wordmark">{shopName}</Type>
+      {socials !== undefined && (
+        <SocialIcons facebookUrl={socials.facebookUrl} instagramUrl={socials.instagramUrl} className="ms-footer-social" labels={{ facebook: words.footerFacebook, instagram: words.footerInstagram }} />
+      )}
       <div className="ms-footer-row">
         <Type as={Link} role="legal" href="/" className="ms-footer-link">
           {words.footerHome}

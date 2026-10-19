@@ -12,6 +12,7 @@
  * homes. With --plan the site is put on that plan (its switches set). Refuses a
  * site that isn't an old family sample, or that already has content in a home.
  */
+import { writeProfileHomes } from '../lib/backend/profile/homes';
 import { createClient } from '@supabase/supabase-js';
 import type { Database, Json } from '../lib/database.types';
 import { holdsLegacyContent } from '../lib/archetypes/main-street/from-homes';
@@ -119,8 +120,11 @@ async function main(): Promise<void> {
     if (error !== null) fail(`section words failed: ${error.message}`);
   }
   const portraitId = homes.portraitUrl === null ? null : await recordUpload(db, tid, homes.portraitUrl, legacy.founder.photo.alt);
-  const { error: prErr } = await db.from('site_profiles').insert({ tenant_id: tid, ...homes.profile, portrait_upload_id: portraitId });
-  if (prErr !== null) fail(`About you failed: ${prErr.message}`);
+  try {
+    await writeProfileHomes(db, tid, homes.profile, { portrait_upload_id: portraitId });
+  } catch (err) {
+    fail(`About you failed: ${err instanceof Error ? err.message : String(err)}`);
+  }
   if (homes.testimonials.length > 0) {
     const { error } = await db.from('site_testimonials').insert(homes.testimonials.map((t, position) => ({ tenant_id: tid, ...t, position })));
     if (error !== null) fail(`testimonials failed: ${error.message}`);

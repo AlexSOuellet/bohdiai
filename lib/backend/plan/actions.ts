@@ -16,6 +16,9 @@ import { requireActingSite } from '@/lib/backend/current-site';
 import { getSiteFeatures } from '@/lib/backend/site-features';
 import { supabaseAdmin } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
+import { sendPlanChange, type PlanChange } from './emails';
+import { longDay } from './billing';
+import { planOf } from './plan';
 import { isSitePlan } from './plan';
 import { loadPlanState, type PlanState } from './queries';
 import { moveOf } from './plan-features';
@@ -67,6 +70,43 @@ async function writeTerms(
   return error === null;
 }
 
+/** Email the maker (and Alex a copy) about a change that has happened. */
+async function tell(change: PlanChange): Promise<void> {
+  const { user, site } = await requireActingSite();
+  await sendPlanChange({ siteName: site.businessName, subdomain: site.subdomain, makerEmail: user.email ?? '', change });
+}
+
+/** Cancel: the site stays up to the end of its current term, then comes down
+ *  (kept and hidden, never deleted). Any site on a plan; Alex, 2026-10-19. */
+export async function cancelAtTermEnd(): Promise<ChangePlanResult> {
+  const { site } = await requireActingSite();
+  const on = await getSiteFeatures(site.tenantId);
+  if (!on.has('plan')) return { ok: false, error: 'This site isn’t on a plan yet.' };
+  const state = await loadPlanState(supabaseAdmin(), site.tenantId);
+  if (state === null) return { ok: false, error: 'This site isn’t on a plan yet.' };
+  const { error } = await supabaseAdmin().from('tenants').update({ plan_cancels: true }).eq('id', site.tenantId);
+  if (error !== null) {
+    logger.error('plan cancel failed', { tenantId: site.tenantId, error: error.message });
+    return { ok: false, error: 'Your cancellation couldn’t be saved. Try again in a moment.' };
+  }
+  await tell({ kind: 'cancel', on: longDay(state.renewsOn) });
+  return done();
+}
+
+/** Keep my site: withdraw a cancellation before the term ends. */
+export async function keepSite(): Promise<ChangePlanResult> {
+  const { site } = await requireActingSite();
+  const on = await getSiteFeatures(site.tenantId);
+  if (!on.has('plan')) return { ok: false, error: 'This site isn’t on a plan yet.' };
+  const { error } = await supabaseAdmin().from('tenants').update({ plan_cancels: false }).eq('id', site.tenantId);
+  if (error !== null) {
+    logger.error('plan keep failed', { tenantId: site.tenantId, error: error.message });
+    return { ok: false, error: 'That couldn’t be saved. Try again in a moment.' };
+  }
+  await tell({ kind: 'keep' });
+  return done();
+}
+
 function done(): ChangePlanResult {
   revalidatePath('/manage', 'layout');
   return { ok: true };
@@ -107,6 +147,7 @@ export async function upgradePlan(to: unknown, billing: unknown): Promise<Change
     }))
   )
     return { ok: false, error: FAILED };
+  await tell({ kind: 'upgrade', to: planOf(to).name });
   return done();
 }
 
@@ -142,6 +183,7 @@ export async function scheduleDowngrade(to: unknown, billing: unknown, showcase:
     }))
   )
     return { ok: false, error: FAILED };
+  await tell({ kind: 'downgrade', to: planOf(to).name, on: longDay(state.renewsOn) });
   return done();
 }
 
@@ -151,6 +193,7 @@ export async function cancelScheduledChange(): Promise<ChangePlanResult> {
   if (!ready.ok) return ready;
   if (!(await writeTerms(ready.tenantId, { plan_next: null, plan_next_billing: null, plan_next_gallery: null })))
     return { ok: false, error: FAILED };
+  await tell({ kind: 'downgrade-dropped', stays: planOf(ready.state.plan).name });
   return done();
 }
 
@@ -191,6 +234,7 @@ export async function skipToRenewal(): Promise<ChangePlanResult> {
   ) {
     return { ok: false, error: FAILED };
   }
+  await tell({ kind: 'renewed', plan: planOf(state.next ?? state.plan).name });
   return done();
 }
 

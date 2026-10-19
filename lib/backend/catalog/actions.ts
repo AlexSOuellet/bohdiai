@@ -11,13 +11,14 @@ import { revalidatePath } from 'next/cache';
 import type { Json } from '@/lib/database.types';
 import { requireActingSite } from '@/lib/backend/current-site';
 import { getSiteFeatures } from '@/lib/backend/site-features';
-import type { FeatureKey } from '@/lib/backend/features';
+import { hasProducts, type FeatureKey } from '@/lib/backend/features';
+import { isFamilySite } from '@/lib/backend/site-kind';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { storeSitePhoto } from '@/lib/backend/site-photo';
 import { logger } from '@/lib/logger';
 import { slugify, uniqueSlug, slugLookupPrefix } from '@/lib/catalog/slug';
-import { buildProductPayload, type ProductForm } from './product-form';
+import { buildProductPayload, GALLERY_MAX, type ProductForm } from './product-form';
 import { buildCollectionPayload, type CollectionForm } from './collection-form';
 import type { SaveResult, PhotoResult, FileResult, DoneResult } from './results';
 
@@ -26,6 +27,11 @@ const CATALOG_OFF = 'Products aren’t switched on for this site.';
 const HOME_LIMIT_CODE = 'P0010';
 /** The list's refusal when a sixth product is ticked (the same words the list shows before asking). */
 const HOME_LIMIT = 'Your home page shows up to 5 products. Untick one first.';
+/** set_listing_in_gallery raises this SQLSTATE when a thirteenth product would go in the gallery. */
+const GALLERY_LIMIT_CODE = 'P0011';
+const GALLERY_LIMIT = `Your gallery shows up to ${GALLERY_MAX} pieces. Untick one first.`;
+const COLLECTIONS_OFF = 'Collections aren’t switched on for this site.';
+const GALLERY_OFF = 'Picking gallery pieces isn’t switched on for this site.';
 const DIGITAL_OFF = 'Downloads aren’t switched on for this site.';
 const FILE_TYPES: Readonly<Record<string, string>> = {
   'application/pdf': 'pdf',
@@ -62,10 +68,17 @@ function saveError(error: DbError, what: 'product' | 'collection', tenantId: str
   return `The ${what} couldn’t be saved. Try again in a moment.`;
 }
 
+/** The acting site when it has the Products screen (its shop, or Showcase's gallery from the catalog). */
 async function catalogSite(): Promise<CatalogSite | null> {
   const { user, site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
-  return on.has('catalog') ? { tenantId: site.tenantId, userId: user.id, on } : null;
+  return hasProducts(on) ? { tenantId: site.tenantId, userId: user.id, on } : null;
+}
+
+/** The acting site when it has collections (its shop; Showcase has none). */
+async function collectionsSite(): Promise<CatalogSite | null> {
+  const site = await catalogSite();
+  return site !== null && site.on.has('catalog') ? site : null;
 }
 
 async function freeSlug(
@@ -243,8 +256,8 @@ export async function uploadProductFile(formData: FormData): Promise<FileResult>
 }
 
 export async function saveCollection(form: CollectionForm): Promise<SaveResult> {
-  const site = await catalogSite();
-  if (site === null) return { ok: false, error: CATALOG_OFF };
+  const site = await collectionsSite();
+  if (site === null) return { ok: false, error: COLLECTIONS_OFF };
   const built = buildCollectionPayload(form);
   if (!built.ok) return built;
   const db = await createSupabaseServerClient();
@@ -312,9 +325,40 @@ export async function setProductOnHome(id: string, onHome: boolean): Promise<Don
   return { ok: true };
 }
 
-export async function orderCollections(ids: string[]): Promise<DoneResult> {
+/** Tick or untick one product for the gallery (Showcase), straight from the products
+ *  list. Writes only that tick; the database keeps the at-most-12 rule in the same step. */
+export async function setProductInGallery(id: string, inGallery: boolean): Promise<DoneResult> {
   const site = await catalogSite();
-  if (site === null) return { ok: false, error: CATALOG_OFF };
+  // Showcase's gallery, or a standard site's gallery on Market and Full.
+  if (site === null || !(site.on.has('gallery_pieces') || (site.on.has('catalog') && (await isFamilySite(supabaseAdmin(), site.tenantId)))))
+    return { ok: false, error: GALLERY_OFF };
+  if (typeof id !== 'string' || typeof inGallery !== 'boolean')
+    return { ok: false, error: HOME_NOT_SAVED };
+  const db = await createSupabaseServerClient();
+  const { error } = await db.rpc('set_listing_in_gallery', {
+    p_tenant_id: site.tenantId,
+    p_listing_id: id,
+    p_in_gallery: inGallery,
+  });
+  if (error !== null) {
+    if (error.code === GALLERY_LIMIT_CODE) return { ok: false, error: GALLERY_LIMIT };
+    if (error.code === 'P0002')
+      return { ok: false, error: 'That product no longer exists. Reload the page.' };
+    logger.error('catalog: gallery tick failed', {
+      tenantId: site.tenantId,
+      code: error.code,
+      error: error.message,
+    });
+    return { ok: false, error: HOME_NOT_SAVED };
+  }
+  revalidatePath('/manage/products');
+  revalidatePath('/manage');
+  return { ok: true };
+}
+
+export async function orderCollections(ids: string[]): Promise<DoneResult> {
+  const site = await collectionsSite();
+  if (site === null) return { ok: false, error: COLLECTIONS_OFF };
   const db = await createSupabaseServerClient();
   const { error } = await db.rpc('order_collections', { p_tenant_id: site.tenantId, p_ids: ids });
   if (error !== null) {

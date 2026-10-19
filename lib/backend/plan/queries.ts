@@ -14,6 +14,8 @@ export type PlanState = {
   comp: PlanComp | null;
   /** The products she picked to show when a downgrade to Showcase takes effect. */
   nextGallery: string[];
+  /** The site closes at the end of its current term (Cancel on Your plan). */
+  cancels: boolean;
   /** Today in the shop's time zone. */
   today: string;
 };
@@ -28,7 +30,7 @@ export async function loadPlanState(
   const { data, error } = await db
     .from('tenants')
     .select(
-      'plan, plan_billing, plan_renews_on, plan_next, plan_next_billing, plan_credit_cents, plan_next_gallery, plan_comp, time_zone',
+      'plan, plan_billing, plan_renews_on, plan_next, plan_next_billing, plan_credit_cents, plan_next_gallery, plan_comp, plan_cancels, time_zone',
     )
     .eq('id', tenantId)
     .maybeSingle();
@@ -44,6 +46,7 @@ export async function loadPlanState(
     creditCents: data.plan_credit_cents,
     comp: isPlanComp(data.plan_comp) ? data.plan_comp : null,
     nextGallery: data.plan_next_gallery ?? [],
+    cancels: data.plan_cancels,
     today,
   };
 }

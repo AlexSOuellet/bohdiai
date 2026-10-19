@@ -39,13 +39,15 @@ import { SCENIC_PREVIEW } from './scenes';
 export const FAMILY_KEYS = ['cozy', 'rustic', 'dark', 'luxury', 'cheerful', 'modern', 'vintage', 'scenic', 'spotlight'] as const;
 export type FamilyKey = (typeof FAMILY_KEYS)[number];
 
-/** The nine positions in every family's home page.
+/** The ten positions in every family's home page (the gallery, an added section,
+ *  sits right after the pieces; it shows only when the site has a gallery).
  *  `founder` is the About-the-maker beat (kept as `founder` to match the
  *  existing renderer + content schema — the section's public label is "About"). */
 export const SECTION_KEYS = [
   'hero',
   'founder',
   'goods',
+  'gallery',
   'collections',
   'reviews',
   'findUs',
@@ -166,6 +168,7 @@ const COZY: Family = {
     on('hero'),
     on('founder', { lead: true }),
     on('goods'),
+    on('gallery'),
     on('collections'),
     on('reviews'),
     on('findUs'),
@@ -208,6 +211,7 @@ const RUSTIC: Family = {
     on('marquee'),
     on('founder', { lead: true }),
     on('goods'),
+    on('gallery'),
     on('findUs'),
     on('collections'),
     on('reviews'),
@@ -247,6 +251,7 @@ const DARK: Family = {
   sectionStack: [
     on('hero'),
     on('goods', { lead: true }),
+    on('gallery'),
     on('founder'),
     on('collections'),
     on('reviews'),
@@ -289,6 +294,7 @@ const LUXURY: Family = {
     on('hero'),
     on('collections', { lead: true }),
     on('goods'),
+    on('gallery'),
     on('reviews'),
     on('founder'),
     on('findUs'),
@@ -330,6 +336,7 @@ const CHEERFUL: Family = {
     on('hero'),
     on('marquee', { lead: true }),
     on('goods'),
+    on('gallery'),
     on('reviews'),
     on('collections'),
     on('founder'),
@@ -370,6 +377,7 @@ const MODERN: Family = {
   sectionStack: [
     on('hero'),
     on('goods', { lead: true }),
+    on('gallery'),
     on('marquee'),
     on('collections'),
     on('founder'),
@@ -417,6 +425,7 @@ const VINTAGE: Family = {
   sectionStack: [
     on('hero'),
     on('goods', { lead: true }),
+    on('gallery'),
     on('founder'),
     on('collections'),
     on('findUs'),
@@ -464,6 +473,7 @@ const SCENIC: Family = {
   sectionStack: [
     on('hero'),
     on('goods', { lead: true }),
+    on('gallery'),
     on('founder'),
     on('findUs'),
     on('collections'),
@@ -512,6 +522,7 @@ const SPOTLIGHT: Family = {
     on('hero'),
     on('findUs'),
     on('goods', { lead: true }),
+    on('gallery'),
     on('founder'),
     on('collections'),
     on('reviews'),

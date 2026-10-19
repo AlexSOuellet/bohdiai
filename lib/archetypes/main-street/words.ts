@@ -37,6 +37,9 @@ export const FAMILY_WORD_SPOTS = {
   footerTerms: '',
   footerCreditPrefix: '',
   footerCreditBrand: '',
+  /** The footer's social icons, named for screen readers. */
+  footerFacebook: '',
+  footerInstagram: '',
   fallbackSeeAllGoods: '',
   fallbackReadFullStory: '',
   fallbackSeeAllDates: '',
@@ -75,6 +78,22 @@ export const FAMILY_WORD_SPOTS = {
   nextStopWhen: '',
   nextStopAccent: '',
   posterDay: '',
+  /** The gallery section and its photo viewer. */
+  gallery: {
+    /** A photo's button: "Open photo: {caption}". */
+    open: '',
+    /** A photo with no name: "Open photo {n}". */
+    openNumbered: '',
+    lightbox: {
+      label: '',
+      close: '',
+      prev: '',
+      next: '',
+      /** "{n} of {of}". */
+      count: '',
+      separator: '',
+    },
+  },
   /** The cart and its order form (Full). */
   cart: {
     /** The menu's cart with its count: "Cart ({n})" (empty, it's `navCart`). */

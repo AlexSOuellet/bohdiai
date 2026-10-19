@@ -15,6 +15,7 @@ import {
   type ItemStatus,
   type PhotoForm,
   HOME_MAX,
+  GALLERY_MAX,
 } from '@/lib/backend/catalog/product-form';
 import { ConfirmButton } from '../../_components/ConfirmButton';
 import { useNotice } from '../../_components/Notice';
@@ -52,6 +53,7 @@ export function ProductEditor({
   newArrivals = false,
   shopUrl,
   homeCount,
+  showcase = false,
 }: {
   initial: ProductForm;
   collections: { id: string; name: string }[];
@@ -63,6 +65,9 @@ export function ProductEditor({
   shopUrl: string;
   /** How many OTHER products are on the home page (not archived, not deleted). */
   homeCount: number;
+  /** Showcase: no shop, so no shop link, home tick, stock, options or collections.
+   *  The price is kept for when the site moves up to Market. */
+  showcase?: boolean;
 }): React.ReactElement {
   const router = useRouter();
   const [form, setForm] = useState(initial);
@@ -219,7 +224,7 @@ export function ProductEditor({
       <div className="bk-head">
         <h1 className="bk-title">{isNew ? 'New product' : stored.name}</h1>
         <div className="bk-head-actions">
-          {!isNew && stored.status === 'active' && stored.slug !== null && (
+          {!showcase && !isNew && stored.status === 'active' && stored.slug !== null && (
             <a
               className="bk-btn bk-btn-quiet"
               href={`${shopUrl}/listings/${stored.slug}`}
@@ -280,23 +285,29 @@ export function ProductEditor({
               onChange={(e) => update({ name: e.target.value })}
             />
           </div>
-          <div className="bk-field">
-            <label className="bk-check">
-              <input
-                type="checkbox"
-                checked={form.onHome}
-                disabled={homeFull}
-                aria-describedby={homeFull ? 'home-full-note' : undefined}
-                onChange={(e) => update({ onHome: e.target.checked })}
-              />
-              Show on your home page
-            </label>
-            {homeFull && (
-              <p id="home-full-note" className="bk-note">
-                {`Your home page already shows ${HOME_MAX} products. Untick one to add this one.`}
-              </p>
-            )}
-          </div>
+          {showcase ? (
+            <p className="bk-note">
+              {`Pick which pieces show on your site with the Gallery ticks on your products list. With none picked, your site shows your newest ${GALLERY_MAX}.`}
+            </p>
+          ) : (
+            <div className="bk-field">
+              <label className="bk-check">
+                <input
+                  type="checkbox"
+                  checked={form.onHome}
+                  disabled={homeFull}
+                  aria-describedby={homeFull ? 'home-full-note' : undefined}
+                  onChange={(e) => update({ onHome: e.target.checked })}
+                />
+                Show on your home page
+              </label>
+              {homeFull && (
+                <p id="home-full-note" className="bk-note">
+                  {`Your home page already shows ${HOME_MAX} products. Untick one to add this one.`}
+                </p>
+              )}
+            </div>
+          )}
           {newArrivals && (
             <div className="bk-field">
               <label className="bk-check">
@@ -369,7 +380,7 @@ export function ProductEditor({
                 onChange={(e) => update({ price: e.target.value })}
               />
             </div>
-            {noOptions && form.kind === 'physical' && (
+            {!showcase && noOptions && form.kind === 'physical' && (
               <div className="bk-field">
                 <label htmlFor="stock" className="bk-label">
                   Stock
@@ -385,7 +396,13 @@ export function ProductEditor({
               </div>
             )}
           </div>
-          {!noOptions && (
+          {showcase && (
+            <p className="bk-note">
+              Prices don’t show on your site on Showcase. Fill it in anyway and it shows when you
+              move up to Market.
+            </p>
+          )}
+          {!showcase && !noOptions && (
             <p className="bk-note">
               With options, each combination below has its own stock. A blank combination price uses
               this one.
@@ -429,49 +446,53 @@ export function ProductEditor({
           )}
         </section>
 
-        <section className="bk-section" aria-labelledby="s-options">
-          <h2 id="s-options" className="bk-section-title">
-            Options
-          </h2>
-          <OptionsField
-            options={form.options}
-            variants={form.variants}
-            basePrice={form.price}
-            digital={digital}
-            onOptions={setOptions}
-            onVariants={setVariants}
-            onChoiceFile={setChoiceFile}
-            onError={notice.showError}
-          />
-        </section>
+        {!showcase && (
+          <section className="bk-section" aria-labelledby="s-options">
+            <h2 id="s-options" className="bk-section-title">
+              Options
+            </h2>
+            <OptionsField
+              options={form.options}
+              variants={form.variants}
+              basePrice={form.price}
+              digital={digital}
+              onOptions={setOptions}
+              onVariants={setVariants}
+              onChoiceFile={setChoiceFile}
+              onError={notice.showError}
+            />
+          </section>
+        )}
 
-        <section className="bk-section" aria-labelledby="s-collections">
-          <h2 id="s-collections" className="bk-section-title">
-            Collections
-          </h2>
-          {collections.length === 0 ? (
-            <p className="bk-note">No collections yet. You can make them under Collections.</p>
-          ) : (
-            <div className="bk-checks">
-              {collections.map((c) => (
-                <label key={c.id} className="bk-check">
-                  <input
-                    type="checkbox"
-                    checked={form.collectionIds.includes(c.id)}
-                    onChange={(e) =>
-                      update({
-                        collectionIds: e.target.checked
-                          ? [...form.collectionIds, c.id]
-                          : form.collectionIds.filter((x) => x !== c.id),
-                      })
-                    }
-                  />
-                  {c.name}
-                </label>
-              ))}
-            </div>
-          )}
-        </section>
+        {!showcase && (
+          <section className="bk-section" aria-labelledby="s-collections">
+            <h2 id="s-collections" className="bk-section-title">
+              Collections
+            </h2>
+            {collections.length === 0 ? (
+              <p className="bk-note">No collections yet. You can make them under Collections.</p>
+            ) : (
+              <div className="bk-checks">
+                {collections.map((c) => (
+                  <label key={c.id} className="bk-check">
+                    <input
+                      type="checkbox"
+                      checked={form.collectionIds.includes(c.id)}
+                      onChange={(e) =>
+                        update({
+                          collectionIds: e.target.checked
+                            ? [...form.collectionIds, c.id]
+                            : form.collectionIds.filter((x) => x !== c.id),
+                        })
+                      }
+                    />
+                    {c.name}
+                  </label>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
         <section className="bk-section" aria-labelledby="s-status">
           <fieldset className="bk-fieldset">

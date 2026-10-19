@@ -2,8 +2,8 @@
  * An intake submission (bohdiai.com/start) as the one builder's content file. Pure:
  * the maker's own words go in as they wrote them (their name, business, about,
  * pieces, prices); the words we write come from the drafts (lib/build/intake-drafts);
- * every button and label comes from a site of the same design. Showcase has no shop,
- * so its pieces become the gallery, with no prices.
+ * every button and label comes from a site of the same design. Showcase has no shop:
+ * its pieces are still its catalog, and the site shows them as its gallery, with no prices.
  */
 import { z } from 'zod/v4';
 import type { FamilyKey } from '@/lib/archetypes/main-street/families';
@@ -27,7 +27,7 @@ export type IntakeForBuild = {
   portraitFile: string | null;
 };
 
-/** How to build a submission: its subdomain, family and skin; on Scenic, the library scene behind the page (made for it first). */
+/** How to build a submission: its subdomain, family and skin, and the library scene made for it first (behind the page on Scenic; ready for any other family to wear Scenic). */
 export type BuildSettings = { subdomain: string; family: FamilyKey; skin: string; niche?: string; scene?: string };
 
 const SECTION_DRAFT = z.object({ kicker: z.string(), title: z.string(), lede: z.string(), moreLabel: z.string(), pageTitle: z.string() });
@@ -36,10 +36,9 @@ const SECTION_DRAFT = z.object({ kicker: z.string(), title: z.string(), lede: z.
 export function draftsSchema(plan: SitePlan) {
   const targets = planLinkTargets(plan) as readonly [LinkTarget, ...LinkTarget[]];
   return z.object({
+    // About you never holds the words at the top of the page (Alex, 2026-10-19):
+    // those are the moment's, edited on the Headline screen.
     profile: z.object({
-      kicker: z.string(),
-      headline: z.string(),
-      aboutTitle: z.string(),
       makes: z.array(z.string()),
       /** A sentence copied word for word from their about. */
       quote: z.string(),
@@ -102,9 +101,6 @@ export function siteFromIntake(intake: IntakeForBuild, d: IntakeDrafts, settings
     site: { subdomain: settings.subdomain, businessName: intake.businessName, design: 'family', family: settings.family, skin: settings.skin, plan: intake.plan, contactEmail: intake.email, ...(settings.niche === undefined ? {} : { niche: settings.niche }) },
     profile: {
       ...EMPTY_PROFILE,
-      kicker: d.profile.kicker,
-      headline: d.profile.headline,
-      aboutTitle: d.profile.aboutTitle,
       bio: intake.about,
       signature: intake.makerName,
       makes: d.profile.makes,
@@ -126,21 +122,19 @@ export function siteFromIntake(intake: IntakeForBuild, d: IntakeDrafts, settings
       ...(opening === undefined ? {} : { media: { file: opening.file, alt: opening.name, kind: 'image' as const } }),
     },
     sections: Object.fromEntries(SECTION_KEYS.map((k) => [k, section(d.sections[k], k === 'close' ? d.closeTarget : '')])) as Record<SectionKey, Partial<SectionWords>>,
-    // Scenic: the library scene made for this site (a Scenic build makes them first).
-    ...(settings.family === 'scenic' && settings.scene !== undefined ? { scene: { library: settings.scene } } : {}),
-    ...(showcase
-      ? { gallery: intake.pieces.map((p) => ({ file: p.file, caption: p.name })) }
-      : {
-          collections,
-          products: intake.pieces.map((p, i) => ({
-            name: p.name,
-            priceCents: p.priceCents,
-            description: described(i),
-            photos: [{ file: p.file, alt: p.name }],
-            onHome: d.homePieces.includes(i + 1),
-            collections: d.collections.filter((c) => c.pieces.includes(i + 1)).map((c) => slugOf(c.name)),
-          })),
-        }),
+    // The library scene made for this site (every build makes them first; Alex, 2026-10-19).
+    ...(settings.scene !== undefined ? { scene: { library: settings.scene } } : {}),
+    // Showcase has no shop: its pieces are its catalog all the same (the gallery shows
+    // the newest 12 until the maker picks), with no collections and no home picks.
+    collections,
+    products: intake.pieces.map((p, i) => ({
+      name: p.name,
+      priceCents: p.priceCents,
+      description: described(i),
+      photos: [{ file: p.file, alt: p.name }],
+      onHome: !showcase && d.homePieces.includes(i + 1),
+      collections: showcase ? [] : d.collections.filter((c) => c.pieces.includes(i + 1)).map((c) => slugOf(c.name)),
+    })),
     words,
   };
 }

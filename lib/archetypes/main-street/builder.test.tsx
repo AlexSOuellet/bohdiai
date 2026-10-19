@@ -111,6 +111,7 @@ describe('MAIN_STREET_SPEC.render — the site’s words', () => {
       name: 'Ember Candle Co', sellsOnline: true, linkTargets: LINK_TARGETS, moment: { ...EMPTY_MOMENT, media: null, photos: [] }, sections, profile: EMPTY_PROFILE,
       portraitUrl: null, testimonials: [],
       dates: [{ id: 'd1', date: '2026-10-17', endDate: '', name: 'Harvest Fair', town: 'Wickford', hours: '9–4', address: '', booth: '', url: '', canceled: false }],
+      gallery: [],
     };
     site.loadFamilyHomes.mockResolvedValue(homes);
     const el = MAIN_STREET_SPEC.render({ content: { design: 'family' }, lookKey: 'main-street-ember', products: [], page: 'events', tenantId: 't1' });
@@ -125,7 +126,7 @@ describe('MAIN_STREET_SPEC.render — the site’s words', () => {
 describe('MAIN_STREET_SPEC — the plans (Full sells online)', () => {
   const sections = Object.fromEntries(SECTION_KEYS.map((k) => [k, EMPTY_SECTION])) as SiteSections;
   const homes = (sellsOnline: boolean): FamilyHomes => ({
-    name: 'Ember Candle Co', sellsOnline, linkTargets: LINK_TARGETS, moment: { ...EMPTY_MOMENT, media: null, photos: [] }, sections, profile: EMPTY_PROFILE, portraitUrl: null, testimonials: [], dates: [],
+    name: 'Ember Candle Co', sellsOnline, linkTargets: LINK_TARGETS, moment: { ...EMPTY_MOMENT, media: null, photos: [] }, sections, profile: EMPTY_PROFILE, portraitUrl: null, testimonials: [], dates: [], gallery: [],
   });
   const cart = {
     lines: [{ id: 'l1', slug: 'tide', name: 'Tide candle', price: '$40', available: true }],

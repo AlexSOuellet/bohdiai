@@ -23,7 +23,7 @@ const photos = [
 ];
 const sec = { kicker: '', title: 'A heading', lede: '', moreLabel: '', pageTitle: '' };
 const good: IntakeDrafts = {
-  profile: { kicker: 'k', headline: 'h', aboutTitle: 'a', makes: ['Baskets'], quote: 'Every basket takes a weekend.', marqueePhrases: ['one', 'two', 'three', 'four'] },
+  profile: { makes: ['Baskets'], quote: 'Every basket takes a weekend.', marqueePhrases: ['one', 'two', 'three', 'four'] },
   moment: { kicker: 'k', sub: 's', story: ['a', 'b', 'c'], ctaLabel: 'Shop', ctaTarget: 'shop', secondCtaLabel: 'About', secondCtaTarget: 'about' },
   sections: Object.fromEntries(SECTION_KEYS.map((k) => [k, sec])) as IntakeDrafts['sections'],
   closeTarget: 'shop',

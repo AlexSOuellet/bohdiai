@@ -53,6 +53,8 @@ vi.mock('@/lib/supabase', () => ({
 vi.mock('@/lib/images/shrink', () => ({ shrinkImage }));
 vi.mock('next/cache', () => ({ revalidatePath }));
 vi.mock('@/lib/logger', () => ({ logger }));
+const family = vi.hoisted(() => ({ is: false }));
+vi.mock('@/lib/backend/site-kind', () => ({ isFamilySite: async () => family.is }));
 
 import {
   saveProduct,
@@ -388,7 +390,7 @@ describe('collections', () => {
     features.on = new Set();
     expect(await createCollection('Autumn')).toEqual({
       ok: false,
-      error: 'Products aren’t switched on for this site.',
+      error: 'Collections aren’t switched on for this site.',
     });
   });
 });

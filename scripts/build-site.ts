@@ -14,6 +14,7 @@
  * backend, not rebuilt. Alex's account is made an admin of the site. Prints the
  * private preview link.
  */
+import { writeProfileHomes } from '../lib/backend/profile/homes';
 import { readFileSync, existsSync } from 'node:fs';
 import { join, extname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -151,7 +152,11 @@ async function main(): Promise<void> {
   // 3) Photos, then every home that uses them.
   const up = await uploadAll(db, tid, mediaDir, plan);
   const idOf = (file: string): string => up.get(file)?.id ?? fail(`photo not uploaded: ${file}`);
-  await check('About you', db.from('site_profiles').insert({ tenant_id: tid, ...plan.profile, portrait_upload_id: plan.portrait === null ? null : idOf(plan.portrait.file) }));
+  try {
+    await writeProfileHomes(db, tid, plan.profile, { portrait_upload_id: plan.portrait === null ? null : idOf(plan.portrait.file) });
+  } catch (err) {
+    fail(`About you failed: ${err instanceof Error ? err.message : String(err)}`);
+  }
   if (plan.moment !== null) {
     const m = plan.moment;
     await check('the opening', db.from('site_moments').insert({ tenant_id: tid, ...m.row, media_upload_id: m.media === null ? null : idOf(m.media.file), poster_upload_id: m.poster === null ? null : idOf(m.poster.file) }));

@@ -1,70 +1,61 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
-import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
 
-const { saveProfile, uploadPortrait, removePortrait } = vi.hoisted(() => ({ saveProfile: vi.fn(), uploadPortrait: vi.fn(), removePortrait: vi.fn() }));
-vi.mock('@/lib/backend/profile/actions', () => ({ saveProfile, uploadPortrait, removePortrait }));
+const { saveAbout, uploadPortrait, removePortrait } = vi.hoisted(() => ({ saveAbout: vi.fn(), uploadPortrait: vi.fn(), removePortrait: vi.fn() }));
+vi.mock('@/lib/backend/profile/actions', () => ({ saveAbout, uploadPortrait, removePortrait }));
 vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined }));
 
-import { marqueeSlots, ProfileEditor } from './ProfileEditor';
+import { ProfileEditor } from './ProfileEditor';
+
+const ABOUT = { aboutTitle: '', bio: '', quote: '', quoteAttribution: '' };
 
 beforeEach(() => {
   Element.prototype.scrollIntoView = vi.fn(); // jsdom has no layout
-  saveProfile.mockReset().mockResolvedValue({ ok: true });
+  saveAbout.mockReset().mockResolvedValue({ ok: true });
   uploadPortrait.mockReset().mockResolvedValue({ ok: true, url: 'https://cdn.example/portrait.webp' });
   removePortrait.mockReset().mockResolvedValue({ ok: true });
 });
 afterEach(cleanup);
 
 function editor() {
-  render(<ProfileEditor initial={{ ...EMPTY_PROFILE, headline: 'Old' }} portraitUrl={null} siteUrl="https://rustic-rhody.bohdiai.com" />);
+  render(<ProfileEditor initial={ABOUT} portraitUrl={null} siteUrl="https://rustic-rhody.bohdiai.com" />);
 }
 
 describe('ProfileEditor', () => {
+  it('holds only what is in the About section: heading, story, quote and portrait', () => {
+    editor();
+    for (const label of ['About heading', 'Your story', 'Your quote', 'Who it’s from']) expect(screen.getByLabelText(label)).toBeTruthy();
+    for (const gone of ['Headline', 'Short line above your name', 'Phone', 'Facebook page', 'Instagram', 'Sign-off name', 'Marquee phrase 1', 'Thing you make 1']) {
+      expect(screen.queryByLabelText(gone)).toBeNull();
+    }
+  });
+
   it('saves the edited words and says so', async () => {
     editor();
     const save = screen.getByRole('button', { name: 'Save' }) as HTMLButtonElement;
     expect(save.disabled).toBe(true);
-    fireEvent.change(screen.getByLabelText('Headline'), { target: { value: 'Burned-wood flags' } });
+    fireEvent.change(screen.getByLabelText('About heading'), { target: { value: 'Burned-wood flags' } });
     expect(screen.getByText('Unsaved changes')).toBeTruthy();
     fireEvent.click(save);
     await waitFor(() => expect(screen.getByText('Saved. Your site shows the changes now.')).toBeTruthy());
-    expect(saveProfile).toHaveBeenCalledWith(expect.objectContaining({ headline: 'Burned-wood flags' }));
+    expect(saveAbout).toHaveBeenCalledWith({ ...ABOUT, aboutTitle: 'Burned-wood flags' });
     expect(screen.queryByText('Unsaved changes')).toBeNull();
-  });
-
-  it('stops a bad phone number before saving', async () => {
-    editor();
-    fireEvent.change(screen.getByLabelText('Phone'), { target: { value: 'call me' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('That phone number doesn’t look right'));
-    expect(saveProfile).not.toHaveBeenCalled();
   });
 
   it('shows the server’s refusal and a plain message when the call itself fails', async () => {
     editor();
-    fireEvent.change(screen.getByLabelText('Headline'), { target: { value: 'New' } });
-    saveProfile.mockResolvedValueOnce({ ok: false, error: 'You don’t have access to change this site.' });
+    fireEvent.change(screen.getByLabelText('About heading'), { target: { value: 'New' } });
+    saveAbout.mockResolvedValueOnce({ ok: false, error: 'You don’t have access to change this site.' });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('You don’t have access to change this site.'));
-    saveProfile.mockRejectedValueOnce(new Error('offline'));
+    saveAbout.mockRejectedValueOnce(new Error('offline'));
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('Something went wrong. Check your connection and try again.'));
   });
 
-  it('edits the three things the maker makes and saves them', async () => {
-    render(<ProfileEditor initial={{ ...EMPTY_PROFILE, makes: ['Burned-wood flags'] }} portraitUrl={null} siteUrl="https://rustic-rhody.bohdiai.com" />);
-    expect((screen.getByLabelText('Thing you make 1') as HTMLInputElement).value).toBe('Burned-wood flags');
-    expect((screen.getByLabelText('Thing you make 3') as HTMLInputElement).value).toBe('');
-    fireEvent.change(screen.getByLabelText('Thing you make 2'), { target: { value: 'Carved signs' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(saveProfile).toHaveBeenCalled());
-    expect(saveProfile.mock.calls[0]?.[0].makes).toEqual(['Burned-wood flags', 'Carved signs', '']);
-  });
-
   it('counts characters against each limit and links to the live site', () => {
     editor();
-    expect(screen.getByText(/One sentence under your name.*3\/160/)).toBeTruthy();
+    expect(screen.getByText(/The heading over your story\. 0\/80/)).toBeTruthy();
     expect(screen.getByRole('link', { name: 'View your site' }).getAttribute('href')).toBe('https://rustic-rhody.bohdiai.com');
   });
 
@@ -74,8 +65,8 @@ describe('ProfileEditor', () => {
     fireEvent.change(screen.getByLabelText('Who it’s from'), { target: { value: 'June, founder' } });
     expect(screen.getByText(/Something you’d say about your work\. 28\/600/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(saveProfile).toHaveBeenCalled());
-    expect(saveProfile.mock.calls[0]?.[0]).toMatchObject({ quote: 'Every board starts as a tree', quoteAttribution: 'June, founder' });
+    await waitFor(() => expect(saveAbout).toHaveBeenCalled());
+    expect(saveAbout.mock.calls[0]?.[0]).toMatchObject({ quote: 'Every board starts as a tree', quoteAttribution: 'June, founder' });
   });
 
   it('stops a name for the quote without the quote', async () => {
@@ -83,26 +74,7 @@ describe('ProfileEditor', () => {
     fireEvent.change(screen.getByLabelText('Who it’s from'), { target: { value: 'June' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('Add the quote, or clear who it’s from.'));
-    expect(saveProfile).not.toHaveBeenCalled();
-  });
-
-  it('grows a new marquee box as the last one fills, and saves the phrases in order', async () => {
-    render(<ProfileEditor initial={{ ...EMPTY_PROFILE, marqueePhrases: ['Small batch'] }} portraitUrl={null} siteUrl="https://x.bohdiai.com" />);
-    expect((screen.getByLabelText('Marquee phrase 1') as HTMLInputElement).value).toBe('Small batch');
-    expect(screen.queryByLabelText('Marquee phrase 3')).toBeNull();
-    fireEvent.change(screen.getByLabelText('Marquee phrase 2'), { target: { value: 'Poured by hand' } });
-    expect(screen.getByLabelText('Marquee phrase 3')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(saveProfile).toHaveBeenCalled());
-    expect(saveProfile.mock.calls[0]?.[0].marqueePhrases).toEqual(['Small batch', 'Poured by hand']);
-  });
-
-  it('counts clearing a new marquee phrase back out as no change', () => {
-    render(<ProfileEditor initial={{ ...EMPTY_PROFILE, marqueePhrases: ['Small batch'] }} portraitUrl={null} siteUrl="https://x.bohdiai.com" />);
-    fireEvent.change(screen.getByLabelText('Marquee phrase 2'), { target: { value: 'x' } });
-    expect(screen.getByText('Unsaved changes')).toBeTruthy();
-    fireEvent.change(screen.getByLabelText('Marquee phrase 2'), { target: { value: '' } });
-    expect(screen.queryByText('Unsaved changes')).toBeNull();
+    expect(saveAbout).not.toHaveBeenCalled();
   });
 
   it('uploads a portrait straight away and shows it', async () => {
@@ -128,7 +100,7 @@ describe('ProfileEditor', () => {
   });
 
   it('removes the portrait after a confirm, and shows a failure plainly', async () => {
-    render(<ProfileEditor initial={EMPTY_PROFILE} portraitUrl="https://cdn.example/old.webp" siteUrl="https://x.bohdiai.com" />);
+    render(<ProfileEditor initial={ABOUT} portraitUrl="https://cdn.example/old.webp" siteUrl="https://x.bohdiai.com" />);
     removePortrait.mockResolvedValueOnce({ ok: false, error: 'The portrait couldn’t be removed. Try again in a moment.' });
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
     fireEvent.click(screen.getByRole('button', { name: 'Yes, remove it' }));
@@ -145,12 +117,3 @@ describe('ProfileEditor', () => {
   });
 });
 
-describe('marqueeSlots', () => {
-  it('adds one empty box after the last phrase, drops trailing blanks, and stops at the limit', () => {
-    expect(marqueeSlots([])).toEqual(['']);
-    expect(marqueeSlots(['a', '', ''])).toEqual(['a', '']);
-    expect(marqueeSlots(['a', '', 'b'])).toEqual(['a', '', 'b', '']);
-    const full = Array.from({ length: 12 }, (_, i) => `p${i}`);
-    expect(marqueeSlots(full)).toEqual(full);
-  });
-});

@@ -26,7 +26,7 @@ import type { FounderTreatment } from './founder';
 import { getFamily, type Family } from './families';
 import type { HeroVariantKey } from './hero-catalog';
 import { readSectionResolutions } from '@/lib/editor/section-state';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import type { ReactElement } from 'react';
 import { supabaseAdmin } from '@/lib/supabase';
 import { familyViewFromHomes, holdsLegacyContent, loadFamilyHomes } from './from-homes';
@@ -294,6 +294,9 @@ function withNav(content: MainStreetView, navVariant?: NavVariant): MainStreetVi
   return { ...content, identity: { ...content.identity, navVariant } };
 }
 
+/** Where a one-page site sends the pages it doesn't have. */
+const ONE_PAGE_ANCHORS = { about: '/#about', events: '/#find-us', contact: '/#contact', testimonials: '/' } as const;
+
 /** Paints a family page from its view, the site's words and the sale running today (Full promotions). */
 type FamilyPaint = (view: MainStreetView, words: FamilyWords, sale: Promotion | null, scene: ScenePhoto | null) => ReactElement;
 
@@ -323,7 +326,7 @@ async function FamilyFromHomes({ content, tenantId, paint, scenic }: { content: 
   // The plans, from the site's switches (old samples too): only Full sells online
   // (cart), and Showcase has no shop at all (catalog off).
   const view = homes !== null ? familyViewFromHomes(homes, words) : (content as MainStreetView);
-  return paint({ ...view, identity: { ...view.identity, sellsOnline: features.has('cart'), showsShop: features.has('catalog') } }, words, sale, scene);
+  return paint({ ...view, identity: { ...view.identity, sellsOnline: features.has('cart'), showsShop: features.has('catalog'), onePage: !features.has('catalog') } }, words, sale, scene);
 }
 
 /** The pieces as the lists show them during a running sale: the sale price in place of the full one. */
@@ -426,6 +429,9 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
     // Showcase has no shop: its shop, collections and collection pages don't exist.
     const showsShop = c.identity.showsShop !== false;
     if (!showsShop && (page === 'shop' || page === 'collections' || page === 'collection')) notFound();
+    // A one-page site (Showcase) has no About, Events or Contact page: their old
+    // addresses land on the section of the home page that holds them.
+    if (c.identity.onePage === true && page !== undefined && page in ONE_PAGE_ANCHORS) redirect(ONE_PAGE_ANCHORS[page as keyof typeof ONE_PAGE_ANCHORS]);
     switch (page) {
       case 'shop':
         return <ShopPage content={c} skin={skin} words={words} products={products} family={family} />;

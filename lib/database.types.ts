@@ -1182,6 +1182,7 @@ export type Database = {
           dimensions: Json | null
           file_upload_id: string | null
           id: string
+          in_gallery: boolean
           inventory_count: number | null
           inventory_tracked: boolean
           is_new: boolean
@@ -1215,6 +1216,7 @@ export type Database = {
           dimensions?: Json | null
           file_upload_id?: string | null
           id?: string
+          in_gallery?: boolean
           inventory_count?: number | null
           inventory_tracked?: boolean
           is_new?: boolean
@@ -1248,6 +1250,7 @@ export type Database = {
           dimensions?: Json | null
           file_upload_id?: string | null
           id?: string
+          in_gallery?: boolean
           inventory_count?: number | null
           inventory_tracked?: boolean
           is_new?: boolean
@@ -2211,6 +2214,87 @@ export type Database = {
           },
         ]
       }
+      site_added_sections: {
+        Row: {
+          enabled: boolean
+          section: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          section: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          section?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_added_sections_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_contacts: {
+        Row: {
+          phone: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          phone?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          phone?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_contacts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_marquees: {
+        Row: {
+          phrases: string[]
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          phrases: string[]
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          phrases?: string[]
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_marquees_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_moment_photos: {
         Row: {
           created_at: string
@@ -2325,15 +2409,10 @@ export type Database = {
       }
       site_profiles: {
         Row: {
-          about_title: string | null
           bio: string | null
-          facebook_url: string | null
           headline: string | null
-          instagram_url: string | null
           kicker: string | null
           makes: string[] | null
-          marquee_phrases: string[] | null
-          phone: string | null
           portrait_upload_id: string | null
           quote: string | null
           quote_attribution: string | null
@@ -2342,15 +2421,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          about_title?: string | null
           bio?: string | null
-          facebook_url?: string | null
           headline?: string | null
-          instagram_url?: string | null
           kicker?: string | null
           makes?: string[] | null
-          marquee_phrases?: string[] | null
-          phone?: string | null
           portrait_upload_id?: string | null
           quote?: string | null
           quote_attribution?: string | null
@@ -2359,15 +2433,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          about_title?: string | null
           bio?: string | null
-          facebook_url?: string | null
           headline?: string | null
-          instagram_url?: string | null
           kicker?: string | null
           makes?: string[] | null
-          marquee_phrases?: string[] | null
-          phone?: string | null
           portrait_upload_id?: string | null
           quote?: string | null
           quote_attribution?: string | null
@@ -2491,6 +2560,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "site_sections_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_socials: {
+        Row: {
+          network: string
+          position: number
+          tenant_id: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          network: string
+          position?: number
+          tenant_id: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          network?: string
+          position?: number
+          tenant_id?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_socials_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -2668,6 +2769,41 @@ export type Database = {
           },
         ]
       }
+      support_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_features: {
         Row: {
           enabled: boolean
@@ -2763,6 +2899,7 @@ export type Database = {
           phone: string | null
           plan: string | null
           plan_billing: string | null
+          plan_cancels: boolean
           plan_comp: string | null
           plan_comp_note: string | null
           plan_credit_cents: number
@@ -2810,6 +2947,7 @@ export type Database = {
           phone?: string | null
           plan?: string | null
           plan_billing?: string | null
+          plan_cancels?: boolean
           plan_comp?: string | null
           plan_comp_note?: string | null
           plan_credit_cents?: number
@@ -2857,6 +2995,7 @@ export type Database = {
           phone?: string | null
           plan?: string | null
           plan_billing?: string | null
+          plan_cancels?: boolean
           plan_comp?: string | null
           plan_comp_note?: string | null
           plan_credit_cents?: number
@@ -3254,6 +3393,14 @@ export type Database = {
       scene_search_text: {
         Args: { p_description: string; p_tags: string[] }
         Returns: string
+      }
+      set_listing_in_gallery: {
+        Args: {
+          p_in_gallery: boolean
+          p_listing_id: string
+          p_tenant_id: string
+        }
+        Returns: undefined
       }
       set_listing_on_home: {
         Args: { p_listing_id: string; p_on_home: boolean; p_tenant_id: string }

@@ -21,7 +21,7 @@ const writes: unknown[] = [];
 
 vi.mock('next/cache', () => ({ revalidatePath }));
 vi.mock('@/lib/backend/current-site', () => ({
-  requireActingSite: () => Promise.resolve({ site: { tenantId: 't1' } }),
+  requireActingSite: () => Promise.resolve({ user: { email: 'lena@example.com' }, site: { tenantId: 't1', businessName: 'Lena Hart Decoupage', subdomain: 'lena' } }),
 }));
 vi.mock('@/lib/backend/site-features', () => ({
   getSiteFeatures: () => Promise.resolve(state.features),
@@ -43,6 +43,8 @@ vi.mock('@/lib/supabase', () => ({
 vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn() } }));
 vi.mock('./queries', () => ({ loadPlanState: () => Promise.resolve(state.plan) }));
 vi.mock('./apply', () => ({ applyPlan }));
+const sendPlanChange = vi.fn((_input: unknown) => Promise.resolve());
+vi.mock('./emails', () => ({ sendPlanChange }));
 const galleryToProducts = vi.fn(() => Promise.resolve(state.convert));
 const candidates = [
   { id: 'p1', name: 'Carol star', uploadId: 'u1', url: 'https://cdn/1.jpg' },
@@ -57,7 +59,7 @@ vi.mock('./convert', async (orig) => ({
   galleryFromProducts,
 }));
 
-const { upgradePlan, scheduleDowngrade, cancelScheduledChange, skipToRenewal, setDemoBilling } =
+const { upgradePlan, scheduleDowngrade, cancelScheduledChange, skipToRenewal, setDemoBilling, cancelAtTermEnd, keepSite } =
   await import('./actions');
 
 function on(over: Partial<PlanState> = {}): PlanState {
@@ -68,6 +70,7 @@ function on(over: Partial<PlanState> = {}): PlanState {
     next: null,
     nextBilling: null,
     creditCents: 0,
+    cancels: false,
     comp: null,
     nextGallery: [],
     today: '2026-10-09',
@@ -343,5 +346,39 @@ describe('downgrading to Showcase', () => {
   it('says so when her products can’t be read', async () => {
     showcaseCandidates.mockResolvedValueOnce({ ok: false, error: 'products: down' } as never);
     expect((await scheduleDowngrade('showcase', 'monthly', ['p1'])).ok).toBe(false);
+  });
+});
+
+describe('cancel at the end of the term', () => {
+  beforeEach(() => {
+    writes.length = 0;
+    sendPlanChange.mockClear();
+    state.features = new Set(['plan']);
+    state.writeError = null;
+    state.plan = on();
+  });
+
+  it('marks the site to close at the end of its term, on any site with a plan, and emails it', async () => {
+    expect(await cancelAtTermEnd()).toEqual({ ok: true });
+    expect(writes).toEqual([{ plan_cancels: true }]);
+    expect(sendPlanChange).toHaveBeenCalledWith(expect.objectContaining({ makerEmail: 'lena@example.com', change: { kind: 'cancel', on: expect.stringContaining('October 29, 2026') } }));
+  });
+
+  it('keeps the site when the maker changes their mind, and emails that too', async () => {
+    expect(await keepSite()).toEqual({ ok: true });
+    expect(writes).toEqual([{ plan_cancels: false }]);
+    expect(sendPlanChange).toHaveBeenCalledWith(expect.objectContaining({ change: { kind: 'keep' } }));
+  });
+
+  it('says so when it can’t be saved, and sends nothing', async () => {
+    state.writeError = 'boom';
+    expect(await cancelAtTermEnd()).toEqual({ ok: false, error: 'Your cancellation couldn’t be saved. Try again in a moment.' });
+    expect(sendPlanChange).not.toHaveBeenCalled();
+  });
+
+  it('refuses a site with no plan', async () => {
+    state.features = new Set();
+    expect((await cancelAtTermEnd()).ok).toBe(false);
+    expect(writes).toEqual([]);
   });
 });

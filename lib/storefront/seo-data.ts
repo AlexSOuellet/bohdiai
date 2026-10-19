@@ -89,9 +89,9 @@ export async function loadTenantSeoFacts(
 
 async function loadHomesSeoRows(db: ReturnType<typeof supabaseAdmin>, tenantId: string): Promise<Parameters<typeof seoFromHomes>[0]> {
   const [moment, firstPhoto, profile, firstPiece] = await Promise.all([
-    db.from('site_moments').select('kicker, media_upload_id').eq('tenant_id', tenantId).maybeSingle(),
+    db.from('site_moments').select('kicker, sub, media_upload_id').eq('tenant_id', tenantId).maybeSingle(),
     db.from('site_moment_photos').select('upload_id').eq('tenant_id', tenantId).order('position').limit(1).maybeSingle(),
-    db.from('site_profiles').select('headline, makes').eq('tenant_id', tenantId).maybeSingle(),
+    db.from('site_profiles').select('makes').eq('tenant_id', tenantId).maybeSingle(),
     db.from('listings').select('media_ids').eq('tenant_id', tenantId).eq('status', 'active').is('deleted_at', null).order('created_at').limit(1).maybeSingle(),
   ]);
   const ids = [moment.data?.media_upload_id ?? null, firstPhoto.data?.upload_id ?? null, firstPiece.data?.media_ids[0] ?? null];
@@ -100,7 +100,7 @@ async function loadHomesSeoRows(db: ReturnType<typeof supabaseAdmin>, tenantId: 
   const byId = new Map((ups ?? []).flatMap((u) => (u.public_url === null ? [] : [[u.id, { url: u.public_url, mime: u.mime_type }] as const])));
   return {
     momentKicker: moment.data?.kicker ?? null,
-    profileHeadline: profile.data?.headline ?? null,
+    momentSub: moment.data?.sub ?? null,
     makes: profile.data?.makes ?? null,
     pictures: ids.map((id) => (id === null ? null : byId.get(id) ?? null)),
   };

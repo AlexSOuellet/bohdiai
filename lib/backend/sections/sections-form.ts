@@ -9,7 +9,7 @@ import { LINK_TARGETS, type LinkTarget } from '@/lib/archetypes/main-street/link
 
 /** The sections every design shares (mirrors the table's check). A design shows
  *  the ones it has, in its own order. */
-export const SECTION_KEYS = ['work', 'collections', 'makes', 'about', 'reviews', 'markets', 'close', 'contact'] as const;
+export const SECTION_KEYS = ['work', 'collections', 'makes', 'about', 'reviews', 'markets', 'close', 'contact', 'gallery'] as const;
 export type SectionKey = (typeof SECTION_KEYS)[number];
 
 export function isSectionKey(value: string): value is SectionKey {
@@ -26,6 +26,7 @@ export const SECTION_NAMES: Record<SectionKey, string> = {
   markets: 'Markets',
   close: 'The closing line',
   contact: 'Getting in touch',
+  gallery: 'Gallery',
 };
 
 export type SectionWords = {

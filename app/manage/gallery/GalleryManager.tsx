@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { unstable_rethrow } from 'next/navigation';
-import { uploadGalleryPhoto, saveGallery, removeGalleryPhoto } from '@/lib/backend/gallery/actions';
+import { uploadGalleryPhoto, saveGallery, removeGalleryPhoto, setGalleryShown } from '@/lib/backend/gallery/actions';
 import { GALLERY_LIMIT, CAPTION_MAX, moveGalleryItem, type GalleryItem } from '@/lib/backend/gallery/gallery-form';
 import { ConfirmButton } from '../_components/ConfirmButton';
 import { useNotice } from '../_components/Notice';
@@ -15,7 +15,11 @@ const sameOrder = (a: readonly GalleryItem[], b: readonly GalleryItem[]): boolea
 /** The gallery: add photos (they upload straight away and join the end), caption
  *  and reorder them (saved together with Save), remove one (straight away, after a
  *  confirm). The first photo opens the site. */
-export function GalleryManager({ initial, siteUrl }: { initial: GalleryItem[]; siteUrl: string }): React.ReactElement {
+/** A standard site on Market or Full: the gallery section's switch, and how many
+ *  products are ticked for it. Its gallery has no limit (Alex, 2026-10-19). */
+export type StandardGallery = { shown: boolean; ticked: number };
+
+export function GalleryManager({ initial, siteUrl, standard = null }: { initial: GalleryItem[]; siteUrl: string; standard?: StandardGallery | null }): React.ReactElement {
   const [items, setItems] = useState(initial);
   const [saved, setSaved] = useState(initial);
   const [uploading, setUploading] = useState(0);
@@ -23,7 +27,27 @@ export function GalleryManager({ initial, siteUrl }: { initial: GalleryItem[]; s
   const inFlight = useRef(false);
   const notice = useNotice();
   const unsaved = !sameOrder(items, saved);
-  const room = GALLERY_LIMIT - items.length;
+  const room = standard === null ? GALLERY_LIMIT - items.length : Number.POSITIVE_INFINITY;
+  const [shown, setShown] = useState(standard?.shown ?? false);
+  const [switching, setSwitching] = useState(false);
+
+  async function toggle(next: boolean): Promise<void> {
+    if (switching) return;
+    setSwitching(true);
+    notice.clear();
+    try {
+      const r = await setGalleryShown(next);
+      if (r.ok) {
+        setShown(next);
+        notice.showSaved(next ? 'Your gallery shows on your site now.' : 'Your gallery is hidden from your site.');
+      } else notice.showError(r.error);
+    } catch (err) {
+      unstable_rethrow(err);
+      notice.showError(FAILED);
+    } finally {
+      setSwitching(false);
+    }
+  }
 
   async function add(e: React.ChangeEvent<HTMLInputElement>): Promise<void> {
     const files = [...(e.target.files ?? [])];
@@ -115,11 +139,29 @@ export function GalleryManager({ initial, siteUrl }: { initial: GalleryItem[]; s
       <main id="main" className="bk-content">
         {notice.area}
 
+        {standard !== null && (
+          <section className="bk-section" aria-labelledby="s-show">
+            <h2 id="s-show" className="bk-section-title">On your site</h2>
+            <label className="bk-check">
+              <input type="checkbox" checked={shown} disabled={switching} onChange={(e) => void toggle(e.target.checked)} />
+              Show my gallery on my site
+            </label>
+            <p className="bk-note">
+              {`Your gallery shows the products you tick for it on your products list (${standard.ticked} ticked), then these photos. It can’t be shown while it’s empty.`}
+              {shown && standard.ticked === 0 && items.length === 0 ? ' It’s switched on but has nothing in it, so it doesn’t show on your site.' : ''}
+            </p>
+          </section>
+        )}
+
         <section className="bk-section" aria-labelledby="s-photos">
           <h2 id="s-photos" className="bk-section-title">
-            Your photos ({items.length} of {GALLERY_LIMIT})
+            {standard === null ? `Your photos (${items.length} of ${GALLERY_LIMIT})` : `Your photos (${items.length})`}
           </h2>
-          <p className="bk-note">The first photo is the big one at the top of your site. Use the arrows to change the order, then Save.</p>
+          <p className="bk-note">
+            {standard === null
+              ? 'The first photo is the big one at the top of your site. Use the arrows to change the order, then Save.'
+              : 'Photos that aren’t products, like your booth or your workbench. Use the arrows to change the order, then Save.'}
+          </p>
 
           {items.length > 0 && (
             <ul className="bk-photos" aria-label="Gallery photos">
@@ -128,7 +170,7 @@ export function GalleryManager({ initial, siteUrl }: { initial: GalleryItem[]; s
                   {/* The owner's own upload, already shrunk to WebP by the upload action. */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={p.url} alt={p.caption === '' ? `Photo ${i + 1}` : p.caption} />
-                  {i === 0 && <span className="bk-tag">Top of your site</span>}
+                  {i === 0 && standard === null && <span className="bk-tag">Top of your site</span>}
                   <label className="bk-label" htmlFor={`cap-${p.id}`}>
                     Caption <span className="bk-note">(optional)</span>
                   </label>
@@ -172,7 +214,7 @@ export function GalleryManager({ initial, siteUrl }: { initial: GalleryItem[]; s
               />
             </label>
             <span className="bk-note">
-              {room <= 0 ? `Your gallery is full. Remove a photo to add another.` : `JPG, PNG or WebP, up to 20MB each. Room for ${room} more.`}
+              {room <= 0 ? `Your gallery is full. Remove a photo to add another.` : standard !== null ? 'JPG, PNG or WebP, up to 20MB each.' : `JPG, PNG or WebP, up to 20MB each. Room for ${room} more.`}
             </span>
           </p>
         </section>

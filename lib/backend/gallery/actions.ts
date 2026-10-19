@@ -14,16 +14,21 @@ import { storeSitePhoto } from '@/lib/backend/site-photo';
 import { logger } from '@/lib/logger';
 import type { DoneResult } from '../catalog/results';
 import { GALLERY_LIMIT, buildGalleryOrder, type GalleryItem } from './gallery-form';
+import { isFamilySite } from '../site-kind';
+import { supabaseAdmin } from '@/lib/supabase';
 
 const GALLERY_OFF = 'The gallery isn’t switched on for this site.';
 const FULL = `Your gallery holds up to ${GALLERY_LIMIT} photos. Remove one to add another.`;
 
 export type GalleryPhotoResult = { ok: true; item: GalleryItem } | { ok: false; error: string };
 
-async function gallerySite(): Promise<{ tenantId: string; userId: string } | null> {
+async function gallerySite(): Promise<{ tenantId: string; userId: string; standard: boolean } | null> {
   const { user, site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
-  return on.has('gallery') ? { tenantId: site.tenantId, userId: user.id } : null;
+  if (!on.has('gallery')) return null;
+  // A standard site on Market or Full has no limit on its gallery (Alex, 2026-10-19).
+  const standard = on.has('catalog') && (await isFamilySite(supabaseAdmin(), site.tenantId));
+  return { tenantId: site.tenantId, userId: user.id, standard };
 }
 
 function done(): void {
@@ -40,7 +45,7 @@ export async function uploadGalleryPhoto(formData: FormData): Promise<GalleryPho
     logger.error('gallery: count failed', { tenantId: site.tenantId, error: countErr.message });
     return { ok: false, error: 'Your gallery couldn’t be checked. Try again in a moment.' };
   }
-  if ((rows ?? []).length >= GALLERY_LIMIT) return { ok: false, error: FULL };
+  if (!site.standard && (rows ?? []).length >= GALLERY_LIMIT) return { ok: false, error: FULL };
 
   const stored = await storeSitePhoto({ tenantId: site.tenantId, userId: site.userId, folder: 'gallery', file: formData.get('file') });
   if (!stored.ok) return stored;
@@ -92,6 +97,35 @@ export async function removeGalleryPhoto(id: string): Promise<DoneResult> {
   if (error !== null) {
     logger.error('gallery: remove failed', { tenantId: site.tenantId, error: error.message });
     return { ok: false, error: 'The photo couldn’t be removed. Try again in a moment.' };
+  }
+  done();
+  return { ok: true };
+}
+
+const EMPTY = 'Add a photo here, or tick a product for your gallery on your products list, before you show it.';
+
+/** Show or hide the gallery on a standard site's page (Market and Full). It can't
+ *  be switched on while there is nothing in it. */
+export async function setGalleryShown(shown: boolean): Promise<DoneResult> {
+  const site = await gallerySite();
+  if (site === null || !site.standard) return { ok: false, error: GALLERY_OFF };
+  if (typeof shown !== 'boolean') return { ok: false, error: 'That change couldn’t be saved. Try again.' };
+  const db = await createSupabaseServerClient();
+  if (shown) {
+    const [photos, ticked] = await Promise.all([
+      db.from('gallery_items').select('id', { count: 'exact', head: true }).eq('tenant_id', site.tenantId),
+      db.from('listings').select('id', { count: 'exact', head: true }).eq('tenant_id', site.tenantId).eq('in_gallery', true).eq('status', 'active').is('deleted_at', null),
+    ]);
+    if (photos.error !== null || ticked.error !== null) {
+      logger.error('gallery: count failed', { tenantId: site.tenantId, error: photos.error?.message ?? ticked.error?.message });
+      return { ok: false, error: 'Your gallery couldn’t be checked. Try again in a moment.' };
+    }
+    if ((photos.count ?? 0) + (ticked.count ?? 0) === 0) return { ok: false, error: EMPTY };
+  }
+  const { error } = await db.from('site_added_sections').upsert({ tenant_id: site.tenantId, section: 'gallery', enabled: shown });
+  if (error !== null) {
+    logger.error('gallery: switch failed', { tenantId: site.tenantId, error: error.message });
+    return { ok: false, error: 'That change couldn’t be saved. Try again in a moment.' };
   }
   done();
   return { ok: true };

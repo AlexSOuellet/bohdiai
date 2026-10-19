@@ -16,8 +16,9 @@ const form = (over: Partial<SectionWords> = {}): SectionWords => ({ ...EMPTY_SEC
 
 describe('the shared sections', () => {
   it('match the database’s list exactly', () => {
-    const sql = fs.readFileSync(path.resolve(__dirname, '../../../supabase/migrations/20261013000002_family_content_homes.sql'), 'utf8');
-    const list = /section text not null check \(section in \(([\s\S]*?)\)\)/.exec(sql)?.[1] ?? '';
+    // The newest list: the gallery's heading joined it (20261019000002_gallery_section.sql).
+    const sql = fs.readFileSync(path.resolve(__dirname, '../../../supabase/migrations/20261019000002_gallery_section.sql'), 'utf8');
+    const list = /check \(section in \(([\s\S]*?)\)\)/.exec(sql)?.[1] ?? '';
     const keys = [...list.matchAll(/'([a-z_]+)'/g)].map((m) => m[1]);
     expect(keys).toEqual([...SECTION_KEYS]);
   });

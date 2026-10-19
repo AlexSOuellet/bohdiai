@@ -41,33 +41,61 @@ describe('catalog in the menu', () => {
 describe('a business card site in the menu', () => {
   it('adds Markets under Selling when switched on', () => {
     const nav = navFor(BACKEND_MODULES, new Set(['profile', 'gallery', 'market_dates']));
-    expect(nav[1]?.items.map((i) => i.label)).toEqual(['About you', 'Gallery']);
+    expect(nav[1]?.items.map((i) => i.label)).toEqual(['About you', 'Scrolling line', 'Contact information', 'Socials', 'Gallery']);
     expect(nav.find((s) => s.section === 'Selling')?.items).toEqual([{ label: 'Markets', href: '/manage/markets' }]);
   });
 
   it('shows About you and Gallery under Your site, and no catalog', () => {
     expect(navFor(BACKEND_MODULES, new Set(['profile', 'gallery']))).toEqual([
-      { section: 'Site', items: [{ label: 'Home', href: '/manage' }] },
+      { section: '', items: [{ label: 'Home', href: '/manage' }] },
       {
         section: 'Your site',
         items: [
           { label: 'About you', href: '/manage/profile' },
+          { label: 'Scrolling line', href: '/manage/marquee' },
+          { label: 'Contact information', href: '/manage/contact' },
+          { label: 'Socials', href: '/manage/socials' },
           { label: 'Gallery', href: '/manage/gallery' },
         ],
       },
+      { section: '', items: [{ label: 'Contact support', href: '/manage/support' }] },
     ]);
   });
 });
 
 describe('Your plan in the menu', () => {
-  it('sits under Site, after Home, only when switched on', () => {
-    expect(navFor(BACKEND_MODULES, new Set(['plan']))[0]).toEqual({
-      section: 'Site',
+  it('sits under Settings at the bottom of the menu, with Home alone at the top', () => {
+    const nav = navFor(BACKEND_MODULES, new Set<FeatureKey>(['plan', 'profile', 'gallery_pieces', 'market_dates']));
+    expect(nav[0]).toEqual({ section: '', items: [{ label: 'Home', href: '/manage' }] });
+    expect(nav.at(-1)).toEqual({
+      section: 'Settings',
       items: [
-        { label: 'Home', href: '/manage' },
         { label: 'Your plan', href: '/manage/plan' },
+        { label: 'Billing', href: '/manage/billing' },
       ],
     });
-    expect(navFor(BACKEND_MODULES, new Set())[0]?.items).toEqual([{ label: 'Home', href: '/manage' }]);
+    expect(navFor(BACKEND_MODULES, new Set()).map((s) => s.items.map((i) => i.label))).toEqual([['Home'], ['Contact support']]);
+  });
+});
+
+describe('Showcase in the menu', () => {
+  it('shows Products (no Collections, no old Gallery) and the Headline', () => {
+    const nav = navFor(BACKEND_MODULES, new Set<FeatureKey>(['gallery_pieces', 'headline', 'profile']));
+    expect(nav).toContainEqual({ section: 'Catalog', items: [{ label: 'Products', href: '/manage/products' }] });
+    const yours = nav.find((s) => s.section === 'Your site')?.items.map((i) => i.label);
+    expect(yours).toEqual(['Headline', 'About you', 'Scrolling line', 'Contact information', 'Socials']);
+  });
+  it('lists a screen once when two switches open it', () => {
+    const nav = navFor(BACKEND_MODULES, new Set<FeatureKey>(['catalog', 'gallery_pieces']));
+    expect(nav.find((s) => s.section === 'Catalog')?.items.map((i) => i.label)).toEqual(['Products', 'Collections']);
+  });
+});
+
+describe('Contact support in the menu', () => {
+  it('is its own item on the main menu, on every backend, just above Settings', () => {
+    const nav = navFor(BACKEND_MODULES, new Set<FeatureKey>(['plan', 'profile']));
+    const i = nav.findIndex((s) => s.items.some((it) => it.label === 'Contact support'));
+    expect(nav[i]).toEqual({ section: '', items: [{ label: 'Contact support', href: '/manage/support' }] });
+    expect(nav[i + 1]?.section).toBe('Settings');
   });
 });

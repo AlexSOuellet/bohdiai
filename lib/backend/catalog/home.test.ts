@@ -7,7 +7,7 @@ const { listProducts, listCollections } = vi.hoisted(() => ({
 vi.mock('./queries', () => ({ listProducts, listCollections }));
 vi.mock('@/lib/supabase-server', () => ({ createSupabaseServerClient: async () => ({}) }));
 
-import { catalogHomeData, catalogHome } from './home';
+import { catalogHomeData, catalogHome, showcaseHomeData } from './home';
 import type { ProductRowView } from './queries';
 
 const p = (
@@ -24,6 +24,7 @@ const p = (
   photoUploadId: 'x',
   collectionIds: [],
   onHome: false,
+  inGallery: false,
   ...over,
 });
 
@@ -76,5 +77,22 @@ describe('catalogHome', () => {
       value: '1',
       note: '0 drafts',
     });
+  });
+});
+
+describe('showcaseHomeData', () => {
+  it('counts products and says how the gallery is picked, with no collections tile', () => {
+    expect(showcaseHomeData([p('active'), p('draft')]).tiles).toEqual([
+      { label: 'Products', value: '1', note: '1 draft' },
+      { label: 'Gallery', value: 'Newest 12', note: 'none picked yet' },
+    ]);
+    const picked = showcaseHomeData([p('active', { inGallery: true }), p('archived', { inGallery: true })]);
+    expect(picked.tiles[1]).toEqual({ label: 'Gallery', value: '1 of 12', note: 'picked by you' });
+  });
+  it('keeps the catalog’s Needs attention lines', () => {
+    expect(showcaseHomeData([p('draft', { photoUploadId: null })]).attention).toEqual([
+      '1 product has no photo.',
+      '1 product is still a draft.',
+    ]);
   });
 });

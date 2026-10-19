@@ -32,6 +32,8 @@ export type ProductRowView = {
   collectionIds: string[];
   /** The owner put this product on the home page. */
   onHome: boolean;
+  /** The owner picked this product for the gallery (Showcase). */
+  inGallery: boolean;
 };
 
 export type CollectionRowView = {
@@ -78,7 +80,7 @@ export async function listProducts(db: Db, tenantId: string): Promise<ProductRow
   const { data, error } = await db
     .from('listings')
     .select(
-      'id, name, status, base_price_cents, inventory_count, media_ids, metadata, on_home, variation_attributes(id), listing_variants(price_cents, inventory_count, status), listing_collections(collection_id)',
+      'id, name, status, base_price_cents, inventory_count, media_ids, metadata, on_home, in_gallery, variation_attributes(id), listing_variants(price_cents, inventory_count, status), listing_collections(collection_id)',
     )
     .eq('tenant_id', tenantId)
     .in('listing_type', PRODUCT_TYPES)
@@ -111,6 +113,7 @@ export async function listProducts(db: Db, tenantId: string): Promise<ProductRow
       photoUploadId: hit === undefined ? null : (first ?? null),
       collectionIds: r.listing_collections.map((c) => c.collection_id),
       onHome: r.on_home,
+      inGallery: r.in_gallery,
     };
   });
 }

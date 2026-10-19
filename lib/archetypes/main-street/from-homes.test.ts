@@ -15,6 +15,7 @@ vi.mock('@/lib/backend/sections/queries', () => ({ getSiteSections: async () => 
 vi.mock('@/lib/backend/profile/queries', () => ({ getProfileForm: async () => EMPTY_PROFILE, getPortraitUrl: async () => null }));
 vi.mock('@/lib/backend/testimonials/queries', () => ({ listTestimonials: loaders.testimonials }));
 vi.mock('@/lib/backend/dates/queries', () => ({ listVisitorMarketDates: loaders.dates }));
+vi.mock('@/lib/storefront/site-gallery', () => ({ loadSiteGallery: async () => [] }));
 
 import { familyMarketDay, familyViewFromHomes, holdsLegacyContent, loadFamilyHomes, type FamilyHomes } from './from-homes';
 import { keyWords } from '@/lib/site-words/words';
@@ -51,6 +52,7 @@ const empty: FamilyHomes = {
   portraitUrl: null,
   testimonials: [],
   dates: [],
+  gallery: [],
 };
 
 describe('familyViewFromHomes', () => {

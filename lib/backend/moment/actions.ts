@@ -13,6 +13,7 @@ import { storeSitePhoto } from '@/lib/backend/site-photo';
 import { logger } from '@/lib/logger';
 import type { DoneResult } from '../catalog/results';
 import { MOMENT_PHOTOS_LIMIT, buildMomentRow, type MomentForm } from './moment-form';
+import { buildHeadlineRow, type HeadlineForm } from './headline-form';
 
 const MOMENT_OFF = 'The moment isn’t switched on for this site.';
 const TRY_AGAIN = 'Your changes couldn’t be saved. Try again in a moment.';
@@ -28,6 +29,28 @@ async function momentSite(): Promise<{ tenantId: string; userId: string } | null
 function done(): void {
   revalidatePath('/manage/moment');
   revalidatePath('/manage');
+}
+
+const HEADLINE_OFF = 'Changing the headline isn’t switched on for this site.';
+
+/** Save only the headline and the line under it (every plan). The rest of the
+ *  moment is left exactly as it is. */
+export async function saveHeadline(form: HeadlineForm): Promise<DoneResult> {
+  const { site } = await requireActingSite();
+  const on = await getSiteFeatures(site.tenantId);
+  if (!on.has('headline') && !on.has('moment')) return { ok: false, error: HEADLINE_OFF };
+  const built = buildHeadlineRow(form);
+  if (!built.ok) return built;
+  const db = await createSupabaseServerClient();
+  const { error } = await db.from('site_moments').upsert({ tenant_id: site.tenantId, ...built.row });
+  if (error !== null) {
+    if (error.code === '42501') return { ok: false, error: 'You don’t have access to change this site.' };
+    logger.error('moment: headline save failed', { tenantId: site.tenantId, code: error.code, error: error.message });
+    return { ok: false, error: TRY_AGAIN };
+  }
+  revalidatePath('/manage/headline');
+  revalidatePath('/manage');
+  return { ok: true };
 }
 
 export async function saveMoment(form: MomentForm): Promise<DoneResult> {

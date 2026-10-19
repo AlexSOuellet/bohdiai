@@ -6,8 +6,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import type { ProductView } from '@/lib/archetypes/content';
-import { profileFormFromRow, type ProfileForm } from '@/lib/backend/profile/profile-form';
-import { PROFILE_COLUMNS } from '@/lib/backend/profile/queries';
+import type { ProfileForm } from '@/lib/backend/profile/profile-form';
+import { getProfileForm } from '@/lib/backend/profile/queries';
 import { loadSiteFeatures } from '@/lib/backend/features';
 import { listVisitorMarketDates } from '@/lib/backend/dates/queries';
 import { listGallery } from '@/lib/backend/gallery/queries';
@@ -41,13 +41,12 @@ export async function loadBoutiqueData(
 ): Promise<BoutiqueData> {
   const [tenant, profile, features, words] = await Promise.all([
     db.from('tenants').select('business_name').eq('id', tenantId).maybeSingle(),
-    db.from('site_profiles').select(PROFILE_COLUMNS).eq('tenant_id', tenantId).maybeSingle(),
+    getProfileForm(db, tenantId),
     loadSiteFeatures(db, tenantId),
     getSiteWords(db, tenantId, NURSERY_WORD_SPOTS, NURSERY_WORDS_PREFIX),
   ]);
   if (tenant.error !== null) throw new Error(`Could not load the site: ${tenant.error.message}`);
   if (tenant.data === null) throw new Error('Could not load the site: no such tenant');
-  if (profile.error !== null) throw new Error(`Could not load About you: ${profile.error.message}`);
   const [dates, gone, promo] = await Promise.all([
     features.has('market_dates') ? listVisitorMarketDates(db, tenantId) : Promise.resolve([]),
     features.has('gallery') ? listGallery(db, tenantId) : Promise.resolve([]),
@@ -56,7 +55,7 @@ export async function loadBoutiqueData(
   const sale = runningSale(promo.promos, promo.today);
   return {
     name: tenant.data.business_name,
-    profile: profileFormFromRow(profile.data),
+    profile,
     dates,
     gone: gone.slice(0, GALLERY_LIMIT),
     cart: features.has('cart'),

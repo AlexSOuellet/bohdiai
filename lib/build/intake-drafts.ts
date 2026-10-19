@@ -52,9 +52,6 @@ export function draftRequest(intake: IntakeForBuild, mood: string, photos: reado
     `Their pieces (the photos above are in this order):\n${pieces}`,
     '',
     'Write the drafts:',
-    `- profile.kicker (up to ${PROFILE_LIMITS.kicker} characters): a short line above the maker’s name on their about.`,
-    `- profile.headline (up to ${PROFILE_LIMITS.headline}): the line beside their name on the about.`,
-    `- profile.aboutTitle (up to ${PROFILE_LIMITS.aboutTitle}): the about page’s heading.`,
     `- profile.makes (up to ${MAKES_LIMIT} short phrases): what they make, from their own description.`,
     `- profile.quote (up to ${PROFILE_LIMITS.quote}): one sentence copied exactly, character for character, from their about, the one that says the most about them. If no sentence works on its own, leave it empty.`,
     `- profile.marqueePhrases (4 to ${MARQUEE_LIMIT}): short phrases that scroll across the page, about the work.`,
@@ -62,7 +59,7 @@ export function draftRequest(intake: IntakeForBuild, mood: string, photos: reado
     `- moment.sub (up to ${MOMENT_LIMITS.sub}): the line under the business name.`,
     '- moment.story (3 to 5 short lines): lines that fade in one at a time over the opening photo and tell one small story together.',
     `- moment.ctaLabel and moment.secondCtaLabel (up to ${MOMENT_LIMITS.ctaLabel} each): the two buttons at the top. Each says where it goes. Their targets are pages on the site: ${targets}.`,
-    `- sections: for each section, kicker (up to ${SECTION_LIMITS.kicker}, a short line above the heading, or empty), title (up to ${SECTION_LIMITS.title}, the heading), lede (up to ${SECTION_LIMITS.lede}, a line under the heading, or empty), moreLabel (up to ${SECTION_LIMITS.moreLabel}, the link at the bottom, or empty), pageTitle (up to ${SECTION_LIMITS.pageTitle}, the heading on that section’s own page, or empty). The sections: work (their pieces), collections (the groups of pieces), makes (what they make), about (the maker, with a link to the about page), reviews (what customers say; they have none yet, so write a heading that will fit when they do), markets (where to find them in person), close (the last line on the home page, with a button), contact (the contact page: a heading and a lede inviting people to write).`,
+    `- sections: for each section, kicker (up to ${SECTION_LIMITS.kicker}, a short line above the heading, or empty), title (up to ${SECTION_LIMITS.title}, the heading), lede (up to ${SECTION_LIMITS.lede}, a line under the heading, or empty), moreLabel (up to ${SECTION_LIMITS.moreLabel}, the link at the bottom, or empty), pageTitle (up to ${SECTION_LIMITS.pageTitle}, the heading on that section’s own page, or empty). The sections: work (their pieces), collections (the groups of pieces), makes (what they make), about (the maker, with a link to the about page), reviews (what customers say; they have none yet, so write a heading that will fit when they do), markets (where to find them in person), close (the last line on the home page, with a button), contact (the contact page: a heading and a lede inviting people to write), gallery (photos of their work, no prices; moreLabel empty).`,
     `- closeTarget: where the closing button goes (${targets}); sections.close.moreLabel is its words.`,
     showcase
       ? '- collections: leave empty; this site shows its work as a gallery.'

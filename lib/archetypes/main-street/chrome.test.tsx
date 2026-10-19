@@ -307,3 +307,11 @@ describe('MainStreetFooter', () => {
     expect(hrefs).not.toContain('/testimonials');
   });
 });
+
+describe('Nav on a one-page site (Showcase)', () => {
+  it('offers only About and Contact, each a jump down the home page', () => {
+    const { container } = render(<Nav identity={{ wordmark: 'Lena Hart Decoupage', showsShop: false, onePage: true }} words={W} />);
+    const hrefs = [...container.querySelectorAll('a')].map((a) => a.getAttribute('href')).filter((h) => h !== '/');
+    expect([...new Set(hrefs)].sort()).toEqual(['/#about', '/#contact']);
+  });
+});

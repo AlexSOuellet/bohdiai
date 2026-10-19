@@ -5,7 +5,7 @@
  * links. Pure: the loader (seo-data) reads the rows; this picks.
  *
  *   - the line above the name (the moment's short line) leads the description
- *   - the line under their name (About you) is the description
+ *   - the line under the headline (the Headline screen) is the description
  *   - what they make names the site when it has no craft set
  *   - the share picture is the opening photo, else its first extra photo, else the
  *     first piece's photo (photos only; a video has no still)
@@ -14,7 +14,8 @@ import type { TenantSeoFacts } from './seo';
 
 export type HomesSeoRows = {
   momentKicker: string | null;
-  profileHeadline: string | null;
+  /** The line under the headline at the top of the page (the Headline screen). */
+  momentSub: string | null;
   makes: readonly string[] | null;
   /** Candidate share pictures, best first: the opening, its first extra photo, the first piece. */
   pictures: readonly ({ url: string; mime: string } | null)[];
@@ -29,7 +30,7 @@ export function seoFromHomes(rows: HomesSeoRows): Pick<TenantSeoFacts, 'tagline'
   const picture = rows.pictures.find((p) => p !== null && p.mime.startsWith('image/'));
   return {
     tagline: text(rows.momentKicker),
-    seoDescription: text(rows.profileHeadline),
+    seoDescription: text(rows.momentSub),
     nicheLabel: text(rows.makes?.[0]),
     imageUrl: picture?.url,
   };

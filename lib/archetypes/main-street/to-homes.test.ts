@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { momentFormFromRow } from '@/lib/backend/moment/moment-form';
 import { sectionsFromRows } from '@/lib/backend/sections/sections-form';
-import { profileFormFromRow } from '@/lib/backend/profile/profile-form';
+import { profileFormFromHomes } from '@/lib/backend/profile/profile-form';
 import { familyViewFromHomes } from './from-homes';
 import { keyWords } from '@/lib/site-words/words';
 import { FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX } from './words';
@@ -73,8 +73,9 @@ describe('homesFromLegacy', () => {
     expect(h.sections.contact).toMatchObject({ title: 'Say hello', lede: 'Questions about a scent? Write any time.' });
   });
 
-  it('puts the story, quote and marquee in About you, and the portrait aside', () => {
-    expect(h.profile).toMatchObject({ bio: 'It started in my kitchen.\n\nNow it fills a barn.', quote: 'Every candle starts with a memory.', quote_attribution: 'June, founder of Aurora', marquee_phrases: ['Small batch', 'Clean burn', 'Made in RI'] });
+  it('puts the story and quote in About you, the marquee in its own home, and the portrait aside', () => {
+    expect(h.profile.profile).toMatchObject({ bio: 'It started in my kitchen.\n\nNow it fills a barn.', quote: 'Every candle starts with a memory.', quote_attribution: 'June, founder of Aurora' });
+    expect(h.profile.marquee).toEqual(['Small batch', 'Clean burn', 'Made in RI']);
     expect(h.portraitUrl).toBe('https://cdn/portrait.jpg');
   });
 
@@ -101,7 +102,7 @@ describe('homesFromLegacy', () => {
     expect(r.sections.reviews).toBeUndefined();
     expect(r.sections.markets).toBeUndefined();
     expect(r.sections.contact).toBeUndefined();
-    expect(r.profile.bio).toBeNull();
+    expect(r.profile.profile.bio).toBeNull();
     expect(r.testimonials).toEqual([]);
   });
 
@@ -126,10 +127,11 @@ describe('a round trip through the homes', () => {
         photos: h.momentPhotoUrls.map((p, i) => ({ id: `p${i}`, ...p })),
       },
       sections: sectionsFromRows(rows),
-      profile: profileFormFromRow(h.profile),
+      profile: profileFormFromHomes({ profile: h.profile.profile, aboutTitle: h.profile.aboutTitle, marquee: h.profile.marquee, phone: h.profile.phone, socials: h.profile.socials }),
       portraitUrl: h.portraitUrl,
       testimonials: h.testimonials.map((t, i) => ({ id: `t${i}`, quote: t.quote, name: t.name, detail: t.detail ?? '' })),
       dates: h.markets.map((m, i) => ({ id: `d${i}`, date: m.date, endDate: '', name: m.name, town: '', hours: m.hours, address: '', booth: '', url: '', canceled: false })),
+      gallery: [],
     }, keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX));
     expect(view.moment).toMatchObject({
       story: legacy.moment.story, eyebrow: legacy.moment.eyebrow, brand: legacy.moment.brand, sub: legacy.moment.sub,

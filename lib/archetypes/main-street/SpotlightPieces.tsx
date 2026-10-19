@@ -26,8 +26,15 @@ type Founder = MainStreetView['founder'];
 /** How long the name is, so the stylesheet sets a longer one smaller. */
 export function slamSize(name: string): 's' | 'm' | 'l' {
   const longest = Math.max(0, ...name.split(/\s+/).map((w) => w.length));
-  if (name.length > 22 || longest > 11) return 's';
+  if (name.length > 16 || longest > 11) return 's';
   if (name.length > 12 || longest > 8) return 'm';
+  return 'l';
+}
+
+/** How long the line under the name is: a few words stay big, a sentence steps down. */
+export function subSize(sub: string): 's' | 'm' | 'l' {
+  if (sub.length > 60) return 's';
+  if (sub.length > 32) return 'm';
   return 'l';
 }
 
@@ -82,7 +89,7 @@ export function SlamHero({
           ))}
         </Type>
         {moment.sub && (
-          <Type as="p" role="storyline" data-ms-hero-sub className="ms-sp-sub">
+          <Type as="p" role="storyline" data-ms-hero-sub className="ms-sp-sub" data-size={subSize(moment.sub)}>
             {moment.sub}
           </Type>
         )}

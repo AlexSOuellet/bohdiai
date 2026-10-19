@@ -1,6 +1,7 @@
 /** The catalog's part of the home screen (spec piece 1 §3): counts and Needs attention. */
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import type { HomeContributor, HomeData } from '../home';
+import { GALLERY_MAX } from '@/lib/catalog/home';
 import {
   listProducts,
   listCollections,
@@ -56,4 +57,28 @@ export const catalogHome: HomeContributor = {
     ]);
     return catalogHomeData(products, collections);
   },
+};
+
+/** Showcase's part of the home screen: the catalog's counts and Needs attention, with
+ *  the gallery pick in place of collections (Showcase has none). */
+export function showcaseHomeData(products: readonly ProductRowView[]): HomeData {
+  const base = catalogHomeData(products, []);
+  const picked = products.filter((p) => p.inGallery && p.status !== 'archived').length;
+  const productTiles = base.tiles.filter((t) => t.label === 'Products');
+  return {
+    tiles: [
+      ...productTiles,
+      {
+        label: 'Gallery',
+        value: picked === 0 ? `Newest ${GALLERY_MAX}` : `${picked} of ${GALLERY_MAX}`,
+        note: picked === 0 ? 'none picked yet' : 'picked by you',
+      },
+    ],
+    attention: base.attention,
+  };
+}
+
+export const showcaseHome: HomeContributor = {
+  feature: 'gallery_pieces',
+  load: async (tenantId) => showcaseHomeData(await listProducts(await createSupabaseServerClient(), tenantId)),
 };

@@ -5,6 +5,7 @@
  * a solid nav header (not the hero's over-media nav), and the footer. Structure
  * only — colors are skin vars, fonts are named roles, nothing niche or hardcoded.
  */
+import { dialable } from '@/lib/backend/profile/profile-form';
 import { priceLabel } from './price-label';
 import type { ReactNode } from 'react';
 import type { ArchetypeTheme } from '../types';
@@ -48,7 +49,7 @@ export function MainStreetSubPage({ content, skin, words, children, current, fam
     <MainStreetRoot skin={skin} family={family}>
       <SubHeader content={content} skin={skin} words={words} current={current} />
       <main className="ms-subpage-main">{children}</main>
-      <MainStreetFooter shopName={content.shopName} words={words} />
+      <MainStreetFooter shopName={content.shopName} words={words} socials={content.socials} />
     </MainStreetRoot>
   );
 }
@@ -206,6 +207,11 @@ export function ContactPage({ content, skin, words, tenantId, family }: { conten
         {intro && (
           <Type as="p" role="body" className="ms-contactpage-intro">
             {intro}
+          </Type>
+        )}
+        {content.phone !== undefined && (
+          <Type as="a" role="navLabel" href={`tel:${dialable(content.phone)}`} className="ms-contactbeat-phone">
+            {content.phone}
           </Type>
         )}
         {tenantId !== undefined && (

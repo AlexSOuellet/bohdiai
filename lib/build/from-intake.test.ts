@@ -29,7 +29,7 @@ function intake(over: Partial<IntakeForBuild> = {}): IntakeForBuild {
 const sec = { kicker: '', title: 'A heading', lede: '', moreLabel: 'More', pageTitle: '' };
 function drafts(over: Partial<IntakeDrafts> = {}): IntakeDrafts {
   return {
-    profile: { kicker: 'On the porch', headline: 'Rope, knotted by hand', aboutTitle: 'About Lena', makes: ['Baskets', 'Totes'], quote: 'Every basket takes a weekend.', marqueePhrases: ['knotted by hand', 'one weekend each', 'rope and patience', 'made on the porch'] },
+    profile: { makes: ['Baskets', 'Totes'], quote: 'Every basket takes a weekend.', marqueePhrases: ['knotted by hand', 'one weekend each', 'rope and patience', 'made on the porch'] },
     moment: { kicker: 'Knotted by hand', sub: 'Baskets that take a weekend', story: ['A coil of rope', 'A weekend of knots', 'A basket'], ctaLabel: 'See the baskets', ctaTarget: 'shop', secondCtaLabel: 'Meet Lena', secondCtaTarget: 'about' },
     sections: Object.fromEntries(SECTION_KEYS.map((k) => [k, sec])) as IntakeDrafts['sections'],
     closeTarget: 'shop',
@@ -81,11 +81,13 @@ describe('siteFromIntake', () => {
     expect(file.sections?.work?.moreTarget).toBe('');
   });
 
-  it('Showcase has no shop: the pieces become the gallery, with no prices and no groups', () => {
+  it('Showcase has no shop: the pieces are still its catalog, with no groups and no home picks', () => {
     const file = siteFromIntake(intake({ plan: 'showcase' }), drafts({ moment: { ...drafts().moment, ctaTarget: 'about', secondCtaTarget: 'contact' }, closeTarget: 'contact' }), settings, words);
-    expect(file.products).toBeUndefined();
-    expect(file.collections).toBeUndefined();
-    expect(file.gallery).toEqual(intake().pieces.map((p) => ({ file: p.file, caption: p.name })));
+    expect(file.gallery).toBeUndefined();
+    expect(file.collections).toEqual([]);
+    expect(file.products?.map((p) => p.name)).toEqual(intake().pieces.map((p) => p.name));
+    expect(file.products?.every((p) => p.onHome === false && p.collections?.length === 0)).toBe(true);
+    expect(file.products?.map((p) => p.priceCents)).toEqual(intake().pieces.map((p) => p.priceCents));
     expect(planSite(file).ok).toBe(true);
   });
 

@@ -1,0 +1,11 @@
+/** Whether a site is a standard site (a family design) rather than a custom site.
+ *  Standard-site screens (the gallery switch) only apply to family designs. */
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/lib/database.types';
+
+export async function isFamilySite(db: SupabaseClient<Database>, tenantId: string): Promise<boolean> {
+  const { data, error } = await db.from('content_pages').select('layout_tree').eq('tenant_id', tenantId).eq('slug', '/').maybeSingle();
+  if (error !== null) throw new Error(`Could not read the site’s design: ${error.message}`);
+  const tree = data?.layout_tree as { root?: { archetypeKey?: unknown } } | null | undefined;
+  return tree?.root?.archetypeKey === 'main-street';
+}

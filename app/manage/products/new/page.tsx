@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { requireActingSite } from '@/lib/backend/current-site';
 import { getSiteFeatures } from '@/lib/backend/site-features';
+import { hasProducts } from '@/lib/backend/features';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { listCollections, countHomeProducts } from '@/lib/backend/catalog/queries';
 import { emptyProductForm } from '@/lib/backend/catalog/product-form';
@@ -14,7 +15,7 @@ export const dynamic = 'force-dynamic';
 export default async function NewProductPage(): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
-  if (!on.has('catalog')) notFound();
+  if (!hasProducts(on)) notFound();
   const db = await createSupabaseServerClient();
   const [collections, homeCount] = await Promise.all([
     listCollections(db, site.tenantId),
@@ -31,6 +32,7 @@ export default async function NewProductPage(): Promise<React.ReactElement> {
       newArrivals={on.has('new_arrivals')}
       shopUrl={storefrontOrigin(site.subdomain, (await headers()).get('host'))}
       homeCount={homeCount}
+      showcase={!on.has('catalog')}
     />
   );
 }

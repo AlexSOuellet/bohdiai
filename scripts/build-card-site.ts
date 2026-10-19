@@ -18,7 +18,8 @@ import { join, extname } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 import type { Database, Json } from '../lib/database.types';
 import { BrandPaletteSchema, type BrandPalette } from '../lib/color/brand-palette';
-import { buildProfileRow, type ProfileForm } from '../lib/backend/profile/profile-form';
+import { buildProfileHomes, type ProfileForm } from '../lib/backend/profile/profile-form';
+import { writeProfileHomes } from '../lib/backend/profile/homes';
 import { GALLERY_LIMIT, CAPTION_MAX } from '../lib/backend/gallery/gallery-form';
 import { FAMILY_KEYS, FAMILIES, type FamilyKey } from '../lib/archetypes/main-street/families';
 import { cardSkinKey } from '../lib/archetypes/card/paint';
@@ -65,7 +66,7 @@ async function main(): Promise<void> {
   if (!(FAMILY_KEYS as readonly string[]).includes(site.SITE.family)) fail(`unknown family: ${site.SITE.family}`);
   if (cardSkinKey(FAMILIES[site.SITE.family], site.SITE.skin) !== site.SITE.skin) fail(`skin ${site.SITE.skin} isn't one of the ${site.SITE.family} family's skins`);
   if (site.SITE.brandPalette !== undefined && !BrandPaletteSchema.safeParse(site.SITE.brandPalette).success) fail('site brandPalette is invalid');
-  const profile = buildProfileRow(site.PROFILE);
+  const profile = buildProfileHomes(site.PROFILE);
   if (!profile.ok) fail(`profile invalid: ${profile.error}`);
   if (site.PHOTOS.length > GALLERY_LIMIT) fail(`at most ${GALLERY_LIMIT} photos (got ${site.PHOTOS.length})`);
   for (const p of site.PHOTOS) {
@@ -168,8 +169,11 @@ async function main(): Promise<void> {
   const { data: existingProfile, error: pErr } = await db.from('site_profiles').select('tenant_id').eq('tenant_id', tenantId).maybeSingle();
   if (pErr !== null) fail(`profile lookup failed: ${pErr.message}`);
   if (existingProfile === null || replaceProfile) {
-    const { error } = await db.from('site_profiles').upsert({ tenant_id: tenantId, ...profile.row });
-    if (error !== null) fail(`profile write failed: ${error.message}`);
+    try {
+      await writeProfileHomes(db, tenantId, profile.homes);
+    } catch (err) {
+      fail(`profile write failed: ${err instanceof Error ? err.message : String(err)}`);
+    }
     process.stdout.write('About you written\n');
   } else {
     process.stdout.write('About you kept (owner’s version; --replace-profile to overwrite)\n');

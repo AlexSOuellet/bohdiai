@@ -55,6 +55,8 @@ export interface ProductOffer {
 export interface ProductView {
   /** The listing id, when projected from the catalog (the cart keys on it). */
   id?: string;
+  /** The owner ticked it for the gallery section. */
+  inGallery?: boolean;
   slug: string;
   name: string;
   /** Formatted from base_price_cents + currency, e.g. "$148" or "from $40". */

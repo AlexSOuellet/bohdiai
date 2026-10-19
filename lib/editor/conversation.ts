@@ -80,6 +80,7 @@ export function conversationDepth(section: SectionKey): ConversationDepth {
 const SECTION_NAMES: Record<SectionKey, string> = {
   hero: 'opening (the first thing anyone sees)',
   goods: 'products heading',
+  gallery: 'gallery of their work',
   collections: 'collections',
   reviews: 'kind words from customers',
   marquee: 'scrolling line of short phrases',

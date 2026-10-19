@@ -6,8 +6,8 @@
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
-import { profileFormFromRow, type ProfileForm } from '@/lib/backend/profile/profile-form';
-import { PROFILE_COLUMNS } from '@/lib/backend/profile/queries';
+import type { ProfileForm } from '@/lib/backend/profile/profile-form';
+import { getProfileForm } from '@/lib/backend/profile/queries';
 import { listGallery } from '@/lib/backend/gallery/queries';
 import { GALLERY_LIMIT, type GalleryItem } from '@/lib/backend/gallery/gallery-form';
 import { loadSiteFeatures } from '@/lib/backend/features';
@@ -23,9 +23,10 @@ export type Portrait = { url: string; alt: string };
 export type CardData = { name: string; profile: ProfileForm; portrait: Portrait | null; photos: GalleryItem[]; dates: MarketDate[]; words: CardWords };
 
 export async function loadCardData(db: SupabaseClient<Database>, tenantId: string): Promise<CardData> {
-  const [tenant, profile, photos, features, words] = await Promise.all([
+  const [tenant, profileForm, profile, photos, features, words] = await Promise.all([
     db.from('tenants').select('business_name').eq('id', tenantId).maybeSingle(),
-    db.from('site_profiles').select(`${PROFILE_COLUMNS}, portrait:uploads(public_url, alt_text)`).eq('tenant_id', tenantId).maybeSingle(),
+    getProfileForm(db, tenantId),
+    db.from('site_profiles').select('portrait:uploads(public_url, alt_text)').eq('tenant_id', tenantId).maybeSingle(),
     listGallery(db, tenantId),
     loadSiteFeatures(db, tenantId),
     getSiteWords(db, tenantId, CARD_WORD_SPOTS, CARD_WORDS_PREFIX),
@@ -36,7 +37,7 @@ export async function loadCardData(db: SupabaseClient<Database>, tenantId: strin
   const dates = features.has('market_dates') ? await listVisitorMarketDates(db, tenantId) : [];
   const portraitUrl = profile.data?.portrait?.public_url ?? null;
   const portrait = portraitUrl === null ? null : { url: portraitUrl, alt: profile.data?.portrait?.alt_text ?? '' };
-  return { name: tenant.data.business_name, profile: profileFormFromRow(profile.data), portrait, photos: photos.slice(0, GALLERY_LIMIT), dates, words };
+  return { name: tenant.data.business_name, profile: profileForm, portrait, photos: photos.slice(0, GALLERY_LIMIT), dates, words };
 }
 
 /** A market's day as the site says it: "Sat Oct 11", read on the market's own date;

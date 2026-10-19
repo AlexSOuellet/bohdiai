@@ -1,7 +1,11 @@
 /**
- * About you (card site spec): the words and contact details the owner edits.
- * The form holds plain strings; an empty field means "not set". Validation turns
- * the form into the `site_profiles` row and names the field that needs fixing.
+ * Everything a site says about its maker and how to reach them, as one plain form
+ * (what the builders and the designs work with). Each piece is stored in its own
+ * home (Alex, 2026-10-19; Plan-Backends.md): the maker's own words in
+ * `site_profiles`, the about heading in the section words (`site_sections`
+ * 'about'), the scrolling line in `site_marquees`, the phone in `site_contacts`,
+ * the social accounts in `site_socials`. Validation turns the form into those
+ * homes and names the field that needs fixing. An empty field means "not set".
  */
 
 export type ProfileForm = {
@@ -22,19 +26,27 @@ export type ProfileForm = {
   instagramUrl: string;
 };
 
+/** The maker's own words: the `site_profiles` row. */
 export type ProfileRow = {
   kicker: string | null;
   headline: string | null;
-  about_title: string | null;
   bio: string | null;
   signature: string | null;
   makes: string[] | null;
   quote: string | null;
   quote_attribution: string | null;
-  marquee_phrases: string[] | null;
+};
+
+export type SocialNetwork = 'facebook' | 'instagram';
+
+/** Every home the form fills. */
+export type ProfileHomes = {
+  profile: ProfileRow;
+  /** The about heading (the section words' 'about' title). */
+  aboutTitle: string | null;
+  marquee: string[] | null;
   phone: string | null;
-  facebook_url: string | null;
-  instagram_url: string | null;
+  socials: { network: SocialNetwork; url: string; position: number }[];
 };
 
 export const PROFILE_LIMITS = { kicker: 60, headline: 160, aboutTitle: 80, bio: 5000, signature: 40, quote: 600, quoteAttribution: 80 } as const;
@@ -85,7 +97,7 @@ export function normalizeBio(bio: string): string {
 }
 
 /** "facebook.com/x", "www.facebook.com/x" and full links all become https links. */
-function socialUrl(raw: string, host: 'facebook' | 'instagram'): string | null | false {
+export function socialUrl(raw: string, host: SocialNetwork): string | null | false {
   const v = raw.trim();
   if (v === '') return null;
   if (host === 'instagram' && /^@?[A-Za-z0-9._]{1,30}$/.test(v)) return `https://www.instagram.com/${v.replace(/^@/, '')}`;
@@ -102,7 +114,7 @@ function socialUrl(raw: string, host: 'facebook' | 'instagram'): string | null |
   return `https://${h}${url.pathname}${url.search}`;
 }
 
-export function buildProfileRow(form: ProfileForm): { ok: true; row: ProfileRow } | { ok: false; error: string } {
+export function buildProfileHomes(form: ProfileForm): { ok: true; homes: ProfileHomes } | { ok: false; error: string } {
   const t = {
     kicker: form.kicker.trim().replace(/\s+/g, ' '),
     headline: form.headline.trim().replace(/\s+/g, ' '),
@@ -144,38 +156,50 @@ export function buildProfileRow(form: ProfileForm): { ok: true; row: ProfileRow 
 
   return {
     ok: true,
-    row: {
-      kicker: orNull(t.kicker),
-      headline: orNull(t.headline),
-      about_title: orNull(t.aboutTitle),
-      bio: orNull(t.bio),
-      signature: orNull(t.signature),
-      makes: makes.length === 0 ? null : makes,
-      quote: orNull(t.quote),
-      quote_attribution: orNull(t.quoteAttribution),
-      marquee_phrases: marquee.length === 0 ? null : marquee,
+    homes: {
+      profile: {
+        kicker: orNull(t.kicker),
+        headline: orNull(t.headline),
+        bio: orNull(t.bio),
+        signature: orNull(t.signature),
+        makes: makes.length === 0 ? null : makes,
+        quote: orNull(t.quote),
+        quote_attribution: orNull(t.quoteAttribution),
+      },
+      aboutTitle: orNull(t.aboutTitle),
+      marquee: marquee.length === 0 ? null : marquee,
       phone: orNull(phone),
-      facebook_url: facebook,
-      instagram_url: instagram,
+      socials: [
+        ...(facebook === null ? [] : [{ network: 'facebook' as const, url: facebook, position: 0 }]),
+        ...(instagram === null ? [] : [{ network: 'instagram' as const, url: instagram, position: 1 }]),
+      ],
     },
   };
 }
 
-export function profileFormFromRow(row: ProfileRow | null): ProfileForm {
-  if (row === null) return EMPTY_PROFILE;
+/** The form from its homes, as read. */
+export function profileFormFromHomes(h: {
+  profile: ProfileRow | null;
+  aboutTitle: string | null;
+  marquee: string[] | null;
+  phone: string | null;
+  socials: readonly { network: string; url: string }[];
+}): ProfileForm {
+  const p = h.profile;
+  const social = (n: SocialNetwork): string => h.socials.find((x) => x.network === n)?.url ?? '';
   return {
-    kicker: row.kicker ?? '',
-    headline: row.headline ?? '',
-    aboutTitle: row.about_title ?? '',
-    bio: row.bio ?? '',
-    signature: row.signature ?? '',
-    makes: row.makes ?? [],
-    quote: row.quote ?? '',
-    quoteAttribution: row.quote_attribution ?? '',
-    marqueePhrases: row.marquee_phrases ?? [],
-    phone: row.phone ?? '',
-    facebookUrl: row.facebook_url ?? '',
-    instagramUrl: row.instagram_url ?? '',
+    kicker: p?.kicker ?? '',
+    headline: p?.headline ?? '',
+    aboutTitle: h.aboutTitle ?? '',
+    bio: p?.bio ?? '',
+    signature: p?.signature ?? '',
+    makes: p?.makes ?? [],
+    quote: p?.quote ?? '',
+    quoteAttribution: p?.quote_attribution ?? '',
+    marqueePhrases: h.marquee ?? [],
+    phone: h.phone ?? '',
+    facebookUrl: social('facebook'),
+    instagramUrl: social('instagram'),
   };
 }
 

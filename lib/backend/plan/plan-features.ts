@@ -12,8 +12,13 @@ import type { FeatureKey } from '../features';
 import { SITE_PLANS, type SitePlan } from './plan';
 import { LINK_TARGETS, type LinkTarget } from '@/lib/archetypes/main-street/links';
 
-const SHOWCASE: readonly FeatureKey[] = ['profile', 'gallery', 'market_dates', 'qr_codes', 'plan'];
-const LITE: readonly FeatureKey[] = [...SHOWCASE, 'catalog', 'market_details', 'market_shop'];
+/** Every plan: About you, markets, the QR code, the plan screen, and the headline at
+ *  the top of the home page (the headline and the line under it; Alex, 2026-10-19). */
+const EVERY_PLAN: readonly FeatureKey[] = ['profile', 'market_dates', 'qr_codes', 'plan', 'headline'];
+/** Showcase (Alex, 2026-10-19): the whole catalog in the backend with no shop and no
+ *  prices on the site; the gallery is up to 12 ticked pieces (newest 12 by default). */
+const SHOWCASE: readonly FeatureKey[] = [...EVERY_PLAN, 'gallery_pieces'];
+const LITE: readonly FeatureKey[] = [...EVERY_PLAN, 'gallery', 'catalog', 'market_details', 'market_shop'];
 const FULL: readonly FeatureKey[] = [
   ...LITE,
   'product_photos',
@@ -32,7 +37,7 @@ export const PLAN_FEATURES: Record<SitePlan, readonly FeatureKey[]> = {
 };
 
 /** Every switch a plan decides. */
-export const PLAN_MANAGED: readonly FeatureKey[] = FULL;
+export const PLAN_MANAGED: readonly FeatureKey[] = [...new Set([...SHOWCASE, ...FULL])];
 
 /** The rows that put a site on `plan`: each managed switch on or off. */
 export function planFeatureRows(plan: SitePlan): { feature_key: FeatureKey; enabled: boolean }[] {
@@ -49,7 +54,7 @@ export function moveOf(from: SitePlan, to: SitePlan): Move {
 
 /** What a maker sees named for each switch a move adds or hides. */
 export const FEATURE_WORDS: Partial<Record<FeatureKey, string>> = {
-  catalog: 'Your products and collections, with prices',
+  catalog: 'Your shop page, collections and prices (your products are kept)',
   market_details: 'Market hours, addresses, booths and websites',
   market_shop: 'The point of sale at markets: the QR shop page, Getting paid and Today',
   product_photos: 'Extra photos on each product (the main photo stays)',

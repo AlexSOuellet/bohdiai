@@ -40,11 +40,13 @@ export const SPOTLIGHT_CSS = `
     .arch-main-street .ms-sp-kick{margin:0;letter-spacing:.32em;color:inherit;opacity:.8}
     .arch-main-street .ms-sp-slam{margin:14px 0 22px;font-size:clamp(76px,12vw,190px);line-height:.86;color:inherit;overflow-wrap:anywhere}
     .arch-main-street .ms-sp-slam[data-size="m"]{font-size:clamp(60px,10vw,160px)}
-    .arch-main-street .ms-sp-slam[data-size="s"]{font-size:clamp(44px,7.4vw,120px)}
+    .arch-main-street .ms-sp-slam[data-size="s"]{font-size:clamp(44px,6.4vw,104px)}
     .arch-main-street .ms-sp-word{display:block}
     .arch-main-street .ms-sp-l{display:inline-block;font-style:normal;animation:ms-sp-slam .5s cubic-bezier(.2,1.6,.4,1) both}
     ${slamDelays}
     .arch-main-street .ms-sp-sub{margin:0 auto;max-width:28ch;color:inherit;animation:ms-sp-up .8s 1.4s both}
+    .arch-main-street .ms-sp-sub[data-size="m"]{font-size:clamp(22px,2.6vw,34px);max-width:34ch}
+    .arch-main-street .ms-sp-sub[data-size="s"]{font-size:clamp(18px,1.7vw,24px);line-height:1.4;max-width:48ch}
     .arch-main-street .ms-sp-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:28px;animation:ms-sp-up .8s 1.7s both}
     .arch-main-street .ms-sp-go{display:inline-block;padding:14px 26px;border:2px solid currentColor;color:inherit;transition:background .25s,color .25s}
     .arch-main-street .ms-sp-hero .ms-sp-go:hover{background:var(--ms-on-media);color:#000}

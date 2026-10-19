@@ -11,7 +11,7 @@
  */
 import { buildMomentRow, EMPTY_MOMENT, type MomentForm, type MomentRow } from '@/lib/backend/moment/moment-form';
 import { buildSectionRow, EMPTY_SECTION, type SectionKey, type SectionRow, type SectionWords } from '@/lib/backend/sections/sections-form';
-import { buildProfileRow, EMPTY_PROFILE, type ProfileRow } from '@/lib/backend/profile/profile-form';
+import { buildProfileHomes, EMPTY_PROFILE, type ProfileHomes } from '@/lib/backend/profile/profile-form';
 import { isCalendarDate } from '@/lib/backend/dates/dates-form';
 import type { MainStreetView } from './schemas';
 
@@ -22,7 +22,7 @@ export type LegacyHomes = {
   momentPosterUrl: string | null;
   momentPhotoUrls: { url: string; alt: string }[];
   sections: Partial<Record<SectionKey, SectionRow>>;
-  profile: ProfileRow;
+  profile: ProfileHomes;
   portraitUrl: string | null;
   testimonials: { quote: string; name: string; detail: string | null }[];
   markets: { date: string; name: string; hours: string }[];
@@ -72,7 +72,7 @@ export function homesFromLegacy(c: MainStreetView): LegacyHomes {
   put('close', { kicker: c.close.label, title: c.close.headline, moreLabel: c.close.ctaLabel, moreTarget: c.close.ctaTarget ?? (c.close.ctaLabel === '' ? '' : 'shop') });
   if (c.contact !== undefined) put('contact', { title: c.contact.heading, lede: c.contact.intro });
 
-  const profile = buildProfileRow({
+  const profile = buildProfileHomes({
     ...EMPTY_PROFILE,
     bio: (c.about?.story ?? []).join('\n\n'),
     quote: f.quote,
@@ -89,7 +89,7 @@ export function homesFromLegacy(c: MainStreetView): LegacyHomes {
     momentPosterUrl: m.media.poster ?? null,
     momentPhotoUrls: (m.collageShots ?? []).flatMap((s) => (s.url === undefined || s.url === '' ? [] : [{ url: s.url, alt: s.alt }])),
     sections,
-    profile: profile.row,
+    profile: profile.homes,
     portraitUrl: f.photo.url ?? null,
     testimonials: (c.reviews?.items ?? []).map((t) => ({ quote: t.quote, name: t.author, detail: t.location ?? null })),
     markets: dated.map((r) => ({ date: r.date ?? '', name: r.where, hours: r.time })),

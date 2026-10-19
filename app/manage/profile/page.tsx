@@ -15,5 +15,6 @@ export default async function ProfilePage(): Promise<React.ReactElement> {
   if (!on.has('profile')) notFound();
   const db = await createSupabaseServerClient();
   const [initial, portraitUrl] = await Promise.all([getProfileForm(db, site.tenantId), getPortraitUrl(db, site.tenantId)]);
-  return <ProfileEditor initial={initial} portraitUrl={portraitUrl} siteUrl={storefrontOrigin(site.subdomain, (await headers()).get('host'))} />;
+  const about = { aboutTitle: initial.aboutTitle, bio: initial.bio, quote: initial.quote, quoteAttribution: initial.quoteAttribution };
+  return <ProfileEditor initial={about} portraitUrl={portraitUrl} siteUrl={storefrontOrigin(site.subdomain, (await headers()).get('host'))} />;
 }

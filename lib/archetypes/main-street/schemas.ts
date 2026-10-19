@@ -132,6 +132,10 @@ export const MainStreetContentSchema = z.object({
      *  False on Showcase: no shop, collections or product pages, no prices, and
      *  the pieces and collections sections don't show. Absent has a shop. */
     showsShop: z.boolean().optional(),
+    /** A one-page site (Showcase; Alex, 2026-10-19): no About, Events or Contact
+     *  pages. The menu jumps down the page, the whole story and the contact form
+     *  sit on the home page, and the old page addresses land on their section. */
+    onePage: z.boolean().optional(),
   }),
 
   /** BEAT 1 — the moment is the hero. Held media + a story told one line at a
@@ -319,6 +323,14 @@ export type MainStreetView = Omit<MainStreetContent, 'moment' | 'founder'> & {
     collageShots?: Omit<CollageShot, 'prompt'>[] | undefined;
   };
   founder: Omit<Founder, 'photo'> & { photo: { url?: string | undefined; alt: string } };
+  /** GALLERY — the added gallery section (Plan-Backends.md): photos of the work with
+   *  their names, no prices. Read from the homes only, never from a page record, so
+   *  it's not in the content schema; absent when the site has none. */
+  gallery?: { title: string; label?: string | undefined; items: { key: string; url: string; alt: string; name: string }[] } | undefined;
+  /** The maker's social accounts (the Socials screen), shown as icons in the footer only. */
+  socials?: { facebookUrl: string; instagramUrl: string } | undefined;
+  /** The phone (Contact information), shown with the contact form. */
+  phone?: string | undefined;
 };
 
 /** The only skin choice is which curated skin to wear. Everything inside it is
