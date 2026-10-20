@@ -73,11 +73,32 @@ The gallery is its own **added section**, separate from products. A site can hav
 
 ## Market ($15 a month)
 
-To be defined.
+Settled with Alex, 2026-10-20 (from the 2026-10-11 Market plan talk): **everything Showcase has, plus the whole catalog with prices and the whole market app.** No online selling of any kind (not even reserve for pickup), no promotions, no collections, no order tracking, one photo per piece.
+
+### On the site
+- The shop page and a page for each piece: photo, price, "Ask about this". Pieces with options (colours, sizes) show their dropdowns, each choice at its own price.
+- **No collections** (Full only): no collections band, menu link or pages.
+- The gallery as an add-on with **no limit** (see "The gallery section").
+- Markets with day, hours, address, booth and website.
+- **Testimonials: up to three**, the ones the maker ticks; her first three until she ticks any.
+- The market shop shoppers scan at her table: pick a piece, how many, and which option; it shows what's left at that market.
+
+### What the maker gets in the backend
+Everything Showcase has, plus:
+1. **Products** with prices, stock on hand, and options (each choice with its own price and stock).
+2. **Markets** with details, and the market records: costs, organizer, notes, review.
+3. **What I'm bringing** on each market: tick the pieces, and say how many of each (or of each option). The count starts at what's on hand. With none left at that market, the piece shows sold out there. Each sale takes from what's on hand and from what's left at that market.
+4. **Market POS**: a tile per piece or option, + and − for how many, stops at what's left; Getting paid.
+5. **How it sold** on each market's page (brought, sold, left, when it sold out) and **Sold out at your markets** on the results page; results this year against last, after costs.
+6. **Testimonials** with a "Show on my site" tick (up to three).
+7. Card payments at the table: **Square only** (Alex, 2026-10-20), when built.
+
+## Every plan, also
+- **Visitor numbers** on the backend home (Alex, 2026-10-20): visits and pages seen this week against last, the most-seen pages and where visits came from (30 days). Counted without cookies in Cloudflare (three months kept). **Full keeps its months** for as long as it's on Full (`site_visit_months`, saved daily).
 
 ## Full ($25 a month)
 
-To be defined. Already decided: try on a look (see another mood and skin on their own site, then keep it) is Full only (Alex, 2026-10-17). The try-on must survive clicking around the site (not only the address bar), and Scenic must never fall back to the marsh: every build makes three backgrounds whatever the family (Open-Work item 6). The gallery add-on is above.
+To be defined. Already decided: online selling through **Square and/or Stripe** (Alex, 2026-10-20); collections; every testimonial; visitor months kept. Try on a look (see another mood and skin on their own site, then keep it) is Full only (Alex, 2026-10-17). The try-on must survive clicking around the site (not only the address bar), and Scenic must never fall back to the marsh: every build makes three backgrounds whatever the family (Open-Work item 6). The gallery add-on is above.
 
 ---
 

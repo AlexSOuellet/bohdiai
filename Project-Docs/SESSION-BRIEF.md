@@ -1,33 +1,25 @@
 # Session Brief — BohdiAI
 
-> **⚠ START HERE (Session 110):** read `session-logs/session-109.md`, then `Plan-Backends.md`, then `Open-Work.md`.
-> Today's work is on **`feat/showcase-backend` (committed, NOT merged)**. Alex reviews it first. Then: **better social
-> icons** and **a line above the bottom navigation**; merge; drop the old `site_profiles` columns after it's live.
+> **⚠ START HERE (Session 111):** read `session-logs/session-110.md`, then `Plan-Backends.md` (Market is settled), then `Open-Work.md`.
+> The Market plan is on **`feat/market-plan` (committed, NOT merged)**. Alex finishes testing on Saltmarsh (now on Market) first; then merge and check the live sites.
+> A change to what a plan shows must also be checked in the custom designs (Saltmarsh, Rose n' Cat).
 > Build everything Alex decides; ask in plain text (no button questions); ask before any change he didn't ask for.
 
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 
 **Operative plan doc:** `Project-Docs/Modular-Plan.md`; open items in `Project-Docs/Open-Work.md`. Every session updates Open-Work as items land.
 
-**Last updated:** 2026-10-19, Session 109 (end).
+**Last updated:** 2026-10-20, Session 110 (end).
 
 ---
 
 ## Current state
 
+**Session 110: Showcase backend merged and live, with the footer's named social buttons, visitor numbers (Cloudflare, no cookies; Full keeps its months) and the backend's new look. The Market plan defined and built on `feat/market-plan` (unmerged): market stock counts and "How it sold", options sell (market app, online cart, Saltmarsh), collections Full only, testimonials up to three on Market, the demo's "Move to <plan> now".** Waiting on Alex: the Cloudflare key for visitor numbers. Recap: `session-logs/session-110.md`.
+
 **Session 109: Showcase backend defined and built (Plan-Backends.md), the gallery section in every family, About you split into its own homes and screens (Headline, Scrolling line, Contact information, Socials), Cancel at end of term, Billing, Contact support, plan-change emails, folding menu, three backgrounds per build. All on `feat/showcase-backend`, unmerged.** Live sites briefly down from a column drop (fixed; old columns stay until the merge is live). Paying at sign-up is now the top priority. Recap: `session-logs/session-109.md`.
 
 **Session 108: bohdiai.com split live (parent + makers.bohdiai.com + service.bohdiai.com); makers arm written for an automated build (makers pay at sign-up, nothing says "built free"); three build bugs fixed; /samples retired.** The middleware shows /makers and /contractors at the arms (`lib/site/arms.ts`), "makers"/"service" reserved. Parent: headline, sample window, doors, Penny then Cut-Pro, story, pledge, "Need something else" box. Makers arm: "Your work online, the way you sell it", looks, plans built up as three steps, how it works (form, site, Publish), prices, comparison, custom sites (Penny), questions, "Start your site" + question box. Service arm unchanged (hand-built voice). Recap: `session-logs/session-108.md`.
-
-**Session 107: priority reset; Scenic + Spotlight live (nine families); Scenic photos/clips + generated searchable scene library; Classic Loafs = the all-moods sample (/looks).** Recap: `session-logs/session-107.md`.
-
-**Session 106: intake form live (bohdiai.com/start, account on the form, mood per family); `scripts/intake-to-site.ts` turns a submission into a site with Claude-drafted words; Publish button; free sites (`tenants.plan_comp`); old samples converted in place.** Recap: `session-logs/session-106.md`.
-
-**Session 105: lineup reset (makers first, family + skin, Scenic/Spotlight, custom sites), every family sells, one builder, Spotlight trial, Vintage — all merged in Session 106.** Recap: `session-logs/session-105.md`.
-
-**Session 104: no word is written into the code: every word lives per site in `site_words` (`<design>/words.ts` names the spots). Saltmarsh polished.** Recap: `session-logs/session-104.md`.
-
-**Session 103: Modular Plan steps 1 (safeguards: db-change hook, page-record rule, modular-rules test) and 2 (homes) done; family pages read from the homes (`from-homes.ts`).** Recap: `session-logs/session-103.md`.
 
 **Session 87 — the whole app now runs on Cloudflare Workers; Vercel serves nothing.** bohdiai.com, www, every shop subdomain and Cut-Pro are all served by the `bohdiai` Worker, verified live (Cut-Pro end to end, including a real photo estimate). `main` is current (fast-forwarded 552 commits). 1364 tests, tsc + lint clean. Runbook + lessons: `Cloudflare-Move.md`.
 
@@ -40,7 +32,7 @@
 
 ## Next actions
 
-**Session 110:** Alex reviews `feat/showcase-backend`; better social icons; a line above the bottom navigation; merge and check the Cloudflare build; then drop the old `site_profiles` columns; then define Market and Full; paying at sign-up (top).
+**Session 111:** Alex finishes testing `feat/market-plan`; merge and check the Cloudflare build and live sites; the pricing cards (testimonials to Market, two lines off Full; asked, not answered); the Cloudflare key (Alex); then define Full; paying at sign-up (top).
 
 **Every open item is in `Open-Work.md`; follow its Priority order.** Next: the maker-backend screens with try on a look for Full (priority 4), then Alex's admin. Waiting on Alex: the purge (after testing); whether Paper & Patina moves onto Spotlight. Waiting on others: Joe's feedback, Renee's details.
 
@@ -93,6 +85,7 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 110 (2026-10-20): **Showcase backend live (named social buttons, visitor numbers, new backend look); Market plan built on `feat/market-plan`, unmerged (stock at markets, options sell, collections Full only, testimonials up to three).** Full recap: `session-logs/session-110.md`.
 - Session 109 (2026-10-19): **Showcase backend + gallery section + About you split into its homes; Cancel, Billing, Contact support, plan emails; on `feat/showcase-backend`, unmerged.** Full recap: `session-logs/session-109.md`.
 - Session 108 (2026-10-18): **bohdiai.com split live (parent + makers/service arms); makers arm for an automated build, pay at sign-up; three build bugs fixed; /samples retired.** Full recap: `session-logs/session-108.md`.
 - Session 107 (2026-10-17): **Priority reset; Scenic + Spotlight live; Scenic photos/clips + generated searchable scene library; Classic Loafs = all-moods sample (/looks live); bohdiai.com parent + makers/service arms decided.** Full recap: `session-logs/session-107.md`.
