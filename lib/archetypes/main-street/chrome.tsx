@@ -1725,10 +1725,11 @@ export function Nav({
 export function MainStreetFooter({ shopName, words, platformCredit = true, socials }: { shopName: string; words: FamilyWords; platformCredit?: boolean; socials?: MainStreetView['socials'] }) {
   return (
     <footer className="ms-footer">
-      <Type as="span" role="wordmark">{shopName}</Type>
+      {/* The social icons get their own line, above the name and the footer links. */}
       {socials !== undefined && (
-        <SocialIcons facebookUrl={socials.facebookUrl} instagramUrl={socials.instagramUrl} className="ms-footer-social" labels={{ facebook: words.footerFacebook, instagram: words.footerInstagram }} />
+        <SocialIcons facebookUrl={socials.facebookUrl} instagramUrl={socials.instagramUrl} className="ms-footer-social" labels={{ facebook: words.footerFacebook, instagram: words.footerInstagram }} showNames nameType="navLabel" />
       )}
+      <Type as="span" role="wordmark">{shopName}</Type>
       <div className="ms-footer-row">
         <Type as={Link} role="legal" href="/" className="ms-footer-link">
           {words.footerHome}
