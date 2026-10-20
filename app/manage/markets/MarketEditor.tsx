@@ -9,8 +9,10 @@ import {
   COSTS_LIMIT,
   GO_BACK_LABEL,
   MARKET_LIMITS as L,
+  STOCK_MAX,
   buildMarketPayload,
   costsTotal,
+  stockKey,
   type GoBack,
   type MarketForm,
 } from '@/lib/backend/markets/market-form';
@@ -18,6 +20,36 @@ import { ConfirmButton } from '../_components/ConfirmButton';
 import { QrCode } from '../_components/QrCode';
 
 import type { ShopPick } from '@/lib/backend/markets/shop-props';
+
+/** A count box's starting number: what's on hand, when it's counted. */
+const onHandText = (n: number | null): string => (n === null ? '' : String(Math.max(n, 0)));
+
+/** Ticking a piece starts its count (or each option's) at what she has on hand,
+ *  unless she already typed one. */
+function startCounts(p: ShopPick, stock: Record<string, string>): Record<string, string> {
+  const next = { ...stock };
+  if (p.options.length === 0) {
+    const k = stockKey(p.id);
+    if (next[k] === undefined) next[k] = onHandText(p.onHand);
+  } else {
+    for (const o of p.options) {
+      const k = stockKey(p.id, o.id);
+      if (next[k] === undefined) next[k] = onHandText(o.onHand);
+    }
+  }
+  return next;
+}
+
+function CountBox({ id, label, value, onChange }: { id: string; label: string; value: string; onChange: (v: string) => void }): React.ReactElement {
+  return (
+    <span className="bk-count">
+      <label className="bk-sr" htmlFor={id}>
+        {label}
+      </label>
+      <input id={id} className="bk-input bk-input-count" inputMode="numeric" maxLength={String(STOCK_MAX).length} placeholder="—" value={value} onChange={(e) => onChange(e.target.value)} />
+    </span>
+  );
+}
 
 /** The market shop's part of the page, on sites that have it. `marketUrl` is the
  *  page buyers scan to (null until the market is saved). */
@@ -79,11 +111,14 @@ export function MarketEditor({
   shop,
   details,
   records,
+  sold,
 }: {
   initial: MarketForm;
   shop?: MarketShopProps | undefined;
   details: boolean;
   records: boolean;
+  /** How each piece sold at this market (the market app), shown above Save. */
+  sold?: React.ReactNode;
 }): React.ReactElement {
   const router = useRouter();
   const [form, setForm] = useState(initial);
@@ -270,36 +305,63 @@ export function MarketEditor({
             )}
             <fieldset className="bk-fieldset">
               <legend className="bk-label">What you’re bringing ({form.listingIds.length})</legend>
-              <p className="bk-note">Buyers who scan this market’s code see only these.</p>
+              <p className="bk-note">
+                Buyers who scan this market’s code see only these. Type how many of each you’re bringing: it starts at
+                what you have on hand, so lower it for anything staying home. When they’re gone, the piece shows sold out
+                at this market. Leave a box empty to sell from everything you have.
+              </p>
               {shop.products.length === 0 ? (
                 <p className="bk-note">No live products yet. Add some under Products.</p>
               ) : (
                 <ul className="bk-picks">
-                  {shop.products.map((p) => (
-                    <li key={p.id}>
-                      <label className="bk-check bk-pick-row">
-                        <input
-                          type="checkbox"
-                          checked={form.listingIds.includes(p.id)}
-                          onChange={(e) =>
-                            update({
-                              listingIds: e.target.checked
-                                ? [...form.listingIds, p.id]
-                                : form.listingIds.filter((x) => x !== p.id),
-                            })
-                          }
-                        />
-                        {p.photoUrl !== null && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img className="bk-thumb" src={p.photoUrl} alt="" />
+                  {shop.products.map((p) => {
+                    const bringing = form.listingIds.includes(p.id);
+                    const setCount = (key: string, v: string): void => update({ stock: { ...form.stock, [key]: v } });
+                    return (
+                      <li key={p.id} className="bk-bring">
+                        <div className="bk-bring-row">
+                          <label className="bk-check bk-pick-row">
+                            <input
+                              type="checkbox"
+                              checked={bringing}
+                              onChange={(e) =>
+                                update(
+                                  e.target.checked
+                                    ? { listingIds: [...form.listingIds, p.id], stock: startCounts(p, form.stock) }
+                                    : { listingIds: form.listingIds.filter((x) => x !== p.id) },
+                                )
+                              }
+                            />
+                            {p.photoUrl !== null && (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img className="bk-thumb" src={p.photoUrl} alt="" />
+                            )}
+                            <span>
+                              {p.name}
+                              {p.soldOut && <span className="bk-note"> · sold out</span>}
+                              {p.options.length === 0 && p.onHand !== null && <span className="bk-note"> · {p.onHand} on hand</span>}
+                            </span>
+                          </label>
+                          {bringing && p.options.length === 0 && (
+                            <CountBox id={`bring-${p.id}`} label={`How many ${p.name} you’re bringing`} value={form.stock[stockKey(p.id)] ?? ''} onChange={(v) => setCount(stockKey(p.id), v)} />
+                          )}
+                        </div>
+                        {bringing && p.options.length > 0 && (
+                          <ul className="bk-bring-options">
+                            {p.options.map((o) => (
+                              <li key={o.id} className="bk-bring-row">
+                                <span>
+                                  {o.label}
+                                  {o.onHand !== null && <span className="bk-note"> · {o.onHand} on hand</span>}
+                                </span>
+                                <CountBox id={`bring-${o.id}`} label={`How many ${p.name}, ${o.label}, you’re bringing`} value={form.stock[stockKey(p.id, o.id)] ?? ''} onChange={(v) => setCount(stockKey(p.id, o.id), v)} />
+                              </li>
+                            ))}
+                          </ul>
                         )}
-                        <span>
-                          {p.name}
-                          {p.soldOut && <span className="bk-note"> · sold</span>}
-                        </span>
-                      </label>
-                    </li>
-                  ))}
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </fieldset>
@@ -501,6 +563,8 @@ export function MarketEditor({
             </section>
           </>
         )}
+
+        {sold}
 
         <div className="bk-row">
           {saveButton}

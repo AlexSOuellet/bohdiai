@@ -13,6 +13,14 @@ export async function loadPaySettings(db: Db, tenantId: string): Promise<PaySett
   return paySettingsFromRow(data);
 }
 
+/** How many of each piece (or each option of a piece) a market brings, keyed by
+ *  `stockKey`. A piece with no row isn't counted there. */
+export async function marketStock(db: Db, eventId: string): Promise<Map<string, number>> {
+  const { data, error } = await db.from('market_stock').select('listing_id, listing_variant_id, brought').eq('event_id', eventId);
+  if (error !== null) throw new Error(`Could not load how many this market brings: ${error.message}`);
+  return new Map((data ?? []).map((r) => [r.listing_variant_id === null ? r.listing_id : `${r.listing_id}:${r.listing_variant_id}`, r.brought]));
+}
+
 /** The listing ids a market brings, in the owner's order. */
 export async function marketListingIds(db: Db, eventId: string): Promise<string[]> {
   const { data, error } = await db.from('market_listings').select('listing_id, position').eq('event_id', eventId).order('position', { ascending: true });

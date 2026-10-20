@@ -693,6 +693,7 @@ export function ShorelineMarket({
               <ShorelineMarketBuyer
                 marketId={market.marketId}
                 pieces={market.pieces}
+                stock={market.stock}
                 methods={market.methods}
                 w={M}
               />

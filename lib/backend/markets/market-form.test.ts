@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildMarketPayload, costsTotal, emptyMarketForm, isPastMarket, normalizeUrl, type MarketForm } from './market-form';
+import { buildMarketPayload, costsTotal, emptyMarketForm, isPastMarket, normalizeUrl, stockKey, type MarketForm } from './market-form';
 import { MARKET_PUBLIC_COLUMNS } from '@/lib/backend/dates/dates-form';
 
 const form = (over: Partial<MarketForm> = {}): MarketForm => ({
@@ -55,6 +55,7 @@ describe('buildMarketPayload', () => {
           { description: 'Gas', amount_cents: 1250 },
         ],
         listing_ids: [],
+        stock: [],
       },
     });
   });
@@ -91,5 +92,24 @@ describe('helpers', () => {
   });
   it('never lets the site read a private column', () => {
     for (const col of ['notes', 'organizer', 'rating', 'go_back', 'review', 'expenses']) expect(MARKET_PUBLIC_COLUMNS).not.toContain(col);
+  });
+});
+
+describe('how many she brings', () => {
+  const base = { ...emptyMarketForm(), name: 'Holly Fair', date: '2026-11-21', listingIds: ['l1', 'l3'] };
+  it('sends a count for each piece or option she brings, leaving blanks and unticked pieces out', () => {
+    const built = buildMarketPayload({ ...base, stock: { l1: ' 3 ', 'l3:v1': '0', 'l3:v2': '', l9: '5' } });
+    expect(built.ok && built.payload.stock).toEqual([
+      { listing_id: 'l1', variant_id: null, brought: 3 },
+      { listing_id: 'l3', variant_id: 'v1', brought: 0 },
+    ]);
+  });
+  it('asks for a whole number', () => {
+    for (const bad of ['2.5', '-1', 'ten', '10000'])
+      expect(buildMarketPayload({ ...base, stock: { l1: bad } })).toEqual({ ok: false, error: 'How many you’re bringing should be a whole number from 0 to 9999.' });
+  });
+  it('keys a piece and an option apart', () => {
+    expect(stockKey('l1')).toBe('l1');
+    expect(stockKey('l1', 'v1')).toBe('l1:v1');
   });
 });

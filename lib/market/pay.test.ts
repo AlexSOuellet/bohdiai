@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { EMPTY_PAY, buildPayRow, cashAppLink, methodsOn, paySettingsFromRow, venmoLink } from './pay';
-import { marketState, payNote, payStep } from './buyer';
+import { marketState, payNote, payStep, pieceLabel } from './buyer';
 
 describe('buildPayRow', () => {
   it('saves handles without their @ or $', () => {
@@ -59,6 +59,9 @@ describe('payStep', () => {
   });
   it('writes a note she can match', () => {
     expect(payNote('Rose n’ Cat', 'Theo', '1004')).toBe('Rose n’ Cat · Theo · #1004');
+    expect(pieceLabel('Scarf', 'Blue', 1)).toBe('Scarf, Blue');
+    expect(pieceLabel('Mug', null, 3)).toBe('3 × Mug');
+    expect(pieceLabel('Mug', '', 1)).toBe('Mug');
   });
 });
 

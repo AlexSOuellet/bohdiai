@@ -82,6 +82,9 @@ export const NURSERY_WORD_SPOTS = {
     error: '',
     errorNetwork: '',
     gone: '',
+    quantity: '',
+    option: '',
+    left: '',
   },
   born: {
     tag: '',

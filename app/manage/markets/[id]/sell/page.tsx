@@ -28,7 +28,7 @@ export default async function SellPage({ params }: PageProps<'/manage/markets/[i
     db.from('tenants').select('time_zone').eq('id', site.tenantId).maybeSingle(),
   ]);
   if (market === null) notFound();
-  const pieces = await loadSellPieces(db, site.tenantId, ids);
+  const pieces = await loadSellPieces(db, site.tenantId, id, ids);
   return (
     <SellBoard
       eventId={id}

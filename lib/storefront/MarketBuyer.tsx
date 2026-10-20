@@ -11,7 +11,7 @@
  * `<prefix>-was`.
  */
 import { useState, type FormEvent, type ReactElement } from 'react';
-import type { ProductView } from '@/lib/archetypes/content';
+import type { MarketPieceCount, ProductView } from '@/lib/archetypes/content';
 import { METHOD_LABEL, type PayMethod } from '@/lib/market/pay';
 import type { PayStep } from '@/lib/market/buyer';
 import { fill } from '@/lib/site-words/words';
@@ -52,6 +52,12 @@ export interface MarketBuyerStrings {
   readonly errorNetwork: string;
   /** Shown in place of the price on a piece that's already gone. */
   readonly gone: string;
+  /** The label on how many of a piece the buyer is taking. */
+  readonly quantity: string;
+  /** The label on which option of a piece (a colour, a size) the buyer is taking. */
+  readonly option: string;
+  /** {n}: how many are left at this market, when the maker counted them. */
+  readonly left: string;
 }
 
 type Held = {
@@ -68,6 +74,12 @@ type Step =
   | { kind: 'details'; piece: ProductView }
   | { kind: 'pay'; held: Held; name: string }
   | { kind: 'done'; held: Held; name: string };
+
+/** The most a buyer can take of a piece in one go: what's left, at most 99. */
+const MAX_AT_ONCE = 99;
+function most(left: number | null): number {
+  return left === null ? MAX_AT_ONCE : Math.min(left, MAX_AT_ONCE);
+}
 
 async function post(
   url: string,
@@ -110,6 +122,7 @@ function Fee({ piece, prefix }: { piece: ProductView; prefix: 'nn' | 'sl' | 'ms'
 export function MarketBuyer({
   marketId,
   pieces,
+  stock = {},
   methods,
   strings: S,
   prefix: p,
@@ -117,6 +130,8 @@ export function MarketBuyer({
 }: {
   marketId: string;
   pieces: ProductView[];
+  /** What's left of each piece at this market (absent: not counted). */
+  stock?: Record<string, MarketPieceCount> | undefined;
   methods: PayMethod[];
   strings: MarketBuyerStrings;
   prefix: 'nn' | 'sl' | 'ms';
@@ -134,6 +149,7 @@ export function MarketBuyer({
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const name = String(data.get('name') ?? '').trim();
+    const option = data.get('option');
     setBusy(true);
     setError(null);
     const r = await post(
@@ -141,6 +157,8 @@ export function MarketBuyer({
       {
         eventId: marketId,
         listingId: piece.id,
+        ...(option === null ? {} : { variantId: String(option) }),
+        quantity: Number(data.get('quantity') ?? 1),
         name,
         email: String(data.get('email') ?? ''),
         method: String(data.get('method') ?? ''),
@@ -244,6 +262,11 @@ export function MarketBuyer({
 
   if (step.kind === 'details') {
     const { piece } = step;
+    const count = piece.id === undefined ? undefined : stock[piece.id];
+    const options = count?.options ?? [];
+    const firstOpen = options.find((o) => o.left !== 0);
+    // Without options the most is what's left of the piece; with options, of the most-stocked open one.
+    const max = options.length === 0 ? most(count?.left ?? null) : Math.max(...options.filter((o) => o.left !== 0).map((o) => most(o.left)), 1);
     return (
       <div className={c('mk-card')}>
         <button type="button" className={c('mk-link')} onClick={() => setStep({ kind: 'pick' })}>
@@ -261,6 +284,28 @@ export function MarketBuyer({
           </span>
         </div>
         <form className={c('mk-form')} onSubmit={(e) => void hold(e, piece)}>
+          {options.length > 0 && (
+            <fieldset>
+              <legend>{S.option}</legend>
+              <div className={c('mk-methods')}>
+                {options.map((o) => (
+                  <label key={o.id} className={c('mk-method')}>
+                    <input type="radio" name="option" value={o.id} required disabled={o.left === 0} defaultChecked={o.id === firstOpen?.id} />
+                    <span>
+                      {o.label} {o.price}
+                      {o.left !== null && <span className={c('mk-small')}> {o.left === 0 ? S.gone : fill(S.left, { n: String(o.left) })}</span>}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          )}
+          {max > 1 && (
+            <label>
+              {S.quantity}
+              <input name="quantity" type="number" inputMode="numeric" min={1} max={max} defaultValue={1} required />
+            </label>
+          )}
           <label>
             {S.yourName}
             <input name="name" required maxLength={40} autoComplete="given-name" />
@@ -296,6 +341,16 @@ export function MarketBuyer({
       <ul className={c('mk-grid')} role="list">
         {pieces.map((piece) => {
           const gone = piece.status === 'sold_out';
+          const count = piece.id === undefined ? undefined : stock[piece.id];
+          // How many are left here, shown when counted (options: their total, when every one is counted).
+          const left =
+            count === undefined
+              ? null
+              : count.options.length === 0
+                ? count.left
+                : count.options.every((o) => o.left !== null)
+                  ? count.options.reduce((n, o) => n + (o.left ?? 0), 0)
+                  : null;
           return (
             <li key={piece.slug}>
               <button
@@ -312,6 +367,7 @@ export function MarketBuyer({
                 </span>
                 <span className={c('mk-name')}>{piece.name}</span>
                 <span className={c('mk-fee')}>{gone ? S.gone : <Fee piece={piece} prefix={p} />}</span>
+                {!gone && left !== null && <span className={c('mk-small')}>{fill(S.left, { n: String(left) })}</span>}
               </button>
             </li>
           );

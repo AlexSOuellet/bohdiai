@@ -33,10 +33,10 @@ export async function saveMarket(form: MarketForm): Promise<SaveResult> {
   const db = await createSupabaseServerClient();
   // The pieces she brings are saved only on sites with the market shop.
   const shop = (await getSiteFeatures(tenantId)).has('market_shop');
-  const { listing_ids: listingIds, ...rest } = built.payload;
+  const { listing_ids: listingIds, stock, ...rest } = built.payload;
   const { data, error } = await db.rpc('save_market', {
     p_tenant_id: tenantId,
-    p: shop ? { ...rest, listing_ids: listingIds } : rest,
+    p: shop ? { ...rest, listing_ids: listingIds, stock } : rest,
     ...(form.id === null ? {} : { p_event_id: form.id }),
   });
   if (error !== null || typeof data !== 'string') {

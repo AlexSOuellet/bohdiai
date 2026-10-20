@@ -53,7 +53,20 @@ export type MarketForm = {
   review: string;
   /** The pieces she brings (market shop), in her order. */
   listingIds: string[];
+  /** How many of each she brings, as typed, keyed by `stockKey` (a piece, or one of its
+   *  options). Blank: not counted, it sells from what she has on hand. */
+  stock: Record<string, string>;
 };
+
+/** The most of one piece (or one option) a market can count. */
+export const STOCK_MAX = 9999;
+
+/** The key for a piece's count, or for one of its options' counts. */
+export function stockKey(listingId: string, variantId: string | null = null): string {
+  return variantId === null ? listingId : `${listingId}:${variantId}`;
+}
+
+export type StockRow = { listing_id: string; variant_id: string | null; brought: number };
 
 export type MarketPayload = {
   name: string;
@@ -74,6 +87,7 @@ export type MarketPayload = {
   review: string | null;
   costs: { description: string; amount_cents: number }[];
   listing_ids: string[];
+  stock: StockRow[];
 };
 
 export function emptyMarketForm(): MarketForm {
@@ -97,6 +111,7 @@ export function emptyMarketForm(): MarketForm {
     goBack: '',
     review: '',
     listingIds: [],
+    stock: {},
   };
 }
 
@@ -171,6 +186,18 @@ export function buildMarketPayload(form: MarketForm): { ok: true; payload: Marke
 
   if (!Number.isInteger(form.rating) || form.rating < 0 || form.rating > 5) return fail('Pick from one to five stars.');
 
+  // Counts only for the pieces she's bringing; a blank box isn't counted.
+  const bringing = new Set(form.listingIds);
+  const stock: StockRow[] = [];
+  for (const [key, raw] of Object.entries(form.stock)) {
+    const [listingId = '', variantId = null] = key.split(':');
+    if (!bringing.has(listingId)) continue;
+    const typed = raw.trim();
+    if (typed === '') continue;
+    if (!/^\d+$/.test(typed) || Number(typed) > STOCK_MAX) return fail(`How many you’re bringing should be a whole number from 0 to ${STOCK_MAX}.`);
+    stock.push({ listing_id: listingId, variant_id: variantId, brought: Number(typed) });
+  }
+
   return {
     ok: true,
     payload: {
@@ -192,6 +219,7 @@ export function buildMarketPayload(form: MarketForm): { ok: true; payload: Marke
       review: orNull(v['review'] ?? ''),
       costs,
       listing_ids: [...new Set(form.listingIds)],
+      stock,
     },
   };
 }

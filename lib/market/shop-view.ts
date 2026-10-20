@@ -9,12 +9,13 @@ import type { Database } from '@/lib/database.types';
 import type { MarketShopView } from '@/lib/archetypes/content';
 import { loadSiteFeatures } from '@/lib/backend/features';
 import { MARKET_PUBLIC_COLUMNS, marketDateFromRow } from '@/lib/backend/dates/dates-form';
-import { loadProductsByIds } from '@/lib/storefront/catalog';
+import { formatPrice, loadProductsByIds } from '@/lib/storefront/catalog';
 import { runningSale, withSale } from '@/lib/storefront/promotions';
 import { loadShopPromotions } from '@/lib/storefront/promotions-load';
 import { marketState } from './buyer';
 import { methodsOn } from './pay';
 import { loadPaySettings, marketListingIds } from './queries';
+import { goneHere, marketPieceStock } from './stock';
 
 export async function loadMarketShop(db: SupabaseClient<Database>, tenantId: string, eventId: string): Promise<MarketShopView | null> {
   const features = await loadSiteFeatures(db, tenantId);
@@ -25,9 +26,20 @@ export async function loadMarketShop(db: SupabaseClient<Database>, tenantId: str
   const market = marketDateFromRow(data.id, data);
 
   const [ids, promo, pay] = await Promise.all([marketListingIds(db, eventId), loadShopPromotions(db, tenantId), loadPaySettings(db, tenantId)]);
+  const [loaded, counts] = await Promise.all([loadProductsByIds(db, tenantId, ids), marketPieceStock(db, tenantId, eventId, ids)]);
+  // A piece with nothing left at this market shows as sold out here, whatever is at home.
   const pieces = withSale(
-    (await loadProductsByIds(db, tenantId, ids)).filter((p) => !p.isPreview).map((p) => p.view),
+    loaded
+      .filter((p) => !p.isPreview)
+      .map((p) => (p.view.id !== undefined && goneHere(counts.get(p.view.id)) ? { ...p.view, status: 'sold_out' as const } : p.view)),
     runningSale(promo.promos, promo.today),
+  );
+  const base = new Map(loaded.map((p) => [p.view.id, p.priceCents]));
+  const stock = Object.fromEntries(
+    [...counts].map(([id, c]) => [
+      id,
+      { left: c.left, options: c.options.map((o) => ({ id: o.id, label: o.label, price: formatPrice(o.priceCents ?? base.get(id) ?? 0), left: o.left })) },
+    ]),
   );
   return {
     marketId: market.id,
@@ -38,6 +50,7 @@ export async function loadMarketShop(db: SupabaseClient<Database>, tenantId: str
     booth: market.booth,
     state: marketState(market, promo.today),
     pieces,
+    stock,
     methods: methodsOn(pay),
   };
 }

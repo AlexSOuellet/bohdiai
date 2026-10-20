@@ -362,3 +362,11 @@ button.bk-up-btn { border: 0; cursor: pointer; font: inherit; font-size: 0.9rem;
 .bk-product-photos .bk-photos { grid-template-columns: 1fr 1fr; }
 .bk-product-photos .bk-photo:first-child { grid-column: 1 / -1; }
 .bk-product-photos .bk-photo:first-child img { aspect-ratio: 4 / 5; }
+
+/* What a maker brings to a market: each ticked piece (or each of its options) with how many. */
+.bk-bring { border-bottom: 1px solid var(--bk-ink-15); }
+.bk-bring:last-child { border-bottom: 0; }
+.bk-bring-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.bk-bring-options { list-style: none; margin: 0 0 0.6rem; padding: 0 0 0 4.25rem; display: grid; gap: 0.35rem; font-size: 0.9rem; }
+.bk-input-count { width: 5.5rem; text-align: right; font-variant-numeric: tabular-nums; }
+.bk-sell-count { font-weight: 700; }

@@ -1,18 +1,32 @@
 import { describe, it, expect } from 'vitest';
 import { EMPTY_PAY } from '@/lib/market/pay';
-import { payStep, sellMethods, sellTotal, sellTotalCents } from './sell';
+import { addOne, payStep, pickedCount, sellMethods, sellTotal, sellTotalCents, takeOne } from './sell';
 
 const pieces = [
-  { id: 'a', name: 'Carol star', priceCents: 1800, price: '$18' },
-  { id: 'b', name: 'Old Saint Nick', priceCents: 2200, price: '$22' },
+  { id: 'a', listingId: 'a', variantId: null, name: 'Carol star', priceCents: 1800, price: '$18', left: null },
+  { id: 'b', listingId: 'b', variantId: null, name: 'Old Saint Nick', priceCents: 2200, price: '$22', left: null },
 ];
 const pay = { ...EMPTY_PAY, venmo: 'lena-b', venmoOn: true, cashapp: 'lenab', cashappOn: true, zelle: 'lena@example.com', zelleOn: true, cashOn: true };
 
 describe('selling at the table', () => {
   it('adds up what she tapped', () => {
-    expect(sellTotalCents(pieces, ['a', 'b'])).toBe(4000);
-    expect(sellTotal(pieces, ['a'])).toBe('$18');
-    expect(sellTotalCents(pieces, ['gone'])).toBe(0);
+    expect(sellTotalCents(pieces, { a: 1, b: 1 })).toBe(4000);
+    expect(sellTotalCents(pieces, { a: 3 })).toBe(5400);
+    expect(sellTotal(pieces, { a: 1 })).toBe('$18');
+    expect(sellTotalCents(pieces, { gone: 2 })).toBe(0);
+  });
+
+  it('adds one at a time, never past what’s left at the market, and takes one off', () => {
+    const counted = { ...pieces[0]!, left: 2 };
+    let picked = addOne({}, counted);
+    picked = addOne(picked, counted);
+    expect(addOne(picked, counted)).toBe(picked);
+    expect(picked).toEqual({ a: 2 });
+    expect(addOne({ a: 7 }, pieces[0]!)).toEqual({ a: 8 });
+    expect(takeOne({ a: 2 }, 'a')).toEqual({ a: 1 });
+    expect(takeOne({ a: 1, b: 1 }, 'a')).toEqual({ b: 1 });
+    expect(takeOne({}, 'a')).toEqual({});
+    expect(pickedCount({ a: 2, b: 1 })).toBe(3);
   });
 
   it('offers only the ways she takes payment, in order', () => {

@@ -6,7 +6,7 @@ import type { Route } from 'next';
 import QRCode from 'qrcode';
 import { useRouter, unstable_rethrow } from 'next/navigation';
 import type { PaySettings } from '@/lib/market/pay';
-import { SELL_METHOD_NAMES, payStep, sellTotal, sellTotalCents, type SellMethod, type SellPiece } from '@/lib/backend/markets/sell';
+import { SELL_METHOD_NAMES, addOne, payStep, pickedCount, sellTotal, sellTotalCents, takeOne, type Picked, type SellMethod, type SellPiece } from '@/lib/backend/markets/sell';
 import { recordMarketSales } from '@/lib/backend/markets/today-actions';
 import { useNotice } from '../../../_components/Notice';
 
@@ -63,7 +63,7 @@ export function RingUp({
 }): React.ReactElement {
   const router = useRouter();
   const notice = useNotice();
-  const [picked, setPicked] = useState<string[]>([]);
+  const [picked, setPicked] = useState<Picked>({});
   const [method, setMethod] = useState<SellMethod | null>(null);
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
@@ -71,8 +71,13 @@ export function RingUp({
   const byId = new Map(pieces.map((p) => [p.id, p]));
   const step = method === null || cents === 0 ? null : payStep(method, pay, cents, `${shopName} · ${marketName}`);
 
-  const toggle = (id: string): void => {
-    setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+  const inSale = Object.keys(picked).filter((id) => byId.has(id));
+  const add = (piece: SellPiece): void => {
+    setPicked((p) => addOne(p, piece));
+    notice.clear();
+  };
+  const less = (id: string): void => {
+    setPicked((p) => takeOne(p, id));
     notice.clear();
   };
 
@@ -82,17 +87,21 @@ export function RingUp({
     setBusy(true);
     notice.clear();
     try {
-      const r = await recordMarketSales(eventId, picked, method);
+      const lines = inSale.flatMap((id) => {
+        const piece = byId.get(id);
+        return piece === undefined ? [] : [{ id, listingId: piece.listingId, variantId: piece.variantId, quantity: picked[id] ?? 1 }];
+      });
+      const r = await recordMarketSales(eventId, lines, method);
       if (r.ok) {
         const message = `Sale recorded: ${sellTotal(pieces, picked)} by ${SELL_METHOD_NAMES[method]}.`;
         notice.showSaved(message);
         onRecorded?.(message);
-        setPicked([]);
+        setPicked({});
         setMethod(null);
         router.refresh();
       } else {
         notice.showError(r.error);
-        setPicked((p) => p.filter((id) => !r.recorded.includes(id)));
+        setPicked((p) => Object.fromEntries(Object.entries(p).filter(([id]) => !r.recorded.includes(id))));
         router.refresh();
       }
     } catch (err) {
@@ -121,14 +130,23 @@ export function RingUp({
                 Tap what they’re taking
               </h2>
               <ul className="bk-sell-grid">
-                {pieces.map((p) => (
-                  <li key={p.id}>
-                    <button type="button" className="bk-sell-tile" aria-pressed={picked.includes(p.id)} onClick={() => toggle(p.id)}>
-                      <span>{p.name}</span>
-                      <strong>{p.price}</strong>
-                    </button>
-                  </li>
-                ))}
+                {pieces.map((p) => {
+                  const n = picked[p.id] ?? 0;
+                  const allGone = p.left === 0;
+                  const noMore = p.left !== null && n >= p.left;
+                  return (
+                    <li key={p.id}>
+                      <button type="button" className="bk-sell-tile" aria-pressed={n > 0} disabled={allGone || noMore} onClick={() => add(p)}>
+                        <span>
+                          {p.name}
+                          {n > 0 && <span className="bk-sell-count"> × {n}</span>}
+                        </span>
+                        <strong>{p.price}</strong>
+                        {p.left !== null && <span className="bk-note">{allGone ? 'All gone here' : `${p.left - n} left`}</span>}
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             </section>
 
@@ -136,17 +154,35 @@ export function RingUp({
               <h2 id="s-total" className="bk-section-title">
                 Total <span className="bk-sell-total">{sellTotal(pieces, picked)}</span>
               </h2>
-              {picked.length > 0 && (
+              {inSale.length > 0 && (
                 <ul className="bk-list" aria-label="In this sale">
-                  {picked.map((id) => (
-                    <li key={id} className="bk-list-item">
-                      <span className="bk-list-name">{byId.get(id)?.name}</span>
-                      <span>{byId.get(id)?.price}</span>
-                      <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" aria-label={`Remove ${byId.get(id)?.name ?? 'piece'}`} onClick={() => toggle(id)}>
-                        Remove
-                      </button>
-                    </li>
-                  ))}
+                  {inSale.map((id) => {
+                    const piece = byId.get(id);
+                    const n = picked[id] ?? 0;
+                    const name = piece?.name ?? 'piece';
+                    return (
+                      <li key={id} className="bk-list-item">
+                        <span className="bk-list-name">{name}</span>
+                        <span>
+                          {n} × {piece?.price}
+                        </span>
+                        <span className="bk-row">
+                          <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" aria-label={`One fewer ${name}`} onClick={() => less(id)}>
+                            −
+                          </button>
+                          <button
+                            type="button"
+                            className="bk-btn bk-btn-quiet bk-btn-small"
+                            aria-label={`One more ${name}`}
+                            disabled={piece === undefined || (piece.left !== null && n >= piece.left)}
+                            onClick={() => piece !== undefined && add(piece)}
+                          >
+                            +
+                          </button>
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
               {methods.length === 0 ? (
@@ -156,7 +192,7 @@ export function RingUp({
               ) : (
                 <div className="bk-row" role="group" aria-label="How are they paying?">
                   {methods.map((m) => (
-                    <button key={m} type="button" className="bk-btn bk-btn-quiet" aria-pressed={method === m} disabled={picked.length === 0} onClick={() => setMethod(m)}>
+                    <button key={m} type="button" className="bk-btn bk-btn-quiet" aria-pressed={method === m} disabled={pickedCount(picked) === 0} onClick={() => setMethod(m)}>
                       {SELL_METHOD_NAMES[m]}
                     </button>
                   ))}

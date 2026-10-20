@@ -5,9 +5,11 @@ import { getSiteFeatures } from '@/lib/backend/site-features';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { getMarket } from '@/lib/backend/markets/queries';
 import { marketPageUrl, shopPicks } from '@/lib/backend/markets/shop-props';
-import { marketListingIds } from '@/lib/market/queries';
+import { marketListingIds, marketStock } from '@/lib/market/queries';
 import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
 import { MarketEditor } from '../MarketEditor';
+import { PieceSales } from '../PieceSales';
+import { loadPieceResults } from '@/lib/backend/markets/piece-sales';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,9 +36,12 @@ export default async function EditMarketPage({
         records={on.has('market_records')}
       />
     );
-  const [picks, listingIds] = await Promise.all([
+  const [picks, listingIds, stock, sold, tenant] = await Promise.all([
     shopPicks(db, site.tenantId),
     marketListingIds(db, id),
+    marketStock(db, id),
+    loadPieceResults(db, site.tenantId, id),
+    db.from('tenants').select('time_zone').eq('id', site.tenantId).maybeSingle(),
   ]);
   const origin = storefrontOrigin(site.subdomain, (await headers()).get('host'));
   return (
@@ -44,7 +49,8 @@ export default async function EditMarketPage({
       details={on.has('market_details')}
       records={on.has('market_records')}
       key={id}
-      initial={{ ...market, listingIds }}
+      sold={<PieceSales rows={sold} timeZone={tenant.data?.time_zone ?? 'America/New_York'} />}
+      initial={{ ...market, listingIds, stock: Object.fromEntries([...stock].map(([k, n]) => [k, String(n)])) }}
       shop={{
         products: picks,
         marketUrl: marketPageUrl(origin, id),

@@ -66,7 +66,7 @@ export function FamilyMarket({ shopName, market, words }: { shopName: string; ma
             </Type>
           ) : (
             <div className="ms-mk-buy">
-              <FamilyMarketBuyer marketId={market.marketId} pieces={market.pieces} methods={market.methods} w={M} />
+              <FamilyMarketBuyer marketId={market.marketId} pieces={market.pieces} stock={market.stock} methods={market.methods} w={M} />
             </div>
           ))}
         {market.state === 'before' && (

@@ -12,8 +12,8 @@ Element.prototype.scrollIntoView = vi.fn(); // jsdom has no layout
 const { SellBoard } = await import('./SellBoard');
 
 const pieces = [
-  { id: 'a', name: 'Carol star', priceCents: 1800, price: '$18' },
-  { id: 'b', name: 'Old Saint Nick', priceCents: 2200, price: '$22' },
+  { id: 'a', listingId: 'a', variantId: null, name: 'Carol star', priceCents: 1800, price: '$18', left: null },
+  { id: 'b', listingId: 'b', variantId: null, name: 'Old Saint Nick', priceCents: 2200, price: '$22', left: null },
 ];
 const pay = { ...EMPTY_PAY, venmo: 'lena-b', venmoOn: true, cashOn: true };
 
@@ -31,21 +31,30 @@ describe('Sell at the table', () => {
   it('adds up what she taps, shows the Venmo code, and records the sale', async () => {
     recordMarketSales.mockResolvedValue({ ok: true, count: 2 });
     board();
-    fireEvent.click(screen.getByRole('button', { name: /Carol star/ }));
-    fireEvent.click(screen.getByRole('button', { name: /Old Saint Nick/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Carol star/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Old Saint Nick/ }));
     expect(screen.getByRole('heading', { name: /Total \$40/ })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Venmo' }));
     expect(await screen.findByText(/Scan to pay \$40 with Venmo/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Paid · record the sale' }));
-    await waitFor(() => expect(recordMarketSales).toHaveBeenCalledWith('e1', ['a', 'b'], 'venmo'));
+    await waitFor(() =>
+      expect(recordMarketSales).toHaveBeenCalledWith(
+        'e1',
+        [
+          { id: 'a', listingId: 'a', variantId: null, quantity: 1 },
+          { id: 'b', listingId: 'b', variantId: null, quantity: 1 },
+        ],
+        'venmo',
+      ),
+    );
     expect(await screen.findByText('Sale recorded: $40 by Venmo.')).toBeTruthy();
   });
 
   it('shows the cash to take, and can drop a piece from the sale', () => {
     board();
-    fireEvent.click(screen.getByRole('button', { name: /Carol star/ }));
-    fireEvent.click(screen.getByRole('button', { name: /Old Saint Nick/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Remove Carol star' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Carol star/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Old Saint Nick/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'One fewer Carol star' }));
     fireEvent.click(screen.getByRole('button', { name: 'Cash' }));
     expect(screen.getByText('Take $22 in cash')).toBeTruthy();
   });
@@ -53,12 +62,25 @@ describe('Sell at the table', () => {
   it('keeps what wasn’t recorded in the sale and says what happened', async () => {
     recordMarketSales.mockResolvedValue({ ok: false, error: 'Only 1 of 2 were recorded.', recorded: ['a'] });
     board();
-    fireEvent.click(screen.getByRole('button', { name: /Carol star/ }));
-    fireEvent.click(screen.getByRole('button', { name: /Old Saint Nick/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Carol star/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Old Saint Nick/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Cash' }));
     fireEvent.click(screen.getByRole('button', { name: 'Paid · record the sale' }));
     expect(await screen.findByText('Only 1 of 2 were recorded.')).toBeTruthy();
     expect(screen.getByRole('heading', { name: /Total \$22/ })).toBeTruthy();
+  });
+
+  it('takes several of a piece, and stops at what’s left at the market', () => {
+    board({ pieces: [{ ...pieces[0]!, left: 2 }, { ...pieces[1]!, left: 0 }] });
+    expect(screen.getByText('2 left')).toBeTruthy();
+    expect(screen.getByText('All gone here')).toBeTruthy();
+    expect((screen.getByRole('button', { name: /^Old Saint Nick/ }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: /^Carol star/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'One more Carol star' }));
+    expect(screen.getByText('2 × $18')).toBeTruthy();
+    expect((screen.getByRole('button', { name: 'One more Carol star' }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole('button', { name: /^Carol star/ }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole('heading', { name: /Total \$36/ })).toBeTruthy();
   });
 
   it('explains when it can’t sell: closed market, nothing ticked, no way to get paid', () => {

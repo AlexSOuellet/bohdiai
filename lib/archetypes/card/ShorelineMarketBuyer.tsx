@@ -6,14 +6,14 @@
  * (lib/storefront/MarketBuyer.tsx). The words are the site's own.
  */
 import type { ReactElement } from 'react';
-import type { ProductView } from '@/lib/archetypes/content';
+import type { MarketPieceCount, ProductView } from '@/lib/archetypes/content';
 import type { PayMethod } from '@/lib/market/pay';
 import { MarketBuyer } from '@/lib/storefront/MarketBuyer';
 import type { CardWords } from './words';
 
 export function ShorelineMarketBuyer(props: {
   marketId: string;
-  pieces: ProductView[];
+  pieces: ProductView[]; stock?: Record<string, MarketPieceCount> | undefined;
   methods: PayMethod[];
   w: CardWords['shoreline']['market'];
 }): ReactElement {

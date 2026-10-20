@@ -117,6 +117,13 @@ export interface CartView {
 
 /** A market's own shop page (Market POS piece 2): the pieces she brought, and
  *  whether the market is taking orders today. */
+/** What's left of one piece at a market (Alex, 2026-10-20). `left` null: not counted.
+ *  A piece with options lists each option, with its own price and what's left. */
+export interface MarketPieceCount {
+  left: number | null;
+  options: { id: string; label: string; price: string; left: number | null }[];
+}
+
 export interface MarketShopView {
   marketId: string;
   name: string;
@@ -126,8 +133,11 @@ export interface MarketShopView {
   town: string;
   booth: string;
   state: 'before' | 'open' | 'after' | 'canceled';
-  /** The pieces she brought, sale prices on, in her order. */
+  /** The pieces she brought, sale prices on, in her order. A piece with nothing left
+   *  at this market shows as sold out. */
   pieces: ProductView[];
+  /** What's left of each piece at this market, by piece id (absent: not counted). */
+  stock?: Record<string, MarketPieceCount>;
   /** The ways to pay she has switched on. */
   methods: ('venmo' | 'cashapp' | 'zelle' | 'cash')[];
 }

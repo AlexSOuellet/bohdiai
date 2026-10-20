@@ -9,6 +9,9 @@ import { cashAppLink, venmoLink, type PayMethod, type PaySettings } from './pay'
 export const holdSchema = z.object({
   eventId: z.string().uuid(),
   listingId: z.string().uuid(),
+  /** Which option of the piece (a colour, a size), when it has options. */
+  variantId: z.string().uuid().optional(),
+  quantity: z.number().int('Pick how many, as a whole number.').min(1, 'Pick how many, at least one.').max(99, 'That’s more than one buyer can take at once.').default(1),
   name: z.string().trim().min(1, 'Please type your first name.').max(40, 'Just your first name, please.'),
   email: z.union([z.literal(''), z.string().trim().toLowerCase().email('That email doesn’t look right.').max(254)]).default(''),
   method: z.enum(['venmo', 'cashapp', 'zelle', 'cash']),
@@ -40,6 +43,12 @@ export function payStep(settings: PaySettings, method: PayMethod, cents: number,
 /** The note on a Venmo payment, so she can match it: "Rose n’ Cat · Theo · #1004". */
 export function payNote(shop: string, piece: string, orderNumber: string): string {
   return `${shop} · ${piece} · #${orderNumber}`;
+}
+
+/** The piece as the buyer and the payment note name it: "Scarf, Blue", "3 × Mug". */
+export function pieceLabel(name: string, option: string | null, quantity: number): string {
+  const named = option === null || option === '' ? name : `${name}, ${option}`;
+  return quantity > 1 ? `${quantity} × ${named}` : named;
 }
 
 /** Where a market stands today: taking orders only on its days. */

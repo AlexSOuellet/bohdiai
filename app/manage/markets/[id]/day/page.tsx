@@ -39,7 +39,7 @@ export default async function MarketDayPage({ params }: PageProps<'/manage/marke
   ]);
   if (market === null) notFound();
   const timeZone = tenant.data?.time_zone ?? 'America/New_York';
-  const pieces = await loadSellPieces(db, site.tenantId, ids);
+  const pieces = await loadSellPieces(db, site.tenantId, id, ids);
   return (
     <MarketDay
       eventId={id}

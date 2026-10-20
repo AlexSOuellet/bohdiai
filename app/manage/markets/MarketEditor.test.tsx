@@ -89,8 +89,19 @@ describe('MarketEditor', () => {
 describe('MarketEditor — your table', () => {
   const shop = {
     products: [
-      { id: 'l1', name: 'Theo', photoUrl: null, soldOut: false },
-      { id: 'l2', name: 'Rosie', photoUrl: 'https://cdn/r.webp', soldOut: true },
+      { id: 'l1', name: 'Theo', photoUrl: null, soldOut: false, onHand: 6, options: [] },
+      { id: 'l2', name: 'Rosie', photoUrl: 'https://cdn/r.webp', soldOut: true, onHand: 0, options: [] },
+      {
+        id: 'l3',
+        name: 'Scarf',
+        photoUrl: null,
+        soldOut: false,
+        onHand: null,
+        options: [
+          { id: 'v1', label: 'Blue', onHand: 4 },
+          { id: 'v2', label: 'Red', onHand: null },
+        ],
+      },
     ],
     marketUrl: null,
     fileBase: 'rose-n-cat-market-qr',
@@ -101,7 +112,7 @@ describe('MarketEditor — your table', () => {
     saveMarket.mockResolvedValue({ ok: true, id: 'm1' });
     render(<MarketEditor details records initial={existing()} shop={shop} />);
     expect(screen.getByText(/Save the market first/)).toBeTruthy();
-    fireEvent.click(screen.getByLabelText(/Theo/));
+    fireEvent.click(screen.getByRole('checkbox', { name: /Theo/ }));
     expect(screen.getByText('What you’re bringing (1)')).toBeTruthy();
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
     await waitFor(() => expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ listingIds: ['l1'] })));
@@ -111,8 +122,33 @@ describe('MarketEditor — your table', () => {
     render(<MarketEditor details records initial={existing({ listingIds: ['l1'] })} shop={{ ...shop, marketUrl: 'https://rose-n-cat.bohdiai.com/market/m1', todayHref: '/manage/markets/m1/day' }} />);
     expect(screen.getByRole('link', { name: 'Market POS' }).getAttribute('href')).toBe('/manage/markets/m1/day');
     expect(screen.getByText('https://rose-n-cat.bohdiai.com/market/m1')).toBeTruthy();
-    fireEvent.click(screen.getByLabelText(/Theo/));
+    fireEvent.click(screen.getByRole('checkbox', { name: /Theo/ }));
     expect(screen.getByText('What you’re bringing (0)')).toBeTruthy();
+  });
+
+  it('starts each count at what she has on hand, and saves what she types', async () => {
+    saveMarket.mockResolvedValue({ ok: true, id: 'm1' });
+    render(<MarketEditor details records initial={existing()} shop={shop} />);
+    fireEvent.click(screen.getByRole('checkbox', { name: /Theo/ }));
+    const theo = screen.getByLabelText('How many Theo you’re bringing') as HTMLInputElement;
+    expect(theo.value).toBe('6');
+    fireEvent.change(theo, { target: { value: '3' } });
+    fireEvent.click(screen.getByRole('checkbox', { name: /Scarf/ }));
+    expect((screen.getByLabelText('How many Scarf, Blue, you’re bringing') as HTMLInputElement).value).toBe('4');
+    expect((screen.getByLabelText('How many Scarf, Red, you’re bringing') as HTMLInputElement).value).toBe('');
+    fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
+    await waitFor(() =>
+      expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ listingIds: ['l1', 'l3'], stock: { l1: '3', 'l3:v1': '4', 'l3:v2': '' } })),
+    );
+  });
+
+  it('keeps a count she typed when she unticks and ticks a piece again', () => {
+    render(<MarketEditor details records initial={existing({ listingIds: ['l1'], stock: { l1: '2' } })} shop={shop} />);
+    expect((screen.getByLabelText('How many Theo you’re bringing') as HTMLInputElement).value).toBe('2');
+    fireEvent.click(screen.getByRole('checkbox', { name: /Theo/ }));
+    expect(screen.queryByLabelText('How many Theo you’re bringing')).toBeNull();
+    fireEvent.click(screen.getByRole('checkbox', { name: /Theo/ }));
+    expect((screen.getByLabelText('How many Theo you’re bringing') as HTMLInputElement).value).toBe('2');
   });
 
   it('says so when there is nothing live to bring', () => {

@@ -163,6 +163,9 @@ export const FAMILY_WORD_SPOTS = {
     error: '',
     errorNetwork: '',
     gone: '',
+    quantity: '',
+    option: '',
+    left: '',
   },
 } as const satisfies WordShape;
 

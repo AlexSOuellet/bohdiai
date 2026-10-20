@@ -1335,6 +1335,65 @@ export type Database = {
           },
         ]
       }
+      market_stock: {
+        Row: {
+          brought: number
+          event_id: string
+          id: string
+          listing_id: string
+          listing_variant_id: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          brought: number
+          event_id: string
+          id?: string
+          listing_id: string
+          listing_variant_id?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          brought?: number
+          event_id?: string
+          id?: string
+          listing_id?: string
+          listing_variant_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_stock_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_stock_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_stock_listing_variant_id_fkey"
+            columns: ["listing_variant_id"]
+            isOneToOne: false
+            referencedRelation: "listing_variants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_stock_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       niche_versions: {
         Row: {
           change_reason: string | null
@@ -3352,12 +3411,18 @@ export type Database = {
           p_name: string
           p_price_cents: number
           p_promotion_id?: string
+          p_quantity?: number
           p_tenant_id: string
+          p_variant_id?: string
         }
         Returns: {
           order_id: string
           order_number: string
         }[]
+      }
+      market_left: {
+        Args: { p_event_id: string; p_listing_id: string; p_variant_id: string }
+        Returns: number
       }
       market_mark_paid: {
         Args: { p_order_id: string; p_tenant_id: string }
@@ -3374,8 +3439,10 @@ export type Database = {
           p_name: string
           p_price_cents: number
           p_promotion_id: string
+          p_quantity?: number
           p_status: string
           p_tenant_id: string
+          p_variant_id?: string
         }
         Returns: {
           order_id: string
@@ -3388,7 +3455,9 @@ export type Database = {
           p_listing_id: string
           p_method: string
           p_price_cents: number
+          p_quantity?: number
           p_tenant_id: string
+          p_variant_id?: string
         }
         Returns: string
       }

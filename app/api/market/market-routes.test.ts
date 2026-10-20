@@ -15,12 +15,14 @@ const state = vi.hoisted(() => ({
   loaded: [] as unknown[],
   promos: [] as unknown[],
   pay: { venmo: 'renee', venmoOn: true, cashapp: '', cashappOn: false, zelle: '', zelleOn: false, cashOn: true },
+  counts: new Map<string, unknown>(),
 }));
 
 vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() } }));
 vi.mock('@/lib/forms/rate-limit', () => ({ formLimitResponse: async () => null }));
 vi.mock('@/lib/backend/features', () => ({ loadSiteFeatures: async () => state.features }));
 vi.mock('@/lib/market/queries', () => ({ marketListingIds: async () => state.brought, loadPaySettings: async () => state.pay }));
+vi.mock('@/lib/market/stock', () => ({ marketPieceStock: async () => state.counts }));
 vi.mock('@/lib/storefront/promotions-load', () => ({ loadShopPromotions: async () => ({ promos: state.promos, today: '2026-10-10' }) }));
 vi.mock('@/lib/storefront/catalog', async (orig) => ({ ...(await orig<typeof Catalog>()), loadProductsByIds: async () => state.loaded }));
 vi.mock('@/lib/supabase', () => ({
@@ -54,6 +56,7 @@ beforeEach(() => {
   state.brought = [THEO];
   state.loaded = [theo];
   state.promos = [];
+  state.counts = new Map();
 });
 
 describe('POST /api/market/hold', () => {
@@ -86,6 +89,35 @@ describe('POST /api/market/hold', () => {
     state.loaded = [{ ...theo, view: { ...theo.view, status: 'sold_out' } }];
     expect((await hold(request('/api/market/hold', good))).status).toBe(409);
     expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it('sells several at once, and one option at its own price', async () => {
+    const res = await hold(request('/api/market/hold', { ...good, quantity: 3 }));
+    expect((await res.json()) as object).toMatchObject({ piece: '3 × Theo', amount: '$360' });
+    expect(rpc).toHaveBeenLastCalledWith('market_hold', expect.objectContaining({ p_price_cents: 12000, p_quantity: 3 }));
+    const V = '00000000-0000-4000-8000-0000000000b1';
+    state.counts = new Map([[THEO, { left: null, options: [{ id: V, label: 'Blue', priceCents: 9000, left: 2 }, { id: 'v2', label: 'Red', priceCents: null, left: null }] }]]);
+    expect((await hold(request('/api/market/hold', good))).status).toBe(400);
+    const blue = await hold(request('/api/market/hold', { ...good, variantId: V }));
+    expect((await blue.json()) as object).toMatchObject({ piece: 'Theo, Blue', amount: '$90' });
+    expect(rpc).toHaveBeenLastCalledWith('market_hold', expect.objectContaining({ p_variant_id: V, p_price_cents: 9000, p_quantity: 1 }));
+  });
+
+  it('refuses an option on a piece without them, a piece with no price, and too many', async () => {
+    expect((await hold(request('/api/market/hold', { ...good, variantId: ORDER }))).status).toBe(409);
+    expect((await hold(request('/api/market/hold', { ...good, quantity: 100 }))).status).toBe(400);
+    state.loaded = [{ ...theo, priceCents: 0 }];
+    expect((await hold(request('/api/market/hold', good))).status).toBe(409);
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it('says how many are left when the buyer asks for more', async () => {
+    rpc.mockResolvedValueOnce({ data: null, error: { code: 'P0023', message: 'x', hint: '2' } });
+    expect((await (await hold(request('/api/market/hold', { ...good, quantity: 3 }))).json()) as object).toEqual({ error: 'Only 2 left. Pick fewer.' });
+    rpc.mockResolvedValueOnce({ data: null, error: { code: 'P0023', message: 'x', hint: '0' } });
+    expect((await (await hold(request('/api/market/hold', good))).json()) as object).toEqual({ error: 'Sorry, that one was just taken. Pick another.' });
+    rpc.mockResolvedValueOnce({ data: null, error: { code: 'P0024', message: 'x' } });
+    expect((await hold(request('/api/market/hold', good))).status).toBe(400);
   });
 
   it('turns the database’s refusals into plain words', async () => {

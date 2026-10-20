@@ -215,6 +215,9 @@ export const CARD_WORD_SPOTS = {
       error: '',
       errorNetwork: '',
       gone: '',
+      quantity: '',
+      option: '',
+      left: '',
     },
   },
   footer: {

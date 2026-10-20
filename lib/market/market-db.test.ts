@@ -22,6 +22,7 @@ const state = vi.hoisted(() => ({
   rpc: { data: null as unknown, error: null as unknown },
   loaded: [] as unknown[],
   promos: [] as unknown[],
+  counts: new Map<string, unknown>(),
 }));
 const revalidatePath = vi.hoisted(() => vi.fn());
 const logger = vi.hoisted(() => ({ error: vi.fn(), warn: vi.fn() }));
@@ -49,6 +50,7 @@ vi.mock('@/lib/backend/catalog/queries', () => ({
   ],
 }));
 vi.mock('next/cache', () => ({ revalidatePath }));
+vi.mock('@/lib/market/stock', async (orig) => ({ ...(await orig<object>()), marketPieceStock: async () => state.counts }));
 vi.mock('@/lib/logger', () => ({ logger }));
 
 const { loadPaySettings, marketListingIds } = await import('./queries');
@@ -71,6 +73,7 @@ beforeEach(() => {
   state.rpc = { data: null, error: null };
   state.loaded = [theo];
   state.promos = [];
+  state.counts = new Map();
   revalidatePath.mockReset();
   logger.error.mockReset();
 });
@@ -98,6 +101,17 @@ describe('loadMarketShop', () => {
     const view = await loadMarketShop(db(), 't1', 'e1');
     expect(view).toMatchObject({ marketId: 'e1', name: 'Holly Fair', state: 'open', booth: 'B4', methods: ['cash'] });
     expect(view?.pieces[0]?.salePrice).toBe('$90');
+  });
+  it('marks a piece with nothing left at this market sold out, and hands over every option’s price and count', async () => {
+    state.loaded = [theo, { ...theo, view: { ...theo.view, id: 'l2', slug: 'scarf', name: 'Scarf' }, priceCents: 3000 }];
+    state.counts = new Map([
+      ['l1', { left: 0, options: [] }],
+      ['l2', { left: null, options: [{ id: 'v1', label: 'Blue', priceCents: null, left: 2 }, { id: 'v2', label: 'Red', priceCents: 3500, left: null }] }],
+    ]);
+    state.queue = [{ data: event, error: null }, { data: [{ listing_id: 'l1', position: 0 }, { listing_id: 'l2', position: 1 }], error: null }, { data: null, error: null }];
+    const view = await loadMarketShop(db(), 't1', 'e1');
+    expect(view?.pieces.map((p) => p.status)).toEqual(['sold_out', 'active']);
+    expect(view?.stock?.['l2']).toEqual({ left: null, options: [{ id: 'v1', label: 'Blue', price: '$30', left: 2 }, { id: 'v2', label: 'Red', price: '$35', left: null }] });
   });
   it('is null without the market shop or the market, and throws a failed read', async () => {
     state.features = new Set();
@@ -136,7 +150,7 @@ describe('Today', () => {
   it('records a sale at the running sale price', async () => {
     state.promos = [{ id: 's', kind: 'sale', name: 'Fall', code: null, percentOff: 25, amountOffCents: null, startsOn: null, endsOn: null, maxUses: null, uses: 0, active: true }];
     expect(await recordMarketSale('e1', 'l1', 'cash')).toEqual({ ok: true });
-    expect(state.calls).toContain('rpc(market_record_sale,{"p_tenant_id":"t1","p_event_id":"e1","p_listing_id":"l1","p_method":"cash","p_price_cents":9000})');
+    expect(state.calls).toContain('rpc(market_record_sale,{"p_tenant_id":"t1","p_event_id":"e1","p_listing_id":"l1","p_method":"cash","p_price_cents":9000,"p_quantity":1})');
   });
 
   it('refuses a sale it can’t record, in plain words', async () => {
@@ -166,7 +180,27 @@ describe('Getting paid and the market page', () => {
     expect((await savePaySettings(EMPTY_PAY)).ok).toBe(false);
   });
   it('offers only live pieces to bring, and builds the page address', async () => {
-    expect(await shopPicks(db(), 't1')).toEqual([{ id: 'l1', name: 'Theo', photoUrl: null, soldOut: false }]);
+    expect(await shopPicks(db(), 't1')).toEqual([{ id: 'l1', name: 'Theo', photoUrl: null, soldOut: false, onHand: null, options: [] }]);
+    state.queue = [{ data: [{ id: 'l1', inventory_count: 7, listing_variants: [] }], error: null }];
+    expect((await shopPicks(db(), 't1'))[0]).toMatchObject({ onHand: 7, options: [] });
+    state.queue = [
+      {
+        data: [
+          {
+            id: 'l1',
+            inventory_count: 9,
+            listing_variants: [
+              { id: 'v1', option_combination: { Size: 'L', Colour: 'Blue' }, inventory_count: 2, status: 'active' },
+              { id: 'v2', option_combination: { Colour: 'Red' }, inventory_count: null, status: 'archived' },
+            ],
+          },
+        ],
+        error: null,
+      },
+    ];
+    expect((await shopPicks(db(), 't1'))[0]).toMatchObject({ onHand: null, options: [{ id: 'v1', label: 'Blue / L', onHand: 2 }] });
+    state.queue = [{ data: null, error: { message: 'down' } }];
+    await expect(shopPicks(db(), 't1')).rejects.toThrow('on hand');
     expect(marketPageUrl('https://rose-n-cat.bohdiai.com', 'e1')).toBe('https://rose-n-cat.bohdiai.com/market/e1');
   });
   it('saves a market’s pieces only on sites with the market shop', async () => {

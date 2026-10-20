@@ -854,7 +854,7 @@ export function NurseryMarket({
             (market.methods.length === 0 ? (
               <p className="nn-mk-note">{w.market.noPay}</p>
             ) : (
-              <NurseryMarketBuyer marketId={market.marketId} pieces={market.pieces} methods={market.methods} w={w.market} />
+              <NurseryMarketBuyer marketId={market.marketId} pieces={market.pieces} stock={market.stock} methods={market.methods} w={w.market} />
             ))}
           {market.state === 'before' && (
             <>

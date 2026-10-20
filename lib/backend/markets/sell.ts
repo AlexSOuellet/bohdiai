@@ -7,7 +7,30 @@
 import { formatPrice } from '@/lib/storefront/catalog';
 import { cashAppLink, venmoLink, type PaySettings } from '@/lib/market/pay';
 
-export type SellPiece = { id: string; name: string; priceCents: number; price: string };
+/** One thing she can ring up: a piece, or one option of it. `id` is the line's own key;
+ *  `left` is what's left of it at this market (null: not counted). */
+export type SellPiece = { id: string; listingId: string; variantId: string | null; name: string; priceCents: number; price: string; left: number | null };
+
+/** What's in the sale: how many of each line, by line id. */
+export type Picked = Readonly<Record<string, number>>;
+
+/** One more of a line, when there's one left to take. */
+export function addOne(picked: Picked, piece: SellPiece): Picked {
+  const now = picked[piece.id] ?? 0;
+  if (piece.left !== null && now >= piece.left) return picked;
+  return { ...picked, [piece.id]: now + 1 };
+}
+
+/** One fewer of a line; at none it leaves the sale. */
+export function takeOne(picked: Picked, id: string): Picked {
+  const now = picked[id] ?? 0;
+  if (now <= 1) return Object.fromEntries(Object.entries(picked).filter(([k]) => k !== id));
+  return { ...picked, [id]: now - 1 };
+}
+
+export function pickedCount(picked: Picked): number {
+  return Object.values(picked).reduce((n, q) => n + q, 0);
+}
 
 export type SellMethod = 'venmo' | 'cashapp' | 'zelle' | 'cash';
 
@@ -23,12 +46,12 @@ export function sellMethods(s: PaySettings): SellMethod[] {
   return on;
 }
 
-export function sellTotalCents(pieces: readonly SellPiece[], picked: readonly string[]): number {
+export function sellTotalCents(pieces: readonly SellPiece[], picked: Picked): number {
   const byId = new Map(pieces.map((p) => [p.id, p.priceCents]));
-  return picked.reduce((sum, id) => sum + (byId.get(id) ?? 0), 0);
+  return Object.entries(picked).reduce((sum, [id, q]) => sum + (byId.get(id) ?? 0) * q, 0);
 }
 
-export function sellTotal(pieces: readonly SellPiece[], picked: readonly string[]): string {
+export function sellTotal(pieces: readonly SellPiece[], picked: Picked): string {
   return formatPrice(sellTotalCents(pieces, picked));
 }
 

@@ -31,7 +31,7 @@ const orders = [
   order({ id: 'o2', number: '1005', name: 'Tom', piece: 'Seashell votive', amount: '$22', amountCents: 2200, method: 'cash', saysPaid: false }),
   order({ id: 'o3', number: '1001', name: 'Ann', piece: 'Carol star', status: 'paid', amount: '$18', amountCents: 1800, method: 'cash' }),
 ];
-const pieces = [{ id: 'a', name: 'Old Saint Nick', priceCents: 2200, price: '$22' }];
+const pieces = [{ id: 'a', listingId: 'a', variantId: null, name: 'Old Saint Nick', priceCents: 2200, price: '$22', left: null }];
 const pay = { ...EMPTY_PAY, cashOn: true };
 
 function day(over: Partial<Parameters<typeof MarketDay>[0]> = {}) {
@@ -101,10 +101,10 @@ describe('the market day', () => {
     day();
     fireEvent.click(screen.getByRole('button', { name: 'Ring up a sale' }));
     const sheet = screen.getByRole('dialog', { name: 'Ring up a sale' });
-    fireEvent.click(within(sheet).getByRole('button', { name: /Old Saint Nick/ }));
+    fireEvent.click(within(sheet).getByRole('button', { name: /^Old Saint Nick/ }));
     fireEvent.click(within(sheet).getByRole('button', { name: 'Cash' }));
     fireEvent.click(within(sheet).getByRole('button', { name: 'Paid · record the sale' }));
-    await waitFor(() => expect(recordMarketSales).toHaveBeenCalledWith('e1', ['a'], 'cash'));
+    await waitFor(() => expect(recordMarketSales).toHaveBeenCalledWith('e1', [{ id: 'a', listingId: 'a', variantId: null, quantity: 1 }], 'cash'));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(screen.getByText('Sale recorded: $22 by Cash.')).toBeTruthy();
   });
