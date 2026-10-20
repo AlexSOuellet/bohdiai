@@ -2409,15 +2409,10 @@ export type Database = {
       }
       site_profiles: {
         Row: {
-          about_title: string | null
           bio: string | null
-          facebook_url: string | null
           headline: string | null
-          instagram_url: string | null
           kicker: string | null
           makes: string[] | null
-          marquee_phrases: string[] | null
-          phone: string | null
           portrait_upload_id: string | null
           quote: string | null
           quote_attribution: string | null
@@ -2426,15 +2421,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          about_title?: string | null
           bio?: string | null
-          facebook_url?: string | null
           headline?: string | null
-          instagram_url?: string | null
           kicker?: string | null
           makes?: string[] | null
-          marquee_phrases?: string[] | null
-          phone?: string | null
           portrait_upload_id?: string | null
           quote?: string | null
           quote_attribution?: string | null
@@ -2443,15 +2433,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          about_title?: string | null
           bio?: string | null
-          facebook_url?: string | null
           headline?: string | null
-          instagram_url?: string | null
           kicker?: string | null
           makes?: string[] | null
-          marquee_phrases?: string[] | null
-          phone?: string | null
           portrait_upload_id?: string | null
           quote?: string | null
           quote_attribution?: string | null
