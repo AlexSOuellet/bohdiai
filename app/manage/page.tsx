@@ -6,6 +6,10 @@ import { PublishPanel } from './_components/PublishPanel';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getPublishView } from '@/lib/backend/publish/queries';
 import { publishSite } from '@/lib/backend/publish/actions';
+import { VisitsPanel } from './_components/VisitsPanel';
+import { loadVisits } from '@/lib/visits/home';
+import { appVisitsReader } from '@/lib/visits/queries';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +17,16 @@ export default async function ManageHome(): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
   const home = await collectHome(HOME_CONTRIBUTORS, on, site.tenantId);
-  const publish = await getPublishView(supabaseAdmin(), site.tenantId, site.subdomain, process.env['BACKEND_SESSION_SECRET']);
+  const db = supabaseAdmin();
+  const publish = await getPublishView(db, site.tenantId, site.subdomain, process.env['BACKEND_SESSION_SECRET']);
+  const visits = await loadVisits({
+    db,
+    run: appVisitsReader(),
+    tenantId: site.tenantId,
+    draft: publish.draft,
+    now: new Date(),
+    onError: (err) => logger.error('backend home visitor numbers failed', { error: err instanceof Error ? err.message : String(err) }),
+  });
   return (
     <>
       <div className="bk-head">
@@ -31,6 +44,7 @@ export default async function ManageHome(): Promise<React.ReactElement> {
             </ul>
           </section>
         )}
+        <VisitsPanel view={visits} />
         {home.tiles.length > 0 ? (
           <div className="bk-tiles">
             {home.tiles.map((t, i) => (

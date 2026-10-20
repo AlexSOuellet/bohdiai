@@ -9,6 +9,8 @@ import { ACTIVITY_COOKIE, checkBackendSession, idleLimitFor, sessionSecret } fro
 import { DRAFT_HEADERS, PREVIEW_COOKIE, PREVIEW_MAX_AGE, PREVIEW_PARAM, draftGate } from '@/lib/storefront/draft-preview';
 import { isReservedSubdomain } from '@/lib/reserved-subdomains';
 import { armRoute } from '@/lib/site/arms';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
+import { pageViewOf, recordPageView } from '@/lib/visits/page-view';
 
 const BASE_DOMAIN = 'bohdiai.com';
 
@@ -110,6 +112,8 @@ export async function middleware(request: NextRequest) {
       isDraft = true;
     }
     tenantId = tenant.id;
+    // Count the page (live sites only: a draft is only ever its owner looking).
+    if (!isDraft) countPageView(request, hostname, tenant.id);
   }
 
   // Build augmented request headers (includes tenant context when applicable).
@@ -295,4 +299,17 @@ async function resolveTenant(subdomain: string): Promise<{ id: string; status: s
     console.error('[middleware] Tenant resolution error:', err);
     return null;
   }
+}
+
+/** Count one page view in Cloudflare (lib/visits/page-view.ts). Best effort: never blocks or breaks the page. */
+function countPageView(request: NextRequest, hostname: string, tenantId: string): void {
+  const view = pageViewOf({ method: request.method, host: hostname, path: request.nextUrl.pathname, search: request.nextUrl.searchParams, headers: request.headers });
+  if (view === null) return;
+  let dataset: AnalyticsEngineDataset | undefined;
+  try {
+    dataset = getCloudflareContext().env.VISITS;
+  } catch {
+    return; // No Cloudflare context (plain `next dev` without the adapter): nothing to count into.
+  }
+  recordPageView(dataset, tenantId, view);
 }

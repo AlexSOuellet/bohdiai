@@ -4,11 +4,11 @@ import { qrFileName, qrTargets } from './qr';
 const O = 'https://rose-n-cat.bohdiai.com';
 
 describe('qrTargets', () => {
-  it('offers home, shop and each live product', () => {
+  it('offers home, shop and each live product, each marked as from a QR code', () => {
     expect(qrTargets(O, { shop: true, products: [{ slug: 'theo', name: 'Theo' }] })).toEqual([
-      { key: 'home', label: 'Your home page', url: `${O}/` },
-      { key: 'shop', label: 'Your shop page', url: `${O}/shop` },
-      { key: 'p:theo', label: 'Theo', url: `${O}/listings/theo` },
+      { key: 'home', label: 'Your home page', url: `${O}/?qr=1` },
+      { key: 'shop', label: 'Your shop page', url: `${O}/shop?qr=1` },
+      { key: 'p:theo', label: 'Theo', url: `${O}/listings/theo?qr=1` },
     ]);
   });
   it('offers only home for a site that does not sell', () => {

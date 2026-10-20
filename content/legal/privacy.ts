@@ -11,7 +11,7 @@ This Privacy Policy describes how **{{shopName}}** ("we," "us," or "our") collec
 
 When you place an order, we collect the information necessary to process and fulfill it, including your name, email address, shipping address, and order details. If you contact us, we retain your correspondence in order to respond and provide support. Full payment card details are collected and processed directly by our payment processor (Stripe or Square); we do not receive or store complete card numbers.
 
-We also collect limited, privacy-respecting analytics, such as aggregate page views and interactions, in order to understand and improve the Site. We do not engage in cross-site tracking and do not use advertising networks.
+We also count page views, without cookies, so the seller can see how many visits the Site gets, which pages are seen most, and the kind of place visits come from (such as a search engine or a social site). These counts hold no information about you: no name, no address, and no way to recognize you on a later visit. We do not engage in cross-site tracking and do not use advertising networks.
 
 ## 2. How We Use Your Information
 
@@ -27,7 +27,7 @@ We disclose personal information only to the extent necessary to fulfill your or
 
 ## 5. Cookies
 
-The Site uses a first-party cookie to maintain the contents of your cart between page loads and a first-party analytics cookie to measure unique visits. The Site does not use marketing cookies or third-party tracking cookies.
+The Site uses a first-party cookie to maintain the contents of your cart between page loads. It does not use analytics cookies, marketing cookies or third-party tracking cookies.
 
 ## 6. Data Retention and Your Rights
 

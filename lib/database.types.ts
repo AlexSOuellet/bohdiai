@@ -2409,10 +2409,15 @@ export type Database = {
       }
       site_profiles: {
         Row: {
+          about_title: string | null
           bio: string | null
+          facebook_url: string | null
           headline: string | null
+          instagram_url: string | null
           kicker: string | null
           makes: string[] | null
+          marquee_phrases: string[] | null
+          phone: string | null
           portrait_upload_id: string | null
           quote: string | null
           quote_attribution: string | null
@@ -2421,10 +2426,15 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          about_title?: string | null
           bio?: string | null
+          facebook_url?: string | null
           headline?: string | null
+          instagram_url?: string | null
           kicker?: string | null
           makes?: string[] | null
+          marquee_phrases?: string[] | null
+          phone?: string | null
           portrait_upload_id?: string | null
           quote?: string | null
           quote_attribution?: string | null
@@ -2433,10 +2443,15 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          about_title?: string | null
           bio?: string | null
+          facebook_url?: string | null
           headline?: string | null
+          instagram_url?: string | null
           kicker?: string | null
           makes?: string[] | null
+          marquee_phrases?: string[] | null
+          phone?: string | null
           portrait_upload_id?: string | null
           quote?: string | null
           quote_attribution?: string | null
@@ -2633,6 +2648,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "site_testimonials_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_visit_months: {
+        Row: {
+          month: string
+          page_views: number
+          saved_at: string
+          sources: Json
+          tenant_id: string
+          top_pages: Json
+          visits: number
+        }
+        Insert: {
+          month: string
+          page_views: number
+          saved_at?: string
+          sources?: Json
+          tenant_id: string
+          top_pages?: Json
+          visits: number
+        }
+        Update: {
+          month?: string
+          page_views?: number
+          saved_at?: string
+          sources?: Json
+          tenant_id?: string
+          top_pages?: Json
+          visits?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_visit_months_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
