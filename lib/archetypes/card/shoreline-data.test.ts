@@ -6,6 +6,7 @@ vi.mock('./data', () => ({ loadCardData: async () => ({ name: 'Saltmarsh & Lace'
 vi.mock('@/lib/backend/features', () => ({ loadSiteFeatures: async () => state.features }));
 vi.mock('@/lib/storefront/catalog', () => ({ loadCatalog: async () => ({ products: [] }), loadCollections }));
 vi.mock('@/lib/storefront/promotions-load', () => ({ loadRunningSale: async () => null }));
+vi.mock('@/lib/storefront/site-gallery', () => ({ loadSiteGallery: async () => [{ key: 'p-tray', url: 'u', alt: '', name: 'Tray' }] }));
 vi.mock('@/lib/backend/testimonials/queries', () => ({ listTestimonials: async () => [] }));
 
 const { loadShorelineData } = await import('./shoreline-data');
@@ -24,6 +25,7 @@ describe('loadShorelineData', () => {
     state.features = new Set(['catalog', 'collections']);
     const site = await loadShorelineData({} as never, 't1');
     expect(site.collections).toEqual([{ slug: 'trays', name: 'Trays', products: [piece] }]);
+    expect(site.gallery).toEqual([{ id: 'p-tray', url: 'u', caption: 'Tray' }]);
   });
   it('has no collections on Market, so no row and no collection pages', async () => {
     state.features = new Set(['catalog']);
@@ -34,6 +36,8 @@ describe('loadShorelineData', () => {
   });
   it('has neither on Showcase', async () => {
     state.features = new Set(['collections']);
-    expect((await loadShorelineData({} as never, 't1')).collections).toEqual([]);
+    const one = await loadShorelineData({} as never, 't1');
+    expect(one.collections).toEqual([]);
+    expect(one.gallery).toEqual([]);
   });
 });

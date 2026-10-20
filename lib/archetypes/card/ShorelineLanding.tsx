@@ -60,7 +60,7 @@ export function Footer({
 }): ReactElement {
   return (
     <footer className="sl-foot" aria-label={w.footer.label}>
-      <SocialIcons facebookUrl={social.facebookUrl} instagramUrl={social.instagramUrl} className="sl-social" labels={w.touch} />
+      <SocialIcons facebookUrl={social.facebookUrl} instagramUrl={social.instagramUrl} className="sl-social" labels={w.touch} showNames />
       <span>
         © {new Date().getFullYear()} {name}
       </span>
@@ -90,7 +90,7 @@ export function PortraitPrint({ portrait }: { portrait: Portrait | null }): Reac
   );
 }
 
-function Print({ photo, index, w }: { photo: GalleryItem; index: number; w: CardWords['work'] }): ReactElement {
+export function Print({ photo, index, w }: { photo: GalleryItem; index: number; w: CardWords['work'] }): ReactElement {
   return (
     <li>
       <Snapshot index={index} className="sl-print" label={photoLabel(photo.caption, index + 1, w)}>

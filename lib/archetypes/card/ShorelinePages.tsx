@@ -18,7 +18,7 @@ import type { CartView, MarketShopView } from '@/lib/archetypes/content';
 import { ShorelineMarketBuyer } from './ShorelineMarketBuyer';
 import { OrderRequestForm } from '@/lib/storefront/OrderRequestForm';
 import { PhotoViewerProvider, Snapshot } from './PhotoViewer';
-import { Frame, Footer, nameParts, PortraitPrint } from './ShorelineLanding';
+import { Frame, Footer, nameParts, PortraitPrint, Print } from './ShorelineLanding';
 import { bioParagraphs, initials, marketDay, marketName, photoLabel, type CardData } from './data';
 import { featuredProducts, type ShorelineData } from './shoreline-data';
 import type { MarketDate } from '@/lib/backend/dates/dates-form';
@@ -223,6 +223,20 @@ function Home({ site }: { site: ShorelineData }): ReactElement {
               <a href="/shop">{W.seeShop}</a>
             </div>
           </section>
+        )}
+        {site.gallery.length > 0 && (
+          <PhotoViewerProvider photos={site.gallery} w={site.card.words.lightbox}>
+            <section className="sl-water" aria-labelledby="sl-work">
+              <h2 className="sl-water-h" id="sl-work">
+                {W.work}
+              </h2>
+              <ul className="sl-prints">
+                {site.gallery.map((photo, i) => (
+                  <Print key={photo.id} photo={photo} index={i} w={site.card.words.work} />
+                ))}
+              </ul>
+            </section>
+          </PhotoViewerProvider>
         )}
         {site.testimonials.length > 0 && (
           <section className="sl-water sl-featured" aria-labelledby="sl-kind">

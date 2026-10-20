@@ -15,6 +15,8 @@ import { offLabel, withSale } from '@/lib/storefront/promotions';
 import { loadRunningSale } from '@/lib/storefront/promotions-load';
 import { siteTestimonials, type Testimonial } from '@/lib/backend/testimonials/testimonial-form';
 import { loadCardData, type CardData } from './data';
+import { loadSiteGallery } from '@/lib/storefront/site-gallery';
+import type { GalleryItem } from '@/lib/backend/gallery/gallery-form';
 
 export type ShorelineData = {
   card: CardData;
@@ -36,6 +38,8 @@ export type ShorelineData = {
   newArrivals: boolean;
   /** Her live collections in her order, each with its pieces (sale prices applied). */
   collections: { slug: string; name: string; products: ProductView[] }[];
+  /** The gallery section (Market and Full, once she switches it on): ticked pieces, then her own photos. */
+  gallery: GalleryItem[];
 };
 
 export async function loadShorelineData(
@@ -68,6 +72,8 @@ export async function loadShorelineData(
         : (await loadCollections(db, tenantId, loaded))
             .filter((c) => c.products.length > 0)
             .map((c) => ({ slug: c.slug, name: c.view.name, products: withSale(c.products, running) })),
+    // The gallery section, the same one every mood shows (Plan-Backends, the gallery section).
+    gallery: pages ? (await loadSiteGallery(db, tenantId, features)).map((g) => ({ id: g.key, url: g.url, caption: g.name })) : [],
     testimonials: features.has('testimonials') ? siteTestimonials(await listTestimonials(db, tenantId), features.has('testimonials_all')) : [],
   };
 }

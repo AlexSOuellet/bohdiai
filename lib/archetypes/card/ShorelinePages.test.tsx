@@ -35,6 +35,7 @@ function product(slug: string, over: Pick<ProductView, never> & { askForPrice?: 
 }
 
 const site: ShorelineData = {
+  gallery: [],
   card: {
     name: 'Saltmarsh & Lace',
     profile: { ...EMPTY_PROFILE, kicker: 'Decoupage from Bristol', headline: 'Sealed to last', aboutTitle: 'From the paint counter', bio: 'I run the paint counter.\n\nEvery sealer gets tested.', signature: 'Lena', facebookUrl: 'https://www.facebook.com/bohdiai', makes: ['Art bottles'] },
@@ -394,5 +395,21 @@ describe('a market’s own page (Market POS)', () => {
     cleanup();
     render(<ShorelineMarket site={site} market={market({ state: 'canceled', endDate: '2026-10-31' })} />);
     expect(screen.getByText(W.market.canceled)).toBeTruthy();
+  });
+});
+
+describe('Saltmarsh’s gallery section and social buttons', () => {
+  it('shows the gallery on the home page after the pieces, once she switches it on', () => {
+    page('home', { ...site, gallery: [{ id: 'p-tray', url: 'https://cdn/tray.jpg', caption: 'Blue tray' }] });
+    expect(screen.getByRole('heading', { name: W.work })).toBeTruthy();
+    expect(screen.getByAltText('Blue tray')).toBeTruthy();
+  });
+  it('shows no gallery section while it’s off or empty', () => {
+    page('home');
+    expect(screen.queryByRole('heading', { name: W.work })).toBeNull();
+  });
+  it('names each social link in the footer', () => {
+    page('home');
+    expect(screen.getByRole('link', { name: S.touch.facebook })).toHaveTextContent(S.touch.facebook);
   });
 });

@@ -138,8 +138,10 @@ ${prints}
 .sl-foot a{color:#f3efe6!important;text-decoration:none}
 .sl-foot a:hover{text-decoration:underline}
 .sl-social{display:flex;gap:14px;flex-basis:100%;justify-content:center;margin-bottom:6px}
-.sl-social a{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;border:1px solid rgba(243,239,230,.45);color:#f3efe6!important;transition:background .3s,border-color .3s}
-.sl-social a:hover{background:var(--rust);border-color:var(--rust);text-decoration:none}
+/* Her social links: a button each with its name, in her accent, like her other buttons. */
+.sl-social a{display:inline-flex;align-items:center;gap:10px;padding:12px 22px 12px 16px;background:var(--rust);color:#f3efe6!important;font-weight:600;font-size:13px;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:background .3s}
+.sl-social svg{width:22px;height:22px;flex:none}
+.sl-social a:hover{filter:brightness(1.12);text-decoration:none}
 
 /* ── photo viewer ────────────────────────────────────────── */
 .sl .bc-lb{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:rgba(12,24,32,.93);padding:clamp(16px,4vw,60px)}
