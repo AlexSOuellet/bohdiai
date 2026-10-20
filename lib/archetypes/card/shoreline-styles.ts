@@ -227,6 +227,12 @@ a.sl-print{text-decoration:none;cursor:pointer}
 .sl-cols a{padding:8px 16px;border:1px solid rgba(243,239,230,.7);background:rgba(11,30,41,.72);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);color:#f3efe6!important;font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
 .sl-cols a:hover,.sl-cols a[aria-current="page"]{background:#f3efe6;color:var(--navy)!important}
 .sl-btn--cart{margin-right:12px}
+.sl-options{margin:0 0 18px}
+.sl-option{display:grid;gap:4px;margin:0 0 14px;max-width:320px}
+.sl-option label{font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ink)}
+.sl-option select{font:500 18px/1.3 var(--body);color:var(--ink);background:rgba(255,255,255,.55);border:0;border-bottom:1.5px solid var(--navy);padding:8px 10px;border-radius:0}
+.sl-option select:focus{outline:2px solid var(--rust);outline-offset:2px}
+.sl-option-note{margin:0 0 14px;font-weight:600;color:var(--rust)}
 .sl-btn--quiet{background:transparent;color:var(--navy)!important;box-shadow:inset 0 0 0 1.5px var(--navy)}
 .sl-btn--quiet:hover{background:var(--navy);color:#f3efe6!important}
 .sl-product-sheet [role="alert"]{margin-top:10px;color:var(--rust)}

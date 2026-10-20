@@ -48,3 +48,22 @@ describe('toCartView with promotions', () => {
     expect(both.total).toBe('$90');
   });
 });
+
+describe('toCartView with a piece’s choice', () => {
+  it('shows each chosen option as its own line, at its own price', () => {
+    const scarf = view('s', {
+      name: 'Scarf',
+      variations: [{ name: 'Colour', options: ['Blue', 'Red'] }],
+      offers: [
+        { id: 'v1', choices: { Colour: 'Blue' }, price: '$28', priceCents: 2800, soldOut: false },
+        { id: 'v2', choices: { Colour: 'Red' }, price: '$30', priceCents: 3000, soldOut: true },
+      ],
+    });
+    const cart = toCartView([{ view: scarf, priceCents: 2800, isPreview: false }], undefined, ['s~v1', 's~v2', 'gone']);
+    expect(cart.lines.map((l) => [l.id, l.name, l.price, l.available])).toEqual([
+      ['s~v1', 'Scarf, Blue', '$28', true],
+      ['s~v2', 'Scarf', '$28', false],
+    ]);
+    expect(cart.total).toBe('$28');
+  });
+});

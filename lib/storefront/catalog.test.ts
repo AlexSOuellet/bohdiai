@@ -40,6 +40,14 @@ const media = resolveMediaMap([
 const sizeAttr: AttributeRow = { listing_id: 'l1', name: 'Size', position: 0, variation_options: [{ value: 'Large', position: 1 }, { value: 'Small', position: 0 }] };
 const variant = (choices: Record<string, string>, price: number | null, stock: number | null): VariantRow => ({ listing_id: 'l1', option_combination: choices, price_cents: price, inventory_count: stock });
 
+describe('offers carry their combination', () => {
+  it('passes the combination’s id through, for the cart and the market app', async () => {
+    const { toProductView: view } = await import('./catalog');
+    const withId = { ...variant({ Size: 'Small' }, 2400, 3), id: 'v-small' };
+    expect(view(row(), [sizeAttr], [withId], media).offers?.[0]).toMatchObject({ id: 'v-small', priceCents: 2400 });
+  });
+});
+
 describe('small helpers', () => {
   it('formats prices the long-standing way', () => {
     expect(formatPrice(2400)).toBe('$24');
@@ -99,8 +107,8 @@ describe('toProductView', () => {
     const view = toProductView(row(), [sizeAttr], [variant({ Size: 'Large' }, 3000, null), variant({ Size: 'Small' }, null, 2)], media);
     expect(view.variations).toEqual([{ name: 'Size', options: ['Small', 'Large'] }]);
     expect(view.offers).toEqual([
-      { choices: { Size: 'Small' }, price: '$24', soldOut: false },
-      { choices: { Size: 'Large' }, price: '$30', soldOut: false },
+      { choices: { Size: 'Small' }, price: '$24', priceCents: 2400, soldOut: false },
+      { choices: { Size: 'Large' }, price: '$30', priceCents: 3000, soldOut: false },
     ]);
     expect(view.price).toBe('$24');
     expect(view.priceFrom).toBe(true);
@@ -117,7 +125,7 @@ describe('toProductView', () => {
   });
   it('ignores combinations that no longer match the options', () => {
     const view = toProductView(row(), [sizeAttr], [variant({ Colour: 'Red' }, 100, null), variant({ Size: 'Small' }, null, null)], media);
-    expect(view.offers).toEqual([{ choices: { Size: 'Small' }, price: '$24', soldOut: false }]);
+    expect(view.offers).toEqual([{ choices: { Size: 'Small' }, price: '$24', priceCents: 2400, soldOut: false }]);
   });
 });
 

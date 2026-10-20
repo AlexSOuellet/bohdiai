@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { render, cleanup, screen } from '@testing-library/react';
+import { render, cleanup, screen, fireEvent } from '@testing-library/react';
 
 import { MainStreetProduct } from './MainStreetProduct';
 import { MAIN_STREET_SKINS } from './skins';
@@ -82,15 +82,30 @@ describe('MainStreetProduct options and stock', () => {
     render(<MainStreetProduct words={W} content={full} skin={skin} product={{ ...base, status: 'sold_out' }} />);
     expect(screen.getByRole('button', { name: W.productSoldOut })).toBeDisabled();
   });
-  it('asks about a piece with options on Full too (the cart cannot pick options yet)', () => {
+  it('puts the chosen option in the cart on Full', () => {
+    document.cookie = 'bohdi_cart=; Max-Age=0; Path=/';
     render(
       <MainStreetProduct words={W}
         content={full}
         skin={skin}
-        product={{ ...base, id: 'l1', variations: [{ name: 'Size', options: ['Small'] }], offers: [{ choices: { Size: 'Small' }, price: '$24', soldOut: false }] }}
+        product={{ ...base, id: '00000000-0000-4000-8000-000000000001', variations: [{ name: 'Size', options: ['Small'] }], offers: [{ id: '00000000-0000-4000-8000-0000000000b1', choices: { Size: 'Small' }, price: '$24', priceCents: 2400, soldOut: false }] }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: W.productAddToCart }));
+    expect(document.cookie).toContain('00000000-0000-4000-8000-000000000001~00000000-0000-4000-8000-0000000000b1');
+    document.cookie = 'bohdi_cart=; Max-Age=0; Path=/';
+  });
+
+  it('asks about a piece with options on a shop that doesn’t sell online', () => {
+    render(
+      <MainStreetProduct words={W}
+        content={{ ...full, identity: { ...full.identity, sellsOnline: false } }}
+        skin={skin}
+        product={{ ...base, id: 'l1', variations: [{ name: 'Size', options: ['Small'] }], offers: [{ id: 'v1', choices: { Size: 'Small' }, price: '$24', soldOut: false }] }}
       />,
     );
     expect(screen.queryByRole('button', { name: W.productAddToCart })).toBeNull();
+    expect(screen.getByRole('link', { name: W.productAskAbout })).toBeTruthy();
   });
 });
 

@@ -100,8 +100,15 @@ export function MainStreetProduct({
               </Type>
             )}
             {product.variations.length > 0 ? (
-              // The cart can't pick options yet, so a piece with options is asked about on every plan.
-              <ProductOptions variations={product.variations} offers={product.offers ?? []} fallbackPrice={product.price} words={words} askHref={ASK_HREF} />
+              // A shop that sells online puts the chosen combination in the cart; otherwise it's asked about.
+              <ProductOptions
+                variations={product.variations}
+                offers={product.offers ?? []}
+                fallbackPrice={product.price}
+                words={words}
+                askHref={sellsOnline ? undefined : ASK_HREF}
+                listingId={sellsOnline ? product.id : undefined}
+              />
             ) : (
               <>
                 <Type as="div" role="title" className="ms-product-price">

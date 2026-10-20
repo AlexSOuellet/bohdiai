@@ -9,7 +9,7 @@
 import { fill } from '@/lib/site-words/words';
 import { useEffect, useState, useSyncExternalStore, type ReactElement } from 'react';
 import { useRouter } from 'next/navigation';
-import { CART_EVENT, addToCart, cartCookieString, cartFromCookieHeader, removeFromCart } from './cart';
+import { CART_EVENT, addToCart, cartCookieString, cartEntry, cartFromCookieHeader, removeFromCart } from './cart';
 import { PROMO_COOKIE, normalizeCode } from './promotions';
 
 function readCart(): string[] {
@@ -45,9 +45,11 @@ export function useCartIds(): string[] {
   return key === '' ? [] : key.split('.');
 }
 
-/** "Add to cart" for one piece; once added it turns into a link to the cart. */
+/** "Add to cart" for one piece (or one choice of a piece with options); once added it
+ *  turns into a link to the cart. */
 export function AddToCartButton({
   listingId,
+  variantId = null,
   addLabel,
   inCartLabel,
   fullLabel,
@@ -55,6 +57,8 @@ export function AddToCartButton({
   typeRole,
 }: {
   listingId: string;
+  /** The chosen combination, for a piece with options. */
+  variantId?: string | null;
   addLabel: string;
   inCartLabel: string;
   /** Shown when the cart already holds as many pieces as it can. */
@@ -65,7 +69,8 @@ export function AddToCartButton({
 }): ReactElement {
   const ids = useCartIds();
   const [refused, setRefused] = useState(false);
-  if (ids.includes(listingId)) {
+  const entry = cartEntry(listingId, variantId);
+  if (ids.includes(entry)) {
     return (
       <a className={className} href="/cart" data-type={typeRole}>
         {inCartLabel}
@@ -79,8 +84,8 @@ export function AddToCartButton({
         className={className}
         data-type={typeRole}
         onClick={() => {
-          const next = addToCart(readCart(), listingId);
-          if (!next.includes(listingId)) {
+          const next = addToCart(readCart(), entry);
+          if (!next.includes(entry)) {
             setRefused(true);
             return;
           }

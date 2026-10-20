@@ -54,6 +54,18 @@ describe('POST /api/order-request', () => {
     promos = [];
   });
 
+  it('orders the chosen option of a piece, at its price, named in the email', async () => {
+    const V = '00000000-0000-4000-8000-0000000000b1';
+    loaded = [{ ...theo, view: { ...theo.view, variations: [{ name: 'Size', options: ['Large'] }], offers: [{ id: V, choices: { Size: 'Large' }, price: '$140', priceCents: 14000, soldOut: false }] } }];
+    const res = await POST(request({ ...good, listingIds: [`${A}~${V}`] }));
+    expect(res.status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith('place_order_request', expect.objectContaining({
+      p_items: [{ listing_id: A, listing_variant_id: V, option: 'Large', name: 'Theo, Large', unit_price_cents: 14000 }],
+    }));
+    expect((send.mock.calls.at(-1)?.[0] as { text: string }).text).toContain('- Theo, Large: $140');
+    loaded = [theo];
+  });
+
   it('saves the order priced from the catalog and emails the maker', async () => {
     const res = await POST(request({ ...good, listingIds: [A] }));
     expect(res.status).toBe(200);

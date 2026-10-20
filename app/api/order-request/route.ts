@@ -6,6 +6,7 @@ import { formLimitResponse } from '@/lib/forms/rate-limit';
 import { loadSiteFeatures } from '@/lib/backend/features';
 import { loadProductsByIds } from '@/lib/storefront/catalog';
 import { orderLines, orderRequestEmail, orderRequestSchema } from '@/lib/storefront/order-request';
+import { splitEntry } from '@/lib/storefront/cart';
 import { bestDiscount, checkCode, runningSale } from '@/lib/storefront/promotions';
 import { loadShopPromotions } from '@/lib/storefront/promotions-load';
 
@@ -66,7 +67,8 @@ async function handle(req: Request) {
     return NextResponse.json({ error: 'This shop can’t take orders right now. Please get in touch another way.' }, { status: 503 });
   }
 
-  const priced = orderLines(input.listingIds, await loadProductsByIds(db, tenantId, input.listingIds));
+  const pieceIds = [...new Set(input.listingIds.map((e) => splitEntry(e).listingId))];
+  const priced = orderLines(input.listingIds, await loadProductsByIds(db, tenantId, pieceIds));
   if (!priced.ok) {
     return NextResponse.json(
       { error: `No longer available: ${priced.unavailable.join(', ')}. Take it out of your cart to send the rest.`, unavailable: priced.unavailable },
@@ -94,7 +96,12 @@ async function handle(req: Request) {
     p_customer_email: input.email,
     p_customer_phone: input.phone,
     p_customer_note: input.note,
-    p_items: priced.lines.map((l) => ({ listing_id: l.listingId, name: l.name, unit_price_cents: l.priceCents })),
+    p_items: priced.lines.map((l) => ({
+      listing_id: l.listingId,
+      ...(l.variantId === null ? {} : { listing_variant_id: l.variantId, option: l.option }),
+      name: l.name,
+      unit_price_cents: l.priceCents,
+    })),
     p_discount_cents: discount?.cents ?? 0,
     ...(discount === null ? {} : { p_discount_label: discount.label }),
     ...(discount?.promotionId == null ? {} : { p_promotion_id: discount.promotionId }),

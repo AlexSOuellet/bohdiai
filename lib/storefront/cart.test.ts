@@ -8,6 +8,9 @@ import {
   parseCart,
   removeFromCart,
   serializeCart,
+  cartEntry,
+  isCartEntry,
+  splitEntry,
 } from './cart';
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
@@ -59,5 +62,23 @@ describe('cookie strings', () => {
   });
   it('round-trips', () => {
     expect(parseCart(serializeCart([id(1), id(2)]))).toEqual([id(1), id(2)]);
+  });
+});
+
+describe('a piece with options in the cart', () => {
+  it('keeps a piece and its chosen combination as one entry', () => {
+    const entry = cartEntry(id(1), id(9));
+    expect(entry).toBe(`${id(1)}~${id(9)}`);
+    expect(cartEntry(id(1))).toBe(id(1));
+    expect(splitEntry(entry)).toEqual({ listingId: id(1), variantId: id(9) });
+    expect(splitEntry(id(1))).toEqual({ listingId: id(1), variantId: null });
+    expect(isCartEntry(entry)).toBe(true);
+    expect(isCartEntry(`${id(1)}~nope`)).toBe(false);
+  });
+  it('holds two choices of one piece side by side, each once', () => {
+    const cart = addToCart(addToCart([], cartEntry(id(1), id(8))), cartEntry(id(1), id(9)));
+    expect(cart).toEqual([`${id(1)}~${id(8)}`, `${id(1)}~${id(9)}`]);
+    expect(parseCart(cart.join('.'))).toEqual(cart);
+    expect(removeFromCart(cart, `${id(1)}~${id(8)}`)).toEqual([`${id(1)}~${id(9)}`]);
   });
 });

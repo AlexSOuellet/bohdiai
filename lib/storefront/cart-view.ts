@@ -9,28 +9,35 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import type { CartView } from '@/lib/archetypes/content';
 import { formatPrice, loadProductsByIds } from './catalog';
-import { isCartable, type LoadedPiece } from './order-request';
+import { cartLine, type LoadedPiece } from './order-request';
+import { cartEntry, splitEntry } from './cart';
 import { bestDiscount, checkCode, runningSale, salePriceCents, type Promotion } from './promotions';
 import { loadShopPromotions } from './promotions-load';
 
 export function toCartView(
   loaded: readonly LoadedPiece[],
   promo: { promos: readonly Promotion[]; today: string; codesOn: boolean; code: string | null } = { promos: [], today: '', codesOn: false, code: null },
+  /** The cart's entries in order (a piece, or a piece and its choice). Absent: one line per piece loaded. */
+  entries?: readonly string[],
 ): CartView {
   const sale = runningSale(promo.promos, promo.today);
   const prices: number[] = [];
-  const lines = loaded.flatMap((p) => {
-    if (p.view.id === undefined) return [];
-    const available = isCartable(p);
-    if (available) prices.push(p.priceCents);
+  const keys = entries ?? loaded.flatMap((p) => (p.view.id === undefined ? [] : [cartEntry(p.view.id)]));
+  const lines = keys.flatMap((entry) => {
+    const p = loaded.find((x) => x.view.id === splitEntry(entry).listingId);
+    if (p === undefined || p.view.id === undefined) return [];
+    const line = cartLine(entry, loaded);
+    const available = line !== null;
+    const cents = line?.priceCents ?? p.priceCents;
+    if (available) prices.push(cents);
     const onSale = available && sale !== null && sale.percentOff !== null;
     return [
       {
-        id: p.view.id,
+        id: entry,
         slug: p.view.slug,
-        name: p.view.name,
-        price: formatPrice(p.priceCents),
-        salePrice: onSale ? formatPrice(salePriceCents(p.priceCents, sale.percentOff ?? 0)) : undefined,
+        name: line?.name ?? p.view.name,
+        price: formatPrice(cents),
+        salePrice: onSale ? formatPrice(salePriceCents(cents, sale.percentOff ?? 0)) : undefined,
         photo: p.view.media.find((m) => m.kind === 'image'),
         available,
       },
@@ -61,10 +68,11 @@ export function toCartView(
 export async function loadCartView(
   db: SupabaseClient<Database>,
   tenantId: string,
-  ids: readonly string[],
+  entries: readonly string[],
   code: string | null = null,
 ): Promise<CartView> {
-  const [loaded, promo] = await Promise.all([loadProductsByIds(db, tenantId, ids), loadShopPromotions(db, tenantId)]);
-  const codesOn = promo.promos.some((p) => p.kind === 'code') ;
-  return toCartView(loaded, { ...promo, codesOn, code });
+  const pieceIds = [...new Set(entries.map((e) => splitEntry(e).listingId))];
+  const [loaded, promo] = await Promise.all([loadProductsByIds(db, tenantId, pieceIds), loadShopPromotions(db, tenantId)]);
+  const codesOn = promo.promos.some((p) => p.kind === 'code');
+  return toCartView(loaded, { ...promo, codesOn, code }, entries);
 }

@@ -7,7 +7,7 @@
 import { hasPrice } from '@/lib/catalog/price';
 import { z } from 'zod';
 import type { ProductView } from '@/lib/archetypes/content';
-import { CART_MAX } from './cart';
+import { CART_MAX, isCartEntry, splitEntry } from './cart';
 import { formatPrice } from './catalog';
 
 export const orderRequestSchema = z.object({
@@ -15,45 +15,64 @@ export const orderRequestSchema = z.object({
   email: z.string().trim().toLowerCase().email('That doesn’t look like a valid email.').max(254),
   phone: z.string().trim().max(40).default(''),
   note: z.string().trim().max(2000).default(''),
-  listingIds: z.array(z.string().uuid()).min(1, 'Your cart is empty.').max(CART_MAX),
+  /** The cart's entries: a piece's id, or a piece's id and its chosen combination's (see cart.ts). */
+  listingIds: z.array(z.string().refine(isCartEntry, 'Your cart has something it can’t read. Take it out and add it again.')).min(1, 'Your cart is empty.').max(CART_MAX),
   /** The discount code the cart applied, or ''. */
   code: z.string().trim().max(40).default(''),
 });
 
 export type OrderRequestInput = z.infer<typeof orderRequestSchema>;
 
-export type OrderLine = { listingId: string; name: string; priceCents: number };
+/** One line of an order: the piece, its chosen combination (and that choice in words), the price. */
+export type OrderLine = { listingId: string; variantId: string | null; name: string; option: string | null; priceCents: number };
 
 export type LoadedPiece = { view: ProductView; priceCents: number; isPreview: boolean };
 
+/** A combination's choices in words: "Blue / Large", in the piece's option order. */
+export function choiceWords(p: LoadedPiece, choices: Record<string, string>): string {
+  return p.view.variations.flatMap((v) => (choices[v.name] === undefined || choices[v.name] === '' ? [] : [choices[v.name] as string])).join(' / ');
+}
+
+/** What one cart entry is: its line when it can be had, else null. A piece without
+ *  options is its own line; a piece with options needs a live, in-stock choice. */
+export function cartLine(entry: string, loaded: readonly LoadedPiece[]): OrderLine | null {
+  const { listingId, variantId } = splitEntry(entry);
+  const p = loaded.find((x) => x.view.id === listingId);
+  if (p === undefined || p.view.status !== 'active' || p.isPreview) return null;
+  if (p.view.variations.length === 0) {
+    if (variantId !== null || !hasPrice(p.priceCents)) return null;
+    return { listingId, variantId: null, name: p.view.name, option: null, priceCents: p.priceCents };
+  }
+  const offer = variantId === null ? undefined : (p.view.offers ?? []).find((o) => o.id === variantId);
+  if (offer === undefined || offer.soldOut || offer.priceCents === undefined || !hasPrice(offer.priceCents)) return null;
+  const option = choiceWords(p, offer.choices);
+  return { listingId, variantId, name: option === '' ? p.view.name : `${p.view.name}, ${option}`, option, priceCents: offer.priceCents };
+}
+
 /**
  * The lines to order, in cart order, or the names of what can no longer be had
- * (adopted, taken down, or a piece with options the cart can't choose).
+ * (adopted, taken down, or a choice that's gone).
  */
 export function orderLines(
-  ids: readonly string[],
+  entries: readonly string[],
   loaded: readonly LoadedPiece[],
 ): { ok: true; lines: OrderLine[]; subtotalCents: number } | { ok: false; unavailable: string[] } {
-  const byId = new Map(loaded.flatMap((p) => (p.view.id === undefined ? [] : [[p.view.id, p] as const])));
   const lines: OrderLine[] = [];
   const unavailable: string[] = [];
-  for (const id of new Set(ids)) {
-    const p = byId.get(id);
-    if (p === undefined) {
-      unavailable.push('A piece that is no longer listed');
+  for (const entry of new Set(entries)) {
+    const line = cartLine(entry, loaded);
+    if (line !== null) {
+      lines.push(line);
       continue;
     }
-    if (!isCartable(p)) {
-      unavailable.push(p.view.name);
-      continue;
-    }
-    lines.push({ listingId: id, name: p.view.name, priceCents: p.priceCents });
+    const p = loaded.find((x) => x.view.id === splitEntry(entry).listingId);
+    unavailable.push(p === undefined ? 'A piece that is no longer listed' : p.view.name);
   }
   if (unavailable.length > 0) return { ok: false, unavailable };
   return { ok: true, lines, subtotalCents: lines.reduce((sum, l) => sum + l.priceCents, 0) };
 }
 
-/** A piece the cart can take: live, in stock, a real listing, no options to pick. */
+/** A piece the cart can take as it is: live, in stock, a real listing, no options to pick. */
 export function isCartable(p: LoadedPiece): boolean {
   return p.view.status === 'active' && !p.isPreview && p.view.variations.length === 0 && hasPrice(p.priceCents);
 }

@@ -5,6 +5,7 @@
  * a page per product, About, Markets, Contact. Every word the maker wrote comes
  * from her data, and every other word is the site's own (`site.card.words`).
  */
+import { ShorelineOptions } from './ShorelineOptions';
 import type { ReactElement } from 'react';
 import Link from 'next/link';
 import type { ProductView } from '@/lib/archetypes/content';
@@ -515,7 +516,15 @@ export function ShorelineProduct({
             <div>
               <div className="sl-product-sheet">
                 <h2>{product.name}</h2>
-                {product.askForPrice === true ? (
+                {product.variations.length > 0 && product.askForPrice !== true ? (
+                  <ShorelineOptions
+                    variations={product.variations}
+                    offers={product.offers ?? []}
+                    fallbackPrice={product.price}
+                    listingId={site.cart && product.status === 'active' ? product.id : undefined}
+                    W={W}
+                  />
+                ) : product.askForPrice === true ? (
                   <p className="sl-product-price sl-product-price--ask">{W.askForPrice}</p>
                 ) : (
                   <p className="sl-product-price">

@@ -46,6 +46,8 @@ export interface AttributeRow {
 
 /** One live combination of a listing's options. */
 export interface VariantRow {
+  /** The combination's id (the cart and the market app sell it). */
+  id?: string;
   listing_id: string;
   option_combination: Json;
   price_cents: number | null;
@@ -178,7 +180,8 @@ function buildProduct(
     const v = byKey.get(combinationKey(choices));
     if (v === undefined) continue;
     const soldOut = isStockSoldOut(v.inventory_count);
-    offers.push({ choices, price: formatPrice(effectivePriceCents(product, { priceCents: v.price_cents })), soldOut });
+    const cents = effectivePriceCents(product, { priceCents: v.price_cents });
+    offers.push({ ...(v.id === undefined ? {} : { id: v.id }), choices, price: formatPrice(cents), priceCents: cents, soldOut });
     all.push({ priceCents: v.price_cents });
     if (!soldOut) buyable.push({ priceCents: v.price_cents });
   }
@@ -232,7 +235,7 @@ async function loadDetails(
     db.from('variation_attributes').select('listing_id, name, position, variation_options(value, position)').in('listing_id', [...ids]),
     db
       .from('listing_variants')
-      .select('listing_id, option_combination, price_cents, inventory_count')
+      .select('id, listing_id, option_combination, price_cents, inventory_count')
       .in('listing_id', [...ids])
       .eq('status', 'active'),
   ]);

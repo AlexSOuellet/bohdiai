@@ -44,10 +44,14 @@ export type CatalogStatus = 'active' | 'sold_out' | 'unavailable';
 
 /** One buyable combination of a product's options, as the shop shows it. */
 export interface ProductOffer {
+  /** The combination's own id (what the cart and the market app sell), from the catalog. */
+  id?: string;
   /** Option name → chosen value, e.g. { Size: 'Large', Scent: 'Fig' }. */
   choices: Record<string, string>;
   /** Formatted price for this combination. */
   price: string;
+  /** The price in cents behind `price`, from the catalog. */
+  priceCents?: number;
   soldOut: boolean;
 }
 

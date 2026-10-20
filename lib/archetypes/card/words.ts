@@ -137,6 +137,11 @@ export const CARD_WORD_SPOTS = {
     writeCta: '',
     writeCtaNoName: '',
     askForPrice: '',
+    /** A piece's options: the price-line marks and the cart's refusals. */
+    soldOut: '',
+    unavailable: '',
+    choiceSoldOut: '',
+    choiceUnavailable: '',
     askAbout: '',
     askMessage: '',
     backToShop: '',

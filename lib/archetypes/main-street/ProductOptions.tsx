@@ -11,6 +11,7 @@ import { combinationKey } from '@/lib/catalog/combinations';
 import { Type } from './Type';
 import { fill } from '@/lib/site-words/words';
 import type { FamilyWords } from './words';
+import { AddToCartButton } from '@/lib/storefront/CartControls';
 
 export function initialChoices(variations: readonly CatalogVariation[], offers: readonly ProductOffer[]): Record<string, string> {
   const start = offers.find((o) => !o.soldOut) ?? offers[0];
@@ -35,6 +36,7 @@ export function ProductOptions({
   fallbackPrice,
   words,
   askHref,
+  listingId,
 }: {
   variations: CatalogVariation[];
   offers: ProductOffer[];
@@ -43,6 +45,8 @@ export function ProductOptions({
   words: FamilyWords;
   /** Set on a shop that doesn't sell online: the buy button becomes "Ask about this" here. */
   askHref?: string | undefined;
+  /** The piece, on a shop that sells online: the chosen combination goes in the cart. */
+  listingId?: string | undefined;
 }) {
   const [choices, setChoices] = useState(() => initialChoices(variations, offers));
   /** Unique per picker, so two on one page never share select ids. */
@@ -79,7 +83,9 @@ export function ProductOptions({
           </div>
         ))}
       <div className="ms-product-buy">
-        {askHref === undefined ? (
+        {askHref === undefined && listingId !== undefined && !blocked && match?.id !== undefined ? (
+          <AddToCartButton key={match.id} listingId={listingId} variantId={match.id} className="ms-product-cta" typeRole="navLabel" addLabel={words.productAddToCart} inCartLabel={words.cart.inCart} fullLabel={words.cart.full} />
+        ) : askHref === undefined ? (
           <Type as="button" role="navLabel" type="button" disabled={blocked} className="ms-product-cta" data-soldout={blocked ? 'true' : 'false'}>
             {cta}
           </Type>
