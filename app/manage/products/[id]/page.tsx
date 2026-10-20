@@ -42,6 +42,7 @@ export default async function EditProductPage({
       shopUrl={storefrontOrigin(site.subdomain, (await headers()).get('host'))}
       homeCount={homeCount}
       showcase={!on.has('catalog')}
+      hasCollections={on.has('collections')}
     />
   );
 }

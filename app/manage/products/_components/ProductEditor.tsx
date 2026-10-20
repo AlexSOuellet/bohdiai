@@ -54,6 +54,7 @@ export function ProductEditor({
   shopUrl,
   homeCount,
   showcase = false,
+  hasCollections = true,
 }: {
   initial: ProductForm;
   collections: { id: string; name: string }[];
@@ -68,6 +69,8 @@ export function ProductEditor({
   /** Showcase: no shop, so no shop link, home tick, stock, options or collections.
    *  The price is kept for when the site moves up to Market. */
   showcase?: boolean;
+  /** The site has collections (Full); Market and Showcase have none, so no Collections section. */
+  hasCollections?: boolean;
 }): React.ReactElement {
   const router = useRouter();
   const [form, setForm] = useState(initial);
@@ -467,7 +470,7 @@ export function ProductEditor({
               </section>
             )}
 
-            {!showcase && (
+            {!showcase && hasCollections && (
               <section className="bk-section" aria-labelledby="s-collections">
                 <h2 id="s-collections" className="bk-section-title">
                   Collections

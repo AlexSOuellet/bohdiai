@@ -33,6 +33,7 @@ export default async function NewProductPage(): Promise<React.ReactElement> {
       shopUrl={storefrontOrigin(site.subdomain, (await headers()).get('host'))}
       homeCount={homeCount}
       showcase={!on.has('catalog')}
+      hasCollections={on.has('collections')}
     />
   );
 }

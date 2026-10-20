@@ -308,6 +308,15 @@ describe('MainStreetFooter', () => {
   });
 });
 
+describe('Nav on a site without collections (Market)', () => {
+  it('keeps the shop and leaves Collections out', () => {
+    const { container } = render(<Nav identity={{ wordmark: 'Lena Hart Decoupage', showsCollections: false }} words={W} />);
+    const hrefs = [...container.querySelectorAll('a')].map((a) => a.getAttribute('href'));
+    expect(hrefs).toContain('/shop');
+    expect(hrefs).not.toContain('/collections');
+  });
+});
+
 describe('Nav on a one-page site (Showcase)', () => {
   it('offers only About and Contact, each a jump down the home page', () => {
     const { container } = render(<Nav identity={{ wordmark: 'Lena Hart Decoupage', showsShop: false, onePage: true }} words={W} />);

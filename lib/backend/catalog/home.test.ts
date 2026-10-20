@@ -7,7 +7,7 @@ const { listProducts, listCollections } = vi.hoisted(() => ({
 vi.mock('./queries', () => ({ listProducts, listCollections }));
 vi.mock('@/lib/supabase-server', () => ({ createSupabaseServerClient: async () => ({}) }));
 
-import { catalogHomeData, catalogHome, showcaseHomeData } from './home';
+import { catalogHomeData, catalogHome, collectionsHome, showcaseHomeData } from './home';
 import type { ProductRowView } from './queries';
 
 const p = (
@@ -64,6 +64,20 @@ describe('catalogHomeData', () => {
   });
   it('is quiet when nothing needs attention', () => {
     expect(catalogHomeData([p('active')], []).attention).toEqual([]);
+  });
+});
+
+describe('collectionsHome', () => {
+  it('adds the Collections count only on sites with collections (Full)', async () => {
+    listCollections.mockResolvedValue([
+      { id: 'a', name: 'A', status: 'active', productCount: 1 },
+      { id: 'b', name: 'B', status: 'draft', productCount: 0 },
+    ]);
+    expect(collectionsHome.feature).toBe('collections');
+    expect(await collectionsHome.load('t1')).toEqual({ tiles: [{ label: 'Collections', value: '1', note: '1 draft' }], attention: [] });
+  });
+  it('the catalog alone shows no Collections tile (Market)', () => {
+    expect(catalogHomeData([p('active')], null).tiles.map((t) => t.label)).toEqual(['Products']);
   });
 });
 

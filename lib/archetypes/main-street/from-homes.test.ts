@@ -59,7 +59,7 @@ describe('familyViewFromHomes', () => {
   it('drops a button whose page the plan doesn’t have, so a Showcase site never points at a shop', () => {
     const v = familyViewFromHomes({
       ...empty,
-      linkTargets: linkTargetsFor(false),
+      linkTargets: linkTargetsFor(false, false),
       moment: { ...EMPTY_MOMENT, media: null, photos: [], ctaLabel: 'Shop', ctaTarget: 'shop', secondCtaLabel: 'Our story', secondCtaTarget: 'about' },
       sections: sections({ close: { kicker: 'Come by', title: 'Light one tonight', moreLabel: 'See collections', moreTarget: 'collections' } }),
     }, W);
@@ -184,11 +184,14 @@ describe('loadFamilyHomes', () => {
     expect(loaders.dates).not.toHaveBeenCalled();
   });
 
-  it('opens the shop and collections to buttons only when the catalog is on', async () => {
+  it('opens the shop to buttons with the catalog, and collections only with their switch too (Full)', async () => {
     loaders.features = new Set(['catalog']);
-    const h = await loadFamilyHomes(db({ data: { business_name: 'Ember' }, error: null }), 't1');
-    expect(h.linkTargets).toContain('shop');
-    expect(h.linkTargets).toContain('collections');
+    const market = await loadFamilyHomes(db({ data: { business_name: 'Ember' }, error: null }), 't1');
+    expect(market.linkTargets).toContain('shop');
+    expect(market.linkTargets).not.toContain('collections');
+    loaders.features = new Set(['catalog', 'collections']);
+    const full = await loadFamilyHomes(db({ data: { business_name: 'Ember' }, error: null }), 't1');
+    expect(full.linkTargets).toContain('collections');
   });
 
   it('reads testimonials, dates and the cart when they’re switched on', async () => {

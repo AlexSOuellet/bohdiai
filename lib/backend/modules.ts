@@ -19,10 +19,10 @@ export const BACKEND_MODULES: BackendModule[] = [
     section: 'Catalog',
     items: [
       { label: 'Products', href: '/manage/products' },
-      { label: 'Collections', href: '/manage/collections' },
     ],
   },
   // Showcase: the catalog in the backend (no collections, no shop); its ticks pick the gallery.
+  { feature: 'collections', section: 'Catalog', items: [{ label: 'Collections', href: '/manage/collections' }] },
   { feature: 'gallery_pieces', section: 'Catalog', items: [{ label: 'Products', href: '/manage/products' }] },
   { feature: 'cart', section: 'Selling', items: [{ label: 'Orders', href: '/manage/orders' }] },
   { feature: 'promotions', section: 'Selling', items: [{ label: 'Promotions', href: '/manage/promotions' }] },

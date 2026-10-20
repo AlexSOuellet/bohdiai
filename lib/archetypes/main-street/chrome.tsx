@@ -1635,7 +1635,11 @@ export function Nav({
   // A one-page site (Showcase) jumps down its home page; otherwise Showcase still has no shop or collections.
   const items = identity.onePage === true
     ? ONE_PAGE_NAV.map((n) => ({ href: n.href, label: words[n.word] }))
-    : identity.showsShop === false ? resolveNav(words).filter((n) => n.href !== '/shop' && n.href !== '/collections') : resolveNav(words);
+    : identity.showsShop === false
+      ? resolveNav(words).filter((n) => n.href !== '/shop' && n.href !== '/collections')
+      : identity.showsCollections === false
+        ? resolveNav(words).filter((n) => n.href !== '/collections')
+        : resolveNav(words);
   // Only a shop that sells online (Full) has a cart to link to.
   const allItems: MobileNavItem[] = identity.sellsOnline === true ? [...items, { href: '/cart', label: <CartCount label={words.cart.navCount} labelEmpty={words.navCart} /> }] : [...items];
   const variant = identity.navVariant ?? 'standard';

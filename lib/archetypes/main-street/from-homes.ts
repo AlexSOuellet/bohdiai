@@ -175,7 +175,7 @@ export async function loadFamilyHomes(db: SupabaseClient<Database>, tenantId: st
   return {
     name: tenant.data.business_name,
     sellsOnline: features.has('cart'),
-    linkTargets: linkTargetsFor(features.has('catalog')),
+    linkTargets: linkTargetsFor(features.has('catalog'), features.has('collections')),
     moment,
     sections,
     profile,

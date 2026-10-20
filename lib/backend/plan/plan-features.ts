@@ -18,16 +18,18 @@ const EVERY_PLAN: readonly FeatureKey[] = ['profile', 'market_dates', 'qr_codes'
 /** Showcase (Alex, 2026-10-19): the whole catalog in the backend with no shop and no
  *  prices on the site; the gallery is up to 12 ticked pieces (newest 12 by default). */
 const SHOWCASE: readonly FeatureKey[] = [...EVERY_PLAN, 'gallery_pieces'];
-const LITE: readonly FeatureKey[] = [...EVERY_PLAN, 'gallery', 'catalog', 'market_details', 'market_shop'];
+/** Market (Alex, 2026-10-11 and 2026-10-20): everything Showcase has, the whole catalog with prices,
+ *  and the whole market app (records, costs and results included). No online selling,
+ *  promotions, collections or extra photos; a few testimonials the maker types in. */
+const LITE: readonly FeatureKey[] = [...EVERY_PLAN, 'gallery', 'catalog', 'market_details', 'market_shop', 'market_records', 'testimonials'];
 const FULL: readonly FeatureKey[] = [
   ...LITE,
+  'collections',
   'product_photos',
   'digital_products',
-  'testimonials',
   'cart',
   'promotions',
   'new_arrivals',
-  'market_records',
 ];
 
 export const PLAN_FEATURES: Record<SitePlan, readonly FeatureKey[]> = {
@@ -54,9 +56,10 @@ export function moveOf(from: SitePlan, to: SitePlan): Move {
 
 /** What a maker sees named for each switch a move adds or hides. */
 export const FEATURE_WORDS: Partial<Record<FeatureKey, string>> = {
-  catalog: 'Your shop page, collections and prices (your products are kept)',
+  catalog: 'Your shop page and prices (your products are kept)',
   market_details: 'Market hours, addresses, booths and websites',
   market_shop: 'The point of sale at markets: the QR shop page, Getting paid and Today',
+  collections: 'Collections and their pages (your collections are kept)',
   product_photos: 'Extra photos on each product (the main photo stays)',
   digital_products: 'Selling downloads (your download products are kept)',
   testimonials: 'Testimonials on your site',
@@ -75,10 +78,10 @@ export function hiddenByMove(from: SitePlan, to: SitePlan): string[] {
 /** The pages a link can point at on a plan. Without the catalog (Showcase) there is
  *  no shop and no collections, so no button may point at them. */
 export function planLinkTargets(plan: SitePlan): readonly LinkTarget[] {
-  return linkTargetsFor(PLAN_FEATURES[plan].includes('catalog'));
+  return linkTargetsFor(PLAN_FEATURES[plan].includes('catalog'), PLAN_FEATURES[plan].includes('collections'));
 }
 
-/** The same, from whether a site has its catalog switched on. */
-export function linkTargetsFor(hasCatalog: boolean): readonly LinkTarget[] {
-  return hasCatalog ? LINK_TARGETS : LINK_TARGETS.filter((t) => t !== 'shop' && t !== 'collections');
+/** The same, from whether a site has its catalog and its collections switched on. */
+export function linkTargetsFor(hasCatalog: boolean, hasCollections: boolean): readonly LinkTarget[] {
+  return LINK_TARGETS.filter((t) => (t !== 'shop' || hasCatalog) && (t !== 'collections' || (hasCatalog && hasCollections)));
 }

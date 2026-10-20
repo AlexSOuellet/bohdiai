@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function CollectionsPage({ searchParams }: PageProps<'/manage/collections'>): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
-  if (!(await getSiteFeatures(site.tenantId)).has('catalog')) notFound();
+  if (!(await getSiteFeatures(site.tenantId)).has('collections')) notFound();
   const collections = await listCollections(await createSupabaseServerClient(), site.tenantId);
   return (
     <>

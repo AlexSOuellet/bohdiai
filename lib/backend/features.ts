@@ -7,7 +7,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 
 export const FEATURES = {
-  catalog: { default: true, description: 'Products and collections' },
+  catalog: { default: true, description: 'Products: the shop page with prices, and a page for each piece' },
+  collections: { default: true, description: 'Collections: groups of products, with their own pages (Full; Market has none)' },
   video: { default: false, description: 'One short video per product (Cloudflare Stream)' },
   digital_products: { default: false, description: 'Products or choices sold as downloadable files' },
   custom_domain_panel: { default: true, description: 'Domain status on the home screen and in settings' },

@@ -132,6 +132,9 @@ export const MainStreetContentSchema = z.object({
      *  False on Showcase: no shop, collections or product pages, no prices, and
      *  the pieces and collections sections don't show. Absent has a shop. */
     showsShop: z.boolean().optional(),
+    /** Whether the site has collections (Full; the collections switch). False on Market and
+     *  Showcase: no collections band, menu link or pages. Absent has them. */
+    showsCollections: z.boolean().optional(),
     /** A one-page site (Showcase; Alex, 2026-10-19): no About, Events or Contact
      *  pages. The menu jumps down the page, the whole story and the contact form
      *  sit on the home page, and the old page addresses land on their section. */

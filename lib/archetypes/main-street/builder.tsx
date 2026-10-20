@@ -326,7 +326,7 @@ async function FamilyFromHomes({ content, tenantId, paint, scenic }: { content: 
   // The plans, from the site's switches (old samples too): only Full sells online
   // (cart), and Showcase has no shop at all (catalog off).
   const view = homes !== null ? familyViewFromHomes(homes, words) : (content as MainStreetView);
-  return paint({ ...view, identity: { ...view.identity, sellsOnline: features.has('cart'), showsShop: features.has('catalog'), onePage: !features.has('catalog') } }, words, sale, scene);
+  return paint({ ...view, identity: { ...view.identity, sellsOnline: features.has('cart'), showsShop: features.has('catalog'), showsCollections: features.has('catalog') && features.has('collections'), onePage: !features.has('catalog') } }, words, sale, scene);
 }
 
 /** The pieces as the lists show them during a running sale: the sale price in place of the full one. */
@@ -429,6 +429,9 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
     // Showcase has no shop: its shop, collections and collection pages don't exist.
     const showsShop = c.identity.showsShop !== false;
     if (!showsShop && (page === 'shop' || page === 'collections' || page === 'collection')) notFound();
+    // Market has no collections: no collections or collection pages either.
+    const showsCollections = showsShop && c.identity.showsCollections !== false;
+    if (!showsCollections && (page === 'collections' || page === 'collection')) notFound();
     // A one-page site (Showcase) has no About, Events or Contact page: their old
     // addresses land on the section of the home page that holds them.
     if (c.identity.onePage === true && page !== undefined && page in ONE_PAGE_ANCHORS) redirect(ONE_PAGE_ANCHORS[page as keyof typeof ONE_PAGE_ANCHORS]);
@@ -454,7 +457,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       case 'testimonials':
         return <TestimonialsPage content={c} skin={skin} words={words} family={family} />;
       default:
-        return <MainStreet content={c} skin={skin} words={words} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} hiddenSections={showsShop ? resolutions.hidden : [...resolutions.hidden, 'goods', 'collections']} shownSections={resolutions.shown} originalMood={originalMood} />;
+        return <MainStreet content={c} skin={skin} words={words} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} hiddenSections={showsShop ? (showsCollections ? resolutions.hidden : [...resolutions.hidden, 'collections']) : [...resolutions.hidden, 'goods', 'collections']} shownSections={resolutions.shown} originalMood={originalMood} />;
     }
     }, familyPainted.key === 'scenic');
   },

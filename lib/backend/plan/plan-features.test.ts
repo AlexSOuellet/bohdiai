@@ -25,13 +25,13 @@ describe('what each plan switches on', () => {
     for (const plan of ['showcase', 'lite', 'full'] as const) expect(PLAN_FEATURES[plan]).toContain('headline');
   });
 
-  it('adds the catalog and the point of sale at Lite, and market records only at Full', () => {
+  it('gives Market the catalog and the whole market app, and keeps collections and online selling for Full', () => {
     expect(PLAN_FEATURES.lite).toEqual(
-      expect.arrayContaining(['catalog', 'market_details', 'market_shop']),
+      expect.arrayContaining(['catalog', 'market_details', 'market_shop', 'market_records', 'testimonials']),
     );
-    expect(PLAN_FEATURES.lite).not.toContain('market_records');
+    for (const k of ['collections', 'cart', 'promotions', 'product_photos', 'new_arrivals'] as const) expect(PLAN_FEATURES.lite).not.toContain(k);
     expect(PLAN_FEATURES.full).toEqual(
-      expect.arrayContaining(['cart', 'promotions', 'new_arrivals', 'market_records']),
+      expect.arrayContaining(['collections', 'cart', 'promotions', 'new_arrivals', 'market_records']),
     );
   });
 
@@ -68,16 +68,25 @@ describe('moving between plans', () => {
 
   it('names what a move down puts away, and nothing for a move up', () => {
     expect(hiddenByMove('full', 'showcase')).toEqual([
-      'Your shop page, collections and prices (your products are kept)',
+      'Your shop page and prices (your products are kept)',
       'Market hours, addresses, booths and websites',
       'The point of sale at markets: the QR shop page, Getting paid and Today',
+      'Market costs, organizer details, notes and reviews',
+      'Testimonials on your site',
+      'Collections and their pages (your collections are kept)',
       'Extra photos on each product (the main photo stays)',
       'Selling downloads (your download products are kept)',
-      'Testimonials on your site',
       'The cart and online orders',
       'Sales and discount codes',
       'New arrivals on your home page',
-      'Market costs, organizer details, notes and reviews',
+    ]);
+    expect(hiddenByMove('full', 'lite')).toEqual([
+      'Collections and their pages (your collections are kept)',
+      'Extra photos on each product (the main photo stays)',
+      'Selling downloads (your download products are kept)',
+      'The cart and online orders',
+      'Sales and discount codes',
+      'New arrivals on your home page',
     ]);
     expect(hiddenByMove('showcase', 'full')).toEqual([]);
   });
@@ -136,11 +145,11 @@ describe('applying a plan', () => {
 });
 
 describe('the pages a link can point at', () => {
-  it('Showcase has no shop and no collections; Market and Full have every page', async () => {
+  it('Showcase has no shop and no collections; Market has no collections; Full has every page', async () => {
     const { planLinkTargets } = await import('./plan-features');
     const { LINK_TARGETS } = await import('@/lib/archetypes/main-street/links');
     expect(planLinkTargets('showcase')).toEqual(LINK_TARGETS.filter((t) => t !== 'shop' && t !== 'collections'));
-    expect(planLinkTargets('lite')).toEqual(LINK_TARGETS);
+    expect(planLinkTargets('lite')).toEqual(LINK_TARGETS.filter((t) => t !== 'collections'));
     expect(planLinkTargets('full')).toEqual(LINK_TARGETS);
   });
 });

@@ -26,8 +26,9 @@ describe('navFor', () => {
 });
 
 describe('catalog in the menu', () => {
-  it('shows Products and Collections only when the catalog is on', () => {
-    expect(navFor(BACKEND_MODULES, new Set(['catalog']))).toContainEqual({
+  it('shows Products with the catalog, and Collections only with the collections switch (Full)', () => {
+    expect(navFor(BACKEND_MODULES, new Set(['catalog']))).toContainEqual({ section: 'Catalog', items: [{ label: 'Products', href: '/manage/products' }] });
+    expect(navFor(BACKEND_MODULES, new Set(['catalog', 'collections']))).toContainEqual({
       section: 'Catalog',
       items: [
         { label: 'Products', href: '/manage/products' },
@@ -86,7 +87,7 @@ describe('Showcase in the menu', () => {
     expect(yours).toEqual(['Headline', 'About you', 'Scrolling line', 'Contact information', 'Socials']);
   });
   it('lists a screen once when two switches open it', () => {
-    const nav = navFor(BACKEND_MODULES, new Set<FeatureKey>(['catalog', 'gallery_pieces']));
+    const nav = navFor(BACKEND_MODULES, new Set<FeatureKey>(['catalog', 'collections', 'gallery_pieces']));
     expect(nav.find((s) => s.section === 'Catalog')?.items.map((i) => i.label)).toEqual(['Products', 'Collections']);
   });
 });

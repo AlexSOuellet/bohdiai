@@ -14,7 +14,7 @@ export default async function EditCollectionPage({ params }: PageProps<'/manage/
   const { id } = await params;
   if (!ID.test(id)) notFound();
   const { site } = await requireActingSite();
-  if (!(await getSiteFeatures(site.tenantId)).has('catalog')) notFound();
+  if (!(await getSiteFeatures(site.tenantId)).has('collections')) notFound();
   const db = await createSupabaseServerClient();
   const [collection, products] = await Promise.all([getCollection(db, site.tenantId, id), listProducts(db, site.tenantId)]);
   if (collection === null) notFound();

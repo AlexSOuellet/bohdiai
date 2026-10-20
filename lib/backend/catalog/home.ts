@@ -12,15 +12,15 @@ import {
 const n = (count: number, one: string, many: string): string =>
   `${count} ${count === 1 ? one : many}`;
 
+/** The catalog's counts and Needs attention. `collections` is null on a site without
+ *  collections (Market, Showcase): no Collections tile. */
 export function catalogHomeData(
   products: readonly ProductRowView[],
-  collections: readonly CollectionRowView[],
+  collections: readonly CollectionRowView[] | null,
 ): HomeData {
   const current = products.filter((p) => p.status !== 'archived');
   const live = current.filter((p) => p.status === 'active');
   const drafts = current.filter((p) => p.status === 'draft');
-  const liveCollections = collections.filter((c) => c.status === 'active').length;
-  const draftCollections = collections.filter((c) => c.status === 'draft').length;
 
   // A product showing only the legacy sample photo still needs a real one (no upload id).
   const noPhoto = current.filter((p) => p.photoUploadId === null).length;
@@ -37,11 +37,15 @@ export function catalogHomeData(
   return {
     tiles: [
       { label: 'Products', value: String(live.length), note: n(drafts.length, 'draft', 'drafts') },
-      {
-        label: 'Collections',
-        value: String(liveCollections),
-        note: n(draftCollections, 'draft', 'drafts'),
-      },
+      ...(collections === null
+        ? []
+        : [
+            {
+              label: 'Collections',
+              value: String(collections.filter((c) => c.status === 'active').length),
+              note: n(collections.filter((c) => c.status === 'draft').length, 'draft', 'drafts'),
+            },
+          ]),
     ],
     attention,
   };
@@ -51,18 +55,23 @@ export const catalogHome: HomeContributor = {
   feature: 'catalog',
   load: async (tenantId) => {
     const db = await createSupabaseServerClient();
-    const [products, collections] = await Promise.all([
-      listProducts(db, tenantId),
-      listCollections(db, tenantId),
-    ]);
-    return catalogHomeData(products, collections);
+    return catalogHomeData(await listProducts(db, tenantId), null);
+  },
+};
+
+/** The Collections tile, on sites with collections (Full). */
+export const collectionsHome: HomeContributor = {
+  feature: 'collections',
+  load: async (tenantId) => {
+    const db = await createSupabaseServerClient();
+    return { tiles: catalogHomeData([], await listCollections(db, tenantId)).tiles.filter((t) => t.label === 'Collections'), attention: [] };
   },
 };
 
 /** Showcase's part of the home screen: the catalog's counts and Needs attention, with
  *  the gallery pick in place of collections (Showcase has none). */
 export function showcaseHomeData(products: readonly ProductRowView[]): HomeData {
-  const base = catalogHomeData(products, []);
+  const base = catalogHomeData(products, null);
   const picked = products.filter((p) => p.inGallery && p.status !== 'archived').length;
   const productTiles = base.tiles.filter((t) => t.label === 'Products');
   return {
