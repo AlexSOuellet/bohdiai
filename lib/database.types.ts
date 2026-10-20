@@ -2666,6 +2666,7 @@ export type Database = {
           name: string
           position: number
           quote: string
+          shown: boolean
           tenant_id: string
           updated_at: string
         }
@@ -2676,6 +2677,7 @@ export type Database = {
           name: string
           position: number
           quote: string
+          shown?: boolean
           tenant_id: string
           updated_at?: string
         }
@@ -2686,6 +2688,7 @@ export type Database = {
           name?: string
           position?: number
           quote?: string
+          shown?: boolean
           tenant_id?: string
           updated_at?: string
         }

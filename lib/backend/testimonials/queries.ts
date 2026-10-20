@@ -6,7 +6,7 @@ import { testimonialFromRow, type Testimonial } from './testimonial-form';
 export async function listTestimonials(db: SupabaseClient<Database>, tenantId: string): Promise<Testimonial[]> {
   const { data, error } = await db
     .from('site_testimonials')
-    .select('id, quote, name, detail')
+    .select('id, quote, name, detail, shown')
     .eq('tenant_id', tenantId)
     .order('position', { ascending: true })
     .order('created_at', { ascending: true });

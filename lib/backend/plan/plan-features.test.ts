@@ -74,6 +74,7 @@ describe('moving between plans', () => {
       'Market costs, organizer details, notes and reviews',
       'Testimonials on your site',
       'Collections and their pages (your collections are kept)',
+      'Every testimonial on your site (Market shows up to three; the rest are kept)',
       'Extra photos on each product (the main photo stays)',
       'Selling downloads (your download products are kept)',
       'The cart and online orders',
@@ -82,6 +83,7 @@ describe('moving between plans', () => {
     ]);
     expect(hiddenByMove('full', 'lite')).toEqual([
       'Collections and their pages (your collections are kept)',
+      'Every testimonial on your site (Market shows up to three; the rest are kept)',
       'Extra photos on each product (the main photo stays)',
       'Selling downloads (your download products are kept)',
       'The cart and online orders',

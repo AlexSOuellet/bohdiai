@@ -11,7 +11,7 @@ import { getSiteFeatures } from '@/lib/backend/site-features';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { logger } from '@/lib/logger';
 import type { DoneResult } from '../catalog/results';
-import { TESTIMONIALS_LIMIT, buildTestimonialRow, checkOrder, testimonialFromRow, type Testimonial, type TestimonialForm } from './testimonial-form';
+import { TESTIMONIALS_LIMIT, TESTIMONIALS_SHOWN_MAX, buildTestimonialRow, checkOrder, testimonialFromRow, type Testimonial, type TestimonialForm } from './testimonial-form';
 
 const OFF = 'Testimonials aren’t switched on for this site.';
 const FAILED = 'That didn’t save. Try again in a moment.';
@@ -34,7 +34,7 @@ export async function saveTestimonial(form: TestimonialForm): Promise<Testimonia
   if (!built.ok) return built;
   const db = await createSupabaseServerClient();
   if (form.id !== null) {
-    const { data, error } = await db.from('site_testimonials').update(built.row).eq('id', form.id).eq('tenant_id', tenantId).select('id, quote, name, detail').maybeSingle();
+    const { data, error } = await db.from('site_testimonials').update(built.row).eq('id', form.id).eq('tenant_id', tenantId).select('id, quote, name, detail, shown').maybeSingle();
     if (error !== null || data === null) {
       logger.error('testimonials: update failed', { tenantId, error: error?.message ?? 'not found' });
       return { ok: false, error: data === null && error === null ? 'That testimonial no longer exists. Reload the page.' : FAILED };
@@ -49,13 +49,33 @@ export async function saveTestimonial(form: TestimonialForm): Promise<Testimonia
   }
   if ((rows ?? []).length >= TESTIMONIALS_LIMIT) return { ok: false, error: `You can keep up to ${TESTIMONIALS_LIMIT}. Remove one to add another.` };
   const position = Math.max(-1, ...(rows ?? []).map((r) => r.position)) + 1;
-  const { data, error } = await db.from('site_testimonials').insert({ tenant_id: tenantId, position, ...built.row }).select('id, quote, name, detail').single();
+  const { data, error } = await db.from('site_testimonials').insert({ tenant_id: tenantId, position, ...built.row }).select('id, quote, name, detail, shown').single();
   if (error !== null || data === null) {
     logger.error('testimonials: add failed', { tenantId, error: error?.message });
     return { ok: false, error: FAILED };
   }
   done();
   return { ok: true, item: testimonialFromRow(data) };
+}
+
+/** Tick (or untick) one to show on the site (Market): up to three ticked at once. */
+export async function showTestimonial(id: string, shown: boolean): Promise<DoneResult> {
+  const tenantId = await site();
+  if (tenantId === null) return { ok: false, error: OFF };
+  const db = await createSupabaseServerClient();
+  if (shown) {
+    const { data, error } = await db.from('site_testimonials').select('id').eq('tenant_id', tenantId).eq('shown', true);
+    if (error !== null) return { ok: false, error: FAILED };
+    if ((data ?? []).filter((r) => r.id !== id).length >= TESTIMONIALS_SHOWN_MAX)
+      return { ok: false, error: `Your site shows up to ${TESTIMONIALS_SHOWN_MAX}. Untick one to show this one.` };
+  }
+  const { error } = await db.from('site_testimonials').update({ shown }).eq('id', id).eq('tenant_id', tenantId);
+  if (error !== null) {
+    logger.error('testimonials: show failed', { tenantId, error: error.message });
+    return { ok: false, error: FAILED };
+  }
+  done();
+  return { ok: true };
 }
 
 export async function removeTestimonial(id: string): Promise<DoneResult> {

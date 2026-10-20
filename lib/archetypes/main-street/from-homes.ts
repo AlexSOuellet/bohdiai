@@ -19,7 +19,7 @@ import type { SectionWords, SiteSections } from '@/lib/backend/sections/sections
 import { getPortraitUrl, getProfileForm } from '@/lib/backend/profile/queries';
 import type { ProfileForm } from '@/lib/backend/profile/profile-form';
 import { listTestimonials } from '@/lib/backend/testimonials/queries';
-import type { Testimonial } from '@/lib/backend/testimonials/testimonial-form';
+import { siteTestimonials, type Testimonial } from '@/lib/backend/testimonials/testimonial-form';
 import { listVisitorMarketDates } from '@/lib/backend/dates/queries';
 import type { MarketDate } from '@/lib/backend/dates/dates-form';
 import { fill } from '@/lib/site-words/words';
@@ -168,7 +168,8 @@ export async function loadFamilyHomes(db: SupabaseClient<Database>, tenantId: st
   if (tenant.error !== null) throw new Error(`Could not load the site: ${tenant.error.message}`);
   if (tenant.data === null) throw new Error('Could not load the site: no such tenant');
   const [testimonials, dates, gallery] = await Promise.all([
-    features.has('testimonials') ? listTestimonials(db, tenantId) : Promise.resolve([]),
+    // Full shows every testimonial; Market up to three, the ticked ones first (Alex, 2026-10-20).
+    features.has('testimonials') ? listTestimonials(db, tenantId).then((list) => siteTestimonials(list, features.has('testimonials_all'))) : Promise.resolve([]),
     features.has('market_dates') ? listVisitorMarketDates(db, tenantId) : Promise.resolve([]),
     loadSiteGallery(db, tenantId, features),
   ]);

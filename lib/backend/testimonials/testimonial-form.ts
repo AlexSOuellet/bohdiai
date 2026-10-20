@@ -8,7 +8,10 @@ export const QUOTE_MAX = 600;
 export const NAME_MAX = 60;
 export const DETAIL_MAX = 60;
 
-export type Testimonial = { id: string; quote: string; name: string; detail: string };
+/** How many testimonials a Market site shows (Alex, 2026-10-20). */
+export const TESTIMONIALS_SHOWN_MAX = 3;
+
+export type Testimonial = { id: string; quote: string; name: string; detail: string; shown: boolean };
 export type TestimonialForm = { id: string | null; quote: string; name: string; detail: string };
 
 export const EMPTY_TESTIMONIAL: TestimonialForm = { id: null, quote: '', name: '', detail: '' };
@@ -29,8 +32,16 @@ export function buildTestimonialRow(form: TestimonialForm): { ok: true; row: Tes
   return { ok: true, row: { quote, name, detail: detail === '' ? null : detail } };
 }
 
-export function testimonialFromRow(r: { id: string; quote: string; name: string; detail: string | null }): Testimonial {
-  return { id: r.id, quote: r.quote, name: r.name, detail: r.detail ?? '' };
+export function testimonialFromRow(r: { id: string; quote: string; name: string; detail: string | null; shown?: boolean }): Testimonial {
+  return { id: r.id, quote: r.quote, name: r.name, detail: r.detail ?? '', shown: r.shown ?? false };
+}
+
+/** What the site shows: every one (Full), or on Market the ticked ones, up to three,
+ *  and the first three in her order until she ticks any. */
+export function siteTestimonials(list: readonly Testimonial[], all: boolean): Testimonial[] {
+  if (all) return [...list];
+  const ticked = list.filter((t) => t.shown);
+  return (ticked.length > 0 ? ticked : list).slice(0, TESTIMONIALS_SHOWN_MAX);
 }
 
 /** The ids in the new order, checked against what she has: every one, each once. */

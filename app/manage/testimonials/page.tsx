@@ -9,7 +9,8 @@ export const dynamic = 'force-dynamic';
 
 export default async function TestimonialsPage(): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
-  if (!(await getSiteFeatures(site.tenantId)).has('testimonials')) notFound();
+  const on = await getSiteFeatures(site.tenantId);
+  if (!on.has('testimonials')) notFound();
   const items = await listTestimonials(await createSupabaseServerClient(), site.tenantId);
-  return <TestimonialsManager initial={items} />;
+  return <TestimonialsManager initial={items} picks={!on.has('testimonials_all')} />;
 }

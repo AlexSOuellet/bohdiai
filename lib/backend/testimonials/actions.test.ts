@@ -42,7 +42,7 @@ vi.mock('@/lib/backend/site-features', () => ({ getSiteFeatures: async () => sta
 vi.mock('@/lib/supabase-server', () => ({ createSupabaseServerClient: async () => db }));
 vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn() } }));
 
-const { saveTestimonial, removeTestimonial, orderTestimonials } = await import('./actions');
+const { saveTestimonial, removeTestimonial, orderTestimonials, showTestimonial } = await import('./actions');
 
 beforeEach(() => {
   state.features = new Set(['testimonials']);
@@ -52,11 +52,30 @@ beforeEach(() => {
   writes.length = 0;
 });
 
+describe('showing testimonials on a Market site', () => {
+  it('ticks one to show, up to three, and unticks any time', async () => {
+    state.rows = [{ id: 'a', position: 0 }, { id: 'b', position: 1 }];
+    expect(await showTestimonial('c', true)).toEqual({ ok: true });
+    expect(writes.at(-1)).toEqual({ op: 'update', arg: { shown: true } });
+    state.rows = [{ id: 'a', position: 0 }, { id: 'b', position: 1 }, { id: 'c', position: 2 }];
+    expect(await showTestimonial('d', true)).toEqual({ ok: false, error: 'Your site shows up to 3. Untick one to show this one.' });
+    expect((await showTestimonial('c', true)).ok).toBe(true);
+    expect(await showTestimonial('a', false)).toEqual({ ok: true });
+  });
+  it('says so when it can’t', async () => {
+    state.error = 'down';
+    expect((await showTestimonial('a', true)).ok).toBe(false);
+    expect((await showTestimonial('a', false)).ok).toBe(false);
+    state.features = new Set();
+    expect((await showTestimonial('a', false)).ok).toBe(false);
+  });
+});
+
 describe('testimonial actions', () => {
   it('adds one at the end', async () => {
     state.rows = [{ id: 'a', position: 0 }, { id: 'b', position: 4 }];
     const r = await saveTestimonial({ id: null, quote: 'So pretty', name: 'Maria', detail: '' });
-    expect(r).toEqual({ ok: true, item: { id: 'new', quote: 'So pretty', name: 'Maria', detail: '' } });
+    expect(r).toEqual({ ok: true, item: { id: 'new', quote: 'So pretty', name: 'Maria', detail: '', shown: false } });
     expect(writes[0]).toEqual({ op: 'insert', arg: { tenant_id: 't1', position: 5, quote: 'So pretty', name: 'Maria', detail: null } });
   });
 

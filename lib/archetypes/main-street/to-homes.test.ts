@@ -129,7 +129,7 @@ describe('a round trip through the homes', () => {
       sections: sectionsFromRows(rows),
       profile: profileFormFromHomes({ profile: h.profile.profile, aboutTitle: h.profile.aboutTitle, marquee: h.profile.marquee, phone: h.profile.phone, socials: h.profile.socials }),
       portraitUrl: h.portraitUrl,
-      testimonials: h.testimonials.map((t, i) => ({ id: `t${i}`, quote: t.quote, name: t.name, detail: t.detail ?? '' })),
+      testimonials: h.testimonials.map((t, i) => ({ id: `t${i}`, quote: t.quote, name: t.name, detail: t.detail ?? '', shown: false })),
       dates: h.markets.map((m, i) => ({ id: `d${i}`, date: m.date, endDate: '', name: m.name, town: '', hours: m.hours, address: '', booth: '', url: '', canceled: false })),
       gallery: [],
     }, keyWords(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX));

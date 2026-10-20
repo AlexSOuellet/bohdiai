@@ -13,7 +13,7 @@ import { HOME_MAX } from '@/lib/catalog/home';
 import { listTestimonials } from '@/lib/backend/testimonials/queries';
 import { offLabel, withSale } from '@/lib/storefront/promotions';
 import { loadRunningSale } from '@/lib/storefront/promotions-load';
-import type { Testimonial } from '@/lib/backend/testimonials/testimonial-form';
+import { siteTestimonials, type Testimonial } from '@/lib/backend/testimonials/testimonial-form';
 import { loadCardData, type CardData } from './data';
 
 export type ShorelineData = {
@@ -68,7 +68,7 @@ export async function loadShorelineData(
         : (await loadCollections(db, tenantId, loaded))
             .filter((c) => c.products.length > 0)
             .map((c) => ({ slug: c.slug, name: c.view.name, products: withSale(c.products, running) })),
-    testimonials: features.has('testimonials') ? await listTestimonials(db, tenantId) : [],
+    testimonials: features.has('testimonials') ? siteTestimonials(await listTestimonials(db, tenantId), features.has('testimonials_all')) : [],
   };
 }
 

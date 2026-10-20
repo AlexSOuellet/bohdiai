@@ -89,7 +89,7 @@ describe('familyViewFromHomes', () => {
       }),
       profile: { ...EMPTY_PROFILE, bio: 'It started in a kitchen.\n\nNow it’s a shop.', quote: 'Every candle is a small fire.', quoteAttribution: 'June', marqueePhrases: ['Small batch', 'Soy wax'] },
       portraitUrl: 'https://cdn/me.webp',
-      testimonials: [{ id: 't1', quote: 'Smells like home', name: 'Ann', detail: 'Providence' }, { id: 't2', quote: 'Lovely', name: 'Bo', detail: '' }],
+      testimonials: [{ id: 't1', quote: 'Smells like home', name: 'Ann', detail: 'Providence', shown: false }, { id: 't2', quote: 'Lovely', name: 'Bo', detail: '', shown: false }],
       dates: [market()],
     }, W);
     expect(v.shopName).toBe('Ember Candle Co');

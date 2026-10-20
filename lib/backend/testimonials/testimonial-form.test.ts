@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { QUOTE_MAX, buildTestimonialRow, checkOrder, testimonialFromRow } from './testimonial-form';
+import { QUOTE_MAX, buildTestimonialRow, checkOrder, testimonialFromRow, siteTestimonials } from './testimonial-form';
 
 describe('a testimonial', () => {
   it('needs words and a name; the detail is optional and tidied', () => {
@@ -16,10 +16,22 @@ describe('a testimonial', () => {
   });
 
   it('reads a row and checks a new order', () => {
-    expect(testimonialFromRow({ id: 'a', quote: 'q', name: 'n', detail: null })).toEqual({ id: 'a', quote: 'q', name: 'n', detail: '' });
+    expect(testimonialFromRow({ id: 'a', quote: 'q', name: 'n', detail: null })).toEqual({ id: 'a', quote: 'q', name: 'n', detail: '', shown: false });
+    expect(testimonialFromRow({ id: 'a', quote: 'q', name: 'n', detail: 'd', shown: true }).shown).toBe(true);
     expect(checkOrder(['b', 'a'], ['a', 'b'])).toBe(true);
     expect(checkOrder(['a', 'a'], ['a', 'b'])).toBe(false);
     expect(checkOrder(['a'], ['a', 'b'])).toBe(false);
     expect(checkOrder(['a', 'c'], ['a', 'b'])).toBe(false);
+  });
+});
+
+describe('what the site shows', () => {
+  const t = (id: string, shown = false) => ({ id, quote: id, name: id, detail: '', shown });
+  it('shows every one on Full', () => {
+    expect(siteTestimonials([t('a'), t('b'), t('c'), t('d')], true).map((x) => x.id)).toEqual(['a', 'b', 'c', 'd']);
+  });
+  it('on Market shows the ticked ones, up to three, else the first three', () => {
+    expect(siteTestimonials([t('a'), t('b'), t('c'), t('d')], false).map((x) => x.id)).toEqual(['a', 'b', 'c']);
+    expect(siteTestimonials([t('a'), t('b', true), t('c'), t('d', true)], false).map((x) => x.id)).toEqual(['b', 'd']);
   });
 });

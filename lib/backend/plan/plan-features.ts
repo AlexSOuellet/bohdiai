@@ -25,6 +25,7 @@ const LITE: readonly FeatureKey[] = [...EVERY_PLAN, 'gallery', 'catalog', 'marke
 const FULL: readonly FeatureKey[] = [
   ...LITE,
   'collections',
+  'testimonials_all',
   'product_photos',
   'digital_products',
   'cart',
@@ -60,6 +61,7 @@ export const FEATURE_WORDS: Partial<Record<FeatureKey, string>> = {
   market_details: 'Market hours, addresses, booths and websites',
   market_shop: 'The point of sale at markets: the QR shop page, Getting paid and Today',
   collections: 'Collections and their pages (your collections are kept)',
+  testimonials_all: 'Every testimonial on your site (Market shows up to three; the rest are kept)',
   product_photos: 'Extra photos on each product (the main photo stays)',
   digital_products: 'Selling downloads (your download products are kept)',
   testimonials: 'Testimonials on your site',

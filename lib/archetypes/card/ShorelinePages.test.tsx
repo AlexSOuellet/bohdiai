@@ -258,7 +258,7 @@ describe('the cart (Full)', () => {
 });
 
 describe('testimonials (Full)', () => {
-  const words = Array.from({ length: 4 }, (_, i) => ({ id: `t${i}`, quote: `Lovely piece ${i}.`, name: `Maria ${i}`, detail: i === 0 ? 'Bristol' : '' }));
+  const words = Array.from({ length: 4 }, (_, i) => ({ id: `t${i}`, quote: `Lovely piece ${i}.`, name: `Maria ${i}`, detail: i === 0 ? 'Bristol' : '', shown: false }));
 
   it('shows the first three on the home page with See more', () => {
     page('home', { ...site, testimonials: words });

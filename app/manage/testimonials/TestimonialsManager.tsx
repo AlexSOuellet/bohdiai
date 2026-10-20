@@ -2,8 +2,8 @@
 
 import { useRef, useState } from 'react';
 import { unstable_rethrow } from 'next/navigation';
-import { DETAIL_MAX, EMPTY_TESTIMONIAL, NAME_MAX, QUOTE_MAX, buildTestimonialRow, type Testimonial, type TestimonialForm } from '@/lib/backend/testimonials/testimonial-form';
-import { orderTestimonials, removeTestimonial, saveTestimonial } from '@/lib/backend/testimonials/actions';
+import { DETAIL_MAX, EMPTY_TESTIMONIAL, NAME_MAX, QUOTE_MAX, buildTestimonialRow, type Testimonial, type TestimonialForm, TESTIMONIALS_SHOWN_MAX } from '@/lib/backend/testimonials/testimonial-form';
+import { orderTestimonials, removeTestimonial, saveTestimonial, showTestimonial } from '@/lib/backend/testimonials/actions';
 import { useNotice } from '../_components/Notice';
 import { ConfirmButton } from '../_components/ConfirmButton';
 
@@ -48,7 +48,8 @@ function Editor({ form, busy, onChange, onSave, onCancel }: { form: TestimonialF
 }
 
 /** Her testimonials, in the order the site shows them: add, change, remove, move. */
-export function TestimonialsManager({ initial }: { initial: Testimonial[] }): React.ReactElement {
+/** `picks`: the site shows only some (Market), so each one has a "Show on my site" tick. */
+export function TestimonialsManager({ initial, picks = false }: { initial: Testimonial[]; picks?: boolean }): React.ReactElement {
   const [items, setItems] = useState(initial);
   const [draft, setDraft] = useState<TestimonialForm>(EMPTY_TESTIMONIAL);
   const [editing, setEditing] = useState<TestimonialForm | null>(null);
@@ -100,6 +101,14 @@ export function TestimonialsManager({ initial }: { initial: Testimonial[] }): Re
     );
   }
 
+  function show(id: string, shown: boolean): void {
+    void run(
+      () => showTestimonial(id, shown),
+      (r) => (r.ok ? setItems((list) => list.map((t) => (t.id === id ? { ...t, shown } : t))) : notice.showError(r.error)),
+    );
+  }
+  const tickedCount = items.filter((t) => t.shown).length;
+
   function remove(id: string): void {
     void run(
       () => removeTestimonial(id),
@@ -118,7 +127,13 @@ export function TestimonialsManager({ initial }: { initial: Testimonial[] }): Re
       </div>
       <main id="main" className="bk-content">
         {notice.area}
-        <p className="bk-note">Your home page shows the first three, with “See more” to the rest. Paste what customers have said in messages, reviews or comments.</p>
+        {picks ? (
+          <p className="bk-note">
+            Your site shows up to {TESTIMONIALS_SHOWN_MAX}. Tick the ones you want; until you tick any, it shows your first {TESTIMONIALS_SHOWN_MAX}. Paste what customers have said in messages, reviews or comments.
+          </p>
+        ) : (
+          <p className="bk-note">Your home page shows the first three, with “See more” to the rest. Paste what customers have said in messages, reviews or comments.</p>
+        )}
         {items.length === 0 ? (
           <p className="bk-note">No testimonials yet. Add your first one below.</p>
         ) : (
@@ -138,6 +153,17 @@ export function TestimonialsManager({ initial }: { initial: Testimonial[] }): Re
                     </footer>
                   </blockquote>
                   <div className="bk-row">
+                    {picks && (
+                      <label className="bk-check">
+                        <input
+                          type="checkbox"
+                          checked={t.shown}
+                          disabled={busy || (!t.shown && tickedCount >= TESTIMONIALS_SHOWN_MAX)}
+                          onChange={(e) => show(t.id, e.target.checked)}
+                        />
+                        Show on my site
+                      </label>
+                    )}
                     <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" disabled={busy || i === 0} aria-label={`Move ${t.name}'s testimonial up`} onClick={() => move(i, -1)}>
                       ↑
                     </button>
