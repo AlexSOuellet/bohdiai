@@ -61,8 +61,9 @@ export async function loadShorelineData(
     cart: features.has('cart'),
     sale: running === null ? null : { name: running.name, off: offLabel(running) },
     newArrivals: features.has('new_arrivals'),
+    // Collections are Full only (Alex, 2026-10-20): none on Market, so no row and no pages.
     collections:
-      loaded === null
+      loaded === null || !features.has('collections')
         ? []
         : (await loadCollections(db, tenantId, loaded))
             .filter((c) => c.products.length > 0)
