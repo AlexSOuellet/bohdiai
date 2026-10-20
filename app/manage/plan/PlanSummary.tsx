@@ -159,6 +159,7 @@ export function PlanSummary({
           keepLabel={next !== null ? `Keep ${current.name}` : null}
           demo
           billing={terms?.billing ?? 'monthly'}
+          pending={next !== null && terms !== null ? { planName: planOf(next).name, on: longDay(terms.renewsOn) } : null}
         />
       )}
 

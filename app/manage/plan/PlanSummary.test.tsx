@@ -115,11 +115,12 @@ describe('Your plan', () => {
     expect(
       screen.getByText('$10 credit on your account, used on your next bills first.'),
     ).toBeTruthy();
-    const group = screen.getByRole('group', { name: 'Billing (demo)' });
+    const group = screen.getByRole('group', { name: 'Demo only: try monthly or yearly billing' });
     expect(
       within(group).getByRole('button', { name: 'Monthly' }).getAttribute('aria-pressed'),
     ).toBe('true');
-    expect(screen.getByRole('button', { name: 'Skip to renewal (demo)' })).toBeTruthy();
+    // Nothing is waiting, so there's no move to play out.
+    expect(screen.queryByRole('note')).toBeNull();
   });
 
   it('shows a waiting move down with Keep, and hides the move-down links', () => {
@@ -144,6 +145,9 @@ describe('Your plan', () => {
       screen.getByText(/Renews April 9, 2027 as Maker Showcase, billed monthly, for \$5\./),
     ).toBeTruthy();
     expect(screen.queryByRole('link', { name: /Downgrade to/ })).toBeNull();
+    // On the demo, a note says what a real site would do and plays the move out now.
+    expect(screen.getByRole('note').textContent).toContain('On a real site, your move to Maker Showcase happens on April 9, 2027, when your plan renews.');
+    expect(screen.getByRole('button', { name: 'Move to Maker Showcase now' })).toBeTruthy();
   });
 
   it('shows no demo buttons on a real site', () => {
