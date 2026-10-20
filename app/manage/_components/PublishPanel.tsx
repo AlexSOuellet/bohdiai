@@ -21,11 +21,11 @@ export function PublishPanel({ siteUrl, previewUrl, publish }: Props): React.Rea
 
   if (state.kind === 'done') {
     return (
-      <section className="bk-now" aria-labelledby="bk-publish" role="status">
-        <p id="bk-publish" className="bk-kicker">
+      <section className="bk-publish is-live" aria-labelledby="bk-publish" role="status">
+        <h2 id="bk-publish" className="bk-publish-title">
           Your site is live
-        </p>
-        <p className="bk-note">
+        </h2>
+        <p className="bk-publish-line">
           Anyone can visit it now at{' '}
           <a className="bk-link" href={siteUrl} target="_blank" rel="noreferrer">
             {siteUrl.replace(/^https:\/\//, '')}
@@ -37,44 +37,43 @@ export function PublishPanel({ siteUrl, previewUrl, publish }: Props): React.Rea
   }
 
   return (
-    <section className="bk-now" aria-labelledby="bk-publish">
-      <p id="bk-publish" className="bk-kicker">
-        Your site is private
-      </p>
-      <div>
-        <p className="bk-note">Only you can see it. Look it over, and publish it when you’re happy with it.</p>
-        <div className="bk-row">
-          {previewUrl === null ? (
-            <p className="bk-note">Your site can’t be opened before it’s published right now. Publish it to see it, or ask Alex.</p>
-          ) : (
-            <a className="bk-btn bk-btn-quiet" href={previewUrl} target="_blank" rel="noreferrer">
-              View my site
-            </a>
-          )}
-          <ConfirmButton
-            label="Publish"
-            confirmLabel="Yes, put it live"
-            keepLabel="Not yet"
-            tone="plain"
-            disabled={pending}
-            onConfirm={() =>
-              start(async () => {
-                try {
-                  const result = await publish();
-                  setState(result.ok ? { kind: 'done' } : { kind: 'error', message: result.error });
-                } catch {
-                  setState({ kind: 'error', message: 'Your site couldn’t be published. Try again in a moment.' });
-                }
-              })
-            }
-          />
-        </div>
-        {state.kind === 'error' && (
-          <p role="alert" className="bk-error">
-            {state.message}
-          </p>
+    <section className="bk-publish" aria-labelledby="bk-publish">
+      <div className="bk-publish-text">
+        <h2 id="bk-publish" className="bk-publish-title">
+          Your site isn’t live yet
+        </h2>
+        <p className="bk-publish-line">Only you can see it. Look it over, then publish it when you’re happy with it.</p>
+        {previewUrl === null && <p className="bk-publish-line">Your site can’t be opened before it’s published right now. Publish it to see it, or ask Alex.</p>}
+      </div>
+      <div className="bk-publish-actions">
+        <ConfirmButton
+          label="Publish"
+          confirmLabel="Yes, put it live"
+          keepLabel="Not yet"
+          tone="plain"
+          disabled={pending}
+          onConfirm={() =>
+            start(async () => {
+              try {
+                const result = await publish();
+                setState(result.ok ? { kind: 'done' } : { kind: 'error', message: result.error });
+              } catch {
+                setState({ kind: 'error', message: 'Your site couldn’t be published. Try again in a moment.' });
+              }
+            })
+          }
+        />
+        {previewUrl !== null && (
+          <a className="bk-link bk-publish-view" href={previewUrl} target="_blank" rel="noreferrer">
+            View my site
+          </a>
         )}
       </div>
+      {state.kind === 'error' && (
+        <p role="alert" className="bk-error bk-publish-error">
+          {state.message}
+        </p>
+      )}
     </section>
   );
 }

@@ -270,254 +270,261 @@ export function ProductEditor({
       <main id="main" className="bk-content">
         {notice.area}
 
-        <section className="bk-section" aria-labelledby="s-basics">
-          <h2 id="s-basics" className="bk-section-title">
-            The basics
-          </h2>
-          <div className="bk-field">
-            <label htmlFor="name" className="bk-label">
-              Name
-            </label>
-            <input
-              id="name"
-              className="bk-input"
-              value={form.name}
-              onChange={(e) => update({ name: e.target.value })}
-            />
-          </div>
-          {showcase ? (
-            <p className="bk-note">
-              {`Pick which pieces show on your site with the Gallery ticks on your products list. With none picked, your site shows your newest ${GALLERY_MAX}.`}
-            </p>
-          ) : (
-            <div className="bk-field">
-              <label className="bk-check">
-                <input
-                  type="checkbox"
-                  checked={form.onHome}
-                  disabled={homeFull}
-                  aria-describedby={homeFull ? 'home-full-note' : undefined}
-                  onChange={(e) => update({ onHome: e.target.checked })}
-                />
-                Show on your home page
-              </label>
-              {homeFull && (
-                <p id="home-full-note" className="bk-note">
-                  {`Your home page already shows ${HOME_MAX} products. Untick one to add this one.`}
-                </p>
-              )}
-            </div>
-          )}
-          {newArrivals && (
-            <div className="bk-field">
-              <label className="bk-check">
-                <input
-                  type="checkbox"
-                  checked={form.isNew}
-                  onChange={(e) => update({ isNew: e.target.checked })}
-                />
-                New arrival
-              </label>
-              <p className="bk-note">
-                Shows it in the new arrivals section of your home page, with a little “new” ribbon.
-                Untick it when it isn’t new any more.
-              </p>
-            </div>
-          )}
-          <div className="bk-field">
-            <label htmlFor="short" className="bk-label">
-              Short description
-            </label>
-            <input
-              id="short"
-              className="bk-input"
-              value={form.shortDescription}
-              onChange={(e) => update({ shortDescription: e.target.value })}
-            />
-          </div>
-          <div className="bk-field">
-            <label htmlFor="long" className="bk-label">
-              Description
-            </label>
-            <textarea
-              id="long"
-              className="bk-input bk-textarea"
-              value={form.description}
-              onChange={(e) => update({ description: e.target.value })}
-            />
-          </div>
-        </section>
-
-        <section className="bk-section" aria-labelledby="s-photos">
-          <h2 id="s-photos" className="bk-section-title">
-            Photos
-          </h2>
-          <PhotosField
-            photos={form.photos}
-            samplePhotoUrl={form.samplePhotoUrl}
-            limit={photoLimit}
-            onAdd={addPhoto}
-            onChange={(photos) => update({ photos })}
-            onError={notice.showError}
-          />
-        </section>
-
-        <section className="bk-section" aria-labelledby="s-price">
-          <h2 id="s-price" className="bk-section-title">
-            Price and stock
-          </h2>
-          <div className="bk-grid-2">
-            <div className="bk-field">
-              <label htmlFor="price" className="bk-label">
-                Price
-              </label>
-              <input
-                id="price"
-                className="bk-input"
-                inputMode="decimal"
-                placeholder="24 or 24.50"
-                value={form.price}
-                onChange={(e) => update({ price: e.target.value })}
-              />
-            </div>
-            {!showcase && noOptions && form.kind === 'physical' && (
-              <div className="bk-field">
-                <label htmlFor="stock" className="bk-label">
-                  Stock
-                </label>
-                <input
-                  id="stock"
-                  className="bk-input"
-                  inputMode="numeric"
-                  placeholder="Blank = made to order"
-                  value={form.stock}
-                  onChange={(e) => update({ stock: e.target.value })}
-                />
-              </div>
-            )}
-          </div>
-          {showcase && (
-            <p className="bk-note">
-              Prices don’t show on your site on Showcase. Fill it in anyway and it shows when you
-              move up to Market.
-            </p>
-          )}
-          {!showcase && !noOptions && (
-            <p className="bk-note">
-              With options, each combination below has its own stock. A blank combination price uses
-              this one.
-            </p>
-          )}
-          {digital && noOptions && (
-            <fieldset className="bk-field bk-fieldset">
-              <legend className="bk-label">How it’s sold</legend>
-              <div className="bk-row">
-                <label className="bk-check">
-                  <input
-                    type="radio"
-                    name="kind"
-                    checked={form.kind === 'physical'}
-                    onChange={() => update({ kind: 'physical' })}
-                  />
-                  Ships
-                </label>
-                <label className="bk-check">
-                  <input
-                    type="radio"
-                    name="kind"
-                    checked={form.kind === 'digital'}
-                    onChange={() => update({ kind: 'digital' })}
-                  />
-                  Download
-                </label>
-              </div>
-              {form.kind === 'digital' && (
-                <FileField
-                  fileName={form.fileName}
-                  label="Upload the download file"
-                  onUploaded={(id, fileName) => {
-                    update({ fileUploadId: id, fileName });
-                    notice.clearError();
-                  }}
-                  onError={notice.showError}
-                />
-              )}
-            </fieldset>
-          )}
-        </section>
-
-        {!showcase && (
-          <section className="bk-section" aria-labelledby="s-options">
-            <h2 id="s-options" className="bk-section-title">
-              Options
+        <div className="bk-product">
+          {/* The piece leads: its photos sit beside the form (on top on a phone). */}
+          <section className="bk-section bk-product-photos" aria-labelledby="s-photos">
+            <h2 id="s-photos" className="bk-section-title">
+              Photos
             </h2>
-            <OptionsField
-              options={form.options}
-              variants={form.variants}
-              basePrice={form.price}
-              digital={digital}
-              onOptions={setOptions}
-              onVariants={setVariants}
-              onChoiceFile={setChoiceFile}
+            <PhotosField
+              photos={form.photos}
+              samplePhotoUrl={form.samplePhotoUrl}
+              limit={photoLimit}
+              onAdd={addPhoto}
+              onChange={(photos) => update({ photos })}
               onError={notice.showError}
             />
           </section>
-        )}
-
-        {!showcase && (
-          <section className="bk-section" aria-labelledby="s-collections">
-            <h2 id="s-collections" className="bk-section-title">
-              Collections
-            </h2>
-            {collections.length === 0 ? (
-              <p className="bk-note">No collections yet. You can make them under Collections.</p>
-            ) : (
-              <div className="bk-checks">
-                {collections.map((c) => (
-                  <label key={c.id} className="bk-check">
+          <div className="bk-product-form">
+            <section className="bk-section" aria-labelledby="s-basics">
+              <h2 id="s-basics" className="bk-section-title">
+                The basics
+              </h2>
+              <div className="bk-field">
+                <label htmlFor="name" className="bk-label">
+                  Name
+                </label>
+                <input
+                  id="name"
+                  className="bk-input"
+                  value={form.name}
+                  onChange={(e) => update({ name: e.target.value })}
+                />
+              </div>
+              {!showcase && (
+                <div className="bk-field">
+                  <label className="bk-check">
                     <input
                       type="checkbox"
-                      checked={form.collectionIds.includes(c.id)}
-                      onChange={(e) =>
-                        update({
-                          collectionIds: e.target.checked
-                            ? [...form.collectionIds, c.id]
-                            : form.collectionIds.filter((x) => x !== c.id),
-                        })
-                      }
+                      checked={form.onHome}
+                      disabled={homeFull}
+                      aria-describedby={homeFull ? 'home-full-note' : undefined}
+                      onChange={(e) => update({ onHome: e.target.checked })}
                     />
-                    {c.name}
+                    Show on your home page
                   </label>
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-
-        <section className="bk-section" aria-labelledby="s-status">
-          <fieldset className="bk-fieldset">
-            <legend>
-              <h2 id="s-status" className="bk-section-title">
-                Status
-              </h2>
-            </legend>
-            <div className="bk-checks">
-              {STATUSES.map((s) => (
-                <label key={s.value} className="bk-check">
-                  <input
-                    type="radio"
-                    name="status"
-                    checked={form.status === s.value}
-                    onChange={() => update({ status: s.value })}
-                  />
-                  {s.label}
+                  {homeFull && (
+                    <p id="home-full-note" className="bk-note">
+                      {`Your home page already shows ${HOME_MAX} products. Untick one to add this one.`}
+                    </p>
+                  )}
+                </div>
+              )}
+              {newArrivals && (
+                <div className="bk-field">
+                  <label className="bk-check">
+                    <input
+                      type="checkbox"
+                      checked={form.isNew}
+                      onChange={(e) => update({ isNew: e.target.checked })}
+                    />
+                    New arrival
+                  </label>
+                  <p className="bk-note">
+                    Shows it in the new arrivals section of your home page, with a little “new”
+                    ribbon. Untick it when it isn’t new any more.
+                  </p>
+                </div>
+              )}
+              <div className="bk-field">
+                <label htmlFor="short" className="bk-label">
+                  Short description
                 </label>
-              ))}
-            </div>
-          </fieldset>
-        </section>
+                <input
+                  id="short"
+                  className="bk-input"
+                  value={form.shortDescription}
+                  onChange={(e) => update({ shortDescription: e.target.value })}
+                />
+              </div>
+              <div className="bk-field">
+                <label htmlFor="long" className="bk-label">
+                  Description
+                </label>
+                <textarea
+                  id="long"
+                  className="bk-input bk-textarea"
+                  value={form.description}
+                  onChange={(e) => update({ description: e.target.value })}
+                />
+              </div>
+              {showcase && (
+                <p className="bk-note">
+                  {`Pick which pieces show on your site with the Gallery ticks on your products list. With none picked, your site shows your newest ${GALLERY_MAX}.`}
+                </p>
+              )}
+            </section>
 
-        <p className="bk-row">{saveButton}</p>
+            <section className="bk-section" aria-labelledby="s-price">
+              <h2 id="s-price" className="bk-section-title">
+                Price and stock
+              </h2>
+              <div className="bk-grid-2">
+                <div className="bk-field">
+                  <label htmlFor="price" className="bk-label">
+                    Price
+                  </label>
+                  <input
+                    id="price"
+                    className="bk-input"
+                    inputMode="decimal"
+                    placeholder="24 or 24.50"
+                    value={form.price}
+                    onChange={(e) => update({ price: e.target.value })}
+                  />
+                </div>
+                {!showcase && noOptions && form.kind === 'physical' && (
+                  <div className="bk-field">
+                    <label htmlFor="stock" className="bk-label">
+                      Stock
+                    </label>
+                    <input
+                      id="stock"
+                      className="bk-input"
+                      inputMode="numeric"
+                      placeholder="Blank = made to order"
+                      value={form.stock}
+                      onChange={(e) => update({ stock: e.target.value })}
+                    />
+                  </div>
+                )}
+              </div>
+              {showcase && (
+                <p className="bk-note">
+                  Prices don’t show on your site on Showcase. Fill it in anyway and it shows when
+                  you move up to Market.
+                </p>
+              )}
+              {!showcase && !noOptions && (
+                <p className="bk-note">
+                  With options, each combination below has its own stock. A blank combination price
+                  uses this one.
+                </p>
+              )}
+              {digital && noOptions && (
+                <fieldset className="bk-field bk-fieldset">
+                  <legend className="bk-label">How it’s sold</legend>
+                  <div className="bk-row">
+                    <label className="bk-check">
+                      <input
+                        type="radio"
+                        name="kind"
+                        checked={form.kind === 'physical'}
+                        onChange={() => update({ kind: 'physical' })}
+                      />
+                      Ships
+                    </label>
+                    <label className="bk-check">
+                      <input
+                        type="radio"
+                        name="kind"
+                        checked={form.kind === 'digital'}
+                        onChange={() => update({ kind: 'digital' })}
+                      />
+                      Download
+                    </label>
+                  </div>
+                  {form.kind === 'digital' && (
+                    <FileField
+                      fileName={form.fileName}
+                      label="Upload the download file"
+                      onUploaded={(id, fileName) => {
+                        update({ fileUploadId: id, fileName });
+                        notice.clearError();
+                      }}
+                      onError={notice.showError}
+                    />
+                  )}
+                </fieldset>
+              )}
+            </section>
+
+            {!showcase && (
+              <section className="bk-section" aria-labelledby="s-options">
+                <h2 id="s-options" className="bk-section-title">
+                  Options
+                </h2>
+                <OptionsField
+                  options={form.options}
+                  variants={form.variants}
+                  basePrice={form.price}
+                  digital={digital}
+                  onOptions={setOptions}
+                  onVariants={setVariants}
+                  onChoiceFile={setChoiceFile}
+                  onError={notice.showError}
+                />
+              </section>
+            )}
+
+            {!showcase && (
+              <section className="bk-section" aria-labelledby="s-collections">
+                <h2 id="s-collections" className="bk-section-title">
+                  Collections
+                </h2>
+                {collections.length === 0 ? (
+                  <p className="bk-note">
+                    No collections yet. You can make them under Collections.
+                  </p>
+                ) : (
+                  <div className="bk-checks">
+                    {collections.map((c) => (
+                      <label key={c.id} className="bk-check">
+                        <input
+                          type="checkbox"
+                          checked={form.collectionIds.includes(c.id)}
+                          onChange={(e) =>
+                            update({
+                              collectionIds: e.target.checked
+                                ? [...form.collectionIds, c.id]
+                                : form.collectionIds.filter((x) => x !== c.id),
+                            })
+                          }
+                        />
+                        {c.name}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+
+            <section className="bk-section" aria-labelledby="s-status">
+              <fieldset className="bk-fieldset">
+                <legend>
+                  <h2 id="s-status" className="bk-section-title">
+                    Status
+                  </h2>
+                </legend>
+                <div className="bk-checks">
+                  {STATUSES.map((s) => (
+                    <label key={s.value} className="bk-check">
+                      <input
+                        type="radio"
+                        name="status"
+                        checked={form.status === s.value}
+                        onChange={() => update({ status: s.value })}
+                      />
+                      {s.label}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            </section>
+
+            <p className="bk-row">{saveButton}</p>
+          </div>
+        </div>
       </main>
     </>
   );

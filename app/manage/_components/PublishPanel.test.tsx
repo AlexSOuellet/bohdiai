@@ -4,10 +4,10 @@ import userEvent from '@testing-library/user-event';
 import { PublishPanel } from './PublishPanel';
 
 describe('PublishPanel', () => {
-  it('says the site is private, opens it, and publishes after a second yes', async () => {
+  it('says the site isn’t live yet, opens it, and publishes after a second yes', async () => {
     const publish = vi.fn(() => Promise.resolve({ ok: true as const }));
     render(<PublishPanel siteUrl="https://tide.bohdiai.com" previewUrl="https://tide.bohdiai.com/?preview=abc" publish={publish} />);
-    expect(screen.getByText('Your site is private')).toBeInTheDocument();
+    expect(screen.getByText('Your site isn’t live yet')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'View my site' })).toHaveAttribute('href', 'https://tide.bohdiai.com/?preview=abc');
     const u = userEvent.setup();
     await u.click(screen.getByRole('button', { name: 'Publish' }));
