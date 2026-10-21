@@ -8,7 +8,8 @@ import type { PaySettings } from '@/lib/market/pay';
 import { METHOD_LABEL } from '@/lib/market/pay';
 import type { SellMethod, SellPiece } from '@/lib/backend/markets/sell';
 import { takings, type TodayOrder } from '@/lib/backend/markets/today';
-import { settleMarketOrder } from '@/lib/backend/markets/today-actions';
+import { refundMarketOrder, settleMarketOrder } from '@/lib/backend/markets/today-actions';
+import { ConfirmButton } from '../../../_components/ConfirmButton';
 import { useNotice } from '../../../_components/Notice';
 import { RingUp } from '../sell/RingUp';
 import type { CardState } from '@/lib/square/pos';
@@ -110,8 +111,33 @@ export function MarketDay({
     }
   }
 
+  async function refund(order: TodayOrder): Promise<void> {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setBusy(true);
+    notice.clear();
+    try {
+      const r = await refundMarketOrder(eventId, order.id);
+      if (r.ok) {
+        notice.showSaved(
+          order.method === 'card'
+            ? `Refund recorded. ${order.piece} is back in stock. Refund the card in the Square app too, if you haven’t.`
+            : `Refund recorded. ${order.piece} is back in stock.`,
+        );
+        router.refresh();
+      } else notice.showError(r.error);
+    } catch (err) {
+      unstable_rethrow(err);
+      notice.showError(FAILED);
+    } finally {
+      inFlight.current = false;
+      setBusy(false);
+    }
+  }
+
   const waiting = orders.filter((o) => o.status === 'pending');
   const sold = orders.filter((o) => o.status === 'paid');
+  const refunded = orders.filter((o) => o.status === 'refunded');
   const day = takings(orders);
   const where = [booth, town].filter((s) => s !== '').join(', ');
 
@@ -185,9 +211,36 @@ export function MarketDay({
                   <span className="bk-day-sold-who">
                     {methodName(o.method)}, {o.name}, {clock(o.createdAt, timeZone)}
                   </span>
+                  <span className="bk-day-sold-act">
+                    <ConfirmButton
+                      label="Refund"
+                      confirmLabel={`Yes, refund ${o.amount}`}
+                      keepLabel="Keep the sale"
+                      disabled={busy}
+                      onConfirm={() => void refund(o)}
+                    />
+                  </span>
                 </li>
               ))}
             </ul>
+          )}
+          {refunded.length > 0 && (
+            <>
+              <h3 className="bk-day-h bk-day-h-small">
+                Refunded <span className="bk-day-count">{refunded.length}</span>
+              </h3>
+              <ul className="bk-day-sold bk-day-refunded" aria-label="Refunded today">
+                {refunded.map((o) => (
+                  <li key={o.id}>
+                    <span className="bk-day-sold-piece">{o.piece}</span>
+                    <span className="bk-day-sold-amt">{o.amount}</span>
+                    <span className="bk-day-sold-who">
+                      Refunded, {methodName(o.method)}, {o.name}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </section>
       </main>

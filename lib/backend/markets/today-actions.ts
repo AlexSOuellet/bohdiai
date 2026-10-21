@@ -81,6 +81,25 @@ export async function recordMarketSales(eventId: string, lines: readonly SaleLin
   return { ok: true, count: lines.reduce((n, l) => n + l.quantity, 0) };
 }
 
+/** Refund a sale (Alex, 2026-10-21): the piece goes back in stock and out of the
+ *  takings. The money is given back where it was taken (cash in hand, Venmo, the
+ *  Square app); this records it. Final: a refunded sale can't be paid again. */
+export async function refundMarketOrder(eventId: string, orderId: string): Promise<DoneResult> {
+  const { site } = await requireActingSite();
+  if (!(await getSiteFeatures(site.tenantId)).has('market_shop')) return { ok: false, error: 'The market shop isn’t switched on for this site.' };
+  const db = await createSupabaseServerClient();
+  const { error } = await db.rpc('set_order_status', { p_tenant_id: site.tenantId, p_order_id: orderId, p_status: 'refunded' });
+  if (error !== null) {
+    if (error.code === 'P0025') return { ok: false, error: 'Only a paid sale can be refunded, and only once.' };
+    logger.error('market: refund failed', { tenantId: site.tenantId, orderId, error: error.message });
+    return { ok: false, error: 'The refund couldn’t be recorded. Try again in a moment.' };
+  }
+  revalidatePath(`/manage/markets/${eventId}/day`);
+  revalidatePath(`/manage/markets/${eventId}/today`);
+  revalidatePath(`/manage/markets/${eventId}`);
+  return { ok: true };
+}
+
 /** A buyer's hold at the table: Paid (the money arrived) or Not received (back on
  *  the shelf). */
 export async function settleMarketOrder(eventId: string, orderId: string, outcome: 'paid' | 'canceled'): Promise<DoneResult> {

@@ -378,3 +378,7 @@ button.bk-up-btn { border: 0; cursor: pointer; font: inherit; font-size: 0.9rem;
 .bk-sell-deal { display: flex; flex-wrap: wrap; align-items: end; gap: 0.5rem; flex-basis: 100%; margin-top: 0.5rem; }
 .bk-sell-deal .bk-label { flex-basis: 100%; }
 .bk-sell-deal .bk-input { max-width: 8rem; }
+.bk-day-sold-act { grid-column: 1 / -1; margin-top: 0.4rem; }
+.bk-day-h-small { font-size: 1rem; margin-top: 1.25rem; }
+.bk-day-refunded li { color: var(--bk-ink-muted); }
+.bk-day-refunded .bk-day-sold-amt { text-decoration: line-through; }

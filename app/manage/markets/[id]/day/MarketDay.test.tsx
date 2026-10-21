@@ -6,8 +6,9 @@ import type { TodayOrder } from '@/lib/backend/markets/today';
 const refresh = vi.fn();
 const settleMarketOrder = vi.fn();
 const recordMarketSales = vi.fn();
+const refundMarketOrder = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }), unstable_rethrow: () => undefined }));
-vi.mock('@/lib/backend/markets/today-actions', () => ({ settleMarketOrder, recordMarketSales }));
+vi.mock('@/lib/backend/markets/today-actions', () => ({ settleMarketOrder, recordMarketSales, refundMarketOrder }));
 vi.mock('qrcode', () => ({ default: { toString: async () => '<svg data-qr="1"></svg>' } }));
 Element.prototype.scrollIntoView = vi.fn(); // jsdom has no layout
 
@@ -58,6 +59,7 @@ afterEach(() => {
   cleanup();
   settleMarketOrder.mockReset();
   recordMarketSales.mockReset();
+  refundMarketOrder.mockReset();
   refresh.mockReset();
 });
 
@@ -114,5 +116,43 @@ describe('the market day', () => {
     expect(screen.getByText(/isn’t on today/)).toBeTruthy();
     expect(screen.getByText(/No one’s waiting/)).toBeTruthy();
     expect((screen.getByRole('button', { name: 'Ring up a sale' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+});
+
+describe('refunds', () => {
+  it('refunds a sale only after a yes, and says the piece is back', async () => {
+    refundMarketOrder.mockResolvedValue({ ok: true });
+    day();
+    const sold = screen.getByRole('list', { name: 'Sold today' });
+    fireEvent.click(within(sold).getByRole('button', { name: 'Refund' }));
+    expect(refundMarketOrder).not.toHaveBeenCalled();
+    fireEvent.click(within(sold).getByRole('button', { name: 'Yes, refund $18' }));
+    await waitFor(() => expect(refundMarketOrder).toHaveBeenCalledWith('e1', 'o3'));
+    expect(await screen.findByText('Refund recorded. Carol star is back in stock.')).toBeTruthy();
+  });
+
+  it('reminds her to refund a card in Square too', async () => {
+    refundMarketOrder.mockResolvedValue({ ok: true });
+    day({ orders: [order({ id: 'o9', status: 'paid', piece: 'Carol star', amount: '$1', amountCents: 100, method: 'card' })] });
+    fireEvent.click(screen.getByRole('button', { name: 'Refund' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, refund $1' }));
+    expect(await screen.findByText(/Refund the card in the Square app too/)).toBeTruthy();
+  });
+
+  it('lists refunded sales apart, with no refund button, and leaves them out of the takings', () => {
+    day({ orders: [order({ id: 'o3', status: 'paid', amount: '$18', amountCents: 1800, method: 'cash' }), order({ id: 'o4', status: 'refunded', piece: 'Old Saint Nick', amount: '$22', amountCents: 2200, method: 'cash' })] });
+    const refunded = screen.getByRole('list', { name: 'Refunded today' });
+    expect(within(refunded).getByText('Old Saint Nick')).toBeTruthy();
+    expect(within(refunded).queryByRole('button', { name: 'Refund' })).toBeNull();
+    expect(screen.getByText('Taken today').parentElement?.textContent).toContain('$18');
+    expect(screen.getByText('Taken today').parentElement?.textContent).not.toContain('$40');
+  });
+
+  it('says so when the refund can’t be recorded', async () => {
+    refundMarketOrder.mockResolvedValue({ ok: false, error: 'Only a paid sale can be refunded, and only once.' });
+    day();
+    fireEvent.click(screen.getByRole('button', { name: 'Refund' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, refund $18' }));
+    expect(await screen.findByText('Only a paid sale can be refunded, and only once.')).toBeTruthy();
   });
 });

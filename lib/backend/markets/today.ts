@@ -11,7 +11,7 @@ export type TodayOrder = {
   id: string;
   number: string;
   createdAt: string;
-  status: 'pending' | 'paid';
+  status: 'pending' | 'paid' | 'refunded';
   name: string;
   piece: string;
   amount: string;
@@ -26,14 +26,14 @@ export async function listMarketOrders(db: SupabaseClient<Database>, tenantId: s
     .select('id, order_number, created_at, status, customer_name, total_cents, payment_method, buyer_paid_at, order_items(name_snapshot)')
     .eq('tenant_id', tenantId)
     .eq('event_id', eventId)
-    .in('status', ['pending', 'paid', 'fulfilled'])
+    .in('status', ['pending', 'paid', 'fulfilled', 'refunded'])
     .order('created_at', { ascending: false });
   if (error !== null) throw new Error(`Could not load today’s sales: ${error.message}`);
   return (data ?? []).map((o) => ({
     id: o.id,
     number: o.order_number,
     createdAt: o.created_at,
-    status: o.status === 'pending' ? 'pending' : 'paid',
+    status: o.status === 'pending' ? 'pending' : o.status === 'refunded' ? 'refunded' : 'paid',
     name: o.customer_name,
     piece: o.order_items.map((i) => i.name_snapshot).join(', '),
     amount: formatPrice(o.total_cents),
