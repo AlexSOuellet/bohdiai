@@ -32,8 +32,9 @@ function Method({
   );
 }
 
-/** Getting paid: the ways buyers can pay at a market, each switched on or off. */
-export function PayManager({ initial }: { initial: PaySettings }): React.ReactElement {
+/** Getting paid: the ways buyers can pay at a market, each switched on or off, then
+ *  cards through the maker's own Square (`children`). */
+export function PayManager({ initial, children }: { initial: PaySettings; children?: React.ReactNode }): React.ReactElement {
   const [s, setS] = useState(initial);
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
@@ -103,13 +104,13 @@ export function PayManager({ initial }: { initial: PaySettings }): React.ReactEl
             </div>
           </Method>
           <Method id="pay-cash" title="Cash at the table" on={s.cashOn} onToggle={(on) => update({ cashOn: on })} />
-          <p className="bk-note">Cards come later, once your Square is connected.</p>
           <p className="bk-row">
             <button type="button" className="bk-btn" disabled={busy} onClick={() => void save()}>
               {busy ? 'Saving…' : 'Save'}
             </button>
           </p>
         </section>
+        {children}
       </main>
     </>
   );

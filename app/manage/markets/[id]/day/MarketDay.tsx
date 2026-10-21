@@ -45,6 +45,8 @@ export function MarketDay({
   methods,
   open,
   timeZone,
+  card = false,
+  cardResult = null,
 }: {
   eventId: string;
   marketName: string;
@@ -59,12 +61,25 @@ export function MarketDay({
   /** The market is on today (buyers can pay, sales can be rung up). */
   open: boolean;
   timeZone: string;
+  /** Cards through the maker's Square are ready. */
+  card?: boolean;
+  /** What happened to a card sale, when Square has just handed back. */
+  cardResult?: { tone: 'ok' | 'error'; text: string } | null;
 }): React.ReactElement {
   const router = useRouter();
   const notice = useNotice();
   const [busy, setBusy] = useState(false);
   const [ringing, setRinging] = useState(false);
   const inFlight = useRef(false);
+
+  useEffect(() => {
+    if (cardResult === null) return;
+    if (cardResult.tone === 'ok') notice.showSaved(cardResult.text);
+    else notice.showError(cardResult.text);
+    // The message came in the address: show it once, then drop it so a refresh doesn't repeat it.
+    window.history.replaceState(null, '', window.location.pathname);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (ringing) return;
@@ -205,6 +220,7 @@ export function MarketDay({
             pay={pay}
             methods={methods}
             open={open}
+            card={card}
             onRecorded={(message) => {
               setRinging(false);
               notice.showSaved(message);

@@ -10,6 +10,10 @@ import { loadPaySettings, marketListingIds } from '@/lib/market/queries';
 import { marketState } from '@/lib/market/buyer';
 import { shopToday } from '@/lib/storefront/promotions';
 import { posMetadata, posViewport } from '@/lib/backend/pos-app';
+import { supabaseAdmin } from '@/lib/supabase';
+import { squareConfig } from '@/lib/square/config';
+import { takesCards } from '@/lib/square/connection';
+import { cardOutcome } from '@/lib/backend/markets/card-outcome';
 import { MarketDay } from './MarketDay';
 
 export const dynamic = 'force-dynamic';
@@ -24,7 +28,7 @@ const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The market day: one phone screen for the table, with none of the getting-ready
  *  setup. Buyers waiting to pay, ringing up a sale, and what sold today. */
-export default async function MarketDayPage({ params }: PageProps<'/manage/markets/[id]/day'>): Promise<React.ReactElement> {
+export default async function MarketDayPage({ params, searchParams }: PageProps<'/manage/markets/[id]/day'>): Promise<React.ReactElement> {
   const { id } = await params;
   if (!ID.test(id)) notFound();
   const { site } = await requireActingSite();
@@ -39,7 +43,7 @@ export default async function MarketDayPage({ params }: PageProps<'/manage/marke
   ]);
   if (market === null) notFound();
   const timeZone = tenant.data?.time_zone ?? 'America/New_York';
-  const pieces = await loadSellPieces(db, site.tenantId, id, ids);
+  const [pieces, card] = await Promise.all([loadSellPieces(db, site.tenantId, id, ids), takesCards(supabaseAdmin(), site.tenantId, squareConfig() !== null)]);
   return (
     <MarketDay
       eventId={id}
@@ -54,6 +58,8 @@ export default async function MarketDayPage({ params }: PageProps<'/manage/marke
       methods={sellMethods(pay)}
       open={marketState(market, shopToday(timeZone)) === 'open'}
       timeZone={timeZone}
+      card={card}
+      cardResult={cardOutcome((await searchParams)['card'])}
     />
   );
 }

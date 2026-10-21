@@ -6,6 +6,8 @@ const refresh = vi.fn();
 const recordMarketSales = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }), unstable_rethrow: () => undefined }));
 vi.mock('@/lib/backend/markets/today-actions', () => ({ recordMarketSales }));
+const startCardSale = vi.fn();
+vi.mock('@/lib/backend/payments/square-actions', () => ({ startCardSale }));
 vi.mock('qrcode', () => ({ default: { toString: async () => '<svg data-qr="1"></svg>' } }));
 Element.prototype.scrollIntoView = vi.fn(); // jsdom has no layout
 
@@ -24,7 +26,30 @@ function board(over: Partial<Parameters<typeof SellBoard>[0]> = {}) {
 afterEach(() => {
   cleanup();
   recordMarketSales.mockReset();
+  startCardSale.mockReset();
   refresh.mockReset();
+});
+
+describe('Card, through Square', () => {
+  it('shows Card only when her Square is connected', () => {
+    board();
+    expect(screen.queryByRole('button', { name: 'Card' })).toBeNull();
+    cleanup();
+    board({ card: true });
+    expect(screen.getByRole('button', { name: 'Card' })).toBeTruthy();
+  });
+
+  it('sends the pieces to Square, not a total the phone made up, and never records it itself', async () => {
+    startCardSale.mockResolvedValue({ ok: false, error: 'Connect your Square on Getting paid first.' });
+    board({ card: true });
+    fireEvent.click(screen.getByRole('button', { name: /^Carol star/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Carol star/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Card' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Charge $36 in Square' }));
+    await waitFor(() => expect(startCardSale).toHaveBeenCalledWith('e1', [{ listingId: 'a', variantId: null, quantity: 2 }]));
+    expect(await screen.findByText('Connect your Square on Getting paid first.')).toBeTruthy();
+    expect(recordMarketSales).not.toHaveBeenCalled();
+  });
 });
 
 describe('Sell at the table', () => {

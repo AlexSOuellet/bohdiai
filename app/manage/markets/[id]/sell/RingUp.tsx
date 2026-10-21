@@ -8,6 +8,7 @@ import { useRouter, unstable_rethrow } from 'next/navigation';
 import type { PaySettings } from '@/lib/market/pay';
 import { SELL_METHOD_NAMES, addOne, payStep, pickedCount, sellTotal, sellTotalCents, takeOne, type Picked, type SellMethod, type SellPiece } from '@/lib/backend/markets/sell';
 import { recordMarketSales } from '@/lib/backend/markets/today-actions';
+import { startCardSale } from '@/lib/backend/payments/square-actions';
 import { useNotice } from '../../../_components/Notice';
 
 const FAILED = 'Something went wrong. Check your connection and try again.';
@@ -49,6 +50,7 @@ export function RingUp({
   pay,
   methods,
   open,
+  card = false,
   onRecorded,
 }: {
   eventId: string;
@@ -58,18 +60,20 @@ export function RingUp({
   pay: PaySettings;
   methods: SellMethod[];
   open: boolean;
+  /** Cards through the maker's Square: connected, with a location picked. */
+  card?: boolean;
   /** Called once a sale is recorded (the market-day screen closes the sheet). */
   onRecorded?: (message: string) => void;
 }): React.ReactElement {
   const router = useRouter();
   const notice = useNotice();
   const [picked, setPicked] = useState<Picked>({});
-  const [method, setMethod] = useState<SellMethod | null>(null);
+  const [method, setMethod] = useState<SellMethod | 'card' | null>(null);
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
   const cents = sellTotalCents(pieces, picked);
   const byId = new Map(pieces.map((p) => [p.id, p]));
-  const step = method === null || cents === 0 ? null : payStep(method, pay, cents, `${shopName} · ${marketName}`);
+  const step = method === null || method === 'card' || cents === 0 ? null : payStep(method, pay, cents, `${shopName} · ${marketName}`);
 
   const inSale = Object.keys(picked).filter((id) => byId.has(id));
   const add = (piece: SellPiece): void => {
@@ -81,17 +85,46 @@ export function RingUp({
     notice.clear();
   };
 
-  async function record(): Promise<void> {
-    if (inFlight.current || method === null) return;
+  function saleLines(): { id: string; listingId: string; variantId: string | null; quantity: number }[] {
+    return inSale.flatMap((id) => {
+      const piece = byId.get(id);
+      return piece === undefined ? [] : [{ id, listingId: piece.listingId, variantId: piece.variantId, quantity: picked[id] ?? 1 }];
+    });
+  }
+
+  /** Card: off to the Square app with the total; Square hands back to the market day,
+   *  which says what happened. */
+  async function charge(): Promise<void> {
+    if (inFlight.current) return;
     inFlight.current = true;
     setBusy(true);
     notice.clear();
     try {
-      const lines = inSale.flatMap((id) => {
-        const piece = byId.get(id);
-        return piece === undefined ? [] : [{ id, listingId: piece.listingId, variantId: piece.variantId, quantity: picked[id] ?? 1 }];
-      });
-      const r = await recordMarketSales(eventId, lines, method);
+      const r = await startCardSale(
+        eventId,
+        saleLines().map(({ listingId, variantId, quantity }) => ({ listingId, variantId, quantity })),
+      );
+      if (!r.ok) {
+        notice.showError(r.error);
+        return;
+      }
+      window.location.assign(/android/i.test(navigator.userAgent) ? r.handOff.android : r.handOff.iphone);
+    } catch (err) {
+      unstable_rethrow(err);
+      notice.showError(FAILED);
+    } finally {
+      inFlight.current = false;
+      setBusy(false);
+    }
+  }
+
+  async function record(): Promise<void> {
+    if (inFlight.current || method === null || method === 'card') return;
+    inFlight.current = true;
+    setBusy(true);
+    notice.clear();
+    try {
+      const r = await recordMarketSales(eventId, saleLines(), method);
       if (r.ok) {
         const message = `Sale recorded: ${sellTotal(pieces, picked)} by ${SELL_METHOD_NAMES[method]}.`;
         notice.showSaved(message);
@@ -185,17 +218,30 @@ export function RingUp({
                   })}
                 </ul>
               )}
-              {methods.length === 0 ? (
+              {methods.length === 0 && !card ? (
                 <p className="bk-note">
                   Add how you take payment first. <Link href="/manage/payments">Go to Getting paid</Link>
                 </p>
               ) : (
                 <div className="bk-row" role="group" aria-label="How are they paying?">
+                  {card && (
+                    <button type="button" className="bk-btn bk-btn-quiet" aria-pressed={method === 'card'} disabled={pickedCount(picked) === 0} onClick={() => setMethod('card')}>
+                      Card
+                    </button>
+                  )}
                   {methods.map((m) => (
                     <button key={m} type="button" className="bk-btn bk-btn-quiet" aria-pressed={method === m} disabled={pickedCount(picked) === 0} onClick={() => setMethod(m)}>
                       {SELL_METHOD_NAMES[m]}
                     </button>
                   ))}
+                </div>
+              )}
+              {method === 'card' && cents > 0 && (
+                <div className="bk-sell-pay">
+                  <p className="bk-sell-handle">Square opens with {sellTotal(pieces, picked)}. Tap, insert or type the card there; the sale is recorded when Square comes back.</p>
+                  <button type="button" className="bk-btn bk-sell-paid" disabled={busy} onClick={() => void charge()}>
+                    {busy ? 'Opening Square…' : `Charge ${sellTotal(pieces, picked)} in Square`}
+                  </button>
                 </div>
               )}
               {step !== null && (

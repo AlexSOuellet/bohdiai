@@ -10,11 +10,10 @@ import { requireActingSite } from '@/lib/backend/current-site';
 import { getSiteFeatures } from '@/lib/backend/site-features';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { logger } from '@/lib/logger';
-import { loadProductsByIds } from '@/lib/storefront/catalog';
-import { runningSale, salePriceCents } from '@/lib/storefront/promotions';
-import { loadShopPromotions } from '@/lib/storefront/promotions-load';
+import { tablePrice } from './table-price';
 import type { DoneResult } from '../catalog/results';
 
+/** Card by hand is the maker's own record of a sale she rang up in Square herself. */
 const METHODS = ['venmo', 'cashapp', 'zelle', 'cash', 'card'] as const;
 
 /** One sale at the table: a piece (or one option of it), how many, and how they paid. */
@@ -26,33 +25,23 @@ export async function recordMarketSale(eventId: string, listingId: string, metho
   if (!(await getSiteFeatures(site.tenantId)).has('market_shop')) return { ok: false, error: 'The market shop isn’t switched on for this site.' };
   if (!(METHODS as readonly string[]).includes(method)) return { ok: false, error: 'Pick how they paid.' };
   const db = await createSupabaseServerClient();
-  const [piece] = await loadProductsByIds(db, site.tenantId, [listingId]);
-  if (piece === undefined) return { ok: false, error: 'That piece isn’t on your site any more.' };
-  // An option sells at its own price, when it has one.
-  let unit = piece.priceCents;
-  if (variantId !== null) {
-    const { data: v, error: vErr } = await db.from('listing_variants').select('price_cents').eq('id', variantId).eq('listing_id', listingId).maybeSingle();
-    if (vErr !== null || v === null) return { ok: false, error: 'That option isn’t on your site any more.' };
-    unit = v.price_cents ?? piece.priceCents;
-  }
-  const promo = await loadShopPromotions(db, site.tenantId);
-  const sale = runningSale(promo.promos, promo.today);
-  const price = sale?.percentOff == null ? unit : salePriceCents(unit, sale.percentOff);
+  const price = await tablePrice(db, site.tenantId, listingId, variantId);
+  if ('error' in price) return { ok: false, error: price.error };
 
   const { error } = await db.rpc('market_record_sale', {
     p_tenant_id: site.tenantId,
     p_event_id: eventId,
     p_listing_id: listingId,
     p_method: method,
-    p_price_cents: price,
+    p_price_cents: price.cents,
     p_quantity: quantity,
     ...(variantId === null ? {} : { p_variant_id: variantId }),
   });
   if (error !== null) {
     if (error.code === 'P0040') return { ok: false, error: 'This market isn’t on today, so it can’t take a sale.' };
     if (error.code === 'P0021') return { ok: false, error: 'That one is already sold or held, or isn’t marked for this market.' };
-    if (error.code === 'P0023') return { ok: false, error: error.hint === '0' ? `${piece.view.name} is all gone at this market.` : `Only ${error.hint} of ${piece.view.name} left at this market.` };
-    if (error.code === 'P0024') return { ok: false, error: `Pick which ${piece.view.name} they’re taking.` };
+    if (error.code === 'P0023') return { ok: false, error: error.hint === '0' ? `${price.name} is all gone at this market.` : `Only ${error.hint} of ${price.name} left at this market.` };
+    if (error.code === 'P0024') return { ok: false, error: `Pick which ${price.name} they’re taking.` };
     logger.error('market: record sale failed', { tenantId: site.tenantId, error: error.message });
     return { ok: false, error: 'The sale couldn’t be recorded. Try again in a moment.' };
   }

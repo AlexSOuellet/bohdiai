@@ -2769,6 +2769,53 @@ export type Database = {
           },
         ]
       }
+      square_connections: {
+        Row: {
+          access_token_enc: string
+          business_name: string
+          connected_at: string
+          expires_at: string
+          location_id: string | null
+          location_name: string
+          merchant_id: string
+          refresh_token_enc: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          access_token_enc: string
+          business_name?: string
+          connected_at?: string
+          expires_at: string
+          location_id?: string | null
+          location_name?: string
+          merchant_id: string
+          refresh_token_enc: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          access_token_enc?: string
+          business_name?: string
+          connected_at?: string
+          expires_at?: string
+          location_id?: string | null
+          location_name?: string
+          merchant_id?: string
+          refresh_token_enc?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "square_connections_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_drafts: {
         Row: {
           layout_tree: Json
@@ -3013,7 +3060,6 @@ export type Database = {
           service_areas: string[] | null
           specialization_notes: string | null
           specializations: string[]
-          square_merchant_id: string | null
           state: string | null
           status: string
           stripe_account_id: string | null
@@ -3061,7 +3107,6 @@ export type Database = {
           service_areas?: string[] | null
           specialization_notes?: string | null
           specializations?: string[]
-          square_merchant_id?: string | null
           state?: string | null
           status?: string
           stripe_account_id?: string | null
@@ -3109,7 +3154,6 @@ export type Database = {
           service_areas?: string[] | null
           specialization_notes?: string | null
           specializations?: string[]
-          square_merchant_id?: string | null
           state?: string | null
           status?: string
           stripe_account_id?: string | null
@@ -3451,6 +3495,17 @@ export type Database = {
           order_id: string
           order_number: string
         }[]
+      }
+      market_record_card_sale: {
+        Args: {
+          p_event_id: string
+          p_listing_id: string
+          p_price_cents: number
+          p_quantity?: number
+          p_tenant_id: string
+          p_variant_id?: string
+        }
+        Returns: string
       }
       market_record_sale: {
         Args: {

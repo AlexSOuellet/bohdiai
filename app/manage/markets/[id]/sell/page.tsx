@@ -8,6 +8,9 @@ import { marketState } from '@/lib/market/buyer';
 import { shopToday } from '@/lib/storefront/promotions';
 import { sellMethods } from '@/lib/backend/markets/sell';
 import { loadSellPieces } from '@/lib/backend/markets/sell-pieces';
+import { supabaseAdmin } from '@/lib/supabase';
+import { squareConfig } from '@/lib/square/config';
+import { takesCards } from '@/lib/square/connection';
 import { SellBoard } from './SellBoard';
 
 export const dynamic = 'force-dynamic';
@@ -28,7 +31,7 @@ export default async function SellPage({ params }: PageProps<'/manage/markets/[i
     db.from('tenants').select('time_zone').eq('id', site.tenantId).maybeSingle(),
   ]);
   if (market === null) notFound();
-  const pieces = await loadSellPieces(db, site.tenantId, id, ids);
+  const [pieces, card] = await Promise.all([loadSellPieces(db, site.tenantId, id, ids), takesCards(supabaseAdmin(), site.tenantId, squareConfig() !== null)]);
   return (
     <SellBoard
       eventId={id}
@@ -38,6 +41,7 @@ export default async function SellPage({ params }: PageProps<'/manage/markets/[i
       pay={pay}
       methods={sellMethods(pay)}
       open={marketState(market, shopToday(tenant.data?.time_zone ?? null)) === 'open'}
+      card={card}
     />
   );
 }

@@ -15,6 +15,7 @@ export function SellBoard(props: {
   pay: PaySettings;
   methods: SellMethod[];
   open: boolean;
+  card?: boolean;
 }): React.ReactElement {
   return (
     <>
