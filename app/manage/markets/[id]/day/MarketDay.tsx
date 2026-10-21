@@ -11,6 +11,7 @@ import { takings, type TodayOrder } from '@/lib/backend/markets/today';
 import { settleMarketOrder } from '@/lib/backend/markets/today-actions';
 import { useNotice } from '../../../_components/Notice';
 import { RingUp } from '../sell/RingUp';
+import type { CardState } from '@/lib/square/pos';
 import { InstallTip } from '../../../pos/InstallTip';
 
 const FAILED = 'Something went wrong. Check your connection and try again.';
@@ -45,7 +46,7 @@ export function MarketDay({
   methods,
   open,
   timeZone,
-  card = false,
+  card = 'off',
   cardResult = null,
 }: {
   eventId: string;
@@ -61,8 +62,8 @@ export function MarketDay({
   /** The market is on today (buyers can pay, sales can be rung up). */
   open: boolean;
   timeZone: string;
-  /** Cards through the maker's Square are ready. */
-  card?: boolean;
+  /** Cards through the maker's Square: ready, waiting on a step, or off. */
+  card?: CardState;
   /** What happened to a card sale, when Square has just handed back. */
   cardResult?: { tone: 'ok' | 'error'; text: string } | null;
 }): React.ReactElement {

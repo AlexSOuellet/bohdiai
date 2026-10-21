@@ -5,6 +5,7 @@ import type { Route } from 'next';
 import type { PaySettings } from '@/lib/market/pay';
 import type { SellMethod, SellPiece } from '@/lib/backend/markets/sell';
 import { RingUp } from './RingUp';
+import type { CardState } from '@/lib/square/pos';
 
 /** Sell at the table: tap what they're taking, show them how to pay, record the sale. */
 export function SellBoard(props: {
@@ -15,7 +16,7 @@ export function SellBoard(props: {
   pay: PaySettings;
   methods: SellMethod[];
   open: boolean;
-  card?: boolean;
+  card?: CardState;
 }): React.ReactElement {
   return (
     <>

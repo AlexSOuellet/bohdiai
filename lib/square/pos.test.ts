@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readSquareReturn, saleMatches, squareHandOff, wasCanceled } from './pos';
+import { canOpenSquare, readSquareReturn, saleMatches, squareHandOff, wasCanceled } from './pos';
 
 const args = {
   applicationId: 'sq0idp-app',
@@ -35,6 +35,14 @@ describe('squareHandOff', () => {
     expect(android).toContain('S.com.squareup.pos.TENDER_TYPES=com.squareup.pos.TENDER_CARD;');
     expect(android).toContain(`S.com.squareup.pos.NOTE=${encodeURIComponent(args.note)};`);
     expect(android).toContain('S.com.squareup.pos.LOCATION_ID=LOC1;');
+  });
+
+  it('tells Square on Android to come back on its own, within the time Square allows', () => {
+    const m = squareHandOff(args).android.match(/;l\.com\.squareup\.pos\.AUTO_RETURN_TIMEOUT_MS=(\d+);/);
+    expect(m).not.toBeNull();
+    const ms = Number(m?.[1]);
+    expect(ms).toBeGreaterThanOrEqual(3200);
+    expect(ms).toBeLessThanOrEqual(10000);
   });
 
   it('leaves the location to Square when none is picked', () => {
@@ -87,5 +95,17 @@ describe('saleMatches', () => {
     expect(saleMatches(sale, { totalCents: 4250, locationId: 'LOC2' })).toBe(false);
     expect(saleMatches({ ...sale, currency: 'CAD' }, { totalCents: 4250, locationId: 'LOC1' })).toBe(false);
     expect(saleMatches({ ...sale, payments: [{ type: 'CASH', amountCents: 4250 }] }, { totalCents: 4250, locationId: 'LOC1' })).toBe(false);
+  });
+});
+
+describe('canOpenSquare', () => {
+  it('knows phones and tablets, an iPad included, from a computer', () => {
+    expect(canOpenSquare('Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/130 Mobile Safari/537.36', 5)).toBe(true);
+    expect(canOpenSquare('Mozilla/5.0 (Linux; Android 13; SM-X200) AppleWebKit/537.36 Chrome/130 Safari/537.36', 10)).toBe(true);
+    expect(canOpenSquare('Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148', 5)).toBe(true);
+    // An iPad's browser calls itself a Mac; it takes touches.
+    expect(canOpenSquare('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15', 5)).toBe(true);
+    expect(canOpenSquare('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15', 0)).toBe(false);
+    expect(canOpenSquare('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/130 Safari/537.36', 0)).toBe(false);
   });
 });

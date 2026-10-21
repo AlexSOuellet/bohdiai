@@ -19,6 +19,18 @@ export type CardSaleNote = { tenantId: string; eventId: string; nonce: string; l
 export const CARD_SALE_PURPOSE = 'square-card-sale';
 /** How long the maker has to finish in Square before the hand-off is refused. */
 export const CARD_SALE_MINUTES = 30;
+/** How long Square shows the finished sale before going back, on Android. */
+export const AUTO_RETURN_MS = 4000;
+
+/** Card in the market app: ready, waiting on a step on Getting paid, or off (Square
+ *  not connected, or cards not set up on BohdiAI). */
+export type CardState = 'ready' | 'pick-location' | 'off';
+
+/** The Square app runs on phones and tablets. An iPad's browser calls itself a Mac,
+ *  so a Mac that takes touches is an iPad. */
+export function canOpenSquare(userAgent: string, touchPoints: number): boolean {
+  return /android|iphone|ipad|ipod/i.test(userAgent) || (/macintosh/i.test(userAgent) && touchPoints > 1);
+}
 
 /** Square's own app, opened from the market app. The phone picks: iPhones use
  *  Square's link, Android its app address. */
@@ -56,6 +68,9 @@ export function squareHandOff(args: {
     `i.com.squareup.pos.TOTAL_AMOUNT=${args.totalCents}`,
     'S.com.squareup.pos.CURRENCY_CODE=USD',
     'S.com.squareup.pos.TENDER_TYPES=com.squareup.pos.TENDER_CARD',
+    // Back to the market app on its own once the sale is done (Android waits on its
+    // Done screen otherwise, and the sale is never recorded). Square allows 3.2 to 10 s.
+    `l.com.squareup.pos.AUTO_RETURN_TIMEOUT_MS=${AUTO_RETURN_MS}`,
     extra('S.com.squareup.pos.NOTE', args.note),
     extra('S.com.squareup.pos.REQUEST_METADATA', args.state),
     ...(args.locationId === null ? [] : [extra('S.com.squareup.pos.LOCATION_ID', args.locationId)]),

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import type { Route } from 'next';
 import QRCode from 'qrcode';
@@ -24,9 +24,13 @@ import {
 import { formatPrice } from '@/lib/storefront/catalog';
 import { recordMarketSales } from '@/lib/backend/markets/today-actions';
 import { startCardSale } from '@/lib/backend/payments/square-actions';
+import { canOpenSquare, type CardState } from '@/lib/square/pos';
 import { useNotice } from '../../../_components/Notice';
 
 const FAILED = 'Something went wrong. Check your connection and try again.';
+
+/** The device never changes while the page is open. */
+const noChanges = (): (() => void) => () => undefined;
 
 /** A big QR the buyer scans from her phone, made in the browser. */
 function BigQr({ url, label }: { url: string; label: string }): React.ReactElement {
@@ -65,7 +69,7 @@ export function RingUp({
   pay,
   methods,
   open,
-  card = false,
+  card = 'off',
   onRecorded,
 }: {
   eventId: string;
@@ -75,8 +79,8 @@ export function RingUp({
   pay: PaySettings;
   methods: SellMethod[];
   open: boolean;
-  /** Cards through the maker's Square: connected, with a location picked. */
-  card?: boolean;
+  /** Cards through the maker's Square: ready, waiting on a step, or off. */
+  card?: CardState;
   /** Called once a sale is recorded (the market-day screen closes the sheet). */
   onRecorded?: (message: string) => void;
 }): React.ReactElement {
@@ -90,6 +94,12 @@ export function RingUp({
   const [method, setMethod] = useState<SellMethod | 'card' | null>(null);
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
+  // Known only in the browser: whether this device can open the Square app.
+  const squareHere = useSyncExternalStore(
+    noChanges,
+    () => canOpenSquare(navigator.userAgent, navigator.maxTouchPoints),
+    () => true,
+  );
   const cents = sellTotalCents(pieces, picked, agreed);
   const total = sellTotal(pieces, picked, agreed);
   const byId = new Map(pieces.map((p) => [p.id, p]));
@@ -311,13 +321,13 @@ export function RingUp({
                   })}
                 </ul>
               )}
-              {methods.length === 0 && !card ? (
+              {methods.length === 0 && card === 'off' ? (
                 <p className="bk-note">
                   Add how you take payment first. <Link href="/manage/payments">Go to Getting paid</Link>
                 </p>
               ) : (
                 <div className="bk-row" role="group" aria-label="How are they paying?">
-                  {card && (
+                  {card === 'ready' && (
                     <button type="button" className="bk-btn bk-btn-quiet" aria-pressed={method === 'card'} disabled={pickedCount(picked) === 0} onClick={() => setMethod('card')}>
                       Card
                     </button>
@@ -329,12 +339,26 @@ export function RingUp({
                   ))}
                 </div>
               )}
+              {card === 'pick-location' && (
+                <p className="bk-note">
+                  Card is one step away: pick which Square location your market sales go to. <Link href="/manage/payments">Go to Getting paid</Link>
+                </p>
+              )}
               {method === 'card' && cents > 0 && (
                 <div className="bk-sell-pay">
-                  <p className="bk-sell-handle">Square opens with {total}. Tap, insert or type the card there; the sale is recorded when Square comes back.</p>
-                  <button type="button" className="bk-btn bk-sell-paid" disabled={busy} onClick={() => void charge()}>
-                    {busy ? 'Opening Square…' : `Charge ${total} in Square`}
-                  </button>
+                  {squareHere ? (
+                    <>
+                      <p className="bk-sell-handle">Square opens with {total}. Tap, insert or type the card there; the sale is recorded when Square comes back.</p>
+                      <button type="button" className="bk-btn bk-sell-paid" disabled={busy} onClick={() => void charge()}>
+                        {busy ? 'Opening Square…' : `Charge ${total} in Square`}
+                      </button>
+                    </>
+                  ) : (
+                    <p className="bk-sell-handle">
+                      Card opens the Square app, so it works on the phone or tablet you run the market app on, with Square signed in. It can’t open Square from a
+                      computer.
+                    </p>
+                  )}
                 </div>
               )}
               {step !== null && (

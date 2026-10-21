@@ -8,6 +8,7 @@ import type { Database } from '@/lib/database.types';
 import type { SquareConfig } from './config';
 import { renewKeys, type SquareKeys, type SquareLocation } from './api';
 import { seal, unseal } from './vault';
+import type { CardState } from './pos';
 
 type Db = SupabaseClient<Database>;
 
@@ -80,10 +81,12 @@ export async function liveKey(db: Db, config: SquareConfig, tenantId: string, no
   return { token: keys.accessToken, merchantId: data.merchant_id, locationId: data.location_id };
 }
 
-/** The market app can take cards: Square is set up on BohdiAI, and this site is
- *  connected with a location picked. */
-export async function takesCards(db: Db, tenantId: string, configured: boolean): Promise<boolean> {
-  if (!configured) return false;
+/** Whether the market app takes cards: ready when Square is set up on BohdiAI and
+ *  this site is connected with a location picked; waiting when it's connected but
+ *  no location is picked yet. */
+export async function cardState(db: Db, tenantId: string, configured: boolean): Promise<CardState> {
+  if (!configured) return 'off';
   const link = await squareLink(db, tenantId);
-  return link !== null && link.locationId !== null;
+  if (link === null) return 'off';
+  return link.locationId === null ? 'pick-location' : 'ready';
 }

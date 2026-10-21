@@ -11,6 +11,11 @@ vi.mock('@/lib/backend/payments/square-actions', () => ({ startCardSale }));
 vi.mock('qrcode', () => ({ default: { toString: async () => '<svg data-qr="1"></svg>' } }));
 Element.prototype.scrollIntoView = vi.fn(); // jsdom has no layout
 
+/** Pretend to be a phone (the Square app opens there); undone after each test. */
+function onPhone(): void {
+  Object.defineProperty(window.navigator, 'userAgent', { value: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) Mobile Safari/537.36', configurable: true });
+}
+
 const { SellBoard } = await import('./SellBoard');
 
 const pieces = [
@@ -28,6 +33,7 @@ afterEach(() => {
   recordMarketSales.mockReset();
   startCardSale.mockReset();
   refresh.mockReset();
+  Reflect.deleteProperty(window.navigator, 'userAgent');
 });
 
 describe('Card, through Square', () => {
@@ -35,13 +41,14 @@ describe('Card, through Square', () => {
     board();
     expect(screen.queryByRole('button', { name: 'Card' })).toBeNull();
     cleanup();
-    board({ card: true });
+    board({ card: 'ready' });
     expect(screen.getByRole('button', { name: 'Card' })).toBeTruthy();
   });
 
   it('sends the pieces to Square, not a total the phone made up, and never records it itself', async () => {
     startCardSale.mockResolvedValue({ ok: false, error: 'Connect your Square on Getting paid first.' });
-    board({ card: true });
+    onPhone();
+    board({ card: 'ready' });
     fireEvent.click(screen.getByRole('button', { name: /^Carol star/ }));
     fireEvent.click(screen.getByRole('button', { name: /^Carol star/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Card' }));
@@ -152,7 +159,8 @@ describe('a price agreed at the table', () => {
 
   it('sends the agreed price to Square for a card', async () => {
     startCardSale.mockResolvedValue({ ok: false, error: 'stop here' });
-    board({ card: true });
+    onPhone();
+    board({ card: 'ready' });
     fireEvent.click(screen.getByRole('button', { name: /^Carol star/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Change price' }));
     fireEvent.change(screen.getByLabelText('Price you agreed'), { target: { value: '1' } });
@@ -160,5 +168,23 @@ describe('a price agreed at the table', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Card' }));
     fireEvent.click(screen.getByRole('button', { name: 'Charge $1 in Square' }));
     await waitFor(() => expect(startCardSale).toHaveBeenCalledWith('e1', [{ listingId: 'a', variantId: null, quantity: 1, agreedCents: 100 }]));
+  });
+});
+
+describe('Card, where it can and can’t work', () => {
+  it('says plainly on a computer that Card works on the phone or tablet', () => {
+    Object.defineProperty(window.navigator, 'userAgent', { value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130', configurable: true });
+    board({ card: 'ready' });
+    fireEvent.click(screen.getByRole('button', { name: /^Carol star/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Card' }));
+    expect(screen.getByText(/works on the phone or tablet you run the market app on/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Charge .* in Square/ })).toBeNull();
+  });
+
+  it('names the step left when Square is connected but no location is picked', () => {
+    board({ card: 'pick-location' });
+    expect(screen.queryByRole('button', { name: 'Card' })).toBeNull();
+    expect(screen.getByText(/Card is one step away/)).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Go to Getting paid' }).getAttribute('href')).toBe('/manage/payments');
   });
 });

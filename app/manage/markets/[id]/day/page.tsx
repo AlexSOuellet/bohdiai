@@ -12,7 +12,7 @@ import { shopToday } from '@/lib/storefront/promotions';
 import { posMetadata, posViewport } from '@/lib/backend/pos-app';
 import { supabaseAdmin } from '@/lib/supabase';
 import { squareConfig } from '@/lib/square/config';
-import { takesCards } from '@/lib/square/connection';
+import { cardState } from '@/lib/square/connection';
 import { cardOutcome } from '@/lib/backend/markets/card-outcome';
 import { MarketDay } from './MarketDay';
 
@@ -43,7 +43,7 @@ export default async function MarketDayPage({ params, searchParams }: PageProps<
   ]);
   if (market === null) notFound();
   const timeZone = tenant.data?.time_zone ?? 'America/New_York';
-  const [pieces, card] = await Promise.all([loadSellPieces(db, site.tenantId, id, ids), takesCards(supabaseAdmin(), site.tenantId, squareConfig() !== null)]);
+  const [pieces, card] = await Promise.all([loadSellPieces(db, site.tenantId, id, ids), cardState(supabaseAdmin(), site.tenantId, squareConfig() !== null)]);
   return (
     <MarketDay
       eventId={id}
