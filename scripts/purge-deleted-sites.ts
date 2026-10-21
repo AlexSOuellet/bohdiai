@@ -47,6 +47,15 @@ async function main(): Promise<void> {
     return;
   }
 
+  // These hold on to photo records, which can't go while anything points at them
+  // (a copy of a site points at the original's), so every deleted site's go first;
+  // everything else goes with the site itself.
+  const ids = list.map((s) => s.id);
+  for (const table of ['gallery_items', 'site_moment_photos', 'site_scenes'] as const) {
+    const held = await db.from(table).delete().in('tenant_id', ids);
+    if (held.error !== null) fail(`removing the deleted sites' ${table} failed (${held.error.message}); nothing else was removed`);
+  }
+
   let removed = 0;
   for (const s of list) {
     const byBucket = new Map<string, string[]>();

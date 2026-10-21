@@ -30,7 +30,7 @@ try {
   const page = (sub) => c.query(`select cp.id, cp.layout_tree from content_pages cp join tenants t on t.id = cp.tenant_id where t.subdomain = $1 and cp.deleted_at is null order by cp.updated_at desc limit 1`, [sub]).then((r) => r.rows[0]);
   const salt = await page('saltmarsh-and-lace');
   const cut = await page('cut-pro-lawncare');
-  const aurora = await page('aurora-candles');
+  const halfmoon = await page('halfmoon-roofing');
 
   await expect('settings-only rewrite of Saltmarsh passes', 'update content_pages set layout_tree = $1 where id = $2', [salt.layout_tree, salt.id], true);
   const saltDesign = structuredClone(salt.layout_tree); saltDesign.root.content.design = 'torch';
@@ -45,9 +45,9 @@ try {
   await expect('editing Cut-Pro words is refused', 'update content_pages set layout_tree = $1 where id = $2', [cutEdit, cut.id], false);
   await expect('saving Cut-Pro unchanged passes', 'update content_pages set layout_tree = $1 where id = $2', [cut.layout_tree, cut.id], true);
   await expect('Cut-Pro status/title change still passes', 'update content_pages set title = title where id = $1', [cut.id], true);
-  const auroraEdit = structuredClone(aurora.layout_tree); auroraEdit.root.lookKey = 'main-street-sawdust';
-  await expect('changing a setting on a family sample is refused (it still holds content)', 'update content_pages set layout_tree = $1 where id = $2', [auroraEdit, aurora.id], false);
-  await expect('old records still read', `select layout_tree->'root'->'content' from content_pages where id = $1`, [aurora.id], true);
+  const halfmoonEdit = structuredClone(halfmoon.layout_tree); halfmoonEdit.root.archetypeKey = 'card';
+  await expect('changing a setting on an old page that still holds content is refused', 'update content_pages set layout_tree = $1 where id = $2', [halfmoonEdit, halfmoon.id], false);
+  await expect('old records still read', `select layout_tree->'root'->'content' from content_pages where id = $1`, [halfmoon.id], true);
   const t = (await c.query(`select tenant_id from content_pages where id = $1`, [salt.id])).rows[0].tenant_id;
   await expect('a new content-bearing page is refused', `insert into content_pages (tenant_id, slug, page_type, title, status, layout_tree) values ($1, '/x-test', 'custom', 'x', 'draft', $2)`, [t, { root: { kind: 'archetype', content: { about: { body: 'hi' } } } }], false);
   await expect('a new settings-only page passes', `insert into content_pages (tenant_id, slug, page_type, title, status, layout_tree) values ($1, '/x-test', 'custom', 'x', 'draft', $2)`, [t, { root: { kind: 'archetype', archetypeKey: 'card', content: { design: 'shoreline' } }, meta: { title: 'x' } }], true);
