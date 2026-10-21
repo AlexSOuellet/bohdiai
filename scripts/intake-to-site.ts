@@ -63,9 +63,10 @@ function isFamily(v: string): v is FamilyKey {
   return (FAMILY_KEYS as readonly string[]).includes(v);
 }
 
-/** The buttons and labels from a family site that has every one the design shows. */
+/** The buttons and labels from a family site that has every one the design shows: the
+ *  moods' set and the shoreline design's (Scenic is drawn by it, so every site can wear it). */
 async function referenceWords(db: Db, from: string | undefined): Promise<Record<string, string>> {
-  const need = designWordKeys('family');
+  const need = [...new Set([...designWordKeys('family'), ...designWordKeys('shoreline')])];
   const read = async (tenantId: string): Promise<Map<string, string>> => {
     const { data, error } = await db.from('site_words').select('key, text').eq('tenant_id', tenantId);
     if (error !== null) fail(`reading words failed: ${error.message}`);

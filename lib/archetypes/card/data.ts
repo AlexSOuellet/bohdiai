@@ -4,6 +4,7 @@
  * (only when the site has them switched on). Read with the service role (the
  * storefront has no signed-in owner).
  */
+import type { ShorelineLook } from './look';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import type { ProfileForm } from '@/lib/backend/profile/profile-form';
@@ -20,7 +21,18 @@ import { CARD_WORD_SPOTS, CARD_WORDS_PREFIX, type CardWords } from './words';
 /** The maker's own photo of themselves (About you's portrait), when they have one. */
 export type Portrait = { url: string; alt: string };
 
-export type CardData = { name: string; profile: ProfileForm; portrait: Portrait | null; photos: GalleryItem[]; dates: MarketDate[]; words: CardWords };
+export type CardData = {
+  name: string;
+  profile: ProfileForm;
+  portrait: Portrait | null;
+  photos: GalleryItem[];
+  dates: MarketDate[];
+  words: CardWords;
+  /** On the Scenic mood: the skin's colours and fonts and the site's own photo (look.ts). Absent: the design's own. */
+  look?: ShorelineLook | undefined;
+  /** On the Scenic mood: the opening's words from the Headline screen. Absent: the name and About you's line. */
+  opening?: { headline: string; line: string; cta: string } | undefined;
+};
 
 export async function loadCardData(db: SupabaseClient<Database>, tenantId: string): Promise<CardData> {
   const [tenant, profileForm, profile, photos, features, words] = await Promise.all([

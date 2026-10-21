@@ -194,9 +194,9 @@ function Home({ site }: { site: ShorelineData }): ReactElement {
     <>
       <div className="sl-sky sl-sky--home">
         <h1 className="sl-name">
-          <Name name={card.name} />
+          <Name name={card.opening?.headline ?? card.name} />
         </h1>
-        {p.kicker !== '' && <p className="sl-kicker">{p.kicker}</p>}
+        {(card.opening?.line ?? p.kicker) !== '' && <p className="sl-kicker">{card.opening?.line ?? p.kicker}</p>}
         {p.makes.length > 0 && (
           <ul className="sl-makes" aria-label={W.makesLabel}>
             {p.makes.map((m) => (
@@ -207,7 +207,7 @@ function Home({ site }: { site: ShorelineData }): ReactElement {
         {site.products.length > 0 && (
           <p className="sl-sky-cta">
             <a className="sl-btn" href="/shop">
-              {W.skyCta}
+              {card.opening?.cta ?? W.skyCta}
             </a>
           </p>
         )}
@@ -464,7 +464,7 @@ export function ShorelineSite({
 }): ReactElement {
   const W = site.card.words.shoreline;
   return (
-    <Frame>
+    <Frame look={site.card.look}>
       <Bar name={site.card.name} current={page} cart={site.cart} W={W} />
       <SaleBanner sale={site.sale} W={W} />
       {page === 'home' && <Home site={site} />}
@@ -500,7 +500,7 @@ export function ShorelineProduct({
   );
   const W = site.card.words.shoreline;
   return (
-    <Frame>
+    <Frame look={site.card.look}>
       <Bar name={site.card.name} current="shop" cart={site.cart} W={W} />
       <SaleBanner sale={site.sale} W={W} />
       <div className="sl-head">
@@ -580,7 +580,7 @@ export function ShorelineCart({ site, cart, platformCredit = true }: { site: Sho
   const ready = cart.lines.filter((l) => l.available);
   const blocked = ready.length !== cart.lines.length;
   return (
-    <Frame>
+    <Frame look={site.card.look}>
       <Bar name={site.card.name} current="cart" cart W={W} />
       <SaleBanner sale={site.sale} W={W} />
       <SyncCart ids={cart.lines.map((l) => l.id)} />
@@ -695,7 +695,7 @@ export function ShorelineMarket({
   }, site.card.words.dates);
   const where = [market.town, market.booth].filter((x) => x !== '').join(M.separator);
   return (
-    <Frame>
+    <Frame look={site.card.look}>
       <header className="sl-bar">
         <span className="sl-bar-name">
           <Name name={site.card.name} />

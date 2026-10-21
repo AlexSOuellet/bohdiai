@@ -16,7 +16,8 @@ import { ShowreelLanding, ShowreelContentPage, ShowreelProduct, ShowreelShop } f
 import { TorchLanding, TorchContentPage } from './TorchLanding';
 import { ShorelineLanding, ShorelineContentPage } from './ShorelineLanding';
 import { ShorelineCart, ShorelineMarket, ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
-import { featuredProducts, loadShorelineData } from './shoreline-data';
+import { featuredProducts, loadScenicData, loadShorelineData, type ShorelineData } from './shoreline-data';
+import type { ShorelineLook } from './look';
 import type { ArchetypePage } from '../builder';
 import type { CartView, ProductView, MarketShopView } from '../content';
 import { CardContentSchema, cardDesign, type CardContent, type CardDesign } from './design';
@@ -42,10 +43,15 @@ function shorelinePage(page: ArchetypePage | undefined): ShorelinePage | null {
   return (SHORELINE_PAGES as readonly string[]).includes(page) ? (page as ShorelinePage) : null;
 }
 
-async function CardSite({ tenantId, paint, design, page, collectionSlug }: { tenantId: string; paint: CardPaint; design: CardDesign; page: ArchetypePage | undefined; collectionSlug?: string | undefined }): Promise<ReactElement> {
+/** The shoreline design's data: its own, or a Scenic site's (its skin, photo, opening and headings). */
+function loadSite(tenantId: string, look: ShorelineLook | undefined): Promise<ShorelineData> {
+  return look === undefined ? loadShorelineData(supabaseAdmin(), tenantId) : loadScenicData(supabaseAdmin(), tenantId, look);
+}
+
+export async function CardSite({ tenantId, paint, design, page, collectionSlug, look }: { tenantId: string; paint: CardPaint; design: CardDesign; page: ArchetypePage | undefined; collectionSlug?: string | undefined; look?: ShorelineLook | undefined }): Promise<ReactElement> {
   const home = page === undefined || page === 'home';
   if (design === 'shoreline') {
-    const site = await loadShorelineData(supabaseAdmin(), tenantId);
+    const site = await loadSite(tenantId, look);
     // Showcase is the one page; Lite and Full have pages (Saltmarsh & Lace demo spec).
     if (!site.pages) {
       if (!home) notFound();
@@ -78,25 +84,25 @@ async function CardSite({ tenantId, paint, design, page, collectionSlug }: { ten
 }
 
 /** The cart — only the shoreline design on Full (the cart switch) has one. */
-async function CardCart({ tenantId, design, cart }: { tenantId: string; design: CardDesign; cart: CartView }): Promise<ReactElement> {
+export async function CardCart({ tenantId, design, cart, look }: { tenantId: string; design: CardDesign; cart: CartView; look?: ShorelineLook | undefined }): Promise<ReactElement> {
   if (design !== 'shoreline') notFound();
-  const site = await loadShorelineData(supabaseAdmin(), tenantId);
+  const site = await loadSite(tenantId, look);
   if (!site.cart) notFound();
   return <ShorelineCart site={site} cart={cart} />;
 }
 
 /** A market's own page — only the shoreline design on Lite and Full has one. */
-async function CardMarket({ tenantId, design, market }: { tenantId: string; design: CardDesign; market: MarketShopView }): Promise<ReactElement> {
+export async function CardMarket({ tenantId, design, market, look }: { tenantId: string; design: CardDesign; market: MarketShopView; look?: ShorelineLook | undefined }): Promise<ReactElement> {
   if (design !== 'shoreline') notFound();
-  const site = await loadShorelineData(supabaseAdmin(), tenantId);
+  const site = await loadSite(tenantId, look);
   if (!site.pages) notFound();
   return <ShorelineMarket site={site} market={market} />;
 }
 
 /** A product's page — the shoreline and show reel designs have them on Lite and Full. */
-async function CardProduct({ tenantId, design, product }: { tenantId: string; design: CardDesign; product: ProductView }): Promise<ReactElement> {
+export async function CardProduct({ tenantId, design, product, look }: { tenantId: string; design: CardDesign; product: ProductView; look?: ShorelineLook | undefined }): Promise<ReactElement> {
   if (design !== 'shoreline' && design !== 'showreel') notFound();
-  const site = await loadShorelineData(supabaseAdmin(), tenantId);
+  const site = await loadSite(tenantId, look);
   if (!site.pages) notFound();
   // Her catalog carries the running sale's price (Full); the route's copy doesn't.
   const priced = site.products.find((p) => p.slug === product.slug) ?? product;
@@ -104,13 +110,14 @@ async function CardProduct({ tenantId, design, product }: { tenantId: string; de
   return <ShorelineProduct site={site} product={priced} tenantId={tenantId} />;
 }
 
-async function CardPage({
+export async function CardPage({
   tenantId,
   paint,
   design,
   html,
   title,
   body,
+  look,
 }: {
   tenantId: string;
   paint: CardPaint;
@@ -118,12 +125,13 @@ async function CardPage({
   html?: string | undefined;
   title?: string | undefined;
   body?: string[] | undefined;
+  look?: ShorelineLook | undefined;
 }): Promise<ReactElement> {
   const { name, profile, words } = await loadCardData(supabaseAdmin(), tenantId);
   if (design === 'bulletin') return <BulletinContentPage name={name} words={words} html={html} title={title} body={body} />;
   if (design === 'showreel') return <ShowreelContentPage name={name} words={words} html={html} title={title} body={body} />;
   if (design === 'torch') return <TorchContentPage name={name} words={words} html={html} title={title} body={body} />;
-  if (design === 'shoreline') return <ShorelineContentPage name={name} social={profile} words={words} html={html} title={title} body={body} />;
+  if (design === 'shoreline') return <ShorelineContentPage name={name} social={profile} words={words} html={html} title={title} body={body} look={look} />;
   return <CardContentPage name={name} paint={paint} words={words} html={html} title={title} body={body} />;
 }
 

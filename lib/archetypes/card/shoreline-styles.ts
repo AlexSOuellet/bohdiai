@@ -53,6 +53,7 @@ export function shorelineCss(): string {
 .sl *,.sl *::before,.sl *::after{box-sizing:border-box}
 .sl a{color:var(--rust)}
 .sl-sea{position:fixed;inset:0;z-index:-1;background:url('${SEA}') center 62%/cover no-repeat,#c9c3c4}
+.sl-sea-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .sl-sea::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0) 40%,rgba(18,30,38,.18) 100%)}
 .sl-skip{position:absolute;left:-9999px;top:8px;z-index:60;background:var(--navy);color:#fff!important;padding:10px 16px}
 .sl-skip:focus{left:8px}

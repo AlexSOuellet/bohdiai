@@ -7,6 +7,7 @@
  * Every word the maker wrote comes from `data`; the renderer adds only
  * the site's own words (`data.words`). Anything with nothing to show is left out.
  */
+import type { ShorelineLook } from './look';
 import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
@@ -29,15 +30,18 @@ export function nameParts(name: string): { text: string; amp: boolean }[] {
     .map((text) => ({ text, amp: text === '&' }));
 }
 
-export function Frame({ children }: { children: ReactNode }): ReactElement {
+export function Frame({ children, look }: { children: ReactNode; look?: ShorelineLook | undefined }): ReactElement {
   return (
     <>
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       <link rel="stylesheet" href={SHORELINE_FONTS_HREF} />
-      <style dangerouslySetInnerHTML={{ __html: shorelineCss() }} />
-      <div className="sl" data-design="shoreline">
-        <div className="sl-sea" aria-hidden="true" />
+      {look !== undefined && <link rel="stylesheet" href={look.fontHref} />}
+      <style dangerouslySetInnerHTML={{ __html: shorelineCss() + (look?.css ?? '') }} />
+      <div className="sl" data-design="shoreline" data-look={look?.key}>
+        <div className="sl-sea" aria-hidden="true">
+          {look?.seaVideo != null && <video className="sl-sea-video" src={look.seaVideo} autoPlay muted loop playsInline />}
+        </div>
         {children}
       </div>
     </>
@@ -120,7 +124,7 @@ export function ShorelineLanding({
   const hasDates = dates.length > 0;
 
   return (
-    <Frame>
+    <Frame look={data.look}>
       {canWrite && (
         <a className="sl-skip" href={`#${TOUCH_ID}`}>
           {w.skip}
@@ -129,9 +133,9 @@ export function ShorelineLanding({
       <PhotoViewerProvider photos={photos} w={w.lightbox}>
         <header className="sl-sky sl-sky--home">
           <h1 className="sl-name">
-            {nameParts(name).map((part, i) => (part.amp ? <em key={i}>{part.text}</em> : <span key={i}>{part.text}</span>))}
+            {nameParts(data.opening?.headline ?? name).map((part, i) => (part.amp ? <em key={i}>{part.text}</em> : <span key={i}>{part.text}</span>))}
           </h1>
-          {p.kicker !== '' && <p className="sl-kicker">{p.kicker}</p>}
+          {(data.opening?.line ?? p.kicker) !== '' && <p className="sl-kicker">{data.opening?.line ?? p.kicker}</p>}
           {p.makes.length > 0 && (
             <ul className="sl-makes" aria-label={w.shoreline.makesLabel}>
               {p.makes.map((m) => (
@@ -225,6 +229,7 @@ export function ShorelineContentPage({
   title,
   body,
   platformCredit = true,
+  look,
 }: {
   name: string;
   social?: Social | undefined;
@@ -233,9 +238,11 @@ export function ShorelineContentPage({
   title?: string | undefined;
   body?: string[] | undefined;
   platformCredit?: boolean;
+  /** On the Scenic mood: the site's skin and photo. */
+  look?: ShorelineLook | undefined;
 }): ReactElement {
   return (
-    <Frame>
+    <Frame look={look}>
       <main id="main" className="sl-page">
         <article className="sl-sheet">
           <Link className="sl-home" href="/" aria-label={w.shoreline.home}>

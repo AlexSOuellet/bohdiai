@@ -3,6 +3,9 @@
  * own product catalog (separate rows), its seven skins, and its render. Bohdi
  * picks the skin and authors everything; this file only describes the shape.
  */
+import { CardCart, CardMarket, CardPage, CardProduct, CardSite } from '../card/builder';
+import { shorelineLook, type ShorelineLook } from '../card/look';
+import { cardPaint } from '../card/paint';
 import { z } from 'zod';
 import type {
   ArchetypeBuildSpec,
@@ -361,6 +364,16 @@ async function FamilyCartBody({ view, words, cart, tenantId }: { view: MainStree
   );
 }
 
+/** The Scenic mood is drawn by the shoreline design (Alex, 2026-10-21: put Saltmarsh in a
+ *  family "and keep it looking exactly the same"), in the site's own skin and photo. */
+function isScenic(mood: string | undefined, brandPalette: Parameters<typeof familyFor>[1]): boolean {
+  return familyFor(mood, brandPalette).key === 'scenic';
+}
+
+async function ScenicLook({ tenantId, skin, children }: { tenantId: string; skin: ArchetypeTheme; children: (look: ShorelineLook) => ReactElement }): Promise<ReactElement> {
+  return children(shorelineLook(skin, await getSiteScene(supabaseAdmin(), tenantId)));
+}
+
 export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   key: 'main-street',
   label: 'Main Street',
@@ -376,6 +389,13 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   toPayload,
   render: ({ content, lookKey, products: rawProducts, catalogSize, page, collectionSlug, logoUrl, brandColors, accentOverride, brandPalette, tenantId, mood, originalMood, heroVariant, goodsTreatment, collections, collectionsTreatment, reviewsTreatment, findUsTreatment, founderTreatment, navVariant, previewTexture, previewTextureOpacity }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
+    if (isScenic(mood, brandPalette) && tenantId !== undefined) {
+      return (
+        <ScenicLook tenantId={tenantId} skin={skin}>
+          {(look) => <CardSite tenantId={tenantId} design="shoreline" page={page} collectionSlug={collectionSlug} look={look} paint={cardPaint({ mood, lookKey, brandPalette })} />}
+        </ScenicLook>
+      );
+    }
     // Resolve the family AND its section variants from the tenant's mood, then
     // apply any preview URL overrides. Every page below wears the SAME picks so
     // a /shop teaser matches what /home advertised. The home's section ORDER
@@ -463,6 +483,9 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   },
   renderProduct: ({ content, lookKey, product, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
+    if (isScenic(mood, brandPalette) && tenantId !== undefined) {
+      return <ScenicLook tenantId={tenantId} skin={skin}>{(look) => <CardProduct tenantId={tenantId} design="shoreline" product={product} look={look} />}</ScenicLook>;
+    }
     // Product pages wear the family's nav variant AND the family's wallpaper.
     const familyBase = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
@@ -477,6 +500,13 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   },
   renderContentPage: ({ content, lookKey, title, body, html, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
+    if (isScenic(mood, brandPalette) && tenantId !== undefined) {
+      return (
+        <ScenicLook tenantId={tenantId} skin={skin}>
+          {(look) => <CardPage tenantId={tenantId} design="shoreline" paint={cardPaint({ mood, lookKey, brandPalette })} html={html} title={title} body={body} look={look} />}
+        </ScenicLook>
+      );
+    }
     const familyBase = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
     return withFamilyContent(content, tenantId, (view, words, _sale, scene) => {
@@ -497,6 +527,9 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   },
   renderCart: ({ content, lookKey, cart, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
+    if (isScenic(mood, brandPalette) && tenantId !== undefined) {
+      return <ScenicLook tenantId={tenantId} skin={skin}>{(look) => <CardCart tenantId={tenantId} design="shoreline" cart={cart} look={look} />}</ScenicLook>;
+    }
     const familyBase = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
     return withFamilyContent(content, tenantId, (view, words, _sale, scene) => {
@@ -511,6 +544,9 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   },
   renderMarket: ({ content, lookKey, market, mood, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
+    if (isScenic(mood, brandPalette)) {
+      return <ScenicLook tenantId={tenantId} skin={skin}>{(look) => <CardMarket tenantId={tenantId} design="shoreline" market={market} look={look} />}</ScenicLook>;
+    }
     const familyBase = familyFor(mood, brandPalette);
     return withFamilyContent(content, tenantId, (view, words, _sale, scene) => (
       <FamilyMarketPage tenantId={tenantId}>

@@ -413,3 +413,22 @@ describe('Saltmarsh’s gallery section and social buttons', () => {
     expect(screen.getByRole('link', { name: S.touch.facebook })).toHaveTextContent(S.touch.facebook);
   });
 });
+
+describe('on the Scenic mood', () => {
+  const look = { key: 'main-street-ember', css: '.sl[data-look="main-street-ember"]{--navy:#111}', fontHref: 'https://fonts.googleapis.com/x', seaVideo: '/clip.mp4' };
+  it('paints in the site’s skin and photo, with the opening from the Headline screen', () => {
+    const { container } = page('home', { ...site, card: { ...site.card, look, opening: { headline: 'Classic Loafs', line: 'Bread worth coming home to', cta: 'Shop the loaves' } } });
+    expect(container.querySelector('.sl')?.getAttribute('data-look')).toBe('main-street-ember');
+    expect(container.querySelector('style')?.textContent).toContain('--navy:#111');
+    expect(container.querySelector('video.sl-sea-video')?.getAttribute('src')).toBe('/clip.mp4');
+    expect(container.querySelector('link[href="https://fonts.googleapis.com/x"]')).not.toBeNull();
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Classic Loafs');
+    expect(screen.getByText('Bread worth coming home to')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Shop the loaves' })).toBeTruthy();
+  });
+  it('keeps its own colours and opening off Scenic', () => {
+    const { container } = page('home');
+    expect(container.querySelector('.sl')?.hasAttribute('data-look')).toBe(false);
+    expect(container.querySelector('video')).toBeNull();
+  });
+});

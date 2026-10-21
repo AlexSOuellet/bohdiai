@@ -951,9 +951,9 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
     key: 'main-street-saltmarsh',
     label: REFERENCE_LABELS.skins.labels['main-street-saltmarsh'],
     palette: {
-      bg: '#F7F2E8',
+      bg: '#FDF9F0',
       fg: '#14232B',
-      fgMuted: 'rgba(20,35,43,0.66)',
+      fgMuted: '#4C5A5F',
       accent: '#8C3B2A',
       onAccent: '#FBF6EA',
       rule: 'rgba(20,35,43,0.2)',

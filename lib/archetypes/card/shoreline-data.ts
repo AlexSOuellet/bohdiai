@@ -17,6 +17,7 @@ import { siteTestimonials, type Testimonial } from '@/lib/backend/testimonials/t
 import { loadCardData, type CardData } from './data';
 import { loadSiteGallery } from '@/lib/storefront/site-gallery';
 import type { GalleryItem } from '@/lib/backend/gallery/gallery-form';
+import type { ShorelineLook } from './look';
 
 export type ShorelineData = {
   card: CardData;
@@ -82,4 +83,41 @@ export async function loadShorelineData(
 export function featuredProducts(products: readonly ProductView[], max = HOME_MAX): ProductView[] {
   const marked = products.filter((p) => p.onHome === true);
   return (marked.length > 0 ? marked : products).slice(0, max);
+}
+
+/** A Scenic site (look.ts): the shoreline design in the site's own skin and photo, with
+ *  the opening from the Headline screen and the section headings from the site's own
+ *  section words, where it has them. */
+export async function loadScenicData(db: SupabaseClient<Database>, tenantId: string, look: ShorelineLook): Promise<ShorelineData> {
+  const [site, moment, sections] = await Promise.all([
+    loadShorelineData(db, tenantId),
+    db.from('site_moments').select('headline, sub, cta_label').eq('tenant_id', tenantId).maybeSingle(),
+    db.from('site_sections').select('section, title, page_title').eq('tenant_id', tenantId),
+  ]);
+  if (moment.error !== null) throw new Error(`Could not load the opening: ${moment.error.message}`);
+  if (sections.error !== null) throw new Error(`Could not load the section headings: ${sections.error.message}`);
+  const title = (key: string): string | null => {
+    const t = (sections.data ?? []).find((r) => r.section === key)?.title;
+    return t === undefined || t === null || t.trim() === '' ? null : t;
+  };
+  const pageTitle = (key: string): string | null => {
+    const t = (sections.data ?? []).find((r) => r.section === key)?.page_title;
+    return t === undefined || t === null || t.trim() === '' ? null : t;
+  };
+  const W = site.card.words.shoreline;
+  const shoreline = {
+    ...W,
+    featured: title('work') ?? W.featured,
+    kindWords: title('reviews') ?? W.kindWords,
+    find: title('markets') ?? W.find,
+    work: title('gallery') ?? W.work,
+    pageTitles: { ...W.pageTitles, markets: pageTitle('markets') ?? title('markets') ?? W.pageTitles.markets, contact: pageTitle('contact') ?? title('contact') ?? W.pageTitles.contact },
+  };
+  const m = moment.data;
+  const opening = {
+    headline: m?.headline ?? site.card.name,
+    line: m?.sub ?? site.card.profile.kicker,
+    cta: m?.cta_label ?? W.skyCta,
+  };
+  return { ...site, card: { ...site.card, look, opening, words: { ...site.card.words, shoreline } } };
 }
