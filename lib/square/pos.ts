@@ -9,7 +9,9 @@
  * while the maker is in Square.
  */
 
-export type CardSaleLine = { listingId: string; variantId: string | null; quantity: number };
+/** A line of a card sale; `agreedCents` is a price agreed with the buyer for the
+ *  whole line, below its marked price. */
+export type CardSaleLine = { listingId: string; variantId: string | null; quantity: number; agreedCents?: number | null };
 
 /** A card sale on its way to Square; `nonce` makes each hand-off recordable once. */
 export type CardSaleNote = { tenantId: string; eventId: string; nonce: string; lines: CardSaleLine[]; totalCents: number; expires: number };

@@ -96,6 +96,7 @@ export async function startCardSale(eventId: string, lines: readonly CardSaleLin
   if (site === null) return { ok: false, error: 'The market shop isn’t switched on for this site.' };
   if (lines.length === 0) return { ok: false, error: 'Tap the pieces they’re taking first.' };
   if (lines.length > 50 || lines.some((l) => !Number.isInteger(l.quantity) || l.quantity < 1 || l.quantity > 99)) return { ok: false, error: 'Pick how many, from 1 to 99.' };
+  if (lines.some((l) => l.agreedCents != null && (!Number.isInteger(l.agreedCents) || l.agreedCents < 0))) return { ok: false, error: 'Type the price you agreed, like 15 or 14.50.' };
   const config = squareConfig();
   if (config === null) return { ok: false, error: NOT_SET_UP };
   const { data: link, error } = await supabaseAdmin().from('square_connections').select('location_id').eq('tenant_id', site.tenantId).maybeSingle();
@@ -110,7 +111,9 @@ export async function startCardSale(eventId: string, lines: readonly CardSaleLin
   for (const line of lines) {
     const price = await tablePrice(db, site.tenantId, line.listingId, line.variantId);
     if ('error' in price) return { ok: false, error: price.error };
-    totalCents += price.cents * line.quantity;
+    const marked = price.cents * line.quantity;
+    if (line.agreedCents != null && line.agreedCents > marked) return { ok: false, error: `That’s more than the marked price for ${price.name}.` };
+    totalCents += line.agreedCents ?? marked;
   }
   if (totalCents < 100) return { ok: false, error: 'Square takes cards for $1.00 or more.' };
 
@@ -118,7 +121,7 @@ export async function startCardSale(eventId: string, lines: readonly CardSaleLin
     tenantId: site.tenantId,
     eventId,
     nonce: crypto.randomUUID(),
-    lines: lines.map((l) => ({ listingId: l.listingId, variantId: l.variantId, quantity: l.quantity })),
+    lines: lines.map((l) => ({ listingId: l.listingId, variantId: l.variantId, quantity: l.quantity, agreedCents: l.agreedCents ?? null })),
     totalCents,
     expires: Date.now() + CARD_SALE_MINUTES * 60 * 1000,
   };

@@ -104,7 +104,7 @@ describe('the market day', () => {
     fireEvent.click(within(sheet).getByRole('button', { name: /^Old Saint Nick/ }));
     fireEvent.click(within(sheet).getByRole('button', { name: 'Cash' }));
     fireEvent.click(within(sheet).getByRole('button', { name: 'Paid · record the sale' }));
-    await waitFor(() => expect(recordMarketSales).toHaveBeenCalledWith('e1', [{ id: 'a', listingId: 'a', variantId: null, quantity: 1 }], 'cash'));
+    await waitFor(() => expect(recordMarketSales).toHaveBeenCalledWith('e1', [{ id: 'a', listingId: 'a', variantId: null, quantity: 1, agreedCents: null }], 'cash'));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(screen.getByText('Sale recorded: $22 by Cash.')).toBeTruthy();
   });

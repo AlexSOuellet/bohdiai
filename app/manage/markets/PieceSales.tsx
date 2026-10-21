@@ -3,6 +3,7 @@
  * across her markets, what sold out where (the results page).
  */
 import type { PieceResult } from '@/lib/backend/markets/piece-sales';
+import { formatPrice } from '@/lib/storefront/catalog';
 
 function timeIn(iso: string, timeZone: string): string {
   return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone }).format(new Date(iso));
@@ -15,6 +16,7 @@ function dayIn(iso: string, timeZone: string): string {
 /** One market's pieces. Shows nothing until something was counted or sold. */
 export function PieceSales({ rows, timeZone }: { rows: readonly PieceResult[]; timeZone: string }): React.ReactElement | null {
   if (rows.length === 0) return null;
+  const given = rows.reduce((n, r) => n + r.givenCents, 0);
   return (
     <section className="bk-section" aria-labelledby="s-sold">
       <h2 id="s-sold" className="bk-section-title">
@@ -29,6 +31,7 @@ export function PieceSales({ rows, timeZone }: { rows: readonly PieceResult[]; t
               <th scope="col">Sold</th>
               <th scope="col">Left</th>
               <th scope="col">Sold out</th>
+              {given > 0 && <th scope="col">Haggled off</th>}
             </tr>
           </thead>
           <tbody>
@@ -39,11 +42,17 @@ export function PieceSales({ rows, timeZone }: { rows: readonly PieceResult[]; t
                 <td>{r.sold}</td>
                 <td>{r.left ?? '·'}</td>
                 <td>{r.soldOutAt === null ? '·' : <strong>{timeIn(r.soldOutAt, timeZone)}</strong>}</td>
+                {given > 0 && <td>{r.givenCents > 0 ? formatPrice(r.givenCents) : '·'}</td>}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {given > 0 && (
+        <p className="bk-sell-handle">
+          You gave <strong>{formatPrice(given)}</strong> off marked prices in haggling here.
+        </p>
+      )}
       <p className="bk-note">Paid sales only. A piece you didn’t count sells from everything you have, so it never shows sold out here.</p>
     </section>
   );

@@ -46,7 +46,7 @@ describe('Card, through Square', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Carol star/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Card' }));
     fireEvent.click(screen.getByRole('button', { name: 'Charge $36 in Square' }));
-    await waitFor(() => expect(startCardSale).toHaveBeenCalledWith('e1', [{ listingId: 'a', variantId: null, quantity: 2 }]));
+    await waitFor(() => expect(startCardSale).toHaveBeenCalledWith('e1', [{ listingId: 'a', variantId: null, quantity: 2, agreedCents: null }]));
     expect(await screen.findByText('Connect your Square on Getting paid first.')).toBeTruthy();
     expect(recordMarketSales).not.toHaveBeenCalled();
   });
@@ -66,8 +66,8 @@ describe('Sell at the table', () => {
       expect(recordMarketSales).toHaveBeenCalledWith(
         'e1',
         [
-          { id: 'a', listingId: 'a', variantId: null, quantity: 1 },
-          { id: 'b', listingId: 'b', variantId: null, quantity: 1 },
+          { id: 'a', listingId: 'a', variantId: null, quantity: 1, agreedCents: null },
+          { id: 'b', listingId: 'b', variantId: null, quantity: 1, agreedCents: null },
         ],
         'venmo',
       ),
@@ -117,5 +117,48 @@ describe('Sell at the table', () => {
     cleanup();
     board({ methods: [] });
     expect(screen.getByRole('link', { name: 'Go to Getting paid' })).toBeTruthy();
+  });
+});
+
+describe('a price agreed at the table', () => {
+  it('changes a line to the price they agreed, and records it that way', async () => {
+    recordMarketSales.mockResolvedValue({ ok: true, count: 1 });
+    board();
+    fireEvent.click(screen.getByRole('button', { name: /^Carol star/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Change price' }));
+    fireEvent.change(screen.getByLabelText('Price you agreed'), { target: { value: '15' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Use this price' }));
+    expect(screen.getByRole('heading', { name: /Total \$15/ })).toBeTruthy();
+    expect(screen.getByText('agreed, marked $18')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Cash' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Paid · record the sale' }));
+    await waitFor(() => expect(recordMarketSales).toHaveBeenCalledWith('e1', [{ id: 'a', listingId: 'a', variantId: null, quantity: 1, agreedCents: 1500 }], 'cash'));
+    expect(await screen.findByText('Sale recorded: $15 by Cash.')).toBeTruthy();
+  });
+
+  it('won’t go above the marked price, and a new count drops the deal', () => {
+    board();
+    fireEvent.click(screen.getByRole('button', { name: /^Carol star/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Change price' }));
+    fireEvent.change(screen.getByLabelText('Price you agreed'), { target: { value: '25' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Use this price' }));
+    expect(screen.getByText('That\u2019s more than the marked $18.')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('Price you agreed'), { target: { value: '10' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Use this price' }));
+    expect(screen.getByRole('heading', { name: /Total \$10/ })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'One more Carol star' }));
+    expect(screen.getByRole('heading', { name: /Total \$36/ })).toBeTruthy();
+  });
+
+  it('sends the agreed price to Square for a card', async () => {
+    startCardSale.mockResolvedValue({ ok: false, error: 'stop here' });
+    board({ card: true });
+    fireEvent.click(screen.getByRole('button', { name: /^Carol star/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Change price' }));
+    fireEvent.change(screen.getByLabelText('Price you agreed'), { target: { value: '1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Use this price' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Card' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Charge $1 in Square' }));
+    await waitFor(() => expect(startCardSale).toHaveBeenCalledWith('e1', [{ listingId: 'a', variantId: null, quantity: 1, agreedCents: 100 }]));
   });
 });

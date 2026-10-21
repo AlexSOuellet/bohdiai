@@ -6,7 +6,22 @@ import type { Route } from 'next';
 import QRCode from 'qrcode';
 import { useRouter, unstable_rethrow } from 'next/navigation';
 import type { PaySettings } from '@/lib/market/pay';
-import { SELL_METHOD_NAMES, addOne, payStep, pickedCount, sellTotal, sellTotalCents, takeOne, type Picked, type SellMethod, type SellPiece } from '@/lib/backend/markets/sell';
+import {
+  SELL_METHOD_NAMES,
+  addOne,
+  lineCents,
+  payStep,
+  pickedCount,
+  readAgreed,
+  sellTotal,
+  sellTotalCents,
+  takeOne,
+  type Agreed,
+  type Picked,
+  type SellMethod,
+  type SellPiece,
+} from '@/lib/backend/markets/sell';
+import { formatPrice } from '@/lib/storefront/catalog';
 import { recordMarketSales } from '@/lib/backend/markets/today-actions';
 import { startCardSale } from '@/lib/backend/payments/square-actions';
 import { useNotice } from '../../../_components/Notice';
@@ -68,27 +83,55 @@ export function RingUp({
   const router = useRouter();
   const notice = useNotice();
   const [picked, setPicked] = useState<Picked>({});
+  // Prices agreed with the buyer, by line; the line being changed and what she's typed.
+  const [agreed, setAgreed] = useState<Agreed>({});
+  const [changing, setChanging] = useState<string | null>(null);
+  const [typed, setTyped] = useState('');
   const [method, setMethod] = useState<SellMethod | 'card' | null>(null);
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
-  const cents = sellTotalCents(pieces, picked);
+  const cents = sellTotalCents(pieces, picked, agreed);
+  const total = sellTotal(pieces, picked, agreed);
   const byId = new Map(pieces.map((p) => [p.id, p]));
   const step = method === null || method === 'card' || cents === 0 ? null : payStep(method, pay, cents, `${shopName} · ${marketName}`);
 
   const inSale = Object.keys(picked).filter((id) => byId.has(id));
+  // A different count is a different deal: changing how many drops the agreed price.
+  const forget = (id: string): void => {
+    setAgreed((a) => Object.fromEntries(Object.entries(a).filter(([k]) => k !== id)));
+    if (changing === id) setChanging(null);
+  };
   const add = (piece: SellPiece): void => {
     setPicked((p) => addOne(p, piece));
+    forget(piece.id);
     notice.clear();
   };
   const less = (id: string): void => {
     setPicked((p) => takeOne(p, id));
+    forget(id);
+    notice.clear();
+  };
+  const startChange = (id: string, marked: number): void => {
+    setChanging(id);
+    setTyped(((agreed[id] ?? marked) / 100).toFixed(2).replace(/\.00$/, ''));
+    notice.clear();
+  };
+  const applyAgreed = (piece: SellPiece, quantity: number): void => {
+    const marked = piece.priceCents * quantity;
+    const r = readAgreed(typed, marked);
+    if (!r.ok) {
+      notice.showError(r.error);
+      return;
+    }
+    setAgreed((a) => (r.cents === marked ? Object.fromEntries(Object.entries(a).filter(([k]) => k !== piece.id)) : { ...a, [piece.id]: r.cents }));
+    setChanging(null);
     notice.clear();
   };
 
-  function saleLines(): { id: string; listingId: string; variantId: string | null; quantity: number }[] {
+  function saleLines(): { id: string; listingId: string; variantId: string | null; quantity: number; agreedCents: number | null }[] {
     return inSale.flatMap((id) => {
       const piece = byId.get(id);
-      return piece === undefined ? [] : [{ id, listingId: piece.listingId, variantId: piece.variantId, quantity: picked[id] ?? 1 }];
+      return piece === undefined ? [] : [{ id, listingId: piece.listingId, variantId: piece.variantId, quantity: picked[id] ?? 1, agreedCents: agreed[id] ?? null }];
     });
   }
 
@@ -102,7 +145,7 @@ export function RingUp({
     try {
       const r = await startCardSale(
         eventId,
-        saleLines().map(({ listingId, variantId, quantity }) => ({ listingId, variantId, quantity })),
+        saleLines().map(({ listingId, variantId, quantity, agreedCents }) => ({ listingId, variantId, quantity, agreedCents })),
       );
       if (!r.ok) {
         notice.showError(r.error);
@@ -126,15 +169,18 @@ export function RingUp({
     try {
       const r = await recordMarketSales(eventId, saleLines(), method);
       if (r.ok) {
-        const message = `Sale recorded: ${sellTotal(pieces, picked)} by ${SELL_METHOD_NAMES[method]}.`;
+        const message = `Sale recorded: ${total} by ${SELL_METHOD_NAMES[method]}.`;
         notice.showSaved(message);
         onRecorded?.(message);
         setPicked({});
+        setAgreed({});
+        setChanging(null);
         setMethod(null);
         router.refresh();
       } else {
         notice.showError(r.error);
         setPicked((p) => Object.fromEntries(Object.entries(p).filter(([id]) => !r.recorded.includes(id))));
+        setAgreed((a) => Object.fromEntries(Object.entries(a).filter(([id]) => !r.recorded.includes(id))));
         router.refresh();
       }
     } catch (err) {
@@ -185,7 +231,7 @@ export function RingUp({
 
             <section className="bk-section" aria-labelledby="s-total">
               <h2 id="s-total" className="bk-section-title">
-                Total <span className="bk-sell-total">{sellTotal(pieces, picked)}</span>
+                Total <span className="bk-sell-total">{total}</span>
               </h2>
               {inSale.length > 0 && (
                 <ul className="bk-list" aria-label="In this sale">
@@ -193,11 +239,22 @@ export function RingUp({
                     const piece = byId.get(id);
                     const n = picked[id] ?? 0;
                     const name = piece?.name ?? 'piece';
+                    const deal = agreed[id];
+                    const marked = (piece?.priceCents ?? 0) * n;
                     return (
                       <li key={id} className="bk-list-item">
                         <span className="bk-list-name">{name}</span>
                         <span>
-                          {n} × {piece?.price}
+                          {deal === undefined ? (
+                            <>
+                              {n} × {piece?.price}
+                            </>
+                          ) : (
+                            <>
+                              <strong>{formatPrice(piece === undefined ? deal : lineCents(piece, n, agreed))}</strong>{' '}
+                              <span className="bk-note">agreed, marked {formatPrice(marked)}</span>
+                            </>
+                          )}
                         </span>
                         <span className="bk-row">
                           <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" aria-label={`One fewer ${name}`} onClick={() => less(id)}>
@@ -212,7 +269,43 @@ export function RingUp({
                           >
                             +
                           </button>
+                          {piece !== undefined && changing !== id && (
+                            <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" onClick={() => startChange(id, marked)}>
+                              Change price
+                            </button>
+                          )}
                         </span>
+                        {piece !== undefined && changing === id && (
+                          <span className="bk-sell-deal">
+                            <label className="bk-label" htmlFor={`deal-${id}`}>
+                              Price you agreed{n > 1 ? ` for all ${n}` : ''}
+                            </label>
+                            <input
+                              id={`deal-${id}`}
+                              className="bk-input"
+                              inputMode="decimal"
+                              autoComplete="off"
+                              value={typed}
+                              onChange={(e) => setTyped(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') applyAgreed(piece, n);
+                              }}
+                            />
+                            <button type="button" className="bk-btn bk-btn-small" onClick={() => applyAgreed(piece, n)}>
+                              Use this price
+                            </button>
+                            <button
+                              type="button"
+                              className="bk-btn bk-btn-quiet bk-btn-small"
+                              onClick={() => {
+                                forget(id);
+                                setChanging(null);
+                              }}
+                            >
+                              {deal === undefined ? 'Cancel' : 'Back to the marked price'}
+                            </button>
+                          </span>
+                        )}
                       </li>
                     );
                   })}
@@ -238,9 +331,9 @@ export function RingUp({
               )}
               {method === 'card' && cents > 0 && (
                 <div className="bk-sell-pay">
-                  <p className="bk-sell-handle">Square opens with {sellTotal(pieces, picked)}. Tap, insert or type the card there; the sale is recorded when Square comes back.</p>
+                  <p className="bk-sell-handle">Square opens with {total}. Tap, insert or type the card there; the sale is recorded when Square comes back.</p>
                   <button type="button" className="bk-btn bk-sell-paid" disabled={busy} onClick={() => void charge()}>
-                    {busy ? 'Opening Square…' : `Charge ${sellTotal(pieces, picked)} in Square`}
+                    {busy ? 'Opening Square…' : `Charge ${total} in Square`}
                   </button>
                 </div>
               )}

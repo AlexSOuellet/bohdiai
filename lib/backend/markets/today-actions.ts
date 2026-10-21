@@ -17,9 +17,16 @@ import type { DoneResult } from '../catalog/results';
 const METHODS = ['venmo', 'cashapp', 'zelle', 'cash', 'card'] as const;
 
 /** One sale at the table: a piece (or one option of it), how many, and how they paid. */
-export async function recordMarketSale(eventId: string, listingId: string, method: string, line: { variantId?: string | null; quantity?: number } = {}): Promise<DoneResult> {
+export async function recordMarketSale(
+  eventId: string,
+  listingId: string,
+  method: string,
+  line: { variantId?: string | null; quantity?: number; agreedCents?: number | null } = {},
+): Promise<DoneResult> {
   const quantity = line.quantity ?? 1;
   const variantId = line.variantId ?? null;
+  const agreed = line.agreedCents ?? null;
+  if (agreed !== null && (!Number.isInteger(agreed) || agreed < 0)) return { ok: false, error: 'Type the price you agreed, like 15 or 14.50.' };
   if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) return { ok: false, error: 'Pick how many, from 1 to 99.' };
   const { site } = await requireActingSite();
   if (!(await getSiteFeatures(site.tenantId)).has('market_shop')) return { ok: false, error: 'The market shop isn’t switched on for this site.' };
@@ -27,6 +34,10 @@ export async function recordMarketSale(eventId: string, listingId: string, metho
   const db = await createSupabaseServerClient();
   const price = await tablePrice(db, site.tenantId, listingId, variantId);
   if ('error' in price) return { ok: false, error: price.error };
+  // A price agreed with the buyer: the line keeps its marked price and the
+  // difference is the order's discount, so "How it sold" shows what was given.
+  const marked = price.cents * quantity;
+  if (agreed !== null && agreed > marked) return { ok: false, error: `That’s more than the marked price for ${price.name}.` };
 
   const { error } = await db.rpc('market_record_sale', {
     p_tenant_id: site.tenantId,
@@ -36,6 +47,7 @@ export async function recordMarketSale(eventId: string, listingId: string, metho
     p_price_cents: price.cents,
     p_quantity: quantity,
     ...(variantId === null ? {} : { p_variant_id: variantId }),
+    ...(agreed === null ? {} : { p_discount_cents: marked - agreed }),
   });
   if (error !== null) {
     if (error.code === 'P0040') return { ok: false, error: 'This market isn’t on today, so it can’t take a sale.' };
@@ -50,7 +62,7 @@ export async function recordMarketSale(eventId: string, listingId: string, metho
 }
 
 /** A line in a sale at the table: its key (`SellPiece.id`), the piece, the option, how many. */
-export type SaleLine = { id: string; listingId: string; variantId: string | null; quantity: number };
+export type SaleLine = { id: string; listingId: string; variantId: string | null; quantity: number; agreedCents?: number | null };
 
 /** Sell at the table: record each line the buyer took, all paid the same way. Stops at
  *  the first that can't be recorded and says which went through (by line key), so
@@ -59,7 +71,7 @@ export async function recordMarketSales(eventId: string, lines: readonly SaleLin
   if (lines.length === 0) return { ok: false, error: 'Tap the pieces they’re taking first.', recorded: [] };
   const recorded: string[] = [];
   for (const line of lines) {
-    const r = await recordMarketSale(eventId, line.listingId, method, { variantId: line.variantId, quantity: line.quantity });
+    const r = await recordMarketSale(eventId, line.listingId, method, { variantId: line.variantId, quantity: line.quantity, agreedCents: line.agreedCents ?? null });
     if (!r.ok) {
       const done = recorded.length === 0 ? '' : ` ${recorded.length} of ${lines.length} were recorded; the rest are still in the sale.`;
       return { ok: false, error: `${r.error}${done}`, recorded };

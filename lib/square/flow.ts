@@ -72,7 +72,13 @@ function isCardNote(v: unknown): v is CardSaleNote {
     (n['lines'] as unknown[]).every((l) => {
       if (typeof l !== 'object' || l === null) return false;
       const x = l as Record<string, unknown>;
-      return typeof x['listingId'] === 'string' && (x['variantId'] === null || typeof x['variantId'] === 'string') && Number.isInteger(x['quantity']);
+      const agreed = x['agreedCents'];
+      return (
+        typeof x['listingId'] === 'string' &&
+        (x['variantId'] === null || typeof x['variantId'] === 'string') &&
+        Number.isInteger(x['quantity']) &&
+        (agreed === undefined || agreed === null || (Number.isInteger(agreed) && (agreed as number) >= 0))
+      );
     })
   );
 }
@@ -169,6 +175,9 @@ export async function recordCardSale(
   for (const line of lines) {
     const price = await tablePrice(admin, tenantId, line.listingId, line.variantId);
     if ('error' in price) return { ok: false, orderNumbers };
+    const marked = price.cents * line.quantity;
+    const agreed = line.agreedCents ?? null;
+    if (agreed !== null && agreed > marked) return { ok: false, orderNumbers };
     const { data, error } = await admin.rpc('market_record_card_sale', {
       p_tenant_id: tenantId,
       p_event_id: eventId,
@@ -176,6 +185,7 @@ export async function recordCardSale(
       p_price_cents: price.cents,
       p_quantity: line.quantity,
       ...(line.variantId === null ? {} : { p_variant_id: line.variantId }),
+      ...(agreed === null ? {} : { p_discount_cents: marked - agreed }),
     });
     if (error !== null) {
       logger.error('square: card sale line not recorded', { tenantId, eventId, code: error.code, error: error.message });

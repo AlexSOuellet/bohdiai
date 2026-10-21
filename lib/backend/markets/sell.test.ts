@@ -1,12 +1,30 @@
 import { describe, it, expect } from 'vitest';
 import { EMPTY_PAY } from '@/lib/market/pay';
-import { addOne, payStep, pickedCount, sellMethods, sellTotal, sellTotalCents, takeOne } from './sell';
+import { addOne, payStep, pickedCount, readAgreed, sellMethods, sellTotal, sellTotalCents, takeOne } from './sell';
 
 const pieces = [
   { id: 'a', listingId: 'a', variantId: null, name: 'Carol star', priceCents: 1800, price: '$18', left: null },
   { id: 'b', listingId: 'b', variantId: null, name: 'Old Saint Nick', priceCents: 2200, price: '$22', left: null },
 ];
 const pay = { ...EMPTY_PAY, venmo: 'lena-b', venmoOn: true, cashapp: 'lenab', cashappOn: true, zelle: 'lena@example.com', zelleOn: true, cashOn: true };
+
+describe('a price agreed at the table', () => {
+  it('reads what she types, in dollars, down to nothing but never above the marked price', () => {
+    expect(readAgreed('15', 1800)).toEqual({ ok: true, cents: 1500 });
+    expect(readAgreed(' $14.50 ', 1800)).toEqual({ ok: true, cents: 1450 });
+    expect(readAgreed('0', 1800)).toEqual({ ok: true, cents: 0 });
+    expect(readAgreed('1,000', 200000)).toEqual({ ok: true, cents: 100000 });
+    expect(readAgreed('19', 1800)).toMatchObject({ ok: false, error: 'That’s more than the marked $18.' });
+    expect(readAgreed('abc', 1800)).toMatchObject({ ok: false });
+    expect(readAgreed('1.234', 1800)).toMatchObject({ ok: false });
+    expect(readAgreed('-2', 1800)).toMatchObject({ ok: false });
+  });
+
+  it('counts an agreed line at its agreed price in the total', () => {
+    expect(sellTotalCents(pieces, { a: 2, b: 1 }, { a: 3000 })).toBe(5200);
+    expect(sellTotal(pieces, { a: 1 }, { a: 100 })).toBe('$1');
+  });
+});
 
 describe('selling at the table', () => {
   it('adds up what she tapped', () => {

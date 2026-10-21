@@ -375,3 +375,6 @@ button.bk-up-btn { border: 0; cursor: pointer; font: inherit; font-size: 0.9rem;
 .bk-demo-note { display: grid; gap: 0.75rem; justify-items: start; padding: 1rem 1.15rem; border: 1px solid var(--bk-brass); border-radius: 10px; background: oklch(0.72 0.08 75 / 12%); }
 .bk-demo-note p { margin: 0; line-height: 1.5; }
 .bk-sq-linked { margin: 0 0 0.75rem; }
+.bk-sell-deal { display: flex; flex-wrap: wrap; align-items: end; gap: 0.5rem; flex-basis: 100%; margin-top: 0.5rem; }
+.bk-sell-deal .bk-label { flex-basis: 100%; }
+.bk-sell-deal .bk-input { max-width: 8rem; }

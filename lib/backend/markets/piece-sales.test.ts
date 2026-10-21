@@ -14,15 +14,15 @@ describe('pieceResults', () => {
       [
         { eventId: 'e1', listingId: 'a', variantId: null, name: 'Mug', quantity: 2, at: '2026-10-20T15:00:00Z' },
         { eventId: 'e1', listingId: 'a', variantId: null, name: 'Mug', quantity: 1, at: '2026-10-20T14:00:00Z' },
-        { eventId: 'e1', listingId: 'b', variantId: 'v', name: 'Scarf, Blue', quantity: 1, at: '2026-10-20T16:00:00Z' },
+        { eventId: 'e1', listingId: 'b', variantId: 'v', name: 'Scarf, Blue', quantity: 1, at: '2026-10-20T16:00:00Z', givenCents: 300 },
         { eventId: 'e1', listingId: 'c', variantId: null, name: 'Card', quantity: 4, at: '2026-10-20T13:00:00Z' },
       ],
     );
     expect(rows).toEqual([
-      { eventId: 'e1', key: 'a', name: 'Mug', brought: 3, sold: 3, left: 0, soldOutAt: '2026-10-20T15:00:00Z' },
-      { eventId: 'e1', key: 'b:v', name: 'Scarf, Blue', brought: 2, sold: 1, left: 1, soldOutAt: null },
-      { eventId: 'e1', key: 'z', name: 'Stayed home', brought: 0, sold: 0, left: 0, soldOutAt: null },
-      { eventId: 'e1', key: 'c', name: 'Card', brought: null, sold: 4, left: null, soldOutAt: null },
+      { eventId: 'e1', key: 'a', name: 'Mug', brought: 3, sold: 3, left: 0, soldOutAt: '2026-10-20T15:00:00Z', givenCents: 0 },
+      { eventId: 'e1', key: 'b:v', name: 'Scarf, Blue', brought: 2, sold: 1, left: 1, soldOutAt: null, givenCents: 300 },
+      { eventId: 'e1', key: 'z', name: 'Stayed home', brought: 0, sold: 0, left: 0, soldOutAt: null, givenCents: 0 },
+      { eventId: 'e1', key: 'c', name: 'Card', brought: null, sold: 4, left: null, soldOutAt: null, givenCents: 0 },
     ]);
   });
 });

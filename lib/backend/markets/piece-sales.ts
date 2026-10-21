@@ -21,10 +21,15 @@ export type PieceResult = {
   left: number | null;
   /** When the last one she brought sold (ISO time), when it sold out. */
   soldOutAt: string | null;
+  /** Knocked off marked prices in haggling at this market, in cents. */
+  givenCents: number;
 };
 
+/** The label a price agreed at the table carries on its order (the database's own). */
+export const AGREED_LABEL = 'Price agreed at the table';
+
 export type BroughtRow = { eventId: string; listingId: string; variantId: string | null; name: string; brought: number };
-export type SoldRow = { eventId: string; listingId: string; variantId: string | null; name: string; quantity: number; at: string };
+export type SoldRow = { eventId: string; listingId: string; variantId: string | null; name: string; quantity: number; at: string; givenCents?: number };
 
 /** Each piece's line at each market: counted pieces first in the order given, then
  *  anything that sold without a count. */
@@ -32,13 +37,14 @@ export function pieceResults(brought: readonly BroughtRow[], sold: readonly Sold
   const rows = new Map<string, PieceResult>();
   const id = (eventId: string, listingId: string, variantId: string | null): string => `${eventId}|${countKey(listingId, variantId)}`;
   for (const b of brought) {
-    rows.set(id(b.eventId, b.listingId, b.variantId), { eventId: b.eventId, key: countKey(b.listingId, b.variantId), name: b.name, brought: b.brought, sold: 0, left: b.brought, soldOutAt: null });
+    rows.set(id(b.eventId, b.listingId, b.variantId), { eventId: b.eventId, key: countKey(b.listingId, b.variantId), name: b.name, brought: b.brought, sold: 0, left: b.brought, soldOutAt: null, givenCents: 0 });
   }
   const inOrder = [...sold].sort((a, b) => a.at.localeCompare(b.at));
   for (const s of inOrder) {
     const k = id(s.eventId, s.listingId, s.variantId);
-    const row = rows.get(k) ?? { eventId: s.eventId, key: countKey(s.listingId, s.variantId), name: s.name, brought: null, sold: 0, left: null, soldOutAt: null };
+    const row = rows.get(k) ?? { eventId: s.eventId, key: countKey(s.listingId, s.variantId), name: s.name, brought: null, sold: 0, left: null, soldOutAt: null, givenCents: 0 };
     row.sold += s.quantity;
+    row.givenCents += s.givenCents ?? 0;
     if (row.brought !== null) {
       row.left = Math.max(row.brought - row.sold, 0);
       if (row.left === 0 && row.soldOutAt === null && row.brought > 0) row.soldOutAt = s.at;
@@ -55,7 +61,7 @@ export async function loadPieceResults(db: Db, tenantId: string, eventId: string
   let stockQuery = db.from('market_stock').select('event_id, listing_id, listing_variant_id, brought, listings(name), listing_variants(option_combination)').eq('tenant_id', tenantId);
   let salesQuery = db
     .from('orders')
-    .select('event_id, paid_at, created_at, order_items(listing_id, listing_variant_id, name_snapshot, variant_description_snapshot, quantity)')
+    .select('event_id, paid_at, created_at, discount_cents, discount_label, order_items(listing_id, listing_variant_id, name_snapshot, variant_description_snapshot, quantity)')
     .eq('tenant_id', tenantId)
     .eq('source', 'market_mode')
     .in('status', ['paid', 'fulfilled'])
@@ -80,7 +86,18 @@ export async function loadPieceResults(db: Db, tenantId: string, eventId: string
       : o.order_items.flatMap((i) =>
           i.listing_id === null
             ? []
-            : [{ eventId: o.event_id as string, listingId: i.listing_id, variantId: i.listing_variant_id, name: named(i.name_snapshot, i.variant_description_snapshot), quantity: i.quantity, at: o.paid_at ?? o.created_at }],
+            : [
+                {
+                  eventId: o.event_id as string,
+                  listingId: i.listing_id,
+                  variantId: i.listing_variant_id,
+                  name: named(i.name_snapshot, i.variant_description_snapshot),
+                  quantity: i.quantity,
+                  at: o.paid_at ?? o.created_at,
+                  // A table sale is one piece per order, so its haggling belongs to that piece.
+                  givenCents: o.discount_label === AGREED_LABEL ? o.discount_cents : 0,
+                },
+              ],
         ),
   );
   return pieceResults(brought, sold);

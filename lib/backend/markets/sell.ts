@@ -46,13 +46,35 @@ export function sellMethods(s: PaySettings): SellMethod[] {
   return on;
 }
 
-export function sellTotalCents(pieces: readonly SellPiece[], picked: Picked): number {
-  const byId = new Map(pieces.map((p) => [p.id, p.priceCents]));
-  return Object.entries(picked).reduce((sum, [id, q]) => sum + (byId.get(id) ?? 0) * q, 0);
+/** A price agreed with the buyer for a line (haggling, Alex 2026-10-21): what that
+ *  line comes to, in cents, by line id. Lines without one sell at their marked price. */
+export type Agreed = Readonly<Record<string, number>>;
+
+/** What a line comes to: the agreed price, or the marked price times how many. */
+export function lineCents(piece: SellPiece, quantity: number, agreed: Agreed = {}): number {
+  return agreed[piece.id] ?? piece.priceCents * quantity;
 }
 
-export function sellTotal(pieces: readonly SellPiece[], picked: Picked): string {
-  return formatPrice(sellTotalCents(pieces, picked));
+export function sellTotalCents(pieces: readonly SellPiece[], picked: Picked, agreed: Agreed = {}): number {
+  const byId = new Map(pieces.map((p) => [p.id, p]));
+  return Object.entries(picked).reduce((sum, [id, q]) => {
+    const piece = byId.get(id);
+    return piece === undefined ? sum : sum + lineCents(piece, q, agreed);
+  }, 0);
+}
+
+export function sellTotal(pieces: readonly SellPiece[], picked: Picked, agreed: Agreed = {}): string {
+  return formatPrice(sellTotalCents(pieces, picked, agreed));
+}
+
+/** The price she typed for a line ("15", "$15", "14.50"): cents, from nothing up to
+ *  the line's marked price. Haggling only ever comes down. */
+export function readAgreed(text: string, markedCents: number): { ok: true; cents: number } | { ok: false; error: string } {
+  const clean = text.trim().replace(/^\$/, '').replace(/,/g, '');
+  if (!/^\d{1,6}(\.\d{1,2})?$/.test(clean)) return { ok: false, error: 'Type the price you agreed, like 15 or 14.50.' };
+  const cents = Math.round(Number(clean) * 100);
+  if (cents > markedCents) return { ok: false, error: `That’s more than the marked ${formatPrice(markedCents)}.` };
+  return { ok: true, cents };
 }
 
 export type PayStep = { kind: 'qr'; url: string; label: string } | { kind: 'text'; label: string; text: string } | { kind: 'cash'; label: string };

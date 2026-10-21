@@ -3498,6 +3498,7 @@ export type Database = {
       }
       market_record_card_sale: {
         Args: {
+          p_discount_cents?: number
           p_event_id: string
           p_listing_id: string
           p_price_cents: number
@@ -3509,6 +3510,7 @@ export type Database = {
       }
       market_record_sale: {
         Args: {
+          p_discount_cents?: number
           p_event_id: string
           p_listing_id: string
           p_method: string
