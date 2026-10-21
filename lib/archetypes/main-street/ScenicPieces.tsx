@@ -27,6 +27,14 @@ import type { FamilyWords } from './words';
 type Founder = MainStreetView['founder'];
 
 /** opening — the name on the open sky over the scene, the moment's lines beneath, its buttons. */
+/** How long the headline is: a name stays big over the sky, a whole sentence steps down so it reads (Alex, 2026-10-21). */
+export function headlineLength(text: string): 's' | 'm' | 'l' | 'xl' {
+  if (text.length <= 22) return 's';
+  if (text.length <= 40) return 'm';
+  if (text.length <= 70) return 'l';
+  return 'xl';
+}
+
 export function HorizonHero({
   identity,
   moment,
@@ -45,7 +53,7 @@ export function HorizonHero({
         <Nav identity={identity} words={words} />
       </nav>
       <div className="ms-wrap ms-sc-sky">
-        <Type as="h1" role="brand" className="ms-sc-brand">
+        <Type as="h1" role="brand" className="ms-sc-brand" data-length={headlineLength(moment.brand)}>
           {moment.brand}
         </Type>
         {moment.eyebrow && (

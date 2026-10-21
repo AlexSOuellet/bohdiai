@@ -166,3 +166,17 @@ describe('ReviewsNotes', () => {
     expect(container.querySelectorAll('.ms-sc-note-from')).toHaveLength(1);
   });
 });
+
+describe('the Scenic headline’s size', () => {
+  it('steps down as the headline gets longer', async () => {
+    const { headlineLength } = await import('./ScenicPieces');
+    expect(headlineLength('Classic Loafs')).toBe('s');
+    expect(headlineLength('Decoupage from Bristol, Rhode Island')).toBe('m');
+    expect(headlineLength('Bottles, boards, boxes, ornaments and oyster dishes, sealed to last')).toBe('l');
+    expect(headlineLength('x'.repeat(71))).toBe('xl');
+  });
+  it('has a size for each step', async () => {
+    const { SCENIC_CSS } = await import('./scenic-styles');
+    for (const step of ['m', 'l', 'xl']) expect(SCENIC_CSS).toContain(`.ms-sc-brand[data-length="${step}"]`);
+  });
+});

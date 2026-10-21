@@ -48,6 +48,10 @@ export const SCENIC_CSS = `
     .arch-main-street .ms-sc-nav{display:flex;align-items:center;justify-content:space-between;padding:14px 40px;background:var(--sc-glass);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
     .arch-main-street .ms-sc-sky{padding-top:clamp(56px,11vh,130px);padding-bottom:clamp(48px,9vw,110px)}
     .arch-main-street .ms-sc-brand{margin:0;max-width:14ch;text-wrap:balance;font-size:clamp(48px,10vw,132px);line-height:.95;color:var(--ms-contrast-bg);text-shadow:0 0 30px color-mix(in srgb,var(--ms-bg) 60%,transparent);animation:ms-sc-rise 1.8s cubic-bezier(.2,.7,.2,1) .2s both}
+    /* A longer headline steps down: a name fills the sky, a sentence reads as one. */
+    .arch-main-street .ms-sc-brand[data-length="m"]{max-width:18ch;font-size:clamp(40px,7vw,96px);line-height:1}
+    .arch-main-street .ms-sc-brand[data-length="l"]{max-width:22ch;font-size:clamp(34px,4.8vw,68px);line-height:1.05}
+    .arch-main-street .ms-sc-brand[data-length="xl"]{max-width:26ch;font-size:clamp(30px,3.8vw,54px);line-height:1.1}
     .arch-main-street .ms-sc-line{margin:clamp(14px,2vw,22px) 0 0;max-width:30ch;font-style:italic;color:var(--ms-fg);text-shadow:0 0 6px color-mix(in srgb,var(--ms-bg) 95%,transparent),0 0 18px color-mix(in srgb,var(--ms-bg) 85%,transparent);animation:ms-sc-rise 1.8s cubic-bezier(.2,.7,.2,1) .55s both}
     .arch-main-street .ms-sc-sub{display:inline-block;margin:clamp(18px,2.6vw,28px) 0 0;max-width:46ch;padding:12px 18px;background:var(--sc-glass);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:var(--ms-fg);animation:ms-sc-rise 1.8s cubic-bezier(.2,.7,.2,1) .8s both}
     .arch-main-street .ms-sc-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:clamp(22px,3vw,32px);animation:ms-sc-rise 1.8s cubic-bezier(.2,.7,.2,1) 1s both}
