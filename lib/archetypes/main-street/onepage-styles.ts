@@ -18,13 +18,7 @@ export const ONE_PAGE_CSS = `
     ${R} .ms-contactbeat-intro{color:var(--ms-fg);margin:16px auto 0;max-width:52ch}
     ${R} .ms-contactbeat-form{margin-top:40px;text-align:left}
     ${R} .ms-contactbeat-phone{display:inline-block;margin-top:20px;color:var(--ms-accent);text-decoration:none;border-bottom:1px solid currentColor}
-    /* The social links: a line of their own above the footer links, each a button like the site's Send button (accent, its lettering) with the network's name. */
-    ${R} .ms-footer-social{display:flex;flex-basis:100%;flex-wrap:wrap;gap:14px;justify-content:center;margin:0 0 8px}
-    /* .ms-footer in front so a family's footer-link color (Scenic's) never overrides the button's. */
-    ${R} .ms-footer .ms-footer-social a{display:inline-flex;align-items:center;gap:12px;padding:14px 24px 14px 18px;border-radius:2px;background:var(--ms-accent);color:var(--ms-on-accent);text-decoration:none;transition:transform .2s ease,filter .2s ease}
-    ${R} .ms-footer .ms-footer-social a:hover{transform:translateY(-2px);filter:brightness(1.08)}
-    ${R} .ms-footer-social svg{width:24px;height:24px;flex:none}
-    ${R} .ms-footer .ms-footer-social a:focus-visible{outline:2px solid var(--ms-contrast-fg);outline-offset:3px}
-    @media(prefers-reduced-motion:reduce){${R} .ms-footer .ms-footer-social a{transition:none}${R} .ms-footer .ms-footer-social a:hover{transform:none}}
+    /* The social links use the shared rule (lib/storefront/social-buttons.ts) in the moods' button colours: the accent, like the Send button. */
+    ${R}{--btn-bg:var(--ms-accent);--btn-fg:var(--ms-on-accent)}
     @media(max-width:860px){${R} .ms-story{padding:40px 0 64px}${R} .ms-contactbeat{padding:64px 0 76px}}
 `;

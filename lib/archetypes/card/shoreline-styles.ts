@@ -24,6 +24,8 @@ const GRAIN = svg(
 const SEA = '/designs/shoreline/sea.webp';
 const WINDOW = '/designs/shoreline/window-frame.webp';
 
+import { SOCIAL_BUTTONS_CSS } from '@/lib/storefront/social-buttons';
+
 export const SHORELINE_FONTS_HREF =
   'https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,400&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Homemade+Apple&display=swap';
 
@@ -42,6 +44,8 @@ export function shorelineCss(): string {
   return `
 .sl{
   --ink:#14232b;--ink-soft:#4c5a5f;--navy:#0e2633;--rust:#8c3b2a;--lace:#fbf6ea;--paper:#fdf9f0;--sea:#5d7f86;
+  /* Her buttons' colours, named once (the shared social links read them). */
+  --btn-bg:var(--navy);--btn-fg:#f3efe6;
   --grain:${GRAIN};
   --display:'Bodoni Moda',Didot,Georgia,serif;--body:'Cormorant Garamond',Georgia,serif;--hand:'Homemade Apple',cursive;
   position:relative;isolation:isolate;min-height:100vh;overflow-x:clip;color:var(--ink);font-family:var(--body);font-size:20px;line-height:1.55;-webkit-font-smoothing:antialiased;background:#c9c3c4;
@@ -137,11 +141,8 @@ ${prints}
 .sl-foot{margin-top:clamp(48px,8vw,90px);padding:24px 16px 32px;background:rgba(14,32,42,.82);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;justify-content:center;flex-wrap:wrap;gap:8px 26px;font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:#cfdcdc}
 .sl-foot a{color:#f3efe6!important;text-decoration:none}
 .sl-foot a:hover{text-decoration:underline}
-.sl-social{display:flex;gap:14px;flex-basis:100%;justify-content:center;margin-bottom:6px}
-/* Her social links: a button each with its name, in her accent, like her other buttons. */
-.sl-social a{display:inline-flex;align-items:center;gap:10px;padding:12px 22px 12px 16px;background:var(--rust);color:#f3efe6!important;font-weight:600;font-size:13px;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:background .3s}
-.sl-social svg{width:22px;height:22px;flex:none}
-.sl-social a:hover{filter:brightness(1.12);text-decoration:none}
+/* The social links use the shared rule (lib/storefront/social-buttons.ts); on the navy footer her buttons turn cream. */
+.sl-foot{--btn-bg:var(--lace);--btn-fg:var(--navy)}
 
 /* ── photo viewer ────────────────────────────────────────── */
 .sl .bc-lb{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:rgba(12,24,32,.93);padding:clamp(16px,4vw,60px)}
@@ -188,7 +189,7 @@ a.sl-print{text-decoration:none;cursor:pointer}
 .sl-price{display:block;padding:4px 0 0;margin-top:0;font-family:var(--body);font-style:normal;font-weight:700;font-size:17px;line-height:1.3;letter-spacing:.02em;color:var(--rust)}
 .sl-price--ask{font-style:italic;font-weight:500;letter-spacing:0;color:var(--ink-soft)}
 .sl-more{display:flex;justify-content:center;margin:clamp(28px,5vw,56px) 0 0}
-.sl-more a,.sl-btn{display:inline-block;padding:14px 26px;background:var(--navy);color:#f3efe6!important;font-weight:600;font-size:14px;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;box-shadow:0 10px 24px -10px rgba(10,24,32,.7);transition:background .3s}
+.sl-more a,.sl-btn{display:inline-block;padding:14px 26px;background:var(--btn-bg);color:var(--btn-fg)!important;font-weight:600;font-size:14px;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;box-shadow:0 10px 24px -10px rgba(10,24,32,.7);transition:background .3s}
 .sl-more a:hover,.sl-btn:hover{background:var(--rust)}
 .sl-card .sl-more{justify-content:flex-start;margin-top:18px}
 .sl-tide .sl-more{margin-top:18px}
@@ -349,5 +350,6 @@ a.sl-print{text-decoration:none;cursor:pointer}
 @media (prefers-reduced-motion:reduce){
   .sl *{animation:none!important;transition:none!important}
 }
+${SOCIAL_BUTTONS_CSS}
 `;
 }

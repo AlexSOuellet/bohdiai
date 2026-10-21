@@ -22,6 +22,7 @@ import { VINTAGE_CSS } from './vintage-styles';
 import { SCENIC_CSS } from './scenic-styles';
 import { GALLERY_CSS } from './gallery-styles';
 import { ONE_PAGE_CSS } from './onepage-styles';
+import { SOCIAL_BUTTONS_CSS } from '@/lib/storefront/social-buttons';
 import { SPOTLIGHT_CSS } from './spotlight-styles';
 import type { FamilyWords } from './words';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
@@ -1505,6 +1506,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-subs-cue{color:var(--ms-accent)}
     ${GALLERY_CSS}
     ${ONE_PAGE_CSS}
+    ${SOCIAL_BUTTONS_CSS}
     ${VINTAGE_CSS}
     ${SCENIC_CSS}
     ${SPOTLIGHT_CSS}

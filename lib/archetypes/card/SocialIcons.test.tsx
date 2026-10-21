@@ -40,3 +40,22 @@ describe('SocialIcons', () => {
     expect(screen.getByRole('link', { name: 'words.instagram' })).toBeInTheDocument();
   });
 });
+
+describe('one look for every design', () => {
+  it('gives named links the shared class, which reads only the design’s button colours', async () => {
+    const { SOCIAL_BUTTONS_CSS } = await import('@/lib/storefront/social-buttons');
+    const { container } = render(<SocialIcons facebookUrl="https://facebook.com/a" instagramUrl="" className="x" labels={labels} showNames />);
+    expect(container.firstElementChild?.className).toBe('social-btns x');
+    expect(SOCIAL_BUTTONS_CSS).toContain('background:var(--btn-bg)');
+    expect(SOCIAL_BUTTONS_CSS).toContain('color:var(--btn-fg)');
+    expect(SOCIAL_BUTTONS_CSS).not.toMatch(/#[0-9a-f]{3,6}\b/i);
+  });
+  it('is in both designs’ stylesheets, and neither styles the links itself', async () => {
+    const { shorelineCss } = await import('./shoreline-styles');
+    const { ONE_PAGE_CSS } = await import('../main-street/onepage-styles');
+    expect(shorelineCss()).toContain('.social-btns a{');
+    expect(shorelineCss()).not.toContain('.sl-social a{');
+    expect(ONE_PAGE_CSS).not.toContain('.ms-footer-social a');
+    expect(ONE_PAGE_CSS).toContain('--btn-bg:var(--ms-accent)');
+  });
+});

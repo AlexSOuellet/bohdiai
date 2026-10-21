@@ -43,7 +43,7 @@ export function SocialIcons({
 }): ReactElement | null {
   if (facebookUrl === '' && instagramUrl === '') return null;
   return (
-    <span className={className}>
+    <span className={showNames ? `social-btns ${className}` : className}>
       {facebookUrl !== '' && (
         <a href={facebookUrl} rel="noopener" className="is-facebook" aria-label={showNames ? undefined : labels.facebook}>
           <Facebook />
