@@ -15,7 +15,7 @@
 
 ## Current state
 
-**Session 111: Market plan merged and live; Saltmarsh is the Scenic mood, drawn by its own design (the Scenic mood now uses the shoreline design); one shared social-button look; 42 test sites purged; the demo's market stays on today (timer bug fixed); the market app takes cards through the maker's own Square (Connect, location, Card hand-off, confirmed by Square, locked keys), haggling (Change price) and Refund on the market day.** Alex's Rustic Rhody Square is connected to Saltmarsh for testing: disconnect after. Recap: `session-logs/session-111.md`.
+**Session 111: Market plan merged and live; Saltmarsh is the Scenic mood, drawn by its own design (the Scenic mood now uses the shoreline design); one shared social-button look; 42 test sites purged; the demo's market stays on today (timer bug fixed); the market app takes cards through the maker's own Square (Connect, location, Card hand-off, confirmed by Square, locked keys), haggling (Change price) and Refund on the market day.** Alex's test Square is disconnected and the test sale removed. Recap: `session-logs/session-111.md`.
 
 **Session 110: Showcase backend merged and live, with the footer's named social buttons, visitor numbers (Cloudflare, no cookies; Full keeps its months) and the backend's new look. The Market plan defined and built (merged and live in Session 111): market stock counts and "How it sold", options sell (market app, online cart, Saltmarsh), collections Full only, testimonials up to three on Market, the demo's "Move to <plan> now".** Waiting on Alex: the Cloudflare key for visitor numbers. Recap: `session-logs/session-110.md`.
 
@@ -30,7 +30,7 @@
 
 ## Next actions
 
-**Session 112 (first thing, Alex):** Orders on the Market plan; Refund in Orders; a Sales list with Refund on each market's page; ask whether the market day keeps its Refund. Then: Alex disconnects his Square and refunds his $1 tests; remove test sale #1037 (asked); the pricing cards (asked); the Cloudflare analytics key (Alex); define Full; paying at sign-up (top). Later (Alex): Square refund notices; Saltmarsh's products with Alex's own photos after he tests Full; then the demo's personal copies.
+**Session 112 (first thing, Alex):** Orders on the Market plan; Refund in Orders; a Sales list with Refund on each market's page (the market day keeps its Refund too, Alex: yes). Done: Alex disconnected his Square and refunded his tests; test sale #1037 removed. Then: the pricing cards (asked); the Cloudflare analytics key (Alex); define Full; paying at sign-up (top). Later (Alex): Square refund notices; Saltmarsh's products with Alex's own photos after he tests Full; then the demo's personal copies.
 
 **Every open item is in `Open-Work.md`; follow its Priority order.** Next: the maker-backend screens with try on a look for Full (priority 4), then Alex's admin. Waiting on Alex: the purge (after testing); whether Paper & Patina moves onto Spotlight. Waiting on others: Joe's feedback, Renee's details.
 

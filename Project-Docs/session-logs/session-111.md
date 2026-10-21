@@ -35,5 +35,5 @@
 1. **Orders on the Market plan** (Alex: "having an orders page is not a bad idea for market sites"), showing market sales; add it to Plan-Backends' Market.
 2. **Refund in Orders** on every paid sale (Market and Full).
 3. **A Sales list on each market's own page** with Refund.
-4. Ask Alex: does the market day keep its Refund button (for mistakes at the table)? (asked, not answered)
-Then: Alex disconnects his Square and refunds his $1 tests; remove test sale #1037 (asked, not answered); the pricing cards; the Cloudflare analytics key (Alex); define Full; paying at sign-up (top).
+4. The market day keeps its Refund button too (Alex: yes).
+Done at the end of the session: Alex disconnected his Square and refunded his $1 tests; test sale #1037 removed. Then: the pricing cards; the Cloudflare analytics key (Alex); define Full; paying at sign-up (top).
