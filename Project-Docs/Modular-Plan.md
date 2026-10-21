@@ -14,7 +14,7 @@
 - Family names don't have to be moods. They name what the site does or feels like.
 
 **The families (eight):** cozy, rustic, dark, elegant, cheerful, modern, plus:
-- **Scenic**, from Saltmarsh's Shoreline design. Its bones: a photo locked behind the page with the content floating over it. Saltmarsh's colors and fonts become one Scenic skin, with the marsh photo as its photo. The family is not about the shore.
+- **Scenic**, from Saltmarsh's Shoreline design. Its bones: a photo locked behind the page with the content floating over it. Saltmarsh's colors and fonts become one Scenic skin, with the marsh photo as its photo. The family is not about the shore. **Session 111 (Alex: "The point was to put it in a family and keep it looking exactly the same"):** the Scenic mood is now drawn by the shoreline design itself, fed by the skin and the scene (`lib/archetypes/card/look.ts`); Saltmarsh is a Scenic site with the Saltmarsh skin, and the demo shows what most sites will be.
 - **Spotlight**, from Paper & Patina's Showreel design. Its bones: each piece fills the screen one at a time, with bold color panels between and a scrolling market-dates ticker. Its section styles join the family engine as new choices, and Spotlight picks them.
 
 More families are added as BohdiAI grows. A good custom shape can become a new family. **Vintage** (Alex, 2026-10-15, inspired by decoupage) is the first one added this way: Victorian printed ephemera with section styles of its own (playbill opening, apothecary tags, cabinet card, specimen drawers, ticket stubs, postcards), in progress on `feat/vintage-family`; its ornament and paper are to be rebuilt from real art.

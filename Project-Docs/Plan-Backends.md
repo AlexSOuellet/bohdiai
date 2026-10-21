@@ -91,14 +91,16 @@ Everything Showcase has, plus:
 4. **Market POS**: a tile per piece or option, + and − for how many, stops at what's left; Getting paid.
 5. **How it sold** on each market's page (brought, sold, left, when it sold out) and **Sold out at your markets** on the results page; results this year against last, after costs.
 6. **Testimonials** with a "Show on my site" tick (up to three).
-7. Card payments at the table: **Square only** (Alex, 2026-10-20), when built.
+7. Card payments at the table: **Square only** (Alex, 2026-10-20). **Built and live (Session 111):** Connect Square on Getting paid (Square's own page; read-only permissions; keys locked server-side and scrambled with a secret kept in Cloudflare), pick the Square location, Disconnect. Card in the Market POS opens the Square app with the total (tap, insert, or typed in by hand); the sale is recorded only when Square confirms the exact total. Alex's #1 for payments: they stay secure.
+8. **Change price** at the table (haggling, Alex 2026-10-21, built): an agreed price per line, never above the marked one; How it sold shows what was haggled off.
+9. **Refunds** (Alex 2026-10-21): Refund on the market day's sales (built); the piece goes back in stock, the takings leave it out. **Next:** an **Orders** page on Market too (Alex: "having an orders page is not a bad idea for market sites"), listing market sales, with Refund on each paid sale; and a **Sales** list with Refund on each market's own page. A refund done in the Square app shows up on its own later (Square notices; Alex: later).
 
 ## Every plan, also
 - **Visitor numbers** on the backend home (Alex, 2026-10-20): visits and pages seen this week against last, the most-seen pages and where visits came from (30 days). Counted without cookies in Cloudflare (three months kept). **Full keeps its months** for as long as it's on Full (`site_visit_months`, saved daily).
 
 ## Full ($25 a month)
 
-To be defined. Already decided: online selling through **Square and/or Stripe** (Alex, 2026-10-20); collections; every testimonial; visitor months kept. Try on a look (see another mood and skin on their own site, then keep it) is Full only (Alex, 2026-10-17). The try-on must survive clicking around the site (not only the address bar), and Scenic must never fall back to the marsh: every build makes three backgrounds whatever the family (Open-Work item 6). The gallery add-on is above.
+To be defined. Already decided: online selling through **Square and/or Stripe** (Alex, 2026-10-20); Refund in Orders on every paid sale, online and market (Alex, 2026-10-21); collections; every testimonial; visitor months kept. Try on a look (see another mood and skin on their own site, then keep it) is Full only (Alex, 2026-10-17). The try-on must survive clicking around the site (not only the address bar), and Scenic must never fall back to the marsh: every build makes three backgrounds whatever the family (Open-Work item 6). The gallery add-on is above.
 
 ---
 
