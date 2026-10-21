@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import { squareConfig } from '@/lib/square/config';
 import { alreadyRecorded, confirmCardSale, readCardNote, recordCardSale, savePayments } from '@/lib/square/flow';
-import { readSquareReturn, wasCanceled } from '@/lib/square/pos';
+import { readSquareReturn, squareReason, wasCanceled } from '@/lib/square/pos';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,13 +21,18 @@ export async function GET(req: Request): Promise<NextResponse> {
   const config = squareConfig();
   const result = readSquareReturn(url.searchParams);
   const note = config === null || result === null ? null : await readCardNote(config, result.state, Date.now());
-  const land = (eventId: string | null, outcome: string): NextResponse => {
+  const land = (eventId: string | null, outcome: string, reason: string | null = null): NextResponse => {
     const to = new URL(eventId === null ? '/manage/markets' : `/manage/markets/${eventId}/day`, req.url);
     to.searchParams.set('card', outcome);
+    if (reason !== null) to.searchParams.set('reason', reason);
     return NextResponse.redirect(to, 303);
   };
   if (config === null || result === null || note === null) return land(null, 'lost');
-  if (result.kind === 'failed') return land(note.eventId, wasCanceled(result.code) ? 'canceled' : 'square-error');
+  if (result.kind === 'failed') {
+    if (wasCanceled(result.code)) return land(note.eventId, 'canceled');
+    logger.error('square: the Square app refused the card sale', { tenantId: note.tenantId, code: result.code });
+    return land(note.eventId, 'square-error', squareReason(result.code));
+  }
 
   const admin = supabaseAdmin();
   let paymentIds: string[] = [];

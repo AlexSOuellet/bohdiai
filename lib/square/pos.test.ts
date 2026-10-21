@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { canOpenSquare, readSquareReturn, saleMatches, squareHandOff, wasCanceled } from './pos';
+import { canOpenSquare, readSquareReturn, reasonWords, saleMatches, squareHandOff, squareReason, wasCanceled } from './pos';
 
 const args = {
   applicationId: 'sq0idp-app',
@@ -78,7 +78,17 @@ describe('readSquareReturn', () => {
   it('knows a cancel from a real failure', () => {
     expect(wasCanceled('payment_canceled')).toBe(true);
     expect(wasCanceled('com.squareup.pos.ERROR_TRANSACTION_CANCELED')).toBe(true);
+    expect(wasCanceled('com.squareup.pos.ERROR_TRANSACTION_CANCELLED')).toBe(true);
+    expect(wasCanceled('TRANSACTION_CANCELED')).toBe(true);
     expect(wasCanceled('no_network_connection')).toBe(false);
+  });
+
+  it('carries Square’s reason only when it’s a plain code, and reads it in words', () => {
+    expect(squareReason('com.squareup.pos.ERROR_USER_NOT_LOGGED_IN')).toBe('com.squareup.pos.ERROR_USER_NOT_LOGGED_IN');
+    expect(squareReason('<script>')).toBeNull();
+    expect(squareReason('')).toBeNull();
+    expect(reasonWords('com.squareup.pos.ERROR_USER_NOT_LOGGED_IN')).toBe('user not logged in');
+    expect(reasonWords('no_network_connection')).toBe('no network connection');
   });
 });
 

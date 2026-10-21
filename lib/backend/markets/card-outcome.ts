@@ -1,3 +1,5 @@
+import { reasonWords, squareReason } from '@/lib/square/pos';
+
 /** What happened to a card sale in Square, in words, for the market day when Square
  *  hands back. Every outcome says something; none is silent. */
 export const CARD_OUTCOME: Record<string, { tone: 'ok' | 'error'; text: string }> = {
@@ -18,6 +20,10 @@ export const CARD_OUTCOME: Record<string, { tone: 'ok' | 'error'; text: string }
   'no-app': { tone: 'error', text: 'The Square app isn’t on this phone. Install Square Point of Sale, sign in, and try again.' },
 };
 
-export function cardOutcome(value: string | string[] | undefined): { tone: 'ok' | 'error'; text: string } | null {
-  return typeof value === 'string' ? (CARD_OUTCOME[value] ?? null) : null;
+/** The outcome in words, with Square's own reason on a failure when it gave one. */
+export function cardOutcome(value: string | string[] | undefined, reason?: string | string[]): { tone: 'ok' | 'error'; text: string } | null {
+  const outcome = typeof value === 'string' ? (CARD_OUTCOME[value] ?? null) : null;
+  if (outcome === null || outcome.tone !== 'error' || typeof reason !== 'string') return outcome;
+  const code = squareReason(reason);
+  return code === null ? outcome : { ...outcome, text: `${outcome.text} Square said: ${reasonWords(code)}.` };
 }

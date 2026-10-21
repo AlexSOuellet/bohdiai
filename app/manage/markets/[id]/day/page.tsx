@@ -30,6 +30,7 @@ const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  *  setup. Buyers waiting to pay, ringing up a sale, and what sold today. */
 export default async function MarketDayPage({ params, searchParams }: PageProps<'/manage/markets/[id]/day'>): Promise<React.ReactElement> {
   const { id } = await params;
+  const query = await searchParams;
   if (!ID.test(id)) notFound();
   const { site } = await requireActingSite();
   if (!(await getSiteFeatures(site.tenantId)).has('market_shop')) notFound();
@@ -59,7 +60,7 @@ export default async function MarketDayPage({ params, searchParams }: PageProps<
       open={marketState(market, shopToday(timeZone)) === 'open'}
       timeZone={timeZone}
       card={card}
-      cardResult={cardOutcome((await searchParams)['card'])}
+      cardResult={cardOutcome(query['card'], query['reason'])}
     />
   );
 }

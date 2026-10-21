@@ -114,9 +114,29 @@ export function readSquareReturn(params: URLSearchParams): SquareReturn | null {
   return null;
 }
 
-/** The maker stepped back out of Square without charging: not a problem to report. */
+/** The maker stepped back out of Square without charging: not a problem to report.
+ *  Square names a cancel differently on iPhone and Android (and across versions),
+ *  so any code that says cancel counts. */
 export function wasCanceled(code: string): boolean {
-  return code === 'payment_canceled' || code === 'com.squareup.pos.ERROR_TRANSACTION_CANCELED';
+  return /cancel/i.test(code);
+}
+
+/** Square's reason, safe to carry in an address and show: its own code, letters,
+ *  digits, dots and underscores only. Null when there's nothing usable. */
+export function squareReason(code: string): string | null {
+  const clean = code.trim();
+  return /^[A-Za-z0-9_.]{1,80}$/.test(clean) ? clean : null;
+}
+
+/** Square's reason in words: "com.squareup.pos.ERROR_USER_NOT_LOGGED_IN" and
+ *  "not_logged_in" both read "user not logged in" / "not logged in". */
+export function reasonWords(code: string): string {
+  return code
+    .replace(/^com\.squareup\.pos\./i, '')
+    .replace(/^ERROR_/i, '')
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .trim();
 }
 
 /** Square's card sale matches what the market app sent: completed, the same total,
