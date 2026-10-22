@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { EMPTY_PROFILE } from './profile-form';
 
 const features = vi.hoisted(() => ({ on: new Set<string>(['profile']) }));
+const design = vi.hoisted(() => ({ scrolling: true }));
 const upsert = vi.hoisted(() => vi.fn());
 const update = vi.hoisted(() => vi.fn());
 const insert = vi.hoisted(() => vi.fn());
@@ -25,6 +26,7 @@ vi.mock('@/lib/supabase-server', () => ({
   }),
 }));
 vi.mock('@/lib/backend/site-photo', () => ({ storeSitePhoto }));
+vi.mock('../site-kind', () => ({ showsScrollingLine: async () => design.scrolling }));
 vi.mock('next/cache', () => ({ revalidatePath }));
 vi.mock('@/lib/logger', () => ({ logger }));
 
@@ -33,6 +35,7 @@ import { profileHomeData } from './home';
 
 beforeEach(() => {
   features.on = new Set(['profile']);
+  design.scrolling = true;
   upsert.mockReset().mockResolvedValue({ error: null });
   update.mockReset().mockResolvedValue({ error: null });
   insert.mockReset().mockResolvedValue({ error: null });
@@ -80,6 +83,11 @@ describe('saveMarquee', () => {
     expect(upsert).toHaveBeenCalledWith({ tenant_id: 't1', phrases: ['Small batch', 'Poured by hand'] }, 'site_marquees');
     expect(await saveMarquee([])).toEqual({ ok: true });
     expect(remove).toHaveBeenCalledWith('site_marquees');
+  });
+  it('refuses on a site whose design has no scrolling line (Alex, 2026-10-22)', async () => {
+    design.scrolling = false;
+    expect(await saveMarquee(['Small batch'])).toEqual({ ok: false, error: 'Your site’s design has no scrolling line.' });
+    expect(upsert).not.toHaveBeenCalled();
   });
   it('refuses too many phrases', async () => {
     expect((await saveMarquee(Array.from({ length: 13 }, (_, i) => `p${i}`))).ok).toBe(false);

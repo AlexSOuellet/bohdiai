@@ -11,11 +11,12 @@
  */
 import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
-import type { CartView, MarketShopView, ProductView } from '@/lib/archetypes/content';
+import type { CartView, MarketInfoView, MarketShopView, ProductView } from '@/lib/archetypes/content';
 import { dialable } from '@/lib/backend/profile/profile-form';
 import { PLATFORM_URL } from '@/lib/storefront/platform-credit';
 import { CardContactForm } from '@/lib/archetypes/card/CardContactForm';
 import { fill } from '@/lib/site-words/words';
+import type { MarketDate } from '@/lib/backend/dates/dates-form';
 import type { NurseryWords } from './words';
 import { NURSERY_FONTS_HREF, nurseryCss } from './nursery-styles';
 import { NurseryPhotos } from './NurseryPhotos';
@@ -139,8 +140,16 @@ function saleDay(date: string, w: NurseryWords['visit']): string {
   return new Intl.DateTimeFormat(w.locale === '' ? undefined : w.locale, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
 }
 
-function Fee({ baby, was }: { baby: ProductView; was: string }): ReactElement {
-  if (baby.salePrice === undefined) return <>{baby.price}</>;
+function Fee({ baby, was, orderOnly }: { baby: ProductView; was: string; orderOnly?: string | undefined }): ReactElement {
+  // Made to order with none ready (Alex, 2026-10-22): the fee, then that it can be ordered.
+  const tag = baby.orderOnly === true && orderOnly !== undefined ? <em className="nn-order-only"> {orderOnly}</em> : null;
+  if (baby.salePrice === undefined)
+    return (
+      <>
+        {baby.price}
+        {tag}
+      </>
+    );
   return (
     <>
       <s className="nn-was">
@@ -148,6 +157,7 @@ function Fee({ baby, was }: { baby: ProductView; was: string }): ReactElement {
         {baby.price}
       </s>{' '}
       {baby.salePrice}
+      {tag}
     </>
   );
 }
@@ -164,7 +174,7 @@ function BassinetCard({ baby, tint, w }: { baby: ProductView; tint: string; w: N
       <span className="nn-card__fee">
         {w.card.fee}
         <b>
-          <Fee baby={baby} was={w.sale.was} />
+          <Fee baby={baby} was={w.sale.was} orderOnly={w.nursery.orderOnly} />
         </b>
       </span>
     </div>
@@ -235,7 +245,7 @@ function JustBorn({ data, babies }: { data: BoutiqueData; babies: ProductView[] 
                     <span className="nn-ann__fee">{w.card.adopted}</span>
                   ) : (
                     <span className="nn-ann__fee">
-                      <Fee baby={b} was={w.sale.was} />
+                      <Fee baby={b} was={w.sale.was} orderOnly={w.nursery.orderOnly} />
                     </span>
                   )}
                 </a>
@@ -498,7 +508,7 @@ export function NurseryHome({
                           <b>{day}</b>
                         </span>
                         <span className="nn-visits__what">
-                          {d.name}
+                          {data.marketPages ? <a className="nn-visits__name" href={`/events/${d.id}`}>{d.name}</a> : d.name}
                           {d.canceled && <span className="nn-visits__off">{w.visit.canceled}</span>}
                           {!d.canceled && details.length > 0 && <small>{details.join(w.separator)}</small>}
                           {!d.canceled && (d.address !== '' || d.url !== '') && (
@@ -620,7 +630,7 @@ export function NurseryCertificate({
                   <div>
                     <dt>{w.certificate.fee}</dt>
                     <dd className="nn-fee">
-                      <Fee baby={product} was={w.sale.was} />
+                      <Fee baby={product} was={w.sale.was} orderOnly={w.nursery.orderOnly} />
                     </dd>
                   </div>
                 </dl>
@@ -813,6 +823,71 @@ export function NurseryCart({
 
 const LINE_CLASS = 'nn-cart__line';
 const LINE_GONE_CLASS = ['nn-cart__line', 'nn-cart__line--gone'].join(' ');
+
+/** A market's information page (Alex, 2026-10-22), reached from a market on her
+ *  site: the sign board with when and where, then the babies she's bringing. Never
+ *  takes payment (the till is NurseryMarket). */
+export function NurseryMarketInfo({ data, market, logoUrl }: { data: BoutiqueData; market: MarketInfoView; logoUrl?: string | undefined }): ReactElement {
+  const w = data.words;
+  const d: MarketDate = { id: market.marketId, date: market.date, endDate: market.endDate, name: market.name, town: market.town, hours: market.hours, address: market.address, booth: market.booth, url: market.url, canceled: market.state === 'canceled' };
+  const { weekday, day } = visitDay(d, w.visit);
+  const details = [market.town, market.hours, market.booth].filter((s) => s !== '');
+  const over = market.state === 'after' || market.state === 'canceled';
+  return (
+    <Frame chrome={{ data, logoUrl }} onHome={false}>
+      <section className="nn-sec" aria-labelledby="nn-mi-h">
+        <div className="nn-wrap">
+          <div className="nn-sign-board">
+            <div className="nn-sign-board__in">
+              <span className="nn-script-tag">
+                {weekday} {day}
+              </span>
+              <h1 className="nn-sign-board__title" id="nn-mi-h">
+                {market.name}
+              </h1>
+              {market.state === 'canceled' ? (
+                <p className="nn-visits__off">{w.visit.canceled}</p>
+              ) : (
+                details.length > 0 && <p className="nn-mi-details">{details.join(w.separator)}</p>
+              )}
+              {!over && (market.address !== '' || market.url !== '') && (
+                <p className="nn-visits__links">
+                  {market.address !== '' && (
+                    <a href={mapsLink(market.address, market.town)} rel="noopener" target="_blank" aria-label={fill(w.visit.directionsLabel, { market: market.name })}>
+                      {w.visit.directions}
+                    </a>
+                  )}
+                  {market.url !== '' && (
+                    <a href={market.url} rel="noopener" target="_blank" aria-label={fill(w.visit.websiteLabel, { market: market.name })}>
+                      {w.visit.website}
+                    </a>
+                  )}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+      <section className="nn-sec" aria-labelledby="nn-mi-bring">
+        <div className="nn-wrap">
+          {over ? (
+            <p className="nn-mi-note">{market.state === 'after' ? w.market.after : w.market.canceled}</p>
+          ) : (
+            <>
+              <h2 className="nn-h2" id="nn-mi-bring">
+                {w.visit.bringing}
+              </h2>
+              {market.pieces.length === 0 ? <p className="nn-mi-note">{w.visit.soon}</p> : <Nursery ribbons={false} babies={market.pieces} w={w} />}
+            </>
+          )}
+          <p className="nn-mi-back">
+            <a href={`/#${VISIT_ID}`}>{w.visit.allMarkets}</a>
+          </p>
+        </div>
+      </section>
+    </Frame>
+  );
+}
 
 /** A market's own page, reached from the code at her table: the market's name and
  *  where to find her, then the buyer's steps while it's on, or what's coming /

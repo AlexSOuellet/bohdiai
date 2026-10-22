@@ -29,7 +29,24 @@ export async function listMarketOrders(db: SupabaseClient<Database>, tenantId: s
     .in('status', ['pending', 'paid', 'fulfilled', 'refunded'])
     .order('created_at', { ascending: false });
   if (error !== null) throw new Error(`Could not load today’s sales: ${error.message}`);
-  return (data ?? []).map((o) => ({
+  return (data ?? []).map(toTodayOrder);
+}
+
+type OrderRead = {
+  id: string;
+  order_number: string;
+  created_at: string;
+  status: string;
+  customer_name: string;
+  total_cents: number;
+  payment_method: string | null;
+  buyer_paid_at: string | null;
+  order_items: { name_snapshot: string }[];
+};
+
+/** One market order as the owner's screens show it. */
+export function toTodayOrder(o: OrderRead): TodayOrder {
+  return {
     id: o.id,
     number: o.order_number,
     createdAt: o.created_at,
@@ -40,7 +57,7 @@ export async function listMarketOrders(db: SupabaseClient<Database>, tenantId: s
     amountCents: o.total_cents,
     method: o.payment_method === 'card' ? 'card' : isPayMethod(o.payment_method) ? o.payment_method : null,
     saysPaid: o.buyer_paid_at !== null,
-  }));
+  };
 }
 
 /** The day's takings: how many sold and the total, all of it and by method. */

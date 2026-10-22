@@ -54,7 +54,7 @@ vi.mock('@/lib/market/stock', async (orig) => ({ ...(await orig<object>()), mark
 vi.mock('@/lib/logger', () => ({ logger }));
 
 const { loadPaySettings, marketListingIds } = await import('./queries');
-const { loadMarketShop } = await import('./shop-view');
+const { loadMarketInfo, loadMarketShop } = await import('./shop-view');
 const { listMarketOrders, takings } = await import('@/lib/backend/markets/today');
 const { recordMarketSale } = await import('@/lib/backend/markets/today-actions');
 const { savePaySettings } = await import('@/lib/backend/payments/actions');
@@ -121,6 +121,39 @@ describe('loadMarketShop', () => {
     expect(await loadMarketShop(db(), 't1', 'e1')).toBeNull();
     state.queue = [{ data: null, error: { message: 'down' } }];
     await expect(loadMarketShop(db(), 't1', 'e1')).rejects.toThrow('down');
+  });
+});
+
+describe('loadMarketInfo', () => {
+  const event = { id: 'e1', event_date: '2026-10-17', end_date: null, name: 'Holly Fair', location: 'Johnston', hours: '9am – 3pm', address: '1 Main St', booth: 'B4', url: 'https://hollyfair.example', status: 'upcoming' };
+  it('gives the market’s details and the pieces she’s bringing, with no way to pay', async () => {
+    state.counts = new Map([['l1', { left: 0, options: [] }]]);
+    state.queue = [{ data: event, error: null }, { data: [{ listing_id: 'l1', position: 0 }], error: null }];
+    const view = await loadMarketInfo(db(), 't1', 'e1');
+    expect(view).toEqual({
+      marketId: 'e1',
+      name: 'Holly Fair',
+      date: '2026-10-17',
+      endDate: '',
+      town: 'Johnston',
+      hours: '9am – 3pm',
+      address: '1 Main St',
+      booth: 'B4',
+      url: 'https://hollyfair.example',
+      state: 'before',
+      pieces: [expect.objectContaining({ slug: 'theo', status: 'sold_out' })],
+    });
+    // Never reads the ways to pay.
+    expect(state.calls).not.toContain('from(payment_settings)');
+  });
+  it('is null on Showcase or for no such market, and throws a failed read', async () => {
+    state.features = new Set(['market_dates']);
+    expect(await loadMarketInfo(db(), 't1', 'e1')).toBeNull();
+    state.features = new Set(['market_shop']);
+    state.queue = [{ data: null, error: null }];
+    expect(await loadMarketInfo(db(), 't1', 'e1')).toBeNull();
+    state.queue = [{ data: null, error: { message: 'down' } }];
+    await expect(loadMarketInfo(db(), 't1', 'e1')).rejects.toThrow('down');
   });
 });
 

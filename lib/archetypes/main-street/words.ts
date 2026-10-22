@@ -16,6 +16,10 @@ export const FAMILY_WORD_SPOTS = {
   productAddToCart: '',
   productAskAbout: '',
   productSoldOut: '',
+  /** A one of a kind piece once it has sold (Alex, 2026-10-22). */
+  productSold: '',
+  /** Made to order with none ready: "{price}" and that it can still be ordered. */
+  productOrderOnly: '',
   productUnavailable: '',
   productDetailsLabel: '',
   contactFormName: '',
@@ -132,6 +136,14 @@ export const FAMILY_WORD_SPOTS = {
   /** A market's own page (the QR page buyers scan at her table; Market and Full). */
   market: {
     separator: '',
+    /** A market's information page (Alex, 2026-10-22): its heading over the pieces,
+     *  the line while none are picked, the booth ("Booth {booth}"), the market's
+     *  website link, and the way back to every market. */
+    bringing: '',
+    soon: '',
+    booth: '',
+    website: '',
+    allMarkets: '',
     before: '',
     after: '',
     canceled: '',

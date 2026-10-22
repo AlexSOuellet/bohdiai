@@ -68,6 +68,10 @@ export interface ProductView {
   shortDescription?: string;
   description: string;
   status: CatalogStatus;
+  /** There is just this one (Alex, 2026-10-22): once it sells it reads "Sold", not "Sold out". */
+  oneOfAKind?: true;
+  /** Made to order with none ready: it can still be ordered, so it isn't sold out; it reads "Order only". */
+  orderOnly?: true;
   /** Ordered media resolved from media_ids — images and/or video. First is primary. */
   media: CatalogMedia[];
   /** Seller-defined variations. Empty if the product has none. */
@@ -144,4 +148,25 @@ export interface MarketShopView {
   stock?: Record<string, MarketPieceCount>;
   /** The ways to pay she has switched on. */
   methods: ('venmo' | 'cashapp' | 'zelle' | 'cash')[];
+}
+
+/** A market's information page on the site (Alex, 2026-10-22): its details and what
+ *  she's bringing, reached by clicking the market on the site. Never takes payment;
+ *  the till is the QR page (MarketShopView). */
+export interface MarketInfoView {
+  marketId: string;
+  name: string;
+  /** First day and last day ('' for one day), as stored, for the design to word. */
+  date: string;
+  endDate: string;
+  town: string;
+  hours: string;
+  address: string;
+  booth: string;
+  /** The market's own website ('' for none). */
+  url: string;
+  state: 'before' | 'open' | 'after' | 'canceled';
+  /** The pieces she ticked for this market, sale prices on, in her order; a piece
+   *  with nothing left at this market shows as sold out. */
+  pieces: ProductView[];
 }

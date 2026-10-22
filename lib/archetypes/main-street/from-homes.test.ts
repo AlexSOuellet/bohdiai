@@ -146,6 +146,15 @@ describe('familyViewFromHomes', () => {
   });
 });
 
+describe('market pages (Alex, 2026-10-22)', () => {
+  it('links each market to its own page on Market and Full, never on Showcase', () => {
+    const d = market({ id: 'e9' });
+    expect(familyViewFromHomes({ ...empty, dates: [d], marketPages: true }, W).founder.findUs?.rows[0]?.href).toBe('/events/e9');
+    expect(familyViewFromHomes({ ...empty, dates: [d], marketPages: false }, W).founder.findUs?.rows[0]).not.toHaveProperty('href');
+    expect(familyViewFromHomes({ ...empty, dates: [d] }, W).founder.findUs?.rows[0]).not.toHaveProperty('href');
+  });
+});
+
 describe('familyMarketDay', () => {
   it('writes one day, or a range', () => {
     expect(familyMarketDay({ date: '2026-10-17', endDate: '' }, W)).toBe('day:Sat Oct 17');

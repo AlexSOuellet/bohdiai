@@ -59,7 +59,7 @@ export function moveOf(from: SitePlan, to: SitePlan): Move {
 export const FEATURE_WORDS: Partial<Record<FeatureKey, string>> = {
   catalog: 'Your shop page and prices (your products are kept)',
   market_details: 'Market hours, addresses, booths and websites',
-  market_shop: 'The point of sale at markets: the QR shop page, Getting paid and Today',
+  market_shop: 'The point of sale at markets: the QR shop page, Getting paid, Today and Orders',
   collections: 'Collections and their pages (your collections are kept)',
   testimonials_all: 'Every testimonial on your site (Market shows up to three; the rest are kept)',
   product_photos: 'Extra photos on each product (the main photo stays)',

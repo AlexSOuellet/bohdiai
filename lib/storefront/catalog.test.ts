@@ -87,6 +87,8 @@ describe('toProductView', () => {
       shortDescription: 'Figs',
       description: 'Long',
       status: 'active',
+      // A blank stock is made to order with none ready: Order only (Alex, 2026-10-22).
+      orderOnly: true,
       media: mediaForListing(row(), media),
       variations: [],
     });
@@ -94,6 +96,16 @@ describe('toProductView', () => {
   it('marks a product the owner put on the home page, and only that one', () => {
     expect(toProductView(row({ on_home: true }), [], [], media).onHome).toBe(true);
     expect(toProductView(row(), [], [], media)).not.toHaveProperty('onHome');
+  });
+  it('marks a one of a kind, and made to order with none ready as Order only, never sold out (Alex, 2026-10-22)', () => {
+    const one = toProductView(row({ inventory_count: 0, stock_kind: 'one_of_a_kind' }), [], [], media);
+    expect(one).toMatchObject({ status: 'sold_out', oneOfAKind: true });
+    const order = toProductView(row({ inventory_count: 0, stock_kind: 'made_to_order' }), [], [], media);
+    expect(order).toMatchObject({ status: 'active', orderOnly: true });
+    expect(toProductView(row({ inventory_count: 2, stock_kind: 'made_to_order' }), [], [], media)).not.toHaveProperty('orderOnly');
+    // Blank is made to order with none counted ready.
+    expect(toProductView(row({ inventory_count: null }), [], [], media)).toMatchObject({ status: 'active', orderOnly: true });
+    expect(toProductView(row({ inventory_count: 0, stock_kind: 'count' }), [], [], media)).not.toHaveProperty('oneOfAKind');
   });
   it('is sold out when its stock is 0, not when it is blank', () => {
     expect(toProductView(row({ inventory_count: 0 }), [], [], media).status).toBe('sold_out');

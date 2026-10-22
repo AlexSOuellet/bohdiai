@@ -87,7 +87,8 @@ export function FindUsCalendar({
   // References survive from section.rows through buildFindUsMonth's grid, so
   // indexOf is exact — no fuzzy matching. O(n) per lookup, fine for typical
   // event counts. Undefined when no eventHrefs supplied → non-interactive.
-  const hrefFor = (e: FindUsEvent): string | undefined => eventHrefs?.[section.rows.indexOf(e)];
+  // The events page scrolls to the row; elsewhere the market opens its own page.
+  const hrefFor = (e: FindUsEvent): string | undefined => eventHrefs?.[section.rows.indexOf(e)] ?? e.href;
 
   return (
     <section id="find-us" className="ms-fu-section ms-fu-cal">

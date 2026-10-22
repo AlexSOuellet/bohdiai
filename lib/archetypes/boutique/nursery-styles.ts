@@ -182,6 +182,13 @@ export function nurseryCss(): string {
 .nn-visits__what small{display:block;font-family:var(--type);font-size:14px;color:var(--ink-soft);margin-top:2px}
 .nn-visits__links{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:6px;font-family:var(--body);font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
 .nn-visits__links a{text-decoration:none;border-bottom:1.5px dashed;color:var(--sage-deep)}
+.nn-visits__name{color:inherit;text-decoration:none;border-bottom:1.5px dashed currentColor}
+.nn-visits__name:hover,.nn-visits__name:focus-visible{color:var(--sage-deep)}
+.nn-mi-details{margin:10px 0 0;font-family:var(--body);font-size:17px}
+.nn-mi-note{margin:0;font-family:var(--body);font-size:18px}
+.nn-mi-back{margin:36px 0 0;font-family:var(--body);font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.nn-order-only{font-style:italic;font-weight:400;opacity:.8}
+.nn-mi-back a{text-decoration:none;border-bottom:1.5px dashed;color:var(--sage-deep)}
 .nn-visits__off{display:inline-block;margin-left:12px;font-family:var(--type);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--rose-deep);border:2px solid var(--rose-deep);padding:2px 8px;transform:rotate(-3deg);vertical-align:middle}
 .nn-visits__canceled .nn-visits__when,.nn-visits__canceled .nn-visits__where{opacity:.5}
 @media (max-width:620px){.nn-visits li{grid-template-columns:1fr;gap:2px}}

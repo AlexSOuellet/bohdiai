@@ -76,6 +76,8 @@ export interface FindUsEvent {
   where: string;
   time: string;
   date?: string | undefined;
+  /** The market's own page on the site (Market and Full); absent → its name is plain text. */
+  href?: string | undefined;
 }
 
 /** The find-us SECTION content — the authored heading + cue + the dates themselves.

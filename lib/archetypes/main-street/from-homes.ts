@@ -33,6 +33,8 @@ export type FamilyHomes = {
   name: string;
   /** Maker Full: the site sells online (the cart is on). */
   sellsOnline: boolean;
+  /** Market and Full: each market has its own page on the site (Alex, 2026-10-22). */
+  marketPages?: boolean | undefined;
   /** The pages a button may point at on this site's plan (Showcase has no shop). */
   linkTargets: readonly LinkTarget[];
   moment: MomentView;
@@ -73,7 +75,7 @@ function marketWhere(d: MarketDate, w: FamilyWords): string {
 
 type FindUs = NonNullable<MainStreetView['founder']['findUs']>;
 
-function findUsFrom(markets: SectionWords, dates: readonly MarketDate[], w: FamilyWords): FindUs | undefined {
+function findUsFrom(markets: SectionWords, dates: readonly MarketDate[], w: FamilyWords, marketPages: boolean): FindUs | undefined {
   if (dates.length === 0) return undefined;
   return {
     label: markets.title,
@@ -84,6 +86,7 @@ function findUsFrom(markets: SectionWords, dates: readonly MarketDate[], w: Fami
       where: marketWhere(d, w),
       time: d.hours,
       date: d.date,
+      ...(marketPages ? { href: `/events/${d.id}` } : {}),
     })),
   };
 }
@@ -141,7 +144,7 @@ export function familyViewFromHomes(h: FamilyHomes, w: FamilyWords): MainStreetV
       heading: orUndefined(s.about.title),
       photo: { url: h.portraitUrl ?? undefined, alt: '' },
       aboutLabel: orUndefined(s.about.moreLabel),
-      findUs: findUsFrom(s.markets, h.dates, w),
+      findUs: findUsFrom(s.markets, h.dates, w, h.marketPages === true),
     },
     close: {
       label: s.close.kicker,
@@ -176,6 +179,7 @@ export async function loadFamilyHomes(db: SupabaseClient<Database>, tenantId: st
   return {
     name: tenant.data.business_name,
     sellsOnline: features.has('cart'),
+    marketPages: features.has('market_shop'),
     linkTargets: linkTargetsFor(features.has('catalog'), features.has('collections')),
     moment,
     sections,

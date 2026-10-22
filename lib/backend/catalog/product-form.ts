@@ -13,6 +13,7 @@ import {
   type Combination,
 } from '@/lib/catalog/combinations';
 import { HOME_MAX, GALLERY_MAX } from '@/lib/catalog/home';
+import { STOCK_KINDS, type StockKind } from '@/lib/catalog/stock';
 
 export { HOME_MAX, GALLERY_MAX };
 
@@ -29,6 +30,8 @@ export type VariantForm = {
   choices: Combination;
   price: string;
   stock: string;
+  /** One of a kind, a count, or made to order (Alex, 2026-10-22). */
+  stockKind: StockKind;
   available: boolean;
 };
 export type PhotoForm = { uploadId: string; url: string };
@@ -40,7 +43,10 @@ export type ProductForm = {
   shortDescription: string;
   description: string;
   price: string;
+  /** With `stockKind`: one of a kind (its count, 1 until it sells), how many (a count),
+   *  or how many are ready (made to order; blank for none counted). */
   stock: string;
+  stockKind: StockKind;
   status: ItemStatus;
   kind: Kind;
   fileUploadId: string | null;
@@ -66,6 +72,7 @@ export type ProductPayload = {
   base_price_cents: number;
   status: ItemStatus;
   inventory_count: number | null;
+  stock_kind: StockKind;
   media_ids: string[];
   file_upload_id: string | null;
   collection_ids: string[];
@@ -77,6 +84,7 @@ export type ProductPayload = {
     combination: Combination;
     price_cents: number | null;
     inventory_count: number | null;
+    stock_kind: StockKind;
     available: boolean;
   }[];
   on_home: boolean;
@@ -99,6 +107,8 @@ export function emptyProductForm(): ProductForm {
     description: '',
     price: '',
     stock: '',
+    // A new piece starts as made to order: what a blank stock always meant.
+    stockKind: 'made_to_order',
     status: 'draft',
     kind: 'physical',
     fileUploadId: null,
@@ -127,6 +137,20 @@ export function parseStock(text: string): { ok: true; count: number | null } | {
   return /^\d{1,6}$/.test(t) ? { ok: true, count: Number(t) } : { ok: false };
 }
 
+/** The count a stock choice saves, or why it can't (`what` names the product or
+ *  combination in the message). One of a kind is 1 until it sells; a count must be
+ *  typed; made to order may say how many are ready. */
+export function stockCount(kind: StockKind, text: string, what: string): { ok: true; count: number | null } | { ok: false; error: string } {
+  const s = parseStock(text);
+  if (!s.ok) return { ok: false, error: `Check the number for ${what}: a whole number, 0 or more.` };
+  if (kind === 'one_of_a_kind') {
+    if (s.count !== null && s.count > 1) return { ok: false, error: `One of a kind is just one. Choose “I have some” for ${what} if you have more.` };
+    return { ok: true, count: s.count ?? 1 };
+  }
+  if (kind === 'count' && s.count === null) return { ok: false, error: `Type how many you have of ${what}, or choose Made to order.` };
+  return { ok: true, count: s.count };
+}
+
 export function formatCents(cents: number | null): string {
   if (cents === null) return '';
   return cents % 100 === 0 ? String(cents / 100) : (cents / 100).toFixed(2);
@@ -150,7 +174,7 @@ export function syncVariants(
   const byKey = new Map(existing.map((v) => [combinationKey(v.choices), v]));
   return combinationsOf(filledOptions(options)).map(
     (choices) =>
-      byKey.get(combinationKey(choices)) ?? { choices, price: '', stock: '', available: true },
+      byKey.get(combinationKey(choices)) ?? { choices, price: '', stock: '', stockKind: 'made_to_order', available: true },
   );
 }
 
@@ -183,6 +207,7 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
 export const isStatus = (v: unknown): v is ItemStatus =>
   (STATUSES as readonly unknown[]).includes(v);
 const isKind = (v: unknown): v is Kind => (KINDS as readonly unknown[]).includes(v);
+const isStockKind = (v: unknown): v is StockKind => (STOCK_KINDS as readonly unknown[]).includes(v);
 export const isStringArray = (v: unknown): v is string[] => Array.isArray(v) && v.every(isString);
 
 /** The form arrives from the browser, so a crafted request can send anything. Check
@@ -191,6 +216,7 @@ function hasProductShape(f: unknown): boolean {
   if (!isRecord(f)) return false;
   if (![f['name'], f['shortDescription'], f['description'], f['price'], f['stock']].every(isString))
     return false;
+  if (!isStockKind(f['stockKind'])) return false;
   if (
     !isStringOrNull(f['id']) ||
     !isStatus(f['status']) ||
@@ -225,6 +251,7 @@ function hasProductShape(f: unknown): boolean {
     Object.values(v['choices']).every(isString) &&
     isString(v['price']) &&
     isString(v['stock']) &&
+    isStockKind(v['stockKind']) &&
     typeof v['available'] === 'boolean';
   return Array.isArray(variants) && variants.every(variantOk);
 }
@@ -311,16 +338,24 @@ export function buildProductPayload(
       choices: combination,
       price: '',
       stock: '',
+      stockKind: 'made_to_order' as const,
       available: true,
     };
     const vp = parseDollars(v.price);
     if (!vp.ok) return fail(`Check the price for ${label(combination)}.`);
-    const vs = parseStock(v.stock);
-    if (!vs.ok) return fail(`Check the stock for ${label(combination)}.`);
+    // A combination that's switched off keeps its number as it is.
+    const off = parseStock(v.stock);
+    const vs = v.available
+      ? stockCount(v.stockKind, v.stock, label(combination))
+      : off.ok
+        ? off
+        : { ok: false as const, error: `Check the number for ${label(combination)}.` };
+    if (!vs.ok) return fail(vs.error);
     variants.push({
       combination,
       price_cents: vp.cents,
       inventory_count: vs.count,
+      stock_kind: v.stockKind,
       available: v.available,
     });
   }
@@ -330,9 +365,8 @@ export function buildProductPayload(
   // Product-level stock and file apply only without options (plan decision 5).
   let inventory: number | null = null;
   if (!hasOptions && form.kind === 'physical') {
-    const s = parseStock(form.stock);
-    if (!s.ok)
-      return fail('Stock must be a whole number, 0 or more. Leave it blank if you make to order.');
+    const s = stockCount(form.stockKind, form.stock, 'this product');
+    if (!s.ok) return fail(s.error);
     inventory = s.count;
   }
   const digitalProduct = !hasOptions && form.kind === 'digital';
@@ -349,6 +383,8 @@ export function buildProductPayload(
       base_price_cents: price.cents ?? NO_PRICE_CENTS,
       status: form.status,
       inventory_count: inventory,
+      // Options and downloads carry their own stock; the product itself is then made to order.
+      stock_kind: !hasOptions && form.kind === 'physical' ? form.stockKind : 'made_to_order',
       media_ids: form.photos.map((p) => p.uploadId),
       file_upload_id: digitalProduct ? form.fileUploadId : null,
       collection_ids: [...new Set(form.collectionIds)],

@@ -2,7 +2,6 @@
 
 import { useRef, useState } from 'react';
 import Link from 'next/link';
-import type { Route } from 'next';
 import { useRouter, unstable_rethrow } from 'next/navigation';
 import { removeMarket, saveMarket } from '@/lib/backend/markets/actions';
 import {
@@ -20,6 +19,7 @@ import { ConfirmButton } from '../_components/ConfirmButton';
 import { QrCode } from '../_components/QrCode';
 
 import type { ShopPick } from '@/lib/backend/markets/shop-props';
+import { EVENT_TABS, type EventTab } from '@/lib/backend/markets/event-tabs';
 
 /** A count box's starting number: what's on hand, when it's counted. */
 const onHandText = (n: number | null): string => (n === null ? '' : String(Math.max(n, 0)));
@@ -51,13 +51,19 @@ function CountBox({ id, label, value, onChange }: { id: string; label: string; v
   );
 }
 
+const TAB_LABEL: Readonly<Record<EventTab, string>> = {
+  details: 'Details',
+  bringing: 'What I’m bringing',
+  sold: 'How it sold',
+  after: 'After',
+};
+
 /** The market shop's part of the page, on sites that have it. `marketUrl` is the
  *  page buyers scan to (null until the market is saved). */
 export type MarketShopProps = {
   products: ShopPick[];
   marketUrl: string | null;
   fileBase: string;
-  todayHref: string | null;
 };
 import { useNotice } from '../_components/Notice';
 
@@ -100,8 +106,11 @@ function Text({
   );
 }
 
-/** One market: everything about it on one page, Save at the top and bottom. Saving
- *  or removing goes back to the list, which says what happened. */
+/** One event, split into tabs (Alex, 2026-10-22): Details (when and where, the
+ *  organizer), What I'm bringing (with the QR code), How it sold, and After (costs,
+ *  notes, review). Showcase has only the Details, so no tabs. The
+ *  form keeps every tab's changes; Save saves them all. Saving or removing goes back
+ *  to the schedule, which says what happened. */
 /** What each plan asks (Saltmarsh & Lace demo spec): Showcase reports the day, market
  *  and town only; `details` (Lite up) adds hours, address, booth and website; `records`
  *  (Full) adds the private Costs, Organizer, Notes and Review. Hidden values stay in the
@@ -112,13 +121,19 @@ export function MarketEditor({
   details,
   records,
   sold,
+  summary,
+  tab: firstTab = 'details',
 }: {
   initial: MarketForm;
   shop?: MarketShopProps | undefined;
   details: boolean;
   records: boolean;
-  /** How each piece sold at this market (the market app), shown above Save. */
+  /** How it sold at this event (piece counts and the sales): the How it sold tab. */
   sold?: React.ReactNode;
+  /** The line across the top: the day, what it took in, the market day button. */
+  summary?: React.ReactNode;
+  /** The tab to open on (from the address, so a link can land on How it sold). */
+  tab?: EventTab;
 }): React.ReactElement {
   const router = useRouter();
   const [form, setForm] = useState(initial);
@@ -126,6 +141,17 @@ export function MarketEditor({
   const inFlight = useRef(false);
   const notice = useNotice();
   const isNew = initial.id === null;
+  // A new event can be filled in on every tab but How it sold (nothing has sold yet).
+  const tabs = EVENT_TABS.filter(
+    (t) => t === 'details' || (t === 'bringing' && shop !== undefined) || (t === 'sold' && sold !== undefined && !isNew) || (t === 'after' && records),
+  );
+  const [tab, setTab] = useState<EventTab>(tabs.includes(firstTab) ? firstTab : 'details');
+  function openTab(t: EventTab): void {
+    setTab(t);
+    notice.clear();
+    // Keep the tab in the address, so a refresh or a shared link lands on it.
+    window.history.replaceState(null, '', t === 'details' ? window.location.pathname : `${window.location.pathname}?tab=${t}`);
+  }
   const update = (patch: Partial<MarketForm>): void => setForm((f) => ({ ...f, ...patch }));
   const setCost = (i: number, patch: Partial<MarketForm['costs'][number]>): void =>
     setForm((f) => ({ ...f, costs: f.costs.map((c, j) => (j === i ? { ...c, ...patch } : c)) }));
@@ -181,17 +207,39 @@ export function MarketEditor({
   return (
     <>
       <div className="bk-head">
-        <h1 className="bk-title">{isNew ? 'Add a market' : initial.name}</h1>
+        <h1 className="bk-title">{isNew ? 'Add an event' : initial.name}</h1>
         <div className="bk-head-actions">
           <Link className="bk-btn bk-btn-quiet" href="/manage/markets">
-            Back to markets
+            Back to schedule
           </Link>
-          {saveButton}
+          {tab !== 'sold' && saveButton}
         </div>
       </div>
       <main id="main" className="bk-content bk-market">
+        {summary}
+        {tabs.length > 1 && (
+          <div className="bk-tabs" role="tablist" aria-label="This event">
+            {tabs.map((t) => (
+              <button
+                key={t}
+                type="button"
+                role="tab"
+                id={`tab-${t}`}
+                aria-selected={tab === t}
+                aria-controls="event-panel"
+                className="bk-tab"
+                onClick={() => openTab(t)}
+              >
+                {TAB_LABEL[t]}
+              </button>
+            ))}
+          </div>
+        )}
         {notice.area}
+        <div id="event-panel" role={tabs.length > 1 ? 'tabpanel' : undefined} aria-labelledby={tabs.length > 1 ? `tab-${tab}` : undefined}>
 
+        {tab === 'details' && (
+        <>
         <section className="bk-section" aria-labelledby="s-when">
           <h2 id="s-when" className="bk-section-title">
             When and where
@@ -201,7 +249,7 @@ export function MarketEditor({
           </p>
           <Text
             id="m-name"
-            label="Market name"
+            label="Event name"
             value={form.name}
             max={L.name}
             onChange={(v) => update({ name: v })}
@@ -268,7 +316,7 @@ export function MarketEditor({
               />
               <Text
                 id="m-url"
-                label="The market’s website"
+                label="The event’s website"
                 note="optional"
                 type="url"
                 inputMode="url"
@@ -290,19 +338,49 @@ export function MarketEditor({
             <p className="bk-note">Your site shows it as canceled, so nobody drives out for it.</p>
           </div>
         </section>
+        {records && (
+            <section className="bk-section" aria-labelledby="s-org">
+              <h2 id="s-org" className="bk-section-title">
+                Organizer
+              </h2>
+              <p className="bk-note">Only you see these.</p>
+              <Text
+                id="m-org-name"
+                label="Name"
+                value={form.organizerName}
+                max={L.organizerName}
+                onChange={(v) => update({ organizerName: v })}
+              />
+              <div className="bk-row">
+                <Text
+                  id="m-org-phone"
+                  label="Phone"
+                  type="tel"
+                  inputMode="tel"
+                  value={form.organizerPhone}
+                  max={L.organizerPhone}
+                  onChange={(v) => update({ organizerPhone: v })}
+                />
+                <Text
+                  id="m-org-email"
+                  label="Email"
+                  type="email"
+                  inputMode="email"
+                  value={form.organizerEmail}
+                  max={L.organizerEmail}
+                  onChange={(v) => update({ organizerEmail: v })}
+                />
+              </div>
+            </section>
+        )}
+        </>
+        )}
 
-        {shop !== undefined && (
+        {tab === 'bringing' && shop !== undefined && (
           <section className="bk-section" aria-labelledby="s-table">
             <h2 id="s-table" className="bk-section-title">
               Your table
             </h2>
-            {shop.todayHref !== null && (
-              <p className="bk-row">
-                <Link className="bk-btn" href={shop.todayHref as Route}>
-                  Market POS
-                </Link>
-              </p>
-            )}
             <fieldset className="bk-fieldset">
               <legend className="bk-label">What you’re bringing ({form.listingIds.length})</legend>
               <p className="bk-note">
@@ -366,9 +444,9 @@ export function MarketEditor({
               )}
             </fieldset>
             <div className="bk-field">
-              <p className="bk-label">This market’s QR code</p>
+              <p className="bk-label">This event’s QR code</p>
               {shop.marketUrl === null ? (
-                <p className="bk-note">Save the market first, then its code shows here.</p>
+                <p className="bk-note">Save the event first, then its code shows here.</p>
               ) : (
                 <>
                   <p className="bk-note bk-qr-url">{shop.marketUrl}</p>
@@ -379,7 +457,7 @@ export function MarketEditor({
           </section>
         )}
 
-        {records && (
+        {tab === 'after' && records && (
           <>
             <section className="bk-section" aria-labelledby="s-costs">
               <h2 id="s-costs" className="bk-section-title">
@@ -457,39 +535,7 @@ export function MarketEditor({
               </div>
             </section>
 
-            <section className="bk-section" aria-labelledby="s-org">
-              <h2 id="s-org" className="bk-section-title">
-                Organizer
-              </h2>
-              <p className="bk-note">Only you see these.</p>
-              <Text
-                id="m-org-name"
-                label="Name"
-                value={form.organizerName}
-                max={L.organizerName}
-                onChange={(v) => update({ organizerName: v })}
-              />
-              <div className="bk-row">
-                <Text
-                  id="m-org-phone"
-                  label="Phone"
-                  type="tel"
-                  inputMode="tel"
-                  value={form.organizerPhone}
-                  max={L.organizerPhone}
-                  onChange={(v) => update({ organizerPhone: v })}
-                />
-                <Text
-                  id="m-org-email"
-                  label="Email"
-                  type="email"
-                  inputMode="email"
-                  value={form.organizerEmail}
-                  max={L.organizerEmail}
-                  onChange={(v) => update({ organizerEmail: v })}
-                />
-              </div>
-            </section>
+
 
             <section className="bk-section" aria-labelledby="s-notes">
               <h2 id="s-notes" className="bk-section-title">
@@ -564,13 +610,14 @@ export function MarketEditor({
           </>
         )}
 
-        {sold}
+        {tab === 'sold' && sold}
+        </div>
 
         <div className="bk-row">
-          {saveButton}
-          {!isNew && (
+          {tab !== 'sold' && saveButton}
+          {!isNew && tab === 'details' && (
             <ConfirmButton
-              label="Remove this market"
+              label="Remove this event"
               confirmLabel="Yes, remove it"
               disabled={busy}
               onConfirm={remove}

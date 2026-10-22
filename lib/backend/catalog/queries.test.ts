@@ -61,6 +61,15 @@ const listing = {
 };
 
 describe('labels', () => {
+  it('names one of a kind and made to order (Alex, 2026-10-22)', () => {
+    const one = (inventoryCount: number | null, stockKind: 'one_of_a_kind' | 'count' | 'made_to_order') => stockLabel({ inventoryCount, stockKind, hasOptions: false, combinations: [] });
+    expect(one(1, 'one_of_a_kind')).toBe('One of a kind');
+    expect(one(0, 'one_of_a_kind')).toBe('Sold');
+    expect(one(0, 'count')).toBe('Sold out');
+    expect(one(null, 'made_to_order')).toBe('Made to order');
+    expect(one(2, 'made_to_order')).toBe('Made to order, 2 ready');
+    expect(one(0, 'made_to_order')).toBe('Order only');
+  });
   it('describes stock in plain words', () => {
     expect(stockLabel({ inventoryCount: null, hasOptions: false, combinations: [] })).toBe(
       'Made to order',

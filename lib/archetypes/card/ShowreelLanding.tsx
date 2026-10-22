@@ -101,6 +101,15 @@ function Caption({ text }: { text: string }): ReactElement {
 /** The piece's price as the shop shows it: the sale price beside the struck full one, or "Ask for price". */
 function Price({ product, w }: { product: ProductView; w: CardWords['shoreline'] }): ReactElement {
   if (product.askForPrice === true) return <span className="sr-price sr-price--ask">{w.askForPrice}</span>;
+  // Sold shows the moment it sells; made to order with none ready still sells (Alex, 2026-10-22).
+  if (product.status === 'sold_out') return <span className="sr-price">{product.oneOfAKind === true ? w.sold : w.soldOut}</span>;
+  if (product.orderOnly === true) {
+    return (
+      <span className="sr-price">
+        {product.salePrice ?? product.price} <em>{w.orderOnly}</em>
+      </span>
+    );
+  }
   if (product.salePrice !== undefined) {
     return (
       <span className="sr-price">

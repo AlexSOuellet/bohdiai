@@ -3,7 +3,7 @@
  * own product catalog (separate rows), its seven skins, and its render. Bohdi
  * picks the skin and authors everything; this file only describes the shape.
  */
-import { CardCart, CardMarket, CardPage, CardProduct, CardSite } from '../card/builder';
+import { CardCart, CardMarket, CardMarketInfo, CardPage, CardProduct, CardSite } from '../card/builder';
 import { shorelineLook, type ShorelineLook } from '../card/look';
 import { cardPaint } from '../card/paint';
 import { z } from 'zod';
@@ -40,6 +40,7 @@ import { withSale, type Promotion } from '@/lib/storefront/promotions';
 import { loadShopWords } from '@/lib/storefront/metadata';
 import { FamilyCart } from './FamilyCart';
 import { FamilyMarket } from './FamilyMarket';
+import { FamilyMarketInfo } from './FamilyMarketInfo';
 import { MainStreetRoot } from './chrome';
 import { getSiteScene } from '@/lib/backend/scene/queries';
 import type { ScenePhoto } from './scenes';
@@ -555,6 +556,23 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
         </MainStreetRoot>
       </FamilyMarketPage>
     ), familyBase.key === 'scenic');
+  },
+  renderMarketInfo: ({ content, lookKey, market, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
+    const skin = themeFor(lookKey, brandPalette, accentOverride);
+    if (isScenic(mood, brandPalette)) {
+      return <ScenicLook tenantId={tenantId} skin={skin}>{(look) => <CardMarketInfo tenantId={tenantId} design="shoreline" market={market} look={look} />}</ScenicLook>;
+    }
+    const familyBase = familyFor(mood, brandPalette);
+    const treatments = resolveTreatments(mood, {});
+    return withFamilyContent(content, tenantId, (view, words, _sale, scene) => {
+      const family = withScene(familyBase, scene);
+      const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
+      return (
+        <MainStreetSubPage content={c} skin={skin} words={words} family={family} current="/events">
+          <FamilyMarketInfo market={market} words={words} />
+        </MainStreetSubPage>
+      );
+    }, familyBase.key === 'scenic');
   },
 };
 

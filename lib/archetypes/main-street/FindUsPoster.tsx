@@ -9,6 +9,7 @@
  * live in `skinVarsCss` under `.ms-fu-poster-*`; colors are `--ms-*` vars, type is
  * named roles.
  */
+import { MarketName } from './MarketName';
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import { type FindUsSection, type FindUsEvent, parseFindUsDate } from './findus';
@@ -52,7 +53,7 @@ export function FindUsPoster({
                   {posterDate(e, words)}
                 </Type>
                 <Type as="span" role="cardTitle" className="ms-fu-poster-de">
-                  {e.where}
+                  <MarketName e={e} />
                   <Type as="span" role="where" className="ms-fu-poster-place">
                     {e.time}
                   </Type>

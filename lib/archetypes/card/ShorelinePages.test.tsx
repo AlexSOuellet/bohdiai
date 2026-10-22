@@ -1,8 +1,8 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen, cleanup, within, fireEvent } from '@testing-library/react';
 import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
-import type { MarketShopView, ProductView } from '@/lib/archetypes/content';
-import { ShorelineCart, ShorelineMarket, ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
+import type { MarketInfoView, MarketShopView, ProductView } from '@/lib/archetypes/content';
+import { ShorelineCart, ShorelineMarket, ShorelineMarketInfo, ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
 import { featuredProducts, type ShorelineData } from './shoreline-data';
 import { fill, keyWords } from '@/lib/site-words/words';
 import { CARD_WORD_SPOTS, CARD_WORDS_PREFIX, type CardWords } from './words';
@@ -30,7 +30,7 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: 
 const TENANT = '1b54cb24-c467-4327-ae66-f9857a71a854';
 const W = S.shoreline;
 
-function product(slug: string, over: Pick<ProductView, never> & { askForPrice?: true; price?: string; onHome?: boolean } = {}): ProductView {
+function product(slug: string, over: Pick<Partial<ProductView>, 'status' | 'oneOfAKind' | 'orderOnly'> & { askForPrice?: true; price?: string; onHome?: boolean } = {}): ProductView {
   return { slug, name: slug.replace(/-/g, ' '), price: '$28', status: 'active', description: 'First part.\n\nSecond part.', media: [{ kind: 'image', url: `https://cdn/${slug}.jpg`, alt: '' }], variations: [], ...over };
 }
 
@@ -430,5 +430,70 @@ describe('on the Scenic mood', () => {
     const { container } = page('home');
     expect(container.querySelector('.sl')?.hasAttribute('data-look')).toBe(false);
     expect(container.querySelector('video')).toBeNull();
+  });
+});
+
+describe('Scenic — a market’s information page (Alex, 2026-10-22)', () => {
+  const info = (over: Partial<MarketInfoView> = {}): MarketInfoView => ({
+    marketId: 'd1',
+    name: 'Harvest Fair',
+    date: '2026-10-24',
+    endDate: '',
+    town: 'Bristol',
+    hours: '10am – 4pm',
+    address: '2 Main St',
+    booth: '12',
+    url: 'https://fair.example',
+    state: 'before',
+    pieces: [product('old-saint-nick', { price: '$22' })],
+    ...over,
+  });
+
+  it('links each market on the Markets page and the home to its own page, on Lite and Full', () => {
+    const { container } = render(<ShorelineSite site={site} page="events" tenantId="t1" />);
+    expect(screen.getByRole('link', { name: 'Harvest Fair' }).getAttribute('href')).toBe('/events/d1');
+    cleanup();
+    render(<ShorelineSite site={site} page="home" tenantId="t1" />);
+    expect(screen.getAllByRole('link', { name: 'Harvest Fair' })[0]?.getAttribute('href')).toBe('/events/d1');
+    cleanup();
+    render(<ShorelineSite site={{ ...site, pages: false }} page="events" tenantId="t1" />);
+    expect(screen.queryByRole('link', { name: 'Harvest Fair' })).toBeNull();
+    expect(container).toBeTruthy();
+  });
+
+  it('gives the details in the market card and what she’s bringing, with the menu and no way to pay', () => {
+    const { container } = render(<ShorelineMarketInfo site={site} market={info()} />);
+    expect(container.querySelector('.sl-market h2')?.textContent).toBe('Harvest Fair');
+    expect(screen.getByText(`${W.marketCols.booth} 12`)).toBeTruthy();
+    expect(screen.getByRole('link', { name: W.directions }).getAttribute('href')).toContain(encodeURIComponent('2 Main St, Bristol'));
+    expect(screen.getByRole('link', { name: W.marketLink }).getAttribute('href')).toBe('https://fair.example');
+    expect(screen.getByRole('heading', { name: W.market.bringing })).toBeTruthy();
+    expect(container.querySelector('nav')).not.toBeNull();
+    expect(container.querySelector('.sl-mk-buy')).toBeNull();
+    expect(screen.getByRole('link', { name: W.market.allMarkets }).getAttribute('href')).toBe('/events');
+  });
+
+  it('says it’s coming soon while nothing is picked, and when it’s over or canceled', () => {
+    const { rerender } = render(<ShorelineMarketInfo site={site} market={info({ pieces: [], address: '', url: '' })} />);
+    expect(screen.getByText(W.market.soon)).toBeTruthy();
+    expect(screen.queryByRole('link', { name: W.directions })).toBeNull();
+    rerender(<ShorelineMarketInfo site={site} market={info({ state: 'after' })} />);
+    expect(screen.getByText(W.market.after)).toBeTruthy();
+    rerender(<ShorelineMarketInfo site={site} market={info({ state: 'canceled' })} />);
+    expect(screen.getByText(W.market.canceled)).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: W.market.bringing })).toBeNull();
+  });
+});
+
+describe('Scenic — sold and order only on the site (Alex, 2026-10-22)', () => {
+  it('shows Sold for a sold one of a kind, Sold out for a count, and Order only for made to order', () => {
+    const products = [
+      product('tray', { price: '$40', status: 'sold_out', oneOfAKind: true }),
+      product('mugs', { price: '$18', status: 'sold_out' }),
+      product('board', { price: '$60', orderOnly: true }),
+    ];
+    const { container } = render(<ShorelineSite site={{ ...site, products }} page="shop" tenantId="t1" />);
+    const prices = [...container.querySelectorAll('.sl-print .sl-price')].map((p) => p.textContent);
+    expect(prices).toEqual([W.sold, W.soldOut, `$60 ${W.orderOnly}`]);
   });
 });

@@ -31,7 +31,7 @@ export default async function MarketResultsPage(): Promise<React.ReactElement> {
         <h1 className="bk-title">Market results</h1>
         <div className="bk-head-actions">
           <Link className="bk-btn bk-btn-quiet" href="/manage/markets">
-            Back to markets
+            Back to schedule
           </Link>
         </div>
       </div>

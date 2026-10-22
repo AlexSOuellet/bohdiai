@@ -8,6 +8,7 @@
  * Class-only: the ticket, the perforated stub edge, and the rail all live in
  * `skinVarsCss` under `.ms-fu-pass-*`; colors are `--ms-*` vars, type is named roles.
  */
+import { MarketName } from './MarketName';
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import { type FindUsSection, type FindUsEvent, parseFindUsDate } from './findus';
@@ -59,7 +60,7 @@ export function FindUsPasses({
                     </Type>
                   )}
                   <Type as="h3" role="cardTitle" className="ms-fu-pass-where">
-                    {e.where}
+                    <MarketName e={e} />
                   </Type>
                   <Type as="p" role="price" className="ms-fu-pass-time">
                     {e.time}

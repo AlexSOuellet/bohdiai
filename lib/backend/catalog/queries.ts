@@ -6,7 +6,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json } from '@/lib/database.types';
 import { formatPrice, loadMediaMap, imageUrlFromMetadata } from '@/lib/storefront/catalog';
 import { hasPrice, priceRange } from '@/lib/catalog/price';
-import { isProductSoldOut } from '@/lib/catalog/stock';
+import { asStockKind, effectiveStockKind, isProductSoldOut, type StockKind } from '@/lib/catalog/stock';
 import {
   syncVariants,
   formatCents,
@@ -58,10 +58,17 @@ export function priceRangeLabel(
 
 export function stockLabel(input: {
   inventoryCount: number | null;
+  stockKind?: StockKind | undefined;
   hasOptions: boolean;
-  combinations: readonly { inventoryCount: number | null }[];
+  combinations: readonly { inventoryCount: number | null; stockKind?: StockKind | undefined }[];
 }): string {
-  if (isProductSoldOut(input)) return 'Sold out';
+  if (isProductSoldOut(input)) return !input.hasOptions && input.stockKind === 'one_of_a_kind' ? 'Sold' : 'Sold out';
+  if (!input.hasOptions) {
+    const count = input.inventoryCount;
+    const kind = effectiveStockKind(count, input.stockKind);
+    if (kind === 'one_of_a_kind') return 'One of a kind';
+    if (kind === 'made_to_order') return count === null ? 'Made to order' : count === 0 ? 'Order only' : `Made to order, ${count} ready`;
+  }
   const counts = input.hasOptions
     ? input.combinations.map((c) => c.inventoryCount)
     : [input.inventoryCount];
@@ -80,7 +87,7 @@ export async function listProducts(db: Db, tenantId: string): Promise<ProductRow
   const { data, error } = await db
     .from('listings')
     .select(
-      'id, name, status, base_price_cents, inventory_count, media_ids, metadata, on_home, in_gallery, variation_attributes(id), listing_variants(price_cents, inventory_count, status), listing_collections(collection_id)',
+      'id, name, status, base_price_cents, inventory_count, stock_kind, media_ids, metadata, on_home, in_gallery, variation_attributes(id), listing_variants(price_cents, inventory_count, stock_kind, status), listing_collections(collection_id)',
     )
     .eq('tenant_id', tenantId)
     .in('listing_type', PRODUCT_TYPES)
@@ -95,9 +102,9 @@ export async function listProducts(db: Db, tenantId: string): Promise<ProductRow
   return rows.map((r) => {
     const available = r.listing_variants
       .filter((v) => v.status === 'active')
-      .map((v) => ({ priceCents: v.price_cents, inventoryCount: v.inventory_count }));
+      .map((v) => ({ priceCents: v.price_cents, inventoryCount: v.inventory_count, stockKind: asStockKind(v.stock_kind) }));
     const hasOptions = r.variation_attributes.length > 0;
-    const stock = { inventoryCount: r.inventory_count, hasOptions, combinations: available };
+    const stock = { inventoryCount: r.inventory_count, stockKind: asStockKind(r.stock_kind), hasOptions, combinations: available };
     // The first photo that still resolves, else the legacy sample photo — matching the
     // storefront (mediaForListing). The sample photo isn't an upload, so its id stays null.
     const first = r.media_ids.find((uploadId) => media.has(uploadId));
@@ -145,7 +152,7 @@ export async function getProduct(
   const { data: r, error } = await db
     .from('listings')
     .select(
-      'id, slug, name, short_description, description, status, listing_type, base_price_cents, inventory_count, media_ids, metadata, file_upload_id, on_home, is_new, variation_attributes(name, position, variation_options(value, position, kind, file_upload_id)), listing_variants(option_combination, price_cents, inventory_count, status), listing_collections(collection_id)',
+      'id, slug, name, short_description, description, status, listing_type, base_price_cents, inventory_count, stock_kind, media_ids, metadata, file_upload_id, on_home, is_new, variation_attributes(name, position, variation_options(value, position, kind, file_upload_id)), listing_variants(option_combination, price_cents, inventory_count, stock_kind, status), listing_collections(collection_id)',
     )
     .eq('tenant_id', tenantId)
     .eq('id', id)
@@ -178,6 +185,7 @@ export async function getProduct(
     choices: combination(v.option_combination),
     price: formatCents(v.price_cents),
     stock: v.inventory_count === null ? '' : String(v.inventory_count),
+    stockKind: effectiveStockKind(v.inventory_count, asStockKind(v.stock_kind)),
     available: v.status === 'active',
   }));
 
@@ -194,6 +202,7 @@ export async function getProduct(
     description: r.description ?? '',
     price: hasPrice(r.base_price_cents) ? formatCents(r.base_price_cents) : '',
     stock: r.inventory_count === null ? '' : String(r.inventory_count),
+    stockKind: effectiveStockKind(r.inventory_count, asStockKind(r.stock_kind)),
     status: asStatus(r.status),
     kind: r.listing_type === 'digital_product' ? 'digital' : 'physical',
     fileUploadId: r.file_upload_id,

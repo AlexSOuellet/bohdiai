@@ -24,9 +24,14 @@ export const BACKEND_MODULES: BackendModule[] = [
   // Showcase: the catalog in the backend (no collections, no shop); its ticks pick the gallery.
   { feature: 'collections', section: 'Catalog', items: [{ label: 'Collections', href: '/manage/collections' }] },
   { feature: 'gallery_pieces', section: 'Catalog', items: [{ label: 'Products', href: '/manage/products' }] },
-  { feature: 'cart', section: 'Selling', items: [{ label: 'Orders', href: '/manage/orders' }] },
-  { feature: 'promotions', section: 'Selling', items: [{ label: 'Promotions', href: '/manage/promotions' }] },
-  { feature: 'market_shop', section: 'Selling', items: [{ label: 'Getting paid', href: '/manage/payments' }] },
+  // Events (Alex, 2026-10-22): the schedule, the till, market sales and results.
+  // Showcase has only its Schedule.
+  { feature: 'market_dates', section: 'Events', items: [{ label: 'Schedule', href: '/manage/markets' }] },
+  { feature: 'market_shop', section: 'Events', items: [{ label: 'Market POS', href: '/manage/pos' }, { label: 'Sales', href: '/manage/sales' }] },
+  { feature: 'market_records', section: 'Events', items: [{ label: 'Results', href: '/manage/markets/results' }] },
+  // Full's online selling: orders sent from the cart, and promotions.
+  { feature: 'cart', section: 'Online shop', items: [{ label: 'Orders', href: '/manage/orders' }] },
+  { feature: 'promotions', section: 'Online shop', items: [{ label: 'Promotions', href: '/manage/promotions' }] },
   { feature: 'headline', section: 'Your site', items: [{ label: 'Headline', href: '/manage/headline' }] },
   {
     feature: 'profile',
@@ -39,8 +44,6 @@ export const BACKEND_MODULES: BackendModule[] = [
     ],
   },
   { feature: 'gallery', section: 'Your site', items: [{ label: 'Gallery', href: '/manage/gallery' }] },
-  { feature: 'market_dates', section: 'Selling', items: [{ label: 'Markets', href: '/manage/markets' }] },
-  { feature: 'market_shop', section: 'Selling', items: [{ label: 'Market POS', href: '/manage/pos' }] },
   { feature: 'testimonials', section: 'Your site', items: [{ label: 'Testimonials', href: '/manage/testimonials' }] },
   { feature: 'qr_codes', section: 'Your site', items: [{ label: 'QR code', href: '/manage/qr' }] },
   // Contact support: its own item on the main menu, every backend (Alex, 2026-10-19).
@@ -53,6 +56,8 @@ export const BACKEND_MODULES: BackendModule[] = [
       { label: 'Billing', href: '/manage/billing' },
     ],
   },
+  // Set up once, so it sits in Settings (Alex, 2026-10-22).
+  { feature: 'market_shop', section: 'Settings', items: [{ label: 'Getting paid', href: '/manage/payments' }] },
 ];
 
 /** Map key for an item that stands alone (no group name can start with it). */
@@ -75,4 +80,9 @@ export function navFor(modules: readonly BackendModule[], on: ReadonlySet<Featur
   return [...sections]
     .filter(([, items]) => items.length > 0)
     .map(([key, items]) => ({ section: key.startsWith(STANDALONE) ? '' : key, items }));
+}
+
+/** The menu without one screen's item (a group left empty drops out). */
+export function withoutItem(nav: readonly NavSection[], href: string): NavSection[] {
+  return nav.map((s) => ({ ...s, items: s.items.filter((i) => i.href !== href) })).filter((s) => s.items.length > 0);
 }

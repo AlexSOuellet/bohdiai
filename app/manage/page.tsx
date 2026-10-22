@@ -10,6 +10,10 @@ import { VisitsPanel } from './_components/VisitsPanel';
 import { loadVisits } from '@/lib/visits/home';
 import { appVisitsReader } from '@/lib/visits/queries';
 import { logger } from '@/lib/logger';
+import { EventsPanel } from './_components/EventsPanel';
+import { loadEventsHome, type EventsHome } from '@/lib/backend/markets/home-events';
+import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { shopToday } from '@/lib/storefront/promotions';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +31,18 @@ export default async function ManageHome(): Promise<React.ReactElement> {
     now: new Date(),
     onError: (err) => logger.error('backend home visitor numbers failed', { error: err instanceof Error ? err.message : String(err) }),
   });
+  let events: EventsHome | null = null;
+  let eventsFailed = false;
+  if (on.has('market_dates')) {
+    try {
+      const own = await createSupabaseServerClient();
+      const tenant = await own.from('tenants').select('time_zone').eq('id', site.tenantId).maybeSingle();
+      events = await loadEventsHome(own, site.tenantId, shopToday(tenant.data?.time_zone ?? null), { shop: on.has('market_shop'), records: on.has('market_records') });
+    } catch (err) {
+      eventsFailed = true;
+      logger.error('backend home events failed', { error: err instanceof Error ? err.message : String(err) });
+    }
+  }
   return (
     <>
       <div className="bk-head">
@@ -44,6 +60,8 @@ export default async function ManageHome(): Promise<React.ReactElement> {
             </ul>
           </section>
         )}
+        {events !== null && <EventsPanel view={events} />}
+        {eventsFailed && <p className="bk-note">Your events couldn’t load. Refresh to try again.</p>}
         <VisitsPanel view={visits} />
         {home.tiles.length > 0 ? (
           <div className="bk-tiles">

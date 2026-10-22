@@ -33,7 +33,7 @@ describe('MarketList', () => {
     );
     const upcoming = within(screen.getByRole('list', { name: 'Coming up' })).getAllByRole('link').map((a) => a.querySelector('.bk-list-name')?.textContent);
     expect(upcoming).toEqual(['Bazaar', 'Holly Fair']);
-    const past = within(screen.getByRole('list', { name: 'Past markets' })).getAllByRole('link').map((a) => a.querySelector('.bk-list-name')?.textContent);
+    const past = within(screen.getByRole('list', { name: 'Past events' })).getAllByRole('link').map((a) => a.querySelector('.bk-list-name')?.textContent);
     expect(past).toEqual(['Pumpkin Fest', 'Scituate Art Festival']);
     expect(screen.getByLabelText('4 of 5 stars')).toBeTruthy();
     expect(screen.getByText('Canceled')).toBeTruthy();
@@ -42,7 +42,20 @@ describe('MarketList', () => {
 
   it('says what to do when there are none', () => {
     render(<MarketList markets={[]} today="2026-10-15" records={false} />);
-    expect(screen.getByText(/No markets yet/)).toBeTruthy();
+    expect(screen.getByText(/No events yet/)).toBeTruthy();
+  });
+
+  it('shows what each past event took in, where the plan has the market shop', () => {
+    render(
+      <MarketList
+        records
+        today="2026-10-15"
+        took={new Map([['a', '$284']])}
+        markets={[m('a', 'Pumpkin Fest', '2026-10-10'), m('b', 'Bazaar', '2026-10-20'), m('c', 'Holly Fair', '2026-10-01', { canceled: true })]}
+      />,
+    );
+    expect(screen.getByText('Took in $284')).toBeTruthy();
+    expect(screen.getAllByText(/Took in/)).toHaveLength(1);
   });
 
   it('leaves stars and the review nudge out when market records are off (Showcase, Lite)', () => {

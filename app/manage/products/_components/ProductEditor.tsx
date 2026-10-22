@@ -1,5 +1,6 @@
 'use client';
 
+import { StockChoice } from './StockChoice';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, unstable_rethrow } from 'next/navigation';
 import { saveProduct, duplicateProduct } from '@/lib/backend/catalog/actions';
@@ -386,22 +387,10 @@ export function ProductEditor({
                     onChange={(e) => update({ price: e.target.value })}
                   />
                 </div>
-                {!showcase && noOptions && form.kind === 'physical' && (
-                  <div className="bk-field">
-                    <label htmlFor="stock" className="bk-label">
-                      Stock
-                    </label>
-                    <input
-                      id="stock"
-                      className="bk-input"
-                      inputMode="numeric"
-                      placeholder="Blank = made to order"
-                      value={form.stock}
-                      onChange={(e) => update({ stock: e.target.value })}
-                    />
-                  </div>
-                )}
               </div>
+              {!showcase && noOptions && form.kind === 'physical' && (
+                <StockChoice kind={form.stockKind} stock={form.stock} onChange={(next) => update(next)} />
+              )}
               {showcase && (
                 <p className="bk-note">
                   Prices don’t show on your site on Showcase. Fill it in anyway and it shows when
@@ -410,8 +399,8 @@ export function ProductEditor({
               )}
               {!showcase && !noOptions && (
                 <p className="bk-note">
-                  With options, each combination below has its own stock. A blank combination price
-                  uses this one.
+                  With options, each combination below says how you stock it. A blank combination
+                  price uses this one.
                 </p>
               )}
               {digital && noOptions && (

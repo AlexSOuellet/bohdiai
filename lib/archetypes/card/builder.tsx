@@ -15,11 +15,11 @@ import { BulletinLanding, BulletinContentPage } from './BulletinLanding';
 import { ShowreelLanding, ShowreelContentPage, ShowreelProduct, ShowreelShop } from './ShowreelLanding';
 import { TorchLanding, TorchContentPage } from './TorchLanding';
 import { ShorelineLanding, ShorelineContentPage } from './ShorelineLanding';
-import { ShorelineCart, ShorelineMarket, ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
+import { ShorelineCart, ShorelineMarket, ShorelineMarketInfo, ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
 import { featuredProducts, loadScenicData, loadShorelineData, type ShorelineData } from './shoreline-data';
 import type { ShorelineLook } from './look';
 import type { ArchetypePage } from '../builder';
-import type { CartView, ProductView, MarketShopView } from '../content';
+import type { CartView, ProductView, MarketInfoView, MarketShopView } from '../content';
 import { CardContentSchema, cardDesign, type CardContent, type CardDesign } from './design';
 import { loadCardData } from './data';
 import { cardPaint, type CardPaint } from './paint';
@@ -99,6 +99,14 @@ export async function CardMarket({ tenantId, design, market, look }: { tenantId:
   return <ShorelineMarket site={site} market={market} />;
 }
 
+/** A market's information page (Alex, 2026-10-22) — the shoreline design on Lite and Full. */
+export async function CardMarketInfo({ tenantId, design, market, look }: { tenantId: string; design: CardDesign; market: MarketInfoView; look?: ShorelineLook | undefined }): Promise<ReactElement> {
+  if (design !== 'shoreline') notFound();
+  const site = await loadSite(tenantId, look);
+  if (!site.pages) notFound();
+  return <ShorelineMarketInfo site={site} market={market} />;
+}
+
 /** A product's page — the shoreline and show reel designs have them on Lite and Full. */
 export async function CardProduct({ tenantId, design, product, look }: { tenantId: string; design: CardDesign; product: ProductView; look?: ShorelineLook | undefined }): Promise<ReactElement> {
   if (design !== 'shoreline' && design !== 'showreel') notFound();
@@ -173,6 +181,10 @@ export const CARD_SPEC: ArchetypeBuildSpec<CardContent> = {
   renderMarket: ({ content, market, tenantId }) => {
     const design = designOf(content);
     return <CardMarket tenantId={tenantId} design={design} market={market} />;
+  },
+  renderMarketInfo: ({ content, market, tenantId }) => {
+    const design = designOf(content);
+    return <CardMarketInfo tenantId={tenantId} design={design} market={market} />;
   },
   renderContentPage: ({ content, lookKey, mood, brandPalette, tenantId, html, title, body }) => {
     const design = designOf(content);

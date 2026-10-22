@@ -382,3 +382,79 @@ button.bk-up-btn { border: 0; cursor: pointer; font: inherit; font-size: 0.9rem;
 .bk-day-h-small { font-size: 1rem; margin-top: 1.25rem; }
 .bk-day-refunded li { color: var(--bk-ink-muted); }
 .bk-day-refunded .bk-day-sold-amt { text-decoration: line-through; }
+
+/* Sales (Events; Alex, 2026-10-22): one line per sale. Phone: the piece and its price
+   on top, how they paid and the buttons under it. Wider: one row. */
+.bk-sale-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--bk-ink-15); }
+.bk-sale {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'piece amt' 'how how' 'act act';
+  align-items: center; gap: 0.2rem 1rem; padding: 0.7rem 0; border-bottom: 1px solid var(--bk-ink-15);
+}
+.bk-sale-piece { grid-area: piece; font-weight: 600; overflow-wrap: anywhere; }
+.bk-sale-amt { grid-area: amt; justify-self: end; font-family: var(--bk-display); font-size: 1.25rem; font-weight: 600; font-variant-numeric: lining-nums tabular-nums; }
+.bk-sale-how { grid-area: how; font-size: 0.875rem; color: var(--bk-ink-muted); }
+.bk-sale-act { grid-area: act; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.bk-sale-act:empty { display: none; }
+.bk-sale-act .bk-btn { padding: 0.35rem 0.7rem; font-size: 12px; }
+.bk-sale[data-state='waiting'] .bk-sale-how strong { color: var(--bk-oxblood); }
+.bk-sale[data-state='refunded'] .bk-sale-piece,
+.bk-sale[data-state='refunded'] .bk-sale-amt { color: var(--bk-ink-60); font-weight: 400; }
+.bk-sale[data-state='refunded'] .bk-sale-amt { text-decoration: line-through; }
+@media (min-width: 768px) {
+  .bk-sale { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 6rem 12rem; grid-template-areas: 'piece how amt act'; }
+  .bk-sale-act { justify-content: flex-end; }
+  .bk-sale-act:empty { display: block; }
+}
+/* An event's block on the Sales page: its name opens the event, its day and takings under it. */
+.bk-event-sales-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.25rem 1rem; margin-bottom: 0.9rem; }
+.bk-event-sales-head .bk-section-title { margin: 0; }
+.bk-event-sales-head a { color: inherit; text-decoration: none; }
+.bk-event-sales-head a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+.bk-event-sales-when { margin: 0; color: var(--bk-ink-muted); }
+.bk-event-sales-took { margin: 0; font-size: 0.9375rem; }
+
+/* An event's page (Alex, 2026-10-22): the summary says how it went in a sentence, set
+   in the display face with a brass rule; the tabs sit under it, one job each. */
+.bk-event-summary {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1.5rem;
+  margin-bottom: 1.25rem; padding: 0.25rem 0 0.25rem 1.1rem; border-left: 3px solid var(--bk-brass);
+}
+.bk-event-summary-when { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0; color: var(--bk-ink-muted); }
+.bk-event-summary-took { margin: 0.2rem 0 0; max-width: 40rem; font-family: var(--bk-display); font-size: 1.5rem; line-height: 1.25; }
+.bk-event-summary-took strong { font-weight: 700; font-variant-numeric: lining-nums; }
+.bk-tabs { display: flex; gap: 0.25rem; margin-bottom: 1.25rem; overflow-x: auto; border-bottom: 1px solid var(--bk-ink-15); scrollbar-width: none; }
+.bk-tab {
+  flex-shrink: 0; margin-bottom: -1px; padding: 0.6rem 0.9rem; border: 0; border-bottom: 2px solid transparent;
+  background: none; color: var(--bk-ink-muted); font: inherit; font-weight: 600; cursor: pointer;
+}
+.bk-tab:hover { color: var(--bk-ink); }
+.bk-tab[aria-selected='true'] { color: var(--bk-ink); border-bottom-color: var(--bk-oxblood); }
+.bk-tab:focus-visible { outline: 2px solid var(--bk-oxblood); outline-offset: -2px; }
+.bk-market-took { font-size: 0.875rem; color: var(--bk-ink-muted); font-variant-numeric: lining-nums tabular-nums; }
+
+/* The home page's Events box: three lines, each one a link to where it leads. */
+.bk-events-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--bk-ink-15); }
+.bk-events-row {
+  display: grid; grid-template-columns: 7rem minmax(0, 1fr); align-items: baseline; gap: 0.25rem 1rem;
+  padding: 0.85rem 0.5rem; border-bottom: 1px solid var(--bk-ink-15); color: inherit; text-decoration: none;
+}
+.bk-events-row:hover { background: oklch(0.72 0.08 75 / 10%); }
+.bk-events-row:hover .bk-events-text { text-decoration: underline; text-decoration-color: var(--bk-ink-15); text-underline-offset: 0.2em; }
+.bk-events-row:focus-visible { outline: 2px solid var(--bk-oxblood); outline-offset: -2px; }
+.bk-events-label { font-size: 0.8125rem; font-weight: 600; color: var(--bk-ink-muted); }
+.bk-events-row[data-today='true'] .bk-events-label { color: var(--bk-oxblood); }
+.bk-events-text { line-height: 1.45; }
+@media (max-width: 520px) { .bk-events-row { grid-template-columns: 1fr; } }
+
+/* How a piece is stocked (Alex, 2026-10-22): three plain choices, the chosen one
+   outlined, then the one number that choice needs. */
+.bk-stock { margin-top: 1rem; }
+.bk-stock-choices { display: grid; gap: 0.6rem; margin-top: 0.35rem; }
+@media (min-width: 768px) { .bk-stock-choices { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.bk-stock-choice { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.8rem 0.9rem; border: 1px solid var(--bk-ink-15); border-radius: 10px; background: var(--bk-field); cursor: pointer; }
+.bk-stock-choice[data-on='true'] { border-color: var(--bk-oxblood); box-shadow: inset 0 0 0 1px var(--bk-oxblood); }
+.bk-stock-choice input { margin-top: 0.2rem; accent-color: var(--bk-oxblood); }
+.bk-stock-choice-text { display: grid; gap: 0.2rem; }
+.bk-stock-choice-text .bk-note { margin: 0; font-size: 0.8125rem; }
+.bk-stock .bk-field { margin-top: 0.9rem; }
+.bk-stock-cell { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }

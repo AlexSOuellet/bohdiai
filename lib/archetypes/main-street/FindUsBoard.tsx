@@ -12,6 +12,7 @@
  * where / price / eyebrow). Placement, the row rule, and the date block all live in
  * `skinVarsCss` under `.ms-fu-board-*` — never inline.
  */
+import { MarketName } from './MarketName';
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import { type FindUsSection, type FindUsEvent, parseFindUsDate } from './findus';
@@ -63,7 +64,7 @@ export function FindUsBoard({
                 </div>
                 <div className="ms-fu-board-venue">
                   <Type as="h3" role="cardTitle" className="ms-fu-board-where">
-                    {e.where}
+                    <MarketName e={e} />
                   </Type>
                   <Type as="p" role="price" className="ms-fu-board-time">
                     {e.time}

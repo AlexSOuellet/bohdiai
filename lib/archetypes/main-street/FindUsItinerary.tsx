@@ -8,6 +8,7 @@
  * Class-only: the route line, the nodes, and the stops live in `skinVarsCss` under
  * `.ms-fu-itin-*`; colors are `--ms-*` vars, type is named roles.
  */
+import { MarketName } from './MarketName';
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import { type FindUsSection, type FindUsEvent, parseFindUsDate } from './findus';
@@ -48,7 +49,7 @@ export function FindUsItinerary({
                 {stopDate(e, words)}
               </Type>
               <Type as="h3" role="cardTitle" className="ms-fu-itin-where">
-                {e.where}
+                <MarketName e={e} />
               </Type>
               <Type as="p" role="where" className="ms-fu-itin-time">
                 {e.time}

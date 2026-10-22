@@ -10,7 +10,7 @@
  * asset generates freely; the cap is expressed per media job via `group`.
  */
 import type { ReactElement, ReactNode } from 'react';
-import type { ProductView, CollectionView, CartView, MarketShopView } from './content';
+import type { ProductView, CollectionView, CartView, MarketInfoView, MarketShopView } from './content';
 import type { BrandPalette } from '@/lib/color/brand-palette';
 
 /** Which page of a multi-page archetype to paint. The home is the default; the
@@ -225,6 +225,21 @@ export interface ArchetypeBuildSpec<T = unknown> {
     content: unknown;
     lookKey: string;
     market: MarketShopView;
+    logoUrl?: string | undefined;
+    tenantId: string;
+    mood?: string | undefined;
+    brandColors?: string[] | undefined;
+    accentOverride?: string | undefined;
+    brandPalette?: BrandPalette | undefined;
+  }): ReactElement;
+
+  /** Paint a market's information page (its details and what she's bringing),
+   *  reached from the market on the site. Optional — a design without one keeps
+   *  its markets unclickable. */
+  renderMarketInfo?(args: {
+    content: unknown;
+    lookKey: string;
+    market: MarketInfoView;
     logoUrl?: string | undefined;
     tenantId: string;
     mood?: string | undefined;

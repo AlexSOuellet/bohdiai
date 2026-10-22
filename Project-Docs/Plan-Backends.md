@@ -93,14 +93,24 @@ Everything Showcase has, plus:
 6. **Testimonials** with a "Show on my site" tick (up to three).
 7. Card payments at the table: **Square only** (Alex, 2026-10-20). **Built and live (Session 111):** Connect Square on Getting paid (Square's own page; read-only permissions; keys locked server-side and scrambled with a secret kept in Cloudflare), pick the Square location, Disconnect. Card in the Market POS opens the Square app with the total (tap, insert, or typed in by hand); the sale is recorded only when Square confirms the exact total. Alex's #1 for payments: they stay secure.
 8. **Change price** at the table (haggling, Alex 2026-10-21, built): an agreed price per line, never above the marked one; How it sold shows what was haggled off.
-9. **Refunds** (Alex 2026-10-21): Refund on the market day's sales (built); the piece goes back in stock, the takings leave it out. **Next:** an **Orders** page on Market too (Alex: "having an orders page is not a bad idea for market sites"), listing market sales, with Refund on each paid sale; and a **Sales** list with Refund on each market's own page. A refund done in the Square app shows up on its own later (Square notices; Alex: later).
+9. **Refunds** (Alex 2026-10-21; built Session 112 on `feat/market-orders`): Refund (a yes first) on every paid sale, on the market day, in **Sales** and on each event's **How it sold**; the piece goes back in stock, the takings leave it out, a card sale gets its refund record. Final. A refund done in the Square app shows up on its own later (Square notices; Alex: later).
+10. **The Events menu** (Alex 2026-10-22, Session 112): **Schedule** (the events list; each past one shows what it took in; "Add an event"), **Market POS**, **Sales** (every market sale grouped by event, one line each), **Results**. **Getting paid** sits in **Settings**. Each event's page: a summary sentence (takings, after costs, Open market day on the day) and tabs **Details**, **What I'm bringing**, **How it sold**, **After**. "Event", not "market" (Alex: not all are markets); Market POS and the market day keep their names.
+11. **Home Events box** (Alex 2026-10-22): next event, last event (takings, after costs), the year so far against last; each line opens where it leads.
+12. **How a piece is stocked** (Alex 2026-10-22): **One of a kind** (Sold once it sells), **I have some** (a count; Sold out at 0), **Made to order** (optional ready count; with none ready the site shows **Order only** and it can still be asked about or ordered). Per option too.
+
+### On the site, also (Session 112)
+- **Each market has its own page** (`/events/<id>`), reached by clicking it anywhere on the site: its details and What I'm bringing (or "coming soon"); never takes payment. Showcase's dates stay plain.
+- **Sold** and **Order only** on the pieces, in every design.
+
+### Every plan, also (Session 112)
+- The **Scrolling line** screen only where the site's design shows one (the moods other than Scenic; Alex: "turn it off for sites it is not included in the design for").
 
 ## Every plan, also
 - **Visitor numbers** on the backend home (Alex, 2026-10-20): visits and pages seen this week against last, the most-seen pages and where visits came from (30 days). Counted without cookies in Cloudflare (three months kept). **Full keeps its months** for as long as it's on Full (`site_visit_months`, saved daily).
 
 ## Full ($25 a month)
 
-To be defined. Already decided: online selling through **Square and/or Stripe** (Alex, 2026-10-20); Refund in Orders on every paid sale, online and market (Alex, 2026-10-21); collections; every testimonial; visitor months kept. Try on a look (see another mood and skin on their own site, then keep it) is Full only (Alex, 2026-10-17). The try-on must survive clicking around the site (not only the address bar), and Scenic must never fall back to the marsh: every build makes three backgrounds whatever the family (Open-Work item 6). The gallery add-on is above.
+To be defined. Already decided: online selling through **Square and/or Stripe** (Alex, 2026-10-20); Refund in Orders on every paid sale, online and market (Alex, 2026-10-21; built Session 112: **Online shop** menu group = Orders (online orders only, Refund on paid ones) and Promotions; market sales are in Events, Sales); collections; every testimonial; visitor months kept. Try on a look (see another mood and skin on their own site, then keep it) is Full only (Alex, 2026-10-17). The try-on must survive clicking around the site (not only the address bar), and Scenic must never fall back to the marsh: every build makes three backgrounds whatever the family (Open-Work item 6). The gallery add-on is above.
 
 ---
 

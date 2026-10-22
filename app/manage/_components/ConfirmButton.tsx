@@ -12,6 +12,7 @@ export function ConfirmButton({
   onConfirm,
   disabled = false,
   describedBy,
+  ariaLabel,
   tone = 'danger',
 }: {
   label: string;
@@ -21,6 +22,9 @@ export function ConfirmButton({
   disabled?: boolean;
   /** Id of a note that explains why the button is off. */
   describedBy?: string | undefined;
+  /** What the first button says to a screen reader when its label alone is ambiguous
+   *  (several "Refund" buttons in one list). */
+  ariaLabel?: string | undefined;
   /** Danger for removing things; plain for a step forward like publishing. */
   tone?: 'danger' | 'plain';
 }): React.ReactElement {
@@ -39,7 +43,7 @@ export function ConfirmButton({
 
   if (!asking) {
     return (
-      <button ref={trigger} type="button" className={tone === 'danger' ? 'bk-btn bk-btn-danger' : 'bk-btn'} disabled={disabled} aria-describedby={describedBy} onClick={() => setAsking(true)}>
+      <button ref={trigger} type="button" className={tone === 'danger' ? 'bk-btn bk-btn-danger' : 'bk-btn'} disabled={disabled} aria-label={ariaLabel} aria-describedby={describedBy} onClick={() => setAsking(true)}>
         {label}
       </button>
     );

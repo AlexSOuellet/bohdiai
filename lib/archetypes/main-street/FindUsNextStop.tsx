@@ -10,6 +10,7 @@
  * under `.ms-fu-next-*`; colors are `--ms-*` vars, type is named roles. The rows
  * render in configured order — the first is the spotlight; we don't recompute "next".
  */
+import { MarketName } from './MarketName';
 import type { ArchetypeTheme } from '../types';
 import { Type } from './Type';
 import { type FindUsSection, type FindUsEvent, parseFindUsDate } from './findus';
@@ -55,7 +56,7 @@ export function FindUsNextStop({
           {dateAccent(spotlight, words)}
         </Type>
         <Type as="p" role="closeHead" className="ms-fu-next-where">
-          {spotlight.where}
+          <MarketName e={spotlight} />
         </Type>
         {viewAll && (
           <Type as="a" role="navLabel" href={viewAll.href} data-ms-fu-viewall="" className="ms-fu-next-cta">
@@ -74,7 +75,7 @@ export function FindUsNextStop({
                     {alsoLabel(e, words)}
                   </Type>
                   <Type as="span" role="where" className="ms-fu-next-sv">
-                    {e.where}
+                    <MarketName e={e} />
                   </Type>
                   <Type as="span" role="price" className="ms-fu-next-st">
                     {e.time}

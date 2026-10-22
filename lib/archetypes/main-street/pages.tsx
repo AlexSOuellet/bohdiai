@@ -5,6 +5,7 @@
  * a solid nav header (not the hero's over-media nav), and the footer. Structure
  * only — colors are skin vars, fonts are named roles, nothing niche or hardcoded.
  */
+import { MarketName } from './MarketName';
 import { dialable } from '@/lib/backend/profile/profile-form';
 import { priceLabel } from './price-label';
 import type { ReactNode } from 'react';
@@ -409,7 +410,7 @@ export function EventsPage({ content, skin, words, family }: { content: MainStre
                   </div>
                   <div className="ms-ev-info">
                     <Type as="h3" role="cardTitle" className="ms-ev-where">
-                      {e.where}
+                      <MarketName e={e} />
                     </Type>
                     <Type as="a" role="navLabel" className="ms-ev-directions" href={directions} target="_blank" rel="noopener noreferrer">
                       {words.getDirections}

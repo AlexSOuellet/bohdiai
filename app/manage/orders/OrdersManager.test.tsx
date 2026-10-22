@@ -53,6 +53,35 @@ describe('OrdersManager', () => {
     await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('couldn’t be updated'));
   });
 
+  it('refunds a paid order after a yes, and shows it refunded', async () => {
+    setOrderStatus.mockResolvedValue({ ok: true });
+    render(<OrdersManager initial={[order({ status: 'paid' })]} timeZone="America/New_York" />);
+    expect(screen.queryByRole('button', { name: 'Cancel: order 1001' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Refund: order 1001' }));
+    expect(setOrderStatus).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, refund $120' }));
+    await waitFor(() => expect(screen.getByText(/Refund recorded/)).toBeTruthy());
+    expect(setOrderStatus).toHaveBeenCalledWith('o1', 'refunded');
+    fireEvent.change(screen.getByLabelText('Show'), { target: { value: 'refunded' } });
+    expect(screen.getByText('Refunded', { selector: '.bk-pill' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /order 1001/ })).toBeNull();
+  });
+
+  it('keeps the sale when the refund is not confirmed', () => {
+    render(<OrdersManager initial={[order({ status: 'paid' })]} timeZone="America/New_York" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Refund: order 1001' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Keep the order' }));
+    expect(setOrderStatus).not.toHaveBeenCalled();
+  });
+
+  it('shows a refused refund', async () => {
+    setOrderStatus.mockResolvedValueOnce({ ok: false, error: 'Only a paid sale can be refunded, and only once.' });
+    render(<OrdersManager initial={[order({ status: 'paid' })]} timeZone="America/New_York" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Refund: order 1001' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, refund $120' }));
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('only once'));
+  });
+
   it('says so when there are no orders', () => {
     render(<OrdersManager initial={[]} timeZone="America/New_York" />);
     expect(screen.getByText(/No orders yet/)).toBeTruthy();

@@ -37,6 +37,8 @@ export const NURSERY_WORD_SPOTS = {
     countOne: '',
     all: '',
     empty: '',
+    /** Made to order with none ready: it can still be ordered (Alex, 2026-10-22). */
+    orderOnly: '',
   },
   gone: {
     tag: '',
@@ -106,6 +108,11 @@ export const NURSERY_WORD_SPOTS = {
     website: '',
     directionsLabel: '',
     websiteLabel: '',
+    /** A market's information page (Alex, 2026-10-22): the heading over the babies
+     *  coming, the line while none are picked, and the way back to every market. */
+    bringing: '',
+    soon: '',
+    allMarkets: '',
   },
   touch: {
     tag: '',

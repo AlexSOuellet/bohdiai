@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
-import type { MarketShopView, ProductView } from '@/lib/archetypes/content';
-import { NurseryMarket } from './NurseryLanding';
+import type { MarketInfoView, MarketShopView, ProductView } from '@/lib/archetypes/content';
+import { NurseryMarket, NurseryMarketInfo } from './NurseryLanding';
 import { NurseryMarketBuyer } from './NurseryMarketBuyer';
 import { fill, keyWords } from '@/lib/site-words/words';
 import { NURSERY_WORD_SPOTS, NURSERY_WORDS_PREFIX, type NurseryWords } from './words';
@@ -43,7 +43,7 @@ const baby = (name: string, extra: Partial<ProductView> = {}): ProductView => ({
   ...extra,
 });
 
-const data: BoutiqueData = { name: 'Rose n’ Cat', profile: EMPTY_PROFILE, dates: [], gone: [], cart: false, newArrivals: false, sale: null, words: S };
+const data: BoutiqueData = { name: 'Rose n’ Cat', profile: EMPTY_PROFILE, dates: [], gone: [], cart: false, marketPages: false, newArrivals: false, sale: null, words: S };
 const market = (over: Partial<MarketShopView> = {}): MarketShopView => ({
   marketId: '00000000-0000-4000-8000-0000000000e1',
   name: 'Holly Fair',
@@ -145,5 +145,43 @@ describe('buying at the table', () => {
     cleanup();
     render(<NurseryMarketBuyer {...props} pieces={[]} methods={['cash']} />);
     expect(screen.getByText(S.market.none)).toBeTruthy();
+  });
+});
+
+describe('NurseryMarketInfo — a market’s information page (Alex, 2026-10-22)', () => {
+  const info = (over: Partial<MarketInfoView> = {}): MarketInfoView => ({
+    marketId: '00000000-0000-4000-8000-0000000000e1',
+    name: 'Holly Fair',
+    date: '2026-11-21',
+    endDate: '',
+    town: 'Johnston',
+    hours: '9am – 3pm',
+    address: '1 Main St',
+    booth: 'Booth 4',
+    url: 'https://holly.example',
+    state: 'before',
+    pieces: [baby('Theo'), baby('Rosie', { status: 'sold_out' })],
+    ...over,
+  });
+
+  it('shows the market on its sign board and the babies coming, with no way to pay', () => {
+    const { container } = render(<NurseryMarketInfo data={data} market={info()} />);
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Holly Fair');
+    expect(container.querySelector('.nn-mi-details')?.textContent).toContain('Johnston');
+    expect(screen.getByRole('link', { name: fill(S.visit.directionsLabel, { market: 'Holly Fair' }) })).toBeTruthy();
+    expect(screen.getByText(S.visit.bringing)).toBeTruthy();
+    expect(screen.getByText('Theo')).toBeTruthy();
+    expect(container.querySelector('.nn-mk-buy, form')).toBeNull();
+    expect(screen.getByRole('link', { name: S.visit.allMarkets }).getAttribute('href')).toBe('/#visit');
+  });
+
+  it('says the babies are coming soon while none are picked, and when it’s over or canceled', () => {
+    const { rerender } = render(<NurseryMarketInfo data={data} market={info({ pieces: [] })} />);
+    expect(screen.getByText(S.visit.soon)).toBeTruthy();
+    rerender(<NurseryMarketInfo data={data} market={info({ state: 'after' })} />);
+    expect(screen.getByText(S.market.after)).toBeTruthy();
+    expect(screen.queryByText(S.visit.bringing)).toBeNull();
+    rerender(<NurseryMarketInfo data={data} market={info({ state: 'canceled', address: '', url: '' })} />);
+    expect(screen.getByText(S.market.canceled)).toBeTruthy();
   });
 });

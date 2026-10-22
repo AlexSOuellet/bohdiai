@@ -1394,6 +1394,18 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     /* A market's own page — FamilyMarket + the shared buyer steps (ms-mk-*, ms-btn, ms-was). */
     .arch-main-street .ms-mk-bar{padding:18px 40px;border-bottom:1px solid var(--ms-rule);color:var(--ms-fg)}
     .arch-main-street .ms-mk{padding-top:var(--ms-loose);padding-bottom:var(--ms-section);color:var(--ms-fg)}
+    /* A market's name that opens its own page: the treatment's own colour and type, with a quiet underline so it reads as a link. */
+    .arch-main-street .ms-fu-link{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.18em;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);transition:text-decoration-color .2s ease}
+    .arch-main-street .ms-fu-link:hover,.arch-main-street .ms-fu-link:focus-visible{text-decoration-color:currentColor}
+    .arch-main-street .ms-mi{padding-bottom:var(--ms-section)}
+    .arch-main-street .ms-mi-day{color:var(--ms-accent);margin:0}
+    .arch-main-street .ms-mi-name{margin:var(--ms-tight) 0 0}
+    .arch-main-street .ms-mi-facts{color:var(--ms-fg-muted);margin:var(--ms-tight) 0 0}
+    .arch-main-street .ms-mi-links{display:flex;flex-wrap:wrap;gap:6px 28px;margin:var(--ms-tight) 0 0}
+    .arch-main-street .ms-mi-bringing{margin-top:var(--ms-section);padding-top:var(--ms-loose);border-top:1px solid var(--ms-rule)}
+    .arch-main-street .ms-mi-head{margin:0 0 var(--ms-loose)}
+    .arch-main-street .ms-mi-note{max-width:620px;margin:var(--ms-loose) 0 0}
+    .arch-main-street .ms-mi-back{margin-top:var(--ms-section)}
     .arch-main-street .ms-mk-head{margin:0}
     .arch-main-street .ms-mk-when{color:var(--ms-fg-muted);margin:var(--ms-tight) 0 var(--ms-loose)}
     .arch-main-street .ms-mk-lede{max-width:620px;margin:0 0 var(--ms-loose)}

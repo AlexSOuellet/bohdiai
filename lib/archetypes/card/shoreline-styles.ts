@@ -265,6 +265,13 @@ a.sl-print{text-decoration:none;cursor:pointer}
 .sl-empty .sl-btn{margin-top:14px}
 /* A market's own page (Market POS): what's coming, then pick, hold, pay, "I paid". */
 .sl-mk{padding:0 clamp(16px,6vw,90px) clamp(50px,9vh,100px)}
+.sl-mi{padding:0 0 clamp(50px,9vh,100px)}
+.sl-price--gone{color:var(--ink-soft)}
+.sl-order-only{font-style:italic;font-weight:500;color:var(--ink-soft)}
+.sl-mi-bringing{margin-top:clamp(48px,7vw,80px)}
+.sl-market h2 a,.sl-tide td a{color:inherit;text-decoration:none}
+.sl-tide td a:hover,.sl-tide td a:focus-visible{text-decoration:underline;text-underline-offset:.15em}
+.sl-market h2 a:hover,.sl-market h2 a:focus-visible{text-decoration:underline;text-underline-offset:.15em}
 .sl-mk-when{margin:-6px 0 26px;font-family:var(--body);font-style:italic;font-size:clamp(19px,2.4vw,24px);color:var(--navy);text-shadow:0 0 18px rgba(245,240,240,.6)}
 .sl-mk-lede{width:min(640px,100%);margin:0 0 26px;padding:16px 22px;background:var(--paper);font-family:var(--body);font-size:19px;box-shadow:0 14px 26px -14px rgba(10,24,32,.45)}
 .sl-mk-buy{width:min(900px,100%)}

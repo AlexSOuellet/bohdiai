@@ -70,7 +70,7 @@ describe('moving between plans', () => {
     expect(hiddenByMove('full', 'showcase')).toEqual([
       'Your shop page and prices (your products are kept)',
       'Market hours, addresses, booths and websites',
-      'The point of sale at markets: the QR shop page, Getting paid and Today',
+      'The point of sale at markets: the QR shop page, Getting paid, Today and Orders',
       'Market costs, organizer details, notes and reviews',
       'Testimonials on your site',
       'Collections and their pages (your collections are kept)',

@@ -139,6 +139,9 @@ export const CARD_WORD_SPOTS = {
     askForPrice: '',
     /** A piece's options: the price-line marks and the cart's refusals. */
     soldOut: '',
+    /** A one of a kind piece once it has sold, and made to order with none ready (Alex, 2026-10-22). */
+    sold: '',
+    orderOnly: '',
     unavailable: '',
     choiceSoldOut: '',
     choiceUnavailable: '',
@@ -189,6 +192,11 @@ export const CARD_WORD_SPOTS = {
     },
     market: {
       separator: '',
+      /** A market's information page (Alex, 2026-10-22): its heading over the pieces,
+       *  the line while none are picked, and the way back to every market. */
+      bringing: '',
+      soon: '',
+      allMarkets: '',
       before: '',
       after: '',
       canceled: '',

@@ -18,13 +18,15 @@ const state = vi.hoisted(() => ({
   features: new Set<string>(['cart']),
   result: { data: null as unknown, error: null as unknown, count: null as number | null },
   rpc: { error: null as unknown },
+  /** What a single-order read (`maybeSingle`) gives. */
+  one: { data: null as unknown, error: null as unknown },
   calls: [] as string[],
 }));
 const revalidatePath = vi.hoisted(() => vi.fn());
 const logger = vi.hoisted(() => ({ error: vi.fn(), warn: vi.fn() }));
 
 const fakeDb = () => ({
-  from: () => chain(() => state.result, state.calls),
+  from: () => chain(() => (state.calls.at(-1)?.startsWith('maybeSingle') === true ? state.one : state.result), state.calls),
   rpc: async (name: string, args: unknown) => {
     state.calls.push(`rpc(${name},${JSON.stringify(args)})`);
     return state.rpc;
@@ -44,6 +46,7 @@ beforeEach(() => {
   state.features = new Set(['cart']);
   state.result = { data: null, error: null, count: null };
   state.rpc = { error: null };
+  state.one = { data: null, error: null };
   state.calls = [];
   revalidatePath.mockReset();
 });
@@ -60,6 +63,40 @@ describe('setOrderStatus', () => {
     expect(await setOrderStatus('o1', 'paid')).toEqual({ ok: false, error: 'The order couldn’t be updated. Try again in a moment.' });
     state.features = new Set();
     expect(await setOrderStatus('o1', 'paid')).toEqual({ ok: false, error: 'Orders aren’t switched on for this site.' });
+  });
+});
+
+describe('refunds and the Market plan', () => {
+  it('refunds a paid order, and says so when it was not paid or already refunded', async () => {
+    expect(await setOrderStatus('o1', 'refunded')).toEqual({ ok: true });
+    expect(state.calls).toEqual(['rpc(set_order_status,{"p_tenant_id":"t1","p_order_id":"o1","p_status":"refunded"})']);
+    expect(revalidatePath).toHaveBeenCalledWith('/manage/markets', 'layout');
+    state.rpc = { error: { code: 'P0025', message: 'not refundable' } };
+    expect(await setOrderStatus('o1', 'refunded')).toEqual({ ok: false, error: 'Only a paid sale can be refunded, and only once.' });
+  });
+  it('on Market (no cart) moves a market sale, and only a market sale', async () => {
+    state.features = new Set(['market_shop']);
+    state.one = { data: { source: 'market_mode' }, error: null };
+    expect(await setOrderStatus('o1', 'refunded')).toEqual({ ok: true });
+    expect(state.calls).toContain('select("source")');
+    expect(state.calls).toContain('eq("tenant_id","t1")');
+    expect(state.calls.at(-1)).toBe('rpc(set_order_status,{"p_tenant_id":"t1","p_order_id":"o1","p_status":"refunded"})');
+    state.calls = [];
+    state.one = { data: { source: 'storefront' }, error: null };
+    expect(await setOrderStatus('o1', 'refunded')).toEqual({ ok: false, error: 'Orders aren’t switched on for this site.' });
+    expect(state.calls.some((c) => c.startsWith('rpc('))).toBe(false);
+    state.one = { data: null, error: null };
+    expect((await setOrderStatus('o1', 'paid')).ok).toBe(false);
+    state.one = { data: null, error: { message: 'down' } };
+    expect(await setOrderStatus('o1', 'paid')).toEqual({ ok: false, error: 'The order couldn’t be updated. Try again in a moment.' });
+  });
+  it('lists cart orders only: market sales are under Events, Sales', async () => {
+    await listOrders(fakeDb() as never, 't1');
+    expect(state.calls).toContain('neq("source","market_mode")');
+    state.calls = [];
+    state.result = { data: null, error: null, count: 0 };
+    await countNewOrders(fakeDb() as never, 't1');
+    expect(state.calls).toContain('neq("source","market_mode")');
   });
 });
 

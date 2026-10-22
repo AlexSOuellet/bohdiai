@@ -11,7 +11,7 @@ const size: OptionForm = {
   choices: [{ value: 'Small', kind: 'physical', fileUploadId: null, fileName: null }],
 };
 const variants: VariantForm[] = [
-  { choices: { Size: 'Small' }, price: '', stock: '', available: true },
+  { choices: { Size: 'Small' }, price: '', stock: '', stockKind: 'made_to_order' as const, available: true },
 ];
 
 const setup = (
@@ -72,8 +72,10 @@ describe('OptionsField', () => {
     const p = setup();
     fireEvent.change(screen.getByLabelText('Price for Small'), { target: { value: '30' } });
     expect(p.onVariants).toHaveBeenLastCalledWith([{ ...variants[0], price: '30' }]);
-    fireEvent.change(screen.getByLabelText('Stock for Small'), { target: { value: '2' } });
+    fireEvent.change(screen.getByLabelText('Small ready now'), { target: { value: '2' } });
     expect(p.onVariants).toHaveBeenLastCalledWith([{ ...variants[0], stock: '2' }]);
+    fireEvent.change(screen.getByLabelText('How you stock Small'), { target: { value: 'one_of_a_kind' } });
+    expect(p.onVariants).toHaveBeenLastCalledWith([{ ...variants[0], stockKind: 'one_of_a_kind', stock: '1' }]);
     fireEvent.click(screen.getByLabelText('Small is available'));
     expect(p.onVariants).toHaveBeenLastCalledWith([{ ...variants[0], available: false }]);
     expect(screen.getByLabelText('Price for Small')).toHaveAttribute('placeholder', '24');

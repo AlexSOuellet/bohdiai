@@ -89,6 +89,8 @@ export const FindUsRow = z.object({
   where: z.string().min(1),
   time: z.string().min(1),
   date: z.string().min(1).optional(),
+  /** The market's own page on the site (Market and Full); absent → not a link. */
+  href: z.string().min(1).optional(),
 });
 
 /** The About-beat bodies. A tuple so the content schema and the copywriter's

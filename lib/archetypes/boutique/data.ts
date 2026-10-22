@@ -27,6 +27,8 @@ export type BoutiqueData = {
   gone: GalleryItem[];
   /** The cart is switched on: pieces can be added and the order sent. */
   cart: boolean;
+  /** Market and Full: each market has its own page on the site (Alex, 2026-10-22). */
+  marketPages: boolean;
   /** New arrivals are switched on: babies ticked new get the Just born section and a ribbon. */
   newArrivals: boolean;
   /** The sale running today, if any: every baby shows its sale price under a banner. */
@@ -59,6 +61,7 @@ export async function loadBoutiqueData(
     dates,
     gone: gone.slice(0, GALLERY_LIMIT),
     cart: features.has('cart'),
+    marketPages: features.has('market_shop'),
     newArrivals: features.has('new_arrivals'),
     sale: sale === null || sale.percentOff === null ? null : { name: sale.name, percentOff: sale.percentOff, endsOn: sale.endsOn },
     words,

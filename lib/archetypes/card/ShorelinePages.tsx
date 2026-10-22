@@ -14,7 +14,7 @@ import type { CardWords } from './words';
 import { CardContactForm } from './CardContactForm';
 import { AddToCartButton, PromoCodeForm, RemoveFromCartButton, SyncCart } from '@/lib/storefront/CartControls';
 import { ShorelineCartLink } from './ShorelineCartLink';
-import type { CartView, MarketShopView } from '@/lib/archetypes/content';
+import type { CartView, MarketInfoView, MarketShopView } from '@/lib/archetypes/content';
 import { ShorelineMarketBuyer } from './ShorelineMarketBuyer';
 import { OrderRequestForm } from '@/lib/storefront/OrderRequestForm';
 import { PhotoViewerProvider, Snapshot } from './PhotoViewer';
@@ -114,6 +114,15 @@ function ProductPrint({ product, eager, newTag, W }: { product: ProductView; eag
 
 function Price({ product, W }: { product: ProductView; W: SW }): ReactElement {
   if (product.askForPrice === true) return <em className="sl-price sl-price--ask">{W.askForPrice}</em>;
+  // Sold shows on the site the moment it sells (Alex, 2026-10-22); a one of a kind is Sold.
+  if (product.status === 'sold_out') return <strong className="sl-price sl-price--gone">{product.oneOfAKind === true ? W.sold : W.soldOut}</strong>;
+  if (product.orderOnly === true) {
+    return (
+      <strong className="sl-price">
+        {product.salePrice ?? product.price} <em className="sl-order-only">{W.orderOnly}</em>
+      </strong>
+    );
+  }
   if (product.salePrice !== undefined) {
     return (
       <strong className="sl-price">
@@ -138,6 +147,7 @@ function Prints({ products, newTag = false, W }: { products: readonly ProductVie
   );
 }
 
+/** The home's market dates; each name opens the market's own page (Lite and Full). */
 function TideTable({ dates, w }: { dates: readonly MarketDate[]; w: CardWords }): ReactElement {
   const W = w.shoreline;
   return (
@@ -154,7 +164,9 @@ function TideTable({ dates, w }: { dates: readonly MarketDate[]; w: CardWords })
         {dates.map((d) => (
           <tr key={d.id} className={d.canceled ? 'sl-gone' : undefined}>
             <td>{marketDay(d, w.dates)}</td>
-            <td>{marketName(d, w.dates)}</td>
+            <td>
+              <a href={`/events/${d.id}`}>{marketName(d, w.dates)}</a>
+            </td>
             <td>{d.town}</td>
           </tr>
         ))}
@@ -368,7 +380,7 @@ function Markets({ site }: { site: ShorelineData }): ReactElement {
               return (
                 <li key={d.id} className={d.canceled ? 'sl-market sl-market--gone' : 'sl-market'}>
                   <span className="sl-market-day">{marketDay(d, site.card.words.dates)}</span>
-                  <h2>{marketName(d, site.card.words.dates)}</h2>
+                  <h2>{site.pages ? <a href={`/events/${d.id}`}>{marketName(d, site.card.words.dates)}</a> : marketName(d, site.card.words.dates)}</h2>
                   {facts.length > 0 && (
                     <p className="sl-market-facts">
                       {facts.map((f) => (
@@ -660,6 +672,70 @@ export function ShorelineCart({ site, cart, platformCredit = true }: { site: Sho
             </section>
           </div>
         )}
+      </main>
+      <Footer name={site.card.name} platformCredit={platformCredit} social={site.card.profile} w={site.card.words} />
+    </Frame>
+  );
+}
+
+/** A market's information page (Alex, 2026-10-22): when and where, then what she's
+ *  bringing, with the menu and footer of every page. Never takes payment; the till
+ *  is ShorelineMarket. */
+export function ShorelineMarketInfo({ site, market, platformCredit = true }: { site: ShorelineData; market: MarketInfoView; platformCredit?: boolean }): ReactElement {
+  const W = site.card.words.shoreline;
+  const M = W.market;
+  const d: MarketDate = { id: market.marketId, date: market.date, endDate: market.endDate, name: market.name, town: market.town, hours: market.hours, address: market.address, booth: market.booth, url: market.url, canceled: market.state === 'canceled' };
+  const facts = [market.town, market.hours, market.booth !== '' ? `${W.marketCols.booth} ${market.booth}` : ''].filter((f) => f !== '');
+  const over = market.state === 'after' || market.state === 'canceled';
+  return (
+    <Frame look={site.card.look}>
+      <Bar name={site.card.name} current="events" cart={site.cart} W={W} />
+      <SaleBanner sale={site.sale} W={W} />
+      <PageHead title={W.pageTitles.markets} />
+      <main id="main" className="sl-mi">
+        {/* The details sit in the Markets page's own card panel, readable over the photo. */}
+        <div className="sl-markets">
+          <div className={market.state === 'canceled' ? 'sl-market sl-market--gone' : 'sl-market'}>
+        <span className="sl-market-day">{marketDay(d, site.card.words.dates)}</span>
+        <h2>{market.name}</h2>
+        {facts.length > 0 && (
+          <p className="sl-market-facts">
+            {facts.map((f) => (
+              <span key={f}>{f}</span>
+            ))}
+          </p>
+        )}
+        {(market.address !== '' || market.url !== '') && (
+          <div className="sl-market-links">
+            {market.address !== '' && (
+              <a href={directionsUrl([market.address, market.town].filter((x) => x !== '').join(', '))} rel="noopener">
+                {W.directions}
+              </a>
+            )}
+            {market.url !== '' && (
+              <a href={market.url} rel="noopener">
+                {W.marketLink}
+              </a>
+            )}
+          </div>
+        )}
+          </div>
+        </div>
+        {over ? (
+          <p className="sl-empty">{market.state === 'after' ? M.after : M.canceled}</p>
+        ) : (
+          <section className="sl-mi-bringing" aria-labelledby="sl-mi-h">
+            <h2 id="sl-mi-h" className="sl-section-h">
+              {M.bringing}
+            </h2>
+            {market.pieces.length === 0 ? <p className="sl-empty">{M.soon}</p> : <Prints products={market.pieces} W={W} />}
+          </section>
+        )}
+        <p className="sl-empty">
+          <a className="sl-btn" href="/events">
+            {M.allMarkets}
+          </a>
+        </p>
       </main>
       <Footer name={site.card.name} platformCredit={platformCredit} social={site.card.profile} w={site.card.words} />
     </Frame>

@@ -7,11 +7,14 @@ import { METHOD_LABEL, isPayMethod } from '@/lib/market/pay';
 
 export const ORDERS_SHOWN = 200;
 
+/** What shoppers sent from the cart, newest first. Market sales have their own
+ *  screen (Events, Sales; Alex 2026-10-22). */
 export async function listOrders(db: SupabaseClient<Database>, tenantId: string): Promise<OrderRow[]> {
   const { data, error } = await db
     .from('orders')
     .select('id, order_number, created_at, status, customer_name, customer_email, customer_phone, customer_note, total_cents, discount_cents, discount_label, source, payment_method, order_items(name_snapshot, unit_price_cents, quantity, created_at)')
     .eq('tenant_id', tenantId)
+    .neq('source', 'market_mode')
     .order('created_at', { ascending: false })
     .limit(ORDERS_SHOWN);
   if (error !== null) throw new Error(`Could not load the orders: ${error.message}`);
@@ -36,9 +39,10 @@ export async function listOrders(db: SupabaseClient<Database>, tenantId: string)
   }));
 }
 
-/** How many orders are waiting on the owner (status New), for the home screen. */
+/** How many cart orders are waiting on the owner (status New), for the home screen.
+ *  A buyer waiting to pay at a market shows on the market day instead. */
 export async function countNewOrders(db: SupabaseClient<Database>, tenantId: string): Promise<number> {
-  const { count, error } = await db.from('orders').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId).eq('status', 'pending');
+  const { count, error } = await db.from('orders').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId).neq('source', 'market_mode').eq('status', 'pending');
   if (error !== null) throw new Error(`Could not count the orders: ${error.message}`);
   return count ?? 0;
 }

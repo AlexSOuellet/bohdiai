@@ -5,6 +5,7 @@
  * pasted in a Victorian scrapbook. Every word is the site's own; ornaments are
  * drawn in CSS or SVG in the skin's colors. Class-only (vintage-styles.ts).
  */
+import { MarketName } from './MarketName';
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetView } from './schemas';
 import { Media } from './chrome';
@@ -148,7 +149,7 @@ export function FindUsTickets({
                   {e.day}
                 </Type>
                 <Type as="span" role="cardTitle" className="ms-tix-where">
-                  {e.where}
+                  <MarketName e={e} />
                 </Type>
                 {e.time !== '' && (
                   <Type as="span" role="legal" className="ms-tix-time">

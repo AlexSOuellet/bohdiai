@@ -71,6 +71,7 @@ describe('syncVariants', () => {
       choices: { Size: 'Large' },
       price: '30',
       stock: '2',
+      stockKind: 'made_to_order',
       available: true,
     });
   });
@@ -91,19 +92,20 @@ describe('renameOptionInVariants', () => {
       choices: { Sizes: 'Large' },
       price: '30',
       stock: '',
+      stockKind: 'made_to_order',
       available: true,
     });
   });
   it('compares and re-keys trimmed names, leaving other keys alone', () => {
     const v = [
-      { choices: { Size: 'Large', Scent: 'Fig' }, price: '5', stock: '1', available: false },
+      { choices: { Size: 'Large', Scent: 'Fig' }, price: '5', stock: '1', stockKind: 'count' as const, available: false },
     ];
     expect(renameOptionInVariants(v, ' Size ', ' Sizes ')).toEqual([
-      { choices: { Sizes: 'Large', Scent: 'Fig' }, price: '5', stock: '1', available: false },
+      { choices: { Sizes: 'Large', Scent: 'Fig' }, price: '5', stock: '1', stockKind: 'count' as const, available: false },
     ]);
   });
   it('returns an unchanged copy for a blank or identical name', () => {
-    const v = [{ choices: { Size: 'Large' }, price: '5', stock: '', available: true }];
+    const v = [{ choices: { Size: 'Large' }, price: '5', stock: '', stockKind: 'made_to_order' as const, available: true }];
     for (const [from, to] of [
       ['', 'X'],
       ['Size', ' '],
@@ -149,6 +151,7 @@ describe('buildProductPayload', () => {
         base_price_cents: 2400,
         status: 'draft',
         inventory_count: 3,
+        stock_kind: 'made_to_order',
         media_ids: [],
         file_upload_id: null,
         collection_ids: ['c1'],
@@ -188,8 +191,25 @@ describe('buildProductPayload', () => {
   it('checks stock', () => {
     expect(buildProductPayload(base({ stock: '2.5' }), { digital: false })).toEqual({
       ok: false,
-      error: 'Stock must be a whole number, 0 or more. Leave it blank if you make to order.',
+      error: 'Check the number for this product: a whole number, 0 or more.',
     });
+  });
+  it('asks plainly how a piece is stocked (Alex, 2026-10-22)', () => {
+    const built = (over: Parameters<typeof base>[0]) => buildProductPayload(base(over), { digital: false });
+    // One of a kind is its one piece until it sells; never more than one.
+    expect(built({ stockKind: 'one_of_a_kind', stock: '' })).toMatchObject({ ok: true, payload: { stock_kind: 'one_of_a_kind', inventory_count: 1 } });
+    expect(built({ stockKind: 'one_of_a_kind', stock: '0' })).toMatchObject({ ok: true, payload: { inventory_count: 0 } });
+    expect(built({ stockKind: 'one_of_a_kind', stock: '3' })).toEqual({ ok: false, error: 'One of a kind is just one. Choose “I have some” for this product if you have more.' });
+    // A count must say how many.
+    expect(built({ stockKind: 'count', stock: '4' })).toMatchObject({ ok: true, payload: { stock_kind: 'count', inventory_count: 4 } });
+    expect(built({ stockKind: 'count', stock: '' })).toEqual({ ok: false, error: 'Type how many you have of this product, or choose Made to order.' });
+    // Made to order may say how many are ready.
+    expect(built({ stockKind: 'made_to_order', stock: '' })).toMatchObject({ ok: true, payload: { stock_kind: 'made_to_order', inventory_count: null } });
+    expect(built({ stockKind: 'made_to_order', stock: '1' })).toMatchObject({ ok: true, payload: { inventory_count: 1 } });
+    // A crafted kind is refused.
+    expect(built({ stockKind: 'lots' as never }).ok).toBe(false);
+    // A download has no stock: made to order, no number.
+    expect(buildProductPayload(base({ kind: 'digital', fileUploadId: 'f1', fileName: 'a.pdf', stockKind: 'count', stock: '' }), { digital: true })).toMatchObject({ ok: true, payload: { stock_kind: 'made_to_order', inventory_count: null } });
   });
   it('starts with no sample photo and never sends it in the payload', () => {
     expect(emptyProductForm().samplePhotoUrl).toBeNull();
@@ -229,8 +249,8 @@ describe('buildProductPayload', () => {
       },
     ]);
     expect(r.payload.variants).toEqual([
-      { combination: { Size: 'Small' }, price_cents: null, inventory_count: 0, available: true },
-      { combination: { Size: 'Large' }, price_cents: 3000, inventory_count: null, available: true },
+      { combination: { Size: 'Small' }, price_cents: null, inventory_count: 0, stock_kind: 'made_to_order', available: true },
+      { combination: { Size: 'Large' }, price_cents: 3000, inventory_count: null, stock_kind: 'made_to_order', available: true },
     ]);
   });
   it('explains option mistakes', () => {
@@ -282,7 +302,14 @@ describe('buildProductPayload', () => {
     const stock = syncVariants([size], []).map((v) => ({ ...v, stock: '-1' }));
     expect(
       buildProductPayload(base({ options: [size], variants: stock }), { digital: false }),
-    ).toEqual({ ok: false, error: 'Check the stock for Small.' });
+    ).toEqual({ ok: false, error: 'Check the number for Small: a whole number, 0 or more.' });
+    // Each combination asks the same way; one switched off keeps its number unchecked by kind.
+    const counted = syncVariants([size], []).map((v) => ({ ...v, stockKind: 'count' as const, stock: '' }));
+    expect(buildProductPayload(base({ options: [size], variants: counted }), { digital: false })).toEqual({ ok: false, error: 'Type how many you have of Small, or choose Made to order.' });
+    const off = syncVariants([size], []).map((v, i) => ({ ...v, stockKind: 'count' as const, stock: i === 0 ? '' : '2', available: i !== 0 }));
+    expect(buildProductPayload(base({ options: [size], variants: off }), { digital: false }).ok).toBe(true);
+    const offBad = syncVariants([size], []).map((v, i) => ({ ...v, stock: i === 0 ? 'x' : '', available: i !== 0 }));
+    expect(buildProductPayload(base({ options: [size], variants: offBad }), { digital: false })).toEqual({ ok: false, error: 'Check the number for Small.' });
   });
   it('needs one available combination to go live', () => {
     const variants = syncVariants([size], []).map((v) => ({ ...v, available: false }));

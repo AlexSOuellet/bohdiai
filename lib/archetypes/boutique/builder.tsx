@@ -7,12 +7,12 @@
 import type { ReactElement } from 'react';
 import { notFound } from 'next/navigation';
 import type { ArchetypeBuildSpec } from '../builder';
-import type { CartView, MarketShopView, ProductView } from '../content';
+import type { CartView, MarketInfoView, MarketShopView, ProductView } from '../content';
 import { supabaseAdmin } from '@/lib/supabase';
 import { BoutiqueContentSchema, type BoutiqueContent } from './design';
 import { loadBoutiqueData } from './data';
 import { withSale } from '@/lib/storefront/promotions';
-import { NurseryHome, NurseryShop, NurseryCertificate, NurseryContentPage, NurseryCart, NurseryMarket } from './NurseryLanding';
+import { NurseryHome, NurseryShop, NurseryCertificate, NurseryContentPage, NurseryCart, NurseryMarket, NurseryMarketInfo } from './NurseryLanding';
 
 export const BOUTIQUE_LOOK = 'boutique';
 
@@ -89,6 +89,11 @@ async function Market({ tenantId, market, logoUrl }: { tenantId: string; market:
   return <NurseryMarket data={data} market={market} logoUrl={logoUrl} />;
 }
 
+async function MarketInfo({ tenantId, market, logoUrl }: { tenantId: string; market: MarketInfoView; logoUrl?: string | undefined }): Promise<ReactElement> {
+  const data = await loadBoutiqueData(supabaseAdmin(), tenantId);
+  return <NurseryMarketInfo data={data} market={market} logoUrl={logoUrl} />;
+}
+
 export const BOUTIQUE_SPEC: ArchetypeBuildSpec<BoutiqueContent> = {
   key: 'boutique',
   label: 'Boutique',
@@ -137,6 +142,10 @@ export const BOUTIQUE_SPEC: ArchetypeBuildSpec<BoutiqueContent> = {
   renderMarket: ({ content, market, logoUrl, tenantId }) => {
     parse(content);
     return <Market tenantId={tenantId} market={market} logoUrl={logoUrl} />;
+  },
+  renderMarketInfo: ({ content, market, logoUrl, tenantId }) => {
+    parse(content);
+    return <MarketInfo tenantId={tenantId} market={market} logoUrl={logoUrl} />;
   },
   renderCart: ({ content, cart, logoUrl, tenantId }) => {
     parse(content);

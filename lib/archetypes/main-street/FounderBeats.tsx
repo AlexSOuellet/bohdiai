@@ -11,6 +11,7 @@
  * Two treatments set their text italic (letter attribution, card quote) — that
  * lives as a scoped `[data-type]` rule in skinVarsCss, never inline.
  */
+import { MarketName } from './MarketName';
 import type { ReactNode } from 'react';
 import type { ArchetypeTheme } from '../types';
 import type { MainStreetView } from './schemas';
@@ -57,7 +58,7 @@ export function FindUsList({ findUs, eventsHref, heading = 'eyebrow', onContrast
       {findUs.rows.map((row, i) => (
         <div key={i} className="ms-findus-row">
           <Type as="span" role="day" className="ms-findus-day">{row.day}</Type>
-          <Type as="span" role="where" className="ms-findus-where">{row.where}</Type>
+          <Type as="span" role="where" className="ms-findus-where"><MarketName e={row} /></Type>
           <Type as="span" role="price" className="ms-findus-time">{row.time}</Type>
         </div>
       ))}

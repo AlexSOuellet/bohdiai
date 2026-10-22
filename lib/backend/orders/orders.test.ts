@@ -3,15 +3,19 @@ import { isOrderStatus, nextSteps } from './orders';
 import { ordersHomeData } from './home';
 
 describe('nextSteps', () => {
-  it('moves a new order to paid or canceled, a paid one to handed over', () => {
+  it('moves a new order to paid or canceled, a paid one to handed over or refunded', () => {
     expect(nextSteps('pending').map((s) => s.to)).toEqual(['paid', 'canceled']);
-    expect(nextSteps('paid').map((s) => s.to)).toEqual(['fulfilled', 'canceled']);
-    expect(nextSteps('fulfilled').map((s) => s.to)).toEqual(['paid']);
+    expect(nextSteps('paid').map((s) => s.to)).toEqual(['fulfilled', 'refunded']);
+    expect(nextSteps('fulfilled').map((s) => s.to)).toEqual(['paid', 'refunded']);
     expect(nextSteps('canceled').map((s) => s.to)).toEqual(['pending']);
+  });
+  it('a refund is final', () => {
+    expect(nextSteps('refunded')).toEqual([]);
   });
   it('knows its statuses', () => {
     expect(isOrderStatus('paid')).toBe(true);
-    expect(isOrderStatus('refunded')).toBe(false);
+    expect(isOrderStatus('refunded')).toBe(true);
+    expect(isOrderStatus('shipped')).toBe(false);
   });
 });
 

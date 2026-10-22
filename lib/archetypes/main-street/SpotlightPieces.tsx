@@ -9,6 +9,7 @@
  * buttons and labels). Class-only (`.ms-sp-*`, spotlight-styles.ts); the slam's
  * letter timing is nth-child rules, and nothing waits on script to be visible.
  */
+import { MarketName } from './MarketName';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetView } from './schemas';
@@ -334,7 +335,7 @@ export function FindUsTicker({
             {e.day}
           </Type>
           <Type as="span" role="where" className="ms-sp-tick-where">
-            {e.where}
+            <MarketName e={e} />
           </Type>
           {e.time !== '' && (
             <Type as="span" role="legal" className="ms-sp-tick-time">

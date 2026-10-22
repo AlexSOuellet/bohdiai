@@ -1126,6 +1126,7 @@ export type Database = {
           price_cents: number | null
           sku: string | null
           status: string
+          stock_kind: string
           tenant_id: string
           updated_at: string
         }
@@ -1139,6 +1140,7 @@ export type Database = {
           price_cents?: number | null
           sku?: string | null
           status?: string
+          stock_kind?: string
           tenant_id: string
           updated_at?: string
         }
@@ -1152,6 +1154,7 @@ export type Database = {
           price_cents?: number | null
           sku?: string | null
           status?: string
+          stock_kind?: string
           tenant_id?: string
           updated_at?: string
         }
@@ -1202,6 +1205,7 @@ export type Database = {
           short_description: string | null
           slug: string
           status: string
+          stock_kind: string
           subscription_interval: string | null
           tenant_id: string
           updated_at: string
@@ -1236,6 +1240,7 @@ export type Database = {
           short_description?: string | null
           slug: string
           status?: string
+          stock_kind?: string
           subscription_interval?: string | null
           tenant_id: string
           updated_at?: string
@@ -1270,6 +1275,7 @@ export type Database = {
           short_description?: string | null
           slug?: string
           status?: string
+          stock_kind?: string
           subscription_interval?: string | null
           tenant_id?: string
           updated_at?: string

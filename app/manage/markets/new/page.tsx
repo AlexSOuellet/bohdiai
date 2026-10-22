@@ -30,7 +30,6 @@ export default async function NewMarketPage(): Promise<React.ReactElement> {
         products: picks,
         marketUrl: null,
         fileBase: `${site.subdomain}-market-qr`,
-        todayHref: null,
       }}
     />
   );

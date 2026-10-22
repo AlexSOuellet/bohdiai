@@ -1,5 +1,6 @@
 'use client';
 
+import { StockCell } from './StockChoice';
 import { useState } from 'react';
 import { MAX_OPTIONS, MAX_CHOICES } from '@/lib/catalog/combinations';
 import type { OptionForm, VariantForm, ChoiceForm, Kind } from '@/lib/backend/catalog/product-form';
@@ -178,7 +179,7 @@ export function OptionsField({
               <tr>
                 <th scope="col">Combination</th>
                 <th scope="col">Price</th>
-                <th scope="col">Stock</th>
+                <th scope="col">How many</th>
                 <th scope="col">Available</th>
               </tr>
             </thead>
@@ -197,14 +198,7 @@ export function OptionsField({
                     />
                   </td>
                   <td>
-                    <input
-                      className="bk-input bk-input-sm"
-                      inputMode="numeric"
-                      aria-label={`Stock for ${label(v)}`}
-                      placeholder="Made to order"
-                      value={v.stock}
-                      onChange={(e) => setVariant(i, { ...v, stock: e.target.value })}
-                    />
+                    <StockCell what={label(v)} kind={v.stockKind} stock={v.stock} onChange={(next) => setVariant(i, { ...v, ...next })} />
                   </td>
                   <td>
                     <input
@@ -219,8 +213,9 @@ export function OptionsField({
             </tbody>
           </table>
           <p className="bk-note">
-            A blank price uses the product price. A blank stock means made to order. Stock at 0
-            shows as sold out.
+            A blank price uses the product price. One of a kind shows Sold once it sells; a count
+            shows Sold out at 0; made to order never sells out and shows Order only when none are
+            ready.
           </p>
         </div>
       )}

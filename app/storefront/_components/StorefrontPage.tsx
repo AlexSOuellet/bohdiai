@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { archetypeSpec } from '@/lib/archetypes/registry';
 import type { ArchetypePage } from '@/lib/archetypes/builder';
-import type { ProductView, CollectionView, CartView, MarketShopView } from '@/lib/archetypes/content';
+import type { ProductView, CollectionView, CartView, MarketInfoView, MarketShopView } from '@/lib/archetypes/content';
 import { seedPreviewReviews } from '@/lib/archetypes/main-street/reviews';
 import { seedPreviewFindUs } from '@/lib/archetypes/main-street/findus';
 import {
@@ -232,6 +232,13 @@ export async function renderArchetypeMarket(tenantId: string, market: MarketShop
   const a = await resolveEnvelope(tenantId);
   if (a === null || a.spec.renderMarket === undefined) return null;
   return a.spec.renderMarket({ content: a.content, lookKey: a.lookKey, market, logoUrl: a.logoUrl, tenantId, mood: a.mood, brandColors: a.brandColors, accentOverride: a.accentOverride, brandPalette: a.brandPalette });
+}
+
+/** A market's information page in the design's own look, or null when the design has none. */
+export async function renderArchetypeMarketInfo(tenantId: string, market: MarketInfoView) {
+  const a = await resolveEnvelope(tenantId);
+  if (a === null || a.spec.renderMarketInfo === undefined) return null;
+  return a.spec.renderMarketInfo({ content: a.content, lookKey: a.lookKey, market, logoUrl: a.logoUrl, tenantId, mood: a.mood, brandColors: a.brandColors, accentOverride: a.accentOverride, brandPalette: a.brandPalette });
 }
 
 /** Wrap a functional page's body (cart, subscriptions, etc.) in the tenant's

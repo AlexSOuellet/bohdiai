@@ -13,7 +13,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json } from '@/lib/database.types';
 import type { ProductView, CatalogMedia, CollectionView, CatalogVariation, ProductOffer } from '@/lib/archetypes/content';
 import { hasPrice, effectivePriceCents, priceRange } from '@/lib/catalog/price';
-import { isStockSoldOut } from '@/lib/catalog/stock';
+import { asStockKind, effectiveStockKind, isOrderOnly, isStockSoldOut } from '@/lib/catalog/stock';
 import { combinationsOf, combinationKey } from '@/lib/catalog/combinations';
 
 type Db = SupabaseClient<Database>;
@@ -30,6 +30,8 @@ export interface ListingRow {
   metadata: Json;
   media_ids: string[] | null;
   inventory_count: number | null;
+  /** How it's stocked (one of a kind, a count, made to order); absent reads as a count. */
+  stock_kind?: string;
   is_preview: boolean;
   on_home: boolean;
   in_gallery: boolean;
@@ -52,6 +54,7 @@ export interface VariantRow {
   option_combination: Json;
   price_cents: number | null;
   inventory_count: number | null;
+  stock_kind?: string;
 }
 
 /** An uploads row as the projection reads it. */
@@ -79,7 +82,7 @@ export interface StoreCollection {
 }
 
 const LISTING_COLUMNS =
-  'id, slug, name, listing_type, base_price_cents, short_description, description, metadata, media_ids, inventory_count, is_preview, on_home, in_gallery, is_new';
+  'id, slug, name, listing_type, base_price_cents, short_description, description, metadata, media_ids, inventory_count, stock_kind, is_preview, on_home, in_gallery, is_new';
 const PRODUCT_TYPES = ['product', 'digital_product'];
 
 /** Format cents to a display price. Matches the storefront's long-standing format
@@ -162,7 +165,9 @@ function buildProduct(
         price: hasPrice(row.base_price_cents) ? formatPrice(row.base_price_cents) : '',
         priceCents: row.base_price_cents,
         ...(hasPrice(row.base_price_cents) ? {} : { askForPrice: true as const }),
-        status: isStockSoldOut(row.inventory_count) ? 'sold_out' : 'active',
+        status: isStockSoldOut(row.inventory_count, asStockKind(row.stock_kind)) ? 'sold_out' : 'active',
+        ...(effectiveStockKind(row.inventory_count, asStockKind(row.stock_kind)) === 'one_of_a_kind' ? { oneOfAKind: true as const } : {}),
+        ...(isOrderOnly(row.inventory_count, asStockKind(row.stock_kind)) ? { orderOnly: true as const } : {}),
       },
       minPriceCents: row.base_price_cents,
     };
@@ -179,7 +184,7 @@ function buildProduct(
   for (const choices of combinationsOf(variations.map((v) => ({ name: v.name, choices: v.options })))) {
     const v = byKey.get(combinationKey(choices));
     if (v === undefined) continue;
-    const soldOut = isStockSoldOut(v.inventory_count);
+    const soldOut = isStockSoldOut(v.inventory_count, asStockKind(v.stock_kind));
     const cents = effectivePriceCents(product, { priceCents: v.price_cents });
     offers.push({ ...(v.id === undefined ? {} : { id: v.id }), choices, price: formatPrice(cents), priceCents: cents, soldOut });
     all.push({ priceCents: v.price_cents });
@@ -235,7 +240,7 @@ async function loadDetails(
     db.from('variation_attributes').select('listing_id, name, position, variation_options(value, position)').in('listing_id', [...ids]),
     db
       .from('listing_variants')
-      .select('id, listing_id, option_combination, price_cents, inventory_count')
+      .select('id, listing_id, option_combination, price_cents, inventory_count, stock_kind')
       .in('listing_id', [...ids])
       .eq('status', 'active'),
   ]);

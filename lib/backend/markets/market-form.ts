@@ -224,14 +224,19 @@ export function buildMarketPayload(form: MarketForm): { ok: true; payload: Marke
   };
 }
 
-/** The costs' total as the page shows it, counting only lines with a readable amount. */
-export function costsTotal(costs: readonly CostLine[]): string {
+/** The costs' total in cents, counting only lines with a readable amount. */
+export function costsCents(costs: readonly CostLine[]): number {
   let cents = 0;
   for (const c of costs) {
     const d = parseDollars(c.amount);
     if (d.ok && d.cents !== null) cents += d.cents;
   }
-  return formatPrice(cents);
+  return cents;
+}
+
+/** The costs' total as the page shows it. */
+export function costsTotal(costs: readonly CostLine[]): string {
+  return formatPrice(costsCents(costs));
 }
 
 /** Past once its last day is before today (in the shop's time zone). Only groups the

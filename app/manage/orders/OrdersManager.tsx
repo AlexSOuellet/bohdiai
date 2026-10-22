@@ -5,6 +5,7 @@ import { unstable_rethrow } from 'next/navigation';
 import { setOrderStatus } from '@/lib/backend/orders/actions';
 import { STATUS_LABEL, nextSteps, type OrderRow, type OrderStatus } from '@/lib/backend/orders/orders';
 import { useNotice } from '../_components/Notice';
+import { ConfirmButton } from '../_components/ConfirmButton';
 
 const FAILED = 'Something went wrong. Check your connection and try again.';
 type Show = 'open' | OrderStatus | 'all';
@@ -19,10 +20,12 @@ const SAVED: Readonly<Record<OrderStatus, string>> = {
   paid: 'Marked paid. Those pieces now show as sold on your site.',
   fulfilled: 'Marked handed over.',
   canceled: 'Order canceled. Any piece it held is back on your site.',
+  refunded: 'Refund recorded. Those pieces are back in stock. Give the money back the way it was paid.',
 };
 
 /** Orders: what shoppers sent from the cart, newest first, each with the buyer's
- *  details and a button per next step. "Open" (new + paid) is the default view. */
+ *  details and a button per next step; a paid order has Refund (a yes first).
+ *  "Open" (new + paid) is the default view. Market sales are under Events, Sales. */
 export function OrdersManager({ initial, timeZone }: { initial: OrderRow[]; timeZone: string }): React.ReactElement {
   const [orders, setOrders] = useState(initial);
   const [show, setShow] = useState<Show>('open');
@@ -77,6 +80,7 @@ export function OrdersManager({ initial, timeZone }: { initial: OrderRow[]; time
               <option value="paid">Paid</option>
               <option value="fulfilled">Handed over</option>
               <option value="canceled">Canceled</option>
+              <option value="refunded">Refunded</option>
               <option value="all">All</option>
             </select>
           </div>
@@ -126,7 +130,18 @@ export function OrdersManager({ initial, timeZone }: { initial: OrderRow[]; time
                   </p>
                   {o.note !== '' && <p className="bk-order-note">“{o.note}”</p>}
                   <div className="bk-row">
-                    {nextSteps(o.status).map((s) => (
+                    {nextSteps(o.status).map((s) =>
+                      s.to === 'refunded' ? (
+                        <ConfirmButton
+                          key={s.to}
+                          label={s.label}
+                          ariaLabel={`${s.label}: order ${o.number}`}
+                          confirmLabel={`Yes, refund ${o.total}`}
+                          keepLabel="Keep the order"
+                          disabled={busy}
+                          onConfirm={() => void move(o.id, s.to)}
+                        />
+                      ) : (
                       <button
                         key={s.to}
                         type="button"
@@ -137,7 +152,8 @@ export function OrdersManager({ initial, timeZone }: { initial: OrderRow[]; time
                       >
                         {s.label}
                       </button>
-                    ))}
+                      ),
+                    )}
                   </div>
                 </li>
               ))}

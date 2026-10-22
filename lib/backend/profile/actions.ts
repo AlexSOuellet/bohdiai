@@ -11,6 +11,7 @@ import { getSiteFeatures } from '@/lib/backend/site-features';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { storeSitePhoto } from '@/lib/backend/site-photo';
 import { logger } from '@/lib/logger';
+import { showsScrollingLine } from '../site-kind';
 import type { DoneResult } from '../catalog/results';
 import { buildProfileHomes, EMPTY_PROFILE, type ProfileForm } from './profile-form';
 
@@ -63,6 +64,7 @@ export async function saveMarquee(phrases: string[]): Promise<DoneResult> {
   const built = buildProfileHomes({ ...EMPTY_PROFILE, marqueePhrases: phrases });
   if (!built.ok) return built;
   const db = await createSupabaseServerClient();
+  if (!(await showsScrollingLine(db, site.tenantId))) return { ok: false, error: 'Your site’s design has no scrolling line.' };
   const r = built.homes.marquee === null
     ? await db.from('site_marquees').delete().eq('tenant_id', site.tenantId)
     : await db.from('site_marquees').upsert({ tenant_id: site.tenantId, phrases: built.homes.marquee });

@@ -97,6 +97,7 @@ export async function refundMarketOrder(eventId: string, orderId: string): Promi
   revalidatePath(`/manage/markets/${eventId}/day`);
   revalidatePath(`/manage/markets/${eventId}/today`);
   revalidatePath(`/manage/markets/${eventId}`);
+  revalidatePath('/manage/sales');
   return { ok: true };
 }
 
@@ -114,5 +115,7 @@ export async function settleMarketOrder(eventId: string, orderId: string, outcom
   }
   revalidatePath(`/manage/markets/${eventId}/day`);
   revalidatePath(`/manage/markets/${eventId}/today`);
+  revalidatePath(`/manage/markets/${eventId}`);
+  revalidatePath('/manage/sales');
   return { ok: true };
 }
