@@ -6,6 +6,49 @@
 
 ---
 
+## The ladder (Alex, 2026-10-24, Session 113)
+
+Four plans, each keeping everything below it and adding one capability:
+
+- **Free** — know your numbers: the dashboard and the tools, no site.
+- **Showcase ($5)** — be found: a one-page site in their chosen look ("one page", never "generic").
+- **Market ($15)** — sell in person: the whole market app.
+- **Full ($25)** — sell online.
+
+Each plan gets its own first steps, starting where the plan below ended, so moving up feels like the next chapter. Every step opens where it happens and comes back to Home with the next one ready; a plan's steps go once done and Home settles into its everyday view. Proposed and agreed in outline (Alex: yes; build Free first):
+
+- **Free:** price your first piece (Cost to make, Price it, save as a product), the rest of your pieces (products list shows each price against its break-even), your next market, then Market day after it. Ongoing: Home shows pieces priced too low, the best earner, what the last market paid an hour. Nudge up once there are a few products: "Your pieces are ready to show."
+- **Showcase:** products already there; pick the 12 for the gallery, headline and story on the page, how people reach you and socials, publish, print the QR. Ongoing: market dates, swap the gallery. Nudge up when doing markets often.
+- **Market:** prices start showing; how each piece is stocked, connect Square, before the next event pick what you're bringing and put out the QR; the till on the day; after, costs, How it sold and Results fill in (Market day done for you). Nudge up when people ask to buy online.
+- **Full:** connect online payments, collections, more photos, a promotion; ongoing: an order comes in, pack, mark sent, refunds there.
+
+**Status:** Free built on `feat/backend-tools` (Session 113, unmerged). Alex: "this is no better and in some ways worse"; the whole backend "does NOT flow". Next session starts by asking what felt worse.
+
+## Free (Alex, 2026-10-24, Session 113)
+
+**A dashboard only.** Makers sign up free and add products only for analysis (running the tools). Results are saved on their own products and events, not downloaded. They upgrade when ready or stay free. An account (not just a newsletter email) keeps them connected and is a marketing tool (Alex).
+
+- **Products come from the tools, not the other way round** (Alex): a Tools menu not tied to any product; a product is saved out of a tool ("Save as a product"), a market out of Market day ("Save as an event").
+- **What it holds:** products (with their costs), the schedule with each event's costs and Market day numbers, the Tools, Contact support. No site screens, no plan or billing screens yet. Not on the pricing pages yet.
+- **Suggested price next to her own price:** her price is her decision; the tool's is advice, one tap away ("Use the suggested price"). A price below break-even says so on the product and in the products list. A product with no price starts at the suggested one.
+- **Database (Alex approved, applied Session 113):** Free in `tenants.plan` / `plan_next` (not `plan_comp` 'free', which gives a paid plan away); `product_costs` + `product_cost_items` (a product's batch, time, other costs, markup and supply list); `event_takings` (Market day's own numbers where there's no till: sales, card share and fee, materials, hours, hourly pay; booth, gas, food and other stay in the event's costs).
+- **Steps and numbers on Home are worked out, not stored:** a step is done when the thing it asks for exists.
+- **Preview site:** Juniper Hollow Candles (`juniper-hollow`, draft, Alex's login).
+- **Open:** whether Free has a product limit; Free's sign-up (with paying at sign-up, the same form); how Free shows on the pricing pages.
+
+## The tools (Alex, 2026-10-24, Session 113)
+
+From Alex's Maker's Toolkit (claude.ai build; `Downloads/bohdiai/makers-toolkit.html`). **The maths is Alex's agreed version; don't change it without asking him** (now in `lib/tools/maths.ts` on the branch).
+
+- **Built (branch):** Cost to make (one batch: supplies with what was paid and batches each lasts, what every piece gets, hours and pay), Price it (break-even exact, never rounded; price = break-even × Double / 2.5 / Triple rounded up; per place: markets, Etsy grossed up for its fees, Facebook haggle room, own website card fees, consignment cut plus rent shared over pieces sold; shop price = (materials + time) × markup; comps search buttons and a low/high), Market day (take-home, pay per hour, verdict against her rate, sales needed to hit it).
+- **To add (Alex: "all of them"):** is this market worth applying to (break-even before paying the booth), a monthly goal (pieces / markets / batches to reach $X), shipping cost (box, padding, postage by weight), taxes to set aside (an estimate, plainly not tax advice), which pieces actually earn (paid plans, from real sales), what to bring (Market, from How it sold), and a description writer.
+- **Description writer and competition:** a monthly limit on Free (cheap model, about a cent a run), more on paid plans. Never fetch Etsy (or other shops') results on our server (Etsy's rules); the search buttons open Etsy in her own browser, and comparison works from listings she pastes or the low/high she typed. On the makers arm, no AI talk ("help writing your descriptions").
+- **Public:** the toolkit stays free and open on the web (saved in the browser) as a way in, beside the maker checkup ("do you need a site", `feat/maker-checkup`). Suggested home `makers.bohdiai.com/tools`; Alex hasn't answered where it lives or whether the header links it.
+- **Flagged to Alex, not changed:** the "Other costs for one" hint includes booth and card fees, then the Etsy and website prices add card fees again and charge booth share to online sales.
+- **A video** explains the ladder (Alex); film the free toolkit first, the whole ladder once Free is real.
+
+---
+
 ## Showcase ($5 a month)
 
 Settled with Alex, 2026-10-19.
@@ -96,7 +139,7 @@ Everything Showcase has, plus:
 9. **Refunds** (Alex 2026-10-21; built Session 112 on `feat/market-orders`): Refund (a yes first) on every paid sale, on the market day, in **Sales** and on each event's **How it sold**; the piece goes back in stock, the takings leave it out, a card sale gets its refund record. Final. A refund done in the Square app shows up on its own later (Square notices; Alex: later).
 10. **The Events menu** (Alex 2026-10-22, Session 112): **Schedule** (the events list; each past one shows what it took in; "Add an event"), **Market POS**, **Sales** (every market sale grouped by event, one line each), **Results**. **Getting paid** sits in **Settings**. Each event's page: a summary sentence (takings, after costs, Open market day on the day) and tabs **Details**, **What I'm bringing**, **How it sold**, **After**. "Event", not "market" (Alex: not all are markets); Market POS and the market day keep their names.
 11. **Home Events box** (Alex 2026-10-22): next event, last event (takings, after costs), the year so far against last; each line opens where it leads.
-12. **How a piece is stocked** (Alex 2026-10-22): **One of a kind** (Sold once it sells), **I have some** (a count; Sold out at 0), **Made to order** (optional ready count; with none ready the site shows **Order only** and it can still be asked about or ordered). Per option too.
+12. **How a piece is stocked** (Alex 2026-10-22): **One of a kind** (Sold once it sells), **I have some** (a count; Sold out at 0), **Made to order** (optional ready count; with none ready the site shows **Order only** and it can still be asked about or ordered). Per option too. **A new product starts with no choice** and can't be saved until she picks (Alex 2026-10-24: most makers are small batches, then one-offs; pure made to order is the smallest group). Option combinations still start on Made to order (Alex may want them blank too).
 
 ### On the site, also (Session 112)
 - **Each market has its own page** (`/events/<id>`), reached by clicking it anywhere on the site: its details and What I'm bringing (or "coming soon"); never takes payment. Showcase's dates stay plain.
