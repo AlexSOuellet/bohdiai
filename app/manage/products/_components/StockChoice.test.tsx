@@ -22,6 +22,15 @@ describe('StockChoice — how a piece is stocked (Alex, 2026-10-22)', () => {
     expect(screen.queryByRole('textbox')).toBeNull();
   });
 
+  it('starts a new piece with nothing picked and no number asked (Alex, 2026-10-24)', () => {
+    const onChange = vi.fn();
+    render(<StockChoice kind={null} stock="" onChange={onChange} />);
+    for (const r of screen.getAllByRole('radio')) expect(r).not.toBeChecked();
+    expect(screen.queryByRole('textbox')).toBeNull();
+    fireEvent.click(screen.getByRole('radio', { name: /I have some/ }));
+    expect(onChange).toHaveBeenLastCalledWith({ stockKind: 'count', stock: '' });
+  });
+
   it('starts one of a kind at its one piece, unless it has already sold', () => {
     const onChange = vi.fn();
     const { rerender } = render(<StockChoice kind="count" stock="6" onChange={onChange} />);

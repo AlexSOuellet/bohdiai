@@ -39,6 +39,7 @@ const existing = (over: Partial<ProductForm> = {}): ProductForm => ({
   slug: 'fig',
   name: 'Fig Candle',
   price: '24',
+  stockKind: 'made_to_order',
   ...over,
 });
 const renderEditor = (initial: ProductForm, digital = false, homeCount = 0, photoLimit = 12) =>
@@ -110,6 +111,7 @@ describe('ProductEditor', () => {
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Fig Candle' } });
     fireEvent.change(screen.getByLabelText('Price'), { target: { value: '24' } });
     fireEvent.click(screen.getByLabelText('Autumn'));
+    fireEvent.click(screen.getByRole('radio', { name: /Made to order/ }));
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
     await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products?saved=Fig%20Candle'));
     expect(saveProduct.mock.calls[0]![0]).toMatchObject({
@@ -271,7 +273,7 @@ describe('ProductEditor', () => {
   });
   it('stays busy while a new product returns to the list, so a second click saves nothing twice', async () => {
     saveProduct.mockResolvedValue({ ok: true, id: 'new' });
-    renderEditor({ ...emptyProductForm(), name: 'Fig Candle', price: '24' });
+    renderEditor({ ...emptyProductForm(), name: 'Fig Candle', price: '24', stockKind: 'count', stock: '3' });
     fireEvent.click(saveButtons()[0]!);
     await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products?saved=Fig%20Candle'));
     const buttons = screen.getAllByRole('button', { name: 'Saving…' });

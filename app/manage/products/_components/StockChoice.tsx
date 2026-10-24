@@ -24,7 +24,8 @@ export function StockChoice({
   stock,
   onChange,
 }: {
-  kind: StockKind;
+  /** Null on a new piece until she picks. */
+  kind: StockKind | null;
   stock: string;
   onChange: (next: { stockKind: StockKind; stock: string }) => void;
 }): React.ReactElement {

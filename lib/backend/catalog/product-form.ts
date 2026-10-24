@@ -46,7 +46,8 @@ export type ProductForm = {
   /** With `stockKind`: one of a kind (its count, 1 until it sells), how many (a count),
    *  or how many are ready (made to order; blank for none counted). */
   stock: string;
-  stockKind: StockKind;
+  /** Null on a new piece until the maker picks (Alex, 2026-10-24: no choice is right for most). */
+  stockKind: StockKind | null;
   status: ItemStatus;
   kind: Kind;
   fileUploadId: string | null;
@@ -107,8 +108,8 @@ export function emptyProductForm(): ProductForm {
     description: '',
     price: '',
     stock: '',
-    // A new piece starts as made to order: what a blank stock always meant.
-    stockKind: 'made_to_order',
+    // A new piece starts with no choice: the maker says how it's stocked.
+    stockKind: null,
     status: 'draft',
     kind: 'physical',
     fileUploadId: null,
@@ -216,7 +217,7 @@ function hasProductShape(f: unknown): boolean {
   if (!isRecord(f)) return false;
   if (![f['name'], f['shortDescription'], f['description'], f['price'], f['stock']].every(isString))
     return false;
-  if (!isStockKind(f['stockKind'])) return false;
+  if (f['stockKind'] !== null && !isStockKind(f['stockKind'])) return false;
   if (
     !isStringOrNull(f['id']) ||
     !isStatus(f['status']) ||
@@ -365,6 +366,8 @@ export function buildProductPayload(
   // Product-level stock and file apply only without options (plan decision 5).
   let inventory: number | null = null;
   if (!hasOptions && form.kind === 'physical') {
+    if (form.stockKind === null)
+      return fail('Say how many you have: One of a kind, I have some, or Made to order.');
     const s = stockCount(form.stockKind, form.stock, 'this product');
     if (!s.ok) return fail(s.error);
     inventory = s.count;
@@ -384,7 +387,7 @@ export function buildProductPayload(
       status: form.status,
       inventory_count: inventory,
       // Options and downloads carry their own stock; the product itself is then made to order.
-      stock_kind: !hasOptions && form.kind === 'physical' ? form.stockKind : 'made_to_order',
+      stock_kind: !hasOptions && form.kind === 'physical' && form.stockKind !== null ? form.stockKind : 'made_to_order',
       media_ids: form.photos.map((p) => p.uploadId),
       file_upload_id: digitalProduct ? form.fileUploadId : null,
       collection_ids: [...new Set(form.collectionIds)],

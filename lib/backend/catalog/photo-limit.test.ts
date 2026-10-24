@@ -22,7 +22,7 @@ describe('how many photos a product may have', () => {
   });
 
   it('is checked when saving', () => {
-    const form = { ...emptyProductForm(), name: 'Carol star', price: '18', photos: [{ uploadId: 'a', url: 'x' }, { uploadId: 'b', url: 'y' }] };
+    const form = { ...emptyProductForm(), name: 'Carol star', price: '18', stockKind: 'made_to_order' as const, photos: [{ uploadId: 'a', url: 'x' }, { uploadId: 'b', url: 'y' }] };
     expect(buildProductPayload(form, { digital: false, photos: { limit: 1, kept: 0 } })).toEqual({ ok: false, error: 'Your plan shows one photo per product. Remove the extra photo to save.' });
     expect(buildProductPayload(form, { digital: false, photos: { limit: 1, kept: 2 } }).ok).toBe(true);
     expect(buildProductPayload(form, { digital: false, photos: { limit: 12, kept: 0 } }).ok).toBe(true);

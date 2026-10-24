@@ -71,6 +71,7 @@ const form = (over: Partial<ProductForm> = {}): ProductForm => ({
   ...emptyProductForm(),
   name: 'Fig Candle',
   price: '24',
+  stockKind: 'made_to_order',
   ...over,
 });
 const file = (type: string, size = 10, name = 'a') =>

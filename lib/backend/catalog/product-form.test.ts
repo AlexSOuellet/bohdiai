@@ -16,6 +16,7 @@ const base = (over: Partial<ProductForm> = {}): ProductForm => ({
   ...emptyProductForm(),
   name: 'Fig Candle',
   price: '24',
+  stockKind: 'made_to_order',
   ...over,
 });
 const size: OptionForm = {
@@ -208,6 +209,11 @@ describe('buildProductPayload', () => {
     expect(built({ stockKind: 'made_to_order', stock: '1' })).toMatchObject({ ok: true, payload: { inventory_count: 1 } });
     // A crafted kind is refused.
     expect(built({ stockKind: 'lots' as never }).ok).toBe(false);
+    // A new piece starts with no choice, and can't be saved until she picks (Alex, 2026-10-24).
+    expect(emptyProductForm().stockKind).toBeNull();
+    expect(built({ stockKind: null })).toEqual({ ok: false, error: 'Say how many you have: One of a kind, I have some, or Made to order.' });
+    // A download never asks.
+    expect(buildProductPayload(base({ kind: 'digital', fileUploadId: 'f1', fileName: 'a.pdf', stockKind: null }), { digital: true })).toMatchObject({ ok: true, payload: { stock_kind: 'made_to_order' } });
     // A download has no stock: made to order, no number.
     expect(buildProductPayload(base({ kind: 'digital', fileUploadId: 'f1', fileName: 'a.pdf', stockKind: 'count', stock: '' }), { digital: true })).toMatchObject({ ok: true, payload: { stock_kind: 'made_to_order', inventory_count: null } });
   });
