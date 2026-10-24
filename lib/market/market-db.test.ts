@@ -245,4 +245,25 @@ describe('Getting paid and the market page', () => {
     await saveMarket(form);
     expect(state.calls.at(-1)).not.toContain('listing_ids');
   });
+
+  it('keeps Market day’s own numbers where there’s no till (Alex, 2026-10-24)', async () => {
+    state.rpc = { data: 'm1', error: null };
+    state.features = new Set(['market_dates', 'market_records']);
+    const form = { ...emptyMarketForm(), name: 'Holly Fair', date: '2026-11-21' };
+    const day = { sales: '640', card: '380', cardRate: '3', materials: '160', hoursAtMarket: '7', hoursOther: '3', wage: '20' };
+    expect(await saveMarket(form, day)).toEqual({ ok: true, id: 'm1' });
+    expect(state.calls).toContain('from(event_takings)');
+    expect(state.calls.find((c) => c.startsWith('upsert('))).toContain('"sales_cents":64000');
+    state.queue.push({ data: null, error: { message: 'down' } });
+    expect(await saveMarket(form, day)).toEqual({ ok: true, id: 'm1', warning: 'takings' });
+    expect(logger.error).toHaveBeenCalledWith('markets: takings save failed', expect.objectContaining({ tenantId: 't1' }));
+    state.calls = [];
+    expect(await saveMarket(form, { ...day, sales: 'lots' })).toEqual({ ok: false, error: 'Check the total sales, like 640 or 640.50.' });
+    expect(state.calls.some((c) => c.startsWith('rpc('))).toBe(false);
+    // With the till, the sales are counted there: nothing typed is kept.
+    state.features = new Set(['market_dates', 'market_shop', 'market_records']);
+    state.calls = [];
+    await saveMarket(form, day);
+    expect(state.calls).not.toContain('from(event_takings)');
+  });
 });

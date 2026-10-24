@@ -2,11 +2,15 @@
  * Products and events come from the tools (Alex, 2026-10-24): "Save as a product"
  * opens a new product with the tool's name and price filled in, and "Save as an
  * event" opens a new event with the market's name and costs. The maker checks it and
- * saves it there, through the screen's own rules. Only the name, a price and cost
- * lines travel, in the address; each is trimmed and capped on the way in.
+ * saves it there, through the screen's own rules. The name, a price and the costs
+ * travel in the address; each is trimmed and capped on the way in, and the costs are
+ * checked again when the product saves.
  */
 import { emptyProductForm, formatCents, type ProductForm } from '@/lib/backend/catalog/product-form';
 import { COSTS_LIMIT, MARKET_LIMITS, emptyMarketForm, type MarketForm } from '@/lib/backend/markets/market-form';
+import { MARKUPS, type Markup } from './maths';
+import { COST_LINES_MAX, type CostSettings } from './product-costs';
+import type { Takings } from './event-takings';
 
 const PRODUCT_NAME_MAX = 120;
 
@@ -25,12 +29,56 @@ function centsFrom(text: string): number | null {
   return /^\d{1,8}$/.test(text) ? Number(text) : null;
 }
 
-/** The address that opens a new product from a tool. */
-export function productLink(name: string, priceCents: number): string {
+const NUMBER_MAX = 12;
+const short = (s: string): string => s.trim().slice(0, NUMBER_MAX);
+
+/** The address that opens a new product from a tool, with its costs when there are any. */
+export function productLink(name: string, priceCents: number, costs: CostSettings | null = null): string {
   const q = new URLSearchParams({ from: 'tools' });
   if (name.trim() !== '') q.set('name', name.trim());
   if (Number.isFinite(priceCents) && priceCents > 0) q.set('price', String(Math.round(priceCents)));
+  if (costs !== null) {
+    q.set('y', short(costs.yield));
+    q.set('h', short(costs.hours));
+    q.set('r', short(costs.rate));
+    q.set('o', short(costs.extras));
+    q.set('m', String(costs.markup));
+    for (const b of costs.batch) if (b.name.trim() !== '' || b.paid.trim() !== '') q.append('b', `${short(b.paid)}:${short(b.lasts)}:${b.name.trim()}`);
+    for (const p of costs.piece) if (p.name.trim() !== '' || p.each.trim() !== '') q.append('p', `${short(p.each)}:${p.name.trim()}`);
+  }
   return `/manage/products/new?${q.toString()}`;
+}
+
+/** The costs a tool sent with a new product, or null. */
+export function costsFromTools(params: Params): CostSettings | null {
+  if (one(params['from']) !== 'tools' || params['y'] === undefined) return null;
+  const m = Number(one(params['m']));
+  const split = (raw: string, parts: number): string[] => {
+    const out: string[] = [];
+    let rest = raw;
+    for (let i = 1; i < parts; i++) {
+      const at = rest.indexOf(':');
+      out.push(at < 0 ? '' : rest.slice(0, at).slice(0, NUMBER_MAX));
+      rest = at < 0 ? rest : rest.slice(at + 1);
+    }
+    out.push(rest.trim().slice(0, 80));
+    return out;
+  };
+  return {
+    yield: one(params['y']).slice(0, NUMBER_MAX),
+    hours: one(params['h']).slice(0, NUMBER_MAX),
+    rate: one(params['r']).slice(0, NUMBER_MAX),
+    extras: one(params['o']).slice(0, NUMBER_MAX),
+    markup: (MARKUPS as readonly number[]).includes(m) ? (m as Markup) : 2.5,
+    batch: many(params['b']).slice(0, COST_LINES_MAX).map((raw) => {
+      const [paid = '', lasts = '', name = ''] = split(raw, 3);
+      return { name, paid, lasts };
+    }),
+    piece: many(params['p']).slice(0, COST_LINES_MAX).map((raw) => {
+      const [each = '', name = ''] = split(raw, 2);
+      return { name, each };
+    }),
+  };
 }
 
 /** A new product's form, with what the tool sent. Anything else starts as usual. */
@@ -43,10 +91,14 @@ export function productFromTools(params: Params): ProductForm {
 
 export type EventCost = { description: string; cents: number };
 
-/** The address that opens a new event from a tool. Costs of 0 are left out. */
-export function eventLink(name: string, costs: readonly EventCost[]): string {
+const TAKINGS_KEYS: readonly (keyof Takings)[] = ['sales', 'card', 'cardRate', 'materials', 'hoursAtMarket', 'hoursOther', 'wage'];
+
+/** The address that opens a new event from a tool, with Market day's own numbers.
+ *  Costs of 0 are left out. */
+export function eventLink(name: string, costs: readonly EventCost[], takings: Takings | null = null): string {
   const q = new URLSearchParams({ from: 'tools' });
   if (name.trim() !== '') q.set('name', name.trim());
+  if (takings !== null) for (const k of TAKINGS_KEYS) if (takings[k].trim() !== '') q.set(`t_${k}`, short(takings[k]));
   for (const c of costs) {
     const n = Math.round(c.cents);
     if (Number.isFinite(n) && n > 0) q.append('cost', `${n}:${c.description}`);
@@ -67,4 +119,11 @@ export function eventFromTools(params: Params): MarketForm {
     })
     .slice(0, COSTS_LIMIT);
   return { ...form, name: one(params['name']).slice(0, MARKET_LIMITS.name), costs };
+}
+
+/** Market day's own numbers sent with a new event, or null. */
+export function takingsFromTools(params: Params): Takings | null {
+  if (one(params['from']) !== 'tools') return null;
+  const t = Object.fromEntries(TAKINGS_KEYS.map((k) => [k, one(params[`t_${k}`]).slice(0, NUMBER_MAX)])) as Takings;
+  return Object.values(t).some((v) => v !== '') ? t : null;
 }

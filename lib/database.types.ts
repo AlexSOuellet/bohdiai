@@ -578,6 +578,60 @@ export type Database = {
           },
         ]
       }
+      event_takings: {
+        Row: {
+          card_cents: number | null
+          card_fee_pct: number | null
+          event_id: string
+          hourly_pay_cents: number | null
+          hours_at_market: number | null
+          hours_other: number | null
+          materials_cents: number | null
+          sales_cents: number | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          card_cents?: number | null
+          card_fee_pct?: number | null
+          event_id: string
+          hourly_pay_cents?: number | null
+          hours_at_market?: number | null
+          hours_other?: number | null
+          materials_cents?: number | null
+          sales_cents?: number | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          card_cents?: number | null
+          card_fee_pct?: number | null
+          event_id?: string
+          hourly_pay_cents?: number | null
+          hours_at_market?: number | null
+          hours_other?: number | null
+          materials_cents?: number | null
+          sales_cents?: number | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_takings_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_takings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           address: string | null
@@ -1816,6 +1870,105 @@ export type Database = {
           },
           {
             foreignKeyName: "payments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_cost_items: {
+        Row: {
+          batches_lasts: number | null
+          id: string
+          kind: string
+          listing_id: string
+          name: string
+          paid_cents: number
+          position: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          batches_lasts?: number | null
+          id?: string
+          kind: string
+          listing_id: string
+          name?: string
+          paid_cents: number
+          position?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          batches_lasts?: number | null
+          id?: string
+          kind?: string
+          listing_id?: string
+          name?: string
+          paid_cents?: number
+          position?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_cost_items_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "product_costs"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "product_cost_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_costs: {
+        Row: {
+          batch_hours: number | null
+          hourly_pay_cents: number | null
+          listing_id: string
+          markup: number
+          other_cents: number | null
+          pieces_per_batch: number | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          batch_hours?: number | null
+          hourly_pay_cents?: number | null
+          listing_id: string
+          markup?: number
+          other_cents?: number | null
+          pieces_per_batch?: number | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          batch_hours?: number | null
+          hourly_pay_cents?: number | null
+          listing_id?: string
+          markup?: number
+          other_cents?: number | null
+          pieces_per_batch?: number | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_costs_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_costs_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"

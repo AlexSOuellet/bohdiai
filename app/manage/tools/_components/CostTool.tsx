@@ -1,15 +1,57 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter, unstable_rethrow } from 'next/navigation';
 import type { Route } from 'next';
 import { cents, type BatchSupply, type PieceItem } from '@/lib/tools/maths';
 import { productLink } from '@/lib/tools/handoff';
+import { toolCosts } from './ToolsShell';
+import { saveCostsToProduct } from '@/lib/tools/actions';
+import type { CostSettings } from '@/lib/tools/product-costs';
 import { BLANK_COST, EXAMPLE_COST, useTools } from './ToolsShell';
 import { ExampleRow, HangTag, NumberField, TextField } from './ToolParts';
 
+/** A product she opened in Cost to make, with its saved costs (null: none yet). */
+export type FromProduct = { id: string; name: string; costs: CostSettings | null };
+
 /** Cost to make: one batch, its supplies, what every piece gets, then her time. */
-export function CostTool(): React.ReactElement {
-  const { cost, setCost, costResult: r, priceResult, canSaveProduct } = useTools();
+export function CostTool({ product = null }: { product?: FromProduct | null }): React.ReactElement {
+  const { cost, setCost, costResult: r, price, setPrice, priceResult, canSaveProduct } = useTools();
+  const router = useRouter();
+  const [saving, setSaving] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+  // Opened from a product: start from its own costs (or a blank batch named for it), once.
+  const loaded = useRef<string | null>(null);
+  useEffect(() => {
+    if (product === null || loaded.current === product.id) return;
+    loaded.current = product.id;
+    const c = product.costs;
+    setCost(
+      c === null
+        ? { ...BLANK_COST, name: product.name }
+        : { name: product.name, yield: c.yield, hours: c.hours, rate: c.rate, batch: c.batch.length > 0 ? c.batch : BLANK_COST.batch, piece: c.piece.length > 0 ? c.piece : BLANK_COST.piece },
+    );
+    if (c !== null) setPrice({ ...price, extras: c.extras, markup: c.markup, linked: true });
+  }, [product, price, setCost, setPrice]);
+
+  async function saveToProduct(id: string): Promise<void> {
+    if (saving) return;
+    setSaving(true);
+    setProblem(null);
+    try {
+      const done = await saveCostsToProduct(id, toolCosts(cost, price));
+      if (done.ok) {
+        router.push(`/manage/products/${id}`);
+        return;
+      }
+      setProblem(done.error);
+    } catch (err) {
+      unstable_rethrow(err);
+      setProblem('Something went wrong. Check your connection and try again.');
+    }
+    setSaving(false);
+  }
   const set = (patch: Partial<typeof cost>): void => setCost({ ...cost, ...patch });
   const setBatch = (i: number, patch: Partial<BatchSupply>): void => set({ batch: cost.batch.map((b, j) => (j === i ? { ...b, ...patch } : b)) });
   const setPiece = (i: number, patch: Partial<PieceItem>): void => set({ piece: cost.piece.map((p, j) => (j === i ? { ...p, ...patch } : p)) });
@@ -21,6 +63,14 @@ export function CostTool(): React.ReactElement {
         What does it cost you to make one?
       </h2>
       <p className="bk-tool-lede">Think about one batch. Put in what you paid for the supplies and how many pieces the batch made, and you’ll see the real cost of each piece.</p>
+      {product !== null && (
+        <p className="bk-tool-example">
+          <span className="bk-tool-example-what">{`Working on ${product.name}`}</span>
+          <Link className="bk-link" href={`/manage/products/${product.id}`}>
+            Back to the product
+          </Link>
+        </p>
+      )}
       {cost === EXAMPLE_COST && <ExampleRow what="Example: a batch of candles at real supplier prices" onBlank={() => setCost(BLANK_COST)} />}
 
       <div className="bk-tool-main">
@@ -117,8 +167,18 @@ export function CostTool(): React.ReactElement {
             <p className="bk-hangtag-next">
               Next: <Link href="/manage/tools/price">Price it</Link>. Your numbers carry over.
             </p>
-            {canSaveProduct && r.has && (
-              <Link className="bk-btn bk-hangtag-save" href={productLink(cost.name, priceResult.has ? priceResult.fair * 100 : 0) as Route}>
+            {product !== null && (
+              <button type="button" className="bk-btn bk-hangtag-save" disabled={saving} onClick={() => void saveToProduct(product.id)}>
+                {saving ? 'Saving…' : `Save to ${product.name}`}
+              </button>
+            )}
+            {problem !== null && (
+              <p className="bk-error" role="alert">
+                {problem}
+              </p>
+            )}
+            {product === null && canSaveProduct && r.has && (
+              <Link className="bk-btn bk-hangtag-save" href={productLink(cost.name, priceResult.has ? priceResult.fair * 100 : 0, toolCosts(cost, price)) as Route}>
                 Save as a product
               </Link>
             )}

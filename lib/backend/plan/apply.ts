@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
-import type { SitePlan } from './plan';
+import type { AccountPlan } from './plan';
 import { planFeatureRows } from './plan-features';
 
 /** Put a site on `plan`: store the plan and set every switch the plans decide.
@@ -9,7 +9,7 @@ import { planFeatureRows } from './plan-features';
 export async function applyPlan(
   db: SupabaseClient<Database>,
   tenantId: string,
-  plan: SitePlan,
+  plan: AccountPlan,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const rows = planFeatureRows(plan).map((r) => ({ tenant_id: tenantId, ...r }));
   const { error: fErr } = await db.from('tenant_features').upsert(rows);

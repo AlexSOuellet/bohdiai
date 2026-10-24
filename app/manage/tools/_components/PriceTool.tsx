@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { MARKUPS, compareToOthers, cents, dollars, markupText, type Channel, type Markup, type CompareRead } from '@/lib/tools/maths';
 import { productLink } from '@/lib/tools/handoff';
+import { toolCosts } from './ToolsShell';
 import { EXAMPLE_PRICE, useTools, type PriceForm } from './ToolsShell';
 import { ExampleRow, HangTag, NumberField, Placed, TextField } from './ToolParts';
 
@@ -31,7 +32,7 @@ const COMPARE_WORDS: Readonly<Record<CompareRead, (low: string, breakEven: strin
 
 /** Price it: her costs, a markup, where she sells, and what others charge. */
 export function PriceTool(): React.ReactElement {
-  const { price, priceShown: p, setPrice, priceResult: r, canSaveProduct } = useTools();
+  const { cost, price, priceShown: p, setPrice, priceResult: r, canSaveProduct } = useTools();
   const set = (patch: Partial<PriceForm>): void => setPrice({ ...p, ...patch });
   // Typing over a number Cost to make filled in stops it following Cost to make.
   const setOwn = (patch: Partial<PriceForm>): void => setPrice({ ...p, ...patch, linked: false });
@@ -213,7 +214,7 @@ export function PriceTool(): React.ReactElement {
             )}
 
             {canSaveProduct && r.has && (
-              <Link className="bk-btn bk-hangtag-save" href={productLink(p.name, r.fair * 100) as Route}>
+              <Link className="bk-btn bk-hangtag-save" href={productLink(p.name, r.fair * 100, p.linked ? toolCosts(cost, p) : null) as Route}>
                 Save as a product
               </Link>
             )}

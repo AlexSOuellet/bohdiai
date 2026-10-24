@@ -10,6 +10,7 @@ import { createContext, useContext, useMemo, useState } from 'react';
 import Link from 'next/link';
 import type { Route } from 'next';
 import { usePathname } from 'next/navigation';
+import type { CostSettings } from '@/lib/tools/product-costs';
 import { costToMake, priceIt, marketDay, cents, dollars, type BatchSupply, type PieceItem, type Channel, type Markup, type MarketInput, type CostResult, type PriceResult, type MarketResult } from '@/lib/tools/maths';
 
 export type CostForm = { name: string; yield: string; batch: BatchSupply[]; piece: PieceItem[]; hours: string; rate: string };
@@ -123,6 +124,12 @@ export function linkedPrice(price: PriceForm, cost: CostForm, costResult: CostRe
     materials: costResult.has ? costResult.materials.toFixed(2) : '',
     time: costResult.time > 0 ? costResult.time.toFixed(2) : '',
   };
+}
+
+/** What a product keeps of the tools: Cost to make's batch and time, and Price it's
+ *  other costs and markup. */
+export function toolCosts(cost: CostForm, price: Pick<PriceForm, 'extras' | 'markup'>): CostSettings {
+  return { yield: cost.yield, hours: cost.hours, rate: cost.rate, extras: price.extras, markup: price.markup, batch: cost.batch, piece: cost.piece };
 }
 
 const TOOLS = [

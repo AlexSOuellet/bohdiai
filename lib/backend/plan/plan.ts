@@ -8,6 +8,15 @@ import { PLANS, type Plan } from '@/lib/site/plans';
 export const SITE_PLANS = ['showcase', 'lite', 'full'] as const;
 export type SitePlan = (typeof SITE_PLANS)[number];
 
+/** Free (Alex, 2026-10-24): a backend with no site. Products worked out with the
+ *  tools, events with their numbers. Below Showcase; not on the pricing pages yet. */
+export const FREE_PLAN = 'free';
+export type AccountPlan = typeof FREE_PLAN | SitePlan;
+
+export function isFreePlan(value: unknown): value is typeof FREE_PLAN {
+  return value === FREE_PLAN;
+}
+
 export function isSitePlan(value: unknown): value is SitePlan {
   return typeof value === 'string' && (SITE_PLANS as readonly string[]).includes(value);
 }

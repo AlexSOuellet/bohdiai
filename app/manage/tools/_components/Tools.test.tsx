@@ -2,7 +2,10 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, within } from '@testing-library/react';
 
 const path = vi.hoisted(() => ({ current: '/manage/tools/cost' }));
-vi.mock('next/navigation', () => ({ usePathname: () => path.current }));
+const push = vi.hoisted(() => vi.fn());
+vi.mock('next/navigation', () => ({ usePathname: () => path.current, useRouter: () => ({ push }), unstable_rethrow: () => undefined }));
+const saveCostsToProduct = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/tools/actions', () => ({ saveCostsToProduct }));
 
 import { ToolsShell, linkedPrice, EXAMPLE_COST, EXAMPLE_PRICE } from './ToolsShell';
 import { CostTool } from './CostTool';
@@ -70,7 +73,9 @@ describe('Cost to make', () => {
 
   it('saves as a product with the name and price, where the site has products', () => {
     shell(<CostTool />);
-    expect(screen.getByRole('link', { name: 'Save as a product' })).toHaveAttribute('href', '/manage/products/new?from=tools&name=8+oz+soy+candle&price=2100');
+    const q = new URL(screen.getByRole('link', { name: 'Save as a product' }).getAttribute('href') ?? '', 'https://app.bohdiai.com').searchParams;
+    expect([q.get('name'), q.get('price'), q.get('y'), q.get('o'), q.get('m')]).toEqual(['8 oz soy candle', '2100', '12', '1.50', '2.5']);
+    expect(q.getAll('b')).toEqual(['31.97:2:Soy wax, 10 lb bag', '30.77:2.5:Fragrance oil, 16 oz', '9.93:8:Wicks, pack of 100']);
     cleanup();
     shell(<CostTool />, false);
     expect(screen.queryByRole('link', { name: 'Save as a product' })).toBeNull();
@@ -179,5 +184,32 @@ describe('Market day', () => {
     cleanup();
     shell(<MarketTool />, true, false);
     expect(screen.queryByRole('link', { name: 'Save as an event' })).toBeNull();
+  });
+});
+
+describe('Cost to make, opened from a product', () => {
+  const product = { id: 'l1', name: 'Fig candle', costs: { yield: '10', hours: '', rate: '20', extras: '2', markup: 3 as const, batch: [{ name: 'Wax', paid: '30', lasts: '' }], piece: [] } };
+
+  it('starts from the product’s own costs and saves them back to it', async () => {
+    saveCostsToProduct.mockResolvedValue({ ok: true });
+    shell(<CostTool product={product} />);
+    expect(screen.getByText('Working on Fig candle')).toBeInTheDocument();
+    expect(screen.getByLabelText('How many one batch makes')).toHaveValue('10');
+    expect(screen.queryByRole('link', { name: 'Save as a product' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Save to Fig candle' }));
+    await vi.waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products/l1'));
+    expect(saveCostsToProduct).toHaveBeenCalledWith('l1', expect.objectContaining({ yield: '10', extras: '2', markup: 3 }));
+  });
+
+  it('starts blank for a product with no costs, and says why a save failed', async () => {
+    saveCostsToProduct.mockResolvedValueOnce({ ok: false, error: 'Check the hours to make the batch.' });
+    shell(<CostTool product={{ id: 'l2', name: 'Tin', costs: null }} />);
+    expect(screen.getByLabelText('What you’re making')).toHaveValue('Tin');
+    expect(screen.getByLabelText('How many one batch makes')).toHaveValue('');
+    fireEvent.click(screen.getByRole('button', { name: 'Save to Tin' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Check the hours to make the batch.');
+    saveCostsToProduct.mockRejectedValueOnce(new Error('offline'));
+    fireEvent.click(screen.getByRole('button', { name: 'Save to Tin' }));
+    expect(await screen.findByText(/Check your connection/)).toBeInTheDocument();
   });
 });

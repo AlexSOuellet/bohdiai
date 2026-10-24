@@ -131,7 +131,7 @@ export function MarketTool(): React.ReactElement {
                   : `To pay yourself ${wage} an hour at this market, you’d need about ${dollars(r.salesNeeded)} in sales.`}
             </p>
             {canSaveEvent && (
-              <Link className="bk-btn bk-hangtag-save" href={eventLink(day.name, eventCosts) as Route}>
+              <Link className="bk-btn bk-hangtag-save" href={eventLink(day.name, eventCosts, { sales: day.sales, card: day.card, cardRate: day.cardRate, materials: day.materials, hoursAtMarket: day.hoursAtMarket, hoursOther: day.hoursOther, wage: day.wage }) as Route}>
                 Save as an event
               </Link>
             )}
