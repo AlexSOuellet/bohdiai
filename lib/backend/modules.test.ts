@@ -59,6 +59,14 @@ describe('a business card site in the menu', () => {
           { label: 'Gallery', href: '/manage/gallery' },
         ],
       },
+      {
+        section: 'Tools',
+        items: [
+          { label: 'Cost to make', href: '/manage/tools/cost' },
+          { label: 'Price it', href: '/manage/tools/price' },
+          { label: 'Market day', href: '/manage/tools/market' },
+        ],
+      },
       { section: '', items: [{ label: 'Contact support', href: '/manage/support' }] },
     ]);
   });
@@ -75,7 +83,7 @@ describe('Your plan in the menu', () => {
         { label: 'Billing', href: '/manage/billing' },
       ],
     });
-    expect(navFor(BACKEND_MODULES, new Set()).map((s) => s.items.map((i) => i.label))).toEqual([['Home'], ['Contact support']]);
+    expect(navFor(BACKEND_MODULES, new Set()).map((s) => s.items.map((i) => i.label))).toEqual([['Home'], ['Cost to make', 'Price it', 'Market day'], ['Contact support']]);
   });
 });
 

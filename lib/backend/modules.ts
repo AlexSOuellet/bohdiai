@@ -46,6 +46,16 @@ export const BACKEND_MODULES: BackendModule[] = [
   { feature: 'gallery', section: 'Your site', items: [{ label: 'Gallery', href: '/manage/gallery' }] },
   { feature: 'testimonials', section: 'Your site', items: [{ label: 'Testimonials', href: '/manage/testimonials' }] },
   { feature: 'qr_codes', section: 'Your site', items: [{ label: 'QR code', href: '/manage/qr' }] },
+  // Tools on every plan (Alex, 2026-10-24): products and events come out of them.
+  {
+    feature: null,
+    section: 'Tools',
+    items: [
+      { label: 'Cost to make', href: '/manage/tools/cost' },
+      { label: 'Price it', href: '/manage/tools/price' },
+      { label: 'Market day', href: '/manage/tools/market' },
+    ],
+  },
   // Contact support: its own item on the main menu, every backend (Alex, 2026-10-19).
   { feature: null, section: '', items: [{ label: 'Contact support', href: '/manage/support' }] },
   {
