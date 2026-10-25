@@ -153,7 +153,30 @@ Everything Showcase has, plus:
 
 ## Full ($25 a month)
 
-To be defined. Already decided: online selling through **Square and/or Stripe** (Alex, 2026-10-20); Refund in Orders on every paid sale, online and market (Alex, 2026-10-21; built Session 112: **Online shop** menu group = Orders (online orders only, Refund on paid ones) and Promotions; market sales are in Events, Sales); collections; every testimonial; visitor months kept. Try on a look (see another mood and skin on their own site, then keep it) is Full only (Alex, 2026-10-17). The try-on must survive clicking around the site (not only the address bar), and Scenic must never fall back to the marsh: every build makes three backgrounds whatever the family (Open-Work item 6). The gallery add-on is above.
+Settled with Alex, 2026-10-25 (Session 114), on top of the earlier calls. **Everything Market has, plus selling online, buyer accounts and try on a look.** Next after Full: the tools and Free (held until Full is done, Alex 2026-10-25).
+
+### On the site
+- **The cart takes payment** (today it only sends an order request): cards through the maker's own **Square and/or Stripe** (Alex, 2026-10-20), and **PayPal** (Alex, 2026-10-25). Money goes straight to the maker; BohdiAI never sees a card or a password and takes no cut; an order counts as paid only when the processor confirms it.
+- **Collections** (band, menu link and pages).
+- **Every testimonial**, not just three.
+- **Several photos per piece** (Market has one).
+- **Buyer accounts** (Alex, 2026-10-25; Penny's site is the reference): a buyer signs in on that shop (each shop's accounts are its own) and sees **My account**: past orders, a page for each order, **Reorder** on a paid order. Checking out without an account always works. The maker switches buyer accounts **on or off** in her settings.
+
+### What the maker gets in the backend
+Everything Market has, plus:
+1. **Online shop**: **Orders** (online orders, Refund on every paid one; built Session 112) and **Promotions** (sales and codes, never stacked; built).
+2. **Getting paid** adds connecting Stripe and PayPal beside Square, each on the processor's own page, keys locked server-side as Square's are.
+3. **Buyer accounts** switch, and her buyers.
+4. **Visitor months kept** for as long as she's on Full.
+5. **Try on a look** (Alex, 2026-10-17; how it looks, Alex 2026-10-25): built like bohdiai.com/looks, a row of moods above **her own live site** in a browser window, with the phone switch, her own pieces and words in every mood. Only she can see it, from her backend; **Keep this look** switches her site. It must survive clicking around the site, and Scenic must never fall back to the marsh (every build makes three backgrounds, Open-Work item 6). A maker who steps down from Full keeps the look she chose.
+
+### Leaving Full (Alex, 2026-10-25)
+- **Buyer accounts are never deleted.** Below Full her buyers just can't sign in; moving back up to Full turns sign-in back on with everything there. This is meant as a reason not to step down.
+- The step-down screen says so plainly before she confirms (how many of her customers will no longer be able to sign in), in the site's own words.
+
+### Market, also (Alex, 2026-10-25)
+- **PayPal at the table** beside Square: the maker's own PayPal account; the simplest way is a PayPal QR code the buyer scans, recorded only when PayPal confirms. (PayPal's card reader is another option.) Venmo comes through PayPal in the US only.
+- Before building PayPal: check what PayPal requires of BohdiAI for makers to connect their own accounts (Square needed its own setup).
 
 ---
 
