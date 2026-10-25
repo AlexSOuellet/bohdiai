@@ -1227,14 +1227,14 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
        storyline keeps its shadow because it plays alone during the intro,
        not next to a shadowed h1. (Session 66 A1 — Alex's call after
        landing the z-index fix.) */
-    .arch-main-street .ms-momenthero-storyline{color:color-mix(in srgb, var(--ms-on-media) 85%, transparent);max-width:24ch;margin:0;text-shadow:0 2px 36px rgba(0,0,0,.55)}
+    .arch-main-street .ms-momenthero-storyline{color:var(--ms-on-media);max-width:24ch;margin:0;text-shadow:0 1px 3px rgba(0,0,0,.7),0 2px 22px rgba(0,0,0,.65)}
     .arch-main-street .ms-momenthero-brand-eyebrow{color:color-mix(in srgb, var(--ms-on-media) 60%, transparent);display:block;margin-bottom:18px}
-    .arch-main-street .ms-momenthero-brand-h1{color:color-mix(in srgb, var(--ms-on-media) 88%, transparent);margin:0;text-shadow:0 2px 40px rgba(0,0,0,.5)}
+    .arch-main-street .ms-momenthero-brand-h1{color:var(--ms-on-media);margin:0;text-shadow:0 1px 3px rgba(0,0,0,.7),0 2px 26px rgba(0,0,0,.6)}
     /* Brand-phase caption — a short supporting tagline under the h1.
        Replaces the CTA row that used to live here (Session 66 A1 — CTAs
        over media of unknown luminance were unwinnable; the nav above
        carries the shop / about clicks). */
-    .arch-main-street .ms-momenthero-brand-sub{color:color-mix(in srgb, var(--ms-on-media) 82%, transparent);margin:22px auto 0;max-width:36ch}
+    .arch-main-street .ms-momenthero-brand-sub{color:var(--ms-on-media);margin:22px auto 0;max-width:36ch;text-shadow:0 1px 3px rgba(0,0,0,.7),0 2px 16px rgba(0,0,0,.6)}
     /* Moment hero scrim — the original center-weighted radial vignette
        (dark corners, brighter middle). This looked GOOD across builds and
        still does — several iterations trying to darken the middle for the
@@ -1244,7 +1244,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
        without it, the scrim's z-index:1 catches clicks meant for anything
        inside the frame. aria-hidden already tells AT the scrim is
        decorative. */
-    .arch-main-street .ms-momenthero-scrim{position:absolute;inset:0;z-index:1;background:radial-gradient(120% 90% at 50% 45%, rgba(0,0,0,.42), rgba(0,0,0,.82));pointer-events:none}
+    .arch-main-street .ms-momenthero-scrim{position:absolute;inset:0;z-index:1;background:radial-gradient(120% 90% at 50% 45%, rgba(0,0,0,.58), rgba(0,0,0,.82));pointer-events:none}
     /* ══════════════════════════════════════════════════════════════════════
        BEATS.TSX — GoodsHead, the goods marquee card, the "see full catalog" cue,
        and the close section. All class-only. ══════════════════════════════════ */
