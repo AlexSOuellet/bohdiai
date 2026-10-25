@@ -660,7 +660,7 @@ export function ShorelineCart({ site, cart, platformCredit = true }: { site: Sho
               </dl>
             </section>
             <section className="sl-letter sl-cart-letter" aria-labelledby="sl-send">
-              <h2 id="sl-send">{C.sendTitle}</h2>
+              <h2 id="sl-send">{cart.pay === undefined ? C.sendTitle : C.payTitle}</h2>
               <p>{cart.pay === undefined ? C.sendLede : C.payLede}</p>
               {blocked ? (
                 <p className="bc-form__status" role="alert">

@@ -190,6 +190,7 @@ export const CARD_WORD_SPOTS = {
       error: '',
       errorNetwork: '',
       /** Paying online with the shop's PayPal (Full): the line over the form, while PayPal finishes, when it fails or is closed or can't load, and the thank-you. */
+      payTitle: '',
       payLede: '',
       paying: '',
       payError: '',

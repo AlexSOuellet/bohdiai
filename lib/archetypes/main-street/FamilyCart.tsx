@@ -101,7 +101,7 @@ export function FamilyCart({ cart, words }: { cart: CartView; words: FamilyWords
           </div>
           <div className="ms-cart-send" aria-labelledby="ms-cart-send">
             <Type as="h2" role="title" id="ms-cart-send" className="ms-cart-send-title">
-              {C.sendTitle}
+              {cart.pay === undefined ? C.sendTitle : C.payTitle}
             </Type>
             <Type as="p" role="body" className="ms-cart-send-lede">
               {cart.pay === undefined ? C.sendLede : C.payLede}

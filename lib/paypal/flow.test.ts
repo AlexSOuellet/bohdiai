@@ -8,7 +8,7 @@ const CODE = '0b9c2f1e-6d4a-4c1b-9e2f-7a8b9c0d1e2f';
 
 describe('the Connect round trip', () => {
   it('comes back to the backend', () => {
-    expect(connectReturnUrl('https://bohdiai.com')).toMatch(/\/api\/paypal\/return$/);
+    expect(connectReturnUrl('https://app.bohdiai.com/api/paypal/connect?x=1')).toBe('https://app.bohdiai.com/api/paypal/return');
   });
   it('names the site when the code matches this browser', () => {
     expect(siteFromTracking(trackingId(SITE, CODE), CODE)).toBe(SITE);

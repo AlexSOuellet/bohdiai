@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireActingSite } from '@/lib/backend/current-site';
 import { getSiteFeatures } from '@/lib/backend/site-features';
-import { serverEnv } from '@/lib/env';
 import { logger } from '@/lib/logger';
 import { paypalConfig } from '@/lib/paypal/config';
 import { partnerToken, signUpLink } from '@/lib/paypal/api';
@@ -23,7 +22,7 @@ export async function GET(req: Request): Promise<NextResponse> {
   }
   const nonce = crypto.randomUUID();
   try {
-    const link = await signUpLink(config, await partnerToken(config), trackingId(site.tenantId, nonce), connectReturnUrl(serverEnv().SITE_URL));
+    const link = await signUpLink(config, await partnerToken(config), trackingId(site.tenantId, nonce), connectReturnUrl(req.url));
     const res = NextResponse.redirect(link);
     res.cookies.set(CONNECT_COOKIE, nonce, { httpOnly: true, secure: true, sameSite: 'lax', path: '/api/paypal', maxAge: CONNECT_MINUTES * 60 });
     return res;

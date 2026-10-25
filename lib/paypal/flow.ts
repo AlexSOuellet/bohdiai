@@ -5,13 +5,12 @@
  * match this browser, the person must still run that site, and PayPal itself (not
  * the address) says which account finished that sign-up and what it allows.
  */
-import { appOrigin } from '@/lib/backend/app-url';
-
 export const CONNECT_COOKIE = 'bohdi_paypal_connect';
 export const CONNECT_MINUTES = 30;
 
-export function connectReturnUrl(siteUrl: string): string {
-  return `${appOrigin(siteUrl)}/api/paypal/return`;
+/** Back to the same backend the maker started from (the Connect route only answers on the backend's own address). */
+export function connectReturnUrl(requestUrl: string): string {
+  return `${new URL(requestUrl).origin}/api/paypal/return`;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
