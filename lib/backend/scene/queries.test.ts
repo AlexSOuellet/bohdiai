@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getSiteScene, saveSiteScene } from './queries';
+import { getSiteBackground, getSiteScene, saveSiteScene } from './queries';
 
 type Result = { data: unknown; error: { message: string } | null };
 
@@ -27,11 +27,11 @@ describe('getSiteScene', () => {
   });
   it('the maker’s own photo paints from its upload', async () => {
     const { db } = fakeDb({ data: { tone: 'light', scene: null, upload: { public_url: 'https://cdn/bay.webp' }, video: null }, error: null });
-    expect(await getSiteScene(db, 't1')).toEqual({ url: 'https://cdn/bay.webp', focus: 'center', own: true });
+    expect(await getSiteScene(db, 't1')).toEqual({ url: 'https://cdn/bay.webp', focus: 'center' });
   });
   it('a dark photo with a clip carries both', async () => {
     const { db } = fakeDb({ data: { tone: 'dark', scene: null, upload: { public_url: 'https://cdn/still.webp' }, video: { public_url: 'https://cdn/clip.mp4' } }, error: null });
-    expect(await getSiteScene(db, 't1')).toEqual({ url: 'https://cdn/still.webp', focus: 'center', own: true, tone: 'dark', video: 'https://cdn/clip.mp4' });
+    expect(await getSiteScene(db, 't1')).toEqual({ url: 'https://cdn/still.webp', focus: 'center', tone: 'dark', video: 'https://cdn/clip.mp4' });
   });
   it('a site with no row (any family but Scenic) has none', async () => {
     const { db } = fakeDb({ data: null, error: null });
@@ -58,5 +58,19 @@ describe('saveSiteScene', () => {
     await expect(saveSiteScene(missing.db, 't1', { kind: 'library', key: 'moon' })).rejects.toThrow('No scene called "moon" in the library');
     const failing = fakeDb({ data: null, error: null }, { error: { message: 'nope' } });
     await expect(saveSiteScene(failing.db, 't1', { kind: 'library', key: 'marsh' })).rejects.toThrow('Could not save the background photo: nope');
+  });
+});
+
+describe('getSiteBackground', () => {
+  it('paints the site’s own background photo', async () => {
+    const { db } = fakeDb({ data: { upload: { public_url: 'https://cdn/wood.jpg' } }, error: null });
+    expect(await getSiteBackground(db, 't1')).toEqual({ url: 'https://cdn/wood.jpg', focus: 'center', own: true });
+  });
+  it('is null without one', async () => {
+    expect(await getSiteBackground(fakeDb({ data: null, error: null }).db, 't1')).toBeNull();
+    expect(await getSiteBackground(fakeDb({ data: { upload: null }, error: null }).db, 't1')).toBeNull();
+  });
+  it('fails loudly when it can’t read', async () => {
+    await expect(getSiteBackground(fakeDb({ data: null, error: { message: 'down' } }).db, 't1')).rejects.toThrow('background photo');
   });
 });

@@ -18,7 +18,7 @@ export interface ScenePhoto {
   tone?: 'light' | 'dark';
   /** A short muted clip that loops behind the page; the photo is its still frame. */
   video?: string;
-  /** The maker's own photo (not a library scene): shown behind the light bands of every family. */
+  /** The site's own background photo (site_backgrounds), not Scenic's scene: Rustic shows it behind its pages. */
   own?: boolean;
 }
 

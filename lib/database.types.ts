@@ -2502,6 +2502,39 @@ export type Database = {
           },
         ]
       }
+      site_backgrounds: {
+        Row: {
+          tenant_id: string
+          updated_at: string
+          upload_id: string
+        }
+        Insert: {
+          tenant_id: string
+          updated_at?: string
+          upload_id: string
+        }
+        Update: {
+          tenant_id?: string
+          updated_at?: string
+          upload_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_backgrounds_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_backgrounds_upload_id_fkey"
+            columns: ["upload_id"]
+            isOneToOne: false
+            referencedRelation: "uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_contacts: {
         Row: {
           phone: string | null

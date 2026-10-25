@@ -42,7 +42,7 @@ import { FamilyCart } from './FamilyCart';
 import { FamilyMarket } from './FamilyMarket';
 import { FamilyMarketInfo } from './FamilyMarketInfo';
 import { MainStreetRoot } from './chrome';
-import { getSiteScene } from '@/lib/backend/scene/queries';
+import { getSiteBackground, getSiteScene } from '@/lib/backend/scene/queries';
 import type { ScenePhoto } from './scenes';
 import { Type } from './Type';
 import { FAMILY_NO_WORDS, FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX, type FamilyWords } from './words';
@@ -308,12 +308,12 @@ type FamilyPaint = (view: MainStreetView, words: FamilyWords, sale: Promotion | 
  *  page record still holds their content, read it from there until the clean-up
  *  step retires them (Modular Plan steps 3 and 6). Both paths read the site's
  *  words from `site_words`; a page with no site behind it has none to read. */
-/** The background photo a family paints behind the page: Scenic shows the site's
- *  scene (a library scene or the maker's photo); Rustic shows only the maker's own
- *  photo (a library scene is a Scenic landscape); the others keep their wallpaper. */
-export function sceneForFamily(familyKey: string, scene: ScenePhoto | null): ScenePhoto | null {
+/** The photo a family paints behind the page: Scenic shows the site's scene (a
+ *  library scene or the maker's photo, site_scenes); Rustic shows the site's own
+ *  background (site_backgrounds) in place of its wallpaper; the others keep theirs. */
+export function sceneForFamily(familyKey: string, scene: ScenePhoto | null, background: ScenePhoto | null = null): ScenePhoto | null {
   if (familyKey === 'scenic') return scene;
-  if (familyKey === 'rustic' && scene?.own === true) return scene;
+  if (familyKey === 'rustic') return background;
   return null;
 }
 
@@ -329,17 +329,18 @@ async function FamilyFromHomes({ content, tenantId, paint, familyKey }: { conten
   const db = supabaseAdmin();
   const legacy = holdsLegacyContent(content);
   // The photo behind the page, for the families that paint one (sceneForFamily).
-  const [words, homes, features, sale, scene] = await Promise.all([
+  const [words, homes, features, sale, scene, background] = await Promise.all([
     getSiteWords(db, tenantId, FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX),
     legacy ? Promise.resolve(null) : loadFamilyHomes(db, tenantId),
     getSiteFeatures(tenantId),
     loadRunningSale(db, tenantId),
-    familyKey === 'scenic' || familyKey === 'rustic' ? getSiteScene(db, tenantId) : Promise.resolve(null),
+    familyKey === 'scenic' ? getSiteScene(db, tenantId) : Promise.resolve(null),
+    familyKey === 'rustic' ? getSiteBackground(db, tenantId) : Promise.resolve(null),
   ]);
   // The plans, from the site's switches (old samples too): only Full sells online
   // (cart), and Showcase has no shop at all (catalog off).
   const view = homes !== null ? familyViewFromHomes(homes, words) : (content as MainStreetView);
-  return paint({ ...view, identity: { ...view.identity, sellsOnline: features.has('cart'), showsShop: features.has('catalog'), showsCollections: features.has('catalog') && features.has('collections'), onePage: !features.has('catalog') } }, words, sale, sceneForFamily(familyKey, scene));
+  return paint({ ...view, identity: { ...view.identity, sellsOnline: features.has('cart'), showsShop: features.has('catalog'), showsCollections: features.has('catalog') && features.has('collections'), onePage: !features.has('catalog') } }, words, sale, sceneForFamily(familyKey, scene, background));
 }
 
 /** The pieces as the lists show them during a running sale: the sale price in place of the full one. */

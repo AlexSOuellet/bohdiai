@@ -372,16 +372,15 @@ describe('MAIN_STREET_SPEC.render — brand palette takes over', () => {
 describe('sceneForFamily — which families paint the site’s background photo', () => {
   const library = { url: '/scenes/marsh.webp', focus: 'center 62%' };
   const own = { url: 'https://cdn/wood.jpg', focus: 'center', own: true, tone: 'dark' as const };
-  it('Scenic paints a library scene or the maker’s own photo', () => {
-    expect(sceneForFamily('scenic', library)).toBe(library);
-    expect(sceneForFamily('scenic', own)).toBe(own);
+  it('Scenic paints its scene, never the site’s own background', () => {
+    expect(sceneForFamily('scenic', library, own)).toBe(library);
+    expect(sceneForFamily('scenic', null, own)).toBeNull();
   });
-  it('Rustic paints only the maker’s own photo, never a library landscape', () => {
-    expect(sceneForFamily('rustic', own)).toBe(own);
+  it('Rustic paints the site’s own background, never Scenic’s scene', () => {
+    expect(sceneForFamily('rustic', library, own)).toBe(own);
     expect(sceneForFamily('rustic', library)).toBeNull();
   });
   it('the other families keep their own wallpaper', () => {
-    expect(sceneForFamily('cozy', own)).toBeNull();
-    expect(sceneForFamily('rustic', null)).toBeNull();
+    expect(sceneForFamily('cozy', library, own)).toBeNull();
   });
 });

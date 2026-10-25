@@ -21,10 +21,19 @@ export async function getSiteScene(db: SupabaseClient<Database>, tenantId: strin
   const own = data.upload?.public_url ?? null;
   if (own !== null) {
     const video = data.video?.public_url ?? null;
-    return { url: own, focus: 'center', own: true, ...(data.tone === 'dark' ? { tone: 'dark' as const } : {}), ...(video === null ? {} : { video }) };
+    return { url: own, focus: 'center', ...(data.tone === 'dark' ? { tone: 'dark' as const } : {}), ...(video === null ? {} : { video }) };
   }
   const scene = data.scene;
   return scene === null ? null : { url: scene.url, focus: scene.focus, ...(scene.tone === 'dark' ? { tone: 'dark' as const } : {}) };
+}
+
+/** The site's own background photo behind its pages (site_backgrounds; the Rustic mood
+ *  shows it in place of its wallpaper), or null when it has none. Not Scenic's scene. */
+export async function getSiteBackground(db: SupabaseClient<Database>, tenantId: string): Promise<ScenePhoto | null> {
+  const { data, error } = await db.from('site_backgrounds').select('upload:uploads!site_backgrounds_upload_id_fkey(public_url)').eq('tenant_id', tenantId).maybeSingle();
+  if (error !== null) throw new Error(`Could not load the background photo: ${error.message}`);
+  const url = data?.upload?.public_url ?? null;
+  return url === null ? null : { url, focus: 'center', own: true };
 }
 
 /** Save a site's background photo choice (one row per site). */
