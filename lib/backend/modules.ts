@@ -46,6 +46,7 @@ export const BACKEND_MODULES: BackendModule[] = [
   { feature: 'gallery', section: 'Your site', items: [{ label: 'Gallery', href: '/manage/gallery' }] },
   { feature: 'testimonials', section: 'Your site', items: [{ label: 'Testimonials', href: '/manage/testimonials' }] },
   { feature: 'qr_codes', section: 'Your site', items: [{ label: 'QR code', href: '/manage/qr' }] },
+  { feature: 'try_on', section: 'Your site', items: [{ label: 'Try on a look', href: '/manage/looks' }] },
   // Contact support: its own item on the main menu, every backend (Alex, 2026-10-19).
   { feature: null, section: '', items: [{ label: 'Contact support', href: '/manage/support' }] },
   {

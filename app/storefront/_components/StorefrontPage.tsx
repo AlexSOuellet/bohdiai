@@ -77,8 +77,8 @@ const STILL_REVEAL_CSS = [
   '.arch-main-street .ms-table-item{opacity:1;transform:translateY(0) rotate(var(--r,0deg))}',
 ].join('');
 
-/** Wrap a rendered store with editor-preview chrome. In preview mode (any preview
- *  token present) it mounts PreviewLinkForwarder so every in-store click keeps the
+/** Wrap a rendered store with editor-preview chrome. In preview mode (a preview
+ *  token, or a mood or look being tried on) it mounts PreviewLinkForwarder so every in-store click keeps the
  *  preview context and the maker stays on the staged draft across pages. When
  *  `still` is set it also appends the reveal-resolving override so reveal-gated
  *  sections are visible in the static pane. Both sit AFTER the store markup so the
@@ -327,7 +327,7 @@ export default async function StorefrontPage({
         previewTexture,
         previewTextureOpacity,
       ),
-      { still: previewStill, preview: previewToken !== undefined },
+      { still: previewStill, preview: previewToken !== undefined || previewMood !== undefined || previewLook !== undefined },
     );
   }
 
@@ -355,7 +355,7 @@ export default async function StorefrontPage({
         previewTextureOpacity,
         collectionSlug,
       ),
-      { still: previewStill, preview: previewToken !== undefined },
+      { still: previewStill, preview: previewToken !== undefined || previewMood !== undefined || previewLook !== undefined },
     );
   }
 
@@ -381,7 +381,7 @@ export default async function StorefrontPage({
     ),
     {
       still: previewStill,
-      preview: previewToken !== undefined,
+      preview: previewToken !== undefined || previewMood !== undefined || previewLook !== undefined,
       spotlight: spotlightSection(previewSection),
     },
   );

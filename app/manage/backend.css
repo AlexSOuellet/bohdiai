@@ -458,3 +458,25 @@ button.bk-up-btn { border: 0; cursor: pointer; font: inherit; font-size: 0.9rem;
 .bk-stock-choice-text .bk-note { margin: 0; font-size: 0.8125rem; }
 .bk-stock .bk-field { margin-top: 0.9rem; }
 .bk-stock-cell { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+
+/* Try on a look (Full): her own site in every mood, in a browser window (like bohdiai.com/looks). */
+.bk-looks { display: grid; gap: 1rem; }
+.bk-looks-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem; margin: 0.75rem 0; }
+.bk-looks-moods { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.bk-looks-mood { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.45rem 0.85rem; border: 1px solid var(--bk-ink-15); border-radius: 999px; background: var(--bk-paper-2); color: var(--bk-ink); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.bk-looks-mood[aria-pressed='true'] { background: var(--bk-oxblood); border-color: var(--bk-oxblood); color: var(--bk-paper-2); }
+.bk-looks-mood[aria-pressed='true'] .bk-pill { background: oklch(1 0 0 / 18%); color: var(--bk-paper-2); }
+.bk-looks-swatch { width: 18px; height: 12px; border-radius: 999px; overflow: hidden; box-shadow: 0 0 0 1px oklch(0 0 0 / 20%); }
+.bk-looks-view { display: inline-flex; padding: 3px; border: 1px solid var(--bk-ink-15); border-radius: 999px; background: var(--bk-paper-2); }
+.bk-looks-viewbtn { padding: 0.3rem 0.8rem; border: 0; border-radius: 999px; background: transparent; color: var(--bk-ink-60); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+.bk-looks-viewbtn[aria-pressed='true'] { background: var(--bk-ink); color: var(--bk-paper-2); }
+.bk-looks-window { width: 100%; margin: 0 auto; overflow: hidden; border-radius: 12px; border: 1px solid var(--bk-ink-15); background: #1a1612; box-shadow: 0 30px 60px -30px oklch(0 0 0 / 45%); transition: max-width 0.3s; }
+.bk-looks-window[data-phone='true'] { max-width: 400px; }
+.bk-looks-chrome { display: flex; align-items: center; gap: 0.75rem; padding: 0.55rem 0.9rem; background: #15110a; }
+.bk-looks-dots { display: flex; gap: 6px; }
+.bk-looks-dots span { width: 10px; height: 10px; border-radius: 50%; background: #2c2620; }
+.bk-looks-label { flex: 1; padding: 0.2rem 0.75rem; border-radius: 7px; background: #241e17; color: #b9ab95; font-size: 12px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bk-looks-open { color: #e9a13d; font-size: 12px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.bk-looks-open:hover { text-decoration: underline; }
+.bk-looks-frame { display: block; width: 100%; height: 78vh; min-height: 560px; border: 0; background: #fff; }
+.bk-looks-window[data-phone='true'] .bk-looks-frame { height: 760px; }

@@ -29,6 +29,7 @@ export const FEATURES = {
   moment: { default: false, description: 'The moment: the first thing a visitor sees (story lines, headline, buttons, its photo and extra photos)' },
   market_dates: { default: false, description: 'Markets: every market the owner does, shown on the site (dates, hours, where) with private costs, notes and review' },
   headline: { default: false, description: 'Headline: the big words at the top of the home page and the line under it (every plan; the rest of the moment stays as built)' },
+  try_on: { default: false, description: 'Try on a look: the owner sees her own site in every mood from the backend, and keeps the one she likes (Full)' },
   gallery_pieces: { default: false, description: 'Gallery from the catalog (Showcase): the whole catalog in the backend, no shop; the site shows up to 12 ticked pieces (newest 12 when none are ticked), no prices' },
 } as const satisfies Record<string, { default: boolean; description: string }>;
 

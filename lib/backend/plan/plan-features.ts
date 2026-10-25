@@ -31,6 +31,7 @@ const FULL: readonly FeatureKey[] = [
   'cart',
   'promotions',
   'new_arrivals',
+  'try_on',
 ];
 
 export const PLAN_FEATURES: Record<SitePlan, readonly FeatureKey[]> = {
@@ -68,6 +69,7 @@ export const FEATURE_WORDS: Partial<Record<FeatureKey, string>> = {
   cart: 'The cart and online orders',
   promotions: 'Sales and discount codes',
   new_arrivals: 'New arrivals on your home page',
+  try_on: 'Trying on other looks (the look you chose stays)',
   market_records: 'Market costs, organizer details, notes and reviews',
 };
 

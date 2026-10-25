@@ -80,6 +80,7 @@ describe('moving between plans', () => {
       'The cart and online orders',
       'Sales and discount codes',
       'New arrivals on your home page',
+      'Trying on other looks (the look you chose stays)',
     ]);
     expect(hiddenByMove('full', 'lite')).toEqual([
       'Collections and their pages (your collections are kept)',
@@ -89,6 +90,7 @@ describe('moving between plans', () => {
       'The cart and online orders',
       'Sales and discount codes',
       'New arrivals on your home page',
+      'Trying on other looks (the look you chose stays)',
     ]);
     expect(hiddenByMove('showcase', 'full')).toEqual([]);
   });
