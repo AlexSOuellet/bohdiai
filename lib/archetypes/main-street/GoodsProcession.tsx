@@ -138,7 +138,7 @@ export function GoodsProcession({
                 style={cardVars}
               >
                 <div className="ms-const-frame">
-                  <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
+                  <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} className="ms-piece-photo" />
                 </div>
                 <div className="ms-const-meta">
                   <Type as="h3" role="cardTitle" className="ms-const-name">

@@ -81,7 +81,7 @@ ${prints}
 /* Each piece is seen through an old weathered cottage window (a photographed frame, no
    panes) with its name on a paper label beneath. */
 .sl-print{display:block;width:100%;padding:0;border:0;background:none;cursor:zoom-in;text-align:center;transform:rotate(var(--r,0deg));transition:transform .8s cubic-bezier(.2,.7,.2,1),filter .8s;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25)) drop-shadow(0 22px 26px rgba(10,24,32,.45))}
-.sl-print img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;background:#ddd;box-sizing:border-box;border:clamp(14px,1.7vw,24px) solid #e9e4d8;border-image:url('${WINDOW}') 136 stretch}
+.sl-print img{display:block;width:100%;aspect-ratio:3/4;object-fit:contain;background:#f3efe6;box-sizing:border-box;border:clamp(14px,1.7vw,24px) solid #e9e4d8;border-image:url('${WINDOW}') 136 stretch}
 .sl-print > span,.sl-label{display:block;width:84%;margin:10px auto 0;padding:10px 8px 12px;background:var(--paper);font-family:var(--hand);font-size:clamp(12px,1.25vw,15px);line-height:1.7;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.2)}
 .sl-label > span{display:block}
 .sl-print:hover,.sl-print:focus-visible{transform:rotate(0deg) translateY(-6px);filter:drop-shadow(0 2px 2px rgba(0,0,0,.25)) drop-shadow(0 32px 34px rgba(10,24,32,.55))}

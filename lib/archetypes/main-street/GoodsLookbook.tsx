@@ -47,7 +47,7 @@ export function GoodsLookbook({
             className={`ms-lookbook-row${i % 2 === 1 ? ' ms-lookbook-row--flip' : ''}`}
           >
             <div className="ms-lookbook-media">
-              <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
+              <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} className="ms-piece-photo" />
             </div>
             <div className="ms-lookbook-text">
               <Type as="span" role="eyebrow" className="ms-lookbook-eyebrow">

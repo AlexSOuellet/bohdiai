@@ -87,7 +87,7 @@ export const VINTAGE_CSS = `
     .arch-main-street .ms-tag-eyelet{position:absolute;top:16px;left:50%;width:15px;height:15px;margin-left:-7.5px;border-radius:50%;background:var(--ms-bg);box-shadow:inset 0 0 0 3px color-mix(in srgb,var(--ms-accent) 55%,var(--ms-fg)),0 0 0 1px var(--ms-rule)}
     .arch-main-street .ms-tag-frame{display:block;width:100%;aspect-ratio:1;overflow:hidden;box-shadow:0 0 0 1px var(--ms-fg)}
     /* The photo is printed onto the tag: white backgrounds take on the old paper. */
-    .arch-main-street .ms-tag-frame .archetype-photo{display:block;width:100%;height:100%;object-fit:cover;mix-blend-mode:multiply}
+    .arch-main-street .ms-tag-frame .archetype-photo{display:block;width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}
     .arch-main-street .ms-tag-label{display:flex;flex-direction:column;align-items:center;gap:5px;width:100%;margin-top:auto;padding:12px 12px 11px;text-align:center;border:1px solid var(--ms-fg);outline:1px solid var(--ms-fg);outline-offset:3px;border-radius:40px/16px;background:color-mix(in srgb,var(--ms-bg) 70%,#fff)}
     .arch-main-street .ms-tag-name{color:var(--ms-fg);font-size:clamp(17px,1.5vw,21px);line-height:1.12}
     .arch-main-street .ms-tag-price{color:var(--ms-accent)}

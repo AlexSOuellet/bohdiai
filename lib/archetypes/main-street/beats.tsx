@@ -110,10 +110,12 @@ export function GoodsMarquee({
           <article key={p.slug + i} data-ms-card className="ms-marq-card">
             <a href={`/listings/${p.slug}`} className="ms-marq-link">
               <div className="ms-marq-media">
-                <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
-                <Type as="span" role="price" className="ms-marq-price">
-                  {priceLabel(p, words)}
-                </Type>
+                <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} className="ms-piece-photo" />
+                {priceLabel(p, words) !== '' && (
+                  <Type as="span" role="price" className="ms-marq-price">
+                    {priceLabel(p, words)}
+                  </Type>
+                )}
               </div>
               <Type as="h3" role="cardTitle" className="ms-marq-name">
                 {p.name}

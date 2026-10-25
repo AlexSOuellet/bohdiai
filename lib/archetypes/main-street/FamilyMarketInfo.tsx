@@ -69,10 +69,12 @@ export function FamilyMarketInfo({ market, words }: { market: MarketInfoView; wo
                 return (
                   <a key={p.slug} href={`/listings/${p.slug}`} className="ms-catalog-card">
                     <div className="ms-catalog-media">
-                      <Media media={shot ?? { kind: 'image', alt: p.name }} />
-                      <Type as="span" role="price" className="ms-catalog-price">
-                        {priceLabel(p, words)}
-                      </Type>
+                      <Media media={shot ?? { kind: 'image', alt: p.name }} className="ms-piece-photo" />
+                      {priceLabel(p, words) !== '' && (
+                        <Type as="span" role="price" className="ms-catalog-price">
+                          {priceLabel(p, words)}
+                        </Type>
+                      )}
                     </div>
                     <Type as="h3" role="cardTitle" className="ms-catalog-name">
                       {p.name}

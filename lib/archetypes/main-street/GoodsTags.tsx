@@ -43,7 +43,7 @@ export function GoodsTags({
               <a href={`/listings/${p.slug}`} data-ms-tag-piece="" className="ms-tag">
                 <span className="ms-tag-eyelet" aria-hidden="true" />
                 <span className="ms-tag-frame">
-                  <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
+                  <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} className="ms-piece-photo" />
                 </span>
                 <span className="ms-tag-label">
                   <Type as="span" role="cardTitle" className="ms-tag-name">

@@ -44,7 +44,7 @@ function MediaTile({ media, aspect }: { media: CatalogMedia; aspect: string }) {
     );
   }
   return media.url ? (
-    <img src={media.url} alt={media.alt} className="archetype-photo ms-product-tile" style={aspectVars} />
+    <img src={media.url} alt={media.alt} className="archetype-photo ms-product-tile ms-piece-photo" style={aspectVars} />
   ) : (
     <div className="archetype-photo ms-product-tile ms-product-tile-empty" aria-label={media.alt} style={aspectVars} />
   );

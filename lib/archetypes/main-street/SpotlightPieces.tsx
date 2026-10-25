@@ -141,7 +141,7 @@ export function GoodsReel({
           <li key={p.slug} className="ms-sp-tile">
             <a href={`/listings/${p.slug}`}>
               <span className="ms-sp-tile-img">
-                <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
+                <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} className="ms-piece-photo" />
               </span>
               <span className="ms-sp-cap">
                 <Type as="span" role="cardTitle" className="ms-sp-cap-name">

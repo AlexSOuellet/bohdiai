@@ -41,7 +41,7 @@ export function GoodsScrapbook({
             <li key={p.slug} className="ms-scrap-item">
               <a href={`/listings/${p.slug}`} data-ms-scrap-piece="" className="ms-scrap-link">
                 <span className="ms-scrap-photo">
-                  <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
+                  <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} className="ms-piece-photo" />
                   <span className="ms-scrap-corner ms-scrap-corner--tl" aria-hidden="true" />
                   <span className="ms-scrap-corner ms-scrap-corner--tr" aria-hidden="true" />
                   <span className="ms-scrap-corner ms-scrap-corner--bl" aria-hidden="true" />

@@ -205,6 +205,10 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street[data-ms-family="rustic"][data-ms-texture-own="true"]{--ms-texture-opacity:.5}
     .arch-main-street[data-ms-family="rustic"][data-ms-texture-own="true"] .ms-stackedhero{background:transparent}
     .arch-main-street .archetype-photo{filter:${a.photoFilter ?? 'none'};display:block;width:100%;height:100%;object-fit:cover}
+    /* A piece's photo is shown whole in every card, whatever its shape (round signs,
+       tall or wide pieces): it fits inside the frame on a soft mat in the look's own
+       colours, never cropped (Alex, 2026-10-25). */
+    .arch-main-street .archetype-photo.ms-piece-photo{object-fit:contain;background:color-mix(in srgb, var(--ms-fg) 7%, var(--ms-bg))}
     .arch-main-street .ms-wrap{max-width:1200px;margin-inline:auto;padding-inline:40px}
     @media(max-width:860px){.arch-main-street .ms-wrap{padding-inline:20px}}
     /* Per-beat wrapper — layout-transparent so the live page is unchanged; a hook

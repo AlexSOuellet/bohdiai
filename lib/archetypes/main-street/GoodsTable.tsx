@@ -74,7 +74,7 @@ export function GoodsTable({
             <a key={p.slug} href={`/listings/${p.slug}`} data-ms-table-item="" className="ms-table-item">
               <span className="ms-table-print">
                 <span className="ms-table-shot">
-                  <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
+                  <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} className="ms-piece-photo" />
                 </span>
                 <span className="ms-table-cap">
                   <Type as="span" role="caption" className="ms-table-name">

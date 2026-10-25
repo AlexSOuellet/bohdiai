@@ -70,7 +70,7 @@ export const SPOTLIGHT_CSS = `
     .arch-main-street .ms-sp-reel > .ms-sp-tile:last-child:nth-child(odd) .archetype-photo{aspect-ratio:16/9}
     .arch-main-street .ms-sp-tile a{display:block;color:var(--ms-fg)}
     .arch-main-street .ms-sp-tile-img{display:block;overflow:hidden;background:color-mix(in srgb,var(--ms-fg) 8%,var(--ms-bg))}
-    .arch-main-street .ms-sp-tile-img .archetype-photo{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;transition:transform .9s cubic-bezier(.2,.9,.2,1)}
+    .arch-main-street .ms-sp-tile-img .archetype-photo{display:block;width:100%;aspect-ratio:4/5;object-fit:contain;transition:transform .9s cubic-bezier(.2,.9,.2,1)}
     .arch-main-street .ms-sp-tile a:hover .archetype-photo{transform:scale(1.035)}
     .arch-main-street .ms-sp-tile a:focus-visible{outline:3px solid var(--ms-accent);outline-offset:6px}
     .arch-main-street .ms-sp-cap{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:14px 2px 6px}

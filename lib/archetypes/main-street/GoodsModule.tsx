@@ -72,7 +72,7 @@ export function GoodsModule({
           {products.map((p, i) => (
             <a key={p.slug} href={`/listings/${p.slug}`} data-ms-module-item="" className="ms-module-item">
               <div className="ms-module-frame">
-                <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
+                <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} className="ms-piece-photo" />
               </div>
               <div className="ms-module-meta">
                 <Type as="span" role="eyebrow" className="ms-module-idx">

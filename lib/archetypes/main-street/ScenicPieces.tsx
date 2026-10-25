@@ -106,7 +106,7 @@ export function GoodsPrints({
             <li key={p.slug} className="ms-sc-print-item">
               <a href={`/listings/${p.slug}`} className="ms-sc-print">
                 <span className="ms-sc-mat">
-                  <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
+                  <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} className="ms-piece-photo" />
                 </span>
                 <span className="ms-sc-label">
                   <Type as="span" role="cardTitle" className="ms-sc-label-name">

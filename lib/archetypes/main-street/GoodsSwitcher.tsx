@@ -48,10 +48,10 @@ export function GoodsSwitcher({
               data-on={i === active ? 'true' : 'false'}
               aria-hidden={i !== active}
             >
-              <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} />
+              <Media media={p.media[0] ?? { kind: 'image', alt: p.name }} className="ms-piece-photo" />
             </div>
           ))}
-          {current && (
+          {current && priceLabel(current, words) !== '' && (
             <Type as="span" role="price" className="ms-switch-price-tag">
               {priceLabel(current, words)}
             </Type>
