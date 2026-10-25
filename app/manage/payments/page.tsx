@@ -9,6 +9,7 @@ import { squareLink } from '@/lib/square/connection';
 import { PayManager } from './PayManager';
 import { SquarePanel } from './SquarePanel';
 import { PayPalPanel } from './PayPalPanel';
+import { StripePanel } from './StripePanel';
 import { paypalConfig } from '@/lib/paypal/config';
 import { paypalLink } from '@/lib/paypal/connection';
 
@@ -34,6 +35,11 @@ const PAYPAL_OUTCOME: Record<string, { tone: 'ok' | 'error'; text: string }> = {
   'not-set-up': { tone: 'error', text: 'PayPal isn’t set up on BohdiAI yet.' },
 };
 
+/** What happened when Connect Stripe was pressed, in words. */
+const STRIPE_OUTCOME: Record<string, { tone: 'ok' | 'error'; text: string }> = {
+  'not-set-up': { tone: 'error', text: 'Stripe isn’t set up on BohdiAI yet, so it can’t be connected yet.' },
+};
+
 export default async function PaymentsPage({ searchParams }: PageProps<'/manage/payments'>): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
@@ -47,6 +53,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/manage/
   const params = await searchParams;
   const outcome = params['square'];
   const paypalOutcome = params['paypal'];
+  const stripeOutcome = params['stripe'];
   const paypalSettings = paypalConfig();
   return (
     <PayManager initial={pay}>
@@ -55,6 +62,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/manage/
         ready={squareConfig() !== null}
         outcome={typeof outcome === 'string' ? (SQUARE_OUTCOME[outcome] ?? null) : null}
       />
+      {online && <StripePanel outcome={typeof stripeOutcome === 'string' ? (STRIPE_OUTCOME[stripeOutcome] ?? null) : null} />}
       {online && (
         <PayPalPanel
           link={paypal}

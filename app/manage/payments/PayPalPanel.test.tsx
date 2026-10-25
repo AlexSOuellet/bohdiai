@@ -27,7 +27,7 @@ describe('PayPalPanel', () => {
 
   it('says it’s waiting on PayPal when PayPal isn’t set up on BohdiAI', () => {
     render(<PayPalPanel link={null} ready={false} testing={false} outcome={null} />);
-    expect(screen.queryByRole('link', { name: 'Connect PayPal' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Connect PayPal' })).toBeTruthy();
     expect(screen.getByText(/waiting on PayPal’s approval/)).toBeTruthy();
     expect(screen.queryByText(/test mode/)).toBeNull();
   });

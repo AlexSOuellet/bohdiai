@@ -25,10 +25,10 @@ describe('SquarePanel', () => {
     expect(screen.getByText(/never sees a card or your Square password/)).toBeTruthy();
   });
 
-  it('says so plainly when cards aren’t set up on BohdiAI', () => {
+  it('keeps Connect Square in place, saying plainly when Square isn’t set up on BohdiAI', () => {
     render(<SquarePanel link={null} ready={false} outcome={null} />);
-    expect(screen.queryByRole('link', { name: 'Connect Square' })).toBeNull();
-    expect(screen.getByText('Card payments aren’t set up on BohdiAI yet.')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Connect Square' })).toBeTruthy();
+    expect(screen.getByText(/Square isn’t set up on BohdiAI yet/)).toBeTruthy();
   });
 
   it('shows what’s connected and the typed-in fee, and disconnects after a yes', async () => {

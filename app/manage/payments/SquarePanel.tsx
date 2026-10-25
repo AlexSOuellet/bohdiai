@@ -78,24 +78,22 @@ export function SquarePanel({
   return (
     <section className="bk-section" aria-labelledby="s-square">
       <h2 id="s-square" className="bk-section-title">
-        Cards, through your Square
+        Payments, through your Square
       </h2>
       {notice.area}
       {link === null ? (
         <>
           <p className="bk-note">
-            Connect your Square and the market app takes cards: it opens the Square app on your phone with the total filled in, you tap, insert or type the
-            card there, and the sale is recorded here. The money goes straight to your own Square. BohdiAI never sees a card or your Square password.
+            Connect your Square to take cards through it. At your markets, the market app opens the Square app on your phone with the total filled in, you
+            tap, insert or type the card there, and the sale is recorded here. The money goes straight to your own Square. BohdiAI never sees a card or your
+            Square password, and takes no cut.
           </p>
-          {ready ? (
-            <p className="bk-row">
-              <a className="bk-btn" href="/api/square/connect">
-                Connect Square
-              </a>
-            </p>
-          ) : (
-            <p className="bk-note">Card payments aren’t set up on BohdiAI yet.</p>
-          )}
+          {!ready && <p className="bk-note">Square isn’t set up on BohdiAI yet, so connecting isn’t open yet.</p>}
+          <p className="bk-row">
+            <a className="bk-btn" href="/api/square/connect">
+              Connect Square
+            </a>
+          </p>
         </>
       ) : (
         <>

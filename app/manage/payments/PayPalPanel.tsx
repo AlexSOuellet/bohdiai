@@ -72,15 +72,12 @@ export function PayPalPanel({
             straight to your own PayPal. BohdiAI never sees a card or your PayPal password, and takes no cut. You need a PayPal business account; PayPal lets you
             make one, or switch a personal account over, on its own page.
           </p>
-          {ready ? (
-            <p className="bk-row">
-              <a className="bk-btn" href="/api/paypal/connect">
-                Connect PayPal
-              </a>
-            </p>
-          ) : (
-            <p className="bk-note">PayPal isn’t set up on BohdiAI yet. We’re waiting on PayPal’s approval; this button turns on as soon as it comes through.</p>
-          )}
+          {!ready && <p className="bk-note">PayPal isn’t set up on BohdiAI yet, so connecting isn’t open yet. We’re waiting on PayPal’s approval.</p>}
+          <p className="bk-row">
+            <a className="bk-btn" href="/api/paypal/connect">
+              Connect PayPal
+            </a>
+          </p>
         </>
       ) : (
         <>
