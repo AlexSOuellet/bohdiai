@@ -174,6 +174,9 @@ Everything Market has, plus:
 - **Buyer accounts are never deleted.** Below Full her buyers just can't sign in; moving back up to Full turns sign-in back on with everything there. This is meant as a reason not to step down.
 - The step-down screen says so plainly before she confirms (how many of her customers will no longer be able to sign in), in the site's own words.
 
+### Built (Session 114)
+Getting paid's Square, Stripe and PayPal sections; PayPal connect, checkout and refunds in test mode only (nothing live; Alex: admin first, payments later; checkout shows no way to pay until one is set up); Try on a look (`try_on`, Full); the opening photo on Headline and the Background screen (every plan); a site's own background (`site_backgrounds`). Still to do: buyer accounts, the step-down count, PayPal for Market, downloads delivered.
+
 ### Market, also (Alex, 2026-10-25)
 - **PayPal at the table** beside Square: the maker's own PayPal account; the simplest way is a PayPal QR code the buyer scans, recorded only when PayPal confirms. (PayPal's card reader is another option.) Venmo comes through PayPal in the US only.
 - Before building PayPal: check what PayPal requires of BohdiAI for makers to connect their own accounts (Square needed its own setup).
