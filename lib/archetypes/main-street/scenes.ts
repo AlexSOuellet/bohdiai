@@ -18,6 +18,8 @@ export interface ScenePhoto {
   tone?: 'light' | 'dark';
   /** A short muted clip that loops behind the page; the photo is its still frame. */
   video?: string;
+  /** The maker's own photo (not a library scene): shown behind the light bands of every family. */
+  own?: boolean;
 }
 
 /** A library scene's name: lowercase words joined by dashes ("classic-loafs-1"). */

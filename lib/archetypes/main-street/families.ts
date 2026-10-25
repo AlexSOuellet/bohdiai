@@ -129,6 +129,8 @@ export interface Family {
   textureTone?: 'light' | 'dark';
   /** A short muted clip that loops behind the page over its still (Scenic). */
   textureVideo?: string;
+  /** The painted photo is the maker's own background, not the family's wallpaper or a library scene. */
+  textureOwn?: boolean;
   imageryGrade: string;
   /** Google Fonts stylesheet URL preloaded on the storefront. */
   fontHref: string;

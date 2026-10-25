@@ -22,7 +22,7 @@ vi.mock('@/lib/backend/site-features', () => ({ getSiteFeatures: async () => new
 vi.mock('@/lib/storefront/metadata', () => ({ loadShopWords: async () => ({ cart: { eyebrow: 'shop.cart.eyebrow', title: 'shop.cart.title', body: 'shop.cart.body', cta: 'shop.cart.cta' } }) }));
 vi.mock('@/lib/storefront/promotions-load', () => ({ loadRunningSale: async () => ({ percentOff: 20 }) }));
 
-import { MAIN_STREET_SPEC } from './builder';
+import { MAIN_STREET_SPEC, sceneForFamily } from './builder';
 import type { ProductView } from '../content';
 
 /** A family page with a site behind it renders through an async server component;
@@ -366,5 +366,22 @@ describe('MAIN_STREET_SPEC.render — brand palette takes over', () => {
       brandPalette: { base: '#0b0b0b', accent: '#3dae3f' },
     }));
     expect(container.innerHTML).toContain('--ms-accent:#3dae3f');
+  });
+});
+
+describe('sceneForFamily — which families paint the site’s background photo', () => {
+  const library = { url: '/scenes/marsh.webp', focus: 'center 62%' };
+  const own = { url: 'https://cdn/wood.jpg', focus: 'center', own: true, tone: 'dark' as const };
+  it('Scenic paints a library scene or the maker’s own photo', () => {
+    expect(sceneForFamily('scenic', library)).toBe(library);
+    expect(sceneForFamily('scenic', own)).toBe(own);
+  });
+  it('Rustic paints only the maker’s own photo, never a library landscape', () => {
+    expect(sceneForFamily('rustic', own)).toBe(own);
+    expect(sceneForFamily('rustic', library)).toBeNull();
+  });
+  it('the other families keep their own wallpaper', () => {
+    expect(sceneForFamily('cozy', own)).toBeNull();
+    expect(sceneForFamily('rustic', null)).toBeNull();
   });
 });

@@ -39,6 +39,8 @@ export const FAMILY_WORD_SPOTS = {
   footerIntro: '',
   footerPrivacy: '',
   footerTerms: '',
+  /** The footer link owners use to reach their backend (/admin). */
+  footerOwnerLogin: '',
   footerCreditPrefix: '',
   footerCreditBrand: '',
   /** The footer's social icons, named for screen readers. */

@@ -200,6 +200,10 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
       background-size:cover;background-position:center;background-repeat:no-repeat;
       filter:invert(1);mix-blend-mode:screen;
     }
+    /* Rustic with the maker's own background photo: the photo shows behind the dark
+       sections, dimmed by the page color so the words over it stay readable. */
+    .arch-main-street[data-ms-family="rustic"][data-ms-texture-own="true"]{--ms-texture-opacity:.5}
+    .arch-main-street[data-ms-family="rustic"][data-ms-texture-own="true"] .ms-stackedhero{background:transparent}
     .arch-main-street .archetype-photo{filter:${a.photoFilter ?? 'none'};display:block;width:100%;height:100%;object-fit:cover}
     .arch-main-street .ms-wrap{max-width:1200px;margin-inline:auto;padding-inline:40px}
     @media(max-width:860px){.arch-main-street .ms-wrap{padding-inline:20px}}
@@ -1110,6 +1114,8 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-stackedhero .ms-hero-navbar{position:relative}
     .arch-main-street .ms-stackedhero-stack{display:flex;flex-direction:column;align-items:center;text-align:center;padding:clamp(32px,6vh,72px) clamp(24px,6vw,64px)}
     .arch-main-street .ms-stackedhero-media{position:relative;overflow:hidden;background:var(--ms-contrast-bg);flex:none;height:min(56.25vw,82vh);min-height:40vh}
+    /* Phones keep the same widescreen band: a taller minimum would crop a wide photo's sides away. */
+    @media(max-width:640px){.arch-main-street .ms-stackedhero-media{min-height:0}}
     /* The photo fills a widescreen band, cropped to fit, so a tall photo can't
        stretch the opening to several screens and a wide one isn't squashed. */
     .arch-main-street .ms-stackedhero-media > .archetype-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
@@ -1525,7 +1531,7 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
   `;
 }
 
-export function MainStreetRoot({ skin, family, children }: { skin: ArchetypeTheme; family?: { key: string; wallpaperUrl: string; textureOpacity: number; textureMode?: 'cover' | 'multiply' | 'screen'; textureFocus?: string; textureTone?: 'light' | 'dark'; textureVideo?: string } | undefined; children: React.ReactNode }) {
+export function MainStreetRoot({ skin, family, children }: { skin: ArchetypeTheme; family?: { key: string; wallpaperUrl: string; textureOpacity: number; textureMode?: 'cover' | 'multiply' | 'screen'; textureFocus?: string; textureTone?: 'light' | 'dark'; textureVideo?: string; textureOwn?: boolean } | undefined; children: React.ReactNode }) {
   return (
     <>
       <link rel="stylesheet" href={fontHref(skin)} />
@@ -1537,7 +1543,7 @@ export function MainStreetRoot({ skin, family, children }: { skin: ArchetypeThem
           }}
         />
       )}
-      <div className="arch-main-street" data-ms-family={family?.key} data-ms-texture-mode={family?.textureMode ?? 'cover'} data-ms-texture-tone={family?.textureTone}>
+      <div className="arch-main-street" data-ms-family={family?.key} data-ms-texture-mode={family?.textureMode ?? 'cover'} data-ms-texture-tone={family?.textureTone} data-ms-texture-own={family?.textureOwn === true ? 'true' : undefined}>
         <div className="ms-grain" aria-hidden />
         {family && <div className="ms-family-texture" aria-hidden />}
         {family?.textureVideo !== undefined && <video className="ms-family-video" src={family.textureVideo} poster={family.wallpaperUrl} autoPlay muted loop playsInline aria-hidden />}
@@ -1762,6 +1768,9 @@ export function MainStreetFooter({ shopName, words, platformCredit = true, socia
         </Type>
         <Type as="a" role="legal" href="/terms" className="ms-footer-link">
           {words.footerTerms}
+        </Type>
+        <Type as="a" role="legal" href="/admin" rel="nofollow" className="ms-footer-link">
+          {words.footerOwnerLogin}
         </Type>
         <Type as="span" role="legal" className="ms-footer-legal">
           &copy; {shopName}

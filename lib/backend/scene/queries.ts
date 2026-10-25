@@ -21,7 +21,7 @@ export async function getSiteScene(db: SupabaseClient<Database>, tenantId: strin
   const own = data.upload?.public_url ?? null;
   if (own !== null) {
     const video = data.video?.public_url ?? null;
-    return { url: own, focus: 'center', ...(data.tone === 'dark' ? { tone: 'dark' as const } : {}), ...(video === null ? {} : { video }) };
+    return { url: own, focus: 'center', own: true, ...(data.tone === 'dark' ? { tone: 'dark' as const } : {}), ...(video === null ? {} : { video }) };
   }
   const scene = data.scene;
   return scene === null ? null : { url: scene.url, focus: scene.focus, ...(scene.tone === 'dark' ? { tone: 'dark' as const } : {}) };

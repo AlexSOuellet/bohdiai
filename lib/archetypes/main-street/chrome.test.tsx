@@ -276,8 +276,11 @@ describe('Nav — split-center variant', () => {
 });
 
 describe('MainStreetFooter', () => {
-  it('shows shoppers no owner sign-in link (owners use /admin)', () => {
+  it('links owners in through the site’s own /admin, never straight to a sign-in page', () => {
     const { container } = render(<MainStreetFooter words={W} shopName="Classic Loafs" />);
+    const owner = container.querySelector('a[href="/admin"]');
+    expect(owner?.textContent).toBe('family.footerOwnerLogin');
+    expect(owner?.getAttribute('rel')).toBe('nofollow');
     expect(container.querySelector('a[href*="signin"]')).toBeNull();
   });
 

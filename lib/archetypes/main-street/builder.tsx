@@ -286,9 +286,9 @@ function familyFor(mood: string | undefined, brandPalette: BrandPalette | undefi
   return brandPalette !== undefined ? { ...family, textureOpacity: 0 } : family;
 }
 
-/** Scenic: the site's chosen photo (a library scene or its own) replaces the family's default scene. */
+/** The site's background photo (sceneForFamily) replaces the family's own wallpaper. */
 function withScene(family: Family, scene: ScenePhoto | null): Family {
-  return scene === null ? family : { ...family, wallpaperUrl: scene.url, textureFocus: scene.focus, ...(scene.tone === undefined ? {} : { textureTone: scene.tone }), ...(scene.video === undefined ? {} : { textureVideo: scene.video }) };
+  return scene === null ? family : { ...family, wallpaperUrl: scene.url, textureFocus: scene.focus, ...(scene.tone === undefined ? {} : { textureTone: scene.tone }), ...(scene.video === undefined ? {} : { textureVideo: scene.video }), ...(scene.own === true ? { textureOwn: true } : {}) };
 }
 
 /** Apply a nav-variant override (the ?nav= preview) onto the content's identity, so
@@ -308,29 +308,38 @@ type FamilyPaint = (view: MainStreetView, words: FamilyWords, sale: Promotion | 
  *  page record still holds their content, read it from there until the clean-up
  *  step retires them (Modular Plan steps 3 and 6). Both paths read the site's
  *  words from `site_words`; a page with no site behind it has none to read. */
-function withFamilyContent(content: unknown, tenantId: string | undefined, paint: FamilyPaint, scenic: boolean): ReactElement {
+/** The background photo a family paints behind the page: Scenic shows the site's
+ *  scene (a library scene or the maker's photo); Rustic shows only the maker's own
+ *  photo (a library scene is a Scenic landscape); the others keep their wallpaper. */
+export function sceneForFamily(familyKey: string, scene: ScenePhoto | null): ScenePhoto | null {
+  if (familyKey === 'scenic') return scene;
+  if (familyKey === 'rustic' && scene?.own === true) return scene;
+  return null;
+}
+
+function withFamilyContent(content: unknown, tenantId: string | undefined, paint: FamilyPaint, familyKey: string): ReactElement {
   if (tenantId === undefined) {
     if (holdsLegacyContent(content)) return paint(content as MainStreetView, FAMILY_NO_WORDS, null, null);
     notFound();
   }
-  return <FamilyFromHomes content={content} tenantId={tenantId} paint={paint} scenic={scenic} />;
+  return <FamilyFromHomes content={content} tenantId={tenantId} paint={paint} familyKey={familyKey} />;
 }
 
-async function FamilyFromHomes({ content, tenantId, paint, scenic }: { content: unknown; tenantId: string; paint: FamilyPaint; scenic: boolean }): Promise<ReactElement> {
+async function FamilyFromHomes({ content, tenantId, paint, familyKey }: { content: unknown; tenantId: string; paint: FamilyPaint; familyKey: string }): Promise<ReactElement> {
   const db = supabaseAdmin();
   const legacy = holdsLegacyContent(content);
-  // Scenic paints the site's own photo behind the page (a library scene or the maker's photo).
+  // The photo behind the page, for the families that paint one (sceneForFamily).
   const [words, homes, features, sale, scene] = await Promise.all([
     getSiteWords(db, tenantId, FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX),
     legacy ? Promise.resolve(null) : loadFamilyHomes(db, tenantId),
     getSiteFeatures(tenantId),
     loadRunningSale(db, tenantId),
-    scenic ? getSiteScene(db, tenantId) : Promise.resolve(null),
+    familyKey === 'scenic' || familyKey === 'rustic' ? getSiteScene(db, tenantId) : Promise.resolve(null),
   ]);
   // The plans, from the site's switches (old samples too): only Full sells online
   // (cart), and Showcase has no shop at all (catalog off).
   const view = homes !== null ? familyViewFromHomes(homes, words) : (content as MainStreetView);
-  return paint({ ...view, identity: { ...view.identity, sellsOnline: features.has('cart'), showsShop: features.has('catalog'), showsCollections: features.has('catalog') && features.has('collections'), onePage: !features.has('catalog') } }, words, sale, scene);
+  return paint({ ...view, identity: { ...view.identity, sellsOnline: features.has('cart'), showsShop: features.has('catalog'), showsCollections: features.has('catalog') && features.has('collections'), onePage: !features.has('catalog') } }, words, sale, sceneForFamily(familyKey, scene));
 }
 
 /** The pieces as the lists show them during a running sale: the sale price in place of the full one. */
@@ -480,7 +489,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       default:
         return <MainStreet content={c} skin={skin} words={words} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} hiddenSections={showsShop ? (showsCollections ? resolutions.hidden : [...resolutions.hidden, 'collections']) : [...resolutions.hidden, 'goods', 'collections']} shownSections={resolutions.shown} originalMood={originalMood} />;
     }
-    }, familyPainted.key === 'scenic');
+    }, familyPainted.key);
   },
   renderProduct: ({ content, lookKey, product, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
@@ -497,7 +506,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
       const [priced = product] = withSale([product], sale);
       return <MainStreetProduct content={c} skin={skin} words={words} product={priced} family={family} />;
-    }, familyBase.key === 'scenic');
+    }, familyBase.key);
   },
   renderContentPage: ({ content, lookKey, title, body, html, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
@@ -514,7 +523,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       const family = withScene(familyBase, scene);
       const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
       return <ContentPage content={c} skin={skin} words={words} title={title} body={body} html={html} family={family} />;
-    }, familyBase.key === 'scenic');
+    }, familyBase.key);
   },
   renderShell: ({ content, lookKey, children, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
@@ -524,7 +533,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       const family = withScene(familyBase, scene);
       const c = withNav(withLogo(view, logoUrl, brandColors), treatments.nav);
       return <MainStreetSubPage content={c} skin={skin} words={words} family={family}>{children}</MainStreetSubPage>;
-    }, familyBase.key === 'scenic');
+    }, familyBase.key);
   },
   renderCart: ({ content, lookKey, cart, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
@@ -541,7 +550,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
           <FamilyCartBody view={view} words={words} cart={cart} tenantId={tenantId} />
         </MainStreetSubPage>
       );
-    }, familyBase.key === 'scenic');
+    }, familyBase.key);
   },
   renderMarket: ({ content, lookKey, market, mood, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
@@ -555,7 +564,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
           <FamilyMarket shopName={view.shopName} market={market} words={words} />
         </MainStreetRoot>
       </FamilyMarketPage>
-    ), familyBase.key === 'scenic');
+    ), familyBase.key);
   },
   renderMarketInfo: ({ content, lookKey, market, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
@@ -572,7 +581,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
           <FamilyMarketInfo market={market} words={words} />
         </MainStreetSubPage>
       );
-    }, familyBase.key === 'scenic');
+    }, familyBase.key);
   },
 };
 

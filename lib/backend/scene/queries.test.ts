@@ -27,11 +27,11 @@ describe('getSiteScene', () => {
   });
   it('the maker’s own photo paints from its upload', async () => {
     const { db } = fakeDb({ data: { tone: 'light', scene: null, upload: { public_url: 'https://cdn/bay.webp' }, video: null }, error: null });
-    expect(await getSiteScene(db, 't1')).toEqual({ url: 'https://cdn/bay.webp', focus: 'center' });
+    expect(await getSiteScene(db, 't1')).toEqual({ url: 'https://cdn/bay.webp', focus: 'center', own: true });
   });
   it('a dark photo with a clip carries both', async () => {
     const { db } = fakeDb({ data: { tone: 'dark', scene: null, upload: { public_url: 'https://cdn/still.webp' }, video: { public_url: 'https://cdn/clip.mp4' } }, error: null });
-    expect(await getSiteScene(db, 't1')).toEqual({ url: 'https://cdn/still.webp', focus: 'center', tone: 'dark', video: 'https://cdn/clip.mp4' });
+    expect(await getSiteScene(db, 't1')).toEqual({ url: 'https://cdn/still.webp', focus: 'center', own: true, tone: 'dark', video: 'https://cdn/clip.mp4' });
   });
   it('a site with no row (any family but Scenic) has none', async () => {
     const { db } = fakeDb({ data: null, error: null });
