@@ -17,6 +17,7 @@ export default async function HeadlinePage(): Promise<React.ReactElement> {
   return (
     <HeadlineEditor
       initial={{ headline: moment.headline, sub: moment.sub }}
+      photo={moment.media}
       siteUrl={storefrontOrigin(site.subdomain, (await headers()).get('host'))}
     />
   );

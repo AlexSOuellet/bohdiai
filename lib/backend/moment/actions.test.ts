@@ -67,7 +67,8 @@ describe('every moment action', () => {
   it('refuses when the moment is switched off, touching nothing', async () => {
     features.on = new Set();
     expect(await saveMoment(EMPTY_MOMENT)).toEqual(OFF);
-    expect(await setMomentPhoto(fd())).toEqual(OFF);
+    // The opening photo answers to the headline switch too (every plan).
+    expect(await setMomentPhoto(fd())).toEqual({ ok: false, error: 'Changing the headline isn’t switched on for this site.' });
     expect(await clearMomentPhoto()).toEqual(OFF);
     expect(await addMomentPhoto(fd())).toEqual(OFF);
     expect(await orderMomentPhotos([])).toEqual(OFF);
@@ -106,7 +107,11 @@ describe('setMomentPhoto and clearMomentPhoto', () => {
     storeSitePhoto.mockResolvedValueOnce({ ok: false, error: 'Use a JPG, PNG or WebP photo.' });
     expect(await setMomentPhoto(fd())).toEqual({ ok: false, error: 'Use a JPG, PNG or WebP photo.' });
     db.upsert.mockResolvedValueOnce(boom);
-    expect(await setMomentPhoto(fd())).toEqual({ ok: false, error: 'The photo was uploaded but couldn’t be set on the moment. Try again.' });
+    expect(await setMomentPhoto(fd())).toEqual({ ok: false, error: 'The photo was uploaded but couldn’t be set as your opening photo. Try again.' });
+  });
+  it('lets every plan change the opening photo from the Headline screen', async () => {
+    features.on = new Set(['headline']);
+    expect((await setMomentPhoto(fd())).ok).toBe(true);
   });
   it('clears the photo for the acting site', async () => {
     expect(await clearMomentPhoto()).toEqual({ ok: true });

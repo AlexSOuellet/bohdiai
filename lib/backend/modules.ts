@@ -33,6 +33,7 @@ export const BACKEND_MODULES: BackendModule[] = [
   { feature: 'cart', section: 'Online shop', items: [{ label: 'Orders', href: '/manage/orders' }] },
   { feature: 'promotions', section: 'Online shop', items: [{ label: 'Promotions', href: '/manage/promotions' }] },
   { feature: 'headline', section: 'Your site', items: [{ label: 'Headline', href: '/manage/headline' }] },
+  { feature: 'background', section: 'Your site', items: [{ label: 'Background', href: '/manage/background' }] },
   {
     feature: 'profile',
     section: 'Your site',

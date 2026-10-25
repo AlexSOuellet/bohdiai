@@ -14,7 +14,7 @@ import { LINK_TARGETS, type LinkTarget } from '@/lib/archetypes/main-street/link
 
 /** Every plan: About you, markets, the QR code, the plan screen, and the headline at
  *  the top of the home page (the headline and the line under it; Alex, 2026-10-19). */
-const EVERY_PLAN: readonly FeatureKey[] = ['profile', 'market_dates', 'qr_codes', 'plan', 'headline'];
+const EVERY_PLAN: readonly FeatureKey[] = ['profile', 'market_dates', 'qr_codes', 'plan', 'headline', 'background'];
 /** Showcase (Alex, 2026-10-19): the whole catalog in the backend with no shop and no
  *  prices on the site; the gallery is up to 12 ticked pieces (newest 12 by default). */
 const SHOWCASE: readonly FeatureKey[] = [...EVERY_PLAN, 'gallery_pieces'];

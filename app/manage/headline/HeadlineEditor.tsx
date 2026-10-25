@@ -6,12 +6,22 @@ import { saveHeadline } from '@/lib/backend/moment/actions';
 import { buildHeadlineRow, type HeadlineForm } from '@/lib/backend/moment/headline-form';
 import { MOMENT_LIMITS } from '@/lib/backend/moment/moment-form';
 import { useNotice } from '../_components/Notice';
+import { OpeningPhotoField } from './OpeningPhotoField';
 
 const FAILED = 'Something went wrong. Check your connection and try again.';
 
 /** The headline at the top of the home page and the line under it. One form, one
  *  Save; every failure lands in the notice at the top. */
-export function HeadlineEditor({ initial, siteUrl }: { initial: HeadlineForm; siteUrl: string }): React.ReactElement {
+export function HeadlineEditor({
+  initial,
+  siteUrl,
+  photo = null,
+}: {
+  initial: HeadlineForm;
+  siteUrl: string;
+  /** The opening photo (or video) at the top of the home page. */
+  photo?: { kind: 'image' | 'video'; url: string; posterUrl: string } | null;
+}): React.ReactElement {
   const [form, setForm] = useState(initial);
   const [saved, setSaved] = useState(initial);
   const [busy, setBusy] = useState(false);
@@ -85,6 +95,7 @@ export function HeadlineEditor({ initial, siteUrl }: { initial: HeadlineForm; si
             </p>
           </div>
         </section>
+        <OpeningPhotoField initial={photo} notice={notice} />
       </main>
     </>
   );

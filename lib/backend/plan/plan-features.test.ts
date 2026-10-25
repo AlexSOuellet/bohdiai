@@ -12,6 +12,7 @@ import { applyPlan } from './apply';
 describe('what each plan switches on', () => {
   it('gives Showcase its catalog with no shop, its headline, and dates-only markets', () => {
     expect([...PLAN_FEATURES.showcase].sort()).toEqual([
+      'background',
       'gallery_pieces',
       'headline',
       'market_dates',

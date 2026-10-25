@@ -69,19 +69,23 @@ export async function saveMoment(form: MomentForm): Promise<DoneResult> {
   return { ok: true };
 }
 
-/** The moment's main photo. */
+/** The moment's main photo: the opening photo at the top of the home page. Every plan
+ *  can change it from the Headline screen (Alex, 2026-10-25), as well as the moment. */
 export async function setMomentPhoto(formData: FormData): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
-  const site = await momentSite();
-  if (site === null) return { ok: false, error: MOMENT_OFF };
+  const { user, site: acting } = await requireActingSite();
+  const on = await getSiteFeatures(acting.tenantId);
+  if (!on.has('headline') && !on.has('moment')) return { ok: false, error: HEADLINE_OFF };
+  const site = { tenantId: acting.tenantId, userId: user.id };
   const stored = await storeSitePhoto({ tenantId: site.tenantId, userId: site.userId, folder: 'moment', file: formData.get('file') });
   if (!stored.ok) return stored;
   const db = await createSupabaseServerClient();
   const { error } = await db.from('site_moments').upsert({ tenant_id: site.tenantId, media_upload_id: stored.uploadId, poster_upload_id: null });
   if (error !== null) {
     logger.error('moment: photo link failed', { tenantId: site.tenantId, code: error.code, error: error.message });
-    return { ok: false, error: 'The photo was uploaded but couldn’t be set on the moment. Try again.' };
+    return { ok: false, error: 'The photo was uploaded but couldn’t be set as your opening photo. Try again.' };
   }
   done();
+  revalidatePath('/manage/headline');
   return { ok: true, url: stored.url };
 }
 
