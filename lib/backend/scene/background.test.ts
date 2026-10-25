@@ -27,6 +27,13 @@ vi.mock('@/lib/supabase-server', () => ({ createSupabaseServerClient: async () =
 vi.mock('@/lib/backend/site-photo', () => ({ storeSitePhoto: async () => s.stored }));
 vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn(), warn: vi.fn() } }));
 vi.mock('next/cache', () => ({ revalidatePath }));
+const found = vi.hoisted(() => ({ scenes: [] as unknown[], fails: false }));
+vi.mock('./library', () => ({
+  searchScenes: async () => {
+    if (found.fails) throw new Error('down');
+    return found.scenes;
+  },
+}));
 vi.mock('./queries', () => ({
   saveSiteScene: async (...a: unknown[]) => {
     if (s.sceneFails) throw new Error('down');
@@ -35,7 +42,7 @@ vi.mock('./queries', () => ({
 }));
 
 const { getBackgroundView } = await import('./background');
-const { setOwnBackground, removeOwnBackground, chooseScene, setOwnScene } = await import('./background-actions');
+const { setOwnBackground, removeOwnBackground, chooseScene, setOwnScene, findScenes } = await import('./background-actions');
 
 const fd = (extra: Record<string, string> = {}): FormData => {
   const d = new FormData();
@@ -55,30 +62,36 @@ beforeEach(() => {
 });
 
 describe('getBackgroundView', () => {
-  it('reads her own background, Scenic’s scene and the scenes made for her', async () => {
+  it('reads her own background, Scenic’s scene, and the whole library with hers first', async () => {
     s.queue.push(
       { data: { upload: { public_url: 'https://cdn/wood.jpg' } }, error: null },
       { data: { scene_key: 'rustic-charm-1', scene: { url: 'https://cdn/s1.webp' }, upload: null }, error: null },
       { data: [{ key: 'rustic-charm-1', url: 'https://cdn/s1.webp', description: 'barn' }], error: null },
+      { data: [{ key: 'marsh', url: 'https://cdn/m.webp', description: 'marsh' }, { key: 'rustic-charm-1', url: 'https://cdn/s1.webp', description: 'barn' }], error: null },
     );
     expect(await getBackgroundView(fakeDb() as never, 't1')).toEqual({
       own: 'https://cdn/wood.jpg',
       scenic: { key: 'rustic-charm-1', url: 'https://cdn/s1.webp' },
-      scenes: [{ key: 'rustic-charm-1', url: 'https://cdn/s1.webp', description: 'barn' }],
+      scenes: [
+        { key: 'rustic-charm-1', url: 'https://cdn/s1.webp', description: 'barn', mine: true },
+        { key: 'marsh', url: 'https://cdn/m.webp', description: 'marsh', mine: false },
+      ],
     });
   });
   it('reads her own Scenic photo, and nothing at all', async () => {
-    s.queue.push({ data: null, error: null }, { data: { scene_key: null, scene: null, upload: { public_url: 'https://cdn/mine.webp' } }, error: null }, { data: null, error: null });
+    s.queue.push({ data: null, error: null }, { data: { scene_key: null, scene: null, upload: { public_url: 'https://cdn/mine.webp' } }, error: null }, { data: null, error: null }, { data: null, error: null });
     expect(await getBackgroundView(fakeDb() as never, 't1')).toEqual({ own: null, scenic: { key: null, url: 'https://cdn/mine.webp' }, scenes: [] });
-    s.queue.push({ data: null, error: null }, { data: { scene_key: 'gone', scene: null, upload: null }, error: null }, { data: [], error: null });
+    s.queue.push({ data: null, error: null }, { data: { scene_key: 'gone', scene: null, upload: null }, error: null }, { data: [], error: null }, { data: [], error: null });
     expect((await getBackgroundView(fakeDb() as never, 't1')).scenic).toBeNull();
   });
   it('fails loudly when any part can’t be read', async () => {
-    s.queue.push(fail, { data: null, error: null }, { data: [], error: null });
+    s.queue.push(fail, { data: null, error: null }, { data: [], error: null }, { data: [], error: null });
     await expect(getBackgroundView(fakeDb() as never, 't1')).rejects.toThrow('background photo');
-    s.queue.push({ data: null, error: null }, fail, { data: [], error: null });
+    s.queue.push({ data: null, error: null }, fail, { data: [], error: null }, { data: [], error: null });
     await expect(getBackgroundView(fakeDb() as never, 't1')).rejects.toThrow('Scenic photo');
-    s.queue.push({ data: null, error: null }, { data: null, error: null }, fail);
+    s.queue.push({ data: null, error: null }, { data: null, error: null }, fail, { data: [], error: null });
+    await expect(getBackgroundView(fakeDb() as never, 't1')).rejects.toThrow('scenes');
+    s.queue.push({ data: null, error: null }, { data: null, error: null }, { data: [], error: null }, fail);
     await expect(getBackgroundView(fakeDb() as never, 't1')).rejects.toThrow('scenes');
   });
 });
@@ -102,14 +115,21 @@ describe('her own background', () => {
 });
 
 describe('Scenic’s photo', () => {
-  it('picks a scene made for her site', async () => {
+  it('searches the whole library', async () => {
+    found.scenes = [{ key: 'marsh', url: 'u', focus: 'center', tone: 'light', tags: [], description: 'marsh' }];
+    expect(await findScenes('marsh')).toEqual({ ok: true, scenes: [{ key: 'marsh', url: 'u', description: 'marsh', mine: false }] });
+    found.fails = true;
+    expect((await findScenes('x')).ok).toBe(false);
+    found.fails = false;
+  });
+  it('picks any scene in the library', async () => {
     s.queue.push({ data: { key: 'rustic-charm-2' }, error: null });
     expect(await chooseScene('rustic-charm-2')).toEqual({ ok: true });
     expect(s.calls.join(' ')).toContain('saveSiteScene(["t1",{"kind":"library","key":"rustic-charm-2"}])');
   });
-  it('refuses a scene made for someone else, and says so when it can’t save', async () => {
+  it('refuses a scene no longer in the library, and says so when it can’t save', async () => {
     s.queue.push({ data: null, error: null });
-    expect(await chooseScene('classic-loafs-1')).toEqual({ ok: false, error: 'That scene isn’t one made for your site.' });
+    expect(await chooseScene('gone-1')).toEqual({ ok: false, error: 'That scene isn’t in the library any more.' });
     s.queue.push(fail);
     expect((await chooseScene('x')).ok).toBe(false);
     s.sceneFails = true;
@@ -132,6 +152,6 @@ describe('Scenic’s photo', () => {
 describe('the switch', () => {
   it('refuses everything when Background is off', async () => {
     s.features = new Set();
-    for (const r of [await setOwnBackground(fd()), await removeOwnBackground(), await chooseScene('x'), await setOwnScene(fd())]) expect(r.ok).toBe(false);
+    for (const r of [await setOwnBackground(fd()), await removeOwnBackground(), await chooseScene('x'), await setOwnScene(fd()), await findScenes('x')]) expect(r.ok).toBe(false);
   });
 });

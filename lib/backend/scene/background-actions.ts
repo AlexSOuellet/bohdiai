@@ -14,6 +14,8 @@ import { storeSitePhoto } from '@/lib/backend/site-photo';
 import { logger } from '@/lib/logger';
 import type { DoneResult } from '../catalog/results';
 import { saveSiteScene } from './queries';
+import { searchScenes } from './library';
+import { SCENES_SHOWN, type SceneOption } from './background';
 
 const OFF = 'Changing your background isn’t switched on for this site.';
 type PhotoResult = { ok: true; url: string } | { ok: false; error: string };
@@ -56,14 +58,27 @@ export async function removeOwnBackground(): Promise<DoneResult> {
   return { ok: true };
 }
 
-/** Scenic shows one of the scenes made for her site. */
+/** Search the whole scene library by any words ("winter barn"); empty words list the newest. */
+export async function findScenes(words: string): Promise<{ ok: true; scenes: SceneOption[] } | { ok: false; error: string }> {
+  const site = await backgroundSite();
+  if (site === null) return { ok: false, error: OFF };
+  try {
+    const found = await searchScenes(await createSupabaseServerClient(), words.slice(0, 100), SCENES_SHOWN);
+    return { ok: true, scenes: found.map((s) => ({ key: s.key, url: s.url, description: s.description, mine: false })) };
+  } catch (err) {
+    logger.error('background: scene search failed', { tenantId: site.tenantId, error: err instanceof Error ? err.message : String(err) });
+    return { ok: false, error: 'The scenes couldn’t be searched. Try again in a moment.' };
+  }
+}
+
+/** Scenic shows a scene from the library. */
 export async function chooseScene(key: string): Promise<DoneResult> {
   const site = await backgroundSite();
   if (site === null) return { ok: false, error: OFF };
   const db = await createSupabaseServerClient();
-  const { data, error } = await db.from('scenes').select('key').eq('key', key).eq('made_for', site.tenantId).maybeSingle();
+  const { data, error } = await db.from('scenes').select('key').eq('key', key).maybeSingle();
   if (error !== null) return { ok: false, error: 'Something went wrong. Try again in a moment.' };
-  if (data === null) return { ok: false, error: 'That scene isn’t one made for your site.' };
+  if (data === null) return { ok: false, error: 'That scene isn’t in the library any more.' };
   try {
     await saveSiteScene(db, site.tenantId, { kind: 'library', key });
   } catch (err) {

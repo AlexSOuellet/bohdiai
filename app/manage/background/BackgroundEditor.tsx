@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter, unstable_rethrow } from 'next/navigation';
-import { chooseScene, removeOwnBackground, setOwnBackground, setOwnScene } from '@/lib/backend/scene/background-actions';
-import type { BackgroundView } from '@/lib/backend/scene/background';
+import { chooseScene, findScenes, removeOwnBackground, setOwnBackground, setOwnScene } from '@/lib/backend/scene/background-actions';
+import type { BackgroundView, SceneOption } from '@/lib/backend/scene/background';
 import { useNotice } from '../_components/Notice';
 import { ConfirmButton } from '../_components/ConfirmButton';
 
@@ -16,6 +16,30 @@ export function BackgroundEditor({ initial, siteUrl }: { initial: BackgroundView
   const notice = useNotice();
   const [busy, setBusy] = useState(false);
   const [tone, setTone] = useState<'light' | 'dark'>('light');
+  const [words, setWords] = useState('');
+  /** Search results; null shows the library as it came (hers first). */
+  const [found, setFound] = useState<SceneOption[] | null>(null);
+  const scenes = found ?? initial.scenes;
+
+  async function search(e: React.FormEvent<HTMLFormElement>): Promise<void> {
+    e.preventDefault();
+    if (words.trim() === '') {
+      setFound(null);
+      return;
+    }
+    setBusy(true);
+    notice.clear();
+    try {
+      const r = await findScenes(words);
+      if (r.ok) setFound(r.scenes);
+      else notice.showError(r.error);
+    } catch (err) {
+      unstable_rethrow(err);
+      notice.showError(FAILED);
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function run(work: () => Promise<{ ok: true } | { ok: false; error: string }>, said: string): Promise<void> {
     setBusy(true);
@@ -86,20 +110,44 @@ export function BackgroundEditor({ initial, siteUrl }: { initial: BackgroundView
           <h2 id="s-scenic" className="bk-section-title">
             Behind your site in Scenic
           </h2>
-          <p className="bk-note">When your site wears the Scenic look, a full photo sits behind the whole page. Pick one of the scenes made for your site, or use a photo of your own.</p>
-          {initial.scenes.length > 0 ? (
-            <div className="bk-scene-grid" role="group" aria-label="Your scenes">
-              {initial.scenes.map((s) => (
+          <p className="bk-note">When your site wears the Scenic look, a full photo sits behind the whole page. Pick any scene from the library (the ones made for your site come first), or use a photo of your own.</p>
+          <form className="bk-row" role="search" onSubmit={(e) => void search(e)}>
+            <label htmlFor="scene-find" className="bk-sr">
+              Search the scenes
+            </label>
+            <input id="scene-find" className="bk-input" placeholder="Search the scenes: winter, barn, kitchen…" value={words} maxLength={100} onChange={(e) => setWords(e.target.value)} />
+            <button type="submit" className="bk-btn bk-btn-quiet" disabled={busy}>
+              Search
+            </button>
+            {found !== null && (
+              <button
+                type="button"
+                className="bk-btn bk-btn-quiet"
+                onClick={() => {
+                  setFound(null);
+                  setWords('');
+                }}
+              >
+                Show all
+              </button>
+            )}
+          </form>
+          {scenes.length > 0 ? (
+            <div className="bk-scene-grid" role="group" aria-label="Scenes">
+              {scenes.map((s) => (
                 <button key={s.key} type="button" className="bk-scene" aria-pressed={initial.scenic?.key === s.key} disabled={busy} onClick={() => void run(() => chooseScene(s.key), 'Saved. Scenic shows that scene now.')}>
                   {/* A scene from BohdiAI's own library. */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={s.url} alt={s.description} loading="lazy" />
-                  <span>{initial.scenic?.key === s.key ? 'Showing now' : 'Use this scene'}</span>
+                  <span>
+                    {initial.scenic?.key === s.key ? 'Showing now' : 'Use this scene'}
+                    {s.mine && ' · Made for your site'}
+                  </span>
                 </button>
               ))}
             </div>
           ) : (
-            <p className="bk-note">No scenes have been made for your site yet.</p>
+            <p className="bk-note">{found !== null ? 'No scenes match those words.' : 'The scene library is empty.'}</p>
           )}
           {initial.scenic !== null && initial.scenic.key === null && (
             <div className="bk-opening-photo">
