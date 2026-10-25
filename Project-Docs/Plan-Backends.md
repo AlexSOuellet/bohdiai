@@ -156,7 +156,7 @@ Everything Showcase has, plus:
 Settled with Alex, 2026-10-25 (Session 114), on top of the earlier calls. **Everything Market has, plus selling online, buyer accounts and try on a look.** Next after Full: the tools and Free (held until Full is done, Alex 2026-10-25).
 
 ### On the site
-- **The cart takes payment** (today it only sends an order request): cards through the maker's own **Square and/or Stripe** (Alex, 2026-10-20), and **PayPal** (Alex, 2026-10-25). Money goes straight to the maker; BohdiAI never sees a card or a password and takes no cut; an order counts as paid only when the processor confirms it.
+- **The cart takes payment** (today it only sends an order request): cards through the maker's own **Square and/or Stripe** (Alex, 2026-10-20), and **PayPal** (Alex, 2026-10-25). Money goes straight to the maker; BohdiAI never sees a card or a password and takes no cut; an order counts as paid only when the processor confirms it. **Any one processor is enough** (Alex, 2026-10-25: Renée has only PayPal): with PayPal alone, buyers without PayPal still pay by card, through PayPal's guest card option and its card form on the site (confirm it's offered in Canada and for her account).
 - **Collections** (band, menu link and pages).
 - **Every testimonial**, not just three.
 - **Several photos per piece** (Market has one).
