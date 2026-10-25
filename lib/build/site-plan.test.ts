@@ -195,6 +195,12 @@ describe('planSite — what it refuses', () => {
     );
   });
 
+  it('puts no more pieces on the home page than it shows', () => {
+    const piece = (n: number) => ({ name: `Piece ${n}`, priceCents: 100, description: 'x', photos: [], onHome: true });
+    expect(errorsOf(familySite({ products: [1, 2, 3, 4, 5].map(piece) }))).not.toContainEqual(expect.stringContaining('home page shows'));
+    expect(errorsOf(familySite({ products: [1, 2, 3, 4, 5, 6].map(piece) }))).toContain('products: the home page shows up to 5 (got 6 with onHome)');
+  });
+
   it('refuses BohdiAI’s own addresses, the marketing arms included', () => {
     for (const subdomain of ['makers', 'service', 'app', 'www']) {
       expect(errorsOf(familySite({ site: { ...familySite().site, subdomain } }))).toContain(`site: "${subdomain}" is one of BohdiAI's own addresses`);

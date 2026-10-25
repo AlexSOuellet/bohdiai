@@ -22,7 +22,7 @@ import { buildSectionRow, EMPTY_SECTION, SECTION_KEYS, type SectionKey, type Sec
 import { buildTestimonialRow, TESTIMONIALS_LIMIT, type TestimonialRow } from '@/lib/backend/testimonials/testimonial-form';
 import { buildDateRow, DATES_LIMIT, type MarketDateForm, type MarketDateRow } from '@/lib/backend/dates/dates-form';
 import { CAPTION_MAX, GALLERY_LIMIT } from '@/lib/backend/gallery/gallery-form';
-import { MAX_PHOTOS } from '@/lib/backend/catalog/product-form';
+import { HOME_MAX, MAX_PHOTOS } from '@/lib/backend/catalog/product-form';
 import { isSitePlan, type SitePlan } from '@/lib/backend/plan/plan';
 import { planLinkTargets } from '@/lib/backend/plan/plan-features';
 import { isReservedSubdomain } from '@/lib/reserved-subdomains';
@@ -284,6 +284,9 @@ export function planSite(f: SiteFile): PlanResult {
       collections: p.collections ?? [],
     };
   });
+
+  const onHome = products.filter((p) => p.onHome).length;
+  if (onHome > HOME_MAX) errors.push(`products: the home page shows up to ${HOME_MAX} (got ${onHome} with onHome)`);
 
   // Markets and testimonials.
   if ((f.markets ?? []).length > DATES_LIMIT) errors.push(`markets: at most ${DATES_LIMIT} (got ${(f.markets ?? []).length})`);

@@ -158,6 +158,8 @@
 .bk-fieldset > legend { padding: 0; }
 /* The notice takes focus from script only; the message itself is the visible cue. */
 .bk-notices:focus { outline: none; }
+/* A notice scrolled to stops below the pinned top bar, never behind it. */
+.bk-notices { scroll-margin-top: 5rem; }
 .bk-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .bk-qr { display: grid; gap: 1rem; justify-items: start; margin-top: 1rem; }
 .bk-qr-img { width: min(280px, 100%); height: auto; border: 1px solid var(--bk-ink-15); border-radius: 8px; image-rendering: pixelated; }
