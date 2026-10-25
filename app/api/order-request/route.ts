@@ -3,12 +3,9 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { resend, fromEmail } from '@/lib/resend';
 import { logger } from '@/lib/logger';
 import { formLimitResponse } from '@/lib/forms/rate-limit';
-import { loadSiteFeatures } from '@/lib/backend/features';
-import { loadProductsByIds } from '@/lib/storefront/catalog';
-import { orderLines, orderRequestEmail, orderRequestSchema } from '@/lib/storefront/order-request';
-import { splitEntry } from '@/lib/storefront/cart';
-import { bestDiscount, checkCode, runningSale } from '@/lib/storefront/promotions';
-import { loadShopPromotions } from '@/lib/storefront/promotions-load';
+import { orderRequestEmail, orderRequestSchema } from '@/lib/storefront/order-request';
+import { placeCartOrder } from '@/lib/storefront/place-order';
+import { onlinePay } from '@/lib/paypal/online-pay';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -51,78 +48,25 @@ async function handle(req: Request) {
   const input = parsed.data;
 
   const db = supabaseAdmin();
-  const { data: tenant, error: lookupError } = await db
-    .from('tenants')
-    .select('business_name, contact_email')
-    .eq('id', tenantId)
-    .eq('status', 'active')
-    .maybeSingle();
-  if (lookupError !== null) throw new Error(`tenant lookup failed: ${lookupError.message}`);
-  if (tenant === null) return NextResponse.json({ error: 'Shop not found.' }, { status: 404 });
-  if (!(await loadSiteFeatures(db, tenantId)).has('cart')) {
-    return NextResponse.json({ error: 'This shop isn’t taking orders online.' }, { status: 404 });
+  // A shop that takes payment online takes orders only through its checkout.
+  if ((await onlinePay(db, tenantId)) !== null) {
+    return NextResponse.json({ error: 'This shop takes payment at checkout. Please pay with the PayPal button.' }, { status: 409 });
   }
-  if (tenant.contact_email === null || tenant.contact_email === '') {
-    logger.warn('order request: tenant has no contact_email', { tenantId });
-    return NextResponse.json({ error: 'This shop can’t take orders right now. Please get in touch another way.' }, { status: 503 });
+  const placed = await placeCartOrder(db, tenantId, input, { verb: 'send' });
+  if (!placed.ok) {
+    if (placed.refusal.status === 503) logger.warn('order request: tenant has no contact_email', { tenantId });
+    return NextResponse.json({ error: placed.refusal.error, ...(placed.refusal.unavailable === undefined ? {} : { unavailable: placed.refusal.unavailable }) }, { status: placed.refusal.status });
   }
-
-  const pieceIds = [...new Set(input.listingIds.map((e) => splitEntry(e).listingId))];
-  const priced = orderLines(input.listingIds, await loadProductsByIds(db, tenantId, pieceIds));
-  if (!priced.ok) {
-    return NextResponse.json(
-      { error: `No longer available: ${priced.unavailable.join(', ')}. Take it out of your cart to send the rest.`, unavailable: priced.unavailable },
-      { status: 409 },
-    );
-  }
-
-  // The same sale-or-code choice the cart showed, worked out again from the shop's own promotions.
-  const promo = await loadShopPromotions(db, tenantId);
-  let codePromo = null;
-  if (input.code !== '') {
-    const checked = checkCode(promo.promos, input.code, promo.today);
-    if (!checked.ok) return NextResponse.json({ error: `${checked.error} Remove it from your cart to send your order.` }, { status: 409 });
-    codePromo = checked.promo;
-  }
-  const discount = bestDiscount(
-    priced.lines.map((l) => l.priceCents),
-    runningSale(promo.promos, promo.today),
-    codePromo,
-  );
-
-  const { data: orderNumber, error: placeError } = await db.rpc('place_order_request', {
-    p_tenant_id: tenantId,
-    p_customer_name: input.name,
-    p_customer_email: input.email,
-    p_customer_phone: input.phone,
-    p_customer_note: input.note,
-    p_items: priced.lines.map((l) => ({
-      listing_id: l.listingId,
-      ...(l.variantId === null ? {} : { listing_variant_id: l.variantId, option: l.option }),
-      name: l.name,
-      unit_price_cents: l.priceCents,
-    })),
-    p_discount_cents: discount?.cents ?? 0,
-    ...(discount === null ? {} : { p_discount_label: discount.label }),
-    ...(discount?.promotionId == null ? {} : { p_promotion_id: discount.promotionId }),
-  });
-  if (placeError !== null) {
-    if (placeError.code === 'P0021') {
-      return NextResponse.json({ error: 'Something in your cart was just taken. Please check your cart and try again.' }, { status: 409 });
-    }
-    if (placeError.code === 'P0022') {
-      return NextResponse.json({ error: 'That discount code just ended or was used up. Remove it from your cart to send your order.' }, { status: 409 });
-    }
-    throw new Error(`place_order_request failed: ${placeError.message}`);
-  }
+  const { orderNumber, lines, subtotalCents, discount } = placed.order;
+  const tenant = { business_name: placed.order.shopName, contact_email: placed.order.contactEmail };
 
   const mail = orderRequestEmail({
     shopName: tenant.business_name,
     orderNumber,
     input,
-    lines: priced.lines,
-    subtotalCents: priced.subtotalCents,
-    discount: discount === null ? null : { label: discount.label, cents: discount.cents },
+    lines,
+    subtotalCents,
+    discount,
   });
   try {
     const result = await resend().emails.send({ from: fromEmail(), to: tenant.contact_email, replyTo: input.email, ...mail });

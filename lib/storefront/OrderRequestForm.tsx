@@ -2,13 +2,17 @@
 
 /**
  * The cart's "send my order" form (Full), shared by every design with a cart.
- * Posts the cart's pieces and the shopper's details to /api/order-request; nothing
- * is charged (card payment isn't connected yet). On success the cart empties and
- * the order number shows. Every failure says so.
+ * Without online payment it posts the cart's pieces and the shopper's details to
+ * /api/order-request and nothing is charged. When the shop takes PayPal (`pay`),
+ * the same details go with the PayPal button instead, and the order is placed when
+ * the payment goes through. On success the cart empties and the order number shows.
+ * Every failure says so.
  */
-import { useState, type FormEvent, type ReactElement } from 'react';
+import { useRef, useState, type FormEvent, type ReactElement } from 'react';
+import type { OnlinePay } from '@/lib/archetypes/content';
 import { ClearCart } from '@/lib/storefront/CartControls';
 import { fill } from '@/lib/site-words/words';
+import { PayPalButtons } from './PayPalButtons';
 
 /** The site's words the order form shows (each design keeps them under its own spots). */
 export type OrderFormWords = {
@@ -22,26 +26,55 @@ export type OrderFormWords = {
   sent: string;
   error: string;
   errorNetwork: string;
+  /** Paying online: while PayPal finishes, when it fails, when the buyer closes PayPal, when PayPal can't load. */
+  paying: string;
+  payError: string;
+  payCancelled: string;
+  payUnavailable: string;
+  /** Paid: the thank-you under the order number. */
+  paid: string;
 };
 
-type State = { kind: 'idle' } | { kind: 'sending' } | { kind: 'sent'; orderNumber: string | null } | { kind: 'error'; message: string };
+type State = { kind: 'idle' } | { kind: 'sending' } | { kind: 'sent'; orderNumber: string | null; paid: boolean } | { kind: 'error'; message: string };
 
 export function OrderRequestForm({
   listingIds,
   code = null,
   w: C,
   honeypot,
+  pay = null,
 }: {
   listingIds: string[];
   code?: string | null;
   w: OrderFormWords;
   /** The hidden spam trap's label. */
   honeypot: string;
+  /** The shop takes payment through its own PayPal. */
+  pay?: OnlinePay | null;
 }): ReactElement {
   const [state, setState] = useState<State>({ kind: 'idle' });
+  const formRef = useRef<HTMLFormElement>(null);
+
+  /** The order's details from the form, or null after the browser shows what's missing. */
+  function details(): Record<string, unknown> | null {
+    const form = formRef.current;
+    if (form === null || !form.reportValidity()) return null;
+    const data = new FormData(form);
+    return {
+      listingIds,
+      code: code ?? '',
+      name: data.get('name'),
+      email: data.get('email'),
+      phone: data.get('phone') ?? '',
+      note: data.get('note') ?? '',
+      company: data.get('company') ?? '',
+    };
+  }
 
   async function onSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
+    // Paying online, the order only goes through the PayPal button (Enter never sends it unpaid).
+    if (pay !== null) return;
     const data = new FormData(e.currentTarget);
     setState({ kind: 'sending' });
     try {
@@ -61,7 +94,7 @@ export function OrderRequestForm({
       const body: unknown = await res.json().catch(() => null);
       if (res.ok) {
         const n = body !== null && typeof body === 'object' && 'orderNumber' in body && typeof body.orderNumber === 'string' ? body.orderNumber : null;
-        setState({ kind: 'sent', orderNumber: n });
+        setState({ kind: 'sent', orderNumber: n, paid: false });
         return;
       }
       const message = body !== null && typeof body === 'object' && 'error' in body && typeof body.error === 'string' ? body.error : C.error;
@@ -76,13 +109,13 @@ export function OrderRequestForm({
       <div className="bc-form__done" role="status">
         <ClearCart />
         {state.orderNumber !== null && <p className="order-num">{fill(C.sentTitle, { n: state.orderNumber })}</p>}
-        <p>{C.sent}</p>
+        <p>{state.paid ? C.paid : C.sent}</p>
       </div>
     );
   }
 
   return (
-    <form className="bc-form" onSubmit={onSubmit}>
+    <form className="bc-form" onSubmit={onSubmit} ref={formRef}>
       <div className="bc-form__row">
         <label>
           {C.name}
@@ -105,9 +138,13 @@ export function OrderRequestForm({
         {honeypot}
         <input name="company" tabIndex={-1} autoComplete="off" />
       </label>
-      <button className="bc-btn" type="submit" disabled={state.kind === 'sending'}>
-        {state.kind === 'sending' ? C.sending : C.send}
-      </button>
+      {pay === null ? (
+        <button className="bc-btn" type="submit" disabled={state.kind === 'sending'}>
+          {state.kind === 'sending' ? C.sending : C.send}
+        </button>
+      ) : (
+        <PayPalButtons pay={pay} details={details} w={C} onPaid={(orderNumber) => setState({ kind: 'sent', orderNumber, paid: true })} />
+      )}
       {state.kind === 'error' && (
         <p className="bc-form__status" role="alert">
           {state.message}

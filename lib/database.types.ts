@@ -3745,6 +3745,18 @@ export type Database = {
         }
         Returns: string
       }
+      record_online_payment: {
+        Args: {
+          p_amount_cents: number
+          p_currency: string
+          p_external_id: string
+          p_metadata?: Json
+          p_order_id: string
+          p_processor: string
+          p_tenant_id: string
+        }
+        Returns: boolean
+      }
       save_collection: {
         Args: { p: Json; p_collection_id?: string; p_tenant_id: string }
         Returns: string

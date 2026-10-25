@@ -132,6 +132,13 @@ export const FAMILY_WORD_SPOTS = {
     sent: '',
     error: '',
     errorNetwork: '',
+    /** Paying online with the shop's PayPal (Full): the line over the form, while PayPal finishes, when it fails or is closed or can't load, and the thank-you. */
+    payLede: '',
+    paying: '',
+    payError: '',
+    payCancelled: '',
+    payUnavailable: '',
+    paid: '',
     honeypot: '',
     was: '',
   },

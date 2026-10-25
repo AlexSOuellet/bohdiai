@@ -661,13 +661,13 @@ export function ShorelineCart({ site, cart, platformCredit = true }: { site: Sho
             </section>
             <section className="sl-letter sl-cart-letter" aria-labelledby="sl-send">
               <h2 id="sl-send">{C.sendTitle}</h2>
-              <p>{C.sendLede}</p>
+              <p>{cart.pay === undefined ? C.sendLede : C.payLede}</p>
               {blocked ? (
                 <p className="bc-form__status" role="alert">
                   {C.fix}
                 </p>
               ) : (
-                <OrderRequestForm listingIds={ready.map((l) => l.id)} code={cart.code?.applied === true ? cart.code.value : null} w={C} honeypot={site.card.words.form.honeypot} />
+                <OrderRequestForm listingIds={ready.map((l) => l.id)} code={cart.code?.applied === true ? cart.code.value : null} w={C} honeypot={site.card.words.form.honeypot} pay={cart.pay ?? null} />
               )}
             </section>
           </div>

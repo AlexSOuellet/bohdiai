@@ -35,6 +35,8 @@ const fakeDb = () => ({
 vi.mock('@/lib/backend/current-site', () => ({ requireActingSite: async () => ({ user: { id: 'u1' }, site: { tenantId: 't1' } }) }));
 vi.mock('@/lib/backend/site-features', () => ({ getSiteFeatures: async () => state.features }));
 vi.mock('@/lib/supabase-server', () => ({ createSupabaseServerClient: async () => fakeDb() }));
+// No PayPal sale here (refundAtPayPal finds no PayPal charge); PayPal refunds are tested in paypal-actions.test.ts.
+vi.mock('@/lib/supabase', () => ({ supabaseAdmin: () => ({ from: () => chain(() => ({ data: null, error: null }), []) }) }));
 vi.mock('next/cache', () => ({ revalidatePath }));
 vi.mock('@/lib/logger', () => ({ logger }));
 

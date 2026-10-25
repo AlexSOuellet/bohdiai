@@ -89,14 +89,19 @@ export function orderRequestEmail(args: {
   lines: readonly OrderLine[];
   subtotalCents: number;
   discount?: { label: string; cents: number } | null;
+  /** Paid online, and how (PayPal): the email says it's paid instead of asking her to arrange payment. */
+  paidWith?: string | null;
 }): { subject: string; text: string; html: string } {
   const { shopName, orderNumber, input, lines, subtotalCents } = args;
+  const paidWith = args.paidWith ?? null;
   const off = args.discount ?? null;
   const totalCents = subtotalCents - (off?.cents ?? 0);
-  const subject = `New order request #${orderNumber} from ${input.name} via ${shopName}`;
+  const subject = paidWith === null ? `New order request #${orderNumber} from ${input.name} via ${shopName}` : `New paid order #${orderNumber} from ${input.name} via ${shopName}`;
+  const heading = paidWith === null ? `Order request #${orderNumber}` : `Paid order #${orderNumber}`;
+  const closing = paidWith === null ? 'Nothing has been charged. Reply to this email to arrange payment and how they get it.' : `Paid in full with ${paidWith}; the money is in your ${paidWith}. Reply to this email to arrange how they get it.`;
   const contact = [input.email, input.phone].filter((s) => s !== '').join(' · ');
   const text = [
-    `Order request #${orderNumber}`,
+    heading,
     '',
     ...lines.map((l) => `- ${l.name}: ${formatPrice(l.priceCents)}`),
     ...(off === null ? [] : [`Discount (${off.label}): -${formatPrice(off.cents)}`]),
@@ -105,17 +110,17 @@ export function orderRequestEmail(args: {
     `From: ${input.name} (${contact})`,
     ...(input.note === '' ? [] : ['', 'Their note:', input.note]),
     '',
-    'Nothing has been charged. Reply to this email to arrange payment and how they get it.',
+    closing,
   ].join('\n');
   const html = `
-    <p><strong>Order request #${escapeHtml(orderNumber)}</strong></p>
+    <p><strong>${escapeHtml(heading)}</strong></p>
     <ul>${lines.map((l) => `<li>${escapeHtml(l.name)}: ${escapeHtml(formatPrice(l.priceCents))}</li>`).join('')}</ul>
     ${off === null ? '' : `<p>Discount (${escapeHtml(off.label)}): -${escapeHtml(formatPrice(off.cents))}</p>`}
     <p><strong>Total:</strong> ${escapeHtml(formatPrice(totalCents))}</p>
     <p><strong>From:</strong> ${escapeHtml(input.name)} (${escapeHtml(contact)})</p>
     ${input.note === '' ? '' : `<p><strong>Their note:</strong><br />${escapeHtml(input.note).replace(/\n/g, '<br />')}</p>`}
     <hr />
-    <p>Nothing has been charged. Reply to this email to arrange payment and how they get it.</p>
+    <p>${escapeHtml(closing)}</p>
   `;
   return { subject, text, html };
 }

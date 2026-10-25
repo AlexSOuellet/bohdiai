@@ -13,6 +13,7 @@ import { cartLine, type LoadedPiece } from './order-request';
 import { cartEntry, splitEntry } from './cart';
 import { bestDiscount, checkCode, runningSale, salePriceCents, type Promotion } from './promotions';
 import { loadShopPromotions } from './promotions-load';
+import { onlinePay } from '@/lib/paypal/online-pay';
 
 export function toCartView(
   loaded: readonly LoadedPiece[],
@@ -72,7 +73,7 @@ export async function loadCartView(
   code: string | null = null,
 ): Promise<CartView> {
   const pieceIds = [...new Set(entries.map((e) => splitEntry(e).listingId))];
-  const [loaded, promo] = await Promise.all([loadProductsByIds(db, tenantId, pieceIds), loadShopPromotions(db, tenantId)]);
+  const [loaded, promo, pay] = await Promise.all([loadProductsByIds(db, tenantId, pieceIds), loadShopPromotions(db, tenantId), onlinePay(db, tenantId)]);
   const codesOn = promo.promos.some((p) => p.kind === 'code');
-  return toCartView(loaded, { ...promo, codesOn, code }, entries);
+  return { ...toCartView(loaded, { ...promo, codesOn, code }, entries), ...(pay === null ? {} : { pay }) };
 }

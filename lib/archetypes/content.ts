@@ -121,6 +121,15 @@ export interface CartView {
   codes: boolean;
   /** The code the shopper entered: whether it's the one taking money off, or why not. */
   code?: { value: string; applied: boolean; message?: string | undefined } | undefined;
+  /** The shop takes payment online through its own PayPal: what the PayPal button needs (nothing secret). */
+  pay?: OnlinePay | undefined;
+}
+
+/** What the cart's PayPal button needs: BohdiAI's public PayPal app ID, the shop's PayPal account, the shop's currency. */
+export interface OnlinePay {
+  clientId: string;
+  merchantId: string;
+  currency: string;
 }
 
 /** A market's own shop page (Market POS piece 2): the pieces she brought, and

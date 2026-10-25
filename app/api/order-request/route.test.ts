@@ -11,8 +11,11 @@ let tenantRow: { business_name: string; contact_email: string | null } | null;
 let features: Set<string>;
 let loaded: unknown[];
 
+vi.mock('server-only', () => ({}));
 vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() } }));
 vi.mock('@/lib/resend', () => ({ resend: () => ({ emails: { send } }), fromEmail: () => 'BohdiAI <site@example.com>' }));
+let shopPay: unknown = null;
+vi.mock('@/lib/paypal/online-pay', () => ({ onlinePay: async () => shopPay }));
 vi.mock('@/lib/forms/rate-limit', () => ({ formLimitResponse: async () => null }));
 vi.mock('@/lib/backend/features', () => ({ loadSiteFeatures: async () => features }));
 let promos: unknown[] = [];
@@ -23,7 +26,7 @@ vi.mock('@/lib/storefront/catalog', async (orig) => ({
 }));
 vi.mock('@/lib/supabase', () => ({
   supabaseAdmin: () => ({
-    from: () => ({ select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: async () => ({ data: tenantRow, error: null }) }) }) }) }),
+    from: () => ({ select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: async () => ({ data: tenantRow, error: null }), single: async () => ({ data: { id: 'o1', total_cents: 0 }, error: null }) }) }) }) }),
     rpc: (...a: unknown[]) => rpc(...a),
   }),
 }));
@@ -52,6 +55,7 @@ describe('POST /api/order-request', () => {
     features = new Set(['cart']);
     loaded = [theo];
     promos = [];
+    shopPay = null;
   });
 
   it('orders the chosen option of a piece, at its price, named in the email', async () => {
@@ -165,5 +169,12 @@ describe('POST /api/order-request with promotions', () => {
     await POST(request(good));
     expect(rpc).toHaveBeenCalledWith('place_order_request', expect.objectContaining({ p_discount_cents: 3000, p_discount_label: 'Fall Sale' }));
     expect(rpc.mock.calls[0]?.[1]).not.toHaveProperty('p_promotion_id');
+  });
+
+  it('turns away an unpaid order when the shop takes payment at checkout', async () => {
+    shopPay = { clientId: 'c', merchantId: 'm', currency: 'USD' };
+    const res = await POST(request(good));
+    expect(res.status).toBe(409);
+    expect(rpc).not.toHaveBeenCalled();
   });
 });

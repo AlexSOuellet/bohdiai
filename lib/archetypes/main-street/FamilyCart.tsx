@@ -104,14 +104,14 @@ export function FamilyCart({ cart, words }: { cart: CartView; words: FamilyWords
               {C.sendTitle}
             </Type>
             <Type as="p" role="body" className="ms-cart-send-lede">
-              {C.sendLede}
+              {cart.pay === undefined ? C.sendLede : C.payLede}
             </Type>
             {blocked ? (
               <p className="bc-form__status" role="alert">
                 {C.fix}
               </p>
             ) : (
-              <OrderRequestForm listingIds={ready.map((l) => l.id)} code={cart.code?.applied === true ? cart.code.value : null} w={C} honeypot={C.honeypot} />
+              <OrderRequestForm listingIds={ready.map((l) => l.id)} code={cart.code?.applied === true ? cart.code.value : null} w={C} honeypot={C.honeypot} pay={cart.pay ?? null} />
             )}
           </div>
         </div>
