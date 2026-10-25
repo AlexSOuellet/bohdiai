@@ -8,6 +8,9 @@ import { squareConfig } from '@/lib/square/config';
 import { squareLink } from '@/lib/square/connection';
 import { PayManager } from './PayManager';
 import { SquarePanel } from './SquarePanel';
+import { PayPalPanel } from './PayPalPanel';
+import { paypalConfig } from '@/lib/paypal/config';
+import { paypalLink } from '@/lib/paypal/connection';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,11 +23,31 @@ const SQUARE_OUTCOME: Record<string, { tone: 'ok' | 'error'; text: string }> = {
   'not-set-up': { tone: 'error', text: 'Card payments aren’t set up on BohdiAI yet.' },
 };
 
+/** What happened on the way back from PayPal's page, in words. */
+const PAYPAL_OUTCOME: Record<string, { tone: 'ok' | 'error'; text: string }> = {
+  connected: { tone: 'ok', text: 'Your PayPal is connected. Your checkout takes PayPal and cards now.' },
+  'not-ready': { tone: 'error', text: 'Your PayPal is connected, but PayPal says it can’t take payments yet. See below.' },
+  declined: { tone: 'error', text: 'PayPal wasn’t connected: BohdiAI wasn’t given permission to take payments on PayPal’s page.' },
+  unfinished: { tone: 'error', text: 'PayPal’s sign-up wasn’t finished. Press Connect PayPal to pick up where you left off.' },
+  expired: { tone: 'error', text: 'That Connect took too long or was started somewhere else. Press Connect PayPal again.' },
+  failed: { tone: 'error', text: 'PayPal didn’t finish connecting. Press Connect PayPal to try again.' },
+  'not-set-up': { tone: 'error', text: 'PayPal isn’t set up on BohdiAI yet.' },
+};
+
 export default async function PaymentsPage({ searchParams }: PageProps<'/manage/payments'>): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
-  if (!(await getSiteFeatures(site.tenantId)).has('market_shop')) notFound();
-  const [pay, link] = await Promise.all([loadPaySettings(await createSupabaseServerClient(), site.tenantId), squareLink(supabaseAdmin(), site.tenantId)]);
-  const outcome = (await searchParams)['square'];
+  const on = await getSiteFeatures(site.tenantId);
+  if (!on.has('market_shop')) notFound();
+  const online = on.has('cart');
+  const [pay, link, paypal] = await Promise.all([
+    loadPaySettings(await createSupabaseServerClient(), site.tenantId),
+    squareLink(supabaseAdmin(), site.tenantId),
+    online ? paypalLink(supabaseAdmin(), site.tenantId) : Promise.resolve(null),
+  ]);
+  const params = await searchParams;
+  const outcome = params['square'];
+  const paypalOutcome = params['paypal'];
+  const paypalSettings = paypalConfig();
   return (
     <PayManager initial={pay}>
       <SquarePanel
@@ -32,6 +55,14 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/manage/
         ready={squareConfig() !== null}
         outcome={typeof outcome === 'string' ? (SQUARE_OUTCOME[outcome] ?? null) : null}
       />
+      {online && (
+        <PayPalPanel
+          link={paypal}
+          ready={paypalSettings !== null}
+          testing={paypalSettings?.sandbox === true}
+          outcome={typeof paypalOutcome === 'string' ? (PAYPAL_OUTCOME[paypalOutcome] ?? null) : null}
+        />
+      )}
     </PayManager>
   );
 }
