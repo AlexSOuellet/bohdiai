@@ -175,7 +175,7 @@ Everything Market has, plus:
 - The step-down screen says so plainly before she confirms (how many of her customers will no longer be able to sign in), in the site's own words.
 
 ### Built (Session 114)
-Getting paid's Square, Stripe and PayPal sections; PayPal connect, checkout and refunds in test mode only (nothing live; Alex: admin first, payments later; checkout shows no way to pay until one is set up); Try on a look (`try_on`, Full); the opening photo on Headline and the Background screen (every plan); a site's own background (`site_backgrounds`). Still to do: buyer accounts, the step-down count, PayPal for Market, downloads delivered.
+Getting paid's Square, Stripe and PayPal sections; PayPal connect, checkout and refunds in test mode only (nothing live; Alex: admin first, payments later; checkout shows no way to pay until one is set up); Try on a look (`try_on`, Full); the opening photo on Headline and the Background screen (every plan); a site's own background (`site_backgrounds`). Still to do: PayPal for Market, downloads delivered. Buyer accounts and the step-down count built in Session 115 (`feat/buyer-accounts`).
 
 ### Market, also (Alex, 2026-10-25)
 - **PayPal at the table** beside Square: the maker's own PayPal account; the simplest way is a PayPal QR code the buyer scans, recorded only when PayPal confirms. (PayPal's card reader is another option.) Venmo comes through PayPal in the US only.

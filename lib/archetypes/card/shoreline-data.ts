@@ -18,6 +18,7 @@ import { loadCardData, type CardData } from './data';
 import { loadSiteGallery } from '@/lib/storefront/site-gallery';
 import type { GalleryItem } from '@/lib/backend/gallery/gallery-form';
 import type { ShorelineLook } from './look';
+import { accountNavLabel } from '@/lib/buyers/nav';
 
 export type ShorelineData = {
   card: CardData;
@@ -31,6 +32,8 @@ export type ShorelineData = {
   allPhotos: boolean;
   /** The cart and order letter (Full). */
   cart: boolean;
+  /** The menu's Account link when buyers can sign in (Full, her switch on); null otherwise. */
+  account: string | null;
   /** What her customers say (Full); empty when the switch is off. */
   testimonials: Testimonial[];
   /** The site-wide sale running today (Full promotions), worded for the banner. */
@@ -64,6 +67,7 @@ export async function loadShorelineData(
     marketDetails: features.has('market_details'),
     allPhotos: features.has('product_photos'),
     cart: features.has('cart'),
+    account: await accountNavLabel(db, tenantId, features),
     sale: running === null ? null : { name: running.name, off: offLabel(running) },
     newArrivals: features.has('new_arrivals'),
     // Collections are Full only (Alex, 2026-10-20): none on Market, so no row and no pages.

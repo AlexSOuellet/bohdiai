@@ -43,7 +43,8 @@ const baby = (name: string, extra: Partial<ProductView> = {}): ProductView => ({
   ...extra,
 });
 
-const data: BoutiqueData = { name: 'Rose n’ Cat', profile: EMPTY_PROFILE, dates: [], gone: [], cart: false, marketPages: false, newArrivals: false, sale: null, words: S };
+const data: BoutiqueData = { name: 'Rose n’ Cat', profile: EMPTY_PROFILE, dates: [], gone: [], cart: false,
+  account: null, marketPages: false, newArrivals: false, sale: null, words: S };
 const market = (over: Partial<MarketShopView> = {}): MarketShopView => ({
   marketId: '00000000-0000-4000-8000-0000000000e1',
   name: 'Holly Fair',

@@ -36,6 +36,7 @@ function product(slug: string, over: Pick<Partial<ProductView>, 'status' | 'oneO
 
 const site: ShorelineData = {
   gallery: [],
+  account: null,
   card: {
     name: 'Saltmarsh & Lace',
     profile: { ...EMPTY_PROFILE, kicker: 'Decoupage from Bristol', headline: 'Sealed to last', aboutTitle: 'From the paint counter', bio: 'I run the paint counter.\n\nEvery sealer gets tested.', signature: 'Lena', facebookUrl: 'https://www.facebook.com/bohdiai', makes: ['Art bottles'] },

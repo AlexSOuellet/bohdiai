@@ -130,6 +130,8 @@ export const MainStreetContentSchema = z.object({
      *  sells: otherwise no cart in the nav, one photo per product, and "Ask about
      *  this" (to the contact page) in place of the buy button. */
     sellsOnline: z.boolean().optional(),
+    /** The menu's Account link (buyer accounts, Full, her switch on): its words, or absent. */
+    accountLabel: z.string().optional(),
     /** Whether the site has a shop at all (Market and Full: the catalog switch).
      *  False on Showcase: no shop, collections or product pages, no prices, and
      *  the pieces and collections sections don't show. Absent has a shop. */

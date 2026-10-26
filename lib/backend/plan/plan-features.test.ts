@@ -82,6 +82,7 @@ describe('moving between plans', () => {
       'Sales and discount codes',
       'New arrivals on your home page',
       'Trying on other looks (the look you chose stays)',
+      'Buyer accounts: your buyers can’t sign in (their accounts and orders are kept)',
     ]);
     expect(hiddenByMove('full', 'lite')).toEqual([
       'Collections and their pages (your collections are kept)',
@@ -92,8 +93,14 @@ describe('moving between plans', () => {
       'Sales and discount codes',
       'New arrivals on your home page',
       'Trying on other looks (the look you chose stays)',
+      'Buyer accounts: your buyers can’t sign in (their accounts and orders are kept)',
     ]);
     expect(hiddenByMove('showcase', 'full')).toEqual([]);
+  });
+
+  it('says how many buyers lose sign-in when she steps down from Full (Alex, 2026-10-25)', () => {
+    expect(hiddenByMove('full', 'lite', 1).at(-1)).toBe('Buyer accounts: 1 buyer with an account at your shop won’t be able to sign in (their accounts and orders are kept, and sign-in comes back when you return to Full)');
+    expect(hiddenByMove('full', 'lite', 12).at(-1)).toMatch(/^Buyer accounts: 12 buyers with an account/);
   });
 });
 

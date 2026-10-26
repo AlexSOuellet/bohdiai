@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 import { formLimitResponse } from '@/lib/forms/rate-limit';
 import { orderRequestSchema } from '@/lib/storefront/order-request';
 import { placeCartOrder } from '@/lib/storefront/place-order';
+import { signedInBuyerProfile } from '@/lib/buyers/session';
 import { paypalConfig } from '@/lib/paypal/config';
 import { createPayPalOrder, partnerToken } from '@/lib/paypal/api';
 import { paidInto } from '@/lib/paypal/connection';
@@ -53,7 +54,7 @@ async function handle(req: Request) {
   const merchantId = config === null ? null : await paidInto(db, tenantId);
   if (config === null || merchantId === null) return NextResponse.json({ error: NOT_TAKING }, { status: 409 });
 
-  const placed = await placeCartOrder(db, tenantId, parsed.data, { verb: 'pay for' });
+  const placed = await placeCartOrder(db, tenantId, parsed.data, { verb: 'pay for' }, await signedInBuyerProfile(tenantId));
   if (!placed.ok) {
     return NextResponse.json({ error: placed.refusal.error, ...(placed.refusal.unavailable === undefined ? {} : { unavailable: placed.refusal.unavailable }) }, { status: placed.refusal.status });
   }

@@ -33,7 +33,7 @@ export type PlacedOrder = {
 /** Why an order couldn't be placed, with the status to answer and any pieces to take out. */
 export type PlaceRefusal = { status: number; error: string; unavailable?: string[] };
 
-export async function placeCartOrder(db: Db, tenantId: string, input: OrderRequestInput, sendWords: { verb: string }): Promise<{ ok: true; order: PlacedOrder } | { ok: false; refusal: PlaceRefusal }> {
+export async function placeCartOrder(db: Db, tenantId: string, input: OrderRequestInput, sendWords: { verb: string }, buyerProfileId: string | null = null): Promise<{ ok: true; order: PlacedOrder } | { ok: false; refusal: PlaceRefusal }> {
   const { data: tenant, error: lookupError } = await db.from('tenants').select('business_name, contact_email, currency').eq('id', tenantId).eq('status', 'active').maybeSingle();
   if (lookupError !== null) throw new Error(`tenant lookup failed: ${lookupError.message}`);
   if (tenant === null) return { ok: false, refusal: { status: 404, error: 'Shop not found.' } };
@@ -88,6 +88,11 @@ export async function placeCartOrder(db: Db, tenantId: string, input: OrderReque
 
   const { data: row, error: rowError } = await db.from('orders').select('id, total_cents').eq('tenant_id', tenantId).eq('order_number', orderNumber).single();
   if (rowError !== null) throw new Error(`placed order lookup failed: ${rowError.message}`);
+  // A signed-in buyer (buyer accounts, Full) finds the order in My account.
+  if (buyerProfileId !== null) {
+    const { error: linkError } = await db.from('orders').update({ customer_profile_id: buyerProfileId }).eq('id', row.id).eq('tenant_id', tenantId);
+    if (linkError !== null) throw new Error(`linking the order to the buyer failed: ${linkError.message}`);
+  }
 
   return {
     ok: true,

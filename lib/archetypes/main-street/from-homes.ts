@@ -27,12 +27,15 @@ import { findUsLocale } from './findus';
 import type { FamilyWords } from './words';
 import type { MainStreetView } from './schemas';
 import { loadSiteGallery, type GalleryPiece } from '@/lib/storefront/site-gallery';
+import { accountNavLabel } from '@/lib/buyers/nav';
 
 /** Everything a family page reads, gathered from the homes. */
 export type FamilyHomes = {
   name: string;
   /** Maker Full: the site sells online (the cart is on). */
   sellsOnline: boolean;
+  /** The menu's Account link when buyers can sign in (Full, her switch on); null otherwise. */
+  accountLabel?: string | null | undefined;
   /** Market and Full: each market has its own page on the site (Alex, 2026-10-22). */
   marketPages?: boolean | undefined;
   /** The pages a button may point at on this site's plan (Showcase has no shop). */
@@ -102,7 +105,7 @@ export function familyViewFromHomes(h: FamilyHomes, w: FamilyWords): MainStreetV
   const story = paragraphs(p.bio);
   return {
     shopName: h.name,
-    identity: { wordmark: h.name, sellsOnline: h.sellsOnline },
+    identity: { wordmark: h.name, sellsOnline: h.sellsOnline, ...(h.accountLabel == null ? {} : { accountLabel: h.accountLabel }) },
     moment: {
       media: m.media === null
         ? { kind: 'still', alt: '' }
@@ -179,6 +182,7 @@ export async function loadFamilyHomes(db: SupabaseClient<Database>, tenantId: st
   return {
     name: tenant.data.business_name,
     sellsOnline: features.has('cart'),
+    accountLabel: await accountNavLabel(db, tenantId, features),
     marketPages: features.has('market_shop'),
     linkTargets: linkTargetsFor(features.has('catalog'), features.has('collections')),
     moment,

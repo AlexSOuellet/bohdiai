@@ -4,7 +4,7 @@
  * pieces from the catalog and the dates from Market dates, all edited in the
  * backend. Never on Bohdi's onboarding menu; built by scripts/build-boutique-site.ts.
  */
-import type { ReactElement } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import type { ArchetypeBuildSpec } from '../builder';
 import type { CartView, MarketInfoView, MarketShopView, ProductView } from '../content';
@@ -12,7 +12,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { BoutiqueContentSchema, type BoutiqueContent } from './design';
 import { loadBoutiqueData } from './data';
 import { withSale } from '@/lib/storefront/promotions';
-import { NurseryHome, NurseryShop, NurseryCertificate, NurseryContentPage, NurseryCart, NurseryMarket, NurseryMarketInfo } from './NurseryLanding';
+import { NurseryHome, NurseryShop, NurseryCertificate, NurseryContentPage, NurseryCart, NurseryMarket, NurseryMarketInfo, NurseryShell } from './NurseryLanding';
 
 export const BOUTIQUE_LOOK = 'boutique';
 
@@ -84,6 +84,11 @@ async function Cart({
   return <NurseryCart data={data} cart={cart} logoUrl={logoUrl} />;
 }
 
+async function Shell({ tenantId, logoUrl, children }: { tenantId: string; logoUrl?: string | undefined; children: ReactNode }): Promise<ReactElement> {
+  const data = await loadBoutiqueData(supabaseAdmin(), tenantId);
+  return <NurseryShell data={data} logoUrl={logoUrl}>{children}</NurseryShell>;
+}
+
 async function Market({ tenantId, market, logoUrl }: { tenantId: string; market: MarketShopView; logoUrl?: string | undefined }): Promise<ReactElement> {
   const data = await loadBoutiqueData(supabaseAdmin(), tenantId);
   return <NurseryMarket data={data} market={market} logoUrl={logoUrl} />;
@@ -146,6 +151,11 @@ export const BOUTIQUE_SPEC: ArchetypeBuildSpec<BoutiqueContent> = {
   renderMarketInfo: ({ content, market, logoUrl, tenantId }) => {
     parse(content);
     return <MarketInfo tenantId={tenantId} market={market} logoUrl={logoUrl} />;
+  },
+  renderShell: ({ content, children, logoUrl, tenantId }) => {
+    parse(content);
+    if (tenantId === undefined) notFound();
+    return <Shell tenantId={tenantId} logoUrl={logoUrl}>{children}</Shell>;
   },
   renderCart: ({ content, cart, logoUrl, tenantId }) => {
     parse(content);

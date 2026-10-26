@@ -6,7 +6,7 @@
  * from her data, and every other word is the site's own (`site.card.words`).
  */
 import { ShorelineOptions } from './ShorelineOptions';
-import type { ReactElement } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
 import type { ProductView } from '@/lib/archetypes/content';
 import { fill } from '@/lib/site-words/words';
@@ -53,7 +53,7 @@ function SaleBanner({ sale, W }: { sale: ShorelineData['sale']; W: SW }): ReactE
   return <p className="sl-sale">{fill(W.saleBanner, { name: sale.name, off: sale.off })}</p>;
 }
 
-function Bar({ name, current, cart = false, W }: { name: string; current: ShorelinePage | 'cart' | null; cart?: boolean; W: SW }): ReactElement {
+function Bar({ name, current, cart = false, account = null, W }: { name: string; current: ShorelinePage | 'cart' | 'account' | null; cart?: boolean; account?: string | null; W: SW }): ReactElement {
   return (
     <header className="sl-bar">
       <Link className="sl-bar-name" href="/">
@@ -68,6 +68,13 @@ function Bar({ name, current, cart = false, W }: { name: string; current: Shorel
               </a>
             </li>
           ))}
+          {account !== null && (
+            <li>
+              <a href="/account" aria-current={current === 'account' ? 'page' : undefined}>
+                {account}
+              </a>
+            </li>
+          )}
           {cart && (
             <li>
               <ShorelineCartLink w={W.cart} />
@@ -477,7 +484,7 @@ export function ShorelineSite({
   const W = site.card.words.shoreline;
   return (
     <Frame look={site.card.look}>
-      <Bar name={site.card.name} current={page} cart={site.cart} W={W} />
+      <Bar name={site.card.name} current={page} cart={site.cart} account={site.account} W={W} />
       <SaleBanner sale={site.sale} W={W} />
       {page === 'home' && <Home site={site} />}
       {page === 'shop' && <Shop site={site} />}
@@ -513,7 +520,7 @@ export function ShorelineProduct({
   const W = site.card.words.shoreline;
   return (
     <Frame look={site.card.look}>
-      <Bar name={site.card.name} current="shop" cart={site.cart} W={W} />
+      <Bar name={site.card.name} current="shop" cart={site.cart} account={site.account} W={W} />
       <SaleBanner sale={site.sale} W={W} />
       <div className="sl-head">
         <a className="sl-back" href="/shop">
@@ -593,7 +600,7 @@ export function ShorelineCart({ site, cart, platformCredit = true }: { site: Sho
   const blocked = ready.length !== cart.lines.length;
   return (
     <Frame look={site.card.look}>
-      <Bar name={site.card.name} current="cart" cart W={W} />
+      <Bar name={site.card.name} current="cart" cart account={site.account} W={W} />
       <SaleBanner sale={site.sale} W={W} />
       <SyncCart ids={cart.lines.map((l) => l.id)} />
       <PageHead title={C.title} />
@@ -689,7 +696,7 @@ export function ShorelineMarketInfo({ site, market, platformCredit = true }: { s
   const over = market.state === 'after' || market.state === 'canceled';
   return (
     <Frame look={site.card.look}>
-      <Bar name={site.card.name} current="events" cart={site.cart} W={W} />
+      <Bar name={site.card.name} current="events" cart={site.cart} account={site.account} W={W} />
       <SaleBanner sale={site.sale} W={W} />
       <PageHead title={W.pageTitles.markets} />
       <main id="main" className="sl-mi">
@@ -818,6 +825,22 @@ export function ShorelineMarket({
           </div>
         )}
       </main>
+    </Frame>
+  );
+}
+
+/** A plain page of the shoreline site (the buyer's account pages): the menu, the
+ *  sale banner, the page itself and the footer. */
+export function ShorelineShell({ site, children, platformCredit = true }: { site: ShorelineData; children: ReactNode; platformCredit?: boolean }): ReactElement {
+  const W = site.card.words.shoreline;
+  return (
+    <Frame look={site.card.look}>
+      <Bar name={site.card.name} current="account" cart={site.cart} account={site.account} W={W} />
+      <SaleBanner sale={site.sale} W={W} />
+      <main id="main" className="sl-account">
+        {children}
+      </main>
+      <Footer name={site.card.name} platformCredit={platformCredit} social={site.card.profile} w={site.card.words} />
     </Frame>
   );
 }

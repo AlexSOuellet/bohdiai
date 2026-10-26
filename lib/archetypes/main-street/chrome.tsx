@@ -1366,6 +1366,11 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
     .arch-main-street .ms-simple-head{color:var(--ms-fg);margin:0 0 16px}
     .arch-main-street .ms-simple-body{color:var(--ms-fg-muted);margin:0 0 32px}
     .arch-main-street .ms-simple-cta{background:var(--ms-accent);color:var(--ms-on-accent);padding:15px 28px;border-radius:2px;display:inline-block}
+    /* The buyer's account pages (Full): the shared ba- layout in the family's colours and type. */
+    .arch-main-street .ba-page{--ba-fg:var(--ms-fg);--ba-muted:var(--ms-fg-muted);--ba-accent:var(--ms-accent);--ba-on-accent:var(--ms-on-accent);--ba-rule:var(--ms-rule);--ba-paper:color-mix(in srgb, var(--ms-fg-muted) 5%, var(--ms-bg));--ba-display:var(--ms-disp);--ba-radius:3px;padding-top:72px}
+    .arch-main-street .ba-card,.arch-main-street .ba-account{border:1px solid var(--ms-rule)}
+    .arch-main-street .ba-page a.ba-btn{color:var(--ms-on-accent)}
+    .arch-main-street .ba-page a.ba-link{color:var(--ms-fg);text-decoration:underline}
     /* The cart (Full) — FamilyCart. Her pieces on the left, the order form on the right. */
     .arch-main-street .ms-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
     .arch-main-street .ms-cart{padding-top:88px;padding-bottom:var(--ms-section)}
@@ -1665,7 +1670,9 @@ export function Nav({
         ? resolveNav(words).filter((n) => n.href !== '/collections')
         : resolveNav(words);
   // Only a shop that sells online (Full) has a cart to link to.
-  const allItems: MobileNavItem[] = identity.sellsOnline === true ? [...items, { href: '/cart', label: <CartCount label={words.cart.navCount} labelEmpty={words.navCart} /> }] : [...items];
+  // A shop whose buyers can sign in (Full, her switch on) links to their account.
+  const withAccount: MobileNavItem[] = identity.accountLabel === undefined ? [...items] : [...items, { href: '/account', label: identity.accountLabel }];
+  const allItems: MobileNavItem[] = identity.sellsOnline === true ? [...withAccount, { href: '/cart', label: <CartCount label={words.cart.navCount} labelEmpty={words.navCart} /> }] : withAccount;
   const variant = identity.navVariant ?? 'standard';
 
   if (variant === 'split-center') {

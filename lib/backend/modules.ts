@@ -32,6 +32,8 @@ export const BACKEND_MODULES: BackendModule[] = [
   // Full's online selling: orders sent from the cart, and promotions.
   { feature: 'cart', section: 'Online shop', items: [{ label: 'Orders', href: '/manage/orders' }] },
   { feature: 'promotions', section: 'Online shop', items: [{ label: 'Promotions', href: '/manage/promotions' }] },
+  // Buyer accounts (Full): her switch and her buyers.
+  { feature: 'buyer_accounts', section: 'Online shop', items: [{ label: 'Buyers', href: '/manage/buyers' }] },
   { feature: 'headline', section: 'Your site', items: [{ label: 'Headline', href: '/manage/headline' }] },
   { feature: 'background', section: 'Your site', items: [{ label: 'Background', href: '/manage/background' }] },
   {

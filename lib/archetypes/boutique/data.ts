@@ -17,6 +17,7 @@ import { loadShopPromotions } from '@/lib/storefront/promotions-load';
 import { runningSale } from '@/lib/storefront/promotions';
 import { getSiteWords } from '@/lib/site-words/queries';
 import { fill } from '@/lib/site-words/words';
+import { accountNavLabel } from '@/lib/buyers/nav';
 import { NURSERY_WORD_SPOTS, NURSERY_WORDS_PREFIX, type NurseryWords } from './words';
 
 /** `gone` is the gallery: the owner's past pieces, shown when Gallery is switched on. */
@@ -27,6 +28,8 @@ export type BoutiqueData = {
   gone: GalleryItem[];
   /** The cart is switched on: pieces can be added and the order sent. */
   cart: boolean;
+  /** The menu's Account link when buyers can sign in (Full, her switch on); null otherwise. */
+  account: string | null;
   /** Market and Full: each market has its own page on the site (Alex, 2026-10-22). */
   marketPages: boolean;
   /** New arrivals are switched on: babies ticked new get the Just born section and a ribbon. */
@@ -61,6 +64,7 @@ export async function loadBoutiqueData(
     dates,
     gone: gone.slice(0, GALLERY_LIMIT),
     cart: features.has('cart'),
+    account: await accountNavLabel(db, tenantId, features),
     marketPages: features.has('market_shop'),
     newArrivals: features.has('new_arrivals'),
     sale: sale === null || sale.percentOff === null ? null : { name: sale.name, percentOff: sale.percentOff, endsOn: sale.endsOn },

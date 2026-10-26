@@ -3,7 +3,7 @@
  * own product catalog (separate rows), its seven skins, and its render. Bohdi
  * picks the skin and authors everything; this file only describes the shape.
  */
-import { CardCart, CardMarket, CardMarketInfo, CardPage, CardProduct, CardSite } from '../card/builder';
+import { CardCart, CardMarket, CardMarketInfo, CardPage, CardProduct, CardShell, CardSite } from '../card/builder';
 import { shorelineLook, type ShorelineLook } from '../card/look';
 import { cardPaint } from '../card/paint';
 import { z } from 'zod';
@@ -528,6 +528,9 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   },
   renderShell: ({ content, lookKey, children, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
+    if (isScenic(mood, brandPalette) && tenantId !== undefined) {
+      return <ScenicLook tenantId={tenantId} skin={skin}>{(look) => <CardShell tenantId={tenantId} design="shoreline" look={look}>{children}</CardShell>}</ScenicLook>;
+    }
     const familyBase = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
     return withFamilyContent(content, tenantId, (view, words, _sale, scene) => {

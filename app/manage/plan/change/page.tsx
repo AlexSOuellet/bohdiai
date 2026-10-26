@@ -8,6 +8,7 @@ import { hiddenByMove, moveOf } from '@/lib/backend/plan/plan-features';
 import { daysLeft, quoteUpgrade } from '@/lib/backend/plan/billing';
 import { showcaseCandidates } from '@/lib/backend/plan/convert';
 import { supabaseAdmin } from '@/lib/supabase';
+import { countBuyers } from '@/lib/buyers/accounts';
 import { PlanChange } from './PlanChange';
 
 export const dynamic = 'force-dynamic';
@@ -56,7 +57,7 @@ export default async function PlanChangePage({
             kind="down"
             from={planOf(state.plan)}
             to={planOf(to)}
-            hidden={hiddenByMove(state.plan, to)}
+            hidden={hiddenByMove(state.plan, to, move === 'down' && on.has('buyer_accounts') ? await countBuyers(supabaseAdmin(), site.tenantId) : 0)}
             renewsOn={state.renewsOn}
             fromBilling={state.billing}
             daysLeft={daysLeft(today, state.renewsOn, state.billing)}

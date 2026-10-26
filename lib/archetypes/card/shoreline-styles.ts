@@ -117,6 +117,20 @@ ${prints}
 .sl-tide tr:last-child td{border-bottom:0}
 .sl-tide .sl-gone td{text-decoration:line-through;opacity:.6}
 
+/* ── the buyer's account pages (Full): the shared ba- layout on the shoreline's paper ── */
+.sl-account .ba-page{--ba-fg:var(--ink);--ba-muted:var(--ink-soft);--ba-accent:var(--navy);--ba-on-accent:#f3efe6;--ba-rule:rgba(76,90,95,.3);--ba-paper:var(--grain),linear-gradient(180deg,#fdf8ec,#f1e6cc);--ba-display:var(--display)}
+.sl-account .ba-card,.sl-account .ba-account{box-shadow:0 26px 44px -16px rgba(10,24,32,.55)}
+.sl-account .ba-title{color:var(--navy)}
+.sl-account .ba-field label{font-size:13px;letter-spacing:.18em;text-transform:uppercase}
+.sl-account .ba-field input{border:0;border-bottom:1.5px solid var(--ink);padding:6px 0;font-family:var(--body);font-size:20px}
+.sl-account .ba-field input:focus{outline:none;border-color:var(--rust);box-shadow:0 1.5px 0 var(--rust)}
+.sl-account .ba-btn{font-size:14px;letter-spacing:.18em;text-transform:uppercase;transition:background .3s}
+.sl-account .ba-btn:hover{background:var(--rust)}
+.sl-account .ba-error{color:var(--rust)}
+.sl-account a.ba-btn{color:#f3efe6}
+.sl-account a.ba-link{color:var(--ink)}
+.sl-account .ba-sum-total{font-family:var(--display);font-size:24px;border-top-width:2px}
+
 /* ── the letter ───────────────────────────────────────────── */
 .sl-letter{position:relative;width:min(760px,calc(100% - 32px));margin:clamp(48px,8vw,100px) auto 0;padding:clamp(30px,5vw,56px) clamp(22px,5vw,58px) clamp(34px,5vw,56px);
   background:var(--grain),repeating-linear-gradient(180deg,transparent 0 35px,rgba(93,127,134,.28) 35px 36px),linear-gradient(180deg,#fffaf0,#f4ead3);
