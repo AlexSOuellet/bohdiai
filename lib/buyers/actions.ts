@@ -114,12 +114,16 @@ export async function signInBuyer(input: { email: string; password: string }): P
     const { data, error } = await passwordChecker().auth.signInWithPassword({ email, password: input.password });
     if (error !== null) {
       const wrong = error.status === 400 || error.code === 'invalid_credentials';
+      logger.warn('buyer: sign-in refused', { code: error.code ?? '', status: error.status ?? 0 });
       if (!wrong) logger.error('buyer: sign-in failed', { error: error.message });
       return { ok: false, error: wrong ? errors.wrong : errors.unavailable };
     }
     await endSharedSession(data.session.access_token);
     const buyer = await ensureBuyer(supabaseAdmin(), tenantId, data.user.id, '');
-    if (buyer === null) return { ok: false, error: errors.wrong };
+    if (buyer === null) {
+      logger.warn('buyer: sign-in refused, not an active member of this shop', { tenantId });
+      return { ok: false, error: errors.wrong };
+    }
     await startBuyerPass(buyer.userId, tenantId, secret);
   } catch (err) {
     logger.error('buyer: sign-in failed', { error: err instanceof Error ? err.message : String(err) });

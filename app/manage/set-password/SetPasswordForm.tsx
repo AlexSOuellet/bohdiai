@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { unstable_rethrow } from 'next/navigation';
 import { setPassword } from '@/lib/backend/auth-actions';
+import { PasswordInput } from '../_components/PasswordInput';
 
 export default function SetPasswordForm(): React.ReactElement {
   const [password, setPw] = useState('');
@@ -29,11 +30,11 @@ export default function SetPasswordForm(): React.ReactElement {
     <form onSubmit={onSubmit} noValidate>
       <div className="bk-field">
         <label htmlFor="pw" className="bk-label">New password</label>
-        <input id="pw" type="password" autoComplete="new-password" className="bk-input" value={password} onChange={(e) => setPw(e.target.value)} />
+        <PasswordInput id="pw" autoComplete="new-password" value={password} onChange={(e) => setPw(e.target.value)} />
       </div>
       <div className="bk-field">
         <label htmlFor="pw2" className="bk-label">Type it again</label>
-        <input id="pw2" type="password" autoComplete="new-password" className="bk-input" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+        <PasswordInput id="pw2" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
       </div>
       <p className="bk-note">At least 10 characters.</p>
       {error !== '' && <p role="alert" className="bk-error">{error}</p>}

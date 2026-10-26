@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { unstable_rethrow } from 'next/navigation';
 import { signIn } from '@/lib/backend/auth-actions';
+import { PasswordInput } from '@/app/manage/_components/PasswordInput';
 
 export default function SignInForm(): React.ReactElement {
   const [email, setEmail] = useState('');
@@ -35,7 +36,7 @@ export default function SignInForm(): React.ReactElement {
       </div>
       <div className="bk-field">
         <label htmlFor="password" className="bk-label">Password</label>
-        <input id="password" type="password" autoComplete="current-password" className="bk-input" aria-invalid={error !== ''} aria-describedby={error !== '' ? 'signin-error' : undefined} value={password} onChange={(e) => setPassword(e.target.value)} />
+        <PasswordInput id="password" autoComplete="current-password" aria-invalid={error !== ''} aria-describedby={error !== '' ? 'signin-error' : undefined} value={password} onChange={(e) => setPassword(e.target.value)} />
       </div>
       {error !== '' && <p id="signin-error" role="alert" className="bk-error">{error}</p>}
       <button type="submit" className="bk-btn" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>

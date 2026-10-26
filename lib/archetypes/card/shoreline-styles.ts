@@ -123,6 +123,7 @@ ${prints}
 .sl-account .ba-title{color:var(--navy)}
 .sl-account .ba-field label{font-size:13px;letter-spacing:.18em;text-transform:uppercase}
 .sl-account .ba-field input{border:0;border-bottom:1.5px solid var(--ink);padding:6px 0;font-family:var(--body);font-size:20px}
+.sl-account .ba-pw input{padding-right:4.5rem}
 .sl-account .ba-field input:focus{outline:none;border-color:var(--rust);box-shadow:0 1.5px 0 var(--rust)}
 .sl-account .ba-btn{font-size:14px;letter-spacing:.18em;text-transform:uppercase;transition:background .3s}
 .sl-account .ba-btn:hover{background:var(--rust)}

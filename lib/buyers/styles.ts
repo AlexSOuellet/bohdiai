@@ -19,6 +19,10 @@ export const BUYER_ACCOUNT_CSS = `
 .ba-field label{font-size:.85em;font-weight:600;letter-spacing:.06em;color:var(--ba-muted)}
 .ba-field input{width:100%;font:inherit;color:var(--ba-fg);background:transparent;border:1px solid var(--ba-rule);border-radius:var(--ba-radius,0);padding:12px 14px}
 .ba-field input:focus{outline:2px solid var(--ba-accent);outline-offset:1px}
+.ba-pw{position:relative}
+.ba-pw input{padding-right:4.5rem}
+.ba-pw-toggle{position:absolute;top:0;right:0;bottom:0;padding:0 14px;background:none;border:0;font:inherit;font-size:.85em;font-weight:600;color:var(--ba-muted);cursor:pointer}
+.ba-pw-toggle:hover,.ba-pw-toggle:focus-visible{color:var(--ba-fg)}
 .ba-hint{font-size:.85em;color:var(--ba-muted)}
 .ba-error{margin:0;color:var(--ba-accent);font-weight:600}
 .ba-btn{justify-self:start;display:inline-block;font:inherit;font-weight:600;background:var(--ba-accent);color:var(--ba-on-accent);border:0;border-radius:var(--ba-radius,0);padding:14px 26px;cursor:pointer;text-decoration:none}

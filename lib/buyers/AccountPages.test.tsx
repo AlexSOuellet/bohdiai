@@ -51,6 +51,16 @@ describe('sign in or make an account', () => {
     expect(screen.getByRole('heading', { name: W.signIn.title })).toBeTruthy();
   });
 
+  it('shows and hides the password', () => {
+    render(<SignInOrCreate w={W} minPassword={10} />);
+    const box = screen.getByLabelText(W.signIn.password) as HTMLInputElement;
+    expect(box.type).toBe('password');
+    fireEvent.click(screen.getByRole('button', { name: W.showPassword }));
+    expect(box.type).toBe('text');
+    fireEvent.click(screen.getByRole('button', { name: W.hidePassword }));
+    expect(box.type).toBe('password');
+  });
+
   it('shows the failure words when the action throws', async () => {
     act.signInBuyer.mockRejectedValue(new Error('network'));
     render(<SignInOrCreate w={W} minPassword={10} />);

@@ -88,6 +88,10 @@
 .bk :focus-visible { outline: 2px solid var(--bk-brass); outline-offset: 2px; }
 .bk-switch { padding: 0 0.75rem 1rem; }
 .bk-input:focus { outline: 2px solid var(--bk-oxblood); outline-offset: 1px; }
+.bk-pw { position: relative; }
+.bk-pw .bk-input { padding-right: 4.5rem; }
+.bk-pw-toggle { position: absolute; top: 0; right: 0; bottom: 0; padding: 0 0.85rem; background: none; border: 0; font: inherit; font-size: 0.8125rem; font-weight: 600; color: var(--bk-ink-muted); cursor: pointer; }
+.bk-pw-toggle:hover, .bk-pw-toggle:focus-visible { color: var(--bk-oxblood); }
 .bk-error { color: var(--bk-danger); font-size: 0.875rem; }
 .bk-note { color: var(--bk-ink-muted); font-size: 0.875rem; line-height: 1.5; }
 .bk-field .bk-note, .bk-section > .bk-note { margin: 0.35rem 0 0; }

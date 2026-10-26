@@ -36,11 +36,22 @@ function useAction(failed: string) {
   return { error, busy, run };
 }
 
-function Field({ id, label, hint, ...input }: { id: string; label: string; hint?: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+function Field({ id, label, hint, reveal, ...input }: { id: string; label: string; hint?: string; reveal?: { show: string; hide: string } } & React.InputHTMLAttributes<HTMLInputElement>) {
+  const [shown, setShown] = useState(false);
+  const box = <input id={id} {...input} {...(reveal !== undefined && shown ? { type: 'text' } : {})} {...(hint !== undefined ? { 'aria-describedby': `${id}-hint` } : {})} />;
   return (
     <div className="ba-field">
       <label htmlFor={id}>{label}</label>
-      <input id={id} {...input} {...(hint !== undefined ? { 'aria-describedby': `${id}-hint` } : {})} />
+      {reveal === undefined ? (
+        box
+      ) : (
+        <div className="ba-pw">
+          {box}
+          <button type="button" className="ba-pw-toggle" aria-pressed={shown} aria-controls={id} onClick={() => setShown((s) => !s)}>
+            {shown ? reveal.hide : reveal.show}
+          </button>
+        </div>
+      )}
       {hint !== undefined && (
         <span id={`${id}-hint`} className="ba-hint">
           {hint}
@@ -78,6 +89,7 @@ export function SignInOrCreate({ w, minPassword }: { w: W; minPassword: number }
           id="ba-password"
           label={words.password}
           type="password"
+          reveal={{ show: w.showPassword, hide: w.hidePassword }}
           autoComplete={creating ? 'new-password' : 'current-password'}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -168,8 +180,8 @@ export function NewPassword({ w, tokenHash, minPassword }: { w: W; tokenHash: st
       </h1>
       <p className="ba-lede">{w.newPassword.lede}</p>
       <form className="ba-form" onSubmit={onSubmit} noValidate>
-        <Field id="ba-password" label={w.newPassword.password} type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} hint={fill(w.create.passwordHint, { n: minPassword })} />
-        <Field id="ba-confirm" label={w.newPassword.confirm} type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+        <Field id="ba-password" label={w.newPassword.password} type="password" reveal={{ show: w.showPassword, hide: w.hidePassword }} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} hint={fill(w.create.passwordHint, { n: minPassword })} />
+        <Field id="ba-confirm" label={w.newPassword.confirm} type="password" reveal={{ show: w.showPassword, hide: w.hidePassword }} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
         {error !== '' && (
           <p role="alert" className="ba-error">
             {error}

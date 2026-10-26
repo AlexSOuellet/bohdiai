@@ -67,6 +67,9 @@ export const SHOP_WORD_SPOTS = {
   account: {
     /** The menu link to /account. */
     nav: '',
+    /** The button inside a password box that shows or hides what was typed. */
+    showPassword: '',
+    hidePassword: '',
     signIn: {
       title: '',
       lede: '',
