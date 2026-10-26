@@ -1,24 +1,25 @@
 # Session Brief — BohdiAI
 
-> **⚠ START HERE (Session 115):** read `session-logs/session-114.md`, then `Plan-Backends.md` ("Full"), then `Open-Work.md` (item 4a).
-> **Now: Full's backend** (buyer accounts switch + list, the step-down customer count, PayPal on Getting paid for Market). Payments are NOT being built (Alex: "we are building ADMIN"): checkout shows no way to pay until a maker sets one up. The tools/Free (`feat/backend-tools`, unmerged) wait until Full is done.
+> **⚠ START HERE (Session 116):** read `session-logs/session-115.md`, then `Plan-Backends.md` ("Full"), then `Open-Work.md` (item 4a).
+> **Alex is designing a new backend himself** ("a full redesign"; where things sit is a big concern). Wait for his design; never place a new backend screen without asking. Buyer accounts are built on `feat/buyer-accounts` (pushed, NOT merged) and wait for it.
+> Payments are NOT being built (Alex: "we are building ADMIN"). The tools/Free (`feat/backend-tools`, unmerged) wait until Full is done.
 > Saltmarsh IS Scenic. A change to what a plan shows must reach the moods, Scenic's shoreline code and Rose n' Cat's nursery.
 > Build everything Alex decides; ask in plain text (no button questions); ask before any change he didn't ask for.
 
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 **Operative plan doc:** `Project-Docs/Modular-Plan.md`; open items in `Project-Docs/Open-Work.md`. Every session updates Open-Work as items land.
 
-**Last updated:** 2026-10-25, Session 114 (end).
+**Last updated:** 2026-10-26, Session 115 (end).
 
 ---
 
 ## Current state
 
-**Sessions 111–112 (live):** the Market plan; Saltmarsh is the Scenic mood; Square cards in the market app (locked keys, confirmed by Square), haggling, refunds everywhere; the Events area (Schedule, Market POS, Sales, Results), market information pages, how a piece is stocked (Sold, Order only). Recaps: `session-logs/session-111.md`, `session-112.md`.
-
-**Session 113: Session 112 merged and live; a new product starts with no stock choice; Saltmarsh's stock is a realistic mix; main's test check green again (Square tests; it had failed unseen since 10-21). Decided: the Free plan (dashboard only, products from the tools), the ladder (Free / Showcase / Market / Full, each plan's own steps), the tools list. Built on `feat/backend-tools` (pushed, not merged): Tools menu, Free's Home, costs on products, Market day on events; preview site Juniper Hollow Candles. Alex: "no better and in some ways worse"; the backend "does NOT flow".** Recap: `session-logs/session-113.md`.
+**Sessions 111–113:** the Market plan; Saltmarsh is the Scenic mood; Square cards in the market app (locked keys, confirmed by Square), haggling, refunds everywhere; the Events area (Schedule, Market POS, Sales, Results), market information pages, how a piece is stocked (Sold, Order only). Session 113's Free plan and tools are on `feat/backend-tools` (unmerged; Alex: "no better and in some ways worse"). Recaps: `session-logs/session-111.md` – `session-113.md`.
 
 **Session 114 (merged and live): Renée's sample site Rustic Charm & More (public, Full, Rustic, redesigned to work in every mood); Full defined; Getting paid with Square/Stripe/PayPal sections; PayPal connect/checkout/refunds built in test mode (sandbox keys only in `.env.local`, nothing live); Try on a look; the opening photo on Headline; a Background screen; a site's own background (`site_backgrounds`); every piece's photo shown whole; Owner login in family footers.** Recap: `session-logs/session-114.md`.
+
+**Session 115 (on `feat/buyer-accounts`, pushed, not merged): buyer accounts for Full (sign in, My account, orders, Reorder; one shared password, a shop-only pass), the Buyers screen and step-down count, Show / Hide on every password box. Alex: the backend needs a full redesign, which he will design.** Recap: `session-logs/session-115.md`.
 
 **Session 87 — the whole app now runs on Cloudflare Workers; Vercel serves nothing.** bohdiai.com, www, every shop subdomain and Cut-Pro are all served by the `bohdiai` Worker, verified live (Cut-Pro end to end, including a real photo estimate). `main` is current (fast-forwarded 552 commits). 1364 tests, tsc + lint clean. Runbook + lessons: `Cloudflare-Move.md`.
 
@@ -31,7 +32,7 @@
 
 ## Next actions
 
-**Session 115:** Full's backend: buyer accounts (switch + list; kept but locked below Full), the step-down screen's customer count, PayPal on Getting paid for Market sites. Then write the mood-proof build rules into Modular-Plan and have the builder check all nine moods. Alex: show Renée her site; apply to PayPal as a partner only when payments start. After Full: the tools/Free (ask Alex what felt worse first), the toolkit page, pricing cards, the Cloudflare analytics key (Alex), paying at sign-up.
+**Session 116:** Alex's backend design first (wait for it). Then place Buyers where it says, merge `feat/buyer-accounts`, check live (Renée's site shows Account). Full still to do: PayPal on Getting paid for Market sites; downloads with payments. Then the mood-proof build rules into Modular-Plan, the builder checking all nine moods. After Full: the tools/Free (ask Alex what felt worse first), the toolkit page, pricing cards, the Cloudflare analytics key (Alex), paying at sign-up.
 
 **Every open item is in `Open-Work.md`; follow its Priority order.** Next: the maker-backend screens with try on a look for Full (priority 4), then Alex's admin. Waiting on Alex: the purge (after testing); whether Paper & Patina moves onto Spotlight. Waiting on others: Joe's feedback, Renee's details.
 
@@ -78,6 +79,7 @@
 - **No words in the code, ever (Alex 2026-10-14).** A new word gets a spot in `<design>/words.ts` and a row in every site's `site_words`. Never a fallback word.
 - **Commit messages via a file on Windows.** PowerShell 5.1 splits an inline message with double quotes into pathspecs; a commit silently failed in Session 93. Use `git commit -F <file>` and check `git log` before merging.
 - **Play a rule back against the real data before building it (Session 112).** "Order only when the one at the market sells" was built to need a typed count; Saltmarsh's are all blank, so nothing changed and Alex had to raise it twice.
+- **Shop pages' typed routes (Session 115).** The shop is served under `/storefront`, so a redirect to `/account` or `/cart` needs `as Route` or the Cloudflare build fails. Type-check with `.next/types` in and `.next/dev` + `next-env.d.ts` out.
 - **Payments: security first (Alex 2026-10-21).** Never see cards or passwords (the processor's own pages/app), keys scrambled with a secret kept only in Cloudflare, server-only storage, fewest permissions, a sale counts only when the processor confirms it. After a push, check the Workers Builds check run exists, not just CI.
 - **Don't cause side effects Alex didn't ask for.** `seed-editor-test-owner.mjs` resets the password every run — running it "just for the admin row" clobbered his known password. Read what a script does before running it for a narrow purpose.
 
@@ -87,14 +89,11 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 115 (2026-10-26): **Buyer accounts for Full (sign in, My account, Reorder, Buyers screen, step-down count) and Show / Hide on password boxes, on `feat/buyer-accounts`, unmerged; Alex will design a new backend.** Full recap: `session-logs/session-115.md`.
 - Session 114 (2026-10-25): **Rustic Charm & More (Renée) built, redesigned for every mood, public; Full defined; Getting paid Square/Stripe/PayPal; PayPal test mode (not live); Try on a look; opening photo + Background screens; own background home; whole-piece photos; merged.** Full recap: `session-logs/session-114.md`.
-- Session 113 (2026-10-24): **Session 112 merged; no default stock choice; Saltmarsh stock; Square tests fix main's CI; Free plan + ladder + tools decided; Tools and Free built on `feat/backend-tools`, unmerged; Alex: backend doesn't flow, Free build no better.** Full recap: `session-logs/session-113.md`.
-- Session 112 (2026-10-22): **Refunds everywhere; Events area (Schedule, POS, Sales, Results) + home Events box; market information pages on the site; One of a kind / I have some / Made to order with Sold and Order only; Scrolling line only where shown. On `feat/market-orders`, unmerged.** Full recap: `session-logs/session-112.md`.
-- Session 111 (2026-10-21): **Market plan live; Saltmarsh = Scenic via its own design; shared social buttons; 42 test sites purged; demo market-day timer fixed; Square cards in the market app (locked keys, confirmed by Square), haggling, refunds.** Full recap: `session-logs/session-111.md`.
+- Sessions 111–113 (2026-10-21 → 10-24): **Market plan live, Square cards, refunds (111); Events area, stock kinds (112); merged, Free plan + ladder + tools decided and built on `feat/backend-tools`, unmerged; Alex: backend doesn't flow (113).** See `session-logs/session-111.md` – `session-113.md`.
 - Sessions 109–110 (2026-10-19 → 10-20): **Showcase backend + gallery section + About you split into its homes (109); Showcase live, named social buttons, visitor numbers, new backend look; Market plan built (110).** See `session-logs/session-109.md`, `session-110.md`.
-- Sessions 107–108 (2026-10-17 → 10-18): **Scenic + Spotlight live, scene library, /looks (107); bohdiai.com split live into parent + makers/service arms, pay at sign-up (108).** See `session-logs/session-107.md`, `session-108.md`.
-- Sessions 105–106 (2026-10-15 → 10-16): **Lineup reset, every family sells, one builder, Vintage (105); intake form live, big push merged, free sites (106).** See `session-logs/session-105.md`, `session-106.md`.
-- Session 104 (2026-10-14): **No word written into the code (`site_words`, all 51 sites, proven identical); Saltmarsh polish from the review; Saturday fairs stay on Saturdays; About you quote/portrait/marquee screen.** Full recap: `session-logs/session-104.md`.
-- Sessions 100–103 (2026-10-10 → 10-13): **Maker checkup, Market + Full $25, Saltmarsh draft (100); priorities reset, Saltmarsh public, market POS (101); Modular-Plan.md + Open-Work.md (102); safeguards + homes (103).** See `session-logs/session-100.md` – `session-103.md`.
+- Sessions 105–108 (2026-10-15 → 10-18): **Lineup reset, every family sells, one builder, Vintage (105); intake form live, big push merged (106); Scenic + Spotlight, scene library, /looks (107); bohdiai.com split into parent + makers/service arms (108).** See `session-logs/session-105.md` – `session-108.md`.
+- Sessions 100–104 (2026-10-10 → 10-14): **Maker checkup, Market + Full (100); Saltmarsh public, market POS (101); Modular-Plan + Open-Work (102); safeguards + homes (103); no word written into the code, `site_words` on all sites (104).** See `session-logs/session-100.md` – `session-104.md`.
 - Sessions 86–99 (2026-09-23 → 10-09): **Cut-Pro LIVE, Cloudflare move, bohdiai.com rebuilt, backend + Catalog (86–90); tiers + pricing pages (91–92); Rustic Rhody, contractor designs, Joe public (93–95); Rose n' Cat + Market POS, not live (96–97); ember logo (98); Saltmarsh demo (99).** See `session-logs/session-86.md` – `session-99.md`.
 - Sessions 0-85: Phase 0 through the Make It Yours walk (archetypes, families, sections, editor). See individual logs.
