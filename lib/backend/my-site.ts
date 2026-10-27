@@ -6,7 +6,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import { logger } from '@/lib/logger';
-import type { NavItem } from './modules';
+import { CUSTOMER_ACCOUNTS_PATH, type NavItem } from './modules';
+import { customerAccountsOn } from './buyers/switch';
 import { getMoment } from './moment/queries';
 import { getPortraitUrl, getProfileForm } from './profile/queries';
 import { listGallery } from './gallery/queries';
@@ -34,7 +35,7 @@ export const SHOWCASE_GALLERY = '/manage/products';
 export const SHOWCASE_GALLERY_ITEM: NavItem = { label: 'Gallery', href: SHOWCASE_GALLERY };
 
 /** The parts of the page, in the order a visitor meets them. */
-const PAGE_ORDER = ['/manage/headline', '/manage/marquee', '/manage/profile', SHOWCASE_GALLERY, '/manage/gallery', '/manage/testimonials', '/manage/contact', '/manage/socials'];
+const PAGE_ORDER = ['/manage/headline', '/manage/marquee', '/manage/profile', SHOWCASE_GALLERY, '/manage/gallery', '/manage/testimonials', '/manage/contact', '/manage/socials', CUSTOMER_ACCOUNTS_PATH];
 /** The tools that work on the whole site. */
 const TOOL_LINES: Readonly<Record<string, string>> = {
   '/manage/background': 'The photo behind your pages',
@@ -50,6 +51,8 @@ export type SiteData = {
   showcaseGallery: { urls: string[]; picked: number } | null;
   testimonials: { quote: string; name: string }[] | null;
   background: string | null;
+  /** Full: whether customers can make an account on her site. */
+  customerAccounts: boolean | null;
 };
 
 const failed: PartShow = { kind: 'failed' };
@@ -87,6 +90,9 @@ function showFor(href: string, d: SiteData): PartShow {
     case '/manage/socials':
       if (d.profile === null) return failed;
       return d.profile.socials.length === 0 ? { kind: 'empty', text: 'No social pages linked yet' } : { kind: 'line', text: d.profile.socials.join(', ') };
+    case CUSTOMER_ACCOUNTS_PATH:
+      if (d.customerAccounts === null) return failed;
+      return d.customerAccounts ? { kind: 'line', text: 'On. Customers can sign in on your site' } : { kind: 'empty', text: 'Off. Customers check out without an account' };
     default:
       return { kind: 'empty', text: '' };
   }
@@ -118,7 +124,7 @@ async function attempt<T>(what: string, load: () => Promise<T>): Promise<T | nul
 export async function loadSiteData(db: SupabaseClient<Database>, tenantId: string, items: readonly NavItem[]): Promise<SiteData> {
   const has = (href: string): boolean => items.some((i) => i.href === href);
   const needsProfile = ['/manage/profile', '/manage/marquee', '/manage/contact', '/manage/socials'].some(has);
-  const [moment, profile, gallery, testimonials, background, showcaseGallery] = await Promise.all([
+  const [moment, profile, gallery, testimonials, background, showcaseGallery, customerAccounts] = await Promise.all([
     has('/manage/headline')
       ? attempt('headline', async () => {
           const m = await getMoment(db, tenantId);
@@ -148,6 +154,7 @@ export async function loadSiteData(db: SupabaseClient<Database>, tenantId: strin
           return { urls: shown.flatMap((p) => (p.photoUrl === null ? [] : [p.photoUrl])), picked: picked.length };
         })
       : null,
+    has(CUSTOMER_ACCOUNTS_PATH) ? attempt('customer accounts', () => customerAccountsOn(db, tenantId)) : null,
   ]);
-  return { moment, profile, gallery, testimonials, background, showcaseGallery };
+  return { moment, profile, gallery, testimonials, background, showcaseGallery, customerAccounts };
 }

@@ -18,6 +18,10 @@ export type NavSection = { section: string; items: NavItem[] };
 export const MY_SITE_PATH = '/manage/site';
 
 /** Groups that open on a page of their own, which leads to the group's screens. */
+/** Full: the people with an account at her shop, and her switch for those accounts. */
+export const CUSTOMERS_PATH = '/manage/customers';
+export const CUSTOMER_ACCOUNTS_PATH = '/manage/customer-accounts';
+
 export const HUBS: Readonly<Record<string, string>> = { 'My site': MY_SITE_PATH };
 
 export const BACKEND_MODULES: BackendModule[] = [
@@ -33,10 +37,12 @@ export const BACKEND_MODULES: BackendModule[] = [
   { feature: 'market_shop', section: 'Events', items: [{ label: 'Sales', href: '/manage/sales' }] },
   { feature: 'market_records', section: 'Events', items: [{ label: 'Results', href: '/manage/markets/results' }] },
   { feature: 'market_shop', section: 'Events', items: [{ label: 'Market POS', href: '/manage/pos' }] },
-  // Full's online selling: orders sent from the cart, promotions and buyer accounts.
+  // Full's online selling: orders sent from the cart and promotions.
   { feature: 'cart', section: 'Orders', items: [{ label: 'Orders', href: '/manage/orders' }] },
   { feature: 'promotions', section: 'Orders', items: [{ label: 'Promotions', href: '/manage/promotions' }] },
-  { feature: 'buyer_accounts', section: 'Orders', items: [{ label: 'Buyers', href: '/manage/buyers' }] },
+  // Full: the people with an account at her shop, their own entry (Alex, 2026-10-27).
+  // It shows only while her Customer accounts switch is on (lib/backend/menu.ts).
+  { feature: 'buyer_accounts', section: 'Customers', items: [{ label: 'Customers', href: CUSTOMERS_PATH }] },
   // My site: the parts of her site, in the order a visitor meets them.
   { feature: 'headline', section: 'My site', items: [{ label: 'Headline', href: '/manage/headline' }] },
   { feature: 'background', section: 'My site', items: [{ label: 'Background', href: '/manage/background' }] },
@@ -54,6 +60,8 @@ export const BACKEND_MODULES: BackendModule[] = [
   { feature: 'testimonials', section: 'My site', items: [{ label: 'Testimonials', href: '/manage/testimonials' }] },
   { feature: 'try_on', section: 'My site', items: [{ label: 'Try on a look', href: '/manage/looks' }] },
   { feature: 'qr_codes', section: 'My site', items: [{ label: 'QR code', href: '/manage/qr' }] },
+  // Her switch for customer accounts: it adds Account to her site's menu (Alex, 2026-10-27).
+  { feature: 'buyer_accounts', section: 'My site', items: [{ label: 'Customer accounts', href: CUSTOMER_ACCOUNTS_PATH }] },
   { feature: 'plan', section: 'Account', items: [{ label: 'Your plan', href: '/manage/plan' }, { label: 'Billing', href: '/manage/billing' }] },
   // Set up once, so it sits with the account (Alex, 2026-10-22).
   { feature: 'market_shop', section: 'Account', items: [{ label: 'Getting paid', href: '/manage/payments' }] },

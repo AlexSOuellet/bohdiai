@@ -19,9 +19,18 @@ const data: SiteData = {
   testimonials: [],
   background: 'https://img/wood.jpg',
   showcaseGallery: null,
+  customerAccounts: null,
 };
 
 describe('My site', () => {
+  it('shows Customer accounts last among the parts, on or off (Full, Alex 2026-10-27)', () => {
+    const full = [...items, { label: 'Customer accounts', href: '/manage/customer-accounts' }];
+    const last = (on: boolean | null) => buildMySite(full, { ...data, customerAccounts: on }).parts.at(-1);
+    expect(last(true)).toEqual({ label: 'Customer accounts', href: '/manage/customer-accounts', show: { kind: 'line', text: 'On. Customers can sign in on your site' } });
+    expect(last(false)?.show).toEqual({ kind: 'empty', text: 'Off. Customers check out without an account' });
+    expect(last(null)?.show).toEqual({ kind: 'failed' });
+  });
+
   it('lists the parts of her page in the order a visitor meets them, and the whole-site tools apart', () => {
     const { parts, tools } = buildMySite(items, data);
     expect(parts.map((p) => p.label)).toEqual(['Headline', 'Scrolling line', 'About you', 'Testimonials', 'Contact information', 'Socials']);

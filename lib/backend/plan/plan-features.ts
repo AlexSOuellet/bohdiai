@@ -71,7 +71,7 @@ export const FEATURE_WORDS: Partial<Record<FeatureKey, string>> = {
   promotions: 'Sales and discount codes',
   new_arrivals: 'New arrivals on your home page',
   try_on: 'Trying on other looks (the look you chose stays)',
-  buyer_accounts: 'Buyer accounts: your buyers can’t sign in (their accounts and orders are kept)',
+  buyer_accounts: 'Customer accounts: your customers can’t sign in (their accounts and orders are kept)',
   market_records: 'Market costs, organizer details, notes and reviews',
 };
 
@@ -79,8 +79,8 @@ export const FEATURE_WORDS: Partial<Record<FeatureKey, string>> = {
  *  longer sign in, and that their accounts are kept. */
 export function buyersLine(buyers: number): string {
   if (buyers === 0) return FEATURE_WORDS.buyer_accounts ?? '';
-  const who = buyers === 1 ? '1 buyer' : `${buyers} buyers`;
-  return `Buyer accounts: ${who} with an account at your shop won’t be able to sign in (their accounts and orders are kept, and sign-in comes back when you return to Full)`;
+  const who = buyers === 1 ? '1 customer' : `${buyers} customers`;
+  return `Customer accounts: ${who} with an account at your shop won’t be able to sign in (their accounts and orders are kept, and sign-in comes back when you return to Full)`;
 }
 
 /** The switches a move from `from` to `to` turns off, in plan order, as words.

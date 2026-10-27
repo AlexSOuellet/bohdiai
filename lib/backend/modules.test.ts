@@ -31,8 +31,8 @@ describe('navFor', () => {
 describe('the menu in her words (the redesign, 2026-10-27)', () => {
   const full: FeatureKey[] = ['catalog', 'collections', 'market_dates', 'market_shop', 'market_records', 'cart', 'promotions', 'buyer_accounts', 'headline', 'background', 'profile', 'testimonials', 'try_on', 'qr_codes', 'plan'];
 
-  it('is one short list on Full: Home, Products, Events, Orders, My site, Account, Help', () => {
-    expect(names(full)).toEqual(['Home', 'Products', 'Events', 'Orders', 'My site', 'Account', 'Help']);
+  it('is one short list on Full: Home, Products, Events, Orders, Customers, My site, Account, Help', () => {
+    expect(names(full)).toEqual(['Home', 'Products', 'Events', 'Orders', 'Customers', 'My site', 'Account', 'Help']);
   });
 
   it('has only Home and Help with nothing switched on', () => {
@@ -49,7 +49,7 @@ describe('the menu in her words (the redesign, 2026-10-27)', () => {
   });
 
   it('keeps every part of her site under My site, in the order a visitor meets them', () => {
-    expect(group(full, 'My site')).toEqual(['Headline', 'Background', 'About you', 'Scrolling line', 'Contact information', 'Socials', 'Testimonials', 'Try on a look', 'QR code']);
+    expect(group(full, 'My site')).toEqual(['Headline', 'Background', 'About you', 'Scrolling line', 'Contact information', 'Socials', 'Testimonials', 'Try on a look', 'QR code', 'Customer accounts']);
   });
 });
 
@@ -74,8 +74,11 @@ describe('Events, Orders and Account (Alex, 2026-10-22)', () => {
     expect(group(market, 'Account')).toEqual(['Your plan', 'Billing', 'Getting paid']);
   });
 
-  it('puts Full’s Orders, Promotions and Buyers under Orders', () => {
-    expect(group([...market, 'cart', 'promotions', 'buyer_accounts'], 'Orders')).toEqual(['Orders', 'Promotions', 'Buyers']);
+  it('puts Full’s Orders and Promotions under Orders, and Customers on its own (Alex, 2026-10-27)', () => {
+    const fullOnline: FeatureKey[] = [...market, 'cart', 'promotions', 'buyer_accounts'];
+    expect(group(fullOnline, 'Orders')).toEqual(['Orders', 'Promotions']);
+    expect(group(fullOnline, 'Customers')).toEqual(['Customers']);
+    expect(group(fullOnline, 'My site')).toContain('Customer accounts');
   });
 
   it('has only the Schedule on Showcase', () => {
