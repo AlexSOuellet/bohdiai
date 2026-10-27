@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { plex } from '../../manage/fonts';
+import { backendFace } from '../../manage/fonts';
 import '../../manage/backend.css';
 
 export const metadata: Metadata = { title: 'Something went wrong', robots: { index: false, follow: false } };
@@ -16,7 +16,7 @@ export default async function AuthErrorPage({ searchParams }: { searchParams: Pr
   const key = typeof reason === 'string' ? reason : '';
   const message = Object.hasOwn(MESSAGES, key) ? MESSAGES[key] : DEFAULT_MESSAGE;
   return (
-    <div className={`bk ${plex.variable}`}>
+    <div className={`bk ${backendFace.variable}`}>
       <main id="main" className="bk-auth">
         <div className="bk-card">
           <p className="bk-kicker">Site owner</p>

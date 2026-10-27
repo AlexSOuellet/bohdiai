@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import SignInForm from './SignInForm';
-import { plex } from '../manage/fonts';
+import { backendFace } from '../manage/fonts';
 import '../manage/backend.css';
 import { endedReason } from '@/lib/backend/session-limits';
 import { SIGNED_OUT_IDLE, SIGNED_OUT_MAX } from '@/lib/backend/auth-messages';
@@ -12,7 +12,7 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 export default async function SignInPage({ searchParams }: Props): Promise<React.ReactElement> {
   const ended = endedReason((await searchParams)['ended']);
   return (
-    <div className={`bk ${plex.variable}`}>
+    <div className={`bk ${backendFace.variable}`}>
       <main id="main" className="bk-auth">
         <div className="bk-card">
           <p className="bk-kicker">Site owner</p>

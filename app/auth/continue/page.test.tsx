@@ -5,7 +5,7 @@ const redirect = vi.fn((to: string): never => {
   throw new Error(`REDIRECT ${to}`);
 });
 vi.mock('next/navigation', () => ({ redirect: (to: string) => redirect(to) }));
-vi.mock('../../manage/fonts', () => ({ plex: { variable: 'plex' } }));
+vi.mock('../../manage/fonts', () => ({ backendFace: { variable: 'backendFace' } }));
 vi.mock('../../manage/backend.css', () => ({}));
 
 import ContinuePage from './page';
