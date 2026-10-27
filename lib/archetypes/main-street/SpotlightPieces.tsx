@@ -24,8 +24,12 @@ import type { FamilyWords } from './words';
 
 type Founder = MainStreetView['founder'];
 
-/** How long the name is, so the stylesheet sets a longer one smaller. */
-export function slamSize(name: string): 's' | 'm' | 'l' {
+/** How long the name is, so the stylesheet sets a longer one smaller. A headline
+ *  that's a whole sentence reads as one, a line at a time, not a word per line
+ *  (Alex, 2026-10-27; as Scenic, 2026-10-21): 'line' up to 70 letters, 'long' past. */
+export function slamSize(name: string): 's' | 'm' | 'l' | 'line' | 'long' {
+  if (name.length > 70) return 'long';
+  if (name.length > 32) return 'line';
   const longest = Math.max(0, ...name.split(/\s+/).map((w) => w.length));
   if (name.length > 16 || longest > 11) return 's';
   if (name.length > 12 || longest > 8) return 'm';

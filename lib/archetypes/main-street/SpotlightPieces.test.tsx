@@ -57,6 +57,10 @@ describe('slamLetters and slamSize', () => {
     expect(slamSize('Saltmarsh & Lace Decoupage')).toBe('s');
     expect(slamSize('Extraordinarily')).toBe('s');
   });
+  it('sets a headline that is a whole sentence as a sentence, smaller still when it runs long', () => {
+    expect(slamSize('Hand-poured candles for dark rooms')).toBe('line');
+    expect(slamSize('Tired old furniture and plain pieces, reborn in layers of paper, paint and pattern')).toBe('long');
+  });
 });
 
 describe('SlamHero', () => {
