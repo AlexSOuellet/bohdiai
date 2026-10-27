@@ -12,13 +12,15 @@ import { getPortraitUrl, getProfileForm } from './profile/queries';
 import { listGallery } from './gallery/queries';
 import { listTestimonials } from './testimonials/queries';
 import { getBackgroundView } from './scene/background';
+import { listProducts } from './catalog/queries';
+import { GALLERY_MAX } from '@/lib/catalog/home';
 
 /** What a part shows of itself on My site. */
 export type PartShow =
   | { kind: 'headline'; headline: string; sub: string; photo: string | null }
   | { kind: 'strip'; text: string }
   | { kind: 'about'; title: string; bio: string; portrait: string | null }
-  | { kind: 'photos'; urls: string[]; total: number }
+  | { kind: 'photos'; urls: string[]; note: string }
   | { kind: 'quote'; quote: string; name: string; total: number }
   | { kind: 'line'; text: string }
   | { kind: 'empty'; text: string }
@@ -27,8 +29,12 @@ export type PartShow =
 export type SitePart = { label: string; href: string; show: PartShow };
 export type SiteTool = { label: string; href: string; line: string; photo: string | null };
 
+/** Showcase's gallery: the pieces she ticks on Products (Plan-Backends, Showcase). */
+export const SHOWCASE_GALLERY = '/manage/products';
+export const SHOWCASE_GALLERY_ITEM: NavItem = { label: 'Gallery', href: SHOWCASE_GALLERY };
+
 /** The parts of the page, in the order a visitor meets them. */
-const PAGE_ORDER = ['/manage/headline', '/manage/marquee', '/manage/profile', '/manage/gallery', '/manage/testimonials', '/manage/contact', '/manage/socials'];
+const PAGE_ORDER = ['/manage/headline', '/manage/marquee', '/manage/profile', SHOWCASE_GALLERY, '/manage/gallery', '/manage/testimonials', '/manage/contact', '/manage/socials'];
 /** The tools that work on the whole site. */
 const TOOL_LINES: Readonly<Record<string, string>> = {
   '/manage/background': 'The photo behind your pages',
@@ -40,6 +46,8 @@ export type SiteData = {
   moment: { headline: string; sub: string; photo: string | null } | null;
   profile: { aboutTitle: string; bio: string; marquee: string[]; phone: string; socials: string[]; portrait: string | null } | null;
   gallery: string[] | null;
+  /** Showcase: the ticked pieces' photos (or her newest until she ticks any). */
+  showcaseGallery: { urls: string[]; picked: number } | null;
   testimonials: { quote: string; name: string }[] | null;
   background: string | null;
 };
@@ -59,7 +67,15 @@ function showFor(href: string, d: SiteData): PartShow {
       return d.profile.bio === '' ? { kind: 'empty', text: 'Your story isn’t written yet' } : { kind: 'about', title: d.profile.aboutTitle, bio: d.profile.bio, portrait: d.profile.portrait };
     case '/manage/gallery':
       if (d.gallery === null) return failed;
-      return d.gallery.length === 0 ? { kind: 'empty', text: 'No photos yet' } : { kind: 'photos', urls: d.gallery.slice(0, 6), total: d.gallery.length };
+      return d.gallery.length === 0 ? { kind: 'empty', text: 'No photos yet' } : { kind: 'photos', urls: d.gallery.slice(0, 6), note: d.gallery.length === 1 ? 'One photo' : `${d.gallery.length} photos` };
+    case SHOWCASE_GALLERY:
+      if (d.showcaseGallery === null) return failed;
+      if (d.showcaseGallery.urls.length === 0) return { kind: 'empty', text: 'No pieces with photos yet' };
+      return {
+        kind: 'photos',
+        urls: d.showcaseGallery.urls.slice(0, 6),
+        note: d.showcaseGallery.picked === 0 ? `Your newest ${GALLERY_MAX} show until you pick` : `${d.showcaseGallery.picked} of ${GALLERY_MAX} picked`,
+      };
     case '/manage/testimonials': {
       if (d.testimonials === null) return failed;
       const first = d.testimonials[0];
@@ -102,7 +118,7 @@ async function attempt<T>(what: string, load: () => Promise<T>): Promise<T | nul
 export async function loadSiteData(db: SupabaseClient<Database>, tenantId: string, items: readonly NavItem[]): Promise<SiteData> {
   const has = (href: string): boolean => items.some((i) => i.href === href);
   const needsProfile = ['/manage/profile', '/manage/marquee', '/manage/contact', '/manage/socials'].some(has);
-  const [moment, profile, gallery, testimonials, background] = await Promise.all([
+  const [moment, profile, gallery, testimonials, background, showcaseGallery] = await Promise.all([
     has('/manage/headline')
       ? attempt('headline', async () => {
           const m = await getMoment(db, tenantId);
@@ -124,6 +140,14 @@ export async function loadSiteData(db: SupabaseClient<Database>, tenantId: strin
           return b.own ?? b.scenic?.url ?? null;
         })
       : null,
+    has(SHOWCASE_GALLERY)
+      ? attempt('gallery picks', async () => {
+          const live = (await listProducts(db, tenantId)).filter((p) => p.status === 'active');
+          const picked = live.filter((p) => p.inGallery);
+          const shown = (picked.length === 0 ? live : picked).slice(0, GALLERY_MAX);
+          return { urls: shown.flatMap((p) => (p.photoUrl === null ? [] : [p.photoUrl])), picked: picked.length };
+        })
+      : null,
   ]);
-  return { moment, profile, gallery, testimonials, background };
+  return { moment, profile, gallery, testimonials, background, showcaseGallery };
 }

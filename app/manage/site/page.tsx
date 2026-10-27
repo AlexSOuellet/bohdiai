@@ -5,7 +5,7 @@ import { requireActingSite } from '@/lib/backend/current-site';
 import { getSiteFeatures } from '@/lib/backend/site-features';
 import { backendMenu } from '@/lib/backend/menu';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
-import { buildMySite, loadSiteData, type PartShow } from '@/lib/backend/my-site';
+import { SHOWCASE_GALLERY_ITEM, buildMySite, loadSiteData, type PartShow } from '@/lib/backend/my-site';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,7 +44,7 @@ function Show({ show }: { show: PartShow }): React.ReactElement | null {
               <img key={url} src={url} alt="" loading="lazy" />
             ))}
           </div>
-          <p className="bk-part-line">{show.total === 1 ? 'One photo' : `${show.total} photos`}</p>
+          <p className="bk-part-line">{show.note}</p>
         </div>
       );
     case 'quote':
@@ -69,8 +69,11 @@ function Show({ show }: { show: PartShow }): React.ReactElement | null {
 /** My site: her site top to bottom; she taps the part she wants to change. */
 export default async function MySitePage(): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
-  const nav = await backendMenu(site.tenantId, await getSiteFeatures(site.tenantId));
-  const items = nav.find((s) => s.section === 'My site')?.items ?? [];
+  const on = await getSiteFeatures(site.tenantId);
+  const nav = await backendMenu(site.tenantId, on);
+  const own = nav.find((s) => s.section === 'My site')?.items ?? [];
+  // Showcase's gallery is the pieces she ticks on Products: it shows here too, opening Products.
+  const items = on.has('gallery_pieces') && !on.has('gallery') ? [...own, SHOWCASE_GALLERY_ITEM] : own;
   if (items.length === 0) notFound();
   const { parts, tools } = buildMySite(items, await loadSiteData(await createSupabaseServerClient(), site.tenantId, items));
   return (

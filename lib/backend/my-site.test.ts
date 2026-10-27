@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildMySite, type SiteData } from './my-site';
+import { SHOWCASE_GALLERY_ITEM, buildMySite, type SiteData } from './my-site';
 
 const items = [
   { label: 'Headline', href: '/manage/headline' },
@@ -18,6 +18,7 @@ const data: SiteData = {
   gallery: null,
   testimonials: [],
   background: 'https://img/wood.jpg',
+  showcaseGallery: null,
 };
 
 describe('My site', () => {
@@ -43,6 +44,16 @@ describe('My site', () => {
   it('says a part couldn’t load instead of showing it empty', () => {
     const { parts } = buildMySite(items, { ...data, profile: null });
     expect(parts.find((p) => p.label === 'About you')?.show).toEqual({ kind: 'failed' });
+  });
+
+  it('on Showcase, shows her gallery picks after About you, opening Products', () => {
+    const withGallery = [...items, SHOWCASE_GALLERY_ITEM];
+    const { parts } = buildMySite(withGallery, { ...data, showcaseGallery: { urls: ['https://img/a.jpg'], picked: 1 } });
+    expect(parts.map((p) => p.label).slice(0, 4)).toEqual(['Headline', 'Scrolling line', 'About you', 'Gallery']);
+    expect(parts.find((p) => p.label === 'Gallery')).toMatchObject({ href: '/manage/products', show: { kind: 'photos', note: '1 of 12 picked' } });
+    expect(buildMySite(withGallery, { ...data, showcaseGallery: { urls: ['https://img/a.jpg'], picked: 0 } }).parts.find((p) => p.label === 'Gallery')?.show).toMatchObject({
+      note: 'Your newest 12 show until you pick',
+    });
   });
 
   it('leaves out parts her site doesn’t have', () => {

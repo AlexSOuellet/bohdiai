@@ -3,9 +3,10 @@ import type { Route } from 'next';
 import { headers } from 'next/headers';
 import { requireActingSite } from '@/lib/backend/current-site';
 import { getSiteFeatures } from '@/lib/backend/site-features';
-import { HOME_CONTRIBUTORS, collectHome } from '@/lib/backend/home';
+import { HOME_CONTRIBUTORS, HOME_CONTRIBUTORS_WITH_STEPS, collectHome } from '@/lib/backend/home';
 import { StatTile } from './_components/StatTile';
 import { PublishPanel } from './_components/PublishPanel';
+import { FirstSteps } from './_components/FirstSteps';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getPublishView } from '@/lib/backend/publish/queries';
 import { publishSite } from '@/lib/backend/publish/actions';
@@ -22,25 +23,30 @@ import type { MomentMedia } from '@/lib/backend/moment/moment-form';
 import { listProducts, type ProductRowView } from '@/lib/backend/catalog/queries';
 import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
 import { MY_SITE_PATH } from '@/lib/backend/modules';
+import { isSitePlan, type SitePlan } from '@/lib/backend/plan/plan';
+import { firstSteps, loadStepFacts, type Steps } from '@/lib/backend/first-steps';
+import { homeWall } from '@/lib/backend/home-wall';
 
 export const dynamic = 'force-dynamic';
 
 /** How many of her pieces the home page shows. */
 const WALL_MAX = 7;
 
-const count = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
-
 function err(where: string, e: unknown): void {
   logger.error(where, { error: e instanceof Error ? e.message : String(e) });
 }
 
 /** The home screen (the redesign, 2026-10-27): her site and her work first, then
- *  what needs doing, then how things are going. */
+ *  her plan's first steps and what needs doing, then how things are going. Each
+ *  plan sees its own: Showcase her gallery, Market her events, Full her orders. */
 export default async function ManageHome(): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
   const own = await createSupabaseServerClient();
-  const home = await collectHome(HOME_CONTRIBUTORS, on, site.tenantId);
+  const tenant = await own.from('tenants').select('time_zone, plan').eq('id', site.tenantId).maybeSingle();
+  // Custom sites have no plan, and no first steps.
+  const plan: SitePlan | null = isSitePlan(tenant.data?.plan) ? tenant.data.plan : null;
+  const home = await collectHome(plan === null ? HOME_CONTRIBUTORS : HOME_CONTRIBUTORS_WITH_STEPS, on, site.tenantId);
   const db = supabaseAdmin();
   const publish = await getPublishView(db, site.tenantId, site.subdomain, process.env['BACKEND_SESSION_SECRET']);
   const siteUrl = storefrontOrigin(site.subdomain, (await headers()).get('host'));
@@ -62,11 +68,12 @@ export default async function ManageHome(): Promise<React.ReactElement> {
     err('backend home opening photo failed', e);
   }
 
+  const showcase = on.has('gallery_pieces') && !on.has('catalog');
   const hasProducts = on.has('catalog') || on.has('gallery_pieces');
   let products: ProductRowView[] | null = null;
   if (hasProducts) {
     try {
-      products = (await listProducts(own, site.tenantId)).filter((p) => p.status !== 'archived');
+      products = await listProducts(own, site.tenantId);
     } catch (e) {
       err('backend home products failed', e);
     }
@@ -76,7 +83,6 @@ export default async function ManageHome(): Promise<React.ReactElement> {
   let eventsFailed = false;
   if (on.has('market_dates')) {
     try {
-      const tenant = await own.from('tenants').select('time_zone').eq('id', site.tenantId).maybeSingle();
       events = await loadEventsHome(own, site.tenantId, shopToday(tenant.data?.time_zone ?? null), { shop: on.has('market_shop'), records: on.has('market_records') });
     } catch (e) {
       eventsFailed = true;
@@ -84,20 +90,38 @@ export default async function ManageHome(): Promise<React.ReactElement> {
     }
   }
 
+  let steps: Steps | null = null;
+  let stepsFailed = false;
+  if (plan !== null) {
+    try {
+      const next = events?.next ?? null;
+      const facts = await loadStepFacts(own, site.tenantId, { draft: publish.draft, next: next === null ? null : { id: next.id, name: next.name } });
+      steps = firstSteps(plan, facts, on);
+    } catch (e) {
+      stepsFailed = true;
+      err('backend home first steps failed', e);
+    }
+  }
+
   const address = siteUrl.replace(/^https?:\/\//, '');
-  const live = products?.filter((p) => p.status === 'active').length ?? 0;
-  const drafts = products?.filter((p) => p.status === 'draft').length ?? 0;
+  const today = on.has('market_shop') && events?.next?.today === true ? events.next : null;
+  const wall = products === null ? null : homeWall(products, showcase, WALL_MAX);
 
   return (
     <>
-      <header className="bk-hello">
+      <header className="bk-hello" data-market-day={today !== null}>
         <div className="bk-hello-text">
           <p className="bk-hello-status" data-live={!publish.draft}>
-            {publish.draft ? 'Only you can see your site for now' : `Live at ${address}`}
+            {today !== null ? `Market day: ${today.name}` : publish.draft ? 'Only you can see your site for now' : `Live at ${address}`}
           </p>
           <h1 className="bk-hello-name">{site.businessName}</h1>
           <div className="bk-hello-actions">
-            <a className="bk-btn" href={publish.draft && publish.previewUrl !== null ? publish.previewUrl : siteUrl} target="_blank" rel="noopener noreferrer">
+            {today !== null && (
+              <Link className="bk-btn" href={`/manage/markets/${today.id}/day` as Route}>
+                Open the market day
+              </Link>
+            )}
+            <a className={today === null ? 'bk-btn' : 'bk-btn bk-btn-quiet'} href={publish.draft && publish.previewUrl !== null ? publish.previewUrl : siteUrl} target="_blank" rel="noopener noreferrer">
               Open my site
             </a>
             <Link className="bk-btn bk-btn-quiet" href={MY_SITE_PATH}>
@@ -119,12 +143,15 @@ export default async function ManageHome(): Promise<React.ReactElement> {
       </header>
 
       <main id="main" className="bk-content bk-home">
+        {steps !== null && <FirstSteps steps={steps} />}
+        {stepsFailed && <p className="bk-note">Your next steps couldn’t load. Refresh to try again.</p>}
+
         {publish.draft && <PublishPanel siteUrl={`https://${site.subdomain}.bohdiai.com`} previewUrl={publish.previewUrl} publish={publishSite} />}
 
         {home.attention.length > 0 && (
           <section className="bk-next" aria-labelledby="bk-next">
             <h2 id="bk-next" className="bk-band-title">
-              Worth doing next
+              Worth a look
             </h2>
             <ul className="bk-next-list">
               {home.attention.map((line, i) => (
@@ -139,20 +166,15 @@ export default async function ManageHome(): Promise<React.ReactElement> {
             <div className="bk-band-head">
               <div>
                 <h2 id="bk-work" className="bk-band-title">
-                  Your work
+                  {wall?.title ?? (showcase ? 'Your gallery' : 'Your work')}
                 </h2>
-                {products !== null && (
-                  <p className="bk-band-sub">
-                    {count(live, 'product on your site', 'products on your site')}
-                    {drafts > 0 && `, ${count(drafts, 'draft', 'drafts')}`}
-                  </p>
-                )}
+                {wall !== null && <p className="bk-band-sub">{wall.sub}</p>}
               </div>
               <Link className="bk-band-link" href="/manage/products">
-                See all your products
+                {showcase ? 'Pick your gallery' : 'See all your products'}
               </Link>
             </div>
-            {products === null ? (
+            {wall === null ? (
               <p role="alert" className="bk-error">
                 Your products couldn’t load. Refresh to try again.
               </p>
@@ -163,7 +185,7 @@ export default async function ManageHome(): Promise<React.ReactElement> {
                     Add a product
                   </Link>
                 </li>
-                {products.slice(0, WALL_MAX).map((p) => (
+                {wall.items.map((p) => (
                   <li key={p.id}>
                     <Link className="bk-wall-item" href={`/manage/products/${p.id}` as Route}>
                       {p.photoUrl === null ? (
