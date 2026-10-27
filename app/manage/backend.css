@@ -45,7 +45,7 @@
 .bk-side[data-open='true'] { transform: translateX(0); visibility: visible; transition-delay: 0s; }
 @media (min-width: 1024px) {
   .bk-side { position: sticky; top: 0; width: 15.5rem; height: 100vh; transform: none; visibility: visible; flex-shrink: 0; }
-  .bk-side-close, .bk-backdrop, .bk-bottom { display: none; }
+  .bk-side-close, .bk-backdrop { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .bk-side { transition: none; } }
 .bk-backdrop { position: fixed; inset: 0; z-index: 30; background: oklch(0.24 0.05 262 / 45%); border: 0; }
@@ -83,7 +83,7 @@
 .bk-bottom-link[aria-current='page'] { color: var(--bk-ink); }
 .bk-bottom-link[aria-current='page'] .bk-icon { stroke: var(--bk-ember); stroke-width: 2.1; }
 .bk-main { display: flex; flex: 1; min-width: 0; flex-direction: column; padding-bottom: 5.5rem; }
-@media (min-width: 1024px) { .bk-main { padding-bottom: 0; } }
+@media (min-width: 1024px) { .bk-main { padding-bottom: 0; } .bk-bottom { display: none; } }
 
 /* A group's screens, as tabs above the screen; inside My site, the way back. */
 .bk-tabs-bar { padding: 1.25rem var(--bk-gutter) 0; max-width: 76rem; }
