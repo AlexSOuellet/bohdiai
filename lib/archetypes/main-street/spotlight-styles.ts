@@ -42,6 +42,11 @@ export const SPOTLIGHT_CSS = `
     .arch-main-street .ms-sp-slam[data-size="m"]{font-size:clamp(60px,10vw,160px)}
     .arch-main-street .ms-sp-slam[data-size="s"]{font-size:clamp(44px,6.4vw,104px)}
     .arch-main-street .ms-sp-word{display:block}
+    /* A sentence for a headline reads as one: words run on, lines wrap, the size steps down. */
+    .arch-main-street .ms-sp-slam[data-size="line"],.arch-main-street .ms-sp-slam[data-size="long"]{max-width:20ch;margin-inline:auto;line-height:1.02;overflow-wrap:normal;text-wrap:balance}
+    .arch-main-street .ms-sp-slam[data-size="line"]{font-size:clamp(38px,5.6vw,88px)}
+    .arch-main-street .ms-sp-slam[data-size="long"]{max-width:24ch;font-size:clamp(32px,4.2vw,64px);line-height:1.06}
+    .arch-main-street .ms-sp-slam[data-size="line"] .ms-sp-word,.arch-main-street .ms-sp-slam[data-size="long"] .ms-sp-word{display:inline-block;margin-inline:.13em}
     .arch-main-street .ms-sp-l{display:inline-block;font-style:normal;animation:ms-sp-slam .5s cubic-bezier(.2,1.6,.4,1) both}
     ${slamDelays}
     .arch-main-street .ms-sp-sub{margin:0 auto;max-width:28ch;color:inherit;animation:ms-sp-up .8s 1.4s both}
@@ -51,6 +56,8 @@ export const SPOTLIGHT_CSS = `
     .arch-main-street .ms-sp-go{display:inline-block;padding:14px 26px;border:2px solid currentColor;color:inherit;transition:background .25s,color .25s}
     .arch-main-street .ms-sp-hero .ms-sp-go:hover{background:var(--ms-on-media);color:#000}
     .arch-main-street .ms-sp-hero--bare .ms-sp-go:hover{background:var(--ms-fg);color:var(--ms-bg)}
+    /* A button says all of itself: the menu's cut-off at 240px is for menu names, not buttons. */
+    .arch-main-street .ms-sp-go[data-type="navLabel"]{max-width:100%;white-space:normal;overflow:visible}
     .arch-main-street .ms-sp-go--quiet{border-color:transparent;text-decoration:underline;text-underline-offset:6px}
     @keyframes ms-sp-slam{0%{transform:scale(3.2);opacity:0}100%{transform:none;opacity:1}}
     @keyframes ms-sp-up{from{opacity:0;transform:translateY(20px)}}
