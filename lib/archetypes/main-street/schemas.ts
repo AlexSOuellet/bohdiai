@@ -17,6 +17,7 @@
 import { z } from 'zod';
 import { MAIN_STREET_SKINS } from './skins';
 import { LINK_TARGETS } from './links';
+import { SECTION_KEYS } from './families';
 
 /** The hero's held media, authored as a STRUCTURED scene rather than a prose
  *  sentence — video models take direction far better from grouped fields, and a
@@ -143,6 +144,8 @@ export const MainStreetContentSchema = z.object({
      *  pages. The menu jumps down the page, the whole story and the contact form
      *  sit on the home page, and the old page addresses land on their section. */
     onePage: z.boolean().optional(),
+    /** The home page sections she switched off on My site (Alex, 2026-10-27). Absent hides none. */
+    hiddenSections: z.array(z.enum(SECTION_KEYS)).optional(),
   }),
 
   /** BEAT 1 — the moment is the hero. Held media + a story told one line at a

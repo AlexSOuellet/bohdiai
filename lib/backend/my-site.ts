@@ -15,6 +15,8 @@ import { listTestimonials } from './testimonials/queries';
 import { getBackgroundView } from './scene/background';
 import { listProducts } from './catalog/queries';
 import { GALLERY_MAX } from '@/lib/catalog/home';
+import type { FeatureKey } from './features';
+import { familyMood, homeSectionsFor, loadHomeSwitches, sectionOn, type HomeSection, type HomeSwitches } from '@/lib/storefront/home-sections';
 
 /** What a part shows of itself on My site. */
 export type PartShow =
@@ -157,4 +159,38 @@ export async function loadSiteData(db: SupabaseClient<Database>, tenantId: strin
     has(CUSTOMER_ACCOUNTS_PATH) ? attempt('customer accounts', () => customerAccountsOn(db, tenantId)) : null,
   ]);
   return { moment, profile, gallery, testimonials, background, showcaseGallery, customerAccounts };
+}
+
+/** One switch in "On your home page": the section's plain name, her own heading for it, and whether it shows. */
+export type HomeSectionRow = { section: HomeSection; label: string; heading: string; on: boolean };
+
+const SECTION_NAMES: Readonly<Record<HomeSection, string>> = {
+  work: 'Your pieces',
+  about: 'About you',
+  markets: 'Where to find you',
+  collections: 'Collections',
+  reviews: 'Testimonials',
+  gallery: 'Gallery',
+  contact: 'Contact',
+  close: 'Closing invitation',
+  marquee: 'Scrolling line',
+};
+
+/** The switches, in the order a visitor meets the sections. */
+export function homeSectionRows(sections: readonly HomeSection[], switches: HomeSwitches, headings: ReadonlyMap<string, string>): HomeSectionRow[] {
+  return sections.map((section) => ({ section, label: SECTION_NAMES[section], heading: headings.get(section) ?? '', on: sectionOn(switches, section) }));
+}
+
+/** Her home page's sections with their switches; null when they couldn't load. A custom design has none. */
+export async function loadHomeSectionRows(db: SupabaseClient<Database>, tenantId: string, on: ReadonlySet<FeatureKey>): Promise<HomeSectionRow[] | null> {
+  return attempt('home page sections', async () => {
+    const sections = homeSectionsFor(await familyMood(db, tenantId), on);
+    if (sections.length === 0) return [];
+    const [switches, headings] = await Promise.all([
+      loadHomeSwitches(db, tenantId),
+      db.from('site_sections').select('section, title').eq('tenant_id', tenantId),
+    ]);
+    if (headings.error !== null) throw new Error(headings.error.message);
+    return homeSectionRows(sections, switches, new Map((headings.data ?? []).map((r) => [r.section, r.title?.trim() ?? ''])));
+  });
 }

@@ -5,7 +5,14 @@ import { requireActingSite } from '@/lib/backend/current-site';
 import { getSiteFeatures } from '@/lib/backend/site-features';
 import { backendMenu } from '@/lib/backend/menu';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
-import { SHOWCASE_GALLERY_ITEM, buildMySite, loadSiteData, type PartShow } from '@/lib/backend/my-site';
+import {
+  SHOWCASE_GALLERY_ITEM,
+  buildMySite,
+  loadHomeSectionRows,
+  loadSiteData,
+  type PartShow,
+} from '@/lib/backend/my-site';
+import { HomeSectionSwitches } from './HomeSectionSwitches';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,14 +80,22 @@ export default async function MySitePage(): Promise<React.ReactElement> {
   const nav = await backendMenu(site.tenantId, on);
   const own = nav.find((s) => s.section === 'My site')?.items ?? [];
   // Showcase's gallery is the pieces she ticks on Products: it shows here too, opening Products.
-  const items = on.has('gallery_pieces') && !on.has('gallery') ? [...own, SHOWCASE_GALLERY_ITEM] : own;
+  const items =
+    on.has('gallery_pieces') && !on.has('gallery') ? [...own, SHOWCASE_GALLERY_ITEM] : own;
   if (items.length === 0) notFound();
-  const { parts, tools } = buildMySite(items, await loadSiteData(await createSupabaseServerClient(), site.tenantId, items));
+  const db = await createSupabaseServerClient();
+  const [data, homeRows] = await Promise.all([
+    loadSiteData(db, site.tenantId, items),
+    loadHomeSectionRows(db, site.tenantId, on),
+  ]);
+  const { parts, tools } = buildMySite(items, data);
   return (
     <>
       <div className="bk-head">
         <h1 className="bk-title">My site</h1>
-        <p className="bk-site-lead">Your site from top to bottom. Tap the part you want to change.</p>
+        <p className="bk-site-lead">
+          Your site from top to bottom. Tap the part you want to change.
+        </p>
       </div>
       <main id="main" className="bk-content bk-site">
         {parts.length > 0 && (
@@ -98,27 +113,36 @@ export default async function MySitePage(): Promise<React.ReactElement> {
             ))}
           </ul>
         )}
-        {tools.length > 0 && (
-          <section className="bk-tools" aria-labelledby="bk-tools">
-            <h2 id="bk-tools" className="bk-tools-title">
-              For the whole site
-            </h2>
-            {tools.map((tool) => (
-              <Link key={tool.href} className="bk-tool" href={tool.href as Route}>
-                {tool.photo === null ? (
-                  <span className="bk-tool-pic" aria-hidden="true" />
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element -- her own upload, sized by CSS
-                  <img className="bk-tool-pic" src={tool.photo} alt="" />
-                )}
-                <span>
-                  <span className="bk-tool-name">{tool.label}</span>
-                  <span className="bk-tool-line">{tool.line}</span>
-                </span>
-              </Link>
-            ))}
-          </section>
-        )}
+        <div className="bk-site-side">
+          {homeRows === null ? (
+            <p className="bk-error">
+              Your home page’s sections couldn’t load. Refresh to try again.
+            </p>
+          ) : (
+            homeRows.length > 0 && <HomeSectionSwitches rows={homeRows} />
+          )}
+          {tools.length > 0 && (
+            <section className="bk-tools" aria-labelledby="bk-tools">
+              <h2 id="bk-tools" className="bk-tools-title">
+                For the whole site
+              </h2>
+              {tools.map((tool) => (
+                <Link key={tool.href} className="bk-tool" href={tool.href as Route}>
+                  {tool.photo === null ? (
+                    <span className="bk-tool-pic" aria-hidden="true" />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element -- her own upload, sized by CSS
+                    <img className="bk-tool-pic" src={tool.photo} alt="" />
+                  )}
+                  <span>
+                    <span className="bk-tool-name">{tool.label}</span>
+                    <span className="bk-tool-line">{tool.line}</span>
+                  </span>
+                </Link>
+              ))}
+            </section>
+          )}
+        </div>
       </main>
     </>
   );

@@ -57,6 +57,7 @@ const site: ShorelineData = {
   sale: null,
   newArrivals: false,
   collections: [],
+  homeOff: new Set(),
 };
 
 afterEach(cleanup);
@@ -66,6 +67,16 @@ function page(which: ShorelinePage, data: ShorelineData = site) {
 }
 
 describe('shoreline pages (Lite and Full)', () => {
+  it('keeps a section she switched off on My site off the home page (Alex, 2026-10-27)', () => {
+    const shown = page('home').container.innerHTML;
+    cleanup();
+    const hidden = page('home', { ...site, homeOff: new Set(['work', 'reviews', 'about', 'markets'] as const) }).container;
+    expect(shown).toContain('sl-featured');
+    expect(hidden.querySelector('.sl-featured')).toBeNull();
+    expect(hidden.querySelector('.sl-card')).toBeNull();
+    expect(hidden.querySelector('.sl-tide')).toBeNull();
+  });
+
   it('keeps the bay behind every page and puts the menu at the top, marking where you are', () => {
     const { container } = page('shop');
     expect(container.querySelector('.sl-sea')).not.toBeNull();

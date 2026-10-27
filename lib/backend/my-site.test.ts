@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SHOWCASE_GALLERY_ITEM, buildMySite, type SiteData } from './my-site';
+import { SHOWCASE_GALLERY_ITEM, buildMySite, homeSectionRows, type SiteData } from './my-site';
 
 const items = [
   { label: 'Headline', href: '/manage/headline' },
@@ -67,5 +67,16 @@ describe('My site', () => {
 
   it('leaves out parts her site doesn’t have', () => {
     expect(buildMySite([{ label: 'Headline', href: '/manage/headline' }], data).parts.map((p) => p.label)).toEqual(['Headline']);
+  });
+});
+
+describe('On your home page (Alex, 2026-10-27)', () => {
+  it('gives each section its plain name, her heading, and whether it shows', () => {
+    const rows = homeSectionRows(['about', 'gallery', 'reviews'], new Map([['reviews', false]]), new Map([['about', 'Hi, I’m Renée']]));
+    expect(rows).toEqual([
+      { section: 'about', label: 'About you', heading: 'Hi, I’m Renée', on: true },
+      { section: 'gallery', label: 'Gallery', heading: '', on: false },
+      { section: 'reviews', label: 'Testimonials', heading: '', on: false },
+    ]);
   });
 });

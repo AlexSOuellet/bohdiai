@@ -28,6 +28,8 @@ import type { FamilyWords } from './words';
 import type { MainStreetView } from './schemas';
 import { loadSiteGallery, type GalleryPiece } from '@/lib/storefront/site-gallery';
 import { accountNavLabel } from '@/lib/buyers/nav';
+import { hiddenFamilySections, loadHomeSwitches } from '@/lib/storefront/home-sections';
+import type { SectionKey } from './families';
 
 /** Everything a family page reads, gathered from the homes. */
 export type FamilyHomes = {
@@ -48,6 +50,8 @@ export type FamilyHomes = {
   dates: MarketDate[];
   /** The gallery section's pieces (empty when the site has none). */
   gallery: GalleryPiece[];
+  /** The home page sections she switched off on My site. */
+  hidden?: readonly SectionKey[] | undefined;
 };
 
 const orUndefined = (s: string): string | undefined => (s === '' ? undefined : s);
@@ -105,7 +109,12 @@ export function familyViewFromHomes(h: FamilyHomes, w: FamilyWords): MainStreetV
   const story = paragraphs(p.bio);
   return {
     shopName: h.name,
-    identity: { wordmark: h.name, sellsOnline: h.sellsOnline, ...(h.accountLabel == null ? {} : { accountLabel: h.accountLabel }) },
+    identity: {
+      wordmark: h.name,
+      sellsOnline: h.sellsOnline,
+      ...(h.accountLabel == null ? {} : { accountLabel: h.accountLabel }),
+      ...(h.hidden === undefined || h.hidden.length === 0 ? {} : { hiddenSections: [...h.hidden] }),
+    },
     moment: {
       media: m.media === null
         ? { kind: 'still', alt: '' }
@@ -173,11 +182,12 @@ export async function loadFamilyHomes(db: SupabaseClient<Database>, tenantId: st
   ]);
   if (tenant.error !== null) throw new Error(`Could not load the site: ${tenant.error.message}`);
   if (tenant.data === null) throw new Error('Could not load the site: no such tenant');
-  const [testimonials, dates, gallery] = await Promise.all([
+  const [testimonials, dates, gallery, switches] = await Promise.all([
     // Full shows every testimonial; Market up to three, the ticked ones first (Alex, 2026-10-20).
     features.has('testimonials') ? listTestimonials(db, tenantId).then((list) => siteTestimonials(list, features.has('testimonials_all'))) : Promise.resolve([]),
     features.has('market_dates') ? listVisitorMarketDates(db, tenantId) : Promise.resolve([]),
     loadSiteGallery(db, tenantId, features),
+    loadHomeSwitches(db, tenantId),
   ]);
   return {
     name: tenant.data.business_name,
@@ -192,6 +202,7 @@ export async function loadFamilyHomes(db: SupabaseClient<Database>, tenantId: st
     testimonials,
     dates,
     gallery,
+    hidden: hiddenFamilySections(switches),
   };
 }
 

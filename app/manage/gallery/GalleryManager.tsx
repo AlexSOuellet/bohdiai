@@ -2,7 +2,8 @@
 
 import { useRef, useState } from 'react';
 import { unstable_rethrow } from 'next/navigation';
-import { uploadGalleryPhoto, saveGallery, removeGalleryPhoto, setGalleryShown } from '@/lib/backend/gallery/actions';
+import Link from 'next/link';
+import { uploadGalleryPhoto, saveGallery, removeGalleryPhoto } from '@/lib/backend/gallery/actions';
 import { GALLERY_LIMIT, CAPTION_MAX, moveGalleryItem, type GalleryItem } from '@/lib/backend/gallery/gallery-form';
 import { ConfirmButton } from '../_components/ConfirmButton';
 import { useNotice } from '../_components/Notice';
@@ -15,8 +16,9 @@ const sameOrder = (a: readonly GalleryItem[], b: readonly GalleryItem[]): boolea
 /** The gallery: add photos (they upload straight away and join the end), caption
  *  and reorder them (saved together with Save), remove one (straight away, after a
  *  confirm). The first photo opens the site. */
-/** A standard site on Market or Full: the gallery section's switch, and how many
- *  products are ticked for it. Its gallery has no limit (Alex, 2026-10-19). */
+/** A standard site on Market or Full: whether the gallery shows (its switch is on
+ *  My site with the other sections, Alex 2026-10-27), and how many products are
+ *  ticked for it. Its gallery has no limit (Alex, 2026-10-19). */
 export type StandardGallery = { shown: boolean; ticked: number };
 
 export function GalleryManager({ initial, siteUrl, standard = null }: { initial: GalleryItem[]; siteUrl: string; standard?: StandardGallery | null }): React.ReactElement {
@@ -28,26 +30,6 @@ export function GalleryManager({ initial, siteUrl, standard = null }: { initial:
   const notice = useNotice();
   const unsaved = !sameOrder(items, saved);
   const room = standard === null ? GALLERY_LIMIT - items.length : Number.POSITIVE_INFINITY;
-  const [shown, setShown] = useState(standard?.shown ?? false);
-  const [switching, setSwitching] = useState(false);
-
-  async function toggle(next: boolean): Promise<void> {
-    if (switching) return;
-    setSwitching(true);
-    notice.clear();
-    try {
-      const r = await setGalleryShown(next);
-      if (r.ok) {
-        setShown(next);
-        notice.showSaved(next ? 'Your gallery shows on your site now.' : 'Your gallery is hidden from your site.');
-      } else notice.showError(r.error);
-    } catch (err) {
-      unstable_rethrow(err);
-      notice.showError(FAILED);
-    } finally {
-      setSwitching(false);
-    }
-  }
 
   async function add(e: React.ChangeEvent<HTMLInputElement>): Promise<void> {
     const files = [...(e.target.files ?? [])];
@@ -142,13 +124,12 @@ export function GalleryManager({ initial, siteUrl, standard = null }: { initial:
         {standard !== null && (
           <section className="bk-section" aria-labelledby="s-show">
             <h2 id="s-show" className="bk-section-title">On your site</h2>
-            <label className="bk-check">
-              <input type="checkbox" checked={shown} disabled={switching} onChange={(e) => void toggle(e.target.checked)} />
-              Show my gallery on my site
-            </label>
             <p className="bk-note">
-              {`Your gallery shows the products you tick for it on your products list (${standard.ticked} ticked), then these photos. It can’t be shown while it’s empty.`}
-              {shown && standard.ticked === 0 && items.length === 0 ? ' It’s switched on but has nothing in it, so it doesn’t show on your site.' : ''}
+              {`Your gallery shows the products you tick for it on your products list (${standard.ticked} ticked), then these photos. `}
+              {standard.shown ? 'It’s on your home page. ' : 'It’s turned off. '}
+              <Link className="bk-link" href="/manage/site">
+                Turn it on or off on My site
+              </Link>
             </p>
           </section>
         )}

@@ -19,6 +19,7 @@ import { loadSiteGallery } from '@/lib/storefront/site-gallery';
 import type { GalleryItem } from '@/lib/backend/gallery/gallery-form';
 import type { ShorelineLook } from './look';
 import { accountNavLabel } from '@/lib/buyers/nav';
+import { loadHomeSwitches, sectionOn, type HomeSection } from '@/lib/storefront/home-sections';
 
 export type ShorelineData = {
   card: CardData;
@@ -44,15 +45,18 @@ export type ShorelineData = {
   collections: { slug: string; name: string; products: ProductView[] }[];
   /** The gallery section (Market and Full, once she switches it on): ticked pieces, then her own photos. */
   gallery: GalleryItem[];
+  /** The home page sections she switched off on My site (Alex, 2026-10-27). */
+  homeOff: ReadonlySet<HomeSection>;
 };
 
 export async function loadShorelineData(
   db: SupabaseClient<Database>,
   tenantId: string,
 ): Promise<ShorelineData> {
-  const [card, features] = await Promise.all([
+  const [card, features, switches] = await Promise.all([
     loadCardData(db, tenantId),
     loadSiteFeatures(db, tenantId),
+    loadHomeSwitches(db, tenantId),
   ]);
   const pages = features.has('catalog');
   const loaded = pages ? await loadCatalog(db, tenantId) : null;
@@ -80,6 +84,7 @@ export async function loadShorelineData(
     // The gallery section, the same one every mood shows (Plan-Backends, the gallery section).
     gallery: pages ? (await loadSiteGallery(db, tenantId, features)).map((g) => ({ id: g.key, url: g.url, caption: g.name })) : [],
     testimonials: features.has('testimonials') ? siteTestimonials(await listTestimonials(db, tenantId), features.has('testimonials_all')) : [],
+    homeOff: new Set((['work', 'reviews', 'about', 'markets'] as const).filter((s) => !sectionOn(switches, s))),
   };
 }
 

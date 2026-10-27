@@ -207,8 +207,12 @@ function Home({ site }: { site: ShorelineData }): ReactElement {
   const { card } = site;
   const p = card.profile;
   const bio = bioParagraphs(p.bio);
-  const featured = featuredProducts(site.products);
-  const soon = card.dates.slice(0, 3);
+  // A section she switched off on My site stays off the home page; its own page keeps it.
+  const off = site.homeOff;
+  const featured = off.has('work') ? [] : featuredProducts(site.products);
+  const soon = off.has('markets') ? [] : card.dates.slice(0, 3);
+  const about = !off.has('about') && (bio.length > 0 || p.headline !== '');
+  const quotes = off.has('reviews') ? [] : site.testimonials;
   return (
     <>
       <div className="sl-sky sl-sky--home">
@@ -257,24 +261,24 @@ function Home({ site }: { site: ShorelineData }): ReactElement {
             </section>
           </PhotoViewerProvider>
         )}
-        {site.testimonials.length > 0 && (
+        {quotes.length > 0 && (
           <section className="sl-water sl-featured" aria-labelledby="sl-kind">
             <h2 className="sl-section-h" id="sl-kind">
               {W.kindWords}
             </h2>
-            <Quotes items={site.testimonials.slice(0, HOME_QUOTES)} />
-            {site.testimonials.length > HOME_QUOTES && (
+            <Quotes items={quotes.slice(0, HOME_QUOTES)} />
+            {quotes.length > HOME_QUOTES && (
               <div className="sl-more">
                 <a href="/testimonials">{W.seeMoreWords}</a>
               </div>
             )}
           </section>
         )}
-        {(bio.length > 0 || p.headline !== '' || soon.length > 0) && (
+        {(about || soon.length > 0) && (
           <div
-            className={bio.length > 0 && soon.length > 0 ? 'sl-below' : 'sl-below sl-below--one'}
+            className={about && bio.length > 0 && soon.length > 0 ? 'sl-below' : 'sl-below sl-below--one'}
           >
-            {(bio.length > 0 || p.headline !== '') && (
+            {about && (
               <section className="sl-card">
                 <div className="sl-card__in">
                   <PortraitPrint portrait={card.portrait} />

@@ -488,7 +488,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       case 'testimonials':
         return <TestimonialsPage content={c} skin={skin} words={words} family={family} />;
       default:
-        return <MainStreet content={c} skin={skin} words={words} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} hiddenSections={showsShop ? (showsCollections ? resolutions.hidden : [...resolutions.hidden, 'collections']) : [...resolutions.hidden, 'goods', 'collections']} shownSections={resolutions.shown} originalMood={originalMood} />;
+        return <MainStreet content={c} skin={skin} words={words} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} hiddenSections={[...resolutions.hidden, ...(c.identity.hiddenSections ?? []), ...(showsShop ? (showsCollections ? [] : ['collections' as const]) : ['goods' as const, 'collections' as const])]} shownSections={resolutions.shown} originalMood={originalMood} />;
     }
     }, familyPainted.key);
   },
