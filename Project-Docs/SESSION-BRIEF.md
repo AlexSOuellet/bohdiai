@@ -1,7 +1,7 @@
 # Session Brief — BohdiAI
 
 > **⚠ START HERE (Session 117):** read `session-logs/session-116.md`, then `Plan-Backends.md` ("Free", "The ladder"), then `Open-Work.md` (item 49).
-> **Today: Maker Free** (Alex). It sits on `feat/backend-tools` (unmerged, built before the redesign). First ask Alex what felt worse there, then bring Free into the redesigned backend.
+> **First: merge `feat/backend-redesign` into main** (Alex, 2026-10-27: "we can do it tomorrow"; no site is truly live). **Then Maker Free** (Alex). It sits on `feat/backend-tools` (unmerged, built before the redesign). First ask Alex what felt worse there, then bring Free into the redesigned backend.
 > **The backend redesign is on `feat/backend-redesign` (pushed, NOT merged; it carries Session 115's buyer accounts).** Alex likes it. Never place a new backend screen without asking where it goes.
 > Payments are NOT being built (Alex: "we are building ADMIN").
 > Saltmarsh IS Scenic. A change to what a plan shows must reach the moods, Scenic's shoreline code and Rose n' Cat's nursery.
