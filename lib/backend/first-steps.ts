@@ -10,6 +10,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import type { SitePlan } from './plan/plan';
 import type { FeatureKey } from './features';
+import { squareLink } from '@/lib/square/connection';
+import { paypalLink } from '@/lib/paypal/connection';
 
 export type Step = { key: string; label: string; href: string; done: boolean };
 export type Steps = { title: string; steps: Step[] };
@@ -85,16 +87,18 @@ function must<T>(r: { data: T; error: { message: string } | null }, what: string
   return r.data;
 }
 
-/** Reads what the steps need. `next` is the soonest event that isn't over. */
-export async function loadStepFacts(db: Db, tenantId: string, input: { draft: boolean; next: { id: string; name: string } | null }): Promise<StepFacts> {
+/** Reads what the steps need. `next` is the soonest event that isn't over. `admin`
+ *  (the server's own key) reads only whether Square and PayPal are connected: their
+ *  homes are locked to everyone else, and no key ever leaves them. */
+export async function loadStepFacts(db: Db, admin: Db, tenantId: string, input: { draft: boolean; next: { id: string; name: string } | null }): Promise<StepFacts> {
   const [moment, profile, contact, socials, listings, square, paypal, tenant, collections, promotions, bringing] = await Promise.all([
     db.from('site_moments').select('headline').eq('tenant_id', tenantId).maybeSingle(),
     db.from('site_profiles').select('bio').eq('tenant_id', tenantId).maybeSingle(),
     db.from('site_contacts').select('phone').eq('tenant_id', tenantId).maybeSingle(),
     db.from('site_socials').select('network', { count: 'exact', head: true }).eq('tenant_id', tenantId),
     db.from('listings').select('base_price_cents, media_ids, in_gallery, listing_variants(price_cents, status)').eq('tenant_id', tenantId).eq('status', 'active').in('listing_type', ['product', 'digital_product']).is('deleted_at', null),
-    db.from('square_connections').select('tenant_id').eq('tenant_id', tenantId).maybeSingle(),
-    db.from('paypal_connections').select('tenant_id').eq('tenant_id', tenantId).maybeSingle(),
+    squareLink(admin, tenantId),
+    paypalLink(admin, tenantId),
     db.from('tenants').select('stripe_account_id').eq('id', tenantId).maybeSingle(),
     db.from('collections').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId).is('deleted_at', null),
     db.from('promotions').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
@@ -116,8 +120,8 @@ export async function loadStepFacts(db: Db, tenantId: string, input: { draft: bo
     socials: socials.count ?? 0,
     galleryPicks: rows.filter((r) => r.in_gallery).length,
     unpriced: rows.filter((r) => !priced(r)).length,
-    squareConnected: must(square, 'Square') !== null,
-    onlinePayments: must(square, 'Square') !== null || must(paypal, 'PayPal') !== null || (must(tenant, 'your site')?.stripe_account_id ?? null) !== null,
+    squareConnected: square !== null,
+    onlinePayments: square !== null || paypal !== null || (must(tenant, 'your site')?.stripe_account_id ?? null) !== null,
     nextEvent: input.next === null ? null : { ...input.next, bringing: bringing.count ?? 0 },
     collections: collections.count ?? 0,
     morePhotos: rows.some((r) => r.media_ids.length > 1),

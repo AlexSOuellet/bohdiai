@@ -95,7 +95,7 @@ export default async function ManageHome(): Promise<React.ReactElement> {
   if (plan !== null) {
     try {
       const next = events?.next ?? null;
-      const facts = await loadStepFacts(own, site.tenantId, { draft: publish.draft, next: next === null ? null : { id: next.id, name: next.name } });
+      const facts = await loadStepFacts(own, db, site.tenantId, { draft: publish.draft, next: next === null ? null : { id: next.id, name: next.name } });
       steps = firstSteps(plan, facts, on);
     } catch (e) {
       stepsFailed = true;
