@@ -6,6 +6,7 @@
  */
 import type { ProfileForm } from '../../lib/backend/profile/profile-form';
 import type { CardSiteModule } from '../build-card-site';
+import type { FamilyMove } from '../convert-card-site';
 
 export const SITE: CardSiteModule['SITE'] = {
   subdomain: 'paper-and-patina',
@@ -56,3 +57,43 @@ export const DATES = [
   { date: '2026-11-14', endDate: '', name: 'Makers Mill Market', town: 'Pawtucket' },
   { date: '2026-12-13', endDate: '', name: 'Holiday Craft Show', town: 'Providence' },
 ];
+
+/** Moving onto the Spotlight family on Showcase (Alex, 2026-10-27), with
+ *  scripts/convert-card-site.ts. The studio photo opens the page; every other
+ *  photo becomes a piece in the gallery. */
+export const FAMILY: FamilyMove = {
+  family: 'spotlight',
+  skin: 'main-street-reel',
+  plan: 'showcase',
+  openingPhoto: 'The studio',
+  moment: {
+    kicker: 'Mixed media in Warwick, RI',
+    headline: 'Tired old furniture and plain pieces, reborn in layers of paper, paint and pattern',
+    sub: 'Dressers, trays, boxes and canvases, every one of them one of a kind.',
+    story: [],
+    ctaLabel: 'Tell me about your piece',
+    ctaTarget: 'contact',
+    secondCtaLabel: '',
+    secondCtaTarget: '',
+    playMode: 'off',
+  },
+  sections: {
+    gallery: { title: 'Pieces with a second life' },
+    about: { title: 'Nothing is too far gone', moreLabel: 'Read Dana’s story', pageTitle: 'How Dana works' },
+    markets: { title: 'Find me at the markets' },
+    close: { title: 'Have a piece that deserves a second life', moreLabel: 'Tell me about it', moreTarget: 'contact' },
+    contact: { title: 'Tell me about your piece', lede: 'A dresser in the garage, a tray from your grandmother, a box with a broken hinge. Send a note and Dana will write back.' },
+  },
+  pieces: {
+    'Peony dresser': 'A tired pine dresser, painted cream and layered with peony papers across every drawer.',
+    'French botanical tray': 'A serving tray dressed in old French botanical prints and sealed for everyday use.',
+    'Garden collage': 'A canvas built up in torn garden papers, paint and pressed texture.',
+    'Butterfly jewelry box': 'A wooden box with a new hinge and a lid of butterflies, lined inside with a soft print.',
+    'Tropical nightstand': 'A small nightstand reborn in deep greens and palm leaves.',
+    'Wanderlust suitcase': 'A vintage suitcase covered in old maps and postcards, for keeping or for display.',
+    'Wildflower jars': 'A set of glass jars wrapped in wildflower papers, for flowers, brushes or anything at all.',
+    'Lemon blossom clock': 'A wall clock with a face of lemon blossoms and a fresh coat of paint on the frame.',
+    'Cottage rose bench': 'A garden bench brought in from the cold, painted and layered with cottage roses.',
+  },
+  wordsFrom: 'classic-loafs',
+};
