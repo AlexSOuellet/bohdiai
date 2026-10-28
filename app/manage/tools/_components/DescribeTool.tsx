@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { unstable_rethrow } from 'next/navigation';
+import { useRouter, unstable_rethrow } from 'next/navigation';
 import type { PhotoForm } from '@/lib/backend/catalog/product-form';
 import { parseDollars } from '@/lib/backend/catalog/product-form';
-import { describePiece } from '@/lib/tools/describe-actions';
+import { describePiece, loadPieceForDescribe, saveDescriptionsToProduct } from '@/lib/tools/describe-actions';
 import { FACTS_MAX, type Description } from '@/lib/tools/describe-limits';
 import { productLink } from '@/lib/tools/handoff';
 import { PhotosField } from '../../products/_components/PhotosField';
@@ -15,8 +15,13 @@ import { HangTag, TextField } from './ToolParts';
 /** Describe it (Alex, 2026-10-28): the description writer on its own. The maker
  *  names the piece, says what it's made of, adds a photo and anything else, and gets
  *  both descriptions on the tag, ready to save as a product. The same writer sits
- *  under the description on the product screen. */
-export function DescribeTool({ canSaveProduct }: { canSaveProduct: boolean }): React.ReactElement {
+ *  under the description on the product screen. It can start from one of the
+ *  maker's products, and then saves to it (Alex, 2026-10-28). */
+export function DescribeTool({ canSaveProduct, products = [] }: { canSaveProduct: boolean; products?: readonly { id: string; name: string }[] }): React.ReactElement {
+  const router = useRouter();
+  const [productId, setProductId] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [name, setName] = useState('');
   const [madeOf, setMadeOf] = useState('');
   const [price, setPrice] = useState('');
@@ -45,6 +50,53 @@ export function DescribeTool({ canSaveProduct }: { canSaveProduct: boolean }): R
     setBusy(false);
   }
 
+  /** Start from one of her products, or from nothing. */
+  async function pick(id: string): Promise<void> {
+    setProductId(id);
+    setText(null);
+    setProblem(null);
+    if (id === '') {
+      setName('');
+      setMadeOf('');
+      setPrice('');
+      setPhotos([]);
+      return;
+    }
+    setLoading(true);
+    try {
+      const got = await loadPieceForDescribe(id);
+      if (got.ok) {
+        setName(got.piece.name);
+        setMadeOf(got.piece.materials.join('\n'));
+        setPrice(got.piece.price);
+        setPhotos(got.piece.photo === null ? [] : [got.piece.photo]);
+      } else setProblem(got.error);
+    } catch (err) {
+      unstable_rethrow(err);
+      setProblem('Something went wrong. Check your connection and try again.');
+    }
+    setLoading(false);
+  }
+
+  async function saveToProduct(): Promise<void> {
+    if (saving || text === null) return;
+    setSaving(true);
+    setProblem(null);
+    try {
+      const done = await saveDescriptionsToProduct(productId, text);
+      if (done.ok) {
+        router.push(`/manage/products/${productId}`);
+        return;
+      }
+      setProblem(done.error);
+    } catch (err) {
+      unstable_rethrow(err);
+      setProblem('Something went wrong. Check your connection and try again.');
+    }
+    setSaving(false);
+  }
+
+  const picked = products.find((p) => p.id === productId) ?? null;
   const cents = parseDollars(price);
   const priceCents = cents.ok && cents.cents !== null ? cents.cents : 0;
 
@@ -65,6 +117,22 @@ export function DescribeTool({ canSaveProduct }: { canSaveProduct: boolean }): R
         >
           <section className="bk-section">
             <h3 className="bk-section-title">The piece</h3>
+            {products.length > 0 && (
+              <div className="bk-field">
+                <label htmlFor="d-product" className="bk-label">
+                  Start from one of your products
+                </label>
+                <select id="d-product" className="bk-input" value={productId} disabled={loading} onChange={(e) => void pick(e.target.value)}>
+                  <option value="">A new piece</option>
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+                {loading && <span className="bk-note">Loading…</span>}
+              </div>
+            )}
             <TextField id="d-name" label="What it’s called" value={name} onChange={setName} wide />
             <div className="bk-field">
               <label htmlFor="d-made" className="bk-label">
@@ -117,7 +185,12 @@ export function DescribeTool({ canSaveProduct }: { canSaveProduct: boolean }): R
                 <p className="bk-hangtag-say bk-describe-text">{text.description}</p>
               </>
             )}
-            {canSaveProduct && text !== null && (
+            {picked !== null && text !== null && (
+              <button type="button" className="bk-btn bk-hangtag-save" disabled={saving} onClick={() => void saveToProduct()}>
+                {saving ? 'Saving…' : `Save to ${picked.name}`}
+              </button>
+            )}
+            {picked === null && canSaveProduct && text !== null && (
               <Link
                 className="bk-btn bk-hangtag-save"
                 href={productLink(name, priceCents, null, { short: text.short, description: text.description, ...(photo === null ? {} : { photoUploadId: photo.uploadId }) }) as Route}

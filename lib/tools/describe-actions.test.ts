@@ -9,6 +9,15 @@ const state = vi.hoisted(() => ({
   write: vi.fn(),
 }));
 const logger = vi.hoisted(() => ({ error: vi.fn() }));
+const own = vi.hoisted(() => ({ product: null as unknown, costs: null as unknown, update: { data: [{ id: 'l1' }] as unknown, error: null as unknown }, sent: [] as unknown[] }));
+vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
+vi.mock('@/lib/backend/catalog/queries', () => ({ getProduct: async () => { if (own.product instanceof Error) throw own.product; return own.product; } }));
+vi.mock('./product-costs', () => ({ loadProductCosts: async () => own.costs }));
+vi.mock('@/lib/supabase-server', () => ({
+  createSupabaseServerClient: async () => ({
+    from: () => ({ update: (row: unknown) => { own.sent.push(row); return { eq: () => ({ eq: () => ({ is: () => ({ select: async () => own.update }) }) }) }; } }),
+  }),
+}));
 
 vi.mock('@/lib/backend/current-site', () => ({ requireActingSite: async () => ({ site: { tenantId: 't1' } }) }));
 vi.mock('@/lib/backend/plan/free', () => ({ isFreeSite: async () => state.free }));
@@ -31,7 +40,7 @@ vi.mock('@/lib/supabase', () => ({
   }),
 }));
 
-import { describePiece } from './describe-actions';
+import { describePiece, loadPieceForDescribe, saveDescriptionsToProduct } from './describe-actions';
 
 const ask = { name: 'Lazy Susan', materials: ['Pine'], facts: '', price: '130', photoUploadId: '11111111-1111-4111-8111-111111111111' };
 
@@ -98,5 +107,42 @@ describe('describePiece', () => {
     state.write.mockRejectedValue('offline');
     expect(await describePiece(ask)).toEqual({ ok: false, error: 'The description couldn’t be written just now. Try again in a moment.' });
     expect(logger.error).toHaveBeenCalledWith('describe: failed', { tenantId: 't1', error: 'offline' });
+  });
+});
+
+const L1 = '22222222-2222-4222-8222-222222222222';
+
+describe('Describe it with one of her products (Alex, 2026-10-28)', () => {
+  it('loads its name, price, main photo and what it’s made of', async () => {
+    own.product = { name: 'Lazy Susan', price: '130', photos: [{ uploadId: 'p1', url: 'https://img/p.jpg' }] };
+    own.costs = { batch: [{ name: '18" Round' }, { name: ' ' }], piece: [{ name: 'Print' }] };
+    expect(await loadPieceForDescribe(L1)).toEqual({ ok: true, piece: { id: L1, name: 'Lazy Susan', price: '130', materials: ['18" Round', 'Print'], photo: { uploadId: 'p1', url: 'https://img/p.jpg' } } });
+    own.product = { name: 'Tin', price: '', photos: [] };
+    own.costs = null;
+    expect(await loadPieceForDescribe(L1)).toMatchObject({ ok: true, piece: { materials: [], photo: null } });
+  });
+
+  it('says when the product is gone, the id is odd, or the load fails', async () => {
+    expect((await loadPieceForDescribe('nope')).ok).toBe(false);
+    own.product = null;
+    expect(await loadPieceForDescribe(L1)).toEqual({ ok: false, error: 'That product isn’t on your site any more. Reload the page.' });
+    own.product = new Error('down');
+    expect((await loadPieceForDescribe(L1)).ok).toBe(false);
+  });
+
+  it('saves both descriptions onto it, trimmed, and nothing else', async () => {
+    own.sent = [];
+    own.update = { data: [{ id: L1 }], error: null };
+    expect(await saveDescriptionsToProduct(L1, { short: ' S ', description: '' })).toEqual({ ok: true });
+    expect(own.sent).toEqual([{ short_description: 'S', description: null }]);
+  });
+
+  it('says when it couldn’t save, the product is gone, or the request is odd', async () => {
+    own.update = { data: null, error: { message: 'down' } };
+    expect((await saveDescriptionsToProduct(L1, { short: 'S', description: 'D' })).ok).toBe(false);
+    own.update = { data: [], error: null };
+    expect(await saveDescriptionsToProduct(L1, { short: 'S', description: 'D' })).toEqual({ ok: false, error: 'That product isn’t on your site any more. Reload the page.' });
+    expect((await saveDescriptionsToProduct('x', { short: 'S', description: 'D' })).ok).toBe(false);
+    expect((await saveDescriptionsToProduct(L1, null as never)).ok).toBe(false);
   });
 });

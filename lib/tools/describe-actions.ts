@@ -12,7 +12,13 @@ import { anthropicClient } from '@/lib/anthropic';
 import { logger } from '@/lib/logger';
 import { parseDollars } from '@/lib/backend/catalog/product-form';
 import { isFreeSite } from '@/lib/backend/plan/free';
-import { DESCRIBE_LIMIT, FACTS_MAX, monthStart, resetsOn, writeDescription, type Description } from './describe';
+import { revalidatePath } from 'next/cache';
+import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { getProduct } from '@/lib/backend/catalog/queries';
+import type { PhotoForm } from '@/lib/backend/catalog/product-form';
+import type { DoneResult } from '@/lib/backend/catalog/results';
+import { loadProductCosts } from './product-costs';
+import { DESCRIBE_LIMIT, FACTS_MAX, LONG_MAX, SHORT_MAX, monthStart, resetsOn, writeDescription, type Description } from './describe';
 
 export type DescribeAsk = { name: string; materials: string[]; facts: string; price: string; photoUploadId: string | null };
 export type DescribeDone = { ok: true; text: Description; left: number } | { ok: false; error: string };
@@ -63,4 +69,57 @@ export async function describePiece(ask: DescribeAsk): Promise<DescribeDone> {
     logger.error('describe: failed', { tenantId: site.tenantId, error: err instanceof Error ? err.message : String(err) });
     return { ok: false, error: FAILED };
   }
+}
+
+export type PieceForDescribe = { id: string; name: string; price: string; materials: string[]; photo: PhotoForm | null };
+
+/** One of the maker's products, to describe in Describe it (Alex, 2026-10-28): its
+ *  name, price, main photo, and what it's made of from its costs. */
+export async function loadPieceForDescribe(id: string): Promise<{ ok: true; piece: PieceForDescribe } | { ok: false; error: string }> {
+  if (typeof id !== 'string' || !ID.test(id)) return { ok: false, error: 'That product couldn’t be found. Reload the page.' };
+  const { site } = await requireActingSite();
+  const db = await createSupabaseServerClient();
+  try {
+    const product = await getProduct(db, site.tenantId, id);
+    if (product === null) return { ok: false, error: 'That product isn’t on your site any more. Reload the page.' };
+    const costs = await loadProductCosts(db, site.tenantId, id);
+    return {
+      ok: true,
+      piece: {
+        id,
+        name: product.name,
+        price: product.price,
+        materials: costs === null ? [] : [...costs.batch, ...costs.piece].map((m) => m.name).filter((m) => m.trim() !== ''),
+        photo: product.photos[0] ?? null,
+      },
+    };
+  } catch (err) {
+    logger.error('describe: product load failed', { tenantId: site.tenantId, error: err instanceof Error ? err.message : String(err) });
+    return { ok: false, error: 'That product couldn’t load. Try again in a moment.' };
+  }
+}
+
+/** Puts both descriptions on one of the maker's products; nothing else on it changes. */
+export async function saveDescriptionsToProduct(id: string, text: Description): Promise<DoneResult> {
+  if (typeof id !== 'string' || !ID.test(id) || text === null || typeof text !== 'object' || typeof text.short !== 'string' || typeof text.description !== 'string')
+    return { ok: false, error: 'Something about this didn’t look right. Reload the page and try again.' };
+  const { site } = await requireActingSite();
+  const db = await createSupabaseServerClient();
+  const short = text.short.trim().slice(0, SHORT_MAX);
+  const description = text.description.trim().slice(0, LONG_MAX);
+  const { data, error } = await db
+    .from('listings')
+    .update({ short_description: short === '' ? null : short, description: description === '' ? null : description })
+    .eq('id', id)
+    .eq('tenant_id', site.tenantId)
+    .is('deleted_at', null)
+    .select('id');
+  if (error !== null) {
+    logger.error('describe: save to product failed', { tenantId: site.tenantId, error: error.message });
+    return { ok: false, error: 'The descriptions couldn’t be saved. Try again in a moment.' };
+  }
+  if ((data ?? []).length === 0) return { ok: false, error: 'That product isn’t on your site any more. Reload the page.' };
+  revalidatePath(`/manage/products/${id}`);
+  revalidatePath('/manage/products');
+  return { ok: true };
 }
