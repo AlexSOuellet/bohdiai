@@ -1,8 +1,9 @@
 # Session Brief — BohdiAI
 
-> **⚠ START HERE (Session 117):** read `session-logs/session-116.md`, then `Plan-Backends.md` ("Free", "The ladder"), then `Open-Work.md` (item 49).
-> **First: merge `feat/backend-redesign` into main** (Alex, 2026-10-27: "we can do it tomorrow"; no site is truly live). **Then Maker Free** (Alex). It sits on `feat/backend-tools` (unmerged, built before the redesign). First ask Alex what felt worse there, then bring Free into the redesigned backend.
-> **The backend redesign is on `feat/backend-redesign` (pushed, NOT merged; it carries Session 115's buyer accounts).** Alex likes it. Never place a new backend screen without asking where it goes.
+> **⚠ START HERE (Session 118):** read `session-logs/session-117.md`, then `Plan-Backends.md` ("Free", "The tools"), then `Open-Work.md` (items 3a, 49, 51).
+> **First: run the full test suite with the dev server stopped (ask Alex before stopping it), then merge `feat/maker-free`** (Free, the tools, the description writer, Market day on Showcase; pushed, NOT merged). Check Workers Builds and the `test` check.
+> **Then (Alex): "the freemium info and rebuild bohdiai.com"**: maker site only, no doors, service switched off (not deleted), one note for non-maker sites, Free on the plans and pricing.
+> The backend redesign is merged and live. Never place a new backend screen without asking where it goes. Say "the maker", not "she".
 > Payments are NOT being built (Alex: "we are building ADMIN").
 > Saltmarsh IS Scenic. A change to what a plan shows must reach the moods, Scenic's shoreline code and Rose n' Cat's nursery.
 > Build everything Alex decides; ask in plain text (no button questions); ask before any change he didn't ask for.
@@ -10,7 +11,7 @@
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 **Operative plan doc:** `Project-Docs/Modular-Plan.md`; open items in `Project-Docs/Open-Work.md`. Every session updates Open-Work as items land.
 
-**Last updated:** 2026-10-27, Session 116 (end).
+**Last updated:** 2026-10-28, Session 117 (end).
 
 ---
 
@@ -20,7 +21,7 @@
 
 **Session 114 (merged and live): Renée's sample site Rustic Charm & More (public, Full, Rustic, redesigned to work in every mood); Full defined; Getting paid with Square/Stripe/PayPal sections; PayPal connect/checkout/refunds built in test mode (sandbox keys only in `.env.local`, nothing live); Try on a look; the opening photo on Headline; a Background screen; a site's own background (`site_backgrounds`); every piece's photo shown whole; Owner login in family footers.** Recap: `session-logs/session-114.md`.
 
-**Session 116 (on `feat/backend-redesign`, pushed, not merged): Claude rebuilt the backend (BohdiAI's own look; menu Home, Products, Events, Orders, Customers, My site, Account, Help; tabs per group; My site shows the whole site with a switch for every home page section); Home changes by plan (Showcase, Market, Full first steps); Customers and its switch split; Paper & Patina on Spotlight/Showcase. The Spotlight long-headline fix is live.** Recap: `session-logs/session-116.md`.
+**Session 117 (redesign merged and live; the rest on `feat/maker-free`, pushed, not merged): Free's own Home (no events on Free); the tools as separate screens on every plan: Cost to make, Price it, Is it worth it? (replaces Market day), Monthly goal, Shipping, Describe it (the description writer, 30/100 a month), What to bring (Market and Full); Market day on Showcase events.** Recap: `session-logs/session-117.md`.
 
 **Session 87 — the whole app now runs on Cloudflare Workers; Vercel serves nothing.** bohdiai.com, www, every shop subdomain and Cut-Pro are all served by the `bohdiai` Worker, verified live (Cut-Pro end to end, including a real photo estimate). `main` is current (fast-forwarded 552 commits). 1364 tests, tsc + lint clean. Runbook + lessons: `Cloudflare-Move.md`.
 
@@ -33,7 +34,7 @@
 
 ## Next actions
 
-**Session 117:** Maker Free (ask Alex what felt worse on `feat/backend-tools` first), built into the redesigned backend. Then merge `feat/backend-redesign` and check every plan's site live; rename `site_added_sections` after. Still open: PayPal on Getting paid for Market sites; the mood-proof build rules into Modular-Plan; the toolkit page, pricing cards, the Cloudflare analytics key (Alex), paying at sign-up.
+**Session 118:** the full suite with the dev server off, merge `feat/maker-free`, then the freemium info and the bohdiai.com rebuild (Open-Work 3a). Still open: Which pieces earn on Full's Home, cancel down to Free, Free's sign-up with paying at sign-up, explainer videos and the demo, renaming `site_added_sections`, PayPal for Market, the Cloudflare analytics key (Alex).
 
 **Every open item is in `Open-Work.md`; follow its Priority order.** Waiting on others: Joe's feedback, Renee's details.
 
@@ -88,10 +89,9 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
-- Session 116 (2026-10-27): **Backend rebuilt by Claude (new look, short menu, My site, Home by plan, home page section switches, Customers), Paper & Patina on Spotlight/Showcase, on `feat/backend-redesign`, unmerged; Spotlight long-headline fix live.** Full recap: `session-logs/session-116.md`.
-- Session 115 (2026-10-26): **Buyer accounts for Full (sign in, My account, Reorder, Buyers screen, step-down count) and Show / Hide on password boxes, on `feat/buyer-accounts`, unmerged; Alex will design a new backend.** Full recap: `session-logs/session-115.md`.
-- Session 114 (2026-10-25): **Rustic Charm & More (Renée) built, redesigned for every mood, public; Full defined; Getting paid Square/Stripe/PayPal; PayPal test mode (not live); Try on a look; opening photo + Background screens; own background home; whole-piece photos; merged.** Full recap: `session-logs/session-114.md`.
-- Sessions 111–113 (2026-10-21 → 10-24): **Market plan live, Square cards, refunds (111); Events area, stock kinds (112); merged, Free plan + ladder + tools decided and built on `feat/backend-tools`, unmerged; Alex: backend doesn't flow (113).** See `session-logs/session-111.md` – `session-113.md`.
+- Session 117 (2026-10-28): **Redesign merged and live; Maker Free, the tools (Is it worth it?, Monthly goal, Shipping, Describe it, What to bring) and Market day on Showcase on `feat/maker-free`, unmerged; no events on Free.** Full recap: `session-logs/session-117.md`.
+- Sessions 115–116 (2026-10-26 → 10-27): **Buyer accounts for Full (115); backend rebuilt by Claude: new look, short menu, My site, Home by plan, section switches, Customers; Paper & Patina on Spotlight/Showcase (116); merged S117.** See `session-logs/session-115.md`, `session-116.md`.
+- Sessions 111–114 (2026-10-21 → 10-25): **Market plan live, Square cards, refunds (111); Events area, stock kinds (112); Free plan + ladder + tools decided (113); Rustic Charm & More, Full defined, Getting paid, PayPal test mode, Try on a look (114).** See `session-logs/session-111.md` – `session-114.md`.
 - Sessions 109–110 (2026-10-19 → 10-20): **Showcase backend + gallery section + About you split into its homes (109); Showcase live, named social buttons, visitor numbers, new backend look; Market plan built (110).** See `session-logs/session-109.md`, `session-110.md`.
 - Sessions 105–108 (2026-10-15 → 10-18): **Lineup reset, every family sells, one builder, Vintage (105); intake form live, big push merged (106); Scenic + Spotlight, scene library, /looks (107); bohdiai.com split into parent + makers/service arms (108).** See `session-logs/session-105.md` – `session-108.md`.
 - Sessions 100–104 (2026-10-10 → 10-14): **Maker checkup, Market + Full (100); Saltmarsh public, market POS (101); Modular-Plan + Open-Work (102); safeguards + homes (103); no word written into the code, `site_words` on all sites (104).** See `session-logs/session-100.md` – `session-104.md`.
