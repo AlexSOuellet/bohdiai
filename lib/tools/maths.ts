@@ -342,6 +342,70 @@ export function marketWorth(input: WorthInput): WorthResult {
   return { dayCost, hours, wage, earns, cover, pay, verdict };
 }
 
+// ── Monthly goal ─────────────────────────────────────────────────────────────
+// What she wants to make in a month, in pieces and markets (Alex, 2026-10-28).
+
+export type GoalInput = {
+  /** What she wants to make in a month, after what the pieces cost to make. */
+  goal: string;
+  price: string;
+  made: string;
+  /** How many pieces she usually sells at one market; blank leaves markets out. */
+  perMarket: string;
+};
+
+export type GoalVerdict = 'empty' | 'no-sale' | 'no-margin' | 'ok';
+
+export type GoalResult = {
+  earns: number;
+  /** Pieces to sell in the month, the sales they make, and the markets that takes. */
+  pieces: number | null;
+  sales: number | null;
+  markets: number | null;
+  verdict: GoalVerdict;
+};
+
+export function monthlyGoal(input: GoalInput): GoalResult {
+  const goal = amount(input.goal);
+  const price = amount(input.price);
+  const earns = price - amount(input.made);
+  const perMarket = amount(input.perMarket);
+  let verdict: GoalVerdict;
+  if (goal === 0) verdict = 'empty';
+  else if (price === 0) verdict = 'no-sale';
+  else if (earns <= 0) verdict = 'no-margin';
+  else verdict = 'ok';
+  if (verdict !== 'ok') return { earns, pieces: null, sales: null, markets: null, verdict };
+  const pieces = roundUp(goal / earns);
+  return { earns, pieces, sales: pieces * price, markets: perMarket > 0 ? roundUp(pieces / perMarket) : null, verdict };
+}
+
+// ── Shipping ─────────────────────────────────────────────────────────────────
+// What one order really costs to ship, and what to charge (Alex, 2026-10-28). She
+// looks up the postage herself; nothing is fetched from a carrier.
+
+export type ShipInput = {
+  box: string;
+  padding: string;
+  postage: string;
+  /** The card fee on what she charges for shipping, a percent; blank for none. */
+  cardRate: string;
+};
+
+export type ShipResult = {
+  cost: number;
+  /** What to charge so the card fee on it still leaves the whole cost: cost ÷ (1 − fee), up to the cent. */
+  charge: number;
+  cardFee: number;
+};
+
+export function shipping(input: ShipInput): ShipResult {
+  const cost = amount(input.box) + amount(input.padding) + amount(input.postage);
+  const rate = Math.min(amount(input.cardRate), 99) / 100;
+  const charge = Math.max(0, roundUp((cost / (1 - rate)) * 100)) / 100;
+  return { cost, charge, cardFee: charge - cost };
+}
+
 // ── Money in words ───────────────────────────────────────────────────────────
 
 /** $3.45, or −$3.45. */

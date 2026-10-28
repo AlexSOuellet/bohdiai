@@ -4,7 +4,7 @@
  * opens the next one; from Cost to make, it carries the piece's cost into Price it
  * (lib/tools/handoff.ts). Nothing else is shared between them.
  */
-import type { BatchSupply, Channel, Markup, PieceItem, WorthInput } from './maths';
+import type { BatchSupply, Channel, GoalInput, Markup, PieceItem, ShipInput, WorthInput } from './maths';
 import type { CostSettings } from './product-costs';
 
 export type CostForm = { name: string; yield: string; batch: BatchSupply[]; piece: PieceItem[]; hours: string; rate: string };
@@ -57,6 +57,11 @@ export const BLANK_PRICE: PriceForm = {
   low: '',
   high: '',
 };
+
+export const BLANK_GOAL: GoalInput = { goal: '', price: '', made: '', perMarket: '' };
+
+/** A card reader's rate as it stands; she can change it. */
+export const BLANK_SHIP: ShipInput = { box: '', padding: '', postage: '', cardRate: '3' };
 
 export const BLANK_WORTH: WorthForm = { name: '', booth: '', gas: '', food: '', other: '', hoursAtMarket: '', hoursOther: '', wage: '20', price: '', made: '', cardShare: '', cardRate: '3', guess: '' };
 

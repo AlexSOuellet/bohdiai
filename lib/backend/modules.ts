@@ -46,9 +46,13 @@ export const BACKEND_MODULES: BackendModule[] = [
       { label: 'Cost to make', href: '/manage/tools/cost' },
       { label: 'Price it', href: '/manage/tools/price' },
       { label: 'Is it worth it?', href: '/manage/tools/market' },
+      { label: 'Monthly goal', href: '/manage/tools/goal' },
+      { label: 'Shipping', href: '/manage/tools/shipping' },
       { label: 'Describe it', href: '/manage/tools/describe' },
     ],
   },
+  // What to bring reads what sold through the market app (Alex, 2026-10-28).
+  { feature: 'market_shop', section: 'Tools', items: [{ label: 'What to bring', href: '/manage/tools/bring' }] },
   // Full's online selling: orders sent from the cart and promotions.
   { feature: 'cart', section: 'Orders', items: [{ label: 'Orders', href: '/manage/orders' }] },
   { feature: 'promotions', section: 'Orders', items: [{ label: 'Promotions', href: '/manage/promotions' }] },

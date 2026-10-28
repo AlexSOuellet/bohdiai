@@ -9,6 +9,9 @@ vi.mock('@/lib/tools/actions', () => ({ saveCostsToProduct }));
 import { CostTool } from './CostTool';
 import { PriceTool } from './PriceTool';
 import { WorthTool } from './WorthTool';
+import { GoalTool } from './GoalTool';
+import { ShipTool } from './ShipTool';
+import { BringTool } from './BringTool';
 import { BLANK_PRICE, type CostCarry, type PriceForm, type WorthForm } from '@/lib/tools/forms';
 import { priceFromCost } from '@/lib/tools/handoff';
 
@@ -247,5 +250,75 @@ describe('Is this market worth it? (replaces Market day, Alex 2026-10-28)', () =
   it('has no link to Cost to make, which is unrelated (Alex, 2026-10-28)', () => {
     render(<WorthTool canSaveEvent />);
     expect(screen.queryByRole('link', { name: 'Cost to make' })).toBeNull();
+  });
+});
+
+describe('Monthly goal (Alex, 2026-10-28)', () => {
+  it('asks for the goal, then gives the pieces, sales and markets', () => {
+    render(<GoalTool />);
+    const t = () => tag('Your goal');
+    expect(within(t()).getByText('Set your goal')).toBeInTheDocument();
+    type('What you want to make in a month', '1000');
+    expect(within(t()).getByText('Add a typical sale')).toBeInTheDocument();
+    type('What an average piece sells for', '28');
+    type('What it costs you to make', '6');
+    expect(within(t()).getByText('46 pieces')).toBeInTheDocument();
+    expect(within(t()).getByText('$1,288 in sales')).toBeInTheDocument();
+    expect(within(t()).getByText('$22.00')).toBeInTheDocument();
+    expect(within(t()).queryByText('Markets')).toBeNull();
+    type('Pieces you usually sell at one market', '25');
+    expect(within(t()).getByText('2 markets')).toBeInTheDocument();
+    type('What it costs you to make', '30');
+    expect(within(t()).getByText('Each piece loses money')).toBeInTheDocument();
+  });
+});
+
+describe('Shipping (Alex, 2026-10-28)', () => {
+  it('adds up one order and says what to charge with the card fee covered', () => {
+    render(<ShipTool />);
+    const t = () => tag('Shipping');
+    expect(within(t()).getByText('Fill in the box, padding and postage.')).toBeInTheDocument();
+    type('The box or mailer', '1.25');
+    type('Padding, tape and labels', '0.80');
+    type('Postage', '12');
+    expect(within(t()).getByText('$14.05')).toBeInTheDocument();
+    expect(within(t()).getByText('$14.49')).toBeInTheDocument();
+    expect(within(t()).getByText('That covers the $0.44 card fee on it too.')).toBeInTheDocument();
+    type('Card fee on what you charge for shipping', '');
+    expect(within(t()).queryByText(/card fee on it/)).toBeNull();
+  });
+});
+
+describe('What to bring (Alex, 2026-10-28)', () => {
+  const r = (eventId: string, key: string, name: string, sold: number, out = false) => ({ eventId, key, name, brought: sold + (out ? 0 : 2), sold, left: out ? 0 : 2, soldOutAt: out ? '2026-10-10T15:00:00Z' : null, givenCents: 0 });
+  const markets = [
+    { id: 'e1', name: 'Fall Fair', date: '2025-10-11' },
+    { id: 'e2', name: 'Fall Fair', date: '2026-10-10' },
+    { id: 'e3', name: 'Holly Fair', date: '2025-12-06' },
+  ];
+  const results = [r('e1', 'l1', 'Candle', 6), r('e2', 'l1', 'Candle', 9, true), r('e3', 'l1', 'Candle', 3), r('e3', 'l2', 'Tin', 4, true)];
+  const rowOf = (name: string) => screen.getByRole('row', { name: new RegExp(`^${name}`) });
+
+  it('suggests from every market, or from one market’s dates', () => {
+    render(<BringTool markets={markets} results={results} />);
+    expect(within(rowOf('Candle')).getAllByRole('cell').map((c) => c.textContent)).toEqual(['Candle', '9', '6', '1 of 3']);
+    expect(within(rowOf('Tin')).getAllByRole('cell').map((c) => c.textContent)).toEqual(['Tin', '4', '4', 'Every time']);
+    fireEvent.change(screen.getByLabelText('Going by'), { target: { value: 'Holly Fair' } });
+    expect(within(rowOf('Candle')).getAllByRole('cell').map((c) => c.textContent)).toEqual(['Candle', '3', '3', '·']);
+    expect(screen.getByText(/sold of it at that market\./)).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Fall Fair (2 times)' })).toBeInTheDocument();
+  });
+
+  it('says so before anything has sold at a market', () => {
+    render(<BringTool markets={[]} results={[]} />);
+    expect(screen.getByText(/Nothing has sold at a market yet/)).toBeInTheDocument();
+    expect(screen.queryByRole('table')).toBeNull();
+  });
+});
+
+describe('What to bring, over several markets', () => {
+  it('says which markets the suggestion comes from', () => {
+    render(<BringTool markets={[{ id: 'e1', name: 'Fair', date: '2026-01-01' }, { id: 'e2', name: 'Show', date: '2026-02-01' }]} results={[]} />);
+    expect(screen.getByText(/at one of those 2 markets\./)).toBeInTheDocument();
   });
 });

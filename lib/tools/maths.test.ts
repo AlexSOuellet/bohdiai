@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { amount, roundUp, costToMake, priceIt, compareToOthers, marketDay, marketWorth, cents, dollars, markupText, type PriceInput, type MarketInput, type WorthInput } from './maths';
+import { amount, roundUp, costToMake, priceIt, compareToOthers, marketDay, marketWorth, monthlyGoal, shipping, cents, dollars, markupText, type PriceInput, type MarketInput, type WorthInput, type GoalInput } from './maths';
 
 // The toolkit's own example: an 8 oz soy candle at CandleScience prices (Alex, 2026-10-24).
 const candle = {
@@ -254,5 +254,38 @@ describe('marketWorth (Alex, 2026-10-28)', () => {
   it('needs nothing when the day costs nothing, and caps the card share at all of it', () => {
     expect(marketWorth({ ...W, booth: '', gas: '', food: '', other: '', wage: '' }).cover).toEqual({ pieces: 0, sales: 0 });
     expect(marketWorth({ ...W, cardShare: '250' }).earns).toBeCloseTo(28.8);
+  });
+});
+
+describe('monthlyGoal (Alex, 2026-10-28)', () => {
+  const G: GoalInput = { goal: '1000', price: '28', made: '6', perMarket: '25' };
+
+  it('gives the pieces, the sales and the markets to reach her goal', () => {
+    // 1000 ÷ (28 − 6) = 45.45 → 46 pieces, $1,288 in sales; 46 ÷ 25 → 2 markets
+    expect(monthlyGoal(G)).toEqual({ earns: 22, pieces: 46, sales: 1288, markets: 2, verdict: 'ok' });
+    expect(monthlyGoal({ ...G, perMarket: '' }).markets).toBeNull();
+    expect(monthlyGoal({ ...G, goal: '220' }).pieces).toBe(10);
+  });
+
+  it('asks for what it needs, and says when a piece earns nothing', () => {
+    expect(monthlyGoal({ ...G, goal: '' }).verdict).toBe('empty');
+    expect(monthlyGoal({ ...G, price: '' }).verdict).toBe('no-sale');
+    expect(monthlyGoal({ ...G, made: '30' })).toMatchObject({ verdict: 'no-margin', pieces: null, markets: null });
+  });
+});
+
+describe('shipping (Alex, 2026-10-28)', () => {
+  it('adds up the order and grosses the charge up for the card fee, to the cent', () => {
+    const r = shipping({ box: '1.25', padding: '0.80', postage: '12', cardRate: '3' });
+    expect(r.cost).toBeCloseTo(14.05);
+    // 14.05 ÷ 0.97 = 14.484… → $14.49
+    expect(r.charge).toBe(14.49);
+    expect(r.cardFee).toBeCloseTo(0.44);
+  });
+
+  it('charges just the cost with no card fee, and caps a silly fee', () => {
+    expect(shipping({ box: '1', padding: '', postage: '9', cardRate: '' }).charge).toBe(10);
+    expect(shipping({ box: '', padding: '', postage: '', cardRate: '' })).toEqual({ cost: 0, charge: 0, cardFee: 0 });
+    expect(Number.isFinite(shipping({ box: '1', padding: '', postage: '', cardRate: '100' }).charge)).toBe(true);
   });
 });
