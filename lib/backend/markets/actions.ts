@@ -12,6 +12,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { logger } from '@/lib/logger';
 import type { DoneResult, SaveResult } from '../catalog/results';
 import { COSTS_LIMIT, MARKETS_LIMIT, buildMarketPayload, type MarketForm } from './market-form';
+import { saveTakings, takingsRow, type Takings } from '@/lib/tools/event-takings';
 
 const OFF = 'Markets aren’t switched on for this site.';
 
@@ -25,11 +26,18 @@ function done(): void {
   revalidatePath('/manage');
 }
 
-export async function saveMarket(form: MarketForm): Promise<SaveResult> {
+/** `takings`: Market day's own numbers (Alex, 2026-10-24), kept where there's no
+ *  till to count the sales. Checked before anything is written; if they then fail to
+ *  save, the event stays saved and the result says so. */
+export async function saveMarket(form: MarketForm, takings: Takings | null = null): Promise<SaveResult> {
   const tenantId = await marketsSite();
   if (tenantId === null) return { ok: false, error: OFF };
   const built = buildMarketPayload(form);
   if (!built.ok) return built;
+  if (takings !== null) {
+    const checked = takingsRow(tenantId, '00000000-0000-0000-0000-000000000000', takings);
+    if (!checked.ok) return checked;
+  }
   const db = await createSupabaseServerClient();
   // The pieces she brings are saved only on sites with the market shop.
   const shop = (await getSiteFeatures(tenantId)).has('market_shop');
@@ -47,6 +55,15 @@ export async function saveMarket(form: MarketForm): Promise<SaveResult> {
     return { ok: false, error: 'The market couldn’t be saved. Try again in a moment.' };
   }
   done();
+  if (takings !== null && !shop) {
+    try {
+      const saved = await saveTakings(db, tenantId, data, takings);
+      if (!saved.ok) return { ok: true, id: data, warning: 'takings' };
+    } catch (err) {
+      logger.error('markets: takings save failed', { tenantId, error: err instanceof Error ? err.message : String(err) });
+      return { ok: true, id: data, warning: 'takings' };
+    }
+  }
   return { ok: true, id: data };
 }
 

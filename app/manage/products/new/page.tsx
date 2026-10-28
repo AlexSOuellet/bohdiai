@@ -6,14 +6,16 @@ import { getSiteFeatures } from '@/lib/backend/site-features';
 import { hasProducts } from '@/lib/backend/features';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { listCollections, countHomeProducts } from '@/lib/backend/catalog/queries';
-import { emptyProductForm } from '@/lib/backend/catalog/product-form';
+import { costsFromTools, productFromTools } from '@/lib/tools/handoff';
 import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
 import { ProductEditor } from '../_components/ProductEditor';
 
 export const dynamic = 'force-dynamic';
 
-export default async function NewProductPage(): Promise<React.ReactElement> {
+/** A new product; from the Tools, it opens with the tool's name and price. */
+export default async function NewProductPage({ searchParams }: PageProps<'/manage/products/new'>): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
+  const sent = await searchParams;
   const on = await getSiteFeatures(site.tenantId);
   if (!hasProducts(on)) notFound();
   const db = await createSupabaseServerClient();
@@ -23,7 +25,8 @@ export default async function NewProductPage(): Promise<React.ReactElement> {
   ]);
   return (
     <ProductEditor
-      initial={emptyProductForm()}
+      initial={productFromTools(sent)}
+      costs={costsFromTools(sent)}
       collections={collections
         .filter((c) => c.status !== 'archived')
         .map((c) => ({ id: c.id, name: c.name }))}

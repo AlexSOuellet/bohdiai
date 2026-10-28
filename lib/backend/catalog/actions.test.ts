@@ -51,6 +51,8 @@ vi.mock('@/lib/supabase', () => ({
   }),
 }));
 vi.mock('@/lib/images/shrink', () => ({ shrinkImage }));
+const saveProductCosts = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/tools/product-costs', async (orig) => ({ ...(await orig<object>()), saveProductCosts }));
 vi.mock('next/cache', () => ({ revalidatePath }));
 vi.mock('@/lib/logger', () => ({ logger }));
 const family = vi.hoisted(() => ({ is: false }));
@@ -121,6 +123,23 @@ describe('saveProduct', () => {
     );
     expect(rpc.mock.calls[0]![1]).not.toHaveProperty('p_listing_id');
     expect(revalidatePath).toHaveBeenCalledWith('/manage/products');
+  });
+  it('saves the costs the Tools worked out with a new product (Alex, 2026-10-24)', async () => {
+    slugRows.mockResolvedValue({ data: [], error: null });
+    saveProductCosts.mockResolvedValue({ ok: true });
+    const costs = { yield: '12', hours: '2', rate: '20', extras: '1.50', markup: 2.5 as const, batch: [{ name: 'Wax', paid: '31.97', lasts: '2' }], piece: [] };
+    expect(await saveProduct(form(), costs)).toEqual({ ok: true, id: 'new-id' });
+    expect(saveProductCosts).toHaveBeenCalledWith(expect.anything(), 't1', 'new-id', costs);
+    saveProductCosts.mockResolvedValue({ ok: false, error: 'x' });
+    expect(await saveProduct(form(), costs)).toEqual({ ok: true, id: 'new-id', warning: 'costs' });
+    saveProductCosts.mockRejectedValue(new Error('down'));
+    expect(await saveProduct(form(), costs)).toEqual({ ok: true, id: 'new-id', warning: 'costs' });
+    expect(logger.error).toHaveBeenCalledWith('catalog: product costs save failed', { tenantId: 't1', error: 'down' });
+    saveProductCosts.mockRejectedValue('odd');
+    expect(await saveProduct(form(), costs)).toEqual({ ok: true, id: 'new-id', warning: 'costs' });
+    rpc.mockClear();
+    expect(await saveProduct(form(), { ...costs, yield: '0' })).toEqual({ ok: false, error: 'Check how many one batch makes: a number more than 0.' });
+    expect(rpc).not.toHaveBeenCalled();
   });
   it('updates an existing product without touching its web address', async () => {
     rpc.mockResolvedValue({ data: 'l1', error: null });

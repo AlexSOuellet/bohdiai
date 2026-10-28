@@ -8,6 +8,8 @@ import { marketPageUrl, shopPicks } from '@/lib/backend/markets/shop-props';
 import { marketListingIds, marketStock } from '@/lib/market/queries';
 import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
 import { MarketEditor } from '../MarketEditor';
+import { loadTakings, type Takings } from '@/lib/tools/event-takings';
+import { logger } from '@/lib/logger';
 import { isEventTab } from '@/lib/backend/markets/event-tabs';
 import { EventSummary } from '../EventSummary';
 import { PieceSales } from '../PieceSales';
@@ -51,12 +53,23 @@ export default async function EditMarketPage({
   );
   if (!on.has('market_shop')) {
     const tenant = await db.from('tenants').select('time_zone').eq('id', site.tenantId).maybeSingle();
+    // Market day's own numbers, where there's no till (Alex, 2026-10-24).
+    let takings: Takings | null = null;
+    if (on.has('market_records')) {
+      try {
+        takings = await loadTakings(db, site.tenantId, id);
+      } catch (err) {
+        logger.error('markets: takings read failed', { tenantId: site.tenantId, error: err instanceof Error ? err.message : String(err) });
+      }
+    }
     return (
       <MarketEditor
         key={id}
         initial={market}
         details={on.has('market_details')}
         records={on.has('market_records')}
+        tab={tab}
+        {...(on.has('market_records') ? { takings, takingsUnsaved: (await searchParams)['takings'] === 'unsaved' } : {})}
         summary={summary(null, shopToday(tenant.data?.time_zone ?? null))}
       />
     );
