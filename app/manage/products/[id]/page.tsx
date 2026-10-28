@@ -35,9 +35,11 @@ export default async function EditProductPage({
   if (product === null) notFound();
   // Its costs from the Tools, when it has any; a failed read shows no costs, not a broken page.
   let summary = null;
+  let materials: string[] = [];
   try {
     const costs = await loadProductCosts(db, site.tenantId, id);
     summary = costs === null ? null : costSummary(costs);
+    materials = costs === null ? [] : [...costs.batch, ...costs.piece].map((m) => m.name);
   } catch (err) {
     logger.error('catalog: product costs read failed', { tenantId: site.tenantId, error: err instanceof Error ? err.message : String(err) });
   }
@@ -58,6 +60,7 @@ export default async function EditProductPage({
       free={await isFreeSite(db, site.tenantId)}
       hasCollections={on.has('collections')}
       costSummary={summary}
+      materials={materials}
       costsUnsaved={costsUnsaved}
     />
   );

@@ -12,8 +12,13 @@ import { MARKUPS, type Markup } from './maths';
 import { COST_LINES_MAX, type CostSettings } from './product-costs';
 import type { Takings } from './event-takings';
 import { BLANK_PRICE, type CostCarry, type PriceForm } from './forms';
+import { LONG_MAX, SHORT_MAX } from './describe-limits';
 
 const PRODUCT_NAME_MAX = 120;
+const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** What Describe it sends with a new product besides the name and price. */
+export type ProductWords = { short?: string; description?: string; photoUploadId?: string };
 
 type Params = Record<string, string | string[] | undefined>;
 
@@ -43,10 +48,13 @@ function appendCarry(q: URLSearchParams, c: CostCarry): void {
 }
 
 /** The address that opens a new product from a tool, with its costs when there are any. */
-export function productLink(name: string, priceCents: number, costs: CostSettings | null = null): string {
+export function productLink(name: string, priceCents: number, costs: CostSettings | null = null, words: ProductWords = {}): string {
   const q = new URLSearchParams({ from: 'tools' });
   if (name.trim() !== '') q.set('name', name.trim());
   if (Number.isFinite(priceCents) && priceCents > 0) q.set('price', String(Math.round(priceCents)));
+  if (words.short !== undefined && words.short.trim() !== '') q.set('short', words.short.trim().slice(0, SHORT_MAX));
+  if (words.description !== undefined && words.description.trim() !== '') q.set('desc', words.description.trim().slice(0, LONG_MAX));
+  if (words.photoUploadId !== undefined && ID.test(words.photoUploadId)) q.set('photo', words.photoUploadId);
   if (costs !== null) {
     appendCarry(q, costs);
     q.set('o', short(costs.extras));
@@ -117,7 +125,19 @@ export function productFromTools(params: Params): ProductForm {
   const form = emptyProductForm();
   if (one(params['from']) !== 'tools') return form;
   const price = centsFrom(one(params['price']));
-  return { ...form, name: one(params['name']).slice(0, PRODUCT_NAME_MAX), price: price === null ? '' : formatCents(price) };
+  return {
+    ...form,
+    name: one(params['name']).slice(0, PRODUCT_NAME_MAX),
+    price: price === null ? '' : formatCents(price),
+    shortDescription: one(params['short']).slice(0, SHORT_MAX),
+    description: (Array.isArray(params['desc']) ? (params['desc'][0] ?? '') : (params['desc'] ?? '')).trim().slice(0, LONG_MAX),
+  };
+}
+
+/** The photo Describe it sent with a new product: an upload id, checked against the site's own uploads by the page. */
+export function photoFromTools(params: Params): string | null {
+  const id = one(params['photo']);
+  return one(params['from']) === 'tools' && ID.test(id) ? id : null;
 }
 
 export type EventCost = { description: string; cents: number };

@@ -46,6 +46,7 @@ export const BACKEND_MODULES: BackendModule[] = [
       { label: 'Cost to make', href: '/manage/tools/cost' },
       { label: 'Price it', href: '/manage/tools/price' },
       { label: 'Market day', href: '/manage/tools/market' },
+      { label: 'Describe it', href: '/manage/tools/describe' },
     ],
   },
   // Full's online selling: orders sent from the cart and promotions.

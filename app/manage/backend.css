@@ -761,3 +761,10 @@ p.bk-notice.bk-cost-line { padding: 0.65rem 0.9rem; border: 1px solid oklch(0.51
 .bk-free-tag .bk-hangtag-big-value { font-size: 2.6rem; }
 .bk-free-tag a { color: var(--bk-primary); font-weight: 600; }
 .bk-ready .bk-band-sub { max-width: 60ch; margin: 0.4rem 0 1rem; }
+
+/* Help me write it (Alex, 2026-10-28): under the description, opens in place. */
+.bk-describe-open { justify-self: start; }
+.bk-describe { display: grid; gap: 0.75rem; padding: 1rem 1.1rem; border-radius: var(--bk-radius-sm); background: var(--bk-ground); box-shadow: inset 0 0 0 1px var(--bk-ink-15); }
+.bk-describe .bk-note { margin: 0; }
+.bk-describe-facts { min-height: 4.5rem; }
+.bk-describe-text { white-space: pre-line; text-align: left; }

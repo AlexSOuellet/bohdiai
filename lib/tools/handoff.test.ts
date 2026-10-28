@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { emptyProductForm } from '@/lib/backend/catalog/product-form';
 import { emptyMarketForm } from '@/lib/backend/markets/market-form';
-import { productLink, productFromTools, eventLink, eventFromTools } from './handoff';
+import { productLink, productFromTools, eventLink, eventFromTools, photoFromTools, priceLink, priceFromCost } from './handoff';
+import { BLANK_PRICE } from './forms';
 
 const paramsOf = (href: string): Record<string, string | string[]> => {
   const out: Record<string, string | string[]> = {};
@@ -66,5 +67,37 @@ describe('Save as an event', () => {
   it('starts as usual when the tools didn’t send it, and leaves out a blank name', () => {
     expect(eventFromTools({ cost: '7500:Booth fee' })).toEqual(emptyMarketForm());
     expect(eventLink(' ', [{ description: 'Booth', cents: Number.NaN }])).toBe('/manage/markets/new?from=tools');
+  });
+});
+
+const params = (href: string): Record<string, string | string[]> => {
+  const q = new URL(href, 'https://app.bohdiai.com').searchParams;
+  const out: Record<string, string | string[]> = {};
+  for (const k of new Set(q.keys())) out[k] = q.getAll(k).length > 1 ? q.getAll(k) : (q.get(k) ?? '');
+  return out;
+};
+const PHOTO = '11111111-1111-4111-8111-111111111111';
+
+describe('Describe it to a new product (Alex, 2026-10-28)', () => {
+  it('carries both descriptions and the photo, and a crafted photo id is dropped', () => {
+    const p = params(productLink('Lazy Susan', 13000, null, { short: ' Pine. ', description: 'Solid pine.\n\nSpins.', photoUploadId: PHOTO }));
+    expect(productFromTools(p)).toMatchObject({ name: 'Lazy Susan', price: '130', shortDescription: 'Pine.', description: 'Solid pine.\n\nSpins.' });
+    expect(photoFromTools(p)).toBe(PHOTO);
+    expect(photoFromTools({ from: 'tools', photo: 'x' })).toBeNull();
+    expect(photoFromTools({ photo: PHOTO })).toBeNull();
+    expect(params(productLink('A', 0, null, { photoUploadId: 'nope', short: ' ' }))).not.toHaveProperty('photo');
+    expect(productFromTools({ from: 'tools', desc: ['first', 'second'] }).description).toBe('first');
+  });
+});
+
+describe('Cost to make to Price it (Alex, 2026-10-28)', () => {
+  it('carries the name, the cost of one and the batch; on its own Price it starts blank', () => {
+    const p = params(priceLink('Candle', 3.45, 3.333, { yield: '12', hours: '2', rate: '20', batch: [{ name: 'Wax', paid: '31.97', lasts: '2' }], piece: [{ name: 'Jar', each: '0.66' }] }));
+    const { form, carry } = priceFromCost(p);
+    expect(form).toMatchObject({ name: 'Candle', materials: '3.45', time: '3.33' });
+    expect(carry).toEqual({ yield: '12', hours: '2', rate: '20', batch: [{ name: 'Wax', paid: '31.97', lasts: '2' }], piece: [{ name: 'Jar', each: '0.66' }] });
+    expect(priceFromCost({})).toEqual({ form: BLANK_PRICE, carry: null });
+    expect(priceFromCost({ from: 'cost', name: 'X' }).carry).toBeNull();
+    expect(params(priceLink(' ', 0, 0, { yield: '', hours: '', rate: '', batch: [], piece: [] }))).not.toHaveProperty('mat');
   });
 });

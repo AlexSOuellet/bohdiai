@@ -1,5 +1,6 @@
 'use client';
 
+import { DescribeHelper } from '../../_components/DescribeHelper';
 import { StockChoice } from './StockChoice';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, unstable_rethrow } from 'next/navigation';
@@ -63,6 +64,7 @@ export function ProductEditor({
   hasCollections = true,
   costs = null,
   costSummary = null,
+  materials = null,
   costsUnsaved = false,
 }: {
   initial: ProductForm;
@@ -70,6 +72,8 @@ export function ProductEditor({
   costs?: CostSettings | null;
   /** A saved product's costs from the Tools: materials, break-even, suggested price. */
   costSummary?: CostSummary | null;
+  /** What a saved product is made of: its supply list from Cost to make, for the description writer. */
+  materials?: readonly string[] | null;
   /** It saved, but the costs that came with it from the Tools didn't. */
   costsUnsaved?: boolean;
   collections: { id: string; name: string }[];
@@ -382,6 +386,13 @@ export function ProductEditor({
                   onChange={(e) => update({ description: e.target.value })}
                 />
               </div>
+              <DescribeHelper
+                name={form.name}
+                materials={materials ?? (costs === null ? [] : [...costs.batch, ...costs.piece].map((m) => m.name))}
+                price={form.price}
+                photoUploadId={form.photos[0]?.uploadId ?? null}
+                onWritten={(text) => update({ shortDescription: text.short, description: text.description })}
+              />
               {showcase && (
                 <p className="bk-note">
                   {`Pick which pieces show on your site with the Gallery ticks on your products list. With none picked, your site shows your newest ${GALLERY_MAX}.`}
