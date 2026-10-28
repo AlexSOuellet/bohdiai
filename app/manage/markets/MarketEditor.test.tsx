@@ -246,4 +246,16 @@ describe('MarketEditor — Market day on the event (Alex, 2026-10-24)', () => {
     await waitFor(() => expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ id: 'm1' }), null));
     await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/markets/m1?tab=after&takings=unsaved'));
   });
+
+  it('on Showcase, the After tab is the costs and Market day only (Alex, 2026-10-28)', () => {
+    render(<MarketEditor initial={existing({ costs: [{ description: 'Booth fee', amount: '130' }] })} details={false} records={false} takings={day} />);
+    fireEvent.click(screen.getByRole('tab', { name: 'After' }));
+    expect(screen.getByRole('heading', { name: 'Costs' })).toBeInTheDocument();
+    expect(screen.getByText(/You took home/)).toHaveTextContent('You took home $339, $33.86 an hour. Worth the trip.');
+    expect(screen.queryByRole('heading', { name: 'Notes' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Your review' })).toBeNull();
+    cleanup();
+    render(<MarketEditor initial={existing()} details={false} records={false} />);
+    expect(screen.queryByRole('tab', { name: 'After' })).toBeNull();
+  });
 });

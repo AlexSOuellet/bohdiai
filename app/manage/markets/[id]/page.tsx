@@ -46,21 +46,20 @@ export default async function EditMarketPage({
       town={market.town}
       canceled={market.canceled}
       took={took}
-      costsCents={on.has('market_records') ? costsCents(market.costs) : null}
+      costsCents={on.has('market_records') || !on.has('market_shop') ? costsCents(market.costs) : null}
       onToday={on.has('market_shop') && market.date <= today && !isPastMarket(market, today)}
       past={isPastMarket(market, today)}
     />
   );
   if (!on.has('market_shop')) {
     const tenant = await db.from('tenants').select('time_zone').eq('id', site.tenantId).maybeSingle();
-    // Market day's own numbers, where there's no till (Alex, 2026-10-24).
+    // Market day's own numbers, where there's no till (Alex, 2026-10-24): Showcase
+    // (Alex, 2026-10-28).
     let takings: Takings | null = null;
-    if (on.has('market_records')) {
-      try {
-        takings = await loadTakings(db, site.tenantId, id);
-      } catch (err) {
-        logger.error('markets: takings read failed', { tenantId: site.tenantId, error: err instanceof Error ? err.message : String(err) });
-      }
+    try {
+      takings = await loadTakings(db, site.tenantId, id);
+    } catch (err) {
+      logger.error('markets: takings read failed', { tenantId: site.tenantId, error: err instanceof Error ? err.message : String(err) });
     }
     return (
       <MarketEditor
@@ -69,7 +68,8 @@ export default async function EditMarketPage({
         details={on.has('market_details')}
         records={on.has('market_records')}
         tab={tab}
-        {...(on.has('market_records') ? { takings, takingsUnsaved: (await searchParams)['takings'] === 'unsaved' } : {})}
+        takings={takings}
+        takingsUnsaved={(await searchParams)['takings'] === 'unsaved'}
         summary={summary(null, shopToday(tenant.data?.time_zone ?? null))}
       />
     );

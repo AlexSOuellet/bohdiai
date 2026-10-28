@@ -140,7 +140,8 @@ export function MarketEditor({
   /** The tab to open on (from the address, so a link can land on How it sold). */
   tab?: EventTab;
   /** Market day's own numbers (Alex, 2026-10-24), where there's no till to count the
-   *  sales; null when none are saved yet. Leave out where the till counts them. */
+   *  sales: Showcase (Alex, 2026-10-28), whose After tab is then its costs and Market
+   *  day only. Null when none are saved yet. Leave out where the till counts them. */
   takings?: Takings | null;
   /** It saved, but its Market day numbers didn't. */
   takingsUnsaved?: boolean;
@@ -155,7 +156,7 @@ export function MarketEditor({
   const isNew = initial.id === null;
   // A new event can be filled in on every tab but How it sold (nothing has sold yet).
   const tabs = EVENT_TABS.filter(
-    (t) => t === 'details' || (t === 'bringing' && shop !== undefined) || (t === 'sold' && sold !== undefined && !isNew) || (t === 'after' && records),
+    (t) => t === 'details' || (t === 'bringing' && shop !== undefined) || (t === 'sold' && sold !== undefined && !isNew) || (t === 'after' && (records || offersTakings)),
   );
   const [tab, setTab] = useState<EventTab>(tabs.includes(firstTab) ? firstTab : 'details');
   function openTab(t: EventTab): void {
@@ -469,7 +470,7 @@ export function MarketEditor({
           </section>
         )}
 
-        {tab === 'after' && records && (
+        {tab === 'after' && (records || offersTakings) && (
           <>
             <section className="bk-section" aria-labelledby="s-costs">
               <h2 id="s-costs" className="bk-section-title">
@@ -548,8 +549,8 @@ export function MarketEditor({
             </section>
             {offersTakings && <MarketDayNumbers day={day} setDay={setDay} costsCents={costsCents(form.costs)} unsaved={takingsUnsaved} />}
 
-
-
+            {records && (
+              <>
             <section className="bk-section" aria-labelledby="s-notes">
               <h2 id="s-notes" className="bk-section-title">
                 Notes
@@ -620,6 +621,8 @@ export function MarketEditor({
                 />
               </div>
             </section>
+              </>
+            )}
           </>
         )}
 

@@ -21,7 +21,7 @@ export default async function NewMarketPage({ searchParams }: PageProps<'/manage
         initial={initial}
         details={on.has('market_details')}
         records={on.has('market_records')}
-        {...(on.has('market_records') ? { takings: takingsFromTools(sent) } : {})}
+        takings={takingsFromTools(sent)}
       />
     );
   const picks = await shopPicks(await createSupabaseServerClient(), site.tenantId);
