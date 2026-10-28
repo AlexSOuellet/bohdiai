@@ -37,6 +37,17 @@ export const BACKEND_MODULES: BackendModule[] = [
   { feature: 'market_shop', section: 'Events', items: [{ label: 'Sales', href: '/manage/sales' }] },
   { feature: 'market_records', section: 'Events', items: [{ label: 'Results', href: '/manage/markets/results' }] },
   { feature: 'market_shop', section: 'Events', items: [{ label: 'Market POS', href: '/manage/pos' }] },
+  // Tools on every plan (Alex, 2026-10-24), their own menu entry after Events, each
+  // tool its own screen run on its own (Alex, 2026-10-28).
+  {
+    feature: null,
+    section: 'Tools',
+    items: [
+      { label: 'Cost to make', href: '/manage/tools/cost' },
+      { label: 'Price it', href: '/manage/tools/price' },
+      { label: 'Market day', href: '/manage/tools/market' },
+    ],
+  },
   // Full's online selling: orders sent from the cart and promotions.
   { feature: 'cart', section: 'Orders', items: [{ label: 'Orders', href: '/manage/orders' }] },
   { feature: 'promotions', section: 'Orders', items: [{ label: 'Promotions', href: '/manage/promotions' }] },

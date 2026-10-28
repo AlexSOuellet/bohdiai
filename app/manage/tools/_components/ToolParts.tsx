@@ -74,16 +74,3 @@ export function Placed({ className, at, width, title }: { className: string; at?
   }, [at, width]);
   return <span ref={ref} className={className} title={title} />;
 }
-
-/** The example strip: what the numbers are, and a way to start from nothing. */
-export function ExampleRow({ what, onBlank }: { what: string; onBlank: () => void }): React.ReactElement {
-  return (
-    <p className="bk-tool-example">
-      <span className="bk-tool-example-what">{what}</span>
-      <span className="bk-note">Type over it with something you make.</span>
-      <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" onClick={onBlank}>
-        Start blank
-      </button>
-    </p>
-  );
-}

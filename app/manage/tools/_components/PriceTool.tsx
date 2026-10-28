@@ -1,12 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { MARKUPS, compareToOthers, cents, dollars, markupText, type Channel, type Markup, type CompareRead } from '@/lib/tools/maths';
+import { MARKUPS, compareToOthers, priceIt, cents, dollars, markupText, type Channel, type Markup, type CompareRead } from '@/lib/tools/maths';
 import { productLink } from '@/lib/tools/handoff';
-import { toolCosts } from './ToolsShell';
-import { EXAMPLE_PRICE, useTools, type PriceForm } from './ToolsShell';
-import { ExampleRow, HangTag, NumberField, Placed, TextField } from './ToolParts';
+import { toolCosts, type CostCarry, type PriceForm } from '@/lib/tools/forms';
+import { HangTag, NumberField, Placed, TextField } from './ToolParts';
 
 const MARKUP_WORDS: Readonly<Record<Markup, { label: string; note: string }>> = {
   2: { label: 'Double', note: 'the least most makers use' },
@@ -30,12 +30,12 @@ const COMPARE_WORDS: Readonly<Record<CompareRead, (low: string, breakEven: strin
   within: () => 'Your price sits right in with other makers. That’s a good place to be.',
 };
 
-/** Price it: her costs, a markup, where she sells, and what others charge. */
-export function PriceTool(): React.ReactElement {
-  const { cost, price, priceShown: p, setPrice, priceResult: r, canSaveProduct } = useTools();
+/** Price it: her costs, a markup, where she sells, and what others charge. Run on its
+ *  own, or opened from Cost to make with the piece's cost filled in (Alex, 2026-10-28). */
+export function PriceTool({ initial, carry, canSaveProduct }: { initial: PriceForm; carry: CostCarry | null; canSaveProduct: boolean }): React.ReactElement {
+  const [p, setPrice] = useState<PriceForm>(initial);
+  const r = priceIt({ ...p, channels: new Set(p.channels) });
   const set = (patch: Partial<PriceForm>): void => setPrice({ ...p, ...patch });
-  // Typing over a number Cost to make filled in stops it following Cost to make.
-  const setOwn = (patch: Partial<PriceForm>): void => setPrice({ ...p, ...patch, linked: false });
   const on = new Set(p.channels);
   const toggle = (c: Channel): void => set({ channels: on.has(c) ? p.channels.filter((x) => x !== c) : CHANNEL_ORDER.filter((x) => x === c || on.has(x)) });
   const compare = compareToOthers(r, p.low, p.high);
@@ -47,23 +47,23 @@ export function PriceTool(): React.ReactElement {
       <h2 id="tool-price" className="bk-tool-title">
         Price it right
       </h2>
-      <p className="bk-tool-lede">Most makers price by gut and come in too low. Your numbers from Cost to make carry over here. See your break-even, the price to charge in each place you sell, and what to charge a shop.</p>
-      {price === EXAMPLE_PRICE && (
-        <ExampleRow what="Example: a soy candle" onBlank={() => setPrice({ ...EXAMPLE_PRICE, name: '', materials: '', time: '', extras: '', low: '', high: '', linked: false })} />
-      )}
+      <p className="bk-tool-lede">Most makers price by gut and come in too low. Put in what one costs you to make, and see your break-even, the price to charge in each place you sell, and what to charge a shop.</p>
 
       <div className="bk-tool-main">
         <form className="bk-tool-form" onSubmit={(e) => e.preventDefault()}>
           <section className="bk-section">
             <h3 className="bk-section-title">Your cost to make one</h3>
-            <label className="bk-check bk-tool-link">
-              <input type="checkbox" checked={p.linked} onChange={(e) => set({ linked: e.target.checked })} /> Fill these in from Cost to make
-            </label>
-            {!p.linked && <p className="bk-note bk-tool-help">These no longer follow Cost to make. Tick the box to bring its numbers back.</p>}
+            {carry !== null ? (
+              <p className="bk-note bk-tool-help">Filled in from Cost to make. Change anything you like.</p>
+            ) : (
+              <p className="bk-note bk-tool-help">
+                Not sure what one costs you? <Link href="/manage/tools/cost">Work it out in Cost to make</Link>.
+              </p>
+            )}
             <div className="bk-tool-grid">
-              <TextField id="p-name" label="What you’re pricing" value={p.name} onChange={(v) => setOwn({ name: v })} wide />
-              <NumberField id="p-mat" label="Materials for one" before="$" value={p.materials} onChange={(v) => setOwn({ materials: v })} />
-              <NumberField id="p-time" label="Your time for one" before="$" value={p.time} onChange={(v) => setOwn({ time: v })} note="Blank if you didn’t add your time." />
+              <TextField id="p-name" label="What you’re pricing" value={p.name} onChange={(v) => set({ name: v })} wide />
+              <NumberField id="p-mat" label="Materials for one" before="$" value={p.materials} onChange={(v) => set({ materials: v })} />
+              <NumberField id="p-time" label="Your time for one" before="$" value={p.time} onChange={(v) => set({ time: v })} note="Blank if you didn’t add your time." />
               <NumberField id="p-extras" label="Other costs for one" before="$" value={p.extras} onChange={(v) => set({ extras: v })} wide note="Costs Cost to make doesn’t cover: a share of booth fees, card fees, gift bags. A dollar or two is a fair guess." />
             </div>
           </section>
@@ -213,8 +213,11 @@ export function PriceTool(): React.ReactElement {
               </div>
             )}
 
+            <p className="bk-hangtag-next">
+              Next: <Link href="/manage/tools/market">Market day</Link>, to see what a market really pays you.
+            </p>
             {canSaveProduct && r.has && (
-              <Link className="bk-btn bk-hangtag-save" href={productLink(p.name, r.fair * 100, p.linked ? toolCosts(cost, p) : null) as Route}>
+              <Link className="bk-btn bk-hangtag-save" href={productLink(p.name, r.fair * 100, carry === null ? null : toolCosts(carry, p)) as Route}>
                 Save as a product
               </Link>
             )}

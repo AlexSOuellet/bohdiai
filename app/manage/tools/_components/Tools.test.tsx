@@ -1,90 +1,132 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, within } from '@testing-library/react';
 
-const path = vi.hoisted(() => ({ current: '/manage/tools/cost' }));
 const push = vi.hoisted(() => vi.fn());
-vi.mock('next/navigation', () => ({ usePathname: () => path.current, useRouter: () => ({ push }), unstable_rethrow: () => undefined }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/manage/tools/cost', useRouter: () => ({ push }), unstable_rethrow: () => undefined }));
 const saveCostsToProduct = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/tools/actions', () => ({ saveCostsToProduct }));
 
-import { ToolsShell, linkedPrice, EXAMPLE_COST, EXAMPLE_PRICE } from './ToolsShell';
 import { CostTool } from './CostTool';
 import { PriceTool } from './PriceTool';
 import { MarketTool } from './MarketTool';
-import { costToMake } from '@/lib/tools/maths';
+import { BLANK_PRICE, type CostCarry, type DayForm, type PriceForm } from '@/lib/tools/forms';
+import { priceFromCost } from '@/lib/tools/handoff';
 
 afterEach(cleanup);
 
-const shell = (tool: React.ReactElement, canSaveProduct = true, canSaveEvent = true) =>
-  render(
-    <ToolsShell canSaveProduct={canSaveProduct} canSaveEvent={canSaveEvent}>
-      {tool}
-    </ToolsShell>,
-  );
 const tag = (name: string) => screen.getByRole('complementary', { name });
-const strip = () => screen.getByRole('navigation', { name: 'Tools' });
+const type = (label: string, value: string, at = 0): void => {
+  fireEvent.change(screen.getAllByLabelText(label)[at] as HTMLElement, { target: { value } });
+};
+const params = (href: string | null): URLSearchParams => new URL(href ?? '', 'https://app.bohdiai.com').searchParams;
 
-describe('the strip across the top', () => {
-  it('shows each tool’s answer and marks the one open', () => {
-    path.current = '/manage/tools/price';
-    shell(<PriceTool />);
-    const links = within(strip()).getAllByRole('link');
-    expect(links.map((l) => l.getAttribute('href'))).toEqual(['/manage/tools/cost', '/manage/tools/price', '/manage/tools/market']);
-    expect(links[1]).toHaveAttribute('aria-current', 'page');
-    expect(links[0]).toHaveTextContent('$3.45');
-    expect(links[1]).toHaveTextContent('$21');
-    expect(links[2]).toHaveTextContent('$339');
-    path.current = '/manage/tools/cost';
+// The toolkit's own examples (Alex, 2026-10-24): an 8 oz soy candle at CandleScience
+// prices; comps from Craftybase's benchmark.
+const CANDLE: PriceForm = { ...BLANK_PRICE, name: '8 oz soy candle', materials: '3.45', time: '3.33', extras: '1.50', channels: ['markets', 'etsy'], low: '16', high: '28' };
+const CANDLE_BATCH: CostCarry = { yield: '12', hours: '2', rate: '20', batch: [{ name: 'Soy wax, 10 lb bag', paid: '31.97', lasts: '2' }], piece: [{ name: '8 oz jelly jar', each: '0.66' }] };
+const FAIR: DayForm = { name: 'Fall Harvest Fair', sales: '640', card: '380', cardRate: '3', booth: '75', gas: '18', food: '22', other: '15', materials: '160', hoursAtMarket: '7', hoursOther: '3', wage: '20' };
+
+/** A batch of 12 candles: wax, fragrance, wicks, a jar and a lid, two hours at $20. */
+function typeTheCandle(): void {
+  type('What you’re making', '8 oz soy candle');
+  type('How many one batch makes', '12');
+  type('Supply', 'Soy wax, 10 lb bag');
+  type('What you paid', '31.97');
+  type('Batches it lasts', '2');
+  fireEvent.click(screen.getByRole('button', { name: 'Add a supply' }));
+  type('Supply', 'Fragrance oil, 16 oz', 1);
+  type('What you paid', '30.77', 1);
+  type('Batches it lasts', '2.5', 1);
+  fireEvent.click(screen.getByRole('button', { name: 'Add a supply' }));
+  type('Supply', 'Wicks, pack of 100', 2);
+  type('What you paid', '9.93', 2);
+  type('Batches it lasts', '8', 2);
+  type('Item', '8 oz jelly jar');
+  type('Costs you each', '0.66');
+  fireEvent.click(screen.getByRole('button', { name: 'Add one' }));
+  type('Item', 'Gold lid', 1);
+  type('Costs you each', '0.33', 1);
+  type('Hours to make the batch', '2');
+}
+
+describe('Cost to make, on its own', () => {
+  it('starts blank, asking how many it makes, with no example', () => {
+    render(<CostTool />);
+    expect(screen.getByLabelText('What you’re making')).toHaveValue('');
+    expect(within(tag('Cost to make one')).getByText('add how many it makes')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Start blank' })).toBeNull();
   });
-});
 
-describe('Cost to make', () => {
-  it('works out the example candle on the tag', () => {
-    shell(<CostTool />);
+  it('works out the cost of one as she types', () => {
+    render(<CostTool />);
+    typeTheCandle();
     expect(within(tag('Cost to make one')).getByText('$3.45')).toBeInTheDocument();
     expect(within(tag('Cost to make one')).getByText('$29.53 for the batch ÷ 12 pieces')).toBeInTheDocument();
     expect(within(tag('Cost to make one')).getByText('$6.78')).toBeInTheDocument();
   });
 
-  it('follows what she types and carries it to Price it', () => {
-    shell(<CostTool />);
-    fireEvent.change(screen.getByLabelText('How many one batch makes'), { target: { value: '6' } });
-    expect(within(tag('Cost to make one')).getByText('$5.91')).toBeInTheDocument();
-    expect(within(strip()).getAllByRole('link')[0]).toHaveTextContent('$5.91');
-  });
-
   it('adds and removes supplies, keeping one row to type in', () => {
-    shell(<CostTool />);
+    render(<CostTool />);
     fireEvent.click(screen.getByRole('button', { name: 'Add a supply' }));
-    expect(screen.getAllByLabelText('Supply')).toHaveLength(4);
-    for (const name of ['Remove Soy wax, 10 lb bag', 'Remove Fragrance oil, 16 oz', 'Remove Wicks, pack of 100', 'Remove this supply']) fireEvent.click(screen.getByRole('button', { name }));
+    expect(screen.getAllByLabelText('Supply')).toHaveLength(2);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Remove this supply' })[0] as HTMLElement);
+    fireEvent.click(screen.getByRole('button', { name: 'Remove this supply' }));
     expect(screen.getAllByLabelText('Supply')).toHaveLength(1);
-    fireEvent.click(screen.getByRole('button', { name: 'Add one' }));
-    expect(screen.getAllByLabelText('Item')).toHaveLength(3);
+    fireEvent.click(screen.getByRole('button', { name: 'Remove this item' }));
+    expect(screen.getAllByLabelText('Item')).toHaveLength(1);
   });
 
-  it('starts blank, asking how many it makes', () => {
-    shell(<CostTool />);
-    fireEvent.click(screen.getByRole('button', { name: 'Start blank' }));
-    expect(screen.getByLabelText('What you’re making')).toHaveValue('');
-    expect(within(tag('Cost to make one')).getByText('add how many it makes')).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Save as a product' })).toBeNull();
-  });
-
-  it('saves as a product with the name and price, where the site has products', () => {
-    shell(<CostTool />);
-    const q = new URL(screen.getByRole('link', { name: 'Save as a product' }).getAttribute('href') ?? '', 'https://app.bohdiai.com').searchParams;
-    expect([q.get('name'), q.get('price'), q.get('y'), q.get('o'), q.get('m')]).toEqual(['8 oz soy candle', '2100', '12', '1.50', '2.5']);
+  it('links to Price it with this piece’s cost and its batch (Alex, 2026-10-28)', () => {
+    render(<CostTool />);
+    typeTheCandle();
+    const link = screen.getByRole('link', { name: 'Price this piece' });
+    expect(link.getAttribute('href')).toMatch(/^\/manage\/tools\/price\?/);
+    const q = params(link.getAttribute('href'));
+    expect([q.get('from'), q.get('name'), q.get('mat'), q.get('time'), q.get('y')]).toEqual(['cost', '8 oz soy candle', '3.45', '3.33', '12']);
     expect(q.getAll('b')).toEqual(['31.97:2:Soy wax, 10 lb bag', '30.77:2.5:Fragrance oil, 16 oz', '9.93:8:Wicks, pack of 100']);
-    cleanup();
-    shell(<CostTool />, false);
     expect(screen.queryByRole('link', { name: 'Save as a product' })).toBeNull();
   });
 });
 
+describe('Cost to make, opened from a product', () => {
+  const product = { id: 'l1', name: 'Fig candle', costs: { yield: '10', hours: '', rate: '20', extras: '2', markup: 3 as const, batch: [{ name: 'Wax', paid: '30', lasts: '' }], piece: [] } };
+
+  it('starts from the product’s own costs and saves them back, keeping its markup', async () => {
+    saveCostsToProduct.mockResolvedValue({ ok: true });
+    render(<CostTool product={product} />);
+    expect(screen.getByText('Working on Fig candle')).toBeInTheDocument();
+    expect(screen.getByLabelText('How many one batch makes')).toHaveValue('10');
+    expect(screen.getAllByLabelText('Item')).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Save to Fig candle' }));
+    await vi.waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products/l1'));
+    expect(saveCostsToProduct).toHaveBeenCalledWith('l1', expect.objectContaining({ yield: '10', extras: '2', markup: 3 }));
+  });
+
+  it('starts blank for a product with no costs, and says why a save failed', async () => {
+    saveCostsToProduct.mockResolvedValueOnce({ ok: false, error: 'Check the hours to make the batch.' });
+    render(<CostTool product={{ id: 'l2', name: 'Tin', costs: null }} />);
+    expect(screen.getByLabelText('What you’re making')).toHaveValue('Tin');
+    expect(screen.getByLabelText('How many one batch makes')).toHaveValue('');
+    fireEvent.click(screen.getByRole('button', { name: 'Save to Tin' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Check the hours to make the batch.');
+    expect(saveCostsToProduct).toHaveBeenLastCalledWith('l2', expect.objectContaining({ extras: '', markup: 2.5 }));
+    saveCostsToProduct.mockRejectedValueOnce(new Error('offline'));
+    fireEvent.click(screen.getByRole('button', { name: 'Save to Tin' }));
+    expect(await screen.findByText(/Check your connection/)).toBeInTheDocument();
+  });
+});
+
 describe('Price it', () => {
+  it('starts blank on its own, with no search buttons until it’s named, and points to Cost to make', () => {
+    render(<PriceTool initial={BLANK_PRICE} carry={null} canSaveProduct />);
+    expect(within(tag('Your price')).getByText('Add your materials and time to start.')).toBeInTheDocument();
+    expect(screen.getByText(/search buttons appear here/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Work it out in Cost to make' })).toHaveAttribute('href', '/manage/tools/cost');
+    expect(screen.queryByRole('link', { name: 'Save as a product' })).toBeNull();
+  });
+
   it('shows break-even, the price, each place she sells, and the shop price', () => {
-    shell(<PriceTool />);
+    render(<PriceTool initial={CANDLE} carry={null} canSaveProduct />);
     const t = tag('Your price');
     expect(t.querySelector('.bk-hangtag-big-value')).toHaveTextContent('$21');
     expect(within(t).getByText('$8.28')).toBeInTheDocument();
@@ -95,7 +137,7 @@ describe('Price it', () => {
   });
 
   it('follows the markup and the places picked, with each place’s own settings', () => {
-    shell(<PriceTool />);
+    render(<PriceTool initial={CANDLE} carry={null} canSaveProduct />);
     fireEvent.click(screen.getByRole('button', { name: /^Triple/ }));
     expect(tag('Your price').querySelector('.bk-hangtag-big-value')).toHaveTextContent('$25');
     fireEvent.click(screen.getByRole('button', { name: 'Etsy' }));
@@ -111,17 +153,8 @@ describe('Price it', () => {
     expect(within(tag('Your price')).getByText(/covers this piece’s share of the rent/)).toBeInTheDocument();
   });
 
-  it('stops following Cost to make once she types over its numbers', () => {
-    shell(<PriceTool />);
-    fireEvent.change(screen.getByLabelText('Materials for one'), { target: { value: '5' } });
-    expect(screen.getByLabelText('Fill these in from Cost to make')).not.toBeChecked();
-    expect(screen.getByText(/no longer follow Cost to make/)).toBeInTheDocument();
-    fireEvent.click(screen.getByLabelText('Fill these in from Cost to make'));
-    expect(screen.getByLabelText('Materials for one')).toHaveValue('3.45');
-  });
-
   it('reads her price against what others charge', () => {
-    shell(<PriceTool />);
+    render(<PriceTool initial={CANDLE} carry={null} canSaveProduct />);
     fireEvent.change(screen.getByLabelText('Lowest you’ve seen'), { target: { value: '30' } });
     fireEvent.change(screen.getByLabelText('Highest you’ve seen'), { target: { value: '40' } });
     expect(within(tag('Your price')).getByText(/below everyone you’ve seen/)).toBeInTheDocument();
@@ -130,30 +163,40 @@ describe('Price it', () => {
     expect(within(tag('Your price')).queryByText('Next to other makers')).toBeNull();
   });
 
-  it('starts blank, with no search buttons until it’s named', () => {
-    shell(<PriceTool />);
-    fireEvent.click(screen.getByRole('button', { name: 'Start blank' }));
-    expect(within(tag('Your price')).getByText('Add your materials and time to start.')).toBeInTheDocument();
-    expect(screen.getByText(/search buttons appear here/)).toBeInTheDocument();
+  it('opened from Cost to make, says so and saves the product with the batch it carried', () => {
+    const { form, carry } = priceFromCost({ from: 'cost', name: '8 oz soy candle', mat: '3.45', time: '3.33', y: '12', h: '2', r: '20', b: '31.97:2:Soy wax, 10 lb bag', p: '0.66:8 oz jelly jar' });
+    render(<PriceTool initial={{ ...form, extras: '1.50' }} carry={carry} canSaveProduct />);
+    expect(screen.getByText('Filled in from Cost to make. Change anything you like.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Materials for one')).toHaveValue('3.45');
+    const q = params(screen.getByRole('link', { name: 'Save as a product' }).getAttribute('href'));
+    expect([q.get('name'), q.get('price'), q.get('y'), q.get('o'), q.get('m')]).toEqual(['8 oz soy candle', '2100', '12', '1.50', '2.5']);
+    expect(q.getAll('b')).toEqual(['31.97:2:Soy wax, 10 lb bag']);
+  });
+
+  it('on its own, saves the product without costs it never had', () => {
+    render(<PriceTool initial={CANDLE} carry={null} canSaveProduct />);
+    const q = params(screen.getByRole('link', { name: 'Save as a product' }).getAttribute('href'));
+    expect([q.get('price'), q.get('y')]).toEqual(['2100', null]);
+    cleanup();
+    render(<PriceTool initial={CANDLE} carry={CANDLE_BATCH} canSaveProduct={false} />);
     expect(screen.queryByRole('link', { name: 'Save as a product' })).toBeNull();
   });
-});
 
-describe('linkedPrice', () => {
-  it('takes Cost to make’s numbers only while linked, and keeps its own name when Cost to make has none', () => {
-    const r = costToMake(EXAMPLE_COST);
-    expect(linkedPrice(EXAMPLE_PRICE, EXAMPLE_COST, r)).toMatchObject({ materials: '3.45', time: '3.33', name: '8 oz soy candle' });
-    expect(linkedPrice({ ...EXAMPLE_PRICE, name: 'Mine' }, { ...EXAMPLE_COST, name: ' ', hours: '' }, costToMake({ ...EXAMPLE_COST, hours: '' }))).toMatchObject({ name: 'Mine', time: '' });
-    const blank = { yield: '', batch: [], piece: [], hours: '', rate: '' };
-    expect(linkedPrice(EXAMPLE_PRICE, { ...EXAMPLE_COST, ...blank }, costToMake(blank)).materials).toBe('');
-    const own = { ...EXAMPLE_PRICE, linked: false, materials: '9' };
-    expect(linkedPrice(own, EXAMPLE_COST, r)).toBe(own);
+  it('links on to Market day', () => {
+    render(<PriceTool initial={BLANK_PRICE} carry={null} canSaveProduct />);
+    expect(screen.getByRole('link', { name: 'Market day' })).toHaveAttribute('href', '/manage/tools/market');
   });
 });
 
 describe('Market day', () => {
+  it('starts blank and asks for the day', () => {
+    render(<MarketTool canSaveEvent />);
+    expect(within(tag('Market day')).getByText('Fill in your day')).toBeInTheDocument();
+    expect(within(tag('Market day')).getByText(/Add your sales, hours and hourly rate/)).toBeInTheDocument();
+  });
+
   it('gives the verdict, take-home, pay per hour and the sales she’d need', () => {
-    shell(<MarketTool />);
+    render(<MarketTool canSaveEvent initial={FAIR} />);
     const t = tag('Market day');
     expect(within(t).getByText('Worth the trip')).toBeInTheDocument();
     expect(within(t).getByText('$339')).toBeInTheDocument();
@@ -162,54 +205,24 @@ describe('Market day', () => {
   });
 
   it('says so when the day lost money', () => {
-    shell(<MarketTool />);
+    render(<MarketTool canSaveEvent initial={FAIR} />);
     fireEvent.change(screen.getByLabelText('Total sales'), { target: { value: '100' } });
     expect(within(tag('Market day')).getByText('You paid to be there')).toBeInTheDocument();
     expect(within(tag('Market day')).getByText('Short by')).toBeInTheDocument();
   });
 
-  it('starts blank and asks for the day', () => {
-    shell(<MarketTool />);
-    fireEvent.click(screen.getByRole('button', { name: 'Start blank' }));
-    expect(within(tag('Market day')).getByText('Fill in your day')).toBeInTheDocument();
-    expect(within(tag('Market day')).getByText(/Add your sales, hours and hourly rate/)).toBeInTheDocument();
-  });
-
   it('saves as an event with its name and the costs of being there', () => {
-    shell(<MarketTool />);
-    const href = screen.getByRole('link', { name: 'Save as an event' }).getAttribute('href') ?? '';
-    const q = new URL(href, 'https://app.bohdiai.com').searchParams;
+    render(<MarketTool canSaveEvent initial={FAIR} />);
+    const q = params(screen.getByRole('link', { name: 'Save as an event' }).getAttribute('href'));
     expect(q.get('name')).toBe('Fall Harvest Fair');
     expect(q.getAll('cost')).toEqual(['7500:Booth fee', '1800:Gas, tolls and parking', '2200:Food and coffee', '1500:Bags, signs, other']);
     cleanup();
-    shell(<MarketTool />, true, false);
+    render(<MarketTool canSaveEvent={false} initial={FAIR} />);
     expect(screen.queryByRole('link', { name: 'Save as an event' })).toBeNull();
   });
-});
 
-describe('Cost to make, opened from a product', () => {
-  const product = { id: 'l1', name: 'Fig candle', costs: { yield: '10', hours: '', rate: '20', extras: '2', markup: 3 as const, batch: [{ name: 'Wax', paid: '30', lasts: '' }], piece: [] } };
-
-  it('starts from the product’s own costs and saves them back to it', async () => {
-    saveCostsToProduct.mockResolvedValue({ ok: true });
-    shell(<CostTool product={product} />);
-    expect(screen.getByText('Working on Fig candle')).toBeInTheDocument();
-    expect(screen.getByLabelText('How many one batch makes')).toHaveValue('10');
-    expect(screen.queryByRole('link', { name: 'Save as a product' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Save to Fig candle' }));
-    await vi.waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products/l1'));
-    expect(saveCostsToProduct).toHaveBeenCalledWith('l1', expect.objectContaining({ yield: '10', extras: '2', markup: 3 }));
-  });
-
-  it('starts blank for a product with no costs, and says why a save failed', async () => {
-    saveCostsToProduct.mockResolvedValueOnce({ ok: false, error: 'Check the hours to make the batch.' });
-    shell(<CostTool product={{ id: 'l2', name: 'Tin', costs: null }} />);
-    expect(screen.getByLabelText('What you’re making')).toHaveValue('Tin');
-    expect(screen.getByLabelText('How many one batch makes')).toHaveValue('');
-    fireEvent.click(screen.getByRole('button', { name: 'Save to Tin' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Check the hours to make the batch.');
-    saveCostsToProduct.mockRejectedValueOnce(new Error('offline'));
-    fireEvent.click(screen.getByRole('button', { name: 'Save to Tin' }));
-    expect(await screen.findByText(/Check your connection/)).toBeInTheDocument();
+  it('links on to Cost to make', () => {
+    render(<MarketTool canSaveEvent />);
+    expect(screen.getByRole('link', { name: 'Cost to make' })).toHaveAttribute('href', '/manage/tools/cost');
   });
 });

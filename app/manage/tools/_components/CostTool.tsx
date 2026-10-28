@@ -1,46 +1,44 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, unstable_rethrow } from 'next/navigation';
 import type { Route } from 'next';
-import { cents, type BatchSupply, type PieceItem } from '@/lib/tools/maths';
-import { productLink } from '@/lib/tools/handoff';
-import { toolCosts } from './ToolsShell';
+import { cents, costToMake, type BatchSupply, type PieceItem } from '@/lib/tools/maths';
+import { priceLink } from '@/lib/tools/handoff';
 import { saveCostsToProduct } from '@/lib/tools/actions';
 import type { CostSettings } from '@/lib/tools/product-costs';
-import { BLANK_COST, EXAMPLE_COST, useTools } from './ToolsShell';
-import { ExampleRow, HangTag, NumberField, TextField } from './ToolParts';
+import { BLANK_COST, BLANK_ITEM, BLANK_SUPPLY, carryOf, toolCosts, type CostForm } from '@/lib/tools/forms';
+import { HangTag, NumberField, TextField } from './ToolParts';
 
 /** A product she opened in Cost to make, with its saved costs (null: none yet). */
 export type FromProduct = { id: string; name: string; costs: CostSettings | null };
 
-/** Cost to make: one batch, its supplies, what every piece gets, then her time. */
+/** What Cost to make starts from: blank, or the product's own costs when opened from one. */
+function startFrom(product: FromProduct | null): CostForm {
+  if (product === null) return BLANK_COST;
+  const c = product.costs;
+  if (c === null) return { ...BLANK_COST, name: product.name };
+  return { name: product.name, yield: c.yield, hours: c.hours, rate: c.rate, batch: c.batch.length > 0 ? c.batch : BLANK_COST.batch, piece: c.piece.length > 0 ? c.piece : BLANK_COST.piece };
+}
+
+/** Cost to make: one batch, its supplies, what every piece gets, then her time. Run on
+ *  its own; its link opens Price it with this piece's cost (Alex, 2026-10-28). */
 export function CostTool({ product = null }: { product?: FromProduct | null }): React.ReactElement {
-  const { cost, setCost, costResult: r, price, setPrice, priceResult, canSaveProduct } = useTools();
+  const [cost, setCost] = useState<CostForm>(() => startFrom(product));
+  const r = costToMake(cost);
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
-  // Opened from a product: start from its own costs (or a blank batch named for it), once.
-  const loaded = useRef<string | null>(null);
-  useEffect(() => {
-    if (product === null || loaded.current === product.id) return;
-    loaded.current = product.id;
-    const c = product.costs;
-    setCost(
-      c === null
-        ? { ...BLANK_COST, name: product.name }
-        : { name: product.name, yield: c.yield, hours: c.hours, rate: c.rate, batch: c.batch.length > 0 ? c.batch : BLANK_COST.batch, piece: c.piece.length > 0 ? c.piece : BLANK_COST.piece },
-    );
-    if (c !== null) setPrice({ ...price, extras: c.extras, markup: c.markup, linked: true });
-  }, [product, price, setCost, setPrice]);
 
   async function saveToProduct(id: string): Promise<void> {
     if (saving) return;
     setSaving(true);
     setProblem(null);
     try {
-      const done = await saveCostsToProduct(id, toolCosts(cost, price));
+      // Price it's other costs and markup stay as the product had them.
+      const kept: Pick<CostSettings, 'extras' | 'markup'> = product?.costs ?? { extras: '', markup: 2.5 };
+      const done = await saveCostsToProduct(id, toolCosts(carryOf(cost), kept));
       if (done.ok) {
         router.push(`/manage/products/${id}`);
         return;
@@ -71,7 +69,6 @@ export function CostTool({ product = null }: { product?: FromProduct | null }): 
           </Link>
         </p>
       )}
-      {cost === EXAMPLE_COST && <ExampleRow what="Example: a batch of candles at real supplier prices" onBlank={() => setCost(BLANK_COST)} />}
 
       <div className="bk-tool-main">
         <form className="bk-tool-form" onSubmit={(e) => e.preventDefault()}>
@@ -92,14 +89,14 @@ export function CostTool({ product = null }: { product?: FromProduct | null }): 
                   <TextField id={`c-b-name-${i}`} label="Supply" value={b.name} onChange={(v) => setBatch(i, { name: v })} />
                   <NumberField id={`c-b-paid-${i}`} label="What you paid" before="$" value={b.paid} onChange={(v) => setBatch(i, { paid: v })} />
                   <NumberField id={`c-b-lasts-${i}`} label="Batches it lasts" value={b.lasts} onChange={(v) => setBatch(i, { lasts: v })} />
-                  <button type="button" className="bk-tool-remove" aria-label={`Remove ${b.name.trim() === '' ? 'this supply' : b.name}`} onClick={() => set({ batch: cost.batch.length > 1 ? cost.batch.filter((_, j) => j !== i) : [{ name: '', paid: '', lasts: '1' }] })}>
+                  <button type="button" className="bk-tool-remove" aria-label={`Remove ${b.name.trim() === '' ? 'this supply' : b.name}`} onClick={() => set({ batch: cost.batch.length > 1 ? cost.batch.filter((_, j) => j !== i) : [BLANK_SUPPLY] })}>
                     Remove
                   </button>
                 </li>
               ))}
             </ul>
             <div className="bk-tool-foot">
-              <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" onClick={() => set({ batch: [...cost.batch, { name: '', paid: '', lasts: '1' }] })}>
+              <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" onClick={() => set({ batch: [...cost.batch, BLANK_SUPPLY] })}>
                 Add a supply
               </button>
               <span className="bk-tool-sum">
@@ -116,14 +113,14 @@ export function CostTool({ product = null }: { product?: FromProduct | null }): 
                 <li key={i} className="bk-tool-row bk-tool-row-piece">
                   <TextField id={`c-p-name-${i}`} label="Item" value={p.name} onChange={(v) => setPiece(i, { name: v })} />
                   <NumberField id={`c-p-each-${i}`} label="Costs you each" before="$" value={p.each} onChange={(v) => setPiece(i, { each: v })} />
-                  <button type="button" className="bk-tool-remove" aria-label={`Remove ${p.name.trim() === '' ? 'this item' : p.name}`} onClick={() => set({ piece: cost.piece.length > 1 ? cost.piece.filter((_, j) => j !== i) : [{ name: '', each: '' }] })}>
+                  <button type="button" className="bk-tool-remove" aria-label={`Remove ${p.name.trim() === '' ? 'this item' : p.name}`} onClick={() => set({ piece: cost.piece.length > 1 ? cost.piece.filter((_, j) => j !== i) : [BLANK_ITEM] })}>
                     Remove
                   </button>
                 </li>
               ))}
             </ul>
             <div className="bk-tool-foot">
-              <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" onClick={() => set({ piece: [...cost.piece, { name: '', each: '' }] })}>
+              <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" onClick={() => set({ piece: [...cost.piece, BLANK_ITEM] })}>
                 Add one
               </button>
               <span className="bk-tool-sum">
@@ -165,7 +162,7 @@ export function CostTool({ product = null }: { product?: FromProduct | null }): 
               )}
             </dl>
             <p className="bk-hangtag-next">
-              Next: <Link href="/manage/tools/price">Price it</Link>. Your numbers carry over.
+              Next: <Link href={priceLink(cost.name, r.materials, r.time, carryOf(cost)) as Route}>Price this piece</Link>. What it costs you goes with it.
             </p>
             {product !== null && (
               <button type="button" className="bk-btn bk-hangtag-save" disabled={saving} onClick={() => void saveToProduct(product.id)}>
@@ -176,11 +173,6 @@ export function CostTool({ product = null }: { product?: FromProduct | null }): 
               <p className="bk-error" role="alert">
                 {problem}
               </p>
-            )}
-            {product === null && canSaveProduct && r.has && (
-              <Link className="bk-btn bk-hangtag-save" href={productLink(cost.name, priceResult.has ? priceResult.fair * 100 : 0, toolCosts(cost, price)) as Route}>
-                Save as a product
-              </Link>
             )}
           </HangTag>
         </div>

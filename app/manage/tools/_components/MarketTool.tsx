@@ -1,11 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { cents, dollars, type MarketCost, type Verdict } from '@/lib/tools/maths';
+import { cents, dollars, marketDay, type MarketCost, type Verdict } from '@/lib/tools/maths';
 import { eventLink } from '@/lib/tools/handoff';
-import { BLANK_DAY, EXAMPLE_DAY, useTools, type DayForm } from './ToolsShell';
-import { ExampleRow, HangTag, NumberField, Placed, TextField } from './ToolParts';
+import { BLANK_DAY, type DayForm } from '@/lib/tools/forms';
+import { HangTag, NumberField, Placed, TextField } from './ToolParts';
 
 const COST_WORDS: Readonly<Record<MarketCost, string>> = {
   materials: 'Materials',
@@ -25,9 +26,11 @@ const VERDICT_WORDS: Readonly<Record<Verdict, { say: string; note: (wage: string
   worth: { say: 'Worth the trip', note: (wage) => (wage === '' ? '' : `You beat the ${wage} an hour you set for your time.`) },
 };
 
-/** Market day: what came in, what it cost to be there, and her time. */
-export function MarketTool(): React.ReactElement {
-  const { day, setDay, dayResult: r, canSaveEvent } = useTools();
+/** Market day: what came in, what it cost to be there, and her time. Run on its own
+ *  (Alex, 2026-10-28). */
+export function MarketTool({ canSaveEvent, initial = BLANK_DAY }: { canSaveEvent: boolean; initial?: DayForm }): React.ReactElement {
+  const [day, setDay] = useState<DayForm>(initial);
+  const r = marketDay(day);
   const set = (patch: Partial<DayForm>): void => setDay({ ...day, ...patch });
   const wage = r.wage > 0 ? dollars(r.wage) : '';
   const v = VERDICT_WORDS[r.verdict];
@@ -43,7 +46,6 @@ export function MarketTool(): React.ReactElement {
         Was that market worth it?
       </h2>
       <p className="bk-tool-lede">Put in what you sold and what it cost you to be there. You’ll see what you really took home, and what you earned for every hour you gave it.</p>
-      {day === EXAMPLE_DAY && <ExampleRow what="Example numbers" onBlank={() => setDay(BLANK_DAY)} />}
 
       <div className="bk-tool-main">
         <form className="bk-tool-form" onSubmit={(e) => e.preventDefault()}>
@@ -129,6 +131,9 @@ export function MarketTool(): React.ReactElement {
                 : r.salesNeeded === 'never'
                   ? 'Your materials and fees eat every sale. Take a look at your prices.'
                   : `To pay yourself ${wage} an hour at this market, you’d need about ${dollars(r.salesNeeded)} in sales.`}
+            </p>
+            <p className="bk-hangtag-next">
+              Next: <Link href="/manage/tools/cost">Cost to make</Link>, to see what each piece really costs you.
             </p>
             {canSaveEvent && (
               <Link className="bk-btn bk-hangtag-save" href={eventLink(day.name, eventCosts, { sales: day.sales, card: day.card, cardRate: day.cardRate, materials: day.materials, hoursAtMarket: day.hoursAtMarket, hoursOther: day.hoursOther, wage: day.wage }) as Route}>

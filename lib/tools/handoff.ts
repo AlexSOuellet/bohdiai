@@ -11,6 +11,7 @@ import { COSTS_LIMIT, MARKET_LIMITS, emptyMarketForm, type MarketForm } from '@/
 import { MARKUPS, type Markup } from './maths';
 import { COST_LINES_MAX, type CostSettings } from './product-costs';
 import type { Takings } from './event-takings';
+import { BLANK_PRICE, type CostCarry, type PriceForm } from './forms';
 
 const PRODUCT_NAME_MAX = 120;
 
@@ -32,27 +33,59 @@ function centsFrom(text: string): number | null {
 const NUMBER_MAX = 12;
 const short = (s: string): string => s.trim().slice(0, NUMBER_MAX);
 
+/** Cost to make's batch and time, written into an address. */
+function appendCarry(q: URLSearchParams, c: CostCarry): void {
+  q.set('y', short(c.yield));
+  q.set('h', short(c.hours));
+  q.set('r', short(c.rate));
+  for (const b of c.batch) if (b.name.trim() !== '' || b.paid.trim() !== '') q.append('b', `${short(b.paid)}:${short(b.lasts)}:${b.name.trim()}`);
+  for (const p of c.piece) if (p.name.trim() !== '' || p.each.trim() !== '') q.append('p', `${short(p.each)}:${p.name.trim()}`);
+}
+
 /** The address that opens a new product from a tool, with its costs when there are any. */
 export function productLink(name: string, priceCents: number, costs: CostSettings | null = null): string {
   const q = new URLSearchParams({ from: 'tools' });
   if (name.trim() !== '') q.set('name', name.trim());
   if (Number.isFinite(priceCents) && priceCents > 0) q.set('price', String(Math.round(priceCents)));
   if (costs !== null) {
-    q.set('y', short(costs.yield));
-    q.set('h', short(costs.hours));
-    q.set('r', short(costs.rate));
+    appendCarry(q, costs);
     q.set('o', short(costs.extras));
     q.set('m', String(costs.markup));
-    for (const b of costs.batch) if (b.name.trim() !== '' || b.paid.trim() !== '') q.append('b', `${short(b.paid)}:${short(b.lasts)}:${b.name.trim()}`);
-    for (const p of costs.piece) if (p.name.trim() !== '' || p.each.trim() !== '') q.append('p', `${short(p.each)}:${p.name.trim()}`);
   }
   return `/manage/products/new?${q.toString()}`;
+}
+
+/** The address that opens Price it from Cost to make (Alex, 2026-10-28): the piece's
+ *  name, materials and time for one, and the batch so a product saved there keeps it. */
+export function priceLink(name: string, materials: number, time: number, carry: CostCarry): string {
+  const q = new URLSearchParams({ from: 'cost' });
+  if (name.trim() !== '') q.set('name', name.trim());
+  if (materials > 0) q.set('mat', materials.toFixed(2));
+  if (time > 0) q.set('time', time.toFixed(2));
+  appendCarry(q, carry);
+  return `/manage/tools/price?${q.toString()}`;
+}
+
+/** Price it as Cost to make opened it, with what it carried; blank when opened on its own. */
+export function priceFromCost(params: Params): { form: PriceForm; carry: CostCarry | null } {
+  if (one(params['from']) !== 'cost') return { form: BLANK_PRICE, carry: null };
+  const form = { ...BLANK_PRICE, name: one(params['name']).slice(0, PRODUCT_NAME_MAX), materials: one(params['mat']).slice(0, NUMBER_MAX), time: one(params['time']).slice(0, NUMBER_MAX) };
+  return { form, carry: params['y'] === undefined ? null : carryFrom(params) };
 }
 
 /** The costs a tool sent with a new product, or null. */
 export function costsFromTools(params: Params): CostSettings | null {
   if (one(params['from']) !== 'tools' || params['y'] === undefined) return null;
   const m = Number(one(params['m']));
+  return {
+    ...carryFrom(params),
+    extras: one(params['o']).slice(0, NUMBER_MAX),
+    markup: (MARKUPS as readonly number[]).includes(m) ? (m as Markup) : 2.5,
+  };
+}
+
+/** Cost to make's batch and time, read back out of an address. */
+function carryFrom(params: Params): CostCarry {
   const split = (raw: string, parts: number): string[] => {
     const out: string[] = [];
     let rest = raw;
@@ -68,8 +101,6 @@ export function costsFromTools(params: Params): CostSettings | null {
     yield: one(params['y']).slice(0, NUMBER_MAX),
     hours: one(params['h']).slice(0, NUMBER_MAX),
     rate: one(params['r']).slice(0, NUMBER_MAX),
-    extras: one(params['o']).slice(0, NUMBER_MAX),
-    markup: (MARKUPS as readonly number[]).includes(m) ? (m as Markup) : 2.5,
     batch: many(params['b']).slice(0, COST_LINES_MAX).map((raw) => {
       const [paid = '', lasts = '', name = ''] = split(raw, 3);
       return { name, paid, lasts };
