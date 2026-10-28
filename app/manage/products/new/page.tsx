@@ -9,6 +9,7 @@ import { listCollections, countHomeProducts } from '@/lib/backend/catalog/querie
 import { costsFromTools, productFromTools } from '@/lib/tools/handoff';
 import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
 import { ProductEditor } from '../_components/ProductEditor';
+import { isFreeSite } from '@/lib/backend/plan/free';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +37,7 @@ export default async function NewProductPage({ searchParams }: PageProps<'/manag
       shopUrl={storefrontOrigin(site.subdomain, (await headers()).get('host'))}
       homeCount={homeCount}
       showcase={!on.has('catalog')}
+      free={await isFreeSite(db, site.tenantId)}
       hasCollections={on.has('collections')}
     />
   );

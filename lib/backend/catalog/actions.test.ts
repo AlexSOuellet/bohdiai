@@ -31,6 +31,8 @@ vi.mock('@/lib/backend/current-site', () => ({
   }),
 }));
 vi.mock('@/lib/backend/site-features', () => ({ getSiteFeatures: async () => features.on }));
+const free = vi.hoisted(() => ({ is: false }));
+vi.mock('@/lib/backend/plan/free', () => ({ isFreeSite: async () => free.is }));
 vi.mock('@/lib/supabase-server', () => ({
   createSupabaseServerClient: async () => ({
     rpc,
@@ -123,6 +125,16 @@ describe('saveProduct', () => {
     );
     expect(rpc.mock.calls[0]![1]).not.toHaveProperty('p_listing_id');
     expect(revalidatePath).toHaveBeenCalledWith('/manage/products');
+  });
+  it('asks how a piece is stocked only where the site sells: never on Free or Showcase (Alex, 2026-10-28)', async () => {
+    slugRows.mockResolvedValue({ data: [], error: null });
+    rpc.mockResolvedValue({ data: 'new-id', error: null });
+    expect(await saveProduct(form({ stockKind: null }))).toEqual({ ok: false, error: 'Say how many you have: One of a kind, I have some, or Made to order.' });
+    free.is = true;
+    expect(await saveProduct(form({ stockKind: null }))).toEqual({ ok: true, id: 'new-id' });
+    free.is = false;
+    features.on = new Set(['gallery_pieces']);
+    expect(await saveProduct(form({ stockKind: null }))).toEqual({ ok: true, id: 'new-id' });
   });
   it('saves the costs the Tools worked out with a new product (Alex, 2026-10-24)', async () => {
     slugRows.mockResolvedValue({ data: [], error: null });

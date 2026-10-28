@@ -10,6 +10,7 @@ import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
 import { loadProductCosts, costSummary } from '@/lib/tools/product-costs';
 import { logger } from '@/lib/logger';
 import { ProductEditor } from '../_components/ProductEditor';
+import { isFreeSite } from '@/lib/backend/plan/free';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,6 +55,7 @@ export default async function EditProductPage({
       shopUrl={storefrontOrigin(site.subdomain, (await headers()).get('host'))}
       homeCount={homeCount}
       showcase={!on.has('catalog')}
+      free={await isFreeSite(db, site.tenantId)}
       hasCollections={on.has('collections')}
       costSummary={summary}
       costsUnsaved={costsUnsaved}

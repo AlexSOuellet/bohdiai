@@ -33,7 +33,8 @@ type Db = SupabaseClient<Database>;
 function optionalNumber(text: string, positive = false): { ok: true; n: number | null } | { ok: false } {
   const t = text.trim();
   if (t === '') return { ok: true, n: null };
-  if (!/^\d{1,6}(\.\d{1,2})?$/.test(t)) return { ok: false };
+  // ".5" counts, as the tools read it (Alex hit it saving half an hour, 2026-10-28).
+  if (!/^(\d{1,6}(\.\d{1,2})?|\.\d{1,2})$/.test(t)) return { ok: false };
   const n = Number(t);
   return positive && n === 0 ? { ok: false } : { ok: true, n };
 }

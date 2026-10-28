@@ -523,3 +523,18 @@ describe('ProductEditor — its costs from the Tools (Alex, 2026-10-24)', () => 
     await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products/new?costs=unsaved'));
   });
 });
+
+describe('ProductEditor — Free (Alex, 2026-10-28)', () => {
+  it('keeps a piece for its costs and price: no home page, stock, options or collections, and it saves', async () => {
+    saveProduct.mockResolvedValue({ ok: true, id: 'l9' });
+    render(<ProductEditor initial={{ ...emptyProductForm(), name: 'Victorian Lazy Susan', price: '130' }} photoLimit={12} collections={collections} digital={false} shopUrl="https://shop.bohdiai.com" homeCount={0} free />);
+    expect(screen.queryByLabelText('Show on your home page')).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Options' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Collections' })).toBeNull();
+    expect(screen.queryByText('One of a kind')).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Price' })).toBeInTheDocument();
+    expect(screen.getByText(/Your price list, for your own numbers/)).toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0] as HTMLElement);
+    await vi.waitFor(() => expect(saveProduct).toHaveBeenCalled());
+  });
+});

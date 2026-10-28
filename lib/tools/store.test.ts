@@ -51,6 +51,12 @@ const candle: CostSettings = {
 };
 
 describe('a product’s costs', () => {
+  it('take half an hour typed as .5, as the tools read it (Alex, 2026-10-28)', () => {
+    const r = costRows('t1', 'l1', { ...candle, hours: '.5' });
+    expect(r.ok && r.costs.batch_hours).toBe(0.5);
+    expect(costRows('t1', 'l1', { ...candle, hours: '.' }).ok).toBe(false);
+  });
+
   it('turn into rows in cents, dropping blank lines, and back again', () => {
     const r = costRows('t1', 'l1', candle);
     expect(r.ok).toBe(true);

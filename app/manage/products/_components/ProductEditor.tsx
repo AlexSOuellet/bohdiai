@@ -59,6 +59,7 @@ export function ProductEditor({
   shopUrl,
   homeCount,
   showcase = false,
+  free = false,
   hasCollections = true,
   costs = null,
   costSummary = null,
@@ -83,11 +84,16 @@ export function ProductEditor({
   /** Showcase: no shop, so no shop link, home tick, stock, options or collections.
    *  The price is kept for when the site moves up to Market. */
   showcase?: boolean;
+  /** Free (Alex, 2026-10-24): no site at all; a piece is kept for its costs and price.
+   *  The same as Showcase here, without its notes about the site. */
+  free?: boolean;
   /** The site has collections (Full); Market and Showcase have none, so no Collections section. */
   hasCollections?: boolean;
 }): React.ReactElement {
   const router = useRouter();
   const [form, setForm] = useState(initial);
+  /** The site sells (Market and Full): it asks about stock, options, the home page and collections. */
+  const sells = !showcase && !free;
   /** The saved version — drives the title, the shop link, the archive button, and
    *  whether there are unsaved changes. A save leaves the page, so it never changes. */
   const stored = initial;
@@ -214,6 +220,7 @@ export function ProductEditor({
     const check = buildProductPayload(next, {
       digital,
       photos: { limit: photoLimit, kept: stored.photos.length },
+      stock: sells,
     });
     if (!check.ok) {
       notice.showError(check.error);
@@ -241,7 +248,7 @@ export function ProductEditor({
       <div className="bk-head">
         <h1 className="bk-title">{isNew ? 'New product' : stored.name}</h1>
         <div className="bk-head-actions">
-          {!showcase && !isNew && stored.status === 'active' && stored.slug !== null && (
+          {sells && !isNew && stored.status === 'active' && stored.slug !== null && (
             <a
               className="bk-btn bk-btn-quiet"
               href={`${shopUrl}/listings/${stored.slug}`}
@@ -318,7 +325,7 @@ export function ProductEditor({
                   onChange={(e) => update({ name: e.target.value })}
                 />
               </div>
-              {!showcase && (
+              {sells && (
                 <div className="bk-field">
                   <label className="bk-check">
                     <input
@@ -384,7 +391,7 @@ export function ProductEditor({
 
             <section className="bk-section" aria-labelledby="s-price">
               <h2 id="s-price" className="bk-section-title">
-                Price and stock
+                {sells ? 'Price and stock' : 'Price'}
               </h2>
               <div className="bk-grid-2">
                 <div className="bk-field">
@@ -409,7 +416,7 @@ export function ProductEditor({
                 unsaved={costsUnsaved}
                 onUse={(cents) => update({ price: formatCents(cents) })}
               />
-              {!showcase && noOptions && form.kind === 'physical' && (
+              {sells && noOptions && form.kind === 'physical' && (
                 <StockChoice kind={form.stockKind} stock={form.stock} onChange={(next) => update(next)} />
               )}
               {showcase && (
@@ -418,7 +425,13 @@ export function ProductEditor({
                   you move up to Market.
                 </p>
               )}
-              {!showcase && !noOptions && (
+              {free && (
+                <p className="bk-note">
+                  Your price list, for your own numbers. Nothing here shows anywhere until you have a
+                  site, and it all comes with you when you do.
+                </p>
+              )}
+              {sells && !noOptions && (
                 <p className="bk-note">
                   With options, each combination below says how you stock it. A blank combination
                   price uses this one.
@@ -462,7 +475,7 @@ export function ProductEditor({
               )}
             </section>
 
-            {!showcase && (
+            {sells && (
               <section className="bk-section" aria-labelledby="s-options">
                 <h2 id="s-options" className="bk-section-title">
                   Options
@@ -480,7 +493,7 @@ export function ProductEditor({
               </section>
             )}
 
-            {!showcase && hasCollections && (
+            {sells && hasCollections && (
               <section className="bk-section" aria-labelledby="s-collections">
                 <h2 id="s-collections" className="bk-section-title">
                   Collections

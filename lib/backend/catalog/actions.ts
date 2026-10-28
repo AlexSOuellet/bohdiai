@@ -20,6 +20,7 @@ import { logger } from '@/lib/logger';
 import { slugify, uniqueSlug, slugLookupPrefix } from '@/lib/catalog/slug';
 import { buildProductPayload, GALLERY_MAX, type ProductForm } from './product-form';
 import { costRows, saveProductCosts, type CostSettings } from '@/lib/tools/product-costs';
+import { isFreeSite } from '@/lib/backend/plan/free';
 import { buildCollectionPayload, type CollectionForm } from './collection-form';
 import type { SaveResult, PhotoResult, FileResult, DoneResult } from './results';
 
@@ -161,9 +162,12 @@ export async function saveProduct(form: ProductForm, costs: CostSettings | null 
       .maybeSingle();
     kept = current?.media_ids.length ?? 0;
   }
+  // Showcase and Free sell nothing, so they aren't asked how a piece is stocked.
+  const stock = site.on.has('catalog') && !(await isFreeSite(db, site.tenantId));
   const built = buildProductPayload(form, {
     digital: site.on.has('digital_products'),
     photos: { limit: photoLimit(site.on), kept },
+    stock,
   });
   if (!built.ok) return built;
 
