@@ -89,12 +89,14 @@ const full: BoutiqueData = {
     { id: 'g5', url: 'https://cdn/g5.webp', caption: 'Sweet pea' },
   ],
   cart: false,
+  account: null,
   marketPages: false,
   newArrivals: false,
   sale: null,
   words: S,
 };
-const bare: BoutiqueData = { name: 'Rose', profile: EMPTY_PROFILE, dates: [], gone: [], cart: false, marketPages: false, newArrivals: false, sale: null, words: S };
+const bare: BoutiqueData = { name: 'Rose', profile: EMPTY_PROFILE, dates: [], gone: [], cart: false,
+  account: null, marketPages: false, newArrivals: false, sale: null, words: S };
 
 afterEach(() => {
   cleanup();

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { AUTH_LINK_KINDS } from '@/lib/backend/auth-kinds';
-import { plex } from '../../manage/fonts';
+import { backendFace } from '../../manage/fonts';
 import '../../manage/backend.css';
 
 export const metadata: Metadata = { title: 'Continue', robots: { index: false, follow: false }, referrer: 'same-origin' };
@@ -21,7 +21,7 @@ export default async function ContinuePage({ searchParams }: { searchParams: Pro
     redirect('/auth/error?reason=link');
   }
   return (
-    <div className={`bk ${plex.variable}`}>
+    <div className={`bk ${backendFace.variable}`}>
       <main id="main" className="bk-auth">
         <div className="bk-card">
           <p className="bk-kicker">Site owner</p>

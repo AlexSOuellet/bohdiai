@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-vi.mock('../manage/fonts', () => ({ plex: { variable: 'plex' } }));
+vi.mock('../manage/fonts', () => ({ backendFace: { variable: 'backendFace' } }));
 vi.mock('./SignInForm', () => ({ default: () => <form aria-label="sign in form" /> }));
 
 import SignInPage from './page';

@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger';
 import { formLimitResponse } from '@/lib/forms/rate-limit';
 import { orderRequestEmail, orderRequestSchema } from '@/lib/storefront/order-request';
 import { placeCartOrder } from '@/lib/storefront/place-order';
+import { signedInBuyerProfile } from '@/lib/buyers/session';
 import { onlinePay } from '@/lib/paypal/online-pay';
 
 export const runtime = 'nodejs';
@@ -52,7 +53,7 @@ async function handle(req: Request) {
   if ((await onlinePay(db, tenantId)) !== null) {
     return NextResponse.json({ error: 'This shop takes payment at checkout. Please pay with the PayPal button.' }, { status: 409 });
   }
-  const placed = await placeCartOrder(db, tenantId, input, { verb: 'send' });
+  const placed = await placeCartOrder(db, tenantId, input, { verb: 'send' }, await signedInBuyerProfile(tenantId));
   if (!placed.ok) {
     if (placed.refusal.status === 503) logger.warn('order request: tenant has no contact_email', { tenantId });
     return NextResponse.json({ error: placed.refusal.error, ...(placed.refusal.unavailable === undefined ? {} : { unavailable: placed.refusal.unavailable }) }, { status: placed.refusal.status });

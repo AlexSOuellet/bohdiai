@@ -18,6 +18,10 @@ export type HomeContributor = { feature: FeatureKey | null; load: (tenantId: str
 
 export const HOME_CONTRIBUTORS: HomeContributor[] = [ordersHome, catalogHome, collectionsHome, showcaseHome, galleryHome, headlineHome, profileHome];
 
+/** On a plan's site, the first steps ask for the headline and the story, so Home
+ *  doesn't ask twice. */
+export const HOME_CONTRIBUTORS_WITH_STEPS: HomeContributor[] = HOME_CONTRIBUTORS.filter((c) => c !== headlineHome && c !== profileHome);
+
 const LOAD_FAILED = 'Part of this page couldn’t load. Refresh to try again.';
 
 export async function collectHome(contributors: readonly HomeContributor[], on: ReadonlySet<FeatureKey>, tenantId: string): Promise<HomeData> {

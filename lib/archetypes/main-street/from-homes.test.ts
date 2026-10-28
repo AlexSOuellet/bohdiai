@@ -15,6 +15,7 @@ vi.mock('@/lib/backend/sections/queries', () => ({ getSiteSections: async () => 
 vi.mock('@/lib/backend/profile/queries', () => ({ getProfileForm: async () => EMPTY_PROFILE, getPortraitUrl: async () => null }));
 vi.mock('@/lib/backend/testimonials/queries', () => ({ listTestimonials: loaders.testimonials }));
 vi.mock('@/lib/backend/dates/queries', () => ({ listVisitorMarketDates: loaders.dates }));
+vi.mock('@/lib/storefront/home-sections', async (orig) => ({ ...(await orig<object>()), loadHomeSwitches: async () => new Map() }));
 vi.mock('@/lib/storefront/site-gallery', () => ({ loadSiteGallery: async () => [] }));
 
 import { familyMarketDay, familyViewFromHomes, holdsLegacyContent, loadFamilyHomes, type FamilyHomes } from './from-homes';
@@ -56,6 +57,11 @@ const empty: FamilyHomes = {
 };
 
 describe('familyViewFromHomes', () => {
+  it('carries the sections she switched off on My site, and none when she switched none off (Alex, 2026-10-27)', () => {
+    expect(familyViewFromHomes({ ...empty, hidden: ['reviews', 'findUs'] }, W).identity.hiddenSections).toEqual(['reviews', 'findUs']);
+    expect(familyViewFromHomes({ ...empty, hidden: [] }, W).identity.hiddenSections).toBeUndefined();
+  });
+
   it('drops a button whose page the plan doesn’t have, so a Showcase site never points at a shop', () => {
     const v = familyViewFromHomes({
       ...empty,

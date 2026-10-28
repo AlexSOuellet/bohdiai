@@ -1,15 +1,16 @@
 # Session Brief — BohdiAI
 
-> **⚠ START HERE (Session 116):** read `session-logs/session-115.md`, then `Plan-Backends.md` ("Full"), then `Open-Work.md` (item 4a).
-> **Alex is designing a new backend himself** ("a full redesign"; where things sit is a big concern). Wait for his design; never place a new backend screen without asking. Buyer accounts are built on `feat/buyer-accounts` (pushed, NOT merged) and wait for it.
-> Payments are NOT being built (Alex: "we are building ADMIN"). The tools/Free (`feat/backend-tools`, unmerged) wait until Full is done.
+> **⚠ START HERE (Session 117):** read `session-logs/session-116.md`, then `Plan-Backends.md` ("Free", "The ladder"), then `Open-Work.md` (item 49).
+> **First: merge `feat/backend-redesign` into main** (Alex, 2026-10-27: "we can do it tomorrow"; no site is truly live). **Then Maker Free** (Alex). It sits on `feat/backend-tools` (unmerged, built before the redesign). First ask Alex what felt worse there, then bring Free into the redesigned backend.
+> **The backend redesign is on `feat/backend-redesign` (pushed, NOT merged; it carries Session 115's buyer accounts).** Alex likes it. Never place a new backend screen without asking where it goes.
+> Payments are NOT being built (Alex: "we are building ADMIN").
 > Saltmarsh IS Scenic. A change to what a plan shows must reach the moods, Scenic's shoreline code and Rose n' Cat's nursery.
 > Build everything Alex decides; ask in plain text (no button questions); ask before any change he didn't ask for.
 
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 **Operative plan doc:** `Project-Docs/Modular-Plan.md`; open items in `Project-Docs/Open-Work.md`. Every session updates Open-Work as items land.
 
-**Last updated:** 2026-10-26, Session 115 (end).
+**Last updated:** 2026-10-27, Session 116 (end).
 
 ---
 
@@ -19,7 +20,7 @@
 
 **Session 114 (merged and live): Renée's sample site Rustic Charm & More (public, Full, Rustic, redesigned to work in every mood); Full defined; Getting paid with Square/Stripe/PayPal sections; PayPal connect/checkout/refunds built in test mode (sandbox keys only in `.env.local`, nothing live); Try on a look; the opening photo on Headline; a Background screen; a site's own background (`site_backgrounds`); every piece's photo shown whole; Owner login in family footers.** Recap: `session-logs/session-114.md`.
 
-**Session 115 (on `feat/buyer-accounts`, pushed, not merged): buyer accounts for Full (sign in, My account, orders, Reorder; one shared password, a shop-only pass), the Buyers screen and step-down count, Show / Hide on every password box. Alex: the backend needs a full redesign, which he will design.** Recap: `session-logs/session-115.md`.
+**Session 116 (on `feat/backend-redesign`, pushed, not merged): Claude rebuilt the backend (BohdiAI's own look; menu Home, Products, Events, Orders, Customers, My site, Account, Help; tabs per group; My site shows the whole site with a switch for every home page section); Home changes by plan (Showcase, Market, Full first steps); Customers and its switch split; Paper & Patina on Spotlight/Showcase. The Spotlight long-headline fix is live.** Recap: `session-logs/session-116.md`.
 
 **Session 87 — the whole app now runs on Cloudflare Workers; Vercel serves nothing.** bohdiai.com, www, every shop subdomain and Cut-Pro are all served by the `bohdiai` Worker, verified live (Cut-Pro end to end, including a real photo estimate). `main` is current (fast-forwarded 552 commits). 1364 tests, tsc + lint clean. Runbook + lessons: `Cloudflare-Move.md`.
 
@@ -32,9 +33,9 @@
 
 ## Next actions
 
-**Session 116:** Alex's backend design first (wait for it). Then place Buyers where it says, merge `feat/buyer-accounts`, check live (Renée's site shows Account). Full still to do: PayPal on Getting paid for Market sites; downloads with payments. Then the mood-proof build rules into Modular-Plan, the builder checking all nine moods. After Full: the tools/Free (ask Alex what felt worse first), the toolkit page, pricing cards, the Cloudflare analytics key (Alex), paying at sign-up.
+**Session 117:** Maker Free (ask Alex what felt worse on `feat/backend-tools` first), built into the redesigned backend. Then merge `feat/backend-redesign` and check every plan's site live; rename `site_added_sections` after. Still open: PayPal on Getting paid for Market sites; the mood-proof build rules into Modular-Plan; the toolkit page, pricing cards, the Cloudflare analytics key (Alex), paying at sign-up.
 
-**Every open item is in `Open-Work.md`; follow its Priority order.** Next: the maker-backend screens with try on a look for Full (priority 4), then Alex's admin. Waiting on Alex: the purge (after testing); whether Paper & Patina moves onto Spotlight. Waiting on others: Joe's feedback, Renee's details.
+**Every open item is in `Open-Work.md`; follow its Priority order.** Waiting on others: Joe's feedback, Renee's details.
 
 ---
 
@@ -62,8 +63,6 @@
 - **Design discipline is not restraint.** Match the maker's real brand energy (Sheri's saturated maximalism). Don't default to clean/white/minimal.
 - **A "structural fix" that only fixes the failure surface is a shortcut.** Audit every affected surface, not just the loud one.
 - **Don't drift to serif; don't pick safe/lazy.** Bold, distinctive, executed — serif only where it earns it. Don't overcorrect to absolutes.
-- **Every phase in the Full Plan updates its checkboxes as work lands.** Don't let the plan and reality drift.
-- **Assets today's pipeline ignores may be tomorrow's editor fuel.** "Retire it" is not a safe default just because it's unused now. Ask whether the next phase earns it a job before pulling the plug.
 - **Verify agent-reported state instead of trusting it.** Cowork reported "40 uncommitted files"; actual was 4. Read `git status` yourself, don't quote what the agent saw.
 - **When Alex says stop / don't change, STOP — even mid-fix.** Session 73 repeatedly edited before he'd said go; he had to say "I did not tell you to change anything."
 - **Don't grade your own homework on a comparison set.** Curation = viewing a wide set AND rejecting, including saying "I'm two short," not padding to a target count with near-identical grabs. Sameness across a set is STRUCTURAL (same kind of thing), not fixable by turning up a dial.
@@ -89,6 +88,7 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 116 (2026-10-27): **Backend rebuilt by Claude (new look, short menu, My site, Home by plan, home page section switches, Customers), Paper & Patina on Spotlight/Showcase, on `feat/backend-redesign`, unmerged; Spotlight long-headline fix live.** Full recap: `session-logs/session-116.md`.
 - Session 115 (2026-10-26): **Buyer accounts for Full (sign in, My account, Reorder, Buyers screen, step-down count) and Show / Hide on password boxes, on `feat/buyer-accounts`, unmerged; Alex will design a new backend.** Full recap: `session-logs/session-115.md`.
 - Session 114 (2026-10-25): **Rustic Charm & More (Renée) built, redesigned for every mood, public; Full defined; Getting paid Square/Stripe/PayPal; PayPal test mode (not live); Try on a look; opening photo + Background screens; own background home; whole-piece photos; merged.** Full recap: `session-logs/session-114.md`.
 - Sessions 111–113 (2026-10-21 → 10-24): **Market plan live, Square cards, refunds (111); Events area, stock kinds (112); merged, Free plan + ladder + tools decided and built on `feat/backend-tools`, unmerged; Alex: backend doesn't flow (113).** See `session-logs/session-111.md` – `session-113.md`.

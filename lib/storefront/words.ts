@@ -12,6 +12,7 @@ export const SHOP_WORD_SPOTS = {
   /** Each route's name in its page title. */
   pages: {
     about: '',
+    account: '',
     cart: '',
     collections: '',
     collection: '',
@@ -60,6 +61,111 @@ export const SHOP_WORD_SPOTS = {
       quarter: '',
       year: '',
       month: '',
+    },
+  },
+  /** Buyer accounts (Full): signing in, My account, an order's page, and the reset email. */
+  account: {
+    /** The menu link to /account. */
+    nav: '',
+    /** The button inside a password box that shows or hides what was typed. */
+    showPassword: '',
+    hidePassword: '',
+    signIn: {
+      title: '',
+      lede: '',
+      email: '',
+      password: '',
+      submit: '',
+      submitting: '',
+      forgot: '',
+      toCreate: '',
+    },
+    create: {
+      title: '',
+      lede: '',
+      name: '',
+      email: '',
+      password: '',
+      /** "At least {n} characters". */
+      passwordHint: '',
+      submit: '',
+      submitting: '',
+      toSignIn: '',
+    },
+    errors: {
+      email: '',
+      password: '',
+      /** "Use at least {n} characters." */
+      short: '',
+      wrong: '',
+      exists: '',
+      limited: '',
+      unavailable: '',
+      failed: '',
+      mismatch: '',
+      expired: '',
+    },
+    forgot: {
+      title: '',
+      lede: '',
+      submit: '',
+      submitting: '',
+      sent: '',
+      back: '',
+    },
+    newPassword: {
+      title: '',
+      lede: '',
+      password: '',
+      confirm: '',
+      submit: '',
+      submitting: '',
+    },
+    mine: {
+      title: '',
+      /** "Hello, {name}". */
+      hello: '',
+      helloNoName: '',
+      orders: '',
+      none: '',
+      browse: '',
+      signOut: '',
+      /** "Order {n}". */
+      number: '',
+      view: '',
+      locale: '',
+    },
+    status: {
+      pending: '',
+      paid: '',
+      fulfilled: '',
+      shipped: '',
+      delivered: '',
+      canceled: '',
+      refunded: '',
+      partiallyRefunded: '',
+    },
+    order: {
+      back: '',
+      /** "Placed {date}". */
+      placed: '',
+      items: '',
+      subtotal: '',
+      discount: '',
+      shipping: '',
+      tax: '',
+      total: '',
+      reorder: '',
+      reordering: '',
+      reorderNone: '',
+    },
+    /** The password-reset email, in the shop's own words. */
+    email: {
+      /** "Reset your {shop} password". */
+      subject: '',
+      lead: '',
+      action: '',
+      expiry: '',
     },
   },
   notify: {

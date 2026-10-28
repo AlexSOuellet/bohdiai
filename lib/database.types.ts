@@ -3260,6 +3260,7 @@ export type Database = {
           address_line2: string | null
           brand_colors: string[] | null
           business_name: string
+          buyer_accounts_on: boolean
           city: string | null
           contact_email: string | null
           country: string | null
@@ -3307,6 +3308,7 @@ export type Database = {
           address_line2?: string | null
           brand_colors?: string[] | null
           business_name: string
+          buyer_accounts_on?: boolean
           city?: string | null
           contact_email?: string | null
           country?: string | null
@@ -3354,6 +3356,7 @@ export type Database = {
           address_line2?: string | null
           brand_colors?: string[] | null
           business_name?: string
+          buyer_accounts_on?: boolean
           city?: string | null
           contact_email?: string | null
           country?: string | null

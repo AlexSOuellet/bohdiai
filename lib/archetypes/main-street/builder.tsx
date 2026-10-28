@@ -3,7 +3,7 @@
  * own product catalog (separate rows), its seven skins, and its render. Bohdi
  * picks the skin and authors everything; this file only describes the shape.
  */
-import { CardCart, CardMarket, CardMarketInfo, CardPage, CardProduct, CardSite } from '../card/builder';
+import { CardCart, CardMarket, CardMarketInfo, CardPage, CardProduct, CardShell, CardSite } from '../card/builder';
 import { shorelineLook, type ShorelineLook } from '../card/look';
 import { cardPaint } from '../card/paint';
 import { z } from 'zod';
@@ -488,7 +488,7 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
       case 'testimonials':
         return <TestimonialsPage content={c} skin={skin} words={words} family={family} />;
       default:
-        return <MainStreet content={c} skin={skin} words={words} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} hiddenSections={showsShop ? (showsCollections ? resolutions.hidden : [...resolutions.hidden, 'collections']) : [...resolutions.hidden, 'goods', 'collections']} shownSections={resolutions.shown} originalMood={originalMood} />;
+        return <MainStreet content={c} skin={skin} words={words} products={products} sectionStack={family.sectionStack} catalogSize={catalogSize} momentKey={tenantId} heroVariant={treatments.hero} goodsTreatment={treatments.goods} collections={collections} collectionsTreatment={treatments.collections} reviewsTreatment={treatments.reviews} findUsTreatment={treatments.findUs} founderTreatment={treatments.founder} family={family} hiddenSections={[...resolutions.hidden, ...(c.identity.hiddenSections ?? []), ...(showsShop ? (showsCollections ? [] : ['collections' as const]) : ['goods' as const, 'collections' as const])]} shownSections={resolutions.shown} originalMood={originalMood} />;
     }
     }, familyPainted.key);
   },
@@ -528,6 +528,9 @@ export const MAIN_STREET_SPEC: ArchetypeBuildSpec<MainStreetAuthored> = {
   },
   renderShell: ({ content, lookKey, children, mood, logoUrl, brandColors, accentOverride, brandPalette, tenantId }) => {
     const skin = themeFor(lookKey, brandPalette, accentOverride);
+    if (isScenic(mood, brandPalette) && tenantId !== undefined) {
+      return <ScenicLook tenantId={tenantId} skin={skin}>{(look) => <CardShell tenantId={tenantId} design="shoreline" look={look}>{children}</CardShell>}</ScenicLook>;
+    }
     const familyBase = familyFor(mood, brandPalette);
     const treatments = resolveTreatments(mood, {});
     return withFamilyContent(content, tenantId, (view, words, _sale, scene) => {

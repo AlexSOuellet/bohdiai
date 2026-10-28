@@ -13,6 +13,7 @@ vi.mock('@/lib/backend/features', () => ({ loadSiteFeatures: async () => state.f
 vi.mock('@/lib/storefront/catalog', () => ({ loadCatalog: async () => ({ products: [] }), loadCollections }));
 vi.mock('@/lib/storefront/promotions-load', () => ({ loadRunningSale: async () => null }));
 vi.mock('@/lib/storefront/site-gallery', () => ({ loadSiteGallery: async () => [{ key: 'p-tray', url: 'u', alt: '', name: 'Tray' }] }));
+vi.mock('@/lib/storefront/home-sections', async (orig) => ({ ...(await orig<object>()), loadHomeSwitches: async () => new Map() }));
 vi.mock('@/lib/backend/testimonials/queries', () => ({ listTestimonials: async () => [] }));
 
 const { loadShorelineData } = await import('./shoreline-data');

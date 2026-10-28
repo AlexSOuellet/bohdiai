@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { navFor, withoutItem, BACKEND_MODULES, type BackendModule } from './modules';
+import { navFor, withoutItem, entryFor, sectionFor, currentItem, BACKEND_MODULES, MY_SITE_PATH, type BackendModule } from './modules';
 import type { FeatureKey } from './features';
 
 const modules: BackendModule[] = [
@@ -7,6 +7,9 @@ const modules: BackendModule[] = [
   { feature: 'catalog', section: 'Catalog', items: [{ label: 'Products', href: '/manage/products' }] },
   { feature: 'video', section: 'Catalog', items: [{ label: 'Videos', href: '/manage/videos' }] },
 ];
+
+const names = (on: FeatureKey[]): string[] => navFor(BACKEND_MODULES, new Set(on)).map((s) => entryFor(s).label);
+const group = (on: FeatureKey[], name: string): string[] => navFor(BACKEND_MODULES, new Set(on)).find((s) => s.section === name)?.items.map((i) => i.label) ?? [];
 
 describe('navFor', () => {
   it('always includes modules with no feature, and only switched-on features otherwise', () => {
@@ -25,108 +28,91 @@ describe('navFor', () => {
   });
 });
 
-describe('catalog in the menu', () => {
+describe('the menu in her words (the redesign, 2026-10-27)', () => {
+  const full: FeatureKey[] = ['catalog', 'collections', 'market_dates', 'market_shop', 'market_records', 'cart', 'promotions', 'buyer_accounts', 'headline', 'background', 'profile', 'testimonials', 'try_on', 'qr_codes', 'plan'];
+
+  it('is one short list on Full: Home, Products, Events, Orders, Customers, My site, Account, Help', () => {
+    expect(names(full)).toEqual(['Home', 'Products', 'Events', 'Orders', 'Customers', 'My site', 'Account', 'Help']);
+  });
+
+  it('has only Home and Help with nothing switched on', () => {
+    expect(names([])).toEqual(['Home', 'Help']);
+  });
+
+  it('opens My site on its own page, and every other group on its first screen', () => {
+    const nav = navFor(BACKEND_MODULES, new Set(full));
+    const entry = (name: string) => entryFor(nav.find((s) => s.section === name) ?? { section: name, items: [] });
+    expect(entry('My site').href).toBe(MY_SITE_PATH);
+    expect(entry('Products').href).toBe('/manage/products');
+    expect(entry('Events').href).toBe('/manage/markets');
+    expect(entry('Help')).toEqual({ label: 'Help', href: '/manage/support' });
+  });
+
+  it('keeps every part of her site under My site, in the order a visitor meets them', () => {
+    expect(group(full, 'My site')).toEqual(['Headline', 'Background', 'About you', 'Scrolling line', 'Contact information', 'Socials', 'Testimonials', 'Try on a look', 'QR code', 'Customer accounts']);
+  });
+});
+
+describe('Products in the menu', () => {
   it('shows Products with the catalog, and Collections only with the collections switch (Full)', () => {
-    expect(navFor(BACKEND_MODULES, new Set(['catalog']))).toContainEqual({ section: 'Catalog', items: [{ label: 'Products', href: '/manage/products' }] });
-    expect(navFor(BACKEND_MODULES, new Set(['catalog', 'collections']))).toContainEqual({
-      section: 'Catalog',
-      items: [
-        { label: 'Products', href: '/manage/products' },
-        { label: 'Collections', href: '/manage/collections' },
-      ],
-    });
-    expect(navFor(BACKEND_MODULES, new Set()).map((s) => s.section)).not.toContain('Catalog');
+    expect(group(['catalog'], 'Products')).toEqual(['Products']);
+    expect(group(['catalog', 'collections'], 'Products')).toEqual(['Products', 'Collections']);
+    expect(names([])).not.toContain('Products');
+  });
+  it('lists a screen once when two switches open it (Showcase)', () => {
+    expect(group(['catalog', 'collections', 'gallery_pieces'], 'Products')).toEqual(['Products', 'Collections']);
+    expect(group(['gallery_pieces'], 'Products')).toEqual(['Products']);
   });
 });
 
-describe('a business card site in the menu', () => {
-  it('adds the Schedule under Events when switched on', () => {
-    const nav = navFor(BACKEND_MODULES, new Set(['profile', 'gallery', 'market_dates']));
-    expect(nav.find((s) => s.section === 'Your site')?.items.map((i) => i.label)).toEqual(['About you', 'Scrolling line', 'Contact information', 'Socials', 'Gallery']);
-    expect(nav.find((s) => s.section === 'Events')?.items).toEqual([{ label: 'Schedule', href: '/manage/markets' }]);
-  });
-
-  it('shows About you and Gallery under Your site, and no catalog', () => {
-    expect(navFor(BACKEND_MODULES, new Set(['profile', 'gallery']))).toEqual([
-      { section: '', items: [{ label: 'Home', href: '/manage' }] },
-      {
-        section: 'Your site',
-        items: [
-          { label: 'About you', href: '/manage/profile' },
-          { label: 'Scrolling line', href: '/manage/marquee' },
-          { label: 'Contact information', href: '/manage/contact' },
-          { label: 'Socials', href: '/manage/socials' },
-          { label: 'Gallery', href: '/manage/gallery' },
-        ],
-      },
-      { section: '', items: [{ label: 'Contact support', href: '/manage/support' }] },
-    ]);
-  });
-});
-
-describe('Your plan in the menu', () => {
-  it('sits under Settings at the bottom of the menu, with Home alone at the top', () => {
-    const nav = navFor(BACKEND_MODULES, new Set<FeatureKey>(['plan', 'profile', 'gallery_pieces', 'market_dates']));
-    expect(nav[0]).toEqual({ section: '', items: [{ label: 'Home', href: '/manage' }] });
-    expect(nav.at(-1)).toEqual({
-      section: 'Settings',
-      items: [
-        { label: 'Your plan', href: '/manage/plan' },
-        { label: 'Billing', href: '/manage/billing' },
-      ],
-    });
-    expect(navFor(BACKEND_MODULES, new Set()).map((s) => s.items.map((i) => i.label))).toEqual([['Home'], ['Contact support']]);
-  });
-});
-
-describe('Showcase in the menu', () => {
-  it('shows Products (no Collections, no old Gallery) and the Headline', () => {
-    const nav = navFor(BACKEND_MODULES, new Set<FeatureKey>(['gallery_pieces', 'headline', 'profile']));
-    expect(nav).toContainEqual({ section: 'Catalog', items: [{ label: 'Products', href: '/manage/products' }] });
-    const yours = nav.find((s) => s.section === 'Your site')?.items.map((i) => i.label);
-    expect(yours).toEqual(['Headline', 'About you', 'Scrolling line', 'Contact information', 'Socials']);
-  });
-  it('lists a screen once when two switches open it', () => {
-    const nav = navFor(BACKEND_MODULES, new Set<FeatureKey>(['catalog', 'collections', 'gallery_pieces']));
-    expect(nav.find((s) => s.section === 'Catalog')?.items.map((i) => i.label)).toEqual(['Products', 'Collections']);
-  });
-});
-
-describe('Contact support in the menu', () => {
-  it('is its own item on the main menu, on every backend, just above Settings', () => {
-    const nav = navFor(BACKEND_MODULES, new Set<FeatureKey>(['plan', 'profile']));
-    const i = nav.findIndex((s) => s.items.some((it) => it.label === 'Contact support'));
-    expect(nav[i]).toEqual({ section: '', items: [{ label: 'Contact support', href: '/manage/support' }] });
-    expect(nav[i + 1]?.section).toBe('Settings');
-  });
-});
-
-describe('Events, Online shop and Getting paid in the menu (Alex, 2026-10-22)', () => {
-  const group = (on: FeatureKey[], name: string): string[] => navFor(BACKEND_MODULES, new Set(on)).find((s) => s.section === name)?.items.map((i) => i.label) ?? [];
+describe('Events, Orders and Account (Alex, 2026-10-22)', () => {
   const market: FeatureKey[] = ['market_dates', 'market_shop', 'market_records', 'plan'];
 
-  it('groups the schedule, the till, sales and results under Events on Market', () => {
-    expect(group(market, 'Events')).toEqual(['Schedule', 'Market POS', 'Sales', 'Results']);
-    expect(group(market, 'Online shop')).toEqual([]);
-    expect(group(market, 'Settings')).toEqual(['Your plan', 'Billing', 'Getting paid']);
+  it('groups the schedule, sales, results and the till under Events on Market', () => {
+    expect(group(market, 'Events')).toEqual(['Schedule', 'Sales', 'Results', 'Market POS']);
+    expect(group(market, 'Orders')).toEqual([]);
+    expect(group(market, 'Account')).toEqual(['Your plan', 'Billing', 'Getting paid']);
   });
 
-  it('puts Full’s Orders and Promotions under Online shop', () => {
-    expect(group([...market, 'cart', 'promotions'], 'Online shop')).toEqual(['Orders', 'Promotions']);
-    expect(group([...market, 'cart', 'promotions'], 'Events')).not.toContain('Orders');
+  it('puts Full’s Orders and Promotions under Orders, and Customers on its own (Alex, 2026-10-27)', () => {
+    const fullOnline: FeatureKey[] = [...market, 'cart', 'promotions', 'buyer_accounts'];
+    expect(group(fullOnline, 'Orders')).toEqual(['Orders', 'Promotions']);
+    expect(group(fullOnline, 'Customers')).toEqual(['Customers']);
+    expect(group(fullOnline, 'My site')).toContain('Customer accounts');
   });
 
   it('has only the Schedule on Showcase', () => {
     expect(group(['market_dates', 'plan'], 'Events')).toEqual(['Schedule']);
-    expect(group(['market_dates', 'plan'], 'Settings')).toEqual(['Your plan', 'Billing']);
+    expect(group(['market_dates', 'plan'], 'Account')).toEqual(['Your plan', 'Billing']);
+  });
+
+  it('keeps Help last, after Account', () => {
+    expect(names(['plan', 'profile']).slice(-2)).toEqual(['Account', 'Help']);
+  });
+});
+
+describe('where a screen belongs', () => {
+  const nav = navFor(BACKEND_MODULES, new Set<FeatureKey>(['catalog', 'market_dates', 'market_records', 'profile']));
+
+  it('finds the group of a screen, and of a page inside it', () => {
+    expect(sectionFor(nav, '/manage/products/123')?.section).toBe('Products');
+    expect(sectionFor(nav, '/manage/profile')?.section).toBe('My site');
+    expect(sectionFor(nav, MY_SITE_PATH)?.section).toBe('My site');
+    expect(sectionFor(nav, '/manage')?.section).toBe('');
+  });
+
+  it('picks Results, not Schedule, for the results page inside the schedule’s path', () => {
+    const events = nav.find((s) => s.section === 'Events');
+    expect(events === undefined ? null : currentItem(events, '/manage/markets/results')?.label).toBe('Results');
+    expect(events === undefined ? null : currentItem(events, '/manage/markets/abc')?.label).toBe('Schedule');
   });
 });
 
 describe('withoutItem', () => {
   it('drops one screen from the menu, and a group it leaves empty', () => {
     const nav = navFor(BACKEND_MODULES, new Set<FeatureKey>(['profile', 'qr_codes']));
-    const your = (n: ReturnType<typeof navFor>) => n.find((s) => s.section === 'Your site')?.items.map((i) => i.label);
-    expect(your(withoutItem(nav, '/manage/marquee'))).toEqual(['About you', 'Contact information', 'Socials', 'QR code']);
+    const yours = (n: ReturnType<typeof navFor>) => n.find((s) => s.section === 'My site')?.items.map((i) => i.label);
+    expect(yours(withoutItem(nav, '/manage/marquee'))).toEqual(['About you', 'Contact information', 'Socials', 'QR code']);
     expect(withoutItem([{ section: 'X', items: [{ label: 'Only', href: '/only' }] }], '/only')).toEqual([]);
   });
 });

@@ -32,6 +32,7 @@ const FULL: readonly FeatureKey[] = [
   'promotions',
   'new_arrivals',
   'try_on',
+  'buyer_accounts',
 ];
 
 export const PLAN_FEATURES: Record<SitePlan, readonly FeatureKey[]> = {
@@ -70,13 +71,23 @@ export const FEATURE_WORDS: Partial<Record<FeatureKey, string>> = {
   promotions: 'Sales and discount codes',
   new_arrivals: 'New arrivals on your home page',
   try_on: 'Trying on other looks (the look you chose stays)',
+  buyer_accounts: 'Customer accounts: your customers can’t sign in (their accounts and orders are kept)',
   market_records: 'Market costs, organizer details, notes and reviews',
 };
 
-/** The switches a move from `from` to `to` turns off, in plan order, as words. */
-export function hiddenByMove(from: SitePlan, to: SitePlan): string[] {
+/** What stepping down says about her buyers (Alex, 2026-10-25): how many can no
+ *  longer sign in, and that their accounts are kept. */
+export function buyersLine(buyers: number): string {
+  if (buyers === 0) return FEATURE_WORDS.buyer_accounts ?? '';
+  const who = buyers === 1 ? '1 customer' : `${buyers} customers`;
+  return `Customer accounts: ${who} with an account at your shop won’t be able to sign in (their accounts and orders are kept, and sign-in comes back when you return to Full)`;
+}
+
+/** The switches a move from `from` to `to` turns off, in plan order, as words.
+ *  `buyers` is how many buyers have an account at her shop. */
+export function hiddenByMove(from: SitePlan, to: SitePlan, buyers = 0): string[] {
   const keep = new Set(PLAN_FEATURES[to]);
-  return PLAN_FEATURES[from].filter((k) => !keep.has(k)).flatMap((k) => FEATURE_WORDS[k] ?? []);
+  return PLAN_FEATURES[from].filter((k) => !keep.has(k)).flatMap((k) => (k === 'buyer_accounts' ? [buyersLine(buyers)] : (FEATURE_WORDS[k] ?? [])));
 }
 
 /** The pages a link can point at on a plan. Without the catalog (Showcase) there is

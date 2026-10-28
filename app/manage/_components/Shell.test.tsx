@@ -19,7 +19,7 @@ const props = {
 describe('Shell drawer', () => {
   it('toggles aria-expanded and closes on Escape', () => {
     render(<Shell {...props}>x</Shell>);
-    const btn = screen.getByRole('button', { name: 'Open menu' });
+    const btn = screen.getByRole('button', { name: 'Menu' });
     expect(btn).toHaveAttribute('aria-expanded', 'false');
     expect(btn).toHaveAttribute('aria-controls', 'bk-side');
     fireEvent.click(btn);
@@ -34,7 +34,7 @@ describe('Shell on the market day', () => {
     path.current = '/manage/markets/ce9a93c8-ecf1-4522-843a-7bdddc2a803c/day';
     const { container } = render(<Shell {...props}><p>till</p></Shell>);
     expect(screen.getByText('till')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Open menu' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Menu' })).toBeNull();
     expect(container.querySelector('.bk-side')).toBeNull();
     path.current = '/manage';
   });

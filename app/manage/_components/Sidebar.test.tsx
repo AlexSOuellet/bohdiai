@@ -6,34 +6,52 @@ vi.mock('next/navigation', () => ({ usePathname: () => path.current }));
 vi.mock('@/lib/backend/auth-actions', () => ({ signOut: vi.fn() }));
 
 import { Sidebar } from './Sidebar';
+import { ScreenTabs } from './ScreenTabs';
+import { BottomBar } from './BottomBar';
+
+const nav = [
+  { section: '', items: [{ label: 'Home', href: '/manage' }] },
+  { section: 'Products', items: [{ label: 'Products', href: '/manage/products' }, { label: 'Collections', href: '/manage/collections' }] },
+  { section: 'Events', items: [{ label: 'Schedule', href: '/manage/markets' }, { label: 'Results', href: '/manage/markets/results' }] },
+  { section: 'My site', items: [{ label: 'Headline', href: '/manage/headline' }, { label: 'About you', href: '/manage/profile' }] },
+  { section: 'Account', items: [{ label: 'Your plan', href: '/manage/plan' }] },
+  { section: 'Help', items: [{ label: 'Contact support', href: '/manage/support' }] },
+];
 
 const base = {
   siteName: 'Classic Loafs',
+  siteUrl: 'https://classic-loafs.bohdiai.com',
   email: 'maker@example.com',
-  nav: [{ section: 'Site', items: [{ label: 'Home', href: '/manage' }] }],
+  nav,
   sites: [{ tenantId: 'a', subdomain: 'alpha', businessName: 'Classic Loafs' }],
   currentTenantId: 'a',
   onNavigate: () => {},
 };
 
 describe('Sidebar', () => {
-  it('matches nested pages but keeps Home exact', () => {
-    const nav = [{ section: 'Site', items: [{ label: 'Home', href: '/manage' }, { label: 'Products', href: '/manage/products' }] }];
-    path.current = '/manage/products/123';
-    const { unmount } = render(<Sidebar {...base} nav={nav} />);
-    expect(screen.getByRole('link', { name: 'Products' })).toHaveAttribute('aria-current', 'page');
+  it('shows one entry per group, in her words, never folded', () => {
+    path.current = '/manage';
+    render(<Sidebar {...base} />);
+    const links = screen.getAllByRole('link').map((a) => a.textContent);
+    expect(links).toEqual(['Classic Loafs', 'Open my site', 'Home', 'Products', 'Events', 'My site', 'Account', 'Help']);
+    expect(screen.queryByRole('button', { name: 'Products' })).toBeNull();
+  });
+  it('opens My site on its own page and Help on Contact support', () => {
+    render(<Sidebar {...base} />);
+    expect(screen.getByRole('link', { name: 'My site' })).toHaveAttribute('href', '/manage/site');
+    expect(screen.getByRole('link', { name: 'Help' })).toHaveAttribute('href', '/manage/support');
+  });
+  it('marks the group of the screen you are on, and keeps Home exact', () => {
+    path.current = '/manage/profile';
+    render(<Sidebar {...base} />);
+    expect(screen.getByRole('link', { name: 'My site' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Home' })).not.toHaveAttribute('aria-current');
-    unmount();
     path.current = '/manage';
   });
   it('shows the client’s own site name, not Penny’s', () => {
     render(<Sidebar {...base} />);
     expect(screen.getByText('Classic Loafs')).toBeInTheDocument();
     expect(screen.queryByText(/Decoupage/)).toBeNull();
-  });
-  it('marks the current page', () => {
-    render(<Sidebar {...base} />);
-    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
   });
   it('shows a site picker only for people with more than one site', () => {
     const { rerender } = render(<Sidebar {...base} />);
@@ -47,33 +65,35 @@ describe('Sidebar', () => {
   });
 });
 
-describe('Sidebar groups', () => {
-  const nav = [
-    { section: 'Site', items: [{ label: 'Home', href: '/manage' }] },
-    { section: 'Your site', items: [{ label: 'Headline', href: '/manage/headline' }, { label: 'About you', href: '/manage/profile' }] },
-    { section: 'Selling', items: [{ label: 'Markets', href: '/manage/markets' }, { label: 'QR code', href: '/manage/qr' }] },
-  ];
-
-  it('starts a group of several folded, opens it on a click, and shows a one-item group as it is', async () => {
-    const { fireEvent } = await import('@testing-library/react');
-    path.current = '/manage';
-    render(<Sidebar {...base} nav={nav} />);
-    expect(screen.getByRole('link', { name: 'Home' })).toBeVisible();
-    const yours = screen.getByRole('button', { name: 'Your site' });
-    expect(yours).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.queryByRole('link', { name: 'Headline' })).toBeNull();
-    fireEvent.click(yours);
-    expect(yours).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByRole('link', { name: 'Headline' })).toBeInTheDocument();
-    fireEvent.click(yours);
-    expect(screen.queryByRole('link', { name: 'Headline' })).toBeNull();
+describe('ScreenTabs', () => {
+  it('shows a group’s screens as tabs and marks the one you are on', () => {
+    path.current = '/manage/markets/results';
+    render(<ScreenTabs nav={nav} />);
+    expect(screen.getByRole('link', { name: 'Results' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Schedule' })).not.toHaveAttribute('aria-current');
   });
-
-  it('opens the group holding the screen you are on, and only that one', () => {
-    path.current = '/manage/profile';
-    render(<Sidebar {...base} nav={nav} />);
-    expect(screen.getByRole('button', { name: 'Your site' })).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByRole('button', { name: 'Selling' })).toHaveAttribute('aria-expanded', 'false');
+  it('shows nothing for a group of one', () => {
+    path.current = '/manage/plan';
+    const { container } = render(<ScreenTabs nav={nav} />);
+    expect(container).toBeEmptyDOMElement();
+  });
+  it('inside My site, shows the way back to it, and nothing on My site itself', () => {
+    path.current = '/manage/headline';
+    const { unmount } = render(<ScreenTabs nav={nav} />);
+    expect(screen.getByRole('link', { name: 'Back to My site' })).toHaveAttribute('href', '/manage/site');
+    unmount();
+    path.current = '/manage/site';
+    const { container } = render(<ScreenTabs nav={nav} />);
+    expect(container).toBeEmptyDOMElement();
     path.current = '/manage';
+  });
+});
+
+describe('BottomBar', () => {
+  it('puts Home and the next three groups in thumb reach, then Menu', () => {
+    path.current = '/manage';
+    render(<BottomBar nav={nav} menuOpen={false} onMenu={() => {}} />);
+    expect(screen.getAllByRole('link').map((a) => a.textContent)).toEqual(['Home', 'Products', 'Events', 'My site']);
+    expect(screen.getByRole('button', { name: 'Menu' })).toHaveAttribute('aria-expanded', 'false');
   });
 });

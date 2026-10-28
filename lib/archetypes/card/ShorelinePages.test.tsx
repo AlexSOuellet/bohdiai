@@ -36,6 +36,7 @@ function product(slug: string, over: Pick<Partial<ProductView>, 'status' | 'oneO
 
 const site: ShorelineData = {
   gallery: [],
+  account: null,
   card: {
     name: 'Saltmarsh & Lace',
     profile: { ...EMPTY_PROFILE, kicker: 'Decoupage from Bristol', headline: 'Sealed to last', aboutTitle: 'From the paint counter', bio: 'I run the paint counter.\n\nEvery sealer gets tested.', signature: 'Lena', facebookUrl: 'https://www.facebook.com/bohdiai', makes: ['Art bottles'] },
@@ -56,6 +57,7 @@ const site: ShorelineData = {
   sale: null,
   newArrivals: false,
   collections: [],
+  homeOff: new Set(),
 };
 
 afterEach(cleanup);
@@ -65,6 +67,16 @@ function page(which: ShorelinePage, data: ShorelineData = site) {
 }
 
 describe('shoreline pages (Lite and Full)', () => {
+  it('keeps a section she switched off on My site off the home page (Alex, 2026-10-27)', () => {
+    const shown = page('home').container.innerHTML;
+    cleanup();
+    const hidden = page('home', { ...site, homeOff: new Set(['work', 'reviews', 'about', 'markets'] as const) }).container;
+    expect(shown).toContain('sl-featured');
+    expect(hidden.querySelector('.sl-featured')).toBeNull();
+    expect(hidden.querySelector('.sl-card')).toBeNull();
+    expect(hidden.querySelector('.sl-tide')).toBeNull();
+  });
+
   it('keeps the bay behind every page and puts the menu at the top, marking where you are', () => {
     const { container } = page('shop');
     expect(container.querySelector('.sl-sea')).not.toBeNull();

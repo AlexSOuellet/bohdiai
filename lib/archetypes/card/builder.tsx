@@ -6,7 +6,7 @@
  * (`mood`) and skin (`lookKey`) it paints in, or the shop's own brand palette.
  * Never on Bohdi's onboarding menu; built by scripts/build-card-site.ts.
  */
-import type { ReactElement } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import type { ArchetypeBuildSpec } from '../builder';
 import { supabaseAdmin } from '@/lib/supabase';
@@ -15,7 +15,7 @@ import { BulletinLanding, BulletinContentPage } from './BulletinLanding';
 import { ShowreelLanding, ShowreelContentPage, ShowreelProduct, ShowreelShop } from './ShowreelLanding';
 import { TorchLanding, TorchContentPage } from './TorchLanding';
 import { ShorelineLanding, ShorelineContentPage } from './ShorelineLanding';
-import { ShorelineCart, ShorelineMarket, ShorelineMarketInfo, ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
+import { ShorelineCart, ShorelineShell, ShorelineMarket, ShorelineMarketInfo, ShorelineProduct, ShorelineSite, type ShorelinePage } from './ShorelinePages';
 import { featuredProducts, loadScenicData, loadShorelineData, type ShorelineData } from './shoreline-data';
 import type { ShorelineLook } from './look';
 import type { ArchetypePage } from '../builder';
@@ -89,6 +89,14 @@ export async function CardCart({ tenantId, design, cart, look }: { tenantId: str
   const site = await loadSite(tenantId, look);
   if (!site.cart) notFound();
   return <ShorelineCart site={site} cart={cart} />;
+}
+
+/** A plain page in the site's chrome (the buyer's account pages) — the shoreline design on Lite and Full. */
+export async function CardShell({ tenantId, design, children, look }: { tenantId: string; design: CardDesign; children: ReactNode; look?: ShorelineLook | undefined }): Promise<ReactElement> {
+  if (design !== 'shoreline') notFound();
+  const site = await loadSite(tenantId, look);
+  if (!site.pages) notFound();
+  return <ShorelineShell site={site}>{children}</ShorelineShell>;
 }
 
 /** A market's own page — only the shoreline design on Lite and Full has one. */
@@ -172,6 +180,11 @@ export const CARD_SPEC: ArchetypeBuildSpec<CardContent> = {
     const design = designOf(content);
     if (tenantId === undefined) notFound();
     return <CardCart tenantId={tenantId} design={design} cart={cart} />;
+  },
+  renderShell: ({ content, children, tenantId }) => {
+    const design = designOf(content);
+    if (tenantId === undefined) notFound();
+    return <CardShell tenantId={tenantId} design={design}>{children}</CardShell>;
   },
   renderProduct: ({ content, product, tenantId }) => {
     const design = designOf(content);

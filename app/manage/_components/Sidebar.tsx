@@ -1,54 +1,18 @@
-import { useState } from 'react';
+'use client';
+
 import Link from 'next/link';
 import type { Route } from 'next';
 import { usePathname } from 'next/navigation';
-import type { NavSection } from '@/lib/backend/modules';
+import { entryFor, sectionFor, type NavSection } from '@/lib/backend/modules';
 import type { ShopSummary } from '@/lib/auth/membership';
 import { signOut } from '@/lib/backend/auth-actions';
+import { NavIcon } from './NavIcon';
 
-function isCurrent(pathname: string, href: string): boolean {
-  return pathname === href || (href !== '/manage' && pathname.startsWith(`${href}/`));
-}
-
-/** A menu group with more than one item starts folded (Alex, 2026-10-19); its
- *  name opens and closes it. The group holding the screen you're on opens by
- *  itself, so you can see where you are. A one-item group shows its item. */
-function NavGroup({ section, pathname, onNavigate }: { section: NavSection; pathname: string; onNavigate: () => void }): React.ReactElement {
-  const here = section.items.some((item) => isCurrent(pathname, item.href));
-  const [opened, setOpened] = useState<boolean | null>(null);
-  // The group with no name (Home) is never folded and shows no heading.
-  const folds = section.section !== '' && section.items.length > 1;
-  const open = !folds || (opened ?? here);
-  const listId = `bk-nav-${(section.section || (section.items[0]?.href ?? 'item')).toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
-  return (
-    <div className="bk-nav-section">
-      {folds ? (
-        <button type="button" className="bk-nav-label bk-nav-toggle" aria-expanded={open} aria-controls={listId} onClick={() => setOpened(!open)}>
-          {section.section}
-        </button>
-      ) : section.section === '' ? null : (
-        <p className="bk-nav-label">{section.section}</p>
-      )}
-      <ul id={listId} className="bk-nav-list" hidden={!open}>
-        {section.items.map((item) => (
-          <li key={item.href}>
-            <Link
-              href={item.href as Route}
-              className="bk-nav-link"
-              aria-current={isCurrent(pathname, item.href) ? 'page' : undefined}
-              onClick={onNavigate}
-            >
-              {item.label}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
+/** The backend's menu (the redesign, 2026-10-27): one entry per group, in her
+ *  words, never folded. The group holding the screen you're on is marked. */
 export function Sidebar(props: {
   siteName: string;
+  siteUrl: string;
   email: string;
   nav: NavSection[];
   sites: ShopSummary[];
@@ -56,53 +20,59 @@ export function Sidebar(props: {
   onNavigate: () => void;
 }): React.ReactElement {
   const pathname = usePathname();
+  const here = sectionFor(props.nav, pathname);
   return (
     <>
       <div className="bk-brand">
         <Link href="/manage" className="bk-brand-name" onClick={props.onNavigate}>
+          <span className="bk-ember" aria-hidden="true" />
           {props.siteName}
-          <br />
-          <span className="bk-brand-sub">Backend</span>
         </Link>
         <button type="button" className="bk-side-close" aria-label="Close menu" onClick={props.onNavigate}>
           ✕
         </button>
       </div>
-
-      {props.sites.length > 1 && (
-        <form action="/manage/switch-site" method="post" className="bk-switch">
-          <label className="bk-nav-label" htmlFor="bk-site">
-            Switch site
-          </label>
-          <select id="bk-site" name="tenantId" defaultValue={props.currentTenantId} className="bk-input">
-            {props.sites.map((s) => (
-              <option key={s.tenantId} value={s.tenantId}>
-                {s.businessName}
-              </option>
-            ))}
-          </select>
-          <button type="submit" className="bk-user-btn">
-            Go
-          </button>
-        </form>
-      )}
+      <a className="bk-brand-visit" href={props.siteUrl} target="_blank" rel="noopener noreferrer">
+        Open my site
+      </a>
 
       <nav className="bk-nav" aria-label="Backend">
-        {props.nav.map((section) => (
-          <NavGroup key={section.section || section.items[0]?.href} section={section} pathname={pathname} onNavigate={props.onNavigate} />
-        ))}
+        <ul className="bk-nav-list">
+          {props.nav.map((section) => {
+            const entry = entryFor(section);
+            return (
+              <li key={entry.href}>
+                <Link href={entry.href as Route} className="bk-nav-link" aria-current={section === here ? 'page' : undefined} onClick={props.onNavigate}>
+                  <NavIcon name={section.section === '' ? entry.label : section.section} />
+                  {entry.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </nav>
 
       <div className="bk-user">
-        <div className="bk-user-row">
-          <span className="bk-avatar" aria-hidden="true">
-            {props.email.charAt(0).toUpperCase()}
-          </span>
-          <div>
-            <p className="bk-user-email">{props.email}</p>
-            <p className="bk-user-role">Owner</p>
-          </div>
-        </div>
+        {props.sites.length > 1 && (
+          <form action="/manage/switch-site" method="post" className="bk-switch">
+            <label className="bk-user-label" htmlFor="bk-site">
+              Switch site
+            </label>
+            <div className="bk-row">
+              <select id="bk-site" name="tenantId" defaultValue={props.currentTenantId} className="bk-input">
+                {props.sites.map((s) => (
+                  <option key={s.tenantId} value={s.tenantId}>
+                    {s.businessName}
+                  </option>
+                ))}
+              </select>
+              <button type="submit" className="bk-user-btn">
+                Go
+              </button>
+            </div>
+          </form>
+        )}
+        <p className="bk-user-email">{props.email}</p>
         <form action={signOut}>
           <button type="submit" className="bk-user-btn">
             Sign out

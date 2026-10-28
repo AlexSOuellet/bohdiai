@@ -17,6 +17,7 @@
 import { z } from 'zod';
 import { MAIN_STREET_SKINS } from './skins';
 import { LINK_TARGETS } from './links';
+import { SECTION_KEYS } from './families';
 
 /** The hero's held media, authored as a STRUCTURED scene rather than a prose
  *  sentence — video models take direction far better from grouped fields, and a
@@ -130,6 +131,8 @@ export const MainStreetContentSchema = z.object({
      *  sells: otherwise no cart in the nav, one photo per product, and "Ask about
      *  this" (to the contact page) in place of the buy button. */
     sellsOnline: z.boolean().optional(),
+    /** The menu's Account link (buyer accounts, Full, her switch on): its words, or absent. */
+    accountLabel: z.string().optional(),
     /** Whether the site has a shop at all (Market and Full: the catalog switch).
      *  False on Showcase: no shop, collections or product pages, no prices, and
      *  the pieces and collections sections don't show. Absent has a shop. */
@@ -141,6 +144,8 @@ export const MainStreetContentSchema = z.object({
      *  pages. The menu jumps down the page, the whole story and the contact form
      *  sit on the home page, and the old page addresses land on their section. */
     onePage: z.boolean().optional(),
+    /** The home page sections she switched off on My site (Alex, 2026-10-27). Absent hides none. */
+    hiddenSections: z.array(z.enum(SECTION_KEYS)).optional(),
   }),
 
   /** BEAT 1 — the moment is the hero. Held media + a story told one line at a

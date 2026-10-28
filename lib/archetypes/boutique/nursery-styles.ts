@@ -235,6 +235,13 @@ export function nurseryCss(): string {
 .nn-cert__buy{display:grid;gap:14px;justify-items:center}
 .nn-cert__buy [role=alert]{margin:0;color:var(--rose-deep);font-weight:700}
 .nn-cert__ask{font-family:var(--type);font-size:15px;text-decoration:none;border-bottom:1.5px dashed}
+/* The buyer's account pages (Full): the shared ba- layout in the nursery's colours. */
+.nn-account .ba-page{--ba-fg:var(--ink);--ba-muted:var(--ink-soft);--ba-accent:var(--rose);--ba-on-accent:#fff;--ba-rule:var(--line);--ba-paper:var(--card);--ba-display:var(--display);--ba-radius:18px;width:auto;margin:40px 0 56px}
+.nn-account .ba-card,.nn-account .ba-account{box-shadow:0 18px 40px -26px rgba(43,34,39,.45);border:1px solid var(--line)}
+.nn-account .ba-field input{border-radius:12px;background:var(--paper)}
+.nn-account .ba-btn{border-radius:99px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;box-shadow:0 5px 0 var(--rose-deep)}
+.nn-account .ba-error{color:var(--rose-deep)}
+.nn-account a.ba-btn{color:#fff}
 .nn-cart-page{padding:48px 0 30px}
 .nn-cart__tag{display:table;margin:0 0 6px}
 .nn-cart__empty{margin-top:28px;display:grid;gap:22px;justify-items:start;font-family:var(--type);font-size:18px}

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { POS_PATH } from '@/lib/backend/session-limits';
 import { Sidebar } from './Sidebar';
+import { ScreenTabs } from './ScreenTabs';
+import { BottomBar } from './BottomBar';
 import type { NavSection } from '@/lib/backend/modules';
 import type { ShopSummary } from '@/lib/auth/membership';
 
@@ -34,6 +36,7 @@ export function Shell(props: {
       <aside id="bk-side" className="bk-side" data-open={open}>
         <Sidebar
           siteName={props.siteName}
+          siteUrl={props.siteUrl}
           email={props.email}
           nav={props.nav}
           sites={props.sites}
@@ -43,16 +46,10 @@ export function Shell(props: {
       </aside>
       {open && <button type="button" aria-label="Close menu" className="bk-backdrop" tabIndex={-1} onClick={() => setOpen(false)} />}
       <div className="bk-main">
-        <header className="bk-top">
-          <button type="button" className="bk-menu-btn" aria-label="Open menu" aria-expanded={open} aria-controls="bk-side" onClick={() => setOpen(true)}>
-            ☰
-          </button>
-          <a className="bk-top-link" href={props.siteUrl} target="_blank" rel="noopener noreferrer">
-            View my site ↗
-          </a>
-        </header>
+        <ScreenTabs nav={props.nav} />
         {props.children}
       </div>
+      <BottomBar nav={props.nav} menuOpen={open} onMenu={() => setOpen(true)} />
     </div>
   );
 }

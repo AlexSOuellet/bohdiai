@@ -97,6 +97,7 @@ export function Frame({
                 ...(data.gone.length > 0 ? [{ href: at(GONE_ID), label: w.nav.gone }] : []),
                 { href: at(ARTIST_ID), label: w.nav.artist },
                 ...(data.dates.length > 0 ? [{ href: at(VISIT_ID), label: w.nav.visit }] : []),
+                ...(data.account !== null ? [{ href: '/account', label: data.account }] : []),
                 { href: at(TOUCH_ID), label: w.nav.touch, cta: true },
               ]}
               w={w.nav}
@@ -946,6 +947,17 @@ export function NurseryMarket({
             </div>
           )}
         </div>
+      </section>
+    </Frame>
+  );
+}
+
+/** A plain page in the nursery's frame (the buyer's account pages). */
+export function NurseryShell({ data, logoUrl, children }: { data: BoutiqueData; logoUrl?: string | undefined; children: ReactNode }): ReactElement {
+  return (
+    <Frame chrome={{ data, logoUrl }} onHome={false}>
+      <section className="nn-account">
+        <div className="nn-wrap">{children}</div>
       </section>
     </Frame>
   );
