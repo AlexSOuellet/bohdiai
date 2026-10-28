@@ -9,6 +9,7 @@ import { costsCents } from '@/lib/backend/markets/market-form';
 import { formatCents } from '@/lib/backend/catalog/product-form';
 import { loadCostSummaries, pricedBelowCost, type CostSummary } from './product-costs';
 import { eventDay, loadAllTakings, type Takings } from './event-takings';
+import type { Steps } from '@/lib/backend/first-steps';
 
 export type StepKey = 'price' | 'pieces' | 'event' | 'after';
 export type Step = { key: StepKey; done: boolean; href: string };
@@ -89,4 +90,17 @@ export async function loadFreeHome(db: SupabaseClient<Database>, tenantId: strin
     })),
     takings,
   });
+}
+
+const STEP_LABELS: Readonly<Record<StepKey, string>> = {
+  price: 'Price your first piece',
+  pieces: 'Add the rest of your pieces',
+  event: 'Add your next market',
+  after: 'After the market, fill in what it paid you',
+};
+
+/** Free's first steps in the shape every plan's Home shows (the redesign); null once all are done. */
+export function freeSteps(view: FreeHome): Steps | null {
+  if (view.next === null) return null;
+  return { title: 'Know your numbers', steps: view.steps.map((s) => ({ key: s.key, label: STEP_LABELS[s.key], href: s.href, done: s.done })) };
 }

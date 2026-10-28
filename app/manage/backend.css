@@ -652,7 +652,7 @@ button.bk-up-btn { border: 0; cursor: pointer; font: inherit; font-size: 0.9rem;
 /* Tools (Alex, 2026-10-24): Cost to make, Price it, Market day. Quiet backend forms
    on the left; the answer on a kraft hang tag on the right, tied on with brass
    string. The tag is the one bold thing. */
-.bk-tools { --bk-kraft: oklch(0.86 0.045 72); --bk-kraft-ink: oklch(0.3 0.03 55); --bk-kraft-line: oklch(0.3 0.03 55 / 22%); --bk-good: oklch(0.42 0.08 135); }
+.bk-tools, .bk-free-tag { --bk-kraft: oklch(0.86 0.045 72); --bk-kraft-ink: oklch(0.3 0.03 55); --bk-kraft-line: oklch(0.3 0.03 55 / 22%); --bk-good: oklch(0.42 0.08 135); }
 .bk-tool-title { margin: 0; font-family: var(--bk-display); font-size: clamp(1.75rem, 3.5vw, 2.4rem); font-weight: 600; line-height: 1.1; text-wrap: balance; }
 .bk-tool-lede { max-width: 62ch; margin: 0.5rem 0 0; color: var(--bk-ink-muted); line-height: 1.55; }
 .bk-tool-example { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin: 1rem 0 0; }
@@ -754,3 +754,10 @@ p.bk-notice.bk-cost-line { padding: 0.65rem 0.9rem; border: 1px solid oklch(0.51
 .bk-event-day strong { font-variant-numeric: lining-nums tabular-nums; }
 
 .bk-below-cost { display: block; margin-top: 0.15rem; color: var(--bk-danger); font-size: 12px; font-weight: 600; }
+
+/* Free’s Home (the ladder, Alex 2026-10-24; redesign 2026-10-28): her numbers on the
+   kraft tag where the other plans show their site. */
+.bk-free-tag { position: relative; z-index: 1; margin-top: 0; max-width: 26rem; width: 100%; justify-self: center; }
+.bk-free-tag .bk-hangtag-big-value { font-size: 2.6rem; }
+.bk-free-tag a { color: var(--bk-primary); font-weight: 600; }
+.bk-ready .bk-band-sub { max-width: 60ch; margin: 0.4rem 0 1rem; }

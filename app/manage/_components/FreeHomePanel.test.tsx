@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, cleanup, within } from '@testing-library/react';
-import { FreeHomePanel } from './FreeHomePanel';
-import type { FreeHome } from '@/lib/tools/free-home';
+import { FreeNumbers, ReadyToShow } from './FreeHomePanel';
+import { freeSteps, type FreeHome } from '@/lib/tools/free-home';
 
 afterEach(cleanup);
 
@@ -20,45 +20,56 @@ const fresh: FreeHome = {
   bestMarket: null,
 };
 
-describe('FreeHomePanel — Free’s Home (Alex, 2026-10-24)', () => {
-  it('lights the step to do next, with one Start', () => {
-    render(<FreeHomePanel view={fresh} showcasePrice={5} />);
-    const steps = screen.getAllByRole('listitem').slice(0, 4);
-    expect(steps[0]).toHaveAttribute('data-state', 'now');
-    expect(steps[1]).toHaveAttribute('data-state', 'later');
-    expect(screen.getAllByRole('link', { name: 'Start' })).toHaveLength(1);
-    expect(screen.getByRole('link', { name: 'Start' })).toHaveAttribute('href', '/manage/tools/cost');
-    expect(screen.getByText('No pieces yet. Price your first one in Cost to make.')).toBeInTheDocument();
-    expect(screen.getByText(/Nothing filled in yet/)).toBeInTheDocument();
+const tag = () => screen.getByRole('complementary', { name: 'Your numbers' });
+
+describe('Free’s first steps (the ladder, Alex 2026-10-24)', () => {
+  it('are Home’s steps: price a piece, the rest, the next market, what it paid', () => {
+    const s = freeSteps(fresh);
+    expect(s?.title).toBe('Know your numbers');
+    expect(s?.steps.map((x) => x.label)).toEqual(['Price your first piece', 'Add the rest of your pieces', 'Add your next market', 'After the market, fill in what it paid you']);
+    expect(s?.steps[0]).toMatchObject({ href: '/manage/tools/cost', done: false });
+  });
+
+  it('go away once every step is done', () => {
+    expect(freeSteps({ ...fresh, steps: fresh.steps.map((s) => ({ ...s, done: true })), next: null })).toBeNull();
+  });
+});
+
+describe('Free’s numbers on the tag', () => {
+  it('starts with nothing worked out yet', () => {
+    render(<FreeNumbers view={fresh} />);
+    expect(within(tag()).getByText('0 of 0')).toBeInTheDocument();
+    expect(within(tag()).getByText('None')).toBeInTheDocument();
+    expect(within(tag()).getByText('Not yet')).toBeInTheDocument();
+    expect(within(tag()).queryByText('Paid you best')).toBeNull();
+  });
+
+  it('shows pieces worked out, the one priced too low, the last market and the best', () => {
+    render(
+      <FreeNumbers
+        view={{ ...fresh, products: 4, noCosts: 1, belowCost: [{ id: 'l2', name: 'Tin' }], lastMarket: { id: 'e2', name: 'Fall Fair', profit: 338.6, hourly: 33.86 }, bestMarket: { id: 'e1', name: 'Spring Fair', hourly: 40 } }}
+      />,
+    );
+    expect(within(tag()).getByText('3 of 4')).toBeInTheDocument();
+    expect(within(tag()).getByRole('link', { name: 'Tin' })).toHaveAttribute('href', '/manage/products');
+    expect(within(tag()).getByRole('link', { name: '$339 home, $33.86 an hour' })).toHaveAttribute('href', '/manage/markets/e2?tab=after');
+    expect(within(tag()).getByText('Fall Fair')).toBeInTheDocument();
+    expect(within(tag()).getByRole('link', { name: '$40.00 an hour' })).toHaveAttribute('href', '/manage/markets/e1?tab=after');
+  });
+
+  it('counts several pieces priced too low, and a market with no hours', () => {
+    render(<FreeNumbers view={{ ...fresh, products: 2, belowCost: [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }], lastMarket: { id: 'e', name: 'Fair', profit: 10, hourly: null } }} />);
+    expect(within(tag()).getByRole('link', { name: '2 pieces' })).toBeInTheDocument();
+    expect(within(tag()).getByRole('link', { name: '$10 home' })).toBeInTheDocument();
+  });
+});
+
+describe('Showcase’s nudge', () => {
+  it('shows once she has a few pieces, with Showcase’s price', () => {
+    const { rerender } = render(<ReadyToShow view={{ ...fresh, products: 2 }} showcasePrice={5} />);
     expect(screen.queryByText('Your pieces are ready to show')).toBeNull();
-  });
-
-  it('shows her numbers once there are some, and the way up to Showcase', () => {
-    const view: FreeHome = {
-      ...fresh,
-      steps: fresh.steps.map((s) => ({ ...s, done: true })),
-      next: null,
-      belowCost: [{ id: 'l2', name: 'Tin' }],
-      products: 4,
-      lastMarket: { id: 'e2', name: 'Fall Fair', profit: 338.6, hourly: 33.86 },
-      bestMarket: { id: 'e1', name: 'Spring Fair', hourly: 40 },
-    };
-    render(<FreeHomePanel view={view} showcasePrice={5} />);
-    expect(screen.queryByText('Know your numbers')).toBeNull();
-    expect(screen.getByText('Tin').closest('a')).toHaveAttribute('href', '/manage/products');
-    expect(screen.getByText('Fall Fair').closest('a')).toHaveTextContent('you took home $339, $33.86 an hour.');
-    expect(screen.getByText('Spring Fair').closest('a')).toHaveAttribute('href', '/manage/markets/e1?tab=after');
-    const up = screen.getByRole('heading', { name: 'Your pieces are ready to show' }).closest('section')!;
+    rerender(<ReadyToShow view={{ ...fresh, products: 3 }} showcasePrice={5} />);
+    const up = screen.getByRole('heading', { name: 'Your pieces are ready to show' }).closest('section') as HTMLElement;
     expect(within(up).getByText(/\$5 a month/)).toBeInTheDocument();
-  });
-
-  it('counts several pieces priced too low, and pieces with no costs', () => {
-    const { rerender } = render(<FreeHomePanel view={{ ...fresh, belowCost: [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }], products: 2 }} showcasePrice={5} />);
-    expect(screen.getByText('2 pieces')).toBeInTheDocument();
-    rerender(<FreeHomePanel view={{ ...fresh, products: 3, noCosts: 2 }} showcasePrice={5} />);
-    expect(screen.getByText('2 of your 3 pieces have no costs worked out yet.')).toBeInTheDocument();
-    rerender(<FreeHomePanel view={{ ...fresh, products: 2, lastMarket: { id: 'e', name: 'Fair', profit: 10, hourly: null } }} showcasePrice={5} />);
-    expect(screen.getByText('Every piece is priced above what it costs you.')).toBeInTheDocument();
-    expect(screen.getByText('Fair').closest('a')).toHaveTextContent('you took home $10.');
   });
 });
