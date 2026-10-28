@@ -278,6 +278,70 @@ export function marketDay(input: MarketInput): MarketResult {
   return { sales, cardFees, costs, totalCosts, profit, hours, hourly, wage, verdict, salesNeeded };
 }
 
+// ── Is this market worth it? ─────────────────────────────────────────────────
+// Before paying for the booth (Alex, 2026-10-28; replaces Market day in the Tools).
+
+export type WorthInput = {
+  booth: string;
+  gas: string;
+  food: string;
+  other: string;
+  hoursAtMarket: string;
+  hoursOther: string;
+  wage: string;
+  /** What an average piece sells for, and what it costs her to make. */
+  price: string;
+  made: string;
+  /** The share of sales paid by card, and the card fee, both percents. */
+  cardShare: string;
+  cardRate: string;
+  /** What she thinks she'll sell, in dollars; blank for no guess. */
+  guess: string;
+};
+
+export type WorthVerdict = 'empty' | 'no-sale' | 'no-margin' | 'no-guess' | 'hard' | 'close' | 'worth';
+
+export type WorthNeed = { pieces: number; sales: number };
+
+export type WorthResult = {
+  /** Booth, travel, food and other. */
+  dayCost: number;
+  hours: number;
+  wage: number;
+  /** What one typical piece earns once it's made and the card fee is paid. */
+  earns: number;
+  /** Just to cover the day, and to also pay herself her rate. Null when a piece earns nothing. */
+  cover: WorthNeed | null;
+  pay: WorthNeed | null;
+  verdict: WorthVerdict;
+};
+
+export function marketWorth(input: WorthInput): WorthResult {
+  const dayCost = amount(input.booth) + amount(input.gas) + amount(input.food) + amount(input.other);
+  const hours = amount(input.hoursAtMarket) + amount(input.hoursOther);
+  const wage = amount(input.wage);
+  const price = amount(input.price);
+  const card = (Math.min(amount(input.cardShare), 100) / 100) * (amount(input.cardRate) / 100);
+  const earns = price - amount(input.made) - price * card;
+  const need = (total: number): WorthNeed => {
+    const pieces = Math.ceil(total / earns);
+    return { pieces, sales: pieces * price };
+  };
+  const cover = earns > 0 ? need(dayCost) : null;
+  const pay = earns > 0 ? need(dayCost + hours * wage) : null;
+  const guess = input.guess.trim() === '' ? null : amount(input.guess);
+
+  let verdict: WorthVerdict;
+  if (dayCost === 0 && price === 0) verdict = 'empty';
+  else if (price === 0) verdict = 'no-sale';
+  else if (cover === null || pay === null) verdict = 'no-margin';
+  else if (guess === null) verdict = 'no-guess';
+  else if (guess < cover.sales) verdict = 'hard';
+  else if (guess < pay.sales) verdict = 'close';
+  else verdict = 'worth';
+  return { dayCost, hours, wage, earns, cover, pay, verdict };
+}
+
 // ── Money in words ───────────────────────────────────────────────────────────
 
 /** $3.45, or −$3.45. */

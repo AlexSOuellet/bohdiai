@@ -9,24 +9,21 @@ const fresh: FreeHome = {
   steps: [
     { key: 'price', done: false, href: '/manage/tools/cost' },
     { key: 'pieces', done: false, href: '/manage/tools/cost' },
-    { key: 'event', done: false, href: '/manage/markets/new' },
-    { key: 'after', done: false, href: '/manage/tools/market' },
+    { key: 'describe', done: false, href: '/manage/tools/describe' },
   ],
   next: 'price',
   belowCost: [],
   noCosts: 0,
   products: 0,
-  lastMarket: null,
-  bestMarket: null,
 };
 
 const tag = () => screen.getByRole('complementary', { name: 'Your numbers' });
 
 describe('Free’s first steps (the ladder, Alex 2026-10-24)', () => {
-  it('are Home’s steps: price a piece, the rest, the next market, what it paid', () => {
+  it('are Home’s steps: price a piece, the rest, a description (no events on Free)', () => {
     const s = freeSteps(fresh);
     expect(s?.title).toBe('Know your numbers');
-    expect(s?.steps.map((x) => x.label)).toEqual(['Price your first piece', 'Add the rest of your pieces', 'Add your next market', 'After the market, fill in what it paid you']);
+    expect(s?.steps.map((x) => x.label)).toEqual(['Price your first piece', 'Add the rest of your pieces', 'Write a description for a piece']);
     expect(s?.steps[0]).toMatchObject({ href: '/manage/tools/cost', done: false });
   });
 
@@ -40,27 +37,18 @@ describe('Free’s numbers on the tag', () => {
     render(<FreeNumbers view={fresh} />);
     expect(within(tag()).getByText('0 of 0')).toBeInTheDocument();
     expect(within(tag()).getByText('None')).toBeInTheDocument();
-    expect(within(tag()).getByText('Not yet')).toBeInTheDocument();
-    expect(within(tag()).queryByText('Paid you best')).toBeNull();
+    expect(within(tag()).queryByText('Last market')).toBeNull();
   });
 
-  it('shows pieces worked out, the one priced too low, the last market and the best', () => {
-    render(
-      <FreeNumbers
-        view={{ ...fresh, products: 4, noCosts: 1, belowCost: [{ id: 'l2', name: 'Tin' }], lastMarket: { id: 'e2', name: 'Fall Fair', profit: 338.6, hourly: 33.86 }, bestMarket: { id: 'e1', name: 'Spring Fair', hourly: 40 } }}
-      />,
-    );
+  it('shows pieces worked out and the one priced too low', () => {
+    render(<FreeNumbers view={{ ...fresh, products: 4, noCosts: 1, belowCost: [{ id: 'l2', name: 'Tin' }] }} />);
     expect(within(tag()).getByText('3 of 4')).toBeInTheDocument();
     expect(within(tag()).getByRole('link', { name: 'Tin' })).toHaveAttribute('href', '/manage/products');
-    expect(within(tag()).getByRole('link', { name: '$339 home, $33.86 an hour' })).toHaveAttribute('href', '/manage/markets/e2?tab=after');
-    expect(within(tag()).getByText('Fall Fair')).toBeInTheDocument();
-    expect(within(tag()).getByRole('link', { name: '$40.00 an hour' })).toHaveAttribute('href', '/manage/markets/e1?tab=after');
   });
 
-  it('counts several pieces priced too low, and a market with no hours', () => {
-    render(<FreeNumbers view={{ ...fresh, products: 2, belowCost: [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }], lastMarket: { id: 'e', name: 'Fair', profit: 10, hourly: null } }} />);
+  it('counts several pieces priced too low', () => {
+    render(<FreeNumbers view={{ ...fresh, products: 2, belowCost: [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }] }} />);
     expect(within(tag()).getByRole('link', { name: '2 pieces' })).toBeInTheDocument();
-    expect(within(tag()).getByRole('link', { name: '$10 home' })).toBeInTheDocument();
   });
 });
 

@@ -45,7 +45,7 @@ export const BACKEND_MODULES: BackendModule[] = [
     items: [
       { label: 'Cost to make', href: '/manage/tools/cost' },
       { label: 'Price it', href: '/manage/tools/price' },
-      { label: 'Market day', href: '/manage/tools/market' },
+      { label: 'Is it worth it?', href: '/manage/tools/market' },
       { label: 'Describe it', href: '/manage/tools/describe' },
     ],
   },

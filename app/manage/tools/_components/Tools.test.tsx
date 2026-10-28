@@ -8,8 +8,8 @@ vi.mock('@/lib/tools/actions', () => ({ saveCostsToProduct }));
 
 import { CostTool } from './CostTool';
 import { PriceTool } from './PriceTool';
-import { MarketTool } from './MarketTool';
-import { BLANK_PRICE, type CostCarry, type DayForm, type PriceForm } from '@/lib/tools/forms';
+import { WorthTool } from './WorthTool';
+import { BLANK_PRICE, type CostCarry, type PriceForm, type WorthForm } from '@/lib/tools/forms';
 import { priceFromCost } from '@/lib/tools/handoff';
 
 afterEach(cleanup);
@@ -24,7 +24,7 @@ const params = (href: string | null): URLSearchParams => new URL(href ?? '', 'ht
 // prices; comps from Craftybase's benchmark.
 const CANDLE: PriceForm = { ...BLANK_PRICE, name: '8 oz soy candle', materials: '3.45', time: '3.33', extras: '1.50', channels: ['markets', 'etsy'], low: '16', high: '28' };
 const CANDLE_BATCH: CostCarry = { yield: '12', hours: '2', rate: '20', batch: [{ name: 'Soy wax, 10 lb bag', paid: '31.97', lasts: '2' }], piece: [{ name: '8 oz jelly jar', each: '0.66' }] };
-const FAIR: DayForm = { name: 'Fall Harvest Fair', sales: '640', card: '380', cardRate: '3', booth: '75', gas: '18', food: '22', other: '15', materials: '160', hoursAtMarket: '7', hoursOther: '3', wage: '20' };
+const FAIR: WorthForm = { name: 'Fall Harvest Fair', booth: '75', gas: '18', food: '22', other: '15', hoursAtMarket: '7', hoursOther: '3', wage: '20', price: '28', made: '6', cardShare: '60', cardRate: '3', guess: '' };
 
 /** A batch of 12 candles: wax, fragrance, wicks, a jar and a lid, two hours at $20. */
 function typeTheCandle(): void {
@@ -190,41 +190,62 @@ describe('Price it', () => {
   });
 });
 
-describe('Market day', () => {
-  it('starts blank and asks for the day', () => {
-    render(<MarketTool canSaveEvent />);
-    expect(within(tag('Market day')).getByText('Fill in your day')).toBeInTheDocument();
-    expect(within(tag('Market day')).getByText(/Add your sales, hours and hourly rate/)).toBeInTheDocument();
+describe('Is this market worth it? (replaces Market day, Alex 2026-10-28)', () => {
+  const t = () => tag('Is it worth it?');
+
+  it('starts blank and asks for the market', () => {
+    render(<WorthTool canSaveEvent />);
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Is this market worth it?');
+    expect(within(t()).getByText('Fill in the market')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Booth fee'), { target: { value: '75' } });
+    expect(within(t()).getByText('Add a typical sale')).toBeInTheDocument();
   });
 
-  it('gives the verdict, take-home, pay per hour and the sales she’d need', () => {
-    render(<MarketTool canSaveEvent initial={FAIR} />);
-    const t = tag('Market day');
-    expect(within(t).getByText('Worth the trip')).toBeInTheDocument();
-    expect(within(t).getByText('$339')).toBeInTheDocument();
-    expect(within(t).getByText('$33.86')).toBeInTheDocument();
-    expect(within(t).getByText('To pay yourself $20 an hour at this market, you’d need about $451 in sales.')).toBeInTheDocument();
+  it('gives the pieces and sales to cover the day and to pay her, and asks for a guess', () => {
+    render(<WorthTool canSaveEvent initial={FAIR} />);
+    // Each piece earns 28 − 6 − 28 × 60% × 3% = $21.50; the day costs $130, her time $200.
+    expect(within(t()).getByText('$21.50')).toBeInTheDocument();
+    expect(within(t()).getByText('$130.00')).toBeInTheDocument();
+    expect(within(t()).getByText('7 pieces')).toBeInTheDocument();
+    expect(within(t()).getByText('$196 in sales')).toBeInTheDocument();
+    expect(within(t()).getByText('16 pieces')).toBeInTheDocument();
+    expect(within(t()).getByText('$448 in sales')).toBeInTheDocument();
+    expect(within(t()).getByText('What do you think you’ll sell?')).toBeInTheDocument();
   });
 
-  it('says so when the day lost money', () => {
-    render(<MarketTool canSaveEvent initial={FAIR} />);
-    fireEvent.change(screen.getByLabelText('Total sales'), { target: { value: '100' } });
-    expect(within(tag('Market day')).getByText('You paid to be there')).toBeInTheDocument();
-    expect(within(tag('Market day')).getByText('Short by')).toBeInTheDocument();
+  it('judges her guess', () => {
+    render(<WorthTool canSaveEvent initial={FAIR} />);
+    const guess = screen.getByLabelText('What do you think you’ll sell?');
+    fireEvent.change(guess, { target: { value: '150' } });
+    expect(within(t()).getByText('Hard to justify')).toBeInTheDocument();
+    fireEvent.change(guess, { target: { value: '300' } });
+    expect(within(t()).getByText('Close')).toBeInTheDocument();
+    expect(within(t()).getByText('It covers the day, but not $20 an hour for your time.')).toBeInTheDocument();
+    fireEvent.change(guess, { target: { value: '500' } });
+    expect(within(t()).getByText('Worth the trip')).toBeInTheDocument();
+    expect(within(t()).getByText('It covers the day and pays you $20 an hour.')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('What’s an hour of your time worth?'), { target: { value: '' } });
+    expect(within(t()).getByText('It covers the day.')).toBeInTheDocument();
   });
 
-  it('saves as an event with its name and the costs of being there', () => {
-    render(<MarketTool canSaveEvent initial={FAIR} />);
+  it('says when each piece loses money', () => {
+    render(<WorthTool canSaveEvent initial={{ ...FAIR, made: '30' }} />);
+    expect(within(t()).getByText('Each piece loses money')).toBeInTheDocument();
+    expect(within(t()).getAllByText('—')).toHaveLength(2);
+  });
+
+  it('saves as an event with its name and the costs of going, never on Free', () => {
+    render(<WorthTool canSaveEvent initial={FAIR} />);
     const q = params(screen.getByRole('link', { name: 'Save as an event' }).getAttribute('href'));
     expect(q.get('name')).toBe('Fall Harvest Fair');
     expect(q.getAll('cost')).toEqual(['7500:Booth fee', '1800:Gas, tolls and parking', '2200:Food and coffee', '1500:Bags, signs, other']);
     cleanup();
-    render(<MarketTool canSaveEvent={false} initial={FAIR} />);
+    render(<WorthTool canSaveEvent={false} initial={FAIR} />);
     expect(screen.queryByRole('link', { name: 'Save as an event' })).toBeNull();
   });
 
   it('has no link to Cost to make, which is unrelated (Alex, 2026-10-28)', () => {
-    render(<MarketTool canSaveEvent />);
+    render(<WorthTool canSaveEvent />);
     expect(screen.queryByRole('link', { name: 'Cost to make' })).toBeNull();
   });
 });

@@ -1,10 +1,8 @@
 import Link from 'next/link';
-import type { Route } from 'next';
-import { cents, dollars } from '@/lib/tools/maths';
 import { PIECES_READY, type FreeHome } from '@/lib/tools/free-home';
 
 /** Free's numbers on Home (Alex, 2026-10-24), on the same kraft tag the tools answer
- *  on: her pieces, any priced too low, her last market and her best. */
+ *  on: her pieces worked out and any priced too low. */
 export function FreeNumbers({ view }: { view: FreeHome }): React.ReactElement {
   const below = view.belowCost;
   return (
@@ -26,26 +24,6 @@ export function FreeNumbers({ view }: { view: FreeHome }): React.ReactElement {
             )}
           </dd>
         </div>
-        <div className="bk-hangtag-pair">
-          <dt>Last market</dt>
-          <dd>
-            {view.lastMarket === null ? (
-              'Not yet'
-            ) : (
-              <Link href={`/manage/markets/${view.lastMarket.id}?tab=after` as Route}>{`${dollars(view.lastMarket.profit)} home${view.lastMarket.hourly === null ? '' : `, ${cents(view.lastMarket.hourly)} an hour`}`}</Link>
-            )}
-          </dd>
-          {view.lastMarket !== null && <dd className="bk-hangtag-math">{view.lastMarket.name}</dd>}
-        </div>
-        {view.bestMarket !== null && (
-          <div className="bk-hangtag-pair">
-            <dt className="bk-hangtag-total">Paid you best</dt>
-            <dd className="bk-hangtag-total">
-              <Link href={`/manage/markets/${view.bestMarket.id}?tab=after` as Route}>{`${cents(view.bestMarket.hourly)} an hour`}</Link>
-            </dd>
-            <dd className="bk-hangtag-math">{view.bestMarket.name}</dd>
-          </div>
-        )}
       </dl>
     </aside>
   );

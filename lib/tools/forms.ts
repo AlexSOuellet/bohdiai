@@ -1,10 +1,10 @@
 /**
- * What each tool's form holds (Alex, 2026-10-28): the three tools are separate
+ * What each tool's form holds (Alex, 2026-10-28): the tools are separate
  * screens, each starting blank and run on its own. A link at the bottom of each
  * opens the next one; from Cost to make, it carries the piece's cost into Price it
  * (lib/tools/handoff.ts). Nothing else is shared between them.
  */
-import type { BatchSupply, Channel, Markup, MarketInput, PieceItem } from './maths';
+import type { BatchSupply, Channel, Markup, PieceItem, WorthInput } from './maths';
 import type { CostSettings } from './product-costs';
 
 export type CostForm = { name: string; yield: string; batch: BatchSupply[]; piece: PieceItem[]; hours: string; rate: string };
@@ -31,7 +31,7 @@ export type PriceForm = {
   high: string;
 };
 
-export type DayForm = MarketInput & { name: string };
+export type WorthForm = WorthInput & { name: string };
 
 export const BLANK_SUPPLY: BatchSupply = { name: '', paid: '', lasts: '1' };
 export const BLANK_ITEM: PieceItem = { name: '', each: '' };
@@ -58,7 +58,7 @@ export const BLANK_PRICE: PriceForm = {
   high: '',
 };
 
-export const BLANK_DAY: DayForm = { name: '', sales: '', card: '', cardRate: '3', booth: '', gas: '', food: '', other: '', materials: '', hoursAtMarket: '', hoursOther: '', wage: '20' };
+export const BLANK_WORTH: WorthForm = { name: '', booth: '', gas: '', food: '', other: '', hoursAtMarket: '', hoursOther: '', wage: '20', price: '', made: '', cardShare: '', cardRate: '3', guess: '' };
 
 /** What a product keeps of the tools: Cost to make's batch and time, with Price it's other costs and markup. */
 export function toolCosts(carry: CostCarry, price: Pick<PriceForm, 'extras' | 'markup'>): CostSettings {

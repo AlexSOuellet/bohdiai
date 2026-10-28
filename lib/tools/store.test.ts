@@ -258,80 +258,62 @@ describe('the hand-off carries costs and a market’s numbers', () => {
   });
 });
 
-describe('Free’s Home', () => {
+describe('Free’s Home (no events on Free, Alex 2026-10-28)', () => {
   const summary = costSummary(candle);
   const input = (over: Partial<FreeHomeInput> = {}): FreeHomeInput => ({
     products: [
-      { id: 'l1', name: 'Candle', priceCents: 2100 },
-      { id: 'l2', name: 'Tin', priceCents: 500 },
-      { id: 'l3', name: 'Melt', priceCents: null },
+      { id: 'l1', name: 'Candle', priceCents: 2100, described: true },
+      { id: 'l2', name: 'Tin', priceCents: 500, described: false },
+      { id: 'l3', name: 'Melt', priceCents: null, described: false },
     ],
     costs: new Map([
       ['l1', summary!],
       ['l2', summary!],
     ]),
-    events: [
-      { id: 'e1', name: 'Spring Fair', date: '2026-05-02', costsCents: 13000 },
-      { id: 'e2', name: 'Fall Fair', date: '2026-10-10', costsCents: 13000 },
-    ],
-    takings: new Map([
-      ['e1', fair],
-      ['e2', { ...fair, sales: '400' }],
-    ]),
     ...over,
   });
 
   it('starts at the first step, with every step undone', () => {
-    const h = freeHome({ products: [], costs: new Map(), events: [], takings: new Map() });
-    expect(h.steps.map((s) => [s.key, s.done])).toEqual([
-      ['price', false],
-      ['pieces', false],
-      ['event', false],
-      ['after', false],
+    const h = freeHome({ products: [], costs: new Map() });
+    expect(h.steps.map((s) => [s.key, s.done, s.href])).toEqual([
+      ['price', false, '/manage/tools/cost'],
+      ['pieces', false, '/manage/tools/cost'],
+      ['describe', false, '/manage/tools/describe'],
     ]);
     expect(h.next).toBe('price');
-    expect(h.steps[3]?.href).toBe('/manage/tools/market');
-    expect(h.lastMarket).toBeNull();
-    expect(h.bestMarket).toBeNull();
   });
 
   it('marks steps done from what exists, and gives her numbers', () => {
     const h = freeHome(input());
     expect(h.next).toBeNull();
-    expect(h.steps[3]?.href).toBe('/manage/markets/e2?tab=after');
     expect(h.belowCost).toEqual([{ id: 'l2', name: 'Tin' }]);
     expect(h.noCosts).toBe(1);
-    expect(h.lastMarket).toMatchObject({ id: 'e2', name: 'Fall Fair' });
-    expect(h.bestMarket).toMatchObject({ id: 'e1', name: 'Spring Fair' });
-  });
-
-  it('leaves out markets with no sales, keeps one with no hours, and needs two to name the best', () => {
-    const h = freeHome(input({ takings: new Map([['e1', { ...fair, hoursAtMarket: '', hoursOther: '' }], ['e2', { ...fair, sales: '' }]]) }));
-    expect(h.lastMarket).toMatchObject({ id: 'e1', hourly: null });
-    expect(h.bestMarket).toBeNull();
-    const two = freeHome(input({ takings: new Map([['e1', { ...fair, sales: '400' }], ['e2', fair]]) }));
-    expect(two.bestMarket?.id).toBe('e2');
+    expect(h.products).toBe(3);
+    expect(freeHome(input({ products: input().products.map((p) => ({ ...p, described: false })) })).next).toBe('describe');
   });
 
   it('loads from the database, and says so when it can’t', async () => {
-    // The costs and the markets' numbers are asked for first, then the products and events.
+    // The costs are asked for first, then the products.
     const empty = { data: [], error: null };
     state.queue.push(
       { data: [{ listing_id: 'l1', pieces_per_batch: 12, batch_hours: 2, hourly_pay_cents: 2000, other_cents: 150, markup: 2.5 }], error: null },
       empty,
-      { data: [{ event_id: 'e1', sales_cents: 64000, hours_at_market: 7 }], error: null },
-      { data: [{ id: 'l1', name: 'Candle', base_price_cents: 300 }, { id: 'l2', name: 'Tin', base_price_cents: 0 }], error: null },
-      { data: [{ id: 'e1', name: 'Fair', event_date: '2026-10-10', event_expenses: [{ amount_cents: 7500 }] }], error: null },
+      {
+        data: [
+          { id: 'l1', name: 'Candle', base_price_cents: 300, short_description: ' ', description: 'Soy.' },
+          { id: 'l2', name: 'Tin', base_price_cents: 0, short_description: null, description: null },
+        ],
+        error: null,
+      },
     );
     const h = await loadFreeHome(db(), 't1');
     expect(h.products).toBe(2);
     expect(h.belowCost).toEqual([{ id: 'l1', name: 'Candle' }]);
-    expect(h.lastMarket?.name).toBe('Fair');
-    state.queue.push(empty, empty, empty, fail, empty);
+    expect(h.steps[2]?.done).toBe(true);
+    expect(state.calls).not.toContain('from(events)');
+    state.queue.push(empty, empty, fail);
     await expect(loadFreeHome(db(), 't1')).rejects.toThrow('Could not read the products: down');
-    state.queue.push(empty, empty, empty, empty, fail);
-    await expect(loadFreeHome(db(), 't1')).rejects.toThrow('Could not read the events: down');
-    state.queue.push(empty, empty, empty, { data: null, error: null }, { data: [{ id: 'e1', name: 'Fair', event_date: '2026-10-10', event_expenses: null }], error: null });
+    state.queue.push(empty, empty, { data: null, error: null });
     expect((await loadFreeHome(db(), 't1')).products).toBe(0);
   });
 });

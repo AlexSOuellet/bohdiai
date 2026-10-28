@@ -48,7 +48,7 @@ export default async function ManageHome(): Promise<React.ReactElement> {
   const own = await createSupabaseServerClient();
   const tenant = await own.from('tenants').select('time_zone, plan').eq('id', site.tenantId).maybeSingle();
   // Free has no site: its Home is her numbers and the steps to know them (Alex, 2026-10-24).
-  if (isFreePlan(tenant.data?.plan)) return <FreeHome tenantId={site.tenantId} name={site.businessName} timeZone={tenant.data?.time_zone ?? null} />;
+  if (isFreePlan(tenant.data?.plan)) return <FreeHome tenantId={site.tenantId} name={site.businessName} />;
   // Custom sites have no plan, and no first steps.
   const plan: SitePlan | null = isSitePlan(tenant.data?.plan) ? tenant.data.plan : null;
   const home = await collectHome(plan === null ? HOME_CONTRIBUTORS : HOME_CONTRIBUTORS_WITH_STEPS, on, site.tenantId);

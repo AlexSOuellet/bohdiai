@@ -1,4 +1,4 @@
-/** Tools on every plan (Alex, 2026-10-24): Cost to make, Price it and Market day, each
+/** Tools on every plan (Alex, 2026-10-24): Cost to make, Price it, Is it worth it? and Describe it, each
  *  its own screen run on its own (Alex, 2026-10-28); the tabs across the top open them. */
 export default function ToolsLayout({ children }: { children: React.ReactNode }): React.ReactElement {
   return (

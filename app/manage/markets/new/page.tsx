@@ -8,7 +8,7 @@ import { MarketEditor } from '../MarketEditor';
 
 export const dynamic = 'force-dynamic';
 
-/** A new event; from Market day in the Tools, it opens with the market's name and costs. */
+/** A new event; from Is this market worth it? in the Tools, it opens with the market's name and costs. */
 export default async function NewMarketPage({ searchParams }: PageProps<'/manage/markets/new'>): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
   const sent = await searchParams;

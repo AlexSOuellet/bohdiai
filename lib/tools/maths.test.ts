@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { amount, roundUp, costToMake, priceIt, compareToOthers, marketDay, cents, dollars, markupText, type PriceInput, type MarketInput } from './maths';
+import { amount, roundUp, costToMake, priceIt, compareToOthers, marketDay, marketWorth, cents, dollars, markupText, type PriceInput, type MarketInput, type WorthInput } from './maths';
 
 // The toolkit's own example: an 8 oz soy candle at CandleScience prices (Alex, 2026-10-24).
 const candle = {
@@ -218,5 +218,41 @@ describe('money in words', () => {
     expect(dollars(-338.6)).toBe('−$339');
     expect(markupText(2.5)).toBe('2.5');
     expect(markupText(3)).toBe('3');
+  });
+});
+
+describe('marketWorth (Alex, 2026-10-28)', () => {
+  const W: WorthInput = { booth: '60', gas: '20', food: '15', other: '5', hoursAtMarket: '7', hoursOther: '3', wage: '20', price: '40', made: '10', cardShare: '50', cardRate: '3', guess: '' };
+
+  it('works out what one piece earns and the pieces and sales to cover the day and to pay her', () => {
+    const r = marketWorth(W);
+    expect(r.dayCost).toBe(100);
+    expect(r.hours).toBe(10);
+    // 40 − 10 − 40 × 50% × 3% = 29.40
+    expect(r.earns).toBeCloseTo(29.4);
+    // 100 ÷ 29.40 → 4 pieces; (100 + 200) ÷ 29.40 → 11 pieces
+    expect(r.cover).toEqual({ pieces: 4, sales: 160 });
+    expect(r.pay).toEqual({ pieces: 11, sales: 440 });
+    expect(r.verdict).toBe('no-guess');
+  });
+
+  it('gives a verdict against her guess', () => {
+    expect(marketWorth({ ...W, guess: '150' }).verdict).toBe('hard');
+    expect(marketWorth({ ...W, guess: '160' }).verdict).toBe('close');
+    expect(marketWorth({ ...W, guess: '439' }).verdict).toBe('close');
+    expect(marketWorth({ ...W, guess: '440' }).verdict).toBe('worth');
+  });
+
+  it('asks for what it needs, and says when a piece earns nothing', () => {
+    const blank = { booth: '', gas: '', food: '', other: '', hoursAtMarket: '', hoursOther: '', wage: '', price: '', made: '', cardShare: '', cardRate: '', guess: '' };
+    expect(marketWorth(blank).verdict).toBe('empty');
+    expect(marketWorth({ ...W, price: '' }).verdict).toBe('no-sale');
+    const lost = marketWorth({ ...W, made: '45', guess: '1000' });
+    expect([lost.verdict, lost.cover, lost.pay]).toEqual(['no-margin', null, null]);
+  });
+
+  it('needs nothing when the day costs nothing, and caps the card share at all of it', () => {
+    expect(marketWorth({ ...W, booth: '', gas: '', food: '', other: '', wage: '' }).cover).toEqual({ pieces: 0, sales: 0 });
+    expect(marketWorth({ ...W, cardShare: '250' }).earns).toBeCloseTo(28.8);
   });
 });
