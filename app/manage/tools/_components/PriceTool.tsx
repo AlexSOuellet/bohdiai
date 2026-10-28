@@ -52,7 +52,7 @@ export function PriceTool({ initial, carry, canSaveProduct }: { initial: PriceFo
       <div className="bk-tool-main">
         <form className="bk-tool-form" onSubmit={(e) => e.preventDefault()}>
           <section className="bk-section">
-            <h3 className="bk-section-title">Your cost to make one</h3>
+            <h3 className="bk-section-title">What one product costs you to make</h3>
             {carry !== null ? (
               <p className="bk-note bk-tool-help">Filled in from Cost to make. Change anything you like.</p>
             ) : (

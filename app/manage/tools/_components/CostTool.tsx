@@ -58,7 +58,7 @@ export function CostTool({ product = null }: { product?: FromProduct | null }): 
   return (
     <section aria-labelledby="tool-cost">
       <h2 id="tool-cost" className="bk-tool-title">
-        What does it cost you to make one?
+        {`What does it cost to make one ${cost.name.trim() === '' ? 'product' : cost.name.trim()}?`}
       </h2>
       <p className="bk-tool-lede">Think about one batch. Put in what you paid for the supplies and how many pieces the batch made, and you’ll see the real cost of each piece.</p>
       {product !== null && (
@@ -140,7 +140,7 @@ export function CostTool({ product = null }: { product?: FromProduct | null }): 
         </form>
 
         <div className="bk-tool-side">
-          <HangTag label="Cost to make one" title={name}>
+          <HangTag label="Cost to make one product" title={name}>
             <p className="bk-hangtag-big">
               <span className="bk-hangtag-big-label">Materials</span>
               <span className="bk-hangtag-big-value">{r.has ? cents(r.materials) : '—'}</span>

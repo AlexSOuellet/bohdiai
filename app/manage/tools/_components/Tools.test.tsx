@@ -53,16 +53,18 @@ describe('Cost to make, on its own', () => {
   it('starts blank, asking how many it makes, with no example', () => {
     render(<CostTool />);
     expect(screen.getByLabelText('What you’re making')).toHaveValue('');
-    expect(within(tag('Cost to make one')).getByText('add how many it makes')).toBeInTheDocument();
+    expect(within(tag('Cost to make one product')).getByText('add how many it makes')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Start blank' })).toBeNull();
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('What does it cost to make one product?');
   });
 
-  it('works out the cost of one as she types', () => {
+  it('works out the cost of one as she types, asking in her own words', () => {
     render(<CostTool />);
     typeTheCandle();
-    expect(within(tag('Cost to make one')).getByText('$3.45')).toBeInTheDocument();
-    expect(within(tag('Cost to make one')).getByText('$29.53 for the batch ÷ 12 pieces')).toBeInTheDocument();
-    expect(within(tag('Cost to make one')).getByText('$6.78')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('What does it cost to make one 8 oz soy candle?');
+    expect(within(tag('Cost to make one product')).getByText('$3.45')).toBeInTheDocument();
+    expect(within(tag('Cost to make one product')).getByText('$29.53 for the batch ÷ 12 pieces')).toBeInTheDocument();
+    expect(within(tag('Cost to make one product')).getByText('$6.78')).toBeInTheDocument();
   });
 
   it('adds and removes supplies, keeping one row to type in', () => {
