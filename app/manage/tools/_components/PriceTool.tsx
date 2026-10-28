@@ -213,9 +213,6 @@ export function PriceTool({ initial, carry, canSaveProduct }: { initial: PriceFo
               </div>
             )}
 
-            <p className="bk-hangtag-next">
-              Next: <Link href="/manage/tools/market">Market day</Link>, to see what a market really pays you.
-            </p>
             {canSaveProduct && r.has && (
               <Link className="bk-btn bk-hangtag-save" href={productLink(p.name, r.fair * 100, carry === null ? null : toolCosts(carry, p)) as Route}>
                 Save as a product

@@ -30,15 +30,15 @@ const FAIR: DayForm = { name: 'Fall Harvest Fair', sales: '640', card: '380', ca
 function typeTheCandle(): void {
   type('What you’re making', '8 oz soy candle');
   type('How many one batch makes', '12');
-  type('Supply', 'Soy wax, 10 lb bag');
+  type('What it is', 'Soy wax, 10 lb bag');
   type('What you paid', '31.97');
   type('Batches it lasts', '2');
   fireEvent.click(screen.getByRole('button', { name: 'Add a supply' }));
-  type('Supply', 'Fragrance oil, 16 oz', 1);
+  type('What it is', 'Fragrance oil, 16 oz', 1);
   type('What you paid', '30.77', 1);
   type('Batches it lasts', '2.5', 1);
   fireEvent.click(screen.getByRole('button', { name: 'Add a supply' }));
-  type('Supply', 'Wicks, pack of 100', 2);
+  type('What it is', 'Wicks, pack of 100', 2);
   type('What you paid', '9.93', 2);
   type('Batches it lasts', '8', 2);
   type('Item', '8 oz jelly jar');
@@ -70,10 +70,10 @@ describe('Cost to make, on its own', () => {
   it('adds and removes supplies, keeping one row to type in', () => {
     render(<CostTool />);
     fireEvent.click(screen.getByRole('button', { name: 'Add a supply' }));
-    expect(screen.getAllByLabelText('Supply')).toHaveLength(2);
+    expect(screen.getAllByLabelText('What it is')).toHaveLength(2);
     fireEvent.click(screen.getAllByRole('button', { name: 'Remove this supply' })[0] as HTMLElement);
     fireEvent.click(screen.getByRole('button', { name: 'Remove this supply' }));
-    expect(screen.getAllByLabelText('Supply')).toHaveLength(1);
+    expect(screen.getAllByLabelText('What it is')).toHaveLength(1);
     fireEvent.click(screen.getByRole('button', { name: 'Remove this item' }));
     expect(screen.getAllByLabelText('Item')).toHaveLength(1);
   });
@@ -184,9 +184,9 @@ describe('Price it', () => {
     expect(screen.queryByRole('link', { name: 'Save as a product' })).toBeNull();
   });
 
-  it('links on to Market day', () => {
+  it('has no link to Market day, which is unrelated (Alex, 2026-10-28)', () => {
     render(<PriceTool initial={BLANK_PRICE} carry={null} canSaveProduct />);
-    expect(screen.getByRole('link', { name: 'Market day' })).toHaveAttribute('href', '/manage/tools/market');
+    expect(screen.queryByRole('link', { name: 'Market day' })).toBeNull();
   });
 });
 
@@ -223,8 +223,8 @@ describe('Market day', () => {
     expect(screen.queryByRole('link', { name: 'Save as an event' })).toBeNull();
   });
 
-  it('links on to Cost to make', () => {
+  it('has no link to Cost to make, which is unrelated (Alex, 2026-10-28)', () => {
     render(<MarketTool canSaveEvent />);
-    expect(screen.getByRole('link', { name: 'Cost to make' })).toHaveAttribute('href', '/manage/tools/cost');
+    expect(screen.queryByRole('link', { name: 'Cost to make' })).toBeNull();
   });
 });

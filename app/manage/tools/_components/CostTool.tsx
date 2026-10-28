@@ -82,11 +82,11 @@ export function CostTool({ product = null }: { product?: FromProduct | null }): 
 
           <section className="bk-section">
             <h3 className="bk-section-title">Supplies the batch uses up</h3>
-            <p className="bk-note bk-tool-help">Things you buy in bulk and share across pieces. If a bag or bottle lasts more than one batch, say how many batches you get out of it. A $30 bottle of fragrance that does 2 batches costs this batch $15.</p>
+            <p className="bk-note bk-tool-help">Things you buy in bulk and share across pieces. If a bag or bottle lasts more than one batch, say how many batches you get out of it. A $30 bottle of fragrance that does 2 batches costs this batch $15. Say exactly what each one is, like 1 inch thick pine round, 18 inches across: it helps write your description later.</p>
             <ul className="bk-tool-rows">
               {cost.batch.map((b, i) => (
                 <li key={i} className="bk-tool-row bk-tool-row-batch">
-                  <TextField id={`c-b-name-${i}`} label="Supply" value={b.name} onChange={(v) => setBatch(i, { name: v })} />
+                  <TextField id={`c-b-name-${i}`} label="What it is" value={b.name} onChange={(v) => setBatch(i, { name: v })} />
                   <NumberField id={`c-b-paid-${i}`} label="What you paid" before="$" value={b.paid} onChange={(v) => setBatch(i, { paid: v })} />
                   <NumberField id={`c-b-lasts-${i}`} label="Batches it lasts" value={b.lasts} onChange={(v) => setBatch(i, { lasts: v })} />
                   <button type="button" className="bk-tool-remove" aria-label={`Remove ${b.name.trim() === '' ? 'this supply' : b.name}`} onClick={() => set({ batch: cost.batch.length > 1 ? cost.batch.filter((_, j) => j !== i) : [BLANK_SUPPLY] })}>

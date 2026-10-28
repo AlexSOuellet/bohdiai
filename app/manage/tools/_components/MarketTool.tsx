@@ -132,9 +132,6 @@ export function MarketTool({ canSaveEvent, initial = BLANK_DAY }: { canSaveEvent
                   ? 'Your materials and fees eat every sale. Take a look at your prices.'
                   : `To pay yourself ${wage} an hour at this market, you’d need about ${dollars(r.salesNeeded)} in sales.`}
             </p>
-            <p className="bk-hangtag-next">
-              Next: <Link href="/manage/tools/cost">Cost to make</Link>, to see what each piece really costs you.
-            </p>
             {canSaveEvent && (
               <Link className="bk-btn bk-hangtag-save" href={eventLink(day.name, eventCosts, { sales: day.sales, card: day.card, cardRate: day.cardRate, materials: day.materials, hoursAtMarket: day.hoursAtMarket, hoursOther: day.hoursOther, wage: day.wage }) as Route}>
                 Save as an event
