@@ -17,7 +17,7 @@ const fresh: FreeHome = {
   products: 0,
 };
 
-const tag = () => screen.getByRole('complementary', { name: 'Your numbers' });
+const tag = () => screen.getByRole('complementary', { name: 'Your prices' });
 
 describe('Free’s first steps (the ladder, Alex 2026-10-24)', () => {
   it('are Home’s steps: price a piece, the rest, a description (no events on Free)', () => {
@@ -36,7 +36,10 @@ describe('Free’s numbers on the tag', () => {
   it('starts with nothing worked out yet', () => {
     render(<FreeNumbers view={fresh} />);
     expect(within(tag()).getByText('0 of 0')).toBeInTheDocument();
-    expect(within(tag()).getByText('None')).toBeInTheDocument();
+    expect(within(tag()).getByText('none')).toBeInTheDocument();
+    expect(within(tag()).getByText('Costs worked out for')).toBeInTheDocument();
+    expect(within(tag()).getByText('products')).toBeInTheDocument();
+    expect(within(tag()).getByText('Selling for less than they cost to make')).toBeInTheDocument();
     expect(within(tag()).queryByText('Last market')).toBeNull();
   });
 
@@ -48,7 +51,7 @@ describe('Free’s numbers on the tag', () => {
 
   it('counts several pieces priced too low', () => {
     render(<FreeNumbers view={{ ...fresh, products: 2, belowCost: [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }] }} />);
-    expect(within(tag()).getByRole('link', { name: '2 pieces' })).toBeInTheDocument();
+    expect(within(tag()).getByRole('link', { name: '2 products' })).toBeInTheDocument();
   });
 });
 

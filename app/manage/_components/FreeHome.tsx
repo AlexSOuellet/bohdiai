@@ -53,7 +53,7 @@ export async function FreeHome({ tenantId, name }: { tenantId: string; name: str
             </Link>
           </div>
         </div>
-        {view === null ? <p className="bk-window-empty">Your numbers couldn’t load. Refresh to try again.</p> : <FreeNumbers view={view} />}
+        {view === null ? <p className="bk-window-empty">Your prices couldn’t load. Refresh to try again.</p> : <FreeNumbers view={view} />}
       </header>
 
       <main id="main" className="bk-content bk-home">
