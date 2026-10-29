@@ -157,11 +157,13 @@ describe('applying a plan', () => {
 });
 
 describe('the pages a link can point at', () => {
-  it('Showcase has no shop and no collections; Market has no collections; Full has every page', async () => {
+  it('Showcase has no shop and no collections but jumps to its gallery; Market has no collections; Full has every page', async () => {
     const { planLinkTargets } = await import('./plan-features');
     const { LINK_TARGETS } = await import('@/lib/archetypes/main-street/links');
     expect(planLinkTargets('showcase')).toEqual(LINK_TARGETS.filter((t) => t !== 'shop' && t !== 'collections'));
-    expect(planLinkTargets('lite')).toEqual(LINK_TARGETS.filter((t) => t !== 'collections'));
-    expect(planLinkTargets('full')).toEqual(LINK_TARGETS);
+    expect(planLinkTargets('showcase')).toContain('gallery');
+    // With a catalog the work is the shop, so no button jumps to the gallery.
+    expect(planLinkTargets('lite')).toEqual(LINK_TARGETS.filter((t) => t !== 'collections' && t !== 'gallery'));
+    expect(planLinkTargets('full')).toEqual(LINK_TARGETS.filter((t) => t !== 'gallery'));
   });
 });
