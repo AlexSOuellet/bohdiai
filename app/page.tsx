@@ -6,6 +6,7 @@ import { HowItWorks } from '@/components/HowItWorks';
 import { WhoBehind } from '@/components/WhoBehind';
 import { Pledge } from '@/components/Pledge';
 import { Footer } from '@/components/Footer';
+import { WorkBrowser } from '@/components/WorkBrowser';
 import { ArmHero, CompareSection, FaqSection, LooksSection, PlansSection } from '@/components/arms/ArmSections';
 import { PlanLadder } from '@/components/arms/PlanLadder';
 import { CustomSites } from '@/components/arms/CustomSites';
@@ -58,6 +59,19 @@ export default async function HomePage(): Promise<React.ReactElement> {
           primary={{ href: '/start', label: 'Start your site →' }}
           secondary={{ href: '#ladder', label: 'See the plans' }}
         />
+        {/* The one way in left for anyone else (Alex, Session 117), where the doors used to be. */}
+        <p className="relative z-content mx-auto mt-5 max-w-[560px] px-4 text-center text-[14px] leading-[1.55] text-muted md:text-[15px]">
+          Need a site for something other than making things?{' '}
+          <a
+            href="#contact"
+            className="whitespace-nowrap text-honey-warm underline decoration-honey-warm/40 underline-offset-4 hover:decoration-honey-warm"
+          >
+            Send me a note
+          </a>
+        </p>
+        <div className="px-2 text-center">
+          <WorkBrowser />
+        </div>
         <LooksSection local={host.includes('localhost')} />
         <PlanLadder />
         <HowItWorks audience="maker" />

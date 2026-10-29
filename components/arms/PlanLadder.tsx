@@ -20,7 +20,7 @@ const STEPS: readonly Step[] = [
   {
     name: FREE_OFFER.name,
     title: FREE_OFFER.title,
-    body: 'Free, with no card. Work out what each piece really costs you, what to charge for it wherever you sell, and whether a market is worth the trip. Your pieces and their numbers are kept for you.',
+    body: 'Free, no card. Know what each piece costs you, what to charge for it, and whether a market is worth the trip.',
     rise: 'xl:mt-36',
   },
   {

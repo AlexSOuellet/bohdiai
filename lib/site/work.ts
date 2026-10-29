@@ -243,13 +243,8 @@ const SALTMARSH: WorkEntry = {
 };
 
 /**
- * The parent's sample window: samples only, nothing real, alternating makers and
- * service businesses (Alex, Session 107). The clients stay in the work strip below.
+ * bohdiai.com's sample window, under the opening: samples only, nothing real
+ * (Alex, Session 107). Makers only since bohdiai.com became the maker site
+ * (Session 117); Halfmoon and True Coat stay as sites, off the window.
  */
-export const HERO_WORK: readonly WorkEntry[] = [
-  sample('classic-loafs'),
-  sample('halfmoon-roofing'),
-  sample('paper-and-patina'),
-  sample('true-coat-painting'),
-  SALTMARSH,
-];
+export const HERO_WORK: readonly WorkEntry[] = [sample('classic-loafs'), sample('paper-and-patina'), SALTMARSH];

@@ -40,7 +40,7 @@ describe('bohdiai.com, the maker site (Session 117)', () => {
     expect(free).toHaveTextContent('$0');
     expect(free).toHaveTextContent('Cost to make');
     expect(free).toHaveTextContent('Is this market worth it?');
-    expect(free).toHaveTextContent('No website on Free');
+    expect(free).toHaveTextContent('No website.');
     expect(free).not.toHaveTextContent(/What to bring/);
     expect(within(free).queryByRole('link')).toBeNull();
     expect(screen.getByRole('article', { name: 'Maker Showcase' })).toHaveTextContent('$5');
@@ -65,6 +65,17 @@ describe('bohdiai.com, the maker site (Session 117)', () => {
     expect(close?.querySelector('a[href="/start"]')).not.toBeNull();
     expect(close?.querySelector('form')).not.toBeNull();
     expect(close).not.toHaveTextContent(/which plan|what kind of business/i);
+  });
+
+  it('shows the maker samples under the opening, with no service samples, and a line for anyone else', () => {
+    render(<HomePage />);
+    expect(screen.getAllByRole('button', { name: /^show /i }).map((b) => b.getAttribute('aria-label'))).toEqual([
+      'Show Classic Loafs',
+      'Show Paper & Patina',
+      'Show Saltmarsh & Lace',
+    ]);
+    expect(screen.getByText(/Need a site for something other than making things\?/, { selector: 'main > p' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Send me a note' })).toHaveAttribute('href', '#contact');
   });
 
   it('shows Penny’s shop as a custom site and keeps the story and the pledge', () => {

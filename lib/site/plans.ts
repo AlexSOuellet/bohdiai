@@ -123,15 +123,15 @@ export const FREE_OFFER: FreeOffer = {
   title: 'Know your numbers',
   forWho: 'For makers who want to know what their work really earns',
   includes: [
-    'Cost to make: what one piece really costs you, supplies and your time included',
-    'Price it: your break-even, and a price for markets, Etsy, Facebook, your own site and consignment',
-    'Is this market worth it? How many pieces you need to sell to cover the day, and to pay yourself too',
-    'Monthly goal: how many pieces and markets it takes to reach the money you want',
-    'Shipping: what to charge so the box, padding and postage don’t come out of your pocket',
-    'Help writing your descriptions, 30 a month',
-    'All your pieces in one place, each price checked against what it costs you to make',
+    'Cost to make: what one piece really costs',
+    'Price it: what to charge, wherever you sell',
+    'Is this market worth it?',
+    'Monthly goal: what it takes to hit your number',
+    'Shipping: what to charge for it',
+    'Help writing descriptions, 30 a month',
+    'Every piece checked against its cost',
   ],
-  noSite: 'No website on Free. Move up to Maker Showcase when you want one, and everything you’ve added comes with you.',
+  noSite: 'No website. Move up when you want one, and everything comes with you.',
 };
 
 export function plansFor(audience: Audience): readonly Plan[] {
