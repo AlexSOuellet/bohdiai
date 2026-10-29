@@ -1,17 +1,19 @@
 'use client';
 
 /**
- * The plan cards on a pricing page (two or three), with one Monthly / Yearly
+ * The plan cards on a pricing page, with one Monthly / Yearly
  * switch above them. Plans are clear glass; the one plan with a badge (Showcase, "Most popular")
  * is lit with a honey edge and carries the badge beside its name. A maker plan's
  * button opens the intake form (bohdiai.com/start) with the plan and monthly or
  * yearly filled in; a contractor plan's "Talk to us" goes to the page's contact
  * form with the plan (Stripe checkout replaces both once staging exists — see the
- * pricing design, step B).
+ * pricing design, step B). Makers see Maker Free first (Alex, Session 117): no
+ * price to switch and no button, since the sign-up form builds a site and Free
+ * has its own way in still to come.
  */
 import { useState } from 'react';
 import Link from 'next/link';
-import { formatPrice, includesLead, plansFor, type Audience, type Plan } from '@/lib/site/plans';
+import { FREE_OFFER, formatPrice, includesLead, plansFor, type Audience, type Plan } from '@/lib/site/plans';
 
 type Period = 'monthly' | 'yearly';
 
@@ -23,9 +25,11 @@ const PERIODS: ReadonlyArray<{ value: Period; label: string }> = [
 export function PlanCards({ audience }: { audience: Audience }): React.ReactElement {
   const [period, setPeriod] = useState<Period>('monthly');
   const plans = plansFor(audience);
-  const three = plans.length === 3;
+  const free = audience === 'maker';
+  const count = plans.length + (free ? 1 : 0);
+  const grid = count >= 4 ? 'md:grid-cols-2 xl:grid-cols-4' : count === 3 ? 'lg:grid-cols-3 md:grid-cols-2' : 'md:grid-cols-2';
   return (
-    <div className={`mx-auto ${three ? 'max-w-[1180px]' : 'max-w-[980px]'}`}>
+    <div className={`mx-auto ${count >= 4 ? 'max-w-[1320px]' : count === 3 ? 'max-w-[1180px]' : 'max-w-[980px]'}`}>
       <fieldset className="mx-auto flex w-fit rounded-pill border border-white/10 bg-black/40 p-1 backdrop-blur-[20px]">
         <legend className="sr-only">Pay monthly or yearly</legend>
         {PERIODS.map((p) => (
@@ -46,12 +50,44 @@ export function PlanCards({ audience }: { audience: Audience }): React.ReactElem
         ))}
       </fieldset>
 
-      <div className={`mt-9 grid items-stretch gap-6 md:mt-12 md:gap-7 ${three ? 'lg:grid-cols-3 md:grid-cols-2' : 'md:grid-cols-2'}`}>
+      <div className={`mt-9 grid items-stretch gap-6 md:mt-12 md:gap-7 ${grid}`}>
+        {free && <FreeCard />}
         {plans.map((plan) => (
           <PlanCard key={plan.id} plan={plan} period={period} />
         ))}
       </div>
     </div>
+  );
+}
+
+function FreeCard(): React.ReactElement {
+  return (
+    <article
+      aria-labelledby="plan-maker-free"
+      className="relative flex flex-col overflow-hidden rounded-[22px] border border-dashed border-white/15 p-6 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.85)] backdrop-blur-[20px] [background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] md:p-8"
+    >
+      <h3 id="plan-maker-free" className="font-sans text-[22px] font-semibold tracking-[-0.02em] text-text md:text-[24px]">
+        {FREE_OFFER.name}
+      </h3>
+      <p className="mt-1.5 min-h-[2.6em] text-[14px] leading-[1.45] text-muted md:text-[15px]">{FREE_OFFER.forWho}</p>
+
+      <div className="mt-6 flex items-baseline gap-2">
+        <span className="font-sans text-[52px] font-semibold leading-none tracking-[-0.045em] text-text-soft md:text-[64px]">
+          {formatPrice(0)}
+        </span>
+        <span className="text-[14px] text-muted">always</span>
+      </div>
+
+      <ul className="mt-6 flex flex-1 flex-col gap-3">
+        {FREE_OFFER.includes.map((item) => (
+          <li key={item} className="flex gap-3 text-[14px] leading-[1.5] text-text-soft md:text-[15px]">
+            <span aria-hidden="true" className="mt-[0.55em] size-1.5 shrink-0 rounded-full bg-honey" />
+            {item}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-6 border-t border-white/[0.08] pt-4 text-[13px] leading-[1.5] text-muted">{FREE_OFFER.noSite}</p>
+    </article>
   );
 }
 

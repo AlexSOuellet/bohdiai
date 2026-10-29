@@ -10,13 +10,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 1,
     },
-    // The two marketing arms have their own addresses (Session 108).
-    ...['https://makers.bohdiai.com', 'https://service.bohdiai.com'].map((url) => ({
-      url,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.9,
-    })),
     ...['/looks', '/faq'].map((path) => ({
       url: `${SITE_URL}${path}`,
       lastModified: new Date(),

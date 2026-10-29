@@ -3,31 +3,23 @@ import type { Route } from 'next';
 import { MobileMenu } from './MobileMenu';
 import { Wordmark } from './Wordmark';
 import { HeaderBackdrop } from './HeaderBackdrop';
-import type { Arm } from '@/lib/site/arms';
 
 const BLUR_CHIP =
   'inline-flex items-center gap-2 rounded-pill border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-text-soft no-underline backdrop-blur-[20px]';
 
-/** Every page's links, in order. Pricing and FAQ lead: they are what people come looking for. */
+/** bohdiai.com's links (the maker site, Session 117): everything on its page, the looks first. */
 export const NAV_LINKS = [
-  { href: '/#pricing', label: 'Pricing' },
+  { href: '/#looks', label: 'Looks' },
+  { href: '/#ladder', label: 'Plans' },
+  { href: '/#how', label: 'How it works' },
+  { href: '/#plans', label: 'Pricing' },
+  { href: '/#custom', label: 'Custom sites' },
   { href: '/faq', label: 'FAQ' },
-  { href: '/#work', label: 'Work' },
-  { href: '/#who', label: 'About' },
   { href: '#contact', label: 'Contact' },
 ] as const;
 
-/** An arm's own links: everything on its page, the looks first for makers. */
-export const ARM_NAV_LINKS: Record<Arm, ReadonlyArray<{ href: string; label: string }>> = {
-  makers: [
-    { href: '/#looks', label: 'Looks' },
-    { href: '/#ladder', label: 'Plans' },
-    { href: '/#how', label: 'How it works' },
-    { href: '/#plans', label: 'Pricing' },
-    { href: '/#custom', label: 'Custom sites' },
-    { href: '/faq', label: 'FAQ' },
-    { href: '#contact', label: 'Contact' },
-  ],
+/** The service page's links, kept with its switched-off page (Session 117). */
+export const ARM_NAV_LINKS: Record<'service', ReadonlyArray<{ href: string; label: string }>> = {
   service: [
     { href: '/#plans', label: 'Pricing' },
     { href: '/#how', label: 'How it works' },
@@ -37,14 +29,13 @@ export const ARM_NAV_LINKS: Record<Arm, ReadonlyArray<{ href: string; label: str
   ],
 };
 
-/** Makers sign up on the form; everyone else starts with a message. */
-const CTA: Record<Arm | 'parent', { href: string; label: string }> = {
-  parent: { href: '#contact', label: 'Start a project →' },
-  makers: { href: '/start', label: 'Start your site →' },
+/** Makers sign up on the form; the service page starts with a message. */
+const CTA: Record<'service' | 'parent', { href: string; label: string }> = {
+  parent: { href: '/start', label: 'Start your site →' },
   service: { href: '#contact', label: 'Start a project →' },
 };
 
-export function Header({ arm }: { arm?: Arm } = {}): React.ReactElement {
+export function Header({ arm }: { arm?: 'service' } = {}): React.ReactElement {
   const links = arm === undefined ? NAV_LINKS : ARM_NAV_LINKS[arm];
   const cta = CTA[arm ?? 'parent'];
   return (

@@ -1,7 +1,5 @@
 import { SITE_CONTACT_EMAIL as CONTACT_EMAIL, SITE_FACEBOOK_URL } from '@/lib/site/contact';
 import { Wordmark } from './Wordmark';
-import { SiteLink } from './SiteLink';
-import type { SiteTarget } from '@/lib/site/arms';
 
 export function Footer(): React.ReactElement {
   return (
@@ -10,20 +8,18 @@ export function Footer(): React.ReactElement {
         <div className="md:max-w-[300px] md:shrink-0">
           <Wordmark className="mb-3.5 inline-block text-[22px]" />
           <p className="text-[12px] leading-[1.55] text-muted md:text-[13px]">
-            Websites for makers, contractors and charities. You keep 100% of what you sell.
+            Websites and tools for makers. You keep 100% of what you sell.
           </p>
         </div>
 
         <div className="flex flex-wrap gap-7 md:gap-12">
           <FooterCol title="Site">
-            {/* The footer sits on the parent and on both arms, so these name their host. */}
-            <SLink to="makers">For makers</SLink>
-            <SLink to="service">For service businesses</SLink>
-            <SLink to="makers" path="/looks">See the looks</SLink>
+            <FLink href="/looks">See the looks</FLink>
+            <FLink href="/#ladder">Plans</FLink>
+            <FLink href="/#plans">Pricing</FLink>
             <FLink href="/faq">FAQ</FLink>
-            <SLink to="parent" path="/#work">Work</SLink>
-            <SLink to="parent" path="/#pledge">Our pledge</SLink>
-            <FLink href="#contact">Start a project</FLink>
+            <FLink href="/#pledge">Our pledge</FLink>
+            <FLink href="/start">Start your site</FLink>
           </FooterCol>
           <FooterCol title="Contact">
             <FLink href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</FLink>
@@ -69,17 +65,6 @@ function FooterCol({
       </span>
       {children}
     </div>
-  );
-}
-
-const LINK =
-  'inline-flex items-center gap-1.5 text-[12px] text-text-soft no-underline transition-colors hover:text-honey-warm md:text-[13px]';
-
-function SLink({ to, path, children }: { to: SiteTarget; path?: string; children: React.ReactNode }): React.ReactElement {
-  return (
-    <SiteLink to={to} {...(path !== undefined ? { path } : {})} className={LINK}>
-      {children}
-    </SiteLink>
   );
 }
 

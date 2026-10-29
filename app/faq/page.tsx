@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
 import { Scene } from '@/components/Scene';
 import { Header } from '@/components/Header';
-import { Contact } from '@/components/Contact';
+import { MakerClose } from '@/components/arms/MakerClose';
 import { Footer } from '@/components/Footer';
 import { SectionKicker } from '@/components/SectionKicker';
 import { FaqList } from '@/components/faq/FaqList';
-import { FAQ_GROUPS, faqJsonLd } from '@/lib/site/faq';
+import { faqGroupsFor, faqJsonLd } from '@/lib/site/faq';
 
 export const metadata: Metadata = {
   title: 'FAQ — BohdiAI',
   description:
-    'Why the prices are so low, when billing starts, who owns your site, and everything else people ask before they start.',
+    'What Free gives you, why the prices are so low, when billing starts, who owns your site, and everything else makers ask before they start.',
 };
 
 const slug = (title: string): string => `faq-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
@@ -30,7 +30,7 @@ export default function FaqPage(): React.ReactElement {
 
 
         <div className="relative z-content mx-auto mt-16 flex max-w-[760px] flex-col gap-12 px-3 md:mt-24 md:gap-16">
-          {FAQ_GROUPS.map((g) => (
+          {faqGroupsFor('maker').map((g) => (
             <section key={g.title} aria-labelledby={slug(g.title)}>
               <h2
                 id={slug(g.title)}
@@ -43,7 +43,7 @@ export default function FaqPage(): React.ReactElement {
           ))}
         </div>
 
-        <Contact />
+        <MakerClose />
       </main>
       <Footer />
     </Scene>
