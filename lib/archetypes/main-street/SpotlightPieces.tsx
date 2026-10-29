@@ -98,7 +98,7 @@ export function SlamHero({
           ))}
         </Type>
         {moment.brand && (
-          <Type as="p" role="storyline" className="ms-sp-head" data-size={subSize(moment.brand)}>
+          <Type as="p" role="body" className="ms-sp-headline" data-size={subSize(moment.brand)}>
             {moment.brand}
           </Type>
         )}

@@ -77,8 +77,8 @@ describe('SlamHero', () => {
     expect(lines.map((l) => l.textContent)).toEqual(['Paper', '& Patina']);
     expect(lines[0]?.classList.contains('ms-sp-word--soft')).toBe(false);
     expect(lines[1]?.classList.contains('ms-sp-word--soft')).toBe(true);
-    expect(container.querySelector('.ms-sp-head')?.textContent).toBe('Tired old furniture and plain pieces, reborn in layers of paper, paint and pattern');
-    expect(container.querySelector('.ms-sp-head')?.getAttribute('data-size')).toBe('s');
+    expect(container.querySelector('.ms-sp-headline')?.textContent).toBe('Tired old furniture and plain pieces, reborn in layers of paper, paint and pattern');
+    expect(container.querySelector('.ms-sp-headline')?.getAttribute('data-size')).toBe('s');
     expect(container.querySelector('.ms-sp-hero-media img')?.getAttribute('alt')).toBe('A box');
     expect(container.querySelector('.ms-sp-kick')?.textContent).toBe('Decoupage');
     expect(container.querySelector('.ms-sp-sub')?.textContent).toBe('Boxes and trays made from old paper.');
@@ -89,7 +89,7 @@ describe('SlamHero', () => {
   it('shows no headline or line under it when the maker has written none', () => {
     const plain = { ...moment, brand: '', sub: undefined } as unknown as MainStreetView['moment'];
     const { container } = render(<SlamHero identity={identity} moment={plain} words={W} />);
-    expect(container.querySelector('.ms-sp-head')).toBeNull();
+    expect(container.querySelector('.ms-sp-headline')).toBeNull();
     expect(container.querySelector('.ms-sp-sub')).toBeNull();
     expect(screen.getByRole('heading', { level: 1 }).getAttribute('aria-label')).toBe('Paper & Patina');
   });
