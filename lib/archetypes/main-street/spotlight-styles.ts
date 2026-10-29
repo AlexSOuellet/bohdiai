@@ -131,9 +131,11 @@ export const SPOTLIGHT_CSS = `
     .arch-main-street .ms-sp-tick-run{display:flex;align-items:baseline;gap:56px;list-style:none;margin:0;padding:0 28px;white-space:nowrap}
     .arch-main-street .ms-sp-tick-title{margin:0;color:inherit}
     .arch-main-street .ms-sp-tick-item{display:flex;align-items:baseline;gap:12px}
-    .arch-main-street .ms-sp-tick-day{color:inherit}
-    .arch-main-street .ms-sp-tick-where{color:inherit}
-    .arch-main-street .ms-sp-tick-time{color:inherit;opacity:.8}
+    /* The dates read at a glance as they pass (Alex, Session 118: too small): the day at the
+       show reel's size, the market bigger. */
+    .arch-main-street .ms-sp-tick-day{color:inherit;font-size:clamp(14px,1.2vw,17px);letter-spacing:.14em}
+    .arch-main-street .ms-sp-tick-where{color:inherit;font-size:clamp(18px,1.7vw,24px)}
+    .arch-main-street .ms-sp-tick-time{color:inherit;opacity:.8;font-size:clamp(14px,1.2vw,17px)}
     @keyframes ms-sp-tick{to{transform:translateX(-50%)}}
 
     @media (max-width:760px){

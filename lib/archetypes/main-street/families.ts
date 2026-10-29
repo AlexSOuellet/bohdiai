@@ -528,7 +528,9 @@ const SPOTLIGHT: Family = {
     on('founder'),
     on('collections'),
     on('reviews'),
-    on('marquee'),
+    // One scrolling band, the market dates (Alex, Session 118: "WHY are there TWO
+    // scrolling marquees"); the show reel never had the scrolling line.
+    off('marquee'),
     contactOff,
     on('close'),
   ],
