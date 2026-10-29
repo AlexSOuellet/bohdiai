@@ -528,16 +528,18 @@ const SPOTLIGHT: Family = {
     on('founder'),
     on('collections'),
     on('reviews'),
-    on('marquee'),
+    // One scrolling band, the market dates (Alex, Session 118: "WHY are there TWO
+    // scrolling marquees"); the show reel never had the scrolling line.
+    off('marquee'),
     contactOff,
     on('close'),
   ],
   typePackage: {
     name: REFERENCE_LABELS.families.typePackages.spotlight,
-    header: 'Playfair Display',
+    header: 'Fraunces',
     body: 'Karla',
     label: 'Karla',
-    accent: 'Playfair Display',
+    accent: 'Fraunces',
   },
   palette: { name: REFERENCE_LABELS.families.palettes.spotlight, bg: '#0E0B09', fg: '#F1E6D2', muted: '#9E9384', accent: '#B5543F' },
   texture: REFERENCE_LABELS.families.textures.spotlight,

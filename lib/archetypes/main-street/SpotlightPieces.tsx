@@ -1,7 +1,8 @@
 /**
  * Main Street — the Spotlight family's own section styles (Session 107; from
- * Paper & Patina's Show reel design). A show reel for the shop: the name slammed
- * letter by letter over the opening photo; the work big, two to a row, with quiet
+ * Paper & Patina's Show reel design). A show reel for the shop: the shop's name
+ * slammed letter by letter over the opening photo, its headline under it (the
+ * show reel's own opening, back by Alex's call, Session 118); the work big, two to a row, with quiet
  * captions; bold color panels for the about and the reviews; each collection a
  * full-width billboard; the market dates scrolling past on a ticker band.
  *
@@ -10,6 +11,7 @@
  * letter timing is nth-child rules, and nothing waits on script to be visible.
  */
 import { MarketName } from './MarketName';
+import { torchLines } from '../card/bulletin';
 import type { ArchetypeTheme } from '../types';
 import type { ProductView } from '../content';
 import type { MainStreetView } from './schemas';
@@ -24,35 +26,33 @@ import type { FamilyWords } from './words';
 
 type Founder = MainStreetView['founder'];
 
-/** How long the name is, so the stylesheet sets a longer one smaller. A headline
- *  that's a whole sentence reads as one, a line at a time, not a word per line
- *  (Alex, 2026-10-27; as Scenic, 2026-10-21): 'line' up to 70 letters, 'long' past. */
-export function slamSize(name: string): 's' | 'm' | 'l' | 'line' | 'long' {
-  if (name.length > 70) return 'long';
-  if (name.length > 32) return 'line';
-  const longest = Math.max(0, ...name.split(/\s+/).map((w) => w.length));
-  if (name.length > 16 || longest > 11) return 's';
-  if (name.length > 12 || longest > 8) return 'm';
-  return 'l';
+/** How long the name's longest line is, so the stylesheet sets a longer one smaller
+ *  (the show reel's own steps). */
+export function slamSize(name: string): 's' | 'm' | 'l' {
+  const longest = Math.max(0, ...torchLines(name).map((l) => l.length));
+  if (longest <= 6) return 'l';
+  if (longest <= 9) return 'm';
+  return 's';
 }
 
-/** How long the line under the name is: a few words stay big, a sentence steps down. */
+/** How long a line under the name is: a few words stay big, a sentence steps down. */
 export function subSize(sub: string): 's' | 'm' | 'l' {
   if (sub.length > 60) return 's';
   if (sub.length > 32) return 'm';
   return 'l';
 }
 
-/** The name as words of letters, numbered across the whole name for the slam's timing. */
+/** The name in its lines (a short word like "&" rides with the next: "Paper", "& Patina"),
+ *  each line's letters numbered across the whole name for the slam's timing; spaces
+ *  are left out of the count. */
 export function slamLetters(name: string): { word: string; letters: { ch: string; n: number }[] }[] {
   let n = 0;
-  return name
-    .split(/\s+/)
-    .filter((w) => w !== '')
-    .map((word) => ({ word, letters: [...word].map((ch) => ({ ch, n: n++ })) }));
+  return torchLines(name).map((word) => ({ word, letters: [...word].map((ch) => ({ ch, n: ch === ' ' ? -1 : n++ })) }));
 }
 
-/** opening — the moment's photo full bleed, the name slammed over it letter by letter. */
+/** opening — the moment's photo full bleed, the shop's name slammed over it letter by
+ *  letter (its first line big, the rest smaller in the accent), the headline and the
+ *  line under it after. */
 export function SlamHero({
   identity,
   moment,
@@ -82,17 +82,26 @@ export function SlamHero({
             {moment.eyebrow}
           </Type>
         )}
-        <Type as="h1" role="brand" className="ms-sp-slam" data-size={slamSize(moment.brand)} aria-label={moment.brand}>
-          {slamLetters(moment.brand).map((w) => (
-            <span key={`${w.word}-${w.letters[0]?.n ?? 0}`} className="ms-sp-word" aria-hidden="true">
-              {w.letters.map((l) => (
-                <i key={l.n} className="ms-sp-l" data-n={Math.min(l.n, 23)}>
-                  {l.ch}
-                </i>
-              ))}
+        <Type as="h1" role="brand" className="ms-sp-slam" data-size={slamSize(identity.wordmark)} aria-label={identity.wordmark}>
+          {slamLetters(identity.wordmark).map((w, line) => (
+            <span key={`${line}-${w.word}`} className={line === 0 ? 'ms-sp-word' : 'ms-sp-word ms-sp-word--soft'} aria-hidden="true">
+              {w.letters.map((l, i) =>
+                l.n < 0 ? (
+                  ' '
+                ) : (
+                  <i key={i} className="ms-sp-l" data-n={Math.min(l.n, 23)}>
+                    {l.ch}
+                  </i>
+                ),
+              )}
             </span>
           ))}
         </Type>
+        {moment.brand && (
+          <Type as="p" role="body" className="ms-sp-headline" data-size={subSize(moment.brand)}>
+            {moment.brand}
+          </Type>
+        )}
         {moment.sub && (
           <Type as="p" role="storyline" data-ms-hero-sub className="ms-sp-sub" data-size={subSize(moment.sub)}>
             {moment.sub}

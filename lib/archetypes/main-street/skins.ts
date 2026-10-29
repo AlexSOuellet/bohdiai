@@ -61,6 +61,8 @@ interface TypeVoices {
   displayWeight: number;
   /** Some skins (industrial / signage) want their big type uppercased. */
   displayUppercase?: boolean;
+  /** A variable display face's settings (Reel's Fraunces: soft, full optical size). */
+  displayVariation?: string;
   body: string;
   bodyWeight?: number;
   /** The small/label voice — a mono OR a letterspaced sans, set in caps. */
@@ -79,6 +81,7 @@ function makeType(v: TypeVoices): Record<string, TypeRole> {
     lineHeight: lh,
     letterSpacing: ls,
     ...(upper ? { uppercase: true } : {}),
+    ...(v.displayVariation !== undefined ? { variationSettings: v.displayVariation } : {}),
   });
   // label/mono role — always uppercase, letterspaced
   const m = (size: number, ls: string): TypeRole => ({
@@ -424,8 +427,9 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
       rule: 'rgba(42,46,34,0.12)',
       contrast: { bg: '#20342A', fg: '#E4ECDF', fgMuted: 'rgba(228,236,223,0.62)' },
     },
+    // Newsreader, not Fraunces: Fraunces went back to Reel, the show reel's own face (Session 118).
     type: makeType({
-      display: "'Fraunces', Georgia, serif",
+      display: "'Newsreader', Georgia, serif",
       displayWeight: 600,
       body: "'Hanken Grotesk', system-ui, sans-serif",
       label: "'Space Mono', ui-monospace, monospace",
@@ -985,9 +989,12 @@ export const MAIN_STREET_SKINS: Record<string, ArchetypeTheme> = {
       rule: 'rgba(241,230,210,0.18)',
       contrast: { bg: '#F1E6D2', fg: '#0E0B09', fgMuted: 'rgba(14,11,9,0.66)' },
     },
+    // The show reel's own faces (Alex, Session 118: the old opening's font was better):
+    // Fraunces, soft and at full optical size, over Karla.
     type: makeType({
-      display: "'Playfair Display', Georgia, serif",
+      display: "'Fraunces', Georgia, serif",
       displayWeight: 900,
+      displayVariation: '"SOFT" 100, "opsz" 144',
       body: "'Karla', system-ui, sans-serif",
       bodyWeight: 500,
       label: "'Karla', system-ui, sans-serif",
@@ -1076,7 +1083,7 @@ export const MAIN_STREET_FONT_HREFS: Record<string, string> = {
   'main-street-gild':
     'https://fonts.googleapis.com/css2?family=Prata&family=Manrope:wght@400;500;600;700&display=swap',
   'main-street-botanical':
-    'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600&family=Space+Mono:wght@400&display=swap',
+    'https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Hanken+Grotesk:wght@400;500;600&family=Space+Mono:wght@400&display=swap',
   'main-street-conservatory':
     'https://fonts.googleapis.com/css2?family=Marcellus&family=Karla:wght@400;500;600&family=Syne+Mono&display=swap',
   'main-street-wildflower':
@@ -1120,7 +1127,7 @@ export const MAIN_STREET_FONT_HREFS: Record<string, string> = {
   'main-street-saltmarsh':
     'https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,400&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap',
   'main-street-reel':
-    'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Karla:wght@400;500;600;700;800&display=swap',
+    'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,100;1,9..144,300..900,100&family=Karla:wght@400;500;600;700;800&display=swap',
 };
 
 export type MainStreetSkinKey = keyof typeof MAIN_STREET_SKINS;

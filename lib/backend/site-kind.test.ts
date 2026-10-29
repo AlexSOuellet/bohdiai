@@ -10,9 +10,11 @@ const db = (result: { data: unknown; error: unknown }) => {
 const page = (root: Record<string, unknown>) => db({ data: { layout_tree: { root } }, error: null });
 
 describe('showsScrollingLine (Alex, 2026-10-22)', () => {
-  it('is every mood but Scenic', async () => {
+  it('is every mood but Scenic and Spotlight (Session 118: Spotlight scrolls the market dates only)', async () => {
     expect(await showsScrollingLine(page({ archetypeKey: 'main-street', mood: 'cozy' }), 't1')).toBe(true);
+    expect(await showsScrollingLine(page({ archetypeKey: 'main-street', mood: 'cheerful' }), 't1')).toBe(true);
     expect(await showsScrollingLine(page({ archetypeKey: 'main-street', mood: 'scenic' }), 't1')).toBe(false);
+    expect(await showsScrollingLine(page({ archetypeKey: 'main-street', mood: 'spotlight' }), 't1')).toBe(false);
   });
   it('is never a custom design, or a site with no page yet', async () => {
     expect(await showsScrollingLine(page({ archetypeKey: 'boutique' }), 't1')).toBe(false);

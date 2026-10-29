@@ -95,12 +95,15 @@ export function hiddenByMove(from: SitePlan, to: SitePlan, buyers = 0): string[]
 }
 
 /** The pages a link can point at on a plan. Without the catalog (Showcase) there is
- *  no shop and no collections, so no button may point at them. */
+ *  no shop and no collections, so no button may point at them; the gallery is
+ *  where its work is, always on the page (with a catalog the work is the shop). */
 export function planLinkTargets(plan: SitePlan): readonly LinkTarget[] {
   return linkTargetsFor(PLAN_FEATURES[plan].includes('catalog'), PLAN_FEATURES[plan].includes('collections'));
 }
 
 /** The same, from whether a site has its catalog and its collections switched on. */
 export function linkTargetsFor(hasCatalog: boolean, hasCollections: boolean): readonly LinkTarget[] {
-  return LINK_TARGETS.filter((t) => (t !== 'shop' || hasCatalog) && (t !== 'collections' || (hasCatalog && hasCollections)));
+  return LINK_TARGETS.filter(
+    (t) => (t !== 'shop' || hasCatalog) && (t !== 'collections' || (hasCatalog && hasCollections)) && (t !== 'gallery' || !hasCatalog),
+  );
 }

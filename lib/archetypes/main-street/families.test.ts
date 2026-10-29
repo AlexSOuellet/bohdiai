@@ -56,12 +56,16 @@ describe('FAMILIES registry', () => {
     expect(leads[0]?.section).not.toBe('close');
   });
 
-  it.each(ALL_FAMILY_KEYS)('%s ships every section on at onboarding except Contact (not built yet)', (key) => {
+  it.each(ALL_FAMILY_KEYS)('%s ships every section on at onboarding except Contact (not built yet), and Spotlight’s scrolling line', (key) => {
     const stack = FAMILIES[key].sectionStack;
     for (const entry of stack) {
       if (entry.section === 'contact') {
         expect(entry.on).toBe(false);
         expect(entry.notBuilt).toBe(true);
+      } else if (key === 'spotlight' && entry.section === 'marquee') {
+        // One scrolling band on Spotlight, the market dates (Alex, Session 118).
+        expect(entry.on).toBe(false);
+        expect(entry.notBuilt).toBeUndefined();
       } else {
         expect(entry.on).toBe(true);
       }

@@ -37,19 +37,21 @@ export const SPOTLIGHT_CSS = `
     .arch-main-street .ms-sp-nav{position:absolute;top:0;left:0;right:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:16px clamp(16px,4vw,44px);background:linear-gradient(180deg,rgba(0,0,0,.55),transparent);color:var(--ms-on-media)}
     .arch-main-street .ms-sp-hero--bare .ms-sp-nav{background:none;color:var(--ms-fg)}
     .arch-main-street .ms-sp-hero-txt{position:relative;z-index:2;text-align:center;padding:110px 16px 90px;max-width:1200px}
-    .arch-main-street .ms-sp-kick{margin:0;letter-spacing:.32em;color:inherit;opacity:.8}
+    .arch-main-street .ms-sp-kick{margin:0;font-size:clamp(13px,1.5vw,17px);font-weight:600;letter-spacing:.38em;color:inherit;opacity:.6}
     .arch-main-street .ms-sp-slam{margin:14px 0 22px;font-size:clamp(76px,12vw,190px);line-height:.86;color:inherit;overflow-wrap:anywhere}
     .arch-main-street .ms-sp-slam[data-size="m"]{font-size:clamp(60px,10vw,160px)}
     .arch-main-street .ms-sp-slam[data-size="s"]{font-size:clamp(44px,6.4vw,104px)}
     .arch-main-street .ms-sp-word{display:block}
-    /* A sentence for a headline reads as one: words run on, lines wrap, the size steps down. */
-    .arch-main-street .ms-sp-slam[data-size="line"],.arch-main-street .ms-sp-slam[data-size="long"]{max-width:20ch;margin-inline:auto;line-height:1.02;overflow-wrap:normal;text-wrap:balance}
-    .arch-main-street .ms-sp-slam[data-size="line"]{font-size:clamp(38px,5.6vw,88px)}
-    .arch-main-street .ms-sp-slam[data-size="long"]{max-width:24ch;font-size:clamp(32px,4.2vw,64px);line-height:1.06}
-    .arch-main-street .ms-sp-slam[data-size="line"] .ms-sp-word,.arch-main-street .ms-sp-slam[data-size="long"] .ms-sp-word{display:inline-block;margin-inline:.13em}
+    /* The name in the menu, as the show reel set it: capitals, a little apart. */
+    .arch-main-street .ms-sp-nav [data-type="wordmark"]{text-transform:uppercase;letter-spacing:.06em}
+    /* The name's second line on, as the show reel set it: smaller, italic, in a light accent. */
+    .arch-main-street .ms-sp-word--soft{font-size:.62em;font-weight:400;color:color-mix(in srgb,var(--ms-accent) 45%,#fff)}
+    .arch-main-street .ms-sp-word--soft .ms-sp-l{font-style:italic}
+    /* The headline under the name: a sentence at reading size, never the big letters. */
+    .arch-main-street .ms-sp-headline{margin:0 auto;max-width:28ch;font-size:clamp(20px,2.6vw,34px);font-weight:500;line-height:1.2;color:inherit;animation:ms-sp-up .8s 1.3s both}
     .arch-main-street .ms-sp-l{display:inline-block;font-style:normal;animation:ms-sp-slam .5s cubic-bezier(.2,1.6,.4,1) both}
     ${slamDelays}
-    .arch-main-street .ms-sp-sub{margin:0 auto;max-width:28ch;color:inherit;animation:ms-sp-up .8s 1.4s both}
+    .arch-main-street .ms-sp-sub{margin:14px auto 0;max-width:28ch;color:inherit;opacity:.85;animation:ms-sp-up .8s 1.5s both}
     .arch-main-street .ms-sp-sub[data-size="m"]{font-size:clamp(22px,2.6vw,34px);max-width:34ch}
     .arch-main-street .ms-sp-sub[data-size="s"]{font-size:clamp(18px,1.7vw,24px);line-height:1.4;max-width:48ch}
     .arch-main-street .ms-sp-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:28px;animation:ms-sp-up .8s 1.7s both}
@@ -58,6 +60,8 @@ export const SPOTLIGHT_CSS = `
     .arch-main-street .ms-sp-hero--bare .ms-sp-go:hover{background:var(--ms-fg);color:var(--ms-bg)}
     /* A button says all of itself: the menu's cut-off at 240px is for menu names, not buttons. */
     .arch-main-street .ms-sp-go[data-type="navLabel"]{max-width:100%;white-space:normal;overflow:visible}
+    /* The opening's button at the show reel's size. */
+    .arch-main-street .ms-sp-hero .ms-sp-go{font-size:14px;letter-spacing:.24em}
     .arch-main-street .ms-sp-go--quiet{border-color:transparent;text-decoration:underline;text-underline-offset:6px}
     @keyframes ms-sp-slam{0%{transform:scale(3.2);opacity:0}100%{transform:none;opacity:1}}
     @keyframes ms-sp-up{from{opacity:0;transform:translateY(20px)}}
@@ -127,9 +131,11 @@ export const SPOTLIGHT_CSS = `
     .arch-main-street .ms-sp-tick-run{display:flex;align-items:baseline;gap:56px;list-style:none;margin:0;padding:0 28px;white-space:nowrap}
     .arch-main-street .ms-sp-tick-title{margin:0;color:inherit}
     .arch-main-street .ms-sp-tick-item{display:flex;align-items:baseline;gap:12px}
-    .arch-main-street .ms-sp-tick-day{color:inherit}
-    .arch-main-street .ms-sp-tick-where{color:inherit}
-    .arch-main-street .ms-sp-tick-time{color:inherit;opacity:.8}
+    /* The dates read at a glance as they pass (Alex, Session 118: too small): the day at the
+       show reel's size, the market bigger. */
+    .arch-main-street .ms-sp-tick-day{color:inherit;font-size:clamp(14px,1.2vw,17px);letter-spacing:.14em}
+    .arch-main-street .ms-sp-tick-where{color:inherit;font-size:clamp(18px,1.7vw,24px)}
+    .arch-main-street .ms-sp-tick-time{color:inherit;opacity:.8;font-size:clamp(14px,1.2vw,17px)}
     @keyframes ms-sp-tick{to{transform:translateX(-50%)}}
 
     @media (max-width:760px){
@@ -142,7 +148,7 @@ export const SPOTLIGHT_CSS = `
       .arch-main-street .ms-sp-reel{gap:8px}
     }
     @media (prefers-reduced-motion:reduce){
-      .arch-main-street .ms-sp-l,.arch-main-street .ms-sp-sub,.arch-main-street .ms-sp-actions,.arch-main-street .ms-sp-hero-media .archetype-photo{animation:none}
+      .arch-main-street .ms-sp-l,.arch-main-street .ms-sp-headline,.arch-main-street .ms-sp-sub,.arch-main-street .ms-sp-actions,.arch-main-street .ms-sp-hero-media .archetype-photo{animation:none}
       .arch-main-street .ms-sp-tick-track{animation:none;width:auto}
       .arch-main-street .ms-sp-tick-run{flex-wrap:wrap;white-space:normal;gap:14px 40px;padding:0 20px}
       .arch-main-street .ms-sp-tick-run[aria-hidden="true"]{display:none}

@@ -15,7 +15,7 @@ const moment = {
   media: { kind: 'still', url: 'https://cdn/open.webp', alt: 'A box' },
   story: [],
   eyebrow: 'Decoupage',
-  brand: 'Paper & Patina',
+  brand: 'Tired old furniture and plain pieces, reborn in layers of paper, paint and pattern',
   sub: 'Boxes and trays made from old paper.',
   ctaLabel: 'See the work',
   ctaTarget: 'shop',
@@ -44,32 +44,41 @@ describe('the Spotlight family', () => {
 });
 
 describe('slamLetters and slamSize', () => {
-  it('numbers every letter across the whole name, word by word', () => {
+  it('splits the name into its lines, a short word riding with the next, and numbers the letters across them', () => {
     expect(slamLetters('Paper & Patina')).toEqual([
       { word: 'Paper', letters: [...'Paper'].map((ch, n) => ({ ch, n })) },
-      { word: '&', letters: [{ ch: '&', n: 5 }] },
-      { word: 'Patina', letters: [...'Patina'].map((ch, i) => ({ ch, n: 6 + i })) },
+      {
+        word: '& Patina',
+        letters: [
+          { ch: '&', n: 5 },
+          { ch: ' ', n: -1 },
+          ...[...'Patina'].map((ch, i) => ({ ch, n: 6 + i })),
+        ],
+      },
     ]);
   });
-  it('sets a longer name smaller', () => {
+  it('sets a name with a longer line smaller, as the show reel did', () => {
     expect(slamSize('Tide')).toBe('l');
     expect(slamSize('Paper & Patina')).toBe('m');
-    expect(slamSize('Saltmarsh & Lace Decoupage')).toBe('s');
+    expect(slamSize('Saltmarsh & Lace Decoupage')).toBe('m');
+    expect(slamSize('Twilight to Darkness')).toBe('s');
     expect(slamSize('Extraordinarily')).toBe('s');
-  });
-  it('sets a headline that is a whole sentence as a sentence, smaller still when it runs long', () => {
-    expect(slamSize('Hand-poured candles for dark rooms')).toBe('line');
-    expect(slamSize('Tired old furniture and plain pieces, reborn in layers of paper, paint and pattern')).toBe('long');
   });
 });
 
 describe('SlamHero', () => {
-  it('slams the name over the moment’s photo, read whole by screen readers, with its lines and buttons', () => {
+  it('slams the shop’s name over the moment’s photo (Alex, Session 118), the headline and the line under it after', () => {
     const { container } = render(<SlamHero identity={identity} moment={moment} words={W} />);
     const h1 = screen.getByRole('heading', { level: 1 });
     expect(h1.getAttribute('aria-label')).toBe('Paper & Patina');
     expect(h1.getAttribute('data-size')).toBe('m');
     expect(container.querySelectorAll('.ms-sp-l')).toHaveLength(12);
+    const lines = [...container.querySelectorAll('.ms-sp-word')];
+    expect(lines.map((l) => l.textContent)).toEqual(['Paper', '& Patina']);
+    expect(lines[0]?.classList.contains('ms-sp-word--soft')).toBe(false);
+    expect(lines[1]?.classList.contains('ms-sp-word--soft')).toBe(true);
+    expect(container.querySelector('.ms-sp-headline')?.textContent).toBe('Tired old furniture and plain pieces, reborn in layers of paper, paint and pattern');
+    expect(container.querySelector('.ms-sp-headline')?.getAttribute('data-size')).toBe('s');
     expect(container.querySelector('.ms-sp-hero-media img')?.getAttribute('alt')).toBe('A box');
     expect(container.querySelector('.ms-sp-kick')?.textContent).toBe('Decoupage');
     expect(container.querySelector('.ms-sp-sub')?.textContent).toBe('Boxes and trays made from old paper.');
@@ -77,9 +86,15 @@ describe('SlamHero', () => {
     expect(screen.getByRole('link', { name: 'Find me' }).getAttribute('href')).toBe('/events');
     expect(container.querySelector('[style]')).toBeNull();
   });
+  it('shows no headline or line under it when the maker has written none', () => {
+    const plain = { ...moment, brand: '', sub: undefined } as unknown as MainStreetView['moment'];
+    const { container } = render(<SlamHero identity={identity} moment={plain} words={W} />);
+    expect(container.querySelector('.ms-sp-headline')).toBeNull();
+    expect(container.querySelector('.ms-sp-sub')).toBeNull();
+    expect(screen.getByRole('heading', { level: 1 }).getAttribute('aria-label')).toBe('Paper & Patina');
+  });
   it('caps the letter timing so a long name never needs a rule it doesn’t have', () => {
-    const long = { ...moment, brand: 'The Very Long Name Of A Little Shop' } as unknown as MainStreetView['moment'];
-    const { container } = render(<SlamHero identity={identity} moment={long} words={W} />);
+    const { container } = render(<SlamHero identity={{ wordmark: 'The Very Long Name Of A Little Shop' }} moment={moment} words={W} />);
     const ns = [...container.querySelectorAll('.ms-sp-l')].map((l) => Number(l.getAttribute('data-n')));
     expect(Math.max(...ns)).toBe(23);
   });
