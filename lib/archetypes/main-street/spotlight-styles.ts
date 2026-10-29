@@ -42,14 +42,15 @@ export const SPOTLIGHT_CSS = `
     .arch-main-street .ms-sp-slam[data-size="m"]{font-size:clamp(60px,10vw,160px)}
     .arch-main-street .ms-sp-slam[data-size="s"]{font-size:clamp(44px,6.4vw,104px)}
     .arch-main-street .ms-sp-word{display:block}
-    /* A sentence for a headline reads as one: words run on, lines wrap, the size steps down. */
-    .arch-main-street .ms-sp-slam[data-size="line"],.arch-main-street .ms-sp-slam[data-size="long"]{max-width:20ch;margin-inline:auto;line-height:1.02;overflow-wrap:normal;text-wrap:balance}
-    .arch-main-street .ms-sp-slam[data-size="line"]{font-size:clamp(38px,5.6vw,88px)}
-    .arch-main-street .ms-sp-slam[data-size="long"]{max-width:24ch;font-size:clamp(32px,4.2vw,64px);line-height:1.06}
-    .arch-main-street .ms-sp-slam[data-size="line"] .ms-sp-word,.arch-main-street .ms-sp-slam[data-size="long"] .ms-sp-word{display:inline-block;margin-inline:.13em}
+    /* The name's second line on, as the show reel set it: smaller, italic, in a light accent. */
+    .arch-main-street .ms-sp-word--soft{font-size:.62em;font-weight:400;color:color-mix(in srgb,var(--ms-accent) 45%,#fff)}
+    .arch-main-street .ms-sp-word--soft .ms-sp-l{font-style:italic}
+    /* The headline under the name: a sentence at reading size, never the big letters. */
+    .arch-main-street .ms-sp-head{margin:0 auto;max-width:28ch;font-size:clamp(20px,2.6vw,34px);line-height:1.2;color:inherit;animation:ms-sp-up .8s 1.3s both}
+    .arch-main-street .ms-sp-head[data-size="s"]{max-width:34ch}
     .arch-main-street .ms-sp-l{display:inline-block;font-style:normal;animation:ms-sp-slam .5s cubic-bezier(.2,1.6,.4,1) both}
     ${slamDelays}
-    .arch-main-street .ms-sp-sub{margin:0 auto;max-width:28ch;color:inherit;animation:ms-sp-up .8s 1.4s both}
+    .arch-main-street .ms-sp-sub{margin:14px auto 0;max-width:28ch;color:inherit;opacity:.85;animation:ms-sp-up .8s 1.5s both}
     .arch-main-street .ms-sp-sub[data-size="m"]{font-size:clamp(22px,2.6vw,34px);max-width:34ch}
     .arch-main-street .ms-sp-sub[data-size="s"]{font-size:clamp(18px,1.7vw,24px);line-height:1.4;max-width:48ch}
     .arch-main-street .ms-sp-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:28px;animation:ms-sp-up .8s 1.7s both}
@@ -142,7 +143,7 @@ export const SPOTLIGHT_CSS = `
       .arch-main-street .ms-sp-reel{gap:8px}
     }
     @media (prefers-reduced-motion:reduce){
-      .arch-main-street .ms-sp-l,.arch-main-street .ms-sp-sub,.arch-main-street .ms-sp-actions,.arch-main-street .ms-sp-hero-media .archetype-photo{animation:none}
+      .arch-main-street .ms-sp-l,.arch-main-street .ms-sp-head,.arch-main-street .ms-sp-sub,.arch-main-street .ms-sp-actions,.arch-main-street .ms-sp-hero-media .archetype-photo{animation:none}
       .arch-main-street .ms-sp-tick-track{animation:none;width:auto}
       .arch-main-street .ms-sp-tick-run{flex-wrap:wrap;white-space:normal;gap:14px 40px;padding:0 20px}
       .arch-main-street .ms-sp-tick-run[aria-hidden="true"]{display:none}
