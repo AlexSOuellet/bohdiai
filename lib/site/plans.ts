@@ -110,6 +110,30 @@ export const PLANS: readonly Plan[] = [
   },
 ];
 
+/**
+ * Maker Free (Alex, Session 113 and 117): the backend and the tools, no site. It
+ * sits below the paid plans on bohdiai.com but is not one of them: no price, no
+ * billing, and the sign-up form (which builds a site) never offers it. Its list
+ * names only the tools Free really has; What to bring is Market and Full's.
+ */
+export type FreeOffer = { name: string; title: string; forWho: string; includes: readonly string[]; noSite: string };
+
+export const FREE_OFFER: FreeOffer = {
+  name: 'Maker Free',
+  title: 'Know your numbers',
+  forWho: 'For makers who want to know what their work really earns',
+  includes: [
+    'Cost to make: what one piece really costs',
+    'Price it: what to charge, wherever you sell',
+    'Is this market worth it?',
+    'Monthly goal: what it takes to hit your number',
+    'Shipping: what to charge for it',
+    'Help writing descriptions, 30 a month',
+    'Every piece checked against its cost',
+  ],
+  noSite: 'No website. Move up when you want one, and everything comes with you.',
+};
+
 export function plansFor(audience: Audience): readonly Plan[] {
   return PLANS.filter((p) => p.audience === audience);
 }
@@ -177,7 +201,7 @@ export const COMPARISON: Record<Audience, readonly ComparisonRow[]> = {
     },
     {
       name: 'BohdiAI',
-      cost: `From ${formatPrice(fromPrice('maker'))} a month`,
+      cost: `Free to start, a site from ${formatPrice(fromPrice('maker'))} a month`,
       you: 'Made from your own words and photos. Change anything yourself, any time. Never a cut of your sales',
       ours: true,
     },

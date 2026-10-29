@@ -25,14 +25,8 @@ describe('the work list', () => {
     expect(SAMPLES.every((w) => w.kind === 'sample')).toBe(true);
   });
 
-  it('cycles samples only in the hero, makers and service businesses in turn, Saltmarsh among them without being a bannered sample', () => {
-    expect(HERO_WORK.map((w) => w.name)).toEqual([
-      'Classic Loafs',
-      'Halfmoon Roofing',
-      'Paper & Patina',
-      'True Coat Painting',
-      'Saltmarsh & Lace',
-    ]);
+  it('cycles maker samples only in the hero (Session 117), Saltmarsh among them without being a bannered sample', () => {
+    expect(HERO_WORK.map((w) => w.name)).toEqual(['Classic Loafs', 'Paper & Patina', 'Saltmarsh & Lace']);
     expect(HERO_WORK.every((w) => w.kind === 'sample')).toBe(true);
     expect(SAMPLES.some((w) => w.slug === 'saltmarsh-and-lace')).toBe(false);
     expect(SAMPLES.some((w) => w.slug === 'knotty-knits')).toBe(false);

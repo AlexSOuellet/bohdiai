@@ -61,11 +61,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(dest);
   }
 
-  // The marketing arms: makers.bohdiai.com and service.bohdiai.com show their
-  // own page at `/`; bohdiai.com/makers and /contractors move to their arm.
+  // bohdiai.com is the maker site (Session 117): makers.bohdiai.com and
+  // service.bohdiai.com forward to it, and so do its old /makers and /contractors.
+  // (On this computer makers.localhost can't forward: Next shortens a redirect to
+  // its own localhost origin to a bare path. Live, the hosts differ, as www does.)
   const arm = armRoute(hostname, request.nextUrl);
-  if (arm?.kind === 'redirect') return NextResponse.redirect(arm.url, 308);
-  const armRewrite = arm?.kind === 'rewrite' ? arm.pathname : null;
+  if (arm !== null) return NextResponse.redirect(arm.url, 308);
 
   // /storefront/* is an internal rewrite target — on the apex (no subdomain)
   // it is never directly addressable. 404 instead of leaking the rewrite shape.
@@ -142,14 +143,10 @@ export async function middleware(request: NextRequest) {
   }
 
   // Start response — rewrite for tenant requests, pass-through for marketing/app.
-  const armUrl = armRewrite !== null ? request.nextUrl.clone() : null;
-  if (armUrl !== null && armRewrite !== null) armUrl.pathname = armRewrite;
   const pass = (): NextResponse =>
     rewriteUrl !== null
       ? NextResponse.rewrite(rewriteUrl, { request: { headers: requestHeaders } })
-      : armUrl !== null
-        ? NextResponse.rewrite(armUrl, { request: { headers: requestHeaders } })
-        : NextResponse.next({ request: { headers: requestHeaders } });
+      : NextResponse.next({ request: { headers: requestHeaders } });
   let response = pass();
 
   // Refresh the Supabase auth session on every request so JWTs stay current.

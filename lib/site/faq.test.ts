@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { FAQ_GROUPS, TOP_QUESTIONS, faqItem, faqJsonLd, allFaqItems } from './faq';
+import { FAQ_GROUPS, TOP_QUESTIONS, faqItem, faqJsonLd, allFaqItems, faqGroupsFor } from './faq';
 
 describe('faq', () => {
   it('leads with why the prices are so low', () => {
@@ -23,11 +23,29 @@ describe('faq', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('points each pricing page at three real questions', () => {
-    for (const ids of Object.values(TOP_QUESTIONS)) {
-      expect(ids).toHaveLength(3);
-      for (const id of ids) expect(faqItem(id).id).toBe(id);
+  it('points each page at three or four real questions of its own, Free first for makers', () => {
+    for (const [audience, ids] of Object.entries(TOP_QUESTIONS)) {
+      expect(ids.length).toBeGreaterThanOrEqual(3);
+      expect(ids.length).toBeLessThanOrEqual(4);
+      for (const id of ids) expect([undefined, audience]).toContain(faqItem(id).audience);
     }
+    expect(TOP_QUESTIONS.maker[0]).toBe('what-is-free');
+  });
+
+  it('shows makers only their own and the shared answers, and keeps the service ones apart (Session 117)', () => {
+    const maker = faqGroupsFor('maker').flatMap((g) => g.items);
+    expect(maker.every((i) => i.audience !== 'contractor')).toBe(true);
+    expect(maker.map((i) => [i.q, ...i.a]).flat().join(' ')).not.toMatch(/contractor|service business|small crews|Sheri|Chris/i);
+    expect(faqGroupsFor('maker').map((g) => g.title)).not.toContain('For contractors');
+    expect(faqGroupsFor('contractor').flatMap((g) => g.items).map((i) => i.id)).toContain('pay-for-leads');
+  });
+
+  it('says what Free gives and that it costs nothing, without promising a site', () => {
+    const free = [...faqItem('what-is-free').a, ...faqItem('free-catch').a].join(' ');
+    expect(free).toMatch(/costs you to make/);
+    expect(free).toMatch(/30 a month/);
+    expect(free).toMatch(/No card/);
+    expect(free).toMatch(/Free has no website/);
   });
 
   it('takes its prices from the plans, and names the build time and custom work', () => {
@@ -36,7 +54,8 @@ describe('faq', () => {
       .join(' ');
     expect(text).toContain('starting at $10 a month');
     expect(text).toContain('starting at $5 a month, from the day you sign up');
-    expect(faqItem('when-billing-starts').a[0]).toMatch(/makers pay from the day they sign up/i);
+    expect(faqItem('when-billing-starts').a[0]).toMatch(/Free never bills you/);
+    expect(faqItem('when-billing-starts').a[0]).toMatch(/pay from the day you sign up/);
     expect(text).toContain('2 to 5 days');
     expect(faqItem('custom').a.join(' ')).toMatch(/quote/i);
   });
@@ -72,7 +91,7 @@ describe('faq', () => {
   it('describes every question for search engines', () => {
     const ld = faqJsonLd();
     expect(ld['@type']).toBe('FAQPage');
-    expect(ld.mainEntity).toHaveLength(allFaqItems().length);
+    expect(ld.mainEntity).toHaveLength(faqGroupsFor('maker').flatMap((g) => g.items).length);
     expect(ld.mainEntity[0]).toMatchObject({ '@type': 'Question', acceptedAnswer: { '@type': 'Answer' } });
   });
 

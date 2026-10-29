@@ -1,102 +1,132 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, within, fireEvent } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 
 // eslint-disable-next-line @next/next/no-img-element -- a plain img stands in for next/image in tests
 vi.mock('next/image', () => ({ default: (p: { alt: string; src: string }) => <img alt={p.alt} src={p.src} /> }));
-const { default: HomePage } = await import('./page');
+vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams('') }));
+vi.mock('next/headers', () => ({ headers: async () => new Headers({ host: 'bohdiai.com' }) }));
+const { default: Page } = await import('./page');
+const page = await Page();
+const HomePage = (): React.ReactElement => page;
 
-describe('bohdiai.com home', () => {
-  it('leads with the slogan and ends in the contact form', () => {
+describe('bohdiai.com, the maker site (Session 117)', () => {
+  it('puts the looks under the opening, builds up the plans before pricing them, and ends with the story, questions and the form', () => {
     const { container } = render(<HomePage />);
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'If you make it, bake it, fix it or fund it, we build it for you',
-    );
-    expect(container.querySelector('#work')).not.toBeNull();
-    expect(container.querySelector('#contact form')).not.toBeNull();
+    const ids = [...container.querySelectorAll('main > section[id]')].map((el) => el.id);
+    expect(ids).toEqual(['looks', 'ladder', 'how', 'plans', 'compare', 'custom', 'who', 'pledge', 'questions', 'contact']);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Your work online the way you sell it');
+    expect(screen.getByRole('heading', { name: 'One shop, every mood' })).toBeInTheDocument();
+    // the header, the opening and the close open the bare form; each paid plan card opens it with its plan
+    const starts = screen.getAllByRole('link', { name: 'Start your site →' });
+    expect(starts.filter((a) => a.getAttribute('href') === '/start')).toHaveLength(3);
   });
 
-  it('links the Facebook page from the footer, in a new tab, and names it for Google', () => {
+  it('starts the ladder with Free, each step building on the one before', () => {
     const { container } = render(<HomePage />);
-    const fb = within(screen.getByRole('contentinfo')).getByRole('link', { name: 'Facebook' });
-    expect(fb).toHaveAttribute('href', 'https://www.facebook.com/bohdiai');
+    const ladder = container.querySelector('#ladder');
+    expect([...(ladder?.querySelectorAll('h3') ?? [])].map((h) => h.textContent)).toEqual([
+      'Know your numbers',
+      'Be found',
+      'Sell at your markets',
+      'Sell online too',
+    ]);
+    expect(ladder).toHaveTextContent('Everything in Maker Free, plus');
+    expect(ladder).toHaveTextContent('Everything in Maker Showcase, plus');
+  });
+
+  it('prices Free at $0 with its tools and no button, beside the three paid plans', () => {
+    render(<HomePage />);
+    const free = screen.getByRole('article', { name: 'Maker Free' });
+    expect(free).toHaveTextContent('$0');
+    expect(free).toHaveTextContent('Cost to make');
+    expect(free).toHaveTextContent('Is this market worth it?');
+    expect(free).toHaveTextContent('No website.');
+    expect(free).not.toHaveTextContent(/What to bring/);
+    expect(within(free).queryByRole('link')).toBeNull();
+    expect(screen.getByRole('article', { name: 'Maker Showcase' })).toHaveTextContent('$5');
+    expect(screen.getByRole('article', { name: 'Maker Market' })).toHaveTextContent('$15');
+    expect(screen.getByRole('article', { name: 'Maker Full' })).toHaveTextContent('$25');
+    expect(screen.getByText('Free to start, a site from $5 a month')).toBeInTheDocument();
+  });
+
+  it('says nothing about service businesses, contractors, charities or the doors', () => {
+    const { container } = render(<HomePage />);
+    expect(container.textContent).not.toMatch(/contractor|charit|service business|fix things|Cut-Pro|real web developer|\$30\b|\$300\b/i);
+    expect(screen.queryByRole('navigation', { name: /choose your path/i })).toBeNull();
+    const ld = JSON.parse(container.querySelector('script[type="application/ld+json"]')?.textContent ?? '{}') as { description?: string };
+    expect(ld.description).not.toMatch(/contractor|charit/i);
+  });
+
+  it('keeps one way in for a site that isn’t a maker’s, in the question box at the end', () => {
+    const { container } = render(<HomePage />);
+    const close = container.querySelector('#contact');
+    expect(close).toHaveTextContent('Questions, or want a custom site?');
+    expect(close).toHaveTextContent('Need a site for something other than making things?');
+    expect(close?.querySelector('a[href="/start"]')).not.toBeNull();
+    expect(close?.querySelector('form')).not.toBeNull();
+    expect(close).not.toHaveTextContent(/which plan|what kind of business/i);
+  });
+
+  it('shows the maker samples under the opening, with no service samples, and a line for anyone else', () => {
+    render(<HomePage />);
+    expect(screen.getAllByRole('button', { name: /^show /i }).map((b) => b.getAttribute('aria-label'))).toEqual([
+      'Show Classic Loafs',
+      'Show Paper & Patina',
+      'Show Saltmarsh & Lace',
+    ]);
+    expect(screen.getByText(/Need a site for something other than making things\?/, { selector: 'main > p' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Send me a note' })).toHaveAttribute('href', '#contact');
+  });
+
+  it('shows Penny’s shop as a custom site and keeps the story and the pledge', () => {
+    const { container } = render(<HomePage />);
+    expect(container.querySelector('#custom')).toHaveTextContent('Decoupage Digital Designs');
+    expect(container.querySelector('#who')).toHaveTextContent('Bodhi means awakening');
+    expect(container.querySelector('#who')).not.toHaveTextContent(/sod|volunteers/);
+    expect(screen.getByRole('link', { name: /why my prices are so low/i })).toHaveAttribute('href', '/faq#why-so-low');
+    expect(container.querySelector('#pledge')).toHaveTextContent('never take a cut');
+  });
+
+  it('answers the most-asked questions, Free first, and links the full FAQ', () => {
+    render(<HomePage />);
+    expect(screen.getByText('What do I get on Free?')).toBeInTheDocument();
+    expect(screen.getByText('Why are your prices so low compared to everyone else?')).toBeInTheDocument();
+    expect(screen.getByText('Do I have to sell online?')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /full faq/i })).toHaveAttribute('href', '/faq');
+  });
+
+  it('leads the header with the looks, links the sign-up form, and has a phone menu', () => {
+    render(<HomePage />);
+    const main = screen.getByRole('navigation', { name: 'Main' });
+    expect([...main.querySelectorAll('a')].map((a) => a.textContent)).toEqual([
+      'Looks',
+      'Plans',
+      'How it works',
+      'Pricing',
+      'Custom sites',
+      'FAQ',
+      'Contact',
+    ]);
+    expect(screen.getByRole('button', { name: 'Open menu' })).toBeInTheDocument();
+  });
+
+  it('links the footer within bohdiai.com only, and Facebook in a new tab', () => {
+    const { container } = render(<HomePage />);
+    const footer = screen.getByRole('contentinfo');
+    for (const a of footer.querySelectorAll('a')) {
+      expect(a.getAttribute('href')).not.toMatch(/makers\.|service\./);
+    }
+    expect(footer).not.toHaveTextContent(/contractor|charit|service/i);
+    const fb = within(footer).getByRole('link', { name: 'Facebook' });
     expect(fb).toHaveAttribute('target', '_blank');
     const ld = JSON.parse(container.querySelector('script[type="application/ld+json"]')?.textContent ?? '{}') as { sameAs?: string[] };
     expect(ld.sameAs).toEqual(['https://www.facebook.com/bohdiai']);
   });
 
-  it('says nothing about the waitlist, beta, Skool or founder spots', () => {
-    const { container } = render(<HomePage />);
-    expect(container.textContent).not.toMatch(
-      /waitlist|beta|skool|founder spot|reserve your shop|built by ai|live in minutes|youtube/i,
-    );
-  });
-
-  it('never talks about AI; the only "AI" on the page is the BohdiAI name', () => {
+  it('never talks about AI, the waitlist, beta or Skool', () => {
     const { container } = render(<HomePage />);
     const text = (container.textContent ?? '').replace(/BohdiAI/g, '');
     expect(text).not.toMatch(/\bAI\b/);
-    expect(text).not.toMatch(/artificial intelligence/i);
-    expect(screen.getByText(/The Bohdi Way/)).toBeInTheDocument();
-  });
-
-  it('shows the two real clients, Penny first, and no sample shelf (the samples live on the arms)', () => {
-    render(<HomePage />);
-    const clients = screen.getByRole('region', { name: 'Client sites' });
-    expect(within(clients).getByRole('heading', { level: 3 })).toHaveTextContent('Decoupage Digital Designs');
-    fireEvent.click(within(clients).getByRole('button', { name: 'Next client' }));
-    expect(within(clients).getByRole('heading', { level: 3 })).toHaveTextContent('Cut-Pro Lawncare & Construction');
-    expect(screen.queryByText(/not real businesses/i)).toBeNull();
-  });
-
-  it('ends with a small box for anything that fits neither door, not the full project form (Session 108)', () => {
-    const { container } = render(<HomePage />);
-    expect(screen.getByRole('heading', { name: 'Need something else' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Send it to me →' })).toBeInTheDocument();
-    expect(container.querySelector('#contact')).not.toHaveTextContent(/which plan|what kind of business/i);
-    expect(screen.getByLabelText('Your question')).toBeInTheDocument();
-  });
-
-  it('opens two doors under the hero, and a word for charities', () => {
-    render(<HomePage />);
-    const doors = screen.getByRole('navigation', { name: /choose your path/i });
-    const [makers, service] = [...doors.querySelectorAll('a')];
-    expect(makers).toHaveTextContent(/I make things/);
-    expect(makers?.getAttribute('href')).toMatch(/^https?:\/\/makers\.(bohdiai\.com|localhost)/);
-    expect(service).toHaveTextContent(/I fix things/);
-    expect(service?.getAttribute('href')).toMatch(/^https?:\/\/service\.(bohdiai\.com|localhost)/);
-    expect(screen.getByRole('link', { name: /charity or community group/i })).toHaveAttribute('href', '#contact');
-  });
-
-  it('tells the name story in the About and links the questions page', () => {
-    const { container } = render(<HomePage />);
-    expect(screen.getByText(/Bodhi means awakening/)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /why my prices are so low/i })).toHaveAttribute('href', '/faq#why-so-low');
-    expect(container.querySelector('footer a[href="/faq"]')).toHaveTextContent('FAQ');
-  });
-
-  it('puts plans and prices one tap from the top', () => {
-    render(<HomePage />);
-    expect(screen.getByRole('link', { name: 'See plans and prices' })).toHaveAttribute('href', '#pricing');
-  });
-
-  it('leads the header with Pricing and FAQ, and has a phone menu', () => {
-    const { container } = render(<HomePage />);
-    const main = screen.getByRole('navigation', { name: 'Main' });
-    expect([...main.querySelectorAll('a')].map((a) => a.textContent).slice(0, 2)).toEqual(['Pricing', 'FAQ']);
-    expect(main.querySelector('a[href="/#pricing"]')).not.toBeNull();
-    expect(main.querySelector('a[href="/faq"]')).not.toBeNull();
-    expect(screen.getByRole('button', { name: 'Open menu' })).toBeInTheDocument();
-    expect(container.querySelector('#pricing nav')).not.toBeNull();
-  });
-
-  it('no longer says where it was built', () => {
-    const { container } = render(<HomePage />);
-    expect(container.querySelector('footer')?.textContent).not.toMatch(/Built in Rhode Island/);
-  });
-
-  it('leaves how it works and the trades to the arms', () => {
-    const { container } = render(<HomePage />);
-    expect(screen.queryByText('Pick your plan')).toBeNull();
-    expect(container.querySelector('#who-for')).toBeNull();
+    expect(text).not.toMatch(/artificial intelligence|waitlist|beta|skool|youtube/i);
   });
 });

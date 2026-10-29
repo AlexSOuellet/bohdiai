@@ -1,7 +1,8 @@
 /**
- * How the makers arm ends (Alex, Session 108): an invite to start, straight to
- * the sign-up form, and under it a small box for questions and custom sites.
- * The service arm keeps the full "tell me about your project" form.
+ * How bohdiai.com ends (Alex, Session 108; the maker site, Session 117): an
+ * invite to start, straight to the sign-up form, and under it a small box for
+ * questions, custom sites, and the one way in left for a site that isn't a
+ * maker's.
  */
 import { SectionKicker } from '@/components/SectionKicker';
 import { QuestionForm } from './QuestionForm';
@@ -31,7 +32,9 @@ export function MakerClose(): React.ReactElement {
 
       <div className="relative mx-auto mt-16 max-w-[560px] rounded-[18px] border border-white/10 p-5 backdrop-blur-[20px] [background:linear-gradient(180deg,rgba(26,20,16,0.7),rgba(10,8,5,0.6))] md:mt-20 md:p-7">
         <h3 className="font-sans text-[18px] font-medium tracking-[-0.01em] text-text">Questions, or want a custom site?</h3>
-        <p className="mb-5 mt-1.5 text-[14px] leading-[1.55] text-muted">Send me a note and I’ll write back within a couple of days.</p>
+        <p className="mb-5 mt-1.5 text-[14px] leading-[1.55] text-muted">
+          Send me a note and I’ll write back within a couple of days. Need a site for something other than making things? Ask here too.
+        </p>
         <QuestionForm kind="maker" />
       </div>
     </section>

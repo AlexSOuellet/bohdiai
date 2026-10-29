@@ -39,9 +39,9 @@ const jetbrains = JetBrains_Mono({
 });
 
 const SITE_URL = process.env['SITE_URL'] ?? 'https://bohdiai.com';
-const SITE_TITLE = 'BohdiAI · Websites for makers, contractors and charities';
+const SITE_TITLE = 'BohdiAI · Websites and tools for makers';
 const SITE_DESCRIPTION =
-  'If you make it, bake it, fix it or fund it, we build it for you. Real websites for small makers, local service businesses and charities, and you keep every dollar of your sales.';
+  'Your work online, the way you sell it. Free tools to price your work, then a real site of your own: be found, sell at your markets, sell online, and keep every dollar of your sales.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

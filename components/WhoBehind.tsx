@@ -35,12 +35,11 @@ export function WhoBehind(): React.ReactElement {
           <p className="mt-4 text-[15px] leading-[1.65] text-muted md:mt-5 md:text-[17px]">
             When I retired, I found out I wasn&apos;t finished. The part I loved was never the
             technology. It was the moment someone realizes they can. These days I put that to work for
-            small businesses: the maker at the craft fair, the crew laying sod, the volunteers keeping a
-            good cause going.
+            makers, from the craft fair table to their first sale online.
           </p>
           <p className="mt-4 text-[15px] leading-[1.65] text-muted md:mt-5 md:text-[17px]">
             That moment is why the business is called Bohdi. Bodhi means awakening. To me, it means
-            empowering. I&apos;m not here to charge small businesses a fortune to grow my own wealth. In
+            empowering. I&apos;m not here to charge makers a fortune to grow my own wealth. In
             empowering others, all of us are enriched.{' '}
             <a
               href="/faq#why-so-low"

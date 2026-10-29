@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-export const alt = 'BohdiAI: If you make it, bake it, fix it or fund it, we build it for you';
+export const alt = 'BohdiAI: Your work online the way you sell it';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -43,15 +43,15 @@ export default function OgImage() {
               boxShadow: '0 0 18px #e9a13d',
             }}
           />
-          BohdiAI · Websites for makers, contractors &amp; charities
+          BohdiAI · Websites and tools for makers
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <div style={{ fontSize: 76, lineHeight: 1.05, color: '#f3ede0', letterSpacing: '-0.03em', fontWeight: 500 }}>
-            If you make it, bake it, fix it or fund it,
+            Your work online
           </div>
           <div style={{ fontSize: 76, lineHeight: 1.05, color: '#f3c97a', letterSpacing: '-0.03em', fontWeight: 500 }}>
-            we build it for you
+            the way you sell it
           </div>
         </div>
 
@@ -65,7 +65,7 @@ export default function OgImage() {
           }}
         >
           <div style={{ display: 'flex', maxWidth: 760, lineHeight: 1.35 }}>
-            Real websites for small makers, local service businesses and charities. You keep every dollar.
+            Free tools to price your work, then a real site of your own. You keep every dollar.
           </div>
           <div style={{ display: 'flex', fontSize: 18, letterSpacing: '0.12em', color: '#8a8070', textTransform: 'uppercase' }}>
             bohdiai.com

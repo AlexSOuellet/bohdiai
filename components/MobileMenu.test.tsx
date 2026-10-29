@@ -5,11 +5,11 @@ import { MobileMenu } from './MobileMenu';
 import { NAV_LINKS } from './Header';
 
 describe('MobileMenu', () => {
-  it('opens to every link, Pricing and FAQ first', async () => {
+  it('opens to every link, the looks first', async () => {
     render(<MobileMenu links={NAV_LINKS} />);
     expect(screen.queryByRole('navigation', { name: 'Menu' })).toBeNull();
     await userEvent.setup().click(screen.getByRole('button', { name: 'Open menu' }));
-    expect(screen.getAllByRole('link').map((a) => a.textContent)).toEqual(['Pricing', 'FAQ', 'Work', 'About', 'Contact']);
+    expect(screen.getAllByRole('link').map((a) => a.textContent)).toEqual(['Looks', 'Plans', 'How it works', 'Pricing', 'Custom sites', 'FAQ', 'Contact']);
     expect(screen.getByRole('button', { name: 'Close menu' })).toHaveAttribute('aria-expanded', 'true');
   });
 

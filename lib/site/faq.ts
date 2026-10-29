@@ -3,11 +3,21 @@
  * /faq page, the top questions on each pricing page and the FAQ structured
  * data, so an answer can't drift between them. Prices come from plans.ts.
  * Agreed with Alex 2026-10-02 — docs/superpowers/specs/2026-10-02-bohdiai-com-faq-design.md.
+ * bohdiai.com is the maker site since Session 117: the service answers are kept
+ * with the switched-off service page (`audience: 'contractor'`) and never shown
+ * on bohdiai.com.
  */
 import { formatPrice, planById, type Audience } from './plans';
 
-/** `link` shows after the answer, e.g. where to buy a domain. */
-export type FaqItem = { id: string; q: string; a: readonly string[]; link?: { href: string; label: string } };
+/** `link` shows after the answer, e.g. where to buy a domain. An item with an
+ *  audience is only for it; the rest answer everyone. */
+export type FaqItem = {
+  id: string;
+  q: string;
+  a: readonly string[];
+  link?: { href: string; label: string };
+  audience?: Audience;
+};
 export type FaqGroup = { title: string; items: readonly FaqItem[] };
 
 const p = (id: Parameters<typeof planById>[0], period: 'monthly' | 'yearly' = 'monthly'): string =>
@@ -24,15 +34,35 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
           'Because getting rich off small businesses was never the point.',
           'I worked in IT for more than 30 years, in the corporate world and for myself, and most of that time was spent helping people: training, support, service. When I retired, that didn’t stop. I still wanted to help.',
           'So I named the business Bohdi. Bodhi means awakening. To me, it means empowering: the moment someone realizes they can do the thing they were sure they couldn’t. The Bohdi Way is built on that. I make the hard parts easy, and you own everything.',
-          'I’ve watched too many makers and small crews get quoted thousands of dollars for a website, then pay again every time they need a change. That money should be going into their business, not mine. In empowering others, all of us are enriched.',
+          'I’ve watched too many makers get quoted thousands of dollars for a website, then pay again every time they need a change. That money should be going into their business, not mine. In empowering others, all of us are enriched.',
         ],
       },
       {
         id: 'cheap-not-good',
         q: 'Does cheap mean it isn’t as good?',
         a: [
-          'No. Every site is built around your own work and your own photos, in a design made to show them off. You can see every look on a real shop on the looks page, and read what Sheri, Chris and Penny say about the sites I made for them.',
+          'No. Every site is built around your own work and your own photos, in a design made to show them off. You can see every look on a real shop on the looks page, and read what Penny says about the shop I made for her.',
           'What you’re not paying for is a big agency’s overhead, or a template you have to wrestle with every night.',
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Maker Free',
+    items: [
+      {
+        id: 'what-is-free',
+        q: 'What do I get on Free?',
+        a: [
+          'The tools that tell you what your work really earns: what one piece costs you to make, what to charge for it wherever you sell, whether a market is worth the trip, how many pieces it takes to reach the money you want each month, and what to charge for shipping. You also get help writing your descriptions, 30 a month.',
+          'Every piece you work out is kept, with its costs and its price, so you can see at a glance which ones sell for less than they cost you to make.',
+        ],
+      },
+      {
+        id: 'free-catch',
+        q: 'Is Free really free?',
+        a: [
+          'Yes. No card, no time limit, and no trial that runs out. Free has no website. When you want one, move up to Maker Showcase, and every piece you’ve added comes with you.',
         ],
       },
     ],
@@ -44,7 +74,14 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         id: 'how-it-works',
         q: 'How does it work?',
         a: [
-          'Makers pick a plan and fill in the short form: what you make, 5 to 10 pieces with a photo of each, a little about you, and the mood you like. Your site is built from it and stays private until you press Publish in your own backend.',
+          'Pick a plan and fill in the short form: what you make, 5 to 10 pieces with a photo of each, a little about you, and the mood you like. Your site is built from it and stays private until you press Publish in your own backend.',
+        ],
+      },
+      {
+        id: 'how-it-works-service',
+        audience: 'contractor',
+        q: 'How does it work?',
+        a: [
           'A service business picks a plan or just sends me a message. We talk about your business, I build the site, and you see the real thing before it goes live. We change whatever isn’t right, then it goes up.',
         ],
       },
@@ -52,17 +89,27 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         id: 'what-to-have-ready',
         q: 'What do I need to have ready?',
         a: [
-          'Not much. Makers need 5 to 10 of their pieces with a photo of each (phone photos are fine), a few sentences about themselves and their work, and their Facebook or Instagram if they have them. A photo of you is welcome, not required.',
+          'Not much. 5 to 10 of your pieces with a photo of each (phone photos are fine), a few sentences about yourself and your work, and your Facebook or Instagram if you have them. A photo of you is welcome, not required.',
+        ],
+      },
+      {
+        id: 'what-to-have-ready-service',
+        audience: 'contractor',
+        q: 'What do I need to have ready?',
+        a: [
           'A service business needs its logo if it has one, some photos of the work, a few sentences about what you do, and your Facebook or Instagram if you have them. If you don’t have something, we figure it out together.',
         ],
       },
       {
         id: 'how-long',
         q: 'How long does it take?',
-        a: [
-          'A maker’s site is built from the form, usually the same day you send it.',
-          'Most service sites on a plan are ready in 2 to 5 days. A custom site takes longer, and we’ll agree on the timing before I start.',
-        ],
+        a: ['Your site is built from the form, usually the same day you send it.'],
+      },
+      {
+        id: 'how-long-service',
+        audience: 'contractor',
+        q: 'How long does it take?',
+        a: ['Most service sites on a plan are ready in 2 to 5 days. A custom site takes longer, and we’ll agree on the timing before I start.'],
       },
     ],
   },
@@ -71,6 +118,7 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
     items: [
       {
         id: 'built-free',
+        audience: 'contractor',
         q: 'What does “built free” mean?',
         a: [
           `For a service business, it means there’s no build fee. You don’t pay thousands up front. You pay the monthly price for your plan, starting at ${p('contractor-lite')} a month, and that’s it.`,
@@ -80,10 +128,13 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
       {
         id: 'when-billing-starts',
         q: 'When does billing start?',
-        a: [
-          'Makers pay from the day they sign up on the form.',
-          'For a service business, billing starts the day your site goes live. You don’t pay anything while I’m building it.',
-        ],
+        a: ['Free never bills you. On a plan with a site, you pay from the day you sign up on the form.'],
+      },
+      {
+        id: 'when-billing-starts-service',
+        audience: 'contractor',
+        q: 'When does billing start?',
+        a: ['For a service business, billing starts the day your site goes live. You don’t pay anything while I’m building it.'],
       },
       {
         id: 'monthly-or-yearly',
@@ -187,6 +238,7 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
     items: [
       {
         id: 'estimate-requests',
+        audience: 'contractor',
         q: 'Where do estimate requests go?',
         a: [
           'Straight to you, with the customer’s photos of the job attached. On Contractor Full they also land in your own inbox on the site, where you can track each one from request to won.',
@@ -194,6 +246,7 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
       },
       {
         id: 'pay-for-leads',
+        audience: 'contractor',
         q: 'Do I have to pay for leads?',
         a: [
           'Never. Every request that comes through your site is yours alone. Nobody else gets it, and you don’t pay a cent per lead.',
@@ -215,11 +268,18 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
   },
 ];
 
-/** Each pricing page's three most-asked questions, shown under its comparison. */
-export const TOP_QUESTIONS: Record<Audience, readonly [string, string, string]> = {
-  maker: ['why-so-low', 'must-sell-online', 'other-fees'],
-  contractor: ['why-so-low', 'pay-for-leads', 'when-billing-starts'],
+/** Each page's most-asked questions, shown under its comparison. */
+export const TOP_QUESTIONS: Record<Audience, readonly string[]> = {
+  maker: ['what-is-free', 'why-so-low', 'must-sell-online', 'other-fees'],
+  contractor: ['why-so-low', 'pay-for-leads', 'when-billing-starts-service'],
 };
+
+/** The groups an audience sees: its own answers and the shared ones, empty groups left out. */
+export function faqGroupsFor(audience: Audience): readonly FaqGroup[] {
+  return FAQ_GROUPS.map((g) => ({ ...g, items: g.items.filter((i) => i.audience === undefined || i.audience === audience) })).filter(
+    (g) => g.items.length > 0,
+  );
+}
 
 export function allFaqItems(): readonly FaqItem[] {
   return FAQ_GROUPS.flatMap((g) => g.items);
@@ -231,7 +291,7 @@ export function faqItem(id: string): FaqItem {
   return item;
 }
 
-/** schema.org FAQPage data for the /faq page. */
+/** schema.org FAQPage data for the /faq page (bohdiai.com's, the makers'). */
 export function faqJsonLd(): {
   '@context': string;
   '@type': 'FAQPage';
@@ -240,7 +300,7 @@ export function faqJsonLd(): {
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: allFaqItems().map((i) => ({
+    mainEntity: faqGroupsFor('maker').flatMap((g) => g.items).map((i) => ({
       '@type': 'Question',
       name: i.q,
       acceptedAnswer: { '@type': 'Answer', text: i.a.join('\n\n') },
