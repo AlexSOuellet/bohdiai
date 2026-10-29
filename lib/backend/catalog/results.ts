@@ -1,4 +1,5 @@
-export type SaveResult = { ok: true; id: string } | { ok: false; error: string };
+/** `warning`: it saved, but something that rides along with it (a product's costs) didn't. */
+export type SaveResult = { ok: true; id: string; warning?: 'costs' | 'takings' } | { ok: false; error: string };
 export type PhotoResult =
   | { ok: true; uploadId: string; url: string }
   | { ok: false; error: string };

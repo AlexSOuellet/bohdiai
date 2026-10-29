@@ -10,12 +10,15 @@ import {
   MARKET_LIMITS as L,
   STOCK_MAX,
   buildMarketPayload,
+  costsCents,
   costsTotal,
   stockKey,
   type GoBack,
   type MarketForm,
 } from '@/lib/backend/markets/market-form';
 import { ConfirmButton } from '../_components/ConfirmButton';
+import { EMPTY_TAKINGS, eventDay, hasTakings, type Takings } from '@/lib/tools/event-takings';
+import { cents as centsText, dollars } from '@/lib/tools/maths';
 import { QrCode } from '../_components/QrCode';
 
 import type { ShopPick } from '@/lib/backend/markets/shop-props';
@@ -123,6 +126,8 @@ export function MarketEditor({
   sold,
   summary,
   tab: firstTab = 'details',
+  takings,
+  takingsUnsaved = false,
 }: {
   initial: MarketForm;
   shop?: MarketShopProps | undefined;
@@ -134,16 +139,24 @@ export function MarketEditor({
   summary?: React.ReactNode;
   /** The tab to open on (from the address, so a link can land on How it sold). */
   tab?: EventTab;
+  /** Market day's own numbers (Alex, 2026-10-24), where there's no till to count the
+   *  sales: Showcase (Alex, 2026-10-28), whose After tab is then its costs and Market
+   *  day only. Null when none are saved yet. Leave out where the till counts them. */
+  takings?: Takings | null;
+  /** It saved, but its Market day numbers didn't. */
+  takingsUnsaved?: boolean;
 }): React.ReactElement {
   const router = useRouter();
   const [form, setForm] = useState(initial);
+  const offersTakings = takings !== undefined;
+  const [day, setDay] = useState<Takings>(takings ?? EMPTY_TAKINGS);
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
   const notice = useNotice();
   const isNew = initial.id === null;
   // A new event can be filled in on every tab but How it sold (nothing has sold yet).
   const tabs = EVENT_TABS.filter(
-    (t) => t === 'details' || (t === 'bringing' && shop !== undefined) || (t === 'sold' && sold !== undefined && !isNew) || (t === 'after' && records),
+    (t) => t === 'details' || (t === 'bringing' && shop !== undefined) || (t === 'sold' && sold !== undefined && !isNew) || (t === 'after' && (records || offersTakings)),
   );
   const [tab, setTab] = useState<EventTab>(tabs.includes(firstTab) ? firstTab : 'details');
   function openTab(t: EventTab): void {
@@ -157,8 +170,8 @@ export function MarketEditor({
     setForm((f) => ({ ...f, costs: f.costs.map((c, j) => (j === i ? { ...c, ...patch } : c)) }));
 
   async function run(
-    work: () => Promise<{ ok: true } | { ok: false; error: string }>,
-    then: () => void,
+    work: () => Promise<{ ok: true; id?: string; warning?: 'costs' | 'takings' } | { ok: false; error: string }>,
+    then: (id: string, warning?: 'costs' | 'takings') => void,
   ): Promise<void> {
     if (inFlight.current) return;
     inFlight.current = true;
@@ -166,7 +179,7 @@ export function MarketEditor({
     notice.clear();
     try {
       const r = await work();
-      if (r.ok) then();
+      if (r.ok) then(r.id ?? initial.id ?? '', r.warning);
       else notice.showError(r.error);
     } catch (err) {
       unstable_rethrow(err);
@@ -184,8 +197,8 @@ export function MarketEditor({
       return;
     }
     void run(
-      () => saveMarket(form),
-      () => router.push(`/manage/markets?saved=${encodeURIComponent(check.payload.name)}`),
+      () => saveMarket(form, offersTakings && (takings !== null || hasTakings(day)) ? day : null),
+      (id, warning) => router.push(warning === 'takings' ? `/manage/markets/${id}?tab=after&takings=unsaved` : `/manage/markets?saved=${encodeURIComponent(check.payload.name)}`),
     );
   }
 
@@ -457,7 +470,7 @@ export function MarketEditor({
           </section>
         )}
 
-        {tab === 'after' && records && (
+        {tab === 'after' && (records || offersTakings) && (
           <>
             <section className="bk-section" aria-labelledby="s-costs">
               <h2 id="s-costs" className="bk-section-title">
@@ -534,9 +547,10 @@ export function MarketEditor({
                 )}
               </div>
             </section>
+            {offersTakings && <MarketDayNumbers day={day} setDay={setDay} costsCents={costsCents(form.costs)} unsaved={takingsUnsaved} />}
 
-
-
+            {records && (
+              <>
             <section className="bk-section" aria-labelledby="s-notes">
               <h2 id="s-notes" className="bk-section-title">
                 Notes
@@ -607,6 +621,8 @@ export function MarketEditor({
                 />
               </div>
             </section>
+              </>
+            )}
           </>
         )}
 
@@ -626,5 +642,59 @@ export function MarketEditor({
         </div>
       </main>
     </>
+  );
+}
+
+const DAY_VERDICT: Readonly<Record<string, string>> = {
+  lost: 'You paid to be there.',
+  'no-hours': 'Add your hours to see what it paid you an hour.',
+  hard: 'Hard to justify: less than half of what your time is worth.',
+  close: 'Close, but under your rate.',
+  worth: 'Worth the trip.',
+};
+
+/** Market day on the event (Alex, 2026-10-24): her own numbers with the costs above. */
+function MarketDayNumbers({ day, setDay, costsCents: costs, unsaved }: { day: Takings; setDay: (t: Takings) => void; costsCents: number; unsaved: boolean }): React.ReactElement {
+  const r = eventDay(day, costs);
+  const set = (patch: Partial<Takings>): void => setDay({ ...day, ...patch });
+  const box = (id: string, label: string, key: keyof Takings, unit?: string): React.ReactElement => (
+    <div className="bk-field">
+      <label className="bk-label" htmlFor={id}>
+        {label}
+      </label>
+      <span className="bk-row">
+        <input id={id} className="bk-input bk-input-sm" inputMode="decimal" value={day[key]} onChange={(e) => set({ [key]: e.target.value })} />
+        {unit !== undefined && <span className="bk-note">{unit}</span>}
+      </span>
+    </div>
+  );
+  return (
+    <section className="bk-section" aria-labelledby="s-day">
+      <h2 id="s-day" className="bk-section-title">
+        Market day
+      </h2>
+      {unsaved && <p className="bk-notice">The event saved, but these numbers didn’t. Save again to keep them.</p>}
+      <p className="bk-note">What you sold and the time you gave it. With the costs above, this shows what the day really paid you.</p>
+      <div className="bk-grid-2">
+        {box('d-sales', 'Total sales', 'sales', 'dollars')}
+        {box('d-card', 'Of that, paid by card', 'card', 'dollars')}
+        {box('d-rate', 'Card fee', 'cardRate', '%')}
+        {box('d-mat', 'What the things you sold cost you to make', 'materials', 'dollars')}
+        {box('d-hrs', 'Hours at the market', 'hoursAtMarket', 'hrs')}
+        {box('d-hrs2', 'Hours driving and packing', 'hoursOther', 'hrs')}
+        {box('d-wage', 'What an hour of your time is worth', 'wage', 'dollars')}
+      </div>
+      {r.sales > 0 && (
+        <p className="bk-event-day" aria-live="polite">
+          You took home <strong>{dollars(r.profit)}</strong>
+          {r.hours > 0 && (
+            <>
+              , <strong>{centsText(r.hourly)}</strong> an hour
+            </>
+          )}
+          . {DAY_VERDICT[r.verdict] ?? ''}
+        </p>
+      )}
+    </section>
   );
 }

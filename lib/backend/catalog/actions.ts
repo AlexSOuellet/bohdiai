@@ -19,6 +19,8 @@ import { storeSitePhoto } from '@/lib/backend/site-photo';
 import { logger } from '@/lib/logger';
 import { slugify, uniqueSlug, slugLookupPrefix } from '@/lib/catalog/slug';
 import { buildProductPayload, GALLERY_MAX, type ProductForm } from './product-form';
+import { costRows, saveProductCosts, type CostSettings } from '@/lib/tools/product-costs';
+import { isFreeSite } from '@/lib/backend/plan/free';
 import { buildCollectionPayload, type CollectionForm } from './collection-form';
 import type { SaveResult, PhotoResult, FileResult, DoneResult } from './results';
 
@@ -139,9 +141,16 @@ async function removeStored(
     });
 }
 
-export async function saveProduct(form: ProductForm): Promise<SaveResult> {
+/** `costs`: what the Tools worked out for a new product (Alex, 2026-10-24), saved
+ *  with it. They're checked before anything is written; if they then fail to save,
+ *  the product stays saved and the result says so. */
+export async function saveProduct(form: ProductForm, costs: CostSettings | null = null): Promise<SaveResult> {
   const site = await catalogSite();
   if (site === null) return { ok: false, error: CATALOG_OFF };
+  if (costs !== null) {
+    const checked = costRows(site.tenantId, '00000000-0000-0000-0000-000000000000', costs);
+    if (!checked.ok) return checked;
+  }
   const db = await createSupabaseServerClient();
   let kept = 0;
   if (form.id !== null) {
@@ -153,9 +162,12 @@ export async function saveProduct(form: ProductForm): Promise<SaveResult> {
       .maybeSingle();
     kept = current?.media_ids.length ?? 0;
   }
+  // Showcase and Free sell nothing, so they aren't asked how a piece is stocked.
+  const stock = site.on.has('catalog') && !(await isFreeSite(db, site.tenantId));
   const built = buildProductPayload(form, {
     digital: site.on.has('digital_products'),
     photos: { limit: photoLimit(site.on), kept },
+    stock,
   });
   if (!built.ok) return built;
 
@@ -178,6 +190,15 @@ export async function saveProduct(form: ProductForm): Promise<SaveResult> {
     };
   revalidatePath('/manage/products');
   revalidatePath('/manage');
+  if (costs !== null) {
+    try {
+      const done = await saveProductCosts(db, site.tenantId, data, costs);
+      if (!done.ok) return { ok: true, id: data, warning: 'costs' };
+    } catch (err) {
+      logger.error('catalog: product costs save failed', { tenantId: site.tenantId, error: err instanceof Error ? err.message : String(err) });
+      return { ok: true, id: data, warning: 'costs' };
+    }
+  }
   return { ok: true, id: data };
 }
 

@@ -7,7 +7,10 @@ import { hasProducts } from '@/lib/backend/features';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { getProduct, listCollections, countHomeProducts } from '@/lib/backend/catalog/queries';
 import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
+import { loadProductCosts, costSummary } from '@/lib/tools/product-costs';
+import { logger } from '@/lib/logger';
 import { ProductEditor } from '../_components/ProductEditor';
+import { isFreeSite } from '@/lib/backend/plan/free';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +19,7 @@ const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default async function EditProductPage({
   params,
+  searchParams,
 }: PageProps<'/manage/products/[id]'>): Promise<React.ReactElement> {
   const { id } = await params;
   if (!ID.test(id)) notFound();
@@ -29,6 +33,17 @@ export default async function EditProductPage({
     countHomeProducts(db, site.tenantId, id),
   ]);
   if (product === null) notFound();
+  // Its costs from the Tools, when it has any; a failed read shows no costs, not a broken page.
+  let summary = null;
+  let materials: string[] = [];
+  try {
+    const costs = await loadProductCosts(db, site.tenantId, id);
+    summary = costs === null ? null : costSummary(costs);
+    materials = costs === null ? [] : [...costs.batch, ...costs.piece].map((m) => m.name);
+  } catch (err) {
+    logger.error('catalog: product costs read failed', { tenantId: site.tenantId, error: err instanceof Error ? err.message : String(err) });
+  }
+  const costsUnsaved = (await searchParams)['costs'] === 'unsaved';
   return (
     <ProductEditor
       key={id}
@@ -42,7 +57,11 @@ export default async function EditProductPage({
       shopUrl={storefrontOrigin(site.subdomain, (await headers()).get('host'))}
       homeCount={homeCount}
       showcase={!on.has('catalog')}
+      free={await isFreeSite(db, site.tenantId)}
       hasCollections={on.has('collections')}
+      costSummary={summary}
+      materials={materials}
+      costsUnsaved={costsUnsaved}
     />
   );
 }

@@ -26,6 +26,9 @@ import { MY_SITE_PATH } from '@/lib/backend/modules';
 import { isSitePlan, type SitePlan } from '@/lib/backend/plan/plan';
 import { firstSteps, loadStepFacts, type Steps } from '@/lib/backend/first-steps';
 import { homeWall } from '@/lib/backend/home-wall';
+import { WorkWall } from './_components/WorkWall';
+import { FreeHome } from './_components/FreeHome';
+import { isFreePlan } from '@/lib/backend/plan/plan';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,6 +47,8 @@ export default async function ManageHome(): Promise<React.ReactElement> {
   const on = await getSiteFeatures(site.tenantId);
   const own = await createSupabaseServerClient();
   const tenant = await own.from('tenants').select('time_zone, plan').eq('id', site.tenantId).maybeSingle();
+  // Free has no site: its Home is her numbers and the steps to know them (Alex, 2026-10-24).
+  if (isFreePlan(tenant.data?.plan)) return <FreeHome tenantId={site.tenantId} name={site.businessName} />;
   // Custom sites have no plan, and no first steps.
   const plan: SitePlan | null = isSitePlan(tenant.data?.plan) ? tenant.data.plan : null;
   const home = await collectHome(plan === null ? HOME_CONTRIBUTORS : HOME_CONTRIBUTORS_WITH_STEPS, on, site.tenantId);
@@ -161,48 +166,7 @@ export default async function ManageHome(): Promise<React.ReactElement> {
           </section>
         )}
 
-        {hasProducts && (
-          <section aria-labelledby="bk-work">
-            <div className="bk-band-head">
-              <div>
-                <h2 id="bk-work" className="bk-band-title">
-                  {wall?.title ?? (showcase ? 'Your gallery' : 'Your work')}
-                </h2>
-                {wall !== null && <p className="bk-band-sub">{wall.sub}</p>}
-              </div>
-              <Link className="bk-band-link" href="/manage/products">
-                {showcase ? 'Pick your gallery' : 'See all your products'}
-              </Link>
-            </div>
-            {wall === null ? (
-              <p role="alert" className="bk-error">
-                Your products couldn’t load. Refresh to try again.
-              </p>
-            ) : (
-              <ul className="bk-wall">
-                <li>
-                  <Link className="bk-wall-add" href="/manage/products/new">
-                    Add a product
-                  </Link>
-                </li>
-                {wall.items.map((p) => (
-                  <li key={p.id}>
-                    <Link className="bk-wall-item" href={`/manage/products/${p.id}` as Route}>
-                      {p.photoUrl === null ? (
-                        <span className="bk-wall-blank">No photo yet</span>
-                      ) : (
-                        // eslint-disable-next-line @next/next/no-img-element -- her own upload, sized by CSS
-                        <img src={p.photoUrl} alt="" loading="lazy" />
-                      )}
-                      {p.status === 'draft' && <span className="bk-wall-tag">Draft</span>}
-                      <span className="bk-wall-name">{p.name}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        )}
+        {hasProducts && <WorkWall wall={wall} title={showcase ? 'Your gallery' : 'Your work'} link={showcase ? 'Pick your gallery' : 'See all your products'} />}
 
         {(events !== null || eventsFailed || home.tiles.length > 0) && (
           <div className="bk-home-pair">

@@ -393,7 +393,7 @@ describe('ProductEditor — home page', () => {
     fireEvent.click(box);
     fireEvent.click(saveButtons()[0]!);
     await waitFor(() =>
-      expect(saveProduct).toHaveBeenCalledWith(expect.objectContaining({ onHome: true })),
+      expect(saveProduct).toHaveBeenCalledWith(expect.objectContaining({ onHome: true }), null),
     );
     expect(screen.queryByText(FULL)).toBeNull();
   });
@@ -462,7 +462,7 @@ describe('ProductEditor — new arrival', () => {
     fireEvent.click(screen.getByLabelText('New arrival'));
     fireEvent.click(saveButtons()[0]!);
     await waitFor(() =>
-      expect(saveProduct).toHaveBeenCalledWith(expect.objectContaining({ isNew: true })),
+      expect(saveProduct).toHaveBeenCalledWith(expect.objectContaining({ isNew: true }), null),
     );
   });
 
@@ -482,5 +482,59 @@ describe('ProductEditor — new arrival', () => {
     expect(screen.getByText('Hidden on your plan')).toBeTruthy();
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
     await waitFor(() => expect(saveProduct).toHaveBeenCalled());
+  });
+});
+
+describe('ProductEditor — its costs from the Tools (Alex, 2026-10-24)', () => {
+  const summary = { materials: 3.45, breakEven: 8.28, suggestedCents: 2100 };
+  const withCosts = (over: Partial<ProductForm> = {}) =>
+    render(<ProductEditor initial={{ ...emptyProductForm(), id: 'l1', slug: 'fig', name: 'Fig', price: '24', stockKind: 'made_to_order', ...over }} photoLimit={12} collections={collections} digital={false} shopUrl="https://shop.bohdiai.com" homeCount={0} costSummary={summary} />);
+
+  it('shows what it costs her and the suggested price, a tap away', () => {
+    withCosts();
+    expect(screen.getByText(/Costs you/)).toHaveTextContent('Costs you $8.28');
+    expect(screen.getByText(/Suggested/)).toHaveTextContent('Suggested $21');
+    fireEvent.click(screen.getByRole('button', { name: 'Use the suggested price' }));
+    expect(screen.getByLabelText('Price')).toHaveValue('21');
+    expect(screen.queryByRole('button', { name: 'Use the suggested price' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Change the costs' })).toHaveAttribute('href', '/manage/tools/cost?product=l1');
+  });
+
+  it('warns when her price is below what it costs her', () => {
+    withCosts({ price: '7' });
+    expect(screen.getByText(/below what the piece costs you/)).toBeInTheDocument();
+  });
+
+  it('offers Cost to make for a product with none, and says when the costs didn’t save', () => {
+    const { unmount } = render(<ProductEditor initial={{ ...emptyProductForm(), id: 'l1', slug: 'fig', name: 'Fig', price: '24', stockKind: 'made_to_order' }} photoLimit={12} collections={collections} digital={false} shopUrl="https://shop.bohdiai.com" homeCount={0} />);
+    expect(screen.getByRole('link', { name: 'Work it out in Cost to make' })).toHaveAttribute('href', '/manage/tools/cost?product=l1');
+    unmount();
+    render(<ProductEditor initial={{ ...emptyProductForm(), id: 'l1', slug: 'fig', name: 'Fig', price: '24', stockKind: 'made_to_order' }} photoLimit={12} collections={collections} digital={false} shopUrl="https://shop.bohdiai.com" homeCount={0} costsUnsaved />);
+    expect(screen.getByText(/the costs from Cost to make didn’t/)).toBeInTheDocument();
+  });
+
+  it('saves the costs with a new product, and opens it when they didn’t save', async () => {
+    saveProduct.mockResolvedValue({ ok: true, id: 'new', warning: 'costs' });
+    const costs = { yield: '12', hours: '', rate: '', extras: '', markup: 2.5 as const, batch: [], piece: [{ name: 'Jar', each: '1' }] };
+    render(<ProductEditor initial={{ ...emptyProductForm(), name: 'Fig', price: '24', stockKind: 'made_to_order' }} photoLimit={12} collections={collections} digital={false} shopUrl="https://shop.bohdiai.com" homeCount={0} costs={costs} />);
+    expect(screen.getByText(/Its costs save with the product/)).toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
+    await waitFor(() => expect(saveProduct).toHaveBeenCalledWith(expect.objectContaining({ name: 'Fig' }), costs));
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/products/new?costs=unsaved'));
+  });
+});
+
+describe('ProductEditor — Free (Alex, 2026-10-28)', () => {
+  it('keeps a piece for its costs and price: no home page, stock, options or collections, and it saves', async () => {
+    saveProduct.mockResolvedValue({ ok: true, id: 'l9' });
+    render(<ProductEditor initial={{ ...emptyProductForm(), name: 'Victorian Lazy Susan', price: '130' }} photoLimit={12} collections={collections} digital={false} shopUrl="https://shop.bohdiai.com" homeCount={0} free />);
+    expect(screen.queryByLabelText('Show on your home page')).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Options' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Collections' })).toBeNull();
+    expect(screen.queryByText('One of a kind')).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Price' })).toBeInTheDocument();
+    expect(screen.getByText(/Your price list, for your own numbers/)).toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0] as HTMLElement);
+    await vi.waitFor(() => expect(saveProduct).toHaveBeenCalled());
   });
 });

@@ -1,13 +1,18 @@
 'use client';
 
+import { DescribeHelper } from '../../_components/DescribeHelper';
 import { StockChoice } from './StockChoice';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, unstable_rethrow } from 'next/navigation';
 import { saveProduct, duplicateProduct } from '@/lib/backend/catalog/actions';
+import { costSummary as costSummaryOf, pricedBelowCost, type CostSettings, type CostSummary } from '@/lib/tools/product-costs';
+import { cents as centsText, dollars } from '@/lib/tools/maths';
 import type { SaveResult } from '@/lib/backend/catalog/results';
 import { combinationKey } from '@/lib/catalog/combinations';
 import {
   buildProductPayload,
+  formatCents,
+  parseDollars,
   syncVariants,
   renameOptionInVariants,
   type ProductForm,
@@ -55,9 +60,22 @@ export function ProductEditor({
   shopUrl,
   homeCount,
   showcase = false,
+  free = false,
   hasCollections = true,
+  costs = null,
+  costSummary = null,
+  materials = null,
+  costsUnsaved = false,
 }: {
   initial: ProductForm;
+  /** What the Tools worked out, saved with a new product (Alex, 2026-10-24). */
+  costs?: CostSettings | null;
+  /** A saved product's costs from the Tools: materials, break-even, suggested price. */
+  costSummary?: CostSummary | null;
+  /** What a saved product is made of: its supply list from Cost to make, for the description writer. */
+  materials?: readonly string[] | null;
+  /** It saved, but the costs that came with it from the Tools didn't. */
+  costsUnsaved?: boolean;
   collections: { id: string; name: string }[];
   digital: boolean;
   /** How many photos this site's plan allows a product. */
@@ -70,11 +88,16 @@ export function ProductEditor({
   /** Showcase: no shop, so no shop link, home tick, stock, options or collections.
    *  The price is kept for when the site moves up to Market. */
   showcase?: boolean;
+  /** Free (Alex, 2026-10-24): no site at all; a piece is kept for its costs and price.
+   *  The same as Showcase here, without its notes about the site. */
+  free?: boolean;
   /** The site has collections (Full); Market and Showcase have none, so no Collections section. */
   hasCollections?: boolean;
 }): React.ReactElement {
   const router = useRouter();
   const [form, setForm] = useState(initial);
+  /** The site sells (Market and Full): it asks about stock, options, the home page and collections. */
+  const sells = !showcase && !free;
   /** The saved version — drives the title, the shop link, the archive button, and
    *  whether there are unsaved changes. A save leaves the page, so it never changes. */
   const stored = initial;
@@ -161,7 +184,7 @@ export function ProductEditor({
 
   /** Run one server call. On success `done` navigates away and the page stays busy,
    *  so the buttons can't fire again while the next page loads. */
-  async function run(action: () => Promise<SaveResult>, done: (id: string) => void): Promise<void> {
+  async function run(action: () => Promise<SaveResult>, done: (id: string, warning?: 'costs' | 'takings') => void): Promise<void> {
     if (inFlight.current) return;
     inFlight.current = true;
     setBusy(true);
@@ -171,7 +194,7 @@ export function ProductEditor({
       const r = await action();
       if (r.ok) {
         leaving = true;
-        done(r.id);
+        done(r.id, r.warning);
       } else notice.showError(r.error);
     } catch (err) {
       unstable_rethrow(err);
@@ -201,14 +224,15 @@ export function ProductEditor({
     const check = buildProductPayload(next, {
       digital,
       photos: { limit: photoLimit, kept: stored.photos.length },
+      stock: sells,
     });
     if (!check.ok) {
       notice.showError(check.error);
       return;
     }
     void run(
-      () => saveProduct(next),
-      () => router.push(`/manage/products?${done}=${encodeURIComponent(check.payload.name)}`),
+      () => saveProduct(next, next.id === null ? costs : null),
+      (id, warning) => router.push(warning === 'costs' ? `/manage/products/${id}?costs=unsaved` : `/manage/products?${done}=${encodeURIComponent(check.payload.name)}`),
     );
   }
 
@@ -228,7 +252,7 @@ export function ProductEditor({
       <div className="bk-head">
         <h1 className="bk-title">{isNew ? 'New product' : stored.name}</h1>
         <div className="bk-head-actions">
-          {!showcase && !isNew && stored.status === 'active' && stored.slug !== null && (
+          {sells && !isNew && stored.status === 'active' && stored.slug !== null && (
             <a
               className="bk-btn bk-btn-quiet"
               href={`${shopUrl}/listings/${stored.slug}`}
@@ -305,7 +329,7 @@ export function ProductEditor({
                   onChange={(e) => update({ name: e.target.value })}
                 />
               </div>
-              {!showcase && (
+              {sells && (
                 <div className="bk-field">
                   <label className="bk-check">
                     <input
@@ -362,6 +386,13 @@ export function ProductEditor({
                   onChange={(e) => update({ description: e.target.value })}
                 />
               </div>
+              <DescribeHelper
+                name={form.name}
+                materials={materials ?? (costs === null ? [] : [...costs.batch, ...costs.piece].map((m) => m.name))}
+                price={form.price}
+                photoUploadId={form.photos[0]?.uploadId ?? null}
+                onWritten={(text) => update({ shortDescription: text.short, description: text.description })}
+              />
               {showcase && (
                 <p className="bk-note">
                   {`Pick which pieces show on your site with the Gallery ticks on your products list. With none picked, your site shows your newest ${GALLERY_MAX}.`}
@@ -371,7 +402,7 @@ export function ProductEditor({
 
             <section className="bk-section" aria-labelledby="s-price">
               <h2 id="s-price" className="bk-section-title">
-                Price and stock
+                {sells ? 'Price and stock' : 'Price'}
               </h2>
               <div className="bk-grid-2">
                 <div className="bk-field">
@@ -388,7 +419,15 @@ export function ProductEditor({
                   />
                 </div>
               </div>
-              {!showcase && noOptions && form.kind === 'physical' && (
+              <CostLine
+                summary={costSummary ?? (costs === null ? null : costSummaryOf(costs))}
+                price={form.price}
+                productId={form.id}
+                fromTools={isNew && costs !== null}
+                unsaved={costsUnsaved}
+                onUse={(cents) => update({ price: formatCents(cents) })}
+              />
+              {sells && noOptions && form.kind === 'physical' && (
                 <StockChoice kind={form.stockKind} stock={form.stock} onChange={(next) => update(next)} />
               )}
               {showcase && (
@@ -397,7 +436,13 @@ export function ProductEditor({
                   you move up to Market.
                 </p>
               )}
-              {!showcase && !noOptions && (
+              {free && (
+                <p className="bk-note">
+                  Your price list, for your own numbers. Nothing here shows anywhere until you have a
+                  site, and it all comes with you when you do.
+                </p>
+              )}
+              {sells && !noOptions && (
                 <p className="bk-note">
                   With options, each combination below says how you stock it. A blank combination
                   price uses this one.
@@ -441,7 +486,7 @@ export function ProductEditor({
               )}
             </section>
 
-            {!showcase && (
+            {sells && (
               <section className="bk-section" aria-labelledby="s-options">
                 <h2 id="s-options" className="bk-section-title">
                   Options
@@ -459,7 +504,7 @@ export function ProductEditor({
               </section>
             )}
 
-            {!showcase && hasCollections && (
+            {sells && hasCollections && (
               <section className="bk-section" aria-labelledby="s-collections">
                 <h2 id="s-collections" className="bk-section-title">
                   Collections
@@ -519,5 +564,66 @@ export function ProductEditor({
         </div>
       </main>
     </>
+  );
+}
+
+/** What the piece costs her and what the Tools suggest, under the price (Alex,
+ *  2026-10-24): her price stays her own; the suggested one is a tap away. */
+function CostLine({
+  summary,
+  price,
+  productId,
+  fromTools,
+  unsaved,
+  onUse,
+}: {
+  summary: CostSummary | null;
+  price: string;
+  productId: string | null;
+  fromTools: boolean;
+  unsaved: boolean;
+  onUse: (cents: number) => void;
+}): React.ReactElement | null {
+  const toolHref = productId === null ? '/manage/tools/cost' : `/manage/tools/cost?product=${productId}`;
+  if (unsaved)
+    return (
+      <p className="bk-notice bk-cost-line">
+        This product saved, but the costs from Cost to make didn’t. <a href={toolHref}>Work them out again in Cost to make</a>.
+      </p>
+    );
+  if (summary === null)
+    return productId === null ? null : (
+      <p className="bk-note bk-cost-line">
+        Not sure what to charge? <a className="bk-link" href={toolHref}>Work it out in Cost to make</a>.
+      </p>
+    );
+  const typed = parseDollars(price);
+  const priceCents = typed.ok ? typed.cents : null;
+  const below = pricedBelowCost(priceCents, summary);
+  return (
+    <div className="bk-cost-line" data-below={below ? 'true' : undefined}>
+      <p className="bk-cost-line-figures">
+        <span>
+          Costs you <strong>{centsText(summary.breakEven)}</strong>
+        </span>
+        <span>
+          Suggested <strong>{dollars(summary.suggestedCents / 100)}</strong>
+        </span>
+        {priceCents !== summary.suggestedCents && (
+          <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" onClick={() => onUse(summary.suggestedCents)}>
+            Use the suggested price
+          </button>
+        )}
+      </p>
+      {below && <p className="bk-cost-line-warn">This price is below what the piece costs you to make. Each one you sell loses money.</p>}
+      <p className="bk-note">
+        {fromTools ? 'From Cost to make. Its costs save with the product.' : 'From Cost to make, with your time and other costs.'}{' '}
+        {productId !== null && (
+          <a className="bk-link" href={toolHref}>
+            Change the costs
+          </a>
+        )}
+      </p>
+    </div>
   );
 }

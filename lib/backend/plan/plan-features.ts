@@ -9,12 +9,16 @@
  * costs, organizer, notes, reviews.
  */
 import type { FeatureKey } from '../features';
-import { SITE_PLANS, type SitePlan } from './plan';
+import { SITE_PLANS, type AccountPlan, type SitePlan } from './plan';
 import { LINK_TARGETS, type LinkTarget } from '@/lib/archetypes/main-street/links';
 
 /** Every plan: About you, markets, the QR code, the plan screen, and the headline at
  *  the top of the home page (the headline and the line under it; Alex, 2026-10-19). */
 const EVERY_PLAN: readonly FeatureKey[] = ['profile', 'market_dates', 'qr_codes', 'plan', 'headline', 'background'];
+/** Free (Alex, 2026-10-24): no site, so none of the site screens. Products to work
+ *  with; no events (Alex, 2026-10-28), they start on Showcase. Tools and Contact
+ *  support are on every plan. */
+const FREE: readonly FeatureKey[] = ['catalog'];
 /** Showcase (Alex, 2026-10-19): the whole catalog in the backend with no shop and no
  *  prices on the site; the gallery is up to 12 ticked pieces (newest 12 by default). */
 const SHOWCASE: readonly FeatureKey[] = [...EVERY_PLAN, 'gallery_pieces'];
@@ -45,8 +49,8 @@ export const PLAN_FEATURES: Record<SitePlan, readonly FeatureKey[]> = {
 export const PLAN_MANAGED: readonly FeatureKey[] = [...new Set([...SHOWCASE, ...FULL])];
 
 /** The rows that put a site on `plan`: each managed switch on or off. */
-export function planFeatureRows(plan: SitePlan): { feature_key: FeatureKey; enabled: boolean }[] {
-  const on = new Set(PLAN_FEATURES[plan]);
+export function planFeatureRows(plan: AccountPlan): { feature_key: FeatureKey; enabled: boolean }[] {
+  const on = new Set(plan === 'free' ? FREE : PLAN_FEATURES[plan]);
   return PLAN_MANAGED.map((key) => ({ feature_key: key, enabled: on.has(key) }));
 }
 

@@ -40,7 +40,7 @@ describe('MarketEditor', () => {
     fireEvent.change(screen.getByLabelText(/Booth or table/), { target: { value: 'Booth 4' } });
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
     await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/markets?saved=Holly%20Fair'));
-    expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ name: 'Holly Fair', date: '2026-11-21', booth: 'Booth 4' }));
+    expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ name: 'Holly Fair', date: '2026-11-21', booth: 'Booth 4' }), null);
   });
 
   it('adds costs and shows their total', () => {
@@ -60,7 +60,7 @@ describe('MarketEditor', () => {
     expect(screen.getByRole('button', { name: '4 stars' }).getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(screen.getByLabelText('Maybe'));
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
-    await waitFor(() => expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ rating: 4, goBack: 'maybe' })));
+    await waitFor(() => expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ rating: 4, goBack: 'maybe' }), null));
   });
 
   it('stops a market with no day before saving, and says why', async () => {
@@ -120,7 +120,7 @@ describe('MarketEditor — your table', () => {
     fireEvent.click(screen.getByRole('checkbox', { name: /Theo/ }));
     expect(screen.getByText('What you’re bringing (1)')).toBeTruthy();
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
-    await waitFor(() => expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ listingIds: ['l1'] })));
+    await waitFor(() => expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ listingIds: ['l1'] }), null));
   });
 
   it('shows the code for a saved event', () => {
@@ -144,7 +144,7 @@ describe('MarketEditor — your table', () => {
     expect((screen.getByLabelText('How many Scarf, Red, you’re bringing') as HTMLInputElement).value).toBe('');
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
     await waitFor(() =>
-      expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ listingIds: ['l1', 'l3'], stock: { l1: '3', 'l3:v1': '4', 'l3:v2': '' } })),
+      expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ listingIds: ['l1', 'l3'], stock: { l1: '3', 'l3:v1': '4', 'l3:v2': '' } }), null),
     );
   });
 
@@ -173,7 +173,7 @@ describe('MarketEditor — your table', () => {
     for (const name of ['Costs', 'Organizer', 'Notes', 'Your review']) expect(screen.queryByRole('heading', { name })).toBeNull();
     expect(screen.queryByRole('tablist')).toBeNull();
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
-    await waitFor(() => expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ organizerName: 'Pat', notes: 'Bring tent weights', rating: 4, hours: '10am – 4pm', booth: 'Booth 4' })));
+    await waitFor(() => expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ organizerName: 'Pat', notes: 'Bring tent weights', rating: 4, hours: '10am – 4pm', booth: 'Booth 4' }), null));
   });
 
   it('adds hours, address, booth and website at Lite, without the private records', () => {
@@ -211,12 +211,51 @@ describe('MarketEditor — tabs', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'After' }));
     expect(screen.queryByRole('button', { name: 'Remove this event' })).toBeNull();
     fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
-    await waitFor(() => expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ town: 'Bristol' })));
+    await waitFor(() => expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ town: 'Bristol' }), null));
   });
 
   it('gives a new event every tab but How it sold', () => {
     render(<MarketEditor details records initial={emptyMarketForm()} shop={shop} sold={<p>Sold list</p>} tab="sold" />);
     expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Details', 'What I’m bringing', 'After']);
     expect(screen.getByRole('tab', { name: 'Details' }).getAttribute('aria-selected')).toBe('true');
+  });
+});
+
+describe('MarketEditor — Market day on the event (Alex, 2026-10-24)', () => {
+  const day = { sales: '640', card: '380', cardRate: '3', materials: '160', hoursAtMarket: '7', hoursOther: '3', wage: '20' };
+
+  it('shows what the day paid with the costs above, and saves the numbers with the event', async () => {
+    saveMarket.mockResolvedValue({ ok: true, id: 'm1' });
+    render(<MarketEditor initial={existing({ costs: [{ description: 'Booth fee', amount: '130' }] })} details records takings={day} />);
+    fireEvent.click(screen.getByRole('tab', { name: 'After' }));
+    expect(screen.getByText(/You took home/)).toHaveTextContent('You took home $339, $33.86 an hour. Worth the trip.');
+    fireEvent.change(screen.getByLabelText('Total sales'), { target: { value: '100' } });
+    expect(screen.getByText(/You took home/)).toHaveTextContent('You paid to be there.');
+    fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
+    await waitFor(() => expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ id: 'm1' }), { ...day, sales: '100' }));
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/markets?saved=Holly%20Fair'));
+  });
+
+  it('sends nothing when no numbers are typed, and opens the numbers again when they didn’t save', async () => {
+    saveMarket.mockResolvedValue({ ok: true, id: 'm1', warning: 'takings' });
+    render(<MarketEditor initial={existing()} details records takings={null} takingsUnsaved />);
+    fireEvent.click(screen.getByRole('tab', { name: 'After' }));
+    expect(screen.getByText(/these numbers didn’t/)).toBeInTheDocument();
+    expect(screen.queryByText(/You took home/)).toBeNull();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]!);
+    await waitFor(() => expect(saveMarket).toHaveBeenCalledWith(expect.objectContaining({ id: 'm1' }), null));
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/manage/markets/m1?tab=after&takings=unsaved'));
+  });
+
+  it('on Showcase, the After tab is the costs and Market day only (Alex, 2026-10-28)', () => {
+    render(<MarketEditor initial={existing({ costs: [{ description: 'Booth fee', amount: '130' }] })} details={false} records={false} takings={day} />);
+    fireEvent.click(screen.getByRole('tab', { name: 'After' }));
+    expect(screen.getByRole('heading', { name: 'Costs' })).toBeInTheDocument();
+    expect(screen.getByText(/You took home/)).toHaveTextContent('You took home $339, $33.86 an hour. Worth the trip.');
+    expect(screen.queryByRole('heading', { name: 'Notes' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Your review' })).toBeNull();
+    cleanup();
+    render(<MarketEditor initial={existing()} details={false} records={false} />);
+    expect(screen.queryByRole('tab', { name: 'After' })).toBeNull();
   });
 });

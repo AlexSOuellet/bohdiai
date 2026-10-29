@@ -32,6 +32,10 @@ describe('parseDollars', () => {
     expect(parseDollars('24')).toEqual({ ok: true, cents: 2400 });
     expect(parseDollars('$24.5')).toEqual({ ok: true, cents: 2450 });
     expect(parseDollars(' 0.99 ')).toEqual({ ok: true, cents: 99 });
+    // With no leading 0, as the tools read it (Alex, 2026-10-28).
+    expect(parseDollars('.5')).toEqual({ ok: true, cents: 50 });
+    expect(parseDollars('$.25')).toEqual({ ok: true, cents: 25 });
+    expect(parseDollars('.').ok).toBe(false);
   });
   it('treats blank as not set', () => {
     expect(parseDollars('  ')).toEqual({ ok: true, cents: null });
@@ -212,6 +216,8 @@ describe('buildProductPayload', () => {
     // A new piece starts with no choice, and can't be saved until she picks (Alex, 2026-10-24).
     expect(emptyProductForm().stockKind).toBeNull();
     expect(built({ stockKind: null })).toEqual({ ok: false, error: 'Say how many you have: One of a kind, I have some, or Made to order.' });
+    // Showcase and Free sell nothing, so they're never asked; the piece is kept as made to order.
+    expect(buildProductPayload(base({ stockKind: null }), { digital: false, stock: false })).toMatchObject({ ok: true, payload: { stock_kind: 'made_to_order', inventory_count: null } });
     // A download never asks.
     expect(buildProductPayload(base({ kind: 'digital', fileUploadId: 'f1', fileName: 'a.pdf', stockKind: null }), { digital: true })).toMatchObject({ ok: true, payload: { stock_kind: 'made_to_order' } });
     // A download has no stock: made to order, no number.

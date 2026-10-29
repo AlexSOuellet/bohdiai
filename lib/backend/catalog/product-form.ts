@@ -127,8 +127,9 @@ export function emptyProductForm(): ProductForm {
 export function parseDollars(text: string): { ok: true; cents: number | null } | { ok: false } {
   const t = text.trim();
   if (t === '') return { ok: true, cents: null };
-  const m = /^\$?\s*(\d{1,6})(?:\.(\d{1,2}))?$/.exec(t);
-  if (m === null) return { ok: false };
+  // ".50" counts too, as the tools read it.
+  const m = /^\$?\s*(\d{0,6})(?:\.(\d{1,2}))?$/.exec(t);
+  if (m === null || (m[1] === '' && m[2] === undefined)) return { ok: false };
   return { ok: true, cents: Number(m[1]) * 100 + Number((m[2] ?? '').padEnd(2, '0')) };
 }
 
@@ -260,7 +261,9 @@ function hasProductShape(f: unknown): boolean {
 /** `photos`: how many this site allows and how many the saved product already has (kept after a downgrade). */
 export function buildProductPayload(
   form: ProductForm,
-  site: { digital: boolean; photos?: { limit: number; kept: number } },
+  /** `stock`: whether the site asks how a piece is stocked. Showcase and Free sell
+   *  nothing, so they don't; their pieces are kept as made to order until they move up. */
+  site: { digital: boolean; photos?: { limit: number; kept: number }; stock?: boolean },
 ): BuildResult {
   if (!hasProductShape(form))
     return fail('Something about this product didn’t look right. Reload the page and try again.');
@@ -365,7 +368,7 @@ export function buildProductPayload(
 
   // Product-level stock and file apply only without options (plan decision 5).
   let inventory: number | null = null;
-  if (!hasOptions && form.kind === 'physical') {
+  if (!hasOptions && form.kind === 'physical' && site.stock !== false) {
     if (form.stockKind === null)
       return fail('Say how many you have: One of a kind, I have some, or Made to order.');
     const s = stockCount(form.stockKind, form.stock, 'this product');

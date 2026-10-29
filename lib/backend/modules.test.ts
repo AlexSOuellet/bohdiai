@@ -31,12 +31,12 @@ describe('navFor', () => {
 describe('the menu in her words (the redesign, 2026-10-27)', () => {
   const full: FeatureKey[] = ['catalog', 'collections', 'market_dates', 'market_shop', 'market_records', 'cart', 'promotions', 'buyer_accounts', 'headline', 'background', 'profile', 'testimonials', 'try_on', 'qr_codes', 'plan'];
 
-  it('is one short list on Full: Home, Products, Events, Orders, Customers, My site, Account, Help', () => {
-    expect(names(full)).toEqual(['Home', 'Products', 'Events', 'Orders', 'Customers', 'My site', 'Account', 'Help']);
+  it('is one short list on Full: Home, Products, Events, Tools, Orders, Customers, My site, Account, Help', () => {
+    expect(names(full)).toEqual(['Home', 'Products', 'Events', 'Tools', 'Orders', 'Customers', 'My site', 'Account', 'Help']);
   });
 
-  it('has only Home and Help with nothing switched on', () => {
-    expect(names([])).toEqual(['Home', 'Help']);
+  it('has only Home, Tools and Help with nothing switched on (Tools is on every plan)', () => {
+    expect(names([])).toEqual(['Home', 'Tools', 'Help']);
   });
 
   it('opens My site on its own page, and every other group on its first screen', () => {

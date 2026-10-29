@@ -489,6 +489,32 @@ export type Database = {
           },
         ]
       }
+      description_runs: {
+        Row: {
+          created_at: string
+          id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "description_runs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       design_choices: {
         Row: {
           candidates: Json

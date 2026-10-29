@@ -61,9 +61,14 @@ const PICKS: Record<Pick, PickSpec> = {
 export function ProductTable({
   products,
   picks = ['home'],
+  belowCost = [],
+  emptyNote = 'No products yet. Add your first one to get started.',
 }: {
   products: ProductRowView[];
   picks?: readonly Pick[];
+  /** Products priced below what they cost to make (from their costs in the Tools). */
+  belowCost?: readonly string[];
+  emptyNote?: string;
 }): React.ReactElement {
   /** A Showcase site shows no prices, so the list doesn't either. */
   const showsPrice = !picks.includes('gallery');
@@ -85,7 +90,7 @@ export function ProductTable({
   const notice = useNotice();
 
   if (products.length === 0)
-    return <p className="bk-note">No products yet. Add your first one to get started.</p>;
+    return <p className="bk-note">{emptyNote}</p>;
 
   const keyOf = (pick: Pick, p: ProductRowView): string => `${pick}:${p.id}`;
   const isTicked = (pick: Pick, p: ProductRowView): boolean => ticked[keyOf(pick, p)] ?? PICKS[pick].of(p);
@@ -206,7 +211,12 @@ export function ProductTable({
                       {p.name}
                     </Link>
                   </td>
-                  {showsPrice && <td>{p.priceLabel}</td>}
+                  {showsPrice && (
+                    <td>
+                      {p.priceLabel}
+                      {belowCost.includes(p.id) && <span className="bk-below-cost">Below what it costs you</span>}
+                    </td>
+                  )}
                   {showsPrice && <td>{p.stockLabel}</td>}
                   <td>
                     <span className="bk-pill" data-status={p.status}>
