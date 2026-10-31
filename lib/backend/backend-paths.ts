@@ -6,7 +6,8 @@
  */
 import { isAppHost } from '@/lib/proxy-security';
 
-const EXACT = ['/signin', '/forgot-password', '/manage'] as const;
+/** /welcome is onboarding (Session 119): signed in, before the backend. */
+const EXACT = ['/signin', '/forgot-password', '/manage', '/welcome'] as const;
 const PREFIXES = ['/auth/', '/manage/'] as const;
 
 export function isBackendPath(pathname: string): boolean {

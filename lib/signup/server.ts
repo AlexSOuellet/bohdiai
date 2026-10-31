@@ -38,7 +38,8 @@ async function passwordUser(email: string, password: string): Promise<string | n
   return null;
 }
 
-async function sitesOf(db: Db, userId: string): Promise<SignupSite[]> {
+/** The sites this account owns: still a draft, and paid for. */
+export async function sitesOf(db: Db, userId: string): Promise<SignupSite[]> {
   const { data, error } = await db.from('tenant_members').select('tenant_id, tenants(status)').eq('user_id', userId).eq('role', 'admin').eq('status', 'active');
   if (error !== null) throw new Error(`Could not read the account's sites: ${error.message}`);
   const ids = (data ?? []).map((r) => r.tenant_id);

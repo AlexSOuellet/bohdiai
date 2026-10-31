@@ -12,11 +12,6 @@ vi.mock('@/lib/intake/browser-photo', () => ({ shrinkInBrowser: (f: File) => shr
 import { IntakeForm } from './IntakeForm';
 
 const words = keyWords(INTAKE_WORD_SPOTS, 'intake');
-const plans = [
-  { tier: 'showcase' as const, name: 'Maker Showcase', monthly: 5, yearly: 50 },
-  { tier: 'lite' as const, name: 'Maker Market', monthly: 15, yearly: 150 },
-  { tier: 'full' as const, name: 'Maker Full', monthly: 25, yearly: 250 },
-];
 const looks = FAMILY_KEYS.map((key) => ({ key, texture: `/t/${key}.png` }));
 const fetchMock = vi.fn();
 const photos = (n: number): File[] => Array.from({ length: n }, (_, i) => new File([new Uint8Array(4)], `p${i}.png`, { type: 'image/png' }));
@@ -30,17 +25,13 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
-function setup(initialPlan: 'showcase' | 'lite' | 'full' | null = 'full', initialBilling: 'monthly' | 'yearly' = 'yearly') {
+function setup() {
   const u = userEvent.setup({ delay: null });
-  const view = render(<IntakeForm words={words} looks={looks} plans={plans} initialPlan={initialPlan} initialBilling={initialBilling} contactEmail="alex@example.com" />);
+  const view = render(<IntakeForm words={words} looks={looks} contactEmail="alex@example.com" />);
   return { u, view };
 }
 
 async function fillAll(u: ReturnType<typeof userEvent.setup>, count = MIN_PIECES): Promise<void> {
-  await u.type(screen.getByLabelText('intake.you.name'), 'Lena');
-  await u.type(screen.getByLabelText('intake.you.business'), 'Saltmarsh');
-  await u.type(screen.getByLabelText('intake.you.email'), 'lena@example.com');
-  await u.type(screen.getByLabelText('intake.you.password'), 'tide pools 22');
   await u.type(screen.getByRole('textbox', { name: 'intake.makes.heading' }), 'Lace');
   await u.upload(screen.getByLabelText(/intake.pieces.add/), photos(count));
   const names = await screen.findAllByLabelText('intake.pieces.name');
@@ -53,7 +44,11 @@ async function fillAll(u: ReturnType<typeof userEvent.setup>, count = MIN_PIECES
 describe('IntakeForm', { timeout: 20_000 }, () => {
   it('shows every word from the form’s own words, and a tile for every family on its own background', () => {
     setup();
-    expect(screen.getByRole('heading', { name: 'intake.you.heading' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'intake.makes.heading' })).toBeInTheDocument();
+    // The plan and the account are sign-up's, not onboarding's (Session 119).
+    expect(screen.queryByRole('heading', { name: 'intake.you.heading' })).toBeNull();
+    expect(screen.queryByLabelText('intake.you.password')).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'intake.plan.yearly' })).toBeNull();
     expect(screen.getByText('intake.pieces.needed')).toBeInTheDocument();
     expect(document.querySelectorAll('input[name="family"]')).toHaveLength(FAMILY_KEYS.length + 1);
     for (const key of FAMILY_KEYS) expect(screen.getByRole('radio', { name: new RegExp(`intake\\.families\\.${key}\\.label`) })).toBeInTheDocument();
@@ -72,10 +67,7 @@ describe('IntakeForm', { timeout: 20_000 }, () => {
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe('/api/intake');
     const sent = init.body as FormData;
-    expect(sent.get(FIELD.name)).toBe('Lena');
-    expect(sent.get(FIELD.plan)).toBe('full');
-    expect(sent.get(FIELD.password)).toBe('tide pools 22');
-    expect(sent.get(FIELD.billing)).toBe('yearly');
+    expect([...sent.keys()].some((k) => ['plan', 'billing', 'email', 'password', 'makerName', 'businessName'].includes(k))).toBe(false);
     expect(sent.get(FIELD.family)).toBe('rustic');
     expect(sent.getAll(FIELD.pieceName)).toEqual(['Piece 1', 'Piece 2', 'Piece 3', 'Piece 4', 'Piece 5']);
     expect(sent.getAll(FIELD.piecePrice)).toEqual(['25', '', '', '', '']);
@@ -84,40 +76,11 @@ describe('IntakeForm', { timeout: 20_000 }, () => {
     expect(shrink).toHaveBeenCalledTimes(MIN_PIECES + 1);
   });
 
-  it('starts on the plan the pricing page sent, and shows its price the way they pay', async () => {
-    const { u } = setup('lite', 'monthly');
-    expect(screen.getByRole('radio', { name: /Maker Market/ })).toBeChecked();
-    expect(screen.getByRole('radio', { name: 'intake.plan.monthly' })).toBeChecked();
-    expect(screen.getAllByText('intake.plan.perMonth')).toHaveLength(3);
-    await u.click(screen.getByRole('radio', { name: 'intake.plan.yearly' }));
-    expect(screen.getAllByText('intake.plan.perYear')).toHaveLength(3);
-    await u.click(screen.getByRole('radio', { name: /Maker Full/ }));
-    expect(screen.getByRole('radio', { name: /Maker Full/ })).toBeChecked();
-  });
-
-  it('the password can be shown and hidden', async () => {
-    const { u } = setup();
-    const box = screen.getByLabelText('intake.you.password');
-    expect(box).toHaveAttribute('type', 'password');
-    expect(box).toHaveAttribute('autocomplete', 'new-password');
-    await u.click(screen.getByRole('button', { name: 'intake.you.show' }));
-    expect(box).toHaveAttribute('type', 'text');
-    await u.click(screen.getByRole('button', { name: 'intake.you.hide' }));
-    expect(box).toHaveAttribute('type', 'password');
-  });
-
-  it('asks for a plan when they came without one', async () => {
-    const { u } = setup(null);
-    expect(screen.getAllByRole('radio', { name: /Maker/ }).every((r) => !(r as HTMLInputElement).checked)).toBe(true);
-    await u.click(screen.getByRole('button', { name: 'intake.send.button' }));
-    expect(screen.getByRole('alert')).toHaveTextContent('intake.errors.plan');
-  });
-
   it('checks before sending, in the form’s own words', async () => {
     const { u } = setup();
     await u.click(screen.getByRole('button', { name: 'intake.send.button' }));
-    expect(screen.getByRole('alert')).toHaveTextContent('intake.errors.name');
-    await u.type(screen.getByLabelText('intake.you.name'), 'L');
+    expect(screen.getByRole('alert')).toHaveTextContent('intake.errors.makes');
+    await u.type(screen.getByRole('textbox', { name: 'intake.makes.heading' }), 'L');
     expect(screen.queryByRole('alert')).toBeNull();
     expect(fetchMock).not.toHaveBeenCalled();
   });

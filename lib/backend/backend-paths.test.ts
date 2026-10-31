@@ -12,7 +12,7 @@ describe('isManagePath', () => {
 });
 
 describe('isBackendPath', () => {
-  it.each(['/signin', '/forgot-password', '/auth/confirm', '/auth/continue', '/auth/error', '/manage', '/manage/set-password'])('%s is a backend path', (p) => {
+  it.each(['/signin', '/forgot-password', '/auth/confirm', '/auth/continue', '/auth/error', '/manage', '/manage/set-password', '/welcome'])('%s is a backend path', (p) => {
     expect(isBackendPath(p)).toBe(true);
   });
   it.each(['/', '/shop', '/manager', '/signing', '/authors', '/dashboard'])('%s is not', (p) => {

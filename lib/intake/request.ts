@@ -1,5 +1,5 @@
 /**
- * The intake form (bohdiai.com/start), checked. Pure: it reads the posted form
+ * The site form (onboarding, app.bohdiai.com/welcome, Session 119), checked. Pure: it reads the posted form
  * and either names what's wrong (as a spot in the form's words, never a word of
  * its own) or hands back exactly what to save. Shared by the page (instant
  * messages) and the route (which checks again before saving).
@@ -26,12 +26,6 @@ export const INTAKE_LIMITS = { name: 120, business: 120, email: 254, makes: 600,
 
 /** Field names the page posts and the route reads. Pieces repeat, in order. */
 export const FIELD = {
-  plan: 'plan',
-  billing: 'billing',
-  name: 'makerName',
-  business: 'businessName',
-  email: 'email',
-  password: 'password',
   makes: 'makes',
   about: 'about',
   family: 'family',
@@ -91,10 +85,14 @@ export type IntakeFields = {
 
 export type IntakePiece = { name: string; priceCents: number | null; description: string | null; photo: File };
 
+/** What the maker sends on onboarding (Session 119). The plan and who they are
+ *  come from their sign-up, never from this form. */
+export type IntakeContent = Pick<IntakeFields, 'makes' | 'about' | 'family'>;
+
 export type IntakeParsed =
   | { kind: 'spam' }
   | { kind: 'invalid'; problem: IntakeProblem }
-  | { kind: 'ok'; fields: IntakeFields; password: string; pieces: IntakePiece[]; portrait: File | null };
+  | { kind: 'ok'; content: IntakeContent; pieces: IntakePiece[]; portrait: File | null };
 
 export const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -117,11 +115,8 @@ export function photoProblem(file: File): ErrorSpot | null {
 }
 
 /** The form's own fields, before the pieces, so the page can check as it goes. */
-export type IntakeDraft = Omit<IntakeFields, 'plan'> & {
-  /** Their new password, as typed (never trimmed). */
-  password: string;
-  /** Null until a plan is chosen. */
-  plan: PlanTier | null;
+export type IntakeDraft = Omit<IntakeContent, 'family'> & {
+  family: IntakeContent['family'];
   pieces: { name: string; price: string; description: string; photo: File | null }[];
   portrait: File | null;
   /** True once a family (or "you pick") is chosen. */
@@ -131,11 +126,6 @@ export type IntakeDraft = Omit<IntakeFields, 'plan'> & {
 /** The first thing wrong with a draft, top of the form first; null when it's ready. */
 export function checkIntake(d: IntakeDraft): IntakeProblem | null {
   const p = (spot: ErrorSpot, values: Record<string, string | number> = {}): IntakeProblem => ({ spot, values });
-  if (d.plan === null) return p('plan');
-  if (d.makerName.trim() === '') return p('name');
-  if (d.businessName.trim() === '') return p('business');
-  if (!EMAIL_SHAPE.test(d.email.trim())) return p('email');
-  if (d.password.length < PASSWORD_MIN || d.password.length > PASSWORD_MAX) return p('password', { min: PASSWORD_MIN, max: PASSWORD_MAX });
   if (d.makes.trim() === '') return p('makes');
   if (d.pieces.length < MIN_PIECES) return p('piecesFew', { min: MIN_PIECES });
   if (d.pieces.length > MAX_PIECES) return p('piecesMany', { max: MAX_PIECES });
@@ -154,12 +144,7 @@ export function checkIntake(d: IntakeDraft): IntakeProblem | null {
     if (bad !== null) return p(bad, { n: 0 });
   }
   if (!d.familyChosen) return p('mood');
-  const long =
-    d.makerName.trim().length > INTAKE_LIMITS.name ||
-    d.businessName.trim().length > INTAKE_LIMITS.business ||
-    d.email.trim().length > INTAKE_LIMITS.email ||
-    d.makes.trim().length > INTAKE_LIMITS.makes ||
-    d.about.trim().length > INTAKE_LIMITS.about;
+  const long = d.makes.trim().length > INTAKE_LIMITS.makes || d.about.trim().length > INTAKE_LIMITS.about;
   return long ? p('tooLong') : null;
 }
 
@@ -176,16 +161,12 @@ function isFamily(v: string, families: readonly FamilyKey[]): v is FamilyKey {
   return (families as readonly string[]).includes(v);
 }
 
-function isTier(v: string, plans: readonly PlanTier[]): v is PlanTier {
-  return (plans as readonly string[]).includes(v);
-}
+/** What the form is checked against: the families there are. */
+export type IntakeChoices = { families: readonly FamilyKey[] };
 
-/** What the form is checked against: the families and the maker plans there are. */
-export type IntakeChoices = { families: readonly FamilyKey[]; plans: readonly PlanTier[] };
-
-/** The posted form, checked whole against the families and plans there are. A
- *  filled honeypot is spam: answered as sent, saved nowhere. */
-export function parseIntake(form: FormData, { families, plans }: IntakeChoices): IntakeParsed {
+/** The posted form, checked whole against the families there are. A filled
+ *  honeypot is spam: answered as sent, saved nowhere. */
+export function parseIntake(form: FormData, { families }: IntakeChoices): IntakeParsed {
   if (text(form, FIELD.honeypot).trim() !== '') return { kind: 'spam' };
   const familyValue = text(form, FIELD.family);
   const names = form.getAll(FIELD.pieceName);
@@ -193,14 +174,7 @@ export function parseIntake(form: FormData, { families, plans }: IntakeChoices):
   const abouts = form.getAll(FIELD.pieceAbout);
   const photos = form.getAll(FIELD.piecePhoto);
   const str = (v: FormDataEntryValue | undefined): string => (typeof v === 'string' ? v : '');
-  const planValue = text(form, FIELD.plan);
   const draft: IntakeDraft = {
-    plan: isTier(planValue, plans) ? planValue : null,
-    billing: text(form, FIELD.billing) === 'yearly' ? 'yearly' : 'monthly',
-    makerName: text(form, FIELD.name),
-    businessName: text(form, FIELD.business),
-    email: text(form, FIELD.email),
-    password: text(form, FIELD.password),
     makes: text(form, FIELD.makes),
     about: text(form, FIELD.about),
     family: isFamily(familyValue, families) ? familyValue : null,
@@ -209,20 +183,10 @@ export function parseIntake(form: FormData, { families, plans }: IntakeChoices):
     pieces: names.map((name, i) => ({ name: str(name), price: str(prices[i]), description: str(abouts[i]), photo: file(photos[i]) })),
   };
   const problem = checkIntake(draft);
-  if (problem !== null || draft.plan === null) return { kind: 'invalid', problem: problem ?? { spot: 'plan', values: {} } };
+  if (problem !== null) return { kind: 'invalid', problem };
   return {
     kind: 'ok',
-    fields: {
-      plan: draft.plan,
-      billing: draft.billing,
-      makerName: draft.makerName.trim(),
-      businessName: draft.businessName.trim(),
-      email: draft.email.trim(),
-      makes: draft.makes.trim(),
-      about: draft.about.trim(),
-      family: draft.family,
-    },
-    password: draft.password,
+    content: { makes: draft.makes.trim(), about: draft.about.trim(), family: draft.family },
     portrait: draft.portrait,
     // checkIntake proved every piece has its photo and every price reads.
     pieces: draft.pieces.flatMap((p) =>

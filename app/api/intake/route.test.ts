@@ -5,6 +5,8 @@ const send = vi.fn();
 const saveIntake = vi.fn();
 const getIntakeWords = vi.fn();
 const logError = vi.fn();
+const getCurrentUser = vi.fn();
+const onboardingSite = vi.fn();
 
 vi.mock('@/lib/forms/rate-limit', () => ({ formLimitResponse: () => Promise.resolve(null) }));
 vi.mock('@/lib/supabase', () => ({ supabaseAdmin: () => ({}) }));
@@ -13,9 +15,8 @@ vi.mock('@/lib/logger', () => ({ logger: { error: (...a: unknown[]) => logError(
 vi.mock('@/lib/images/shrink', () => ({ shrinkImage: vi.fn() }));
 vi.mock('@/lib/intake/save', () => ({ saveIntake: (...a: unknown[]) => saveIntake(...a) }));
 vi.mock('@/lib/intake/queries', () => ({ getIntakeWords: () => getIntakeWords() }));
-const ensureAccount = vi.fn();
-const removeNewAccount = vi.fn();
-vi.mock('@/lib/intake/account', () => ({ ensureAccount: (...a: unknown[]) => ensureAccount(...a), removeNewAccount: (...a: unknown[]) => removeNewAccount(...a) }));
+vi.mock('@/lib/auth/session', () => ({ getCurrentUser: () => getCurrentUser() }));
+vi.mock('@/lib/signup/onboarding', () => ({ onboardingSite: (...a: unknown[]) => onboardingSite(...a) }));
 
 import { POST } from './route';
 import { FIELD, MIN_PIECES, MOOD_PICK } from '@/lib/intake/request';
@@ -24,12 +25,6 @@ import { INTAKE_WORD_SPOTS } from '@/lib/intake/words';
 
 function body(extra: Record<string, string> = {}): FormData {
   const f = new FormData();
-  f.set(FIELD.plan, 'full');
-  f.set(FIELD.billing, 'yearly');
-  f.set(FIELD.name, 'Lena');
-  f.set(FIELD.business, 'Saltmarsh');
-  f.set(FIELD.email, 'lena@example.com');
-  f.set(FIELD.password, 'tide pools 22');
   f.set(FIELD.makes, 'Lace');
   f.set(FIELD.about, 'Porch');
   f.set(FIELD.family, MOOD_PICK);
@@ -42,27 +37,56 @@ function body(extra: Record<string, string> = {}): FormData {
   for (const [k, v] of Object.entries(extra)) f.set(k, v);
   return f;
 }
-const post = (f: FormData | string): Promise<Response> => POST(new Request('https://bohdiai.com/api/intake', { method: 'POST', body: f }));
+const post = (f: FormData | string): Promise<Response> => POST(new Request('https://app.bohdiai.com/api/intake', { method: 'POST', body: f }));
 
-describe('POST /api/intake', () => {
+const SITE = { tenantId: 't1', plan: 'full', billing: 'yearly', businessName: 'Saltmarsh' };
+
+describe('POST /api/intake (onboarding)', () => {
   beforeEach(() => {
     send.mockReset().mockResolvedValue({ error: null });
     saveIntake.mockReset().mockResolvedValue({ ok: true, id: 'i1' });
     getIntakeWords.mockReset().mockResolvedValue(keyWords(INTAKE_WORD_SPOTS, 'intake'));
     logError.mockReset();
-    ensureAccount.mockReset().mockResolvedValue({ ok: true, userId: 'u1', created: true });
-    removeNewAccount.mockReset();
+    getCurrentUser.mockReset().mockResolvedValue({ id: 'u1', email: 'lena@example.com', user_metadata: { name: 'Lena' } });
+    onboardingSite.mockReset().mockResolvedValue(SITE);
   });
 
-  it('saves it, emails Alex with the maker as Reply-To, and says it arrived', async () => {
+  it('saves it against their own site, with who they are and their plan from sign-up, and emails Alex', async () => {
     const res = await post(body());
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
-    expect(saveIntake).toHaveBeenCalledWith(expect.objectContaining({ fields: expect.objectContaining({ plan: 'full', billing: 'yearly', makerName: 'Lena', family: null }), portrait: null }));
+    expect(onboardingSite).toHaveBeenCalledWith({}, 'u1');
+    expect(saveIntake).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'u1',
+        tenantId: 't1',
+        fields: { plan: 'full', billing: 'yearly', makerName: 'Lena', businessName: 'Saltmarsh', email: 'lena@example.com', makes: 'Lace', about: 'Porch', family: null },
+        portrait: null,
+      }),
+    );
     expect(saveIntake.mock.calls[0]?.[0].pieces).toHaveLength(MIN_PIECES);
-    expect(ensureAccount).toHaveBeenCalledWith(expect.anything(), expect.any(Function), 'lena@example.com', 'tide pools 22');
-    expect(saveIntake.mock.calls[0]?.[0].userId).toBe('u1');
     expect(send).toHaveBeenCalledWith(expect.objectContaining({ to: 'alex@bohdiai.com', replyTo: 'lena@example.com', subject: 'intake.email.subject' }));
+  });
+
+  it('never takes a plan or an email from the form', async () => {
+    await post(body({ plan: 'showcase', email: 'someone@else.com' }));
+    expect(saveIntake.mock.calls[0]?.[0].fields).toMatchObject({ plan: 'full', email: 'lena@example.com' });
+  });
+
+  it('turns away someone who isn’t signed in, before anything else', async () => {
+    getCurrentUser.mockResolvedValue(null);
+    const res = await post(body());
+    expect(res.status).toBe(401);
+    expect(onboardingSite).not.toHaveBeenCalled();
+    expect(saveIntake).not.toHaveBeenCalled();
+  });
+
+  it('turns away a maker with no site waiting (already sent, not paid, or Free)', async () => {
+    onboardingSite.mockResolvedValue(null);
+    const res = await post(body());
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ failed: true });
+    expect(saveIntake).not.toHaveBeenCalled();
   });
 
   it('spam is answered as sent and saved nowhere', async () => {
@@ -73,14 +97,14 @@ describe('POST /api/intake', () => {
   });
 
   it('names what’s wrong as a spot in the form’s words', async () => {
-    const res = await post(body({ [FIELD.email]: 'nope' }));
+    const res = await post(body({ [FIELD.makes]: ' ' }));
     expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ problem: { spot: 'email', values: {} } });
+    expect(await res.json()).toEqual({ problem: { spot: 'makes', values: {} } });
     expect(saveIntake).not.toHaveBeenCalled();
   });
 
   it('a body that isn’t a form didn’t send', async () => {
-    const res = await POST(new Request('https://bohdiai.com/api/intake', { method: 'POST', body: '{"x":1}', headers: { 'content-type': 'application/json' } }));
+    const res = await POST(new Request('https://app.bohdiai.com/api/intake', { method: 'POST', body: '{"x":1}', headers: { 'content-type': 'application/json' } }));
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ failed: true });
   });
@@ -104,27 +128,6 @@ describe('POST /api/intake', () => {
     getIntakeWords.mockRejectedValueOnce('words down');
     expect(await (await post(body())).json()).toEqual({ ok: true });
     expect(logError).toHaveBeenCalledTimes(3);
-  });
-
-  it('an email with an account needs that account’s password; a failed account didn’t send', async () => {
-    ensureAccount.mockResolvedValueOnce({ ok: false, reason: 'accountExists' });
-    let res = await post(body());
-    expect(await res.json()).toEqual({ problem: { spot: 'accountExists', values: {} } });
-    ensureAccount.mockResolvedValueOnce({ ok: false, reason: 'failed' });
-    res = await post(body());
-    expect(res.status).toBe(502);
-    expect(saveIntake).not.toHaveBeenCalled();
-  });
-
-  it('a failed save removes the account it made, and never one that was already there', async () => {
-    saveIntake.mockResolvedValueOnce({ ok: false, reason: 'failed' });
-    await post(body());
-    expect(removeNewAccount).toHaveBeenCalledWith(expect.anything(), 'u1');
-    removeNewAccount.mockClear();
-    ensureAccount.mockResolvedValueOnce({ ok: true, userId: 'old', created: false });
-    saveIntake.mockResolvedValueOnce({ ok: false, reason: 'photoUnread' });
-    await post(body());
-    expect(removeNewAccount).not.toHaveBeenCalled();
   });
 
   it('anything unexpected didn’t send', async () => {

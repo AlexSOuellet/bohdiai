@@ -22,12 +22,14 @@ export async function saveIntake(args: {
   fields: IntakeFields;
   pieces: readonly IntakePiece[];
   portrait: File | null;
-  /** The account the maker made on the form. */
+  /** The account the maker made at sign-up. */
   userId: string;
+  /** The site record sign-up made, which this fills (Session 119). */
+  tenantId: string;
   /** For tests; a fresh id otherwise. */
   id?: string;
 }): Promise<SaveResult> {
-  const { db, shrink, fields, pieces, portrait, userId } = args;
+  const { db, shrink, fields, pieces, portrait, userId, tenantId } = args;
   const id = args.id ?? crypto.randomUUID();
 
   // Shrink everything first: an unreadable photo stops the send before anything is stored.
@@ -66,6 +68,7 @@ export async function saveIntake(args: {
   const { error: intakeErr } = await db.from('intakes').insert({
     id,
     user_id: userId,
+    tenant_id: tenantId,
     plan: fields.plan,
     billing: fields.billing,
     maker_name: fields.makerName,

@@ -2,17 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { FAMILY_KEYS } from '@/lib/archetypes/main-street/families';
 import { checkIntake, FIELD, isErrorSpot, MAX_PIECES, MIN_PIECES, MOOD_PICK, parseIntake, photoProblem, priceToCents, type IntakeDraft } from './request';
 
-const CHOICES = { families: FAMILY_KEYS, plans: ['showcase', 'lite', 'full'] as const };
+const CHOICES = { families: FAMILY_KEYS };
 const photo = (name = 'a.jpg', type = 'image/jpeg', size = 10): File => new File([new Uint8Array(size)], name, { type });
 
 function draft(over: Partial<IntakeDraft> = {}): IntakeDraft {
   return {
-    plan: 'lite',
-    billing: 'monthly',
-    makerName: 'Lena',
-    businessName: 'Saltmarsh & Lace',
-    email: 'lena@example.com',
-    password: 'tide pools 22',
     makes: 'Lace and sea glass',
     about: 'I started on the porch.',
     family: 'cozy',
@@ -25,12 +19,6 @@ function draft(over: Partial<IntakeDraft> = {}): IntakeDraft {
 
 function form(d: IntakeDraft, extra: Record<string, string> = {}): FormData {
   const f = new FormData();
-  f.set(FIELD.plan, d.plan ?? '');
-  f.set(FIELD.billing, d.billing);
-  f.set(FIELD.name, d.makerName);
-  f.set(FIELD.business, d.businessName);
-  f.set(FIELD.email, d.email);
-  f.set(FIELD.password, d.password);
   f.set(FIELD.makes, d.makes);
   f.set(FIELD.about, d.about);
   f.set(FIELD.family, d.family ?? (d.familyChosen ? MOOD_PICK : ''));
@@ -77,21 +65,8 @@ describe('checkIntake', () => {
     expect(checkIntake(draft())).toBeNull();
   });
 
-  it('needs a password of 8 to 72 characters, taken as typed', () => {
-    expect(checkIntake(draft({ password: 'short' }))).toEqual({ spot: 'password', values: { min: 8, max: 72 } });
-    expect(checkIntake(draft({ password: 'x'.repeat(73) }))?.spot).toBe('password');
-    expect(checkIntake(draft({ password: '        ' }))).toBeNull();
-  });
-
-  it('needs a plan first', () => {
-    expect(checkIntake(draft({ plan: null, makerName: '' }))?.spot).toBe('plan');
-  });
-
   it('names the first thing wrong, top of the form first', () => {
-    expect(checkIntake(draft({ makerName: ' ', email: 'x' }))?.spot).toBe('name');
-    expect(checkIntake(draft({ businessName: '' }))?.spot).toBe('business');
-    expect(checkIntake(draft({ email: 'not an email' }))?.spot).toBe('email');
-    expect(checkIntake(draft({ makes: '' }))?.spot).toBe('makes');
+    expect(checkIntake(draft({ makes: '', about: '' }))?.spot).toBe('makes');
     expect(checkIntake(draft({ about: '' }))?.spot).toBe('about');
     expect(checkIntake(draft({ familyChosen: false, family: null }))?.spot).toBe('mood');
   });
@@ -127,7 +102,7 @@ describe('checkIntake', () => {
 
   it('refuses words over the limits', () => {
     expect(checkIntake(draft({ about: 'x'.repeat(5001) }))?.spot).toBe('tooLong');
-    expect(checkIntake(draft({ makerName: 'x'.repeat(121) }))?.spot).toBe('tooLong');
+    expect(checkIntake(draft({ makes: 'x'.repeat(601) }))?.spot).toBe('tooLong');
   });
 });
 
@@ -137,15 +112,15 @@ describe('parseIntake', () => {
   });
 
   it('hands back exactly what to save, trimmed', () => {
-    const d = draft({ makerName: ' Lena ', portrait: photo('me.jpg') });
+    const d = draft({ makes: ' Lace and sea glass ', portrait: photo('me.jpg') });
     d.pieces[0] = { name: ' Tide pool ', price: '$40', description: ' Blue glass ', photo: photo('p.jpg') };
     d.pieces[1] = { ...d.pieces[1]!, price: '' };
     const out = parseIntake(form(d), CHOICES);
     expect(out.kind).toBe('ok');
     if (out.kind !== 'ok') return;
-    expect(out.fields).toEqual({ plan: 'lite', billing: 'monthly', makerName: 'Lena', businessName: 'Saltmarsh & Lace', email: 'lena@example.com', makes: 'Lace and sea glass', about: 'I started on the porch.', family: 'cozy' });
+    // Who they are and their plan come from their sign-up, never this form.
+    expect(out.content).toEqual({ makes: 'Lace and sea glass', about: 'I started on the porch.', family: 'cozy' });
     expect(out.portrait?.name).toBe('me.jpg');
-    expect(out.password).toBe('tide pools 22');
     expect(out.pieces).toHaveLength(MIN_PIECES);
     expect(out.pieces[0]).toMatchObject({ name: 'Tide pool', priceCents: 4000, description: 'Blue glass' });
     expect(out.pieces[1]).toMatchObject({ priceCents: null, description: null });
@@ -153,26 +128,22 @@ describe('parseIntake', () => {
 
   it('"you pick for me" saves no mood', () => {
     const out = parseIntake(form(draft({ family: null, familyChosen: true })), CHOICES);
-    expect(out.kind === 'ok' && out.fields.family).toBeNull();
+    expect(out.kind === 'ok' && out.content.family).toBeNull();
   });
 
   it('takes any family there is, by its own name', () => {
     for (const key of FAMILY_KEYS) {
       const out = parseIntake(form(draft({ family: key })), CHOICES);
-      expect(out.kind === 'ok' && out.fields.family).toBe(key);
+      expect(out.kind === 'ok' && out.content.family).toBe(key);
     }
     // A family the code doesn't have yet isn't a choice.
     expect(parseIntake(form(draft({ family: 'luxury' })), { ...CHOICES, families: ['cozy'] })).toMatchObject({ kind: 'invalid', problem: { spot: 'mood' } });
   });
 
-  it('takes the plan they signed up on, and how they pay', () => {
-    const yearly = parseIntake(form(draft({ plan: 'full', billing: 'yearly' })), CHOICES);
-    expect(yearly.kind === 'ok' && [yearly.fields.plan, yearly.fields.billing]).toEqual(['full', 'yearly']);
-    // A plan the list doesn't have is no plan.
-    expect(parseIntake(form(draft(), { [FIELD.plan]: 'gold' }), CHOICES)).toEqual({ kind: 'invalid', problem: { spot: 'plan', values: {} } });
-    // Anything but yearly is monthly.
-    const odd = parseIntake(form(draft(), { [FIELD.billing]: 'weekly' }), CHOICES);
-    expect(odd.kind === 'ok' && odd.fields.billing).toBe('monthly');
+  it('ignores a plan or account sent with the form', () => {
+    const out = parseIntake(form(draft(), { plan: 'gold', email: 'someone@else.com', password: 'x' }), CHOICES);
+    expect(out.kind).toBe('ok');
+    expect(out.kind === 'ok' && Object.keys(out.content)).toEqual(['makes', 'about', 'family']);
   });
 
   it('an unknown family is no mood chosen', () => {
@@ -188,7 +159,7 @@ describe('parseIntake', () => {
 
   it('an empty form has no pieces', () => {
     const f = new FormData();
-    expect(parseIntake(f, CHOICES)).toEqual({ kind: 'invalid', problem: { spot: 'plan', values: {} } });
+    expect(parseIntake(f, CHOICES)).toEqual({ kind: 'invalid', problem: { spot: 'makes', values: {} } });
     const g = form(draft({ pieces: [] }));
     g.set(FIELD.portrait, 'not a file');
     expect(parseIntake(g, CHOICES)).toEqual({ kind: 'invalid', problem: { spot: 'piecesFew', values: { min: MIN_PIECES } } });

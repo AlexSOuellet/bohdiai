@@ -59,14 +59,14 @@ describe('saveIntake', () => {
 
   it('stores every photo privately, then the intake and its pieces', async () => {
     const { db, calls } = fakeDb();
-    const out = await saveIntake({ db, shrink, fields, pieces, portrait: file(), userId: 'u1', id: 'i1' });
+    const out = await saveIntake({ db, shrink, fields, pieces, portrait: file(), userId: 'u1', tenantId: 't1', id: 'i1' });
     expect(out).toEqual({ ok: true, id: 'i1' });
     expect(calls.bucket).toBe(INTAKE_BUCKET);
     expect(calls.uploads).toEqual(['i1/piece-1.webp', 'i1/piece-2.webp', 'i1/portrait.webp']);
     expect(shrink).toHaveBeenCalledWith(expect.any(ArrayBuffer), { maxEdge: 2400, format: 'webp', quality: 82 });
     expect(calls.inserts[0]).toEqual({
       table: 'intakes',
-      row: { id: 'i1', user_id: 'u1', plan: 'lite', billing: 'yearly', maker_name: 'Lena', business_name: 'Saltmarsh', email: 'l@example.com', makes: 'Lace', about: 'Porch', family: null, portrait_path: 'i1/portrait.webp' },
+      row: { id: 'i1', user_id: 'u1', tenant_id: 't1', plan: 'lite', billing: 'yearly', maker_name: 'Lena', business_name: 'Saltmarsh', email: 'l@example.com', makes: 'Lace', about: 'Porch', family: null, portrait_path: 'i1/portrait.webp' },
     });
     expect(calls.inserts[1]).toEqual({
       table: 'intake_pieces',
@@ -79,7 +79,7 @@ describe('saveIntake', () => {
 
   it('makes its own id, and no portrait means no portrait path', async () => {
     const { db, calls } = fakeDb();
-    const out = await saveIntake({ db, shrink, fields, pieces, portrait: null, userId: 'u1' });
+    const out = await saveIntake({ db, shrink, fields, pieces, portrait: null, userId: 'u1', tenantId: 't1' });
     expect(out.ok).toBe(true);
     expect(calls.uploads).toHaveLength(2);
     expect((calls.inserts[0]?.row as { portrait_path: unknown }).portrait_path).toBeNull();
@@ -88,34 +88,34 @@ describe('saveIntake', () => {
   it('an unreadable photo stops it before anything is stored', async () => {
     const { db, calls } = fakeDb();
     shrink.mockImplementationOnce(() => Promise.reject(new Error('bad bytes')));
-    expect(await saveIntake({ db, shrink, fields, pieces, portrait: null, userId: 'u1', id: 'i1' })).toEqual({ ok: false, reason: 'photoUnread' });
+    expect(await saveIntake({ db, shrink, fields, pieces, portrait: null, userId: 'u1', tenantId: 't1', id: 'i1' })).toEqual({ ok: false, reason: 'photoUnread' });
     expect(calls.uploads).toEqual([]);
     expect(calls.inserts).toEqual([]);
   });
 
   it('a failed upload removes the photos already stored', async () => {
     const { db, calls } = fakeDb({ upload: 2 });
-    expect(await saveIntake({ db, shrink, fields, pieces, portrait: null, userId: 'u1', id: 'i1' })).toEqual({ ok: false, reason: 'failed' });
+    expect(await saveIntake({ db, shrink, fields, pieces, portrait: null, userId: 'u1', tenantId: 't1', id: 'i1' })).toEqual({ ok: false, reason: 'failed' });
     expect(calls.removed).toEqual([['i1/piece-1.webp']]);
     expect(calls.inserts).toEqual([]);
   });
 
   it('a failed first upload has nothing to remove', async () => {
     const { db, calls } = fakeDb({ upload: 1 });
-    expect(await saveIntake({ db, shrink, fields, pieces, portrait: null, userId: 'u1', id: 'i1' })).toEqual({ ok: false, reason: 'failed' });
+    expect(await saveIntake({ db, shrink, fields, pieces, portrait: null, userId: 'u1', tenantId: 't1', id: 'i1' })).toEqual({ ok: false, reason: 'failed' });
     expect(calls.removed).toEqual([]);
   });
 
   it('a failed intake save removes the photos', async () => {
     const { db, calls } = fakeDb({ intake: { message: 'nope' } });
-    expect(await saveIntake({ db, shrink, fields, pieces, portrait: null, userId: 'u1', id: 'i1' })).toEqual({ ok: false, reason: 'failed' });
+    expect(await saveIntake({ db, shrink, fields, pieces, portrait: null, userId: 'u1', tenantId: 't1', id: 'i1' })).toEqual({ ok: false, reason: 'failed' });
     expect(calls.removed).toEqual([['i1/piece-1.webp', 'i1/piece-2.webp']]);
     expect(calls.deletes).toEqual(['i1']);
   });
 
   it('a failed pieces save removes the intake and the photos, even if cleaning up fails too', async () => {
     const { db, calls } = fakeDb({ pieces: { message: 'nope' }, remove: { message: 'x' }, deleteIntake: { message: 'y' } });
-    expect(await saveIntake({ db, shrink, fields, pieces, portrait: null, userId: 'u1', id: 'i1' })).toEqual({ ok: false, reason: 'failed' });
+    expect(await saveIntake({ db, shrink, fields, pieces, portrait: null, userId: 'u1', tenantId: 't1', id: 'i1' })).toEqual({ ok: false, reason: 'failed' });
     expect(calls.deletes).toEqual(['i1']);
     expect(calls.removed).toHaveLength(1);
   });
