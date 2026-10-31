@@ -12,6 +12,7 @@ import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
 import { FAMILY_KEYS } from '@/lib/archetypes/main-street/families';
 import { getCurrentUser } from '@/lib/auth/session';
 import { onboardingSite } from '@/lib/signup/onboarding';
+import { startBuild } from '@/lib/build/start-build';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -70,7 +71,15 @@ async function handle(req: Request) {
     return NextResponse.json({ failed: true }, { status: 502 });
   }
 
-  // It's saved: a failed email is logged for Alex, and the maker is still told it arrived.
+  // It's saved: the site builds itself. A build that can't start is logged and
+  // Alex is emailed below as always, so the form is never lost.
+  try {
+    await startBuild(saved.id);
+  } catch (err) {
+    logger.error('intake: saved, but the build didn’t start', { id: saved.id, error: err instanceof Error ? err.message : String(err) });
+  }
+
+  // A failed email is logged for Alex, and the maker is still told it arrived.
   try {
     const words = await getIntakeWords(db);
     const email = composeIntakeEmail({ id: saved.id, fields, pieces: parsed.pieces, hasPortrait: parsed.portrait !== null, words });

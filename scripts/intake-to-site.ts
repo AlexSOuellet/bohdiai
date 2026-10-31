@@ -32,7 +32,8 @@ import type { Database } from '../lib/database.types';
 import { anthropicClient } from '../lib/anthropic';
 import { FAMILY_KEYS, type FamilyKey } from '../lib/archetypes/main-street/families';
 import { isSitePlan } from '../lib/backend/plan/plan';
-import { designWordKeys, planSite } from '../lib/build/site-plan';
+import { planSite } from '../lib/build/site-plan';
+import { referenceWords } from '../lib/build/reference-words';
 import { siteFromIntake, type BuildSettings, type IntakeForBuild } from '../lib/build/from-intake';
 import { draftIntake, type PiecePhoto } from '../lib/build/intake-drafts';
 import { makeScenes, sceneKeys, SCENES_DEFAULT, SCENES_MAX, SCENES_MIN } from '../lib/build/scene-art';
@@ -43,8 +44,6 @@ import { ensureBuilderAccess } from '../lib/backend/builder-access';
 import { getIntakeWords } from '../lib/intake/queries';
 import { composeReadyEmail } from '../lib/intake/ready-email';
 import { resend, fromEmail } from '../lib/resend';
-
-type Db = ReturnType<typeof createClient<Database>>;
 
 /** Platform storage for the scene library's photos (not any one site's folder). */
 const SCENE_BUCKET = 'generated-images';
@@ -61,33 +60,6 @@ function flag(args: string[], name: string): string | undefined {
 
 function isFamily(v: string): v is FamilyKey {
   return (FAMILY_KEYS as readonly string[]).includes(v);
-}
-
-/** The buttons and labels from a family site that has every one the design shows: the
- *  moods' set and the shoreline design's (Scenic is drawn by it, so every site can wear it). */
-async function referenceWords(db: Db, from: string | undefined): Promise<Record<string, string>> {
-  const need = [...new Set([...designWordKeys('family'), ...designWordKeys('shoreline')])];
-  const read = async (tenantId: string): Promise<Map<string, string>> => {
-    const { data, error } = await db.from('site_words').select('key, text').eq('tenant_id', tenantId);
-    if (error !== null) fail(`reading words failed: ${error.message}`);
-    return new Map((data ?? []).map((r) => [r.key, r.text]));
-  };
-  const complete = (words: Map<string, string>): boolean => need.every((k) => words.has(k));
-  if (from !== undefined) {
-    const { data } = await db.from('tenants').select('id').eq('subdomain', from).maybeSingle();
-    if (data === null) fail(`no site called ${from}`);
-    const words = await read(data.id);
-    if (!complete(words)) fail(`${from} is missing some of the design's words: ${need.filter((k) => !words.has(k)).slice(0, 5).join(', ')}…`);
-    return Object.fromEntries(need.map((k) => [k, words.get(k) ?? '']));
-  }
-  const { data: pages, error } = await db.from('content_pages').select('tenant_id, layout_tree');
-  if (error !== null) fail(`reading pages failed: ${error.message}`);
-  const ids = [...new Set((pages ?? []).filter((p) => (p.layout_tree as { root?: { archetypeKey?: unknown } } | null)?.root?.archetypeKey === 'main-street').map((p) => p.tenant_id))];
-  for (const id of ids) {
-    const words = await read(id);
-    if (complete(words)) return Object.fromEntries(need.map((k) => [k, words.get(k) ?? '']));
-  }
-  return fail('no family site has every word the design shows; pass --words-from <site>');
 }
 
 async function main(): Promise<void> {
@@ -149,7 +121,7 @@ async function main(): Promise<void> {
   }
 
   // 2) The words we write, checked against the whole content file.
-  const words = await referenceWords(db, flag(rest, '--words-from'));
+  const words = await referenceWords(db, flag(rest, '--words-from')).catch((err: unknown) => fail(err instanceof Error ? err.message : String(err)));
   const niche = flag(rest, '--niche');
   // Every build makes three backgrounds for the site, whatever its family, into the
   // library (Alex, 2026-10-19: three until the library is big enough to pick from).

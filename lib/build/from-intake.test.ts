@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { SECTION_KEYS } from '@/lib/backend/sections/sections-form';
 import { checkDrafts, draftsSchema, siteFromIntake, type IntakeDrafts, type IntakeForBuild } from './from-intake';
-import { designWordKeys, planSite } from './site-plan';
+import { siteWordKeys, planSite } from './site-plan';
 
-const words = Object.fromEntries(designWordKeys('family').map((k) => [k, `word for ${k}`]));
+const words = Object.fromEntries(siteWordKeys('family').map((k) => [k, `word for ${k}`]));
 const settings = { subdomain: 'tide-and-twine', family: 'cozy' as const, skin: 'main-street-ember' };
 
 function intake(over: Partial<IntakeForBuild> = {}): IntakeForBuild {

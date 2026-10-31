@@ -7,6 +7,7 @@ const getIntakeWords = vi.fn();
 const logError = vi.fn();
 const getCurrentUser = vi.fn();
 const onboardingSite = vi.fn();
+const startBuild = vi.fn();
 
 vi.mock('@/lib/forms/rate-limit', () => ({ formLimitResponse: () => Promise.resolve(null) }));
 vi.mock('@/lib/supabase', () => ({ supabaseAdmin: () => ({}) }));
@@ -17,6 +18,7 @@ vi.mock('@/lib/intake/save', () => ({ saveIntake: (...a: unknown[]) => saveIntak
 vi.mock('@/lib/intake/queries', () => ({ getIntakeWords: () => getIntakeWords() }));
 vi.mock('@/lib/auth/session', () => ({ getCurrentUser: () => getCurrentUser() }));
 vi.mock('@/lib/signup/onboarding', () => ({ onboardingSite: (...a: unknown[]) => onboardingSite(...a) }));
+vi.mock('@/lib/build/start-build', () => ({ startBuild: (...a: unknown[]) => startBuild(...a) }));
 
 import { POST } from './route';
 import { FIELD, MIN_PIECES, MOOD_PICK } from '@/lib/intake/request';
@@ -49,6 +51,19 @@ describe('POST /api/intake (onboarding)', () => {
     logError.mockReset();
     getCurrentUser.mockReset().mockResolvedValue({ id: 'u1', email: 'lena@example.com', user_metadata: { name: 'Lena' } });
     onboardingSite.mockReset().mockResolvedValue(SITE);
+    startBuild.mockReset().mockResolvedValue(undefined);
+  });
+
+  it('starts the build once it’s saved', async () => {
+    await post(body());
+    expect(startBuild).toHaveBeenCalledWith('i1');
+  });
+
+  it('still says it arrived, and still emails Alex, when the build can’t start', async () => {
+    startBuild.mockRejectedValue(new Error('no workflow'));
+    expect(await (await post(body())).json()).toEqual({ ok: true });
+    expect(send).toHaveBeenCalled();
+    expect(logError).toHaveBeenCalledWith('intake: saved, but the build didn’t start', { id: 'i1', error: 'no workflow' });
   });
 
   it('saves it against their own site, with who they are and their plan from sign-up, and emails Alex', async () => {
@@ -79,6 +94,7 @@ describe('POST /api/intake (onboarding)', () => {
     expect(res.status).toBe(401);
     expect(onboardingSite).not.toHaveBeenCalled();
     expect(saveIntake).not.toHaveBeenCalled();
+    expect(startBuild).not.toHaveBeenCalled();
   });
 
   it('turns away a maker with no site waiting (already sent, not paid, or Free)', async () => {

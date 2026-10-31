@@ -21,6 +21,9 @@
     { "name": "FORM_LIMITER", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } }
   ],
   "images": { "binding": "IMAGES" },
+  // The automatic build after onboarding (Session 119): worker.ts's SiteBuild runs
+  // lib/build/build-sequence.ts, each step a request to /api/build/step.
+  "workflows": [{ "name": "bohdiai-site-build", "binding": "SITE_BUILD", "class_name": "SiteBuild" }],
   // Visitor numbers: one data point per page view, no cookies (lib/visits/page-view.ts).
   "analytics_engine_datasets": [{ "binding": "VISITS", "dataset": "bohdiai_visits" }],
   // Daily, early morning: save each Full site's finished months (worker.ts → /api/cron/visit-months).

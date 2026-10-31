@@ -167,6 +167,13 @@ export function designWordKeys(design: BuildDesign): string[] {
   return [...own, ...wordKeys(SHOP_WORD_SPOTS, SHOP_WORDS_PREFIX)];
 }
 
+/** Every word a new site of this design gets. A mood site also carries the shoreline
+ *  design's buttons and labels, because Scenic is drawn by it and any site can wear
+ *  Scenic or try it on (Session 111). */
+export function siteWordKeys(design: BuildDesign): string[] {
+  return design === 'family' ? [...new Set([...designWordKeys('family'), ...designWordKeys('shoreline')])] : designWordKeys(design);
+}
+
 /** True when the skin is one of the family's skins (its moods include the family's public word). */
 function skinFits(family: FamilyKey, skin: string): boolean {
   if (MAIN_STREET_SKINS[skin] === undefined) return false;
@@ -305,7 +312,7 @@ export function planSite(f: SiteFile): PlanResult {
   }
 
   // Words: every spot the design shows, none blank, none unknown.
-  const want = designWordKeys(s.design);
+  const want = siteWordKeys(s.design);
   const wanted = new Set(want);
   const missing = want.filter((k) => (f.words[k] ?? '') === '');
   if (missing.length > 0) errors.push(`words: ${missing.length} spot(s) have no word: ${missing.slice(0, 12).join(', ')}${missing.length > 12 ? ', …' : ''}`);

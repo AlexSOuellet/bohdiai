@@ -2,11 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { EMPTY_PROFILE } from '@/lib/backend/profile/profile-form';
 import { EMPTY_MOMENT } from '@/lib/backend/moment/moment-form';
 import { SECTION_KEYS } from '@/lib/backend/sections/sections-form';
-import { designWordKeys, planSite, slugOf, type BuildDesign, type SiteFile } from './site-plan';
+import { designWordKeys, siteWordKeys, planSite, slugOf, type BuildDesign, type SiteFile } from './site-plan';
 
 /** Every spot the design shows, each with a word. */
 function allWords(design: BuildDesign): Record<string, string> {
-  return Object.fromEntries(designWordKeys(design).map((k) => [k, `word for ${k}`]));
+  return Object.fromEntries(siteWordKeys(design).map((k) => [k, `word for ${k}`]));
 }
 
 /** Changes to a test site; a key set to undefined leaves that part out. */
@@ -69,7 +69,7 @@ describe('planSite — a family site', () => {
     expect(p.products[1]).toMatchObject({ slug: 'custom', priceCents: null, short: 'One of a kind', stock: 3, isNew: true, collections: [] });
     expect(p.markets[0]).toMatchObject({ name: 'Harvest Fair', hours: '9–4', booth: null, address: null, url: null });
     expect(p.testimonials[0]).toMatchObject({ quote: 'Beautiful work.', name: 'Pat' });
-    expect(p.words).toHaveLength(designWordKeys('family').length);
+    expect(p.words).toHaveLength(siteWordKeys('family').length);
     // Each photo uploads once, even when two spots share it.
     expect(p.files).toEqual(['portrait.webp', 'open.webp', 'p1.webp', 'g1.webp', 'g2.webp', 'tide.webp']);
   });
@@ -262,14 +262,16 @@ describe('planSite — what it refuses', () => {
 
   it('needs every word the design shows, and only those', () => {
     const words = allWords('family');
+    // A mood site carries the shoreline design's buttons too, so it can wear Scenic.
+    expect(errorsOf(familySite({ words })).filter((e) => e.startsWith('words: '))).toEqual([]);
     const [first] = designWordKeys('family');
     const few = Object.fromEntries(Object.entries(words).slice(0, 5));
     const missing = errorsOf(familySite({ words: few })).find((e) => e.startsWith('words: '));
     expect(missing).toMatch(/spot\(s\) have no word: .*, …$/);
     const blank = errorsOf(familySite({ words: { ...words, [first as string]: '' } }));
     expect(blank).toContain(`words: 1 spot(s) have no word: ${first}`);
-    const extra = errorsOf(familySite({ words: { ...words, 'card.form.send': 'Send' } }));
-    expect(extra).toContain('words: not spots of the family design: card.form.send');
+    const extra = errorsOf(familySite({ words: { ...words, 'nope.send': 'Send' } }));
+    expect(extra).toContain('words: not spots of the family design: nope.send');
     const lots = Object.fromEntries(Array.from({ length: 13 }, (_, i) => [`nope.${i}`, 'x']));
     expect(errorsOf(familySite({ words: { ...words, ...lots } })).find((e) => e.startsWith('words: not spots'))).toMatch(/, …$/);
   });
