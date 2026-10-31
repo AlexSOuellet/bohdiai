@@ -13,6 +13,8 @@ import { recordCheckout, type Recorded } from '@/lib/billing/record';
 import { ownerOf } from '@/lib/signup/confirm-email';
 import { confirmOwner } from '@/lib/signup/after-paid';
 import { CheckEmail } from '@/components/signup/CheckEmail';
+import { headers } from 'next/headers';
+import { headersOrigin } from '@/lib/backend/request-origin';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +48,7 @@ export default async function PaidPage({ searchParams }: { searchParams: Search 
         const owner = await ownerOf(supabaseAdmin(), recorded.tenantId);
         email = owner.email;
         // The first to record the payment sends the email; a failure shows "Send it again".
-        if (recorded.first) await confirmOwner(supabaseAdmin(), owner).catch((err: unknown) => logger.error('start/paid: confirmation email failed', { error: err instanceof Error ? err.message : String(err) }));
+        if (recorded.first) await confirmOwner(supabaseAdmin(), owner, headersOrigin(await headers())).catch((err: unknown) => logger.error('start/paid: confirmation email failed', { error: err instanceof Error ? err.message : String(err) }));
       }
     } catch (err) {
       logger.error('start/paid: could not read the checkout', { error: err instanceof Error ? err.message : String(err) });

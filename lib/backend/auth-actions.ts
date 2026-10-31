@@ -8,6 +8,8 @@
  * set from a fresh session that came from an emailed link.
  */
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
+import { headersOrigin } from './request-origin';
 import type { Route } from 'next';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { supabaseAdmin } from '@/lib/supabase';
@@ -71,7 +73,9 @@ export async function signIn(input: { email: string; password: string }): Promis
 async function unconfirmed(email: string): Promise<ActionResult> {
   let next: Awaited<ReturnType<typeof unconfirmedSignIn>>;
   try {
-    next = await unconfirmedSignIn(supabaseAdmin(), email, serverEnv().SITE_URL);
+    // The site's own address (bohdiai.com, or the dev server), from the app host's.
+    const site = headersOrigin(await headers()).replace('://app.', '://');
+    next = await unconfirmedSignIn(supabaseAdmin(), email, site);
   } catch (err) {
     logger.error('sign-in: unconfirmed account', { error: err instanceof Error ? err.message : String(err) });
     return { ok: false, error: SIGN_IN_UNAVAILABLE };

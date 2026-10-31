@@ -5,6 +5,7 @@ import { formLimitResponse } from '@/lib/forms/rate-limit';
 import { parseSignup } from '@/lib/signup/request';
 import { signUp } from '@/lib/signup/signup';
 import { signupDeps } from '@/lib/signup/server';
+import { requestOrigin } from '@/lib/backend/request-origin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -30,7 +31,7 @@ export async function POST(req: Request): Promise<Response> {
   if (parsed.kind === 'invalid') return NextResponse.json({ problem: parsed.problem }, { status: 400 });
 
   try {
-    const result = await signUp(parsed.fields, parsed.password, signupDeps(supabaseAdmin(), new URL(req.url).origin));
+    const result = await signUp(parsed.fields, parsed.password, signupDeps(supabaseAdmin(), requestOrigin(req)));
     if (result.ok) return NextResponse.json({ url: result.url });
     if (result.reason === 'accountExists') return NextResponse.json({ problem: { spot: 'accountExists', values: {} } }, { status: 400 });
     return NextResponse.json({ failed: true }, { status: 502 });

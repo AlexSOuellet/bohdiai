@@ -25,7 +25,7 @@ describe('POST /api/signup/again', () => {
     sendAgain.mockResolvedValue({ ok: true, email: 'lena@example.com' });
     const res = await post({ session: 'cs_1' });
     expect(await res.json()).toEqual({ email: 'lena@example.com' });
-    expect(sendAgain).toHaveBeenCalledWith({}, {}, 'cs_1');
+    expect(sendAgain).toHaveBeenCalledWith({}, {}, 'cs_1', 'https://bohdiai.com');
     expect(fixEmail).not.toHaveBeenCalled();
   });
 
@@ -33,7 +33,7 @@ describe('POST /api/signup/again', () => {
     fixEmail.mockResolvedValue({ ok: true, email: 'new@example.com' });
     const res = await post({ session: 'cs_1', email: 'new@example.com' });
     expect(await res.json()).toEqual({ email: 'new@example.com' });
-    expect(fixEmail).toHaveBeenCalledWith({}, {}, 'cs_1', 'new@example.com');
+    expect(fixEmail).toHaveBeenCalledWith({}, {}, 'cs_1', 'new@example.com', 'https://bohdiai.com');
   });
 
   it.each(['email', 'accountExists'])('names the problem (%s) in the form’s words', async (reason) => {

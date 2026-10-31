@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { formLimitResponse } from '@/lib/forms/rate-limit';
 import { stripe } from '@/lib/billing/stripe';
 import { fixEmail, sendAgain } from '@/lib/signup/after-paid';
+import { requestOrigin } from '@/lib/backend/request-origin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -31,7 +32,8 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   try {
-    const result = email === null ? await sendAgain(stripe(), supabaseAdmin(), session) : await fixEmail(stripe(), supabaseAdmin(), session, email);
+    const here = requestOrigin(req);
+    const result = email === null ? await sendAgain(stripe(), supabaseAdmin(), session, here) : await fixEmail(stripe(), supabaseAdmin(), session, email, here);
     if (result.ok) return NextResponse.json({ email: result.email });
     if (result.reason === 'email' || result.reason === 'accountExists') return NextResponse.json({ problem: { spot: result.reason, values: {} } }, { status: 400 });
     // Already confirmed, or not a paid sign-up: nothing to send.

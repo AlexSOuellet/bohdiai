@@ -25,6 +25,7 @@ vi.mock('./auth-links', () => ({ sendAuthLink }));
 vi.mock('@/lib/auth/membership', () => ({ getUserShops }));
 vi.mock('./user-lookup', () => ({ findUserByEmail }));
 vi.mock('@/lib/signup/server', () => ({ unconfirmedSignIn }));
+vi.mock('next/headers', () => ({ headers: async () => new Headers({ host: 'app.bohdiai.com', 'x-forwarded-proto': 'https' }) }));
 vi.mock('next/navigation', () => ({ redirect: vi.fn((p: string) => { throw new Error(`REDIRECT ${p}`); }) }));
 
 import { signIn, signOut as signOutAction, requestPasswordReset, setPassword } from './auth-actions';
@@ -59,7 +60,7 @@ describe('signIn', () => {
     signInWithPassword.mockResolvedValue({ error: { message: 'Email not confirmed', status: 400, code: 'email_not_confirmed' } });
     unconfirmedSignIn.mockResolvedValue({ kind: 'pay', url: 'https://checkout.stripe.com/c/cs_1' });
     await expect(signIn({ email: 'a@b.co', password: 'longenough' })).rejects.toThrow('REDIRECT https://checkout.stripe.com/c/cs_1');
-    expect(unconfirmedSignIn).toHaveBeenCalledWith(expect.anything(), 'a@b.co', expect.any(String));
+    expect(unconfirmedSignIn).toHaveBeenCalledWith(expect.anything(), 'a@b.co', 'https://bohdiai.com');
   });
   it('asks someone who paid to confirm their email first', async () => {
     signInWithPassword.mockResolvedValue({ error: { message: 'Email not confirmed', status: 400, code: 'email_not_confirmed' } });

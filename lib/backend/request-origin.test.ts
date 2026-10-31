@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { requestOrigin, isSameOriginPost } from './request-origin';
+import { requestOrigin, isSameOriginPost, headersOrigin } from './request-origin';
 
 const req = (url: string, headers: Record<string, string>) => new Request(url, { method: 'POST', headers });
 
@@ -27,5 +27,17 @@ describe('isSameOriginPost', () => {
   });
   it('allows a post with no Origin header', () => {
     expect(isSameOriginPost(req('https://app.bohdiai.com/auth/confirm', { host: 'app.bohdiai.com' }))).toBe(true);
+  });
+});
+
+describe('headersOrigin', () => {
+  it('reads the address the visitor used from a page’s headers', () => {
+    expect(headersOrigin(new Headers({ host: 'app.bohdiai.com', 'x-forwarded-proto': 'https' }))).toBe('https://app.bohdiai.com');
+    expect(headersOrigin(new Headers({ host: 'bohdiai.com' }))).toBe('https://bohdiai.com');
+  });
+
+  it('is plain http on the dev server', () => {
+    expect(headersOrigin(new Headers({ host: 'localhost:3000' }))).toBe('http://localhost:3000');
+    expect(headersOrigin(new Headers({ host: 'app.localhost:3000' }))).toBe('http://app.localhost:3000');
   });
 });

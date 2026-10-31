@@ -15,6 +15,15 @@ export function requestOrigin(request: Request): string {
   return `${scheme}://${host}`;
 }
 
+/** The same, from a page's request headers (no Request object there). */
+export function headersOrigin(headers: Headers): string {
+  const host = requestHost(headers);
+  const forwarded = headers.get('x-forwarded-proto')?.split(',')[0]?.trim();
+  const local = host.startsWith('localhost') || host.includes('.localhost') || host.startsWith('127.0.0.1');
+  const scheme = forwarded === 'https' || forwarded === 'http' ? forwarded : local ? 'http' : 'https';
+  return `${scheme}://${host}`;
+}
+
 /** True when a form post came from the same origin the visitor is on (absent Origin is allowed). */
 export function isSameOriginPost(request: Request): boolean {
   const from = request.headers.get('origin');
