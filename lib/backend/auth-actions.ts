@@ -30,7 +30,7 @@ const BACKEND_HOME = '/manage';
 
 const LINK_AGAIN = 'This link is no longer valid. Use Forgot password on the sign-in page to get a fresh one.';
 const SIGN_IN_UNAVAILABLE = 'Sign-in is unavailable for a moment. Please try again in a few minutes.';
-const CONFIRM_FIRST = 'Please confirm your email first: click the link in the email from BohdiAI. Not there? Check your spam or junk folder.';
+const CONFIRM_FIRST = 'Please confirm your email first. I’ve just sent you a fresh link from BohdiAI. Not there in a few minutes? Check your spam or junk folder.';
 /** A password may be set only this long after the emailed link was opened. */
 const LINK_SESSION_SECONDS = 15 * 60;
 const CLOCK_SKEW_SECONDS = 60;

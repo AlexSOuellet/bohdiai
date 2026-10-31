@@ -27,7 +27,7 @@ describe('GET /auth/confirm', () => {
     expect(res.headers.get('location')).toBe('https://app.bohdiai.com/auth/continue?token_hash=a%26b%3Dc&type=recovery');
   });
 
-  it.each(['', '?type=invite', '?token_hash=t', '?token_hash=&type=invite', '?token_hash=t&type=signup'])(
+  it.each(['', '?type=invite', '?token_hash=t', '?token_hash=&type=invite', '?token_hash=t&type=magiclink'])(
     'sends %j to the error page',
     async (qs) => {
       const res = await GET(get(qs));
@@ -46,6 +46,13 @@ describe('POST /auth/confirm', () => {
     expect(res.headers.get('location')).toBe('https://app.bohdiai.com/manage/set-password');
   });
 
+  it('confirms a new maker’s email and goes straight into the backend (Session 119)', async () => {
+    verifyOtp.mockResolvedValue({ error: null });
+    const res = await POST(post({ token_hash: 't', type: 'signup' }));
+    expect(verifyOtp).toHaveBeenCalledWith({ token_hash: 't', type: 'email' });
+    expect(res.headers.get('location')).toBe('https://app.bohdiai.com/manage');
+  });
+
   it('sends a bad or used token to the error page', async () => {
     verifyOtp.mockResolvedValue({ error: { message: 'expired' } });
     const res = await POST(post({ token_hash: 't', type: 'invite' }));
@@ -53,7 +60,7 @@ describe('POST /auth/confirm', () => {
     expect(res.headers.get('location')).toBe(ERROR);
   });
 
-  it.each([{ type: 'invite' }, { token_hash: '', type: 'invite' }, { token_hash: 't', type: 'signup' }, { token_hash: 't' }])(
+  it.each([{ type: 'invite' }, { token_hash: '', type: 'invite' }, { token_hash: 't', type: 'magiclink' }, { token_hash: 't' }])(
     'refuses %j without calling Supabase',
     async (fields) => {
       const res = await POST(post(fields));

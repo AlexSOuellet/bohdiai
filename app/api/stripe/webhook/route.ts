@@ -3,6 +3,7 @@ import { logger } from '@/lib/logger';
 import { supabaseAdmin } from '@/lib/supabase';
 import { stripe } from '@/lib/billing/stripe';
 import { claim, letGo, recordCheckout, recordSubscription } from '@/lib/billing/record';
+import { confirmSite } from '@/lib/signup/after-paid';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -35,7 +36,14 @@ export async function POST(req: Request): Promise<Response> {
   try {
     switch (event.type) {
       case 'checkout.session.completed':
-        if (event.data.object.mode === 'subscription') await recordCheckout(s, db, event.data.object.id);
+        if (event.data.object.mode === 'subscription') {
+          const recorded = await recordCheckout(s, db, event.data.object.id);
+          // The first to record the payment sends the confirmation email.
+          // A failed email is logged, not retried: the screen's "Send it again" and sign-in send another.
+          if (recorded.paid && recorded.first) {
+            await confirmSite(db, recorded.tenantId).catch((err: unknown) => logger.error('stripe webhook: confirmation email failed', { error: err instanceof Error ? err.message : String(err) }));
+          }
+        }
         break;
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted':

@@ -5,8 +5,10 @@
  * Dependencies are injected so this is testable without Supabase or Resend.
  */
 export type AuthLinkKind = 'invite' | 'recovery';
+/** A link the confirm route takes: also "signup", which confirms a new maker's email (Session 119; lib/signup/confirm-email). */
+export type ConfirmKind = AuthLinkKind | 'signup';
 
-export function confirmUrl(appOrigin: string, hashedToken: string, kind: AuthLinkKind): string {
+export function confirmUrl(appOrigin: string, hashedToken: string, kind: ConfirmKind): string {
   const u = new URL('/auth/confirm', appOrigin);
   u.searchParams.set('token_hash', hashedToken);
   u.searchParams.set('type', kind);

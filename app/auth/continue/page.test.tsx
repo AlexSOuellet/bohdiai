@@ -24,11 +24,16 @@ describe('/auth/continue', () => {
     expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
     expect(container.querySelector('.bk')).not.toBeNull();
   });
+  it('accepts a new maker’s confirmation link (Session 119)', async () => {
+    const { container } = render(await run({ token_hash: 't', type: 'signup' }));
+    expect(screen.getByRole('heading')).toHaveTextContent('Confirm your email');
+    expect(container.querySelector('input[name="type"]')).toHaveValue('signup');
+  });
   it('accepts a recovery link', async () => {
     render(await run({ token_hash: 't', type: 'recovery' }));
     expect(screen.getByRole('heading')).toHaveTextContent('Reset your password');
   });
-  it.each([{}, { type: 'invite' }, { token_hash: 't' }, { token_hash: '', type: 'invite' }, { token_hash: 't', type: 'signup' }, { token_hash: ['a', 'b'], type: 'invite' }])(
+  it.each([{}, { type: 'invite' }, { token_hash: 't' }, { token_hash: '', type: 'invite' }, { token_hash: 't', type: 'magiclink' }, { token_hash: ['a', 'b'], type: 'invite' }])(
     'sends %j to the error page',
     async (params) => {
       await expect(run(params)).rejects.toThrow(ERROR);

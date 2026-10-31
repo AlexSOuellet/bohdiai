@@ -7,6 +7,7 @@ const letGo = vi.fn();
 const recordCheckout = vi.fn();
 const recordSubscription = vi.fn();
 const touched = vi.fn();
+const confirmSite = vi.fn();
 
 vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() } }));
 vi.mock('@/lib/supabase', () => ({
@@ -21,6 +22,8 @@ vi.mock('@/lib/billing/record', () => ({
   recordCheckout: (...a: unknown[]) => recordCheckout(...a),
   recordSubscription: (...a: unknown[]) => recordSubscription(...a),
 }));
+
+vi.mock('@/lib/signup/after-paid', () => ({ confirmSite: (...a: unknown[]) => confirmSite(...a) }));
 
 import { POST } from './route';
 
@@ -39,8 +42,10 @@ describe('POST /api/stripe/webhook', () => {
   beforeEach(() => {
     vi.stubEnv('STRIPE_WEBHOOK_SECRET', SECRET);
     vi.stubEnv('STRIPE_SECRET_KEY', 'sk_test_x');
-    for (const f of [claim, letGo, recordCheckout, recordSubscription, touched]) f.mockReset();
+    for (const f of [claim, letGo, recordCheckout, recordSubscription, touched, confirmSite]) f.mockReset();
     claim.mockResolvedValue(true);
+    recordCheckout.mockResolvedValue({ paid: true, tenantId: 't1', email: 'a@b.co', first: true });
+    confirmSite.mockResolvedValue(undefined);
   });
   afterEach(() => vi.unstubAllEnvs());
 
@@ -49,6 +54,20 @@ describe('POST /api/stripe/webhook', () => {
     expect(res.status).toBe(200);
     expect(claim).toHaveBeenCalledWith({}, 'evt_1', 'checkout.session.completed');
     expect(recordCheckout).toHaveBeenCalledWith(expect.anything(), {}, 'cs_1');
+    expect(confirmSite).toHaveBeenCalledWith({}, 't1');
+  });
+
+  it('sends the confirmation email only if it recorded the payment first', async () => {
+    recordCheckout.mockResolvedValue({ paid: true, tenantId: 't1', email: 'a@b.co', first: false });
+    await POST(await notice(completed));
+    expect(confirmSite).not.toHaveBeenCalled();
+  });
+
+  it('keeps the payment recorded when only the email fails', async () => {
+    confirmSite.mockRejectedValue(new Error('resend down'));
+    const res = await POST(await notice(completed));
+    expect(res.status).toBe(200);
+    expect(letGo).not.toHaveBeenCalled();
   });
 
   it('turns away a notice not signed with our secret, before the database', async () => {

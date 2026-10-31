@@ -10,6 +10,9 @@ import { getIntakeWords } from '@/lib/intake/queries';
 import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
 import { stripe } from '@/lib/billing/stripe';
 import { recordCheckout, type Recorded } from '@/lib/billing/record';
+import { ownerOf } from '@/lib/signup/confirm-email';
+import { confirmOwner } from '@/lib/signup/after-paid';
+import { CheckEmail } from '@/components/signup/CheckEmail';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,9 +38,16 @@ export default async function PaidPage({ searchParams }: { searchParams: Search 
   const session = (await searchParams)['session'];
 
   let recorded: Recorded | 'failed' = { paid: false };
+  let email = '';
   if (typeof session === 'string' && session.startsWith('cs_')) {
     try {
       recorded = await recordCheckout(stripe(), supabaseAdmin(), session);
+      if (recorded.paid) {
+        const owner = await ownerOf(supabaseAdmin(), recorded.tenantId);
+        email = owner.email;
+        // The first to record the payment sends the email; a failure shows "Send it again".
+        if (recorded.first) await confirmOwner(supabaseAdmin(), owner).catch((err: unknown) => logger.error('start/paid: confirmation email failed', { error: err instanceof Error ? err.message : String(err) }));
+      }
     } catch (err) {
       logger.error('start/paid: could not read the checkout', { error: err instanceof Error ? err.message : String(err) });
       recorded = 'failed';
@@ -59,8 +69,7 @@ export default async function PaidPage({ searchParams }: { searchParams: Search 
                 ✓
               </div>
               <h1 className={TITLE}>{w.title}</h1>
-              <p className={BODY}>{fill(w.body, { email: recorded.email ?? '' })}</p>
-              <p className={`${BODY} mt-4 text-[14px]`}>{w.spam}</p>
+              <CheckEmail words={words} session={typeof session === 'string' ? session : ''} email={email} contactEmail={SITE_CONTACT_EMAIL} />
             </div>
           ) : (
             <div className={CARD}>

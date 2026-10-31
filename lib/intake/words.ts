@@ -37,6 +37,24 @@ export const INTAKE_WORD_SPOTS = {
     notPaidTitle: '',
     notPaidBody: '',
     notPaidButton: '',
+    again: '',
+    /** "{email}". */
+    sent: '',
+    wrong: '',
+    fixLabel: '',
+    fixButton: '',
+    cancel: '',
+  },
+  /** The email that confirms their address, sent once they've paid. */
+  confirm: {
+    subject: '',
+    /** "{name}". */
+    greeting: '',
+    body: '',
+    button: '',
+    /** Who to ignore it as. */
+    notYou: '',
+    signoff: '',
   },
   plan: {
     heading: '',

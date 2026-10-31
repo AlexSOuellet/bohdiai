@@ -15,7 +15,8 @@ import { isAccountPlan } from '@/lib/signup/request';
 
 type Db = SupabaseClient<Database>;
 
-export type Recorded = { paid: false } | { paid: true; tenantId: string; email: string | null };
+/** `first` is true only for whoever recorded it, so the confirmation email goes once. */
+export type Recorded = { paid: false } | { paid: true; tenantId: string; email: string | null; first: boolean };
 
 const UNIQUE_VIOLATION = '23505';
 
@@ -48,7 +49,7 @@ export async function recordCheckout(s: Stripe, db: Db, sessionId: string): Prom
   const email = session.customer_details?.email ?? session.customer_email ?? null;
 
   const lock = `checkout:${session.id}`;
-  if (!(await claim(db, lock, 'checkout.session.completed'))) return { paid: true, tenantId, email };
+  if (!(await claim(db, lock, 'checkout.session.completed'))) return { paid: true, tenantId, email, first: false };
   try {
     const sub = session.subscription;
     if (sub === null || typeof sub === 'string') throw new Error(`checkout ${session.id} came back without its subscription`);
@@ -79,7 +80,7 @@ export async function recordCheckout(s: Stripe, db: Db, sessionId: string): Prom
       .update({ plan_billing: interval === 'year' ? 'yearly' : 'monthly', plan_renews_on: day(now.end) })
       .eq('id', tenantId);
     if (tErr !== null) throw new Error(`Could not save the renewal day: ${tErr.message}`);
-    return { paid: true, tenantId, email };
+    return { paid: true, tenantId, email, first: true };
   } catch (err) {
     await letGo(db, lock);
     throw err;

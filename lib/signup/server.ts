@@ -12,6 +12,7 @@ import { addShopOwner } from '@/lib/auth/membership';
 import { startCheckout } from '@/lib/billing/checkout';
 import { billingFor, stripe } from '@/lib/billing/stripe';
 import { freeSubdomain } from './subdomain';
+import { confirmSite } from './after-paid';
 import type { SignupDeps, SignupSite } from './signup';
 import type { SignupFields } from './request';
 
@@ -87,14 +88,20 @@ async function createSite(db: Db, userId: string, fields: SignupFields): Promise
 /**
  * Sign-in for an account that isn't confirmed yet (Supabase only says so when the
  * password was right): one that never finished paying goes back to Stripe; one
- * that paid is told to confirm their email.
+ * that paid is sent a fresh confirmation link and told to look for it.
  */
 export async function unconfirmedSignIn(db: Db, email: string, origin: string): Promise<{ kind: 'pay'; url: string } | { kind: 'confirm' }> {
   const user = await findUserByEmail(email);
   if (user === null) return { kind: 'confirm' };
   const sites = await sitesOf(db, user.id);
   const waiting = sites.find((s) => s.draft && !s.paid);
-  if (waiting === undefined || sites.some((s) => s.paid)) return { kind: 'confirm' };
+  const paid = sites.find((s) => s.paid);
+  if (paid !== undefined) {
+    // Their link may be lost or used up: a fresh one, every time they try.
+    await confirmSite(db, paid.tenantId);
+    return { kind: 'confirm' };
+  }
+  if (waiting === undefined) return { kind: 'confirm' };
   const { data, error } = await db.from('tenants').select('plan, plan_billing, business_name, contact_email').eq('id', waiting.tenantId).single();
   if (error !== null) throw new Error(`Could not read the site's plan: ${error.message}`);
   const plan = data.plan;

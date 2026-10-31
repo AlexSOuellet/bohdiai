@@ -61,7 +61,7 @@ describe('recordCheckout', () => {
   it('saves the billing record and the renewal day, once', async () => {
     const { s, retrieve } = fakeStripe({});
     const { db, calls } = fakeDb();
-    expect(await recordCheckout(s, db, 'cs_1')).toEqual({ paid: true, tenantId: 't1', email: 'lena@example.com' });
+    expect(await recordCheckout(s, db, 'cs_1')).toEqual({ paid: true, tenantId: 't1', email: 'lena@example.com', first: true });
     expect(retrieve).toHaveBeenCalledWith('cs_1', { expand: ['subscription'] });
     expect(calls[0]).toMatchObject({ table: 'stripe_events', op: 'insert', value: { id: 'checkout:cs_1' } });
     expect(calls[1]).toMatchObject({
@@ -86,7 +86,7 @@ describe('recordCheckout', () => {
   it('only reads when the checkout was already recorded (Stripe’s notice and the page both arrive)', async () => {
     const { s } = fakeStripe({});
     const { db, calls } = fakeDb({ stripe_events: [{ code: '23505', message: 'duplicate' }] });
-    expect(await recordCheckout(s, db, 'cs_1')).toMatchObject({ paid: true, tenantId: 't1' });
+    expect(await recordCheckout(s, db, 'cs_1')).toMatchObject({ paid: true, tenantId: 't1', first: false });
     expect(calls.filter((c) => c.table === 'subscriptions')).toHaveLength(0);
   });
 

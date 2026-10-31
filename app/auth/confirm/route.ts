@@ -35,7 +35,8 @@ export async function GET(request: Request): Promise<Response> {
   return redirectTo(next);
 }
 
-/** Verifies the emailed invite/reset token, starts the session, then asks for a password. */
+/** Verifies the emailed token and starts the session: an invite or reset then asks for a
+ *  password; a new maker's confirmation (Session 119) goes straight into their backend. */
 export async function POST(request: Request): Promise<Response> {
   const origin = requestOrigin(request);
   // A cross-site form post must not be able to spend a token.
@@ -52,7 +53,8 @@ export async function POST(request: Request): Promise<Response> {
   if (typeof tokenHash !== 'string' || tokenHash === '' || typeof type !== 'string' || !AUTH_LINK_KINDS.has(type)) return toError(origin);
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: type as 'invite' | 'recovery' });
+  const signup = type === 'signup';
+  const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: signup ? 'email' : (type as 'invite' | 'recovery') });
   if (error !== null) return toError(origin);
-  return redirectTo(new URL('/manage/set-password', origin));
+  return redirectTo(new URL(signup ? '/manage' : '/manage/set-password', origin));
 }
