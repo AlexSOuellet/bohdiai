@@ -19,6 +19,12 @@ describe('PlanCards', () => {
     expect(screen.queryByText(/contractor/i)).toBeNull();
   });
 
+  it('starts Free from its own card, through the same sign-up', () => {
+    render(<PlanCards audience="maker" />);
+    const free = screen.getByRole('article', { name: 'Maker Free' });
+    expect(within(free).getByRole('link', { name: /start free/i })).toHaveAttribute('href', '/start?plan=maker-free');
+  });
+
   it('lights up only the badged plan, with its badge beside the name', () => {
     render(<PlanCards audience="maker" />);
     const showcase = screen.getByRole('article', { name: 'Maker Showcase' });

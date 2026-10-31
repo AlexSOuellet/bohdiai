@@ -8,6 +8,7 @@
  * set from a fresh session that came from an emailed link.
  */
 import { redirect } from 'next/navigation';
+import type { Route } from 'next';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { resend, fromEmail } from '@/lib/resend';
@@ -20,6 +21,7 @@ import { sendAuthLink } from './auth-links';
 import { findUserByEmail } from './user-lookup';
 import { appOrigin } from './app-url';
 import { RESET_SENT } from './auth-messages';
+import { unconfirmedSignIn } from '@/lib/signup/server';
 
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
@@ -28,6 +30,7 @@ const BACKEND_HOME = '/manage';
 
 const LINK_AGAIN = 'This link is no longer valid. Use Forgot password on the sign-in page to get a fresh one.';
 const SIGN_IN_UNAVAILABLE = 'Sign-in is unavailable for a moment. Please try again in a few minutes.';
+const CONFIRM_FIRST = 'Please confirm your email first: click the link in the email from BohdiAI. Not there? Check your spam or junk folder.';
 /** A password may be set only this long after the emailed link was opened. */
 const LINK_SESSION_SECONDS = 15 * 60;
 const CLOCK_SKEW_SECONDS = 60;
@@ -56,10 +59,26 @@ export async function signIn(input: { email: string; password: string }): Promis
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password: input.password });
   if (error !== null) {
+    // Only said when the password was right (Session 119): signed up, not confirmed.
+    if (error.code === 'email_not_confirmed') return unconfirmed(email);
     const wrong = error.status === 400 || error.code === 'invalid_credentials';
     return { ok: false, error: wrong ? 'That email and password don’t match.' : SIGN_IN_UNAVAILABLE };
   }
   redirect(BACKEND_HOME);
+}
+
+/** Never finished paying: back to Stripe. Paid: confirm the email first. */
+async function unconfirmed(email: string): Promise<ActionResult> {
+  let next: Awaited<ReturnType<typeof unconfirmedSignIn>>;
+  try {
+    next = await unconfirmedSignIn(supabaseAdmin(), email, serverEnv().SITE_URL);
+  } catch (err) {
+    logger.error('sign-in: unconfirmed account', { error: err instanceof Error ? err.message : String(err) });
+    return { ok: false, error: SIGN_IN_UNAVAILABLE };
+  }
+  // Stripe's own page, outside the app's routes.
+  if (next.kind === 'pay') redirect(next.url as Route);
+  return { ok: false, error: CONFIRM_FIRST };
 }
 
 export async function signOut(): Promise<void> {

@@ -16,6 +16,28 @@ const FAMILY_SPOTS = Object.fromEntries(FAMILY_KEYS.map((k) => [k, LOOK])) as Re
 
 export const INTAKE_WORD_SPOTS = {
   page: { title: '', lede: '', metaTitle: '', metaDescription: '' },
+  /** The first step (Alex, Session 119): the plan and the account, then Stripe. */
+  signup: {
+    title: '',
+    lede: '',
+    /** Free's price on its plan tile. */
+    free: '',
+    button: '',
+    sending: '',
+    /** Shown when Stripe's back button brought them here. */
+    back: '',
+  },
+  /** Back from Stripe. */
+  paid: {
+    metaTitle: '',
+    title: '',
+    /** "{email}". */
+    body: '',
+    spam: '',
+    notPaidTitle: '',
+    notPaidBody: '',
+    notPaidButton: '',
+  },
   plan: {
     heading: '',
     hint: '',

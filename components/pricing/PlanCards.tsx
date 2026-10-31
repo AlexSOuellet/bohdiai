@@ -4,16 +4,15 @@
  * The plan cards on a pricing page, with one Monthly / Yearly
  * switch above them. Plans are clear glass; the one plan with a badge (Showcase, "Most popular")
  * is lit with a honey edge and carries the badge beside its name. A maker plan's
- * button opens the intake form (bohdiai.com/start) with the plan and monthly or
- * yearly filled in; a contractor plan's "Talk to us" goes to the page's contact
- * form with the plan (Stripe checkout replaces both once staging exists — see the
- * pricing design, step B). Makers see Maker Free first (Alex, Session 117): no
- * price to switch and no button, since the sign-up form builds a site and Free
- * has its own way in still to come.
+ * button opens sign-up (bohdiai.com/start) with the plan and monthly or yearly
+ * filled in; a contractor plan's "Talk to us" goes to the page's contact form
+ * with the plan. Makers see Maker Free first (Alex, Session 117): no price to
+ * switch; its button opens sign-up on Free (Alex, Session 119).
  */
 import { useState } from 'react';
 import Link from 'next/link';
 import { FREE_OFFER, formatPrice, includesLead, plansFor, type Audience, type Plan } from '@/lib/site/plans';
+import { FREE_PLAN_ID } from '@/lib/intake/start';
 
 type Period = 'monthly' | 'yearly';
 
@@ -87,6 +86,12 @@ function FreeCard(): React.ReactElement {
         ))}
       </ul>
       <p className="mt-6 border-t border-white/[0.08] pt-4 text-[13px] leading-[1.5] text-muted">{FREE_OFFER.noSite}</p>
+      <Link
+        href={{ pathname: '/start', query: { plan: FREE_PLAN_ID } }}
+        className="mt-6 inline-flex items-center justify-center gap-2 rounded-pill border border-white/20 px-6 py-3.5 text-[14px] font-semibold text-text no-underline transition-transform hover:-translate-y-px"
+      >
+        Start free →
+      </Link>
     </article>
   );
 }

@@ -34,7 +34,7 @@ describe('bohdiai.com, the maker site (Session 117)', () => {
     expect(ladder).toHaveTextContent('Everything in Maker Showcase, plus');
   });
 
-  it('prices Free at $0 with its tools and no button, beside the three paid plans', () => {
+  it('prices Free at $0 with its tools and its own sign-up button (Session 119), beside the three paid plans', () => {
     render(<HomePage />);
     const free = screen.getByRole('article', { name: 'Maker Free' });
     expect(free).toHaveTextContent('$0');
@@ -42,7 +42,7 @@ describe('bohdiai.com, the maker site (Session 117)', () => {
     expect(free).toHaveTextContent('Is this market worth it?');
     expect(free).toHaveTextContent('No website.');
     expect(free).not.toHaveTextContent(/What to bring/);
-    expect(within(free).queryByRole('link')).toBeNull();
+    expect(within(free).getByRole('link', { name: /start free/i })).toHaveAttribute('href', '/start?plan=maker-free');
     expect(screen.getByRole('article', { name: 'Maker Showcase' })).toHaveTextContent('$5');
     expect(screen.getByRole('article', { name: 'Maker Market' })).toHaveTextContent('$15');
     expect(screen.getByRole('article', { name: 'Maker Full' })).toHaveTextContent('$25');

@@ -96,7 +96,7 @@ export type IntakeParsed =
   | { kind: 'invalid'; problem: IntakeProblem }
   | { kind: 'ok'; fields: IntakeFields; password: string; pieces: IntakePiece[]; portrait: File | null };
 
-const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** A price as typed ("25", "$25", "1,200.50") in cents; blank is "ask me" (null);
  *  anything else is undefined (not a price). */

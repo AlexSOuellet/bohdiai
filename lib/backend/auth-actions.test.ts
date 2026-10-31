@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createHash } from 'node:crypto';
 import type * as ActionLimit from './action-limit';
 
-const { signInWithPassword, updateUser, signOut, allowAction, allowKey, sendAuthLink, getUserShops, findUserByEmail, getClaims, requireUser } = vi.hoisted(() => ({
+const { signInWithPassword, updateUser, signOut, allowAction, allowKey, sendAuthLink, getUserShops, findUserByEmail, getClaims, requireUser, unconfirmedSignIn } = vi.hoisted(() => ({
   signInWithPassword: vi.fn(),
   updateUser: vi.fn(),
   signOut: vi.fn(),
@@ -13,6 +13,7 @@ const { signInWithPassword, updateUser, signOut, allowAction, allowKey, sendAuth
   sendAuthLink: vi.fn(),
   getUserShops: vi.fn(),
   findUserByEmail: vi.fn(),
+  unconfirmedSignIn: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase-server', () => ({
@@ -23,6 +24,7 @@ vi.mock('@/lib/auth/session', () => ({ requireUser }));
 vi.mock('./auth-links', () => ({ sendAuthLink }));
 vi.mock('@/lib/auth/membership', () => ({ getUserShops }));
 vi.mock('./user-lookup', () => ({ findUserByEmail }));
+vi.mock('@/lib/signup/server', () => ({ unconfirmedSignIn }));
 vi.mock('next/navigation', () => ({ redirect: vi.fn((p: string) => { throw new Error(`REDIRECT ${p}`); }) }));
 
 import { signIn, signOut as signOutAction, requestPasswordReset, setPassword } from './auth-actions';
@@ -53,8 +55,24 @@ describe('signIn', () => {
     signInWithPassword.mockResolvedValue({ error: { message: 'x', status: 422, code: 'invalid_credentials' } });
     expect(await signIn({ email: 'a@b.co', password: 'longenough' })).toEqual({ ok: false, error: 'That email and password don’t match.' });
   });
-  it('is turned away when rate limited', async () => {
-    allowAction.mockResolvedValue('limited');
+  it('sends someone who never finished paying back to Stripe', async () => {
+    signInWithPassword.mockResolvedValue({ error: { message: 'Email not confirmed', status: 400, code: 'email_not_confirmed' } });
+    unconfirmedSignIn.mockResolvedValue({ kind: 'pay', url: 'https://checkout.stripe.com/c/cs_1' });
+    await expect(signIn({ email: 'a@b.co', password: 'longenough' })).rejects.toThrow('REDIRECT https://checkout.stripe.com/c/cs_1');
+    expect(unconfirmedSignIn).toHaveBeenCalledWith(expect.anything(), 'a@b.co', expect.any(String));
+  });
+  it('asks someone who paid to confirm their email first', async () => {
+    signInWithPassword.mockResolvedValue({ error: { message: 'Email not confirmed', status: 400, code: 'email_not_confirmed' } });
+    unconfirmedSignIn.mockResolvedValue({ kind: 'confirm' });
+    const res = await signIn({ email: 'a@b.co', password: 'longenough' });
+    expect(res).toEqual({ ok: false, error: expect.stringMatching(/confirm your email first.*spam/i) });
+  });
+  it('says unavailable when that lookup fails', async () => {
+    signInWithPassword.mockResolvedValue({ error: { message: 'Email not confirmed', status: 400, code: 'email_not_confirmed' } });
+    unconfirmedSignIn.mockRejectedValue(new Error('stripe down'));
+    expect(await signIn({ email: 'a@b.co', password: 'longenough' })).toEqual({ ok: false, error: 'Sign-in is unavailable for a moment. Please try again in a few minutes.' });
+  });
+  it('is turned away when rate limited', async () => {    allowAction.mockResolvedValue('limited');
     expect(await signIn({ email: 'a@b.co', password: 'x' })).toEqual({ ok: false, error: 'Too many tries. Please wait a minute and try again.' });
     expect(signInWithPassword).not.toHaveBeenCalled();
   });
