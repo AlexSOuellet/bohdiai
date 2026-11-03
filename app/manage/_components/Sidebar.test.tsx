@@ -25,18 +25,10 @@ const base = {
   nav,
   sites: [{ tenantId: 'a', subdomain: 'alpha', businessName: 'Classic Loafs' }],
   currentTenantId: 'a',
-  publish: null,
   onNavigate: () => {},
 };
 
 describe('Sidebar', () => {
-  it('shows Publish beside Open my site while the site isn’t live, and not once it is', () => {
-    const { rerender } = render(<Sidebar {...base} publish={async () => ({ ok: true })} />);
-    expect(screen.getByRole('button', { name: 'Publish' })).toBeInTheDocument();
-    expect(screen.getByText('Only you can see your site')).toBeInTheDocument();
-    rerender(<Sidebar {...base} />);
-    expect(screen.queryByRole('button', { name: 'Publish' })).toBeNull();
-  });
   it('shows one entry per group, in her words, never folded', () => {
     path.current = '/manage';
     render(<Sidebar {...base} />);

@@ -7,7 +7,6 @@ import { requireActingSite } from '@/lib/backend/current-site';
 import { getSiteFeatures } from '@/lib/backend/site-features';
 import { backendMenu } from '@/lib/backend/menu';
 import { getSiteOpen } from '@/lib/backend/publish/queries';
-import { publishSite } from '@/lib/backend/publish/actions';
 import { Shell } from './_components/Shell';
 import { backendFace } from './fonts';
 import './backend.css';
@@ -29,7 +28,6 @@ export default async function ManageLayout({ children }: { children: React.React
         nav={await backendMenu(site.tenantId, on)}
         sites={sites}
         currentTenantId={site.tenantId}
-        publish={open.canPublish ? publishSite : null}
       >
         {children}
       </Shell>

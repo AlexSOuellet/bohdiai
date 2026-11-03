@@ -58,9 +58,6 @@
 }
 .bk-brand-visit { display: inline-block; margin: 0 1.25rem 1rem 2.7rem; font-size: 0.8125rem; font-weight: 600; color: var(--bk-primary); text-decoration: none; }
 .bk-brand-visit:hover { text-decoration: underline; text-underline-offset: 0.2em; }
-/* Publish beside Open my site while the site is private (Session 119). */
-.bk-side-publish { margin: -0.5rem 1.25rem 1rem 2.7rem; display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; }
-.bk-side-publish-note { margin: 0; font-size: 0.75rem; color: var(--bk-ink-muted); }
 .bk-side-close { background: none; border: 0; padding: 0.25rem 0.4rem; color: var(--bk-ink-60); cursor: pointer; font: inherit; }
 .bk-nav { flex: 1; overflow-y: auto; padding: 0.5rem 0.75rem; }
 .bk-nav-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
