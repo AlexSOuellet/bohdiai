@@ -1,11 +1,11 @@
 # Session Brief — BohdiAI
 
-> **⚠ START HERE (Session 119):** read `session-logs/session-118.md`, then `Open-Work.md` (items 3a, 49, 51, 54, 55).
-> **Everything is merged and live; `main` is the only branch from Session 118.** bohdiai.com is the maker site with Free on the ladder and pricing; Spotlight's opening is back to Paper & Patina's show reel.
-> **Unanswered (ask Alex, one at a time):** a page for each plan; the paid pricing cards that promise things that aren't built; Free's sign-up.
-> **Agreed, not built: four more Free tools** (price tags and labels, supply shopping list, batch planner, care and thank-you cards). Ask where they go before building.
+> **⚠ START HERE (Session 120):** read `session-logs/session-119.md`, then `Open-Work.md` items 0 and 6.
+> **Everything is merged and live; `main` is the only branch (`feat/maker-checkup` parked, `fix/auth-link-24h` waits for Alex).** Self-serve sign-up and pay for every plan, the build on its own on Cloudflare, Publish wherever the site shows, Take my site offline.
+> **Next (Alex): makers getting paid online.** Square online checkout first (Square's own page, two more permissions), then Stripe for makers; PayPal live waits on Alex's partner application. Explain the protections before building (payment security is #1).
+> **Before live sign-ups (Alex):** `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` in Cloudflare, webhook registered.
 > **There is no public toolkit (Alex).** Never place a new backend screen without asking where it goes. Say "the maker", not "she".
-> Payments are NOT being built (Alex: "we are building ADMIN").
+> Payments for makers ARE now being built (Alex, Session 119), Square online first.
 > Saltmarsh IS Scenic. A change to what a plan shows must reach the moods, Scenic's shoreline code and Rose n' Cat's nursery.
 > **When Alex says put it back the way it was, match the old one exactly: words, fonts, sizes. No additions.**
 > Build everything Alex decides; ask in plain text (no button questions); ask before any change he didn't ask for.
@@ -13,15 +13,15 @@
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 **Operative plan doc:** `Project-Docs/Modular-Plan.md`; open items in `Project-Docs/Open-Work.md`. Every session updates Open-Work as items land.
 
-**Last updated:** 2026-10-29, Session 118 (end).
+**Last updated:** 2026-11-03, Session 119 (end).
 
 ---
 
 ## Current state
 
-**Session 118 (all merged and live): Maker Free and the tools merged; bohdiai.com is the maker site (no doors, service switched off, one line for non-maker sites, Free on the ladder and pricing); Spotlight's opening back to the show reel (the slammed name, its fonts, See the work ↓ to the gallery, one scrolling band).** Recap: `session-logs/session-118.md`.
+**Session 119 (merged and live): sign-up and pay for every plan (Stripe's checkout, Free at $0), the confirmation email, the site form at /welcome, the build as a Cloudflare Workflow; no product images generated; webpack for dev and build; Publish on Home, My site and try-on; Take my site offline.** Recap: `session-logs/session-119.md`.
 
-**Session 117 (merged Session 118): Free's own Home (no events on Free); the tools as separate screens on every plan: Cost to make, Price it, Is it worth it? (replaces Market day), Monthly goal, Shipping, Describe it (the description writer, 30/100 a month), What to bring (Market and Full); Market day on Showcase events.** Recap: `session-logs/session-117.md`.
+**Session 118 (all merged and live): Maker Free and the tools merged; bohdiai.com is the maker site (no doors, service switched off, one line for non-maker sites, Free on the ladder and pricing); Spotlight's opening back to the show reel (the slammed name, its fonts, See the work ↓ to the gallery, one scrolling band).** Recap: `session-logs/session-118.md`.
 
 **Session 87 — the whole app now runs on Cloudflare Workers; Vercel serves nothing.** bohdiai.com, www, every shop subdomain and Cut-Pro are all served by the `bohdiai` Worker, verified live (Cut-Pro end to end, including a real photo estimate). `main` is current (fast-forwarded 552 commits). 1364 tests, tsc + lint clean. Runbook + lessons: `Cloudflare-Move.md`.
 
@@ -34,7 +34,7 @@
 
 ## Next actions
 
-**Session 119:** Alex's answers on a page per plan, the pricing cards and Free's sign-up; then the four new Free tools (ask where they go). Still open: Which pieces earn on Full's Home, cancel down to Free, Free's sign-up with paying at sign-up, explainer videos and the demo, renaming `site_added_sections`, PayPal for Market, the Cloudflare analytics key (Alex).
+**Session 120:** makers getting paid online: Square online checkout (Open-Work item 6), then Stripe for makers. Still open: the four Free tools, the photo backgrounds tool, a page per plan, the pricing cards, the site form follow-ups (item 58), renaming `site_added_sections`, the Cloudflare analytics key (Alex).
 
 **Every open item is in `Open-Work.md`; follow its Priority order.** Waiting on others: Joe's feedback, Renee's details.
 
@@ -89,8 +89,8 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
-- Session 118 (2026-10-29): **All merged and live: Maker Free and the tools; bohdiai.com is the maker site with Free; Spotlight's opening back to the show reel; four more Free tools agreed.** Full recap: `session-logs/session-118.md`.
-- Session 117 (2026-10-28): **Redesign merged and live; Maker Free, the tools (Is it worth it?, Monthly goal, Shipping, Describe it, What to bring) and Market day on Showcase on `feat/maker-free`, unmerged; no events on Free.** Full recap: `session-logs/session-117.md`.
+- Session 119 (2026-10-31 → 11-03): **Merged and live: self-serve sign-up and pay, the build on its own (Cloudflare Workflow), Publish wherever the site shows, Take my site offline; Square online checkout next.** Full recap: `session-logs/session-119.md`.
+- Sessions 117–118 (2026-10-28 → 10-29): **Free, the tools, Market day on Showcase (117); all merged and live: Maker Free and the tools; bohdiai.com is the maker site with Free; Spotlight's opening back to the show reel; four more Free tools agreed.** Full recap: `session-logs/session-118.md`.
 - Sessions 115–116 (2026-10-26 → 10-27): **Buyer accounts for Full (115); backend rebuilt by Claude: new look, short menu, My site, Home by plan, section switches, Customers; Paper & Patina on Spotlight/Showcase (116); merged S117.** See `session-logs/session-115.md`, `session-116.md`.
 - Sessions 111–114 (2026-10-21 → 10-25): **Market plan live, Square cards, refunds (111); Events area, stock kinds (112); Free plan + ladder + tools decided (113); Rustic Charm & More, Full defined, Getting paid, PayPal test mode, Try on a look (114).** See `session-logs/session-111.md` – `session-114.md`.
 - Sessions 109–110 (2026-10-19 → 10-20): **Showcase backend + gallery section + About you split into its homes (109); Showcase live, named social buttons, visitor numbers, new backend look; Market plan built (110).** See `session-logs/session-109.md`, `session-110.md`.
