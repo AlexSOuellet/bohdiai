@@ -11,6 +11,7 @@ import type { Database } from '../lib/database.types';
 import { anthropicClient } from '../lib/anthropic';
 import { makeScenes, sceneKeys, SCENES_DEFAULT, SCENES_MAX, SCENES_MIN } from '../lib/build/scene-art';
 import { falPainter } from '../lib/build/scene-painter';
+import { finishScene } from '../lib/build/scene-finish-sharp';
 import { addScenes } from '../lib/backend/scene/library';
 import { saveSiteScene } from '../lib/backend/scene/queries';
 
@@ -57,6 +58,7 @@ async function main(): Promise<void> {
     {
       client: anthropicClient(),
       painter: falPainter(falKey),
+      finish: finishScene,
       store: async (k, webp) => {
         const path = `scenes/${k}.webp`;
         const { error } = await db.storage.from(SCENE_BUCKET).upload(path, webp, { contentType: 'image/webp', upsert: false });

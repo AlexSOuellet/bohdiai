@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import sharp from 'sharp';
-import { cleanTags, finishScene, makeScenes, planScenes, sceneKeys, sceneRequest, sceneSystemPrompt, SCENE_HEIGHT, SCENE_WIDTH, type MadeScene, type ScenePainter } from './scene-art';
+import { finishScene } from './scene-finish-sharp';
+import { cleanTags, makeScenes, planScenes, sceneKeys, sceneRequest, sceneSystemPrompt, SCENE_HEIGHT, SCENE_WIDTH, type MadeScene, type ScenePainter } from './scene-art';
 
 const brief = { businessName: 'Classic Loafs', makes: 'Sourdough and country loaves', about: 'I bake at home on weekends.' };
 
@@ -93,7 +94,7 @@ describe('makeScenes', () => {
     const stored: string[] = [];
     const added: MadeScene[][] = [];
     const r = await makeScenes(
-      { client: fakeClient({ parsed_output: plans(2) }).client, painter: painter(), store: async (key) => { stored.push(key); return `https://cdn/${key}.webp`; }, add: async (s) => { added.push([...s]); } },
+      { client: fakeClient({ parsed_output: plans(2) }).client, painter: painter(), finish: finishScene, store: async (key) => { stored.push(key); return `https://cdn/${key}.webp`; }, add: async (s) => { added.push([...s]); } },
       brief,
       ['classic-loafs-1', 'classic-loafs-2'],
     );
@@ -109,7 +110,7 @@ describe('makeScenes', () => {
   it('stops at the first failed photo, says which, and adds nothing', async () => {
     const added: MadeScene[][] = [];
     const r = await makeScenes(
-      { client: fakeClient({ parsed_output: plans(2) }).client, painter: painter(1), store: async (key) => key, add: async (s) => { added.push([...s]); } },
+      { client: fakeClient({ parsed_output: plans(2) }).client, painter: painter(1), finish: finishScene, store: async (key) => key, add: async (s) => { added.push([...s]); } },
       brief,
       ['a-1', 'a-2'],
     );

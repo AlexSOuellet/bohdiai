@@ -13,7 +13,6 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
 import { z } from 'zod/v4';
-import sharp from 'sharp';
 import { SCENE_KEY } from '@/lib/archetypes/main-street/scenes';
 import { DRAFT_MODEL } from './intake-drafts';
 
@@ -99,17 +98,10 @@ export type ScenePainter = {
   enlarge: (photo: Buffer) => Promise<Buffer>;
 };
 
-/** A photo saved at full-screen size, and whether it reads dark where the name sits. */
-export async function finishScene(photo: Buffer): Promise<{ webp: Buffer; tone: 'light' | 'dark' }> {
-  const sized = sharp(photo).resize(SCENE_WIDTH, SCENE_HEIGHT, { fit: 'cover', kernel: 'lanczos3' });
-  const webp = await sized.clone().webp({ quality: 82 }).toBuffer();
-  const top = await sharp(webp)
-    .extract({ left: 0, top: 0, width: SCENE_WIDTH, height: Math.round(SCENE_HEIGHT * 0.6) })
-    .greyscale()
-    .stats();
-  const mean = top.channels[0]?.mean ?? 255;
-  return { webp, tone: mean < DARK_BELOW ? 'dark' : 'light' };
-}
+/** Sizes a painted photo to full screen and says whether it reads dark where the name
+ *  sits. On a computer: scene-finish-sharp.ts; on Cloudflare: scene-finish.ts. Passed in,
+ *  so the image library a computer uses is never loaded by the app. */
+export type FinishScene = (photo: Buffer) => Promise<{ webp: Buffer | Uint8Array; tone: 'light' | 'dark' }>;
 
 /** Free library names for a site's new scenes: "<subdomain>-1", "-2", … skipping any taken. */
 export function sceneKeys(subdomain: string, count: number, taken: ReadonlySet<string>): string[] {
@@ -129,8 +121,9 @@ export type MadeScene = { key: string; url: string; tone: 'light' | 'dark'; tags
 export type SceneDeps = {
   client: Pick<Anthropic, 'messages'>;
   painter: ScenePainter;
+  finish: FinishScene;
   /** Saves a finished photo under its library name and returns its public address. */
-  store: (key: string, webp: Buffer) => Promise<string>;
+  store: (key: string, webp: Buffer | Uint8Array) => Promise<string>;
   /** Adds the made scenes to the library. */
   add: (scenes: readonly MadeScene[]) => Promise<void>;
 };
@@ -146,7 +139,7 @@ export async function makeScenes(deps: SceneDeps, brief: SceneBrief, keys: reado
     try {
       const painted = await deps.painter.paint(plan.picture);
       const enlarged = await deps.painter.enlarge(painted);
-      const { webp, tone } = await finishScene(enlarged);
+      const { webp, tone } = await deps.finish(enlarged);
       const url = await deps.store(key, webp);
       made.push({ key, url, tone, tags: plan.tags, description: plan.picture });
     } catch (e) {

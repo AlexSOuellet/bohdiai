@@ -38,6 +38,7 @@ import { siteFromIntake, type BuildSettings, type IntakeForBuild } from '../lib/
 import { draftIntake, type PiecePhoto } from '../lib/build/intake-drafts';
 import { makeScenes, sceneKeys, SCENES_DEFAULT, SCENES_MAX, SCENES_MIN } from '../lib/build/scene-art';
 import { falPainter } from '../lib/build/scene-painter';
+import { finishScene } from '../lib/build/scene-finish-sharp';
 import { addScenes } from '../lib/backend/scene/library';
 import { INTAKE_BUCKET } from '../lib/intake/save';
 import { ensureBuilderAccess } from '../lib/backend/builder-access';
@@ -170,6 +171,7 @@ async function main(): Promise<void> {
       {
         client: anthropicClient(),
         painter: falPainter(falKey),
+        finish: finishScene,
         store: async (key, webp) => {
           const path = `scenes/${key}.webp`;
           const { error: upErr } = await db.storage.from(SCENE_BUCKET).upload(path, webp, { contentType: 'image/webp', upsert: false });
