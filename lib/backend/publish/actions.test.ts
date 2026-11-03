@@ -28,7 +28,7 @@ vi.mock('@/lib/supabase-server', () => ({
     }),
 }));
 
-import { publishSite } from './actions';
+import { publishSite, putSiteOnline, takeSiteOffline } from './actions';
 
 describe('publishSite', () => {
   beforeEach(() => {
@@ -48,7 +48,7 @@ describe('publishSite', () => {
       ['id', 't1'],
       ['status', 'draft'],
     ]);
-    expect(revalidatePath).toHaveBeenCalledWith('/manage');
+    expect(revalidatePath).toHaveBeenCalledWith('/manage', 'layout');
   });
 
   it('a site that is already live stays live and says so', async () => {
@@ -69,5 +69,43 @@ describe('publishSite', () => {
     expect(await publishSite()).toEqual({ ok: false, error: 'Your site couldn’t be published. Try again in a moment.' });
     expect(logError).toHaveBeenCalledTimes(1);
     expect(revalidatePath).not.toHaveBeenCalled();
+  });
+});
+
+describe('taking a site offline and back (Session 119)', () => {
+  beforeEach(() => {
+    state.updateError = null;
+    state.updated = [{ id: 't1' }];
+    calls.update = [];
+    calls.eqs = [];
+    revalidatePath.mockReset();
+  });
+
+  it('takes only a live site offline', async () => {
+    state.nowStatus = 'offline';
+    expect(await takeSiteOffline()).toEqual({ ok: true });
+    expect(calls.update).toEqual([{ status: 'offline' }]);
+    expect(calls.eqs).toEqual([
+      ['id', 't1'],
+      ['status', 'active'],
+    ]);
+    expect(revalidatePath).toHaveBeenCalledWith('/manage', 'layout');
+  });
+
+  it('puts only an offline site back', async () => {
+    state.nowStatus = 'active';
+    expect(await putSiteOnline()).toEqual({ ok: true });
+    expect(calls.update).toEqual([{ status: 'active' }]);
+    expect(calls.eqs).toEqual([
+      ['id', 't1'],
+      ['status', 'offline'],
+    ]);
+  });
+
+  it('says so when nothing moved and the site isn’t where it should be', async () => {
+    state.updated = [];
+    state.nowStatus = 'draft';
+    expect(await takeSiteOffline()).toEqual({ ok: false, error: 'Your site couldn’t be taken offline. Try again in a moment.' });
+    expect(await putSiteOnline()).toEqual({ ok: false, error: 'Your site couldn’t be put back online. Try again in a moment.' });
   });
 });

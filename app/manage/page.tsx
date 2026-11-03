@@ -9,7 +9,8 @@ import { PublishPanel } from './_components/PublishPanel';
 import { FirstSteps } from './_components/FirstSteps';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getPublishView } from '@/lib/backend/publish/queries';
-import { publishSite } from '@/lib/backend/publish/actions';
+import { publishSite, putSiteOnline, takeSiteOffline } from '@/lib/backend/publish/actions';
+import { OfflinePanel } from './_components/OfflinePanel';
 import { VisitsPanel } from './_components/VisitsPanel';
 import { loadVisits } from '@/lib/visits/home';
 import { appVisitsReader } from '@/lib/visits/queries';
@@ -116,8 +117,8 @@ export default async function ManageHome(): Promise<React.ReactElement> {
     <>
       <header className="bk-hello" data-market-day={today !== null}>
         <div className="bk-hello-text">
-          <p className="bk-hello-status" data-live={!publish.draft}>
-            {today !== null ? `Market day: ${today.name}` : publish.draft ? 'Only you can see your site for now' : `Live at ${address}`}
+          <p className="bk-hello-status" data-live={!publish.draft && !publish.offline}>
+            {today !== null ? `Market day: ${today.name}` : publish.draft ? 'Only you can see your site for now' : publish.offline ? 'Your site is offline for now' : `Live at ${address}`}
           </p>
           <h1 className="bk-hello-name">{site.businessName}</h1>
           <div className="bk-hello-actions">
@@ -126,7 +127,7 @@ export default async function ManageHome(): Promise<React.ReactElement> {
                 Open the market day
               </Link>
             )}
-            <a className={today === null ? 'bk-btn' : 'bk-btn bk-btn-quiet'} href={publish.draft && publish.previewUrl !== null ? publish.previewUrl : siteUrl} target="_blank" rel="noopener noreferrer">
+            <a className={today === null ? 'bk-btn' : 'bk-btn bk-btn-quiet'} href={(publish.draft || publish.offline) && publish.previewUrl !== null ? publish.previewUrl : siteUrl} target="_blank" rel="noopener noreferrer">
               Open my site
             </a>
             <Link className="bk-btn bk-btn-quiet" href={MY_SITE_PATH}>
@@ -152,6 +153,7 @@ export default async function ManageHome(): Promise<React.ReactElement> {
         {stepsFailed && <p className="bk-note">Your next steps couldn’t load. Refresh to try again.</p>}
 
         {publish.draft && <PublishPanel siteUrl={`https://${site.subdomain}.bohdiai.com`} previewUrl={publish.previewUrl} publish={publishSite} />}
+        {publish.offline && <OfflinePanel offline previewUrl={publish.previewUrl} putOnline={putSiteOnline} />}
 
         {home.attention.length > 0 && (
           <section className="bk-next" aria-labelledby="bk-next">
@@ -188,6 +190,7 @@ export default async function ManageHome(): Promise<React.ReactElement> {
         )}
 
         <VisitsPanel view={visits} />
+        {!publish.draft && !publish.offline && <OfflinePanel offline={false} takeOffline={takeSiteOffline} />}
       </main>
     </>
   );

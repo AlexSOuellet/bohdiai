@@ -10,14 +10,18 @@ import { previewCode, previewLink, PREVIEW_PARAM } from '@/lib/storefront/draft-
 import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
 import { FREE_PLAN } from '@/lib/backend/plan/plan';
 
-export type PublishView = { draft: false } | { draft: true; previewUrl: string | null };
+/** A live site; a private one not yet published; or one its maker took offline (Session 119).
+ *  Private and offline sites open only through their private link. */
+export type PublishView = { draft: false; offline: false } | { draft: true; offline: false; previewUrl: string | null } | { draft: false; offline: true; previewUrl: string | null };
 
 export async function getPublishView(db: SupabaseClient<Database>, tenantId: string, subdomain: string, secret: string | undefined): Promise<PublishView> {
   const { data, error } = await db.from('tenants').select('status').eq('id', tenantId).maybeSingle();
   if (error !== null) throw new Error(`Could not read the site’s status: ${error.message}`);
-  if (data?.status !== 'draft') return { draft: false };
+  const status = data?.status;
+  if (status !== 'draft' && status !== 'offline') return { draft: false, offline: false };
   const code = await previewCode(secret, subdomain);
-  return { draft: true, previewUrl: code === null ? null : previewLink(subdomain, code) };
+  const previewUrl = code === null ? null : previewLink(subdomain, code);
+  return status === 'draft' ? { draft: true, offline: false, previewUrl } : { draft: false, offline: true, previewUrl };
 }
 
 export type SiteOpen = {
@@ -35,7 +39,8 @@ export async function getSiteOpen(db: SupabaseClient<Database>, tenantId: string
   if (error !== null) throw new Error(`Could not read the site’s status: ${error.message}`);
   const origin = storefrontOrigin(subdomain, backendHost);
   const canPublish = data?.status === 'draft' && data.plan !== FREE_PLAN;
-  if (!canPublish) return { canPublish, openUrl: origin };
+  // Private and offline sites open only through their private link.
+  if (!canPublish && data?.status !== 'offline') return { canPublish, openUrl: origin };
   const code = await previewCode(secret, subdomain);
   return { canPublish, openUrl: code === null ? origin : `${origin}/?${PREVIEW_PARAM}=${code}` };
 }

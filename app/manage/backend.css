@@ -356,6 +356,9 @@ a.bk-step:hover { background: var(--bk-ground); }
 .bk-publish-actions .bk-btn { padding: 0.65rem 1.6rem; }
 .bk-publish-view { font-size: 0.875rem; font-weight: 600; }
 .bk-publish-error { flex-basis: 100%; margin: 0; }
+/* Take my site offline (Session 119): quiet, at the foot of Home while the site is live. */
+.bk-offline { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 2rem; margin-top: 2.5rem; padding: 1rem 0 0; border-top: 1px solid var(--bk-ink-15); }
+.bk-offline-title { margin: 0; font-size: 1rem; font-weight: 700; color: var(--bk-ink); }
 .bk-now { display: grid; gap: 1rem 2rem; padding: 1.25rem 1.5rem; background: var(--bk-surface); border: 1px solid var(--bk-ink-15); border-left: 4px solid var(--bk-ember); }
 @media (min-width: 768px) { .bk-now { grid-template-columns: 14rem 1fr; align-items: start; } }
 .bk-now-name { margin: 0.15rem 0 0.25rem; font-family: var(--bk-display); font-size: 1.9rem; font-weight: 700; line-height: 1.1; }

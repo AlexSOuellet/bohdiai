@@ -13,16 +13,16 @@ function db(result: { data: { status: string; plan?: string | null } | null; err
 describe('getPublishView', () => {
   it('a draft gets its private link, made with this site’s secret', async () => {
     const view = await getPublishView(db({ data: { status: 'draft' }, error: null }), 't1', 'tide', SECRET);
-    expect(view).toEqual({ draft: true, previewUrl: `https://tide.bohdiai.com/?preview=${await previewCode(SECRET, 'tide')}` });
+    expect(view).toEqual({ draft: true, offline: false, previewUrl: `https://tide.bohdiai.com/?preview=${await previewCode(SECRET, 'tide')}` });
   });
 
   it('without a secret a draft has no link, and says so in the panel', async () => {
-    expect(await getPublishView(db({ data: { status: 'draft' }, error: null }), 't1', 'tide', undefined)).toEqual({ draft: true, previewUrl: null });
+    expect(await getPublishView(db({ data: { status: 'draft' }, error: null }), 't1', 'tide', undefined)).toEqual({ draft: true, offline: false, previewUrl: null });
   });
 
   it('a live site shows no panel', async () => {
-    expect(await getPublishView(db({ data: { status: 'active' }, error: null }), 't1', 'tide', SECRET)).toEqual({ draft: false });
-    expect(await getPublishView(db({ data: null, error: null }), 't1', 'tide', SECRET)).toEqual({ draft: false });
+    expect(await getPublishView(db({ data: { status: 'active' }, error: null }), 't1', 'tide', SECRET)).toEqual({ draft: false, offline: false });
+    expect(await getPublishView(db({ data: null, error: null }), 't1', 'tide', SECRET)).toEqual({ draft: false, offline: false });
   });
 
   it('a failed read throws, so the page shows its error', async () => {
@@ -44,5 +44,14 @@ describe('getSiteOpen (Publish wherever the site is shown, Session 119)', () => 
 
   it('Free has no site to publish', async () => {
     expect((await getSiteOpen(db({ data: { status: 'draft', plan: 'free' }, error: null }), 't1', 'tide', SECRET, 'app.bohdiai.com')).canPublish).toBe(false);
+  });
+});
+
+describe('an offline site (Session 119)', () => {
+  it('keeps its private link for its maker, and has nothing to publish', async () => {
+    const view = await getPublishView(db({ data: { status: 'offline' }, error: null }), 't1', 'tide', SECRET);
+    expect(view).toEqual({ draft: false, offline: true, previewUrl: `https://tide.bohdiai.com/?preview=${await previewCode(SECRET, 'tide')}` });
+    const open = await getSiteOpen(db({ data: { status: 'offline', plan: 'lite' }, error: null }), 't1', 'tide', SECRET, 'app.bohdiai.com');
+    expect(open).toEqual({ canPublish: false, openUrl: `https://tide.bohdiai.com/?preview=${await previewCode(SECRET, 'tide')}` });
   });
 });

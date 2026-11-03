@@ -63,6 +63,11 @@ export const SHOP_WORD_SPOTS = {
       month: '',
     },
   },
+  /** The page every visitor sees while the maker has the site offline (Session 119). */
+  offline: {
+    title: '',
+    body: '',
+  },
   /** Buyer accounts (Full): signing in, My account, an order's page, and the reset email. */
   account: {
     /** The menu link to /account. */

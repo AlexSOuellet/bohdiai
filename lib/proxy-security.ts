@@ -95,7 +95,7 @@ export function tenantLookupUrl(supabaseUrl: string, subdomain: string): string 
     `${supabaseUrl}/rest/v1/tenants` +
     `?select=id,status` +
     `&subdomain=eq.${encodeURIComponent(subdomain.toLowerCase())}` +
-    `&status=in.(active,draft)` +
+    `&status=in.(active,draft,offline)` +
     `&deleted_at=is.null` +
     `&limit=1`
   );

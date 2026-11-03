@@ -77,24 +77,28 @@ export async function middleware(request: NextRequest) {
   // Storefront subdomains: resolve tenant or return 404
   let tenantId: string | undefined;
   let isDraft = false;
+  // A site its maker took offline (Session 119): every visitor sees the offline page.
+  let offlineVisitor = false;
   if (subdomain !== null) {
     const tenant = await resolveTenant(subdomain);
     if (!tenant) {
       return new NextResponse('Store not found', { status: 404 });
     }
-    // A draft site is "not found" to everyone but its private preview link.
+    // A draft site is "not found" to everyone but its private preview link; an
+    // offline one shows everyone else that it's temporarily offline (Session 119).
     // The link's code is remembered in a cookie for this site only, then the
     // address is cleaned of it.
-    if (tenant.status === 'draft') {
+    if (tenant.status === 'draft' || tenant.status === 'offline') {
       const gate = await draftGate(
         process.env['BACKEND_SESSION_SECRET'],
         subdomain,
         request.nextUrl.searchParams.get(PREVIEW_PARAM),
         request.cookies.get(PREVIEW_COOKIE)?.value,
       );
-      if (gate === 'deny') {
+      if (gate === 'deny' && tenant.status === 'draft') {
         return new NextResponse('Store not found', { status: 404, headers: DRAFT_HEADERS });
       }
+      if (gate === 'deny') offlineVisitor = true;
       if (gate === 'link') {
         const clean = request.nextUrl.clone();
         const code = clean.searchParams.get(PREVIEW_PARAM) ?? '';
@@ -110,11 +114,11 @@ export async function middleware(request: NextRequest) {
         Object.entries(DRAFT_HEADERS).forEach(([k, v]) => admitted.headers.set(k, v));
         return admitted;
       }
-      isDraft = true;
+      if (!offlineVisitor) isDraft = true;
     }
     tenantId = tenant.id;
     // Count the page (live sites only: a draft is only ever its owner looking).
-    if (!isDraft) countPageView(request, hostname, tenant.id);
+    if (!isDraft && !offlineVisitor) countPageView(request, hostname, tenant.id);
   }
 
   // Build augmented request headers (includes tenant context when applicable).
@@ -139,7 +143,7 @@ export async function middleware(request: NextRequest) {
   const skipRewrite = originalPath.startsWith('/api/') || isBackendPath(originalPath);
   const rewriteUrl = isTenantRequest && !skipRewrite ? request.nextUrl.clone() : null;
   if (rewriteUrl !== null) {
-    rewriteUrl.pathname = '/storefront' + (originalPath === '/' ? '' : originalPath);
+    rewriteUrl.pathname = offlineVisitor ? '/storefront/offline' : '/storefront' + (originalPath === '/' ? '' : originalPath);
   }
 
   // Start response — rewrite for tenant requests, pass-through for marketing/app.

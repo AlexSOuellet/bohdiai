@@ -177,8 +177,8 @@ describe('isDormantPath', () => {
 describe('tenantLookupUrl', () => {
   const url = new URL(tenantLookupUrl('https://db.example.co', 'Cut-Pro-Lawncare'));
 
-  it('asks only for active or draft shops that have not been deleted', () => {
-    expect(url.searchParams.get('status')).toBe('in.(active,draft)');
+  it('asks only for live, private or offline shops that have not been deleted', () => {
+    expect(url.searchParams.get('status')).toBe('in.(active,draft,offline)');
     expect(url.searchParams.get('deleted_at')).toBe('is.null');
   });
 
@@ -191,7 +191,7 @@ describe('tenantLookupUrl', () => {
 
   it('encodes the subdomain so it cannot add its own filters', () => {
     const sneaky = new URL(tenantLookupUrl('https://db.example.co', 'x&status=eq.suspended'));
-    expect(sneaky.searchParams.getAll('status')).toEqual(['in.(active,draft)']);
+    expect(sneaky.searchParams.getAll('status')).toEqual(['in.(active,draft,offline)']);
   });
 });
 
