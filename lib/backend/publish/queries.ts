@@ -6,7 +6,9 @@
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
-import { previewCode, previewLink } from '@/lib/storefront/draft-preview';
+import { previewCode, previewLink, PREVIEW_PARAM } from '@/lib/storefront/draft-preview';
+import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
+import { FREE_PLAN } from '@/lib/backend/plan/plan';
 
 export type PublishView = { draft: false } | { draft: true; previewUrl: string | null };
 
@@ -16,4 +18,24 @@ export async function getPublishView(db: SupabaseClient<Database>, tenantId: str
   if (data?.status !== 'draft') return { draft: false };
   const code = await previewCode(secret, subdomain);
   return { draft: true, previewUrl: code === null ? null : previewLink(subdomain, code) };
+}
+
+export type SiteOpen = {
+  /** True while the site is private and can be published (Free has no site to publish). */
+  canPublish: boolean;
+  /** Where "Open my site" goes: the private link while it isn't live, so it opens. */
+  openUrl: string;
+};
+
+/** For every screen that shows the site (Alex, Session 119: a publish link wherever
+ *  the site is shown). The address follows the backend's own host, so it opens on
+ *  the dev server as well as live. */
+export async function getSiteOpen(db: SupabaseClient<Database>, tenantId: string, subdomain: string, secret: string | undefined, backendHost: string | null): Promise<SiteOpen> {
+  const { data, error } = await db.from('tenants').select('status, plan').eq('id', tenantId).maybeSingle();
+  if (error !== null) throw new Error(`Could not read the site’s status: ${error.message}`);
+  const origin = storefrontOrigin(subdomain, backendHost);
+  const canPublish = data?.status === 'draft' && data.plan !== FREE_PLAN;
+  if (!canPublish) return { canPublish, openUrl: origin };
+  const code = await previewCode(secret, subdomain);
+  return { canPublish, openUrl: code === null ? origin : `${origin}/?${PREVIEW_PARAM}=${code}` };
 }

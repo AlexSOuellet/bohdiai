@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 
 const path = { current: '/manage' };
-vi.mock('next/navigation', () => ({ usePathname: () => path.current }));
+vi.mock('next/navigation', () => ({ usePathname: () => path.current, useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock('@/lib/backend/auth-actions', () => ({ signOut: vi.fn() }));
 
 import { Shell, BARE_PATH } from './Shell';
@@ -14,6 +14,7 @@ const props = {
   nav: [{ section: 'Site', items: [{ label: 'Home', href: '/manage' }] }],
   sites: [{ tenantId: 'a', subdomain: 'alpha', businessName: 'Classic Loafs' }],
   currentTenantId: 'a',
+  publish: null,
 };
 
 describe('Shell drawer', () => {

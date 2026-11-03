@@ -8,6 +8,7 @@ import { ScreenTabs } from './ScreenTabs';
 import { BottomBar } from './BottomBar';
 import type { NavSection } from '@/lib/backend/modules';
 import type { ShopSummary } from '@/lib/auth/membership';
+import type { DoneResult } from '@/lib/backend/catalog/results';
 
 /** Screens that fill the phone with no backend menu: the Market POS. */
 export const BARE_PATH = POS_PATH;
@@ -19,6 +20,8 @@ export function Shell(props: {
   nav: NavSection[];
   sites: ShopSummary[];
   currentTenantId: string;
+  /** Publish, while the site isn't live: shown beside "Open my site". */
+  publish: (() => Promise<DoneResult>) | null;
   children: React.ReactNode;
 }): React.ReactElement {
   const [open, setOpen] = useState(false);
@@ -41,6 +44,7 @@ export function Shell(props: {
           nav={props.nav}
           sites={props.sites}
           currentTenantId={props.currentTenantId}
+          publish={props.publish}
           onNavigate={() => setOpen(false)}
         />
       </aside>

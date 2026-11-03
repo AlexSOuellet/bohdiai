@@ -13,6 +13,11 @@ import {
   type PartShow,
 } from '@/lib/backend/my-site';
 import { HomeSectionSwitches } from './HomeSectionSwitches';
+import { headers } from 'next/headers';
+import { supabaseAdmin } from '@/lib/supabase';
+import { PublishPanel } from '../_components/PublishPanel';
+import { getSiteOpen } from '@/lib/backend/publish/queries';
+import { publishSite } from '@/lib/backend/publish/actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,8 +94,10 @@ export default async function MySitePage(): Promise<React.ReactElement> {
     loadHomeSectionRows(db, site.tenantId, on),
   ]);
   const { parts, tools } = buildMySite(items, data);
+  const open = await getSiteOpen(supabaseAdmin(), site.tenantId, site.subdomain, process.env['BACKEND_SESSION_SECRET'], (await headers()).get('host'));
   return (
     <>
+      {open.canPublish && <PublishPanel siteUrl={`https://${site.subdomain}.bohdiai.com`} previewUrl={open.openUrl} publish={publishSite} />}
       <div className="bk-head">
         <h1 className="bk-title">My site</h1>
         <p className="bk-site-lead">

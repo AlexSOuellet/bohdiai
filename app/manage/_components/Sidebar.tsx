@@ -7,6 +7,8 @@ import { entryFor, sectionFor, type NavSection } from '@/lib/backend/modules';
 import type { ShopSummary } from '@/lib/auth/membership';
 import { signOut } from '@/lib/backend/auth-actions';
 import { NavIcon } from './NavIcon';
+import { SidebarPublish } from './SidebarPublish';
+import type { DoneResult } from '@/lib/backend/catalog/results';
 
 /** The backend's menu (the redesign, 2026-10-27): one entry per group, in her
  *  words, never folded. The group holding the screen you're on is marked. */
@@ -17,6 +19,7 @@ export function Sidebar(props: {
   nav: NavSection[];
   sites: ShopSummary[];
   currentTenantId: string;
+  publish: (() => Promise<DoneResult>) | null;
   onNavigate: () => void;
 }): React.ReactElement {
   const pathname = usePathname();
@@ -35,6 +38,7 @@ export function Sidebar(props: {
       <a className="bk-brand-visit" href={props.siteUrl} target="_blank" rel="noopener noreferrer">
         Open my site
       </a>
+      {props.publish !== null && <SidebarPublish publish={props.publish} />}
 
       <nav className="bk-nav" aria-label="Backend">
         <ul className="bk-nav-list">

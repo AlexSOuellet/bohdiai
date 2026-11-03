@@ -6,7 +6,8 @@ import { needsOnboarding, ONBOARDING_PATH } from '@/lib/signup/onboarding';
 import { requireActingSite } from '@/lib/backend/current-site';
 import { getSiteFeatures } from '@/lib/backend/site-features';
 import { backendMenu } from '@/lib/backend/menu';
-import { storefrontOrigin } from '@/lib/dashboard/storefront-url';
+import { getSiteOpen } from '@/lib/backend/publish/queries';
+import { publishSite } from '@/lib/backend/publish/actions';
 import { Shell } from './_components/Shell';
 import { backendFace } from './fonts';
 import './backend.css';
@@ -18,16 +19,17 @@ export default async function ManageLayout({ children }: { children: React.React
   // Onboarding first (Session 119): a paid site that hasn't sent its form goes there.
   if (await needsOnboarding(supabaseAdmin(), site.tenantId)) redirect(ONBOARDING_PATH);
   const on = await getSiteFeatures(site.tenantId);
-  const siteUrl = storefrontOrigin(site.subdomain, (await headers()).get('host'));
+  const open = await getSiteOpen(supabaseAdmin(), site.tenantId, site.subdomain, process.env['BACKEND_SESSION_SECRET'], (await headers()).get('host'));
   return (
     <div className={`bk ${backendFace.variable}`}>
       <Shell
         siteName={site.businessName}
-        siteUrl={siteUrl}
+        siteUrl={open.openUrl}
         email={user.email ?? ''}
         nav={await backendMenu(site.tenantId, on)}
         sites={sites}
         currentTenantId={site.tenantId}
+        publish={open.canPublish ? publishSite : null}
       >
         {children}
       </Shell>
