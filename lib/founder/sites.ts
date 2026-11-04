@@ -20,6 +20,8 @@ export type FounderSite = {
   /** What the site pays BohdiAI; null when it pays nothing. */
   paying: { cents: number; interval: string } | null;
   joined: string;
+  /** Alex's account is on the site, so he can open its backend. */
+  canManage: boolean;
 };
 
 export type SitesSummary = { sites: number; live: number; monthlyCents: number };
@@ -86,6 +88,7 @@ export async function loadFounderSites(db: Db): Promise<FounderSite[]> {
       maker: member === undefined ? null : (emails.get(member.user_id) ?? null),
       paying: sub === undefined ? null : { cents: sub.unit_amount_cents ?? 0, interval: sub.billing_interval ?? 'month' },
       joined: t.created_at,
+      canManage: members.data.some((m) => m.tenant_id === t.id && isFounder(m.user_id)),
     };
   });
 }

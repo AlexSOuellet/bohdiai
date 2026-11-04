@@ -35,7 +35,7 @@ function fakeDb(tables: Record<string, Result>, users: Result = { data: { users:
   return { from, auth: { admin: { listUsers: async () => users } } } as unknown as SupabaseClient<Database>;
 }
 
-const site = (over: Partial<FounderSite>): FounderSite => ({ id: 'a', name: 'A', subdomain: 'a', status: 'active', plan: 'full', planComp: null, maker: null, paying: null, joined: '2026-11-01', ...over });
+const site = (over: Partial<FounderSite>): FounderSite => ({ id: 'a', name: 'A', subdomain: 'a', status: 'active', plan: 'full', planComp: null, maker: null, paying: null, joined: '2026-11-01', canManage: true, ...over });
 
 describe('who may open the admin', () => {
   beforeEach(() => {
@@ -97,7 +97,7 @@ describe('loadFounderSites', () => {
     ];
     const db = fakeDb({ tenants: { data: tenants, error: null }, tenant_members: { data: members, error: null }, subscriptions: { data: subscriptions, error: null } }, users);
     const [one, two] = await loadFounderSites(db);
-    expect(one).toMatchObject({ name: 'One', maker: 'maker@example.com', paying: { cents: 25000, interval: 'year' } });
+    expect(one).toMatchObject({ name: 'One', maker: 'maker@example.com', paying: { cents: 25000, interval: 'year' }, canManage: true });
     expect(two).toMatchObject({ name: 'Two', maker: null, paying: null, planComp: 'free' });
   });
 
@@ -108,7 +108,7 @@ describe('loadFounderSites', () => {
       subscriptions: { data: [{ tenant_id: 't1', status: 'trialing', unit_amount_cents: null, billing_interval: null }], error: null },
     });
     const [one] = await loadFounderSites(db);
-    expect(one).toMatchObject({ maker: null, paying: null });
+    expect(one).toMatchObject({ maker: null, paying: null, canManage: false });
   });
 
   it('keeps a paying site whose subscription has no interval as monthly', async () => {

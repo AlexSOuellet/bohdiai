@@ -17,6 +17,8 @@ export function Sidebar(props: {
   nav: NavSection[];
   sites: ShopSummary[];
   currentTenantId: string;
+  /** Alex: his way between sites is his admin, so he gets a way back to it instead of the picker. */
+  founder: boolean;
   onNavigate: () => void;
 }): React.ReactElement {
   const pathname = usePathname();
@@ -53,7 +55,12 @@ export function Sidebar(props: {
       </nav>
 
       <div className="bk-user">
-        {props.sites.length > 1 && (
+        {props.founder && (
+          <Link href="/founder" className="bk-user-btn" onClick={props.onNavigate}>
+            Back to admin
+          </Link>
+        )}
+        {!props.founder && props.sites.length > 1 && (
           <form action="/manage/switch-site" method="post" className="bk-switch">
             <label className="bk-user-label" htmlFor="bk-site">
               Switch site

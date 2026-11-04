@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { needsOnboarding, ONBOARDING_PATH } from '@/lib/signup/onboarding';
 import { requireActingSite } from '@/lib/backend/current-site';
+import { isFounder } from '@/lib/founder/access';
 import { getSiteFeatures } from '@/lib/backend/site-features';
 import { backendMenu } from '@/lib/backend/menu';
 import { getSiteOpen } from '@/lib/backend/publish/queries';
@@ -28,6 +29,7 @@ export default async function ManageLayout({ children }: { children: React.React
         nav={await backendMenu(site.tenantId, on)}
         sites={sites}
         currentTenantId={site.tenantId}
+        founder={isFounder(user.id)}
       >
         {children}
       </Shell>

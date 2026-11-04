@@ -18,6 +18,7 @@ import { serverEnv } from '@/lib/env';
 import { logger } from '@/lib/logger';
 import { requireUser } from '@/lib/auth/session';
 import { getUserShops } from '@/lib/auth/membership';
+import { isFounder } from '@/lib/founder/access';
 import { allowAction, allowKey, ACTION_LIMITED, ACTION_UNAVAILABLE } from './action-limit';
 import { sendAuthLink } from './auth-links';
 import { findUserByEmail } from './user-lookup';
@@ -29,6 +30,10 @@ export type ActionResult = { ok: true; message?: string } | { ok: false; error: 
 
 const MIN_PASSWORD = 10;
 const BACKEND_HOME = '/manage';
+const ADMIN_HOME = '/founder';
+
+/** Where an account lands once signed in: Alex to his admin, everyone else to their backend. */
+const homeFor = (userId: string): Route => (isFounder(userId) ? ADMIN_HOME : BACKEND_HOME);
 
 const LINK_AGAIN = 'This link is no longer valid. Use Forgot password on the sign-in page to get a fresh one.';
 const SIGN_IN_UNAVAILABLE = 'Sign-in is unavailable for a moment. Please try again in a few minutes.';
@@ -59,14 +64,14 @@ export async function signIn(input: { email: string; password: string }): Promis
   if (turned !== null) return turned;
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password: input.password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password: input.password });
   if (error !== null) {
     // Only said when the password was right (Session 119): signed up, not confirmed.
     if (error.code === 'email_not_confirmed') return unconfirmed(email);
     const wrong = error.status === 400 || error.code === 'invalid_credentials';
     return { ok: false, error: wrong ? 'That email and password don’t match.' : SIGN_IN_UNAVAILABLE };
   }
-  redirect(BACKEND_HOME);
+  redirect(homeFor(data.user.id));
 }
 
 /** Never finished paying: back to Stripe. Paid: confirm the email first. */
@@ -147,7 +152,7 @@ function fromFreshLink(amr: unknown): boolean {
 }
 
 export async function setPassword(input: { password: string; confirm: string }): Promise<ActionResult> {
-  await requireUser();
+  const user = await requireUser();
   if (input.password.length < MIN_PASSWORD) return { ok: false, error: `Use at least ${MIN_PASSWORD} characters.` };
   if (input.password !== input.confirm) return { ok: false, error: 'The two passwords don’t match.' };
   const supabase = await createSupabaseServerClient();
@@ -158,5 +163,5 @@ export async function setPassword(input: { password: string; confirm: string }):
     if (error.name === 'AuthSessionMissingError') return { ok: false, error: LINK_AGAIN };
     return { ok: false, error: `Your password wasn’t saved: ${error.message}` };
   }
-  redirect(BACKEND_HOME);
+  redirect(homeFor(user.id));
 }

@@ -25,6 +25,7 @@ const base = {
   nav,
   sites: [{ tenantId: 'a', subdomain: 'alpha', businessName: 'Classic Loafs' }],
   currentTenantId: 'a',
+  founder: false,
   onNavigate: () => {},
 };
 
@@ -58,6 +59,10 @@ describe('Sidebar', () => {
     expect(screen.queryByLabelText('Switch site')).toBeNull();
     rerender(<Sidebar {...base} sites={[...base.sites, { tenantId: 'b', subdomain: 'beta', businessName: 'Beta' }]} />);
     expect(screen.getByLabelText('Switch site')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Back to admin' })).toBeNull();
+    rerender(<Sidebar {...base} founder sites={[...base.sites, { tenantId: 'b', subdomain: 'beta', businessName: 'Beta' }]} />);
+    expect(screen.queryByLabelText('Switch site')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Back to admin' })).toHaveAttribute('href', '/founder');
   });
   it('has a sign-out button', () => {
     render(<Sidebar {...base} />);

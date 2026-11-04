@@ -14,6 +14,7 @@ const props = {
   nav: [{ section: 'Site', items: [{ label: 'Home', href: '/manage' }] }],
   sites: [{ tenantId: 'a', subdomain: 'alpha', businessName: 'Classic Loafs' }],
   currentTenantId: 'a',
+  founder: false,
 };
 
 describe('Shell drawer', () => {

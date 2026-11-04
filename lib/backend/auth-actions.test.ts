@@ -30,6 +30,7 @@ vi.mock('next/navigation', () => ({ redirect: vi.fn((p: string) => { throw new E
 
 import { signIn, signOut as signOutAction, requestPasswordReset, setPassword } from './auth-actions';
 import { RESET_SENT } from './auth-messages';
+import { FOUNDER_USER_IDS } from '@/lib/founder/access';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -40,9 +41,13 @@ beforeEach(() => {
 
 describe('signIn', () => {
   it('signs in and goes to the backend', async () => {
-    signInWithPassword.mockResolvedValue({ error: null });
+    signInWithPassword.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null });
     await expect(signIn({ email: ' Maker@Example.com ', password: 'longenough' })).rejects.toThrow('REDIRECT /manage');
     expect(signInWithPassword).toHaveBeenCalledWith({ email: 'maker@example.com', password: 'longenough' });
+  });
+  it('takes Alex straight to the admin', async () => {
+    signInWithPassword.mockResolvedValue({ data: { user: { id: FOUNDER_USER_IDS[0] } }, error: null });
+    await expect(signIn({ email: 'a@example.com', password: 'longenough' })).rejects.toThrow('REDIRECT /founder');
   });
   it('gives one message for any wrong email or password', async () => {
     signInWithPassword.mockResolvedValue({ error: { message: 'Invalid login credentials', status: 400, code: 'invalid_credentials' } });

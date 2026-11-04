@@ -19,6 +19,7 @@ export function Shell(props: {
   nav: NavSection[];
   sites: ShopSummary[];
   currentTenantId: string;
+  founder: boolean;
   children: React.ReactNode;
 }): React.ReactElement {
   const [open, setOpen] = useState(false);
@@ -41,6 +42,7 @@ export function Shell(props: {
           nav={props.nav}
           sites={props.sites}
           currentTenantId={props.currentTenantId}
+          founder={props.founder}
           onNavigate={() => setOpen(false)}
         />
       </aside>

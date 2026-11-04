@@ -8,8 +8,9 @@ function paying(site: FounderSite): string {
   return site.planComp === null ? 'Nothing' : (FREE_NAMES[site.planComp] ?? site.planComp);
 }
 
-/** Every site, newest first. A draft has no public address to open. */
-export function SiteTable({ sites }: { sites: readonly FounderSite[] }): React.ReactElement {
+/** Every site, newest first, with the way into each: the site itself (a private
+ *  link when it isn't live) and its backend. */
+export function SiteTable({ sites }: { sites: readonly (FounderSite & { openUrl: string })[] }): React.ReactElement {
   return (
     <div className="bk-table-wrap">
       <table className="bk-table">
@@ -21,6 +22,7 @@ export function SiteTable({ sites }: { sites: readonly FounderSite[] }): React.R
             <th scope="col">Maker</th>
             <th scope="col">Pays</th>
             <th scope="col">Started</th>
+            <th scope="col">Backend</th>
           </tr>
         </thead>
         <tbody>
@@ -28,13 +30,9 @@ export function SiteTable({ sites }: { sites: readonly FounderSite[] }): React.R
             <tr key={site.id}>
               <td>
                 <span className="fd-site">{site.name}</span>
-                {site.status === 'draft' ? (
-                  <span className="fd-address">{site.subdomain}.bohdiai.com</span>
-                ) : (
-                  <a className="fd-address" href={`https://${site.subdomain}.bohdiai.com`} target="_blank" rel="noreferrer">
-                    {site.subdomain}.bohdiai.com
-                  </a>
-                )}
+                <a className="fd-address" href={site.openUrl} target="_blank" rel="noreferrer">
+                  {site.subdomain}.bohdiai.com
+                </a>
               </td>
               <td>{planName(site.plan)}</td>
               <td>
@@ -45,6 +43,18 @@ export function SiteTable({ sites }: { sites: readonly FounderSite[] }): React.R
               <td>{site.maker ?? 'Just you'}</td>
               <td>{paying(site)}</td>
               <td>{shortDate(site.joined)}</td>
+              <td>
+                {site.canManage ? (
+                  <form action="/manage/switch-site" method="post">
+                    <input type="hidden" name="tenantId" value={site.id} />
+                    <button type="submit" className="fd-out" aria-label={`Open the backend of ${site.name}`}>
+                      Open
+                    </button>
+                  </form>
+                ) : (
+                  'Not on this site'
+                )}
+              </td>
             </tr>
           ))}
         </tbody>

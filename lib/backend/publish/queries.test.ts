@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
-import { getPublishView, getSiteOpen } from './queries';
+import { getPublishView, getSiteOpen, siteOpenUrl } from './queries';
 import { previewCode } from '@/lib/storefront/draft-preview';
 
 const SECRET = 'x'.repeat(40);
@@ -27,6 +27,14 @@ describe('getPublishView', () => {
 
   it('a failed read throws, so the page shows its error', async () => {
     await expect(getPublishView(db({ data: null, error: { message: 'down' } }), 't1', 'tide', SECRET)).rejects.toThrow('down');
+  });
+});
+
+describe('siteOpenUrl', () => {
+  it('opens a live site at its address and a private one through its private link', async () => {
+    expect(await siteOpenUrl({ status: 'active', plan: 'full' }, 'tide', SECRET, 'app.bohdiai.com')).toBe('https://tide.bohdiai.com');
+    expect(await siteOpenUrl({ status: 'draft', plan: 'full' }, 'tide', SECRET, 'app.bohdiai.com')).toMatch(/^https:\/\/tide\.bohdiai\.com\/\?.+=/);
+    expect(await siteOpenUrl({ status: 'offline', plan: 'full' }, 'tide', SECRET, 'app.bohdiai.com')).toMatch(/^https:\/\/tide\.bohdiai\.com\/\?.+=/);
   });
 });
 

@@ -37,10 +37,19 @@ export type SiteOpen = {
 export async function getSiteOpen(db: SupabaseClient<Database>, tenantId: string, subdomain: string, secret: string | undefined, backendHost: string | null): Promise<SiteOpen> {
   const { data, error } = await db.from('tenants').select('status, plan').eq('id', tenantId).maybeSingle();
   if (error !== null) throw new Error(`Could not read the site’s status: ${error.message}`);
+  const site = { status: data?.status ?? null, plan: data?.plan ?? null };
+  return { canPublish: canPublish(site), openUrl: await siteOpenUrl(site, subdomain, secret, backendHost) };
+}
+
+type SiteState = { status: string | null; plan: string | null };
+
+const canPublish = (site: SiteState): boolean => site.status === 'draft' && site.plan !== FREE_PLAN;
+
+/** Where a site opens, for a caller that already has its status and plan. */
+export async function siteOpenUrl(site: SiteState, subdomain: string, secret: string | undefined, backendHost: string | null): Promise<string> {
   const origin = storefrontOrigin(subdomain, backendHost);
-  const canPublish = data?.status === 'draft' && data.plan !== FREE_PLAN;
   // Private and offline sites open only through their private link.
-  if (!canPublish && data?.status !== 'offline') return { canPublish, openUrl: origin };
+  if (!canPublish(site) && site.status !== 'offline') return origin;
   const code = await previewCode(secret, subdomain);
-  return { canPublish, openUrl: code === null ? origin : `${origin}/?${PREVIEW_PARAM}=${code}` };
+  return code === null ? origin : `${origin}/?${PREVIEW_PARAM}=${code}`;
 }
