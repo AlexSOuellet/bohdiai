@@ -37,7 +37,7 @@ const { onlinePay } = await import('./online-pay');
 
 const fail = { data: null, error: { message: 'down' } };
 const row = { merchant_id: 'M1', email: 'renee@example.com', payments_receivable: true, email_confirmed: true, connected_at: '2026-10-25T10:00:00Z' };
-const ENV = { PAYPAL_CLIENT_ID: 'client', PAYPAL_CLIENT_SECRET: 'secret', PAYPAL_PARTNER_MERCHANT_ID: 'P', PAYPAL_ENV: 'sandbox' };
+const ENV = { PAYPAL_ON: 'on', PAYPAL_CLIENT_ID: 'client', PAYPAL_CLIENT_SECRET: 'secret', PAYPAL_PARTNER_MERCHANT_ID: 'P', PAYPAL_ENV: 'sandbox' };
 
 beforeEach(() => {
   state.queue = [];

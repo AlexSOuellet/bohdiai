@@ -24,12 +24,15 @@ const sent = (f: { mock: { calls: Call[] } }, i = 0): Call => f.mock.calls[i] ??
 const header = (init: RequestInit, name: string): string | undefined => (init.headers as Record<string, string>)[name];
 
 describe('paypalConfig', () => {
-  const env = { PAYPAL_CLIENT_ID: 'c', PAYPAL_CLIENT_SECRET: 's', PAYPAL_PARTNER_MERCHANT_ID: 'P', PAYPAL_ENV: 'sandbox' };
+  const env = { PAYPAL_ON: 'on', PAYPAL_CLIENT_ID: 'c', PAYPAL_CLIENT_SECRET: 's', PAYPAL_PARTNER_MERCHANT_ID: 'P', PAYPAL_ENV: 'sandbox' };
   it('needs every setting and a known mode', () => {
     expect(paypalConfig(env)).toEqual({ clientId: 'c', clientSecret: 's', partnerMerchantId: 'P', sandbox: true, attributionId: null });
     expect(paypalConfig({ ...env, PAYPAL_ENV: 'live', PAYPAL_ATTRIBUTION_ID: 'BN' })).toEqual({ clientId: 'c', clientSecret: 's', partnerMerchantId: 'P', sandbox: false, attributionId: 'BN' });
     expect(paypalConfig({ ...env, PAYPAL_ENV: 'production' })).toBeNull();
     expect(paypalConfig({ ...env, PAYPAL_PARTNER_MERCHANT_ID: undefined })).toBeNull();
+    // The switch: every key in place still means off until PAYPAL_ON says "on".
+    expect(paypalConfig({ ...env, PAYPAL_ON: undefined })).toBeNull();
+    expect(paypalConfig({ ...env, PAYPAL_ON: 'off' })).toBeNull();
   });
   it('uses PayPal’s test copy while testing', () => {
     expect(paypalBase({ sandbox: true })).toBe('https://api-m.sandbox.paypal.com');

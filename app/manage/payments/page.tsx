@@ -45,16 +45,17 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/manage/
   const on = await getSiteFeatures(site.tenantId);
   if (!on.has('market_shop')) notFound();
   const online = on.has('cart');
+  // PayPal is switched off (lib/paypal/config.ts): no settings, no section.
+  const paypalSettings = paypalConfig();
   const [pay, link, paypal] = await Promise.all([
     loadPaySettings(await createSupabaseServerClient(), site.tenantId),
     squareLink(supabaseAdmin(), site.tenantId),
-    online ? paypalLink(supabaseAdmin(), site.tenantId) : Promise.resolve(null),
+    online && paypalSettings !== null ? paypalLink(supabaseAdmin(), site.tenantId) : Promise.resolve(null),
   ]);
   const params = await searchParams;
   const outcome = params['square'];
   const paypalOutcome = params['paypal'];
   const stripeOutcome = params['stripe'];
-  const paypalSettings = paypalConfig();
   return (
     <PayManager initial={pay}>
       <SquarePanel
@@ -63,11 +64,11 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/manage/
         outcome={typeof outcome === 'string' ? (SQUARE_OUTCOME[outcome] ?? null) : null}
       />
       {online && <StripePanel outcome={typeof stripeOutcome === 'string' ? (STRIPE_OUTCOME[stripeOutcome] ?? null) : null} />}
-      {online && (
+      {online && paypalSettings !== null && (
         <PayPalPanel
           link={paypal}
-          ready={paypalSettings !== null}
-          testing={paypalSettings?.sandbox === true}
+          ready
+          testing={paypalSettings.sandbox}
           outcome={typeof paypalOutcome === 'string' ? (PAYPAL_OUTCOME[paypalOutcome] ?? null) : null}
         />
       )}

@@ -2,7 +2,7 @@
 
 > **⚠ START HERE (Session 120):** read `session-logs/session-119.md`, then `Open-Work.md` items 0 and 6.
 > **Everything is merged and live; `main` is the only branch (`feat/maker-checkup` parked, `fix/auth-link-24h` waits for Alex).** Self-serve sign-up and pay for every plan, the build on its own on Cloudflare, Publish wherever the site shows, Take my site offline.
-> **Next (Alex): makers getting paid online.** Square online checkout first (Square's own page, two more permissions), then Stripe for makers; PayPal live waits on Alex's partner application. Explain the protections before building (payment security is #1).
+> **Next (Alex): makers getting paid online.** Square online checkout first (Square's own page, two more permissions), then Stripe for makers. PayPal is switched off (Alex, 2026-11-04) until a maker asks; the code stays, `PAYPAL_ON=on` brings it back. Explain the protections before building (payment security is #1).
 > **Before live sign-ups (Alex):** `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` in Cloudflare, webhook registered.
 > **There is no public toolkit (Alex).** Never place a new backend screen without asking where it goes. Say "the maker", not "she".
 > Payments for makers ARE now being built (Alex, Session 119), Square online first.
@@ -13,7 +13,7 @@
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 **Operative plan doc:** `Project-Docs/Modular-Plan.md`; open items in `Project-Docs/Open-Work.md`. Every session updates Open-Work as items land.
 
-**Last updated:** 2026-11-03, Session 119 (end).
+**Last updated:** 2026-11-04 (PayPal switched off); before that 2026-11-03, Session 119 (end).
 
 ---
 
