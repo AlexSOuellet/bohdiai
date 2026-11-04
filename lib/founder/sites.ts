@@ -22,9 +22,9 @@ export type FounderSite = {
   joined: string;
   /** Alex's account is on the site, so he can open its backend. */
   canManage: boolean;
+  /** The maker has cancelled and leaves at the end of their term. */
+  leaving: boolean;
 };
-
-export type SitesSummary = { sites: number; live: number; monthlyCents: number };
 
 const PLAN_NAMES: Record<string, string> = { free: 'Free', showcase: 'Showcase', lite: 'Market', full: 'Full' };
 const STATUS_NAMES: Record<string, string> = { active: 'Live', draft: 'Draft', offline: 'Offline' };
@@ -49,12 +49,12 @@ export function monthlyCents(paying: FounderSite['paying']): number {
   return paying.interval === 'year' ? Math.round(paying.cents / 12) : paying.cents;
 }
 
-export function summarize(sites: readonly FounderSite[]): SitesSummary {
-  return {
-    sites: sites.length,
-    live: sites.filter((s) => s.status === 'active').length,
-    monthlyCents: sites.reduce((sum, s) => sum + monthlyCents(s.paying), 0),
-  };
+const FOUND_SHOWN = 10;
+
+/** The sites whose name, address or maker's email has this in it. */
+export function findSites(sites: readonly FounderSite[], query: string): FounderSite[] {
+  const q = query.toLowerCase();
+  return sites.filter((s) => [s.name, s.subdomain, s.maker ?? ''].some((text) => text.toLowerCase().includes(q))).slice(0, FOUND_SHOWN);
 }
 
 /** Every account's email by ID. */
@@ -66,7 +66,7 @@ async function emailsById(db: Db): Promise<Map<string, string>> {
 
 export async function loadFounderSites(db: Db): Promise<FounderSite[]> {
   const [tenants, members, subscriptions, emails] = await Promise.all([
-    db.from('tenants').select('id, business_name, subdomain, status, plan, plan_comp, created_at').is('deleted_at', null).order('created_at', { ascending: false }),
+    db.from('tenants').select('id, business_name, subdomain, status, plan, plan_comp, plan_cancels, created_at').is('deleted_at', null).order('created_at', { ascending: false }),
     db.from('tenant_members').select('tenant_id, user_id').eq('status', 'active').order('created_at'),
     db.from('subscriptions').select('tenant_id, status, unit_amount_cents, billing_interval'),
     emailsById(db),
@@ -88,6 +88,7 @@ export async function loadFounderSites(db: Db): Promise<FounderSite[]> {
       maker: member === undefined ? null : (emails.get(member.user_id) ?? null),
       paying: sub === undefined ? null : { cents: sub.unit_amount_cents ?? 0, interval: sub.billing_interval ?? 'month' },
       joined: t.created_at,
+      leaving: t.plan_cancels,
       canManage: members.data.some((m) => m.tenant_id === t.id && isFounder(m.user_id)),
     };
   });

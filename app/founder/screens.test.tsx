@@ -2,10 +2,54 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import type { FounderSite } from '@/lib/founder/sites';
+import type { Dashboard } from '@/lib/founder/dashboard';
+import { DashboardView } from './DashboardView';
 import { SiteTable } from './SiteTable';
 import { MessageList } from './messages/MessageList';
 
-const site = (over: Partial<FounderSite & { openUrl: string }>): FounderSite & { openUrl: string } => ({ id: 'a', name: 'Rustic Flags', subdomain: 'rustic-flags', status: 'active', plan: 'full', planComp: null, maker: 'maker@example.com', paying: { cents: 25000, interval: 'year' }, joined: '2026-11-01T15:00:00Z', canManage: true, openUrl: 'https://rustic-flags.bohdiai.com', ...over });
+const site = (over: Partial<FounderSite & { openUrl: string }>): FounderSite & { openUrl: string } => ({ id: 'a', name: 'Rustic Flags', subdomain: 'rustic-flags', status: 'active', plan: 'full', planComp: null, maker: 'maker@example.com', paying: { cents: 25000, interval: 'year' }, joined: '2026-11-01T15:00:00Z', canManage: true, leaving: false, openUrl: 'https://rustic-flags.bohdiai.com', ...over });
+
+const quiet: Dashboard = {
+  mrrCents: 0,
+  paying: 0,
+  signups: { thisMonth: 0, lastMonth: 0 },
+  cancels: { thisMonth: 0, leaving: 0 },
+  sites: { live: 0, drafts: 0, free: 0 },
+  needs: { failing: 0, stuck: 0, messages: 0 },
+  plans: [],
+  latest: [],
+};
+
+describe('DashboardView', () => {
+  it('says when things are quiet', () => {
+    render(<DashboardView data={quiet} />);
+    expect(screen.getByText('Nothing needs you right now.')).toBeInTheDocument();
+    expect(screen.getByText('No one is paying yet.')).toBeInTheDocument();
+    expect(screen.getByText('No sign-ups yet.')).toBeInTheDocument();
+  });
+  it('shows the numbers, what needs Alex, and who signed up', () => {
+    render(
+      <DashboardView
+        data={{
+          ...quiet,
+          mrrCents: 2583,
+          paying: 1,
+          signups: { thisMonth: 3, lastMonth: 2 },
+          needs: { failing: 1, stuck: 2, messages: 3 },
+          plans: [{ plan: 'full', paying: 1, monthlyCents: 2583 }],
+          latest: [{ id: 'a', name: 'Rustic Flags', plan: 'full', maker: 'pat@example.com', joined: '2026-11-01T15:00:00Z' }, { id: 'b', name: 'Tide', plan: 'free', maker: null, joined: '2026-11-01T15:00:00Z' }],
+        }}
+      />,
+    );
+    expect(screen.getAllByText('$25.83')).toHaveLength(2);
+    expect(screen.getByText('1 paying maker')).toBeInTheDocument();
+    expect(screen.getByText('2 last month')).toBeInTheDocument();
+    expect(screen.getByText('1 payment is failing')).toBeInTheDocument();
+    expect(screen.getByText('2 site builds have stopped')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '3 messages this month' })).toHaveAttribute('href', '/founder/messages');
+    expect(screen.getByText('Full, pat@example.com')).toBeInTheDocument();
+  });
+});
 
 describe('SiteTable', () => {
   it('shows a live paying site with its address to open', () => {

@@ -3,7 +3,8 @@ import type * as React from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import { FOUNDER_USER_IDS, isFounder, requireFounder } from './access';
-import { dollars, loadFounderSites, monthlyCents, planName, statusName, summarize, type FounderSite } from './sites';
+import { dollars, findSites, loadFounderSites, monthlyCents, planName, statusName, type FounderSite } from './sites';
+import { buildDashboard, loadDashboard, monthKey, previousMonth } from './dashboard';
 import { loadFounderMessages } from './messages';
 
 const s = vi.hoisted(() => ({ user: { id: 'someone' } }));
@@ -35,7 +36,7 @@ function fakeDb(tables: Record<string, Result>, users: Result = { data: { users:
   return { from, auth: { admin: { listUsers: async () => users } } } as unknown as SupabaseClient<Database>;
 }
 
-const site = (over: Partial<FounderSite>): FounderSite => ({ id: 'a', name: 'A', subdomain: 'a', status: 'active', plan: 'full', planComp: null, maker: null, paying: null, joined: '2026-11-01', canManage: true, ...over });
+const site = (over: Partial<FounderSite>): FounderSite => ({ id: 'a', name: 'A', subdomain: 'a', status: 'active', plan: 'full', planComp: null, maker: null, paying: null, joined: '2026-11-01', canManage: true, leaving: false, ...over });
 
 describe('who may open the admin', () => {
   beforeEach(() => {
@@ -71,9 +72,70 @@ describe('the words and numbers', () => {
     expect(monthlyCents({ cents: 500, interval: 'month' })).toBe(500);
     expect(monthlyCents({ cents: 25000, interval: 'year' })).toBe(2083);
   });
-  it('sums up the sites', () => {
-    const sites = [site({ paying: { cents: 500, interval: 'month' } }), site({ id: 'b', status: 'draft' }), site({ id: 'c', paying: { cents: 25000, interval: 'year' } })];
-    expect(summarize(sites)).toEqual({ sites: 3, live: 2, monthlyCents: 2583 });
+});
+
+describe('finding a maker', () => {
+  const sites = [site({ name: 'Rustic Flags', subdomain: 'rustic-flags', maker: 'pat@example.com' }), site({ id: 'b', name: 'Tide Pool', subdomain: 'tide', maker: null })];
+  it('finds by name, address or email, whatever the case', () => {
+    expect(findSites(sites, 'RUSTIC').map((s) => s.id)).toEqual(['a']);
+    expect(findSites(sites, 'tide').map((s) => s.id)).toEqual(['b']);
+    expect(findSites(sites, 'pat@').map((s) => s.id)).toEqual(['a']);
+    expect(findSites(sites, 'zzz')).toEqual([]);
+  });
+  it('shows ten at most', () => {
+    expect(findSites(Array.from({ length: 12 }, (_, i) => site({ id: String(i) })), 'a')).toHaveLength(10);
+  });
+});
+
+describe('the dashboard', () => {
+  const now = new Date('2026-11-15T12:00:00Z');
+  const sub = (over: Partial<{ tenant_id: string; status: string; created_at: string; canceled_at: string | null }>) => ({ tenant_id: 'a', status: 'active', created_at: '2026-11-03T12:00:00Z', canceled_at: null, ...over });
+
+  it('reads months on Alex’s clock and steps back over a new year', () => {
+    expect(monthKey('2026-11-01T02:00:00Z')).toBe('2026-10');
+    expect(previousMonth('2026-11')).toBe('2026-10');
+    expect(previousMonth('2026-01')).toBe('2025-12');
+  });
+
+  it('adds up money, sign-ups, cancellations and sites', () => {
+    const d = buildDashboard({
+      sites: [
+        site({ plan: 'full', paying: { cents: 25000, interval: 'year' }, leaving: true }),
+        site({ id: 'b', plan: 'showcase', paying: { cents: 500, interval: 'month' } }),
+        site({ id: 'c', plan: 'showcase', paying: { cents: 500, interval: 'month' } }),
+        site({ id: 'd', status: 'draft', planComp: 'free' }),
+      ],
+      subscriptions: [sub({}), sub({ tenant_id: 'b', created_at: '2026-10-20T12:00:00Z' }), sub({ tenant_id: 'c', created_at: '2026-09-01T12:00:00Z', canceled_at: '2026-11-02T12:00:00Z' }), sub({ tenant_id: 'gone', created_at: '2026-08-01T12:00:00Z', canceled_at: '2026-10-02T12:00:00Z', status: 'past_due' })],
+      stuck: 2,
+      messageDates: ['2026-11-02T12:00:00Z', '2026-10-02T12:00:00Z'],
+      now,
+    });
+    expect(d).toMatchObject({
+      mrrCents: 3083,
+      paying: 3,
+      signups: { thisMonth: 1, lastMonth: 1 },
+      cancels: { thisMonth: 1, leaving: 1 },
+      sites: { live: 3, drafts: 1, free: 1 },
+      needs: { failing: 1, stuck: 2, messages: 1 },
+    });
+    expect(d.plans).toEqual([
+      { plan: 'full', paying: 1, monthlyCents: 2083 },
+      { plan: 'showcase', paying: 2, monthlyCents: 1000 },
+    ]);
+    expect(d.latest.map((s) => s.id)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('reads it all from the database', async () => {
+    const db = fakeDb({
+      tenants: { data: [{ id: 't1', business_name: 'One', subdomain: 'one', status: 'active', plan: 'full', plan_comp: null, plan_cancels: false, created_at: '2026-11-01' }], error: null },
+      subscriptions: { data: [{ tenant_id: 't1', status: 'active', unit_amount_cents: 500, billing_interval: 'month', created_at: '2026-11-03T12:00:00Z', canceled_at: null }], error: null },
+      intakes: { data: [{ id: 'i' }], error: null },
+    });
+    expect(await loadDashboard(db, now)).toMatchObject({ mrrCents: 500, signups: { thisMonth: 1 }, needs: { stuck: 1 } });
+  });
+
+  it('says so when the site forms can’t be read', async () => {
+    await expect(loadDashboard(fakeDb({ intakes: { data: null, error: { message: 'down' } } }), now)).rejects.toThrow('down');
   });
 });
 

@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const TABS = [
-  { href: '/founder', label: 'Sites' },
+  { href: '/founder', label: 'Dashboard' },
+  { href: '/founder/act', label: 'Act as a maker' },
   { href: '/founder/messages', label: 'Messages' },
 ] as const;
 
