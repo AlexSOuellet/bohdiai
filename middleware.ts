@@ -4,7 +4,7 @@ import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 import { sanitizeTenantHeaders, isUnreachableStorefrontPath, requestHost, isAppHost, isDormantPath, tenantLookupUrl, apexRedirect } from '@/lib/proxy-security';
 import { appOrigin } from '@/lib/backend/app-url';
-import { backendRedirect, isBackendPath, isManagePath, ownerEntryRedirect } from '@/lib/backend/backend-paths';
+import { backendRedirect, founderEntryRedirect, isBackendPath, isManagePath, ownerEntryRedirect } from '@/lib/backend/backend-paths';
 import { ACTIVITY_COOKIE, checkBackendSession, idleLimitFor, sessionSecret } from '@/lib/backend/session-limits';
 import { DRAFT_HEADERS, PREVIEW_COOKIE, PREVIEW_MAX_AGE, PREVIEW_PARAM, draftGate } from '@/lib/storefront/draft-preview';
 import { isReservedSubdomain } from '@/lib/reserved-subdomains';
@@ -44,6 +44,8 @@ export async function middleware(request: NextRequest) {
   // other host sends those paths there (spec §1 — the session cookie stays on
   // app.bohdiai.com).
   const appBase = appOrigin(process.env['SITE_URL'] || 'https://bohdiai.com');
+  const toAdmin = founderEntryRedirect(hostname, appBase);
+  if (toAdmin !== null) return NextResponse.redirect(toAdmin, 307);
   const toApp = backendRedirect(hostname, request.nextUrl, appBase);
   if (toApp !== null) return NextResponse.redirect(toApp, 307);
 

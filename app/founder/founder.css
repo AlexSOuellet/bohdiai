@@ -1,0 +1,14 @@
+/* Alex's admin: the backend's look (backend.css), with a top bar in place of its side menu. */
+.fd { min-height: 100vh; background: var(--bk-ground); }
+.fd-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1.5rem; max-width: 76rem; padding: 1.25rem var(--bk-gutter) 0; }
+.fd-who { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; font-size: 0.8125rem; color: var(--bk-ink-muted); }
+.fd-out { padding: 0; border: 0; background: none; font: inherit; font-weight: 700; color: var(--bk-ink); cursor: pointer; }
+.fd-out:hover { color: var(--bk-primary); }
+.fd-site { display: block; font-weight: 700; }
+.fd-address { color: var(--bk-ink-muted); font-size: 0.8125rem; }
+.fd-address:hover { color: var(--bk-primary); }
+.fd-messages { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+.fd-message { padding: 1rem 1.15rem; border-radius: var(--bk-radius-sm); background: var(--bk-surface); box-shadow: 0 0 0 1px var(--bk-ink-15); }
+.fd-message-from { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1rem; margin: 0 0 0.5rem; font-size: 0.8125rem; color: var(--bk-ink-muted); }
+.fd-message-from strong { color: var(--bk-ink); }
+.fd-message-text { margin: 0; max-width: 70ch; line-height: 1.5; white-space: pre-wrap; }

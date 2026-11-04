@@ -160,7 +160,7 @@ Decided the same day: a maker's saves go live at once (the shop reads the databa
 
 ## Platform
 35. Staging: its own test domain, its own database, and the root domain as a setting.
-36. Alex's dashboard:
+36. Alex's dashboard (**started 2026-11-04 on `feat/alex-admin`: admin.bohdiai.com forwards to app.bohdiai.com/founder, locked to Alex's account in `lib/founder/access.ts`; Sites and Messages screens built; everything below still to do, statistics only as the line over Sites**):
     - view any site as its client
     - statistics
     - demo runs and checkups

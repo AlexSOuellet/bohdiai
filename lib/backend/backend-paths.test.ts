@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isBackendPath, isManagePath, backendRedirect, ownerEntryRedirect } from './backend-paths';
+import { isBackendPath, isManagePath, backendRedirect, founderEntryRedirect, ownerEntryRedirect } from './backend-paths';
 
 describe('isManagePath', () => {
   it('covers the backend and its pages', () => {
@@ -8,6 +8,24 @@ describe('isManagePath', () => {
   });
   it('leaves sign-in, links and look-alikes alone', () => {
     for (const p of ['/signin', '/forgot-password', '/auth/confirm', '/manager', '/']) expect(isManagePath(p)).toBe(false);
+  });
+});
+
+describe("Alex's admin", () => {
+  const app = 'https://app.bohdiai.com';
+  it('counts as the signed-in backend, so it keeps the auto sign-out and the app host', () => {
+    for (const p of ['/founder', '/founder/messages']) {
+      expect(isManagePath(p)).toBe(true);
+      expect(isBackendPath(p)).toBe(true);
+    }
+    expect(isBackendPath('/founders')).toBe(false);
+    expect(backendRedirect('rustic-flags.bohdiai.com', new URL('https://rustic-flags.bohdiai.com/founder'), app)).toBe('https://app.bohdiai.com/founder');
+  });
+  it('is reached from admin.bohdiai.com, and only from there', () => {
+    expect(founderEntryRedirect('admin.bohdiai.com', app)).toBe('https://app.bohdiai.com/founder');
+    expect(founderEntryRedirect('admin.localhost:3000', app)).toBe('http://app.localhost:3000/founder');
+    expect(founderEntryRedirect('app.bohdiai.com', app)).toBeNull();
+    expect(founderEntryRedirect('bohdiai.com', app)).toBeNull();
   });
 });
 

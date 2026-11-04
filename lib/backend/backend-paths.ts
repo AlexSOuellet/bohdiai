@@ -7,16 +7,16 @@
 import { isAppHost } from '@/lib/proxy-security';
 
 /** /welcome is onboarding (Session 119): signed in, before the backend. */
-const EXACT = ['/signin', '/forgot-password', '/manage', '/welcome'] as const;
-const PREFIXES = ['/auth/', '/manage/'] as const;
+const EXACT = ['/signin', '/forgot-password', '/manage', '/welcome', '/founder'] as const;
+const PREFIXES = ['/auth/', '/manage/', '/founder/'] as const;
 
 export function isBackendPath(pathname: string): boolean {
   return (EXACT as readonly string[]).includes(pathname) || PREFIXES.some((p) => pathname.startsWith(p));
 }
 
-/** The signed-in backend itself (not sign-in or the emailed-link routes). */
+/** The signed-in backend itself, and Alex's admin (not sign-in or the emailed-link routes). */
 export function isManagePath(pathname: string): boolean {
-  return pathname === '/manage' || pathname.startsWith('/manage/');
+  return pathname === '/manage' || pathname.startsWith('/manage/') || pathname === '/founder' || pathname.startsWith('/founder/');
 }
 
 /** The app host to send someone to. Never derived from a production request host
@@ -32,6 +32,14 @@ function appTarget(hostname: string, appBase: string): string {
 export function backendRedirect(hostname: string, url: URL, appBase: string): string | null {
   if (!isBackendPath(url.pathname) || isAppHost(hostname)) return null;
   return `${appTarget(hostname, appBase)}${url.pathname}${url.search}`;
+}
+
+/** admin.bohdiai.com is the way into Alex's admin, which lives on the app host with
+ *  the sign-in cookie. Any path there goes to the admin's front page. */
+export function founderEntryRedirect(hostname: string, appBase: string): string | null {
+  const host = hostname.split(':')[0] ?? '';
+  if (host !== 'admin.bohdiai.com' && host !== 'admin.localhost') return null;
+  return `${appTarget(hostname, appBase)}/founder`;
 }
 
 /**
