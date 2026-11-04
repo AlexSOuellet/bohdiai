@@ -21,3 +21,5 @@
 .fd-signups li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.15rem 1rem; }
 .fd-find { max-width: 32rem; margin-bottom: 1.25rem; }
 .fd-find .bk-input { flex: 1; min-width: 0; }
+.fd-form { max-width: 32rem; }
+.fd-form .bk-note, .fd-form .bk-error { margin-top: 0.6rem; }

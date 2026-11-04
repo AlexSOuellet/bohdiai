@@ -8,6 +8,10 @@ import { longDay } from '@/lib/backend/plan/billing';
 import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
 import { PlanSummary, type PlanMode } from './PlanSummary';
 import { CancelPanel } from './CancelPanel';
+import { PromoPanel } from './PromoPanel';
+import { currentSubscription } from '@/lib/billing/maker-subscription';
+import { discountRunning } from '@/lib/billing/promos';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +27,9 @@ export default async function PlanPage({
   if (!on.has('plan')) notFound();
   const state = await loadPlanState(await createSupabaseServerClient(), site.tenantId);
   if (state === null) notFound();
+  const sub = await currentSubscription(supabaseAdmin(), site.tenantId);
+  const canUseCode = sub !== null && sub.unitCents > 0;
+  const discount = sub !== null && discountRunning(sub, new Date()) ? sub.discountLabel : null;
   const mode: PlanMode = on.has('demo_checkout')
     ? { kind: 'demo' }
     : { kind: 'email', siteName: site.businessName, contactEmail: SITE_CONTACT_EMAIL };
@@ -43,6 +50,7 @@ export default async function PlanPage({
       </div>
       <main id="main" className="bk-content">
         <PlanSummary view={planView(state.plan)} mode={mode} terms={state} changed={changed} />
+        {canUseCode && <PromoPanel discount={discount} />}
         <CancelPanel cancels={state.cancels} endsOn={longDay(state.renewsOn)} offerShowcase={state.plan !== 'showcase'} />
       </main>
     </>

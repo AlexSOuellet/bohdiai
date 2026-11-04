@@ -36,7 +36,7 @@ function fakeDb(tables: Record<string, Result>, users: Result = { data: { users:
   return { from, auth: { admin: { listUsers: async () => users } } } as unknown as SupabaseClient<Database>;
 }
 
-const site = (over: Partial<FounderSite>): FounderSite => ({ id: 'a', name: 'A', subdomain: 'a', status: 'active', plan: 'full', planComp: null, maker: null, paying: null, joined: '2026-11-01', canManage: true, leaving: false, ...over });
+const site = (over: Partial<FounderSite>): FounderSite => ({ id: 'a', name: 'A', subdomain: 'a', status: 'active', plan: 'full', planComp: null, maker: null, paying: null, discount: null, joined: '2026-11-01', canManage: true, leaving: false, ...over });
 
 describe('who may open the admin', () => {
   beforeEach(() => {
@@ -171,6 +171,32 @@ describe('loadFounderSites', () => {
     });
     const [one] = await loadFounderSites(db);
     expect(one).toMatchObject({ maker: null, paying: null, canManage: false });
+  });
+
+  it('shows what a discounted maker really pays, and a free one as not paying', async () => {
+    const running = { discount_label: '10% off', discount_percent: 10, discount_ends_at: null };
+    const db = fakeDb({
+      tenants: { data: tenants, error: null },
+      subscriptions: {
+        data: [
+          { tenant_id: 't1', status: 'active', unit_amount_cents: 2500, billing_interval: 'month', ...running },
+          { tenant_id: 't2', status: 'active', unit_amount_cents: 2500, billing_interval: 'month', discount_label: 'Free', discount_percent: 100, discount_ends_at: null },
+        ],
+        error: null,
+      },
+    });
+    const [one, two] = await loadFounderSites(db);
+    expect(one).toMatchObject({ paying: { cents: 2250, interval: 'month' }, discount: '10% off' });
+    expect(two).toMatchObject({ paying: null, discount: 'Free' });
+  });
+
+  it('goes back to full price when a discount has ended', async () => {
+    const db = fakeDb({
+      tenants: { data: tenants.slice(0, 1), error: null },
+      subscriptions: { data: [{ tenant_id: 't1', status: 'active', unit_amount_cents: 2500, billing_interval: 'month', discount_label: '3 months free', discount_percent: 100, discount_ends_at: '2026-10-01T00:00:00Z' }], error: null },
+    });
+    const [one] = await loadFounderSites(db, new Date('2026-11-04T12:00:00Z'));
+    expect(one).toMatchObject({ paying: { cents: 2500 }, discount: null });
   });
 
   it('keeps a paying site whose subscription has no interval as monthly', async () => {

@@ -17,8 +17,10 @@ export type FounderSite = {
   planComp: string | null;
   /** The maker's sign-in email; null when only Alex runs the site. */
   maker: string | null;
-  /** What the site pays BohdiAI; null when it pays nothing. */
+  /** What the site really pays BohdiAI, after any discount; null when it pays nothing. */
   paying: { cents: number; interval: string } | null;
+  /** The discount running, in words; null when there's none. */
+  discount: string | null;
   joined: string;
   /** Alex's account is on the site, so he can open its backend. */
   canManage: boolean;
@@ -64,11 +66,26 @@ async function emailsById(db: Db): Promise<Map<string, string>> {
   return new Map(data.users.map((u) => [u.id, u.email ?? '']));
 }
 
-export async function loadFounderSites(db: Db): Promise<FounderSite[]> {
+type BilledSub = { unit_amount_cents: number | null; billing_interval: string | null; discount_label?: string | null; discount_percent?: number | null; discount_ends_at?: string | null };
+
+function runningLabel(sub: BilledSub, now: Date): string | null {
+  const label = sub.discount_label ?? null;
+  const ends = sub.discount_ends_at ?? null;
+  return label !== null && (ends === null || new Date(ends) > now) ? label : null;
+}
+
+/** After the discount running; a maker at 100% off isn't paying. */
+function payingOf(sub: BilledSub, now: Date): FounderSite['paying'] {
+  const percent = runningLabel(sub, now) === null ? 0 : (sub.discount_percent ?? 0);
+  const cents = Math.round(((sub.unit_amount_cents ?? 0) * (100 - percent)) / 100);
+  return cents === 0 ? null : { cents, interval: sub.billing_interval ?? 'month' };
+}
+
+export async function loadFounderSites(db: Db, now: Date = new Date()): Promise<FounderSite[]> {
   const [tenants, members, subscriptions, emails] = await Promise.all([
     db.from('tenants').select('id, business_name, subdomain, status, plan, plan_comp, plan_cancels, created_at').is('deleted_at', null).order('created_at', { ascending: false }),
     db.from('tenant_members').select('tenant_id, user_id').eq('status', 'active').order('created_at'),
-    db.from('subscriptions').select('tenant_id, status, unit_amount_cents, billing_interval'),
+    db.from('subscriptions').select('tenant_id, status, unit_amount_cents, billing_interval, discount_label, discount_percent, discount_ends_at'),
     emailsById(db),
   ]);
   if (tenants.error !== null) throw new Error(`Could not read the sites: ${tenants.error.message}`);
@@ -86,7 +103,8 @@ export async function loadFounderSites(db: Db): Promise<FounderSite[]> {
       plan: t.plan,
       planComp: t.plan_comp,
       maker: member === undefined ? null : (emails.get(member.user_id) ?? null),
-      paying: sub === undefined ? null : { cents: sub.unit_amount_cents ?? 0, interval: sub.billing_interval ?? 'month' },
+      paying: sub === undefined ? null : payingOf(sub, now),
+      discount: sub === undefined ? null : runningLabel(sub, now),
       joined: t.created_at,
       leaving: t.plan_cancels,
       canManage: members.data.some((m) => m.tenant_id === t.id && isFounder(m.user_id)),

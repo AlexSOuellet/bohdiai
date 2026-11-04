@@ -17,6 +17,43 @@ const input: CheckoutInput = {
   backUrl: 'https://bohdiai.com/start?plan=maker-full&billing=yearly&back=1',
 };
 
+describe('startCheckout with a code', () => {
+  const promo = { code: 'SPRING10', percent: 10, months: 3, audience: 'new', expires: null, maxUses: null } as const;
+
+  it('puts the code on the checkout, asks for a card, and names it for the record', async () => {
+    const { s, create } = fakeStripe([{ id: 'p', recurring: { interval: 'month' }, unit_amount: 2500 } as never]);
+    await startCheckout(s, { ...input, billing: 'monthly', promo });
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        discounts: [{ coupon: 'SPRING10' }],
+        payment_method_collection: 'always',
+        subscription_data: { metadata: expect.objectContaining({ promo_code: 'SPRING10', promo_percent: '10', promo_months: '3' }) },
+      }),
+    );
+  });
+
+  it('leaves the months out of a discount that never ends', async () => {
+    const { s, create } = fakeStripe([{ id: 'p', recurring: { interval: 'month' }, unit_amount: 2500 } as never]);
+    await startCheckout(s, { ...input, promo: { ...promo, months: null } });
+    expect(JSON.stringify(create.mock.lastCall)).not.toContain('promo_months');
+  });
+
+  it('turns months on a yearly plan into money off the first year', async () => {
+    const { s, create } = fakeStripe([{ id: 'p', recurring: { interval: 'year' }, unit_amount: 25000 } as never]);
+    const coupons = { create: vi.fn(async () => ({ id: 'once' })) };
+    await startCheckout({ ...s, coupons } as unknown as Stripe, { ...input, promo: { ...promo, percent: 100 } });
+    expect(coupons.create).toHaveBeenCalledWith(expect.objectContaining({ amount_off: 6250, duration: 'once' }));
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ discounts: [{ coupon: 'once' }] }));
+  });
+
+  it('treats a price with no amount as nothing', async () => {
+    const { s } = fakeStripe([{ id: 'p', recurring: { interval: 'year' } } as never]);
+    const coupons = { create: vi.fn(async () => ({ id: 'once' })) };
+    await startCheckout({ ...s, coupons } as unknown as Stripe, { ...input, promo });
+    expect(coupons.create).toHaveBeenCalledWith(expect.objectContaining({ amount_off: 0 }));
+  });
+});
+
 describe('startCheckout', () => {
   it('opens Stripe’s page for the plan’s price, naming the site', async () => {
     const { s, list, create } = fakeStripe([{ id: 'price_full_year' }]);

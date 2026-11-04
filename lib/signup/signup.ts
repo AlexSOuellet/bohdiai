@@ -10,11 +10,14 @@
  *
  * Every outside step is passed in, so the order is tested on its own.
  */
+import type { ErrorSpot } from '@/lib/intake/request';
 import type { SignupFields } from './request';
 
 export type SignupSite = { tenantId: string; draft: boolean; paid: boolean };
 
 export type SignupDeps = {
+  /** What's wrong with the code they typed, in the form's own words; null when it's fine or blank. */
+  promoProblem(fields: SignupFields): Promise<ErrorSpot | null>;
   /** A new, unconfirmed account; 'exists' when the email already has one. */
   createUser(email: string, password: string, name: string): Promise<{ ok: true; userId: string } | { ok: false; reason: 'exists' | 'failed' }>;
   /** The account, when this is its password (confirmed or not yet); else null. */
@@ -31,9 +34,12 @@ export type SignupDeps = {
   checkout(tenantId: string, fields: SignupFields): Promise<string>;
 };
 
-export type SignupResult = { ok: true; url: string } | { ok: false; reason: 'accountExists' | 'failed' };
+export type SignupResult = { ok: true; url: string } | { ok: false; reason: 'accountExists' | 'failed' } | { ok: false; reason: 'promo'; spot: ErrorSpot };
 
 export async function signUp(fields: SignupFields, password: string, deps: SignupDeps): Promise<SignupResult> {
+  // Before anything is made, so a mistyped code costs nothing to fix.
+  const spot = await deps.promoProblem(fields);
+  if (spot !== null) return { ok: false, reason: 'promo', spot };
   const made = await deps.createUser(fields.email, password, fields.makerName);
   if (made.ok) {
     try {

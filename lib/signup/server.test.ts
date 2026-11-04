@@ -6,12 +6,14 @@ import type * as StripeModule from '@/lib/billing/stripe';
 const findUserByEmail = vi.fn();
 const confirmSite = vi.fn();
 const startCheckout = vi.fn();
+const checkPromo = vi.fn();
+vi.mock('@/lib/billing/promos', () => ({ checkPromo: (...a: unknown[]) => checkPromo(...a) }));
 vi.mock('@/lib/backend/user-lookup', () => ({ findUserByEmail: (...a: unknown[]) => findUserByEmail(...a) }));
 vi.mock('./after-paid', () => ({ confirmSite: (...a: unknown[]) => confirmSite(...a) }));
 vi.mock('@/lib/billing/checkout', () => ({ startCheckout: (...a: unknown[]) => startCheckout(...a) }));
 vi.mock('@/lib/billing/stripe', async (orig) => ({ ...(await orig<typeof StripeModule>()), stripe: () => ({}) }));
 
-import { startPlanId, unconfirmedSignIn } from './server';
+import { signupDeps, startPlanId, unconfirmedSignIn } from './server';
 
 /** Members, billing and the site's plan, as the database would answer. */
 function fakeDb(members: { tenant_id: string; status: string }[], paid: string[], plan = { plan: 'lite', plan_billing: 'yearly', business_name: 'Saltmarsh', contact_email: 'lena@example.com' }) {
@@ -63,5 +65,46 @@ describe('startPlanId', () => {
   it('names the plan the way bohdiai.com/start reads it', () => {
     expect(startPlanId({ plan: 'free' })).toBe('maker-free');
     expect(startPlanId({ plan: 'full' })).toBe('maker-full');
+  });
+});
+
+describe('a promo code at sign-up', () => {
+  const fields = { plan: 'lite', billing: 'monthly', makerName: 'Lena', businessName: 'Saltmarsh', email: 'lena@example.com', promoCode: 'SPRING10' } as const;
+  const deps = () => signupDeps(fakeDb([], []), 'https://bohdiai.com');
+  const promo = { code: 'SPRING10', percent: 10, months: null, audience: 'new', expires: null, maxUses: null };
+
+  beforeEach(() => {
+    checkPromo.mockReset();
+    startCheckout.mockReset();
+  });
+
+  it('has nothing to check when the box is blank', async () => {
+    expect(await deps().promoProblem({ ...fields, promoCode: '' })).toBeNull();
+    expect(checkPromo).not.toHaveBeenCalled();
+  });
+  it('has nothing to discount on Free', async () => {
+    expect(await deps().promoProblem({ ...fields, plan: 'free' })).toBe('promoFree');
+  });
+  it('checks it as a new sign-up', async () => {
+    checkPromo.mockResolvedValue({ ok: true, promo });
+    expect(await deps().promoProblem(fields)).toBeNull();
+    expect(checkPromo).toHaveBeenCalledWith({}, expect.anything(), { code: 'SPRING10', email: 'lena@example.com', tenantId: null, isNew: true });
+  });
+  it('says when it’s been used, and when it’s no good', async () => {
+    checkPromo.mockResolvedValue({ ok: false, why: 'used' });
+    expect(await deps().promoProblem(fields)).toBe('promoUsed');
+    checkPromo.mockResolvedValue({ ok: false, why: 'unknown' });
+    expect(await deps().promoProblem(fields)).toBe('promoBad');
+  });
+  it('hands the checked code to Stripe’s page', async () => {
+    checkPromo.mockResolvedValue({ ok: true, promo });
+    startCheckout.mockResolvedValue('https://checkout.stripe.com/c/cs_3');
+    await deps().checkout('t1', fields);
+    expect(startCheckout).toHaveBeenCalledWith({}, expect.objectContaining({ promo }));
+  });
+  it('stops rather than charge full price when the code ended mid-sign-up', async () => {
+    checkPromo.mockResolvedValue({ ok: false, why: 'unknown' });
+    await expect(deps().checkout('t1', fields)).rejects.toThrow('stopped being valid');
+    expect(startCheckout).not.toHaveBeenCalled();
   });
 });

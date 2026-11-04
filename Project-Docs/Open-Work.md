@@ -160,7 +160,7 @@ Decided the same day: a maker's saves go live at once (the shop reads the databa
 
 ## Platform
 35. Staging: its own test domain, its own database, and the root domain as a setting.
-36. Alex's dashboard (**started 2026-11-04 on `feat/alex-admin`: admin.bohdiai.com forwards to app.bohdiai.com/founder, locked to Alex's account in `lib/founder/access.ts`; Dashboard (MRR, sign-ups, cancellations, needs you, by plan, latest sign-ups), Act as a maker (find, not a list) and Messages built; your sign-in lands there; everything below still to do. **Make a maker free and give discounts (Alex, 2026-11-04): not built. Nothing writes to Stripe after checkout, so a maker's cancel or plan change, and a free site, don't change what Stripe charges. Fix before live sign-ups.**):
+36. Alex's dashboard (**started 2026-11-04 on `feat/alex-admin`: admin.bohdiai.com forwards to app.bohdiai.com/founder, locked to Alex's account in `lib/founder/access.ts`; Dashboard (MRR, sign-ups, cancellations, needs you, by plan, latest sign-ups), Act as a maker (find, not a list) and Messages built; your sign-in lands there; everything below still to do. **Promotions built (Alex, 2026-11-04): codes on the Promotions screen (`lib/billing/promos.ts`; a code is a Stripe coupon, `plan_promo_uses` keeps who used it, one use per maker, one discount at a time), given directly or made free from a maker's page under Act as a maker, entered at sign-up or on Your plan. A cancel now reaches Stripe and a cancelled site goes offline at term end. Real makers still can't change plan themselves: Upgrade emails Alex, and nothing changes what Stripe charges for a plan change.**):
     - view any site as its client
     - statistics
     - demo runs and checkups

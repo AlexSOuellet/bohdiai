@@ -12,6 +12,7 @@ import type Stripe from 'stripe';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import { isAccountPlan } from '@/lib/signup/request';
+import { recordSignupPromo } from './promos';
 
 type Db = SupabaseClient<Database>;
 
@@ -80,6 +81,19 @@ export async function recordCheckout(s: Stripe, db: Db, sessionId: string): Prom
       .update({ plan_billing: interval === 'year' ? 'yearly' : 'monthly', plan_renews_on: day(now.end) })
       .eq('id', tenantId);
     if (tErr !== null) throw new Error(`Could not save the renewal day: ${tErr.message}`);
+    const code = sub.metadata['promo_code'];
+    if (code !== undefined && email !== null) {
+      const months = sub.metadata['promo_months'];
+      await recordSignupPromo(db, {
+        stripeId: sub.id,
+        code,
+        tenantId,
+        email: email.toLowerCase(),
+        discount: { percent: Number(sub.metadata['promo_percent']), months: months === undefined ? null : Number(months) },
+        interval,
+        now: new Date(),
+      });
+    }
     return { paid: true, tenantId, email, first: true };
   } catch (err) {
     await letGo(db, lock);
@@ -102,6 +116,12 @@ export async function recordSubscription(db: Db, sub: Stripe.Subscription): Prom
     .eq('stripe_subscription_id', sub.id);
   if (error !== null) throw new Error(`Could not update the billing record: ${error.message}`);
   const tenantId = sub.metadata['tenant_id'];
+  // The term is over: the site comes down, kept and hidden, never deleted.
+  if (sub.status === 'canceled' && tenantId !== undefined) {
+    const { error: downErr } = await db.from('tenants').update({ status: 'offline', plan_cancels: false }).eq('id', tenantId).eq('status', 'active');
+    if (downErr !== null) throw new Error(`Could not close the site: ${downErr.message}`);
+    return;
+  }
   if (now === null || tenantId === undefined) return;
   const { error: tErr } = await db.from('tenants').update({ plan_renews_on: day(now.end) }).eq('id', tenantId);
   if (tErr !== null) throw new Error(`Could not save the renewal day: ${tErr.message}`);

@@ -7,7 +7,7 @@ import { DashboardView } from './DashboardView';
 import { SiteTable } from './SiteTable';
 import { MessageList } from './messages/MessageList';
 
-const site = (over: Partial<FounderSite & { openUrl: string }>): FounderSite & { openUrl: string } => ({ id: 'a', name: 'Rustic Flags', subdomain: 'rustic-flags', status: 'active', plan: 'full', planComp: null, maker: 'maker@example.com', paying: { cents: 25000, interval: 'year' }, joined: '2026-11-01T15:00:00Z', canManage: true, leaving: false, openUrl: 'https://rustic-flags.bohdiai.com', ...over });
+const site = (over: Partial<FounderSite & { openUrl: string }>): FounderSite & { openUrl: string } => ({ id: 'a', name: 'Rustic Flags', subdomain: 'rustic-flags', status: 'active', plan: 'full', planComp: null, maker: 'maker@example.com', paying: { cents: 25000, interval: 'year' }, discount: null, joined: '2026-11-01T15:00:00Z', canManage: true, leaving: false, openUrl: 'https://rustic-flags.bohdiai.com', ...over });
 
 const quiet: Dashboard = {
   mrrCents: 0,

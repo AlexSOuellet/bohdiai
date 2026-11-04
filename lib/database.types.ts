@@ -1944,6 +1944,38 @@ export type Database = {
           },
         ]
       }
+      plan_promo_uses: {
+        Row: {
+          code: string
+          email: string
+          id: string
+          redeemed_at: string
+          tenant_id: string
+        }
+        Insert: {
+          code: string
+          email: string
+          id?: string
+          redeemed_at?: string
+          tenant_id: string
+        }
+        Update: {
+          code?: string
+          email?: string
+          id?: string
+          redeemed_at?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_promo_uses_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_cost_items: {
         Row: {
           batches_lasts: number | null
@@ -3128,6 +3160,9 @@ export type Database = {
           currency: string | null
           current_period_end: string | null
           current_period_start: string | null
+          discount_ends_at: string | null
+          discount_label: string | null
+          discount_percent: number | null
           ended_at: string | null
           id: string
           status: string
@@ -3149,6 +3184,9 @@ export type Database = {
           currency?: string | null
           current_period_end?: string | null
           current_period_start?: string | null
+          discount_ends_at?: string | null
+          discount_label?: string | null
+          discount_percent?: number | null
           ended_at?: string | null
           id?: string
           status: string
@@ -3170,6 +3208,9 @@ export type Database = {
           currency?: string | null
           current_period_end?: string | null
           current_period_start?: string | null
+          discount_ends_at?: string | null
+          discount_label?: string | null
+          discount_percent?: number | null
           ended_at?: string | null
           id?: string
           status?: string

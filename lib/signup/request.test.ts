@@ -15,7 +15,7 @@ describe('parseSignup', () => {
     const parsed = parseSignup(good);
     expect(parsed).toEqual({
       kind: 'ok',
-      fields: { plan: 'full', billing: 'yearly', makerName: 'Lena', businessName: 'Saltmarsh', email: 'lena@example.com' },
+      fields: { plan: 'full', billing: 'yearly', makerName: 'Lena', businessName: 'Saltmarsh', email: 'lena@example.com', promoCode: '' },
       password: 'tide pools 22',
     });
   });
@@ -38,6 +38,10 @@ describe('parseSignup', () => {
     expect(parseSignup({ ...good, [SIGNUP_FIELD.honeypot]: 'Acme' })).toEqual({ kind: 'spam' });
   });
 
+  it('reads a typed code in capitals', () => {
+    expect(parseSignup({ ...good, promoCode: ' spring10 ' })).toMatchObject({ fields: { promoCode: 'SPRING10' } });
+  });
+
   it('reads nothing from a body that isn’t an object', () => {
     expect(parseSignup(null)).toMatchObject({ kind: 'invalid', problem: { spot: 'plan' } });
   });
@@ -45,6 +49,6 @@ describe('parseSignup', () => {
 
 describe('checkSignup', () => {
   it('is happy with a ready draft', () => {
-    expect(checkSignup({ plan: 'showcase', billing: 'monthly', makerName: 'A', businessName: 'B', email: 'a@b.co', password: '12345678' })).toBeNull();
+    expect(checkSignup({ plan: 'showcase', billing: 'monthly', makerName: 'A', businessName: 'B', email: 'a@b.co', password: '12345678', promoCode: '' })).toBeNull();
   });
 });

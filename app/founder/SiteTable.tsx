@@ -1,10 +1,12 @@
+import Link from 'next/link';
+import type { Route } from 'next';
 import { dollars, planName, statusName, type FounderSite } from '@/lib/founder/sites';
 import { shortDate } from './format';
 
 const FREE_NAMES: Record<string, string> = { free: 'Free site', showcase: 'Free Showcase' };
 
 function paying(site: FounderSite): string {
-  if (site.paying !== null) return `${dollars(site.paying.cents)} a ${site.paying.interval}`;
+  if (site.paying !== null) return `${dollars(site.paying.cents)} a ${site.paying.interval}${site.discount === null ? '' : ` (${site.discount})`}`;
   return site.planComp === null ? 'Nothing' : (FREE_NAMES[site.planComp] ?? site.planComp);
 }
 
@@ -41,7 +43,11 @@ export function SiteTable({ sites }: { sites: readonly (FounderSite & { openUrl:
                 </span>
               </td>
               <td>{site.maker ?? 'Just you'}</td>
-              <td>{paying(site)}</td>
+              <td>
+                <Link href={`/founder/act/${site.id}` as Route} className="bk-link" aria-label={`Change what ${site.name} pays: ${paying(site)}`}>
+                  {paying(site)}
+                </Link>
+              </td>
               <td>{shortDate(site.joined)}</td>
               <td>
                 {site.canManage ? (

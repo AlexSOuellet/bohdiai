@@ -20,6 +20,9 @@ const revalidatePath = vi.fn();
 const writes: unknown[] = [];
 
 vi.mock('next/cache', () => ({ revalidatePath }));
+const billing = vi.hoisted(() => ({ currentSubscription: vi.fn(), setEndsWithTerm: vi.fn() }));
+vi.mock('@/lib/billing/stripe', () => ({ stripe: () => ({}) }));
+vi.mock('@/lib/billing/maker-subscription', () => billing);
 vi.mock('@/lib/backend/current-site', () => ({
   requireActingSite: () => Promise.resolve({ user: { email: 'lena@example.com' }, site: { tenantId: 't1', businessName: 'Lena Hart Decoupage', subdomain: 'lena' } }),
 }));
@@ -356,6 +359,30 @@ describe('cancel at the end of the term', () => {
     state.features = new Set(['plan']);
     state.writeError = null;
     state.plan = on();
+    billing.currentSubscription.mockReset().mockResolvedValue(null);
+    billing.setEndsWithTerm.mockReset().mockResolvedValue(undefined);
+  });
+
+  it('tells Stripe the plan ends with this term, and that it doesn’t after all', async () => {
+    billing.currentSubscription.mockResolvedValue({ stripeId: 'sub_1' });
+    expect(await cancelAtTermEnd()).toEqual({ ok: true });
+    expect(billing.setEndsWithTerm).toHaveBeenLastCalledWith({}, { stripeId: 'sub_1' }, true);
+    expect(await keepSite()).toEqual({ ok: true });
+    expect(billing.setEndsWithTerm).toHaveBeenLastCalledWith({}, { stripeId: 'sub_1' }, false);
+  });
+
+  it('says nothing is cancelled when Stripe can’t be told', async () => {
+    billing.currentSubscription.mockResolvedValue({ stripeId: 'sub_1' });
+    billing.setEndsWithTerm.mockRejectedValue(new Error('stripe down'));
+    expect((await cancelAtTermEnd()).ok).toBe(false);
+    expect((await keepSite()).ok).toBe(false);
+    expect(writes).toEqual([]);
+    expect(sendPlanChange).not.toHaveBeenCalled();
+  });
+
+  it('copes with a failure that isn’t an Error', async () => {
+    billing.currentSubscription.mockRejectedValue('down');
+    expect((await cancelAtTermEnd()).ok).toBe(false);
   });
 
   it('marks the site to close at the end of its term, on any site with a plan, and emails it', async () => {

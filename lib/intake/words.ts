@@ -26,6 +26,8 @@ export const INTAKE_WORD_SPOTS = {
     sending: '',
     /** Shown when Stripe's back button brought them here. */
     back: '',
+    /** The promo code box. */
+    promo: '',
   },
   /** Back from Stripe. */
   paid: {
@@ -109,6 +111,9 @@ export const INTAKE_WORD_SPOTS = {
   send: { button: '', sending: '' },
   sent: { title: '', body: '' },
   errors: {
+    promoBad: '',
+    promoUsed: '',
+    promoFree: '',
     plan: '',
     /** "{min}" and "{max}". */
     password: '',

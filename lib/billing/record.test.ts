@@ -20,7 +20,8 @@ function fakeDb(errors: Partial<Record<string, Err[]>> = {}) {
         update: (value: unknown) => ({
           eq: (col: string, v: unknown) => {
             calls.push({ table, op: 'update', value, eq: [col, v] });
-            return Promise.resolve({ error: next(table) });
+            const answer = Promise.resolve({ error: next(table) });
+            return Object.assign(answer, { eq: () => answer });
           },
         }),
         delete: () => ({
@@ -127,6 +128,19 @@ describe('recordSubscription', () => {
     await recordSubscription(db, subscription({ status: 'past_due', cancel_at_period_end: true }));
     expect(calls[0]).toMatchObject({ table: 'subscriptions', op: 'update', value: { status: 'past_due', cancel_at_period_end: true }, eq: ['stripe_subscription_id', 'sub_1'] });
     expect(calls[1]).toMatchObject({ table: 'tenants', value: { plan_renews_on: '2026-11-30' }, eq: ['id', 't1'] });
+  });
+});
+
+describe('recordSubscription at the end of a term', () => {
+  it('brings the site down, kept and hidden, only if it’s live', async () => {
+    const { db, calls } = fakeDb();
+    await recordSubscription(db, subscription({ status: 'canceled' }));
+    expect(calls[1]).toMatchObject({ table: 'tenants', op: 'update', value: { status: 'offline', plan_cancels: false } });
+    expect(calls).toHaveLength(2);
+  });
+  it('says so when the site can’t be closed', async () => {
+    const { db } = fakeDb({ tenants: [{ message: 'down' }] });
+    await expect(recordSubscription(db, subscription({ status: 'canceled' }))).rejects.toThrow(/close/);
   });
 });
 

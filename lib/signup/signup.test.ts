@@ -2,10 +2,11 @@ import { describe, it, expect, vi } from 'vitest';
 import { signUp, type SignupDeps } from './signup';
 import type { SignupFields } from './request';
 
-const fields: SignupFields = { plan: 'lite', billing: 'monthly', makerName: 'Lena', businessName: 'Saltmarsh', email: 'lena@example.com' };
+const fields: SignupFields = { plan: 'lite', billing: 'monthly', makerName: 'Lena', businessName: 'Saltmarsh', email: 'lena@example.com', promoCode: '' };
 
 function deps(over: Partial<SignupDeps> = {}): SignupDeps {
   return {
+    promoProblem: vi.fn(async () => null),
     createUser: vi.fn(async () => ({ ok: true as const, userId: 'u1' })),
     passwordUser: vi.fn(async () => 'u1'),
     sitesOf: vi.fn(async () => []),
@@ -18,6 +19,12 @@ function deps(over: Partial<SignupDeps> = {}): SignupDeps {
 }
 
 describe('signUp', () => {
+  it('stops at a bad code before anything is made', async () => {
+    const d = deps({ promoProblem: vi.fn(async () => 'promoBad' as const) });
+    expect(await signUp(fields, 'tide pools 22', d)).toEqual({ ok: false, reason: 'promo', spot: 'promoBad' });
+    expect(d.createUser).not.toHaveBeenCalled();
+  });
+
   it('makes the account and the site, then sends them to Stripe', async () => {
     const d = deps();
     expect(await signUp(fields, 'tide pools 22', d)).toEqual({ ok: true, url: 'https://checkout.stripe.com/t1' });

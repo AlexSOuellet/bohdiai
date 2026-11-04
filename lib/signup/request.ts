@@ -15,6 +15,7 @@ export const SIGNUP_FIELD = {
   business: 'businessName',
   email: 'email',
   password: 'password',
+  promo: 'promoCode',
   honeypot: 'company',
 } as const;
 
@@ -24,6 +25,8 @@ export type SignupFields = {
   makerName: string;
   businessName: string;
   email: string;
+  /** The code they typed, in capitals; blank is none. */
+  promoCode: string;
 };
 
 export type SignupDraft = Omit<SignupFields, 'plan'> & { plan: AccountPlan | null; password: string };
@@ -69,12 +72,13 @@ export function parseSignup(body: unknown): SignupParsed {
     businessName: text(b, SIGNUP_FIELD.business),
     email: text(b, SIGNUP_FIELD.email),
     password: text(b, SIGNUP_FIELD.password),
+    promoCode: text(b, SIGNUP_FIELD.promo).trim().toUpperCase(),
   };
   const problem = checkSignup(draft);
   if (problem !== null || draft.plan === null) return { kind: 'invalid', problem: problem ?? { spot: 'plan', values: {} } };
   return {
     kind: 'ok',
-    fields: { plan: draft.plan, billing, makerName: draft.makerName.trim(), businessName: draft.businessName.trim(), email: draft.email.trim().toLowerCase() },
+    fields: { plan: draft.plan, billing, makerName: draft.makerName.trim(), businessName: draft.businessName.trim(), email: draft.email.trim().toLowerCase(), promoCode: draft.promoCode },
     password: draft.password,
   };
 }

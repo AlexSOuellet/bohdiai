@@ -42,6 +42,9 @@ export const MOOD_PICK = 'pick';
 
 /** Every problem the form can name; each is a spot in the form's words (errors.*). */
 export const ERROR_SPOTS = [
+  'promoBad',
+  'promoUsed',
+  'promoFree',
   'plan',
   'name',
   'business',

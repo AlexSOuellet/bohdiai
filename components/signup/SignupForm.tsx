@@ -15,7 +15,7 @@ import { BILLINGS, INTAKE_LIMITS, PASSWORD_MAX, PASSWORD_MIN, type Billing, type
 import { FREE_PLAN, type AccountPlan } from '@/lib/backend/plan/plan';
 import { checkSignup, SIGNUP_FIELD } from '@/lib/signup/request';
 
-type Fields = { plan: AccountPlan | null; billing: Billing; makerName: string; businessName: string; email: string; password: string; company: string };
+type Fields = { plan: AccountPlan | null; billing: Billing; makerName: string; businessName: string; email: string; password: string; promoCode: string; company: string };
 type Status = { kind: 'idle' } | { kind: 'sending' } | IntakeAnswer;
 
 const INPUT =
@@ -40,7 +40,7 @@ type Props = {
 
 export function SignupForm({ words, plans, initialPlan, initialBilling, back, contactEmail }: Props): React.ReactElement {
   const w = words;
-  const [fields, setFields] = useState<Fields>({ plan: initialPlan, billing: initialBilling, makerName: '', businessName: '', email: '', password: '', company: '' });
+  const [fields, setFields] = useState<Fields>({ plan: initialPlan, billing: initialBilling, makerName: '', businessName: '', email: '', password: '', promoCode: '', company: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
 
@@ -73,6 +73,7 @@ export function SignupForm({ words, plans, initialPlan, initialBilling, back, co
           [SIGNUP_FIELD.business]: fields.businessName,
           [SIGNUP_FIELD.email]: fields.email,
           [SIGNUP_FIELD.password]: fields.password,
+          [SIGNUP_FIELD.promo]: fields.promoCode,
           [SIGNUP_FIELD.honeypot]: fields.company,
         }),
       });
@@ -188,6 +189,15 @@ export function SignupForm({ words, plans, initialPlan, initialBilling, back, co
           </div>
         </div>
       </section>
+
+      {!isFree && (
+        <div className="max-w-[20rem]">
+          <label htmlFor="su-promo" className={LABEL}>
+            {w.signup.promo}
+          </label>
+          <input id="su-promo" autoComplete="off" maxLength={30} value={fields.promoCode} onChange={(e) => set('promoCode', e.target.value)} className={INPUT} />
+        </div>
+      )}
 
       <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
         <input id="su-company" tabIndex={-1} autoComplete="off" value={fields.company} onChange={(e) => set('company', e.target.value)} />

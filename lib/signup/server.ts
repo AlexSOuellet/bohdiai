@@ -11,14 +11,30 @@ import { findUserByEmail } from '@/lib/backend/user-lookup';
 import { addShopOwner } from '@/lib/auth/membership';
 import { startCheckout } from '@/lib/billing/checkout';
 import { billingFor, stripe } from '@/lib/billing/stripe';
+import { checkPromo, type Promo } from '@/lib/billing/promos';
 import { freeSubdomain } from './subdomain';
 import { confirmSite } from './after-paid';
 import type { SignupDeps, SignupSite } from './signup';
 import type { SignupFields } from './request';
+import type { ErrorSpot } from '@/lib/intake/request';
 
 type Db = SupabaseClient<Database>;
 
 const UNIQUE_VIOLATION = '23505';
+
+type SignupPromo = { ok: true; promo: Promo } | { ok: false; spot: ErrorSpot };
+
+async function signupPromo(db: Db, fields: SignupFields): Promise<SignupPromo> {
+  const check = await checkPromo(stripe(), db, { code: fields.promoCode, email: fields.email, tenantId: null, isNew: true });
+  if (check.ok) return check;
+  return { ok: false, spot: check.why === 'used' ? 'promoUsed' : 'promoBad' };
+}
+
+async function checkedPromo(db: Db, fields: SignupFields): Promise<Promo> {
+  const check = await signupPromo(db, fields);
+  if (!check.ok) throw new Error(`the code ${fields.promoCode} stopped being valid during sign-up`);
+  return check.promo;
+}
 
 /** The plan as bohdiai.com/start's address names it (?plan=maker-full). */
 export function startPlanId(fields: Pick<SignupFields, 'plan'>): string {
@@ -107,7 +123,7 @@ export async function unconfirmedSignIn(db: Db, email: string, origin: string): 
   if (error !== null) throw new Error(`Could not read the site's plan: ${error.message}`);
   const plan = data.plan;
   if (plan !== FREE_PLAN && plan !== 'showcase' && plan !== 'lite' && plan !== 'full') throw new Error(`site ${waiting.tenantId} has no plan`);
-  const fields: SignupFields = { plan, billing: data.plan_billing === 'yearly' ? 'yearly' : 'monthly', makerName: '', businessName: data.business_name, email };
+  const fields: SignupFields = { plan, billing: data.plan_billing === 'yearly' ? 'yearly' : 'monthly', makerName: '', businessName: data.business_name, email, promoCode: '' };
   return { kind: 'pay', url: await signupDeps(db, origin).checkout(waiting.tenantId, fields) };
 }
 
@@ -129,8 +145,16 @@ export function signupDeps(db: Db, origin: string): SignupDeps {
       const { error } = await db.auth.admin.deleteUser(userId);
       if (error !== null) logger.error('signup: could not remove the new account after a failed sign-up', { userId, error: error.message });
     },
-    checkout: (tenantId, fields) =>
+    async promoProblem(fields) {
+      if (fields.promoCode === '') return null;
+      if (fields.plan === FREE_PLAN) return 'promoFree';
+      const check = await signupPromo(db, fields);
+      if (check.ok) return null;
+      return check.spot;
+    },
+    checkout: async (tenantId, fields) =>
       startCheckout(stripe(), {
+        promo: fields.promoCode === '' ? undefined : await checkedPromo(db, fields),
         tenantId,
         email: fields.email,
         plan: fields.plan,

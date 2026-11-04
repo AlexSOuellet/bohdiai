@@ -16,6 +16,8 @@ import { requireActingSite } from '@/lib/backend/current-site';
 import { getSiteFeatures } from '@/lib/backend/site-features';
 import { supabaseAdmin } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
+import { stripe } from '@/lib/billing/stripe';
+import { currentSubscription, setEndsWithTerm } from '@/lib/billing/maker-subscription';
 import { sendPlanChange, type PlanChange } from './emails';
 import { longDay } from './billing';
 import { planOf } from './plan';
@@ -76,6 +78,18 @@ async function tell(change: PlanChange): Promise<void> {
   await sendPlanChange({ siteName: site.businessName, subdomain: site.subdomain, makerEmail: user.email ?? '', change });
 }
 
+/** Tells Stripe first, so nothing says cancelled while Stripe would still charge. */
+async function tellStripe(tenantId: string, ends: boolean): Promise<boolean> {
+  try {
+    const sub = await currentSubscription(supabaseAdmin(), tenantId);
+    if (sub !== null) await setEndsWithTerm(stripe(), sub, ends);
+    return true;
+  } catch (err) {
+    logger.error('plan: Stripe not told', { tenantId, ends, error: err instanceof Error ? err.message : String(err) });
+    return false;
+  }
+}
+
 /** Cancel: the site stays up to the end of its current term, then comes down
  *  (kept and hidden, never deleted). Any site on a plan; Alex, 2026-10-19. */
 export async function cancelAtTermEnd(): Promise<ChangePlanResult> {
@@ -84,6 +98,7 @@ export async function cancelAtTermEnd(): Promise<ChangePlanResult> {
   if (!on.has('plan')) return { ok: false, error: 'This site isn’t on a plan yet.' };
   const state = await loadPlanState(supabaseAdmin(), site.tenantId);
   if (state === null) return { ok: false, error: 'This site isn’t on a plan yet.' };
+  if (!(await tellStripe(site.tenantId, true))) return { ok: false, error: 'Your cancellation couldn’t be saved. Try again in a moment.' };
   const { error } = await supabaseAdmin().from('tenants').update({ plan_cancels: true }).eq('id', site.tenantId);
   if (error !== null) {
     logger.error('plan cancel failed', { tenantId: site.tenantId, error: error.message });
@@ -98,6 +113,7 @@ export async function keepSite(): Promise<ChangePlanResult> {
   const { site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
   if (!on.has('plan')) return { ok: false, error: 'This site isn’t on a plan yet.' };
+  if (!(await tellStripe(site.tenantId, false))) return { ok: false, error: 'That couldn’t be saved. Try again in a moment.' };
   const { error } = await supabaseAdmin().from('tenants').update({ plan_cancels: false }).eq('id', site.tenantId);
   if (error !== null) {
     logger.error('plan keep failed', { tenantId: site.tenantId, error: error.message });

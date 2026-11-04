@@ -33,6 +33,7 @@ export async function POST(req: Request): Promise<Response> {
   try {
     const result = await signUp(parsed.fields, parsed.password, signupDeps(supabaseAdmin(), requestOrigin(req)));
     if (result.ok) return NextResponse.json({ url: result.url });
+    if (result.reason === 'promo') return NextResponse.json({ problem: { spot: result.spot, values: {} } }, { status: 400 });
     if (result.reason === 'accountExists') return NextResponse.json({ problem: { spot: 'accountExists', values: {} } }, { status: 400 });
     return NextResponse.json({ failed: true }, { status: 502 });
   } catch (err) {
