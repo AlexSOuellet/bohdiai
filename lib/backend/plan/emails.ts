@@ -1,11 +1,14 @@
 /**
  * Plan-change emails (Alex, 2026-10-19): every plan change emails the maker, and
- * Alex gets a copy so he always knows where each site stands. Plain text. A failed
+ * Alex gets a copy, in plain text, so he always knows where each site stands. A failed
  * send is logged, never shown as a failed change: the change itself has happened.
  */
 import { resend, fromEmail } from '@/lib/resend';
 import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
 import { logger } from '@/lib/logger';
+import { renderEmail } from '@/lib/email/layout';
+
+const PLAN_URL = 'https://app.bohdiai.com/manage/plan';
 
 export type PlanChange =
   | { kind: 'cancel'; on: string }
@@ -16,23 +19,29 @@ export type PlanChange =
   | { kind: 'renewed'; plan: string };
 
 /** The maker's email for one change. `on` is already a long day ("Tuesday, November 18, 2026"). */
-export function planChangeEmail(siteName: string, change: PlanChange): { subject: string; text: string } {
+export function planChangeEmail(siteName: string, change: PlanChange, assetBase?: string): { subject: string; text: string; html: string } {
+  const mail = planWords(siteName, change);
+  return { subject: mail.subject, text: mail.text, html: renderEmail({ heading: mail.heading, paragraphs: mail.text.split('\n\n'), button: { label: 'Open Your plan', url: PLAN_URL }, assetBase }) };
+}
+
+function planWords(siteName: string, change: PlanChange): { subject: string; heading: string; text: string } {
   switch (change.kind) {
     case 'cancel':
       return {
         subject: `${siteName}: your site will close on ${change.on}`,
+        heading: 'Your site is closing',
         text: `You cancelled ${siteName}. Your site stays up until the end of your current term, ${change.on}, and then it comes down. Nothing is deleted.\n\nChanged your mind? Choose Keep my site on Your plan in your backend before ${change.on}.`,
       };
     case 'keep':
-      return { subject: `${siteName}: your site is staying up`, text: `You chose to keep ${siteName}. Your cancellation is withdrawn and your plan carries on as before.` };
+      return { subject: `${siteName}: your site is staying up`, heading: 'Your site is staying up', text: `You chose to keep ${siteName}. Your cancellation is withdrawn and your plan carries on as before.` };
     case 'upgrade':
-      return { subject: `${siteName}: you’re now on ${change.to}`, text: `${siteName} moved up to ${change.to}. Everything it adds is in your backend now.` };
+      return { subject: `${siteName}: you’re now on ${change.to}`, heading: `You’re now on ${change.to}`, text: `${siteName} moved up to ${change.to}. Everything it adds is in your backend now.` };
     case 'downgrade':
-      return { subject: `${siteName}: moving to ${change.to} on ${change.on}`, text: `${siteName} moves to ${change.to} on ${change.on}, at the end of your current term. Until then nothing changes.` };
+      return { subject: `${siteName}: moving to ${change.to} on ${change.on}`, heading: `Moving to ${change.to}`, text: `${siteName} moves to ${change.to} on ${change.on}, at the end of your current term. Until then nothing changes.` };
     case 'downgrade-dropped':
-      return { subject: `${siteName}: staying on ${change.stays}`, text: `You kept ${siteName} on ${change.stays}. The move you had waiting won’t happen.` };
+      return { subject: `${siteName}: staying on ${change.stays}`, heading: `Staying on ${change.stays}`, text: `You kept ${siteName} on ${change.stays}. The move you had waiting won’t happen.` };
     case 'renewed':
-      return { subject: `${siteName}: renewed on ${change.plan}`, text: `${siteName} renewed on ${change.plan}.` };
+      return { subject: `${siteName}: renewed on ${change.plan}`, heading: `Renewed on ${change.plan}`, text: `${siteName} renewed on ${change.plan}.` };
   }
 }
 

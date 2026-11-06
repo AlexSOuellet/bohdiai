@@ -103,7 +103,7 @@ describe('the dashboard', () => {
         site({ plan: 'full', paying: { cents: 25000, interval: 'year' }, leaving: true }),
         site({ id: 'b', plan: 'showcase', paying: { cents: 500, interval: 'month' } }),
         site({ id: 'c', plan: 'showcase', paying: { cents: 500, interval: 'month' } }),
-        site({ id: 'd', status: 'draft', planComp: 'free' }),
+        site({ id: 'd', status: 'draft', planComp: 'free', plan: null }),
       ],
       subscriptions: [sub({}), sub({ tenant_id: 'b', created_at: '2026-10-20T12:00:00Z' }), sub({ tenant_id: 'c', created_at: '2026-09-01T12:00:00Z', canceled_at: '2026-11-02T12:00:00Z' }), sub({ tenant_id: 'gone', created_at: '2026-08-01T12:00:00Z', canceled_at: '2026-10-02T12:00:00Z', status: 'past_due' })],
       stuck: 2,
@@ -123,6 +123,25 @@ describe('the dashboard', () => {
       { plan: 'showcase', paying: 2, monthlyCents: 1000 },
     ]);
     expect(d.latest.map((s) => s.id)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('counts a free invite as a sign-up, but not a hand-built sample or a maker already billed', () => {
+    const d = buildDashboard({
+      sites: [
+        site({ id: 'invited', plan: 'full', planComp: 'free', joined: '2026-11-06T12:00:00Z' }),
+        site({ id: 'sample', plan: null, planComp: 'free', joined: '2026-11-06T12:00:00Z' }),
+        site({ id: 'billed', plan: 'full', planComp: 'free', joined: '2026-11-01T12:00:00Z' }),
+      ],
+      subscriptions: [sub({ tenant_id: 'billed', created_at: '2026-11-02T12:00:00Z' })],
+      stuck: 0,
+      messageDates: [],
+      now,
+    });
+    expect(d.signups.thisMonth).toBe(2);
+    expect(d.latest.map((s) => [s.id, s.free])).toEqual([
+      ['invited', true],
+      ['billed', true],
+    ]);
   });
 
   it('reads it all from the database', async () => {

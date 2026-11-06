@@ -14,6 +14,7 @@ import { findUserByEmail } from '@/lib/backend/user-lookup';
 import { createSite, startPlanId } from '@/lib/signup/server';
 import { ownerOf } from '@/lib/signup/confirm-email';
 import { createInviteCode, findInviteCodes, type Discount, type InviteCode, discountLabel } from '@/lib/billing/promos';
+import { renderEmail } from '@/lib/email/layout';
 import { planName } from './sites';
 
 type Db = SupabaseClient<Database>;
@@ -23,28 +24,28 @@ export type Invitee = { name: string; email: string; business: string; plan: Sit
 export type InviteResult = { ok: true } | { ok: false; reason: 'exists' };
 export type WaitingInvite = { key: string; kind: 'free' | 'discount'; name: string; email: string; business: string; deal: string; tenantId: string | null; code: string | null };
 
-const escapeHtml = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-export function composeInviteEmail(input: { name: string; business: string; offer: string; button: string; link: string; note: string; lasts: string }): { subject: string; text: string; html: string } {
+export function composeInviteEmail(input: { name: string; business: string; heading: string; offer: string; next: string; button: string; link: string; note: string; lasts: string; assetBase?: string | undefined }): { subject: string; text: string; html: string } {
   const greeting = `Hi ${input.name},`;
-  const lines = [input.offer, ...(input.note === '' ? [] : [input.note])];
+  const lines = [input.offer, ...(input.note === '' ? [] : [input.note]), input.next];
   return {
     subject: `Your BohdiAI site for ${input.business}`,
     text: [greeting, '', ...lines.flatMap((l) => [l, '']), `${input.button}: ${input.link}`, '', input.lasts, '', 'Alex'].join('\n'),
-    html: [`<p>${escapeHtml(greeting)}</p>`, ...lines.map((l) => `<p>${escapeHtml(l)}</p>`), `<p><a href="${escapeHtml(input.link)}">${escapeHtml(input.button)}</a></p>`, `<p>${escapeHtml(input.lasts)}</p>`, '<p>Alex</p>'].join(''),
+    html: renderEmail({ heading: input.heading, paragraphs: [greeting, ...lines], button: { label: input.button, url: input.link }, small: [input.lasts], assetBase: input.assetBase }),
   };
 }
 
-const freeOffer = (business: string, plan: string): string => `I’d like to give you a free BohdiAI site for ${business}, on the ${plan} plan. There’s nothing to pay and no card to enter. Set a password, tell me about your work, and your site builds itself.`;
-const discountOffer = (business: string, plan: string, deal: string): string => `I’d like to offer you a BohdiAI site for ${business}, on the ${plan} plan, with ${deal}. Your discount is already on the link below.`;
+const freeOffer = (business: string, plan: string): string => `I’d like to give ${business} a website, free, on the ${plan} plan. There’s nothing to pay and no card to enter.`;
+const FREE_NEXT = 'Set a password, tell me about your work, send a few photos, and your site builds itself. You’ll see it before anyone else does, and it only goes live when you say so.';
+const discountOffer = (business: string, plan: string, deal: string): string => `I’d like to offer ${business} a website on the ${plan} plan, with ${deal}.`;
+const DISCOUNT_NEXT = 'Your discount is already on the link below, so there’s no code to type. Sign up, tell me about your work, send a few photos, and your site builds itself.';
 
 async function sendOrThrow(send: Send, to: string, mail: ReturnType<typeof composeInviteEmail>): Promise<void> {
   const sent = await send({ to, ...mail });
   if (sent.error !== null) throw new Error(`Could not send the invite: ${sent.error.message}`);
 }
 
-function freeEmail(input: { name: string; business: string; plan: string; note: string; link: string }): ReturnType<typeof composeInviteEmail> {
-  return composeInviteEmail({ name: input.name, business: input.business, offer: freeOffer(input.business, input.plan), button: 'Set your password', link: input.link, note: input.note, lasts: 'This link lasts 24 hours and works once. If it runs out, just ask me for a new one.' });
+export function freeEmail(input: { name: string; business: string; plan: string; note: string; link: string; assetBase?: string }): ReturnType<typeof composeInviteEmail> {
+  return composeInviteEmail({ name: input.name, business: input.business, heading: 'Your free site is waiting', offer: freeOffer(input.business, input.plan), next: FREE_NEXT, button: 'Set your password', link: input.link, note: input.note, lasts: 'This link works once. If it has run out by the time you open it, just ask me for a new one.', assetBase: input.assetBase });
 }
 
 export async function inviteFree(db: Db, who: Invitee, appBase: string, send: Send): Promise<InviteResult> {
@@ -68,9 +69,9 @@ export async function inviteFree(db: Db, who: Invitee, appBase: string, send: Se
   }
 }
 
-function discountEmail(code: InviteCode, siteBase: string): ReturnType<typeof composeInviteEmail> {
+export function discountEmail(code: InviteCode, siteBase: string, assetBase?: string): ReturnType<typeof composeInviteEmail> {
   const link = `${siteBase}/start?plan=${startPlanId({ plan: code.plan })}&code=${code.code}`;
-  return composeInviteEmail({ name: code.name, business: code.business, offer: discountOffer(code.business, planName(code.plan), discountLabel(code)), button: 'Get started', link, note: code.note, lasts: 'This offer is just for you and can be used once.' });
+  return composeInviteEmail({ name: code.name, business: code.business, heading: 'An offer just for you', offer: discountOffer(code.business, planName(code.plan), discountLabel(code).toLowerCase()), next: DISCOUNT_NEXT, button: 'Get started', link, note: code.note, lasts: 'This offer is just for you and can be used once.', assetBase });
 }
 
 export async function inviteDiscount(s: Stripe, who: Invitee, discount: Discount, siteBase: string, send: Send): Promise<InviteResult> {

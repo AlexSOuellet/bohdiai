@@ -80,6 +80,7 @@ export function DashboardView({ data }: { data: Dashboard }): React.ReactElement
                     <span className="fd-site">{s.name}</span>
                     <span className="fd-address">
                       {planName(s.plan)}
+                      {s.free ? ', free site' : ''}
                       {s.maker === null ? '' : `, ${s.maker}`}
                     </span>
                   </span>

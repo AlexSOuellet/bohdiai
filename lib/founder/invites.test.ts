@@ -54,7 +54,7 @@ beforeEach(() => {
 });
 
 describe('composeInviteEmail', () => {
-  const base = { name: 'Lena', business: 'A & B', offer: 'An offer', button: 'Go', link: 'https://x.example/?a=1&b=2', lasts: 'One day', note: '' };
+  const base = { name: 'Lena', business: 'A & B', heading: 'A heading', offer: 'An offer', next: 'What’s next', button: 'Go', link: 'https://x.example/?a=1&b=2', lasts: 'One day', note: '' };
   it('says the offer, the link and who it’s from', () => {
     const mail = composeInviteEmail(base);
     expect(mail.subject).toBe('Your BohdiAI site for A & B');

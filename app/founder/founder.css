@@ -24,3 +24,6 @@
 .fd-form { max-width: 32rem; }
 .fd-form .bk-note, .fd-form .bk-error { margin-top: 0.6rem; }
 .fd-deals { display: grid; gap: 0.25rem; white-space: nowrap; }
+.fd-emails { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(min(26rem, 100%), 1fr)); }
+.fd-emails .bk-section { margin: 0; }
+.fd-email { display: block; width: 100%; height: 44rem; margin-top: 0.75rem; border: 0; border-radius: var(--bk-radius-sm); background: #0a0805; }

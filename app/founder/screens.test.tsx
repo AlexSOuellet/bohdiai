@@ -37,7 +37,7 @@ describe('DashboardView', () => {
           signups: { thisMonth: 3, lastMonth: 2 },
           needs: { failing: 1, stuck: 2, messages: 3 },
           plans: [{ plan: 'full', paying: 1, monthlyCents: 2583 }],
-          latest: [{ id: 'a', name: 'Rustic Flags', plan: 'full', maker: 'pat@example.com', joined: '2026-11-01T15:00:00Z' }, { id: 'b', name: 'Tide', plan: 'free', maker: null, joined: '2026-11-01T15:00:00Z' }],
+          latest: [{ id: 'a', name: 'Rustic Flags', plan: 'full', maker: 'pat@example.com', joined: '2026-11-01T15:00:00Z', free: false }, { id: 'b', name: 'Tide', plan: 'full', maker: 'tide@example.com', joined: '2026-11-01T15:00:00Z', free: true }, { id: 'c', name: 'Bare', plan: 'free', maker: null, joined: '2026-11-01T15:00:00Z', free: false }],
         }}
       />,
     );
@@ -48,6 +48,7 @@ describe('DashboardView', () => {
     expect(screen.getByText('2 site builds have stopped')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '3 messages this month' })).toHaveAttribute('href', '/founder/messages');
     expect(screen.getByText('Full, pat@example.com')).toBeInTheDocument();
+    expect(screen.getByText('Full, free site, tide@example.com')).toBeInTheDocument();
   });
 });
 

@@ -4,6 +4,8 @@
  * starts the session. Setting a password only ever happens through such a link.
  * Dependencies are injected so this is testable without Supabase or Resend.
  */
+import { renderEmail } from '@/lib/email/layout';
+
 export type AuthLinkKind = 'invite' | 'recovery';
 /** A link the confirm route takes: also "signup", which confirms a new maker's email (Session 119; lib/signup/confirm-email). */
 export type ConfirmKind = AuthLinkKind | 'signup';
@@ -15,10 +17,7 @@ export function confirmUrl(appOrigin: string, hashedToken: string, kind: Confirm
   return u.toString();
 }
 
-const escapeHtml = (s: string): string =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-export function composeAuthEmail(input: { kind: AuthLinkKind; siteName: string; link: string }): {
+export function composeAuthEmail(input: { kind: AuthLinkKind; siteName: string; link: string; assetBase?: string }): {
   subject: string;
   text: string;
   html: string;
@@ -29,8 +28,9 @@ export function composeAuthEmail(input: { kind: AuthLinkKind; siteName: string; 
     ? `Your backend for ${input.siteName} is ready. Use the link below to set your password and sign in.`
     : `Someone asked to reset the password for ${input.siteName}. If it was you, use the link below to reset your password. If not, you can ignore this email.`;
   const action = invite ? 'Set your password' : 'Reset your password';
-  const text = `${lead}\n\n${action}: ${input.link}\n\nThe link works once and expires in an hour.\n\n— BohdiAI`;
-  const html = `<p>${escapeHtml(lead)}</p><p><a href="${escapeHtml(input.link)}">${action}</a></p><p>The link works once and expires in an hour.</p><p>— BohdiAI</p>`;
+  const lasts = 'The link works once and expires in an hour.';
+  const text = `${lead}\n\n${action}: ${input.link}\n\n${lasts}\n\nAlex`;
+  const html = renderEmail({ heading: invite ? 'Your backend is ready' : 'Reset your password', paragraphs: [lead], button: { label: action, url: input.link }, small: [lasts], assetBase: input.assetBase });
   return { subject, text, html };
 }
 

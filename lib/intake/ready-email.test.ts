@@ -12,7 +12,8 @@ describe('composeReadyEmail', () => {
     expect(e.text).toContain('Hi Lena,');
     expect(e.text).toContain('Sign in with lena@example.com.');
     expect(e.text).toContain(`intake.ready.button: ${SIGN_IN_URL}`);
-    expect(e.html).toContain(`<a href="${SIGN_IN_URL}">intake.ready.button</a>`);
+    expect(e.html).toContain(`href="${SIGN_IN_URL}"`);
+    expect(e.html).toContain(">intake.ready.button</a>");
     expect(e.html).toContain('Salt &amp; &lt;Lace&gt;');
     expect(SIGN_IN_URL).toBe('https://app.bohdiai.com/signin');
   });

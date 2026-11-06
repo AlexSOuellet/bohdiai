@@ -11,22 +11,15 @@ import type { Database } from '@/lib/database.types';
 import { fill } from '@/lib/site-words/words';
 import type { IntakeWords } from '@/lib/intake/queries';
 import { confirmUrl } from '@/lib/backend/auth-links';
+import { renderEmail } from '@/lib/email/layout';
 
 type Db = SupabaseClient<Database>;
 
-const escapeHtml = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-export function composeConfirmEmail(args: { name: string; link: string; words: IntakeWords }): { subject: string; text: string; html: string } {
+export function composeConfirmEmail(args: { name: string; link: string; words: IntakeWords; assetBase?: string }): { subject: string; text: string; html: string } {
   const c = args.words.confirm;
   const greeting = fill(c.greeting, { name: args.name });
   const text = [greeting, '', c.body, '', `${c.button}: ${args.link}`, '', c.notYou, '', c.signoff].join('\n');
-  const html = [
-    `<p>${escapeHtml(greeting)}</p>`,
-    `<p>${escapeHtml(c.body)}</p>`,
-    `<p><a href="${escapeHtml(args.link)}">${escapeHtml(c.button)}</a></p>`,
-    `<p>${escapeHtml(c.notYou)}</p>`,
-    `<p>${escapeHtml(c.signoff)}</p>`,
-  ].join('');
+  const html = renderEmail({ heading: c.heading, paragraphs: [greeting, c.body], button: { label: c.button, url: args.link }, small: [c.notYou], assetBase: args.assetBase });
   return { subject: c.subject, text, html };
 }
 

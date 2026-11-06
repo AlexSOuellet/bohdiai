@@ -50,6 +50,7 @@ export const INTAKE_WORD_SPOTS = {
   /** The email that confirms their address, sent once they've paid. */
   confirm: {
     subject: '',
+    heading: '',
     /** "{name}". */
     greeting: '',
     body: '',
@@ -143,6 +144,8 @@ export const INTAKE_WORD_SPOTS = {
   ready: {
     /** "{business}". */
     subject: '',
+    /** "{business}". */
+    heading: '',
     /** "{name}". */
     greeting: '',
     /** "{business}". */

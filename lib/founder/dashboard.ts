@@ -1,8 +1,8 @@
 /**
- * The numbers on Alex's dashboard. Every self-serve sign-up has a subscription
- * (Free included), so sign-ups count subscriptions, not sites: hand-built samples
- * aren't sign-ups. Months run on Alex's clock. Read with the server's own key, so
- * only call this behind requireFounder.
+ * The numbers on Alex's dashboard. A sign-up is a subscription (Free included) or
+ * a free site Alex invited someone to, which never touches Stripe. Hand-built
+ * samples aren't sign-ups: they have no subscription and no plan. Months run on
+ * Alex's clock. Read with the server's own key, so only call this behind requireFounder.
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
@@ -14,7 +14,7 @@ type Db = SupabaseClient<Database>;
 export type SubscriptionDates = { tenant_id: string; status: string; created_at: string; canceled_at: string | null };
 
 export type PlanLine = { plan: string | null; paying: number; monthlyCents: number };
-export type LatestSignup = { id: string; name: string; plan: string | null; maker: string | null; joined: string };
+export type LatestSignup = { id: string; name: string; plan: string | null; maker: string | null; joined: string; free: boolean };
 
 export type Dashboard = {
   mrrCents: number;
@@ -45,6 +45,13 @@ export function previousMonth(key: string): string {
   return month === 1 ? `${year - 1}-12` : `${year}-${String(month - 1).padStart(2, '0')}`;
 }
 
+/** When each maker joined, newest first: their subscription, or the day their free site was made. */
+function signupsOf(sites: readonly FounderSite[], subscriptions: readonly SubscriptionDates[]): { tenantId: string; joined: string }[] {
+  const billed = new Set(subscriptions.map((s) => s.tenant_id));
+  const invited = sites.filter((s) => s.planComp !== null && s.plan !== null && !billed.has(s.id));
+  return [...subscriptions.map((s) => ({ tenantId: s.tenant_id, joined: s.created_at })), ...invited.map((s) => ({ tenantId: s.id, joined: s.joined }))].sort((a, b) => b.joined.localeCompare(a.joined));
+}
+
 function planLines(sites: readonly FounderSite[]): PlanLine[] {
   const lines = new Map<string | null, PlanLine>();
   for (const site of sites) {
@@ -61,13 +68,13 @@ export function buildDashboard(input: { sites: readonly FounderSite[]; subscript
   const lastMonth = previousMonth(thisMonth);
   const byId = new Map(sites.map((s) => [s.id, s]));
   const paying = sites.filter((s) => s.paying !== null);
-  const newest = [...subscriptions].sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const signups = signupsOf(sites, subscriptions);
   return {
     mrrCents: paying.reduce((sum, s) => sum + monthlyCents(s.paying), 0),
     paying: paying.length,
     signups: {
-      thisMonth: subscriptions.filter((s) => monthKey(s.created_at) === thisMonth).length,
-      lastMonth: subscriptions.filter((s) => monthKey(s.created_at) === lastMonth).length,
+      thisMonth: signups.filter((s) => monthKey(s.joined) === thisMonth).length,
+      lastMonth: signups.filter((s) => monthKey(s.joined) === lastMonth).length,
     },
     cancels: {
       thisMonth: subscriptions.filter((s) => s.canceled_at !== null && monthKey(s.canceled_at) === thisMonth).length,
@@ -84,9 +91,9 @@ export function buildDashboard(input: { sites: readonly FounderSite[]; subscript
       messages: messageDates.filter((d) => monthKey(d) === thisMonth).length,
     },
     plans: planLines(sites),
-    latest: newest.slice(0, LATEST_SHOWN).flatMap((sub) => {
-      const site = byId.get(sub.tenant_id);
-      return site === undefined ? [] : [{ id: site.id, name: site.name, plan: site.plan, maker: site.maker, joined: sub.created_at }];
+    latest: signups.slice(0, LATEST_SHOWN).flatMap((signup) => {
+      const site = byId.get(signup.tenantId);
+      return site === undefined ? [] : [{ id: site.id, name: site.name, plan: site.plan, maker: site.maker, joined: signup.joined, free: site.planComp !== null }];
     }),
   };
 }

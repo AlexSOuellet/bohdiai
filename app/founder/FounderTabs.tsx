@@ -9,6 +9,7 @@ const TABS = [
   { href: '/founder/act', label: 'Act as a maker' },
   { href: '/founder/promotions', label: 'Promotions' },
   { href: '/founder/messages', label: 'Messages' },
+  { href: '/founder/emails', label: 'Emails' },
 ] as const;
 
 export function FounderTabs(): React.ReactElement {
