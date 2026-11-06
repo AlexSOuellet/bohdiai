@@ -126,8 +126,13 @@ describe('inviteMaker', () => {
 });
 
 describe('sendInviteAgain', () => {
+  it('says when there’s nothing to send', async () => {
+    m.resendFree.mockResolvedValueOnce('started');
+    expect((await sendInviteAgain(null, form({ tenantId: 't1' }))).message).toContain('already set a password');
+  });
   it('sends a free site’s link', async () => {
-    expect((await sendInviteAgain(null, form({ tenantId: 't1' }))).ok).toBe(true);
+    m.resendFree.mockResolvedValueOnce('sent');
+    expect(await sendInviteAgain(null, form({ tenantId: 't1' }))).toEqual({ ok: true, message: 'Sent.' });
     expect(m.resendFree).toHaveBeenCalledWith(expect.anything(), 't1', 'https://app.bohdiai.com', expect.any(Function));
   });
   it('sends a code’s invite', async () => {

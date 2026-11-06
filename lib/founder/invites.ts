@@ -1,7 +1,7 @@
 /**
  * Inviting one maker (Alex, 2026-11-06). A free site skips Stripe altogether: the
- * account and the site record are made here, and the email's link sets a password
- * and opens the site form. A discount goes through Stripe, so the card is typed on
+ * account and the site record are made here, and the email's link, which never
+ * expires, sets a password and opens the site form. A discount goes through Stripe, so the card is typed on
  * Stripe's page: the email carries a one-use code that fills itself in at sign-up.
  * Read and written with the server's own key, so only call this behind requireFounder.
  */
@@ -9,12 +9,13 @@ import type Stripe from 'stripe';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import type { SitePlan } from '@/lib/backend/plan/plan';
-import { confirmUrl } from '@/lib/backend/auth-links';
+import { sessionSecret } from '@/lib/backend/session-limits';
 import { findUserByEmail } from '@/lib/backend/user-lookup';
 import { createSite, startPlanId } from '@/lib/signup/server';
 import { ownerOf } from '@/lib/signup/confirm-email';
 import { createInviteCode, findInviteCodes, type Discount, type InviteCode, discountLabel } from '@/lib/billing/promos';
 import { renderEmail } from '@/lib/email/layout';
+import { INVITE_OPEN, inviteToken, inviteUrl } from './invite-link';
 import { planName } from './sites';
 
 type Db = SupabaseClient<Database>;
@@ -45,12 +46,18 @@ async function sendOrThrow(send: Send, to: string, mail: ReturnType<typeof compo
 }
 
 export function freeEmail(input: { name: string; business: string; plan: string; note: string; link: string; assetBase?: string }): ReturnType<typeof composeInviteEmail> {
-  return composeInviteEmail({ name: input.name, business: input.business, heading: 'Your free site is waiting', offer: freeOffer(input.business, input.plan), next: FREE_NEXT, button: 'Set your password', link: input.link, note: input.note, lasts: 'This link works once. If it has run out by the time you open it, just ask me for a new one.', assetBase: input.assetBase });
+  return composeInviteEmail({ name: input.name, business: input.business, heading: 'Your free site is waiting', offer: freeOffer(input.business, input.plan), next: FREE_NEXT, button: 'Set your password', link: input.link, note: input.note, lasts: 'This link is just for you, and there’s no rush: it’s good until you’ve set your password.', assetBase: input.assetBase });
+}
+
+function signingSecret(): string {
+  const secret = sessionSecret(process.env['BACKEND_SESSION_SECRET']);
+  if (secret === undefined) throw new Error('BACKEND_SESSION_SECRET is not set');
+  return secret;
 }
 
 export async function inviteFree(db: Db, who: Invitee, appBase: string, send: Send): Promise<InviteResult> {
   if ((await findUserByEmail(who.email)) !== null) return { ok: false, reason: 'exists' };
-  const { data, error } = await db.auth.admin.generateLink({ type: 'invite', email: who.email, options: { data: { name: who.name } } });
+  const { data, error } = await db.auth.admin.createUser({ email: who.email, email_confirm: true, user_metadata: { name: who.name }, app_metadata: { [INVITE_OPEN]: true } });
   if (error !== null) throw new Error(`Could not make the invite: ${error.message}`);
   const userId = data.user.id;
   let tenantId: string | null = null;
@@ -58,7 +65,7 @@ export async function inviteFree(db: Db, who: Invitee, appBase: string, send: Se
     tenantId = await createSite(db, userId, { plan: who.plan, billing: 'monthly', makerName: who.name, businessName: who.business, email: who.email, promoCode: '' });
     const { error: compErr } = await db.from('tenants').update({ plan_comp: 'free', plan_comp_note: 'Invited by Alex' }).eq('id', tenantId);
     if (compErr !== null) throw new Error(`Could not mark the site free: ${compErr.message}`);
-    const link = confirmUrl(appBase, data.properties.hashed_token, 'invite');
+    const link = inviteUrl(appBase, await inviteToken(signingSecret(), userId));
     await sendOrThrow(send, who.email, freeEmail({ name: who.name, business: who.business, plan: planName(who.plan), note: who.note, link }));
     return { ok: true };
   } catch (err) {
@@ -98,15 +105,17 @@ export async function loadWaitingInvites(s: Stripe, db: Db): Promise<WaitingInvi
   return [...free, ...codes.map((c): WaitingInvite => ({ key: c.code, kind: 'discount', name: c.name, email: c.email, business: c.business, deal: discountLabel(c), tenantId: null, code: c.code }))];
 }
 
-/** A fresh link for a free site. An invite link can't be made twice for one account, so this is a password link. */
-export async function resendFree(db: Db, tenantId: string, appBase: string, send: Send): Promise<void> {
+/** The invite again, the same link. Once they've set a password there's nothing to send: they just sign in. */
+export async function resendFree(db: Db, tenantId: string, appBase: string, send: Send): Promise<'sent' | 'started'> {
   const owner = await ownerOf(db, tenantId);
+  const { data: account, error: accountErr } = await db.auth.admin.getUserById(owner.userId);
+  if (accountErr !== null) throw new Error(`Could not read the account: ${accountErr.message}`);
+  if (account.user.app_metadata[INVITE_OPEN] !== true) return 'started';
   const { data: site, error: siteErr } = await db.from('tenants').select('business_name, plan').eq('id', tenantId).single();
   if (siteErr !== null) throw new Error(`Could not read the site: ${siteErr.message}`);
-  const { data, error } = await db.auth.admin.generateLink({ type: 'recovery', email: owner.email });
-  if (error !== null) throw new Error(`Could not make the link: ${error.message}`);
-  const link = confirmUrl(appBase, data.properties.hashed_token, 'recovery');
+  const link = inviteUrl(appBase, await inviteToken(signingSecret(), owner.userId));
   await sendOrThrow(send, owner.email, freeEmail({ name: owner.name, business: site.business_name, plan: planName(site.plan), note: '', link }));
+  return 'sent';
 }
 
 export async function resendDiscount(s: Stripe, db: Db, code: string, siteBase: string, send: Send): Promise<void> {

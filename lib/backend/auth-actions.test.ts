@@ -20,6 +20,8 @@ vi.mock('@/lib/supabase-server', () => ({
   createSupabaseServerClient: async () => ({ auth: { signInWithPassword, updateUser, signOut, getClaims, getUser: async () => ({ data: { user: { id: 'u1' } }, error: null }) } }),
 }));
 vi.mock('./action-limit', async (importOriginal) => ({ ...(await importOriginal<typeof ActionLimit>()), allowAction, allowKey }));
+const updateUserById = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/supabase', () => ({ supabaseAdmin: () => ({ auth: { admin: { updateUserById } } }) }));
 vi.mock('@/lib/auth/session', () => ({ requireUser }));
 vi.mock('./auth-links', () => ({ sendAuthLink }));
 vi.mock('@/lib/auth/membership', () => ({ getUserShops }));
@@ -36,7 +38,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   allowAction.mockResolvedValue('allowed');
   allowKey.mockResolvedValue('allowed');
-  requireUser.mockResolvedValue({ id: 'u1' });
+  requireUser.mockResolvedValue({ id: 'u1', app_metadata: {} });
 });
 
 describe('signIn', () => {
@@ -175,6 +177,28 @@ describe('setPassword', () => {
     updateUser.mockResolvedValue({ error: null });
     await expect(setPassword({ password: 'longenough1', confirm: 'longenough1' })).rejects.toThrow('REDIRECT /manage');
     expect(updateUser).toHaveBeenCalledWith({ password: 'longenough1' });
+  });
+  it('closes an invite once its password is set', async () => {
+    requireUser.mockResolvedValue({ id: 'u1', app_metadata: { invite_open: true } });
+    claims([{ method: 'otp', timestamp: nowSec() - 30 }]);
+    updateUser.mockResolvedValue({ error: null });
+    updateUserById.mockResolvedValue({ error: null });
+    await expect(setPassword({ password: 'longenough1', confirm: 'longenough1' })).rejects.toThrow('REDIRECT /manage');
+    expect(updateUserById).toHaveBeenCalledWith('u1', { app_metadata: { invite_open: false } });
+  });
+  it('still goes on when the invite can’t be closed', async () => {
+    requireUser.mockResolvedValue({ id: 'u1', app_metadata: { invite_open: true } });
+    claims([{ method: 'otp', timestamp: nowSec() - 30 }]);
+    updateUser.mockResolvedValue({ error: null });
+    updateUserById.mockResolvedValue({ error: { message: 'down' } });
+    await expect(setPassword({ password: 'longenough1', confirm: 'longenough1' })).rejects.toThrow('REDIRECT /manage');
+  });
+  it('leaves other accounts alone', async () => {
+    claims([{ method: 'otp', timestamp: nowSec() - 30 }]);
+    updateUser.mockResolvedValue({ error: null });
+    updateUserById.mockClear();
+    await expect(setPassword({ password: 'longenough1', confirm: 'longenough1' })).rejects.toThrow('REDIRECT /manage');
+    expect(updateUserById).not.toHaveBeenCalled();
   });
   it('shows the error when saving fails', async () => {
     updateUser.mockResolvedValue({ error: { message: 'weak' } });

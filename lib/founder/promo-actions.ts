@@ -91,8 +91,8 @@ export async function sendInviteAgain(_prev: FormResult | null, form: FormData):
   const tenantId = field(form, 'tenantId');
   try {
     const { app, site } = await origins();
-    if (tenantId !== '') await resendFree(supabaseAdmin(), tenantId, app, send);
-    else await resendDiscount(stripe(), supabaseAdmin(), field(form, 'code'), site, send);
+    if (tenantId === '') await resendDiscount(stripe(), supabaseAdmin(), field(form, 'code'), site, send);
+    else if ((await resendFree(supabaseAdmin(), tenantId, app, send)) === 'started') return { ok: true, message: 'They’ve already set a password, so there’s nothing to send. They just need to sign in.' };
   } catch (err) {
     return failed('send invite again', err);
   }

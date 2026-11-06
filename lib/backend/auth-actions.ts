@@ -19,6 +19,7 @@ import { logger } from '@/lib/logger';
 import { requireUser } from '@/lib/auth/session';
 import { getUserShops } from '@/lib/auth/membership';
 import { isFounder } from '@/lib/founder/access';
+import { INVITE_OPEN } from '@/lib/founder/invite-link';
 import { allowAction, allowKey, ACTION_LIMITED, ACTION_UNAVAILABLE } from './action-limit';
 import { sendAuthLink } from './auth-links';
 import { findUserByEmail } from './user-lookup';
@@ -162,6 +163,11 @@ export async function setPassword(input: { password: string; confirm: string }):
   if (error !== null) {
     if (error.name === 'AuthSessionMissingError') return { ok: false, error: LINK_AGAIN };
     return { ok: false, error: `Your password wasn’t saved: ${error.message}` };
+  }
+  // Their invite link has done its job: from now on it opens nothing.
+  if (user.app_metadata[INVITE_OPEN] === true) {
+    const closed = await supabaseAdmin().auth.admin.updateUserById(user.id, { app_metadata: { [INVITE_OPEN]: false } });
+    if (closed.error !== null) logger.error('invite: link not closed after password set', { userId: user.id, error: closed.error.message });
   }
   redirect(homeFor(user.id));
 }
