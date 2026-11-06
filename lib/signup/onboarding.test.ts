@@ -7,14 +7,22 @@ vi.mock('./server', () => ({ sitesOf: (...a: unknown[]) => sitesOf(...a) }));
 
 import { needsOnboarding, onboardingSite } from './onboarding';
 
+const compProbe = { next: false };
+
 type Tenant = { id: string; status: string; plan: string | null; plan_billing: string | null; business_name: string };
 
 /** Sites, sent forms and billing rows, as the database would answer. */
-function fakeDb(tenants: Tenant[], sent: string[] = [], paidCount = 1) {
+function fakeDb(tenants: Tenant[], sent: string[] = [], paidCount = 1, comp: string | null = null, compError: { message: string } | null = null) {
   const db = {
     from(table: string) {
       if (table === 'subscriptions') {
+        compProbe.next = paidCount === 0;
         const chain = { select: () => chain, eq: () => Promise.resolve({ count: paidCount, error: null }) };
+        return chain;
+      }
+      if (table === 'tenants' && compProbe.next) {
+        compProbe.next = false;
+        const chain = { select: () => chain, eq: () => chain, maybeSingle: async () => ({ data: compError === null ? { plan_comp: comp } : null, error: compError }) };
         return chain;
       }
       const rows = table === 'tenants' ? tenants : sent.map((tenant_id) => ({ tenant_id }));
@@ -65,5 +73,18 @@ describe('needsOnboarding', () => {
   it('is false once the form is sent, and on Free', async () => {
     expect(await needsOnboarding(fakeDb([site()], ['t1']), 't1')).toBe(false);
     expect(await needsOnboarding(fakeDb([site({ plan: 'free' })]), 't1')).toBe(false);
+  });
+});
+
+describe('a free site from Alex’s invite', () => {
+  const draft = { id: 't1', status: 'draft', plan: 'full', plan_billing: 'monthly', business_name: 'Saltmarsh' };
+  it('waits for its form with no billing at all', async () => {
+    expect(await needsOnboarding(fakeDb([draft], [], 0, 'free'), 't1')).toBe(true);
+  });
+  it('doesn’t once the form is sent', async () => {
+    expect(await needsOnboarding(fakeDb([draft], ['t1'], 0, 'free'), 't1')).toBe(false);
+  });
+  it('says so when the site can’t be read', async () => {
+    await expect(needsOnboarding(fakeDb([draft], [], 0, null, { message: 'down' }), 't1')).rejects.toThrow('down');
   });
 });

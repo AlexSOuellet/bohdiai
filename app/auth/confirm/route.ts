@@ -56,5 +56,5 @@ export async function POST(request: Request): Promise<Response> {
   const signup = type === 'signup';
   const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: signup ? 'email' : (type as 'invite' | 'recovery') });
   if (error !== null) return toError(origin);
-  return redirectTo(new URL(signup ? '/manage' : '/manage/set-password', origin));
+  return redirectTo(new URL(signup ? '/manage' : '/auth/set-password', origin));
 }

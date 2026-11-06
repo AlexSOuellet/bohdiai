@@ -6,12 +6,18 @@
  * first, so the admin never says something Stripe isn't doing.
  */
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import { logger } from '@/lib/logger';
 import { supabaseAdmin } from '@/lib/supabase';
 import { stripe } from '@/lib/billing/stripe';
 import { currentSubscription } from '@/lib/billing/maker-subscription';
 import { applyDiscount, clearDiscount, createPromo, endPromo, normalizeCode, PROMO_CODE_SHAPE, type Audience } from '@/lib/billing/promos';
+import { headersOrigin } from '@/lib/backend/request-origin';
+import { isSitePlan } from '@/lib/backend/plan/plan';
+import { EMAIL_SHAPE } from '@/lib/intake/request';
+import { resend, fromEmail } from '@/lib/resend';
 import { requireFounder } from './access';
+import { inviteDiscount, inviteFree, resendDiscount, resendFree } from './invites';
 
 export type FormResult = { ok: boolean; message: string };
 
@@ -43,6 +49,54 @@ function readDiscount(form: FormData): { percent: number; months: number | null 
 function failed(what: string, err: unknown): FormResult {
   logger.error(`admin: ${what} failed`, { error: err instanceof Error ? err.message : String(err) });
   return { ok: false, message: FAILED };
+}
+
+const send = async (msg: { to: string; subject: string; text: string; html: string }): Promise<{ error: { message: string } | null }> => {
+  const { error } = await resend().emails.send({ from: fromEmail(), ...msg });
+  return { error: error === null ? null : { message: error.message } };
+};
+
+/** The app's address and the public site's, from the admin's own. */
+async function origins(): Promise<{ app: string; site: string }> {
+  const app = headersOrigin(await headers());
+  return { app, site: app.replace('://app.', '://') };
+}
+
+export async function inviteMaker(_prev: FormResult | null, form: FormData): Promise<FormResult> {
+  await requireFounder();
+  const name = field(form, 'name');
+  const email = field(form, 'email').toLowerCase();
+  const business = field(form, 'business');
+  const plan = field(form, 'plan');
+  if (name === '' || business === '') return { ok: false, message: 'Add their name and business name.' };
+  if (!EMAIL_SHAPE.test(email)) return { ok: false, message: 'That email doesn’t look right.' };
+  if (!isSitePlan(plan)) return { ok: false, message: 'Pick a plan.' };
+  const who = { name, email, business, plan, note: field(form, 'note').slice(0, MAX_NOTE) };
+  const free = field(form, 'kind') === 'site';
+  const discount = free ? null : readDiscount(form);
+  if (typeof discount === 'string') return { ok: false, message: discount };
+  try {
+    const { app, site } = await origins();
+    const sent = discount === null ? await inviteFree(supabaseAdmin(), who, app, send) : await inviteDiscount(stripe(), who, discount, site, send);
+    if (!sent.ok) return { ok: false, message: `${email} already has an account. Find them under Act as a maker instead.` };
+  } catch (err) {
+    return failed('invite', err);
+  }
+  revalidatePath('/founder/invite');
+  return { ok: true, message: `Invite sent to ${email}.` };
+}
+
+export async function sendInviteAgain(_prev: FormResult | null, form: FormData): Promise<FormResult> {
+  await requireFounder();
+  const tenantId = field(form, 'tenantId');
+  try {
+    const { app, site } = await origins();
+    if (tenantId !== '') await resendFree(supabaseAdmin(), tenantId, app, send);
+    else await resendDiscount(stripe(), supabaseAdmin(), field(form, 'code'), site, send);
+  } catch (err) {
+    return failed('send invite again', err);
+  }
+  return { ok: true, message: 'Sent.' };
 }
 
 export async function createPromoCode(_prev: FormResult | null, form: FormData): Promise<FormResult> {

@@ -13,7 +13,7 @@ vi.mock('./after-paid', () => ({ confirmSite: (...a: unknown[]) => confirmSite(.
 vi.mock('@/lib/billing/checkout', () => ({ startCheckout: (...a: unknown[]) => startCheckout(...a) }));
 vi.mock('@/lib/billing/stripe', async (orig) => ({ ...(await orig<typeof StripeModule>()), stripe: () => ({}) }));
 
-import { signupDeps, startPlanId, unconfirmedSignIn } from './server';
+import { signupDeps, sitesOf, startPlanId, unconfirmedSignIn } from './server';
 
 /** Members, billing and the site's plan, as the database would answer. */
 function fakeDb(members: { tenant_id: string; status: string }[], paid: string[], plan = { plan: 'lite', plan_billing: 'yearly', business_name: 'Saltmarsh', contact_email: 'lena@example.com' }) {
@@ -106,5 +106,25 @@ describe('a promo code at sign-up', () => {
     checkPromo.mockResolvedValue({ ok: false, why: 'unknown' });
     await expect(deps().checkout('t1', fields)).rejects.toThrow('stopped being valid');
     expect(startCheckout).not.toHaveBeenCalled();
+  });
+});
+
+describe('sitesOf', () => {
+  it('counts a free site as paid for, so an invited maker reaches the site form', async () => {
+    const db = {
+      from: () => {
+        const chain = {
+          select: () => chain,
+          eq: () => chain,
+          in: () => Promise.resolve({ data: [], error: null }),
+          then: (ok: (v: unknown) => unknown) => Promise.resolve({ data: [{ tenant_id: 't1', tenants: { status: 'draft', plan_comp: 'free' } }, { tenant_id: 't2', tenants: { status: 'draft', plan_comp: null } }], error: null }).then(ok),
+        };
+        return chain;
+      },
+    } as unknown as SupabaseClient<Database>;
+    expect(await sitesOf(db, 'u1')).toEqual([
+      { tenantId: 't1', draft: true, paid: true },
+      { tenantId: 't2', draft: true, paid: false },
+    ]);
   });
 });

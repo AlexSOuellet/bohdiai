@@ -41,7 +41,7 @@ export default async function FounderMakerPage({ params }: PageProps<'/founder/a
         </section>
 
         {!free && (
-          <section className="bk-section">
+          <section id="discount" className="bk-section">
             <h2 className="bk-section-title">Give a discount</h2>
             <p className="bk-note">This replaces any discount running. On a yearly plan, months become credit toward their next renewal.</p>
             <ActionForm action={giveDiscount} button="Give discount" tenantId={site.id}>
@@ -50,7 +50,7 @@ export default async function FounderMakerPage({ params }: PageProps<'/founder/a
           </section>
         )}
 
-        <section className="bk-section">
+        <section id="free" className="bk-section">
           <h2 className="bk-section-title">{free ? 'Free site' : 'Make them free'}</h2>
           {free ? (
             <ActionForm action={endFree} button="Back to paying" tenantId={site.id} />

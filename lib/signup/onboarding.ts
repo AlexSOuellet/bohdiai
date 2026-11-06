@@ -5,7 +5,7 @@
  * Free never onboards.
  *
  * A site is waiting for its form when it's still a draft, on a plan with a site,
- * paid for, and no form has been sent for it.
+ * paid for (or free, by Alex's invite), and no form has been sent for it.
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
@@ -41,10 +41,16 @@ export async function onboardingSite(db: Db, userId: string): Promise<WaitingSit
   return (await waiting(db, paid))[0] ?? null;
 }
 
+async function isFreeSite(db: Db, tenantId: string): Promise<boolean> {
+  const { data, error } = await db.from('tenants').select('plan_comp').eq('id', tenantId).maybeSingle();
+  if (error !== null) throw new Error(`Could not read the site: ${error.message}`);
+  return data?.plan_comp === 'free';
+}
+
 /** True when the backend's site is still waiting for its form (and is paid for). */
 export async function needsOnboarding(db: Db, tenantId: string): Promise<boolean> {
   const { count, error } = await db.from('subscriptions').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId);
   if (error !== null) throw new Error(`Could not read billing: ${error.message}`);
-  if ((count ?? 0) === 0) return false;
+  if ((count ?? 0) === 0 && !(await isFreeSite(db, tenantId))) return false;
   return (await waiting(db, [tenantId])).length > 0;
 }

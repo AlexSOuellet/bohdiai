@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { unstable_rethrow } from 'next/navigation';
 import { setPassword } from '@/lib/backend/auth-actions';
-import { PasswordInput } from '../_components/PasswordInput';
+import { PasswordInput } from '@/app/manage/_components/PasswordInput';
 
 export default function SetPasswordForm(): React.ReactElement {
   const [password, setPw] = useState('');

@@ -1,4 +1,5 @@
 /** Where the intake form starts: the plan the pricing page sent the maker with. */
+import { PROMO_CODE_SHAPE } from '@/lib/billing/promo-shape';
 import { isPlanId, planById } from '@/lib/site/plans';
 import { FREE_PLAN, type AccountPlan } from '@/lib/backend/plan/plan';
 import type { Billing, PlanTier } from './request';
@@ -8,10 +9,11 @@ export const FREE_PLAN_ID = 'maker-free';
 
 /** Sign-up's starting plan (Alex, Session 119): a maker plan or Free, and
  *  whether Stripe's back button brought them here (?back=1). */
-export function startingSignup(search: Record<string, string | string[] | undefined>): { plan: AccountPlan | null; billing: Billing; back: boolean } {
+export function startingSignup(search: Record<string, string | string[] | undefined>): { plan: AccountPlan | null; billing: Billing; back: boolean; promoCode: string } {
   const site = startingPlan(search);
+  const code = search['code'];
   const plan = search['plan'] === FREE_PLAN_ID ? FREE_PLAN : site.plan;
-  return { plan, billing: plan === FREE_PLAN ? 'monthly' : site.billing, back: search['back'] === '1' };
+  return { plan, billing: plan === FREE_PLAN ? 'monthly' : site.billing, back: search['back'] === '1', promoCode: typeof code === 'string' && PROMO_CODE_SHAPE.test(code) ? code : '' };
 }
 
 /** The plan the pricing page's button carried (?plan=maker-full&billing=yearly);

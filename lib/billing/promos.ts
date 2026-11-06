@@ -13,7 +13,9 @@ import type Stripe from 'stripe';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import { addMonths } from '@/lib/backend/plan/billing';
+import { isSitePlan, type SitePlan } from '@/lib/backend/plan/plan';
 import type { MakerSubscription } from './maker-subscription';
+import { PROMO_CODE_SHAPE } from './promo-shape';
 
 type Db = SupabaseClient<Database>;
 
@@ -24,10 +26,15 @@ export type PromoRow = Promo & { uses: number };
 export type PromoRefusal = 'unknown' | 'used' | 'newOnly';
 export type PromoCheck = { ok: true; promo: Promo } | { ok: false; why: PromoRefusal };
 
-export const PROMO_CODE_SHAPE = /^[A-Z0-9-]{3,30}$/;
+/** A one-use code made for one invited maker. */
+export type InviteCode = Discount & { code: string; name: string; email: string; business: string; plan: SitePlan; note: string };
+
+export { PROMO_CODE_SHAPE };
 
 const PROMO_MARK = 'bohdiai_promo';
 const CURRENCY = 'usd';
+const INVITE_DAYS = 60;
+const DAY_SECONDS = 86400;
 const MONTHS_IN_YEAR = 12;
 const UNIQUE_VIOLATION = '23505';
 
@@ -96,7 +103,39 @@ export async function listPromos(s: Stripe, db: Db): Promise<PromoRow[]> {
   const [coupons, uses] = await Promise.all([s.coupons.list({ limit: 100 }), usesOf(db)]);
   return coupons.data.flatMap((coupon) => {
     const promo = promoOf(coupon);
-    return promo === null ? [] : [{ ...promo, uses: uses.get(promo.code) ?? 0 }];
+    return promo === null || coupon.metadata?.['invite_email'] !== undefined ? [] : [{ ...promo, uses: uses.get(promo.code) ?? 0 }];
+  });
+}
+
+/** A code only this invite knows: new sign-ups only, one use, good for 60 days. */
+export async function createInviteCode(s: Stripe, who: { name: string; email: string; business: string; plan: SitePlan; note: string }, discount: Discount): Promise<InviteCode> {
+  const code = `INVITE-${crypto.randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase()}`;
+  await s.coupons.create({
+    id: code,
+    name: code,
+    percent_off: discount.percent,
+    ...couponDuration(discount),
+    max_redemptions: 1,
+    redeem_by: Math.floor(Date.now() / 1000) + INVITE_DAYS * DAY_SECONDS,
+    metadata: { [PROMO_MARK]: 'new', invite_name: who.name, invite_email: who.email, invite_business: who.business, invite_plan: who.plan, invite_note: who.note },
+  });
+  return { ...discount, ...who, code };
+}
+
+function inviteOf(coupon: Stripe.Coupon): InviteCode | null {
+  const m = coupon.metadata;
+  const promo = promoOf(coupon);
+  const plan = m?.['invite_plan'];
+  if (promo === null || m?.['invite_email'] === undefined || !isSitePlan(plan)) return null;
+  return { code: promo.code, percent: promo.percent, months: promo.months, name: m['invite_name'] ?? '', email: m['invite_email'], business: m['invite_business'] ?? '', plan, note: m['invite_note'] ?? '' };
+}
+
+/** Invite codes still open: not used, not expired. */
+export async function findInviteCodes(s: Stripe, db: Db): Promise<InviteCode[]> {
+  const [coupons, uses] = await Promise.all([s.coupons.list({ limit: 100 }), usesOf(db)]);
+  return coupons.data.flatMap((coupon) => {
+    const invite = coupon.valid ? inviteOf(coupon) : null;
+    return invite === null || uses.has(invite.code) ? [] : [invite];
   });
 }
 

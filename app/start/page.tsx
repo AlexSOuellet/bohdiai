@@ -37,7 +37,7 @@ export default async function StartPage({ searchParams }: { searchParams: Search
         </h1>
         <p className="mx-auto mt-5 max-w-[560px] text-center text-[15px] leading-[1.6] text-text-soft md:text-[17px]">{words.signup.lede}</p>
         <div className="mx-auto mt-12 max-w-[860px] md:mt-16">
-          <SignupForm words={words} plans={plans} initialPlan={start.plan} initialBilling={start.billing} back={start.back} contactEmail={SITE_CONTACT_EMAIL} />
+          <SignupForm words={words} plans={plans} initialPlan={start.plan} initialBilling={start.billing} back={start.back} initialPromo={start.promoCode} contactEmail={SITE_CONTACT_EMAIL} />
         </div>
       </main>
       <Footer />

@@ -83,6 +83,19 @@ describe('SiteTable', () => {
   });
 });
 
+describe('the deal on a maker’s row', () => {
+  it('offers Make free and Give discount', () => {
+    render(<SiteTable sites={[site({ id: 't1' })]} />);
+    expect(screen.getByRole('link', { name: 'Make Rustic Flags free' })).toHaveAttribute('href', '/founder/act/t1#free');
+    expect(screen.getByRole('link', { name: 'Give Rustic Flags a discount' })).toHaveAttribute('href', '/founder/act/t1#discount');
+  });
+  it('offers a way to change a free site', () => {
+    render(<SiteTable sites={[site({ id: 't1', planComp: 'free', paying: null })]} />);
+    expect(screen.getByRole('link', { name: 'Change Rustic Flags’s free site' })).toHaveAttribute('href', '/founder/act/t1#free');
+    expect(screen.queryByRole('link', { name: 'Make Rustic Flags free' })).toBeNull();
+  });
+});
+
 describe('MessageList', () => {
   it('says when there are none', () => {
     render(<MessageList messages={[]} />);

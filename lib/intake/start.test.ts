@@ -17,13 +17,18 @@ describe('startingPlan', () => {
 });
 
 describe('startingSignup', () => {
+  it('keeps an invite’s code, and only something shaped like one', () => {
+    expect(startingSignup({ code: 'INVITE-ABC' }).promoCode).toBe('INVITE-ABC');
+    expect(startingSignup({ code: '<b>' }).promoCode).toBe('');
+    expect(startingSignup({ code: ['A', 'B'] }).promoCode).toBe('');
+  });
   it('reads a maker plan, or Free (always monthly)', () => {
-    expect(startingSignup({ plan: 'maker-lite', billing: 'yearly' })).toEqual({ plan: 'lite', billing: 'yearly', back: false });
-    expect(startingSignup({ plan: 'maker-free', billing: 'yearly' })).toEqual({ plan: 'free', billing: 'monthly', back: false });
-    expect(startingSignup({})).toEqual({ plan: null, billing: 'monthly', back: false });
+    expect(startingSignup({ plan: 'maker-lite', billing: 'yearly' })).toEqual({ plan: 'lite', billing: 'yearly', back: false, promoCode: '' });
+    expect(startingSignup({ plan: 'maker-free', billing: 'yearly' })).toEqual({ plan: 'free', billing: 'monthly', back: false, promoCode: '' });
+    expect(startingSignup({})).toEqual({ plan: null, billing: 'monthly', back: false, promoCode: '' });
   });
 
   it('knows when Stripe’s back button brought them here', () => {
-    expect(startingSignup({ plan: 'maker-full', back: '1' })).toMatchObject({ back: true });
+    expect(startingSignup({ plan: 'maker-full', back: '1' })).toMatchObject({ back: true, promoCode: '' });
   });
 });

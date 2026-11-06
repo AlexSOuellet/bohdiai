@@ -54,16 +54,16 @@ async function passwordUser(email: string, password: string): Promise<string | n
   return null;
 }
 
-/** The sites this account owns: still a draft, and paid for. */
+/** The sites this account owns: still a draft, and paid for (a free site needs no paying). */
 export async function sitesOf(db: Db, userId: string): Promise<SignupSite[]> {
-  const { data, error } = await db.from('tenant_members').select('tenant_id, tenants(status)').eq('user_id', userId).eq('role', 'admin').eq('status', 'active');
+  const { data, error } = await db.from('tenant_members').select('tenant_id, tenants(status, plan_comp)').eq('user_id', userId).eq('role', 'admin').eq('status', 'active');
   if (error !== null) throw new Error(`Could not read the account's sites: ${error.message}`);
   const ids = (data ?? []).map((r) => r.tenant_id);
   if (ids.length === 0) return [];
   const { data: subs, error: subErr } = await db.from('subscriptions').select('tenant_id').in('tenant_id', ids);
   if (subErr !== null) throw new Error(`Could not read billing: ${subErr.message}`);
   const paid = new Set((subs ?? []).map((s) => s.tenant_id));
-  return (data ?? []).map((r) => ({ tenantId: r.tenant_id, draft: r.tenants?.status === 'draft', paid: paid.has(r.tenant_id) }));
+  return (data ?? []).map((r) => ({ tenantId: r.tenant_id, draft: r.tenants?.status === 'draft', paid: paid.has(r.tenant_id) || r.tenants?.plan_comp === 'free' }));
 }
 
 async function putOnPlan(db: Db, tenantId: string, fields: SignupFields): Promise<void> {
@@ -74,7 +74,7 @@ async function putOnPlan(db: Db, tenantId: string, fields: SignupFields): Promis
 }
 
 /** An unpublished site record, owned by the account, on the plan picked. */
-async function createSite(db: Db, userId: string, fields: SignupFields): Promise<string> {
+export async function createSite(db: Db, userId: string, fields: SignupFields): Promise<string> {
   const isTaken = async (subdomain: string): Promise<boolean> => {
     const { data, error } = await db.from('tenants').select('id').eq('subdomain', subdomain).maybeSingle();
     if (error !== null) throw new Error(`Could not check the web address: ${error.message}`);
@@ -160,7 +160,7 @@ export function signupDeps(db: Db, origin: string): SignupDeps {
         plan: fields.plan,
         billing: fields.billing,
         paidUrl: `${origin}/start/paid?session={CHECKOUT_SESSION_ID}`,
-        backUrl: `${origin}/start?plan=${startPlanId(fields)}&billing=${billingFor(fields.plan, fields.billing)}&back=1`,
+        backUrl: `${origin}/start?plan=${startPlanId(fields)}&billing=${billingFor(fields.plan, fields.billing)}&back=1${fields.promoCode === '' ? '' : `&code=${fields.promoCode}`}`,
       }),
   };
 }

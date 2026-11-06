@@ -43,7 +43,7 @@ describe('POST /auth/confirm', () => {
     const res = await POST(post({ token_hash: 't', type }));
     expect(verifyOtp).toHaveBeenCalledWith({ token_hash: 't', type });
     expect(res.status).toBe(303);
-    expect(res.headers.get('location')).toBe('https://app.bohdiai.com/manage/set-password');
+    expect(res.headers.get('location')).toBe('https://app.bohdiai.com/auth/set-password');
   });
 
   it('confirms a new maker’s email and goes straight into the backend (Session 119)', async () => {
@@ -87,7 +87,7 @@ describe('POST /auth/confirm', () => {
       headers: { origin: 'https://app.bohdiai.com' },
       body: new URLSearchParams({ token_hash: 't', type: 'invite' }),
     });
-    expect((await POST(req)).headers.get('location')).toBe('https://app.bohdiai.com/manage/set-password');
+    expect((await POST(req)).headers.get('location')).toBe('https://app.bohdiai.com/auth/set-password');
   });
 });
 

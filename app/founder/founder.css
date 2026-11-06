@@ -23,3 +23,4 @@
 .fd-find .bk-input { flex: 1; min-width: 0; }
 .fd-form { max-width: 32rem; }
 .fd-form .bk-note, .fd-form .bk-error { margin-top: 0.6rem; }
+.fd-deals { display: grid; gap: 0.25rem; white-space: nowrap; }

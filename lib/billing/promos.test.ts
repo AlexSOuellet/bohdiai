@@ -3,7 +3,7 @@ import type Stripe from 'stripe';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import type { MakerSubscription } from './maker-subscription';
-import { applyDiscount, checkoutCoupon, checkPromo, claimPromo, clearDiscount, createPromo, discountLabel, discountRunning, endPromo, endsAfter, listPromos, normalizeCode, recordSignupPromo, releasePromo, yearlyValueCents, type Promo } from './promos';
+import { applyDiscount, createInviteCode, findInviteCodes, checkoutCoupon, checkPromo, claimPromo, clearDiscount, createPromo, discountLabel, discountRunning, endPromo, endsAfter, listPromos, normalizeCode, recordSignupPromo, releasePromo, yearlyValueCents, type Promo } from './promos';
 
 const NOW = new Date('2026-11-04T12:00:00Z');
 
@@ -101,6 +101,36 @@ describe('making and ending codes', () => {
   });
   it('says so when the uses can’t be read', async () => {
     await expect(listPromos(fakeStripe(coupon()).s, fakeDb({ plan_promo_uses: { error: { message: 'down' } } }).db)).rejects.toThrow('down');
+  });
+});
+
+describe('invite codes', () => {
+  const who = { name: 'Lena', email: 'lena@example.com', business: 'Saltmarsh', plan: 'full' as const, note: 'Hi' };
+  const meta = { bohdiai_promo: 'new', invite_name: 'Lena', invite_email: 'lena@example.com', invite_business: 'Saltmarsh', invite_plan: 'full', invite_note: 'Hi' };
+
+  it('makes a one-use code nobody could guess', async () => {
+    const { s, create } = fakeStripe();
+    const code = await createInviteCode(s, who, { percent: 100, months: 3 });
+    expect(code.code).toMatch(/^INVITE-[0-9A-F]{12}$/);
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ id: code.code, percent_off: 100, duration_in_months: 3, max_redemptions: 1, metadata: meta }));
+  });
+  it('keeps invite codes off the Promotions list, and lists the open ones as invites', async () => {
+    const invite = coupon({ id: 'INVITE-A', metadata: meta });
+    const { s } = fakeStripe(invite);
+    const { db } = fakeDb();
+    expect(await listPromos(s, db)).toEqual([]);
+    expect(await findInviteCodes(s, db)).toEqual([{ code: 'INVITE-A', percent: 10, months: null, ...who }]);
+  });
+  it('fills in what a code left blank', async () => {
+    const { s } = fakeStripe(coupon({ id: 'INVITE-A', metadata: { bohdiai_promo: 'new', invite_email: 'a@example.com', invite_plan: 'lite' } }));
+    expect(await findInviteCodes(s, fakeDb().db)).toMatchObject([{ name: '', business: '', note: '', plan: 'lite' }]);
+  });
+  it('drops an invite once it’s used, ended, or isn’t one', async () => {
+    const used = fakeDb({ plan_promo_uses: { data: [{ code: 'INVITE-A' }], error: null } }).db;
+    expect(await findInviteCodes(fakeStripe(coupon({ id: 'INVITE-A', metadata: meta })).s, used)).toEqual([]);
+    expect(await findInviteCodes(fakeStripe(coupon({ id: 'INVITE-A', metadata: meta, valid: false })).s, fakeDb().db)).toEqual([]);
+    expect(await findInviteCodes(fakeStripe(coupon()).s, fakeDb().db)).toEqual([]);
+    expect(await findInviteCodes(fakeStripe(coupon({ metadata: { ...meta, invite_plan: 'nope' } })).s, fakeDb().db)).toEqual([]);
   });
 });
 

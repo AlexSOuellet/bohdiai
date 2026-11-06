@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 
 const TABS = [
   { href: '/founder', label: 'Dashboard' },
+  { href: '/founder/invite', label: 'Invite a maker' },
   { href: '/founder/act', label: 'Act as a maker' },
   { href: '/founder/promotions', label: 'Promotions' },
   { href: '/founder/messages', label: 'Messages' },

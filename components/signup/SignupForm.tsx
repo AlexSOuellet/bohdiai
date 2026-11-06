@@ -35,12 +35,14 @@ type Props = {
   initialBilling: Billing;
   /** Stripe's back button brought them here. */
   back: boolean;
+  /** A code an invite's link carried. */
+  initialPromo?: string;
   contactEmail: string;
 };
 
-export function SignupForm({ words, plans, initialPlan, initialBilling, back, contactEmail }: Props): React.ReactElement {
+export function SignupForm({ words, plans, initialPlan, initialBilling, back, initialPromo = '', contactEmail }: Props): React.ReactElement {
   const w = words;
-  const [fields, setFields] = useState<Fields>({ plan: initialPlan, billing: initialBilling, makerName: '', businessName: '', email: '', password: '', promoCode: '', company: '' });
+  const [fields, setFields] = useState<Fields>({ plan: initialPlan, billing: initialBilling, makerName: '', businessName: '', email: '', password: '', promoCode: initialPromo, company: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
 

@@ -24,6 +24,7 @@ export function SiteTable({ sites }: { sites: readonly (FounderSite & { openUrl:
             <th scope="col">Maker</th>
             <th scope="col">Pays</th>
             <th scope="col">Started</th>
+            <th scope="col">Deal</th>
             <th scope="col">Backend</th>
           </tr>
         </thead>
@@ -43,12 +44,24 @@ export function SiteTable({ sites }: { sites: readonly (FounderSite & { openUrl:
                 </span>
               </td>
               <td>{site.maker ?? 'Just you'}</td>
-              <td>
-                <Link href={`/founder/act/${site.id}` as Route} className="bk-link" aria-label={`Change what ${site.name} pays: ${paying(site)}`}>
-                  {paying(site)}
-                </Link>
-              </td>
+              <td>{paying(site)}</td>
               <td>{shortDate(site.joined)}</td>
+              <td>
+                {site.planComp === null ? (
+                  <span className="fd-deals">
+                    <Link href={`/founder/act/${site.id}#free` as Route} className="bk-link" aria-label={`Make ${site.name} free`}>
+                      Make free
+                    </Link>
+                    <Link href={`/founder/act/${site.id}#discount` as Route} className="bk-link" aria-label={`Give ${site.name} a discount`}>
+                      Give discount
+                    </Link>
+                  </span>
+                ) : (
+                  <Link href={`/founder/act/${site.id}#free` as Route} className="bk-link" aria-label={`Change ${site.name}’s free site`}>
+                    Change
+                  </Link>
+                )}
+              </td>
               <td>
                 {site.canManage ? (
                   <form action="/manage/switch-site" method="post">
