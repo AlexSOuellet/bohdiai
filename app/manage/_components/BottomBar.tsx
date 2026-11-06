@@ -11,7 +11,7 @@ import { NavIcon } from './NavIcon';
 export function BottomBar({ nav, menuOpen, onMenu }: { nav: NavSection[]; menuOpen: boolean; onMenu: () => void }): React.ReactElement {
   const pathname = usePathname();
   const here = sectionFor(nav, pathname);
-  const shown = nav.filter((s) => s.section !== 'Account' && s.section !== 'Help').slice(0, 4);
+  const shown = nav.filter((s) => s.section !== 'Account' && s.section !== 'Support').slice(0, 4);
   return (
     <nav className="bk-bottom" aria-label="Shortcuts">
       {shown.map((section) => {

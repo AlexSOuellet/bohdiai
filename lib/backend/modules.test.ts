@@ -31,12 +31,12 @@ describe('navFor', () => {
 describe('the menu in her words (the redesign, 2026-10-27)', () => {
   const full: FeatureKey[] = ['catalog', 'collections', 'market_dates', 'market_shop', 'market_records', 'cart', 'promotions', 'buyer_accounts', 'headline', 'background', 'profile', 'testimonials', 'try_on', 'qr_codes', 'plan'];
 
-  it('is one short list on Full: Home, Products, Events, Tools, Orders, Customers, My site, Account, Help', () => {
-    expect(names(full)).toEqual(['Home', 'Products', 'Events', 'Tools', 'Orders', 'Customers', 'My site', 'Account', 'Help']);
+  it('is one short list on Full: Home, Products, Events, Tools, Orders, Customers, My site, Account, Support', () => {
+    expect(names(full)).toEqual(['Home', 'Products', 'Events', 'Tools', 'Orders', 'Customers', 'My site', 'Account', 'Support']);
   });
 
-  it('has only Home, Tools and Help with nothing switched on (Tools is on every plan)', () => {
-    expect(names([])).toEqual(['Home', 'Tools', 'Help']);
+  it('has only Home, Tools and Support with nothing switched on (Tools is on every plan)', () => {
+    expect(names([])).toEqual(['Home', 'Tools', 'Support']);
   });
 
   it('opens My site on its own page, and every other group on its first screen', () => {
@@ -45,7 +45,7 @@ describe('the menu in her words (the redesign, 2026-10-27)', () => {
     expect(entry('My site').href).toBe(MY_SITE_PATH);
     expect(entry('Products').href).toBe('/manage/products');
     expect(entry('Events').href).toBe('/manage/markets');
-    expect(entry('Help')).toEqual({ label: 'Help', href: '/manage/support' });
+    expect(entry('Support')).toEqual({ label: 'Support', href: '/manage/support' });
   });
 
   it('keeps every part of her site under My site, in the order a visitor meets them', () => {
@@ -86,8 +86,8 @@ describe('Events, Orders and Account (Alex, 2026-10-22)', () => {
     expect(group(['market_dates', 'plan'], 'Account')).toEqual(['Your plan', 'Billing']);
   });
 
-  it('keeps Help last, after Account', () => {
-    expect(names(['plan', 'profile']).slice(-2)).toEqual(['Account', 'Help']);
+  it('keeps Support last, after Account', () => {
+    expect(names(['plan', 'profile']).slice(-2)).toEqual(['Account', 'Support']);
   });
 });
 

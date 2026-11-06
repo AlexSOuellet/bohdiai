@@ -15,7 +15,7 @@ const nav = [
   { section: 'Events', items: [{ label: 'Schedule', href: '/manage/markets' }, { label: 'Results', href: '/manage/markets/results' }] },
   { section: 'My site', items: [{ label: 'Headline', href: '/manage/headline' }, { label: 'About you', href: '/manage/profile' }] },
   { section: 'Account', items: [{ label: 'Your plan', href: '/manage/plan' }] },
-  { section: 'Help', items: [{ label: 'Contact support', href: '/manage/support' }] },
+  { section: 'Support', items: [{ label: 'Contact support', href: '/manage/support' }] },
 ];
 
 const base = {
@@ -34,13 +34,13 @@ describe('Sidebar', () => {
     path.current = '/manage';
     render(<Sidebar {...base} />);
     const links = screen.getAllByRole('link').map((a) => a.textContent);
-    expect(links).toEqual(['Classic Loafs', 'Open my site', 'Home', 'Products', 'Events', 'My site', 'Account', 'Help']);
+    expect(links).toEqual(['Classic Loafs', 'Open my site', 'Home', 'Products', 'Events', 'My site', 'Account', 'Support']);
     expect(screen.queryByRole('button', { name: 'Products' })).toBeNull();
   });
-  it('opens My site on its own page and Help on Contact support', () => {
+  it('opens My site on its own page and Support on Contact support', () => {
     render(<Sidebar {...base} />);
     expect(screen.getByRole('link', { name: 'My site' })).toHaveAttribute('href', '/manage/site');
-    expect(screen.getByRole('link', { name: 'Help' })).toHaveAttribute('href', '/manage/support');
+    expect(screen.getByRole('link', { name: 'Support' })).toHaveAttribute('href', '/manage/support');
   });
   it('marks the group of the screen you are on, and keeps Home exact', () => {
     path.current = '/manage/profile';

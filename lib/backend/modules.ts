@@ -81,8 +81,8 @@ export const BACKEND_MODULES: BackendModule[] = [
   { feature: 'plan', section: 'Account', items: [{ label: 'Your plan', href: '/manage/plan' }, { label: 'Billing', href: '/manage/billing' }] },
   // Set up once, so it sits with the account (Alex, 2026-10-22).
   { feature: 'market_shop', section: 'Account', items: [{ label: 'Getting paid', href: '/manage/payments' }] },
-  // Help: on every backend, last.
-  { feature: null, section: 'Help', items: [{ label: 'Contact support', href: '/manage/support' }] },
+  // Support: on every backend, last.
+  { feature: null, section: 'Support', items: [{ label: 'Contact support', href: '/manage/support' }] },
 ];
 
 /** Map key for an item that stands alone (no group name can start with it). */
