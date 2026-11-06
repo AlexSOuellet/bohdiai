@@ -1,11 +1,12 @@
 # Session Brief — BohdiAI
 
-> **⚠ START HERE (Session 120):** read `session-logs/session-119.md`, then `Open-Work.md` items 0 and 6.
-> **Everything is merged and live; `main` is the only branch (`feat/maker-checkup` parked, `fix/auth-link-24h` waits for Alex).** Self-serve sign-up and pay for every plan, the build on its own on Cloudflare, Publish wherever the site shows, Take my site offline.
+> **⚠ START HERE (Session 121):** read `session-logs/session-120.md`, then `Open-Work.md` items 5, 6 and 36.
+> **Everything is merged and live; `main` is the only branch (`feat/maker-checkup` parked, `fix/auth-link-24h` waits for Alex).** Alex's admin (Dashboard, Invite a maker, Act as a maker, Promotions, Messages, Emails), promotions, the new email look, a cancel that reaches Stripe.
+> **Alex's call first: should real makers change plans themselves?** Today Upgrade emails Alex and nothing changes what Stripe charges.
+> **Every email to a maker uses `renderEmail` (`lib/email/layout.ts`); all future emails keep this look (Alex).** No screen listing all sites in the admin (Alex).
 > **Next (Alex): makers getting paid online.** Square online checkout first (Square's own page, two more permissions), then Stripe for makers. PayPal is switched off (Alex, 2026-11-04) until a maker asks; the code stays, `PAYPAL_ON=on` brings it back. Explain the protections before building (payment security is #1).
 > **Before live sign-ups (Alex):** `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` in Cloudflare, webhook registered.
 > **There is no public toolkit (Alex).** Never place a new backend screen without asking where it goes. Say "the maker", not "she".
-> Payments for makers ARE now being built (Alex, Session 119), Square online first.
 > Saltmarsh IS Scenic. A change to what a plan shows must reach the moods, Scenic's shoreline code and Rose n' Cat's nursery.
 > **When Alex says put it back the way it was, match the old one exactly: words, fonts, sizes. No additions.**
 > Build everything Alex decides; ask in plain text (no button questions); ask before any change he didn't ask for.
@@ -13,15 +14,13 @@
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 **Operative plan doc:** `Project-Docs/Modular-Plan.md`; open items in `Project-Docs/Open-Work.md`. Every session updates Open-Work as items land.
 
-**Last updated:** 2026-11-04 (PayPal switched off); before that 2026-11-03, Session 119 (end).
+**Last updated:** 2026-11-06, Session 120 (end).
 
 ---
 
 ## Current state
 
-**Session 119 (merged and live): sign-up and pay for every plan (Stripe's checkout, Free at $0), the confirmation email, the site form at /welcome, the build as a Cloudflare Workflow; no product images generated; webpack for dev and build; Publish on Home, My site and try-on; Take my site offline.** Recap: `session-logs/session-119.md`.
-
-**Session 118 (all merged and live): Maker Free and the tools merged; bohdiai.com is the maker site (no doors, service switched off, one line for non-maker sites, Free on the ladder and pricing); Spotlight's opening back to the show reel (the slammed name, its fonts, See the work ↓ to the gallery, one scrolling band).** Recap: `session-logs/session-118.md`.
+**Session 120 (merged and live): Alex's admin at admin.bohdiai.com; promo codes, direct discounts and free makers through Stripe; Invite a maker (a free site needs no Stripe, its link never expires); one email look; a cancel reaches Stripe and a cancelled site goes offline at term end.** Recap: `session-logs/session-120.md`.
 
 **Session 87 — the whole app now runs on Cloudflare Workers; Vercel serves nothing.** bohdiai.com, www, every shop subdomain and Cut-Pro are all served by the `bohdiai` Worker, verified live (Cut-Pro end to end, including a real photo estimate). `main` is current (fast-forwarded 552 commits). 1364 tests, tsc + lint clean. Runbook + lessons: `Cloudflare-Move.md`.
 
@@ -34,7 +33,7 @@
 
 ## Next actions
 
-**Session 120:** makers getting paid online: Square online checkout (Open-Work item 6), then Stripe for makers. Still open: the four Free tools, the photo backgrounds tool, a page per plan, the pricing cards, the site form follow-ups (item 58), renaming `site_added_sections`, the Cloudflare analytics key (Alex).
+**Session 121:** ask Alex about plan changes for real makers, then makers getting paid online: Square online checkout (Open-Work item 6), then Stripe for makers. Still open: the four Free tools, the photo backgrounds tool, a page per plan, the pricing cards, the site form follow-ups (item 58), renaming `site_added_sections`, the Cloudflare analytics key (Alex).
 
 **Every open item is in `Open-Work.md`; follow its Priority order.** Waiting on others: Joe's feedback, Renee's details.
 
@@ -89,9 +88,9 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 120 (2026-11-04 → 11-06): **Merged and live: PayPal off, Alex's admin, promotions, invites with no time limit, the email look, cancels reach Stripe.** `session-logs/session-120.md`
 - Session 119 (2026-10-31 → 11-03): **Merged and live: self-serve sign-up and pay, the build on its own (Cloudflare Workflow), Publish wherever the site shows, Take my site offline; Square online checkout next.** Full recap: `session-logs/session-119.md`.
-- Sessions 117–118 (2026-10-28 → 10-29): **Free, the tools, Market day on Showcase (117); all merged and live: Maker Free and the tools; bohdiai.com is the maker site with Free; Spotlight's opening back to the show reel; four more Free tools agreed.** Full recap: `session-logs/session-118.md`.
-- Sessions 115–116 (2026-10-26 → 10-27): **Buyer accounts for Full (115); backend rebuilt by Claude: new look, short menu, My site, Home by plan, section switches, Customers; Paper & Patina on Spotlight/Showcase (116); merged S117.** See `session-logs/session-115.md`, `session-116.md`.
+- Sessions 115–118 (2026-10-26 → 10-29): **Buyer accounts (115); backend rebuilt (116); Free, the tools (117); bohdiai.com the maker site, all merged and live (118).** Recaps in `session-logs/`.
 - Sessions 111–114 (2026-10-21 → 10-25): **Market plan live, Square cards, refunds (111); Events area, stock kinds (112); Free plan + ladder + tools decided (113); Rustic Charm & More, Full defined, Getting paid, PayPal test mode, Try on a look (114).** See `session-logs/session-111.md` – `session-114.md`.
 - Sessions 109–110 (2026-10-19 → 10-20): **Showcase backend + gallery section + About you split into its homes (109); Showcase live, named social buttons, visitor numbers, new backend look; Market plan built (110).** See `session-logs/session-109.md`, `session-110.md`.
 - Sessions 105–108 (2026-10-15 → 10-18): **Lineup reset, every family sells, one builder, Vintage (105); intake form live, big push merged (106); Scenic + Spotlight, scene library, /looks (107); bohdiai.com split into parent + makers/service arms (108).** See `session-logs/session-105.md` – `session-108.md`.

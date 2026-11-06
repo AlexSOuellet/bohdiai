@@ -88,9 +88,10 @@ export async function inviteDiscount(s: Stripe, who: Invitee, discount: Discount
   return { ok: true };
 }
 
-/** Invites nobody has acted on: a free site with no form sent, or a code nobody has used. */
-export async function loadWaitingInvites(s: Stripe, db: Db): Promise<WaitingInvite[]> {
-  const [sites, sent, codes] = await Promise.all([db.from('tenants').select('id, business_name').eq('status', 'draft').eq('plan_comp', 'free').is('deleted_at', null), db.from('intakes').select('tenant_id'), findInviteCodes(s, db)]);
+/** Invites nobody has acted on: a free site with no form sent, or a code nobody has used.
+ *  Free invites never touch Stripe, so with no Stripe there are just no codes to list. */
+export async function loadWaitingInvites(s: Stripe | null, db: Db): Promise<WaitingInvite[]> {
+  const [sites, sent, codes] = await Promise.all([db.from('tenants').select('id, business_name').eq('status', 'draft').eq('plan_comp', 'free').is('deleted_at', null), db.from('intakes').select('tenant_id'), s === null ? [] : findInviteCodes(s, db)]);
   if (sites.error !== null) throw new Error(`Could not read the invites: ${sites.error.message}`);
   if (sent.error !== null) throw new Error(`Could not read the site forms: ${sent.error.message}`);
   const done = new Set(sent.data.map((r) => r.tenant_id));

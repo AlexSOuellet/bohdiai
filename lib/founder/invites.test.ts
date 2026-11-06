@@ -152,6 +152,11 @@ describe('loadWaitingInvites', () => {
       { key: 'INVITE-ABC', kind: 'discount', name: 'Lena', email: 'lena@example.com', business: 'Saltmarsh', deal: '3 months free', tenantId: null, code: 'INVITE-ABC' },
     ]);
   });
+  it('still lists free sites with no Stripe', async () => {
+    const { db } = fakeDb({ tenants: { data: [{ id: 't1', business_name: 'Saltmarsh' }], error: null } });
+    expect((await loadWaitingInvites(null, db)).map((w) => w.key)).toEqual(['t1']);
+    expect(m.findInviteCodes).not.toHaveBeenCalled();
+  });
   it.each(['tenants', 'intakes'])('says so when %s can’t be read', async (table) => {
     await expect(loadWaitingInvites(stripeStub, fakeDb({ [table]: { error: { message: 'down' } } }).db)).rejects.toThrow('down');
   });

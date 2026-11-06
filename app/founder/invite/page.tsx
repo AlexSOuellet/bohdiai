@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 /** Invite a maker: a free site with no payment step, or a discount already on their link. */
 export default async function FounderInvitePage(): Promise<React.ReactElement> {
   await requireFounder();
-  const waiting = await loadWaitingInvites(stripe(), supabaseAdmin());
+  const waiting = await loadWaitingInvites(process.env['STRIPE_SECRET_KEY'] === undefined ? null : stripe(), supabaseAdmin());
   return (
     <>
       <div className="bk-head">
