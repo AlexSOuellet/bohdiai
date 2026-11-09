@@ -40,9 +40,9 @@ export function ReadyToShow({ view, showcasePrice }: { view: FreeHome; showcaseP
         Your pieces are ready to show
       </h2>
       <p className="bk-band-sub">{`Showcase puts them on a site of your own for $${showcasePrice} a month, with your gallery, your story and where to find you. Everything here comes with you.`}</p>
-      <a className="bk-btn" href="https://makers.bohdiai.com" target="_blank" rel="noopener noreferrer">
+      <Link className="bk-btn" href="/manage/plan">
         See the plans
-      </a>
+      </Link>
     </section>
   );
 }

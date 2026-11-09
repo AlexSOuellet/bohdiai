@@ -17,8 +17,8 @@ import { LINK_TARGETS, type LinkTarget } from '@/lib/archetypes/main-street/link
 const EVERY_PLAN: readonly FeatureKey[] = ['profile', 'market_dates', 'qr_codes', 'plan', 'headline', 'background'];
 /** Free (Alex, 2026-10-24): no site, so none of the site screens. Products to work
  *  with; no events (Alex, 2026-10-28), they start on Showcase. Tools and Contact
- *  support are on every plan. */
-const FREE: readonly FeatureKey[] = ['catalog'];
+ *  support are on every plan. Your plan is the way up to a site (Alex, 2026-11-09). */
+const FREE: readonly FeatureKey[] = ['catalog', 'plan'];
 /** Showcase (Alex, 2026-10-19): the whole catalog in the backend with no shop and no
  *  prices on the site; the gallery is up to 12 ticked pieces (newest 12 by default). */
 const SHOWCASE: readonly FeatureKey[] = [...EVERY_PLAN, 'gallery_pieces'];

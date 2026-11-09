@@ -10,6 +10,7 @@ import { stripe } from '@/lib/billing/stripe';
 import { cardOnFile, nextCharge, pastCharges } from '@/lib/billing/card';
 import { logger } from '@/lib/logger';
 import { CardButton } from './CardButton';
+import { freeSite } from '@/lib/backend/plan/free-up';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +22,9 @@ export default async function BillingPage({ searchParams }: PageProps<'/manage/b
   const on = await getSiteFeatures(site.tenantId);
   if (!on.has('plan')) notFound();
   const state = await loadPlanState(await createSupabaseServerClient(), site.tenantId);
-  if (state === null) notFound();
+  // Free has no site plan to load: nothing to pay, and any card it has stays changeable.
+  const onFree = state === null && (await freeSite(supabaseAdmin(), site.tenantId)).free;
+  if (state === null && !onFree) notFound();
   const sub = await currentSubscription(supabaseAdmin(), site.tenantId);
   let billed: StripeBilling | null = null;
   let unreadable = false;
@@ -29,13 +32,13 @@ export default async function BillingPage({ searchParams }: PageProps<'/manage/b
     try {
       const s = stripe();
       const [card, next, charges] = await Promise.all([cardOnFile(s, sub.stripeId), nextCharge(s, sub.stripeId), pastCharges(s, sub.customerId)]);
-      billed = stripeBillingView({ card, next, charges, planName: billingView(state).planName });
+      billed = stripeBillingView({ card, next, charges, planName: state === null ? 'Free' : billingView(state).planName });
     } catch (err) {
       logger.error('billing: Stripe not read', { tenantId: site.tenantId, error: err instanceof Error ? err.message : String(err) });
       unreadable = true;
     }
   }
-  const v = billingView(state);
+  const v = state === null ? null : billingView(state);
   const raw = (await searchParams)['card'];
   const cardNote = raw === 'updated' ? 'Your new card is saved. It’s the one we charge from now on.' : raw === 'not-updated' ? 'Your card wasn’t changed.' : null;
   return (
@@ -64,7 +67,9 @@ export default async function BillingPage({ searchParams }: PageProps<'/manage/b
         )}
         <section className="bk-section" aria-labelledby="s-next">
           <h2 id="s-next" className="bk-section-title">Your next charge</h2>
-          {billed !== null ? (
+          {v === null ? (
+            <p className="bk-note">You’re on Free. Nothing to pay.</p>
+          ) : billed !== null ? (
             <p className="bk-note">{billed.next}</p>
           ) : v.amount === null ? (
             <p className="bk-note">{`Your site is free on ${v.planName}. Nothing will be charged.`}</p>

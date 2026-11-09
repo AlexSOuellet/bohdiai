@@ -13,9 +13,9 @@ describe('Free (Alex, 2026-10-24)', () => {
     expect(isFreePlan(null)).toBe(false);
   });
 
-  it('turns on products only: no events (Alex, 2026-10-28) and none of the site screens', () => {
+  it('turns on products and Your plan only: no events (Alex, 2026-10-28), none of the site screens, and the way up (Alex, 2026-11-09)', () => {
     const on = planFeatureRows('free').filter((r) => r.enabled).map((r) => r.feature_key);
-    expect(on).toEqual(['catalog']);
+    expect(on.sort()).toEqual(['catalog', 'plan']);
     expect(planFeatureRows('free').find((r) => r.feature_key === 'profile')?.enabled).toBe(false);
   });
 
