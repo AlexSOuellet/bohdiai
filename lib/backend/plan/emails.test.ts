@@ -21,6 +21,14 @@ describe('planChangeEmail', () => {
       expect(planChangeEmail('Site', change).text).not.toBe('');
     }
   });
+  it('says a switch to yearly happened now, and a switch to monthly waits for renewal', () => {
+    const now = planChangeEmail('Lena', { kind: 'billing', billing: 'yearly', on: null });
+    expect(now.subject).toBe('Lena: now billed yearly');
+    expect(now.text).toContain('counted toward');
+    const later = planChangeEmail('Lena', { kind: 'billing', billing: 'monthly', on: 'Saturday, May 1, 2027' });
+    expect(later.subject).toBe('Lena: billed monthly from Saturday, May 1, 2027');
+    expect(later.text).toContain('Until then nothing changes');
+  });
 });
 
 describe('sendPlanChange', () => {

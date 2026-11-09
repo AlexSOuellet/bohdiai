@@ -12,6 +12,7 @@ import { PromoPanel } from './PromoPanel';
 import { currentSubscription } from '@/lib/billing/maker-subscription';
 import { discountRunning } from '@/lib/billing/promos';
 import { supabaseAdmin } from '@/lib/supabase';
+import { planHow } from '@/lib/backend/plan/how';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,9 +31,9 @@ export default async function PlanPage({
   const sub = await currentSubscription(supabaseAdmin(), site.tenantId);
   const canUseCode = sub !== null && sub.unitCents > 0;
   const discount = sub !== null && discountRunning(sub, new Date()) ? sub.discountLabel : null;
-  const mode: PlanMode = on.has('demo_checkout')
-    ? { kind: 'demo' }
-    : { kind: 'email', siteName: site.businessName, contactEmail: SITE_CONTACT_EMAIL };
+  const how = await planHow(supabaseAdmin(), site.tenantId, on.has('demo_checkout'), state);
+  const mode: PlanMode =
+    how.how === 'demo' ? { kind: 'demo' } : how.how === 'alex' ? { kind: 'email', siteName: site.businessName, contactEmail: SITE_CONTACT_EMAIL } : { kind: 'self' };
   // After a change the checkout sends her back here; say what happened.
   const params = await searchParams;
   const changedTo = first(params['changed']);

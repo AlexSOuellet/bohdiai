@@ -26,6 +26,10 @@ export function emailSamples(words: IntakeWords, assetBase: string): EmailSample
     ['Kept their site', planChangeEmail(BUSINESS, { kind: 'keep' }, assetBase)],
     ['Moved up a plan', planChangeEmail(BUSINESS, { kind: 'upgrade', to: 'Full' }, assetBase)],
     ['Moving down a plan', planChangeEmail(BUSINESS, { kind: 'downgrade', to: 'Showcase', on: 'December 6, 2026' }, assetBase)],
+    ['Kept their plan', planChangeEmail(BUSINESS, { kind: 'downgrade-dropped', stays: 'Full' }, assetBase)],
+    ['Now billed yearly', planChangeEmail(BUSINESS, { kind: 'billing', billing: 'yearly', on: null }, assetBase)],
+    ['Billed monthly from renewal', planChangeEmail(BUSINESS, { kind: 'billing', billing: 'monthly', on: 'December 6, 2026' }, assetBase)],
+    ['Moved down at renewal', planChangeEmail(BUSINESS, { kind: 'renewed', plan: 'Showcase' }, assetBase)],
   ];
   return samples.map(([title, mail]) => ({ title, subject: mail.subject, html: mail.html }));
 }

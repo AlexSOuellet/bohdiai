@@ -5,6 +5,12 @@ import type { Database } from '@/lib/database.types';
 
 const recordSignupPromo = vi.fn();
 vi.mock('./promos', () => ({ recordSignupPromo: (...a: unknown[]) => recordSignupPromo(...a) }));
+const plans = vi.hoisted(() => ({
+  applyPlan: vi.fn(async (): Promise<{ ok: true } | { ok: false; error: string }> => ({ ok: true })),
+  galleryFromProducts: vi.fn(async (): Promise<{ ok: true; count: number } | { ok: false; error: string }> => ({ ok: true, count: 1 })),
+}));
+vi.mock('@/lib/backend/plan/apply', () => ({ applyPlan: plans.applyPlan }));
+vi.mock('@/lib/backend/plan/convert', () => ({ galleryFromProducts: plans.galleryFromProducts }));
 
 import { claim, letGo, recordCheckout, recordSubscription } from './record';
 
@@ -290,5 +296,99 @@ describe('letGo', () => {
     const { db, calls } = fakeDb();
     await letGo(db, 'checkout:cs_1');
     expect(calls).toEqual([{ table: 'stripe_events', op: 'delete', eq: ['id', 'checkout:cs_1'] }]);
+  });
+});
+
+describe('recordSubscription: the site follows the plan Stripe charges for', () => {
+  type Row = { plan: string | null; plan_billing: string | null; plan_next: string | null; plan_next_gallery: string[] | null };
+  /** A database that answers the site's plan read with `row`, and notes every write. */
+  function planDb(row: Row | null, opts: { readError?: string; tenantErrors?: (string | null)[] } = {}) {
+    const calls: { table: string; op: string; value?: unknown }[] = [];
+    const tenantErrors = [...(opts.tenantErrors ?? [])];
+    const db = {
+      from(table: string) {
+        return {
+          select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: row, error: opts.readError === undefined ? null : { message: opts.readError } }) }) }),
+          update: (value: unknown) => {
+            calls.push({ table, op: 'update', value });
+            const e = table === 'tenants' ? (tenantErrors.shift() ?? null) : null;
+            const answer = Promise.resolve({ error: e === null ? null : { message: e } });
+            return { eq: () => Object.assign(answer, { eq: () => answer }) };
+          },
+        };
+      },
+    };
+    return { db: db as unknown as SupabaseClient<Database>, calls };
+  }
+  const priced = (key: string, cents = 500, interval: 'month' | 'year' = 'month') =>
+    subscription({ items: { data: [{ current_period_start: START, current_period_end: END, price: { id: 'price_9', lookup_key: key, unit_amount: cents, currency: 'usd', recurring: { interval } } }] } as unknown as Stripe.Subscription['items'] });
+
+  beforeEach(() => {
+    plans.applyPlan.mockClear();
+    plans.galleryFromProducts.mockClear();
+  });
+
+  it('a downgrade waiting for renewal happens when Stripe moves the price: the picked pieces become the gallery', async () => {
+    const { db, calls } = planDb({ plan: 'lite', plan_billing: 'monthly', plan_next: 'showcase', plan_next_gallery: ['p2', 'p1'] });
+    await recordSubscription(db, priced('bohdiai_showcase_yearly', 5000, 'year'));
+    expect(calls[0]).toMatchObject({ table: 'subscriptions', value: { tier: 'showcase', stripe_price_id: 'price_9', unit_amount_cents: 5000, billing_interval: 'year' } });
+    expect(plans.galleryFromProducts).toHaveBeenCalledWith(db, 't1', ['p2', 'p1'], 12);
+    expect(plans.applyPlan).toHaveBeenCalledWith(db, 't1', 'showcase');
+    expect(calls[1]).toMatchObject({ table: 'tenants', value: { plan_billing: 'yearly', plan_next: null, plan_next_billing: null, plan_next_gallery: null } });
+    expect(calls[2]).toMatchObject({ table: 'tenants', value: { plan_renews_on: '2026-11-30' } });
+  });
+
+  it('a site already on the plan Stripe charges for is left alone', async () => {
+    const { db, calls } = planDb({ plan: 'full', plan_billing: 'monthly', plan_next: null, plan_next_gallery: null });
+    await recordSubscription(db, priced('bohdiai_full_monthly', 2500));
+    expect(plans.applyPlan).not.toHaveBeenCalled();
+    expect(calls.map((c) => c.table)).toEqual(['subscriptions', 'tenants']);
+  });
+
+  it('a change of billing alone saves the billing, nothing else switches', async () => {
+    const { db, calls } = planDb({ plan: 'lite', plan_billing: 'yearly', plan_next: 'lite', plan_next_gallery: null });
+    await recordSubscription(db, priced('bohdiai_lite_monthly', 1500));
+    expect(plans.applyPlan).not.toHaveBeenCalled();
+    expect(calls[1]).toMatchObject({ value: { plan_billing: 'monthly', plan_next: null } });
+  });
+
+  it('moves up with no gallery to make, and Free has no billing', async () => {
+    const up = planDb({ plan: 'lite', plan_billing: 'monthly', plan_next: null, plan_next_gallery: null });
+    await recordSubscription(up.db, priced('bohdiai_full_monthly', 2500));
+    expect(plans.applyPlan).toHaveBeenCalledWith(up.db, 't1', 'full');
+    expect(plans.galleryFromProducts).not.toHaveBeenCalled();
+    const free = planDb({ plan: 'showcase', plan_billing: 'monthly', plan_next: null, plan_next_gallery: null });
+    await recordSubscription(free.db, priced('bohdiai_free_monthly', 0));
+    expect(free.calls[1]).toMatchObject({ value: { plan_billing: null } });
+  });
+
+  it('Showcase with no picks (a move Stripe made on its own) keeps the gallery as it is', async () => {
+    const { db } = planDb({ plan: 'lite', plan_billing: 'monthly', plan_next: null, plan_next_gallery: null });
+    await recordSubscription(db, priced('bohdiai_showcase_monthly'));
+    expect(plans.galleryFromProducts).not.toHaveBeenCalled();
+    expect(plans.applyPlan).toHaveBeenCalledWith(db, 't1', 'showcase');
+  });
+
+  it('a price that isn’t one of the plans changes nothing on the site', async () => {
+    const { db, calls } = planDb({ plan: 'lite', plan_billing: 'monthly', plan_next: null, plan_next_gallery: null });
+    await recordSubscription(db, priced('something_else'));
+    expect(calls[0]?.value).not.toHaveProperty('tier');
+    expect(plans.applyPlan).not.toHaveBeenCalled();
+  });
+
+  it('no site to follow: nothing more', async () => {
+    const { db, calls } = planDb(null);
+    await recordSubscription(db, priced('bohdiai_full_monthly'));
+    expect(calls.map((c) => c.table)).toEqual(['subscriptions', 'tenants']);
+  });
+
+  it('says so when any step fails, so Stripe sends the notice again', async () => {
+    const row = { plan: 'lite', plan_billing: 'monthly', plan_next: 'showcase', plan_next_gallery: ['p1'] };
+    await expect(recordSubscription(planDb(row, { readError: 'down' }).db, priced('bohdiai_showcase_monthly'))).rejects.toThrow("Could not read the site's plan: down");
+    plans.galleryFromProducts.mockResolvedValueOnce({ ok: false, error: 'gallery: full' });
+    await expect(recordSubscription(planDb(row).db, priced('bohdiai_showcase_monthly'))).rejects.toThrow('Could not make the Showcase gallery: gallery: full');
+    plans.applyPlan.mockResolvedValueOnce({ ok: false, error: 'switches: down' });
+    await expect(recordSubscription(planDb(row).db, priced('bohdiai_showcase_monthly'))).rejects.toThrow('Could not put the site on its plan: switches: down');
+    await expect(recordSubscription(planDb(row, { tenantErrors: ['locked'] }).db, priced('bohdiai_showcase_monthly'))).rejects.toThrow("Could not save the plan's billing: locked");
   });
 });

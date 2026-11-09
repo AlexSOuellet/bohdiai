@@ -6,10 +6,12 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn() }),
   unstable_rethrow: () => undefined,
 }));
+const changeBilling = vi.fn(async () => ({ ok: true }));
 vi.mock('@/lib/backend/plan/actions', () => ({
   cancelScheduledChange: vi.fn(),
   skipToRenewal: vi.fn(),
   setDemoBilling: vi.fn(),
+  changeBilling,
 }));
 
 const { PlanSummary } = await import('./PlanSummary');
@@ -177,5 +179,47 @@ describe('Your plan', () => {
   it('free on every plan marks the plans above as free too', () => {
     render(<PlanSummary view={planView('showcase')} mode={DEMO} terms={{ billing: 'monthly', renewsOn: '2026-11-09', next: null, nextBilling: null, creditCents: 0, comp: 'free' }} />);
     expect(screen.getAllByText('Free for you')).toHaveLength(3);
+  });
+});
+
+describe('Your plan on a real site that changes its own plan', () => {
+  const SELF: PlanMode = { kind: 'self' };
+  const terms = (over: Record<string, unknown> = {}) => ({ billing: 'monthly' as const, renewsOn: '2026-12-01', next: null, nextBilling: null, creditCents: 0, comp: null, ...over });
+
+  it('upgrades and downgrades go to checkout, never to email', () => {
+    render(<PlanSummary view={planView('lite')} mode={SELF} terms={terms()} />);
+    expect(screen.getByRole('link', { name: 'Upgrade to Maker Full' }).getAttribute('href')).toBe('/manage/plan/change?to=full');
+    expect(screen.getByRole('link', { name: 'Downgrade to Maker Showcase' }).getAttribute('href')).toBe('/manage/plan/change?to=showcase');
+    expect(screen.queryByText(/Demo only/)).toBeNull();
+  });
+
+  it('offers yearly now, or monthly at renewal', async () => {
+    const { unmount } = render(<PlanSummary view={planView('lite')} mode={SELF} terms={terms()} />);
+    expect(screen.getByText(/The switch happens today/)).toBeTruthy();
+    screen.getByRole('button', { name: 'Switch to yearly' }).click();
+    await vi.waitFor(() => expect(changeBilling).toHaveBeenCalledWith('yearly'));
+    unmount();
+    render(<PlanSummary view={planView('lite')} mode={SELF} terms={terms({ billing: 'yearly' })} />);
+    expect(screen.getByText(/when your year ends, on .*December 1, 2026/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Switch to monthly' })).toBeTruthy();
+  });
+
+  it('a free site has no billing to switch', () => {
+    render(<PlanSummary view={planView('lite')} mode={SELF} terms={terms({ comp: 'free' })} />);
+    expect(screen.queryByRole('button', { name: /Switch to/ })).toBeNull();
+  });
+
+  it('a billing switch waiting for renewal says so, and can be undone', () => {
+    render(<PlanSummary view={planView('lite')} mode={SELF} terms={terms({ billing: 'yearly', next: 'lite', nextBilling: 'monthly' })} />);
+    expect(screen.getByRole('heading', { name: /^Billed monthly from .*December 1, 2026$/ })).toBeTruthy();
+    expect(screen.getByText('Until then your yearly plan carries on as it is.')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Stay billed yearly' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Switch to/ })).toBeNull();
+  });
+
+  it('a downgrade waiting for renewal offers to keep the plan', () => {
+    render(<PlanSummary view={planView('full')} mode={SELF} terms={terms({ next: 'lite' })} />);
+    expect(screen.getByRole('heading', { name: /Downgrading to Maker Market/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Keep Maker Full' })).toBeTruthy();
   });
 });

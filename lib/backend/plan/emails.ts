@@ -16,7 +16,9 @@ export type PlanChange =
   | { kind: 'upgrade'; to: string }
   | { kind: 'downgrade'; to: string; on: string }
   | { kind: 'downgrade-dropped'; stays: string }
-  | { kind: 'renewed'; plan: string };
+  | { kind: 'renewed'; plan: string }
+  /** Monthly or yearly on the same plan; `on` is the renewal day it starts, or null for now. */
+  | { kind: 'billing'; billing: 'monthly' | 'yearly'; on: string | null };
 
 /** The maker's email for one change. `on` is already a long day ("Tuesday, November 18, 2026"). */
 export function planChangeEmail(siteName: string, change: PlanChange, assetBase?: string): { subject: string; text: string; html: string } {
@@ -40,6 +42,12 @@ function planWords(siteName: string, change: PlanChange): { subject: string; hea
       return { subject: `${siteName}: moving to ${change.to} on ${change.on}`, heading: `Moving to ${change.to}`, text: `${siteName} moves to ${change.to} on ${change.on}, at the end of your current term. Until then nothing changes.` };
     case 'downgrade-dropped':
       return { subject: `${siteName}: staying on ${change.stays}`, heading: `Staying on ${change.stays}`, text: `You kept ${siteName} on ${change.stays}. The move you had waiting won’t happen.` };
+    case 'billing': {
+      const how = change.billing === 'yearly' ? 'yearly' : 'monthly';
+      return change.on === null
+        ? { subject: `${siteName}: now billed ${how}`, heading: `Now billed ${how}`, text: `${siteName} is now billed ${how}. The unused part of your last bill counted toward this one.` }
+        : { subject: `${siteName}: billed ${how} from ${change.on}`, heading: `Billed ${how} from ${change.on}`, text: `${siteName} will be billed ${how} from ${change.on}, when your current term ends. Until then nothing changes.` };
+    }
     case 'renewed':
       return { subject: `${siteName}: renewed on ${change.plan}`, heading: `Renewed on ${change.plan}`, text: `${siteName} renewed on ${change.plan}.` };
   }

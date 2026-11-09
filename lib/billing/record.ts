@@ -13,6 +13,10 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import { isAccountPlan } from '@/lib/signup/request';
 import { recordSignupPromo } from './promos';
+import { planOfKey } from './plan-change';
+import { applyPlan } from '@/lib/backend/plan/apply';
+import { galleryFromProducts } from '@/lib/backend/plan/convert';
+import { GALLERY_LIMIT } from '@/lib/backend/gallery/gallery-form';
 
 type Db = SupabaseClient<Database>;
 
@@ -101,9 +105,11 @@ export async function recordCheckout(s: Stripe, db: Db, sessionId: string): Prom
   }
 }
 
-/** Stripe changed a subscription (renewed, card failed, cancelled): the billing record follows. */
+/** Stripe changed a subscription (renewed, plan changed, card failed, cancelled): the billing record follows. */
 export async function recordSubscription(db: Db, sub: Stripe.Subscription): Promise<void> {
   const now = period(sub);
+  const item = sub.items.data[0];
+  const priced = planOfKey(item?.price.lookup_key);
   const { error } = await db
     .from('subscriptions')
     .update({
@@ -112,6 +118,14 @@ export async function recordSubscription(db: Db, sub: Stripe.Subscription): Prom
       canceled_at: iso(sub.canceled_at),
       ended_at: iso(sub.ended_at),
       ...(now === null ? {} : { current_period_start: iso(now.start), current_period_end: iso(now.end) }),
+      ...(item === undefined || priced === null
+        ? {}
+        : {
+            tier: priced.plan,
+            stripe_price_id: item.price.id,
+            unit_amount_cents: item.price.unit_amount,
+            billing_interval: item.price.recurring?.interval === 'year' ? 'year' : 'month',
+          }),
     })
     .eq('stripe_subscription_id', sub.id);
   if (error !== null) throw new Error(`Could not update the billing record: ${error.message}`);
@@ -123,6 +137,33 @@ export async function recordSubscription(db: Db, sub: Stripe.Subscription): Prom
     return;
   }
   if (now === null || tenantId === undefined) return;
+  if (priced !== null) await followPlan(db, tenantId, priced);
   const { error: tErr } = await db.from('tenants').update({ plan_renews_on: day(now.end) }).eq('id', tenantId);
   if (tErr !== null) throw new Error(`Could not save the renewal day: ${tErr.message}`);
+}
+
+/**
+ * The site's plan follows what Stripe is charging for. A change made from Your plan
+ * has usually done this already, and then nothing happens here. A downgrade waiting
+ * for renewal happens here: Stripe moves the price on renewal day and says so. On
+ * Showcase, the pieces the maker picked become the gallery.
+ */
+async function followPlan(db: Db, tenantId: string, priced: NonNullable<ReturnType<typeof planOfKey>>): Promise<void> {
+  const { data, error } = await db.from('tenants').select('plan, plan_billing, plan_next, plan_next_gallery').eq('id', tenantId).maybeSingle();
+  if (error !== null) throw new Error(`Could not read the site's plan: ${error.message}`);
+  if (data === null) return;
+  const billing = priced.plan === 'free' ? null : priced.billing;
+  const samePlan = data.plan === priced.plan;
+  if (samePlan && data.plan_billing === billing) return;
+  if (!samePlan) {
+    const picks = data.plan_next === priced.plan ? (data.plan_next_gallery ?? []) : [];
+    if (priced.plan === 'showcase' && picks.length > 0) {
+      const g = await galleryFromProducts(db, tenantId, picks, GALLERY_LIMIT);
+      if (!g.ok) throw new Error(`Could not make the Showcase gallery: ${g.error}`);
+    }
+    const applied = await applyPlan(db, tenantId, priced.plan);
+    if (!applied.ok) throw new Error(`Could not put the site on its plan: ${applied.error}`);
+  }
+  const { error: tErr } = await db.from('tenants').update({ plan_billing: billing, plan_next: null, plan_next_billing: null, plan_next_gallery: null }).eq('id', tenantId);
+  if (tErr !== null) throw new Error(`Could not save the plan's billing: ${tErr.message}`);
 }
