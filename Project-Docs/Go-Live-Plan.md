@@ -25,7 +25,9 @@ Part 1 is what has to be done for that, in the order it gets done. Part 2 is eve
 - Free to a paid plan: same as upgrade (Free is already a $0 Stripe subscription, so it's a change on that same subscription).
 - Every change still emails the maker, with a copy to you.
 - Stepping down warns first about what they lose (this screen exists, for example how many customer accounts stop working when leaving Full).
+**Added (Session 121, found while building):** Billing showed "No card is connected yet" and "No charges yet" even for a maker paying through Stripe, and there was no way to replace an expired or declined card. Billing now shows Stripe's own next charge, the card on file, **Update my card** (Stripe's own page), and past charges with receipts. Your plan gets a monthly/yearly switch (to yearly now, to monthly at renewal).
 **Done when:** proven against Stripe's test mode, every direction (up, down, monthly to yearly).
+**Progress (2026-11-09, `feat/plan-changes`, not merged):** paid plans up, down, monthly/yearly, keep my plan, renewal step-down, Billing card and charges built; proven in Stripe test mode on a test clock. **Left:** Free to a paid plan (Free has no Your plan screen; Alex to say where its Upgrade goes), then Alex looks at the screens, then merge.
 
 ### [ ] 3. Safety checks before strangers can sign up (Claude builds; you decide the wording)
 **What it is:** once anyone can sign up, someone will eventually put up something illegal, hateful, a scam, or someone else's photos. Today nothing stops that and you have no way to take it down quickly.
