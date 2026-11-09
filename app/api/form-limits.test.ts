@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 
 // Every public form consults the limiter before it reads the body, touches the
 // database, or sends email. A turned-away visitor gets the limiter's answer and
@@ -40,18 +40,29 @@ const ROUTES = [
   { name: 'signup', load: () => import('./signup/route'), shape: { error: 'slow down' } },
 ] as const;
 
+type Post = (req: Request) => Promise<Response>;
+const loaded: Post[] = [];
+
 describe('public forms are rate limited', () => {
+  // Load every route once, up front, with its own allowance: a route's first import
+  // pulls in its whole module tree, which can outrun a single test's 5 seconds
+  // when the full suite is running. Each test then times only the route itself.
+  beforeAll(async () => {
+    for (const route of ROUTES) loaded.push((await route.load()).POST);
+  }, 120_000);
+
   beforeEach(() => {
     formLimitResponse.mockReset();
     touched.mockReset();
   });
 
-  for (const route of ROUTES) {
+  for (const [i, route] of ROUTES.entries()) {
     it(`${route.name}: a turned-away visitor gets the limiter's answer and nothing runs`, async () => {
       formLimitResponse.mockImplementation((_req: Request, _form: string, toBody: (m: string) => unknown) =>
         Promise.resolve(Response.json(toBody('slow down'), { status: 429 })),
       );
-      const { POST } = await route.load();
+      const POST = loaded[i];
+      if (POST === undefined) throw new Error(`${route.name} was not loaded`);
       const res = await POST(new Request('https://shop.bohdiai.com/api/x', { method: 'POST', body: '{}' }));
       expect(res.status).toBe(429);
       expect(await res.json()).toEqual(route.shape);

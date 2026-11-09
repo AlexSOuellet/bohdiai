@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { seal, unseal } from './vault';
 
 /** A stand-in for a Supabase query: any chain of calls, awaited, gives the next
@@ -228,6 +228,15 @@ describe('confirmCardSale — Square’s own word first', () => {
   });
   const connected = async () => state.queue.push({ data: await sealedRow(20 * DAY), error: null });
   const fresh = () => state.queue.push({ data: [], error: null }, { data: [], error: null });
+  // confirmCardSale reads the real clock; pin it to NOW so the key above stays
+  // 20 days from running out instead of drifting into the renewal window.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(NOW);
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
 
   it('confirms a completed card sale for exactly the total at her location', async () => {
     await connected();

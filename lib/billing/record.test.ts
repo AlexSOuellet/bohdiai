@@ -1,8 +1,16 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type Stripe from 'stripe';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
-import { claim, recordCheckout, recordSubscription } from './record';
+
+const recordSignupPromo = vi.fn();
+vi.mock('./promos', () => ({ recordSignupPromo: (...a: unknown[]) => recordSignupPromo(...a) }));
+
+import { claim, letGo, recordCheckout, recordSubscription } from './record';
+
+beforeEach(() => {
+  recordSignupPromo.mockReset().mockResolvedValue(undefined);
+});
 
 type Err = { code?: string; message: string } | null;
 
@@ -149,5 +157,138 @@ describe('claim', () => {
     expect(await claim(fakeDb().db, 'evt_1', 'x')).toBe(true);
     expect(await claim(fakeDb({ stripe_events: [{ code: '23505', message: 'dup' }] }).db, 'evt_1', 'x')).toBe(false);
     await expect(claim(fakeDb({ stripe_events: [{ code: '500', message: 'down' }] }).db, 'evt_1', 'x')).rejects.toThrow(/down/);
+  });
+});
+
+describe('recordCheckout, the rest of what Stripe can send back', () => {
+  it('says not paid for a checkout with no site on it, and writes nothing', async () => {
+    const { s } = fakeStripe({ client_reference_id: null });
+    const { db, calls } = fakeDb();
+    expect(await recordCheckout(s, db, 'cs_1')).toEqual({ paid: false });
+    expect(calls).toHaveLength(0);
+  });
+
+  it('uses the checkout’s own email when Stripe has no customer details, and none at all when neither is there', async () => {
+    const fallback = fakeStripe({ customer_details: null, customer_email: 'typed@example.com' });
+    expect(await recordCheckout(fallback.s, fakeDb().db, 'cs_1')).toMatchObject({ email: 'typed@example.com' });
+    const none = fakeStripe({ customer_details: { email: null } as Stripe.Checkout.Session.CustomerDetails, customer_email: null });
+    expect(await recordCheckout(none.s, fakeDb().db, 'cs_1')).toEqual({ paid: true, tenantId: 't1', email: null, first: true });
+  });
+
+  it('reads the customer id from an expanded customer', async () => {
+    const { s } = fakeStripe({ subscription: subscription({ customer: { id: 'cus_9' } as Stripe.Customer }) });
+    const { db, calls } = fakeDb();
+    await recordCheckout(s, db, 'cs_1');
+    expect(calls.find((c) => c.table === 'subscriptions')).toMatchObject({ value: { stripe_customer_id: 'cus_9' } });
+  });
+
+  it('refuses a checkout that came back without its subscription, and lets the claim go', async () => {
+    for (const sub of [null, 'sub_1']) {
+      const { s } = fakeStripe({ subscription: sub as unknown as Stripe.Subscription });
+      const { db, calls } = fakeDb();
+      await expect(recordCheckout(s, db, 'cs_1')).rejects.toThrow('checkout cs_1 came back without its subscription');
+      expect(calls.at(-1)).toMatchObject({ table: 'stripe_events', op: 'delete', eq: ['id', 'checkout:cs_1'] });
+      expect(calls.some((c) => c.table === 'subscriptions')).toBe(false);
+    }
+  });
+
+  it('refuses a subscription with no price', async () => {
+    const { s } = fakeStripe({ subscription: subscription({ items: { data: [] } as unknown as Stripe.ApiList<Stripe.SubscriptionItem> }) });
+    const { db, calls } = fakeDb();
+    await expect(recordCheckout(s, db, 'cs_1')).rejects.toThrow('subscription sub_1 has no price');
+    expect(calls.at(-1)).toMatchObject({ table: 'stripe_events', op: 'delete' });
+  });
+
+  it('records a price with no repeat as monthly', async () => {
+    const once = subscription();
+    (once.items.data[0] as unknown as { price: { recurring: null } }).price.recurring = null;
+    const { db, calls } = fakeDb();
+    await recordCheckout(fakeStripe({ subscription: once }).s, db, 'cs_1');
+    expect(calls.find((c) => c.table === 'subscriptions')).toMatchObject({ value: { billing_interval: 'month' } });
+  });
+
+  it('lets the claim go when the renewal day can’t be saved', async () => {
+    const { db, calls } = fakeDb({ tenants: [{ message: 'locked' }] });
+    await expect(recordCheckout(fakeStripe({}).s, db, 'cs_1')).rejects.toThrow('Could not save the renewal day: locked');
+    expect(calls.at(-1)).toMatchObject({ table: 'stripe_events', op: 'delete', eq: ['id', 'checkout:cs_1'] });
+  });
+
+  it('notes the code a maker signed up with, against the lower-cased email', async () => {
+    const sub = subscription({ metadata: { tenant_id: 't1', plan: 'lite', promo_code: 'SPRING10', promo_percent: '10', promo_months: '3' } });
+    const { s } = fakeStripe({ subscription: sub, customer_details: { email: 'Lena@Example.com' } as Stripe.Checkout.Session.CustomerDetails });
+    const { db } = fakeDb();
+    await recordCheckout(s, db, 'cs_1');
+    expect(recordSignupPromo).toHaveBeenCalledWith(db, {
+      stripeId: 'sub_1',
+      code: 'SPRING10',
+      tenantId: 't1',
+      email: 'lena@example.com',
+      discount: { percent: 10, months: 3 },
+      interval: 'month',
+      now: expect.any(Date),
+    });
+  });
+
+  it('notes a code with no month count as lasting for good', async () => {
+    const sub = subscription({ metadata: { tenant_id: 't1', plan: 'lite', promo_code: 'FOREVER', promo_percent: '25' } });
+    await recordCheckout(fakeStripe({ subscription: sub }).s, fakeDb().db, 'cs_1');
+    expect(recordSignupPromo).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ code: 'FOREVER', discount: { percent: 25, months: null } }));
+  });
+
+  it('notes no code without one, or without an email to hold it to', async () => {
+    await recordCheckout(fakeStripe({}).s, fakeDb().db, 'cs_1');
+    const sub = subscription({ metadata: { tenant_id: 't1', plan: 'lite', promo_code: 'SPRING10', promo_percent: '10' } });
+    await recordCheckout(fakeStripe({ subscription: sub, customer_details: null, customer_email: null }).s, fakeDb().db, 'cs_1');
+    expect(recordSignupPromo).not.toHaveBeenCalled();
+  });
+
+  it('lets the claim go when noting the code fails', async () => {
+    recordSignupPromo.mockRejectedValue(new Error('promo down'));
+    const sub = subscription({ metadata: { tenant_id: 't1', plan: 'lite', promo_code: 'SPRING10', promo_percent: '10' } });
+    const { db, calls } = fakeDb();
+    await expect(recordCheckout(fakeStripe({ subscription: sub }).s, db, 'cs_1')).rejects.toThrow('promo down');
+    expect(calls.at(-1)).toMatchObject({ table: 'stripe_events', op: 'delete' });
+  });
+});
+
+describe('recordSubscription, the edges', () => {
+  it('records when it was cancelled and ended', async () => {
+    const { db, calls } = fakeDb();
+    await recordSubscription(db, subscription({ status: 'canceled', canceled_at: START, ended_at: END }));
+    expect(calls[0]).toMatchObject({ value: { canceled_at: '2026-10-31T00:00:00.000Z', ended_at: '2026-11-30T00:00:00.000Z' } });
+  });
+
+  it('says so when the billing record can’t be updated, and goes no further', async () => {
+    const { db, calls } = fakeDb({ subscriptions: [{ message: 'down' }] });
+    await expect(recordSubscription(db, subscription())).rejects.toThrow('Could not update the billing record: down');
+    expect(calls).toHaveLength(1);
+  });
+
+  it('says so when the renewal day can’t be saved', async () => {
+    const { db } = fakeDb({ tenants: [{ message: 'locked' }] });
+    await expect(recordSubscription(db, subscription())).rejects.toThrow('Could not save the renewal day: locked');
+  });
+
+  it('keeps the old period when Stripe sends none, and leaves the site alone', async () => {
+    const { db, calls } = fakeDb();
+    await recordSubscription(db, subscription({ items: { data: [] } as unknown as Stripe.ApiList<Stripe.SubscriptionItem> }));
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.value).not.toHaveProperty('current_period_end');
+  });
+
+  it('touches only the billing record when the subscription names no site, even at the end of a term', async () => {
+    for (const status of ['active', 'canceled'] as const) {
+      const { db, calls } = fakeDb();
+      await recordSubscription(db, subscription({ status, metadata: {} }));
+      expect(calls.map((c) => c.table)).toEqual(['subscriptions']);
+    }
+  });
+});
+
+describe('letGo', () => {
+  it('removes the claim so it can be taken again', async () => {
+    const { db, calls } = fakeDb();
+    await letGo(db, 'checkout:cs_1');
+    expect(calls).toEqual([{ table: 'stripe_events', op: 'delete', eq: ['id', 'checkout:cs_1'] }]);
   });
 });
