@@ -1,6 +1,7 @@
 # Session Brief — BohdiAI
 
-> **⚠ START HERE (Session 121):** read `session-logs/session-120.md`, then `Open-Work.md` items 5, 6 and 36.
+> **⚠ START HERE: `Go-Live-Plan.md` is the order to fully live (Session 121, 2026-11-09). Work from its first unticked step; tick each step the moment it's done and live (Alex).**
+> Session 121: read `session-logs/session-120.md`, then `Open-Work.md` items 5, 6 and 36.
 > **Everything is merged and live; `main` is the only branch (`feat/maker-checkup` parked, `fix/auth-link-24h` waits for Alex).** Alex's admin (Dashboard, Invite a maker, Act as a maker, Promotions, Messages, Emails), promotions, the new email look, a cancel that reaches Stripe.
 > **Alex's call first: should real makers change plans themselves?** Today Upgrade emails Alex and nothing changes what Stripe charges.
 > **Every email to a maker uses `renderEmail` (`lib/email/layout.ts`); all future emails keep this look (Alex).** No screen listing all sites in the admin (Alex).
