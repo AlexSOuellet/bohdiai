@@ -20,11 +20,13 @@ test.describe('The maker site', () => {
     await expect(page.locator('#contact a[href="/start"]')).toBeVisible();
   });
 
-  test('shows Free at $0 beside the paid plans, with no button', async ({ page }) => {
+  test('shows Free at $0 beside the paid plans, its button going to sign-up', async ({ page }) => {
     await page.goto('/');
     const free = page.getByRole('article', { name: 'Maker Free' });
     await expect(free).toContainText('$0');
-    await expect(free.getByRole('link')).toHaveCount(0);
+    // Free has its own sign-up since Session 119: one button, onto the start page on Free.
+    await expect(free.getByRole('link')).toHaveCount(1);
+    await expect(free.getByRole('link')).toHaveAttribute('href', '/start?plan=maker-free');
     await expect(page.getByRole('article', { name: 'Maker Showcase' })).toContainText('$5');
   });
 
