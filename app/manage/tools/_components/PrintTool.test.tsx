@@ -320,8 +320,10 @@ describe('Fit a piece', () => {
     await addDesign();
     type('How many', '4');
     type('One sheet of your paper costs', '1.25');
-    expect(screen.getByText(/That’s \$0\.63 of paper for each piece/)).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Add it in Cost to make' }).getAttribute('href')).toBe(`/manage/tools/cost?product=${ID}&paper=63&sheets=2`);
+    // Four 4 inch coasters fit on one sheet.
+    expect(tag().textContent).toContain('on 1 sheet of US Letter');
+    expect(screen.getByText(/That’s \$0\.31 of paper for each piece/)).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Add it in Cost to make' }).getAttribute('href')).toBe(`/manage/tools/cost?product=${ID}&paper=31&sheets=1`);
   });
 });
 
@@ -350,7 +352,7 @@ describe('Big print', () => {
     openTab('Big print');
     await addDesign();
     type('Width', '16');
-    expect(tag().textContent).toContain('on 6 sheets of US Letter');
+    expect(tag().textContent).toContain('on 4 sheets of US Letter');
     expect(screen.getByText('Printing and joining the sheets')).toBeTruthy();
   });
   it('says when there’s nothing to join', async () => {

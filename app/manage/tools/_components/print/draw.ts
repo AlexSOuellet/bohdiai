@@ -49,6 +49,12 @@ export function paintPrint(ctx: CanvasRenderingContext2D, src: HTMLCanvasElement
   ctx.clip();
   ctx.fillStyle = '#fff';
   ctx.fillRect(0, 0, job.w, job.h);
+  // A round or oval piece shows, and prints, round: nothing outside its edge.
+  if (cut.shape !== 'rect') {
+    ctx.beginPath();
+    ctx.ellipse(job.w / 2, job.h / 2, job.w / 2, job.h / 2, 0, 0, Math.PI * 2);
+    ctx.clip();
+  }
   ctx.save();
   if (look.mirror) {
     ctx.translate(job.w, 0);

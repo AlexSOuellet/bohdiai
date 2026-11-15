@@ -30,7 +30,7 @@ vi.mock('upscaler', () => ({
 vi.mock('@upscalerjs/esrgan-medium/2x', () => ({ default: { modelType: 'layers' } }));
 vi.mock('@upscalerjs/esrgan-slim/2x', () => ({ default: { modelType: 'layers' } }));
 
-const pdfDoc = vi.hoisted(() => ({ pages: [] as unknown[], images: [] as unknown[], lines: 0, texts: [] as string[] }));
+const pdfDoc = vi.hoisted(() => ({ pages: [] as unknown[], images: [] as unknown[], lines: 0, rects: 0, texts: [] as string[] }));
 vi.mock('jspdf', () => ({
   jsPDF: class {
     constructor(o: { format: number[] }) {
@@ -44,6 +44,9 @@ vi.mock('jspdf', () => ({
     }
     line(): void {
       pdfDoc.lines++;
+    }
+    rect(): void {
+      pdfDoc.rects++;
     }
     text(t: string): void {
       pdfDoc.texts.push(t);
@@ -74,6 +77,7 @@ beforeEach(() => {
   pdfDoc.pages = [];
   pdfDoc.images = [];
   pdfDoc.lines = 0;
+  pdfDoc.rects = 0;
   pdfDoc.texts = [];
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
 });
@@ -113,12 +117,12 @@ describe('buildPdf', () => {
     const out = await buildPdf([design], sheets, 'in', '16 × 20 in', (i, n) => said.push(`${i + 1}/${n}`));
     expect(out.blob.size).toBeGreaterThan(0);
     expect(out.dpi).toBe(300);
-    expect(pdfDoc.pages).toHaveLength(6);
+    expect(pdfDoc.pages).toHaveLength(4);
     expect(pdfDoc.pages[0]).toEqual([8.5, 11]);
-    expect(said).toEqual(['1/6', '2/6', '3/6', '4/6', '5/6', '6/6']);
-    expect(pdfDoc.texts).toContain('Sheet 1 of 6 · print at 100% / Actual size');
-    expect(pdfDoc.texts.filter((t) => t === '1 in')).toHaveLength(6);
-    expect(pdfDoc.images[0]).toEqual([0.25, 0.25, 8, 10.5]);
+    expect(said).toEqual(['1/4', '2/4', '3/4', '4/4']);
+    expect(pdfDoc.texts).toContain('Sheet 1 of 4 · print at 100% / Actual size');
+    expect(pdfDoc.texts.filter((t) => t === '1 in')).toHaveLength(4);
+    expect(pdfDoc.images[0]).toEqual([0.125, 0.125, 8.25, 10.575]);
   });
   it('reports the lowest DPI it had to print at', async () => {
     drawn.dpi = 220;
@@ -132,6 +136,13 @@ describe('buildPdf', () => {
     expect(pdfDoc.pages).toEqual([[30, 40]]);
     expect(pdfDoc.lines).toBe(0);
     expect(pdfDoc.texts).toEqual([]);
+  });
+  it('draws a fine line to cut along around prints that share a sheet', async () => {
+    const small = { ...design, job: { w: 3, h: 3 } };
+    const four = [small, small, small, small];
+    await buildPdf(four, planSheets(four.map((d) => d.job), 'letter').sheets, 'in', '', () => undefined);
+    expect(pdfDoc.pages).toHaveLength(1);
+    expect(pdfDoc.rects).toBe(4);
   });
   it('refuses an empty job', async () => {
     await expect(buildPdf([], [], 'in', '', () => undefined)).rejects.toThrow('There’s nothing to print yet.');

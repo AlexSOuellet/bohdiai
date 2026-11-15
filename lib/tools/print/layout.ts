@@ -7,9 +7,12 @@
 
 export const DPI = 300;
 export const OVERLAP_IN = 0.25;
-export const MARGIN_IN = 0.25;
+/** ⅛ in clear at the edges (Alex, 2026-11-15): four 4 in coasters fit a sheet of US Letter;
+ *  most home printers print that close. The bottom keeps room for the footer and ruler. */
+export const MARGIN_IN = 0.125;
+export const FOOT_IN = 0.3;
 /** Room left between prints sharing a sheet, to cut them apart. */
-export const GAP_IN = 0.25;
+export const GAP_IN = 0.125;
 /** The most pixels one picture may have, so phones can hold it. */
 export const MAX_AREA = 16e6;
 export const MAX_IN = 200;
@@ -136,7 +139,7 @@ const tileCount = (size: number, avail: number): number => (size <= avail + EPS 
 /** A print bigger than the paper, split across sheets that overlap. */
 function tile(design: number, job: Job, pw: number, ph: number): Sheet[] {
   const aw = pw - 2 * MARGIN_IN;
-  const ah = ph - 2 * MARGIN_IN;
+  const ah = ph - MARGIN_IN - FOOT_IN;
   const cols = tileCount(job.w, aw);
   const rows = tileCount(job.h, ah);
   const sx = aw - OVERLAP_IN;
@@ -159,7 +162,7 @@ function tile(design: number, job: Job, pw: number, ph: number): Sheet[] {
 /** Prints that fit a sheet, in shelves: tallest first, left to right, a cut gap between. */
 function pack(designs: ReadonlyArray<{ i: number; job: Job }>, pw: number, ph: number): Sheet[] {
   const aw = pw - 2 * MARGIN_IN;
-  const ah = ph - 2 * MARGIN_IN;
+  const ah = ph - MARGIN_IN - FOOT_IN;
   const order = [...designs].sort((a, b) => b.job.h - a.job.h || a.i - b.i);
   const sheets: Sheet[] = [];
   let sheet: Sheet | null = null;
@@ -187,8 +190,8 @@ function pack(designs: ReadonlyArray<{ i: number; job: Job }>, pw: number, ph: n
   for (const s of sheets) {
     const only = s.items.length === 1 ? s.items[0] : undefined;
     if (only !== undefined) {
-      only.px = (pw - only.w) / 2;
-      only.py = (ph - only.h) / 2;
+      only.px = MARGIN_IN + (pw - 2 * MARGIN_IN - only.w) / 2;
+      only.py = MARGIN_IN + (ph - MARGIN_IN - FOOT_IN - only.h) / 2;
     }
   }
   return sheets;
@@ -196,7 +199,7 @@ function pack(designs: ReadonlyArray<{ i: number; job: Job }>, pw: number, ph: n
 
 function layoutOn(designs: readonly Job[], pw: number, ph: number): Sheet[] {
   const aw = pw - 2 * MARGIN_IN;
-  const ah = ph - 2 * MARGIN_IN;
+  const ah = ph - MARGIN_IN - FOOT_IN;
   const small: Array<{ i: number; job: Job }> = [];
   const big: Sheet[] = [];
   designs.forEach((job, i) => {

@@ -35,7 +35,11 @@ export async function buildPdf(designs: readonly PrintDesign[], sheets: readonly
       if (sheet.pw === 0 || (it.px === 0 && it.py === 0 && it.w === sheet.pw)) continue;
       doc.setDrawColor(90);
       doc.setLineWidth(0.006);
-      if (d.cut.shape === 'rect') {
+      if (d.cut.shape === 'rect' && shared) {
+        // Prints sharing a sheet sit too close for corner marks: a fine line to cut along.
+        doc.setDrawColor(150);
+        doc.rect(it.px, it.py, it.w, it.h);
+      } else if (d.cut.shape === 'rect') {
         const room = shared ? GAP_IN / 2 : Math.min(it.px, it.py, sheet.pw - it.px - it.w, sheet.ph - it.py - it.h, MARGIN_IN * 4);
         draw(cornerMarks(it, room));
       }

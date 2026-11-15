@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DPI, FILL, MAX_AREA, MAX_IN, MAX_ZOOM, OVERLAP_IN, MARGIN_IN, PAPERS, biggestSharp, clampZoom, minZoom, nudge, enlargeFactor, fmtSize, parseSize, placement, planSheets, sourceDpi, withWrap } from './layout';
+import { DPI, FILL, FOOT_IN, GAP_IN, MAX_AREA, MAX_IN, MAX_ZOOM, OVERLAP_IN, MARGIN_IN, PAPERS, biggestSharp, clampZoom, minZoom, nudge, enlargeFactor, fmtSize, parseSize, placement, planSheets, sourceDpi, withWrap } from './layout';
 
 describe('parseSize and fmtSize', () => {
   it('reads inches and centimetres into inches', () => {
@@ -73,7 +73,7 @@ describe('planSheets', () => {
     expect(landscape).toBe(false);
     expect(sheets).toHaveLength(1);
     expect(sheets[0]).toMatchObject({ pw: 8.5, ph: 11 });
-    expect(sheets[0]?.items).toEqual([{ design: 0, x0: 0, y0: 0, w: 8, h: 8, px: 0.25, py: 1.5, nextX: null, nextY: null }]);
+    expect(sheets[0]?.items).toEqual([{ design: 0, x0: 0, y0: 0, w: 8, h: 8, px: 0.25, py: expect.closeTo(1.4125, 9), nextX: null, nextY: null }]);
   });
   it('turns the paper when that needs fewer sheets', () => {
     const { sheets, landscape } = planSheets([{ w: 10, h: 7 }], 'letter');
@@ -81,16 +81,24 @@ describe('planSheets', () => {
     expect(sheets).toHaveLength(1);
     expect(sheets[0]).toMatchObject({ pw: 11, ph: 8.5 });
   });
+  it('keeps ⅛ inch clear at the edges and between prints, and room along the bottom for the ruler (Alex, 2026-11-15)', () => {
+    expect(MARGIN_IN).toBe(0.125);
+    expect(GAP_IN).toBe(0.125);
+    expect(FOOT_IN).toBe(0.3);
+    // Four 4 inch coasters on one sheet of US Letter.
+    const { sheets } = planSheets([0, 1, 2, 3].map(() => ({ w: 4, h: 4 })), 'letter');
+    expect(sheets).toHaveLength(1);
+    for (const t of sheets[0]?.items ?? []) expect(t.py + t.h).toBeLessThanOrEqual(11 - FOOT_IN + 1e-9);
+  });
   it('splits a big print across sheets with a ¼ inch overlap', () => {
     expect(OVERLAP_IN).toBe(0.25);
-    expect(MARGIN_IN).toBe(0.25);
     const { sheets } = planSheets([{ w: 16, h: 20 }], 'letter');
-    expect(sheets).toHaveLength(6);
+    expect(sheets).toHaveLength(4);
     const tiles = sheets.flatMap((s) => s.items);
     // Every tile is inside the paper's printable area.
     for (const s of sheets) for (const t of s.items) {
       expect(t.px + t.w).toBeLessThanOrEqual(s.pw - MARGIN_IN + 1e-9);
-      expect(t.py + t.h).toBeLessThanOrEqual(s.ph - MARGIN_IN + 1e-9);
+      expect(t.py + t.h).toBeLessThanOrEqual(s.ph - FOOT_IN + 1e-9);
     }
     // Neighbours share exactly the overlap, and the tiles cover the whole print.
     const first = tiles[0];
@@ -113,16 +121,16 @@ describe('planSheets', () => {
     expect(items.map((i) => i.design).sort()).toEqual([0, 1, 2, 3]);
     for (const a of items) for (const b of items) {
       if (a === b) continue;
-      const apart = a.px + a.w + 0.25 - 1e-9 <= b.px || b.px + b.w + 0.25 - 1e-9 <= a.px || a.py + a.h + 0.25 - 1e-9 <= b.py || b.py + b.h + 0.25 - 1e-9 <= a.py;
+      const apart = a.px + a.w + GAP_IN - 1e-9 <= b.px || b.px + b.w + GAP_IN - 1e-9 <= a.px || a.py + a.h + GAP_IN - 1e-9 <= b.py || b.py + b.h + GAP_IN - 1e-9 <= a.py;
       expect(apart).toBe(true);
     }
   });
   it('moves to a new sheet when one is full, and gives a big print its own sheets', () => {
     const many = Array.from({ length: 7 }, () => ({ w: 4, h: 5 }));
-    expect(planSheets(many, 'letter').sheets).toHaveLength(4);
+    expect(planSheets(many, 'letter').sheets).toHaveLength(2);
     const mixed = planSheets([{ w: 3, h: 3 }, { w: 16, h: 20 }], 'letter');
-    expect(mixed.sheets).toHaveLength(7);
-    expect(mixed.sheets.filter((s) => s.items.some((i) => i.design === 1))).toHaveLength(6);
+    expect(mixed.sheets).toHaveLength(5);
+    expect(mixed.sheets.filter((s) => s.items.some((i) => i.design === 1))).toHaveLength(4);
   });
   it('gives nothing for no prints', () => {
     expect(planSheets([], 'a4').sheets).toEqual([]);
