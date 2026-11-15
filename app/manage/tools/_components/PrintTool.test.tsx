@@ -36,7 +36,7 @@ beforeEach(() => {
   downloads.length = 0;
   m.open.mockImplementation(async (f: File) => picture(1500, 1500, f.name.replace(/\..*$/, '')));
   m.enlarge.mockImplementation(async (src: HTMLCanvasElement, f: number) => canvas(src.width * f, src.height * f));
-  m.buildPdf.mockResolvedValue(new Blob(['%PDF']));
+  m.buildPdf.mockResolvedValue({ blob: new Blob(['%PDF']), dpi: 300 });
   m.drawRegion.mockImplementation(() => ({ canvas: Object.assign(canvas(10, 10), { toBlob: (cb: (b: Blob) => void) => cb(new Blob([new Uint8Array(60)])) }), dpi: 300 }));
   vi.stubGlobal('URL', Object.assign(URL, { createObjectURL: () => 'blob:x', revokeObjectURL: () => undefined }));
   vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
@@ -214,6 +214,47 @@ describe('Print it, the three steps', () => {
 });
 
 describe('Print it, More', () => {
+  it('never lets the other side run past 200 in, and refuses a job of too many sheets', async () => {
+    m.open.mockResolvedValue(picture(1000, 4000));
+    render(<PrintTool pieces={[]} products={null} />);
+    await addPicture();
+    choosePaper();
+    type('Width', '200');
+    fireEvent.blur(screen.getByLabelText('Width'));
+    expect((screen.getByLabelText('Height') as HTMLInputElement).value).toBe('200');
+    expect((screen.getByLabelText('Width') as HTMLInputElement).value).toBe('50');
+    expect(tag().textContent).toContain('That’s 130 sheets. Try a smaller size or bigger paper.');
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save the PDF' }));
+    });
+    expect(m.buildPdf).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert').textContent).toMatch(/Try a smaller size or bigger paper/);
+  });
+
+  it('says so when the PDF had to print below 300 DPI', async () => {
+    m.open.mockResolvedValue(picture(3000, 3000));
+    m.buildPdf.mockResolvedValue({ blob: new Blob(['%PDF']), dpi: 220 });
+    render(<PrintTool pieces={[]} products={null} />);
+    await addPicture();
+    choosePaper('print');
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save the PDF' }));
+    });
+    await waitFor(() => expect(screen.getByRole('status').textContent).toBe('Saved design-8x8in.pdf. Printed as sharp as this device allows.'));
+  });
+
+  it('shows a message when saving a piece fails on the way', async () => {
+    m.savePiece.mockRejectedValue(new Error('network'));
+    render(<PrintTool pieces={[]} products={null} />);
+    await addPicture();
+    fireEvent.click(screen.getByRole('button', { name: 'Save this size' }));
+    type('Name this size', 'Box lid');
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+    expect(screen.getByRole('alert').textContent).toBe('The piece couldn’t be saved. Try again in a moment.');
+  });
+
   it('mirrors, brightens, and sizes a round piece with its wrap', async () => {
     render(<PrintTool pieces={[]} products={null} />);
     await addPicture();

@@ -13,6 +13,8 @@ export const GAP_IN = 0.25;
 /** The most pixels one picture may have, so phones can hold it. */
 export const MAX_AREA = 16e6;
 export const MAX_IN = 200;
+/** The most sheets one job may take; past this the maker is asked for a smaller size or bigger paper. */
+export const SHEETS_MAX = 100;
 const CM = 2.54;
 const EPS = 1e-6;
 
@@ -50,6 +52,13 @@ export function parseSize(text: string, unit: Unit): number | null {
 export function fmtSize(inches: number, unit: Unit): string {
   const v = unit === 'cm' ? inches * CM : inches;
   return String(Number(v.toFixed(unit === 'cm' ? 1 : 2)));
+}
+
+/** A size kept in proportion so neither side is over MAX_IN. */
+export function capSize(w: number, h: number): Job {
+  const big = Math.max(w, h);
+  if (big <= MAX_IN) return { w, h };
+  return w >= h ? { w: MAX_IN, h: (h * MAX_IN) / w } : { w: (w * MAX_IN) / h, h: MAX_IN };
 }
 
 export function withWrap(piece: Job, wrapIn: number): Job {
@@ -92,8 +101,7 @@ export function biggestSharp(srcW: number, srcH: number, maxFactor: 1 | 2 | 4): 
   while (f > 1 && !fits(srcW, srcH, f)) f /= 2;
   const w = (srcW * f) / DPI;
   const h = (srcH * f) / DPI;
-  if (Math.max(w, h) <= MAX_IN) return { w, h };
-  return w >= h ? { w: MAX_IN, h: (h * MAX_IN) / w } : { w: (w * MAX_IN) / h, h: MAX_IN };
+  return capSize(w, h);
 }
 
 const tileCount = (size: number, avail: number): number => (size <= avail + EPS ? 1 : Math.ceil((size - OVERLAP_IN) / (avail - OVERLAP_IN) - EPS));

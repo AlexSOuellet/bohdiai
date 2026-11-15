@@ -9,9 +9,11 @@ export type PrintDesign = { src: HTMLCanvasElement; job: Job; look: Look; cut: C
 
 const tick = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
 
-export async function buildPdf(designs: readonly PrintDesign[], sheets: readonly Sheet[], unit: Unit, sizeLabel: string, onSheet: (i: number, n: number) => void): Promise<Blob> {
+export async function buildPdf(designs: readonly PrintDesign[], sheets: readonly Sheet[], unit: Unit, sizeLabel: string, onSheet: (i: number, n: number) => void): Promise<{ blob: Blob; dpi: number }> {
   const { jsPDF } = await import('jspdf');
   let doc: InstanceType<typeof jsPDF> | null = null;
+  // The lowest DPI any part was drawn at (lowered for a very big part).
+  let lowest = DPI;
   for (const [i, sheet] of sheets.entries()) {
     onSheet(i, sheets.length);
     await tick();
@@ -25,7 +27,8 @@ export async function buildPdf(designs: readonly PrintDesign[], sheets: readonly
     for (const it of sheet.items) {
       const d = designs[it.design];
       if (d === undefined) continue;
-      const { canvas } = drawRegion(d.src, d.job, it, DPI, d.look, d.cut);
+      const { canvas, dpi } = drawRegion(d.src, d.job, it, DPI, d.look, d.cut);
+      lowest = Math.min(lowest, dpi);
       doc.addImage(canvas.toDataURL('image/jpeg', 0.93), 'JPEG', it.px, it.py, it.w, it.h, undefined, 'FAST');
       canvas.width = 1;
       canvas.height = 1;
@@ -54,5 +57,5 @@ export async function buildPdf(designs: readonly PrintDesign[], sheets: readonly
     }
   }
   if (doc === null) throw new Error('There’s nothing to print yet.');
-  return doc.output('blob');
+  return { blob: doc.output('blob'), dpi: lowest };
 }

@@ -42,6 +42,10 @@ const TRAY = { name: '  Round tray ', shape: 'round', widthIn: 12, heightIn: 9, 
 const ROW = { id: 'p1', name: 'Box lid', shape: 'rect', width_in: 8, height_in: 6.5, wrap_in: 0.25, position: 0 };
 
 describe('checkPiece', () => {
+  it('refuses anything that isn’t a piece, without throwing', () => {
+    expect(checkPiece({ name: 5, shape: 'rect', widthIn: 8, heightIn: 8, wrapIn: 0 } as never)).toEqual({ ok: false, error: 'Give the piece a name.' });
+    expect(checkPiece({ ...TRAY, shape: 'rect', widthIn: '8' } as never)).toEqual({ ok: false, error: 'The size has to be more than 0 and up to 200 inches.' });
+  });
   it('trims the name and makes a round piece as tall as it is wide', () => {
     expect(checkPiece(TRAY)).toEqual({ ok: true, piece: { name: 'Round tray', shape: 'round', widthIn: 12, heightIn: 12, wrapIn: 0.5 } });
   });

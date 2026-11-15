@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const upscale = vi.hoisted(() => ({ fail: new Set<string>(), made: [] as string[] }));
+const upscale = vi.hoisted(() => ({ fail: new Set<string>(), made: [] as string[], webgl: true }));
 vi.mock('@tensorflow/tfjs', () => {
   const t = { clipByValue: () => t, cast: () => t, dispose: () => undefined };
   return {
-    setBackend: async () => true,
+    setBackend: async () => upscale.webgl,
+    getBackend: () => (upscale.webgl ? 'webgl' : 'cpu'),
     ready: async () => undefined,
     tidy: (f: () => unknown) => f(),
     browser: { fromPixels: () => ({ dispose: () => undefined }), toPixels: async () => undefined },
@@ -56,7 +57,8 @@ vi.mock('jspdf', () => ({
     }
   },
 }));
-vi.mock('./draw', () => ({ drawRegion: () => ({ canvas: { toDataURL: () => 'data:', width: 1, height: 1 }, dpi: 300 }) }));
+const drawn = vi.hoisted(() => ({ dpi: 300 }));
+vi.mock('./draw', () => ({ drawRegion: () => ({ canvas: { toDataURL: () => 'data:', width: 1, height: 1 }, dpi: drawn.dpi }) }));
 
 const { enlarge, ENLARGE_FAILED, ENLARGE_STOPPED } = await import('./enlarge');
 const { buildPdf } = await import('./pdf');
@@ -68,6 +70,7 @@ const src = { width: 100, height: 100 } as HTMLCanvasElement;
 beforeEach(() => {
   upscale.fail.clear();
   upscale.made = [];
+  upscale.webgl = true;
   pdfDoc.pages = [];
   pdfDoc.images = [];
   pdfDoc.lines = 0;
@@ -90,6 +93,11 @@ describe('enlarge', () => {
     upscale.fail.add('slim');
     await expect(enlarge(src, 2, () => undefined, new AbortController().signal)).rejects.toThrow(ENLARGE_FAILED);
   });
+  it('gives up at once on a device that can’t run it quickly, instead of grinding', async () => {
+    upscale.webgl = false;
+    await expect(enlarge(src, 2, () => undefined, new AbortController().signal)).rejects.toThrow(ENLARGE_FAILED);
+    expect(upscale.made).toEqual([]);
+  });
   it('stops when the maker presses Stop', async () => {
     const c = new AbortController();
     c.abort();
@@ -102,14 +110,21 @@ describe('buildPdf', () => {
   it('makes a page per sheet at the paper’s size, with the footer and ruler on each', async () => {
     const { sheets } = planSheets([design.job], 'letter');
     const said: string[] = [];
-    const blob = await buildPdf([design], sheets, 'in', '16 × 20 in', (i, n) => said.push(`${i + 1}/${n}`));
-    expect(blob.size).toBeGreaterThan(0);
+    const out = await buildPdf([design], sheets, 'in', '16 × 20 in', (i, n) => said.push(`${i + 1}/${n}`));
+    expect(out.blob.size).toBeGreaterThan(0);
+    expect(out.dpi).toBe(300);
     expect(pdfDoc.pages).toHaveLength(6);
     expect(pdfDoc.pages[0]).toEqual([8.5, 11]);
     expect(said).toEqual(['1/6', '2/6', '3/6', '4/6', '5/6', '6/6']);
     expect(pdfDoc.texts).toContain('Sheet 1 of 6 · print at 100% / Actual size');
     expect(pdfDoc.texts.filter((t) => t === '1 in')).toHaveLength(6);
     expect(pdfDoc.images[0]).toEqual([0.25, 0.25, 8, 10.5]);
+  });
+  it('reports the lowest DPI it had to print at', async () => {
+    drawn.dpi = 220;
+    const job = { w: 30, h: 40 };
+    expect((await buildPdf([{ ...design, job }], planSheets([job], 'print').sheets, 'in', '30 × 40 in', () => undefined)).dpi).toBe(220);
+    drawn.dpi = 300;
   });
   it('a print-shop page carries no marks or footer', async () => {
     const job = { w: 30, h: 40 };

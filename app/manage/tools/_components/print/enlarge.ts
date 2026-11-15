@@ -13,12 +13,11 @@ const PADDING = 8;
 
 async function pass(src: HTMLCanvasElement, model: Model, onProgress: (f: number) => void, signal: AbortSignal): Promise<HTMLCanvasElement> {
   const tf = await import('@tensorflow/tfjs');
-  try {
-    await tf.setBackend('webgl');
-  } catch {
-    // The default backend is used.
-  }
+  // Without WebGL the models crawl on the processor for minutes; give up at once and
+  // print from the original instead.
+  const gpu = await tf.setBackend('webgl').catch(() => false);
   await tf.ready();
+  if (!gpu || tf.getBackend() !== 'webgl') throw new Error(ENLARGE_FAILED);
   const { default: Upscaler } = await import('upscaler');
   const definition = model === 'medium' ? (await import('@upscalerjs/esrgan-medium/2x')).default : (await import('@upscalerjs/esrgan-slim/2x')).default;
   const upscaler = new Upscaler({ model: { ...definition, path: `/print-models/${model}/model.json` } });
@@ -50,8 +49,10 @@ export async function enlarge(src: HTMLCanvasElement, factor: 2 | 4, onProgress:
         img = await pass(img, model, (f) => onProgress((p + f) / passes), signal);
       }
       return img;
-    } catch {
+    } catch (err) {
       if (signal.aborted) throw new Error(ENLARGE_STOPPED);
+      // No WebGL: the fast model won't do any better.
+      if (err instanceof Error && err.message === ENLARGE_FAILED) break;
     }
   }
   throw new Error(ENLARGE_FAILED);

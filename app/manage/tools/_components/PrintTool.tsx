@@ -10,7 +10,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { DPI, PAPER_KEYS, biggestSharp, enlargeFactor, fmtSize, parseSize, planSheets, sourceDpi, withWrap, type Job, type PaperKey, type Unit } from '@/lib/tools/print/layout';
+import { DPI, PAPER_KEYS, SHEETS_MAX, biggestSharp, capSize, enlargeFactor, fmtSize, parseSize, planSheets, sourceDpi, withWrap, type Job, type PaperKey, type Unit } from '@/lib/tools/print/layout';
 import { brighten } from '@/lib/tools/print/pixels';
 import { withDpi } from '@/lib/tools/print/png';
 import { PIECE_WRAP_MAX, type PieceShape, type PrintPiece } from '@/lib/tools/print/pieces';
@@ -40,6 +40,7 @@ const STORE_UNIT = 'bohdi.print.unit';
 const START_IN = 8;
 const PREVIEW_PX = 900;
 const COPIES_MAX = 50;
+const PIECE_FAILED = 'The piece couldn’t be saved. Try again in a moment.';
 
 type Pic = {
   key: number;
@@ -218,8 +219,8 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
       setTyped({ w: which === 'w' ? text : fmtSize(cur.w, unit), h: which === 'h' ? text : fmtSize(cur.h, unit) });
       return;
     }
-    const w = which === 'w' ? v : v * ratio;
-    const h = which === 'h' ? v : v / ratio;
+    // Neither side may pass the most a print can be, the other one included.
+    const { w, h } = capSize(which === 'w' ? v : v * ratio, which === 'h' ? v : v / ratio);
     update(cur.key, { w, h });
     setTyped({ w: which === 'w' ? text : fmtSize(w, unit), h: which === 'h' ? text : fmtSize(h, unit) });
   }
@@ -271,7 +272,13 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
 
   async function keepSize(name: string): Promise<void> {
     if (cur === undefined) return;
-    const done = await savePiece({ name, shape: cur.shape, widthIn: cur.w, heightIn: cur.h, wrapIn: cur.wrapIn });
+    let done: Awaited<ReturnType<typeof savePiece>>;
+    try {
+      done = await savePiece({ name, shape: cur.shape, widthIn: cur.w, heightIn: cur.h, wrapIn: cur.wrapIn });
+    } catch {
+      setSay({ text: PIECE_FAILED, bad: true });
+      return;
+    }
     if (!done.ok) {
       setSay({ text: done.error, bad: true });
       return;
@@ -282,13 +289,13 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
   }
 
   async function rename(p: PrintPiece, name: string): Promise<void> {
-    const done = await renamePiece(p.id, name);
+    const done = await renamePiece(p.id, name).catch(() => ({ ok: false as const, error: PIECE_FAILED }));
     if (!done.ok) return setSay({ text: done.error, bad: true });
     setPieces((all) => all.map((x) => (x.id === p.id ? { ...x, name: name.trim() } : x)));
   }
 
   async function remove(p: PrintPiece): Promise<void> {
-    const done = await deletePiece(p.id);
+    const done = await deletePiece(p.id).catch(() => ({ ok: false as const, error: PIECE_FAILED }));
     if (!done.ok) return setSay({ text: done.error, bad: true });
     setPieces((all) => all.filter((x) => x.id !== p.id));
   }
@@ -326,6 +333,10 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
       setSay({ text: 'Pick the paper you print on first.', bad: true });
       return;
     }
+    if (tooMany) {
+      setSay({ text: tooManySay, bad: true });
+      return;
+    }
     setSay(null);
     const stop = new AbortController();
     try {
@@ -336,11 +347,11 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
         return { src: (sharpened.get(p.key) as { src: HTMLCanvasElement }).src, job: jobOf(p), look: { mirror: p.mirror, brighter }, cut: { shape: p.shape, wrapIn: p.wrapIn } };
       });
       const first = pics[0] as Pic;
-      const blob = await buildPdf(designs, job.plan.sheets, unit, sizeLabel(first), (i, n) => setBusy({ say: `Laying out sheet ${i + 1} of ${n}…`, progress: (i + 1) / n, stop: null }));
+      const { blob, dpi } = await buildPdf(designs, job.plan.sheets, unit, sizeLabel(first), (i, n) => setBusy({ say: `Laying out sheet ${i + 1} of ${n}…`, progress: (i + 1) / n, stop: null }));
       const name = fileName(pics.length === 1 && first.copies === 1 ? `${first.pic.name}-${fmtSize(jobOf(first).w, unit)}x${fmtSize(jobOf(first).h, unit)}${unit}.pdf` : `${first.pic.name}-and-more-${job.plan.sheets.length}-sheets.pdf`);
       download(blob, name);
       const all = [...sharpened.values()];
-      finished(name, all.some((s) => s.made), all.some((s) => s.soft));
+      finished(name, all.some((s) => s.made), all.some((s) => s.soft) || dpi < DPI);
     } catch (err) {
       setSay(err instanceof Error && err.message === ENLARGE_STOPPED ? { text: 'Stopped. Nothing was saved.', bad: false } : { text: err instanceof Error ? err.message : 'The PDF couldn’t be made.', bad: true });
     } finally {
@@ -381,6 +392,8 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
   const curVerdict = cur === undefined ? null : verdict(cur);
   const anySoft = pics.some((p) => verdict(p) === 'soft');
   const copies = pics.reduce((n, p) => n + p.copies, 0);
+  const tooMany = sheets > SHEETS_MAX;
+  const tooManySay = `That’s ${sheets} sheets. Try a smaller size or bigger paper.`;
 
   // Paper to a product: this picture's share of the sheets, for one piece.
   const sheetCents = (() => {
@@ -722,6 +735,7 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
             ) : (
               <>
                 <p className="bk-hangtag-say">{where}</p>
+                {tooMany && <p className="bk-hangtag-say bk-error">{tooManySay}</p>}
                 {curVerdict === 'sharp' && (
                   <p className="bk-tool-verdict" data-tone="good">
                     Sharp

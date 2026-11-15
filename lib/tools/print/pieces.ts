@@ -23,24 +23,24 @@ type Row = Pick<Database['public']['Tables']['print_pieces']['Row'], 'id' | 'nam
 export const PIECE_COLUMNS = 'id, name, shape, width_in, height_in, wrap_in';
 
 /** A piece's name, checked. */
-export function checkPieceName(raw: string): { ok: true; name: string } | { ok: false; error: string } {
-  const name = raw.trim();
+export function checkPieceName(raw: unknown): { ok: true; name: string } | { ok: false; error: string } {
+  const name = typeof raw === 'string' ? raw.trim() : '';
   if (name === '') return { ok: false, error: 'Give the piece a name.' };
   if (name.length > PIECE_NAME_MAX) return { ok: false, error: `Keep the name to ${PIECE_NAME_MAX} letters or fewer.` };
   return { ok: true, name };
 }
 
 const isShape = (s: string): s is PieceShape => (PIECE_SHAPES as readonly string[]).includes(s);
-const sizeOk = (n: number): boolean => Number.isFinite(n) && n > 0 && n <= PIECE_SIZE_MAX;
+const sizeOk = (n: unknown): n is number => typeof n === 'number' && Number.isFinite(n) && n > 0 && n <= PIECE_SIZE_MAX;
 
 /** A piece as the maker set it, checked. A round piece is as tall as it is wide. */
 export function checkPiece(input: PieceInput): { ok: true; piece: Omit<PrintPiece, 'id'> } | { ok: false; error: string } {
   const named = checkPieceName(input.name);
   if (!named.ok) return named;
-  if (!isShape(input.shape)) return { ok: false, error: 'Pick a shape for the piece.' };
+  if (typeof input.shape !== 'string' || !isShape(input.shape)) return { ok: false, error: 'Pick a shape for the piece.' };
   const heightIn = input.shape === 'round' ? input.widthIn : input.heightIn;
   if (!sizeOk(input.widthIn) || !sizeOk(heightIn)) return { ok: false, error: `The size has to be more than 0 and up to ${PIECE_SIZE_MAX} inches.` };
-  if (!Number.isFinite(input.wrapIn) || input.wrapIn < 0 || input.wrapIn > PIECE_WRAP_MAX) return { ok: false, error: `The wrap has to be between 0 and ${PIECE_WRAP_MAX} inches.` };
+  if (typeof input.wrapIn !== 'number' || !Number.isFinite(input.wrapIn) || input.wrapIn < 0 || input.wrapIn > PIECE_WRAP_MAX) return { ok: false, error: `The wrap has to be between 0 and ${PIECE_WRAP_MAX} inches.` };
   const round2 = (n: number): number => Math.round(n * 100) / 100;
   return { ok: true, piece: { name: named.name, shape: input.shape, widthIn: round2(input.widthIn), heightIn: round2(heightIn), wrapIn: round2(input.wrapIn) } };
 }
