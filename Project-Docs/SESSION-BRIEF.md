@@ -4,7 +4,7 @@
 > Session 121: read `session-logs/session-120.md`, then `Open-Work.md` items 5, 6 and 36.
 > **Everything is merged and live; `main` is the only branch (`feat/maker-checkup` parked, `fix/auth-link-24h` waits for Alex).** Alex's admin (Dashboard, Invite a maker, Act as a maker, Promotions, Messages, Emails), promotions, the new email look, a cancel that reaches Stripe.
 > **Alex's call first: should real makers change plans themselves?** Today Upgrade emails Alex and nothing changes what Stripe charges.
-> **Every email to a maker uses `renderEmail` (`lib/email/layout.ts`); all future emails keep this look (Alex).** No screen listing all sites in the admin (Alex).
+> **Every email to a maker uses `renderEmail` (`lib/email/layout.ts`); all future emails keep this look (Alex).** Act as a maker: search, or see every maker in a list (Alex, 2026-11-15).
 > **Next (Alex): makers getting paid online.** Square online checkout first (Square's own page, two more permissions), then Stripe for makers. PayPal is switched off (Alex, 2026-11-04) until a maker asks; the code stays, `PAYPAL_ON=on` brings it back. Explain the protections before building (payment security is #1).
 > **Before live sign-ups (Alex):** `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` in Cloudflare, webhook registered.
 > **There is no public toolkit (Alex).** Never place a new backend screen without asking where it goes. Say "the maker", not "she".

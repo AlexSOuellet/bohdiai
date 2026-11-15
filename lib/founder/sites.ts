@@ -59,6 +59,11 @@ export function findSites(sites: readonly FounderSite[], query: string): Founder
   return sites.filter((s) => [s.name, s.subdomain, s.maker ?? ''].some((text) => text.toLowerCase().includes(q))).slice(0, FOUND_SHOWN);
 }
 
+/** Every maker, by name, for picking from a list (Alex, 2026-11-15: search OR see a list). */
+export function everySite(sites: readonly FounderSite[]): FounderSite[] {
+  return [...sites].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+}
+
 /** Every account's email by ID. */
 async function emailsById(db: Db): Promise<Map<string, string>> {
   const { data, error } = await db.auth.admin.listUsers({ page: 1, perPage: 1000 });
