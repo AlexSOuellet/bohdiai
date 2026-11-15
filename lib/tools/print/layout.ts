@@ -20,6 +20,8 @@ export const MAX_IN = 200;
 export const SHEETS_MAX = 100;
 const CM = 2.54;
 const EPS = 1e-6;
+/** A design this close to the paper's own size counts as made for it (A4 files are 8.27 in; the paper 8.268). */
+const SHEET_SLACK = 0.02;
 
 export type Unit = 'in' | 'cm';
 export type PaperKey = 'letter' | 'legal' | 'tabloid' | 'a4' | 'a3' | 'print';
@@ -202,11 +204,19 @@ function layoutOn(designs: readonly Job[], pw: number, ph: number): Sheet[] {
   const ah = ph - MARGIN_IN - FOOT_IN;
   const small: Array<{ i: number; job: Job }> = [];
   const big: Sheet[] = [];
+  const whole: Sheet[] = [];
   designs.forEach((job, i) => {
     if (job.w <= aw + EPS && job.h <= ah + EPS) small.push({ i, job });
+    // A design made to fill the sheet (Alex, 2026-11-15) prints on one, edge to edge.
+    else if (job.w <= pw + SHEET_SLACK && job.h <= ph + SHEET_SLACK) whole.push({ pw, ph, items: [{ design: i, x0: 0, y0: 0, w: job.w, h: job.h, px: (pw - job.w) / 2, py: (ph - job.h) / 2, nextX: null, nextY: null }] });
     else big.push(...tile(i, job, pw, ph));
   });
-  return [...pack(small, pw, ph), ...big];
+  return [...pack(small, pw, ph), ...whole, ...big];
+}
+
+/** Whether a sheet's print runs right to its edges, past the margins. */
+export function fillsSheet(sheet: Sheet): boolean {
+  return sheet.items.some((t) => t.px < MARGIN_IN - EPS || t.py < MARGIN_IN - EPS || t.px + t.w > sheet.pw - MARGIN_IN + EPS);
 }
 
 /** Every print laid out on the paper, on the fewest sheets: the paper turned

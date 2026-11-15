@@ -146,6 +146,15 @@ describe('Resize', () => {
     await save();
     expect(m.buildPdf).not.toHaveBeenCalled();
   });
+  it('prints a design made for the sheet on one sheet, edge to edge (Alex, 2026-11-15)', async () => {
+    m.open.mockResolvedValue(picture(2480, 3508));
+    render(<PrintTool pieces={[]} products={null} />);
+    await addDesign();
+    choosePaper('a4');
+    fireEvent.click(screen.getByRole('button', { name: 'Biggest sharp size' }));
+    expect(tag().textContent).toContain('on 1 sheet of A4');
+    expect(tag().textContent).toContain('Fills the whole sheet. If your printer can print borderless, turn that on; if not, it leaves a thin white edge.');
+  });
   it('asks for the paper once and remembers it', async () => {
     const { unmount } = render(<PrintTool pieces={[]} products={null} />);
     choosePaper('a4');

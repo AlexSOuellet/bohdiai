@@ -12,7 +12,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { DPI, FILL, MAX_AREA, PAPER_KEYS, SHEETS_MAX, biggestSharp, capSize, clampZoom, enlargeFactor, fmtSize, parseSize, planSheets, sourceDpi, withWrap, type Frame, type Job, type PaperKey, type Unit } from '@/lib/tools/print/layout';
+import { DPI, FILL, MAX_AREA, PAPER_KEYS, SHEETS_MAX, biggestSharp, capSize, clampZoom, enlargeFactor, fillsSheet, fmtSize, parseSize, planSheets, sourceDpi, withWrap, type Frame, type Job, type PaperKey, type Unit } from '@/lib/tools/print/layout';
 import { brighten } from '@/lib/tools/print/pixels';
 import { withDpi } from '@/lib/tools/print/png';
 import { PIECE_WRAP_MAX, type PieceShape, type PrintPiece } from '@/lib/tools/print/pieces';
@@ -958,6 +958,7 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
                 <>
                   <p className="bk-hangtag-say">{where}</p>
                   {tooMany && <p className="bk-hangtag-say bk-error">{tooManySay}</p>}
+                  {paper !== 'print' && job.plan.sheets.some(fillsSheet) && <p className="bk-hangtag-say">Fills the whole sheet. If your printer can print borderless, turn that on; if not, it leaves a thin white edge.</p>}
                   {tab === 'big' && sheets === 1 && <p className="bk-hangtag-say">This fits on one sheet, so there’s nothing to join.</p>}
                   {curVerdict === 'sharp' && (
                     <p className="bk-tool-verdict" data-tone="good">

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DPI, FILL, FOOT_IN, GAP_IN, MAX_AREA, MAX_IN, MAX_ZOOM, OVERLAP_IN, MARGIN_IN, PAPERS, biggestSharp, clampZoom, minZoom, nudge, enlargeFactor, fmtSize, parseSize, placement, planSheets, sourceDpi, withWrap } from './layout';
+import { DPI, FILL, FOOT_IN, GAP_IN, fillsSheet, type Sheet, MAX_AREA, MAX_IN, MAX_ZOOM, OVERLAP_IN, MARGIN_IN, PAPERS, biggestSharp, clampZoom, minZoom, nudge, enlargeFactor, fmtSize, parseSize, placement, planSheets, sourceDpi, withWrap } from './layout';
 
 describe('parseSize and fmtSize', () => {
   it('reads inches and centimetres into inches', () => {
@@ -161,5 +161,23 @@ describe('choosing which part of the picture shows (Alex, 2026-11-15)', () => {
     expect(sourceDpi(1200, 1200, square, { zoom: 2, x: 0, y: 0 })).toBe(150);
     expect(enlargeFactor(1200, 1200, square, { zoom: 2, x: 0, y: 0 })).toBe(2);
     expect(enlargeFactor(1200, 1200, square, FILL)).toBe(1);
+  });
+});
+
+describe('a design made to fill the sheet (Alex, 2026-11-15)', () => {
+  it('prints an A4 design on one A4 sheet, edge to edge, at its true size', () => {
+    const { sheets } = planSheets([{ w: 8.27, h: 11.69 }], 'a4');
+    expect(sheets).toHaveLength(1);
+    const t = sheets[0]?.items[0];
+    expect(t).toMatchObject({ w: 8.27, h: 11.69, x0: 0, y0: 0, nextX: null, nextY: null });
+    expect(fillsSheet(sheets[0] as Sheet)).toBe(true);
+  });
+  it('does the same for a Letter design on Letter, either way round', () => {
+    expect(planSheets([{ w: 8.5, h: 11 }], 'letter').sheets).toHaveLength(1);
+    expect(planSheets([{ w: 11, h: 8.5 }], 'letter')).toMatchObject({ landscape: true, sheets: [{ pw: 11, ph: 8.5 }] });
+  });
+  it('still splits a design that’s bigger than the paper, and leaves room on a smaller one', () => {
+    expect(planSheets([{ w: 8.6, h: 11 }], 'letter').sheets.length).toBeGreaterThan(1);
+    expect(fillsSheet(planSheets([{ w: 8, h: 8 }], 'letter').sheets[0] as Sheet)).toBe(false);
   });
 });
