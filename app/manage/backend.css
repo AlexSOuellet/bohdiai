@@ -880,3 +880,21 @@ p.bk-notice.bk-cost-line { padding: 0.65rem 0.9rem; border: 1px solid oklch(0.51
 .bk-print-extend input { margin-top: 0.2rem; }
 .bk-print-drop + .bk-print-add { margin-top: 0.9rem; }
 .bk-print-add + .bk-note { margin-top: 0.5rem; }
+
+/* The share-only try-the-tools page (Alex, 2026-11-15): the tools in the backend's
+   own look, on bohdiai.com, with the feedback form under them. */
+.bk-try-main { max-width: 76rem; margin: 0 auto; padding: clamp(1.5rem, 4vw, 3rem) var(--bk-gutter) 4rem; }
+.bk-try-head { display: grid; gap: 0.9rem; margin-bottom: 0.5rem; }
+.bk-try-head .bk-brand-name { margin: 0; align-items: center; }
+.bk-try-head .bk-tool-lede { max-width: 68ch; }
+.bk-try-jump { margin: 0; font-weight: 600; }
+.bk-try-panel { margin-top: 1.5rem; }
+.bk-try-feedback { margin-top: 4rem; padding-top: 2.5rem; border-top: 1px solid var(--bk-ink-15); max-width: 48rem; }
+.bk-try-feedback > .bk-tool-title { margin-bottom: 1.25rem; }
+.bk-try-ideas { gap: 0.8rem; }
+.bk-try-ideas .bk-check { align-items: flex-start; }
+.bk-try-ideas .bk-check input { margin-top: 0.2rem; }
+.bk-try-message { min-height: 8rem; resize: vertical; font: inherit; }
+.bk-try-about { margin-top: 0.9rem; }
+.bk-try-thanks { display: grid; gap: 0.6rem; justify-items: start; }
+.bk-try-thanks p { margin: 0; }
