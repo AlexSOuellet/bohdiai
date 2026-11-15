@@ -967,7 +967,7 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
     sharper: picturePart,
   };
 
-  const tagTitle = tab === 'sharper' ? 'Make it sharper' : cur === null ? 'Your print' : tab === 'several' || copies > 1 ? `${copies} prints` : sizeLabel(cur);
+  const tagTitle = tab === 'sharper' ? 'Make it sharper' : cur === null ? 'Your print' : tab === 'several' || copies > 1 ? `${copies} ${copies === 1 ? 'print' : 'prints'}` : sizeLabel(cur);
 
   return (
     <section aria-labelledby="tool-print" className="bk-print">

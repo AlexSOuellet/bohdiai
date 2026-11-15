@@ -400,6 +400,14 @@ describe('Several on a sheet', () => {
   });
 });
 
+it('says one print, not one prints', async () => {
+  render(<PrintTool pieces={[]} products={null} />);
+  openTab('Several on a sheet');
+  await addDesign();
+  expect(tag().textContent).toContain('1 print');
+  expect(tag().textContent).not.toContain('1 prints');
+});
+
 describe('Big print', () => {
   it('splits a big design across sheets and says how to join them', async () => {
     render(<PrintTool pieces={[]} products={null} />);
