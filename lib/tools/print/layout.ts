@@ -65,26 +65,53 @@ export function withWrap(piece: Job, wrapIn: number): Job {
   return { w: piece.w + 2 * wrapIn, h: piece.h + 2 * wrapIn };
 }
 
-/** Where the picture sits so it fills the print, the extra trimmed evenly. */
-export function placement(srcW: number, srcH: number, job: Job): { x: number; y: number; w: number; h: number } {
-  const k = Math.max(job.w / srcW, job.h / srcH);
+/** Which part of the picture shows when its shape differs from the print's (Alex,
+ *  2026-11-15): zoom 1 fills the print; less shows more of the picture, down to the
+ *  whole of it; more comes in closer. x and y run from -1 to 1 across the room the
+ *  picture has to move, 0 centred. */
+export type Frame = { zoom: number; x: number; y: number };
+export const FILL: Frame = { zoom: 1, x: 0, y: 0 };
+export const MAX_ZOOM = 4;
+
+const clamp1 = (n: number): number => Math.max(-1, Math.min(1, n));
+
+/** The furthest out the maker can zoom: the whole picture inside the print. */
+export function minZoom(srcW: number, srcH: number, job: Job): number {
+  return Math.min(job.w / srcW, job.h / srcH) / Math.max(job.w / srcW, job.h / srcH);
+}
+
+export function clampZoom(zoom: number, srcW: number, srcH: number, job: Job): number {
+  return Math.max(minZoom(srcW, srcH, job), Math.min(MAX_ZOOM, zoom));
+}
+
+/** Where the picture sits in the print: filling it, the extra trimmed evenly, unless
+ *  the maker moved or zoomed it. */
+export function placement(srcW: number, srcH: number, job: Job, frame: Frame = FILL): { x: number; y: number; w: number; h: number } {
+  const k = Math.max(job.w / srcW, job.h / srcH) * frame.zoom;
   const w = srcW * k;
   const h = srcH * k;
-  return { x: (job.w - w) / 2, y: (job.h - h) / 2, w, h };
+  return { x: (job.w - w) / 2 + (frame.x * Math.abs(w - job.w)) / 2, y: (job.h - h) / 2 + (frame.y * Math.abs(h - job.h)) / 2, w, h };
+}
+
+/** The frame after the maker drags the picture by dx, dy inches. */
+export function nudge(frame: Frame, dx: number, dy: number, srcW: number, srcH: number, job: Job): Frame {
+  const p = placement(srcW, srcH, job, frame);
+  const roomX = Math.abs(p.w - job.w) / 2;
+  const roomY = Math.abs(p.h - job.h) / 2;
+  return { zoom: frame.zoom, x: roomX > EPS ? clamp1(frame.x + dx / roomX) : 0, y: roomY > EPS ? clamp1(frame.y + dy / roomY) : 0 };
 }
 
 /** The detail the file has at this size, in dots per inch. */
-export function sourceDpi(srcW: number, srcH: number, job: Job): number {
-  const p = placement(srcW, srcH, job);
-  return Math.min(srcW / p.w, srcH / p.h);
+export function sourceDpi(srcW: number, srcH: number, job: Job, frame: Frame = FILL): number {
+  return srcW / placement(srcW, srcH, job, frame).w;
 }
 
 const fits = (srcW: number, srcH: number, f: number): boolean => srcW * srcH * f * f <= MAX_AREA;
 
 /** How much to enlarge: the least that reaches 300 DPI, or the most the device can
  *  hold when nothing reaches it. 4 is two doublings. */
-export function enlargeFactor(srcW: number, srcH: number, job: Job): 1 | 2 | 4 {
-  const d = sourceDpi(srcW, srcH, job);
+export function enlargeFactor(srcW: number, srcH: number, job: Job, frame: Frame = FILL): 1 | 2 | 4 {
+  const d = sourceDpi(srcW, srcH, job, frame);
   if (d >= DPI - 0.5) return 1;
   let best: 1 | 2 | 4 = 1;
   for (const f of [2, 4] as const) {

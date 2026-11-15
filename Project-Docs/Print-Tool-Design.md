@@ -14,6 +14,14 @@ Makers who print pictures for their work (decoupage first: rice paper, tissue, n
 - **Too many choices in the first version: most people want their picture resized to a size and printed at 300 DPI (2026-11-15).** So the screen is three steps and the tool makes every other call itself; the extras sit under one More link, closed by default ("yes.. perfect").
 - The `print_pieces` table (below) is approved (2026-11-15).
 
+## The page is built around the job (Alex, 2026-11-15, after trying it)
+
+**Supersedes "The screen" and "More" below.** Alex: one long form with no explanation "leaves it up to the user to figure out what they are doing". The page opens with what the tool is for, then **tabs for what the maker wants to accomplish**; each tab says what it's for and shows only that job's options. **Not a question-and-answer format.** Built for every job, not one scenario (the coaster was an example).
+
+The tabs: **Resize** (one design at an exact size, in proportion; also save as a PNG), **Fit a piece** (a measured piece: shape, size, wrap, how many, saved pieces), **Several on a sheet** (designs and copies, each its own size, fewest sheets), **Big print** (split across overlapping sheets, how to join them), **Make it sharper** (a bigger, sharper picture, nothing printed). Paper, Mirror it and Brighter for thin paper (each with a line on when to use it), the cutting mat with a key, the printing tips and Add the paper to a product sit on every printing tab. A picture added on one tab carries to the others.
+
+**Which part shows:** whenever the design's shape differs from the print's (Fit a piece), the maker drags the picture to choose which part shows, and zooms out as far as the whole picture or in closer. The PDF, the PNG and the mat all print what the maker chose.
+
 ## Goals, non-goals, anti-goals
 
 Goal: add a picture, type a size (or pick a saved piece), save a PDF that prints at exactly that size and sharp.

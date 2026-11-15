@@ -1,11 +1,12 @@
 /** Drawing a print, or one sheet's part of it, at a set DPI on the maker's device:
  *  the picture filling the print, mirrored or brightened if asked, and a round or
  *  oval piece's cut line. */
-import { MAX_AREA, placement, type Job } from '@/lib/tools/print/layout';
+import { FILL, MAX_AREA, placement, type Frame, type Job } from '@/lib/tools/print/layout';
 import { brighten, whiteBounds } from '@/lib/tools/print/pixels';
 import type { PieceShape } from '@/lib/tools/print/pieces';
 
-export type Look = { mirror: boolean; brighter: boolean };
+/** frame: which part of the picture shows (filling the print when left out). */
+export type Look = { mirror: boolean; brighter: boolean; frame?: Frame };
 export type Cut = { shape: PieceShape; wrapIn: number };
 export type Region = { x0: number; y0: number; w: number; h: number };
 
@@ -53,7 +54,7 @@ export function paintPrint(ctx: CanvasRenderingContext2D, src: HTMLCanvasElement
     ctx.translate(job.w, 0);
     ctx.scale(-1, 1);
   }
-  const p = placement(src.width, src.height, job);
+  const p = placement(src.width, src.height, job, look.frame ?? FILL);
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(src, p.x, p.y, p.w, p.h);
   ctx.restore();

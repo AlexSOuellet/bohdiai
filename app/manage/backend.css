@@ -842,3 +842,35 @@ p.bk-notice.bk-cost-line { padding: 0.65rem 0.9rem; border: 1px solid oklch(0.51
 .bk-print-tips { padding: 1.1rem 1.25rem; border-left: 3px solid var(--bk-ember); border-radius: 0 var(--bk-radius-sm) var(--bk-radius-sm) 0; background: var(--bk-surface); box-shadow: 0 1px 0 var(--bk-ink-15); }
 .bk-print-tips-title { margin: 0 0 0.5rem; font-family: var(--bk-display); font-size: 1rem; font-weight: 800; }
 .bk-print-tips ul { display: grid; gap: 0.35rem; margin: 0; padding-left: 1.1rem; color: var(--bk-ink-muted); font-size: 0.875rem; line-height: 1.5; }
+
+/* Print it's tabs (Alex, 2026-11-15): what the tool is for on top, then a tab for each
+   job, each showing only its own options. */
+.bk-print-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1.5rem; padding: 0.35rem; border-radius: 999px; background: var(--bk-surface); box-shadow: 0 1px 0 var(--bk-ink-15); width: fit-content; max-width: 100%; }
+@media (max-width: 640px) { .bk-print-tabs { border-radius: var(--bk-radius-sm); width: 100%; } }
+.bk-print-tab { min-height: 2.6rem; padding: 0 1.1rem; border: 0; border-radius: 999px; background: transparent; color: var(--bk-ink-muted); font: inherit; font-size: 0.9375rem; font-weight: 700; cursor: pointer; }
+.bk-print-tab:hover { color: var(--bk-ink); background: var(--bk-ground); }
+.bk-print-tab[aria-selected='true'] { background: var(--bk-deep); color: var(--bk-surface); box-shadow: inset 0 -2px 0 var(--bk-ember); }
+.bk-print-tab:focus-visible { outline: 2px solid var(--bk-ember); outline-offset: 2px; }
+.bk-print-about { max-width: 62ch; margin: 1.1rem 0 0; padding-left: 0.9rem; border-left: 3px solid var(--bk-ember); font-size: 1rem; line-height: 1.55; }
+.bk-print-panel .bk-tool-main { margin-top: 1.25rem; }
+.bk-print-lead { margin: -0.2rem 0 0.9rem; }
+.bk-print-trim { margin-top: 0.9rem; }
+.bk-print-size + .bk-note { margin: 0.5rem 0 0; }
+.bk-print-size + .bk-note + .bk-print-link { margin-top: 0.6rem; }
+.bk-print-pieces-top { margin: 0 0 1.1rem; padding: 0 0 1.1rem; border-top: 0; border-bottom: 1px solid var(--bk-ink-15); }
+.bk-print-piece-actions:not(:empty) { margin-top: 0.9rem; }
+.bk-print-options { margin-top: 1rem; gap: 0.75rem; }
+.bk-print-options .bk-check { align-items: flex-start; }
+.bk-print-options .bk-check input { margin-top: 0.2rem; }
+.bk-print-why { display: block; margin-top: 0.1rem; }
+.bk-section > .bk-label { display: block; margin: 0 0 0.45rem; }
+.bk-section > .bk-print-unit + .bk-print-size { margin-top: 0.9rem; }
+.bk-print-size + .bk-field, .bk-field + .bk-field { margin-top: 0.9rem; }
+.bk-print-frame { display: grid; gap: 0.9rem; }
+.bk-print-frame-box { border-radius: var(--bk-radius-sm); overflow: hidden; }
+.bk-print-frame-canvas { display: block; width: 100%; height: 300px; cursor: grab; touch-action: none; }
+.bk-print-frame-canvas:active { cursor: grabbing; }
+.bk-print-frame-canvas:focus-visible { outline: 2px solid var(--bk-ember); outline-offset: 2px; }
+.bk-print-zoom { display: grid; gap: 0.4rem; }
+.bk-print-zoom-range { width: 100%; accent-color: var(--bk-ember); }
+.bk-print-key { margin: -0.4rem 0 0; }

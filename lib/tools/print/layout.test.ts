@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DPI, MAX_AREA, MAX_IN, OVERLAP_IN, MARGIN_IN, PAPERS, biggestSharp, enlargeFactor, fmtSize, parseSize, placement, planSheets, sourceDpi, withWrap } from './layout';
+import { DPI, FILL, MAX_AREA, MAX_IN, MAX_ZOOM, OVERLAP_IN, MARGIN_IN, PAPERS, biggestSharp, clampZoom, minZoom, nudge, enlargeFactor, fmtSize, parseSize, placement, planSheets, sourceDpi, withWrap } from './layout';
 
 describe('parseSize and fmtSize', () => {
   it('reads inches and centimetres into inches', () => {
@@ -126,5 +126,32 @@ describe('planSheets', () => {
   });
   it('gives nothing for no prints', () => {
     expect(planSheets([], 'a4').sheets).toEqual([]);
+  });
+});
+
+describe('choosing which part of the picture shows (Alex, 2026-11-15)', () => {
+  const square = { w: 4, h: 4 };
+  it('fills the print, centred, until the maker moves it', () => {
+    expect(placement(1000, 2000, square, FILL)).toEqual({ x: 0, y: -2, w: 4, h: 8 });
+  });
+  it('moves the picture as far as its edge and no further', () => {
+    expect(placement(1000, 2000, square, { zoom: 1, x: 0, y: 1 })).toEqual({ x: 0, y: 0, w: 4, h: 8 });
+    expect(placement(1000, 2000, square, { zoom: 1, x: 0, y: -1 })).toEqual({ x: 0, y: -4, w: 4, h: 8 });
+    expect(nudge(FILL, 0, 1, 1000, 2000, square)).toEqual({ zoom: 1, x: 0, y: 0.5 });
+    expect(nudge(FILL, 0, 9, 1000, 2000, square).y).toBe(1);
+    // There's no room to move across a picture that exactly fills the width.
+    expect(nudge(FILL, 1, 0, 1000, 2000, square).x).toBe(0);
+  });
+  it('zooms out as far as the whole picture, and in closer', () => {
+    expect(minZoom(1000, 2000, square)).toBe(0.5);
+    expect(placement(1000, 2000, square, { zoom: 0.5, x: 0, y: 0 })).toEqual({ x: 1, y: 0, w: 2, h: 4 });
+    expect(placement(1000, 1000, square, { zoom: 2, x: 0, y: 0 })).toEqual({ x: -2, y: -2, w: 8, h: 8 });
+    expect(clampZoom(0.1, 1000, 2000, square)).toBe(0.5);
+    expect(clampZoom(9, 1000, 2000, square)).toBe(MAX_ZOOM);
+  });
+  it('counts the detail at the zoom the maker chose', () => {
+    expect(sourceDpi(1200, 1200, square, { zoom: 2, x: 0, y: 0 })).toBe(150);
+    expect(enlargeFactor(1200, 1200, square, { zoom: 2, x: 0, y: 0 })).toBe(2);
+    expect(enlargeFactor(1200, 1200, square, FILL)).toBe(1);
   });
 });
