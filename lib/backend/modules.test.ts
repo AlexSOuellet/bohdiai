@@ -39,6 +39,14 @@ describe('the menu in her words (the redesign, 2026-10-27)', () => {
     expect(names([])).toEqual(['Home', 'Tools', 'Support']);
   });
 
+  it('has Print it after Describe it on every plan, Free included (Alex, 2026-11-15)', () => {
+    for (const on of [[], full]) {
+      const tools = group(on, 'Tools');
+      expect(tools.indexOf('Print it')).toBe(tools.indexOf('Describe it') + 1);
+    }
+    expect(BACKEND_MODULES.flatMap((m) => m.items).find((i) => i.label === 'Print it')?.href).toBe('/manage/tools/print');
+  });
+
   it('opens My site on its own page, and every other group on its first screen', () => {
     const nav = navFor(BACKEND_MODULES, new Set(full));
     const entry = (name: string) => entryFor(nav.find((s) => s.section === name) ?? { section: name, items: [] });

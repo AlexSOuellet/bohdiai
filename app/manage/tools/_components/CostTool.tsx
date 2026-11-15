@@ -15,7 +15,15 @@ import { HangTag, NumberField, TextField } from './ToolParts';
 export type FromProduct = { id: string; name: string; costs: CostSettings | null };
 
 /** What Cost to make starts from: blank, or the product's own costs when opened from one. */
-function startFrom(product: FromProduct | null): CostForm {
+function startFrom(product: FromProduct | null, paper: PieceItem | null): CostForm {
+  const form = startFromProduct(product);
+  if (paper === null) return form;
+  // Print it's paper (Alex, 2026-11-15) joins the lines every piece gets.
+  const kept = form.piece.filter((p) => p.name.trim() !== '' || p.each.trim() !== '');
+  return { ...form, piece: [...kept, paper] };
+}
+
+function startFromProduct(product: FromProduct | null): CostForm {
   if (product === null) return BLANK_COST;
   const c = product.costs;
   if (c === null) return { ...BLANK_COST, name: product.name };
@@ -24,8 +32,8 @@ function startFrom(product: FromProduct | null): CostForm {
 
 /** Cost to make: one batch, its supplies, what every piece gets, then her time. Run on
  *  its own; its link opens Price it with this piece's cost (Alex, 2026-10-28). */
-export function CostTool({ product = null }: { product?: FromProduct | null }): React.ReactElement {
-  const [cost, setCost] = useState<CostForm>(() => startFrom(product));
+export function CostTool({ product = null, paper = null }: { product?: FromProduct | null; paper?: PieceItem | null }): React.ReactElement {
+  const [cost, setCost] = useState<CostForm>(() => startFrom(product, paper));
   const r = costToMake(cost);
   const router = useRouter();
   const [saving, setSaving] = useState(false);
