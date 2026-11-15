@@ -15,7 +15,7 @@
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 **Operative plan doc:** `Project-Docs/Modular-Plan.md`; open items in `Project-Docs/Open-Work.md`. Every session updates Open-Work as items land.
 
-**Last updated:** 2026-11-06, Session 120 (end).
+**Last updated:** 2026-11-15, Session 122 (end).
 
 ---
 
@@ -89,6 +89,7 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 122 (2026-11-15): **Merged and live: Print it (Tools tab, every plan), Act as a maker lists every maker.** `session-logs/session-122.md`
 - Session 120 (2026-11-04 → 11-06): **Merged and live: PayPal off, Alex's admin, promotions, invites with no time limit, the email look, cancels reach Stripe.** `session-logs/session-120.md`
 - Session 119 (2026-10-31 → 11-03): **Merged and live: self-serve sign-up and pay, the build on its own (Cloudflare Workflow), Publish wherever the site shows, Take my site offline; Square online checkout next.** Full recap: `session-logs/session-119.md`.
 - Sessions 115–118 (2026-10-26 → 10-29): **Buyer accounts (115); backend rebuilt (116); Free, the tools (117); bohdiai.com the maker site, all merged and live (118).** Recaps in `session-logs/`.
