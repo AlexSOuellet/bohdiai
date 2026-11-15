@@ -22,6 +22,8 @@ The tabs: **Resize** (one design at an exact size, in proportion; also save as a
 
 **Which part shows:** whenever the design's shape differs from the print's (Fit a piece), the maker drags the picture to choose which part shows, and zooms out as far as the whole picture or in closer. The PDF, the PNG and the mat all print what the maker chose.
 
+**Later the same day (Alex):** ⅛ in at the sides, top and between prints (four 4 in coasters on one Letter sheet), a strip kept at the bottom for the sheet number and ruler; round and oval pieces show and print round; a design made for the sheet (an A4 file on A4) prints on one sheet edge to edge, not split; Fit a piece takes several different designs on the same piece, each with its own "which part shows"; and a zoomed-out design can be **extended** to fill the space, by mirroring its edges outward on the device (no AI: AI extension would mean uploading designs and generating image content, left as its own decision).
+
 ## Goals, non-goals, anti-goals
 
 Goal: add a picture, type a size (or pick a saved piece), save a PDF that prints at exactly that size and sharp.

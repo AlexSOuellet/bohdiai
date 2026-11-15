@@ -874,3 +874,7 @@ p.bk-notice.bk-cost-line { padding: 0.65rem 0.9rem; border: 1px solid oklch(0.51
 .bk-print-zoom { display: grid; gap: 0.4rem; }
 .bk-print-zoom-range { width: 100%; accent-color: var(--bk-ember); }
 .bk-print-key { margin: -0.4rem 0 0; }
+.bk-print-extend { align-items: flex-start; margin-top: 0.9rem; }
+.bk-print-extend input { margin-top: 0.2rem; }
+.bk-print-drop + .bk-print-add { margin-top: 0.9rem; }
+.bk-print-add + .bk-note { margin-top: 0.5rem; }

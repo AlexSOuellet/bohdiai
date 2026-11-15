@@ -33,3 +33,22 @@ describe('paintPrint', () => {
     expect(calls.some((c) => c.startsWith('ellipse'))).toBe(false);
   });
 });
+
+describe('extending the design to fill the space (Alex, 2026-11-15)', () => {
+  const draws = (calls: string[]): number => calls.filter((c) => c.startsWith('drawImage')).length;
+  it('mirrors the design outward when it’s zoomed out, so there’s no white', () => {
+    const { ctx, calls } = recorder();
+    // A tall design zoomed out in a square: space either side.
+    paintPrint(ctx, src, { w: 4, h: 4 }, { ...look, frame: { zoom: 0.5, x: 0, y: 0 }, extend: true }, { shape: 'rect', wrapIn: 0 }, 100);
+    expect(draws(calls)).toBe(3);
+    expect(calls.filter((c) => c === 'scale(-1,1)').length).toBeGreaterThanOrEqual(2);
+  });
+  it('draws it once when it already fills the print, or when not asked', () => {
+    const a = recorder();
+    paintPrint(a.ctx, src, { w: 4, h: 4 }, { ...look, extend: true }, { shape: 'rect', wrapIn: 0 }, 100);
+    expect(draws(a.calls)).toBe(1);
+    const b = recorder();
+    paintPrint(b.ctx, src, { w: 4, h: 4 }, { ...look, frame: { zoom: 0.5, x: 0, y: 0 } }, { shape: 'rect', wrapIn: 0 }, 100);
+    expect(draws(b.calls)).toBe(1);
+  });
+});

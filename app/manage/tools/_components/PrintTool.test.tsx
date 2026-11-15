@@ -17,9 +17,14 @@ vi.mock('./print/draw', () => ({ drawRegion: m.drawRegion, trimmed: (c: HTMLCanv
 vi.mock('./print/MatPreview', () => ({ MatPreview: ({ label }: { label: string }) => <p>{label}</p> }));
 vi.mock('./print/FrameEditor', () => ({
   FrameEditor: ({ onChange }: { onChange: (f: { zoom: number; x: number; y: number }) => void }) => (
-    <button type="button" onClick={() => onChange({ zoom: 1, x: 0, y: 1 })}>
-      Show the top
-    </button>
+    <>
+      <button type="button" onClick={() => onChange({ zoom: 1, x: 0, y: 1 })}>
+        Show the top
+      </button>
+      <button type="button" onClick={() => onChange({ zoom: 0.5, x: 0, y: 0 })}>
+        Zoom out
+      </button>
+    </>
   ),
 }));
 vi.mock('@/lib/tools/print/actions', () => ({ savePiece: m.savePiece, renamePiece: m.renamePiece, deletePiece: m.deletePiece }));
@@ -333,6 +338,46 @@ describe('Fit a piece', () => {
     expect(tag().textContent).toContain('on 1 sheet of US Letter');
     expect(screen.getByText(/That’s \$0\.31 of paper for each piece/)).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Add it in Cost to make' }).getAttribute('href')).toBe(`/manage/tools/cost?product=${ID}&paper=31&sheets=1`);
+  });
+});
+
+describe('Fit a piece with several designs (Alex, 2026-11-15)', () => {
+  it('puts different designs on the same piece, each showing its own part', async () => {
+    m.open.mockImplementation(async (f: File) => picture(1000, 2000, f.name.replace(/\..*$/, '')));
+    render(<PrintTool pieces={[]} products={null} />);
+    openTab('Fit a piece');
+    await addDesign('holly.jpg');
+    choosePaper();
+    fireEvent.click(screen.getByRole('button', { name: 'Round' }));
+    await addDesign('ivy.jpg', 'Add another design');
+    expect(screen.getByRole('button', { name: 'ivy' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByText('Which part of ivy shows')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Show the top' }));
+    // The piece is shared: a new size changes every design on it.
+    type('Across', '3');
+    fireEvent.blur(screen.getByLabelText('Across'));
+    expect(tag().textContent).toContain('2 prints');
+    await save();
+    await waitFor(() => expect(m.buildPdf).toHaveBeenCalled());
+    const ds = m.buildPdf.mock.calls[0]?.[0] as Array<{ job: unknown; look: { frame: unknown }; cut: unknown }>;
+    expect(ds.map((d) => d.job)).toEqual([{ w: 3, h: 3 }, { w: 3, h: 3 }]);
+    expect(ds.map((d) => d.cut)).toEqual([{ shape: 'round', wrapIn: 0 }, { shape: 'round', wrapIn: 0 }]);
+    expect(ds.map((d) => d.look.frame)).toEqual([{ zoom: 1, x: 0, y: 0 }, { zoom: 1, x: 0, y: 1 }]);
+    fireEvent.click(screen.getByRole('button', { name: 'Remove ivy' }));
+    expect(tag().textContent).toContain('3 × 3 in');
+  });
+  it('extends a zoomed-out design to fill the space, when asked', async () => {
+    m.open.mockResolvedValue(picture(1000, 2000));
+    render(<PrintTool pieces={[]} products={null} />);
+    openTab('Fit a piece');
+    await addDesign();
+    choosePaper();
+    expect(screen.queryByLabelText(/Extend the design/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom out' }));
+    fireEvent.click(screen.getByLabelText(/Extend the design to fill the space/));
+    await save();
+    await waitFor(() => expect(m.buildPdf).toHaveBeenCalled());
+    expect((m.buildPdf.mock.calls[0]?.[0] as Array<{ look: unknown }>)[0]?.look).toMatchObject({ extend: true, frame: { zoom: 0.5 } });
   });
 });
 

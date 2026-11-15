@@ -70,6 +70,8 @@ type Design = {
   wrapIn: number;
   copies: number;
   frame: Frame;
+  /** Fill any space around a zoomed-out design by mirroring it outward. */
+  extend: boolean;
   sharper: { factor: 2 | 4; canvas: HTMLCanvasElement } | null;
 };
 type Busy = { say: string; progress: number | null; stop: AbortController | null };
@@ -129,13 +131,15 @@ let nextKey = 1;
 function designOf(pic: Picture, ready: HTMLCanvasElement, startIn: number): Design {
   const r = ready.width / ready.height;
   const size = pic.inches ?? (r >= 1 ? { w: startIn, h: startIn / r } : { w: startIn * r, h: startIn });
-  return { key: nextKey++, pic, ready, preview: smallCopy(ready, false), trim: false, ...size, shape: 'rect', wrapIn: 0, copies: 1, frame: FILL, sharper: null };
+  return { key: nextKey++, pic, ready, preview: smallCopy(ready, false), trim: false, ...size, shape: 'rect', wrapIn: 0, copies: 1, frame: FILL, extend: false, sharper: null };
 }
 
 export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiece[]; products: ProductChoice[] | null }): React.ReactElement {
   const [tab, setTab] = useState<PrintTab>('resize');
   const [one, setOne] = useState<Design | null>(null);
-  const [piece, setPiece] = useState<Design | null>(null);
+  // Fit a piece: one piece, any number of designs on it (Alex, 2026-11-15).
+  const [pieceSet, setPieceSet] = useState<Design[]>([]);
+  const [pieceActive, setPieceActive] = useState(0);
   const [many, setMany] = useState<Design[]>([]);
   const [active, setActive] = useState(0);
   // Remembered on the device; what the maker picks here wins.
@@ -159,9 +163,9 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
   const [sharperBy, setSharperBy] = useState<2 | 4>(2);
 
   /** The design the tab's fields change. */
-  const cur: Design | null = tab === 'piece' ? piece : tab === 'several' ? (many[active] ?? many[0] ?? null) : one;
+  const cur: Design | null = tab === 'piece' ? (pieceSet[pieceActive] ?? pieceSet[0] ?? null) : tab === 'several' ? (many[active] ?? many[0] ?? null) : one;
   /** Every print in this tab's job (several: each design's copies). */
-  const designs: Design[] = useMemo(() => (tab === 'piece' ? (piece === null ? [] : [piece]) : tab === 'several' ? many : tab === 'sharper' || one === null ? [] : [{ ...one, copies: 1 }]), [tab, one, piece, many]);
+  const designs: Design[] = useMemo(() => (tab === 'piece' ? pieceSet : tab === 'several' ? many : tab === 'sharper' || one === null ? [] : [{ ...one, copies: 1 }]), [tab, one, pieceSet, many]);
 
   const job = useMemo(() => {
     const owner: number[] = [];
@@ -180,7 +184,7 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
     () =>
       job.owner.map((i) => {
         const d = designs[i] as Design;
-        return { src: brightPreviews.get(d.key) ?? d.preview, job: jobOf(d), look: { mirror, brighter: false, frame: d.frame }, cut: { shape: d.shape, wrapIn: d.wrapIn } };
+        return { src: brightPreviews.get(d.key) ?? d.preview, job: jobOf(d), look: { mirror, brighter: false, frame: d.frame, extend: d.extend }, cut: { shape: d.shape, wrapIn: d.wrapIn } };
       }),
     [job, designs, brightPreviews, mirror],
   );
@@ -189,7 +193,12 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
   function change(patch: Partial<Design>): void {
     if (cur === null) return;
     const key = cur.key;
-    if (tab === 'piece') setPiece((d) => (d === null ? d : { ...d, ...patch }));
+    if (tab === 'piece') {
+      // The piece itself is shared by every design on it; the rest is each design's own.
+      const { w, h, shape, wrapIn, ...own } = patch;
+      const shared: Partial<Design> = { ...(w === undefined ? {} : { w }), ...(h === undefined ? {} : { h }), ...(shape === undefined ? {} : { shape }), ...(wrapIn === undefined ? {} : { wrapIn }) };
+      setPieceSet((all) => all.map((d) => ({ ...d, ...shared, ...(d.key === key ? own : {}) })));
+    }
     else if (tab === 'several') setMany((all) => all.map((d) => (d.key === key ? { ...d, ...patch } : d)));
     else setOne((d) => (d === null ? d : { ...d, ...patch }));
   }
@@ -209,6 +218,9 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
       const pic = await openPicture(file);
       setTyped(null);
       const seed = (startIn: number): Design => designOf(pic, pic.canvas, startIn);
+      // A design on the piece takes the piece's own shape and size (4 in square to start).
+      const first = pieceSet[0];
+      const onPiece = (d: Design): Design => (first === undefined ? { ...d, w: PIECE_START_IN, h: PIECE_START_IN } : { ...d, w: first.w, h: first.h, shape: first.shape, wrapIn: first.wrapIn });
       // The picture carries to the other tabs that have none yet.
       if (tab === 'several') {
         if (another && many.length > 0) {
@@ -219,14 +231,20 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
           setActive(0);
         }
         if (one === null) setOne(seed(START_IN));
-        if (piece === null) setPiece(seed(PIECE_START_IN));
+        if (pieceSet.length === 0) setPieceSet([onPiece(seed(PIECE_START_IN))]);
       } else if (tab === 'piece') {
-        setPiece(piece === null ? { ...seed(PIECE_START_IN), w: PIECE_START_IN, h: PIECE_START_IN } : { ...seed(PIECE_START_IN), w: piece.w, h: piece.h, shape: piece.shape, wrapIn: piece.wrapIn, copies: piece.copies });
+        const fresh = onPiece(seed(PIECE_START_IN));
+        if (another && pieceSet.length > 0) {
+          setPieceSet((all) => [...all, fresh]);
+          setPieceActive(pieceSet.length);
+        } else {
+          setPieceSet((all) => (all.length === 0 ? [fresh] : all.map((d, i) => (i === pieceActive ? { ...fresh, copies: d.copies } : d))));
+        }
         if (one === null) setOne(seed(START_IN));
         if (many.length === 0) setMany([seed(START_IN)]);
       } else {
         setOne(seed(START_IN));
-        if (piece === null) setPiece({ ...seed(PIECE_START_IN), w: PIECE_START_IN, h: PIECE_START_IN });
+        if (pieceSet.length === 0) setPieceSet([onPiece(seed(PIECE_START_IN))]);
         if (many.length === 0) setMany([seed(START_IN)]);
       }
     } catch (err) {
@@ -378,7 +396,7 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
       const canvas = await enlarge(d.ready, f, (x) => setBusy({ say: words, progress: x, stop }), stop.signal);
       const keepIt = (x: Design): Design => (x.key === d.key ? { ...x, sharper: { factor: f, canvas } } : x);
       setOne((x) => (x === null ? x : keepIt(x)));
-      setPiece((x) => (x === null ? x : keepIt(x)));
+      setPieceSet((all) => all.map(keepIt));
       setMany((all) => all.map(keepIt));
       return canvas;
     } catch (err) {
@@ -416,7 +434,7 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
       for (const d of designs) sharpened.set(d.key, await sharp(d, stop));
       const prints: PrintDesign[] = job.owner.map((i) => {
         const d = designs[i] as Design;
-        return { src: (sharpened.get(d.key) as Sharp).src, job: jobOf(d), look: { mirror, brighter, frame: d.frame }, cut: { shape: d.shape, wrapIn: d.wrapIn } };
+        return { src: (sharpened.get(d.key) as Sharp).src, job: jobOf(d), look: { mirror, brighter, frame: d.frame, extend: d.extend }, cut: { shape: d.shape, wrapIn: d.wrapIn } };
       });
       const first = designs[0] as Design;
       const { blob, dpi } = await buildPdf(prints, job.plan.sheets, unit, sizeLabel(first), (i, n) => setBusy({ say: `Laying out sheet ${i + 1} of ${n}…`, progress: (i + 1) / n, stop: null }));
@@ -441,7 +459,7 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
       const s = await sharp(cur, stop);
       setBusy({ say: 'Making the picture…', progress: null, stop: null });
       const j = jobOf(cur);
-      const r = drawRegion(s.src, j, { x0: 0, y0: 0, w: j.w, h: j.h }, DPI, { mirror, brighter, frame: cur.frame }, { shape: cur.shape, wrapIn: cur.wrapIn });
+      const r = drawRegion(s.src, j, { x0: 0, y0: 0, w: j.w, h: j.h }, DPI, { mirror, brighter, frame: cur.frame, extend: cur.extend }, { shape: cur.shape, wrapIn: cur.wrapIn });
       const name = fileName(`${cur.pic.name}-${fmtSize(j.w, unit)}x${fmtSize(j.h, unit)}${unit}.png`);
       await savePicture(r.canvas, r.dpi, name);
       finished(name, s.made, s.soft || r.dpi < DPI);
@@ -508,53 +526,86 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
   const framing = tab === 'piece' && cur !== null && Math.abs(ratioOf(cur) - jobOf(cur).w / jobOf(cur).h) > 0.005;
   const fitsSharper = (f: number): boolean => one !== null && one.ready.width * one.ready.height * f * f <= MAX_AREA;
 
+  // The designs listed on Several on a sheet, and on Fit a piece when there's more than one.
+  const list = tab === 'several' ? many : tab === 'piece' ? pieceSet : null;
+  const listActive = tab === 'piece' ? pieceActive : active;
+  const setList = tab === 'piece' ? setPieceSet : setMany;
+  const setListActive = tab === 'piece' ? setPieceActive : setActive;
+  const listed = list !== null && (tab === 'several' ? list.length > 0 : list.length > 1);
+
+  const addAnother = (
+    <label className="bk-btn bk-btn-quiet bk-btn-small bk-print-add">
+      <input
+        type="file"
+        className="bk-print-file"
+        accept="image/*,application/pdf"
+        aria-label="Add another design"
+        onChange={(e) => {
+          void addPicture(e.target.files?.[0], true);
+          e.target.value = '';
+        }}
+      />
+      Add another design
+    </label>
+  );
+
   // The parts each tab is built from.
   const picturePart = (
     <section className="bk-section">
-      <h3 className="bk-section-title">{tab === 'several' ? 'Your designs' : 'Your design'}</h3>
-      {tab !== 'several' || many.length === 0 ? (
-        <label className="bk-print-drop" data-has={cur === null ? undefined : 'true'}>
-          <input
-            type="file"
-            className="bk-print-file"
-            accept="image/*,application/pdf"
-            aria-label="Add your design"
-            onChange={(e) => {
-              void addPicture(e.target.files?.[0], false);
-              e.target.value = '';
-            }}
-          />
-          <span className="bk-print-drop-name">{cur === null ? 'Add your design' : cur.pic.name}</span>
-          <span className="bk-note">{cur === null ? 'A JPG, PNG or PDF. Tap to choose it, drag it here, or paste it.' : `${cur.ready.width} × ${cur.ready.height} pixels · tap to change`}</span>
-        </label>
+      <h3 className="bk-section-title">{listed ? 'Your designs' : 'Your design'}</h3>
+      {!listed ? (
+        <>
+          <label className="bk-print-drop" data-has={cur === null ? undefined : 'true'}>
+            <input
+              type="file"
+              className="bk-print-file"
+              accept="image/*,application/pdf"
+              aria-label="Add your design"
+              onChange={(e) => {
+                void addPicture(e.target.files?.[0], false);
+                e.target.value = '';
+              }}
+            />
+            <span className="bk-print-drop-name">{cur === null ? 'Add your design' : cur.pic.name}</span>
+            <span className="bk-note">{cur === null ? 'A JPG, PNG or PDF. Tap to choose it, drag it here, or paste it.' : `${cur.ready.width} × ${cur.ready.height} pixels · tap to change`}</span>
+          </label>
+          {tab === 'piece' && cur !== null && (
+            <>
+              {addAnother}
+              <p className="bk-note">For a set with different designs, like four coasters that don’t match. Each one goes on the same piece.</p>
+            </>
+          )}
+        </>
       ) : (
         <>
           <ul className="bk-print-pics">
-            {many.map((d, i) => (
+            {(list ?? []).map((d, i) => (
               <li key={d.key} className="bk-print-pic">
                 <button
                   type="button"
                   className="bk-print-chip"
-                  aria-pressed={i === active}
+                  aria-pressed={i === listActive}
                   onClick={() => {
                     setTyped(null);
-                    setActive(i);
+                    setListActive(i);
                   }}
                 >
                   {d.pic.name}
                 </button>
                 <span className="bk-note">{sizeLabel(d)}</span>
-                <label className="bk-print-copies">
-                  Copies
-                  <input className="bk-tool-num" type="number" min={1} max={COPIES_MAX} value={d.copies} onChange={(e) => setMany((all) => all.map((x) => (x.key === d.key ? { ...x, copies: Math.min(COPIES_MAX, Math.max(1, Math.round(Number(e.target.value) || 1))) } : x)))} />
-                </label>
-                {many.length > 1 && (
+                {tab === 'several' && (
+                  <label className="bk-print-copies">
+                    Copies
+                    <input className="bk-tool-num" type="number" min={1} max={COPIES_MAX} value={d.copies} onChange={(e) => setList((all) => all.map((x) => (x.key === d.key ? { ...x, copies: Math.min(COPIES_MAX, Math.max(1, Math.round(Number(e.target.value) || 1))) } : x)))} />
+                  </label>
+                )}
+                {(list ?? []).length > 1 && (
                   <button
                     type="button"
                     className="bk-link bk-print-link"
                     onClick={() => {
-                      setMany((all) => all.filter((x) => x.key !== d.key));
-                      setActive(0);
+                      setList((all) => all.filter((x) => x.key !== d.key));
+                      setListActive(0);
                     }}
                   >
                     {`Remove ${d.pic.name}`}
@@ -563,20 +614,8 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
               </li>
             ))}
           </ul>
-          <label className="bk-btn bk-btn-quiet bk-btn-small bk-print-add">
-            <input
-              type="file"
-              className="bk-print-file"
-              accept="image/*,application/pdf"
-              aria-label="Add another design"
-              onChange={(e) => {
-                void addPicture(e.target.files?.[0], true);
-                e.target.value = '';
-              }}
-            />
-            Add another design
-          </label>
-          <p className="bk-note">Tap a design to change its size below.</p>
+          {addAnother}
+          <p className="bk-note">{tab === 'piece' ? 'Tap a design to choose which part of it shows. They all share the piece below.' : 'Tap a design to change its size below.'}</p>
         </>
       )}
       {cur !== null && cur.pic.pages > 1 && (
@@ -738,9 +777,18 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
   const framePart =
     framing && cur !== null ? (
       <section className="bk-section">
-        <h3 className="bk-section-title">Which part shows</h3>
+        <h3 className="bk-section-title">{pieceSet.length > 1 ? `Which part of ${cur.pic.name} shows` : 'Which part shows'}</h3>
         <p className="bk-note bk-print-lead">Your design is a different shape from the piece, so some of it won’t fit. Drag it to choose which part shows, or zoom out to fit all of it.</p>
-        <FrameEditor src={brightPreviews.get(cur.key) ?? cur.preview} job={jobOf(cur)} shape={cur.shape} frame={cur.frame} onChange={(f) => change({ frame: f })} />
+        <FrameEditor src={brightPreviews.get(cur.key) ?? cur.preview} job={jobOf(cur)} shape={cur.shape} frame={cur.frame} extend={cur.extend} onChange={(f) => change({ frame: f })} />
+        {cur.frame.zoom < 1 - 1e-6 && (
+          <label className="bk-check bk-print-extend">
+            <input type="checkbox" checked={cur.extend} onChange={(e) => change({ extend: e.target.checked })} />
+            <span>
+              Extend the design to fill the space
+              <span className="bk-note bk-print-why">The space around it is filled by mirroring the design’s edges outward, right here on your device. It works best on backgrounds; anything right at the edge shows as a repeat.</span>
+            </span>
+          </label>
+        )}
       </section>
     ) : null;
 

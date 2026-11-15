@@ -7,12 +7,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { FILL, MAX_ZOOM, clampZoom, minZoom, nudge, placement, type Frame, type Job } from '@/lib/tools/print/layout';
 import type { PieceShape } from '@/lib/tools/print/pieces';
+import { paintPrint } from './draw';
 
 const BOX_H = 300;
 const ROOM = 0.6;
 const KEY_STEP = 0.1;
 
-export function FrameEditor({ src, job, shape, frame, onChange }: { src: HTMLCanvasElement; job: Job; shape: PieceShape; frame: Frame; onChange: (f: Frame) => void }): React.ReactElement {
+export function FrameEditor({ src, job, shape, frame, extend = false, onChange }: { src: HTMLCanvasElement; job: Job; shape: PieceShape; frame: Frame; extend?: boolean; onChange: (f: Frame) => void }): React.ReactElement {
   const box = useRef<HTMLDivElement>(null);
   const ref = useRef<HTMLCanvasElement>(null);
   const drag = useRef<{ x: number; y: number } | null>(null);
@@ -56,20 +57,18 @@ export function FrameEditor({ src, job, shape, frame, onChange }: { src: HTMLCan
     x.globalAlpha = 0.35;
     x.drawImage(src, ox + p.x * scale, oy + p.y * scale, p.w * scale, p.h * scale);
     x.globalAlpha = 1;
-    // The print itself, on white paper, clear.
+    // The print itself, as it will print: on white paper, clear, extended if asked.
     x.save();
-    outline();
-    x.clip();
-    x.fillStyle = '#fff';
-    x.fillRect(ox, oy, job.w * scale, job.h * scale);
-    x.drawImage(src, ox + p.x * scale, oy + p.y * scale, p.w * scale, p.h * scale);
+    x.translate(ox, oy);
+    x.scale(scale, scale);
+    paintPrint(x, src, job, { mirror: false, brighter: false, frame, extend }, { shape, wrapIn: 0 }, scale);
     x.restore();
     x.setLineDash([6, 4]);
     x.strokeStyle = ember;
     x.lineWidth = 2;
     outline();
     x.stroke();
-  }, [src, job, shape, frame, width, scale]);
+  }, [src, job, shape, frame, extend, width, scale]);
 
   const move = (dxPx: number, dyPx: number): void => onChange(nudge(frame, dxPx / scale, dyPx / scale, src.width, src.height, job));
   const zoomTo = (z: number): void => onChange({ ...frame, zoom: clampZoom(z, src.width, src.height, job) });

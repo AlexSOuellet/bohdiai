@@ -6,7 +6,8 @@ import { brighten, whiteBounds } from '@/lib/tools/print/pixels';
 import type { PieceShape } from '@/lib/tools/print/pieces';
 
 /** frame: which part of the picture shows (filling the print when left out). */
-export type Look = { mirror: boolean; brighter: boolean; frame?: Frame };
+/** extend: fill any space around a zoomed-out design by mirroring it outward (Alex, 2026-11-15). */
+export type Look = { mirror: boolean; brighter: boolean; frame?: Frame; extend?: boolean };
 export type Cut = { shape: PieceShape; wrapIn: number };
 export type Region = { x0: number; y0: number; w: number; h: number };
 
@@ -62,10 +63,28 @@ export function paintPrint(ctx: CanvasRenderingContext2D, src: HTMLCanvasElement
   }
   const p = placement(src.width, src.height, job, look.frame ?? FILL);
   ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(src, p.x, p.y, p.w, p.h);
+  if (look.extend === true && (p.w < job.w - 1e-6 || p.h < job.h - 1e-6)) extended(ctx, src, job, p);
+  else ctx.drawImage(src, p.x, p.y, p.w, p.h);
   ctx.restore();
   ctx.restore();
   cutLines(ctx, job, cut, inch);
+}
+
+/** The design with mirrored copies of itself around it, out to the print's edges, so the
+ *  background carries on with no seam and no white. Done on the device, no AI. */
+function extended(ctx: CanvasRenderingContext2D, src: HTMLCanvasElement, job: Job, p: { x: number; y: number; w: number; h: number }): void {
+  const odd = (n: number): boolean => Math.abs(n) % 2 === 1;
+  const cols = [Math.floor(-p.x / p.w), Math.ceil((job.w - p.x) / p.w) - 1];
+  const rows = [Math.floor(-p.y / p.h), Math.ceil((job.h - p.y) / p.h) - 1];
+  for (let iy = rows[0] ?? 0; iy <= (rows[1] ?? 0); iy++) {
+    for (let ix = cols[0] ?? 0; ix <= (cols[1] ?? 0); ix++) {
+      ctx.save();
+      ctx.translate(p.x + ix * p.w + (odd(ix) ? p.w : 0), p.y + iy * p.h + (odd(iy) ? p.h : 0));
+      ctx.scale(odd(ix) ? -1 : 1, odd(iy) ? -1 : 1);
+      ctx.drawImage(src, 0, 0, p.w, p.h);
+      ctx.restore();
+    }
+  }
 }
 
 /** A round or oval piece's cut line around the print, and (with a wrap) a lighter
