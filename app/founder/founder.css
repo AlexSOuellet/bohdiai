@@ -27,3 +27,5 @@
 .fd-emails { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(min(26rem, 100%), 1fr)); }
 .fd-emails .bk-section { margin: 0; }
 .fd-email { display: block; width: 100%; height: 44rem; margin-top: 0.75rem; border: 0; border-radius: var(--bk-radius-sm); background: #0a0805; }
+.fd-wanted { display: grid; gap: 0.4rem; margin: 0.6rem 0 0; padding: 0; list-style: none; max-width: 32rem; }
+.fd-wanted-row { display: flex; justify-content: space-between; gap: 1rem; padding: 0.45rem 0; border-bottom: 1px solid var(--bk-ink-15); }

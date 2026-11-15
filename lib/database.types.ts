@@ -3530,6 +3530,36 @@ export type Database = {
         }
         Relationships: []
       }
+      tool_feedback: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          makes: string
+          message: string
+          name: string
+          wants: string[]
+        }
+        Insert: {
+          created_at?: string
+          email?: string
+          id?: string
+          makes?: string
+          message?: string
+          name?: string
+          wants?: string[]
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          makes?: string
+          message?: string
+          name?: string
+          wants?: string[]
+        }
+        Relationships: []
+      }
       uploads: {
         Row: {
           ai_generation_metadata: Json | null

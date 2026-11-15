@@ -32,7 +32,8 @@ const COMPARE_WORDS: Readonly<Record<CompareRead, (low: string, breakEven: strin
 
 /** Price it: her costs, a markup, where she sells, and what others charge. Run on its
  *  own, or opened from Cost to make with the piece's cost filled in (Alex, 2026-10-28). */
-export function PriceTool({ initial, carry, canSaveProduct }: { initial: PriceForm; carry: CostCarry | null; canSaveProduct: boolean }): React.ReactElement {
+/** publicPage: on the share-only try-the-tools page, with no backend to link into (Alex, 2026-11-15). */
+export function PriceTool({ initial, carry, canSaveProduct, publicPage = false }: { initial: PriceForm; carry: CostCarry | null; canSaveProduct: boolean; publicPage?: boolean }): React.ReactElement {
   const [p, setPrice] = useState<PriceForm>(initial);
   const r = priceIt({ ...p, channels: new Set(p.channels) });
   const set = (patch: Partial<PriceForm>): void => setPrice({ ...p, ...patch });
@@ -57,7 +58,13 @@ export function PriceTool({ initial, carry, canSaveProduct }: { initial: PriceFo
               <p className="bk-note bk-tool-help">Filled in from Cost to make. Change anything you like.</p>
             ) : (
               <p className="bk-note bk-tool-help">
-                Not sure what one costs you? <Link href="/manage/tools/cost">Work it out in Cost to make</Link>.
+                {publicPage ? (
+                  'Not sure what one costs you? Work it out on the Cost to make tab.'
+                ) : (
+                  <>
+                    Not sure what one costs you? <Link href="/manage/tools/cost">Work it out in Cost to make</Link>.
+                  </>
+                )}
               </p>
             )}
             <div className="bk-tool-grid">

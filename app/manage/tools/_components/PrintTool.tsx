@@ -12,7 +12,27 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { DPI, FILL, MAX_AREA, PAPER_KEYS, SHEETS_MAX, biggestSharp, capSize, clampZoom, enlargeFactor, fillsSheet, fmtSize, parseSize, planSheets, sourceDpi, withWrap, type Frame, type Job, type PaperKey, type Unit } from '@/lib/tools/print/layout';
+import {
+  DPI,
+  FILL,
+  MAX_AREA,
+  PAPER_KEYS,
+  SHEETS_MAX,
+  biggestSharp,
+  capSize,
+  clampZoom,
+  enlargeFactor,
+  fillsSheet,
+  fmtSize,
+  parseSize,
+  planSheets,
+  sourceDpi,
+  withWrap,
+  type Frame,
+  type Job,
+  type PaperKey,
+  type Unit,
+} from '@/lib/tools/print/layout';
 import { brighten } from '@/lib/tools/print/pixels';
 import { withDpi } from '@/lib/tools/print/png';
 import { PIECE_WRAP_MAX, type PieceShape, type PrintPiece } from '@/lib/tools/print/pieces';
@@ -41,14 +61,43 @@ export const PAPER_NAMES: Readonly<Record<PaperKey, string>> = {
 
 /** The tabs, in order, with what each one is for. */
 const TABS: ReadonlyArray<{ key: PrintTab; name: string; about: string }> = [
-  { key: 'resize', name: 'Resize', about: 'Print one design at the exact size you need. Type the width or the height and the other follows, so nothing gets stretched.' },
-  { key: 'piece', name: 'Fit a piece', about: 'Cover something you’ve measured, like a coaster, a tray or a box lid. Give its shape and size, how much should wrap over the edge, and choose which part of the picture shows.' },
-  { key: 'several', name: 'Several on a sheet', about: 'Fill a sheet with designs, or copies of one, so no paper goes to waste. Each design keeps its own size, and they’re fitted on as few sheets as possible with room to cut between them.' },
-  { key: 'big', name: 'Big print', about: 'Print a design bigger than your paper. It’s split across sheets that overlap by ¼ inch and are numbered in order, so you can trim them and join them up.' },
-  { key: 'sharper', name: 'Make it sharper', about: 'Turn a small or blurry file into a bigger, sharper picture, without printing it. Handy for a print shop or another app.' },
+  {
+    key: 'resize',
+    name: 'Resize',
+    about:
+      'Print one design at the exact size you need. Type the width or the height and the other follows, so nothing gets stretched.',
+  },
+  {
+    key: 'piece',
+    name: 'Fit a piece',
+    about:
+      'Cover something you’ve measured, like a coaster, a tray or a box lid. Give its shape and size, how much should wrap over the edge, and choose which part of the picture shows.',
+  },
+  {
+    key: 'several',
+    name: 'Several on a sheet',
+    about:
+      'Fill a sheet with designs, or copies of one, so no paper goes to waste. Each design keeps its own size, and they’re fitted on as few sheets as possible with room to cut between them.',
+  },
+  {
+    key: 'big',
+    name: 'Big print',
+    about:
+      'Print a design bigger than your paper. It’s split across sheets that overlap by ¼ inch and are numbered in order, so you can trim them and join them up.',
+  },
+  {
+    key: 'sharper',
+    name: 'Make it sharper',
+    about:
+      'Turn a small or blurry file into a bigger, sharper picture, without printing it. Handy for a print shop or another app.',
+  },
 ];
 
-const SHAPE_NAMES: Readonly<Record<PieceShape, string>> = { rect: 'Rectangle', round: 'Round', oval: 'Oval' };
+const SHAPE_NAMES: Readonly<Record<PieceShape, string>> = {
+  rect: 'Rectangle',
+  round: 'Round',
+  oval: 'Oval',
+};
 const STORE_PAPER = 'bohdi.print.paper';
 const STORE_UNIT = 'bohdi.print.unit';
 const START_IN = 8;
@@ -130,11 +179,34 @@ let nextKey = 1;
 /** A design from a picture, at a starting size in proportion (a PDF keeps its own page size). */
 function designOf(pic: Picture, ready: HTMLCanvasElement, startIn: number): Design {
   const r = ready.width / ready.height;
-  const size = pic.inches ?? (r >= 1 ? { w: startIn, h: startIn / r } : { w: startIn * r, h: startIn });
-  return { key: nextKey++, pic, ready, preview: smallCopy(ready, false), trim: false, ...size, shape: 'rect', wrapIn: 0, copies: 1, frame: FILL, extend: false, sharper: null };
+  const size =
+    pic.inches ?? (r >= 1 ? { w: startIn, h: startIn / r } : { w: startIn * r, h: startIn });
+  return {
+    key: nextKey++,
+    pic,
+    ready,
+    preview: smallCopy(ready, false),
+    trim: false,
+    ...size,
+    shape: 'rect',
+    wrapIn: 0,
+    copies: 1,
+    frame: FILL,
+    extend: false,
+    sharper: null,
+  };
 }
 
-export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiece[]; products: ProductChoice[] | null }): React.ReactElement {
+/** canSavePieces: false on the share-only try-the-tools page, where there's no account to keep them in. */
+export function PrintTool({
+  pieces: firstPieces,
+  products,
+  canSavePieces = true,
+}: {
+  pieces: PrintPiece[];
+  products: ProductChoice[] | null;
+  canSavePieces?: boolean;
+}): React.ReactElement {
   const [tab, setTab] = useState<PrintTab>('resize');
   const [one, setOne] = useState<Design | null>(null);
   // Fit a piece: one piece, any number of designs on it (Alex, 2026-11-15).
@@ -143,12 +215,24 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
   const [many, setMany] = useState<Design[]>([]);
   const [active, setActive] = useState(0);
   // Remembered on the device; what the maker picks here wins.
-  const storedPaper = useSyncExternalStore(noop, () => read(STORE_PAPER), () => null);
-  const storedUnit = useSyncExternalStore(noop, () => read(STORE_UNIT), () => null);
+  const storedPaper = useSyncExternalStore(
+    noop,
+    () => read(STORE_PAPER),
+    () => null,
+  );
+  const storedUnit = useSyncExternalStore(
+    noop,
+    () => read(STORE_UNIT),
+    () => null,
+  );
   const [unitPick, setUnitPick] = useState<Unit | null>(null);
   const [paperPick, setPaperPick] = useState<PaperKey | null>(null);
   const unit: Unit = unitPick ?? (storedUnit === 'cm' ? 'cm' : 'in');
-  const paper: PaperKey | null = paperPick ?? (storedPaper !== null && (PAPER_KEYS as readonly string[]).includes(storedPaper) ? (storedPaper as PaperKey) : null);
+  const paper: PaperKey | null =
+    paperPick ??
+    (storedPaper !== null && (PAPER_KEYS as readonly string[]).includes(storedPaper)
+      ? (storedPaper as PaperKey)
+      : null);
   const [changingPaper, setChangingPaper] = useState(false);
   const [mirror, setMirror] = useState(false);
   const [brighter, setBrighter] = useState(false);
@@ -163,9 +247,24 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
   const [sharperBy, setSharperBy] = useState<2 | 4>(2);
 
   /** The design the tab's fields change. */
-  const cur: Design | null = tab === 'piece' ? (pieceSet[pieceActive] ?? pieceSet[0] ?? null) : tab === 'several' ? (many[active] ?? many[0] ?? null) : one;
+  const cur: Design | null =
+    tab === 'piece'
+      ? (pieceSet[pieceActive] ?? pieceSet[0] ?? null)
+      : tab === 'several'
+        ? (many[active] ?? many[0] ?? null)
+        : one;
   /** Every print in this tab's job (several: each design's copies). */
-  const designs: Design[] = useMemo(() => (tab === 'piece' ? pieceSet : tab === 'several' ? many : tab === 'sharper' || one === null ? [] : [{ ...one, copies: 1 }]), [tab, one, pieceSet, many]);
+  const designs: Design[] = useMemo(
+    () =>
+      tab === 'piece'
+        ? pieceSet
+        : tab === 'several'
+          ? many
+          : tab === 'sharper' || one === null
+            ? []
+            : [{ ...one, copies: 1 }],
+    [tab, one, pieceSet, many],
+  );
 
   const job = useMemo(() => {
     const owner: number[] = [];
@@ -179,12 +278,20 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
     return { owner, plan: planSheets(jobs, paper ?? 'letter') };
   }, [designs, paper]);
 
-  const brightPreviews = useMemo(() => new Map(designs.map((d) => [d.key, brighter ? smallCopy(d.preview, true) : d.preview])), [designs, brighter]);
+  const brightPreviews = useMemo(
+    () => new Map(designs.map((d) => [d.key, brighter ? smallCopy(d.preview, true) : d.preview])),
+    [designs, brighter],
+  );
   const matPrints = useMemo<MatPrint[]>(
     () =>
       job.owner.map((i) => {
         const d = designs[i] as Design;
-        return { src: brightPreviews.get(d.key) ?? d.preview, job: jobOf(d), look: { mirror, brighter: false, frame: d.frame, extend: d.extend }, cut: { shape: d.shape, wrapIn: d.wrapIn } };
+        return {
+          src: brightPreviews.get(d.key) ?? d.preview,
+          job: jobOf(d),
+          look: { mirror, brighter: false, frame: d.frame, extend: d.extend },
+          cut: { shape: d.shape, wrapIn: d.wrapIn },
+        };
       }),
     [job, designs, brightPreviews, mirror],
   );
@@ -196,10 +303,15 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
     if (tab === 'piece') {
       // The piece itself is shared by every design on it; the rest is each design's own.
       const { w, h, shape, wrapIn, ...own } = patch;
-      const shared: Partial<Design> = { ...(w === undefined ? {} : { w }), ...(h === undefined ? {} : { h }), ...(shape === undefined ? {} : { shape }), ...(wrapIn === undefined ? {} : { wrapIn }) };
+      const shared: Partial<Design> = {
+        ...(w === undefined ? {} : { w }),
+        ...(h === undefined ? {} : { h }),
+        ...(shape === undefined ? {} : { shape }),
+        ...(wrapIn === undefined ? {} : { wrapIn }),
+      };
       setPieceSet((all) => all.map((d) => ({ ...d, ...shared, ...(d.key === key ? own : {}) })));
-    }
-    else if (tab === 'several') setMany((all) => all.map((d) => (d.key === key ? { ...d, ...patch } : d)));
+    } else if (tab === 'several')
+      setMany((all) => all.map((d) => (d.key === key ? { ...d, ...patch } : d)));
     else setOne((d) => (d === null ? d : { ...d, ...patch }));
   }
 
@@ -220,7 +332,10 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
       const seed = (startIn: number): Design => designOf(pic, pic.canvas, startIn);
       // A design on the piece takes the piece's own shape and size (4 in square to start).
       const first = pieceSet[0];
-      const onPiece = (d: Design): Design => (first === undefined ? { ...d, w: PIECE_START_IN, h: PIECE_START_IN } : { ...d, w: first.w, h: first.h, shape: first.shape, wrapIn: first.wrapIn });
+      const onPiece = (d: Design): Design =>
+        first === undefined
+          ? { ...d, w: PIECE_START_IN, h: PIECE_START_IN }
+          : { ...d, w: first.w, h: first.h, shape: first.shape, wrapIn: first.wrapIn };
       // The picture carries to the other tabs that have none yet.
       if (tab === 'several') {
         if (another && many.length > 0) {
@@ -238,7 +353,11 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
           setPieceSet((all) => [...all, fresh]);
           setPieceActive(pieceSet.length);
         } else {
-          setPieceSet((all) => (all.length === 0 ? [fresh] : all.map((d, i) => (i === pieceActive ? { ...fresh, copies: d.copies } : d))));
+          setPieceSet((all) =>
+            all.length === 0
+              ? [fresh]
+              : all.map((d, i) => (i === pieceActive ? { ...fresh, copies: d.copies } : d)),
+          );
         }
         if (one === null) setOne(seed(START_IN));
         if (many.length === 0) setMany([seed(START_IN)]);
@@ -248,7 +367,10 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
         if (many.length === 0) setMany([seed(START_IN)]);
       }
     } catch (err) {
-      setSay({ text: err instanceof Error ? err.message : 'That file couldn’t be opened.', bad: true });
+      setSay({
+        text: err instanceof Error ? err.message : 'That file couldn’t be opened.',
+        bad: true,
+      });
     } finally {
       setBusy(null);
     }
@@ -261,12 +383,19 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
   });
   useEffect(() => {
     const onPaste = (e: ClipboardEvent): void => {
-      const item = [...(e.clipboardData?.items ?? [])].find((i) => i.kind === 'file' && (i.type.startsWith('image/') || i.type === 'application/pdf'));
+      const item = [...(e.clipboardData?.items ?? [])].find(
+        (i) => i.kind === 'file' && (i.type.startsWith('image/') || i.type === 'application/pdf'),
+      );
       const f = item?.getAsFile();
       if (f === null || f === undefined) return;
       e.preventDefault();
       const ext = f.type === 'application/pdf' ? 'pdf' : (f.type.split('/')[1] ?? 'png');
-      void pasteTo.current(f.name !== '' && f.name !== 'image.png' ? f : new File([f], `pasted-picture.${ext}`, { type: f.type }), false);
+      void pasteTo.current(
+        f.name !== '' && f.name !== 'image.png'
+          ? f
+          : new File([f], `pasted-picture.${ext}`, { type: f.type }),
+        false,
+      );
     };
     document.addEventListener('paste', onPaste);
     return () => document.removeEventListener('paste', onPaste);
@@ -279,9 +408,19 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
       const pic = await openPicture(cur.pic.file, page);
       const ready = cur.trim ? trimmed(pic.canvas) : pic.canvas;
       const r = ready.width / ready.height;
-      change({ pic, ready, preview: smallCopy(ready, false), frame: FILL, sharper: null, ...(tab === 'piece' ? {} : { h: cur.w / r }) });
+      change({
+        pic,
+        ready,
+        preview: smallCopy(ready, false),
+        frame: FILL,
+        sharper: null,
+        ...(tab === 'piece' ? {} : { h: cur.w / r }),
+      });
     } catch (err) {
-      setSay({ text: err instanceof Error ? err.message : 'That page couldn’t be opened.', bad: true });
+      setSay({
+        text: err instanceof Error ? err.message : 'That page couldn’t be opened.',
+        bad: true,
+      });
     } finally {
       setBusy(null);
     }
@@ -292,7 +431,14 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
     const ready = on ? trimmed(cur.pic.canvas) : cur.pic.canvas;
     const r = ready.width / ready.height;
     setTyped(null);
-    change({ trim: on, ready, preview: smallCopy(ready, false), frame: FILL, sharper: null, ...(tab === 'piece' ? {} : { h: cur.w / r }) });
+    change({
+      trim: on,
+      ready,
+      preview: smallCopy(ready, false),
+      frame: FILL,
+      sharper: null,
+      ...(tab === 'piece' ? {} : { h: cur.w / r }),
+    });
   }
 
   /** A typed size. In proportion on every tab but Fit a piece, where a piece has its own shape. */
@@ -301,7 +447,10 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
     const v = parseSize(text, unit);
     const fixed = tab === 'piece' && cur.shape !== 'round';
     if (v === null) {
-      setTyped({ w: which === 'w' ? text : fmtSize(cur.w, unit), h: which === 'h' ? text : fmtSize(cur.h, unit) });
+      setTyped({
+        w: which === 'w' ? text : fmtSize(cur.w, unit),
+        h: which === 'h' ? text : fmtSize(cur.h, unit),
+      });
       return;
     }
     let size: Job;
@@ -313,8 +462,26 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
       size = capSize(which === 'w' ? v : v * r, which === 'h' ? v : v / r);
     }
     // A new piece shape changes how far out the picture can zoom.
-    change({ ...size, ...(tab === 'piece' ? { frame: { ...cur.frame, zoom: clampZoom(cur.frame.zoom, cur.ready.width, cur.ready.height, withWrap(size, cur.wrapIn)) } } : {}) });
-    setTyped({ w: which === 'w' ? text : fmtSize(size.w, unit), h: which === 'h' ? text : fmtSize(size.h, unit) });
+    change({
+      ...size,
+      ...(tab === 'piece'
+        ? {
+            frame: {
+              ...cur.frame,
+              zoom: clampZoom(
+                cur.frame.zoom,
+                cur.ready.width,
+                cur.ready.height,
+                withWrap(size, cur.wrapIn),
+              ),
+            },
+          }
+        : {}),
+    });
+    setTyped({
+      w: which === 'w' ? text : fmtSize(size.w, unit),
+      h: which === 'h' ? text : fmtSize(size.h, unit),
+    });
   }
 
   function biggest(): void {
@@ -351,7 +518,13 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
     if (cur === null) return;
     let done: Awaited<ReturnType<typeof savePiece>>;
     try {
-      done = await savePiece({ name, shape: cur.shape, widthIn: cur.w, heightIn: cur.h, wrapIn: cur.wrapIn });
+      done = await savePiece({
+        name,
+        shape: cur.shape,
+        widthIn: cur.w,
+        heightIn: cur.h,
+        wrapIn: cur.wrapIn,
+      });
     } catch {
       setSay({ text: PIECE_FAILED, bad: true });
       return;
@@ -367,7 +540,10 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
   }
 
   async function rename(p: PrintPiece, name: string): Promise<void> {
-    const done = await renamePiece(p.id, name).catch(() => ({ ok: false as const, error: PIECE_FAILED }));
+    const done = await renamePiece(p.id, name).catch(() => ({
+      ok: false as const,
+      error: PIECE_FAILED,
+    }));
     if (!done.ok) return setSay({ text: done.error, bad: true });
     setPieces((all) => all.map((x) => (x.id === p.id ? { ...x, name: name.trim() } : x)));
   }
@@ -382,19 +558,36 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
    *  file is too small. soft: the device couldn't enlarge it enough. */
   async function sharp(d: Design, stop: AbortController): Promise<Sharp> {
     const f = enlargeFactor(d.ready.width, d.ready.height, jobOf(d), d.frame);
-    if (f === 1) return { src: d.ready, made: false, soft: sourceDpi(d.ready.width, d.ready.height, jobOf(d), d.frame) < DPI - 0.5 };
+    if (f === 1)
+      return {
+        src: d.ready,
+        made: false,
+        soft: sourceDpi(d.ready.width, d.ready.height, jobOf(d), d.frame) < DPI - 0.5,
+      };
     if (d.sharper?.factor === f) return { src: d.sharper.canvas, made: true, soft: false };
     const canvas = await enlarging(d, f, stop);
-    return canvas === null ? { src: d.ready, made: false, soft: true } : { src: canvas, made: true, soft: false };
+    return canvas === null
+      ? { src: d.ready, made: false, soft: true }
+      : { src: canvas, made: true, soft: false };
   }
 
   /** Enlarges a design, keeping the result for the next save. Null when the device can't. */
-  async function enlarging(d: Design, f: 2 | 4, stop: AbortController): Promise<HTMLCanvasElement | null> {
+  async function enlarging(
+    d: Design,
+    f: 2 | 4,
+    stop: AbortController,
+  ): Promise<HTMLCanvasElement | null> {
     const words = `Making ${d.pic.name} sharper… keep this page open.`;
     setBusy({ say: words, progress: 0, stop });
     try {
-      const canvas = await enlarge(d.ready, f, (x) => setBusy({ say: words, progress: x, stop }), stop.signal);
-      const keepIt = (x: Design): Design => (x.key === d.key ? { ...x, sharper: { factor: f, canvas } } : x);
+      const canvas = await enlarge(
+        d.ready,
+        f,
+        (x) => setBusy({ say: words, progress: x, stop }),
+        stop.signal,
+      );
+      const keepIt = (x: Design): Design =>
+        x.key === d.key ? { ...x, sharper: { factor: f, canvas } } : x;
       setOne((x) => (x === null ? x : keepIt(x)));
       setPieceSet((all) => all.map(keepIt));
       setMany((all) => all.map(keepIt));
@@ -416,7 +609,11 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
   }
 
   function failed(err: unknown, fallback: string): void {
-    setSay(err instanceof Error && err.message === ENLARGE_STOPPED ? { text: 'Stopped. Nothing was saved.', bad: false } : { text: err instanceof Error ? err.message : fallback, bad: true });
+    setSay(
+      err instanceof Error && err.message === ENLARGE_STOPPED
+        ? { text: 'Stopped. Nothing was saved.', bad: false }
+        : { text: err instanceof Error ? err.message : fallback, bad: true },
+    );
   }
 
   const sheets = job.plan.sheets.length;
@@ -434,15 +631,35 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
       for (const d of designs) sharpened.set(d.key, await sharp(d, stop));
       const prints: PrintDesign[] = job.owner.map((i) => {
         const d = designs[i] as Design;
-        return { src: (sharpened.get(d.key) as Sharp).src, job: jobOf(d), look: { mirror, brighter, frame: d.frame, extend: d.extend }, cut: { shape: d.shape, wrapIn: d.wrapIn } };
+        return {
+          src: (sharpened.get(d.key) as Sharp).src,
+          job: jobOf(d),
+          look: { mirror, brighter, frame: d.frame, extend: d.extend },
+          cut: { shape: d.shape, wrapIn: d.wrapIn },
+        };
       });
       const first = designs[0] as Design;
-      const { blob, dpi } = await buildPdf(prints, job.plan.sheets, unit, sizeLabel(first), (i, n) => setBusy({ say: `Laying out sheet ${i + 1} of ${n}…`, progress: (i + 1) / n, stop: null }));
+      const { blob, dpi } = await buildPdf(
+        prints,
+        job.plan.sheets,
+        unit,
+        sizeLabel(first),
+        (i, n) =>
+          setBusy({ say: `Laying out sheet ${i + 1} of ${n}…`, progress: (i + 1) / n, stop: null }),
+      );
       const j = jobOf(first);
-      const name = fileName(designs.length === 1 && first.copies === 1 ? `${first.pic.name}-${fmtSize(j.w, unit)}x${fmtSize(j.h, unit)}${unit}.pdf` : `${first.pic.name}-and-more-${sheets}-sheets.pdf`);
+      const name = fileName(
+        designs.length === 1 && first.copies === 1
+          ? `${first.pic.name}-${fmtSize(j.w, unit)}x${fmtSize(j.h, unit)}${unit}.pdf`
+          : `${first.pic.name}-and-more-${sheets}-sheets.pdf`,
+      );
       download(blob, name);
       const all = [...sharpened.values()];
-      finished(name, all.some((s) => s.made), all.some((s) => s.soft) || dpi < DPI);
+      finished(
+        name,
+        all.some((s) => s.made),
+        all.some((s) => s.soft) || dpi < DPI,
+      );
     } catch (err) {
       failed(err, 'The PDF couldn’t be made.');
     } finally {
@@ -459,8 +676,17 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
       const s = await sharp(cur, stop);
       setBusy({ say: 'Making the picture…', progress: null, stop: null });
       const j = jobOf(cur);
-      const r = drawRegion(s.src, j, { x0: 0, y0: 0, w: j.w, h: j.h }, DPI, { mirror, brighter, frame: cur.frame, extend: cur.extend }, { shape: cur.shape, wrapIn: cur.wrapIn });
-      const name = fileName(`${cur.pic.name}-${fmtSize(j.w, unit)}x${fmtSize(j.h, unit)}${unit}.png`);
+      const r = drawRegion(
+        s.src,
+        j,
+        { x0: 0, y0: 0, w: j.w, h: j.h },
+        DPI,
+        { mirror, brighter, frame: cur.frame, extend: cur.extend },
+        { shape: cur.shape, wrapIn: cur.wrapIn },
+      );
+      const name = fileName(
+        `${cur.pic.name}-${fmtSize(j.w, unit)}x${fmtSize(j.h, unit)}${unit}.png`,
+      );
       await savePicture(r.canvas, r.dpi, name);
       finished(name, s.made, s.soft || r.dpi < DPI);
     } catch (err) {
@@ -471,7 +697,15 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
   }
 
   async function savePicture(canvas: HTMLCanvasElement, dpi: number, name: string): Promise<void> {
-    const blob = await new Promise<Blob>((ok, bad) => canvas.toBlob((b) => (b === null ? bad(new Error('This is too big to save as one picture. Save the PDF instead.')) : ok(b)), 'image/png'));
+    const blob = await new Promise<Blob>((ok, bad) =>
+      canvas.toBlob(
+        (b) =>
+          b === null
+            ? bad(new Error('This is too big to save as one picture. Save the PDF instead.'))
+            : ok(b),
+        'image/png',
+      ),
+    );
     const png = withDpi(new Uint8Array(await blob.arrayBuffer()), dpi);
     download(new Blob([png.slice().buffer], { type: 'image/png' }), name);
   }
@@ -482,11 +716,21 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
     setSay(null);
     const stop = new AbortController();
     try {
-      const canvas = one.sharper?.factor === sharperBy ? one.sharper.canvas : await enlarging(one, sharperBy, stop);
-      if (canvas === null) return setSay({ text: 'This device couldn’t make the picture sharper. Try it on a computer.', bad: true });
+      const canvas =
+        one.sharper?.factor === sharperBy
+          ? one.sharper.canvas
+          : await enlarging(one, sharperBy, stop);
+      if (canvas === null)
+        return setSay({
+          text: 'This device couldn’t make the picture sharper. Try it on a computer.',
+          bad: true,
+        });
       const name = fileName(`${one.pic.name}-sharper.png`);
       await savePicture(canvas, DPI, name);
-      setSay({ text: `Saved ${name}. It now prints sharp up to ${fmtSize(canvas.width / DPI, unit)} × ${fmtSize(canvas.height / DPI, unit)} ${unit}.`, bad: false });
+      setSay({
+        text: `Saved ${name}. It now prints sharp up to ${fmtSize(canvas.width / DPI, unit)} × ${fmtSize(canvas.height / DPI, unit)} ${unit}.`,
+        bad: false,
+      });
     } catch (err) {
       failed(err, 'The picture couldn’t be made.');
     } finally {
@@ -495,7 +739,10 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
   }
 
   // What the hang tag says.
-  const where = paper === 'print' ? `on ${sheets === 1 ? 'one page' : `${sheets} pages`} the size of the print` : `on ${sheets} ${sheets === 1 ? 'sheet' : 'sheets'} of ${PAPER_NAMES[paper ?? 'letter']}`;
+  const where =
+    paper === 'print'
+      ? `on ${sheets === 1 ? 'one page' : `${sheets} pages`} the size of the print`
+      : `on ${sheets} ${sheets === 1 ? 'sheet' : 'sheets'} of ${PAPER_NAMES[paper ?? 'letter']}`;
   const verdict = (d: Design): 'sharp' | 'sharper' | 'soft' => {
     const j = jobOf(d);
     const f = enlargeFactor(d.ready.width, d.ready.height, j, d.frame);
@@ -518,13 +765,18 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
     const area = (d: Design): number => jobOf(d).w * jobOf(d).h * d.copies;
     const total = designs.reduce((n, d) => n + area(d), 0);
     const mine = designs.find((d) => d.key === cur.key) ?? cur;
-    return total === 0 ? null : Math.round((sheets * sheetCents * (area(mine) / total)) / mine.copies);
+    return total === 0
+      ? null
+      : Math.round((sheets * sheetCents * (area(mine) / total)) / mine.copies);
   })();
 
-  const shown = cur === null ? null : (typed ?? { w: fmtSize(cur.w, unit), h: fmtSize(cur.h, unit) });
+  const shown =
+    cur === null ? null : (typed ?? { w: fmtSize(cur.w, unit), h: fmtSize(cur.h, unit) });
   const about = TABS.find((t) => t.key === tab)?.about ?? '';
-  const framing = tab === 'piece' && cur !== null && Math.abs(ratioOf(cur) - jobOf(cur).w / jobOf(cur).h) > 0.005;
-  const fitsSharper = (f: number): boolean => one !== null && one.ready.width * one.ready.height * f * f <= MAX_AREA;
+  const framing =
+    tab === 'piece' && cur !== null && Math.abs(ratioOf(cur) - jobOf(cur).w / jobOf(cur).h) > 0.005;
+  const fitsSharper = (f: number): boolean =>
+    one !== null && one.ready.width * one.ready.height * f * f <= MAX_AREA;
 
   // The designs listed on Several on a sheet, and on Fit a piece when there's more than one.
   const list = tab === 'several' ? many : tab === 'piece' ? pieceSet : null;
@@ -566,13 +818,22 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
                 e.target.value = '';
               }}
             />
-            <span className="bk-print-drop-name">{cur === null ? 'Add your design' : cur.pic.name}</span>
-            <span className="bk-note">{cur === null ? 'A JPG, PNG or PDF. Tap to choose it, drag it here, or paste it.' : `${cur.ready.width} × ${cur.ready.height} pixels · tap to change`}</span>
+            <span className="bk-print-drop-name">
+              {cur === null ? 'Add your design' : cur.pic.name}
+            </span>
+            <span className="bk-note">
+              {cur === null
+                ? 'A JPG, PNG or PDF. Tap to choose it, drag it here, or paste it.'
+                : `${cur.ready.width} × ${cur.ready.height} pixels · tap to change`}
+            </span>
           </label>
           {tab === 'piece' && cur !== null && (
             <>
               {addAnother}
-              <p className="bk-note">For a set with different designs, like four coasters that don’t match. Each one goes on the same piece.</p>
+              <p className="bk-note">
+                For a set with different designs, like four coasters that don’t match. Each one goes
+                on the same piece.
+              </p>
             </>
           )}
         </>
@@ -596,7 +857,28 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
                 {tab === 'several' && (
                   <label className="bk-print-copies">
                     Copies
-                    <input className="bk-tool-num" type="number" min={1} max={COPIES_MAX} value={d.copies} onChange={(e) => setList((all) => all.map((x) => (x.key === d.key ? { ...x, copies: Math.min(COPIES_MAX, Math.max(1, Math.round(Number(e.target.value) || 1))) } : x)))} />
+                    <input
+                      className="bk-tool-num"
+                      type="number"
+                      min={1}
+                      max={COPIES_MAX}
+                      value={d.copies}
+                      onChange={(e) =>
+                        setList((all) =>
+                          all.map((x) =>
+                            x.key === d.key
+                              ? {
+                                  ...x,
+                                  copies: Math.min(
+                                    COPIES_MAX,
+                                    Math.max(1, Math.round(Number(e.target.value) || 1)),
+                                  ),
+                                }
+                              : x,
+                          ),
+                        )
+                      }
+                    />
                   </label>
                 )}
                 {(list ?? []).length > 1 && (
@@ -615,7 +897,11 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
             ))}
           </ul>
           {addAnother}
-          <p className="bk-note">{tab === 'piece' ? 'Tap a design to choose which part of it shows. They all share the piece below.' : 'Tap a design to change its size below.'}</p>
+          <p className="bk-note">
+            {tab === 'piece'
+              ? 'Tap a design to choose which part of it shows. They all share the piece below.'
+              : 'Tap a design to change its size below.'}
+          </p>
         </>
       )}
       {cur !== null && cur.pic.pages > 1 && (
@@ -623,7 +909,12 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
           <label className="bk-label" htmlFor="print-page">
             Page of the PDF
           </label>
-          <select id="print-page" className="bk-input" value={cur.pic.page} onChange={(e) => void choosePage(Number(e.target.value))}>
+          <select
+            id="print-page"
+            className="bk-input"
+            value={cur.pic.page}
+            onChange={(e) => void choosePage(Number(e.target.value))}
+          >
             {Array.from({ length: cur.pic.pages }, (_, i) => (
               <option key={i + 1} value={i + 1}>{`Page ${i + 1}`}</option>
             ))}
@@ -641,10 +932,20 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
 
   const unitPart = (
     <div className="bk-print-unit" role="group" aria-label="Measure in">
-      <button type="button" className="bk-print-unit-btn" aria-pressed={unit === 'in'} onClick={() => setUnit('in')}>
+      <button
+        type="button"
+        className="bk-print-unit-btn"
+        aria-pressed={unit === 'in'}
+        onClick={() => setUnit('in')}
+      >
         in
       </button>
-      <button type="button" className="bk-print-unit-btn" aria-pressed={unit === 'cm'} onClick={() => setUnit('cm')}>
+      <button
+        type="button"
+        className="bk-print-unit-btn"
+        aria-pressed={unit === 'cm'}
+        onClick={() => setUnit('cm')}
+      >
         cm
       </button>
     </div>
@@ -656,7 +957,17 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
         {label}
       </label>
       <span className="bk-tool-inp">
-        <input id={`print-${which}`} className="bk-tool-num" type="text" inputMode="decimal" autoComplete="off" disabled={cur === null} value={shown?.[which] ?? ''} onChange={(e) => setSize(which, e.target.value)} onBlur={() => setTyped(null)} />
+        <input
+          id={`print-${which}`}
+          className="bk-tool-num"
+          type="text"
+          inputMode="decimal"
+          autoComplete="off"
+          disabled={cur === null}
+          value={shown?.[which] ?? ''}
+          onChange={(e) => setSize(which, e.target.value)}
+          onBlur={() => setTyped(null)}
+        />
         <span className="bk-tool-unit">{unit}</span>
       </span>
     </div>
@@ -665,7 +976,9 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
   const sizePart = (
     <section className="bk-section">
       <div className="bk-print-head">
-        <h3 className="bk-section-title">{tab === 'several' && cur !== null ? `Size of ${cur.pic.name}` : 'Size'}</h3>
+        <h3 className="bk-section-title">
+          {tab === 'several' && cur !== null ? `Size of ${cur.pic.name}` : 'Size'}
+        </h3>
         {unitPart}
       </div>
       <div className="bk-print-size">
@@ -687,35 +1000,64 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
         <h3 className="bk-section-title">The piece</h3>
         {unitPart}
       </div>
-      <div className="bk-print-pieces bk-print-pieces-top">
-        <p className="bk-label">My pieces</p>
-        {pieces.length === 0 && <p className="bk-note">Save a piece you cover again and again, and it waits here next time.</p>}
-        {!editingPieces && (
-          <div className="bk-print-chips">
-            {pieces.map((p) => (
-              <button key={p.id} type="button" className="bk-print-chip" disabled={cur === null} onClick={() => pickPiece(p)}>
-                {p.name}
-              </button>
-            ))}
-          </div>
-        )}
-        {editingPieces && (
-          <ul className="bk-print-piece-list">
-            {pieces.map((p) => (
-              <PieceRow key={p.id} piece={p} unit={unit} onRename={(n) => void rename(p, n)} onRemove={() => void remove(p)} />
-            ))}
-          </ul>
-        )}
-        {pieces.length > 0 && naming === null && (
-          <button type="button" className="bk-link bk-print-link" onClick={() => setEditingPieces(!editingPieces)}>
-            {editingPieces ? 'Done' : 'Change my pieces'}
-          </button>
-        )}
-      </div>
+      {canSavePieces && (
+        <div className="bk-print-pieces bk-print-pieces-top">
+          <p className="bk-label">My pieces</p>
+          {pieces.length === 0 && (
+            <p className="bk-note">
+              Save a piece you cover again and again, and it waits here next time.
+            </p>
+          )}
+          {!editingPieces && (
+            <div className="bk-print-chips">
+              {pieces.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  className="bk-print-chip"
+                  disabled={cur === null}
+                  onClick={() => pickPiece(p)}
+                >
+                  {p.name}
+                </button>
+              ))}
+            </div>
+          )}
+          {editingPieces && (
+            <ul className="bk-print-piece-list">
+              {pieces.map((p) => (
+                <PieceRow
+                  key={p.id}
+                  piece={p}
+                  unit={unit}
+                  onRename={(n) => void rename(p, n)}
+                  onRemove={() => void remove(p)}
+                />
+              ))}
+            </ul>
+          )}
+          {pieces.length > 0 && naming === null && (
+            <button
+              type="button"
+              className="bk-link bk-print-link"
+              onClick={() => setEditingPieces(!editingPieces)}
+            >
+              {editingPieces ? 'Done' : 'Change my pieces'}
+            </button>
+          )}
+        </div>
+      )}
       <p className="bk-label">Shape</p>
       <div className="bk-print-unit" role="group" aria-label="Shape of the piece">
         {(['rect', 'round', 'oval'] as const).map((s) => (
-          <button key={s} type="button" className="bk-print-unit-btn" disabled={cur === null} aria-pressed={(cur?.shape ?? 'rect') === s} onClick={() => setShape(s)}>
+          <button
+            key={s}
+            type="button"
+            className="bk-print-unit-btn"
+            disabled={cur === null}
+            aria-pressed={(cur?.shape ?? 'rect') === s}
+            onClick={() => setShape(s)}
+          >
             {SHAPE_NAMES[s]}
           </button>
         ))}
@@ -729,10 +1071,20 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
           Wrap over the edge
         </label>
         <span className="bk-tool-inp">
-          <WrapInput key={`${cur?.key ?? 0}-${unit}-${cur?.wrapIn ?? 0}`} id="print-wrap" unit={unit} disabled={cur === null} value={cur?.wrapIn ?? 0} onChange={(v) => change({ wrapIn: v })} />
+          <WrapInput
+            key={`${cur?.key ?? 0}-${unit}-${cur?.wrapIn ?? 0}`}
+            id="print-wrap"
+            unit={unit}
+            disabled={cur === null}
+            value={cur?.wrapIn ?? 0}
+            onChange={(v) => change({ wrapIn: v })}
+          />
           <span className="bk-tool-unit">{unit}</span>
         </span>
-        <span className="bk-note">Extra on every side to fold over the edge. Leave it blank for a design that stops at the edge. Round and oval pieces get their cut line printed.</span>
+        <span className="bk-note">
+          Extra on every side to fold over the edge. Leave it blank for a design that stops at the
+          edge. Round and oval pieces get their cut line printed.
+        </span>
       </div>
       <div className="bk-field bk-tool-field">
         <label className="bk-label" htmlFor="print-copies">
@@ -747,14 +1099,24 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
             max={COPIES_MAX}
             disabled={cur === null}
             value={cur?.copies ?? 1}
-            onChange={(e) => change({ copies: Math.min(COPIES_MAX, Math.max(1, Math.round(Number(e.target.value) || 1))) })}
+            onChange={(e) =>
+              change({
+                copies: Math.min(COPIES_MAX, Math.max(1, Math.round(Number(e.target.value) || 1))),
+              })
+            }
           />
         </span>
-        <span className="bk-note">For a set, like four coasters. They’re fitted on as few sheets as possible.</span>
+        <span className="bk-note">
+          For a set, like four coasters. They’re fitted on as few sheets as possible.
+        </span>
       </div>
       <div className="bk-print-piece-actions">
-        {cur !== null && naming === null && !editingPieces && (
-          <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" onClick={() => setNaming('')}>
+        {canSavePieces && cur !== null && naming === null && !editingPieces && (
+          <button
+            type="button"
+            className="bk-btn bk-btn-quiet bk-btn-small"
+            onClick={() => setNaming('')}
+          >
             Save this piece
           </button>
         )}
@@ -764,9 +1126,21 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
           <label className="bk-label" htmlFor="print-piece-name">
             Name this piece
           </label>
-          <input id="print-piece-name" className="bk-input" type="text" autoComplete="off" maxLength={60} value={naming} onChange={(e) => setNaming(e.target.value)} />
+          <input
+            id="print-piece-name"
+            className="bk-input"
+            type="text"
+            autoComplete="off"
+            maxLength={60}
+            value={naming}
+            onChange={(e) => setNaming(e.target.value)}
+          />
           <div className="bk-print-piece-actions">
-            <button type="button" className="bk-btn bk-btn-small" onClick={() => void keepSize(naming)}>
+            <button
+              type="button"
+              className="bk-btn bk-btn-small"
+              onClick={() => void keepSize(naming)}
+            >
               Save
             </button>
             <button type="button" className="bk-link bk-print-link" onClick={() => setNaming(null)}>
@@ -781,15 +1155,35 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
   const framePart =
     framing && cur !== null ? (
       <section className="bk-section">
-        <h3 className="bk-section-title">{pieceSet.length > 1 ? `Which part of ${cur.pic.name} shows` : 'Which part shows'}</h3>
-        <p className="bk-note bk-print-lead">Your design is a different shape from the piece, so some of it won’t fit. Drag it to choose which part shows, or zoom out to fit all of it.</p>
-        <FrameEditor src={brightPreviews.get(cur.key) ?? cur.preview} job={jobOf(cur)} shape={cur.shape} frame={cur.frame} extend={cur.extend} onChange={(f) => change({ frame: f })} />
+        <h3 className="bk-section-title">
+          {pieceSet.length > 1 ? `Which part of ${cur.pic.name} shows` : 'Which part shows'}
+        </h3>
+        <p className="bk-note bk-print-lead">
+          Your design is a different shape from the piece, so some of it won’t fit. Drag it to
+          choose which part shows, or zoom out to fit all of it.
+        </p>
+        <FrameEditor
+          src={brightPreviews.get(cur.key) ?? cur.preview}
+          job={jobOf(cur)}
+          shape={cur.shape}
+          frame={cur.frame}
+          extend={cur.extend}
+          onChange={(f) => change({ frame: f })}
+        />
         {cur.frame.zoom < 1 - 1e-6 && (
           <label className="bk-check bk-print-extend">
-            <input type="checkbox" checked={cur.extend} onChange={(e) => change({ extend: e.target.checked })} />
+            <input
+              type="checkbox"
+              checked={cur.extend}
+              onChange={(e) => change({ extend: e.target.checked })}
+            />
             <span>
               Extend the design to fill the space
-              <span className="bk-note bk-print-why">The space around it is filled by mirroring the design’s edges outward, right here on your device. It works best on backgrounds; anything right at the edge shows as a repeat.</span>
+              <span className="bk-note bk-print-why">
+                The space around it is filled by mirroring the design’s edges outward, right here on
+                your device. It works best on backgrounds; anything right at the edge shows as a
+                repeat.
+              </span>
             </span>
           </label>
         )}
@@ -802,7 +1196,11 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
       {paper !== null && !changingPaper ? (
         <p className="bk-print-paper">
           <span>{`On ${PAPER_NAMES[paper]}`}</span>
-          <button type="button" className="bk-link bk-print-link" onClick={() => setChangingPaper(true)}>
+          <button
+            type="button"
+            className="bk-link bk-print-link"
+            onClick={() => setChangingPaper(true)}
+          >
             Change
           </button>
         </p>
@@ -811,7 +1209,12 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
           <label className="bk-label" htmlFor="print-paper">
             What paper do you print on?
           </label>
-          <select id="print-paper" className="bk-input" value={paper ?? ''} onChange={(e) => choosePaper(e.target.value as PaperKey)}>
+          <select
+            id="print-paper"
+            className="bk-input"
+            value={paper ?? ''}
+            onChange={(e) => choosePaper(e.target.value as PaperKey)}
+          >
             {paper === null && <option value="">Choose your paper</option>}
             {PAPER_KEYS.map((k) => (
               <option key={k} value={k}>
@@ -819,7 +1222,10 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
               </option>
             ))}
           </select>
-          <span className="bk-note">Asked once, then remembered on this device. Pick “One page the size of the print” to send it to a print shop.</span>
+          <span className="bk-note">
+            Asked once, then remembered on this device. Pick “One page the size of the print” to
+            send it to a print shop.
+          </span>
         </div>
       )}
       <div className="bk-checks bk-print-options">
@@ -827,14 +1233,23 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
           <input type="checkbox" checked={mirror} onChange={(e) => setMirror(e.target.checked)} />
           <span>
             Mirror it
-            <span className="bk-note bk-print-why">For transfers that go on face-down, so the design comes out the right way round.</span>
+            <span className="bk-note bk-print-why">
+              For transfers that go on face-down, so the design comes out the right way round.
+            </span>
           </span>
         </label>
         <label className="bk-check">
-          <input type="checkbox" checked={brighter} onChange={(e) => setBrighter(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={brighter}
+            onChange={(e) => setBrighter(e.target.checked)}
+          />
           <span>
             Brighter for thin paper
-            <span className="bk-note bk-print-why">Rice paper and tissue print paler; this lifts the colour so the design doesn’t wash out.</span>
+            <span className="bk-note bk-print-why">
+              Rice paper and tissue print paler; this lifts the colour so the design doesn’t wash
+              out.
+            </span>
           </span>
         </label>
       </div>
@@ -846,25 +1261,54 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
       {tab === 'sharper' ? (
         <>
           <div className="bk-print-unit" role="group" aria-label="How much bigger">
-            <button type="button" className="bk-print-unit-btn" aria-pressed={sharperBy === 2} disabled={!fitsSharper(2)} onClick={() => setSharperBy(2)}>
+            <button
+              type="button"
+              className="bk-print-unit-btn"
+              aria-pressed={sharperBy === 2}
+              disabled={!fitsSharper(2)}
+              onClick={() => setSharperBy(2)}
+            >
               Twice as big
             </button>
-            <button type="button" className="bk-print-unit-btn" aria-pressed={sharperBy === 4} disabled={!fitsSharper(4)} onClick={() => setSharperBy(4)}>
+            <button
+              type="button"
+              className="bk-print-unit-btn"
+              aria-pressed={sharperBy === 4}
+              disabled={!fitsSharper(4)}
+              onClick={() => setSharperBy(4)}
+            >
               Four times as big
             </button>
           </div>
-          <button type="button" className="bk-btn bk-print-go" disabled={one === null || busy !== null || !fitsSharper(sharperBy)} onClick={() => void saveSharper()}>
+          <button
+            type="button"
+            className="bk-btn bk-print-go"
+            disabled={one === null || busy !== null || !fitsSharper(sharperBy)}
+            onClick={() => void saveSharper()}
+          >
             Make it sharper and save
           </button>
-          {one !== null && !fitsSharper(2) && <p className="bk-note">This file is already as big as this device can handle.</p>}
+          {one !== null && !fitsSharper(2) && (
+            <p className="bk-note">This file is already as big as this device can handle.</p>
+          )}
         </>
       ) : (
         <>
-          <button type="button" className="bk-btn bk-print-go" disabled={cur === null || busy !== null} onClick={() => void savePdf()}>
+          <button
+            type="button"
+            className="bk-btn bk-print-go"
+            disabled={cur === null || busy !== null}
+            onClick={() => void savePdf()}
+          >
             Save the PDF
           </button>
           {tab === 'resize' && (
-            <button type="button" className="bk-link bk-print-link" disabled={cur === null || busy !== null} onClick={() => void savePng()}>
+            <button
+              type="button"
+              className="bk-link bk-print-link"
+              disabled={cur === null || busy !== null}
+              onClick={() => void savePng()}
+            >
               Save as a picture (PNG) instead
             </button>
           )}
@@ -879,14 +1323,21 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
             </progress>
           )}
           {busy.stop !== null && (
-            <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" onClick={() => busy.stop?.abort()}>
+            <button
+              type="button"
+              className="bk-btn bk-btn-quiet bk-btn-small"
+              onClick={() => busy.stop?.abort()}
+            >
               Stop
             </button>
           )}
         </div>
       )}
       {say !== null && (
-        <p className={say.bad ? 'bk-print-say bk-error' : 'bk-print-say'} role={say.bad ? 'alert' : 'status'}>
+        <p
+          className={say.bad ? 'bk-print-say bk-error' : 'bk-print-say'}
+          role={say.bad ? 'alert' : 'status'}
+        >
           {say.text}
         </p>
       )}
@@ -897,7 +1348,9 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
     printing && products !== null && products.length > 0 ? (
       <section className="bk-section">
         <h3 className="bk-section-title">Add the paper to a product</h3>
-        <p className="bk-note bk-print-lead">See what the paper adds to the cost of what you make, then add it in Cost to make.</p>
+        <p className="bk-note bk-print-lead">
+          See what the paper adds to the cost of what you make, then add it in Cost to make.
+        </p>
         <div className="bk-tool-grid">
           <div className="bk-field bk-tool-field">
             <label className="bk-label" htmlFor="print-sheet-price">
@@ -905,14 +1358,27 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
             </label>
             <span className="bk-tool-inp">
               <span className="bk-tool-unit">$</span>
-              <input id="print-sheet-price" className="bk-tool-num" type="text" inputMode="decimal" autoComplete="off" value={sheetPrice} onChange={(e) => setSheetPrice(e.target.value)} />
+              <input
+                id="print-sheet-price"
+                className="bk-tool-num"
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
+                value={sheetPrice}
+                onChange={(e) => setSheetPrice(e.target.value)}
+              />
             </span>
           </div>
           <div className="bk-field">
             <label className="bk-label" htmlFor="print-product">
               Product
             </label>
-            <select id="print-product" className="bk-input" value={productId} onChange={(e) => setProductId(e.target.value)}>
+            <select
+              id="print-product"
+              className="bk-input"
+              value={productId}
+              onChange={(e) => setProductId(e.target.value)}
+            >
               {products.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
@@ -967,24 +1433,49 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
     sharper: picturePart,
   };
 
-  const tagTitle = tab === 'sharper' ? 'Make it sharper' : cur === null ? 'Your print' : tab === 'several' || copies > 1 ? `${copies} ${copies === 1 ? 'print' : 'prints'}` : sizeLabel(cur);
+  const tagTitle =
+    tab === 'sharper'
+      ? 'Make it sharper'
+      : cur === null
+        ? 'Your print'
+        : tab === 'several' || copies > 1
+          ? `${copies} ${copies === 1 ? 'print' : 'prints'}`
+          : sizeLabel(cur);
 
   return (
     <section aria-labelledby="tool-print" className="bk-print">
       <h2 id="tool-print" className="bk-tool-title">
         Print your designs at the exact size you need
       </h2>
-      <p className="bk-tool-lede">Print it gets your designs onto paper at the exact size you need, sharp, ready to cut and use. If a file is too small to print sharp, it’s made sharper for you. It all happens on your own device, so your designs aren’t uploaded anywhere. Pick what you want to do.</p>
+      <p className="bk-tool-lede">
+        Print it gets your designs onto paper at the exact size you need, sharp, ready to cut and
+        use. If a file is too small to print sharp, it’s made sharper for you. It all happens on
+        your own device, so your designs aren’t uploaded anywhere. Pick what you want to do.
+      </p>
 
       <div className="bk-print-tabs" role="tablist" aria-label="What do you want to do?">
         {TABS.map((t) => (
-          <button key={t.key} type="button" role="tab" id={`print-tab-${t.key}`} aria-selected={tab === t.key} aria-controls="print-panel" className="bk-print-tab" onClick={() => chooseTab(t.key)}>
+          <button
+            key={t.key}
+            type="button"
+            role="tab"
+            id={`print-tab-${t.key}`}
+            aria-selected={tab === t.key}
+            aria-controls="print-panel"
+            className="bk-print-tab"
+            onClick={() => chooseTab(t.key)}
+          >
             {t.name}
           </button>
         ))}
       </div>
 
-      <div id="print-panel" role="tabpanel" aria-labelledby={`print-tab-${tab}`} className="bk-print-panel">
+      <div
+        id="print-panel"
+        role="tabpanel"
+        aria-labelledby={`print-tab-${tab}`}
+        className="bk-print-panel"
+      >
         <p className="bk-print-about">{about}</p>
         <div className="bk-tool-main">
           <form className="bk-tool-form" onSubmit={(e) => e.preventDefault()}>
@@ -997,11 +1488,15 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
             <HangTag label="Print it" title={tagTitle}>
               {tab === 'sharper' ? (
                 one === null ? (
-                  <p className="bk-hangtag-say">Add your design to see how big it can print sharp.</p>
+                  <p className="bk-hangtag-say">
+                    Add your design to see how big it can print sharp.
+                  </p>
                 ) : (
                   <>
                     <p className="bk-hangtag-say">{`Prints sharp up to ${fmtSize(one.ready.width / DPI, unit)} × ${fmtSize(one.ready.height / DPI, unit)} ${unit} now.`}</p>
-                    {fitsSharper(sharperBy) && <p className="bk-hangtag-say">{`Made ${sharperBy === 2 ? 'twice' : 'four times'} as big: up to ${fmtSize((one.ready.width * sharperBy) / DPI, unit)} × ${fmtSize((one.ready.height * sharperBy) / DPI, unit)} ${unit}.`}</p>}
+                    {fitsSharper(sharperBy) && (
+                      <p className="bk-hangtag-say">{`Made ${sharperBy === 2 ? 'twice' : 'four times'} as big: up to ${fmtSize((one.ready.width * sharperBy) / DPI, unit)} × ${fmtSize((one.ready.height * sharperBy) / DPI, unit)} ${unit}.`}</p>
+                    )}
                   </>
                 )
               ) : cur === null ? (
@@ -1010,8 +1505,17 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
                 <>
                   <p className="bk-hangtag-say">{where}</p>
                   {tooMany && <p className="bk-hangtag-say bk-error">{tooManySay}</p>}
-                  {paper !== 'print' && job.plan.sheets.some(fillsSheet) && <p className="bk-hangtag-say">Fills the whole sheet. If your printer can print borderless, turn that on; if not, it leaves a thin white edge.</p>}
-                  {tab === 'big' && sheets === 1 && <p className="bk-hangtag-say">This fits on one sheet, so there’s nothing to join.</p>}
+                  {paper !== 'print' && job.plan.sheets.some(fillsSheet) && (
+                    <p className="bk-hangtag-say">
+                      Fills the whole sheet. If your printer can print borderless, turn that on; if
+                      not, it leaves a thin white edge.
+                    </p>
+                  )}
+                  {tab === 'big' && sheets === 1 && (
+                    <p className="bk-hangtag-say">
+                      This fits on one sheet, so there’s nothing to join.
+                    </p>
+                  )}
                   {curVerdict === 'sharp' && (
                     <p className="bk-tool-verdict" data-tone="good">
                       Sharp
@@ -1027,27 +1531,63 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
                       Prints a little soft at this size
                     </p>
                   )}
-                  {curVerdict === 'soft' && <p className="bk-hangtag-say">{tab === 'piece' ? 'Zoom out a little, or use a bigger file.' : 'Try Biggest sharp size, or a bigger file.'}</p>}
-                  {designs.length > 1 && anySoft && curVerdict !== 'soft' && <p className="bk-hangtag-say">One of the other designs prints a little soft at its size.</p>}
+                  {curVerdict === 'soft' && (
+                    <p className="bk-hangtag-say">
+                      {tab === 'piece'
+                        ? 'Zoom out a little, or use a bigger file.'
+                        : 'Try Biggest sharp size, or a bigger file.'}
+                    </p>
+                  )}
+                  {designs.length > 1 && anySoft && curVerdict !== 'soft' && (
+                    <p className="bk-hangtag-say">
+                      One of the other designs prints a little soft at its size.
+                    </p>
+                  )}
                 </>
               )}
             </HangTag>
             {printing && cur !== null && sheets > 0 && (
               <>
-                <MatPreview prints={matPrints} sheets={job.plan.sheets} unit={unit} label={`How it lays out: ${where}`} />
-                <p className="bk-note bk-print-key">{sheets > 1 ? 'The grid is your cutting mat, in ' + (unit === 'cm' ? 'centimetres' : 'inches') + '. Numbers are the order to print and lay the sheets; gold lines are where sheets meet, and the shading is the overlap.' : 'The grid is your cutting mat, in ' + (unit === 'cm' ? 'centimetres' : 'inches') + '. White is your paper.'}</p>
+                <MatPreview
+                  prints={matPrints}
+                  sheets={job.plan.sheets}
+                  unit={unit}
+                  label={`How it lays out: ${where}`}
+                />
+                <p className="bk-note bk-print-key">
+                  {sheets > 1
+                    ? 'The grid is your cutting mat, in ' +
+                      (unit === 'cm' ? 'centimetres' : 'inches') +
+                      '. Numbers are the order to print and lay the sheets; gold lines are where sheets meet, and the shading is the overlap.'
+                    : 'The grid is your cutting mat, in ' +
+                      (unit === 'cm' ? 'centimetres' : 'inches') +
+                      '. White is your paper.'}
+                </p>
               </>
             )}
             {printing && (
               <section className="bk-print-tips" aria-labelledby="print-tips">
                 <h3 id="print-tips" className="bk-print-tips-title">
-                  {tab === 'big' ? 'Printing and joining the sheets' : 'Printing so the size comes out right'}
+                  {tab === 'big'
+                    ? 'Printing and joining the sheets'
+                    : 'Printing so the size comes out right'}
                 </h3>
                 <ul>
-                  {tab === 'big' && <li>Print the sheets in number order. Trim each one along the gold ticks, then lay it over the shaded overlap on the next and glue it down.</li>}
+                  {tab === 'big' && (
+                    <li>
+                      Print the sheets in number order. Trim each one along the gold ticks, then lay
+                      it over the shaded overlap on the next and glue it down.
+                    </li>
+                  )}
                   <li>In the print window choose Actual size or 100%. Turn off Fit to page.</li>
-                  <li>Measure the ruler bar after printing. If it isn’t exactly 1 in (or 2 cm), the printer changed the size.</li>
-                  <li>Thin or special paper, like rice paper or tissue: tape it to a sheet of copy paper along the leading edge before it goes through the printer.</li>
+                  <li>
+                    Measure the ruler bar after printing. If it isn’t exactly 1 in (or 2 cm), the
+                    printer changed the size.
+                  </li>
+                  <li>
+                    Thin or special paper, like rice paper or tissue: tape it to a sheet of copy
+                    paper along the leading edge before it goes through the printer.
+                  </li>
                 </ul>
               </section>
             )}
@@ -1059,7 +1599,19 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
 }
 
 /** The wrap, typed in the maker's unit. */
-function WrapInput({ id, unit, value, disabled, onChange }: { id: string; unit: Unit; value: number; disabled: boolean; onChange: (inches: number) => void }): React.ReactElement {
+function WrapInput({
+  id,
+  unit,
+  value,
+  disabled,
+  onChange,
+}: {
+  id: string;
+  unit: Unit;
+  value: number;
+  disabled: boolean;
+  onChange: (inches: number) => void;
+}): React.ReactElement {
   const [text, setText] = useState(value === 0 ? '' : fmtSize(value, unit));
   return (
     <input
@@ -1080,15 +1632,37 @@ function WrapInput({ id, unit, value, disabled, onChange }: { id: string; unit: 
   );
 }
 
-function PieceRow({ piece, unit, onRename, onRemove }: { piece: PrintPiece; unit: Unit; onRename: (name: string) => void; onRemove: () => void }): React.ReactElement {
+function PieceRow({
+  piece,
+  unit,
+  onRename,
+  onRemove,
+}: {
+  piece: PrintPiece;
+  unit: Unit;
+  onRename: (name: string) => void;
+  onRemove: () => void;
+}): React.ReactElement {
   const [name, setName] = useState(piece.name);
   const id = `print-piece-${piece.id}`;
   return (
     <li className="bk-print-piece-row">
       <label className="bk-sr" htmlFor={id}>{`Name of ${piece.name}`}</label>
-      <input id={id} className="bk-input" type="text" maxLength={60} value={name} onChange={(e) => setName(e.target.value)} />
+      <input
+        id={id}
+        className="bk-input"
+        type="text"
+        maxLength={60}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
       <span className="bk-note">{`${fmtSize(piece.widthIn, unit)} × ${fmtSize(piece.heightIn, unit)} ${unit}${piece.shape === 'rect' ? '' : `, ${SHAPE_NAMES[piece.shape].toLowerCase()}`}`}</span>
-      <button type="button" className="bk-btn bk-btn-quiet bk-btn-small" disabled={name.trim() === piece.name} onClick={() => onRename(name)}>
+      <button
+        type="button"
+        className="bk-btn bk-btn-quiet bk-btn-small"
+        disabled={name.trim() === piece.name}
+        onClick={() => onRename(name)}
+      >
         Save name
       </button>
       <button type="button" className="bk-btn bk-btn-danger bk-btn-small" onClick={onRemove}>

@@ -9,6 +9,8 @@ const TABS = [
   { href: '/founder/act', label: 'Act as a maker' },
   { href: '/founder/promotions', label: 'Promotions' },
   { href: '/founder/messages', label: 'Messages' },
+  // What people sent from the try-the-tools page (Alex, 2026-11-15).
+  { href: '/founder/feedback', label: 'Feedback' },
   { href: '/founder/emails', label: 'Emails' },
 ] as const;
 
