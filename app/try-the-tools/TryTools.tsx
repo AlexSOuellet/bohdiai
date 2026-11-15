@@ -1,8 +1,9 @@
 'use client';
 
 /** The tools to try (Alex, 2026-11-15), one tab each. Nothing is saved: the buttons
- *  that save to a product or keep a piece are left out. Describe it (an AI call each
- *  use) and What to bring (it reads a maker's own market sales) aren't here. */
+ *  that save to a product or keep a piece are left out. Describe it runs through the
+ *  page's own guarded route. What to bring isn't here: it reads a maker's own market
+ *  sales (Alex: just Describe it). */
 import { useState } from 'react';
 import { CostTool } from '@/app/manage/tools/_components/CostTool';
 import { PriceTool } from '@/app/manage/tools/_components/PriceTool';
@@ -10,6 +11,7 @@ import { WorthTool } from '@/app/manage/tools/_components/WorthTool';
 import { GoalTool } from '@/app/manage/tools/_components/GoalTool';
 import { ShipTool } from '@/app/manage/tools/_components/ShipTool';
 import { PrintTool } from '@/app/manage/tools/_components/PrintTool';
+import { DescribeTool } from '@/app/manage/tools/_components/DescribeTool';
 import { BLANK_PRICE } from '@/lib/tools/forms';
 
 export const TRY_TOOLS = [
@@ -18,6 +20,7 @@ export const TRY_TOOLS = [
   { key: 'worth', name: 'Is it worth it?' },
   { key: 'goal', name: 'Monthly goal' },
   { key: 'ship', name: 'Shipping' },
+  { key: 'describe', name: 'Describe it' },
   { key: 'print', name: 'Print it' },
 ] as const;
 type ToolKey = (typeof TRY_TOOLS)[number]['key'];
@@ -39,6 +42,7 @@ export function TryTools(): React.ReactElement {
         {tool === 'worth' && <WorthTool canSaveEvent={false} />}
         {tool === 'goal' && <GoalTool />}
         {tool === 'ship' && <ShipTool />}
+        {tool === 'describe' && <DescribeTool canSaveProduct={false} publicPage />}
         {tool === 'print' && <PrintTool pieces={[]} products={null} canSavePieces={false} />}
       </div>
     </div>
