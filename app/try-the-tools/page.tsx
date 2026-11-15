@@ -23,7 +23,7 @@ export default function TryTheToolsPage(): React.ReactElement {
           </p>
           <h1 className="bk-tool-title">Tools for makers. Try them, then tell us what you think.</h1>
           <p className="bk-tool-lede">
-            BohdiAI builds websites for makers, and every maker gets a set of tools with theirs: what a piece costs you to make, what to charge, whether a market is worth the trip, and printing your designs at the exact size you need. They’re here for you to try, no account needed, and nothing you type is saved. When you’ve had a go, tell us what worked, what didn’t, and which tool you’d want next.
+            BohdiAI builds websites for makers, and every maker gets a set of tools with theirs: what a piece costs you to make, what to charge, whether a market is worth the trip, help writing your product descriptions, and printing your designs at the exact size you need. They’re here for you to try, no account needed, and nothing you type is saved. When you’ve had a go, tell us what worked, what didn’t, and which tool you’d want next.
           </p>
           <p className="bk-try-jump">
             <a className="bk-link" href="#feedback">

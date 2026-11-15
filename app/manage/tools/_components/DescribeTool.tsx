@@ -6,10 +6,15 @@ import type { Route } from 'next';
 import { useRouter, unstable_rethrow } from 'next/navigation';
 import type { PhotoForm } from '@/lib/backend/catalog/product-form';
 import { parseDollars } from '@/lib/backend/catalog/product-form';
-import { describePiece, loadPieceForDescribe, saveDescriptionsToProduct } from '@/lib/tools/describe-actions';
+import {
+  describePiece,
+  loadPieceForDescribe,
+  saveDescriptionsToProduct,
+} from '@/lib/tools/describe-actions';
 import { FACTS_MAX, type Description } from '@/lib/tools/describe-limits';
 import { productLink } from '@/lib/tools/handoff';
 import { PhotosField } from '../../products/_components/PhotosField';
+import { shrinkInBrowser } from '@/lib/intake/browser-photo';
 import { HangTag, TextField } from './ToolParts';
 
 /** Describe it (Alex, 2026-10-28): the description writer on its own. The maker
@@ -17,7 +22,18 @@ import { HangTag, TextField } from './ToolParts';
  *  both descriptions on the tag, ready to save as a product. The same writer sits
  *  under the description on the product screen. It can start from one of the
  *  maker's products, and then saves to it (Alex, 2026-10-28). */
-export function DescribeTool({ canSaveProduct, products = [] }: { canSaveProduct: boolean; products?: readonly { id: string; name: string }[] }): React.ReactElement {
+/** publicPage: on the share-only try-the-tools page (Alex, 2026-11-15): it runs through
+ *  the page's own guarded route, the photo is shrunk here and sent with the request, and
+ *  nothing is saved. */
+export function DescribeTool({
+  canSaveProduct,
+  products = [],
+  publicPage = false,
+}: {
+  canSaveProduct: boolean;
+  products?: readonly { id: string; name: string }[];
+  publicPage?: boolean;
+}): React.ReactElement {
   const router = useRouter();
   const [productId, setProductId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,13 +48,22 @@ export function DescribeTool({ canSaveProduct, products = [] }: { canSaveProduct
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const photo = photos[0] ?? null;
+  const [sentPhoto, setSentPhoto] = useState<{ name: string; data: string } | null>(null);
 
   async function write(): Promise<void> {
     if (busy) return;
     setBusy(true);
     setProblem(null);
     try {
-      const done = await describePiece({ name, materials: madeOf.split('\n'), facts, price, photoUploadId: photo?.uploadId ?? null });
+      const done = publicPage
+        ? await describeHere()
+        : await describePiece({
+            name,
+            materials: madeOf.split('\n'),
+            facts,
+            price,
+            photoUploadId: photo?.uploadId ?? null,
+          });
       if (done.ok) {
         setText(done.text);
         setLeft(done.left);
@@ -48,6 +73,36 @@ export function DescribeTool({ canSaveProduct, products = [] }: { canSaveProduct
       setProblem('Something went wrong. Check your connection and try again.');
     }
     setBusy(false);
+  }
+
+  /** The try-the-tools page's own route, with the photo sent along. */
+  async function describeHere(): Promise<{ ok: true; text: Description; left: number | null } | { ok: false; error: string }> {
+    const res = await fetch('/api/try-describe', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name, madeOf, facts, price, photo: sentPhoto?.data ?? '' }),
+    });
+    const body = (await res.json().catch(() => ({}))) as { ok?: boolean; text?: Description; error?: string };
+    if (res.ok && body.ok === true && body.text !== undefined) return { ok: true, text: body.text, left: null };
+    return { ok: false, error: body.error ?? 'The description couldn’t be written just now. Please try again in a moment.' };
+  }
+
+  /** A photo for the try-the-tools page: shrunk here, kept only in this page. */
+  async function choosePhoto(file: File | undefined): Promise<void> {
+    if (file === undefined) return;
+    setProblem(null);
+    try {
+      const small = await shrinkInBrowser(file);
+      const data = await new Promise<string>((ok, bad) => {
+        const r = new FileReader();
+        r.onload = () => (typeof r.result === 'string' ? ok(r.result) : bad(new Error('unreadable')));
+        r.onerror = () => bad(new Error('unreadable'));
+        r.readAsDataURL(small);
+      });
+      setSentPhoto({ name: file.name, data });
+    } catch {
+      setProblem('That photo couldn’t be read. Try a JPG or PNG.');
+    }
   }
 
   /** Start from one of her products, or from nothing. */
@@ -105,7 +160,10 @@ export function DescribeTool({ canSaveProduct, products = [] }: { canSaveProduct
       <h2 id="tool-describe" className="bk-tool-title">
         {`Describe ${name.trim() === '' ? 'your product' : name.trim()}`}
       </h2>
-      <p className="bk-tool-lede">Say what it is and what it’s made of, add a photo, and get a short description and a full one to start from. Change any of it after.</p>
+      <p className="bk-tool-lede">
+        Say what it is and what it’s made of, add a photo, and get a short description and a full
+        one to start from. Change any of it after.
+      </p>
 
       <div className="bk-tool-main">
         <form
@@ -122,7 +180,13 @@ export function DescribeTool({ canSaveProduct, products = [] }: { canSaveProduct
                 <label htmlFor="d-product" className="bk-label">
                   Start from one of your products
                 </label>
-                <select id="d-product" className="bk-input" value={productId} disabled={loading} onChange={(e) => void pick(e.target.value)}>
+                <select
+                  id="d-product"
+                  className="bk-input"
+                  value={productId}
+                  disabled={loading}
+                  onChange={(e) => void pick(e.target.value)}
+                >
                   <option value="">A new piece</option>
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -138,15 +202,53 @@ export function DescribeTool({ canSaveProduct, products = [] }: { canSaveProduct
               <label htmlFor="d-made" className="bk-label">
                 What it’s made of
               </label>
-              <textarea id="d-made" className="bk-input bk-textarea bk-describe-facts" value={madeOf} onChange={(e) => setMadeOf(e.target.value)} />
-              <span className="bk-note">One thing a line, as exactly as you can: 1 inch thick pine round, 18 inches across.</span>
+              <textarea
+                id="d-made"
+                className="bk-input bk-textarea bk-describe-facts"
+                value={madeOf}
+                onChange={(e) => setMadeOf(e.target.value)}
+              />
+              <span className="bk-note">
+                One thing a line, as exactly as you can: 1 inch thick pine round, 18 inches across.
+              </span>
             </div>
-            <TextField id="d-price" label="Price, if you have one" value={price} onChange={setPrice} />
+            <TextField
+              id="d-price"
+              label="Price, if you have one"
+              value={price}
+              onChange={setPrice}
+            />
           </section>
 
           <section className="bk-section">
             <h3 className="bk-section-title">A photo</h3>
-            <PhotosField photos={photos} limit={1} onAdd={(p) => setPhotos([p])} onChange={setPhotos} onError={setProblem} />
+            {publicPage ? (
+              sentPhoto === null ? (
+                <label className="bk-print-drop">
+                  <input
+                    type="file"
+                    className="bk-print-file"
+                    accept="image/*"
+                    aria-label="Add a photo"
+                    onChange={(e) => {
+                      void choosePhoto(e.target.files?.[0]);
+                      e.target.value = '';
+                    }}
+                  />
+                  <span className="bk-print-drop-name">Add a photo</span>
+                  <span className="bk-note">It’s only used to write the description, and it isn’t kept.</span>
+                </label>
+              ) : (
+                <p className="bk-print-paper">
+                  <span>{sentPhoto.name}</span>
+                  <button type="button" className="bk-link bk-print-link" onClick={() => setSentPhoto(null)}>
+                    Remove
+                  </button>
+                </p>
+              )
+            ) : (
+              <PhotosField photos={photos} limit={1} onAdd={(p) => setPhotos([p])} onChange={setPhotos} onError={setProblem} />
+            )}
           </section>
 
           <section className="bk-section">
@@ -155,15 +257,27 @@ export function DescribeTool({ canSaveProduct, products = [] }: { canSaveProduct
               <label htmlFor="d-facts" className="bk-label">
                 Your own facts
               </label>
-              <textarea id="d-facts" className="bk-input bk-textarea bk-describe-facts" maxLength={FACTS_MAX} value={facts} onChange={(e) => setFacts(e.target.value)} />
-              <span className="bk-note">The finished size, what makes it special, who it’s for. Leave it blank if you like.</span>
+              <textarea
+                id="d-facts"
+                className="bk-input bk-textarea bk-describe-facts"
+                maxLength={FACTS_MAX}
+                value={facts}
+                onChange={(e) => setFacts(e.target.value)}
+              />
+              <span className="bk-note">
+                The finished size, what makes it special, who it’s for. Leave it blank if you like.
+              </span>
             </div>
             <div className="bk-row">
               <button type="submit" className="bk-btn" disabled={busy || name.trim() === ''}>
                 {busy ? 'Writing…' : text === null ? 'Write it' : 'Write it again'}
               </button>
               {name.trim() === '' && <span className="bk-note">Give it a name first.</span>}
-              {left !== null && <span className="bk-note">{left === 1 ? '1 more this month' : `${left} more this month`}</span>}
+              {left !== null && (
+                <span className="bk-note">
+                  {left === 1 ? '1 more this month' : `${left} more this month`}
+                </span>
+              )}
             </div>
             {problem !== null && (
               <p className="bk-error" role="alert">
@@ -186,14 +300,25 @@ export function DescribeTool({ canSaveProduct, products = [] }: { canSaveProduct
               </>
             )}
             {picked !== null && text !== null && (
-              <button type="button" className="bk-btn bk-hangtag-save" disabled={saving} onClick={() => void saveToProduct()}>
+              <button
+                type="button"
+                className="bk-btn bk-hangtag-save"
+                disabled={saving}
+                onClick={() => void saveToProduct()}
+              >
                 {saving ? 'Saving…' : `Save to ${picked.name}`}
               </button>
             )}
             {picked === null && canSaveProduct && text !== null && (
               <Link
                 className="bk-btn bk-hangtag-save"
-                href={productLink(name, priceCents, null, { short: text.short, description: text.description, ...(photo === null ? {} : { photoUploadId: photo.uploadId }) }) as Route}
+                href={
+                  productLink(name, priceCents, null, {
+                    short: text.short,
+                    description: text.description,
+                    ...(photo === null ? {} : { photoUploadId: photo.uploadId }),
+                  }) as Route
+                }
               >
                 Save as a product
               </Link>

@@ -16,7 +16,7 @@ Alex's claude.ai decoupage print resizer (artifact LEK27NNaGJ1NJCaUo3c4xj) becam
 Act as a maker: search, **or see every maker in a list** (Alex; replaces "no screen listing all sites").
 
 ## The try-the-tools page (Alex)
-Asked whether it reverses "there is no public toolkit": Alex chose a share-only page, "just to get feedback, it is not permanent". **bohdiai.com/try-the-tools**: an explanation, six tools as tabs with nothing saved (no saving to products, no saved pieces, no links into a backend), the tool ideas to tick, and a feedback form (all optional details; the same spam guard as the other public forms). Saved in `tool_feedback` (approved); Alex's admin has a **Feedback** tab with how many want each idea and every response. Open-Work item 61.
+Asked whether it reverses "there is no public toolkit": Alex chose a share-only page, "just to get feedback, it is not permanent". **bohdiai.com/try-the-tools**: an explanation, six tools as tabs with nothing saved (no saving to products, no saved pieces, no links into a backend), the tool ideas to tick, and a feedback form (all optional details; the same spam guard as the other public forms). Describe it was added after (Alex): its own route, five a minute per visitor, the photo sent with the request and never kept; What to bring stays off. Saved in `tool_feedback` (approved); Alex's admin has a **Feedback** tab with how many want each idea and every response. Open-Work item 61.
 
 ## Open
 - Alex to print a real PDF at Actual size and measure the ruler bar.

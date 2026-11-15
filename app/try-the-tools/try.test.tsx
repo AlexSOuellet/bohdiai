@@ -6,6 +6,7 @@ vi.mock('@/lib/tools/actions', () => ({ saveCostsToProduct: vi.fn() }));
 vi.mock('@/lib/tools/print/actions', () => ({ savePiece: vi.fn(), renamePiece: vi.fn(), deletePiece: vi.fn() }));
 vi.mock('@/app/manage/tools/_components/print/MatPreview', () => ({ MatPreview: () => null }));
 vi.mock('@/app/manage/fonts', () => ({ backendFace: { variable: 'font-backend' } }));
+vi.mock('@/lib/tools/describe-actions', () => ({ describePiece: vi.fn(), loadPieceForDescribe: vi.fn(), saveDescriptionsToProduct: vi.fn() }));
 
 import { TryTools, TRY_TOOLS } from './TryTools';
 import { FeedbackForm } from './FeedbackForm';
@@ -21,10 +22,10 @@ describe('the try-the-tools page (Alex, 2026-11-15)', () => {
   it('tells search engines to skip it', () => {
     expect(metadata.robots).toEqual({ index: false, follow: false });
   });
-  it('has the six tools as tabs, and leaves out Describe it and What to bring', () => {
+  it('has the seven tools as tabs, and leaves out What to bring', () => {
     render(<TryTools />);
     expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(TRY_TOOLS.map((t) => t.name));
-    expect(TRY_TOOLS.map((t) => t.name)).toEqual(['Cost to make', 'Price it', 'Is it worth it?', 'Monthly goal', 'Shipping', 'Print it']);
+    expect(TRY_TOOLS.map((t) => t.name)).toEqual(['Cost to make', 'Price it', 'Is it worth it?', 'Monthly goal', 'Shipping', 'Describe it', 'Print it']);
   });
   it('never links into a maker’s backend or offers to save', () => {
     render(<TryTools />);
@@ -36,6 +37,34 @@ describe('the try-the-tools page (Alex, 2026-11-15)', () => {
       expect(screen.queryByRole('link', { name: /^Save (as a product|as an event)/ })).toBeNull();
       expect(screen.queryByText('My pieces')).toBeNull();
     }
+  });
+});
+
+describe('Describe it on the page (Alex, 2026-11-15)', () => {
+  it('writes through the page’s own route and offers no saving', async () => {
+    const fetch = vi.fn(async () => Response.json({ ok: true, text: { short: 'A stoneware mug.', description: 'Thrown by hand.' } }));
+    vi.stubGlobal('fetch', fetch);
+    render(<TryTools />);
+    fireEvent.click(screen.getByRole('tab', { name: 'Describe it' }));
+    fireEvent.change(screen.getByLabelText('What it’s called'), { target: { value: 'Mug' } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Write it' }));
+    });
+    expect((fetch.mock.calls[0] as unknown as [string])[0]).toBe('/api/try-describe');
+    await waitFor(() => expect(screen.getByText('A stoneware mug.')).toBeTruthy());
+    expect(screen.queryByText(/more this month/)).toBeNull();
+    expect(screen.queryByText('Save as a product')).toBeNull();
+    expect(screen.getByLabelText('Add a photo')).toBeTruthy();
+  });
+  it('shows the route’s message when it can’t write', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => Response.json({ error: 'That’s a lot of requests at once. Please wait a minute and try again.' }, { status: 429 })));
+    render(<TryTools />);
+    fireEvent.click(screen.getByRole('tab', { name: 'Describe it' }));
+    fireEvent.change(screen.getByLabelText('What it’s called'), { target: { value: 'Mug' } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Write it' }));
+    });
+    expect(screen.getByRole('alert').textContent).toBe('That’s a lot of requests at once. Please wait a minute and try again.');
   });
 });
 

@@ -73,3 +73,12 @@ describe('the description writer (Alex, 2026-10-28)', () => {
     expect(resetsOn(new Date('2026-12-31T23:00:00Z'))).toBe('January 1');
   });
 });
+
+describe('a photo sent with the request (the try-the-tools page, Alex 2026-11-15)', () => {
+  it('goes to the model as the picture itself, nothing stored', () => {
+    const msg = describeRequest({ name: 'Mug', materials: [], facts: '', priceCents: null, photoUrl: null, photoData: { mediaType: 'image/jpeg', data: 'QUJD' } });
+    const content = msg.content as Array<{ type: string; source?: unknown; text?: string }>;
+    expect(content[0]).toEqual({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: 'QUJD' } });
+    expect(content[1]?.text).toContain('The photo above is the piece.');
+  });
+});
