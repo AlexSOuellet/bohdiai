@@ -664,11 +664,13 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
 
   const sizePart = (
     <section className="bk-section">
-      <h3 className="bk-section-title">{tab === 'several' && cur !== null ? `Size of ${cur.pic.name}` : 'Size'}</h3>
+      <div className="bk-print-head">
+        <h3 className="bk-section-title">{tab === 'several' && cur !== null ? `Size of ${cur.pic.name}` : 'Size'}</h3>
+        {unitPart}
+      </div>
       <div className="bk-print-size">
         {sizeField('w', 'Width')}
         {sizeField('h', 'Height')}
-        {unitPart}
       </div>
       <p className="bk-note">Type one and the other follows, so the design keeps its shape.</p>
       {cur !== null && (
@@ -681,7 +683,10 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
 
   const piecePart = (
     <section className="bk-section">
-      <h3 className="bk-section-title">The piece</h3>
+      <div className="bk-print-head">
+        <h3 className="bk-section-title">The piece</h3>
+        {unitPart}
+      </div>
       <div className="bk-print-pieces bk-print-pieces-top">
         <p className="bk-label">My pieces</p>
         {pieces.length === 0 && <p className="bk-note">Save a piece you cover again and again, and it waits here next time.</p>}
@@ -718,7 +723,6 @@ export function PrintTool({ pieces: firstPieces, products }: { pieces: PrintPiec
       <div className="bk-print-size">
         {sizeField('w', cur?.shape === 'round' ? 'Across' : 'Width')}
         {cur?.shape !== 'round' && sizeField('h', 'Height')}
-        {unitPart}
       </div>
       <div className="bk-field bk-tool-field">
         <label className="bk-label" htmlFor="print-wrap">
