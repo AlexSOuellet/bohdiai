@@ -397,7 +397,8 @@ export async function finishPaidChange(session: string): Promise<string> {
         ? { kind: 'upgrade', to: planOf(plan).name }
         : { kind: 'billing', billing, on: null },
     );
-  revalidatePath('/manage', 'layout');
+  // No revalidatePath here: this runs while the return page is drawn, where Next refuses
+  // it, and the maker arrives from Stripe on a fresh page anyway.
   return kind === 'upgrade' ? `/manage/plan?changed=${plan}` : '/manage/plan?changed=billing';
 }
 

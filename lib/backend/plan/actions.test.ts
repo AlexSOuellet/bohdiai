@@ -581,6 +581,8 @@ describe('a site Stripe bills', () => {
       expect(await finishPaidChange('cs_1')).toBe('/manage/plan?changed=full');
       expect(pay.finishPayPage).toHaveBeenCalledWith({}, 'cs_1', 't1', 'sub_1');
       expect(applyPlan).toHaveBeenCalledWith(expect.anything(), 't1', 'full');
+      // It runs while the return page is drawn, where Next refuses a refresh (Alex hit it, 2026-11-16).
+      expect(revalidatePath).not.toHaveBeenCalled();
       expect(writes).toEqual([
         {
           plan_billing: 'monthly',
