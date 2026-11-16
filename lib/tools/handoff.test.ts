@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { emptyProductForm } from '@/lib/backend/catalog/product-form';
 import { emptyMarketForm } from '@/lib/backend/markets/market-form';
-import { productLink, productFromTools, eventLink, eventFromTools, photoFromTools, priceLink, priceFromCost } from './handoff';
+import { productLink, productFromTools, eventLink, eventFromTools, photoFromTools, priceLink, priceFromCost, paperLink, paperFromTools } from './handoff';
 import { BLANK_PRICE } from './forms';
 
 const paramsOf = (href: string): Record<string, string | string[]> => {
@@ -99,5 +99,20 @@ describe('Cost to make to Price it (Alex, 2026-10-28)', () => {
     expect(priceFromCost({})).toEqual({ form: BLANK_PRICE, carry: null });
     expect(priceFromCost({ from: 'cost', name: 'X' }).carry).toBeNull();
     expect(params(priceLink(' ', 0, 0, { yield: '', hours: '', rate: '', batch: [], piece: [] }))).not.toHaveProperty('mat');
+  });
+});
+
+describe('Print it’s paper to a product’s costs (Alex, 2026-11-15)', () => {
+  const ID = '0f8fad5b-d9cb-469f-a165-70867728950e';
+  it('opens Cost to make on the product with the paper for one piece', () => {
+    expect(paperLink(ID, 94, 3)).toBe(`/manage/tools/cost?product=${ID}&paper=94&sheets=3`);
+    expect(paperFromTools({ product: ID, paper: '94', sheets: '3' })).toEqual({ name: 'Paper, 3 sheets', each: '0.94' });
+    expect(paperFromTools({ product: ID, paper: '125', sheets: '1' })).toEqual({ name: 'Paper, 1 sheet', each: '1.25' });
+  });
+  it('ignores an address without a paper cost, or with a bad one', () => {
+    expect(paperFromTools({ product: ID })).toBeNull();
+    expect(paperFromTools({ paper: 'abc', sheets: '3' })).toBeNull();
+    expect(paperFromTools({ paper: '94', sheets: '0' })).toBeNull();
+    expect(paperFromTools({ paper: '999999999', sheets: '3' })).toBeNull();
   });
 });

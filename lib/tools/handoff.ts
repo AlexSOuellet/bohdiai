@@ -8,7 +8,7 @@
  */
 import { emptyProductForm, formatCents, type ProductForm } from '@/lib/backend/catalog/product-form';
 import { COSTS_LIMIT, MARKET_LIMITS, emptyMarketForm, type MarketForm } from '@/lib/backend/markets/market-form';
-import { MARKUPS, type Markup } from './maths';
+import { MARKUPS, type Markup, type PieceItem } from './maths';
 import { COST_LINES_MAX, type CostSettings } from './product-costs';
 import type { Takings } from './event-takings';
 import { BLANK_PRICE, type CostCarry, type PriceForm } from './forms';
@@ -177,4 +177,22 @@ export function takingsFromTools(params: Params): Takings | null {
   if (one(params['from']) !== 'tools') return null;
   const t = Object.fromEntries(TAKINGS_KEYS.map((k) => [k, one(params[`t_${k}`]).slice(0, NUMBER_MAX)])) as Takings;
   return Object.values(t).some((v) => v !== '') ? t : null;
+}
+
+/** Print it's paper for one piece (Alex, 2026-11-15): Cost to make opens on the
+ *  product with a "Paper" line filled in for each piece; the maker checks it and
+ *  saves it there. */
+export function paperLink(productId: string, eachCents: number, sheets: number): string {
+  return `/manage/tools/cost?${new URLSearchParams({ product: productId, paper: String(eachCents), sheets: String(sheets) }).toString()}`;
+}
+
+const PAPER_CENTS_MAX = 1_000_000;
+const SHEETS_MAX = 999;
+
+/** The paper line Print it sent, or null. */
+export function paperFromTools(params: Params): PieceItem | null {
+  const cents = centsFrom(one(params['paper']));
+  const sheets = /^\d{1,3}$/.test(one(params['sheets'])) ? Number(one(params['sheets'])) : 0;
+  if (cents === null || cents > PAPER_CENTS_MAX || sheets < 1 || sheets > SHEETS_MAX) return null;
+  return { name: `Paper, ${sheets} ${sheets === 1 ? 'sheet' : 'sheets'}`, each: formatCents(cents) };
 }

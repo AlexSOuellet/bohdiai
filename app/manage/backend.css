@@ -776,3 +776,130 @@ p.bk-notice.bk-cost-line { padding: 0.65rem 0.9rem; border: 1px solid oklch(0.51
 .bk-describe .bk-note { margin: 0; }
 .bk-describe-facts { min-height: 4.5rem; }
 .bk-describe-text { white-space: pre-line; text-align: left; }
+
+/* Print it (Alex, 2026-11-15): the backend's tool pieces, and one bold thing, the
+   preview as a cutting mat in the backend's deep ink with its grid in the maker's
+   unit and the cut lines in ember. */
+.bk-print { --bk-print-grid: oklch(0.97 0.008 250 / 9%); --bk-print-grid-heavy: oklch(0.97 0.008 250 / 22%); }
+.bk-print-drop {
+  position: relative; display: grid; gap: 0.25rem; padding: 1.4rem 1.25rem; border: 1.5px dashed var(--bk-field-line); border-radius: var(--bk-radius-sm);
+  background: var(--bk-ground); cursor: pointer;
+}
+.bk-print-drop:hover, .bk-print-drop:focus-within { border-color: var(--bk-ember); background: oklch(0.72 0.13 68 / 8%); }
+.bk-print-drop:focus-within { outline: 2px solid var(--bk-ember); outline-offset: 2px; }
+.bk-print-drop-name { font-family: var(--bk-display); font-size: 1.15rem; font-weight: 700; overflow-wrap: anywhere; }
+.bk-print-drop[data-has='true'] .bk-print-drop-name::before { content: ''; display: inline-block; width: 0.55rem; height: 0.55rem; margin-right: 0.5rem; border-radius: 50%; background: var(--bk-ember); vertical-align: 0.15em; }
+.bk-print-file { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 0; }
+.bk-print-drop + .bk-field { margin-top: 0.9rem; }
+.bk-print-size { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; align-items: end; }
+/* The heading with the in / cm switch beside it, clear of the boxes. */
+.bk-print-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem 1rem; margin-bottom: 0.6rem; }
+.bk-print-head .bk-section-title { margin: 0; }
+.bk-print-unit { display: inline-flex; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--bk-field-line); padding: 3px; gap: 2px; background: var(--bk-field); }
+.bk-print-unit-btn { min-height: 2.4rem; padding: 0 0.95rem; border: 0; border-radius: 999px; background: transparent; color: var(--bk-ink-muted); font: inherit; font-size: 0.875rem; font-weight: 700; cursor: pointer; }
+.bk-print-unit-btn[aria-pressed='true'] { background: var(--bk-deep); color: var(--bk-surface); }
+.bk-print-unit-btn:focus-visible { outline: 2px solid var(--bk-ember); outline-offset: 2px; }
+.bk-print-unit-btn:disabled { cursor: default; opacity: 0.55; }
+.bk-print-link { padding: 0; border: 0; background: none; font: inherit; font-size: 0.875rem; font-weight: 600; text-decoration: underline; text-underline-offset: 0.2em; cursor: pointer; justify-self: start; }
+.bk-print-size + .bk-print-link { margin-top: 0.7rem; }
+.bk-print-pieces { display: grid; gap: 0.55rem; margin-top: 1.25rem; padding-top: 1.1rem; border-top: 1px solid var(--bk-ink-15); }
+.bk-print-pieces > .bk-label { margin: 0; }
+.bk-print-pieces .bk-note { margin: 0; }
+.bk-print-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.bk-print-chip { min-height: 2.3rem; padding: 0.35rem 0.95rem; border: 0; border-radius: 999px; background: var(--bk-ground); box-shadow: inset 0 0 0 1px var(--bk-ink-15); color: var(--bk-ink); font: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer; overflow-wrap: anywhere; }
+.bk-print-chip:hover:not(:disabled) { box-shadow: inset 0 0 0 1.5px var(--bk-ember); }
+.bk-print-chip[aria-pressed='true'] { background: var(--bk-deep); color: var(--bk-surface); box-shadow: none; }
+.bk-print-chip:disabled { opacity: 0.55; cursor: default; }
+.bk-print-piece-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem; }
+.bk-print-name { display: grid; gap: 0.45rem; max-width: 24rem; }
+.bk-print-piece-list, .bk-print-pics { display: grid; gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+.bk-print-piece-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 0.35rem 0.6rem; align-items: center; }
+.bk-print-piece-row .bk-note { grid-column: 1 / -1; grid-row: 2; }
+@media (max-width: 480px) { .bk-print-piece-row { grid-template-columns: minmax(0, 1fr); } .bk-print-piece-row .bk-note { grid-row: auto; } }
+.bk-print-paper { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.9rem; margin: 0; font-family: var(--bk-display); font-size: 1.15rem; font-weight: 700; }
+.bk-print-save { display: grid; gap: 0.75rem; justify-items: start; margin: 0.25rem 0 1.5rem; }
+.bk-print-go { min-height: 3.1rem; padding-inline: 2rem; font-size: 1rem; background: var(--bk-ember-glow); color: var(--bk-deep); }
+.bk-print-go:hover:not(:disabled) { background: var(--bk-ember); }
+.bk-print-busy { display: grid; gap: 0.45rem; justify-items: start; width: min(100%, 26rem); }
+.bk-print-busy .bk-note { margin: 0; }
+.bk-print-progress { width: 100%; height: 0.5rem; appearance: none; border: 0; border-radius: 999px; background: var(--bk-ink-15); overflow: hidden; }
+.bk-print-progress::-webkit-progress-bar { background: var(--bk-ink-15); }
+.bk-print-progress::-webkit-progress-value { background: var(--bk-ember); }
+.bk-print-progress::-moz-progress-bar { background: var(--bk-ember); }
+.bk-print-say { margin: 0; font-size: 0.9rem; font-weight: 600; }
+.bk-print-more { margin-top: 0.5rem; }
+.bk-print-more-title { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; font-family: var(--bk-display); font-size: 1.15rem; font-weight: 800; cursor: pointer; list-style: none; }
+.bk-print-more-title::-webkit-details-marker { display: none; }
+.bk-print-more-title::after { content: ''; width: 0.5rem; height: 0.5rem; border-right: 2px solid var(--bk-ember); border-bottom: 2px solid var(--bk-ember); transform: rotate(-45deg); transition: transform 160ms ease; }
+.bk-print-more[open] > .bk-print-more-title::after { transform: rotate(45deg); }
+.bk-print-more-title:focus-visible { outline: 2px solid var(--bk-ember); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .bk-print-more-title::after { transition: none; } }
+.bk-print-more-body { margin-top: 0.75rem; }
+.bk-print-more-body .bk-section > .bk-print-unit { margin-bottom: 0.9rem; }
+.bk-print-more-body .bk-section > .bk-btn + .bk-note, .bk-print-add + .bk-note { margin-top: 0.6rem; }
+.bk-print-pic { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+.bk-print-copies { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.875rem; font-weight: 600; }
+.bk-print-copies .bk-tool-num { width: 4.5rem; flex: none; padding: 0.45rem 0.6rem; border: 1px solid var(--bk-field-line); border-radius: 6px; background: var(--bk-field); }
+.bk-print-pics + .bk-print-add { margin-top: 0.9rem; }
+.bk-print-add { position: relative; overflow: hidden; }
+.bk-print-side { display: grid; gap: 1.25rem; }
+.bk-print-side .bk-hangtag { margin-top: 2.25rem; }
+.bk-print-mat { border-radius: var(--bk-radius-sm); background: var(--bk-deep); overflow: hidden; box-shadow: 0 1px 0 var(--bk-ink-15), inset 0 0 0 1px oklch(0.97 0.008 250 / 8%); }
+.bk-print-canvas { display: block; width: var(--w, 100%); max-width: 100%; height: auto; margin-inline: auto; }
+.bk-print-tips { padding: 1.1rem 1.25rem; border-left: 3px solid var(--bk-ember); border-radius: 0 var(--bk-radius-sm) var(--bk-radius-sm) 0; background: var(--bk-surface); box-shadow: 0 1px 0 var(--bk-ink-15); }
+.bk-print-tips-title { margin: 0 0 0.5rem; font-family: var(--bk-display); font-size: 1rem; font-weight: 800; }
+.bk-print-tips ul { display: grid; gap: 0.35rem; margin: 0; padding-left: 1.1rem; color: var(--bk-ink-muted); font-size: 0.875rem; line-height: 1.5; }
+
+/* Print it's tabs (Alex, 2026-11-15): what the tool is for on top, then a tab for each
+   job, each showing only its own options. */
+.bk-print-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1.5rem; padding: 0.35rem; border-radius: 999px; background: var(--bk-surface); box-shadow: 0 1px 0 var(--bk-ink-15); width: fit-content; max-width: 100%; }
+@media (max-width: 640px) { .bk-print-tabs { border-radius: var(--bk-radius-sm); width: 100%; } }
+.bk-print-tab { min-height: 2.6rem; padding: 0 1.1rem; border: 0; border-radius: 999px; background: transparent; color: var(--bk-ink-muted); font: inherit; font-size: 0.9375rem; font-weight: 700; cursor: pointer; }
+.bk-print-tab:hover { color: var(--bk-ink); background: var(--bk-ground); }
+.bk-print-tab[aria-selected='true'] { background: var(--bk-deep); color: var(--bk-surface); box-shadow: inset 0 -2px 0 var(--bk-ember); }
+.bk-print-tab:focus-visible { outline: 2px solid var(--bk-ember); outline-offset: 2px; }
+.bk-print-about { max-width: 62ch; margin: 1.1rem 0 0; padding-left: 0.9rem; border-left: 3px solid var(--bk-ember); font-size: 1rem; line-height: 1.55; }
+.bk-print-panel .bk-tool-main { margin-top: 1.25rem; }
+.bk-print-lead { margin: -0.2rem 0 0.9rem; }
+.bk-print-trim { margin-top: 0.9rem; }
+.bk-print-size + .bk-note { margin: 0.5rem 0 0; }
+.bk-print-size + .bk-note + .bk-print-link { margin-top: 0.6rem; }
+.bk-print-pieces-top { margin: 0 0 1.1rem; padding: 0 0 1.1rem; border-top: 0; border-bottom: 1px solid var(--bk-ink-15); }
+.bk-print-piece-actions:not(:empty) { margin-top: 0.9rem; }
+.bk-print-options { margin-top: 1rem; gap: 0.75rem; }
+.bk-print-options .bk-check { align-items: flex-start; }
+.bk-print-options .bk-check input { margin-top: 0.2rem; }
+.bk-print-why { display: block; margin-top: 0.1rem; }
+.bk-section > .bk-label { display: block; margin: 0 0 0.45rem; }
+.bk-section > .bk-print-unit + .bk-print-size { margin-top: 0.9rem; }
+.bk-print-size + .bk-field, .bk-field + .bk-field { margin-top: 0.9rem; }
+.bk-print-frame { display: grid; gap: 0.9rem; }
+.bk-print-frame-box { border-radius: var(--bk-radius-sm); overflow: hidden; }
+.bk-print-frame-canvas { display: block; width: 100%; height: 300px; cursor: grab; touch-action: none; }
+.bk-print-frame-canvas:active { cursor: grabbing; }
+.bk-print-frame-canvas:focus-visible { outline: 2px solid var(--bk-ember); outline-offset: 2px; }
+.bk-print-zoom { display: grid; gap: 0.4rem; }
+.bk-print-zoom-range { width: 100%; accent-color: var(--bk-ember); }
+.bk-print-key { margin: -0.4rem 0 0; }
+.bk-print-extend { align-items: flex-start; margin-top: 0.9rem; }
+.bk-print-extend input { margin-top: 0.2rem; }
+.bk-print-drop + .bk-print-add { margin-top: 0.9rem; }
+.bk-print-add + .bk-note { margin-top: 0.5rem; }
+
+/* The share-only try-the-tools page (Alex, 2026-11-15): the tools in the backend's
+   own look, on bohdiai.com, with the feedback form under them. */
+.bk-try-main { max-width: 76rem; margin: 0 auto; padding: clamp(1.5rem, 4vw, 3rem) var(--bk-gutter) 4rem; }
+.bk-try-head { display: grid; gap: 0.9rem; margin-bottom: 0.5rem; }
+.bk-try-head .bk-brand-name { margin: 0; align-items: center; }
+.bk-try-head .bk-tool-lede { max-width: 68ch; }
+.bk-try-jump { margin: 0; font-weight: 600; }
+.bk-try-panel { margin-top: 1.5rem; }
+.bk-try-feedback { margin-top: 4rem; padding-top: 2.5rem; border-top: 1px solid var(--bk-ink-15); max-width: 48rem; }
+.bk-try-feedback > .bk-tool-title { margin-bottom: 1.25rem; }
+.bk-try-ideas { gap: 0.8rem; }
+.bk-try-ideas .bk-check { align-items: flex-start; }
+.bk-try-ideas .bk-check input { margin-top: 0.2rem; }
+.bk-try-message { min-height: 8rem; resize: vertical; font: inherit; }
+.bk-try-about { margin-top: 0.9rem; }
+.bk-try-thanks { display: grid; gap: 0.6rem; justify-items: start; }
+.bk-try-thanks p { margin: 0; }

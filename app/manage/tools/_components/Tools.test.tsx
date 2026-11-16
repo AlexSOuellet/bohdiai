@@ -322,3 +322,17 @@ describe('What to bring, over several markets', () => {
     expect(screen.getByText(/at one of those 2 markets\./)).toBeInTheDocument();
   });
 });
+
+describe('Cost to make with Print it’s paper (Alex, 2026-11-15)', () => {
+  it('adds the paper to the product’s own lines for every piece', () => {
+    const product = { id: 'l1', name: 'Round tray', costs: { yield: '4', hours: '1', rate: '20', extras: '', markup: 2.5 as const, batch: [], piece: [{ name: 'Mod Podge', each: '0.30' }] } };
+    render(<CostTool product={product} paper={{ name: 'Paper, 3 sheets', each: '0.94' }} />);
+    expect(screen.getByDisplayValue('Mod Podge')).toBeTruthy();
+    expect(screen.getByDisplayValue('Paper, 3 sheets')).toBeTruthy();
+    expect(screen.getByDisplayValue('0.94')).toBeTruthy();
+  });
+  it('replaces the empty line when the product has no costs yet', () => {
+    render(<CostTool product={{ id: 'l1', name: 'Box lid', costs: null }} paper={{ name: 'Paper, 1 sheet', each: '1.25' }} />);
+    expect(screen.getAllByDisplayValue('Paper, 1 sheet')).toHaveLength(1);
+  });
+});

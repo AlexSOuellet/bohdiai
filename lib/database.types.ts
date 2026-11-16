@@ -1976,6 +1976,50 @@ export type Database = {
           },
         ]
       }
+      print_pieces: {
+        Row: {
+          height_in: number
+          id: string
+          name: string
+          position: number
+          shape: string
+          tenant_id: string
+          updated_at: string
+          width_in: number
+          wrap_in: number
+        }
+        Insert: {
+          height_in: number
+          id?: string
+          name: string
+          position?: number
+          shape?: string
+          tenant_id: string
+          updated_at?: string
+          width_in: number
+          wrap_in?: number
+        }
+        Update: {
+          height_in?: number
+          id?: string
+          name?: string
+          position?: number
+          shape?: string
+          tenant_id?: string
+          updated_at?: string
+          width_in?: number
+          wrap_in?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_pieces_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_cost_items: {
         Row: {
           batches_lasts: number | null
@@ -3483,6 +3527,36 @@ export type Database = {
           time_zone?: string
           types?: string[]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      tool_feedback: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          makes: string
+          message: string
+          name: string
+          wants: string[]
+        }
+        Insert: {
+          created_at?: string
+          email?: string
+          id?: string
+          makes?: string
+          message?: string
+          name?: string
+          wants?: string[]
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          makes?: string
+          message?: string
+          name?: string
+          wants?: string[]
         }
         Relationships: []
       }

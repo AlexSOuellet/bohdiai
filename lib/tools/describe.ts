@@ -31,6 +31,8 @@ export type DescribeInput = {
   priceCents: number | null;
   /** The main photo's public address, or null. */
   photoUrl: string | null;
+  /** Or the photo itself, sent with the request and never stored (the try-the-tools page). */
+  photoData?: { mediaType: 'image/jpeg' | 'image/png' | 'image/webp'; data: string } | null;
 };
 
 const schema = z.object({ short: z.string(), description: z.string() });
@@ -45,6 +47,13 @@ export function describeSystemPrompt(): string {
   ].join('\n\n');
 }
 
+/** The photo, by its address or sent along with the request. */
+function photoBlock(input: DescribeInput): Anthropic.ImageBlockParam[] {
+  if (input.photoUrl !== null) return [{ type: 'image', source: { type: 'url', url: input.photoUrl } }];
+  const d = input.photoData ?? null;
+  return d === null ? [] : [{ type: 'image', source: { type: 'base64', media_type: d.mediaType, data: d.data } }];
+}
+
 /** What the maker gave us, as one message with the photo first. */
 export function describeRequest(input: DescribeInput): Anthropic.MessageParam {
   const materials = input.materials.map((m) => m.trim()).filter((m) => m !== '').slice(0, MATERIALS_MAX);
@@ -53,14 +62,14 @@ export function describeRequest(input: DescribeInput): Anthropic.MessageParam {
     materials.length === 0 ? 'What it is made of: not given.' : `What it is made of, in the maker’s words:\n${materials.map((m) => `- ${m}`).join('\n')}`,
     input.facts.trim() === '' ? 'The maker’s own facts: none.' : `The maker’s own facts:\n${input.facts.trim().slice(0, FACTS_MAX)}`,
     input.priceCents === null ? 'Price: not set.' : `Price, for your sense of the piece only: $${(input.priceCents / 100).toFixed(2)}`,
-    input.photoUrl === null ? 'There is no photo.' : 'The photo above is the piece.',
+    input.photoUrl === null && (input.photoData ?? null) === null ? 'There is no photo.' : 'The photo above is the piece.',
     '',
     'Write the short description and the full description. Some supplies are things used up in making it (wax, glue, sealer); describe the piece, not the workshop.',
   ].join('\n');
   return {
     role: 'user',
     content: [
-      ...(input.photoUrl === null ? [] : [{ type: 'image', source: { type: 'url', url: input.photoUrl } } satisfies Anthropic.ImageBlockParam]),
+      ...photoBlock(input),
       { type: 'text', text },
     ],
   };

@@ -38,6 +38,8 @@ const ROUTES = [
   { name: 'notify-interest', load: () => import('./notify-interest/route'), shape: { error: 'slow down' } },
   { name: 'intake', load: () => import('./intake/route'), shape: { error: 'slow down' } },
   { name: 'signup', load: () => import('./signup/route'), shape: { error: 'slow down' } },
+  { name: 'feedback', load: () => import('./tool-feedback/route'), shape: { error: 'slow down' } },
+  { name: 'describe-try', load: () => import('./try-describe/route'), shape: { error: 'slow down' } },
 ] as const;
 
 type Post = (req: Request) => Promise<Response>;

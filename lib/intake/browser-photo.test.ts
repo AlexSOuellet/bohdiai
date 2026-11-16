@@ -49,7 +49,7 @@ describe('shrinkInBrowser', () => {
     const createImageBitmap = vi.fn(() => Promise.resolve(bitmap));
     vi.stubGlobal('createImageBitmap', createImageBitmap);
     const drawImage = vi.fn();
-    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage } as unknown as CanvasRenderingContext2D);
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage } as never);
     vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(function (cb) {
       cb(new Blob([new Uint8Array(2)], { type: 'image/jpeg' }));
     });
@@ -65,7 +65,7 @@ describe('shrinkInBrowser', () => {
     vi.stubGlobal('createImageBitmap', () => Promise.resolve({ width: 10, height: 10, close: vi.fn() }));
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     await expect(shrinkInBrowser(file())).rejects.toThrow('no canvas');
-    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: vi.fn() } as unknown as CanvasRenderingContext2D);
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: vi.fn() } as never);
     vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(function (cb) {
       cb(null);
     });

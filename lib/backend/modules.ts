@@ -49,6 +49,8 @@ export const BACKEND_MODULES: BackendModule[] = [
       { label: 'Monthly goal', href: '/manage/tools/goal' },
       { label: 'Shipping', href: '/manage/tools/shipping' },
       { label: 'Describe it', href: '/manage/tools/describe' },
+      // Print it (Alex, 2026-11-15): every plan.
+      { label: 'Print it', href: '/manage/tools/print' },
     ],
   },
   // What to bring reads what sold through the market app (Alex, 2026-10-28).

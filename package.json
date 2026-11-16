@@ -26,12 +26,18 @@
     "@opennextjs/cloudflare": "^1.20.7",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.1",
+    "@tensorflow/tfjs": "^4.11.0",
+    "@upscalerjs/esrgan-medium": "^1.0.0",
+    "@upscalerjs/esrgan-slim": "^1.0.0",
+    "jspdf": "^4.2.1",
     "next": "^16.2.6",
+    "pdfjs-dist": "^6.5.438",
     "qrcode": "^1.5.4",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "resend": "^4.0.0",
     "stripe": "23.0.0",
+    "upscaler": "^1.0.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

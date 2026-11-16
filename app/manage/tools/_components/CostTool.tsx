@@ -15,7 +15,15 @@ import { HangTag, NumberField, TextField } from './ToolParts';
 export type FromProduct = { id: string; name: string; costs: CostSettings | null };
 
 /** What Cost to make starts from: blank, or the product's own costs when opened from one. */
-function startFrom(product: FromProduct | null): CostForm {
+function startFrom(product: FromProduct | null, paper: PieceItem | null): CostForm {
+  const form = startFromProduct(product);
+  if (paper === null) return form;
+  // Print it's paper (Alex, 2026-11-15) joins the lines every piece gets.
+  const kept = form.piece.filter((p) => p.name.trim() !== '' || p.each.trim() !== '');
+  return { ...form, piece: [...kept, paper] };
+}
+
+function startFromProduct(product: FromProduct | null): CostForm {
   if (product === null) return BLANK_COST;
   const c = product.costs;
   if (c === null) return { ...BLANK_COST, name: product.name };
@@ -24,8 +32,9 @@ function startFrom(product: FromProduct | null): CostForm {
 
 /** Cost to make: one batch, its supplies, what every piece gets, then her time. Run on
  *  its own; its link opens Price it with this piece's cost (Alex, 2026-10-28). */
-export function CostTool({ product = null }: { product?: FromProduct | null }): React.ReactElement {
-  const [cost, setCost] = useState<CostForm>(() => startFrom(product));
+/** publicPage: on the share-only try-the-tools page, with no backend to link into (Alex, 2026-11-15). */
+export function CostTool({ product = null, paper = null, publicPage = false }: { product?: FromProduct | null; paper?: PieceItem | null; publicPage?: boolean }): React.ReactElement {
+  const [cost, setCost] = useState<CostForm>(() => startFrom(product, paper));
   const r = costToMake(cost);
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -161,9 +170,13 @@ export function CostTool({ product = null }: { product?: FromProduct | null }): 
                 </>
               )}
             </dl>
-            <p className="bk-hangtag-next">
-              Next: <Link href={priceLink(cost.name, r.materials, r.time, carryOf(cost)) as Route}>Price this piece</Link>. What it costs you goes with it.
-            </p>
+            {publicPage ? (
+              <p className="bk-hangtag-next">Next: take what it costs you to the Price it tab.</p>
+            ) : (
+              <p className="bk-hangtag-next">
+                Next: <Link href={priceLink(cost.name, r.materials, r.time, carryOf(cost)) as Route}>Price this piece</Link>. What it costs you goes with it.
+              </p>
+            )}
             {product !== null && (
               <button type="button" className="bk-btn bk-hangtag-save" disabled={saving} onClick={() => void saveToProduct(product.id)}>
                 {saving ? 'Saving…' : `Save to ${product.name}`}

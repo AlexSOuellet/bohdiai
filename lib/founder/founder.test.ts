@@ -3,7 +3,7 @@ import type * as React from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import { FOUNDER_USER_IDS, isFounder, requireFounder } from './access';
-import { dollars, findSites, loadFounderSites, monthlyCents, planName, statusName, type FounderSite } from './sites';
+import { dollars, everySite, findSites, loadFounderSites, monthlyCents, planName, statusName, type FounderSite } from './sites';
 import { buildDashboard, loadDashboard, monthKey, previousMonth } from './dashboard';
 import { loadFounderMessages } from './messages';
 
@@ -84,6 +84,11 @@ describe('finding a maker', () => {
   });
   it('shows ten at most', () => {
     expect(findSites(Array.from({ length: 12 }, (_, i) => site({ id: String(i) })), 'a')).toHaveLength(10);
+  });
+  it('lists every maker by name when nothing is searched (Alex, 2026-11-15)', () => {
+    const all = [site({ id: 'c', name: 'saltmarsh & Lace' }), ...sites, site({ id: 'd', name: 'Apple Row' })];
+    expect(everySite(all).map((s) => s.id)).toEqual(['d', 'a', 'c', 'b']);
+    expect(everySite(Array.from({ length: 40 }, (_, i) => site({ id: String(i) })))).toHaveLength(40);
   });
 });
 
