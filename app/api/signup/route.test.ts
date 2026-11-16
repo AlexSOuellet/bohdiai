@@ -21,6 +21,7 @@ const good = {
   [SIGNUP_FIELD.business]: 'Saltmarsh',
   [SIGNUP_FIELD.email]: 'lena@example.com',
   [SIGNUP_FIELD.password]: 'tide pools 22',
+  [SIGNUP_FIELD.agree]: true,
 };
 const post = (body: unknown): Promise<Response> =>
   POST(new Request('https://bohdiai.com/api/signup', { method: 'POST', body: typeof body === 'string' ? body : JSON.stringify(body), headers: { 'content-type': 'application/json' } }));
