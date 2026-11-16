@@ -1,9 +1,9 @@
 # Session Brief — BohdiAI
 
 > **⚠ START HERE: `Go-Live-Plan.md` is the order to fully live (Session 121, 2026-11-09). Work from its first unticked step; tick each step the moment it's done and live (Alex).**
-> Session 123: read `session-logs/session-122.md`. First: Alex looks at `feat/plan-changes` (Go-Live step 2, built and proven in test mode), then merge; then the next unticked Go-Live step. The try-the-tools page stays up until Alex says.
-> **Everything is merged and live; `main` is the only branch (`feat/maker-checkup` parked, `fix/auth-link-24h` waits for Alex).** Alex's admin (Dashboard, Invite a maker, Act as a maker, Promotions, Messages, Emails), promotions, the new email look, a cancel that reaches Stripe.
-> **Alex's call first: should real makers change plans themselves?** Today Upgrade emails Alex and nothing changes what Stripe charges.
+> Session 124: read `session-logs/session-123.md`. **Go-Live step 2 done; step 3: terms, Suspend, the locked site record, Report this site all live. Next: the check on words and photos (last of step 3), then step 4 (Square online checkout).** The try-the-tools page stays up until Alex says.
+> **Everything is merged and live; `main` is the only branch (`feat/maker-checkup` parked, `fix/auth-link-24h` waits for Alex).** Alex's admin (Dashboard, Invite a maker, Act as a maker with Suspend, Promotions, Messages, Reports, Feedback, Emails; new-item counts on the tabs), promotions, the new email look, a cancel that reaches Stripe.
+> **Makers change their own plan (live):** anything charged today is paid on Stripe's own page; cancel moves to Free at term end; Close my account removes everything. **The renewal-day steps need the Stripe webhook live (step 9's first part, Alex).**
 > **Every email to a maker uses `renderEmail` (`lib/email/layout.ts`); all future emails keep this look (Alex).** Act as a maker: search, or see every maker in a list (Alex, 2026-11-15).
 > **Next (Alex): makers getting paid online.** Square online checkout first (Square's own page, two more permissions), then Stripe for makers. PayPal is switched off (Alex, 2026-11-04) until a maker asks; the code stays, `PAYPAL_ON=on` brings it back. Explain the protections before building (payment security is #1).
 > **Before live sign-ups (Alex):** `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` in Cloudflare, webhook registered.
@@ -15,26 +15,22 @@
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 **Operative plan doc:** `Project-Docs/Modular-Plan.md`; open items in `Project-Docs/Open-Work.md`. Every session updates Open-Work as items land.
 
-**Last updated:** 2026-11-15, Session 122 (end).
+**Last updated:** 2026-11-16, Session 123 (end).
 
 ---
 
 ## Current state
 
-**Session 120 (merged and live): Alex's admin at admin.bohdiai.com; promo codes, direct discounts and free makers through Stripe; Invite a maker (a free site needs no Stripe, its link never expires); one email look; a cancel reaches Stripe and a cancelled site goes offline at term end.** Recap: `session-logs/session-120.md`.
-
 **Session 87 — the whole app now runs on Cloudflare Workers; Vercel serves nothing.** bohdiai.com, www, every shop subdomain and Cut-Pro are all served by the `bohdiai` Worker, verified live (Cut-Pro end to end, including a real photo estimate). `main` is current (fast-forwarded 552 commits). 1364 tests, tsc + lint clean. Runbook + lessons: `Cloudflare-Move.md`.
 
 - **Direction (2026-09-29):** everything is manual for now. No onboarding, no editor, no automated builder. All site edits go through Alex. A maker **backend** (catalog, pricing, orders, customers, checkout, modeled on Penny's Decoupage Digital Designs site, minus digital downloads) WILL be built. The Facebook poster and financial report come after launch. Sites span service providers, makers and charities, inside the BohdiAI structure.
 - **Deploy** = push to `main`. Cloudflare Workers Builds builds on its own Linux machines and deploys. Never build on the PC for production: OpenNext bakes `.env.local` into the bundle. Runtime keys live in the Worker's top-level "Variables and Secrets" (not the Build section), pasted without .env quotes.
-- **Switched off** (404 on every host, code kept): onboarding, make-it-yours, dashboard/editor, sign-in/auth, library ingest, archetype-test (`DORMANT_PREFIXES`, lib/proxy-security.ts).
 - **Security fixes landed:** the shop resolves from the real Host (`x-bohdi-shop` is retired and stripped); every public form is rate-limited through the Workers Rate Limiting binding (fails closed); deleted shops 404.
 - **Workers constraints:** no filesystem at request time (legal templates are now bundled); photo shrink goes through the Images binding (`lib/images/shrink.ts`, 20MB max); edge `middleware.ts`, not `proxy.ts`.
-- **Building a client:** content module in `scripts/sites/<site>.ts`, then `npx tsx --env-file=.env.local scripts/build-contractor-site.ts <site> --media <dir> [--contact-email x]`. This writes to the DB and storage, so no deploy is needed.
 
 ## Next actions
 
-**Session 123:** Alex looks at `feat/plan-changes`, then merge (Go-Live step 2). **Session 122 (done):** Print it, the maker list, the try-the-tools feedback page. **Earlier (Session 121):** ask Alex about plan changes for real makers, then makers getting paid online: Square online checkout (Open-Work item 6), then Stripe for makers. Still open: the four Free tools, the photo backgrounds tool, a page per plan, the pricing cards, the site form follow-ups (item 58), renaming `site_added_sections`, the Cloudflare analytics key (Alex).
+**Session 124:** the check on words and photos (Go-Live step 3's last piece; a flagged item at build stops the site publishing until Alex clears it), then Go-Live step 4. **Session 123 (done):** Go-Live step 2 and three of step 3's four pieces. **Session 122 (done):** Print it, the maker list, the try-the-tools feedback page. **Earlier (Session 121):** ask Alex about plan changes for real makers, then makers getting paid online: Square online checkout (Open-Work item 6), then Stripe for makers. Still open: the four Free tools, the photo backgrounds tool, a page per plan, the pricing cards, the site form follow-ups (item 58), renaming `site_added_sections`, the Cloudflare analytics key (Alex).
 
 **Every open item is in `Open-Work.md`; follow its Priority order.** Waiting on others: Joe's feedback, Renee's details.
 
@@ -81,6 +77,7 @@
 - **Play a rule back against the real data before building it (Session 112).** "Order only when the one at the market sells" was built to need a typed count; Saltmarsh's are all blank, so nothing changed and Alex had to raise it twice.
 - **Shop pages' typed routes (Session 115).** The shop is served under `/storefront`, so a redirect to `/account` or `/cart` needs `as Route` or the Cloudflare build fails. Type-check with `.next/types` in and `.next/dev` + `next-env.d.ts` out.
 - **Payments: security first (Alex 2026-10-21).** Never see cards or passwords (the processor's own pages/app), keys scrambled with a secret kept only in Cloudflare, server-only storage, fewest permissions, a sale counts only when the processor confirms it. After a push, check the Workers Builds check run exists, not just CI.
+- **Ask, then stop (Session 123).** A question to Alex ends the turn; don't keep building on the side. Before merging, run every test touching what changed (grep across `app/` too); check a new screen can be reached from the menus.
 - **Don't cause side effects Alex didn't ask for.** `seed-editor-test-owner.mjs` resets the password every run — running it "just for the admin row" clobbered his known password. Read what a script does before running it for a narrow purpose.
 
 ---
@@ -89,6 +86,7 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 123 (2026-11-16): **Merged and live: makers change their own plan (Stripe's page, cancel to Free, Close my account), maker terms at sign-up, the site record locked, Suspend (billing paused), Report this site, new counts on admin tabs.** `session-logs/session-123.md`
 - Session 122 (2026-11-15): **Merged and live: Print it (Tools tab, every plan), Act as a maker lists every maker, the share-only bohdiai.com/try-the-tools page with a Feedback tab in the admin.** `session-logs/session-122.md`
 - Session 120 (2026-11-04 → 11-06): **Merged and live: PayPal off, Alex's admin, promotions, invites with no time limit, the email look, cancels reach Stripe.** `session-logs/session-120.md`
 - Session 119 (2026-10-31 → 11-03): **Merged and live: self-serve sign-up and pay, the build on its own (Cloudflare Workflow), Publish wherever the site shows, Take my site offline; Square online checkout next.** Full recap: `session-logs/session-119.md`.

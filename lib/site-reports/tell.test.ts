@@ -30,3 +30,35 @@ describe('Alex’s email for a report (go-live step 3)', () => {
     ).toContain('They left no email.');
   });
 });
+
+describe('tellAlex', () => {
+  it('emails Alex, and only logs when the send fails', async () => {
+    const { vi } = await import('vitest');
+    const send = vi
+      .fn()
+      .mockResolvedValueOnce({ error: null })
+      .mockResolvedValueOnce({ error: { message: 'bounced' } })
+      .mockRejectedValueOnce(new Error('offline'));
+    const logError = vi.fn();
+    vi.doMock('@/lib/resend', () => ({
+      resend: () => ({ emails: { send } }),
+      fromEmail: () => 'BohdiAI <x@example.com>',
+    }));
+    vi.doMock('@/lib/logger', () => ({ logger: { error: logError } }));
+    vi.resetModules();
+    const { tellAlex } = await import('./tell');
+    const r = {
+      siteName: 'A',
+      subdomain: 'a',
+      tenantId: 't',
+      reason: 'other' as const,
+      details: 'x',
+      email: '',
+    };
+    await tellAlex(r);
+    await tellAlex(r);
+    await tellAlex(r);
+    expect(send).toHaveBeenCalledTimes(3);
+    expect(logError).toHaveBeenCalledTimes(2);
+  });
+});

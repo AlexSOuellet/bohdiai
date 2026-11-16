@@ -50,3 +50,31 @@ describe('new-item counts (Alex, 2026-11-16)', () => {
     expect(upserts).toEqual([{ tab: 'reports', seen_at: expect.any(String) }]);
   });
 });
+
+describe('when the database fails', () => {
+  it('says which part couldn’t be read or saved', async () => {
+    const broken = {
+      from: (table: string) =>
+        table === 'founder_seen'
+          ? {
+              select: async () => ({ data: null, error: { message: 'down' } }),
+              upsert: async () => ({ error: { message: 'down' } }),
+            }
+          : {},
+    } as unknown as SupabaseClient<Database>;
+    await expect(newCounts(broken)).rejects.toThrow('Could not read what’s been seen: down');
+    await expect(markSeen(broken, 'reports')).rejects.toThrow('Could not mark reports seen: down');
+    const countFails = {
+      from: (table: string) => {
+        if (table === 'founder_seen') return { select: async () => ({ data: [], error: null }) };
+        const q = {
+          select: () => q,
+          then: (ok: (v: unknown) => unknown) =>
+            Promise.resolve({ count: null, error: { message: 'gone' } }).then(ok),
+        };
+        return q;
+      },
+    } as unknown as SupabaseClient<Database>;
+    await expect(newCounts(countFails)).rejects.toThrow(/Could not count the/);
+  });
+});

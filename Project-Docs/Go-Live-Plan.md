@@ -38,6 +38,7 @@ Part 1 is what has to be done for that, in the order it gets done. Part 2 is eve
 - **"Report this site":** a small link in every site's footer that sends you a message.
 - **A suspend switch:** on a maker's page in your admin. One press takes the site offline (the same "temporarily offline" page that exists today) and stops the maker putting it back.
 **Before building:** I bring you the plain list of what each check flags and what the maker sees, and wait for your yes.
+**Progress (2026-11-16, Session 123; plan `Safety-Checks-Plan.md`, Alex: "go"):** maker terms + tick box, Suspend (billing paused, no refunds), Report this site + Reports tab: all done and live. Also found and fixed: a maker's login could change any part of their own site record (now locked). **Left: the check on words and photos.**
 
 ### [ ] 4. Makers get paid online with Square (Claude)
 **What it is:** on Full, a shopper fills the cart, presses Pay, and pays on Square's own checkout page. The money goes straight into the maker's Square. BohdiAI never sees the card.

@@ -141,3 +141,46 @@ describe('siteSuspended', () => {
     expect(await siteSuspended(fakeDb({ status: 'active' }).db, 't1')).toBe(false);
   });
 });
+
+describe('when the site can’t be read', () => {
+  it('says so and changes nothing', async () => {
+    const broken = {
+      from: () => {
+        const chain = {
+          select: () => chain,
+          eq: () => chain,
+          maybeSingle: async () => ({ data: null, error: { message: 'down' } }),
+        };
+        return chain;
+      },
+    } as unknown as SupabaseClient<Database>;
+    const gone = {
+      from: () => {
+        const chain = {
+          select: () => chain,
+          eq: () => chain,
+          maybeSingle: async () => ({ data: null, error: null }),
+        };
+        return chain;
+      },
+    } as unknown as SupabaseClient<Database>;
+    expect((await suspendSite(broken, fakeStripe().s, 't1', 'x')).ok).toBe(false);
+    expect((await unsuspendSite(broken, fakeStripe().s, 't1')).ok).toBe(false);
+    expect(await suspendSite(gone, fakeStripe().s, 't1', 'x')).toEqual({
+      ok: false,
+      error: 'That site isn’t there any more.',
+    });
+    expect(await unsuspendSite(gone, fakeStripe().s, 't1')).toEqual({
+      ok: false,
+      error: 'That site isn’t there any more.',
+    });
+    await expect(siteSuspended(broken, 't1')).rejects.toThrow('down');
+  });
+  it('a failed save on unsuspend pauses billing again', async () => {
+    currentSubscription.mockResolvedValue(SUB);
+    const { db } = fakeDb({ status: 'suspended', suspended_from: 'active' }, true);
+    const { s, calls } = fakeStripe();
+    expect((await unsuspendSite(db, s, 't1')).ok).toBe(false);
+    expect(calls).toEqual([{ pause_collection: '' }, { pause_collection: { behavior: 'void' } }]);
+  });
+});
