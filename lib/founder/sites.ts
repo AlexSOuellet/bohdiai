@@ -26,10 +26,22 @@ export type FounderSite = {
   canManage: boolean;
   /** The maker has cancelled and leaves at the end of their term. */
   leaving: boolean;
+  /** Why Alex suspended it, while it is (go-live step 3). */
+  suspendedReason: string | null;
 };
 
-const PLAN_NAMES: Record<string, string> = { free: 'Free', showcase: 'Showcase', lite: 'Market', full: 'Full' };
-const STATUS_NAMES: Record<string, string> = { active: 'Live', draft: 'Draft', offline: 'Offline' };
+const PLAN_NAMES: Record<string, string> = {
+  free: 'Free',
+  showcase: 'Showcase',
+  lite: 'Market',
+  full: 'Full',
+};
+const STATUS_NAMES: Record<string, string> = {
+  active: 'Live',
+  draft: 'Draft',
+  offline: 'Offline',
+  suspended: 'Suspended',
+};
 const PAYING_STATUSES = ['active', 'trialing'];
 
 export function planName(plan: string | null): string {
@@ -56,12 +68,18 @@ const FOUND_SHOWN = 10;
 /** The sites whose name, address or maker's email has this in it. */
 export function findSites(sites: readonly FounderSite[], query: string): FounderSite[] {
   const q = query.toLowerCase();
-  return sites.filter((s) => [s.name, s.subdomain, s.maker ?? ''].some((text) => text.toLowerCase().includes(q))).slice(0, FOUND_SHOWN);
+  return sites
+    .filter((s) =>
+      [s.name, s.subdomain, s.maker ?? ''].some((text) => text.toLowerCase().includes(q)),
+    )
+    .slice(0, FOUND_SHOWN);
 }
 
 /** Every maker, by name, for picking from a list (Alex, 2026-11-15: search OR see a list). */
 export function everySite(sites: readonly FounderSite[]): FounderSite[] {
-  return [...sites].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+  return [...sites].sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
+  );
 }
 
 /** Every account's email by ID. */
@@ -71,7 +89,13 @@ async function emailsById(db: Db): Promise<Map<string, string>> {
   return new Map(data.users.map((u) => [u.id, u.email ?? '']));
 }
 
-type BilledSub = { unit_amount_cents: number | null; billing_interval: string | null; discount_label?: string | null; discount_percent?: number | null; discount_ends_at?: string | null };
+type BilledSub = {
+  unit_amount_cents: number | null;
+  billing_interval: string | null;
+  discount_label?: string | null;
+  discount_percent?: number | null;
+  discount_ends_at?: string | null;
+};
 
 function runningLabel(sub: BilledSub, now: Date): string | null {
   const label = sub.discount_label ?? null;
@@ -88,18 +112,39 @@ function payingOf(sub: BilledSub, now: Date): FounderSite['paying'] {
 
 export async function loadFounderSites(db: Db, now: Date = new Date()): Promise<FounderSite[]> {
   const [tenants, members, subscriptions, emails] = await Promise.all([
-    db.from('tenants').select('id, business_name, subdomain, status, plan, plan_comp, plan_cancels, created_at').is('deleted_at', null).order('created_at', { ascending: false }),
-    db.from('tenant_members').select('tenant_id, user_id').eq('status', 'active').order('created_at'),
-    db.from('subscriptions').select('tenant_id, status, unit_amount_cents, billing_interval, discount_label, discount_percent, discount_ends_at'),
+    db
+      .from('tenants')
+      .select(
+        'id, business_name, subdomain, status, plan, plan_comp, plan_cancels, suspended_reason, created_at',
+      )
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false }),
+    db
+      .from('tenant_members')
+      .select('tenant_id, user_id')
+      .eq('status', 'active')
+      .order('created_at'),
+    db
+      .from('subscriptions')
+      .select(
+        'tenant_id, status, unit_amount_cents, billing_interval, discount_label, discount_percent, discount_ends_at',
+      ),
     emailsById(db),
   ]);
   if (tenants.error !== null) throw new Error(`Could not read the sites: ${tenants.error.message}`);
-  if (members.error !== null) throw new Error(`Could not read who runs the sites: ${members.error.message}`);
-  if (subscriptions.error !== null) throw new Error(`Could not read the subscriptions: ${subscriptions.error.message}`);
+  if (members.error !== null)
+    throw new Error(`Could not read who runs the sites: ${members.error.message}`);
+  if (subscriptions.error !== null)
+    throw new Error(`Could not read the subscriptions: ${subscriptions.error.message}`);
 
   return tenants.data.map((t) => {
     const member = members.data.find((m) => m.tenant_id === t.id && !isFounder(m.user_id));
-    const sub = subscriptions.data.find((s) => s.tenant_id === t.id && PAYING_STATUSES.includes(s.status) && (s.unit_amount_cents ?? 0) > 0);
+    const sub = subscriptions.data.find(
+      (s) =>
+        s.tenant_id === t.id &&
+        PAYING_STATUSES.includes(s.status) &&
+        (s.unit_amount_cents ?? 0) > 0,
+    );
     return {
       id: t.id,
       name: t.business_name,
@@ -112,6 +157,7 @@ export async function loadFounderSites(db: Db, now: Date = new Date()): Promise<
       discount: sub === undefined ? null : runningLabel(sub, now),
       joined: t.created_at,
       leaving: t.plan_cancels,
+      suspendedReason: t.status === 'suspended' ? t.suspended_reason : null,
       canManage: members.data.some((m) => m.tenant_id === t.id && isFounder(m.user_id)),
     };
   });

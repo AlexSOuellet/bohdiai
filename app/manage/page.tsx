@@ -47,14 +47,29 @@ export default async function ManageHome(): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
   const own = await createSupabaseServerClient();
-  const tenant = await own.from('tenants').select('time_zone, plan').eq('id', site.tenantId).maybeSingle();
+  const tenant = await own
+    .from('tenants')
+    .select('time_zone, plan')
+    .eq('id', site.tenantId)
+    .maybeSingle();
   // Free has no site: its Home is her numbers and the steps to know them (Alex, 2026-10-24).
-  if (isFreePlan(tenant.data?.plan)) return <FreeHome tenantId={site.tenantId} name={site.businessName} />;
+  if (isFreePlan(tenant.data?.plan))
+    return <FreeHome tenantId={site.tenantId} name={site.businessName} />;
   // Custom sites have no plan, and no first steps.
   const plan: SitePlan | null = isSitePlan(tenant.data?.plan) ? tenant.data.plan : null;
-  const home = await collectHome(plan === null ? HOME_CONTRIBUTORS : HOME_CONTRIBUTORS_WITH_STEPS, on, site.tenantId);
+  const home = await collectHome(
+    plan === null ? HOME_CONTRIBUTORS : HOME_CONTRIBUTORS_WITH_STEPS,
+    on,
+    site.tenantId,
+  );
   const db = supabaseAdmin();
-  const publish = await getPublishView(db, site.tenantId, site.subdomain, process.env['BACKEND_SESSION_SECRET']);
+  const publish = await getPublishView(
+    db,
+    site.tenantId,
+    site.subdomain,
+    process.env['BACKEND_SESSION_SECRET'],
+  );
+  const suspended = 'suspended' in publish;
   const siteUrl = storefrontOrigin(site.subdomain, (await headers()).get('host'));
   const visits = await loadVisits({
     db,
@@ -89,7 +104,10 @@ export default async function ManageHome(): Promise<React.ReactElement> {
   let eventsFailed = false;
   if (on.has('market_dates')) {
     try {
-      events = await loadEventsHome(own, site.tenantId, shopToday(tenant.data?.time_zone ?? null), { shop: on.has('market_shop'), records: on.has('market_records') });
+      events = await loadEventsHome(own, site.tenantId, shopToday(tenant.data?.time_zone ?? null), {
+        shop: on.has('market_shop'),
+        records: on.has('market_records'),
+      });
     } catch (e) {
       eventsFailed = true;
       err('backend home events failed', e);
@@ -101,7 +119,10 @@ export default async function ManageHome(): Promise<React.ReactElement> {
   if (plan !== null) {
     try {
       const next = events?.next ?? null;
-      const facts = await loadStepFacts(own, db, site.tenantId, { draft: publish.draft, next: next === null ? null : { id: next.id, name: next.name } });
+      const facts = await loadStepFacts(own, db, site.tenantId, {
+        draft: publish.draft,
+        next: next === null ? null : { id: next.id, name: next.name },
+      });
       steps = firstSteps(plan, facts, on);
     } catch (e) {
       stepsFailed = true;
@@ -117,8 +138,19 @@ export default async function ManageHome(): Promise<React.ReactElement> {
     <>
       <header className="bk-hello" data-market-day={today !== null}>
         <div className="bk-hello-text">
-          <p className="bk-hello-status" data-live={!publish.draft && !publish.offline}>
-            {today !== null ? `Market day: ${today.name}` : publish.draft ? 'Only you can see your site for now' : publish.offline ? 'Your site is offline for now' : `Live at ${address}`}
+          <p
+            className="bk-hello-status"
+            data-live={!publish.draft && !publish.offline && !suspended}
+          >
+            {suspended
+              ? 'Your site is suspended'
+              : today !== null
+                ? `Market day: ${today.name}`
+                : publish.draft
+                  ? 'Only you can see your site for now'
+                  : publish.offline
+                    ? 'Your site is offline for now'
+                    : `Live at ${address}`}
           </p>
           <h1 className="bk-hello-name">{site.businessName}</h1>
           <div className="bk-hello-actions">
@@ -127,7 +159,16 @@ export default async function ManageHome(): Promise<React.ReactElement> {
                 Open the market day
               </Link>
             )}
-            <a className={today === null ? 'bk-btn' : 'bk-btn bk-btn-quiet'} href={(publish.draft || publish.offline) && publish.previewUrl !== null ? publish.previewUrl : siteUrl} target="_blank" rel="noopener noreferrer">
+            <a
+              className={today === null ? 'bk-btn' : 'bk-btn bk-btn-quiet'}
+              href={
+                (publish.draft || publish.offline) && publish.previewUrl !== null
+                  ? publish.previewUrl
+                  : siteUrl
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Open my site
             </a>
             <Link className="bk-btn bk-btn-quiet" href={MY_SITE_PATH}>
@@ -138,9 +179,19 @@ export default async function ManageHome(): Promise<React.ReactElement> {
         <figure className="bk-window">
           <figcaption className="bk-window-bar">{address}</figcaption>
           {opening === null ? (
-            <p className="bk-window-empty">{openingFailed ? 'Your opening photo couldn’t load. Refresh to try again.' : 'Your site has no opening photo yet.'}</p>
+            <p className="bk-window-empty">
+              {openingFailed
+                ? 'Your opening photo couldn’t load. Refresh to try again.'
+                : 'Your site has no opening photo yet.'}
+            </p>
           ) : opening.kind === 'video' ? (
-            <video src={opening.url} poster={opening.posterUrl === '' ? undefined : opening.posterUrl} muted playsInline aria-label={opening.alt} />
+            <video
+              src={opening.url}
+              poster={opening.posterUrl === '' ? undefined : opening.posterUrl}
+              muted
+              playsInline
+              aria-label={opening.alt}
+            />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element -- her own upload, sized by CSS
             <img src={opening.url} alt={opening.alt} />
@@ -150,10 +201,20 @@ export default async function ManageHome(): Promise<React.ReactElement> {
 
       <main id="main" className="bk-content bk-home">
         {steps !== null && <FirstSteps steps={steps} />}
-        {stepsFailed && <p className="bk-note">Your next steps couldn’t load. Refresh to try again.</p>}
+        {stepsFailed && (
+          <p className="bk-note">Your next steps couldn’t load. Refresh to try again.</p>
+        )}
 
-        {publish.draft && <PublishPanel siteUrl={`https://${site.subdomain}.bohdiai.com`} previewUrl={publish.previewUrl} publish={publishSite} />}
-        {publish.offline && <OfflinePanel offline previewUrl={publish.previewUrl} putOnline={putSiteOnline} />}
+        {publish.draft && (
+          <PublishPanel
+            siteUrl={`https://${site.subdomain}.bohdiai.com`}
+            previewUrl={publish.previewUrl}
+            publish={publishSite}
+          />
+        )}
+        {publish.offline && (
+          <OfflinePanel offline previewUrl={publish.previewUrl} putOnline={putSiteOnline} />
+        )}
 
         {home.attention.length > 0 && (
           <section className="bk-next" aria-labelledby="bk-next">
@@ -168,12 +229,20 @@ export default async function ManageHome(): Promise<React.ReactElement> {
           </section>
         )}
 
-        {hasProducts && <WorkWall wall={wall} title={showcase ? 'Your gallery' : 'Your work'} link={showcase ? 'Pick your gallery' : 'See all your products'} />}
+        {hasProducts && (
+          <WorkWall
+            wall={wall}
+            title={showcase ? 'Your gallery' : 'Your work'}
+            link={showcase ? 'Pick your gallery' : 'See all your products'}
+          />
+        )}
 
         {(events !== null || eventsFailed || home.tiles.length > 0) && (
           <div className="bk-home-pair">
             {events !== null && <EventsPanel view={events} />}
-            {eventsFailed && <p className="bk-note">Your events couldn’t load. Refresh to try again.</p>}
+            {eventsFailed && (
+              <p className="bk-note">Your events couldn’t load. Refresh to try again.</p>
+            )}
             {home.tiles.length > 0 && (
               <section aria-labelledby="bk-glance">
                 <h2 id="bk-glance" className="bk-band-title bk-band-head">
@@ -181,7 +250,12 @@ export default async function ManageHome(): Promise<React.ReactElement> {
                 </h2>
                 <div className="bk-tiles">
                   {home.tiles.map((t, i) => (
-                    <StatTile key={`${i}-${t.label}`} label={t.label} value={t.value} {...(t.note !== undefined ? { note: t.note } : {})} />
+                    <StatTile
+                      key={`${i}-${t.label}`}
+                      label={t.label}
+                      value={t.value}
+                      {...(t.note !== undefined ? { note: t.note } : {})}
+                    />
                   ))}
                 </div>
               </section>
@@ -190,7 +264,9 @@ export default async function ManageHome(): Promise<React.ReactElement> {
         )}
 
         <VisitsPanel view={visits} />
-        {!publish.draft && !publish.offline && <OfflinePanel offline={false} takeOffline={takeSiteOffline} />}
+        {!publish.draft && !publish.offline && !suspended && (
+          <OfflinePanel offline={false} takeOffline={takeSiteOffline} />
+        )}
       </main>
     </>
   );

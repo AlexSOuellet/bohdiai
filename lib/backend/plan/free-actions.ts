@@ -8,6 +8,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { Route } from 'next';
 import { requireActingSite } from '@/lib/backend/current-site';
+import { siteSuspended, SUSPENDED_NOTE } from '@/lib/founder/suspend';
 import { getSiteFeatures } from '@/lib/backend/site-features';
 import { headersOrigin } from '@/lib/backend/request-origin';
 import { supabaseAdmin } from '@/lib/supabase';
@@ -34,6 +35,8 @@ export async function upgradeFromFree(to: unknown, billing: unknown): Promise<Fr
   const db = supabaseAdmin();
   let next: string;
   try {
+    // Nothing is charged while Alex has the site suspended (its billing is paused).
+    if (await siteSuspended(db, site.tenantId)) return { ok: false, error: SUSPENDED_NOTE };
     const facts = await freeSite(db, site.tenantId);
     if (!facts.free) return { ok: false, error: 'You’re already on a paid plan.' };
     const tell = (): Promise<void> =>

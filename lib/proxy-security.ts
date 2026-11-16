@@ -42,10 +42,7 @@ export function requestHost(headers: Headers): string {
  * storefront URLs — those exist only as the rewrite target for resolved
  * tenant subdomains.
  */
-export function isUnreachableStorefrontPath(
-  pathname: string,
-  subdomain: string | null,
-): boolean {
+export function isUnreachableStorefrontPath(pathname: string, subdomain: string | null): boolean {
   return subdomain === null && pathname.startsWith('/storefront');
 }
 
@@ -81,12 +78,14 @@ const DORMANT_PREFIXES = [
 
 /** True when `pathname` is, or sits under, a switched-off surface (whole segments only). */
 export function isDormantPath(pathname: string): boolean {
-  return DORMANT_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+  return DORMANT_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
 }
 
 /**
  * The Supabase REST query that turns a subdomain into the shop it serves: an
- * active or draft shop that hasn't been deleted, with its status (a draft opens
+ * active, draft, offline or suspended shop that hasn't been deleted, with its status (a draft opens
  * only to its preview link — see lib/storefront/draft-preview.ts). Lowercased to
  * match the unique index on lower(subdomain).
  */
@@ -95,7 +94,7 @@ export function tenantLookupUrl(supabaseUrl: string, subdomain: string): string 
     `${supabaseUrl}/rest/v1/tenants` +
     `?select=id,status` +
     `&subdomain=eq.${encodeURIComponent(subdomain.toLowerCase())}` +
-    `&status=in.(active,draft,offline)` +
+    `&status=in.(active,draft,offline,suspended)` +
     `&deleted_at=is.null` +
     `&limit=1`
   );

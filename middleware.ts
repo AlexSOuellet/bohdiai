@@ -1,12 +1,37 @@
 import { createServerClient } from '@supabase/ssr';
 import type { SetAllCookies } from '@supabase/ssr';
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { sanitizeTenantHeaders, isUnreachableStorefrontPath, requestHost, isAppHost, isDormantPath, tenantLookupUrl, apexRedirect } from '@/lib/proxy-security';
+import {
+  sanitizeTenantHeaders,
+  isUnreachableStorefrontPath,
+  requestHost,
+  isAppHost,
+  isDormantPath,
+  tenantLookupUrl,
+  apexRedirect,
+} from '@/lib/proxy-security';
 import { appOrigin } from '@/lib/backend/app-url';
-import { backendRedirect, founderEntryRedirect, isBackendPath, isManagePath, ownerEntryRedirect } from '@/lib/backend/backend-paths';
-import { ACTIVITY_COOKIE, checkBackendSession, idleLimitFor, sessionSecret } from '@/lib/backend/session-limits';
-import { DRAFT_HEADERS, PREVIEW_COOKIE, PREVIEW_MAX_AGE, PREVIEW_PARAM, draftGate } from '@/lib/storefront/draft-preview';
+import {
+  backendRedirect,
+  founderEntryRedirect,
+  isBackendPath,
+  isManagePath,
+  ownerEntryRedirect,
+} from '@/lib/backend/backend-paths';
+import {
+  ACTIVITY_COOKIE,
+  checkBackendSession,
+  idleLimitFor,
+  sessionSecret,
+} from '@/lib/backend/session-limits';
+import {
+  DRAFT_HEADERS,
+  PREVIEW_COOKIE,
+  PREVIEW_MAX_AGE,
+  PREVIEW_PARAM,
+  draftGate,
+} from '@/lib/storefront/draft-preview';
 import { isReservedSubdomain } from '@/lib/reserved-subdomains';
 import { armRoute } from '@/lib/site/arms';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
@@ -90,6 +115,8 @@ export async function middleware(request: NextRequest) {
     // offline one shows everyone else that it's temporarily offline (Session 119).
     // The link's code is remembered in a cookie for this site only, then the
     // address is cleaned of it.
+    // A site Alex suspended (go-live step 3): the offline page for everyone, no private link.
+    if (tenant.status === 'suspended') offlineVisitor = true;
     if (tenant.status === 'draft' || tenant.status === 'offline') {
       const gate = await draftGate(
         process.env['BACKEND_SESSION_SECRET'],
@@ -145,7 +172,9 @@ export async function middleware(request: NextRequest) {
   const skipRewrite = originalPath.startsWith('/api/') || isBackendPath(originalPath);
   const rewriteUrl = isTenantRequest && !skipRewrite ? request.nextUrl.clone() : null;
   if (rewriteUrl !== null) {
-    rewriteUrl.pathname = offlineVisitor ? '/storefront/offline' : '/storefront' + (originalPath === '/' ? '' : originalPath);
+    rewriteUrl.pathname = offlineVisitor
+      ? '/storefront/offline'
+      : '/storefront' + (originalPath === '/' ? '' : originalPath);
   }
 
   // Start response — rewrite for tenant requests, pass-through for marketing/app.
@@ -197,18 +226,34 @@ export async function middleware(request: NextRequest) {
           // (and no-cache headers) land on `response` through setAll above;
           // carry them onto the redirect.
           const { error } = await supabase.auth.signOut({ scope: 'local' });
-          if (error !== null) console.error('[middleware] Backend auto sign-out failed:', error.message);
+          if (error !== null)
+            console.error('[middleware] Backend auto sign-out failed:', error.message);
           const dest = request.nextUrl.clone();
           dest.pathname = '/signin';
           dest.search = `?ended=${verdict}`;
           const ended = NextResponse.redirect(dest, 303);
           response.cookies.getAll().forEach((c) => ended.cookies.set(c));
-          ended.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate, max-age=0');
-          ended.cookies.set(ACTIVITY_COOKIE, '', { httpOnly: true, secure, sameSite: 'lax', path: '/', maxAge: 0 });
+          ended.headers.set(
+            'Cache-Control',
+            'private, no-cache, no-store, must-revalidate, max-age=0',
+          );
+          ended.cookies.set(ACTIVITY_COOKIE, '', {
+            httpOnly: true,
+            secure,
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 0,
+          });
           return ended;
         }
         if (nextCookie !== null) {
-          response.cookies.set(ACTIVITY_COOKIE, nextCookie, { httpOnly: true, secure, sameSite: 'lax', path: '/', maxAge: idleLimitFor(request.nextUrl.pathname) });
+          response.cookies.set(ACTIVITY_COOKIE, nextCookie, {
+            httpOnly: true,
+            secure,
+            sameSite: 'lax',
+            path: '/',
+            maxAge: idleLimitFor(request.nextUrl.pathname),
+          });
         }
       }
     } else {
@@ -263,7 +308,7 @@ function extractSubdomain(hostname: string): string | null {
 
   if (!host.endsWith(`.${BASE_DOMAIN}`)) return null;
 
-  const sub = host.slice(0, -(`.${BASE_DOMAIN}`.length));
+  const sub = host.slice(0, -`.${BASE_DOMAIN}`.length);
 
   // Reject nested subdomains (e.g. a.b.bohdiai.com)
   if (sub.includes('.')) return null;
@@ -306,7 +351,13 @@ async function resolveTenant(subdomain: string): Promise<{ id: string; status: s
 
 /** Count one page view in Cloudflare (lib/visits/page-view.ts). Best effort: never blocks or breaks the page. */
 function countPageView(request: NextRequest, hostname: string, tenantId: string): void {
-  const view = pageViewOf({ method: request.method, host: hostname, path: request.nextUrl.pathname, search: request.nextUrl.searchParams, headers: request.headers });
+  const view = pageViewOf({
+    method: request.method,
+    host: hostname,
+    path: request.nextUrl.pathname,
+    search: request.nextUrl.searchParams,
+    headers: request.headers,
+  });
   if (view === null) return;
   let dataset: AnalyticsEngineDataset | undefined;
   try {

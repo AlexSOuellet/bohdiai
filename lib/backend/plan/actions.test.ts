@@ -72,6 +72,10 @@ const redirect = vi.hoisted(() =>
     throw Object.assign(new Error('NEXT_REDIRECT'), { url });
   }),
 );
+vi.mock('@/lib/founder/suspend', async (orig) => ({
+  ...(await orig<object>()),
+  siteSuspended: () => Promise.resolve(false),
+}));
 vi.mock('next/navigation', () => ({ redirect }));
 vi.mock('next/headers', () => ({ headers: async () => new Headers({ host: 'app.bohdiai.com' }) }));
 vi.mock('@/lib/backend/request-origin', () => ({ headersOrigin: () => 'https://app.bohdiai.com' }));

@@ -27,6 +27,7 @@ import { stepUp } from './free-up';
 import { nameMatches, removeAccount } from './close';
 import { isFounder } from '@/lib/founder/access';
 import { requireActingSite } from '@/lib/backend/current-site';
+import { siteSuspended, SUSPENDED_NOTE } from '@/lib/founder/suspend';
 import { getSiteFeatures } from '@/lib/backend/site-features';
 import { supabaseAdmin } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
@@ -405,6 +406,8 @@ async function openPayPage(
   backPath: string,
 ): Promise<Opened> {
   try {
+    // Nothing is charged while Alex has the site suspended (its billing is paused).
+    if (await siteSuspended(supabaseAdmin(), tenantId)) return { ok: false, error: SUSPENDED_NOTE };
     const sub = await currentSubscription(supabaseAdmin(), tenantId);
     if (sub === null) return { ok: false, error: FAILED };
     const origin = headersOrigin(await headers());

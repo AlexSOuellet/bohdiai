@@ -89,6 +89,19 @@ export function emailSamples(words: IntakeWords, assetBase: string): EmailSample
       'Moved down at renewal',
       planChangeEmail(BUSINESS, { kind: 'renewed', plan: 'Showcase' }, assetBase),
     ],
+    [
+      'Site suspended',
+      planChangeEmail(
+        BUSINESS,
+        {
+          kind: 'suspended',
+          reason:
+            'Your shop lists vapes, which can’t be sold on BohdiAI. Take them off and I’ll put the site back.',
+        },
+        assetBase,
+      ),
+    ],
+    ['Site back from suspended', planChangeEmail(BUSINESS, { kind: 'unsuspended' }, assetBase)],
   ];
   return samples.map(([title, mail]) => ({ title, subject: mail.subject, html: mail.html }));
 }

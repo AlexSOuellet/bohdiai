@@ -1,19 +1,34 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeTenantHeaders, isUnreachableStorefrontPath, requestHost, isAppHost, isDormantPath, tenantLookupUrl, apexRedirect } from './proxy-security';
+import {
+  sanitizeTenantHeaders,
+  isUnreachableStorefrontPath,
+  requestHost,
+  isAppHost,
+  isDormantPath,
+  tenantLookupUrl,
+  apexRedirect,
+} from './proxy-security';
 
 describe('requestHost', () => {
   it('resolves from the real Host header', () => {
-    expect(requestHost(new Headers({ host: 'cut-pro-lawncare.bohdiai.com' }))).toBe('cut-pro-lawncare.bohdiai.com');
+    expect(requestHost(new Headers({ host: 'cut-pro-lawncare.bohdiai.com' }))).toBe(
+      'cut-pro-lawncare.bohdiai.com',
+    );
   });
 
   it('ignores x-bohdi-shop — a visitor could write it to pose as any shop', () => {
-    const headers = new Headers({ host: 'bohdiai.com', 'x-bohdi-shop': 'cut-pro-lawncare.bohdiai.com' });
+    const headers = new Headers({
+      host: 'bohdiai.com',
+      'x-bohdi-shop': 'cut-pro-lawncare.bohdiai.com',
+    });
     expect(requestHost(headers)).toBe('bohdiai.com');
   });
 
   it('lowercases and strips a single trailing dot, before any port', () => {
     expect(requestHost(new Headers({ host: 'App.BohdiAI.com.' }))).toBe('app.bohdiai.com');
-    expect(requestHost(new Headers({ host: 'shop.bohdiai.com.:443' }))).toBe('shop.bohdiai.com:443');
+    expect(requestHost(new Headers({ host: 'shop.bohdiai.com.:443' }))).toBe(
+      'shop.bohdiai.com:443',
+    );
     expect(isAppHost(requestHost(new Headers({ host: 'App.BohdiAI.com.' })))).toBe(true);
   });
 
@@ -142,7 +157,14 @@ describe('isDormantPath', () => {
   });
 
   it('has the sign-in and backend paths live again', () => {
-    for (const path of ['/signin', '/auth/confirm', '/auth/continue', '/auth/error', '/manage', '/forgot-password']) {
+    for (const path of [
+      '/signin',
+      '/auth/confirm',
+      '/auth/continue',
+      '/auth/error',
+      '/manage',
+      '/forgot-password',
+    ]) {
       expect(isDormantPath(path), path).toBe(false);
     }
   });
@@ -178,7 +200,7 @@ describe('tenantLookupUrl', () => {
   const url = new URL(tenantLookupUrl('https://db.example.co', 'Cut-Pro-Lawncare'));
 
   it('asks only for live, private or offline shops that have not been deleted', () => {
-    expect(url.searchParams.get('status')).toBe('in.(active,draft,offline)');
+    expect(url.searchParams.get('status')).toBe('in.(active,draft,offline,suspended)');
     expect(url.searchParams.get('deleted_at')).toBe('is.null');
   });
 
@@ -191,18 +213,25 @@ describe('tenantLookupUrl', () => {
 
   it('encodes the subdomain so it cannot add its own filters', () => {
     const sneaky = new URL(tenantLookupUrl('https://db.example.co', 'x&status=eq.suspended'));
-    expect(sneaky.searchParams.getAll('status')).toEqual(['in.(active,draft,offline)']);
+    expect(sneaky.searchParams.getAll('status')).toEqual(['in.(active,draft,offline,suspended)']);
   });
 });
 
 describe('apexRedirect', () => {
   it('sends www to the bare domain, keeping the path and query', () => {
-    expect(apexRedirect('www.bohdiai.com', new URL('https://www.bohdiai.com/privacy?x=1'))).toBe('https://bohdiai.com/privacy?x=1');
+    expect(apexRedirect('www.bohdiai.com', new URL('https://www.bohdiai.com/privacy?x=1'))).toBe(
+      'https://bohdiai.com/privacy?x=1',
+    );
   });
 
   it('leaves the bare domain, shops, and local dev alone', () => {
     expect(apexRedirect('bohdiai.com', new URL('https://bohdiai.com/'))).toBeNull();
-    expect(apexRedirect('cut-pro-lawncare.bohdiai.com', new URL('https://cut-pro-lawncare.bohdiai.com/'))).toBeNull();
+    expect(
+      apexRedirect(
+        'cut-pro-lawncare.bohdiai.com',
+        new URL('https://cut-pro-lawncare.bohdiai.com/'),
+      ),
+    ).toBeNull();
     expect(apexRedirect('localhost:3000', new URL('http://localhost:3000/'))).toBeNull();
   });
 });

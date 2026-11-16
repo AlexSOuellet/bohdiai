@@ -20,6 +20,8 @@ export function Shell(props: {
   sites: ShopSummary[];
   currentTenantId: string;
   founder: boolean;
+  /** One line above every screen (a suspended site, go-live step 3). */
+  banner?: string | null;
   children: React.ReactNode;
 }): React.ReactElement {
   const [open, setOpen] = useState(false);
@@ -46,8 +48,21 @@ export function Shell(props: {
           onNavigate={() => setOpen(false)}
         />
       </aside>
-      {open && <button type="button" aria-label="Close menu" className="bk-backdrop" tabIndex={-1} onClick={() => setOpen(false)} />}
+      {open && (
+        <button
+          type="button"
+          aria-label="Close menu"
+          className="bk-backdrop"
+          tabIndex={-1}
+          onClick={() => setOpen(false)}
+        />
+      )}
       <div className="bk-main">
+        {props.banner != null && (
+          <p role="status" className="bk-banner">
+            {props.banner}
+          </p>
+        )}
         <ScreenTabs nav={props.nav} />
         {props.children}
       </div>

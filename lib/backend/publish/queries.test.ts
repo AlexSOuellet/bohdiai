@@ -6,60 +6,160 @@ import { previewCode } from '@/lib/storefront/draft-preview';
 
 const SECRET = 'x'.repeat(40);
 
-function db(result: { data: { status: string; plan?: string | null } | null; error: { message: string } | null }) {
-  return { from: () => ({ select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve(result) }) }) }) } as unknown as SupabaseClient<Database>;
+function db(result: {
+  data: { status: string; plan?: string | null } | null;
+  error: { message: string } | null;
+}) {
+  return {
+    from: () => ({
+      select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve(result) }) }),
+    }),
+  } as unknown as SupabaseClient<Database>;
 }
 
 describe('getPublishView', () => {
   it('a draft gets its private link, made with this site’s secret', async () => {
-    const view = await getPublishView(db({ data: { status: 'draft' }, error: null }), 't1', 'tide', SECRET);
-    expect(view).toEqual({ draft: true, offline: false, previewUrl: `https://tide.bohdiai.com/?preview=${await previewCode(SECRET, 'tide')}` });
+    const view = await getPublishView(
+      db({ data: { status: 'draft' }, error: null }),
+      't1',
+      'tide',
+      SECRET,
+    );
+    expect(view).toEqual({
+      draft: true,
+      offline: false,
+      previewUrl: `https://tide.bohdiai.com/?preview=${await previewCode(SECRET, 'tide')}`,
+    });
   });
 
   it('without a secret a draft has no link, and says so in the panel', async () => {
-    expect(await getPublishView(db({ data: { status: 'draft' }, error: null }), 't1', 'tide', undefined)).toEqual({ draft: true, offline: false, previewUrl: null });
+    expect(
+      await getPublishView(db({ data: { status: 'draft' }, error: null }), 't1', 'tide', undefined),
+    ).toEqual({ draft: true, offline: false, previewUrl: null });
   });
 
   it('a live site shows no panel', async () => {
-    expect(await getPublishView(db({ data: { status: 'active' }, error: null }), 't1', 'tide', SECRET)).toEqual({ draft: false, offline: false });
-    expect(await getPublishView(db({ data: null, error: null }), 't1', 'tide', SECRET)).toEqual({ draft: false, offline: false });
+    expect(
+      await getPublishView(db({ data: { status: 'active' }, error: null }), 't1', 'tide', SECRET),
+    ).toEqual({ draft: false, offline: false });
+    expect(await getPublishView(db({ data: null, error: null }), 't1', 'tide', SECRET)).toEqual({
+      draft: false,
+      offline: false,
+    });
   });
 
   it('a failed read throws, so the page shows its error', async () => {
-    await expect(getPublishView(db({ data: null, error: { message: 'down' } }), 't1', 'tide', SECRET)).rejects.toThrow('down');
+    await expect(
+      getPublishView(db({ data: null, error: { message: 'down' } }), 't1', 'tide', SECRET),
+    ).rejects.toThrow('down');
   });
 });
 
 describe('siteOpenUrl', () => {
   it('opens a live site at its address and a private one through its private link', async () => {
-    expect(await siteOpenUrl({ status: 'active', plan: 'full' }, 'tide', SECRET, 'app.bohdiai.com')).toBe('https://tide.bohdiai.com');
-    expect(await siteOpenUrl({ status: 'draft', plan: 'full' }, 'tide', SECRET, 'app.bohdiai.com')).toMatch(/^https:\/\/tide\.bohdiai\.com\/\?.+=/);
-    expect(await siteOpenUrl({ status: 'offline', plan: 'full' }, 'tide', SECRET, 'app.bohdiai.com')).toMatch(/^https:\/\/tide\.bohdiai\.com\/\?.+=/);
+    expect(
+      await siteOpenUrl({ status: 'active', plan: 'full' }, 'tide', SECRET, 'app.bohdiai.com'),
+    ).toBe('https://tide.bohdiai.com');
+    expect(
+      await siteOpenUrl({ status: 'draft', plan: 'full' }, 'tide', SECRET, 'app.bohdiai.com'),
+    ).toMatch(/^https:\/\/tide\.bohdiai\.com\/\?.+=/);
+    expect(
+      await siteOpenUrl({ status: 'offline', plan: 'full' }, 'tide', SECRET, 'app.bohdiai.com'),
+    ).toMatch(/^https:\/\/tide\.bohdiai\.com\/\?.+=/);
   });
 });
 
 describe('getSiteOpen (Publish wherever the site is shown, Session 119)', () => {
   it('a private site can be published, and opens through its private link on this host', async () => {
-    const open = await getSiteOpen(db({ data: { status: 'draft', plan: 'lite' }, error: null }), 't1', 'tide', SECRET, 'app.bohdiai.com');
-    expect(open).toEqual({ canPublish: true, openUrl: `https://tide.bohdiai.com/?preview=${await previewCode(SECRET, 'tide')}` });
-    const local = await getSiteOpen(db({ data: { status: 'draft', plan: 'full' }, error: null }), 't1', 'tide', SECRET, 'app.localhost:3000');
+    const open = await getSiteOpen(
+      db({ data: { status: 'draft', plan: 'lite' }, error: null }),
+      't1',
+      'tide',
+      SECRET,
+      'app.bohdiai.com',
+    );
+    expect(open).toEqual({
+      canPublish: true,
+      openUrl: `https://tide.bohdiai.com/?preview=${await previewCode(SECRET, 'tide')}`,
+      suspended: false,
+    });
+    const local = await getSiteOpen(
+      db({ data: { status: 'draft', plan: 'full' }, error: null }),
+      't1',
+      'tide',
+      SECRET,
+      'app.localhost:3000',
+    );
     expect(local.openUrl.startsWith('http://tide.localhost:3000/?preview=')).toBe(true);
   });
 
   it('a live site has nothing to publish and opens plainly', async () => {
-    expect(await getSiteOpen(db({ data: { status: 'active', plan: 'lite' }, error: null }), 't1', 'tide', SECRET, 'app.bohdiai.com')).toEqual({ canPublish: false, openUrl: 'https://tide.bohdiai.com' });
+    expect(
+      await getSiteOpen(
+        db({ data: { status: 'active', plan: 'lite' }, error: null }),
+        't1',
+        'tide',
+        SECRET,
+        'app.bohdiai.com',
+      ),
+    ).toEqual({ canPublish: false, openUrl: 'https://tide.bohdiai.com', suspended: false });
   });
 
   it('Free has no site to publish', async () => {
-    expect((await getSiteOpen(db({ data: { status: 'draft', plan: 'free' }, error: null }), 't1', 'tide', SECRET, 'app.bohdiai.com')).canPublish).toBe(false);
+    expect(
+      (
+        await getSiteOpen(
+          db({ data: { status: 'draft', plan: 'free' }, error: null }),
+          't1',
+          'tide',
+          SECRET,
+          'app.bohdiai.com',
+        )
+      ).canPublish,
+    ).toBe(false);
   });
 });
 
 describe('an offline site (Session 119)', () => {
   it('keeps its private link for its maker, and has nothing to publish', async () => {
-    const view = await getPublishView(db({ data: { status: 'offline' }, error: null }), 't1', 'tide', SECRET);
-    expect(view).toEqual({ draft: false, offline: true, previewUrl: `https://tide.bohdiai.com/?preview=${await previewCode(SECRET, 'tide')}` });
-    const open = await getSiteOpen(db({ data: { status: 'offline', plan: 'lite' }, error: null }), 't1', 'tide', SECRET, 'app.bohdiai.com');
-    expect(open).toEqual({ canPublish: false, openUrl: `https://tide.bohdiai.com/?preview=${await previewCode(SECRET, 'tide')}` });
+    const view = await getPublishView(
+      db({ data: { status: 'offline' }, error: null }),
+      't1',
+      'tide',
+      SECRET,
+    );
+    expect(view).toEqual({
+      draft: false,
+      offline: true,
+      previewUrl: `https://tide.bohdiai.com/?preview=${await previewCode(SECRET, 'tide')}`,
+    });
+    const open = await getSiteOpen(
+      db({ data: { status: 'offline', plan: 'lite' }, error: null }),
+      't1',
+      'tide',
+      SECRET,
+      'app.bohdiai.com',
+    );
+    expect(open).toEqual({
+      canPublish: false,
+      openUrl: `https://tide.bohdiai.com/?preview=${await previewCode(SECRET, 'tide')}`,
+      suspended: false,
+    });
+  });
+});
+
+describe('a suspended site (go-live step 3, Alex 2026-11-16)', () => {
+  it('has nothing to publish or put back, no private link, and says it’s suspended', async () => {
+    const sus = db({ data: { status: 'suspended', plan: 'lite' }, error: null });
+    expect(await getSiteOpen(sus, 't1', 'tide', SECRET, 'app.bohdiai.com')).toEqual({
+      canPublish: false,
+      openUrl: 'https://tide.bohdiai.com',
+      suspended: true,
+    });
+    expect(await getPublishView(sus, 't1', 'tide', SECRET)).toEqual({
+      draft: false,
+      offline: false,
+      suspended: true,
+    });
   });
 });
