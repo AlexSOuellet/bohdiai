@@ -14,7 +14,7 @@ Drafted 2026-11-16 for Alex's yes. Nothing is built until he says go. Four piece
 
 **Where the words live:** in the database with the rest of the sign-up form's words, so they can change without a deploy.
 
-**Alex's call:** the wording of both pages. Claude drafts, Alex edits and approves.
+**Done 2026-11-16:** Alex approved the wording ("its good"); merged.
 
 ---
 
