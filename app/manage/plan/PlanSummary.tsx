@@ -13,8 +13,12 @@ import {
 import type { SitePlan } from '@/lib/backend/plan/plan';
 import { PlanButtons } from './PlanButtons';
 
-/** How Upgrade works on this site: the demo switches through checkout; a real site emails Alex until billing exists. */
-export type PlanMode = { kind: 'demo' } | { kind: 'email'; siteName: string; contactEmail: string };
+/** How Upgrade works on this site: the demo and a real site change it themselves through
+ *  checkout (Alex, Session 121); a sample site with no billing emails Alex. */
+export type PlanMode =
+  | { kind: 'demo' }
+  | { kind: 'self' }
+  | { kind: 'email'; siteName: string; contactEmail: string };
 
 /** How the plan is billed, when it renews, and any downgrade waiting for that renewal (and how it will be billed). */
 export type PlanTermsView = {
@@ -42,7 +46,15 @@ function Checks({
   );
 }
 
-function UpgradeCard({ plan, mode, comp }: { plan: Plan; mode: PlanMode; comp: PlanComp | null }): React.ReactElement {
+function UpgradeCard({
+  plan,
+  mode,
+  comp,
+}: {
+  plan: Plan;
+  mode: PlanMode;
+  comp: PlanComp | null;
+}): React.ReactElement {
   const label = `Upgrade to ${plan.name}`;
   return (
     <section className="bk-up" data-tier={plan.tier} aria-labelledby={`bk-up-${plan.id}`}>
@@ -58,7 +70,7 @@ function UpgradeCard({ plan, mode, comp }: { plan: Plan; mode: PlanMode; comp: P
       {isFreeOn(plan.tier, comp) && <p className="bk-up-year">Free for you</p>}
       <p className="bk-up-lead">{includesLead(plan) ?? 'What you’d add'}</p>
       <Checks lines={plan.includes} className="bk-up-list" />
-      {mode.kind === 'demo' ? (
+      {mode.kind !== 'email' ? (
         <Link
           className="bk-up-btn"
           href={{ pathname: '/manage/plan/change', query: { to: plan.tier } }}
@@ -88,7 +100,10 @@ export function PlanSummary({
 }): React.ReactElement {
   const { current, above, below } = view;
   const demo = mode.kind === 'demo';
+  const changes = mode.kind !== 'email';
   const next = terms?.next ?? null;
+  // A billing switch waits for renewal on the same plan: it isn't a downgrade.
+  const billingOnly = next !== null && next === current.tier;
   return (
     <div className="bk-plan">
       {changed !== null && (
@@ -107,32 +122,39 @@ export function PlanSummary({
             {current.name}
           </h2>
           <p className="bk-now-price">
-            {isFreeOn(current.tier, terms?.comp) ? 'Free for you' : `$${current.monthly} a month, or $${current.yearly} a year`}
+            {isFreeOn(current.tier, terms?.comp)
+              ? 'Free for you'
+              : `$${current.monthly} a month, or $${current.yearly} a year`}
           </p>
-          {terms !== null && terms.renewsOn !== '' && isFreeOn(next ?? current.tier, terms.comp) && (
-            <p className="bk-now-terms">
-              Nothing to pay{next !== null && `. Moves to ${planOf(next).name} on ${longDay(terms.renewsOn)}`}.
-            </p>
-          )}
-          {terms !== null && terms.renewsOn !== '' && !isFreeOn(next ?? current.tier, terms.comp) && (
-            <p className="bk-now-terms">
-              Billed {terms.billing}. Renews {longDay(terms.renewsOn)}
-              {next !== null &&
-                ` as ${planOf(next).name}, billed ${terms.nextBilling ?? terms.billing},`}{' '}
-              for{' '}
-              {money(
-                renewalCharge(
-                  priceCents(
-                    next ?? current.tier,
-                    next !== null ? (terms.nextBilling ?? terms.billing) : terms.billing,
-                    terms.comp,
-                  ),
-                  terms.creditCents,
-                ).paidCents,
-              )}
-              {terms.creditCents > 0 && ', after credit'}.
-            </p>
-          )}
+          {terms !== null &&
+            terms.renewsOn !== '' &&
+            isFreeOn(next ?? current.tier, terms.comp) && (
+              <p className="bk-now-terms">
+                Nothing to pay
+                {next !== null && `. Moves to ${planOf(next).name} on ${longDay(terms.renewsOn)}`}.
+              </p>
+            )}
+          {terms !== null &&
+            terms.renewsOn !== '' &&
+            !isFreeOn(next ?? current.tier, terms.comp) && (
+              <p className="bk-now-terms">
+                Billed {terms.billing}. Renews {longDay(terms.renewsOn)}
+                {next !== null &&
+                  ` as ${planOf(next).name}, billed ${terms.nextBilling ?? terms.billing},`}{' '}
+                for{' '}
+                {money(
+                  renewalCharge(
+                    priceCents(
+                      next ?? current.tier,
+                      next !== null ? (terms.nextBilling ?? terms.billing) : terms.billing,
+                      terms.comp,
+                    ),
+                    terms.creditCents,
+                  ).paidCents,
+                )}
+                {terms.creditCents > 0 && ', after credit'}.
+              </p>
+            )}
           {terms !== null && terms.creditCents > 0 && (
             <p className="bk-now-credit">
               {money(terms.creditCents)} credit on your account, used on your next bills first.
@@ -145,21 +167,42 @@ export function PlanSummary({
       {next !== null && terms !== null && (
         <section className="bk-pending" aria-labelledby="bk-pending-h">
           <h2 id="bk-pending-h" className="bk-pending-h">
-            Downgrading to {planOf(next).name} on {longDay(terms.renewsOn)}
+            {billingOnly
+              ? `Billed ${terms.nextBilling ?? terms.billing} from ${longDay(terms.renewsOn)}`
+              : `Downgrading to ${planOf(next).name} on ${longDay(terms.renewsOn)}`}
           </h2>
           <p className="bk-note">
-            You keep everything in {current.name} until then. Nothing is deleted; it’s put away
-            until you upgrade again.
+            {billingOnly
+              ? `Until then your ${terms.billing} plan carries on as it is.`
+              : `You keep everything in ${current.name} until then. Nothing is deleted; it’s put away until you upgrade again.`}
           </p>
         </section>
       )}
 
-      {demo && (
+      {changes && (
         <PlanButtons
-          keepLabel={next !== null ? `Keep ${current.name}` : null}
-          demo
+          keepLabel={
+            next === null
+              ? null
+              : billingOnly
+                ? `Stay billed ${terms?.billing ?? 'monthly'}`
+                : `Keep ${current.name}`
+          }
+          demo={demo}
           billing={terms?.billing ?? 'monthly'}
-          pending={next !== null && terms !== null ? { planName: planOf(next).name, on: longDay(terms.renewsOn) } : null}
+          pending={
+            next !== null && terms !== null
+              ? { planName: planOf(next).name, on: longDay(terms.renewsOn) }
+              : null
+          }
+          switchBilling={
+            !demo && next === null && terms !== null && !isFreeOn(current.tier, terms.comp)
+              ? terms.billing === 'monthly'
+                ? 'yearly'
+                : 'monthly'
+              : null
+          }
+          renewsOn={terms === null ? '' : longDay(terms.renewsOn)}
         />
       )}
 
@@ -176,7 +219,7 @@ export function PlanSummary({
         </>
       )}
 
-      {demo && next === null && below.length > 0 && (
+      {changes && next === null && below.length > 0 && (
         <div className="bk-downs">
           <p className="bk-label">Need less for a while?</p>
           {below.map((plan) => (

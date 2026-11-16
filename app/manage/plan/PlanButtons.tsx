@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { useRouter, unstable_rethrow } from 'next/navigation';
 import {
   cancelScheduledChange,
+  changeBilling,
   setDemoBilling,
   skipToRenewal,
   type ChangePlanResult,
@@ -13,20 +14,27 @@ import { useNotice } from '../_components/Notice';
 
 const FAILED = 'Something went wrong. Check your connection and try again.';
 
-/** The small plan buttons on Your plan: keep the current plan after all, and on the
- *  demo, a note that plays out a waiting move now (a maker trying the demo can't wait
- *  for the renewal day) and the billing switch, so moves and credit can be shown. */
+/** The small plan buttons on Your plan: keep the current plan after all; on a real
+ *  site, switch between monthly and yearly (to yearly now, to monthly at renewal);
+ *  and on the demo, a note that plays out a waiting move now (a maker trying the demo
+ *  can't wait for the renewal day) and the billing switch, so moves and credit can be shown. */
 export function PlanButtons({
   keepLabel,
   demo,
   billing,
   pending = null,
+  switchBilling = null,
+  renewsOn = '',
 }: {
   keepLabel: string | null;
   demo: boolean;
   billing: Billing;
   /** The move waiting for the renewal: the plan's name and the day, in words. */
   pending?: { planName: string; on: string } | null;
+  /** A real site's billing switch: the billing it would move to, or null for none. */
+  switchBilling?: Billing | null;
+  /** The renewal day in words, for what switching to monthly means. */
+  renewsOn?: string;
 }): React.ReactElement | null {
   const router = useRouter();
   const notice = useNotice();
@@ -51,7 +59,7 @@ export function PlanButtons({
     }
   }
 
-  if (keepLabel === null && !demo) return null;
+  if (keepLabel === null && !demo && switchBilling === null) return null;
   return (
     <div className="bk-plan-btns">
       {notice.area}
@@ -65,20 +73,46 @@ export function PlanButtons({
           {keepLabel}
         </button>
       )}
+      {switchBilling !== null && (
+        <div className="bk-plan-billing">
+          <p className="bk-note">
+            {switchBilling === 'yearly'
+              ? `Pay yearly and get two months free. The switch happens today, and the unused part of this month counts toward the year.${demo ? '' : ' You pay on Stripe’s own page, with the card on file or a different one.'}`
+              : `Pay monthly instead. The switch happens when your year ends, on ${renewsOn}, so you keep the year you paid for.`}
+          </p>
+          <button
+            type="button"
+            className="bk-btn"
+            disabled={busy}
+            onClick={() => void run(() => changeBilling(switchBilling))}
+          >
+            {switchBilling === 'yearly' ? 'Switch to yearly' : 'Switch to monthly'}
+          </button>
+        </div>
+      )}
       {demo && (
         <>
           {pending !== null && (
             <div className="bk-demo-note" role="note">
               <p>
-                <strong>This is a demo.</strong> On a real site, your move to {pending.planName} happens on {pending.on}, when
-                your plan renews. Want to see it now?
+                <strong>This is a demo.</strong> On a real site, your move to {pending.planName}{' '}
+                happens on {pending.on}, when your plan renews. Want to see it now?
               </p>
-              <button type="button" className="bk-btn" disabled={busy} onClick={() => void run(skipToRenewal)}>
+              <button
+                type="button"
+                className="bk-btn"
+                disabled={busy}
+                onClick={() => void run(skipToRenewal)}
+              >
                 Move to {pending.planName} now
               </button>
             </div>
           )}
-          <span className="bk-demo-billing" role="group" aria-label="Demo only: try monthly or yearly billing">
+          <span
+            className="bk-demo-billing"
+            role="group"
+            aria-label="Demo only: try monthly or yearly billing"
+          >
             <span className="bk-label">Demo only: try monthly or yearly billing</span>
             {(['monthly', 'yearly'] as const).map((b) => (
               <button

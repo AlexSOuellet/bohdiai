@@ -1,7 +1,14 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import { isSitePlan, type SitePlan } from './plan';
-import { isBilling, isPlanComp, nextRenewal, todayDay, type Billing, type PlanComp } from './billing';
+import {
+  isBilling,
+  isPlanComp,
+  nextRenewal,
+  todayDay,
+  type Billing,
+  type PlanComp,
+} from './billing';
 
 export type PlanState = {
   plan: SitePlan;
@@ -16,6 +23,8 @@ export type PlanState = {
   nextGallery: string[];
   /** The site closes at the end of its current term (Cancel on Your plan). */
   cancels: boolean;
+  /** Closing the whole account at the end of the term, not moving to Free (Alex, 2026-11-16). */
+  closing: boolean;
   /** Today in the shop's time zone. */
   today: string;
 };
@@ -47,6 +56,7 @@ export async function loadPlanState(
     comp: isPlanComp(data.plan_comp) ? data.plan_comp : null,
     nextGallery: data.plan_next_gallery ?? [],
     cancels: data.plan_cancels,
+    closing: data.plan_cancels && data.plan_next === null,
     today,
   };
 }

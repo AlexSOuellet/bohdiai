@@ -4,7 +4,10 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 const m = vi.hoisted(() => ({ redeemPromo: vi.fn(), refresh: vi.fn() }));
 vi.mock('@/lib/backend/plan/promo-actions', () => ({ redeemPromo: m.redeemPromo }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: m.refresh }), unstable_rethrow: () => undefined }));
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ refresh: m.refresh }),
+  unstable_rethrow: () => undefined,
+}));
 
 import { PromoPanel } from './PromoPanel';
 
@@ -40,6 +43,8 @@ describe('PromoPanel', () => {
     m.redeemPromo.mockRejectedValue(new Error('offline'));
     render(<PromoPanel discount={null} />);
     enter('SPRING10');
-    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Check your connection'));
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent('Check your connection'),
+    );
   });
 });

@@ -16,7 +16,13 @@ import { FREE_PLAN, type AccountPlan } from '@/lib/backend/plan/plan';
 export type Billing = 'monthly' | 'yearly';
 
 /** One price in Stripe. */
-export type StripePlan = { plan: AccountPlan; billing: Billing; name: string; cents: number; lookupKey: string };
+export type StripePlan = {
+  plan: AccountPlan;
+  billing: Billing;
+  name: string;
+  cents: number;
+  lookupKey: string;
+};
 
 /** Free is monthly at $0 whatever was picked: there is nothing to pay yearly. */
 export function billingFor(plan: AccountPlan, billing: Billing): Billing {
@@ -43,7 +49,16 @@ export function stripePlans(): StripePlan[] {
       lookupKey: lookupKey(p.tier, billing),
     })),
   );
-  return [{ plan: FREE_PLAN, billing: 'monthly', name: FREE_OFFER.name, cents: 0, lookupKey: lookupKey(FREE_PLAN, 'monthly') }, ...paid];
+  return [
+    {
+      plan: FREE_PLAN,
+      billing: 'monthly',
+      name: FREE_OFFER.name,
+      cents: 0,
+      lookupKey: lookupKey(FREE_PLAN, 'monthly'),
+    },
+    ...paid,
+  ];
 }
 
 /** The Stripe client, talking to Stripe with fetch (it runs on Cloudflare). */

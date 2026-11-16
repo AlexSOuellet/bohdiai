@@ -30,7 +30,7 @@ const quotes = {
   yearly: quoteUpgrade(monthly, 'lite', 'yearly', TODAY),
 };
 
-function checkout() {
+function checkout(pays: 'stripe' | 'nothing' | 'demo' = 'demo') {
   return render(
     <PlanChange
       kind="up"
@@ -38,6 +38,7 @@ function checkout() {
       to={planOf('lite')}
       fromBilling="monthly"
       quotes={quotes}
+      pays={pays}
     />,
   );
 }
@@ -89,6 +90,7 @@ describe('checkout (moving up)', () => {
         from={planOf('showcase')}
         to={planOf('lite')}
         fromBilling="yearly"
+        pays="demo"
         quotes={{
           monthly: quoteUpgrade(yearly, 'lite', 'monthly', TODAY),
           yearly: quoteUpgrade(yearly, 'lite', 'yearly', TODAY),
@@ -108,6 +110,13 @@ describe('checkout (moving up)', () => {
       screen.getByText('Credit left, used on your next bills first').nextElementSibling
         ?.textContent,
     ).toBe('$9.93');
+  });
+
+  it('on a paying site, goes on to Stripe’s own payment page and says the card can be changed there (Alex, 2026-11-16)', () => {
+    checkout('stripe');
+    expect(screen.getByRole('button', { name: 'Continue to payment' })).toBeTruthy();
+    expect(screen.getByText(/with the card on file or a different one/)).toBeTruthy();
+    expect(screen.queryByText('Demo site: no card is charged.')).toBeNull();
   });
 
   it('switches the plan on Confirm, on the billing she picked, and goes back to Your plan', async () => {
@@ -135,7 +144,11 @@ describe('checkout (moving up)', () => {
   });
 });
 
-const OPTIONS = Array.from({ length: 14 }, (_, i) => ({ id: `p${i}`, name: `Piece ${i}`, url: `https://cdn/${i}.jpg` }));
+const OPTIONS = Array.from({ length: 14 }, (_, i) => ({
+  id: `p${i}`,
+  name: `Piece ${i}`,
+  url: `https://cdn/${i}.jpg`,
+}));
 
 describe('downgrade', () => {
   function down(showcase = OPTIONS.slice(0, 2)) {
@@ -190,10 +203,14 @@ describe('downgrade', () => {
   it('starts with the first 12 picked and won’t let a 13th be ticked', () => {
     down(OPTIONS);
     expect(screen.getByText(/12 of 12 picked/)).toBeTruthy();
-    expect((screen.getByRole('checkbox', { name: /Piece 12/ }) as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByRole('checkbox', { name: /Piece 12/ }) as HTMLInputElement).disabled).toBe(
+      true,
+    );
     fireEvent.click(screen.getByRole('checkbox', { name: /Piece 0/ }));
     expect(screen.getByText(/11 of 12 picked/)).toBeTruthy();
-    expect((screen.getByRole('checkbox', { name: /Piece 12/ }) as HTMLInputElement).disabled).toBe(false);
+    expect((screen.getByRole('checkbox', { name: /Piece 12/ }) as HTMLInputElement).disabled).toBe(
+      false,
+    );
   });
 
   it('sends the pieces she picked, and can’t go ahead with none', async () => {
@@ -201,13 +218,32 @@ describe('downgrade', () => {
     down();
     fireEvent.click(screen.getByRole('checkbox', { name: /Piece 0/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Downgrade to Maker Showcase' }));
-    await waitFor(() => expect(scheduleDowngrade).toHaveBeenCalledWith('showcase', 'yearly', ['p1']));
+    await waitFor(() =>
+      expect(scheduleDowngrade).toHaveBeenCalledWith('showcase', 'yearly', ['p1']),
+    );
     fireEvent.click(screen.getByRole('checkbox', { name: /Piece 1/ }));
-    expect((screen.getByRole('button', { name: /Downgrade to Maker Showcase|Changing/ }) as HTMLButtonElement).disabled).toBe(true);
+    expect(
+      (
+        screen.getByRole('button', {
+          name: /Downgrade to Maker Showcase|Changing/,
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
   });
 
   it('shows no picker for a downgrade to Lite', () => {
-    render(<PlanChange kind="down" from={planOf('full')} to={planOf('lite')} hidden={hiddenByMove('full', 'lite')} renewsOn="2027-04-09" fromBilling="yearly" daysLeft={182} showcase={[]} />);
+    render(
+      <PlanChange
+        kind="down"
+        from={planOf('full')}
+        to={planOf('lite')}
+        hidden={hiddenByMove('full', 'lite')}
+        renewsOn="2027-04-09"
+        fromBilling="yearly"
+        daysLeft={182}
+        showcase={[]}
+      />,
+    );
     expect(screen.queryByText(/picked/)).toBeNull();
   });
 });

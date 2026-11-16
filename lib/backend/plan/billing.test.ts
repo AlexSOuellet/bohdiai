@@ -172,14 +172,24 @@ describe('free sites', () => {
   });
 
   it('moving up from a free Showcase pays the new plan for the rest of the month, with no credit', () => {
-    const q = quoteUpgrade({ plan: 'showcase', billing: 'monthly', renewsOn: '2026-10-29', comp: 'showcase' }, 'lite', 'monthly', '2026-10-09');
+    const q = quoteUpgrade(
+      { plan: 'showcase', billing: 'monthly', renewsOn: '2026-10-29', comp: 'showcase' },
+      'lite',
+      'monthly',
+      '2026-10-09',
+    );
     expect(q.creditCents).toBe(0);
     expect(q.todayCents).toBe(q.partCents);
     expect(q.renewalCents).toBe(priceCents('lite', 'monthly'));
   });
 
   it('a site that is free on every plan moves up for nothing', () => {
-    const q = quoteUpgrade({ plan: 'showcase', billing: 'monthly', renewsOn: '2026-10-29', comp: 'free' }, 'full', 'yearly', '2026-10-09');
+    const q = quoteUpgrade(
+      { plan: 'showcase', billing: 'monthly', renewsOn: '2026-10-29', comp: 'free' },
+      'full',
+      'yearly',
+      '2026-10-09',
+    );
     expect(q.todayCents).toBe(0);
     expect(q.renewalCents).toBe(0);
   });

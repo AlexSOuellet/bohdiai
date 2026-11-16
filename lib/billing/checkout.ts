@@ -27,16 +27,24 @@ export async function startCheckout(s: Stripe, input: CheckoutInput): Promise<st
   const key = lookupKey(input.plan, input.billing);
   const prices = await s.prices.list({ lookup_keys: [key], active: true, limit: 1 });
   const price = prices.data[0];
-  if (price === undefined) throw new Error(`Stripe has no price ${key}: run scripts/stripe-plans.ts`);
+  if (price === undefined)
+    throw new Error(`Stripe has no price ${key}: run scripts/stripe-plans.ts`);
   const promo = input.promo;
   const metadata = {
     tenant_id: input.tenantId,
     plan: input.plan,
     billing: billingFor(input.plan, input.billing),
-    ...(promo === undefined ? {} : { promo_code: promo.code, promo_percent: String(promo.percent), ...(promo.months === null ? {} : { promo_months: String(promo.months) }) }),
+    ...(promo === undefined
+      ? {}
+      : {
+          promo_code: promo.code,
+          promo_percent: String(promo.percent),
+          ...(promo.months === null ? {} : { promo_months: String(promo.months) }),
+        }),
   };
   const interval = price.recurring?.interval === 'year' ? 'year' : 'month';
-  const coupon = promo === undefined ? null : await checkoutCoupon(s, promo, interval, price.unit_amount ?? 0);
+  const coupon =
+    promo === undefined ? null : await checkoutCoupon(s, promo, interval, price.unit_amount ?? 0);
   const session = await s.checkout.sessions.create({
     mode: 'subscription',
     line_items: [{ price: price.id, quantity: 1 }],

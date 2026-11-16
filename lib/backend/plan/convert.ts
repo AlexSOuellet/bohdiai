@@ -4,7 +4,6 @@ import { slugify, uniqueSlug } from '@/lib/catalog/slug';
 import { NO_PRICE_CENTS } from '@/lib/catalog/price';
 import { HOME_MAX } from '@/lib/catalog/home';
 
-
 export type GalleryPhoto = { uploadId: string; caption: string };
 
 export type NewProduct = {
@@ -38,16 +37,30 @@ export function productsFromGallery(
       taken.add(slug);
       const onHome = homeLeft > 0;
       if (onHome) homeLeft -= 1;
-      return { slug, name, media_ids: [p.uploadId], base_price_cents: NO_PRICE_CENTS, on_home: onHome };
+      return {
+        slug,
+        name,
+        media_ids: [p.uploadId],
+        base_price_cents: NO_PRICE_CENTS,
+        on_home: onHome,
+      };
     });
 }
 
 /** Write the products for a site's gallery photos. Runs with the service role
  *  inside a plan change the caller has already allowed. Adds only; never edits or
  *  removes a product, so running it twice adds nothing the second time. */
-export async function galleryToProducts(db: SupabaseClient<Database>, tenantId: string): Promise<{ ok: true; added: number } | { ok: false; error: string }> {
+export async function galleryToProducts(
+  db: SupabaseClient<Database>,
+  tenantId: string,
+): Promise<{ ok: true; added: number } | { ok: false; error: string }> {
   const [gallery, listings] = await Promise.all([
-    db.from('gallery_items').select('upload_id, caption, position, created_at').eq('tenant_id', tenantId).order('position', { ascending: true }).order('created_at', { ascending: true }),
+    db
+      .from('gallery_items')
+      .select('upload_id, caption, position, created_at')
+      .eq('tenant_id', tenantId)
+      .order('position', { ascending: true })
+      .order('created_at', { ascending: true }),
     db.from('listings').select('slug, media_ids, on_home, deleted_at').eq('tenant_id', tenantId),
   ]);
   if (gallery.error !== null) return { ok: false, error: `gallery: ${gallery.error.message}` };
@@ -82,7 +95,11 @@ export type ShowcasePick = { id: string; name: string; uploadId: string };
 
 /** The ids she may pick for Showcase: her live products that have a photo, at most
  *  GALLERY_LIMIT, in the order she ticked them. Unknown ids are dropped. */
-export function pickedForShowcase(ids: readonly string[], products: readonly ShowcasePick[], limit: number): ShowcasePick[] {
+export function pickedForShowcase(
+  ids: readonly string[],
+  products: readonly ShowcasePick[],
+  limit: number,
+): ShowcasePick[] {
   const byId = new Map(products.map((p) => [p.id, p]));
   const seen = new Set<string>();
   const picked: ShowcasePick[] = [];
@@ -97,7 +114,12 @@ export function pickedForShowcase(ids: readonly string[], products: readonly Sho
 }
 
 /** Her live products that can stand in the Showcase gallery: each with its main photo. */
-export async function showcaseCandidates(db: SupabaseClient<Database>, tenantId: string): Promise<{ ok: true; products: (ShowcasePick & { url: string })[] } | { ok: false; error: string }> {
+export async function showcaseCandidates(
+  db: SupabaseClient<Database>,
+  tenantId: string,
+): Promise<
+  { ok: true; products: (ShowcasePick & { url: string })[] } | { ok: false; error: string }
+> {
   const { data, error } = await db
     .from('listings')
     .select('id, name, media_ids, on_home, created_at')
@@ -109,7 +131,10 @@ export async function showcaseCandidates(db: SupabaseClient<Database>, tenantId:
   if (error !== null) return { ok: false, error: `products: ${error.message}` };
   const rows = (data ?? []).filter((r) => r.media_ids.length > 0);
   const firstIds = rows.map((r) => r.media_ids[0] as string);
-  const { data: ups, error: uErr } = firstIds.length === 0 ? { data: [], error: null } : await db.from('uploads').select('id, public_url').in('id', firstIds);
+  const { data: ups, error: uErr } =
+    firstIds.length === 0
+      ? { data: [], error: null }
+      : await db.from('uploads').select('id, public_url').in('id', firstIds);
   if (uErr !== null) return { ok: false, error: `photos: ${uErr.message}` };
   const urls = new Map((ups ?? []).map((u) => [u.id, u.public_url]));
   return {
@@ -125,19 +150,42 @@ export async function showcaseCandidates(db: SupabaseClient<Database>, tenantId:
 /** Make the chosen products her Showcase gallery: their main photos, captioned with
  *  their names, in her order. The old gallery entries are only references to photos,
  *  so replacing them loses no photo; every product stays saved. */
-export async function galleryFromProducts(db: SupabaseClient<Database>, tenantId: string, ids: readonly string[], limit: number): Promise<{ ok: true; count: number } | { ok: false; error: string }> {
+export async function galleryFromProducts(
+  db: SupabaseClient<Database>,
+  tenantId: string,
+  ids: readonly string[],
+  limit: number,
+): Promise<{ ok: true; count: number } | { ok: false; error: string }> {
   const found = await showcaseCandidates(db, tenantId);
   if (!found.ok) return found;
   const picked = pickedForShowcase(ids, found.products, limit);
   if (picked.length === 0) return { ok: true, count: 0 };
   const { error: dErr } = await db.from('gallery_items').delete().eq('tenant_id', tenantId);
   if (dErr !== null) return { ok: false, error: `gallery: ${dErr.message}` };
-  const { error } = await db.from('gallery_items').insert(picked.map((p, position) => ({ tenant_id: tenantId, upload_id: p.uploadId, position, caption: p.name })));
+  const { error } = await db.from('gallery_items').insert(
+    picked.map((p, position) => ({
+      tenant_id: tenantId,
+      upload_id: p.uploadId,
+      position,
+      caption: p.name,
+    })),
+  );
   if (error !== null) return { ok: false, error: `gallery: ${error.message}` };
   // The family designs read Showcase's gallery from the catalog's ticks: tick exactly the picked ones.
-  const { error: cErr } = await db.from('listings').update({ in_gallery: false }).eq('tenant_id', tenantId).eq('in_gallery', true);
+  const { error: cErr } = await db
+    .from('listings')
+    .update({ in_gallery: false })
+    .eq('tenant_id', tenantId)
+    .eq('in_gallery', true);
   if (cErr !== null) return { ok: false, error: `gallery ticks: ${cErr.message}` };
-  const { error: tErr } = await db.from('listings').update({ in_gallery: true }).eq('tenant_id', tenantId).in('id', picked.map((p) => p.id));
+  const { error: tErr } = await db
+    .from('listings')
+    .update({ in_gallery: true })
+    .eq('tenant_id', tenantId)
+    .in(
+      'id',
+      picked.map((p) => p.id),
+    );
   if (tErr !== null) return { ok: false, error: `gallery ticks: ${tErr.message}` };
   return { ok: true, count: picked.length };
 }

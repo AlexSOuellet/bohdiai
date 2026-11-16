@@ -5,10 +5,29 @@ import { plansFor } from '@/lib/site/plans';
 describe('stripePlans', () => {
   it('has Free at $0 and every maker plan monthly and yearly, at the prices bohdiai.com shows', () => {
     const plans = stripePlans();
-    expect(plans[0]).toMatchObject({ plan: 'free', billing: 'monthly', cents: 0, lookupKey: 'bohdiai_free_monthly' });
+    expect(plans[0]).toMatchObject({
+      plan: 'free',
+      billing: 'monthly',
+      cents: 0,
+      lookupKey: 'bohdiai_free_monthly',
+    });
     for (const p of plansFor('maker')) {
-      expect(plans).toContainEqual(expect.objectContaining({ plan: p.tier, billing: 'monthly', cents: p.monthly * 100, name: p.name }));
-      expect(plans).toContainEqual(expect.objectContaining({ plan: p.tier, billing: 'yearly', cents: p.yearly * 100, name: p.name }));
+      expect(plans).toContainEqual(
+        expect.objectContaining({
+          plan: p.tier,
+          billing: 'monthly',
+          cents: p.monthly * 100,
+          name: p.name,
+        }),
+      );
+      expect(plans).toContainEqual(
+        expect.objectContaining({
+          plan: p.tier,
+          billing: 'yearly',
+          cents: p.yearly * 100,
+          name: p.name,
+        }),
+      );
     }
     expect(plans).toHaveLength(1 + plansFor('maker').length * 2);
   });
