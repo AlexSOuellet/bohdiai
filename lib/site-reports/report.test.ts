@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseReport, reportPageUrl, siteName, REPORT_FIELD } from './report';
+import { parseReport, siteName, REPORT_FIELD } from './report';
 
 const good = {
   [REPORT_FIELD.site]: 'rustic-charm',
@@ -56,16 +56,5 @@ describe('siteName', () => {
     expect(siteName('rustic-charm.localhost:3000')).toBe('rustic-charm');
     expect(siteName('')).toBeNull();
     expect(siteName('evil.example.com')).toBeNull();
-  });
-});
-
-describe('reportPageUrl', () => {
-  it('goes to bohdiai.com live, and to the dev server on this computer', () => {
-    expect(reportPageUrl('rustic-charm.bohdiai.com', 'https:', 'rustic-charm')).toBe(
-      'https://bohdiai.com/report?site=rustic-charm',
-    );
-    expect(reportPageUrl('rustic-charm.localhost:3000', 'http:', 'rustic-charm')).toBe(
-      'http://localhost:3000/report?site=rustic-charm',
-    );
   });
 });

@@ -1,4 +1,3 @@
-import { reportPageUrl } from '@/lib/site-reports/report';
 import { createServerClient } from '@supabase/ssr';
 import type { SetAllCookies } from '@supabase/ssr';
 import type { NextRequest } from 'next/server';
@@ -115,13 +114,14 @@ export async function middleware(request: NextRequest) {
     if (!tenant) {
       return new NextResponse('Store not found', { status: 404 });
     }
-    // "Report this site" in every footer (go-live step 3): bohdiai.com's report page,
-    // the site filled in. Works whatever state the site is in.
+    // "Report this site" in every footer (go-live step 3): the report page, with this
+    // site filled in, shown right here on the site's own address. Not a redirect to
+    // bohdiai.com: Next shortens a same-server redirect to a bare path, which loops
+    // on this computer. Works whatever state the site is in.
     if (request.nextUrl.pathname === REPORT_PATH) {
-      return NextResponse.redirect(
-        reportPageUrl(request.headers.get('host') ?? hostname, request.nextUrl.protocol, subdomain),
-        303,
-      );
+      const page = new URL(REPORT_PATH, request.url);
+      page.searchParams.set('site', subdomain);
+      return NextResponse.rewrite(page);
     }
     // A draft site is "not found" to everyone but its private preview link; an
     // offline one shows everyone else that it's temporarily offline (Session 119).

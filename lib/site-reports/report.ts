@@ -69,14 +69,3 @@ export function parseReport(
     return { kind: 'invalid', problem: 'email' };
   return { kind: 'ok', fields: { site, reason, details, email: email.toLowerCase() } };
 }
-
-/** Where a site's footer link goes: bohdiai.com's report page with the site filled in
- *  (the dev server's own address on this computer). */
-export function reportPageUrl(host: string, protocol: string, subdomain: string): string {
-  const bare = host.split(':')[0] ?? '';
-  const port = host.includes(':') ? `:${host.split(':')[1]}` : '';
-  const origin = bare.endsWith('localhost')
-    ? `${protocol}//localhost${port}`
-    : 'https://bohdiai.com';
-  return `${origin}/report?site=${encodeURIComponent(subdomain)}`;
-}
