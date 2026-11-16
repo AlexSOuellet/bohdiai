@@ -5,11 +5,13 @@ describe('subdomainFrom', () => {
   it('makes a web address from the business name', () => {
     expect(subdomainFrom('Rustic Charm & More')).toBe('rustic-charm-and-more');
     expect(subdomainFrom('Renée’s Pottery')).toBe('renees-pottery');
-    expect(subdomainFrom("  Juniper Hollow Candles!! ")).toBe('juniper-hollow-candles');
+    expect(subdomainFrom('  Juniper Hollow Candles!! ')).toBe('juniper-hollow-candles');
   });
 
   it('keeps it short enough for a web address', () => {
-    const made = subdomainFrom('A really very extremely long business name that goes on and on forever');
+    const made = subdomainFrom(
+      'A really very extremely long business name that goes on and on forever',
+    );
     expect(made.length).toBeLessThanOrEqual(40);
     expect(made.endsWith('-')).toBe(false);
   });

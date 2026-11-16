@@ -3427,6 +3427,7 @@ export type Database = {
           status: string
           stripe_account_id: string | null
           subdomain: string
+          terms_agreed_at: string | null
           tier: string
           time_zone: string
           types: string[]
@@ -3475,6 +3476,7 @@ export type Database = {
           status?: string
           stripe_account_id?: string | null
           subdomain: string
+          terms_agreed_at?: string | null
           tier: string
           time_zone?: string
           types: string[]
@@ -3523,6 +3525,7 @@ export type Database = {
           status?: string
           stripe_account_id?: string | null
           subdomain?: string
+          terms_agreed_at?: string | null
           tier?: string
           time_zone?: string
           types?: string[]

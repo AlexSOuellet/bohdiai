@@ -12,7 +12,10 @@ const LOOK = { label: '', line: '' } as const;
 
 /** One tile per family there is, now and later: a new family gets its spots here
  *  the day it's added (Alex, 2026-10-16). Makers see these as moods. */
-const FAMILY_SPOTS = Object.fromEntries(FAMILY_KEYS.map((k) => [k, LOOK])) as Record<FamilyKey, typeof LOOK>;
+const FAMILY_SPOTS = Object.fromEntries(FAMILY_KEYS.map((k) => [k, LOOK])) as Record<
+  FamilyKey,
+  typeof LOOK
+>;
 
 export const INTAKE_WORD_SPOTS = {
   page: { title: '', lede: '', metaTitle: '', metaDescription: '' },
@@ -119,6 +122,8 @@ export const INTAKE_WORD_SPOTS = {
     /** "{min}" and "{max}". */
     password: '',
     accountExists: '',
+    /** The tick box for the maker terms isn't ticked. */
+    terms: '',
     name: '',
     business: '',
     email: '',
@@ -177,6 +182,36 @@ export const INTAKE_WORD_SPOTS = {
     priceAsk: '',
     /** "{id}": where the photos are kept. */
     photos: '',
+  },
+  /** The tick box at sign-up (go-live step 3, Alex 2026-11-16). */
+  agree: {
+    /** "{terms}" and "{rules}": where the two links go. */
+    line: '',
+    terms: '',
+    rules: '',
+  },
+  /** bohdiai.com/maker-terms. */
+  makerTerms: {
+    metaTitle: '',
+    metaDescription: '',
+    title: '',
+    /** The whole line, date included ("Last updated: …"). */
+    updated: '',
+    /** Paragraphs split by a blank line; a line starting "## " is a heading. "{email}". */
+    body: '',
+    back: '',
+  },
+  /** bohdiai.com/what-cant-be-sold. */
+  cantSell: {
+    metaTitle: '',
+    metaDescription: '',
+    title: '',
+    intro: '',
+    /** One thing per line. */
+    items: '',
+    /** "{email}". */
+    closing: '',
+    back: '',
   },
 } as const satisfies WordShape;
 

@@ -18,19 +18,37 @@ type Db = SupabaseClient<Database>;
 /** Where onboarding lives, on the app host. */
 export const ONBOARDING_PATH = '/welcome';
 
-export type WaitingSite = { tenantId: string; plan: SitePlan; billing: Billing; businessName: string };
+export type WaitingSite = {
+  tenantId: string;
+  plan: SitePlan;
+  billing: Billing;
+  businessName: string;
+};
 
 /** Which of these sites are waiting for their form. */
 async function waiting(db: Db, tenantIds: readonly string[]): Promise<WaitingSite[]> {
   if (tenantIds.length === 0) return [];
-  const { data, error } = await db.from('tenants').select('id, status, plan, plan_billing, business_name').in('id', [...tenantIds]);
+  const { data, error } = await db
+    .from('tenants')
+    .select('id, status, plan, plan_billing, business_name')
+    .in('id', [...tenantIds]);
   if (error !== null) throw new Error(`Could not read the sites: ${error.message}`);
-  const { data: sent, error: sentErr } = await db.from('intakes').select('tenant_id').in('tenant_id', [...tenantIds]);
+  const { data: sent, error: sentErr } = await db
+    .from('intakes')
+    .select('tenant_id')
+    .in('tenant_id', [...tenantIds]);
   if (sentErr !== null) throw new Error(`Could not read the sent forms: ${sentErr.message}`);
   const done = new Set((sent ?? []).map((r) => r.tenant_id));
   return (data ?? []).flatMap((t) =>
     t.status === 'draft' && isSitePlan(t.plan) && !done.has(t.id)
-      ? [{ tenantId: t.id, plan: t.plan, billing: t.plan_billing === 'yearly' ? ('yearly' as const) : ('monthly' as const), businessName: t.business_name }]
+      ? [
+          {
+            tenantId: t.id,
+            plan: t.plan,
+            billing: t.plan_billing === 'yearly' ? ('yearly' as const) : ('monthly' as const),
+            businessName: t.business_name,
+          },
+        ]
       : [],
   );
 }
@@ -42,14 +60,21 @@ export async function onboardingSite(db: Db, userId: string): Promise<WaitingSit
 }
 
 async function isFreeSite(db: Db, tenantId: string): Promise<boolean> {
-  const { data, error } = await db.from('tenants').select('plan_comp').eq('id', tenantId).maybeSingle();
+  const { data, error } = await db
+    .from('tenants')
+    .select('plan_comp')
+    .eq('id', tenantId)
+    .maybeSingle();
   if (error !== null) throw new Error(`Could not read the site: ${error.message}`);
   return data?.plan_comp === 'free';
 }
 
 /** True when the backend's site is still waiting for its form (and is paid for). */
 export async function needsOnboarding(db: Db, tenantId: string): Promise<boolean> {
-  const { count, error } = await db.from('subscriptions').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId);
+  const { count, error } = await db
+    .from('subscriptions')
+    .select('id', { count: 'exact', head: true })
+    .eq('tenant_id', tenantId);
   if (error !== null) throw new Error(`Could not read billing: ${error.message}`);
   if ((count ?? 0) === 0 && !(await isFreeSite(db, tenantId))) return false;
   return (await waiting(db, [tenantId])).length > 0;

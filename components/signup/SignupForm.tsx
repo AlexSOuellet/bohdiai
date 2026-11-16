@@ -11,11 +11,28 @@ import { fill } from '@/lib/site-words/words';
 import type { IntakeWords } from '@/lib/intake/queries';
 import { formatPrice } from '@/lib/site/plans';
 import { answerStatus, type IntakeAnswer } from '@/lib/intake/answer';
-import { BILLINGS, INTAKE_LIMITS, PASSWORD_MAX, PASSWORD_MIN, type Billing, type IntakeProblem } from '@/lib/intake/request';
+import {
+  BILLINGS,
+  INTAKE_LIMITS,
+  PASSWORD_MAX,
+  PASSWORD_MIN,
+  type Billing,
+  type IntakeProblem,
+} from '@/lib/intake/request';
 import { FREE_PLAN, type AccountPlan } from '@/lib/backend/plan/plan';
 import { checkSignup, SIGNUP_FIELD } from '@/lib/signup/request';
 
-type Fields = { plan: AccountPlan | null; billing: Billing; makerName: string; businessName: string; email: string; password: string; promoCode: string; company: string };
+type Fields = {
+  plan: AccountPlan | null;
+  billing: Billing;
+  makerName: string;
+  businessName: string;
+  email: string;
+  password: string;
+  promoCode: string;
+  agreed: boolean;
+  company: string;
+};
 type Status = { kind: 'idle' } | { kind: 'sending' } | IntakeAnswer;
 
 const INPUT =
@@ -40,9 +57,27 @@ type Props = {
   contactEmail: string;
 };
 
-export function SignupForm({ words, plans, initialPlan, initialBilling, back, initialPromo = '', contactEmail }: Props): React.ReactElement {
+export function SignupForm({
+  words,
+  plans,
+  initialPlan,
+  initialBilling,
+  back,
+  initialPromo = '',
+  contactEmail,
+}: Props): React.ReactElement {
   const w = words;
-  const [fields, setFields] = useState<Fields>({ plan: initialPlan, billing: initialBilling, makerName: '', businessName: '', email: '', password: '', promoCode: initialPromo, company: '' });
+  const [fields, setFields] = useState<Fields>({
+    plan: initialPlan,
+    billing: initialBilling,
+    makerName: '',
+    businessName: '',
+    email: '',
+    password: '',
+    promoCode: initialPromo,
+    agreed: false,
+    company: '',
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
 
@@ -76,11 +111,18 @@ export function SignupForm({ words, plans, initialPlan, initialBilling, back, in
           [SIGNUP_FIELD.email]: fields.email,
           [SIGNUP_FIELD.password]: fields.password,
           [SIGNUP_FIELD.promo]: fields.promoCode,
+          [SIGNUP_FIELD.agree]: fields.agreed,
           [SIGNUP_FIELD.honeypot]: fields.company,
         }),
       });
       const body: unknown = await res.json().catch(() => null);
-      if (res.ok && body !== null && typeof body === 'object' && 'url' in body && typeof body.url === 'string') {
+      if (
+        res.ok &&
+        body !== null &&
+        typeof body === 'object' &&
+        'url' in body &&
+        typeof body.url === 'string'
+      ) {
         // Straight to Stripe's own page; the button stays busy while it opens.
         window.location.assign(body.url);
         return;
@@ -95,9 +137,17 @@ export function SignupForm({ words, plans, initialPlan, initialBilling, back, in
   const isFree = fields.plan === FREE_PLAN;
 
   return (
-    <form onSubmit={onSubmit} noValidate aria-busy={sending} className="flex flex-col gap-8 text-left md:gap-10">
+    <form
+      onSubmit={onSubmit}
+      noValidate
+      aria-busy={sending}
+      className="flex flex-col gap-8 text-left md:gap-10"
+    >
       {back && (
-        <p role="status" className="rounded-[14px] border border-honey-warm/30 bg-honey-warm/[0.06] px-4 py-3 text-[14px] leading-[1.55] text-text-soft">
+        <p
+          role="status"
+          className="rounded-[14px] border border-honey-warm/30 bg-honey-warm/[0.06] px-4 py-3 text-[14px] leading-[1.55] text-text-soft"
+        >
           {w.signup.back}
         </p>
       )}
@@ -112,24 +162,40 @@ export function SignupForm({ words, plans, initialPlan, initialBilling, back, in
                 key={b}
                 className="cursor-pointer rounded-pill px-4 py-2 text-[13px] font-semibold text-muted transition-colors has-[:checked]:bg-honey-warm has-[:checked]:text-bg has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-honey-warm"
               >
-                <input type="radio" name="billing" value={b} checked={fields.billing === b} onChange={() => set('billing', b)} className="sr-only" />
+                <input
+                  type="radio"
+                  name="billing"
+                  value={b}
+                  checked={fields.billing === b}
+                  onChange={() => set('billing', b)}
+                  className="sr-only"
+                />
                 {b === 'monthly' ? w.plan.monthly : w.plan.yearly}
               </label>
             ))}
           </div>
         )}
-        <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
+        <div className="sm:grid-cols-2 grid gap-3 md:grid-cols-4">
           {plans.map((p) => (
             <label
               key={p.plan}
               className="flex cursor-pointer flex-col gap-1 rounded-[14px] border border-white/[0.1] bg-black/30 p-4 transition-colors has-[:checked]:border-honey-warm/70 has-[:checked]:bg-honey-warm/[0.06] has-[:checked]:shadow-[0_0_0_1px_rgba(243,201,122,0.5)] has-[:focus-visible]:shadow-[0_0_0_3px_rgba(243,201,122,0.35)]"
             >
-              <input type="radio" name="plan" value={p.plan} checked={fields.plan === p.plan} onChange={() => set('plan', p.plan)} className="sr-only" />
+              <input
+                type="radio"
+                name="plan"
+                value={p.plan}
+                checked={fields.plan === p.plan}
+                onChange={() => set('plan', p.plan)}
+                className="sr-only"
+              />
               <span className="font-sans text-[18px] font-medium text-text">{p.name}</span>
               <span className="text-[14px] text-text-soft">
                 {p.plan === FREE_PLAN
                   ? w.signup.free
-                  : fill(fields.billing === 'monthly' ? w.plan.perMonth : w.plan.perYear, { price: formatPrice(fields.billing === 'monthly' ? p.monthly : p.yearly) })}
+                  : fill(fields.billing === 'monthly' ? w.plan.perMonth : w.plan.perYear, {
+                      price: formatPrice(fields.billing === 'monthly' ? p.monthly : p.yearly),
+                    })}
               </span>
             </label>
           ))}
@@ -145,13 +211,27 @@ export function SignupForm({ words, plans, initialPlan, initialBilling, back, in
             <label htmlFor="su-name" className={LABEL}>
               {w.you.name}
             </label>
-            <input id="su-name" autoComplete="name" maxLength={INTAKE_LIMITS.name} value={fields.makerName} onChange={(e) => set('makerName', e.target.value)} className={INPUT} />
+            <input
+              id="su-name"
+              autoComplete="name"
+              maxLength={INTAKE_LIMITS.name}
+              value={fields.makerName}
+              onChange={(e) => set('makerName', e.target.value)}
+              className={INPUT}
+            />
           </div>
           <div>
             <label htmlFor="su-business" className={LABEL}>
               {w.you.business}
             </label>
-            <input id="su-business" autoComplete="organization" maxLength={INTAKE_LIMITS.business} value={fields.businessName} onChange={(e) => set('businessName', e.target.value)} className={INPUT} />
+            <input
+              id="su-business"
+              autoComplete="organization"
+              maxLength={INTAKE_LIMITS.business}
+              value={fields.businessName}
+              onChange={(e) => set('businessName', e.target.value)}
+              className={INPUT}
+            />
           </div>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
@@ -159,7 +239,16 @@ export function SignupForm({ words, plans, initialPlan, initialBilling, back, in
             <label htmlFor="su-email" className={LABEL}>
               {w.you.email}
             </label>
-            <input id="su-email" type="email" inputMode="email" autoComplete="email" maxLength={INTAKE_LIMITS.email} value={fields.email} onChange={(e) => set('email', e.target.value)} className={INPUT} />
+            <input
+              id="su-email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              maxLength={INTAKE_LIMITS.email}
+              value={fields.email}
+              onChange={(e) => set('email', e.target.value)}
+              className={INPUT}
+            />
           </div>
           <div>
             <label htmlFor="su-password" className={LABEL}>
@@ -190,6 +279,17 @@ export function SignupForm({ words, plans, initialPlan, initialBilling, back, in
             </p>
           </div>
         </div>
+        <label className="flex cursor-pointer items-start gap-3 text-[14px] leading-[1.55] text-text-soft">
+          <input
+            type="checkbox"
+            checked={fields.agreed}
+            onChange={(e) => set('agreed', e.target.checked)}
+            className="mt-1 size-4 shrink-0 accent-honey-warm"
+          />
+          <span>
+            <AgreeLine line={w.agree.line} terms={w.agree.terms} rules={w.agree.rules} />
+          </span>
+        </label>
       </section>
 
       {!isFree && (
@@ -197,12 +297,28 @@ export function SignupForm({ words, plans, initialPlan, initialBilling, back, in
           <label htmlFor="su-promo" className={LABEL}>
             {w.signup.promo}
           </label>
-          <input id="su-promo" autoComplete="off" maxLength={30} value={fields.promoCode} onChange={(e) => set('promoCode', e.target.value)} className={INPUT} />
+          <input
+            id="su-promo"
+            autoComplete="off"
+            maxLength={30}
+            value={fields.promoCode}
+            onChange={(e) => set('promoCode', e.target.value)}
+            className={INPUT}
+          />
         </div>
       )}
 
-      <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
-        <input id="su-company" tabIndex={-1} autoComplete="off" value={fields.company} onChange={(e) => set('company', e.target.value)} />
+      <div
+        aria-hidden="true"
+        className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden"
+      >
+        <input
+          id="su-company"
+          tabIndex={-1}
+          autoComplete="off"
+          value={fields.company}
+          onChange={(e) => set('company', e.target.value)}
+        />
       </div>
 
       <div className="flex flex-col items-center gap-4 border-t border-white/[0.08] pt-8">
@@ -225,5 +341,44 @@ export function SignupForm({ words, plans, initialPlan, initialBilling, back, in
         </button>
       </div>
     </form>
+  );
+}
+
+const AGREE_LINK = 'text-honey-warm underline underline-offset-2 hover:text-text';
+
+/** "I agree to the {terms} and {rules}." with the two pages linked; they open in a new
+ *  tab so nothing typed on the form is lost. */
+function AgreeLine({
+  line,
+  terms,
+  rules,
+}: {
+  line: string;
+  terms: string;
+  rules: string;
+}): React.ReactElement {
+  const parts = line.split(/(\{terms\}|\{rules\})/);
+  return (
+    <>
+      {parts.map((part, i) =>
+        part === '{terms}' ? (
+          <a key={i} href="/maker-terms" target="_blank" rel="noopener" className={AGREE_LINK}>
+            {terms}
+          </a>
+        ) : part === '{rules}' ? (
+          <a
+            key={i}
+            href="/what-cant-be-sold"
+            target="_blank"
+            rel="noopener"
+            className={AGREE_LINK}
+          >
+            {rules}
+          </a>
+        ) : (
+          part
+        ),
+      )}
+    </>
   );
 }

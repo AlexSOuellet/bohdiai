@@ -27,7 +27,10 @@ export function subdomainFrom(businessName: string): string {
 }
 
 /** The first free address for this business name. */
-export async function freeSubdomain(businessName: string, isTaken: (subdomain: string) => Promise<boolean>): Promise<string> {
+export async function freeSubdomain(
+  businessName: string,
+  isTaken: (subdomain: string) => Promise<boolean>,
+): Promise<string> {
   const base = subdomainFrom(businessName);
   for (let n = 1; n <= MAX_TRIES; n += 1) {
     const candidate = n === 1 ? base : `${base}-${n}`;

@@ -14,11 +14,19 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
-const answer = (body: unknown, status = 200): Response => new Response(JSON.stringify(body), { status });
+const answer = (body: unknown, status = 200): Response =>
+  new Response(JSON.stringify(body), { status });
 
 function setup() {
   const u = userEvent.setup({ delay: null });
-  render(<CheckEmail words={words} session="cs_1" email="lena@example.com" contactEmail="alex@example.com" />);
+  render(
+    <CheckEmail
+      words={words}
+      session="cs_1"
+      email="lena@example.com"
+      contactEmail="alex@example.com"
+    />,
+  );
   return u;
 }
 

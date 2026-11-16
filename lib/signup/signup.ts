@@ -19,7 +19,11 @@ export type SignupDeps = {
   /** What's wrong with the code they typed, in the form's own words; null when it's fine or blank. */
   promoProblem(fields: SignupFields): Promise<ErrorSpot | null>;
   /** A new, unconfirmed account; 'exists' when the email already has one. */
-  createUser(email: string, password: string, name: string): Promise<{ ok: true; userId: string } | { ok: false; reason: 'exists' | 'failed' }>;
+  createUser(
+    email: string,
+    password: string,
+    name: string,
+  ): Promise<{ ok: true; userId: string } | { ok: false; reason: 'exists' | 'failed' }>;
   /** The account, when this is its password (confirmed or not yet); else null. */
   passwordUser(email: string, password: string): Promise<string | null>;
   /** The sites this account owns. */
@@ -34,9 +38,16 @@ export type SignupDeps = {
   checkout(tenantId: string, fields: SignupFields): Promise<string>;
 };
 
-export type SignupResult = { ok: true; url: string } | { ok: false; reason: 'accountExists' | 'failed' } | { ok: false; reason: 'promo'; spot: ErrorSpot };
+export type SignupResult =
+  | { ok: true; url: string }
+  | { ok: false; reason: 'accountExists' | 'failed' }
+  | { ok: false; reason: 'promo'; spot: ErrorSpot };
 
-export async function signUp(fields: SignupFields, password: string, deps: SignupDeps): Promise<SignupResult> {
+export async function signUp(
+  fields: SignupFields,
+  password: string,
+  deps: SignupDeps,
+): Promise<SignupResult> {
   // Before anything is made, so a mistyped code costs nothing to fix.
   const spot = await deps.promoProblem(fields);
   if (spot !== null) return { ok: false, reason: 'promo', spot };
@@ -61,7 +72,8 @@ export async function signUp(fields: SignupFields, password: string, deps: Signu
     return { ok: true, url: await deps.checkout(tenantId, fields) };
   }
   const waiting = sites.find((s) => s.draft && !s.paid);
-  if (waiting === undefined || sites.some((s) => s.paid)) return { ok: false, reason: 'accountExists' };
+  if (waiting === undefined || sites.some((s) => s.paid))
+    return { ok: false, reason: 'accountExists' };
   await deps.setPlan(waiting.tenantId, fields);
   return { ok: true, url: await deps.checkout(waiting.tenantId, fields) };
 }
