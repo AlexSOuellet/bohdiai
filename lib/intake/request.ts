@@ -22,7 +22,16 @@ export const MAX_PHOTO_BYTES = 20 * 1024 * 1024;
 export const PASSWORD_MIN = 8;
 export const PASSWORD_MAX = 72;
 
-export const INTAKE_LIMITS = { name: 120, business: 120, email: 254, makes: 600, about: 5000, pieceName: 120, pieceAbout: 2000, price: 20 } as const;
+export const INTAKE_LIMITS = {
+  name: 120,
+  business: 120,
+  email: 254,
+  makes: 600,
+  about: 5000,
+  pieceName: 120,
+  pieceAbout: 2000,
+  price: 20,
+} as const;
 
 /** Field names the page posts and the route reads. Pieces repeat, in order. */
 export const FIELD = {
@@ -51,6 +60,7 @@ export const ERROR_SPOTS = [
   'email',
   'password',
   'accountExists',
+  'terms',
   'makes',
   'about',
   'piecesFew',
@@ -86,7 +96,12 @@ export type IntakeFields = {
   family: FamilyKey | null;
 };
 
-export type IntakePiece = { name: string; priceCents: number | null; description: string | null; photo: File };
+export type IntakePiece = {
+  name: string;
+  priceCents: number | null;
+  description: string | null;
+  photo: File;
+};
 
 /** What the maker sends on onboarding (Session 119). The plan and who they are
  *  come from their sign-up, never from this form. */
@@ -102,7 +117,10 @@ export const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /** A price as typed ("25", "$25", "1,200.50") in cents; blank is "ask me" (null);
  *  anything else is undefined (not a price). */
 export function priceToCents(typed: string): number | null | undefined {
-  const t = typed.trim().replace(/^\$\s*/, '').replace(/,/g, '');
+  const t = typed
+    .trim()
+    .replace(/^\$\s*/, '')
+    .replace(/,/g, '');
   if (t === '') return null;
   if (!/^\d+(\.\d{1,2})?$/.test(t)) return undefined;
   const [whole, part = ''] = t.split('.');
@@ -128,7 +146,10 @@ export type IntakeDraft = Omit<IntakeContent, 'family'> & {
 
 /** The first thing wrong with a draft, top of the form first; null when it's ready. */
 export function checkIntake(d: IntakeDraft): IntakeProblem | null {
-  const p = (spot: ErrorSpot, values: Record<string, string | number> = {}): IntakeProblem => ({ spot, values });
+  const p = (spot: ErrorSpot, values: Record<string, string | number> = {}): IntakeProblem => ({
+    spot,
+    values,
+  });
   if (d.makes.trim() === '') return p('makes');
   if (d.pieces.length < MIN_PIECES) return p('piecesFew', { min: MIN_PIECES });
   if (d.pieces.length > MAX_PIECES) return p('piecesMany', { max: MAX_PIECES });
@@ -139,7 +160,11 @@ export function checkIntake(d: IntakeDraft): IntakeProblem | null {
     if (bad !== null) return p(bad, { n });
     if (piece.name.trim() === '') return p('pieceName', { n });
     if (priceToCents(piece.price) === undefined) return p('piecePrice', { n });
-    if (piece.name.trim().length > INTAKE_LIMITS.pieceName || piece.description.trim().length > INTAKE_LIMITS.pieceAbout) return p('tooLong');
+    if (
+      piece.name.trim().length > INTAKE_LIMITS.pieceName ||
+      piece.description.trim().length > INTAKE_LIMITS.pieceAbout
+    )
+      return p('tooLong');
   }
   if (d.about.trim() === '') return p('about');
   if (d.portrait !== null) {
@@ -147,7 +172,8 @@ export function checkIntake(d: IntakeDraft): IntakeProblem | null {
     if (bad !== null) return p(bad, { n: 0 });
   }
   if (!d.familyChosen) return p('mood');
-  const long = d.makes.trim().length > INTAKE_LIMITS.makes || d.about.trim().length > INTAKE_LIMITS.about;
+  const long =
+    d.makes.trim().length > INTAKE_LIMITS.makes || d.about.trim().length > INTAKE_LIMITS.about;
   return long ? p('tooLong') : null;
 }
 
@@ -183,7 +209,12 @@ export function parseIntake(form: FormData, { families }: IntakeChoices): Intake
     family: isFamily(familyValue, families) ? familyValue : null,
     familyChosen: isFamily(familyValue, families) || familyValue === MOOD_PICK,
     portrait: file(form.get(FIELD.portrait)),
-    pieces: names.map((name, i) => ({ name: str(name), price: str(prices[i]), description: str(abouts[i]), photo: file(photos[i]) })),
+    pieces: names.map((name, i) => ({
+      name: str(name),
+      price: str(prices[i]),
+      description: str(abouts[i]),
+      photo: file(photos[i]),
+    })),
   };
   const problem = checkIntake(draft);
   if (problem !== null) return { kind: 'invalid', problem };
@@ -195,7 +226,14 @@ export function parseIntake(form: FormData, { families }: IntakeChoices): Intake
     pieces: draft.pieces.flatMap((p) =>
       p.photo === null
         ? []
-        : [{ name: p.name.trim(), priceCents: priceToCents(p.price) ?? null, description: p.description.trim() === '' ? null : p.description.trim(), photo: p.photo }],
+        : [
+            {
+              name: p.name.trim(),
+              priceCents: priceToCents(p.price) ?? null,
+              description: p.description.trim() === '' ? null : p.description.trim(),
+              photo: p.photo,
+            },
+          ],
     ),
   };
 }

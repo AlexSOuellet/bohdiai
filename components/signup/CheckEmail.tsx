@@ -13,11 +13,17 @@ import { INTAKE_LIMITS } from '@/lib/intake/request';
 
 type Status = { kind: 'idle' } | { kind: 'sending' } | { kind: 'sent' } | IntakeAnswer;
 
-const BUTTON = 'rounded-pill border border-white/20 px-5 py-2.5 text-[14px] font-semibold text-text transition-transform hover:-translate-y-px disabled:cursor-wait disabled:opacity-60';
+const BUTTON =
+  'rounded-pill border border-white/20 px-5 py-2.5 text-[14px] font-semibold text-text transition-transform hover:-translate-y-px disabled:cursor-wait disabled:opacity-60';
 
 type Props = { words: IntakeWords; session: string; email: string; contactEmail: string };
 
-export function CheckEmail({ words, session, email: first, contactEmail }: Props): React.ReactElement {
+export function CheckEmail({
+  words,
+  session,
+  email: first,
+  contactEmail,
+}: Props): React.ReactElement {
   const w = words;
   const [email, setEmail] = useState(first);
   const [fixing, setFixing] = useState(false);
@@ -28,9 +34,19 @@ export function CheckEmail({ words, session, email: first, contactEmail }: Props
     setStatus({ kind: 'sending' });
     const failed = fill(w.errors.failed, { email: contactEmail });
     try {
-      const res = await fetch('/api/signup/again', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+      const res = await fetch('/api/signup/again', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      });
       const answer: unknown = await res.json().catch(() => null);
-      if (res.ok && answer !== null && typeof answer === 'object' && 'email' in answer && typeof answer.email === 'string') {
+      if (
+        res.ok &&
+        answer !== null &&
+        typeof answer === 'object' &&
+        'email' in answer &&
+        typeof answer.email === 'string'
+      ) {
         setEmail(answer.email);
         setFixing(false);
         setStatus({ kind: 'sent' });
@@ -50,7 +66,9 @@ export function CheckEmail({ words, session, email: first, contactEmail }: Props
   const sending = status.kind === 'sending';
   return (
     <div className="mt-8 flex flex-col items-center gap-4">
-      <p className="mx-auto max-w-[440px] text-[15px] leading-[1.6] text-muted">{fill(w.paid.body, { email })}</p>
+      <p className="mx-auto max-w-[440px] text-[15px] leading-[1.6] text-muted">
+        {fill(w.paid.body, { email })}
+      </p>
       <p className="mx-auto max-w-[440px] text-[14px] leading-[1.6] text-muted">{w.paid.spam}</p>
       {status.kind === 'sent' && (
         <p role="status" className="text-[14px] text-honey-warm">
@@ -68,8 +86,15 @@ export function CheckEmail({ words, session, email: first, contactEmail }: Props
         </p>
       )}
       {fixing ? (
-        <form onSubmit={onFix} noValidate className="flex w-full max-w-[440px] flex-col gap-3 text-left">
-          <label htmlFor="ce-email" className="text-[12px] font-medium uppercase tracking-[0.14em] text-muted">
+        <form
+          onSubmit={onFix}
+          noValidate
+          className="flex w-full max-w-[440px] flex-col gap-3 text-left"
+        >
+          <label
+            htmlFor="ce-email"
+            className="text-[12px] font-medium uppercase tracking-[0.14em] text-muted"
+          >
             {w.paid.fixLabel}
           </label>
           <input
@@ -93,7 +118,12 @@ export function CheckEmail({ words, session, email: first, contactEmail }: Props
         </form>
       ) : (
         <div className="flex flex-wrap justify-center gap-3">
-          <button type="button" disabled={sending} onClick={() => void post({ session })} className={BUTTON}>
+          <button
+            type="button"
+            disabled={sending}
+            onClick={() => void post({ session })}
+            className={BUTTON}
+          >
             {w.paid.again}
           </button>
           <button type="button" onClick={() => setFixing(true)} className={BUTTON}>

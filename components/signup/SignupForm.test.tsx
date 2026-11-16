@@ -26,7 +26,16 @@ afterEach(() => vi.unstubAllGlobals());
 
 function setup(initialPlan: SignupPlan['plan'] | null = 'full', back = false) {
   const u = userEvent.setup({ delay: null });
-  render(<SignupForm words={words} plans={plans} initialPlan={initialPlan} initialBilling="yearly" back={back} contactEmail="alex@example.com" />);
+  render(
+    <SignupForm
+      words={words}
+      plans={plans}
+      initialPlan={initialPlan}
+      initialBilling="yearly"
+      back={back}
+      contactEmail="alex@example.com"
+    />,
+  );
   return u;
 }
 
@@ -35,12 +44,14 @@ async function fillIn(u: ReturnType<typeof userEvent.setup>): Promise<void> {
   await u.type(screen.getByLabelText('intake.you.business'), 'Saltmarsh');
   await u.type(screen.getByLabelText('intake.you.email'), 'lena@example.com');
   await u.type(screen.getByLabelText('intake.you.password'), 'tide pools 22');
+  await u.click(screen.getByRole('checkbox', { name: 'intake.agree.line' }));
 }
 
 describe('SignupForm', () => {
   it('shows every plan, Free included, with the one picked on the pricing page chosen', () => {
     setup('full');
-    for (const p of plans) expect(screen.getByRole('radio', { name: new RegExp(p.name) })).toBeInTheDocument();
+    for (const p of plans)
+      expect(screen.getByRole('radio', { name: new RegExp(p.name) })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: /Maker Full/ })).toBeChecked();
     expect(screen.getByText('intake.signup.free')).toBeInTheDocument();
   });
@@ -53,7 +64,9 @@ describe('SignupForm', () => {
   });
 
   it('sends the plan and account, then goes straight to Stripe’s page', async () => {
-    fetchMock.mockResolvedValue(new Response(JSON.stringify({ url: 'https://checkout.stripe.com/c/cs_1' }), { status: 200 }));
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ url: 'https://checkout.stripe.com/c/cs_1' }), { status: 200 }),
+    );
     const u = setup('full');
     await fillIn(u);
     await u.click(screen.getByRole('button', { name: 'intake.signup.button' }));
@@ -64,6 +77,7 @@ describe('SignupForm', () => {
       [SIGNUP_FIELD.billing]: 'yearly',
       [SIGNUP_FIELD.email]: 'lena@example.com',
       [SIGNUP_FIELD.password]: 'tide pools 22',
+      [SIGNUP_FIELD.agree]: true,
     });
     expect(assign).toHaveBeenCalledWith('https://checkout.stripe.com/c/cs_1');
   });
@@ -75,8 +89,54 @@ describe('SignupForm', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('won’t send until the maker terms are ticked (go-live step 3, Alex 2026-11-16)', async () => {
+    const u = setup('full');
+    await u.type(screen.getByLabelText('intake.you.name'), 'Lena');
+    await u.type(screen.getByLabelText('intake.you.business'), 'Saltmarsh');
+    await u.type(screen.getByLabelText('intake.you.email'), 'lena@example.com');
+    await u.type(screen.getByLabelText('intake.you.password'), 'tide pools 22');
+    await u.click(screen.getByRole('button', { name: 'intake.signup.button' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('intake.errors.terms');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('links both pages from the tick box, in a new tab so the form isn’t lost', () => {
+    const real = {
+      ...words,
+      agree: {
+        line: 'I agree to the {terms} and {rules}.',
+        terms: 'maker terms',
+        rules: 'what can’t be sold',
+      },
+    };
+    render(
+      <SignupForm
+        words={real}
+        plans={plans}
+        initialPlan="full"
+        initialBilling="yearly"
+        back={false}
+        contactEmail="alex@example.com"
+      />,
+    );
+    const terms = screen.getByRole('link', { name: 'maker terms' });
+    expect(terms).toHaveAttribute('href', '/maker-terms');
+    expect(terms).toHaveAttribute('target', '_blank');
+    expect(screen.getByRole('link', { name: 'what can’t be sold' })).toHaveAttribute(
+      'href',
+      '/what-cant-be-sold',
+    );
+    expect(
+      screen.getByRole('checkbox', { name: 'I agree to the maker terms and what can’t be sold.' }),
+    ).not.toBeChecked();
+  });
+
   it('shows the route’s problem in the form’s own words', async () => {
-    fetchMock.mockResolvedValue(new Response(JSON.stringify({ problem: { spot: 'accountExists', values: {} } }), { status: 400 }));
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ problem: { spot: 'accountExists', values: {} } }), {
+        status: 400,
+      }),
+    );
     const u = setup('lite');
     await fillIn(u);
     await u.click(screen.getByRole('button', { name: 'intake.signup.button' }));

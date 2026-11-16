@@ -25,7 +25,12 @@ const UNIQUE_VIOLATION = '23505';
 type SignupPromo = { ok: true; promo: Promo } | { ok: false; spot: ErrorSpot };
 
 async function signupPromo(db: Db, fields: SignupFields): Promise<SignupPromo> {
-  const check = await checkPromo(stripe(), db, { code: fields.promoCode, email: fields.email, tenantId: null, isNew: true });
+  const check = await checkPromo(stripe(), db, {
+    code: fields.promoCode,
+    email: fields.email,
+    tenantId: null,
+    isNew: true,
+  });
   if (check.ok) return check;
   return { ok: false, spot: check.why === 'used' ? 'promoUsed' : 'promoBad' };
 }
@@ -47,7 +52,9 @@ async function passwordUser(email: string, password: string): Promise<string | n
   const url = process.env['SUPABASE_URL'] ?? process.env['NEXT_PUBLIC_SUPABASE_URL'];
   const anon = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
   if (url === undefined || anon === undefined) throw new Error('Supabase url / anon key missing');
-  const client = createClient(url, anon, { auth: { persistSession: false, autoRefreshToken: false } });
+  const client = createClient(url, anon, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
   const { data, error } = await client.auth.signInWithPassword({ email, password });
   if (error === null) return data.user.id;
   if (error.code === 'email_not_confirmed') return (await findUserByEmail(email))?.id ?? null;
@@ -56,18 +63,38 @@ async function passwordUser(email: string, password: string): Promise<string | n
 
 /** The sites this account owns: still a draft, and paid for (a free site needs no paying). */
 export async function sitesOf(db: Db, userId: string): Promise<SignupSite[]> {
-  const { data, error } = await db.from('tenant_members').select('tenant_id, tenants(status, plan_comp)').eq('user_id', userId).eq('role', 'admin').eq('status', 'active');
+  const { data, error } = await db
+    .from('tenant_members')
+    .select('tenant_id, tenants(status, plan_comp)')
+    .eq('user_id', userId)
+    .eq('role', 'admin')
+    .eq('status', 'active');
   if (error !== null) throw new Error(`Could not read the account's sites: ${error.message}`);
   const ids = (data ?? []).map((r) => r.tenant_id);
   if (ids.length === 0) return [];
-  const { data: subs, error: subErr } = await db.from('subscriptions').select('tenant_id').in('tenant_id', ids);
+  const { data: subs, error: subErr } = await db
+    .from('subscriptions')
+    .select('tenant_id')
+    .in('tenant_id', ids);
   if (subErr !== null) throw new Error(`Could not read billing: ${subErr.message}`);
   const paid = new Set((subs ?? []).map((s) => s.tenant_id));
-  return (data ?? []).map((r) => ({ tenantId: r.tenant_id, draft: r.tenants?.status === 'draft', paid: paid.has(r.tenant_id) || r.tenants?.plan_comp === 'free' }));
+  return (data ?? []).map((r) => ({
+    tenantId: r.tenant_id,
+    draft: r.tenants?.status === 'draft',
+    paid: paid.has(r.tenant_id) || r.tenants?.plan_comp === 'free',
+  }));
 }
 
+/** The plan picked, and when they ticked the maker terms (every sign-up comes through
+ *  here, and none gets this far without the tick). */
 async function putOnPlan(db: Db, tenantId: string, fields: SignupFields): Promise<void> {
-  const { error } = await db.from('tenants').update({ plan_billing: fields.plan === FREE_PLAN ? null : billingFor(fields.plan, fields.billing) }).eq('id', tenantId);
+  const { error } = await db
+    .from('tenants')
+    .update({
+      plan_billing: fields.plan === FREE_PLAN ? null : billingFor(fields.plan, fields.billing),
+      terms_agreed_at: new Date().toISOString(),
+    })
+    .eq('id', tenantId);
   if (error !== null) throw new Error(`Could not save the billing choice: ${error.message}`);
   const applied = await applyPlan(db, tenantId, fields.plan);
   if (!applied.ok) throw new Error(`Could not put the site on its plan: ${applied.error}`);
@@ -76,7 +103,11 @@ async function putOnPlan(db: Db, tenantId: string, fields: SignupFields): Promis
 /** An unpublished site record, owned by the account, on the plan picked. */
 export async function createSite(db: Db, userId: string, fields: SignupFields): Promise<string> {
   const isTaken = async (subdomain: string): Promise<boolean> => {
-    const { data, error } = await db.from('tenants').select('id').eq('subdomain', subdomain).maybeSingle();
+    const { data, error } = await db
+      .from('tenants')
+      .select('id')
+      .eq('subdomain', subdomain)
+      .maybeSingle();
     if (error !== null) throw new Error(`Could not check the web address: ${error.message}`);
     return data !== null;
   };
@@ -85,7 +116,14 @@ export async function createSite(db: Db, userId: string, fields: SignupFields): 
     const subdomain = await freeSubdomain(fields.businessName, isTaken);
     const { data, error } = await db
       .from('tenants')
-      .insert({ subdomain, business_name: fields.businessName, tier: 'basic', types: ['seller'], status: 'draft', contact_email: fields.email })
+      .insert({
+        subdomain,
+        business_name: fields.businessName,
+        tier: 'basic',
+        types: ['seller'],
+        status: 'draft',
+        contact_email: fields.email,
+      })
       .select('id')
       .single();
     if (error?.code === UNIQUE_VIOLATION) continue;
@@ -107,7 +145,11 @@ export async function createSite(db: Db, userId: string, fields: SignupFields): 
  * password was right): one that never finished paying goes back to Stripe; one
  * that paid is sent a fresh confirmation link and told to look for it.
  */
-export async function unconfirmedSignIn(db: Db, email: string, origin: string): Promise<{ kind: 'pay'; url: string } | { kind: 'confirm' }> {
+export async function unconfirmedSignIn(
+  db: Db,
+  email: string,
+  origin: string,
+): Promise<{ kind: 'pay'; url: string } | { kind: 'confirm' }> {
   const user = await findUserByEmail(email);
   if (user === null) return { kind: 'confirm' };
   const sites = await sitesOf(db, user.id);
@@ -119,11 +161,23 @@ export async function unconfirmedSignIn(db: Db, email: string, origin: string): 
     return { kind: 'confirm' };
   }
   if (waiting === undefined) return { kind: 'confirm' };
-  const { data, error } = await db.from('tenants').select('plan, plan_billing, business_name, contact_email').eq('id', waiting.tenantId).single();
+  const { data, error } = await db
+    .from('tenants')
+    .select('plan, plan_billing, business_name, contact_email')
+    .eq('id', waiting.tenantId)
+    .single();
   if (error !== null) throw new Error(`Could not read the site's plan: ${error.message}`);
   const plan = data.plan;
-  if (plan !== FREE_PLAN && plan !== 'showcase' && plan !== 'lite' && plan !== 'full') throw new Error(`site ${waiting.tenantId} has no plan`);
-  const fields: SignupFields = { plan, billing: data.plan_billing === 'yearly' ? 'yearly' : 'monthly', makerName: '', businessName: data.business_name, email, promoCode: '' };
+  if (plan !== FREE_PLAN && plan !== 'showcase' && plan !== 'lite' && plan !== 'full')
+    throw new Error(`site ${waiting.tenantId} has no plan`);
+  const fields: SignupFields = {
+    plan,
+    billing: data.plan_billing === 'yearly' ? 'yearly' : 'monthly',
+    makerName: '',
+    businessName: data.business_name,
+    email,
+    promoCode: '',
+  };
   return { kind: 'pay', url: await signupDeps(db, origin).checkout(waiting.tenantId, fields) };
 }
 
@@ -131,9 +185,15 @@ export async function unconfirmedSignIn(db: Db, email: string, origin: string): 
 export function signupDeps(db: Db, origin: string): SignupDeps {
   return {
     async createUser(email, password, name) {
-      const { data, error } = await db.auth.admin.createUser({ email, password, email_confirm: false, user_metadata: { name } });
+      const { data, error } = await db.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: false,
+        user_metadata: { name },
+      });
       if (error === null) return { ok: true, userId: data.user.id };
-      if (error.code === 'email_exists' || error.status === 422) return { ok: false, reason: 'exists' };
+      if (error.code === 'email_exists' || error.status === 422)
+        return { ok: false, reason: 'exists' };
       logger.error('signup: account create failed', { error: error.message });
       return { ok: false, reason: 'failed' };
     },
@@ -143,7 +203,11 @@ export function signupDeps(db: Db, origin: string): SignupDeps {
     setPlan: (tenantId, fields) => putOnPlan(db, tenantId, fields),
     async removeUser(userId) {
       const { error } = await db.auth.admin.deleteUser(userId);
-      if (error !== null) logger.error('signup: could not remove the new account after a failed sign-up', { userId, error: error.message });
+      if (error !== null)
+        logger.error('signup: could not remove the new account after a failed sign-up', {
+          userId,
+          error: error.message,
+        });
     },
     async promoProblem(fields) {
       if (fields.promoCode === '') return null;

@@ -15,37 +15,85 @@ import { renderEmail } from '@/lib/email/layout';
 
 type Db = SupabaseClient<Database>;
 
-export function composeConfirmEmail(args: { name: string; link: string; words: IntakeWords; assetBase?: string }): { subject: string; text: string; html: string } {
+export function composeConfirmEmail(args: {
+  name: string;
+  link: string;
+  words: IntakeWords;
+  assetBase?: string;
+}): { subject: string; text: string; html: string } {
   const c = args.words.confirm;
   const greeting = fill(c.greeting, { name: args.name });
-  const text = [greeting, '', c.body, '', `${c.button}: ${args.link}`, '', c.notYou, '', c.signoff].join('\n');
-  const html = renderEmail({ heading: c.heading, paragraphs: [greeting, c.body], button: { label: c.button, url: args.link }, small: [c.notYou], assetBase: args.assetBase });
+  const text = [
+    greeting,
+    '',
+    c.body,
+    '',
+    `${c.button}: ${args.link}`,
+    '',
+    c.notYou,
+    '',
+    c.signoff,
+  ].join('\n');
+  const html = renderEmail({
+    heading: c.heading,
+    paragraphs: [greeting, c.body],
+    button: { label: c.button, url: args.link },
+    small: [c.notYou],
+    assetBase: args.assetBase,
+  });
   return { subject: c.subject, text, html };
 }
 
-export type Send = (msg: { to: string; subject: string; text: string; html: string }) => Promise<{ error: { message: string } | null }>;
+export type Send = (msg: {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+}) => Promise<{ error: { message: string } | null }>;
 
 /** A site's owner, as sign-up made them. */
 export type Owner = { userId: string; email: string; name: string; confirmed: boolean };
 
 export async function ownerOf(db: Db, tenantId: string): Promise<Owner> {
-  const { data, error } = await db.from('tenant_members').select('user_id').eq('tenant_id', tenantId).eq('role', 'admin').eq('status', 'active').limit(1).maybeSingle();
+  const { data, error } = await db
+    .from('tenant_members')
+    .select('user_id')
+    .eq('tenant_id', tenantId)
+    .eq('role', 'admin')
+    .eq('status', 'active')
+    .limit(1)
+    .maybeSingle();
   if (error !== null) throw new Error(`Could not read the site's owner: ${error.message}`);
   if (data === null) throw new Error(`site ${tenantId} has no owner`);
   const { data: u, error: uErr } = await db.auth.admin.getUserById(data.user_id);
   if (uErr !== null) throw new Error(`Could not read the account: ${uErr.message}`);
   const meta: Record<string, unknown> = u.user.user_metadata;
   const name = meta['name'];
-  return { userId: u.user.id, email: u.user.email ?? '', name: typeof name === 'string' ? name : '', confirmed: u.user.email_confirmed_at != null };
+  return {
+    userId: u.user.id,
+    email: u.user.email ?? '',
+    name: typeof name === 'string' ? name : '',
+    confirmed: u.user.email_confirmed_at != null,
+  };
 }
 
 /** Makes a fresh link and emails it to the owner. Does nothing once they're confirmed. */
-export async function sendConfirmation(args: { db: Db; owner: Owner; appOrigin: string; words: IntakeWords; send: Send }): Promise<void> {
+export async function sendConfirmation(args: {
+  db: Db;
+  owner: Owner;
+  appOrigin: string;
+  words: IntakeWords;
+  send: Send;
+}): Promise<void> {
   if (args.owner.confirmed) return;
-  const { data, error } = await args.db.auth.admin.generateLink({ type: 'magiclink', email: args.owner.email });
+  const { data, error } = await args.db.auth.admin.generateLink({
+    type: 'magiclink',
+    email: args.owner.email,
+  });
   if (error !== null) throw new Error(`Could not make the confirmation link: ${error.message}`);
   const link = confirmUrl(args.appOrigin, data.properties.hashed_token, 'signup');
   const mail = composeConfirmEmail({ name: args.owner.name, link, words: args.words });
   const sent = await args.send({ to: args.owner.email, ...mail });
-  if (sent.error !== null) throw new Error(`Could not send the confirmation email: ${sent.error.message}`);
+  if (sent.error !== null)
+    throw new Error(`Could not send the confirmation email: ${sent.error.message}`);
 }

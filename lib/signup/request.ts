@@ -5,7 +5,15 @@
  * (which checks again). Problems are spots in the form's own words (errors.*).
  */
 import { FREE_PLAN, isFreePlan, isSitePlan, type AccountPlan } from '@/lib/backend/plan/plan';
-import { BILLINGS, EMAIL_SHAPE, INTAKE_LIMITS, PASSWORD_MAX, PASSWORD_MIN, type Billing, type IntakeProblem } from '@/lib/intake/request';
+import {
+  BILLINGS,
+  EMAIL_SHAPE,
+  INTAKE_LIMITS,
+  PASSWORD_MAX,
+  PASSWORD_MIN,
+  type Billing,
+  type IntakeProblem,
+} from '@/lib/intake/request';
 
 /** Field names the page posts and the route reads. */
 export const SIGNUP_FIELD = {
@@ -16,6 +24,8 @@ export const SIGNUP_FIELD = {
   email: 'email',
   password: 'password',
   promo: 'promoCode',
+  /** The tick box: true once they agree to the maker terms. */
+  agree: 'agreeTerms',
   honeypot: 'company',
 } as const;
 
@@ -29,7 +39,12 @@ export type SignupFields = {
   promoCode: string;
 };
 
-export type SignupDraft = Omit<SignupFields, 'plan'> & { plan: AccountPlan | null; password: string };
+export type SignupDraft = Omit<SignupFields, 'plan'> & {
+  plan: AccountPlan | null;
+  password: string;
+  /** The maker terms and what can't be sold, ticked (go-live step 3, Alex 2026-11-16). */
+  agreed: boolean;
+};
 
 export type SignupParsed =
   | { kind: 'spam' }
@@ -42,13 +57,21 @@ export function isAccountPlan(v: unknown): v is AccountPlan {
 
 /** The first thing wrong, top of the form first; null when it's ready. */
 export function checkSignup(d: SignupDraft): IntakeProblem | null {
-  const p = (spot: IntakeProblem['spot'], values: Record<string, string | number> = {}): IntakeProblem => ({ spot, values });
+  const p = (
+    spot: IntakeProblem['spot'],
+    values: Record<string, string | number> = {},
+  ): IntakeProblem => ({ spot, values });
   if (d.plan === null) return p('plan');
   if (d.makerName.trim() === '') return p('name');
   if (d.businessName.trim() === '') return p('business');
   if (!EMAIL_SHAPE.test(d.email.trim())) return p('email');
-  if (d.password.length < PASSWORD_MIN || d.password.length > PASSWORD_MAX) return p('password', { min: PASSWORD_MIN, max: PASSWORD_MAX });
-  const long = d.makerName.trim().length > INTAKE_LIMITS.name || d.businessName.trim().length > INTAKE_LIMITS.business || d.email.trim().length > INTAKE_LIMITS.email;
+  if (d.password.length < PASSWORD_MIN || d.password.length > PASSWORD_MAX)
+    return p('password', { min: PASSWORD_MIN, max: PASSWORD_MAX });
+  if (!d.agreed) return p('terms');
+  const long =
+    d.makerName.trim().length > INTAKE_LIMITS.name ||
+    d.businessName.trim().length > INTAKE_LIMITS.business ||
+    d.email.trim().length > INTAKE_LIMITS.email;
   return long ? p('tooLong') : null;
 }
 
@@ -64,7 +87,12 @@ export function parseSignup(body: unknown): SignupParsed {
   const planRaw = text(b, SIGNUP_FIELD.plan);
   const plan = isAccountPlan(planRaw) ? planRaw : null;
   const billingRaw = text(b, SIGNUP_FIELD.billing);
-  const billing: Billing = plan === FREE_PLAN ? 'monthly' : (BILLINGS as readonly string[]).includes(billingRaw) ? (billingRaw as Billing) : 'monthly';
+  const billing: Billing =
+    plan === FREE_PLAN
+      ? 'monthly'
+      : (BILLINGS as readonly string[]).includes(billingRaw)
+        ? (billingRaw as Billing)
+        : 'monthly';
   const draft: SignupDraft = {
     plan,
     billing,
@@ -73,12 +101,21 @@ export function parseSignup(body: unknown): SignupParsed {
     email: text(b, SIGNUP_FIELD.email),
     password: text(b, SIGNUP_FIELD.password),
     promoCode: text(b, SIGNUP_FIELD.promo).trim().toUpperCase(),
+    agreed: b[SIGNUP_FIELD.agree] === true,
   };
   const problem = checkSignup(draft);
-  if (problem !== null || draft.plan === null) return { kind: 'invalid', problem: problem ?? { spot: 'plan', values: {} } };
+  if (problem !== null || draft.plan === null)
+    return { kind: 'invalid', problem: problem ?? { spot: 'plan', values: {} } };
   return {
     kind: 'ok',
-    fields: { plan: draft.plan, billing, makerName: draft.makerName.trim(), businessName: draft.businessName.trim(), email: draft.email.trim().toLowerCase(), promoCode: draft.promoCode },
+    fields: {
+      plan: draft.plan,
+      billing,
+      makerName: draft.makerName.trim(),
+      businessName: draft.businessName.trim(),
+      email: draft.email.trim().toLowerCase(),
+      promoCode: draft.promoCode,
+    },
     password: draft.password,
   };
 }
