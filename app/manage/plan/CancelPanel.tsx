@@ -10,17 +10,21 @@ import { useNotice } from '../_components/Notice';
 const FAILED = 'Something went wrong. Check your connection and try again.';
 
 /** Cancel on Your plan (Alex, 2026-10-19): the site stays up to the end of the
- *  current term, then comes down (kept and hidden, never deleted). Until that day
- *  the maker can keep it. On Market and Full, Showcase is offered as a quieter
- *  choice first, never automatically. */
+ *  current term, then comes down and the maker moves to Free (Alex, 2026-11-16): no
+ *  more charges, their products and tools kept. Until that day the maker can keep it.
+ *  Showcase is offered as a quieter choice first, unless it's the plan already or on
+ *  its way; a downgrade waiting is named, since cancelling replaces it. */
 export function CancelPanel({
   cancels,
   endsOn,
   offerShowcase,
+  waiting,
 }: {
   cancels: boolean;
   endsOn: string;
   offerShowcase: boolean;
+  /** The plan a downgrade is waiting to move to at renewal, or null. */
+  waiting: string | null;
 }): React.ReactElement {
   const router = useRouter();
   const notice = useNotice();
@@ -48,12 +52,12 @@ export function CancelPanel({
   return (
     <section className="bk-section" aria-labelledby="s-cancel">
       <h2 id="s-cancel" className="bk-section-title">
-        {cancels ? 'Your site is closing' : 'Cancel'}
+        {cancels ? 'You’re moving to Free' : 'Cancel'}
       </h2>
       {notice.area}
       {cancels ? (
         <>
-          <p className="bk-note">{`Your site goes down on ${endsOn}, at the end of your current term. Nothing is deleted. Changed your mind? Keep it before then.`}</p>
+          <p className="bk-note">{`On ${endsOn}, at the end of your current term, your site comes down and you move to Free. Nothing more is charged, and nothing is deleted: your products and tools stay. Changed your mind? Keep your site before then.`}</p>
           <button
             type="button"
             className="bk-btn"
@@ -65,7 +69,10 @@ export function CancelPanel({
         </>
       ) : (
         <>
-          <p className="bk-note">{`If you cancel, your site stays up until ${endsOn}, the end of your current term, and then comes down. Nothing is deleted, and you can change your mind before then.`}</p>
+          <p className="bk-note">{`If you cancel, your site stays up until ${endsOn}, the end of your current term. Then it comes down and you move to Free: nothing more is charged, and your products and tools stay. You can move back up any time, and change your mind before then.`}</p>
+          {waiting !== null && (
+            <p className="bk-note">{`You’re set to move to ${waiting} on ${endsOn}. If you cancel instead, you move to Free that day.`}</p>
+          )}
           {offerShowcase && (
             <p className="bk-note">
               Quiet season? You can keep a small site on Showcase instead.{' '}
@@ -76,7 +83,7 @@ export function CancelPanel({
           )}
           <ConfirmButton
             label="Cancel my site"
-            confirmLabel={`Yes, close it on ${endsOn}`}
+            confirmLabel={`Yes, move me to Free on ${endsOn}`}
             keepLabel="Keep my site"
             disabled={busy}
             onConfirm={() => void run(cancelAtTermEnd)}

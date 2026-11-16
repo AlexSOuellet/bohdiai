@@ -105,7 +105,8 @@ export default async function PlanPage({
         <CancelPanel
           cancels={state.cancels}
           endsOn={longDay(state.renewsOn)}
-          offerShowcase={state.plan !== 'showcase'}
+          offerShowcase={state.plan !== 'showcase' && state.next !== 'showcase'}
+          waiting={!state.cancels && isSitePlan(state.next) ? planOf(state.next).name : null}
         />
       </main>
     </>

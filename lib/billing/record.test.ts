@@ -576,7 +576,25 @@ describe('recordSubscription: the site follows the plan Stripe charges for', () 
       plan_next_gallery: null,
     });
     await recordSubscription(free.db, priced('bohdiai_free_monthly', 0));
-    expect(free.calls[1]).toMatchObject({ value: { plan_billing: null } });
+    expect(free.calls.filter((c) => c.table === 'tenants').map((c) => c.value)).toContainEqual(
+      expect.objectContaining({ plan_billing: null }),
+    );
+  });
+
+  it('a cancel reaching renewal moves the site to Free: its page goes offline and the cancel is done (Alex, 2026-11-16)', async () => {
+    const { db, calls } = planDb({
+      plan: 'lite',
+      plan_billing: 'monthly',
+      plan_next: 'free',
+      plan_next_gallery: null,
+    });
+    await recordSubscription(db, priced('bohdiai_free_monthly', 0));
+    expect(plans.applyPlan).toHaveBeenCalledWith(db, 't1', 'free');
+    const tenantWrites = calls.filter((c) => c.table === 'tenants').map((c) => c.value);
+    expect(tenantWrites).toContainEqual({ status: 'offline' });
+    expect(tenantWrites).toContainEqual(
+      expect.objectContaining({ plan_billing: null, plan_cancels: false, plan_next: null }),
+    );
   });
 
   it('Showcase with no picks (a move Stripe made on its own) keeps the gallery as it is', async () => {

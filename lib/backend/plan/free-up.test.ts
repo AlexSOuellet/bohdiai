@@ -33,12 +33,13 @@ function fakeDb(opts: { row?: unknown; readError?: string; writeError?: string }
           }),
         }),
       }),
-      update: (v: unknown) => ({
-        eq: async () => {
-          writes.push(v);
-          return { error: opts.writeError === undefined ? null : { message: opts.writeError } };
-        },
-      }),
+      update: (v: unknown) => {
+        writes.push(v);
+        const answer = Promise.resolve({
+          error: opts.writeError === undefined ? null : { message: opts.writeError },
+        });
+        return { eq: () => Object.assign(answer, { eq: () => answer }) };
+      },
     }),
   };
   return { db: db as unknown as SupabaseClient<Database>, writes };
@@ -85,6 +86,8 @@ describe('stepUp', () => {
         plan_next_billing: null,
         plan_next_gallery: null,
       },
+      // A site that went offline when it moved to Free comes back online (Alex, 2026-11-16).
+      { status: 'active' },
     ]);
   });
   it('keeps the renewal day when there’s no new one, and says which step failed', async () => {

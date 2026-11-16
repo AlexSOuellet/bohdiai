@@ -23,6 +23,8 @@ describe('planChangeEmail', () => {
       'Lena Hart Decoupage: your site will close on Tuesday, November 18, 2026',
     );
     expect(m.text).toContain('Keep my site');
+    // Cancelling moves the maker to Free (Alex, 2026-11-16).
+    expect(m.text).toContain('you move to BohdiAI Free: nothing more is charged, and your products and tools stay');
   });
   it('has words for every change', () => {
     for (const change of [

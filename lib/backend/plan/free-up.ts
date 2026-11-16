@@ -54,6 +54,14 @@ export async function stepUp(
     })
     .eq('id', tenantId);
   if (error !== null) return { ok: false, error: `terms: ${error.message}` };
+  // A site that came down when it moved to Free (a cancel, Alex 2026-11-16) comes back up.
+  // Free has no site, so an offline site on Free can only have come from that.
+  const { error: upErr } = await db
+    .from('tenants')
+    .update({ status: 'active' })
+    .eq('id', tenantId)
+    .eq('status', 'offline');
+  if (upErr !== null) return { ok: false, error: `site: ${upErr.message}` };
   return { ok: true };
 }
 

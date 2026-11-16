@@ -47,8 +47,8 @@ function planWords(
     case 'cancel':
       return {
         subject: `${siteName}: your site will close on ${change.on}`,
-        heading: 'Your site is closing',
-        text: `You cancelled ${siteName}. Your site stays up until the end of your current term, ${change.on}, and then it comes down. Nothing is deleted.\n\nChanged your mind? Choose Keep my site on Your plan in your backend before ${change.on}.`,
+        heading: 'You’re moving to Free',
+        text: `You cancelled ${siteName}. Your site stays up until the end of your current term, ${change.on}. Then it comes down and you move to BohdiAI Free: nothing more is charged, and your products and tools stay. Nothing is deleted, and you can move back up any time.\n\nChanged your mind? Choose Keep my site on Your plan in your backend before ${change.on}.`,
       };
     case 'keep':
       return {

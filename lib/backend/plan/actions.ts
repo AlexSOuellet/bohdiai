@@ -133,40 +133,63 @@ async function tell(change: PlanChange): Promise<void> {
   });
 }
 
-/** Tells Stripe first, so nothing says cancelled while Stripe would still charge. */
-async function tellStripe(tenantId: string, ends: boolean): Promise<boolean> {
+/** Cancelling (Alex, 2026-11-16): Stripe moves to the $0 Free price at renewal, the same
+ *  way a downgrade waits, replacing any downgrade already waiting. The subscription
+ *  carries on at $0, so the maker can move back up on it. A site Stripe doesn't bill has
+ *  nothing to tell. */
+async function moveToFreeAtRenewal(tenantId: string): Promise<boolean> {
   try {
     const sub = await currentSubscription(supabaseAdmin(), tenantId);
     if (sub === null) return true;
-    // A downgrade waiting for renewal gives way to the cancel.
-    if (ends) await dropAtRenewal(stripe(), sub.stripeId);
-    await setEndsWithTerm(stripe(), sub, ends);
+    const s = stripe();
+    await changeAtRenewal(s, sub.stripeId, await findPrice(s, 'free', 'monthly'), {
+      plan: 'free',
+      billing: 'monthly',
+    });
     return true;
   } catch (err) {
-    logger.error('plan: Stripe not told', {
+    logger.error('plan: Stripe not told of the cancel', {
       tenantId,
-      ends,
       error: err instanceof Error ? err.message : String(err),
     });
     return false;
   }
 }
 
-/** Cancel: the site stays up to the end of its current term, then comes down
- *  (kept and hidden, never deleted). Any site on a plan; Alex, 2026-10-19. */
+/** Keep my site: Stripe lets go of the move to Free (and of an older cancel that ended
+ *  the subscription), so renewal carries on as it was. */
+async function stayOnPlan(tenantId: string): Promise<boolean> {
+  try {
+    const sub = await currentSubscription(supabaseAdmin(), tenantId);
+    if (sub === null) return true;
+    await dropAtRenewal(stripe(), sub.stripeId);
+    await setEndsWithTerm(stripe(), sub, false);
+    return true;
+  } catch (err) {
+    logger.error('plan: Stripe not told of the keep', {
+      tenantId,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return false;
+  }
+}
+
+/** Cancel: the site stays up to the end of its current term, then comes down and the
+ *  maker moves to Free (Alex, 2026-11-16): no more charges, their backend, products and
+ *  tools kept, and moving back up any time. Nothing is deleted. Any site on a plan. */
 export async function cancelAtTermEnd(): Promise<ChangePlanResult> {
   const { site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
   if (!on.has('plan')) return { ok: false, error: 'This site isn’t on a plan yet.' };
   const state = await loadPlanState(supabaseAdmin(), site.tenantId);
   if (state === null) return { ok: false, error: 'This site isn’t on a plan yet.' };
-  if (!(await tellStripe(site.tenantId, true)))
+  if (!(await moveToFreeAtRenewal(site.tenantId)))
     return { ok: false, error: 'Your cancellation couldn’t be saved. Try again in a moment.' };
   const { error } = await supabaseAdmin()
     .from('tenants')
     .update({
       plan_cancels: true,
-      plan_next: null,
+      plan_next: 'free',
       plan_next_billing: null,
       plan_next_gallery: null,
     })
@@ -184,11 +207,16 @@ export async function keepSite(): Promise<ChangePlanResult> {
   const { site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
   if (!on.has('plan')) return { ok: false, error: 'This site isn’t on a plan yet.' };
-  if (!(await tellStripe(site.tenantId, false)))
+  if (!(await stayOnPlan(site.tenantId)))
     return { ok: false, error: 'That couldn’t be saved. Try again in a moment.' };
   const { error } = await supabaseAdmin()
     .from('tenants')
-    .update({ plan_cancels: false })
+    .update({
+      plan_cancels: false,
+      plan_next: null,
+      plan_next_billing: null,
+      plan_next_gallery: null,
+    })
     .eq('id', site.tenantId);
   if (error !== null) {
     logger.error('plan keep failed', { tenantId: site.tenantId, error: error.message });

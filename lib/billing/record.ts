@@ -193,6 +193,16 @@ async function followPlan(
     }
     const applied = await applyPlan(db, tenantId, priced.plan);
     if (!applied.ok) throw new Error(`Could not put the site on its plan: ${applied.error}`);
+    // A cancel reaching renewal (Alex, 2026-11-16): Free has no site, so its page comes
+    // down, kept and hidden, never deleted. Moving back up brings it back.
+    if (priced.plan === 'free') {
+      const { error: downErr } = await db
+        .from('tenants')
+        .update({ status: 'offline' })
+        .eq('id', tenantId)
+        .eq('status', 'active');
+      if (downErr !== null) throw new Error(`Could not take the site down: ${downErr.message}`);
+    }
   }
   const { error: tErr } = await db
     .from('tenants')
@@ -201,6 +211,7 @@ async function followPlan(
       plan_next: null,
       plan_next_billing: null,
       plan_next_gallery: null,
+      ...(priced.plan === 'free' ? { plan_cancels: false } : {}),
     })
     .eq('id', tenantId);
   if (tErr !== null) throw new Error(`Could not save the plan's billing: ${tErr.message}`);

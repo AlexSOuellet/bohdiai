@@ -453,20 +453,22 @@ describe('cancel at the end of the term', () => {
     billing.setEndsWithTerm.mockReset().mockResolvedValue(undefined);
   });
 
-  it('tells Stripe the plan ends with this term, and that it doesn’t after all', async () => {
+  it('cancelling moves the maker to Free at renewal in Stripe, and keeping undoes it (Alex, 2026-11-16)', async () => {
     billing.currentSubscription.mockResolvedValue({ stripeId: 'sub_1' });
     expect(await cancelAtTermEnd()).toEqual({ ok: true });
-    // A downgrade waiting for renewal gives way to the cancel.
-    expect(pc.dropAtRenewal).toHaveBeenCalledWith({}, 'sub_1');
-    expect(billing.setEndsWithTerm).toHaveBeenLastCalledWith({}, { stripeId: 'sub_1' }, true);
-    pc.dropAtRenewal.mockClear();
+    // Stripe moves to the $0 Free price at renewal; any downgrade waiting gives way to it.
+    expect(pc.changeAtRenewal).toHaveBeenCalledWith({}, 'sub_1', { id: 'price_free_monthly' }, { plan: 'free', billing: 'monthly' });
+    // The subscription carries on, at $0: nothing is ended.
+    expect(billing.setEndsWithTerm).not.toHaveBeenCalledWith({}, { stripeId: 'sub_1' }, true);
     expect(await keepSite()).toEqual({ ok: true });
+    expect(pc.dropAtRenewal).toHaveBeenCalledWith({}, 'sub_1');
+    // An older cancel that ended the subscription is undone too.
     expect(billing.setEndsWithTerm).toHaveBeenLastCalledWith({}, { stripeId: 'sub_1' }, false);
-    expect(pc.dropAtRenewal).not.toHaveBeenCalled();
   });
 
   it('says nothing is cancelled when Stripe can’t be told', async () => {
     billing.currentSubscription.mockResolvedValue({ stripeId: 'sub_1' });
+    pc.changeAtRenewal.mockRejectedValueOnce(new Error('stripe down'));
     billing.setEndsWithTerm.mockRejectedValue(new Error('stripe down'));
     expect((await cancelAtTermEnd()).ok).toBe(false);
     expect((await keepSite()).ok).toBe(false);
@@ -479,10 +481,10 @@ describe('cancel at the end of the term', () => {
     expect((await cancelAtTermEnd()).ok).toBe(false);
   });
 
-  it('marks the site to close at the end of its term, on any site with a plan, and emails it', async () => {
+  it('marks the site to move to Free at the end of its term, on any site with a plan, and emails it', async () => {
     expect(await cancelAtTermEnd()).toEqual({ ok: true });
     expect(writes).toEqual([
-      { plan_cancels: true, plan_next: null, plan_next_billing: null, plan_next_gallery: null },
+      { plan_cancels: true, plan_next: 'free', plan_next_billing: null, plan_next_gallery: null },
     ]);
     expect(sendPlanChange).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -494,7 +496,7 @@ describe('cancel at the end of the term', () => {
 
   it('keeps the site when the maker changes their mind, and emails that too', async () => {
     expect(await keepSite()).toEqual({ ok: true });
-    expect(writes).toEqual([{ plan_cancels: false }]);
+    expect(writes).toEqual([{ plan_cancels: false, plan_next: null, plan_next_billing: null, plan_next_gallery: null }]);
     expect(sendPlanChange).toHaveBeenCalledWith(
       expect.objectContaining({ change: { kind: 'keep' } }),
     );
